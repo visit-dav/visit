@@ -8,6 +8,8 @@
 #include <qradiobutton.h>
 #include <QvisVariableButton.h>
 
+#define POINT_TYPE_POINTS 3
+
 // ****************************************************************************
 // Method: QvisPointControl::QvisPointControl
 //
@@ -20,6 +22,9 @@
 //    Brad Whitlock, Thu Dec 9 17:05:12 PST 2004
 //    I replaced one of the line edits with a QvisVariableButton.
 //
+//    Brad Whitlock, Wed Jul 20 13:48:43 PST 2005
+//    Initialize lastGoodSizePixels.
+//
 // ****************************************************************************
 
 QvisPointControl::QvisPointControl(QWidget *parent, const char *name) :
@@ -27,7 +32,9 @@ QvisPointControl::QvisPointControl(QWidget *parent, const char *name) :
 {
     // Set some default values.
 
+    lastGoodPointType = 0;
     lastGoodSize = 0.05;
+    lastGoodSizePixels = 1;
     lastGoodVar = "default";
 
     // Create the top layout.
@@ -113,29 +120,74 @@ QvisPointControl::~QvisPointControl()
 // Creation:   November 4, 2004 
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jul 20 13:53:17 PST 2005
+//   Made it use ProcessSizeText.
+//
 // ****************************************************************************
 
 void
 QvisPointControl::processSizeText()
 {
+    if(ProcessSizeText(lastGoodPointType))
+    {
+        if(!signalsBlocked())
+        {
+            if(lastGoodPointType == POINT_TYPE_POINTS)
+                emit pointSizePixelsChanged(lastGoodSizePixels);
+            else
+                emit pointSizeChanged(lastGoodSize);
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: QvisPointControl::ProcessSizeText
+//
+// Purpose: 
+//   Processes the text in the size text field based on the point type.
+//
+// Arguments:
+//   pointType : The point type to use when interpreting the size text.
+//
+// Returns:    True if the text was processed okay.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 20 14:49:19 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+QvisPointControl::ProcessSizeText(int pointType)
+{
     QString temp = sizeLineEdit->displayText().stripWhiteSpace();
     bool okay = !temp.isEmpty();
-    double val;
-    if (okay)
+
+    if(pointType == POINT_TYPE_POINTS)
     {
-        val = temp.toDouble(&okay);
+        int val;
+        if (okay)
+            val = temp.toInt(&okay);
+        if (okay)
+            lastGoodSizePixels = val;
+        else
+            SetPointSizePixels(lastGoodSizePixels);
     }
-    if (okay)
+    else
     {
-        lastGoodSize = val;
-        if (!signalsBlocked())
-            emit pointSizeChanged(val);
+        double val;
+        if (okay)
+            val = temp.toDouble(&okay);
+        if (okay)
+            lastGoodSize = val;
+        else
+            SetPointSize(lastGoodSize);
     }
-    else 
-    {
-        SetPointSize(lastGoodSize);
-    }
+
+    return okay;
 }
 
 
@@ -155,12 +207,39 @@ QvisPointControl::processSizeText()
 double
 QvisPointControl::GetPointSize() 
 {
-    blockSignals(true);
-    processSizeText();
-    blockSignals(false);
+    if(lastGoodPointType < POINT_TYPE_POINTS)
+    {
+        blockSignals(true);
+        ProcessSizeText(lastGoodPointType);
+        blockSignals(false);
+    }
     return lastGoodSize;
 }
 
+// ****************************************************************************
+// Method: QvisPointControl::GetPointSizePixels
+//
+// Purpose: 
+//   Gets the point size in terms of pixels.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 20 14:49:00 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+QvisPointControl::GetPointSizePixels() 
+{
+    if(lastGoodPointType == POINT_TYPE_POINTS)
+    {
+        blockSignals(true);
+        ProcessSizeText(lastGoodPointType);
+        blockSignals(false);
+    }
+    return lastGoodSizePixels;
+}
 
 // ****************************************************************************
 // Method: QvisPointControl::sizeVarChanged
@@ -229,15 +308,22 @@ QvisPointControl::GetPointSizeVar()
 //    Brad Whitlock, Thu Dec 9 17:12:39 PST 2004
 //    I changed the name of one of the widgets.
 //
+//    Brad Whitlock, Wed Jul 20 14:09:29 PST 2005
+//    Added code to get the point size.
+//
 // ****************************************************************************
 
 void
 QvisPointControl::typeButtonChanged(int type)
 {
-    sizeLabel->setEnabled(type != 3);
-    sizeLineEdit->setEnabled(type != 3);
-    sizeVarToggle->setEnabled(type != 3);
-    sizeVarButton->setEnabled(type != 3);
+    // Get the values that are in the text field.
+    ProcessSizeText(lastGoodPointType);
+
+    lastGoodPointType = type;
+
+    UpdateSizeText();
+    UpdatePointType();
+
     if (!signalsBlocked())
         emit pointTypeChanged(type);
 }
@@ -288,10 +374,61 @@ QvisPointControl::sizeVarToggled(bool val)
 
 void QvisPointControl::SetPointSize(double val)
 {
-    QString temp;
-    temp.sprintf("%g", val);
-    sizeLineEdit->setText(temp);
     lastGoodSize = val;
+    UpdateSizeText();
+}
+
+// ****************************************************************************
+// Method: QvisPointControl::SetPointSizePixels
+//
+// Purpose: 
+//   Sets the point size in terms of pixels.
+//
+// Arguments:
+//   val : The new pixel size.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 20 14:47:26 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPointControl::SetPointSizePixels(int val)
+{
+    lastGoodSizePixels = val;
+    UpdateSizeText();
+}
+
+// ****************************************************************************
+// Method: QvisPointControl::UpdateSizeText
+//
+// Purpose: 
+//   Updates the size text.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 20 14:48:01 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPointControl::UpdateSizeText()
+{
+    if(lastGoodPointType < POINT_TYPE_POINTS)
+    {
+        QString temp;
+        temp.sprintf("%g", lastGoodSize);
+        sizeLineEdit->setText(temp);
+    }
+    else
+    {
+        QString temp;
+        temp.sprintf("%d", lastGoodSizePixels);
+        sizeLineEdit->setText(temp);
+    }
 }
 
 
@@ -383,6 +520,9 @@ void QvisPointControl::SetPointSizeVar(QString &var)
 //   Brad Whitlock, Thu Dec 9 17:14:45 PST 2004
 //   I changed the name of one of the widgets.
 //
+//   Brad Whitlock, Wed Jul 20 14:13:43 PST 2005
+//   I made it set the lastGoodPointType and update the text.
+//
 // ****************************************************************************
 
 void QvisPointControl::SetPointType(int type)
@@ -393,12 +533,38 @@ void QvisPointControl::SetPointType(int type)
     typeButtons->blockSignals(true);
     typeButtons->setButton(type);
     typeButtons->blockSignals(false);
-    sizeLabel->setEnabled(type != 3);
-    sizeLineEdit->setEnabled(type != 3);
-    sizeVarToggle->setEnabled(type != 3);
-    sizeVarButton->setEnabled(type != 3);
+
+    lastGoodPointType = type;
+    UpdateSizeText();
+    UpdatePointType();
+
     if (!signalsBlocked())
         emit pointTypeChanged(type);
+}
+
+// ****************************************************************************
+// Method: QvisPointControl::UpdatePointType
+//
+// Purpose: 
+//   Updates some point widgets based on the point type.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 20 14:48:35 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPointControl::UpdatePointType()
+{
+    if(lastGoodPointType != POINT_TYPE_POINTS)
+        sizeLabel->setText("Point size");
+    else
+        sizeLabel->setText("Point size (pixels)");
+
+    sizeVarToggle->setEnabled(lastGoodPointType != POINT_TYPE_POINTS);
+    sizeVarButton->setEnabled(lastGoodPointType != POINT_TYPE_POINTS);
 }
 
 // ****************************************************************************

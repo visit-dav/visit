@@ -52,6 +52,9 @@ class MeshAttributes;
 //   Replaced point-related control widgets (and associated slots) 
 //   with QvisPointControl. 
 //
+//   Brad Whitlock, Wed Jul 20 14:23:58 PST 2005
+//   Added a new slot to handle a new signal from QvisPointControl.
+//
 // ****************************************************************************
 
 class QvisMeshPlotWindow : public QvisPostableWindowObserver
@@ -87,6 +90,7 @@ private slots:
     void smoothingLevelChanged(int index);
 
     void pointSizeChanged(double d);
+    void pointSizePixelsChanged(int);
     void pointTypeChanged(int index);
     void pointSizeVarToggled(bool);
     void pointSizeVarChanged(const QString &);

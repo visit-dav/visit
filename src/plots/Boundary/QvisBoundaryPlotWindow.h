@@ -32,6 +32,9 @@ class QvisPointControl;
 //   Kathleen Bonnell, Fri Nov 12 10:17:58 PST 2004
 //   Added QvisPointControl widget and appropriate methods and slots.
 //
+//   Brad Whitlock, Wed Jul 20 14:23:58 PST 2005
+//   Added a new slot to handle a new signal from QvisPointControl.
+//
 // ****************************************************************************
 
 class QvisBoundaryPlotWindow : public QvisPostableWindowObserver
@@ -71,6 +74,7 @@ private slots:
     void smoothingLevelChanged(int index);
 
     void pointSizeChanged(double d);
+    void pointSizePixelsChanged(int size);
     void pointTypeChanged(int index);
     void pointSizeVarToggled(bool on);
     void pointSizeVarChanged(const QString &);

@@ -25,7 +25,9 @@ class avtScatterFilter;
 //  Creation:   Tue Nov 2 21:52:32 PST 2004 
 //
 //  Modifications:
-//   
+//   Brad Whitlock, Thu Jul 21 15:29:40 PST 2005
+//   Added SetPointGlyphMode.
+//
 // ****************************************************************************
 
 class avtScatterPlot : public avtPlot
@@ -75,6 +77,7 @@ protected:
     void GetColorInformation(std::string &colorString,
                              int &mode, float &skew, bool &minFlag,
                              float &minVal, bool &maxFlag, float &maxVal);
+    void SetPointGlyphSize();
 };
 
 

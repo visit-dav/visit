@@ -343,6 +343,7 @@ void
 avtPseudocolorPlot::CustomizeBehavior()
 {
     SetLimitsMode(atts.GetLimitsMode());
+    SetPointGlyphSize();
 
     if (atts.GetOpacity() < 1.)
     {
@@ -404,6 +405,10 @@ avtPseudocolorPlot::CustomizeBehavior()
 //    Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004 
 //    Replaced glyphMapper methods with new names. 
 //
+//    Brad Whitlock, Wed Jul 20 13:26:13 PST 2005
+//    I made the pointSize in the atts be used for to set the point size for
+//    points, which is not the same as what's used for Box, Axis, Icosahedra.
+//
 // ****************************************************************************
 
 void
@@ -451,7 +456,7 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
         glyphMapper->DataScalingOff();
     }
     glyphMapper->SetGlyphType((int)atts.GetPointType());
-
+    SetPointGlyphSize();
 
     if (varname != NULL)
     {
@@ -840,6 +845,26 @@ avtPseudocolorPlot::SetLegendRanges()
     varLegend->SetVarRange(min, max);
 }
 
+// ****************************************************************************
+// Method: avtPseudocolorPlot::SetPointGlyphSize
+//
+// Purpose: 
+//   Sets the point glyph size into the mapper.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 21 15:24:25 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtPseudocolorPlot::SetPointGlyphSize()
+{
+    // Size used for points when using a point glyph.
+    if(atts.GetPointType() == PseudocolorAttributes::Point)
+        glyphMapper->SetPointSize(atts.GetPointSizePixels());
+}
 
 // ****************************************************************************
 //  Method: avtPseudocolorPlot::ReleaseData

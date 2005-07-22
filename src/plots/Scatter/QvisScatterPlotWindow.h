@@ -31,7 +31,9 @@ class QvisVariableButton;
 // Creation:   Wed Dec 1 16:16:10 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jul 20 15:26:06 PST 2005
+//   Added pointSizeLabel.
+//
 // ****************************************************************************
 
 class QvisScatterPlotWindow : public QvisPostableWindowObserver
@@ -138,6 +140,7 @@ private:
     QLabel    *colorRoleLabel;
 
     QLineEdit *pointSize;
+    QLabel    *pointSizeLabel;
     QComboBox *pointType;
     QCheckBox *scaleCube;
     QvisColorTableButton *colorTableName;

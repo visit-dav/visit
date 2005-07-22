@@ -180,6 +180,9 @@ QvisSubsetPlotWindow::~QvisSubsetPlotWindow()
 //   Kathleen Bonnell, Fri Nov 12 11:35:11 PST 2004 
 //   Added pointControl. 
 //
+//   Brad Whitlock, Wed Jul 20 14:27:00 PST 2005
+//   Added pointSizePixelsChanged slot.
+//
 // ****************************************************************************
 
 void
@@ -302,6 +305,8 @@ QvisSubsetPlotWindow::CreateWindowContents()
     pointControl = new QvisPointControl(central, "pointControl");
     connect(pointControl, SIGNAL(pointSizeChanged(double)),
             this, SLOT(pointSizeChanged(double)));
+    connect(pointControl, SIGNAL(pointSizePixelsChanged(int)),
+            this, SLOT(pointSizePixelsChanged(int)));
     connect(pointControl, SIGNAL(pointSizeVarChanged(const QString &)),
             this, SLOT(pointSizeVarChanged(const QString &)));
     connect(pointControl, SIGNAL(pointSizeVarToggled(bool)),
@@ -399,6 +404,9 @@ QvisSubsetPlotWindow::CreateWindowContents()
 //
 //   Mark C. Miller, Mon Dec  6 13:30:51 PST 2004
 //   Fixed SGI compiler error with string conversion to QString
+//
+//   Brad Whitlock, Wed Jul 20 18:10:08 PST 2005
+//   Added pointSizePixels.
 //
 // ****************************************************************************
 
@@ -512,6 +520,11 @@ QvisSubsetPlotWindow::UpdateWindow(bool doAll)
             pointControl->blockSignals(true);
             temp = QString(subsetAtts->GetPointSizeVar().c_str());
             pointControl->SetPointSizeVar(temp);
+            pointControl->blockSignals(false);
+            break;
+        case 18: // pointSizePixels
+            pointControl->blockSignals(true);
+            pointControl->SetPointSizePixels(subsetAtts->GetPointSizePixels());
             pointControl->blockSignals(false);
             break;
         }
@@ -1313,6 +1326,8 @@ QvisSubsetPlotWindow::colorTableClicked(bool useDefault, const QString &ctName)
 // Creation:   November 4, 2004 
 //
 // Modifications:
+//   Brad Whitlock, Wed Jul 20 18:11:27 PST 2005
+//   Added pointSizePixels.
 //
 // ****************************************************************************
 
@@ -1325,6 +1340,7 @@ QvisSubsetPlotWindow::GetCurrentValues(int which_widget)
     if(doAll)
     {
         subsetAtts->SetPointSize(pointControl->GetPointSize());
+        subsetAtts->SetPointSizePixels(pointControl->GetPointSizePixels());
         subsetAtts->SetPointSizeVar(pointControl->GetPointSizeVar().latin1());
     }
 }
@@ -1427,4 +1443,23 @@ QvisSubsetPlotWindow::pointSizeChanged(double size)
     Apply();
 }
 
+// ****************************************************************************
+// Method: QvisSubsetPlotWindow::pointSizePixelsChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   point size text and presses the Enter key.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 20 14:25:58 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
 
+void
+QvisSubsetPlotWindow::pointSizePixelsChanged(int size)
+{
+    subsetAtts->SetPointSizePixels(size); 
+    Apply();
+}

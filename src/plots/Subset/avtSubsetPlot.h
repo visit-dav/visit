@@ -1,5 +1,5 @@
 // ************************************************************************* //
-//                             avtSubsetPlot.h                             //
+//                             avtSubsetPlot.h                               //
 // ************************************************************************* //
 
 #ifndef AVT_SUBSET_PLOT_H
@@ -59,6 +59,9 @@ class     avtSmoothPolyDataFilter;
 //    Kathleen Bonnell, Fri Nov 12 11:47:49 PST 2004 
 //    Changed mapper type to avtLevelsPointGlyphMapper. 
 //
+//    Brad Whitlock, Thu Jul 21 15:38:31 PST 2005
+//    Added SetPointGlyphSize.
+//
 // ****************************************************************************
 
 class
@@ -99,7 +102,8 @@ avtSubsetPlot : public avtVolumeDataPlot
     avtLookupTable           *avtLUT;
 
     void                      SetColors(void); 
-    void                      SortLabels(void); 
+    void                      SortLabels(void);
+    void                      SetPointGlyphSize();
     virtual avtMapper        *GetMapper(void);
     virtual avtDataObject_p   ApplyOperators(avtDataObject_p);
     virtual avtDataObject_p   ApplyRenderingTransformation(avtDataObject_p);

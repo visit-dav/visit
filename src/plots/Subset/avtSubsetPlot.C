@@ -203,6 +203,10 @@ avtSubsetPlot::Create()
 //    Kathleen Bonnell, Fri Nov 12 11:47:49 PST 2004 
 //    Incorporate pointSize, pointtype and pointSizeVar. 
 //
+//    Brad Whitlock, Wed Jul 20 13:26:13 PST 2005
+//    I made the pointSize in the atts be used for to set the point size for
+//    points, which is not the same as what's used for Box, Axis, Icosahedra.
+//
 // ****************************************************************************
 
 void
@@ -241,6 +245,7 @@ avtSubsetPlot::SetAtts(const AttributeGroup *a)
         levelsMapper->DataScalingOff();
     }
     levelsMapper->SetGlyphType((int)atts.GetPointType());
+    SetPointGlyphSize();
 }
 
 // ****************************************************************************
@@ -593,6 +598,9 @@ avtSubsetPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Kathleen Bonnell, Mon Sep 29 12:31:18 PDT 2003 
 //    Set AntialiasedRenderOrder depending upon wireframe mode. 
 //
+//    Brad Whitlock, Thu Jul 21 15:39:12 PST 2005
+//    Set the point glyph size.
+//
 // ****************************************************************************
 
 void
@@ -600,6 +608,7 @@ avtSubsetPlot::CustomizeBehavior(void)
 {
     SortLabels();
     SetColors();
+    SetPointGlyphSize();
     levelsLegend->SetLookupTable(avtLUT->GetLookupTable());
 
     behavior->SetLegend(levLegendRefPtr);
@@ -613,6 +622,27 @@ avtSubsetPlot::CustomizeBehavior(void)
         behavior->SetShiftFactor(0.);
         behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
     }
+}
+
+// ****************************************************************************
+// Method: avtSubsetPlot::SetPointGlyphSize
+//
+// Purpose: 
+//   Sets the point glyph size into the mapper.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 21 15:24:25 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtSubsetPlot::SetPointGlyphSize()
+{
+    // Size used for points when using a point glyph.
+    if(atts.GetPointType() == SubsetAttributes::Point)
+        levelsMapper->SetPointSize(atts.GetPointSizePixels());
 }
 
 // ****************************************************************************

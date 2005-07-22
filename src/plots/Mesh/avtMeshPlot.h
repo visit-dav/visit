@@ -104,6 +104,9 @@ class     avtVariablePointGlyphMapper;
 //    Brad Whitlock, Wed Dec 15 10:48:35 PDT 2004
 //    Removed SetVarName.
 //
+//    Brad Whitlock, Thu Jul 21 15:25:44 PST 2005
+//    Added SetPointGlyphSize.
+//
 // ****************************************************************************
 
 class
@@ -164,6 +167,7 @@ avtMeshPlot : public avtPlot
 
   private:
     bool                     ShouldRenderOpaque(void);
+    void                     SetPointGlyphSize();
 };
 
 

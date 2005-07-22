@@ -127,6 +127,9 @@
       <Field name="pointSize" label="Point size" type="double">
         0.050000
       </Field>
+      <Field name="pointSizePixels" label="Point size pixels" type="int">
+        1
+      </Field>
       <Field name="pointType" label="Point Type" type="enum" subtype="PointType">
         Point
       </Field>

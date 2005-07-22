@@ -40,6 +40,9 @@ class     avtSmoothPolyDataFilter;
 //    Kathleen Bonnell, Fri Nov 12 10:42:08 PST 2004 
 //    Changed mapper to type avtLevelsPointGlyphMapper. 
 //
+//    Brad Whitlock, Thu Jul 21 15:35:39 PST 2005
+//    Added SetPointGlyphSize.
+//
 // ****************************************************************************
 
 class
@@ -79,7 +82,8 @@ avtFilledBoundaryPlot : public avtVolumeDataPlot
     avtLookupTable             *avtLUT;
 
     void                      SetColors(void); 
-    void                      SortLabels(void); 
+    void                      SortLabels(void);
+    void                      SetPointGlyphSize();
     virtual avtMapper        *GetMapper(void);
     virtual avtDataObject_p   ApplyOperators(avtDataObject_p);
     virtual avtDataObject_p   ApplyRenderingTransformation(avtDataObject_p);

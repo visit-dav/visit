@@ -74,6 +74,9 @@
       <Field name="showInternal" label="Show Internal" type="bool">
         false
       </Field>
+      <Field name="pointSizePixels" label="Point size pixels" type="int">
+        1
+      </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
     </Attribute>

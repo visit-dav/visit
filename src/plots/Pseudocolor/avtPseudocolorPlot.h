@@ -87,6 +87,9 @@ class     avtVariableLegend;
 //    Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004
 //    Replaced avtPointGlyphMapper with avtVariablePointGlyphMapper. 
 //
+//    Brad Whitlock, Thu Jul 21 15:25:44 PST 2005
+//    Added SetPointGlyphSize.
+//
 // ****************************************************************************
 
 class avtPseudocolorPlot : public avtSurfaceDataPlot
@@ -135,9 +138,9 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
 
     virtual void                SetCellCountMultiplierForSRThreshold(
                                    const avtDataObject_p dob);
-
 private:
     void                        SetLegendRanges(void);
+    void                        SetPointGlyphSize();
 };
 
 

@@ -40,6 +40,9 @@ class QvisPointControl;
 //    Kathleen Bonnell, Fri Nov 12 10:42:08 PST 2004 
 //    Added pointControl and associated slots, also added GetCurrentValues.
 //
+//    Brad Whitlock, Wed Jul 20 14:23:58 PST 2005
+//    Added a new slot to handle a new signal from QvisPointControl.
+//
 // ****************************************************************************
 
 class QvisFilledBoundaryPlotWindow : public QvisPostableWindowObserver
@@ -83,6 +86,7 @@ private slots:
     void mixedColorChanged(const QColor &color);
 
     void pointSizeChanged(double d);
+    void pointSizePixelsChanged(int size);
     void pointTypeChanged(int index);
     void pointSizeVarToggled(bool on);
     void pointSizeVarChanged(const QString &);
