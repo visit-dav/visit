@@ -10,6 +10,7 @@
       Vector
       Tensor
       Symmetric_Tensor
+      Array
       Label
       Material
       Species

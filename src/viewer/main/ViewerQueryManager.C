@@ -55,16 +55,27 @@ extern ViewerSubject *viewerSubject;
 //
 // ****************************************************************************
 
+
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Mon Jul 25 08:23:55 PDT 2005
+//    I added QUERY_ARRAY_VAR.  Note the ordering of the defines here must 
+//    exactly match that in avtTypes.h.
+//
+// ****************************************************************************
+
 #define QUERY_MESH_VAR              0x0001
 #define QUERY_SCALAR_VAR            0x0002
 #define QUERY_VECTOR_VAR            0x0004
 #define QUERY_TENSOR_VAR            0x0008
 #define QUERY_SYMMETRIC_TENSOR_VAR  0x0010
-#define QUERY_LABEL_VAR             0x0020
-#define QUERY_MATERIAL_VAR          0x0040
-#define QUERY_MATSPECIES_VAR        0x0080
-#define QUERY_CURVE_VAR             0x0100
-#define QUERY_UNKNOWN_VAR           0x0200
+#define QUERY_ARRAY_VAR             0x0020
+#define QUERY_LABEL_VAR             0x0040
+#define QUERY_MATERIAL_VAR          0x0080
+#define QUERY_MATSPECIES_VAR        0x0100
+#define QUERY_CURVE_VAR             0x0200
+#define QUERY_UNKNOWN_VAR           0x0400
 
 
 
