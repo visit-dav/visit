@@ -39,18 +39,23 @@ def CommandInPath(command):
 # Programmer: Brad Whitlock
 # Date:       Wed Dec 18 11:33:22 PDT 2002
 #
+# Modifications:
+#   Brad Whitlock, Mon Jul 25 16:17:39 PST 2005
+#   Made it possible to set the return value into a list of return values.
+#
 ###############################################################################
 
-def applyFunctionToNFramesWMutex(threadID, exitmutex, func, start, end, conversionargs):
+def applyFunctionToNFramesWMutex(threadID, exitmutex, retval, func, start, end, conversionargs):
     try:
-        func(threadID, start, end, conversionargs)
+        retval[threadID] = func(threadID, start, end, conversionargs)
         exitmutex[threadID] = 1
     except IndexError:
         return
     
 def applyFunctionToNFrames(func, filesPerThread, nframes, conversionargs):
+    retval = 0
     if(nframes < filesPerThread):
-        func(0, 0, nframes, conversionargs)
+        retval = func(0, 0, nframes, conversionargs)
     else:
         try:
             import thread
@@ -63,22 +68,24 @@ def applyFunctionToNFrames(func, filesPerThread, nframes, conversionargs):
             if(numThreads * filesPerThread < nframes):
                 numThreads = numThreads + 1
             exitmutex = [0] * numThreads
+            retval = [0] * numThreads
             while keepSpawning == 1:
                 end = end + filesPerThread
                 if(end >= nframes):
                     end = nframes
                     keepSpawning = 0
-                thread.start_new(applyFunctionToNFramesWMutex, (threadID, exitmutex, func, start, end, conversionargs))
+                thread.start_new(applyFunctionToNFramesWMutex, (threadID, exitmutex, retval, func, start, end, conversionargs))
                 start = start + filesPerThread
                 threadID = threadID + 1
             # Do the first part of the work on the main thread.
-            applyFunctionToNFramesWMutex(0, exitmutex, func, 0, filesPerThread, conversionargs)
+            applyFunctionToNFramesWMutex(0, exitmutex, retval, func, 0, filesPerThread, conversionargs)
 
             # Wait for all of the threads to complete
             while 0 in exitmutex: pass
         except ImportError:
             print "Could not import threads module."
-            func(0, 0, nframes, conversionargs)
+            retval = func(0, 0, nframes, conversionargs)
+    return retval
 
 ###############################################################################
 # Function: applyFunctionToFrames
@@ -89,6 +96,10 @@ def applyFunctionToNFrames(func, filesPerThread, nframes, conversionargs):
 # Programmer: Brad Whitlock
 # Date:       Wed Dec 18 11:33:22 PDT 2002
 #
+# Modifications:
+#   Brad Whitlock, Mon Jul 25 16:17:09 PST 2005
+#   I made it return a value.
+#
 ###############################################################################
 
 def applyFunctionToFrames(func, nframes, conversionargs):
@@ -96,7 +107,7 @@ def applyFunctionToFrames(func, nframes, conversionargs):
     filesPerThread = nframes / maxThreads
     if(filesPerThread < 1):
         filesPerThread = 1
-    applyFunctionToNFrames(func, filesPerThread, nframes, conversionargs)
+    return applyFunctionToNFrames(func, filesPerThread, nframes, conversionargs)
 
 ###############################################################################
 # Function: CopyFile
@@ -151,10 +162,16 @@ def CopyFile(srcName, destName, allowLinks):
 #   Brad Whitlock, Fri Oct 3 13:12:54 PST 2003
 #   Changed so it uses unlink to remove files.
 #
+#   Brad Whitlock, Mon Jul 25 16:16:28 PST 2005
+#   I made it fail gracefully.
+#
 ###############################################################################
 
 def RemoveFile(fileName):
-    os.unlink(fileName)
+    try:
+        os.unlink(fileName)
+    except OSError:
+        pass
 
 def removeFilesHelper(threadID, start, end, conversionargs):
     # Get the arguments out of the tuple.
@@ -173,11 +190,15 @@ def removeFilesHelper(threadID, start, end, conversionargs):
 # Programmer: Brad Whitlock
 # Date:       Wed Dec 18 11:33:22 PDT 2002
 #
+# Modifications:
+#   Brad Whitlock, Mon Jul 25 16:16:01 PST 2005
+#   Made it return a value.
+#
 ###############################################################################
 
 def removeFiles(format, nframes):
     conversionargs = format
-    applyFunctionToFrames(removeFilesHelper, nframes, conversionargs)
+    return applyFunctionToFrames(removeFilesHelper, nframes, conversionargs)
 
 ###############################################################################
 # Function: createQuickTimeFile
@@ -188,9 +209,11 @@ def removeFiles(format, nframes):
 # Date:       Wed Dec 18 11:33:22 PDT 2002
 #
 # Modifications:
-#
 #   Hank Childs, Thu Apr  1 07:48:41 PST 2004
 #   Added frames per second.
+#
+#   Brad Whitlock, Mon Jul 25 16:15:35 PST 2005
+#   Made it return a value.
 #
 ###############################################################################
 
@@ -202,7 +225,7 @@ def createQuickTimeFile(moviename, baseFormat, start, end, xres, yres, fps):
     # Create the movie file.
     command = "dmconvert -f qt -p video,comp=qt_mjpega,inrate=%d,rate=%d %s %s" % (fps, fps, names, moviename)
     #print command
-    os.system(command)
+    return os.system(command)
 
 ###############################################################################
 # Function: EncodeQuickTimeMovieHelper
@@ -214,9 +237,11 @@ def createQuickTimeFile(moviename, baseFormat, start, end, xres, yres, fps):
 # Date:       Wed Dec 18 11:33:22 PDT 2002
 #
 # Modifications:
-#
 #   Hank Childs, Thu Apr  1 07:52:00 PST 2004
 #   Added frames per second.
+#
+#   Brad Whitlock, Mon Jul 25 16:15:24 PST 2005
+#   Made it return a value.
 #
 ###############################################################################
 
@@ -229,7 +254,7 @@ def EncodeQuickTimeMovieHelper(threadID, start, end, conversionargs):
     fps = conversionargs[4]
     # Create the name of the part of the movie and the names of the files to use.
     subMovieName = "%s.%d" % (moviename, threadID)
-    createQuickTimeFile(subMovieName, baseFormat, start, end, xres, yres, fps)
+    return createQuickTimeFile(subMovieName, baseFormat, start, end, xres, yres, fps)
 
 ###############################################################################
 # Function: MovieClassSaveWindow
@@ -465,6 +490,9 @@ class MakeMovie:
     #   Brad Whitlock, Tue Apr 12 16:53:22 PST 2005
     #   Added support for stereo, multiple output sizes and formats.
     #
+    #   Brad Whitlock, Mon Jul 25 15:21:25 PST 2005
+    #   I made img2sm and dmconvert use PNG files.
+    #
     ###########################################################################
 
     def __init__(self):
@@ -489,14 +517,14 @@ class MakeMovie:
            self.FORMAT_RGB  : self.FORMAT_RGB, \
            self.FORMAT_PNG  : self.FORMAT_PNG, \
            self.FORMAT_MPEG : self.FORMAT_PPM, \
-           self.FORMAT_QT   : self.FORMAT_TIFF, \
-           self.FORMAT_SM   : self.FORMAT_TIFF \
+           self.FORMAT_QT   : self.FORMAT_PNG, \
+           self.FORMAT_SM   : self.FORMAT_PNG \
         }
 
         # This map gives us the file extension to use for a specific file format.
         self.formatExtension = { \
            self.FORMAT_PPM  : ".ppm", \
-           self.FORMAT_TIFF : ".tiff", \
+           self.FORMAT_TIFF : ".tif", \
            self.FORMAT_JPEG : ".jpeg", \
            self.FORMAT_BMP  : ".bmp", \
            self.FORMAT_RGB  : ".rgb", \
@@ -1846,6 +1874,30 @@ class MakeMovie:
         return retval
 
     ###########################################################################
+    # Method: GetDMConvertSuccess
+    #
+    # Purpose:    This method determines whether dmconvert ran successfully.
+    #
+    # Programmer: Brad Whitlock
+    # Date:       Mon Jul 25 16:14:42 PST 2005
+    #
+    # Modifications:
+    #
+    ###########################################################################
+
+    def GetDMConvertSuccess(self, retval):
+        success = 1
+        if type(retval) == type([]):
+            for v in retval:
+                if v == 256:
+                    success = 0
+        elif type(retval) == type(0):
+            if retval == 256:
+                success = 0
+
+        return success
+
+    ###########################################################################
     # Method: EncodeQuickTimeMovie
     #
     # Purpose:    This method creates a QuickTime movie.
@@ -1866,6 +1918,9 @@ class MakeMovie:
     #   Made it return more status about the movie encoding process. Passed in
     #   imageFormatString, xres, yres.
     #
+    #   Brad Whitlock, Mon Jul 25 16:09:01 PST 2005
+    #   Made it more tolerant to failures of the dmconvert command.
+    #
     ###########################################################################
 
     def EncodeQuickTimeMovie(self, moviename, imageFormatString, xres, yres):
@@ -1873,25 +1928,37 @@ class MakeMovie:
         retval = 0
 
         if(CommandInPath("dmconvert")):
+            # Determine the image extension
+            ext = self.formatExtension[self.outputNeedsInput[self.FORMAT_QT]]
             fps = self.fps
-            baseFormat = imageFormatString
+            baseFormat = imageFormatString + ext
 
-            # Create small quicktime movies
+            # Create small QuickTime movies
             conversionargs = (moviename, baseFormat, xres, yres, fps)
             framesPerMovie = 50
             nframes = self.numFrames
-            applyFunctionToNFrames(EncodeQuickTimeMovieHelper, framesPerMovie, nframes, conversionargs)
+            retval = applyFunctionToNFrames(EncodeQuickTimeMovieHelper, framesPerMovie, nframes, conversionargs)
+            msg = ""
+            success = self.GetDMConvertSuccess(retval)
+
             # Glue the submovies together.
             nSubMovies = nframes / framesPerMovie
             if(nSubMovies * framesPerMovie < nframes):
                 nSubMovies = nSubMovies + 1
             subMovieFormat = "%s.%%d" % moviename
-            createQuickTimeFile(moviename, subMovieFormat, 0, nSubMovies, xres, yres, fps)
+            if success == 1:
+                s = createQuickTimeFile(moviename, subMovieFormat, 0, nSubMovies, xres, yres, fps)
+                success = self.GetDMConvertSuccess(s)
+
+            if success == 0:
+                msg =        "The command \"dmconvert\" could not create a QuickTime \n"
+                msg = msg + "movie. You can still access the frames of your \n"
+                msg = msg + "movie in: %s.\n" % self.tmpDir
+
             # Delete the submovies.
             removeFiles(subMovieFormat, nSubMovies)
-            retval = 1
 
-            retval = (1, moviename, "")
+            retval = (success, moviename, msg)
         else:
             s =     "The command \"dmconvert\", which is required to make \n"
             s = s + "QuickTime movies is not in your path so your source \n"
@@ -1917,6 +1984,10 @@ class MakeMovie:
     #   Brad Whitlock, Tue May 10 11:41:31 PDT 2005
     #   I made it pass back more information.
     #
+    #   Brad Whitlock, Mon Jul 25 15:19:15 PST 2005
+    #   I made it use the extension for the filename since it did not have
+    #   that and was not working.
+    #
     ###########################################################################
 
     def EncodeStreamingMovie(self, moviename, imageFormatString):
@@ -1924,9 +1995,12 @@ class MakeMovie:
         retval = 0
 
         if(CommandInPath("img2sm")):
+            # Determine the image extension
+            ext = self.formatExtension[self.outputNeedsInput[self.FORMAT_SM]]
+
             # Execute the img2sm command
-            command = "img2sm -rle -FPS %d -first 0 -last %d -form tiff %s %s" % \
-                      (self.fps, self.numFrames-1, imageFormatString, moviename)
+            command = "img2sm -rle -FPS %d -first 0 -last %d -form png %s%s %s" % \
+                      (self.fps, self.numFrames-1, imageFormatString, ext, moviename)
             self.Debug(command)
             r = os.system(command)
 
