@@ -12,7 +12,7 @@
     <Field name="animationMode" label="Animation mode" type="int">
       2
     </Field>
-    <Field name="windowMode" label="windowMode" type="int">
+    <Field name="interactionMode" label="interactionMode" type="int">
       0
     </Field>
     <Field name="boundingBoxNavigate" label="boundingBoxNavigate" type="bool">
@@ -72,6 +72,9 @@
     </Field>
     <Field name="windowSize" label="Window size" type="intArray" length="2">
       0
+      0
+    </Field>
+    <Field name="winMode" label="winMode" type="int">
       0
     </Field>
     <Function name="SetFromNode" user="false" member="true">

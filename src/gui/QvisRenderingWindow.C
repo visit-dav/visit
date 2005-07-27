@@ -569,6 +569,9 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
 //   Mark C. Miller, Fri Mar  4 13:05:02 PST 2005
 //   Changed GetNumTriangles to GetNumPrimitives
 //
+//   Mark C. Miller, Thu Jul 21 20:16:42 PDT 2005
+//   Added a break; statement after case label 16
+//
 // ****************************************************************************
 
 void
@@ -608,6 +611,7 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
         case 14: //viewDimension
         case 15: //viewKeyframes
         case 16: //cameraViewMode
+            break;
         case 17: // usingScalableRendering
             scalrenUsingLabel->setText(windowInfo->GetUsingScalableRendering() ? "yes" : "no");
             break;

@@ -1,6 +1,7 @@
 #include <VariableMenuPopulator.h>
 
 #include <Init.h>
+#include <StringHelpers.h>
 #include <avtDatabaseMetaData.h>
 #include <avtSIL.h>
 #include <PlotPluginInfo.h>
@@ -9,8 +10,9 @@
 #include <QvisVariablePopupMenu.h>
 #include <qobject.h>
 
-using std::string;
 using std::map;
+using std::string;
+using std::vector;
 
 // ****************************************************************************
 // Method: VariableMenuPopulator::VariableMenuPopulator
@@ -716,6 +718,10 @@ VariableMenuPopulator::ItemEnabled(int varType) const
 //   I removed the code to clear the menu and changed the slot hookup code
 //   so it is more general.
 //
+//   Mark C. Miller, Tue Jul 26 17:22:22 PDT 2005
+//   Modified to take into account possibility of grouping the hierarchy of
+//   popup menus.
+//
 // ****************************************************************************
 
 void
@@ -730,20 +736,32 @@ VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
     int j, varCount = menu->count();
     std::string var;
     bool        validVar;
+    StringStringMap originalNameToGroupedName;
+    bool shouldUseGrouping = vars.IsGroupingRequired(originalNameToGroupedName);
     vars.InitTraversal();
     while(vars.GetNextVariable(var, validVar))
     {
+        if (shouldUseGrouping)
+            var = originalNameToGroupedName[var];
+
         // Split the variable's path into a vector of strings.
         stringVector pathvar;
         Split(var, pathvar);
 
         // Add the submenus.
         QvisVariablePopupMenu *parent = menu;
-        string path;
+        string path, altpath;
         for (j = 0; j < pathvar.size() - 1; ++j)
         {
             // Create the current path.
             path += (pathvar[j] + "/");
+            if (shouldUseGrouping)
+            {
+                if (string(path, path.size()-4, 4) != ".../")
+                    altpath += (pathvar[j] + "/");
+            }
+            else
+                altpath += (pathvar[j] + "/"); 
 
             // See if the current path is in the map. If it is then
             // do nothing. If the path is not in the map then we
@@ -754,12 +772,12 @@ VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
             {
                 QvisVariablePopupMenu *newPopup =
                     new QvisVariablePopupMenu(menu->getPlotType(), parent,
-                                              path.c_str());
-                newPopup->setVarPath(path.c_str());
+                                                      path.c_str());
+                newPopup->setVarPath(altpath.c_str());
                 if (receiver != 0 && slot != 0)
                 {
                     QObject::connect(newPopup, SIGNAL(activated(int, const QString &)),
-                                     receiver, slot);
+                        receiver, slot);
                 }
 
                 popups[path] = newPopup;
@@ -795,7 +813,7 @@ VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
 // ****************************************************************************
 
 void
-VariableMenuPopulator::Split(const std::string &varName, stringVector &pieces) const
+VariableMenuPopulator::Split(const std::string &varName, stringVector &pieces)
 {
     std::string word;
     int         parenthesis = 0;
@@ -1078,4 +1096,115 @@ int
 VariableMenuPopulator::VariableList::Size() const
 {
     return sorted ? sortedVariables.size() : unsortedVariableNames.size();
+}
+
+// ****************************************************************************
+// Method: VariableMenuPopulator::VariableList::IsGroupingRequired
+//
+// Purpose: Determine if any levels in the menu hierarchy are so large that
+// we should group them to reduce clutter.
+//
+// Returns:    True if grouping is required, false otherwise 
+//
+// Programmer: Mark C. Miller 
+// Creation:   Tue Jul 26 17:22:22 PDT 2005 
+//
+// ****************************************************************************
+
+bool
+VariableMenuPopulator::VariableList::IsGroupingRequired(
+    StringStringMap& originalNameToGroupedName)
+{
+    int i, j, k;
+    string var;
+    bool validVar;
+    bool isGroupingRequired = false;
+    map<string, vector<string> > entriesAtPath;
+    InitTraversal();
+    while(GetNextVariable(var, validVar))
+    {
+        // Split the variable's path into a vector of strings.
+        stringVector pathvar;
+        Split(var, pathvar);
+
+        string path;
+        for (j = 0; j < pathvar.size(); j++)
+        {
+            map<string, vector<string> >::const_iterator p2 =
+                entriesAtPath.find(path);
+            if (p2 == entriesAtPath.end())
+                entriesAtPath[path].push_back(pathvar[j]);
+            else
+            {
+                bool foundIt = false;
+                for (k = 0; k < entriesAtPath[path].size(); k++)
+                {
+                    if (entriesAtPath[path][k] == pathvar[j])
+                    {
+                        foundIt = true;
+                        break;
+                    }
+                }
+                if (!foundIt)
+                {
+                    entriesAtPath[path].push_back(pathvar[j]);
+                    if (entriesAtPath[path].size() > 90)
+                        isGroupingRequired = true;
+                }
+            }
+
+            path += (pathvar[j] + "/");
+        }
+    }
+
+    //
+    // Since we've now check to see if grouping is required, indicate that.
+    // Also, if we've decided grouping is NOT required, just return.
+    //
+    if (!isGroupingRequired)
+        return false;
+
+    map<string, vector<vector<string> > > groupsAtPath;
+    InitTraversal();
+    while(GetNextVariable(var, validVar))
+    {
+        // Split the variable's path into a vector of strings.
+        stringVector pathvar;
+        Split(var, pathvar);
+
+        string path, newpath;
+        for (j = 0; j < pathvar.size()-1; j++)
+        {
+            if (entriesAtPath[path].size() > 90)
+            {
+                if (groupsAtPath.find(path) == groupsAtPath.end())
+                {
+                    vector<vector<string> > groups;
+                    StringHelpers::GroupStringsFixedAlpha(entriesAtPath[path], 30, groups);
+                    groupsAtPath[path] = groups;
+                }
+
+                int groupNum = -1;
+                for (k = 0; k < groupsAtPath[path].size(); k++)
+                {
+                    for (i = 0; i < groupsAtPath[path][k].size(); i++)
+                    {
+                        if (groupsAtPath[path][k][i] == pathvar[j])
+                        {
+                            groupNum = k;
+                            break;
+                        }
+                    }
+                    if (groupNum != -1)
+                        break;
+                }
+                if (groupNum != -1)
+                    newpath += groupsAtPath[path][groupNum][0] + ".../";
+            }
+            path += (pathvar[j] + "/");
+            newpath += (pathvar[j] + "/");
+        }
+        originalNameToGroupedName[path + pathvar[j]] = newpath + pathvar[j];
+    }
+    return true;
 }

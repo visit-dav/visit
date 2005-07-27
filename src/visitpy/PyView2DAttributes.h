@@ -16,5 +16,7 @@ PyObject       *PyView2DAttributes_WrapPyObject(const View2DAttributes *attr);
 void            PyView2DAttributes_SetLogging(bool val);
 void            PyView2DAttributes_SetDefaults(const View2DAttributes *atts);
 
+PyObject       *PyView2DAttributes_StringRepresentation(const View2DAttributes *atts);
+
 #endif
 

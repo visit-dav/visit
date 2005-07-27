@@ -213,6 +213,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Brad Whitlock, Tue Feb 8 14:53:18 PST 2005
 //    Added return value for ValidateTimeSlider.
 //
+//    Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
+//    Added DoAllPlotsAxesHaveSameUnits
+//
 // ****************************************************************************
 
 
@@ -349,6 +352,7 @@ public:
     void GetPlotLimits(int nDimensions, double *limits) const;
     void SetSpatialExtentsType(avtExtentType);
     bool GetMaintainDataMode() const;
+    bool DoAllPlotsAxesHaveSameUnits() const;
 
     bool SetBackgroundColor(const double *);
     bool SetForegroundColor(const double *);

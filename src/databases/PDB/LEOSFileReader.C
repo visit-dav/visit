@@ -1,4 +1,7 @@
+#include <snprintf.h>
+
 #include <InvalidVariableException.h>
+#include <InvalidFilesException.h>
 #include <UnexpectedValueException.h>
 
 #include <vtkCellArray.h>
@@ -138,12 +141,20 @@ FixMatName(char *matName, int maxLen)
 //   Mark C. Miller, Wed Jul 21 11:19:15 PDT 2004
 //   Uncommented test of return value for avtCallback::IssueWarning
 //
+//   Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
+//   Made this so it would issue errors only from MD server
+//   Also, made it so that it would truncate output after several messages
 // ****************************************************************************
 void
 IssueUnknownLEOSVariableWarning(const char *matDirName, const char *matName,
     const char *varName)
 {
+#ifndef MDSERVER
+    return;
+#endif
+
     char msg[2048];
+    static int numTimes = 0;
 
     static bool longMsgIssued = false;
 
@@ -157,16 +168,28 @@ IssueUnknownLEOSVariableWarning(const char *matDirName, const char *matName,
 
     if (!longMsgIssued)
     {
-        sprintf(msg, longMsgFmtStr, varName, matName, matDirName);
+        SNPRINTF(msg, sizeof(msg), longMsgFmtStr, varName, matName, matDirName);
         longMsgIssued = true;
     }
     else
     {
-        sprintf(msg, shortMsgFmtStr, varName, matName, matDirName);
+        SNPRINTF(msg, sizeof(msg), shortMsgFmtStr, varName, matName, matDirName);
     }
 
-    if (!avtCallback::IssueWarning(msg))
-        cerr << msg << endl;
+    if (numTimes <= 5)
+    {
+        if (!avtCallback::IssueWarning(msg))
+            cerr << msg << endl;
+    }
+
+    if (numTimes == 5)
+    {
+        SNPRINTF(msg, sizeof(msg), "\n\nFurther Warnings will be suppressed\n");
+        if (!avtCallback::IssueWarning(msg))
+            cerr << msg << endl;
+    }
+
+    numTimes++;
 }
 
 // ****************************************************************************
@@ -340,6 +363,10 @@ LEOSFileReader::ValidateVariableInfoAssumptions(eosVarInfo_t &mapInfo,
 // Programmer: Mark C. Miller
 // Creation:   February 10, 2004 
 //
+// Modifications:
+//
+//   Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
+//   Made it initialize xdim/ydim members to -1
 // ****************************************************************************
 
 void
@@ -349,6 +376,8 @@ LEOSFileReader::SetMapEntry(eosVarInfo_t &info, int ndims,
     string yName, string yUnits, string ySize)
 {
     info.ndims = ndims;
+    info.xdim = -1;
+    info.ydim = -1;
     info.vName = vName;
     info.vUnits = vUnits;
     info.xName = xName;
@@ -809,6 +838,9 @@ LEOSFileReader::ReadMaterialInfo(const char *matDirName, string &matName,
 //   Brad Whitlock, Wed Jul 21 09:52:13 PDT 2004
 //   Removed an unused variable.
 //
+//   Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
+//   Made it get variable dimension information directly from the table data
+//   instead of from the contents of other PDB objects.
 // ****************************************************************************
 
 bool
@@ -832,11 +864,20 @@ LEOSFileReader::ReadVariableInfo(const char *matDirName,
     n = tableDesc.find('(');
     varInfo.vName = string(tableDesc,0,n);
     tableDesc = string(tableDesc,n+1,string::npos);
+
+    // get dimensions info directly from table object itself 
+    TypeEnum tabType;
+    int totSize, *dims, ndims;
+    sprintf(tmpStr,"/%s%s%s", matDirName, varDirName, varInfo.vName.c_str());
+    pdb->SymbolExists(tmpStr, &tabType, &totSize, &dims, &ndims);
+    varInfo.ndims = ndims;
+    varInfo.xdim = ndims > 0 ? dims[0] : -1;
+    varInfo.ydim = ndims > 1 ? dims[1] : -1;
+    delete [] dims;
  
     // parse name of PDB symbol containing size in x
     n = tableDesc.find_first_of(",)");
     varInfo.xSize = string(tableDesc,0,n);
-    varInfo.ndims = 1;
  
     // parse name of PDB symbol containing size in y, if appropriate
     if (tableDesc[n] == ',')
@@ -844,7 +885,6 @@ LEOSFileReader::ReadVariableInfo(const char *matDirName,
         tableDesc = string(tableDesc,n+1,string::npos);
         n = tableDesc.find(')');
         varInfo.ySize = string(tableDesc,0,n);
-        varInfo.ndims = 2;
     }
     tableDesc = string(tableDesc,n+1,string::npos);
 
@@ -865,64 +905,30 @@ LEOSFileReader::ReadVariableInfo(const char *matDirName,
     // get variable units
     resultStr = 0;
     sprintf(tmpStr,"/%s%sunits_%s", matDirName, varDirName, varInfo.vName.c_str());
-    if (!pdb->GetString(tmpStr, &resultStr))
-        return false;
-    varInfo.vUnits = RemoveSpaces(resultStr);
-    delete [] resultStr;
+    if (pdb->GetString(tmpStr, &resultStr))
+    {
+        varInfo.vUnits = RemoveSpaces(resultStr);
+        delete [] resultStr;
+    }
 
     // get xUnits
     resultStr = 0;
     sprintf(tmpStr,"/%s%sunits_%s", matDirName, varDirName, varInfo.xName.c_str());
-    if (!pdb->GetString(tmpStr, &resultStr))
-        return false;
-    varInfo.xUnits = RemoveSpaces(resultStr);
-    delete [] resultStr;
+    if (pdb->GetString(tmpStr, &resultStr))
+    {
+        varInfo.xUnits = RemoveSpaces(resultStr);
+        delete [] resultStr;
+    }
 
     // get yUnits 
     if (varInfo.ndims == 2)
     {
         resultStr = 0;
         sprintf(tmpStr,"/%s%sunits_%s", matDirName, varDirName, varInfo.yName.c_str());
-        if (!pdb->GetString(tmpStr, &resultStr))
-            return false;
-        varInfo.yUnits = RemoveSpaces(resultStr);
-        delete [] resultStr;
-    }
-
-    //
-    // If the PDB symbol for either the xSize or ySize doesn't actually exist, then we
-    // really have a 1D variable. So, make any necessary adjustments
-    //
-    if (varInfo.ndims == 2)
-    {
-        //
-        // make sure the PDB symbol for the size in x exists and is greather than 1
-        //
-        int size = 0;;
-        sprintf(tmpStr,"/%s%s%s", matDirName, varDirName, varInfo.xSize.c_str());
-        if (!pdb->GetInteger(tmpStr, &size) || (size <= 1))
+        if (pdb->GetString(tmpStr, &resultStr))
         {
-            // reduce the dimension and copy everything from y to x
-            varInfo.ndims--;
-            varInfo.xSize = varInfo.ySize;
-            varInfo.xUnits = varInfo.yUnits;
-            varInfo.xName = varInfo.yName;
-        }
-
-        //
-        // make sure the PDB symbol for the size in y exists and is greather than 1
-        //
-        size = 0;
-        sprintf(tmpStr,"/%s%s%s", matDirName, varDirName, varInfo.ySize.c_str());
-        if (!pdb->GetInteger(tmpStr, &size) || (size <= 1))
-        {
-            // reduce the dimension and copy everything from x to y
-            varInfo.ndims--;
-            if (varInfo.ndims == 0)
-                return false;
-            varInfo.ySize = varInfo.xSize;
-            varInfo.yUnits = varInfo.xUnits;
-            varInfo.yName = varInfo.xName;
+            varInfo.yUnits = RemoveSpaces(resultStr);
+            delete [] resultStr;
         }
     }
 
@@ -1063,6 +1069,7 @@ LEOSFileReader::ReadFileAndPopulateMetaData(avtDatabaseMetaData *md)
 
     for (i = 0; i < numTopDirs; i++)
     {
+
         // skip dirs known NOT to be material dirs
         if ((strcmp(topDirs[i],"&ptrs/") == 0) ||
             (strcmp(topDirs[i],"master/") == 0))
@@ -1128,8 +1135,7 @@ LEOSFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // LEOS data isn't so large that remote engine scenarious are likely.
     //
     char *s = getenv("VISIT_LEOS_TRY_HARDER");
-    if (s != 0)
-        tryHardLevel = atoi(s);
+    tryHardLevel = s ? atoi(s) : 0;
 
     //
     // LEOS databases can have a very large number of meshes and
@@ -1170,25 +1176,19 @@ LEOSFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 // Programmer: Mark C. Miller
 // Creation:   June 17, 2004
 //
+// Modifications:
+//
+//   Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
+//   Changed it to use size information obtained during read
 // ****************************************************************************
 
 vtkDataSet *
 LEOSFileReader::GetCurve(const string matDirName, const string varName,
     const eosVarInfo_t& varInfo)
 {
-    int i, size;
+    int i, size = -1;
     char tmpStr[256];
     TypeEnum type;
-
-    // set name of PDB symbol containing size in X to read 
-    sprintf(tmpStr, "/%s%s/%s", matDirName.c_str(), varName.c_str(),
-        varInfo.xSize.c_str());
-
-    // read the size (of x coordinate array)
-    if (!pdb->GetInteger(tmpStr, &size))
-    {
-        EXCEPTION1(InvalidVariableException, varName.c_str());
-    }
 
     // loop to read x, then y values
     double *xvals;
@@ -1210,10 +1210,17 @@ LEOSFileReader::GetCurve(const string matDirName, const string varName,
 
         if (ndims != 1)
             EXCEPTION2(UnexpectedValueException, 1, ndims);
-        if (nelems != size)
-            EXCEPTION2(UnexpectedValueException, size, nelems);
         if (type != DOUBLEARRAY_TYPE)
             EXCEPTION2(UnexpectedValueException, DOUBLEARRAY_TYPE, type);
+        if (size == -1)
+        {
+            size = nelems;
+        }
+        else
+        {
+            if (size != nelems)
+                EXCEPTION2(UnexpectedValueException, size, nelems);
+        }
 
         if (i == 0)
             xvals = dbuf;
@@ -1281,6 +1288,8 @@ LEOSFileReader::GetCurve(const string matDirName, const string varName,
 //   Fixed problem where z coordinate wasn't getting properly set
 //   Added support for curve objects
 //
+//   Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
+//   Made it more forgiving when getting dimenions and size
 // ****************************************************************************
 
 vtkDataSet *
@@ -1376,39 +1385,33 @@ LEOSFileReader::GetMesh(int state, const char *var)
         size = 1;
         if (i == 0)
         {
-            // set name of PDB symbol containing size to read 
-            sprintf(tmpStr, "/%s%s/%s", matDirName.c_str(), varName.c_str(),
-                                      varInfoFromFile.xSize.c_str());
-
-            // read the size
-            if (!pdb->GetInteger(tmpStr, &size))
-            {
-                EXCEPTION1(InvalidVariableException, var);
-            }
-
             // set name of variable to read
             sprintf(tmpStr, "/%s%s/%s", matDirName.c_str(), varName.c_str(),
-                                      varInfoFromFile.xName.c_str());
+                                        varInfoFromFile.xName.c_str());
+
+            if (!pdb->SymbolExists(tmpStr, 0, &size, 0, 0))
+            {
+                EXCEPTION1(InvalidFilesException, pdb->GetName().c_str());
+            }
         }
         else if (i == 1)
         {
+            // set name of variable to read
+            sprintf(tmpStr, "/%s%s/%s", matDirName.c_str(), varName.c_str(),
+                                        varInfoFromFile.yName.c_str());
+
             if (varInfoFromFile.ndims == 2)
             {
-                // set name of PDB symbol containing size to read 
-                sprintf(tmpStr, "/%s%s/%s", matDirName.c_str(), varName.c_str(),
-                                          varInfoFromFile.ySize.c_str());
-
-                // read the size
-                if (!pdb->GetInteger(tmpStr, &size))
+                if (!pdb->SymbolExists(tmpStr, 0, &size, 0, 0))
                 {
-                    EXCEPTION1(InvalidVariableException, var);
+                    EXCEPTION1(InvalidFilesException, pdb->GetName().c_str());
                 }
-
-                sprintf(tmpStr, "/%s%s/%s", matDirName.c_str(), varName.c_str(),
-                                          varInfoFromFile.yName.c_str());
             }
             else
+            {
                 size = 1;
+            }
+
         }
 
         // Default number of components for an array is 1.
@@ -1483,6 +1486,8 @@ LEOSFileReader::GetMesh(int state, const char *var)
 //   I fixed a problem where it would attempt to read the Ny dimension of
 //   a 1D variable
 //
+//   Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
+//   made it more forgiving when getting dimensions and size
 // ****************************************************************************
 
 vtkDataArray *
@@ -1531,32 +1536,15 @@ LEOSFileReader::GetVar(int state, const char *var)
     // we may have detected, but ignored, a problem with the info from the map
     //
 
-    int Nx, Ny;
-
-    // set name of PDB symbol containing size in x to read 
-    sprintf(tmpStr, "/%s%s/%s", matDirName.c_str(), varName.c_str(),
-                                      varInfoFromFile.xSize.c_str());
-    // read the size
-    if (!pdb->GetInteger(tmpStr, &Nx))
-    {
-        EXCEPTION1(InvalidVariableException, var);
-    }
-
-    // set name of PDB symbol containing size in y to read 
-    sprintf(tmpStr, "/%s%s/%s", matDirName.c_str(), varName.c_str(),
-                                      varInfoFromFile.ySize.c_str());
-    // read the size
-    Ny = 1;
-    if ((varInfoFromFile.ndims == 2) && !pdb->GetInteger(tmpStr, &Ny))
-    {
-        EXCEPTION1(InvalidVariableException, var);
-    }
-
-    int size = Nx * Ny;
-
     // set the name of the PDB symbol containing the variable data
     sprintf(tmpStr, "/%s%s/%s", matDirName.c_str(), varName.c_str(),
         varInfoFromFile.vName.c_str());
+
+    int size;
+    if (!pdb->SymbolExists(tmpStr, 0, &size, 0, 0))
+    {
+        EXCEPTION1(InvalidVariableException, var);
+    }
 
     // allocate VTK data array for this variable
     vtkFloatArray *var_data = vtkFloatArray::New();

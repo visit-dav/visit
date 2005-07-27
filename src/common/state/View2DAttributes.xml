@@ -1,6 +1,32 @@
 <?xml version="1.0"?>
-  <Attribute name="View2DAttributes" purpose="This class contains the 2d view attributes." exportAPI="STATE_API" exportInclude="state_exports.h">
-    <Field name="windowCoords" type="doubleArray" length="4">0. 0. 1. 1.</Field>
-    <Field name="viewportCoords" type="doubleArray" length="4">0.1 0.1 0.9 0.9</Field>
-    <Field name="fullFrame" type="bool">false</Field>
+  <Attribute name="View2DAttributes" purpose="This class contains the 2d view attributes." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="View2DAttributes.code">
+    <Enum name="TriStateMode">
+      On
+      Off
+      Auto
+    </Enum>
+    <Field name="windowCoords" label="windowCoords" type="doubleArray" length="4">
+      0.000000
+      0.000000
+      1.000000
+      1.000000
+    </Field>
+    <Field name="viewportCoords" label="viewportCoords" type="doubleArray" length="4">
+      0.100000
+      0.100000
+      0.900000
+      0.900000
+    </Field>
+    <Field name="fullFrameActivationMode" label="fullFrameActivationMode" type="enum" subtype="TriStateMode">
+      Off
+    </Field>
+    <Field name="fullFrameAutoThreshold" label="fullFrameAutoThreshold" type="double">
+      100.000000
+    </Field>
+    <Function name="GetUseFullFrame" user="true" member="true">
+    </Function>
+    <Function name="SetUseFullFrame" user="true" member="true">
+    </Function>
+    <Constant name="DEFAULT_FULL_FRAME_AUTO_THRESHOLD" member="false">
+    </Constant>
   </Attribute>

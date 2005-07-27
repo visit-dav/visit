@@ -56,6 +56,9 @@ class QObject;
 //   Hank Childs, Tue Jul 19 14:23:56 PDT 2005
 //   Added array var support.
 //
+//   Mark C. Miller, Tue Jul 26 17:22:22 PDT 2005
+//   Added support for grouping of the variable menu hierarchy
+//
 // ****************************************************************************
 
 class WINUTIL_API VariableMenuPopulator
@@ -79,20 +82,22 @@ public:
 
 private:
     typedef std::map<std::string, bool> StringBoolMap;
+    typedef std::map<std::string, std::string> StringStringMap;
 
     class VariableList
     {
     public:
         VariableList();
         virtual ~VariableList();
-        void SetSorted(bool val) { sorted = val; }
-        bool GetSorted() const { return sorted; }
+        void SetSorted(bool val) { sorted = val; };
+        bool GetSorted() const { return sorted; };
         void AddVariable(const std::string &var, bool validVar);
         void Clear();
         int  Size() const;
         bool Contains(const std::string &var) const;
         void InitTraversal();
         bool GetNextVariable(std::string &var, bool &validVar);
+        bool IsGroupingRequired(StringStringMap& origNameToGroupedName);
     private:
         bool                    sorted;
         StringBoolMap           sortedVariables;
@@ -104,7 +109,7 @@ private:
 
     void UpdateSingleMenu(QvisVariablePopupMenu *, VariableList &vars,
                           QObject *, const char *slot);
-    void Split(const std::string &varName, stringVector &pieces) const;
+    static void Split(const std::string &varName, stringVector &pieces);
     void AddVars(VariableList &to, VariableList &from);
     void AddExpression(const Expression &);
     void GetRelevantExpressions(ExpressionList &newExpressionList,

@@ -395,7 +395,7 @@ avtView2D::SetFromView2DAttributes(const View2DAttributes *view2DAtts)
         viewport[i] = view2DAtts->GetViewportCoords()[i];
         window[i] = view2DAtts->GetWindowCoords()[i];
     }
-    fullFrame = view2DAtts->GetFullFrame();
+    fullFrame = view2DAtts->GetUseFullFrame();
 }
 
 // ****************************************************************************
@@ -424,7 +424,7 @@ avtView2D::SetToView2DAttributes(View2DAttributes *view2DAtts) const
 {
     view2DAtts->SetWindowCoords(window);
     view2DAtts->SetViewportCoords(viewport);
-    view2DAtts->SetFullFrame(fullFrame);
+    view2DAtts->SetUseFullFrame(fullFrame);
 }
 
 // ****************************************************************************

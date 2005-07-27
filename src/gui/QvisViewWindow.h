@@ -5,11 +5,13 @@
 
 // Forward declarations.
 class DataNode;
+class QButtonGroup;
 class QCheckBox;
 class QComboBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
+class QRadioButton;
 class QSlider;
 class QTabWidget;
 class QVBox;
@@ -68,6 +70,8 @@ class QPushButton;
 //   Eric Brugger, Tue Feb 10 10:29:21 PST 2004
 //   I added center of rotation controls to the advanced tab.
 //
+//   Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
+//   Added stuff for auto full frame mode
 // ****************************************************************************
 
 class GUI_API QvisViewWindow : public QvisPostableWindowSimpleObserver
@@ -111,7 +115,7 @@ private slots:
 
     void processViewportText();
     void processWindowText();
-    void fullFrameToggled(bool val);
+    void fullFrameActivationModeChanged(int);
 
     void processNormalText();
     void processFocusText();
@@ -152,6 +156,7 @@ private:
     View3DAttributes    *view3d;
     WindowInformation   *windowInfo;
     int                 activeTab;
+    bool                activeTabSetBySlot;
 
     // Curve widgets
     QVBox       *pageCurve;
@@ -161,11 +166,15 @@ private:
     QLineEdit   *rangeLineEdit;
 
     // 2d widgets
-    QVBox       *page2D;
-    QGroupBox   *view2DGroup;
-    QLineEdit   *viewportLineEdit;
-    QLineEdit   *windowLineEdit;
-    QCheckBox   *fullFrameToggle;
+    QVBox        *page2D;
+    QGroupBox    *view2DGroup;
+    QLineEdit    *viewportLineEdit;
+    QLineEdit    *windowLineEdit;
+    QLabel       *fullFrameLabel;
+    QButtonGroup *fullFrameActivationMode;
+    QRadioButton *fullFrameAuto;
+    QRadioButton *fullFrameOn;
+    QRadioButton *fullFrameOff;
 
     // 3d widgets
     QVBox       *page3D;

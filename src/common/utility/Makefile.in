@@ -76,8 +76,9 @@ LIBS=
 ##
 ## Files...
 ##
-SRC=BJHash.C NamingConvention.C Utility.C void_ref_ptr.C
-HDR=BJHash.h NamingConvention.h Utility.h ref_ptr.h array_ref_ptr.h void_ref_ptr.h
+SRC=BJHash.C NamingConvention.C StringHelpers.C Utility.C void_ref_ptr.C
+HDR=BJHash.h NamingConvention.h StringHelpers.h Utility.h ref_ptr.h \
+    array_ref_ptr.h void_ref_ptr.h
 OBJ=$(SRC:.C=.o)
 LIB=libutility
 NOT_DISTRIB=
