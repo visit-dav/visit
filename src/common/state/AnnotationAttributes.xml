@@ -108,6 +108,28 @@
     <Field name="axesTicks2D" label="axesTicks2D" type="enum" subtype="Ticks">
       BottomLeft
     </Field>
+    <Field name="xAxisUserTitle2D" label="xAxisUserTitle2D" type="string">
+      X-Axis
+    </Field>
+    <Field name="yAxisUserTitle2D" label="yAxisUserTitle2D" type="string">
+      Y-Axis
+    </Field>
+    <Field name="xAxisUserTitleFlag2D" label="xAxisUserTitle2D" type="bool">
+      false
+    </Field>
+    <Field name="yAxisUserTitleFlag2D" label="yAxisUserTitle2D" type="bool">
+      false
+    </Field>
+    <Field name="xAxisUserUnits2D" label="xAxisUserUnits2D" type="string">
+    </Field>
+    <Field name="yAxisUserUnits2D" label="yAxisUserUnits2D" type="string">
+    </Field>
+    <Field name="xAxisUserUnitsFlag2D" label="xAxisUserUnits2D" type="bool">
+      false
+    </Field>
+    <Field name="yAxisUserUnitsFlag2D" label="yAxisUserUnits2D" type="bool">
+      false
+    </Field>
     <Field name="axesFlag" label="axesFlag" type="bool">
       true
     </Field>
@@ -215,6 +237,39 @@
     </Field>
     <Field name="zLabelScaling" label="zLabelScaling" type="int">
       0
+    </Field>
+    <Field name="xAxisUserTitle" label="xAxisUserTitle" type="string">
+      X-Axis
+    </Field>
+    <Field name="yAxisUserTitle" label="yAxisUserTitle" type="string">
+      Y-Axis
+    </Field>
+    <Field name="zAxisUserTitle" label="zAxisUserTitle" type="string">
+      Z-Axis
+    </Field>
+    <Field name="xAxisUserTitleFlag" label="xAxisUserTitle" type="bool">
+      false
+    </Field>
+    <Field name="yAxisUserTitleFlag" label="yAxisUserTitle" type="bool">
+      false
+    </Field>
+    <Field name="zAxisUserTitleFlag" label="zAxisUserTitle" type="bool">
+      false
+    </Field>
+    <Field name="xAxisUserUnits" label="xAxisUserUnits" type="string">
+    </Field>
+    <Field name="yAxisUserUnits" label="yAxisUserUnits" type="string">
+    </Field>
+    <Field name="zAxisUserUnits" label="zAxisUserUnits" type="string">
+    </Field>
+    <Field name="xAxisUserUnitsFlag" label="xAxisUserUnits" type="bool">
+      false
+    </Field>
+    <Field name="yAxisUserUnitsFlag" label="yAxisUserUnits" type="bool">
+      false
+    </Field>
+    <Field name="zAxisUserUnitsFlag" label="zAxisUserUnits" type="bool">
+      false
     </Field>
     <Field name="axesTickLocation" label="axesTickLocation" type="enum" subtype="Location">
       Inside

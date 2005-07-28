@@ -62,6 +62,9 @@ using   std::vector;
 //    Kathleen Bonnell, Tue Dec 16 11:47:25 PST 2003 
 //    Intialize autlabelscaling, userPowX,  userPowY. 
 //
+//    Brad Whitlock, Thu Jul 28 08:47:01 PDT 2005
+//    I initialized some label flags.
+//
 // ****************************************************************************
 
 VisWinAxes::VisWinAxes(VisWindowColleagueProxy &p) : VisWinColleague(p)
@@ -111,6 +114,10 @@ VisWinAxes::VisWinAxes(VisWindowColleagueProxy &p) : VisWinColleague(p)
     autolabelScaling = true; 
     userPowX = 0;
     userPowY = 0;
+    userXTitle = false;
+    userXUnits = false;
+    userYTitle = false;
+    userYUnits = false;
 }
 
 
@@ -539,6 +546,9 @@ VisWinAxes::UpdateView(void)
 //    Kathleen Bonnell, Tue Mar 23 08:57:31 PST 2004 
 //    Allow labels from DataAtts to be set for Curve window, too.
 //
+//    Brad Whitlock, Thu Jul 28 08:48:35 PDT 2005
+//    Added code that allows the user to override the titles and units.
+//
 // ****************************************************************************
 
 void
@@ -571,16 +581,24 @@ VisWinAxes::UpdatePlotList(vector<avtActor_p> &list)
         }
     }
 
-    SNPRINTF(unitsX, 256, x.c_str());
-    SNPRINTF(unitsY, 256, y.c_str());
-    if (lx != "")
-        SNPRINTF(xTitle, 256, lx.c_str());
-    else
-        strcpy(xTitle, "X-Axis");
-    if (ly != "")
-        SNPRINTF(yTitle, 256, ly.c_str());
-    else
-        strcpy(yTitle, "Y-Axis");
+    if(!userXUnits)
+        SNPRINTF(unitsX, 256, x.c_str());
+    if(!userYUnits)
+        SNPRINTF(unitsY, 256, y.c_str());
+    if(!userXTitle)
+    {
+        if (lx != "")
+            SNPRINTF(xTitle, 256, lx.c_str());
+        else
+            strcpy(xTitle, "X-Axis");
+    }
+    if(!userYTitle)
+    {
+        if (ly != "")
+            SNPRINTF(yTitle, 256, ly.c_str());
+        else
+            strcpy(yTitle, "Y-Axis");
+    }
 
     SetTitle();
 }
@@ -1378,3 +1396,69 @@ VisWinAxes::SetLabelScaling(bool autoscale, int upowX, int upowY)
     userPowX = upowX;
     userPowY = upowY;
 } 
+
+// ****************************************************************************
+// Method: VisWinAxes::SetTitle
+//
+// Purpose: 
+//   Sets the title for an axis, overriding any title that comes from the plot.
+//
+// Arguments:
+//   title   : The new title.
+//   userSet : Whether the title is user-set.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 28 10:58:41 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinAxes::SetXTitle(const string &title, bool userSet)
+{
+    if(userSet)
+        SNPRINTF(xTitle, 256, "%s", title.c_str());
+    userXTitle = userSet;
+}
+
+void
+VisWinAxes::SetYTitle(const string &title, bool userSet)
+{
+    if(userSet)
+        SNPRINTF(yTitle, 256, "%s", title.c_str());
+    userYTitle = userSet;
+}
+
+// ****************************************************************************
+// Method: VisWinAxes::SetUnits
+//
+// Purpose: 
+//   Sets the units for an axis, overriding any units that comes from the plot.
+//
+// Arguments:
+//   units   : The new units.
+//   userSet : Whether the title is user-set.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 28 10:58:41 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinAxes::SetXUnits(const string &units, bool userSet)
+{
+    if(userSet)
+        SNPRINTF(unitsX, 256, "%s", units.c_str());
+    userXUnits = userSet;
+}
+
+void
+VisWinAxes::SetYUnits(const string &units, bool userSet)
+{
+    if(userSet)
+        SNPRINTF(unitsY, 256, "%s", units.c_str());
+    userYUnits = userSet;
+}

@@ -6810,6 +6810,9 @@ ViewerSubject::SendKeepAlives()
 //    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //    Added SetTryHarderCyclesTimesRPC
 //
+//    Kathleen Bonnell, Wed Jul 27 15:47:34 PDT 2005
+//    Added SuppressQueryOutputRPC.
+//
 // ****************************************************************************
 
 void
@@ -7112,6 +7115,9 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::OpenClientRPC:
         OpenClient();
+        break;
+    case ViewerRPC::SuppressQueryOutputRPC:
+        SuppressQueryOutput();
         break;
     case ViewerRPC::MaxRPC:
         break;
@@ -8001,3 +8007,25 @@ ViewerSubject::SetTryHarderCyclesTimes()
     ViewerFileServer *fs = ViewerFileServer::Instance();
     fs->SetTryHarderCyclesTimes(viewerRPC.GetIntArg1());
 }
+
+
+// ****************************************************************************
+// Method: ViewerSubject::SuppressQueryOutput
+//
+// Purpose: 
+//   Turns on/off printing of query output. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   July 27, 2005 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::SuppressQueryOutput()
+{
+    ViewerQueryManager::Instance()->
+        SuppressQueryOutput(viewerRPC.GetBoolFlag());
+}
+

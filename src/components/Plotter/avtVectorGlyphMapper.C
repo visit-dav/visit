@@ -577,6 +577,9 @@ avtVectorGlyphMapper::SetAutoScale(bool val)
 //    Kathleen Bonnell, Mon Aug  9 13:54:42 PDT 2004
 //    Set colorByScalar to false.
 //
+//    Kathleen Bonnell, Mon Jul 25 08:34:49 PDT 2005 
+//    Turn on mappers' scalar visibility. 
+//
 // ****************************************************************************
 
 void
@@ -584,6 +587,19 @@ avtVectorGlyphMapper::ColorByMagOn(void)
 {
     colorByMag = true;
     colorByScalar = false;
+
+
+    if (actors != NULL)
+    {
+        for (int i = 0 ; i < nMappers ; i++)
+        {
+            if (actors[i] != NULL)
+            {
+                mappers[i]->ScalarVisibilityOn();
+            }
+        }
+    }
+
 
     if (glyphFilter != NULL)
     {
@@ -607,6 +623,10 @@ avtVectorGlyphMapper::ColorByMagOn(void)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   August 6, 2004 
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Jul 25 08:34:49 PDT 2005 
+//    Turn on mappers' scalar visibility. 
+//
 // ****************************************************************************
 
 void
@@ -615,6 +635,18 @@ avtVectorGlyphMapper::ColorByScalarOn(const string &sn)
     colorByMag = false;
     colorByScalar = true;
     scalarName = sn;
+
+
+    if (actors != NULL)
+    {
+        for (int i = 0 ; i < nMappers ; i++)
+        {
+            if (actors[i] != NULL)
+            {
+                mappers[i]->ScalarVisibilityOn();
+            }
+        }
+    }
 
     if (glyphFilter != NULL)
     {
@@ -646,6 +678,11 @@ avtVectorGlyphMapper::ColorByScalarOn(const string &sn)
 //    Kathleen Bonnell, Mon Aug  9 13:54:42 PDT 2004
 //    Set colorByScalar to false.
 //
+//    Kathleen Bonnell, Mon Jul 25 08:34:49 PDT 2005 
+//    Turn Mappers' scalar visibility off,  set color mode for the glyph 
+//    filter to 'SingleColor' to ensure that no unnecessary scalars are
+//    created.
+//
 // ****************************************************************************
 
 void
@@ -663,6 +700,7 @@ avtVectorGlyphMapper::ColorByMagOff(const unsigned char col[3])
         {
             if (actors[i] != NULL)
             {
+                mappers[i]->ScalarVisibilityOff();
                 vtkProperty *prop = actors[i]->GetProperty();
                 float r = ((float) glyphColor[0]) / 255.;
                 float g = ((float) glyphColor[1]) / 255.;
@@ -678,7 +716,8 @@ avtVectorGlyphMapper::ColorByMagOff(const unsigned char col[3])
         {
             if (glyphFilter[i] != NULL)
             {
-                glyphFilter[i]->SetColorMode(0);
+               // Will ensure no new scalars are created accidentally.
+                glyphFilter[i]->SetColorModeToColorBySingleColor();
             }
         }
     }

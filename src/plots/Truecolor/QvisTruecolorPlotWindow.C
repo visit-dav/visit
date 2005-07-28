@@ -6,20 +6,9 @@
 #include <qcheckbox.h>
 #include <qlabel.h>
 #include <qlayout.h>
-#include <qlineedit.h>
-#include <qspinbox.h>
-#include <qvbox.h>
-#include <qbuttongroup.h>
-#include <qradiobutton.h>
-#include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
-#include <QvisColorButton.h>
-#include <QvisLineStyleWidget.h>
-#include <QvisLineWidthWidget.h>
 #include <stdio.h>
-#include <string>
 
-using std::string;
 
 // ****************************************************************************
 // Method: QvisTruecolorPlotWindow::QvisTruecolorPlotWindow
@@ -74,6 +63,8 @@ QvisTruecolorPlotWindow::~QvisTruecolorPlotWindow()
 // Creation:   Tue Jun 15 11:10:32 PDT 2004
 //
 // Modifications:
+//   Kathleen Bonnell, Mon Jul 25 15:27:06 PDT 2005
+//   Added lighting checkbox.
 //   
 // ****************************************************************************
 
@@ -81,7 +72,6 @@ void
 QvisTruecolorPlotWindow::CreateWindowContents()
 {
     QGridLayout *mainLayout = new QGridLayout(topLayout, 1,2,  10, "mainLayout");
-
 
     opacityLabel = new QLabel("opacity", central, "opacityLabel");
     mainLayout->addWidget(opacityLabel,0,0);
@@ -92,6 +82,9 @@ QvisTruecolorPlotWindow::CreateWindowContents()
             this, SLOT(opacityChanged(int, const void*)));
     mainLayout->addWidget(opacity, 0,1);
 
+    lighting = new QCheckBox("Lighting", central, "lighting");
+    connect(lighting, SIGNAL(toggled(bool)), this, SLOT(lightingToggled(bool)));
+    mainLayout->addWidget(lighting, 1, 0);
 }
 
 
@@ -105,15 +98,14 @@ QvisTruecolorPlotWindow::CreateWindowContents()
 // Creation:   Tue Jun 15 11:10:32 PDT 2004
 //
 // Modifications:
+//   Kathleen Bonnell, Mon Jul 25 15:27:06 PDT 2005
+//   Added lighting.
 //   
 // ****************************************************************************
 
 void
 QvisTruecolorPlotWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
-    double r;
-
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
         if(!doAll)
@@ -124,19 +116,17 @@ QvisTruecolorPlotWindow::UpdateWindow(bool doAll)
             }
         }
 
-        const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
-        QColor                tempcolor;
         switch(i)
         {
           case 0: //opacity
             opacity->blockSignals(true);
             opacity->setValue(int(atts->GetOpacity()*255.));
             opacity->blockSignals(false);
+            break;
+          case 1: //lighting
+            lighting->blockSignals(true);
+            lighting->setChecked(atts->GetLightingFlag());
+            lighting->blockSignals(false);
             break;
         }
     }
@@ -270,6 +260,13 @@ void
 QvisTruecolorPlotWindow::opacityChanged(int opacity, const void*)
 {
     atts->SetOpacity((float)opacity/255.);
+    Apply();
+}
+
+void
+QvisTruecolorPlotWindow::lightingToggled(bool val)
+{
+    atts->SetLightingFlag(val);
     Apply();
 }
 

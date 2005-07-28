@@ -202,6 +202,10 @@ avtTruecolorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 //  Programmer: Chris Wojtan
 //  Creation:   Monday, June 15 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Jul 25 15:27:06 PDT 2005
+//    Add SetLighting call.
+//
 // ****************************************************************************
 
 void
@@ -211,6 +215,7 @@ avtTruecolorPlot::SetAtts(const AttributeGroup *a)
     needsRecalculation = atts.ChangesRequireRecalculation(*newAtts);
     atts = *newAtts;
     SetOpacity(atts.GetOpacity());
+    SetLighting(atts.GetLightingFlag());
 }
 
 
@@ -264,6 +269,37 @@ avtTruecolorPlot::ReleaseData(void)
     if (TruecolorFilter != NULL)
     {
         TruecolorFilter->ReleaseData();
+    }
+}
+
+// ****************************************************************************
+//  Method: avtPseudocolorPlot::SetLighting
+//
+//  Purpose:
+//      Turns the lighting on or off.
+//
+//  Arguments:
+//      lightingOn   true if the lighting should be turned on, false otherwise.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   July 21, 2005 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtTruecolorPlot::SetLighting(bool lightingOn)
+{
+    if (lightingOn)
+    {
+        myMapper->TurnLightingOn();
+        myMapper->SetSpecularIsInappropriate(false);
+    }
+    else
+    {
+        myMapper->TurnLightingOff();
+        myMapper->SetSpecularIsInappropriate(true);
     }
 }
 

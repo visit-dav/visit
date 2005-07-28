@@ -29,6 +29,9 @@ class     avtTruecolorFilter;
 //    Hank Childs, Wed Nov 10 11:32:31 PST 2004
 //    Add ReleaseData to address memory leaks.
 //
+//    Kathleen Bonnell, Mon Jul 25 15:27:06 PDT 2005 
+//    Added SetLighting method.
+//
 // ****************************************************************************
 
 class avtTruecolorPlot : public avtSurfaceDataPlot
@@ -45,6 +48,7 @@ class avtTruecolorPlot : public avtSurfaceDataPlot
     virtual void                ReleaseData();
     
     void                        SetOpacity(float);
+    void                        SetLighting(bool);
 
   protected:
     avtVariableMapper          *myMapper;

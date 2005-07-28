@@ -38,7 +38,10 @@ class vtkOutlineSource;
 //    
 //    Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003 
 //    Added method 'SetLabelScaling'.
-//    
+//
+//    Brad Whitlock, Thu Jul 28 10:10:40 PDT 2005
+//    Added methods to set the units and title.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinAxes3D : public VisWinColleague
@@ -74,8 +77,15 @@ class VISWINDOW_API VisWinAxes3D : public VisWinColleague
     void                      SetTickLocation(int);
     void                      SetLabelScaling(bool, int, int, int);
 
+    void                      SetXTitle(const std::string &, bool);
+    void                      SetXUnits(const std::string &, bool);
+    void                      SetYTitle(const std::string &, bool);
+    void                      SetYUnits(const std::string &, bool);
+    void                      SetZTitle(const std::string &, bool);
+    void                      SetZUnits(const std::string &, bool);
+
   protected:
-    vtkVisItCubeAxesActor      *axes;
+    vtkVisItCubeAxesActor    *axes;
     vtkOutlineSource         *axesBoxSource;
     vtkPolyDataMapper        *axesBoxMapper;
     vtkActor                 *axesBox;
@@ -83,6 +93,19 @@ class VISWINDOW_API VisWinAxes3D : public VisWinColleague
     bool                      addedAxes3D;
     float                     currentBounds[6];
     bool                      visibility;
+
+    std::string               userXTitle;
+    std::string               userYTitle;
+    std::string               userZTitle;
+    std::string               userXUnits;
+    std::string               userYUnits;
+    std::string               userZUnits;
+    bool                      userXTitleFlag;
+    bool                      userYTitleFlag;
+    bool                      userZTitleFlag;
+    bool                      userXUnitsFlag;
+    bool                      userYUnitsFlag;
+    bool                      userZUnitsFlag;
 
     void                      AddAxes3DToWindow(void);
     void                      RemoveAxes3DFromWindow(void);

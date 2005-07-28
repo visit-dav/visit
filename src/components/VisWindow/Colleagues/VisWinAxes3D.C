@@ -1,5 +1,5 @@
 // ************************************************************************* //
-//                                VisWinAxes3D.C                              //
+//                                VisWinAxes3D.C                             //
 // ************************************************************************* //
 
 #include <vtkVisItCubeAxesActor.h>
@@ -13,7 +13,6 @@
 #include <VisWindow.h>
 #include <VisWindowColleagueProxy.h>
 #include <VisWinAxes3D.h>
-
 
 
 // ****************************************************************************
@@ -41,9 +40,14 @@
 //    Disable lighting on the axesBox by setting its ambient/diffuse
 //    coefficients. 
 //
+//    Brad Whitlock, Thu Jul 28 10:07:18 PDT 2005
+//    Added new members for storing user-specified axis titles and units.
+//
 // ****************************************************************************
 
-VisWinAxes3D::VisWinAxes3D(VisWindowColleagueProxy &p) : VisWinColleague(p)
+VisWinAxes3D::VisWinAxes3D(VisWindowColleagueProxy &p) : VisWinColleague(p),
+    userXTitle(), userYTitle(), userZTitle(), 
+    userXUnits(), userYUnits(), userZUnits()
 {
     axes = vtkVisItCubeAxesActor::New();
     axes->SetFlyModeToClosestTriad();
@@ -66,6 +70,13 @@ VisWinAxes3D::VisWinAxes3D(VisWindowColleagueProxy &p) : VisWinColleague(p)
         currentBounds[i] = -1;
     }
     addedAxes3D = false;
+
+    userXUnitsFlag = false;
+    userYUnitsFlag = false;
+    userZUnitsFlag = false;
+    userXTitleFlag = false;
+    userYTitleFlag = false;
+    userZTitleFlag = false;
 }
 
 
@@ -381,6 +392,9 @@ VisWinAxes3D::UpdateView()
 //    Brad Whitlock, Fri Jul 23 17:59:43 PST 2004
 //    I added support for setting the axis titles based on the x,y,z labels.
 //
+//    Brad Whitlock, Thu Jul 28 10:06:20 PDT 2005
+//    I added support for overriding the title and units.
+//
 // ****************************************************************************
 
 void
@@ -412,13 +426,35 @@ VisWinAxes3D::UpdatePlotList(vector<avtActor_p> &list)
             zt = atts.GetZLabel();
     }
 
-    axes->SetXUnits(x.c_str());
-    axes->SetYUnits(y.c_str());
-    axes->SetZUnits(z.c_str());
+    if(userXUnitsFlag)
+        axes->SetXUnits(userXUnits.c_str());
+    else
+        axes->SetXUnits(x.c_str());
 
-    axes->SetXTitle(xt.c_str());
-    axes->SetYTitle(yt.c_str());
-    axes->SetZTitle(zt.c_str());
+    if(userYUnitsFlag)
+        axes->SetYUnits(userYUnits.c_str());
+    else
+        axes->SetYUnits(y.c_str());
+
+    if(userZUnitsFlag)
+        axes->SetZUnits(userZUnits.c_str());
+    else
+        axes->SetZUnits(z.c_str());
+
+    if(userXTitleFlag)
+        axes->SetXTitle(userXTitle.c_str());
+    else
+        axes->SetXTitle(xt.c_str());
+
+    if(userYTitleFlag)
+        axes->SetYTitle(userYTitle.c_str());
+    else
+        axes->SetYTitle(yt.c_str());
+
+    if(userZTitleFlag)
+        axes->SetZTitle(userZTitle.c_str());
+    else
+        axes->SetZTitle(zt.c_str());
 }
 
 
@@ -770,3 +806,81 @@ VisWinAxes3D::SetLabelScaling(bool autoscale, int upowX, int upowY, int upowZ)
 {
     axes->SetLabelScaling(autoscale, upowX, upowY, upowZ);
 } 
+
+// ****************************************************************************
+// Method: SetTitle
+//
+// Purpose: 
+//   Sets the X,Y,Z titles for the axes. If the userSet flag is true then we
+//   override the titles that come from the database.
+//
+// Arguments:
+//   title   : The new title.
+//   userSet : Whether to use the new title.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 28 10:50:38 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetXTitle(const std::string &title, bool userSet)
+{
+    userXTitle = title;
+    userXTitleFlag = userSet;
+}
+
+void
+VisWinAxes3D::SetYTitle(const std::string &title, bool userSet)
+{
+    userYTitle = title;
+    userYTitleFlag = userSet;
+}
+
+void
+VisWinAxes3D::SetZTitle(const std::string &title, bool userSet)
+{
+    userZTitle = title;
+    userZTitleFlag = userSet;
+}
+
+// ****************************************************************************
+// Method: SetTitle
+//
+// Purpose: 
+//   Sets the X,Y,Z titles for the axes. If the userSet flag is true then we
+//   override the titles that come from the database.
+//
+// Arguments:
+//   title   : The new title.
+//   userSet : Whether to use the new title.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 28 10:50:38 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetXUnits(const std::string &units, bool userSet)
+{
+    userXUnits = units;
+    userXUnitsFlag = userSet;    
+}
+
+void
+VisWinAxes3D::SetYUnits(const std::string &units, bool userSet)
+{
+    userYUnits = units;
+    userYUnitsFlag = userSet;    
+}
+
+void
+VisWinAxes3D::SetZUnits(const std::string &units, bool userSet)
+{
+    userZUnits = units;
+    userZUnitsFlag = userSet;    
+}

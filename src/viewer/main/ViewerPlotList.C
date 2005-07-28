@@ -7820,6 +7820,9 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
 //   Kathleen Bonnell, Tue Jan 11 16:16:48 PST 2005 
 //   Made whether or not the plot is a Label plot be part of the criteria. 
 //   
+//   Kathleen Bonnell, Wed Jul 27 15:26:02 PDT 2005 
+//   Added tests for plot in bad state (no actor & error flag set). 
+//   
 // ****************************************************************************
 
 void
@@ -7831,6 +7834,8 @@ ViewerPlotList::CanMeshPlotBeOpaque()
     {
         if (plots[i].plot->IsInRange() && plots[i].realized && 
             !plots[i].hidden && !plots[i].plot->IsLabel() &&
+            !(plots[i].plot->NoActorExists() && 
+              plots[i].plot->GetErrorFlag()) && 
             (!plots[i].plot->IsMesh() ||
              plots[i].plot->GetMeshType() == AVT_POINT_MESH))
             canBeOpaque = false;

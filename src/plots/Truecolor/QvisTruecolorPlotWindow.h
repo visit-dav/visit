@@ -7,15 +7,7 @@
 class TruecolorAttributes;
 class QLabel;
 class QCheckBox;
-class QLineEdit;
-class QSpinBox;
-class QVBox;
-class QButtonGroup;
-class QvisColorTableButton;
 class QvisOpacitySlider;
-class QvisColorButton;
-class QvisLineStyleWidget;
-class QvisLineWidthWidget;
 
 // ****************************************************************************
 // Class: QvisTruecolorPlotWindow
@@ -29,6 +21,8 @@ class QvisLineWidthWidget;
 // Creation:   Tue Jun 15 11:10:32 PDT 2004
 //
 // Modifications:
+//   Kathleen Bonnell, Mon Jul 25 15:27:06 PDT 2005
+//   Add lighting toggle.
 //   
 // ****************************************************************************
 
@@ -53,10 +47,12 @@ class QvisTruecolorPlotWindow : public QvisPostableWindowObserver
     void Apply(bool ignore = false);
   private slots:
     void opacityChanged(int opacity, const void*);
+    void lightingToggled(bool on);
   private:
     int plotType;
     QvisOpacitySlider *opacity;
     QLabel *opacityLabel;
+    QCheckBox *lighting;
 
     TruecolorAttributes *atts;
 };

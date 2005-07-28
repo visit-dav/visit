@@ -81,6 +81,7 @@
 #define VTK_COLOR_BY_SCALE  0
 #define VTK_COLOR_BY_SCALAR 1
 #define VTK_COLOR_BY_VECTOR 2
+#define VTK_COLOR_BY_SINGLE_COLOR 3
 
 #define VTK_USE_VECTOR 0
 #define VTK_USE_NORMAL 1
@@ -152,6 +153,8 @@ public:
     {this->SetColorMode(VTK_COLOR_BY_SCALAR);};
   void SetColorModeToColorByVector() 
     {this->SetColorMode(VTK_COLOR_BY_VECTOR);};
+  void SetColorModeToColorBySingleColor() 
+    {this->SetColorMode(VTK_COLOR_BY_SINGLE_COLOR);};
   const char *GetColorModeAsString();
 
   // Description:
@@ -323,6 +326,10 @@ inline const char *vtkVisItGlyph3D::GetColorModeAsString(void)
   else if ( this->ColorMode == VTK_COLOR_BY_VECTOR ) 
     {
     return "ColorByVector";
+    }
+  else if ( this->ColorMode == VTK_COLOR_BY_SINGLE_COLOR ) 
+    {
+    return "ColorBySingleColor";
     }
   else 
     {
