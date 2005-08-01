@@ -390,6 +390,9 @@ avtCurve2DFileFormat::ReadFile(void)
 //    Hank Childs, Thu Sep 23 14:54:07 PDT 2004
 //    Add support for Fortran-style scientific notation (5.05D-2).
 //
+//    Hank Childs, Fri Jul 29 14:34:39 PDT 2005
+//    Add support for tabs.
+//
 // ****************************************************************************
 
 CurveToken
@@ -447,6 +450,8 @@ avtCurve2DFileFormat::GetPoint(ifstream &ifile, float &x, float &y, string &ln)
     {
         if (line[i] == 'D' || line[i] == 'd')
             line[i] = 'E';
+        if (line[i] == '\t')
+            line[i] = ' ';
     }
 
     char *ystr = NULL;
