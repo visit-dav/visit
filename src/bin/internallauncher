@@ -82,6 +82,9 @@ $0 = shift @ARGV;
 #    Brad Whitlock, Mon Jul 25 11:58:46 PDT 2005
 #    Fixed problem with -newconsole on AIX.
 #
+#    Jeremy Meredith, Wed Aug  3 10:21:31 PDT 2005
+#    Added -stereo to the help text.
+#
 ###############################################################################
 
 
@@ -152,6 +155,8 @@ $usage = "
         -foreground <color>  Foreground color for GUI.
         -nowin               Run with viewer windows off-screen (i.e. OSMesa).
 			     This is typically used with the -cli option.
+        -stereo              Enable active stereo, also known as the
+                             page-flipping, or 'CrystalEyes' mode.
 
     Version options
     ---------------------------------------------------------------------------

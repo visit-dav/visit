@@ -39,6 +39,9 @@
 //   Brad Whitlock, Thu Feb 17 15:45:19 PST 2005
 //   I made WriteConfigFile return a bool.
 //
+//   Jeremy Meredith, Tue Aug  2 16:05:09 PDT 2005
+//   Added WriteEscapedString method.
+//
 // ****************************************************************************
 
 class STATE_API ConfigManager
@@ -54,6 +57,7 @@ protected:
     void WriteObject(DataNode *node, int indentLevel = 0);
     void WriteData(DataNode *node);
     void WriteQuotedStringData(const std::string &str);
+    void WriteEscapedString(const std::string &str);
     void WriteIndent(int indentLevel);
     void WriteBack(DataNode *root);
 

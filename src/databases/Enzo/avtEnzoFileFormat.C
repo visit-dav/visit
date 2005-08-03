@@ -72,6 +72,9 @@ void avtEnzoFileFormat::Grid::Print()
 //    Jeremy Meredith, Wed Feb 23 15:18:48 PST 2005
 //    May have multiple root grids; identify by parentID==0, not by ID==1.
 //
+//    Jeremy Meredith, Wed Aug  3 10:22:36 PDT 2005
+//    Added support for 2D files.
+//
 // ****************************************************************************
 void avtEnzoFileFormat::Grid::DetermineExtentsInParent(vector<Grid> &grids)
 {
@@ -79,17 +82,30 @@ void avtEnzoFileFormat::Grid::DetermineExtentsInParent(vector<Grid> &grids)
     {
         Grid &p = grids[parentID];
         minLogicalExtentsInParent[0] = int(.5 + double(p.zdims[0]) * (minSpatialExtents[0] - p.minSpatialExtents[0])/(p.maxSpatialExtents[0] - p.minSpatialExtents[0]));
-        minLogicalExtentsInParent[1] = int(.5 + double(p.zdims[1]) * (minSpatialExtents[1] - p.minSpatialExtents[1])/(p.maxSpatialExtents[1] - p.minSpatialExtents[1]));
-        minLogicalExtentsInParent[2] = int(.5 + double(p.zdims[2]) * (minSpatialExtents[2] - p.minSpatialExtents[2])/(p.maxSpatialExtents[2] - p.minSpatialExtents[2]));
         maxLogicalExtentsInParent[0] = int(.5 + double(p.zdims[0]) * (maxSpatialExtents[0] - p.minSpatialExtents[0])/(p.maxSpatialExtents[0] - p.minSpatialExtents[0]));
+        minLogicalExtentsInParent[1] = int(.5 + double(p.zdims[1]) * (minSpatialExtents[1] - p.minSpatialExtents[1])/(p.maxSpatialExtents[1] - p.minSpatialExtents[1]));
         maxLogicalExtentsInParent[1] = int(.5 + double(p.zdims[1]) * (maxSpatialExtents[1] - p.minSpatialExtents[1])/(p.maxSpatialExtents[1] - p.minSpatialExtents[1]));
-        maxLogicalExtentsInParent[2] = int(.5 + double(p.zdims[2]) * (maxSpatialExtents[2] - p.minSpatialExtents[2])/(p.maxSpatialExtents[2] - p.minSpatialExtents[2]));
+        if (dimension == 3)
+        {
+            minLogicalExtentsInParent[2] = int(.5 + double(p.zdims[2]) * (minSpatialExtents[2] - p.minSpatialExtents[2])/(p.maxSpatialExtents[2] - p.minSpatialExtents[2]));
+            maxLogicalExtentsInParent[2] = int(.5 + double(p.zdims[2]) * (maxSpatialExtents[2] - p.minSpatialExtents[2])/(p.maxSpatialExtents[2] - p.minSpatialExtents[2]));
+        }
+        else
+        {
+            minLogicalExtentsInParent[2] = 0;
+            maxLogicalExtentsInParent[2] = 0;
+        }
+
         refinementRatio[0] = double(zdims[0]) / double(maxLogicalExtentsInParent[0]-minLogicalExtentsInParent[0]);
         refinementRatio[1] = double(zdims[1]) / double(maxLogicalExtentsInParent[1]-minLogicalExtentsInParent[1]);
-        refinementRatio[2] = double(zdims[2]) / double(maxLogicalExtentsInParent[2]-minLogicalExtentsInParent[2]);
+        if (dimension == 3)
+            refinementRatio[2] = double(zdims[2]) / double(maxLogicalExtentsInParent[2]-minLogicalExtentsInParent[2]);
+        else
+            refinementRatio[2] = 1;
+
         if (refinementRatio[0] != 2 ||
             refinementRatio[1] != 2 ||
-            refinementRatio[2] != 2)
+            (dimension==3 && refinementRatio[2] != 2))
         {
             EXCEPTION1(ImproperUseException,
                        "Found a refinement ratio that was not exactly 2.");
@@ -102,7 +118,10 @@ void avtEnzoFileFormat::Grid::DetermineExtentsInParent(vector<Grid> &grids)
         minLogicalExtentsInParent[2] = 0;
         maxLogicalExtentsInParent[0] = ndims[0]-1;
         maxLogicalExtentsInParent[1] = ndims[1]-1;
-        maxLogicalExtentsInParent[2] = ndims[2]-1;
+        if (dimension == 3)
+            maxLogicalExtentsInParent[2] = ndims[2]-1;
+        else
+            maxLogicalExtentsInParent[2] = 0;
         refinementRatio[0] = refinementRatio[1] = refinementRatio[2] = 1;
     }
 }
@@ -159,6 +178,10 @@ avtEnzoFileFormat::Grid::DetermineExtentsGlobally(int numLevels,
 //  Programmer:  Jeremy Meredith
 //  Creation:    January  6, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Aug  3 10:22:36 PDT 2005
+//    Added support for 2D files.
+//
 // ****************************************************************************
 void
 avtEnzoFileFormat::ReadHierachyFile()
@@ -175,6 +198,7 @@ avtEnzoFileFormat::ReadHierachyFile()
     root.ID = 0;
     root.level = -1;
     root.parentID = -1;
+    root.dimension = dimension;
     root.minSpatialExtents[0] = root.minSpatialExtents[1] = root.minSpatialExtents[2] = -1e37;
     root.maxSpatialExtents[0] = root.maxSpatialExtents[1] = root.maxSpatialExtents[2] = 1e37;
     root.minLogicalExtentsGlobally[0] = 0;
@@ -192,6 +216,8 @@ avtEnzoFileFormat::ReadHierachyFile()
         if (buff == "Grid")
         {
             Grid g;
+            g.dimension = dimension;
+
             h >> buff; // '='
             h >> g.ID;
 
@@ -202,35 +228,64 @@ avtEnzoFileFormat::ReadHierachyFile()
                 h >> buff;
             }
             h >> buff; // '='
-            h >> min3[0] >> min3[1] >> min3[2];
+
+            if (dimension == 3)
+                h >> min3[0] >> min3[1] >> min3[2];
+            else
+                h >> min3[0] >> min3[1];
+
             while (buff != "GridEndIndex")
             {
                 h >> buff;
             }
             h >> buff; // '='
-            h >> max3[0] >> max3[1] >> max3[2];
+
+            if (dimension == 3)
+                h >> max3[0] >> max3[1] >> max3[2];
+            else
+                h >> max3[0] >> max3[1];
 
             g.zdims[0] = max3[0]-min3[0] + 1;
             g.zdims[1] = max3[1]-min3[1] + 1;
-            g.zdims[2] = max3[2]-min3[2] + 1;
+            if (dimension == 3)
+                g.zdims[2] = max3[2]-min3[2] + 1;
+            else
+                g.zdims[2] = 1;
 
             g.ndims[0] = g.zdims[0]+1;
             g.ndims[1] = g.zdims[1]+1;
-            g.ndims[2] = g.zdims[2]+1;
+            if (dimension == 3)
+                g.ndims[2] = g.zdims[2]+1;
+            else
+                g.ndims[2] = 1;
 
             while (buff != "GridLeftEdge")
             {
                 h >> buff;
             }
             h >> buff; // '='
-            h >> g.minSpatialExtents[0] >> g.minSpatialExtents[1] >> g.minSpatialExtents[2];
+
+            if (dimension == 3)
+                h >> g.minSpatialExtents[0] >> g.minSpatialExtents[1] >> g.minSpatialExtents[2];
+            else
+            {
+                h >> g.minSpatialExtents[0] >> g.minSpatialExtents[1];
+                g.minSpatialExtents[2] = 0;
+            }
 
             while (buff != "GridRightEdge")
             {
                 h >> buff;
             }
             h >> buff; // '='
-            h >> g.maxSpatialExtents[0] >> g.maxSpatialExtents[1] >> g.maxSpatialExtents[2];
+
+            if (dimension == 3)
+                h >> g.maxSpatialExtents[0] >> g.maxSpatialExtents[1] >> g.maxSpatialExtents[2];
+            else
+            {
+                h >> g.maxSpatialExtents[0] >> g.maxSpatialExtents[1];
+                g.maxSpatialExtents[2] = 0;
+            }
 
             while (buff != "NumberOfParticles")
             {
@@ -316,6 +371,10 @@ avtEnzoFileFormat::ReadHierachyFile()
 //  Programmer:  Jeremy Meredith
 //  Creation:    January  6, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Aug  3 10:22:36 PDT 2005
+//    Added support for 2D files.
+//
 // ****************************************************************************
 void
 avtEnzoFileFormat::ReadParameterFile()
@@ -340,6 +399,11 @@ avtEnzoFileFormat::ReadParameterFile()
         {
             r >> buff; // '='
             r >> curTime;
+        }
+        else if (buff == "TopGridRank")
+        {
+            r >> buff; // '='
+            r >> dimension;
         }
     }
     r.close();
@@ -489,12 +553,16 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
 //    Jeremy Meredith, Fri Feb 11 18:15:49 PST 2005
 //    Added HDF5 support.
 //
+//    Jeremy Meredith, Wed Aug  3 10:22:36 PDT 2005
+//    Added support for 2D files.
+//
 // ****************************************************************************
 
 avtEnzoFileFormat::avtEnzoFileFormat(const char *filename)
     : avtSTMDFileFormat(&filename, 1)
 {
     fileType = ENZO_FT_UNKNOWN;
+    dimension = 0;
     numGrids = 0;
     numLevels = 0;
     curTime = 0;
@@ -699,6 +767,10 @@ avtEnzoFileFormat::FreeUpResources(void)
 //    Jeremy Meredith, Fri Jul 15 15:29:14 PDT 2005
 //    Added cycle and time to the metadata.
 //
+//    Jeremy Meredith, Wed Aug  3 10:22:36 PDT 2005
+//    Added support for 2D files.  Fixed problem with single-grid files.
+//    Fixed dimensionality of point meshes.
+//
 // ****************************************************************************
 
 void
@@ -712,22 +784,31 @@ avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = "mesh";
+    mesh->originalName = "mesh";
 
     mesh->meshType = AVT_RECTILINEAR_MESH;
-    mesh->topologicalDimension = 3;
-    mesh->spatialDimension = 3;
+    mesh->topologicalDimension = dimension;
+    mesh->spatialDimension = dimension;
     mesh->hasSpatialExtents = true;
 
     mesh->minSpatialExtents[0] = grids[1].minSpatialExtents[0];
-    mesh->minSpatialExtents[1] = grids[1].minSpatialExtents[1];
-    mesh->minSpatialExtents[2] = grids[1].minSpatialExtents[2];
     mesh->maxSpatialExtents[0] = grids[1].maxSpatialExtents[0];
+    mesh->minSpatialExtents[1] = grids[1].minSpatialExtents[1];
     mesh->maxSpatialExtents[1] = grids[1].maxSpatialExtents[1];
-    mesh->maxSpatialExtents[2] = grids[1].maxSpatialExtents[2];
-    // now loop over all level zero grids
-    for (int g = 2 ; grids[g].parentID == 0 ; g++)
+    if (dimension == 3)
     {
-        for (int j = 0 ; j < 3 ; j++)
+        mesh->minSpatialExtents[2] = grids[1].minSpatialExtents[2];
+        mesh->maxSpatialExtents[2] = grids[1].maxSpatialExtents[2];
+    }
+    else
+    {
+        mesh->minSpatialExtents[2] = 0;
+        mesh->maxSpatialExtents[2] = 0;
+    }
+    // now loop over all level zero grids
+    for (int g = 2 ; g <= numGrids && grids[g].parentID == 0 ; g++)
+    {
+        for (int j = 0 ; j < dimension ; j++)
         {
             if (grids[g].minSpatialExtents[j] < mesh->minSpatialExtents[j])
                 mesh->minSpatialExtents[j] = grids[g].minSpatialExtents[j];
@@ -760,9 +841,10 @@ avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     avtMeshMetaData *pmesh = new avtMeshMetaData;
     pmesh->name = "particles";
+    pmesh->originalName = "particles";
     pmesh->meshType = AVT_POINT_MESH;
-    pmesh->topologicalDimension = 1;
-    pmesh->spatialDimension = 3;
+    pmesh->topologicalDimension = 0;
+    pmesh->spatialDimension = dimension;
     pmesh->hasSpatialExtents = false;
     pmesh->numBlocks = numGrids;
     pmesh->blockTitle = "Grids";
@@ -837,6 +919,9 @@ avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Jeremy Meredith, Fri Feb 11 18:15:49 PST 2005
 //    Added HDF5 support.
 //
+//    Jeremy Meredith, Wed Aug  3 10:22:36 PDT 2005
+//    Added support for 2D files.  Added support for single-level files.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -856,8 +941,17 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
             coords[i]->SetNumberOfTuples(grids[d].ndims[i]);
             for (int j = 0 ; j < grids[d].ndims[i] ; j++)
             {
-                double c = grids[d].minSpatialExtents[i] + double(j) * (grids[d].maxSpatialExtents[i]-grids[d].minSpatialExtents[i])/double(grids[d].ndims[i]-1);
-                coords[i]->SetComponent(j, 0, c);
+                if (i+1 > dimension)
+                {
+                    coords[i]->SetComponent(j, 0, 0);
+                }
+                else
+                {
+                    double c = grids[d].minSpatialExtents[i] + double(j) *
+                        (grids[d].maxSpatialExtents[i]-grids[d].minSpatialExtents[i]) / 
+                        double(grids[d].ndims[i]-1);
+                    coords[i]->SetComponent(j, 0, c);
+                }
             }
         }
    
@@ -886,8 +980,9 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
 
         int32 var_index_x = SDnametoindex(file_handle, "particle_position_x");
         int32 var_index_y = SDnametoindex(file_handle, "particle_position_y");
-        int32 var_index_z = SDnametoindex(file_handle, "particle_position_z");
-        if (var_index_x < 0 || var_index_y < 0 || var_index_z < 0)
+        int32 var_index_z = dimension==3 ? SDnametoindex(file_handle, "particle_position_z") : -1;
+        if (var_index_x < 0 || var_index_y < 0 ||
+            (dimension==3 && var_index_z < 0))
         {
             // This grid didn't have any particles.  No problem -- particles
             // won't exist in every grid.  Just close the file and return
@@ -898,8 +993,9 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
 
         int32 var_handle_x = SDselect(file_handle, var_index_x);
         int32 var_handle_y = SDselect(file_handle, var_index_y);
-        int32 var_handle_z = SDselect(file_handle, var_index_z);
-        if (var_handle_x < 0 || var_handle_y < 0 || var_handle_z < 0)
+        int32 var_handle_z = dimension==3 ? SDselect(file_handle, var_index_z) : -1;
+        if (var_handle_x < 0 || var_handle_y < 0 ||
+            (dimension==3 && var_handle_z < 0))
         {
             // One of the particle position variables didn't exist.
             // This is strange, because we just converted the name
@@ -940,13 +1036,22 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
         for (i=0; i<npart; i++)
             pts[i*3+1] = float(ddata[i]);
 
-        SDreaddata(var_handle_z, start, NULL, dims, ddata);
-        for (i=0; i<npart; i++)
-            pts[i*3+2] = float(ddata[i]);
+        if (dimension == 3)
+        {
+            SDreaddata(var_handle_z, start, NULL, dims, ddata);
+            for (i=0; i<npart; i++)
+                pts[i*3+2] = float(ddata[i]);
+        }
+        else
+        {
+            for (i=0; i<npart; i++)
+                pts[i*3+2] = 0;
+        }
 
         SDendaccess(var_handle_x);
         SDendaccess(var_handle_y);
-        SDendaccess(var_handle_z);
+        if (dimension == 3)
+            SDendaccess(var_handle_z);
 
         vtkUnstructuredGrid  *ugrid = vtkUnstructuredGrid::New(); 
         ugrid->SetPoints(points);
@@ -996,13 +1101,14 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
         // find the coordinate variables (if they exist)
         hid_t var_id_x = H5Dopen(fileId, "particle_position_x");
         hid_t var_id_y = H5Dopen(fileId, "particle_position_y");
-        hid_t var_id_z = H5Dopen(fileId, "particle_position_z");
+        hid_t var_id_z = dimension==3 ? H5Dopen(fileId, "particle_position_z") : -1;
 
         // turn back on error reporting
         H5Eset_auto(old_errorfunc, old_clientdata);
 
         // check if the variables exist
-        if (var_id_x < 0 || var_id_y < 0 || var_id_z < 0)
+        if (var_id_x < 0 || var_id_y < 0 ||
+            (dimension==3 && var_id_z < 0))
         {
             // This grid didn't have any particles.  No problem -- particles
             // won't exist in every grid.  Just close the file and return
@@ -1034,13 +1140,22 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
         for (i=0; i<npart; i++)
             pts[i*3+1] = float(ddata[i]);
 
-        H5Dread(var_id_z, H5T_NATIVE_DOUBLE,H5S_ALL,H5S_ALL,H5P_DEFAULT, ddata);
-        for (i=0; i<npart; i++)
-            pts[i*3+2] = float(ddata[i]);
+        if (dimension == 3)
+        {
+            H5Dread(var_id_z, H5T_NATIVE_DOUBLE,H5S_ALL,H5S_ALL,H5P_DEFAULT, ddata);
+            for (i=0; i<npart; i++)
+                pts[i*3+2] = float(ddata[i]);
+        }
+        else
+        {
+            for (i=0; i<npart; i++)
+                pts[i*3+2] = 0;
+        }
 
         H5Dclose(var_id_x);
         H5Dclose(var_id_y);
-        H5Dclose(var_id_z);
+        if (dimension == 3)
+            H5Dclose(var_id_z);
 
         vtkUnstructuredGrid  *ugrid = vtkUnstructuredGrid::New(); 
         ugrid->SetPoints(points);
@@ -1080,6 +1195,9 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
 //
 //    Jeremy Meredith, Thu May  5 10:28:28 PDT 2005
 //    Skip the whole thing if there's only one grid.
+//
+//    Jeremy Meredith, Wed Aug  3 10:22:36 PDT 2005
+//    Added support for 2D files.
 //
 // ****************************************************************************
 
@@ -1121,67 +1239,76 @@ avtEnzoFileFormat::BuildDomainNesting()
         //
         // build the avtDomainNesting object
         //
-        avtStructuredDomainNesting *dn =
-            new avtStructuredDomainNesting(numGrids, numLevels);
 
-        dn->SetNumDimensions(3);
-
-        //
-        // Set refinement level ratio information
-        //
-
-        // NOTE: this appears to be on a per-level basis, not a
-        //       per-grid basis.  We will just force them all to 
-        //       a 2:1 ratio for now.  There is no reason internally
-        //       that refinement ratios could not change on a
-        //       per-grid basis, but it is only stored on a per-
-        //       level basis
-        int ratio = 1;
-        vector<int> ratios(3);
-        ratios[0] = ratio;
-        ratios[1] = ratio;
-        ratios[2] = ratio;
-        dn->SetLevelRefinementRatios(0, ratios);
-        for (i = 1; i < numLevels; i++)
+        if (numLevels > 0)
         {
-            ratio = 2;
+            avtStructuredDomainNesting *dn =
+                new avtStructuredDomainNesting(numGrids, numLevels);
+
+            dn->SetNumDimensions(dimension);
+
+            //
+            // Set refinement level ratio information
+            //
+
+            // NOTE: this appears to be on a per-level basis, not a
+            //       per-grid basis.  We will just force them all to 
+            //       a 2:1 ratio for now.  There is no reason internally
+            //       that refinement ratios could not change on a
+            //       per-grid basis, but it is only stored on a per-
+            //       level basis
+            int ratio = 1;
             vector<int> ratios(3);
             ratios[0] = ratio;
             ratios[1] = ratio;
             ratios[2] = ratio;
-            dn->SetLevelRefinementRatios(i, ratios);
-        }
-
-        //
-        // set each domain's level, children and logical extents
-        //
-        for (i = 1; i <= numGrids; i++)
-        {
-            vector<int> childGrids;
-            for (int j = 0; j < grids[i].childrenID.size(); j++)
+            dn->SetLevelRefinementRatios(0, ratios);
+            for (i = 1; i < numLevels; i++)
             {
-                // if this is allowed to be 1-origin, we will just pass
-                // the "children" array up -- the "-1" here at least needs
-                // to be removed
-                childGrids.push_back(grids[i].childrenID[j] - 1);
+                ratio = 2;
+                vector<int> ratios(3);
+                ratios[0] = ratio;
+                ratios[1] = ratio;
+                ratios[2] = ratio;
+                dn->SetLevelRefinementRatios(i, ratios);
             }
 
-            vector<int> logExts(6);
-            logExts[0] = grids[i].minLogicalExtentsGlobally[0];
-            logExts[1] = grids[i].minLogicalExtentsGlobally[1];
-            logExts[2] = grids[i].minLogicalExtentsGlobally[2];
-            logExts[3] = grids[i].maxLogicalExtentsGlobally[0]-1;
-            logExts[4] = grids[i].maxLogicalExtentsGlobally[1]-1;
-            logExts[5] = grids[i].maxLogicalExtentsGlobally[2]-1;
+            //
+            // set each domain's level, children and logical extents
+            //
+            for (i = 1; i <= numGrids; i++)
+            {
+                vector<int> childGrids;
+                for (int j = 0; j < grids[i].childrenID.size(); j++)
+                {
+                    // if this is allowed to be 1-origin, we will just pass
+                    // the "children" array up -- the "-1" here at least needs
+                    // to be removed
+                    childGrids.push_back(grids[i].childrenID[j] - 1);
+                }
 
-            dn->SetNestingForDomain(i-1, grids[i].level,
-                                    childGrids, logExts);
+                vector<int> logExts(6);
+                logExts[0] = grids[i].minLogicalExtentsGlobally[0];
+                logExts[1] = grids[i].minLogicalExtentsGlobally[1];
+                logExts[2] = grids[i].minLogicalExtentsGlobally[2];
+                logExts[3] = grids[i].maxLogicalExtentsGlobally[0]-1;
+                logExts[4] = grids[i].maxLogicalExtentsGlobally[1]-1;
+                if (dimension == 3)
+                    logExts[5] = grids[i].maxLogicalExtentsGlobally[2]-1;
+                else
+                    logExts[5] = grids[i].minLogicalExtentsGlobally[2];
+
+                dn->SetNestingForDomain(i-1, grids[i].level,
+                                        childGrids, logExts);
+            }
+
+            void_ref_ptr vr = void_ref_ptr(dn,
+                                         avtStructuredDomainNesting::Destruct);
+
+            cache->CacheVoidRef("mesh",
+                                AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                                timestep, -1, vr);
         }
-
-        void_ref_ptr vr = void_ref_ptr(dn, avtStructuredDomainNesting::Destruct);
-
-        cache->CacheVoidRef("mesh", AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
-                            timestep, -1, vr);
     }
 }
 
@@ -1206,6 +1333,9 @@ avtEnzoFileFormat::BuildDomainNesting()
 //  Modifications:
 //    Jeremy Meredith, Fri Feb 11 18:15:49 PST 2005
 //    Added HDF5 support.
+//
+//    Jeremy Meredith, Wed Aug  3 10:22:36 PDT 2005
+//    Added support for 2D files.
 //
 // ****************************************************************************
 
@@ -1244,6 +1374,11 @@ avtEnzoFileFormat::GetVar(int domain, const char *varname)
         char  name[65];
         int32 nattrs;
         SDgetinfo(var_handle, name, &ndims, dims, &data_type, &nattrs);
+        if (ndims == 2)
+        {
+            // force the third dimension to 1
+            dims[2]=1;
+        }
         if (ndims == 1)
         {
             // force the other dimensions to length 1 for particle meshes
@@ -1342,6 +1477,8 @@ avtEnzoFileFormat::GetVar(int domain, const char *varname)
         int ntuples;
         if (ndims == 1)
             ntuples = dims[0];
+        else if (ndims == 2)
+            ntuples = dims[0]*dims[1];
         else if (ndims == 3)
             ntuples = dims[0]*dims[1]*dims[2];
         else
