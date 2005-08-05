@@ -2084,12 +2084,12 @@ if test "$mili_specified" = "yes"; then
    if test "$withval" != "no"; then
       MILI_DIR=`echo $withval | cut -f1 -d`
       MILI_FLAGS="-I$MILI_DIR"
-      MILI_LIBS="-L$MILI_DIR -lmili -lgahl"
+      MILI_LIBS="-L$MILI_DIR -lmili"
    fi
 else
    if test "$MILI_DIR" != "" ; then
       MILI_FLAGS="-I$MILI_DIR $MILI_FLAGS"
-      MILI_LIBS="-L$MILI_DIR -lmili -lgahl $MILI_LIBS"
+      MILI_LIBS="-L$MILI_DIR -lmili $MILI_LIBS"
    fi
 fi
 if test "$MILI_LIBS" != "" ; then
@@ -2172,7 +2172,11 @@ else
       BOXLIB2D_INCLUDE="-I$DEFAULT_BOXLIB2D_INCLUDE $BOXLIB2D_INCLUDE"
    fi
    if test "$DEFAULT_BOXLIB2D_LIBS" != "" ; then
-      BOXLIB2D_LIBS="-L$DEFAULT_BOXLIB2D_LIBS -lbox2D -lg2c $BOXLIB2D_LIBS"
+      if test "`echo $CXX | cut -c1-3`" = "g++"; then
+         BOXLIB2D_LIBS="-L$DEFAULT_BOXLIB2D_LIBS -lbox2D -lg2c $BOXLIB2D_LIBS"
+      else
+         BOXLIB2D_LIBS="-L$DEFAULT_BOXLIB2D_LIBS -lbox2D $BOXLIB2D_LIBS"
+      fi
    fi
 fi
 if test "$BOXLIB2D_LIBS" != "" ; then
@@ -2212,7 +2216,11 @@ else
       BOXLIB3D_INCLUDE="-I$DEFAULT_BOXLIB3D_INCLUDE $BOXLIB3D_INCLUDE"
    fi
    if test "$DEFAULT_BOXLIB3D_LIBS" != "" ; then
-      BOXLIB3D_LIBS="-L$DEFAULT_BOXLIB3D_LIBS -lbox3D -lg2c $BOXLIB3D_LIBS"
+      if test "`echo $CXX | cut -c1-3`" = "g++"; then
+         BOXLIB3D_LIBS="-L$DEFAULT_BOXLIB3D_LIBS -lbox3D -lg2c $BOXLIB3D_LIBS"
+      else
+         BOXLIB3D_LIBS="-L$DEFAULT_BOXLIB3D_LIBS -lbox3D $BOXLIB3D_LIBS"
+      fi
    fi
 fi
 if test "$BOXLIB3D_LIBS" != "" ; then

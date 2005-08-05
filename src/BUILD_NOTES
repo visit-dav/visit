@@ -39,7 +39,7 @@ build and install those libraries prior to building VisIt.
     =======  =======  ===========            ====================
     Boxlib   ???      An AMR I/O library     ???
     HDF5     1.6.0    File I/O library       http://hdf.ncsa.uiuc.edu/HDF5/
-    Mili     1.06     File I/O library       (none)
+    Mili     1.09     File I/O library       (none)
 
 Most of the third party libraries necessary to build VisIt are available for
 download from ftp://ftp.llnl.gov/pub/visit/3rd_party.  It is suggested that
@@ -661,12 +661,11 @@ make
 # Install it in the visit directory under the mili directory.
 #
 mkdir $VISITDIR/mili
-mkdir $VISITDIR/mili/1.06
-mkdir $VISITDIR/mili/1.06/$VISITARCH
-cp src/mili.h      $VISITDIR/mili/1.06/$VISITARCH
-cp src/mili_enum.h $VISITDIR/mili/1.06/$VISITARCH
-cp src/libmili.a   $VISITDIR/mili/1.06/$VISITARCH
-cp src/libgahl.a   $VISITDIR/mili/1.06/$VISITARCH
+mkdir $VISITDIR/mili/1.09
+mkdir $VISITDIR/mili/1.09/$VISITARCH
+cp src/mili.h      $VISITDIR/mili/1.09/$VISITARCH
+cp src/mili_enum.h $VISITDIR/mili/1.09/$VISITARCH
+cp src/libmili.a   $VISITDIR/mili/1.09/$VISITARCH
 cd ..
 
 #

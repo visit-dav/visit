@@ -14,11 +14,13 @@
 #include <avtIntegrateQuery.h>
 #include <avtL2NormQuery.h>
 #include <avtL2NormBetweenCurvesQuery.h>
+#include <avtKurtosisQuery.h>
 #include <avtMomentOfInertiaQuery.h>
 #include <avtNodeCoordsQuery.h>
 #include <avtOriginalDataMinMaxQuery.h>
 #include <avtOriginalDataNumNodesQuery.h>
 #include <avtOriginalDataNumZonesQuery.h>
+#include <avtSkewnessQuery.h>
 #include <avtSphericalCompactnessFactorQuery.h>
 #include <avtTimeQuery.h>
 #include <avtTotalRevolvedSurfaceAreaQuery.h>
@@ -137,6 +139,9 @@ avtQueryFactory::Instance()
 //    Hank Childs, Thu Jul 14 14:12:12 PDT 2005
 //    Add Spherical Compactness Factor.
 //
+//    Hank Childs, Fri Aug  5 09:49:12 PDT 2005
+//    Added kurtosis, skewness.
+//
 // ****************************************************************************
 
 
@@ -188,6 +193,14 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (qname == "L2Norm")
     {
         query = new avtL2NormQuery();
+    }
+    else if (qname == "Kurtosis")
+    {
+        query = new avtKurtosisQuery();
+    }
+    else if (qname == "Skewness")
+    {
+        query = new avtSkewnessQuery();
     }
 #if 0
     // problem with multiple input queries, so don't do them here

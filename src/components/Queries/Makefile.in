@@ -101,6 +101,9 @@
 #   Hank Childs, Thu Jul 14 14:13:41 PDT 2005
 #   Added Spherical Compactness Factor.
 #
+#   Hank Childs, Fri Aug  5 09:59:12 PDT 2005
+#   Added kurtosis, skewness.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -146,6 +149,7 @@ Queries_src= \
  Queries/avtCycleQuery.C  \
  Queries/avtEulerianQuery.C \
  Queries/avtIntegrateQuery.C  \
+ Queries/avtKurtosisQuery.C  \
  Queries/avtL2NormQuery.C  \
  Queries/avtL2NormBetweenCurvesQuery.C  \
  Queries/avtMinMaxQuery.C  \
@@ -156,6 +160,7 @@ Queries_src= \
  Queries/avtOriginalDataMinMaxQuery.C  \
  Queries/avtOriginalDataNumNodesQuery.C  \
  Queries/avtOriginalDataNumZonesQuery.C  \
+ Queries/avtSkewnessQuery.C  \
  Queries/avtSphericalCompactnessFactorQuery.C  \
  Queries/avtSummationQuery.C  \
  Queries/avtTimeQuery.C  \

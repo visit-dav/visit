@@ -55,6 +55,7 @@ sunspot=true
 hyper=true
 gps=true
 berg=true
+up=true
 pengra=true
 alc=true
 thunder=true
@@ -76,6 +77,7 @@ do
          hyper=false
          gps=false
          berg=false
+         up=false
          pengra=false
          alc=false
          thunder=false
@@ -119,6 +121,14 @@ do
          ;;
       +berg)
          berg=true
+         shift
+         ;;
+      -up)
+         up=false
+         shift
+         ;;
+      +up)
+         up=true
          shift
          ;;
       -pengra)
@@ -366,6 +376,43 @@ then
 fi
 
 #
+# Install on up.
+#
+rm -f up
+cat <<EOF > up
+
+./visit-install -private -c open -g visit -gw -l $ver aix64-xlc /usr/gapps/visit > installlog 2>&1
+rm -f resultlog
+echo ""                                            >  resultlog 2>&1
+echo "        install of visit on up"              >> resultlog 2>&1
+echo "       ------------------------"             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/bin  >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "The database plugins:"                       >> resultlog 2>&1
+ls /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/ibm-aix-pwr64-xlc\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $up = true ]
+then
+   if [ $test = no ]
+   then
+      scp up:/p/gup1/$user/up/visitbuild/visit$ver2.aix64-xlc.tar.gz .
+      scp visit$ver2.aix64-xlc.tar.gz gps15:
+      scp visit-install gps15:
+      scp up gps15:up_install
+      ssh gps15 "chmod 750 up_install;./up_install"
+   fi
+fi
+
+#
 # Install on pengra.
 #
 rm -f pengra
@@ -486,5 +533,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit sunspot hyper gps berg pengra alc thunder
+   rm -f kickit sunspot hyper gps berg up pengra alc thunder
 fi

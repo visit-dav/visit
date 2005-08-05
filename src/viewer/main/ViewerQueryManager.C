@@ -3046,6 +3046,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Hank Childs, Thu May 19 14:26:48 PDT 2005
 //    Added centroid, moment of inertia queries.
 //
+//    Hank Childs, Fri Aug  5 09:49:12 PDT 2005
+//    Added kurtosis, skewness.
+//
 // ****************************************************************************
 
 void
@@ -3093,6 +3096,8 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Cycle", dq, tr, basic, 1, 0, false);
     queryTypes->AddQuery("Time", dq, tr, basic, 1, 0, false);
     queryTypes->AddQuery("L2Norm", dq, cr, basic, 1, 0, false);
+    queryTypes->AddQuery("Kurtosis", dq, cr, basic, 1, 0, false);
+    queryTypes->AddQuery("Skewness", dq, cr, basic, 1, 0, false);
     queryTypes->AddQuery("Integrate", dq, cr, basic, 1, 0, false);
     queryTypes->AddQuery("L2Norm Between Curves", dq, cr, basic, 2, 0, false);
     queryTypes->AddQuery("Area Between Curves", dq, cr, basic, 2, 0, false);
