@@ -313,6 +313,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Hank Childs, Tue Jul 19 15:54:14 PDT 2005
 //    Add support for array variables.
 //
+//    Hank Childs, Fri Aug  5 16:32:56 PDT 2005
+//    Set the variable type, as well as the array subnames.
+//
 // ****************************************************************************
 
 void
@@ -418,6 +421,8 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
             atts.SetVariableDimension(1, var_list[i]);
             atts.SetCentering(smd->centering, var_list[i]);
             atts.SetTreatAsASCII(smd->treatAsASCII, var_list[i]); 
+            atts.SetVariableType(AVT_SCALAR_VAR, var_list[i]);
+
             //
             // Note that we are using the spatial extents as both the spatial 
             // extents and as the global spatial extents (the spatial extents 
@@ -451,6 +456,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                 atts.AddVariable(var_list[i]);
             atts.SetVariableDimension(vmd->varDim, var_list[i]);
             atts.SetCentering(vmd->centering, var_list[i]);
+            atts.SetVariableType(AVT_VECTOR_VAR, var_list[i]);
     
             //
             // Note that we are using the spatial extents as both the spatial 
@@ -484,6 +490,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                 atts.AddVariable(var_list[i]);
             atts.SetVariableDimension(9, var_list[i]);
             atts.SetCentering(tmd->centering, var_list[i]);
+            atts.SetVariableType(AVT_TENSOR_VAR, var_list[i]);
         }
     
         const avtSymmetricTensorMetaData *stmd = 
@@ -494,6 +501,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                 atts.AddVariable(var_list[i], stmd->units);
             else
                 atts.AddVariable(var_list[i]);
+            atts.SetVariableType(AVT_SYMMETRIC_TENSOR_VAR, var_list[i]);
             atts.SetVariableDimension(9, var_list[i]);
             atts.SetCentering(stmd->centering, var_list[i]);
         }
@@ -505,8 +513,10 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                 atts.AddVariable(var_list[i], amd->units);
             else
                 atts.AddVariable(var_list[i]);
+            atts.SetVariableType(AVT_ARRAY_VAR, var_list[i]);
             atts.SetVariableDimension(amd->nVars, var_list[i]);
             atts.SetCentering(amd->centering, var_list[i]);
+            atts.SetVariableSubnames(amd->compNames, var_list[i]);
         }
 
         const avtSpeciesMetaData *spmd = 
@@ -516,6 +526,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
             atts.AddVariable(var_list[i]);
             atts.SetVariableDimension(1, var_list[i]);
             atts.SetCentering(AVT_ZONECENT, var_list[i]);
+            atts.SetVariableType(AVT_MATSPECIES, var_list[i]);
             double extents[2];
             extents[0] = 0.;
             extents[1] = 1.;
@@ -541,6 +552,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
             atts.SetVariableDimension(1, var_list[i]);
             atts.SetCentering(lmd->centering, var_list[i]);
             atts.SetTreatAsASCII(true, var_list[i]); 
+            atts.SetVariableType(AVT_LABEL_VAR, var_list[i]);
         }
     }
     atts.SetActiveVariable(var);

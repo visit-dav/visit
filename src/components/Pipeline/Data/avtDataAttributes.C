@@ -288,6 +288,9 @@ avtDataAttributes::DestructSelf(void)
 //    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
 //    Added mirOccurred.
 //
+//    Hank Childs, Thu Aug  4 11:40:24 PDT 2005
+//    Print out vartype, subnames.
+//
 // ****************************************************************************
 
 void
@@ -421,6 +424,56 @@ avtDataAttributes::Print(ostream &out)
     for (i = 0 ; i < variables.size() ; i++)
     {
         out << "Variable = " << variables[i].varname.c_str() << endl;
+        out << "Variable type = ";
+        switch (variables[i].vartype)
+        {
+          case AVT_MESH:
+            out << "mesh";
+            break;
+          case AVT_SCALAR_VAR:
+            out << "scalar";
+            break;
+          case AVT_VECTOR_VAR:
+            out << "vector";
+            break;
+          case AVT_TENSOR_VAR:
+            out << "tensor";
+            break;
+          case AVT_SYMMETRIC_TENSOR_VAR:
+            out << "symmetric tensor";
+            break;
+          case AVT_ARRAY_VAR:
+            out << "array";
+            break;
+          case AVT_LABEL_VAR:
+            out << "label";
+            break;
+          case AVT_MATERIAL:
+            out << "material";
+            break;
+          case AVT_MATSPECIES:
+            out << "species";
+            break;
+          case AVT_CURVE:
+            out << "curve";
+            break;
+          case AVT_UNKNOWN_TYPE:
+          default:
+            out << "unknown";
+            break;
+        }
+        out << endl;
+        if (variables[i].subnames.size() != 0)
+        {
+            out << "Variable subnames = " << endl;
+            for (int j = 0 ; j < variables[i].subnames.size() ; j++)
+            {
+                out << variables[i].subnames[j];
+                if (j < variables[i].subnames.size()-1)
+                    out << ", ";
+            }
+            out << endl;
+        }
         if(variables[i].varunits != "")
             out << "Units = " << variables[i].varunits.c_str() << endl;
         out << "Dimension = " << variables[i].dimension << endl;
@@ -468,7 +521,6 @@ avtDataAttributes::Print(ostream &out)
             out << "Cumulative current data = " << endl;
             variables[i].cumulativeCurrentData->Print(out);
         }
-
     }
 
     out << "Selections Applied: ";
@@ -563,6 +615,9 @@ avtDataAttributes::Print(ostream &out)
 //    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
 //    Added mirOccurred.
 //
+//    Hank Childs, Thu Aug  4 13:27:43 PDT 2005
+//    Added vartype, subnames.
+//
 // ****************************************************************************
 
 void
@@ -612,6 +667,8 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     {
         const char *vname = di.variables[i].varname.c_str();
         AddVariable(vname, di.variables[i].varunits);
+        SetVariableType(di.variables[i].vartype, vname);
+        SetVariableSubnames(di.variables[i].subnames, vname);
         SetVariableDimension(di.variables[i].dimension, vname);
         SetCentering(di.variables[i].centering, vname);
         SetTreatAsASCII(di.variables[i].treatAsASCII, vname);
@@ -724,6 +781,14 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
 //    Added mirOccurred.
 //
+//    Hank Childs, Thu Aug  4 11:09:38 PDT 2005
+//    Added cast to int, since size_t is not automatically cast to int with
+//    presence of new InvalidMergeException signature for doubles.  Also add
+//    support for vartypes and subnames.
+//
+//    Hank Childs, Thu Aug  4 13:27:43 PDT 2005
+//    Added vartype, subnames.
+//
 // ****************************************************************************
 
 void
@@ -757,14 +822,19 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
 
     if (variables.size() != da.variables.size())
     {
-        EXCEPTION2(InvalidMergeException, variables.size(), 
-                   da.variables.size());
+        EXCEPTION2(InvalidMergeException, (int) variables.size(), 
+                   (int) da.variables.size());
     }
     for (i = 0 ; i < variables.size() ; i++)
     {
         if (variables[i].varname != da.variables[i].varname)
         {
             EXCEPTION0(InvalidMergeException);
+        }
+        if (variables[i].vartype != da.variables[i].vartype)
+        {
+            EXCEPTION2(InvalidMergeException, variables[i].vartype,
+                       da.variables[i].vartype);
         }
         if (variables[i].centering != da.variables[i].centering)
         {
@@ -780,6 +850,17 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
             EXCEPTION2(InvalidMergeException, variables[i].dimension,
                        da.variables[i].dimension);
         }
+        if (variables[i].subnames.size() != da.variables[i].subnames.size())
+        {
+            EXCEPTION2(InvalidMergeException, 
+                       (int) variables[i].subnames.size(),
+                       (int) da.variables[i].subnames.size());
+        }
+        for (int j = 0 ; j < variables[i].subnames.size() ; j++)
+            if (variables[i].subnames[j] != da.variables[i].subnames[j])
+            {
+                EXCEPTION0(InvalidMergeException);
+            }
     }
     if (activeVariable != da.activeVariable)
     {
@@ -824,8 +905,8 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
 
     if (selectionsApplied.size() != da.selectionsApplied.size())
     {
-        EXCEPTION2(InvalidMergeException, selectionsApplied.size(),
-                                        da.selectionsApplied.size());
+        EXCEPTION2(InvalidMergeException, (int) selectionsApplied.size(),
+                                        (int) da.selectionsApplied.size());
     }
     else
     {
@@ -1504,7 +1585,6 @@ avtDataAttributes::GetVariableDimension(const char *varname) const
 //    Hank Childs, Mon Feb 23 14:19:15 PST 2004
 //    Account for multiple variables.
 //
-//  Modifications:
 //    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
 //    Added a reason to the exception.
 //
@@ -1520,8 +1600,7 @@ avtDataAttributes::SetCentering(avtCentering cen, const char *varname)
     if (index < 0)
     {
         //
-        // We were asked to set the variable dimension of a non-existent
-        // variable.
+        // We were asked to set the centering of a non-existent variable.
         //
         const char *varname_to_print = (varname != NULL ? varname
                                          : "<null>");
@@ -1559,8 +1638,7 @@ avtDataAttributes::GetCentering(const char *varname) const
     if (index < 0)
     {
         //
-        // We were asked to set the variable dimension of a non-existent
-        // variable.
+        // We were asked to get the centering of a non-existent variable.
         //
         const char *varname_to_print = (varname != NULL ? varname
                                          : "<null>");
@@ -1570,6 +1648,141 @@ avtDataAttributes::GetCentering(const char *varname) const
     }
 
     return variables[index].centering;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataAttributes::SetVariableType
+//
+//  Purpose:
+//      Sets the variable type.
+//
+//  Arguments:
+//      vt         The new variable type.
+//
+//  Programmer:    Hank Childs
+//  Creation:      August 4, 2005
+//
+// ****************************************************************************
+
+void
+avtDataAttributes::SetVariableType(avtVarType vt, const char *varname)
+{
+    int index = VariableNameToIndex(varname);
+    if (index < 0)
+    {
+        //
+        // We were asked to set the variable type of a non-existent
+        // variable.
+        //
+        const char *varname_to_print = (varname != NULL ? varname
+                                         : "<null>");
+        string reason = "Attempting to set variable type of non-existent";
+        reason = reason +  " variable: " + varname_to_print + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
+    }
+
+    variables[index].vartype = vt;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataAttributes::GetVariableType
+//
+//  Purpose:
+//      Gets the variable type of a specific variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 4, 2005
+//
+// ****************************************************************************
+
+avtVarType
+avtDataAttributes::GetVariableType(const char *varname) const
+{
+    int index = VariableNameToIndex(varname);
+    if (index < 0)
+    {
+        //
+        // We were asked to set the variable type of a non-existent
+        // variable.
+        //
+        const char *varname_to_print = (varname != NULL ? varname
+                                         : "<null>");
+        string reason = "Attempting to retrieve variable type of non-existent";
+        reason = reason +  " variable: " + varname_to_print + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
+    }
+
+    return variables[index].vartype;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataAttributes::SetVariableSubnames
+//
+//  Purpose:
+//      Sets the variable subnames.
+//
+//  Arguments:
+//      sn         The new subnames.
+//
+//  Programmer:    Hank Childs
+//  Creation:      August 4, 2005
+//
+// ****************************************************************************
+
+void
+avtDataAttributes::SetVariableSubnames(const std::vector<std::string> &sn,
+                                       const char *varname)
+{
+    int index = VariableNameToIndex(varname);
+    if (index < 0)
+    {
+        //
+        // We were asked to set the variable type of a non-existent
+        // variable.
+        //
+        const char *varname_to_print = (varname != NULL ? varname
+                                         : "<null>");
+        string reason = "Attempting to set variable subnames of non-existent";
+        reason = reason +  " variable: " + varname_to_print + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
+    }
+
+    variables[index].subnames = sn;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataAttributes::GetVariableSubnames
+//
+//  Purpose:
+//      Gets the variable subnames of a specific variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 4, 2005
+//
+// ****************************************************************************
+
+const std::vector<std::string> &
+avtDataAttributes::GetVariableSubnames(const char *varname) const
+{
+    int index = VariableNameToIndex(varname);
+    if (index < 0)
+    {
+        //
+        // We were asked to set the variable type of a non-existent
+        // variable.
+        //
+        const char *varname_to_print = (varname != NULL ? varname
+                                         : "<null>");
+        string reason = "Attempting to retrieve variable subnames of non-";
+        reason = reason +  "existent variable: " + varname_to_print + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
+    }
+
+    return variables[index].subnames;
 }
 
 
@@ -1739,15 +1952,18 @@ avtDataAttributes::SetTime(double d)
 //    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
 //    Added mirOccurred.
 //
+//    Hank Childs, Thu Aug  4 13:27:43 PDT 2005
+//    Added vartype, subnames.
+//
 // ****************************************************************************
 
 void
 avtDataAttributes::Write(avtDataObjectString &str,
                          const avtDataObjectWriter *wrtr)
 {
-    int   i;
+    int   i, j;
 
-    int numVals = 21 + 3*variables.size();
+    int numVals = 21 + 5*variables.size();
     int *vals = new int[numVals];
     vals[0] = topologicalDimension;
     vals[1] = spatialDimension;
@@ -1772,9 +1988,11 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[20] = variables.size();
     for (i = 0 ; i < variables.size() ; i++)
     {
-        vals[21+3*i]   = variables[i].dimension;
-        vals[21+3*i+1] = variables[i].centering;
-        vals[21+3*i+2] = (variables[i].treatAsASCII ? 1 : 0);
+        vals[21+5*i]   = variables[i].dimension;
+        vals[21+5*i+1] = variables[i].centering;
+        vals[21+5*i+2] = (variables[i].treatAsASCII ? 1 : 0);
+        vals[21+5*i+3] = variables[i].vartype;
+        vals[21+5*i+4] = variables[i].subnames.size();
     }
     wrtr->WriteInt(str, vals, numVals);
     wrtr->WriteDouble(str, dtime);
@@ -1798,11 +2016,19 @@ avtDataAttributes::Write(avtDataObjectString &str,
         wrtr->WriteInt(str, unitlen);
         if(unitlen > 0)
         {
-            str.Append((char *) variables[i].varunits.c_str(),
-                        unitlen,
-                        avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
+            str.Append((char *) variables[i].varunits.c_str(), unitlen,
+                     avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
         }
 
+        // Write the subnames (if any).  Number of subnames already
+        // communicated in mass "int" writing phase.
+        for (j = 0 ; j < variables[i].subnames.size() ; j++)
+        {
+            wrtr->WriteInt(str, variables[i].subnames[j].size());
+            str.Append((char *) variables[i].subnames[j].c_str(),
+                     variables[i].subnames[j].size(),
+                     avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
+        }
         variables[i].trueData->Write(str, wrtr);
         variables[i].cumulativeTrueData->Write(str, wrtr);
         variables[i].effectiveData->Write(str, wrtr);
@@ -1929,12 +2155,15 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Hank Childs, Thu Mar  3 16:20:49 PST 2005
 //    Clear the selectionsApplied array before pushing new entries back.
 //
+//    Hank Childs, Fri Aug  5 16:19:40 PDT 2005
+//    Read variable type and subnames.
+//
 // ****************************************************************************
 
 int
 avtDataAttributes::Read(char *input)
 {
-    int     i;
+    int     i, j;
     int     size = 0;
     int     tmp;
     double  dtmp;
@@ -2026,17 +2255,29 @@ avtDataAttributes::Read(char *input)
     int *varDims = new int[numVars];
     avtCentering *centerings = new avtCentering[numVars];
     bool *ascii = new bool[numVars];
+    avtVarType *vartypes = new avtVarType[numVars];
+    int *subnames_size = new int[numVars];
     for (i = 0 ; i < numVars ; i++)
     {
         memcpy(&tmp, input, sizeof(int));
         input += sizeof(int); size += sizeof(int);
         varDims[i] = tmp;
+
         memcpy(&tmp, input, sizeof(int));
         input += sizeof(int); size += sizeof(int);
         centerings[i] = (avtCentering) tmp;
+
         memcpy(&tmp, input, sizeof(int));
         input += sizeof(int); size += sizeof(int);
         ascii[i] = (tmp != 0 ? true : false);
+
+        memcpy(&tmp, input, sizeof(int));
+        input += sizeof(int); size += sizeof(int);
+        vartypes[i] = (avtVarType) tmp;
+
+        memcpy(&tmp, input, sizeof(int));
+        input += sizeof(int); size += sizeof(int);
+        subnames_size[i] = tmp;
     }
 
     memcpy(&dtmp, input, sizeof(double));
@@ -2069,7 +2310,6 @@ avtDataAttributes::Read(char *input)
         int unit_length;
         memcpy(&unit_length, input, sizeof(int));
         input += sizeof(int); size += sizeof(int);
-
         // Add the variable.
         if(unit_length > 0)
         {
@@ -2078,16 +2318,33 @@ avtDataAttributes::Read(char *input)
         }
         else
             AddVariable(varname);
-
         // Adjust the size and input pointer in accordance with the
         // size of the units that we had. We do it here in case
         // we didn't have any units.
         size += unit_length;
         input += unit_length;
 
+        // Get the subnames.
+        std::vector<std::string> subnames;
+        if (subnames_size[i] > 0)
+        {
+            subnames.resize(subnames_size[i]);
+            for (j = 0 ; j < subnames_size[i] ; j++)
+            {
+                int len;
+                memcpy(&len, input, sizeof(int));
+                input += sizeof(int); size += sizeof(int);
+                subnames[j] = string(input, len);
+                size += len;
+                input += len; 
+            }
+            SetVariableSubnames(subnames);
+        }
+
         SetCentering(centerings[i], varname.c_str());
         SetVariableDimension(varDims[i], varname.c_str());
         SetTreatAsASCII(ascii[i], varname.c_str());
+        SetVariableType(vartypes[i], varname.c_str());
  
         s = variables[i].trueData->Read(input);
         input += s; size += s;
@@ -2103,6 +2360,8 @@ avtDataAttributes::Read(char *input)
     delete [] varDims;
     delete [] centerings;
     delete [] ascii;
+    delete [] vartypes;
+    delete [] subnames_size;
 
     int meshnameSize;
     memcpy(&meshnameSize, input, sizeof(int));
@@ -2662,6 +2921,9 @@ avtDataAttributes::SetActiveVariable(const char *v)
 //    Brad Whitlock, Tue Jul 20 12:24:28 PDT 2004
 //    Added the units argument so units can be passed in if they are known.
 //
+//    Hank Childs, Fri Aug  5 16:29:41 PDT 2005
+//    Initialize vartype.
+//
 // ****************************************************************************
 
 void
@@ -2689,6 +2951,7 @@ avtDataAttributes::AddVariable(const std::string &s, const std::string &units)
     new_var.varunits = units;
     new_var.dimension = -1;
     new_var.centering = AVT_UNKNOWN_CENT;
+    new_var.vartype = AVT_UNKNOWN_TYPE;
     new_var.treatAsASCII = false;
     new_var.trueData = NULL;
     new_var.cumulativeTrueData = NULL;

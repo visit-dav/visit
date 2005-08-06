@@ -10,6 +10,7 @@
 #include <string>
 
 #include <avtStreamer.h>
+#include <avtTypes.h>
 
 class     vtkDataArray;
 class     ArgsExpr;
@@ -50,6 +51,9 @@ class     ExprPipelineState;
 //    Hank Childs, Mon Dec 27 10:13:44 PST 2004
 //    Separate out parts that are related to streaming.
 //
+//    Hank Childs, Fri Aug  5 16:40:12 PDT 2005
+//    Added GetVariableType.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionFilter : virtual public 
@@ -82,6 +86,7 @@ class EXPRESSION_API avtExpressionFilter : virtual public
     virtual void             ExamineSpecification(avtPipelineSpecification_p);
 
     virtual int              GetVariableDimension() { return 1; };
+    virtual avtVarType       GetVariableType() { return AVT_UNKNOWN_TYPE; };
 
     vtkDataArray            *Recenter(vtkDataSet*, vtkDataArray*,avtCentering);
 };

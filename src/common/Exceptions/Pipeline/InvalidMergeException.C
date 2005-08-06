@@ -13,8 +13,8 @@ using namespace std;
 //  Method: InvalidMergeException constructor
 //
 //  Arguments:
-//      n1      The number of domains for the first field.
-//      n2      The number of domains for the second field.
+//      n1      The first field's integer.
+//      n2      The second field's integer.
 //
 //  Programmer: Hank Childs
 //  Creation:   September 22, 2000
@@ -26,6 +26,27 @@ InvalidMergeException::InvalidMergeException(int n1, int n2)
     char  str[1024];
     sprintf(str, "Cannot merge datasets because of an incompatible field "
                  "%d and %d.", n1, n2);
+    msg = str;
+}
+
+
+// ****************************************************************************
+//  Method: InvalidMergeException constructor
+//
+//  Arguments:
+//      n1      The first field's double precision number.
+//      n2      The second field's double precision number.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 4, 2005
+//
+// ****************************************************************************
+
+InvalidMergeException::InvalidMergeException(double n1, double n2)
+{
+    char  str[1024];
+    sprintf(str, "Cannot merge datasets because of an incompatible field "
+                 "%g and %g.", n1, n2);
     msg = str;
 }
 

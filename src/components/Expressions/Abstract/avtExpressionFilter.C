@@ -245,7 +245,23 @@ avtExpressionFilter::RefashionDataObjectInfo(void)
            outAtts.AddVariable(outputVariableName);
     }
     outAtts.SetActiveVariable(outputVariableName);
-    outAtts.SetVariableDimension(GetVariableDimension());
+    int dim = GetVariableDimension();
+    outAtts.SetVariableDimension(dim);
+    if (GetVariableType() != AVT_UNKNOWN_TYPE)
+    {
+        outAtts.SetVariableType(GetVariableType());
+    }
+    else
+    {
+        if (dim == 1)
+            outAtts.SetVariableType(AVT_SCALAR_VAR);
+        else if (dim == 3)
+            outAtts.SetVariableType(AVT_VECTOR_VAR);
+        else if (dim == 9)
+            outAtts.SetVariableType(AVT_TENSOR_VAR);
+        else
+            outAtts.SetVariableType(AVT_SCALAR_VAR);
+    }
     outAtts.SetCentering(IsPointVariable()?AVT_NODECENT:AVT_ZONECENT);
 }
 

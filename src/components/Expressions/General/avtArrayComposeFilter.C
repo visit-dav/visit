@@ -146,8 +146,10 @@ avtArrayComposeFilter::DeriveVariable(vtkDataSet *in_ds)
 //  Creation:     July 21, 2005
 //
 // ****************************************************************************
+
 void
-avtArrayComposeFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
+avtArrayComposeFilter::ProcessArguments(ArgsExpr *args,
+                                        ExprPipelineState *state)
 {
     // Check the number of arguments
     std::vector<ArgExpr*> *arguments = args->GetArgs();
@@ -158,4 +160,33 @@ avtArrayComposeFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state
     avtMultipleInputExpressionFilter::ProcessArguments(args, state);
 }
 
+
+// ****************************************************************************
+//  Method: avtArrayComposeFilter::RefashionDataObjectInfo
+//
+//  Purpose:
+//      Tell the output what the component names are.
+//
+//  Programmer:   Hank Childs
+//  Creation:     August 5, 2005
+//
+// ****************************************************************************
+
+void
+avtArrayComposeFilter::RefashionDataObjectInfo(void)
+{
+    avtMultipleInputExpressionFilter::RefashionDataObjectInfo();
+
+    // If we don't know the name of the variable, we can't set it up in the
+    // output.
+    if (outputVariableName == NULL)
+        return;
+
+    std::vector<std::string> subnames(varnames.size());
+    for (int i = 0 ; i < varnames.size() ; i++)
+        subnames[i] = varnames[i];
+
+    avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+    outAtts.SetVariableSubnames(subnames, outputVariableName);
+}
 

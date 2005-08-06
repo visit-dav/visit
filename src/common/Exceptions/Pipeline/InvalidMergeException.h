@@ -20,12 +20,18 @@
 //  Programmer: Hank Childs
 //  Creation:   September 22, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Aug  4 11:06:21 PDT 2005
+//    Added new constructor that takes doubles.
+//
 // ****************************************************************************
 
 class AVTEXCEPTION_API InvalidMergeException : public PipelineException
 {
   public:
                     InvalidMergeException(int, int);
+                    InvalidMergeException(double, double);
                     InvalidMergeException();
     virtual        ~InvalidMergeException() VISIT_THROW_NOTHING {;};
 };
