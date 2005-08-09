@@ -1,8 +1,10 @@
 // ****************************************************************************
 //  Modifications:
-//
 //    Hank Childs, Wed Jul 20 17:21:46 PDT 2005
 //    Add support for tensors, arrays.
+//
+//    Brad Whitlock, Tue Aug 2 15:49:22 PST 2005
+//    Added support for materials and subsets.
 //
 // ****************************************************************************
 
@@ -17,6 +19,9 @@
     vtkIdType     nCells = input->GetNumberOfCells();
     vtkIdType     skipIncrement = 1;
 
+    // By default, the max number of rows is 1.
+    maxLabelRows = 1;
+
     //
     // Look for the cell center array that the label filter calculated.
     //
@@ -27,8 +32,14 @@
     //
     // Look for the original cell number array.
     //
-    vtkUnsignedIntArray *originalCells = 0;
+    vtkUnsignedIntArray  *originalCells = 0;
+    vtkDataArray         *subsetLabel = 0;
+    vtkDataArray         *materialLabels = 0;
     vtkDataArray *data = input->GetCellData()->GetArray("LabelFilterOriginalCellNumbers");
+    if(data == 0 && atts.GetVarType() == LabelAttributes::LABEL_VT_VECTOR_VAR)
+    {
+        data = input->GetCellData()->GetVectors();
+    }
     if(data == 0)
     {
         debug3 << "avtLabelRenderer could not find LabelFilterOriginalCellNumbers" << endl;
@@ -48,7 +59,17 @@
     //
     data = input->GetCellData()->GetArray(varname);
 
-    if(data != 0)
+    if(useGlobalLabel)
+    {
+        const char *gl = globalLabel.c_str();
+        for(vtkIdType id = 0; id < nCells; id += skipIncrement)
+        {
+            BEGIN_LABEL
+                CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%s", gl);
+            END_LABEL
+        }
+    }
+    else if(data != 0)
     {
         int numElements = data->GetNumberOfTuples();
 
@@ -154,6 +175,7 @@
         else if(data->GetNumberOfComponents() == 9)
         {
             debug3 << "Labelling cells with 3d tensor data" << endl;
+            maxLabelRows = 3;
             for(vtkIdType id = 0; id < nCells; id += skipIncrement)
             {
                 // float *vert = cellCenters->GetTuple3(id);
@@ -174,6 +196,7 @@
             int row_size = 1;
             while (row_size*row_size < nComps)
                 row_size++;
+            maxLabelRows = row_size;
             char formatStringStart[8] = "(%g, ";
             char formatStringMiddle[8] = "%g, ";
             char formatStringEnd[8] = "%g)\n";

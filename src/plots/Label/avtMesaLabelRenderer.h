@@ -19,7 +19,9 @@
 // Creation:   Mon Oct 25 08:46:36 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 4 10:35:24 PDT 2005
+//   Added some new helper methods.
+//
 // ****************************************************************************
 
 class avtMesaLabelRenderer : public avtLabelRenderer
@@ -44,10 +46,27 @@ protected:
     void DrawAllCellLabels3D();
     void DrawAllNodeLabels3D();
 
+    void PopulateBinsWithCellLabels3D();
+    void PopulateBinsWithNodeLabels3D();
+    void PopulateBinsHelper(const unsigned char *, const char *, const float *,
+                            int);
+    void ClearZBuffer();
+    void InitializeZBuffer(bool, bool);
+
+    void SetColor(int);
+    void BeginSize2D(int);
+    void EndSize2D();
+
     float                  x_scale;
     float                  y_scale;
     int                    characterDisplayListIndices[256];
     bool                   characterDisplayListsCreated;
+
+    int                    zBufferMode;
+    float                 *zBuffer;
+    int                    zBufferWidth;
+    int                    zBufferHeight;
+    float                  zTolerance;
 };
 
 #endif

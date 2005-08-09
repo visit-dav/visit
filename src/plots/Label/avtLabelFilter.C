@@ -165,6 +165,8 @@ avtLabelFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         needCellArray = variableProbablyIsAMesh || (cellVar != 0);
         needNodeArray = variableProbablyIsAMesh || (pointVar != 0);
     }
+    else
+        variableProbablyIsAMesh = true;
 
 //    debug3 << "avtLabelFilter::ExecuteData: 3.5: The data arrays are:" << endl;
 //    print_array_names(outDS);

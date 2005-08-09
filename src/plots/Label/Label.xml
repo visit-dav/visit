@@ -1,13 +1,17 @@
 <?xml version="1.0"?>
-  <Plugin name="Label" type="plot" label="Label" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" vartype="mesh,scalar,vector,tensor,symmetrictensor,label,array" iconFile="Label.xpm">
+  <Plugin name="Label" type="plot" label="Label" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" vartype="mesh,scalar,vector,material,subset,tensor,symmetrictensor,label,array" iconFile="Label.xpm">
     <Files components="V">
       avtLabelFilter.C
+      avtLabelSubsetsFilter.C
+      avtLabelsMapper.C
       avtLabelRenderer.C
       avtMesaLabelRenderer.C
       avtOpenGLLabelRenderer.C
     </Files>
     <Files components="E">
       avtLabelFilter.C
+      avtLabelSubsetsFilter.C
+      avtLabelsMapper.C
       avtLabelRenderer.C
       avtMesaLabelRenderer.C
       avtOpenGLLabelRenderer.C
@@ -33,6 +37,26 @@
         Back
         FrontAndBack
       </Enum>
+      <Enum name="VariableType">
+        LABEL_VT_MESH
+        LABEL_VT_SCALAR_VAR
+        LABEL_VT_VECTOR_VAR
+        LABEL_VT_TENSOR_VAR
+        LABEL_VT_SYMMETRIC_TENSOR_VAR
+        LABEL_VT_ARRAY_VAR
+        LABEL_VT_LABEL_VAR
+        LABEL_VT_MATERIAL
+        LABEL_VT_SUBSET
+        LABEL_VT_UNKNOWN_TYPE
+      </Enum>
+      <Enum name="DepthTestMode">
+        LABEL_DT_AUTO
+        LABEL_DT_ALWAYS
+        LABEL_DT_NEVER
+      </Enum>
+      <Field name="varType" label="Variable type" type="enum" subtype="VariableType" internal="true" ignoreeq="true">
+        LABEL_VT_UNKNOWN_TYPE
+      </Field>
       <Field name="legendFlag" label="Legend" type="bool">
         true
       </Field>
@@ -48,32 +72,35 @@
       <Field name="drawLabelsFacing" label="Draw labels facing" type="enum" subtype="LabelDrawFacing">
         Front
       </Field>
-      <Field name="showSingleNode" label="Show single node" type="bool">
-        false
-      </Field>
-      <Field name="showSingleCell" label="Show single cell" type="bool">
-        false
-      </Field>
-      <Field name="useForegroundTextColor" label="Use foreground text color" type="bool">
-        true
-      </Field>
       <Field name="labelDisplayFormat" label="Label display" type="enum" subtype="LabelIndexDisplay">
         Natural
       </Field>
       <Field name="numberOfLabels" label="numberOfLabels" type="int">
         200
       </Field>
-      <Field name="textColor" label="Text color" type="color" enabler="useForegroundTextColor:true">
+      <Field name="specifyTextColor1" label="Specify text color1" type="bool">
+        false
+      </Field>
+      <Field name="textColor1" label="Text color1" type="color" enabler="specifyTextColor1:true">
         255
         0
         0
         0
       </Field>
-      <Field name="textHeight" label="textHeight" type="float">
+      <Field name="textHeight1" label="textHeight1" type="float">
         0.020000
       </Field>
-      <Field name="textLabel" label="textLabel" type="string">
-        *
+      <Field name="specifyTextColor2" label="Specify text color2" type="bool">
+        false
+      </Field>
+      <Field name="textColor2" label="Text color2" type="color" enabler="specifyTextColor2:true">
+        0
+        0
+        255
+        0
+      </Field>
+      <Field name="textHeight2" label="textHeight2" type="float">
+        0.020000
       </Field>
       <Field name="horizontalJustification" label="Horizontal justification" type="enum" subtype="LabelHorizontalAlignment">
         HCenter
@@ -81,13 +108,12 @@
       <Field name="verticalJustification" label="Vertical Justification" type="enum" subtype="LabelVerticalAlignment">
         VCenter
       </Field>
-      <Field name="singleNodeIndex" label="Single node index" type="int">
-        0
-      </Field>
-      <Field name="singleCellIndex" label="Single cell index" type="int">
-        0
+      <Field name="depthTestMode" label="Depth test mode" type="enum" subtype="DepthTestMode">
+        LABEL_DT_AUTO
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="VarChangeRequiresReset" user="true" member="true">
       </Function>
     </Attribute>
   </Plugin>

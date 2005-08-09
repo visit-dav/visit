@@ -9,6 +9,8 @@
 #include <avtExtents.h>
 #include <avtGhostZoneAndFacelistFilter.h>
 #include <avtLabelFilter.h>
+#include <avtLabelsMapper.h>
+#include <avtLabelSubsetsFilter.h>
 #include <avtMesaLabelRenderer.h>
 #include <avtOpenGLLabelRenderer.h>
 #include <vtkLookupTable.h>
@@ -36,6 +38,7 @@ avtLabelPlot::avtLabelPlot() : avtSurfaceDataPlot()
     ghostAndFaceFilter = NULL;
     condenseFilter = NULL;
     normalFilter = NULL;
+    labelSubsetsFilter = NULL;
 
     if (avtCallback::GetNowinMode())
         renderer = new avtMesaLabelRenderer;
@@ -53,7 +56,7 @@ avtLabelPlot::avtLabelPlot() : avtSurfaceDataPlot()
 
     avtCustomRenderer_p cr;
     CopyTo(cr, renderer);
-    labelMapper = new avtUserDefinedMapper(cr);
+    labelMapper = new avtLabelsMapper(cr);
 }
 
 
@@ -88,6 +91,11 @@ avtLabelPlot::~avtLabelPlot()
     {
         delete labelFilter;
         labelFilter = NULL;
+    }
+    if (labelSubsetsFilter != NULL)
+    {
+        delete labelSubsetsFilter;
+        labelSubsetsFilter = NULL;
     }
 
     renderer = NULL;
@@ -239,6 +247,10 @@ avtLabelPlot::ApplyOperators(avtDataObject_p input)
 //   Kathleen Bonnell, Thu Jan  6 10:34:57 PST 2005
 //   Removed TRY-CATCH block in favor of testing for ValidVariable.
 //
+//   Brad Whitlock, Tue Aug 2 15:05:15 PST 2005
+//   I added code to set the variable's type in the label filter so the
+//   filter can conditionally apply some special subset-related features.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -316,6 +328,21 @@ avtLabelPlot::ApplyRenderingTransformation(avtDataObject_p input)
         visitTimer->StopTimer(onefilter, "avtVertexNormalsFilter");
     }
 
+    if(atts.GetVarType() == LabelAttributes::LABEL_VT_MATERIAL ||
+       atts.GetVarType() == LabelAttributes::LABEL_VT_SUBSET)
+    {
+        // Apply the label subsets filter here.
+        onefilter = visitTimer->StartTimer();
+        if(labelSubsetsFilter != NULL)
+            delete labelSubsetsFilter;
+        labelSubsetsFilter = new avtLabelSubsetsFilter;
+        labelSubsetsFilter->SetNeedMIR(atts.GetVarType() == 
+            LabelAttributes::LABEL_VT_MATERIAL);
+        labelSubsetsFilter->SetInput(dob);
+        dob = labelSubsetsFilter->GetOutput();
+        visitTimer->StopTimer(onefilter, "avtLabelSubsetsFilter");
+    }
+
     //
     // Create additional label information.
     //
@@ -323,7 +350,6 @@ avtLabelPlot::ApplyRenderingTransformation(avtDataObject_p input)
     if(labelFilter != NULL)
         delete labelFilter;
     labelFilter = new avtLabelFilter;
-    labelFilter->SetLabelVariable(varname);
     labelFilter->SetInput(dob);
     dob = labelFilter->GetOutput();
     visitTimer->StopTimer(onefilter, "avtLabelFilter");
@@ -354,6 +380,13 @@ avtLabelPlot::CustomizeBehavior(void)
     behavior->SetShiftFactor(0.5);
     behavior->SetRenderOrder(MUST_GO_LAST);
     behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
+
+    debug4 << "avtLabelPlot::CustomizeBehavior: Labels = " << endl;
+    std::vector<std::string> labels;
+    behavior->GetInfo().GetAttributes().GetLabels(labels);
+    for(int i = 0; i < labels.size(); ++i)
+        debug4 << "\tlabel["<<i<<"] = " << labels[i] << endl;
+    debug4 << endl;
 }
 
 
@@ -417,6 +450,17 @@ avtLabelPlot::CustomizeMapper(avtDataObjectInformation &doi)
     for(int i = 0; i < 6; ++i)
         fe[i] = float(e[i]);
     renderer->SetExtents(fe);
+
+    bool ugl = atts.GetVarType() == LabelAttributes::LABEL_VT_MATERIAL ||
+               atts.GetVarType() == LabelAttributes::LABEL_VT_SUBSET;
+    renderer->SetUseGlobalLabel(ugl);
+
+    debug4 << "avtLabelPlot::CustomizeMapper: Labels = " << endl;
+    std::vector<std::string> labels;
+    doi.GetAttributes().GetLabels(labels);
+    for(int i = 0; i < labels.size(); ++i)
+        debug4 << "\tlabel["<<i<<"] = " << labels[i] << endl;
+    debug4 << endl;
 }
 
 // ****************************************************************************
@@ -533,6 +577,10 @@ avtLabelPlot::ReleaseData(void)
     if (normalFilter != NULL)
     {
         normalFilter->ReleaseData();
+    }
+    if (labelSubsetsFilter != NULL)
+    {
+        labelSubsetsFilter->ReleaseData();
     }
     debug3 << "avtLabelPlot::ReleaseData: 1" << endl;
 }

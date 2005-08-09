@@ -13,6 +13,8 @@
 class avtGhostZoneAndFacelistFilter;
 class avtCondenseDatasetFilter;
 class avtLabelFilter;
+class avtLabelsMapper;
+class avtLabelSubsetsFilter;
 class avtUserDefinedMapper;
 class avtVariableLegend;
 class avtVertexNormalsFilter;
@@ -29,6 +31,9 @@ class avtVertexNormalsFilter;
 //  Modifications:
 //    Brad Whitlock, Wed Dec 15 10:48:35 PDT 2004
 //    Removed SetVarName.
+//
+//    Brad Whitlock, Wed Aug 3 18:04:15 PST 2005
+//    I made it use a avtLabelsMapper so we can label subsets.
 //
 // ****************************************************************************
 
@@ -54,9 +59,10 @@ class avtLabelPlot : public avtSurfaceDataPlot
     avtGhostZoneAndFacelistFilter *ghostAndFaceFilter;
     avtCondenseDatasetFilter      *condenseFilter;
     avtVertexNormalsFilter        *normalFilter;
+    avtLabelSubsetsFilter         *labelSubsetsFilter;
     avtLabelFilter                *labelFilter;
     avtLabelRenderer_p             renderer;
-    avtUserDefinedMapper          *labelMapper; 
+    avtLabelsMapper               *labelMapper; 
     avtVariableLegend             *varLegend;
     avtLegend_p                    varLegendRefPtr;
 
