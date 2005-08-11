@@ -37,6 +37,9 @@ class vtkVisItExtractRectilinearGrid;
 //    they have been modified to correctly handle cell data when VOI is
 //    along max boundary. 
 //
+//    Kathleen Bonnell, Thu Aug  4 15:47:59 PDT 2005 
+//    Added RefashionDataObjectInfo.
+//
 // ****************************************************************************
 
 class avtIndexSelectFilter : public avtPluginStreamer
@@ -69,6 +72,7 @@ class avtIndexSelectFilter : public avtPluginStreamer
     virtual vtkDataSet         *ExecuteData(vtkDataSet *, int, std::string);
     virtual void                PreExecute(void);
     virtual void                PostExecute(void);
+    virtual void                RefashionDataObjectInfo(void);
 
     virtual avtPipelineSpecification_p
                             PerformRestriction(avtPipelineSpecification_p);

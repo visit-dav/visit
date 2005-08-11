@@ -171,6 +171,9 @@ typedef struct {
 //    Kathleen Bonnell, Wed Jul 27 15:47:34 PDT 2005 
 //    Added SuppressQueryOutput.
 //
+//    Kathleen Bonnell, Wed Aug 10 16:46:17 PDT 2005
+//    Added ActivePlotsChanged. 
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -235,6 +238,8 @@ class VIEWER_API ViewerQueryManager
     void            SetQueryOverTimeAttsFromDefault();
     void            SetDefaultQueryOverTimeAttsFromClient();
     void            SetClientQueryOverTimeAttsFromDefault();
+    void            ActivePlotsChanged()
+                       {  activePlotsChanged = true; } ;
 
 
     static QueryAttributes  *GetQueryClientAtts();
@@ -320,6 +325,7 @@ class VIEWER_API ViewerQueryManager
     CachedLineout         lineoutCache;
 
     bool                  suppressQueryOutput; 
+    bool                  activePlotsChanged; 
 
 
     static QueryAttributes    *queryClientAtts;

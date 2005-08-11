@@ -171,6 +171,9 @@ CreateExtentsString(const double * extents, const int dim, const char *type);
 //    Kathleen Bonnell, Wed Jul 27 15:47:34 PDT 2005 
 //    Added suppressQueryOutput. 
 //
+//    Kathleen Bonnell, Wed Aug 10 16:46:17 PDT 2005 
+//    Added activePlotsChanged. 
+//
 // ****************************************************************************
 
 ViewerQueryManager::ViewerQueryManager()
@@ -202,6 +205,7 @@ ViewerQueryManager::ViewerQueryManager()
     lineoutCache.resWinId = -1;
 
     suppressQueryOutput = false;
+    activePlotsChanged = true;
 }
 
 
@@ -1703,6 +1707,9 @@ ViewerQueryManager::ClearPickPoints()
 //    When setting pickAtts 'MatSelected' state, use the plot's 'real' var,
 //    in case there is an expression involved whose 'real' var is material. 
 //
+//    Kathleen Bonnell, Wed Aug 10 16:46:17 PDT 2005 
+//    For StartPick, added test for changed active plots.
+//
 // ****************************************************************************
 
 bool
@@ -1721,7 +1728,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         pickCache.push_back(pd);
         return retval;
     }
-    if (initialPick)
+    if (initialPick || activePlotsChanged)
     {
         preparingPick = true;
         ViewerWindow *win = (ViewerWindow *)pd.callbackData;
@@ -1736,6 +1743,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         plist->StartPick(needZones, needInvTrans);
         initialPick = false;
         preparingPick = false;
+        activePlotsChanged = false;
     }
 
     if (pd.validPick)

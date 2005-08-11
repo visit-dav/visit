@@ -75,6 +75,9 @@ void avtEnzoFileFormat::Grid::Print()
 //    Jeremy Meredith, Wed Aug  3 10:22:36 PDT 2005
 //    Added support for 2D files.
 //
+//    Jeremy Meredith, Thu Aug 11 14:35:00 PDT 2005
+//    Fixed logical extents when there are multiple root grids.
+//
 // ****************************************************************************
 void avtEnzoFileFormat::Grid::DetermineExtentsInParent(vector<Grid> &grids)
 {
@@ -113,15 +116,28 @@ void avtEnzoFileFormat::Grid::DetermineExtentsInParent(vector<Grid> &grids)
     }
     else
     {
-        minLogicalExtentsInParent[0] = 0;
-        minLogicalExtentsInParent[1] = 0;
-        minLogicalExtentsInParent[2] = 0;
-        maxLogicalExtentsInParent[0] = ndims[0]-1;
-        maxLogicalExtentsInParent[1] = ndims[1]-1;
+        Grid &p = grids[0];
+
+        double xpct = (maxSpatialExtents[0] - minSpatialExtents[0])/(p.maxSpatialExtents[0] - p.minSpatialExtents[0]);
+        minLogicalExtentsInParent[0] = int(.5 + (double(zdims[0])/xpct) * (minSpatialExtents[0] - p.minSpatialExtents[0])/(p.maxSpatialExtents[0] - p.minSpatialExtents[0]));
+        maxLogicalExtentsInParent[0] = int(.5 + (double(zdims[0])/xpct) * (maxSpatialExtents[0] - p.minSpatialExtents[0])/(p.maxSpatialExtents[0] - p.minSpatialExtents[0]));
+
+        double ypct = (maxSpatialExtents[1] - minSpatialExtents[1])/(p.maxSpatialExtents[1] - p.minSpatialExtents[1]);
+        minLogicalExtentsInParent[1] = int(.5 + (double(zdims[1])/ypct) * (minSpatialExtents[1] - p.minSpatialExtents[1])/(p.maxSpatialExtents[1] - p.minSpatialExtents[1]));
+        maxLogicalExtentsInParent[1] = int(.5 + (double(zdims[1])/ypct) * (maxSpatialExtents[1] - p.minSpatialExtents[1])/(p.maxSpatialExtents[1] - p.minSpatialExtents[1]));
+
         if (dimension == 3)
-            maxLogicalExtentsInParent[2] = ndims[2]-1;
+        {
+            double zpct = (maxSpatialExtents[2] - minSpatialExtents[2])/(p.maxSpatialExtents[2] - p.minSpatialExtents[2]);
+            minLogicalExtentsInParent[2] = int(.5 + (double(zdims[2])/zpct) * (minSpatialExtents[2] - p.minSpatialExtents[2])/(p.maxSpatialExtents[2] - p.minSpatialExtents[2]));
+            maxLogicalExtentsInParent[2] = int(.5 + (double(zdims[2])/zpct) * (maxSpatialExtents[2] - p.minSpatialExtents[2])/(p.maxSpatialExtents[2] - p.minSpatialExtents[2]));
+        }
         else
+        {
+            minLogicalExtentsInParent[2] = 0;
             maxLogicalExtentsInParent[2] = 0;
+        }
+
         refinementRatio[0] = refinementRatio[1] = refinementRatio[2] = 1;
     }
 }
@@ -140,6 +156,9 @@ void avtEnzoFileFormat::Grid::DetermineExtentsInParent(vector<Grid> &grids)
 //    Jeremy Meredith, Wed Feb 23 15:18:48 PST 2005
 //    May have multiple root grids; identify by parentID==0, not by ID==1.
 //
+//    Jeremy Meredith, Thu Aug 11 14:35:00 PDT 2005
+//    Fixed logical extents when there are multiple root grids.
+//
 // ****************************************************************************
 void
 avtEnzoFileFormat::Grid::DetermineExtentsGlobally(int numLevels,
@@ -157,12 +176,12 @@ avtEnzoFileFormat::Grid::DetermineExtentsGlobally(int numLevels,
     }
     else
     {
-        minLogicalExtentsGlobally[0] = 0;
-        minLogicalExtentsGlobally[1] = 0;
-        minLogicalExtentsGlobally[2] = 0;
-        maxLogicalExtentsGlobally[0] = zdims[0];
-        maxLogicalExtentsGlobally[1] = zdims[1];
-        maxLogicalExtentsGlobally[2] = zdims[2];
+        minLogicalExtentsGlobally[0] = minLogicalExtentsInParent[0];
+        minLogicalExtentsGlobally[1] = minLogicalExtentsInParent[1];
+        minLogicalExtentsGlobally[2] = minLogicalExtentsInParent[2];
+        maxLogicalExtentsGlobally[0] = maxLogicalExtentsInParent[0];
+        maxLogicalExtentsGlobally[1] = maxLogicalExtentsInParent[1];
+        maxLogicalExtentsGlobally[2] = maxLogicalExtentsInParent[2];
     }
 }
 
@@ -181,6 +200,12 @@ avtEnzoFileFormat::Grid::DetermineExtentsGlobally(int numLevels,
 //  Modifications:
 //    Jeremy Meredith, Wed Aug  3 10:22:36 PDT 2005
 //    Added support for 2D files.
+//
+//    Jeremy Meredith, Thu Aug 11 16:59:19 PDT 2005
+//    Moved the determination of the grid logical extents up a level
+//    (to ReadAllMetaData), because when there are multiple root-
+//    level grids, all of the root level grid extents must be unified
+//    to determine any individual grid's logical extents.
 //
 // ****************************************************************************
 void
@@ -296,7 +321,6 @@ avtEnzoFileFormat::ReadHierachyFile()
 
             g.level = level;
             g.parentID = parent;
-            g.DetermineExtentsInParent(grids);
 
             if (grids.size() != g.ID)
             {
@@ -410,7 +434,7 @@ avtEnzoFileFormat::ReadParameterFile()
 }
 
 // ****************************************************************************
-//  Method:  
+//  Method:  avtEnzoFileFormat::DetermineVariablesFromGridFile
 //
 //  Purpose:
 //    Find the smallest grid that contains some particles, or just the smallest
@@ -603,6 +627,53 @@ avtEnzoFileFormat::~avtEnzoFileFormat()
 {
 }
 
+
+// ****************************************************************************
+//  Method: avtEnzoFileFormat::UnifyGlobalExtents 
+//
+//  Purpose:
+//    Gets the total spatial extents for the whole problem.  Uses only the
+//    root level grids since they are guaranteed to cover the spatial extents.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 11, 2005
+//
+// ****************************************************************************
+void
+avtEnzoFileFormat::UnifyGlobalExtents()
+{
+    Grid &root = grids[0];
+
+    root.minSpatialExtents[0] = grids[1].minSpatialExtents[0];
+    root.maxSpatialExtents[0] = grids[1].maxSpatialExtents[0];
+    root.minSpatialExtents[1] = grids[1].minSpatialExtents[1];
+    root.maxSpatialExtents[1] = grids[1].maxSpatialExtents[1];
+    if (dimension == 3)
+    {
+        root.minSpatialExtents[2] = grids[1].minSpatialExtents[2];
+        root.maxSpatialExtents[2] = grids[1].maxSpatialExtents[2];
+    }
+    else
+    {
+        root.minSpatialExtents[2] = 0;
+        root.maxSpatialExtents[2] = 0;
+    }
+    // now loop over all level zero grids
+    for (int g = 2 ; g <= numGrids && grids[g].parentID == 0 ; g++)
+    {
+        for (int j = 0 ; j < dimension ; j++)
+        {
+            if (grids[g].minSpatialExtents[j] < root.minSpatialExtents[j])
+                root.minSpatialExtents[j] = grids[g].minSpatialExtents[j];
+            if (grids[g].maxSpatialExtents[j] > root.maxSpatialExtents[j])
+                root.maxSpatialExtents[j] = grids[g].maxSpatialExtents[j];
+        }
+    }
+}
+
 // ****************************************************************************
 //  Method:  avtEnzoFileFormat::ReadAllMetaData
 //
@@ -614,6 +685,13 @@ avtEnzoFileFormat::~avtEnzoFileFormat()
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    January  6, 2005
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Aug 11 16:59:19 PDT 2005
+//    Moved the determination of the grid logical extents to here from
+//    ReadHierachyFile, because when there are multiple root-
+//    level grids, all of the root level grid extents must be unified
+//    to determine any individual grid's logical extents.
 //
 // ****************************************************************************
 void
@@ -630,9 +708,14 @@ avtEnzoFileFormat::ReadAllMetaData()
     // convert spatial extents into logical extents
     ReadHierachyFile();
 
+    // We need to get the whole global extents before we
+    // can determine logical extents
+    UnifyGlobalExtents();
+
     // Convert the parent logical extents
     for (int i=1; i<grids.size(); i++)
     {
+        grids[i].DetermineExtentsInParent(grids);
         grids[i].DetermineExtentsGlobally(numLevels, grids);
     }
 
@@ -771,6 +854,10 @@ avtEnzoFileFormat::FreeUpResources(void)
 //    Added support for 2D files.  Fixed problem with single-grid files.
 //    Fixed dimensionality of point meshes.
 //
+//    Jeremy Meredith, Thu Aug 11 17:09:22 PDT 2005
+//    Moved the unification of the problem spatial extents to a new method.
+//    This is because it had to be calculated much earlier in the process.
+//
 // ****************************************************************************
 
 void
@@ -791,31 +878,12 @@ avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->spatialDimension = dimension;
     mesh->hasSpatialExtents = true;
 
-    mesh->minSpatialExtents[0] = grids[1].minSpatialExtents[0];
-    mesh->maxSpatialExtents[0] = grids[1].maxSpatialExtents[0];
-    mesh->minSpatialExtents[1] = grids[1].minSpatialExtents[1];
-    mesh->maxSpatialExtents[1] = grids[1].maxSpatialExtents[1];
-    if (dimension == 3)
-    {
-        mesh->minSpatialExtents[2] = grids[1].minSpatialExtents[2];
-        mesh->maxSpatialExtents[2] = grids[1].maxSpatialExtents[2];
-    }
-    else
-    {
-        mesh->minSpatialExtents[2] = 0;
-        mesh->maxSpatialExtents[2] = 0;
-    }
-    // now loop over all level zero grids
-    for (int g = 2 ; g <= numGrids && grids[g].parentID == 0 ; g++)
-    {
-        for (int j = 0 ; j < dimension ; j++)
-        {
-            if (grids[g].minSpatialExtents[j] < mesh->minSpatialExtents[j])
-                mesh->minSpatialExtents[j] = grids[g].minSpatialExtents[j];
-            if (grids[g].maxSpatialExtents[j] > mesh->maxSpatialExtents[j])
-                mesh->maxSpatialExtents[j] = grids[g].maxSpatialExtents[j];
-        }
-    }
+    mesh->minSpatialExtents[0] = grids[0].minSpatialExtents[0];
+    mesh->maxSpatialExtents[0] = grids[0].maxSpatialExtents[0];
+    mesh->minSpatialExtents[1] = grids[0].minSpatialExtents[1];
+    mesh->maxSpatialExtents[1] = grids[0].maxSpatialExtents[1];
+    mesh->minSpatialExtents[2] = grids[0].minSpatialExtents[2];
+    mesh->maxSpatialExtents[2] = grids[0].maxSpatialExtents[2];
 
     // spoof a group/domain mesh
     mesh->numBlocks = numGrids;

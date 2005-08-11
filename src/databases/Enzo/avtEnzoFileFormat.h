@@ -29,6 +29,9 @@
 //    Jeremy Meredith, Wed Aug  3 10:21:56 PDT 2005
 //    Added support for 2D Enzo files.
 //
+//    Jeremy Meredith, Thu Aug 11 14:35:39 PDT 2005
+//    Added new routine to unify global extents.
+//
 // ****************************************************************************
 
 class avtEnzoFileFormat : public avtSTMDFileFormat
@@ -111,6 +114,7 @@ class avtEnzoFileFormat : public avtSTMDFileFormat
     void ReadAllMetaData();
     void ReadHierachyFile();
     void ReadParameterFile();
+    void UnifyGlobalExtents();
     void DetermineVariablesFromGridFile();
     void BuildDomainNesting();
 };

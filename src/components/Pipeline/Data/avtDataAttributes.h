@@ -147,6 +147,9 @@ class     avtExtents;
 //    Hank Childs, Thu Aug  4 09:21:34 PDT 2005
 //    Added type and variable names (for arrays).
 //
+//    Kathleen Bonnell, Thu Aug  4 15:47:59 PDT 2005 
+//    Added canUseOrigZones, origNodesRequiredForPick and Set/Get methods.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -336,6 +339,16 @@ class PIPELINE_API avtDataAttributes
     void                     SetMIROccurred(bool mo)
                                    { mirOccurred = mo; };
 
+    bool                     CanUseOrigZones(void) const
+                                   { return canUseOrigZones; };
+    void                     SetCanUseOrigZones(bool v)
+                                   { canUseOrigZones = v; };
+
+    bool                     OrigNodesRequiredForPick(void) const
+                                   { return origNodesRequiredForPick; };
+    void                     SetOrigNodesRequiredForPick(bool v)
+                                   { origNodesRequiredForPick = v; };
+
   protected:
     int                      spatialDimension;
     int                      topologicalDimension;
@@ -358,6 +371,8 @@ class PIPELINE_API avtDataAttributes
     bool                     canUseCumulativeAsTrueOrCurrent;
     int                      numStates;
     bool                     mirOccurred;
+    bool                     canUseOrigZones;
+    bool                     origNodesRequiredForPick;
 
     avtExtents              *trueSpatial;
     avtExtents              *cumulativeTrueSpatial;

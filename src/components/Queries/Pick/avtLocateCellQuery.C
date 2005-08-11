@@ -126,6 +126,15 @@ avtLocateCellQuery::~avtLocateCellQuery()
 //    will be used by PickQuery in determining the correct zone id to display
 //    to the user.
 //
+//    Kathleen Bonnell, Wed Aug 10 17:00:58 PDT 2005 
+//    Added some 'canUseCells' tests for whether or not to set the
+//    element number or determine cell center -- Added mostly because 
+//    these things shouldn't be done if IndexSelected (the only operator
+//    currently to set this flag) -- the origCell may be invalid, the
+//    current cell number is most likely invalid, and the cell center is
+//    probably invalid as well, so defer the determination (other than
+//    domain and intersection point) until the Pick portion. 
+//
 // ****************************************************************************
 
 void
@@ -142,8 +151,9 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
     }
 
     avtDataObjectInformation &info = GetInput()->GetInfo();
-    int dim     = info.GetAttributes().GetSpatialDimension(); 
-    int topodim = info.GetAttributes().GetTopologicalDimension(); 
+    avtDataAttributes &dataAtts = info.GetAttributes();
+    int dim     = dataAtts.GetSpatialDimension(); 
+    int topodim = dataAtts.GetTopologicalDimension(); 
 
 
     float dist = minDist, isect[3] = { 0., 0., 0.};
@@ -169,13 +179,14 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
 
         vtkDataArray *origCells = 
                  ds->GetCellData()->GetArray("avtOriginalCellNumbers");
+        bool canUseCells = dataAtts.CanUseOrigZones();
 
-        if (origCells)
+        if (canUseCells && origCells)
         {
             int comp = origCells->GetNumberOfComponents() -1;
             foundElement = (int) origCells->GetComponent(foundCell, comp);
         }
-        else if (info.GetAttributes().GetContainsOriginalCells())
+        else if (canUseCells && dataAtts.GetContainsOriginalCells())
         {
             debug5 << "PICK PROBLEM! Info says we should have original "
                    << " cells but the array was not found in the dataset."
@@ -183,10 +194,10 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
         }
         else if (info.GetValidity().GetZonesPreserved()) 
         {
-            if (info.GetAttributes().GetContainsGhostZones() 
-                    != AVT_CREATED_GHOSTS)
+            if (dataAtts.GetContainsGhostZones() != AVT_CREATED_GHOSTS)
             {
-                foundElement = foundCell;
+                if (canUseCells)
+                    foundElement = foundCell;
             }
             else
             {
@@ -200,7 +211,7 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
         // avtLocateCellQuery will be using it to find the Zone number and 
         // we are in 3D.
         //
-        if (foundElement == -1 && dim == 3)
+        if (foundElement == -1 && dim == 3 && canUseCells)
         {
             vtkVisItUtility::GetCellCenter(ds->GetCell(foundCell), isect);
         }

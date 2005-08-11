@@ -81,6 +81,9 @@ using     std::sort;
 //    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
 //    Initialize mirOccurred.
 //
+//    Kathleen Bonnell, Thu Aug  4 15:47:59 PDT 2005 
+//    Added canUseOrigZones, origNodesRequiredForPick.
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes()
@@ -130,6 +133,8 @@ avtDataAttributes::avtDataAttributes()
 
     numStates = 1;
     mirOccurred = false;
+    canUseOrigZones = true;
+    origNodesRequiredForPick = false;
 }
 
 
@@ -290,6 +295,9 @@ avtDataAttributes::DestructSelf(void)
 //
 //    Hank Childs, Thu Aug  4 11:40:24 PDT 2005
 //    Print out vartype, subnames.
+//
+//    Kathleen Bonnell, Thu Aug  4 15:47:59 PDT 2005 
+//    Added canUseOrigZones, origNodesRequiredForPick.
 //
 // ****************************************************************************
 
@@ -530,7 +538,11 @@ avtDataAttributes::Print(ostream &out)
 
     out << "Num states: " << numStates << endl;
     if (mirOccurred)
-        out << "Material Interace Reconstruction occurred: " << endl;
+        out << "Material Interace Reconstruction occurred. " << endl;
+    if (canUseOrigZones)
+        out << "Original Zones cannot be used for Pick." << endl;
+    if (origNodesRequiredForPick)
+        out << "Original Nodes are required for Pick." << endl;
 
 }
 
@@ -618,6 +630,9 @@ avtDataAttributes::Print(ostream &out)
 //    Hank Childs, Thu Aug  4 13:27:43 PDT 2005
 //    Added vartype, subnames.
 //
+//    Kathleen Bonnell, Thu Aug  4 15:47:59 PDT 2005 
+//    Added canUseOrigZones, origNodesRequiredForPick.
+//
 // ****************************************************************************
 
 void
@@ -698,6 +713,8 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     selectionsApplied = di.selectionsApplied;
     numStates = di.numStates;
     mirOccurred = di.mirOccurred;
+    canUseOrigZones = di.canUseOrigZones;
+    origNodesRequiredForPick = di.origNodesRequiredForPick;
 }
 
 
@@ -788,6 +805,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //
 //    Hank Childs, Thu Aug  4 13:27:43 PDT 2005
 //    Added vartype, subnames.
+//
+//    Kathleen Bonnell, Thu Aug  4 15:47:59 PDT 2005 
+//    Added canUseOrigZones, origNodesRequiredForPick.
 //
 // ****************************************************************************
 
@@ -983,6 +1003,8 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     canUseInvTransform &= da.canUseInvTransform;
     canUseTransform &= da.canUseTransform;
     mirOccurred |= da.mirOccurred;
+    canUseOrigZones &= da.canUseOrigZones;
+    origNodesRequiredForPick |= da.origNodesRequiredForPick;
 }
 
 
@@ -1955,6 +1977,9 @@ avtDataAttributes::SetTime(double d)
 //    Hank Childs, Thu Aug  4 13:27:43 PDT 2005
 //    Added vartype, subnames.
 //
+//    Kathleen Bonnell, Thu Aug  4 15:47:59 PDT 2005 
+//    Added canUseOrigZones, origNodesRequiredForPick.
+//
 // ****************************************************************************
 
 void
@@ -1963,7 +1988,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
 {
     int   i, j;
 
-    int numVals = 21 + 5*variables.size();
+    int numVals = 23 + 5*variables.size();
     int *vals = new int[numVals];
     vals[0] = topologicalDimension;
     vals[1] = spatialDimension;
@@ -1984,15 +2009,17 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[16] = windowMode;
     vals[17] = numStates;
     vals[18] = mirOccurred;
-    vals[19] = activeVariable;
-    vals[20] = variables.size();
+    vals[19] = canUseOrigZones;
+    vals[20] = origNodesRequiredForPick;
+    vals[21] = activeVariable;
+    vals[22] = variables.size();
     for (i = 0 ; i < variables.size() ; i++)
     {
-        vals[21+5*i]   = variables[i].dimension;
-        vals[21+5*i+1] = variables[i].centering;
-        vals[21+5*i+2] = (variables[i].treatAsASCII ? 1 : 0);
-        vals[21+5*i+3] = variables[i].vartype;
-        vals[21+5*i+4] = variables[i].subnames.size();
+        vals[23+5*i]   = variables[i].dimension;
+        vals[23+5*i+1] = variables[i].centering;
+        vals[23+5*i+2] = (variables[i].treatAsASCII ? 1 : 0);
+        vals[23+5*i+3] = variables[i].vartype;
+        vals[23+5*i+4] = variables[i].subnames.size();
     }
     wrtr->WriteInt(str, vals, numVals);
     wrtr->WriteDouble(str, dtime);
@@ -2158,6 +2185,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Hank Childs, Fri Aug  5 16:19:40 PDT 2005
 //    Read variable type and subnames.
 //
+//    Kathleen Bonnell, Thu Aug  4 15:47:59 PDT 2005 
+//    Added canUseOrigZones, origNodesRequiredForPick.
+//
 // ****************************************************************************
 
 int
@@ -2243,6 +2273,14 @@ avtDataAttributes::Read(char *input)
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
     mirOccurred = (tmp != 0 ? true : false);
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    canUseOrigZones = (tmp != 0 ? true : false);
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    origNodesRequiredForPick = (tmp != 0 ? true : false);
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);

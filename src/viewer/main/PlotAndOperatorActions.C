@@ -1596,6 +1596,10 @@ SetActivePlotsAction::~SetActivePlotsAction()
 //   Brad Whitlock, Mon Dec 8 15:25:54 PST 2003
 //   I removed Eric's code.
 //
+//   Kathleen Bonnell, Wed Aug 10 16:46:17 PDT 2005 
+//   Notify ViewerQueryManger that active plot has changed if in Pick mode.
+//   (So that plot can be reexecuted if necesssary).
+//
 // ****************************************************************************
 
 void
@@ -1610,6 +1614,9 @@ SetActivePlotsAction::Execute()
     bool moreThanPlotsValid          = args.GetBoolFlag();
     window->GetPlotList()->SetActivePlots(activePlots,
         activeOperators, expandedPlots, moreThanPlotsValid);
+    if (window->GetInteractionMode() == ZONE_PICK || 
+        window->GetInteractionMode() == NODE_PICK) 
+       ViewerQueryManager::Instance()->ActivePlotsChanged(); 
 }
 
 ///////////////////////////////////////////////////////////////////////////////
