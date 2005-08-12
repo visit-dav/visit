@@ -870,6 +870,13 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Mark C. Miller, Wed Aug 10 08:15:21 PDT 2005
 //    Added code to handle Silo's new defvars objects
 //
+//    Eric Brugger, Fri Aug 12 08:28:04 PDT 2005
+//    Modified the handling of multi-meshes with all EMPTY blocks to
+//    avoid a crash.
+//
+//    Eric Brugger, Fri Aug 12 11:36:35 PDT 2005
+//    Corrected a memory leak.
+//
 // ****************************************************************************
 
 void
@@ -1086,6 +1093,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             meshnum++;
             if (meshnum >= mm->nblocks)
             {
+                debug1 << "Giving up on mesh \"" << multimesh_names[i] 
+                       << "\" since all its blocks are EMPTY." << endl;
                 valid_var = false;
                 break;
             }
@@ -1262,21 +1271,21 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 
         // Store off the important info about this multimesh
         // so we can match other multi-objects to it later
-        if (valid_var)
+        actualMeshName.push_back(name_w_dir);
+        firstSubMesh.push_back((meshnum < mm->nblocks) ?
+                               mm->meshnames[meshnum] : "");
+        blocksForMesh.push_back(mm->nblocks);
+        allSubMeshDirs.push_back(vector<string>());
+        for (int j=0; j<mm->nblocks; j++)
         {
-            actualMeshName.push_back(name_w_dir);
-            firstSubMesh.push_back(mm->meshnames[meshnum]);
-            blocksForMesh.push_back(mm->nblocks);
-            allSubMeshDirs.push_back(vector<string>());
-            for (int j=0; j<mm->nblocks; j++)
-            {
-                string dir,var;
-                SplitDirVarName(mm->meshnames[j], dirname, dir,var);
-                if (j==0)
-                    firstSubMeshVarName.push_back(var);
-                allSubMeshDirs[i].push_back(dir);
-            }
+            string dir,var;
+            SplitDirVarName(mm->meshnames[j], dirname, dir,var);
+            if (j==meshnum)
+                firstSubMeshVarName.push_back(var);
+            allSubMeshDirs[i].push_back(dir);
         }
+        if (meshnum >= mm->nblocks)
+            firstSubMeshVarName.push_back("");
 
         delete [] name_w_dir;
     }
@@ -2246,6 +2255,13 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         delete [] origdir_names[i];
     }
     delete [] origdir_names;
+#ifdef DB_SCALAR // this test can be removed after Silo-4.5-pre3 is released
+    for (i = 0 ; i < ndefvars; i++)
+    {
+        delete [] defvars_names[i];
+    }
+    delete [] defvars_names;
+#endif
 }
 
 // ****************************************************************************

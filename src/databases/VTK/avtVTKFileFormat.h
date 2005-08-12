@@ -32,6 +32,9 @@ class DBOptionsAttributes;
 //    Hank Childs, Tue May 24 12:06:52 PDT 2005
 //    Added argument to constructor for DB options.
 //
+//    Eric Brugger, Fri Aug 12 11:28:43 PDT 2005
+//    Added GetCycleFromFilename.
+//
 // ****************************************************************************
 
 class avtVTKFileFormat : public avtSTSDFileFormat
@@ -49,6 +52,8 @@ class avtVTKFileFormat : public avtSTSDFileFormat
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
     virtual void          FreeUpResources(void);
+
+    int                   GetCycleFromFilename(const char *f) const;
 
   protected:
     vtkDataSet           *dataset;
