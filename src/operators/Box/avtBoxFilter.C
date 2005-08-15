@@ -16,6 +16,8 @@
 #include <vtkUnstructuredGrid.h>
 
 #include <avtExtents.h>
+#include <avtIntervalTree.h>
+#include <avtMetaData.h>
 #include <avtSpatialBoxSelection.h>
 
 #include <DebugStream.h>
@@ -795,6 +797,11 @@ avtBoxFilter::RefashionDataObjectInfo(void)
 //  Programmer: Mark C. Miller 
 //  Creation:   September 28, 2004 
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 12 13:40:39 PDT 2005
+//    Add support for interval trees.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -802,6 +809,10 @@ avtBoxFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
     avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
 
+    //
+    // First tell the file format reader that we are going to be doing a box,
+    // in case it can pull out exactly the zones that are within the box.
+    //
     avtSpatialBoxSelection *sel = new avtSpatialBoxSelection;
     if (atts.GetAmount() == BoxAttributes::Some)
         sel->SetInclusionMode(avtSpatialBoxSelection::Partial);
@@ -812,6 +823,18 @@ avtBoxFilter::PerformRestriction(avtPipelineSpecification_p spec)
     sel->SetMins(mins);
     sel->SetMaxs(maxs);
     selID = rv->GetDataSpecification()->AddDataSelection(sel);
+
+    //
+    // Now, if the file format reader has produced an interval tree, determine
+    // which domains fall within the box and make sure we only read in those.
+    //
+    avtIntervalTree *it = GetMetaData()->GetSpatialExtents();
+    if (it != NULL)
+    {
+        vector<int> dl;
+        it->GetDomainsListFromRange(mins, maxs, dl);
+        rv->GetDataSpecification()->GetRestriction()->RestrictDomains(dl);
+    }
 
     return rv;
 }

@@ -15,6 +15,7 @@
 class vtkDataSet;
 class vtkCell;
 
+class avtAbsValFilter;
 class avtBinaryMultiplyFilter;
 class avtVMetricArea;
 class avtVMetricVolume;
@@ -28,6 +29,11 @@ class avtVMetricVolume;
 //
 //  Programmer: Hank Childs
 //  Creation:   May 17, 2005
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 12 15:25:07 PDT 2005
+//    Use absolute value of the volume or area.
 //
 // ****************************************************************************
 
@@ -48,6 +54,7 @@ class QUERY_API avtCentroidQuery : public avtDatasetQuery
     avtVMetricArea                 *area;
     avtVMetricVolume               *volume;
     avtBinaryMultiplyFilter        *multiply;
+    avtAbsValFilter                *absval;
 
     virtual void                    Execute(vtkDataSet *, const int);
     virtual void                    PreExecute(void);
