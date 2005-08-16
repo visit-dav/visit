@@ -16,5 +16,7 @@ PyObject       *PyExternalSurfaceAttributes_WrapPyObject(const ExternalSurfaceAt
 void            PyExternalSurfaceAttributes_SetLogging(bool val);
 void            PyExternalSurfaceAttributes_SetDefaults(const ExternalSurfaceAttributes *atts);
 
+PyObject       *PyExternalSurfaceAttributes_StringRepresentation(const ExternalSurfaceAttributes *atts);
+
 #endif
 

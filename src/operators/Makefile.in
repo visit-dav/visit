@@ -166,6 +166,10 @@
 #    Hank Childs, Sat Jan 29 19:51:16 PST 2005
 #    Added elevate, resample, and coordswap operators.
 #
+#    Hank Childs, Mon Aug 15 14:51:30 PDT 2005
+#    Added Smooth and Merge.  Made resample, decimate, tube, external surface,
+#    and coordswap all available as non-default operators.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -173,13 +177,13 @@
 all: message
 	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
 
-OPTIONAL=Context ConnCompReduce CoordSwap Decimate ExternalSurface \
-         MetricThreshold RemoveCells Resample SiloDump SubdivideQuads \
-         SurfCompPrep Tube
+OPTIONAL=Context ConnCompReduce MetricThreshold RemoveCells SiloDump \
+         SubdivideQuads SurfCompPrep
 
-REQUIRED=Box Clip Cone Cylinder Displace Elevate IndexSelect InverseGhostZone \
-         Isosurface Isovolume Lineout OnionPeel Project Reflect Revolve \
-         Slice SphereSlice ThreeSlice Threshold Transform
+REQUIRED=Box Clip Cone CoordSwap Cylinder Decimate Displace Elevate \
+         ExternalSurface IndexSelect InverseGhostZone Isosurface Isovolume \
+         Lineout Merge OnionPeel Project Reflect Resample Revolve Slice \
+         Smooth SphereSlice ThreeSlice Threshold Transform Tube
 
 SUBDIRS=$(REQUIRED) @OPERATOR_OPTIONAL_DIRS@
 ALLSUBDIRS=$(REQUIRED) $(OPTIONAL)

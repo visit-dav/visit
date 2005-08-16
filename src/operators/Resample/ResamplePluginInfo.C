@@ -103,5 +103,5 @@ ResampleGeneralPluginInfo::GetID() const
 bool
 ResampleGeneralPluginInfo::EnabledByDefault() const
 {
-    return true;
+    return false;
 }

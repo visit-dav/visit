@@ -101,6 +101,9 @@ avtUnaryMathFilter::~avtUnaryMathFilter()
 //    Hank Childs, Thu Jan  6 13:32:50 PST 2005
 //    Create the correct sized array.
 //
+//    Hank Childs, Tue Aug 16 09:05:03 PDT 2005
+//    Make cur_mesh accessible to derived types.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -236,7 +239,9 @@ avtUnaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
     // If it did, it probably doesn't matter.  If not, then it is the same
     // number.  So send in the input.  Really doesn't matter.
     //
+    cur_mesh = in_ds;
     DoOperation(data, dv, ncomps, nvals);
+    cur_mesh = NULL;
 
     return dv;
 }

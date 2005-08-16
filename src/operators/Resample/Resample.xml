@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Resample" type="operator" label="Resample" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false">
+  <Plugin name="Resample" type="operator" label="Resample" version="1.0" enabled="false" mdspecificcode="false" onlyengine="false" noengine="false">
     <Files components="E">
       avtResamplePluginFilter.C
     </Files>

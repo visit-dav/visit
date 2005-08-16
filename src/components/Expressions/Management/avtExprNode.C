@@ -79,6 +79,9 @@
 #include <avtNeighborEvaluatorFilter.h>
 #include <avtDataIdFilter.h>
 #include <avtExpressionComponentMacro.h>
+#include <avtConservativeSmoothingExpression.h>
+#include <avtMeanFilterExpression.h>
+#include <avtMedianFilterExpression.h>
 
 #include <stdio.h>
 #include <ExpressionException.h>
@@ -396,6 +399,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Hank Childs, Thu Jul 21 12:34:02 PDT 2005
 //      Added array_compose, array_decompose.
 //
+//      Hank Childs, Tue Aug 16 09:05:03 PDT 2005
+//      Added mean_filter, median_filter.
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -577,6 +583,12 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtRevolvedVolume;
     else if (functionName == "revolved_surface_area")
         f = new avtRevolvedSurfaceArea;
+    else if (functionName == "conservative_smoothing")
+        f = new avtConservativeSmoothingExpression;
+    else if (functionName == "mean_filter")
+        f = new avtMeanFilterExpression;
+    else if (functionName == "median_filter")
+        f = new avtMedianFilterExpression;
     else if (functionName == "zoneid")
     {
         avtDataIdFilter *ff = new avtDataIdFilter;

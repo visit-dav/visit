@@ -49,6 +49,9 @@
 //    Jeremy Meredith, Tue Apr 26 12:05:29 PDT 2005
 //    Default persistent to true.
 //
+//    Hank Childs, Tue Aug 16 14:53:44 PDT 2005
+//    Add additional variable types.
+//
 // ****************************************************************************
 
 class Attribute
@@ -169,7 +172,7 @@ class Attribute
             {
                 QString varTypeString;
                 int mask = 1;
-                for(int m = 0; m < 9; ++m)
+                for(int m = 0; m < 11; ++m)
                 {
                     varTypeString += ((f->varTypes & mask) ? "1" : "0");
                     mask = mask << 1;

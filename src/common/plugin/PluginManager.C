@@ -801,12 +801,26 @@ PluginManager::LoadSinglePlugin(int index)
 //  Creation:   February  6, 2003
 //
 //  Modifications:
+//    Jeremy Meredith, Tue Aug 16 11:25:07 PDT 2005
+//    Enable all plugins when loading on demand.  There is currently no path
+//    to inform the Engine which plugins are actually enabled (see '6489), but
+//    since we are loading plugins on demand, it is simpler and perfectly
+//    correct to blindly enable all plugins in this case.
+//
 // ****************************************************************************
 
 void
 PluginManager::LoadPluginsOnDemand()
 {
     loadOnDemand = true;
+
+    // If we are loading plugins on demand, there is no
+    // reason to leave any plugin disabled.
+    int nAllPlugins = ids.size();
+    for (int i=0; i<nAllPlugins; i++)
+    {
+        EnablePlugin(ids[i]);
+    }
 }
 
 // ****************************************************************************
