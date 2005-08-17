@@ -37,6 +37,7 @@
 
 // .SECTION Additions 
 // KSB, LLNL, Added flag that allows ghost cells to be ignored. 
+// JSM, LLNL, Added FindClosestPointToLine method for point meshes.
 
 
 #ifndef __vtkVisItCellLocator_h
@@ -150,6 +151,12 @@ public:
                                 vtkIdList *cells);
 
 
+  // Description:
+  // Return the closest point and the cell which is closest to the ray
+  // specified by a0 and a1.
+  void FindClosestPointToLine(float a0[3], float a1[3],
+                              float &dist2, vtkIdType &cellId);
+  
   // Description:
   // Return the closest point and the cell which is closest to the point x.
   // The closest point is somewhere on a cell, it need not be one of the

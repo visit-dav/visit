@@ -7,6 +7,7 @@
 #include <qlabel.h>
 #include <qlayout.h>
 #include <qlineedit.h>
+#include <QNarrowLineEdit.h>
 #include <qspinbox.h>
 #include <qvbox.h>
 #include <qbuttongroup.h>
@@ -80,12 +81,15 @@ QvisMaterialWindow::~QvisMaterialWindow()
 //    Jeremy Meredith, Mon Sep 15 17:16:55 PDT 2003
 //    Added a toggle for the new material algorithm.
 //
+//    Hank Childs, Tue Aug 16 15:36:43 PDT 2005
+//    Add a toggle for "simplify heavily mixed zones".
+//
 // ****************************************************************************
 
 void
 QvisMaterialWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 5,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 7,2,  10, "mainLayout");
 
 
     smoothing = new QCheckBox("Enable interface smoothing", central, "smoothing");
@@ -113,6 +117,21 @@ QvisMaterialWindow::CreateWindowContents()
     connect(cleanZonesOnly, SIGNAL(toggled(bool)),
             this, SLOT(cleanZonesOnlyChanged(bool)));
     mainLayout->addWidget(cleanZonesOnly, 4,0);
+
+    simplifyHeavilyMixedZones = new QCheckBox("Simplify heavily mixed zones", 
+                 central, "simplifyHeavilyMixedZones");
+    connect(simplifyHeavilyMixedZones, SIGNAL(toggled(bool)),
+            this, SLOT(simplifyHeavilyMixedZonesChanged(bool)));
+    mainLayout->addWidget(simplifyHeavilyMixedZones, 5,0);
+
+    maxMatsPerZoneLabel = new QLabel("Maximum materials per zone",
+                                     central, "maxMatsPerZoneLabel");
+    mainLayout->addWidget(maxMatsPerZoneLabel, 6, 0);
+
+    maxMatsPerZone = new QNarrowLineEdit(central, "maxMatsPerZone");
+    connect(maxMatsPerZone, SIGNAL(returnPressed()), this,
+            SLOT(maxMatsPerZoneProcessText()));
+    mainLayout->addWidget(maxMatsPerZone, 6, 1);
 }
 
 
@@ -132,6 +151,9 @@ QvisMaterialWindow::CreateWindowContents()
 //    Jeremy Meredith, Mon Sep 15 17:20:57 PDT 2003
 //    Added a toggle for the new MIR algorithm.
 //
+//    Hank Childs, Tue Aug 16 15:36:43 PDT 2005
+//    Add a toggle for "simplify heavily mixed zones".
+//
 // ****************************************************************************
 
 void
@@ -144,6 +166,8 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
     cleanZonesOnly->blockSignals(true);
     forceFullConnectivity->blockSignals(true);
     useNewMIR->blockSignals(true);
+    simplifyHeavilyMixedZones->blockSignals(true);
+    maxMatsPerZone->blockSignals(true);
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -172,6 +196,16 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
           case 4: //useNewMIR
             useNewMIR->setChecked(atts->GetUseNewMIRAlgorithm());
             break;
+          case 5: //simplifyHeavilyMixedZones
+            simplifyHeavilyMixedZones->setChecked(
+                                         atts->GetSimplifyHeavilyMixedZones());
+            maxMatsPerZone->setEnabled(atts->GetSimplifyHeavilyMixedZones());
+            maxMatsPerZoneLabel->setEnabled(atts->GetSimplifyHeavilyMixedZones());
+            break;
+          case 6: //maxMatsPerZone
+            temp.sprintf("%d", atts->GetMaxMaterialsPerZone());
+            maxMatsPerZone->setText(temp);
+            break;
         }
     }
 
@@ -180,6 +214,8 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
     cleanZonesOnly->blockSignals(false);
     forceFullConnectivity->blockSignals(false);
     useNewMIR->blockSignals(false);
+    simplifyHeavilyMixedZones->blockSignals(false);
+    maxMatsPerZone->blockSignals(false);
 }
 
 
@@ -199,12 +235,16 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
 //    Jeremy Meredith, Mon Sep 15 17:17:12 PDT 2003
 //    Added the toggle for the new MIR algorithm.
 //
+//    Hank Childs, Tue Aug 16 15:36:43 PDT 2005
+//    Add a toggle for "simplify heavily mixed zones".
+//
 // ****************************************************************************
 
 void
 QvisMaterialWindow::GetCurrentValues(int which_widget)
 {
     bool doAll = (which_widget == -1);
+    QString msg, temp;
 
     // Do smoothing
     if(which_widget == 0 || doAll)
@@ -234,6 +274,36 @@ QvisMaterialWindow::GetCurrentValues(int which_widget)
     if(which_widget == 4 || doAll)
     {
         // Nothing for useNewMIR
+    }
+
+    // Do simplifyHeavilyMixedZones
+    if(which_widget == 5 || doAll)
+    {
+        // Nothing for simplifyHeavilyMixedZone
+    }
+
+    // Do maxMatsPerZone
+    if(which_widget == 6 || doAll)
+    {
+        temp = maxMatsPerZone->displayText().simplifyWhiteSpace();
+        bool okay = !temp.isEmpty();
+        if(okay)
+        {
+            int val = temp.toInt(&okay);
+            if (val < 1)
+                okay = false;
+            else
+                atts->SetMaxMaterialsPerZone(val);
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("Max mats per zone must be at least 1."
+                "Resetting to the last good value of %d.",
+                atts->GetMaxMaterialsPerZone());
+            Message(msg);
+            atts->SetMaxMaterialsPerZone(atts->GetMaxMaterialsPerZone());
+        }
     }
 
 }
@@ -374,6 +444,22 @@ void
 QvisMaterialWindow::useNewMIRChanged(bool val)
 {
     atts->SetUseNewMIRAlgorithm(val);
+    Apply();
+}
+
+
+void
+QvisMaterialWindow::simplifyHeavilyMixedZonesChanged(bool val)
+{
+    atts->SetSimplifyHeavilyMixedZones(val);
+    Apply();
+}
+
+
+void
+QvisMaterialWindow::maxMatsPerZoneProcessText()
+{
+    GetCurrentValues(6);
     Apply();
 }
 

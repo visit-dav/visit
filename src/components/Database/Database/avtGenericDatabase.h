@@ -246,6 +246,9 @@ class     PickVarInfo;
 //    Hank Childs, Tue Jul 19 14:52:08 PDT 2005
 //    Added support for array variables.
 //
+//    Hank Childs, Wed Aug 17 09:10:35 PDT 2005
+//    Add support for simplifying heavily mixed zones.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -365,11 +368,11 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                               stringVector &, 
                                               stringVector &, 
                                               bool, bool, bool, bool, bool,
-                                              bool, int, bool, bool&, bool&,
-                                              bool);
+                                              bool, bool, int, int, bool, 
+                                              bool&, bool&, bool);
     void_ref_ptr               GetMIR(int, const char *, int, vtkDataSet*,
                                       avtMaterial *, int, bool, bool, bool,
-                                      int, bool, bool&, bool&, bool);
+                                      bool, int, int, bool, bool&, bool&,bool);
     avtMaterial               *GetMaterial(int, const char *, int);
     avtSpecies                *GetSpecies(int, const char *, int);
     void                       GetMaterialIndices(avtMaterial *,

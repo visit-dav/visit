@@ -101,6 +101,9 @@ avtExpressionEvaluatorFilter::~avtExpressionEvaluatorFilter()
 //    Hank Childs, Fri Dec 31 11:47:01 PST 2004
 //    Use a cached terminating source rather than one on the stack.
 //
+//    Hank Childs, Tue Aug 16 16:53:20 PDT 2005
+//    Added called to VerifyVariableTypes ['6485]
+//
 // ****************************************************************************
 
 void
@@ -145,9 +148,74 @@ avtExpressionEvaluatorFilter::Execute(void)
         GetOutput()->Copy(*dObj);
     }
 
+    //VerifyVariableTypes();
+
     // Stop the timer
     visitTimer->StopTimer(timingIndex, "Expression Evaluator Filter");
     visitTimer->DumpTimings();
+}
+
+
+// ****************************************************************************
+//  Method: avtExpressionEvaluatorFilter::VerifyVariableTypes
+//
+//  Purpose:
+//      Verify that the variables created are of the same type they were
+//      declared to be.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 16, 2005
+//
+// ****************************************************************************
+
+void
+avtExpressionEvaluatorFilter::VerifyVariableTypes(void)
+{
+    avtDataAttributes &atts = GetOutput()->GetInfo().GetAttributes();
+    int nvars = atts.GetNumberOfVariables();
+    for (int i = 0 ; i < nvars ; i++)
+    {
+        const std::string &varname = atts.GetVariableName();
+        avtVarType vt = atts.GetVariableType(varname.c_str());
+        Expression *exp = ParsingExprList::GetExpression(varname.c_str());
+        if (exp == NULL)
+            continue;
+        Expression::ExprType et = exp->GetType();
+        if (et == Expression::Mesh || et == Expression::Material
+            || et == Expression::Species)
+            continue;
+        avtVarType et_as_avt = AVT_UNKNOWN_TYPE;
+        switch (et)
+        {
+          case Expression::ScalarMeshVar:
+            et_as_avt = AVT_SCALAR_VAR;
+            break;
+          case Expression::VectorMeshVar:
+            et_as_avt = AVT_VECTOR_VAR;
+            break;
+          case Expression::TensorMeshVar:
+            et_as_avt = AVT_TENSOR_VAR;
+            break;
+          case Expression::SymmetricTensorMeshVar:
+            et_as_avt = AVT_SYMMETRIC_TENSOR_VAR;
+            break;
+          case Expression::ArrayMeshVar:
+            et_as_avt = AVT_ARRAY_VAR;
+            break;
+        }
+        if (vt != et_as_avt)
+        {
+            char msg[1024];
+            sprintf(msg, "The expression variable \"%s\" was declared to be of"
+                         " type %s, but is actually of type %s.  Please "
+                         "confirm that the variable was declared correctly.  "
+                        "Contact visit-help@llnl.gov if you believe that "
+                         "the variable has been declared correctly.",
+                         varname.c_str(), avtVarTypeToString(vt).c_str(),
+                         avtVarTypeToString(et_as_avt).c_str());
+            EXCEPTION1(VisItException, msg);
+        }
+    }
 }
 
 

@@ -1100,6 +1100,156 @@ avtMaterial::CreatePackedMaterial() const
 }
 
 // ****************************************************************************
+//  Method:  SimplifyHeavilyMixedZones
+//
+//  Purpose:
+//    Create a clone of this material, but simplify zones that are heavily 
+//    mixed.
+//    
+//  Programmer:  Hank Childs
+//  Creation:    August 16, 2005
+//
+// ****************************************************************************
+
+avtMaterial *
+avtMaterial::SimplifyHeavilyMixedZones(int maxMats) const
+{
+    int   i, j, k;
+
+    //
+    // Start off by creating the matlist and calculating the new mixlen.
+    //
+    int *new_ml = new int[nZones];
+    int new_mixlen = 0;
+    for (i = 0 ; i < nZones ; i++)
+    {
+        if (matlist[i] >= 0)
+            new_ml[i] = matlist[i];
+        else
+        {
+            // We know where we are going to put the zone in our new mixed
+            // arrays, so set that up now.
+            new_ml[i] = -new_mixlen-1;
+
+            // Now calculate how many materials are in the zone and clamp it
+            // to maxMats if necessary.
+            int current = -matlist[i]-1;
+            int nmats = 1;
+            // nmats < 1000 just to prevent infinite loops if someone
+            // set this structure up wrong.
+            while ((mix_next[current] != 0) && (nmats < 1000))
+            {
+                current = mix_next[current]-1;
+                nmats++;
+            }
+            if (nmats > maxMats)
+                nmats = maxMats;
+            new_mixlen += nmats;
+        }
+    }
+
+    //
+    // Now that we know their sizes, let's construct the mixed arrays.
+    //
+    int   *new_mix_mat  = new int[new_mixlen];
+    int   *new_mix_next = new int[new_mixlen];
+    int   *new_mix_zone = new int[new_mixlen];
+    float *new_mix_vf   = new float[new_mixlen];
+    int    cur_offset   = 0;
+    int   *top_mat      = new int[maxMats];
+    float *top_vf       = new float[maxMats];
+    for (i = 0 ; i < nZones ; i++)
+    {
+        if (new_ml[i] >= 0)
+            continue;
+
+        int nValid = 0;
+        for (j = 0 ; j < maxMats ; j++)
+            top_mat[j] = -1;
+
+        // Start off by determining how many materials are in the zone.
+        // Also construct mix_next and mix_zone.
+        int current = -matlist[i]-1;
+        int nmats = 1;
+        // nmats < 1000 just to prevent infinite loops if someone
+        // set this structure up wrong.
+        bool keepGoing = true;
+        while (keepGoing)
+        {
+            bool madeCut = false;
+            for (j = 0 ; j < nValid ; j++)
+            {
+                if (mix_vf[current] > top_vf[j])
+                {
+                    int start = (nValid >= maxMats ? maxMats-1 : nValid);
+                    for (k = start ; k > j ; k--)
+                    {
+                        top_vf[k] = top_vf[k-1];
+                        top_mat[k] = top_mat[k-1];
+                    }
+                    if (nValid < maxMats)
+                        nValid++;
+                    top_vf[j] = mix_vf[current];
+                    top_mat[j] = mix_mat[current];
+                    madeCut = true;
+                    break;
+                }
+            }
+            if (!madeCut && (nValid < maxMats))
+            {
+                top_vf[nValid] = mix_vf[current];
+                top_mat[nValid] = mix_mat[current];
+                nValid++;
+            }
+            current = mix_next[current]-1;
+            if (current == -1)
+                keepGoing = false;
+            else if (nmats >= 1000)
+                keepGoing = false;
+            else
+                nmats++;
+        }
+        if (nmats > maxMats)
+        {
+            nmats = maxMats;
+            float sum = 0.;
+            for (j = 0 ; j < nValid ; j++)
+                 sum += top_vf[j];
+            if (sum > 0)
+                for (j = 0 ; j < nValid ; j++)
+                     top_vf[j] /= sum;
+          
+        }
+        for (j = 0 ; j < nValid ; j++)
+        {
+            new_mix_zone[cur_offset+j] = i;
+            if (j == nmats-1)
+                new_mix_next[cur_offset+j] = 0;
+            else
+                new_mix_next[cur_offset+j] = cur_offset+j+2;
+            new_mix_mat[cur_offset+j] = top_mat[j];
+            new_mix_vf[cur_offset+j] = top_vf[j];
+        }
+        cur_offset += nmats;
+    }
+
+    avtMaterial *rv = new avtMaterial(nMaterials, materials, nZones,
+                                      new_ml, new_mixlen, new_mix_mat,
+                                      new_mix_next, new_mix_zone, new_mix_vf);
+
+    delete [] new_ml;
+    delete [] new_mix_mat;
+    delete [] new_mix_next;
+    delete [] new_mix_zone;
+    delete [] new_mix_vf;
+    delete [] top_mat;
+    delete [] top_vf;
+
+    return rv;
+}
+
+
+// ****************************************************************************
 //  Method: avtMaterial destructor
 //
 //  Programmer: Hank Childs

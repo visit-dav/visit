@@ -4017,6 +4017,8 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
                         bool needSmoothMaterialInterfaces,
                         bool needCleanZonesOnly,
                         bool reconstructionForced,
+                        bool simplifyHeavilyMixedZones,
+                        int  maxMatsPerZone,
                         int  mirAlgorithm,
                         bool didGhosts,
                         bool &subdivisionOccurred,
@@ -4058,7 +4060,8 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     void_ref_ptr vr_mir = GetMIR(dom, var, ts, ds, mat, topoDim,
                                  needValidConnectivity,
                                  needSmoothMaterialInterfaces,
-                                 needCleanZonesOnly, mirAlgorithm,
+                                 needCleanZonesOnly, simplifyHeavilyMixedZones,
+                                 maxMatsPerZone, mirAlgorithm,
                                  didGhosts,
                                  subdivisionOccurred,
                                  notAllCellsSubdivided, reUseMIR);
@@ -4705,6 +4708,9 @@ avtGenericDatabase::SpeciesSelect(avtDatasetCollection &dsc,
 //    Jeremy Meredith, Thu Sep 18 11:31:23 PDT 2003
 //    Made the new MIR algorithm work in 2D as well.
 //
+//    Hank Childs, Wed Aug 17 09:10:35 PDT 2005
+//    Add support for simplifying heavily mixed zones.
+//
 // ****************************************************************************
 void_ref_ptr
 avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
@@ -4712,17 +4718,20 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
                            bool needValidConnectivity,
                            bool needSmoothMaterialInterfaces,
                            bool needCleanZonesOnly, 
+                           bool simplifyHeavilyMixedZones, int maxMatsPerZone,
                            int  mirAlgorithm,
                            bool didGhosts,
                            bool &subdivisionOccurred,
                            bool &notAllCellsSubdivided, bool reUseMIR)
 {
     char cacheLbl[1000];
-    sprintf(cacheLbl, "MIR_%s_%s_%s_%s_%s",
+    sprintf(cacheLbl, "MIR_%s_%s_%s_%s_%s_%d_%s",
             needValidConnectivity        ? "FullSubdiv" : "MinimalSubdiv",
             needSmoothMaterialInterfaces ? "Smooth"     : "NotSmooth",
             needCleanZonesOnly           ? "CleanOnly"  : "SplitMixed",
             didGhosts                    ? "DidGhosts"  : "NoDidGhosts",
+            simplifyHeavilyMixedZones    ? "Simplify"   : "NoSimplify",
+            maxMatsPerZone,
             mirAlgorithm==0              ? "TetMIR"     : "ZooMIR");
 
     //
@@ -4747,6 +4756,12 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
             EXCEPTION0(NoInputException);
         }
 
+        avtMaterial *mat_to_use = mat;
+        if (simplifyHeavilyMixedZones)
+        {
+            mat_to_use = mat->SimplifyHeavilyMixedZones(maxMatsPerZone);
+        }
+
         MIR *mir = NULL;
 
         //
@@ -4763,11 +4778,11 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
         mir->SetCleanZonesOnly(needCleanZonesOnly);
         if (topoDim == 3)
         {
-            mir->Reconstruct3DMesh(ds, mat);
+            mir->Reconstruct3DMesh(ds, mat_to_use);
         }
         else
         {
-            mir->Reconstruct2DMesh(ds, mat);
+            mir->Reconstruct2DMesh(ds, mat_to_use);
         }
 
         //
@@ -4780,6 +4795,11 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
         {
             cache.CacheVoidRef(matname.c_str(), cacheLbl, timestep, domain,vr);
         }
+
+        // By deleting this new material, we are assuming that the MIR is
+        // not caching a copy of the material.
+        if (mat != mat_to_use)
+            delete mat_to_use;
     }
 
     MIR *rv = (MIR *) *vr;
@@ -7198,6 +7218,9 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
 //    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
 //    Set MIROccurred flag in avtDataAttributes. 
 //
+//    Hank Childs, Wed Aug 17 09:23:38 PDT 2005
+//    Use new material options for simplifying heavily mixed zones.
+//
 // ****************************************************************************
 
 void
@@ -7269,6 +7292,8 @@ avtGenericDatabase::MaterialSelect(avtDatasetCollection &ds,
                                 spec->NeedSmoothMaterialInterfaces(),
                                 spec->NeedCleanZonesOnly(), 
                                 spec->MustDoMaterialInterfaceReconstruction(),
+                                spec->SimplifyHeavilyMixedZones(),
+                                spec->MaxMaterialsPerZone(),
                                 spec->UseNewMIRAlgorithm() ? 1 : 0,
                                 didGhosts, so, nacs, reUseMIR);
 
