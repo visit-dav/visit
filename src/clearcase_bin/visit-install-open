@@ -50,7 +50,7 @@ esac
 #
 # Parse the execute line, providing default values for error checking.
 #
-kickit=true
+hoth=true
 sunspot=true
 hyper=true
 gps=true
@@ -72,7 +72,7 @@ for abc
 do
    case $1 in
       -none)
-         kickit=false
+         hoth=false
          sunspot=false
          hyper=false
          gps=false
@@ -83,12 +83,12 @@ do
          thunder=false
          shift
          ;;
-      -kickit)
-         kickit=false
+      -hoth)
+         hoth=false
          shift
          ;;
-      +kickit)
-         kickit=true
+      +hoth)
+         hoth=true
          shift
          ;;
       -sunspot)
@@ -196,15 +196,20 @@ ver2=`echo $ver | tr "." "_"`
 ver=`echo $ver2 | tr "_" "."`
 
 #
-# Install on kickit.
+# Copy visit from kickit.
 #
-rm -f kickit
-cat <<EOF > kickit
+scp kickit:/var/tmp/$user/kickit/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_rh71.tar.gz
+
+#
+# Install on hoth.
+#
+rm -f hoth
+cat <<EOF > hoth
 #!/bin/sh
-./visit-install -r -private -c open -g visit -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
+./visit-install -r -private -c open -g visit -gw -l $ver linux_rhel3 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
-echo "        install of visit on kickit"          > resultlog 2>&1
-echo "       ----------------------------"         >> resultlog 2>&1
+echo "        install of visit on hoth"            > resultlog 2>&1
+echo "       --------------------------"           >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
@@ -219,15 +224,15 @@ ls /usr/gapps/visit/$ver/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gap
 mail $emailName < resultlog
 EOF
 
-if [ $kickit = true ]
+if [ $hoth = true ]
 then
    if [ $test = no ]
    then
-      scp kickit:/var/tmp/$user/kickit/visitbuild/visit$ver2.linux.tar.gz .
-      scp visit$ver2.linux.tar.gz kickit:
+      scp hoth:/var/tmp/$user/hoth/visitbuild/visit$ver2.linux.tar.gz visit_$ver2.linux_rhel3.tar.gz
+      scp visit$ver2.linux_rhel3.tar.gz kickit:
       scp visit-install kickit:
-      scp kickit kickit:kickit_install
-      ssh kickit "chmod 750 kickit_install;./kickit_install"
+      scp hoth kickit:hoth_install
+      ssh kickit "chmod 750 hoth_install;./hoth_install"
    fi
 fi
 
@@ -418,7 +423,7 @@ fi
 rm -f pengra
 cat <<EOF > pengra
 #!/bin/sh
-./visit-install $verflag -c open -g visit -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
+./visit-install $verflag -c open -g visit -gw -l $ver linux_chaos /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on pengra"          > resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1
@@ -441,7 +446,7 @@ then
    if [ $test = no ]
    then
       scp pengra1:/usr/tmp/brugger/pengra/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
-      scp visit$ver2.linux_chaos.tar.gz gps15:visit$ver2.linux.tar.gz
+      scp visit$ver2.linux_chaos.tar.gz gps15:
       scp visit-install gps15:
       scp pengra gps15:pengra_install
       ssh gps15 "chmod 750 pengra_install;./pengra_install"
@@ -454,7 +459,7 @@ fi
 rm -f alc
 cat <<EOF > alc
 #!/bin/sh
-./visit-install -r -private -c open -g visit -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
+./visit-install -r -private -c open -g visit -gw -l $ver linux_chaos /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on alc"             > resultlog 2>&1
 echo "       -------------------------"            >> resultlog 2>&1
@@ -477,7 +482,7 @@ then
    if [ $test = no ]
    then
       scp pengra1:/usr/tmp/brugger/pengra/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
-      scp visit$ver2.linux_chaos.tar.gz alc0:visit$ver2.linux.tar.gz
+      scp visit$ver2.linux_chaos.tar.gz alc0:
       scp visit-install alc0:
       scp alc alc0:alc_install
       ssh alc0 "chmod 750 alc_install;./alc_install"
@@ -533,5 +538,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit sunspot hyper gps berg up pengra alc thunder
+   rm -f hoth sunspot hyper gps berg up pengra alc thunder
 fi

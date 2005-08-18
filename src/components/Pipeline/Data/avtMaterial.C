@@ -49,6 +49,10 @@ using std::vector;
 //    Hank Childs, Sun Feb 13 13:28:52 PST 2005
 //    Fix a bad test that assumes mixlen is > 0.
 //
+//    Jeremy Meredith, Thu Aug 18 13:25:06 PDT 2005
+//    Fixed a test that compared a negative 1-origin matlist entry into the
+//    mix array with mixlen in a way that assumed the entry was 0-origin.
+//
 // ****************************************************************************
 static void
 RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
@@ -95,12 +99,12 @@ RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
             // If we have a valid index into the mixed portion, tag it and
             // skip along to the next zone.
             //
-            if ((ml[i] < 0) && (ml[i] > -mixl))
+            if ((ml[i] < 0) && (ml[i] >= -mixl))
             {
                 newml[i] = ml[i];
                 continue;
             }
-            else if (ml[i] < 0 && ml[i] <= -mixl)
+            else if (ml[i] < 0 && ml[i] < -mixl)
             {
                 newml[i] = nMats;
                 if (!haveIssuedWarning)

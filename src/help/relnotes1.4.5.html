@@ -1,0 +1,103 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.4.5 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.4.5 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.4.5</font></b></p>
+<ul>
+<li>VisIt's material interface reconstruction algorithm has been improved so that it can optionally simplify the number of materials in a zone. This option, called <i>"Simplify heavily mixed zones"</i>, reduces memory consumption by a factor of 3 to 4 when there are many materials in a zone. The new simplification mode is not turned on by default. If you suspect that VisIt is running out of memory during material interface reconstruction (if you have trouble going to new time states when plotting a FilledBoundary plot) then you can enable the new mode by opening the <b>Material 
+Options</b> window and clicking on the <b>Simplify heavily mixed zones</b> check box. The new simplification mode works by keeping N materials that have the highest volume fractions. The number of materials kept is user-specified in the <b>Material 
+Options</b> window. Pick and other Queries will still return information about all of the the original materials in their output.</li>
+<li>VisIt now supports array variables, which are N-component vector variables where the size of N can vary. Array variables can be read in by database reader plugins or they can also be created using the new <i>array_compose</i> expression, which takes a list of 
+scalar variables and unites them into an array variable (e.g. <i>array_compose(density, pressure, speed, temperature)</i>). The resulting array variable can then be plotted by the Label plot, allowing you to use a single label plot to inspect multiple variables simultaneously.</li>
+<li>VisIt has several new operator plugins: <i>Decimate</i>, <i>Smooth</i>, <i>Merge</i>, and <i>Resample</i>. The Decimate operator can simplify meshes. The Smooth operator smooths out data values. The Merge operator merges multiple domains, etc into a single dataset that can be processed better by the Smooth operator. The Resample operator samples a dataset in each of its dimensions to extract a user-specified number of samples that are combined into a single, 
+simplified, rectilinear dataset.
+    <br><br>Each of the new operators is built and installed by default but they are not enabled by default. To make VisIt load these operator plugins, open the <b>Plugin manager</b> window, turn on the desired operators, save your settings, and restart VisIt.
+</li>
+<li>VisIt's Label plot has been enhanced in several ways:
+    <ul>
+    <li>The Label plot can now optionally perform depth testing to eliminate labels that should not be visible when plotting 3D labels. Whether depth testing is necessary is automatically determined by default. VisIt may indicate that depth testing needs to be done but was not done because you are running on a remote display. You can make the Label plot always do depth testing by setting the <b>Depth testing mode</b> to <b>Always</b>.</li>
+    <li>The Label plot has been enhanced so it can plot Tensor and Array variables.</li>
+    <li>The Label plot has been enhanced so it can plot Material and Subset variables, allowing you to label a plot with material names, domain numbers, group numbers, patch names, level names, etc.</li>
+    <li>The Label plot has been enhanced so you can specify different cell or node colors and text sizes when you plot a mesh and opt to display both cells and nodes. The additional controls for setting colors and text height are only available 
+    in the <b>Label plot attributes</b> window when you plot a mesh with the Label plot.</li>
+	<li><i>The single zone/node options were removed from the Label plot in favor of requiring the OnionPeel or IndexSelect operators to be applied instead.</i></li>
+    </ul>
+</li>
+<li>VisIt can now pick on point meshes that have no glyphs applied to them. Pick returns information for the point closest to where you clicked in the vis window.</li>
+<li>VisIt's default point glyph mode has been changed from <i>Box</i> to <i>Points</i> so point meshes will no longer have glyphs applied by default. The result is that point meshes will be drawn as points with a pixel size of 2, making rendering of point meshes much faster. This change will not override your saved settings. If you would 
+like to apply glyphs to your point meshes, you can still do so by selecting an 
+alternate glyph type in the plot attribute windows for plots that can render point meshes.</li>
+<li>Several of VisIt's plot attribute windows have been modified so you can set the pixel size for points meshes that are rendered as points. The <b>Point size</b> text field in those windows has been enhanced so it 
+shows as <b>Point size (pixels)</b> when you are rendering point meshes as points. When the text field displays as <b>Point size (pixels)</b>, you can type in a new pixel size for your point mesh's points.</li>
+<li>VisIt now supports some image processing expressions: <i>mean</i>, <i>median</i>, and <i>conservative_smooth</i>. All of these expressions are for 
+reducing so-called <i>"salt-and-pepper"</i> noise, which is common in CT data.</li>
+<li>VisIt has a new database plugin called Xmdv that can read and write array 
+variables&nbsp; to a text file. The Xmdv reader can be used in conjunction with <i>Export database</i> to export data derived from expressions to text files for processing in other applications.</li>
+<li>VisIt has a new database reader plugin that can read a subset of PATRAN neutral data files. Specifically, the mesh and materials can be read in and plotted.</li>
+<li>VisIt has a new database reader plugin that can read a subset of NASTRAN Bulk data files. The new reader can read in the mesh contained in the Bulk data file format provided it uses any of the following keywords: <i>GRID</i>,<i>GRID*</i>,<i>CHEXA</i>,<i>CTETRA</i>,<i>CPYRAM</i>,<i>CPENTA</i>,<i>CQUAD4</i>,<i>CTRIA2</i>,<i>CTRIA3</i>,<i>CBAR</i>. If you are interested in improving this reader so it can read the NASTRAN results file or if you have data to contribute, please contact <i>visit-help@llnl.gov</i>.</li>
+<li>VisIt's Box operator now uses interval trees so it reduces the number of subsets that must be processed. For example, this enhancement makes the Box operator more efficient when reading Enzo databases since the number of patches that are read and processed decreases.</li>
+<li>VisIt's <b>Annotation</b> window has been enhanced so it provides text fields on both the <b>2D</b> and <b>3D</b> tabs that allow you to specify axis titles and units.</li>
+<li>VisIt's <i>curl</i> expression now supports 2D data.</li>
+<li>VisIt now has host profiles for LLNL's <i>up</i> and <i>pu</i> computers.</li>
+<li>VisIt now supports <i>Kurtosis</i> and <i>Skewness</i> queries.</li>
+<li>VisIt now supports a <i>Spherical compactness factor</i> query that calculates the volume of an object and creates a sphere located at the object's centroid that has the same volume, and then reports the percentage of the object's volume that lies with the sphere's volume.</li>
+<li>VisIt's VTK database reader plugin has been enhanced so it can correctly read char data from VTK files.</li>
+<li>VisIt's TrueColor plot, which can display images using their correct colors, is now built and installed by default. 
+The TrueColor plot is useful for plotting experimental data next to simulated 
+data or for other purposes such as including maps in a visualization.</li>
+<li>VisIt's TrueColor plot has been enhanced so there is now an option to turn off lighting.</li>
+<li>The Scatter plot now scales all domains using the global extents when the <b>Scale to cube</b> check box is turned on. This means that the points from all domains are where they should be instead of possibly occupying different spaces.</li>
+<li>VisIt's CLI has two new methods that influence whether query output is printed to the console. The new methods are: <i>SuppressQueryOutputOn()</i> and <i>SuppressQueryOutputOff()</i>.</li>
+<li>VisIt now has an <i>"auto-fullframe"</i> mode that can be used to make VisIt enter fullframe mode when plotting 2D datasets that have very high aspect ratios. This improves plotting of LEOS data tremendously because no Transform operator is required to make the plots presentable.</li>
+<li>The <b>View</b> window has been enhanced so the tab that matches the dimension of the vis window is enabled by default.</li>
+<li>The <i>"visit -movie"</i> script now saves out RGB files instead of TIFF images so the <i>img2sm</i> program will work on the SGI plaform, which sometimes has a faulty TIFF library.</li>
+<li>VisIt can now be built as a 64-bit binary using xlC.</li>
+<li>Information about using VisIt's command line <i>-stereo</i> flag has been added to <i>visit -help</i>.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.4.5</font></b></p>
+<ul>
+<li>VisIt's viewer crashes when the left mouse button and middle mouse buttons are clicked at the same time.</li>
+<li>VisIt's viewer crashes when attempting to query a plot that could not be generated by the compute engine.</li>
+<li>The Spheral database reader plugin returns empty datasets in certain cases, leading the compute engine to crash.</li>
+<li>The CLI cannot be launched by the viewer on AIX systems, preventing movie-making from working.</li>
+<li>The Enzo database reader plugin used to provide incorrect extents when the database had multiple root grids.</li>
+<li>VisIt crashes when reading Ale3D Silo root files that contain multi-meshes whose members are all <i>EMPTY</i> blocks.</li>
+<li>VisIt cannot obtain cycle or time information from VTK files. Cycle and time data can be stored as field data in the VTK file and VisIt will recognize it.</li>
+<li>Plugins that are not enabled by default cannot be loaded by the compute engine.</li>
+<li>Point meshes could not have glyphs applied (e.g. Icosahedra, Box, Axis) if the points were first rendered as regular points.</li>
+<li>Using the IndexSelect operator with the groups category of subset causes the compute engine to crash.</li>
+<li>The Label plot draws cell ids instead of 2D vectors when the vectors result from a 3D vector variable being sliced.</li>
+<li>Volume plots using the hardware-accelerated rendering modes do not render AMR datasets properly due to a probable ghost zone issue.</li>
+<li>The <em>MomentOfInertia</em> and <em>Centroid</em> queries calculate the wrong values on meshes created by the Revolve operator when cells with negative volumes are produced.</li>
+<li>VisIt's Enzo database plugin reader fails to open 2D Enzo files.</li>
+<li>Expressions involving mesh quality which often contain reserved angle-bracket characters are not properly saved to session files.</li>
+<li>Setting a min value for coordinates in Scatter plot while coloring it by a variable causes it to use wrong data values.</li>
+<li>It is not possible to turn off domains for datasets that have multiple domains and also groups in VisIt's CLI.</li>
+<li>The IndexSelect operator does not use the right base index for its cell indices.</li>
+<li>Pick is looking up nodes in the original mesh instead of the index-selected mesh when the IndexSelect operator has been applied, leading to incorrect pick results.</li>
+<li>Picking on an index-selected mesh always returns relative logical coordinates.</li>
+<li>VisIt's Tecplot database reader plugin cannot handle the <i>DATASETAUXDATA</i> keyword and it always requires a 2D mesh to have <i>X</i> and <i>Y</i> variables.</li>
+<li>The Vector plot does not always use the <i>Single color</i> color attribute when that coloring mode is used when VisIt animates a Vector plot over time.</li>
+<li>The variable menu that allows you to pick a variable by which to scale a point mesh is enabled when it should not be enabled.</li>
+<li>VisIt's Curve2D database reader, which reads in Ultra curve files, cannot successfully read files that use tabs for white-space.</li>
+<li>VisIt indiscriminately displays the same error message multiple times if the same error message is issued multiple times.</li>
+<li>The IndexSelect operator can cause some subsets that have been explicitly turned off to reappear when using the operator on groups.</li>
+<li>Plots that fail to be generated by the compute engine still cause the Mesh plot to automatically go out of opaque mode.</li>
+<li>When the first variable used by the Scatter plot is cell centered and we color by another variable, the Scatter plot's point glyphs are all white.</li>
+<li>A misleading error message about a missing compute engine has been eliminated from pick.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes1.4.4.html">VisIt 1.4.4 Release Notes</a>.</p>
+</body>
+</html>
