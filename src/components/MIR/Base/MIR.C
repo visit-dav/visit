@@ -34,6 +34,22 @@ using std::vector;
 
 
 // ****************************************************************************
+//  Method:  MIR::SetAlgorithm
+//
+//  Purpose:
+//    Set the option algorithm
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 18, 2005
+//
+// ****************************************************************************
+void
+MIR::SetAlgorithm(int a)
+{
+    options.algorithm = a;
+}
+
+// ****************************************************************************
 //  Method:  MIR::SetSubdivisionLevel
 //
 //  Purpose:
@@ -111,6 +127,22 @@ void
 MIR::SetCleanZonesOnly(bool czo)
 {
     options.cleanZonesOnly = czo;
+}
+
+// ****************************************************************************
+//  Method:  MIR::SetIsovolumeVF
+//
+//  Purpose:
+//    Set the VF cutoff for the isovolume algorithm.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 18, 2005
+//
+// ****************************************************************************
+void
+MIR::SetIsovolumeVF(float vf)
+{
+    options.isovolumeVF = vf;
 }
 
 // ****************************************************************************

@@ -3,6 +3,7 @@
 #include <MaterialAttributes.h>
 #include <ViewerProxy.h>
 
+#include <qcombobox.h>
 #include <qcheckbox.h>
 #include <qlabel.h>
 #include <qlayout.h>
@@ -84,33 +85,43 @@ QvisMaterialWindow::~QvisMaterialWindow()
 //    Hank Childs, Tue Aug 16 15:36:43 PDT 2005
 //    Add a toggle for "simplify heavily mixed zones".
 //
+//    Jeremy Meredith, Thu Aug 18 16:14:59 PDT 2005
+//    Changed algorithm selection to a multiple-choice.
+//    Added VF for isovolume method.
+//
 // ****************************************************************************
 
 void
 QvisMaterialWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 7,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 8,2,  10, "mainLayout");
 
+    QHBox *algBox = new QHBox(central);
+    algorithmLabel = new QLabel("Algorithm:", algBox, "algorithmLabel");
+    algBox->setSpacing(10);
+
+    algorithm = new QComboBox(false, algBox, "algorithm");
+    algorithm->insertItem("Tetrahedral (obsolete)");
+    algorithm->insertItem("Zoo-based (default)");
+    algorithm->insertItem("Isovolume (special-purpose)");
+    connect(algorithm, SIGNAL(activated(int)),
+            this, SLOT(algorithmChanged(int)));
+    mainLayout->addMultiCellWidget(algBox, 0,0, 0,1);
 
     smoothing = new QCheckBox("Enable interface smoothing", central, "smoothing");
     connect(smoothing, SIGNAL(toggled(bool)),
             this, SLOT(smoothingChanged(bool)));
-    mainLayout->addWidget(smoothing, 0,0);
+    mainLayout->addWidget(smoothing, 1,0);
 
     forceFullConnectivity = new QCheckBox("Force full connectivity", central, "forceFullConnectivity");
     connect(forceFullConnectivity, SIGNAL(toggled(bool)),
             this, SLOT(forceFullConnectivityChanged(bool)));
-    mainLayout->addWidget(forceFullConnectivity, 1,0);
+    mainLayout->addWidget(forceFullConnectivity, 2,0);
 
     forceMIR = new QCheckBox("Force interface reconstruction", central, "forceMIR");
     connect(forceMIR, SIGNAL(toggled(bool)),
             this, SLOT(forceMIRChanged(bool)));
-    mainLayout->addWidget(forceMIR, 2,0);
-
-    useNewMIR = new QCheckBox("Use new MIR algorithm", central, "useNewMIR");
-    connect(useNewMIR, SIGNAL(toggled(bool)),
-            this, SLOT(useNewMIRChanged(bool)));
-    mainLayout->addWidget(useNewMIR, 3,0);
+    mainLayout->addWidget(forceMIR, 3,0);
 
     cleanZonesOnly = new QCheckBox("Clean zones only", central, "cleanZonesOnly");
     cleanZonesOnly->setEnabled(false);
@@ -132,6 +143,13 @@ QvisMaterialWindow::CreateWindowContents()
     connect(maxMatsPerZone, SIGNAL(returnPressed()), this,
             SLOT(maxMatsPerZoneProcessText()));
     mainLayout->addWidget(maxMatsPerZone, 6, 1);
+
+    isoVolumeFractionLabel = new QLabel("Volume Fraction for Isovolume", central, "isoVolumeFractionLabel");
+    mainLayout->addWidget(isoVolumeFractionLabel,7,0);
+    isoVolumeFraction = new QNarrowLineEdit(central, "isoVolumeFraction");
+    connect(isoVolumeFraction, SIGNAL(returnPressed()),
+            this, SLOT(isoVolumeFractionProcessText()));
+    mainLayout->addWidget(isoVolumeFraction, 7,1);
 }
 
 
@@ -154,6 +172,10 @@ QvisMaterialWindow::CreateWindowContents()
 //    Hank Childs, Tue Aug 16 15:36:43 PDT 2005
 //    Add a toggle for "simplify heavily mixed zones".
 //
+//    Jeremy Meredith, Thu Aug 18 16:14:59 PDT 2005
+//    Changed algorithm selection to a multiple-choice.
+//    Added VF for isovolume method.
+//
 // ****************************************************************************
 
 void
@@ -165,9 +187,10 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
     forceMIR->blockSignals(true);
     cleanZonesOnly->blockSignals(true);
     forceFullConnectivity->blockSignals(true);
-    useNewMIR->blockSignals(true);
+    algorithm->blockSignals(true);
     simplifyHeavilyMixedZones->blockSignals(true);
     maxMatsPerZone->blockSignals(true);
+    isoVolumeFraction->blockSignals(true);
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -193,8 +216,18 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
           case 3: //needValidConnectivity
             forceFullConnectivity->setChecked(atts->GetNeedValidConnectivity());
             break;
-          case 4: //useNewMIR
-            useNewMIR->setChecked(atts->GetUseNewMIRAlgorithm());
+          case 4: //algorithm
+            if (atts->GetAlgorithm() == MaterialAttributes::Isovolume)
+            {
+                isoVolumeFraction->setEnabled(true);
+                isoVolumeFractionLabel->setEnabled(true);
+            }
+            else
+            {
+                isoVolumeFraction->setEnabled(false);
+                isoVolumeFractionLabel->setEnabled(false);
+            }
+            algorithm->setCurrentItem(atts->GetAlgorithm());
             break;
           case 5: //simplifyHeavilyMixedZones
             simplifyHeavilyMixedZones->setChecked(
@@ -206,6 +239,10 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
             temp.sprintf("%d", atts->GetMaxMaterialsPerZone());
             maxMatsPerZone->setText(temp);
             break;
+          case 7: //isoVolumeFraction
+            temp.setNum(atts->GetIsoVolumeFraction());
+            isoVolumeFraction->setText(temp);
+            break;
         }
     }
 
@@ -213,9 +250,10 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
     forceMIR->blockSignals(false);
     cleanZonesOnly->blockSignals(false);
     forceFullConnectivity->blockSignals(false);
-    useNewMIR->blockSignals(false);
+    algorithm->blockSignals(false);
     simplifyHeavilyMixedZones->blockSignals(false);
     maxMatsPerZone->blockSignals(false);
+    isoVolumeFraction->blockSignals(false);
 }
 
 
@@ -237,6 +275,10 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
 //
 //    Hank Childs, Tue Aug 16 15:36:43 PDT 2005
 //    Add a toggle for "simplify heavily mixed zones".
+//
+//    Jeremy Meredith, Thu Aug 18 16:14:59 PDT 2005
+//    Changed algorithm selection to a multiple-choice.
+//    Added VF for isovolume method.
 //
 // ****************************************************************************
 
@@ -270,10 +312,10 @@ QvisMaterialWindow::GetCurrentValues(int which_widget)
         // Nothing for forceFullConnectivity
     }
 
-    // Do useNewMIR
+    // Do algorithm
     if(which_widget == 4 || doAll)
     {
-        // Nothing for useNewMIR
+        // Nothing for algorithm
     }
 
     // Do simplifyHeavilyMixedZones
@@ -306,6 +348,29 @@ QvisMaterialWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Do isoVolumeFraction
+    if(which_widget == 7 || doAll)
+    {
+        temp = isoVolumeFraction->displayText().simplifyWhiteSpace();
+        bool okay = !temp.isEmpty();
+        if (okay)
+        {
+            float val = temp.toFloat(&okay);
+            if (val < 0 || val > 1)
+                okay = false;
+            else
+                atts->SetIsoVolumeFraction(val);
+        }
+
+        if (!okay)
+        {
+            msg.sprintf("The value of isoVolumeFraction was invalid. "
+                "Resetting to the last good value of %g.",
+                atts->GetIsoVolumeFraction());
+            Message(msg);
+            atts->SetIsoVolumeFraction(atts->GetIsoVolumeFraction());
+        }
+    }
 }
 
 
@@ -441,14 +506,6 @@ QvisMaterialWindow::cleanZonesOnlyChanged(bool val)
 
 
 void
-QvisMaterialWindow::useNewMIRChanged(bool val)
-{
-    atts->SetUseNewMIRAlgorithm(val);
-    Apply();
-}
-
-
-void
 QvisMaterialWindow::simplifyHeavilyMixedZonesChanged(bool val)
 {
     atts->SetSimplifyHeavilyMixedZones(val);
@@ -463,4 +520,21 @@ QvisMaterialWindow::maxMatsPerZoneProcessText()
     Apply();
 }
 
+
+void
+QvisMaterialWindow::algorithmChanged(int val)
+{
+    if(val != atts->GetAlgorithm())
+    {
+        atts->SetAlgorithm(MaterialAttributes::Algorithm(val));
+        Apply();
+    }
+}
+
+void
+QvisMaterialWindow::isoVolumeFractionProcessText()
+{
+    GetCurrentValues(7);
+    Apply();
+}
 

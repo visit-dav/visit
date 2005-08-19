@@ -14,7 +14,7 @@
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkSlicer.h>
-#include <vtkTransformPolyDataFilter.h>
+#include <vtkTransformFilter.h>
 
 #include <avtCallback.h>
 #include <avtDataset.h>
@@ -81,12 +81,15 @@ static void      ProjectExtentsCallback(const double *in, double *out,
 //    Kathleen Bonnell, Wed Jun  2 09:11:01 PDT 2004 
 //    Added origTrans. 
 //
+//    Hank Childs, Fri Aug 19 08:57:27 PDT 2005
+//    Use vtkTransformFilter instead of vtkTransformPolyDataFilter ['6471].
+//
 // ****************************************************************************
 
 avtSliceFilter::avtSliceFilter()
 {
     slicer = vtkSlicer::New();
-    transform = vtkTransformPolyDataFilter::New();
+    transform = vtkTransformFilter::New();
     celllist = NULL;
     invTrans = vtkMatrix4x4::New();
     origTrans = vtkMatrix4x4::New();
@@ -1234,6 +1237,11 @@ ProjectExtentsCallback(const double *in, double *out, void *args)
 //    Hank Childs, Thu Jan 20 10:36:10 PST 2005
 //    Added argument so this could be called through a callback.
 //
+//    Hank Childs, Fri Aug 19 09:00:32 PDT 2005
+//    Cast the output of the transform filter to poly data.  This was necessary
+//    because we changed the filter type from vtkTransformPolyDataFilter to
+//    vtkTransformFilter to avoid '6471.
+//
 // ****************************************************************************
 
 void
@@ -1320,7 +1328,7 @@ avtSliceFilter::ProjectExtents(const double *b_in, double *b_out)
     // Now iterate through the resulting triangles and determine what the 
     // extents are.
     //
-    vtkPolyData *pd = transform->GetOutput();
+    vtkPolyData *pd = (vtkPolyData *) transform->GetOutput();
     float minmax[4] = { +FLT_MAX, -FLT_MAX, +FLT_MAX, -FLT_MAX };
     for (int i = 0 ; i < pd->GetNumberOfCells() ; i++)
     {

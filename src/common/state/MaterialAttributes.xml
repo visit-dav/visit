@@ -1,5 +1,10 @@
 <?xml version="1.0"?>
   <Attribute name="MaterialAttributes" purpose="Attributes to control material interface reconstruction" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Enum name="Algorithm">
+      Tetrahedral
+      ZooClipping
+      Isovolume
+    </Enum>
     <Field name="smoothing" label="Enable interface smoothing" type="bool">
       false
     </Field>
@@ -12,13 +17,16 @@
     <Field name="needValidConnectivity" label="Force perfect connectivity" type="bool">
       false
     </Field>
-    <Field name="useNewMIRAlgorithm" label="Use new MIR algorithm" type="bool">
-      true
+    <Field name="algorithm" label="Algorithm" type="enum" subtype="Algorithm">
+      ZooClipping
     </Field>
     <Field name="simplifyHeavilyMixedZones" label="Simplify Heavily Mixed Zones" type="bool">
       false
     </Field>
     <Field name="maxMaterialsPerZone" label="Maximum Materials Per Zone" type="int" enabler="simplifyHeavilyMixedZones:true">
       3
+    </Field>
+    <Field name="isoVolumeFraction" label="VF for Isovolume" type="float" enabler="algorithm:Isovolume">
+      0.500000
     </Field>
   </Attribute>

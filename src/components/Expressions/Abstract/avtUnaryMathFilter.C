@@ -267,3 +267,39 @@ avtUnaryMathFilter::CreateArray(vtkDataArray *in1)
 }
 
 
+// ****************************************************************************
+//  Method: avtUnaryMathFilter::GetVariableDimension
+//
+//  Purpose:
+//      Determines what the variable dimension of the output is.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 19, 2005
+//
+// ****************************************************************************
+
+int
+avtUnaryMathFilter::GetVariableDimension(void)
+{
+    if (*(GetInput()) == NULL)
+        return avtSingleInputExpressionFilter::GetVariableDimension();
+
+    //
+    // The base class will set the variable of interest to be the 
+    // 'activeVariable'.  This is a by-product of how the base class sets its
+    // input.  If that method should change (SetActiveVariable), this
+    // technique for inferring the variable name may stop working.
+    //
+    const char *varname = activeVariable;
+    if (varname == NULL)
+        return avtSingleInputExpressionFilter::GetVariableDimension();
+
+    avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+    if (! atts.ValidVariable(varname))
+        return avtSingleInputExpressionFilter::GetVariableDimension();
+    int ncomp = atts.GetVariableDimension(varname);
+
+    return GetNumberOfComponentsInOutput(ncomp);
+}
+
+

@@ -684,6 +684,10 @@ CGetChunkByLabel(avtDataRepresentation & data, void *arg, bool &success)
 //    Hank Childs, Sat Dec 13 16:06:07 PST 2003
 //    Set the dimension of the active variable.
 //
+//    Hank Childs, Fri Aug 19 10:19:57 PDT 2005
+//    Variable names should never be NULL.  But sometimes they are if another
+//    filter has screwed up.  Don't crash in this case.
+//
 // ****************************************************************************
 
 void
@@ -746,6 +750,12 @@ CSetActiveVariable(avtDataRepresentation &data, void *arg, bool &success)
     for (i = 0 ; i < pd->GetNumberOfArrays() ; i++)
     {
         args->hasPointVars = true;
+        if (pd->GetArrayName(i) == NULL)
+        {
+            debug1 << "WARNING: NULL variable name present in data set." 
+                   << endl;
+            continue;
+        }
         if (strcmp(args->varname, pd->GetArrayName(i)) == 0)
         {
             args->activeIsPoint = true;
@@ -768,6 +778,12 @@ CSetActiveVariable(avtDataRepresentation &data, void *arg, bool &success)
     for (i = 0 ; i < cd->GetNumberOfArrays() ; i++)
     {
         args->hasCellVars = true;
+        if (cd->GetArrayName(i) == NULL)
+        {
+            debug1 << "WARNING: NULL variable name present in data set." 
+                   << endl;
+            continue;
+        }
         if (strcmp(args->varname, cd->GetArrayName(i)) == 0)
         {
             args->activeIsPoint = false;

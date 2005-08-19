@@ -877,6 +877,9 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Eric Brugger, Fri Aug 12 11:36:35 PDT 2005
 //    Corrected a memory leak.
 //
+//    Hank Childs, Fri Aug 19 08:31:47 PDT 2005
+//    Corrected another memory leak.
+//
 // ****************************************************************************
 
 void
@@ -2104,6 +2107,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 expr.SetType(vartype);
             md->AddExpression(&expr);
         }
+        DBFreeDefvars(defv);
     }
 #endif
 

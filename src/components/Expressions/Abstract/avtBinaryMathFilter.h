@@ -33,6 +33,9 @@ class     vtkDataArray;
 //      Add data member cur_mesh so derived types can access mesh when 
 //      deriving variables.
 //
+//      Hank Childs, Fri Aug 19 14:04:25 PDT 2005
+//      Do a better job of determining the variable dimension.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtBinaryMathFilter 
@@ -57,6 +60,7 @@ class EXPRESSION_API avtBinaryMathFilter
                                                     ? ncompsIn1 
                                                     : ncompsIn2);
                                          };
+    virtual int               GetVariableDimension(void);
 
     avtCentering              centering;
     vtkDataSet               *cur_mesh;

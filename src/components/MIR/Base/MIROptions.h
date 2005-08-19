@@ -34,6 +34,9 @@
 //    Jeremy Meredith, Fri Oct 25 10:39:24 PDT 2002
 //    Added cleanZonesOnly.
 //
+//    Jeremy Meredith, Thu Aug 18 16:36:42 PDT 2005
+//    Added algorithm and isovolumeVF.
+//
 // ****************************************************************************
 class MIR_API MIROptions
 {
@@ -45,11 +48,13 @@ class MIR_API MIROptions
         High
     };
 
+    int              algorithm;
     SubdivisionLevel subdivisionLevel;
     int              numIterations;
     bool             smoothing;
     bool             leaveCleanZonesWhole;
     bool             cleanZonesOnly;
+    float            isovolumeVF;
 
   public:
     MIROptions();

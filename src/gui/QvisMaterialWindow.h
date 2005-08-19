@@ -8,14 +8,14 @@ class MaterialAttributes;
 class QLabel;
 class QCheckBox;
 class QNarrowLineEdit;
+class QButtonGroup;
+class QComboBox;
 
 // ****************************************************************************
 // Class: QvisMaterialWindow
 //
 // Purpose: 
 //   Defines QvisMaterialWindow class.
-//
-// Notes:      This class was automatically generated!
 //
 // Programmer: Jeremy Meredith
 // Creation:   October 24, 2002
@@ -29,6 +29,10 @@ class QNarrowLineEdit;
 //
 //    Hank Childs, Tue Aug 16 15:36:43 PDT 2005
 //    Add a toggle for "simplify heavily mixed zones".
+//
+//    Jeremy Meredith, Thu Aug 18 16:14:59 PDT 2005
+//    Changed algorithm selection to a multiple-choice.
+//    Added VF for isovolume method.
 //
 // ****************************************************************************
 
@@ -56,9 +60,10 @@ class QvisMaterialWindow : public QvisPostableWindowObserver
     void forceFullConnectivityChanged(bool val);
     void forceMIRChanged(bool val);
     void cleanZonesOnlyChanged(bool val);
-    void useNewMIRChanged(bool val);
+    void algorithmChanged(int val);
     void simplifyHeavilyMixedZonesChanged(bool val);
     void maxMatsPerZoneProcessText(void);
+    void isoVolumeFractionProcessText(void);
   private:
     MaterialAttributes *atts;
 
@@ -66,10 +71,13 @@ class QvisMaterialWindow : public QvisPostableWindowObserver
     QCheckBox *forceFullConnectivity;
     QCheckBox *forceMIR;
     QCheckBox *cleanZonesOnly;
-    QCheckBox *useNewMIR;
+    QComboBox *algorithm;
     QCheckBox *simplifyHeavilyMixedZones;
     QNarrowLineEdit *maxMatsPerZone;
+    QNarrowLineEdit *isoVolumeFraction;
     QLabel *maxMatsPerZoneLabel;
+    QLabel *algorithmLabel;
+    QLabel *isoVolumeFractionLabel;
 };
 
 #endif

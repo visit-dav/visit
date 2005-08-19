@@ -249,6 +249,9 @@ class     PickVarInfo;
 //    Hank Childs, Wed Aug 17 09:10:35 PDT 2005
 //    Add support for simplifying heavily mixed zones.
 //
+//    Jeremy Meredith, Thu Aug 18 16:39:54 PDT 2005
+//    Added a new isovolume MIR algorithm, and a VF cutoff for it.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -368,11 +371,11 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                               stringVector &, 
                                               stringVector &, 
                                               bool, bool, bool, bool, bool,
-                                              bool, bool, int, int, bool, 
+                                              bool, bool, int, int, float, bool, 
                                               bool&, bool&, bool);
     void_ref_ptr               GetMIR(int, const char *, int, vtkDataSet*,
                                       avtMaterial *, int, bool, bool, bool,
-                                      bool, int, int, bool, bool&, bool&,bool);
+                                      bool, int, int, float, bool, bool&, bool&,bool);
     avtMaterial               *GetMaterial(int, const char *, int);
     avtSpecies                *GetSpecies(int, const char *, int);
     void                       GetMaterialIndices(avtMaterial *,

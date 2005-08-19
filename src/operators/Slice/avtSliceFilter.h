@@ -11,7 +11,7 @@
 
 class vtkDataSet;
 class vtkRectilinearGrid;
-class vtkTransformPolyDataFilter;
+class vtkTransformFilter;
 class vtkMatrix4x4;
 class vtkSlicer;
 
@@ -73,6 +73,11 @@ class avtPointAttribute;
 //    Hank Childs, Thu Jan 20 10:36:10 PST 2005
 //    Added extra argument to ProjectExtents.
 //
+//    Hank Childs, Fri Aug 19 08:57:27 PDT 2005
+//    Use vtkTransformFilter instead of vtkTransformPolyDataFilter, since 
+//    vtkTransformPolyDataFilter does not pass on names of vectors, which
+//    can screw us up down stream. ['6471]
+//
 // ****************************************************************************
 
 class avtSliceFilter : public avtPluginStreamer
@@ -97,7 +102,7 @@ class avtSliceFilter : public avtPluginStreamer
     double                        cachedOrigin[3];
 
     vtkSlicer                    *slicer;
-    vtkTransformPolyDataFilter   *transform;
+    vtkTransformFilter           *transform;
     int                          *celllist;
     vtkMatrix4x4                 *invTrans;
     vtkMatrix4x4                 *origTrans;
