@@ -385,7 +385,7 @@ avtLabelPlot::CustomizeBehavior(void)
     std::vector<std::string> labels;
     behavior->GetInfo().GetAttributes().GetLabels(labels);
     for(int i = 0; i < labels.size(); ++i)
-        debug4 << "\tlabel["<<i<<"] = " << labels[i] << endl;
+        debug4 << "\tlabel["<<i<<"] = " << labels[i].c_str() << endl;
     debug4 << endl;
 }
 
@@ -447,7 +447,8 @@ avtLabelPlot::CustomizeMapper(avtDataObjectInformation &doi)
     double e[6];
     doi.GetAttributes().GetTrueSpatialExtents()->CopyTo(e);
     float fe[6];
-    for(int i = 0; i < 6; ++i)
+    int i;
+    for(i = 0; i < 6; ++i)
         fe[i] = float(e[i]);
     renderer->SetExtents(fe);
 
@@ -458,8 +459,8 @@ avtLabelPlot::CustomizeMapper(avtDataObjectInformation &doi)
     debug4 << "avtLabelPlot::CustomizeMapper: Labels = " << endl;
     std::vector<std::string> labels;
     doi.GetAttributes().GetLabels(labels);
-    for(int i = 0; i < labels.size(); ++i)
-        debug4 << "\tlabel["<<i<<"] = " << labels[i] << endl;
+    for(i = 0; i < labels.size(); ++i)
+        debug4 << "\tlabel["<<i<<"] = " << labels[i].c_str() << endl;
     debug4 << endl;
 }
 

@@ -104,7 +104,7 @@ avtNASTRANFileFormat::FreeUpResources(void)
         meshDS = 0;
     }
 
-    title.clear();
+    title = "";
 }
 
 // ****************************************************************************

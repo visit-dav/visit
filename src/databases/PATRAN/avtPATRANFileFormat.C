@@ -154,7 +154,7 @@ avtPATRANFileFormat::FreeUpResources(void)
         componentListSize = 0;
     }
 
-    title.clear();
+    title = "";
     componentNames.clear();
 }
 

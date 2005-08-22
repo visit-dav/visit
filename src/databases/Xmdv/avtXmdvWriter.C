@@ -100,7 +100,7 @@ avtXmdvWriter::WriteHeaders(const avtDatabaseMetaData *md,
                 }
             }
             else
-                debug1 << "Cannot check centering of " << s[i] << ", probably"
+                debug1 << "Cannot check centering of " << s[i].c_str() << ", probably"
                        << " an expression.  Hoping for the best." << endl;
         }
         varsAreNodal = (cent == AVT_NODECENT);
@@ -169,7 +169,7 @@ avtXmdvWriter::WriteChunk(vtkDataSet *ds, int chunk)
         ofile << "x\ny\nz\n";
     for (i = 0 ; i < scalars.size() ; i++)
     {
-        ofile << scalars[i] << endl;
+        ofile << scalars[i].c_str() << endl;
     }
 
     vtkDataArray **arrays = new vtkDataArray*[scalars.size()];

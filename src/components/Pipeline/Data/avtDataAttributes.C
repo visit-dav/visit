@@ -476,7 +476,7 @@ avtDataAttributes::Print(ostream &out)
             out << "Variable subnames = " << endl;
             for (int j = 0 ; j < variables[i].subnames.size() ; j++)
             {
-                out << variables[i].subnames[j];
+                out << variables[i].subnames[j].c_str();
                 if (j < variables[i].subnames.size()-1)
                     out << ", ";
             }

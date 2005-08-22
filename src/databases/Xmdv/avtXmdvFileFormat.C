@@ -24,6 +24,16 @@
 
 using     std::string;
 
+#if defined(_WIN32)
+// Define >> for strings since Windows does not seem to have it.
+ifstream &operator >> (ifstream &s, string &str)
+{
+    char tmp[1000];
+    s >> tmp;
+    str = string(tmp);
+    return s;
+}
+#endif
 
 // ****************************************************************************
 //  Method: avtXmdv constructor

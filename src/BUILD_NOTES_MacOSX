@@ -34,7 +34,7 @@ shell prompt.
     
     Optional Version  Description            For More Information
     ======== =======  ===========            ====================
-    Mili     1.06     I/O library            (none)
+    Mili     1.09     I/O library            (none)
     HDF4     2.0      I/O library            http://hdf.ncsa.uiuc.edu/release4/obtain.html
 
 The public version of VisIt has been built with the above listed versions
@@ -707,8 +707,8 @@ offset = 0x227e5000
 Building Mili as a prebound dynamic library
 ===============================================================================
 
-Mili is a database file format library for finite element codes. VisIt
-has a database reader for this popular LLNL engineering database file
+Mili is a database file format library for finite element codes like ls-dyna.
+VisIt has a database reader for this popular LLNL engineering database file
 format. Mili file format support is optional and is not required for
 VisIt to run.
 
@@ -723,30 +723,24 @@ the Mili's src directory
 
 CC=gcc
 CFLAGS = -I. -O2 -fno-common -fPIC
-MILI_LDFLAGS=-Wl,-seg1addr,0x227e8000 -L. -lgahl
-GAHL_LDFLAGS=-Wl,-seg1addr,0x227e5000
+MILI_LDFLAGS=-Wl,-seg1addr,0x227e5000
 LDFLAGS=-dynamiclib -prebind -twolevel_namespace -Wl,-install_name,@executable_path/../lib/$@
 .SUFFIXES : .o .c
-MILI_SRC=mili.c direc.c param.c io.c util.c dep.c svar.c srec.c mesh_u.c wrap_c.c io_mem.c eprtf.c sarray.c
+MILI_SRC=mili.c direc.c param.c io.c util.c dep.c svar.c srec.c mesh_u.c wrap_c.c io_mem.c eprtf.c sarray.c gahl.c
 MILI_OBJ=${MILI_SRC:.c=.o}
-GAHL_SRC=gahl.c
-GAHL_OBJ=$(GAHL_SRC:.c=.o)
 MILI_LIB=libmili.dylib
-GAHL_LIB=libgahl.dylib
 all: $(MILI_LIB)
-$(MILI_LIB): $(GAHL_LIB) $(MILI_OBJ)
+$(MILI_LIB): $(MILI_OBJ)
 	$(CC) -o $@ $(LDFLAGS) $(MILI_LDFLAGS) $(MILI_OBJ)
-$(GAHL_LIB): $(GAHL_OBJ)
-	$(CC) -o $@ $(LDFLAGS) $(GAHL_LDFLAGS) $(GAHL_OBJ)
 clean: 
-	rm -f *.a *.o $(MILI_LIB) $(GAHL_LIB)
+	rm -f *.a *.o $(MILI_LIB)
 
 Now that you're in Mili's source directory and you have a Makefile, 
 type: make
 
 # Install Mili
 mkdir $VISITPATH/mili
-cp *.dylib $VISITPATH/mili
+cp libmili.dylib $VISITPATH/mili
 cp mili.h $VISITPATH/mili
 cp mili_enum.h $VISITPATH/mili
 cd ../..

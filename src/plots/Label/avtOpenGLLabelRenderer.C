@@ -1545,7 +1545,8 @@ avtOpenGLLabelRenderer::DrawLabels3D()
         x_scale = node_x_scale;
         y_scale = node_y_scale;
         SetColor(0);
-        for(int i = 0; i < n; ++i, ++info)
+        int i;
+        for(i = 0; i < n; ++i, ++info)
         {
             if(info->label != 0 && info->type == 0)
                 DrawLabel(info->screenPoint, info->label);
@@ -1558,7 +1559,7 @@ avtOpenGLLabelRenderer::DrawLabels3D()
         y_scale = cell_y_scale;
         SetColor(1);
         info = labelBins;
-        for(int i = 0; i < n; ++i, ++info)
+        for(i = 0; i < n; ++i, ++info)
         {
             if(info->label != 0 && info->type == 1)
                 DrawLabel(info->screenPoint, info->label);
