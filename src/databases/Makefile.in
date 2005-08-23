@@ -160,6 +160,9 @@
 #   Brad Whitlock, Thu Jul 28 13:47:03 PST 2005
 #   Added PATRAN reader.
 #
+#   Brad Whitlock, Tue Aug 9 17:42:08 PST 2005
+#   Added netCDF support and a reader for it.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -180,11 +183,12 @@ REQUIRED=ANALYZE ANSYS AUXFile BOV CMAT Curve2D Dune EnSight Image Lines \
  NASTRAN OVERFLOW PATRAN PLOT2D PLOT3D Point3D SAR STL Shapefile Silo SimV1 \
  Spheral TFT Tecplot Vista VTK WavefrontOBJ Xmdv
 VISUS=ViSUS
+NETCDF=NETCDF
 
 OPTIONAL=
 
-SUBDIRS=$(REQUIRED) @DB_OPTIONAL_DIRS@ @EXODUS@ @SAF@ @HDF4@ @HDF5@ @PDB@ @MILI@ @BOXLIB2D@ @BOXLIB3D@ @VISUS@
-ALLSUBDIRS=$(REQUIRED) $(EXODUS) $(SAF) $(HDF4) $(HDF5) $(MILI) $(PDB) $(BOXLIB2D) $(BOXLIB3D) $(VISUS) $(SAMPLES) $(OPTIONAL)
+SUBDIRS=$(REQUIRED) @DB_OPTIONAL_DIRS@ @EXODUS@ @SAF@ @HDF4@ @HDF5@ @PDB@ @MILI@ @BOXLIB2D@ @BOXLIB3D@ @VISUS@ @NETCDF@
+ALLSUBDIRS=$(REQUIRED) $(EXODUS) $(SAF) $(HDF4) $(HDF5) $(MILI) $(PDB) $(BOXLIB2D) $(BOXLIB3D) $(VISUS) $(NETCDF) $(SAMPLES) $(OPTIONAL)
 
 message:
 	@echo

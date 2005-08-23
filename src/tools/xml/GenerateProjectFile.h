@@ -44,6 +44,9 @@
 //    Hank Childs, Tue May 24 09:41:53 PDT 2005
 //    Added hasoptions.
 //
+//    Brad Whitlock, Thu Aug 18 11:17:29 PDT 2005
+//    Prevented Windows directory names when not on Windows.
+//
 // ****************************************************************************
 
 class ProjectFileGeneratorPlugin
@@ -968,14 +971,18 @@ protected:
         QString projectExtension(".dsp");
         QString workSpaceExtension(".dsw");
         QString projectDir(ProjectDir());
+
         if(version7)
         {
-            projectDir += QString("projects-MSVC7.Net\\plots\\");
             projectExtension = ".vcproj";
             workSpaceExtension = ".sln";
         }
+#if defined(_WIN32)
+        if(version7)
+            projectDir += QString("projects-MSVC7.Net\\plots\\");
         else
             projectDir += QString("projects\\plots\\");
+#endif
         QString IProject(projectDir + (name + "I") + projectExtension);
         QString EProject(projectDir + (name + "E") + projectExtension);
         QString GProject(projectDir + (name + "G") + projectExtension);
@@ -1165,12 +1172,16 @@ protected:
         QString projectDir(ProjectDir());
         if(version7)
         {
-            projectDir += QString("projects-MSVC7.Net\\operators\\");
             projectExtension = ".vcproj";
             workSpaceExtension = ".sln";
         }
+
+#if defined(_WIN32)
+        if(version7)
+            projectDir += QString("projects-MSVC7.Net\\operators\\");
         else
             projectDir += QString("projects\\operators\\");
+#endif
         QString IProject(projectDir + (name + "I") + projectExtension);
         QString EProject(projectDir + (name + "E") + projectExtension);
         QString GProject(projectDir + (name + "G") + projectExtension);
@@ -1938,12 +1949,16 @@ protected:
         QString projectDir(ProjectDir());
         if(version7)
         {
-            projectDir += QString("projects-MSVC7.Net\\databases\\");
             projectExtension = ".vcproj";
             workSpaceExtension = ".sln";
         }
+
+#if defined(_WIN32)
+        if(version7)
+            projectDir += QString("projects-MSVC7.Net\\databases\\");
         else
             projectDir += QString("projects\\databases\\");
+#endif
         QString IProject(projectDir + (name + "I") + projectExtension);
         QString EProject(projectDir + (name + "E") + projectExtension);
         QString MProject(projectDir + (name + "M") + projectExtension);

@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+  <Plugin name="NETCDF" type="database" label="NETCDF" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false">
+    <CXXFLAGS>
+      $(NETCDF_INCLUDE)
+    </CXXFLAGS>
+    <LIBS>
+      $(NETCDF_LIB)
+    </LIBS>
+    <Extensions>
+      nc
+      cdf
+      elev
+    </Extensions>
+    <Files components="M">
+      avtNETCDFFileFormat.C
+      avtBasicNETCDFFileFormat.C
+      avtADAPTFileFormat.C
+      avtLODIFileFormat.C
+      avtLODIParticleFileFormat.C
+      NETCDFFileObject.C
+    </Files>
+    <Files components="E">
+      avtNETCDFFileFormat.C
+      avtBasicNETCDFFileFormat.C
+      avtADAPTFileFormat.C
+      avtLODIFileFormat.C
+      avtLODIParticleFileFormat.C
+      NETCDFFileObject.C
+    </Files>
+    <Attribute name="" purpose="" persistent="true">
+    </Attribute>
+  </Plugin>

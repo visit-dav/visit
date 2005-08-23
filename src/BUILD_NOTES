@@ -40,6 +40,7 @@ build and install those libraries prior to building VisIt.
     Boxlib   ???      An AMR I/O library     ???
     HDF5     1.6.0    File I/O library       http://hdf.ncsa.uiuc.edu/HDF5/
     Mili     1.09     File I/O library       (none)
+    netCDF   3.6.0    File I/O library       http://www.unidata.ucar.edu/packages/netcdf/
 
 Most of the third party libraries necessary to build VisIt are available for
 download from ftp://ftp.llnl.gov/pub/visit/3rd_party.  It is suggested that
@@ -796,6 +797,39 @@ tar xf Boxlib3D.h.tar
 cd $VISITDIR
 cd ..
 
+
+netCDF (Optional)
+==================
+NetCDF (Network Common Data Form) is an interface for array-oriented data
+access and a library that provides an implementation of the interface. The
+netCDF library also defines a machine-independent format for representing
+scientific data. Together, the interface, library, and format support the
+creation, access, and sharing of scientific data. NetCDF uses GNU's autoconf
+system to provide a platform-independent build process.
+
+#
+# Build netCDF (without Fortran support)
+#
+gunzip netcdf.tar.gz
+tar xvf netcdf.tar
+cd netcdf-3.6.0-p1/src
+
+mkdir $VISITDIR/netcdf
+mkdir $VISITDIR/netcdf/3.0.6
+mkdir $VISITDIR/netcdf/3.0.6/$VISITARCH
+
+# On IA64 systems, you should add "-fPIC" to the following CFLAGS and CXXFLAGS.
+# On Opteron systems, you should add "-fPIC -m64" to the following CFLAGS and CXXFLAGS.
+./configure --prefix=$VISITDIR/netcdf/3.0.6/$VISITARCH FC="" CFLAGS="-O2" CXXFLAGS="-O2"
+make
+
+#
+# Install it in the visit directory under the netcdf directory
+#
+make install
+cd ../..
+
+
 VisIt
 ======
 
@@ -840,6 +874,8 @@ configure script or can listed by the configure script by typing
   --disable-scripting     build without Python scripting capability
   --enable-java           build the Java interface library
   --enable-buildall       build all plugins
+
+  --with-netcdf=INC,LIB   Location of NetCDF header and library
 
   --with-hdf5=INC,LIB     Location of HDF5 header and library
   --with-vbt=INC,LIB      Location of VBT/DSL headers and libraries
