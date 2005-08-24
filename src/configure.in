@@ -2296,7 +2296,7 @@ if test "$SHORT_UNAME" = "darwin"; then
 else
     NETCDF_LIBEXT="a"
 fi
-if test "$hdf5_specified" = "yes"; then
+if test "$netcdf_specified" = "yes"; then
    if test "$withval" != "no"; then
       NETCDF_INCLUDE="-I`echo $withval |cut -f1 -d,`"
       NETCDF_LIB="`echo $withval |cut -f2 -d, -s`/libnetcdf.$NETCDF_LIBEXT"
@@ -2311,7 +2311,7 @@ else
 fi
 if test "$NETCDF_LIB" != "" ; then
    if test "$NETCDF_INCLUDE" != "" ; then
-      HDF5="$""(NETCDF)"
+      NETCDF="$""(NETCDF)"
       AC_MSG_RESULT(yes)
       AC_DEFINE(HAVE_NETCDF_H)
       AC_DEFINE(HAVE_LIBNETCDF)

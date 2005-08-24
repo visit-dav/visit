@@ -155,6 +155,9 @@ FindMedian(float *list, int nlist)
 //    Hank Childs, Fri Aug 19 11:08:56 PDT 2005
 //    Use a more efficient method to determine the median.
 //
+//    Hank Childs, Tue Aug 23 09:37:51 PDT 2005
+//    Fix indexing bug.
+//
 // ****************************************************************************
 
 void
@@ -247,7 +250,7 @@ avtMedianFilterExpression::DoOperation(vtkDataArray *in1, vtkDataArray *out,
                                 continue;
                             for (int kk = k-1 ; kk <= k+1 ; kk++)
                             {
-                                if (kk < 0 || kk >= dims[1])
+                                if (kk < 0 || kk >= dims[2])
                                     continue;
                                 int idx2 = kk*dims[1]*dims[0] + jj*dims[0] +ii;
                                 all_vals[numSamps] = in1->GetTuple1(idx2);

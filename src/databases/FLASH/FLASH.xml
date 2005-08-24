@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+  <Plugin name="FLASH" type="database" label="FLASH" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false">
+    <CXXFLAGS>
+      $(HDF5_INCLUDE)
+    </CXXFLAGS>
+    <LIBS>
+      $(HDF5_LIB)
+    </LIBS>
+    <Attribute name="" purpose="" persistent="true">
+    </Attribute>
+  </Plugin>

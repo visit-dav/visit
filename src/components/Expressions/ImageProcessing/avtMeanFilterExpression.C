@@ -84,6 +84,11 @@ avtMeanFilterExpression::PreExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   August 14, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Aug 23 09:37:51 PDT 2005
+//    Fix indexing bug.
+//
 // ****************************************************************************
 
 void
@@ -174,7 +179,7 @@ avtMeanFilterExpression::DoOperation(vtkDataArray *in1, vtkDataArray *out,
                                 continue;
                             for (int kk = k-1 ; kk <= k+1 ; kk++)
                             {
-                                if (kk < 0 || kk >= dims[1])
+                                if (kk < 0 || kk >= dims[2])
                                     continue;
                                 int idx2 = kk*dims[1]*dims[0] + jj*dims[0] +ii;
                                 sum += in1->GetTuple1(idx2);

@@ -13,6 +13,7 @@
 
 class vtkDataSet;
 class avtFacelistFilter;
+class avtGhostZoneAndFacelistFilter;
 
 
 // ****************************************************************************
@@ -23,6 +24,11 @@ class avtFacelistFilter;
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   Sat Aug  3 11:54:16 PDT 2002
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Aug 23 09:49:57 PDT 2005
+//    Add support for ghost zone removal.
 //
 // ****************************************************************************
 
@@ -43,8 +49,9 @@ class avtExternalSurfaceFilter : virtual public avtPluginFilter,
     virtual bool         Equivalent(const AttributeGroup*);
 
   protected:
-    avtFacelistFilter          *ff;
-    ExternalSurfaceAttributes   atts;
+    avtFacelistFilter               *ff;
+    avtGhostZoneAndFacelistFilter   *gz_and_ff;
+    ExternalSurfaceAttributes        atts;
 
     virtual avtFilter   *GetFacadedFilter();
 };

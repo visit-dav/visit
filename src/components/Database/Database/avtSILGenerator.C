@@ -43,6 +43,9 @@ static SILCategoryRole CategoryFromCollectionClassName(string classStr);
 //    Hank Childs, Fri Aug  1 21:38:52 PDT 2003
 //    Add support for curves.
 //
+//    Jeremy Meredith, Wed Aug 24 10:39:57 PDT 2005
+//    Use block origin for group origin as well.
+//
 // ****************************************************************************
 
 void
@@ -89,9 +92,9 @@ avtSILGenerator::CreateSIL(avtDatabaseMetaData *md, avtSIL *sil)
                        mesh->blockNames);
             if (mesh->numGroups > 0)
             {
-                AddGroups(sil, topIndex, mesh->numGroups, domainList,
-                       mesh->groupIds, mesh->groupTitle, mesh->groupPieceName,
-                       mesh->blockTitle);
+                AddGroups(sil, topIndex, mesh->numGroups, mesh->blockOrigin,
+                          domainList, mesh->groupIds, mesh->groupTitle,
+                          mesh->groupPieceName, mesh->blockTitle);
             }
         }
         domainListList.push_back(domainList);
@@ -262,10 +265,13 @@ avtSILGenerator::AddSubsets(avtSIL *sil, int parent, int num, int origin,
 //    Jeremy Meredith, Fri Feb 28 10:19:35 PST 2003
 //    Swapped the order of a conjunctive test to prevent an ABR.
 //
+//    Jeremy Meredith, Wed Aug 24 12:42:53 PDT 2005
+//    Added an origin.
+//
 // ****************************************************************************
  
 void
-avtSILGenerator::AddGroups(avtSIL *sil, int top, int numGroups,
+avtSILGenerator::AddGroups(avtSIL *sil, int top, int numGroups, int origin,
                        const vector<int> &domList, const vector<int> &groupIds,
                        const string &gTitle, const string &piece,
                        const string &bTitle)
@@ -279,7 +285,7 @@ avtSILGenerator::AddGroups(avtSIL *sil, int top, int numGroups,
     for (i = 0 ; i < numGroups ; i++)
     {
         char name[1024];
-        sprintf(name, "%s%d", piece.c_str(), i);
+        sprintf(name, "%s%d", piece.c_str(), i+origin);
  
         avtSILSet_p set = new avtSILSet(name, -1);
  

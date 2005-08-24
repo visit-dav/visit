@@ -28,6 +28,10 @@ class     avtSIL;
 //  Programmer: Hank Childs
 //  Creation:   September 6, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Aug 24 10:34:13 PDT 2005
+//    Added origin for the groups.
+//
 // ****************************************************************************
 
 class DATABASE_API avtSILGenerator
@@ -41,7 +45,8 @@ class DATABASE_API avtSILGenerator
                                    const std::vector<std::string> &,
                                    SILCategoryRole cat = SIL_DOMAIN,
                                    bool onlyCreateSets = false);
-    void                AddGroups(avtSIL *, int, int, const std::vector<int> &,
+    void                AddGroups(avtSIL *, int, int, int,
+                                  const std::vector<int> &,
                                   const std::vector<int>&, const std::string &,
                                   const std::string &, const std::string &);
     void                AddMaterials(avtSIL *, int, const std::string &,

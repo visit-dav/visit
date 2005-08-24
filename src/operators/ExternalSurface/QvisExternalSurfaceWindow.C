@@ -16,6 +16,8 @@
 #include <QvisColorButton.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
+#include <QvisVariableButton.h>
+
 #include <stdio.h>
 #include <string>
 
@@ -28,7 +30,7 @@ using std::string;
 //   Constructor
 //
 // Programmer: xml2window
-// Creation:   Sat Aug 3 12:12:37 PDT 2002
+// Creation:   Tue Aug 23 09:43:51 PDT 2005
 //
 // Modifications:
 //   
@@ -52,7 +54,7 @@ QvisExternalSurfaceWindow::QvisExternalSurfaceWindow(const int type,
 //   Destructor
 //
 // Programmer: xml2window
-// Creation:   Sat Aug 3 12:12:37 PDT 2002
+// Creation:   Tue Aug 23 09:43:51 PDT 2005
 //
 // Modifications:
 //   
@@ -70,12 +72,10 @@ QvisExternalSurfaceWindow::~QvisExternalSurfaceWindow()
 //   Creates the widgets for the window.
 //
 // Programmer: xml2window
-// Creation:   Sat Aug 3 12:12:37 PDT 2002
+// Creation:   Tue Aug 23 09:43:51 PDT 2005
 //
 // Modifications:
-//    Jeremy Meredith, Sun Aug  4 10:18:59 PDT 2002
-//    Never added dummy widget to window.
-//
+//   
 // ****************************************************************************
 
 void
@@ -84,10 +84,10 @@ QvisExternalSurfaceWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 1,2,  10, "mainLayout");
 
 
-    dummy = new QCheckBox("dummy", NULL, "dummy");
-    connect(dummy, SIGNAL(toggled(bool)),
-            this, SLOT(dummyChanged(bool)));
-    //mainLayout->addWidget(dummy, 0,0);
+    removeGhosts = new QCheckBox("Remove ghost faces?", central, "removeGhosts");
+    connect(removeGhosts, SIGNAL(toggled(bool)),
+            this, SLOT(removeGhostsChanged(bool)));
+    mainLayout->addWidget(removeGhosts, 0,0);
 
 }
 
@@ -99,7 +99,7 @@ QvisExternalSurfaceWindow::CreateWindowContents()
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: xml2window
-// Creation:   Sat Aug 3 12:12:37 PDT 2002
+// Creation:   Tue Aug 23 09:43:51 PDT 2005
 //
 // Modifications:
 //   
@@ -109,6 +109,7 @@ void
 QvisExternalSurfaceWindow::UpdateWindow(bool doAll)
 {
     QString temp;
+    double r;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -120,10 +121,17 @@ QvisExternalSurfaceWindow::UpdateWindow(bool doAll)
             }
         }
 
+        const double         *dptr;
+        const float          *fptr;
+        const int            *iptr;
+        const char           *cptr;
+        const unsigned char  *uptr;
+        const string         *sptr;
+        QColor                tempcolor;
         switch(i)
         {
-          case 0: //dummy
-            dummy->setChecked(atts->GetDummy());
+          case 0: //removeGhosts
+            removeGhosts->setChecked(atts->GetRemoveGhosts());
             break;
         }
     }
@@ -137,7 +145,7 @@ QvisExternalSurfaceWindow::UpdateWindow(bool doAll)
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: xml2window
-// Creation:   Sat Aug 3 12:12:37 PDT 2002
+// Creation:   Tue Aug 23 09:43:51 PDT 2005
 //
 // Modifications:
 //   
@@ -146,13 +154,13 @@ QvisExternalSurfaceWindow::UpdateWindow(bool doAll)
 void
 QvisExternalSurfaceWindow::GetCurrentValues(int which_widget)
 {
-    bool doAll = (which_widget == -1);
+    bool okay, doAll = (which_widget == -1);
     QString msg, temp;
 
-    // Do dummy
+    // Do removeGhosts
     if(which_widget == 0 || doAll)
     {
-        // Nothing for dummy
+        // Nothing for removeGhosts
     }
 
 }
@@ -164,9 +172,9 @@ QvisExternalSurfaceWindow::GetCurrentValues(int which_widget)
 
 
 void
-QvisExternalSurfaceWindow::dummyChanged(bool val)
+QvisExternalSurfaceWindow::removeGhostsChanged(bool val)
 {
-    atts->SetDummy(val);
+    atts->SetRemoveGhosts(val);
     Apply();
 }
 

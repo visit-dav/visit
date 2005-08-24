@@ -571,6 +571,9 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //    Kathleen Bonnell, Thu Aug  4 15:47:59 PDT 2005 
 //    Request original node numbers when required. 
 //    
+//    Jeremy Meredith, Wed Aug 24 13:37:07 PDT 2005
+//    Added support for group origin.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -614,6 +617,7 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
     }
     else if (atts.GetWhichData() == IndexSelectAttributes::OneGroup)
     {
+        int groupOrigin=GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
         avtSILRestriction_p silr =rv->GetDataSpecification()->GetRestriction();
         int nc = silr->GetNumCollections();
         for (int i = 0 ; i < nc ; i++)
@@ -629,12 +633,13 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
                  // have to have SIL qualifiers otherwise.
                  //
                  const vector<int> &els = coll->GetSubsetList();
-                 int group = atts.GetGroupIndex();
+                 int group = atts.GetGroupIndex() - groupOrigin;
+
                  //
                  // Only go through the restriction process if we have
                  // more than 1 group 
                  //
-                 if (group < els.size() && els.size() > 1)  // Sanity check
+                 if (group >= 0 && group < els.size() && els.size() > 1)
                  {
                      //
                      // We think we found the group, so set up the new spec.

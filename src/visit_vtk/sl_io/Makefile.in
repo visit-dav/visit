@@ -38,6 +38,9 @@
 #    Kathleen Bonnell, Thu Feb 12 16:42:39 PST 2004 
 #    Removed EnSight readers (moved to EnSight database plugin). 
 #
+#    Hank Childs, Wed Aug 24 15:45:14 PDT 2005
+#    Add vtkCleanPolyData.
+#
 ##############################################################################
 
 ##
@@ -52,6 +55,7 @@
 SRC=\
     vtkAppendFilter.C \
     vtkAppendPolyData.C \
+    vtkCleanPolyData.C \
     vtkDataObjectReader.C \
     vtkDataObjectWriter.C \
     vtkDataReader.C \
