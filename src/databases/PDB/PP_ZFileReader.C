@@ -857,6 +857,10 @@ PP_ZFileReader::InitializeVarStorage()
 //
 //   Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //   Added timestep argument and code to set cycles/times
+//
+//   Jeremy Meredith, Thu Aug 25 11:35:32 PDT 2005
+//   Added group origin to mesh metadata constructor.
+//
 // ****************************************************************************
 
 void
@@ -919,14 +923,14 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
 
     // Add the logical mesh
     avtMeshMetaData *mmd = new avtMeshMetaData(
-        "logical_mesh", 1, 0, cellOrigin, ndims, ndims, AVT_RECTILINEAR_MESH);
+      "logical_mesh", 1, 0, cellOrigin, 0, ndims, ndims, AVT_RECTILINEAR_MESH);
     mmd->hasSpatialExtents = false;
     mmd->cellOrigin = 1;
     md->Add(mmd);
 
     // Add the mesh.
     mmd = new avtMeshMetaData(
-        "mesh", 1, 0, cellOrigin, ndims, ndims, AVT_CURVILINEAR_MESH);
+        "mesh", 1, 0, cellOrigin, 0, ndims, ndims, AVT_CURVILINEAR_MESH);
     mmd->hasSpatialExtents = false;
     mmd->cellOrigin = 1;
     md->Add(mmd);
@@ -934,7 +938,7 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
 #if !defined(_WIN32)
     // Add a revolved mesh.
     mmd = new avtMeshMetaData(
-        "revolved_mesh", 1, 0, cellOrigin, 3, 3, AVT_UNSTRUCTURED_MESH);
+        "revolved_mesh", 1, 0, cellOrigin, 0, 3, 3, AVT_UNSTRUCTURED_MESH);
     mmd->hasSpatialExtents = false;
     mmd->cellOrigin = 1;
     md->Add(mmd);
@@ -1148,6 +1152,8 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
 // Creation:   Fri Sep 26 10:37:22 PDT 2003
 //
 // Modifications:
+//   Jeremy Meredith, Thu Aug 25 11:35:32 PDT 2005
+//   Added group origin to mesh metadata constructor.
 //   
 // ****************************************************************************
 
@@ -1215,7 +1221,7 @@ PP_ZFileReader::AddRayMetaData(avtDatabaseMetaData *md)
     //
     if(haveRay2d)
     {
-        avtMeshMetaData *mmd = new avtMeshMetaData("ray", 1, 0, cellOrigin,
+        avtMeshMetaData *mmd = new avtMeshMetaData("ray", 1, 0, cellOrigin, 0,
             2, 1, AVT_UNSTRUCTURED_MESH);
         mmd->hasSpatialExtents = false;
         mmd->cellOrigin = cellOrigin;
@@ -1237,7 +1243,7 @@ PP_ZFileReader::AddRayMetaData(avtDatabaseMetaData *md)
     //
     if(haveRay3d)
     {
-        avtMeshMetaData *mmd = new avtMeshMetaData("ray3d", 1, 0, cellOrigin,
+        avtMeshMetaData *mmd = new avtMeshMetaData("ray3d", 1, 0, cellOrigin,0,
             3, 1, AVT_UNSTRUCTURED_MESH);
         mmd->hasSpatialExtents = false;
         mmd->cellOrigin = cellOrigin;

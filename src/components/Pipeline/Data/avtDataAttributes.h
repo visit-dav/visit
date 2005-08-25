@@ -150,6 +150,9 @@ class     avtExtents;
 //    Kathleen Bonnell, Thu Aug  4 15:47:59 PDT 2005 
 //    Added canUseOrigZones, origNodesRequiredForPick and Set/Get methods.
 //
+//    Jeremy Meredith, Thu Aug 25 11:06:41 PDT 2005
+//    Added origin for groups.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -235,6 +238,10 @@ class PIPELINE_API avtDataAttributes
     int                      GetBlockOrigin(void) const
                                    { return blockOrigin; };
     void                     SetBlockOrigin(int);
+
+    int                      GetGroupOrigin(void) const
+                                   { return groupOrigin; };
+    void                     SetGroupOrigin(int);
 
     avtGhostType             GetContainsGhostZones(void) const
                                    { return containsGhostZones; };
@@ -354,6 +361,7 @@ class PIPELINE_API avtDataAttributes
     int                      topologicalDimension;
     int                      cellOrigin;
     int                      blockOrigin;
+    int                      groupOrigin;
     double                   dtime;
     bool                     timeIsAccurate;
     int                      cycle;

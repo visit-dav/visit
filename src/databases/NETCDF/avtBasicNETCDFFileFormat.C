@@ -161,7 +161,9 @@ avtBasicNETCDFFileFormat::ActivateTimestep()
 // Creation:   Thu Aug 18 18:05:29 PST 2005
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Thu Aug 25 12:55:29 PDT 2005
+//    Added group origin to mesh metadata constructor.
+//
 // ****************************************************************************
 
 void
@@ -304,7 +306,7 @@ avtBasicNETCDFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     {
                         meshNames[meshName] = meshDims;
                         avtMeshMetaData *mmd = new avtMeshMetaData(meshName, 
-                            1, 1, 1, meshDims.size(), meshDims.size(),
+                            1, 1, 1, 0, meshDims.size(), meshDims.size(),
                             AVT_RECTILINEAR_MESH);
                         md->Add(mmd);
                     }

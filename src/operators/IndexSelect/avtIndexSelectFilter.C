@@ -617,7 +617,7 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
     }
     else if (atts.GetWhichData() == IndexSelectAttributes::OneGroup)
     {
-        int groupOrigin=GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
+        int groupOrigin=GetInput()->GetInfo().GetAttributes().GetGroupOrigin();
         avtSILRestriction_p silr =rv->GetDataSpecification()->GetRestriction();
         int nc = silr->GetNumCollections();
         for (int i = 0 ; i < nc ; i++)

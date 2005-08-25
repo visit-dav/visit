@@ -84,6 +84,9 @@ using     std::sort;
 //    Kathleen Bonnell, Thu Aug  4 15:47:59 PDT 2005 
 //    Added canUseOrigZones, origNodesRequiredForPick.
 //
+//    Jeremy Meredith, Thu Aug 25 11:07:00 PDT 2005
+//    Added groupOrigin.
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes()
@@ -99,6 +102,7 @@ avtDataAttributes::avtDataAttributes()
     activeVariable         = -1;
     cellOrigin             = 0;
     blockOrigin            = 0;
+    groupOrigin            = 0;
     topologicalDimension   = -1;
     spatialDimension       = -1;
 
@@ -299,6 +303,9 @@ avtDataAttributes::DestructSelf(void)
 //    Kathleen Bonnell, Thu Aug  4 15:47:59 PDT 2005 
 //    Added canUseOrigZones, origNodesRequiredForPick.
 //
+//    Jeremy Meredith, Thu Aug 25 11:07:11 PDT 2005
+//    Added group origin.
+//
 // ****************************************************************************
 
 void
@@ -308,6 +315,7 @@ avtDataAttributes::Print(ostream &out)
     out << "Topological dimension = " << topologicalDimension << endl;
     out << "Cell origin = " << cellOrigin << endl;
     out << "Block origin = " << blockOrigin << endl;
+    out << "Group origin = " << groupOrigin << endl;
     if (!timeIsAccurate)
         out << "Time is not known. Suspected to be " << dtime << endl;
     else
@@ -645,6 +653,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 
     SetCellOrigin(di.cellOrigin);
     SetBlockOrigin(di.blockOrigin);
+    SetGroupOrigin(di.groupOrigin);
     if (di.cycleIsAccurate)
     {
         SetCycle(di.cycle);
@@ -809,6 +818,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //    Kathleen Bonnell, Thu Aug  4 15:47:59 PDT 2005 
 //    Added canUseOrigZones, origNodesRequiredForPick.
 //
+//    Jeremy Meredith, Thu Aug 25 11:07:42 PDT 2005
+//    Added groupOrigin.
+//
 // ****************************************************************************
 
 void
@@ -894,6 +906,10 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     if (blockOrigin != da.blockOrigin)
     {
         EXCEPTION2(InvalidMergeException, blockOrigin, da.blockOrigin);
+    }
+    if (groupOrigin != da.groupOrigin)
+    {
+        EXCEPTION2(InvalidMergeException, groupOrigin, da.groupOrigin);
     }
 
     if (spatialDimension != da.spatialDimension)
@@ -1851,6 +1867,27 @@ avtDataAttributes::SetBlockOrigin(int origin)
 
 
 // ****************************************************************************
+//  Method: avtDataAttributes::SetGroupOrigin
+//
+//  Purpose:
+//      Sets the group origin.
+//
+//  Arguments:
+//      origin     The new group origin.
+//
+//  Programmer:    Jeremy Meredith
+//  Creation:      August 25, 2005
+//
+// ****************************************************************************
+
+void
+avtDataAttributes::SetGroupOrigin(int origin)
+{
+    groupOrigin = origin;
+}
+
+
+// ****************************************************************************
 //  Method: avtDataAttributes::SetCycle
 //
 //  Purpose:
@@ -1980,6 +2017,9 @@ avtDataAttributes::SetTime(double d)
 //    Kathleen Bonnell, Thu Aug  4 15:47:59 PDT 2005 
 //    Added canUseOrigZones, origNodesRequiredForPick.
 //
+//    Jeremy Meredith, Thu Aug 25 11:09:40 PDT 2005
+//    Added group origin.
+//
 // ****************************************************************************
 
 void
@@ -1988,38 +2028,39 @@ avtDataAttributes::Write(avtDataObjectString &str,
 {
     int   i, j;
 
-    int numVals = 23 + 5*variables.size();
+    int numVals = 24 + 5*variables.size();
     int *vals = new int[numVals];
     vals[0] = topologicalDimension;
     vals[1] = spatialDimension;
     vals[2] = cellOrigin;
     vals[3] = blockOrigin;
-    vals[4] = cycle;
-    vals[5] = (cycleIsAccurate ? 1 : 0);
-    vals[6] = (timeIsAccurate ? 1 : 0);
-    vals[7] = (int) containsGhostZones;
-    vals[8] = (containsOriginalCells ? 1 : 0);
-    vals[9] = (containsOriginalNodes ? 1 : 0);
-    vals[10] = (keepNodeZoneArrays ? 1 : 0);
-    vals[11] = (containsGlobalZoneIds ? 1 : 0);
-    vals[12] = (containsGlobalNodeIds ? 1 : 0);
-    vals[13] = (canUseInvTransform ? 1 : 0);
-    vals[14] = (canUseTransform ? 1 : 0);
-    vals[15] = (canUseCumulativeAsTrueOrCurrent ? 1 : 0);
-    vals[16] = windowMode;
-    vals[17] = numStates;
-    vals[18] = mirOccurred;
-    vals[19] = canUseOrigZones;
-    vals[20] = origNodesRequiredForPick;
-    vals[21] = activeVariable;
-    vals[22] = variables.size();
+    vals[4] = groupOrigin;
+    vals[5] = cycle;
+    vals[6] = (cycleIsAccurate ? 1 : 0);
+    vals[7] = (timeIsAccurate ? 1 : 0);
+    vals[8] = (int) containsGhostZones;
+    vals[9] = (containsOriginalCells ? 1 : 0);
+    vals[10] = (containsOriginalNodes ? 1 : 0);
+    vals[11] = (keepNodeZoneArrays ? 1 : 0);
+    vals[12] = (containsGlobalZoneIds ? 1 : 0);
+    vals[13] = (containsGlobalNodeIds ? 1 : 0);
+    vals[14] = (canUseInvTransform ? 1 : 0);
+    vals[15] = (canUseTransform ? 1 : 0);
+    vals[16] = (canUseCumulativeAsTrueOrCurrent ? 1 : 0);
+    vals[17] = windowMode;
+    vals[18] = numStates;
+    vals[19] = mirOccurred;
+    vals[20] = canUseOrigZones;
+    vals[21] = origNodesRequiredForPick;
+    vals[22] = activeVariable;
+    vals[23] = variables.size();
     for (i = 0 ; i < variables.size() ; i++)
     {
-        vals[23+5*i]   = variables[i].dimension;
-        vals[23+5*i+1] = variables[i].centering;
-        vals[23+5*i+2] = (variables[i].treatAsASCII ? 1 : 0);
-        vals[23+5*i+3] = variables[i].vartype;
-        vals[23+5*i+4] = variables[i].subnames.size();
+        vals[24+5*i]   = variables[i].dimension;
+        vals[24+5*i+1] = variables[i].centering;
+        vals[24+5*i+2] = (variables[i].treatAsASCII ? 1 : 0);
+        vals[24+5*i+3] = variables[i].vartype;
+        vals[24+5*i+4] = variables[i].subnames.size();
     }
     wrtr->WriteInt(str, vals, numVals);
     wrtr->WriteDouble(str, dtime);
@@ -2188,6 +2229,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Kathleen Bonnell, Thu Aug  4 15:47:59 PDT 2005 
 //    Added canUseOrigZones, origNodesRequiredForPick.
 //
+//    Jeremy Meredith, Thu Aug 25 11:09:34 PDT 2005
+//    Added group origin.
+//
 // ****************************************************************************
 
 int
@@ -2213,6 +2257,10 @@ avtDataAttributes::Read(char *input)
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
     SetBlockOrigin(tmp);
+  
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    SetGroupOrigin(tmp);
   
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);

@@ -164,6 +164,10 @@ avtANALYZEFileFormat::GetMeshExtents(float *extents) const
 //  Programmer: Brad Whitlock
 //  Creation:   Mon Nov 24 16:51:26 PST 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug 25 11:35:32 PDT 2005
+//    Added group origin to mesh metadata constructor.
+//
 // ****************************************************************************
 
 void
@@ -183,7 +187,7 @@ avtANALYZEFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     float extents[6];
     GetMeshExtents(extents);
     avtMeshMetaData *mmd = new avtMeshMetaData(
-        meshname, nblocks, block_origin, 0, spatial_dimension,
+        meshname, nblocks, block_origin, 0, 0, spatial_dimension,
         topological_dimension, mt);
     mmd->SetExtents(extents);
     string unitString(fileInformation.data.dime.vox_units);

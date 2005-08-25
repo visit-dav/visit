@@ -308,7 +308,9 @@ avtLODIFileFormat::GetTimes(doubleVector &t)
 // Creation:   Mon Aug 22 16:15:51 PST 2005
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Thu Aug 25 12:55:29 PDT 2005
+//    Added group origin to mesh metadata constructor.
+//
 // ****************************************************************************
 
 void
@@ -342,7 +344,7 @@ avtLODIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         std::string meshName("mesh");
         avtMeshMetaData *mmd = new avtMeshMetaData(meshName, 
-                                1, 1, 1, ndims-1, ndims-1, AVT_RECTILINEAR_MESH);
+                              1, 1, 1, 0, ndims-1, ndims-1, AVT_RECTILINEAR_MESH);
         fileObject->ReadStringAttribute("cgridx", "units", mmd->xUnits);
         fileObject->ReadStringAttribute("cgridy", "units", mmd->yUnits);
         md->Add(mmd);

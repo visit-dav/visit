@@ -880,6 +880,9 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Hank Childs, Fri Aug 19 08:31:47 PDT 2005
 //    Corrected another memory leak.
 //
+//    Jeremy Meredith, Thu Aug 25 11:35:32 PDT 2005
+//    Added group origin to mesh metadata constructor.
+//
 // ****************************************************************************
 
 void
@@ -1121,6 +1124,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         int ndims;
         int tdims;
         int cellOrigin;
+        int groupOrigin = 0;
         string xUnits, yUnits, zUnits;
         string xLabel, yLabel, zLabel;
         switch (silo_mt)
@@ -1258,7 +1262,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         char *name_w_dir = GenerateName(dirname, multimesh_names[i]);
         avtMeshMetaData *mmd = new avtMeshMetaData(name_w_dir,
                                    mm->nblocks, mm->blockorigin, cellOrigin,
-                                   ndims, tdims, mt);
+                                   groupOrigin, ndims, tdims, mt);
         mmd->validVariable = valid_var;
         mmd->groupTitle = "blocks";
         mmd->groupPieceName = "block";
@@ -1347,7 +1351,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 
         char *name_w_dir = GenerateName(dirname, qmesh_names[i]);
         avtMeshMetaData *mmd = new avtMeshMetaData(extents_to_use,
-                                                   name_w_dir, 1, 0,qm->origin,
+                                                   name_w_dir, 1, 0,
+                                                   qm->origin, 0,
                                                    qm->ndims, qm->ndims,
                                                    mt);
         if (qm->units[0] != NULL)
@@ -1412,7 +1417,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 
         char *name_w_dir = GenerateName(dirname, ucdmesh_names[i]);
         avtMeshMetaData *mmd = new avtMeshMetaData(extents_to_use, name_w_dir,
-                            1, 0, um->origin, um->ndims, um->ndims,
+                            1, 0, um->origin, 0, um->ndims, um->ndims,
                             AVT_UNSTRUCTURED_MESH);
         if (um->units[0] != NULL)
            mmd->xUnits = um->units[0];
@@ -1452,7 +1457,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 
         char *name_w_dir = GenerateName(dirname, ptmesh_names[i]);
         avtMeshMetaData *mmd = new avtMeshMetaData(name_w_dir, 1, 0,pm->origin,
-                                         pm->ndims, 0, AVT_POINT_MESH);
+                                              0, pm->ndims, 0, AVT_POINT_MESH);
         mmd->groupTitle = "blocks";
         mmd->groupPieceName = "block";
         if (pm->units[0] != NULL)
