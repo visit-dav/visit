@@ -32,6 +32,9 @@ class vtkRenderWindow;
 class vtkMesaRenderer;
 class vtkTimerLog;
 
+#define SPHERE_TEX_W 64
+#define SPHERE_TEX_H 64
+
 // ****************************************************************************
 //  Modifications:
 //  
@@ -60,6 +63,16 @@ public:
   // Description:
   // Draw method for Mesa.
   virtual int Draw(vtkRenderer *ren, vtkActor *a);
+
+  typedef enum {TEXTURE_NO_POINTS,
+                TEXTURE_USING_POINTSPRITES
+                // room for more methods such as shaders
+               } PointTextureMode;
+
+  // Description:
+  // Sets/Gets the point texturing method. 
+  vtkSetMacro(PointTextureMethod, PointTextureMode);
+  vtkGetMacro(PointTextureMethod, PointTextureMode);
   
 protected:
   vtkVisItMesaPolyDataMapper();
@@ -70,6 +83,62 @@ protected:
   int nLists;
   bool doingDisplayLists;
   int  primsInCurrentList;
+
+  // Description:
+  // Method for texturing the points as spheres.
+  PointTextureMode PointTextureMethod; 
+
+  // Description:
+  // Whether the texture data has been created. Used with PointTextureMethod
+  // equal to TEXTURE_USING_POINTSPRITES.
+  bool SphereTexturesDataCreated;
+
+  // Description:
+  // Whether the texture data has been loaded. Used with PointTextureMethod
+  // equal to TEXTURE_USING_POINTSPRITES.
+  bool SphereTexturesLoaded;
+
+  // Description:
+  // Contains the sphere texture that we use when the point texturing mode
+  // is set to TEXTURE_USING_POINTSPRITES.
+  unsigned char SphereTexture[SPHERE_TEX_H][SPHERE_TEX_W][4];
+
+  // Description:
+  // Contains mask texture for point edges. Used with PointTextureMethod
+  // equal to TEXTURE_USING_POINTSPRITES.
+  unsigned char SphereMaskTexture[SPHERE_TEX_H][SPHERE_TEX_W];
+
+  // Description:
+  // Contains the names of the textures. Used with PointTextureMethod
+  // equal to TEXTURE_USING_POINTSPRITES.
+  unsigned int  TextureNames[2];
+
+  // Description:
+  // Contains the GL state for alpha testing and blending so we can restore
+  // if if we do point texturing.
+  struct TextureState
+  {
+    int   isBlendEnabled;
+    int   blendFunc0;
+    int   blendFunc1;
+    int   needAlphaTest;
+    int   isAlphaTestEnabled;
+    int   alphaTestFunc;
+    float alphaTestRef;
+  };
+
+  // Description:
+  // Called to set up textures, etc when we want to draw textured points.
+  void StartFancyPoints(TextureState &atts);
+
+  // Description:
+  // Called to restore previous OpenGL state after drawing textured points.
+  void EndFancyPoints(TextureState &atts);
+
+  // Description:
+  // Makes the sphere textures used when PointTextureMethod is
+  // equal to TEXTURE_USING_POINTSPRITES.
+  void MakeTextures();
 
   vtkRenderWindow *RenderWindow;   // RenderWindow used for the previous render
 private:

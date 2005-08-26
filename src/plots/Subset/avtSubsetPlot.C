@@ -634,14 +634,17 @@ avtSubsetPlot::CustomizeBehavior(void)
 // Creation:   Thu Jul 21 15:24:25 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 25 10:17:39 PDT 2005
+//   Added sphere points.
+//
 // ****************************************************************************
 
 void
 avtSubsetPlot::SetPointGlyphSize()
 {
     // Size used for points when using a point glyph.
-    if(atts.GetPointType() == SubsetAttributes::Point)
+    if(atts.GetPointType() == SubsetAttributes::Point ||
+       atts.GetPointType() == SubsetAttributes::Sphere)
         levelsMapper->SetPointSize(atts.GetPointSizePixels());
 }
 

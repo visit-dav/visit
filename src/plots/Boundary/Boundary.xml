@@ -17,6 +17,7 @@
         Axis
         Icosahedron
         Point
+        Sphere
       </Enum>
       <Field name="colorType" label="colorType" type="enum" subtype="ColoringMethod">
         ColorByMultipleColors

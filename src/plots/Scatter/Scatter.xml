@@ -23,6 +23,7 @@
         Axis
         Icosahedron
         Point
+        Sphere
       </Enum>
       <Enum name="VariableRole">
         Coordinate0

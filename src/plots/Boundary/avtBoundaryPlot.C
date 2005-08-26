@@ -471,14 +471,17 @@ avtBoundaryPlot::CustomizeBehavior(void)
 // Creation:   Thu Jul 21 15:24:25 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 25 10:12:07 PDT 2005
+//   Added sphere points.
+//
 // ****************************************************************************
 
 void
 avtBoundaryPlot::SetPointGlyphSize()
 {
     // Size used for points when using a point glyph.
-    if(atts.GetPointType() == BoundaryAttributes::Point)
+    if(atts.GetPointType() == BoundaryAttributes::Point ||
+       atts.GetPointType() == BoundaryAttributes::Sphere)
         levelsMapper->SetPointSize(atts.GetPointSizePixels());
 }
 

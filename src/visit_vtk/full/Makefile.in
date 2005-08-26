@@ -242,6 +242,9 @@
 #    Kathleen Bonnell, Tue May 10 11:09:36 PDT 2005
 #    Added vtkVisItExtractGrid and vtkVisItExtractRectilinearGrid.
 #
+#    Brad Whitlock, Fri Aug 26 10:26:12 PDT 2005
+#    Added vtkVisItDataSetMapper.
+#
 ##############################################################################
 
 ##
@@ -292,6 +295,7 @@ SRC=InitVTK.C \
     vtkVisItCubeAxesActor.C \
     vtkVisItCutter.C \
     vtkVisItClipper.C \
+    vtkVisItDataSetMapper.C \
     vtkVisItExtractGrid.C \
     vtkVisItExtractRectilinearGrid.C \
     vtkVisItFeatureEdges.C \
