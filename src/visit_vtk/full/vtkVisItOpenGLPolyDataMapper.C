@@ -3653,7 +3653,10 @@ vtkVisItOpenGLPolyDataMapper::EndFancyPoints(
 // Creation:   Thu Aug 25 14:59:22 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Aug 29 10:04:32 PDT 2005
+//   Fixed it so the first texture's alpha is based on the Z value as computed
+//   for a sphere. The last equation was a kludge.
+//
 // ****************************************************************************
 
 void
@@ -3673,29 +3676,21 @@ vtkVisItOpenGLPolyDataMapper::MakeTextures()
 
    for (j = 0; j < SPHERE_TEX_H; j++)
    {
-      float idy = float(j) - dy;
-      for (i = 0; i < SPHERE_TEX_H; i++)
+      float y = (float(j) / float(SPHERE_TEX_H-1)) * 2. - 1.;
+      for (i = 0; i < SPHERE_TEX_W; i++)
       {
-         float idx = float(i) - dx;         
-         float r = sqrt(idx*idx + idy*idy);
-
          texture[j][i][0] = (GLubyte) 0;
          texture[j][i][1] = (GLubyte) 0;
          texture[j][i][2] = (GLubyte) 0;
 
-         // Set up the alphas
-         if(r < R)
+         float x = (float(i) / float(SPHERE_TEX_W-1)) * 2. - 1.;
+         float x2y2 = sqrt(x*x + y*y);
+         if(x2y2 < 1.)
          {
-             float dR = R - r;
-             float t = (dR / R);
-             dR = sqrt(sqrt(1 - t*t)) * dR;
-             if(t < minT) minT = t;
-             if(t > maxT) maxT = t;
-
-             GLubyte rc = (GLubyte)(t * 255.);
-
+             float z = sqrt(1. - x2y2);
+             GLubyte rc = (GLubyte)(z * 255.);
              texture[j][i][3] = (GLubyte) 255 - rc;
-             mask[j][i] = 255;
+             mask[j][i] = (GLubyte) 255;
          }
          else
          {
