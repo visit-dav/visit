@@ -10,6 +10,8 @@
 #include <string>
 
 #include <avtDataObject.h>
+#include <avtDatabase.h>
+
 class    AttributeSubject;
 
 
@@ -17,6 +19,8 @@ typedef   void  (*WarningCallback)(void *, const char *);
 typedef   void  (*ImageCallback)(void *, int, avtDataObject_p &);
 typedef   void  (*UpdatePlotAttributesCallback)(void *, const std::string &,
                                                 int, AttributeSubject*);
+typedef   ref_ptr<avtDatabase> (*GetDatabaseCallback)(void *,
+                                       const std::string &, int, const char *);
 
 
 #include <WindowAttributes.h>
@@ -45,6 +49,9 @@ typedef   void  (*UpdatePlotAttributesCallback)(void *, const std::string &,
 //
 //    Mark C. Miller, Wed Jul 21 09:51:18 PDT 2004
 //    Changed return value of IssueWarning to bool
+//
+//    Hank Childs, Fri Aug 26 15:29:54 PDT 2005
+//    Add GetDatabase.
 //
 // ****************************************************************************
 
@@ -75,6 +82,11 @@ class PIPELINE_API avtCallback
     static bool                  GetNowinMode(void)
                                      { return nowinMode; };
 
+    static void                  RegisterGetDatabaseCallback(
+                                                  GetDatabaseCallback, void *);
+    static ref_ptr<avtDatabase>  GetDatabase(const std::string &, int,
+                                             const char *);
+
   protected:
     static WarningCallback       warningCallback;
     static void                 *warningCallbackArgs;
@@ -90,6 +102,9 @@ class PIPELINE_API avtCallback
     static UpdatePlotAttributesCallback
                                  updatePlotAttributesCallback;
     static void                 *updatePlotAttributesCallbackArgs;
+
+    static GetDatabaseCallback   getDatabaseCallback;
+    static void                 *getDatabaseCallbackArgs;
 };
 
 

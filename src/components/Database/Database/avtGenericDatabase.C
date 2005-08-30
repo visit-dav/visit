@@ -34,6 +34,7 @@
 #include <snprintf.h>
 
 #include <avtCallback.h>
+#include <avtCommonDataFunctions.h>
 #include <avtDatabaseMetaData.h>
 #include <avtDatasetCollection.h>
 #include <avtDatasetVerifier.h>
@@ -8066,6 +8067,9 @@ avtGenericDatabase::QueryVectors(const string &varName, const int dom,
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added dummy args for data type conversion for calls to get variable
 //
+//    Kathleen Bonnell, Tue Aug 30 09:35:44 PDT 2005 
+//    Compute Major Eigenvalue.
+//
 // ****************************************************************************
 
 bool
@@ -8133,6 +8137,7 @@ avtGenericDatabase::QueryTensors(const string &varName, const int dom,
                         tensors->GetTuple(incidentElements[k], temp);
                         for (int i = 0; i < nComponents; i++)
                             vals.push_back(temp[i]);
+                        vals.push_back(MajorEigenvalue(temp));
                     }
                 }
                 else 
@@ -8143,6 +8148,7 @@ avtGenericDatabase::QueryTensors(const string &varName, const int dom,
                     tensors->GetTuple(element, temp);
                     for (int i = 0; i < nComponents; i++)
                         vals.push_back(temp[i]);
+                    vals.push_back(MajorEigenvalue(temp));
                 }
                 delete [] temp;
             }

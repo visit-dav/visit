@@ -82,6 +82,7 @@
 #include <avtConservativeSmoothingExpression.h>
 #include <avtMeanFilterExpression.h>
 #include <avtMedianFilterExpression.h>
+#include <avtConnCMFEExpression.h>
 
 #include <stdio.h>
 #include <ExpressionException.h>
@@ -402,6 +403,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Hank Childs, Tue Aug 16 09:05:03 PDT 2005
 //      Added mean_filter, median_filter.
 //
+//      Hank Childs, Fri Aug 26 13:51:39 PDT 2005
+//      Added conn_cmfe.
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -589,6 +593,8 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtMeanFilterExpression;
     else if (functionName == "median_filter")
         f = new avtMedianFilterExpression;
+    else if (functionName == "conn_cmfe")
+        f = new avtConnCMFEExpression;
     else if (functionName == "zoneid")
     {
         avtDataIdFilter *ff = new avtDataIdFilter;

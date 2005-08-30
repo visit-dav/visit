@@ -118,6 +118,9 @@ avtExpressionStreamer::~avtExpressionStreamer()
 //    Hank Childs, Thu Jul 28 09:06:00 PDT 2005
 //    Fix UMR that can occur with array variables.
 //
+//    Hank Childs, Tue Aug 30 13:46:19 PDT 2005
+//    Move code for calculating cumulative extents to avtExpressionFilter.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -202,67 +205,6 @@ avtExpressionStreamer::ExecuteData(vtkDataSet *in_ds, int index,
             rv->GetCellData()->SetActiveVectors(outputVariableName);
         else if (vardim == 9)
             rv->GetCellData()->SetActiveTensors(outputVariableName);
-    }
-
-    //
-    // Make our best attempt at maintaining our extents.
-    //
-    int nvars   = dat->GetNumberOfComponents();
-    if (nvars <= 3 || nvars == 9)
-    {
-        double exts[6];
-        unsigned char *ghosts = NULL;
-        if (!isPoint)
-        {
-            vtkUnsignedCharArray *g = (vtkUnsignedCharArray *)
-                                 rv->GetCellData()->GetArray("avtGhostZones");
-            if (g != NULL)
-            {
-                ghosts = g->GetPointer(0);
-            }
-        }
-        int ntuples = dat->GetNumberOfTuples();
-        exts[0] = +FLT_MAX;
-        exts[1] = -FLT_MAX;
-        for (i = 0 ; i < ntuples ; i++)
-        {
-            if (ghosts != NULL && ghosts[i] > 0) 
-            {
-                continue;
-            }
-            float *val = dat->GetTuple(i);
-            float value = 0;
-            if (nvars == 1)
-            {
-                value = *val;
-            }
-            else if (nvars == 3)
-            {
-                value = val[0]*val[0] + val[1] * val[1] + val[2] *val[2];
-            }
-            else if (nvars == 9)
-            {
-                // This function is found in avtCommonDataFunctions.
-                value = MajorEigenvalue(val);    
-            }
-            // else ... array variable
-
-            if (value < exts[0])
-            {
-                exts[0] = value;
-            }
-            if (value > exts[1])
-            {
-                exts[1] = value;
-            }
-        }
-        if (nvars == 3)
-        {
-            exts[0] = sqrt(exts[0]);
-            exts[1] = sqrt(exts[1]);
-        }
-        GetOutput()->GetInfo().GetAttributes().
-                 GetCumulativeTrueDataExtents(outputVariableName)->Merge(exts);
     }
 
     //

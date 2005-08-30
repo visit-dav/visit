@@ -77,6 +77,8 @@ using std::set;
 static double RenderBalance(int numTrianglesIHave);
 static void   DumpImage(avtDataObject_p, const char *fmt, bool allprocs=true);
 static void   DumpImage(avtImage_p, const char *fmt, bool allprocs=true);
+static ref_ptr<avtDatabase> GetDatabase(void *, const std::string &,
+                                        int, const char *);
 
 // ****************************************************************************
 //  Method: NetworkManager default constructor
@@ -114,6 +116,9 @@ static void   DumpImage(avtImage_p, const char *fmt, bool allprocs=true);
 //    Hank Childs, Mon Feb 28 16:56:20 PST 2005
 //    Initialize inQueryMode.
 //
+//    Hank Childs, Fri Aug 26 15:44:48 PDT 2005
+//    Register a callback to get databases.
+//
 // ****************************************************************************
 NetworkManager::NetworkManager(void) : virtualDatabases()
 {
@@ -127,6 +132,8 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
 
     // stuff to support scalable rendering. We always have window 0
     NewVisWindow(0);
+
+    avtCallback::RegisterGetDatabaseCallback(GetDatabase, this);
 }
 
 // ****************************************************************************
@@ -3602,3 +3609,31 @@ DumpImage(avtImage_p img, const char *fmt, bool allprocs)
     CopyTo(tmpImage, img);
     DumpImage(tmpImage, fmt, allprocs);
 }
+
+
+// ****************************************************************************
+//  Function:  GetDatabase
+//
+//  Purpose:
+//      A callback for our expression language that can get a database.
+//
+//  Arguments:
+//    nm         A void * pointer to the network manager.
+//    filename   The database filename.
+//    time       The time index.
+//    format     The preferred format for the file.
+//
+//  Programmer:  Hank Childs
+//  Creation:    August 26, 2005
+//
+// ****************************************************************************
+
+static ref_ptr<avtDatabase>
+GetDatabase(void *nm, const std::string &filename, int time,const char *format)
+{
+    NetworkManager *nm2 = (NetworkManager *) nm;
+    NetnodeDB *db = nm2->GetDBFromCache(filename, time, format);
+    return db->GetDB();
+}
+
+

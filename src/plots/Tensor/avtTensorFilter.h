@@ -22,6 +22,10 @@ class  vtkVertexFilter;
 //  Programmer: Hank Childs
 //  Creation:   September 23, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Aug 30 15:11:01 PDT 2005
+//    Added keepNodeZone & PerformRestriction.
+//
 // ****************************************************************************
 
 class avtTensorFilter : public avtStreamer
@@ -42,6 +46,7 @@ class avtTensorFilter : public avtStreamer
     void                      SetNTensors(int);
 
   protected:
+    bool                      keepNodeZone;
     bool                      useStride;
     int                       stride;
     int                       nTensors;
@@ -51,6 +56,8 @@ class avtTensorFilter : public avtStreamer
 
     virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
     virtual void              RefashionDataObjectInfo(void);
+    virtual avtPipelineSpecification_p
+                              PerformRestriction(avtPipelineSpecification_p);
 };
 
 

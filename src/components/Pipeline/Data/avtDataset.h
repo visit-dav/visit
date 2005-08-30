@@ -51,6 +51,9 @@ class   avtDataRepresentation;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Mon Aug 29 14:57:42 PDT 2005
+//    Add friend status for avtCMFEExpression.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataset : public avtDataObject
@@ -59,6 +62,7 @@ class PIPELINE_API avtDataset : public avtDataObject
     friend                   class avtDatasetSource;
     friend                   class avtSourceFromAVTDataset;
     friend                   class avtDatasetExaminer;
+    friend                   class avtCMFEExpression;
 
   public:
                              avtDataset(avtDataObjectSource *);

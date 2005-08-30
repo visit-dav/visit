@@ -74,6 +74,14 @@ void vtkTensorReduceFilter::SetNumberOfElements(int n)
   numEls = n;
 }
 
+// ****************************************************************************
+// Modifications:
+//
+//    Kathleen Bonnell, Tue Aug 30 11:11:56 PDT 2005 
+//    Copy other Point and Cell data. 
+//
+// ****************************************************************************
+
 void vtkTensorReduceFilter::Execute(void)
 {
   vtkDataSet *input  = this->GetInput();
@@ -81,6 +89,8 @@ void vtkTensorReduceFilter::Execute(void)
 
   vtkCellData *inCd = input->GetCellData();
   vtkPointData *inPd = input->GetPointData();
+  vtkCellData *outCd = output->GetCellData();
+  vtkPointData *outPd = output->GetPointData();
 
   vtkDataArray *inCtensors = inCd->GetTensors();
   vtkDataArray *inPtensors = inPd->GetTensors();
@@ -121,8 +131,10 @@ void vtkTensorReduceFilter::Execute(void)
   outTensors->SetNumberOfComponents(9);
 
   float nextToTake = 0.;
+  int count = 0;
   if (inPtensors != NULL)
     {
+    outPd->CopyAllocate(inPd, npts);
     outTensors->SetName(inPtensors->GetName());
     for (int i = 0 ; i < npts ; i++)
       {
@@ -137,13 +149,17 @@ void vtkTensorReduceFilter::Execute(void)
         float v[9];
         inPtensors->GetTuple(i, v);
         outTensors->InsertNextTuple(v);
+        outPd->CopyData(inPd, i, count++);
         }
       }
+      outPd->Squeeze();
     }
 
   nextToTake = 0.;
+  count = 0;
   if (inCtensors != NULL)
     {
+    outCd->CopyAllocate(inCd, ncells);
     outTensors->SetName(inCtensors->GetName());
     for (int i = 0 ; i < ncells ; i++)
       {
@@ -159,8 +175,10 @@ void vtkTensorReduceFilter::Execute(void)
         float v[9];
         inCtensors->GetTuple(i, v);
         outTensors->InsertNextTuple(v);
+        outCd->CopyData(inCd, i, count++);
         }
       }
+      outCd->Squeeze();
     }
 
   int nOutPts = outpts->GetNumberOfPoints();

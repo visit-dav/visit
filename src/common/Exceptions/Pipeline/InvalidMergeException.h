@@ -25,6 +25,9 @@
 //    Hank Childs, Thu Aug  4 11:06:21 PDT 2005
 //    Added new constructor that takes doubles.
 //
+//    Hank Childs, Mon Aug 29 15:49:32 PDT 2005
+//    Added new constructor with a warning message.
+//
 // ****************************************************************************
 
 class AVTEXCEPTION_API InvalidMergeException : public PipelineException
@@ -32,6 +35,7 @@ class AVTEXCEPTION_API InvalidMergeException : public PipelineException
   public:
                     InvalidMergeException(int, int);
                     InvalidMergeException(double, double);
+                    InvalidMergeException(const char *);
                     InvalidMergeException();
     virtual        ~InvalidMergeException() VISIT_THROW_NOTHING {;};
 };

@@ -21,6 +21,10 @@
 //  Programmer: Hank Childs
 //  Creation:   September 23, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Aug 30 15:11:01 PDT 2005
+//    Added keepNodeZone.
+//
 // ****************************************************************************
 
 avtTensorFilter::avtTensorFilter(bool us, int red)
@@ -45,6 +49,7 @@ avtTensorFilter::avtTensorFilter(bool us, int red)
     {
         reduce->SetNumberOfElements(nTensors);
     }
+    keepNodeZone = false;
 }
 
 
@@ -231,6 +236,9 @@ avtTensorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 //    Hank Childs, Wed Apr  9 13:53:09 PDT 2003
 //    Do not calculate normals of these points.
 //
+//    Kathleen Bonnell, Tue Aug 30 15:11:01 PDT 2005
+//    Added keepNodeZone.
+//
 // ****************************************************************************
 
 void
@@ -239,6 +247,7 @@ avtTensorFilter::RefashionDataObjectInfo(void)
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(0);
     GetOutput()->GetInfo().GetValidity().SetNormalsAreInappropriate(true);
+    GetOutput()->GetInfo().GetAttributes().SetKeepNodeZoneArrays(keepNodeZone);
 }
 
 
@@ -276,5 +285,57 @@ avtTensorFilter::ReleaseData(void)
     vertex->SetOutput(p);
     p->Delete();
 }
+
+
+// ****************************************************************************
+//  Method: avtTensorFilter::PerformRestriction
+//
+//  Purpose:  
+//    Request original nodes/zones when appropriate. 
+// 
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 30, 2005 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtPipelineSpecification_p
+avtTensorFilter::PerformRestriction(avtPipelineSpecification_p pspec)
+{
+    avtPipelineSpecification_p rv = pspec;
+
+    if (pspec->GetDataSpecification()->MayRequireZones() || 
+        pspec->GetDataSpecification()->MayRequireNodes())
+    {
+        avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
+        keepNodeZone = true;
+        if (data.ValidActiveVariable())
+        {
+            if (data.GetCentering() == AVT_NODECENT)
+            {
+                rv->GetDataSpecification()->TurnNodeNumbersOn();
+            }
+            else if (data.GetCentering() == AVT_ZONECENT)
+            {
+                rv->GetDataSpecification()->TurnZoneNumbersOn();
+            }
+        }
+        else 
+        {
+            // canot determine variable centering, so turn on both
+            // node numbers and zone numbers.
+            rv->GetDataSpecification()->TurnNodeNumbersOn();
+            rv->GetDataSpecification()->TurnZoneNumbersOn();
+        }
+    }
+    else
+    {
+        keepNodeZone = false;
+    }
+
+    return rv;
+}
+
 
 

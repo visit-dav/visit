@@ -28,6 +28,9 @@ UpdatePlotAttributesCallback  avtCallback::updatePlotAttributesCallback = NULL;
 void                         *avtCallback::updatePlotAttributesCallbackArgs 
                                                                         = NULL;
 
+GetDatabaseCallback           avtCallback::getDatabaseCallback = NULL;
+void                         *avtCallback::getDatabaseCallbackArgs = NULL; 
+
 
 // ****************************************************************************
 //  Method: avtCallback::RegisterWarningCallback
@@ -260,6 +263,51 @@ avtCallback::UpdatePlotAttributes(const string &str, int index,
 
     updatePlotAttributesCallback(updatePlotAttributesCallbackArgs, str, 
                                  index, atts);
+}
+
+
+// ****************************************************************************
+//  Method: avtCallback::RegisterGetDatabaseCallback
+//
+//  Purpose:
+//      Registers a callback that can be called to get a database.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 26, 2005
+//
+// ****************************************************************************
+
+void
+avtCallback::RegisterGetDatabaseCallback(GetDatabaseCallback gdc, 
+                                         void *gdcArgs)
+{
+    getDatabaseCallback     = gdc;
+    getDatabaseCallbackArgs = gdcArgs;
+}
+
+
+// ****************************************************************************
+//  Method: avtCallback::GetDatabaseCallback
+//
+//  Purpose:
+//      A callback that gets a database.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 26, 2005
+//
+// ****************************************************************************
+
+ref_ptr<avtDatabase>
+avtCallback::GetDatabase(const string &filename, int time, const char *format)
+{
+    if (getDatabaseCallback == NULL)
+    {
+        debug1 << "Unable to get a database since no callback has "
+               << "been registered." << endl;
+        return NULL;
+    }
+
+    return getDatabaseCallback(getDatabaseCallbackArgs, filename, time,format);
 }
 
 

@@ -47,6 +47,9 @@ class Pos;
 //    remove Token references from the parse tree node classes.
 //    Also added some destructors.
 //
+//    Hank Childs, Tue Aug 30 13:20:47 PDT 2005
+//    Added access to variable and database names.
+//
 // ****************************************************************************
 class EXPR_API ExprNode : public ExprParseTreeNode
 {
@@ -320,6 +323,7 @@ class EXPR_API DBExpr : public ExprParseTreeNode
     virtual ~DBExpr() { delete file; delete mach; delete time; }
     virtual void PrintNode(ostream &o);
     virtual const std::string GetTypeName() { return "DBExpr"; }
+    PathExpr *GetFile(void) { return file; };
   protected:
     PathExpr *file;
     MachExpr *mach;
@@ -335,6 +339,8 @@ class EXPR_API VarExpr : public virtual ExprNode
     virtual void PrintNode(ostream &o);
     virtual std::set<std::string> GetVarLeaves();
     virtual const std::string GetTypeName() { return "Var"; }
+    PathExpr *GetVar(void) { return var; };
+    DBExpr   *GetDB(void) { return db; };
   protected:
     DBExpr   *db;
     PathExpr *var;

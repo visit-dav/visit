@@ -9,7 +9,7 @@
 
 #include <avtMapper.h>
 
-class     vtkTensorGlyph;
+class     vtkVisItTensorGlyph;
 class     vtkLookupTable;
 class     vtkPolyData;
 class     vtkVisItPolyDataNormals;
@@ -32,6 +32,10 @@ class     vtkVisItPolyDataNormals;
 //
 //    Eric Brugger, Wed Nov 24 12:58:22 PST 2004
 //    Added scaleByMagnitude and autoScale.
+//
+//    Kathleen Bonnell, Tue Aug 30 15:11:01 PDT 2005 
+//    Use VisIt's version of TensorGlyph so that orignal zone and node
+//    arrays can be copied through.
 //
 // ****************************************************************************
 
@@ -57,7 +61,7 @@ class PLOTTER_API  avtTensorGlyphMapper : public avtMapper
     bool                       scaleByMagnitude;
     bool                       autoScale;
 
-    vtkTensorGlyph           **tensorFilter;
+    vtkVisItTensorGlyph      **tensorFilter;
     vtkVisItPolyDataNormals  **normalsFilter;
     int                        nTensorFilters;
 

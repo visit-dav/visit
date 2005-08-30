@@ -88,6 +88,11 @@ $0 = shift @ARGV;
 #    Hank Childs, Wed Aug 24 16:48:02 PDT 2005
 #    Added text to -config for absolute paths.
 #
+#    Jeremy Meredith, Tue Aug 30 10:00:17 PDT 2005
+#    Keep track of original environment variables like library paths and
+#    plugin dirs explicitly.  In some cases, the engine may try to set them
+#    differently from the other components, and the existing logic would fail.
+#
 ###############################################################################
 
 
@@ -844,11 +849,32 @@ if (defined($ENV{HOME}))
 }
 
 # Set up stuff for shared libraries for various platforms
-$ENV{LD_LIBRARY_PATH}    = "$visitlibdir:$ENV{LD_LIBRARY_PATH}";
-$ENV{LD_LIBRARY32_PATH}  = "$visitlibdir:$ENV{LD_LIBRARY32_PATH}";
-$ENV{LD_LIBRARYN32_PATH} = "$visitlibdir:$ENV{LD_LIBRARYN32_PATH}";
-$ENV{LD_LIBRARY64_PATH}  = "$visitlibdir:$ENV{LD_LIBRARY64_PATH}";
-$ENV{LIBPATH}            = "$visitlibdir:$ENV{LIBPATH}";
+if (! defined($ENV{LD_LIBRARY_PATH_VISITORIG}))
+{
+    $ENV{LD_LIBRARY_PATH_VISITORIG} = "$ENV{LD_LIBRARY_PATH}";
+}
+if (! defined($ENV{LD_LIBRARY32_PATH_VISITORIG}))
+{
+    $ENV{LD_LIBRARY32_PATH_VISITORIG} = "$ENV{LD_LIBRARY32_PATH}";
+}
+if (! defined($ENV{LD_LIBRARYN32_PATH_VISITORIG}))
+{
+    $ENV{LD_LIBRARYN32_PATH_VISITORIG} = "$ENV{LD_LIBRARYN32_PATH}";
+}
+if (! defined($ENV{LD_LIBRARY64_PATH_VISITORIG}))
+{
+    $ENV{LD_LIBRARY64_PATH_VISITORIG} = "$ENV{LD_LIBRARY64_PATH}";
+}
+if (! defined($ENV{LIBPATH_VISITORIG}))
+{
+    $ENV{LIBPATH_VISITORIG} = "$ENV{LIBPATH}";
+}
+
+$ENV{LD_LIBRARY_PATH}    = "$visitlibdir:$ENV{LD_LIBRARY_PATH_VISITORIG}";
+$ENV{LD_LIBRARY32_PATH}  = "$visitlibdir:$ENV{LD_LIBRARY32_PATH_VISITORIG}";
+$ENV{LD_LIBRARYN32_PATH} = "$visitlibdir:$ENV{LD_LIBRARYN32_PATH_VISITORIG}";
+$ENV{LD_LIBRARY64_PATH}  = "$visitlibdir:$ENV{LD_LIBRARY64_PATH_VISITORIG}";
+$ENV{LIBPATH}            = "$visitlibdir:$ENV{LIBPATH_VISITORIG}";
 
 # Add /usr/local/lib to the shared library path.  This was added for the
 # c++ library on some sun systems, but it may have broader applicability.
@@ -867,10 +893,13 @@ if ($publiconly)
     # Forget the private and user-specified paths, and only use the public one
     $ENV{VISITPLUGINDIR}="$visitplugins";
 }
-elsif (!grep /$visitprivateplugins/, $ENV{VISITPLUGINDIR})
+else
 {
-    # Don't keep adding the same paths over and over again (avoid duplicates)
-    $ENV{VISITPLUGINDIR}="$ENV{VISITPLUGINDIR}:$visitprivateplugins:$visitplugins";
+    if (! defined($ENV{VISITPLUGINDIRORIG}))
+    {
+        $ENV{VISITPLUGINDIRORIG} = $ENV{VISITPLUGINDIR};
+    }
+    $ENV{VISITPLUGINDIR}="$ENV{VISITPLUGINDIRORIG}:$visitprivateplugins:$visitplugins";
 }
 
 

@@ -351,12 +351,22 @@ VarExpr::PrintNode(ostream &o)
     var->Print(o, "Var");
 }
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Tue Aug 30 13:11:51 PDT 2005
+//    Only consider variables that are for the currently active database.
+//    Other variables (for CMFE) are handled differently.
+//
+// ****************************************************************************
+
 std::set<std::string>
 VarExpr::GetVarLeaves()
 {
     std::set<std::string> ret;
 
-    ret.insert(var->GetFullpath());
+    if (db == NULL)
+        ret.insert(var->GetFullpath());
 
     return ret;
 }

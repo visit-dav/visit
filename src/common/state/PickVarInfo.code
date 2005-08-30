@@ -157,6 +157,9 @@ Definition:
 //   Brad Whitlock, Mon Apr 4 12:12:19 PDT 2005
 //   Added support for printing label variables.
 //
+//   Kathleen Bonnell, Tue Aug 30 09:35:44 PDT 2005
+//   Change how ncomps is computed for tensor vars.
+//
 // ****************************************************************************
 void
 PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
@@ -331,14 +334,16 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                 }
                 else if (variableType == "tensor")
                 {
+                    os += "\n";
                     int buf_len = strlen(buff);
-                    int ncomps = values.size() / names.size();
+                    int ncomps = (values.size()-names.size()) / names.size();
                     PrintTensor(os, values, i, ncomps, buf_len);
                 }
                 else if (variableType == "symm_tensor")
                 {
+                    os += "\n";
                     int buf_len = strlen(buff);
-                    int ncomps = values.size() / names.size();
+                    int ncomps = (values.size()-names.size()) / names.size();
                     PrintSymmetricTensor(os, values, i, ncomps, buf_len);
                 }
                 else if (variableType == "label")
@@ -397,6 +402,11 @@ Definition:
 //
 // Programmer: Hank Childs
 // Creation:   September 22, 2003
+//
+// Modifications:
+//   Kathleen Bonnell, Tue Aug 30 09:35:44 PDT 2005
+//   Print major eigenvalue.  Change how offset is computed.
+//
 // ****************************************************************************
 
 void
@@ -405,20 +415,34 @@ PickVarInfo::PrintTensor(std::string &os, const std::vector<double> &values,
 {
     int  j;
 
-    int offset = tuple*ncomps;
+    int offset = tuple*(ncomps+1);
     if (ncomps == 2)  // 2D tensor
     {
         char line[256];
+        for (j = 0 ; j < buff_len ; j++)
+            os += " ";
+
         sprintf(line, "(%g, %g)\n", values[offset], values[offset+1]);
+
         os += line;
         for (j = 0 ; j < buff_len ; j++)
             os += " ";
+
         sprintf(line, "(%g, %g)\n", values[offset+2], values[offset+3]);
+
+        os += line;
+        for (j = 0 ; j < buff_len ; j++)
+            os += " ";
+
+        sprintf(line, "Major Eigenvalue: %g\n", values[offset+4]);
         os += line;
     }
     else if (ncomps == 9) // 3D tensor
     {
         char line[256];
+        for (j = 0 ; j < buff_len ; j++)
+            os += " ";
+
         sprintf(line, "(%g, %g, %g)\n", values[offset], values[offset+1],
                                         values[offset+2]);
         os += line;
@@ -433,6 +457,11 @@ PickVarInfo::PrintTensor(std::string &os, const std::vector<double> &values,
 
         sprintf(line, "(%g, %g, %g)\n", values[offset+6], values[offset+7],
                                         values[offset+8]);
+        os += line;
+        for (j = 0 ; j < buff_len ; j++)
+            os += " ";
+
+        sprintf(line, "Major Eigenvalue: %g\n", values[offset+9]);
         os += line;
     }
 }
@@ -449,6 +478,11 @@ Definition:
 //
 // Programmer: Hank Childs
 // Creation:   September 22, 2003
+//  
+// Modifications:
+//   Kathleen Bonnell, Tue Aug 30 09:35:44 PDT 2005
+//   Print major eigenvalue.  Change how offset is computed.
+//
 // ****************************************************************************
 
 void
@@ -461,16 +495,30 @@ PickVarInfo::PrintSymmetricTensor(std::string &os,
     if (ncomps == 2)  // 2D tensor
     {
         char line[256];
+        for (j = 0 ; j < buff_len ; j++)
+            os += " ";
+
         sprintf(line, "(%g, %g)\n", values[offset], values[offset+1]);
+
         os += line;
         for (j = 0 ; j < buff_len ; j++)
             os += " ";
+
         sprintf(line, "(%g, %g)\n", values[offset+2], values[offset+3]);
+
+        os += line;
+        for (j = 0 ; j < buff_len ; j++)
+            os += " ";
+
+        sprintf(line, "Major Eigenvalue: %g\n", values[offset+4]);
         os += line;
     }
     else if (ncomps == 9) // 3D tensor
     {
         char line[256];
+        for (j = 0 ; j < buff_len ; j++)
+            os += " ";
+
         sprintf(line, "(%g, %g, %g)\n", values[offset], values[offset+1],
                                         values[offset+2]);
         os += line;
@@ -485,6 +533,11 @@ PickVarInfo::PrintSymmetricTensor(std::string &os,
 
         sprintf(line, "(%g, %g, %g)\n", values[offset+6], values[offset+7],
                                         values[offset+8]);
+        os += line;
+        for (j = 0 ; j < buff_len ; j++)
+            os += " ";
+
+        sprintf(line, "Major Eigenvalue: %g\n", values[offset+9]);
         os += line;
     }
 }
