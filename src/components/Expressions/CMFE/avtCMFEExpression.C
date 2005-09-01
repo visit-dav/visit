@@ -167,8 +167,15 @@ avtCMFEExpression::Execute()
         EXCEPTION1(InvalidVariableException, var.c_str());
     if (strcmp(dob->GetType(), "avtDataset") != 0)
         EXCEPTION1(InvalidVariableException, var.c_str());
+
+    // HACK.  This will only work for conn_cmfe.
     avtPipelineSpecification_p spec = 
-                dob->GetTerminatingSource()->GetGeneralPipelineSpecification();
+                new avtPipelineSpecification(
+                            dob->GetTerminatingSource()
+                               ->GetGeneralPipelineSpecification()
+                               ->GetDataSpecification(),
+                            1);
+
     dob->Update(spec);
     avtDataset_p dsp;
     CopyTo(dsp, dob);
