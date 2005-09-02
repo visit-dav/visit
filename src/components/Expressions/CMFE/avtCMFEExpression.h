@@ -6,11 +6,13 @@
 #define AVT_CMFE_EXPRESSION_H
 
 #include <avtExpressionFilter.h>
+#include <ExprNode.h>
 
 class     vtkDataArray;
 class     ArgsExpr;
 class     ExprPipelineState;
 class     ConstExpr;
+class     avtDatabase;
 
 // ****************************************************************************
 //  Class: avtCMFEExpression
@@ -39,6 +41,12 @@ class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
     bool                      issuedWarning;
     std::string               db;
     std::string               var;
+    TimeExpr::Type            timeType;
+    int                       timeIndex;
+    int                       cycle;
+    double                    dtime;
+    bool                      isDelta;
+    int                       firstDBTime;
 
     virtual void              PreExecute(void);
     virtual void              Execute(void);
@@ -46,6 +54,8 @@ class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
     virtual avtDataTree_p     PerformCMFE(avtDataTree_p, avtDataTree_p,
                                           const std::string &, 
                                           const std::string &) = 0;
+    virtual void              ExamineSpecification(avtPipelineSpecification_p);
+    int                       GetTimestate(ref_ptr<avtDatabase>);
 };
 
 

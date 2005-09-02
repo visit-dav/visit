@@ -1,0 +1,117 @@
+#!/bin/sh
+#-----------------------------------------------------------------------
+#
+# VISIT-CREATE-CHKSUMS - Create the md5 and sha1 checksums for the
+#                        visit distributions.
+#
+# Author: Eric Brugger
+# Date:   August 30, 2005
+#
+# Usage:
+#    visit-create-chksums -v <version> -d <distribution>
+#
+#-----------------------------------------------------------------------
+
+dist=undefined
+version=undefined
+
+#
+# The loop is executed once for each symbol on the execute line.  This means
+# that $1 may be blank for later executions of the loop if any "shift 2"
+# commands are executed.  The variable abc is not used in the loop.  
+#
+for abc
+do
+   case $1 in
+      -d)
+         dist=$2
+         shift 2
+         ;;
+      -v)
+         version=$2
+         shift 2
+         ;;
+   esac
+done
+
+#
+# Check that the distribution name and version number was provided.
+#
+if [ $dist = undefined ]
+then
+   echo "Usage: -v <version> -d <distribution>"
+   exit
+fi
+
+if [ $version = undefined ]
+then
+   echo "Usage: -v <version> -d <distribution>"
+   exit
+fi
+
+version2=`echo $version | tr "." "_"`
+
+#
+# Create the md5 checksums followed by the sha1 checksums.
+#
+cmds="md5sum sha1sum"
+for cmd in $cmds
+do
+   if [ $cmd = md5sum ]
+   then
+      output=visit_md5_checksums
+   else
+      output=visit_sha1_checksums
+   fi
+
+   rm -f $output
+
+   echo ""                                  >  $output
+   echo "The VisIt executable checksums"    >> $output
+   echo ""                                  >> $output
+   $cmd INSTALL_NOTES                       >> $output
+   $cmd visit-install                       >> $output
+   $cmd jvisit$version.tar.gz               >> $output
+   $cmd visit$version.exe                   >> $output
+   $cmd visit$version-win98.exe             >> $output
+   $cmd visit$version2.aix.tar.gz           >> $output
+   $cmd visit$version2.darwin.tar.gz        >> $output
+   $cmd visit$version2.irix6.tar.gz         >> $output
+   $cmd visit$version2.linux-altix.tar.gz   >> $output
+   $cmd visit$version2.linux-ia64.tar.gz    >> $output
+   $cmd visit$version2.linux-x86_64.tar.gz  >> $output
+   $cmd visit$version2.linux_chaos.tar.gz   >> $output
+   $cmd visit$version2.linux_rh71.tar.gz    >> $output
+   $cmd visit$version2.linux_rhel3.tar.gz   >> $output
+   $cmd visit$version2.osf1.tar.gz          >> $output
+   $cmd visit$version2.sunos5.tar.gz        >> $output
+
+   echo ""                                  >> $output
+   echo "The VisIt source code checksums"   >> $output
+   echo ""                                  >> $output
+   $cmd BUILD_NOTES                         >> $output
+   $cmd BUILD_NOTES_MacOSX                  >> $output
+   $cmd $dist.tar.gz                        >> $output
+   $cmd visitdev$version.exe                >> $output
+   cd ../visit_third_party
+   $cmd CMake_020314.tar.gz                 >> ../visit$version/$output
+   $cmd CMake1.4.7-src-unix.tar.gz          >> ../visit$version/$output
+   $cmd cmake-1.8.1.tar.gz                  >> ../visit$version/$output
+   $cmd Mesa-4.1-mangled.tar.gz             >> ../visit$version/$output
+   $cmd Mesa-5.0-mangled.tar.gz             >> ../visit$version/$output
+   $cmd Python-2.1.2.tar.gz                 >> ../visit$version/$output
+   $cmd qt-x11-2.3.0.tar.gz                 >> ../visit$version/$output
+   $cmd qt-x11-free-3.0.2.tar.gz            >> ../visit$version/$output
+   $cmd qt-x11-free-3.3.2.tar.gz            >> ../visit$version/$output
+   $cmd silo020325.sh                       >> ../visit$version/$output
+   $cmd silo040308.sh                       >> ../visit$version/$output
+   $cmd silo041018.sh                       >> ../visit$version/$output
+   $cmd silo050228.sh                       >> ../visit$version/$output
+   $cmd silo050506.sh                       >> ../visit$version/$output
+   $cmd VTK_020314.tar.gz                   >> ../visit$version/$output
+   $cmd vtk_cvs_16Dec02.tar.gz              >> ../visit$version/$output
+   $cmd vtk_cvs_2003_10_28.tar.gz           >> ../visit$version/$output
+   cd ../visit$version
+
+   shift
+done

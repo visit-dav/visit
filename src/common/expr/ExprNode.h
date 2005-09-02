@@ -50,6 +50,9 @@ class Pos;
 //    Hank Childs, Tue Aug 30 13:20:47 PDT 2005
 //    Added access to variable and database names.
 //
+//    Hank Childs, Thu Sep  1 11:25:35 PDT 2005
+//    Added access for TimeExpr's.
+//
 // ****************************************************************************
 class EXPR_API ExprNode : public ExprParseTreeNode
 {
@@ -147,6 +150,7 @@ class EXPR_API UnaryExpr : public MathExpr
     virtual std::set<std::string> GetVarLeaves()
         {return expr->GetVarLeaves();}
     virtual const std::string GetTypeName() { return "Unary"; }
+    ExprNode *GetExpr(void) { return expr; };
   protected:
     ExprNode *expr;
 };
@@ -306,12 +310,17 @@ class EXPR_API TimeExpr : public ExprParseTreeNode
   public:
     enum Type { Cycle, Time, Index, Unknown };
     TimeExpr(const Pos &p, ListExpr *l, Type t=Unknown)
-        : ExprParseTreeNode(p), type(t), list(l) {}
+        : ExprParseTreeNode(p), type(t), list(l) { isDelta = false; }
     virtual ~TimeExpr() { delete list; }
     virtual void PrintNode(ostream &o);
     virtual const std::string GetTypeName() { return "Time"; }
+    bool GetIsDelta(void) { return isDelta; };
+    void SetIsDelta(bool b) { isDelta = b; };
+    Type GetType(void) { return type; };
+    ListExpr *GetList(void) { return list; };
   protected:
     Type      type;
+    bool      isDelta;
     ListExpr *list;
 };
 
@@ -324,6 +333,7 @@ class EXPR_API DBExpr : public ExprParseTreeNode
     virtual void PrintNode(ostream &o);
     virtual const std::string GetTypeName() { return "DBExpr"; }
     PathExpr *GetFile(void) { return file; };
+    TimeExpr *GetTime(void) { return time; };
   protected:
     PathExpr *file;
     MachExpr *mach;

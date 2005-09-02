@@ -166,6 +166,9 @@
 #   Jeremy Meredith, Tue Aug 23 13:27:44 PDT 2005
 #   Added a FLASH reader.
 #
+#   Brad Whitlock, Tue Aug 30 15:59:31 PST 2005
+#   Added a CGNS reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -175,10 +178,12 @@ all: message
 
 BOXLIB2D=Boxlib2D
 BOXLIB3D=Boxlib3D
+CGNS=CGNS
 EXODUS=Exodus TimeVaryingExodus
 HDF4=Cosmos Enzo
 HDF5=Tetrad SAMRAI CosmosPP Pixie FLASH
 MILI=Mili
+NETCDF=NETCDF
 PDB=KullLite PDB
 SAF=SAF
 SAMPLES=Rect Hex
@@ -186,12 +191,11 @@ REQUIRED=ANALYZE ANSYS AUXFile BOV CMAT Curve2D Dune EnSight Image Lines \
  NASTRAN OVERFLOW PATRAN PLOT2D PLOT3D Point3D SAR STL Shapefile Silo SimV1 \
  Spheral TFT Tecplot Vista VTK WavefrontOBJ Xmdv
 VISUS=ViSUS
-NETCDF=NETCDF
 
 OPTIONAL=
 
-SUBDIRS=$(REQUIRED) @DB_OPTIONAL_DIRS@ @EXODUS@ @SAF@ @HDF4@ @HDF5@ @PDB@ @MILI@ @BOXLIB2D@ @BOXLIB3D@ @VISUS@ @NETCDF@
-ALLSUBDIRS=$(REQUIRED) $(EXODUS) $(SAF) $(HDF4) $(HDF5) $(MILI) $(PDB) $(BOXLIB2D) $(BOXLIB3D) $(VISUS) $(NETCDF) $(SAMPLES) $(OPTIONAL)
+SUBDIRS=$(REQUIRED) @DB_OPTIONAL_DIRS@ @EXODUS@ @SAF@ @HDF4@ @HDF5@ @PDB@ @MILI@ @BOXLIB2D@ @BOXLIB3D@ @VISUS@ @NETCDF@ @CGNS@
+ALLSUBDIRS=$(REQUIRED) $(EXODUS) $(SAF) $(HDF4) $(HDF5) $(MILI) $(PDB) $(BOXLIB2D) $(BOXLIB3D) $(VISUS) $(NETCDF) $(CGNS) $(SAMPLES) $(OPTIONAL)
 
 message:
 	@echo

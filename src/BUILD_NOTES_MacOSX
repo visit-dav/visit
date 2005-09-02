@@ -147,6 +147,36 @@ otool -hv libfoo.dylib
 otool -hvL libfoo.dylib
 
 ==============================================================================
+Building an application that can run on multiple versions of MacOS X
+==============================================================================
+
+By default, the linker on MacOS X will resolve all system library dependencies
+such that the final linked binary file will depend on a particular version of
+the system libraries. For example, this prevents you from building on 
+MacOS X 10.3 and running your application on MacOS X 10.4. As of MacOS X 10.3,
+there is a special linker flag, called -undefined, that allows system library
+dependencies to be left undefined during the link step without breaking 
+prebinding, which is crucial to minimizing VisIt's start up time. There is 
+also an environment variable called MACOSX_DEPLOYMENT_TARGET that can be 
+set to tell the linker which versions of the system libraries to expect. 
+Setting the  MACOSX_DEPLOYMENT_TARGET environment variable and using the
+-undefined linker flag will help your compiled application run on more than
+one version of MacOS X.
+
+To make sure that when you build an application on MacOS X 10.3, it can also 
+run on MacOS X 10.4 and beyond, you should set the MACOSX_DEPLOYMENT_TARGET
+environment variable before you build your application.
+
+Example:
+setenv MACOSX_DEPLOYMENT_TARGET 10.3
+
+You should also add the -undefined linker flag to your LDFLAGS in your
+Makefile.
+
+Example:
+LDFLAGS="$LDFLAGS -Wl,-undefined,dynamic_lookup"
+
+==============================================================================
 Support libraries
 ==============================================================================
 
@@ -177,6 +207,10 @@ gunzip visit050829.tar.gz
 tar xf visit050829.tar
 setenv VISITSOURCE `pwd`/visit050829
 
+# Make sure that you build a version of VisIt that can run on MacOS X 10.3
+# and later.
+setenv MACOSX_DEPLOYMENT_TARGET 10.3
+
 ==============================================================================
 Building Qt as a set of prebound dynamic libraries
 ==============================================================================
@@ -184,18 +218,21 @@ Building Qt as a set of prebound dynamic libraries
 Qt actually builds as a prebound dynamic library but we need to make sure
 that it sets an install_name that is relative to our VisIt executables.
 
-# Build Qt 3.3.1 for MacOS X
+# Unzip the Qt source
 gunzip qt-mac-free-3.3.1.tar.gz
 tar xvf qt-mac-free-3.3.1.tar
 cd qt-mac-free-3.3.1
+
+# Build Qt 3.3.1 for MacOS X
 setenv QTDIR `pwd`
-./configure
+./configure -thread
 make
 
-# Qt built but we need to change it a little.
+# Qt built but we need to change it a little and it's easier to do it now
+# after it has been built.
 cd src
 vi Makefile
-Add -install_name @executable_path/../lib/libqt.dylib to LFLAGS and save
+Add -install_name @executable_path/../lib/libqt.dylib -undefined dynamic_lookup to LFLAGS and save
 rm ../lib/libqt*
 make
 
@@ -244,10 +281,10 @@ cd Mesa-5.0.2
 #    we renamed the Mesa library.
 #
 #    For libMesaGL.dylib, add:
-#       EXTRA_FLAGS="${EXTRA_FLAGS} -prebind -Wl,-seg1addr,0x2098a000"
+#       EXTRA_FLAGS="${EXTRA_FLAGS} -prebind -Wl,-seg1addr,0x2098a000,-undefined,dynamic_lookup"
 #
 #    For libOSMesa.dylib, add:
-#       EXTRA_FLAGS="${EXTRA_FLAGS} -prebind -Wl,-seg1addr,0x20bd7000"
+#       EXTRA_FLAGS="${EXTRA_FLAGS} -prebind -Wl,-seg1addr,0x20bd7000,-undefined,dynamic_lookup"
 #
 #    The additions above will cause the two modified libraries to be built
 #    as prebound dynamic libraries, which will help reduce VisIt's start
@@ -504,7 +541,7 @@ Example:
    2. vi Makefile
    3. Search for -prebind
    4. After -prebind, add:
-      -Wl,-seg1addr,0x20be6000,-install_name,@executable_path/../lib/libvtkzlib.dylib,-compatibility_version,4.2,-current_version,4.2
+      -Wl,-seg1addr,0x20be6000,-install_name,@executable_path/../lib/libvtkzlib.dylib,-compatibility_version,4.2,-current_version,4.2,-undefined,dynamic_lookup
       
       Be sure to use the right library name in for the -install_name linker flag since that
       name is put into the library so the runtime linker can find the library relative
@@ -592,7 +629,7 @@ cd tmplib
 ar -x ../libpython2.3.a
 echo "char **environ=0;" > environhack.c
 gcc -o environhack.o -c environhack.c
-gcc -dynamiclib -prebind -Wl,-seg1addr,0x222ea000,-install_name,@executable_path/../lib/libpython2.3.dylib,-compatibility_version,2.3.3,-current_version,2.3.3 -twolevel_namespace -o libpython2.3.dylib *.o -framework Carbon
+gcc -dynamiclib -prebind -Wl,-seg1addr,0x222ea000,-install_name,@executable_path/../lib/libpython2.3.dylib,-compatibility_version,2.3.3,-current_version,2.3.3,-undefined,dynamic_lookup -twolevel_namespace -o libpython2.3.dylib *.o  -framework Carbon
 cp libpython2.3.dylib $VISITPATH/python/lib/python2.3/config/libpython2.3.dylib
 cd ../..
 
@@ -628,7 +665,7 @@ make
 # address of the library and make it be prebound. We'll build our own
 # version of the library using the prebuilt sources.
 cd src
-gcc -dynamiclib -prebind -twolevel_namespace -Wl,-seg1addr,0x2263c000,-install_name,@executable_path/../lib/libhdf5.dylib,-compatibility_version,1.6,-current_version,1.6 -o libhdf5.dylib *.lo -lz
+gcc -dynamiclib -prebind -twolevel_namespace -Wl,-seg1addr,0x2263c000,-install_name,@executable_path/../lib/libhdf5.dylib,-compatibility_version,1.6,-current_version,1.6,-undefined,dynamic_lookup -o libhdf5.dylib *.lo -lz
 
 # Install HDF5
 mkdir $VISITPATH/hdf5
@@ -680,7 +717,7 @@ cd lib
 mkdir tmplib
 cd tmplib
 ar -x ../libsilo.a
-gcc -dynamiclib -prebind -twolevel_namespace -Wl,-seg1addr,0x2274b000,-install_name,@executable_path/../lib/libsilo.dylib,-compatibility_version,4.4.3,-current_version,4.4.3 -o ../libsilo.dylib *.o -L$HDF5LIB -lhdf5
+gcc -dynamiclib -prebind -twolevel_namespace -Wl,-seg1addr,0x2274b000,-install_name,@executable_path/../lib/libsilo.dylib,-compatibility_version,4.4.3,-current_version,4.4.3,-undefined,dynamic_lookup -o ../libsilo.dylib *.o -L$HDF5LIB -lhdf5
 cd ..
 
 # Install Silo
@@ -724,7 +761,7 @@ the Mili's src directory
 
 CC=gcc
 CFLAGS = -I. -O2 -fno-common -fPIC
-MILI_LDFLAGS=-Wl,-seg1addr,0x227e5000
+MILI_LDFLAGS=-Wl,-seg1addr,0x227e5000,-undefined,dynamic_lookup
 LDFLAGS=-dynamiclib -prebind -twolevel_namespace -Wl,-install_name,@executable_path/../lib/$@
 .SUFFIXES : .o .c
 MILI_SRC=mili.c direc.c param.c io.c util.c dep.c svar.c srec.c mesh_u.c wrap_c.c io_mem.c eprtf.c sarray.c gahl.c
@@ -782,7 +819,7 @@ cd hdf/src
 mkdir tmp
 cd tmp
 ar -x ../libdf.a
-gcc -dynamiclib -prebind -twolevel_namespace -o libdf.dylib *.o -L$VISITPATH/jpeg/lib -ljpeg -lz -Wl,-seg1addr,0x22805000,-install_name,@executable_path/../lib/libdf.dylib,-compatibility_version,2.0,-current_version,2.0
+gcc -dynamiclib -prebind -twolevel_namespace -o libdf.dylib *.o -L$VISITPATH/jpeg/lib -ljpeg -lz -Wl,-seg1addr,0x22805000,-install_name,@executable_path/../lib/libdf.dylib,-compatibility_version,2.0,-current_version,2.0,-undefined,dynamic_lookup
 mkdir $VISITPATH/hdf4
 mkdir $VISITPATH/hdf4/lib
 mkdir $VISITPATH/hdf4/include
@@ -793,7 +830,7 @@ cd ../../../mfhdf/libsrc
 mkdir tmp
 cd tmp
 ar -x ../libmfhdf.a
-gcc -dynamiclib -prebind -twolevel_namespace -o libmfhdf.dylib *.o L$VISITPATH/jpeg/lib -L$VISITPATH/hdf4/lib -ljpeg -ldf -Wl,-seg1addr,0x228a0000,-install_name,@executable_path/../lib/libmfhdf.dylib,-compatibility_version,2.0,-current_version,2.0
+gcc -dynamiclib -prebind -twolevel_namespace -o libmfhdf.dylib *.o L$VISITPATH/jpeg/lib -L$VISITPATH/hdf4/lib -ljpeg -ldf -Wl,-seg1addr,0x228a0000,-install_name,@executable_path/../lib/libmfhdf.dylib,-compatibility_version,2.0,-current_version,2.0,-undefined,dynamic_lookup
 mv libmfhdf.dylib $VISITPATH/hdf4/lib
 cd ../../..
 
@@ -840,7 +877,7 @@ cd libsrc
 mkdir tmp
 cd tmp
 ar -x ../libnetcdf.a
-gcc -dynamiclib -prebind -twolevel_namespace -o libnetcdf.dylib *.o -Wl,-seg1addr,0x228bf0000,-install_name,@executable_path/../lib/libnetcdf.dylib,-compatibility_version,3.6.0,-current_version,3.6.0
+gcc -dynamiclib -prebind -twolevel_namespace -o libnetcdf.dylib *.o -Wl,-seg1addr,0x228bf000,-install_name,@executable_path/../lib/libnetcdf.dylib,-compatibility_version,3.6.0,-current_version,3.6.0,-undefined,dynamic_lookup
 rm $VISITPATH/netcdf/3.6.0/lib/*.a
 mv libnetcdf.dylib $VISITPATH/netcdf/3.6.0/lib
 cd ../../..

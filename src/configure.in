@@ -555,6 +555,12 @@ dnl
 dnl    Brad Whitlock, Tue Aug 9 17:31:30 PST 2005
 dnl    I added checks for netCDF.
 dnl
+dnl    Brad Whitlock, Tue Aug 30 15:57:15 PST 2005
+dnl    I added checks for CGNS.
+dnl
+dnl    Brad Whitlock, Fri Sep 2 15:07:19 PST 2005
+dnl    Fixed up some things for MacOS X 10.4
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1337,7 +1343,7 @@ if test "$USE_PTY" = "yes"; then
 
     # Check for SYSV versus BSD style pseudo-ttys
     AC_MSG_CHECKING(for SYSV vs BSD style ptys)
-    if test "$UNAME" = "Linux" || test "$UNAME" = "AIX"; then
+    if test "$UNAME" = "Linux" || test "$UNAME" = "AIX" || test "$UNAME" = "Darwin"; then
         AC_MSG_RESULT(BSD)
     else
         AC_TRY_LINK([#include <stdlib.h>], grantpt(0),
@@ -2134,7 +2140,11 @@ else
       HDF4_FLAGS="-I$DEFAULT_HDF4_FLAGS $HDF4_FLAGS"
    fi
    if test "$DEFAULT_HDF4_LIBS" != "" ; then
-      HDF4_LIBS="-L$DEFAULT_HDF4_LIBS -lmfhdf -ldf -ljpeg -lz $HDF4_LIBS"
+      if test "$SHORT_UNAME" = "darwin"; then
+          HDF4_LIBS="-L$DEFAULT_HDF4_LIBS -lmfhdf -ldf -lvtkjpeg -lz $HDF4_LIBS"
+      else
+          HDF4_LIBS="-L$DEFAULT_HDF4_LIBS -lmfhdf -ldf -ljpeg -lz $HDF4_LIBS"
+      fi
       HDF4_LIBDIR="$DEFAULT_HDF4_LIBS"
    fi
 fi
@@ -2325,6 +2335,51 @@ AC_SUBST(NETCDF)
 AC_SUBST(NETCDF_INCLUDE)
 AC_SUBST(NETCDF_LIB)
 
+#
+# Look for CGNS
+#
+AC_MSG_CHECKING(for CGNS)
+CGNS=""
+CGNS_INCLUDE=""
+CGNS_LIB=""
+AC_ARG_WITH(cgns,
+	    [  --with-cgns=INC-DIR,LIB-DIR     Location of CGNS header and library],
+           cgns_specified="yes",
+           cgns_specified="no"
+           )
+if test "$SHORT_UNAME" = "darwin"; then
+    CGNS_LIBEXT="dylib"
+else
+    CGNS_LIBEXT="a"
+fi
+if test "$cgns_specified" = "yes"; then
+   if test "$withval" != "no"; then
+      CGNS_INCLUDE="-I`echo $withval |cut -f1 -d,`"
+      CGNS_LIB="`echo $withval |cut -f2 -d, -s`/libcgns.$CGNS_LIBEXT"
+   fi
+else
+   if test "$DEFAULT_CGNS_INCLUDE" != "" ; then
+      CGNS_INCLUDE="-I$DEFAULT_CGNS_INCLUDE $CGNS_INCLUDE"
+   fi
+   if test "$DEFAULT_CGNS_LIB" != "" ; then
+      CGNS_LIB="$DEFAULT_CGNS_LIB/libcgns.$CGNS_LIBEXT $CGNS_LIB"
+   fi
+fi
+if test "$CGNS_LIB" != "" ; then
+   if test "$CGNS_INCLUDE" != "" ; then
+      CGNS="$""(CGNS)"
+      AC_MSG_RESULT(yes)
+      AC_DEFINE(HAVE_CGNS_H)
+      AC_DEFINE(HAVE_LIBCGNS)
+   else
+      AC_MSG_RESULT(no)
+   fi
+else
+   AC_MSG_RESULT(no)
+fi
+AC_SUBST(CGNS)
+AC_SUBST(CGNS_INCLUDE)
+AC_SUBST(CGNS_LIB)
 
 #
 # Add Some include paths to the engine's CPPFLAGS.
@@ -2385,7 +2440,7 @@ if test "$enable_gui" = "yes"; then
 
     if test -f $QtGlobalInc; then
         ## Check for supported versions of Qt.
-	for ver in  3.3.0  3.3.1  3.3.2  3.3.3 \
+	for ver in  3.3.0  3.3.1  3.3.2  3.3.3  3.3.4\
                     3.2.0  3.2.1  3.2.2  3.2.3 \
                     3.1.2  3.1.1  3.1.0 \
                     3.0.4  3.0.3  3.0.2  3.0.1  3.0.0 \
@@ -2851,7 +2906,7 @@ AC_SUBST(ENGINEWRAPPAR)
 
 #
 # This helps the Makefile in the lib directory make the right links
-# to Silo, Mili, HDF4, HDF5, and NETCDF. It is only needed on MacOS X
+# to Silo, Mili, HDF4, HDF5, NETCDF, and CGNS. It is only needed on MacOS X
 # because on other platforms, these libraries are statically linked into
 # the database plugins and on MacOS X they are dynamically linked.
 #
@@ -2860,6 +2915,7 @@ CREATE_MILI_LINK=""
 CREATE_HDF4_LINK=""
 CREATE_HDF5_LINK=""
 CREATE_NETCDF_LINK=""
+CREATE_CGNS_LINK=""
 case $SHORT_UNAME in
   darwin)
     if test "$SILO_LIB" != "" ; then
@@ -2877,6 +2933,9 @@ case $SHORT_UNAME in
     if test "$NETCDF_LIB" != "" ; then
         CREATE_NETCDF_LINK="create_netcdf_link"
     fi
+    if test "$CGNS_LIB" != "" ; then
+        CREATE_CGNS_LINK="create_cgns_link"
+    fi
   ;;
 esac
 AC_SUBST(CREATE_SILO_LINK)
@@ -2884,6 +2943,7 @@ AC_SUBST(CREATE_MILI_LINK)
 AC_SUBST(CREATE_HDF4_LINK)
 AC_SUBST(CREATE_HDF5_LINK)
 AC_SUBST(CREATE_NETCDF_LINK)
+AC_SUBST(CREATE_CGNS_LINK)
 
 #
 # Check for library functions that can work around, or that we have

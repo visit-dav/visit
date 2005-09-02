@@ -474,6 +474,13 @@ avtGenericDatabase::GetFilename(int ts)
 //
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added bool arg, forceReadAllCyclesTimes
+//
+//    Jeremy Meredith, Fri Sep  2 15:03:06 PDT 2005
+//    Removed most of the special character replacements, as the expression
+//    language scanner is now accepting most of them inside <>'s.  Replaced
+//    the unacceptable [] <> () with the acceptable {}'s since it seems 
+//    more natural than the former _ character used to replace them.
+//
 // ****************************************************************************
 
 void
@@ -485,79 +492,35 @@ avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState,
     std::vector<char>        forbiddenChars;
     std::vector<std::string> replacementStrs;
 
-    forbiddenChars.push_back(' ');
-    replacementStrs.push_back("_");
-
     forbiddenChars.push_back('\n');
     replacementStrs.push_back("_nl_");
 
     forbiddenChars.push_back('\t');
     replacementStrs.push_back("_tab_");
 
-    forbiddenChars.push_back('.');
-    replacementStrs.push_back("_dot_");
-
-    forbiddenChars.push_back('!');
-    replacementStrs.push_back("_");
     forbiddenChars.push_back('@');
     replacementStrs.push_back("_at_");
+
     forbiddenChars.push_back('#');
     replacementStrs.push_back("_number_");
-    forbiddenChars.push_back('$');
-    replacementStrs.push_back("_dollar_");
-    forbiddenChars.push_back('%');
-    replacementStrs.push_back("_percent_");
-    forbiddenChars.push_back('^');
-    replacementStrs.push_back("_carat_");
-    forbiddenChars.push_back('&');
-    replacementStrs.push_back("_ampersand_");
-    forbiddenChars.push_back('*');
-    replacementStrs.push_back("_star_");
 
-    forbiddenChars.push_back('-');
-    replacementStrs.push_back("_hyphen_");
-    forbiddenChars.push_back('+');
-    replacementStrs.push_back("_plus_");
-    forbiddenChars.push_back('=');
-    replacementStrs.push_back("_equal_");
-    forbiddenChars.push_back('|');
-    replacementStrs.push_back("_pipe_");
-    forbiddenChars.push_back('~');
-    replacementStrs.push_back("_tilde_");
     forbiddenChars.push_back(':');
     replacementStrs.push_back("_colon_");
-    forbiddenChars.push_back(';');
-    replacementStrs.push_back("_semicolon_");
-    forbiddenChars.push_back('\"');
-    replacementStrs.push_back("_quote_");
-    forbiddenChars.push_back('\'');
-    replacementStrs.push_back("_quote_");
-    forbiddenChars.push_back('.');
-    replacementStrs.push_back("_dot_");
-    forbiddenChars.push_back(',');
-    replacementStrs.push_back("_comma_");
-    forbiddenChars.push_back('?');
-    replacementStrs.push_back("_question_");
 
     forbiddenChars.push_back('[');
-    replacementStrs.push_back("_");
+    replacementStrs.push_back("{");
     forbiddenChars.push_back(']');
-    replacementStrs.push_back("_");
-
-    forbiddenChars.push_back('{');
-    replacementStrs.push_back("_");
-    forbiddenChars.push_back('}');
-    replacementStrs.push_back("_");
+    replacementStrs.push_back("}");
 
     forbiddenChars.push_back('<');
-    replacementStrs.push_back("_");
+    replacementStrs.push_back("{");
     forbiddenChars.push_back('>');
-    replacementStrs.push_back("_");
+    replacementStrs.push_back("}");
 
     forbiddenChars.push_back('(');
-    replacementStrs.push_back("_");
+    replacementStrs.push_back("{");
     forbiddenChars.push_back(')');
-    replacementStrs.push_back("_");
+    replacementStrs.push_back("}");
 
     md->ReplaceForbiddenCharacters(forbiddenChars, replacementStrs);
 }

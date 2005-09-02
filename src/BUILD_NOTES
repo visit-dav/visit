@@ -41,6 +41,7 @@ build and install those libraries prior to building VisIt.
     HDF5     1.6.0    File I/O library       http://hdf.ncsa.uiuc.edu/HDF5/
     Mili     1.09     File I/O library       (none)
     netCDF   3.6.0    File I/O library       http://www.unidata.ucar.edu/packages/netcdf/
+    CGNS     2.4      File I/O library       http://www.cgns.org
 
 Most of the third party libraries necessary to build VisIt are available for
 download from ftp://ftp.llnl.gov/pub/visit/3rd_party.  It is suggested that
@@ -828,6 +829,47 @@ make
 #
 make install
 cd ../..
+
+
+CGNS (Optional)
+================
+The CFD General Notation System (CGNS) consists of a collection of 
+conventions, and software implementing those conventions, for the storage
+and retrieval of CFD (computational fluid dynamics) data. The principal 
+target of CGNS is data normally associated with compressible viscous flow
+(i.e., the Navier-Stokes equations), but the standard is also applicable
+to subclasses such as Euler and potential flows.
+
+#
+# Build CGNS
+#
+gunzip cgnslib_2.4-3.tar.gz
+cd cgnslib_2.4
+
+mkdir $VISITDIR/cgns
+mkdir $VISITDIR/cgns/2.4
+mkdir $VISITDIR/cgns/2.4/$VISITARCH
+mkdir $VISITDIR/cgns/2.4/$VISITARCH/include
+mkdir $VISITDIR/cgns/2.4/$VISITARCH/lib
+
+# Configure it.
+#
+# On SGI, you may want to add -64 to the CFLAGS to build a 64 bit binary.
+# Note that if you do that then after you configure, you will have to remove
+# "-n32" from the make.SGI file that configure creates.
+#
+# On IA64 systems, you should add "-fPIC" to the CFLAGS.
+#
+# On Opteron systems, you should add "-fPIC -m64" to the CFLAGS.
+
+env CFLAGS="-O2" ./configure --prefix=$VISITDIR/cgns/2.4/$VISITARCH
+make
+
+#
+# Install it in the visit directory under the cgns directory
+#
+make install
+cd ..
 
 
 VisIt

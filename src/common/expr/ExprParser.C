@@ -97,6 +97,12 @@ ExprParser::ExprParser(ExprNodeFactory *f) : Parser(), factory(f)
 //    instead of Identifier tokens.  These two changes were to
 //    remove Token references from the parse tree node classes.
 //
+//    Hank Childs, Thu Sep  1 11:47:47 PDT 2005
+//    Add support for specifying times with a delta using 'd'.
+//
+//    Jeremy Meredith, Fri Sep  2 16:57:48 PDT 2005
+//    Improved error message to TimeSpec slightly.
+//
 // ****************************************************************************
 ParseTreeNode*
 ExprParser::ApplyRule(const Symbol           &sym,
@@ -404,10 +410,25 @@ ExprParser::ApplyRule(const Symbol           &sym,
         {
         case 0:
             {
-                const   string & id = ((Identifier*)T[3])->GetVal();
+                string id = ((Identifier*)T[3])->GetVal();
+                bool isDelta = false;
+                if (id.length() == 2)
+                {
+                    if (id[0] == 'd' || id[0] == 'D')
+                        id = id.substr(1, 1);
+                    else if (id[1] == 'd' || id[1] == 'D')
+                        id = id.substr(0, 1);
+                    else
+                        EXCEPTION2(SyntacticException, T[3]->GetPos(),
+                                   "time format needs to be "
+                                   "'i', 'c', or 't', with an optional 'd'");
+                    isDelta = true;
+                }
+               
                 if (id.length() != 1)
-                    EXCEPTION2(SyntacticException,E[3]->GetPos(),
-                                             "needs to be 'i', 'c', or 't'");
+                    EXCEPTION2(SyntacticException, T[3]->GetPos(),
+                               "time format needs to be "
+                               "'i', 'c', or 't', with an optional 'd'");
                 char    c = id[0];
                 TimeExpr::Type t;
                 if (c == 'c' || c == 'C')
@@ -417,9 +438,13 @@ ExprParser::ApplyRule(const Symbol           &sym,
                 else if (c == 'i' || c == 'I')
                     t = TimeExpr::Index;
                 else
-                    EXCEPTION2(SyntacticException, E[3]->GetPos(),
-                                             "needs to be 'i', 'c', or 't'");
-                node = new TimeExpr(p, (ListExpr*)(E[1]), t);
+                    EXCEPTION2(SyntacticException, T[3]->GetPos(),
+                               "time format needs to be "
+                               "'i', 'c', or 't', with an optional 'd'");
+                TimeExpr *t1 = new TimeExpr(p, (ListExpr*)(E[1]), t);
+                t1->SetIsDelta(isDelta);
+                node = t1;
+
                 break;
             }
         case 1:
