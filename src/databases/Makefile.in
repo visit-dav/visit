@@ -169,6 +169,9 @@
 #   Brad Whitlock, Tue Aug 30 15:59:31 PST 2005
 #   Added a CGNS reader.
 #
+#   Brad Whitlock, Tue Sep 6 11:37:20 PDT 2005
+#   Added a GDAL reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -180,6 +183,7 @@ BOXLIB2D=Boxlib2D
 BOXLIB3D=Boxlib3D
 CGNS=CGNS
 EXODUS=Exodus TimeVaryingExodus
+GDAL=GDAL
 HDF4=Cosmos Enzo
 HDF5=Tetrad SAMRAI CosmosPP Pixie FLASH
 MILI=Mili
@@ -194,8 +198,8 @@ VISUS=ViSUS
 
 OPTIONAL=
 
-SUBDIRS=$(REQUIRED) @DB_OPTIONAL_DIRS@ @EXODUS@ @SAF@ @HDF4@ @HDF5@ @PDB@ @MILI@ @BOXLIB2D@ @BOXLIB3D@ @VISUS@ @NETCDF@ @CGNS@
-ALLSUBDIRS=$(REQUIRED) $(EXODUS) $(SAF) $(HDF4) $(HDF5) $(MILI) $(PDB) $(BOXLIB2D) $(BOXLIB3D) $(VISUS) $(NETCDF) $(CGNS) $(SAMPLES) $(OPTIONAL)
+SUBDIRS=$(REQUIRED) @DB_OPTIONAL_DIRS@ @EXODUS@ @SAF@ @HDF4@ @HDF5@ @PDB@ @MILI@ @BOXLIB2D@ @BOXLIB3D@ @VISUS@ @NETCDF@ @CGNS@ @GDAL@
+ALLSUBDIRS=$(REQUIRED) $(EXODUS) $(SAF) $(HDF4) $(HDF5) $(MILI) $(PDB) $(BOXLIB2D) $(BOXLIB3D) $(VISUS) $(NETCDF) $(CGNS) $(GDAL) $(SAMPLES) $(OPTIONAL)
 
 message:
 	@echo

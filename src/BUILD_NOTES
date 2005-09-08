@@ -42,6 +42,7 @@ build and install those libraries prior to building VisIt.
     Mili     1.09     File I/O library       (none)
     netCDF   3.6.0    File I/O library       http://www.unidata.ucar.edu/packages/netcdf/
     CGNS     2.4      File I/O library       http://www.cgns.org
+    GDAL     1.3.0    GIS reader library     http://www.gdal.org
 
 Most of the third party libraries necessary to build VisIt are available for
 download from ftp://ftp.llnl.gov/pub/visit/3rd_party.  It is suggested that
@@ -844,6 +845,7 @@ to subclasses such as Euler and potential flows.
 # Build CGNS
 #
 gunzip cgnslib_2.4-3.tar.gz
+tar xvf cgnslib_2.4-3.tar
 cd cgnslib_2.4
 
 mkdir $VISITDIR/cgns
@@ -867,6 +869,33 @@ make
 
 #
 # Install it in the visit directory under the cgns directory
+#
+make install
+cd ..
+
+
+GDAL (Optional)
+================
+GDAL is a translator library for raster geospatial data formats that presents
+a single abstract data model to the calling application for all supported
+formats. 
+
+#
+# Build GDAL
+#
+gunzip gdal-1.3.0.tar.gz
+tar xvf gdal-1.3.0.tar
+cd gdal-1.3.0
+
+mkdir $VISITDIR/gdal
+mkdir $VISITDIR/gdal/1.3.0
+mkdir $VISITDIR/gdal/1.3.0/$VISITARCH
+
+./configure --prefix=$VISITDIR/gdal/1.3.0/$VISITARCH --enable-static --disable-shared
+make
+
+#
+# Install GDAL in the visit directory under the gdal directory
 #
 make install
 cd ..

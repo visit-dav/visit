@@ -84,6 +84,9 @@
 #    Brad Whitlock, Thu Sep 1 17:17:43 PST 2005
 #    Added support for CGNS on MacOS X.
 #
+#    Brad Whitlock, Tue Sep 6 11:23:04 PDT 2005
+#    Added support for GDAL.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -115,7 +118,7 @@ LIBSILO=libsilo.@SHLIB_LIBEXT@
 all: libvtkcommon libvtkdicom libvtkfiltering libvtkgraphics libvtkhybrid \
      libvtkio libvtkimaging libvtkrendering libvtkzlib libvtkpng libvtkjpeg \
      libvtkexpat libvtktiff libvtkfreetype libvtkftgl libosmesa libmesagl \
-     libqt pythondir @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ @CREATE_CGNS_LINK@
+     libqt pythondir @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@
 
 libvtkcommon:
 	$(RM) $(LIBVTKCOMMON)
@@ -222,6 +225,10 @@ create_netcdf_link:
 create_cgns_link:
 	$(RM) libcgns.@SHLIB_LIBEXT@
 	ln -s @CGNS_LIB@ .
+
+create_gdal_link:
+	$(RM) libgdal.@SHLIB_LIBEXT@
+	ln -s @GDAL_LIB@ .
 
 clean distclean:
 	$(RM) \
