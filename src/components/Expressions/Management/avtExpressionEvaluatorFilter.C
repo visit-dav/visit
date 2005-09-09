@@ -171,6 +171,10 @@ avtExpressionEvaluatorFilter::Execute(void)
 //    Hank Childs, Fri Aug 19 09:20:24 PDT 2005
 //    Switch ordering of arguments in error message.
 //
+//    Hank Childs, Fri Sep  9 10:27:45 PDT 2005
+//    Don't bother checking against 'unknown', since it probably comes from
+//    a CMFE expression.
+//
 // ****************************************************************************
 
 void
@@ -186,8 +190,8 @@ avtExpressionEvaluatorFilter::VerifyVariableTypes(void)
         if (exp == NULL)
             continue;
         Expression::ExprType et = exp->GetType();
-        if (et == Expression::Mesh || et == Expression::Material
-            || et == Expression::Species)
+        if (et == Expression::Mesh || et == Expression::Material ||
+            et == Expression::Species || et == Expression::Unknown)
             continue;
         avtVarType et_as_avt = AVT_UNKNOWN_TYPE;
         switch (et)
