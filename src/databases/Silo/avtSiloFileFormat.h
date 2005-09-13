@@ -5,11 +5,13 @@
 #ifndef AVT_SILO_FILE_FORMAT_H
 #define AVT_SILO_FILE_FORMAT_H
 
+#include <avtDataSelection.h>
 #include <avtSTMDFileFormat.h>
 
 #include <string>
 #include <vector>
 #include <map>
+#include <set>
 
 #include <silo.h>
 
@@ -101,6 +103,13 @@ typedef struct
 //
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added methods to GetCycle/Time
+//
+//    Mark C. Miller, Wed Aug 10 12:00:00 PDT 2005
+//    Added resample data selections to support CSG mesh discretization
+//
+//    Jeremy Meredith, Tue Sep 13 15:57:05 PDT 2005
+//    Changed domainDirs to a set to ensure log(n) search times.
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -133,6 +142,10 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     void                  ActivateTimestep(void);
 
+    virtual void           RegisterDataSelections(
+                               const std::vector<avtDataSelection_p> &selList,
+                               std::vector<bool> *selectionsApplied);
+
   protected:
     DBfile              **dbfiles;
     int                   tocIndex;
@@ -141,7 +154,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     static bool           madeGlobalSiloCalls;
 
-    std::vector<std::string>    domainDirs;
+    std::set<std::string>    domainDirs;
 
     // The following fields are for determining multimeshes for multivars
     std::vector<std::string>                  firstSubMesh;
@@ -164,6 +177,8 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     std::map<std::string, std::vector<int> >  arbMeshZoneRangesToSkip;
 
+    std::vector<avtDataSelection_p>           selList;
+    std::vector<bool>                        *selsApplied;
 
     DBfile               *GetFile(int);
     DBfile               *OpenFile(int, bool skipGlobalInfo = false);
@@ -186,6 +201,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     vtkDataSet           *CreateCurvilinearMesh(DBquadmesh *);
     vtkDataSet           *CreateRectilinearMesh(DBquadmesh *);
+    vtkDataSet           *GetCSGMesh(DBfile *, const char *, int);
     vtkDataSet           *GetPointMesh(DBfile *, const char *);
     vtkDataSet           *GetQuadMesh(DBfile *, const char *, int);
     vtkDataSet           *GetUnstructuredMesh(DBfile *, const char *,

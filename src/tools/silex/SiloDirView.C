@@ -53,6 +53,9 @@ SiloDirView::SiloDirView(QWidget *p, const QString &n)
 //    Split the total_items calculation into multiple lines.  g++-2.96
 //    was choking on it for some odd reason.
 //
+//    Mark C. Miller, Tue Sep 13 20:09:49 PDT 2005
+//    Added support for new silo objects; defvars, csgmesh/vars
+//
 // ****************************************************************************
 void
 SiloDirView::Set(SiloDir *d)
@@ -62,6 +65,7 @@ SiloDirView::Set(SiloDir *d)
     total_items  = d->array.size()           + (d->array.size()           ? 1:0);
     total_items += d->obj.size()             + (d->obj.size()             ? 1:0);
     total_items += d->var.size()             + (d->var.size()             ? 1:0);
+    total_items += d->defvars.size()         + (d->defvars.size()         ? 1:0);
     total_items += d->matspecies.size()      + (d->matspecies.size()      ? 1:0);
     total_items += d->mat.size()             + (d->mat.size()             ? 1:0);
     total_items += d->ptvar.size()           + (d->ptvar.size()           ? 1:0);
@@ -75,6 +79,8 @@ SiloDirView::Set(SiloDir *d)
     total_items += d->multivar.size()        + (d->multivar.size()        ? 1:0);
     total_items += d->multimesh.size()       + (d->multimesh.size()       ? 1:0);
     total_items += d->curve.size()           + (d->curve.size()           ? 1:0);
+    total_items += d->csgvar.size()          + (d->csgvar.size()          ? 1:0);
+    total_items += d->csgmesh.size()         + (d->csgmesh.size()         ? 1:0);
 
     bool expandVars = true;
     if (d->curve.size())
@@ -183,6 +189,26 @@ SiloDirView::Set(SiloDir *d)
         for (int i=0; i<d->ptvar.size(); i++)
             new SiloDirViewItem(d,ptvar, d->ptvar[i]);
         ptvar->setOpen(true);
+        expandVars = false;
+    }
+
+    if (d->csgmesh.size())
+    {
+        SiloDirViewItem *csgmesh = new SiloDirViewItem(NULL,this, "CSGMeshes");
+        csgmesh->setPixmap(0, *mesh_pixmap);
+        for (int i=0; i<d->csgmesh.size(); i++)
+            new SiloDirViewItem(d,csgmesh, d->csgmesh[i]);
+        csgmesh->setOpen(true);
+        expandVars = false;
+    }
+
+    if (d->csgvar.size())
+    {
+        SiloDirViewItem *csgvar = new SiloDirViewItem(NULL,this, "CSGVars");
+        csgvar->setPixmap(0, *var_pixmap);
+        for (int i=0; i<d->csgvar.size(); i++)
+            new SiloDirViewItem(d,csgvar, d->csgvar[i]);
+        csgvar->setOpen(true);
         expandVars = false;
     }
 

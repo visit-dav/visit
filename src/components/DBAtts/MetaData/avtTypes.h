@@ -60,7 +60,8 @@ enum avtMeshType
     AVT_UNSTRUCTURED_MESH,   /* 2 */
     AVT_POINT_MESH,          /* 3 */
     AVT_SURFACE_MESH,        /* 4 */
-    AVT_UNKNOWN_MESH         /* 5 */
+    AVT_CSG_MESH,            /* 5 */
+    AVT_UNKNOWN_MESH         /* 6 */
 };
 
 

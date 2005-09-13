@@ -200,6 +200,9 @@
 #    Hank Childs, Fri Apr  8 09:43:05 PDT 2005
 #    Add new partition strategy.
 #
+#    Mark C. Miller, Tue Aug 16 19:28:18 PDT 2005
+#    Added avtResampleSelection.C
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -255,6 +258,7 @@ Data_src= \
   Data/avtRay.C \
   Data/avtRayFunction.C \
   Data/avtRelativeValueSamplePointArbitrator.C \
+  Data/avtResampleSelection.C \
   Data/avtSamplePointArbitrator.C \
   Data/avtSamplePoints.C \
   Data/avtSpatialBoxSelection.C \

@@ -12,6 +12,7 @@
 
 #include <vtkCell.h>
 #include <vtkCellData.h>
+#include <vtkCSGGrid.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
 #include <vtkIdList.h>
@@ -102,17 +103,20 @@ static const char *DataArrayTypeName(vtkDataArray *arr)
 // ****************************************************************************
 //  Function: PrecisionInBytes
 //
-//  Purpose: Given a vtk data array, return its precision in bytes 
+//  Purpose: Given a vtk data type, return its precision in bytes 
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   April 4, 2005 
 // 
+//  Modifications:
+//     Mark C. Miller, Tue Sep 13 20:07:48 PDT 2005
+//     Made it just take data type as arg instead of a vtkDataArray
 // ****************************************************************************
 
 static int
-PrecisionInBytes(vtkDataArray *var)
+PrecisionInBytes(int dataType)
 {
-    switch (var->GetDataType())
+    switch (dataType)
     {
         case VTK_VOID:           return sizeof(void*);
         // case VTK_BIT: not sure what to do here
@@ -128,6 +132,24 @@ PrecisionInBytes(vtkDataArray *var)
         case VTK_DOUBLE:         return sizeof(double);
         case VTK_ID_TYPE:        return sizeof(vtkIdType);
     }
+}
+
+// ****************************************************************************
+//  Function: PrecisionInBytes
+//
+//  Purpose: Given a vtk data array, return its precision in bytes 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   August 10, 2005 
+// 
+// ****************************************************************************
+static int
+PrecisionInBytes(vtkDataArray *var)
+{
+    if (var)
+        return PrecisionInBytes(var->GetDataType());
+    else
+        return PrecisionInBytes(VTK_FLOAT);
 }
 
 // ****************************************************************************
@@ -253,7 +275,7 @@ ConvertDataArrayToFloat(vtkDataArray *oldArr)
 }
 
 // ****************************************************************************
-//  Funcion: GetCoordDataArray
+//  Funcion: GetCoordDataType
 //
 //  Purpose: Given a vtkDataSet, return a sample the first of its
 //  coordinate arrays
@@ -261,9 +283,13 @@ ConvertDataArrayToFloat(vtkDataArray *oldArr)
 //  Programmer: Mark C. Miller 
 //  Creation:   April 4, 2005 
 // 
+//  Modifications:
+//    Mark C. Miller, Tue Sep 13 20:07:48 PDT 2005
+//    Made it return the coordinate data type explicitly. Also, made it
+//    a little more lenient about getting null pointers
 // ****************************************************************************
-static vtkDataArray*
-GetCoordDataArray(vtkDataSet *ds)
+static int 
+GetCoordDataType(vtkDataSet *ds)
 {
     switch (ds->GetDataObjectType())
     {
@@ -272,9 +298,9 @@ GetCoordDataArray(vtkDataSet *ds)
         case VTK_UNSTRUCTURED_GRID:
             {
                 vtkPointSet *ps = vtkPointSet::SafeDownCast(ds);
-                if (ps != 0)
+                if (ps && ps->GetPoints() && ps->GetPoints()->GetData())
                 {
-                    return ps->GetPoints()->GetData();
+                    return ps->GetPoints()->GetData()->GetDataType();
                 }
             }
             break;
@@ -282,19 +308,14 @@ GetCoordDataArray(vtkDataSet *ds)
         case VTK_RECTILINEAR_GRID:
             {
                 vtkRectilinearGrid *rg = vtkRectilinearGrid::SafeDownCast(ds);
-                if (rg != 0)
+                if (rg && rg->GetXCoordinates())
                 {
-                    return rg->GetXCoordinates();
+                    return rg->GetXCoordinates()->GetDataType();
                 }
             }
             break;
-
-        case VTK_IMAGE_DATA:
-        case VTK_STRUCTURED_POINTS:
-            return 0;
-            break;
     }
-    return 0;
+    return VTK_FLOAT;
 }
 
 // ****************************************************************************
@@ -3346,10 +3367,10 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
                          ts, domain, material);
 
         if ((mesh != NULL) && IsAdmissibleDataType(admissibleDataTypes,
-                                  GetCoordDataArray(mesh)->GetDataType()))
+                                  GetCoordDataType(mesh)))
         {
             if (!needNativePrecision &&
-                (PrecisionInBytes(GetCoordDataArray(mesh)) > sizeof(float)))
+                (PrecisionInBytes(GetCoordDataType(mesh)) > sizeof(float)))
             {
                 mesh = (vtkDataSet *) cache.GetVTKObject(meshname,
                                  avtVariableCache::DATASET_NAME,
@@ -3437,11 +3458,10 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
         // Convert BEFORE caching only if native precision is greater
         // than float and VisIt has NOT asked for native precision
         //
-        const char *cacheTypeName = 
-            GetCoordDataArray(mesh)->GetDataType() == VTK_FLOAT ?
+        const char *cacheTypeName = GetCoordDataType(mesh) == VTK_FLOAT ?
             avtVariableCache::DATASET_NAME :
             avtVariableCache::NATIVE_DATASET_NAME;
-        if (PrecisionInBytes(GetCoordDataArray(mesh)) > sizeof(float) &&
+        if (PrecisionInBytes(GetCoordDataType(mesh)) > sizeof(float) &&
             !needNativePrecision)
         {
             vtkDataSet *mesh1 = ConvertDataSetToFloat(mesh);
@@ -3477,7 +3497,7 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
         // convert here, go ahead and cache the converted result too.
         //
         if (!IsAdmissibleDataType(admissibleDataTypes,
-                                  GetCoordDataArray(mesh)->GetDataType()))
+                                  GetCoordDataType(mesh)))
         {
             vtkDataSet *mesh1 = ConvertDataSetToFloat(mesh);
 

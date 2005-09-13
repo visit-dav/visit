@@ -521,7 +521,9 @@
                 <Field name="numNodesSet" type="bool">true</Field>
                 <Field name="numNodes" type="int">2</Field>
                 <Field name="partitionSet" type="bool">true</Field>
-                <Field name="partition" type="string">views</Field>
+                <Field name="partition" type="string">white</Field>
+                <Field name="launchArgsSet" type="bool">true</Field>
+                <Field name="launchArgs" type="string">-pool views</Field>
                 <Field name="bankSet" type="bool">true</Field>
                 <Field name="bank" type="string">vws_llnl</Field>
                 <Field name="timeLimitSet" type="bool">true</Field>
