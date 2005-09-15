@@ -2,6 +2,8 @@
 //                            avtVTKFileFormat.C                             //
 // ************************************************************************* //
 
+#include <avtDatabaseMetaData.h>
+#include <avtMaterial.h>
 #include <avtVTKFileFormat.h>
 
 #include <vtkCellData.h>
@@ -14,8 +16,13 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkFloatArray.h>
 
+#include <snprintf.h>
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
+
+#include <map>
+#include <string>
+#include <vector>
 
 
 //
@@ -44,6 +51,9 @@ static void GetListOfUniqueCellTypes(vtkUnstructuredGrid *ug,
 //     Hank Childs, Tue May 24 12:05:52 PDT 2005
 //     Added arguments.
 //
+//     Mark C. Miller, Thu Sep 15 19:45:51 PDT 2005
+//     Initialized matvarname
+//
 // ****************************************************************************
 
 avtVTKFileFormat::avtVTKFileFormat(const char *fname, DBOptionsAttributes *) 
@@ -51,6 +61,7 @@ avtVTKFileFormat::avtVTKFileFormat(const char *fname, DBOptionsAttributes *)
 {
     dataset = NULL;
     readInDataset = false;
+    matvarname = NULL;
 }
 
 
@@ -60,6 +71,11 @@ avtVTKFileFormat::avtVTKFileFormat(const char *fname, DBOptionsAttributes *)
 //  Programmer: Hank Childs
 //  Creation:   February 23, 2001
 //
+//  Modifications:
+//
+//    Mark C. Miller, Thu Sep 15 19:45:51 PDT 2005
+//    Freed matvarname
+//
 // ****************************************************************************
 
 avtVTKFileFormat::~avtVTKFileFormat()
@@ -68,6 +84,11 @@ avtVTKFileFormat::~avtVTKFileFormat()
     {
         dataset->Delete();
         dataset = NULL;
+    }
+    if (matvarname != NULL)
+    {
+        free(matvarname);
+        matvarname = NULL;
     }
 }
 
@@ -136,6 +157,60 @@ avtVTKFileFormat::ReadInDataset(void)
     readInDataset = true;
 }
 
+// ****************************************************************************
+//  Method: avtVTKFileFormat::GetAuxiliaryData
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   September 15, 2005 
+//
+// ****************************************************************************
+
+void *
+avtVTKFileFormat::GetAuxiliaryData(const char *var,
+    const char *type, void *, DestructorFunction &df)
+{
+    void *rv = NULL;
+
+    if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
+    {
+        vtkIntArray *matarr = vtkIntArray::SafeDownCast(GetVar(matvarname));
+
+        int ntuples = matarr->GetNumberOfTuples();
+        int *matlist = new int[ntuples];
+        memcpy(matlist, matarr->GetPointer(0), ntuples*sizeof(int));
+        matarr->Delete();
+
+        int *matnostmp = new int[matnos.size()];
+        char **matnamestmp = new char*[matnames.size()];
+        for (int i = 0; i < matnos.size(); i++)
+        {
+            matnostmp[i] = matnos[i];
+            matnamestmp[i] = (char*) matnames[i].c_str();
+        }
+
+        avtMaterial *mat = new avtMaterial(matnos.size(), //silomat->nmat,
+                                           matnostmp,     //silomat->matnos,
+                                           matnamestmp,   //silomat->matnames,
+                                           1,             //silomat->ndims,
+                                           &ntuples,      //silomat->dims,
+                                           0,             //silomat->major_order,
+                                           matlist,       //silomat->matlist,
+                                           0,             //silomat->mixlen,
+                                           0,             //silomat->mix_mat,
+                                           0,             //silomat->mix_next,
+                                           0,             //silomat->mix_zone,
+                                           0              //silomat->mix_vf
+                                           );
+
+        delete [] matnostmp;
+        delete [] matnamestmp;
+
+        df = avtMaterial::Destruct;
+        rv = mat;
+    }
+
+    return rv;
+}
 
 // ****************************************************************************
 //  Method: avtVTKFileFormat::GetMesh
@@ -324,6 +399,11 @@ avtVTKFileFormat::GetVectorVar(const char *var)
 //  Programmer: Hank Childs
 //  Creation:   February 23, 2001
 //
+//  Modifications:
+//
+//    Mark C. Miller, Thu Sep 15 19:45:51 PDT 2005
+//    Freed matvarname
+//
 // ****************************************************************************
 
 void
@@ -336,6 +416,11 @@ avtVTKFileFormat::FreeUpResources(void)
     {
         dataset->Delete();
         dataset = NULL;
+    }
+    if (matvarname != NULL)
+    {
+        free(matvarname);
+        matvarname = NULL;
     }
 
     readInDataset = false;
@@ -387,6 +472,9 @@ avtVTKFileFormat::FreeUpResources(void)
 //
 //    Kathleen Bonnell, Wed Jul 13 18:27:05 PDT 2005 
 //    Specify whether or not scalar data should be treated as ascii. 
+//
+//    Mark C. Miller, Thu Sep 15 19:45:51 PDT 2005
+//    Added support for arrays representing materials
 //    
 // ****************************************************************************
 
@@ -527,7 +615,35 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             sprintf(buffer2, "internal_var_%s", name+strlen("avt"));
             name = buffer2;
         }
-        if (ncomp == 1)
+        if ((arr->GetDataType() == VTK_INT) && (ncomp == 1) &&
+            ((strncmp(name, "internal_var_Subsets", strlen("internal_var_Subsets")) == 0) ||
+            ((strncmp(name, "material", strlen("material")) == 0))))
+        {
+            vtkIntArray *iarr = vtkIntArray::SafeDownCast(arr);
+            int *iptr = iarr->GetPointer(0);
+            std::map<int, bool> valMap;
+            int ntuples = iarr->GetNumberOfTuples();
+            for (int j = 0; j < ntuples; j++)
+                valMap[iptr[j]] = true;
+            std::map<int, bool>::const_iterator it;
+            for (it = valMap.begin(); it != valMap.end(); it++)
+            {
+                char tmpname[32];
+                SNPRINTF(tmpname, sizeof(tmpname), "%d", it->first);
+                matnames.push_back(tmpname);
+                matnos.push_back(it->first);
+            }
+
+            avtMaterialMetaData *mmd = new avtMaterialMetaData("materials", MESHNAME,
+                                               valMap.size(), matnames);
+            md->Add(mmd);
+
+            if (strncmp(name, "internal_var_Subsets", strlen("internal_var_Subsets")) == 0)
+                matvarname = strdup("internal_var_Subsets");
+            else
+                matvarname = strdup("material");
+        }
+        else if (ncomp == 1)
         {
             bool ascii = arr->GetDataType() == VTK_CHAR;
             AddScalarVarToMetaData(md, name, MESHNAME, AVT_ZONECENT, NULL, ascii);

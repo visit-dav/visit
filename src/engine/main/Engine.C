@@ -869,6 +869,9 @@ Engine::ProcessInput()
 //    Hank Childs, Sun Mar 27 13:29:13 PST 2005
 //    Added more timing arguments.
 //
+//    Mark C. Miller, Thu Sep 15 11:30:18 PDT 2005
+//    Added lb-absolute option
+//
 // ****************************************************************************
 void
 Engine::ProcessCommandLine(int argc, char **argv)
@@ -931,6 +934,10 @@ Engine::ProcessCommandLine(int argc, char **argv)
         else if (strcmp(argv[i], "-lb-random") == 0)
         {
             LoadBalancer::SetScheme(LOAD_BALANCE_RANDOM_ASSIGNMENT);
+        }
+        else if (strcmp(argv[i], "-lb-absolute") == 0)
+        {
+            LoadBalancer::SetScheme(LOAD_BALANCE_ABSOLUTE);
         }
     }
 }

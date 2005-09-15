@@ -76,6 +76,10 @@ class QRadioButton;
 //    parsed from the SSH_CLIENT (or related) environment variables.  Added
 //    ability to specify an SSH port.
 //
+//    Jeremy Meredith, Thu Sep 15 15:20:55 PDT 2005
+//    Added machine file support and the ability to use the VisIt script
+//    to set up env variables in parallel.
+//
 // ****************************************************************************
 
 class GUI_API QvisHostProfileWindow : public QvisPostableWindowObserver
@@ -110,6 +114,7 @@ private slots:
     void processPartitionNameText();
     void processBankNameText();
     void processTimeLimitText();
+    void processMachinefileText();
     void processLaunchArgsText();
     void numProcessorsChanged(int value);
     void timeoutChanged(int value);
@@ -121,9 +126,11 @@ private slots:
     void togglePartitionName(bool);
     void toggleBankName(bool);
     void toggleTimeLimit(bool);
+    void toggleMachinefile(bool);
     void toggleLaunchArgs(bool);
     void toggleParallel(bool);
     void toggleShareMDServer(bool);
+    void toggleUseVisItScriptForEnv(bool);
     void loadBalancingChanged(int);
     void hostNameChanged(const QString &host);
     void hostAliasesChanged(const QString &host);
@@ -164,6 +171,8 @@ private:
     QLineEdit    *bankName;
     QCheckBox    *timeLimitCheckBox;
     QLineEdit    *timeLimit;
+    QCheckBox    *machinefileCheckBox;
+    QLineEdit    *machinefile;
     QLabel       *loadBalancingLabel;
     QButtonGroup *loadBalancing;
     QRadioButton *lbAuto;
@@ -177,6 +186,7 @@ private:
     QLineEdit    *launchArgs;
     QWidget      *advancedGroup;
     QCheckBox    *shareMDServerCheckBox;
+    QCheckBox    *useVisItScriptForEnvCheckBox;
     QButtonGroup *clientHostNameMethod;
     QRadioButton *chnMachineName;
     QRadioButton *chnParseFromSSHClient;

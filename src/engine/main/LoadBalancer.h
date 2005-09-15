@@ -66,7 +66,8 @@ typedef enum
     LOAD_BALANCE_STRIDE_ACROSS_BLOCKS,        /* 1 */
     LOAD_BALANCE_RANDOM_ASSIGNMENT,           /* 2 */
     LOAD_BALANCE_DBPLUGIN_DYNAMIC,            /* 3 */
-    LOAD_BALANCE_RESTRICTED                   /* 4 */
+    LOAD_BALANCE_RESTRICTED,                  /* 4 */
+    LOAD_BALANCE_ABSOLUTE                     /* 5 */
 } LoadBalanceScheme;
 
 
@@ -116,6 +117,12 @@ typedef enum
 //    Jeremy Meredith, Wed May 11 09:07:15 PDT 2005
 //    Added "restricted" load balancing mode.  This is intended for
 //    non-global filesystems and simulation-mode engines.
+//
+//    Mark C. Miller, Wed Sep 14 15:10:06 PDT 2005
+//    Added "absolute" load balancing scheme. This assigns domains
+//    to processors such that the same domains are always processed by the
+//    same processors, regardless of which domains are involved in the
+//    current pipeline.
 //
 // ****************************************************************************
 

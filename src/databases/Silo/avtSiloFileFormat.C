@@ -647,6 +647,30 @@ avtSiloFileFormat::FreeUpResources(void)
     multimatspec_name.clear();
 }
 
+// ****************************************************************************
+//  Method: avtSiloFileFormat::CanCacheVariable
+//
+//  Purpose: Tells visit not to cache CSG mesh variables. This will be removed
+//  when CSG mesh discretization is moved into generic database.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   September 15, 2005 
+// ****************************************************************************
+bool
+avtSiloFileFormat::CanCacheVariable(const char *varname)
+{
+    if (metadata)
+    {
+        const string meshname = metadata->MeshForVar(varname);
+        if (meshname != "")
+        {
+            const avtMeshMetaData *mmd = metadata->GetMesh(meshname);
+            if (mmd && mmd->meshType == AVT_SURFACE_MESH)
+                return false;
+        }
+    }
+    return true;
+}
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::PopulateDatabaseMetaData
@@ -5894,10 +5918,10 @@ avtSiloFileFormat::GetCSGMesh(DBfile *dbfile, const char *mn, int dom)
     //
     // Hack, discretize to a poly data object
     //
-    cerr << "Discretizing with minX = " << minX << ", maxX = " << maxX << endl;
-    cerr << "                  minY = " << minY << ", maxY = " << maxY << endl;
-    cerr << "                  minZ = " << minZ << ", maxZ = " << maxZ << endl;
-    cerr << "                  nX = " << nX << ", nY = " << nY << ", nZ = " << nZ << endl;
+    debug5 << "Discretizing with minX = " << minX << ", maxX = " << maxX << endl;
+    debug5 << "                  minY = " << minY << ", maxY = " << maxY << endl;
+    debug5 << "                  minZ = " << minZ << ", maxZ = " << maxZ << endl;
+    debug5 << "                  nX = " << nX << ", nY = " << nY << ", nZ = " << nZ << endl;
     return csggrid->DiscretizeSurfaces(dom, minX, maxX, nX,
                                             minY, maxY, nY,
                                             minZ, maxZ, nZ);

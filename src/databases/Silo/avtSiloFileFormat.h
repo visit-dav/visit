@@ -110,6 +110,11 @@ typedef struct
 //    Jeremy Meredith, Tue Sep 13 15:57:05 PDT 2005
 //    Changed domainDirs to a set to ensure log(n) search times.
 //
+//    Mark C. Miller, Thu Sep 15 11:30:18 PDT 2005
+//    Added CanCacheVariable, primarily to support csg discretization.
+//    It will be removed after 3d, adaptive csg discretization is available
+//    in avtGenericDatabase
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -135,6 +140,8 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
     virtual void          PopulateIOInformation(avtIOInformation &);
+
+    bool                  CanCacheVariable(const char *);
 
     int                   GetCycle();
     int                   GetCycleFromFilename(const char *f) const;

@@ -269,6 +269,10 @@ RemoteProxyBase::AddArgument(const std::string &arg)
 //    Brad Whitlock, Tue Aug 10 17:16:55 PST 2004
 //    Undefined a macro on Windows because it interferes with HostProfile.
 //
+//    Jeremy Meredith, Thu Sep 15 16:34:15 PDT 2005
+//    Added ability to launch visit script under mpirun in order to set up
+//    the environment on beowulf clusters (and similar).
+//
 // ****************************************************************************
 
 void
@@ -351,6 +355,18 @@ RemoteProxyBase::AddProfileArguments(const HostProfile &profile,
             {
                 AddArgument("-la");
                 AddArgument(profile.GetLaunchArgs());
+            }
+
+            if (profile.GetMachinefileSet() &&
+                profile.GetMachinefile().length() > 0)
+            {
+                AddArgument("-machinefile");
+                AddArgument(profile.GetMachinefile());
+            }
+
+            if (profile.GetVisitSetsUpEnv())
+            {
+                AddArgument("-setupenv");
             }
         }
 #if 0 // disabling dynamic load balancing for now
