@@ -6316,6 +6316,11 @@ ViewerWindow::GetNotifyForEachRender() const
 //   Mark C. Miller, Wed Jun  8 11:03:31 PDT 2005
 //   Made transitions into and out of SR mode smoother, less work
 //
+//   Mark C. Miller, Wed Sep 21 18:00:53 PDT 2005
+//   Made it send window env. to engine before transmuting plots. Otherwise,
+//   engine would be working from old scalable rendering parameters and not
+//   the new ones we're just setting here.
+//
 // ****************************************************************************
 
 void
@@ -6330,10 +6335,12 @@ ViewerWindow::ChangeScalableRenderingMode(bool newMode)
         ClearLastExternalRenderRequestInfo();
 
         // remove all plot's actors from the VisWindow
-        DisableUpdates();
+        if (updatesEnabled)
+            DisableUpdates();
         ClearPlots();
 
         // transmute the plots
+        SendWindowEnvironmentToEngine(GetPlotList()->GetEngineKey());
         GetPlotList()->TransmutePlots(!newMode);
 
         // set scalable rendering mode in the vis window 
