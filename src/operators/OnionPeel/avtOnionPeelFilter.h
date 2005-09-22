@@ -10,8 +10,9 @@
 #include <OnionPeelAttributes.h>
 
 
-class vtkOnionPeelFilter;
 class vtkDataSet;
+class vtkOnionPeelFilter;
+class vtkPolyDataOnionPeelFilter;
 
 
 // ****************************************************************************
@@ -78,6 +79,7 @@ class avtOnionPeelFilter : public avtPluginStreamer
   protected:
     OnionPeelAttributes   atts;
     vtkOnionPeelFilter   *opf;
+    vtkPolyDataOnionPeelFilter   *poly_opf;
 
     int                   badSeed;
     int                   maximumIds;

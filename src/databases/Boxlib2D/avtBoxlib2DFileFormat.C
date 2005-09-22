@@ -31,6 +31,7 @@
 #include <vector>
 #include <string>
 #include <visitstream.h>
+#include <visit-config.h>
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -502,6 +503,9 @@ avtBoxlib2DFileFormat::GetMesh(int patch, const char *mesh_name)
 //    Have proc. 0 read the Header and then broadcast the info to the other 
 //    procs.
 //
+//    Brad Whitlock, Thu Sep 22 13:27:18 PST 2005
+//    Fixed on win32.
+//
 // ****************************************************************************
 
 void
@@ -518,7 +522,7 @@ avtBoxlib2DFileFormat::ReadHeader(void)
     ifstream in;
     string double_tmp;
 
-    string headerFilename = rootPath + timestepPath + "/Header";
+    string headerFilename = rootPath + timestepPath + SLASH_STRING + "Header";
         
     if (iDoReading)
         in.open(headerFilename.c_str());
@@ -1116,6 +1120,10 @@ avtBoxlib2DFileFormat::GetVectorVar(int patch, const char *var_name)
 //  Programmer:  Hank Childs
 //  Creation:    December 10, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Thu Sep 22 13:28:58 PST 2005
+//    Fixed on win32.
+//
 // ****************************************************************************
 
 VisMF *
@@ -1123,11 +1131,20 @@ avtBoxlib2DFileFormat::GetVisMF(int index)
 {
     if (!mfReaders[index])
     {
-        char filename[1024];
-        sprintf(filename, "%s%s/%s", rootPath.c_str(),
-                                     timestepPath.c_str(),
-                                     multifabFilenames[index].c_str());
-        mfReaders[index] = new VisMF(filename);
+        string filename(rootPath + timestepPath + SLASH_STRING +
+                        multifabFilenames[index]);
+#if defined(_WIN32)
+        // If we're on Windows then make some extra passes through the filename
+        // so all '\\' characters are changed to '/' or Boxlib will choke.
+        std::string::size_type idx;
+        while((idx = filename.find("/")) != string::npos)
+            filename.replace(idx, 1, "\\");
+        while((idx = filename.find("\\\\")) != string::npos)
+            filename.replace(idx, 2, "\\");
+        while((idx = filename.find("\\")) != string::npos)
+            filename.replace(idx, 1, "/");
+#endif
+        mfReaders[index] = new VisMF(filename.c_str());
     }
     return mfReaders[index];
 }
@@ -1729,6 +1746,10 @@ avtBoxlib2DFileFormat::FreeUpResources()
 //  Programmer:  Hank Childs
 //  Creation:    December 10, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Thu Sep 22 13:26:45 PST 2005
+//    Fixed for win32.
+//
 // ****************************************************************************
 
 string 
@@ -1738,12 +1759,12 @@ GetDirName(const char *path)
 
     int len = strlen(path);
     const char *last = path + (len-1);
-    while (*last != '/' && last > path)
+    while (*last != SLASH_CHAR && last > path)
     {
         last--;
     }
 
-    if (*last != '/')
+    if (*last != SLASH_CHAR)
     {
         return "";
     }

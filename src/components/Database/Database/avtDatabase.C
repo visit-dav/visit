@@ -5,6 +5,7 @@
 #include <avtDatabase.h>
 
 #include <visitstream.h>
+#include <visit-config.h>
 #include <stdio.h>
 
 #include <Expression.h>
@@ -1275,6 +1276,9 @@ avtDatabase::NumStagesForFetch(avtDataSpecification_p)
 //    Jeremy Meredith, Tue Aug 27 11:34:35 PDT 2002
 //    Moved from avtDatabaseFactory to avtDatabase.
 //
+//    Brad Whitlock, Wed Sep 21 16:41:56 PST 2005
+//    Fixed for win32.
+//
 // ****************************************************************************
 
 void
@@ -1290,7 +1294,7 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 
     char          dir[1024];
     const char   *p = textfile, *q = NULL;
-    while ((q = strstr(p, "/")) != NULL)
+    while ((q = strstr(p, SLASH_STRING)) != NULL)
     {
         p = q+1;
     }
@@ -1307,7 +1311,7 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
         ifile.getline(str_auto, 1024, '\n');
         if (str_auto[0] != '\0' && str_auto[0] != '#')
         {
-            if (str_auto[0] == '/' || str_auto[0] == '!')
+            if (str_auto[0] == SLASH_CHAR || str_auto[0] == '!')
             {
                 strcpy(str_with_dir, str_auto);
             }
