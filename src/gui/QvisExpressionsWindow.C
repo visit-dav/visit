@@ -50,6 +50,9 @@
 //    Hank Childs, Tue Aug 16 09:05:03 PDT 2005
 //    Added image processing category.
 //
+//    Hank Childs, Wed Sep 21 17:31:59 PDT 2005
+//    Added external_node, surface normal, min/max edge length/side volume.
+//
 // ****************************************************************************
 struct ExprNameList
 {
@@ -66,6 +69,10 @@ const char *expr_meshquality[] = {
     "dimension",
     "jacobian",
     "largest_angle",
+    "max_edge_length",
+    "max_side_volume",
+    "min_edge_length",
+    "min_side_volume",
     "neighbor",
     "node_degree",
     "oddy",
@@ -74,7 +81,6 @@ const char *expr_meshquality[] = {
     "shape",
     "shape_and_size",
     "shear",
-    "side_volume",
     "skew",
     "smallest_angle",
     "stretch",
@@ -175,6 +181,7 @@ const char *expr_mesh[] = {
     "cylindrical",
     "cylindrical_radius",
     "cylindrical_theta",
+    "external_node",
     "global_nodeid",
     "global_zoneid",
     "nodeid",
@@ -196,6 +203,9 @@ const char *expr_misc[] = {
     "Laplacian",
     "recenter",
     "resrad",
+    "surface_normal",
+    "   point_surface_normal",
+    "   cell_surface_normal",
     NULL
 };
 

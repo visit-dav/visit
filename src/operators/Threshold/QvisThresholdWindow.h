@@ -33,6 +33,9 @@ class QvisVariableButton;
 //   Brad Whitlock, Fri Dec 10 09:39:57 PDT 2004
 //   Added a variable button.
 //
+//   Hank Childs, Thu Sep 15 15:31:34 PDT 2005
+//   Added windowing for creating point meshes.
+//
 // ****************************************************************************
 
 class QvisThresholdWindow : public QvisOperatorWindow
@@ -51,11 +54,14 @@ class QvisThresholdWindow : public QvisOperatorWindow
     virtual void GetCurrentValues(int which_widget);
   private slots:
     void amountChanged(int val);
+    void meshTypeChanged(int val);
     void lboundProcessText();
     void uboundProcessText();
     void variableChanged(const QString &);
   private:
     QButtonGroup        *amount;
+    QButtonGroup        *meshType;
+    QLabel              *amountLabel;
     QLineEdit           *lbound;
     QLineEdit           *ubound;
     QvisVariableButton  *variable;

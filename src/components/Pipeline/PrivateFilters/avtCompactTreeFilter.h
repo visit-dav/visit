@@ -37,6 +37,10 @@
 //    Hank Childs, Wed Aug 24 15:45:14 PDT 2005
 //    Add an option for cleaning poly-data.
 //
+//    Hank Childs, Thu Sep 22 16:59:42 PDT 2005
+//    Add tolerance for merging points when cleaning poly data.  Also add
+//    an option to do merging in parallel.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCompactTreeFilter : public avtDatasetToDatasetFilter
@@ -56,11 +60,16 @@ class PIPELINE_API avtCompactTreeFilter : public avtDatasetToDatasetFilter
 
     void                  CreateCleanPolyData(bool v)
                               { createCleanPolyData = v; };
+    void                  SetToleranceWhenCleaningPolyData(double d)
+                              { tolerance = d; };
+    void                  SetParallelMerge(bool p) { parallelMerge = p; };
 
   protected:
     virtual void          Execute(void);
     bool                  executionDependsOnDLB;
+    bool                  parallelMerge;
     bool                  createCleanPolyData;
+    double                tolerance;
 };
 
 

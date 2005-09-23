@@ -1,9 +1,10 @@
 <?xml version="1.0"?>
-  <Plugin name="Threshold" type="operator" label="Threshold" version="1.0" iconFile="Threshold.xpm">
+  <Plugin name="Threshold" type="operator" label="Threshold" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" iconFile="Threshold.xpm">
     <Attribute name="ThresholdAttributes" purpose="This class contains attributes for the threshold operator." persistent="true">
       <Enum name="Amount">
         Some
         All
+        PointsOnly
       </Enum>
       <Field name="amount" label="Amount of cell in the range" type="enum" subtype="Amount">
         Some

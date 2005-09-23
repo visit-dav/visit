@@ -38,6 +38,9 @@ class DBOptionsAttributes;
 //    Mark C. Miller, Thu Sep 15 19:45:51 PDT 2005
 //    Added GetAuxiliaryData to support materials
 //
+//    Kathleen Bonnell, Thu Sep 22 15:37:13 PDT 2005 
+//    Added 'extension' to store file extension. 
+//
 // ****************************************************************************
 
 class avtVTKFileFormat : public avtSTSDFileFormat
@@ -70,6 +73,8 @@ class avtVTKFileFormat : public avtSTSDFileFormat
     std::vector<int>      matnos;
     std::vector<std::string> matnames;
 
+
+    std::string           extension;
 
     void                  ReadInDataset(void);
     vtkDataSet           *ConvertStructuredPointsToRGrid(vtkStructuredPoints *);

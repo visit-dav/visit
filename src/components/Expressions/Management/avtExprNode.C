@@ -43,6 +43,7 @@
 #include <avtRadianToDegreeFilter.h>
 #include <avtRevolvedVolume.h>
 #include <avtSideVolume.h>
+#include <avtEdgeLength.h>
 #include <avtRevolvedSurfaceArea.h>
 #include <avtSpecMFFilter.h>
 #include <avtTanFilter.h>
@@ -83,6 +84,8 @@
 #include <avtMeanFilterExpression.h>
 #include <avtMedianFilterExpression.h>
 #include <avtConnCMFEExpression.h>
+#include <avtExternalNodeExpression.h>
+#include <avtSurfaceNormalExpression.h>
 
 #include <stdio.h>
 #include <ExpressionException.h>
@@ -406,6 +409,10 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Hank Childs, Fri Aug 26 13:51:39 PDT 2005
 //      Added conn_cmfe.
 //
+//      Hank Childs, Wed Sep 21 17:30:53 PDT 2005
+//      Added external_node, surface normals, min_side_volume, max_side_volume,
+//      min_edge_length, and max_edge_length.
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -538,6 +545,8 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtTestNotEqualToFilter();
     else if (functionName == "neighbor")
         f = new avtNeighborFilter();
+    else if (functionName == "external_node")
+        f = new avtExternalNodeExpression();
     else if (functionName == "node_degree")
         f = new avtNodeDegreeFilter();
     // Begin Verdict Metrics
@@ -551,8 +560,30 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtVMetricTaper();
     else if (functionName == "volume")
         f = new avtVMetricVolume();
-    else if (functionName == "side_volume")
-        f = new avtSideVolume();
+    else if (functionName == "min_edge_length")
+    {
+        avtEdgeLength *el = new avtEdgeLength();
+        el->SetTakeMin(true);
+        f = el;
+    }
+    else if (functionName == "max_edge_length")
+    {
+        avtEdgeLength *el = new avtEdgeLength();
+        el->SetTakeMin(false);
+        f = el;
+    }
+    else if (functionName == "min_side_volume")
+    {
+        avtSideVolume *sv = new avtSideVolume();
+        sv->SetTakeMin(true);
+        f = sv;
+    }
+    else if (functionName == "max_side_volume")
+    {
+        avtSideVolume *sv = new avtSideVolume();
+        sv->SetTakeMin(false);
+        f = sv;
+    }
     else if (functionName == "stretch")
         f = new avtVMetricStretch();
     else if (functionName == "diagonal")
@@ -595,6 +626,19 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtMedianFilterExpression;
     else if (functionName == "conn_cmfe")
         f = new avtConnCMFEExpression;
+    else if (functionName == "surface_normal" || 
+             functionName == "point_surface_normal")
+    {
+        avtSurfaceNormalExpression *ff = new avtSurfaceNormalExpression;
+        ff->DoPointNormals(true);
+        f = ff;
+    }
+    else if (functionName == "cell_surface_normal")
+    {
+        avtSurfaceNormalExpression *ff = new avtSurfaceNormalExpression;
+        ff->DoPointNormals(false);
+        f = ff;
+    }
     else if (functionName == "zoneid")
     {
         avtDataIdFilter *ff = new avtDataIdFilter;

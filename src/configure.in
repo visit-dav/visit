@@ -564,6 +564,10 @@ dnl
 dnl    Brad Whitlock, Tue Sep 6 11:24:53 PDT 2005
 dnl    I added checks for GDAL.
 dnl
+dnl    Kathleen Bonnell, Thu Sep 22 16:49:12 PDT 2005 
+dnl    Added 'vtkexpat' to lightweight libs, so VTK XML file format can
+dnl    link properly to mdserver. 
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -828,7 +832,7 @@ if test -n "$VTK"; then
     if test "$SHORT_UNAME" = "darwin"; then
         VTK_LIGHTWEIGHT_LIBS=$VTK_LIBS
     else
-        VTK_LIGHTWEIGHT_LIBS="-lvtkCommon -lvtkFiltering -lvtkzlib"
+        VTK_LIGHTWEIGHT_LIBS="-lvtkCommon -lvtkFiltering -lvtkzlib -lvtkexpat"
     fi
 
     # If we're on Darwin, we took VisIt's vtkCamera and built it into the VTK library so

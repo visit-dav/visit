@@ -12,9 +12,15 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkStructuredGrid.h>
 #include <vtkStructuredPoints.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkFloatArray.h>
+#include <vtkVisItXMLImageDataReader.h>
+#include <vtkVisItXMLPolyDataReader.h>
+#include <vtkVisItXMLRectilinearGridReader.h>
+#include <vtkVisItXMLStructuredGridReader.h>
+#include <vtkVisItXMLUnstructuredGridReader.h>
 
 #include <snprintf.h>
 #include <DebugStream.h>
@@ -24,7 +30,7 @@
 #include <string>
 #include <vector>
 
-
+using std::string;
 //
 // Define the static const's
 //
@@ -54,6 +60,9 @@ static void GetListOfUniqueCellTypes(vtkUnstructuredGrid *ug,
 //     Mark C. Miller, Thu Sep 15 19:45:51 PDT 2005
 //     Initialized matvarname
 //
+//     Kathleen Bonnell, Thu Sep 22 15:37:13 PDT 2005 
+//     Save the file extension. 
+//
 // ****************************************************************************
 
 avtVTKFileFormat::avtVTKFileFormat(const char *fname, DBOptionsAttributes *) 
@@ -62,6 +71,15 @@ avtVTKFileFormat::avtVTKFileFormat(const char *fname, DBOptionsAttributes *)
     dataset = NULL;
     readInDataset = false;
     matvarname = NULL;
+
+    // find the file extension
+    int i, start;
+    int len = strlen(fname);
+    for(i = 0; i < len; i++)
+        if(fname[i] == '.')
+            start = i;
+
+    extension = string(fname, start+1, len-1);
 }
 
 
@@ -110,6 +128,9 @@ avtVTKFileFormat::~avtVTKFileFormat()
 //    Kathleen Bonnell, Thu Mar 11 12:53:12 PST 2004 
 //    Convert StructuredPoints datasets into RectilinearGrids. 
 //
+//    Kathleen Bonnell, Thu Sep 22 15:37:13 PDT 2005 
+//    Support vtk xml file formats.
+//
 // ****************************************************************************
 
 void
@@ -127,24 +148,81 @@ avtVTKFileFormat::ReadInDataset(void)
         dataset->Delete();
     }
 
-    //
-    // Create a file reader and set our dataset to be its output.
-    //
-    vtkVisItDataSetReader *reader = vtkVisItDataSetReader::New();
-    reader->ReadAllScalarsOn();
-    reader->ReadAllVectorsOn();
-    reader->ReadAllTensorsOn();
-    reader->SetFileName(filename);
-    dataset = reader->GetOutput();
-    dataset->Register(NULL);
+    if (extension == "vtk")
+    {
+        //
+        // Create a file reader and set our dataset to be its output.
+        //
+        vtkVisItDataSetReader *reader = vtkVisItDataSetReader::New();
+        reader->ReadAllScalarsOn();
+        reader->ReadAllVectorsOn();
+        reader->ReadAllTensorsOn();
+        reader->SetFileName(filename);
+        dataset = reader->GetOutput();
+        dataset->Register(NULL);
 
-    //
-    // Force the read and make sure that the reader is really gone, so we don't
-    // eat up too many file descriptors.
-    //
-    dataset->Update();
-    dataset->SetSource(NULL);
-    reader->Delete();
+        //
+        // Force the read and make sure that the reader is really gone, 
+        // so we don't eat up too many file descriptors.
+        //
+        dataset->Update();
+        dataset->SetSource(NULL);
+        reader->Delete();
+    }
+    else if (extension == "vti")
+    {
+        vtkVisItXMLImageDataReader *reader = vtkVisItXMLImageDataReader::New();
+        reader->SetFileName(filename);
+        dataset = reader->GetOutput();
+        dataset->Register(NULL);
+        dataset->Update();
+        dataset->SetSource(NULL);
+        reader->Delete();
+    } 
+    else if (extension == "vtr") 
+    {
+        vtkVisItXMLRectilinearGridReader *reader = 
+            vtkVisItXMLRectilinearGridReader::New();
+        reader->SetFileName(filename);
+        dataset = reader->GetOutput();
+        dataset->Register(NULL);
+        dataset->Update();
+        dataset->SetSource(NULL);
+        reader->Delete();
+    } 
+    else if (extension == "vts")
+    {
+        vtkVisItXMLStructuredGridReader *reader = 
+            vtkVisItXMLStructuredGridReader::New();
+        reader->SetFileName(filename);
+        dataset = reader->GetOutput();
+        dataset->Register(NULL);
+        dataset->Update();
+        dataset->SetSource(NULL);
+        reader->Delete();
+    } 
+    else if (extension == "vtp") 
+    {
+        vtkVisItXMLPolyDataReader *reader = vtkVisItXMLPolyDataReader::New();
+        reader->SetFileName(filename);
+        dataset = reader->GetOutput();
+        dataset->Register(NULL);
+        dataset->Update();
+        dataset->SetSource(NULL);
+        reader->Delete();
+    } 
+    else if (extension == "vtu") 
+    {
+        vtkVisItXMLUnstructuredGridReader *reader = 
+            vtkVisItXMLUnstructuredGridReader::New();
+        reader->SetFileName(filename);
+        dataset = reader->GetOutput();
+        dataset->Register(NULL);
+        dataset->Update();
+        dataset->SetSource(NULL);
+        reader->Delete();
+    } 
+
 
     if (dataset->GetDataObjectType() == VTK_STRUCTURED_POINTS)
     {

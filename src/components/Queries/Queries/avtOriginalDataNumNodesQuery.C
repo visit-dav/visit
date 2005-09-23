@@ -49,6 +49,9 @@ avtOriginalDataNumNodesQuery::~avtOriginalDataNumNodesQuery()
 //    Kathleen Bonnell, Mon Mar  7 18:09:14 PST 2005
 //    Ensure that the correct DB variable is used.
 //
+//    Hank Childs, Fri Sep 23 10:53:37 PDT 2005
+//    Data spec's DBVariable has been deprecated.  Use a different path.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -59,10 +62,11 @@ avtOriginalDataNumNodesQuery::ApplyFilters(avtDataObject_p inData)
 
     string dbVar = ParsingExprList::GetRealVariable(
                        queryAtts.GetVariables()[0]);
-    dspec->SetDBVariable(dbVar.c_str());
+    avtDataSpecification_p new_dspec = new avtDataSpecification(dspec,
+                                                                dbVar.c_str());
 
     avtPipelineSpecification_p pspec = 
-        new avtPipelineSpecification(dspec, queryAtts.GetPipeIndex()); 
+        new avtPipelineSpecification(new_dspec, queryAtts.GetPipeIndex()); 
 
     avtDataObject_p retObj;
     CopyTo(retObj, inData);

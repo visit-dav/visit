@@ -27,7 +27,7 @@ class QvisVariableButton;
 // Notes:      This class was automatically generated!
 
 // Programmer: xml2window
-// Creation:   Sun Aug 14 17:22:31 PST 2005
+// Creation:   Thu Sep 22 16:56:20 PST 2005
 //
 // Modifications:
 //   
@@ -48,10 +48,13 @@ class QvisMergeWindow : public QvisOperatorWindow
     void UpdateWindow(bool doAll);
     virtual void GetCurrentValues(int which_widget);
   private slots:
-    void dummyChanged(bool val);
+    void parallelMergeChanged(bool val);
+    void toleranceProcessText();
   private:
-    QCheckBox *dummy;
-    QLabel *dummyLabel;
+    QCheckBox *parallelMerge;
+    QLineEdit *tolerance;
+    QLabel *parallelMergeLabel;
+    QLabel *toleranceLabel;
 
     MergeOperatorAttributes *atts;
 };

@@ -78,47 +78,77 @@ QvisThresholdWindow::~QvisThresholdWindow()
 //   Brad Whitlock, Fri Dec 10 09:40:53 PDT 2004
 //   Changed so it uses a variable button. I also improved the widget spacing.
 //
+//   Hank Childs, Tue Sep 13 09:25:35 PDT 2005
+//   Add support for "PointsOnly".
+//
 // ****************************************************************************
 
 void
 QvisThresholdWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 4,2,  10, "mainLayout");
+    QGroupBox *rangeBox = new QGroupBox(central, "rangeBox");
+    rangeBox->setTitle("Threshold Range");
+    topLayout->addWidget(rangeBox);
 
+    QGridLayout *mainLayout = new QGridLayout(rangeBox, 4,2);
+    mainLayout->setMargin(10);
+    mainLayout->setSpacing(5);
+    mainLayout->addRowSpacing(0, 10);
+    mainLayout->addWidget(new QLabel("Lower bound", rangeBox, "lboundLabel"),1,0);
+    lbound = new QLineEdit(rangeBox, "lbound");
+    connect(lbound, SIGNAL(returnPressed()),
+            this, SLOT(lboundProcessText()));
+    mainLayout->addMultiCellWidget(lbound, 1,1, 1,1);
 
-    mainLayout->addMultiCellWidget(new QLabel("Amount of cell in the range",
-        central, "amountLabel"),0,0,0,1);
-    amount = new QButtonGroup(central, "amount");
+    mainLayout->addWidget(new QLabel("Upper bound", rangeBox, "uboundLabel"),2,0);
+    ubound = new QLineEdit(rangeBox, "ubound");
+    connect(ubound, SIGNAL(returnPressed()),
+            this, SLOT(uboundProcessText()));
+    mainLayout->addMultiCellWidget(ubound, 2, 2, 1, 1);
+
+    mainLayout->addWidget(new QLabel("Variable", rangeBox, "variableLabel"),3,0);
+    variable = new QvisVariableButton(true, true, true,
+        QvisVariableButton::Scalars, rangeBox, "variable");
+    connect(variable, SIGNAL(activated(const QString &)),
+            this, SLOT(variableChanged(const QString &)));
+    mainLayout->addMultiCellWidget(variable, 3,3, 1, 1);
+
+    QGroupBox *nodalBox = new QGroupBox(central, "nodalBox");
+    nodalBox->setTitle("Nodal Quantities Only");
+    topLayout->addWidget(nodalBox);
+
+    QGridLayout *nodalLayout = new QGridLayout(nodalBox, 3,3);
+    nodalLayout->setMargin(10);
+    nodalLayout->setSpacing(5);
+    nodalLayout->addRowSpacing(0, 10);
+
+    nodalLayout->addMultiCellWidget(new QLabel("Output mesh is ",
+        nodalBox, "meshType"),1,1,0,0);
+    meshType = new QButtonGroup(nodalBox, "meshType");
+    meshType->setFrameStyle(QFrame::NoFrame);
+    QHBoxLayout *meshTypeLayout = new QHBoxLayout(meshType);
+    meshTypeLayout->setSpacing(10);
+    QRadioButton *meshTypeCells = new QRadioButton("Cells from input", meshType);
+    meshTypeLayout->addWidget(meshTypeCells);
+    QRadioButton *meshTypePoints = new QRadioButton("Point mesh", meshType);
+    meshTypeLayout->addWidget(meshTypePoints);
+    connect(meshType, SIGNAL(clicked(int)),
+            this, SLOT(meshTypeChanged(int)));
+    nodalLayout->addMultiCellWidget(meshType, 1,1, 1,2);
+
+    amountLabel = new QLabel("Nodes in range ", nodalBox, "meshType");
+    nodalLayout->addMultiCellWidget(amountLabel, 2,2,0,0);
+    amount = new QButtonGroup(nodalBox, "amount");
     amount->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *amountLayout = new QHBoxLayout(amount);
     amountLayout->setSpacing(10);
-    QRadioButton *amountAmountSome = new QRadioButton("Some", amount);
-    amountLayout->addWidget(amountAmountSome);
-    QRadioButton *amountAmountAll = new QRadioButton("All", amount);
-    amountLayout->addWidget(amountAmountAll);
+    QRadioButton *amountAll = new QRadioButton("All", amount);
+    amountLayout->addWidget(amountAll);
+    QRadioButton *amountOne = new QRadioButton("At least one", amount);
+    amountLayout->addWidget(amountOne);
     connect(amount, SIGNAL(clicked(int)),
             this, SLOT(amountChanged(int)));
-    mainLayout->addMultiCellWidget(amount, 0,0, 2,3);
-
-    mainLayout->addWidget(new QLabel("Lower bound", central, "lboundLabel"),1,0);
-    lbound = new QLineEdit(central, "lbound");
-    connect(lbound, SIGNAL(returnPressed()),
-            this, SLOT(lboundProcessText()));
-    mainLayout->addMultiCellWidget(lbound, 1,1, 1,3);
-
-    mainLayout->addWidget(new QLabel("Upper bound", central, "uboundLabel"),2,0);
-    ubound = new QLineEdit(central, "ubound");
-    connect(ubound, SIGNAL(returnPressed()),
-            this, SLOT(uboundProcessText()));
-    mainLayout->addMultiCellWidget(ubound, 2, 2, 1, 3);
-
-    mainLayout->addWidget(new QLabel("Variable", central, "variableLabel"),3,0);
-    variable = new QvisVariableButton(true, true, true,
-        QvisVariableButton::Scalars, central, "variable");
-    connect(variable, SIGNAL(activated(const QString &)),
-            this, SLOT(variableChanged(const QString &)));
-    mainLayout->addMultiCellWidget(variable, 3,3, 1, 3);
-
+    nodalLayout->addMultiCellWidget(amount, 2,2, 1,2);
 }
 
 
@@ -141,6 +171,9 @@ QvisThresholdWindow::CreateWindowContents()
 //   Replaced simple QString::sprintf's with a setNum because there seems
 //   to be a bug causing numbers to be incremented by .00001.  See '5263.
 //
+//   Hank Childs, Thu Sep 15 15:31:34 PDT 2005
+//   Add support for meshType.
+//
 // ****************************************************************************
 
 void
@@ -161,7 +194,22 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
         switch(i)
         {
           case 0: //amount
-            amount->setButton(atts->GetAmount());
+            if (atts->GetAmount() == 2)
+            {
+                amountLabel->setEnabled(false);
+                amount->setEnabled(false);
+                meshType->setButton(1);
+            }
+            else
+            {
+                amountLabel->setEnabled(true);
+                amount->setEnabled(true);
+                meshType->setButton(0);
+                if (atts->GetAmount() == ThresholdAttributes::All)
+                    amount->setButton(0);
+                else if (atts->GetAmount() == ThresholdAttributes::Some)
+                    amount->setButton(1);
+            }
             break;
           case 1: //lbound
             if (atts->GetLbound() == -1e+37)
@@ -282,7 +330,26 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
 void
 QvisThresholdWindow::amountChanged(int val)
 {
-    ThresholdAttributes::Amount newVal = ThresholdAttributes::Amount(val);
+    ThresholdAttributes::Amount newVal = (val == 0 
+                                       ? ThresholdAttributes::All
+                                       : ThresholdAttributes::Some);
+    if(newVal != atts->GetAmount())
+    {
+        atts->SetAmount(newVal);
+        Apply();
+    }
+}
+
+void
+QvisThresholdWindow::meshTypeChanged(int val)
+{
+    ThresholdAttributes::Amount newVal;
+    if (val == 1)
+        newVal = ThresholdAttributes::PointsOnly;
+    else
+        newVal = (amount->selectedId() == 0 ? ThresholdAttributes::All
+                                            : ThresholdAttributes::Some);
+
     if(newVal != atts->GetAmount())
     {
         atts->SetAmount(newVal);

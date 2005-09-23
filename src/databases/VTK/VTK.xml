@@ -2,6 +2,11 @@
   <Plugin name="VTK" type="database" label="VTK" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="true" hasoptions="true">
     <Extensions>
       vtk
+      vts
+      vtr 
+      vtu
+      vti
+      vtp
     </Extensions>
     <Files components="M">
       avtVTKFileFormat.C
@@ -12,6 +17,27 @@
       vtkVisItStructuredGridReader.C
       vtkVisItStructuredPointsReader.C
       vtkVisItUnstructuredGridReader.C
+      vtkVisItBase64InputStream.C
+      vtkVisItBase64OutputStream.C
+      vtkVisItBase64Utilities.C
+      vtkVisItDataCompressor.C
+      vtkVisItInputStream.C
+      vtkVisItOutputStream.C
+      vtkVisItXMLDataElement.C
+      vtkVisItXMLDataParser.C
+      vtkVisItXMLDataReader.C
+      vtkVisItXMLFileReadTester.C
+      vtkVisItXMLImageDataReader.C
+      vtkVisItXMLParser.C
+      vtkVisItXMLPolyDataReader.C
+      vtkVisItXMLReader.C
+      vtkVisItXMLRectilinearGridReader.C
+      vtkVisItXMLStructuredDataReader.C
+      vtkVisItXMLStructuredGridReader.C
+      vtkVisItXMLUnstructuredDataReader.C
+      vtkVisItXMLUnstructuredGridReader.C
+      vtkVisItXMLUtilities.C
+      vtkVisItZLibDataCompressor.C
     </Files>
     <Files components="E">
       avtVTKFileFormat.C
@@ -22,6 +48,27 @@
       vtkVisItStructuredGridReader.C
       vtkVisItStructuredPointsReader.C
       vtkVisItUnstructuredGridReader.C
+      vtkVisItBase64InputStream.C
+      vtkVisItBase64OutputStream.C
+      vtkVisItBase64Utilities.C
+      vtkVisItDataCompressor.C
+      vtkVisItInputStream.C
+      vtkVisItOutputStream.C
+      vtkVisItXMLDataElement.C
+      vtkVisItXMLDataParser.C
+      vtkVisItXMLDataReader.C
+      vtkVisItXMLFileReadTester.C
+      vtkVisItXMLImageDataReader.C
+      vtkVisItXMLParser.C
+      vtkVisItXMLPolyDataReader.C
+      vtkVisItXMLReader.C
+      vtkVisItXMLRectilinearGridReader.C
+      vtkVisItXMLStructuredDataReader.C
+      vtkVisItXMLStructuredGridReader.C
+      vtkVisItXMLUnstructuredDataReader.C
+      vtkVisItXMLUnstructuredGridReader.C
+      vtkVisItXMLUtilities.C
+      vtkVisItZLibDataCompressor.C
     </Files>
     <Attribute name="" purpose="" persistent="true">
     </Attribute>

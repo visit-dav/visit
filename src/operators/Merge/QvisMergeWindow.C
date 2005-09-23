@@ -30,7 +30,7 @@ using std::string;
 //   Constructor
 //
 // Programmer: xml2window
-// Creation:   Sun Aug 14 17:22:31 PST 2005
+// Creation:   Thu Sep 22 16:56:20 PST 2005
 //
 // Modifications:
 //   
@@ -54,7 +54,7 @@ QvisMergeWindow::QvisMergeWindow(const int type,
 //   Destructor
 //
 // Programmer: xml2window
-// Creation:   Sun Aug 14 17:22:31 PST 2005
+// Creation:   Thu Sep 22 16:56:20 PST 2005
 //
 // Modifications:
 //   
@@ -72,7 +72,7 @@ QvisMergeWindow::~QvisMergeWindow()
 //   Creates the widgets for the window.
 //
 // Programmer: xml2window
-// Creation:   Sun Aug 14 17:22:31 PST 2005
+// Creation:   Thu Sep 22 16:56:20 PST 2005
 //
 // Modifications:
 //   
@@ -81,13 +81,20 @@ QvisMergeWindow::~QvisMergeWindow()
 void
 QvisMergeWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 1,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 2,2,  10, "mainLayout");
 
 
-    dummy = new QCheckBox("Unused field", central, "dummy");
-    connect(dummy, SIGNAL(toggled(bool)),
-            this, SLOT(dummyChanged(bool)));
-    mainLayout->addWidget(dummy, 0,0);
+    parallelMerge = new QCheckBox("Merge across all processors?", central, "parallelMerge");
+    connect(parallelMerge, SIGNAL(toggled(bool)),
+            this, SLOT(parallelMergeChanged(bool)));
+    mainLayout->addWidget(parallelMerge, 0,0);
+
+    toleranceLabel = new QLabel("Maximum distance between points that should be merged", central, "toleranceLabel");
+    mainLayout->addWidget(toleranceLabel,1,0);
+    tolerance = new QLineEdit(central, "tolerance");
+    connect(tolerance, SIGNAL(returnPressed()),
+            this, SLOT(toleranceProcessText()));
+    mainLayout->addWidget(tolerance, 1,1);
 
 }
 
@@ -99,7 +106,7 @@ QvisMergeWindow::CreateWindowContents()
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: xml2window
-// Creation:   Sun Aug 14 17:22:31 PST 2005
+// Creation:   Thu Sep 22 16:56:20 PST 2005
 //
 // Modifications:
 //   
@@ -130,8 +137,12 @@ QvisMergeWindow::UpdateWindow(bool doAll)
         QColor                tempcolor;
         switch(i)
         {
-          case 0: //dummy
-            dummy->setChecked(atts->GetDummy());
+          case 0: //parallelMerge
+            parallelMerge->setChecked(atts->GetParallelMerge());
+            break;
+          case 1: //tolerance
+            temp.setNum(atts->GetTolerance());
+            tolerance->setText(temp);
             break;
         }
     }
@@ -145,7 +156,7 @@ QvisMergeWindow::UpdateWindow(bool doAll)
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: xml2window
-// Creation:   Sun Aug 14 17:22:31 PST 2005
+// Creation:   Thu Sep 22 16:56:20 PST 2005
 //
 // Modifications:
 //   
@@ -157,10 +168,31 @@ QvisMergeWindow::GetCurrentValues(int which_widget)
     bool okay, doAll = (which_widget == -1);
     QString msg, temp;
 
-    // Do dummy
+    // Do parallelMerge
     if(which_widget == 0 || doAll)
     {
-        // Nothing for dummy
+        // Nothing for parallelMerge
+    }
+
+    // Do tolerance
+    if(which_widget == 1 || doAll)
+    {
+        temp = tolerance->displayText().simplifyWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            double val = temp.toDouble(&okay);
+            atts->SetTolerance(val);
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The value of tolerance was invalid. "
+                "Resetting to the last good value of %g.",
+                atts->GetTolerance());
+            Message(msg);
+            atts->SetTolerance(atts->GetTolerance());
+        }
     }
 
 }
@@ -172,9 +204,17 @@ QvisMergeWindow::GetCurrentValues(int which_widget)
 
 
 void
-QvisMergeWindow::dummyChanged(bool val)
+QvisMergeWindow::parallelMergeChanged(bool val)
 {
-    atts->SetDummy(val);
+    atts->SetParallelMerge(val);
+    Apply();
+}
+
+
+void
+QvisMergeWindow::toleranceProcessText()
+{
+    GetCurrentValues(1);
     Apply();
 }
 

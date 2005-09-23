@@ -200,12 +200,20 @@ static void UpdateNeighborCells(int pt, const int *pt_dims,
 //    Hank Childs, Sun Apr  3 13:06:01 PDT 2005
 //    Fix bug with structured chunking.
 //
+//    Hank Childs, Tue Sep 13 09:03:12 PDT 2005
+//    Add support for "PointsOnly".
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtThresholdFilter::ProcessOneChunk(vtkDataSet *in_ds, int domain,
                                     std::string label, bool fromChunker)
 {
+    if (atts.GetAmount() == ThresholdAttributes::PointsOnly)
+    {
+        return ThresholdToPointMesh(in_ds);
+    }
+
     if (fromChunker)
     {
         //
@@ -347,6 +355,74 @@ avtThresholdFilter::GetAssignments(vtkDataSet *in_ds, const int *dims,
 
 
 // ****************************************************************************
+//  Method: avtThresholdFilter::ThresholdToPointMesh
+//
+//  Purpose:
+//      Does a threshold on a nodal quantity and then creates a point mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 13, 2005
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
+{
+    bool isNodal;
+    vtkDataArray *var = GetThresholdVariable(in_ds, isNodal);
+    if (!isNodal)
+    {
+        EXCEPTION1(VisItException, "You can only threshold with this method "
+                   "with nodal quantities");
+    }
+
+    int numMatching = 0;
+    int numPts = in_ds->GetNumberOfPoints();
+    float lbound = atts.GetLbound();
+    float ubound = atts.GetUbound();
+    for (int i = 0 ; i < numPts ; i++)
+    {
+        float val = var->GetTuple1(i);
+        if (val >= lbound && val <= ubound)
+            numMatching++;
+    }
+
+    if (numMatching == 0)
+        return NULL;
+
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+    vtkPoints *pts = vtkPoints::New();
+    pts->SetNumberOfPoints(numMatching);
+    ugrid->SetPoints(pts);
+    ugrid->Allocate(2*numMatching);
+    vtkPointData *inPD = in_ds->GetPointData();
+    vtkPointData *outPD = ugrid->GetPointData();
+    outPD->CopyAllocate(inPD, numMatching);
+    pts->Delete();
+
+    int newId = 0;
+    vtkIdType onevertex[1];
+    for (int i = 0 ; i < numPts ; i++)
+    {
+        float val = var->GetTuple1(i);
+        if (val >= lbound && val <= ubound)
+        {
+            outPD->CopyData(inPD, i, newId);
+            float pt[3];
+            in_ds->GetPoint(i, pt);
+            pts->SetPoint(newId, pt);
+            onevertex[0] = newId;
+            ugrid->InsertNextCell(VTK_VERTEX, 1, onevertex);
+            newId++;
+        }
+    }
+
+    // Caller will free.
+    return ugrid;
+}
+
+
+// ****************************************************************************
 //  Method: avtThresholdFilter::GetThresholdVariable
 //
 //  Purpose:
@@ -405,12 +481,21 @@ avtThresholdFilter::GetThresholdVariable(vtkDataSet *in_ds, bool &isPoint)
 //  Programmer: Hank Childs
 //  Creation:   October 23, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Sep 13 09:07:05 PDT 2005
+//    Add support for "PointsOnly".
+//
 // ****************************************************************************
 
 void
 avtThresholdFilter::RefashionDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
+    if (atts.GetAmount() == ThresholdAttributes::PointsOnly)
+    {
+        GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(0);
+    }
 }
 
 

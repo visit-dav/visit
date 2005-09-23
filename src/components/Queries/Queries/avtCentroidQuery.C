@@ -196,6 +196,9 @@ avtCentroidQuery::Execute(vtkDataSet *ds, const int dom)
 //    Hank Childs, Fri Aug 12 15:25:07 PDT 2005
 //    Use absolute value of the volume or area.
 //
+//    Hank Childs, Wed Sep 14 16:01:12 PDT 2005
+//    Use topological dimension for weights, not spatial dimension.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -225,7 +228,7 @@ avtCentroidQuery::ApplyFilters(avtDataObject_p inData)
     }
 
     avtVerdictFilter *vf = NULL;
-    if (dob->GetInfo().GetAttributes().GetSpatialDimension() == 3)
+    if (dob->GetInfo().GetAttributes().GetTopologicalDimension() == 3)
         vf = volume;
     else
         vf = area;

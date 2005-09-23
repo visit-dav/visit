@@ -81,6 +81,8 @@ avtMergeFilter::SetAtts(const AttributeGroup *a)
     atts = *(const MergeOperatorAttributes*)a;
 
     ctf = new avtCompactTreeFilter();
+    ctf->SetToleranceWhenCleaningPolyData(atts.GetTolerance());
+    ctf->SetParallelMerge(atts.GetParallelMerge());
     ctf->CreateCleanPolyData(true);
 }
 

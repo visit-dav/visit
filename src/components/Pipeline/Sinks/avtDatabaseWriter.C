@@ -154,6 +154,9 @@ avtDatabaseWriter::Write(const std::string &filename,
 //    If the database does domain decomposition, then we need to change the
 //    chunk id to be our processor id.
 //
+//    Hank Childs, Thu Sep 15 14:13:34 PDT 2005
+//    Don't do interface reconstruction if all variables are requested ['6587].
+//
 // ****************************************************************************
 
 void
@@ -282,6 +285,8 @@ avtDatabaseWriter::Write(const std::string &filename,
             {
                 hasMaterialsInProblem = true;
                 mustGetMaterialsAdditionally = true;
+/* Doing this interface reconstruction almost always is the WRONG thing to do.
+ * So remove this code until we decide to put it back in.
                 if (!shouldNeverDoMIR &&
                     (shouldAlwaysDoMIR || !CanHandleMaterials()))
                 {
@@ -292,6 +297,7 @@ avtDatabaseWriter::Write(const std::string &filename,
                 {
                     mustGetMaterialsAdditionally = true;
                 }
+ */
                 materialList.push_back(mat_md->name);
             }
         }
