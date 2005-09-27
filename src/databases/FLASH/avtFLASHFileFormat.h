@@ -27,6 +27,9 @@
 //    Jeremy Meredith, Thu Aug 25 15:07:36 PDT 2005
 //    Added particle support.
 //
+//    Jeremy Meredith, Tue Sep 27 14:22:29 PDT 2005
+//    Added "new" style particle support.
+//
 // ****************************************************************************
 
 class avtFLASHFileFormat : public avtSTMDFileFormat
@@ -88,6 +91,8 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
         double maxSpatialExtents[3];
         int    minGlobalLogicalExtents[3];
         int    maxGlobalLogicalExtents[3];
+
+        void Print(ostream&);
     };
 
   protected:
@@ -96,6 +101,7 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
     int                       numBlocks;
     int                       numLevels;
     int                       numParticles;
+    std::string               particleHDFVarName;
     hid_t                     fileId;
     SimParams                 simParams;
     std::vector<Block>        blocks;

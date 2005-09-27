@@ -54,6 +54,46 @@ static string GetNiceParticleName(const string &varname)
     return nicename;
 }
 
+
+// ****************************************************************************
+//  Method:  avtFLASHFileFormat::Block::Print
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    September 27, 2005
+//
+// ****************************************************************************
+void
+avtFLASHFileFormat::Block::Print(ostream &out)
+{
+    out << "---- BLOCK: "<<ID<<endl;
+    out << "  level = "<<level<<endl;
+    out << "  parentID = "<<parentID<<endl;
+    out << "  childrenIDs = ";
+    for (int c=0; c<8; c++)
+        out << childrenIDs[c]<< " ";
+    out << endl;
+    out << "  neighborIDs = ";
+    for (int n=0; n<6; n++)
+        out << neighborIDs[n]<< " ";
+    out << endl;
+    out << "  minSpatialExtents = "
+         << minSpatialExtents[0] << " , "
+         << minSpatialExtents[1] << " , "
+         << minSpatialExtents[2] << endl;
+    out << "  maxSpatialExtents = "
+         << maxSpatialExtents[0] << " , "
+         << maxSpatialExtents[1] << " , "
+         << maxSpatialExtents[2] << endl;
+    out << "  minGlobalLogicalExtents = "
+         << minGlobalLogicalExtents[0] << " , "
+         << minGlobalLogicalExtents[1] << " , "
+         << minGlobalLogicalExtents[2] << endl;
+    out << "  maxGlobalLogicalExtents = "
+         << maxGlobalLogicalExtents[0] << " , "
+         << maxGlobalLogicalExtents[1] << " , "
+         << maxGlobalLogicalExtents[2] << endl;
+}
+
 // ****************************************************************************
 //  Method: avtFLASH constructor
 //
@@ -122,6 +162,9 @@ avtFLASHFileFormat::FreeUpResources(void)
 //    Jeremy Meredith, Thu Aug 25 15:07:36 PDT 2005
 //    Added particle support.
 //
+//    Jeremy Meredith, Tue Sep 27 14:23:17 PDT 2005
+//    Added support for files containing only particles and no grids.
+//
 // ****************************************************************************
 
 void
@@ -132,50 +175,53 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if (!avtDatabase::OnlyServeUpMetaData())
         BuildDomainNesting();
 
-    avtMeshMetaData *mesh = new avtMeshMetaData;
-    mesh->name = "mesh";
-    mesh->originalName = "mesh";
-
-    mesh->meshType = AVT_RECTILINEAR_MESH;
-    mesh->topologicalDimension = dimension;
-    mesh->spatialDimension = dimension;
-    mesh->blockOrigin = 1;
-    mesh->groupOrigin = 1;
-
-    mesh->hasSpatialExtents = true;
-    mesh->minSpatialExtents[0] = minSpatialExtents[0];
-    mesh->maxSpatialExtents[0] = maxSpatialExtents[0];
-    mesh->minSpatialExtents[1] = minSpatialExtents[1];
-    mesh->maxSpatialExtents[1] = maxSpatialExtents[1];
-    mesh->minSpatialExtents[2] = minSpatialExtents[2];
-    mesh->maxSpatialExtents[2] = maxSpatialExtents[2];
-
-    // spoof a group/domain mesh for the AMR hierarchy
-    mesh->numBlocks = numBlocks;
-    mesh->blockTitle = "Blocks";
-    mesh->blockPieceName = "block";
-    mesh->numGroups = numLevels;
-    mesh->groupTitle = "Levels";
-    mesh->groupPieceName = "level";
-    mesh->numGroups = numLevels;
-    vector<int> groupIds(numBlocks);
-    vector<string> pieceNames(numBlocks);
-    for (int i = 0; i < numBlocks; i++)
+    if (numBlocks > 0)
     {
-        char tmpName[64];
-        sprintf(tmpName,"level%d,block%d",blocks[i].level, blocks[i].ID);
-        groupIds[i] = blocks[i].level-1;
-        pieceNames[i] = tmpName;
-    }
-    mesh->blockNames = pieceNames;
-    mesh->groupIds = groupIds;
-    md->Add(mesh);
+        avtMeshMetaData *mesh = new avtMeshMetaData;
+        mesh->name = "mesh";
+        mesh->originalName = "mesh";
+
+        mesh->meshType = AVT_RECTILINEAR_MESH;
+        mesh->topologicalDimension = dimension;
+        mesh->spatialDimension = dimension;
+        mesh->blockOrigin = 1;
+        mesh->groupOrigin = 1;
+
+        mesh->hasSpatialExtents = true;
+        mesh->minSpatialExtents[0] = minSpatialExtents[0];
+        mesh->maxSpatialExtents[0] = maxSpatialExtents[0];
+        mesh->minSpatialExtents[1] = minSpatialExtents[1];
+        mesh->maxSpatialExtents[1] = maxSpatialExtents[1];
+        mesh->minSpatialExtents[2] = minSpatialExtents[2];
+        mesh->maxSpatialExtents[2] = maxSpatialExtents[2];
+
+        // spoof a group/domain mesh for the AMR hierarchy
+        mesh->numBlocks = numBlocks;
+        mesh->blockTitle = "Blocks";
+        mesh->blockPieceName = "block";
+        mesh->numGroups = numLevels;
+        mesh->groupTitle = "Levels";
+        mesh->groupPieceName = "level";
+        mesh->numGroups = numLevels;
+        vector<int> groupIds(numBlocks);
+        vector<string> pieceNames(numBlocks);
+        for (int i = 0; i < numBlocks; i++)
+        {
+            char tmpName[64];
+            sprintf(tmpName,"level%d,block%d",blocks[i].level, blocks[i].ID);
+            groupIds[i] = blocks[i].level-1;
+            pieceNames[i] = tmpName;
+        }
+        mesh->blockNames = pieceNames;
+        mesh->groupIds = groupIds;
+        md->Add(mesh);
 
 
-    // grid variables
-    for (int v = 0 ; v < varNames.size(); v++)
-    {
-        AddScalarVarToMetaData(md, varNames[v], "mesh", AVT_ZONECENT);
+        // grid variables
+        for (int v = 0 ; v < varNames.size(); v++)
+        {
+            AddScalarVarToMetaData(md, varNames[v], "mesh", AVT_ZONECENT);
+        }
     }
 
     // particles
@@ -235,6 +281,10 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Jeremy Meredith, Thu Aug 25 15:07:36 PDT 2005
 //    Added particle support.
 //
+//    Jeremy Meredith, Tue Sep 27 14:23:42 PDT 2005
+//    Added "new" style particle support where the HDF5 variable name
+//    containing particle data has changed.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -281,7 +331,7 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
     }
     else if (string(meshname) == "particles")
     {
-        hid_t pointId = H5Dopen(fileId, "particle tracers");
+        hid_t pointId = H5Dopen(fileId, particleHDFVarName.c_str());
 
         vtkPoints *points  = vtkPoints::New();
         points->SetNumberOfPoints(numParticles);
@@ -374,6 +424,10 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
 //    Jeremy Meredith, Thu Aug 25 15:07:36 PDT 2005
 //    Added particle support.
 //
+//    Jeremy Meredith, Tue Sep 27 14:24:32 PDT 2005
+//    Added "new" style particle support where the HDF5 variable name
+//    containing particle data has changed.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -390,7 +444,7 @@ avtFLASHFileFormat::GetVar(int domain, const char *varname)
         string varname = particleVarNames[index];
         hid_t  vartype = particleVarTypes[index];
 
-        hid_t pointId = H5Dopen(fileId, "particle tracers");
+        hid_t pointId = H5Dopen(fileId, particleHDFVarName.c_str());
 
         vtkFloatArray * fa = vtkFloatArray::New();
         fa->SetNumberOfTuples(numParticles);
@@ -602,6 +656,9 @@ avtFLASHFileFormat::GetVectorVar(int domain, const char *varname)
 //    Jeremy Meredith, Thu Aug 25 15:07:36 PDT 2005
 //    Added particle support.
 //
+//    Jeremy Meredith, Tue Sep 27 14:24:45 PDT 2005
+//    Added support for files containing only particles, and no grids.
+//
 // ****************************************************************************
 void
 avtFLASHFileFormat::ReadAllMetaData()
@@ -617,13 +674,22 @@ avtFLASHFileFormat::ReadAllMetaData()
         EXCEPTION1(InvalidFilesException, filename.c_str());
     }
 
-    ReadBlockStructure();
-    ReadBlockExtents();
-    ReadRefinementLevels();
-    ReadSimulationParameters();
-    ReadUnknownNames();
-    DetermineGlobalLogicalExtentsForAllBlocks();
     ReadParticleAttributes();
+    ReadBlockStructure();
+
+    if (numParticles == 0 && numBlocks == 0)
+    {
+        EXCEPTION1(InvalidFilesException, filename.c_str());
+    }
+
+    if (numBlocks > 0)
+    {
+        ReadBlockExtents();
+        ReadRefinementLevels();
+        ReadSimulationParameters();
+        ReadUnknownNames();
+        DetermineGlobalLogicalExtentsForAllBlocks();
+    }
 }
 
 
@@ -639,16 +705,32 @@ avtFLASHFileFormat::ReadAllMetaData()
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 24, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Sep 27 14:25:02 PDT 2005
+//    Let this function fail silently; some FLASH files contain only
+//    particles and no grids, and we want to support those without errors.
+//
 // ****************************************************************************
 void avtFLASHFileFormat::ReadBlockStructure()
 {
+    // temporarily disable error reporting
+    H5E_auto_t  old_errorfunc;
+    void       *old_clientdata;
+    H5Eget_auto(&old_errorfunc, &old_clientdata);
+    H5Eset_auto(NULL, NULL);
+
     //
     // Read the "gid" block connectivity description
     //
     hid_t gidId = H5Dopen(fileId, "gid");
+
+    // turn back on error reporting
+    H5Eset_auto(old_errorfunc, old_clientdata);
+
     if (gidId < 0)
     {
-        EXCEPTION1(InvalidFilesException, filename.c_str());
+        numBlocks = 0;
+        return;
     }
 
     hid_t gidSpaceId = H5Dget_space(gidId);
@@ -733,6 +815,11 @@ void avtFLASHFileFormat::ReadBlockStructure()
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 24, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Sep 27 14:26:41 PDT 2005
+//    Force read data type to double; in other words, don't assume it was
+//    saved as double precision values.
+//
 // ****************************************************************************
 void avtFLASHFileFormat::ReadBlockExtents()
 {
@@ -758,12 +845,8 @@ void avtFLASHFileFormat::ReadBlockExtents()
         EXCEPTION1(InvalidFilesException, filename.c_str());
     }
 
-    hid_t bbox_raw_data_type = H5Dget_type(bboxId);
-    hid_t bbox_data_type = H5Tget_native_type(bbox_raw_data_type,
-                                              H5T_DIR_ASCEND);
-    
     double *bbox_array = new double[numBlocks * dimension * 2];
-    H5Dread(bboxId, bbox_data_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, bbox_array);
+    H5Dread(bboxId, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, bbox_array);
 
     minSpatialExtents[0] = FLT_MAX;
     minSpatialExtents[1] = FLT_MAX;
@@ -803,10 +886,6 @@ void avtFLASHFileFormat::ReadBlockExtents()
                 maxSpatialExtents[2] = blocks[b].maxSpatialExtents[2];
         }
     }
-
-    // Done with the type
-    H5Tclose(bbox_data_type);
-    H5Tclose(bbox_raw_data_type);
 
     // Done with the space
     H5Sclose(bboxSpaceId);
@@ -900,6 +979,13 @@ void avtFLASHFileFormat::ReadRefinementLevels()
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 24, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Sep 27 14:28:01 PDT 2005
+//    Made the read of the simulation parameters more arbitrary; different
+//    flavors of FLASH files have stored the data members in different
+//    order or as different data types, and thus we can't assume a single
+//    data structure.
+//
 // ****************************************************************************
 void avtFLASHFileFormat::ReadSimulationParameters()
 {
@@ -912,10 +998,17 @@ void avtFLASHFileFormat::ReadSimulationParameters()
         EXCEPTION1(InvalidFilesException, filename.c_str());
     }
 
-    hid_t sp_raw_data_type = H5Dget_type(simparamsId);
-    hid_t sp_data_type = H5Tget_native_type(sp_raw_data_type, H5T_DIR_ASCEND);
+    hid_t sp_type = H5Tcreate(H5T_COMPOUND, sizeof(SimParams));
+    H5Tinsert(sp_type, "total blocks",   HOFFSET(SimParams, total_blocks), H5T_NATIVE_INT);
+    H5Tinsert(sp_type, "time",           HOFFSET(SimParams, time),         H5T_NATIVE_DOUBLE);
+    H5Tinsert(sp_type, "timestep",       HOFFSET(SimParams, timestep),     H5T_NATIVE_DOUBLE);
+    H5Tinsert(sp_type, "redshift",       HOFFSET(SimParams, redshift),     H5T_NATIVE_DOUBLE);
+    H5Tinsert(sp_type, "number of steps",HOFFSET(SimParams, nsteps),       H5T_NATIVE_INT);
+    H5Tinsert(sp_type, "nxb",            HOFFSET(SimParams, nxb),          H5T_NATIVE_INT);
+    H5Tinsert(sp_type, "nyb",            HOFFSET(SimParams, nyb),          H5T_NATIVE_INT);
+    H5Tinsert(sp_type, "nzb",            HOFFSET(SimParams, nzb),          H5T_NATIVE_INT);
 
-    H5Dread(simparamsId, sp_data_type, H5S_ALL, H5S_ALL, H5P_DEFAULT,
+    H5Dread(simparamsId, sp_type, H5S_ALL, H5S_ALL, H5P_DEFAULT,
             &simParams);
 
     // Sanity check: size of the gid array better match number of blocks
@@ -959,8 +1052,7 @@ void avtFLASHFileFormat::ReadSimulationParameters()
     }
 
     // Done with the type
-    H5Tclose(sp_data_type);
-    H5Tclose(sp_raw_data_type);
+    H5Tclose(sp_type);
 
     // Done with the variable; don't leak it
     H5Dclose(simparamsId);
@@ -1045,6 +1137,14 @@ void avtFLASHFileFormat::ReadUnknownNames()
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 25, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Sep 27 14:29:42 PDT 2005
+//    Added "new" style particle support where the HDF5 variable name
+//    containing particle data has changed.  It turns out the data structure
+//    itself has also changed, but we are reading its contents in a robust
+//    enough fashion that this didn't bite us.  Also, added support for
+//    FLASH files containing only particles and no grid data.
+//
 // ****************************************************************************
 void
 avtFLASHFileFormat::ReadParticleAttributes()
@@ -1056,7 +1156,14 @@ avtFLASHFileFormat::ReadParticleAttributes()
     H5Eset_auto(NULL, NULL);
 
     // find the particle variable (if it exists)
-    hid_t pointId = H5Dopen(fileId, "particle tracers");
+    hid_t pointId;
+    particleHDFVarName = "particle tracers";
+    pointId = H5Dopen(fileId, particleHDFVarName.c_str());
+    if (pointId < 0)
+    {
+        particleHDFVarName = "tracer particles";
+        pointId = H5Dopen(fileId, particleHDFVarName.c_str());
+    }
 
     // turn back on error reporting
     H5Eset_auto(old_errorfunc, old_clientdata);
@@ -1105,6 +1212,18 @@ avtFLASHFileFormat::ReadParticleAttributes()
             // only support double and int for now
         }
 
+        // We read the particles before the grids.  Just in case we
+        // don't have any grids, take a stab at the problem dimension
+        // based purely on the existence of various data members.
+        // This will be overwritten by the true grid topological
+        // dimension if the grid exists.
+        if (strcmp(member_name, "particle_x")==0 && dimension < 1)
+            dimension = 1;
+        if (strcmp(member_name, "particle_t")==0 && dimension < 2)
+            dimension = 2;
+        if (strcmp(member_name, "particle_z")==0 && dimension < 3)
+            dimension = 3;
+
         H5Tclose(member_type);
         H5Tclose(member_raw_type);
     }
@@ -1129,6 +1248,12 @@ avtFLASHFileFormat::ReadParticleAttributes()
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 24, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Sep 27 14:30:59 PDT 2005
+//    The old logic was failing when the origin of the data was not at
+//    (0,0,0), and also when there was more than one top-level block.
+//    Rewrote this routine to fix both these problems.
+//
 // ****************************************************************************
 void avtFLASHFileFormat::DetermineGlobalLogicalExtentsForAllBlocks()
 {
@@ -1137,37 +1262,26 @@ void avtFLASHFileFormat::DetermineGlobalLogicalExtentsForAllBlocks()
                              maxSpatialExtents[2] - minSpatialExtents[2]};
     for (int b=0; b<numBlocks; b++)
     {
-        int multiplier = 1 << (blocks[b].level - 1);
-        int ncells_x = multiplier * block_zdims[0];
-        int ncells_y = multiplier * block_zdims[1];
-        int ncells_z = multiplier * block_zdims[2];
-        double startx=0, starty=0, startz=0;
-        double endx=0,   endy=0,   endz=0;
+        Block &B = blocks[b];
 
-        if (problemsize[0] > 0)
+        for (int d=0; d<3; d++)
         {
-            startx = (ncells_x * blocks[b].minSpatialExtents[0]) / problemsize[0];
-            endx   = (ncells_x * blocks[b].maxSpatialExtents[0]) / problemsize[0];
-        }
+            if (d < dimension)
+            {
+                double factor = problemsize[d] / (B.maxSpatialExtents[d] - B.minSpatialExtents[d]);
+                double start  = (B.minSpatialExtents[d] - minSpatialExtents[d]) / problemsize[d];
 
-        if (problemsize[1] > 0)
-        {
-            starty = (ncells_y * blocks[b].minSpatialExtents[1]) / problemsize[1];
-            endy   = (ncells_y * blocks[b].maxSpatialExtents[1]) / problemsize[1];
+                double beg = (start * block_zdims[d] * factor);
+                double end = (start * block_zdims[d] * factor) + block_zdims[d];
+                blocks[b].minGlobalLogicalExtents[d] = int(beg+.5);
+                blocks[b].maxGlobalLogicalExtents[d] = int(end+.5);
+            }
+            else
+            {
+                blocks[b].minGlobalLogicalExtents[d] = 0;
+                blocks[b].maxGlobalLogicalExtents[d] = 0;
+            }
         }
-
-        if (problemsize[2] > 0)
-        {
-            startz = (ncells_z * blocks[b].minSpatialExtents[2]) / problemsize[2];
-            endz   = (ncells_z * blocks[b].maxSpatialExtents[2]) / problemsize[2];
-        }
-
-        blocks[b].minGlobalLogicalExtents[0] = int(startx + .5);
-        blocks[b].minGlobalLogicalExtents[1] = int(starty + .5);
-        blocks[b].minGlobalLogicalExtents[2] = int(startz + .5);
-        blocks[b].maxGlobalLogicalExtents[0] = int(endx   + .5);
-        blocks[b].maxGlobalLogicalExtents[1] = int(endy   + .5);
-        blocks[b].maxGlobalLogicalExtents[2] = int(endz   + .5);
     }
 }
 
@@ -1183,6 +1297,10 @@ void avtFLASHFileFormat::DetermineGlobalLogicalExtentsForAllBlocks()
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 24, 2005
+//
+//  Modifications:
+//    Jeremy Meredith, Tue Sep 27 14:31:56 PDT 2005
+//    Made an indexing origin error for the domain boundaries.
 //
 // ****************************************************************************
 void
@@ -1202,7 +1320,7 @@ avtFLASHFileFormat::BuildDomainNesting()
 
         avtRectilinearDomainBoundaries *rdb = new avtRectilinearDomainBoundaries(true);
         rdb->SetNumDomains(numBlocks);
-        for (i = 1; i <= numBlocks; i++)
+        for (i = 0; i < numBlocks; i++)
         {
             int logExts[6];
             logExts[0] = blocks[i].minGlobalLogicalExtents[0];
@@ -1211,7 +1329,7 @@ avtFLASHFileFormat::BuildDomainNesting()
             logExts[3] = blocks[i].maxGlobalLogicalExtents[1];
             logExts[4] = blocks[i].minGlobalLogicalExtents[2];
             logExts[5] = blocks[i].maxGlobalLogicalExtents[2];
-            rdb->SetIndicesForAMRPatch(i-1, blocks[i].level, logExts);
+            rdb->SetIndicesForAMRPatch(i, blocks[i].level - 1, logExts);
         }
         rdb->CalculateBoundaries();
 
@@ -1278,7 +1396,7 @@ avtFLASHFileFormat::BuildDomainNesting()
                 if (dimension >= 3)
                     logExts[5] = blocks[i].maxGlobalLogicalExtents[2]-1;
                 else
-                    logExts[5] = blocks[i].minGlobalLogicalExtents[2];
+                    logExts[5] = blocks[i].maxGlobalLogicalExtents[2];
 
                 dn->SetNestingForDomain(i, blocks[i].level-1,
                                         childBlocks, logExts);
@@ -1307,6 +1425,11 @@ avtFLASHFileFormat::BuildDomainNesting()
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 23, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Sep 27 14:32:26 PDT 2005
+//    Don't attempt if we don't have any grid data in this file (i.e. only
+//    particles in the file).
+//
 // ****************************************************************************
 void *
 avtFLASHFileFormat::GetAuxiliaryData(const char *var, int dom, 
@@ -1314,6 +1437,9 @@ avtFLASHFileFormat::GetAuxiliaryData(const char *var, int dom,
                                      DestructorFunction &df)
 {
     if (type != AUXILIARY_DATA_SPATIAL_EXTENTS)
+        return NULL;
+
+    if (numBlocks == 0)
         return NULL;
 
     avtIntervalTree *itree = new avtIntervalTree(numBlocks, 3);
