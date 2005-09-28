@@ -557,6 +557,10 @@ CFLAGS=-O2 with CFLAGS="-fPIC -O2" in the configure command below.
 On irix systems, if you want to build a 64 bit version you can replace
 CFLAGS=-O2 with CFLAGS="-64 -O2" in the configure command below.
 
+On Opteron systems, replace CFLAGS="-O2" with CFLAGS="-m64 -fPIC -O2" and
+add -disable-sdx. Finally, replace --without-hdf5 with:
+-with-hdf5=$VISITDIR/hdf5/1.6.0/$VISITARCH/include,$VISITDIR/hdf5/1.6.0/$VISITARCH/lib
+
 #
 # Build Silo
 #
@@ -891,7 +895,18 @@ mkdir $VISITDIR/gdal
 mkdir $VISITDIR/gdal/1.3.0
 mkdir $VISITDIR/gdal/1.3.0/$VISITARCH
 
-./configure --prefix=$VISITDIR/gdal/1.3.0/$VISITARCH --enable-static --disable-shared
+# Configure it.
+#
+# On IA64 systems, you should add "-fPIC" to the CFLAGS, CXXFLAGS.
+#
+# On Opteron systems, you should add "-fPIC -m64" to the CFLAGS, CXXFLAGS.
+#
+# On AIX systems where you build a 64 bit library using xlC, add the following
+# to the front of the configure line:
+#     env CC=xlc CXX=xlC CFLAGS="-q64 -qcpluscmt -O2" CXXFLAGS="-q64 -O2"
+#
+
+env CXXFLAGS="-O2" CFLAGS="-O2"./configure --prefix=$VISITDIR/gdal/1.3.0/$VISITARCH --with-gif=internal --with-png=internal --with-jpeg=internal --with-libz=internal --with-netcdf=no --without-jasper --enable-static --disable-shared --without-python
 make
 
 #

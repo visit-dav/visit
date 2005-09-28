@@ -37,6 +37,8 @@ shell prompt.
     Mili     1.09     I/O library            (none)
     HDF4     2.0      I/O library            http://hdf.ncsa.uiuc.edu/release4/obtain.html
     netCDF   3.6.0    File I/O library       http://www.unidata.ucar.edu/packages/netcdf/
+    CGNS     2.4      File I/O library       http://www.cgns.org
+    GDAL     1.3.0    GIS reader library     http://www.gdal.org
 
 The public version of VisIt has been built with the above listed versions
 of the libraries, so it is known to work properly with those versions.  For
@@ -686,7 +688,7 @@ offset = offset + (0x1000 - offset % 0x1000)
 offset = 0x2274b000
 
 ===============================================================================
-Building Silo as a prebound dynamic library
+Building Silo as a prebound dynamic library  (optional)
 ===============================================================================
 
 Silo is a self-describing, machine-independent scientific file format.
@@ -742,7 +744,7 @@ offset = offset + (0x1000 - offset % 0x1000)
 offset = 0x227e5000
 
 ===============================================================================
-Building Mili as a prebound dynamic library
+Building Mili as a prebound dynamic library  (optional)
 ===============================================================================
 
 Mili is a database file format library for finite element codes like ls-dyna.
@@ -794,7 +796,7 @@ offset = offset + (0x1000 - offset % 0x1000)
 offset = 0x22805000
 
 ==============================================================================
-Building HDF4 as a prebound dynamic library
+Building HDF4 as a prebound dynamic library  (optional)
 ==============================================================================
 
 HDF4 is a data storage library that lets you write large volumes of data to 
@@ -850,7 +852,7 @@ offset = offset + (0x1000 - offset % 0x1000)
 offset = 0x228bf000
 
 ==============================================================================
-Building NetCDF as a prebound dynamic library
+Building NetCDF as a prebound dynamic library  (optional)
 ==============================================================================
 
 NetCDF is a scientific data storage library that lets you write platform-
@@ -881,6 +883,94 @@ gcc -dynamiclib -prebind -twolevel_namespace -o libnetcdf.dylib *.o -Wl,-seg1add
 rm $VISITPATH/netcdf/3.6.0/lib/*.a
 mv libnetcdf.dylib $VISITPATH/netcdf/3.6.0/lib
 cd ../../..
+
+# Next offset
+offset = 0x228bf000 + int(float(194968) * 1.05)
+# Align the offset to 0x1000 byte boundaries
+offset = offset + (0x1000 - offset % 0x1000)
+# Next offset
+offset = 0x228f1000
+
+===============================================================================
+Building CGNS as a prebound dynamic library  (optional)
+===============================================================================
+The CFD General Notation System (CGNS) consists of a collection of 
+conventions, and software implementing those conventions, for the storage
+and retrieval of CFD (computational fluid dynamics) data. The principal 
+target of CGNS is data normally associated with compressible viscous flow
+(i.e., the Navier-Stokes equations), but the standard is also applicable
+to subclasses such as Euler and potential flows.
+
+# Unpack CGNS
+tar zxvf cgnslib_2.4-3.tar.gz
+cd cgnslib_2.4
+
+mkdir $VISITPATH/cgns
+mkdir $VISITPATH/cgns/2.4
+mkdir $VISITPATH/cgns/2.4/include
+mkdir $VISITPATH/cgns/2.4/lib
+
+# Configure CGNS
+env CFLAGS="-O2 -fno-common" ./configure --prefix=$VISITPATH/cgns/2.4
+make
+
+# Install headers, etc.
+make install
+
+# Prepare a prebound, dynamic library
+cd DARWIN
+mkdir tmp
+cd tmp
+ar -x ../libcgns.a
+gcc -dynamiclib -prebind -twolevel_namespace -o libcgns.dylib *.o -Wl,-seg1addr,0x228f1000,-install_name,@executable_path/../lib/libcgns.dylib,-compatibility_version,2.4.0,-current_version,2.4.0,-undefined,dynamic_lookup
+rm $VISITPATH/cgns/2.4/lib/libcgns.a
+cp libcgns.dylib $VISITPATH/cgns/2.4/lib
+cd ../../../
+
+# Next offset
+offset = 0x228f1000 + int(float(468428) * 1.05)
+# Align the offset to 0x1000 byte boundaries
+offset = offset + (0x1000 - offset % 0x1000)
+# Next offset
+offset = 0x2296a000
+
+===============================================================================
+Building GDAL as a prebound dynamic library  (optional)
+===============================================================================
+GDAL is a translator library for raster geospatial data formats that presents
+a single abstract data model to the calling application for all supported
+formats. 
+
+# Unpack GDAL
+tar zxvf gdal-1.3.0.tar.gz
+cd gdal-1.3.0
+
+mkdir $VISITPATH/gdal
+mkdir $VISITPATH/gdal/1.3.0
+
+# Configure GDAL
+env CXXFLAGS="-O2 -fno-common" CFLAGS="-O2 -fno-common" ./configure --prefix=$VISITPATH/gdal/1.3.0 --with-gif=internal --with-png=internal --with-jpeg=internal --with-libz=internal --with-netcdf=no --without-jasper --enable-static --disable-shared --without-python
+make
+
+# Install GDAL headers, etc.
+make install
+
+# Prepare a prebound, dynamic library
+cd .libs
+mkdir tmp
+cd tmp
+ar -x ../libgdal.a
+g++ -dynamiclib -prebind -twolevel_namespace -o libgdal.dylib *.o -Wl,-seg1addr,0x2296a000,-install_name,@executable_path/../lib/libgdal.dylib,-compatibility_version,1.3.0,-current_version,1.3.0,-undefined,dynamic_lookup
+rm $VISITPATH/gdal/1.3.0/lib/libgdal.*
+cp libgdal.dylib $VISITPATH/gdal/1.3.0/lib
+cd ../../..
+
+# Next offset
+offset = 0x2296a000 + int(float(4840812) * 1.05)
+# Align the offset to 0x1000 byte boundaries
+offset = offset + (0x1000 - offset % 0x1000)
+# Next offset
+offset = 0x22e43000
 
 ===============================================================================
 Building VisIt with prebinding

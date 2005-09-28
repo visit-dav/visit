@@ -2422,7 +2422,11 @@ else
 fi
 if test "$GDAL_LIB" != "" ; then
    if test "$GDAL_INCLUDE" != "" ; then
-      GDAL_LIBS="$GDAL_LIB -ljpeg -lpng -lgif -ldl"
+      if test "$GDAL_WITH_HDF5" == "yes"; then
+          GDAL_LIBS="$GDAL_LIB $HDF5_LIB"
+      else
+          GDAL_LIBS="$GDAL_LIB"
+      fi
       GDAL="$""(GDAL)"
       AC_MSG_RESULT(yes)
       AC_DEFINE(HAVE_GDAL_H)
