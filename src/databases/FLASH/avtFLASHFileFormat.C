@@ -5,12 +5,15 @@
 #include <avtFLASHFileFormat.h>
 
 #include <string>
+#include <vector>
 
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellType.h>
+#include <vtkPolyData.h>
+#include <vtkCellArray.h>
 
 #include <float.h>
 
@@ -26,8 +29,8 @@
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 
-using     std::vector;
-using     std::string;
+using std::vector;
+using std::string;
 
 
 // ****************************************************************************
@@ -165,6 +168,9 @@ avtFLASHFileFormat::FreeUpResources(void)
 //    Jeremy Meredith, Tue Sep 27 14:23:17 PDT 2005
 //    Added support for files containing only particles and no grids.
 //
+//    Jeremy Meredith, Thu Sep 29 11:12:29 PDT 2005
+//    Added conversion of 1D grids to curves.
+//
 // ****************************************************************************
 
 void
@@ -175,6 +181,7 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if (!avtDatabase::OnlyServeUpMetaData())
         BuildDomainNesting();
 
+    // grids
     if (numBlocks > 0)
     {
         avtMeshMetaData *mesh = new avtMeshMetaData;
@@ -222,6 +229,19 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         {
             AddScalarVarToMetaData(md, varNames[v], "mesh", AVT_ZONECENT);
         }
+    }
+
+    // curves
+    if (numBlocks > 0 && dimension == 1)
+    {
+        // grid variables
+        for (int v = 0 ; v < varNames.size(); v++)
+        {
+            avtCurveMetaData *curve = new avtCurveMetaData;
+            curve->name = string("curves/") + varNames[v];
+            md->Add(curve);
+        }
+        
     }
 
     // particles
@@ -284,6 +304,9 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Jeremy Meredith, Tue Sep 27 14:23:42 PDT 2005
 //    Added "new" style particle support where the HDF5 variable name
 //    containing particle data has changed.
+//
+//    Jeremy Meredith, Thu Sep 29 11:12:50 PDT 2005
+//    Added support for converting 1D AMR grids to curves.
 //
 // ****************************************************************************
 
@@ -393,6 +416,127 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
         points->Delete();
 
         return ugrid;
+    }
+    else if (strlen(meshname) > 7 && strncmp(meshname, "curves/", 7)==0)
+    {
+        int b,i;
+
+        //
+        // Read the values from the file
+        //
+        int nvals = block_zdims[0] * numBlocks;
+        float *vals = new float[nvals];
+
+        string varname = string(meshname).substr(7); 
+        hid_t varId = H5Dopen(fileId, varname.c_str());
+
+        H5Dread(varId, H5T_NATIVE_FLOAT, H5S_ALL,H5S_ALL,H5P_DEFAULT, vals);
+        H5Dclose(varId);
+
+        //
+        // Find a sampling
+        //
+        double ds_size   = maxSpatialExtents[0] - minSpatialExtents[0];
+        double step_size = ds_size;
+        for (b=0; b<numBlocks; b++)
+        {
+            double minExt = blocks[b].minSpatialExtents[0];
+            double maxExt = blocks[b].maxSpatialExtents[0];
+            double step   = (maxExt - minExt) / double(block_zdims[0]);
+            if (step < step_size)
+                step_size = step;
+        }
+        int nsteps = int(.5 + (ds_size / step_size));
+
+        //
+        // Create and initialize the sampling arrays
+        //
+        float *x = new float[nsteps];
+        float *y = new float[nsteps];
+        float *l = new float[nsteps];
+
+        for (i=0; i<nsteps; i++)
+        {
+            x[i] = (step_size * (double(i)+.5)) + minSpatialExtents[0];
+            y[i] = 0;
+            l[i] = -1;
+        }
+
+        //
+        // Sample each block
+        //
+        for (b=0; b<numBlocks; b++)
+        {
+            double minExt = blocks[b].minSpatialExtents[0];
+            double maxExt = blocks[b].maxSpatialExtents[0];
+            double size   = maxExt - minExt;
+            double step   = size / double(block_zdims[0]);
+
+            int first_index = int((minExt - (minSpatialExtents[0]+step_size/2.))/step_size+.99999);
+            int last_index  = int((maxExt - (minSpatialExtents[0]+step_size/2.))/step_size);
+
+            if (first_index < 0 || first_index >= nsteps)
+            {
+                // Logic error!  Recover.
+                first_index = 0;
+            }
+            if (last_index < 0 || last_index >= nsteps)
+            {
+                // Logic error!  Recover.
+                last_index = nsteps-1;
+            }
+
+            for (int j = first_index; j <= last_index; j++)
+            {
+                if (blocks[b].level < l[j])
+                    continue;
+
+                int block_index = int((x[j] - minExt) / step);
+                if (block_index < 0 || block_index >= block_zdims[0])
+                {
+                    // Logic error! Could be propagated from earlier. Recover.
+                    continue;
+                }
+
+                y[j] = vals[b * block_zdims[0] + block_index];
+                l[j] = blocks[b].level;
+            }
+        }
+
+        //
+        // Create the polydata
+        //
+        vtkPolyData *pd  = vtkPolyData::New();
+        vtkPoints   *pts = vtkPoints::New();
+        pd->SetPoints(pts);
+
+        pts->SetNumberOfPoints(nsteps);
+        for (int j = 0 ; j < nsteps ; j++)
+        {
+            pts->SetPoint(j, x[j], y[j], 0.);
+        }
+ 
+        //
+        // Connect the points up with line segments.
+        //
+        vtkCellArray *line = vtkCellArray::New();
+        pd->SetLines(line);
+        for (int k = 1 ; k < nsteps ; k++)
+        {
+            line->InsertNextCell(2);
+            line->InsertCellPoint(k-1);
+            line->InsertCellPoint(k);
+        }
+
+        pts->Delete();
+        line->Delete();
+
+        delete[] vals;
+        delete[] x;
+        delete[] y;
+        delete[] l;
+
+        return pd;
     }
 
     return NULL;
