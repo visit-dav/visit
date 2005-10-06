@@ -52,6 +52,9 @@ void          QuicksortTuple3(Tuple3 *, int);
 //    Hank Childs, Fri Dec 10 10:49:43 PST 2004
 //    Initialize shouldDoTiling.
 //
+//    Hank Childs, Fri Sep 30 17:27:02 PDT 2005
+//    Initialize shouldProduceOverlaps.
+//
 // ****************************************************************************
 
 avtImagePartition::avtImagePartition(int w, int h, int np, int tp)
@@ -104,6 +107,7 @@ avtImagePartition::avtImagePartition(int w, int h, int np, int tp)
 
     establishedPartitionBoundaries = false;
     shouldDoTiling = false;
+    shouldProduceOverlaps = false;
 }
 
 
@@ -236,6 +240,9 @@ avtImagePartition::GetPartition(int part, int &minW, int &maxW, int &minH,
     }
 
     minH = partitionStartsOnScanline[part];
+    if (shouldProduceOverlaps)
+        if (minH > 0)
+            minH--;
     maxH = partitionStopsOnScanline[part];
 }
 

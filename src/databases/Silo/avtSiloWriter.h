@@ -41,10 +41,13 @@ struct avtMeshMetaData;
 //    Added data members to hold args passed in WriteHeaders to facilitate
 //    writing extents on multi-objects in CloseFile()
 //
+//    Hank Childs, Tue Sep 27 10:21:36 PDT 2005
+//    Use virtual inheritance.
+//
 // ****************************************************************************
 
 class
-avtSiloWriter : public avtDatabaseWriter
+avtSiloWriter : public virtual avtDatabaseWriter
 {
   public:
                    avtSiloWriter();

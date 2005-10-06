@@ -12,11 +12,13 @@
 
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
+#include <avtImagePartition.h>
 #include <avtParallel.h>
 #include <avtRay.h>
 #include <avtRelativeValueSamplePointArbitrator.h>
 #include <avtResampleSelection.h>
 #include <avtSamplePointExtractor.h>
+#include <avtSamplePointCommunicator.h>
 #include <avtSourceFromAVTDataset.h>
 #include <avtWorldSpaceToImageSpaceTransform.h>
 
@@ -27,10 +29,11 @@
 // Function Prototypes
 //
 
-vtkRectilinearGrid     *CreateGrid(const double *, int, int, int);
+vtkRectilinearGrid     *CreateGrid(const double *, int, int, int,
+                                   int, int, int, int);
 void                    CreateViewFromBounds(avtViewInfo &, const double *,
                                              double [3]);
-vtkDataArray           *GetCoordinates(float, float, int);
+vtkDataArray           *GetCoordinates(float, float, int, int, int);
 
 
 #ifndef MAX
@@ -160,6 +163,10 @@ avtResampleFilter::Execute(void)
 //    Mark C. Miller, Tue Sep 13 20:09:49 PDT 2005
 //    Permitted poly data to pass through
 //
+//    Hank Childs, Thu Oct  6 10:53:17 PDT 2005
+//    Do not allow rectilinear grids to bypass resampling.  Only for poly
+//    data now. ['6676]
+//
 // ****************************************************************************
 
 bool
@@ -177,95 +184,7 @@ avtResampleFilter::InputNeedsNoResampling(void)
         return true;
 #endif
 
-    //
-    // If a specific set of dimensions was requested, then this is not going
-    // to work.
-    //
-    if (!atts.GetUseTargetVal())
-    {
-        debug5 << "Must resample input because it is not using a target value"
-               << endl;
-        return false;
-    }
-
-    //
-    // If there is more than one domain, GetSingleLeaf will return NULL.
-    //
-    vtkDataSet *in_ds = inDT->GetSingleLeaf();
-    if (in_ds == NULL)
-    {
-        debug5 << "Must resample the input because there are multiple domains."
-               << endl;
-        return false;
-    }
-
-    if (in_ds->GetDataObjectType() != VTK_RECTILINEAR_GRID)
-    {
-        debug5 << "Must resample input because the input is not rectilinear."
-               << endl;
-        return false;
-    }
-
-    vtkRectilinearGrid *rg = (vtkRectilinearGrid *) in_ds;
-    vtkDataArray *x = rg->GetXCoordinates();
-    vtkDataArray *y = rg->GetYCoordinates();
-    vtkDataArray *z = rg->GetZCoordinates();
-
-    double diff = x->GetComponent(1, 0) - x->GetComponent(0, 0);
-    int  i;
-
-    int nX = x->GetNumberOfTuples();
-    int nY = y->GetNumberOfTuples();
-    int nZ = z->GetNumberOfTuples();
-
-    for (i = 0 ; i < nX-1 ; i++)
-    {
-        double thisDiff = x->GetComponent(i+1, 0) - x->GetComponent(i, 0);
-        if (thisDiff < 0.9*diff || thisDiff > 1.1*diff)
-        {
-            debug5 << "Must resample input because the voxels are not cubes"
-                   << endl;
-            return false;
-        }
-    }
-
-    for (i = 0 ; i < nY-1 ; i++)
-    {
-        double thisDiff = y->GetComponent(i+1, 0) - y->GetComponent(i, 0);
-        if (thisDiff < 0.9*diff || thisDiff > 1.1*diff)
-        {
-            debug5 << "Must resample input because the voxels are not cubes"
-                   << endl;
-            return false;
-        }
-    }
-
-    for (i = 0 ; i < nZ-1 ; i++)
-    {
-        double thisDiff = z->GetComponent(i+1, 0) - z->GetComponent(i, 0);
-        if (thisDiff < 0.9*diff || thisDiff > 1.1*diff)
-        {
-            debug5 << "Must resample input because the voxels are not cubes"
-                   << endl;
-            return false;
-        }
-    }
-
-    int numVals = nX*nY*nZ;
-    if (numVals > 2*atts.GetTargetVal())
-    {
-        debug5 << "Must resample input because there are too many voxels ("
-               << numVals << ")" << endl;
-        return false;
-    }
-    if (numVals*2 < atts.GetTargetVal())
-    {
-        debug5 << "Must resample input because there are too few voxels ("
-               << numVals << ")" << endl;
-        return false;
-    }
-
-    return true;
+    return false;
 }
 
 
@@ -372,6 +291,9 @@ avtResampleFilter::BypassResample(void)
 //    Mark C. Miller, Thu Sep 15 11:30:18 PDT 2005
 //    Modified where data selection bypass is done and added matching
 //    collective calls
+//
+//    Hank Childs, Sun Oct  2 12:02:50 PDT 2005
+//    Add support for distributed resampling.
 //
 // ****************************************************************************
 
@@ -480,7 +402,7 @@ avtResampleFilter::ResampleInput(void)
         SetOutputDataTree(GetInputDataTree());
 
         // we can save a lot of time if we know everyone can bypass
-        if (!UnifyMaximumValue(0))
+        if (UnifyMaximumValue(0) == 0)
             return;
 
         // here is some dummied up code to match collective calls below
@@ -512,7 +434,25 @@ avtResampleFilter::ResampleInput(void)
     avtSamplePointExtractor extractor(width, height, depth);
     extractor.Set3DMode(is3D);
     extractor.SetInput(trans.GetOutput());
+    avtSamplePoints_p samples = extractor.GetTypedOutput();
     
+    avtSamplePointCommunicator communicator;
+    avtImagePartition partition(width, height, PAR_Size(), PAR_Rank());
+    communicator.SetImagePartition(&partition);
+    bool doDistributedResample = false;
+#ifdef PARALLEL
+    doDistributedResample = atts.GetDistributedResample();
+#endif
+
+    if (doDistributedResample)
+    {
+        partition.SetShouldProduceOverlaps(true);
+        avtDataObject_p dob;
+        CopyTo(dob, samples);
+        communicator.SetInput(dob);
+        samples = communicator.GetTypedOutput();
+    }
+
     //
     // This is hack-ish.  The sample point extractor throws out variables
     // that have "avt" or "vtk" in them.  The returned sample points don't
@@ -556,7 +496,6 @@ avtResampleFilter::ResampleInput(void)
     //
     // Since this is Execute, forcing an update is okay...
     //
-    avtSamplePoints_p samples = extractor.GetTypedOutput();
     samples->Update(GetGeneralPipelineSpecification());
 
     if (samples->GetInfo().GetValidity().HasErrorOccurred())
@@ -570,7 +509,17 @@ avtResampleFilter::ResampleInput(void)
     // Create a rectilinear dataset that is stretched according to the 
     // original bounds.
     //
-    vtkRectilinearGrid *rg = CreateGrid(bounds, width, height, depth);
+    int width_start  = 0;
+    int width_end    = width;
+    int height_start = 0;
+    int height_end   = height;
+    if (doDistributedResample)
+    {
+        partition.GetThisPartition(width_start, width_end, height_start, 
+                                   height_end);
+        width_end += 1;
+        height_end += 1;
+    }
 
     //
     // If we have more processors than domains, we have to handle that
@@ -591,7 +540,8 @@ avtResampleFilter::ResampleInput(void)
         //
         for (i = 0 ; i < effectiveVars ; i++)
         {
-            int numVals = width*height*depth;
+            int numVals = (width_end-width_start) * (height_end-height_start)
+                        * depth;
             vars[i]->SetNumberOfTuples(numVals);
             for (j = 0 ; j < numVals ; j++)
             {
@@ -601,20 +551,30 @@ avtResampleFilter::ResampleInput(void)
     }
     else
     {
-        samples->GetVolume()->GetVariables(atts.GetDefaultVal(), vars);
+        avtImagePartition *ip = NULL;
+        if (doDistributedResample)
+            ip = &partition;
+        samples->GetVolume()->GetVariables(atts.GetDefaultVal(), vars, ip);
     }
 
-    //
-    // Collect will perform the parallel collection.  Does nothing in serial.
-    // This will only be valid on processor 0.
-    //
     bool iHaveData = false;
-    for (i = 0 ; i < effectiveVars ; i++)
+    if (doDistributedResample)
     {
-        float *ptr = (float *) vars[i]->GetVoidPointer(0);
-        iHaveData = Collect(ptr, width*height*depth);
+        iHaveData = true;
     }
-
+    else
+    {
+        //
+        // Collect will perform the parallel collection.  Does nothing in
+        // serial.  This will only be valid on processor 0.
+        //
+        for (i = 0 ; i < effectiveVars ; i++)
+        {
+            float *ptr = (float *) vars[i]->GetVoidPointer(0);
+            iHaveData = Collect(ptr, width*height*depth);
+        }
+    }
+    
     std::vector<std::string> varnames;
     for (i = 0 ; i < vl.nvars ; i++)
     {
@@ -627,8 +587,12 @@ avtResampleFilter::ResampleInput(void)
 
     if (iHaveData)
     {
+        vtkRectilinearGrid *rg = CreateGrid(bounds, width, height, depth,
+                                        width_start, width_end, height_start,
+                                        height_end);
+
         //
-        // Attach this variable to our rectilinear grid.
+        // Attach these variables to our rectilinear grid.
         //
         int varsSeen = 0;
         for (i = 0 ; i < effectiveVars ; i++)
@@ -643,6 +607,7 @@ avtResampleFilter::ResampleInput(void)
         }
 
         avtDataTree_p tree = new avtDataTree(rg, 0);
+        rg->Delete();
         SetOutputDataTree(tree);
     }
     else
@@ -654,7 +619,6 @@ avtResampleFilter::ResampleInput(void)
         SetOutputDataTree(dummy);
     }
 
-    rg->Delete();
     for (i = 0 ; i < effectiveVars ; i++)
     {
         vars[i]->Delete();
@@ -873,7 +837,7 @@ avtResampleFilter::RefashionDataObjectInfo(void)
 
 
 // ****************************************************************************
-//  Method: avtResampleFilter::CreateGrid
+//  Method: CreateGrid
 //
 //  Purpose:
 //      Creates a rectilinear grid that makes sense for the bounds of the
@@ -884,6 +848,10 @@ avtResampleFilter::RefashionDataObjectInfo(void)
 //      numX      The number of samples in X.
 //      numY      The number of samples in Y.
 //      numZ      The number of samples in Z.
+//      minX      The minimum X index for this processor.
+//      maxX      The maximum Y index for this processor.
+//      minY      The minimum X index for this processor.
+//      maxY      The maximum Y index for this processor.
 //
 //  Programmer:   Hank Childs
 //  Creation:     March 26, 2001
@@ -896,10 +864,14 @@ avtResampleFilter::RefashionDataObjectInfo(void)
 //    Hank Childs, Tue Feb  5 09:49:34 PST 2002
 //    Use double for bounds.
 //
+//    Hank Childs, Fri Sep 30 10:50:24 PDT 2005
+//    Add support for distributed resampling.
+//
 // ****************************************************************************
 
 vtkRectilinearGrid *
-CreateGrid(const double *bounds, int numX, int numY, int numZ)
+CreateGrid(const double *bounds, int numX, int numY, int numZ, int minX,
+           int maxX, int minY, int maxY)
 {
     vtkDataArray *xc = NULL;
     vtkDataArray *yc = NULL;
@@ -909,12 +881,12 @@ CreateGrid(const double *bounds, int numX, int numY, int numZ)
     float height = bounds[3] - bounds[2];
     float depth  = bounds[5] - bounds[4];
 
-    xc = GetCoordinates(bounds[0], width, numX);
-    yc = GetCoordinates(bounds[2], height, numY);
-    zc = GetCoordinates(bounds[4], depth, numZ);
+    xc = GetCoordinates(bounds[0], width, numX, minX, maxX);
+    yc = GetCoordinates(bounds[2], height, numY, minY, maxY);
+    zc = GetCoordinates(bounds[4], depth, numZ, 0, numZ);
       
     vtkRectilinearGrid *rv = vtkRectilinearGrid::New();
-    rv->SetDimensions(numX, numY, numZ);
+    rv->SetDimensions(maxX-minX, maxY-minY, numZ);
     rv->SetXCoordinates(xc);
     xc->Delete();
     rv->SetYCoordinates(yc);
@@ -937,7 +909,7 @@ CreateGrid(const double *bounds, int numX, int numY, int numZ)
 //      length   The length of the coordinates array.
 //      numEls   The number of elements in the coordinates array.
 //
-//  Returns:     A vtkScalars element for the coordinate.
+//  Returns:     A vtkDataArray element for the coordinate.
 //
 //  Programmer:  Hank Childs
 //  Creation:    March 26, 2001
@@ -947,28 +919,32 @@ CreateGrid(const double *bounds, int numX, int numY, int numZ)
 //    Changes in VTK 4.0 API require use of vtkDataArray /vtkFloatArray
 //    in place of vtkScalars. 
 //
+//    Hank Childs, Fri Sep 30 10:50:24 PDT 2005
+//    Add support for distributed resampling.
+//
 // ****************************************************************************
 
 vtkDataArray *
-GetCoordinates(float start, float length, int numEls)
+GetCoordinates(float start, float length, int numEls, int myStart, int myStop)
 {
     vtkFloatArray *rv = vtkFloatArray::New();
 
     //
     // Make sure we don't have any degenerate cases here.
     //
-    if (length <= 0. || numEls <= 1)
+    if (length <= 0. || numEls <= 1 || myStart >= myStop)
     {
         rv->SetNumberOfValues(1);
         rv->SetValue(0, start);
         return rv;
     }
 
-    rv->SetNumberOfValues(numEls);
+    int realNumEls = myStop - myStart;
+    rv->SetNumberOfValues(realNumEls);
     float offset = length / (numEls-1);
-    for (int i = 0 ; i < numEls ; i++)
+    for (int i = myStart ; i < myStop ; i++)
     {
-        rv->SetValue(i, start + i*offset);
+        rv->SetValue(i-myStart, start + i*offset);
     }
 
     return rv;

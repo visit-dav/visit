@@ -69,6 +69,11 @@ avtExternalNodeExpression::~avtExternalNodeExpression()
 //  Programmer:   Hank Childs
 //  Creation:     September 21, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Sep 28 11:07:50 PDT 2005
+//    Use correct form of delete operator.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -127,7 +132,7 @@ avtExternalNodeExpression::DeriveVariable(vtkDataSet *in_ds)
     for (i = 0 ; i < npts ; i++)
         rv->SetTuple1(i, (haveNode[i] ? 1. : 0.));
 
-    delete haveNode;
+    delete [] haveNode;
     new_ds->Delete();
 
     return rv;

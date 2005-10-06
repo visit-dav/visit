@@ -20,10 +20,15 @@ class DBOptionsAttributes;
 //  Programmer: Hank Childs
 //  Creation:   September 11, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Sep 27 10:21:36 PDT 2005
+//    Use virtual inheritance.
+//
 // ****************************************************************************
 
 class
-avtVTKWriter : public avtDatabaseWriter
+avtVTKWriter : public virtual avtDatabaseWriter
 {
   public:
                    avtVTKWriter(DBOptionsAttributes *);

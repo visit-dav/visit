@@ -108,6 +108,9 @@ avtSamplePointCommunicator::SetImagePartition(avtImagePartition *ip)
 //    Hank Childs, Sat Dec 11 11:27:16 PST 2004
 //    Add support multiple executions that come about because of tiling.
 //
+//    Hank Childs, Fri Sep 30 14:04:39 PDT 2005
+//    Added support for serial communication (ie pass-thru).
+//
 // ****************************************************************************
 
 void
@@ -257,6 +260,8 @@ avtSamplePointCommunicator::Execute(void)
     UpdateProgress(currentStage++, nProgressStages);
 
     visitTimer->StopTimer(timingsIndex, "Sample point communication");
+#else
+    GetTypedOutput()->Copy(*(GetTypedInput()));
 #endif
 }
 

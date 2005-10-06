@@ -22,10 +22,15 @@ class vtkUnstructuredGrid;
 //  Programmer: Jeremy Meredith
 //  Creation:   February 15, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Sep 27 10:21:36 PDT 2005
+//    Use virtual inheritance.
+//
 // ****************************************************************************
 
 class
-avtTecplotWriter : public avtDatabaseWriter
+avtTecplotWriter : public virtual avtDatabaseWriter
 {
   public:
                    avtTecplotWriter();

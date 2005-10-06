@@ -87,6 +87,9 @@ avtExternalSurfaceFilter::Create()
 //    Hank Childs, Tue Aug 23 09:49:57 PDT 2005
 //    Add support for ghost zone removal.
 //
+//    Hank Childs, Mon Sep 26 09:34:35 PDT 2005
+//    Add support for edge generation.
+//
 // ****************************************************************************
 
 void
@@ -97,9 +100,13 @@ avtExternalSurfaceFilter::SetAtts(const AttributeGroup *a)
     {
         gz_and_ff = new avtGhostZoneAndFacelistFilter();
         gz_and_ff->SetUseFaceFilter(true);
+        gz_and_ff->SetCreateEdgeListFor2DDatasets(atts.GetEdgesIn2D());
     }
     else
+    {
         ff = new avtFacelistFilter();
+        ff->SetCreateEdgeListFor2DDatasets(atts.GetEdgesIn2D());
+    }
 }
 
 

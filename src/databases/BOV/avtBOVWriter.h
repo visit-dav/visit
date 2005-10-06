@@ -19,10 +19,15 @@
 //  Programmer: Hank Childs
 //  Creation:   September 11, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Sep 27 10:21:36 PDT 2005
+//    Use virtual inheritance.
+//
 // ****************************************************************************
 
 class
-avtBOVWriter : public avtDatabaseWriter
+avtBOVWriter : public virtual avtDatabaseWriter
 {
   public:
                    avtBOVWriter() {;};

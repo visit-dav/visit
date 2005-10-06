@@ -4,6 +4,7 @@
 
 #include <avtDuneFileFormat.h>
 
+#include <algorithm>
 #include <string>
 #include <sstream>
 
@@ -776,6 +777,8 @@ avtDuneFileFormat::GetVectorVar(int timestate, const char *varname)
 //                  parsing mods. All data parsed thru get_tokens().
 //                  Combined LOADER and RESTART sections.
 //                  Modest cleanups.
+//      Thu Oct  6 16:58:57 PDT 2005
+//          (HRC) - Qualify find with "std::".  ['6647]
 //
 // ****************************************************************************
 
@@ -889,7 +892,7 @@ avtDuneFileFormat::ReadDuneData(const int timestate) {
             // found material, get density
             get_tokens(buffer, material, tokens);
             rho = density[tokens[0]];
-            vector<string>::iterator ndx = find(matnames.begin(), matnames.end(), tokens[0]);
+            vector<string>::iterator ndx = std::find(matnames.begin(), matnames.end(), tokens[0]);
             if (ndx == matnames.end()) {
               EXCEPTION1(InvalidVariableException, "Material");
             }
