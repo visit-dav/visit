@@ -36,7 +36,11 @@
 #include <icons/animate.xpm>
 #include <icons/annot.xpm>
 #include <icons/command.xpm>
+#include <icons/correlation.xpm>
+#include <icons/globallineout.xpm>
 #include <icons/light.xpm>
+#include <icons/keyframe.xpm>
+#include <icons/matoptions.xpm>
 #include <icons/pick.xpm>
 #include <icons/plugin.xpm>
 #include <icons/rainbow.xpm>
@@ -227,6 +231,9 @@
 //    Eric Brugger, Thu Jun 30 09:17:12 PDT 2005
 //    Added a 2x3 window layout and removed the 4x4 window layout.
 //
+//    Brad Whitlock, Fri Sep 9 11:50:55 PDT 2005
+//    Added more icons.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -236,7 +243,8 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     QPixmap openIcon, saveIcon, computerIcon, printIcon, rainbowIcon;
     QPixmap annotIcon, lightIcon, subsetIcon, viewIcon;
     QPixmap exprIcon, animIcon, pluginIcon, pickIcon, copyIcon, lockIcon;
-    QPixmap saveMovieIcon, commandIcon;
+    QPixmap saveMovieIcon, commandIcon, keyframeIcon, materialIcon;
+    QPixmap globalLineoutIcon, correlationIcon;
 
     // Make the main window observe the global status subject. This is
     // part of the mechanism that allows other windows to display status
@@ -277,6 +285,10 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     lockIcon = QPixmap(lock_xpm);
     saveMovieIcon = QPixmap(savemovie_xpm);
     commandIcon = QPixmap(command_xpm);
+    keyframeIcon = QPixmap(keyframe_xpm);
+    materialIcon = QPixmap(matoptions_xpm);
+    globalLineoutIcon = QPixmap(globallineout_xpm);
+    correlationIcon = QPixmap(correlation_xpm);
 
     outputBlue = new QPixmap( output_blue_xpm );
     outputRed = new QPixmap( output_red_xpm );
@@ -333,12 +345,12 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     id = ctrls->insertItem(annotIcon, tr("A&nnotation . . ."), this, SIGNAL(activateAnnotationWindow()), CTRL+Key_N);
     id = ctrls->insertItem(rainbowIcon, tr("Color &table . . ."), this, SIGNAL(activateColorTableWindow()), CTRL+Key_T);
     id = ctrls->insertItem(commandIcon, tr("Command . . ."), this, SIGNAL(activateCommandWindow()), CTRL+SHIFT+Key_C);
-    id = ctrls->insertItem( tr("&Database correlations . . ."), this, SIGNAL(activateCorrelationListWindow()), CTRL+Key_D);
+    id = ctrls->insertItem(correlationIcon, tr("&Database correlations . . ."), this, SIGNAL(activateCorrelationListWindow()), CTRL+Key_D);
     id = ctrls->insertItem(exprIcon, tr("&Expressions . . ."), this, SIGNAL(activateExpressionsWindow()), CTRL+SHIFT+Key_E );
-    id = ctrls->insertItem( tr("&Keyframing . . ."), this, SIGNAL(activateKeyframeWindow()), CTRL+Key_K);
-    id = ctrls->insertItem( tr("&Material Options . . ."), this, SIGNAL(activateMaterialWindow()), CTRL+Key_M);
+    id = ctrls->insertItem(keyframeIcon, tr("&Keyframing . . ."), this, SIGNAL(activateKeyframeWindow()), CTRL+Key_K);
     id = ctrls->insertItem(lightIcon, tr("&Lighting . . ."), this, SIGNAL(activateLightingWindow()), CTRL+Key_L );
-    id = ctrls->insertItem(tr("&Lineout . . ."), this, SIGNAL(activateGlobalLineoutWindow()), CTRL+SHIFT+Key_L );
+    id = ctrls->insertItem(globalLineoutIcon, tr("&Lineout . . ."), this, SIGNAL(activateGlobalLineoutWindow()), CTRL+SHIFT+Key_L );
+    id = ctrls->insertItem(materialIcon, tr("&Material Options . . ."), this, SIGNAL(activateMaterialWindow()), CTRL+Key_M);
     id = ctrls->insertItem(pickIcon, tr("&Pick . . ."), this, SIGNAL(activatePickWindow()), CTRL+Key_P );
     id = ctrls->insertItem(tr("&Query . . ."), this, SIGNAL(activateQueryWindow()), CTRL+Key_Q );
     id = ctrls->insertItem(tr("&Query over time options . . ."), this, SIGNAL(activateQueryOverTimeWindow()), CTRL+SHIFT+Key_Q );

@@ -320,6 +320,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Jeremy Meredith, Thu Aug 25 11:06:06 PDT 2005
 //    Added group origin.
 //
+//    Hank Childs, Fri Oct  7 08:21:03 PDT 2005
+//    Added fullDBName.
+//
 // ****************************************************************************
 
 void
@@ -334,6 +337,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     int timerHandle = visitTimer->StartTimer();
 
     avtDataAttributes &atts     = dob->GetInfo().GetAttributes();
+    atts.SetFullDBName(fullDBName);
     avtDataValidity   &validity = dob->GetInfo().GetValidity();
 
     string mesh = GetMetaData(ts)->MeshForVar(var);

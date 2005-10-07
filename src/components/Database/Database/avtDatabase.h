@@ -221,6 +221,9 @@ typedef struct {
 //    Hank Childs, Tue Jul 19 15:52:47 PDT 2005
 //    Add QueryArray.
 //
+//    Hank Childs, Fri Oct  7 08:21:03 PDT 2005
+//    Added fullDBName.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -230,6 +233,10 @@ class DATABASE_API avtDatabase
     virtual                    ~avtDatabase();
 
     virtual const char         *GetFilename(int) { return NULL; };
+    const std::string          &GetFullDBName(void) { return fullDBName; };
+    void                        SetFullDBName(const std::string &f)
+                                                    { fullDBName = f; };
+
     avtDataObject_p             GetOutput(const char *, int);
 
     virtual void                GetAuxiliaryData(avtDataSpecification_p,
@@ -291,6 +298,7 @@ class DATABASE_API avtDatabase
     bool                                   gotIOInfo;
     static bool                            onlyServeUpMetaData;
     std::string                            fileFormat;
+    std::string                            fullDBName;
 
     static int                             mdCacheSize;
     static int                             silCacheSize;

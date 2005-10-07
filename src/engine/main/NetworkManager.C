@@ -351,6 +351,13 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
 //    Hank Childs, Tue Sep 20 13:03:00 PDT 2005
 //    Don't assume that filename lengths are bigger than 6 characters ['6616].
 //
+//    Hank Childs, Fri Oct  7 17:22:01 PDT 2005
+//    Tell database what it's full name is.  Also, remove some antiquated code
+//    that the variable name in the DB info to the empty string.  I believe
+//    the code was no longer doing anything useful, besides torpedoing SR
+//    and CMFE when used in combination.  The test suite passes without it
+//    and there is really no explanation for why we were doing it.
+//
 // ****************************************************************************
 
 NetnodeDB *
@@ -381,7 +388,6 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
     // got a match
     if (cachedDB != NULL)
     {
-
         // even if we found the DB in the cache,
         // we need to update the metadata if its time-varying
         if (!cachedDB->GetDB()->MetaDataIsInvariant() ||
@@ -391,7 +397,6 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
             cachedDB->GetDB()->GetSIL(time);
         }
 
-        cachedDB->SetDBInfo(filename, "", time);
         return cachedDB;
     }
 
@@ -407,6 +412,7 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
             db = avtDatabaseFactory::VisitFile(filename_c, time, format);
         else
             db = avtDatabaseFactory::FileList(&filename_c, 1, time, format);
+        db->SetFullDBName(filename);
 
         // If we want to open the file at a later timestep, get the
         // SIL so that it contains the right data.
@@ -675,6 +681,9 @@ NetworkManager::StartNetwork(const string &format,
 //   Hank Childs, Sun Feb 27 12:30:17 PST 2005
 //   Added avtDatabase argument to AddDatabase.
 //
+//   Hank Childs, Fri Oct  7 09:30:57 PDT 2005
+//   Tell the database what its full name is.
+//
 // ****************************************************************************
 
 void
@@ -788,6 +797,7 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
         else
             db = avtDatabaseFactory::FileList(&dbName_c, 1, time,
                                               defaultFormat);
+        db->SetFullDBName(dbName);
 
         // If we want to open the file at a later timestep, get the
         // metadata and the SIL so that it contains the right data.

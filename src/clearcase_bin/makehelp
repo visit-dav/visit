@@ -18,7 +18,43 @@
 #  Brad Whitlock, Fri Jun 18 10:21:12 PDT 2004
 #  I added a new chapter to the manual and some that were missing.
 #
+#  Brad Whitlock, Fri Oct 7 13:26:46 PST 2005
+#  I added an argument that converts the files to MIF but does not convert
+#  the MIF files into HTML.
+#
 ###############################################################################
+
+set MIFOnly = "FALSE"
+set Help = "FALSE"
+
+#
+# Parse the argument list.
+#
+while ($#argv >= 1)
+   switch ($1)
+      case -mifonly:
+               set MIFOnly = TRUE
+               breaksw
+      case -h:
+      case -help:
+               set Help = TRUE
+               breaksw
+      default:
+               echo " "
+               echo ">>>>>>>>>>  Illegal option $1  <<<<<<<<<<"
+               echo " "
+               breaksw
+   endsw
+   shift
+end
+
+if ($Help == TRUE) then
+   echo "Usage: makehelp [-mifonly] [-h | -help]"
+   echo ""
+   echo "       -mifonly       Just convert the frame documents to MIF files."
+   echo "       -h             Print this message."
+   exit (1)
+endif
 
 # Keep this until we get our sysadmins to add fmbatch to the path.
 if(`hostname` == "sunspot.llnl.gov" || `hostname` == "sunburn.llnl.gov") then
@@ -89,23 +125,26 @@ Quit" > $fmCommands
     endif
 end
 
-# If the tool is built then proceed.
-if(-e mif2help) then
-    # Create a list of MIF files to pass to mif2help.
-    set mifargs = " "
-    foreach input ($inputFiles)
-        set mifName = "$outputPath/$input.mif"
-        set tmpvar =  "$mifargs $mifName"
-        set mifargs = "$tmpvar"
-    end
+# If we're doing more than converting then run mif2help.
+if ("$MIFOnly" == "FALSE") then
+    # If the tool is built then proceed.
+    if(-e mif2help) then
+        # Create a list of MIF files to pass to mif2help.
+        set mifargs = " "
+        foreach input ($inputFiles)
+            set mifName = "$outputPath/$input.mif"
+            set tmpvar =  "$mifargs $mifName"
+            set mifargs = "$tmpvar"
+        end
 
-    mif2help $mifargs
-else
-    echo "The mif2help tool failed to build."
+        mif2help $mifargs
+    else
+        echo "The mif2help tool failed to build."
+    endif
+
+    # Remove the temp directory
+    rm -rf $outputPath
 endif
-
-# Remove the temp directory
-rm -rf $outputPath
 
 # Go back to the starting directory.
 cd $startDir

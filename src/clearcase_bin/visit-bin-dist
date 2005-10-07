@@ -209,6 +209,9 @@
 #    Jeremy Meredith, Wed Jul  6 14:46:56 PDT 2005
 #    Added xlc compiler-specific support.
 #
+#    Brad Whitlock, Fri Oct 7 13:16:49 PST 2005
+#    Copy dbA00.pdb and dbB00.pdb to the distribution.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -503,6 +506,10 @@ if ($DataFiles == "TRUE") then
    ./tire
    rm multi_point* multi_rect* multi_curv* poly3d.silo
    cp *.silo $pwd/distribution/visit/data
+   if (-e ./correlationtest) then
+      ./correlationtest
+       cp db{A,B}00.pdb $pwd/distribution/visit/data
+   endif
    cd $pwd/distribution/visit/data
    cd $pwd
 endif
