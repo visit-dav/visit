@@ -568,6 +568,10 @@ dnl    Kathleen Bonnell, Thu Sep 22 16:49:12 PDT 2005
 dnl    Added 'vtkexpat' to lightweight libs, so VTK XML file format can
 dnl    link properly to mdserver. 
 dnl
+dnl    Jeremy Meredith, Thu Oct 13 13:55:32 PDT 2005
+dnl    Added cqscore, the tool for scoring tickets.  Also forced a make on
+dnl    the bin directory before exiting configure.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -3239,6 +3243,7 @@ DATABASE_FILES="databases/Makefile"
 
 DATA_FILES="data/Makefile"
 SIMULATION_PROTOTYPE_FILES="sim/Makefile"
+CQSCORE_FILES="cqscore/Makefile"
 
 if test "$enable_scripting" = "yes"; then
     VISITPY_FILES="visitpy/Makefile"
@@ -3276,6 +3281,7 @@ AC_OUTPUT($STANDARD_FILES
           $DATA_FILES
           $VISITPY_FILES
           $SIMULATION_PROTOTYPE_FILES
+          $CQSCORE_FILES
           $JAVA_FILES,
           echo timestamp > include/stamp-h)
 
@@ -3285,6 +3291,7 @@ AC_OUTPUT($STANDARD_FILES
 #
 (cd include   && ${MAKE-make})
 (cd lib       && ${MAKE-make})
+(cd bin       && ${MAKE-make})
 rm -f $TOPDIR/exe/xml2makefile
 (cd tools/xml && ${MAKE-make} $TOPDIR/exe/xml2makefile)
 

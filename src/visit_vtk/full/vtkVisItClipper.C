@@ -177,6 +177,9 @@ vtkVisItClipper::Execute()
 //    Brad Whitlock, Thu Aug 12 14:48:46 PST 2004
 //    Added float casts to pow() arguments so it builds on MSVC7.Net.
 //
+//    Kathleen Bonnell, Tue Sep  6 08:45:16 PDT 2005
+//    Added call to SetUpClipFunction. 
+//
 // ****************************************************************************
 
 void
@@ -224,6 +227,7 @@ vtkVisItClipper::StructuredGridExecute(void)
         int lookup_case = 0;
         float dist[8];
         int nCellPts = twoD ? 4 : 8;
+        SetUpClipFunction(cellId);
         for (j = nCellPts-1 ; j >= 0 ; j--)
         {
             int ptId = (cellI + X_val[j]) + (cellJ + Y_val[j])*ptstrideY +
@@ -245,7 +249,6 @@ vtkVisItClipper::StructuredGridExecute(void)
             if (j > 0)
                 lookup_case *= 2;
         }
-
         unsigned char *splitCase;
         int            numOutput;
         int            interpIDs[4];
@@ -435,6 +438,9 @@ vtkVisItClipper::StructuredGridExecute(void)
 //    Brad Whitlock, Thu Aug 12 14:49:24 PST 2004
 //    Added float casts to the pow() arguments so it builds on MSVC7.Net.
 //
+//    Kathleen Bonnell, Tue Sep  6 08:45:16 PDT 2005
+//    Added call to SetUpClipFunction. 
+//
 // ****************************************************************************
 
 void vtkVisItClipper::RectilinearGridExecute(void)
@@ -481,6 +487,7 @@ void vtkVisItClipper::RectilinearGridExecute(void)
         int lookup_case = 0;
         float dist[8];
         int nCellPts = twoD ? 4 : 8;
+        SetUpClipFunction(cellId);
         for (j = nCellPts-1 ; j >= 0 ; j--)
         {
             if (clipFunction)
@@ -504,7 +511,6 @@ void vtkVisItClipper::RectilinearGridExecute(void)
             if (j > 0)
                 lookup_case *= 2;
         }
-
         unsigned char *splitCase;
         int            numOutput;
         int            interpIDs[4];
@@ -693,6 +699,9 @@ void vtkVisItClipper::RectilinearGridExecute(void)
 //    Added support for unstructured voxels and pixels, letting us use this
 //    fast algorithm on thresholded/onionpeeled structured meshes.
 //
+//    Kathleen Bonnell, Tue Sep  6 08:45:16 PDT 2005
+//    Added call to SetUpClipFunction. 
+//
 // ****************************************************************************
 void vtkVisItClipper::UnstructuredGridExecute(void)
 {
@@ -759,6 +768,7 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
  
         if (canClip)
         {
+            SetUpClipFunction(cellId);
             const int max_pts = 8;
             float dist[max_pts];
             int lookup_case = 0;
@@ -1027,6 +1037,9 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
 //    Jeremy Meredith, Wed May  5 14:49:55 PDT 2004
 //    Changed it to a single cutoff for scalars to make the math more robust.
 //
+//    Kathleen Bonnell, Tue Sep  6 08:45:16 PDT 2005
+//    Added call to SetUpClipFunction. 
+//
 // ****************************************************************************
 void vtkVisItClipper::PolyDataExecute(void)
 {
@@ -1094,6 +1107,7 @@ void vtkVisItClipper::PolyDataExecute(void)
             const int max_pts = 8;
             float dist[max_pts];
             int lookup_case = 0;
+            SetUpClipFunction(cellId);
             for (j = npts-1 ; j >= 0 ; j--)
             {
                 if (clipFunction)

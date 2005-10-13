@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+  <Plugin name="CracksClipper" type="operator" label="CracksClipper" version="1.0" enabled="false" mdspecificcode="false" onlyengine="false" noengine="false">
+    <Files components="V">
+      avtCracksClipperFilter.C vtkCracksClipper.C vtkCrackWidthFilter.C
+    </Files>
+    <Files components="E">
+      avtCracksClipperFilter.C vtkCracksClipper.C vtkCrackWidthFilter.C
+    </Files>
+    <Attribute name="CracksClipperAttributes" purpose="Attributes for the cracks clipper operator" persistent="true" codefile="CracksClipper.code">
+      <Field name="crack1Var" label="Crack 1 Variable" type="string">
+        crack1_dir
+      </Field>
+      <Field name="crack2Var" label="Crack 2 Variable" type="string">
+        crack2_dir
+      </Field>
+      <Field name="crack3Var" label="Crack 3 Variable" type="string">
+        crack3_dir
+      </Field>
+      <Field name="strainVar" label="Strain Variable" type="string">
+        void_strain_ten
+      </Field>
+      <Field name="useCrack1" label="Use Crack 1" type="bool">
+        true
+      </Field>
+      <Field name="useCrack2" label="Use Crack 2" type="bool">
+        true
+      </Field>
+      <Field name="useCrack3" label="Use Crack 3" type="bool">
+        true
+      </Field>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

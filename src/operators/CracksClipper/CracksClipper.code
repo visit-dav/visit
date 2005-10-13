@@ -1,0 +1,13 @@
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const CracksClipperAttributes &) const;
+Definition:
+// ****************************************************************************
+// Modifications:
+//
+// ****************************************************************************
+bool
+CracksClipperAttributes::ChangesRequireRecalculation(const CracksClipperAttributes &obj) const
+{
+    return true;
+}
+
