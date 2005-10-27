@@ -165,6 +165,10 @@ import java.util.prefs.BackingStoreException;
 //   I made SetPlotOptions and SetOperatorOptions complain if they are given
 //   invalid indices or names.
 //
+//   Brad Whitlock, Thu Oct 27 10:45:59 PDT 2005
+//   I made it possible to skip plugins that did not load while still allowing
+//   plugins that did load to get hooked up to xfer.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -1788,23 +1792,27 @@ public class ViewerProxy implements SimpleObserver
         {
             // Try loading the plot plugins. If they can all be loaded,
             // add them to xfer.
-            boolean success = plotPlugins.LoadPlugins(pluginAtts);
-            if(success)
+            plotPlugins.LoadPlugins(pluginAtts);
+            for(int i = 0; i < plotPlugins.GetNumPlugins(); ++i)
             {
-                // Add the plot plugins to xfer.
-                for(int i = 0; i < plotPlugins.GetNumPlugins(); ++i)
-                    xfer.Add((AttributeSubject)plotPlugins.GetPluginAttributes(i));
-
-                // Try loading the operator plugins. If they can all be loaded,
-                // add them to xfer.
-                success = operatorPlugins.LoadPlugins(pluginAtts);
-                if(success)
-                {
-                    for(int i = 0; i < operatorPlugins.GetNumPlugins(); ++i)
-                        xfer.Add((AttributeSubject)operatorPlugins.GetPluginAttributes(i));
-                }
+                 Plugin p = plotPlugins.GetPluginAttributes(i);
+                 if(p != null)
+                     xfer.Add((AttributeSubject)p);
+                 else
+                     xfer.AddDummy();
             }
 
+            // Try loading the operator plugins. If they can all be loaded,
+            // add them to xfer.
+            operatorPlugins.LoadPlugins(pluginAtts);
+            for(int i = 0; i < operatorPlugins.GetNumPlugins(); ++i)
+            {
+                 Plugin p = operatorPlugins.GetPluginAttributes(i);
+                 if(p != null)
+                     xfer.Add((AttributeSubject)p);
+                 else
+                     xfer.AddDummy();
+            }
 
             pluginsLoaded = true;
         }

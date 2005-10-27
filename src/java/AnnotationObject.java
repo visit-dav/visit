@@ -23,10 +23,11 @@ public class AnnotationObject extends AttributeSubject
     public final static int ANNOTATIONTYPE_TEXT2D = 0;
     public final static int ANNOTATIONTYPE_TEXT3D = 1;
     public final static int ANNOTATIONTYPE_TIMESLIDER = 2;
-    public final static int ANNOTATIONTYPE_ARROW2D = 3;
-    public final static int ANNOTATIONTYPE_ARROW3D = 4;
-    public final static int ANNOTATIONTYPE_BOX = 5;
-    public final static int ANNOTATIONTYPE_IMAGE = 6;
+    public final static int ANNOTATIONTYPE_LINE2D = 3;
+    public final static int ANNOTATIONTYPE_ARROW2D = 4;
+    public final static int ANNOTATIONTYPE_ARROW3D = 5;
+    public final static int ANNOTATIONTYPE_BOX = 6;
+    public final static int ANNOTATIONTYPE_IMAGE = 7;
 
     public final static int FONTFAMILY_ARIAL = 0;
     public final static int FONTFAMILY_COURIER = 1;

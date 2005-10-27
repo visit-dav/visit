@@ -1,12 +1,8 @@
 package llnl.visit;
 
-import java.io.File;
 import java.lang.ArrayIndexOutOfBoundsException;
 import java.lang.InstantiationException;
 import java.lang.IllegalAccessException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.net.MalformedURLException;
 
 // ****************************************************************************
 // Class: PluginManager
@@ -31,6 +27,16 @@ import java.net.MalformedURLException;
 //
 //   Brad Whitlock, Mon Jun 6 18:20:35 PST 2005
 //   I made it use the right path separator so it works on Windows.
+//
+//   John Carlson, Tue Oct 25 15:34:23 PST 2005
+//   Made it use Class.forName instead of a URL class loader. This makes sure
+//   that the class can load its plugins when it is used in an applet.
+//
+//   Brad Whitlock, Thu Oct 27 10:29:23 PDT 2005
+//   I made it try up to 3 different class names to account for some new
+//   variability in class naming conventions for operator state objects. In
+//   addition, the class can now successfully skip loading a plugin without
+//   preventing all plugins from failing to load.
 //
 // ****************************************************************************
 
@@ -139,7 +145,8 @@ class PluginManager
 
     public boolean LoadPlugins(PluginManagerAttributes atts)
     {
-        boolean success = true;
+	if(verbose)
+            System.out.println("Loading plugins");
 
         // Count the number of plugins that match the type we're after.
         int count = CountMatchingTypes(atts);
@@ -153,109 +160,92 @@ class PluginManager
         // Extract the sorted plugin list from the atts.
         String[] loadList = new String[count];
         PopulatePluginList(atts, loadList);
-
-        // Create a class path based on the type of plugin that we
-        // want to read.
-        String classPath = System.getProperty("java.class.path");
-        String[] pathList = classPath.split(java.io.File.pathSeparator);
-        if(pathList.length > 0)
-        {
-            // Create the URL list that we'll use to create a class loader.
-            URL[] URLlist = new URL[pathList.length];
-
-            // Check each path to make sure that it exists and that we can read it.
-            // If we can read it, add it to the URL list.
-            for(int i = 0; i < pathList.length; ++i)
-            {
-                File path = new File(pathList[i]);
-                if(!path.exists() || !path.canRead())
-                {
-                    if(verbose)
-                         System.out.println("The classpath directory "+path+" cannot be read.");
-                    return false;
-                }
-                else
-                {
-                    try
-                    {
-                        URLlist[i] = path.toURL();
-                    }
-                    catch(MalformedURLException e4)
-                    {
-                        if(verbose)
-                            System.out.println("Could not read the "+pluginType+" plugin directory!");
-                        return false;
-                    }
-                }
-            } 
-    
-            // Create a new class loader that reads classes from the
-            // specified plugin directory.
-            loader = new URLClassLoader(URLlist);
-        }
-        else
-        {
-            if(verbose)
-                System.out.println("The class path is empty - cannot determine VisIt plugin directory!");
-            return false;
-        }
+        if(verbose)
+            System.out.println("Load List length "+loadList.length);
 
         // Store the plugin names and versions and try to load the
         // plugin using a class loader.
-        int index = 0;
-        for(int i = 0; i < count && success; ++i)
+        for(int i = 0; i < count; ++i)
         {
             String name = loadList[i];
 
+            // Add default values for this plugin in case it can't be loaded.
+            pluginNames[i] = new String("");
+            pluginVersions[i] = new String("");
+            pluginAtts[i] = null;
+
+            // Create a list of possible names for the 
+            int nPossibleClassNames = 2;
+            String[] classNames = new String[3];
+            classNames[0] = new String("llnl.visit."+pluginType+"s."+name+"Attributes");
+            classNames[1] = new String("llnl.visit."+pluginType+"s."+name+"PluginAttributes");
             try
             {
-                // Create the expected class name.
-                String className = new String("llnl.visit."+pluginType+"s."+name+"Attributes");
-
-                // Try using this object's class loaded to load the
-                // plugin class.
-                Class c = loader.loadClass(className);
-
-                // If the new object has a Plugin interface then
-                // create an instance of it and store it.
-                Object obj = c.newInstance();
-
-                // Check the version of the plugin. If it matches the version that was
-                // sent from the viewer then we have a valid plugin and we can continue.
-                Plugin p = (Plugin)obj;
-                pluginNames[index] = new String(p.GetName());
-                pluginVersions[index] = new String(p.GetVersion());
-
-                // Save the instance that we created because it is the
-                // one that we'll use to communicate with the viewer.
-                pluginAtts[index] = p;
-
-                if(verbose)
-                    System.out.println("Loaded "+pluginNames[index]+" version "+pluginVersions[index]);
-
-                ++index;
+                String c0 = pluginType.substring(0,1).toUpperCase();
+                String prefix = c0 + pluginType.substring(1, pluginType.length());
+                classNames[2] = new String("llnl.visit."+pluginType+"s."+name+prefix+"Attributes");
+                ++nPossibleClassNames;
             }
-            catch(ClassNotFoundException e)
+            catch(IndexOutOfBoundsException e0)
             {
-                success = false;
-                if(verbose)
-                    System.out.println("The "+name+" plugin could not be loaded. ClassNotFoundException.");
+                // ignore.
             }
-            catch(InstantiationException e2)
+
+            boolean classLoaded = false;
+            for(int index = 0; index < nPossibleClassNames && !classLoaded; ++index)
             {
-                success = false;
-                if(verbose)
-                    System.out.println("The "+name+" plugin could not be instantiated. InstantiationException.");
-            }
-            catch(IllegalAccessException e3)
-            {
-                success = false;
-                if(verbose)
-                    System.out.println("The "+name+" plugin could not be create. IllegalAccessException.");
+                try
+                {
+                    // Try to load the plugin class.
+                    Class c = Class.forName(classNames[index]);
+
+                    // If the new object has a Plugin interface then
+                    // create an instance of it and store it.
+                    Object obj = c.newInstance();
+
+                    // Check the version of the plugin. If it matches the version that was
+                    // sent from the viewer then we have a valid plugin and we can continue.
+                    Plugin p = (Plugin)obj;
+                    pluginNames[i] = new String(p.GetName());
+                    pluginVersions[i] = new String(p.GetVersion());
+
+                    // Save the instance that we created because it is the
+                    // one that we'll use to communicate with the viewer.
+                    pluginAtts[i] = p;
+
+                    if(verbose)
+                        System.out.println("Loaded "+pluginNames[i]+" version "+pluginVersions[i] + " from " + classNames[index]);
+
+                    classLoaded = true;
+                }
+                catch(ClassNotFoundException e1)
+                {
+                    if(verbose)
+                    {
+                        e1.printStackTrace();
+                        System.out.println("The "+name+" plugin could not be loaded from " + classNames[index]);
+                    }
+                }
+                catch(InstantiationException e2)
+                {
+                    if(verbose)
+                    {
+                        e2.printStackTrace();
+                        System.out.println("The "+name+" plugin could not be instantiated. InstantiationException.");
+                    }
+                }
+                catch(IllegalAccessException e3)
+                {
+                    if(verbose)
+                    {
+                        e3.printStackTrace();
+                        System.out.println("The "+name+" plugin could not be created. IllegalAccessException.");
+                    }
+                }
             }
         } // for i
 
-        return success;
+        return true;
     }
 
     private boolean WantPlugin(PluginManagerAttributes atts, int i)
@@ -291,5 +281,4 @@ class PluginManager
     private Plugin[]       pluginAtts;
     private boolean        pluginsLoaded;
     private boolean        verbose;
-    private URLClassLoader loader;
 }
