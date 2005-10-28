@@ -71,12 +71,15 @@ QvisCurvePlotWindow::~QvisCurvePlotWindow()
 //   Kathleen Bonnell, Tue Dec 23 13:27:22 PST 2003
 //   Added PointSize and ShowPoints.
 //   
+//   Kathleen Bonnell, Thu Oct 27 16:10:29 PDT 2005 
+//   Added showLegend.
+//   
 // ****************************************************************************
 
 void
 QvisCurvePlotWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 5,4, 10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 5,3, 10, "mainLayout");
 
     mainLayout->addWidget(new QLabel("Line Style", central, "lineStyleLabel"),0,0);
     lineStyle = new QvisLineStyleWidget(0, central, "lineStyle");
@@ -104,20 +107,25 @@ QvisCurvePlotWindow::CreateWindowContents()
             this, SLOT(showLabelsChanged(bool)));
     mainLayout->addWidget(showLabels, 3,0);
 
+    showLegend = new QCheckBox("Legend", central, "showLegend");
+    connect(showLegend, SIGNAL(toggled(bool)),
+            this, SLOT(showLegendChanged(bool)));
+    mainLayout->addWidget(showLegend, 3,1);
+
     showPoints = new QCheckBox("Points", central, "showPoints");
     connect(showPoints, SIGNAL(toggled(bool)),
             this, SLOT(showPointsChanged(bool)));
-    mainLayout->addWidget(showPoints, 3,1);
+    mainLayout->addWidget(showPoints, 4,0);
 
     // Create the point size line edit
     pointSize = new QNarrowLineEdit(central, "pointSize");
     connect(pointSize, SIGNAL(returnPressed()),
             this, SLOT(processPointSizeText())); 
-    mainLayout->addWidget(pointSize, 3, 3);
+    mainLayout->addWidget(pointSize, 4, 2);
     pointSizeLabel = new QLabel(pointSize, "Point size",
         central, "pointSizeLabel");
     pointSizeLabel->setAlignment(AlignRight | AlignVCenter);
-    mainLayout->addWidget(pointSizeLabel, 3, 2);
+    mainLayout->addWidget(pointSizeLabel, 4, 1);
 }
 
 
@@ -138,6 +146,9 @@ QvisCurvePlotWindow::CreateWindowContents()
 //   Replaced simple QString::sprintf's with a setNum because there seems
 //   to be a bug causing numbers to be incremented by .00001.  See '5263.
 //
+//   Kathleen Bonnell, Thu Oct 27 16:10:29 PDT 2005 
+//   Added showLegend.
+//   
 // ****************************************************************************
 
 void
@@ -191,6 +202,9 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
           case 6: //pointSize
             tempText.setNum(atts->GetPointSize());
             pointSize->setText(tempText);
+            break;
+          case 7: //showLegend
+            showLegend->setChecked(atts->GetShowLegend());
             break;
         }
     }
@@ -365,6 +379,13 @@ void
 QvisCurvePlotWindow::showLabelsChanged(bool val)
 {
     atts->SetShowLabels(val);
+    Apply();
+}
+
+void
+QvisCurvePlotWindow::showLegendChanged(bool val)
+{
+    atts->SetShowLegend(val);
     Apply();
 }
 

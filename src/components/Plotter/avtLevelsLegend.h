@@ -58,6 +58,9 @@ class  vtkLookupTable;
 //    Eric Brugger, Thu Jul 17 08:17:40 PDT 2003
 //    Added maxSize argument to GetLegendSize.
 //
+//    Kathleen Bonnell, Tue Oct 25 11:13:14 PDT 2005 
+//    Added virtual methods ChangeTitle, ChangeFontHeight.
+// 
 // ****************************************************************************
 
 class PLOTTER_API avtLevelsLegend : public avtLegend
@@ -90,6 +93,8 @@ class PLOTTER_API avtLevelsLegend : public avtLegend
     int                        rangeVisibility;
 
     virtual void               ChangePosition(float, float);
+    virtual void               ChangeTitle(const char *);
+    virtual void               ChangeFontHeight(float);
 };
 
 

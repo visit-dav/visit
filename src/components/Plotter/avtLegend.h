@@ -10,7 +10,7 @@
 #include <ref_ptr.h>
 
 
-class  vtkVerticalScalarBarActor;
+class  vtkActor2D;
 class  vtkRenderer;
 
 
@@ -44,6 +44,11 @@ class  vtkRenderer;
 //    Kathleen Bonnell, Thu Aug 12 13:07:29 PDT 2004 
 //    Added SetGlobalVisibility.
 //
+//    Kathleen Bonnell, Tue Oct 25 11:13:14 PDT 2005 
+//    Changed 'legend' from vtkVerticalScalarBarActor to Actor2D to allow
+//    different derived types.  Added pure virtual methods ChangeTitle,
+//    ChangeFontHeight.
+//    
 // ****************************************************************************
 
 class PLOTTER_API  avtLegend
@@ -80,7 +85,7 @@ class PLOTTER_API  avtLegend
     bool                          legendOn;
     bool                          globalVisibility;
     bool                          currentlyDrawn;
-    vtkVerticalScalarBarActor    *legend;
+    vtkActor2D                   *legend;
     vtkRenderer                  *renderer;
 
     float                         fontHeight;
@@ -91,6 +96,8 @@ class PLOTTER_API  avtLegend
     char                         *message;
 
     virtual void                  ChangePosition(float, float) = 0;
+    virtual void                  ChangeTitle(const char *) = 0;
+    virtual void                  ChangeFontHeight(float) = 0;
 };
 
 

@@ -16,5 +16,7 @@ PyObject       *PyCurveAttributes_WrapPyObject(const CurveAttributes *attr);
 void            PyCurveAttributes_SetLogging(bool val);
 void            PyCurveAttributes_SetDefaults(const CurveAttributes *atts);
 
+PyObject       *PyCurveAttributes_StringRepresentation(const CurveAttributes *atts);
+
 #endif
 
