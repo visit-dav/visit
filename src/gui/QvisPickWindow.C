@@ -9,6 +9,7 @@
 #include <qlineedit.h>
 #include <qmultilineedit.h>
 #include <qtabwidget.h>
+#include <qspinbox.h>
 #include <qstringlist.h>
 #include <qvbox.h>
 #include <QvisVariableButton.h>
@@ -143,6 +144,10 @@ QvisPickWindow::~QvisPickWindow()
 //   Kathleen Bonnell, Tue Dec 28 16:23:43 PST 2004 
 //   Added 'displayPickLetter' checkbox. 
 //
+//   Kathleen Bonnell, Mon Oct 31 10:39:28 PST 2005 
+//   Hide all tabs whose index > MIN_PICK_TABS.
+//   Added 'userMaxPickTabs' spinbox. 
+//
 // ****************************************************************************
 
 void
@@ -157,70 +162,82 @@ QvisPickWindow::CreateWindowContents()
         pages[i] = new QVBox(central, "page");
         pages[i]->setMargin(10);
         pages[i]->setSpacing(5);
+        pages[i]->setHidden(true);
         infoLists[i]  = new QMultiLineEdit(pages[i], "infoList");
         infoLists[i]->setWordWrap(QMultiLineEdit::WidgetWidth);
         infoLists[i]->setReadOnly(true);
-        tabWidget->addTab(pages[i]," "); 
+        if (i < MIN_PICK_TABS)
+        {
+            pages[i]->setHidden(false);
+            tabWidget->addTab(pages[i]," "); 
+        }
     }
+    
 
-    QGridLayout *gLayout = new QGridLayout(topLayout, 11, 4);
+    QGridLayout *gLayout = new QGridLayout(topLayout, 12, 4);
+
+    userMaxPickTabs = new QSpinBox(MIN_PICK_TABS, MAX_PICK_TABS, 1, central, "userMaxPickTabs");
+    userMaxPickTabs->setButtonSymbols(QSpinBox::PlusMinus);
+    gLayout->addWidget(userMaxPickTabs, 0, 1);
+    gLayout->addWidget(new QLabel(userMaxPickTabs, "Max Tabs", central), 0,0);
+
     varsButton = new QvisVariableButton(true, false, true, -1,
         central, "varsButton");
     varsButton->setText("Variables");
     varsButton->setChangeTextOnVariableChange(false);
     connect(varsButton, SIGNAL(activated(const QString &)),
             this, SLOT(addPickVariable(const QString &)));
-    gLayout->addWidget(varsButton, 0, 0);
+    gLayout->addWidget(varsButton, 1, 0);
 
     varsLineEdit = new QLineEdit(central, "varsLineEdit");
     varsLineEdit->setText("default"); 
     connect(varsLineEdit, SIGNAL(returnPressed()),
             this, SLOT(variableProcessText()));
-    gLayout->addMultiCellWidget(varsLineEdit, 0, 0, 1, 3);
+    gLayout->addMultiCellWidget(varsLineEdit, 1, 1, 1, 3);
 
     conciseOutputCheckBox = new QCheckBox("Concise Output.", central,
                                      "conciseOutputCheckBox");
     connect(conciseOutputCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(conciseOutputToggled(bool)));
-    gLayout->addMultiCellWidget(conciseOutputCheckBox, 1, 1, 0, 1);
+    gLayout->addMultiCellWidget(conciseOutputCheckBox, 2, 2, 0, 1);
 
 
     showMeshNameCheckBox = new QCheckBox("Show Mesh Name", central, 
                                   "showMeshNameCheckBox");
     connect(showMeshNameCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(showMeshNameToggled(bool)));
-    gLayout->addMultiCellWidget(showMeshNameCheckBox, 2, 2, 0, 1);
+    gLayout->addMultiCellWidget(showMeshNameCheckBox, 3, 3, 0, 1);
 
     showTimestepCheckBox = new QCheckBox("Show Timestep", central, 
                                   "showTimestepCheckBox");
     connect(showTimestepCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(showTimestepToggled(bool)));
-    gLayout->addMultiCellWidget(showTimestepCheckBox, 2, 2, 2, 3);
+    gLayout->addMultiCellWidget(showTimestepCheckBox, 3, 3, 2, 3);
 
     displayIncEls = new QCheckBox("Display incident nodes/zones.", central, 
                                   "displayIncEls");
     connect(displayIncEls, SIGNAL(toggled(bool)),
             this, SLOT(displayIncElsToggled(bool)));
-    gLayout->addMultiCellWidget(displayIncEls, 3, 3, 0, 1);
+    gLayout->addMultiCellWidget(displayIncEls, 4, 4, 0, 1);
 
     displayGlobalIds = new QCheckBox("Display global nodes/zones.", central, 
                                   "displayGlobalIds");
     connect(displayGlobalIds, SIGNAL(toggled(bool)),
             this, SLOT(displayGlobalIdsToggled(bool)));
-    gLayout->addMultiCellWidget(displayGlobalIds, 4, 4, 0, 1);
+    gLayout->addMultiCellWidget(displayGlobalIds, 5, 5, 0, 1);
 
     displayPickLetter = new QCheckBox("Display reference pick letter.", central, 
                                   "displayPickLetter");
     connect(displayPickLetter, SIGNAL(toggled(bool)),
             this, SLOT(displayPickLetterToggled(bool)));
-    gLayout->addMultiCellWidget(displayPickLetter, 5, 5, 0, 1);
+    gLayout->addMultiCellWidget(displayPickLetter, 6, 6, 0, 1);
 
 
     // Node settings
     QGroupBox *nodeGroupBox = new QGroupBox(central, "nodeGroupBox");
     nodeGroupBox->setTitle("Display for Nodes:");
     nodeGroupBox->setMargin(10);
-    gLayout->addMultiCellWidget(nodeGroupBox, 6, 6, 0, 3);
+    gLayout->addMultiCellWidget(nodeGroupBox, 7, 7, 0, 3);
     QGridLayout *nLayout = new QGridLayout(nodeGroupBox, 3, 4);
     nLayout->setMargin(10);
     nLayout->setSpacing(10);
@@ -247,7 +264,7 @@ QvisPickWindow::CreateWindowContents()
     QGroupBox *zoneGroupBox = new QGroupBox(central, "zoneGroupBox");
     zoneGroupBox->setTitle("Display for Zones:");
     zoneGroupBox->setMargin(10);
-    gLayout->addMultiCellWidget(zoneGroupBox, 7, 7, 0, 3);
+    gLayout->addMultiCellWidget(zoneGroupBox, 8, 8, 0, 3);
     QGridLayout *zLayout = new QGridLayout(zoneGroupBox, 3, 4);
     zLayout->setMargin(10);
     zLayout->setSpacing(10);
@@ -271,19 +288,19 @@ QvisPickWindow::CreateWindowContents()
                                      "autoShowCheckBox");
     connect(autoShowCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(autoShowToggled(bool)));
-    gLayout->addMultiCellWidget(autoShowCheckBox, 8, 8, 0, 3);
+    gLayout->addMultiCellWidget(autoShowCheckBox, 9, 9, 0, 3);
 
     savePicksCheckBox = new QCheckBox("Don't clear this window", central,
                                      "savePicksCheckBox");
     connect(savePicksCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(savePicksToggled(bool)));
-    gLayout->addMultiCellWidget(savePicksCheckBox, 9, 9, 0, 3);
+    gLayout->addMultiCellWidget(savePicksCheckBox, 10, 10, 0, 3);
 
     timeCurveCheckBox = new QCheckBox("Create time curve with next pick.", central,
                                      "timeCurveCheckBox");
     connect(timeCurveCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(timeCurveToggled(bool)));
-    gLayout->addMultiCellWidget(timeCurveCheckBox, 10, 10, 0, 3);
+    gLayout->addMultiCellWidget(timeCurveCheckBox, 11, 11, 0, 3);
 }
 
 // ****************************************************************************
@@ -547,6 +564,10 @@ QvisPickWindow::UpdateWindow(bool doAll)
 //   changed, this code had to be updated as well.  Now simply use 
 //   pickAtts->CreateOutputString.
 //   
+//   Kathleen Bonnell, Mon Oct 31 10:44:07 PST 2005 
+//   Use value in userMaxPickTabs for setting nextPage instead of 
+//   MAX_PICK_TABS. 
+//
 // ****************************************************************************
 
 void
@@ -582,7 +603,7 @@ QvisPickWindow::UpdatePage()
 
         // Show the tab.
         tabWidget->showPage(pages[nextPage]);
-        nextPage = (nextPage + 1) % MAX_PICK_TABS;
+        nextPage = (nextPage + 1) % userMaxPickTabs->value();
     }
 }
 
@@ -602,6 +623,9 @@ QvisPickWindow::UpdatePage()
 // Modifications:
 //   Kathleen Bonnell, Tue Mar 26 14:03:24 PST 2002 
 //   Improved parsing of the varsLineEdit text.
+//
+//   Kathleen Bonnell, Mon Oct 31 10:44:07 PST 2005 
+//   Added call to ResizeTabs.
 //
 // ****************************************************************************
 
@@ -635,6 +659,11 @@ QvisPickWindow::GetCurrentValues(int which_widget)
  
         pickAtts->SetVariables(userVars);
     }
+
+    if (doAll)
+    {
+        ResizeTabs();
+    }
 }
 
 // ****************************************************************************
@@ -653,6 +682,9 @@ QvisPickWindow::GetCurrentValues(int which_widget)
 //   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003
 //   Added a node for savePicks.
 //   
+//   Kathleen Bonnell, Mon Oct 31 10:47:53 PST 2005 
+//   Added a node for userMaxTabs.
+//   
 // ****************************************************************************
 
 void
@@ -669,6 +701,7 @@ QvisPickWindow::CreateNode(DataNode *parentNode)
         {
             node->AddNode(new DataNode("autoShow", autoShow));
             node->AddNode(new DataNode("savePicks", savePicks));
+            node->AddNode(new DataNode("userMaxTabs", userMaxPickTabs->value()));
         }
     }
 }
@@ -690,6 +723,9 @@ QvisPickWindow::CreateNode(DataNode *parentNode)
 //   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003
 //   Added a node for savePicks.
 //   
+//   Kathleen Bonnell, Mon Oct 31 10:47:53 PST 2005 
+//   Added a node for userMaxTabs.
+//   
 // ****************************************************************************
 
 void
@@ -707,6 +743,11 @@ QvisPickWindow::SetFromNode(DataNode *parentNode, const int *borders)
         autoShow = node->AsBool();
     if((node = winNode->GetNode("savePicks")) != 0)
         savePicks = node->AsBool();
+    if((node = winNode->GetNode("userMaxTabs")) != 0)
+    {
+        userMaxPickTabs->setValue(node->AsInt());
+        ResizeTabs();
+    }
 }
 
 // ****************************************************************************
@@ -795,7 +836,7 @@ void
 QvisPickWindow::ClearPages()
 {
     QString temp = " ";
-    for (int i = 0; i < MAX_PICK_TABS; i++)
+    for (int i = 0; i < tabWidget->count(); i++)
     {
         tabWidget->changeTab(pages[i], temp);
         infoLists[i]->clear();
@@ -1243,4 +1284,55 @@ QvisPickWindow::displayPickLetterToggled(bool val)
     pickAtts->SetDisplayPickLetter(val);
     Apply();
 }
+
+
+// ****************************************************************************
+// Method: QvisPickWindow::ResizeTabs
+//
+// Purpose:
+//   Resizes the number of tab the tabWidget hold based on the
+//   current value in userMaxPickTabs. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   October 31, 2005 
+//
+// ****************************************************************************
+
+void
+QvisPickWindow::ResizeTabs()
+{
+    int currentMax = tabWidget->count();
+    int newMax     = userMaxPickTabs->value();
+
+    if (currentMax == newMax)
+        return;
+
+    int i;
+    QString temp = " ";
+    if (newMax < currentMax)
+    {
+        // Reduce the number of pages that tabWidget holds
+        for (i = currentMax-1; i >= newMax; i--)
+        {
+            tabWidget->changeTab(pages[i], temp);
+            infoLists[i]->clear();
+            tabWidget->removePage(pages[i]);
+            pages[i]->setHidden(true);
+        }
+        if (nextPage >= newMax)
+            nextPage = 0;
+    }
+    else // newMax > currentMax 
+    {
+        // Increase the number of pages that tabWidget holds
+        for (i = currentMax; i < newMax; i++)
+        {
+            pages[i]->setHidden(false);
+            tabWidget->addTab(pages[i]," "); 
+        }
+        if (tabWidget->label(nextPage) != " ")
+            nextPage = currentMax; 
+    }
+}
+
 

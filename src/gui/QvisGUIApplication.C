@@ -403,12 +403,15 @@ LongFileName(const char *shortName)
 //   Brad Whitlock, Thu Oct 27 14:17:01 PST 2005
 //   Added sessionFileHelper.
 //
+//   Brad Whitlock, Fri Oct 28 13:50:21 PST 2005
+//   Added movieArguments.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     ConfigManager(), GUIBase(), message(), plotWindows(),
     operatorWindows(), otherWindows(), foregroundColor(), backgroundColor(),
-    applicationStyle(), loadFile(), sessionFile()
+    applicationStyle(), loadFile(), sessionFile(), movieArguments()
 {
     completeInit = visitTimer->StartTimer();
     int total = visitTimer->StartTimer();
@@ -490,6 +493,9 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
 
     // Add left-over arguments to the viewer.
     AddViewerArguments(argc, argv);
+
+    // Add some left-over arguments to the movie script.
+    AddMovieArguments(argc, argv);
 
     //
     // Create the application and customize its appearance. Note that we
@@ -1853,6 +1859,52 @@ QvisGUIApplication::AddViewerArguments(int argc, char **argv)
         }
         else
             viewer->AddArgument(argv[i]);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::AddMovieArguments
+//
+// Purpose: 
+//   Adds certain arguments to the list of arguments that will be passed along
+//   to the movie-maker.
+//
+// Arguments:
+//   argc : The number of arguments.
+//   argv : The list of arguments.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 28 12:21:19 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::AddMovieArguments(int argc, char **argv)
+{
+    for(int i = 1; i < argc; ++i)
+    {
+        std::string arg(argv[i]);
+        if(arg == "-geometry" ||
+           arg == "-key" ||
+           arg == "=sessionfile" ||
+           arg == "-host" ||
+           arg == "-port" ||
+           arg == "-sessionfile" ||
+           arg == "-o" ||
+           arg == "-format" ||
+           arg == "-output")
+        {
+            // skip the 2nd argument
+            ++i;
+        }
+        else if(arg == "-reverse_launch")
+        {
+            // Skip it
+        }
+        else
+            movieArguments.push_back(argv[i]);
     }
 }
 
@@ -5790,13 +5842,20 @@ QuoteSpaces(const std::string &s)
 //   Brad Whitlock, Thu Jul 14 10:55:37 PDT 2005
 //   I made it use GetVisItLauncher.
 //
+//   Brad Whitlock, Fri Oct 28 13:52:31 PST 2005
+//   I moved the code to add the visit command to the caller. I also added 
+//   code to add the version number if we're not running a development version.
+//
 // ****************************************************************************
 
 void
 GetMovieCommandLine(const MovieAttributes *movieAtts, stringVector &args)
 {
-    args.push_back(QuoteSpaces(GetVisItLauncher()));
-    args.push_back("-movie");
+    if(!GetIsDevelopmentVersion())
+    {
+        args.push_back("-v");
+        args.push_back(VERSION);
+    }
 
     // iterate over the formats
     args.push_back("-format");
@@ -6034,9 +6093,13 @@ QvisGUIApplication::SaveMovie()
 
             // Get the command line arguments.
             stringVector args;
+            args.push_back(QuoteSpaces(GetVisItLauncher()));
+            args.push_back("-movie");
             GetMovieCommandLine(movieAtts, args);
             args.push_back("-sessionfile");
             args.push_back(QuoteSpaces(std::string(sessionFile.latin1())));
+            for(int m = 0; m < movieArguments.size(); ++m)
+                args.push_back(movieArguments[m]);
 
             if (movieAtts->GetGenerationMethod() == MovieAttributes::NowNewInstance)
             {

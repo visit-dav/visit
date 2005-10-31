@@ -259,6 +259,10 @@ class SplashScreen;
 //    Brad Whitlock, Thu Oct 27 16:26:46 PST 2005
 //    Added sessionFileHelper to help open the databases in a session file.
 //
+//    Brad Whitlock, Fri Oct 28 12:15:52 PDT 2005
+//    Added movie arguments so the user can pass certain arguments to the
+//    movie script on the command line when we launch a new VisIt.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -272,6 +276,7 @@ public:
 private:
     void AddViewerArguments(int argc, char **argv);
     void AddViewerSpaceArguments();
+    void AddMovieArguments(int argc, char **argv);
     void SplashScreenProgress(const char *, int);
     void CalculateViewerArea(int orientation, int &x, int &y,
                              int &width, int &height);
@@ -476,6 +481,9 @@ private:
     // Session variables
     QString                      sessionFile;
     int                          sessionCount;
+
+    // Movie variables
+    stringVector                 movieArguments;
 
     // Synchronization attributes
     ObserverToCallback           *syncObserver;

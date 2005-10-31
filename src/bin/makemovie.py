@@ -1649,6 +1649,13 @@ class MakeMovie:
     #   Moved some code to the IterateAndSaveFrames method. Added code to make
     #   sure that each movie format has a valid format string.
     #
+    #   Brad Whitlock, Mon Oct 31 12:05:14 PDT 2005
+    #   Moved the code around for the stateFile case so that we launch compute
+    #   engines before restoring the session file. The viewer does not try to
+    #   use the list of compute engines stored in the session file so it is
+    #   up to this script to launch the right parallel compute engines before
+    #   restoring the session file.
+    #
     ###########################################################################
 
     def GenerateFrames(self):
@@ -1721,21 +1728,25 @@ class MakeMovie:
                 SetTimeSliderState(tsState)
         elif(self.usesStateFile):
             self.Debug("GenerateFrames: using session file %s" % self.stateFile)
-            # Make the viewer try and restore its session using the file that
-            # was passed in.
-            RestoreSession(self.stateFile, 0)
 
             # If we're using a session file, try and read it to determine which
             # compute engines need to be launched.
-            if self.usesStateFile and self.useSessionEngineInformation == 1:
+            properties = {}
+            if self.useSessionEngineInformation == 1:
                 properties = self.ReadEngineProperties(self.stateFile)
+                self.Debug(properties)
 
             # Launch any compute engines that were either specified on the
             # command line or in the session file.
             for host in properties.keys():
-                args = self.CreateEngineArguments(properties[host])
-                if len(args) > 0:
+                if properties[host] != {}:
+                    args = self.CreateEngineArguments(properties[host])
+                    self.Debug("Starting compute engine: %s" % host)
                     OpenComputeEngine(host, args)
+
+            # Make the viewer try and restore its session using the file that
+            # was passed in.
+            RestoreSession(self.stateFile, 0)
 
             # Make sure that plots are all drawn.
             DrawPlots()

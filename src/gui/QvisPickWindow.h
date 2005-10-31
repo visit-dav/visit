@@ -3,11 +3,13 @@
 #include <gui_exports.h>
 #include <QvisPostableWindowObserver.h>
 
-#define MAX_PICK_TABS 8
+#define MAX_PICK_TABS 25
+#define MIN_PICK_TABS 8 
 
 class QCheckBox;
 class QLineEdit;
 class QMultiLineEdit;
+class QSpinBox;
 class QTabWidget;
 class QVBox;
 class QvisVariableButton;
@@ -71,6 +73,9 @@ class PickAttributes;
 //   Kathleen Bonnell, Tue Dec 28 16:23:43 PST 2004
 //   Add checkbox and slot for displayPickLetter. 
 //
+//   Kathleen Bonnell, Mon Oct 31 10:39:28 PST 2005 
+//   Added spinbox for userMaxPickTabs, and ResizeTabs method.
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -117,6 +122,7 @@ private slots:
 private:
     void UpdatePage(void);
     void ClearPages(void);
+    void ResizeTabs(void);
 
     bool                savePicks;
     bool                autoShow;
@@ -148,5 +154,6 @@ private:
     PickAttributes     *pickAtts;
     QCheckBox          *displayGlobalIds;
     QCheckBox          *displayPickLetter;
+    QSpinBox           *userMaxPickTabs;
 };
 #endif
