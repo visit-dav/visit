@@ -32,6 +32,9 @@ class QvisLineWidthWidget;
 //   Kathleen Bonnell, Thu Oct 27 15:35:11 PDT 2005 
 //   Added showLegend.
 //   
+//   Kathleen Bonnell, Mon Oct 31 17:05:35 PST 2005
+//   Added cycleColors, colorLabel.
+//   
 // ****************************************************************************
 
 class QvisCurvePlotWindow : public QvisPostableWindowObserver
@@ -61,11 +64,14 @@ class QvisCurvePlotWindow : public QvisPostableWindowObserver
     void showLegendChanged(bool val);
     void showPointsChanged(bool val);
     void processPointSizeText();
+    void cycleColorsChanged(bool val);
   private:
     int plotType;
     QvisLineStyleWidget *lineStyle;
     QvisLineWidthWidget *lineWidth;
+    QCheckBox           *cycleColors;
     QvisColorButton     *color;
+    QLabel              *colorLabel;
     QCheckBox           *showLabels;
     QCheckBox           *showLegend;
     QCheckBox           *showPoints;
