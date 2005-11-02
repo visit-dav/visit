@@ -867,6 +867,10 @@ avtOpenGLLabelRenderer::DrawAllLabels2D(bool drawNodeLabels, bool drawCellLabels
 //    bin sizes works better. Finally, I added some code for debugging that
 //    lets us visualize the bins.
 //
+//    Brad Whitlock, Wed Nov 2 14:44:48 PST 2005
+//    I changed a char array to bool and removed the use of memset to avoid
+//    a problem where labels would not show up on versions built with xlC.
+//
 // ****************************************************************************
 
 void
@@ -955,8 +959,9 @@ avtOpenGLLabelRenderer::DrawDynamicallySelectedLabels2D(bool drawNodeLabels,
     // Create an array to record whether or not we've drawn a label
     // for a bin.
     //
-    char  *bins = new char[bin_x_y];
-    memset (bins, -1, bin_x_y * sizeof (char)); /* -1 */
+    bool *bins = new bool[bin_x_y];
+    for(int b = 0; b < bin_x_y; ++b)
+        bins[b] = false;
 
 #ifdef VISUALIZE_DYNAMIC_BINS
     glColor3f(1.,0.,0.);
@@ -1022,11 +1027,11 @@ avtOpenGLLabelRenderer::DrawDynamicallySelectedLabels2D(bool drawNodeLabels,
             // add the label to that bin.
             //
             int binIndex = bin_j*bin_x_n+bin_i;
-            if (bins[binIndex] >= 0)
+            if (bins[binIndex])
                 continue; /*cell has label*/
 
             // Mark that the cell has a label
-            bins[binIndex] = 1;
+            bins[binIndex] = true;
 
             // Draw the label in the cell.
             DrawLabel2(labelVert, labelPtr);
@@ -1064,11 +1069,11 @@ avtOpenGLLabelRenderer::DrawDynamicallySelectedLabels2D(bool drawNodeLabels,
             // add the label to that bin.
             //
             int binIndex = bin_j*bin_x_n+bin_i;
-            if (bins[binIndex] >= 0)
+            if (bins[binIndex])
                 continue; /*cell has label*/
 
             // Mark that the cell has a label
-            bins[binIndex] = 1;
+            bins[binIndex] = true;
 
             // Draw the label in the cell.
             DrawLabel2(labelVert, labelPtr);
