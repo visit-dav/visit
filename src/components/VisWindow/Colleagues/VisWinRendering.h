@@ -142,6 +142,9 @@ class VisWindowColleagueProxy;
 //    Mark C. Miller, Fri Mar  4 13:05:02 PST 2005
 //    Changed name of GetNumTriangles to GetNumPrimitives
 //
+//    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//    Added 3 most recent rendering times to set of times returned by
+//    GetRenderTimes. Added supporting data members
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -211,7 +214,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     void                     SetAntialiasing(bool enabled);
     bool                     GetAntialiasing() const
                                  { return antialiasing; };
-    void                     GetRenderTimes(float times[3]) const;
+    void                     GetRenderTimes(float times[6]) const;
     void                     SetStereoRendering(bool enabled, int type);
     bool                     GetStereo() const
                                  { return stereo; };
@@ -282,6 +285,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     float                         maxRenderTime;
     float                         summedRenderTime;
     float                         nRenders;
+    float                         curRenderTimes[3];
 
     // stereo option
     static bool                   stereoEnabled;

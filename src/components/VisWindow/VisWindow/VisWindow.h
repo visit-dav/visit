@@ -311,6 +311,9 @@ class VisitInteractor;
 //    Kathleen Bonnell, Mon Jun 27 14:54:36 PDT 2005 
 //    Added GetMaxPlotZShift.
 //
+//    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//    Added 3 most recent rendering times to set of times returned
+//    by GetRenderTimes
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -474,7 +477,7 @@ public:
     void                 SetRenderInfoCallback(VisCallback *cb, void *data);
     void                 SetAntialiasing(bool enabled);
     bool                 GetAntialiasing() const;
-    void                 GetRenderTimes(float times[3]) const;
+    void                 GetRenderTimes(float times[6]) const;
     void                 SetStereoRendering(bool enabled, int type);
     bool                 GetStereo() const;
     int                  GetStereoType() const;

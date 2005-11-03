@@ -61,6 +61,9 @@
     <Field name="shadowStrength" label="Shadow Strength" type="double">
       0.500000
     </Field>
+    <Field name="compressionActivationMode" label="compressionActivationMode" type="enum" subtype="TriStateMode">
+      Never
+    </Field>
     <Function name="GetEffectiveScalableThreshold" user="true" member="true">
     </Function>
     <Constant name="DEFAULT_SCALABLE_AUTO_THRESHOLD" member="false">

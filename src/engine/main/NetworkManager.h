@@ -225,6 +225,9 @@ typedef struct _EngineVisWinInfo
 //
 //    Mark C. Miller, Wed Jun  8 11:03:31 PDT 2005
 //    Added HasNonMeshPlots
+//
+//    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//    Added GetShouldUseCompression()
 // ****************************************************************************
 class NetworkManager
 {
@@ -259,6 +262,7 @@ class NetworkManager
     int           GetTotalGlobalCellCounts(int winID) const;
     void          SetGlobalCellCount(int netId, int cellCount);
     int           GetScalableThreshold(int winId) const;
+    bool          GetShouldUseCompression(int winId) const;
     void          DoneWithNetwork(int);
 
     void          UpdatePlotAtts(int, const AttributeGroup *);

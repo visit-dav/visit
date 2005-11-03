@@ -58,6 +58,10 @@
 //    I added static methods, TimeSinceLastArrival, DiffTime
 //    I defined the TIMEINFO macro and restructured code to use it 
 //
+//    Mark C. Miller, Wed Nov  2 09:07:05 PST 2005
+//    Added optional force argument to Start/Stop methods to permit
+//    getting timer info in return value even if not logging to file
+//
 // ****************************************************************************
 
 class MISC_API TimingsManager
@@ -73,9 +77,10 @@ class MISC_API TimingsManager
 
     void                       Enable(void);
     void                       Disable(void);
+    bool                       Enabled() const {return enabled;};
 
-    int                        StartTimer(void);
-    double                     StopTimer(int, const std::string &);
+    int                        StartTimer(bool force=false);
+    double                     StopTimer(int, const std::string &, bool force=false);
 
     static double              DiffTime();
 

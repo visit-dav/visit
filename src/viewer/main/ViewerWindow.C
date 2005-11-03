@@ -241,6 +241,8 @@ ViewerWindow::ViewerWindow(int windowIndex)
     isChangingScalableRenderingMode = false;
     targetScalableRenderingMode = false;
     nameOfCtChangedSinceLastRender = "";
+    isCompressingScalableImage = false;
+    compressionActivationMode = RenderingAttributes::Never;
 
     // Create the popup menu and the toolbar.
     popupMenu = new ViewerPopupMenu(this);
@@ -5243,6 +5245,9 @@ ViewerWindow::GetWindowAttributes() const
     renderAtts.SetDoShadowing(GetDoShading());
     renderAtts.SetShadowStrength(GetShadingStrength());
 
+    renderAtts.SetCompressionActivationMode(
+        (RenderingAttributes::TriStateMode) compressionActivationMode);
+
     winAtts.SetRenderAtts(renderAtts);
 
     //
@@ -5912,11 +5917,14 @@ ViewerWindow::GetAntialiasing() const
 // Creation:   Mon Sep 23 14:39:41 PST 2002
 //
 // Modifications:
+//
+//    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//    Added 3 most recent rendering times to set of times returned
 //   
 // ****************************************************************************
 
 void
-ViewerWindow::GetRenderTimes(float times[3]) const
+ViewerWindow::GetRenderTimes(float times[6]) const
 {
     visWindow->GetRenderTimes(times);
 }
@@ -6321,6 +6329,8 @@ ViewerWindow::GetNotifyForEachRender() const
 //   engine would be working from old scalable rendering parameters and not
 //   the new ones we're just setting here.
 //
+//   Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//   Reset compression flag 
 // ****************************************************************************
 
 void
@@ -6359,6 +6369,9 @@ ViewerWindow::ChangeScalableRenderingMode(bool newMode)
 
     // note, this flag is set to true when the render message is sent
     isChangingScalableRenderingMode = false;
+
+    if (newMode == false)
+        isCompressingScalableImage = false;
 }
 
 // ****************************************************************************
@@ -6573,6 +6586,32 @@ int
 ViewerWindow::GetScalableAutoThreshold() const
 {
     return visWindow->GetScalableAutoThreshold();
+}
+
+// ****************************************************************************
+//
+// Purpose: Set/Get compression activation mode
+//
+// Programmer: Mark C. Miller
+// Creation:   November 3, 2005 
+// ****************************************************************************
+int
+ViewerWindow::SetCompressionActivationMode(int val)
+{
+    int oldVal = compressionActivationMode;
+    compressionActivationMode = val;
+    return oldVal;
+}
+int
+ViewerWindow::GetCompressionActivationMode() const
+{
+    return compressionActivationMode;
+}
+
+bool
+ViewerWindow::GetIsCompressingScalableImage() const
+{
+    return isCompressingScalableImage;
 }
 
 // ****************************************************************************
@@ -7503,6 +7542,7 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
     lastExternalRenderRequest.lastChangedCtName = ""; 
 
     nameOfCtChangedSinceLastRender = "";
+
 }
 
 // ****************************************************************************
@@ -7549,6 +7589,9 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
 //
 //    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
 //    Added code to manage name of last color table to change
+//
+//    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//    Added code to filter compression mode from influencing skip 
 // ****************************************************************************
 
 bool
@@ -7561,9 +7604,12 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
     WindowAttributes tmpWinAtts = thisRequest.winAtts;
     int lastScalableAutoThreshold = lastRequest.winAtts.GetRenderAtts().GetScalableAutoThreshold();
     int lastScalableActivationMode = lastRequest.winAtts.GetRenderAtts().GetScalableActivationMode();
+    int lastCompressionActivationMode = lastRequest.winAtts.GetRenderAtts().GetCompressionActivationMode();
     tmpWinAtts.GetRenderAtts().SetScalableAutoThreshold(lastScalableAutoThreshold);
     tmpWinAtts.GetRenderAtts().SetScalableActivationMode(
         (RenderingAttributes::TriStateMode) lastScalableActivationMode);
+    tmpWinAtts.GetRenderAtts().SetCompressionActivationMode(
+        (RenderingAttributes::TriStateMode) lastCompressionActivationMode);
     View3DAttributes lastView3D = lastRequest.winAtts.GetView3D();
     tmpWinAtts.GetView3D().SetCenterOfRotationSet(lastView3D.GetCenterOfRotationSet());
     tmpWinAtts.GetView3D().SetCenterOfRotation(lastView3D.GetCenterOfRotation());
@@ -7758,6 +7804,8 @@ ViewerWindow::GetExternalRenderRequestInfo(
 //    Hank Childs, Fri Jan 28 11:55:12 PST 2005
 //    Make sure returns inside 'try' are wrapped.
 //
+//    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//    Added code to set whether window is being compressed or not 
 // ****************************************************************************
 bool
 ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
@@ -7841,6 +7889,11 @@ ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
     {
         CopyTo(dob, imgList[0]);
     }
+
+    if (imgList[0]->GetCompressionRatio() != -1.0)
+        isCompressingScalableImage = true;
+    else
+        isCompressingScalableImage = false;
 
     return true;
 }

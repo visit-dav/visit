@@ -35,6 +35,9 @@ class  vtkImageData;
 //    used by VTK. Since I don't plan to use this feature of a vtkImageData
 //    object, I have captured knowledge of row/col offset here in AVT.
 //
+//    Mark C. Miller, Mon Oct 31 18:12:49 PST 2005
+//    Added code to support compression of data object string
+//
 // ****************************************************************************
 
 class PIPELINE_API avtImageRepresentation
@@ -56,11 +59,13 @@ class PIPELINE_API avtImageRepresentation
     float               *GetZBuffer(void);
     unsigned char       *GetRGBBuffer(void);
     unsigned char       *GetImageString(int &);
+    unsigned char       *GetCompressedImageString(int &);
     void                 GetSize(int *rowSize, int *colSize);
 
     void                 SetOrigin(const int rowOrigin, const int colOrigin);
     void                 GetOrigin(int *rowOrigin, int *colOrigin) const;
     virtual int          GetNumberOfCells(bool polysOnly = false) const; 
+    float                GetCompressionRatio() const;
 
     bool                 Valid(void);
     void                 ReleaseData(void);
@@ -77,6 +82,7 @@ class PIPELINE_API avtImageRepresentation
 
     int                  rowOrigin;
     int                  colOrigin;
+    float                compressionRatio;
 
     void                 Copy(const avtImageRepresentation &);
     void                 DestructSelf(void);
@@ -85,6 +91,7 @@ class PIPELINE_API avtImageRepresentation
   private:
     void                 GetImageFromString(unsigned char *, int,
                             vtkImageData *&, float *&);
+    unsigned char       *GetImageString(int &, bool);
 };
 
 inline

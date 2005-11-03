@@ -46,6 +46,9 @@ class     avtDataObjectString;
 //    Moved inlined destructor definition to .C file because certain compilers
 //    have problems with them.
 //
+//    Mark C. Miller, Mon Oct 31 18:12:49 PST 2005
+//    Added code to support compression of data object string
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObjectWriter : virtual public avtOriginatingSink
@@ -57,6 +60,7 @@ class PIPELINE_API avtDataObjectWriter : virtual public avtOriginatingSink
     void                       Write(avtDataObjectString &);
 
     void                       SetDestinationFormat(const TypeRepresentation&);
+    void                       SetUseCompression(bool val) { useCompression = val; };
 
     void                       WriteInt(avtDataObjectString &, int) const;
     void                       WriteFloat(avtDataObjectString &, float) const;
@@ -73,6 +77,7 @@ class PIPELINE_API avtDataObjectWriter : virtual public avtOriginatingSink
   protected:
     TypeRepresentation         sourceFormat;
     TypeRepresentation         destinationFormat;
+    bool                       useCompression;
 
     virtual void               DataObjectWrite(avtDataObjectString &) = 0;
 };

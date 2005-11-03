@@ -343,6 +343,9 @@ class ViewerToolbar;
 //    removed a method to set the popup menu's enabled state since we can
 //    get at the menu directly.
 //
+//    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
+//    Added 3 most recent rendering times to set of times returned from
+//    GetRenderTimes. Added compression controls
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -527,7 +530,7 @@ public:
     // Rendering options.
     void SetAntialiasing(bool enabled);
     bool GetAntialiasing() const;
-    void GetRenderTimes(float times[3]) const;
+    void GetRenderTimes(float times[6]) const;
     void SetStereoRendering(bool enabled, int type);
     bool GetStereo() const;
     int  GetStereoType() const;
@@ -553,6 +556,9 @@ public:
     void SetShadingProperties(bool,double);
     bool GetDoShading() const;
     double GetShadingStrength() const;
+    int GetCompressionActivationMode() const;
+    int SetCompressionActivationMode(int);
+    bool GetIsCompressingScalableImage() const;
 
     void Lineout(const bool);
 
@@ -624,6 +630,9 @@ private:
     bool            isChangingScalableRenderingMode;
     bool            targetScalableRenderingMode;
     std::string     nameOfCtChangedSinceLastRender;
+    bool            isCompressingScalableImage;
+    int             compressionActivationMode;
+
 
     bool            cameraView;
     bool            maintainView;

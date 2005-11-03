@@ -63,6 +63,8 @@ class PIPELINE_API avtImage : public avtDataObject
     virtual void              ReleaseData(void);
     avtImageRepresentation   &GetImage(void);
     virtual void              GetSize(int *width, int *height) const;
+    virtual float             GetCompressionRatio() const
+                                  {return image.GetCompressionRatio(); };
 
   protected:
     avtImageRepresentation    image;

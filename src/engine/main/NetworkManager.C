@@ -1266,6 +1266,35 @@ NetworkManager::GetScalableThreshold(int windowID) const
 }
 
 // ****************************************************************************
+//  Method: NetworkManager::GetShouldUseCompression
+//
+//  Purpose: Determine if we should use compression 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 3, 2005 
+//
+// ****************************************************************************
+bool
+NetworkManager::GetShouldUseCompression(int windowID) const
+{
+    int scalableAutoThreshold;
+    RenderingAttributes::TriStateMode compressionActivationMode;
+
+    // since we're in a const method, we can't use the [] operator to index
+    // into the map directly becuase that operator will modify the map if the
+    // key is new
+    std::map<int, EngineVisWinInfo>::const_iterator it;
+    it = viswinMap.find(windowID);
+    const EngineVisWinInfo &viswinInfo = it->second;
+    const WindowAttributes &windowAttributes = viswinInfo.windowAttributes; 
+
+    compressionActivationMode = 
+        windowAttributes.GetRenderAtts().GetCompressionActivationMode();
+
+    return compressionActivationMode != RenderingAttributes::Never;
+}
+
+// ****************************************************************************
 //  Method: NetworkManager::DoneWithNetwork
 //
 //  Purpose:

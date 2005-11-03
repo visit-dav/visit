@@ -2505,6 +2505,10 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
             renderAtts->GetScalableActivationMode())
             windows[index]->SetScalableActivationMode(renderAtts->GetScalableActivationMode());
 
+        if (windows[index]->GetCompressionActivationMode() !=
+            renderAtts->GetCompressionActivationMode())
+            windows[index]->SetCompressionActivationMode(renderAtts->GetCompressionActivationMode());
+
         if (windows[index]->GetSpecularFlag()  != renderAtts->GetSpecularFlag() ||
             windows[index]->GetSpecularCoeff() != renderAtts->GetSpecularCoeff() ||
             windows[index]->GetSpecularPower() != renderAtts->GetSpecularPower() ||
