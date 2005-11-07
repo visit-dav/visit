@@ -38,10 +38,10 @@ using   std::sort;
 // ----------------------------------------------------------------------------
 
 #ifdef PARALLEL
-template <class T> int GetMPIDataType();
-template <>        int GetMPIDataType<int>()    { return MPI_INT;  }
-template <>        int GetMPIDataType<float>()  { return MPI_FLOAT;}
-template <>        int GetMPIDataType<unsigned char>()  { return MPI_UNSIGNED_CHAR;}
+template <class T> MPI_Datatype GetMPIDataType();
+template <>        MPI_Datatype GetMPIDataType<int>()    { return MPI_INT;  }
+template <>        MPI_Datatype GetMPIDataType<float>()  { return MPI_FLOAT;}
+template <>        MPI_Datatype GetMPIDataType<unsigned char>()  { return MPI_UNSIGNED_CHAR;}
 #endif
 
 // ****************************************************************************
@@ -438,6 +438,10 @@ BoundaryHelperFunctions<T>::FillMixedBoundaryData(int          d1,
 //    Hank Childs, Thu Jun 23 10:27:01 PDT 2005
 //    Re-wrote using all-to-all for efficiency.
 //
+//    Brad Whitlock, Mon Nov 7 09:26:56 PDT 2005
+//    I made it use MPI_Datatype for the return type of GetMPIDataType so
+//    it can build with LAM.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -447,7 +451,7 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
                                                        int      ncomp)
 {
 #ifdef PARALLEL
-    int mpi_datatype = GetMPIDataType<T>();
+    MPI_Datatype mpi_datatype = GetMPIDataType<T>();
 
     int mpiMsgTag = GetUniqueMessageTag();
 
@@ -602,6 +606,10 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
 //    way, use the "match", which is already pre-computed by the client for
 //    this purpose.
 //
+//    Brad Whitlock, Mon Nov 7 09:26:56 PDT 2005
+//    I made it use MPI_Datatype for the return type of GetMPIDataType so
+//    it can build with LAM.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -613,7 +621,7 @@ BoundaryHelperFunctions<T>::CommunicateMixedBoundaryData(const vector<int> &doma
 {
 #ifdef PARALLEL
 
-    int mpi_datatype = GetMPIDataType<T>();
+    MPI_Datatype mpi_datatype = GetMPIDataType<T>();
     MPI_Status stat;
 
     int rank;

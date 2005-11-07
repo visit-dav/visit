@@ -257,6 +257,9 @@
 #    Kathleen Bonnell, Thu Oct 27 15:02:44 PDT 2005 
 #    Added vtkLineLegend.
 #
+#    Brad Whitlock, Thu Nov 3 11:02:54 PDT 2005
+#    Added support for Mesa vs. OpenGL source builds.
+#
 ##############################################################################
 
 ##
@@ -268,6 +271,11 @@
 ##
 ## Files...
 ##
+OPENGL_SRC=vtkVisItOpenGLPolyDataMapper.C
+
+MESA_SRC=vtkOSMesaRenderWindow.C \
+    vtkVisItMesaPolyDataMapper.C
+
 SRC=InitVTK.C \
     vtkAxisDepthSort.C \
     vtkBackgroundActor.C @VTK_CAMERA_SRC@\
@@ -282,7 +290,6 @@ SRC=InitVTK.C \
     vtkLinesFromOriginalCells.C \
     vtkOBJWriter.C \
     vtkOnionPeelFilter.C \
-    vtkOSMesaRenderWindow.C \
     vtkPolyDataOnionPeelFilter.C \
     vtkPPMWriter.C \
     vtkRGBWriter.C \
@@ -316,8 +323,6 @@ SRC=InitVTK.C \
     vtkVisItExtractRectilinearGrid.C \
     vtkVisItFeatureEdges.C \
     vtkVisItGlyph3D.C \
-    vtkVisItMesaPolyDataMapper.C \
-    vtkVisItOpenGLPolyDataMapper.C \
     vtkVisItPolyDataNormals.C \
     vtkVisItSTLWriter.C \
     vtkVisItScalarTree.C \
@@ -327,9 +332,9 @@ SRC=InitVTK.C \
     vtkVolumeFromVolume.C
 
 
-CPPFLAGS=@VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ -I. @MESA_INCLUDE@
+CPPFLAGS=@VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ -I.
 
-OBJ=$(SRC:.C=.o)
+OBJ=$(SRC:.C=.o) $(OPENGL_OBJ) $(MESA_OBJ)
 LIB=libvisit_vtk
 LIBS=-lmisc -lavtexceptions -llightweight_visit_vtk @VTK_LIBS@ $(X_LIBS)
 

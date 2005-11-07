@@ -1237,7 +1237,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
 
     //
     // When respond with null is true, this routine still has an obligation
-    // to recieve the dummied-up data tree from each processor, regardless of
+    // to receive the dummied-up data tree from each processor, regardless of
     // whether or not the scalable threshold has been exceeded. So, we capture
     // that fact in the 'sendDataAnyway' bool. Likewise, when scalableThreshold
     // is -1, it means also to send the data anyway. 
@@ -1297,7 +1297,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
 
                 mpiSource = stat.MPI_SOURCE;
 
-                debug5 << "recievied the \"num cells I have\" (=" << proc_i_localCellCount
+                debug5 << "received the \"num cells I have\" (=" << proc_i_localCellCount
                        << ") message from processor " << mpiSource << endl;
 
                 // accumulate this processors cell count in the total for this network
@@ -1327,7 +1327,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
                 {
                     MPI_Recv(&size, 1, MPI_INT, mpiSource, 
                              mpiDataObjSizeTag, MPI_COMM_WORLD, &stat);
-                    debug5 << "recieving size=" << size << endl;
+                    debug5 << "receiving size=" << size << endl;
 
                     debug5 << "receiving " << size << " bytes from MPI_SOURCE "
                            << mpiSource << endl;
@@ -1335,7 +1335,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
                     char *str = new char[size];
                     MPI_Recv(str, size, MPI_CHAR, mpiSource, 
                              mpiDataObjDataTag, MPI_COMM_WORLD, &stat);
-                    debug5 << "recieving data" << endl;
+                    debug5 << "receiving data" << endl;
     
                     // The data object reader will delete the string.
                     avtDataObjectReader *avtreader = new avtDataObjectReader;

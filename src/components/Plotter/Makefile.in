@@ -166,6 +166,9 @@
 #    Kathleen Bonnell, Thu Oct 27 15:01:07 PDT 2005 
 #    Add avtCurveLegend. 
 #
+#    Brad Whitlock, Thu Nov 3 11:05:59 PDT 2005
+#    Added support for Mesa vs OpenGL build.
+#
 ##############################################################################
 
 ##
@@ -177,14 +180,16 @@
 ##
 ## Files...
 ##
+OPENGL_SRC=avtOpenGLSurfaceAndWireframeRenderer.C
+MESA_SRC=avtMesaSurfaceAndWireframeRenderer.C
+
 SRC=avtLegend.C avtVariableLegend.C avtGeometryDrawable.C avtActor.C \
     avtBehavior.C avtTheater.C avtMapper.C avtVariableMapper.C avtPlot.C \
     avtImageMapper.C avtImageDrawable.C avtLevelsLegend.C \
     avtLevelsMapper.C avtDrawer.C avtVectorGlyphMapper.C \
     avtUserDefinedMapper.C RenderOrder.C avtVolumeVariableLegend.C \
     avtColorTables.C avtSurfaceAndWireframeRenderer.C avtLookupTable.C \
-    avtLightList.C avtPickActor.C avtMesaSurfaceAndWireframeRenderer.C \
-    avtOpenGLSurfaceAndWireframeRenderer.C avtCustomRenderer.C \
+    avtLightList.C avtPickActor.C avtCustomRenderer.C \
     avtLineoutActor.C avtTransparencyActor.C avtLabelActor.C \
     avtDecorationsDrawable.C avtDecorationsMapper.C avtLabeledCurveMapper.C \
     avtExternallyRenderedImagesActor.C avtTensorGlyphMapper.C avtDrawable.C \
@@ -193,10 +198,10 @@ SRC=avtLegend.C avtVariableLegend.C avtGeometryDrawable.C avtActor.C \
 
 
 
-CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@ @MESA_INCLUDE@
+CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 
-SEROBJ=$(SRC:.C=.o)
-PAROBJ=$(SRC:.C=_par.o)
+SEROBJ=$(SRC:.C=.o) $(SEROPENGL_OBJ) $(SERMESA_OBJ)
+PAROBJ=$(SRC:.C=_par.o) $(PAROPENGL_OBJ) $(PARMESA_OBJ)
 LIB=libplotter
 SERLIBS=-ldbatts -lmisc -lcomm -lstate -lexpr -lparser -lutility -lpipeline_ser -lavtview -lavtmath_ser -lavtfilters_ser -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser $(VTK_LIBS) $(X_LIBS)
 PARLIBS=-ldbatts -lmisc -lcomm -lstate -lexpr -lparser -lutility -lpipeline_par -lavtview -lavtmath_par -lavtfilters_par -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par $(VTK_LIBS) $(X_LIBS)

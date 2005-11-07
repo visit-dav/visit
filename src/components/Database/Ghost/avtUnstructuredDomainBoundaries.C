@@ -34,14 +34,14 @@ using namespace std;
 #ifdef PARALLEL
 namespace
 {
-    template <class T> int GetMPIDataType();
-    template <>        int GetMPIDataType<int>()    { return MPI_INT;  }
-    template <>        int GetMPIDataType<char>()   { return MPI_CHAR; }
-    template <>        int GetMPIDataType<float>()  { return MPI_FLOAT;}
+    template <class T> MPI_Datatype GetMPIDataType();
+    template <>        MPI_Datatype GetMPIDataType<int>()    { return MPI_INT;  }
+    template <>        MPI_Datatype GetMPIDataType<char>()   { return MPI_CHAR; }
+    template <>        MPI_Datatype GetMPIDataType<float>()  { return MPI_FLOAT;}
 
-    template <>        int GetMPIDataType<unsigned int>()
+    template <>        MPI_Datatype GetMPIDataType<unsigned int>()
                        { return MPI_UNSIGNED; }
-    template <>        int GetMPIDataType<unsigned char>()
+    template <>        MPI_Datatype GetMPIDataType<unsigned char>()
                        { return MPI_UNSIGNED_CHAR;}
 }
 
@@ -1484,6 +1484,10 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
 //    I wrapped this method with an ifdef so it is not built using MSVC6.0
 //    on Windows.
 //
+//    Brad Whitlock, Mon Nov 7 09:25:57 PDT 2005
+//    I made it use the correct return type for GetMPIDataType() so that it
+//    works with other MPI implementations.
+//
 // ****************************************************************************
 #if !defined(_WIN32) || (defined(_WIN32) && !defined(USING_MSVC6))
 template <class T>
@@ -1569,7 +1573,7 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
             // If this process owns the receving domain, we recv information.
             else if (domain2proc[recvDom] == rank)
             {
-                int type = GetMPIDataType<T>();
+                MPI_Datatype type = GetMPIDataType<T>();
                 MPI_Status stat;
 
                 int fRank = domain2proc[sendDom];
@@ -1591,7 +1595,7 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
             // If this process owns the sending domain, we send information.
             else if (domain2proc[sendDom] == rank)
             {
-                int type = GetMPIDataType<T>();
+                MPI_Datatype type = GetMPIDataType<T>();
                 int tRank = domain2proc[recvDom];
 
                 int index = GetGivenIndex(sendDom, recvDom);
