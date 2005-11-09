@@ -53,6 +53,10 @@ class avtSpecies;
 //    Hank Childs, Sat Mar  5 10:35:11 PST 2005
 //    Added ActivateTimestep.
 //
+//    Mark C. Miller, Tue Nov  8 20:56:46 PST 2005
+//    Moved implementation of GetCycle to .C file. Added GetTime and
+//    GetCycleFromFilename
+//
 // ****************************************************************************
 
 class avtSAMRAIFileFormat : public avtSTMDFileFormat
@@ -76,7 +80,10 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     void                 *GetAuxiliaryData(const char *var, int,
                                            const char *type, void *args,
                                            DestructorFunction &);
-    int                   GetCycle(void) { return time_step_number; };
+
+    int                   GetCycleFromFilename(const char *f) const;
+    int                   GetCycle(void);
+    double                GetTime(void);
 
     void                  PopulateDatabaseMetaData(avtDatabaseMetaData *);
     void                  PopulateIOInformation(avtIOInformation &ioInfo);
