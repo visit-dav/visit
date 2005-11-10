@@ -6,6 +6,8 @@ QueryAttributes::Reset()
 {
     name    = " ";
     resultsMessage  = " ";
+    xUnits = "";
+    yUnits = "";
     if (!variables.empty())
     {
         variables.clear();
@@ -15,7 +17,9 @@ QueryAttributes::Reset()
     {
          varTypes.clear();
     }
-    worldPoint[0] = worldPoint[1] = worldPoint[2] = 0.;
+    worldPoint[0] = 0.;
+    worldPoint[1] = 0.;
+    worldPoint[2] = 0.;
     domain = -1;
     element = -1;
     elementType = Zone;

@@ -273,10 +273,13 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
 //    Set domain to -1 (so that no domain-restriction is performed) if
 //    the node is global.
 //
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
+//    Added avtDatAttributes arg.
+//
 // ****************************************************************************
 
 void
-avtPickByNodeQuery::Preparation()
+avtPickByNodeQuery::Preparation(const avtDataAttributes &)
 {
     if (!pickAtts.GetElementIsGlobal())
     {

@@ -774,6 +774,7 @@ mkdir $VISITDIR/boxlib/$VISITARCH
 mkdir $VISITDIR/boxlib/$VISITARCH/{include,lib}
 mkdir $VISITDIR/boxlib/$VISITARCH/include/{2D,3D}
 cp libbox3d*.a $VISITDIR/boxlib/$VISITARCH/lib/libbox3D.a
+tar cf Boxlib3D.h.tar *.H
 
 #
 # Now build the 2d version.
@@ -790,6 +791,7 @@ gmake -f GNUmakefile
 # Install the 2d version in the visit directory under the boxlib directory.
 #
 cp libbox2d*.a $VISITDIR/boxlib/$VISITARCH/lib/libbox2D.a
+tar cf Boxlib2D.h.tar *.H
 
 #
 # Install the header files.

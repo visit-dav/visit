@@ -283,6 +283,9 @@ avtPickQuery::PostExecute(void)
 //    Change where we get ghostType from, as the inData's atts aren't always
 //    accurate. (What is stored in PickAtts was taken from the networkCache.)
 //
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
+//    Added avtDatAttributes arg.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -296,7 +299,7 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
     ghostType = (avtGhostType)pickAtts.GetGhostType();
     pickAtts.SetDimension(inAtts.GetSpatialDimension());
 
-    Preparation();
+    Preparation(inAtts);
 
     if (needTransform && (transform == NULL)) 
     {

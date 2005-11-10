@@ -107,6 +107,9 @@
 #   Hank Childs, Fri Sep 23 16:09:48 PDT 2005
 #   Added watertight query.
 #
+#   Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
+#   Added TrajectoryByNode/Zone. 
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -171,6 +174,8 @@ Queries_src= \
  Queries/avtTotalRevolvedVolumeQuery.C \
  Queries/avtTotalSurfaceAreaQuery.C \
  Queries/avtTotalVolumeQuery.C \
+ Queries/avtTrajectoryByNode.C \
+ Queries/avtTrajectoryByZone.C \
  Queries/avtVariableByNodeQuery.C \
  Queries/avtVariableByZoneQuery.C \
  Queries/avtVariableSummationQuery.C \

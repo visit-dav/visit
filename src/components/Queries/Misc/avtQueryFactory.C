@@ -27,6 +27,8 @@
 #include <avtTotalRevolvedVolumeQuery.h>
 #include <avtTotalSurfaceAreaQuery.h>
 #include <avtTotalVolumeQuery.h>
+#include <avtTrajectoryByNode.h>
+#include <avtTrajectoryByZone.h>
 #include <avtVariableByNodeQuery.h>
 #include <avtVariableByZoneQuery.h>
 #include <avtVariableSummationQuery.h>
@@ -145,6 +147,9 @@ avtQueryFactory::Instance()
 //
 //    Hank Childs, Fri Sep 23 16:11:07 PDT 2005
 //    Added watertight query.
+//
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
+//    Added TrajectoryByNode/Zone queries.
 //
 // ****************************************************************************
 
@@ -311,6 +316,14 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (qname == "Node Coords")
     {
         query = new avtNodeCoordsQuery();
+    }
+    else if (qname == "TrajectoryByZone") 
+    {
+        query = new avtTrajectoryByZone();
+    }
+    else if (qname == "TrajectoryByNode")
+    {
+        query = new avtTrajectoryByNode();
     }
     return query;
 }

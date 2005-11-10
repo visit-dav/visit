@@ -986,6 +986,21 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
 {
     queryClientAtts->SetResultsMessage("");
     queryClientAtts->SetResultsValue(0.);
+    if (!queryTypes->QueryExists(qName, QueryList::DatabaseQuery))
+    {
+        // we've reset some values, notify clients
+        queryClientAtts->Notify();
+        string msg(qName);
+        msg += " is not a valid query name.\n";
+        Error(msg.c_str());
+        return;
+    }
+    if (!doTimeQuery && !queryTypes->RegularQueryAvailable(qName))
+    {
+        string msg = "Regular (non-time) query is not available for " + qName;
+        Error(msg.c_str());
+        return;
+    }
 
     // test for non-hidden active plot and running engine
     ViewerPlotList *plist = oWin->GetPlotList();
@@ -1008,15 +1023,6 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
         return ;
     }
 
-    if (!queryTypes->QueryExists(qName, QueryList::DatabaseQuery))
-    {
-        // we've reset some values, notify clients
-        queryClientAtts->Notify();
-        string msg(qName);
-        msg += " is not a valid query name.\n";
-        Error(msg.c_str());
-        return;
-    }
 
     int numInputs = queryTypes->NumberOfInputsForQuery(qName);
     if (numInputs <= 0)
@@ -3115,6 +3121,11 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Hank Childs, Fri Sep 23 16:16:28 PDT 2005
 //    Added watertight query.
 //
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
+//    Reflect changes to QueryList, timeQuery is now QueryMode,
+//    Queries can specify the number of vars required. 
+//    Added TrajectoryByNode/Zone.
+//
 // ****************************************************************************
 
 void
@@ -3128,12 +3139,20 @@ ViewerQueryManager::InitializeQueryList()
     //    QueryList::WindowType                  winType
     //    int                                    numInputs
     //    int                                    allowedVarTypes
-    //    bool                                   isTimeQuery
+    //    QueryList::QueryMode                   queryMode
+    //    int                                    numRequiredVars (optional)
+    //                                           default is 1
     //
 
     QueryList::QueryType pq = QueryList::PointQuery;
     QueryList::QueryType dq = QueryList::DatabaseQuery;
     QueryList::QueryType lq = QueryList::LineQuery;
+
+    QueryList::Groups cr = QueryList::CurveRelated;
+    QueryList::Groups mr = QueryList::MeshRelated;
+    QueryList::Groups pr = QueryList::PickRelated;
+    QueryList::Groups tr = QueryList::TimeRelated;
+    QueryList::Groups vr = QueryList::VariableRelated;
 
     QueryList::WindowType basic = QueryList::Basic;
     QueryList::WindowType sp  = QueryList::SinglePoint;
@@ -3144,57 +3163,56 @@ ViewerQueryManager::InitializeQueryList()
     QueryList::WindowType dzv = QueryList::DomainZoneVars;
     QueryList::WindowType ad  = QueryList::ActualData;
     //QueryList::WindowType av = QueryList::ActualDataVars;
+ 
+    QueryList::QueryMode qo = QueryList::QueryOnly;
+    QueryList::QueryMode qt = QueryList::QueryAndTime;
+    QueryList::QueryMode to = QueryList::TimeOnly;
 
-    QueryList::Groups cr = QueryList::CurveRelated;
-    QueryList::Groups mr = QueryList::MeshRelated;
-    QueryList::Groups pr = QueryList::PickRelated;
-    QueryList::Groups tr = QueryList::TimeRelated;
-    QueryList::Groups vr = QueryList::VariableRelated;
-
-    
     if (PlotPluginManager::Instance()->PluginAvailable("Curve_1.0") &&
         OperatorPluginManager::Instance()->PluginAvailable("Lineout_1.0")) 
     {
-        queryTypes->AddQuery("Lineout", lq, vr, dp, 1, 0, false);
+        queryTypes->AddQuery("Lineout", lq, vr, dp, 1, 0, qo);
     }
-    queryTypes->AddQuery("Eulerian", dq, mr, basic, 1, 0, false);
-    queryTypes->AddQuery("Compactness", dq, mr, basic, 1, 0, false);
-    queryTypes->AddQuery("Cycle", dq, tr, basic, 1, 0, false);
-    queryTypes->AddQuery("Time", dq, tr, basic, 1, 0, false);
-    queryTypes->AddQuery("L2Norm", dq, cr, basic, 1, 0, false);
-    queryTypes->AddQuery("Kurtosis", dq, cr, basic, 1, 0, false);
-    queryTypes->AddQuery("Skewness", dq, cr, basic, 1, 0, false);
-    queryTypes->AddQuery("Integrate", dq, cr, basic, 1, 0, false);
-    queryTypes->AddQuery("L2Norm Between Curves", dq, cr, basic, 2, 0, false);
-    queryTypes->AddQuery("Area Between Curves", dq, cr, basic, 2, 0, false);
-    queryTypes->AddQuery("Revolved volume", dq, mr, basic, 1, 0, false);
-    queryTypes->AddQuery("Revolved surface area", dq, mr, basic, 1, 0, false);
-    queryTypes->AddQuery("2D area", dq, mr, basic, 1, 0, true);
-    queryTypes->AddQuery("3D surface area", dq, mr, basic, 1, 0, true);
-    queryTypes->AddQuery("Volume", dq, mr, basic, 1, 0, true);
-    queryTypes->AddQuery("Moment of Inertia", dq, mr, basic, 1, 0, false);
-    queryTypes->AddQuery("Centroid", dq, mr, basic, 1, 0, false);
-    queryTypes->AddQuery("Spherical Compactness Factor", dq, mr, basic, 1, 0, true);
-    queryTypes->AddQuery("Variable Sum", dq, vr, basic, 1, 0, true);
-    queryTypes->AddQuery("Watertight", dq, mr, basic, 1, 0, false);
-    queryTypes->AddQuery("Weighted Variable Sum", dq, vr, basic, 1, 0, true);
-    queryTypes->AddQuery("Pick", pq, pr, sp, 1, 0, true);
-    queryTypes->AddQuery("NodePick", pq, pr, sp, 1, 0, true);
+    queryTypes->AddQuery("Eulerian", dq, mr, basic, 1, 0, qo);
+    queryTypes->AddQuery("Compactness", dq, mr, basic, 1, 0, qo);
+    queryTypes->AddQuery("Cycle", dq, tr, basic, 1, 0, qo);
+    queryTypes->AddQuery("Time", dq, tr, basic, 1, 0, qo);
+    queryTypes->AddQuery("L2Norm", dq, cr, basic, 1, 0, qo);
+    queryTypes->AddQuery("Kurtosis", dq, cr, basic, 1, 0, qo);
+    queryTypes->AddQuery("Skewness", dq, cr, basic, 1, 0, qo);
+    queryTypes->AddQuery("Integrate", dq, cr, basic, 1, 0, qo);
+    queryTypes->AddQuery("L2Norm Between Curves", dq, cr, basic, 2, 0, qo);
+    queryTypes->AddQuery("Area Between Curves", dq, cr, basic, 2, 0, qo);
+    queryTypes->AddQuery("Revolved volume", dq, mr, basic, 1, 0, qo);
+    queryTypes->AddQuery("Revolved surface area", dq, mr, basic, 1, 0, qo);
+    queryTypes->AddQuery("2D area", dq, mr, basic, 1, 0, qt);
+    queryTypes->AddQuery("3D surface area", dq, mr, basic, 1, 0, qt);
+    queryTypes->AddQuery("Volume", dq, mr, basic, 1, 0, qt);
+    queryTypes->AddQuery("Moment of Inertia", dq, mr, basic, 1, 0, qo);
+    queryTypes->AddQuery("Centroid", dq, mr, basic, 1, 0, qo);
+    queryTypes->AddQuery("Spherical Compactness Factor", dq, mr, basic, 1, 0, qt);
+    queryTypes->AddQuery("Variable Sum", dq, vr, basic, 1, 0, qt);
+    queryTypes->AddQuery("Watertight", dq, mr, basic, 1, 0, qo);
+    queryTypes->AddQuery("Weighted Variable Sum", dq, vr, basic, 1, 0, qt);
+    queryTypes->AddQuery("Pick", pq, pr, sp, 1, 0, qt);
+    queryTypes->AddQuery("NodePick", pq, pr, sp, 1, 0, qt);
 
     int MinMaxVars = QUERY_SCALAR_VAR | QUERY_TENSOR_VAR | QUERY_VECTOR_VAR | 
             QUERY_SYMMETRIC_TENSOR_VAR | QUERY_MATSPECIES_VAR | QUERY_CURVE_VAR;
 
-    queryTypes->AddQuery("MinMax", dq, vr, ad, 1, MinMaxVars, false);
-    queryTypes->AddQuery("Min", dq, vr, ad, 1, MinMaxVars, true);
-    queryTypes->AddQuery("Max", dq, vr, ad, 1, MinMaxVars, true);
-    queryTypes->AddQuery("SpatialExtents", dq, mr, ad, 1, 0, false);
-    queryTypes->AddQuery("NumNodes", dq, mr, ad, 1, 0, false);
-    queryTypes->AddQuery("NumZones", dq, mr, ad, 1, 0, false);
-    queryTypes->AddQuery("PickByZone", pq, pr, dzv, 1, 0, true);
-    queryTypes->AddQuery("PickByNode", pq, pr, dnv, 1, 0, true);
-    queryTypes->AddQuery("Zone Center", dq, mr, dz, 1, 0, false);
-    queryTypes->AddQuery("Node Coords", dq, mr, dn, 1, 0, false);
-                          
+    queryTypes->AddQuery("MinMax", dq, vr, ad, 1, MinMaxVars, qo);
+    queryTypes->AddQuery("Min", dq, vr, ad, 1, MinMaxVars, qt);
+    queryTypes->AddQuery("Max", dq, vr, ad, 1, MinMaxVars, qt);
+    queryTypes->AddQuery("SpatialExtents", dq, mr, ad, 1, 0, qo);
+    queryTypes->AddQuery("NumNodes", dq, mr, ad, 1, 0, qo);
+    queryTypes->AddQuery("NumZones", dq, mr, ad, 1, 0, qo);
+    queryTypes->AddQuery("PickByZone", pq, pr, dzv, 1, 0, qt);
+    queryTypes->AddQuery("PickByNode", pq, pr, dnv, 1, 0, qt);
+    queryTypes->AddQuery("Zone Center", dq, mr, dz, 1, 0, qo);
+    queryTypes->AddQuery("Node Coords", dq, mr, dn, 1, 0, qo);
+    int TrajVars = QUERY_SCALAR_VAR;
+    queryTypes->AddQuery("TrajectoryByZone", dq, vr, dzv, 1, TrajVars, to, 2);
+    queryTypes->AddQuery("TrajectoryByNode", dq, vr, dnv, 1, TrajVars, to, 2);
     queryTypes->SelectAll();
 }
 
@@ -3941,6 +3959,9 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom,
 //    Hank Childs, Fri Jan 28 11:55:12 PST 2005
 //    Make sure returns inside 'try' are wrapped.
 //
+//    Kathleen Bonnell, Tue Nov  8 11:48:24 PST 2005 
+//    Ensure that number of vars required by query are present. 
+//
 // ****************************************************************************
 
 bool         
@@ -4033,6 +4054,18 @@ ViewerQueryManager::VerifySingleInputQuery(ViewerPlotList *plist, const int plot
                 Error(msg.c_str());
                 CATCH_RETURN2(1, false);
             }
+        }
+        int nv = queryTypes->NumberOfVarsForQuery(qName);
+        if (nv > 1 && nv != uniqueVars.size())
+        {
+            queryClientAtts->Notify();
+            char msg[256];
+            SNPRINTF(msg, 256, "%s%s%s%d%s%d%s",
+                "Cannot perform a ", qName.c_str(), " query with only ",
+                 uniqueVars.size(), " variables, it requires " ,
+                 nv, " variables.\n");
+            Error(msg);
+            CATCH_RETURN2(1, false);
         }
         qa.SetVariables(uniqueVars);
         qa.SetVarTypes(varTypes);

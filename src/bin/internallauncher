@@ -107,6 +107,9 @@ $0 = shift @ARGV;
 #    Brad Whitlock, Fri Oct 28 11:17:28 PDT 2005
 #    Added AWE fix for -newconsole under AIX.
 #
+#    Kathlene Bonnell, Wed Nov  9 16:23:19 PST 2005
+#    Added qsub launch command.
+#
 ###############################################################################
 
 
@@ -1147,6 +1150,49 @@ if ($procs_set or ($parallel and $parlaunch_set))
 
         @printcmd = @parcmd;
         chomp($printcmd[0] = `basename $printcmd[0]`);
+    }
+    # qsub
+    elsif (substr($launch,0,4) eq "qsub")
+    {
+        chomp($tdate = `date | cut -c 12-19`);
+        chomp($tuser = `whoami`);
+        $tfilename = "/tmp/visit.$tuser.$tdate";
+        $tfile_opened = 1;
+        open(TFILE, ">$tfilename") or $tfile_opened = 0;
+        if ($tfile_opened)
+        {
+            if ($security_key_set) { push @visitcmd, "-key", $security_key; }
+
+            $libcmd    = "setenv LIBPATH $ENV{LIBPATH}\n";
+            $ldlibcmd  = "setenv LD_LIBRARY_PATH $ENV{LD_LIBRARY_PATH}\n";
+            $plugincmd = "setenv VISITPLUGINDIR $ENV{VISITPLUGINDIR}\n";
+            $mpicmd    = "mpiexec -np $procs -pernode @visitcmd\n";
+
+            print TFILE "#!/bin/tcsh\n";
+            print TFILE $libcmd;
+            print TFILE $ldlibcmd;
+            print TFILE $plugincmd;
+            print TFILE $mpicmd;
+            close(TFILE);
+           
+            @parcmd = ("qsub");
+            push @parcmd, @launchargs if $launchargs_set;
+            push @parcmd, "-l nodes=$procs:ppn=2:vis" if $procs_set;
+            if ($time_set)
+            {
+                $wtime = $time*60;
+                push @parcmd, "-l walltime=$wtime";
+            }
+            push @parcmd, "-q",  $part  if $part_set;
+          
+            @printcmd = @parcmd;
+            push @parcmd, $tfilename;
+            push @printcmd, $libcmd; 
+            push @printcmd, $ldlibcmd; 
+            push @printcmd, $plugincmd; 
+            push @printcmd, $mpicmd; 
+            push @printcmd, ("\"".(pop @printcmd)."\"");
+        }
     }
     else
     {

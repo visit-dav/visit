@@ -1,46 +1,41 @@
 // ************************************************************************* //
-//                        avtVariableByNodeQuery.h                           //
+//                            avtTrajectoryByNode.h                          //
 // ************************************************************************* //
 
-#ifndef AVT_VARIABLEBYNODE_QUERY_H
-#define AVT_VARIABLEBYNODE_QUERY_H
+#ifndef AVT_TRAJECTORYBYNODE_H
+#define AVT_TRAJECTORYBYNODE_H
 #include <query_exports.h>
 
-#include <avtPickByNodeQuery.h>
-
-#include <PickAttributes.h>
-
-
-class vtkDataSet;
+#include <avtVariableByNodeQuery.h>
 
 
 // ****************************************************************************
-//  Class: avtVariableByNodeQuery
+//  Class: avtTrajectoryByNode
 //
 //  Purpose:
-//    A query that retrieves var information about a mesh given a 
+//    A time query that retrieves var information about a mesh given a 
 //    particular domain and node number.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   July 29, 2004
+//  Creation:   November 8, 2005 
 //
 //  Modifications:
-//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
-//    Added avtDataAttributes arg to Preparation.
 //
 // ****************************************************************************
 
-class QUERY_API avtVariableByNodeQuery : public avtPickByNodeQuery
+class QUERY_API avtTrajectoryByNode : public avtVariableByNodeQuery
 {
   public:
-                              avtVariableByNodeQuery();
-    virtual                  ~avtVariableByNodeQuery();
+                              avtTrajectoryByNode();
+    virtual                  ~avtTrajectoryByNode();
 
 
-    virtual const char       *GetType(void)   { return "avtVariableByNodeQuery"; };
+    virtual const char       *GetType(void)   { return "avtTrajectoryByNode"; };
     virtual const char       *GetDescription(void)
                                  { return "Retrieving var information on mesh."; };
 
+    virtual void              GetTimeCurveSpecs(bool &timeForX, int &nRes)
+                                 { timeForX = false; nRes = 2; }
   protected:
     virtual void                    Preparation(const avtDataAttributes &); 
     virtual void                    PostExecute(void);

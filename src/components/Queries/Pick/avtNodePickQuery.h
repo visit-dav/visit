@@ -1,5 +1,5 @@
 // ************************************************************************* //
-//                            avtNodePickQuery.h                                 //
+//                           avtNodePickQuery.h                              //
 // ************************************************************************* //
 
 #ifndef AVT_NODEPICK_QUERY_H
@@ -30,6 +30,9 @@ class vtkDataSet;
 //    Added PreExecute and PostExecute methods, minDist, foundNode and
 //    foundDomain members.
 //    
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
+//    Added avtDataAttributes arg to Preparation.
+//    
 // ****************************************************************************
 
 class QUERY_API avtNodePickQuery : public avtPickQuery
@@ -47,7 +50,7 @@ class QUERY_API avtNodePickQuery : public avtPickQuery
     virtual void                    Execute(vtkDataSet *, const int);
     virtual void                    PostExecute(void);
     virtual void                    PreExecute(void);
-    virtual void                    Preparation(void);
+    virtual void                    Preparation(const avtDataAttributes &);
     int                             DeterminePickedNode(vtkDataSet *);
 
   private:

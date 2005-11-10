@@ -7579,6 +7579,9 @@ visit_Queries(PyObject *self, PyObject *args)
 // Creation:   March 23, 2004 
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
+//   Reflect changes to QueryList: QueryTime is now QueryMode, and
+//   has three values, QueryOnly, QueryAndTime, and TimeOnly.
 //   
 // ****************************************************************************
 
@@ -7592,11 +7595,12 @@ visit_QueriesOverTime(PyObject *self, PyObject *args)
 
     // We only want to include Database time queries, so count them.
     intVector types = viewer->GetQueryList()->GetTypes();
-    intVector time = viewer->GetQueryList()->GetTimeQuery();
+    intVector mode = viewer->GetQueryList()->GetQueryMode();
     int nQueries = 0; 
     for(int i = 0; i < types.size(); ++i)
     {
-        if (types[i] == QueryList::DatabaseQuery && time[i] == 1)
+        if (types[i] == QueryList::DatabaseQuery && 
+            mode[i] != QueryList::QueryOnly )
             nQueries++;
     }
 
@@ -7605,7 +7609,8 @@ visit_QueriesOverTime(PyObject *self, PyObject *args)
 
     for(int j = 0, k = 0; j < queries.size(); ++j)
     {
-        if (types[j] == QueryList::DatabaseQuery && time[j] == 1)
+        if (types[j] == QueryList::DatabaseQuery && 
+            mode[j] != QueryList::QueryOnly)
         {
             PyObject *dval = PyString_FromString(queries[j].c_str());
             if(dval == NULL)

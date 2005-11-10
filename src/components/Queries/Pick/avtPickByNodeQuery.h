@@ -21,6 +21,8 @@ class vtkDataSet;
 //  Creation:   May 10, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
+//    Added avtDataAttributes arg to Preparation.
 //    
 // ****************************************************************************
 
@@ -40,7 +42,7 @@ class QUERY_API avtPickByNodeQuery : public avtPickQuery
   protected:
 
     virtual void                    Execute(vtkDataSet *, const int);
-    virtual void                    Preparation(void);
+    virtual void                    Preparation(const avtDataAttributes &);
 };
 
 

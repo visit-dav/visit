@@ -1,10 +1,10 @@
 // ************************************************************************* //
-//                          avtVariableByNodeQuery.C                         //
+//                           avtTrajectoryByNode.C                           //
 // ************************************************************************* //
 
-#include <avtVariableByNodeQuery.h>
-#include <avtTerminatingSource.h>
+#include <avtTrajectoryByNode.h>
 #include <avtParallel.h>
+#include <avtTerminatingSource.h>
 #include <float.h>
 #include <snprintf.h>
 #include <PickVarInfo.h>
@@ -15,74 +15,69 @@ using std::string;
 
 
 // ****************************************************************************
-//  Method: avtVariableByNodeQuery::avtVariableByNodeQuery
+//  Method: avtTrajectoryByNode::avtTrajectoryByNode
 //
 //  Purpose:
-//      Construct an avtVariableByNodeQuery object.
+//      Construct an avtTrajectoryByNode object.
 //
 //  Programmer:   Kathleen Bonnell 
-//  Creation:     July 29, 2004
+//  Creation:     November 8, 2005
 //
 //  Modifications:
 //
 // ****************************************************************************
 
-avtVariableByNodeQuery::avtVariableByNodeQuery()
+avtTrajectoryByNode::avtTrajectoryByNode()
 {
 }
 
 // ****************************************************************************
-//  Method: avtVariableByNodeQuery::~avtVariableByNodeQuery
+//  Method: avtTrajectoryByNode::~avtTrajectoryByNode
 //
 //  Purpose:
-//      Destruct an avtVariableByNodeQuery object.
+//      Destruct an avtTrajectoryByNode object.
 //
 //  Programmer:   Kathleen Bonnell 
-//  Creation:     July 29, 2004 
+//  Creation:     November 8, 2005 
 //
 //  Modifications:
 //
 // ****************************************************************************
 
-avtVariableByNodeQuery::~avtVariableByNodeQuery()
+avtTrajectoryByNode::~avtTrajectoryByNode()
 {
 }
 
  
 // ****************************************************************************
-//  Method: avtVariableByNodeQuery::Preparation
+//  Method: avtTrajectoryByNode::Preparation
 //
 //  Purpose:
 //    Sets pickAtts information from queryAtts. 
 //
 //  Programmer:   Kathleen Bonnell 
-//  Creation:     July 29, 2004
+//  Creation:     November 8, 2005
 //
 //  Modifications:
-//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
-//    Added avtDataAttributes arg.
 //
 // ****************************************************************************
 
 void 
-avtVariableByNodeQuery::Preparation(const avtDataAttributes &inAtts)
+avtTrajectoryByNode::Preparation(const avtDataAttributes &inAtts)
 {
+    if (inAtts.ValidVariable(queryAtts.GetVariables()[0].c_str()))
+        queryAtts.SetXUnits(inAtts.GetVariableUnits(queryAtts.GetVariables()[0].c_str()));
+    if (inAtts.ValidVariable(queryAtts.GetVariables()[1].c_str()))
+        queryAtts.SetYUnits(inAtts.GetVariableUnits(queryAtts.GetVariables()[1].c_str()));
     avtDataSpecification_p dspec = 
         GetInput()->GetTerminatingSource()->GetFullDataSpecification();
 
-    pickAtts.SetTimeStep(queryAtts.GetTimeStep());
-    pickAtts.SetActiveVariable(dspec->GetVariable());
-    pickAtts.SetDomain(queryAtts.GetDomain());
-    pickAtts.SetElementNumber(queryAtts.GetElement());
-    pickAtts.SetVariables(queryAtts.GetVariables());
-    pickAtts.SetPickType(PickAttributes::DomainNode);
-
-    avtPickByNodeQuery::Preparation(inAtts);
+    avtVariableByNodeQuery::Preparation(inAtts);
 }
 
 
 // ****************************************************************************
-//  Method: avtVariableByNodeQuery::PostExecute
+//  Method: avtTrajectoryByNode::PostExecute
 //
 //  Purpose:
 //    This is called after all of the domains are executed.
@@ -90,14 +85,14 @@ avtVariableByNodeQuery::Preparation(const avtDataAttributes &inAtts)
 //    gathered the info, to processor 0.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   July 29, 2004 
+//  Creation:   November 8, 2005 
 //
 //  Modifications:
 //
 // ****************************************************************************
 
 void
-avtVariableByNodeQuery::PostExecute(void)
+avtTrajectoryByNode::PostExecute(void)
 {
     avtPickQuery::PostExecute();
    
@@ -111,7 +106,10 @@ avtVariableByNodeQuery::PostExecute(void)
             pickAtts.SetCellPoint(cp);
             pickAtts.CreateOutputString(msg);
             SetResultMessage(msg.c_str());
-            SetResultValues(pickAtts.GetPickVarInfo(0).GetValues());
+            doubleVector res;
+            res.push_back(pickAtts.GetPickVarInfo(0).GetValues()[0]);
+            res.push_back(pickAtts.GetPickVarInfo(1).GetValues()[0]);
+            SetResultValues(res);
         }
         else
         {

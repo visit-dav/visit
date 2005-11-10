@@ -59,11 +59,13 @@ avtVariableByZoneQuery::~avtVariableByZoneQuery()
 //  Creation:     July 29, 2004
 //
 //  Modifications:
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
+//    Added avtDataAttributes arg.
 //
 // ****************************************************************************
 
 void 
-avtVariableByZoneQuery::Preparation()
+avtVariableByZoneQuery::Preparation(const avtDataAttributes &inAtts)
 {
     avtDataSpecification_p dspec = 
         GetInput()->GetTerminatingSource()->GetFullDataSpecification();
@@ -75,7 +77,7 @@ avtVariableByZoneQuery::Preparation()
     pickAtts.SetVariables(queryAtts.GetVariables());
     pickAtts.SetPickType(PickAttributes::DomainZone);
 
-    avtPickByZoneQuery::Preparation();
+    avtPickByZoneQuery::Preparation(inAtts);
 }
 
 

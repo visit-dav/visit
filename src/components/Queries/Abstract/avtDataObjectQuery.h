@@ -62,6 +62,9 @@ typedef void (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Kathleen Bonnell, Mon Jan  3 15:08:37 PST 2005 
 //    Overloaded SetSILRestriction method with avtSILRestriction_p arg. 
 //
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
+//    Added GetTimeCurveSpecs. 
+//
 // ****************************************************************************
 
 class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
@@ -88,6 +91,7 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
                                                            void *);
 
     virtual void                  SetTimeVarying(bool val) { timeVarying = val;};
+    virtual void                  GetTimeCurveSpecs(bool &timeForX, int &nRes);
 
     void                          SetSILRestriction(const SILRestrictionAttributes *);
     void                          SetSILRestriction(const avtSILRestriction_p);

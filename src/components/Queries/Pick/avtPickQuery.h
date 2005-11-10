@@ -84,6 +84,9 @@ class avtExpressionEvaluatorFilter;
 //    Kathleen Bonnell, Tue Jun 28 10:47:35 PDT 2005 
 //    Re-added SetRealIds. 
 // 
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
+//    Added avtDataAttributes arg to Preparation.
+//    
 // ****************************************************************************
 
 class QUERY_API avtPickQuery : public avtDatasetQuery
@@ -124,7 +127,7 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
     virtual avtDataObject_p         ApplyFilters(avtDataObject_p);   
 
     // Pick-specific code
-    virtual void                    Preparation(void){};
+    virtual void                    Preparation(const avtDataAttributes &){};
     bool                            DeterminePickedNode(vtkDataSet *, int &);
     void                            GetNodeCoords(vtkDataSet *, const int);
     void                            GetZoneCoords(vtkDataSet *, const int);
