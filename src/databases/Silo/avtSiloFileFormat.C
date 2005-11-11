@@ -942,6 +942,8 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Jeremy Meredith, Fri Oct  7 17:08:21 PDT 2005
 //    Added VARTYPE to defvar defines to avoid namespace conflict.
 //
+//    Mark C. Miller, Fri Nov 11 09:45:42 PST 2005
+//    Made it more fault tolerant when multimats are corrupted
 // ****************************************************************************
 
 void
@@ -2152,8 +2154,6 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         DetermineFileAndDirectory(material, correctFile, realvar);
 
         DBmaterial *mat = DBGetMaterial(correctFile, realvar);
-        if (mat == NULL)
-            EXCEPTION1(InvalidVariableException, mm->matnames[meshnum]);
 
         bool valid_var = true;
         if (mat == NULL)
@@ -2170,6 +2170,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         // there are names in the Silo file, use those as well.
         //
         vector<string>  matnames;
+        string meshname;
         if (valid_var)
         {
             for (j = 0 ; j < mat->nmat ; j++)
@@ -2190,30 +2191,30 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 matnames.push_back(num);
                 delete[] num;
             }
-        }
 
-        string meshname;
-        TRY
-        {
-            meshname = DetermineMultiMeshForSubVariable(dbfile,
-                                                        multimat_names[i],
-                                                        mm->matnames,
-                                                        mm->nmats, dirname);
-            debug5 << "Material " << multimat_names[i]<< " is defined on mesh "
-                   << meshname.c_str() << endl;
+            TRY
+            {
+                meshname = DetermineMultiMeshForSubVariable(dbfile,
+                                                            multimat_names[i],
+                                                            mm->matnames,
+                                                            mm->nmats, dirname);
+                debug5 << "Material " << multimat_names[i]<< " is defined on mesh "
+                       << meshname.c_str() << endl;
+            }
+            CATCH(SiloException)
+            {
+                debug1 << "Giving up on var \"" << multimat_names[i] 
+                       << "\" since its first non-empty block (" << material
+                       << ") is invalid." << endl;
+                valid_var = false;
+            }
+            ENDTRY
         }
-        CATCH(SiloException)
-        {
-            debug1 << "Giving up on var \"" << multimat_names[i] 
-                   << "\" since its first non-empty block (" << material
-                   << ") is invalid." << endl;
-            valid_var = false;
-        }
-        ENDTRY
 
         char *name_w_dir = GenerateName(dirname, multimat_names[i]);
         avtMaterialMetaData *mmd = new avtMaterialMetaData(name_w_dir,
-                                                meshname, mat->nmat, matnames);
+                                                meshname,
+                                                mat ? mat->nmat : 0, matnames);
         mmd->validVariable = valid_var;
         md->Add(mmd);
 
@@ -5733,7 +5734,9 @@ avtSiloFileFormat::GetCSGMesh(DBfile *dbfile, const char *mn, int dom)
 #ifndef DBCSG_INNER // remove after silo-4.5 is released
     return 0;
 #else
-#ifndef MDSERVER
+#ifdef MDSERVER
+    return 0;
+#else
     int   i, j;
 
     //
@@ -6161,6 +6164,10 @@ avtSiloFileFormat::GetRelativeVarName(const char *initVar, const char *newVar,
 //    Jeremy Meredith, Tue Jun  7 10:55:18 PDT 2005
 //    Allowed EMPTY domains.
 //
+//    Mark C. Miller, Fri Nov 11 09:45:42 PST 2005
+//    Added code to try an exact match with the leading slash, if one exists,
+//    removed from the meshname. This is to work around a bug in data files
+//    generated with earlier versions of the HDF5 driver.
 // ****************************************************************************
 
 string
@@ -6170,7 +6177,9 @@ avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
                                                     int nblocks,
                                                     const char *curdir)
 {
+    int i;
     char subMesh[256];
+    char subMeshTmp[256];
 
     // Find the first non-empty mesh
     int meshnum = 0;
@@ -6186,24 +6195,48 @@ avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
     GetMeshname(dbfile, varname[meshnum], subMesh);
 
     //
+    // The code involving subMeshTmp is to maintain backward compability
+    // with Silo/HDF5 files in which HDF5 driver had a bug in that it
+    // *always* added a leading slash to the name of the mesh associated
+    // with an object. Eventually, this code can be eliminated
+    //
+    if (subMesh[0] == '/')
+    {
+        for (i = 0; i < strlen(subMesh); i++)
+            subMeshTmp[i] = subMesh[i+1];
+    }
+
+    //
     // varname is very likely qualified with a file name.  We need to figure
     // out what it's mesh's name looks like the prepended file name, so we can
     // meaningfully compare it with our list of submeshes.
     //
     char subMeshWithFile[1024];
+    char subMeshWithFileTmp[1024];
     GetRelativeVarName(varname[meshnum], subMesh, subMeshWithFile);
+    if (subMesh[0] == '/')
+        GetRelativeVarName(varname[meshnum], subMeshTmp, subMeshWithFileTmp);
 
     //
     // Attempt an "exact" match, where the first mesh for the multivar is
     // an exact match and the number of domains is the same.
     //
     int size = actualMeshName.size();
-    int i;
     for (i = 0 ; i < size ; i++)
     {
         if (firstSubMesh[i] == subMeshWithFile && nblocks == blocksForMesh[i])
         {
             return actualMeshName[i];
+        }
+    }
+    if (subMesh[0] == '/')
+    {
+        for (i = 0 ; i < size ; i++)
+        {
+            if (firstSubMesh[i] == subMeshWithFileTmp && nblocks == blocksForMesh[i])
+            {
+                return actualMeshName[i];
+            }
         }
     }
 
@@ -6212,6 +6245,7 @@ avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
     // Look for a multimesh which has the same name as the mesh for
     // the multivar, and match up domains by directory name.
     //
+    debug5 << "Using fuzzy logic to match multivar to a multimesh" << endl;
     string dir,varmesh;
     SplitDirVarName(subMesh, curdir, dir, varmesh);
     for (i = 0 ; i < size ; i++)
@@ -6307,6 +6341,9 @@ avtSiloFileFormat::GetMeshtype(DBfile *dbfile, char *mesh)
 //    Mark C. Miller, Tue Sep 13 14:25:42 PDT 2005
 //    Permit absolute pathnames for meshes (leading slashes)
 //
+//    Mark C. Miller, Thu Nov 10 21:12:36 PST 2005
+//    Undid above change.
+//
 // ****************************************************************************
 
 void
@@ -6321,11 +6358,6 @@ avtSiloFileFormat::GetMeshname(DBfile *dbfile, char *var, char *meshname)
         char str[1024];
         sprintf(str, "Unable to determine mesh for %s.", var);
         EXCEPTION1(SiloException, str);
-    }
-    if (meshname[0] == '/')
-    {
-        for (int i = 0; i < strlen(meshname); i++)
-            meshname[i] = meshname[i+1];
     }
 }
 

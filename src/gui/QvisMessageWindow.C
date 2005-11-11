@@ -2,7 +2,7 @@
 #include <Observer.h>
 #include <MessageAttributes.h>
 
-#include <TimingsManager.h> // for DELTA_TOA_HERE
+#include <TimingsManager.h> // for DELTA_TOA_THIS_LINE
 
 #include <qapplication.h>
 #include <qlabel.h>
@@ -120,7 +120,7 @@ QvisMessageWindow::Update(Subject *)
 {
     MessageAttributes *ma = (MessageAttributes *)subject;
 
-    double secondsSinceLastMessage = DELTA_TOA_HERE;
+    double secondsSinceLastMessage = DELTA_TOA_THIS_LINE;
 
     QString msgText;
     MessageAttributes::Severity severity = ma->GetSeverity();
