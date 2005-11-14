@@ -260,6 +260,9 @@
 #    Brad Whitlock, Thu Nov 3 11:02:54 PDT 2005
 #    Added support for Mesa vs. OpenGL source builds.
 #
+#    Eric Brugger, Mon Nov 14 11:21:18 PST 2005
+#    Remove vtkCamera.
+#
 ##############################################################################
 
 ##
@@ -278,7 +281,7 @@ MESA_SRC=vtkOSMesaRenderWindow.C \
 
 SRC=InitVTK.C \
     vtkAxisDepthSort.C \
-    vtkBackgroundActor.C @VTK_CAMERA_SRC@\
+    vtkBackgroundActor.C \
     vtkConnectedTubeFilter.C \
     vtkCSGCell.C \
     vtkCSGGrid.C \

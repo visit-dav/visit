@@ -242,7 +242,9 @@ QvisQueryWindow::CreateWindowContents()
 // Creation:   Fri May 9 17:23:39 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Nov 14 10:36:09 PDT 2005
+//   Disable the post button if posting is not enabled.
+//
 // ****************************************************************************
 
 void
@@ -282,7 +284,10 @@ QvisQueryWindow::CreateEntireWindow()
 
     // Make the window post itself when the post button is clicked.
     if(notepad)
+    {
         connect(postButton, SIGNAL(clicked()), this, SLOT(post()));
+        postButton->setEnabled(postEnabled);
+    }
     else
         postButton->setEnabled(false);
 

@@ -688,6 +688,9 @@ void vtkExodusReader::ReadGeometry(int exoid)
 //   Don't blocks where there are zero elements in that block -- it is causing
 //   warnings in the debug logs.
 //
+//   Brad Whitlock, Mon Nov 14 14:25:23 PST 2005
+//   Added SHELL4 element.
+//
 //----------------------------------------------------------------------------
 void vtkExodusReader::ReadCells(int exoid)
 {
@@ -810,7 +813,9 @@ void vtkExodusReader::ReadCells(int exoid)
       cellType = VTK_HEXAHEDRON;
       cellNumPoints = 8;
       }
-    else if (strncmp(all_caps_elem_type, "QUA", 3) == 0)
+    else if (strncmp(all_caps_elem_type, "QUA", 3) == 0 ||
+             strncmp(all_caps_elem_type, "SHELL4", 6) == 0)
+
       {
       cellType = VTK_QUAD;
       cellNumPoints = 4;

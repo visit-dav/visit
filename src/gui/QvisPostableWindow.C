@@ -9,6 +9,7 @@
 // Static members.
 //
 bool QvisPostableWindow::postWhenShown = false;
+bool QvisPostableWindow::postEnabled = true;
 
 // ****************************************************************************
 // Method: QvisPostableWindow::QvisPostableWindow
@@ -214,6 +215,28 @@ QvisPostableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 }
 
 // ****************************************************************************
+// Method: QvisPostableWindow::SetPostEnabled
+//
+// Purpose: 
+//   Sets whether window posting is enabled.
+//
+// Arguments:
+//   v : True if enabled; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov 14 10:41:29 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPostableWindow::SetPostEnabled(bool v)
+{
+    postEnabled = v;
+}
+
+// ****************************************************************************
 // Method: QvisPostableWindow::show
 //
 // Purpose: 
@@ -319,7 +342,9 @@ QvisPostableWindow::raise()
 // Creation:   Fri Jul 28 15:52:21 PST 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Nov 14 10:37:57 PDT 2005
+//   Added code to disable posting if it's not enabled.
+//
 // ****************************************************************************
 
 void
@@ -338,17 +363,22 @@ QvisPostableWindow::post()
             saveWindowDefaults = true;
         }
 
-        // Post to the notepad
-        notepad->postWindow(this);
+        if(postEnabled)
+        {
+            // Post to the notepad
+            notepad->postWindow(this);
 
-        // Hide the main window.
-        QvisWindowBase::hide();
+            // Hide the main window.
+            QvisWindowBase::hide();
 
-        // Make sure the window knows it is posted.
-        isPosted = true;
-        postButton->setText("Unpost");
-        disconnect(postButton, SIGNAL(clicked()), this, SLOT(post()));
-        connect(postButton, SIGNAL(clicked()), this, SLOT(unpost()));
+            // Make sure the window knows it is posted.
+            isPosted = true;
+            postButton->setText("Unpost");
+            disconnect(postButton, SIGNAL(clicked()), this, SLOT(post()));
+            connect(postButton, SIGNAL(clicked()), this, SLOT(unpost()));
+        }
+        else
+            QvisWindowBase::show();
     }
 }
 
@@ -519,6 +549,9 @@ QvisPostableWindow::GetShortCaption()
 //   Brad Whitlock, Fri Feb 15 11:24:06 PDT 2002
 //   Added code to return early if the window is already created.
 //
+//   Brad Whitlock, Mon Nov 14 10:38:48 PDT 2005
+//   Added code to disable the post button if posting is not enabled.
+//
 // ****************************************************************************
 
 void
@@ -551,7 +584,10 @@ QvisPostableWindow::CreateEntireWindow()
 
     // Make the window post itself when the post button is clicked.
     if(notepad)
+    {
         connect(postButton, SIGNAL(clicked()), this, SLOT(post()));
+        postButton->setEnabled(postEnabled);
+    }
     else
         postButton->setEnabled(false);
 

@@ -151,6 +151,9 @@ QvisPostableWindowSimpleObserver::SelectedSubject()
 //   Brad Whitlock, Fri Nov 7 16:48:36 PST 2003
 //   Added support for more buttons.
 //
+//   Brad Whitlock, Mon Nov 14 10:36:48 PDT 2005
+//   Disable post button if posting is not enabled.
+//
 // ****************************************************************************
 
 void
@@ -209,7 +212,10 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
     postButton = new QPushButton("Post", central, "postButton");
     // Make the window post itself when the post button is clicked.
     if(notepad)
+    {
         connect(postButton, SIGNAL(clicked()), this, SLOT(post()));
+        postButton->setEnabled(postEnabled);
+    }
     else
         postButton->setEnabled(false);
     buttonLayout->addWidget(postButton, 1, 2);

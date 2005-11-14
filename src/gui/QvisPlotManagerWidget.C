@@ -110,6 +110,9 @@ using std::vector;
 //   Jeremy Meredith, Tue Aug 24 16:20:40 PDT 2004
 //   Made it observe metadata directly so it knows when to update things.
 //
+//   Brad Whitlock, Mon Nov 14 13:23:37 PST 2005
+//   Changed layout a little.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
@@ -131,7 +134,9 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
     varMenuFlags = 0;
     sourceVisible = false;
 
-    topLayout = new QGridLayout(this, 5, 4);
+    QVBoxLayout *veryTopLayout = new QVBoxLayout(this);
+    veryTopLayout->setSpacing(5);
+    topLayout = new QGridLayout(veryTopLayout, 4, 4);
     topLayout->setSpacing(5);
 
     // Create the source combobox.
@@ -192,7 +197,7 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
         "applyOperatorToggle");
     connect(applyOperatorToggle, SIGNAL(toggled(bool)),
             this, SLOT(applyOperatorToggled(bool)));
-    topLayout->addMultiCellWidget(applyOperatorToggle, 4, 4, 0, 3);
+    veryTopLayout->addWidget(applyOperatorToggle);
 
     // Create the plot and operator menus. Note that they will be empty until
     // they are populated by the main application.

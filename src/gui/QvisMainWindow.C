@@ -13,6 +13,7 @@
 #include <QvisMainWindow.h>
 #include <QvisFilePanel.h>
 #include <QvisNotepadArea.h>
+#include <QvisPostableWindow.h>
 #include <QvisPlotManagerWidget.h>
 
 #include <StatusSubject.h>
@@ -25,6 +26,7 @@
 #include <TimeFormat.h>
 #include <WindowInformation.h>
 #include <ViewerProxy.h>
+#include <DebugStream.h>
 
 #define VIEWER_NOT_IMPLEMENTED
 
@@ -510,6 +512,14 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     // notpad widget will fill all the remaining space.
     notepad = new QvisNotepadArea( central );
     topLayout->addWidget(notepad, 300);
+
+    if(qApp->desktop()->height() < 1024)
+    {
+        debug1 << "The screen's vertical resolution is less than 1024 "
+                  "so the notepad will not be available." << endl;
+        notepad->hide();
+        QvisPostableWindow::SetPostEnabled(false);
+    }
 
     // Create the output button and put it in the status bar as a
     // permanent widget.
