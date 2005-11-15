@@ -307,6 +307,10 @@ avtSTMDFileFormatInterface::GetFilename(int ts)
 //    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //    Replaced -INT_MAX & -DBL_MAX with INVALID_CYCLE and INVALID_TIME
 //
+//    Mark C. Miller, Tue Nov 15 17:43:06 PST 2005
+//    Fixed problem where it would totally ignore trying to
+//    GetCycleFromFilename if the plugin hadn't implemented it
+//
 // ****************************************************************************
 
 void
@@ -373,13 +377,18 @@ avtSTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
 
             if (md->IsCycleAccurate(i) != true)
             {
-                if (canGetGoodCycleFromFilename)
-                    c = timesteps[i]->FormatGetCycleFromFilename(timesteps[i]->GetFilename());
-                else if (forceReadAllCyclesTimes)
+                if (forceReadAllCyclesTimes)
+                {
                     c = timesteps[i]->FormatGetCycle();
-
-                if (c != avtFileFormat::INVALID_CYCLE)
-                    cIsAccurate = true;
+                    if (c != avtFileFormat::INVALID_CYCLE)
+                        cIsAccurate = true;
+                }
+                else
+                {
+                    c = timesteps[i]->FormatGetCycleFromFilename(timesteps[i]->GetFilename());
+                    if (c != avtFileFormat::INVALID_CYCLE && canGetGoodCycleFromFilename)
+                        cIsAccurate = true;
+                }
             }
             else
             {
@@ -395,13 +404,18 @@ avtSTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
 
             if (md->IsTimeAccurate(i) != true)
             {
-                if (canGetGoodTimeFromFilename)
-                    t = timesteps[i]->FormatGetTimeFromFilename(timesteps[i]->GetFilename());
-                else if (forceReadAllCyclesTimes)
+                if (forceReadAllCyclesTimes)
+                {
                     t = timesteps[i]->FormatGetTime();
-
-                if (t != avtFileFormat::INVALID_TIME)
-                    tIsAccurate = true;
+                    if (t != avtFileFormat::INVALID_TIME)
+                        tIsAccurate = true;
+                }
+                else
+                {
+                    t = timesteps[i]->FormatGetTimeFromFilename(timesteps[i]->GetFilename());
+                    if (t != avtFileFormat::INVALID_TIME && canGetGoodTimeFromFilename)
+                        tIsAccurate = true;
+                }
             }
             else
             {

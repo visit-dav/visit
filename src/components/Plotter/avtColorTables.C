@@ -8,12 +8,13 @@
 // Static data that describes the eight default color tables.
 //
 
-static const char *predef_ct_names[]  = {"caleblack", "calewhite",
-    "contoured", "gray", "hot", "levels", "rainbow", "xray"};
-static const int predef_ct_ncolors[]  = {7, 7, 4, 2, 5, 30, 6, 2};
-static const int predef_ct_smooth[]   = {1, 1, 0, 1, 1,  0, 1, 1};
-static const int predef_ct_equal[]    = {0, 0, 1, 0, 0,  1, 0, 0};
-static const int predef_ct_discrete[] = {0, 0, 0, 0, 0,  1, 0, 0};
+static const char *predef_ct_names[]  = { "bluehot", "caleblack", "calewhite",
+    "contoured", "difference", "gray", "hot", "hot_and_cold", 
+    "hot_desaturated", "levels", "orangehot", "rainbow", "xray"};
+static const int predef_ct_ncolors[]  = {4, 7, 7, 4, 3, 2, 5, 5, 8, 30, 4, 6, 2};
+static const int predef_ct_smooth[]   = {1, 1, 1, 0, 1, 1, 1, 1, 1,  0, 1, 1, 1};
+static const int predef_ct_equal[]    = {0, 0, 0, 1, 0, 0, 0, 0, 0,  1, 0, 0, 0};
+static const int predef_ct_discrete[] = {0, 0, 0, 0, 0, 0, 0, 0, 0,  1, 0, 0, 0};
 
 /* Hot */
 static const float ct_hot[] = {
@@ -103,6 +104,50 @@ static const float ct_levels[] = {
  1.00f, 0.51f, 0.00f, 1.00f,
 };
 
+/* Bluehot */
+static const float ct_bluehot[] = {
+ 0.f,    0.f, 0.f,  0.f, 
+ 0.333f, 0.f, 0.f,  0.5f, 
+ 0.666f, 0.f, 0.5f, 1.f, 
+ 1.0f,   1.f, 1.f,  1.f, 
+};
+
+/* Orangehot */
+static const float ct_orangehot[] = {
+ 0.f,    0.f,  0.f,  0.f, 
+ 0.333f, 0.5f, 0.f,  0.f, 
+ 0.666f, 1.f,  0.5f, 0.f, 
+ 1.0f,   1.f,  1.f,  1.f, 
+};
+
+/* Hot-and-cold */
+static const float ct_hot_and_cold[] = {
+ 0.f,    0.f, 1.f, 1.f, 
+ 0.45f,  0.f, 0.f, 1.f, 
+ 0.5f,   0.f, 0.f, 0.5f, 
+ 0.55f,  1.f, 0.f, 0.f, 
+ 1.0f,   1.f, 1.f, 0.f, 
+};
+
+/* Hot desaturated */
+static const float ct_hot_desaturated[] = {
+ 0.0f,   0.28f, 0.28f, 0.86f, 
+ 0.143f, 0.f,   0.f,   0.36f, 
+ 0.285f, 0.f,   1.f,   1.f, 
+ 0.429f, 0.f,   0.5f,  0.f, 
+ 0.571f, 1.f,   1.f,   0.f, 
+ 0.714f, 1.f,   0.38f, 0.f, 
+ 0.857f, 0.42f, 0.f,   0.f, 
+ 1.0f,   0.88f, 0.3f,  0.3f, 
+};
+
+/* Difference */
+static const float ct_difference[] = {
+ 0.f,    0.f,  0.f,  1.f, 
+ 0.5f,   1.f,  1.f,  1.f, 
+ 1.0f,   1.f,  0.f,  0.f, 
+};
+
 // Static pointer to single instance.
 avtColorTables *avtColorTables::instance = NULL;
 
@@ -122,6 +167,10 @@ avtColorTables *avtColorTables::instance = NULL;
 //   Kathleen Bonnell, Thu Jan 13 17:58:39 PST 2005 
 //   Make the opacity for the ColorControlPoint be 255. 
 //
+//   Hank Childs, Tue Nov 15 08:44:11 PST 2005
+//   Add new color tables: blue hot, orange hot, difference, hot_desaturated,
+//   hot and cold.
+//
 // ****************************************************************************
 
 avtColorTables::avtColorTables()
@@ -129,18 +178,23 @@ avtColorTables::avtColorTables()
     ctAtts = new ColorTableAttributes();
 
     // Set up some pointers.
-    const float *predef_ct_colors[8];
-    predef_ct_colors[0] = ct_caleblack;
-    predef_ct_colors[1] = ct_calewhite;
-    predef_ct_colors[2] = ct_contoured;
-    predef_ct_colors[3] = ct_gray;
-    predef_ct_colors[4] = ct_hot;
-    predef_ct_colors[5] = ct_levels;
-    predef_ct_colors[6] = ct_rainbow;
-    predef_ct_colors[7] = ct_xray;
+    const float *predef_ct_colors[13];
+    predef_ct_colors[0]  = ct_bluehot;
+    predef_ct_colors[1]  = ct_caleblack;
+    predef_ct_colors[2]  = ct_calewhite;
+    predef_ct_colors[3]  = ct_contoured;
+    predef_ct_colors[4]  = ct_difference;
+    predef_ct_colors[5]  = ct_gray;
+    predef_ct_colors[6]  = ct_hot;
+    predef_ct_colors[7]  = ct_hot_and_cold;
+    predef_ct_colors[8]  = ct_hot_desaturated;
+    predef_ct_colors[9]  = ct_levels;
+    predef_ct_colors[10] = ct_orangehot;
+    predef_ct_colors[11] = ct_rainbow;
+    predef_ct_colors[12] = ct_xray;
 
     // Add each colortable.
-    for(int i = 0; i < 8; ++i)
+    for(int i = 0; i < 13; ++i)
     {
         ColorControlPointList ccpl;
 

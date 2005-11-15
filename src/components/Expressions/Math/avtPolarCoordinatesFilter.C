@@ -62,6 +62,11 @@ avtPolarCoordinatesFilter::~avtPolarCoordinatesFilter()
 //  Programmer:   Hank Childs
 //  Creation:     November 18, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Nov 15 15:49:07 PST 2005
+//    Make phi be 0 for 2D plots.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -71,6 +76,8 @@ avtPolarCoordinatesFilter::DeriveVariable(vtkDataSet *in_ds)
     vtkFloatArray *rv = vtkFloatArray::New();
     rv->SetNumberOfComponents(3);
     rv->SetNumberOfTuples(npts);
+    bool in3D = 
+            (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 3);
     for (int i = 0 ; i < npts ; i++)
     {
         float pt[3];
@@ -82,7 +89,9 @@ avtPolarCoordinatesFilter::DeriveVariable(vtkDataSet *in_ds)
         float theta = atan2(pt[1], pt[0]);
         rv->SetComponent(i, 1, theta);
 
-        float phi = acos(pt[2] / r);
+        float phi = 0.;
+        if (in3D)
+            phi = acos(pt[2] / r);
         rv->SetComponent(i, 2, phi);
     }
     

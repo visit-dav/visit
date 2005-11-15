@@ -1289,6 +1289,9 @@ void avtFLASHFileFormat::ReadUnknownNames()
 //    enough fashion that this didn't bite us.  Also, added support for
 //    FLASH files containing only particles and no grid data.
 //
+//    Brad Whitlock, Tue Nov 15 10:33:55 PDT 2005
+//    I increased the size of a dimension so it will build on AIX.
+//
 // ****************************************************************************
 void
 avtFLASHFileFormat::ReadParticleAttributes()
@@ -1321,7 +1324,7 @@ avtFLASHFileFormat::ReadParticleAttributes()
 
     hid_t pointSpaceId = H5Dget_space(pointId);
 
-    hsize_t p_dims[0];
+    hsize_t p_dims[100];
     hsize_t p_ndims =  H5Sget_simple_extent_dims(pointSpaceId, p_dims, NULL);
     if (p_ndims != 1)
     {

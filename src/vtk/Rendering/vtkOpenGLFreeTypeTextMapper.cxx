@@ -206,21 +206,21 @@ void vtkOpenGLFreeTypeTextMapper::RenderOverlay(vtkViewport* viewport,
     actor->GetActualPositionCoordinate()->GetComputedViewportValue(viewport);
   
   // Define bounding rectangle
-  float orientVector[2];
-  float upVector[2];
+  int orientVector[2];
+  int upVector[2];
   if (tprop->GetOrientation() == VTK_TEXT_HORIZONTAL)
     {
-    orientVector[0] = 1.;
-    orientVector[1] = 0.;
-    upVector[0] = 0.;
-    upVector[1] = 1.;
+    orientVector[0] = 1;
+    orientVector[1] = 0;
+    upVector[0] = 0;
+    upVector[1] = 1;
     }
   else
     {
-    orientVector[0] = 0.;
-    orientVector[1] = 1.;
-    upVector[0] = -1.0;
-    upVector[1] =  0.;
+    orientVector[0] = 0;
+    orientVector[1] = 1;
+    upVector[0] = -1;
+    upVector[1] =  0;
     }
 
   int pos[2];
@@ -232,24 +232,24 @@ void vtkOpenGLFreeTypeTextMapper::RenderOverlay(vtkViewport* viewport,
     case VTK_TEXT_LEFT: 
       break;
     case VTK_TEXT_CENTERED:
-      pos[0] = pos[0] - (int)(orientVector[0] * size[0] / 2);
-      pos[1] = pos[1] - (int)(orientVector[1] * size[0] / 2);
+      pos[0] = pos[0] - orientVector[0] * size[0] / 2;
+      pos[1] = pos[1] - orientVector[1] * size[0] / 2;
       break;
     case VTK_TEXT_RIGHT: 
-      pos[0] = pos[0] - (int)(orientVector[0] * size[0]);
-      pos[1] = pos[1] - (int)(orientVector[1] * size[0]);
+      pos[0] = pos[0] - orientVector[0] * size[0];
+      pos[1] = pos[1] - orientVector[1] * size[0];
       break;
     }
 
   switch (tprop->GetVerticalJustification())
     {
     case VTK_TEXT_TOP: 
-      pos[0] = pos[0] - (int)(upVector[0] * (size[1] - this->LastLargestDescender));
-      pos[1] = pos[1] - (int)(upVector[1] * (size[1] - this->LastLargestDescender));
+      pos[0] = pos[0] - upVector[0] * (size[1] + this->LastLargestDescender);
+      pos[1] = pos[1] - upVector[1] * (size[1] + this->LastLargestDescender);
       break;
     case VTK_TEXT_CENTERED:
-      pos[0] = pos[0] - (int)(upVector[0] * (size[1] / 2 - this->LastLargestDescender / 2));
-      pos[1] = pos[1] - (int)(upVector[1] * (size[1] / 2 - this->LastLargestDescender / 2));
+      pos[0] = pos[0] - upVector[0] * (size[1] / 2 + this->LastLargestDescender / 2);
+      pos[1] = pos[1] - upVector[1] * (size[1] / 2 + this->LastLargestDescender / 2);
       break;
     case VTK_TEXT_BOTTOM: 
       break;

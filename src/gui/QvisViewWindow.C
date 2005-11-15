@@ -2310,11 +2310,24 @@ QvisViewWindow::Viewport(const double *viewport)
 // Programmer: Eric Brugger
 // Creation:   January 13, 2003
 //
+// Modifications:
+//
+//   Hank Childs, Mon Nov 14 14:05:52 PST 2005
+//   Check for window specifications.
+//
 // ****************************************************************************
 
 void
 QvisViewWindow::Window(const double *window)
 {
+    if (window[0] >= window[1] || window[2] >= window[3])
+    {
+        Warning("The window should be specified as \"minX, maxX, minY, maxY\"."
+                "\nYou have specified the coordinates out of order.\nNote "
+                "that minX *must* be less than maxX and minY *must* be less "
+                "than maxY");
+        return;
+    }
     view2d->SetWindowCoords(window);
  
     Update2D(true);

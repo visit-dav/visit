@@ -239,6 +239,12 @@ avtMacroExpressionFilter::AdditionalPipelineFilters(void)
 //  Programmer: Hank Childs
 //  Creation:   December 28, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Nov 15 07:12:53 PST 2005
+//    Make sure we don't lose the active variable if it is not a macro
+//    variable.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -250,8 +256,6 @@ avtMacroExpressionFilter::PerformRestriction(avtPipelineSpecification_p spec)
     eef.SetInput(term_src->GetOutput());
 
     //
-    // Go through the standard hassles to force an Execute.
-    //
     // If we use the default variable, the EEF will try to create it, so tell
     // it that the default variable is the one we are calculating.
     //
@@ -259,6 +263,14 @@ avtMacroExpressionFilter::PerformRestriction(avtPipelineSpecification_p spec)
     const char *v = outputVariableName;
     avtDataSpecification_p new_dspec = new avtDataSpecification(old_dspec, v);
     new_dspec->RemoveSecondaryVariable(v);
+
+    //
+    // If the primary variable is not the macro variable, then we may have just
+    // clobbered it.  Add the primary variable back as a secondary variable.
+    //
+    if (strcmp(old_dspec->GetVariable(), v) != 0)
+        new_dspec->AddSecondaryVariable(old_dspec->GetVariable());
+
     avtPipelineSpecification_p new_pspec = new avtPipelineSpecification(spec,
                                                                     new_dspec);
     last_spec = new_dspec;

@@ -139,6 +139,9 @@ QvisPostableWindow::CreateNode(DataNode *parentNode)
 //   Brad Whitlock, Wed Sep 10 09:19:32 PDT 2003
 //   Added a method to make sure that the window fits on the screen.
 //
+//   Hank Childs, Mon Nov 14 16:25:27 PST 2005
+//   Don't allow windows to come up off the screen.
+//
 // ****************************************************************************
 
 void
@@ -170,14 +173,22 @@ QvisPostableWindow::SetFromNode(DataNode *parentNode, const int *borders)
     }
     if((node = winNode->GetNode("x")) != 0)
     {
-        x = node->AsInt();
+        int x_pos = node->AsInt();
+        if (x_pos < 0)
+            x_pos = 0;
+        x = x_pos;
         if(!is_posted)
             x += borders[2];
         xy_set = true;
     }
     if((node = winNode->GetNode("y")) != 0)
     {
-        y = node->AsInt();
+        int y_pos = node->AsInt();
+        if (y_pos < 0)
+            y_pos = 0;
+        y = y_pos;
+        if (!is_posted)
+            y += borders[0];
         xy_set = true;
     }
     if((node = winNode->GetNode("width")) != 0)

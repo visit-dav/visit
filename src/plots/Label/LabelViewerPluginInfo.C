@@ -5,6 +5,7 @@
 #include <LabelPluginInfo.h>
 #include <avtLabelPlot.h>
 #include <avtDatabaseMetaData.h>
+#include <Expression.h>
 #include <DebugStream.h>
 
 #if defined(__APPLE__)
@@ -287,7 +288,11 @@ LabelViewerPluginInfo::XPMIconData() const
 // Creation:   Tue Aug 2 14:28:36 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Nov 15 09:49:41 PDT 2005
+//   Added code to get the expression type if the DetermineVarType returns
+//   a scalar. This allows us to get the right type for things made up of
+//   scalars such as vectors.
+//
 // ****************************************************************************
 
 void
@@ -314,6 +319,32 @@ LabelViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     else
     {
         avtVarType t = md->DetermineVarType(varName);
+
+        if(t == AVT_SCALAR_VAR)
+        {
+            // The final variable type is scalar but we should check if the
+            // variable is an expression. If so then we should take the
+            // expression's output type if it differs from scalar. This
+            // allows us to get the right type for vector expressions, etc.
+            for(int i = 0; i < md->GetNumberOfExpressions(); ++i)
+            {
+                const Expression *e = md->GetExpression(i);
+                if(e->GetName() == varName)
+                {
+                    if(e->GetType() == Expression::VectorMeshVar)
+                        t = AVT_VECTOR_VAR;
+                    else if(e->GetType() == Expression::TensorMeshVar)
+                        t = AVT_TENSOR_VAR;
+                    else if(e->GetType() == Expression::SymmetricTensorMeshVar)
+                        t = AVT_SYMMETRIC_TENSOR_VAR;
+                    else if(e->GetType() == Expression::ArrayMeshVar)
+                        t = AVT_ARRAY_VAR;
+
+                    break;
+                }
+            }
+        }
+
         if(t == AVT_MESH)
         {
             labelAtts->SetVarType(LabelAttributes::LABEL_VT_MESH);
