@@ -236,6 +236,8 @@
 //    Brad Whitlock, Fri Sep 9 11:50:55 PDT 2005
 //    Added more icons.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added mesh management attributes window
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -353,6 +355,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     id = ctrls->insertItem(lightIcon, tr("&Lighting . . ."), this, SIGNAL(activateLightingWindow()), CTRL+Key_L );
     id = ctrls->insertItem(globalLineoutIcon, tr("&Lineout . . ."), this, SIGNAL(activateGlobalLineoutWindow()), CTRL+SHIFT+Key_L );
     id = ctrls->insertItem(materialIcon, tr("&Material Options . . ."), this, SIGNAL(activateMaterialWindow()), CTRL+Key_M);
+    id = ctrls->insertItem(tr("&Mesh management . . ."), this, SIGNAL(activateMeshManagementWindow()), CTRL+SHIFT+Key_M);
     id = ctrls->insertItem(pickIcon, tr("&Pick . . ."), this, SIGNAL(activatePickWindow()), CTRL+Key_P );
     id = ctrls->insertItem(tr("&Query . . ."), this, SIGNAL(activateQueryWindow()), CTRL+Key_Q );
     id = ctrls->insertItem(tr("&Query over time options . . ."), this, SIGNAL(activateQueryOverTimeWindow()), CTRL+SHIFT+Key_Q );

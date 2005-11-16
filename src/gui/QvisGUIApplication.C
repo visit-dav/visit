@@ -73,6 +73,7 @@
 #include <QvisColorTableWindow.h>
 #include <QvisCommandWindow.h>
 #include <QvisDatabaseCorrelationListWindow.h>
+#include <QvisMeshManagementWindow.h>
 #include <QvisEngineWindow.h>
 #include <QvisExportDBWindow.h>
 #include <QvisExpressionsWindow.h>
@@ -163,6 +164,7 @@
 #define WINDOW_SIMULATION       27
 #define WINDOW_EXPORT_DB        28
 #define WINDOW_COMMAND          29
+#define WINDOW_MESH_MANAGEMENT  30
 
 const char *QvisGUIApplication::windowNames[] = {
 "File selection",
@@ -194,7 +196,8 @@ const char *QvisGUIApplication::windowNames[] = {
 "Interactors",
 "Simulations",
 "Export Database",
-"Commands"
+"Commands",
+"Mesh Management Options"
 };
 
 // Some internal prototypes.
@@ -2151,6 +2154,8 @@ QvisGUIApplication::CreateMainWindow()
 //   Brad Whitlock, Wed Apr 20 17:37:07 PST 2005
 //   Added command window.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added mesh management attributes window
 // ****************************************************************************
 
 void
@@ -2262,6 +2267,8 @@ QvisGUIApplication::SetupWindows()
              this, SLOT(showExportDBWindow()));
      connect(mainWin, SIGNAL(activateCommandWindow()),
              this, SLOT(showCommandWindow()));
+     connect(mainWin, SIGNAL(activateMeshManagementWindow()),
+             this, SLOT(showMeshManagementWindow()));
 }
 
 // ****************************************************************************
@@ -2296,6 +2303,8 @@ QvisGUIApplication::SetupWindows()
 //   Hank Childs, Tue May 24 17:11:00 PDT 2005
 //   Added the Export DB window.
 //
+//   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//   Added mesh management attributes window
 // ****************************************************************************
 
 QvisWindowBase *
@@ -2494,6 +2503,11 @@ QvisGUIApplication::WindowFactory(int i)
         win = new QvisCommandWindow(windowNames[i], "Command", mainWin->GetNotepad());
         connect(win, SIGNAL(runCommand(const QString &)),
                 this, SLOT(Interpret(const QString &)));
+        break;
+    case WINDOW_MESH_MANAGEMENT:
+        // Create the animation window.
+        win = new QvisMeshManagementWindow(viewer->GetMeshManagementAttributes(),
+            windowNames[i], "MeshManagement", mainWin->GetNotepad());
         break;
     }
 
@@ -6245,3 +6259,4 @@ void QvisGUIApplication::showQueryOverTimeWindow()   { GetInitializedWindowPoint
 void QvisGUIApplication::showInteractorWindow()      { GetInitializedWindowPointer(WINDOW_INTERACTOR)->show(); }
 void QvisGUIApplication::showSimulationWindow()      { GetInitializedWindowPointer(WINDOW_SIMULATION)->show(); }
 void QvisGUIApplication::showExportDBWindow()        { GetInitializedWindowPointer(WINDOW_EXPORT_DB)->show(); }
+void QvisGUIApplication::showMeshManagementWindow()  { GetInitializedWindowPointer(WINDOW_MESH_MANAGEMENT)->show(); }

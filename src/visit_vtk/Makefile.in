@@ -38,13 +38,16 @@
 #   Jeremy Meredith, Tue Aug 31 09:33:32 PDT 2004
 #   Added "parallel" directory.
 #
+#   Mark C. Miller, Wed Nov 16 12:09:09 PST 2005
+#   Removed sl_io
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 @DIRTARGETS@
 
-SUBDIRS=lightweight full sl_io parallel
+SUBDIRS=lightweight full parallel
 
 message:
 	@echo

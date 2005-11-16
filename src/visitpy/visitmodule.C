@@ -54,6 +54,7 @@
 #include <GlobalLineoutAttributes.h>
 #include <InteractorAttributes.h>
 #include <KeyframeAttributes.h>
+#include <MeshManagementAttributes.h>
 #include <MessageAttributes.h>
 #include <PickAttributes.h>
 #include <Plot.h>
@@ -90,6 +91,7 @@
 #include <PyLineObject.h>
 #include <PyLightAttributes.h>
 #include <PyMaterialAttributes.h>
+#include <PyMeshManagementAttributes.h>
 #include <PyPickAttributes.h>
 #include <PyPrinterAttributes.h>
 #include <PyProcessAttributes.h>
@@ -9853,6 +9855,120 @@ visit_GetProcessAttributes(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_GetMeshManagementAttributes
+//
+// Purpose: Returns a mesh management attributes object with the current state
+//          of the active window.
+//
+// Programmer: Mark C. Miller
+// Creation:   November 6, 2005 
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetMeshManagementAttributes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
+
+    PyObject *retval = PyMeshManagementAttributes_NewPyObject();
+    MeshManagementAttributes *ra = PyMeshManagementAttributes_FromPyObject(retval);
+
+    // Copy the viewer proxy's window information into the return data structure.
+    *ra = *(viewer->GetMeshManagementAttributes());
+
+    return retval;
+}
+
+// ****************************************************************************
+// Function: visit_SetMeshManagementAttributes
+//
+// Purpose: Tells the viewer to use the mesh management attributes we're
+//          giving it.
+//
+// Programmer: Mark C. Miller 
+// Creation:   November 5, 2005 
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetMeshManagementAttributes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *mmAtts = NULL;
+    // Try and get the view pointer.
+    if(!PyArg_ParseTuple(args,"O",&mmAtts))
+    {
+        VisItErrorFunc("SetMeshManagementAttributes: Cannot parse object!");
+        return NULL;
+    }
+    if(!PyMeshManagementAttributes_Check(mmAtts))
+    {
+        VisItErrorFunc("Argument is not a MeshManagementAttributes object");
+        return NULL;
+    }
+
+    MUTEX_LOCK();
+        MeshManagementAttributes *ra = PyMeshManagementAttributes_FromPyObject(mmAtts);
+
+        // Copy the object into the view attributes.
+        *(viewer->GetMeshManagementAttributes()) = *ra;
+        viewer->GetMeshManagementAttributes()->Notify();
+        viewer->SetMeshManagementAttributes();
+
+        if(logging)
+            fprintf(logFile, "SetMeshManagementAttributes()\n");
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_SetDefaultMeshManagementAttributes
+//
+// Purpose: Tells the viewer to save the default mesh management attributes.
+//
+// Programmer: Mark C. Miller 
+// Creation:   November 15, 2005
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetDefaultMeshManagementAttributes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *mma = NULL;
+    // Try and get the mma pointer.
+    if(!PyArg_ParseTuple(args,"O",&mma))
+    {
+        VisItErrorFunc("SetDefaultMeshManagementAttributes: Cannot parse object!");
+        return NULL;
+    }
+    if(!PyMeshManagementAttributes_Check(mma))
+    {
+        VisItErrorFunc("Argument is not a MeshManagementAttributes object");
+        return NULL;
+    }
+
+    MUTEX_LOCK();
+        MeshManagementAttributes *va = PyMeshManagementAttributes_FromPyObject(mma);
+
+        // Copy the object into the view attributes.
+        *(viewer->GetMeshManagementAttributes()) = *va;
+        viewer->GetMeshManagementAttributes()->Notify();
+        viewer->SetDefaultMeshManagementAttributes();
+
+        if(logging)
+            fprintf(logFile, "SetDefaultMeshManagementAttributes()\n");
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Function: UpdateAnnotationsHelper
 //
 // Purpose: 
@@ -10611,6 +10727,8 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Hank Childs, Thu Jul 21 16:28:48 PDT 2005
 //   Added DefineArrayExpression.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added mesh management attributes
 // ****************************************************************************
 
 static void
@@ -10741,6 +10859,8 @@ AddDefaultMethods()
                                               visit_GetKeyframeAttributes_doc);
     AddMethod("GetMaterialAttributes", visit_GetMaterialAttributes,
                                               visit_GetMaterialAttributes_doc);
+    AddMethod("GetMeshManagementAttributes", visit_GetMeshManagementAttributes,
+                                              visit_GetMeshManagementAttributes_doc);
     AddMethod("GetPickAttributes", visit_GetPickAttributes,
                                                   visit_GetPickAttributes_doc);
     AddMethod("GetPickOutput", visit_GetPickOutput, visit_GetPickOutput_doc);
@@ -10834,6 +10954,8 @@ AddDefaultMethods()
                                             visit_SetInteractorAttributes_doc);
     AddMethod("SetDefaultMaterialAttributes", visit_SetDefaultMaterialAttributes,
                                             visit_SetMaterialAttributes_doc);
+    AddMethod("SetDefaultMeshManagementAttributes", visit_SetDefaultMeshManagementAttributes,
+                                            visit_SetMeshManagementAttributes_doc);
     AddMethod("SetDefaultOperatorOptions", visit_SetDefaultOperatorOptions,
                                                  visit_SetOperatorOptions_doc);
     AddMethod("SetDefaultPickAttributes", visit_SetDefaultPickAttributes,
@@ -10849,6 +10971,8 @@ AddDefaultMethods()
                                               visit_SetKeyframeAttributes_doc);
     AddMethod("SetMaterialAttributes", visit_SetMaterialAttributes,
                                             visit_SetMaterialAttributes_doc);
+    AddMethod("SetMeshManagementAttributes", visit_SetMeshManagementAttributes,
+                                            visit_SetMeshManagementAttributes_doc);
     AddMethod("SetOperatorOptions", visit_SetOperatorOptions,
                                                  visit_SetOperatorOptions_doc);
     AddMethod("SetPickAttributes", visit_SetPickAttributes,
@@ -11004,6 +11128,8 @@ AddDefaultMethods()
 //   Hank Childs, Thu Jun 30 11:18:11 PDT 2005
 //   Added PyExportDBAttributes.
 //
+//   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//   Added mesh management attributes
 // ****************************************************************************
 
 static void
@@ -11016,6 +11142,7 @@ AddExtensions()
     ADD_EXTENSION(PyExportDBAttributes_GetMethodTable);
     ADD_EXTENSION(PyGlobalAttributes_GetMethodTable);
     ADD_EXTENSION(PyHostProfile_GetMethodTable);
+    ADD_EXTENSION(PyMeshManagementAttributes_GetMethodTable);
     ADD_EXTENSION(PyMaterialAttributes_GetMethodTable);
     ADD_EXTENSION(PyPrinterAttributes_GetMethodTable);
     ADD_EXTENSION(PyProcessAttributes_GetMethodTable);
@@ -11067,6 +11194,8 @@ AddExtensions()
 //   Hank Childs, Thu Jun 30 11:18:11 PDT 2005
 //   Added PyExportDBAttributes.
 //
+//   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//   Added mesh management attributes
 // ****************************************************************************
 
 static void
@@ -11077,6 +11206,7 @@ InitializeExtensions()
     PyGlobalAttributes_StartUp(viewer->GetGlobalAttributes(), logFile);
     PyHostProfile_StartUp(0, logFile);
     PyMaterialAttributes_StartUp(viewer->GetMaterialAttributes(), logFile);
+    PyMeshManagementAttributes_StartUp(viewer->GetMeshManagementAttributes(), logFile);
     PyPrinterAttributes_StartUp(viewer->GetPrinterAttributes(), logFile);
     PyProcessAttributes_StartUp(viewer->GetProcessAttributes(), logFile);
     PyRenderingAttributes_StartUp(viewer->GetRenderingAttributes(), logFile);
@@ -11107,6 +11237,8 @@ InitializeExtensions()
 //   Brad Whitlock, Fri Mar 19 08:52:05 PDT 2004
 //   Added GlobalAttributes.
 //
+//   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//   Added mesh management attributes
 // ****************************************************************************
 
 static void
@@ -11115,6 +11247,7 @@ CloseExtensions()
     PyAnnotationAttributes_CloseDown();
     PyGlobalAttributes_CloseDown();
     PyMaterialAttributes_CloseDown();
+    PyMeshManagementAttributes_CloseDown();
     PyPrinterAttributes_CloseDown();
     PySaveWindowAttributes_CloseDown();
     PyViewCurveAttributes_CloseDown();
@@ -11168,6 +11301,7 @@ SetLogging(bool val)
     PyExportDBAttributes_SetLogging(val);
     PyGlobalAttributes_SetLogging(val);
     PyMaterialAttributes_SetLogging(val);
+    PyMeshManagementAttributes_SetLogging(val);
     PyPrinterAttributes_SetLogging(val);
     PyProcessAttributes_SetLogging(val);
     PyRenderingAttributes_SetLogging(val);

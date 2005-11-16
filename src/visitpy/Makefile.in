@@ -112,6 +112,9 @@
 #    Hank Childs, Thu Jun 30 11:11:55 PDT 2005
 #    Added PyExportDBAtts.
 #
+#    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+#    Added mesh management attributes
+#
 ##############################################################################
 
 ##
@@ -136,6 +139,7 @@ SRC= \
     PyLightAttributes.C \
     PyLineObject.C \
     PyMaterialAttributes.C \
+    PyMeshManagementAttributes.C \
     PyMethodDoc.C \
     PyPickAttributes.C \
     PyPrinterAttributes.C \
@@ -166,6 +170,7 @@ HDR= \
     PyLightAttributes.h \
     PyLineObject.h \
     PyMaterialAttributes.h \
+    PyMeshManagementAttributes.h \
     PyMethodDoc.h \
     PyPickAttributes.h \
     PyPrinterAttributes.h \

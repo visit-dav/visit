@@ -31,6 +31,7 @@ class ClientInformationList;
 class ClientMethod;
 class ColorTableAttributes;
 class InteractorAttributes;
+class MeshManagementAttributes;
 class MessageAttributes;
 class MovieAttributes;
 class ProcessAttributes;
@@ -375,6 +376,8 @@ struct avtDefaultPlotMetaData;
 //    Kathleen Bonnell, Wed Jul 27 15:47:34 PDT 2005 
 //    Added SuppressQueryOutput. 
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added mesh management attributes rpcs 
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -534,6 +537,9 @@ private:
     void SetDefaultQueryOverTimeAttributes();
     void ResetQueryOverTimeAttributes();
     void ResetLineoutColor();
+    void SetMeshManagementAttributes();
+    void SetDefaultMeshManagementAttributes();
+    void ResetMeshManagementAttributes();
 
     void SetInteractorAttributes();
     void SetDefaultInteractorAttributes();
@@ -542,6 +548,7 @@ private:
     void GetProcessAttributes();
 
     void SetTryHarderCyclesTimes();
+
 
     void OpenClient();
 

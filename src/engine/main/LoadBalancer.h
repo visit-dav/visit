@@ -11,7 +11,6 @@
 #include <set>
 #include <map>
 
-#include <avtDatabaseMetaData.h>
 #include <avtPipelineSpecification.h>
 #include <avtIOInformation.h>
 
@@ -58,18 +57,6 @@ struct IOInfo
     std::vector< std::set<int> >      files;   // files open by each proc
     std::vector< std::set<int> >      domains; // domains on each proc
 };
-
-
-typedef enum
-{
-    LOAD_BALANCE_CONTIGUOUS_BLOCKS_TOGETHER    = 0,
-    LOAD_BALANCE_STRIDE_ACROSS_BLOCKS,        /* 1 */
-    LOAD_BALANCE_RANDOM_ASSIGNMENT,           /* 2 */
-    LOAD_BALANCE_DBPLUGIN_DYNAMIC,            /* 3 */
-    LOAD_BALANCE_RESTRICTED,                  /* 4 */
-    LOAD_BALANCE_ABSOLUTE                     /* 5 */
-} LoadBalanceScheme;
-
 
 // ****************************************************************************
 //  Class: LoadBalancer
@@ -124,6 +111,10 @@ typedef enum
 //    same processors, regardless of which domains are involved in the
 //    current pipeline.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added DetermineAppropriateLoadBalanceScheme 
+//    Removed avtIOInformation and avtDatabaseMetaData args from AddDatabase
+//
 // ****************************************************************************
 
 class LoadBalancer
@@ -137,10 +128,11 @@ class LoadBalancer
                                          avtPipelineSpecification_p input);
     bool                          CheckDynamicLoadBalancing(int);
 
+    LoadBalanceScheme             DetermineAppropriateScheme(
+                                      avtPipelineSpecification_p input);
+
     void                          AddDatabase(const std::string &dbname,
-                                              avtDatabase *,
-                                              const avtIOInformation &,
-                                              const avtDatabaseMetaData *);
+                                              avtDatabase *, int time);
 
     int                           AddPipeline(const std::string &dbname);
     void                          ResetPipeline(int);

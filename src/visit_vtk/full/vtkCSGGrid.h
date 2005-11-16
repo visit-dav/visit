@@ -52,6 +52,7 @@
 #include <visit_vtk_exports.h>
 
 #include <map>
+#include <vector>
 
 #include "vtkDataArray.h"
 #include "vtkIdTypeArray.h"
@@ -60,9 +61,13 @@
 #include "vtkPlanes.h"
 #include "vtkStructuredData.h"
 
+#include <float.h>
+
 class vtkPolyData;
+class vtkUnstructuredGrid;
 
 using std::map;
+using std::vector;
 
 #define VTK_CSG_GRID 20
 
@@ -118,6 +123,12 @@ public:
   void GetCellPoints(vtkIdType cellId, vtkIdList *ptIds);
   void GetPointCells(vtkIdType ptId, vtkIdList *cellIds);
   void ComputeBounds();
+  void SetBounds(float minX, float maxX,
+                 float minY, float maxY,
+                 float minZ, float maxZ)
+      {Bounds[0] = minX; Bounds[1] = maxX;
+       Bounds[2] = minY; Bounds[3] = maxY;
+       Bounds[4] = minZ; Bounds[5] = maxZ;};
   int GetMaxCellSize();
   void GetCellNeighbors(vtkIdType cellId, vtkIdList *ptIds,
                         vtkIdList *cellIds);
@@ -126,10 +137,30 @@ public:
   //
   // A discretize method that returns the surfaces only
   //
-  vtkPolyData  *DiscretizeSurfaces(int specificZone = -1,
-                                   double minX = -10.0, double maxX = 10.0, int nX = 100,
-                                   double minY = -10.0, double maxY = 10.0, int nY = 100,
-                                   double minZ = -10.0, double maxZ = 10.0, int nZ = 100);
+  vtkPolyData  *DiscretizeSurfaces(int specificZone = -1, double tol = 0.01,
+                                   double minX = -10.0, double maxX = 10.0,
+                                   double minY = -10.0, double maxY = 10.0,
+                                   double minZ = -10.0, double maxZ = 10.0);
+
+  //
+  // A discretize method that returns the volumetric mesh, uniformally
+  // sampled to a specific number of samples in x, y and z
+  //
+  vtkUnstructuredGrid *DiscretizeSpace(int specificZone = -1, double tol = 0.01,
+                                   double minX = -10.0, double maxX = 10.0,
+                                   double minY = -10.0, double maxY = 10.0,
+                                   double minZ = -10.0, double maxZ = 10.0);
+
+  //
+  // A discretize method that returns the entire spatial bounding
+  // box, meshed adaptively, though discontinuously to a specified
+  // tolerance (smallest edge length)
+  //
+  vtkUnstructuredGrid *DiscretizeSpace(int specificZone = -1, int rank=0, int nprocs=1,
+                                       double tol = 0.01,
+                                       double minX = -10.0, double maxX = 10.0,
+                                       double minY = -10.0, double maxY = 10.0,
+                                       double minZ = -10.0, double maxZ = 10.0);
 
   // Description:
   // Return the actual size of the data in kilobytes. This number
@@ -225,6 +256,249 @@ protected:
   vtkIdTypeArray *CellRegionIds;             // Indices into Regions of the "completed" regions
 
 private:
+
+
+class Box
+{
+public:
+    typedef enum {
+        LT_ZERO = -1,
+        EQ_ZERO =  0,
+        GT_ZERO = +1
+    } FuncState;
+
+    Box(double x, double X,
+        double y, double Y,
+        double z, double Z,
+        const vector<int>& _zids,
+        double g000, double g001, double g010, double g011,
+        double g100, double g101, double g110, double g111)
+        : x0(x),y0(y),z0(z),x1(X),y1(Y),z1(Z), zids(_zids),
+          f000(g000), f001(g001), f010(g010), f011(g011),
+          f100(g100), f101(g101), f110(g110), f111(g111) {};
+
+    FuncState EvalFuncState(vtkImplicitFunction *func, double tol);
+
+    static FuncState ValState2(double val)
+        { return val > 0.0 ? GT_ZERO :  LT_ZERO; };
+    static FuncState ValState3(double val)
+        { return val > 0.0 ? GT_ZERO : val < 0.0 ? LT_ZERO : EQ_ZERO; };
+
+    static bool SameState2(FuncState s1, FuncState s2)
+    {
+        if (s1 == LT_ZERO || s1 == EQ_ZERO)
+        {
+            if (s2 == LT_ZERO || s2 == EQ_ZERO)
+                return true;
+            return false;
+        }
+        else
+        {
+            if (s2 == GT_ZERO || s2 == EQ_ZERO)
+                return true;
+            return false;
+        }
+    }
+    static bool SameState3(FuncState s1, FuncState s2)
+        { return s1 == s2; } ;
+
+    double Resolution() const
+    {
+        double xres = x1 - x0; 
+        double yres = y1 - y0; 
+        double zres = z1 - z0; 
+
+        if (xres < yres)
+        {
+            if (xres < zres)
+                return xres;
+            return zres;
+        }
+        else
+        {
+            if (yres < zres)
+                return yres;
+            return zres;
+        }
+    };
+
+    vector<Box*> Subdivide() const
+    {
+        vector<Box*> retval;
+        double halfx = (x0 + x1) / 2.0;
+        double halfy = (y0 + y1) / 2.0;
+        double halfz = (z0 + z1) / 2.0;
+
+        Box* box000 = new Box(x0, halfx, y0, halfy, z0, halfz, zids,
+                                 f000, DBL_MAX, DBL_MAX, DBL_MAX,
+                              DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX);
+        Box* box001 = new Box(halfx, x1, y0, halfy, z0, halfz, zids,
+                              DBL_MAX,    f001, DBL_MAX, DBL_MAX,
+                              DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX);
+        Box* box010 = new Box(x0, halfx, halfy, y1, z0, halfz, zids,
+                              DBL_MAX, DBL_MAX,    f010, DBL_MAX,
+                              DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX);
+        Box* box011 = new Box(halfx, x1, halfy, y1, z0, halfz, zids,
+                              DBL_MAX, DBL_MAX, DBL_MAX,    f011,
+                              DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX);
+        Box* box100 = new Box(x0, halfx, y0, halfy, halfz, z1, zids,
+                              DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX,
+                                 f100, DBL_MAX, DBL_MAX, DBL_MAX);
+        Box* box101 = new Box(halfx, x1, y0, halfy, halfz, z1, zids,
+                              DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX,
+                              DBL_MAX,    f101, DBL_MAX, DBL_MAX);
+        Box* box110 = new Box(x0, halfx, halfy, y1, halfz, z1, zids,
+                              DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX,
+                              DBL_MAX, DBL_MAX,    f110, DBL_MAX);
+        Box* box111 = new Box(halfx, x1, halfy, y1, halfz, z1, zids,
+                              DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX,
+                              DBL_MAX, DBL_MAX, DBL_MAX,    f111);
+
+        retval.push_back(box000);
+        retval.push_back(box001);
+        retval.push_back(box010);
+        retval.push_back(box011);
+        retval.push_back(box100);
+        retval.push_back(box101);
+        retval.push_back(box110);
+        retval.push_back(box111);
+
+        return retval;
+    }
+    vector<Box*> SubdivideX() const
+    {
+        vector<Box*> retval;
+        double halfx = (x0 + x1) / 2.0;
+
+        Box* box0 = new Box(x0, halfx, y0, y1, z0, z1, zids,
+                            f000, DBL_MAX, f010, DBL_MAX,
+                            f100, DBL_MAX, f110, DBL_MAX);
+        Box* box1 = new Box(halfx, x1, y0, y1, z0, z1, zids,
+                            DBL_MAX, f001, DBL_MAX, f011,
+                            DBL_MAX, f101, DBL_MAX, f111);
+
+        retval.push_back(box0);
+        retval.push_back(box1);
+
+        return retval;
+    }
+    vector<Box*> SubdivideY() const
+    {
+        vector<Box*> retval;
+        double halfy = (y0 + y1) / 2.0;
+
+        Box* box0 = new Box(x0, x1, y0, halfy, z0, z1, zids,
+                            f000, f001, DBL_MAX, DBL_MAX,
+                            f100, f101, DBL_MAX, DBL_MAX);
+        Box* box1 = new Box(x0, x1, halfy, y1, z0, z1, zids,
+                            DBL_MAX, DBL_MAX, f010, f011,
+                            DBL_MAX, DBL_MAX, f110, f111);
+
+        retval.push_back(box0);
+        retval.push_back(box1);
+
+        return retval;
+    }
+    vector<Box*> SubdivideZ() const
+    {
+        vector<Box*> retval;
+        double halfz = (z0 + z1) / 2.0;
+
+        Box* box0 = new Box(x0, x1, y0, y1, z0, halfz, zids,
+                               f000,    f001,    f010,    f011,
+                            DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX);
+        Box* box1 = new Box(x0, x1, y0, y1, halfz, z1, zids,
+                            DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX,
+                               f100,    f101,    f110,    f111);
+
+        retval.push_back(box0);
+        retval.push_back(box1);
+
+        return retval;
+    }
+
+    float *GetPoint(int i)
+    {
+        tmp[0] = (i & 01) ? x1 : x0;
+        tmp[1] = (i & 02) ? y1 : y0;
+        tmp[2] = (i & 04) ? z1 : z0;
+        return tmp;
+    }
+
+    double GetFunctionValue(vtkImplicitFunction *func, int i)
+    {
+        switch (i)
+        {
+            case 0:
+            {
+                if (f000 != DBL_MAX)
+                    return f000;
+                f000 = func->FunctionValue(GetPoint(i));
+                return f000;
+            }
+            case 1:
+            {
+                if (f001 != DBL_MAX)
+                    return f001;
+                f001 = func->FunctionValue(GetPoint(i));
+                return f001;
+            }
+            case 2:
+            {
+                if (f010 != DBL_MAX)
+                    return f010;
+                f010 = func->FunctionValue(GetPoint(i));
+                return f010;
+            }
+            case 3:
+            {
+                if (f011 != DBL_MAX)
+                    return f011;
+                f011 = func->FunctionValue(GetPoint(i));
+                return f011;
+            }
+            case 4:
+            {
+                if (f100 != DBL_MAX)
+                    return f100;
+                f100 = func->FunctionValue(GetPoint(i));
+                return f100;
+            }
+            case 5:
+            {
+                if (f101 != DBL_MAX)
+                    return f101;
+                f101 = func->FunctionValue(GetPoint(i));
+                return f101;
+            }
+            case 6:
+            {
+                if (f110 != DBL_MAX)
+                    return f110;
+                f110 = func->FunctionValue(GetPoint(i));
+                return f110;
+            }
+            case 7:
+            {
+                if (f111 != DBL_MAX)
+                    return f111;
+                f111 = func->FunctionValue(GetPoint(i));
+                return f111;
+            }
+        }
+    }
+
+    double x0,y0,z0,x1,y1,z1;
+    double f000,f001,f010,f011,f100,f101,f110,f111;
+    float tmp[3];
+    vector<int> zids;
+};
+
+  static void MakeMeshZone(const Box *aBox, vtkPoints *points,
+                           vtkUnstructuredGrid *ugrid,
+                           map<float, map<float,
+                              map<float, int> > >& nodemap);
+
   float tmpFloats[32];                       // temporary storage to help satisfy interface
                                              //    requirements of vtkDataSet
 

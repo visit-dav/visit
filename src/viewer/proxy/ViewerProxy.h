@@ -33,6 +33,7 @@ class InternalSILObserver;
 class KeyframeAttributes;
 class LightList;
 class MaterialAttributes;
+class MeshManagementAttributes;
 class MessageAttributes;
 class MovieAttributes;
 class ParentProcess;
@@ -390,6 +391,8 @@ class Xfer;
 //    Kathleen Bonnell, Wed Jul 27 15:52:59 PDT 2005
 //    Added SuppressQueryOutput.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added mesh management attributes methods 
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -585,6 +588,10 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
 
     void SetTryHarderCyclesTimes(int flag);
 
+    void SetMeshManagementAttributes();
+    void SetDefaultMeshManagementAttributes();
+    void ResetMeshManagementAttributes();
+
     void WriteConfigFile();
     void ExportEntireState(const std::string &filename);
     void ImportEntireState(const std::string &filename, bool inVisItDir);
@@ -719,6 +726,8 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
                                     {return clientInformationList; }
     MovieAttributes            *GetMovieAttributes() const
                                     {return movieAtts; }
+    MeshManagementAttributes   *GetMeshManagementAttributes() const
+                                    {return meshManagementAtts;}
 
     // Don't use this method unless absolutely necessary.
     void SetXferUpdate(bool val);
@@ -781,6 +790,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     ClientInformation          *clientInformation;
     ClientInformationList      *clientInformationList;
     MovieAttributes            *movieAtts;
+    MeshManagementAttributes   *meshManagementAtts;
 
     AttributeSubject           **plotAtts;
     AttributeSubject           **operatorAtts;

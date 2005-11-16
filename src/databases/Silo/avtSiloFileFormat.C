@@ -648,31 +648,6 @@ avtSiloFileFormat::FreeUpResources(void)
 }
 
 // ****************************************************************************
-//  Method: avtSiloFileFormat::CanCacheVariable
-//
-//  Purpose: Tells visit not to cache CSG mesh variables. This will be removed
-//  when CSG mesh discretization is moved into generic database.
-//
-//  Programmer: Mark C. Miller
-//  Creation:   September 15, 2005 
-// ****************************************************************************
-bool
-avtSiloFileFormat::CanCacheVariable(const char *varname)
-{
-    if (metadata)
-    {
-        const string meshname = metadata->MeshForVar(varname);
-        if (meshname != "")
-        {
-            const avtMeshMetaData *mmd = metadata->GetMesh(meshname);
-            if (mmd && mmd->meshType == AVT_SURFACE_MESH)
-                return false;
-        }
-    }
-    return true;
-}
-
-// ****************************************************************************
 //  Method: avtSiloFileFormat::PopulateDatabaseMetaData
 //
 //  Purpose:
@@ -944,6 +919,9 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //
 //    Mark C. Miller, Fri Nov 11 09:45:42 PST 2005
 //    Made it more fault tolerant when multimats are corrupted
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Removed spoofing of CSG mesh as a surface mesh  
 // ****************************************************************************
 
 void
@@ -1279,8 +1257,6 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 #ifdef DBCSG_INNER // remove after silo-4.5 is released
           case DB_CSGMESH:
             {
-//#warning csg mesh spoofed as a surface mesh
-                mt = AVT_SURFACE_MESH;
                 char   *realvar;
                 DBfile *correctFile = dbfile;
                 DetermineFileAndDirectory(mm->meshnames[meshnum], correctFile,
@@ -1312,8 +1288,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 char *name_w_dir = GenerateName(dirname, csgmesh_names[i]);
                 avtMeshMetaData *mmd = new avtMeshMetaData(extents_to_use, name_w_dir,
                                     csgm->zones->nzones, 0, csgm->origin, 0,
-                                    csgm->ndims, csgm->ndims, AVT_SURFACE_MESH);
-//#warning USING AVT_SURFACE_MESH FOR CSG MESH
+                                    csgm->ndims, csgm->ndims, AVT_CSG_MESH);
                 if (csgm->units[0] != NULL)
                    mmd->xUnits = csgm->units[0];
                 if (csgm->units[1] != NULL)
@@ -1336,6 +1311,11 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                         znames.push_back(csgm->zones->zonenames[j]);
                     mmd->blockNames = znames;
                 }
+
+                //
+                // CSG meshes require special load balancing
+                //
+                mmd->loadBalanceScheme = LOAD_BALANCE_DBPLUGIN_DYNAMIC;
 
                 md->Add(mmd);
 
@@ -1675,8 +1655,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         char *name_w_dir = GenerateName(dirname, csgmesh_names[i]);
         avtMeshMetaData *mmd = new avtMeshMetaData(extents_to_use, name_w_dir,
                             csgm->zones->nzones, 0, csgm->origin, 0,
-                            csgm->ndims, csgm->ndims, AVT_SURFACE_MESH);
-//#warning USING AVT_SURFACE_MESH FOR CSG MESH
+                            csgm->ndims, csgm->ndims, AVT_CSG_MESH);
         if (csgm->units[0] != NULL)
            mmd->xUnits = csgm->units[0];
         if (csgm->units[1] != NULL)
@@ -1699,6 +1678,11 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 znames.push_back(csgm->zones->zonenames[j]);
             mmd->blockNames = znames;
         }
+
+        //
+        // CSG meshes require special load balancing
+        //
+        mmd->loadBalanceScheme = LOAD_BALANCE_DBPLUGIN_DYNAMIC;
 
         md->Add(mmd);
 
@@ -5726,6 +5710,12 @@ avtSiloFileFormat::GetPointMesh(DBfile *dbfile, const char *mn)
 //  Programmer:   Mark C. Miller 
 //  Creation:     August 8, 2005 
 //
+//  Modifications:
+//  
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added some more primitives. Moved discretization calls to
+//    generic database
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -5794,6 +5784,28 @@ avtSiloFileFormat::GetCSGMesh(DBfile *dbfile, const char *mn, int dom)
                 for (j = 0; j < ncoeffs; j++)
                     coeffs[j] = ((float*)pc)[j];
                 bids.push_back(csggrid->AddBoundary(vtkCSGGrid::PLANE_X,
+                                                    ncoeffs,
+                                                    coeffs));
+                break;
+            }
+            case DBCSG_PLANE_Y:
+            {
+                ncoeffs = 1;
+                double coeffs[1];
+                for (j = 0; j < ncoeffs; j++)
+                    coeffs[j] = ((float*)pc)[j];
+                bids.push_back(csggrid->AddBoundary(vtkCSGGrid::PLANE_Y,
+                                                    ncoeffs,
+                                                    coeffs));
+                break;
+            }
+            case DBCSG_PLANE_Z:
+            {
+                ncoeffs = 1;
+                double coeffs[1];
+                for (j = 0; j < ncoeffs; j++)
+                    coeffs[j] = ((float*)pc)[j];
+                bids.push_back(csggrid->AddBoundary(vtkCSGGrid::PLANE_Z,
                                                     ncoeffs,
                                                     coeffs));
                 break;
@@ -5883,7 +5895,6 @@ avtSiloFileFormat::GetCSGMesh(DBfile *dbfile, const char *mn, int dom)
 
     double minX = -10.0, minY = -10.0, minZ = -10.0;
     double maxX =  10.0, maxY =  10.0, maxZ =  10.0;
-    int nX = 100, nY = 100, nZ = 100;
 
     if (!((csgm->min_extents[0] == 0.0 && csgm->max_extents[0] == 0.0 &&
            csgm->min_extents[1] == 0.0 && csgm->max_extents[1] == 0.0 &&
@@ -5899,51 +5910,14 @@ avtSiloFileFormat::GetCSGMesh(DBfile *dbfile, const char *mn, int dom)
         minZ = csgm->min_extents[2];
         maxZ = csgm->max_extents[2];
     }
+    csggrid->SetBounds(minX, maxX, minY, maxY, minZ, maxZ);
 
     DBFreeCsgmesh(csgm);
 
-    //
-    // Use the resample selection, if present, to drive the discretization
-    //
-    for (int i = 0; i < selList.size(); i++)
-    {
-        if (string(selList[i]->GetType()) == "Resample Data Selection")
-        {
-            avtResampleSelection *sel = (avtResampleSelection *) *(selList[i]);
-            int counts[3];
-            sel->GetCounts(counts);
-            nX = counts[0];
-            nY = counts[1];
-            nZ = counts[2];
-            double starts[3];
-            sel->GetStarts(starts);
-            minX = starts[0];
-            minY = starts[1];
-            minZ = starts[2];
-            double stops[3];
-            sel->GetStops(stops);
-            maxX = stops[0];
-            maxY = stops[1];
-            maxZ = stops[2];
-
-            // overrwrite method-scope arrays with the new indexing
-            (*selsApplied)[i] = true;
-            break;
-        }
-    }
-
-    //
-    // Hack, discretize to a poly data object
-    //
-    debug5 << "Discretizing with minX = " << minX << ", maxX = " << maxX << endl;
-    debug5 << "                  minY = " << minY << ", maxY = " << maxY << endl;
-    debug5 << "                  minZ = " << minZ << ", maxZ = " << maxZ << endl;
-    debug5 << "                  nX = " << nX << ", nY = " << nY << ", nZ = " << nZ << endl;
-    return csggrid->DiscretizeSurfaces(dom, minX, maxX, nX,
-                                            minY, maxY, nY,
-                                            minZ, maxZ, nZ);
+    return csggrid;
 
 #endif
+    return 0;
 #endif
 }
 

@@ -1,8 +1,8 @@
 // ************************************************************************* //
 //                         avtDataRepresentation.C                           //
 // ************************************************************************* //
-
 #include <avtDataRepresentation.h>
+#include <avtCommonDataFunctions.h>
 
 #include <vtkCharArray.h>
 #include <vtkDataSet.h>
@@ -21,9 +21,7 @@
 #include <ImproperUseException.h>
 #include <DebugStream.h>
 
-
 using std::string;
-
 
 //
 // Static members
@@ -36,7 +34,6 @@ vtkDataSet   *avtDataRepresentation::nullDataset = NULL;
 //
 
 static DataSetType DatasetTypeForVTK(vtkDataSet *);
-
 
 // ****************************************************************************
 //  Method: avtDataRepresentation default constructor
@@ -52,6 +49,8 @@ static DataSetType DatasetTypeForVTK(vtkDataSet *);
 //    Hank Childs, Thu Sep 27 16:43:27 PDT 2001
 //    Initialized datasetType.
 //
+//    Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
+//    Added compression data members
 // ****************************************************************************
 
 avtDataRepresentation::avtDataRepresentation()
@@ -61,6 +60,9 @@ avtDataRepresentation::avtDataRepresentation()
     asCharLength = 0;
     domain       = -1;
     datasetType  = DATASET_TYPE_UNKNOWN;
+    compressionRatio = -1.0;
+    timeToCompress   = -1.0;
+    timeToDecompress = -1.0;
 }
 
 
@@ -92,6 +94,8 @@ avtDataRepresentation::avtDataRepresentation()
 //    Hank Childs, Wed Mar 17 19:21:22 PST 2004
 //    Make use of the null dataset to make sure we don't blow memory in SR-mode
 //
+//    Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
+//    Added compression data members
 // ****************************************************************************
 
 avtDataRepresentation::avtDataRepresentation(vtkDataSet *d, int dom, string s,
@@ -118,6 +122,9 @@ avtDataRepresentation::avtDataRepresentation(vtkDataSet *d, int dom, string s,
     datasetType  = DATASET_TYPE_UNKNOWN;
     domain       = dom;
     label        = s ;
+    compressionRatio = -1.0;
+    timeToCompress   = -1.0;
+    timeToDecompress = -1.0;
 }
 
 
@@ -149,6 +156,8 @@ avtDataRepresentation::avtDataRepresentation(vtkDataSet *d, int dom, string s,
 //    Hank Childs, Thu Sep 27 16:43:27 PDT 2001
 //    Added argument to dataset type.
 //
+//    Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
+//    Added compression data members
 // ****************************************************************************
 
 avtDataRepresentation::avtDataRepresentation(char *d, int dl, int dom, 
@@ -163,6 +172,9 @@ avtDataRepresentation::avtDataRepresentation(char *d, int dl, int dom,
     originalString = os;
     domain         = dom;
     label          = s; 
+    compressionRatio = -1.0;
+    timeToCompress   = -1.0;
+    timeToDecompress = -1.0;
 }
 
 
@@ -189,6 +201,8 @@ avtDataRepresentation::avtDataRepresentation(char *d, int dl, int dom,
 //    Hank Childs, Thu Sep 27 16:43:27 PDT 2001
 //    Initialized datasetType.
 //
+//    Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
+//    Added compression data members
 // ****************************************************************************
 
 avtDataRepresentation::avtDataRepresentation(const avtDataRepresentation &rhs)
@@ -211,6 +225,9 @@ avtDataRepresentation::avtDataRepresentation(const avtDataRepresentation &rhs)
     datasetType = rhs.datasetType;
     domain = rhs.domain;
     label = rhs.label; 
+    compressionRatio = rhs.compressionRatio;
+    timeToCompress = rhs.timeToCompress;
+    timeToDecompress = rhs.timeToDecompress;
 }
 
 
@@ -277,6 +294,8 @@ avtDataRepresentation::~avtDataRepresentation()
 //    Hank Childs, Thu Sep 27 16:43:27 PDT 2001
 //    Copied over datasetType.
 //
+//    Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
+//    Added compression data members
 // ****************************************************************************
 
 const avtDataRepresentation &
@@ -311,6 +330,9 @@ avtDataRepresentation::operator=(const avtDataRepresentation &rhs)
     datasetType = rhs.datasetType;
     domain = rhs.domain;
     label = rhs.label; 
+    compressionRatio = rhs.compressionRatio;
+    timeToCompress = rhs.timeToCompress;
+    timeToDecompress = rhs.timeToDecompress;
 
     return *this;
 }
@@ -386,6 +408,42 @@ avtDataRepresentation::GetNumberOfCells(int topoDim, bool polysOnly) const
 // ****************************************************************************
 //  Method: avtDataRepresentation::GetDataString
 //
+//  Purpose: Public interface to get the data as a character string
+//           w/o compression
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 15, 2005
+//
+// ****************************************************************************
+
+unsigned char *
+avtDataRepresentation::GetDataString(int &length, DataSetType &dst)
+{
+    const bool useCompression = false;
+    return GetDataString(length, dst, useCompression);
+}
+
+// ****************************************************************************
+//  Method: avtDataRepresentation::GetCompressedDataString
+//
+//  Purpose: Public interface to get the data as a character string
+//           with compression
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 15, 2005
+//
+// ****************************************************************************
+
+unsigned char *
+avtDataRepresentation::GetCompressedDataString(int &length, DataSetType &dst)
+{
+    const bool useCompression = true;
+    return GetDataString(length, dst, useCompression);
+}
+
+// ****************************************************************************
+//  Method: avtDataRepresentation::GetDataString
+//
 //  Purpose:
 //      Gets the data as a character string.
 //
@@ -406,10 +464,12 @@ avtDataRepresentation::GetNumberOfCells(int topoDim, bool polysOnly) const
 //    Hank Childs, Wed Mar 17 19:21:22 PST 2004
 //    Make use of the null dataset to make sure we don't blow memory in SR-mode
 //
+//    Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
+//    Added compression
 // ****************************************************************************
 
 unsigned char *
-avtDataRepresentation::GetDataString(int &length, DataSetType &dst)
+avtDataRepresentation::GetDataString(int &length, DataSetType &dst, bool compress)
 {
     InitializeNullDataset();
 
@@ -437,8 +497,23 @@ avtDataRepresentation::GetDataString(int &length, DataSetType &dst)
             writer->Write();
             asCharLength = writer->GetOutputStringLength();
             asChar = (unsigned char *) writer->RegisterAndGetOutputString();
-            originalString = (char *)asChar;
             writer->Delete();
+
+            if (compress)
+            {
+                int asCharLengthNew = 0;
+                unsigned char *asCharNew = 0;
+                if (CCompressDataString(asChar, asCharLength,
+                                        &asCharNew, &asCharLengthNew,
+                                        &timeToCompress, &compressionRatio))
+                {
+                    delete [] asChar;
+                    asChar = asCharNew;
+                    asCharLength = asCharLengthNew;
+                }
+            }
+
+            originalString = (char *)asChar;
         }
     }
     else
@@ -481,6 +556,8 @@ avtDataRepresentation::GetDataString(int &length, DataSetType &dst)
 //    Remove the data string after creating the VTK data set.  This 
 //    substantially reduces memory footprint.
 //
+//    Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
+//    Added compression
 // ****************************************************************************
 
 vtkDataSet *
@@ -550,9 +627,22 @@ avtDataRepresentation::GetDataVTK(void)
                 break;
               }
             }
+
+            int asCharLengthNew = 0;
+            int asCharLengthTmp = asCharLength;
+            unsigned char *asCharNew = 0;
+            unsigned char *asCharTmp = asChar;
+            if (CDecompressDataString(asChar, asCharLength, &asCharNew, &asCharLengthNew,
+                              &timeToCompress, &timeToDecompress, &compressionRatio))
+            {
+                
+                asCharTmp = asCharNew;
+                asCharLengthTmp = asCharLengthNew;
+            }
+
             vtkCharArray *charArray = vtkCharArray::New();
             int iOwnIt = 1;  // 1 means we own it -- you don't delete it.
-            charArray->SetArray((char *) asChar, asCharLength, iOwnIt);
+            charArray->SetArray((char *) asCharTmp, asCharLengthTmp, iOwnIt);
             reader->SetReadFromInputString(1);
             reader->SetInputArray(charArray);
 
@@ -576,6 +666,8 @@ avtDataRepresentation::GetDataVTK(void)
             reader->Delete();
             charArray->Delete();
             originalString = NULL;
+            if (asCharNew)
+                delete [] asCharNew;
         }
     }
 
@@ -678,4 +770,72 @@ avtDataRepresentation::DatasetTypeForVTK(vtkDataSet *ds)
     return rv;
 }
 
+// ****************************************************************************
+//  Method: avtDataRepresentation::GetCompressionRatio
+//
+//  Purpose: Gets the compression ratio, if any, without uncompressing 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 15, 2005 
+//
+// ****************************************************************************
 
+float
+avtDataRepresentation::GetCompressionRatio() const
+{
+    if (compressionRatio != -1.0)
+        return compressionRatio;
+
+    if (asChar != NULL)
+    {
+        float ratioc;
+        CGetCompressionInfoFromDataString(asChar, asCharLength, 
+            0, &ratioc);
+        return ratioc;
+    }
+
+    return compressionRatio;
+}
+
+// ****************************************************************************
+//  Method: avtDataRepresentation::GetTimeToCompress
+//
+//  Purpose: Gets the time to compress, if any, without uncompressing 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 15, 2005 
+//
+// ****************************************************************************
+
+float
+avtDataRepresentation::GetTimeToCompress() const
+{
+    if (timeToCompress != -1.0)
+        return timeToCompress;
+
+    if (asChar != NULL)
+    {
+        float timec;
+        CGetCompressionInfoFromDataString(asChar, asCharLength, 
+            &timec, 0);
+        return timec;
+    }
+
+    return timeToCompress;
+}
+
+// ****************************************************************************
+//  Method: avtDataRepresentation::GetTimeToDecompress
+//
+//  Purpose: Gets the time to decompress, if any, without uncompressing 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 15, 2005 
+//
+// ****************************************************************************
+
+float
+avtDataRepresentation::GetTimeToDecompress() const
+{
+    return timeToDecompress;
+}

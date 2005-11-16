@@ -3,8 +3,10 @@
 #include <gui_exports.h>
 #include <qmainwindow.h>
 #include <GUIBase.h>
+#include <vectortypes.h>
 #include <vector>
 #include <map>
+#include <limits.h>
 
 class DataNode;
 
@@ -31,6 +33,8 @@ class DataNode;
 //   Brad Whitlock, Wed Sep 10 09:28:22 PDT 2003
 //   I added FitToScreen.
 //
+//   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//   Added StringToDoubleList utility which was duplicated in other gui classes 
 // ****************************************************************************
 
 class GUI_API QvisWindowBase : public QMainWindow, public GUIBase
@@ -47,6 +51,10 @@ public:
     virtual void CreateNode(DataNode *);
     virtual void SetFromNode(DataNode *, const int *borders);
     virtual void ProcessOldVersions(DataNode *, const char *);
+
+    static void StringToDoubleList(const char *str, doubleVector &dv,
+                    int max=INT_MAX);
+
 public slots:
     virtual void show();
 protected:

@@ -29,6 +29,8 @@ class avtSimulationInformation;
 //    Jeremy Meredith, Thu Aug 25 09:28:10 PDT 2005
 //    Added origin for groups.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added loadBalanceScheme
 //----------------------------------------------------------------------------
 struct DBATTS_API avtMeshMetaData : public AttributeSubject
 {
@@ -70,6 +72,7 @@ struct DBATTS_API avtMeshMetaData : public AttributeSubject
     std::string   zLabel;
 
     bool          validVariable;
+    LoadBalanceScheme loadBalanceScheme;
 
 public:
     avtMeshMetaData();

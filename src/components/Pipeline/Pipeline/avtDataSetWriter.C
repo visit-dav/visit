@@ -115,6 +115,8 @@ avtDataSetWriter::DataObjectWrite(avtDataObjectString &str)
 //    Hank Childs, Wed Mar 17 20:40:56 PST 2004
 //    Reduce the number of socket writes.
 //
+//    Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
+//    Added compression
 // ****************************************************************************
 
 void
@@ -156,7 +158,11 @@ avtDataSetWriter::WriteDataTree(avtDataTree_p tree, avtDataObjectString &str)
         DataSetType dst;
 
         // get the domain string and its length
-        s = tree->GetDataRepresentation().GetDataString(len, dst);
+        if (useCompression)
+            s = tree->GetDataRepresentation().GetCompressedDataString(len, dst);
+        else
+            s = tree->GetDataRepresentation().GetDataString(len, dst);
+
         lengthAndChunkAndDSTAndLabel[0] = len;
         // write out the length 
 

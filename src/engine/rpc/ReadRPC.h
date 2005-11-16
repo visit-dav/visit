@@ -5,6 +5,7 @@
 #include <string>
 #include <CompactSILRestrictionAttributes.h>
 #include <MaterialAttributes.h>
+#include <MeshManagementAttributes.h>
 
 // ****************************************************************************
 //  Class: ReadRPC
@@ -24,6 +25,8 @@
 //    Hank Childs, Tue Mar  9 14:27:31 PST 2004
 //    Added file format type.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added mesh management attributes 
 // ****************************************************************************
 
 class ENGINE_RPC_API ReadRPC : public BlockingRPC
@@ -36,7 +39,8 @@ public:
     void operator()(const std::string &format, const std::string& filename,
                     const std::string &var, int time,
                     const CompactSILRestrictionAttributes &,
-                    const MaterialAttributes &);
+                    const MaterialAttributes &,
+                    const MeshManagementAttributes &);
 
     // Property selection methods
     virtual void SelectAll();
@@ -48,6 +52,7 @@ public:
     void SetTime(int);
     void SetCSRAttributes(const CompactSILRestrictionAttributes &);
     void SetMaterialAttributes(const MaterialAttributes &);
+    void SetMeshManagementAttributes(const MeshManagementAttributes &);
 
     // Property getting methods
     std::string GetVar()  const;
@@ -56,6 +61,7 @@ public:
     int         GetTime() const;
     const CompactSILRestrictionAttributes &GetCSRAttributes() const;
     const MaterialAttributes &GetMaterialAttributes() const;
+    const MeshManagementAttributes &GetMeshManagementAttributes() const;
 
 private:
     std::string file;
@@ -64,6 +70,7 @@ private:
     int         time;
     CompactSILRestrictionAttributes silr_atts;
     MaterialAttributes materialAtts;
+    MeshManagementAttributes meshManagementAtts;
 };
 
 #endif

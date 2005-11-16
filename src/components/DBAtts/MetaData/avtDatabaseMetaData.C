@@ -104,10 +104,12 @@ VariableNamesEqual(const std::string &v1, const std::string &v2)
 //    Jeremy Meredith, Thu Aug 25 09:42:22 PDT 2005
 //    Added group origin.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added loadBalanceScheme
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData()
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsi")
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsii")
 {
     blockTitle = "domains";
     blockPieceName = "domain";
@@ -132,6 +134,7 @@ avtMeshMetaData::avtMeshMetaData()
     xLabel = "X-Axis";
     yLabel = "Y-Axis";
     zLabel = "Z-Axis";
+    loadBalanceScheme = LOAD_BALANCE_UNKNOWN;
 }
 
 // ****************************************************************************
@@ -190,12 +193,14 @@ avtMeshMetaData::avtMeshMetaData()
 //    Jeremy Meredith, Thu Aug 25 09:42:33 PDT 2005
 //    Added group origin.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added loadBalanceScheme
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(const float *extents, std::string s, int nb,
                                  int bo, int co, int go, int sd, int td,
                                  avtMeshType mt)
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsi")
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsii")
 {
     name                 = s;
     originalName         = name;
@@ -222,6 +227,7 @@ avtMeshMetaData::avtMeshMetaData(const float *extents, std::string s, int nb,
     xLabel = "X-Axis";
     yLabel = "Y-Axis";
     zLabel = "Z-Axis";
+    loadBalanceScheme    = LOAD_BALANCE_UNKNOWN;
 }
 
 
@@ -280,11 +286,13 @@ avtMeshMetaData::avtMeshMetaData(const float *extents, std::string s, int nb,
 //    Jeremy Meredith, Thu Aug 25 09:42:37 PDT 2005
 //    Added group origin.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added loadBalanceScheme
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int go,
                                  int sd, int td, avtMeshType mt)
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsi")
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsii")
 {
     name                 = s;
     originalName         = name;
@@ -313,6 +321,8 @@ avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int go,
     xLabel = "X-Axis";
     yLabel = "Y-Axis";
     zLabel = "Z-Axis";
+
+    loadBalanceScheme = LOAD_BALANCE_UNKNOWN;
 }
 
 
@@ -372,10 +382,12 @@ avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int go,
 //    Jeremy Meredith, Thu Aug 25 09:42:38 PDT 2005
 //    Added group origin.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added loadBalanceScheme
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(const avtMeshMetaData &rhs)
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsi")
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsii")
 {
     name                     = rhs.name;
     originalName             = rhs.originalName;
@@ -412,6 +424,7 @@ avtMeshMetaData::avtMeshMetaData(const avtMeshMetaData &rhs)
     yLabel                   = rhs.yLabel;
     zLabel                   = rhs.zLabel;
     validVariable            = rhs.validVariable;
+    loadBalanceScheme        = rhs.loadBalanceScheme;
 }
 
 
@@ -485,6 +498,8 @@ avtMeshMetaData::~avtMeshMetaData()
 //    Jeremy Meredith, Thu Aug 25 09:42:42 PDT 2005
 //    Added group origin.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added loadBalanceScheme
 // ****************************************************************************
 
 const avtMeshMetaData &
@@ -525,6 +540,7 @@ avtMeshMetaData::operator=(const avtMeshMetaData &rhs)
     yLabel                   = rhs.yLabel;
     zLabel                   = rhs.zLabel;
     validVariable            = rhs.validVariable;
+    loadBalanceScheme        = rhs.loadBalanceScheme;
 
     return *this;
 }
@@ -617,6 +633,7 @@ avtMeshMetaData::SelectAll()
     Select(29, (void*)&containsGlobalZoneIds);
     Select(30, (void*)&originalName);
     Select(31, (void*)&groupOrigin);
+    Select(32, (void*)&loadBalanceScheme);
 }
 
 
@@ -715,6 +732,8 @@ avtMeshMetaData::SetExtents(const float *extents)
 //    Jeremy Meredith, Thu Aug 25 09:42:47 PDT 2005
 //    Added group origin.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added loadBalanceScheme
 // ****************************************************************************
 
 void
@@ -855,6 +874,13 @@ avtMeshMetaData::Print(ostream &out, int indent) const
     {
         Indent(out, indent);
         out << "THIS IS NOT A VALID VARIABLE." << endl;
+    }
+
+    if (loadBalanceScheme != LOAD_BALANCE_UNKNOWN)
+    {
+        Indent(out, indent);
+        out << "HAS A SPECIFIC LOAD BALANCE SCHEME = "
+            << loadBalanceScheme << endl;
     }
 }
 

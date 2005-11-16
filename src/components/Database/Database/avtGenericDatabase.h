@@ -252,6 +252,8 @@ class     PickVarInfo;
 //    Jeremy Meredith, Thu Aug 18 16:39:54 PDT 2005
 //    Added a new isovolume MIR algorithm, and a VF cutoff for it.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Replaced type conversion args on many Get functions to data spec 
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -304,48 +306,45 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                           avtSourceFromDatabase *);
     vtkDataSet                *GetScalarVarDataset(const char *, int, int,
                                                    const char *,
-                                                   const bool, const vector<int>&);
+                                                   const avtDataSpecification_p);
     vtkDataSet                *GetMeshDataset(const char *, int, int,
-                                              const char *, const bool,
-                                              const vector<int>&);
+                                              const char *, const avtDataSpecification_p); 
     vtkDataSet                *GetVectorVarDataset(const char *, int, int,
                                                    const char *,
-                                                   const bool, const vector<int>&);
+                                                   const avtDataSpecification_p);
     vtkDataSet                *GetSymmetricTensorVarDataset(const char *, int,
                                                             int, const char *,
-                                                            const bool,
-                                                            const vector<int>&);
+                                                            const avtDataSpecification_p);
     vtkDataSet                *GetTensorVarDataset(const char *, int, int,
                                                    const char *,
-                                                   const bool, const vector<int>&);
+                                                   const avtDataSpecification_p);
     vtkDataSet                *GetArrayVarDataset(const char *, int, int,
                                                    const char *,
-                                                   const bool, const vector<int>&);
+                                                   const avtDataSpecification_p);
     vtkDataSet                *GetMaterialDataset(const char *, int, int,
-                                                  const char *, const bool,
-                                                  const vector<int>&);
+                                                  const char *,
+                                                  const avtDataSpecification_p);
     vtkDataSet                *GetSpeciesDataset(const char *, int, int,
-                                                 const char *, const bool,
-                                                 const vector<int>&);
+                                                 const char *,
+                                                 const avtDataSpecification_p);
     vtkDataSet                *GetLabelVarDataset(const char *, int, int,
-                                                  const char *, const bool,
-                                                  const vector<int>&);
+                                                  const char *,
+                                                  const avtDataSpecification_p);
     vtkDataArray              *GetScalarVariable(const char *, int, int,
                                                  const char *,
-                                                 const bool, const vector<int>&);
+                                                 const avtDataSpecification_p);
     vtkDataArray              *GetVectorVariable(const char *, int, int,
                                                  const char *,
-                                                 const bool, const vector<int>&);
+                                                 const avtDataSpecification_p);
     vtkDataArray              *GetSymmetricTensorVariable(const char *,int,int,
                                                           const char *,
-                                                          const bool,
-                                                          const vector<int>&);
+                                                          const avtDataSpecification_p);
     vtkDataArray              *GetTensorVariable(const char *, int, int,
                                                  const char *,
-                                                 const bool, const vector<int>&);
+                                                 const avtDataSpecification_p);
     vtkDataArray              *GetArrayVariable(const char *, int, int,
                                                  const char *,
-                                                 const bool, const vector<int>&);
+                                                 const avtDataSpecification_p);
     vtkDataArray              *GetSpeciesVariable(const char *, int, int,
                                                   const char *, int);
     vtkDataArray              *GetLabelVariable(const char *, int, int,
@@ -355,9 +354,9 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     void                       AddSecondaryVariables(vtkDataSet *, int, int,
                                                      const char *,
                                               const std::vector<CharStrRef> &,
-                                              const bool, const vector<int>&);
+                                              const avtDataSpecification_p);
     vtkDataSet                *GetMesh(const char *, int, int, const char *,
-                                       const bool, const vector<int>&);
+                                       avtDataSpecification_p);
 
     void                       AddOriginalCellsArray(vtkDataSet *, const int);
     void                       AddOriginalNodesArray(vtkDataSet *, const int);

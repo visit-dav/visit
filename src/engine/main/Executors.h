@@ -153,6 +153,8 @@ RPCExecutor<KeepAliveRPC>::Execute(KeepAliveRPC *rpc)
 //    Brad Whitlock, Tue Feb 22 12:38:39 PDT 2005
 //    I changed the interface to StartNetwork.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Passed MeshManagement attributes 
 // ****************************************************************************
 
 template<>
@@ -172,7 +174,8 @@ RPCExecutor<ReadRPC>::Execute(ReadRPC *rpc)
                              rpc->GetVar(),
                              rpc->GetTime(),
                              rpc->GetCSRAttributes(),
-                             rpc->GetMaterialAttributes());
+                             rpc->GetMaterialAttributes(),
+                             rpc->GetMeshManagementAttributes());
         rpc->SendReply();
     }
     CATCH2(VisItException, e)
@@ -830,6 +833,9 @@ RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
 //
 //    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
 //    Added compression control
+//
+//    Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
+//    Changed use compression settin of window instead of always setting false 
 // ****************************************************************************
 template<>
 void
@@ -896,7 +902,7 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
         bool scalableThresholdExceeded = false;
 
         // Send the data back to the viewer.
-        writer->SetUseCompression(false);
+        writer->SetUseCompression(netmgr->GetShouldUseCompression(winId));
         engine->WriteData(rpc, writer, rpc->GetRespondWithNull(),
                     scalableThreshold, &scalableThresholdExceeded,
                     currentTotalGlobalCellCount, cellCountMultiplier,

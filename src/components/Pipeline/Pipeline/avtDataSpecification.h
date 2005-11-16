@@ -130,6 +130,8 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //    Remove "DBVariable" construct.  Also added OriginalVariable which is
 //    needed when GeneralPipelineSpecifications are requested.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added members and methods for mesh discretization 
 // ****************************************************************************
 
 class PIPELINE_API avtDataSpecification
@@ -307,6 +309,22 @@ class PIPELINE_API avtDataSpecification
     std::vector<int>             GetAdmissibleDataTypes() const;
     void                         InitAdmissibleDataTypes();
 
+    void                         SetDiscTol(double tol) { discTol = tol; };
+    double                       DiscTol() const { return discTol; };
+
+    void                         SetDiscMode(int mode) { discMode = mode; };
+    int                          DiscMode() const { return discMode; };
+
+    void                         SetDiscBoundaryOnly(bool b)
+                                     { discBoundaryOnly = b; };
+    bool                         DiscBoundaryOnly() const
+                                     { return discBoundaryOnly; };
+    
+    void                         SetPassNativeCSG(bool p)
+                                     { passNativeCSG = p; };
+    bool                         PassNativeCSG() const
+                                     { return passNativeCSG; };
+
   protected:
     int                          timestep;
     char                        *variable;
@@ -345,6 +363,10 @@ class PIPELINE_API avtDataSpecification
     bool                         needNativePrecision;
     avtGhostDataType             desiredGhostDataType;
     std::map<int,bool>           admissibleDataTypes;
+    double                       discTol;
+    int                          discMode;
+    bool                         discBoundaryOnly;
+    bool                         passNativeCSG;
 
     //
     // If we are processing in parallel, this information may have been lost.

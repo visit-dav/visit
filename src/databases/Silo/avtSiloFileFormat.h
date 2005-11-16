@@ -115,6 +115,8 @@ typedef struct
 //    It will be removed after 3d, adaptive csg discretization is available
 //    in avtGenericDatabase
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Removed CanCacheVariable 
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -140,8 +142,6 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
     virtual void          PopulateIOInformation(avtIOInformation &);
-
-    bool                  CanCacheVariable(const char *);
 
     int                   GetCycle();
     int                   GetCycleFromFilename(const char *f) const;

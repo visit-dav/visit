@@ -34,6 +34,8 @@ class QvisVariableButton;
 //   Brad Whitlock, Thu Dec 9 17:44:32 PST 2004
 //   I made the window use a variable button.
 //
+//   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//   Moved StringToDoubleList to QvisWindowBase 
 // ****************************************************************************
 
 class QvisIsosurfaceWindow : public QvisOperatorWindow
@@ -54,7 +56,6 @@ class QvisIsosurfaceWindow : public QvisOperatorWindow
  
     QString LevelString(int i);
     void ProcessSelectByText();
-    void StringToDoubleList(const char *str, doubleVector &dv);
   private slots:
     void scaleClicked(int scale);
     void selectByChanged(int);

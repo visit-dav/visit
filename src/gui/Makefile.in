@@ -312,6 +312,9 @@
 #    Added John Anderson's QvisImageAnnotationInterface and
 #    QvisLine2DInterface.
 #
+#    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+#    Added mesh management attributes window
+#
 ##############################################################################
 
 ##
@@ -360,6 +363,7 @@ HDRMOC = \
     QvisDelayedWindow.h \
     QvisDelayedWindowObserver.h \
     QvisDelayedWindowSimpleObserver.h \
+    QvisMeshManagementWindow.h \
     QvisEngineWindow.h \
     QvisExportDBWindow.h \
     QvisExpressionsWindow.h \

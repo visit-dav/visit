@@ -264,6 +264,7 @@ static const exception_info exception_tree[] =
     {"PlotDimensionalityException",        "VisWindowException"},
     {"RecursiveExpressionException",       "VisItException"},
     {"SiloException",                      "DatabaseException"},
+    {"StubReferencedException",            "PipelineException"},
     {"UnexpectedValueException",           "PipelineException"},
     {"VisItException",                     NULL},
     {"VisWindowException",                 "VisItException"}

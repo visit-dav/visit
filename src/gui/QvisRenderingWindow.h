@@ -53,6 +53,9 @@ class QvisOpacitySlider;
 //
 //   Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
 //   Added compression controls
+//
+//   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//   Added fpsLabel 
 // ****************************************************************************
 
 class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
@@ -125,6 +128,7 @@ private:
 
     // Labels to display renderer information.
     QLabel       *scalrenUsingLabel;
+    QLabel       *fpsLabel;
     QLabel       *fpsMinLabel;
     QLabel       *fpsAvgLabel;
     QLabel       *fpsMaxLabel;

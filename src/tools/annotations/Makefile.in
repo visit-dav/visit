@@ -41,6 +41,9 @@
 #   Eric Brugger, Tue Jul 27 13:52:30 PDT 2004
 #   Added -I$(TOPDIR)/include/visit to pick up visitstream.h.
 #
+#   Kathleen Bonnell, Wed Nov 16 08:51:43 PST 2005 
+#   Added PTHREAD_LIB and X_LIBS.
+#
 ##############################################################################
 
 
@@ -48,7 +51,7 @@
 # --------------------
 @SET_MAKE@
 @VARIABLES@
-LIBS=@VTK_LIBS@
+LIBS=@VTK_LIBS@ @PTHREAD_LIB@ @X_LIBS@
 CPPFLAGS=@CPPFLAGS@ @VTK_INCLUDES@ -I$(TOPDIR)/include/visit -I.
 
 T2P_SRC    = text2polys.C arial_font.C

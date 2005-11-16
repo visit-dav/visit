@@ -9,6 +9,7 @@
 #include <DBOptionsAttributes.h>
 #include <ExportDBAttributes.h>
 #include <MaterialAttributes.h>
+#include <MeshManagementAttributes.h>
 #include <avtExpressionEvaluatorFilter.h>
 #include <ImproperUseException.h>
 #include <InvalidVariableException.h>
@@ -358,6 +359,8 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
 //    and CMFE when used in combination.  The test suite passes without it
 //    and there is really no explanation for why we were doing it.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Changed interface to lb->AddDatabase 
 // ****************************************************************************
 
 NetnodeDB *
@@ -432,9 +435,7 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
         databaseCache.push_back(netDB);
 
         netDB->SetDBInfo(filename, "", time);
-        const   avtIOInformation & ioinfo = db->GetIOInformation(time);
-        const   avtDatabaseMetaData *md = db->GetMetaData(time);
-        loadBalancer->AddDatabase(filename, db, ioinfo, md);
+        loadBalancer->AddDatabase(filename, db, time);
       
         // The code here should be:
         // CATCH_RETURN2(1, netDB);
@@ -580,6 +581,8 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
 //    Jeremy Meredith, Thu Aug 18 17:54:51 PDT 2005
 //    Added a new isovolume algorithm, with adjustable VF cutoff.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added mesh management attributes 
 // ****************************************************************************
 
 void
@@ -588,7 +591,8 @@ NetworkManager::StartNetwork(const string &format,
                              const string &var,
                              int time,
                              const CompactSILRestrictionAttributes &atts,
-                             const MaterialAttributes &matopts)
+                             const MaterialAttributes &matopts,
+                             const MeshManagementAttributes &meshopts)
 {
     // If the variable is an expression, we need to find a "real" variable
     // name to work with.
@@ -634,6 +638,10 @@ NetworkManager::StartNetwork(const string &format,
     dspec->SetSimplifyHeavilyMixedZones(matopts.GetSimplifyHeavilyMixedZones());
     dspec->SetMaxMaterialsPerZone(matopts.GetMaxMaterialsPerZone());
     dspec->SetIsovolumeMIRVF(matopts.GetIsoVolumeFraction());
+    dspec->SetDiscTol(meshopts.GetDiscretizationTolerance()[0]);
+    dspec->SetDiscMode(meshopts.GetDiscretizationMode());
+    dspec->SetDiscBoundaryOnly(meshopts.GetDiscretizeBoundaryOnly());
+    dspec->SetPassNativeCSG(meshopts.GetPassNativeCSG());
     workingNet->SetDataSpec(dspec);
     workingNet->SetTime(dspec->GetTimestep());
 
@@ -684,6 +692,8 @@ NetworkManager::StartNetwork(const string &format,
 //   Hank Childs, Fri Oct  7 09:30:57 PDT 2005
 //   Tell the database what its full name is.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Changed interface to lb->AddDatabase 
 // ****************************************************************************
 
 void
@@ -820,9 +830,7 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
         databaseCache.push_back(netDB);
 
         // Add the database to the load balancer.
-        const   avtIOInformation & ioinfo = db->GetIOInformation(time);
-        const   avtDatabaseMetaData *md = db->GetMetaData(time);
-        loadBalancer->AddDatabase(dbName, db, ioinfo, md);
+        loadBalancer->AddDatabase(dbName, db, time);
     }
     CATCH(DatabaseException)
     {
@@ -2778,6 +2786,10 @@ NetworkManager::StopQueryMode(void)
 //    Re-add test for topological dimension of 1 to skipLocate test. Retrieve
 //    ghost type from queryInputAtts and set in PickAtts.
 //
+//    Kathleen Bonnell, Wed Nov 16 11:15:06 PST 2005 
+//    Ensure that Pick's input has the same DataAttributes as the plot
+//    being picked.
+//
 // ****************************************************************************
 
 void
@@ -2816,7 +2828,12 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
 
     avtSILRestriction_p silr = networkCache[id]->GetDataSpec()->GetRestriction();
 
-    avtDataAttributes &queryInputAtts = queryInput->GetInfo().GetAttributes();
+    //
+    // Create a copy that we can use to set Pick's Input DataAtts.
+    //
+    avtDataAttributes queryInputAtts;
+    queryInputAtts.Copy(queryInput->GetInfo().GetAttributes());
+
     pa->SetMatSelected(queryInputAtts.MIROccurred() || pa->GetMatSelected());
     if (pa->GetRequiresGlyphPick())
     {
@@ -2984,6 +3001,12 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
                     pQ->SetSILRestriction(silr->MakeAttributes());
                 }
                 pQ->SetNeedTransform(queryInputVal.GetPointsWereTransformed());
+                //
+                // DataAttributes from the DB Node may not match the 
+                // plot we are currently picking, so copy the correct atts.
+                //
+                networkCache[id]->GetNodeList()[0]->GetOutput()->GetInfo().
+                   GetAttributes().Copy(queryInputAtts);
                 pQ->SetInput(networkCache[id]->GetNodeList()[0]->GetOutput());
 
                 pQ->SetPickAtts(pa);

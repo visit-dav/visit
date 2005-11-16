@@ -19,6 +19,7 @@ class AttributeSubject;
 class EngineList;
 class EngineProxy;
 class MaterialAttributes;
+class MeshManagementAttributes;
 class PickAttributes;
 class ProcessAttributes;
 class QueryAttributes;
@@ -220,6 +221,8 @@ class avtDatabaseMetaData;
 //    Hank Childs, Wed May 25 15:24:49 PDT 2005
 //    Added ExportDBAtts.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added mesh management attributes
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -282,6 +285,10 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     static MaterialAttributes *GetMaterialDefaultAtts();
     static void SetClientMaterialAttsFromDefault();
     static void SetDefaultMaterialAttsFromClient();
+    static MeshManagementAttributes *GetMeshManagementClientAtts();
+    static MeshManagementAttributes *GetMeshManagementDefaultAtts();
+    static void SetClientMeshManagementAttsFromDefault();
+    static void SetDefaultMeshManagementAttsFromClient();
 
     static ExportDBAttributes *GetExportDBAtts();
     static void SetExportDBAtts(ExportDBAttributes *);
@@ -353,6 +360,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     // Global engine computation attributes
     static MaterialAttributes *materialClientAtts;
     static MaterialAttributes *materialDefaultAtts;
+    static MeshManagementAttributes *meshManagementClientAtts;
+    static MeshManagementAttributes *meshManagementDefaultAtts;
     static ExportDBAttributes *exportDBAtts;
 };
 

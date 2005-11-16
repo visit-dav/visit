@@ -42,6 +42,8 @@ class QvisOpacitySlider;
 //   Brad Whitlock, Tue Dec 3 08:52:43 PDT 2002
 //   I added a color table coloring option.
 //
+//   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//   Moved StringToDoubleList to QvisWindowBase 
 // ****************************************************************************
 
 class QvisContourPlotWindow : public QvisPostableWindowObserver
@@ -69,7 +71,6 @@ protected:
 
     QString LevelString(int i);
     void ProcessSelectByText();
-    void StringToDoubleList(const char *str, doubleVector &dv);
 private slots:
     void lineStyleChanged(int newStyle);
     void lineWidthChanged(int newWidth);

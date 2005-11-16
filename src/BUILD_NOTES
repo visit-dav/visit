@@ -218,7 +218,8 @@ cd VTK
 ../cmake-1.8.1/bin/cmake .
 #
 # Edit CMakeCache.txt.  Turn BUILD_SHARED_LIBS, VTK_USE_HYBRID,
-# VTK_USE_MANGLED_MESA, and VTK_USE_ANSI_STDLIB on, Turn BUILD_TESTING off.
+# VTK_USE_MANGLED_MESA, VTK_USE_ANSI_STDLIB, and CMAKE_SKIP_RPATH on, 
+# Turn BUILD_TESTING off.
 #
 # If you want to change the compilers you should modify CMAKE_CXX_COMPILER
 # and CMAKE_C_COMPILER.  If you want to change the compiler flags you should
@@ -258,16 +259,6 @@ cd VTK
 ../cmake-1.8.1/bin/cmake .
 
 #
-# On linux systems the link line generated for the Hybrid and Rendering
-# libraries will have the X11 library directory listed before the mesa
-# library directory which may cause the library to be linked against the
-# osmesa library in the X11 directory instead of the one that comes with
-# our version of mangled mesa.  To correct this problem you will need to
-# edit the Makefiles in the Hybrid and Rendering directories to swap the
-# order of the X11 library directory and the mesa library directory.
-#
-
-#
 # On tru64 systems using g++ 3.0.4, several files in the Imaging directory
 # will not compile because of an internal compiler error.  You will need to
 # comment out the code in the method ThreadedExecute (with "#if 0" as the
@@ -295,26 +286,28 @@ mkdir $VISITDIR/vtk
 mkdir $VISITDIR/vtk/2003.10.28
 mkdir $VISITDIR/vtk/2003.10.28/$VISITARCH
 mkdir $VISITDIR/vtk/2003.10.28/$VISITARCH/{Common,Filtering,Graphics,Hybrid,IO,Imaging,Rendering,MangleMesaInclude,lib}
-cp vtkConfigure.h                 $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp vtkToolkits.h                  $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp vtk*Instantiator.h             $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp Utilities/zlib/zlib.h          $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp Utilities/zlib/zconf.h         $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp Utilities/zlib/zlibDllConfig.h $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp Utilities/tiff/tiffio.h        $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp Utilities/tiff/tiff.h          $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp Utilities/tiff/tiffvers.h      $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp Utilities/tiff/tconf.h         $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp Utilities/tiff/tiffDllConfig.h $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp Common/*.h                     $VISITDIR/vtk/2003.10.28/$VISITARCH/Common
-cp Filtering/*.h                  $VISITDIR/vtk/2003.10.28/$VISITARCH/Filtering
-cp Graphics/*.h                   $VISITDIR/vtk/2003.10.28/$VISITARCH/Graphics
-cp Hybrid/*.h                     $VISITDIR/vtk/2003.10.28/$VISITARCH/Hybrid
-cp IO/*.h                         $VISITDIR/vtk/2003.10.28/$VISITARCH/IO
-cp Imaging/*.h                    $VISITDIR/vtk/2003.10.28/$VISITARCH/Imaging
-cp Rendering/*.h                  $VISITDIR/vtk/2003.10.28/$VISITARCH/Rendering
-cp MangleMesaInclude/*.h          $VISITDIR/vtk/2003.10.28/$VISITARCH/MangleMesaInclude
-cp bin/*.so                       $VISITDIR/vtk/2003.10.28/$VISITARCH/lib
+cp vtkConfigure.h                   $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp vtkToolkits.h                    $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp vtk*Instantiator.h               $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp Utilities/expat/expat.h          $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp Utilities/expat/expatDLLConfig.h $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp Utilities/zlib/zlib.h            $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp Utilities/zlib/zconf.h           $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp Utilities/zlib/zlibDllConfig.h   $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp Utilities/tiff/tiffio.h          $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp Utilities/tiff/tiff.h            $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp Utilities/tiff/tiffvers.h        $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp Utilities/tiff/tconf.h           $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp Utilities/tiff/tiffDllConfig.h   $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp Common/*.h                       $VISITDIR/vtk/2003.10.28/$VISITARCH/Common
+cp Filtering/*.h                    $VISITDIR/vtk/2003.10.28/$VISITARCH/Filtering
+cp Graphics/*.h                     $VISITDIR/vtk/2003.10.28/$VISITARCH/Graphics
+cp Hybrid/*.h                       $VISITDIR/vtk/2003.10.28/$VISITARCH/Hybrid
+cp IO/*.h                           $VISITDIR/vtk/2003.10.28/$VISITARCH/IO
+cp Imaging/*.h                      $VISITDIR/vtk/2003.10.28/$VISITARCH/Imaging
+cp Rendering/*.h                    $VISITDIR/vtk/2003.10.28/$VISITARCH/Rendering
+cp MangleMesaInclude/*.h            $VISITDIR/vtk/2003.10.28/$VISITARCH/MangleMesaInclude
+cp bin/*.so                         $VISITDIR/vtk/2003.10.28/$VISITARCH/lib
 cd ..
 
 #

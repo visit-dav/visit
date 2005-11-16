@@ -39,6 +39,7 @@
 #include <KeyframeAttributes.h>
 #include <LightList.h>
 #include <MaterialAttributes.h>
+#include <MeshManagementAttributes.h>
 #include <MessageAttributes.h>
 #include <MovieAttributes.h>
 #include <ParentProcess.h>
@@ -186,6 +187,8 @@
 //    Initialize viewer, viewerP, xfer. Added clientMethod, clientInformation,
 //    clientInformationList, and movieAtts.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added mesh management attributes
 // ****************************************************************************
 
 ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
@@ -240,6 +243,7 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
     clientInformation    = new ClientInformation;
     clientInformationList = new ClientInformationList;
     movieAtts            = new MovieAttributes;
+    meshManagementAtts   = new MeshManagementAttributes;
 
     // Make the proxy observe the SIL restriction attributes.
     silRestrictionAtts->Attach(this);
@@ -390,6 +394,8 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
 //    Brad Whitlock, Wed May 4 16:16:22 PST 2005
 //    Added viewerP and clientMethod, clientInformation, clientInformationList.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added mesh management attributes
 // ****************************************************************************
 
 ViewerProxy::~ViewerProxy()
@@ -446,6 +452,7 @@ ViewerProxy::~ViewerProxy()
     delete clientInformation;
     delete clientInformationList;
     delete movieAtts;
+    delete meshManagementAtts;
 
     //
     // Delete the plot attribute state objects.
@@ -867,6 +874,8 @@ ViewerProxy::AddArgument(const std::string &arg)
 //    Brad Whitlock, Thu May 5 19:13:02 PST 2005
 //    Added support for reverse launching and client interface discovery.
 //
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added mesh management attributes
 // ****************************************************************************
 
 void
@@ -986,6 +995,7 @@ ViewerProxy::Create(int *inputArgc, char ***inputArgv)
     xfer->Add(interactorAtts);
     xfer->Add(procAtts);
     xfer->Add(movieAtts);
+    xfer->Add(meshManagementAtts);
 
     xfer->ListObjects();
 
@@ -3581,6 +3591,78 @@ ViewerProxy::ResetMaterialAttributes()
     // Set the rpc type.
     //
     viewerRPC->SetRPCType(ViewerRPC::ResetMaterialAttributesRPC);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+//  Method: ViewerProxy::SetMeshManagementAttributes
+//
+//  Purpose: Applies the mesh management attributes.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   November 6, 2005 
+//
+// ****************************************************************************
+
+void
+ViewerProxy::SetMeshManagementAttributes()
+{
+    //
+    // Set the rpc type.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::SetMeshManagementAttributesRPC);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::SetDefaultMeshManagementAttributes
+//
+// Purpose: Sets the default mesh management attributes.
+//
+// Programmer: Mark C. Miller 
+// Creation:   November 6, 2005 
+//
+// ****************************************************************************
+
+void
+ViewerProxy::SetDefaultMeshManagementAttributes()
+{
+    //
+    // Set the rpc type.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::SetDefaultMeshManagementAttributesRPC);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::ResetMeshManagementAttributes
+//
+// Purpose: Reset the mesh management attributes to the default values.
+//
+// Programmer: Mark C. Miller 
+// Creation:   November 6, 2005 
+//
+// ****************************************************************************
+
+void
+ViewerProxy::ResetMeshManagementAttributes()
+{
+    //
+    // Set the rpc type.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::ResetMeshManagementAttributesRPC);
 
     //
     // Issue the RPC.

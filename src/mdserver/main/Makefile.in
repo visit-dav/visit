@@ -155,6 +155,9 @@
 #    Hank Childs, Mon May 23 14:04:43 PDT 2005
 #    Added GetDBPluginInfoRPCExecutor.
 #
+#    Mark C. Miller, Mon Oct 31 18:12:49 PST 2005
+#    Eliminated refs to sl_io library. Added LibPipelineStubs.
+#
 ##############################################################################
 
 ##
@@ -182,7 +185,7 @@ LIBS= \
     -lcomm \
     -lmisc \
     -lutility \
-    -llightweight_visit_vtk -lvtk_sl_io \
+    -llightweight_visit_vtk \
     @VTK_LIGHTWEIGHT_LIBS@ \
     @PREBIND_LIBS@ \
     @LIBS@ \
@@ -209,13 +212,14 @@ SRC=ChangeDirectoryRPCExecutor.C \
     MDServerApplication.C \
     MDServerConnection.C \
     QuitRPCExecutor.C \
+    LibPipelineStubs.C \
     main.C
 
 OBJ=$(SRC:.C=.o)
 
 ## Source files for the test program
 TESTSRC=testmds.C
-TESTOBJ=testmds.o
+TESTOBJ=testmds.o LibPipelineStubs.o
 
 DISTRIB=
 
