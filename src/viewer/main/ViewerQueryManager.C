@@ -1725,6 +1725,12 @@ ViewerQueryManager::ClearPickPoints()
 //    For StartPick, don't set needZone to 'true' if a nodal-var Tensor or
 //    Vector is plotted.   Do GlyphPickf or Tensor plots.
 //
+//    Kathleen Bonnell, Thu Nov 17 13:39:42 PST 2005 
+//    Retrive topodim from plot and store in pickatts.  It is more reliable
+//    than attempting retrieval from pipeline.  For the same reason,
+//    determine if the input is 'LinesData' from the plot (spatdim = 2,
+//    and plot is Boundary or Contour).  Save in pickatts.
+//
 // ****************************************************************************
 
 bool
@@ -1907,6 +1913,13 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                   (strcmp(plot->GetPlotName(), "Tensor") == 0) ||
                   ((plot->GetMeshType() == AVT_POINT_MESH) &&
                    (strcmp(plot->GetPlotName(), "Label") != 0));
+
+        bool isLinesData = (plot->GetSpatialDimension() == 2) &&
+                  ((strcmp(plot->GetPlotName(), "Boundary") == 0) ||
+                   (strcmp(plot->GetPlotName(), "Contour") == 0));
+        pickAtts->SetLinesData(isLinesData);
+        pickAtts->SetInputTopoDim(plot->GetTopologicalDimension());
+                  
 
         if (doGlyphPick && win->GetScalableRendering() && 
             (dom ==-1 || el == -1))

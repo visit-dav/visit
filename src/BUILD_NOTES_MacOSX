@@ -28,7 +28,7 @@ shell prompt.
     Python   2.3.3    Scripting Language     http://www.python.org
     Qt       3.3.1    GUI Toolkit            http://www.trolltech.com
     Silo     4.4.3    File I/O library       http://www.llnl.gov/bdiv/meshtv
-                                             ftp://ftp.llnl.gov/pub/visit/3rd_party/silo050506.sh
+                                             ftp://ftp.llnl.gov/pub/visit/3rd_party/silo051121.sh
     VTK      20031028 Visualization Toolkit  http://www.kitware.com
     HDF5     1.6.0    I/O library            http://hdf.ncsa.uiuc.edu/HDF5/
     
@@ -205,9 +205,9 @@ take this opportunity to unzip VisIt's source code distribution and set an
 environment variable that will be used to identify VisIt's source code 
 directory.
 
-gunzip visit050829.tar.gz
-tar xf visit050829.tar
-setenv VISITSOURCE `pwd`/visit050829
+gunzip visit051121.tar.gz
+tar xf visit051121.tar
+setenv VISITSOURCE `pwd`/visit051121
 
 # Make sure that you build a version of VisIt that can run on MacOS X 10.3
 # and later.
@@ -705,8 +705,8 @@ offsets will not be affected since the HDF5 version of the Silo library
 should be larger.
 
 # Build silo source into an archive library
-sh silo050506.sh
-cd silo050506
+sh silo051121.sh
+cd silo051121
 # Set the values of some helper variables (tcsh)
 set HDF5INCLUDE=$VISITDIR/hdf5/include
 set HDF5LIB=$VISITDIR/hdf5/lib
@@ -1000,9 +1000,9 @@ More information about building VisIt follows after that.
 #
 # Unzipping VisIt's source code distribution
 #
-gunzip visit050829.tar.gz
-tar xf visit050829.tar
-cd visit050829
+gunzip visit051121.tar.gz
+tar xf visit051121.tar
+cd visit051121
 
 #
 # HDF5 and Silo

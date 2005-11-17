@@ -16,7 +16,7 @@ shell prompt.
     Mesa     5.0      3-D Graphics Library   http://www.mesa3d.org/
     Python   2.1.2    Scripting Language     http://www.python.org
     Qt       3.3.2    GUI Toolkit            http://www.trolltech.com
-    Silo     4.4.3    File I/O library       http://www.llnl.gov/bdiv/meshtv
+    Silo     4.5      File I/O library       http://www.llnl.gov/bdiv/meshtv
     VTK      20031028 Visualization Toolkit  http://www.kitware.com
 
 
@@ -290,7 +290,7 @@ cp vtkConfigure.h                   $VISITDIR/vtk/2003.10.28/$VISITARCH
 cp vtkToolkits.h                    $VISITDIR/vtk/2003.10.28/$VISITARCH
 cp vtk*Instantiator.h               $VISITDIR/vtk/2003.10.28/$VISITARCH
 cp Utilities/expat/expat.h          $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp Utilities/expat/expatDLLConfig.h $VISITDIR/vtk/2003.10.28/$VISITARCH
+cp Utilities/expat/expatDllConfig.h $VISITDIR/vtk/2003.10.28/$VISITARCH
 cp Utilities/zlib/zlib.h            $VISITDIR/vtk/2003.10.28/$VISITARCH
 cp Utilities/zlib/zconf.h           $VISITDIR/vtk/2003.10.28/$VISITARCH
 cp Utilities/zlib/zlibDllConfig.h   $VISITDIR/vtk/2003.10.28/$VISITARCH
@@ -418,9 +418,18 @@ setenv LD_LIBRARY64_PATH $QTDIR/lib:$LD_LIBRARY64_PATH       # SGI
 # file to get the prototype for sprintf.
 #
 # On linux systems if the OpenGL library is built with threading support,
-# qt won't by default compile the QGL widget.  To overcome this problem you
-# will need to add "-thread" to the configure line.  When qt creates the
-# qt library it will name it qt-mt instead of qt.  This will cause problems
+# qt won't by default compile the QGL widget.  To determine if the OpenGL
+# library was built with threading run the following command:
+#
+#     ./configure --help
+#
+# If the output contains:
+#
+#     WARNING: /usr/X11R6/lib/libGL.so is threaded!
+#     The Qt OpenGL module requires Qt to be configured with -thread.
+#
+# then you will need to add "-thread" to the configure line.  When qt creates
+# the qt library it will name it qt-mt instead of qt.  This will cause problems
 # linking visit.  To fix this you should first build qt, having it create
 # libqt-mt.so.  Then remove all occurances of "-mt" from src/Makefile and
 # issue the make command again.  It will now create the qt library properly
@@ -551,14 +560,18 @@ On irix systems, if you want to build a 64 bit version you can replace
 CFLAGS=-O2 with CFLAGS="-64 -O2" in the configure command below.
 
 On Opteron systems, replace CFLAGS="-O2" with CFLAGS="-m64 -fPIC -O2" and
-add -disable-sdx. Finally, replace --without-hdf5 with:
--with-hdf5=$VISITDIR/hdf5/1.6.0/$VISITARCH/include,$VISITDIR/hdf5/1.6.0/$VISITARCH/lib
+add --disable-sdx.
 
 #
 # Build Silo
 #
-sh silo050506.sh
-cd silo050506
+sh silo051121.sh
+cd silo051121
+#
+# If you want to build silo with hdf5 support then use the commented configure
+# line.
+# env CFLAGS=-O2 ./configure --without-readline -with-hdf5=$VISITDIR/hdf5/1.6.0/$VISITARCH/include,$VISITDIR/hdf5/1.6.0/$VISITARCH/lib --without-exodus
+#
 env CFLAGS=-O2 ./configure --without-readline --without-hdf5 --without-exodus
 make
 
@@ -566,12 +579,12 @@ make
 # Install it in the visit directory under the silo directory.
 #
 mkdir $VISITDIR/silo
-mkdir $VISITDIR/silo/4.4.3
-mkdir $VISITDIR/silo/4.4.3/$VISITARCH
-mkdir $VISITDIR/silo/4.4.3/$VISITARCH/{include,lib}
-cp silo/silo/silo.{h,inc}   $VISITDIR/silo/4.4.3/$VISITARCH/include
-cp silo/sdx/sdx.{h,inc}     $VISITDIR/silo/4.4.3/$VISITARCH/include
-cp lib/libsilo.a            $VISITDIR/silo/4.4.3/$VISITARCH/lib
+mkdir $VISITDIR/silo/4.5
+mkdir $VISITDIR/silo/4.5/$VISITARCH
+mkdir $VISITDIR/silo/4.5/$VISITARCH/{include,lib}
+cp silo/silo/silo.{h,inc}   $VISITDIR/silo/4.5/$VISITARCH/include
+cp silo/sdx/sdx.{h,inc}     $VISITDIR/silo/4.5/$VISITARCH/include
+cp lib/libsilo.a            $VISITDIR/silo/4.5/$VISITARCH/lib
 cd ..
 
 
@@ -668,12 +681,31 @@ cp src/mili_enum.h $VISITDIR/mili/1.09/$VISITARCH
 cp src/libmili.a   $VISITDIR/mili/1.09/$VISITARCH
 cd ..
 
+HDF5 (Optional)
+================
+
+HDF5 is an I/O library that is used by many of the VisIt database plugins.
+
 #
 # Build HDF5.
 #
 gunzip hdf5-1.6.0.tar.gz
 tar xf hdf5-1.6.0.tar
 cd hdf5-1.6.0
+
+HDF5 can be built as a serial or a parallel library.  Always build the
+serial version of HDF5 for VisIt.  Both the serial and parallel versions
+of VisIt use the serial version of HDF5.
+
+If HDF5 is already installed on your system in a standard location such
+as /usr/local then it may conflict with the version you are now building.
+The problem is that a compile line may have include (-I) or library (-L)
+directives so that either the header files or library are coming from the
+system location and the other is coming from the location where you are
+installing the version you are now building.  If this occurs you will have
+a run time failure of any plugins that depend on HDF5.  The solution is to
+make sure that neither the header files nor the library are coming from
+the system location.
 
 HDF5 will by default want to use the vendor supplied compiler so you will
 probably need to specify the compiler.  This can be done by preceding the
@@ -693,6 +725,11 @@ mkdir $VISITDIR/hdf5/1.6.0
 mkdir $VISITDIR/hdf5/1.6.0/$VISITARCH
 make install
 cd ..
+
+Boxlib (Optional)
+==================
+
+Boxlib is an I/O library for reading and writing structured AMR mesh data.
 
 #
 # Build Boxlib.
@@ -801,6 +838,7 @@ cd ..
 
 netCDF (Optional)
 ==================
+
 NetCDF (Network Common Data Form) is an interface for array-oriented data
 access and a library that provides an implementation of the interface. The
 netCDF library also defines a machine-independent format for representing
@@ -833,6 +871,7 @@ cd ../..
 
 CGNS (Optional)
 ================
+
 The CFD General Notation System (CGNS) consists of a collection of 
 conventions, and software implementing those conventions, for the storage
 and retrieval of CFD (computational fluid dynamics) data. The principal 
@@ -875,6 +914,7 @@ cd ..
 
 GDAL (Optional)
 ================
+
 GDAL is a translator library for raster geospatial data formats that presents
 a single abstract data model to the calling application for all supported
 formats. 
@@ -926,9 +966,9 @@ env command for configure.
 #
 # Build and install it in the visit directory.
 #
-gunzip visit050829.tar.gz
-tar xf visit050829.tar
-cd visit050829/config-site
+gunzip visit051121.tar.gz
+tar xf visit051121.tar
+cd visit051121/config-site
 echo VISITHOME=$VISITDIR > `hostname`.conf
 sed "s/ARCH/$VISITARCH/" Template.conf >> `hostname`.conf
 cd ..
@@ -937,14 +977,14 @@ make
 clearcase_bin/visit-bin-dist
 # Use the appropriate install command based on the operating system on
 # which you built VisIt.
-clearcase_bin/visit-install 1.4.5 aix $VISITDIR
-clearcase_bin/visit-install 1.4.5 darwin $VISITDIR
-clearcase_bin/visit-install 1.4.5 irix6 $VISITDIR
-clearcase_bin/visit-install 1.4.5 linux $VISITDIR
-clearcase_bin/visit-install 1.4.5 linux-ia64 $VISITDIR
-clearcase_bin/visit-install 1.4.5 linux-x86_64 $VISITDIR
-clearcase_bin/visit-install 1.4.5 osf1 $VISITDIR
-clearcase_bin/visit-install 1.4.5 sunos5 $VISITDIR
+clearcase_bin/visit-install 1.5 aix $VISITDIR
+clearcase_bin/visit-install 1.5 darwin $VISITDIR
+clearcase_bin/visit-install 1.5 irix6 $VISITDIR
+clearcase_bin/visit-install 1.5 linux $VISITDIR
+clearcase_bin/visit-install 1.5 linux-ia64 $VISITDIR
+clearcase_bin/visit-install 1.5 linux-x86_64 $VISITDIR
+clearcase_bin/visit-install 1.5 osf1 $VISITDIR
+clearcase_bin/visit-install 1.5 sunos5 $VISITDIR
 
 When running the configure script you can enable or disable certain dependent
 packages.  All the configure options are listed at the beginning of the

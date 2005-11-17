@@ -626,6 +626,9 @@ PickAttributes::PrepareForNewPick()
     globalElement = -1;
     if (!globalIncidentElements.empty())
         globalIncidentElements.clear();
+
+    linesData = false;
+    inputTopoDim = -1;
 }
 
 Function: SetFromNode

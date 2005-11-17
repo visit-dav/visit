@@ -351,6 +351,11 @@ LoadBalancer::CheckDynamicLoadBalancing(avtPipelineSpecification_p input)
 //
 //  Programmer: Mark C. Miller
 //  Creation:   October 4, 2005
+//
+//  Modifications:
+//
+//    Mark C. Miller, Thu Nov 17 11:46:43 PST 2005
+//    Test for non-NULL mmd before dereferencing
 // ****************************************************************************
 LoadBalanceScheme
 LoadBalancer::DetermineAppropriateScheme(avtPipelineSpecification_p input)
@@ -369,7 +374,7 @@ LoadBalancer::DetermineAppropriateScheme(avtPipelineSpecification_p input)
     string meshName = md->MeshForVar(data->GetVariable());
     const avtMeshMetaData *mmd = md->GetMesh(meshName);
 
-    if (mmd->loadBalanceScheme != LOAD_BALANCE_UNKNOWN)
+    if (mmd && mmd->loadBalanceScheme != LOAD_BALANCE_UNKNOWN)
     {
         debug1 << "Default load balance scheme \""
                << LoadBalanceSchemeToString(scheme) << "\""

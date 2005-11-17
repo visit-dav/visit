@@ -212,6 +212,10 @@ class avtToolInterface;
 //
 //    Mark C. Miller, Wed Nov  9 12:35:15 PST 2005
 //    Added PrepareCacheForReplace
+//
+//    Kathleen Bonnell, Thu Nov 17 12:00:23 PST 2005 
+//    Added GetTopologicalDimension method.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot
@@ -344,6 +348,7 @@ class VIEWER_API ViewerPlot
     // Get/Set specific plot attributes.
     //
     int GetBlockOrigin() const;
+    int GetTopologicalDimension() const;
     int GetSpatialDimension() const;
     double *GetSpatialExtents(avtExtentType = AVT_UNKNOWN_EXTENT_TYPE) const;
     void SetSpatialExtentsType(avtExtentType);

@@ -3006,6 +3006,38 @@ ViewerPlot::GetBlockOrigin() const
 
 
 // ****************************************************************************
+//  Method: ViewerPlot::GetTopologicalDimension
+//
+//  Purpose:
+//    Get the topological dimension for the plot.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   November 17, 2005 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+ViewerPlot::GetTopologicalDimension() const
+{
+    int retval = 0;
+
+    if(readerList != NULL)
+    {
+        if(*(readerList[cacheIndex]) != NULL)
+        {
+            avtDataAttributes &atts = readerList[cacheIndex]->
+                GetInfo().GetAttributes();
+            retval = atts.GetTopologicalDimension();
+        }
+    }
+
+    return retval;
+}
+
+
+// ****************************************************************************
 //  Method: ViewerPlot::GetSpatialDimension
 //
 //  Purpose:

@@ -182,6 +182,12 @@
     <Field name="hasMixedGhostTypes" label="hasMixedGhostTypes" type="int" internal="true">
       -1
     </Field>
+    <Field name="linesData" label="linesData" type="bool" internal="true">
+      false 
+    </Field>
+    <Field name="inputTopoDim" label="inputTopoDim" type="int" internal="true">
+      -1 
+    </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
     <Function name="CreateOutputString" user="true" member="true">
