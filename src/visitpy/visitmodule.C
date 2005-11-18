@@ -3901,6 +3901,102 @@ visit_RedrawWindow(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_MoveAndResizeWindow
+//
+// Purpose: 
+//   Moves a window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 17 17:00:00 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ResizeWindow(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int win, i0, i1;
+    if(!PyArg_ParseTuple(args, "iii", &win, &i0, &i1))
+        return NULL;
+
+    MUTEX_LOCK();
+        viewer->ResizeWindow(win, i0, i1);
+        if(logging)
+            fprintf(logFile, "ResizeWindow(%d, %d, %d)\n", win, i0, i1);
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_MoveWindow
+//
+// Purpose: 
+//   Moves a window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 17 17:00:00 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_MoveWindow(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int win, i0, i1;
+    if(!PyArg_ParseTuple(args, "iii", &win, &i0, &i1))
+        return NULL;
+
+    MUTEX_LOCK();
+        viewer->MoveWindow(win, i0, i1);
+        if(logging)
+            fprintf(logFile, "MoveWindow(%d, %d, %d)\n", win, i0, i1);
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_MoveAndResizeWindow
+//
+// Purpose: 
+//   Moves and resizes a window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 17 17:00:00 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_MoveAndResizeWindow(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int win, i0, i1, i2, i3;
+    if(!PyArg_ParseTuple(args, "iiiii", &win, &i0, &i1, &i2, &i3))
+        return NULL;
+
+    MUTEX_LOCK();
+        viewer->MoveAndResizeWindow(win, i0, i1, i2, i3);
+        if(logging)
+        {
+            fprintf(logFile, "MoveAndResizeWindow(%d, %d, %d, %d, %d)\n",
+                    win, i0, i1, i2, i3);
+        }
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Function: visit_RecenterView
 //
 // Purpose:
@@ -10727,8 +10823,12 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Hank Childs, Thu Jul 21 16:28:48 PDT 2005
 //   Added DefineArrayExpression.
 //
-//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
-//    Added mesh management attributes
+//   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//   Added mesh management attributes
+//
+//   Brad Whitlock, Thu Nov 17 17:03:13 PST 2005
+//   Added ResizeWindow, MoveWindow, MoveAndResizeWindow.
+//
 // ****************************************************************************
 
 static void
@@ -10891,6 +10991,8 @@ AddDefaultMethods()
                                                    visit_MovePlotKeyframe_doc);
     AddMethod("MoveViewKeyframe", visit_MoveViewKeyframe,
                                                    visit_MoveViewKeyframe_doc);
+    AddMethod("MoveWindow", visit_MoveWindow, visit_MoveWindow_doc);
+    AddMethod("MoveAndResizeWindow", visit_MoveAndResizeWindow, visit_MoveAndResizeWindow_doc);
     AddMethod("NodePick", visit_NodePick, visit_NodePick_doc);
     AddMethod("OpenDatabase", visit_OpenDatabase, visit_OpenDatabase_doc);
     AddMethod("OpenClient", visit_OpenClient);
@@ -10933,6 +11035,7 @@ AddDefaultMethods()
                                                    visit_ResetPlotOptions_doc);
     AddMethod("ResetQueryOverTimeAttributes", visit_ResetQueryOverTimeAttributes);
     AddMethod("ResetView", visit_ResetView, visit_ResetView_doc);
+    AddMethod("ResizeWindow", visit_ResizeWindow, visit_ResizeWindow_doc);
     AddMethod("RestoreSession", visit_RestoreSession,visit_RestoreSession_doc);
     AddMethod("SaveSession", visit_SaveSession, visit_SaveSession_doc);
     AddMethod("SaveWindow", visit_SaveWindow, visit_SaveWindow_doc);

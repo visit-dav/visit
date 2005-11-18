@@ -156,6 +156,12 @@
       SetTryHarderCyclesTimesRPC
       OpenClientRPC
       SuppressQueryOutputRPC
+      SetMeshManagementAttributesRPC
+      SetDefaultMeshManagementAttributesRPC
+      ResetMeshManagementAttributesRPC
+      ResizeWindowRPC
+      MoveWindowRPC
+      MoveAndResizeWindowRPC
       MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">

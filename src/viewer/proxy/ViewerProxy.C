@@ -2427,6 +2427,94 @@ ViewerProxy::RedrawWindow()
 }
 
 // ****************************************************************************
+// Method: ViewerProxy::ResizeWindow
+//
+// Purpose: 
+//   Resize a window.
+//
+// Arguments:
+//   win  : The window id.
+//   w    : The new width.
+//   h    : The new height.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 17 16:45:08 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::ResizeWindow(int win, int w, int h)
+{
+    viewerRPC->SetRPCType(ViewerRPC::ResizeWindowRPC);
+    viewerRPC->SetWindowId(win);
+    viewerRPC->SetIntArg1(w);
+    viewerRPC->SetIntArg2(h);
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::MoveWindow
+//
+// Purpose: 
+//   Move a window.
+//
+// Arguments:
+//   win  : The window id.
+//   x    : The new x.
+//   y    : The new y.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 17 16:45:08 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::MoveWindow(int win, int x, int y)
+{
+    viewerRPC->SetRPCType(ViewerRPC::MoveWindowRPC);
+    viewerRPC->SetWindowId(win);
+    viewerRPC->SetIntArg1(x);
+    viewerRPC->SetIntArg2(y);
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::ResizeAndMoveWindow
+//
+// Purpose: 
+//   Resize and move a window.
+//
+// Arguments:
+//   win  : The window id.
+//   x    : The new x.
+//   y    : The new y.
+//   w    : The new width.
+//   h    : The new height.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 17 16:45:08 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::MoveAndResizeWindow(int win, int x, int y, int w, int h)
+{
+    viewerRPC->SetRPCType(ViewerRPC::MoveAndResizeWindowRPC);
+    viewerRPC->SetWindowId(win);
+    viewerRPC->SetIntArg1(x);
+    viewerRPC->SetIntArg2(y);
+    viewerRPC->SetIntArg3(w);
+    viewerRPC->SetWindowLayout(h);
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
 // Method: ViewerProxy::HideToolbars
 //
 // Purpose: 

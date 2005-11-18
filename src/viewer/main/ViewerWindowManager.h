@@ -319,6 +319,9 @@ typedef struct {
 //    Mark C. Miller, Tue May  3 21:49:22 PDT 2005
 //    Added bool arg to GetDatasets
 //
+//    Brad Whitlock, Thu Nov 17 17:12:05 PST 2005
+//    Added methods to move and resize windows.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public QObject
@@ -345,6 +348,9 @@ class VIEWER_API ViewerWindowManager : public QObject
     void DeleteWindow();
     void DeleteWindow(ViewerWindow *win);
     void DisableRedraw(int windowIndex = -1);
+    void MoveWindow(int windowIndex, int x, int y);
+    void MoveAndResizeWindow(int windowIndex, int x, int y, int w, int h);
+    void ResizeWindow(int windowIndex, int w, int h);
     bool FileInUse(const std::string &host,
                    const std::string &dbName) const;
     void IconifyAllWindows();

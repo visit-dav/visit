@@ -6875,6 +6875,10 @@ ViewerSubject::SendKeepAlives()
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added mesh management attributes rpcs 
+//
+//    Brad Whitlock, Thu Nov 17 17:09:13 PST 2005
+//    Added methods rpcs to move and resize windows.
+//
 // ****************************************************************************
 
 void
@@ -7189,6 +7193,15 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::ResetMeshManagementAttributesRPC:
         ResetMeshManagementAttributes();
+        break;
+    case ViewerRPC::MoveWindowRPC:
+        MoveWindow();
+        break;
+    case ViewerRPC::MoveAndResizeWindowRPC:
+        MoveAndResizeWindow();
+        break;
+    case ViewerRPC::ResizeWindowRPC:
+        ResizeWindow();
         break;
     case ViewerRPC::MaxRPC:
         break;
@@ -8100,3 +8113,70 @@ ViewerSubject::SuppressQueryOutput()
         SuppressQueryOutput(viewerRPC.GetBoolFlag());
 }
 
+// ****************************************************************************
+// Method: ViewerSubject::MoveWindow
+//
+// Purpose: 
+//   Moves a window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 17 17:10:57 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::MoveWindow()
+{
+    ViewerWindowManager::Instance()->MoveWindow(
+        viewerRPC.GetWindowId()-1,
+        viewerRPC.GetIntArg1(),
+        viewerRPC.GetIntArg2());
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::MoveAndResizeWindow
+//
+// Purpose: 
+//   Moves and resizes a window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 17 17:11:08 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::MoveAndResizeWindow()
+{
+    ViewerWindowManager::Instance()->MoveAndResizeWindow(
+        viewerRPC.GetWindowId()-1,
+        viewerRPC.GetIntArg1(),
+        viewerRPC.GetIntArg2(),
+        viewerRPC.GetIntArg3(),
+        viewerRPC.GetWindowLayout());
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::ResizeWindow
+//
+// Purpose: 
+//   Resizes a window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 17 17:11:26 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::ResizeWindow()
+{
+    ViewerWindowManager::Instance()->ResizeWindow(
+        viewerRPC.GetWindowId()-1,
+        viewerRPC.GetIntArg1(),
+        viewerRPC.GetIntArg2());
+}

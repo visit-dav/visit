@@ -6,7 +6,7 @@
 
 #include <algorithm>
 #include <string>
-#include <sstream>
+#include <visitstream.h>
 
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
@@ -23,7 +23,6 @@
 #include <InvalidVariableException.h>
 
 using     std::string;
-using     std::stringstream;
 
 // Note: particle and fragment are interchangable in comments/descriptions.
 
@@ -159,9 +158,9 @@ avtDuneFileFormat::avtDuneFileFormat(const char *filename)
     // no material/species names in graphics file, we'll roll our own
     // based on the number of materials
     for (int i = 0; i < max_species; i++) {
-      stringstream ss;
+      ostrstream ss;
       ss << SPECIES_BASE << i+1;
-      stringstream sm;
+      ostrstream sm;
       sm << MATERIAL_BASE << i+1;
       matnames.push_back(sm.str());
       species_names.push_back(ss.str());
@@ -522,7 +521,7 @@ avtDuneFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
   string mesh_for_mat = meshname; // ??? -- could be multiple meshes
   string material_name = "fragments";
   if (matnames.size() == 0) {
-    stringstream ss;
+    ostrstream ss;
     ss << "material_" << 1;
     matnames.push_back(ss.str());
   }

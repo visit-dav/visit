@@ -861,6 +861,9 @@ PP_ZFileReader::InitializeVarStorage()
 //   Jeremy Meredith, Thu Aug 25 11:35:32 PDT 2005
 //   Added group origin to mesh metadata constructor.
 //
+//   Hank Childs, Fri Nov 18 11:31:31 PST 2005
+//   Label the axes appropriately.
+//
 // ****************************************************************************
 
 void
@@ -925,6 +928,8 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
     avtMeshMetaData *mmd = new avtMeshMetaData(
       "logical_mesh", 1, 0, cellOrigin, 0, ndims, ndims, AVT_RECTILINEAR_MESH);
     mmd->hasSpatialExtents = false;
+    mmd->xLabel = "K-Axis";
+    mmd->yLabel = "L-Axis";
     mmd->cellOrigin = 1;
     md->Add(mmd);
 
@@ -933,6 +938,8 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
         "mesh", 1, 0, cellOrigin, 0, ndims, ndims, AVT_CURVILINEAR_MESH);
     mmd->hasSpatialExtents = false;
     mmd->cellOrigin = 1;
+    mmd->xLabel = "Z-Axis";
+    mmd->yLabel = "R-Axis";
     md->Add(mmd);
 
 #if !defined(_WIN32)
@@ -1506,6 +1513,9 @@ GetMesh_StoreMeshPoints(float *ptr, const T *rt, const T *zt, const int kmax,
 //   Templatized the code for storing the mesh points for the "mesh" variable
 //   so we can support double and float coordinate fields.
 //
+//   Hank Childs, Fri Nov 18 08:45:59 PST 2005
+//   Added support for rotation matrices when revolving the mesh.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1665,11 +1675,106 @@ PP_ZFileReader::GetMesh(int state, const char *var)
         }
 
         //
+        // See if there is an ntform.
+        //
+        bool have_ntform = false;
+        int ntform = 0;
+        if ((have_ntform = pdb->GetInteger("ntform@value", &ntform)) == false)
+            have_ntform = pdb->GetInteger("ntform@gnl", &ntform);
+
+        vtkMatrix4x4 **transforms = new vtkMatrix4x4*[ntform+1];
+        int nPts = ugrid->GetNumberOfPoints();
+        int *transformId = new int[nPts];
+        if (have_ntform && ntform > 0)
+        {
+            //
+            // We need to set up the transformation matrix.
+            //
+            int nvals_rot_mat;
+            double *rot_mat = NULL;
+            int nvals_disp;
+            double *disp = NULL;
+            pdb->GetDoubleArray("tformrot@gnl", &rot_mat, &nvals_rot_mat);
+            pdb->GetDoubleArray("tformdisp@gnl", &disp, &nvals_disp);
+            for (i = 0 ; i < ntform+1 ; i++)
+            {
+                transforms[i] = vtkMatrix4x4::New();
+                int mat = ntform - i;
+                int mat_start = 9*mat;
+                int disp_start = 3*i;
+                transforms[i]->SetElement(0, 0, rot_mat[mat_start+0]);
+                transforms[i]->SetElement(1, 0, rot_mat[mat_start+1]);
+                transforms[i]->SetElement(2, 0, rot_mat[mat_start+2]);
+                transforms[i]->SetElement(0, 1, rot_mat[mat_start+3]);
+                transforms[i]->SetElement(1, 1, rot_mat[mat_start+4]);
+                transforms[i]->SetElement(2, 1, rot_mat[mat_start+5]);
+                transforms[i]->SetElement(0, 2, rot_mat[mat_start+6]);
+                transforms[i]->SetElement(1, 2, rot_mat[mat_start+7]);
+                transforms[i]->SetElement(2, 2, rot_mat[mat_start+8]);
+                transforms[i]->SetElement(0, 3, -disp[disp_start+0]);
+                transforms[i]->SetElement(1, 3, -disp[disp_start+1]);
+                transforms[i]->SetElement(2, 3, -disp[disp_start+2]);
+            }
+
+            //
+            // Now figure out what transformation should be applied to each zone.
+            //
+            int *itform = NULL;
+            int nvals_itform;
+            pdb->GetIntegerArray("itform@gnl", &itform, &nvals_itform);
+            for (j = 0 ; j < lmax ; j++)
+                for (i = 0 ; i < kmax ; i++)
+                {
+                    int idx_p = j*kmax + i;
+                    transformId[idx_p] = 0;
+                }
+            for (j = 1 ; j < lmax ; j++)
+            {
+                for (i = 1 ; i < kmax ; i++)
+                {
+                    // Find all incident zones and use the "max" transform.
+                    // This is because ghosts probably have '0' as their 
+                    // transform.
+                    int idx = j*kmax+i;
+                    int val = itform[idx];
+                    int quad[4];
+                    quad[0] = j * kmax + i;
+                    quad[1] = j * kmax + i - 1;
+                    quad[2] = (j-1) * kmax + i - 1;
+                    quad[3] = (j-1) * kmax + i;
+                    for (int kk = 0 ; kk < 4 ; kk++)
+                    {
+                        if (transformId[quad[kk]] < val)
+                            transformId[quad[kk]] = val;
+                    }
+                }
+            }
+        }
+        else
+        {
+            //
+            // Set up an identity matrix.
+            //
+            transforms[0] = vtkMatrix4x4::New();
+            for (i = 0 ; i < nPts ; i++)
+                transformId[i] = 0;
+        }
+
+        //
         // Revolve the unstructured grid.
         //
         double axis[3] = {1., 0., 0.};
-        retval = RevolveDataSet(ugrid, axis, 0., 360., revolutionSteps, true);
+        retval = RevolveDataSet(ugrid, axis, 0., 360., revolutionSteps, 
+                                transforms, transformId, true);
+
+        //
+        // Clean up memory.
+        //
         ugrid->Delete();
+        for (i = 0 ; i < ntform+1 ; i++)
+            transforms[i]->Delete();
+        delete [] transforms;
+        delete [] transformId;
     }
     else
     {
@@ -3369,22 +3474,36 @@ GetRotationMatrix(double angle, const double axis[3], vtkMatrix4x4 *mat)
     rot3->SetElement(1, 1, cos_angle);
 
     //
+    // The X-coordinate is actually the Z-axis.  So swap 'X' and 'Z'.
+    //
+    vtkMatrix4x4 *swap1 = vtkMatrix4x4::New();
+    swap1->Identity();
+    swap1->SetElement(0, 0, 0.);
+    swap1->SetElement(2, 2, 0.);
+    swap1->SetElement(0, 2, 1.);
+    swap1->SetElement(2, 0, 1.);
+
+    //
     // Now set up our matrix.
     //
     vtkMatrix4x4 *tmp  = vtkMatrix4x4::New();
     vtkMatrix4x4 *tmp2 = vtkMatrix4x4::New();
-    vtkMatrix4x4::Multiply4x4(rot5, rot4, tmp);
+    vtkMatrix4x4 *tmp3 = vtkMatrix4x4::New();
+    vtkMatrix4x4::Multiply4x4(swap1, rot5, tmp3);
+    vtkMatrix4x4::Multiply4x4(tmp3, rot4, tmp);
     vtkMatrix4x4::Multiply4x4(tmp, rot3, tmp2);
     vtkMatrix4x4::Multiply4x4(tmp2, rot2, tmp);
     vtkMatrix4x4::Multiply4x4(tmp, rot1, mat);
 
     tmp->Delete();
     tmp2->Delete();
+    tmp3->Delete();
     rot1->Delete();
     rot2->Delete();
     rot3->Delete();
     rot4->Delete();
     rot5->Delete();
+    swap1->Delete();
 }
 
 // ****************************************************************************
@@ -3412,12 +3531,16 @@ GetRotationMatrix(double angle, const double axis[3], vtkMatrix4x4 *mat)
 //     revolving lines. I changed the code a little so there can never
 //     be uninitialized points to interfere with computing the plot bounds.
 //
+//     Hank Childs, Fri Nov 18 09:04:37 PST 2005
+//     Add new arguments for point-dependent transformations.
+//
 // ****************************************************************************
 
 template <class T>
 static vtkDataSet *
 RevolveDataSetHelper(T *ugrid, vtkDataSet *in_ds,
-    const double *axis, double start_angle, double stop_angle, int nsteps)
+    const double *axis, double start_angle, double stop_angle, int nsteps, 
+    vtkMatrix4x4 **transforms, int *transformId)
 {
     int   i, j;
 
@@ -3446,11 +3569,14 @@ RevolveDataSetHelper(T *ugrid, vtkDataSet *in_ds,
             float pt[4];
             in_ds->GetPoint(j, pt);
             pt[3] = 1.;
-            float outpt[4];
-            mat->MultiplyPoint(pt, outpt);
-            *ptr++ = outpt[0];
-            *ptr++ = outpt[1];
-            *ptr++ = outpt[2];
+            float outpt1[4];
+            mat->MultiplyPoint(pt, outpt1);
+            outpt1[3] = 1.;
+            float outpt2[4];
+            transforms[transformId[j]]->MultiplyPoint(outpt1, outpt2);
+            *ptr++ = outpt2[0];
+            *ptr++ = outpt2[1];
+            *ptr++ = outpt2[2];
         }
     }
 
@@ -3597,11 +3723,15 @@ RevolveDataSetHelper(T *ugrid, vtkDataSet *in_ds,
 //
 // Modifications:
 //   
+//   Hank Childs, Fri Nov 18 09:04:37 PST 2005
+//   Add new arguments for point-dependent transformations.
+//
 // ****************************************************************************
 
 vtkDataSet *
 PP_ZFileReader::RevolveDataSet(vtkDataSet *in_ds, const double *axis,
-    double start_angle, double stop_angle, int nsteps, bool extrude)
+    double start_angle, double stop_angle, int nsteps, 
+    vtkMatrix4x4 **transforms, int *transformId, bool extrude)
 {
     vtkDataSet *retval = 0;
 
@@ -3609,13 +3739,13 @@ PP_ZFileReader::RevolveDataSet(vtkDataSet *in_ds, const double *axis,
     {
         vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
         retval = RevolveDataSetHelper(ugrid, in_ds, axis, start_angle,
-                                      stop_angle, nsteps);
+                                  stop_angle, nsteps, transforms, transformId);
     }
     else
     {
         vtkPolyData *pd = vtkPolyData::New();
         retval = RevolveDataSetHelper(pd, in_ds, axis, start_angle,
-                                      stop_angle, nsteps);
+                                  stop_angle, nsteps, transforms, transformId);
     }
 
     return retval;

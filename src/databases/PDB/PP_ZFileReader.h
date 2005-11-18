@@ -43,6 +43,9 @@ class avtVariableCache;
 //   access to the file format's variable cache object for storing auxiliary
 //   data.
 //
+//   Hank Childs, Fri Nov 18 09:08:48 PST 2005
+//   Add new arguments to revolve data sets.
+//
 // ****************************************************************************
 
 class PP_ZFileReader : public PDBReader
@@ -91,7 +94,8 @@ protected:
 
     static vtkDataSet *RevolveDataSet(vtkDataSet *in_ds, const double *axis,
                                       double start_angle, double stop_angle,
-                                      int nsteps, bool extrude);
+                                      int nsteps, vtkMatrix4x4 **, 
+                                      int *, bool extrude);
 
     // Data members
     int                      kmax;

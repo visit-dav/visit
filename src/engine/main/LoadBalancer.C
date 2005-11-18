@@ -356,7 +356,13 @@ LoadBalancer::CheckDynamicLoadBalancing(avtPipelineSpecification_p input)
 //
 //    Mark C. Miller, Thu Nov 17 11:46:43 PST 2005
 //    Test for non-NULL mmd before dereferencing
+//
+//    Hank Childs, Fri Nov 18 16:15:12 PST 2005
+//    Better accomodate CMFE ... don't assume that the database stored with
+//    this pipeline index is the one we're referencing.
+//
 // ****************************************************************************
+
 LoadBalanceScheme
 LoadBalancer::DetermineAppropriateScheme(avtPipelineSpecification_p input)
 {
@@ -371,7 +377,18 @@ LoadBalancer::DetermineAppropriateScheme(avtPipelineSpecification_p input)
     avtDatabase *db = dbMap[dbname];
     avtDatabaseMetaData *md = db->GetMetaData(db->GetMostRecentTimestep());
     avtDataSpecification_p data = input->GetDataSpecification();
-    string meshName = md->MeshForVar(data->GetVariable());
+    string meshName;
+    TRY
+    {
+        meshName = md->MeshForVar(data->GetVariable());
+    }
+    CATCH(...)
+    {
+        // Probably a CMFE.
+        return scheme;
+    }
+    ENDTRY;
+
     const avtMeshMetaData *mmd = md->GetMesh(meshName);
 
     if (mmd && mmd->loadBalanceScheme != LOAD_BALANCE_UNKNOWN)
