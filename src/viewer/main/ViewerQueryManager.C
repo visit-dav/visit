@@ -3139,6 +3139,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Queries can specify the number of vars required. 
 //    Added TrajectoryByNode/Zone.
 //
+//    Brad Whitlock, Thu Nov 17 10:20:06 PDT 2005
+//    Added Best Fit Line query.
+//
 // ****************************************************************************
 
 void
@@ -3226,6 +3229,7 @@ ViewerQueryManager::InitializeQueryList()
     int TrajVars = QUERY_SCALAR_VAR;
     queryTypes->AddQuery("TrajectoryByZone", dq, vr, dzv, 1, TrajVars, to, 2);
     queryTypes->AddQuery("TrajectoryByNode", dq, vr, dnv, 1, TrajVars, to, 2);
+    queryTypes->AddQuery("Best Fit Line", dq, mr, basic, 1, 0, qo);
     queryTypes->SelectAll();
 }
 

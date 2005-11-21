@@ -176,6 +176,9 @@
 #    Kathleen Bonnell, Thu Oct 13 11:32:38 PDT 2005 
 #    Added CracksClipper.
 #
+#    Hank Childs, Sun Nov 20 11:39:40 PST 2005
+#    Added PDF (probability density function) operator.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -189,8 +192,8 @@ OPTIONAL=Context ConnCompReduce MetricThreshold RemoveCells SiloDump \
 REQUIRED=Box Clip Cone CoordSwap CracksClipper Cylinder Decimate \
          DeferExpression Displace Elevate ExternalSurface IndexSelect \
          InverseGhostZone Isosurface Isovolume Lineout Merge OnionPeel \
-         Project Reflect Resample Revolve Slice Smooth SphereSlice ThreeSlice \
-         Threshold Transform Tube
+         PDF Project Reflect Resample Revolve Slice Smooth SphereSlice \
+         ThreeSlice Threshold Transform Tube
 
 SUBDIRS=$(REQUIRED) @OPERATOR_OPTIONAL_DIRS@
 ALLSUBDIRS=$(REQUIRED) $(OPTIONAL)

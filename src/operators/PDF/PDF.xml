@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+  <Plugin name="PDF" type="operator" label="Probability Density Function" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false">
+    <Attribute name="PDFAttributes" purpose="Attributes for the PDF operator" persistent="true">
+      <Enum name="Scaling">
+        Linear
+        Log
+        Skew
+      </Enum>
+      <Enum name="NumAxes">
+        Two
+        Three
+      </Enum>
+      <Enum name="DensityType">
+        Probability
+        ZoneCount
+      </Enum>
+      <Field name="var1" label="var1" type="string">
+        default
+      </Field>
+      <Field name="var1MinFlag" label="Use variable 1 min" type="bool">
+        false
+      </Field>
+      <Field name="var1MaxFlag" label="Use variable 1 max" type="bool">
+        false
+      </Field>
+      <Field name="var1Min" label="Variable 1 Min" type="double" enabler="var1MinFlag:true">
+        0.000000
+      </Field>
+      <Field name="var1Max" label="Variable 1 Max" type="double" enabler="var1MaxFlag:true">
+        1.000000
+      </Field>
+      <Field name="var1Scaling" label="Variable 1 scale" type="enum" subtype="Scaling">
+        Linear
+      </Field>
+      <Field name="var1SkewFactor" label="Variable 1 skew factor" type="double" enabler="var1Scaling:Skew">
+        1.000000
+      </Field>
+      <Field name="var1NumSamples" label="Number of samples for variable 1?" type="int">
+        100
+      </Field>
+      <Field name="var2" label="Variable 2" type="string">
+        default
+      </Field>
+      <Field name="var2MinFlag" label="Use variable 2 min" type="bool">
+        false
+      </Field>
+      <Field name="var2MaxFlag" label="Use variable 2 max" type="bool">
+        false
+      </Field>
+      <Field name="var2Min" label="Variable 2 Min" type="double" enabler="var2MinFlag:true">
+        0.000000
+      </Field>
+      <Field name="var2Max" label="Variable 2 Max" type="double" enabler="var2MaxFlag:true">
+        1.000000
+      </Field>
+      <Field name="var2Scaling" label="Variable 2 scale" type="enum" subtype="Scaling">
+        Linear
+      </Field>
+      <Field name="var2SkewFactor" label="Variable 2 skew factor" type="double" enabler="var2Scaling:Skew">
+        1.000000
+      </Field>
+      <Field name="var2NumSamples" label="Number of samples for variable 2?" type="int">
+        100
+      </Field>
+      <Field name="numAxes" label="Number of variables" type="enum" subtype="NumAxes">
+        Two
+      </Field>
+      <Field name="var3" label="Variable 3" type="string">
+        default
+      </Field>
+      <Field name="var3MinFlag" label="Use variable 3 min" type="bool">
+        false
+      </Field>
+      <Field name="var3MaxFlag" label="Use variable 3 max" type="bool">
+        false
+      </Field>
+      <Field name="var3Min" label="Variable 3 Min" type="double" enabler="var3MinFlag:true">
+        0.000000
+      </Field>
+      <Field name="var3Max" label="Variable 3 Max" type="double" enabler="var3MaxFlag:true">
+        1.000000
+      </Field>
+      <Field name="var3Scaling" label="Variable 3 scale" type="enum" subtype="Scaling">
+        Linear
+      </Field>
+      <Field name="var3SkewFactor" label="Variable 3 skew factor" type="double" enabler="var3Scaling:Skew">
+        1.000000
+      </Field>
+      <Field name="var3NumSamples" label="Number of samples for variable 3?" type="int">
+        100
+      </Field>
+      <Field name="scaleCube" label="Scale to cube" type="bool">
+        true
+      </Field>
+      <Field name="densityType" label="Density Type" type="enum" subtype="DensityType">
+        Probability
+      </Field>
+    </Attribute>
+  </Plugin>

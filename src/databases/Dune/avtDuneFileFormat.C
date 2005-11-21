@@ -23,6 +23,29 @@
 #include <InvalidVariableException.h>
 
 using     std::string;
+using     std::find;
+
+// ****************************************************************************
+//  Function: dune_getline
+//
+//  Purpose:
+//      Implements the getline function that is available with gcc, but not
+//      with SGI's compiler.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 21, 2005
+//
+// ****************************************************************************
+
+bool
+dune_getline(std::ifstream &ifile, std::string &str)
+{
+    char buffer[1024];
+    ifile.getline(buffer, 1024, '\n');
+    str = buffer;
+    return !(ifile.eof());
+}
+
 
 // Note: particle and fragment are interchangable in comments/descriptions.
 
@@ -50,6 +73,9 @@ using     std::string;
 //                  Combined LOADER and RESTART sections.
 //                  Modest cleanups.
 //
+//      Hank Childs, Mon Nov 21 11:25:48 PST 2005
+//      Replace getline with dune_getline.
+//
 // ****************************************************************************
 
 avtDuneFileFormat::avtDuneFileFormat(const char *filename)
@@ -72,7 +98,7 @@ avtDuneFileFormat::avtDuneFileFormat(const char *filename)
   string buffer;
 
   while (ftype == UNKNOWN && !ifile.eof()) {
-    getline(ifile, buffer);
+    dune_getline(ifile, buffer);
     if (buffer.find(sinkedFragments) != string::npos) {
       ftype = RESTART;
     }
@@ -81,7 +107,7 @@ avtDuneFileFormat::avtDuneFileFormat(const char *filename)
   ifile.seekg((streampos) 0, ios::beg);
 
   while (ftype == UNKNOWN) {
-    getline(ifile, buffer);
+    dune_getline(ifile, buffer);
     if (buffer.find(title) != string::npos) {
       ftype = TECPLOT;
     }
@@ -133,7 +159,7 @@ avtDuneFileFormat::avtDuneFileFormat(const char *filename)
 
   switch (ftype) {
   case TECPLOT:
-    while (getline(ifile, buffer)) {
+    while (dune_getline(ifile, buffer)) {
       if (buffer.find(ztime) != string::npos) {
         cycles.push_back(ntimes);
         ++ntimes;
@@ -147,7 +173,7 @@ avtDuneFileFormat::avtDuneFileFormat(const char *filename)
         int np = atoi(tokens[3].c_str());
         num_particles.push_back(np);
         for (int i = 0; i < np; i++) {
-          getline(ifile, buffer);
+          dune_getline(ifile, buffer);
           get_tokens(buffer, empty, tokens);
           ispecies = atoi(tokens[0].c_str());
           max_species = MAX(max_species, ispecies);
@@ -188,11 +214,11 @@ avtDuneFileFormat::avtDuneFileFormat(const char *filename)
                 tmat = tokens[0];
                 matnames.push_back(tmat);
               }
-            } while (getline(ifile, buffer) &&
+            } while (dune_getline(ifile, buffer) &&
                      buffer.find(rbracket) == string::npos);
             species_to_matname[tname] = tmat;
           }
-        } while (getline(ifile, buffer) && buffer.find(rbrace) == string::npos);
+        } while (dune_getline(ifile, buffer) && buffer.find(rbrace) == string::npos);
         if (species_names.size() != matnames.size()) {
           EXCEPTION1(InvalidVariableException, "SpeciesTags{}");
         }
@@ -213,11 +239,11 @@ avtDuneFileFormat::avtDuneFileFormat(const char *filename)
                 get_tokens(buffer, mass_density, tokens);
                 tden = fortranDoubleToCDouble(tokens[0]);
               }
-            } while (getline(ifile, buffer) && 
+            } while (dune_getline(ifile, buffer) && 
                      buffer.find(rbracket) == string::npos);
             density[tname] = tden;
           }
-        } while (getline(ifile, buffer) && buffer.find(rbrace) == string::npos);
+        } while (dune_getline(ifile, buffer) && buffer.find(rbrace) == string::npos);
       }
 
       // Fragments
@@ -229,7 +255,7 @@ avtDuneFileFormat::avtDuneFileFormat(const char *filename)
           if (buffer.find(fragment) != string::npos) {
             ++nx;
           }
-        } while (getline(ifile, buffer) && buffer.find(rbrace) == string::npos);
+        } while (dune_getline(ifile, buffer) && buffer.find(rbrace) == string::npos);
         cycles.push_back(ntimes);
         times.push_back((double)ntimes);
         num_particles.push_back(nx);
@@ -249,7 +275,7 @@ avtDuneFileFormat::avtDuneFileFormat(const char *filename)
           if (buffer.find(fragment) != string::npos) {
             ++nx;
           }
-        } while (getline(ifile, buffer) && buffer.find(rbrace) == string::npos);
+        } while (dune_getline(ifile, buffer) && buffer.find(rbrace) == string::npos);
         cycles.push_back(ntimes);
         if (sinked != -1.0) {
           times.push_back(sinked);
@@ -260,7 +286,7 @@ avtDuneFileFormat::avtDuneFileFormat(const char *filename)
         num_particles.push_back(nx);
         ++ntimes;
       }
-    } while (getline(ifile, buffer));
+    } while (dune_getline(ifile, buffer));
 
     break;
   default:
@@ -779,6 +805,9 @@ avtDuneFileFormat::GetVectorVar(int timestate, const char *varname)
 //      Thu Oct  6 16:58:57 PDT 2005
 //          (HRC) - Qualify find with "std::".  ['6647]
 //
+//      Hank Childs, Mon Nov 21 11:25:48 PST 2005
+//      Replace getline with dune_getline.
+//
 // ****************************************************************************
 
 void
@@ -849,7 +878,7 @@ avtDuneFileFormat::ReadDuneData(const int timestate) {
   switch (ftype) {
   case TECPLOT:
     for (int i = 0; i < nparticles; i++) {
-      getline(ifile, buffer);
+      dune_getline(ifile, buffer);
       get_tokens(buffer, empty, tokens);
       for (int j = 1; j < tokens.size(); j++) {      // 0th is integer
         fragment[j] = fortranDoubleToCDouble(tokens[j]);
@@ -877,7 +906,7 @@ avtDuneFileFormat::ReadDuneData(const int timestate) {
     rho = 1.0;
 
     while (np < nparticles) {
-      getline(ifile, buffer);
+      dune_getline(ifile, buffer);
       if (ifile.eof()) {
         EXCEPTION1(InvalidFilesException, fname.c_str());
       }
@@ -921,7 +950,7 @@ avtDuneFileFormat::ReadDuneData(const int timestate) {
             radius[np] = fortranDoubleToCDouble(tokens[0]);
             radius_Found = true;
             if (timestate == 0) {
-              getline(ifile, buffer);
+              dune_getline(ifile, buffer);
             }
           }
           if (radius_Found && density_found) {
@@ -966,7 +995,7 @@ avtDuneFileFormat::ReadDuneData(const int timestate) {
             // impulse block
             if (timestate == 0) {
               // loader format has Impuse[ on separate line
-              getline(ifile, buffer);
+              dune_getline(ifile, buffer);
             }
             if (buffer.find(time) != string::npos) {
               get_tokens(buffer, time, tokens);
@@ -974,7 +1003,7 @@ avtDuneFileFormat::ReadDuneData(const int timestate) {
             }
             if (timestate == 0) {
               // loader format has Time[ on separate line
-              getline(ifile, buffer);
+              dune_getline(ifile, buffer);
             }
             if (buffer.find(vi) != string::npos) {
               // found DV => impulse velocity of fragment
@@ -985,7 +1014,7 @@ avtDuneFileFormat::ReadDuneData(const int timestate) {
               }
             }                                              // if vi
           }                                                // if impulse
-        } while (getline(ifile, buffer) && 
+        } while (dune_getline(ifile, buffer) && 
                  buffer.find(rbracket) == string::npos);   // do ...
         ++np;
       }                                                    // if fragment_block
