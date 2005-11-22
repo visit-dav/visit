@@ -212,6 +212,9 @@
 #    Brad Whitlock, Fri Oct 7 13:16:49 PST 2005
 #    Copy dbA00.pdb and dbB00.pdb to the distribution.
 #
+#    Mark C. Miller, Tue Nov 22 09:42:57 PST 2005
+#    Removed refs to sl_io library
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -740,7 +743,6 @@ endif
 echo "Copying libraries to the distribution..."
 cp `ls $VisItDir/lib/*.$SHLIB_SOEXT | grep -v libvtk | grep -v libqt | grep -v libpython` $libdir
 cp $VisItDir/lib/libvtkqt.$SHLIB_SOEXT $libdir
-cp $VisItDir/lib/libvtk_sl_io.$SHLIB_SOEXT $libdir
 cp $VisItDir/lib/libqtviswindow.$SHLIB_SOEXT $libdir
 
 #

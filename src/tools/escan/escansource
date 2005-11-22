@@ -5,6 +5,8 @@
 #    Hank Childs, Fri Jan 28 13:17:16 PST 2005
 #    Updated directories.
 #
+#    Mark C. Miller, Tue Nov 22 09:42:57 PST 2005
+#    Removed refs to sl_io subdirectory
 # ****************************************************************************
 
 set VISITDIR = "/data_vobs/VisIt"
@@ -87,7 +89,6 @@ escan $VISITDIR/viewer/rpc/*.C
 escan $VISITDIR/visit_vtk/full/*.C
 escan $VISITDIR/visit_vtk/lightweight/*.C
 escan $VISITDIR/visit_vtk/parallel/*.C
-escan $VISITDIR/visit_vtk/sl_io/*.C
 escan $VISITDIR/visitpy/*.C
 escan $VISITDIR/vtkqt/*.C
 escan $VISITDIR/winutil/*.C

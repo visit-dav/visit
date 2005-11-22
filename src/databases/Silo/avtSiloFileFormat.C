@@ -2876,6 +2876,9 @@ avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile)
 //    ended up with a partially completed structure that eventually caused a
 //    crash.
 //
+//    Mark C. Miller, Tue Nov 22 13:28:31 PST 2005
+//    Added alternative group information
+//
 // ****************************************************************************
 
 void
@@ -2964,6 +2967,23 @@ avtSiloFileFormat::GetConnectivityAndGroupInformationFromFile(DBfile *dbfile,
             }
 
             DBSetDir(dbfile, "/");
+        }
+
+        //
+        // Check for alternative definition of group information
+        // from "_visit_domain_groups"
+        //
+        if (numGroups == -1 && DBInqVarExists(dbfile, "_visit_domain_groups") != 0)
+        {
+            int numEntries = DBGetVarLength(dbfile, "_visit_domain_groups");
+
+            groupIds = new int[numEntries];
+            DBReadVar(dbfile, "_visit_domain_groups", groupIds);
+
+            map<int, bool> groupMap;
+            for (int i = 0; i < numEntries; i++)
+                groupMap[groupIds[i]] = true;
+            numGroups = groupMap.size();
         }
     }
 }
