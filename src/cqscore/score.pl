@@ -559,7 +559,14 @@ while (($resultset->MoveNext()) == 1) {
   }
   else
   {
-      #next;
+      $li = substr($li_str, 0,1) if $li_str ne "";
+      $tc = substr($tc_str, 0,1) if $tc_str ne "";
+      $se = substr($se_str, 0,1) if $se_str ne "";
+      $iu = substr($iu_str, 0,1) if $iu_str ne "";
+      $id = substr($id_str, 0,1) if $id_str ne "";
+      $tg = substr($tg_str, 0,1) if $tg_str ne "";
+      $ef = substr($ef_str, 0,1) if $ef_str ne "";
+      $cp = substr($cp_str, 0,1) if $cp_str ne "";
   }
 
   if (! $debug and $output eq "")

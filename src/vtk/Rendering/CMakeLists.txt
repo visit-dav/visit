@@ -358,7 +358,9 @@ IF (VTK_WRAP_TCL)
                 ${Kit_SRCS}
                 COMMANDS ${Kit_TCL_EXTRA_CMDS})
   ADD_LIBRARY(vtk${KIT}TCL ${KitTCL_SRCS} ${Kit_TCL_EXTRA_SRCS})
-#  TARGET_LINK_LIBRARIES (vtk${KIT}TCL vtk${KIT} ${KIT_TCL_LIBS})
+  IF(APPLE OR WIN32)
+    TARGET_LINK_LIBRARIES (vtk${KIT}TCL vtk${KIT} ${KIT_TCL_LIBS})
+  ENDIF(APPLE OR WIN32)
   INSTALL_TARGETS(/lib/vtk vtk${KIT}TCL)
 ENDIF (VTK_WRAP_TCL)
 
@@ -370,18 +372,20 @@ IF (VTK_WRAP_PYTHON)
   IF (APPLE)
     ADD_LIBRARY(vtk${KIT}PythonD ${KitPython_SRCS} ${Kit_PYTHON_EXTRA_SRCS})
     ADD_LIBRARY(vtk${KIT}Python MODULE vtk${KIT}PythonInit.cxx)
-#    TARGET_LINK_LIBRARIES(vtk${KIT}PythonD vtk${KIT} ${KIT_PYTHON_LIBS} ${PYTHON_LIBRARY})
-#    TARGET_LINK_LIBRARIES(vtk${KIT}Python vtk${KIT}PythonD)
+    TARGET_LINK_LIBRARIES(vtk${KIT}PythonD vtk${KIT} ${KIT_PYTHON_LIBS} ${PYTHON_LIBRARY})
+    TARGET_LINK_LIBRARIES(vtk${KIT}Python vtk${KIT}PythonD)
     INSTALL_TARGETS(/lib/vtk vtk${KIT}PythonD)
   ELSE (APPLE)
     ADD_LIBRARY(vtk${KIT}Python MODULE ${KitPython_SRCS} ${Kit_PYTHON_EXTRA_SRCS})
-#   TARGET_LINK_LIBRARIES (vtk${KIT}Python vtk${KIT} ${KIT_PYTHON_LIBS})
+    IF(WIN32)
+      TARGET_LINK_LIBRARIES (vtk${KIT}Python vtk${KIT} ${KIT_PYTHON_LIBS})
+    ENDIF(WIN32)
   ENDIF(APPLE)
-#  IF(WIN32)
-#    TARGET_LINK_LIBRARIES (vtk${KIT}Python
-#                           debug ${PYTHON_DEBUG_LIBRARY}
-#                           optimized ${PYTHON_LIBRARY})
-#  ENDIF(WIN32)
+  IF(WIN32)
+    TARGET_LINK_LIBRARIES (vtk${KIT}Python
+                           debug ${PYTHON_DEBUG_LIBRARY}
+                           optimized ${PYTHON_LIBRARY})
+  ENDIF(WIN32)
   INSTALL_TARGETS(/lib/vtk vtk${KIT}Python)
 ENDIF (VTK_WRAP_PYTHON)
 
@@ -391,11 +395,15 @@ ENDIF (VTK_WRAP_PYTHON)
 IF (VTK_WRAP_JAVA)
   VTK_WRAP_JAVA2(vtk${KIT}Java KitJava_SRCS ${Kit_SRCS})
   ADD_LIBRARY(vtk${KIT}Java SHARED ${KitJava_SRCS} ${Kit_JAVA_EXTRA_SRCS})
-#  TARGET_LINK_LIBRARIES(vtk${KIT}Java vtk${KIT} ${KIT_JAVA_LIBS})
+  IF(APPLE OR WIN32)
+    TARGET_LINK_LIBRARIES(vtk${KIT}Java vtk${KIT} ${KIT_JAVA_LIBS})
+  ENDIF(APPLE OR WIN32)
   INSTALL_TARGETS(/lib/vtk vtk${KIT}Java)
 ENDIF (VTK_WRAP_JAVA)
 
-# TARGET_LINK_LIBRARIES(vtk${KIT} ${KIT_LIBS})
+IF(APPLE OR WIN32)
+  TARGET_LINK_LIBRARIES(vtk${KIT} ${KIT_LIBS})
+ENDIF(APPLE OR WIN32)
 
 INSTALL_TARGETS(/lib/vtk vtk${KIT})
 INSTALL_FILES(/include/vtk .h ${Kit_SRCS})
@@ -431,19 +439,23 @@ IF (VTK_WRAP_PYTHON)
           vtkTkRenderWidgetPython.cxx
           vtkTkImageViewerWidgetPython.cxx
           )
-         ADD_LIBRARY(vtkRenderingPythonTkWidgets SHARED
-                     ${RenderingPythonTkWidgets_SRCS})
-#       TARGET_LINK_LIBRARIES (vtkRenderingPythonTkWidgets
-#                              vtk${KIT}
-#                              ${TCL_LIBRARY}
-#                              ${TK_LIBRARY})
+       ADD_LIBRARY(vtkRenderingPythonTkWidgets SHARED
+                   ${RenderingPythonTkWidgets_SRCS})
+       IF(APPLE OR WIN32)
+         TARGET_LINK_LIBRARIES (vtkRenderingPythonTkWidgets
+                                vtk${KIT}
+                                ${TCL_LIBRARY}
+                                ${TK_LIBRARY})
+       ENDIF(APPLE OR WIN32)
        INSTALL_TARGETS(/lib/vtk vtkRenderingPythonTkWidgets)
      ENDIF(NOT VTK_USE_COCOA)
   ENDIF (TK_LIBRARY)
 ENDIF (VTK_WRAP_PYTHON)
 
 IF(VTK_USE_X)
-#  TARGET_LINK_LIBRARIES(vtk${KIT} -lXt ${CMAKE_X_LIBS})
+  IF(APPLE OR WIN32)
+    TARGET_LINK_LIBRARIES(vtk${KIT} -lXt ${CMAKE_X_LIBS})
+  ENDIF(APPLE OR WIN32)
   ADD_DEFINITIONS(${CMAKE_X_CFLAGS})
 ENDIF(VTK_USE_X)
 

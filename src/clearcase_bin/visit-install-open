@@ -52,12 +52,11 @@ esac
 #
 hoth=true
 sunspot=true
-hyper=true
+quad=false
 gps=true
 berg=true
 up=true
-pengra=true
-alc=true
+mcr=true
 thunder=true
 
 ver=undefined
@@ -74,12 +73,11 @@ do
       -none)
          hoth=false
          sunspot=false
-         hyper=false
+         quad=false
          gps=false
          berg=false
          up=false
-         pengra=false
-         alc=false
+         mcr=false
          thunder=false
          shift
          ;;
@@ -99,12 +97,12 @@ do
          sunspot=true
          shift
          ;;
-      -hyper)
-         hyper=false
+      -quad)
+         quad=false
          shift
          ;;
-      +hyper)
-         hyper=true
+      +quad)
+         quad=true
          shift
          ;;
       -gps)
@@ -131,20 +129,12 @@ do
          up=true
          shift
          ;;
-      -pengra)
-         pengra=false
+      -mcr)
+         mcr=false
          shift
          ;;
-      +pengra)
-         pengra=true
-         shift
-         ;;
-      -alc)
-         alc=false
-         shift
-         ;;
-      +alc)
-         alc=true
+      +mcr)
+         mcr=true
          shift
          ;;
       -thunder)
@@ -242,7 +232,7 @@ fi
 rm -f sunspot
 cat <<EOF > sunspot
 #!/bin/sh
-./visit-install -private -c open -g visit -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
+./visit-install $verflag -c open -g visit -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on sunspot"         > resultlog 2>&1
 echo "       -----------------------------"        >> resultlog 2>&1
@@ -273,15 +263,15 @@ then
 fi
 
 #
-# Install on hyper.
+# Install on quad.
 #
-rm -f hyper
-cat <<EOF > hyper
+rm -f quad
+cat <<EOF > quad
 #!/bin/sh
-./visit-install $verflag -c open -g visit -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
+./visit-install -r -private -c open -g visit -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
-echo "        install of visit on hyper"           > resultlog 2>&1
-echo "       ---------------------------"          >> resultlog 2>&1
+echo "        install of visit on quad"            > resultlog 2>&1
+echo "       --------------------------"           >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
@@ -296,15 +286,15 @@ ls /usr/gapps/visit/$ver/sgi-irix6-mips2/plugins/databases/libI* | sed "s/\/usr\
 mail $emailName < resultlog
 EOF
 
-if [ $hyper = true ]
+if [ $quad = true ]
 then
    if [ $test = no ]
    then
-      scp hyper:/scratch1/$user/hyper/visitbuild/visit$ver2.irix6.tar.gz .
-      scp visit$ver2.irix6.tar.gz kickit:
-      scp visit-install kickit:
-      scp hyper kickit:hyper_install
-      ssh kickit "chmod 750 hyper_install;./hyper_install"
+      scp quad:/usr/tmp/$user/quad/visitbuild/visit$ver2.irix6.tar.gz .
+      scp visit$ver2.irix6.tar.gz gps15:
+      scp visit-install gps15:
+      scp quad gps15:quad_install
+      ssh gps15 "chmod 750 quad_install;./quad_install"
    fi
 fi
 
@@ -314,7 +304,7 @@ fi
 rm -f gps
 cat <<EOF > gps
 #!/bin/sh
-./visit-install -r -private -c open -g visit -gw -l $ver osf1 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c open -g visit -gw -l $ver osf1 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on gps"             > resultlog 2>&1
 echo "       -------------------------"            >> resultlog 2>&1
@@ -385,7 +375,7 @@ fi
 #
 rm -f up
 cat <<EOF > up
-
+#!/bin/sh
 ./visit-install -private -c open -g visit -gw -l $ver aix64-xlc /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo ""                                            >  resultlog 2>&1
@@ -418,50 +408,14 @@ then
 fi
 
 #
-# Install on pengra.
+# Install on mcr.
 #
-rm -f pengra
-cat <<EOF > pengra
+rm -f mcr
+cat <<EOF > mcr
 #!/bin/sh
-./visit-install $verflag -c open -g visit -gw -l $ver linux_chaos /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c open -g visit -gw -l $ver linux_chaos /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
-echo "        install of visit on pengra"          > resultlog 2>&1
-echo "       ----------------------------"         >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k /usr/gapps/visit                             >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver/linux-intel/bin        >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
-EOF
-
-if [ $pengra = true ]
-then
-   if [ $test = no ]
-   then
-      scp pengra1:/usr/tmp/brugger/pengra/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
-      scp visit$ver2.linux_chaos.tar.gz gps15:
-      scp visit-install gps15:
-      scp pengra gps15:pengra_install
-      ssh gps15 "chmod 750 pengra_install;./pengra_install"
-   fi
-fi
-
-#
-# Install on alc.
-#
-rm -f alc
-cat <<EOF > alc
-#!/bin/sh
-./visit-install -r -private -c open -g visit -gw -l $ver linux_chaos /usr/gapps/visit > installlog 2>&1
-rm -f resultlog
-echo "        install of visit on alc"             > resultlog 2>&1
+echo "        install of visit on mcr"             > resultlog 2>&1
 echo "       -------------------------"            >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
@@ -477,23 +431,22 @@ ls /usr/gapps/visit/$ver/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gap
 mail $emailName < resultlog
 EOF
 
-if [ $alc = true ]
+if [ $mcr = true ]
 then
    if [ $test = no ]
    then
-      scp pengra1:/usr/tmp/brugger/pengra/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
-      scp visit$ver2.linux_chaos.tar.gz alc0:
-      scp visit-install alc0:
-      scp alc alc0:alc_install
-      ssh alc0 "chmod 750 alc_install;./alc_install"
-      # Temporary until the gnu shared libraries are fixed on alc.  Copying
-      # the gcc 3.2.3 shared libraries to visit's shared library directory so
-      # that it gets them instead of the broken gnu 3.3.3 shared libraries.
-      scp pengra1:/usr/lib/libstdc++.so.5.0.3 .
-      scp pengra1:/lib/libgcc_s.so.1 .
+      scp mcr37:/usr/tmp/brugger/mcr/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
+      scp visit$ver2.linux_chaos.tar.gz gps15:
+      scp visit-install gps15:
+      scp mcr gsp15:mcr_install
+      ssh gps15 "chmod 750 mcr_install;./mcr_install"
+      # Temporary until all the machines are upgraded to chaos 3.  These
+      # libraries are needed to run chaos 2 executables on chaos 3 systems.
+      scp mcr37:/usr/lib/libstdc++.so.5.0.3 .
+      scp mcr37:/lib/libgcc_s.so.1 .
       chmod 664 libstdc++.so.5.0.3 libgcc_s.so.1
-      scp libstdc++.so.5.0.3 alc:/usr/gapps/visit/$ver/linux-intel/lib
-      scp libgcc_s.so.1 alc:/usr/gapps/visit/$ver/linux-intel/lib
+      scp libstdc++.so.5.0.3 gps15:/usr/gapps/visit/$ver/linux-intel/lib
+      scp libgcc_s.so.1 gps15:/usr/gapps/visit/$ver/linux-intel/lib
    fi
 fi
 
@@ -538,5 +491,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot hyper gps berg up pengra alc thunder
+   rm -f hoth sunspot quad gps berg up mcr thunder
 fi

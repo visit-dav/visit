@@ -52,11 +52,12 @@ esac
 kickit=true
 hoth=true
 sunspot=true
-hyper=true
+quad=false
 gps=true
 berg=true
 up=true
 pengra=true
+mcr=true
 thunder=true
 
 dist=undefined
@@ -73,11 +74,12 @@ do
          kickit=false
          hoth=false
          sunspot=false
-         hyper=false
+         quad=false
          gps=false
          berg=false
          up=false
          pengra=false
+         mcr=false
          thunder=false
          shift
          ;;
@@ -105,12 +107,12 @@ do
          sunspot=true
          shift
          ;;
-      -hyper)
-         hyper=false
+      -quad)
+         quad=false
          shift
          ;;
-      +hyper)
-         hyper=true
+      +quad)
+         quad=true
          shift
          ;;
       -gps)
@@ -143,6 +145,14 @@ do
          ;;
       +pengra)
          pengra=true
+         shift
+         ;;
+      -mcr)
+         mcr=false
+         shift
+         ;;
+      +mcr)
+         mcr=true
          shift
          ;;
       -thunder)
@@ -330,21 +340,21 @@ then
 fi
 
 #
-# Build on hyper.
+# Build on quad.
 #
-rm -f hyper
-cat <<EOF > hyper
+rm -f quad
+cat <<EOF > quad
 #!/bin/sh
-if test ! -d /scratch1/$user ; then
-   mkdir /scratch1/$user
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
 fi
-if test ! -d /scratch1/$user/hyper ; then
-   mkdir /scratch1/$user/hyper
+if test ! -d /usr/tmp/$user/quad ; then
+   mkdir /usr/tmp/$user/quad
 fi
-rm -rf /scratch1/$user/hyper/visitbuild
-mkdir /scratch1/$user/hyper/visitbuild
-mv hyper_$dist.tar.gz /scratch1/$user/hyper/visitbuild/$dist.tar.gz
-cd /scratch1/$user/hyper/visitbuild
+rm -rf /usr/tmp/$user/quad/visitbuild
+mkdir /usr/tmp/$user/quad/visitbuild
+mv quad_$dist.tar.gz /usr/tmp/$user/quad/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/quad/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
@@ -355,8 +365,8 @@ clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.irix6.tar.gz ..
 cd ..
 rm -f resultlog
-echo "        build of visit on hyper"        > resultlog 2>&1
-echo "       -------------------------"       >> resultlog 2>&1
+echo "        build of visit on quad"         > resultlog 2>&1
+echo "       ------------------------"        >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
@@ -369,13 +379,13 @@ ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | s
 mail $emailName < resultlog
 EOF
 
-if [ $hyper = true ]
+if [ $quad = true ]
 then
    if [ $test = no ]
    then
-      scp hyper hyper:hyper_buildit
-      scp $dist.tar.gz hyper:hyper_$dist.tar.gz
-      ssh hyper "chmod 750 hyper_buildit;./hyper_buildit" &
+      scp quad quad:quad_buildit
+      scp $dist.tar.gz quad:quad_$dist.tar.gz
+      ssh quad "chmod 750 quad_buildit;./quad_buildit" &
    fi
 fi
 
@@ -580,6 +590,56 @@ then
 fi
 
 #
+# Build on mcr.
+#
+rm -f mcr
+cat <<EOF > mcr
+#!/bin/sh
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
+fi
+if test ! -d /usr/tmp/$user/mcr ; then
+   mkdir /usr/tmp/$user/mcr
+fi
+rm -rf /usr/tmp/$user/mcr/visitbuild
+mkdir /usr/tmp/$user/mcr/visitbuild
+mv mcr_$dist.tar.gz /usr/tmp/$user/mcr/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/mcr/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
+make -j 3 >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
+mv visit\$ver2.linux.tar.gz ..
+cd ..
+rm -f resultlog
+echo "        build of visit on mcr"          > resultlog 2>&1
+echo "       -----------------------"         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $mcr = true ]
+then
+   if [ $test = no ]
+   then
+      scp mcr mcr37:mcr_buildit
+      scp $dist.tar.gz mcr37:mcr_$dist.tar.gz
+      ssh mcr37 "chmod 750 mcr_buildit;./mcr_buildit" &
+   fi
+fi
+
+#
 # Build on thunder.
 #
 rm -f thunder
@@ -634,5 +694,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit hoth sunspot hyper gps berg up pengra thunder
+   rm -f kickit hoth sunspot quad gps berg up pengra mcr thunder
 fi

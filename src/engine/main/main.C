@@ -1,3 +1,5 @@
+#include <visit-config.h>
+
 #include <Engine.h>
 
 #include <DebugStream.h>

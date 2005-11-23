@@ -64,7 +64,9 @@ CONFIGURE_FILE(${VTKTIFF_SOURCE_DIR}/tiffDllConfig.h.in
                ${VTKTIFF_BINARY_DIR}/tiffDllConfig.h)
 
 ADD_LIBRARY(vtktiff ${common_SRCS})
-# TARGET_LINK_LIBRARIES( vtktiff ${VTK_ZLIB_LIBRARIES} ${VTK_JPEG_LIBRARIES} )
+IF(APPLE OR WIN32)
+  TARGET_LINK_LIBRARIES( vtktiff ${VTK_ZLIB_LIBRARIES} ${VTK_JPEG_LIBRARIES} )
+ENDIF(APPLE OR WIN32)
 
 INSTALL_TARGETS(/lib/vtk vtktiff)
 INSTALL_FILES(/include/vtk .h tiffDllConfig tiffvers tiff tiffio tconf)
