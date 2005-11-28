@@ -781,6 +781,10 @@ VariableMenuPopulator::ItemEnabled(int varType) const
 //   Modified to take into account possibility of grouping the hierarchy of
 //   popup menus.
 //
+//   Mark C. Miller, Mon Nov 28 15:37:01 PST 2005
+//   Fixed bug where when grouping was required AND a component in a variable's
+//   pathname had 3 or fewer characters, we'd get a SEGV
+//
 // ****************************************************************************
 
 void
@@ -816,11 +820,20 @@ VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
             path += (pathvar[j] + "/");
             if (shouldUseGrouping)
             {
-                if (string(path, path.size()-4, 4) != ".../")
-                    altpath += (pathvar[j] + "/");
+                if (path.size() > 3)
+                {
+                    if (string(path, path.size()-4, 4) != ".../")
+                        altpath += (pathvar[j] + "/");
+                }
+                else
+                {
+                    altpath += (pathvar[j] + "/"); 
+                }
             }
             else
+            {
                 altpath += (pathvar[j] + "/"); 
+            }
 
             // See if the current path is in the map. If it is then
             // do nothing. If the path is not in the map then we
