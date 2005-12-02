@@ -583,6 +583,11 @@ dnl
 dnl    Kathleen Bonnell, Wed Nov 16 08:51:43 PST 2005 
 dnl    Added -lXt to X_LIBS. 
 dnl
+dnl    Mark C. Miller, Thu Dec  1 19:31:07 PST 2005
+dnl    Changed support for bzip2 to a third_party_builtin library
+dnl    This means it is part of the distribution and gets built whenever
+dnl    VisIt gets built. It can be disabled with --disable-bzip2
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1236,6 +1241,20 @@ esac
 AC_SUBST(DB_OPTIONAL_DIRS)
 
 dnl
+dnl Disable building bzip2. Only necessary if bzip2 won't buid somewhere 
+dnl
+AC_ARG_ENABLE(bzip2,
+   [  --disable-bzip2         do not build or use bzip2 library -- disables compression],
+   Usebzip2="$enable_bzip2", Usebzip2=yes)
+BUILD_BZIP2=""
+if test "$Usebzip2" = "yes"; then
+    BUILD_BZIP2="bzip2"
+    AC_DEFINE(HAVE_LIBBZ2)
+    LIBS="-lbz2 $LIBS"
+fi
+AC_SUBST(BUILD_BZIP2)
+
+dnl
 dnl Make note if no CXXFLAGS have STILL yet been specified; this is the
 dnl same check as for emptycxxflags above, except it is possible that a
 dnl config-site file added some, in which case we need to append, not
@@ -1414,9 +1433,6 @@ AC_TRY_COMPILE([#include <sys/types.h>
 # are needed.  The libraries are added to the beginning of `LIBS'.
 #
 AC_CHECK_LIB(m,        main,      LIBS="-lm $LIBS")
-AC_CHECK_LIB(bz2, BZ2_bzBuffToBuffCompress, LIBS="-lbz2 $LIBS"
-                                  AC_DEFINE(HAVE_LIBBZ2)
-            )
 
 dnl  Is zlib present?
 dnl
@@ -3247,6 +3263,8 @@ DATABASE_FILES="databases/Makefile"
 DATA_FILES="data/Makefile"
 SIMULATION_PROTOTYPE_FILES="sim/Makefile"
 CQSCORE_FILES="cqscore/Makefile"
+THIRD_PARTY_BUILTIN_FILES="third_party_builtin/Makefile
+                           third_party_builtin/bzip2/Makefile"
 
 if test "$enable_scripting" = "yes"; then
     VISITPY_FILES="visitpy/Makefile"
@@ -3285,6 +3303,7 @@ AC_OUTPUT($STANDARD_FILES
           $VISITPY_FILES
           $SIMULATION_PROTOTYPE_FILES
           $CQSCORE_FILES
+	  $THIRD_PARTY_BUILTIN_FILES
           $JAVA_FILES,
           echo timestamp > include/stamp-h)
 
