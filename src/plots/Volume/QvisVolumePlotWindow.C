@@ -2092,12 +2092,20 @@ QvisVolumePlotWindow::resampleTargetSliderReleased()
 //   Brad Whitlock, Thu Dec 9 17:39:00 PST 2004
 //   I renamed the method and recoded it.
 //
+//   Hank Childs, Sun Dec  4 18:30:40 PST 2005
+//   Set whether or not the toggles should be active ['6827].
+//
 // ****************************************************************************
 
 void
 QvisVolumePlotWindow::opacityVariableChanged(const QString &var)
 {
     volumeAtts->SetOpacityVariable(var.latin1());
+    bool notDefaultVar = (volumeAtts->GetOpacityVariable() != "default");
+    opacityMinToggle->setEnabled(notDefaultVar);
+    opacityMaxToggle->setEnabled(notDefaultVar);
+    opacityMin->setEnabled(notDefaultVar && volumeAtts->GetUseOpacityVarMin());
+    opacityMax->setEnabled(notDefaultVar && volumeAtts->GetUseOpacityVarMax());
     SetUpdate(false);
     Apply();
 }

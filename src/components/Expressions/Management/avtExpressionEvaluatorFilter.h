@@ -64,6 +64,9 @@ class avtSourceFromAVTDataset;
 //   Hank Childs, Tue Aug 16 16:50:56 PDT 2005
 //   Add method VerifyVariableTypes.
 //
+//   Hank Childs, Sun Dec  4 17:31:14 PST 2005
+//   Added description.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionEvaluatorFilter 
@@ -77,6 +80,9 @@ class EXPRESSION_API avtExpressionEvaluatorFilter
     virtual                 ~avtExpressionEvaluatorFilter();
     virtual const char*      GetType(void)
                                      { return "avtExpressionEvaluatorFilter";};
+   virtual const char        *GetDescription(void)
+                                     { return "Creating expressions"; };
+
 
     virtual void             Query(PickAttributes *);
     virtual avtQueryableSource *

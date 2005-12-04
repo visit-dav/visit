@@ -180,6 +180,62 @@ avtRayTracer::SetGradientBackgroundColors(const float bg1[3],
 
 
 // ****************************************************************************
+//  Function: GetNumberOfStages
+//
+//  Purpose:
+//      Determines how many stages the ray tracer will take.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 4, 2005
+//
+// ****************************************************************************
+
+int
+avtRayTracer::GetNumberOfStages(int screenX, int screenY, int screenZ)
+{
+    int nD = GetNumberOfDivisions(screenX, screenY, screenZ);
+    int numPerTile = 3;
+#ifdef PARALLEL
+    numPerTile = 5;
+#endif
+    return 3*nD*nD;
+}
+
+
+// ****************************************************************************
+//  Function: GetNumberOfDivisions
+//
+//  Purpose:
+//      Determines how many divisions of screen space we should use.  That is,
+//      how many tiles should we use.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 4, 2005
+//
+// ****************************************************************************
+
+int
+avtRayTracer::GetNumberOfDivisions(int screenX, int screenY, int screenZ)
+{
+    VISIT_LONG_LONG numSamps = screenX*screenY*screenZ;
+    int sampLimitPerProc = 25000000; // 25M
+    numSamps /= PAR_Size();
+    int numTiles = numSamps/sampLimitPerProc;
+    int numDivisions = (int) sqrt((double) numTiles);
+    if (numDivisions < 1)
+        numDivisions = 1;
+    int altNumDiv = (int)(screenX / 700.) + 1;
+    if (altNumDiv > numDivisions)
+        numDivisions = altNumDiv;
+    altNumDiv = (int)(screenY / 700.) + 1;
+    if (altNumDiv > numDivisions)
+        numDivisions = altNumDiv;
+
+    return numDivisions;
+}
+
+
+// ****************************************************************************
 //  Method: avtRayTracer::Execute
 //
 //  Purpose:
@@ -338,19 +394,7 @@ avtRayTracer::Execute(void)
     // The tiles are important to make sure that we never need too much
     // memory.
     //
-    VISIT_LONG_LONG numSamps = screen[0]*screen[1]*samplesPerRay;
-    int sampLimitPerProc = 25000000; // 25M
-    numSamps /= PAR_Size();
-    int numTiles = numSamps/sampLimitPerProc;
-    int numDivisions = (int) sqrt((double) numTiles);
-    if (numDivisions < 1)
-        numDivisions = 1;
-    int altNumDiv = (int)(screen[0] / 700.) + 1;
-    if (altNumDiv > numDivisions)
-        numDivisions = altNumDiv;
-    altNumDiv = (int)(screen[1] / 700.) + 1;
-    if (altNumDiv > numDivisions)
-        numDivisions = altNumDiv;
+    int numDivisions = GetNumberOfDivisions(screen[0],screen[1],samplesPerRay);
 
     int IStep = screen[0] / numDivisions;
     int JStep = screen[1] / numDivisions;

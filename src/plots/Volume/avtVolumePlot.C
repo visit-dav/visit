@@ -259,6 +259,23 @@ avtVolumePlot::SetLegendOpacities()
 
 
 // ****************************************************************************
+//  Method: avtVolumePlot::GetNumberOfStagesForImageBasedPlot
+//
+//  Purpose:
+//      Determines the number of stages for this plot.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 4, 2005
+//
+// ****************************************************************************
+
+int
+avtVolumePlot::GetNumberOfStagesForImageBasedPlot(const WindowAttributes &a)
+{
+    return volumeFilter->GetNumberOfStages(a);
+}
+
+// ****************************************************************************
 //  Method: avtVolumePlot::ImageExecute
 //
 //  Purpose:

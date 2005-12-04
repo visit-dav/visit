@@ -1490,12 +1490,25 @@ VisWinRendering::GetRenderTimes(float times[6]) const
 //   Kathleen Bonnell, Thu Jun 30 15:29:55 PDT 2005
 //   Support red-green stereo type.
 //   
+//   Hank Childs, Sun Dec  4 18:50:46 PST 2005
+//   Issue a warning if the user tried to start stereo without putting
+//   "-stereo" on the command line ['4432].
+//
 // ****************************************************************************
 
 void
 VisWinRendering::SetStereoRendering(bool enabled, int type)
 {
-    if(enabled != stereo || type != stereoType)
+    if (enabled && !stereoEnabled && (type == 2))
+    {
+        avtCallback::IssueWarning("To use crystal eyes stereo, you need "
+           "to re-start VisIt with the \"-stereo\" flag.  VisIt does not "
+           "automatically have stereo functionality enabled, because enabling "
+           " it can incur severe performance penalties in non-stereo mode.  We"
+           " apologize for any inconvience.");
+        return;
+    }
+    if (enabled != stereo || type != stereoType)
     {
         stereo = enabled;
         stereoType = type;

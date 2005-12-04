@@ -168,6 +168,9 @@ class     AttributeSubject;
 //    Brad Whitlock, Tue Dec 14 15:29:22 PST 2004
 //    I made SetVarName be virtual.
 //
+//    Hank Childs, Sun Dec  4 17:52:16 PST 2005
+//    Added GetNumberOfStagesForImageBasedPlots.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -188,6 +191,8 @@ class PLOTTER_API avtPlot
                                        const WindowAttributes*);
 
     virtual bool               PlotIsImageBased(void) { return false; };
+    virtual int                GetNumberOfStagesForImageBasedPlot(
+                                       const WindowAttributes &) { return 0; };
     virtual avtImage_p         ImageExecute(avtImage_p img,
                                             const WindowAttributes &) 
                                     { return img; };

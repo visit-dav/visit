@@ -41,6 +41,10 @@ typedef struct _EngineVisWinInfo
     bool                        markedForDeletion;
 } EngineVisWinInfo;
 
+typedef void   (*InitializeProgressCallback)(void *, int);
+typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
+
+
 // ****************************************************************************
 //  Class: NetworkManager
 //
@@ -232,6 +236,10 @@ typedef struct _EngineVisWinInfo
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added mesh management attributes to StartNetwork 
+//
+//    Hank Childs, Sun Dec  4 16:54:05 PST 2005
+//    Add progress to SR.
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -307,6 +315,9 @@ class NetworkManager
     void          CloneNetwork(const int id);
     void          AddQueryOverTimeFilter(QueryOverTimeAttributes *,
                                          const int clonedFromId);
+    static void   RegisterInitializeProgressCallback(
+                                           InitializeProgressCallback, void *);
+    static void   RegisterProgressCallback(ProgressCallback, void *);
 
  private:
 
@@ -333,6 +344,12 @@ class NetworkManager
     std::map<int, EngineVisWinInfo>   viswinMap;
 
     bool                        dumpRenders;
+
+    static InitializeProgressCallback
+                                initializeProgressCallback;
+    static void                *initializeProgressCallbackArgs;
+    static ProgressCallback     progressCallback;
+    static void                *progressCallbackArgs;
 };
 
 #endif

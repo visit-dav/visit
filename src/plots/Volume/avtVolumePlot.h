@@ -52,6 +52,9 @@ class avtResampleFilter;
 //    Integrated this plot with SR mode, meaning that a lot of infrastructure
 //    for delivering images could be removed.
 //
+//    Hank Childs, Sun Dec  4 17:55:06 PST 2005
+//    Added GetNumberOfStagesForImageBasedPlots.
+//
 // ****************************************************************************
 
 class
@@ -70,6 +73,8 @@ avtVolumePlot : public avtVolumeDataPlot
 
     virtual bool        PlotIsImageBased(void);
     virtual avtImage_p  ImageExecute(avtImage_p, const WindowAttributes &);
+    virtual int         GetNumberOfStagesForImageBasedPlot(
+                                                     const WindowAttributes &);
     virtual bool        Equivalent(const AttributeGroup *);
 
     virtual bool        CanCacheWriterExternally(void) { return false; }

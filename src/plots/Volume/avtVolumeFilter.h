@@ -47,6 +47,7 @@ class avtVolumeFilter : public avtDatasetToDatasetFilter
                                   { return "Volume rendering"; };
 
     avtImage_p               RenderImage(avtImage_p, const WindowAttributes &);
+    int                      GetNumberOfStages(const WindowAttributes &);
 
   protected:
     VolumeAttributes         atts;
