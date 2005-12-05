@@ -65,11 +65,14 @@ using std::string;
 //    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004 
 //    Initialize specularIsInappropriate.
 //
+//    Hank Childs, Sat Dec  3 20:32:37 PST 2005
+//    Change test for whether or not we are doing software rendering.
+//
 // ****************************************************************************
 
 avtMapper::avtMapper()
 {
-    immediateMode = avtCallback::GetNowinMode();
+    immediateMode = avtCallback::GetSoftwareRendering();
     drawable = NULL;
     mappers  = NULL;
     actors   = NULL;
@@ -987,19 +990,23 @@ avtMapper::GlobalSetAmbientCoefficient(const float amb)
 //
 // Modifications:
 //   
+//    Hank Childs, Sat Dec  3 20:32:37 PST 2005
+//    Change test for whether or not we are doing software rendering.
+//
 // ****************************************************************************
 
 void
 avtMapper::SetImmediateModeRendering(bool val)
 {
-    if(!avtCallback::GetNowinMode())
+    if (!avtCallback::GetSoftwareRendering())
     {
         immediateMode = val;
         for (int i = 0; i < nMappers; i++)
         {
-            if(mappers[i] != NULL)
+            if (mappers[i] != NULL)
             {
-                if(immediateMode != (mappers[i]->GetImmediateModeRendering()?1:0))
+                if (immediateMode != 
+                                 (mappers[i]->GetImmediateModeRendering()?1:0))
                     mappers[i]->SetImmediateModeRendering(immediateMode?1:0);
             }
         }

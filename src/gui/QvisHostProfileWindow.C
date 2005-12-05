@@ -170,6 +170,9 @@ QvisHostProfileWindow::~QvisHostProfileWindow()
 //   Kathleen Bonnell, Thu Nov 10 16:58:34 PST 2005 
 //   Added "qsub" launcher.
 //
+//   Hank Childs, Fri Dec  2 10:59:47 PST 2005
+//   Added new tab for hardware acceleration.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::CreateWindowContents()
@@ -409,6 +412,58 @@ QvisHostProfileWindow::CreateWindowContents()
     parLayout->addMultiCellWidget(machinefileCheckBox, prow, prow, 0, 1);
     parLayout->addMultiCellWidget(machinefile, prow, prow, 2, 3);
     prow++;
+
+    hwGroup = new QWidget(central, "hwGroup");
+    optionsTabs->addTab(hwGroup, "Hardware Acceleration");
+
+    QVBoxLayout *innerHwLayout = new QVBoxLayout(hwGroup);
+    innerHwLayout->setMargin(10);
+    innerHwLayout->addSpacing(15);
+
+    QGridLayout *hwLayout = new QGridLayout(innerHwLayout, 8, 2);
+    hwLayout->setColStretch(2, 50);
+    hwLayout->setColStretch(3, 50);
+    hwLayout->setSpacing(10);
+
+    std::string str1 = "These options are for hardware accelerating the\n"
+                       "scalable rendering feature on a parallel cluster.\n"
+                       "In other modes, VisIt will automatically use hardware acceleration.\n"
+                       "This window only needs to be modified for parallel \n"
+                       "clusters that have graphics cards.\n";
+  
+    int hrow = 0;
+    hwLayout->addMultiCellWidget(new QLabel(str1, hwGroup, "disclaimer1"),
+                                 hrow, hrow+4, 0, 1);
+    hrow += 4;
+
+    canDoHW = new QCheckBox("Use cluster's graphics cards",
+                                     hwGroup, "canDoHW");
+    connect(canDoHW, SIGNAL(toggled(bool)),
+            this, SLOT(toggleCanDoHW(bool)));
+    hwLayout->addMultiCellWidget(canDoHW, hrow, hrow, 0, 1);
+    hrow++;
+
+    preCommand = new QLineEdit(hwGroup, "preCommand");
+    preCommandCheckBox = new QCheckBox("Pre-command", hwGroup,
+                                    "preCommandCheckBox");
+    connect(preCommand, SIGNAL(textChanged(const QString &)),
+            this, SLOT(preCommandChanged(const QString &)));
+    connect(preCommandCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(togglePreCommand(bool)));
+    hwLayout->addMultiCellWidget(preCommandCheckBox, hrow, hrow, 0, 0);
+    hwLayout->addMultiCellWidget(preCommand, hrow, hrow, 1, 1);
+    hrow++;
+
+    postCommand = new QLineEdit(hwGroup, "postCommand");
+    postCommandCheckBox = new QCheckBox("Post-command", hwGroup,
+                                    "postCommandCheckBox");
+    connect(postCommand, SIGNAL(textChanged(const QString &)),
+            this, SLOT(postCommandChanged(const QString &)));
+    connect(postCommandCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(togglePostCommand(bool)));
+    hwLayout->addMultiCellWidget(postCommandCheckBox, hrow, hrow, 0, 0);
+    hwLayout->addMultiCellWidget(postCommand, hrow, hrow, 1, 1);
+    hrow++;
 
     advancedGroup = new QWidget(central, "advancedGroup");
     optionsTabs->addTab(advancedGroup, "Advanced options");
@@ -756,6 +811,9 @@ QvisHostProfileWindow::UpdateProfileList()
 //   Jeremy Meredith, Tue Sep 27 14:10:02 PDT 2005
 //   Forgot to set a couple checkbox values to false if not a parallel profile.
 //
+//   Hank Childs, Sat Dec  3 20:55:49 PST 2005
+//   Added support for new hardware acceleration options.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::UpdateActiveProfile()
@@ -792,6 +850,11 @@ QvisHostProfileWindow::UpdateActiveProfile()
     clientHostName->blockSignals(true);
     sshPortCheckBox->blockSignals(true);
     sshPort->blockSignals(true);
+    canDoHW->blockSignals(true);
+    preCommand->blockSignals(true);
+    preCommandCheckBox->blockSignals(true);
+    postCommand->blockSignals(true);
+    postCommandCheckBox->blockSignals(true);
 
     // If there is no active profile, set some "default" values.
     if(i < 0)
@@ -920,6 +983,12 @@ QvisHostProfileWindow::UpdateActiveProfile()
 
         engineArguments->setText(temp);
 
+        canDoHW->setChecked(current.GetCanDoHWAccel());
+        preCommandCheckBox->setChecked(current.GetHavePreCommand());
+        preCommand->setText(current.GetHwAccelPreCommand().c_str());
+        postCommandCheckBox->setChecked(current.GetHavePostCommand());
+        postCommand->setText(current.GetHwAccelPostCommand().c_str());
+
         switch (current.GetClientHostDetermination())
         {
           case HostProfile::MachineName:
@@ -971,6 +1040,11 @@ QvisHostProfileWindow::UpdateActiveProfile()
     clientHostName->blockSignals(false);
     sshPortCheckBox->blockSignals(false);
     sshPort->blockSignals(false);
+    canDoHW->blockSignals(false);
+    preCommand->blockSignals(false);
+    preCommandCheckBox->blockSignals(false);
+    postCommand->blockSignals(false);
+    postCommandCheckBox->blockSignals(false);
 }
 
 // ****************************************************************************
@@ -1034,6 +1108,9 @@ QvisHostProfileWindow::ReplaceLocalHost()
 //    Jeremy Meredith, Thu Sep 15 16:39:31 PDT 2005
 //    Added machinefile and useVisItScriptForEnv.
 //
+//    Hank Childs, Sat Dec  3 20:55:49 PST 2005
+//    Added support for new hardware acceleration options.
+//
 // ****************************************************************************
 
 void
@@ -1089,6 +1166,11 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
     lbDynamic->setEnabled(false);
     loadBalancing->setEnabled(false);
 #endif
+    canDoHW->setEnabled(enabled);
+    preCommandCheckBox->setEnabled(enabled && current->GetCanDoHWAccel());
+    postCommandCheckBox->setEnabled(enabled && current->GetCanDoHWAccel());
+    preCommand->setEnabled(enabled && current->GetHavePreCommand() && current->GetCanDoHWAccel());
+    postCommand->setEnabled(enabled && current->GetHavePostCommand() && current->GetCanDoHWAccel());
     engineArgumentsLabel->setEnabled(enabled);
     engineArguments->setEnabled(enabled);
     deleteButton->setEnabled(enabled);
@@ -2702,3 +2784,162 @@ QvisHostProfileWindow::clientHostNameChanged(const QString &h)
     }
 }
 
+// ****************************************************************************
+//  Method:  QvisHostProfileWindow::toggleCanDoHW
+//
+//  Purpose:
+//      Toggles whether or not we can do hardware acceleration.
+//
+//  Arguments:
+//      state    True if we can, false if we can't.
+//
+//  Programmer:  Hank Childs
+//  Creation:    December 2, 2005
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::toggleCanDoHW(bool state)
+{
+    HostProfileList *profiles = (HostProfileList *)subject;
+    if(profiles->GetActiveProfile() >= 0)
+    {
+        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
+        current.SetCanDoHWAccel(state);
+        profiles->MarkActiveProfile();
+        UpdateWindowSensitivity();
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+// ****************************************************************************
+//  Method:  QvisHostProfileWindow::togglePreCommand
+//
+//  Purpose:
+//      Toggles whether or not there is a pre-command
+//
+//  Arguments:
+//      state    True if there is, false if there's not.
+//
+//  Programmer:  Hank Childs
+//  Creation:    December 2, 2005
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::togglePreCommand(bool state)
+{
+    HostProfileList *profiles = (HostProfileList *)subject;
+    if(profiles->GetActiveProfile() >= 0)
+    {
+        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
+        current.SetHavePreCommand(state);
+        profiles->MarkActiveProfile();
+        UpdateWindowSensitivity();
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+// ****************************************************************************
+//  Method:  QvisHostProfileWindow::togglePostCommand
+//
+//  Purpose:
+//      Toggles whether or not there is a post-command
+//
+//  Arguments:
+//      state    True if there is, false if there's not.
+//
+//  Programmer:  Hank Childs
+//  Creation:    December 2, 2005
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::togglePostCommand(bool state)
+{
+    HostProfileList *profiles = (HostProfileList *)subject;
+    if(profiles->GetActiveProfile() >= 0)
+    {
+        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
+        current.SetHavePostCommand(state);
+        profiles->MarkActiveProfile();
+        UpdateWindowSensitivity();
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+// ****************************************************************************
+//  Method:  QvisHostProfileWindow::preCommandChanged
+//
+//  Purpose:
+//      Changes the text for the pre-command
+//
+//  Arguments:
+//    portStr   the string indicating the port value
+//
+//  Programmer:  Hank Childs
+//  Creation:    December 2, 2005
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::preCommandChanged(const QString &portStr)
+{
+    HostProfileList *profiles = (HostProfileList *)subject;
+    if(profiles->GetActiveProfile() >= 0)
+    {
+        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
+        QString temp, msg;
+        temp = postCommand->displayText();
+        if(!temp.isEmpty())
+        {
+            current.SetHwAccelPreCommand(std::string(temp.latin1()));
+        }
+        else
+        {
+            msg.sprintf("Pre-command cannot be empty, turning off pre-command.");
+            current.SetHavePreCommand(false);
+        }
+        profiles->MarkActiveProfile();
+        UpdateWindowSensitivity();
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+// ****************************************************************************
+//  Method:  QvisHostProfileWindow::postCommandChanged
+//
+//  Purpose:
+//      Changes the text for the post-command
+//
+//  Arguments:
+//    portStr   the string indicating the port value
+//
+//  Programmer:  Hank Childs
+//  Creation:    December 2, 2005
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::postCommandChanged(const QString &portStr)
+{
+    HostProfileList *profiles = (HostProfileList *)subject;
+    if(profiles->GetActiveProfile() >= 0)
+    {
+        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
+        QString temp, msg;
+        temp = postCommand->displayText();
+        if(!temp.isEmpty())
+        {
+            current.SetHwAccelPostCommand(std::string(temp.latin1()));
+        }
+        else
+        {
+            msg.sprintf("Post-command cannot be empty, turning off post-command.");
+            current.SetHavePostCommand(false);
+        }
+        profiles->MarkActiveProfile();
+        UpdateWindowSensitivity();
+        SetUpdate(false);
+        Apply();
+    }
+}

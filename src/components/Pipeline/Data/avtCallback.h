@@ -53,6 +53,9 @@ typedef   ref_ptr<avtDatabase> (*GetDatabaseCallback)(void *,
 //    Hank Childs, Fri Aug 26 15:29:54 PDT 2005
 //    Add GetDatabase.
 //
+//    Hank Childs, Sat Dec  3 20:27:16 PST 2005
+//    Added swRendering.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCallback
@@ -82,6 +85,11 @@ class PIPELINE_API avtCallback
     static bool                  GetNowinMode(void)
                                      { return nowinMode; };
 
+    static void                  SetSoftwareRendering(bool b)
+                                     { swRendering = b; };
+    static bool                  GetSoftwareRendering(void)
+                                     { return swRendering; };
+
     static void                  RegisterGetDatabaseCallback(
                                                   GetDatabaseCallback, void *);
     static ref_ptr<avtDatabase>  GetDatabase(const std::string &, int,
@@ -98,6 +106,7 @@ class PIPELINE_API avtCallback
     static LightList             lightList;
 
     static bool                  nowinMode;
+    static bool                  swRendering;
 
     static UpdatePlotAttributesCallback
                                  updatePlotAttributesCallback;

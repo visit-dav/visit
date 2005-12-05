@@ -140,12 +140,17 @@ avtSurfaceAndWireframeRenderer::~avtSurfaceAndWireframeRenderer()
 //  Programmer: Hank Childs
 //  Creation:   April 23, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Dec  3 20:37:07 PST 2005
+//    Change test for whether or not we are doing software rendering.
+//
 // ****************************************************************************
 
 avtSurfaceAndWireframeRenderer *
 avtSurfaceAndWireframeRenderer::New(void)
 {
-    if (avtCallback::GetNowinMode())
+    if (avtCallback::GetSoftwareRendering())
     {
         return new avtMesaSurfaceAndWireframeRenderer;
     }
