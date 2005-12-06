@@ -162,13 +162,13 @@ QvisPickWindow::CreateWindowContents()
         pages[i] = new QVBox(central, "page");
         pages[i]->setMargin(10);
         pages[i]->setSpacing(5);
-        pages[i]->setHidden(true);
+        pages[i]->hide();
         infoLists[i]  = new QMultiLineEdit(pages[i], "infoList");
         infoLists[i]->setWordWrap(QMultiLineEdit::WidgetWidth);
         infoLists[i]->setReadOnly(true);
         if (i < MIN_PICK_TABS)
         {
-            pages[i]->setHidden(false);
+            pages[i]->show();
             tabWidget->addTab(pages[i]," "); 
         }
     }
@@ -1317,7 +1317,7 @@ QvisPickWindow::ResizeTabs()
             tabWidget->changeTab(pages[i], temp);
             infoLists[i]->clear();
             tabWidget->removePage(pages[i]);
-            pages[i]->setHidden(true);
+            pages[i]->hide();
         }
         if (nextPage >= newMax)
             nextPage = 0;
@@ -1327,7 +1327,7 @@ QvisPickWindow::ResizeTabs()
         // Increase the number of pages that tabWidget holds
         for (i = currentMax; i < newMax; i++)
         {
-            pages[i]->setHidden(false);
+            pages[i]->show();
             tabWidget->addTab(pages[i]," "); 
         }
         if (tabWidget->label(nextPage) != " ")

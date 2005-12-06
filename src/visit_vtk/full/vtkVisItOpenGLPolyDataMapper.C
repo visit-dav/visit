@@ -41,21 +41,14 @@ static const int dlSize = 8192;
   #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
     #include <OpenGL/gl.h>
   #else
+    #if defined(_WIN32)
+       #include <windows.h>
+    #endif
     #include <GL/gl.h>
   #endif
 #endif
 
 #include <math.h>
-
-#ifdef VTK_IMPLEMENT_MESA_CXX
-// We have Mesa so allow multitexturing code to be compiled.
-#define HAVE_MULTITEXTURING
-#elif defined(GL_VERSION_1_3)
-// We're not using Mesa so only allow multitexturing code to be compiled if we
-// have OpenGL 1.3 or later.
-#define HAVE_MULTITEXTURING
-#endif
-
 
 #ifndef VTK_IMPLEMENT_MESA_CXX
 vtkCxxRevisionMacro(vtkVisItOpenGLPolyDataMapper, "$Revision: 1.78 $");
@@ -72,6 +65,9 @@ vtkStandardNewMacro(vtkVisItOpenGLPolyDataMapper);
 //    Brad Whitlock, Thu Aug 25 14:54:29 PST 2005
 //    Initialized new point texturing members.
 //
+//    Brad Whitlock, Tue Dec 6 13:37:21 PST 2005
+//    Changed to 1-pass texturing. Also added check for point sprite extension.
+//
 // ****************************************************************************
 vtkVisItOpenGLPolyDataMapper::vtkVisItOpenGLPolyDataMapper()
 {
@@ -83,8 +79,12 @@ vtkVisItOpenGLPolyDataMapper::vtkVisItOpenGLPolyDataMapper()
   this->PointTextureMethod = TEXTURE_NO_POINTS;
   this->SphereTexturesDataCreated = false;
   this->SphereTexturesLoaded = false;
-  this->TextureNames[0] = 0;
-  this->TextureNames[1] = 0;
+  this->TextureName = 0;
+#ifndef vtkVisItOpenGLPolyDataMapper
+  this->PointSpriteSupported = -1;  // OpenGL
+#else
+  this->PointSpriteSupported = 1;   // Mesa
+#endif
 }
 
 // Destructor (don't call ReleaseGraphicsResources() since it is virtual
@@ -120,7 +120,7 @@ void vtkVisItOpenGLPolyDataMapper::ReleaseGraphicsResources(vtkWindow *win)
   if (this->SphereTexturesLoaded)
     {
         win->MakeCurrent();
-        glDeleteTextures(2, this->TextureNames);
+        glDeleteTextures(1, &this->TextureName);
         this->SphereTexturesLoaded = false;
     }
 }
@@ -3498,15 +3498,52 @@ void vtkVisItOpenGLPolyDataMapper::PrintSelf(ostream& os, vtkIndent indent)
 //   Brad Whitlock, Thu Nov 3 13:21:08 PST 2005
 //   Added conditional compilation.
 //
+//   Brad Whitlock, Tue Dec 6 13:37:58 PST 2005
+//   Changed to 1-pass texturing.
+//
 // ****************************************************************************
 
 void
 vtkVisItOpenGLPolyDataMapper::StartFancyPoints(
     vtkVisItOpenGLPolyDataMapper::TextureState &atts)
 {
-#ifdef HAVE_MULTITEXTURING
     if(this->PointTextureMethod == TEXTURE_USING_POINTSPRITES)
     {
+#ifndef vtkVisItOpenGLPolyDataMapper
+        // If we're in OpenGL and not Mesa then do this test.
+        if(this->PointSpriteSupported == -1)
+        {
+            const char *ext = (const char *)glGetString(GL_EXTENSIONS);
+            if(ext != 0 && strstr(ext, "GL_ARB_point_sprite") != 0)
+                this->PointSpriteSupported = 1;
+            else
+            {
+                if(LastWindow != 0)
+                {
+                    // If the window is direct then say that the extension is
+                    // not supported since it should have been in the list
+                    // of extensions. If the display is not direct then the
+                    // list of extensions is unreliable and we should just 
+                    // try and use the extension.
+                    vtkRenderWindow *renWin = vtkRenderWindow::
+                        SafeDownCast(LastWindow);
+                    if(renWin != 0)
+                        this->PointSpriteSupported = renWin->IsDirect() ? 0 : 1;
+                    else
+                        this->PointSpriteSupported = 0;
+                }
+                else
+                    this->PointSpriteSupported = 0;
+            }
+        }
+        
+        if(this->PointSpriteSupported < 1)
+        {
+            // Point sprites are not supported
+            return;
+        }
+#endif
+
         // Create the rextures
         if(!this->SphereTexturesDataCreated)
         {
@@ -3517,25 +3554,17 @@ vtkVisItOpenGLPolyDataMapper::StartFancyPoints(
         // Create and bind the textures if we have not done that yet.
         if(!this->SphereTexturesLoaded)
         {
-            glGenTextures(2, this->TextureNames);
+            glGenTextures(1, &this->TextureName);
 
             // Set up the first texture
-            glBindTexture(GL_TEXTURE_2D, this->TextureNames[0]);
+            glBindTexture(GL_TEXTURE_2D, this->TextureName);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SPHERE_TEX_W, SPHERE_TEX_H,
-                         0, GL_RGBA, GL_UNSIGNED_BYTE, this->SphereTexture);
+            glTexImage2D(GL_TEXTURE_2D, 0, 2, SPHERE_TEX_W, SPHERE_TEX_H,
+                         0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, this->SphereTexture);
 
-            // Set up the second texture
-            glBindTexture(GL_TEXTURE_2D, this->TextureNames[1]);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, SPHERE_TEX_W, SPHERE_TEX_H,
-                         0, GL_ALPHA, GL_UNSIGNED_BYTE, this->SphereMaskTexture);
             this->SphereTexturesLoaded = true;
         }
 
@@ -3584,28 +3613,15 @@ vtkVisItOpenGLPolyDataMapper::StartFancyPoints(
         glEnable(MY_POINT_SPRITE_ARB);
 
         //
-        // Turn on the first texture
+        // Turn on the texture
         //
-        glActiveTexture(GL_TEXTURE0);
         glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, this->TextureNames[0]);
-        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-        glTexEnvi(MY_POINT_SPRITE_ARB,
-                  MY_COORD_REPLACE_ARB,
-                  GL_TRUE);
-
-        //
-        // Turn on the second texture
-        //
-        glActiveTexture(GL_TEXTURE1);
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, this->TextureNames[1]);      
-        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+        glBindTexture(GL_TEXTURE_2D, this->TextureName);
+        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);
         glTexEnvi(MY_POINT_SPRITE_ARB,
                   MY_COORD_REPLACE_ARB,
                   GL_TRUE);
     }
-#endif
 }
 
 // ****************************************************************************
@@ -3621,16 +3637,25 @@ vtkVisItOpenGLPolyDataMapper::StartFancyPoints(
 // Creation:   Thu Aug 25 14:58:49 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Dec 6 13:39:33 PST 2005
+//   I changed it to 1-pass texturing.
+//
 // ****************************************************************************
 
 void
 vtkVisItOpenGLPolyDataMapper::EndFancyPoints(
     vtkVisItOpenGLPolyDataMapper::TextureState &atts)
 {
-#ifdef HAVE_MULTITEXTURING
     if(this->PointTextureMethod == TEXTURE_USING_POINTSPRITES)
     {
+#ifndef vtkVisItOpenGLPolyDataMapper
+        // If we're in OpenGL and not Mesa then do this test.
+        if(this->PointSpriteSupported < 1)
+        {
+            // Point sprites are not supported
+            return;
+        }
+#endif
         if(atts.needAlphaTest)
         {
             if(atts.isAlphaTestEnabled)
@@ -3645,13 +3670,10 @@ vtkVisItOpenGLPolyDataMapper::EndFancyPoints(
         // Restore the old blend function.
         glBlendFunc(atts.blendFunc0, atts.blendFunc1);
 
-        glActiveTexture(GL_TEXTURE0);
         glDisable(GL_TEXTURE_2D);
-        glActiveTexture(GL_TEXTURE1);
-        glDisable(GL_TEXTURE_2D);
+
         glDisable(MY_POINT_SPRITE_ARB);
     }
-#endif
 }
 
 // ****************************************************************************
@@ -3672,12 +3694,14 @@ vtkVisItOpenGLPolyDataMapper::EndFancyPoints(
 //   Fixed it so the first texture's alpha is based on the Z value as computed
 //   for a sphere. The last equation was a kludge.
 //
+//   Brad Whitlock, Tue Dec 6 13:41:18 PST 2005
+//   I changed it to 1-pass texturing.
+//
 // ****************************************************************************
 
 void
 vtkVisItOpenGLPolyDataMapper::MakeTextures()
 {
-#ifdef HAVE_MULTITEXTURING
    int i, j;
 
    float dx = SPHERE_TEX_H * 0.5f;
@@ -3687,31 +3711,27 @@ vtkVisItOpenGLPolyDataMapper::MakeTextures()
    float minT = 0.;
    float maxT = 0.;
 
-   GLubyte texture[SPHERE_TEX_H][SPHERE_TEX_H][4];
-   GLubyte mask[SPHERE_TEX_H][SPHERE_TEX_H];
+   GLubyte texture[SPHERE_TEX_H][SPHERE_TEX_H][2];
 
    for (j = 0; j < SPHERE_TEX_H; j++)
    {
       float y = (float(j) / float(SPHERE_TEX_H-1)) * 2. - 1.;
       for (i = 0; i < SPHERE_TEX_W; i++)
       {
-         texture[j][i][0] = (GLubyte) 0;
-         texture[j][i][1] = (GLubyte) 0;
-         texture[j][i][2] = (GLubyte) 0;
-
          float x = (float(i) / float(SPHERE_TEX_W-1)) * 2. - 1.;
          float x2y2 = sqrt(x*x + y*y);
          if(x2y2 < 1.)
          {
              float z = sqrt(1. - x2y2);
              GLubyte rc = (GLubyte)(z * 255.);
-             texture[j][i][3] = (GLubyte) 255 - rc;
-             mask[j][i] = (GLubyte) 255;
+
+             texture[j][i][0] = (GLubyte) 255 - rc;
+             texture[j][i][1] = (GLubyte) 255;
          }
          else
          {
-             texture[j][i][3] = (GLubyte) 255;
-             mask[j][i] = (GLubyte) 0;
+             texture[j][i][0] = (GLubyte) 0;
+             texture[j][i][1] = (GLubyte) 0;
          }
       }
    }
@@ -3733,7 +3753,7 @@ vtkVisItOpenGLPolyDataMapper::MakeTextures()
            if(i >= 1 && i < SPHERE_TEX_W-1 &&
               j >= 1 && j < SPHERE_TEX_H-1)
            {
-               for(int c = 0; c < 4; ++c)
+               for(int c = 0; c < 2; ++c)
                {
                    float t = kernel[0][0] * float(texture[j-1][i-1][c]) + 
                              kernel[0][1] * float(texture[j-1][i][c]) + 
@@ -3747,28 +3767,12 @@ vtkVisItOpenGLPolyDataMapper::MakeTextures()
                    t /= kernelSum;
                    this->SphereTexture[j][i][c] = (GLubyte)t;
                }
-
-               float m = kernel[0][0] * float(mask[j-1][i-1]) + 
-                         kernel[0][1] * float(mask[j-1][i]) + 
-                         kernel[0][2] * float(mask[j-1][i+1]) + 
-                         kernel[1][0] * float(mask[j][i-1]) + 
-                         kernel[1][1] * float(mask[j][i]) + 
-                         kernel[1][2] * float(mask[j][i+1]) + 
-                         kernel[2][0] * float(mask[j+1][i-1]) + 
-                         kernel[2][1] * float(mask[j+1][i]) + 
-                         kernel[2][2] * float(mask[j+1][i+1]);
-               m /= kernelSum;
-               this->SphereMaskTexture[j][i] = (GLubyte)m;
            }
            else
            {
                this->SphereTexture[j][i][0] = (GLubyte)0;
                this->SphereTexture[j][i][1] = (GLubyte)0;
-               this->SphereTexture[j][i][2] = (GLubyte)0;
-               this->SphereTexture[j][i][3] = (GLubyte)255;
-               this->SphereMaskTexture[j][i] = (GLubyte)0;
            }
        }
    }
-#endif
 }

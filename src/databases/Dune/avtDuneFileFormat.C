@@ -856,7 +856,11 @@ avtDuneFileFormat::ReadDuneData(const int timestate) {
   const string q = "Q(";
   const string w = "W(";
   const string r = "R(";
+#if defined(_WIN32)
+  const double pi = 3.14159265358979323846;
+#else
   const double pi = M_PI;
+#endif
   const double volume_factor = 4.0/3.0 * pi;
   const string species = "Species(";
   const string material = "Material(";

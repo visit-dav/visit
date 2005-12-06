@@ -10,6 +10,7 @@
 // the source for the OpenGL Label renderer to get a Mesa label renderer.
 //
 #define avtOpenGLLabelRenderer avtMesaLabelRenderer
+#define VTK_IMPLEMENT_MESA_CXX
 
 // Include the source
 #include <avtOpenGLLabelRenderer.C>

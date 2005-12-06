@@ -97,7 +97,8 @@ IsovolumeCellReconstructor::ReconstructCell(int cellid_, int celltype_,
 
 
         // Fill the volume fractions for the current material
-        for (int n = 0 ; n < nids ; n++)
+        int n;
+        for (n = 0 ; n < nids ; n++)
         {
             nodeVFs[n][matno] = 0.;
             if (!allZeros &&
@@ -117,7 +118,7 @@ IsovolumeCellReconstructor::ReconstructCell(int cellid_, int celltype_,
         // Fill the VF's array and calculate the clip case
         //
         int lookup_case = 0;
-        for (int n = nids-1 ; n >= 0 ; n--)
+        for (n = nids-1 ; n >= 0 ; n--)
         {
             // node is from original mesh
             newVFs[n] = nodeVFs[n][matno];
@@ -198,7 +199,7 @@ IsovolumeCellReconstructor::ReconstructCell(int cellid_, int celltype_,
             if (lookup_case != 0)
             {
                 TempCell cell;
-                for (int n = 0 ; n < nids ; n++)
+                for (n = 0 ; n < nids ; n++)
                 {
                     cell.localids[n] = n;
                     cell.ids[n] = ids[n];
@@ -218,7 +219,7 @@ IsovolumeCellReconstructor::ReconstructCell(int cellid_, int celltype_,
         // Fake an old cell for now
         //
         TempCell old;
-        for (int n = 0 ; n < nids ; n++)
+        for (n = 0 ; n < nids ; n++)
         {
             old.localids[n] = n;
             old.ids[n] = ids[n];

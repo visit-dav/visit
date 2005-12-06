@@ -4,11 +4,6 @@
 
 #include "avtOpenGLSurfaceAndWireframeRenderer.h"
 
-#if defined(_WIN32)
-#include <windows.h>
-#endif
-#include <GL/gl.h>
-
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkPointData.h>
@@ -18,6 +13,19 @@
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkTriangle.h>
+
+#ifndef VTK_IMPLEMENT_MESA_CXX
+  #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
+    #include <OpenGL/gl.h>
+  #else
+    #if defined(_WIN32)
+       #include <windows.h>
+    #endif
+    #include <GL/gl.h>
+  #endif
+#else
+  #include <GL/gl.h>
+#endif
 
 #include <DebugStream.h>
 

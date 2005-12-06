@@ -2060,16 +2060,23 @@ fi
 EXODUS=""
 EXODUS_FLAGS=""
 EXODUS_LIBS=""
+EXODUS_LIB=""
 if test "$exodus_enabled" = "yes"; then
     EXODUS="$""(EXODUS)"
     EXODUS_FLAGS="$EXODUS_FLAGS -I$exodus_inc"
     EXODUS_LIBS="-L$exodus_lib -lexoIIv2c -lnetcdf"
+    if test "$SHORT_UNAME" = "darwin"; then
+        EXODUS_LIB="$exodus_lib/libexoIIv2c.dylib"
+    else
+        EXODUS_LIB="$exodus_lib/libexoIIv2c.a"
+    fi
     AC_MSG_RESULT(yes)
 else
     AC_MSG_RESULT(no)
 fi
 
 AC_SUBST(EXODUS)
+AC_SUBST(EXODUS_LIB)
 AC_SUBST(EXODUS_LIBS)
 AC_SUBST(EXODUS_FLAGS)
 
@@ -2918,7 +2925,7 @@ case $SHORT_UNAME in
     PREBIND_LIBS="$""(PREBIND_LIBS)"
     # Create the address.txt file with the initial offset for the VisIt libraries.
     rm -f address.txt linkedit.log
-    echo "0x2322a000" > address.txt
+    echo "0x36e9f000" > address.txt
     ;;
 esac
 # Set up the defaults
@@ -2991,10 +2998,10 @@ AC_SUBST(ENGINEWRAPPAR)
 
 #
 # This helps the Makefile in the lib directory make the right links
-# to Silo, Mili, HDF4, HDF5, NETCDF, CGNS, and GDAL. It is only needed 
-# on MacOS X because on other platforms, these libraries are statically
-# linked into the database plugins and on MacOS X they are dynamically
-# linked.
+# to Silo, Mili, HDF4, HDF5, NETCDF, CGNS, GDAL, and Exodus. It is only
+# needed on MacOS X because on other platforms, these libraries are
+# statically linked into the database plugins and on MacOS X they are
+# dynamically linked.
 #
 CREATE_SILO_LINK=""
 CREATE_MILI_LINK=""
@@ -3003,6 +3010,7 @@ CREATE_HDF5_LINK=""
 CREATE_NETCDF_LINK=""
 CREATE_CGNS_LINK=""
 CREATE_GDAL_LINK=""
+CREATE_EXODUS_LINK=""
 case $SHORT_UNAME in
   darwin)
     if test "$SILO_LIB" != "" ; then
@@ -3026,6 +3034,9 @@ case $SHORT_UNAME in
     if test "$GDAL_LIB" != "" ; then
         CREATE_GDAL_LINK="create_gdal_link"
     fi
+    if test "$EXODUS_LIB" != "" ; then
+        CREATE_EXODUS_LINK="create_exodus_link"
+    fi
   ;;
 esac
 AC_SUBST(CREATE_SILO_LINK)
@@ -3035,6 +3046,7 @@ AC_SUBST(CREATE_HDF5_LINK)
 AC_SUBST(CREATE_NETCDF_LINK)
 AC_SUBST(CREATE_CGNS_LINK)
 AC_SUBST(CREATE_GDAL_LINK)
+AC_SUBST(CREATE_EXODUS_LINK)
 
 #
 # Check for library functions that can work around, or that we have

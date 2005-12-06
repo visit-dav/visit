@@ -347,8 +347,11 @@ QvisThresholdWindow::meshTypeChanged(int val)
     if (val == 1)
         newVal = ThresholdAttributes::PointsOnly;
     else
-        newVal = (amount->selectedId() == 0 ? ThresholdAttributes::All
-                                            : ThresholdAttributes::Some);
+    {
+        int selectedId = amount->id(amount->selected());
+        newVal = (selectedId == 0 ? ThresholdAttributes::All
+                                  : ThresholdAttributes::Some);
+    }
 
     if(newVal != atts->GetAmount())
     {

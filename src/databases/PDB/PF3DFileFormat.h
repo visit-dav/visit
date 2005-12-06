@@ -24,6 +24,9 @@ class vtkDataArray;
 //   Brad Whitlock, Tue Jul 20 10:50:54 PDT 2004
 //   Rewrote for new PF3D file format.
 //
+//   Brad Whitlock, Thu Dec 1 14:53:29 PST 2005
+//   Added ability to dynamically determine the size of visnams.
+//
 // ****************************************************************************
 
 class PF3DFileFormat : public PDBReader, public avtSTMDFileFormat
@@ -62,15 +65,20 @@ protected:
     //
     class MasterInformation
     {
-        struct History
+        struct MemberData
         {
-            double time;
-            int ivzsave;
-            float tnowps;
-            long ncyc;
-            float dt;
+            MemberData();
+            ~MemberData();
+            void Print(ostream &) const;
+
+            std::string name;
+            TypeEnum    dataType;
+            int         ndims;
+            int         dims[3];
+            void       *data;
         };
 
+        typedef std::vector<MemberData *> MemberDataVector;
     public:
         MasterInformation();
         virtual ~MasterInformation();
@@ -81,36 +89,21 @@ protected:
         // Methods to get pointers to the fields of the variable
         // sized "struct".
         //
-        double        Get_time() const;
-        int           Get_ivzsave() const;
-        float         Get_tnowps() const;
-        long          Get_ncyc() const;
-        float         Get_dt() const;
-        const double *Get_rhomin_vz() const;
-        const double *Get_rhomax_vz() const;
-        const double *Get_e0min_vz() const;
-        const double *Get_e0max_vz() const;
+        double        Get_tnowps() const;
         const long *  Get_domloc() const;
         const double *Get_xyzloc() const;
         const char *  Get_visnams() const;
         const char *  Get_visname_for_domain(int dom, int comp) const;
-        const double *Get_e1min_vz() const;
-        const double *Get_e1max_vz() const;
-        const double *Get_iawmin_vz() const;
-        const double *Get_iawmax_vz() const;
-        const double *Get_e2min_vz() const;
-        const double *Get_e2max_vz() const;
-        const double *Get_epwmin_vz() const;
-        const double *Get_epwmax_vz() const;
-
-        static const int visnam_size;
+        const double *GetMinArray(const std::string &varName) const;
+        const double *GetMaxArray(const std::string &varName) const;
 
         ostream &operator << (ostream &os);
     private:
-        int CalculateBufferSize();
+        const MemberData *FindMember(const std::string &name) const;
 
-        int  nDomains;
-        void *buffer;
+
+        int              nDomains;
+        MemberDataVector members;
     };
 
     class BOF
@@ -144,7 +137,7 @@ private:
     int  GetRealDomainIndex(int dom) const;
     std::string GetBOFKey(int realDomain, const char *varName) const;
     bool ReadStringVector(const char *name, stringVector &output);
-
+    bool CanAccessFile(const std::string &) const;
 
     bool initialized;
 

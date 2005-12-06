@@ -4,7 +4,6 @@
 #include <Init.h>
 #endif
 #include <arial.h>
-#include <GL/gl.h>
 
 #include <vtkCamera.h>
 #include <vtkCellData.h>
@@ -21,6 +20,16 @@
 
 #include <DebugStream.h>
 #include <TimingsManager.h>
+
+#ifndef VTK_IMPLEMENT_MESA_CXX
+#if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
+#include <OpenGL/gl.h>
+#else
+#include <GL/gl.h>
+#endif
+#else
+#include <GL/gl.h>
+#endif
 
 #define ZBUFFER_USE_PROVIDED 0
 #define ZBUFFER_QUERY        1

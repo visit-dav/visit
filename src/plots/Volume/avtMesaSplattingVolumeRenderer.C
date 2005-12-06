@@ -8,6 +8,7 @@
 #include <GL/gl_mangle.h>
 
 #define avtOpenGLSplattingVolumeRenderer avtMesaSplattingVolumeRenderer
+#define VTK_IMPLEMENT_MESA_CXX
 
 #include "avtOpenGLSplattingVolumeRenderer.C"
 

@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2004
+#                            Copyright 2000 - 2005
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -75,6 +75,10 @@
 #   I moved the Exceptions library out of components into common to fix
 #   the build order so we can prelink on MacOS X.
 #
+#   Brad Whitlock, Wed Nov 23 10:31:24 PDT 2005
+#   I changed the build order for MacOS X because expressions and queries
+#   now depend on the database library.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -82,7 +86,7 @@
 @DIRTARGETS@
 
 SUBDIRS=DBAtts Math Pipeline MIR \
-        Expressions View Filters Queries Database Plotter FileWriter \
+        View Filters Database Expressions Queries Plotter FileWriter \
         @VISWINDOW@ QtVisWindow
 
 message:

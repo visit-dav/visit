@@ -221,8 +221,12 @@ QvisMeshManagementWindow::UpdateWindow(bool doAll)
 // Purpose:
 //   Gets values from certain widgets and stores them in the subject.
 //
-// Programmer: xml2window
+// Programmer: Mark C. Miller
 // Creation:   Thu Oct 24 10:03:40 PDT 2002
+//
+// Modifications:
+//    Brad Whitlock, Wed Nov 23 11:42:26 PDT 2005
+//    Fixed for Qt 3.0.2.
 //
 // ****************************************************************************
 void
@@ -241,10 +245,11 @@ QvisMeshManagementWindow::GetCurrentValues(const QWidget *widget)
 
     if (doAll || widget == discretizationMode)
     {
-        if (discretizationMode->selectedId() == 0 &&
+        int selectedId = discretizationMode->id(discretizationMode->selected());
+        if (selectedId == 0 &&
             mmAtts->GetDiscretizationMode() != MeshManagementAttributes::Uniform)
             mmAtts->SetDiscretizationMode(MeshManagementAttributes::Uniform);
-        else if (discretizationMode->selectedId() == 1 &&
+        else if (selectedId == 1 &&
             mmAtts->GetDiscretizationMode() != MeshManagementAttributes::Adaptive)
             mmAtts->SetDiscretizationMode(MeshManagementAttributes::Adaptive);
     }
