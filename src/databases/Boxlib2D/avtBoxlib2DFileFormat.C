@@ -32,6 +32,7 @@
 #include <string>
 #include <visitstream.h>
 #include <visit-config.h>
+#include <snprintf.h>
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -622,7 +623,10 @@ avtBoxlib2DFileFormat::ReadHeader(void)
     BroadcastInt(integer);
     if (dimension != integer)
     {
-        EXCEPTION1(InvalidDBTypeException,"This reader only handles 2D files.");
+        char msg[256];
+        SNPRINTF(msg, sizeof(msg),
+            "Got dimension=%d! This reader only handles 2D files.", integer);
+        EXCEPTION1(InvalidDBTypeException,msg);
     }
 
     // Read in time
