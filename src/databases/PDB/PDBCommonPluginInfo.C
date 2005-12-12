@@ -67,6 +67,9 @@ PDBCommonPluginInfo::GetDefaultExtensions()
 //    I rewrote this method so the plugin can have internal file formats
 //    that have varying file format interfaces.
 //
+//    Brad Whitlock, Fri Dec 9 17:37:53 PST 2005
+//    Renamed to PDB_CreateFileFormatInterface.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -78,7 +81,7 @@ PDBCommonPluginInfo::SetupDatabase(const char *const *list,
     //
     // Create a file format interface based on information in the files.
     //
-    avtFileFormatInterface *inter = CreateFileFormatInterface(list, nList, nBlock);
+    avtFileFormatInterface *inter = PDB_CreateFileFormatInterface(list, nList, nBlock);
 
     // If we created a file format interface, try creating a database.
     if(inter)

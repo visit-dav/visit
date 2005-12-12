@@ -261,6 +261,9 @@
 #    Eric Brugger, Wed Nov 23 08:00:06 PST 2005
 #    Added PLATFORM_CPPFLAGS.
 #
+#    Mark C. Miller, Mon Dec 12 20:53:03 PST 2005
+#    Added BZIP2_LIBS variable
+#
 ##############################################################################
 
 ##
@@ -282,7 +285,7 @@ LIBS=-L../../lib -L../../vtkqt -lengineproxy -lenginerpc -lviewerrpc \
      -lavtfilters_ser -lavtwriter_ser -lavtview -lpipeline_ser -lvisit_vtk \
      -llightweight_visit_vtk -lparallel_visit_vtk_ser -lvtkqt -lwinutil \
      @QT_LIBS@ -lproxybase -lmisc -lcomm -lstate -lutility -lavtexceptions \
-     $(VTK_LIBS) $(X_LIBS) @LIBS@ @PTHREAD_LIB@
+     $(VTK_LIBS) $(X_LIBS) $(BZIP2_LIBS) @LIBS@ @PTHREAD_LIB@
 
 LDFLAGS=@LDFLAGS@ @QT_LDFLAGS@
 LIBDEP=

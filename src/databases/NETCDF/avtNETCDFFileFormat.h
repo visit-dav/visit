@@ -7,6 +7,6 @@ class avtFileFormatInterface;
 // Prototype for the file format interface factory function.
 //
 avtFileFormatInterface *
-CreateFileFormatInterface(const char * const *, int, int);
+NETCDF_CreateFileFormatInterface(const char * const *, int, int);
 
 #endif
