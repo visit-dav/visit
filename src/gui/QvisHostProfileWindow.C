@@ -173,6 +173,9 @@ QvisHostProfileWindow::~QvisHostProfileWindow()
 //   Hank Childs, Fri Dec  2 10:59:47 PST 2005
 //   Added new tab for hardware acceleration.
 //
+//   Hank Childs, Fri Dec  9 07:13:44 PST 2005
+//   Change the word 'window' to 'tab' in disclaimer for hardware acceleration.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::CreateWindowContents()
@@ -428,7 +431,7 @@ QvisHostProfileWindow::CreateWindowContents()
     std::string str1 = "These options are for hardware accelerating the\n"
                        "scalable rendering feature on a parallel cluster.\n"
                        "In other modes, VisIt will automatically use hardware acceleration.\n"
-                       "This window only needs to be modified for parallel \n"
+                       "This tab only needs to be modified for parallel \n"
                        "clusters that have graphics cards.\n";
   
     int hrow = 0;

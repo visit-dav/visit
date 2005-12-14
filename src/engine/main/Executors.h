@@ -836,6 +836,9 @@ RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
 //
 //    Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
 //    Changed use compression settin of window instead of always setting false 
+//
+//    Mark C. Miller, Wed Dec 14 16:43:07 PST 2005
+//    Changed to pass compression bool to Engine::WriteData
 // ****************************************************************************
 template<>
 void
@@ -900,10 +903,11 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
         int currentTotalGlobalCellCount = netmgr->GetTotalGlobalCellCounts(winId);
         int currentNetworkGlobalCellCount = 0;
         bool scalableThresholdExceeded = false;
+        bool useCompression = netmgr->GetShouldUseCompression(winId);
 
         // Send the data back to the viewer.
-        writer->SetUseCompression(netmgr->GetShouldUseCompression(winId));
-        engine->WriteData(rpc, writer, rpc->GetRespondWithNull(),
+        engine->WriteData(rpc, writer, useCompression,
+                    rpc->GetRespondWithNull(),
                     scalableThreshold, &scalableThresholdExceeded,
                     currentTotalGlobalCellCount, cellCountMultiplier,
                     &currentNetworkGlobalCellCount);
@@ -1244,6 +1248,8 @@ RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
 //    Hank Childs, Sun Dec  4 16:51:20 PST 2005
 //    Allow SR mode to give progress during rendering.
 //
+//    Mark C. Miller, Wed Dec 14 16:43:07 PST 2005
+//    Changed to pass compression bool to Engine::WriteData
 // ****************************************************************************
 template<>
 void
@@ -1273,12 +1279,10 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
             netmgr->Render(rpc->GetIDs(),rpc->GetSendZBuffer(),
                            rpc->GetAnnotMode(), rpc->GetWindowID());
 
-        // set writer to compress as necessary
-        writer->SetUseCompression(
-            netmgr->GetShouldUseCompression(rpc->GetWindowID()));
-
         // Send the data back to the viewer.
-        engine->WriteData(rpc, writer);
+        bool useCompression = netmgr->GetShouldUseCompression(rpc->GetWindowID());
+        engine->WriteData(rpc, writer, useCompression);
+
     }
     CATCH2(VisItException, e)
     {

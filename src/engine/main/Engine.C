@@ -1232,9 +1232,13 @@ WriteByteStreamToSocket(NonBlockingRPC *rpc, Connection *vtkConnection,
 //    Hank Childs, Wed Dec  1 14:57:22 PST 2004
 //    Automatically transition to SR mode with image based plots.
 //
+//    Mark C. Miller, Wed Dec 14 17:19:38 PST 2005
+//    Added compression bool arg to method and appropriate calls to writers
+//
 // ****************************************************************************
 void
 Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
+    bool useCompression,
     bool respondWithNull, int scalableThreshold, bool* scalableThresholdExceeded,
     int currentTotalGlobalCellCount, float cellCountMultiplier,
     int* currentNetworkGlobalCellCount)
@@ -1398,6 +1402,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
             // Create a writer to write across the network.
             avtDataObjectWriter_p networkwriter = ui_dob->InstantiateWriter();
             networkwriter->SetDestinationFormat(destinationFormat);
+            networkwriter->SetUseCompression(useCompression);
             networkwriter->SetInput(ui_dob);
     
             avtDataObjectString do_str;
@@ -1511,6 +1516,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
                         rpc->GetMaxStageNum());
 
         writer_to_use->SetDestinationFormat(destinationFormat);
+        writer_to_use->SetUseCompression(useCompression);
         avtDataObjectString  do_str;
         writer_to_use->Write(do_str);
 
