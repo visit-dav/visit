@@ -30,6 +30,10 @@
 //   Brad Whitlock, Thu Jul 29 12:15:30 PDT 2004
 //   I added a new flag to turn on extra smart file grouping.
 //
+//   Brad Whitlock, Wed Dec 14 16:57:00 PST 2005
+//   I added a new UNCHECKED enum to file_types to fill in for when we have
+//   not checked for a file type yet.
+//
 // ****************************************************************************
 
 class MDSERVER_RPC_API GetFileListRPC : public BlockingRPC
@@ -41,6 +45,10 @@ public:
         REG,
         VIRTUAL,
         UNKNOWN,
+
+        // internal use only
+        UNCHECKED,
+        UNCHECKED_REMOVE_IF_NOT_DIR
     };
 
     struct MDSERVER_RPC_API FileList : public AttributeSubject
@@ -53,6 +61,7 @@ public:
         intVector    numVirtualFiles;
     public:
         FileList();
+        FileList(const FileList &obj);
         virtual ~FileList();
         virtual void SelectAll();
         virtual const std::string TypeName() const
