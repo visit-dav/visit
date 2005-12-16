@@ -601,6 +601,18 @@ directions listed below to build Python.  If you have any problems building
 or installing Python, read the README file in the Python distribution for more
 information.
 
+Note that instructions for building 2 different versions of Python are given
+here because versions of VisIt built using xlc (7.0.0.2 or later) can have 
+threading problems that lead to crashes of the CLI when Python 2.1.2 is used.
+For that reason, if you are building on AIX using a newer version of xlc,
+download the Python 2.4.2 source code from http://www.python.org and use 
+it to build VisIt. VisIt will eventually be upgraded to use Python 2.4.2 or
+later on all platforms.
+
+
+Building Python 2.1.2
+======================
+
 On itanium (ia64) systems, the -fPIC flag is needed.  To add this flag to
 python's build, do the following:  (1) Follow the commands below until the
 configure step.  Execute configure as given.  (2) Look at the Makefile and
@@ -646,6 +658,37 @@ g++ -Wl,-expect_unresolved -Wl,'*' -shared -o ../libpython2.1.so *.o # tru64
 cd ..
 rm -rf tmpdir
 cp libpython2.1.so $VISITDIR/python/$VISITARCH/lib/python2.1/config/libpython2.1.so
+cd ..
+
+
+Building Python 2.4.2 (AIX instructions)
+=========================================
+
+tar zxvf Python-2.4.2.tar.gz
+cd Python-2.4.2
+
+#
+# Make changes to setup.py
+# Comment out lines 469-475, 727-735, 960, 1066
+# Save the changes and exit your editor
+#
+
+#
+# Configure and build Python
+#
+./configure --with-gcc="xlc_r -q64 -O2" --with-cxx="xlC_r -q64 -O2" --disable-ipv6 AR="ar -X64" --prefix=$VISITDIR/python/$VISITARCH 
+make
+make install
+
+#
+# Create a shared library version of the python library.
+#
+xlc -qmkshrobj -o libpython2.4.so libpython2.4.a -lm
+
+#
+# Install the shared library version of the python library.
+#
+cp libpython2.4.so $VISITDIR/python/$VISITARCH/lib/python2.4/config/libpython2.4.so
 cd ..
 
 
