@@ -570,17 +570,10 @@ Text2DObject_print(PyObject *v, FILE *fp, int flags)
         fprintf(fp, "active = 1\n");
     else
         fprintf(fp, "active = 0\n");
-    {   const float *position = obj->data->GetPosition();
-        fprintf(fp, "position = (");
-        for(int i = 0; i < 3; ++i)
-        {
-            fprintf(fp, "%g", position[i]);
-            if(i < 2)
-                fprintf(fp, ", ");
-        }
-        fprintf(fp, ")\n");
-    }
 /*CUSTOM*/
+    {   const float *position = obj->data->GetPosition();
+        fprintf(fp, "position = (%g, %g)\n", position[0], position[1]);
+    }
     const float *position2 = obj->data->GetPosition2();
     fprintf(fp, "width = %g\n", position2[0]);
     const unsigned char *textColor = obj->data->GetTextColor().GetColor();
