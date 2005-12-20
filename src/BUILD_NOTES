@@ -11,13 +11,13 @@ commands needed to build the libraries and VisIt from this file into your
 shell prompt.
 
 
-    Library  Version  Description            For More Information
-    =======  =======  ===========            ====================
-    Mesa     5.0      3-D Graphics Library   http://www.mesa3d.org/
-    Python   2.1.2    Scripting Language     http://www.python.org
-    Qt       3.3.2    GUI Toolkit            http://www.trolltech.com
-    Silo     4.5      File I/O library       http://www.llnl.gov/bdiv/meshtv
-    VTK      20031028 Visualization Toolkit  http://www.kitware.com
+    Library  Version   Description            For More Information
+    =======  =======   ===========            ====================
+    Mesa     5.0       3-D Graphics Library   http://www.mesa3d.org/
+    Python   2.1.2     Scripting Language     http://www.python.org
+    Qt       3.3.2     GUI Toolkit            http://www.trolltech.com
+    Silo     4.5       File I/O library       http://www.llnl.gov/bdiv/meshtv
+    VTK      20031028c Visualization Toolkit  http://www.kitware.com
 
 
 The public version of VisIt has been built with the above listed versions
@@ -206,8 +206,8 @@ make
 # Build VTK
 #
 cd ..
-gunzip vtk_cvs_2003_10_28.tar.gz
-tar xf vtk_cvs_2003_10_28.tar
+gunzip vtk_cvs_2003_10_28c.tar.gz
+tar xf vtk_cvs_2003_10_28c.tar
 cd VTK
 #
 # On irix systems we have experienced problems with CMake not using the
@@ -285,31 +285,31 @@ make
 # Install it in the visit directory under the vtk directory.
 #
 mkdir $VISITDIR/vtk
-mkdir $VISITDIR/vtk/2003.10.28
-mkdir $VISITDIR/vtk/2003.10.28/$VISITARCH
-mkdir $VISITDIR/vtk/2003.10.28/$VISITARCH/{Common,Filtering,Graphics,Hybrid,IO,Imaging,Rendering,MangleMesaInclude,lib}
-cp vtkConfigure.h                   $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp vtkToolkits.h                    $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp vtk*Instantiator.h               $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp Utilities/expat/expat.h          $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp Utilities/expat/expatDllConfig.h $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp Utilities/zlib/zlib.h            $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp Utilities/zlib/zconf.h           $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp Utilities/zlib/zlibDllConfig.h   $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp Utilities/tiff/tiffio.h          $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp Utilities/tiff/tiff.h            $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp Utilities/tiff/tiffvers.h        $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp Utilities/tiff/tconf.h           $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp Utilities/tiff/tiffDllConfig.h   $VISITDIR/vtk/2003.10.28/$VISITARCH
-cp Common/*.h                       $VISITDIR/vtk/2003.10.28/$VISITARCH/Common
-cp Filtering/*.h                    $VISITDIR/vtk/2003.10.28/$VISITARCH/Filtering
-cp Graphics/*.h                     $VISITDIR/vtk/2003.10.28/$VISITARCH/Graphics
-cp Hybrid/*.h                       $VISITDIR/vtk/2003.10.28/$VISITARCH/Hybrid
-cp IO/*.h                           $VISITDIR/vtk/2003.10.28/$VISITARCH/IO
-cp Imaging/*.h                      $VISITDIR/vtk/2003.10.28/$VISITARCH/Imaging
-cp Rendering/*.h                    $VISITDIR/vtk/2003.10.28/$VISITARCH/Rendering
-cp MangleMesaInclude/*.h            $VISITDIR/vtk/2003.10.28/$VISITARCH/MangleMesaInclude
-cp bin/*.so                         $VISITDIR/vtk/2003.10.28/$VISITARCH/lib
+mkdir $VISITDIR/vtk/2003.10.28c
+mkdir $VISITDIR/vtk/2003.10.28c/$VISITARCH
+mkdir $VISITDIR/vtk/2003.10.28c/$VISITARCH/{Common,Filtering,Graphics,Hybrid,IO,Imaging,Rendering,MangleMesaInclude,lib}
+cp vtkConfigure.h                   $VISITDIR/vtk/2003.10.28c/$VISITARCH
+cp vtkToolkits.h                    $VISITDIR/vtk/2003.10.28c/$VISITARCH
+cp vtk*Instantiator.h               $VISITDIR/vtk/2003.10.28c/$VISITARCH
+cp Utilities/expat/expat.h          $VISITDIR/vtk/2003.10.28c/$VISITARCH
+cp Utilities/expat/expatDllConfig.h $VISITDIR/vtk/2003.10.28c/$VISITARCH
+cp Utilities/zlib/zlib.h            $VISITDIR/vtk/2003.10.28c/$VISITARCH
+cp Utilities/zlib/zconf.h           $VISITDIR/vtk/2003.10.28c/$VISITARCH
+cp Utilities/zlib/zlibDllConfig.h   $VISITDIR/vtk/2003.10.28c/$VISITARCH
+cp Utilities/tiff/tiffio.h          $VISITDIR/vtk/2003.10.28c/$VISITARCH
+cp Utilities/tiff/tiff.h            $VISITDIR/vtk/2003.10.28c/$VISITARCH
+cp Utilities/tiff/tiffvers.h        $VISITDIR/vtk/2003.10.28c/$VISITARCH
+cp Utilities/tiff/tconf.h           $VISITDIR/vtk/2003.10.28c/$VISITARCH
+cp Utilities/tiff/tiffDllConfig.h   $VISITDIR/vtk/2003.10.28c/$VISITARCH
+cp Common/*.h                       $VISITDIR/vtk/2003.10.28c/$VISITARCH/Common
+cp Filtering/*.h                    $VISITDIR/vtk/2003.10.28c/$VISITARCH/Filtering
+cp Graphics/*.h                     $VISITDIR/vtk/2003.10.28c/$VISITARCH/Graphics
+cp Hybrid/*.h                       $VISITDIR/vtk/2003.10.28c/$VISITARCH/Hybrid
+cp IO/*.h                           $VISITDIR/vtk/2003.10.28c/$VISITARCH/IO
+cp Imaging/*.h                      $VISITDIR/vtk/2003.10.28c/$VISITARCH/Imaging
+cp Rendering/*.h                    $VISITDIR/vtk/2003.10.28c/$VISITARCH/Rendering
+cp MangleMesaInclude/*.h            $VISITDIR/vtk/2003.10.28c/$VISITARCH/MangleMesaInclude
+cp bin/*.so                         $VISITDIR/vtk/2003.10.28c/$VISITARCH/lib
 cd ..
 
 #
