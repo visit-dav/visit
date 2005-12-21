@@ -73,11 +73,12 @@ do
    $cmd visit-install                       >> $output
    $cmd jvisit$version.tar.gz               >> $output
    $cmd visit$version.exe                   >> $output
-   $cmd visit$version-win98.exe             >> $output
+#  $cmd visit$version-win98.exe             >> $output
    $cmd visit$version2.aix.tar.gz           >> $output
+   $cmd visit$version2.aix64-xlc.tar.gz     >> $output
    $cmd visit$version2.darwin.tar.gz        >> $output
-   $cmd visit$version2.irix6.tar.gz         >> $output
-   $cmd visit$version2.linux-altix.tar.gz   >> $output
+#  $cmd visit$version2.irix6.tar.gz         >> $output
+#  $cmd visit$version2.linux-altix.tar.gz   >> $output
    $cmd visit$version2.linux-ia64.tar.gz    >> $output
    $cmd visit$version2.linux-x86_64.tar.gz  >> $output
    $cmd visit$version2.linux_chaos.tar.gz   >> $output
@@ -108,9 +109,11 @@ do
    $cmd silo041018.sh                       >> ../visit$version/$output
    $cmd silo050228.sh                       >> ../visit$version/$output
    $cmd silo050506.sh                       >> ../visit$version/$output
+   $cmd silo051121.sh                       >> ../visit$version/$output
    $cmd VTK_020314.tar.gz                   >> ../visit$version/$output
    $cmd vtk_cvs_16Dec02.tar.gz              >> ../visit$version/$output
    $cmd vtk_cvs_2003_10_28.tar.gz           >> ../visit$version/$output
+   $cmd vtk_cvs_2003_10_28c.tar.gz          >> ../visit$version/$output
    cd ../visit$version
 
    shift
