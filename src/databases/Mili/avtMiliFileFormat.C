@@ -454,6 +454,11 @@ read_results(Famid &dbid, int ts, int sr, int rank,
 //    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
 //    Added logic to read the "free nodes" mesh, too. Removed huge block of
 //    unused #ifdef'd code having to do with ghost zones.
+//
+//    Mark C. Miller, Tue Jan  3 17:55:22 PST 2006
+//    Added code to deal with case where nodal positions are time invariant.
+//    They are not stored as "results" but instead part of the mesh read
+//    in the ReadMesh() call.
 // ****************************************************************************
 
 vtkDataSet *
@@ -502,12 +507,25 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
     // The node positions are stored in 'nodpos'.
     //
     char *nodpos_str = "nodpos";
+    int nodpos = -2;
 
-    int nodpos = GetVariableIndex(nodpos_str, mesh_id);
+    // Since this whole plugin assumes GetVariableIndex
+    // handles throwing of invalid variable exception
+    // we have to wrap this with TRY/CATCH to deal with
+    // case where nodal positions are stored in params
+    TRY
+    {
+        nodpos = GetVariableIndex(nodpos_str, mesh_id);
+    }
+    CATCH(InvalidVariableException)
+    {
+        nodpos = -1;
+    }
+    ENDTRY
 
     int subrec = -1;
     int vsize = M_FLOAT;
-    for (i = 0 ; i < vars_valid[dom][nodpos].size() ; i++)
+    for (i = 0 ; nodpos >= 0 && i < vars_valid[dom][nodpos].size() ; i++)
     {
         if (vars_valid[dom][nodpos][i])
         {
@@ -516,31 +534,48 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
             break;
         }
     }
-    if (subrec == -1)
+    if (subrec == -1 && nodpos != -1)
     {
         EXCEPTION0(ImproperUseException);
     }
 
     int amt = dims*nnodes[dom][mesh_id];
-    float *fpts = new float[amt];
-    read_results(dbid[dom], ts+1, subrec, 1, &nodpos_str, vsize, amt, fpts);
-
-    vtkPoints *pts = vtkPoints::New();
-    pts->SetNumberOfPoints(nnodes[dom][mesh_id]);
-    float *vpts = (float *) pts->GetVoidPointer(0);
-    float *tmp = fpts; 
-    for (int pt = 0 ; pt < nnodes[dom][mesh_id] ; pt++)
+    float *fpts = 0;
+    if (nodpos != -1)
     {
-        *(vpts++) = *(tmp++);
-        *(vpts++) = *(tmp++);
-        if (dims >= 3)
-            *(vpts++) = *(tmp++);
-        else
-            *(vpts++) = 0.;
-    }
+        fpts = new float[amt];
+        read_results(dbid[dom], ts+1, subrec, 1, &nodpos_str, vsize, amt, fpts);
 
-    rv->SetPoints(pts);
-    pts->Delete();
+        vtkPoints *pts = vtkPoints::New();
+        pts->SetNumberOfPoints(nnodes[dom][mesh_id]);
+        float *vpts = (float *) pts->GetVoidPointer(0);
+        float *tmp = fpts; 
+        for (int pt = 0 ; pt < nnodes[dom][mesh_id] ; pt++)
+        {
+            *(vpts++) = *(tmp++);
+            *(vpts++) = *(tmp++);
+            if (dims >= 3)
+                *(vpts++) = *(tmp++);
+            else
+                *(vpts++) = 0.;
+        }
+
+        rv->SetPoints(pts);
+        pts->Delete();
+    }
+    else
+    {
+        //
+        // We can arrive here if there are no nodal positions results
+        // but we have initial mesh positions from reading the mesh
+        // header information (mc_load_nodes). Otherwise, we're in
+        // an error condition
+        //
+        if (rv->GetPoints() == 0)
+        {
+            EXCEPTION1(InvalidVariableException, mesh)
+        }
+    }
 
     //
     // If VisIt really asked for the free nodes mesh, compute that now,
@@ -548,7 +583,8 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
     //
     if (strstr(mesh, free_nodes_str) == 0)
     {
-        delete [] fpts;
+        if (fpts)
+            delete [] fpts;
         return rv;
     }
 
@@ -926,6 +962,9 @@ avtMiliFileFormat::GetSizeInfoForGroup(const char *group_name, int &offset,
 //    Akira Haddox, Thu Aug  7 10:07:40 PDT 2003
 //    Fixed beam support.
 //
+//    Mark C. Miller, Tue Jan  3 17:55:22 PST 2006
+//    Added code to get initial nodal positions with mc_load_nodes()
+//
 // ****************************************************************************
 
 void
@@ -950,6 +989,34 @@ avtMiliFileFormat::ReadMesh(int dom)
         int node_id = 0;
         mc_get_class_info(dbid[dom], mesh_id, M_NODE, node_id, short_name, 
                           long_name, &nnodes[dom][mesh_id]);
+
+        //
+        // Read initial nodal position information, if available
+        //
+        vtkPoints *pts = vtkPoints::New();
+        pts->SetNumberOfPoints(nnodes[dom][mesh_id]);
+        float *vpts = (float *) pts->GetVoidPointer(0);
+        if (mc_load_nodes(dbid[dom], mesh_id, short_name, vpts) == 0)
+        {
+            //
+            // We need to insert zeros if we're in 2D
+            //
+            if (dims == 2)
+            {
+                for (int p = nnodes[dom][mesh_id]-1; p >= 0; p--)
+                {
+                    int q = p*3, r = p*2;
+                    vpts[q+0] = vpts[r+0];
+                    vpts[q+1] = vpts[r+1];
+                    vpts[q+2] = 0.0;
+                }
+            }
+        }
+        else
+        {
+            pts->Delete();
+            pts = NULL;
+        }
 
         //
         // Determine the connectivity.  This will also calculate the number of
@@ -998,7 +1065,7 @@ avtMiliFileFormat::ReadMesh(int dom)
                 int *mat = new int[nelems];
                 int *part = new int[nelems];
                 mc_load_conns(dbid[dom], mesh_id, short_name, conn, mat, part);
-                
+
                 conn_list[i].push_back(conn);
                 mat_list[i].push_back(mat);
                 list_size[i].push_back(nelems);
@@ -1093,6 +1160,16 @@ avtMiliFileFormat::ReadMesh(int dom)
                 delete [] conn;
             }
         }
+
+        //
+        // Hook up points to mesh if we have 'em
+        //
+        if (pts)
+        {
+            connectivity[dom][mesh_id]->SetPoints(pts);
+            pts->Delete();
+        }
+
     }// end mesh reading loop
 
     readMesh[dom] = true;

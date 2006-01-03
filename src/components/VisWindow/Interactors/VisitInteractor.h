@@ -75,6 +75,9 @@ typedef   void (*ViewCallback)(VisWindow *);
 //    class as RotateAboutFocus3D, PanImage3D and ZoomImage3D.  I added
 //    DollyCameraTowardFocus3D.
 //
+//    Hank Childs, Thu Dec 29 10:30:53 PST 2005
+//    Added Boolean argument to IssueViewCallback.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
@@ -137,7 +140,7 @@ class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
 
     void                        MotionBegin(void);
     void                        MotionEnd(void);
-    void                        IssueViewCallback(void);
+    void                        IssueViewCallback(bool = false);
     void                        StartBoundingBox(void);
     void                        EndBoundingBox(void);
 

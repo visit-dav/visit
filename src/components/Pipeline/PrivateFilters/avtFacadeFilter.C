@@ -256,3 +256,22 @@ avtFacadeFilter::ReleaseData(void)
 }
 
 
+// ****************************************************************************
+//  Method: avtFacadeFilter::RefashionDataObjectInfo
+//
+//  Purpose:
+//      Calls refashion data object info on each of the facaded filters.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 29, 2005
+//
+// ****************************************************************************
+
+void
+avtFacadeFilter::RefashionDataObjectInfo(void)
+{
+    for (int i = 0 ; i < GetNumberOfFacadedFilters() ; i++)
+        GetIthFacadedFilter(i)->RefashionDataObjectInfo();
+}
+
+
