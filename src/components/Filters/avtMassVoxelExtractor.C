@@ -979,6 +979,12 @@ static inline int FindMatch(const float *A, const float &a, const int &nA)
 //  Programmer: Hank Childs
 //  Creation:   November 20, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jan  3 17:26:11 PST 2006
+//    Fix bug that ultimately led to UMR where sampling occurred along 
+//    invalid values.
+//
 // ****************************************************************************
 
 void
@@ -1117,13 +1123,30 @@ avtMassVoxelExtractor::SampleAlongSegment(const float *origin,
             }
         }
 
-        foundHit = false;
-        if (ind[0] < 0)
-            continue;
-        if (ind[1] < 0)
-            continue;
-        if (ind[2] < 0)
-            continue;
+        bool intersectedDataset = !(ind[0] < 0 || ind[1] < 0 || ind[2] < 0);
+        if (!intersectedDataset)
+        {
+            if (!foundHit) 
+            {
+                // We still haven't found the start.  Keep looking.
+                continue;
+            }
+            else
+            {
+                // This is the true terminus.
+                last = i;
+                break;
+            }
+        }
+        else  // Did intersect data set.
+        {
+            if (!foundHit)
+            {
+                // This is the first true sample.  "The true start"
+                first = i;
+            }
+        }
+
         valid_sample[i] = true;
         foundHit = true;
         hasSamples = true;

@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 using std::getline;
+#include <snprintf.h>
 #include <visitstream.h>
 #include <set>
 
@@ -22,6 +23,7 @@ extern "C" {
 
 #include <Expression.h>
 
+#include <avtCallback.h>
 #include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 #include <avtGhostData.h>
@@ -40,6 +42,40 @@ using std::string;
 using std::ifstream;
 
 const char *free_nodes_str = "_free_nodes";
+
+#define Warn(msg)          IssueWarning(msg, __LINE__)
+
+// ****************************************************************************
+//  Method:  avtMiliFileFormat::IssueWarning
+//
+//  Purpose: Convenience method to issue warning messages. Manages number of
+//      times a given warning message will be output
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    January 4, 2005 
+//
+// ****************************************************************************
+void
+avtMiliFileFormat::IssueWarning(const char *msg, int key)
+{
+    if (warn_map.find(key) == warn_map.end())
+        warn_map[key] = 1;
+    else
+        warn_map[key]++;
+
+    if (warn_map[key] <= 5)
+    {
+        if (!avtCallback::IssueWarning(msg))
+            cerr << msg << endl;
+    }
+
+    if (warn_map[key] == 5)
+    {
+        const char *smsg = "\n\nFurther warnings will be suppresed";
+        if (!avtCallback::IssueWarning(smsg))
+            cerr << smsg << endl;
+    }
+}
 
 // ****************************************************************************
 //  Constructor:  avtMiliFileFormat::avtMiliFileFormat
@@ -534,46 +570,67 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
             break;
         }
     }
-    if (subrec == -1 && nodpos != -1)
-    {
-        EXCEPTION0(ImproperUseException);
-    }
 
     int amt = dims*nnodes[dom][mesh_id];
     float *fpts = 0;
     if (nodpos != -1)
     {
-        fpts = new float[amt];
-        read_results(dbid[dom], ts+1, subrec, 1, &nodpos_str, vsize, amt, fpts);
-
-        vtkPoints *pts = vtkPoints::New();
-        pts->SetNumberOfPoints(nnodes[dom][mesh_id]);
-        float *vpts = (float *) pts->GetVoidPointer(0);
-        float *tmp = fpts; 
-        for (int pt = 0 ; pt < nnodes[dom][mesh_id] ; pt++)
+        if (subrec == -1)
         {
-            *(vpts++) = *(tmp++);
-            *(vpts++) = *(tmp++);
-            if (dims >= 3)
-                *(vpts++) = *(tmp++);
-            else
-                *(vpts++) = 0.;
-        }
+            if (rv->GetPoints() == 0)
+            {
+                char msg[1024];
+                SNPRINTF(msg, sizeof(msg),
+                    "Unable to find coords for domain %d. Skipping it", dom);
+                Warn(msg);
 
-        rv->SetPoints(pts);
-        pts->Delete();
+                // null out the returned grid
+                rv->Delete();
+                rv = vtkUnstructuredGrid::New();
+                return rv;
+            }
+        }
+        else
+        {
+
+            fpts = new float[amt];
+            read_results(dbid[dom], ts+1, subrec, 1, &nodpos_str, vsize, amt, fpts);
+
+            vtkPoints *pts = vtkPoints::New();
+            pts->SetNumberOfPoints(nnodes[dom][mesh_id]);
+            float *vpts = (float *) pts->GetVoidPointer(0);
+            float *tmp = fpts; 
+            for (int pt = 0 ; pt < nnodes[dom][mesh_id] ; pt++)
+            {
+                *(vpts++) = *(tmp++);
+                *(vpts++) = *(tmp++);
+                if (dims >= 3)
+                    *(vpts++) = *(tmp++);
+                else
+                    *(vpts++) = 0.;
+            }
+            rv->SetPoints(pts);
+            pts->Delete();
+        }
     }
     else
     {
         //
         // We can arrive here if there are no nodal positions results
         // but we have initial mesh positions from reading the mesh
-        // header information (mc_load_nodes). Otherwise, we're in
-        // an error condition
+        // header information (mc_load_nodes).
         //
         if (rv->GetPoints() == 0)
         {
-            EXCEPTION1(InvalidVariableException, mesh)
+            char msg[1024];
+            SNPRINTF(msg, sizeof(msg),
+                "Unable to find coords for domain %d. Skipping it", dom);
+            Warn(msg);
+
+            // null out the returned grid
+            rv->Delete();
+            rv = vtkUnstructuredGrid::New();
+            return rv;
         }
     }
 

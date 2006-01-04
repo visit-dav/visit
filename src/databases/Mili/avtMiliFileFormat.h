@@ -5,6 +5,7 @@
 #ifndef AVT_MILI_FILE_FORMAT_H
 #define AVT_MILI_FILE_FORMAT_H
 
+#include <map>
 #include <vector>
 #include <string>
 #include <visitstream.h>
@@ -22,6 +23,7 @@ class vtkUnstructuredGrid;
 class vtkFloatArray;
 
 using std::vector;
+using std::map;
 
 // ****************************************************************************
 //  Class: avtMiliFileFormat
@@ -62,6 +64,9 @@ using std::vector;
 //    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
 //    Added CanCacheVariable since we handle caching of "param arrays" here
 //    in the plugin and added data members to handle free nodes mesh
+//
+//    Mark C. Miller, Wed Jan  4 16:51:34 PST 2006
+//    Added IssueWarning private method and warn_map data member
 // ****************************************************************************
 
 class avtMiliFileFormat : public avtMTMDFileFormat
@@ -101,6 +106,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     bool                  setTimesteps;
     vector<double>        times;
 
+    map<int, int>         warn_map;
     vector<bool>          validateVars;
     vector<bool>          readMesh;
     int                   dims;
@@ -132,6 +138,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     vector<int>                            nmaterials;
     vector<vector< avtMaterial * > >       materials;
 
+    void                  IssueWarning(const char *msg, int key);
     void                  ReadMesh(int dom);
     void                  ValidateVariables(int dom);
     avtMaterial *         ConstructMaterials(vector< vector<int*> >&,
