@@ -875,6 +875,11 @@ class MakeMovie:
     #   Brad Whitlock, Fri Jun 24 10:11:31 PDT 2005
     #   Added support for reading the window sizes out of the session file.
     #
+    #   Brad Whitlock, Thu Jan 5 16:41:17 PST 2006
+    #   Added code to treat tiff format specially because of the preference
+    #   for giving "-format tiff" on the command line but saving files with
+    #   ".tif" extension. This lets the option work again.
+    #
     ###########################################################################
 
     def ProcessArguments(self):
@@ -934,6 +939,8 @@ class MakeMovie:
                             else:
                                 self.PrintUsage();
                                 sys.exit(-1)
+                        elif(format == "tiff" or format == "tif"):
+                            formatList = formatList + ["tiff"]
                         else:
                             found = 0
                             format2 = "." + format
