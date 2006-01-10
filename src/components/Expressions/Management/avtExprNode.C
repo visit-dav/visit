@@ -85,6 +85,7 @@
 #include <avtMeanFilterExpression.h>
 #include <avtMedianFilterExpression.h>
 #include <avtConnCMFEExpression.h>
+#include <avtPosCMFEExpression.h>
 #include <avtExternalNodeExpression.h>
 #include <avtSurfaceNormalExpression.h>
 
@@ -414,8 +415,14 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Added external_node, surface normals, min_side_volume, max_side_volume,
 //      min_edge_length, and max_edge_length.
 //
+//      Hank Childs, Mon Oct 10 17:08:05 PDT 2005
+//      Added pos_cmfe.
+//
 //      Brad Whitlock, Fri Nov 18 15:59:27 PST 2005
 //      Added distance_to_best_fit_line.
+//
+//      Hank Childs, Thu Jan  5 08:44:12 PST 2006
+//      Remove redundant polar_phi entry that was added with cut-n-paste.
 //
 // ****************************************************************************
 void
@@ -630,6 +637,8 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtMedianFilterExpression;
     else if (functionName == "conn_cmfe")
         f = new avtConnCMFEExpression;
+    else if (functionName == "pos_cmfe")
+        f = new avtPosCMFEExpression;
     else if (functionName == "surface_normal" || 
              functionName == "point_surface_normal")
     {
@@ -723,12 +732,6 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtDistanceToBestFitLineFilter(true);
     else if (functionName == "distance_to_best_fit_line2")
         f = new avtDistanceToBestFitLineFilter(false);
-    else if (functionName == "polar_phi")
-    {
-        avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;
-        ecm->SetMacro("polar", 2);
-        f = ecm;
-    }
     else
     {
         string error =

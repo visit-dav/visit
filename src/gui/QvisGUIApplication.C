@@ -5550,7 +5550,9 @@ QvisGUIApplication::updateVisItCompleted(const QString &program)
 // Creation:   Fri May 6 09:40:54 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jan 6 13:53:48 PST 2006
+//   I added the AcceptRecordedMacro client method.
+//
 // ****************************************************************************
 
 void
@@ -5568,11 +5570,12 @@ QvisGUIApplication::SendInterface()
     info->DeclareMethod("Hide",      "");
     info->DeclareMethod("Iconify",   "");
     info->DeclareMethod("Show",      "");
-    info->DeclareMethod("MessageBoxYesNo",    "s");
-    info->DeclareMethod("MessageBoxOkCancel", "s");
-    info->DeclareMethod("MessageBoxOk",       "s");
-    info->DeclareMethod("MovieProgress",      "sii");
-    info->DeclareMethod("MovieProgressEnd",   "");
+    info->DeclareMethod("MessageBoxYesNo",     "s");
+    info->DeclareMethod("MessageBoxOkCancel",  "s");
+    info->DeclareMethod("MessageBoxOk",        "s");
+    info->DeclareMethod("MovieProgress",       "sii");
+    info->DeclareMethod("MovieProgressEnd",    "");
+    info->DeclareMethod("AcceptRecordedMacro", "s");
     info->SelectAll();
     info->Notify();
 
@@ -5600,6 +5603,9 @@ QvisGUIApplication::SendInterface()
 // Modifications:
 //   Brad Whitlock, Mon Jul 11 09:21:55 PDT 2005
 //   Moved creation of movie progress dialog to this method.
+//
+//   Brad Whitlock, Fri Jan 6 13:35:18 PST 2006
+//   Added code to get macros.
 //
 // ****************************************************************************
 
@@ -5764,6 +5770,13 @@ QvisGUIApplication::HandleClientMethod()
             {
                 if(movieProgress != 0)
                     movieProgress->hide();
+            }
+            else if(method->GetMethodName() == "AcceptRecordedMacro")
+            {
+                QvisCommandWindow *cmdWin = (QvisCommandWindow *)
+                    GetWindowPointer(WINDOW_COMMAND);
+                QString macro(method->GetStringArgs()[0].c_str());
+                cmdWin->acceptRecordedMacro(macro);
             }
         }
     }

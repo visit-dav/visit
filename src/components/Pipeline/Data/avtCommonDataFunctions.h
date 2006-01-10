@@ -56,8 +56,12 @@ class     vtkDataArray;
 //    Hank Childs, Tue Jul 27 08:49:51 PDT 2004
 //    Add CConvertUnstructuredGridToPolyData.
 //
+//    Hank Childs, Tue Oct 11 13:47:59 PDT 2005
+//    Add CGetAllDatasets.
+//
 //    Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
 //    Added compression support functions 
+//
 // ****************************************************************************
 
 //
@@ -68,6 +72,7 @@ PIPELINE_API void CGetSpatialExtents(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetDataExtents(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CUpdateData(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CAddInputToAppendFilter(avtDataRepresentation &, void *, bool &);
+PIPELINE_API void CGetAllDatasets(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfZones(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetChunkByDomain(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetChunkByLabel(avtDataRepresentation &, void *, bool &);
@@ -141,6 +146,14 @@ typedef struct
     double       *extents;
     const char   *varname;
 } GetVariableRangeArgs;
+
+typedef struct
+{
+    std::vector<vtkDataSet *> datasets;
+    std::vector<int>          domains;
+    std::vector<std::string>  labels;
+} GetAllDatasetsArgs;
+
 
 #endif
 

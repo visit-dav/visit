@@ -6638,6 +6638,10 @@ ViewerWindowManager::GetWindowInformation()
 //   Fixed problem where windowInfo->SetWindowMode was called twice, once
 //   with interaction mode and once with window mode. Added calls to
 //   windowInfo->SetWinMode()
+//
+//   Brad Whitlock, Fri Jan 6 11:15:25 PDT 2006
+//   Added code to set the view dimension since it was not getting set.
+//
 // ****************************************************************************
 
 void
@@ -6707,6 +6711,12 @@ ViewerWindowManager::UpdateWindowInformation(int flags, int windowIndex)
             windowInfo->SetLockView(win->GetViewIsLocked());
             windowInfo->SetViewExtentsType(int(win->GetViewExtentsType()));
             windowInfo->SetWinMode(win->GetWindowMode());
+            if(win->GetWindowMode() == WINMODE_3D)
+                windowInfo->SetViewDimension(3);
+            else if(win->GetWindowMode() == WINMODE_CURVE)
+                windowInfo->SetViewDimension(1);
+            else
+                windowInfo->SetViewDimension(2);
             windowInfo->SetPerspective(win->GetPerspectiveProjection());
             windowInfo->SetLockTools(win->GetToolLock());
             windowInfo->SetLockTime(win->GetTimeLock());

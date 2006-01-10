@@ -162,6 +162,7 @@
       ResizeWindowRPC
       MoveWindowRPC
       MoveAndResizeWindowRPC
+      SetStateLoggingRPC
       MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">

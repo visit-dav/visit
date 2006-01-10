@@ -91,6 +91,9 @@ class avtPlot;
 //    Hank Childs, Tue Jul 19 14:23:56 PDT 2005
 //    Added VAR_CATEGORY_ARRAY.
 //
+//    Brad Whitlock, Thu Jan 5 14:40:42 PST 2006
+//    I removed explicit support for logging from the scripting plugins.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralPlotPluginInfo
@@ -161,10 +164,10 @@ class PLUGIN_API EnginePlotPluginInfo : public virtual CommonPlotPluginInfo
 class PLUGIN_API ScriptingPlotPluginInfo : public virtual CommonPlotPluginInfo
 {
   public:
-    virtual void InitializePlugin(AttributeSubject *subj, FILE *logFile) = 0;
+    virtual void InitializePlugin(AttributeSubject *subj, void *data) = 0;
     virtual void *GetMethodTable(int *nMethods) = 0;
+    virtual char *GetLogString() = 0;
     virtual bool TypesMatch(void *) { return false; }
-    virtual void SetLogging(bool val) = 0;
     virtual void SetDefaults(const AttributeSubject *) = 0;
 };
 

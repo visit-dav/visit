@@ -244,6 +244,7 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
     clientInformationList = new ClientInformationList;
     movieAtts            = new MovieAttributes;
     meshManagementAtts   = new MeshManagementAttributes;
+    logRPC               = new ViewerRPC;
 
     // Make the proxy observe the SIL restriction attributes.
     silRestrictionAtts->Attach(this);
@@ -453,6 +454,7 @@ ViewerProxy::~ViewerProxy()
     delete clientInformationList;
     delete movieAtts;
     delete meshManagementAtts;
+    delete logRPC;
 
     //
     // Delete the plot attribute state objects.
@@ -996,6 +998,7 @@ ViewerProxy::Create(int *inputArgc, char ***inputArgv)
     xfer->Add(procAtts);
     xfer->Add(movieAtts);
     xfer->Add(meshManagementAtts);
+    xfer->Add(logRPC);
 
     xfer->ListObjects();
 

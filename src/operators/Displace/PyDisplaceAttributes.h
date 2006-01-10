@@ -6,17 +6,15 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyDisplaceAttributes_StartUp(DisplaceAttributes *subj, FILE *logFile);
+void            PyDisplaceAttributes_StartUp(DisplaceAttributes *subj, void *data);
 void            PyDisplaceAttributes_CloseDown();
 PyMethodDef    *PyDisplaceAttributes_GetMethodTable(int *nMethods);
 bool            PyDisplaceAttributes_Check(PyObject *obj);
 DisplaceAttributes *PyDisplaceAttributes_FromPyObject(PyObject *obj);
 PyObject       *PyDisplaceAttributes_NewPyObject();
 PyObject       *PyDisplaceAttributes_WrapPyObject(const DisplaceAttributes *attr);
-void            PyDisplaceAttributes_SetLogging(bool val);
+std::string     PyDisplaceAttributes_GetLogString();
 void            PyDisplaceAttributes_SetDefaults(const DisplaceAttributes *atts);
-
-PyObject       *PyDisplaceAttributes_StringRepresentation(const DisplaceAttributes *atts);
 
 #endif
 

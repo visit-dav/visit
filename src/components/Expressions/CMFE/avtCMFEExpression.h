@@ -30,6 +30,11 @@ class     avtDatabase;
 //    Add support for expressions.  Also add GetVariableDimension, which is
 //    necessary for non-scalars.
 //
+//    Hank Childs, Thu Jan  5 15:34:17 PST 2006
+//    Do a better job of getting centering of input variable.  Also add 
+//    support for a "default" variable for when we are sampling onto 
+//    non-overlapping meshes.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
@@ -44,6 +49,8 @@ class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
     virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
     virtual int               NumVariableArguments() { return 1; };
     virtual int               GetVariableDimension() { return varDim; };
+    virtual bool              IsPointVariable(void) { return isNodal; };
+    virtual void              AddInputVariableName(const char *);
 
   protected:
     bool                      issuedWarning;
@@ -58,6 +65,8 @@ class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
     avtSILRestriction_p       firstDBSIL;
     std::string               argument_expression;
     int                       varDim;
+    bool                      isNodal;
+    std::vector<std::string>  varnames;
 
     virtual void              PreExecute(void);
     virtual void              Execute(void);
@@ -67,6 +76,7 @@ class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
                                           const std::string &) = 0;
     virtual void              ExamineSpecification(avtPipelineSpecification_p);
     virtual bool              UseIdenticalSIL(void) { return false; };
+    virtual bool              HasDefaultVariable(void) { return false; };
     int                       GetTimestate(ref_ptr<avtDatabase>);
 };
 

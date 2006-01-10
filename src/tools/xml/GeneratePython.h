@@ -90,6 +90,10 @@ inline char toupper(char c)
 //    Hank Childs, Tue May 24 10:19:40 PDT 2005
 //    Added hasoptions.
 //
+//    Brad Whitlock, Thu Jan 5 13:33:40 PST 2006
+//    Changed string representation coding and removed most print coding by
+//    making it use the string coding.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -187,11 +191,6 @@ class PythonGeneratorField : public virtual Field
         c << endl;
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        c << "    //" << name << endl;
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
         c << "    //" << name << endl;
@@ -258,14 +257,9 @@ class AttsGeneratorInt : public virtual Int , public virtual PythonGeneratorFiel
         c << "    PyObject *retval = PyInt_FromLong(long(obj->data->"<<MethodNameGet()<<"()));" << endl;
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        c << "    fprintf(fp, \"" << name << " = %d\\n\", obj->data->" << MethodNameGet() << "());" << endl;
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"" << name << " = %d\\n\", atts->" << MethodNameGet() << "());" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %d\\n\", prefix, atts->" << MethodNameGet() << "());" << endl;
         c << "    str += tmpStr;" << endl;
     }
 };
@@ -335,24 +329,10 @@ class AttsGeneratorIntArray : public virtual IntArray , public virtual PythonGen
         c << "        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(" << name << "[i])));" << endl;
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        c << "    {   const int *" << name << " = obj->data->" << MethodNameGet() << "();" << endl;
-        c << "        fprintf(fp, \"" << name << " = (\");" << endl;
-        c << "        for(int i = 0; i < " << length << "; ++i)" << endl;
-        c << "        {" << endl;
-        c << "            fprintf(fp, \"%d\", " << name << "[i]);" << endl;
-        c << "            if(i < " << length - 1 << ")" << endl;
-        c << "                fprintf(fp, \", \");" << endl;
-        c << "        }" << endl;
-        c << "        fprintf(fp, \")\\n\");" << endl;
-        c << "    }" << endl;
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
         c << "    {   const int *" << name << " = atts->" << MethodNameGet() << "();" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"" << name << " = (\");" << endl;
+        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
         c << "        str += tmpStr;" << endl;
         c << "        for(int i = 0; i < " << length << "; ++i)" << endl;
         c << "        {" << endl;
@@ -434,24 +414,10 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual PythonG
         c << "        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(" << name << "[i])));" << endl;
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        c << "    {   const intVector &" << name << " = obj->data->" << MethodNameGet() << "();" << endl;
-        c << "        fprintf(fp, \"" << name << " = (\");" << endl;
-        c << "        for(int i = 0; i < " << name << ".size(); ++i)" << endl;
-        c << "        {" << endl;
-        c << "            fprintf(fp, \"%d\", " << name << "[i]);" << endl;
-        c << "            if(i < " << name << ".size() - 1)" << endl;
-        c << "                fprintf(fp, \", \");" << endl;
-        c << "        }" << endl;
-        c << "        fprintf(fp, \")\\n\");" << endl;
-        c << "    }" << endl;
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
         c << "    {   const intVector &" << name << " = atts->" << MethodNameGet() << "();" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"" << name << " = (\");" << endl;
+        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
         c << "        str += tmpStr;" << endl;
         c << "        for(int i = 0; i < " << name << ".size(); ++i)" << endl;
         c << "        {" << endl;
@@ -493,20 +459,12 @@ class AttsGeneratorBool : public virtual Bool , public virtual PythonGeneratorFi
         c << "    PyObject *retval = PyInt_FromLong(obj->data->"<<MethodNameGet()<<"()?1L:0L);" << endl;
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        c << "    if(obj->data->" << MethodNameGet() << "())" << endl;
-        c << "        fprintf(fp, \"" << name << " = 1\\n\");" << endl;
-        c << "    else" << endl;
-        c << "        fprintf(fp, \"" << name << " = 0\\n\");" << endl;
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
         c << "    if(atts->" << MethodNameGet() << "())" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"" << name << " = 1\\n\");" << endl;
+        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = 1\\n\", prefix);" << endl;
         c << "    else" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"" << name << " = 0\\n\");" << endl;
+        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = 0\\n\", prefix);" << endl;
         c << "    str += tmpStr;" << endl;
     }
 };
@@ -535,14 +493,9 @@ class AttsGeneratorFloat : public virtual Float , public virtual PythonGenerator
         c << "    PyObject *retval = PyFloat_FromDouble(double(obj->data->"<<MethodNameGet()<<"()));" << endl;
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        c << "    fprintf(fp, \"" << name << " = %g\\n\", obj->data->" << MethodNameGet() << "());" << endl;
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"" << name << " = %g\\n\", atts->" << MethodNameGet() << "());" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %g\\n\", prefix, atts->" << MethodNameGet() << "());" << endl;
         c << "    str += tmpStr;" << endl;
     }
 };
@@ -612,24 +565,10 @@ class AttsGeneratorFloatArray : public virtual FloatArray , public virtual Pytho
         c << "        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(double(" << name << "[i])));" << endl;
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        c << "    {   const float *" << name << " = obj->data->" << MethodNameGet() << "();" << endl;
-        c << "        fprintf(fp, \"" << name << " = (\");" << endl;
-        c << "        for(int i = 0; i < " << length << "; ++i)" << endl;
-        c << "        {" << endl;
-        c << "            fprintf(fp, \"%g\", " << name << "[i]);" << endl;
-        c << "            if(i < " << length - 1 << ")" << endl;
-        c << "                fprintf(fp, \", \");" << endl;
-        c << "        }" << endl;
-        c << "        fprintf(fp, \")\\n\");" << endl;
-        c << "    }" << endl;
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
         c << "    {   const float *" << name << " = atts->" << MethodNameGet() << "();" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"" << name << " = (\");" << endl;
+        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
         c << "        str += tmpStr;" << endl;
         c << "        for(int i = 0; i < " << length << "; ++i)" << endl;
         c << "        {" << endl;
@@ -671,14 +610,9 @@ class AttsGeneratorDouble : public virtual Double , public virtual PythonGenerat
         c << "    PyObject *retval = PyFloat_FromDouble(obj->data->"<<MethodNameGet()<<"());" << endl;
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        c << "    fprintf(fp, \"" << name << " = %g\\n\", obj->data->" << MethodNameGet() << "());" << endl;
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"" << name << " = %g\\n\", atts->" << MethodNameGet() << "());" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %g\\n\", prefix, atts->" << MethodNameGet() << "());" << endl;
         c << "    str += tmpStr;" << endl;
     }
 };
@@ -748,24 +682,10 @@ class AttsGeneratorDoubleArray : public virtual DoubleArray , public virtual Pyt
         c << "        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(" << name << "[i]));" << endl;
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        c << "    {   const double *" << name << " = obj->data->" << MethodNameGet() << "();" << endl;
-        c << "        fprintf(fp, \"" << name << " = (\");" << endl;
-        c << "        for(int i = 0; i < " << length << "; ++i)" << endl;
-        c << "        {" << endl;
-        c << "            fprintf(fp, \"%g\", " << name << "[i]);" << endl;
-        c << "            if(i < " << length - 1 << ")" << endl;
-        c << "                fprintf(fp, \", \");" << endl;
-        c << "        }" << endl;
-        c << "        fprintf(fp, \")\\n\");" << endl;
-        c << "    }" << endl;
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
         c << "    {   const double *" << name << " = atts->" << MethodNameGet() << "();" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"" << name << " = (\");" << endl;
+        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
         c << "        str += tmpStr;" << endl;
         c << "        for(int i = 0; i < " << length << "; ++i)" << endl;
         c << "        {" << endl;
@@ -846,24 +766,10 @@ class AttsGeneratorDoubleVector : public virtual DoubleVector , public virtual P
         c << "        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(" << name << "[i]));" << endl;
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        c << "    {   const doubleVector &" << name << " = obj->data->" << MethodNameGet() << "();" << endl;
-        c << "        fprintf(fp, \"" << name << " = (\");" << endl;
-        c << "        for(int i = 0; i < " << name << ".size(); ++i)" << endl;
-        c << "        {" << endl;
-        c << "            fprintf(fp, \"%g\", " << name << "[i]);" << endl;
-        c << "            if(i < " << name << ".size() - 1)" << endl;
-        c << "                fprintf(fp, \", \");" << endl;
-        c << "        }" << endl;
-        c << "        fprintf(fp, \")\\n\");" << endl;
-        c << "    }" << endl;
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
         c << "    {   const doubleVector &" << name << " = atts->" << MethodNameGet() << "();" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"" << name << " = (\");" << endl;
+        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
         c << "        str += tmpStr;" << endl;
         c << "        for(int i = 0; i < " << name << ".size(); ++i)" << endl;
         c << "        {" << endl;
@@ -905,14 +811,9 @@ class AttsGeneratorUChar : public virtual UChar , public virtual PythonGenerator
         c << "    PyObject *retval = PyInt_FromLong(long(obj->data->"<<MethodNameGet()<<"()));" << endl;
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        c << "    fprintf(fp, \"" << name << " = %d\\n\", int(obj->data->" << MethodNameGet() << "()));" << endl;
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"" << name << " = %d\\n\", int(atts->" << MethodNameGet() << "()));" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %d\\n\", prefix, int(atts->" << MethodNameGet() << "()));" << endl;
         c << "    str += tmpStr;" << endl;
     }
 };
@@ -987,25 +888,10 @@ class AttsGeneratorUCharArray : public virtual UCharArray , public virtual Pytho
         c << "        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(" << name << "[i])));" << endl;
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        c << "    {   const unsigned char *" << name << " = obj->data->" << MethodNameGet() << "();" << endl;
-        c << "        fprintf(fp, \"" << name << " = (\");" << endl;
-        c << "        for(int i = 0; i < " << length << "; ++i)" << endl;
-        c << "        {" << endl;
-        c << "            fprintf(fp, \"%d\", int(" << name << "[i]));" << endl;
-        c << "            if(i < " << length - 1 << ")" << endl;
-        c << "                fprintf(fp, \", \");" << endl;
-        c << "        }" << endl;
-        c << "        fprintf(fp, \")\\n\");" << endl;
-        c << "    }" << endl;
-        c << endl;
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
         c << "    {   const unsigned char *" << name << " = atts->" << MethodNameGet() << "();" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"" << name << " = (\");" << endl;
+        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
         c << "        str += tmpStr;" << endl;
         c << "        for(int i = 0; i < " << length << "; ++i)" << endl;
         c << "        {" << endl;
@@ -1100,24 +986,10 @@ class AttsGeneratorUCharVector : public virtual UCharVector , public virtual Pyt
         c << "        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(" << name << "[i])));" << endl;
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        c << "    {   const unsignedCharVector &" << name << " = obj->data->" << MethodNameGet() << "();" << endl;
-        c << "        fprintf(fp, \"" << name << " = (\");" << endl;
-        c << "        for(int i = 0; i < " << name << ".size(); ++i)" << endl;
-        c << "        {" << endl;
-        c << "            fprintf(fp, \"%d\", int(" << name << "[i]));" << endl;
-        c << "            if(i < " << name <<".size() - 1)" << endl;
-        c << "                fprintf(fp, \", \");" << endl;
-        c << "        }" << endl;
-        c << "        fprintf(fp, \")\\n\");" << endl;
-        c << "    }" << endl;
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
         c << "    {   const unsignedCharVector &" << name << " = atts->" << MethodNameGet() << "();" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"" << name << " = (\");" << endl;
+        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
         c << "        str += tmpStr;" << endl;
         c << "        for(int i = 0; i < " << name << ".size(); ++i)" << endl;
         c << "        {" << endl;
@@ -1158,14 +1030,9 @@ class AttsGeneratorString : public virtual String , public virtual PythonGenerat
         c << "    PyObject *retval = PyString_FromString(obj->data->"<<MethodNameGet()<<"().c_str());" << endl;
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        c << "    fprintf(fp, \"" << name << " = \\\"%s\\\"\\n\", obj->data->" << MethodNameGet() << "().c_str());" << endl;
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"" << name << " = \\\"%s\\\"\\n\", atts->" << MethodNameGet() << "().c_str());" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = \\\"%s\\\"\\n\", prefix, atts->" << MethodNameGet() << "().c_str());" << endl;
         c << "    str += tmpStr;" << endl;
     }
 };
@@ -1219,24 +1086,10 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual P
         c << "        PyTuple_SET_ITEM(retval, i, PyString_FromString(" << name << "[i].c_str()));" << endl;
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        c << "    {   const stringVector &" << name << " = obj->data->" << MethodNameGet() << "();" << endl;
-        c << "        fprintf(fp, \"" << name << " = (\");" << endl;
-        c << "        for(int i = 0; i < " << name << ".size(); ++i)" << endl;
-        c << "        {" << endl;
-        c << "            fprintf(fp, \"\\\"%s\\\"\", " << name << "[i].c_str());" << endl;
-        c << "            if(i < " << name << ".size() - 1)" << endl;
-        c << "                fprintf(fp, \", \");" << endl;
-        c << "        }" << endl;
-        c << "        fprintf(fp, \")\\n\");" << endl;
-        c << "    }" << endl;
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
         c << "    {   const stringVector &" << name << " = atts->" << MethodNameGet() << "();" << endl;
-        c << "        SNPRINTF(tmpStr, 1000, \"" << name << " = (\");" << endl;
+        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
         c << "        str += tmpStr;" << endl;
         c << "        for(int i = 0; i < " << name << ".size(); ++i)" << endl;
         c << "        {" << endl;
@@ -1278,15 +1131,10 @@ class AttsGeneratorColorTable : public virtual ColorTable , public virtual Pytho
         c << "    PyObject *retval = PyString_FromString(obj->data->"<<MethodNameGet()<<"().c_str());" << endl;
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        c << "    fprintf(fp, \"" << name << " = \\\"%s\\\"\\n\", obj->data->" << MethodNameGet() << "().c_str());" << endl;
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "   SNPRINTF(tmpStr, 1000, \"" << name << " = \\\"%s\\\"\\n\", atts->" << MethodNameGet() << "().c_str());" << endl;
-        c << "   str += tmpStr;" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = \\\"%s\\\"\\n\", prefix, atts->" << MethodNameGet() << "().c_str());" << endl;
+        c << "    str += tmpStr;" << endl;
     }
 };
 
@@ -1369,16 +1217,10 @@ class AttsGeneratorColor : public virtual Color , public virtual PythonGenerator
         c << "    PyTuple_SET_ITEM(retval, 3, PyInt_FromLong(long(" << name << "[3])));" << endl;
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        c << "    const unsigned char *" << name << " = obj->data->" << MethodNameGet() << "().GetColor();" << endl;
-        c << "    fprintf(fp, \"" << name << " = (%d, %d, %d, %d)\\n\", int("<<name<<"[0]), int("<<name<<"[1]), int("<<name<<"[2]), int("<<name<<"[3]));" << endl;
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
         c << "    const unsigned char *" << name << " = atts->" << MethodNameGet() << "().GetColor();" << endl;
-        c << "    SNPRINTF(tmpStr, 1000, \"" << name << " = (%d, %d, %d, %d)\\n\", int("<<name<<"[0]), int("<<name<<"[1]), int("<<name<<"[2]), int("<<name<<"[3]));" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = (%d, %d, %d, %d)\\n\", prefix, int("<<name<<"[0]), int("<<name<<"[1]), int("<<name<<"[2]), int("<<name<<"[3]));" << endl;
         c << "    str += tmpStr;" << endl;
     }
 };
@@ -1407,14 +1249,9 @@ class AttsGeneratorLineStyle : public virtual LineStyle , public virtual PythonG
         c << "    PyObject *retval = PyInt_FromLong(long(obj->data->"<<MethodNameGet()<<"()));" << endl;
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        c << "    fprintf(fp, \"" << name << " = %d\\n\", obj->data->" << MethodNameGet() << "());" << endl;
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"" << name << " = %d\\n\", atts->" << MethodNameGet() << "());" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %d\\n\", prefix, atts->" << MethodNameGet() << "());" << endl;
         c << "    str += tmpStr;" << endl;
     }
 };
@@ -1443,14 +1280,9 @@ class AttsGeneratorLineWidth : public virtual LineWidth , public virtual PythonG
         c << "    PyObject *retval = PyInt_FromLong(long(obj->data->"<<MethodNameGet()<<"()));" << endl;
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        c << "    fprintf(fp, \"" << name << " = %d\\n\", obj->data->" << MethodNameGet() << "());" << endl;
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"" << name << " = %d\\n\", atts->" << MethodNameGet() << "());" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %d\\n\", prefix, atts->" << MethodNameGet() << "());" << endl;
         c << "    str += tmpStr;" << endl;
     }
 };
@@ -1479,14 +1311,9 @@ class AttsGeneratorOpacity : public virtual Opacity , public virtual PythonGener
         c << "    PyObject *retval = PyFloat_FromDouble(obj->data->"<<MethodNameGet()<<"());" << endl;
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        c << "    fprintf(fp, \"" << name << " = %g\\n\", obj->data->" << MethodNameGet() << "());" << endl;
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"" << name << " = %g\\n\", atts->" << MethodNameGet() << "());" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %g\\n\", prefix, atts->" << MethodNameGet() << "());" << endl;
         c << "    str += tmpStr;" << endl;
     }
 };
@@ -1515,14 +1342,9 @@ class AttsGeneratorVariableName : public virtual VariableName , public virtual P
         c << "    PyObject *retval = PyString_FromString(obj->data->"<<MethodNameGet()<<"().c_str());" << endl;
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        c << "    fprintf(fp, \"" << name << " = \\\"%s\\\"\\n\", obj->data->" << MethodNameGet() << "().c_str());" << endl;
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"" << name << " = \\\"%s\\\"\\n\", atts->" << MethodNameGet() << "().c_str());" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = \\\"%s\\\"\\n\", prefix, atts->" << MethodNameGet() << "().c_str());" << endl;
         c << "    str += tmpStr;" << endl;
     }
 };
@@ -1797,45 +1619,19 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
         }
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        if(AttType == "ColorAttributeList")
-        {
-            c << "    fprintf(fp, \"" << name << " = [\");" << endl;
-            c << "    {   const ColorAttributeList &cL = obj->data->Get" << Name << "();" << endl;
-            c << "        for(int i = 0; i < cL.GetNumColorAttributes(); ++i)" << endl;
-            c << "        {" << endl;
-            c << "            const unsigned char *c = cL[i].GetColor();" << endl;
-            c << "            fprintf(fp, \"(%d, %d, %d, %d)\"," << endl;
-            c << "                    int(c[0]), int(c[1]), int(c[2]), int(c[3]));" << endl;
-            c << "            if(i < cL.GetNumColorAttributes()-1)" << endl;
-            c << "                fprintf(fp, \", \");" << endl;
-            c << "        }" << endl;
-            c << "    }" << endl;
-            c << "    fprintf(fp, \"]\\n\");" << endl;
-        }
-        else
-        {
-            c << "// Code to print " << name << " not implemented." << endl;
-        }
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
         if(AttType == "ColorAttributeList")
         {
             c << "    { const ColorAttributeList &cL = atts->Get" << Name << "();" << endl;
-            c << "        str += \"" << name << " = [\";" << endl;
+            c << "        const char *comment = (prefix==0 || strcmp(prefix,\"\")==0) ? \"# \" : \"\";" << endl;
             c << "        for(int i = 0; i < cL.GetNumColorAttributes(); ++i)" << endl;
             c << "        {" << endl;
             c << "            const unsigned char *c = cL[i].GetColor();" << endl;
-            c << "            SNPRINTF(tmpStr, 1000, \"(%d, %d, %d, %d)\"," << endl;
-            c << "                    int(c[0]), int(c[1]), int(c[2]), int(c[3]));" << endl;
+            c << "            SNPRINTF(tmpStr, 1000, \"%s%sSet" << Name << "(%d, (%d, %d, %d, %d))\\n\"," << endl;
+            c << "                     comment, prefix, i, int(c[0]), int(c[1]), int(c[2]), int(c[3]));" << endl;
             c << "            str += tmpStr;" << endl;
-            c << "            if(i < cL.GetNumColorAttributes()-1)" << endl;
-            c << "                str += \", \";" << endl;
             c << "        }" << endl;
-            c << "        str += \"]\\n\";" << endl;
             c << "    }" << endl;
         }
         else
@@ -1935,41 +1731,6 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
         c << "    PyObject *retval = PyInt_FromLong(long(obj->data->"<<MethodNameGet()<<"()));" << endl;
     }
 
-    virtual void PrintValue(ostream &c, const QString &classname)
-    {
-        // Create a string that shows the possible values.
-        c << "    const char *" << name << "_names = \"";
-        for(int j = 0; j < enumType->values.size(); ++j)
-        {
-            c << enumType->values[j];
-            if(j < enumType->values.size() - 1)
-                c << ", ";
-        }
-        c << "\";" << endl;
-
-        for(int i = 0; i < enumType->values.size(); ++i)
-        {
-            c << "    ";
-            if(i == 0)
-            {
-                c << "if";
-                c << "(obj->data->" << MethodNameGet() << "() == "
-                  << classname << "::" << enumType->values[i] << ")" << endl;
-            }
-            else if(i < enumType->values.size() - 1)
-            {
-                c << "else if";
-                c << "(obj->data->" << MethodNameGet() << "() == "
-                  << classname << "::" << enumType->values[i] << ")" << endl;
-            }
-            else
-                c << "else" << endl;
-            c << "        fprintf(fp, \"" << name << " = "
-              << enumType->values[i] << "  # %s\\n\", " << name << "_names);" << endl;
-        }
-        c << endl;
-    }
-
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
         // Create a string that shows the possible values.
@@ -1999,10 +1760,10 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
             }
             else
                 c << "else" << endl;
-            c << "        {" << endl;
-            c << "             SNPRINTF(tmpStr, 1000, \"" << name << " = " << enumType->values[i] << "  # %s\\n\", " << name << "_names);" << endl;
-            c << "             str += tmpStr;" << endl;
-            c << "        }" << endl;
+            c << "    {" << endl;
+            c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s" << enumType->values[i] << "  # %s\\n\", prefix, prefix, " << name << "_names);" << endl;
+            c << "        str += tmpStr;" << endl;
+            c << "    }" << endl;
         }
         c << endl;
     }
@@ -2159,17 +1920,16 @@ class PythonGeneratorAttribute
         h << "//" << endl;
         h << "// Functions exposed to the VisIt module." << endl;
         h << "//" << endl;
-        h << "void            Py"<<name<<"_StartUp("<<name<<" *subj, FILE *logFile);" << endl;
+        h << "void            Py"<<name<<"_StartUp("<<name<<" *subj, void *data);" << endl;
         h << "void            Py"<<name<<"_CloseDown();" << endl;
         h << "PyMethodDef    *Py"<<name<<"_GetMethodTable(int *nMethods);" << endl;
         h << "bool            Py"<<name<<"_Check(PyObject *obj);" << endl;
         h << name << " *Py"<<name<<"_FromPyObject(PyObject *obj);" << endl;
         h << "PyObject       *Py"<<name<<"_NewPyObject();" << endl;
         h << "PyObject       *Py"<<name<<"_WrapPyObject(const " << name << " *attr);" << endl;
-        h << "void            Py"<<name<<"_SetLogging(bool val);" << endl;
         h << "void            Py"<<name<<"_SetDefaults(const "<<name<<" *atts);" << endl;
-        h << endl;
-        h << "PyObject       *Py"<<name<<"_StringRepresentation(const "<<name<<" *atts);" << endl;
+        h << "std::string     Py"<<name<<"_GetLogString();" << endl;
+        h << "std::string     Py"<<name<<"_ToString(const " << name << " *, const char *);" << endl;
         h << endl;
         h << "#endif" << endl;
         h << endl;
@@ -2181,6 +1941,7 @@ class PythonGeneratorAttribute
         for(int i = 0; i < fields.size(); ++i)
             val |= fields[i]->RequiresColorHeaderFiles();
         c << "#include <ColorAttribute.h>" << endl;
+        c << "#include <snprintf.h>" << endl;
     }
 
     void WriteHeaderComment(ostream &c)
@@ -2219,7 +1980,7 @@ class PythonGeneratorAttribute
         c << "//" << endl;
         c << "// Internal prototypes" << endl;
         c << "//" << endl;
-        c << "static PyObject *New"<<name<<"();" << endl;
+        c << "static PyObject *New"<<name<<"(int);" << endl;
         c << endl;
     }
 
@@ -2311,41 +2072,37 @@ class PythonGeneratorAttribute
         c << name << "_print(PyObject *v, FILE *fp, int flags)" << endl;
         c << "{" << endl;
         c << "    "<<name<<"Object *obj = ("<<name<<"Object *)v;" << endl;
-        c << endl;
-        for(int i = 0; i < fields.size(); ++i)
-        {
-            if(!fields[i]->internal)
-                fields[i]->PrintValue(c, name);
-        }
-        c << endl;
+        c << "    fprintf(fp, \"%s\", Py" << name << "_ToString(obj->data, \"\").c_str());" << endl;
         c << "    return 0;" << endl;
         c << "}" << endl;
         c << endl;
     }
 
-    void WriteStringRepresentationFunction(ostream &c)
+    void WriteToStringFunction(ostream &c)
     {
-        c << "#include <snprintf.h>" << endl;
-        c << "PyObject *" << endl;
-        c << "Py" << name << "_StringRepresentation(const "<<name<<" *atts)" << endl;
+        c << "std::string" << endl;
+        c << "Py" << name << "_ToString(const "<<name<<" *atts, const char *prefix)" << endl;
         c << "{" << endl;
-        c << "   std::string str; " << endl;
-        c << "   char tmpStr[1000]; " << endl;
+        c << "    std::string str; " << endl;
+        c << "    char tmpStr[1000]; " << endl;
         c << endl;
         for(int i = 0; i < fields.size(); ++i)
         {
-            fields[i]->StringRepresentation(c, name);
+            if(!fields[i]->internal)
+                fields[i]->StringRepresentation(c, name);
         }
-        c << "    return PyString_FromString(str.c_str());" << endl;
+        c << "    return str;" << endl;
         c << "}" << endl << endl;
+    }
 
-        c << "static PyObject *" << endl;
+    void WriteStringRepresentationFunction(ostream &c)
+    {
+        c << "PyObject *" << endl;
         c << name << "_str(PyObject *v)" << endl;
         c << "{" << endl;
         c << "    "<<name<<"Object *obj = ("<<name<<"Object *)v;" << endl;
-        c << "    return Py" << name << "_StringRepresentation(obj->data);" << endl;
-        c << "}" << endl;
-        c << endl << endl;
+        c << "    return PyString_FromString(Py" << name << "_ToString(obj->data,\"\").c_str());" << endl;
+        c << "}" << endl << endl;
     }
 
 
@@ -2442,15 +2199,18 @@ class PythonGeneratorAttribute
         c << "//" << endl;
         c << endl;
         c << "static "<<name<<" *defaultAtts = 0;" << endl;
+        c << "static "<<name<<" *currentAtts = 0;" << endl;
         c << endl;
         c << "static PyObject *" << endl;
-        c << "New"<<name<<"()" << endl;
+        c << "New"<<name<<"(int useCurrent)" << endl;
         c << "{" << endl;
         c << "    "<<name<<"Object *newObject;" << endl;
         c << "    newObject = PyObject_NEW("<<name<<"Object, &"<<name<<"Type);" << endl;
         c << "    if(newObject == NULL)" << endl;
         c << "        return NULL;" << endl;
-        c << "    if(defaultAtts)" << endl;
+        c << "    if(useCurrent && currentAtts != 0)" << endl;
+        c << "        newObject->data = new "<<name<<"(*currentAtts);" << endl;
+        c << "    else if(defaultAtts != 0)" << endl;
         c << "        newObject->data = new "<<name<<"(*defaultAtts);" << endl;
         c << "    else" << endl;
         c << "        newObject->data = new "<<name<<";" << endl;
@@ -2472,22 +2232,34 @@ class PythonGeneratorAttribute
         c << endl;
     }
 
-    void WriteLogMethod(ostream &c)
+    void WriteCallLogRoutineMethod(ostream &c)
     {
+        QString shortName(name);
+        shortName.replace("Attributes", "Atts");
+
+        c << "std::string" << endl;
+        c << "Py" << name << "_GetLogString()" << endl;
+        c << "{" << endl;
+        c << "    std::string s(\"" << shortName << " = " << name << "()\\n\");" << endl;
+        c << "    if(currentAtts != 0)" << endl;
+        c << "        s += Py" << name << "_ToString(currentAtts, \"" << shortName << ".\");" << endl;
+        c << "    return s;" << endl;
+        c << "}" << endl;
+        c << endl;
+
         c << "static void" << endl;
-        c << "Py" << name << "_WriteLog(Subject *subj, void *data)" << endl;
+        c << "Py" << name << "_CallLogRoutine(Subject *subj, void *data)" << endl;
         c << "{" << endl;
         c << "    "<<name<<" *atts = ("<<name<<" *)subj;" << endl;
-        c << "    FILE *logFile = (FILE *)data;" << endl;
+        c << "    typedef void (*logCallback)(const std::string &);" << endl;
+        c << "    logCallback cb = (logCallback)data;" << endl;
         c << endl;
-        c << "    if(!"<<name<<"EnableLogging || (logFile == NULL))" << endl;
-        c << "        return;" << endl;
-        c << endl;
-        c << "    fprintf(logFile, \"# "<<name<<"_WriteLog()\\n\");" << endl;
-        
-        // Iterate through the fields and create the appropriate commands for creating
-        // a state object in python.
-
+        c << "    if(cb != 0)" << endl;
+        c << "    {" << endl;
+        c << "        std::string s(\"" << shortName << " = " << name << "()\\n\");" << endl;
+        c << "        s += Py" << name << "_ToString(currentAtts, \"" << shortName << ".\");" << endl;
+        c << "        cb(s);" << endl;
+        c << "    }" << endl;
         c << "}" << endl;
     }
 
@@ -2502,9 +2274,16 @@ class PythonGeneratorAttribute
         c << "PyObject *" << endl;
         c << name << "_new(PyObject *self, PyObject *args)" << endl;
         c << "{" << endl;
-        c << "    if (!PyArg_ParseTuple(args, \"\"))" << endl;
-        c << "        return NULL;" << endl;
-        c << "    return (PyObject *)New"<<name<<"();" << endl;
+        c << "    int useCurrent = 0;" << endl;
+        c << "    if (!PyArg_ParseTuple(args, \"i\", &useCurrent))" << endl;
+        c << "    {" << endl;
+        c << "        if (!PyArg_ParseTuple(args, \"\"))" << endl;
+        c << "            return NULL;" << endl;
+        c << "        else" << endl;
+        c << "            PyErr_Clear();" << endl;
+        c << "    }" << endl;
+        c << endl;
+        c << "    return (PyObject *)New"<<name<<"(useCurrent);" << endl;
         c << "}" << endl;
         c << endl;
         c << "//" << endl;
@@ -2516,16 +2295,16 @@ class PythonGeneratorAttribute
         c << "};" << endl;
         c << endl;
         c << "static Observer *"<<name<<"Observer = 0;" << endl;
-        c << "static bool "<<name<<"EnableLogging = true;" << endl;
         c << endl;
-        WriteLogMethod(c);
+        WriteCallLogRoutineMethod(c);
         c << endl;
         c << "void" << endl;
-        c << "Py"<<name<<"_StartUp("<<name<<" *subj, FILE *logFile)" << endl;
+        c << "Py"<<name<<"_StartUp("<<name<<" *subj, void *data)" << endl;
         c << "{" << endl;
         c << "    if(subj == 0)" << endl;
         c << "        return;" << endl;
         c << endl;
+        c << "    currentAtts = subj;" << endl;
         c << "    Py" << name << "_SetDefaults(subj);" << endl;
         c << endl;
         c << "    //" << endl;
@@ -2534,10 +2313,9 @@ class PythonGeneratorAttribute
         c << "    if("<<name<<"Observer == 0)" << endl;
         c << "    {" << endl;
         c << "        "<<name<<"Observer = new ObserverToCallback(subj," << endl;
-        c << "            Py"<<name<<"_WriteLog, (void *)logFile);" << endl;
+        c << "            Py"<<name<<"_CallLogRoutine, (void *)data);" << endl;
         c << "    }" << endl;
         c << endl;
-        c << "    "<<name<<"EnableLogging = true;" << endl;
         c << "}" << endl;
         c << endl;
         c << "void" << endl;
@@ -2572,19 +2350,13 @@ class PythonGeneratorAttribute
         c << "PyObject *" << endl;
         c << "Py"<<name<<"_NewPyObject()" << endl;
         c << "{" << endl;
-        c << "    return New"<<name<<"();" << endl;
+        c << "    return New"<<name<<"(0);" << endl;
         c << "}" << endl;
         c << endl;
         c << "PyObject *" << endl;
         c << "Py"<<name<<"_WrapPyObject(const " << name << " *attr)" << endl;
         c << "{" << endl;
         c << "    return Wrap"<<name<<"(attr);" << endl;
-        c << "}" << endl;
-        c << endl;
-        c << "void" << endl;
-        c << "Py"<<name<<"_SetLogging(bool val)" << endl;
-        c << "{" << endl;
-        c << "    "<<name<<"EnableLogging = val;" << endl;
         c << "}" << endl;
         c << endl;
         c << "void" << endl;
@@ -2607,6 +2379,7 @@ class PythonGeneratorAttribute
         WriteHeaderComment(c);
         WritePyObjectStruct(c);
         WriteInternalPrototypes(c);
+        WriteToStringFunction(c);
         WritePyObjectMethods(c);
         WritePyObjectMethodTable(c);
         WriteTypeFunctions(c);

@@ -6,17 +6,15 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyLineoutAttributes_StartUp(LineoutAttributes *subj, FILE *logFile);
+void            PyLineoutAttributes_StartUp(LineoutAttributes *subj, void *data);
 void            PyLineoutAttributes_CloseDown();
 PyMethodDef    *PyLineoutAttributes_GetMethodTable(int *nMethods);
 bool            PyLineoutAttributes_Check(PyObject *obj);
 LineoutAttributes *PyLineoutAttributes_FromPyObject(PyObject *obj);
 PyObject       *PyLineoutAttributes_NewPyObject();
 PyObject       *PyLineoutAttributes_WrapPyObject(const LineoutAttributes *attr);
-void            PyLineoutAttributes_SetLogging(bool val);
+std::string     PyLineoutAttributes_GetLogString();
 void            PyLineoutAttributes_SetDefaults(const LineoutAttributes *atts);
-
-PyObject       *PyLineoutAttributes_StringRepresentation(const LineoutAttributes *atts);
 
 #endif
 

@@ -6,17 +6,15 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyCurveAttributes_StartUp(CurveAttributes *subj, FILE *logFile);
+void            PyCurveAttributes_StartUp(CurveAttributes *subj, void *data);
 void            PyCurveAttributes_CloseDown();
 PyMethodDef    *PyCurveAttributes_GetMethodTable(int *nMethods);
 bool            PyCurveAttributes_Check(PyObject *obj);
 CurveAttributes *PyCurveAttributes_FromPyObject(PyObject *obj);
 PyObject       *PyCurveAttributes_NewPyObject();
 PyObject       *PyCurveAttributes_WrapPyObject(const CurveAttributes *attr);
-void            PyCurveAttributes_SetLogging(bool val);
+std::string     PyCurveAttributes_GetLogString();
 void            PyCurveAttributes_SetDefaults(const CurveAttributes *atts);
-
-PyObject       *PyCurveAttributes_StringRepresentation(const CurveAttributes *atts);
 
 #endif
 

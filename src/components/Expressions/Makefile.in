@@ -120,6 +120,9 @@
 #   Brad Whitlock, Wed Nov 23 10:36:57 PDT 2005
 #   Added more libs for Mac linking.
 #
+#   Hank Childs, Thu Jan  5 08:34:43 PST 2006
+#   Add pos_cmfe.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -155,7 +158,8 @@ Conditional_src= \
 
 CMFE_src= \
   CMFE/avtCMFEExpression.C \
-  CMFE/avtConnCMFEExpression.C
+  CMFE/avtConnCMFEExpression.C \
+  CMFE/avtPosCMFEExpression.C
 
 Derivations_src=\
   Derivations/avtEffectiveTensorFilter.C \

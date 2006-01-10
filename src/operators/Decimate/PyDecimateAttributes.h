@@ -6,14 +6,14 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyDecimateAttributes_StartUp(DecimateAttributes *subj, FILE *logFile);
+void            PyDecimateAttributes_StartUp(DecimateAttributes *subj, void *data);
 void            PyDecimateAttributes_CloseDown();
 PyMethodDef    *PyDecimateAttributes_GetMethodTable(int *nMethods);
 bool            PyDecimateAttributes_Check(PyObject *obj);
 DecimateAttributes *PyDecimateAttributes_FromPyObject(PyObject *obj);
 PyObject       *PyDecimateAttributes_NewPyObject();
 PyObject       *PyDecimateAttributes_WrapPyObject(const DecimateAttributes *attr);
-void            PyDecimateAttributes_SetLogging(bool val);
+std::string     PyDecimateAttributes_GetLogString();
 void            PyDecimateAttributes_SetDefaults(const DecimateAttributes *atts);
 
 #endif

@@ -175,6 +175,9 @@ import java.util.prefs.BackingStoreException;
 //   Brad Whitlock, Tue Nov 29 12:13:41 PDT 2005
 //   I added mesh management attributes.
 //
+//   Brad Whitlock, Tue Jan 10 16:29:28 PST 2006
+//   Added another ViewerRPC object for logging.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -239,6 +242,7 @@ public class ViewerProxy implements SimpleObserver
         clientInformationList = new ClientInformationList();
         movieAtts = new MovieAttributes();
         meshManagementAtts = new MeshManagementAttributes();
+        logRPC = new ViewerRPC();
 
         // Create the plugin managers.
         plotPlugins = new PluginManager("plot");
@@ -366,6 +370,7 @@ public class ViewerProxy implements SimpleObserver
             xfer.Add(processAtts);
             xfer.Add(movieAtts);
             xfer.Add(meshManagementAtts);
+            xfer.Add(logRPC);
 
             // hook up the message observer.
             messageObserver.Attach(messageAtts);
@@ -1920,4 +1925,5 @@ public class ViewerProxy implements SimpleObserver
     private ClientInformationList    clientInformationList;
     private MovieAttributes          movieAtts;
     private MeshManagementAttributes meshManagementAtts;
+    private ViewerRPC                logRPC;
 }

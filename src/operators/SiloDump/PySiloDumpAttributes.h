@@ -6,14 +6,14 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PySiloDumpAttributes_StartUp(SiloDumpAttributes *subj, FILE *logFile);
+void            PySiloDumpAttributes_StartUp(SiloDumpAttributes *subj, void *data);
 void            PySiloDumpAttributes_CloseDown();
 PyMethodDef    *PySiloDumpAttributes_GetMethodTable(int *nMethods);
 bool            PySiloDumpAttributes_Check(PyObject *obj);
 SiloDumpAttributes *PySiloDumpAttributes_FromPyObject(PyObject *obj);
 PyObject       *PySiloDumpAttributes_NewPyObject();
 PyObject       *PySiloDumpAttributes_WrapPyObject(const SiloDumpAttributes *attr);
-void            PySiloDumpAttributes_SetLogging(bool val);
+std::string     PySiloDumpAttributes_GetLogString();
 void            PySiloDumpAttributes_SetDefaults(const SiloDumpAttributes *atts);
 
 #endif

@@ -6,14 +6,14 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyRevolveAttributes_StartUp(RevolveAttributes *subj, FILE *logFile);
+void            PyRevolveAttributes_StartUp(RevolveAttributes *subj, void *data);
 void            PyRevolveAttributes_CloseDown();
 PyMethodDef    *PyRevolveAttributes_GetMethodTable(int *nMethods);
 bool            PyRevolveAttributes_Check(PyObject *obj);
 RevolveAttributes *PyRevolveAttributes_FromPyObject(PyObject *obj);
 PyObject       *PyRevolveAttributes_NewPyObject();
 PyObject       *PyRevolveAttributes_WrapPyObject(const RevolveAttributes *attr);
-void            PyRevolveAttributes_SetLogging(bool val);
+std::string     PyRevolveAttributes_GetLogString();
 void            PyRevolveAttributes_SetDefaults(const RevolveAttributes *atts);
 
 #endif

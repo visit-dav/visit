@@ -6,17 +6,16 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyContourAttributes_StartUp(ContourAttributes *subj, FILE *logFile);
+void            PyContourAttributes_StartUp(ContourAttributes *subj, void *data);
 void            PyContourAttributes_CloseDown();
 PyMethodDef    *PyContourAttributes_GetMethodTable(int *nMethods);
 bool            PyContourAttributes_Check(PyObject *obj);
 ContourAttributes *PyContourAttributes_FromPyObject(PyObject *obj);
 PyObject       *PyContourAttributes_NewPyObject();
 PyObject       *PyContourAttributes_WrapPyObject(const ContourAttributes *attr);
-void            PyContourAttributes_SetLogging(bool val);
 void            PyContourAttributes_SetDefaults(const ContourAttributes *atts);
-
-PyObject       *PyContourAttributes_StringRepresentation(const ContourAttributes *atts);
+std::string     PyContourAttributes_GetLogString();
+std::string     PyContourAttributes_ToString(const ContourAttributes *, const char *);
 
 #endif
 

@@ -21,6 +21,12 @@ class     ConstExpr;
 //  Programmer: Hank Childs
 //  Creation:   August 26, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Oct 10 17:08:05 PDT 2005
+//    Remove virtual designation from ExecuteTree, since its not really 
+//    intended to be a virtual method.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtConnCMFEExpression : public avtCMFEExpression
@@ -36,7 +42,7 @@ class EXPRESSION_API avtConnCMFEExpression : public avtCMFEExpression
     virtual avtDataTree_p     PerformCMFE(avtDataTree_p, avtDataTree_p,
                                           const std::string &,
                                           const std::string &);
-    virtual avtDataTree_p     ExecuteTree(avtDataTree_p, avtDataTree_p,
+    avtDataTree_p             ExecuteTree(avtDataTree_p, avtDataTree_p,
                                           const std::string &,
                                           const std::string &);
     virtual bool              UseIdenticalSIL(void) { return true; };

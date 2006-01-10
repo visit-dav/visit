@@ -148,6 +148,49 @@ avtDatasetExaminer::GetSpatialExtents(avtDataset_p &ds, double *se)
 
 
 // ****************************************************************************
+//  Method: avtDatasetExaminer::GetSpatialExtents
+//
+//  Purpose:
+//      Gets the spatial extents of the multiple data sets.
+//
+//  Arguments:
+//      se        A place to put the spatial extents
+//
+//  Returns:      Whether or not the extents were obtained.
+//
+//  Programmer:   Hank Childs
+//  Creation:     January 9, 2006
+//
+// ****************************************************************************
+ 
+bool
+avtDatasetExaminer::GetSpatialExtents(std::vector<avtDataTree_p> &l,double *se)
+{
+    int   i;
+ 
+    bool foundExtents = false;
+    for (i = 0 ; i < 3 ; i++)
+    {
+        se[2*i + 0] = +DBL_MAX;
+        se[2*i + 1] = -DBL_MAX;
+    }
+ 
+    for (i = 0 ; i < l.size() ; i++)
+    {
+        l[i]->Traverse(CGetSpatialExtents, se, foundExtents);
+    }
+ 
+    if (!foundExtents)
+    {
+        debug1 << "Unable to determine spatial extents -- dataset needs an "
+               << "update" << endl;
+    }
+ 
+    return foundExtents;
+}
+
+
+// ****************************************************************************
 //  Method: avtDatasetExaminer::GetDataExtents
 //
 //  Purpose:

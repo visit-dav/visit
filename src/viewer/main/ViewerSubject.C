@@ -249,6 +249,7 @@ ViewerSubject::ViewerSubject() : xfer(), clients(), viewerRPC(),
     clientInformation = 0;
     clientInformationList = 0;
     movieAtts = 0;
+    logRPC = 0;
 
     //
     // Set some flags related to viewer windows.
@@ -329,6 +330,7 @@ ViewerSubject::~ViewerSubject()
     delete clientInformation;
     delete clientInformationList;
     delete movieAtts;
+    delete logRPC;
 
     delete viewerState;
     delete inputConnection;
@@ -602,6 +604,7 @@ ViewerSubject::CreateState()
     clientInformation = new ClientInformation;
     clientInformationList = new ClientInformationList;
     movieAtts = new MovieAttributes;
+    logRPC    = new ViewerRPC;
 
     //
     // Connect the client attribute subjects.
@@ -654,6 +657,7 @@ ViewerSubject::CreateState()
     viewerState->Add(procAtts);
     viewerState->Add(movieAtts);
     viewerState->Add(ViewerEngineManager::GetMeshManagementClientAtts());
+    viewerState->Add(logRPC);
 }
 
 // ****************************************************************************
@@ -6883,6 +6887,10 @@ ViewerSubject::SendKeepAlives()
 //    Brad Whitlock, Thu Nov 17 17:09:13 PST 2005
 //    Added methods rpcs to move and resize windows.
 //
+//    Brad Whitlock, Thu Jan 5 16:10:44 PST 2006
+//    Added code to broadcast the RPC to be executed to all clients so one
+//    client can log the actions taken by another.
+//
 // ****************************************************************************
 
 void
@@ -6893,6 +6901,17 @@ ViewerSubject::HandleViewerRPC()
     //
     bool actionHandled = false;
     ViewerActionManager *actionMgr = 0;
+
+    // Tell the clients that state logging should be turned off. By state
+    // logging, I mean all freely exchanged state objects except for the
+    // logRPC, which should be logged when received unless it is a
+    // SetStateLoggingRPC.
+    //
+    logRPC->SetRPCType(ViewerRPC::SetStateLoggingRPC);
+    logRPC->SetBoolFlag(false);
+    BroadcastToAllClients((void*)this, logRPC);
+    logRPC->CopyAttributes(&viewerRPC);
+    BroadcastToAllClients((void*)this, logRPC);
 
     debug5 << "Handling "
            << ViewerRPC::ViewerRPCType_ToString(viewerRPC.GetRPCType()).c_str()
@@ -7225,6 +7244,11 @@ ViewerSubject::HandleViewerRPC()
     if(!actionHandled)
         ViewerWindowManager::Instance()->UpdateActions();
 
+    // Tell the clients that it's okay to start logging again.
+    logRPC->SetRPCType(ViewerRPC::SetStateLoggingRPC);
+    logRPC->SetBoolFlag(true);
+    BroadcastToAllClients((void*)this, logRPC);
+
     debug5 << "Done handling "
            << ViewerRPC::ViewerRPCType_ToString(viewerRPC.GetRPCType()).c_str()
            << " RPC." << endl;
@@ -7298,16 +7322,21 @@ ViewerSubject::PostponeAction(ViewerActionBase *action)
 // Creation:   Fri Apr 15 10:52:10 PDT 2005
 //
 // Modifications:
+//   Brad Whitlock, Tue Jan 10 11:37:48 PDT 2006
+//   Added code to send RPC's to the clients to ensure that they can be
+//   logged. Maybe this should only be done if there's a client that has a
+//   MacroRecord client method
 //
 // ****************************************************************************
 
 void
 ViewerSubject::HandlePostponedAction()
 {
+    ViewerWindowManager *wM = ViewerWindowManager::Instance();
     int index = postponedAction.GetWindow();
     ViewerRPC::ViewerRPCType t = postponedAction.GetRPC().GetRPCType();
     const char *tName = ViewerRPC::ViewerRPCType_ToString(t).c_str();
-    ViewerWindow *win = ViewerWindowManager::Instance()->GetWindow(index);
+    ViewerWindow *win = wM->GetWindow(index);
     if(win != 0)
     {
         ViewerActionManager *actionMgr = win->GetActionManager();
@@ -7316,8 +7345,42 @@ ViewerSubject::HandlePostponedAction()
                << tName << " for window " << (win->GetWindowId()+1) << "."
                << endl;
 
+        // Tell the clients that state logging should be turned off. By state
+        // logging, I mean all freely exchanged state objects except for the
+        // logRPC, which should be logged when received unless it is a
+        // SetStateLoggingRPC.
+        //
+        logRPC->SetRPCType(ViewerRPC::SetStateLoggingRPC);
+        logRPC->SetBoolFlag(false);
+        BroadcastToAllClients((void*)this, logRPC);
+        // Tell the logging client to log a change to set the window to the
+        // window that originated the RPC.
+        if(win != wM->GetActiveWindow())
+        {
+            logRPC->SetRPCType(ViewerRPC::SetActiveWindowRPC);
+            logRPC->SetWindowId(win->GetWindowId()+1);
+            BroadcastToAllClients((void*)this, logRPC);
+        }
+        logRPC->CopyAttributes(&postponedAction.GetRPC());
+        BroadcastToAllClients((void*)this, logRPC);
+
+
         // Handle the action.
         actionMgr->HandleAction(postponedAction.GetRPC());
+
+
+        // Tell the logging client to log a change to set the window back to
+        // The current active window.
+        if(win != wM->GetActiveWindow())
+        {
+            logRPC->SetRPCType(ViewerRPC::SetActiveWindowRPC);
+            logRPC->SetWindowId(wM->GetActiveWindow()->GetWindowId()+1);
+            BroadcastToAllClients((void*)this, logRPC);
+        }
+        // Tell the clients that it's okay to start logging again.
+        logRPC->SetRPCType(ViewerRPC::SetStateLoggingRPC);
+        logRPC->SetBoolFlag(true);
+        BroadcastToAllClients((void*)this, logRPC);
     }
     else
     {

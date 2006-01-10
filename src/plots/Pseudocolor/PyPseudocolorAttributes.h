@@ -6,17 +6,15 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyPseudocolorAttributes_StartUp(PseudocolorAttributes *subj, FILE *logFile);
+void            PyPseudocolorAttributes_StartUp(PseudocolorAttributes *subj, void *data);
 void            PyPseudocolorAttributes_CloseDown();
 PyMethodDef    *PyPseudocolorAttributes_GetMethodTable(int *nMethods);
 bool            PyPseudocolorAttributes_Check(PyObject *obj);
 PseudocolorAttributes *PyPseudocolorAttributes_FromPyObject(PyObject *obj);
 PyObject       *PyPseudocolorAttributes_NewPyObject();
 PyObject       *PyPseudocolorAttributes_WrapPyObject(const PseudocolorAttributes *attr);
-void            PyPseudocolorAttributes_SetLogging(bool val);
+std::string     PyPseudocolorAttributes_GetLogString();
 void            PyPseudocolorAttributes_SetDefaults(const PseudocolorAttributes *atts);
-
-PyObject       *PyPseudocolorAttributes_StringRepresentation(const PseudocolorAttributes *atts);
 
 #endif
 

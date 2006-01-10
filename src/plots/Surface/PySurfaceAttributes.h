@@ -6,14 +6,14 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PySurfaceAttributes_StartUp(SurfaceAttributes *subj, FILE *logFile);
+void            PySurfaceAttributes_StartUp(SurfaceAttributes *subj, void *data);
 void            PySurfaceAttributes_CloseDown();
 PyMethodDef    *PySurfaceAttributes_GetMethodTable(int *nMethods);
 bool            PySurfaceAttributes_Check(PyObject *obj);
 SurfaceAttributes *PySurfaceAttributes_FromPyObject(PyObject *obj);
 PyObject       *PySurfaceAttributes_NewPyObject();
 PyObject       *PySurfaceAttributes_WrapPyObject(const SurfaceAttributes *attr);
-void            PySurfaceAttributes_SetLogging(bool val);
+std::string     PySurfaceAttributes_GetLogString();
 void            PySurfaceAttributes_SetDefaults(const SurfaceAttributes *atts);
 
 #endif

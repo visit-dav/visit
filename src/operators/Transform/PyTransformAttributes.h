@@ -6,17 +6,15 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyTransformAttributes_StartUp(TransformAttributes *subj, FILE *logFile);
+void            PyTransformAttributes_StartUp(TransformAttributes *subj, void *data);
 void            PyTransformAttributes_CloseDown();
 PyMethodDef    *PyTransformAttributes_GetMethodTable(int *nMethods);
 bool            PyTransformAttributes_Check(PyObject *obj);
 TransformAttributes *PyTransformAttributes_FromPyObject(PyObject *obj);
 PyObject       *PyTransformAttributes_NewPyObject();
 PyObject       *PyTransformAttributes_WrapPyObject(const TransformAttributes *attr);
-void            PyTransformAttributes_SetLogging(bool val);
+std::string     PyTransformAttributes_GetLogString();
 void            PyTransformAttributes_SetDefaults(const TransformAttributes *atts);
-
-PyObject       *PyTransformAttributes_StringRepresentation(const TransformAttributes *atts);
 
 #endif
 
