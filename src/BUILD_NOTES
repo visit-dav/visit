@@ -38,6 +38,7 @@ build and install those libraries prior to building VisIt.
     Library  Version  Description            For More Information
     =======  =======  ===========            ====================
     Boxlib   ???      An AMR I/O library     ???
+    HDF4     2.4.1    File I/O library       http://hdf.ncsa.uiuc.edu/hdf4.html
     HDF5     1.6.0    File I/O library       http://hdf.ncsa.uiuc.edu/HDF5/
     Mili     1.09     File I/O library       (none)
     netCDF   3.6.0    File I/O library       http://www.unidata.ucar.edu/packages/netcdf/
@@ -726,6 +727,33 @@ cp src/mili_enum.h $VISITDIR/mili/1.09/$VISITARCH
 cp src/libmili.a   $VISITDIR/mili/1.09/$VISITARCH
 cd ..
 
+HDF4 (Optional)
+================
+
+HDF4 is a data storage library that lets you write large volumes of data to
+disk files and it is the predecessor of HDF5.
+
+#
+# Build HDF4.
+#
+gunzip HDF4.2r1.tar.gz
+tar xf HDF4.2r1.tar
+cd HDF4.2r1
+
+# On Linux systems, you will need to add "-fPIC" to the CFLAGS.  On Opteron
+# systems, you will need to add "-fPIC -m64" to the CFLAGS.
+
+env CFLAGS="-O2" LIBS="-lm" ./configure --disable-fortran -prefix=$VISITDIR/hdf4/2.4.1/$VISITARCH
+
+#
+# Install it in the visit directory under the hdf4 directory.
+#
+mkdir $VISITDIR/hdf4
+mkdir $VISITDIR/hdf4/2.4.1
+mkdir $VISITDIR/hdf4/2.4.1/$VISITARCH
+make install
+cd ..
+
 HDF5 (Optional)
 ================
 
@@ -787,13 +815,13 @@ Boxlib does not work on Solaris or Irix systems.  We had to modify boxlib
 to use it with VisIt so you will need to contact us for the source code if
 you wish to build it.
 
-On Itanium systems you will need to modify FPC.cpp and whereever you see
-a reference to "__i486__", you will need to add an appropriate reference to
-"__ia64__".
-
 On Linux systems you will also need to add -fPIC to the compile flags.
-This can done by adding the line "CXXFLAGS += -fPIC" near the top of the
-file GNUmakefile.
+This can done by adding the line "CXXFLAGS += -fPIC" and "FFLAGS += -fPIC"
+near the top of the file GNUmakefile.
+
+If the mpi header files are located in a non-standard location you will
+need to add the line "CXXFLAGS += -I" near the top of the file GNUmakefile,
+where the "-I" is followed by the mpi include directory.
 
 On systems using MPI 2.0 (altix), you will need to change the following 3
 lines
@@ -899,12 +927,12 @@ tar xvf netcdf.tar
 cd netcdf-3.6.0-p1/src
 
 mkdir $VISITDIR/netcdf
-mkdir $VISITDIR/netcdf/3.0.6
-mkdir $VISITDIR/netcdf/3.0.6/$VISITARCH
+mkdir $VISITDIR/netcdf/3.6.0
+mkdir $VISITDIR/netcdf/3.6.0/$VISITARCH
 
 # On IA64 systems, you should add "-fPIC" to the following CFLAGS and CXXFLAGS.
 # On Opteron systems, you should add "-fPIC -m64" to the following CFLAGS and CXXFLAGS.
-./configure --prefix=$VISITDIR/netcdf/3.0.6/$VISITARCH FC="" CFLAGS="-O2" CXXFLAGS="-O2"
+./configure --prefix=$VISITDIR/netcdf/3.6.0/$VISITARCH FC="" CFLAGS="-O2" CXXFLAGS="-O2"
 make
 
 #
@@ -985,8 +1013,11 @@ mkdir $VISITDIR/gdal/1.3.0/$VISITARCH
 # to the front of the configure line:
 #     env CC=xlc CXX=xlC CFLAGS="-q64 -qcpluscmt -O2" CXXFLAGS="-q64 -O2"
 #
+# Some systems may have problems building mysql support. If that is the case
+# you will need to add "--without-mysql" at the end of the following configure
+# command.
 
-env CXXFLAGS="-O2" CFLAGS="-O2"./configure --prefix=$VISITDIR/gdal/1.3.0/$VISITARCH --with-gif=internal --with-png=internal --with-jpeg=internal --with-libz=internal --with-netcdf=no --without-jasper --enable-static --disable-shared --without-python
+env CXXFLAGS="-O2" CFLAGS="-O2" ./configure --prefix=$VISITDIR/gdal/1.3.0/$VISITARCH --with-gif=internal --with-png=internal --with-jpeg=internal --with-libz=internal --with-netcdf=no --without-jasper --enable-static --disable-shared --without-python
 make
 
 #

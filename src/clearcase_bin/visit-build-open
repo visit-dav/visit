@@ -59,6 +59,7 @@ up=true
 pengra=true
 mcr=true
 thunder=true
+gauss=true
 
 dist=undefined
 
@@ -81,6 +82,7 @@ do
          pengra=false
          mcr=false
          thunder=false
+         gauss=false
          shift
          ;;
       -kickit)
@@ -161,6 +163,14 @@ do
          ;;
       +thunder)
          thunder=true
+         shift
+         ;;
+      -gauss)
+         gauss=false
+         shift
+         ;;
+      +gauss)
+         gauss=true
          shift
          ;;
       -d)
@@ -690,9 +700,59 @@ then
 fi
 
 #
+# Build on gauss.
+#
+rm -f gauss
+cat <<EOF > gauss
+#!/bin/sh
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
+fi
+if test ! -d /usr/tmp/$user/gauss ; then
+   mkdir /usr/tmp/$user/gauss
+fi
+rm -rf /usr/tmp/$user/gauss/visitbuild
+mkdir /usr/tmp/$user/gauss/visitbuild
+mv gauss_$dist.tar.gz /usr/tmp/$user/gauss/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/gauss/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
+make -j 3 >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ..
+cd ..
+rm -f resultlog
+echo "        build of visit on gauss"        > resultlog 2>&1
+echo "       -------------------------"       >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $gauss = true ]
+then
+   if [ $test = no ]
+   then
+      scp gauss gauss2:gauss_buildit
+      scp $dist.tar.gz gauss2:gauss_$dist.tar.gz
+      ssh gauss2 "chmod 750 gauss_buildit;./gauss_buildit" &
+   fi
+fi
+
+#
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f kickit hoth sunspot quad gps berg up pengra mcr thunder
+   rm -f kickit hoth sunspot quad gps berg up pengra mcr thunder gauss
 fi

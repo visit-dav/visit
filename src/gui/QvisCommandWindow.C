@@ -93,6 +93,9 @@ QvisCommandWindow::~QvisCommandWindow()
 //   Brad Whitlock, Fri Jan 6 13:36:19 PST 2006
 //   Added new buttons to record macros.
 //
+//   Brad Whitlock, Wed Jan 11 09:53:23 PDT 2006
+//   I fixed an errant tooltip.
+//
 // ****************************************************************************
 
 void
@@ -124,7 +127,7 @@ QvisCommandWindow::CreateWindowContents()
     macroEnd = new QPushButton(QIconSet(QPixmap(macrostop_xpm)),
         "Stop", macroBox, "macroEnd");
     connect(macroEnd, SIGNAL(clicked()), this, SLOT(macroEndClicked()));
-    QToolTip::add(macroPause, "Stop macro recording");
+    QToolTip::add(macroEnd, "Stop macro recording");
     macroLayout->addWidget(macroEnd);
     macroRecord->setEnabled(true);
     macroPause->setEnabled(false);
