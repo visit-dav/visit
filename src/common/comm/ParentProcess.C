@@ -50,9 +50,12 @@
 //    Brad Whitlock, Thu Apr 26 15:58:35 PST 2001
 //    Added initialization of the version.
 //
+//    Brad Whitlock, Wed Jan 11 17:01:24 PST 2006
+//    Added localUserName.
+//
 // ****************************************************************************
 
-ParentProcess::ParentProcess() : version(VERSION)
+ParentProcess::ParentProcess() : version(VERSION), localUserName()
 {
     // Set some default values.
     hostName = std::string("localhost");
@@ -603,4 +606,42 @@ void
 ParentProcess::GetHostInfo()
 {
     hostInfo = (void *)gethostbyname(hostName.c_str());
+}
+
+// ****************************************************************************
+// Method: ParentProcess::GetLocalUserName
+//
+// Purpose: 
+//   Gets the local user's name.
+//
+// Returns:    A reference to the local user name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 11 17:02:38 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string &
+ParentProcess::GetLocalUserName()
+{
+    //
+    // Get the local user name.
+    //
+    if(localUserName.size() == 0)
+    {
+#if defined(_WIN32)
+    char username[100];
+    DWORD maxLen = 100;
+    GetUserName((LPTSTR)username, (LPDWORD)&maxLen);
+    localUserName = std::string(username);
+#else
+    struct passwd *users_passwd_entry = NULL;
+    if((users_passwd_entry = getpwuid(getuid())) != NULL)
+        localUserName = std::string(users_passwd_entry->pw_name);
+#endif
+    }
+
+    return localUserName;
 }

@@ -13,8 +13,7 @@ class Navigate2D;
 class Navigate3D;
 class NavigateCurve;
 class NullInteractor;
-class Pick2D;
-class Pick3D;
+class Pick;
 class Zoom2D;
 class Zoom3D;
 class ZoomCurve;
@@ -52,6 +51,9 @@ class ZoomCurve;
 //
 //    Eric Brugger, Tue Dec 28 07:50:45 PST 2004
 //    Added Dolly3D interactor.
+//
+//    Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006 
+//    Replaced Pick3D and Pick2D interactors with Pick.
 //
 // ****************************************************************************
 
@@ -94,8 +96,7 @@ private:
     Navigate2D       *navigate2D;
     NavigateCurve    *navigateCurve;
     NullInteractor   *nullInteractor;
-    Pick2D           *pick2D;
-    Pick3D           *pick3D;
+    Pick             *pick;
     Zoom2D           *zoom2D;
     Zoom3D           *zoom3D;
     ZoomCurve        *zoomCurve;

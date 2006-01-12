@@ -418,7 +418,7 @@ public:
     void BlockSocketSignals(bool);
 
     void CreateNode(DataNode *node, bool detailed);
-    void SetFromNode(DataNode *node);
+    bool SetFromNode(DataNode *node);
 
     void PostponeAction(ViewerActionBase *);
 public slots:
@@ -649,6 +649,7 @@ private:
     bool                   smallWindow;
     bool                   noconfig;
     bool                   defaultStereoToOn;
+    bool                   useWindowMetrics;
     char                  *configFileName;
     char                 **qt_argv;
 

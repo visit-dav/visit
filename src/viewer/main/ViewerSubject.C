@@ -257,6 +257,7 @@ ViewerSubject::ViewerSubject() : xfer(), clients(), viewerRPC(),
     nowin = false;
     smallWindow = false;
     defaultStereoToOn = false;
+    useWindowMetrics = true;
 
     //
     // By default, read the config files.
@@ -1699,6 +1700,9 @@ ViewerSubject::ProcessEvents()
 //    Brad Whitlock, Thu Jan 9 11:52:21 PDT 2003
 //    I made borders, shift, preshift, and geometry be strings.
 //
+//    Brad Whitlock, Wed Jan 11 17:38:13 PST 2006
+//    I passed a flag to the window metrics.
+//
 // ****************************************************************************
 
 void
@@ -1740,6 +1744,7 @@ ViewerSubject::InitializeWorkArea()
            preshift.size() == 0 || geometry.size() == 0)
         {
             wm = WindowMetrics::Instance();
+            wm->MeasureScreen(useWindowMetrics);
         }
 
         //
@@ -2060,6 +2065,9 @@ ViewerSubject::GetOperatorFactory() const
 //    Hank Childs, Tue Dec  6 11:52:38 PST 2005
 //    Make sure to tell AVT that we are doing software rendering with -nowin.
 //
+//    Brad Whitlock, Wed Jan 11 17:40:16 PST 2006
+//    I added support for -nowindowmetrics.
+//
 // ****************************************************************************
 
 void
@@ -2316,6 +2324,10 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
                 continue;
             }
             engineParallelArguments = SplitValues(argv2[++i], ';');
+        }
+        else if(strcmp(argv2[i], "-nowindowmetrics") == 0)
+        {
+            useWindowMetrics = false;
         }
         else // Unknown argument -- add it to the list
         {
@@ -2689,21 +2701,33 @@ ViewerSubject::CreateNode(DataNode *parentNode, bool detailed)
 //   Brad Whitlock, Thu Mar 18 08:48:39 PDT 2004
 //   Added code to initialize the file server.
 //
+//   Brad Whitlock, Wed Jan 11 14:44:13 PST 2006
+//   I added some error checking to the session file processing.
+//
 // ****************************************************************************
 
-void
+bool
 ViewerSubject::SetFromNode(DataNode *parentNode)
 {
+    bool fatalError = true;
+
     if(parentNode == 0)
-        return;
+        return fatalError;
 
     DataNode *searchNode = parentNode->GetNode("ViewerSubject");
     if(searchNode == 0)
-        return;
+        return fatalError;
 
-    ViewerFileServer::Instance()->SetFromNode(searchNode);
-    ViewerWindowManager::Instance()->SetFromNode(searchNode);
-    ViewerQueryManager::Instance()->SetFromNode(searchNode);
+    // See if there are any obvious errors in the session file.
+    fatalError = ViewerWindowManager::Instance()->SessionContainsErrors(searchNode);
+    if(!fatalError)
+    {
+        ViewerFileServer::Instance()->SetFromNode(searchNode);
+        ViewerWindowManager::Instance()->SetFromNode(searchNode);
+        ViewerQueryManager::Instance()->SetFromNode(searchNode);
+    }
+
+    return fatalError;
 }
 
 // ****************************************************************************

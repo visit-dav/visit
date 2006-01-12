@@ -43,6 +43,9 @@ class Connection;
 //   connections to create without having to pass the numbers on the command
 //   line.
 //
+//   Brad Whitlock, Wed Jan 11 17:00:35 PST 2006
+//   Added localUserName.
+//
 // ****************************************************************************
 
 class COMM_API ParentProcess
@@ -57,6 +60,7 @@ public:
     Connection  *GetReadConnection(int i=0) const;
     Connection  *GetWriteConnection(int i=0) const;
     void         SetVersion(const std::string &ver);
+    const std::string &GetLocalUserName();
 private:
     void ExchangeTypeRepresentations(int failCode=0);
     int  GetClientSocketDescriptor(int port);
@@ -68,6 +72,7 @@ private:
     int              nReadConnections,  nWriteConnections;
     std::string      version;
     std::string      securityKey;
+    std::string      localUserName;
 };
 
 #endif

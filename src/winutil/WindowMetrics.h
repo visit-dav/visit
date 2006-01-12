@@ -19,12 +19,17 @@
 //    Brad Whitlock, Mon Mar 24 11:37:45 PDT 2003
 //    Added API.
 //
+//    Brad Whitlock, Wed Jan 11 17:37:08 PST 2006
+//    Added MeasureScreen.
+//
 // ****************************************************************************
 
 class WINUTIL_API WindowMetrics
 {
   public:
     static WindowMetrics *Instance();
+    void MeasureScreen(bool);
+
     int GetScreenX()   {return screenX;   }
     int GetScreenY()   {return screenY;   }
     int GetScreenW()   {return screenW;   }

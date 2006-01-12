@@ -216,6 +216,9 @@ class avtToolInterface;
 //    Kathleen Bonnell, Thu Nov 17 12:00:23 PST 2005 
 //    Added GetTopologicalDimension method.
 //
+//    Brad Whitlock, Wed Jan 11 14:52:22 PST 2006
+//    I added SessionContainsErrors.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot
@@ -374,6 +377,7 @@ class VIEWER_API ViewerPlot
     //
     void CreateNode(DataNode *);
     void SetFromNode(DataNode *);
+    static bool SessionContainsErrors(DataNode *);
     void InitializePlot(Plot &p) const;
 
     void RegisterViewerPlotList(ViewerPlotList *vpl)

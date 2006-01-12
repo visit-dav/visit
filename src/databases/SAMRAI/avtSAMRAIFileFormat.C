@@ -2174,6 +2174,9 @@ avtSAMRAIFileFormat::GetTime()
 //    Mark C. Miller, Mon Aug 23 14:17:55 PDT 2004
 //    Added code to set cycle/time info
 //
+//    Hank Childs, Wed Jan 11 09:36:13 PST 2006
+//    Change rectilinear mesh type to AMR mesh type.
+//
 // ****************************************************************************
 
 void
@@ -2199,7 +2202,7 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         avtMeshMetaData *mesh = new avtMeshMetaData;
         mesh->name = mesh_name;
 
-        mesh->meshType = AVT_RECTILINEAR_MESH;
+        mesh->meshType = AVT_AMR_MESH;
         mesh->topologicalDimension = num_dim_problem;
         mesh->spatialDimension = num_dim_problem; // should really be set rank of "Coords"
         mesh->hasSpatialExtents = false;

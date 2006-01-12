@@ -1347,6 +1347,9 @@ avtBoxlib3DFileFormat::GetVisMF(int index)
 //    Hank Childs, Mon Feb 14 11:08:13 PST 2005
 //    Make materials be 1-indexed.
 //
+//    Hank Childs, Wed Jan 11 09:40:17 PST 2006
+//    Change mesh type to AMR.
+//
 // ****************************************************************************
 
 void
@@ -1366,7 +1369,7 @@ avtBoxlib3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     char mesh_name[32] = "Mesh";
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = mesh_name;
-    mesh->meshType = AVT_RECTILINEAR_MESH;
+    mesh->meshType = AVT_AMR_MESH;
     mesh->numBlocks = totalPatches;
     mesh->blockOrigin = 0;
     mesh->spatialDimension = dimension;

@@ -620,6 +620,9 @@ ViewerProxy::GetLocalHostName() const
 //   Brad Whitlock, Tue May 3 15:49:57 PST 2005
 //   Added viewerP.
 //
+//   Brad Whitlock, Wed Jan 11 17:03:46 PST 2006
+//   I fixed the code for viewerP->GetLocalUseName.
+//
 // ****************************************************************************
 
 const std::string &
@@ -633,12 +636,7 @@ ViewerProxy::GetLocalUserName() const
     if(viewer != 0)
         return viewer->GetLocalUserName();
 
-#if 0
     return viewerP->GetLocalUserName();
-#else
-    cerr << "Fix ViewerProxy::GetLocalUserName: " << __LINE__ << endl;
-    return *(new std::string("whitlocb"));
-#endif
 }
 
 // ****************************************************************************

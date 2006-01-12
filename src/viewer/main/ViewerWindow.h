@@ -346,6 +346,10 @@ class ViewerToolbar;
 //    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
 //    Added 3 most recent rendering times to set of times returned from
 //    GetRenderTimes. Added compression controls
+//
+//    Brad Whitlock, Wed Jan 11 14:55:54 PST 2006
+//    Added SessionContainsErrors.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -363,6 +367,7 @@ public:
 
     void CreateNode(DataNode *parentNode, bool detailed);
     void SetFromNode(DataNode *parentNode);
+    static bool SessionContainsErrors(DataNode *parentNode);
 
     void SetSize(const int width, const int height);
     void GetSize(int &width, int &height);

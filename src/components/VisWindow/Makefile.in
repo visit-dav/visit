@@ -116,6 +116,9 @@
 #    Brad Whitlock, Tue Jun 28 11:57:19 PDT 2005
 #    I made it use John Anderson's new annotation objects.
 #
+#    Kathleen Bonnell, Thu Jan 12 13:55:29 PST 2006 
+#    Removed Pick2D and Pick3D, added Pick. 
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -155,8 +158,7 @@ Interactors_src= \
   Interactors/Navigate3D.C \
   Interactors/NavigateCurve.C \
   Interactors/NullInteractor.C \
-  Interactors/Pick2D.C \
-  Interactors/Pick3D.C \
+  Interactors/Pick.C \
   Interactors/VisitHotPointInteractor.C \
   Interactors/VisitInteractor.C \
   Interactors/Zoom2D.C \
