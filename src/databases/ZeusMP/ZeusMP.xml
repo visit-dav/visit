@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+  <Plugin name="ZeusMP" type="database" label="ZeusMP" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false">
+    <CXXFLAGS>
+      $(HDF4_FLAGS)
+    </CXXFLAGS>
+    <LIBS>
+      $(HDF4_LIBS)
+    </LIBS>
+    <Extensions>
+      zeus
+    </Extensions>
+    <Attribute name="" purpose="" persistent="true">
+    </Attribute>
+  </Plugin>
