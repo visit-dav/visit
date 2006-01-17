@@ -14,6 +14,7 @@
 #include <visit-config.h>
 
 #include <ParentProcess.h>
+#include <DebugStream.h>
 #include <SocketConnection.h>
 #include <CommunicationHeader.h>
 #include <CouldNotConnectException.h>
@@ -203,21 +204,38 @@ ParentProcess::SetVersion(const std::string &ver)
 //    I added numRead and numWrite so we don't have to get the number of
 //    connections to create from the command line anymore.
 //
+//    Brad Whitlock, Tue Jan 17 14:26:09 PST 2006
+//    Added debug logging.
+//
 // ****************************************************************************
 
 void
 ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
     bool createSockets, int failCode)
 {
+    const char *mName = "ParentProcess::Connect: ";
     char **argv2 = *argv;
     bool rhostSpecified = false;
     bool nWriteSpecified = false, nReadSpecified = false;
-    int  deleteCount = 0, port = 0;
+    int  i, deleteCount = 0, port = 0;
+
+    // Log the arguments.
+    debug5 << mName << "Called with (numRead=" << numRead 
+           << ", numWrite=, " << numWrite
+           << ", argc=" << *argc
+           << ", argv={";
+    for (i = 0; i < *argc ; ++i)
+    {
+        debug5 << argv2[i];
+        if(i < *argc-1)
+           debug5 << ", ";
+    }
+    debug5 << "})" << endl;
 
     //
     // Go through the arguments and override the defaults.
     //
-    for (int i = 1; i < *argc ; ++i)
+    for (i = 1; i < *argc ; ++i)
     {
         deleteCount = 0;
         if (std::string(argv2[i]) == std::string("-host"))
@@ -226,6 +244,7 @@ ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
             {
                 rhostSpecified = true;
                 hostName = std::string(argv2[i + 1]);
+                debug5 << mName << "hostName = " << hostName.c_str() << endl;
                 GetHostInfo();
                 deleteCount = 2;
             }
@@ -235,6 +254,7 @@ ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
             if(rhostSpecified && (i + 1 < *argc))
             {
                 port = atoi(argv2[i + 1]);
+                debug5 << mName << "port = " << port << endl;
                 deleteCount = 2;
             }
         }
@@ -243,6 +263,7 @@ ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
             if(i + 1 < *argc)
             {
                 securityKey = std::string(argv2[i + 1]);
+                debug5 << mName << "securityKey = " << securityKey.c_str() << endl;
                 deleteCount = 2;
             }
         }
@@ -272,8 +293,10 @@ ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
     //
     if(rhostSpecified && createSockets)
     {
+        debug5 << mName << "Creating sockets" << endl;
         if(numRead > 0)
         {
+            debug5 << mName << "Creating read sockets" << endl;
             nReadSpecified = true;
             writeConnections = new Connection*[numRead];
             for(int j = 0; j < numRead; ++j)
@@ -289,6 +312,7 @@ ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
 
         if(numWrite > 0)
         {
+            debug5 << mName << "Creating write sockets" << endl;
             nWriteSpecified = true;
             readConnections = new Connection*[numWrite];
             for(int j = 0; j < numWrite; ++j)
@@ -317,9 +341,12 @@ ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
             // Now that the sockets are open, exchange type representation info
             // and set that info in the socket connections.
             //
+            debug5 << mName << "Exchanging type representations." << endl;
             ExchangeTypeRepresentations(failCode);
         }
     }
+
+    debug5 << mName << "done" << endl;
 }
 
 // ****************************************************************************
@@ -538,11 +565,15 @@ ParentProcess::GetWriteConnection(int i) const
 //   Brad Whitlock, Tue Mar 19 16:09:30 PST 2002
 //   Made it work on Windows.
 //
+//   Brad Whitlock, Tue Jan 17 14:37:35 PST 2006
+//   Added debug logging.
+//
 // ****************************************************************************
 
 int
 ParentProcess::GetClientSocketDescriptor(int port)
 {
+    const char *mName = "ParentProcess::GetClientSocketDescriptor: ";
     int                s;
     struct hostent     *hp;
     struct sockaddr_in server;
@@ -550,6 +581,7 @@ ParentProcess::GetClientSocketDescriptor(int port)
     //
     // Set up the structures for opening the sockets.
     //
+    debug5 << mName << "Set up using port " << port << endl;
     hp = (struct hostent *)hostInfo;
     if (hp == NULL)
         return -1;
@@ -561,6 +593,7 @@ ParentProcess::GetClientSocketDescriptor(int port)
     // 
     // Create a socket.
     // 
+    debug5 << mName << "Creating a socket" << endl;
     s = socket(AF_INET, SOCK_STREAM, 0);
     if (s < 0)
     {
@@ -568,14 +601,17 @@ ParentProcess::GetClientSocketDescriptor(int port)
     }
 
     // Disable the Nagle algorithm 
+    debug5 << mName << "Setting socket options" << endl;
     int opt = 1;
 #if defined(_WIN32)
     setsockopt(s, IPPROTO_TCP, TCP_NODELAY, (const char FAR *)&opt, sizeof(int));
 #else
     setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(int));
 #endif
+    debug5 << mName << "Calling connect" << endl;
     if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0)
     {
+        debug5 << mName << "Could not connect!" << endl;
 #if defined(_WIN32)
         closesocket(s);
 #else
@@ -583,6 +619,8 @@ ParentProcess::GetClientSocketDescriptor(int port)
 #endif
         return -1;
     }
+
+    debug5 << mName << "Connected socket" << endl;
 
     return s;
 }
@@ -605,6 +643,9 @@ ParentProcess::GetClientSocketDescriptor(int port)
 void
 ParentProcess::GetHostInfo()
 {
+    debug5 << "ParentProcess::GetHostInfo: Calling gethostbyname(\""
+           << hostName.c_str() << "\")\n";
+
     hostInfo = (void *)gethostbyname(hostName.c_str());
 }
 
@@ -620,7 +661,9 @@ ParentProcess::GetHostInfo()
 // Creation:   Wed Jan 11 17:02:38 PST 2006
 //
 // Modifications:
-//   
+//  Brad Whitlock, Tue Jan 17 14:38:35 PST 2006
+//  Added debug logging.
+//
 // ****************************************************************************
 
 const std::string &
@@ -631,16 +674,18 @@ ParentProcess::GetLocalUserName()
     //
     if(localUserName.size() == 0)
     {
+        debug5 << "Getting local user name: ";
 #if defined(_WIN32)
-    char username[100];
-    DWORD maxLen = 100;
-    GetUserName((LPTSTR)username, (LPDWORD)&maxLen);
-    localUserName = std::string(username);
+        char username[100];
+        DWORD maxLen = 100;
+        GetUserName((LPTSTR)username, (LPDWORD)&maxLen);
+        localUserName = std::string(username);
 #else
-    struct passwd *users_passwd_entry = NULL;
-    if((users_passwd_entry = getpwuid(getuid())) != NULL)
-        localUserName = std::string(users_passwd_entry->pw_name);
+        struct passwd *users_passwd_entry = NULL;
+        if((users_passwd_entry = getpwuid(getuid())) != NULL)
+            localUserName = std::string(users_passwd_entry->pw_name);
 #endif
+        debug5 << localUserName << endl;
     }
 
     return localUserName;

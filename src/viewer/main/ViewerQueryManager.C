@@ -468,6 +468,9 @@ ViewerQueryManager::AddQuery(ViewerWindow *origWin, Line *lineAtts,
 //   Tell the lineouts whether or not to follow time, and whether or not to
 //   use a time slider. 
 //
+//   Kathleen Bonnell, Tue Jan 17 11:30:15 PST 2006
+//   Removed call to SetTimeSlider.
+//
 // ****************************************************************************
 
 void
@@ -539,11 +542,6 @@ ViewerQueryManager::SimpleAddQuery(ViewerQuery_p query, ViewerPlot *oplot,
     // Add the query to the correct list.
     //
     lineoutList[index]->AddQuery(query);
-
-    //
-    // Set the on/off state of the time slider 
-    //
-    lineoutList[index]->SetTimeSlider(gla->GetDynamic());
 
     //
     // Tell it whether or not to follow time.
@@ -2535,6 +2533,9 @@ ViewerQueryManager::SetDynamicLineout(bool newMode)
 //   Use new GlobalLineout atts to set flags for lineouts, for following time, 
 //   and using a time slider. 
 //
+//   Kathleen Bonnell, Tue Jan 17 11:30:15 PST 2006
+//   Removed call to SetLineoutsTimeSlider.
+//
 // ****************************************************************************
 
 void
@@ -2553,7 +2554,6 @@ ViewerQueryManager::SetGlobalLineoutAttsFromClient()
         if (globalLineoutAtts->GetDynamic() != goingDynamic)
         {
             SetDynamicLineout(goingDynamic);
-            SetLineoutsTimeSlider(goingDynamic);
             SetLineoutsFollowTime(!(goingDynamic && creatingCurve));
         }
         else if (globalLineoutAtts->GetCurveOption() !=
@@ -4411,31 +4411,6 @@ ViewerQueryManager::SetLineoutsFollowTime(bool followTime)
     for (int i = 0; i < nLineouts; ++i)
     {
         lineoutList[i]->SetLineoutsFollowTime(followTime);
-    }
-}
-
-
-// ****************************************************************************
-//  Method: ViewerQueryManager::SetLineoutsTimeSlider
-//
-//  Purpose:
-//    Tells the lineout lists to turn on/off the time slider for the
-//    reswin's plot list. 
-//
-//  Arguments:
-//    removeTimeSlider   True if time slider should be removed, false otherwise.
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   Februrary 3, 2005 
-//
-// ****************************************************************************
-
-void
-ViewerQueryManager::SetLineoutsTimeSlider(bool removeTimeSlider)
-{
-    for (int i = 0; i < nLineouts; ++i)
-    {
-        lineoutList[i]->SetTimeSlider(removeTimeSlider);
     }
 }
 

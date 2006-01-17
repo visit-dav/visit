@@ -2086,6 +2086,7 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
                 // to the map.
                 std::string key(path + rootName);
                 virtualFiles[key].path = path;
+                virtualFiles[key].filterList = filterList;
                 virtualFiles[key].files.swap(pos->second.files);
             }
         }
@@ -2355,27 +2356,35 @@ MDServerConnection::ConsolidateVirtualDatabases(
 //   and file grouping settings that were in place the last time we read
 //   the directory.
 //
+//   Brad Whitlock, Tue Jan 17 16:35:40 PST 2006
+//   I added another case that allows us to update a virtual database that
+//   we've seen before.
+//
 // ****************************************************************************
 
 const MDServerConnection::VirtualFileInformationMap::iterator
 MDServerConnection::GetVirtualFileDefinition(const std::string &file)
 {
+    const char *mName = "MDServerConnection::GetVirtualFileDefinition: ";
+
     // Look for the file in the virtual files map.
     VirtualFileInformationMap::iterator virtualFile = virtualFiles.find(file);
 
-    //
-    // If the file was not found in the virtual file map, but it contains
-    // a wildcard character, which means that it is a virtual file, read
-    // the file list to try and create a definition for the virtual file
-    // so we can open it even if we've never seen it before.
-    //
-    if (virtualFile == virtualFiles.end() &&
-        file.find("*") != std::string::npos)
+    bool fileContainsStar = (file.find("*") != std::string::npos);
+    std::string::size_type index = file.rfind(SLASH_STRING);
+
+    if (virtualFile == virtualFiles.end())
     {
-        int index = file.rfind(SLASH_STRING);
-        if(index != std::string::npos)
+        //
+        // If the file was not found in the virtual file map, but it contains
+        // a wildcard character, which means that it is a virtual file, read
+        // the file list to try and create a definition for the virtual file
+        // so we can open it even if we've never seen it before.
+        //
+        if(fileContainsStar && index != std::string::npos)
         {
-            debug2 << "A virtual database was requested but we've never seen "
+            debug2 << mName << "A virtual database (" << file.c_str()
+                   << ") was requested but we've never seen "
                       "it before. Try and get a definition for it." << endl;
 
             // Remember the old path.
@@ -2396,6 +2405,43 @@ MDServerConnection::GetVirtualFileDefinition(const std::string &file)
             // Look for the file again in the virtual file map.
             virtualFile = virtualFiles.find(file);
         }
+    }
+    else if(virtualFile->second.files.size() == 0 &&
+            fileContainsStar && index != std::string::npos)
+    {
+        debug2 << mName << "A virtual database (" << file.c_str()
+               << ") was requested and we've seen "
+                  "it before but it was closed and its definition "
+                  "(list of files) was erased. Try and re-read its "
+                  "definition using the filter that we've saved for it (";
+        for(int i = 0; i < virtualFile->second.filterList.size(); ++i)
+        {
+            debug2 << virtualFile->second.filterList[i].c_str();
+            if(i < virtualFile->second.filterList.size()-1)
+                debug2 << ", ";
+        }
+        debug2 << ")." << endl;
+
+        // Remember the old path.
+        std::string oldPath(currentWorkingDirectory);
+
+        // We found the last separator so we can change to that path
+        // to ensure that the file list is read.
+        std::string path(file.substr(0, index));
+        ChangeDirectory(path);
+
+        // Get the filtered file list. This creates virtual files.
+        GetFileListRPC::FileList f;
+        stringVector oldFilterList(filterList);
+        filterList = virtualFile->second.filterList;
+        GetFilteredFileList(f);
+        filterList = oldFilterList;
+
+        // Change the path back to the old path.
+        ChangeDirectory(oldPath);
+
+        // Look for the file again in the virtual file map.
+        virtualFile = virtualFiles.find(file);
     }
 
     return virtualFile;
@@ -2620,11 +2666,18 @@ MDServerConnection::GetDatabase(string file, int timeState,
 //   I added a db argument so this rpc can be used to remove a virtual file
 //   definition without necessarily having to close the database.
 //
+//   Brad Whitlock, Tue Jan 17 16:37:18 PST 2006
+//   Changed the method so virtual databases are "deleted" from the map by
+//   deleting their list of files. This way, other information such as the
+//   filter is preserved so we can reliably recreate the list of files later,
+//   if needed.
+//
 // ****************************************************************************
 
 void
 MDServerConnection::CloseDatabase(const std::string &db)
 {
+    const char *mName = "MDServerConnection::CloseDatabase: ";
     std::string dbToClose(db);
     bool closeCurrentDB = (dbToClose == currentDatabaseName);
     if(dbToClose == "")
@@ -2637,14 +2690,15 @@ MDServerConnection::CloseDatabase(const std::string &db)
 
     if(virtualFile != virtualFiles.end())
     {
-        debug1 << "Removing " << dbToClose.c_str()
-               << " from the virtual file map." << endl;
-        virtualFiles.erase(virtualFile);
+        debug1 << mName << "Clearing out " << dbToClose.c_str()
+               << "'s file list from the virtual file map so we can "
+                  "repopulate it later." << endl;
+        virtualFile->second.files.clear();
     }
 
     if (closeCurrentDB && currentDatabase != NULL)
     {
-        debug1 << "Closing database: " << currentDatabaseName.c_str() << endl;
+        debug1 << mName << "Closing database: " << currentDatabaseName.c_str() << endl;
         delete currentDatabase;
         currentDatabase = NULL;
         currentDatabaseName = "";

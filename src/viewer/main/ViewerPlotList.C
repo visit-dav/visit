@@ -5031,7 +5031,9 @@ ViewerPlotList::DemoteOperator(int operatorId, bool applyToAll)
 // Creation:   Thu Apr 10 10:10:37 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jan 17 12:08:44 PDT 2006
+//   Added a line of code to update the vis window.
+//
 // ****************************************************************************
 
 void
@@ -5062,6 +5064,11 @@ ViewerPlotList::RemoveOperator(int operatorId, bool applyToAll)
         //
         UpdatePlotList();
         UpdatePlotAtts(false);
+
+        //
+        // Update the frame
+        //
+        UpdateFrame();
     }
 }
 

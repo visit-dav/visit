@@ -1,6 +1,7 @@
 #include <QvisColorTableButton.h>
 #include <qpopupmenu.h>
 #include <qapplication.h>
+#include <qtooltip.h>
 
 //
 // Static members.
@@ -162,6 +163,8 @@ QvisColorTableButton::sizePolicy() const
 // Creation:   Sat Jun 16 20:08:42 PST 2001
 //
 // Modifications:
+//   Brad Whitlock, Tue Jan 17 11:41:44 PDT 2006
+//   Added a tooltip so long color table names can be put in a tooltip.
 //   
 // ****************************************************************************
 
@@ -170,6 +173,7 @@ QvisColorTableButton::useDefaultColorTable()
 {
     colorTable = QString("Default");
     setText(colorTable);
+    QToolTip::add(this, colorTable);
 }
 
 // ****************************************************************************
@@ -188,6 +192,9 @@ QvisColorTableButton::useDefaultColorTable()
 //   Brad Whitlock, Fri Feb 15 10:15:43 PDT 2002
 //   Made it set the menu text to "Default" if no color table is found.
 //
+//   Brad Whitlock, Tue Jan 17 11:41:44 PDT 2006
+//   Added a tooltip so long color table names can be put in a tooltip.
+//
 // ****************************************************************************
 
 void
@@ -197,9 +204,14 @@ QvisColorTableButton::setColorTable(const QString &ctName)
     {
         colorTable = ctName;
         setText(colorTable);
+        QToolTip::add(this, colorTable);
     }
     else
-        setText(QString("Default"));
+    {
+        QString def("Default");
+        setText(def);
+        QToolTip::add(this, def);
+    }
 }
 
 // ****************************************************************************
@@ -305,6 +317,8 @@ QvisColorTableButton::popupPressed()
 // Creation:   Sat Jun 16 20:11:06 PST 2001
 //
 // Modifications:
+//   Brad Whitlock, Tue Jan 17 11:41:44 PDT 2006
+//   Added a tooltip so long color table names can be put in a tooltip.
 //   
 // ****************************************************************************
 
@@ -313,13 +327,16 @@ QvisColorTableButton::colorTableSelected(int index)
 {
     if(index == 0)
     {
-        emit selectedColorTable(true, QString("Default"));
-        setText("Default");
+        QString def("Default");
+        emit selectedColorTable(true, def);
+        setText(def);
+        QToolTip::add(this, def);
     }
     else if(index < numColorTableNames + 2)
     {
         emit selectedColorTable(false, colorTableNames[index-2]);
         setText(colorTableNames[index-2]);
+        QToolTip::add(this, colorTableNames[index-2]);
     }
 }
 

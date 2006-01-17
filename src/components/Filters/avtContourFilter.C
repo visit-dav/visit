@@ -853,6 +853,11 @@ avtContourFilter::CreatePercentValues(double mn, double mx)
 //    Change the way the levels are set when the user specifies the number
 //    of levels and the minimum and maximum.
 //
+//    Brad Whitlock, Mon Dec 19 17:17:05 PST 2005
+//    I changed the code so it conditionally applies the extrema offset 
+//    because applying it when min/max were set made it impossible to get
+//    contours that go through the min/max values.
+//
 // ****************************************************************************
 
 void
@@ -892,14 +897,13 @@ avtContourFilter::CreateNIsoValues(double min, double max)
     //
     // If we have to generate the isolevels, then we want them to be offset
     // at the extrema.  This offset is arbitrary and mimicks what MeshTV did,
-    // except in the case where the minimum and maximum are specified.  In
-    // MeshTV, the offsets weren't applied if the minimum or maximum were
-    // specified, whereas here we always apply the offsets.
+    // except in the case where the minimum and maximum are specified.
     //
     extremaOffset = (hi - lo) / (nLevels + 1.);
-
-    lo += extremaOffset;
-    hi -= extremaOffset;
+    if(!atts.GetMinFlag())
+        lo += extremaOffset;
+    if(!atts.GetMaxFlag())
+        hi -= extremaOffset;
 
     if (nLevels <= 1)
     {
