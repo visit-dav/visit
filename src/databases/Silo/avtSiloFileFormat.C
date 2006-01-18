@@ -922,6 +922,10 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Removed spoofing of CSG mesh as a surface mesh  
+//
+//    Mark C. Miller, Wed Jan 18 19:58:47 PST 2006
+//    Made it more fault tolerant for multivar, multimat and multimatspecies
+//    objects that contained all EMPTY pieces.
 // ****************************************************************************
 
 void
@@ -1164,7 +1168,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             meshnum++;
             if (meshnum >= mm->nblocks)
             {
-                debug1 << "Giving up on mesh \"" << multimesh_names[i] 
+                debug1 << "Invalidating mesh \"" << multimesh_names[i] 
                        << "\" since all its blocks are EMPTY." << endl;
                 valid_var = false;
                 break;
@@ -1178,7 +1182,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         }
         CATCH(SiloException)
         {
-            debug1 << "Giving up on mesh \"" << multimesh_names[i] 
+            debug1 << "Invalidating mesh \"" << multimesh_names[i] 
                    << "\" since its first non-empty block (" << mm->meshnames[meshnum]
                    << ") is invalid." << endl;
             valid_var = false;
@@ -1702,17 +1706,20 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 
         // Find the first non-empty mesh
         int meshnum = 0;
+        bool valid_var = true;
         while (string(mv->varnames[meshnum]) == "EMPTY")
         {
             meshnum++;
             if (meshnum >= mv->nvars)
             {
-                EXCEPTION1(InvalidVariableException,  multivar_names[i]);
+                debug1 << "Invalidating variable \"" << multivar_names[i] 
+                       << "\" since all its blocks are EMPTY." << endl;
+                valid_var = false;
+                break;
             }
         }
 
         string meshname;
-        bool valid_var = true;
 
         TRY
         {
@@ -1720,16 +1727,19 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             //       multimesh has already been read.  Thus it must reside
             //       in the same directory (or a previously read one) as
             //       this variable.
-            meshname = DetermineMultiMeshForSubVariable(dbfile,
-                                                        multivar_names[i],
-                                                        mv->varnames,
-                                                        mv->nvars, dirname);
-            debug5 << "Variable " << multivar_names[i] 
-                   << " is defined on mesh " << meshname.c_str() << endl;
+            if (valid_var)
+            {
+                meshname = DetermineMultiMeshForSubVariable(dbfile,
+                                                            multivar_names[i],
+                                                            mv->varnames,
+                                                            mv->nvars, dirname);
+                debug5 << "Variable " << multivar_names[i] 
+                       << " is defined on mesh " << meshname.c_str() << endl;
+            }
         }
         CATCH(SiloException)
         {
-            debug1 << "Giving up on var \"" << multivar_names[i] 
+            debug1 << "Invalidating var \"" << multivar_names[i] 
                    << "\" since its first non-empty block (" << mv->varnames[meshnum]
                    << ") is invalid." << endl;
             valid_var = false;
@@ -1745,10 +1755,11 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         DBfile *correctFile = dbfile;
         string  varUnits;
 
-        DetermineFileAndDirectory(mv->varnames[meshnum], correctFile, realvar);
         int nvals = 1;
         if (valid_var)
         {
+            DetermineFileAndDirectory(mv->varnames[meshnum], correctFile, realvar);
+
             switch (mv->vartypes[meshnum])
             {
               case DB_UCDVAR:
@@ -2122,12 +2133,16 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 
         // Find the first non-empty mesh
         int meshnum = 0;
+        bool valid_var = true;
         while (string(mm->matnames[meshnum]) == "EMPTY")
         {
             meshnum++;
             if (meshnum >= mm->nmats)
             {
-                EXCEPTION1(InvalidVariableException,  multimat_names[i]);
+                debug1 << "Invalidating material \"" << multimat_names[i] 
+                       << "\" since all its blocks are EMPTY." << endl;
+                valid_var = false;
+                break;
             }
         }
 
@@ -2135,17 +2150,19 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 
         char   *realvar = NULL;
         DBfile *correctFile = dbfile;
-        DetermineFileAndDirectory(material, correctFile, realvar);
+        DBmaterial *mat = NULL;
 
-        DBmaterial *mat = DBGetMaterial(correctFile, realvar);
+        if (valid_var)
+        {
+            DetermineFileAndDirectory(material, correctFile, realvar);
+            mat = DBGetMaterial(correctFile, realvar);
+        }
 
-        bool valid_var = true;
         if (mat == NULL)
         {
-            debug1 << "Giving up on material \"" << multimat_names[i] 
+            debug1 << "Invalidating material \"" << multimat_names[i] 
                    << "\" since its first non-empty block (" << material
                    << ") is invalid." << endl;
-            DBFreeMaterial(mat);
             valid_var = false;
         }
 
@@ -2264,64 +2281,71 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 
         // Find the first non-empty mesh
         int meshnum = 0;
+        bool valid_var = true;
         while (string(ms->specnames[meshnum]) == "EMPTY")
         {
             meshnum++;
             if (meshnum >= ms->nspec)
             {
-                EXCEPTION1(InvalidVariableException,  multimatspecies_names[i]);
+                debug1 << "Invalidating species \"" << multimatspecies_names[i] 
+                       << "\" since all its blocks are EMPTY." << endl;
+                valid_var = false;
+                break;
             }
         }
 
-        // get the associated multimat
-
-        // We can only get this "matname" using GetComponent.  It it not
-        // yet a part of the DBmultimatspec structure, so this is the only
-        // way we can get this info.
-        char *multimatName = (char *) GetComponent(dbfile,
-                                          multimatspecies_names[i], "matname");
-
-        // get the multimesh for the multimat
-        DBmultimat *mm = GetMultimat(dirname, multimatName);
-        if (mm == NULL)
-            EXCEPTION1(InvalidVariableException, multimatspecies_names[i]);
-        char *material = mm->matnames[meshnum];
-
         string meshname;
-        bool valid_var = true;
-        TRY
-        {
-            meshname = DetermineMultiMeshForSubVariable(dbfile,
-                                                      multimatspecies_names[i],
-                                                      mm->matnames,
-                                                      ms->nspec, dirname);
-        }
-        CATCH(SiloException)
-        {
-            debug1 << "Giving up on var \"" << multimatspecies_names[i]
-                   << "\" since its first non-empty block (" << material
-                   << ") is invalid." << endl;
-            valid_var = false;
-        }
-        ENDTRY
-
-        // get the species info
-        char *species = ms->specnames[meshnum];
-
-        char   *realvar = NULL;
-        DBfile *correctFile = dbfile;
-        DetermineFileAndDirectory(species, correctFile, realvar);
-
         DBmatspecies *spec = NULL;
-        DBShowErrors(DB_NONE, NULL);
-        spec = DBGetMatspecies(correctFile, realvar);
-        DBShowErrors(DB_ALL, ExceptionGenerator);
-        if (spec == NULL)
+
+        if (valid_var)
         {
-            debug1 << "Giving up on species \"" << multimatspecies_names[i]
-                   << "\" since its first non-empty block (" << species
-                   << ") is invalid." << endl;
-            valid_var = false;
+            // get the associated multimat
+
+            // We can only get this "matname" using GetComponent.  It it not
+            // yet a part of the DBmultimatspec structure, so this is the only
+            // way we can get this info.
+            char *multimatName = (char *) GetComponent(dbfile,
+                                              multimatspecies_names[i], "matname");
+
+            // get the multimesh for the multimat
+            DBmultimat *mm = GetMultimat(dirname, multimatName);
+            if (mm == NULL)
+                EXCEPTION1(InvalidVariableException, multimatspecies_names[i]);
+            char *material = mm->matnames[meshnum];
+
+            TRY
+            {
+                meshname = DetermineMultiMeshForSubVariable(dbfile,
+                                                          multimatspecies_names[i],
+                                                          mm->matnames,
+                                                          ms->nspec, dirname);
+            }
+            CATCH(SiloException)
+            {
+                debug1 << "Giving up on var \"" << multimatspecies_names[i]
+                       << "\" since its first non-empty block (" << material
+                       << ") is invalid." << endl;
+                valid_var = false;
+            }
+            ENDTRY
+
+            // get the species info
+            char *species = ms->specnames[meshnum];
+
+            char   *realvar = NULL;
+            DBfile *correctFile = dbfile;
+            DetermineFileAndDirectory(species, correctFile, realvar);
+
+            DBShowErrors(DB_NONE, NULL);
+            spec = DBGetMatspecies(correctFile, realvar);
+            DBShowErrors(DB_ALL, ExceptionGenerator);
+            if (spec == NULL)
+            {
+                debug1 << "Giving up on species \"" << multimatspecies_names[i]
+                       << "\" since its first non-empty block (" << species
+                       << ") is invalid." << endl;
+                valid_var = false;
+            }
         }
 
         vector<int>              numSpecies;

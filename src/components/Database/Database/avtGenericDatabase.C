@@ -4104,6 +4104,9 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Jeremy Meredith, Thu Aug 18 17:54:51 PDT 2005
 //    Added a new isovolume algorithm, with adjustable VF cutoff.
 //
+//    Hank Childs, Thu Jan 12 14:49:44 PST 2006
+//    Make warning also include domain number.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -4134,9 +4137,9 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     if (mat == NULL || ds == NULL || mat->GetNZones() !=ds->GetNumberOfCells())
     {
         char msg[128];
-        SNPRINTF(msg,sizeof(msg),"The material object with nzones=%d and dataset "
-            "object with ncells=%d do not agree.", mat->GetNZones(),
-            ds->GetNumberOfCells());
+        SNPRINTF(msg,sizeof(msg),"In domain number %d, the material object "
+              "with nzones=%d and dataset object with ncells=%d do not agree.",
+               dom, mat->GetNZones(), ds->GetNumberOfCells());
         EXCEPTION1(InvalidDBTypeException, msg); 
     }
 

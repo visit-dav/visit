@@ -4,8 +4,10 @@
 
 #include <avtTotalRevolvedSurfaceAreaQuery.h>
 
+#include <avtFacelistFilter.h>
 #include <avtRevolvedSurfaceArea.h>
 #include <avtSourceFromAVTDataset.h>
+
 #include <NonQueryableInputException.h>
 
 
@@ -68,6 +70,11 @@ avtTotalRevolvedSurfaceAreaQuery::~avtTotalRevolvedSurfaceAreaQuery()
 //  Programmer: Hank Childs 
 //  Creation:   March 18, 2003 
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Jan 12 15:00:52 PST 2006
+//    Add support for data sets that aren't already external edges.
+//
 // ****************************************************************************
 
 avtDataObject_p 
@@ -82,6 +89,17 @@ avtTotalRevolvedSurfaceAreaQuery::ApplyFilters(avtDataObject_p inData)
     CopyTo(ds, inData);
     avtSourceFromAVTDataset termsrc(ds);
     avtDataObject_p dob = termsrc.GetOutput();
+
+    avtFacelistFilter ff;
+    if (dob->GetInfo().GetAttributes().GetTopologicalDimension() == 2)
+    {
+        qualifier = "This query was calculated by finding the external line "
+                    "segments of the data set and then calculating the surface"
+                    " area of these line segments when revolved into 3D.";
+        ff.SetCreateEdgeListFor2DDatasets(true);
+        ff.SetInput(dob);
+        dob = ff.GetOutput();
+    }
 
     surface_area->SetInput(dob);
     avtDataObject_p objOut = surface_area->GetOutput();
@@ -105,6 +123,9 @@ avtTotalRevolvedSurfaceAreaQuery::ApplyFilters(avtDataObject_p inData)
 //    Added test for topological dimension, as that is no longer performed by
 //    base class.  
 //
+//    Hank Childs, Thu Jan 12 14:54:25 PST 2006
+//    Add more checking.
+//
 // ****************************************************************************
 
 void
@@ -120,6 +141,13 @@ avtTotalRevolvedSurfaceAreaQuery::VerifyInput(void)
     {
         EXCEPTION1(NonQueryableInputException,
             "Requires plot with topological dimension > 0.");
+    }
+
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() >= 3
+        || GetInput()->GetInfo().GetAttributes().GetSpatialDimension() >= 3)
+    {
+        EXCEPTION1(NonQueryableInputException,
+            "Can only revolve 2D data sets.  This data is already 3D.");
     }
 
     SetUnits(GetInput()->GetInfo().GetAttributes().GetXUnits());

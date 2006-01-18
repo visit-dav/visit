@@ -81,7 +81,7 @@ public:
 
     // User-defined methods
     bool GetUseFullFrame(const double *limits=0) const;
-    void View2DAttributes::SetUseFullFrame(bool ff);
+    void SetUseFullFrame(bool ff);
 private:
     double windowCoords[4];
     double viewportCoords[4];

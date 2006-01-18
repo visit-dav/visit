@@ -36,6 +36,9 @@ class vtkDataSet;
 //    Moved inlined destructor definition to .C file because certain compilers
 //    have problems with them.
 //
+//    Hank Childs, Thu Jan 12 14:58:07 PST 2006
+//    Added qualifier.
+//
 // ****************************************************************************
 
 class QUERY_API avtSummationQuery : public avtDatasetQuery
@@ -61,6 +64,7 @@ class QUERY_API avtSummationQuery : public avtDatasetQuery
     std::string                     variableName;
     std::string                     sumType;
     std::string                     unitsAppend;
+    std::string                     qualifier;
     bool                            sumGhostValues;
     bool                            sumOnlyPositiveValues;
     char                            descriptionBuffer[1024];
