@@ -1356,6 +1356,9 @@ PluginManager::ReadPluginDir(vector<pair<string,string> > &files)
 //    Told PluginSymbol not to complain if it could not find
 //    the g++ initialization code.
 //
+//    Hank Childs, Thu Jan 19 17:05:49 PST 2006
+//    Print out plugin errors to the screen.  ['6629]
+//
 // ****************************************************************************
 
 void
@@ -1365,8 +1368,10 @@ PluginManager::PluginOpen(const string &pluginFile)
     HINSTANCE lib = LoadLibrary(pluginFile.c_str());
     if(!lib)
     {
+        const char *pluginError = PluginError();
+        cerr << "Error opening plugin file: " << pluginError << endl;
         EXCEPTION3(InvalidPluginException, "Error opening plugin file",
-                   pluginFile.c_str(), PluginError());
+                   pluginFile.c_str(), pluginError);
     }
 
     handle = (void *)lib;
@@ -1375,8 +1380,10 @@ PluginManager::PluginOpen(const string &pluginFile)
     handle = dlopen(pluginFile.c_str(), RTLD_LAZY);
     if (!handle)
     {
+        const char *pluginError = PluginError();
+        cerr << "Error opening plugin file: " << pluginError << endl;
         EXCEPTION3(InvalidPluginException, "Error opening plugin file",
-                   pluginFile.c_str(), PluginError());
+                   pluginFile.c_str(), pluginError);
     }
 
     // Try to initialize static constructors.  This is a g++ism.

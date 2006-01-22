@@ -181,6 +181,9 @@
 #   Brad Whitlock, Fri Jan 13 13:47:09 PST 2006
 #   Added ZeusMP reader.
 #
+#   Hank Childs, Thu Jan 19 09:40:30 PST 2006
+#   Added Chombo reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -194,7 +197,7 @@ CGNS=CGNS
 EXODUS=Exodus TimeVaryingExodus
 GDAL=GDAL
 HDF4=Cosmos Enzo ZeusMP
-HDF5=Tetrad SAMRAI CosmosPP Pixie FLASH
+HDF5=Tetrad SAMRAI CosmosPP Pixie FLASH Chombo
 MILI=Mili
 NETCDF=NETCDF
 PDB=KullLite PDB

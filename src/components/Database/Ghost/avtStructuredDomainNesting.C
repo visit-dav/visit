@@ -501,6 +501,9 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
 //    Mark C. Miller, Wed Feb 16 14:32:55 PST 2005
 //    Account for possibility that some meshes may not exist
 //
+//    Hank Childs, Fri Jan 20 17:11:59 PST 2006
+//    Add warning messages for failure.
+//
 // ****************************************************************************
 
 bool
@@ -536,11 +539,32 @@ avtStructuredDomainNesting::ConfirmMesh(vector<int> &domains,
 
         vector<int> &extents = domainNesting[domains[i]].logicalExtents;
         if ((extents[3]-extents[0]+2) != dims[0])
+        {
+            debug1 << "Warning: avtStructuredDomainNesting failing "
+                   << " because declared extents in I " 
+                   << extents[3]-extents[0]+2 
+                   << " are bigger than data set size " << dims[0]
+                   << "." << endl;
             return false;
+        }
         if ((extents[4]-extents[1]+2) != dims[1])
+        {
+            debug1 << "Warning: avtStructuredDomainNesting failing "
+                   << " because declared extents in J " 
+                   << extents[4]-extents[1]+2 
+                   << " are bigger than data set size " << dims[1]
+                   << "." << endl;
             return false;
+        }
         if (dims[2] > 1 && (extents[5]-extents[2]+2) != dims[2])
+        {
+            debug1 << "Warning: avtStructuredDomainNesting failing "
+                   << " because declared extents in K " 
+                   << extents[5]-extents[2]+2 
+                   << " are bigger than data set size " << dims[2]
+                   << "." << endl;
             return false;
+        }
     }
 
     return true;
