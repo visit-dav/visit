@@ -74,6 +74,11 @@ avtExpressionFilter::~avtExpressionFilter()
 //    Hank Childs, Sat Jan  1 11:11:17 PST 2005
 //    Do not assume that there are arguments (which leads to a crash).
 //
+//    Hank Childs, Sun Jan 22 12:31:17 PST 2006
+//    Don't do further processing for lists and other constructs that aren't
+//    actually avtExprNodes.  This can happen when processing macro 
+//    expressions.
+//
 // ****************************************************************************
 
 void
@@ -88,7 +93,17 @@ avtExpressionFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     std::vector<ArgExpr*> *arguments = args->GetArgs();
     std::vector<ArgExpr*>::iterator i;
     for (i=arguments->begin(); i != arguments->end(); i++)
-        dynamic_cast<avtExprNode*>((*i)->GetExpr())->CreateFilters(state);
+    {
+        ExprParseTreeNode *n = (*i)->GetExpr();
+        avtExprNode *expr_node = dynamic_cast<avtExprNode*>((*i)->GetExpr());
+        if (expr_node == NULL)
+        {
+            // Probably a list or some other construct that doesn't need
+            // to create filters.
+            continue;
+        }
+        expr_node->CreateFilters(state);
+    }
 }
 
 
@@ -141,7 +156,7 @@ avtExpressionFilter::SetOutputVariableName(const char *name)
 //    DataExents now always have only 2 components. 
 //
 //    Hank Childs, Mon Dec 27 10:28:51 PST 2004
-//    Call avtDatasetToDatasetFilter's PostExecute, since that is now the base 
+//    Call avtDatasetToDatasetFilter's PreExecute, since that is now the base 
 //    class.
 //
 // ****************************************************************************
@@ -438,7 +453,7 @@ avtExpressionFilter::PerformRestriction(avtPipelineSpecification_p spec)
 // ****************************************************************************
 
 bool
-avtExpressionFilter::IsPointVariable()
+avtExpressionFilter::IsPointVariable(void)
 {
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
     if (atts.ValidActiveVariable())
@@ -447,6 +462,30 @@ avtExpressionFilter::IsPointVariable()
     }
 
     return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtExpressionFilter::GetVariableDimension
+//
+//  Purpose:
+//      Determines the variable dimension.
+//
+//  Returns:    The variable dimension.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 21, 2006
+//
+// ****************************************************************************
+
+int
+avtExpressionFilter::GetVariableDimension(void)
+{
+    avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+    if (atts.ValidActiveVariable())
+        return atts.GetVariableDimension();
+
+    return 1;
 }
 
 

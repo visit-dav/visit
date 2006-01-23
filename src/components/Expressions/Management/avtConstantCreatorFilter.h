@@ -25,6 +25,9 @@
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Mon Jan 23 11:32:14 PST 2006
+//    Make sure constants are always scalars.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtConstantCreatorFilter : public avtUnaryMathFilter
@@ -43,6 +46,7 @@ class EXPRESSION_API avtConstantCreatorFilter : public avtUnaryMathFilter
     virtual void             DoOperation(vtkDataArray *in, vtkDataArray *out,
                                          int ncomponents, int ntuples);
     virtual int              GetNumberOfComponentsInOutput(int) { return 1; };
+    virtual int              GetVariableDimension(void) { return 1; };
     virtual vtkDataArray    *CreateArray(vtkDataArray *);
 
     double                   value;

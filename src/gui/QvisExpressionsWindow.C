@@ -53,6 +53,9 @@
 //    Hank Childs, Wed Sep 21 17:31:59 PDT 2005
 //    Added external_node, surface normal, min/max edge length/side volume.
 //
+//    Hank Childs, Sun Jan 22 12:47:29 PST 2006
+//    Renamed comparison to relational.  Added new category for comparison.
+//
 // ****************************************************************************
 struct ExprNameList
 {
@@ -107,7 +110,7 @@ const char *expr_math[] = {
     NULL
 };
 
-const char *expr_comparison[] = {
+const char *expr_relational[] = {
     "eq",
     "ge",
     "gt",
@@ -216,6 +219,14 @@ const char *expr_imageprocessing[] = {
     NULL
 };
 
+const char *expr_comparison[] = {
+    "conn_cmfe",
+    "pos_cmfe",
+    "symm_plane",
+    "symm_transform",
+    NULL
+};
+
 ExprNameList exprlist[] =
 {
     {"Math",             expr_math},
@@ -225,10 +236,11 @@ ExprNameList exprlist[] =
     {"Material",         expr_materials},
     {"Mesh",             expr_mesh},
     {"Mesh Quality",     expr_meshquality},
+    {"Comparison",       expr_comparison},
     {"Image Processing", expr_imageprocessing},
     {"Miscellaneous",    expr_misc},
     {"Trigonometry",     expr_trig},
-    {"Comparison",       expr_comparison},
+    {"Relational",       expr_relational},
     {"Conditional",      expr_conditional},
     {"Logical",          expr_logical},
     {NULL,NULL}
@@ -911,6 +923,9 @@ QvisExpressionsWindow::displayAllVarsChanged()
 //    Brad Whitlock, Thu Dec 9 14:15:01 PST 2004
 //    Added code to set the focus to the definition edit.
 //
+//    Hank Childs, Sun Jan 22 12:49:57 PST 2006
+//    Add special insertion code for complicated expressions.
+//
 // ****************************************************************************
 
 void
@@ -922,7 +937,46 @@ QvisExpressionsWindow::insertFunction(int id)
     QString orig = definitionEdit->text();
     definitionEdit->insert(insertFunctionMenu->text(id));
 
-    if (insertFunctionMenu->text(id).length() >= 2)
+    bool doParens = (insertFunctionMenu->text(id).length() >= 2);
+    std::string str = insertFunctionMenu->text(id);
+    if (str == "conn_cmfe")
+    {
+        definitionEdit->insert("(<filename:var>, <meshname>)");
+        doParens = false;
+    }
+    else if (str == "pos_cmfe")
+    {
+        definitionEdit->insert("(<filename:var>, <default-var>, <meshname>)");
+        doParens = false;
+    }
+    else if (str == "symm_plane")
+    {
+        definitionEdit->insert("(<var>, [Nx, Ny, Nz, Ox, Oy, Oz])");
+        doParens = false;
+    }
+    else if (str == "symm_transform")
+    {
+        definitionEdit->insert("(<var>, [T00, T01, T02, T10, T11, T12, "
+                                        "T20, T21, T22])");
+        doParens = false;
+    }
+    else if (str == "matvf")
+    {
+        definitionEdit->insert("(<material-name>, [#, #, ... #])");
+        doParens = false;
+    }
+    else if (str == "specmf")
+    {
+        definitionEdit->insert("(<material-name>, [#, #, ... #])");
+        doParens = false;
+    }
+    else if (str == "if")
+    {
+        definitionEdit->insert("(<condition>, <then-var>, <else-var>)");
+        doParens = false;
+    }
+
+    if (doParens)
     {
         definitionEdit->insert("()");
 

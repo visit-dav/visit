@@ -123,6 +123,9 @@
 #   Hank Childs, Thu Jan  5 08:34:43 PST 2006
 #   Add pos_cmfe.
 #
+#   Hank Childs, Sun Jan 22 10:52:01 PST 2006
+#   Add new expressions for symmetry.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -159,7 +162,14 @@ Conditional_src= \
 CMFE_src= \
   CMFE/avtCMFEExpression.C \
   CMFE/avtConnCMFEExpression.C \
-  CMFE/avtPosCMFEExpression.C
+  CMFE/avtEvalPlaneExpression.C \
+  CMFE/avtEvalTransformExpression.C \
+  CMFE/avtPosCMFEAlgorithm.C \
+  CMFE/avtPosCMFEExpression.C \
+  CMFE/avtSymmEvalExpression.C \
+  CMFE/avtSymmPlaneExpression.C \
+  CMFE/avtSymmTransformExpression.C
+
 
 Derivations_src=\
   Derivations/avtEffectiveTensorFilter.C \

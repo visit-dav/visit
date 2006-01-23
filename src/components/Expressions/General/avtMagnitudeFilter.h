@@ -27,6 +27,9 @@ class     vtkDataArray;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Mon Jan 23 09:45:07 PST 2006
+//    Declare the correct variable dimension.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtMagnitudeFilter : public avtSingleInputExpressionFilter
@@ -40,6 +43,7 @@ class EXPRESSION_API avtMagnitudeFilter : public avtSingleInputExpressionFilter
                               {return "Calculating Magnitude of Each Vector";};
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual int               GetVariableDimension(void) { return 1; };
 };
 
 

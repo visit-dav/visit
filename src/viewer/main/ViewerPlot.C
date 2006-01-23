@@ -4625,6 +4625,9 @@ ViewerPlot::InitializePlot(Plot &plot) const
 //   Removed MeshType arg from SetOpaqueMeshIsAppropriate.  (MeshType is now
 //   sent to the avtPlot.)
 //
+//   Kathleen Bonnell, Mon Jan 23 18:28:28 PST 2006 
+//   Set the atts in plotAtts, too. 
+//
 // ****************************************************************************
 
 void
@@ -4642,6 +4645,8 @@ ViewerPlot::SetOpaqueMeshIsAppropriate(bool val)
                 plotList[cacheIndex]->SetAtts(atts);
                 // Set the attributes into the current plot attributes.
                 curPlotAtts->CopyAttributes(atts);
+                // Set the attributes into the stored plot attributes.
+                plotAtts->SetAtts(cacheIndex, curPlotAtts);
             }
         }
     }
