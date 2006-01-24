@@ -176,29 +176,55 @@ avtChomboFileFormat::InitializeReader(void)
                                            "have the \"/\" group.");
     }
 
+    bool hasTime = false;
+    bool hasIterations = false;
+
+    int numAttrs = H5Aget_num_attrs(slash);
+    char buf[1024];
+    for (i = 0 ; i < numAttrs ; i++)
+    {
+        hid_t idx = H5Aopen_idx(slash, i);
+        H5Aget_name(idx, 1024, buf);
+        if (strcmp(buf, "time") == 0)
+            hasTime = true;
+        if (strcmp(buf, "iteration") == 0)
+            hasIterations = true;
+        H5Aclose(idx);
+    }
+
     //
     // Get the time.
     //
-    hid_t time_id = H5Aopen_name(slash, "time");
-    if (time_id < 0)
+    if (hasTime)
     {
-        EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, must "
-                                           "have time in \"/\" group.");
+        hid_t time_id = H5Aopen_name(slash, "time");
+        if (time_id < 0)
+        {
+            EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, must "
+                                               "have time in \"/\" group.");
+        }
+        H5Aread(time_id, H5T_NATIVE_DOUBLE, &dtime);
+        H5Aclose(time_id);
     }
-    H5Aread(time_id, H5T_NATIVE_DOUBLE, &dtime);
-    H5Aclose(time_id);
+    else
+        dtime = 0.;
 
     //
     // Get the cycle.
     //
-    hid_t cycle_id = H5Aopen_name(slash, "iteration");
-    if (cycle_id < 0)
+    if (hasIterations)
     {
-        EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, must "
-                                           "have iteration in \"/\" group.");
+        hid_t cycle_id = H5Aopen_name(slash, "iteration");
+        if (cycle_id < 0)
+        {
+            EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, must "
+                                             "have iteration in \"/\" group.");
+        }
+        H5Aread(cycle_id, H5T_NATIVE_INT, &cycle);
+        H5Aclose(cycle_id);
     }
-    H5Aread(cycle_id, H5T_NATIVE_INT, &cycle);
-    H5Aclose(cycle_id);
+    else
+        cycle = 0;
 
     //
     // Note: max_level, per conversation with John Shalf, is for the code
@@ -372,6 +398,20 @@ avtChomboFileFormat::InitializeReader(void)
     // Now iterate over the patches again, storing their extents in our
     // internal data structure.
     //
+    hid_t box2d_id = H5Tcreate (H5T_COMPOUND, sizeof(box));
+    H5Tinsert (box2d_id, "lo_i", HOFFSET(box2d, lo.i), H5T_NATIVE_INT);
+    H5Tinsert (box2d_id, "lo_j", HOFFSET(box2d, lo.j), H5T_NATIVE_INT);
+    H5Tinsert (box2d_id, "hi_i", HOFFSET(box2d, hi.i), H5T_NATIVE_INT);
+    H5Tinsert (box2d_id, "hi_j", HOFFSET(box2d, hi.j), H5T_NATIVE_INT);
+
+    hid_t box3d_id = H5Tcreate (H5T_COMPOUND, sizeof(box));
+    H5Tinsert (box3d_id, "lo_i", HOFFSET(box3d, lo.i), H5T_NATIVE_INT);
+    H5Tinsert (box3d_id, "lo_j", HOFFSET(box3d, lo.j), H5T_NATIVE_INT);
+    H5Tinsert (box3d_id, "lo_k", HOFFSET(box3d, lo.k), H5T_NATIVE_INT);
+    H5Tinsert (box3d_id, "hi_i", HOFFSET(box3d, hi.i), H5T_NATIVE_INT);
+    H5Tinsert (box3d_id, "hi_j", HOFFSET(box3d, hi.j), H5T_NATIVE_INT);
+    H5Tinsert (box3d_id, "hi_k", HOFFSET(box3d, hi.k), H5T_NATIVE_INT);
+
     int patchId = 0;
     for (i = 0 ; i < num_levels ; i++)
     {
@@ -385,35 +425,39 @@ avtChomboFileFormat::InitializeReader(void)
         H5Sget_simple_extent_dims(boxspace, dims, maxdims);
         hid_t memdataspace = H5Screate_simple(1, dims, NULL);
 
-        // EXTREME WEIRDNESS REGARDING SIZE OF BOX.  NEED MORE INFO FROM
-        // LBL.  PROBABLY HDF ISSUE THAT I NEED TO BE EDUCATED ON.
-        int box_size = (dimension == 3 ? 9 : 7);
-        int arr_size = box_size*patchesPerLevel[i];
-        int *buff = new int[arr_size];
+        box *boxes_buff = new box[dims[0]];
+        H5Dread(boxes, (dimension == 2 ? box2d_id : box3d_id), memdataspace, 
+                boxspace, H5P_DEFAULT, boxes_buff);
 
-        hid_t atype = H5Dget_type(boxes);
-        H5Dread(boxes, atype, memdataspace, boxspace, 
-                H5P_DEFAULT, buff);
         for (j = 0 ; j < patchesPerLevel[i] ; j++)
         {
-            int *t = buff + box_size*j;
-            lowI[patchId] = *t++;
-            lowJ[patchId] = *t++;
-            if (dimension == 3)
-                lowK[patchId] = *t++;
-            hiI[patchId] = *t++ + 1;
-            hiJ[patchId] = *t++ + 1;
-            if (dimension == 3)
-                hiK[patchId] = *t++ + 1;
+            if (dimension == 2)
+            {
+                lowI[patchId] = boxes_buff[j].b2.lo.i;
+                lowJ[patchId] = boxes_buff[j].b2.lo.j;
+                hiI[patchId] = boxes_buff[j].b2.hi.i+1;
+                hiJ[patchId] = boxes_buff[j].b2.hi.j+1;
+            }
+            else
+            {
+                lowI[patchId] = boxes_buff[j].b3.lo.i;
+                lowJ[patchId] = boxes_buff[j].b3.lo.j;
+                lowK[patchId] = boxes_buff[j].b3.lo.k;
+                hiI[patchId] = boxes_buff[j].b3.hi.i+1;
+                hiJ[patchId] = boxes_buff[j].b3.hi.j+1;
+                hiK[patchId] = boxes_buff[j].b3.hi.k+1;
+            }
             patchId++;
         }
 
-        delete [] buff;
         H5Sclose(memdataspace);
         H5Sclose(boxspace);
         H5Dclose(boxes);
         H5Gclose(level);
     }
+
+    H5Tclose(box2d_id);
+    H5Tclose(box3d_id);
 
     //
     // The domain nesting takes a while to calculate.  We don't need the
@@ -830,7 +874,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
     int dims[3];
     dims[0] = hiI[patch]-lowI[patch]+1;
     dims[1] = hiJ[patch]-lowJ[patch]+1;
-    dims[2] = (dimension == 3 ? hiJ[patch]-lowJ[patch] : 1);
+    dims[2] = (dimension == 3 ? hiK[patch]-lowK[patch]+1 : 1);
 
     vtkRectilinearGrid *rg = vtkRectilinearGrid::New();
     rg->SetDimensions(dims);

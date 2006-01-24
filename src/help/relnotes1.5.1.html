@@ -53,9 +53,6 @@ targeted at making it easier to detect when session files contain errors and at 
 <li>VisIt's Mili database reader plugin has been enhanced so that it can support time-invariant nodal positions.</li>
 <li>VisIt's <b>File selection window</b> now truncates the list of files in a virtual database to prevent the window from doing too much work and to work around a flaw in the Qt GUI library. The change allows for faster interaction with the window. 
 The full list of time states is still available in the <b>Main window's File panel</b>.</li>
-<li>VisIt has a new database reader plugin that can read rectilinear Chombo data files. The new database reader can read files ending in 
-<i>".hdf5"</i> or <i>".h5"</i> as Chombo files. If your files do not have those file extensions then use the 
-<i>"-default_format Chombo"</i> command line options when you run VisIt.</li>
 <li>VisIt has a new database reader plugin that can read HDF4 output files from ZeusMP, a popular astrophysics code. Note that since each processor writes its own HDF4 file and there is no convention for creating master files in ZeusMP, you must create a 
 <i>".visit"</i> file to let VisIt know how to reassemble the files into a whole. The
 <i>&quot;.visit&quot;</i> file is a simple text file.&nbsp; For a time-varying database broken up into 4 tiles, 
@@ -135,6 +132,7 @@ This problem caused the Volume plot to sample data in the wrong regions of a mes
 <li>Views saved to session files do not contain all fields, which can lead to confusion.</li>
 <li>VisIt's xmledit program does not gracefully handle the removal of a code file.</li>
 <li>Pick causes plots to disappear when in scalable rendering mode.</li>
+<li>Subset plots of rectilinear or AMR meshes are now rendered correctly.  Previously, just the corners of the mesh appeared.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.5.html">VisIt 1.5 Release Notes</a>.</p>
