@@ -307,6 +307,9 @@ avtSimV1FileFormat::FreeUpResources(void)
 //    Jeremy Meredith, Thu Apr 28 17:59:48 PDT 2005
 //    Added cycle and time.  Fixed labels.  Added control command enabling.
 //
+//    Shelly Prevost, Tue Jan 24 17:49:11 PST 2006
+//    Added the ability to send more general commands to the simulation.
+//
 // ****************************************************************************
 
 void
@@ -434,9 +437,9 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         //md->Add(scalar);
     }
 
-    for (int c=0; c<vsmd->numCommands; c++)
+    for (int c=0; c<vsmd->numGenericCommands; c++)
     {
-        VisIt_SimulationControlCommand *scc = &vsmd->commands[c];
+        VisIt_SimulationControlCommand *scc = &vsmd->genericCommands[c];
         avtSimulationCommandSpecification::CommandArgumentType t;
         switch (scc->argType)
         {
@@ -463,7 +466,23 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         scs->SetEnabled(scc->enabled);
         md->GetSimInfo().AddAvtSimulationCommandSpecification(*scs);
     }
-
+ 
+    for (int c=0; c<vsmd->numCustomCommands; c++)
+    {
+        VisIt_SimulationControlCommand *scc = &vsmd->customCommands[c];
+        avtSimulationCommandSpecification::CommandArgumentType t;
+        avtSimulationCommandSpecification *scs = new avtSimulationCommandSpecification;
+        scs->SetName(scc->name);
+        scs->SetText(scc->text);
+        scs->SetValue(scc->value);
+        scs->SetIsOn(scc->isOn);
+        scs->SetUiType(scc->uiType);
+        scs->SetClassName(scc->className);
+        scs->SetArgumentType(t);
+        scs->SetEnabled(scc->enabled);
+        md->GetSimInfo().AddAvtSimulationCustCommandSpecification(*scs);
+    }
+ 
     for (int mat=0; mat<vsmd->numMaterials; mat++)
     {
         VisIt_MaterialMetaData *mmd = &vsmd->materials[mat];

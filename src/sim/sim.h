@@ -1,3 +1,6 @@
+
+#include <VisItDataInterface_V1.h>
+
 extern int runflag;
 extern int quitflag;
 
@@ -14,3 +17,5 @@ extern float *p_nvalues;
 
 extern int numdomains;
 extern int par_rank;
+extern VisIt_SimulationMetaData *md;
+void Update_UI_Commands();

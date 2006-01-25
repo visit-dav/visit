@@ -902,12 +902,15 @@ int VisItSetupEnvironment(void)
 * Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
 *
 * Modifications:
+*   Shelly Prevost, Wed Jan 25 08:50:44 PST 2006
+*   Added the guifile argument.
 *
 *******************************************************************************/
 int VisItInitializeSocketAndDumpSimFile(const char *name,
                                         const char *comment,
                                         const char *path,
-                                        const char *inputfile)
+                                        const char *inputfile,
+                                        const char *guifile)
 {
     FILE *file;
 
@@ -940,6 +943,8 @@ int VisItInitializeSocketAndDumpSimFile(const char *name,
         fprintf(file, "inputfile %s\n", inputfile);
     if (comment)
         fprintf(file, "comment %s\n", comment);
+     if ( guifile )
+       fprintf(file, "uiFile %s\n", guifile);
 
     fclose(file);
 

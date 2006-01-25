@@ -15,6 +15,9 @@ class QPushButton;
 class StatusAttributes;
 class QLineEdit;
 class QListView;
+class QString;
+
+class avtSimulationCommandSpecification;
 
 // ****************************************************************************
 // Class: QvisSimulationWindow
@@ -33,6 +36,10 @@ class QListView;
 //    SetNewMetaData needed more info to construct the key correctly.
 //    Added simulation mode.
 //
+//    Shelly Prevost, Tue Jan 24 12:29:29 PST 2006
+//    Added methods to allow the addition of a custom simulation control
+//    window.
+//
 // ****************************************************************************
 
 class GUI_API QvisSimulationWindow : public QvisPostableWindowObserver
@@ -48,14 +55,17 @@ public:
                      QvisNotepadArea *notepad = 0);
     virtual ~QvisSimulationWindow();
     virtual void CreateWindowContents();
+    virtual void CreateCommandUI();
     virtual void Update(Subject *TheChangedSubject);
     virtual void SubjectRemoved(Subject *TheRemovedSubject);
-
+    
+    void UpdateCustomUIComponent(avtSimulationCommandSpecification *cmd);
     void ConnectStatusAttributes(StatusAttributes *s);
     void SetNewMetaData(const QualifiedFilename &qf,
                         const avtDatabaseMetaData *md);
 private:
     void UpdateWindow(bool doAll);
+    void UpdateCustomUI(avtDatabaseMetaData *md);
     void UpdateStatusArea();
     void UpdateInformation(int index);
     void UpdateInformation(const QString &key);
@@ -70,6 +80,7 @@ private slots:
     void interruptEngine();
     void selectEngine(int index);
     void clearCache();
+    void showCommandWindow();
     void executeSimCommand();
     void executePushButtonCommand(int);
     void executePushButtonCommand0();
@@ -81,6 +92,7 @@ private slots:
     void executePushButtonCommand6();
     void executePushButtonCommand7();
     void executePushButtonCommand8();
+
 private:
     EngineList           *engines;
     StatusAttributes     *statusAtts;
@@ -99,7 +111,7 @@ private:
     QPushButton      *closeEngineButton;
     QPushButton      *clearCacheButton;
     QLineEdit        *simCommandEdit;
-
+    QWidget          *DynamicCommandsWin;
     QPushButton      *cmdButtons[9];
     QMap<int,int>     simulationToEngineListMap;
 };

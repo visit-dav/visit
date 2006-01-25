@@ -7,9 +7,10 @@
  *
  *    Jeremy Meredith, Wed May 11 11:05:50 PDT 2005
  *    Added ghost zones.  Added domain lists for restricted load balancing.
- */ 
+ *
+ *    Shelly Prevost added custom command updating
+ */
 #include "sim.h"
-
 #include <VisItControlInterface_V1.h>
 #include <VisItDataInterface_V1.h>
 
@@ -17,9 +18,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-VisIt_SimulationMetaData *VisItGetMetaData()
+VisIt_SimulationMetaData *md = NULL; 
+
+// Here is where you add all the initialization code you
+// want to run only once.
+void InitializeMD(int MaxNumCustCMD )
 {
-    VisIt_SimulationMetaData *md = malloc(sizeof(VisIt_SimulationMetaData));
+    md = malloc(sizeof(VisIt_SimulationMetaData));
     md->currentCycle = cycle;
     md->currentTime  = 0;
     md->currentMode  = runflag ? VISIT_SIMMODE_RUNNING : VISIT_SIMMODE_STOPPED;
@@ -57,28 +62,113 @@ VisIt_SimulationMetaData *VisItGetMetaData()
     md->numCurves      = 0;
     md->numExpressions = 0;
 
-    md->numCommands = 4;
-    md->commands = malloc(sizeof(VisIt_SimulationControlCommand) * md->numCommands);
+    // this will set up the generic and custom
+    // commands
+    initAllCMD(MaxNumCustCMD);
+}                    
 
-    md->commands[0].name = strdup("halt");
-    md->commands[0].argType = VISIT_CMDARG_NONE;
-    md->commands[0].enabled = 1;
 
-    md->commands[1].name = strdup("step");
-    md->commands[1].argType = VISIT_CMDARG_NONE;
-    md->commands[1].enabled = 1;
+VisIt_SimulationMetaData *VisItGetMetaData()
+{
+  // maximum number of UI components connections
+  // that you will be creating
+int MAX_NUMBER_CUST_CMD = 15;
 
-    md->commands[2].name = strdup("run");
-    md->commands[2].argType = VISIT_CMDARG_NONE;
-    md->commands[2].enabled = 1;
+  // if the first time setup the meta data
+  // and create meta data slots for the UI control
+  // Do this only once.
+  if (md == NULL )
+  {
+     InitializeMD(MAX_NUMBER_CUST_CMD);
 
-    md->commands[3].name = strdup("testcommand");
-    md->commands[3].argType = VISIT_CMDARG_NONE;
-    md->commands[3].enabled = runflag ? 0 : 1;
+     // set up the specific ui channel to control the
+     // ui compenents in the VisIt custom commands dialog
+     // These names should be the exact same name as defined
+     // in the interface file.
 
+     createCMD ( "MainTextLabel");
+     createCMD ( "ShellySpinBox1");
+     createCMD ( "progressBar1");
+     createCMD ( "Top_Button_1");
+     createCMD ( "ShellySlider_1");
+     createCMD ( "ShellyDial_1");
+     createCMD ( "ShellyLineEdit1");
+     createCMD ( "ShellyText_2");
+     createCMD ( "RadioButton1");
+     createCMD ( "RadioButton2");
+     createCMD ( "RadioButton3");
+     createCMD ( "LCDNumber1");
+     createCMD ( "CheckBox1");
+     createCMD ( "timeEdit1");
+     createCMD ( "dateEdit1");
+
+   }
+
+    // now update the meta data so that the custom
+    // command interface will be brought up to date
+    // with what is going on in the simulation
+    Update_UI_Commands();
+
+    // no return the updated meta data that will
+    // be sent to the VisIt program
     return md;
 }
 
+// Here is where you want to put the changing information.
+// This information will be sent back to VisIt and update
+// the matching UI components.
+void Update_UI_Commands()
+{
+      int MAX_CMD_STR_LEN = 64;
+      // put updated UI information here.
+      static int timeStep = 0;
+      char value[MAX_CMD_STR_LEN];
+      char modValue[MAX_CMD_STR_LEN];
+      printf ( "updating UI command data \n");
+
+     // move the progess bar and update the value in the spin box
+      setCMDValue ("progressBar1",  (timeStep *10)% 100);
+      setCMDValue ("ShellySpinBox1", timeStep);
+      setCMDValue ("LCDNumber1",timeStep);
+
+      // change the lable on the pushbutton
+      setCMDText  ("Top_Button_1",  "Simulation Text");
+      setCMDEnable ("Top_Button_1", 0);
+      setCMDIsOn ("CheckBox1", 0);
+      setCMDIsOn ("RadioButton1", 1);
+      setCMDIsOn ("RadioButton2", 0);
+                                          
+      setCMDText ("RadioButton1", "Label 1");
+      setCMDText ("RadioButton2", "Label 2");
+      setCMDText ("RadioButton3", "Label 3");
+
+
+      // set the text on the lable
+      sprintf (  value, "%5d", timeStep *10);
+      strcat( value, " Simulation Label");
+      setCMDText  ("MainTextLabel", value);
+      setCMDText  ("CheckBox1", "New Label");
+      setCMDText  ("timeEdit1", "11:06:03");
+      setCMDText  ("dateEdit1", "Mon Jan 23 2006");
+
+      // move the slider and dial
+      setCMDValue ( "ShellySlider_1",(timeStep * 10) % 100);
+      setCMDValue ( "ShellyDial_1",timeStep % 360);
+
+      sprintf (  modValue, "%5d", timeStep % 360);
+      setCMDText ( "ShellyLineEdit1",modValue);
+      setCMDText ( "ShellyText_2",modValue);
+
+      md->currentCycle = cycle;
+      md->currentTime  = timeStep;
+      md->currentMode  = runflag ? VISIT_SIMMODE_RUNNING : VISIT_SIMMODE_STOPPED;
+      timeStep++;
+}
+
+
+
+// This function is called when Visit wants to retrieve
+// the mesh data from the simulation
 VisIt_MeshData *VisItGetMesh(int domain,const char *name)
 {
     VisIt_MeshData *mesh = malloc(sizeof(VisIt_MeshData));
@@ -163,3 +253,9 @@ VisIt_SimulationCallback visitCallbacks =
     NULL,  /* mixed scalar */
     VisItGetDomainList
 };
+
+
+
+
+
+

@@ -7,7 +7,7 @@
 
 SIMSER=sim
 SIMPAR=psim
-SIMSRC=sim.c VisItControlInterface_V1.c simconnection.c
+SIMSRC=sim.c VisItControlInterface_V1.c simconnection.c UI_Connection.c SimHelperFunc.c
 SIMSEROBJ=$(SIMSRC:.c=.o)
 SIMPAROBJ=$(SIMSRC:.c=_par.o)
 

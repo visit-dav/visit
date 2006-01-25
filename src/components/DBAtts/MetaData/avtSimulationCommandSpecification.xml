@@ -1,5 +1,10 @@
 <?xml version="1.0"?>
   <Attribute name="avtSimulationCommandSpecification" purpose="Contains the specification for one command" persistent="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h">
+    <Enum name="RunMode">
+      Unknown
+      Running
+      Stopped
+    </Enum>
     <Enum name="CommandArgumentType">
       CmdArgNone
       CmdArgInt
@@ -10,6 +15,20 @@
     </Field>
     <Field name="argumentType" label="argumentType" type="enum" subtype="CommandArgumentType">
     </Field>
+    <Field name="className" label="className" type="string">
+    </Field>
     <Field name="enabled" label="enabled" type="bool">
+    </Field>
+    <Field name="parent" label="parent" type="string">
+    </Field>
+    <Field name="isOn" label="isOn" type="bool">
+    </Field>
+    <Field name="signal" label="signal" type="string">
+    </Field>
+    <Field name="text" label="text" type="string">
+    </Field>
+    <Field name="uiType" label="uiType" type="string">
+    </Field>
+    <Field name="value" label="value" type="string">
     </Field>
   </Attribute>

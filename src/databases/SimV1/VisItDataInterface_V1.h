@@ -80,6 +80,13 @@ typedef struct VisIt_SimulationControlCommand
     const char *name;
     int         argType;   /* CMDARG */
     int         enabled;   /* boolean */
+    char       *signal;
+    char       *className;
+    char       *parent;
+    char       *text;
+    char       *value;
+    char       *uiType;
+    int         isOn;
 } VisIt_SimulationControlCommand;
 
 typedef struct VisIt_MeshMetaData
@@ -160,8 +167,11 @@ typedef struct VisIt_SimulationMetaData
     VisIt_CurveMetaData      *curves;
     VisIt_ExpressionMetaData *expressions;
 
-    int numCommands;
-    VisIt_SimulationControlCommand *commands;
+    int numGenericCommands;
+    int numCustomCommands;
+
+    VisIt_SimulationControlCommand *genericCommands;
+    VisIt_SimulationControlCommand *customCommands;
 } VisIt_SimulationMetaData;
 
 typedef struct VisIt_CurvilinearMesh

@@ -313,7 +313,10 @@
 #    QvisLine2DInterface.
 #
 #    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
-#    Added mesh management attributes window
+#    Added mesh management attributes window.
+#
+#    Shelly Prevost, Wed Nov 16 10:46:36 PST 2005
+#    Added QUI_LIBS for dynamic ui loading.  Added SimCommandSlots.
 #
 ##############################################################################
 
@@ -324,7 +327,7 @@
 @VARIABLES@
 LIB=libgui
 
-LIBS=-lplugin @QT_LIBS@ -L../lib -lviewerproxy -lviewerrpc \
+LIBS=-lplugin @QT_LIBS@ @QUI_LIBS@ -L../lib -lviewerproxy -lviewerrpc \
      -lmdserverproxy -lmdserverrpc -ldbatts -lproxybase \
      -lmisc -lstate -lcomm -lavtexceptions -lutility -lexpr -lparser \
      -lwinutil $(X_LIBS) @LIBS@ @PTHREAD_LIB@ @GUIFRAMEWORKS@
@@ -426,6 +429,7 @@ HDRMOC = \
     QvisVisItUpdate.h \
     QvisWindowBase.h \
     QvisWizard.h \
+    SimCommandSlots.h \
     SplashScreen.h
 
 # Then, all of the rest of the header files
