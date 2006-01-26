@@ -255,16 +255,16 @@ fi
 rm -f hoth
 cat <<EOF > hoth
 #!/bin/sh
-if test ! -e /var/tmp/$user ; then
-   mkdir /var/tmp/$user
+if test ! -e /scratch/$user ; then
+   mkdir /scratch/$user
 fi
-if test ! -e /var/tmp/$user/hoth ; then
-   mkdir /var/tmp/$user/hoth
+if test ! -e /scratch/$user/hoth ; then
+   mkdir /scratch/$user/hoth
 fi
-rm -rf /var/tmp/$user/hoth/visitbuild
-mkdir /var/tmp/$user/hoth/visitbuild
-mv hoth_$dist.tar.gz /var/tmp/$user/hoth/visitbuild/$dist.tar.gz
-cd /var/tmp/$user/hoth/visitbuild
+rm -rf /scratch/$user/hoth/visitbuild
+mkdir /scratch/$user/hoth/visitbuild
+mv hoth_$dist.tar.gz /scratch/$user/hoth/visitbuild/$dist.tar.gz
+cd /scratch/$user/hoth/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`

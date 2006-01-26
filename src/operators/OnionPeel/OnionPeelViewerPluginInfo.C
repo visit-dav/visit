@@ -148,6 +148,9 @@ OnionPeelViewerPluginInfo::GetClientAtts(AttributeSubject *atts)
 //    Added code to set the category name and subset name from the plot's
 //    SILRestriction. 
 //
+//    Kathleen Bonnell, Thu Jan 26 07:33:29 PST 2006 
+//    Add silTopSet to argslist for GetCollectionIndex. 
+//   
 // ****************************************************************************
 
 void
@@ -202,8 +205,10 @@ OnionPeelViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
             // Find the first valid subset name, and also determine if
             // the currently set subset name is valid.
             //
-            int colIndex = restriction->GetCollectionIndex(collection->GetCategory());
-            avtSILCollection_p collection =restriction->GetSILCollection(colIndex); 
+            int colIndex = restriction->GetCollectionIndex(
+                           collection->GetCategory(), silTopSet);
+            avtSILCollection_p collection =
+                           restriction->GetSILCollection(colIndex); 
             if (*collection != NULL)
             {
                 std::vector<int> sets = collection->GetSubsetList();

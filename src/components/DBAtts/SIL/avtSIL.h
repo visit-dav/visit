@@ -66,6 +66,10 @@ class   SILAttributes;
 //    Hank Childs, Thu Nov 14 15:43:28 PST 2002
 //    Added concept of SIL matrices.
 //
+//    Kathleen Bonnell, Thu Jan 26 07:44:00 PST 2006 
+//    Added int arg to GetCollectionIndex, added overloaded GetSetIndex
+//    with an int arg.
+//
 // ****************************************************************************
 
 class DBATTS_API avtSIL
@@ -83,7 +87,8 @@ class DBATTS_API avtSIL
     void                              AddMatrix(avtSILMatrix_p);
 
     int                               GetSetIndex(std::string) const;
-    int                               GetCollectionIndex(std::string) const;
+    int                               GetSetIndex(std::string, int) const;
+    int                               GetCollectionIndex(std::string, int) const;
 
     void                              Print(ostream &) const;
     void                              Print(ostream &,

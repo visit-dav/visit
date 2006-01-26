@@ -621,23 +621,28 @@ avtSIL::GetSetIndex(std::string name) const
 //
 //  Arguments:
 //      name    The category of the collection.
+//      superset  The superset to which this collection should belong.
 //
 //  Returns:    The index of the collection.
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   August 8, 2002 
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Jan 26 07:44:00 PST 2006
+//    Added int superset arg.
+//
 // ****************************************************************************
 
 int
-avtSIL::GetCollectionIndex(std::string name) const
+avtSIL::GetCollectionIndex(std::string name, int superset) const
 {
     int index = -1;
     int size = collections.size();
     for (int i = 0 ; i < size ; i++)
     {
         avtSILCollection_p coll = collections[i];
-        if (coll->GetCategory() == name)
+        if (coll->GetCategory() == name && coll->GetSupersetIndex() == superset)
         {
             index = i;
             break;
@@ -855,6 +860,49 @@ avtSIL::Print(ostream &out,
         avtSILMatrix_p m = matrices[i];
         m->Print(out);
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtSIL::GetSetIndex
+//
+//  Purpose:
+//    Returns the set index of a set.
+//
+//  Arguments:
+//    name      The name of the set.
+//    collID    The ID of the collection for this set.
+//
+//  Returns:    The index of the set.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   January 26, 2005 
+//
+// ****************************************************************************
+
+int
+avtSIL::GetSetIndex(std::string name, int collId) const
+{
+    int index = -1;
+    int size = sets.size();
+    for (int i = 0 ; i < size ; i++)
+    {
+        avtSILSet_p set = sets[i];
+        intVector mapsIn = set->GetMapsIn();
+        if (set->GetName() == name &&
+            std::find(mapsIn.begin(), mapsIn.end(), collId) != mapsIn.end())
+        {
+            index = i;
+            break;
+        }
+    }
+
+    if (index == -1)
+    {
+        EXCEPTION1(InvalidVariableException, name);
+    }
+
+    return index;
 }
 
 
