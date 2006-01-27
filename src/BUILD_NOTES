@@ -346,21 +346,22 @@ set path=($QTDIR/bin $path)
 setenv LD_LIBRARY_PATH $QTDIR/lib:$LD_LIBRARY_PATH
 setenv LD_LIBRARYN32_PATH $QTDIR/lib:$LD_LIBRARYN32_PATH     # SGI
 setenv LD_LIBRARY64_PATH $QTDIR/lib:$LD_LIBRARY64_PATH       # SGI
-# Use the appropriate configure command based on the operating system on
-# which you are building Qt.
-./configure -platform aix-g++ -shared -no-largefile -no-imgfmt-png -no-imgfmt-jpeg -no-imgfmt-mng
-./configure -platform irix-cc-64 -shared -no-imgfmt-png -no-imgfmt-jpeg -no-imgfmt-mng
-./configure -platform linux-g++ -shared -no-imgfmt-png -no-imgfmt-jpeg -no-imgfmt-mng
-./configure -platform solaris-g++ -shared -no-imgfmt-png -no-imgfmt-jpeg -no-imgfmt-mng
-./configure -platform tru64-g++ -shared -no-imgfmt-png -no-imgfmt-jpeg -no-imgfmt-mng
+
 #
-# When you build qt, not all of qt will build successfully because support
-# for png, jpeg and mng are missing.  This is ok because the library and
-# the executables that we care about get built.
+# On linux systems using the gcc 2.96 compiler, the compiler has a bug that
+# causes most of the text fields that contain numeric values to have 1
+# added to the 6th digit.  For example, 1 is displayed as 1.00001. To
+# correct this problem you will need to replace the code in the function
+# doubleToString in the file src/tools/qlocale.cpp with
 #
-# On tru64 systems you will need to make the following changes to
-# the file mkspecs/tru64-g++/qmake.conf:
-# set QMAKE_LIBDIR_OPENGL to "/usr/shlib"
+#     char str[80];
+#     sprintf(str, "%g", d);
+#     QString num_str(str);
+#
+#     return num_str;
+#
+# You will also need to add "#include <stdio.h>" at the beginning of the
+# file to get the prototype for sprintf.
 #
 # On tru64 systems qt generates some unaligned access errors. To
 # correct the problem change the following two code blocks in
@@ -399,26 +400,33 @@ setenv LD_LIBRARY64_PATH $QTDIR/lib:$LD_LIBRARY64_PATH       # SGI
 # #   define NAN (::nan())
 # #endif
 #
-# On aix systems qt will normally find non c++ compliant X11 header files in
-# /usr/lpp/X11/include.  You will need to make the following changes to the
-# file mkspecs/aix-g++/qmake.conf:
+# On later versions of the Irix compiler (e.g. 7.41), you will need to change
+# strtoll to strtol in src/tools/qdatastream.cpp before running configure.
+#
+# If you wish to specify a specific compiler then modify the appropriate
+# mkspecs/XXX/qmake.conf file, where XXX is the platform name.
+#
+# Use the appropriate configure command based on the operating system on
+# which you are building Qt.
+#
+./configure -platform aix-g++ -shared -no-largefile -qt-libpng
+./configure -platform aix-xlc-64 -shared -qt-libpng
+./configure -platform irix-cc-64 -shared -qt-libpng
+./configure -platform linux-g++ -shared -qt-libpng
+./configure -platform linux-g++-64 -shared -qt-libpng
+./configure -platform solaris-g++ -shared -qt-libpng
+./configure -platform tru64-g++ -shared -qt-libpng
+
+#
+# On tru64 systems you will need to make the following changes to
+# the file mkspecs/tru64-g++/qmake.conf:
+# set QMAKE_LIBDIR_OPENGL to "/usr/shlib"
+#
+# On aix systems, when using the aix-g++ platform, qt will normally find non
+# c++ compliant X11 header files in /usr/lpp/X11/include.  You will need to
+# make the following changes to the file mkspecs/aix-g++/qmake.conf:
 # remove "/usr/X11R6/include" from QMAKE_INCDIR_X11
 # remove "/usr/X11R6/include" from QMAKE_INCDIR_OPENGL
-#
-# On linux systems using the gcc 2.96 compiler, the compiler has a bug that
-# causes most of the text fields that contain numeric values to have 1
-# added to the 6th digit.  For example, 1 is displayed as 1.00001. To
-# correct this problem you will need to replace the code in the function
-# doubleToString in the file src/tools/qlocale.cpp with
-#
-#     char str[80];
-#     sprintf(str, "%g", d);
-#     QString num_str(str);
-#
-#     return num_str;
-#
-# You will also need to add "#include <stdio.h>" at the beginning of the
-# file to get the prototype for sprintf.
 #
 # On linux systems if the OpenGL library is built with threading support,
 # qt won't by default compile the QGL widget.  To determine if the OpenGL
@@ -434,9 +442,9 @@ setenv LD_LIBRARY64_PATH $QTDIR/lib:$LD_LIBRARY64_PATH       # SGI
 # then you will need to add "-thread" to the configure line.  When qt creates
 # the qt library it will name it qt-mt instead of qt.  This will cause problems
 # linking visit.  To fix this you should first build qt, having it create
-# libqt-mt.so.  Then remove all occurances of "-mt" from src/Makefile and
-# issue the make command again.  It will now create the qt library properly
-# named for visit.
+# libqt-mt.so.  Then change all occurances of "libqt-mt" to "libqt" in
+# src/Makefile and issue the make command again.  It will now create the qt
+# library properly named for visit.
 #
 make
 
@@ -448,7 +456,7 @@ mkdir $VISITDIR/qt/3.3.2
 mkdir $VISITDIR/qt/3.3.2/$VISITARCH
 mkdir $VISITDIR/qt/3.3.2/$VISITARCH/{bin,include,lib}
 mkdir $VISITDIR/qt/3.3.2/$VISITARCH/include/private
-cp bin/{findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/3.3.2/$VISITARCH/bin
+cp bin/{designer,findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/3.3.2/$VISITARCH/bin
 cd include; cp *.h $VISITDIR/qt/3.3.2/$VISITARCH/include
 cp private/*.h $VISITDIR/qt/3.3.2/$VISITARCH/include/private
 cd ../lib;find . -print | cpio -pvmud $VISITDIR/qt/3.3.2/$VISITARCH/lib
@@ -458,6 +466,7 @@ cd ../..
 # directory so that the loader can find the library.
 #
 # ln -s libqt.so.3.3.2 $VISITDIR/qt/3.3.2/$VISITARCH/lib/libqt.so
+# ln -s libqui.so.1.0.0 $VISITDIR/qt/3.3.2/$VISITARCH/lib/libqui.so
 #
 
 #
