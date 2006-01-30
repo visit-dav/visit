@@ -5559,6 +5559,9 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 //    Hank Childs, Sun Mar  6 09:14:52 PST 2005
 //    Only do collective communication if we are not in DLB mode.
 //
+//    Hank Childs, Thu Jan 26 10:07:14 PST 2006
+//    Do not use non-robust ghost nodes. ['6900]
+//
 // ****************************************************************************
 
 bool
@@ -5637,6 +5640,20 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     visitTimer->StopTimer(portion1, "Prepatory time for ghost zone creation."
                                     "  This also counts synchronization.");
     int portion2 = visitTimer->StartTimer();
+
+    //
+    // The unstructured mesh domain boundaries code can create situations
+    // where ghost nodes identify faces as ghost that are actually real.
+    // Create ghost zones in this case.
+    //
+    if (ghostType == GHOST_NODE_DATA)
+    {
+        if (hasDomainBoundaryInfo)
+            if (!dbi->CreatesRobustGhostNodes())
+                ghostType = GHOST_ZONE_DATA;
+        if (md->GetMesh(meshname)->meshType == AVT_UNSTRUCTURED_MESH)
+            ghostType = GHOST_ZONE_DATA;
+    }
 
     //
     // Now its decision time.  We know what tools we can use -- whether or not
@@ -5835,6 +5852,9 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 //
 //    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
 //    Call ResetCachedMembers.
+//
+//    Hank Childs, Fri Jan 27 08:57:17 PST 2006
+//    Add support for exchanging global node and zone numbers.
 //
 // ****************************************************************************
 
@@ -6256,6 +6276,50 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
             vtkDataSet *ds1 = list[j];
             cellNums.push_back(ds1->GetCellData()->GetArray(
                                                 "avtOriginalCellNumbers"));
+        }
+        vector<vtkDataArray *> cellNumsOut;
+        cellNumsOut = dbi->ExchangeIntVector(doms,false,cellNums);
+        for (j = 0 ; j < doms.size() ; j++)
+        {
+            vtkDataSet *ds1 = ds.GetDataset(j, 0);
+            ds1->GetCellData()->AddArray(cellNumsOut[j]);
+            cellNumsOut[j]->Delete();
+        }
+    }
+
+    //
+    // Exchange GlobalNodeIds.
+    //
+    if (spec->NeedGlobalNodeNumbers())
+    {
+        vector<vtkDataArray *> nodeNums;
+        for (j = 0 ; j < doms.size() ; j++)
+        {
+            vtkDataSet *ds1 = list[j];
+            nodeNums.push_back(ds1->GetPointData()->GetArray(
+                                                "avtGlobalNodeNumbers"));
+        }
+        vector<vtkDataArray *> nodeNumsOut;
+        nodeNumsOut = dbi->ExchangeIntVector(doms,true,nodeNums);
+        for (j = 0 ; j < doms.size() ; j++)
+        {
+            vtkDataSet *ds1 = ds.GetDataset(j, 0);
+            ds1->GetPointData()->AddArray(nodeNumsOut[j]);
+            nodeNumsOut[j]->Delete();
+        }
+    }
+
+    //
+    // Exchange GlobalZoneNumbers Arrays.
+    //
+    if (spec->NeedGlobalZoneNumbers())
+    {
+        vector<vtkDataArray *> cellNums;
+        for (j = 0 ; j < doms.size() ; j++)
+        {
+            vtkDataSet *ds1 = list[j];
+            cellNums.push_back(ds1->GetCellData()->GetArray(
+                                                "avtGlobalZoneNumbers"));
         }
         vector<vtkDataArray *> cellNumsOut;
         cellNumsOut = dbi->ExchangeIntVector(doms,false,cellNums);

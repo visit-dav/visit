@@ -57,7 +57,6 @@ gps=true
 berg=true
 up=true
 pengra=true
-mcr=true
 thunder=true
 gauss=true
 
@@ -80,7 +79,6 @@ do
          berg=false
          up=false
          pengra=false
-         mcr=false
          thunder=false
          gauss=false
          shift
@@ -147,14 +145,6 @@ do
          ;;
       +pengra)
          pengra=true
-         shift
-         ;;
-      -mcr)
-         mcr=false
-         shift
-         ;;
-      +mcr)
-         mcr=true
          shift
          ;;
       -thunder)
@@ -600,56 +590,6 @@ then
 fi
 
 #
-# Build on mcr.
-#
-rm -f mcr
-cat <<EOF > mcr
-#!/bin/sh
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
-fi
-if test ! -d /usr/tmp/$user/mcr ; then
-   mkdir /usr/tmp/$user/mcr
-fi
-rm -rf /usr/tmp/$user/mcr/visitbuild
-mkdir /usr/tmp/$user/mcr/visitbuild
-mv mcr_$dist.tar.gz /usr/tmp/$user/mcr/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/mcr/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
-make -j 3 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
-mv visit\$ver2.linux.tar.gz ..
-cd ..
-rm -f resultlog
-echo "        build of visit on mcr"          > resultlog 2>&1
-echo "       -----------------------"         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
-EOF
-
-if [ $mcr = true ]
-then
-   if [ $test = no ]
-   then
-      scp mcr mcr37:mcr_buildit
-      scp $dist.tar.gz mcr37:mcr_$dist.tar.gz
-      ssh mcr37 "chmod 750 mcr_buildit;./mcr_buildit" &
-   fi
-fi
-
-#
 # Build on thunder.
 #
 rm -f thunder
@@ -754,5 +694,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit hoth sunspot quad gps berg up pengra mcr thunder gauss
+   rm -f kickit hoth sunspot quad gps berg up pengra thunder gauss
 fi

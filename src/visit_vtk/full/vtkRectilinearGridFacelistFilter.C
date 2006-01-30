@@ -581,19 +581,23 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
   unsigned char *gza        = NULL;
   bool constructGZA = false;
   vector<unsigned char> ghost_zones;
-  if (gzv == NULL)
+  vtkUnsignedCharArray *gnv = (vtkUnsignedCharArray *)
+                                 inPointData->GetArray("avtGhostNodes");
+  if (gzv == NULL && gnv == NULL)
   {
-      vtkUnsignedCharArray *gnv = (vtkUnsignedCharArray *)
-                                     inPointData->GetArray("avtGhostNodes");
-      if (gnv == NULL)
-      {
-          EXCEPTION0(ImproperUseException);
-      }
+      EXCEPTION0(ImproperUseException);
+  }
+
+  if (gnv != NULL)
+  {
       unsigned char *gna = gnv->GetPointer(0);
       int nCells = pd->GetNumberOfCells();
       gza = new unsigned char[nCells];
       constructGZA = true;
 
+      unsigned char *gz_val = NULL;
+      if (gzv != NULL)
+          gz_val = gzv->GetPointer(0);
       vtkIdType *nl = list->GetPointer(0);
       for (int i = 0 ; i < nCells ; i++)
       {
@@ -605,6 +609,8 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
               nl++;
           }
           gza[i] = (oneOkay ? 0 : 1);
+          if (gz_val != NULL && gz_val[i] > 0)
+              gza[i] = gz_val[i];
       }
   }
   else

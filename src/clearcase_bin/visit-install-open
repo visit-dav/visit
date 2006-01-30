@@ -61,7 +61,7 @@ quad=true
 gps=true
 berg=true
 up=true
-mcr=true
+pengra=true
 thunder=true
 gauss=true
 
@@ -83,7 +83,7 @@ do
          gps=false
          berg=false
          up=false
-         mcr=false
+         pengra=false
          thunder=false
          gauss=false
          shift
@@ -136,12 +136,12 @@ do
          up=true
          shift
          ;;
-      -mcr)
-         mcr=false
+      -pengra)
+         pengra=false
          shift
          ;;
-      +mcr)
-         mcr=true
+      +pengra)
+         pengra=true
          shift
          ;;
       -thunder)
@@ -393,7 +393,7 @@ cat <<EOF > up
 #!/bin/sh
 ./visit-install -private -c open -g visit -gw -l $ver aix64-xlc /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
-echo ""                                            >  resultlog 2>&1
+echo ""                                            > resultlog 2>&1
 echo "        install of visit on up"              >> resultlog 2>&1
 echo "       ------------------------"             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
@@ -423,15 +423,15 @@ then
 fi
 
 #
-# Install on mcr.
+# Install on pengra.
 #
-rm -f mcr
-cat <<EOF > mcr
+rm -f pengra
+cat <<EOF > pengra
 #!/bin/sh
 ./visit-install -private -c open -g visit -gw -l $ver linux_chaos /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
-echo "        install of visit on mcr"             > resultlog 2>&1
-echo "       -------------------------"            >> resultlog 2>&1
+echo "        install of visit on pengra"          > resultlog 2>&1
+echo "       ----------------------------"         >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
@@ -446,22 +446,15 @@ ls /usr/gapps/visit/$ver/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gap
 mail $emailName < resultlog
 EOF
 
-if [ $mcr = true ]
+if [ $pengra = true ]
 then
    if [ $test = no ]
    then
-      scp mcr37:/usr/tmp/$user/mcr/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
+      scp pengra1:/usr/tmp/$user/pengra/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
       scp visit$ver2.linux_chaos.tar.gz gps15:
       scp visit-install gps15:
-      scp mcr gps15:mcr_install
-      ssh gps15 "chmod 750 mcr_install;./mcr_install"
-      # Temporary until all the machines are upgraded to chaos 3.  These
-      # libraries are needed to run chaos 2 executables on chaos 3 systems.
-      scp mcr37:/usr/lib/libstdc++.so.5.0.3 .
-      scp mcr37:/lib/libgcc_s.so.1 .
-      chmod 664 libstdc++.so.5.0.3 libgcc_s.so.1
-      scp libstdc++.so.5.0.3 gps15:/usr/gapps/visit/$ver/linux-intel/lib
-      scp libgcc_s.so.1 gps15:/usr/gapps/visit/$ver/linux-intel/lib
+      scp pengra gps15:pengra_install
+      ssh gps15 "chmod 750 pengra_install;./pengra_install"
    fi
 fi
 
@@ -542,5 +535,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot quad gps berg up mcr thunder gauss
+   rm -f hoth sunspot quad gps berg up pengra thunder gauss
 fi

@@ -21,7 +21,6 @@ user=`whoami`
 #
 hitit=true
 sunset=true
-warp=false
 sc=true
 tidalwave=true
 white=true
@@ -42,7 +41,6 @@ do
       -none)
          hitit=false
          sunset=false
-         warp=false
          sc=false
          tidalwave=false
          white=false
@@ -77,14 +75,6 @@ do
          ;;
       +sunset)
          sunset=true
-         shift
-         ;;
-      -warp)
-         warp=false
-         shift
-         ;;
-      +warp)
-         warp=true
          shift
          ;;
       -sc)
@@ -243,40 +233,6 @@ then
 
       scp -P 22 sunset:/export/scratch/$user/sunset/visitbuild/visit$ver2.sunos5.tar.gz .
       scp -P 22 visit$ver2.sunos5.tar.gz sunset:
-   fi
-fi
-
-#
-# Install on warp.
-#
-rm -f warp
-cat <<EOF > warp
-
-./visit-install $verflag -c closed -g visit -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "        install of visit on warp"            >> resultlog 2>&1
-echo "       --------------------------"           >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k /usr/gapps/visit                             >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver/sgi-irix6-mips2/bin    >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/sgi-irix6-mips2/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/sgi-irix6-mips2/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/sgi-irix6-mips2/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver/sgi-irix6-mips2/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/sgi-irix6-mips2\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
-
-if [ $warp = true ]
-then
-   if [ $test = no ]
-   then
-      cat warp >> bdiv
-
-      scp tidalwave:/fc/san1/$user/tidalwave/visitbuild/visit$ver2.irix6.tar.gz .
-      scp -P 22 visit$ver2.irix6.tar.gz sunset:
    fi
 fi
 
@@ -486,5 +442,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f bdiv hitit sunset lc warp sc tidalwave white uv lilac
+   rm -f bdiv hitit sunset lc sc tidalwave white uv lilac
 fi

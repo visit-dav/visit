@@ -76,6 +76,9 @@ dune_getline(std::ifstream &ifile, std::string &str)
 //      Hank Childs, Mon Nov 21 11:25:48 PST 2005
 //      Replace getline with dune_getline.
 //
+//      Hank Childs, Thu Jan 26 11:06:59 PST 2006
+//      NULL terminate ostrstreams.
+//
 // ****************************************************************************
 
 avtDuneFileFormat::avtDuneFileFormat(const char *filename)
@@ -185,9 +188,9 @@ avtDuneFileFormat::avtDuneFileFormat(const char *filename)
     // based on the number of materials
     for (int i = 0; i < max_species; i++) {
       ostrstream ss;
-      ss << SPECIES_BASE << i+1;
+      ss << SPECIES_BASE << i+1 << '\0';
       ostrstream sm;
-      sm << MATERIAL_BASE << i+1;
+      sm << MATERIAL_BASE << i+1 << '\0';
       matnames.push_back(sm.str());
       species_names.push_back(ss.str());
       species_to_matname[ss.str()] = sm.str();
@@ -455,6 +458,8 @@ avtDuneFileFormat::FreeUpResources(void)
 //      Fri Sep 16 09:20:59 PDT 2005
 //          (DMS) - Simplified AddMaterialToMetaData section.
 //
+//      Hank Childs, Thu Jan 26 11:06:59 PST 2006
+//      NULL terminate ostrstreams.
 //
 // ****************************************************************************
 
@@ -548,7 +553,7 @@ avtDuneFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
   string material_name = "fragments";
   if (matnames.size() == 0) {
     ostrstream ss;
-    ss << "material_" << 1;
+    ss << "material_" << 1 << '\0';
     matnames.push_back(ss.str());
   }
 
