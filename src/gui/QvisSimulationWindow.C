@@ -38,6 +38,8 @@
 using std::string;
 using std::vector;
 
+#define CUSTOM_BUTTON 5
+
 // ****************************************************************************
 // Method: QvisSimulationWindow::QvisSimulationWindow
 //
@@ -106,6 +108,9 @@ QvisSimulationWindow::~QvisSimulationWindow()
 //   Shelly Prevost, Tue Jan 24 17:06:49 PST 2006
 //   Added a custom simulation control window.
 //
+//   Brad Whitlock, Tue Jan 31 16:04:07 PST 2006
+//   I moved the generic button creation code back to this method.
+//
 // ****************************************************************************
 
 void
@@ -129,7 +134,7 @@ QvisSimulationWindow::CreateWindowContents()
     simInfo->addColumn("Value");
     simInfo->setAllColumnsShowFocus(true);
     simInfo->setResizeMode(QListView::AllColumns);
-    topLayout->addWidget(simInfo);
+    topLayout->addWidget(simInfo, 10);
 
     // Create the status bars.
     //QLabel *totalStatusLabel = new QLabel("Total progress:", central, "totalStatusLabel");
@@ -144,7 +149,7 @@ QvisSimulationWindow::CreateWindowContents()
 
     totalProgressBar = new QProgressBar(central, "totalProgressBar");
     totalProgressBar->setTotalSteps(100);
-    //progressLayout->addWidget(totalProgressBar);
+    progressLayout->addWidget(totalProgressBar);
 
     QGridLayout *buttonLayout1 = new QGridLayout(topLayout, 1, 3);
     buttonLayout1->setSpacing(10);
@@ -163,32 +168,6 @@ QvisSimulationWindow::CreateWindowContents()
     connect(clearCacheButton, SIGNAL(clicked()), this, SLOT(clearCache()));
     clearCacheButton->setEnabled(false);
     buttonLayout1->addWidget(clearCacheButton, 0, 1);
-
-    CreateCommandUI();
-
-    topLayout->addSpacing(10);
-}
-
-// ****************************************************************************
-// Method: void QvisSimulationWindow::CreateCommandUI()
-//
-// Purpose:
-//   Updates the ui components in the Costom UI popup. It check for matches
-//   between ui updates sent from the simulations to ui components in the
-//   custom ui popup. If it finds a match it update the ui component.
-//
-// Programmer: Shelly Prevost
-// Creation:   December 21, 2005
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisSimulationWindow::CreateCommandUI()
-{
-    int simindex = simCombo->currentItem();
-    int index = simulationToEngineListMap[simindex];
 
     // Create the group box and generic buttons.
     QGroupBox *commandGroup = new QGroupBox(central, "commandGroup");
@@ -213,46 +192,31 @@ QvisSimulationWindow::CreateCommandUI()
     connect(cmdButtons[2],SIGNAL(clicked()),this,SLOT(executePushButtonCommand2()));
     connect(cmdButtons[3],SIGNAL(clicked()),this,SLOT(executePushButtonCommand3()));
     connect(cmdButtons[4],SIGNAL(clicked()),this,SLOT(executePushButtonCommand4()));
-    connect(cmdButtons[5],SIGNAL(clicked()),this,SLOT(showCommandWindow()));
-    
-    // get ui filename from value array
-    QString key;
-    QString uiFilename("defaultUI.ui");
+    connect(cmdButtons[CUSTOM_BUTTON],SIGNAL(clicked()),this,SLOT(showCommandWindow()));
 
-    // Check for a valid engine.
-    const stringVector &s = engines->GetEngines();
-    if (index == -1 || s.size() < 1)
-    {
-        QMessageBox::warning(this, "No Valid engines found", "",
-                             "Ok", 0, 0, 1);
-        QDialog *NoUI = new QDialog(0, "No Custom Interface");
-        DynamicCommandsWin = NoUI;
-        return;
-    }
- 
-    key.sprintf("%s:%s",
-                engines->GetEngines()[index].c_str(),
-                engines->GetSimulationName()[index].c_str());
-                    
-    avtDatabaseMetaData *md = metadataMap[key];
-    QListViewItem *item;
+    topLayout->addSpacing(10);
+}
 
-    const vector<string> &names  = md->GetSimInfo().GetOtherNames();
-    const vector<string> &values = md->GetSimInfo().GetOtherValues();
-                  
-    for (int i=0; i<names.size(); i++)
-    {
-        if ( !strcmp(names[i].c_str(),"uiFile"))  uiFilename = values[i];
-    }
+// ****************************************************************************
+// Method: QvisSimulationWindow::GetUIFileDirectory
+//
+// Purpose: 
+//   Returns the name of the directory where VisIt looks for UI files.
+//
+// Returns:    The directory where VisIt looks for UI files.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//   Brad Whitlock, Tue Jan 31 16:40:02 PST 2006
+//   Refactored code from elsewhere into this method.
+//
+// ****************************************************************************
 
-    if ((simindex < 0)  || (uiFilename == "defaultUI.ui"))
-    {
-        QMessageBox::warning(this, "VisIt", "Custom UI NOT Found",
-                             "Ok", 0, 0, 0, 1);
-    }
-
-    // Now get the directory prefix for the file name    
-    QString fname;
+QString
+QvisSimulationWindow::GetUIFileDirectory() const
+{
     // First look in user defined variable
     QString dirName(getenv("VISITSIMDIR"));
     // if still not defined then look in the users home directory
@@ -267,23 +231,122 @@ QvisSimulationWindow::CreateCommandUI()
         dirName = getenv("VISITDIR");
         if (!dirName.isEmpty()) dirName += "/UI/";
     }
+
+    return dirName;
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::GetUIfile
+//
+// Purpose: 
+//   Returns the name of the directory where VisIt looks for UI files.
+//
+// Returns:    The directory name of the UI file that is appropriate for the
+//             currently selected simulation, or an empty string if there
+//             is no simulation or if it does not have a user interface.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//   Brad Whitlock, Tue Jan 31 16:40:02 PST 2006
+//   Refactored code from elsewhere into this method.
+//
+// ****************************************************************************
+
+QString
+QvisSimulationWindow::GetUIFile() const
+{
+    QString retval;
+
+    // Check for a valid engine.
+    const stringVector &s = engines->GetEngines();
+    int simindex = simCombo->currentItem();
+    int index = simulationToEngineListMap[simindex];
+    if (index != -1 && s.size() >= 1)
+    {
+        // We have a "valid" engine in the list so try and get its
+        // metadata so we can get the name of the UI file.
+        QString key; 
+        key.sprintf("%s:%s",
+                    engines->GetEngines()[index].c_str(),
+                    engines->GetSimulationName()[index].c_str());
+        SimulationMetaDataMap::ConstIterator pos = metadataMap.find(key);
+        if(pos != metadataMap.end())
+        {
+            // get ui filename from value array
+            avtDatabaseMetaData *md = metadataMap[key];
+            QString uiFilename;
+            QListViewItem *item;
+            const stringVector &names  = md->GetSimInfo().GetOtherNames();
+            const stringVector &values = md->GetSimInfo().GetOtherValues();
+                  
+            for (int i=0; i<names.size(); i++)
+            {
+                if (names[i] == "uiFile")
+                    uiFilename = QString(values[i].c_str());
+            }
+
+            if (!uiFilename.isEmpty())
+            {
+                retval = GetUIFileDirectory() + uiFilename;
+            }
+        }
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: void QvisSimulationWindow::CreateCommandUI
+//
+// Purpose:
+//   Updates the ui components in the Costom UI popup. It check for matches
+//   between ui updates sent from the simulations to ui components in the
+//   custom ui popup. If it finds a match it update the ui component.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//   Brad Whitlock, Tue Jan 31 16:33:45 PST 2006
+//   I renamed the method and moved a bunch of its code into helper methods.
+//
+// ****************************************************************************
+
+void
+QvisSimulationWindow::CreateCommandUI()
+{
+    // Try and get the name of the UI file.
+    QString fname(GetUIFile());
+    if(fname.isEmpty())
+    {
+        if(DynamicCommandsWin != NULL)
+            delete DynamicCommandsWin;
+        DynamicCommandsWin = NULL;
+        cmdButtons[CUSTOM_BUTTON]->setEnabled(false);
+        return;
+    }
     
-    fname = dirName + uiFilename;
     debug5 << "UI_DIR = " << fname.latin1() << endl;
 
     // Dynamically create the custom UI be reading in it's xml file.
+    int simindex = simCombo->currentItem();
+    int index = simulationToEngineListMap[simindex];
     SimCommandSlots *CommandConnections = new SimCommandSlots(viewer,
         engines, index);
     DynamicCommandsWin  = QWidgetFactory::create(fname, CommandConnections);
     
-    // if creation failed then jump out 
+    // If creation failed then jump out 
     if (DynamicCommandsWin == NULL)
     {
-        cmdButtons[5]->setEnabled(false);
-        QMessageBox::warning(this, "VisIt File NOT Found", fname.latin1(),
-                             "Ok", 0, 0, 1);
-        QDialog *NoUI = new QDialog(0, "No Custom Interface");
-        DynamicCommandsWin = NoUI;
+        cmdButtons[CUSTOM_BUTTON]->setEnabled(false);
+        QString msg;
+        msg.sprintf("VisIt could not locate the simulation's "
+                    "user interface creation file at: %s. The custom user "
+                    "interface for this simulation will be unavailable.",
+                    fname.latin1());
+        Error(msg);
         return;
     }
      
@@ -327,7 +390,7 @@ QvisSimulationWindow::CreateCommandUI()
 
     // enable custom command UI button
     debug5 << "enabling custom command button" << endl;
-    cmdButtons[5]->setEnabled(true);
+    cmdButtons[CUSTOM_BUTTON]->setEnabled(true);
     debug5 << "successfully added simulation interface" << endl;
 }
 
@@ -398,17 +461,28 @@ QvisSimulationWindow::SubjectRemoved(Subject *TheRemovedSubject)
 // Creation:   December 21, 2005
 //
 // Modifications:
+//   Brad Whitlock, Tue Jan 31 16:53:30 PST 2006
+//   I made the method return early if the dynamic commands window has not
+//   yet been created. It's now created more on-demand.
 //
 // ****************************************************************************
 
 void 
 QvisSimulationWindow::UpdateCustomUIComponent (avtSimulationCommandSpecification *cmd)
 {
+    if(DynamicCommandsWin == NULL)
+        return;
+
     QObject *ui = NULL;
     ui  = DynamicCommandsWin->child(cmd->GetName().c_str());
     if (ui)
     {
         debug5 << "Looking up component = " << cmd->GetName().c_str() << endl;
+
+        // Block signals so updating the user interface does not cause a
+        // command to go back to the simulation.
+        ui->blockSignals(true);
+
         if (ui->isA("QLabel"))
         {
             debug5 << "found label " << cmd->GetName().c_str() << " text = "
@@ -553,6 +627,9 @@ QvisSimulationWindow::UpdateCustomUIComponent (avtSimulationCommandSpecification
             ((QCheckBox*)ui)->setEnabled(cmd->GetEnabled());
             ((QCheckBox*)ui)->setChecked(cmd->GetIsOn());
         }
+
+        // Unblock signals.
+        ui->blockSignals(false);
     }
     else
         debug5 << "could not find UI component named "
@@ -643,6 +720,11 @@ QvisSimulationWindow::SetNewMetaData(const QualifiedFilename &qf,
 // Creation:   March 21, 2005
 //
 // Modifications:
+//   Brad Whitlock, Tue Jan 31 17:35:31 PST 2006
+//   I added code to delete the dynamic commands window if we've created it
+//   before and there are no hosts. If it is allowed to persist then it
+//   causes a crash when you go to click on it because of its SimCommandSlots
+//   object.
 //
 // ****************************************************************************
 
@@ -653,6 +735,16 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
     {
         const stringVector &host = engines->GetEngines();
         const stringVector &sim  = engines->GetSimulationName();
+
+        // If we have zero hosts but we have a dynamic command window then
+        // we must have disconnected from the simulation. Blow away the
+        // dynamic command window.
+        if(host.size() < 1 && DynamicCommandsWin != NULL)
+        {
+            debug5 << "Destroying dynamic command window" << endl;
+            delete DynamicCommandsWin;
+            DynamicCommandsWin = NULL;
+        }
 
         // Add the engines to the widget.
         simCombo->blockSignals(true);
@@ -838,6 +930,9 @@ QvisSimulationWindow::UpdateStatusArea()
 //   Shelly Prevost, Tue Jan 24 17:06:49 PST 2006
 //   Added a custom simulation control window.
 //
+//   Brad Whitlock, Tue Jan 31 16:32:36 PST 2006
+//   Added code to set the enabled state of the custom command button.
+//
 // ****************************************************************************
 
 void
@@ -932,6 +1027,15 @@ QvisSimulationWindow::UpdateInformation(int index)
           case avtSimulationInformation::Stopped:
             simulationMode->setText("Simulation Status: Stopped");
             break;
+        }
+
+        // If we've not created a dynamic commands window and we can get a
+        // decent-looking UI filename, enabled the custom command button
+        // so we can create a window when that button is clicked.
+        if(DynamicCommandsWin == NULL)
+        {
+            QString fname(GetUIFile());
+            cmdButtons[CUSTOM_BUTTON]->setEnabled(!fname.isEmpty());
         }
 
         for (int c=0; c<6; c++)
@@ -1344,16 +1448,19 @@ QvisSimulationWindow::clearCache()
 // Creation:   December 21, 2005
 //
 // Modifications:
+//    Brad Whitlock, Tue Jan 31 15:54:43 PST 2006
+//    I made it create the commands window on the fly instead of creating
+//    it at the same time as the regular Window is created.
 //
 // ****************************************************************************
 
 void QvisSimulationWindow::showCommandWindow()
 {
+    if(DynamicCommandsWin == NULL)
+        CreateCommandUI();
+
     if (DynamicCommandsWin != NULL)
         DynamicCommandsWin->show();
-    else
-        QMessageBox::warning(this, "VisIt", "Custom UI NOT Found", "Ok", 0,
-                             0, 0, 1);
 }
 
 void

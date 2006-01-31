@@ -327,7 +327,7 @@
 @VARIABLES@
 LIB=libgui
 
-LIBS=-lplugin @QT_LIBS@ @QUI_LIBS@ -L../lib -lviewerproxy -lviewerrpc \
+LIBS=-lplugin $(QT_LIBS) $(QUI_LIBS) -L../lib -lviewerproxy -lviewerrpc \
      -lmdserverproxy -lmdserverrpc -ldbatts -lproxybase \
      -lmisc -lstate -lcomm -lavtexceptions -lutility -lexpr -lparser \
      -lwinutil $(X_LIBS) @LIBS@ @PTHREAD_LIB@ @GUIFRAMEWORKS@

@@ -237,7 +237,9 @@ void setCMDText (char *name, char *text )
     index = findCMD ( name);
     if ( (index >= 0) && ( index < md->numCustomCommands))
     {
+#ifdef DEBUG_PRINT
       printf ( "found %s and changing text to %s \n" ,name, text);
+#endif
       strncpy(md->customCommands[index].text, text,  MAX_CMD_STR_LEN-1);
     }
 }

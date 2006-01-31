@@ -40,6 +40,9 @@ class avtSimulationCommandSpecification;
 //    Added methods to allow the addition of a custom simulation control
 //    window.
 //
+//    Brad Whitlock, Tue Jan 31 16:42:59 PST 2006
+//    I added some new methods to contain some refactored code.
+//
 // ****************************************************************************
 
 class GUI_API QvisSimulationWindow : public QvisPostableWindowObserver
@@ -55,7 +58,6 @@ public:
                      QvisNotepadArea *notepad = 0);
     virtual ~QvisSimulationWindow();
     virtual void CreateWindowContents();
-    virtual void CreateCommandUI();
     virtual void Update(Subject *TheChangedSubject);
     virtual void SubjectRemoved(Subject *TheRemovedSubject);
     
@@ -75,6 +77,10 @@ private:
     void AddMetaDataEntry(const QString &key);
     void RemoveMetaDataEntry(const QString &key);
     void UpdateMetaDataEntry(const QString &key);
+
+    void CreateCommandUI();
+    QString GetUIFileDirectory() const;
+    QString GetUIFile() const;
 private slots:
     void closeEngine();
     void interruptEngine();

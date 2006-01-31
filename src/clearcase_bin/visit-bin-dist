@@ -8,8 +8,9 @@
 # Date:   October 26, 2000
 #
 # Usage:
-#    visit-bin-dist [-c] [-g] [-h] [-md <visit_dir>] [-nd] [-nmesa] [-npython]
-#                   [-nqt] [-nstrip] [-nvtk] [-os <operating_system>]
+#    visit-bin-dist [-c] [-g] [-h] [-make <make_command>] [-md <visit_dir>]
+#                   [-nd] [-nmesa] [-npython] [-nqt] [-nstrip] [-nvtk]
+#                   [-os <operating_system>]
 #
 # Modifications:
 #    Jeremy Meredith, Fri May 11 14:15:01 PDT 2001
@@ -215,6 +216,10 @@
 #    Mark C. Miller, Tue Nov 22 09:42:57 PST 2005
 #    Removed refs to sl_io library
 #
+#    Eric Brugger, Mon Jan 30 14:52:21 PST 2006
+#    I added the -make argument, which allows the user to specify the make
+#    command.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -228,6 +233,7 @@ set OSGiven = "FALSE"
 set CompilerGiven = "FALSE"
 set compiler = ""
 set Strip = "TRUE"
+set Make = "make"
 set Help = "FALSE"
 
 #
@@ -246,6 +252,11 @@ while ($#argv >= 1)
       case -h:
       case -help:
                set Help = TRUE
+               breaksw
+
+      case -make:
+               shift
+               set Make = $1
                breaksw
 
       case -md:
@@ -304,13 +315,15 @@ while ($#argv >= 1)
 end
 
 if ($Help == TRUE) then
-   echo "Usage: visit-bin-dist [-c] [-g] [-h] [-md <visit_dir>] [-nd] [-nmesa]"
+   echo "Usage: visit-bin-dist [-c] [-g] [-h] [-make <make_command>]"
+   echo "                      [-md <visit_dir>] [-nd] [-nmesa]"
    echo "                      [-npython] [-nqt] [-nstrip] [-nvtk]"
    echo "                      [-os <operating_system>]"
    echo ""
    echo "       -c             Compress the resultant package."
    echo "       -g             Gzip the resultant package.  (default)"
    echo "       -h             Print this message."
+   echo "       -make make     Make command."
    echo "       -md dir        Set where to find the distribution."
    echo "       -nd            No data files."
    echo "       -nmesa         No Mesa libraries."
@@ -500,7 +513,7 @@ if ($DataFiles == "TRUE") then
    echo "Creating data generation programs..."
    set pwd = `pwd`
    cd $VisItDir/data
-   make
+   $Make
    echo "Generating data files..."
    ./globe
    ./multi_test

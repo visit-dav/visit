@@ -685,7 +685,7 @@ ParentProcess::GetLocalUserName()
         if((users_passwd_entry = getpwuid(getuid())) != NULL)
             localUserName = std::string(users_passwd_entry->pw_name);
 #endif
-        debug5 << localUserName << endl;
+        debug5 << localUserName.c_str() << endl;
     }
 
     return localUserName;

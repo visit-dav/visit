@@ -19,7 +19,9 @@
 #include <DebugStream.h>
 
 
-#if !defined(_WIN32)
+#if defined(_WIN32)
+#include <direct.h>
+#else
 #include <unistd.h>
 #ifndef HAVE_FTIME_PROTOTYPE
 extern "C" {

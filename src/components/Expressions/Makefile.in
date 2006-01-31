@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2005
+#                            Copyright 2000 - 2006
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -125,6 +125,9 @@
 #
 #   Hank Childs, Sun Jan 22 10:52:01 PST 2006
 #   Add new expressions for symmetry.
+#
+#   Brad Whitlock, Thu Jan 26 15:39:36 PST 2006
+#   Added libs for Mac build.
 #
 ##############################################################################
 
@@ -289,9 +292,11 @@ CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libexpressions
+SERLIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) -lavtfilters_ser
+PARLIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) -lavtfilters_par
 COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lutility -lplugin -lvisit_vtk -llightweight_visit_vtk -lavtview
-SERLIBS=$(COMMONLIBS) -lpipeline_ser -lavtmath_ser -ldatabase_ser -lmir_ser $(VTK_LIBS) $(X_LIBS) @LIBS@
-PARLIBS=$(COMMONLIBS) -lpipeline_par -lavtmath_par -ldatabase_par -lmir_par $(VTK_LIBS) $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
+SERLIBS=$(COMMONLIBS) -lpipeline_ser -lavtmath_ser -ldatabase_ser -lmir_ser $(VTK_LIBS) $(SERLIBS_FOR_MACOSX_PREBINDING) $(X_LIBS) @LIBS@
+PARLIBS=$(COMMONLIBS) -lpipeline_par -lavtmath_par -ldatabase_par -lmir_par $(VTK_LIBS) $(PARLIBS_FOR_MACOSX_PREBINDING) $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
 
 ##
 ## Standard targets...

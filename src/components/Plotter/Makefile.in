@@ -1,4 +1,4 @@
-#                            Copyright 1991 - 2005
+#                            Copyright 1991 - 2006
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -203,8 +203,9 @@ CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o) $(SEROPENGL_OBJ) $(SERMESA_OBJ)
 PAROBJ=$(SRC:.C=_par.o) $(PAROPENGL_OBJ) $(PARMESA_OBJ)
 LIB=libplotter
-SERLIBS=-ldbatts -lmisc -lcomm -lstate -lexpr -lparser -lutility -lpipeline_ser -lavtview -lavtmath_ser -lavtfilters_ser -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser $(VTK_LIBS) $(X_LIBS)
-PARLIBS=-ldbatts -lmisc -lcomm -lstate -lexpr -lparser -lutility -lpipeline_par -lavtview -lavtmath_par -lavtfilters_par -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par $(VTK_LIBS) $(X_LIBS)
+LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)
+SERLIBS=-ldbatts -lmisc -lcomm -lstate -lexpr -lparser -lutility -lpipeline_ser -lavtview -lavtmath_ser -lavtfilters_ser -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS)
+PARLIBS=-ldbatts -lmisc -lcomm -lstate -lexpr -lparser -lutility -lpipeline_par -lavtview -lavtmath_par -lavtfilters_par -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS)
 
 ##
 ## Standard targets...

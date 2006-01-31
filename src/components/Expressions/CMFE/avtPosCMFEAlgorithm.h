@@ -99,10 +99,9 @@ class EXPRESSION_API avtPosCMFEAlgorithm
       public:
                               SpatialPartition();
         virtual              ~SpatialPartition();
-        void                  CreatePartition(
-                                    avtPosCMFEAlgorithm::DesiredPoints &, 
-                                    avtPosCMFEAlgorithm::FastLookupGrouping &,
-                                    double *);
+        void                  CreatePartition(DesiredPoints &, 
+                                              FastLookupGrouping &,
+                                              double *);
 
         int                   GetProcessor(float *);
         int                   GetProcessor(vtkCell *);

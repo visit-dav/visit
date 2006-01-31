@@ -1,4 +1,4 @@
-#                            Copyright 2001-2005
+#                            Copyright 2001-2006
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -62,6 +62,9 @@
 #    Hank Childs, Sun Jan 22 10:27:32 PST 2006
 #    Added avtCustomTransform.
 #
+#    Brad Whitlock, Thu Jan 26 15:29:46 PST 2006
+#    Added more libs for MacOS X prebinding.
+#
 ##############################################################################
 
 ##
@@ -113,7 +116,8 @@ CPPFLAGS=-I../../include @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libavtfilters
-COMMONLIBS=-ldbatts -lstate -lcomm -lmisc -lavtexceptions -lexpr -lparser -lutility -lavtview -lvisit_vtk -llightweight_visit_vtk
+LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)
+COMMONLIBS=-ldbatts -lstate -lcomm -lmisc -lavtexceptions -lexpr -lparser -lutility -lavtview -lvisit_vtk -llightweight_visit_vtk $(LIBS_FOR_MACOSX_PREBINDING)
 SERLIBS=$(COMMONLIBS) -lpipeline_ser -lavtmath_ser $(VTK_LIBS)
 PARLIBS=$(COMMONLIBS) -lpipeline_par -lavtmath_par $(VTK_LIBS)
 

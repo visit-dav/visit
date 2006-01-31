@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2005
+#                            Copyright 2000 - 2006
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -118,6 +118,9 @@
 #    Brad Whitlock, Fri Apr 29 12:07:54 PDT 2005
 #    Moved -lmir to -lmir_ser, -lmir_par for parallel MacOS X build.
 #
+#    Brad Whitlock, Thu Jan 26 15:38:25 PST 2006
+#    Added -lbz2 for Mac.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -161,7 +164,8 @@ CPPFLAGS=-I../../include @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libdatabase
-COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lplugin -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk
+LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)
+COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lplugin -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk $(LIBS_FOR_MACOSX_PREBINDING)
 SERLIBS=$(COMMONLIBS) -lmir_ser -lpipeline_ser -lavtmath_ser $(VTK_LIBS)
 PARLIBS=$(COMMONLIBS) -lmir_par -lpipeline_par -lavtmath_par $(VTK_LIBS) @SHLIB_MPI_LIBS@
 

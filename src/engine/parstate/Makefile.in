@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2005
+#                            Copyright 2000 - 2006
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -70,6 +70,9 @@
 #    Brad Whitlock, Thu Jul 14 16:22:03 PST 2005
 #    Added a few more libs for parallel on MacOS X.
 #
+#    Brad Whitlock, Mon Jan 30 10:28:55 PDT 2006
+#    Added MacOS X stuff.
+#
 ##############################################################################
 
 ##
@@ -90,10 +93,11 @@ SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 
 LIB=libengineparstate
+LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)
 SERLIBS=-lstate -lcomm -lmisc -lutility -lpipeline_ser -ldbatts -lavtexceptions \
-        -lexpr -lparser -lavtmath_ser -llightweight_visit_vtk $(VTK_LIBS)
+        -lexpr -lparser -lavtmath_ser -llightweight_visit_vtk $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)
 PARLIBS=-lstate -lcomm -lmisc -lutility -lpipeline_par -ldbatts -lavtexceptions \
-        -lexpr -lparser -lavtmath_par -llightweight_visit_vtk $(VTK_LIBS)
+        -lexpr -lparser -lavtmath_par -llightweight_visit_vtk $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)
 
 ##
 ## Standard targets...

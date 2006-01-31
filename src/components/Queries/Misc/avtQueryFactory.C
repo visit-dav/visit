@@ -21,6 +21,7 @@
 #include <avtOriginalDataMinMaxQuery.h>
 #include <avtOriginalDataNumNodesQuery.h>
 #include <avtOriginalDataNumZonesQuery.h>
+#include <avtOriginalDataSpatialExtentsQuery.h>
 #include <avtSkewnessQuery.h>
 #include <avtSphericalCompactnessFactorQuery.h>
 #include <avtTimeQuery.h>
@@ -154,6 +155,9 @@ avtQueryFactory::Instance()
 //
 //    Brad Whitlock, Thu Nov 17 10:18:41 PDT 2005
 //    Added Best Fit Line.
+//
+//    Kathleen Bonnell, Tue Jan 31 15:52:18 PST 2006 
+//    Added OriginalData SpatialExtents query.
 //
 // ****************************************************************************
 
@@ -332,6 +336,10 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (qname == "Best Fit Line")
     {
         query = new avtBestFitLineQuery();
+    }
+    else if (qname == "SpatialExtents")
+    {
+        query = new avtOriginalDataSpatialExtentsQuery();
     }
 
     return query;

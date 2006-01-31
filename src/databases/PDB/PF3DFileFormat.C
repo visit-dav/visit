@@ -711,7 +711,7 @@ PF3DFileFormat::FilenameForDomain(int realDomain)
            << master.Get_visname_for_domain(realDomain, 0) << endl;
     debug4 << mName << "visnam_file = "
            << master.Get_visname_for_domain(realDomain, 1) << endl;
-    debug4 << mName << "prefix = " << prefix << endl;
+    debug4 << mName << "prefix = " << prefix.c_str() << endl;
 
     // Look for "/viz/" in the visnam string for the specified domain and use
     // anything to the right of it.

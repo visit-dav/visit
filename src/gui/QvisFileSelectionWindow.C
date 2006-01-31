@@ -156,7 +156,7 @@ protected:
 class QVirtualFileListBoxItem : public QFileSelectionListBoxItem
 {
 public:
-    static const int MAX_DISPLAYED_NAMES = 5;
+    static const int MAX_DISPLAYED_NAMES;
 
     QVirtualFileListBoxItem(QListBox *lb, const QString &name,
                             const QualifiedFilename &qf, const stringVector &n,
@@ -215,6 +215,7 @@ protected:
             int offset = pixmap ? (pixmap->width() + 6) : 3;
             int yIncr = fm.lineSpacing(); // + 2; //fm.ascent() + fm.leading()/2;
             int y = yIncr + fm.ascent() + fm.leading()/2;
+            int i;
 
             if(names.size() > (MAX_DISPLAYED_NAMES*2))
             {
@@ -223,7 +224,7 @@ protected:
                 painter->drawText(offset, y, nFilesString);
                 y += yIncr;
 
-                for(int i = 0; i < MAX_DISPLAYED_NAMES; ++i)
+                for(i = 0; i < MAX_DISPLAYED_NAMES; ++i)
                 {
                     painter->drawText(offset, y, names[i].c_str());
                     y += yIncr;
@@ -232,7 +233,7 @@ protected:
                 painter->drawText(offset, y, "...");
                 y += yIncr;
 
-                for(int i = names.size()-MAX_DISPLAYED_NAMES; i < names.size(); ++i)
+                for(i = names.size()-MAX_DISPLAYED_NAMES; i < names.size(); ++i)
                 {
                     painter->drawText(offset, y, names[i].c_str());
                     y += yIncr;
@@ -240,7 +241,7 @@ protected:
             }
             else
             {
-                for(int i = 0; i < names.size(); ++i)
+                for(i = 0; i < names.size(); ++i)
                 {
                     painter->drawText(offset, y, names[i].c_str());
                     y += yIncr;
@@ -252,6 +253,8 @@ protected:
 private:
     stringVector names;
 };
+
+const int QVirtualFileListBoxItem::MAX_DISPLAYED_NAMES = 5;
 
 // ****************************************************************************
 // Method: QvisFileSelectionWindow::QvisFileSelectionWindow

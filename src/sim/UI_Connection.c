@@ -45,7 +45,9 @@ char *parseCommand ( const char *cmd, char *signalName, char *buttonName )
     char *str = strdup (cmd );
     strcpy( signalName, strtok(str, ";" ));
     strcpy( buttonName, strtok(NULL, ";"));
+#ifdef DEBUG_PRINT
     printf("name and ui comp = %s %s \n",signalName, buttonName);
+#endif
 
 //    fprintf(stderr, "token = %s with command '%s'\n", str2,cmd);
     return signalName;
@@ -76,20 +78,22 @@ void ClickedSignal ( const char *cmd )
     char ui_component[256];
 
     char *action = parseCommand (cmd, sig, ui_component);
+#ifdef DEBUG_PRINT
     printf("looking for name = %s \n", ui_component);
-
+#endif
     for ( i =0; i < lastSigConnection; i++)
     {
-         if ( !strcmp ( sigConnections[i].sig, action))
+        if ( !strcmp ( sigConnections[i].sig, action))
         {
-          if ( !strcmp ( sigConnections[i].name, ui_component))
-          {
-            ((slotFunc)((sigConnections[i].slot)))(cmd);
-          }
+            if ( !strcmp ( sigConnections[i].name, ui_component))
+            {
+               ((slotFunc)((sigConnections[i].slot)))(cmd);
+            }
         }
     }
-
-     fprintf(stderr, "SIGNAL Clicked with command '%s'\n", cmd);
+#ifdef DEBUG_PRINT
+    fprintf(stderr, "SIGNAL Clicked with command '%s'\n", cmd);
+#endif
 }
 
 
@@ -116,20 +120,23 @@ void ValueChangedSignal ( const char *cmd )
     char ui_component[256];
 
     char *action = parseCommand (cmd, sig, ui_component);
+#ifdef DEBUG_PRINT
     printf("looking for name = %s \n", ui_component);
-
+#endif
     for ( i =0; i < lastSigConnection; i++)
     {
          //if ( !strcmp ( sigConnections[i].sig, "clicked()"))
-         if ( !strcmp ( sigConnections[i].sig, action))
+        if ( !strcmp ( sigConnections[i].sig, action))
         {
-          if ( !strcmp ( sigConnections[i].name, ui_component))
-          {
-            (*sigConnections[i].slot)(cmd);
-          }
+            if ( !strcmp ( sigConnections[i].name, ui_component))
+            {
+                (*sigConnections[i].slot)(cmd);
+            }
         }
     }
-     fprintf(stderr, "SIGNAL ValueChanged with command '%s'\n", cmd);
+#ifdef DEBUG_PRINT
+    fprintf(stderr, "SIGNAL ValueChanged with command '%s'\n", cmd);
+#endif
 }
 
 
@@ -152,7 +159,9 @@ void ValueChangedSignal ( const char *cmd )
 
 void TextChangedSignal ( const char *cmd )
 {
-     fprintf(stderr, "SIGNAL TextChanged with command '%s'\n", cmd);
+#ifdef DEBUG_PRINT
+    fprintf(stderr, "SIGNAL TextChanged with command '%s'\n", cmd);
+#endif
 }
 
 
@@ -175,7 +184,9 @@ void TextChangedSignal ( const char *cmd )
 
 void ActivatedSignal ( const char *cmd )
 {
-     fprintf(stderr, "SIGNAL Activated with command '%s'\n", cmd);
+#ifdef DEBUG_PRINT
+    fprintf(stderr, "SIGNAL Activated with command '%s'\n", cmd);
+#endif
 }
 
 
@@ -198,7 +209,9 @@ void ActivatedSignal ( const char *cmd )
 
 void CurrentChangedSignal ( const char *cmd )
 {
-     fprintf(stderr, "SIGNAL CurrentChanged with command '%s'\n", cmd);
+#ifdef DEBUG_PRINT
+    fprintf(stderr, "SIGNAL CurrentChanged with command '%s'\n", cmd);
+#endif
 }
 
 
@@ -222,11 +235,13 @@ void CurrentChangedSignal ( const char *cmd )
 
 void addConnection ( char * name, char* sig, slotFunc theSlot )
 {
-        sigConnections[lastSigConnection].name = strdup (name);
-        sigConnections[lastSigConnection].sig = strdup (sig);
-        sigConnections[lastSigConnection].slot = theSlot;
-        printf ( "Added new connection %s %s \n", name, sig);
-        lastSigConnection++;
+    sigConnections[lastSigConnection].name = strdup (name);
+    sigConnections[lastSigConnection].sig = strdup (sig);
+    sigConnections[lastSigConnection].slot = theSlot;
+#ifdef DEBUG_PRINT
+    printf ( "Added new connection %s %s \n", name, sig);
+#endif
+    lastSigConnection++;
 }
 
 
@@ -257,19 +272,21 @@ void ProcessCustomCommand ( const char *cmd)
     char ui_component[256];
 
     char *action = parseCommand (cmd, sig, ui_component);
+#ifdef DEBUG_PRINT
     printf("looking for name = %s with sig = %s \n", ui_component, action);
-
+#endif
     for ( i =0; i < lastSigConnection; i++)
     {
          //if ( !strcmp ( sigConnections[i].sig, "clicked()"))
-         if ( !strcmp ( sigConnections[i].sig, action))
+        if ( !strcmp ( sigConnections[i].sig, action))
         {
-          if ( !strcmp ( sigConnections[i].name, ui_component))
-          {
-            (*sigConnections[i].slot)(cmd);
-          }
+            if ( !strcmp ( sigConnections[i].name, ui_component))
+            {
+                (*sigConnections[i].slot)(cmd);
+            }
         }
     }
+#ifdef DEBUG_PRINT
     fprintf(stderr, "SIGNAL %s with command '%s'\n",action, cmd);
-
+#endif
 }

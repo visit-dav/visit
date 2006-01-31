@@ -124,8 +124,9 @@ void Update_UI_Commands()
       static int timeStep = 0;
       char value[MAX_CMD_STR_LEN];
       char modValue[MAX_CMD_STR_LEN];
+#ifdef DEBUG_PRINT
       printf ( "updating UI command data \n");
-
+#endif
      // move the progess bar and update the value in the spin box
       setCMDValue ("progressBar1",  (timeStep *10)% 100);
       setCMDValue ("ShellySpinBox1", timeStep);

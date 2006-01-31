@@ -104,6 +104,8 @@ LogFile_Open(const char *filename)
     }
     else
         logging = false;
+
+    return logging;
 }
 
 void
