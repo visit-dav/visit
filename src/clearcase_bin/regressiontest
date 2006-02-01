@@ -149,10 +149,14 @@
 #    Hank Childs, Wed Jan  4 14:07:19 PST 2006
 #    Remove defer_expr from the skipList.
 #
+#    Mark C. Miller, Wed Feb  1 19:30:18 PST 2006
+#    Removed meredith from logrecipients, added miller
+#    Changed DISPLAY from elysium to staples
+#
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
-logrecipients="meredith childs"
+logrecipients="miller childs"
 
 # list of modes to run the test in
 testmodes="serial parallel"
@@ -216,7 +220,7 @@ fi
 
 # set up the environment
 umask 002
-DISPLAY=elysium:0
+DISPLAY=staples:0
 export DISPLAY
 PATH=/misc/gapps/mpich/1.2.4/Linux/serial/64/debug/bin:/home/visit/bin:/data_vobs/VisIt/clearcase_bin:/home/visit/clearcase_bin:/usr/atria/bin:/usr/security/bin:/sbin:/usr/sbin:/usr/bsd:/usr/local/bin:/usr/bin:/bin:/etc:/usr/bin/X11:/usr/local/X11:/usr/etc:/usr/lib:/usr/atria/bin:/usr/ccs/bin:/usr/SUNWspro/bin:.
 export PATH
