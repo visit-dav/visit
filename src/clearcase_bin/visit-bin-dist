@@ -220,6 +220,9 @@
 #    I added the -make argument, which allows the user to specify the make
 #    command.
 #
+#    Brad Whitlock, Fri Feb 3 08:30:30 PDT 2006
+#    I added Qt's qui library to the distribution.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -404,8 +407,10 @@ endif
 #
 if ("$os" == "darwin") then
     set QtLibName = `cd $VisItDir/lib && ls libqt.$SHLIB_SOEXT`
+    set QUILibName = `cd $VisItDir/lib && ls libqui.$SHLIB_SOEXT`
 else
     set QtLibName = `cd $VisItDir/lib && ls libqt.$SHLIB_SOEXT.?.?.?`
+    set QUILibName = `cd $VisItDir/lib && ls libqui.$SHLIB_SOEXT.?.?.?`
 endif
 
 #
@@ -414,6 +419,12 @@ endif
 if (("$QtLibs" == "TRUE") && (! -e $VisItDir/lib/$QtLibName)) then
    echo " "
    echo "Error: The file $VisItDir/lib/$QtLibName does not exist. aborting ..."
+   echo " "
+   exit (1)
+endif
+if (("$QtLibs" == "TRUE") && (! -e $VisItDir/lib/$QUILibName)) then
+   echo " "
+   echo "Error: The file $VisItDir/lib/$QUILibName does not exist. aborting ..."
    echo " "
    exit (1)
 endif
@@ -768,6 +779,14 @@ if ("$os" != "darwin") then
     ln -s $QtLibName $libdir/libqt.$SHLIB_SOEXT.$majorVersion.$minorVersion
     ln -s $QtLibName $libdir/libqt.$SHLIB_SOEXT.$majorVersion
     ln -s $QtLibName $libdir/libqt.$SHLIB_SOEXT
+endif
+cp $VisItDir/lib/$QUILibName $libdir/$QUILibName
+set majorVersion = `echo $QUILibName | awk '{printf substr($1, 10, 1)}'`
+set minorVersion = `echo $QUILibName | awk '{printf substr($1, 12, 1)}'`
+if ("$os" != "darwin") then
+    ln -s $QUILibName $libdir/libqui.$SHLIB_SOEXT.$majorVersion.$minorVersion
+    ln -s $QUILibName $libdir/libqui.$SHLIB_SOEXT.$majorVersion
+    ln -s $QUILibName $libdir/libqui.$SHLIB_SOEXT
 endif
 
 #

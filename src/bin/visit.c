@@ -97,6 +97,10 @@ int ReadKey(const char *key, char **keyval);
  *   Brad Whitlock, Wed Jun 22 17:24:08 PST 2005
  *   Added support for -newconsole.
  *
+ *   Brad Whitlock, Thu Feb 2 14:48:18 PST 2006
+ *   I changed makemovie.py to makemoviemain.py so right-click movies and
+ *   the "visit -movie" commands work again.
+ *
  *****************************************************************************/
 
 int
@@ -231,7 +235,7 @@ main(int argc, char *argv[])
     if(addMovieArguments)
     {
         size += strlen("-s") + 1;
-        size += 1 + strlen(visitpath) + 1 + strlen("makemovie.py") + 2;
+        size += 1 + strlen(visitpath) + 1 + strlen("makemoviemain.py") + 2;
         size += strlen("-nowin") + 1;
     }
     if(addVISITARGS)
@@ -279,8 +283,8 @@ main(int argc, char *argv[])
     }
     if(addMovieArguments)
     {
-        sprintf(cptr, " -s \"%s\\makemovie.py\" -nowin", visitpath);
-        sprintf(cptr2, " -s \"%s\\makemovie.py\" -nowin", visitpath);
+        sprintf(cptr, " -s \"%s\\makemoviemain.py\" -nowin", visitpath);
+        sprintf(cptr2, " -s \"%s\\makemoviemain.py\" -nowin", visitpath);
     }
     command[size-1] = '\0';
     printCommand[size-1] = '\0';

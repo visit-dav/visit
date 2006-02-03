@@ -989,7 +989,7 @@ static void log_ToggleLockViewModeRPC(ViewerRPC *rpc, char *str)
 
 static void log_ToggleFullFrameRPC(ViewerRPC *rpc, char *str)
 {
-    SNPRINTF(str, SLEN, "ToggleFullFrame()\n");
+    SNPRINTF(str, SLEN, "ToggleFullFrameMode()\n");
 }
 
 static void log_UndoViewRPC(ViewerRPC *rpc, char *str)

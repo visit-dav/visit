@@ -290,6 +290,7 @@ static PyObject             *visitModule = 0;
 static bool                  moduleInitialized = false;
 static bool                  keepGoing = true;
 static bool                  viewerInitiatedQuit = false;
+static bool                  viewerBlockingRead = false;
 #ifdef THREADS
 static bool                  moduleUseThreads = true;
 #else
@@ -324,6 +325,7 @@ static std::map<AnnotationObject *, int> localObjectReferenceCount;
 #if defined(_WIN32)
 #define POLLING_SYNCHRONIZE
 static  CRITICAL_SECTION     mutex;
+static  HANDLE               threadHandle = INVALID_HANDLE_VALUE;
 #define THREAD_INIT()
 #define MUTEX_CREATE()       InitializeCriticalSection(&mutex)
 #define MUTEX_DESTROY() 
@@ -11491,6 +11493,10 @@ LaunchViewer()
 //   Brad Whitlock, Thu Apr 18 10:03:09 PDT 2002
 //   Added a Windows implementation.
 //
+//   Brad Whitlock, Thu Feb 2 13:20:48 PST 2006
+//   I made the Windows implementation keep track of the thread handle so
+//   we can later terminate it, if necessary.
+//
 // ****************************************************************************
 
 static void
@@ -11506,7 +11512,7 @@ CreateListenerThread()
 #if defined(_WIN32)
     // Create the thread with the WIN32 API.
     DWORD Id;
-    if(CreateThread(0, 0, visit_eventloop, (LPVOID)0, 0, &Id) == INVALID_HANDLE_VALUE)
+    if((threadHandle = CreateThread(0, 0, visit_eventloop, (LPVOID)0, 0, &Id)) == INVALID_HANDLE_VALUE)
     {
         moduleUseThreads = false;
         fprintf(stderr, "Could not create event loop thread.\n");
@@ -11543,12 +11549,59 @@ CreateListenerThread()
 //   Added code to delete clientMethodObserver. I also made the CLI just
 //   detach from the viewer instead of telling it to close.
 //
+//   Brad Whitlock, Thu Feb 2 13:23:51 PST 2006
+//   Added code to wait for the listening thread to be finished or to terminate
+//   it if we know that it's just waiting for viewer input
+//   (viewerBlockingRead == true).
+//
 // ****************************************************************************
 
 static void
 CloseModule()
 {
+#if defined(_WIN32)
+    //
+    // Wait for the reading thread to be done.
+    //
+    if(!viewerInitiatedQuit)
+    {
+        MUTEX_LOCK();
+        keepGoing = false;
+        MUTEX_UNLOCK();
+    }
+    else
+        keepGoing = false;
+
+    //
+    // Sometimes it's not possible to wait for the reading thread to be
+    // done - such as when it enters a blocking read for input from
+    // the viewer at just the right moment. In that case, let's poll
+    // until the thread is done or still active and we know it's
+    // waiting for viewer input. If we know that it's waiting
+    // for viewer input, terminate it so we can safely disconnect from
+    // the viewer, without the 2nd thread wreaking havoc.
+    //
+    if(threadHandle != INVALID_HANDLE_VALUE && !viewerInitiatedQuit)
+    {
+        DWORD exitCode = STILL_ACTIVE;
+        do
+        {
+            if(GetExitCodeThread(threadHandle, &exitCode) != 0)
+            {
+                if(exitCode == STILL_ACTIVE && viewerBlockingRead)
+                {
+                    TerminateThread(threadHandle, 0);
+                    exitCode = 0;
+                    viewerBlockingRead = false;
+                }
+            }
+            else
+                exitCode = 0;
+        } while(exitCode == STILL_ACTIVE);
+    }
+#else
     keepGoing = false;
+#endif
 
     // Delete the observers
     delete messageObserver;
@@ -11842,6 +11895,11 @@ terminatevisit()
 //   our visit methods without a live viewer. Finally, I added code to wake up
 //   thread 1 if we're not using a polling synchronize.
 //
+//   Brad Whitlock, Thu Feb 2 13:21:41 PST 2006
+//   I set the viewerBlockingRead flag when the 2nd thread is doing nothing
+//   but waiting for input from the viewer. This helps us terminate the
+//   thread later if we need to.
+//
 // ****************************************************************************
 
 #if defined(_WIN32)
@@ -11858,8 +11916,10 @@ visit_eventloop(void *)
     while(keepGoing)
     {
         // Block until we have input to read.
+        viewerBlockingRead = true;
         if(viewer->GetWriteConnection()->NeedsRead(true))
         {
+            viewerBlockingRead = false;
             TRY
             {
                 // Process input.
@@ -11893,6 +11953,8 @@ visit_eventloop(void *)
             keepGoing = false;
         }
     }
+
+    viewerBlockingRead = false;
 
     return NULL;
 }
