@@ -824,28 +824,12 @@ Boxlib does not work on Solaris or Irix systems.  We had to modify boxlib
 to use it with VisIt so you will need to contact us for the source code if
 you wish to build it.
 
+You will need to modify GNUmakefile so that it doesn't use MPI.  To do this
+change "USE_MPI   = TRUE" to "USE_MPI   = FALSE".
+
 On Linux systems you will also need to add -fPIC to the compile flags.
 This can done by adding the line "CXXFLAGS += -fPIC" and "FFLAGS += -fPIC"
 near the top of the file GNUmakefile.
-
-If the mpi header files are located in a non-standard location you will
-need to add the line "CXXFLAGS += -I" near the top of the file GNUmakefile,
-where the "-I" is followed by the mpi include directory.
-
-On systems using MPI 2.0 (altix), you will need to change the following 3
-lines
-
-typedef int MPI_Op;
-typedef int MPI_Comm;
-typedef int MPI_Datatype;
-
-to
-
-typedef unsigned int MPI_Op;
-typedef unsigned int MPI_Comm;
-typedef unsigned int MPI_Datatype;
-
-in the file ccse-mpi.H.
 
 #
 # Boxlib builds either a 2d or 3d version and VisIt needs both, so you will

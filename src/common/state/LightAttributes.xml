@@ -1,13 +1,35 @@
 <?xml version="1.0"?>
-  <Attribute name="LightAttributes" purpose="This class is a light in a light list." exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="LightAttributes" purpose="This class is a light in a light list." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="LightAttributes.code">
     <Enum name="LightType">
       Ambient
       Object
       Camera
     </Enum>
-    <Field name="enabledFlag" type="bool">false</Field>
-    <Field name="type" type="enum" subtype="LightType">Camera</Field>
-    <Field name="direction" type="doubleArray" length="3">0. 0. -1.</Field>
-    <Field name="color" type="color">255 255 255 255</Field>
-    <Field name="brightness" type="double">1.</Field>
+    <Field name="enabledFlagCanBeToggled" label="enabledFlagCanBeToggled" type="bool" internal="true">
+      true
+    </Field>
+    <Field name="enabledFlag" label="enabledFlag" type="bool" enabler="enabledFlagCanBeToggled:true">
+      false
+    </Field>
+    <Field name="type" label="type" type="enum" subtype="LightType">
+      Camera
+    </Field>
+    <Field name="direction" label="direction" type="doubleArray" length="3">
+      0.000000
+      0.000000
+      -1.000000
+    </Field>
+    <Field name="color" label="color" type="color">
+      255
+      255
+      255
+      255
+    </Field>
+    <Field name="brightness" label="brightness" type="double">
+      1.000000
+    </Field>
+    <Function name="operator =" user="false" member="true"> 
+    </Function>
+    <Function name="SetEnabledFlag" user="false" member="true"> 
+    </Function>
   </Attribute>

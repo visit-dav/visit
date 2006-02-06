@@ -7685,6 +7685,8 @@ visit_GetPipelineCachingMode(PyObject *self, PyObject *args)
 // Creation:   October 28, 2004
 //
 // Modifications:
+//   Kathleen Bonnell, Mon Feb  6 16:23:30 PST 2006
+//   Don't allow light0 to be turned off.
 //
 // ****************************************************************************
 
@@ -7699,7 +7701,12 @@ visit_SetLight(PyObject *self, PyObject *args)
         return NULL;
 
     LightAttributes *light = PyLightAttributes_FromPyObject(pylight);
-
+    if (index == 0 && !light->GetEnabledFlag())
+    {
+        light->SetEnabledFlag(true);
+        cerr << "Warning:  Cannot un-enable light 0.  To turn off lighting " 
+             << "for all plots, change light 0 type to Ambient." << endl; 
+    }
     MUTEX_LOCK();
     LightList *lightlist = viewer->GetLightList();
     lightlist->SetLight(index, *light);
