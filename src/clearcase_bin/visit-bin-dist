@@ -867,6 +867,7 @@ cp $VisItDir/plugins/operators/libE*.$SHLIB_SOEXT $plugindir/operators
 cp $VisItDir/plugins/operators/libG*.$SHLIB_SOEXT $plugindir/operators
 cp $VisItDir/plugins/operators/libI*.$SHLIB_SOEXT $plugindir/operators
 cp $VisItDir/plugins/operators/libS*.$SHLIB_SOEXT $plugindir/operators
+cp $VisItDir/plugins/operators/libV*.$SHLIB_SOEXT $plugindir/operators
 cp $VisItDir/plugins/databases/*.$SHLIB_SOEXT     $plugindir/databases
 
 #

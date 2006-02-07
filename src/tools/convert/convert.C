@@ -53,6 +53,9 @@ static void UsageAndExit(const char *);
 //    creation to the engine plugin, and moved the test to see if a database
 //    plugin has a writer to the general plugin info.
 //
+//    Mark C. Miller, Tue Feb  7 11:16:18 PST 2006
+//    Added return statement to main
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -262,6 +265,7 @@ int main(int argc, char *argv[])
          }
          ENDTRY
     }
+    return 0;
 }
 
 
