@@ -323,6 +323,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Hank Childs, Fri Oct  7 08:21:03 PDT 2005
 //    Added fullDBName.
 //
+//    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006 
+//    Added meshCoordType.
+//
 // ****************************************************************************
 
 void
@@ -383,6 +386,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
             atts.GetTrueSpatialExtents()->Set(extents);
             haveSetTrueSpatialExtents = true;
         }
+        atts.SetMeshCoordType(mmd->meshCoordType);
     }
 
     //

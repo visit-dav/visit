@@ -1590,6 +1590,9 @@ avtKullLiteFileFormat::GetRealMaterial(int domain)
 //     Hank Childs, Tue Jun 14 16:25:52 PDT 2005
 //     Add support for RZ meshes.
 //
+//     Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006 
+//     Set meshCoordType.
+//
 // ****************************************************************************
 
 void
@@ -1631,6 +1634,7 @@ avtKullLiteFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         mesh->xLabel = "Z-Axis";
         mesh->yLabel = "R-Axis";
+        mesh->meshCoordType = AVT_RZ;
     }
     md->Add(mesh);
 

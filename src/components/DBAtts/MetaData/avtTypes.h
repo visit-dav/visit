@@ -74,6 +74,12 @@ enum avtGhostType
     AVT_MAYBE_GHOSTS    /* 3 */
 };
 
+enum avtMeshCoordType
+{
+    AVT_XY      = 0,
+    AVT_RZ,    /* 1 */
+    AVT_ZR     /* 2 */
+};
 
 enum SetState
 {

@@ -90,6 +90,9 @@ using     std::sort;
 //    Hank Childs, Fri Oct  7 08:31:30 PDT 2005
 //    Added fullDBName.
 //
+//    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
+//    Added meshCoordType.
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes()
@@ -143,6 +146,7 @@ avtDataAttributes::avtDataAttributes()
     mirOccurred = false;
     canUseOrigZones = true;
     origNodesRequiredForPick = false;
+    meshCoordType = AVT_XY;
 }
 
 
@@ -312,6 +316,9 @@ avtDataAttributes::DestructSelf(void)
 //
 //    Hank Childs, Fri Oct  7 08:31:30 PDT 2005
 //    Added fullDBName.
+//
+//    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
+//    Added meshCoordType.
 //
 // ****************************************************************************
 
@@ -560,6 +567,18 @@ avtDataAttributes::Print(ostream &out)
     if (origNodesRequiredForPick)
         out << "Original Nodes are required for Pick." << endl;
 
+    switch (meshCoordType)
+    {
+      case AVT_XY:
+        out << "The mesh coord tyep is XY " << endl;
+        break; 
+      case AVT_RZ:
+        out << "The mesh coord tyep is RZ " << endl;
+        break; 
+      case AVT_ZR:
+        out << "The mesh coord tyep is ZR " << endl;
+        break; 
+    }
 }
 
 
@@ -652,6 +671,9 @@ avtDataAttributes::Print(ostream &out)
 //    Hank Childs, Fri Oct  7 08:31:30 PDT 2005
 //    Added fullDBName.
 //
+//    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
+//    Added meshCoordType.
+//
 // ****************************************************************************
 
 void
@@ -736,6 +758,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     mirOccurred = di.mirOccurred;
     canUseOrigZones = di.canUseOrigZones;
     origNodesRequiredForPick = di.origNodesRequiredForPick;
+    meshCoordType = di.meshCoordType;
 }
 
 
@@ -832,6 +855,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //
 //    Jeremy Meredith, Thu Aug 25 11:07:42 PDT 2005
 //    Added groupOrigin.
+//
+//    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
+//    Added meshCoordType.
 //
 // ****************************************************************************
 
@@ -966,6 +992,10 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
                                                da.selectionsApplied[i]);
             }
         }
+    }
+    if (meshCoordType != da.meshCoordType)
+    {
+        EXCEPTION2(InvalidMergeException, meshCoordType, da.meshCoordType);
     }
 
     if (GetContainsGhostZones() == AVT_MAYBE_GHOSTS)
@@ -2035,6 +2065,9 @@ avtDataAttributes::SetTime(double d)
 //    Hank Childs, Fri Oct  7 08:31:30 PDT 2005
 //    Added fullDBName.
 //
+//    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
+//    Added meshCoordType.
+//
 // ****************************************************************************
 
 void
@@ -2043,7 +2076,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
 {
     int   i, j;
 
-    int numVals = 24 + 5*variables.size();
+    int numVals = 25 + 5*variables.size();
     int *vals = new int[numVals];
     vals[0] = topologicalDimension;
     vals[1] = spatialDimension;
@@ -2067,15 +2100,16 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[19] = mirOccurred;
     vals[20] = canUseOrigZones;
     vals[21] = origNodesRequiredForPick;
-    vals[22] = activeVariable;
-    vals[23] = variables.size();
+    vals[22] = meshCoordType;
+    vals[23] = activeVariable;
+    vals[24] = variables.size();
     for (i = 0 ; i < variables.size() ; i++)
     {
-        vals[24+5*i]   = variables[i].dimension;
-        vals[24+5*i+1] = variables[i].centering;
-        vals[24+5*i+2] = (variables[i].treatAsASCII ? 1 : 0);
-        vals[24+5*i+3] = variables[i].vartype;
-        vals[24+5*i+4] = variables[i].subnames.size();
+        vals[25+5*i]   = variables[i].dimension;
+        vals[25+5*i+1] = variables[i].centering;
+        vals[25+5*i+2] = (variables[i].treatAsASCII ? 1 : 0);
+        vals[25+5*i+3] = variables[i].vartype;
+        vals[25+5*i+4] = variables[i].subnames.size();
     }
     wrtr->WriteInt(str, vals, numVals);
     wrtr->WriteDouble(str, dtime);
@@ -2254,6 +2288,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Hank Childs, Fri Oct  7 08:31:30 PDT 2005
 //    Added fullDBName.
 //
+//    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
+//    Added meshCoordType.
+//
 // ****************************************************************************
 
 int
@@ -2351,6 +2388,10 @@ avtDataAttributes::Read(char *input)
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
     origNodesRequiredForPick = (tmp != 0 ? true : false);
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    meshCoordType = (avtMeshCoordType)tmp;
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);

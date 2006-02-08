@@ -21,11 +21,16 @@
 //  Programmer: Hank Childs
 //  Creation:   September 8, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Feb  3 11:24:40 PST 2006
+//    Initialize revolveAboutX.
+//
 // ****************************************************************************
 
 avtRevolvedVolume::avtRevolvedVolume()
 {
     haveIssuedWarning = false;
+    revolveAboutX = true;
 }
 
 
@@ -39,6 +44,10 @@ avtRevolvedVolume::avtRevolvedVolume()
 //  Programmer: Hank Childs
 //  Creation:   September 8, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Feb  3 11:24:40 PST 2006
+//    Initialize revolveAboutX.
+
 // ****************************************************************************
 
 void
@@ -53,6 +62,10 @@ avtRevolvedVolume::PreExecute(void)
                                                "2-dimensional");
     }
     haveIssuedWarning = false;
+    if (atts.GetMeshCoordType() == AVT_ZR)
+        revolveAboutX = false;
+    else 
+        revolveAboutX = true;
 }
 
 
@@ -90,9 +103,12 @@ avtRevolvedVolume::DeriveVariable(vtkDataSet *in_ds)
 //  Method: avtRevolvedVolume::GetZoneVolume
 //
 //  Purpose:
-//      Revolve the zone around the axis x = 0.  This is done by making
-//      two volumes for the top of the zone and the bottom of the zone and
-//      subtracting them.
+//      Revolve the zone around either the y-axis (x = 0), or the 
+//      x-axis (y = 0).   Which axis is determined by the mesh coord type.
+//      RZ -> about x; ZR -> about y;  XY -> assume RZ, so about x.
+//
+//      This is done by making two volumes for the top of the zone 
+//      and the bottom of the zone and subtracting them.
 //
 //  Arguments:
 //      cell    The input zone.
@@ -224,7 +240,39 @@ avtRevolvedVolume::GetZoneVolume(vtkCell *cell)
 //  Function: GetTriangleVolume
 // 
 //  Purpose:
-//      Revolve a triangle around the y-axis.
+//    Revolve a triangle around either the x-axis or y-axis.
+//
+//    Simulates revolution about y-axis by revsering order of x and
+//    y coordinates in call to GetTriangleVolume2.
+// 
+//  Arguments:
+//      x       The x-coordinates of the triangle.
+//      y       The y-coordinates of the triangle.
+// 
+//  Returns:    The volume of the revolved triangle.
+// 
+//  Programmer: Kathleen Bonnell 
+//  Creation:   February 3, 2006
+//
+//  Modifications:
+//  
+// ****************************************************************************
+ 
+double
+avtRevolvedVolume::GetTriangleVolume(double x[3], double y[3])
+{
+    if (revolveAboutX)
+        return GetTriangleVolume2(x, y);
+     else
+        return GetTriangleVolume2(y, x);
+}
+
+
+// ****************************************************************************
+//  Function: GetTriangleVolume2
+// 
+//  Purpose:
+//      Revolve a triangle around the x-axis (y = 0).
 // 
 //  Arguments:
 //      x       The x-coordinates of the triangle.
@@ -236,13 +284,18 @@ avtRevolvedVolume::GetZoneVolume(vtkCell *cell)
 //  Creation:   March 29, 2000
 //  
 //  Modifications:
-//      Akira Haddox, Wed Jul  2 12:27:24 PDT 2003
-//      Dealt with triangles below or on the y-axis.
+//    Akira Haddox, Wed Jul  2 12:27:24 PDT 2003
+//    Dealt with triangles below or on the x-axis.
+// 
+//    Kathleen Bonnell, Thu Feb  2 10:53:19 PST 2006 
+//    Renamed to GetTriangleVolume2, modifiy comments to more 
+//    accurately reflect revolution-about-x, Fixed x-intercept formula
+//    for triangles crossing x-axis. Tighten up for-loop for sorting points.
 // 
 // ****************************************************************************
  
 double
-avtRevolvedVolume::GetTriangleVolume(double x[3], double y[3])
+avtRevolvedVolume::GetTriangleVolume2(double x[3], double y[3])
 {
     int     i, j;
     double   cone01, cone02, cone12;
@@ -303,7 +356,7 @@ avtRevolvedVolume::GetTriangleVolume(double x[3], double y[3])
         else
         {
             double nslope = (oppositeY - pt1Y) / (oppositeX - pt1X);
-            xInt1 = oppositeX + oppositeY / nslope;
+            xInt1 = oppositeX - oppositeY / nslope;
         }
             
         if (oppositeX == pt2X)
@@ -311,7 +364,7 @@ avtRevolvedVolume::GetTriangleVolume(double x[3], double y[3])
         else
         {
             double nslope = (oppositeY - pt2Y) / (oppositeX - pt2X);
-            xInt2 = oppositeX + oppositeY / nslope;
+            xInt2 = oppositeX - oppositeY / nslope;
         }   
 
         double v1, v2, v3;     
@@ -326,7 +379,7 @@ avtRevolvedVolume::GetTriangleVolume(double x[3], double y[3])
         y[1] = 0;
         y[2] = 0;
 
-        v1 = GetTriangleVolume(x, y);
+        v1 = GetTriangleVolume2(x, y);
         
         //
         // Find the volume of the quad by splitting it into triangles 
@@ -335,11 +388,11 @@ avtRevolvedVolume::GetTriangleVolume(double x[3], double y[3])
 
         x[0] = pt1X;
         y[0] = pt1Y;
-        v2 = GetTriangleVolume(x, y);
+        v2 = GetTriangleVolume2(x, y);
         
         x[1] = pt2X;
         y[1] = pt2Y;
-        v3 = GetTriangleVolume(x, y);
+        v3 = GetTriangleVolume2(x, y);
 
         return v1 + v2 + v3;
     }
@@ -348,9 +401,9 @@ avtRevolvedVolume::GetTriangleVolume(double x[3], double y[3])
     // Sort the points so that they are ordered by x-coordinate.  This will
     // make things much easier later.
     // 
-    for (i = 0 ; i < 3 ; i++)
+    for (i = 0 ; i < 2 ; i++)
     {
-        for (j = i ; j < 3 ; j++)
+        for (j = i + 1 ; j < 3 ; j++)
         {
             if (x[j] < x[i])
             {
@@ -424,7 +477,7 @@ avtRevolvedVolume::GetTriangleVolume(double x[3], double y[3])
 // 
 //  Purpose:
 //      Calculate the volume of the cone created by revolving a line segment
-//      around the y-axis.
+//      around the x-axis (y = 0).
 // 
 //  Arguments:
 //      x       The x-coordinates of the line segment.
@@ -436,13 +489,17 @@ avtRevolvedVolume::GetTriangleVolume(double x[3], double y[3])
 //  Programmer: Hank Childs
 //  Creation:   March 29, 2000
 //  
+//  Modifications:
+//    Kathleen Bonnell, Thu Feb  2 11:26:23 PST 2006
+//    Renamed some vars for clarity.
+//
 // ****************************************************************************
  
 double
 avtRevolvedVolume::RevolveLineSegment(double x[2], double y[2], double *slope)
 {
     double   m, b;
-    double   x_at_y_axis;
+    double   x_intercept;
     double   radius, height;
     double   coneAll, coneCropped;
  
@@ -477,12 +534,12 @@ avtRevolvedVolume::RevolveLineSegment(double x[2], double y[2], double *slope)
     }
 
     //
-    // Calculate where the line segment will hit the line x = 0.
+    // Calculate where the line segment will hit the line y = 0.
     // Note we have already taken care of degenerate cases.
     //
     m = (y[1] - y[0]) / (x[1] - x[0]);
     b = y[0] - m*x[0];
-    x_at_y_axis = -b / m;
+    x_intercept = -b / m;
  
     //
     // We are now going to calculate the cone that contains are volume and
@@ -496,17 +553,17 @@ avtRevolvedVolume::RevolveLineSegment(double x[2], double y[2], double *slope)
         //         . <= P0
         //
         //                . <= P1
-        //                      x_at_y_axis
+        //                      x_intercept
         //                          ||
         //                          \/
-        // y-axis  -----------------.--------------------
+        // x-axis  -----------------.--------------------
         //
         radius = y[0];
-        height = x_at_y_axis - x[0];
+        height = x_intercept - x[0];
         coneAll = M_PI * radius * radius * height / 3;
  
         radius = y[1];
-        height = x_at_y_axis - x[1];
+        height = x_intercept - x[1];
         coneCropped = M_PI * radius * radius * height / 3;
     }
     else  // m > 0 
@@ -515,22 +572,21 @@ avtRevolvedVolume::RevolveLineSegment(double x[2], double y[2], double *slope)
         //                           . <= P1
         //
         //                       . <= P0
-        //         x_at_y_axis
+        //         x_intercept
         //             ||
         //             \/
-        // y-axis  ----.---------------------------------
+        // x-axis  ----.---------------------------------
         //
         radius = y[1];
-        height = x[1] - x_at_y_axis;
+        height = x[1] - x_intercept;
         coneAll = M_PI * radius * radius * height / 3;
  
         radius = y[0];
-        height = x[0] - x_at_y_axis;
+        height = x[0] - x_intercept;
         coneCropped = M_PI * radius * radius * height / 3;
     }
  
     *slope = m;
     return (coneAll - coneCropped);
 }
-
 

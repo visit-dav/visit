@@ -1131,6 +1131,8 @@ avtCGNSFileFormat::GetCurvilinearMesh(int base, int zone, const char *meshname,
 // Creation:   Wed Aug 31 09:30:30 PDT 2005
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Feb  8 09:41:45 PST 2006
+//   Don't retrieve zcoords if ncoords != 3.
 //   
 // ****************************************************************************
 
@@ -1164,13 +1166,20 @@ avtCGNSFileFormat::GetUnstructuredMesh(int base, int zone, const char *meshname,
             pts->SetNumberOfPoints(nPts);
             const float *xc = coords[0];
             const float *yc = coords[1];
-            const float *zc = coords[2];
+            const float *zc = NULL; 
+            if (ncoords == 3)
+            {
+                zc = coords[2];
+            }
             for(unsigned int i = 0; i < nPts; ++i)
             {
                 float pt[3];
                 pt[0] = *xc++;
                 pt[1] = *yc++;
-                pt[2] = *zc++;
+                if (ncoords == 3)
+                    pt[2] = *zc++;
+                else 
+                    pt[2] = 0.;
                 pts->SetPoint(i, pt);
             }
 

@@ -32,11 +32,16 @@ static double AreaOfCone(double, double, double);
 //  Programmer: Hank Childs
 //  Creation:   September 8, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Feb  7 14:14:33 PST 2006
+//    Added revolveAboutX. 
+//
 // ****************************************************************************
 
 avtRevolvedSurfaceArea::avtRevolvedSurfaceArea()
 {
     haveIssuedWarning = false;
+    revolveAboutX = true;
 }
 
 
@@ -50,6 +55,10 @@ avtRevolvedSurfaceArea::avtRevolvedSurfaceArea()
 //  Programmer: Hank Childs
 //  Creation:   September 8, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Feb  7 14:14:33 PST 2006
+//    Added revolveAboutX. 
+//
 // ****************************************************************************
 
 void
@@ -60,10 +69,14 @@ avtRevolvedSurfaceArea::PreExecute(void)
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
     if (atts.GetSpatialDimension() != 2)
     {
-        EXCEPTION2(InvalidDimensionsException, "Revolved volume",
+        EXCEPTION2(InvalidDimensionsException, "Revolved surface area",
                                                "2-dimensional");
     }
     haveIssuedWarning = false;
+    if (atts.GetMeshCoordType() == AVT_ZR)
+        revolveAboutX = false;
+    else 
+        revolveAboutX = true;
 }
 
 
@@ -88,6 +101,9 @@ avtRevolvedSurfaceArea::PreExecute(void)
 //
 //    Hank Childs, Mon Aug 30 17:09:57 PDT 2004
 //    Remove call to SetGhostLevel for vtkDataSetRemoveGhostCells filter.
+//
+//    Kathleen Bonnell, Tue Feb  7 14:14:33 PST 2006
+//    Changed GetLineArea call to GetCellArea. 
 //
 // ****************************************************************************
 
@@ -181,7 +197,7 @@ avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds)
     for (i = 0 ; i < ncells ; i++)
     {
         vtkCell *cell = pd_1d_nogz->GetCell(i);
-        float area = (float) GetLineArea(cell);
+        float area = (float) GetCellArea(cell);
         int orig_cell = orig_cells->GetValue(i);
         float orig_area = arr->GetTuple1(orig_cell);
         float new_area = area + orig_area;
@@ -201,26 +217,25 @@ avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds)
 
 
 // ****************************************************************************
-//  Method: avtRevolvedSurfaceArea::GetLineArea
+//  Method: avtRevolvedSurfaceArea::GetCellArea
 //
 //  Purpose:
-//      Revolve the zone around the line y = 0.  This is done by making
-//      two cones -- one that intersects the line y = 0 and one that is
-//      the requested line segment, but extended to the line y = 0.  Then
-//      we can difference them and get the surface area for just this cell.
-//
+//      Tests that cell is a line, and if so calls GetLineArea. 
+
 //  Arguments:
-//      line    The input line.
+//      cell   The input cell.
+//      y      The y-coordinates of the input line.
 //
-//  Returns:    The surface area of the revolved line segment.
+//  Returns:    The surface area of the revolved cell, 0 if the cell
+//              is not a line. 
 //
-//  Programmer: Hank Childs
-//  Creation:   March 18, 2003
+//  Programmer: Kathleen Bonnell 
+//  Creation:   February 7, 2006 
 //
 // ****************************************************************************
  
 double
-avtRevolvedSurfaceArea::GetLineArea(vtkCell *cell)
+avtRevolvedSurfaceArea::GetCellArea(vtkCell *cell)
 {
     int cellType = cell->GetCellType();
     if (cellType != VTK_LINE)
@@ -247,7 +262,42 @@ avtRevolvedSurfaceArea::GetLineArea(vtkCell *cell)
     x[1] = p1[0];
     y[0] = p0[1];
     y[1] = p1[1];
+    double area;
+    if (revolveAboutX)
+        area = GetLineArea(x, y);
+    else
+        area = GetLineArea(y, x);
+    return area;
+}
 
+// ****************************************************************************
+//  Method: avtRevolvedSurfaceArea::GetLineArea
+//
+//  Purpose:
+//      Revolve the zone around the line y = 0.  This is done by making
+//      two cones -- one that intersects the line y = 0 and one that is
+//      the requested line segment, but extended to the line y = 0.  Then
+//      we can difference them and get the surface area for just this cell.
+//
+//  Arguments:
+//      x      The x-coordinates of the input line.
+//      y      The y-coordinates of the input line.
+//
+//  Returns:    The surface area of the revolved line segment.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 18, 2003
+//
+//  Modifications:
+//    Kathleen Bonnell, Tue Feb  7 14:14:33 PST 2006
+//    Changed args from vtkCell to x and y coords of the line.
+//    Moved cell-is-line test to GetCellArea method.
+//
+// ****************************************************************************
+ 
+double
+avtRevolvedSurfaceArea::GetLineArea(double x[2], double y[2])
+{
     //
     // It's easier to think about this if we know x[0] < x[1]
     //

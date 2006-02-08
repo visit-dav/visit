@@ -31,6 +31,10 @@ class avtSimulationInformation;
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added loadBalanceScheme
+//
+//    Kathleen Bonnell, Fri Feb  3 10:23:36 PST 2006 
+//    Added meshCoordType.
+//
 //----------------------------------------------------------------------------
 struct DBATTS_API avtMeshMetaData : public AttributeSubject
 {
@@ -73,6 +77,7 @@ struct DBATTS_API avtMeshMetaData : public AttributeSubject
 
     bool          validVariable;
     LoadBalanceScheme loadBalanceScheme;
+    avtMeshCoordType meshCoordType;
 
 public:
     avtMeshMetaData();

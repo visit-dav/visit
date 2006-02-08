@@ -5,10 +5,13 @@
 #include <avtWeightedVariableSummationQuery.h>
 
 #include <avtBinaryMultiplyFilter.h>
+#include <avtRevolvedVolume.h>
 #include <avtSourceFromAVTDataset.h>
 #include <avtTerminatingSource.h>
 #include <avtVMetricArea.h>
 #include <avtVMetricVolume.h>
+
+#include <DebugStream.h>
 
 
 using     std::string;
@@ -23,6 +26,9 @@ using     std::string;
 //  Modifications:
 //    Kathleen Bonnell, Wed Aug 10 14:05:07 PDT 2005
 //    Force only positive volumes, but allow negative values from var.
+//
+//    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
+//    Added revolvedVolume. 
 //
 // ****************************************************************************
 
@@ -39,6 +45,9 @@ avtWeightedVariableSummationQuery::avtWeightedVariableSummationQuery()
     volume->SetOutputVariableName("avt_weights");
     volume->UseOnlyPositiveVolumes(true);
 
+    revolvedVolume = new avtRevolvedVolume;
+    revolvedVolume->SetOutputVariableName("avt_weights");
+
     string vname = "avt_sum";
     SetVariableName(vname);
     SumGhostValues(false);
@@ -52,6 +61,10 @@ avtWeightedVariableSummationQuery::avtWeightedVariableSummationQuery()
 //  Programmer: Hank Childs 
 //  Creation:   February 3, 2004 
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
+//    Added revolvedVolume. 
+//
 // ****************************************************************************
 
 avtWeightedVariableSummationQuery::~avtWeightedVariableSummationQuery()
@@ -59,6 +72,7 @@ avtWeightedVariableSummationQuery::~avtWeightedVariableSummationQuery()
     delete area;
     delete multiply;
     delete volume;
+    delete revolvedVolume;
 }
 
 
@@ -90,6 +104,9 @@ avtWeightedVariableSummationQuery::~avtWeightedVariableSummationQuery()
 //    Rework so that both time-varying and non use artificial pipeline. 
 //    Only difference is the pipeline spec used. 
 //
+//    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
+//    Added revolvedVolume, use it when 2D data and meshcoord type is RZ or ZR.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -114,11 +131,22 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
     int topo = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
     if (topo == 2)
     {
-        area->SetInput(dob);
-        dob = area->GetOutput();
+        if (GetInput()->GetInfo().GetAttributes().GetMeshCoordType() == AVT_XY)
+        {
+            debug5 << "WeightedVariableSum using Area" << endl;
+            area->SetInput(dob);
+            dob = area->GetOutput();
+        }
+        else 
+        {
+            debug5 << "WeightedVariableSum using RevolvedVolume" << endl;
+            revolvedVolume->SetInput(dob);
+            dob = revolvedVolume->GetOutput();
+        }
     }
     else
     {
+        debug5 << "WeightedVariableSum using Volume" << endl;
         volume->SetInput(dob);
         dob = volume->GetOutput();
     }

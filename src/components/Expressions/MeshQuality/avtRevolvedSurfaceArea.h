@@ -21,6 +21,11 @@ class     vtkCell;
 //  Programmer: Hank Childs
 //  Creation:   March 18, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Feb  7 14:14:33 PST 2006
+//    Added revolveAboutX. Changed args of GetLineArea from vtkCell, to double.
+//    Added GetCellArea.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtRevolvedSurfaceArea 
@@ -36,14 +41,15 @@ class EXPRESSION_API avtRevolvedSurfaceArea
     
   protected:
     bool                        haveIssuedWarning;
+    bool                        revolveAboutX;
 
     virtual vtkDataArray       *DeriveVariable(vtkDataSet *);
     virtual void                PreExecute(void);
 
     virtual bool                IsPointVariable(void)  { return false; };
 
-    double                      GetLineArea(vtkCell *);
-    double                      GetTriangleVolume(double [3], double [3]);
+    double                      GetCellArea(vtkCell*);
+    double                      GetLineArea(double[2], double[2]);
     double                      RevolveLineSegment(double [2], double [2],
                                                    double *);
 };

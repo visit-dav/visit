@@ -21,6 +21,10 @@ class     vtkCell;
 //  Programmer: Hank Childs
 //  Creation:   September 8, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Feb  3 11:24:40 PST 2006
+//    Added revolveAboutX, GetTriangleVolume2. 
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtRevolvedVolume : public avtSingleInputExpressionFilter
@@ -34,6 +38,7 @@ class EXPRESSION_API avtRevolvedVolume : public avtSingleInputExpressionFilter
     
   protected:
     bool                        haveIssuedWarning;
+    bool                        revolveAboutX;
 
     virtual vtkDataArray       *DeriveVariable(vtkDataSet *);
     virtual void                PreExecute(void);
@@ -42,6 +47,7 @@ class EXPRESSION_API avtRevolvedVolume : public avtSingleInputExpressionFilter
 
     double                      GetZoneVolume(vtkCell *);
     double                      GetTriangleVolume(double [3], double [3]);
+    double                      GetTriangleVolume2(double [3], double [3]);
     double                      RevolveLineSegment(double [2], double [2],
                                                    double *);
 };
