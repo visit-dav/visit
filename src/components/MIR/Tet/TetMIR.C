@@ -40,7 +40,7 @@ using std::vector;
 #define STDMAX(A, B) (((A)>(B)) ? (A) : (B))
 
 
-#include "Array.h"
+#include "VisItArray.h"
 #include "Tri.h"
 #include "Tet.h"
 #include "Wedge.h"

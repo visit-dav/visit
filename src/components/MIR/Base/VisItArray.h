@@ -1,11 +1,11 @@
-#ifndef ARRAY_H
-#define ARRAY_H
+#ifndef VISITARRAY_H
+#define VISITARRAY_H
 #include <mir_exports.h>
 
 #include <string.h>
 
 // ****************************************************************************
-//  Class:  Array
+//  Class:  VisItArray
 //
 //  Purpose:
 //    Lightweight implementation of the STL vector template class.
@@ -20,29 +20,32 @@
 //    Jeremy Meredith, Mon Sep 15 09:47:58 PDT 2003
 //    Updated to allow reserving memory.
 //
+//    Mark C. Miller, Thu Feb  9 20:29:57 PST 2006
+//    Renamed to VisItArray
+//
 // ****************************************************************************
 template<class T>
-class MIR_API Array
+class MIR_API VisItArray
 {
   private:
     T     *d;
     int    cp;
     int    sz;
-    void operator=(const Array<T> &rhs) { };
+    void operator=(const VisItArray<T> &rhs) { };
   public:
-    Array()
+    VisItArray()
     {
         d = new T[10];
         cp = 10;
         sz = 0;
     }
-    Array(int initSize)
+    VisItArray(int initSize)
     {
         d = new T[initSize];
         cp = initSize;
         sz = 0;
     }
-    ~Array()
+    ~VisItArray()
     {
         delete[] d;
     }
@@ -79,7 +82,7 @@ class MIR_API Array
         d[sz++] = t;
     }
 
-    static void Swap(Array<T> &a1, Array<T> &a2)
+    static void Swap(VisItArray<T> &a1, VisItArray<T> &a2)
     {
         T  *td = a1.d;
         a1.d   = a2.d;

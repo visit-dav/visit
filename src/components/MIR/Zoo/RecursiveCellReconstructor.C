@@ -4,6 +4,7 @@
 #include <vtkCellTypes.h>
 #include <avtMaterial.h>
 #include <ZooMIR.h>
+#include <VisItArray.h>
 #include <ImproperUseException.h>
 #include <vtkTriangulationTables.h>
 
@@ -69,6 +70,9 @@ RecursiveCellReconstructor::RecursiveCellReconstructor(vtkDataSet *d,
 //    Created a base CellReconstructor class and moved this method down
 //    into this derived class.
 //
+//    Mark C. Miller, Thu Feb  9 21:06:10 PST 2006
+//    Renamed Array class to VisItArray to avoid name collisions with
+//    third-party libs
 // ****************************************************************************
 void
 RecursiveCellReconstructor::ReconstructCell(int cellid_, int celltype_,
@@ -158,7 +162,7 @@ RecursiveCellReconstructor::ReconstructCell(int cellid_, int celltype_,
             //
 
             // make the new list the old list
-            Array<TempCell>::Swap(outlist, tmplist);
+            VisItArray<TempCell>::Swap(outlist, tmplist);
             outlist.clear();
 
             // loop over all old temporary cells

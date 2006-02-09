@@ -3,7 +3,7 @@
 
 #include <MIR.h>
 #include <MIRConnectivity.h>
-#include <Array.h>
+#include <VisItArray.h>
 
 #define FREE_ENTRY_LIST_SIZE 16384
 #define POOL_SIZE 256
@@ -40,6 +40,9 @@ struct ResampledMat;
 //    This is because we are now also using this for an isovolume MIR method
 //    where we do NOT want the edge points to be reused across materials.
 //
+//    Mark C. Miller, Thu Feb  9 21:06:10 PST 2006
+//    Renamed Array class to VisItArray to avoid name collisions with
+//    third-party libs
 // ****************************************************************************
 class MIR_API ZooMIR : public MIR
 {
@@ -164,9 +167,9 @@ class MIR_API ZooMIR : public MIR
     std::vector<float>                      origXCoords;
     std::vector<float>                      origYCoords;
     std::vector<float>                      origZCoords;
-    Array<ReconstructedCoord>               coordsList;
-    Array<ReconstructedZone>                zonesList;
-    Array<vtkIdType>                        indexList;
+    VisItArray<ReconstructedCoord>          coordsList;
+    VisItArray<ReconstructedZone>           zonesList;
+    VisItArray<vtkIdType>                   indexList;
 
     int                                     dimension;
     int                                     nMaterials;

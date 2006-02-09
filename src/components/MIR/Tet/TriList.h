@@ -3,7 +3,7 @@
 #include <mir_exports.h>
 
 #include "Tri.h"
-#include "Array.h"
+#include "VisItArray.h"
 
 
 // ****************************************************************************
@@ -36,11 +36,14 @@
 //    Added a "forced material" where if it is >=0, any added tet will have
 //    the forced material instead of the normal requested material.
 //
+//    Mark C. Miller, Thu Feb  9 21:06:10 PST 2006
+//    Renamed Array class to VisItArray to avoid name collisions with
+//    third-party libs
 // ****************************************************************************
 class MIR_API TriList
 {
   private:
-    Array<Tri> list;
+    VisItArray<Tri> list;
     void operator=(const TriList &rhs) { };
   public:
     void       Clear()                 {list.clear();}
@@ -50,7 +53,7 @@ class MIR_API TriList
     void Add(const Tri&, int);
     void AddTri(int, int,  Tri::Node&,Tri::Node&,Tri::Node&, int);
     void AddQuad(int, int, Tri::Node&,Tri::Node&,Tri::Node&,Tri::Node&, int);
-    static void Swap(TriList &a, TriList &b) {Array<Tri>::Swap(a.list, b.list);}
+    static void Swap(TriList &a, TriList &b) {VisItArray<Tri>::Swap(a.list, b.list);}
 };
 
 // ****************************************************************************
