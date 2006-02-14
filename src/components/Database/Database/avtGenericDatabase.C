@@ -5183,6 +5183,12 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 //    Hank Childs, Mon Jun 27 16:24:23 PDT 2005
 //    Add argument to GetDataset.
 //
+//    Hank Childs, Thu Feb  9 16:24:32 PST 2006
+//    If we have domain boundary information and we are doing reconstruction
+//    for mixed material zones, then we need to read in the materials for
+//    every domain, so the ghost zone communication routines can work
+//    correctly.
+//
 // ****************************************************************************
 
 void
@@ -5267,11 +5273,21 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
     src->DatabaseProgress(0, 0, progressString);
     int nDomains = domains.size();
     avtSILRestrictionTraverser trav(silr);
+    bool forceMIR = spec->MustDoMaterialInterfaceReconstruction();
+    if (spec->NeedMixedVariableReconstruction())
+    {
+        avtDatasetCollection emptyCollection(0);
+        intVector emptyDomainList;
+        avtDomainBoundaries *dbi = GetDomainBoundaryInformation(emptyCollection,
+                                                    emptyDomainList, spec);
+        if (dbi != NULL)
+            forceMIR = true;
+    }
+
     for (i = 0 ; i < nDomains ; i++)
     {
         stringVector labels;
         stringVector matnames;
-        bool forceMIR = spec->MustDoMaterialInterfaceReconstruction();
         bool doSelect = PrepareMaterialSelect(domains[i], forceMIR, trav, 
                                               matnames);
         int nmats = matnames.size();

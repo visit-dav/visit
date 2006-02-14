@@ -17,6 +17,9 @@
 #include <vtkPointData.h>
 #include <vtkPointDataToCellData.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkStructuredGrid.h>
+
+#include <avtCallback.h>
 
 #include <DebugStream.h>
 #include <ExpressionException.h>
@@ -36,11 +39,14 @@
 //    Hank Childs, Fri Mar  4 08:21:04 PST 2005
 //    Removed centering conversion modules.
 //
+//    Hank Childs, Mon Feb 13 15:08:41 PST 2006
+//    Add support for logical gradients.
+//
 // ****************************************************************************
 
 avtGradientFilter::avtGradientFilter()
 {
-    ;
+    doLogicalGradients = false;
 }
 
 
@@ -63,6 +69,25 @@ avtGradientFilter::avtGradientFilter()
 avtGradientFilter::~avtGradientFilter()
 {
     ;
+}
+
+
+// ****************************************************************************
+//  Method: avtGradientFilter::PreExecute
+//
+//  Purpose:
+//      Initializes a flag saying whether or not we've issued a warning.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 13, 2006
+//
+// ****************************************************************************
+
+void
+avtGradientFilter::PreExecute(void)
+{
+    avtSingleInputExpressionFilter::PreExecute();
+    haveIssuedWarning = false;
 }
 
 
@@ -106,6 +131,9 @@ avtGradientFilter::~avtGradientFilter()
 //    Hank Childs, Fri Mar 11 16:01:21 PST 2005
 //    Fix memory leak.
 //
+//    Hank Childs, Mon Feb 13 15:08:41 PST 2006
+//    Add support for logical gradients ['4385].
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -114,6 +142,30 @@ avtGradientFilter::DeriveVariable(vtkDataSet *in_ds)
     if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
         return RectilinearGradient((vtkRectilinearGrid *) in_ds);
+    }
+    if (doLogicalGradients)
+    {
+        if (in_ds->GetDataObjectType() != VTK_STRUCTURED_GRID)
+        {
+            if (!haveIssuedWarning)
+                avtCallback::IssueWarning("You can only do logical gradients "
+                                          "on structured grids.");
+            haveIssuedWarning = true;
+            int nvals = 0;
+            if (in_ds->GetPointData()->GetScalars() != NULL)
+                nvals = in_ds->GetNumberOfPoints();
+            else
+                nvals = in_ds->GetNumberOfCells();
+            vtkFloatArray *rv = vtkFloatArray::New();
+            rv->SetNumberOfComponents(3);
+            rv->SetNumberOfTuples(nvals);
+            float vals[3] = { 0., 0., 0. };
+            for (int i = 0 ; i < nvals ; i++)
+                rv->SetTuple(i, vals);
+            return rv;
+        }
+
+        return LogicalGradient((vtkStructuredGrid *) in_ds);
     }
 
     vtkDataArray *scalarValues = in_ds->GetPointData()->GetScalars(); 
@@ -395,6 +447,9 @@ float avtGradientFilter::EvaluateValue(float x, float y, float z,
 //    Jeremy Meredith, Fri Jul  2 15:58:01 PDT 2004
 //    Added a check to make sure the scalars existed before proceeding.
 //
+//    Hank Childs, Mon Feb 13 16:12:23 PST 2006
+//    Removed misleading comment.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -495,7 +550,6 @@ avtGradientFilter::RectilinearGradient(vtkRectilinearGrid *rg)
     const int kskip = dims0*dims1;
     if (dims2 <= 1)
     {
-        // Do all the cases where we have valid values on both sides.
         for (j = 0 ; j < dims1 ; j++)
         {
             for (i = 0 ; i < dims0 ; i++)
@@ -524,7 +578,6 @@ avtGradientFilter::RectilinearGradient(vtkRectilinearGrid *rg)
     }
     else
     {
-        // Do all the cases where we have valid values on both sides.
         for (k = 0 ; k < dims2 ; k++)
         {
             for (j = 0 ; j < dims1 ; j++)
@@ -576,4 +629,279 @@ avtGradientFilter::RectilinearGradient(vtkRectilinearGrid *rg)
     return out_array;
 }
 
+
+// ****************************************************************************
+//  Method: avtGradientFilter::LogicalGradient
+//
+//  Purpose:
+//      Determines the logical gradient of a curvilinear dataset.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 13, 2006
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtGradientFilter::LogicalGradient(vtkStructuredGrid *sg)
+{
+    int i, j, k;
+
+    vtkPoints *vtkpts = sg->GetPoints();
+    float *pts = (float *) vtkpts->GetVoidPointer(0);
+    bool deletePoints = false;
+
+    int dims[3];
+    sg->GetDimensions(dims);
+    bool isNodal = true;
+    vtkDataArray *s = sg->GetPointData()->GetScalars();
+    if (s == NULL)
+    {
+         s = sg->GetCellData()->GetScalars();
+         if (s == NULL)
+         {
+             EXCEPTION1(ExpressionException, "the scalar variable could not"
+                                             " be found.");
+         }
+
+         isNodal = false;
+         dims[0] -= 1;
+         dims[1] -= 1;
+         dims[2] -= 1;
+
+         float *pts2 = NULL;
+         if (dims[2] > 1)
+         {
+             pts2 = new float[3*dims[0]*dims[1]*dims[2]];
+             for (k = 0 ; k < dims[2] ; k++)
+             {
+                 for (j = 0 ; j < dims[1] ; j++)
+                 {
+                     for (i = 0 ; i < dims[0] ; i++)
+                     {
+                         int c_idx = k*(dims[0])*(dims[1]) + j*dims[0] + i;
+                         float *p = pts2 + 3*c_idx;
+                         p[0] = 0.;
+                         p[1] = 0.;
+                         p[2] = 0.;
+                         for (int l = 0 ; l < 8 ; l++)
+                         {
+                             int p_idx = (l&1 ? i+1 : i);
+                             p_idx += (l&2 ? j+1 : j)*(dims[0]+1);
+                             p_idx += (l&4 ? k+1 : k)*(dims[0]+1)*(dims[1]+1);
+                             p[0] += pts[3*p_idx] / 8.;
+                             p[1] += pts[3*p_idx+1] / 8.;
+                             p[2] += pts[3*p_idx+2] / 8.;
+                         }
+                     }
+                 }
+             }
+         }
+         else
+         {
+             pts2 = new float[3*dims[0]*dims[1]];
+             for (j = 0 ; j < dims[1] ; j++)
+             {
+                 for (i = 0 ; i < dims[0] ; i++)
+                 {
+                     int c_idx = j*dims[0] + i;
+                     float *p = pts2 + 3*c_idx;
+                     p[0] = 0.;
+                     p[1] = 0.;
+                     p[2] = 0.;
+                     for (int l = 0 ; l < 4 ; l++)
+                     {
+                         int p_idx = (l&1 ? i+1 : i);
+                         p_idx += (l&2 ? j+1 : j)*(dims[0]+1);
+                         p[0] += pts[3*p_idx] / 4.;
+                         p[1] += pts[3*p_idx+1] / 4.;
+                     }
+                 }
+             }
+         }
+
+         pts = pts2;
+         deletePoints = true;
+    }
+
+    vtkDataArray *out_array = s->NewInstance();
+    out_array->SetNumberOfComponents(3);
+    out_array->SetNumberOfTuples(s->GetNumberOfTuples());
+
+    float *in  = (float *) s->GetVoidPointer(0);
+    float *out = (float *) out_array->GetVoidPointer(0);
+
+    const int dims0 = dims[0];
+    const int dims1 = dims[1];
+    const int dims2 = dims[2];
+    const int iskip = 1;
+    const int jskip = dims0;
+    const int kskip = dims0*dims1;
+    if (dims2 <= 1)
+    {
+        for (j = 0 ; j < dims1 ; j++)
+        {
+            for (i = 0 ; i < dims0 ; i++)
+            {
+                int index     = j*jskip + i*iskip;
+                int vec_index = 3*index;
+
+                float *pt1 = pts + 3*(index+iskip);
+                float *pt2 = pts + 3*(index-iskip);
+                if ((i > 0) && (i < (dims0-1)))
+                    out[vec_index] = in[index+iskip] - in[index-iskip];
+                else if (i == 0)
+                {
+                    pt2 = pts + 3*index;
+                    out[vec_index] = in[index+iskip] - in[index];
+                }
+                else // i == dims0-1
+                {
+                    pt1 = pts + 3*index;
+                    out[vec_index] = in[index] - in[index-iskip];
+                }
+                float diff[3];
+                diff[0] = pt1[0] - pt2[0];
+                diff[1] = pt1[1] - pt2[1];
+                diff[2] = pt1[2] - pt2[2];
+                float dist = sqrt(diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2]);
+                if (dist == 0.)
+                    out[vec_index++] = 0.;
+                else
+                    out[vec_index++] /= dist;
+
+                pt1 = pts + 3*(index+jskip);
+                pt2 = pts + 3*(index-jskip);
+                if ((j > 0) && (j < (dims1-1)))
+                    out[vec_index] = in[index+jskip] - in[index-jskip];
+                else if (j == 0)
+                {
+                    pt2 = pts + 3*index;
+                    out[vec_index] = in[index+jskip] - in[index];
+                }
+                else // j == dims1-1
+                {
+                    pt1 = pts + 3*index;
+                    out[vec_index] = in[index] - in[index-jskip];
+                }
+                diff[0] = pt1[0] - pt2[0];
+                diff[1] = pt1[1] - pt2[1];
+                diff[2] = pt1[2] - pt2[2];
+                dist = sqrt(diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2]);
+                if (dist == 0.)
+                    out[vec_index++] = 0.;
+                else
+                    out[vec_index++] /= dist;
+                out[vec_index++] = 0.;
+            }
+        }
+    }
+    else
+    {
+        for (k = 0 ; k < dims2 ; k++)
+        {
+            for (j = 0 ; j < dims1 ; j++)
+            {
+                for (i = 0 ; i < dims0 ; i++)
+                {
+                    int index     = k*kskip + j*jskip + i*iskip;
+                    int vec_index = 3*index;
+
+                    float *pt1 = pts + 3*(index+iskip);
+                    float *pt2 = pts + 3*(index-iskip);
+                    if ((i > 0) && (i < (dims0-1)))
+                        out[vec_index] = in[index+iskip]-in[index-iskip];
+                    else if (i == 0)
+                    {
+                        pt2 = pts + 3*index;
+                        out[vec_index] = in[index+iskip] - in[index];
+                    }
+                    else // i == dims0-1
+                    {
+                        pt1 = pts + 3*index;
+                        out[vec_index] = in[index] - in[index-iskip];
+                    }
+                    float diff[3];
+                    diff[0] = pt1[0] - pt2[0];
+                    diff[1] = pt1[1] - pt2[1];
+                    diff[2] = pt1[2] - pt2[2];
+                    float dist = sqrt(diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2]);
+                    if (dist == 0.)
+                        out[vec_index++] = 0.;
+                    else
+                        out[vec_index++] /= dist;
+
+                    pt1 = pts + 3*(index+jskip);
+                    pt2 = pts + 3*(index-jskip);
+                    if ((j > 0) && (j < (dims1-1)))
+                        out[vec_index] = in[index+jskip] - in[index-jskip];
+                    else if (j == 0)
+                    {
+                        pt2 = pts + 3*index;
+                        out[vec_index] = in[index+jskip] - in[index];
+                    }
+                    else // j == dims1-1
+                    {
+                        pt1 = pts + 3*index;
+                        out[vec_index] = in[index] - in[index-jskip];
+                    }
+                    diff[0] = pt1[0] - pt2[0];
+                    diff[1] = pt1[1] - pt2[1];
+                    diff[2] = pt1[2] - pt2[2];
+                    dist = sqrt(diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2]);
+                    if (dist == 0.)
+                        out[vec_index++] = 0.;
+                    else
+                        out[vec_index++] /= dist;
+
+                    pt1 = pts + 3*(index+kskip);
+                    pt2 = pts + 3*(index-kskip);
+                    if ((k > 0) && (k < (dims2-1)))
+                        out[vec_index] = in[index+kskip] - in[index-kskip];
+                    else if (k == 0)
+                    {
+                        pt2 = pts + 3*index;
+                        out[vec_index] = in[index+kskip] - in[index];
+                    }
+                    else // k == dims2-1
+                    {
+                        pt1 = pts + 3*index;
+                        out[vec_index] = in[index] - in[index-kskip];
+                    }
+                    diff[0] = pt1[0] - pt2[0];
+                    diff[1] = pt1[1] - pt2[1];
+                    diff[2] = pt1[2] - pt2[2];
+                    dist = sqrt(diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2]);
+                    if (dist == 0.)
+                        out[vec_index++] = 0.;
+                    else
+                        out[vec_index++] /= dist;
+                }
+            }
+        }
+    }
+
+    return out_array;
+}
+
+
+// ****************************************************************************
+//  Method: avtGradientFilter::PerformRestriction
+//
+//  Purpose:
+//      Request ghost zones.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 13, 2006
+//
+// ****************************************************************************
+
+avtPipelineSpecification_p
+avtGradientFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
+{
+    avtPipelineSpecification_p spec2 = 
+                   avtSingleInputExpressionFilter::PerformRestriction(in_spec);
+    spec2->GetDataSpecification()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+    return spec2;
+}
+ 
 

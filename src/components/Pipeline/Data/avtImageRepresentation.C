@@ -68,9 +68,15 @@ avtImageRepresentation::avtImageRepresentation(vtkImageData *d)
 //  Programmer: Hank Childs
 //  Creation:   February 13, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Feb  6 14:59:43 PST 2006
+//    Allow the z-buffer to be directly acquired instead of copied.
+//
 // ****************************************************************************
 
-avtImageRepresentation::avtImageRepresentation(vtkImageData *d, float *z)
+avtImageRepresentation::avtImageRepresentation(vtkImageData *d, float *z, 
+                                               bool iNowOwn)
 {
     Initialize();
     int width = 0;
@@ -86,8 +92,13 @@ avtImageRepresentation::avtImageRepresentation(vtkImageData *d, float *z)
 
     if (z != NULL)
     {
-       zbuffer      = new float[width * height];
-       memcpy(zbuffer, z, sizeof(float) * width * height);
+       if (iNowOwn)
+           zbuffer = z;
+       else
+       {
+           zbuffer      = new float[width * height];
+           memcpy(zbuffer, z, sizeof(float) * width * height);
+       }
        zbufferRef   = new int(1);
     }
 }

@@ -4,6 +4,8 @@
 
 #include <avtSIL.h>
 
+#include <algorithm>
+
 #include <avtSILCollection.h>
 #include <avtSILNamespace.h>
 #include <avtSILSet.h>

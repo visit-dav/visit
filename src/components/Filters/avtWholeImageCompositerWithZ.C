@@ -211,6 +211,9 @@ avtWholeImageCompositerWithZ::~avtWholeImageCompositerWithZ()
 //    Jeremy Meredith, October 20, 2004
 //    Allowed for the use of an allreduce instead of a simple reduce.
 //    
+//    Hank Childs, Mon Feb  6 14:55:39 PST 2006
+//    Fix memory leak ['6829].
+//
 // ****************************************************************************
 
 void
@@ -265,7 +268,6 @@ avtWholeImageCompositerWithZ::Execute(void)
        iorgb  = zeroImageRep.GetRGBBuffer();
     }
 
-
     if (mpiRoot >= 0)
     {
        // only root allocates output AVT image (for a non-allreduce)
@@ -291,7 +293,7 @@ avtWholeImageCompositerWithZ::Execute(void)
        {
           if (shouldOutputZBuffer)
           {
-             avtImageRepresentation theOutput(mergedGlobalImage,rioz);
+             avtImageRepresentation theOutput(mergedGlobalImage,rioz,true);
              SetOutputImage(theOutput);
           }
           else
@@ -314,7 +316,7 @@ avtWholeImageCompositerWithZ::Execute(void)
        {
           if (shouldOutputZBuffer)
           {
-             avtImageRepresentation theOutput(mergedLocalImage,ioz);
+             avtImageRepresentation theOutput(mergedLocalImage,ioz,true);
              SetOutputImage(theOutput);
           }
           else
@@ -327,16 +329,8 @@ avtWholeImageCompositerWithZ::Execute(void)
        }
        else
        {
-          if (shouldOutputZBuffer)
-          {
-             avtImageRepresentation theOutput(zeroImageRep.GetImageVTK(),zeroImageRep.GetZBuffer());
-             SetOutputImage(theOutput);
-          }
-          else
-          {
-             avtImageRepresentation theOutput(zeroImageRep.GetImageVTK());
-             SetOutputImage(theOutput);
-          }
+          avtImageRepresentation theOutput(zeroImageRep);
+          SetOutputImage(theOutput);
        }
     }
 }
