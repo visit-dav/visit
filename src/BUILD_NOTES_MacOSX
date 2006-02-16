@@ -207,9 +207,9 @@ take this opportunity to unzip VisIt's source code distribution and set an
 environment variable that will be used to identify VisIt's source code 
 directory.
 
-gunzip visit051121.tar.gz
-tar xf visit051121.tar
-setenv VISITSOURCE `pwd`/visit051121
+gunzip visit060206.tar.gz
+tar xf visit060206.tar
+setenv VISITSOURCE `pwd`/visit060206
 
 # Make sure that you build a version of VisIt that can run on MacOS X 10.3
 # and later.
@@ -1054,9 +1054,9 @@ More information about building VisIt follows after that.
 #
 # Unzipping VisIt's source code distribution
 #
-gunzip visit051121.tar.gz
-tar xf visit051121.tar
-cd visit051121
+gunzip visit060206.tar.gz
+tar xf visit060206.tar
+cd visit060206
 
 #
 # HDF5 and Silo
