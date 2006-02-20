@@ -25,6 +25,7 @@
 #include <ClientInformation.h>
 #include <ClientInformationList.h>
 #include <ColorTableAttributes.h>
+#include <ConstructDDFAttributes.h>
 #include <DatabaseCorrelationList.h>
 #include <DBPluginInfoAttributes.h>
 #include <ExportDBAttributes.h>
@@ -189,6 +190,10 @@
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added mesh management attributes
+//
+//    Hank Childs, Mon Feb 13 21:44:04 PST 2006
+//    Added construct DDF attributes.
+//
 // ****************************************************************************
 
 ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
@@ -239,6 +244,7 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
     procAtts             = new ProcessAttributes;
     dbPluginInfoAtts     = new DBPluginInfoAttributes;
     exportDBAtts         = new ExportDBAttributes;
+    constructDDFAtts     = new ConstructDDFAttributes;
     clientMethod         = new ClientMethod;
     clientInformation    = new ClientInformation;
     clientInformationList = new ClientInformationList;
@@ -397,6 +403,10 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added mesh management attributes
+//
+//    Hank Childs, Mon Feb 13 21:46:04 PST 2006
+//    Added constructDDF.
+//
 // ****************************************************************************
 
 ViewerProxy::~ViewerProxy()
@@ -449,6 +459,7 @@ ViewerProxy::~ViewerProxy()
     delete procAtts;
     delete dbPluginInfoAtts;
     delete exportDBAtts;
+    delete constructDDFAtts;
     delete clientMethod;
     delete clientInformation;
     delete clientInformationList;
@@ -876,6 +887,10 @@ ViewerProxy::AddArgument(const std::string &arg)
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added mesh management attributes
+//
+//    Hank Childs, Mon Feb 13 21:47:32 PST 2006
+//    Added construct DDF.
+//
 // ****************************************************************************
 
 void
@@ -959,6 +974,7 @@ ViewerProxy::Create(int *inputArgc, char ***inputArgv)
     xfer->Add(silAtts);
     xfer->Add(dbPluginInfoAtts);
     xfer->Add(exportDBAtts);
+    xfer->Add(constructDDFAtts);
     xfer->Add(clientMethod);
     xfer->Add(clientInformation);
     xfer->Add(clientInformationList);
@@ -1785,6 +1801,31 @@ ViewerProxy::ExportDatabase()
     // Set the rpc type and arguments.
     //
     viewerRPC->SetRPCType(ViewerRPC::ExportDBRPC);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::ConstructDDF
+//
+// Purpose: 
+//     Construct a DDF.
+//
+// Programmer: Hank Childs
+// Creation:   February 13, 2006
+//
+// ****************************************************************************
+
+void
+ViewerProxy::ConstructDDF()
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::ConstructDDFRPC);
 
     //
     // Issue the RPC.

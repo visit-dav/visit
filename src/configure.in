@@ -601,6 +601,9 @@ dnl
 dnl    Eric Brugger, Thu Feb  2 08:51:04 PST 2006
 dnl    I removed -lg2c as a boxlib library dependence when using gcc.
 dnl
+dnl    Hank Childs, Mon Feb 13 20:58:37 PST 2006
+dnl    Added subdirectory /components/DDF.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -3270,6 +3273,7 @@ VISIT_VTK_FILES="visit_vtk/Makefile
                  visit_vtk/parallel/Makefile"
 COMPONENT_FILES="components/Makefile
                  components/DBAtts/Makefile
+                 components/DDF/Makefile
                  components/Database/Makefile
                  components/Expressions/Makefile
                  components/FileWriter/Makefile

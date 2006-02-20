@@ -17,6 +17,7 @@
 #include <CancelledConnectException.h>
 #include <CouldNotConnectException.h>
 #include <AnnotationAttributes.h>
+#include <ConstructDDFAttributes.h>
 #include <ExportDBAttributes.h>
 #include <PickAttributes.h>
 #include <ProcessAttributes.h>
@@ -259,6 +260,7 @@ MaterialAttributes *ViewerEngineManager::materialDefaultAtts=0;
 MeshManagementAttributes *ViewerEngineManager::meshManagementClientAtts=0;
 MeshManagementAttributes *ViewerEngineManager::meshManagementDefaultAtts=0;
 ExportDBAttributes *ViewerEngineManager::exportDBAtts=0;
+ConstructDDFAttributes *ViewerEngineManager::constructDDFAtts=0;
 
 //
 // Function prototypes.
@@ -3087,6 +3089,73 @@ ViewerEngineManager::ExportDatabase(const EngineKey &ek, int id)
 {
     ENGINE_PROXY_RPC_BEGIN("ExportDatabase");
     engine->ExportDatabase(id, exportDBAtts);
+    ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
+}
+
+
+// ****************************************************************************
+//  Method: ViewerEngineManager::GetConstructDDFAtts
+//
+//  Purpose:
+//      Gets the construct ddf atts.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 13, 2006
+//
+// ****************************************************************************
+
+ConstructDDFAttributes *
+ViewerEngineManager::GetConstructDDFAtts(void)
+{
+    if (constructDDFAtts == 0)
+    {
+        constructDDFAtts = new ConstructDDFAttributes();
+    }
+
+    return constructDDFAtts;
+}
+
+
+// ****************************************************************************
+//  Method: ViewerEngineManager::SetConstructDDFAtts
+//
+//  Purpose:
+//      Sets the construct ddf atts.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 13, 2006
+//
+// ****************************************************************************
+
+void
+ViewerEngineManager::SetConstructDDFAtts(ConstructDDFAttributes *e)
+{
+    if (constructDDFAtts == 0)
+    {
+        constructDDFAtts = new ConstructDDFAttributes();
+    }
+
+    *constructDDFAtts = *e;
+    constructDDFAtts->Notify();
+}
+
+
+// ****************************************************************************
+//  Method: ViewerEngineManager::ConstructDDF
+//
+//  Purpose:
+//      Constructs a derived data function.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 13, 2006
+//
+// ****************************************************************************
+
+bool
+ViewerEngineManager::ConstructDDF(const EngineKey &ek, int id)
+{
+    ENGINE_PROXY_RPC_BEGIN("ConstructDDF");
+    engine->ConstructDDF(id, constructDDFAtts);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
 

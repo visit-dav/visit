@@ -12,7 +12,12 @@
 
 #include <ExprPipelineState.h>
 
+class avtDDF;
 class avtSourceFromAVTDataset;
+
+
+typedef avtDDF *   (*GetDDFCallback)(void *, const char *);
+
 
 // ****************************************************************************
 //  Class: avtExpressionEvaluatorFilter
@@ -67,6 +72,9 @@ class avtSourceFromAVTDataset;
 //   Hank Childs, Sun Dec  4 17:31:14 PST 2005
 //   Added description.
 //
+//   Hank Childs, Sun Feb 19 09:54:19 PST 2006
+//   Add support for DDFs.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionEvaluatorFilter 
@@ -98,6 +106,8 @@ class EXPRESSION_API avtExpressionEvaluatorFilter
     virtual void             GetDomainName(const std::string &, const int,
                                  const int , std::string &);
 
+    static void              RegisterGetDDFCallback(GetDDFCallback, void *);
+
   protected:
     virtual void             PreExecute(void) {}
     virtual void             PostExecute(void) {}
@@ -111,6 +121,9 @@ class EXPRESSION_API avtExpressionEvaluatorFilter
     ExprPipelineState            pipelineState;
     avtPipelineSpecification_p   lastUsedSpec;
     avtSourceFromAVTDataset     *termsrc;
+
+    static  GetDDFCallback       getDDFCallback;
+    static  void                *getDDFCallbackArgs;
 
   private:
     int                          currentTimeState;

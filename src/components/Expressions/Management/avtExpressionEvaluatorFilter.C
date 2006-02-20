@@ -8,6 +8,8 @@
 #include <vtkDataArray.h>
 
 #include <avtDatasetExaminer.h>
+#include <avtDDF.h>
+#include <avtDDFFunctionInfo.h>
 #include <avtExpressionEvaluatorFilter.h>
 #include <avtExpressionFilter.h>
 #include <avtIdentityFilter.h>
@@ -30,6 +32,10 @@ using std::vector;
 using std::set;
 using std::string;
 using std::find;
+
+
+GetDDFCallback     avtExpressionEvaluatorFilter::getDDFCallback = NULL;
+void              *avtExpressionEvaluatorFilter::getDDFCallbackArgs = NULL;
 
 
 // ****************************************************************************
@@ -302,6 +308,9 @@ avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 //    Jeremy Meredith, Mon Jun 13 15:51:50 PDT 2005
 //    Delete the parse trees when we're done with them.  This fixes leaks.
 //
+//    Hank Childs, Sun Feb 19 10:03:12 PST 2006
+//    Add support for DDFs.  Also correct order of perform restriction calls.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -389,14 +398,35 @@ avtExpressionEvaluatorFilter::PerformRestriction(
             }
         }
 
-        // Check if this is an expression or a real variable.
+        // Check if this is an expression, a real variable, or a DDF.
         Expression *exp = ParsingExprList::GetExpression(var);
-        if (exp == NULL)
+        avtDDF *ddf = NULL;
+        if (getDDFCallback != NULL)
+            ddf = getDDFCallback(getDDFCallbackArgs, var.c_str());
+
+        if (exp == NULL && ddf == NULL)
         {
             debug5 << "EEF::PerformRestriction:     not an expression" << endl;
             // Not an expression.  Put the name on the real list.
             real_list.insert(var);
-        } else {
+        } 
+        else if (ddf != NULL)
+        {
+            debug5 << "EEF::PerformRestriction:     DDF.  Roots:" << endl;
+            avtDDFFunctionInfo *info = ddf->GetFunctionInfo();
+            int nVars = info->GetDomainNumberOfTuples();
+            for (int i = 0 ; i < nVars ; i++)
+            {
+                std::string name = info->GetDomainTupleName(i);
+                debug5 << "EEF::PerformRestriction:         " << name << endl;
+                candidates.insert(name);
+            }
+            std::string name = info->GetCodomainName();
+            debug5 << "EEF::PerformRestriction:         " << name << endl;
+            candidates.insert(name);
+        }
+        else  // (expr != NULL)
+        {
             debug5 << "EEF::PerformRestriction:     expression.  Roots:" 
                    << endl;
             // Expression.  Put the name on the expr list.  Find the base
@@ -530,7 +560,8 @@ avtExpressionEvaluatorFilter::PerformRestriction(
         top->SetInput(termsrc->GetOutput());
     }
 
-    for (i = 0 ; i < filters.size() ; i++)
+    // Do these in the order the pipeline would.
+    for (i = filters.size()-1 ; i >= 0 ; i--)
     {
         rv = filters[i]->PerformRestriction(rv);
     }
@@ -578,6 +609,27 @@ avtExpressionEvaluatorFilter::ReleaseData(void)
         termsrc = NULL;
     }
 }
+
+
+// ****************************************************************************
+//  Method: avtExpressionEvaluatorFilter::RegisterGetDDFCallback
+//
+//  Purpose:
+//      Registers a callback that allows us to get DDFs.
+//
+//  Programmer:  Hank Childs
+//  Creation:    February 19, 2006
+//
+// ****************************************************************************
+
+void
+avtExpressionEvaluatorFilter::RegisterGetDDFCallback(GetDDFCallback gdc,
+                                                     void *args)
+{
+    getDDFCallback     = gdc;
+    getDDFCallbackArgs = args;
+}
+
 
 // ****************************************************************************
 //  Method: avtExpressionEvaluatorFilter::Query

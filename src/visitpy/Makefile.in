@@ -118,6 +118,9 @@
 #    Brad Whitlock, Mon Jan 9 10:35:55 PDT 2006
 #    Added Logging.C
 #
+#    Hank Childs, Mon Feb 13 21:13:27 PST 2006
+#    Added ConstructDDFAttributes.
+#
 ##############################################################################
 
 ##
@@ -132,6 +135,7 @@
 SRC= \
     PyAnimationAttributes.C \
     PyAnnotationAttributes.C \
+    PyConstructDDFAttributes.C \
     PyDatabaseCorrelation.C \
     PyExportDBAttributes.C \
     PyGlobalAttributes.C \

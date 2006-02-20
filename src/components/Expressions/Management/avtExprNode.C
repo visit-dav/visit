@@ -66,6 +66,7 @@
 #include <avtDegreeFilter.h>
 #include <avtVMetrics.h>
 #include <avtRecenterFilter.h>
+#include <avtApplyDDFExpression.h>
 #include <avtConstantCreatorFilter.h>
 #include <avtRelativeDifferenceFilter.h>
 #include <avtConditionalFilter.h>
@@ -434,6 +435,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Hank Childs, Tue Feb 14 14:03:47 PST 2006
 //      Added logical gradient.
 //
+//      Hank Childs, Sat Feb 18 10:24:30 PST 2006
+//      Added apply_ddf.
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -548,6 +552,8 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtRelativeDifferenceFilter();
     else if (functionName == "var_skew")
         f = new avtVariableSkewFilter();
+    else if (functionName == "apply_ddf")
+        f = new avtApplyDDFExpression();
     else if (functionName == "if")
         f = new avtConditionalFilter();
     else if (functionName == "and")

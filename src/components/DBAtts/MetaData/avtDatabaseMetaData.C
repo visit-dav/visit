@@ -5544,7 +5544,8 @@ avtDatabaseMetaData::GetNDomains(std::string var) const
 //      Determines the type of the variable argument.
 //
 //  Arguments:
-//      var_in  A variable name.
+//      var_in    A variable name.
+//      do_expr   Whether or not to do expressions.
 //
 //  Returns:    The type of var.
 //
@@ -5576,20 +5577,26 @@ avtDatabaseMetaData::GetNDomains(std::string var) const
 //    Hank Childs, Tue Jul 19 13:24:19 PDT 2005
 //    Added support for arrays.
 //
+//    Hank Childs, Sun Feb 19 10:57:47 PST 2006
+//    Only get information from expressions based on argument value.
+//
 // ****************************************************************************
 
 avtVarType
-avtDatabaseMetaData::DetermineVarType(std::string var_in) const
+avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
 {
     int  i;
 
     // If the variable is an expression, we need to find a "real" variable
     // name to work with.
-    ExprNode *tree = ParsingExprList::GetExpressionTree(var_in);
-    while (tree != NULL)
+    if (do_expr)
     {
-        var_in = *tree->GetVarLeaves().begin();
-        tree = ParsingExprList::GetExpressionTree(var_in);
+        ExprNode *tree = ParsingExprList::GetExpressionTree(var_in);
+        while (tree != NULL)
+        {
+            var_in = *tree->GetVarLeaves().begin();
+            tree = ParsingExprList::GetExpressionTree(var_in);
+        }
     }
 
     std::string var; 

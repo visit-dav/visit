@@ -604,6 +604,66 @@ SumFloatAcrossAllProcessors(float &value)
 
 
 // ****************************************************************************
+//  Function: UnifyMinimumFloatArrayAcrossAllProcessors
+//
+//  Purpose:
+//      Finds the minimum for each element of an array of floats 
+//      across all processors.
+//
+//  Arguments:
+//      inArray    The input.
+//      outArray   The minimums of the inArrays across all processors.
+//      nArray     The number of entries in inArray/outArray.
+//
+//  Programmer:    Hank Childs
+//  Creation:      February 20, 2006
+//
+// ****************************************************************************
+
+void
+UnifyMinimumFloatArrayAcrossAllProcessors(float *inArray, float *outArray, 
+                                          int nArray)
+{
+#ifdef PARALLEL
+    MPI_Allreduce(inArray, outArray, nArray, MPI_FLOAT, MPI_MIN,
+                  MPI_COMM_WORLD);
+#else
+    memcpy(outArray, inArray, nArray*sizeof(float));
+#endif
+}
+
+
+// ****************************************************************************
+//  Function: UnifyMaximumFloatArrayAcrossAllProcessors
+//
+//  Purpose:
+//      Finds the maximum for each element of an array of floats 
+//      across all processors.
+//
+//  Arguments:
+//      inArray    The input.
+//      outArray   The maximums of the inArrays across all processors.
+//      nArray     The number of entries in inArray/outArray.
+//
+//  Programmer:    Hank Childs
+//  Creation:      February 20, 2006
+//
+// ****************************************************************************
+
+void
+UnifyMaximumFloatArrayAcrossAllProcessors(float *inArray, float *outArray, 
+                                          int nArray)
+{
+#ifdef PARALLEL
+    MPI_Allreduce(inArray, outArray, nArray, MPI_FLOAT, MPI_MAX,
+                  MPI_COMM_WORLD);
+#else
+    memcpy(outArray, inArray, nArray*sizeof(float));
+#endif
+}
+
+
+// ****************************************************************************
 //  Function: SumIntAcrossAllProcessors
 //
 //  Purpose:

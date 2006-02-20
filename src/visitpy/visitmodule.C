@@ -47,6 +47,7 @@
 #include <ClientInformation.h>
 #include <ClientInformationList.h>
 #include <ColorTableAttributes.h>
+#include <ConstructDDFAttributes.h>
 #include <DatabaseCorrelationList.h>
 #include <DatabaseCorrelation.h>
 #include <DBPluginInfoAttributes.h>
@@ -82,6 +83,7 @@
 // Extension include files.
 //
 #include <PyAnnotationAttributes.h>
+#include <PyConstructDDFAttributes.h>
 #include <PyExportDBAttributes.h>
 #include <PyDatabaseCorrelation.h>
 #include <PyGlobalAttributes.h>
@@ -4710,6 +4712,51 @@ visit_ExportDatabase(PyObject *self, PyObject *args)
         *(viewer->GetExportDBAttributes()) = *va;
         viewer->GetExportDBAttributes()->Notify();
         viewer->ExportDatabase();
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_ConstructDDF
+//
+// Purpose:
+//     Tells the viewer to construct a DDF.
+//
+// Notes:      
+//
+// Programmer: Hank Childs
+// Creation:   Mon Feb 13 21:18:22 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ConstructDDF(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *ddf_info = NULL;
+    // Try and get the view pointer.
+    if(!PyArg_ParseTuple(args,"O",&ddf_info))
+    {
+        VisItErrorFunc("ConstructDDF: Cannot parse object!");
+        return NULL;
+    }
+    if(!PyConstructDDFAttributes_Check(ddf_info))
+    {
+        VisItErrorFunc("Argument is not a ConstructDDFAttributes object");
+        return NULL;
+    }
+
+    MUTEX_LOCK();
+        ConstructDDFAttributes *va = PyConstructDDFAttributes_FromPyObject(ddf_info);
+
+        // Copy the object into the constructDDF attributes.
+        *(viewer->GetConstructDDFAttributes()) = *va;
+        viewer->GetConstructDDFAttributes()->Notify();
+        viewer->ConstructDDF();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -10584,6 +10631,7 @@ AddDefaultMethods()
     AddMethod("CloseComputeEngine", visit_CloseComputeEngine, 
                                                  visit_CloseComputeEngine_doc);
     AddMethod("CloseDatabase", visit_CloseDatabase, visit_CloseDatabase_doc);
+    AddMethod("ConstructDDF", visit_ConstructDDF, visit_ConstructDDF_doc);
     AddMethod("CopyAnnotationsToWindow", visit_CopyAnnotationsToWindow,
                                                                visit_Copy_doc);
     AddMethod("CopyLightingToWindow", visit_CopyLightingToWindow,
@@ -10934,6 +10982,10 @@ AddDefaultMethods()
 //
 //   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //   Added mesh management attributes
+//
+//   Hank Childs, Mon Feb 13 21:22:43 PST 2006
+//   Added ConstructDDFAttributes.
+//
 // ****************************************************************************
 
 static void
@@ -10943,6 +10995,7 @@ AddExtensions()
     PyMethodDef *methods;
 
     ADD_EXTENSION(PyAnnotationAttributes_GetMethodTable);
+    ADD_EXTENSION(PyConstructDDFAttributes_GetMethodTable);
     ADD_EXTENSION(PyExportDBAttributes_GetMethodTable);
     ADD_EXTENSION(PyGlobalAttributes_GetMethodTable);
     ADD_EXTENSION(PyHostProfile_GetMethodTable);
@@ -11005,12 +11058,16 @@ AddExtensions()
 //   I changed the 2nd argument in the StartUp function calls so it passes
 //   a logging callback function instead of a pointer to a log file.
 //
+//   Hank Childs, Mon Feb 13 21:22:43 PST 2006
+//   Added PyConstructDDFAttributes.
+//
 // ****************************************************************************
 
 static void
 InitializeExtensions()
 {
     PyAnnotationAttributes_StartUp(viewer->GetAnnotationAttributes(), 0);
+    PyConstructDDFAttributes_StartUp(viewer->GetConstructDDFAttributes(), 0);
     PyExportDBAttributes_StartUp(viewer->GetExportDBAttributes(), 0);
     PyGlobalAttributes_StartUp(viewer->GetGlobalAttributes(), 0);
     PyHostProfile_StartUp(0, 0);

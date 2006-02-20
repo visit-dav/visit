@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+  <Attribute name="ConstructDDFAttributes" purpose="Attributes for constructing DDFs" persistent="true" exportAPI="" exportInclude="">
+    <Enum name="BinningScheme">
+      Uniform
+      Unknown
+    </Enum>
+    <Enum name="StatisticalOperator">
+      Average
+      Minimum
+      Maximum
+      StandardDeviation
+      Variance
+      Percentile
+      Median
+      InterquartileRange
+      Mode
+      Sum
+    </Enum>
+    <Field name="ddfName" label="ddfName" type="string">
+    </Field>
+    <Field name="varnames" label="varnames" type="stringVector">
+    </Field>
+    <Field name="ranges" label="ranges" type="doubleVector">
+    </Field>
+    <Field name="codomainName" label="codomainName" type="string">
+    </Field>
+    <Field name="statisticalOperator" label="Statistical Operator" type="enum" subtype="StatisticalOperator">
+      Average
+    </Field>
+    <Field name="percentile" label="Percentile" type="double">
+      90.000000
+    </Field>
+    <Field name="undefinedValue" label="Undefined Value" type="double">
+      0.000000
+    </Field>
+    <Field name="binningScheme" label="Binning Scheme" type="enum" subtype="BinningScheme">
+      Uniform
+    </Field>
+    <Field name="numSamples" label="numSamples" type="intVector">
+    </Field>
+  </Attribute>

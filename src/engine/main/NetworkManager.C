@@ -10,6 +10,7 @@
 #include <DebugStream.h>
 #include <avtDatabaseFactory.h>
 #include <LoadBalancer.h>
+#include <ConstructDDFAttributes.h>
 #include <DBOptionsAttributes.h>
 #include <ExportDBAttributes.h>
 #include <MaterialAttributes.h>
@@ -26,6 +27,7 @@
 #include <PickAttributes.h>
 #include <VisualCueInfo.h>
 #include <VisualCueList.h>
+#include <avtApplyDDFExpression.h>
 #include <avtCallback.h>
 #include <avtColorTables.h>
 #include <avtExtents.h>
@@ -51,6 +53,8 @@
 #include <avtZonePickQuery.h>
 #include <avtCurvePickQuery.h>
 #include <avtSoftwareShader.h>
+#include <avtDDF.h>
+#include <avtDDFConstructor.h>
 #include <avtSourceFromAVTImage.h>
 #include <avtSourceFromImage.h>
 #include <avtSourceFromNullData.h>
@@ -87,6 +91,7 @@ static void   DumpImage(avtDataObject_p, const char *fmt, bool allprocs=true);
 static void   DumpImage(avtImage_p, const char *fmt, bool allprocs=true);
 static ref_ptr<avtDatabase> GetDatabase(void *, const std::string &,
                                         int, const char *);
+static avtDDF *GetDDFCallbackBridge(void *arg, const char *name);
 
 //
 // Static data members of the NetworkManager class.
@@ -137,6 +142,9 @@ void                      *NetworkManager::progressCallbackArgs = NULL;
 //    Hank Childs, Fri Aug 26 15:44:48 PDT 2005
 //    Register a callback to get databases.
 //
+//    Hank Childs, Sat Feb 18 11:31:23 PST 2006
+//    Added a call back for the apply ddf expression.
+//
 // ****************************************************************************
 NetworkManager::NetworkManager(void) : virtualDatabases()
 {
@@ -152,6 +160,9 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
     NewVisWindow(0);
 
     avtCallback::RegisterGetDatabaseCallback(GetDatabase, this);
+    avtApplyDDFExpression::RegisterGetDDFCallback(GetDDFCallbackBridge, this);
+    avtExpressionEvaluatorFilter::RegisterGetDDFCallback(
+                                                  GetDDFCallbackBridge, this);
 }
 
 // ****************************************************************************
@@ -171,6 +182,9 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added code to delete VisWindow objects
 //
+//    Hank Childs, Mon Feb 13 23:14:23 PST 2006
+//    Delete the DDFs.
+//
 // ****************************************************************************
 NetworkManager::~NetworkManager(void)
 {
@@ -181,6 +195,9 @@ NetworkManager::~NetworkManager(void)
     std::map<int, EngineVisWinInfo>::iterator it;
     for (it = viswinMap.begin(); it != viswinMap.end(); it++)
         delete it->second.viswin;
+
+    for (int d = 0 ; d < ddf.size() ; d++)
+        delete ddf[d];
 }
 
 // ****************************************************************************
@@ -3277,6 +3294,106 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
 }
 
 // ****************************************************************************
+//  Method:  NetworkManager::ConstructDDF
+//
+//  Purpose:
+//      Constructs a derived data function.
+//
+//  Arguments:
+//    id         The network to use.
+//    atts       The ConstructDDF attributes.
+//
+//  Programmer:  Hank Childs
+//  Creation:    February 13, 2006
+//
+// ****************************************************************************
+
+#include <vtkDataSetWriter.h>
+#include <vtkDataSet.h>
+
+void
+NetworkManager::ConstructDDF(int id, ConstructDDFAttributes *atts)
+{
+    if (id >= networkCache.size())
+    {
+        debug1 << "Internal error:  asked to use network ID (" << id 
+               << ") >= num saved networks ("
+               << networkCache.size() << ")" << endl;
+        EXCEPTION0(ImproperUseException);
+    }
+ 
+    if (networkCache[id] == NULL)
+    {
+        debug1 << "Asked to construct a DDF from a network that has already "
+               << "been cleared." << endl;
+        EXCEPTION0(ImproperUseException);
+    }
+
+    if (id != networkCache[id]->GetNetID())
+    {
+        debug1 << "Internal error: network at position[" << id << "] "
+               << "does not have same id (" << networkCache[id]->GetNetID()
+               << ")" << endl;
+        EXCEPTION0(ImproperUseException);
+    }
+
+    avtDataObject_p dob = 
+        networkCache[id]->GetPlot()->GetIntermediateDataObject();
+
+    if (*dob == NULL)
+    {
+        debug1 << "Could not find a valid data set to construct a DDF from"
+               << endl;
+        EXCEPTION0(NoInputException);
+    }
+
+    avtDDFConstructor ddfc;
+    ddfc.SetInput(dob);
+    avtPipelineSpecification_p spec = networkCache[id]->GetPipelineSpec();
+    loadBalancer->ResetPipeline(spec->GetPipelineIndex());
+    avtDDF *d = ddfc.ConstructDDF(atts, spec);
+    // This should be cleaned up at some point.
+    if (d != NULL)
+    {
+        vtkDataSet *g = d->CreateGrid();
+        vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
+        char str[1024];
+        sprintf(str, "%s.vtk", atts->GetDdfName().c_str());
+        wrtr->SetFileName(str);
+        wrtr->SetInput(g);
+        wrtr->Write();
+        g->Delete();
+        ddf.push_back(d);
+        ddf_names.push_back(atts->GetDdfName());
+    }
+}
+
+
+// ****************************************************************************
+//  Method: NetworkManager::GetDDF
+//
+//  Purpose:
+//      Gets a DDF.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 18, 2006
+//
+// ****************************************************************************
+
+avtDDF *
+NetworkManager::GetDDF(const char *name)
+{
+    for (int i = 0 ; i < ddf_names.size() ; i++)
+    {
+        if (ddf_names[i] == name)
+            return ddf[i];
+    }
+
+    return NULL;
+}
+
+
+// ****************************************************************************
 //  Method:  NetworkManager::ExportDatabase
 //
 //  Purpose:
@@ -3805,6 +3922,25 @@ GetDatabase(void *nm, const std::string &filename, int time,const char *format)
     NetworkManager *nm2 = (NetworkManager *) nm;
     NetnodeDB *db = nm2->GetDBFromCache(filename, time, format);
     return db->GetDB();
+}
+
+
+// ****************************************************************************
+//  Function: GetDDFCallbackBridge
+//
+//  Purpose:
+//      The bridge that can go to the network manager and ask for a DDF.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 18, 2006
+//
+// ****************************************************************************
+
+static avtDDF *
+GetDDFCallbackBridge(void *arg, const char *name)
+{
+    NetworkManager *nm = (NetworkManager *) arg;
+    return nm->GetDDF(name);
 }
 
 

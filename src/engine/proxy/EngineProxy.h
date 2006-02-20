@@ -13,6 +13,7 @@
 #include <ApplyOperatorRPC.h>
 #include <ClearCacheRPC.h>
 #include <CloneNetworkRPC.h>
+#include <ConstructDDFRPC.h>
 #include <DefineVirtualDatabaseRPC.h>
 #include <ExportDatabaseRPC.h>
 #include <MakePlotRPC.h>
@@ -38,6 +39,7 @@
 #include <vector>
 
 class StatusAttributes;
+class ConstructDDFAttributes;
 class ExportDBAttributes;
 
 // ****************************************************************************
@@ -321,6 +323,7 @@ public:
                                    const QueryAttributes *, 
                                    QueryAttributes &);
     void                     ExportDatabase(int, const ExportDBAttributes *);
+    void                     ConstructDDF(int, const ConstructDDFAttributes *);
 
     void                     ReleaseData(const int);
     void                     CloneNetwork(const int,
@@ -366,6 +369,7 @@ private:
     ProcInfoRPC              procInfoRPC;
     SimulationCommandRPC     simulationCommandRPC;
     ExportDatabaseRPC        exportDatabaseRPC;
+    ConstructDDFRPC          constructDDFRPC;
 
     // For indicating status.
     StatusAttributes        *statusAtts;

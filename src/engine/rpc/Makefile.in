@@ -120,6 +120,9 @@
 #    Hank Childs, Thu May 26 11:42:40 PDT 2005
 #    Added ExportDatabaseRPC.
 #
+#    Hank Childs, Mon Feb 13 21:59:53 PST 2006
+#    Added ConstructDDFRPC.
+#
 ###############################################################################
 
 ##
@@ -138,6 +141,7 @@ SRC= \
     ApplyOperatorRPC.C \
     ClearCacheRPC.C \
     CloneNetworkRPC.C \
+    ConstructDDFRPC.C \
     DefineVirtualDatabaseRPC.C \
     ExecuteRPC.C \
     ExportDatabaseRPC.C \

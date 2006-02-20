@@ -163,6 +163,7 @@
       MoveWindowRPC
       MoveAndResizeWindowRPC
       SetStateLoggingRPC
+      ConstructDDFRPC
       MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">

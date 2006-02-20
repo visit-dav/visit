@@ -26,6 +26,7 @@
 #include <ApplyOperatorRPC.h>
 #include <ClearCacheRPC.h>
 #include <CloneNetworkRPC.h>
+#include <ConstructDDFRPC.h>
 #include <DefineVirtualDatabaseRPC.h>
 #include <ExecuteRPC.h>
 #include <ExportDatabaseRPC.h>
@@ -1369,6 +1370,49 @@ RPCExecutor<SimulationCommandRPC>::Execute(SimulationCommandRPC *rpc)
         rpc->SendError(e.Message(), e.GetExceptionType());
     }
     ENDTRY
+}
+
+// ****************************************************************************
+//  Method:  RPCExecutor<ConstructDDFRPC>::Execute
+//
+//  Purpose:
+//      Constructs a DDF.
+//
+//  Programmer:  Hank Childs
+//  Creation:    February 13, 2006
+//
+// ****************************************************************************
+template<>
+void
+RPCExecutor<ConstructDDFRPC>::Execute(ConstructDDFRPC *rpc)
+{
+    Engine *engine = Engine::Instance();
+    NetworkManager *netmgr = engine->GetNetMgr();
+
+    debug2 << "Executing ConstructDDFRPC." << endl;
+
+    avtDataObjectSource::RegisterProgressCallback(NULL, NULL);
+    LoadBalancer::RegisterProgressCallback(NULL, NULL);
+    avtTerminatingSource::RegisterInitializeProgressCallback(NULL, NULL);
+    avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, (void*)rpc);
+    TRY
+    {
+        netmgr->ConstructDDF(rpc->GetID(), rpc->GetConstructDDFAtts());
+        rpc->SendReply();
+    }
+    CATCH2(VisItException, e)
+    {
+        rpc->SendError(e.Message(), e.GetExceptionType());
+    }
+    ENDTRY
+
+    avtDataObjectSource::RegisterProgressCallback(
+                               Engine::EngineUpdateProgressCallback, NULL);
+    LoadBalancer::RegisterProgressCallback(
+                               Engine::EngineUpdateProgressCallback, NULL);
+    avtTerminatingSource::RegisterInitializeProgressCallback(
+                               Engine::EngineInitializeProgressCallback, NULL);
+    avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, NULL);
 }
 
 // ****************************************************************************

@@ -149,6 +149,9 @@ EngineProxy::~EngineProxy()
 //    Hank Childs, Thu May 26 11:42:40 PDT 2005
 //    Added exportDatabaseRPC.
 //
+//    Hank Childs, Mon Feb 13 22:21:42 PST 2006
+//    Add constructDDFRPC.
+//
 // ****************************************************************************
 void
 EngineProxy::SetupComponentRPCs()
@@ -176,6 +179,7 @@ EngineProxy::SetupComponentRPCs()
     xfer.Add(&procInfoRPC);
     xfer.Add(&simulationCommandRPC);
     xfer.Add(&exportDatabaseRPC);
+    xfer.Add(&constructDDFRPC);
 
     //
     // Add other state objects to the transfer object
@@ -1221,7 +1225,6 @@ void
 EngineProxy::GetProcInfo(ProcessAttributes &retAtts)
 {
     procInfoRPC();
-    cerr << "In EngineProxy::GetProcInfo" << endl;
 
     // Get the reply and update the progress bar
     while (procInfoRPC.GetStatus() == VisItRPC::incomplete ||
@@ -1296,6 +1299,33 @@ EngineProxy::CloneNetwork(const int id, const QueryOverTimeAttributes *qa)
     {
         RECONSTITUTE_EXCEPTION(cloneNetworkRPC.GetExceptionType(),
                                cloneNetworkRPC.Message());
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  EngineProxy::ConstructDDF
+//
+//  Purpose:
+//      Have the engine construct a derived data function.
+//
+//  Arguments:
+//    id         the id of the network to be cloned.
+//    atts       the attributes to construct the DDF
+//
+//  Programmer:  Hank Childs
+//  Creation:    February 13, 2006
+//
+// ****************************************************************************
+
+void
+EngineProxy::ConstructDDF(const int id, const ConstructDDFAttributes *atts)
+{
+    constructDDFRPC(id, atts);
+    if (constructDDFRPC.GetStatus() == VisItRPC::error)
+    {
+        RECONSTITUTE_EXCEPTION(constructDDFRPC.GetExceptionType(),
+                               constructDDFRPC.Message());
     }
 }
 

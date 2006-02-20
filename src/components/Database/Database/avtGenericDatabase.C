@@ -1348,6 +1348,11 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Replaced data type args with data specification 
+//
+//    Hank Childs, Sun Feb 19 10:30:11 PST 2006
+//    If something goes wrong during expression calculation, then some of
+//    the assumptions in this routine are wrong.  Fix them so we don't crash.
+//
 // ****************************************************************************
 
 void
@@ -1365,7 +1370,8 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
     {
         const char *varName = *(vars2nd[i]);
         avtDatabaseMetaData *md = GetMetaData(ts);
-        avtVarType vt = md->DetermineVarType(varName);
+
+        avtVarType vt = md->DetermineVarType(varName, false);
 
         //
         // They asked for the mesh as a secondary variable.  Just ignore this
