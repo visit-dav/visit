@@ -2218,6 +2218,10 @@ ViewerEngineManager::StartPick(const EngineKey &ek, const bool forZones,
 //
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added winID
+//
+//    Hank Childs, Mon Feb 20 16:40:37 PST 2006
+//    Do not launch an engine just to set the window annotation attributes.
+//
 // ****************************************************************************
 
 bool
@@ -2232,6 +2236,15 @@ ViewerEngineManager::SetWinAnnotAtts(const EngineKey &ek,
                                      const string ctName,
                                      const int winID)
 {
+    //
+    // It doesn't really make sense to launch an engine so we can tell it what
+    // the annotation attributes are.
+    //
+    if (!EngineExists(ek))
+    {
+        return false;
+    }
+
     ENGINE_PROXY_RPC_BEGIN("SetWinAnnotAtts");
     engine->SetWinAnnotAtts(wa,aa,ao,extstr,visCues,frameAndState,viewExtents,
         ctName, winID);
