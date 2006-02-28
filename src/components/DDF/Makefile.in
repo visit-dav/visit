@@ -34,6 +34,9 @@
 #    Hank Childs, Sun Feb 12 14:14:09 PST 2006
 #    Created.
 #
+#    Hank Childs, Sat Feb 25 14:05:47 PST 2006
+#    Added avtR2Fsum, avtR2Fstddev, avtR2Fvariance.
+#
 ##############################################################################
 
 ##
@@ -47,7 +50,7 @@
 ##
 SRC=avtBinningScheme.C avtDDF.C avtDDFConstructor.C avtDDFFunctionInfo.C \
     avtR2Faverage.C avtR2Fmaximum.C avtR2Fminimum.C avtR2Foperator.C \
-    avtUniformBinningScheme.C
+    avtR2Fstddev.C avtR2Fsum.C avtR2Fvariance.C avtUniformBinningScheme.C
 
 CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 

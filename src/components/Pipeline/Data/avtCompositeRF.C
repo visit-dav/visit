@@ -9,6 +9,7 @@
 #include <avtGradients.h>
 #include <avtLightingModel.h>
 #include <avtOpacityMap.h>
+#include <avtPointExtractor.h>
 #include <avtRay.h>
 
 
@@ -28,6 +29,9 @@
 //    Hank Childs, Sun Dec  2 15:55:28 PST 2001
 //    Add support for secondary variables.
 //
+//    Hank Childs, Sat Jan  7 17:50:22 PST 2006
+//    Add support for kernel based sampling.
+//
 // ****************************************************************************
 
 avtCompositeRF::avtCompositeRF(avtLightingModel *l, avtOpacityMap *m,
@@ -40,6 +44,7 @@ avtCompositeRF::avtCompositeRF(avtLightingModel *l, avtOpacityMap *m,
     secondaryTable = secondaryMap->GetTable();
     colorVariableIndex   = 0;
     opacityVariableIndex = 0;
+    weightVariableIndex  = -1;
 
     int entries = secondaryMap->GetNumberOfTableEntries();
     float *opacities = new float[entries];
@@ -131,6 +136,16 @@ avtCompositeRF::GetRayValue(const avtRay *ray, const avtGradients *gradients,
     // For right now, only work with one variable.
     const float  *sample      = ray->sample[colorVariableIndex];
     const float  *sample2     = ray->sample[opacityVariableIndex];
+    const float  *weight      = NULL;
+    float         min_weight  = 0.;
+    float         min_weight_denom = 0.;
+    if (weightVariableIndex >= 0)
+    {
+        weight = ray->sample[weightVariableIndex];
+        min_weight = avtPointExtractor::GetMinimumWeightCutoff();
+        if (min_weight > 0.)
+            min_weight_denom = 1./min_weight;
+    }
 
     int maxSample = IndexOfDepth(depth, numSamples);
 
@@ -155,8 +170,14 @@ avtCompositeRF::GetRayValue(const avtRay *ray, const avtGradients *gradients,
             //
             if (opac.A > 0)
             {
+                double tableOpac = opac.A;
+                if (weight != NULL)
+                {
+                    if (weight[z] < min_weight)
+                        tableOpac *= weight[z]*min_weight_denom;
+                }
                 double numberOfSamplesToReachFullOpacity = 1;
-                double samplesOpacity = opac.A / 
+                double samplesOpacity = tableOpac / 
                                              numberOfSamplesToReachFullOpacity;
                 samplesOpacity = samplesOpacity*samplesOpacity;
 

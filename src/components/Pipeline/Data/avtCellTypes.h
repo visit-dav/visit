@@ -15,6 +15,9 @@
 //    Hank Childs, Tue Nov 13 15:18:18 PST 2001
 //    Allowed for cells to have multiple variables.
 //
+//    Hank Childs, Tue Jan 24 16:25:58 PST 2006
+//    Added avtPoint.
+//
 // ****************************************************************************
 
 typedef struct
@@ -55,6 +58,14 @@ typedef struct
     float  val[6][AVT_VARIABLE_LIMIT];
     int    nVars;
 }  avtWedge;
+
+
+typedef struct
+{
+    float bbox[6];
+    float val[AVT_VARIABLE_LIMIT];
+    int   nVars;
+}  avtPoint;
 
 
 #endif

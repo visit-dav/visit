@@ -23,6 +23,7 @@ class  vtkWedge;
 
 class  avtHexahedronExtractor;
 class  avtMassVoxelExtractor;
+class  avtPointExtractor;
 class  avtPyramidExtractor;
 class  avtTetrahedronExtractor;
 class  avtWedgeExtractor;
@@ -61,6 +62,15 @@ class  avtRayFunction;
 //    Hank Childs, Sat Jan 29 13:32:54 PST 2005
 //    Added 2D extractors.
 //
+//    Hank Childs, Sun Dec  4 19:12:42 PST 2005
+//    Added support for kernel-based sampling.
+//
+//    Hank Childs, Sun Jan  1 10:56:19 PST 2006
+//    Added RasterBasedSample and KernelBasedSample.
+//
+//    Hank Childs, Tue Feb 28 08:25:33 PST 2006
+//    Added PreExecute.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtSamplePointExtractor 
@@ -84,6 +94,7 @@ class AVTFILTERS_API avtSamplePointExtractor
     void                      StopTiling(void) { shouldDoTiling = false; };
 
     void                      Set3DMode(bool m) { modeIs3D = m; };
+    void                      SetKernelBasedSampling(bool);
 
   protected:
     int                       width, height, depth;
@@ -93,9 +104,12 @@ class AVTFILTERS_API avtSamplePointExtractor
     int                       width_min, width_max;
     int                       height_min, height_max;
     bool                      modeIs3D;
+    bool                      kernelBasedSampling;
+    double                    point_radius;
 
     avtHexahedronExtractor   *hexExtractor;
     avtMassVoxelExtractor    *massVoxelExtractor;
+    avtPointExtractor        *pointExtractor;
     avtPyramidExtractor      *pyramidExtractor;
     avtTetrahedronExtractor  *tetExtractor;
     avtWedgeExtractor        *wedgeExtractor;
@@ -108,6 +122,7 @@ class AVTFILTERS_API avtSamplePointExtractor
     double                    aspect;
 
     virtual void              Execute(void);
+    virtual void              PreExecute(void);
     virtual void              ExecuteTree(avtDataTree_p);
     void                      SetUpExtractors(void);
 
@@ -119,6 +134,9 @@ class AVTFILTERS_API avtSamplePointExtractor
     inline void               ExtractTriangle(vtkTriangle *, vtkDataSet *,int);
     inline void               ExtractQuad(vtkQuad *, vtkDataSet *, int);
     inline void               ExtractPixel(vtkPixel *, vtkDataSet *, int);
+
+    void                      KernelBasedSample(vtkDataSet *);
+    void                      RasterBasedSample(vtkDataSet *);
 };
 
 

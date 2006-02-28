@@ -12,6 +12,7 @@ class QGroupBox;
 class QLabel;
 class QLineEdit;
 class QPushButton;
+class QRadioButton;
 class QSlider;
 class QVBoxLayout;
 class QvisColorSelectionWidget;
@@ -61,6 +62,9 @@ class QvisVariableButton;
 //
 //    Kathleen Bonnell, Thu Mar  3 11:01:22 PST 2005 
 //    Added skewLineEdit and scalingButtons. 
+//
+//    Hank Childs, Sun Jan  8 08:14:11 PST 2006
+//    Added support for kernel based sampling.
 //
 // ****************************************************************************
 
@@ -117,6 +121,7 @@ private slots:
     void samplesPerRayProcessText();
     void rendererTypeChanged(int val);
     void gradientTypeChanged(int val);
+    void samplingTypeChanged(int val);
     void num3DSlicesProcessText();
     void processSkewText();
     void scaleClicked(int scale);
@@ -158,6 +163,9 @@ private:
     QCheckBox                *smoothDataToggle;
     QComboBox                *rendererTypesComboBox;
     QButtonGroup             *gradientButtonGroup;
+    QButtonGroup             *samplingButtonGroup;
+    QRadioButton             *rasterizationButton;
+    QRadioButton             *kernelButton;
     QLineEdit                *resampleTarget;
     QSlider                  *resampleTargetSlider;
     QLineEdit                *num3DSlices;

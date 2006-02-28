@@ -8,6 +8,7 @@
 
 
 avtSamplePointArbitrator   *avtRay::arbitrator = NULL;
+bool                        avtRay::kernelBasedSampling = false;
 
 
 // ****************************************************************************
@@ -146,6 +147,24 @@ avtRay::SetArbitrator(avtSamplePointArbitrator *arb)
 
 
 // ****************************************************************************
+//  Method: avtRay::SetKernelBasedSampling
+//
+//  Purpose:
+//      Tells the ray whether or not we are doing kernel based sampling.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 1, 2006
+//
+// ****************************************************************************
+
+void
+avtRay::SetKernelBasedSampling(bool val)
+{
+    kernelBasedSampling = val;
+}
+
+
+// ****************************************************************************
 //  Method: avtRay::GetFirstSampleOfLongestRun
 //
 //  Purpose:
@@ -250,6 +269,40 @@ avtRay::GetLastSampleOfLongestRun(void) const
     }
 
     return -1;
+}
+
+
+// ****************************************************************************
+//  Method: avtRay::Finalize
+//
+//  Purpose:
+//      Tells the ray that all of the samples have been set and that it should
+//      prepare itself for queries from ray functions.  This is only needed at
+//      this time for kernel based sampling.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 1, 2006
+//
+// ****************************************************************************
+
+void
+avtRay::Finalize(void)
+{
+    if (kernelBasedSampling)
+    {
+        for (int z = 0 ; z < numSamples ; z++)
+        {
+             if (!validSample[z])
+                 continue;
+             if (sample[numVariables-1][z] <= 0.)
+                 continue;
+             float denom = 1. / sample[numVariables-1][z];
+             for (int i = 0 ; i < numVariables-1 ; i++)
+             {
+                 sample[i][z] *= denom;
+             }
+        }
+    }
 }
 
 

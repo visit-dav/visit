@@ -33,6 +33,10 @@
         Log10
         Skew
       </Enum>
+      <Enum name="SamplingType">
+        KernelBased
+        Rasterization
+      </Enum>
       <Field name="legendFlag" label="legendFlag" type="bool">
         true
       </Field>
@@ -101,6 +105,9 @@
       </Field>
       <Field name="skewFactor" label="skewFactor" type="double" enabler="scaling:Skew">
         1.000000
+      </Field>
+      <Field name="sampling" label="Sampling Type" type="enum" subtype="SamplingType" enabler="rendererType:RayCasting">
+        Rasterization
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>

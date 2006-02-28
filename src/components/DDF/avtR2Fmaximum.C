@@ -15,9 +15,14 @@
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Feb 25 15:22:19 PST 2006
+//    Add undefinedVal.
+//
 // ****************************************************************************
 
-avtR2Fmaximum::avtR2Fmaximum(int nb) : avtR2Foperator(nb)
+avtR2Fmaximum::avtR2Fmaximum(int nb, double uv) : avtR2Foperator(nb, uv)
 {
     max = new float[nb];
     for (int i = 0 ; i < nb ; i++)
@@ -73,6 +78,11 @@ avtR2Fmaximum::AddData(int b, float v)
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Feb 25 15:28:11 PST 2006
+//    Use the undefined val.
+//
 // ****************************************************************************
 
 float *
@@ -80,6 +90,8 @@ avtR2Fmaximum::FinalizePass(int pass)
 {
     float *rv = new float[nBins];
     UnifyMaximumFloatArrayAcrossAllProcessors(max, rv, nBins);
+    for (int i = 0 ; i < nBins ; i++)
+        rv[i] = (rv[i] == -FLT_MAX ? undefinedVal : rv[i]);
     return rv;
 }
 

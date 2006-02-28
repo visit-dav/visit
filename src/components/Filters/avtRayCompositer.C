@@ -391,6 +391,9 @@ avtRayCompositer::DrawRadialGradient(unsigned char *data, int w, int h)
 //    Hank Childs, Thu Jan  3 09:50:29 PST 2002
 //    Account for case where our partition contains nothing.
 //
+//    Hank Childs, Wed Jan 25 12:23:59 PST 2006
+//    Add error checking.
+//
 // ****************************************************************************
 
 void
@@ -398,6 +401,18 @@ avtRayCompositer::Execute(void)
 {
     int  i, j;
     avtVolume *volume = GetTypedInput()->GetVolume();
+    if (volume == NULL)
+    {
+        // This comes up in the following scenario:
+        // An internal error occurs in the sampling phase.  An exception is
+        // thrown.  That exception causes avtSamplePoints::SetVolume to be
+        // not called.  When its not called, its data member "volume" is
+        // not initialized.  So we get a NULL here.
+        //
+        // So: in summary, we only get into this situation if there was an
+        // error before this module was called.
+        EXCEPTION0(ImproperUseException);
+    }
 
     //
     // Determine the size of the screen.

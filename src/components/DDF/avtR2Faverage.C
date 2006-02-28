@@ -13,9 +13,14 @@
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Feb 25 15:22:19 PST 2006
+//    Add undefinedVal.
+//
 // ****************************************************************************
 
-avtR2Faverage::avtR2Faverage(int nb) : avtR2Foperator(nb)
+avtR2Faverage::avtR2Faverage(int nb, double uv) : avtR2Foperator(nb, uv)
 {
     running_total = new double[nb];
     count         = new int[nb];
@@ -76,6 +81,11 @@ avtR2Faverage::AddData(int b, float v)
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Feb 25 15:22:19 PST 2006
+//    Use the "undefinedVal".
+//
 // ****************************************************************************
 
 float *
@@ -91,7 +101,7 @@ avtR2Faverage::FinalizePass(int pass)
         if (cnt2[i] > 0)
             rv[i] = rt2[i] / cnt2[i];
         else
-            rv[i] = 0.;
+            rv[i] = undefinedVal;
     }
     delete [] rt2;
     delete [] cnt2;

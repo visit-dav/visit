@@ -1,8 +1,8 @@
 // ************************************************************************* //
-//                               avtR2Fminimum.C                             //
+//                                  avtR2Fsum.C                              //
 // ************************************************************************* //
 
-#include <avtR2Fminimum.h>
+#include <avtR2Fsum.h>
 
 #include <float.h>
 
@@ -10,88 +10,75 @@
 
 
 // ****************************************************************************
-//  Method: avtR2Fminimum constructor
+//  Method: avtR2Fsum constructor
 //
 //  Programmer: Hank Childs
-//  Creation:   February 12, 2006
-//
-//  Modifications:
-//
-//    Hank Childs, Sat Feb 25 15:22:19 PST 2006
-//    Add undefinedVal.
+//  Creation:   February 25, 2006
 //
 // ****************************************************************************
 
-avtR2Fminimum::avtR2Fminimum(int nb, double uv) : avtR2Foperator(nb, uv)
+avtR2Fsum::avtR2Fsum(int nb) : avtR2Foperator(nb, 0.)
 {
-    min = new float[nb];
+    sum = new float[nb];
     for (int i = 0 ; i < nb ; i++)
-        min[i] = FLT_MAX;
+        sum[i] = 0.;
 }
 
 
 // ****************************************************************************
-//  Method: avtR2Fminimum destructor
+//  Method: avtR2Fsum destructor
 //
 //  Purpose:
 //      Defines the destructor.  Note: this should not be inlined in the header
 //      because it causes problems for certain compilers.
 //
 //  Programmer: Hank Childs
-//  Creation:   February 12, 2006
+//  Creation:   February 25, 2006
 //
 // ****************************************************************************
 
-avtR2Fminimum::~avtR2Fminimum()
+avtR2Fsum::~avtR2Fsum()
 {
-    delete [] min;
+    delete [] sum;
 }
 
 
 // ****************************************************************************
-//  Method: avtR2Fminimum::AddData
+//  Method: avtR2Fsum::AddData
 //
 //  Purpose:
 //      Adds a single data point to the operator.
 //
 //  Programmer: Hank Childs
-//  Creation:   February 12, 2006
+//  Creation:   February 25, 2006
 //
 // ****************************************************************************
 
 void
-avtR2Fminimum::AddData(int b, float v)
+avtR2Fsum::AddData(int b, float v)
 {
-    if (v < min[b])
-        min[b] = v;
+    sum[b] += v;
 }
 
 
 // ****************************************************************************
-//  Method: avtR2Fminimum::FinalizePass
+//  Method: avtR2Fsum::FinalizePass
 //
 //  Purpose:
-//      Finalizes the current pass.  In the case of "minimum", there is only
-//      one pass.  So calculate the final minimums and return them.  The caller
+//      Finalizes the current pass.  In the case of "sum", there is only
+//      one pass.  So calculate the final sums and return them.  The caller
 //      is responsible for freeing the memory.
 //
 //  Programmer: Hank Childs
-//  Creation:   February 12, 2006
-//
-//  Modifications:
-//
-//    Hank Childs, Sat Feb 25 15:28:11 PST 2006
-//    Use the undefined val.
+//  Creation:   February 25, 2006
 //
 // ****************************************************************************
 
 float *
-avtR2Fminimum::FinalizePass(int pass)
+avtR2Fsum::FinalizePass(int pass)
 {
     float *rv = new float[nBins];
-    UnifyMinimumFloatArrayAcrossAllProcessors(min, rv, nBins);
-    for (int i = 0 ; i < nBins ; i++)
-        rv[i] = (rv[i] == FLT_MAX ? undefinedVal : rv[i]);
+    SumFloatArrayAcrossAllProcessors(sum, rv, nBins);
     return rv;
 }
 

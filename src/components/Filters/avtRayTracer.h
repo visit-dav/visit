@@ -44,6 +44,9 @@ class   avtRayFunction;
 //    Hank Childs, Sun Dec  4 18:00:55 PST 2005
 //    Add method that estimates number of stages.
 //
+//    Hank Childs, Mon Jan 16 11:11:47 PST 2006
+//    Add support for kernel based sampling.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtRayTracer : public avtDatasetToImageFilter
@@ -72,11 +75,15 @@ class AVTFILTERS_API avtRayTracer : public avtDatasetToImageFilter
     int                   GetSamplesPerRay(void)  { return samplesPerRay; };
     const int            *GetScreen(void)         { return screen; };
 
+    void                  SetKernelBasedSampling(bool v)
+                                    { kernelBasedSampling = v; };
+
   protected:
     avtViewInfo           view;
 
     int                   screen[2];
     int                   samplesPerRay;
+    bool                  kernelBasedSampling;
     int                   backgroundMode;
     unsigned char         background[3];
     float                 gradBG1[3];

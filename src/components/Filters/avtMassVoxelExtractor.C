@@ -1214,6 +1214,10 @@ inline int FindIndex(const float &pt, const int &last_hit, const int &n,
 //    Hank Childs, Mon Jul 11 14:01:28 PDT 2005
 //    Fix indexing issue with ghost zones ['5712].
 //
+//    Hank Childs, Mon Feb  6 12:36:51 PST 2006
+//    Fix another issue with ghost zones that only comes up with AMR grids
+//    ['6940].
+//
 // ****************************************************************************
 
 void
@@ -1326,7 +1330,16 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid)
                 {
                     int index = zind*((nX-1)*(nY-1)) + yind*(nX-1) + xind;
                     if (ghosts->GetValue(index) != 0)
+                    {
+                        if (count > 0)
+                        {
+                            avtRay *ray = volume->GetRay(i, j);
+                            ray->SetSamples(firstZ, k, tmpSampleList);
+                        }
+                        firstZ = -1;
+                        count = 0;
                         continue;
+                    }
                 }
 
                 float z_front  = 0.;

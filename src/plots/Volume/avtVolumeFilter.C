@@ -187,6 +187,9 @@ avtVolumeFilter::Execute(void)
 //    Hank Childs, Sat Jan 29 10:37:19 PST 2005
 //    Use opacity map sample arbitrator.
 //
+//    Hank Childs, Sat Jan  7 17:50:22 PST 2006
+//    Use weighting variable for kernel based sampling.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -347,6 +350,11 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     avtCompositeRF rayfoo(lm, &om, om2);
     rayfoo.SetColorVariableIndex(primIndex);
     rayfoo.SetOpacityVariableIndex(opacIndex);
+    if (atts.GetSampling() == VolumeAttributes::KernelBased)
+    {
+        software->SetKernelBasedSampling(true);
+        rayfoo.SetWeightVariableIndex(vl.nvars);
+    }
     
     software->SetRayFunction(&rayfoo);
     software->SetSamplesPerRay(atts.GetSamplesPerRay());

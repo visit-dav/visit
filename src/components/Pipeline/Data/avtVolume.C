@@ -39,6 +39,9 @@
 //    Hank Childs, Tue Feb  5 09:17:12 PST 2002
 //    Be more forgiving of volumes with zero variables.
 //
+//    Hank Childs, Tue Feb 28 08:14:32 PST 2006
+//    Initialize useKernel.
+//
 // ****************************************************************************
 
 avtVolume::avtVolume(int sw, int sh, int sd, int nv)
@@ -71,6 +74,8 @@ avtVolume::avtVolume(int sw, int sh, int sd, int nv)
 
     progressCallback     = NULL;
     progressCallbackArgs = NULL;
+
+    useKernel = false;
 }
 
 
@@ -197,6 +202,9 @@ avtVolume::Restrict(int minw, int maxw, int minh, int maxh)
 //    Hank Childs, Tue Nov 27 10:58:09 PST 2001
 //    Added progress callbacks.
 //
+//    Hank Childs, Sun Jan  1 17:46:21 PST 2006
+//    Added call to avtRay::Finalize for kernel based sampling.
+//
 // ****************************************************************************
 
 void
@@ -243,6 +251,7 @@ avtVolume::GetPixels(avtRayFunction *rayfoo,unsigned char *data,float *zbuffer)
                     //
                     // Get the value of the ray.
                     //
+                    rays[i][j]->Finalize();
                     rayfoo->GetRayValue(rays[i][j], g, rgb, zbuffer[index]);
 
                     //
@@ -990,6 +999,9 @@ avtVolume::ExtractSamples(const char * const *msgs, const int *cnt, int nmsgs)
 //    Add support for get the variables only from our portion of the partitions
 //    subvolume.
 //
+//    Hank Childs, Tue Feb 28 08:14:32 PST 2006
+//    Initialize differently if we are using the kernel method.
+//
 // ****************************************************************************
 
 void
@@ -1038,7 +1050,9 @@ avtVolume::GetVariables(float defaultVal, vtkDataArray **scalars,
             {
                 for (l = 0 ; l < numVariables ; l++)
                 {
-                    scalars[l]->SetTuple1(count, defaultVal);
+                    float val = (useKernel && l == (numVariables-1)
+                                  ? 0. : defaultVal);
+                    scalars[l]->SetTuple1(count, val);
                 }
                 count++;
             }

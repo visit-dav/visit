@@ -11,11 +11,17 @@
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Feb 25 15:24:49 PST 2006
+//    Added undefined value.
+//
 // ****************************************************************************
 
-avtR2Foperator::avtR2Foperator(int nb)
+avtR2Foperator::avtR2Foperator(int nb, double uv)
 {
     nBins = nb;
+    undefinedVal = uv;
 }
 
 

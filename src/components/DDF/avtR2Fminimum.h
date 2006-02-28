@@ -23,12 +23,17 @@
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Feb 25 15:24:49 PST 2006
+//    Add undefined value in constructor.
+//
 // ****************************************************************************
 
 class AVTDDF_API avtR2Fminimum : public avtR2Foperator
 {
   public:
-                           avtR2Fminimum(int);
+                           avtR2Fminimum(int, double);
     virtual               ~avtR2Fminimum();
 
     virtual float         *FinalizePass(int);

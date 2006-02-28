@@ -111,6 +111,10 @@ avtSamplePointCommunicator::SetImagePartition(avtImagePartition *ip)
 //    Hank Childs, Fri Sep 30 14:04:39 PDT 2005
 //    Added support for serial communication (ie pass-thru).
 //
+//    Hank Childs, Jan 27 14:49:36 PST 2006
+//    Tell the cell list not to extract samples that are outside the volume
+//    of interest.
+//
 // ****************************************************************************
 
 void
@@ -221,6 +225,8 @@ avtSamplePointCommunicator::Execute(void)
                                      outMaxHeight);
     int nv = GetTypedInput()->GetNumberOfVariables();
     nv = UnifyMaximumValue(nv);
+    if (GetTypedInput()->GetUseWeightingScheme())
+        GetTypedOutput()->SetUseWeightingScheme(true);
     if (GetTypedOutput()->GetVolume() == NULL)
     {
         GetTypedOutput()->SetNumberOfVariables(nv);
@@ -249,6 +255,7 @@ avtSamplePointCommunicator::Execute(void)
     // Extract the sample points from the new cells.
     //
     avtCellList *outcl = GetTypedOutput()->GetCellList();
+    outcl->Restrict(outMinWidth, outMaxWidth, outMinHeight, outMaxHeight);
     outcl->ExtractCells(in_cells_msgs, in_cells_count, numProcs, outvolume);
     UpdateProgress(currentStage++, nProgressStages);
     delete [] concat4;
