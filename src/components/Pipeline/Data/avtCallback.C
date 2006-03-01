@@ -32,6 +32,9 @@ void                         *avtCallback::updatePlotAttributesCallbackArgs
 GetDatabaseCallback           avtCallback::getDatabaseCallback = NULL;
 void                         *avtCallback::getDatabaseCallbackArgs = NULL; 
 
+bool                          avtCallback::haveRenderingException = false;
+std::string                   avtCallback::renderingExceptionMessage;
+
 
 // ****************************************************************************
 //  Method: avtCallback::RegisterWarningCallback

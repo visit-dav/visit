@@ -5870,24 +5870,39 @@ ViewerPlotList::UpdateWindow(bool immediateUpdate)
     //
     window->SetMergeViewLimits(false);
 
-    if (updatesEnabled)
+    TRY
     {
-        if (immediateUpdate)
+        if (updatesEnabled)
         {
-            //
-            // Enable updates in the window now.
-            //
-            window->EnableUpdates();
-        }
-        else
-        {
-            //
-            // Send a message to the rendering thread to render the window.
-            //
-            window->SendUpdateMessage();
+            if (immediateUpdate)
+            {
+                //
+                // Enable updates in the window now.
+                //
+                window->EnableUpdates();
+            }
+            else
+            {
+                //
+                // Send a message to the rendering thread to render the window.
+                //
+                window->SendUpdateMessage();
+            }
         }
     }
+    CATCH2(VisItException, ve)
+    {
+        Error(ve.Message().c_str());
+ 
+        for (int i = 0; i < nPlots; i++)
+            if (plots[i].plot->IsInRange() &&
+                plots[i].realized == true && plots[i].hidden == false)
+                    plots[i].plot->SetErrorFlag(true);
+        window->ClearPlots();
+    }
+    ENDTRY
 }
+
 
 // ****************************************************************************
 //  Method: ViewerPlotList::UpdateColorTable

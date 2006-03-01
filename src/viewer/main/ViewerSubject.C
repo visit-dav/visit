@@ -1157,6 +1157,10 @@ ViewerSubject::DisconnectClient(ViewerClientConnection *client)
 //    Brad Whitlock, Fri Jul 25 12:24:37 PDT 2003
 //    Moved most of the code elsewhere.
 //
+//    Hank Childs, Tue Feb 28 11:28:37 PST 2006
+//    Catch all exceptions and keep executing.  This will probably lead to
+//    crashes in some cases, but the alternative is to just quit.
+//
 // ****************************************************************************
 
 int
@@ -1166,17 +1170,32 @@ ViewerSubject::Execute()
     // Enter the event processing loop.
     //
     int retval;
-    TRY
+    while (1)
     {
-        retval = mainApp->exec();
+        TRY
+        {
+            retval = mainApp->exec();
+        }
+        CATCH(LostConnectionException)
+        {
+            cerr << "The component that launched VisIt's viewer has terminated "
+                    "abnormally." << endl;
+            retval = -1;
+        }
+        CATCH2(VisItException, ve)
+        {
+            char msg[1024];
+            sprintf(msg, "VisIt has encountered the following error: %s.\n"
+                    "VisIt will attempt to continue processing, but it may "
+                    "behave unreliably.  Please save this error message and "
+                    "give it to a VisIt developer.  In addition, you may want"
+                    " to save your session and re-start.  Of course, this "
+                    "session may still cause VisIt to malfunction.", 
+                     ve.Message().c_str());
+            Error(msg);
+        }
+        ENDTRY
     }
-    CATCH(LostConnectionException)
-    {
-        cerr << "The component that launched VisIt's viewer has terminated "
-                "abnormally." << endl;
-        retval = -1;
-    }
-    ENDTRY
 
     return retval;
 }
