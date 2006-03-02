@@ -1102,6 +1102,9 @@ avtSliceFilter::ReleaseData(void)
 //    Allow normals filter to decide if we need normals; it should be able
 //    to figure out if we have sliced and thus they are not needed.
 //
+//    Kathleen Bonnell, Thu Mar  2 14:26:06 PST 2006 
+//    Set ZonesSplit.
+//
 // ****************************************************************************
 
 void
@@ -1115,6 +1118,7 @@ avtSliceFilter::RefashionDataObjectInfo(void)
         outAtts.SetTopologicalDimension(inAtts.GetTopologicalDimension()-1);
 
     outValidity.InvalidateZones();
+    outValidity.ZonesSplit();
 
     if (atts.GetProject2d())
     {

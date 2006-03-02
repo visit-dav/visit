@@ -354,6 +354,9 @@ avtThreeSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 //    Hank Childs, Mon May 24 08:42:53 PDT 2004
 //    Allow normals to be calculated.
 //
+//    Kathleen Bonnell, Thu Mar  2 14:26:06 PST 2006 
+//    Set ZonesSplit.
+//
 // ****************************************************************************
 
 void
@@ -365,6 +368,7 @@ avtThreeSliceFilter::RefashionDataObjectInfo(void)
    
     outAtts.SetTopologicalDimension(inAtts.GetTopologicalDimension()-1);
     outValidity.InvalidateZones();
+    outValidity.ZonesSplit();
 }
 
 

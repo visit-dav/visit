@@ -9,6 +9,8 @@
 
 #include <avtSummationQuery.h>
 
+class avtCondenseDatasetFilter;
+
 
 // ****************************************************************************
 //  Class: avtVariableSummationQuery
@@ -18,6 +20,10 @@
 //
 //  Programmer: Hank Childs
 //  Creation:   February 3, 2004
+//
+//  Modifications:
+//    Kathleen Bonnell, Thu Mar  2 15:05:17 PST 2006
+//    Add ApplyFilters() and condense filter.
 //
 // ****************************************************************************
 
@@ -31,7 +37,10 @@ class QUERY_API avtVariableSummationQuery : public avtSummationQuery
                              { return "avtVariableSummationQuery"; };
 
   protected:
+    avtCondenseDatasetFilter   *condense;
+
     virtual void               VerifyInput(void);
+    virtual avtDataObject_p    ApplyFilters(avtDataObject_p);
 };
 
 

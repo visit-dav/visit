@@ -60,12 +60,16 @@ avtDataValidity::~avtDataValidity()
 //    Mark C. Miller, Thu Jan 29 16:40:25 PST 2004
 //    Added hasEverOwnedAnyDomain
 //
+//    Kathleen Bonnell, Thu Mar  2 14:04:06 PST 2006
+//    Added originalZonesIntact.
+//
 // ****************************************************************************
 
 void
 avtDataValidity::Reset(void)
 {
     zonesPreserved                    = true;
+    originalZonesIntact               = true;
     dataMetaDataPreserved             = true;
     spatialMetaDataPreserved          = true;
     operationFailed                   = false;
@@ -129,12 +133,16 @@ avtDataValidity::Reset(void)
 //    Mark C. Miller, Thu Jan 29 16:40:25 PST 2004 
 //    Added hasEverOwnedAnyDomain
 //
+//    Kathleen Bonnell, Thu Mar  2 14:04:06 PST 2006
+//    Added originalZonesIntact.
+//
 // ****************************************************************************
 
 void
 avtDataValidity::Copy(const avtDataValidity &di)
 {
     zonesPreserved                    = di.zonesPreserved;
+    originalZonesIntact               = di.originalZonesIntact;
     spatialMetaDataPreserved          = di.spatialMetaDataPreserved;
     dataMetaDataPreserved             = di.dataMetaDataPreserved;
     operationFailed                   = di.operationFailed;
@@ -198,12 +206,16 @@ avtDataValidity::Copy(const avtDataValidity &di)
 //    Mark C. Miller, Thu Jan 29 16:40:25 PST 2004
 //    Added hasEverOwnedAnyDomain 
 //
+//    Kathleen Bonnell, Thu Mar  2 14:04:06 PST 2006
+//    Added originalZonesIntact.
+//
 // ****************************************************************************
 
 void
 avtDataValidity::Merge(const avtDataValidity &di)
 {
     zonesPreserved           = zonesPreserved && di.zonesPreserved;
+    originalZonesIntact      = originalZonesIntact && di.originalZonesIntact;
     spatialMetaDataPreserved = spatialMetaDataPreserved
                                && di.spatialMetaDataPreserved;
     dataMetaDataPreserved    = dataMetaDataPreserved
@@ -298,32 +310,36 @@ avtDataValidity::Merge(const avtDataValidity &di)
 //    Mark C. Miller, Thu Jan 29 16:40:25 PST 2004
 //    Added hasEverOwnedAnyDomain
 //
+//    Kathleen Bonnell, Thu Mar  2 14:04:06 PST 2006
+//    Added originalZonesIntact.
+//
 // ****************************************************************************
 
 void
 avtDataValidity::Write(avtDataObjectString &str,
                        const avtDataObjectWriter *wrtr)
 {
-    const int numVals = 17;
+    const int numVals = 18;
     int  vals[numVals];
 
     vals[0] = (zonesPreserved ? 1 : 0);
-    vals[1] = (dataMetaDataPreserved ? 1 : 0);
-    vals[2] = (spatialMetaDataPreserved ? 1 : 0);
-    vals[3] = (operationFailed ? 1 : 0);
-    vals[4] = (usingAllData ? 1 : 0);
-    vals[5] = (usingAllDomains ? 1 : 0);
-    vals[6] = (isThisDynamic ? 1 : 0);
-    vals[7] = (pointsWereTransformed ? 1 : 0);
-    vals[8] = (wireframeRenderingIsInappropriate ? 1 : 0);
-    vals[9] = (normalsAreInappropriate ? 1 : 0);
-    vals[10]= (subdivisionOccurred ? 1 : 0);
-    vals[11]= (notAllCellsSubdivided ? 1 : 0);
-    vals[12]= (disjointElements ? 1 : 0);
-    vals[13]= (queryable ? 1 : 0);
-    vals[14]= (hasEverOwnedAnyDomain ? 1 : 0);
-    vals[15]= (errorOccurred ? 1 : 0);
-    vals[16]= errorString.size();
+    vals[1] = (originalZonesIntact ? 1 : 0);
+    vals[2] = (dataMetaDataPreserved ? 1 : 0);
+    vals[3] = (spatialMetaDataPreserved ? 1 : 0);
+    vals[4] = (operationFailed ? 1 : 0);
+    vals[5] = (usingAllData ? 1 : 0);
+    vals[6] = (usingAllDomains ? 1 : 0);
+    vals[7] = (isThisDynamic ? 1 : 0);
+    vals[8] = (pointsWereTransformed ? 1 : 0);
+    vals[9] = (wireframeRenderingIsInappropriate ? 1 : 0);
+    vals[10] = (normalsAreInappropriate ? 1 : 0);
+    vals[11]= (subdivisionOccurred ? 1 : 0);
+    vals[12]= (notAllCellsSubdivided ? 1 : 0);
+    vals[13]= (disjointElements ? 1 : 0);
+    vals[14]= (queryable ? 1 : 0);
+    vals[15]= (hasEverOwnedAnyDomain ? 1 : 0);
+    vals[16]= (errorOccurred ? 1 : 0);
+    vals[17]= errorString.size();
     wrtr->WriteInt(str, vals, numVals);
 
     str.Append((char *) errorString.c_str(), errorString.size(),
@@ -377,6 +393,9 @@ avtDataValidity::Write(avtDataObjectString &str,
 //    Mark C. Miller, Thu Jan 29 16:40:25 PST 2004
 //    Added hasEverOwnedAnyDomain, careful to put in right order in sequence
 //
+//    Kathleen Bonnell, Thu Mar  2 14:04:06 PST 2006
+//    Added originalZonesIntact.
+//
 // ****************************************************************************
 
 int
@@ -391,6 +410,15 @@ avtDataValidity::Read(char *input)
     if (zp == 0)
     {
         InvalidateZones();
+    }
+
+    // read zones intact
+    int zi;
+    memcpy(&zi, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    if (zi == 0)
+    {
+        ZonesSplit();
     }
 
     // read data extents preserved

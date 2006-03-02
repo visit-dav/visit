@@ -211,6 +211,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     vtkDataSet           *GetCSGMesh(DBfile *, const char *, int);
     vtkDataSet           *GetPointMesh(DBfile *, const char *);
     vtkDataSet           *GetQuadMesh(DBfile *, const char *, int);
+    vtkDataSet           *GetCurve(DBfile *, const char *);
     vtkDataSet           *GetUnstructuredMesh(DBfile *, const char *,
                                               int, const char *);
     void                  ReadInConnectivity(vtkUnstructuredGrid *,

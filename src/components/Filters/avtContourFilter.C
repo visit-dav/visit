@@ -649,6 +649,9 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
 //    Hank Childs, Thu Feb 26 09:05:34 PST 2004
 //    Do a better job of handling multiple variables.
 //
+//    Kathleen Bonnell, Thu Mar  2 15:05:17 PST 2006
+//    Add ZonesSplit.
+//
 // ****************************************************************************
 
 void
@@ -678,6 +681,7 @@ avtContourFilter::RefashionDataObjectInfo(void)
     }
 
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
+    GetOutput()->GetInfo().GetValidity().ZonesSplit();
 }
 
 

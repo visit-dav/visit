@@ -17,6 +17,8 @@
 #include <vtkFloatArray.h>
 #include <vtkIdList.h>
 #include <vtkIdTypeArray.h>
+#include <vtkCharArray.h>
+#include <vtkShortArray.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -929,6 +931,9 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //
 //    Kathleen Bonnell, Wed Feb  8 09:41:45 PST 2006 
 //    Set mmd->meshCoordType from coord_sys. 
+//
+//    Mark C. Miller, Thu Mar  2 00:03:40 PST 2006
+//    Added support for curve objects
 // 
 // ****************************************************************************
 
@@ -1075,6 +1080,13 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         strcpy(defvars_names[i], toc->defvars_names[i]);
     }
 #endif
+    int      ncurves = toc->ncurve;
+    char   **curve_names = new char*[ncurves];
+    for (i = 0 ; i < ncurves; i++)
+    {
+        curve_names[i] = new char[strlen(toc->curve_names[i])+1];
+        strcpy(curve_names[i], toc->curve_names[i]);
+    }
 
     //
     // The dbfile will probably change, so read in the meshtv_defvars and
@@ -1644,6 +1656,36 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 
         delete [] name_w_dir;
         DBFreePointmesh(pm);
+    }
+
+    //
+    // Curves 
+    //
+    for (i = 0 ; i < ncurves; i++)
+    {
+        char   *realvar;
+        DBfile *correctFile = dbfile;
+
+        DetermineFileAndDirectory(curve_names[i], correctFile, realvar);
+        DBcurve *cur = DBGetCurve(correctFile, realvar);
+        if (cur == NULL)
+            EXCEPTION1(InvalidFilesException, curve_names[i]);
+
+        char *name_w_dir = GenerateName(dirname, curve_names[i]);
+
+        avtCurveMetaData *cmd = new avtCurveMetaData(name_w_dir);
+        if (cur->xlabel != NULL)
+            cmd->xLabel = cur->xlabel;
+        if (cur->ylabel != NULL)
+            cmd->yLabel = cur->ylabel;
+        if (cur->xunits != NULL)
+            cmd->xUnits = cur->xunits;
+        if (cur->yunits != NULL)
+            cmd->yUnits = cur->yunits;
+        md->Add(cmd);
+
+        delete [] name_w_dir;
+        DBFreeCurve(cur);
     }
 
 #ifdef DBCSG_INNER // remove after silo-4.5 is released
@@ -2620,6 +2662,11 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     }
     delete [] defvars_names;
 #endif
+    for (i = 0 ; i < ncurves; i++)
+    {
+        delete [] curve_names[i];
+    }
+    delete [] curve_names;
 }
 
 // ****************************************************************************
@@ -3960,6 +4007,9 @@ avtSiloFileFormat::GetPointVectorVar(DBfile *dbfile, const char *vname)
 //    Mark C. Miller, Mon Feb 14 20:28:47 PST 2005
 //    Added test for DB_QUAD_CURV/RECT for valid type
 //
+//    Mark C. Miller, Thu Mar  2 00:03:40 PST 2006
+//    Added support for curves
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -3997,10 +4047,11 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
 #ifdef DBCSG_INNER // remove after silo-4.5 is released
     if (type != DB_UCDMESH && type != DB_QUADMESH && type != DB_QUAD_CURV &&
         type != DB_QUAD_RECT && type != DB_POINTMESH && type != DB_MULTIMESH &&
-        type != DB_CSGMESH)
+        type != DB_CSGMESH && type != DB_CURVE)
 #else
     if (type != DB_UCDMESH && type != DB_QUADMESH && type != DB_QUAD_CURV &&
-        type != DB_QUAD_RECT && type != DB_POINTMESH && type != DB_MULTIMESH)
+        type != DB_QUAD_RECT && type != DB_POINTMESH && type != DB_MULTIMESH &&
+        type != DB_CURVE)
 #endif
     {
         EXCEPTION1(InvalidVariableException, mesh);
@@ -4066,6 +4117,10 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
         rv = GetCSGMesh(domain_file, directory_mesh, domain);
     }
 #endif
+    else if (type == DB_CURVE)
+    {
+        rv = GetCurve(domain_file, directory_mesh);
+    }
     else
     {
         EXCEPTION0(ImproperUseException);
@@ -5285,6 +5340,120 @@ avtSiloFileFormat::VerifyQuadmesh(DBquadmesh *qm, const char *meshname)
     }
 }
 
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetCurve
+//
+//  Purpose: Read a Silo curve object and return a vtkDataSet for it
+//
+//  Arguments:
+//      dbfile   A handle to the file this variable lives in.
+//      mn       The curve name.
+//
+//  Returns:     The vtkDataSet corresponding to mn.
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    March 1, 2006 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtSiloFileFormat::GetCurve(DBfile *dbfile, const char *cn)
+{
+    int i;
+
+    //
+    // It's ridiculous, but Silo does not have all of the `const's in their
+    // library, so let's cast it away.
+    //
+    char *curvename  = const_cast<char *>(cn);
+
+    //
+    // Get the Silo construct.
+    //
+    DBcurve *cur = DBGetCurve(dbfile, curvename);
+    if (cur == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, curvename);
+    }
+
+    //
+    // Add all of the points to an array.
+    //
+    vtkPolyData *pd  = vtkPolyData::New();
+    vtkPoints   *pts = vtkPoints::New();
+    pd->SetPoints(pts);
+
+    // DBForceSingle assures that all double data is converted to float
+    // So, both are handled as float, here
+    if (cur->datatype == DB_FLOAT ||
+        cur->datatype == DB_DOUBLE)
+    {
+        vtkFloatArray *farr= vtkFloatArray::New();
+        farr->SetNumberOfComponents(3);
+        farr->SetNumberOfTuples(cur->npts);
+        for (i = 0 ; i < cur->npts; i++)
+            farr->SetTuple3(i, cur->x[i], cur->y[i], 0.0);
+        pts->SetData(farr);
+        farr->Delete();
+    }
+    else if (cur->datatype == DB_INT)
+    {
+        int *px = (int *) cur->x;
+        int *py = (int *) cur->y;
+        vtkIntArray *iarr= vtkIntArray::New();
+        iarr->SetNumberOfComponents(3);
+        iarr->SetNumberOfTuples(cur->npts);
+        for (i = 0 ; i < cur->npts; i++)
+            iarr->SetTuple3(i, px[i], py[i], 0);
+        pts->SetData(iarr);
+        iarr->Delete();
+    }
+    else if (cur->datatype == DB_SHORT)
+    {
+        short *px = (short *) cur->x;
+        short *py = (short *) cur->y;
+        vtkShortArray *sarr= vtkShortArray::New();
+        sarr->SetNumberOfComponents(3);
+        sarr->SetNumberOfTuples(cur->npts);
+        for (i = 0 ; i < cur->npts; i++)
+            sarr->SetTuple3(i, px[i], py[i], 0);
+        pts->SetData(sarr);
+        sarr->Delete();
+    }
+    else if (cur->datatype == DB_CHAR)
+    {
+        char *px = (char *) cur->x;
+        char *py = (char *) cur->y;
+        vtkCharArray *carr= vtkCharArray::New();
+        carr->SetNumberOfComponents(3);
+        carr->SetNumberOfTuples(cur->npts);
+        for (i = 0 ; i < cur->npts; i++)
+            carr->SetTuple3(i, px[i], py[i], 0);
+        pts->SetData(carr);
+        carr->Delete();
+    }
+
+    //
+    // Connect the points up with line segments.
+    //
+    vtkCellArray *line = vtkCellArray::New();
+    pd->SetLines(line);
+    for (i = 1 ; i < cur->npts; i++)
+    {
+        line->InsertNextCell(2);
+        line->InsertCellPoint(i-1);
+        line->InsertCellPoint(i);
+    }
+
+    pts->Delete();
+    line->Delete();
+
+    DBFreeCurve(cur);
+
+    return pd;
+}
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::CreateRectilinearMesh

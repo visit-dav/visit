@@ -349,12 +349,17 @@ avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //  Programmer: Jeremy Meredith
 //  Creation:   February 16, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Mar  2 14:26:06 PST 2006 
+//    Set ZonesSplit.
+//
 // ****************************************************************************
 
 void
 avtIsovolumeFilter::RefashionDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
+    GetOutput()->GetInfo().GetValidity().ZonesSplit();
 }
 
 

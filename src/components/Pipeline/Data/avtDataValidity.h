@@ -62,6 +62,9 @@ class     avtDataObjectWriter;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Kathleen Bonnell, Thu Mar  2 14:04:06 PST 2006 
+//    Added ZonesSplit() and GetOriginalZonesIntact().
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataValidity
@@ -87,11 +90,24 @@ class PIPELINE_API avtDataValidity
                                    { dataMetaDataPreserved = false; };
     bool                     GetDataMetaDataPreserved(void) const
                                    { return dataMetaDataPreserved; };
- 
+
+    // 
+    //  This has more to do with zone-numbering than with
+    //  the zones being subdivided, tetrahedralized, etc.
+    // 
     void                     InvalidateZones(void)
                                    { zonesPreserved = false; };
     bool                     GetZonesPreserved(void) const
                                    { return zonesPreserved; };
+
+    // 
+    //  This has more to do with zone being split, by
+    //  clipping, slicing, etc.
+    // 
+    void                     ZonesSplit(void)
+                                   { originalZonesIntact = false; };
+    bool                     GetOriginalZonesIntact(void) const
+                                   { return originalZonesIntact; };
 
     void                     InvalidateOperation(void)
                                    { operationFailed = true; };
@@ -164,6 +180,7 @@ class PIPELINE_API avtDataValidity
 
   protected:
     bool                     zonesPreserved;
+    bool                     originalZonesIntact;
     bool                     spatialMetaDataPreserved;
     bool                     dataMetaDataPreserved;
     bool                     operationFailed;

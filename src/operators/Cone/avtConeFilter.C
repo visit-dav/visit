@@ -816,6 +816,9 @@ avtConeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //    Kathleen Bonnell, Wed Jun  2 09:37:42 PDT 2004
 //    Set CanUseInvTransform to false.  for Flattened or R-theta.
 //
+//    Kathleen Bonnell, Thu Mar  2 14:26:06 PST 2006 
+//    Set ZonesSplit.
+//
 // ****************************************************************************
 
 void
@@ -827,6 +830,7 @@ avtConeFilter::RefashionDataObjectInfo(void)
  
     outAtts.SetTopologicalDimension(inAtts.GetTopologicalDimension()-1);
     outValidity.InvalidateZones();
+    outValidity.ZonesSplit();
 
     double angle = atts.GetAngle();
     double length = atts.GetLength();

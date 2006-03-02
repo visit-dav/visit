@@ -465,12 +465,16 @@ avtClipFilter::SetUpClipFunctions(vtkImplicitBoolean *funcs, bool &inv)
 //    Hank Childs, Wed Jun  6 13:32:28 PDT 2001
 //    Renamed from CopyDatasetMetaData.
 //
+//    Kathleen Bonnell, Thu Mar  2 14:26:06 PST 2006 
+//    Set ZonesSplit.
+//
 // ****************************************************************************
 
 void
 avtClipFilter::RefashionDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
+    GetOutput()->GetInfo().GetValidity().ZonesSplit();
 }
 
 
