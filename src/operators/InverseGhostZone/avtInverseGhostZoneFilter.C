@@ -113,6 +113,9 @@ avtInverseGhostZoneFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Fri Aug 27 15:25:22 PDT 2004
 //    Rename ghost data array.
 //
+//    Hank Childs, Thu Mar  2 11:08:43 PST 2006
+//    Remove avtRealDims ['6724].
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -143,6 +146,8 @@ avtInverseGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
             ghostZones->InsertNextValue(ghost);
         }
         out_ds->GetCellData()->RemoveArray("avtGhostZones");
+        if (out_ds->GetFieldData()->GetArray("avtRealDims") != NULL)
+            out_ds->GetFieldData()->RemoveArray("avtRealDims");
         out_ds->GetCellData()->AddArray(ghostZones);
     }
     else

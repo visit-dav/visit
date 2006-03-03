@@ -239,6 +239,9 @@ NetworkManager::~NetworkManager(void)
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added code to delete VisWindow objects
 //
+//    Hank Childs, Thu Mar  2 10:06:33 PST 2006
+//    Added support for image based plots.
+//
 // ****************************************************************************
 void
 NetworkManager::ClearAllNetworks(void)
@@ -270,6 +273,7 @@ NetworkManager::ClearAllNetworks(void)
     {
         it->second.viswin->ClearPlots();
         it->second.plotsCurrentlyInWindow.clear();
+        it->second.imageBasedPlots.clear();
         delete it->second.viswin;
     }
     viswinMap.clear();
@@ -1362,7 +1366,11 @@ NetworkManager::GetShouldUseCompression(int windowID) const
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Modified to manage multiple VisWindow objects
 //
+//    Hank Childs, Thu Mar  2 10:06:33 PST 2006
+//    Clear out image based plots.
+//
 // ****************************************************************************
+
 void
 NetworkManager::DoneWithNetwork(int id)
 {
@@ -1382,6 +1390,7 @@ NetworkManager::DoneWithNetwork(int id)
 
         viswinMap[thisNetworksWinID].viswin->ClearPlots();
         viswinMap[thisNetworksWinID].plotsCurrentlyInWindow.clear();
+        viswinMap[thisNetworksWinID].imageBasedPlots.clear();
 
         //
         // Delete the associated VisWindow if this is the last plot that
@@ -1768,7 +1777,14 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Hank Childs, Sun Dec  4 16:58:32 PST 2005
 //    Added progress to scalable renderings.
 //
+//    Hank Childs, Thu Mar  2 10:06:33 PST 2006
+//    Add support for image based plots.
+//
+//    Hank Childs, Fri Mar  3 08:32:02 PST 2006
+//    Do not do shadowing in 2D.
+//
 // ****************************************************************************
+
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
     int windowID)
@@ -1793,6 +1809,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
     VisualCueList &visualCueList = viswinInfo.visualCueList;
     int *const &frameAndState = viswinInfo.frameAndState;
     std::vector<int>& plotsCurrentlyInWindow = viswinMap[windowID].plotsCurrentlyInWindow;
+    std::vector<avtPlot_p>& imageBasedPlots = viswinMap[windowID].imageBasedPlots;
 
     TRY
     {
@@ -1996,13 +2013,16 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             //
             bool doShadows = windowAttributes.GetRenderAtts().GetDoShadowing();
             bool two_pass_mode = false;
-#ifdef PARALLEL
             if (viswin->GetWindowMode() == WINMODE_3D)
             {
+#ifdef PARALLEL
                 two_pass_mode = viswin->TransparenciesExist();
                 two_pass_mode = UnifyMaximumValue(two_pass_mode);
-            }
 #endif
+            }
+            else
+                doShadows = false;
+
             int nstages = 3;  // Rendering + Two for Compositing
             nstages += (doShadows ? 2 : 0);
             nstages += (two_pass_mode ? 1 : 0);

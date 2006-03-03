@@ -299,6 +299,10 @@ avtResampleFilter::BypassResample(void)
 //    Hank Childs, Mon Feb 20 15:22:57 PST 2006
 //    Automatically use kernel-based sampling when dealing with point meshes.
 //
+//    Hank Childs, Fri Mar  3 12:27:11 PST 2006
+//    Don't allow the resampler to "send cells", because there is no
+//    second pass.
+//
 // ****************************************************************************
 
 void
@@ -438,6 +442,7 @@ avtResampleFilter::ResampleInput(void)
     bool doKernel = 
         (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0);
     avtSamplePointExtractor extractor(width, height, depth);
+    extractor.SendCellsMode(false);
     extractor.Set3DMode(is3D);
     extractor.SetInput(trans.GetOutput());
     if (doKernel)

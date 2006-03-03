@@ -19,7 +19,8 @@ Unix and Mac OS X:
 
         "version" will be 1.5.1 for the current distribution.
 
-        "platform" will be one of the following:  aix, darwin, irix6, linux,
+        "platform" will be one of the following:  aix, aix64-xlc, darwin,
+        irix6, linux-altix, linux-ia64, linux-x86_64, linux_chaos, linux_rhel3,
         osf1, or sunos5 depending on the machine.  The one you use should
         match the name of the accompanying distribution file.
 

@@ -1,10 +1,11 @@
 <?xml version="1.0"?>
-  <Plugin name="Curve2D" type="database" label="Curve2D" version="1.0" enabled="true" dbtype="STSD" haswriter="false">
+  <Plugin name="Curve2D" type="database" label="Curve2D" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false">
     <Extensions>
       curve
       ultra
       ult
+      u
     </Extensions>
-    <Attribute persistent="false">
+    <Attribute name="" purpose="" persistent="false">
     </Attribute>
   </Plugin>

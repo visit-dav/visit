@@ -40,6 +40,7 @@ typedef struct _EngineVisWinInfo
     int                         frameAndState[7];
     VisWindow                  *viswin;
     std::vector<int>            plotsCurrentlyInWindow;
+    std::vector<avtPlot_p>      imageBasedPlots;
     bool                        markedForDeletion;
 } EngineVisWinInfo;
 
@@ -248,7 +249,11 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Hank Childs, Mon Feb 13 22:25:04 PST 2006
 //    Add support for DDFs.
 //
+//    Hank Childs, Thu Mar  2 10:04:54 PST 2006
+//    Add imageBasedPlots to vis win info, remove from network manager.
+//
 // ****************************************************************************
+
 class NetworkManager
 {
    typedef std::map<std::string, stringVector> StringVectorMap;
@@ -343,7 +348,6 @@ class NetworkManager
     std::vector<Netnode*>       workingNetnodeList;
     DataNetwork                *workingNet;
     std::vector<std::string>    nameStack;
-    std::vector<avtPlot_p>      imageBasedPlots;
 
     int                         uniqueNetworkId;
     bool                        requireOriginalCells;

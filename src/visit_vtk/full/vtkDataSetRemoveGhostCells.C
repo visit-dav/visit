@@ -55,6 +55,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <vtkVisItUtility.h>
+
 //------------------------------------------------------------------------------
 // Modifications:
 //   Kathleen Bonnell, Wed Mar  6 13:48:48 PST 2002
@@ -107,6 +109,64 @@ void vtkDataSetRemoveGhostCells::Execute()
           break;
   }
 }
+
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Thu Mar  2 11:14:53 PST 2006
+//    Created.
+//
+// ****************************************************************************
+
+void vtkDataSetRemoveGhostCells::GenericExecute()
+{
+    int  i;
+
+    vtkDataSet *ds = this->GetInput();
+    vtkDataArray *arr = ds->GetCellData()->GetArray("avtGhostZones");
+    if (arr == NULL)
+    {
+        GetOutput()->ShallowCopy(ds);
+        return;
+    }
+     
+    vtkPoints *ptsObj = vtkVisItUtility::GetPoints(ds);
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+    ugrid->SetPoints(ptsObj);
+    ptsObj->Delete();
+    ugrid->GetPointData()->ShallowCopy(ds->GetPointData());
+
+    int nOut = 0;
+    int nCells = ds->GetNumberOfCells();
+    for (i = 0 ; i < nCells ; i++)
+        if (arr->GetTuple1(i) == 0)
+            nOut++;
+    ugrid->Allocate(8*nOut);
+   
+    vtkIdType npts;
+    vtkIdType *pts;
+    int cellId = 0;
+    vtkCellData *inCD  = ds->GetCellData();
+    vtkCellData *outCD = ugrid->GetCellData();
+    outCD->CopyAllocate(inCD, nOut);
+    vtkIdList *ptList = vtkIdList::New();
+    for (i = 0 ; i < nCells ; i++)
+    {
+        if (arr->GetTuple1(i) != 0)
+            continue;
+   
+        ds->GetCellPoints(i, ptList);
+        int type = ds->GetCellType(i);
+        ugrid->InsertNextCell(type, ptList);
+        outCD->CopyData(inCD, i, cellId++);
+    }
+    ptList->Delete();
+
+    ugrid->Squeeze();
+    SetOutput(ugrid);
+    ugrid->Delete();
+}
+
 
 // ***************************************************************************
 //  Modifications:
@@ -352,6 +412,9 @@ void vtkDataSetRemoveGhostCells::PolyDataExecute()
 //    Hank Childs, Fri Aug 27 15:10:50 PDT 2004
 //    Use the new ghost data names.
 //
+//    Hank Childs, Thu Mar  2 11:14:53 PST 2006
+//    Call generic execute if there are no real dims.
+//
 // ***************************************************************************
 
 void vtkDataSetRemoveGhostCells::RectilinearGridExecute()
@@ -364,9 +427,7 @@ void vtkDataSetRemoveGhostCells::RectilinearGridExecute()
   if (!realDims || (realDims->GetDataType() != VTK_INT)
     || (realDims->GetNumberOfComponents() != 1))
     {
-    vtkErrorMacro(<<"No proper match for avtRealDims found in field data.");
-    output->ShallowCopy(input);
-    output->GetCellData()->RemoveArray("avtGhostZones");
+    GenericExecute();
     return;
     }
 
@@ -411,6 +472,9 @@ void vtkDataSetRemoveGhostCells::RectilinearGridExecute()
 //    Hank Childs, Fri Aug 27 15:10:50 PDT 2004
 //    Use the new ghost data names.
 //
+//    Hank Childs, Thu Mar  2 11:14:53 PST 2006
+//    Call generic execute if there are no real dims.
+//
 // ***************************************************************************
 
 void vtkDataSetRemoveGhostCells::StructuredGridExecute()
@@ -422,8 +486,7 @@ void vtkDataSetRemoveGhostCells::StructuredGridExecute()
   if (!realDims || (realDims->GetDataType() != VTK_INT)
     || (realDims->GetNumberOfComponents() != 1))
     {
-    vtkErrorMacro(<<"No proper match for avtRealDims found in field data.");
-    output->ShallowCopy(input);
+    GenericExecute();
     return;
     }
 

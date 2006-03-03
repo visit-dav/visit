@@ -62,21 +62,22 @@ We currently build VisIt using the following compilers on the following
 operating systems.  It is suggested that you use the same compilers.
 
 
-   Operating System          Compiler
-   ================          ========
-   AIX 5.1                   g++ 3.1
-   IRIX64 6.5                MIPSpro 7.3.1.2m and MIPSpro 7.4
-   Linux 7.1 and 7.2         g++ 2.96 or g++ 3.2.3
-   Solaris 7                 g++ 2.95.2 or g++ 3.2
-   Tru64 5.1                 g++ 3.3.3
+   Operating System                        Compiler
+   ================                        ========
+   AIX 5.1                                 g++ 3.1
+   IRIX64 6.5                              MIPSpro 7.3.1.2m or MIPSpro 7.41
+   Redhad Enterprise Linux 3 (x86)         g++ 2.96 or g++ 3.2.3
+   Redhad Enterprise Linux 4 (x86, ia64)   g++ 3.2.3
+   Redhad Enterprise Linux 4 (x86_64)      g++ 3.4.4
+   Solaris 7                               g++ 2.95.2 or g++ 3.2
+   Tru64 5.1                               g++ 3.3.3
 
 The following compilers will *NOT* work with VisIt.  They will either not
 compile VisIt or will generate bad code.
 
-   Operating System          Compiler
-   ================          ========
-   Linux 7.1 and 7.2         g++ 3.3 -> 3.3.3
-   AIX 5.1                   g++ 3.2.3 -> 3.3.3
+   Operating System                        Compiler
+   ================                        ========
+   AIX 5.1                                 g++ 3.2.3 -> 3.3.3
 
 It is essential that you build all the dependent packages and VisIt using
 the same c++ compiler or you will encounter linking problems because different
@@ -104,11 +105,15 @@ multiple machine architectures.  Lets create an environment variable to
 hold the name of the architecture specific directory.  Some examples
 include:
 
-setenv VISITARCH aix_5_gcc_3.3.3
+setenv VISITARCH aix_5_gcc_3.1
 setenv VISITARCH aix_5_xlc_64
+setenv VISITARCH altix_gcc_3.3.3
+setenv VISITARCH chaos_3_ia64_elan4_gcc_3.2.3
+setenv VISITARCH chaos_3_x86_64_ib_gcc_3.4.4
+setenv VISITARCH chaos_3_x86_elan3_gcc_3.2.3
 setenv VISITARCH irix64_cc_7.3.1.2_64
-setenv VISITARCH irix64_cc_7.4_64
-setenv VISITARCH linux_chaos_gcc_3.3.3
+setenv VISITARCH irix64_cc_7.41_64
+setenv VISITARCH linux_rhel3_gcc_3.2.3
 setenv VISITARCH linux_redhat_gcc_2.96
 setenv VISITARCH solaris_gcc_2.95.2
 setenv VISITARCH solaris_gcc_3.2
@@ -251,10 +256,10 @@ cd VTK
 # appropriate files and directories in the mesa directory.
 # For example:
 #
-# MANGLED_MESA_INCLUDE_DIR:PATH=/home/visit/mesa/include
-# MANGLED_MESA_LIBRARY:FILEPATH=/home/visit/mesa/lib/libMesaGL.so
-# MANGLED_OSMESA_INCLUDE_DIR:PATH=/home/visit/mesa/include
-# MANGLED_OSMESA_LIBRARY:FILEPATH=/home/visit/mesa/lib/libOSMesa.so
+# MANGLED_MESA_INCLUDE_DIR:PATH=$VISITDIR/mesa/5.0/$VISITARCH/include
+# MANGLED_MESA_LIBRARY:FILEPATH=$VISITDIR/mesa/5.0/$VISITARCH/lib/libMesaGL.so
+# MANGLED_OSMESA_INCLUDE_DIR:PATH=$VISITDIR/mesa/5.0/$VISITARCH/include
+# MANGLED_OSMESA_LIBRARY:FILEPATH=$VISITDIR/mesa/5.0/$VISITARCH/lib/libOSMesa.so
 #
 # Note that you need to be very careful in setting the above variables so
 # that you provide the appropriate filename or path.
@@ -406,8 +411,23 @@ setenv LD_LIBRARY64_PATH $QTDIR/lib:$LD_LIBRARY64_PATH       # SGI
 # If you wish to specify a specific compiler then modify the appropriate
 # mkspecs/XXX/qmake.conf file, where XXX is the platform name.
 #
+# On linux systems if the OpenGL library is built with threading support,
+# qt won't by default compile the QGL widget.  To determine if the OpenGL
+# library was built with threading run the following command:
+#
+#     ./configure --help
+#
+# If the output contains:
+#
+#     WARNING: /usr/X11R6/lib/libGL.so is threaded!
+#     The Qt OpenGL module requires Qt to be configured with -thread.
+#
+# then you will need to add "-thread" to the configure line below.
+#
 # Use the appropriate configure command based on the operating system on
-# which you are building Qt.
+# which you are building Qt.  You should use the linux-g++ platform for
+# all linux versions except for opteron systems, in which case you should
+# use the linux-g++-64 platform.
 #
 ./configure -platform aix-g++ -shared -no-largefile -qt-libpng
 ./configure -platform aix-xlc-64 -shared -qt-libpng
@@ -428,25 +448,15 @@ setenv LD_LIBRARY64_PATH $QTDIR/lib:$LD_LIBRARY64_PATH       # SGI
 # remove "/usr/X11R6/include" from QMAKE_INCDIR_X11
 # remove "/usr/X11R6/include" from QMAKE_INCDIR_OPENGL
 #
-# On linux systems if the OpenGL library is built with threading support,
-# qt won't by default compile the QGL widget.  To determine if the OpenGL
-# library was built with threading run the following command:
+make
+
 #
-#     ./configure --help
-#
-# If the output contains:
-#
-#     WARNING: /usr/X11R6/lib/libGL.so is threaded!
-#     The Qt OpenGL module requires Qt to be configured with -thread.
-#
-# then you will need to add "-thread" to the configure line.  When qt creates
-# the qt library it will name it qt-mt instead of qt.  This will cause problems
-# linking visit.  To fix this you should first build qt, having it create
-# libqt-mt.so.  Then change all occurances of "libqt-mt" to "libqt" in
+# If qt was configured with threading support then the qt library will be
+# named qt-mt instead of qt.  This will cause problems linking visit.  To
+# fix this problem, change all occurances of "libqt-mt" to "libqt" in
 # src/Makefile and issue the make command again.  It will now create the qt
 # library properly named for visit.
 #
-make
 
 #
 # Install it in the visit directory under the qt directory.
@@ -565,23 +575,27 @@ Silo is one of the file formats supported by VisIt.  Follow the directions
 listed below to build Silo.  If you have any problems building or installing
 Silo, read the BUILD_NOTES file in the Silo distribution for more information.
 
-On itanium (ia64) systems, the -fPIC flag is needed.  You can replace
-CFLAGS=-O2 with CFLAGS="-fPIC -O2" in the configure command below.
-
-On irix systems, if you want to build a 64 bit version you can replace
-CFLAGS=-O2 with CFLAGS="-64 -O2" in the configure command below.
-
-On Opteron systems, replace CFLAGS="-O2" with CFLAGS="-m64 -fPIC -O2" and
-add --disable-sdx.
-
 #
 # Build Silo
 #
 sh silo051121.sh
 cd silo051121
+
+#
+#
+# On itanium (ia64) systems, the -fPIC flag is needed.  You can replace
+# CFLAGS=-O2 with CFLAGS="-fPIC -O2" in the configure command below.
+#
+# On opteron systems, the -fPIC and -m64 flags are needed. You can replace
+# CFLAGS="-O2" with CFLAGS="-m64 -fPIC -O2". You will also need to disable
+# SDX by adding --disable-sdx to the end of the configure command.
+#
+# On irix systems, if you want to build a 64 bit version you can replace
+# CFLAGS=-O2 with CFLAGS="-64 -O2" in the configure command below.
 #
 # If you want to build silo with hdf5 support then use the commented configure
-# line.
+# line.  If you want to build silo with hdf5 support you must first build hdf5,
+# which is described later in this document.
 # env CFLAGS=-O2 ./configure --without-readline -with-hdf5=$VISITDIR/hdf5/1.6.0/$VISITARCH/include,$VISITDIR/hdf5/1.6.0/$VISITARCH/lib --without-exodus
 #
 env CFLAGS=-O2 ./configure --without-readline --without-hdf5 --without-exodus
@@ -623,11 +637,12 @@ later on all platforms.
 Building Python 2.1.2
 ======================
 
-On itanium (ia64) systems, the -fPIC flag is needed.  To add this flag to
-python's build, do the following:  (1) Follow the commands below until the
-configure step.  Execute configure as given.  (2) Look at the Makefile and
-find the value of the variable OPT.  (3) Re-execute configure with OPT
-specified through the env command, with -fPIC added to OPT.  For example:
+On itanium (ia64) systems, the -fPIC flag is needed.  On opteron systems,
+the "-m64 -fPIC" flags are needed.  To add flags to python's build, do the
+following:  (1) Follow the commands below until the configure step.  Execute
+configure as given.  (2) Look at the Makefile and find the value of the
+variable OPT.  (3) Re-execute configure with OPT specified through the env
+command, with the additional flags added to OPT.  For example:
 
 env OPT="-fPIC -O2" ./configure --prefix=$VISITDIR/python/$VISITARCH
 
@@ -638,7 +653,7 @@ On irix systems, if you want to build a 64 bit version will need to override
 the default compiler and linker options.  This is done in a similar fashion
 as described above but -64 is added to OPT and LDFLAGS.  For example:
 
-env OPT="-64 -O2" LDFLAGS="-64" ./configure --prefix=$VISITDIR/python/$VISITARCH 
+env OPT="-64 -O2" LDFLAGS="-64" ./configure --prefix=$VISITDIR/python/$VISITARCH
 
 #
 # Build and install it in the visit directory under the python directory.
@@ -663,6 +678,7 @@ g++ -shared -o ../libpython2.1.so *.o                                # irix
 CC  -shared -o ../libpython2.1.so *.o                                # irix
 CC  -64 -shared -o ../libpython2.1.so *.o                            # irix 64
 g++ -shared -o ../libpython2.1.so *.o                                # linux
+g++ -m64 -shared -o ../libpython2.1.so *.o                           # opteron
 g++ -Wl,-G -o ../libpython2.1.so *.o                                 # solaris
 g++ -Wl,-expect_unresolved -Wl,'*' -shared -o ../libpython2.1.so *.o # tru64
 cd ..
@@ -718,10 +734,50 @@ gunzip mili.tar.gz
 tar xf mili.tar
 cd Mili
 
-On irix systems, if you want to build a 64 bit version will need to override
-the default compiler options.  You will need to replace all occurances of
-"-n32" with "-64" in the configure script.
-
+#
+# On irix systems, if you want to build a 64 bit version will need to override
+# the default compiler options.  You will need to replace all occurances of
+# "-n32" with "-64" in the configure script.
+#
+# On itanium (ia64) systems you will need to add -fPIC to the compiler options
+# in the configure script.  Add -fPIC to CFLAGS and FFLAGS below the line
+# containing "-pc-linux" in the configure script.
+#
+# On opteron systems you will need to add "-m64 -fPIC" to the CFLAGS and
+# FFLAGS.
+#
+# The configure script doesn't recognize newer operating systems such as
+# itanium (ia64) and opteron systems.  In order to fix this you will need to
+# add the lines:
+#
+#   ia64-unknown-linux)
+#     CFLAGS="-O2 -fPIC -DHAVEINT8"
+#     FFLAGS="-O2 -fPIC"
+#     mili_lib_path_spec="-L../src"
+#     ;;
+#   x86_64-unknown-linux)
+#     CFLAGS="-O2 -m64 -fPIC -DHAVEINT8"
+#     FFLAGS="-O2 -m64 -fPIC"
+#     mili_lib_path_spec="-L../src"
+#     ;;
+#
+# after the lines:
+#
+#   *-pc-linux*)
+#     CFLAGS="-g -DHAVEINT8"
+#     FFLAGS="-g"
+#     mili_lib_path_spec="-L../src"
+#     ;;
+#
+# You will also need to add one of the two lines below
+#
+# host=ia64-unknown-linux
+# host=x86_64-unknown-linux
+#
+# after the line
+#
+# host=`${CONFIG_SHELL-/bin/sh} $ac_config_sub $host_alias`
+#
 ./configure
 make
 
@@ -749,9 +805,10 @@ gunzip HDF4.2r1.tar.gz
 tar xf HDF4.2r1.tar
 cd HDF4.2r1
 
-# On Linux systems, you will need to add "-fPIC" to the CFLAGS.  On Opteron
-# systems, you will need to add "-fPIC -m64" to the CFLAGS.
-
+#
+# On itanium (ia64) systems, you will need to add "-fPIC" to the CFLAGS.  On
+# opteron systems, you will need to add "-fPIC -m64" to the CFLAGS.
+#
 env CFLAGS="-O2" LIBS="-lm" ./configure --disable-fortran -prefix=$VISITDIR/hdf4/2.4.1/$VISITARCH
 
 #
@@ -793,8 +850,12 @@ HDF5 will by default want to use the vendor supplied compiler so you will
 probably need to specify the compiler.  This can be done by preceding the
 configure command with "env CC=compiler_name".
 
-On Linux systems you will need to add -fPIC to the compile flags.  This
-can done by preceding the configure command with "env CFLAGS=-fPIC".
+On itanium (ia64) systems you will need to add -fPIC to the compile flags.
+This can be done by preceding the configure command with "env CFLAGS=-fPIC".
+
+On opteron systems you will need to add "-m64 -fPIC" to the compile
+flags.  This can be done by preceding the configure command with
+"env CFLAGS=-m64 -fPIC".
 
 ./configure --disable-shared -prefix=$VISITDIR/hdf5/1.6.0/$VISITARCH
 make
@@ -827,9 +888,13 @@ you wish to build it.
 You will need to modify GNUmakefile so that it doesn't use MPI.  To do this
 change "USE_MPI   = TRUE" to "USE_MPI   = FALSE".
 
-On Linux systems you will also need to add -fPIC to the compile flags.
-This can done by adding the line "CXXFLAGS += -fPIC" and "FFLAGS += -fPIC"
+On itanium (ia64) systems you will need to add -fPIC to the compile flags.
+This can be done by adding the line "CXXFLAGS += -fPIC" and "FFLAGS += -fPIC"
 near the top of the file GNUmakefile.
+
+On opteron systems you will need to add "-m64 -fPIC" to the compile flags.
+This can be done byy adding the line "CXXFLAGS += "-m64 -fPIC"" and
+"FFLAGS += -m64 -fPIC" near the top of the file GNUmakefile.
 
 #
 # Boxlib builds either a 2d or 3d version and VisIt needs both, so you will
@@ -923,8 +988,11 @@ mkdir $VISITDIR/netcdf
 mkdir $VISITDIR/netcdf/3.6.0
 mkdir $VISITDIR/netcdf/3.6.0/$VISITARCH
 
-# On IA64 systems, you should add "-fPIC" to the following CFLAGS and CXXFLAGS.
-# On Opteron systems, you should add "-fPIC -m64" to the following CFLAGS and CXXFLAGS.
+#
+# On itanium (ia64) systems, you should add "-fPIC" to the following CFLAGS
+# and CXXFLAGS.  On opteron systems, you should add "-fPIC -m64" to the
+# following CFLAGS and CXXFLAGS.
+#
 ./configure --prefix=$VISITDIR/netcdf/3.6.0/$VISITARCH FC="" CFLAGS="-O2" CXXFLAGS="-O2"
 make
 
@@ -958,15 +1026,15 @@ mkdir $VISITDIR/cgns/2.4/$VISITARCH
 mkdir $VISITDIR/cgns/2.4/$VISITARCH/include
 mkdir $VISITDIR/cgns/2.4/$VISITARCH/lib
 
-# Configure it.
 #
 # On SGI, you may want to add -64 to the CFLAGS to build a 64 bit binary.
 # Note that if you do that then after you configure, you will have to remove
 # "-n32" from the make.SGI file that configure creates.
 #
-# On IA64 systems, you should add "-fPIC" to the CFLAGS.
+# On itanium (ia64) systems, you should add "-fPIC" to the CFLAGS.
 #
-# On Opteron systems, you should add "-fPIC -m64" to the CFLAGS.
+# On opteron systems, you should add "-fPIC -m64" to the CFLAGS.
+#
 
 env CFLAGS="-O2" ./configure --prefix=$VISITDIR/cgns/2.4/$VISITARCH
 make
@@ -996,11 +1064,10 @@ mkdir $VISITDIR/gdal
 mkdir $VISITDIR/gdal/1.3.0
 mkdir $VISITDIR/gdal/1.3.0/$VISITARCH
 
-# Configure it.
 #
-# On IA64 systems, you should add "-fPIC" to the CFLAGS, CXXFLAGS.
+# On itanium (ia64) systems, you should add "-fPIC" to the CFLAGS, CXXFLAGS.
 #
-# On Opteron systems, you should add "-fPIC -m64" to the CFLAGS, CXXFLAGS.
+# On opteron systems, you should add "-fPIC -m64" to the CFLAGS, CXXFLAGS.
 #
 # On AIX systems where you build a 64 bit library using xlC, add the following
 # to the front of the configure line:
@@ -1009,7 +1076,7 @@ mkdir $VISITDIR/gdal/1.3.0/$VISITARCH
 # Some systems may have problems building mysql support. If that is the case
 # you will need to add "--without-mysql" at the end of the following configure
 # command.
-
+#
 env CXXFLAGS="-O2" CFLAGS="-O2" ./configure --prefix=$VISITDIR/gdal/1.3.0/$VISITARCH --with-gif=internal --with-png=internal --with-jpeg=internal --with-libz=internal --with-netcdf=no --without-jasper --enable-static --disable-shared --without-python
 make
 
@@ -1029,9 +1096,6 @@ configure that tests your system for various libraries and programs required
 to build VisIt.  Follow the directions listed below to build VisIt.
 More information about building VisIt follows after that.
 
-Note: for Itanium (ia64) systems, add the -fPIC flag to the CXXFLAGS in the
-env command for configure.
-
 #
 # Build and install it in the visit directory.
 #
@@ -1041,11 +1105,20 @@ cd visit060206/config-site
 echo VISITHOME=$VISITDIR > `hostname`.conf
 sed "s/ARCH/$VISITARCH/" Template.conf >> `hostname`.conf
 cd ..
-env CXXFLAGS=-O2 ./configure
+
+#
+# For itanium (ia64) systems add the -fPIC flag to the CFLAGS and CXXFLAGS
+# in the env command for configure.  For opteron systems add the "-m64 -fPIC"
+# flags to the CFLAGS and CXXFLAGS in the env command for configure.
+#
+env CFLAGS=-O2 CXXFLAGS=-O2 ./configure
 make
 clearcase_bin/visit-bin-dist
+
+#
 # Use the appropriate install command based on the operating system on
 # which you built VisIt.
+#
 clearcase_bin/visit-install 1.5.1 aix $VISITDIR
 clearcase_bin/visit-install 1.5.1 darwin $VISITDIR
 clearcase_bin/visit-install 1.5.1 irix6 $VISITDIR
@@ -1076,7 +1149,7 @@ configure script or can listed by the configure script by typing
   --with-exodus-lib[=<DIR>]       specify Exodus lib path
 
 The enable parallel option builds the parallel version of VisIt.  Parallel
-versions are supported on SGI, IBM AIX, Tru64, and some Linux systems.  The
+versions are supported on SGI, IBM AIX, Tru64, and some linux systems.  The
 disable scripting option builds VisIt without the Python scripting.  The
 enable buildall option builds all the VisIt plugins.  By default, only the
 most common plugins are built.
