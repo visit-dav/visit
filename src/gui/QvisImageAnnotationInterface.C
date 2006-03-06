@@ -268,13 +268,43 @@ QvisImageAnnotationInterface::UpdateControls()
 // Creation:   Wed Nov 5 11:49:08 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Mar 6 11:05:02 PDT 2006
+//   I added code to make sure that the screen position is recorded.
+//
 // ****************************************************************************
 
 void
 QvisImageAnnotationInterface::GetCurrentValues(int which_widget)
 {
     bool doAll = (which_widget == -1);
+
+    if(which_widget == 0 || doAll)
+    {
+        // Get the new position
+        GetScreenPosition(positionStartEdit, "Lower left");
+    }
+
+    if(which_widget == 1 || doAll)
+    {
+        // Get its new current value and store it in the atts.
+        ForceSpinBoxUpdate(widthSpinBox);
+        int w = widthSpinBox->value();
+        float pos[] = {w, annot->GetPosition2()[1], 0};
+        annot->SetPosition2(pos);
+        if(linkedWH->isOn())
+            heightSpinBox->setValue(w);
+    }
+
+    if(which_widget == 2 || doAll)
+    {
+        // Get its new current value and store it in the atts.
+        ForceSpinBoxUpdate(heightSpinBox);
+        int h = heightSpinBox->value();
+        float pos[] = {annot->GetPosition2()[0], h, 0};
+        annot->SetPosition2(pos);
+        if(linkedWH->isOn())
+            widthSpinBox->setValue(h);
+    }
 }
 
 //

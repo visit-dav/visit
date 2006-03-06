@@ -8,6 +8,7 @@
 // Forward declarations
 class ColorControlPointList;
 class ColorTableAttributes;
+class DataNode;
 class QVBoxLayout;
 class QPushButton;
 class QButtonGroup;
@@ -48,6 +49,9 @@ class QvisColorGridWidget;
 //   Brad Whitlock, Tue Jul 1 16:37:41 PST 2003
 //   I added an Export button.
 //
+//   Brad Whitlock, Mon Mar 6 09:09:46 PDT 2006
+//   I added code to save the current color table to the settings.
+//
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
@@ -60,6 +64,9 @@ public:
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisColorTableWindow();
     virtual void CreateWindowContents();
+
+    virtual void CreateNode(DataNode *);
+    virtual void SetFromNode(DataNode *, const int *borders);
 public slots:
     virtual void apply();
 protected:

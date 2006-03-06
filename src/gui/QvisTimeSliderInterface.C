@@ -323,6 +323,9 @@ QvisTimeSliderInterface::UpdateControls()
 //   Brad Whitlock, Thu Feb 24 16:37:01 PST 2005
 //   I changed how time format gets put into the object.
 //
+//   Brad Whitlock, Mon Mar 6 14:38:21 PST 2006
+//   I adde code to make sure that width and height are saved.
+//
 // ****************************************************************************
 
 void
@@ -352,6 +355,30 @@ QvisTimeSliderInterface::GetCurrentValues(int which_widget)
         }
 
         annot->SetText(sv);
+    }
+
+    if(which_widget == 2 || doAll)
+    {
+        // Get its new current value and store it in the atts.
+        ForceSpinBoxUpdate(widthSpinBox);
+        int w = widthSpinBox->value();
+        float pos2[3];
+        pos2[0] = float(w) * 0.01f;
+        pos2[1] = annot->GetPosition2()[1];
+        pos2[2] = annot->GetPosition2()[2];
+        annot->SetPosition2(pos2);
+    }
+
+    if(which_widget == 3 || doAll)
+    {
+        // Get its new current value and store it in the atts.
+        ForceSpinBoxUpdate(heightSpinBox);
+        int h = heightSpinBox->value();
+        float pos2[3];
+        pos2[0] = annot->GetPosition2()[0];
+        pos2[1] = float(h) * 0.01f;
+        pos2[2] = annot->GetPosition2()[2];
+        annot->SetPosition2(pos2);
     }
 }
 

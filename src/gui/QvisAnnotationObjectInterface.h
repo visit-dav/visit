@@ -6,6 +6,7 @@
 
 class AnnotationObject;
 class QLineEdit;
+class QSpinBox;
 class QVBoxLayout;
 class QvisScreenPositionEdit;
 
@@ -21,7 +22,9 @@ class QvisScreenPositionEdit;
 // Creation:   Fri Oct 31 10:24:32 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Mar 6 11:14:15 PDT 2006
+//   Added a new helper method.
+//
 // ****************************************************************************
 
 class GUI_API QvisAnnotationObjectInterface : public QGroupBox, public GUIBase
@@ -48,6 +51,8 @@ protected:
     void GetPosition(QLineEdit *le, const QString &name);
     void GetScreenPosition(QvisScreenPositionEdit *spe, const QString &name);
     void GetPosition2(QLineEdit *le, const QString &name);
+    void GetScreenPosition2(QvisScreenPositionEdit *spe, const QString &name);
+    void ForceSpinBoxUpdate(QSpinBox *sb);
 
     QVBoxLayout      *topLayout;
 

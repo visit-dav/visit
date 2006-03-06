@@ -228,12 +228,38 @@ QvisLine2DInterface::UpdateControls()
 // Creation:   Fri Sep 03 09:32:04 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Mar 6 11:08:06 PDT 2006
+//   I added code to make sure that the end points get recorded.
+//
 // ****************************************************************************
+
 void
 QvisLine2DInterface::GetCurrentValues(int which_widget)
 {
     bool doAll = (which_widget == -1);
+
+    if(which_widget == 0 || doAll)
+    {
+        // Get the new position
+        GetScreenPosition(positionStartEdit, "Start");
+    }
+
+    if(which_widget == 1 || doAll)
+    {
+        // Get the new position
+        GetScreenPosition2(positionEndEdit, "End");
+    }
+
+    if(which_widget == 2 || doAll)
+    {
+        // Get its new current value and store it in the atts.
+        ForceSpinBoxUpdate(widthSpinBox);
+        ColorAttribute ca;
+        ca.SetRgb(widthSpinBox->value(),
+                  annot->GetColor2().Green(),
+                  annot->GetColor2().Blue());
+        annot->SetColor2(ca);
+    }
 }
 
 //
