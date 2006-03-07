@@ -3775,6 +3775,9 @@ VisWindow::ProcessResizeEvent(void *data)
 //   Kathleen Bonnell, Thu Sep  2 13:40:25 PDT 2004 
 //   Added code to call the 'FindIntersection' method if the flag is set. 
 //
+//   Kathleen Bonnell, Tue Mar  7 08:27:25 PST 2006 
+//   Expanded 'intersection only' to handle SR mode.
+//
 // ****************************************************************************
 
 void
@@ -3785,14 +3788,27 @@ VisWindow::Pick(int x, int y)
 
     if (pickForIntersectionOnly)
     {
-        double isect[3];
-        ppInfo->validPick = FindIntersection(x, y, isect); 
         ppInfo->intersectionOnly = true; 
-        if (ppInfo->validPick)
+        if (!GetScalableRendering())
         {
-            ppInfo->rayPt1[0] = isect[0];
-            ppInfo->rayPt1[1] = isect[1];
-            ppInfo->rayPt1[2] = isect[2];
+            double isect[3];
+            ppInfo->validPick = FindIntersection(x, y, isect); 
+            if (ppInfo->validPick)
+            {
+                ppInfo->rayPt1[0] = isect[0];
+                ppInfo->rayPt1[1] = isect[1];
+                ppInfo->rayPt1[2] = isect[2];
+            }
+        }
+        else
+        {
+            //        
+            // SR mode, and intersect only, need to go to the engine for this
+            // so tell pick what the x, y points are by setting them in rayPt.
+            //        
+            ppInfo->rayPt1[0] = (float) x;
+            ppInfo->rayPt1[1] = (float) y;
+            ppInfo->validPick = false;
         }
         // Execute the callback.
         (*performPickCallback)((void*)ppInfo);
@@ -5338,7 +5354,7 @@ VisWindow::FindIntersection(const int x, const int y, double isect[3])
     {
         return false;
     }
-   
+
     plots->MakeAllPickable();
     bool success;
     vtkCellPicker *picker = vtkCellPicker::New();

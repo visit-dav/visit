@@ -10,6 +10,10 @@
 # Usage:
 #    visit-install-closed [-beta | -private | -public] -v <version>
 #
+# Modifications:
+#   Brad Whitlock, Tue Mar 7 14:10:26 PST 2006
+#   I added -b bdivp to the visit-install invokations.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -174,7 +178,7 @@ EOF
 rm -f hitit
 cat <<EOF > hitit
 
-./visit-install -r -private -c closed -g visit -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
+./visit-install -r -private -c closed -g visit -b bdivp -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "        install of visit on hitit"           >> resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1
@@ -208,7 +212,7 @@ fi
 rm -f sunset
 cat <<EOF > sunset
 
-./visit-install -private -c closed -g visit -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c closed -g visit -b bdivp -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "        install of visit on sunset"          >> resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1
@@ -263,7 +267,7 @@ EOF
 rm -f sc
 cat <<EOF > sc
 
-./visit-install -r -private -c closed -g visit -gw -l $ver osf1 /usr/gapps/visit > installlog 2>&1
+./visit-install -r -private -c closed -g visit -b bdivp -gw -l $ver osf1 /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "        install of visit on sc"              >> resultlog 2>&1
 echo "       ------------------------"             >> resultlog 2>&1
@@ -297,7 +301,7 @@ fi
 rm -f tidalwave
 cat <<EOF > tidalwave
 
-./visit-install -private -c closed -g visit -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c closed -g visit -b bdivp -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "        install of visit on tidalwave"       >> resultlog 2>&1
 echo "       -------------------------------"      >> resultlog 2>&1
@@ -331,7 +335,7 @@ fi
 rm -f white
 cat <<EOF > white
 
-./visit-install -private -c closed -g visit -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c closed -g visit -b bdivp -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "        install of visit on white"           >> resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1
@@ -365,7 +369,7 @@ fi
 rm -f pu
 cat <<EOF > pu
 
-./visit-install -private -c closed -g visit -gw -l $ver aix64-xlc /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c closed -g visit -b bdivp -gw -l $ver aix64-xlc /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "        install of visit on pu"              >> resultlog 2>&1
 echo "       ------------------------"             >> resultlog 2>&1
@@ -399,7 +403,7 @@ fi
 rm -f lilac
 cat <<EOF > lilac
 
-./visit-install $verflag -c closed -g visit -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
+./visit-install $verflag -c closed -g visit -b bdivp -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "        install of visit on lilac"           >> resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1

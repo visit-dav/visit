@@ -87,6 +87,9 @@ class QvisRecentPathRemovalWindow;
 //   I added a new slot function so we can select multiple files by hitting
 //   the return key in the file list.
 //
+//   Brad Whitlock, Tue Mar 7 10:11:46 PDT 2006
+//   Added the selectedFilesChanged signal.
+//
 // ****************************************************************************
 
 class GUI_API QvisFileSelectionWindow : public QvisDelayedWindowSimpleObserver
@@ -98,6 +101,8 @@ public:
     virtual void CreateWindowContents();
     virtual void SubjectRemoved(Subject *TheRemovedSubject);
     virtual void ConnectSubjects(HostProfileList *hpl);
+signals:
+    void selectedFilesChanged();
 public slots:
     virtual void show();
     virtual void showMinimized();

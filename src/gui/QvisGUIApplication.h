@@ -269,6 +269,9 @@ class SplashScreen;
 //    Brad Whitlock, Thu Feb 2 18:53:59 PST 2006
 //    I split SaveMovie into SaveMovie and SaveMovieMain.
 //
+//    Brad Whitlock, Tue Mar 7 10:19:37 PDT 2006
+//    Added UpdateSavedConfigFile.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -365,6 +368,7 @@ private slots:
     void SaveSession();
     void sessionFileHelper_LoadFile(const QString &);
     void sessionFileHelper_LoadSession(const QString &);
+    void UpdateSavedConfigFile();
 
     // Plot, operator related slots.
     void AddPlot(int, const QString &);

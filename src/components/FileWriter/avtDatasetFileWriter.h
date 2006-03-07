@@ -45,6 +45,9 @@ typedef enum
 //    Moved inlined destructor definition to .C file because certain compilers 
 //    have problems with them.
 //
+//    Brad Whitlock, Mon Mar 6 17:35:28 PST 2006
+//    I made it reset nFilesWritten if the nase changes.
+//
 // ****************************************************************************
 
 class AVTFILEWRITER_API avtDatasetFileWriter : public avtOriginatingDatasetSink
@@ -61,6 +64,7 @@ class AVTFILEWRITER_API avtDatasetFileWriter : public avtOriginatingDatasetSink
   protected:
     static const char *extensions[];
     int                nFilesWritten;
+    char              *oldFileBase;
 
     void               WriteSTLFile(const char *, bool);
 

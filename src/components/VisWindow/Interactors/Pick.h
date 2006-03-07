@@ -35,6 +35,9 @@ class VisWindowInteractorProxy;
 //    Renamed from Pick3D.  Added private members picking, handlingCache,
 //    pickCache and methods HandlePickCache and DoPick.
 //
+//    Kathleen Bonnell, Tue Mar  7 08:27:25 PST 2006 
+//    Added EndLeftButtonAction. 
+// 
 // ****************************************************************************
 
 class VISWINDOW_API Pick : public VisitInteractor
@@ -43,6 +46,7 @@ class VISWINDOW_API Pick : public VisitInteractor
                         Pick(VisWindowInteractorProxy &);
  
     virtual void        StartLeftButtonAction();
+    virtual void        EndLeftButtonAction();
 
   private:
     bool                picking;

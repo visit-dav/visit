@@ -361,6 +361,10 @@ LoadBalancer::CheckDynamicLoadBalancing(avtPipelineSpecification_p input)
 //    Better accomodate CMFE ... don't assume that the database stored with
 //    this pipeline index is the one we're referencing.
 //
+//    Hank Childs, Tue Mar  7 10:43:53 PST 2006
+//    Check here to see if we should do DBPLUGIN_DYNAMIC, rather than
+//    setting it as a global.
+//    
 // ****************************************************************************
 
 LoadBalanceScheme
@@ -375,9 +379,11 @@ LoadBalancer::DetermineAppropriateScheme(avtPipelineSpecification_p input)
     const LBInfo &lbinfo = pipelineInfo[index];
     std::string dbname = lbinfo.db;
     avtDatabase *db = dbMap[dbname];
-    avtDatabaseMetaData *md = db->GetMetaData(db->GetMostRecentTimestep());
+
     avtDataSpecification_p data = input->GetDataSpecification();
+    avtDatabaseMetaData *md = db->GetMetaData(db->GetMostRecentTimestep());
     string meshName;
+
     TRY
     {
         meshName = md->MeshForVar(data->GetVariable());
@@ -388,6 +394,9 @@ LoadBalancer::DetermineAppropriateScheme(avtPipelineSpecification_p input)
         return scheme;
     }
     ENDTRY;
+
+    if (md->GetFormatCanDoDomainDecomposition())
+        return LOAD_BALANCE_DBPLUGIN_DYNAMIC;
 
     const avtMeshMetaData *mmd = md->GetMesh(meshName);
 
@@ -894,6 +903,11 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Removed avtIOInformation and avtDatabaseMetaData args because the
 //    are obtainable from the database_ptr
+//
+//    Hank Childs, Tue Mar  7 10:43:53 PST 2006
+//    Make the decision to do DBPLUGIN_DYNAMIC load balancing on a per
+//    input basis.
+//
 // ****************************************************************************
 
 void
@@ -922,10 +936,6 @@ LoadBalancer::AddDatabase(const string &db, avtDatabase *db_ptr, int time)
             debug4 << "\n             ";
     }
     debug4 << "]  " << endl;
-
-    const avtDatabaseMetaData *md = db_ptr->GetMetaData(time);
-    if (md->GetFormatCanDoDomainDecomposition())
-        SetScheme(LOAD_BALANCE_DBPLUGIN_DYNAMIC);
 }
 
 // ****************************************************************************

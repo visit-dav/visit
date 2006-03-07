@@ -27,11 +27,16 @@ const char *avtImageFileWriter::extensions[] = {
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Mon Mar 6 17:36:50 PST 2006
+//    Added oldFileBase.
+//
 // ****************************************************************************
 
 avtImageFileWriter::avtImageFileWriter()
 {
     nFilesWritten = 0;
+    oldFileBase = 0;
 }
 
 
@@ -45,11 +50,16 @@ avtImageFileWriter::avtImageFileWriter()
 //  Programmer: Hank Childs
 //  Creation:   February 5, 2004
 //
+//  Modifications:
+//    Brad Whitlock, Mon Mar 6 17:37:26 PST 2006
+//    Added oldFileBase.
+//
 // ****************************************************************************
 
 avtImageFileWriter::~avtImageFileWriter()
 {
-    ;
+    if(oldFileBase != 0)
+        delete [] oldFileBase;
 }
 
 
@@ -236,7 +246,9 @@ avtImageFileWriter::FileHasExtension(const char *filename, const char *ext) cons
 // Creation:   Tue Feb 13 14:54:17 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Mar 6 17:39:39 PST 2006
+//   Added code to reset nFilesWritten if the file base changes.
+//
 // ****************************************************************************
 
 char *
@@ -245,6 +257,24 @@ avtImageFileWriter::CreateFilename(const char *base, bool family,
 {
     char *str = NULL;
     int len = strlen(base);
+
+    // Reset the nFilesWritten count if the file base changes.
+    if(family)
+    {
+        if(oldFileBase == NULL)
+        {
+            oldFileBase = new char[len+1];
+            strcpy(oldFileBase, base);
+        }
+        else if(strcmp(oldFileBase, base) != 0)
+        {
+            delete [] oldFileBase;
+            oldFileBase = new char[len+1];
+            strcpy(oldFileBase, base);
+
+            nFilesWritten = 0;
+        }
+    }
 
     // Get memory for the filename. The 9 is for "0000.tif"
     str = new char[len + 1 + 9];

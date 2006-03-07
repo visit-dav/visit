@@ -252,6 +252,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Hank Childs, Thu Mar  2 10:04:54 PST 2006
 //    Add imageBasedPlots to vis win info, remove from network manager.
 //
+//    Kathleen Bonnell, Tue Mar  7 08:27:25 PST 2006 
+//    Add PickForIntersection.
+//
 // ****************************************************************************
 
 class NetworkManager
@@ -320,6 +323,7 @@ class NetworkManager
     void          StopQueryMode(void);
 
     void          Pick(const int, const int, PickAttributes *);
+    void          PickForIntersection(const int, PickAttributes *);
     void          Query(const std::vector<int> &, QueryAttributes*);
     void          ExportDatabase(const int, ExportDBAttributes *);
     void          ConstructDDF(const int, ConstructDDFAttributes *);

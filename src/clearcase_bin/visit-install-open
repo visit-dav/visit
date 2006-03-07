@@ -15,6 +15,9 @@
 #   I fixed some errors that prevented other users from installing on
 #   mcr and thunder.
 #
+#   Brad Whitlock, Tue Mar 7 14:08:59 PST 2006
+#   Added -b bank to the visit-install invokations.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -211,7 +214,7 @@ scp kickit:/var/tmp/$user/kickit/visitbuild/visit$ver2.linux.tar.gz visit$ver2.l
 rm -f hoth
 cat <<EOF > hoth
 #!/bin/sh
-./visit-install -r -private -c open -g visit -gw -l $ver linux_rhel3 /usr/gapps/visit > installlog 2>&1
+./visit-install -r -private -c open -g visit -b bdivp -gw -l $ver linux_rhel3 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on hoth"            > resultlog 2>&1
 echo "       --------------------------"           >> resultlog 2>&1
@@ -247,7 +250,7 @@ fi
 rm -f sunspot
 cat <<EOF > sunspot
 #!/bin/sh
-./visit-install $verflag -c open -g visit -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
+./visit-install $verflag -c open -g visit -b bdivp -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on sunspot"         > resultlog 2>&1
 echo "       -----------------------------"        >> resultlog 2>&1
@@ -283,7 +286,7 @@ fi
 rm -f quad
 cat <<EOF > quad
 #!/bin/sh
-./visit-install -r -private -c open -g visit -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
+./visit-install -r -private -c open -g visit -b bdivp -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on quad"            > resultlog 2>&1
 echo "       --------------------------"           >> resultlog 2>&1
@@ -319,7 +322,7 @@ fi
 rm -f gps
 cat <<EOF > gps
 #!/bin/sh
-./visit-install -private -c open -g visit -gw -l $ver osf1 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c open -g visit -b bdivp -gw -l $ver osf1 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on gps"             > resultlog 2>&1
 echo "       -------------------------"            >> resultlog 2>&1
@@ -355,7 +358,7 @@ fi
 rm -f berg
 cat <<EOF > berg
 #!/bin/sh
-./visit-install -private -c open -g visit -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c open -g visit -b bdivp -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on berg"            > resultlog 2>&1
 echo "       --------------------------"           >> resultlog 2>&1
@@ -391,7 +394,7 @@ fi
 rm -f up
 cat <<EOF > up
 #!/bin/sh
-./visit-install -private -c open -g visit -gw -l $ver aix64-xlc /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c open -g visit -b bdivp -gw -l $ver aix64-xlc /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo ""                                            > resultlog 2>&1
 echo "        install of visit on up"              >> resultlog 2>&1
@@ -428,7 +431,7 @@ fi
 rm -f pengra
 cat <<EOF > pengra
 #!/bin/sh
-./visit-install -private -c open -g visit -gw -l $ver linux_chaos /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c open -g visit -b bdivp -gw -l $ver linux_chaos /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on pengra"          > resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1
@@ -464,7 +467,7 @@ fi
 rm -f thunder
 cat <<EOF > thunder
 #!/bin/sh
-./visit-install -private -c open -g visit -gw -l $ver linux-ia64 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c open -g visit -b bdivp -gw -l $ver linux-ia64 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on thunder"         > resultlog 2>&1
 echo "       -----------------------------"        >> resultlog 2>&1
@@ -500,7 +503,7 @@ fi
 rm -f gauss
 cat <<EOF > gauss
 #!/bin/sh
-./visit-install $verflag -c open -g visit -gw -l $ver linux-x86_64 /usr/gapps/visit > installlog 2>&1
+./visit-install $verflag -c open -g visit -b bdivp -gw -l $ver linux-x86_64 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on gauss"           > resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1

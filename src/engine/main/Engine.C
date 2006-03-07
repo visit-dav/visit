@@ -1867,6 +1867,9 @@ Engine::EngineInitializeProgressCallback(void *data, int nStages)
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
+//    Hank Childs, Fri Mar  3 14:17:40 PST 2006
+//    Changed name in exception to be correct.
+//
 // ****************************************************************************
 
 void
@@ -1875,7 +1878,7 @@ Engine::EngineWarningCallback(void *data, const char *msg)
     NonBlockingRPC *rpc = (NonBlockingRPC*)data;
     if (!rpc)
         EXCEPTION1(VisItException,
-                   "EngineInitializeProgressCallback called with no RPC set.");
+                   "EngineWarningCallback called with no RPC set.");
 
     rpc->SendWarning(msg);
 }

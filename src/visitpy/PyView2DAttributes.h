@@ -13,8 +13,9 @@ bool            PyView2DAttributes_Check(PyObject *obj);
 View2DAttributes *PyView2DAttributes_FromPyObject(PyObject *obj);
 PyObject       *PyView2DAttributes_NewPyObject();
 PyObject       *PyView2DAttributes_WrapPyObject(const View2DAttributes *attr);
-std::string     PyView2DAttributes_GetLogString();
 void            PyView2DAttributes_SetDefaults(const View2DAttributes *atts);
+std::string     PyView2DAttributes_GetLogString();
+std::string     PyView2DAttributes_ToString(const View2DAttributes *, const char *);
 
 #endif
 

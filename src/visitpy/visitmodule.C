@@ -3629,6 +3629,9 @@ visit_ClearReferenceLines(PyObject *self, PyObject *args)
 //    Jeremy Meredith, Thu Jul 25 11:46:02 PDT 2002
 //    Added code to get the last real filename to use as a return value.
 //
+//    Mark C. Miller, Tue Mar  7 10:31:34 PST 2006
+//    Made it return NULL only when it doesen't know SaveWindow exited
+//    out the bottom.
 // ****************************************************************************
 
 STATIC PyObject *
@@ -3642,12 +3645,18 @@ visit_SaveWindow(PyObject *self, PyObject *args)
     MUTEX_UNLOCK();
     int errorFlag = Synchronize();
 
+    std::string realname = viewer->GetSaveWindowAttributes()->GetLastRealFilename();
     PyObject *retval = NULL;
-    if(errorFlag == 0)
+
+    if (errorFlag == 0)
     {
-        std::string realname =
-            viewer->GetSaveWindowAttributes()->GetLastRealFilename();
         retval = PyString_FromString(realname.c_str());
+    }
+    else
+    {
+        // test for bugus name indicating save failed, somehow
+        if (realname == "/dev/null/SaveWindow_Error.txt")
+            retval = PyString_FromString("");
     }
 
     return retval;

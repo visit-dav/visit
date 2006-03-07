@@ -32,6 +32,7 @@ using std::string;
 #include <ViewerEngineManager.h>
 #include <ViewerFileServer.h>
 #include <ViewerMessaging.h>
+#include <ViewerPlot.h> 
 #include <ViewerPlotList.h> 
 #include <ViewerPopupMenu.h>
 #include <ViewerQueryManager.h>
@@ -4709,23 +4710,43 @@ ViewerWindow::SetCenterOfRotation(double x, double y, double z)
 // Creation:   Tue Jan 6 10:27:53 PDT 2004
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Mar  7 08:27:25 PST 2006
+//   Use direct visWindow->FindIntersection if !SR, pick is too complex for
+//   this simple operation.  If SR mode, call GetPickAttributesForScreenPoint,
+//   which will have the engine query it's viswin for the intersection. 
 //   
 // ****************************************************************************
 
 void
 ViewerWindow::ChooseCenterOfRotation(double sx, double sy)
 {
-    PickAttributes pick;
+    double isect[3];
+    bool success = false;
+    int w,h;
+    visWindow->GetSize(w, h);
+    int x = (int)(sx * w);
+    int y = (int)(sy * h);
 
-    //
-    // Determine the world point using the screen point using pick.
-    //
-    if(GetPickAttributesForScreenPoint(sx, sy, pick))
+    if (!visWindow->GetScalableRendering())
+    {
+        success = visWindow->FindIntersection(x, y, isect);
+    }
+    else
+    {
+        PickAttributes pick;
+        GetPickAttributesForScreenPoint((double)x, (double)y, pick);
+        if (pick.GetFulfilled())
+        {
+            isect[0] = pick.GetPickPoint()[0];
+            isect[1] = pick.GetPickPoint()[1];
+            isect[2] = pick.GetPickPoint()[2];
+            success = true;
+        }
+    }
+    if (success)
     {
         // Use the pick point as the new center of rotation.
-        SetCenterOfRotation(pick.GetPickPoint()[0],
-                            pick.GetPickPoint()[1],
-                            pick.GetPickPoint()[2]);
+        SetCenterOfRotation(isect[0], isect[1], isect[2]);
     }
     else
     {
@@ -5389,47 +5410,49 @@ ViewerWindow::Pick(int x, int y, const INTERACTION_MODE pickMode)
 //    Kathleen Bonnell, Thu Sep  2 13:55:05 PDT 2004 
 //    Tell the visWindow that Pick will be an intersection-only. 
 //   
+//    Kathleen Bonnell, Tue Mar  7 08:27:25 PST 2006 
+//    Made this an SR-only method.  It directly calls an Engine-Pick that
+//    will perform an intersection-only pick, less complex than an ordinary
+//    pick. 
+//   
 // ****************************************************************************
 
 bool
 ViewerWindow::GetPickAttributesForScreenPoint(double sx, double sy,
     PickAttributes &pa)
 {
-    INTERACTION_MODE iMode = visWindow->GetInteractionMode();
+    if (!visWindow->GetScalableRendering())
+        return false;
 
-    // The return value will be set in the pick function.
     bool retval = false;
-
     TRY
     {
-        // Set the interaction mode to pick.
-        SetInteractionMode(ZONE_PICK);
-
-        //
-        // Make the Pick infrastructure use a pick routine that does not add
-        // a Pick graphic to the vis window.
-        //
-        visWindow->SetPickTypeToIntersection();
-        pickFunction = PickFunctionSetSuccessFlag;
-        pickFunctionData = (void *)&retval;
-
-        //
-        // This method calls the Pick infrastructure with a pick routine that
-        // does not add a pick graphic to the vis window.
-        //
-        visWindow->Pick(sx, sy);
-
-        // Copy the pick attributes
-        pa = *(ViewerQueryManager::GetPickAtts());
-
-        // Restore the interaction mode.
-        SetInteractionMode(iMode);
+        ViewerPlotList *plist = GetPlotList();
+        intVector plotIds;
+        plist->GetActivePlotIDs(plotIds);
+        EngineKey key = plist->GetPlot(plotIds[0])->GetEngineKey();
+        if (ViewerEngineManager::Instance()->EngineExists(key))
+        {
+            intVector netIds;
+            for (int i = 0; i < plotIds.size(); i++)
+            {
+                netIds.push_back(plist->GetPlot(plotIds[i])->GetNetworkID());
+            }
+            PickAttributes pick;
+            pick.SetIncidentElements(netIds);
+            float sc[3];
+            sc[0] = sx;
+            sc[1] = sy;
+            sc[2] = 0.; 
+            pick.SetRayPoint1(sc);
+            ViewerEngineManager::Instance()->Pick(key, -1, GetWindowId(),
+                                                  &pick, pick);
+            pa = pick;
+            retval = pick.GetFulfilled();
+        }
     }
     CATCHALL(...)
     {
-        // Restore the interaction mode.
-        SetInteractionMode(iMode);
-
         RETHROW;
     }
     ENDTRY
@@ -6659,6 +6682,11 @@ ViewerWindow::GetIsCompressingScalableImage() const
 //   Added code to prevent the view from being saved if there are no plots
 //   that have actually been realized.
 //
+//   Brad Whitlock, Tue Mar 7 15:51:48 PST 2006
+//   Added code to save the window's image size, which is the interior OpenGL
+//   part of the window. We need that in order to produce movies with the
+//   exact right size in visit -movie when the -geometry flag is not given.
+//
 // ****************************************************************************
 
 void
@@ -6673,10 +6701,12 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
     //
     // Save the window size and location.
     //
-    int windowSize[2], windowLocation[2];
+    int windowSize[2], windowImageSize[2], windowLocation[2];
     GetWindowSize(windowSize[0], windowSize[1]);
+    GetSize(windowImageSize[0], windowImageSize[1]);
     GetLocation(windowLocation[0], windowLocation[1]);
     windowNode->AddNode(new DataNode("windowSize", windowSize, 2));
+    windowNode->AddNode(new DataNode("windowImageSize", windowImageSize, 2));
     windowNode->AddNode(new DataNode("windowLocation", windowLocation, 2));
 
     //

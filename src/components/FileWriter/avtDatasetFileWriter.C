@@ -47,11 +47,16 @@ using   std::vector;
 //  Programmer: Hank Childs
 //  Creation:   May 24, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Mon Mar 6 17:36:50 PST 2006
+//    Added oldFileBase.
+//
 // ****************************************************************************
 
 avtDatasetFileWriter::avtDatasetFileWriter()
 {
     nFilesWritten = 0;
+    oldFileBase = 0;
 }
 
 
@@ -65,11 +70,16 @@ avtDatasetFileWriter::avtDatasetFileWriter()
 //  Programmer: Hank Childs
 //  Creation:   February 5, 2004
 //
+//  Modifications:
+//    Brad Whitlock, Mon Mar 6 17:37:26 PST 2006
+//    Added oldFileBase.
+//
 // ****************************************************************************
 
 avtDatasetFileWriter::~avtDatasetFileWriter()
 {
-    ;
+    if(oldFileBase != 0)
+        delete [] oldFileBase;
 }
 
 
@@ -633,9 +643,11 @@ avtDatasetFileWriter::WriteCurveFile(const char *filename)
 //  Creation:   May 24, 2002
 //
 //  Modifications:
+//   Hank Childs, Mon Feb 24 18:22:04 PST 2003
+//   Allow for non-familied filenames.
 //
-//    Hank Childs, Mon Feb 24 18:22:04 PST 2003
-//    Allow for non-familied filenames.
+//   Brad Whitlock, Mon Mar 6 17:39:39 PST 2006
+//   Added code to reset nFilesWritten if the file base changes.
 //
 // ****************************************************************************
 
@@ -645,6 +657,24 @@ avtDatasetFileWriter::CreateFilename(const char *base, bool family,
 {
     char *str = NULL;
     int len = strlen(base);
+
+    // Reset the nFilesWritten count if the file base changes.
+    if(family)
+    {
+        if(oldFileBase == NULL)
+        {
+            oldFileBase = new char[len+1];
+            strcpy(oldFileBase, base);
+        }
+        else if(strcmp(oldFileBase, base) != 0)
+        {
+            delete [] oldFileBase;
+            oldFileBase = new char[len+1];
+            strcpy(oldFileBase, base);
+
+            nFilesWritten = 0;
+        }
+    }
 
     //
     // Get memory for the filename.
