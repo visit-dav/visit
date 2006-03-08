@@ -36,45 +36,46 @@ static const char *ViewerRPCType_strings[] = {
 "ToggleMaintainDataModeRPC", "ToggleBoundingBoxModeRPC", "ToggleCameraViewModeRPC", 
 "TogglePerspectiveViewRPC", "ToggleSpinModeRPC", "ToggleLockTimeRPC", 
 "ToggleLockToolsRPC", "ToggleLockViewModeRPC", "ToggleFullFrameRPC", 
-"UndoViewRPC", "InvertBackgroundRPC", "ClearPickPointsRPC", 
-"SetWindowModeRPC", "EnableToolRPC", "CopyViewToWindowRPC", 
-"CopyLightingToWindowRPC", "CopyAnnotationsToWindowRPC", "CopyPlotsToWindowRPC", 
-"ClearCacheRPC", "ClearCacheForAllEnginesRPC", "SetViewExtentsTypeRPC", 
-"ClearRefLinesRPC", "SetRenderingAttributesRPC", "DatabaseQueryRPC", 
-"PointQueryRPC", "LineQueryRPC", "CloneWindowRPC", 
-"SetMaterialAttributesRPC", "SetDefaultMaterialAttributesRPC", "ResetMaterialAttributesRPC", 
-"SetPlotDatabaseStateRPC", "DeletePlotDatabaseKeyframeRPC", "MovePlotDatabaseKeyframeRPC", 
-"ClearViewKeyframesRPC", "DeleteViewKeyframeRPC", "MoveViewKeyframeRPC", 
-"SetViewKeyframeRPC", "OpenMDServerRPC", "EnableToolbarRPC", 
-"HideToolbarsRPC", "HideToolbarsForAllWindowsRPC", "ShowToolbarsRPC", 
-"ShowToolbarsForAllWindowsRPC", "SetToolbarIconSizeRPC", "SaveViewRPC", 
-"SetGlobalLineoutAttributesRPC", "SetPickAttributesRPC", "ExportColorTableRPC", 
-"ExportEntireStateRPC", "ImportEntireStateRPC", "ResetPickAttributesRPC", 
-"AddAnnotationObjectRPC", "HideActiveAnnotationObjectsRPC", "DeleteActiveAnnotationObjectsRPC", 
-"RaiseActiveAnnotationObjectsRPC", "LowerActiveAnnotationObjectsRPC", "SetAnnotationObjectOptionsRPC", 
-"SetDefaultAnnotationObjectListRPC", "ResetAnnotationObjectListRPC", "ResetPickLetterRPC", 
-"SetDefaultPickAttributesRPC", "ChooseCenterOfRotationRPC", "SetCenterOfRotationRPC", 
-"SetQueryOverTimeAttributesRPC", "SetDefaultQueryOverTimeAttributesRPC", "ResetQueryOverTimeAttributesRPC", 
-"ResetLineoutColorRPC", "SetInteractorAttributesRPC", "SetDefaultInteractorAttributesRPC", 
-"ResetInteractorAttributesRPC", "GetProcInfoRPC", "SendSimulationCommandRPC", 
-"UpdateDBPluginInfoRPC", "ExportDBRPC", "SetTryHarderCyclesTimesRPC", 
-"OpenClientRPC", "SuppressQueryOutputRPC", "SetMeshManagementAttributesRPC", 
-"SetDefaultMeshManagementAttributesRPC", "ResetMeshManagementAttributesRPC", "ResizeWindowRPC", 
-"MoveWindowRPC", "MoveAndResizeWindowRPC", "SetStateLoggingRPC", 
-"ConstructDDFRPC", "MaxRPC"};
+"UndoViewRPC", "RedoViewRPC", "InvertBackgroundRPC", 
+"ClearPickPointsRPC", "SetWindowModeRPC", "EnableToolRPC", 
+"CopyViewToWindowRPC", "CopyLightingToWindowRPC", "CopyAnnotationsToWindowRPC", 
+"CopyPlotsToWindowRPC", "ClearCacheRPC", "ClearCacheForAllEnginesRPC", 
+"SetViewExtentsTypeRPC", "ClearRefLinesRPC", "SetRenderingAttributesRPC", 
+"DatabaseQueryRPC", "PointQueryRPC", "LineQueryRPC", 
+"CloneWindowRPC", "SetMaterialAttributesRPC", "SetDefaultMaterialAttributesRPC", 
+"ResetMaterialAttributesRPC", "SetPlotDatabaseStateRPC", "DeletePlotDatabaseKeyframeRPC", 
+"MovePlotDatabaseKeyframeRPC", "ClearViewKeyframesRPC", "DeleteViewKeyframeRPC", 
+"MoveViewKeyframeRPC", "SetViewKeyframeRPC", "OpenMDServerRPC", 
+"EnableToolbarRPC", "HideToolbarsRPC", "HideToolbarsForAllWindowsRPC", 
+"ShowToolbarsRPC", "ShowToolbarsForAllWindowsRPC", "SetToolbarIconSizeRPC", 
+"SaveViewRPC", "SetGlobalLineoutAttributesRPC", "SetPickAttributesRPC", 
+"ExportColorTableRPC", "ExportEntireStateRPC", "ImportEntireStateRPC", 
+"ResetPickAttributesRPC", "AddAnnotationObjectRPC", "HideActiveAnnotationObjectsRPC", 
+"DeleteActiveAnnotationObjectsRPC", "RaiseActiveAnnotationObjectsRPC", "LowerActiveAnnotationObjectsRPC", 
+"SetAnnotationObjectOptionsRPC", "SetDefaultAnnotationObjectListRPC", "ResetAnnotationObjectListRPC", 
+"ResetPickLetterRPC", "SetDefaultPickAttributesRPC", "ChooseCenterOfRotationRPC", 
+"SetCenterOfRotationRPC", "SetQueryOverTimeAttributesRPC", "SetDefaultQueryOverTimeAttributesRPC", 
+"ResetQueryOverTimeAttributesRPC", "ResetLineoutColorRPC", "SetInteractorAttributesRPC", 
+"SetDefaultInteractorAttributesRPC", "ResetInteractorAttributesRPC", "GetProcInfoRPC", 
+"SendSimulationCommandRPC", "UpdateDBPluginInfoRPC", "ExportDBRPC", 
+"SetTryHarderCyclesTimesRPC", "OpenClientRPC", "SuppressQueryOutputRPC", 
+"SetMeshManagementAttributesRPC", "SetDefaultMeshManagementAttributesRPC", "ResetMeshManagementAttributesRPC", 
+"ResizeWindowRPC", "MoveWindowRPC", "MoveAndResizeWindowRPC", 
+"SetStateLoggingRPC", "ConstructDDFRPC", "MaxRPC"
+};
 
 std::string
 ViewerRPC::ViewerRPCType_ToString(ViewerRPC::ViewerRPCType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 164) index = 0;
+    if(index < 0 || index >= 165) index = 0;
     return ViewerRPCType_strings[index];
 }
 
 std::string
 ViewerRPC::ViewerRPCType_ToString(int t)
 {
-    int index = (t < 0 || t >= 164) ? 0 : t;
+    int index = (t < 0 || t >= 165) ? 0 : t;
     return ViewerRPCType_strings[index];
 }
 
@@ -82,7 +83,7 @@ bool
 ViewerRPC::ViewerRPCType_FromString(const std::string &s, ViewerRPC::ViewerRPCType &val)
 {
     val = ViewerRPC::CloseRPC;
-    for(int i = 0; i < 164; ++i)
+    for(int i = 0; i < 165; ++i)
     {
         if(s == ViewerRPCType_strings[i])
         {
@@ -102,7 +103,7 @@ ViewerRPC::ViewerRPCType_FromString(const std::string &s, ViewerRPC::ViewerRPCTy
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Feb 13 21:49:32 PST 2006
+// Creation:   Tue Mar 7 16:37:37 PST 2006
 //
 // Modifications:
 //   
@@ -143,7 +144,7 @@ ViewerRPC::ViewerRPC() : AttributeSubject("iiiisssss*iiIiiisi*i*i*ssDDs*ibiiiss"
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Feb 13 21:49:32 PST 2006
+// Creation:   Tue Mar 7 16:37:37 PST 2006
 //
 // Modifications:
 //   
@@ -203,7 +204,7 @@ ViewerRPC::ViewerRPC(const ViewerRPC &obj) : AttributeSubject("iiiisssss*iiIiiis
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Feb 13 21:49:32 PST 2006
+// Creation:   Tue Mar 7 16:37:37 PST 2006
 //
 // Modifications:
 //   
@@ -223,7 +224,7 @@ ViewerRPC::~ViewerRPC()
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Feb 13 21:49:32 PST 2006
+// Creation:   Tue Mar 7 16:37:37 PST 2006
 //
 // Modifications:
 //   
@@ -286,7 +287,7 @@ ViewerRPC::operator = (const ViewerRPC &obj)
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Feb 13 21:49:32 PST 2006
+// Creation:   Tue Mar 7 16:37:37 PST 2006
 //
 // Modifications:
 //   
@@ -355,7 +356,7 @@ ViewerRPC::operator == (const ViewerRPC &obj) const
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Feb 13 21:49:32 PST 2006
+// Creation:   Tue Mar 7 16:37:37 PST 2006
 //
 // Modifications:
 //   
@@ -376,7 +377,7 @@ ViewerRPC::operator != (const ViewerRPC &obj) const
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Feb 13 21:49:32 PST 2006
+// Creation:   Tue Mar 7 16:37:37 PST 2006
 //
 // Modifications:
 //   
@@ -397,7 +398,7 @@ ViewerRPC::TypeName() const
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Feb 13 21:49:32 PST 2006
+// Creation:   Tue Mar 7 16:37:37 PST 2006
 //
 // Modifications:
 //   
@@ -425,7 +426,7 @@ ViewerRPC::CopyAttributes(const AttributeGroup *atts)
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Feb 13 21:49:32 PST 2006
+// Creation:   Tue Mar 7 16:37:37 PST 2006
 //
 // Modifications:
 //   
@@ -451,7 +452,7 @@ ViewerRPC::CreateCompatible(const std::string &tname) const
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Feb 13 21:49:32 PST 2006
+// Creation:   Tue Mar 7 16:37:37 PST 2006
 //
 // Modifications:
 //   
@@ -478,7 +479,7 @@ ViewerRPC::NewInstance(bool copy) const
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Feb 13 21:49:32 PST 2006
+// Creation:   Tue Mar 7 16:37:37 PST 2006
 //
 // Modifications:
 //   
@@ -1157,7 +1158,7 @@ ViewerRPC::SelectStringArg2()
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Feb 13 21:49:32 PST 2006
+// Creation:   Tue Mar 7 16:37:37 PST 2006
 //
 // Modifications:
 //   
@@ -1212,7 +1213,7 @@ ViewerRPC::GetFieldName(int index) const
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Feb 13 21:49:32 PST 2006
+// Creation:   Tue Mar 7 16:37:37 PST 2006
 //
 // Modifications:
 //   
@@ -1267,7 +1268,7 @@ ViewerRPC::GetFieldType(int index) const
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Feb 13 21:49:32 PST 2006
+// Creation:   Tue Mar 7 16:37:37 PST 2006
 //
 // Modifications:
 //   
@@ -1322,7 +1323,7 @@ ViewerRPC::GetFieldTypeName(int index) const
 // Note:       Autogenerated by xml2atts.
 //
 // Programmer: xml2atts
-// Creation:   Mon Feb 13 21:49:32 PST 2006
+// Creation:   Tue Mar 7 16:37:37 PST 2006
 //
 // Modifications:
 //   

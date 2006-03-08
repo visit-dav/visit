@@ -29,6 +29,7 @@
 #include <resetview.xpm>
 #include <recenterview.xpm>
 #include <undoview.xpm>
+#include <redoview.xpm>
 #include <saveview.xpm>
 #include <blankcamera.xpm>
 #include <choosecenterofrotation.xpm>
@@ -129,11 +130,36 @@ UndoViewAction::Execute()
 bool
 UndoViewAction::Enabled() const
 {
-    // This action should only be enabled if the window to which the action belongs
-    // has plots in it.
-    return (window->GetPlotList()->GetNumPlots() > 0);
+    // This action should only be enabled if the window to which the 
+    // action belongs has plots in it and there are views to undo.
+    return (window->GetPlotList()->GetNumPlots() > 0) &&
+            window->UndoViewEnabled();
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+RedoViewAction::RedoViewAction(ViewerWindow *win) :
+    ViewerAction(win, "RedoViewAction")
+{
+    SetAllText("Redo view");
+    if (!win->GetNoWinMode())
+        SetIconSet(QIconSet(QPixmap(redoview_xpm)));
+}
+
+void
+RedoViewAction::Execute()
+{
+    windowMgr->RedoView(windowId);
+}
+
+bool
+RedoViewAction::Enabled() const
+{
+    // This action should only be enabled if the window to which the 
+    // action belongs has plots in it and there are views to Redo.
+    return (window->GetPlotList()->GetNumPlots() > 0) &&
+            window->RedoViewEnabled();
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

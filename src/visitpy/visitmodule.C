@@ -8156,6 +8156,34 @@ visit_UndoView(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_RedoView
+//
+// Purpose:
+//   Tells the viewer to redo the last view operation.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 7 16:39:03 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_RedoView(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
+
+    MUTEX_LOCK();
+        viewer->RedoView();
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Function: visit_WriteConfigFile
 //
 // Purpose:
@@ -10592,6 +10620,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Brad Whitlock, Thu Nov 17 17:03:13 PST 2005
 //   Added ResizeWindow, MoveWindow, MoveAndResizeWindow.
 //
+//   Brad Whitlock, Tue Mar 7 16:39:38 PST 2006
+//   Added RedoView.
+//
 // ****************************************************************************
 
 static void
@@ -10904,6 +10935,7 @@ AddDefaultMethods()
                                                          visit_ToggleMode_doc);
     AddMethod("ToggleSpinMode", visit_ToggleSpinMode, visit_ToggleMode_doc);
     AddMethod("UndoView",  visit_UndoView, visit_UndoView_doc);
+    AddMethod("RedoView",  visit_RedoView, visit_RedoView_doc);
     AddMethod("WriteConfigFile",  visit_WriteConfigFile, 
                                                     visit_WriteConfigFile_doc);
     AddMethod("ZonePick", visit_Pick, visit_Pick_doc);

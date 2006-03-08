@@ -401,6 +401,9 @@ class Xfer;
 //    Hank Childs, Mon Feb 13 21:39:02 PST 2006
 //    Added GetConstructDDFAttributes, ConstructDDF.
 //
+//    Brad Whitlock, Tue Mar 7 16:36:16 PST 2006
+//    Added RedoView.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -533,6 +536,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void ToggleMaintainViewMode();
     void ToggleMaintainDataMode();
     void UndoView();
+    void RedoView();
     void ToggleLockViewMode();
     void ToggleLockTime();
     void ToggleLockTools();
