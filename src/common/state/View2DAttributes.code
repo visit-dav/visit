@@ -27,7 +27,7 @@ View2DAttributes::GetUseFullFrame(const double *limits) const
         return true;
 
     if (limits == 0)
-        return true;
+        return false;
 
     double dlimit1 = limits[1] - limits[0];
     double dlimit2 = limits[3] - limits[2];

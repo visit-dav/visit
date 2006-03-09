@@ -784,13 +784,16 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
         //
         // Launch the engine.
         //
-        typedef struct {string h; int p; string k;} SimData;
+        typedef struct {
+            string h; int p; string k;
+            ViewerConnectionProgressDialog *d;} SimData;
         SimData simData;
         // The windows compiler can't accept non aggregate types in an
         // initializer list so initialize them like this:
         simData.h = simHost;
         simData.p = simPort;
         simData.k = simSecurityKey;
+        simData.d = SetupConnectionProgressWindow(newEngine.proxy, ek.HostName());
 
         newEngine.proxy->Create(ek.HostName(),  chd, clientHostName,
                           manualSSHPort, sshPort,

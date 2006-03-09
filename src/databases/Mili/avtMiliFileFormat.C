@@ -293,6 +293,9 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fname)
 //
 //    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
 //    Free structures having to do with free nodes mesh
+//
+//    Mark C. Miller, Wed Mar  8 08:40:55 PST 2006
+//    Added code to cleanse Mili subrecords
 // ****************************************************************************
 
 avtMiliFileFormat::~avtMiliFileFormat()
@@ -324,6 +327,9 @@ avtMiliFileFormat::~avtMiliFileFormat()
             }
     connectivity.clear();
     materials.clear();
+    for (i = 0; i < sub_records.size(); ++i)
+        for (j = 0; j < sub_records[i].size(); ++j)
+            mc_cleanse_subrec(&sub_records[i][j]);
 
     //
     // Reset flags to indicate the meshes needs to be read in again.
@@ -1259,6 +1265,9 @@ avtMiliFileFormat::ReadMesh(int dom)
 //    Mark C. Miller, Mon Mar  6 14:25:49 PST 2006
 //    Added call to cleanse subrec at end of loop to fix a memory leak
 //
+//    Mark C. Miller, Wed Mar  8 08:40:55 PST 2006
+//    Moved code to cleanse subrec to destructor
+//
 // ****************************************************************************
 
 void
@@ -1344,7 +1353,6 @@ avtMiliFileFormat::ValidateVariables(int dom)
 
                  mc_cleanse_st_variable(&sv);
             }
-            mc_cleanse_subrec(&sr);
         }
     }
 
