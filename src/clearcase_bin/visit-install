@@ -100,6 +100,10 @@
 #    Brad Whitlock, Tue Mar 7 13:47:00 PST 2006
 #    I added the ability to choose a bank other than bdivp.
 #
+#    Eric Brugger, Fri Mar 10 09:55:15 PST 2006
+#    I added the ability to install a nersc or ornl config site file.
+#    I made a chgrp command conditional on the user having set a group.
+# 
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -183,8 +187,10 @@ while ($config == prompt)
    echo "   1) No system configuration"
    echo "   2) LLNL open network"
    echo "   3) LLNL closed network"
+   echo "   4) NERSC network"
+   echo "   5) ORNL network"
    echo ""
-   echo "(1,2,3):"
+   echo "(1,2,3,4,5):"
 
    set config = $<
    switch ($config)
@@ -197,13 +203,19 @@ while ($config == prompt)
       case 3:
          set config = closed
          breaksw
+      case 4:
+         set config = nersc
+         breaksw
+      case 5:
+         set config = ornl
+         breaksw
       default:
          set config = prompt
          breaksw
    endsw
 end
 
-if ($config != none && $config != open && $config != closed) then
+if ($config != none && $config != open && $config != closed && $config != nersc && $config != ornl) then
    echo "Illegal configuration option, choices are none, open and closed."
    exit (1)
 endif
@@ -334,13 +346,19 @@ cp distribution/visit/data/* $dir/data
 # Use the appropriate configuration file, setting the bank to the right value.
 #
 rm -f $dir/$version+/.visit/config
-if ($config == open) then
-   ln -s visit-config-open  $dir/$version+/.visit/config_template
-else if ($config == closed) then
+if ($config == closed) then
    ln -s visit-config-closed $dir/$version+/.visit/config_template
+else if ($config == nersc) then
+   ln -s visit-config-nersc $dir/$version+/.visit/config_template
+else if ($config == open) then
+   ln -s visit-config-open  $dir/$version+/.visit/config_template
+else if ($config == ornl) then
+   ln -s visit-config-ornl $dir/$version+/.visit/config_template
 endif
 sed -e "s/bdivp/$bank/" $dir/$version+/.visit/config_template > $dir/$version+/.visit/config
-chgrp $group_ownership $dir/$version+/.visit/config
+if ($group_ownership != none) then
+   chgrp $group_ownership $dir/$version+/.visit/config
+endif
 chmod 664 $dir/$version+/.visit/config
 
 #

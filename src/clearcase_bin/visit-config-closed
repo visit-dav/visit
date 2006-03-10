@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Object name="VisIt">
-    <Field name="Version" type="string">1.5</Field>
+    <Field name="Version" type="string">1.5.2</Field>
     <Object name="VIEWER">
         <Object name="GlobalAttributes">
             <Field name="cloneWindowOnFirstRef" type="bool">true</Field>

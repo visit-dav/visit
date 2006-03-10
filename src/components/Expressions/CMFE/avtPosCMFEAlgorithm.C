@@ -1449,6 +1449,11 @@ Boundary::AttemptSplit(Boundary *&b1, Boundary *&b2)
 //  Programmer: Hank Childs
 //  Creation:   October 12, 2005
 //
+//  Modification:
+//
+//    Hank Childs, Fri Mar 10 14:35:32 PST 2006
+//    Add fix for parallel engines of 1 processor.
+//
 // ****************************************************************************
 
 void
@@ -1494,7 +1499,7 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
     b_list[0] = new Boundary(fbounds, nProcs, X_AXIS);
     int listSize = 1;
     int *bin_lookup = new int[2*nProcs];
-    bool keepGoing = true;
+    bool keepGoing = (nProcs > 1);
     while (keepGoing)
     {
         // Figure out how many boundaries need to keep going.
