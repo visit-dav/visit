@@ -50,8 +50,14 @@
 
 #include <vtkCommand.h>
 
+// Modifications:
+//  Brad Whitlock, Mon Mar 13 15:38:12 PST 2006
+//  I added support for alt and alt+shift keys.
+//
 vtkQtRenderWindowInteractor::vtkQtRenderWindowInteractor() {
     qtRenWin = NULL;
+    alt = false;
+    altshift = false;
 }
 
 vtkQtRenderWindowInteractor::~vtkQtRenderWindowInteractor() {
@@ -86,7 +92,12 @@ void vtkQtRenderWindowInteractor::PrintSelf(ostream&os, vtkIndent indent) {
     vtkRenderWindowInteractor::PrintSelf(os, indent);
 }
 
-// GetSize calling sequence changed by LLNL to fit VTK interface change.
+// Modifications:
+//  GetSize calling sequence changed by LLNL to fit VTK interface change.
+//
+//  Brad Whitlock, Mon Mar 13 15:38:12 PST 2006
+//  I added support for alt and alt+shift keys.
+//
 void vtkQtRenderWindowInteractor::mousePressEvent(QMouseEvent *me) {
     if (!Enabled)
       return;
@@ -100,13 +111,30 @@ void vtkQtRenderWindowInteractor::mousePressEvent(QMouseEvent *me) {
       ctrl = 1;
     if (me->state() & Qt::ShiftButton)
       shift = 1;
+    // Set the alt and altshift flags.
+    alt = (me->state() & Qt::AltButton);
+    if(me->state() & Qt::AltButton &&
+       me->state() & Qt::ShiftButton)
+    {
+        altshift = true;
+        shift = 0; 
+        alt = false;
+    }
+    else
+        altshift = false;
+
     int xp = me->x();
     int yp = Size[1]- me->y() -1;
 
     SetEventInformation(xp, yp, ctrl, shift);
     switch (me->button()) {
     case QEvent::LeftButton:
-      InvokeEvent(vtkCommand::LeftButtonPressEvent, NULL); 
+      if(altshift)
+          InvokeEvent(vtkCommand::MiddleButtonPressEvent, NULL);
+      else if(alt)
+          InvokeEvent(vtkCommand::RightButtonPressEvent, NULL);
+      else
+          InvokeEvent(vtkCommand::LeftButtonPressEvent, NULL);
       break;
     case QEvent::MidButton:
       InvokeEvent(vtkCommand::MiddleButtonPressEvent, NULL); 
@@ -119,7 +147,12 @@ void vtkQtRenderWindowInteractor::mousePressEvent(QMouseEvent *me) {
     }
 }
 
-// GetSize calling sequence changed by LLNL to fit VTK interface change.
+// Modifications:
+//  GetSize calling sequence changed by LLNL to fit VTK interface change.
+//
+//  Brad Whitlock, Mon Mar 13 15:38:12 PST 2006
+//  I added support for alt and alt+shift keys.
+//
 void vtkQtRenderWindowInteractor::mouseReleaseEvent(QMouseEvent *me) {
     if (!Enabled)
       return;
@@ -133,13 +166,22 @@ void vtkQtRenderWindowInteractor::mouseReleaseEvent(QMouseEvent *me) {
       ctrl = 1;
     if (me->state() & Qt::ShiftButton)
       shift = 1;
+    // Set the alt and altshift flags.
+    if(altshift)
+        shift = 0; 
+
     int xp = me->x();
     int yp = Size[1]- me->y() -1;
 
     SetEventInformation(xp, yp, ctrl, shift);
     switch (me->button()) {
     case QEvent::LeftButton:
-      InvokeEvent(vtkCommand::LeftButtonReleaseEvent);
+      if(altshift)
+          InvokeEvent(vtkCommand::MiddleButtonReleaseEvent);
+      else if(alt)
+          InvokeEvent(vtkCommand::RightButtonReleaseEvent);
+      else
+          InvokeEvent(vtkCommand::LeftButtonReleaseEvent);
       break;
     case QEvent::MidButton:
       InvokeEvent(vtkCommand::MiddleButtonReleaseEvent);
@@ -150,6 +192,9 @@ void vtkQtRenderWindowInteractor::mouseReleaseEvent(QMouseEvent *me) {
     default:
       return;
     }
+
+    alt = false;
+    altshift = false;
 }
 
 void vtkQtRenderWindowInteractor::timer() {
@@ -176,7 +221,12 @@ int vtkQtRenderWindowInteractor::DestroyTimer() {
     return 1;
 }
 
-// GetSize calling sequence changed by LLNL to fit VTK interface change.
+// Modifications:
+//  GetSize calling sequence changed by LLNL to fit VTK interface change.
+//
+//  Brad Whitlock, Mon Mar 13 15:38:12 PST 2006
+//  I added support for alt and alt+shift keys.
+//
 void vtkQtRenderWindowInteractor::keyPressEvent(QKeyEvent *ke) {
     if (!Enabled)
       return;
@@ -189,6 +239,18 @@ void vtkQtRenderWindowInteractor::keyPressEvent(QKeyEvent *ke) {
       ctrl = 1;
     if (ke->state() & Qt::ShiftButton)
       shift = 1;
+    // Set the alt and altshift flags.
+    alt = (ke->state() & Qt::AltButton);
+    if(ke->state() & Qt::AltButton &&
+       ke->state() & Qt::ShiftButton)
+    {
+        altshift = true;
+        shift = 0;
+        alt = false;
+    }
+    else
+        altshift = false;
+
     QPoint cp = qtRenWin->mapFromGlobal(QCursor::pos());
     int xp = cp.x();
     int yp = Size[1]- cp.y() -1;

@@ -26,12 +26,31 @@
 //    Akira Haddox, Thu Jul  3 13:58:11 PDT 2003
 //    Added initialization of guideLine data.
 //
+//    Brad Whitlock, Mon Mar 13 12:11:01 PDT 2006
+//    Added different initialization for Apple so all lines can be drawn
+//    at once.
+//
 // ****************************************************************************
 
 Zoom2D::Zoom2D(VisWindowInteractorProxy &v) : ZoomInteractor(v)
 {
     guideLines       = vtkPolyData::New();
 
+#if defined(__APPLE__)
+    vtkPoints *pts = vtkPoints::New();
+    pts->SetNumberOfPoints(12);
+    guideLines->SetPoints(pts);
+    pts->Delete();
+
+    vtkCellArray *lines  = vtkCellArray::New();
+    vtkIdType  ids[8][2] = {
+       {0, 1}, {2,3}, {4,5}, {6,7}, {8,1}, {5,9}, {10,2}, {6,11}
+    };
+    for(int i = 0; i < 8; ++i)
+        lines->InsertNextCell(2, ids[i]);
+    guideLines->SetLines(lines);
+    lines->Delete();
+#else
     vtkPoints *pts = vtkPoints::New();
     pts->SetNumberOfPoints(2);
     guideLines->SetPoints(pts);
@@ -42,7 +61,7 @@ Zoom2D::Zoom2D(VisWindowInteractorProxy &v) : ZoomInteractor(v)
     lines->InsertNextCell(2, ids);
     guideLines->SetLines(lines);
     lines->Delete();
-
+#endif
     guideLinesMapper = vtkDashedXorGridMapper2D::New();
     guideLinesMapper->SetInput(guideLines);
     guideLinesMapper->SetDots(2, 3);
@@ -243,6 +262,9 @@ Zoom2D::EndMiddleButtonAction()
 //    control-key now determines zoom/unzoom, shouldDrawGuides 
 //    (from InteractorAtts) determines whether guidelines should be drawn.
 //
+//    Brad Whitlock, Mon Mar 13 11:42:54 PDT 2006
+//    I added code to set the color for the guidlines actor.
+//
 // ****************************************************************************
 
 void
@@ -252,12 +274,21 @@ Zoom2D::StartRubberBand(int x, int y)
     ZoomInteractor::StartRubberBand(x, y);
     if (shouldDrawGuides)
     {
+        // Set the actor's color.
+        float fg[3];
+        proxy.GetForegroundColor(fg);
+        guideLinesActor->GetProperty()->SetColor(fg[0], fg[1], fg[2]);
+
         vtkRenderer *ren = proxy.GetBackground();
         ren->AddActor2D(guideLinesActor);
        
         lastGuideX = x;
         lastGuideY = y;
+#if defined(__APPLE__)
+        UpdateRubberBand(x,y,x,y,x,y);
+#else
         DrawAllGuideLines(x, y, x, y);
+#endif
     }
 }
 
@@ -307,6 +338,9 @@ Zoom2D::EndRubberBand()
 //    control-key now determines zoom/unzoom, shouldDrawGuides 
 //    (from InteractorAtts) determines whether guidelines should be drawn.
 //
+//    Brad Whitlock, Mon Mar 13 12:22:13 PDT 2006
+//    Added code for Apple so all lines can be drawn at once.
+//
 // ****************************************************************************
 
 void
@@ -327,7 +361,33 @@ Zoom2D::UpdateRubberBand(int aX, int aY, int lX, int lY, int nX, int nY)
     // call. The rubberBand doesn't need it exactly, but we do.
     if (shouldDrawGuides)
     {
+#if defined(__APPLE__)
+        int x0 = (aX < nX) ? aX : nX;
+        int x1 = (aX > nX) ? aX : nX;
+        int y0 = (aY < nY) ? aY : nY;
+        int y1 = (aY > nY) ? aY : nY;
+        int xMin = (int)(canvasDeviceMinX);
+        int yMin = (int)(canvasDeviceMinY);
+        int xMax = (int)(canvasDeviceMaxX);
+        int yMax = (int)(canvasDeviceMaxY);
+        vtkViewport *ren = proxy.GetBackground();
+        vtkPoints *pts = guideLines->GetPoints();
+        pts->SetPoint(0, (double) xMin, (double) y0, 0.);
+        pts->SetPoint(1, (double) x0,   (double) y0, 0.);
+        pts->SetPoint(2, (double) x1,   (double) y0, 0.);
+        pts->SetPoint(3, (double) xMax, (double) y0, 0.);
+        pts->SetPoint(4, (double) xMin, (double) y1, 0.);
+        pts->SetPoint(5, (double) x0,   (double) y1, 0.);
+        pts->SetPoint(6, (double) x1,   (double) y1, 0.);
+        pts->SetPoint(7, (double) xMax, (double) y1, 0.);
+        pts->SetPoint(8, (double) x0,   (double) yMin, 0.);
+        pts->SetPoint(9, (double) x0,   (double) yMax, 0.);
+        pts->SetPoint(10, (double) x1,  (double) yMin, 0.);
+        pts->SetPoint(11, (double) x1,  (double) yMax, 0.);
+        guideLinesMapper->RenderOverlay(ren, guideLinesActor);
+#else
         UpdateGuideLines(aX, aY, lastGuideX, lastGuideY, nX, nY);
+#endif
         lastGuideX = nX;
         lastGuideY = nY;
     }

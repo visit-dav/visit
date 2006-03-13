@@ -12,8 +12,10 @@
 #include <avtSimulationInformation.h>
 #include <avtSimulationCommandSpecification.h>
 
+#include <Expression.h>
 #include <DebugStream.h>
 #include <InvalidFilesException.h>
+#include <InvalidVariableException.h>
 
 #include <visitstream.h>
 
@@ -310,6 +312,9 @@ avtSimV1FileFormat::FreeUpResources(void)
 //    Shelly Prevost, Tue Jan 24 17:49:11 PST 2006
 //    Added the ability to send more general commands to the simulation.
 //
+//    Brad Whitlock, Wed Mar 1 15:46:40 PST 2006
+//    I added expressions to the metadata.
+//
 // ****************************************************************************
 
 void
@@ -520,9 +525,32 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         md->Add(curve);
     }
 
+    for(int e = 0; e < vsmd->numExpressions; ++e)
+    {
+        Expression *newexp = new Expression;
+        newexp->SetName(vsmd->expressions[e].name);
+        newexp->SetDefinition(vsmd->expressions[e].definition);
+        if(vsmd->expressions[e].vartype == VISIT_VARTYPE_MESH)
+            newexp->SetType(Expression::Mesh);
+        else if(vsmd->expressions[e].vartype == VISIT_VARTYPE_SCALAR)
+            newexp->SetType(Expression::ScalarMeshVar);
+        else if(vsmd->expressions[e].vartype == VISIT_VARTYPE_VECTOR)
+            newexp->SetType(Expression::VectorMeshVar);
+        else if(vsmd->expressions[e].vartype == VISIT_VARTYPE_TENSOR)
+            newexp->SetType(Expression::TensorMeshVar);
+        else if(vsmd->expressions[e].vartype == VISIT_VARTYPE_SYMMETRIC_TENSOR)
+            newexp->SetType(Expression::SymmetricTensorMeshVar);
+        else if(vsmd->expressions[e].vartype == VISIT_VARTYPE_MATERIAL)
+            newexp->SetType(Expression::Material);
+        else if(vsmd->expressions[e].vartype == VISIT_VARTYPE_MATSPECIES)
+            newexp->SetType(Expression::Species);
+        else
+            newexp->SetType(Expression::Unknown);
+
+        md->AddExpression(newexp);
+    }
     //md->Print(cout);
 
-    // DO THE EXPRESSIONS, ETC.
 #endif
 }
 
@@ -557,7 +585,12 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Jeremy Meredith, Wed May 25 14:38:35 PDT 2005
 //    Added unstructured mesh support.
 //
+//    Brad Whitlock, Fri Mar 3 09:36:52 PDT 2006
+//    Added point mesh support and made it throw an exception if the 
+//    simulation's mesh callback could not find the named mesh.
+//
 // ****************************************************************************
+
 vtkDataSet *
 avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
 {
@@ -573,7 +606,15 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
     if (!cb.GetMesh)
         return NULL;
 
+    // Call into the simulation to get the mesh
     VisIt_MeshData *vmesh = cb.GetMesh(domain, meshname);
+
+    // If the mesh could not be created then throw an exception.
+    if(vmesh == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, meshname);
+    }
+
     switch (vmesh->meshType)
     {
       case VISIT_MESHTYPE_CURVILINEAR:
@@ -965,9 +1006,73 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
             return ugrid;
         }
         break;
+      case VISIT_MESHTYPE_POINT:
+        {
+            VisIt_PointMesh *pmesh = vmesh->pmesh;
+
+            if (!pmesh)
+                return NULL;
+
+
+            vtkPolyData  *pd = vtkPolyData::New();
+            vtkPoints    *points  = vtkPoints::New();
+            pd->SetPoints(points);
+            points->Delete();
+
+            //
+            // Populate the coordinates.
+            //
+            int npts = pmesh->nnodes;
+            points->SetNumberOfPoints(npts);
+            float *pts = (float *) points->GetVoidPointer(0);
+            pd->Allocate(npts);
+            vtkIdType onevertex[1];
+            if (pmesh->xcoords.dataType == VISIT_DATATYPE_FLOAT)
+            {
+                for (int i=0; i<npts; i++)
+                {
+                    pts[i*3 + 0] = pmesh->xcoords.fArray[i];
+                    pts[i*3 + 1] = pmesh->ycoords.fArray[i];
+                    if (pmesh->ndims==3)
+                        pts[i*3 + 2] = pmesh->zcoords.fArray[i];
+                    else
+                        pts[i*3 + 2] = 0.f;
+
+                    onevertex[0] = i;
+                    pd->InsertNextCell(VTK_VERTEX, 1, onevertex);
+                }
+            }
+            else if (pmesh->xcoords.dataType == VISIT_DATATYPE_DOUBLE)
+            {
+                for (int i=0; i<npts; i++)
+                {
+                    pts[i*3 + 0] = pmesh->xcoords.dArray[i];
+                    pts[i*3 + 1] = pmesh->ycoords.dArray[i];
+                    if (pmesh->ndims==3)
+                        pts[i*3 + 2] = pmesh->zcoords.dArray[i];
+                    else
+                        pts[i*3 + 2] = 0.f;
+
+                    onevertex[0] = i;
+                    pd->InsertNextCell(VTK_VERTEX, 1, onevertex);
+                }
+            }
+            else
+            {
+                EXCEPTION1(ImproperUseException,
+                           "Coordinate arrays must be float or double.\n");
+            }
+
+            FreeDataArray(pmesh->xcoords);
+            FreeDataArray(pmesh->ycoords);
+            FreeDataArray(pmesh->zcoords);
+
+            return pd;
+        }
+        break;
       default:
         EXCEPTION1(ImproperUseException,
-                   "Only curvilinear meshes are currently supported.\n");
+                   "You've tried to use an unsupported mesh type.\n");
         break;
     }
 

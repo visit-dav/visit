@@ -597,6 +597,11 @@ extern int F_VISITGETDOMAINLIST(int *);
 #define F_VISITMDSETRUNNING     F77_ID(visitmdsetrunning_,visitmdsetrunning,VISITMDSETRUNNING)
 #define F_VISITMDMESHCREATE     F77_ID(visitmdmeshcreate_,visitmdmeshcreate,VISITMDMESHCREATE)
 #define F_VISITMDMESHSETUNITS   F77_ID(visitmdmeshsetunits_,visitmdmeshsetunits,VISITMDMESHSETUNITS)
+#define F_VISITMDMESHSETLABELS  F77_ID(visitmdmeshsetlabels_,visitmdmeshsetlabels,VISITMDMESHSETLABELS)
+#define F_VISITMDMESHSETBLOCKTITLE      F77_ID(visitmdmeshsetblocktitle_,visitmdmeshsetblocktitle,VISITMDMESHSETBLOCKTITLE)
+#define F_VISITMDMESHSETBLOCKPIECENAME  F77_ID(visitmdmeshsetblockpiecename_,visitmdmeshsetblockpiecename,VISITMDMESHSETBLOCKPIECENAME)
+#define F_VISITMDMESHSETGROUPTITLE      F77_ID(visitmdmeshsetgrouptitle_,visitmdmeshsetgrouptitle,VISITMDMESHSETGROUPTITLE)
+#define F_VISITMDMESHSETGROUPPIECENAME  F77_ID(visitmdmeshsetgrouppiecename_,visitmdmeshsetgrouppiecename,VISITMDMESHSETGROUPPIECENAME)
 #define F_VISITMDSCALARCREATE   F77_ID(visitmdscalarcreate_,visitmdscalarcreate,VISITMDSCALARCREATE)
 #define F_VISITMDSCALARSETUNITS F77_ID(visitmdscalarsetunits_,visitmdscalarsetunits,VISITMDSCALARSETUNITS)
 #define F_VISITMDADDSIMCOMMAND  F77_ID(visitmdaddsimcommand_,visitmdaddsimcommand,VISITMDADDSIMCOMMAND)
@@ -605,9 +610,12 @@ extern int F_VISITGETDOMAINLIST(int *);
 #define F_VISITMDCURVESETLABELS F77_ID(visitmdcurvesetlabels_,visitmdcurvesetlabels,VISITMDCURVESETLABELS)
 #define F_VISITMDMATERIALCREATE F77_ID(visitmdmaterialcreate_,visitmdmaterialcreate,VISITMDMATERIALCREATE)
 #define F_VISITMDMATERIALADD    F77_ID(visitmdmaterialadd_,visitmdmaterialadd,VISITMDMATERIALADD)
+#define F_VISITMDEXPRESSIONCREATE      F77_ID(visitmdexpressioncreate_,visitmdexpressioncreate,VISITMDEXPRESSIONCREATE)
 
 #define F_VISITMESHRECTILINEAR  F77_ID(visitmeshrectilinear_,visitmeshrectilinear,VISITMESHRECTILINEAR)
 #define F_VISITMESHCURVILINEAR  F77_ID(visitmeshcurvilinear_,visitmeshcurvilinear,VISITMESHCURVILINEAR)
+#define F_VISITMESHPOINT        F77_ID(visitmeshpoint_,visitmeshpoint,VISITMESHPOINT)
+#define F_VISITMESHUNSTRUCTURED F77_ID(visitmeshunstructured_,visitmeshunstructured,VISITMESHUNSTRUCTURED)
 
 #define F_VISITSCALARSETDATA    F77_ID(visitscalarsetdata_,visitscalarsetdata,VISITSCALARSETDATA)
 #define F_VISITSCALARSETDATAC   F77_ID(visitscalarsetdatac_,visitscalarsetdatac,VISITSCALARSETDATAC)
@@ -1133,6 +1141,238 @@ F_VISITMDMESHSETUNITS(int *mdhandle, int *meshindex, VISIT_F77STRING units,
 }
 
 /******************************************************************************
+ * Function: F_VISITMDMESHSETLABELS
+ *
+ * Purpose:   Allows FORTRAN to create set the axis labels for mesh metadata
+ *
+ * Arguments:
+ *   mdhandle  : The handle to the metadata object we're using.
+ *   meshindex : The index of the mesh in the metadata.
+ *   xlabel    : Fortran string containing the mesh's x label.
+ *   lxlabel   : Length of the xlabel string.
+ *   ylabel    : Fortran string containing the mesh's y label.
+ *   lylabel   : Length of the ylabel string.
+ *   zlabel    : Fortran string containing the mesh's z label.
+ *   lzlabel   : Length of the zlabel string.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jan 27 16:15:11 PST 2006
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITMDMESHSETLABELS(int *mdhandle, int *meshindex, 
+    VISIT_F77STRING xlabel, int *lxlabel, 
+    VISIT_F77STRING ylabel, int *lylabel, 
+    VISIT_F77STRING zlabel, int *lzlabel)
+{
+    int retval = VISIT_ERROR;
+
+    VisIt_SimulationMetaData *md = (VisIt_SimulationMetaData *)GetFortranPointer(*mdhandle);
+    if(md)
+    {
+        if(*meshindex >= 0 && *meshindex < md->numMeshes)
+        {
+            char *f_xl = NULL, *f_yl = NULL, *f_zl = NULL;
+            COPY_FORTRAN_STRING(f_xl, xlabel, lxlabel);
+            COPY_FORTRAN_STRING(f_yl, ylabel, lylabel);
+            COPY_FORTRAN_STRING(f_zl, zlabel, lzlabel);
+            FREE((char *)md->meshes[*meshindex].xLabel);
+            FREE((char *)md->meshes[*meshindex].yLabel);
+            FREE((char *)md->meshes[*meshindex].zLabel);
+            md->meshes[*meshindex].xLabel = f_xl;
+            md->meshes[*meshindex].yLabel = f_yl;
+            md->meshes[*meshindex].zLabel = f_zl;
+            retval = VISIT_OKAY;
+        }
+        else
+            fprintf(stderr, "visitmdmeshsetlabels: An invalid index was passed\n");
+    }
+    else
+        fprintf(stderr, "visitmdmeshsetlabels: Could not access metadata\n");
+
+    return retval;
+}
+
+/******************************************************************************
+ * Function: F_VISITMDMESHSETBLOCKTITLE
+ *
+ * Purpose:   Allows FORTRAN to create set the blockTitle for mesh metadata
+ *
+ * Arguments:
+ *   mdhandle    : The handle to the metadata object we're using.
+ *   meshindex   : The index of the mesh in the metadata.
+ *   blockTitle  : Fortran string containing the mesh blockTitle.
+ *   lblockTitle : Length of the mesh blockTitle string.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jan 27 16:15:11 PST 2006
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITMDMESHSETBLOCKTITLE(int *mdhandle, int *meshindex, 
+    VISIT_F77STRING blockTitle, int *lblockTitle)
+{
+    int retval = VISIT_ERROR;
+
+    VisIt_SimulationMetaData *md = (VisIt_SimulationMetaData *)GetFortranPointer(*mdhandle);
+    if(md)
+    {
+        if(*meshindex >= 0 && *meshindex < md->numMeshes)
+        {
+            char *f_blockTitle = NULL;
+            COPY_FORTRAN_STRING(f_blockTitle, blockTitle, lblockTitle);
+            FREE((char *)md->meshes[*meshindex].blockTitle);
+            md->meshes[*meshindex].blockTitle = f_blockTitle;
+            retval = VISIT_OKAY;
+        }
+        else
+            fprintf(stderr, "visitmdmeshsetblocktitle: An invalid index was passed\n");
+    }
+    else
+        fprintf(stderr, "visitmdmeshsetblocktitle: Could not access metadata\n");
+
+    return retval;
+}
+
+/******************************************************************************
+ * Function: F_VISITMDMESHSETBLOCKPIECENAME
+ *
+ * Purpose:   Allows FORTRAN to create set the blockPieceName for mesh metadata
+ *
+ * Arguments:
+ *   mdhandle    : The handle to the metadata object we're using.
+ *   meshindex   : The index of the mesh in the metadata.
+ *   blockPieceName  : Fortran string containing the mesh blockPieceName.
+ *   lblockPieceName : Length of the mesh blockPieceName string.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jan 27 16:15:11 PST 2006
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITMDMESHSETBLOCKPIECENAME(int *mdhandle, int *meshindex, 
+    VISIT_F77STRING blockPieceName, int *lblockPieceName)
+{
+    int retval = VISIT_ERROR;
+
+    VisIt_SimulationMetaData *md = (VisIt_SimulationMetaData *)GetFortranPointer(*mdhandle);
+    if(md)
+    {
+        if(*meshindex >= 0 && *meshindex < md->numMeshes)
+        {
+            char *f_blockPieceName = NULL;
+            COPY_FORTRAN_STRING(f_blockPieceName, blockPieceName, lblockPieceName);
+            FREE((char *)md->meshes[*meshindex].blockPieceName);
+            md->meshes[*meshindex].blockPieceName = f_blockPieceName;
+            retval = VISIT_OKAY;
+        }
+        else
+            fprintf(stderr, "visitmdmeshsetblocktitle: An invalid index was passed\n");
+    }
+    else
+        fprintf(stderr, "visitmdmeshsetblocktitle: Could not access metadata\n");
+
+    return retval;
+}
+
+/******************************************************************************
+ * Function: F_VISITMDMESHSETGROUPTITLE
+ *
+ * Purpose:   Allows FORTRAN to create set the groupTitle for mesh metadata
+ *
+ * Arguments:
+ *   mdhandle    : The handle to the metadata object we're using.
+ *   meshindex   : The index of the mesh in the metadata.
+ *   groupTitle  : Fortran string containing the mesh groupTitle.
+ *   lgroupTitle : Length of the mesh groupTitle string.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jan 27 16:15:11 PST 2006
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITMDMESHSETGROUPTITLE(int *mdhandle, int *meshindex, 
+    VISIT_F77STRING groupTitle, int *lgroupTitle)
+{
+    int retval = VISIT_ERROR;
+
+    VisIt_SimulationMetaData *md = (VisIt_SimulationMetaData *)GetFortranPointer(*mdhandle);
+    if(md)
+    {
+        if(*meshindex >= 0 && *meshindex < md->numMeshes)
+        {
+            char *f_groupTitle = NULL;
+            COPY_FORTRAN_STRING(f_groupTitle, groupTitle, lgroupTitle);
+            FREE((char *)md->meshes[*meshindex].groupTitle);
+            md->meshes[*meshindex].groupTitle = f_groupTitle;
+            retval = VISIT_OKAY;
+        }
+        else
+            fprintf(stderr, "visitmdmeshsetgrouptitle: An invalid index was passed\n");
+    }
+    else
+        fprintf(stderr, "visitmdmeshsetgrouptitle: Could not access metadata\n");
+
+    return retval;
+}
+
+/******************************************************************************
+ * Function: F_VISITMDMESHSETGROUPPIECENAME
+ *
+ * Purpose:   Allows FORTRAN to create set the groupPieceName for mesh metadata
+ *
+ * Arguments:
+ *   mdhandle    : The handle to the metadata object we're using.
+ *   meshindex   : The index of the mesh in the metadata.
+ *   groupPieceName  : Fortran string containing the mesh groupPieceName.
+ *   lgroupPieceName : Length of the mesh groupPieceName string.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jan 27 16:15:11 PST 2006
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITMDMESHSETGROUPPIECENAME(int *mdhandle, int *meshindex, 
+    VISIT_F77STRING groupPieceName, int *lgroupPieceName)
+{
+    int retval = VISIT_ERROR;
+
+    VisIt_SimulationMetaData *md = (VisIt_SimulationMetaData *)GetFortranPointer(*mdhandle);
+    if(md)
+    {
+        if(*meshindex >= 0 && *meshindex < md->numMeshes)
+        {
+            char *f_groupPieceName = NULL;
+            COPY_FORTRAN_STRING(f_groupPieceName, groupPieceName, lgroupPieceName);
+            FREE((char *)md->meshes[*meshindex].groupPieceName);
+            md->meshes[*meshindex].groupPieceName = f_groupPieceName;
+            retval = VISIT_OKAY;
+        }
+        else
+            fprintf(stderr, "visitmdmeshsetgrouptitle: An invalid index was passed\n");
+    }
+    else
+        fprintf(stderr, "visitmdmeshsetgrouptitle: Could not access metadata\n");
+
+    return retval;
+}
+
+/******************************************************************************
  * Function: F_VISITMDSCALARCREATE
  *
  * Purpose:   Allows FORTRAN to create scalar metadata
@@ -1644,6 +1884,76 @@ F_VISITSTRCMP(VISIT_F77STRING s1, int *ls1, VISIT_F77STRING s2, int *ls2)
     return retval;
 }
 
+/******************************************************************************
+ * Function: F_VISITMDEXPRESSIONCREATE
+ *
+ * Purpose:   Allows FORTRAN to create expression metadata
+ *
+ * Arguments:
+ *   mdhandle        : The handle to the metadata object we're using.
+ *   expressionname  : Fortran string containing the expression name.
+ *   lexpressionname : Length of the expression name string.
+ *   definition      : Fortran string containing the mesh name.
+ *   ldefinition     : Length of the mesh name string.
+ *   vartype         : The expression's type
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Wed Mar 1 15:23:48 PST 2006
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITMDEXPRESSIONCREATE(int *mdhandle, VISIT_F77STRING expressionname, int *lexpressionname,
+    VISIT_F77STRING definition, int *ldefinition, int *vartype)
+{
+    int retval = VISIT_INVALID_HANDLE;
+
+    VisIt_SimulationMetaData *md = (VisIt_SimulationMetaData *)GetFortranPointer(*mdhandle);
+    if(md)
+    {
+        int index = VISIT_INVALID_HANDLE, vt;
+        VisIt_ExpressionMetaData *emd = NULL;
+        char *f_expressionname = NULL;
+        char *f_definition = NULL;
+        COPY_FORTRAN_STRING(f_expressionname, expressionname, lexpressionname);
+        COPY_FORTRAN_STRING(f_definition, definition, ldefinition);
+
+        vt = (*vartype < 0 || *vartype >= VISIT_VARTYPE_UNKNOWN) ? VISIT_VARTYPE_UNKNOWN : *vartype;
+
+        emd = ALLOC(VisIt_ExpressionMetaData, 1 + md->numExpressions);
+        if(emd)
+        {
+            /* Grow the expression array. */
+            if(md->numExpressions > 0)
+            {
+                memcpy(emd, md->expressions, sizeof(VisIt_ExpressionMetaData) * md->numExpressions);
+                free(md->expressions);
+            }
+            md->expressions = emd;
+            index = md->numExpressions++;
+
+            /* Set some properties about the new expression. */
+            md->expressions[index].name = f_expressionname;
+            md->expressions[index].definition = f_definition;
+            md->expressions[index].vartype = vt;
+        }
+        else
+        {
+            fprintf(stderr, "visitmdexpressioncreate: Could not create new expression\n");
+            FREE(f_expressionname);
+            FREE(f_definition);
+        }
+
+        retval = index;
+    }
+    else
+        fprintf(stderr, "visitmdexpressioncreate: Could not access metadata\n");
+
+    return retval;
+}
+
 /*****************************************************************************
  *****************************************************************************
  *****************************************************************************
@@ -1766,6 +2076,110 @@ F_VISITMESHCURVILINEAR(int *meshid, int *baseindex, int *minrealindex, int *maxr
 }
 
 /******************************************************************************
+ * Function: F_VISITMESHPOINT
+ *
+ * Purpose:   Allows FORTRAN to pass back data for a point mesh.
+ *
+ * Arguments:
+ *   meshid : The handle to the mesh that was passed by VisItGetMesh.
+ *   ...
+ *   dims   : The x,y,z dimensions of the mesh.
+ *   ndims  : The number of dimensions in the mesh.
+ *   x      : The x coordinate array.
+ *   y      : The y coordinate array.
+ *   z      : The z coordinate array.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jan 27 16:15:11 PST 2006
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITMESHPOINT(int *meshid, int *ndims, int *nnodes, float *x, float *y,
+    float *z)
+{
+    int retval = VISIT_ERROR;
+    VisIt_MeshData *mesh = (VisIt_MeshData *)GetFortranPointer(*meshid);
+    if(mesh)
+    {
+         int i;
+         mesh->meshType = VISIT_MESHTYPE_POINT;
+         mesh->pmesh = ALLOC(VisIt_PointMesh,1);
+         memset(mesh->pmesh, 0, sizeof(VisIt_PointMesh));
+
+         mesh->pmesh->nnodes = *nnodes;
+         mesh->pmesh->ndims = *ndims;
+
+         mesh->pmesh->xcoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM, x);
+         mesh->pmesh->ycoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM, y);
+         mesh->pmesh->zcoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM, z);
+         retval = VISIT_OKAY;
+    }
+    else
+        fprintf(stderr, "visitmeshpoint: An invalid handle was used.\n");
+
+    return retval;
+}
+
+/******************************************************************************
+ * Function: F_VISITMESHUNSTRUCTURED
+ *
+ * Purpose:   Allows FORTRAN to pass back data for an unstructured mesh.
+ *
+ * Arguments:
+ *   meshid : The handle to the mesh that was passed by VisItGetMesh.
+ *   ...
+ *   dims   : The x,y,z dimensions of the mesh.
+ *   ndims  : The number of dimensions in the mesh.
+ *   x      : The x coordinate array.
+ *   y      : The y coordinate array.
+ *   z      : The z coordinate array.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jan 27 16:15:11 PST 2006
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITMESHUNSTRUCTURED(int *meshid, int *ndims, int *nnodes, int *nzones,
+    int *firstrealzone, int *lastrealzone, float *x, float *y, float *z,
+    int *connectivitylen, int *connectivity)
+{
+    int retval = VISIT_ERROR;
+    VisIt_MeshData *mesh = (VisIt_MeshData *)GetFortranPointer(*meshid);
+    if(mesh)
+    {
+         int i;
+         mesh->meshType = VISIT_MESHTYPE_UNSTRUCTURED;
+         mesh->umesh = ALLOC(VisIt_UnstructuredMesh,1);
+         memset(mesh->umesh, 0, sizeof(VisIt_UnstructuredMesh));
+
+         mesh->umesh->ndims = *ndims;
+         mesh->umesh->nnodes = *nnodes;
+         mesh->umesh->nzones = *nzones;
+         mesh->umesh->firstRealZone = *firstrealzone;
+         mesh->umesh->lastRealZone = *lastrealzone;
+
+         mesh->umesh->xcoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM, x);
+         mesh->umesh->ycoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM, y);
+         mesh->umesh->zcoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM, z);
+
+         mesh->umesh->connectivityLen = *connectivitylen;
+         mesh->umesh->connectivity = VisIt_CreateDataArrayFromInt(VISIT_OWNER_SIM, connectivity);
+
+         retval = VISIT_OKAY;
+    }
+    else
+        fprintf(stderr, "visitmeshunstructured: An invalid handle was used.\n");
+
+    return retval;
+}
+
+/******************************************************************************
  * Function: F_VISITSCALARSETDATA
  *
  * Purpose:   Allows FORTRAN to pass back scalar data.
@@ -1853,7 +2267,7 @@ F_VISITSCALARSETDATA(int *sid, void *scalar, int *dims, int *ndims,
             fprintf(stderr, "visitsetscalardata: Invalid owner value.\n");
     }
     else
-        fprintf(stderr, "visitsetscalardatac: Could not set scalar data\n");
+        fprintf(stderr, "visitsetscalardata: Could not set scalar data\n");
 
     return retval;
 }

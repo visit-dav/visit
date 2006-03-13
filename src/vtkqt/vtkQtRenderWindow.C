@@ -951,8 +951,8 @@ void *vtkQtRenderWindow::GetGenericDisplayId()
 #elif defined(Q_WS_X11)
     return (void *)this->x11Display();
 #elif defined(Q_WS_MACX)
-    cerr << "vtkQtRenderWindow::GetGenericDisplayId(): Mac version not implemented!" << endl;
-    return 0;
+    // Return the GL widget so we can create a transparent window over it.
+    return (void *)gl;
 #endif
 };
 
