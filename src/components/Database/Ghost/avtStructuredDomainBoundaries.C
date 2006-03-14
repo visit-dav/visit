@@ -2309,6 +2309,10 @@ avtStructuredDomainBoundaries::RequiresCommunication(avtGhostDataType gtype)
 //  Programmer:  Hank Childs
 //  Creation:    March 27, 2002
 //
+//  Modifications:
+//    Mark C. Miller, Thu Mar  9 11:15:29 PST 2006
+//    Protected deref of meshes[i] with test for non-0
+//
 // ****************************************************************************
 bool
 avtStructuredDomainBoundaries::ConfirmMesh(vector<int>         domainNum,
@@ -2325,6 +2329,9 @@ avtStructuredDomainBoundaries::ConfirmMesh(vector<int>         domainNum,
             return false;
         }
         Boundary &b = wholeBoundary[domainNum[i]];
+
+        if (meshes[i] == 0)
+            return false;
 
         //
         // Comparing points and cells is probably good enough.

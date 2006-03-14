@@ -4655,18 +4655,22 @@ ViewerWindow::UpdateViewCurve(const double *limits)
 //    Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
 //    Added logic to support auto full frame mode. Made call to
 //    vwm->UpdateViewAtts use appropriate bool flags
+//
+//    Mark C. Miller, Tue Mar 14 17:49:26 PST 2006
+//    Retrieved full frame activation mode from avtView class, not atts 
 // ****************************************************************************
 
 void
 ViewerWindow::UpdateView2d(const double *limits)
 {
-    const View2DAttributes *view2dAtts = ViewerWindowManager::Instance()->
-                                             GetView2DClientAtts();
+    const avtView2D &view2d = GetView2D();
+    View2DAttributes view2dAtts;
+    view2d.SetToView2DAttributes(&view2dAtts);
 
-    if (view2dAtts->GetFullFrameActivationMode() == View2DAttributes::Auto)
+    if (view2d.fullFrameActivationMode == (int) View2DAttributes::Auto)
     {
         const bool currentFullFrameMode = GetFullFrameMode();
-        bool newFullFrameMode = view2dAtts->GetUseFullFrame(limits); 
+        bool newFullFrameMode = view2dAtts.GetUseFullFrame(limits); 
 
         // if plot's units are different, that overrides other considerations 
         if (plotList)
