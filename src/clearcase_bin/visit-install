@@ -355,11 +355,13 @@ else if ($config == open) then
 else if ($config == ornl) then
    ln -s visit-config-ornl $dir/$version+/.visit/config_template
 endif
-sed -e "s/bdivp/$bank/" $dir/$version+/.visit/config_template > $dir/$version+/.visit/config
-if ($group_ownership != none) then
-   chgrp $group_ownership $dir/$version+/.visit/config
+if (-e $dir/$version+/.visit/config_template) then
+    sed -e "s/bdivp/$bank/" $dir/$version+/.visit/config_template > $dir/$version+/.visit/config
+    if ($group_ownership != none) then
+        chgrp $group_ownership $dir/$version+/.visit/config
+    endif
+    chmod 664 $dir/$version+/.visit/config
 endif
-chmod 664 $dir/$version+/.visit/config
 
 #
 # If we're on MacOS X, then we want to create some small scripts that
