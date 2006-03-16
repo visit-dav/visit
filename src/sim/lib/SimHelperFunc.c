@@ -5,8 +5,6 @@
  *    
  */
 
-#include "sim.h"
-
 #include <VisItControlInterface_V1.h>
 #include <VisItDataInterface_V1.h>
 
@@ -19,11 +17,11 @@
 
 // current number of active channels to the custom
 // UI update information in the meta data.
-int currentIndex = 0;
+int VisIt_CurrentIndex = 0;
 
 
 // ****************************************************************************
-// Function: int findCMD ( char *name )
+// Function: int VisItFindCMD ( char *name )
 //
 // Purpose:
 //   Searches for a match between name and a name in the metat data custom
@@ -40,14 +38,14 @@ int currentIndex = 0;
 //
 // ****************************************************************************
 
-int findCMD ( char *name )
+int VisItFindCMD (VisIt_SimulationMetaData mdd, char *name )
 {
     int found = -1;
     int i;
 
-    for ( i =0; i < md->numCustomCommands; i++)
+    for ( i =0; i < mdd.numCustomCommands; i++)
     {
-      if ( !strcmp (md->customCommands[i].name, name))
+      if ( !strcmp (mdd.customCommands[i].name, name))
       {
         found = i;
       }
@@ -56,7 +54,7 @@ int findCMD ( char *name )
 }
 
 // ****************************************************************************
-// Function: void createCMD ( char *name )
+// Function: void VisItCreateCMD ( char *name )
 //
 // Purpose:
 //   Creates a entry in the meta data to allow updating the ui
@@ -73,22 +71,22 @@ int findCMD ( char *name )
 // Modifications:
 //
 // ****************************************************************************
-void createCMD ( char *name )
+void VisItCreateCMD ( VisIt_SimulationMetaData mdd, char *name )
 {
   int index;
 
-  if ( currentIndex < md->numCustomCommands)
+  if ( VisIt_CurrentIndex < mdd.numCustomCommands)
   {
-      index = findCMD ( name );
+      index = VisItFindCMD (mdd, name );
       if ( index < 0 )
-      strncpy(md->customCommands[currentIndex].name, name,MAX_CMD_STR_LEN-1);
-      currentIndex++;
+      strncpy(mdd.customCommands[VisIt_CurrentIndex].name, name,MAX_CMD_STR_LEN-1);
+      VisIt_CurrentIndex++;
   }
 
 }
 
 // ****************************************************************************
-// Function: void initCMD ( VisIt_SimulationControlCommand *cmd )
+// Function: void VisItInitCMD ( VisItSimulationControlCommand *cmd )
 //
 // Purpose:
 //   This function initialize the meta data structure so that
@@ -103,7 +101,7 @@ void createCMD ( char *name )
 // Modifications:
 //
 // ****************************************************************************
-void initCMD ( VisIt_SimulationControlCommand *cmd )
+void VisItInitCMD ( VisIt_SimulationControlCommand *cmd )
 {
     cmd->name = malloc(MAX_CMD_STR_LEN);
     strncpy ( cmd->name, "VISIT_NONE",MAX_CMD_STR_LEN);
@@ -126,7 +124,7 @@ void initCMD ( VisIt_SimulationControlCommand *cmd )
 }
 
 // ****************************************************************************
-// Function: void setCMDEnable (char *name, int enabledCMD )
+// Function: void VisItSetCMDEnable (char *name, int enabledCMD )
 //
 // Purpose:
 //   this is a helper function to look up the ui component by
@@ -142,19 +140,19 @@ void initCMD ( VisIt_SimulationControlCommand *cmd )
 // Modifications:
 //
 // ****************************************************************************
-void setCMDEnable (char *name, int enabledCMD )
+void VisItSetCMDEnable (VisIt_SimulationMetaData mdd, char *name, int enabledCMD )
 {
     int index;
 
-    index = findCMD ( name);
-    if ( (index >= 0) && ( index < md->numCustomCommands))
+    index = VisItFindCMD (mdd, name);
+    if ( (index >= 0) && ( index < mdd.numCustomCommands))
     {
-      md->customCommands[index].enabled = enabledCMD;
+      mdd.customCommands[index].enabled = enabledCMD;
     }
 }
 
 // ****************************************************************************
-// Function: void setCMDIsOn (char *name, int isOn)
+// Function: void VisItSetCMDIsOn (char *name, int isOn)
 //
 // Purpose:
 //   this is a helper function to look up the ui component by
@@ -170,19 +168,19 @@ void setCMDEnable (char *name, int enabledCMD )
 // Modifications:
 //
 // ****************************************************************************
-void setCMDIsOn (char *name, int isOn )
+void VisItSetCMDIsOn (VisIt_SimulationMetaData mdd, char *name, int isOn )
 {
     int index;
 
-    index = findCMD ( name);
-    if ( (index >= 0) && ( index < md->numCustomCommands))
+    index = VisItFindCMD ( mdd, name);
+    if ( (index >= 0) && ( index < mdd.numCustomCommands))
     {
-      md->customCommands[index].isOn = isOn;
+      mdd.customCommands[index].isOn = isOn;
     }
 }
 
 // ****************************************************************************
-// Function: void setCMDValue (char *name, int value )
+// Function: void VisItSetCMDValue (char *name, int value )
 //
 // Purpose:
 //   Searches for a match between name and a name in the metat data custom
@@ -199,21 +197,21 @@ void setCMDIsOn (char *name, int isOn )
 // Modifications:
 //
 // ****************************************************************************
-void setCMDValue (char *name, int value )
+void VisItSetCMDValue (VisIt_SimulationMetaData mdd, char *name, int value )
 {
     int index;
     char strValue[MAX_CMD_STR_LEN];
 
     sprintf (  strValue, "%5d", value);
-    index = findCMD ( name);
-    if ( (index >= 0) && ( index < md->numCustomCommands))
+    index = VisItFindCMD ( mdd, name);
+    if ( (index >= 0) && ( index < mdd.numCustomCommands))
     {
-      strncpy(md->customCommands[index].value, strValue,  MAX_CMD_STR_LEN-1);
+      strncpy(mdd.customCommands[index].value, strValue,  MAX_CMD_STR_LEN-1);
     }
 }
 
 // ****************************************************************************
-// Function: void setCMDText (char *name, char *text )
+// Function: void VisItSetCMDText (char *name, char *text )
 //
 // Purpose:
 //   Searches for a match between name and a name in the metat data custom
@@ -230,23 +228,20 @@ void setCMDValue (char *name, int value )
 // Modifications:
 //
 // ****************************************************************************
-void setCMDText (char *name, char *text )
+void VisItSetCMDText (VisIt_SimulationMetaData mdd, char *name, char *text )
 {
     int index;
 
-    index = findCMD ( name);
-    if ( (index >= 0) && ( index < md->numCustomCommands))
+    index = VisItFindCMD (mdd, name);
+    if ( (index >= 0) && ( index < mdd.numCustomCommands))
     {
-#ifdef DEBUG_PRINT
-      printf ( "found %s and changing text to %s \n" ,name, text);
-#endif
-      strncpy(md->customCommands[index].text, text,  MAX_CMD_STR_LEN-1);
+      strncpy(mdd.customCommands[index].text, text,  MAX_CMD_STR_LEN-1);
     }
 }
 
 
 // ****************************************************************************
-// Function: setCMD ( VisIt_SimulationControlCommand cmd  )
+// Function: setCMD ( VisItSimulationControlCommand cmd  )
 //
 // Purpose:
 //   Searches for a match between cmd.name and a name in the metat data custom
@@ -262,30 +257,30 @@ void setCMDText (char *name, char *text )
 // Modifications:
 //
 // ****************************************************************************
-void setCMD ( VisIt_SimulationControlCommand cmd  )
+void VisItSetCMD ( VisIt_SimulationMetaData mdd, VisIt_SimulationControlCommand cmd  )
 {
     int index;
 
-    index = findCMD ( cmd.name);
-    if ( (index >= 0) && ( index < md->numCustomCommands))
+    index = VisItFindCMD ( mdd, cmd.name);
+    if ( (index >= 0) && ( index < mdd.numCustomCommands))
     {
-        md->customCommands[index].argType = cmd.argType;
-        md->customCommands[index].enabled = cmd.enabled;
-        md->customCommands[index].isOn = cmd.isOn;
-        strncpy(md->customCommands[index].name,       cmd.name,     MAX_CMD_STR_LEN-1);
-        strncpy(md->customCommands[index].signal,     cmd.signal,   MAX_CMD_STR_LEN-1);
-        strncpy(md->customCommands[index].text,       cmd.text,     MAX_CMD_STR_LEN-1);
-        strncpy(md->customCommands[index].className,  cmd.className,MAX_CMD_STR_LEN-1);
-        strncpy(md->customCommands[index].value,      cmd.value,    MAX_CMD_STR_LEN-1);
-        strncpy(md->customCommands[index].uiType,     cmd.uiType,   MAX_CMD_STR_LEN-1);
-        strncpy(md->customCommands[index].parent,     cmd.parent,   MAX_CMD_STR_LEN-1);
+        mdd.customCommands[index].argType = cmd.argType;
+        mdd.customCommands[index].enabled = cmd.enabled;
+        mdd.customCommands[index].isOn = cmd.isOn;
+        strncpy(mdd.customCommands[index].name,       cmd.name,     MAX_CMD_STR_LEN-1);
+        strncpy(mdd.customCommands[index].signal,     cmd.signal,   MAX_CMD_STR_LEN-1);
+        strncpy(mdd.customCommands[index].text,       cmd.text,     MAX_CMD_STR_LEN-1);
+        strncpy(mdd.customCommands[index].className,  cmd.className,MAX_CMD_STR_LEN-1);
+        strncpy(mdd.customCommands[index].value,      cmd.value,    MAX_CMD_STR_LEN-1);
+        strncpy(mdd.customCommands[index].uiType,     cmd.uiType,   MAX_CMD_STR_LEN-1);
+        strncpy(mdd.customCommands[index].parent,     cmd.parent,   MAX_CMD_STR_LEN-1);
     }
 }
 
 
 
 // ****************************************************************************
-// Function: void initAllCMD(int MaxNumCustCMD  )
+// Function: void VisItInitAllCMD(int MaxNumCustCMD  )
 //
 // Purpose:
 //   This functions initializes the meta data so that all the command arrays are
@@ -302,42 +297,41 @@ void setCMD ( VisIt_SimulationControlCommand cmd  )
 // Modifications:
 //
 // ****************************************************************************
-void initAllCMD(int MaxNumCustCMD  )
+void VisItInitAllCMD(VisIt_SimulationMetaData *mdd, int MaxNumCustCMD  )
 {
-
     // These are the definitions for the
     // generic commands found in the first window
     // when VisIt open the first simulation window
-    md->numGenericCommands = 6;
-    md->genericCommands = malloc(sizeof(VisIt_SimulationControlCommand) * md->numGenericCommands);
+   mdd->numGenericCommands = 6;
+   mdd->genericCommands = malloc(sizeof(VisIt_SimulationControlCommand) *mdd->numGenericCommands);
 
-    md->genericCommands[0].name = strdup("halt");
-    md->genericCommands[0].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[0].enabled = 1;
+   mdd->genericCommands[0].name = strdup("halt");
+   mdd->genericCommands[0].argType = VISIT_CMDARG_NONE;
+   mdd->genericCommands[0].enabled = 1;
 
-    md->genericCommands[1].name = strdup("step");
-    md->genericCommands[1].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[1].enabled = 1;
+   mdd->genericCommands[1].name = strdup("step");
+   mdd->genericCommands[1].argType = VISIT_CMDARG_NONE;
+   mdd->genericCommands[1].enabled = 1;
 
-    md->genericCommands[2].name = strdup("run");
-    md->genericCommands[2].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[2].enabled = 1;
+   mdd->genericCommands[2].name = strdup("run");
+   mdd->genericCommands[2].argType = VISIT_CMDARG_NONE;
+   mdd->genericCommands[2].enabled = 1;
 
-    md->genericCommands[3].name = strdup("restart");
-    md->genericCommands[3].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[3].enabled = runflag ? 0 : 1;
+   mdd->genericCommands[3].name = strdup("restart");
+   mdd->genericCommands[3].argType = VISIT_CMDARG_NONE;
+   mdd->genericCommands[3].enabled = 1;
 
-    md->genericCommands[4].name = strdup("sync");
-    md->genericCommands[4].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[4].enabled = runflag ? 0 : 1;
+   mdd->genericCommands[4].name = strdup("sync");
+   mdd->genericCommands[4].argType = VISIT_CMDARG_NONE;
+   mdd->genericCommands[4].enabled = 1;
 
-    md->genericCommands[5].name = strdup("Custom Commands");
-    md->genericCommands[5].argType = VISIT_CMDARG_NONE;
-    md->genericCommands[5].enabled = runflag ? 0 : 1;
+   mdd->genericCommands[5].name = strdup("custom");
+   mdd->genericCommands[5].argType = VISIT_CMDARG_NONE;
+   mdd->genericCommands[5].enabled = 1;
 
-    md->numCustomCommands = MaxNumCustCMD;
-    md->customCommands = malloc(sizeof(VisIt_SimulationControlCommand) * md->numCustomCommands);
+   mdd->numCustomCommands = MaxNumCustCMD;
+   mdd->customCommands = malloc(sizeof(VisIt_SimulationControlCommand) *mdd->numCustomCommands);
 
     int i;
-    for ( i =0; i < md->numCustomCommands; i++) initCMD( &md->customCommands[i]);
+    for ( i =0; i <mdd->numCustomCommands; i++) VisItInitCMD(&mdd->customCommands[i]);
 }

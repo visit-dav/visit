@@ -30,63 +30,68 @@
 # the University of  California,  and shall not  be  used for  advertising  or
 # product endorsement purposes.
 #
-# Modifications:
-#   Brad Whitlock, Mon Jan 30 09:27:13 PDT 2006
-#   Added a Fortran simulation and its support code.
-#
 ##############################################################################
+##
+## Programs and options...
+##
 @SET_MAKE@
 @VARIABLES@
-@MPI_CC@
-@MPI_CXX@
+
+##
+## Files...
+##
+
+SIMSRC= \
+  VisItControlInterface_V1.c \
+  SimHelperFunc.c \
+  UI_Connection.c
+SIMFSRC= \
+  visitfortransiminterface.c
 
 
+SIMOBJ=$(SIMSRC:.c=.o)
+SIMLIB=libsim
+SIMLIBNAME=$(TOPDIR)/archives/$(SIMLIB).a
+SIMFOBJ=$(SIMFSRC:.c=.o)
+SIMFLIB=libsimf
+SIMFLIBNAME=$(TOPDIR)/archives/$(SIMFLIB).a
 
-SIMSER=sim
-SIMPAR=psim
-SIMSRC=sim.c VisItControlInterface_V1.c simconnection.c UI_Connection.c SimHelperFunc.c
-SIMSEROBJ=$(SIMSRC:.c=.o)
-SIMPAROBJ=$(SIMSRC:.c=_par.o)
-
-SIMFSER=simf
-SIMFSEROBJ=simf.o VisItControlInterface_V1.o visitfortransiminterface.o
-
-CPPFLAGS=@CPPFLAGS@ -I. -I../include -I../include/visit
-F77FLAGS=-I. -I../include -I../include/visit
-
-SERLIBS=
-PARLIBS=@MPI_LIBS@
-
-#CFLAGS=-g -I. -I../include/visit -Wimplicit-function-declaration
-#LDFLAGS=-L../lib -L/usr/X11R6/lib
-#PARLIBS=-lmpich
-
-#LIBS=-ldl -lsocket -lnsl
-#LIBS=-ldl -lpthread
-
-# override for suns:
-#PARLIBS=-L/usr/gapps/mpich/1.2.4/SunOS/serial/default/optim/lib -lmpich -lrt -lthread
-#CFLAGS=-g -I. -I../include/visit -Wimplicit-function-declaration -I/usr/gapps/mpich/1.2.4/SunOS/serial/default/optim/include
-
-all: $(SIMSER) $(SIMPAR)
+##
+## Override the certain variables with values from configure.
+##
+LDFLAGS=-L../lib @PY_LDFLAGS@ @LDFLAGS@
+LIBS=@LIBS@ 
+CXXFLAGS=@CXXFLAGS@ @PY_CXXFLAGS@ -I. -I../../include/visit
+CFLAGS= -I. -I../../include/visit
 
 
-$(SIMSER): $(SIMSEROBJ)
-	$(CC) -Wl,--export-dynamic $(LDFLAGS) $(SIMSEROBJ) $(LIBS) $(SERLIBS) -o $@
+##
+## Standard targets...
+##
+all:  message $(SIMLIBNAME) $(SIMFLIBNAME)
 
-$(SIMPAR): $(SIMPAROBJ)
-	$(CC) -Wl,--export-dynamic $(LDFLAGS) $(SIMPAROBJ) $(LIBS) $(PARLIBS) -o $@
+$(SIMLIBNAME): $(SIMOBJ)
+	$(AR) -rc $(SIMLIBNAME) $(SIMOBJ) 
 
-$(SIMSER).pure: $(SIMSEROBJ)
-	purify $(LD) $(LDFLAGS) $(SIMSEROBJ) $(LIBS) -o $@
-
-$(SIMFSER): $(SIMFSEROBJ)
-	$(F77) -Wl,--export-dynamic $(LDFLAGS) $(SIMFSEROBJ) $(LIBS) $(SERLIBS) -o $@
+$(SIMFLIBNAME): $(SIMFOBJ)
+	$(AR) -rc $(SIMFLIBNAME) $(SIMFOBJ) 
 
 clean:
-	rm -f $(SIMSEROBJ) $(SIMSER) $(SIMSER).pure
-	rm -f $(SIMPAROBJ) $(SIMPAR)
-	rm -f $(SIMFSEROBJ) $(SIMFSER)
+	$(RM) $(SIMLIBNAME) $(SIMFLIBNAME)
+	$(RM) $(SIMOBJ) $(SIMFOBJ)
 
+message:
+	@echo
+	@echo "****************************************************************************"
+	@echo "****************************************************************************"
+	@echo "***"
+	@echo "*** Building libsim and libsimf"
+	@echo "***"
+	@echo "****************************************************************************"
+	@echo "****************************************************************************"
+
+##
+## Automatic dependency stuff
+##
 @TARGETS@
-@PARLIBTARGETS@
+@LIBTARGETS@

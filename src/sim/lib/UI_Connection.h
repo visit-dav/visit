@@ -19,11 +19,8 @@
 typedef void (*slotFunc) (char * cmd);
 typedef struct signalInfo { char *name; char* sig; slotFunc slot; } sigInfoConnect;
 
-
-//void ClickedSignal ( const char *cmd );
-//void ValueChangedSignal ( const char *cmd );
-void ProcessCustomCommand ( const char *cmd);
-void addConnection ( char * name, char* sig, slotFunc theSlot );
+void VisItProcessCustomCommand( const char *cmd);
+void VisItAddConnection(char * name, char* sig, slotFunc theSlot );
 
 
 #endif

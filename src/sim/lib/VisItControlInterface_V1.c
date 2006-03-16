@@ -18,8 +18,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "visit-config.h"
-
 /* ****************************************************************************
  *  File:  VisItControlInterface.c
  *
@@ -982,7 +980,7 @@ int  VisItDetectInput(int blocking, int consoleFileDescriptor)
 
    fd_set readSet;
    int status = 0;
-   struct timeval ZeroTimeout = {0,0};
+   struct timeval ZeroTimeout = {0,500000};
    struct timeval *timeout = (blocking ? NULL : &ZeroTimeout);
 
    if (consoleFileDescriptor < 0 &&

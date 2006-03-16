@@ -11,6 +11,7 @@
  *    Shelly Prevost added custom command updating
  */
 #include "sim.h"
+#include "SimHelperFunc.h"
 #include <VisItControlInterface_V1.h>
 #include <VisItDataInterface_V1.h>
 
@@ -19,12 +20,14 @@
 #include <string.h>
 
 VisIt_SimulationMetaData *md = NULL; 
+void Update_UI_Commands();
 
 // Here is where you add all the initialization code you
 // want to run only once.
 void InitializeMD(int MaxNumCustCMD )
 {
     md = malloc(sizeof(VisIt_SimulationMetaData));
+
     md->currentCycle = cycle;
     md->currentTime  = 0;
     md->currentMode  = runflag ? VISIT_SIMMODE_RUNNING : VISIT_SIMMODE_STOPPED;
@@ -64,45 +67,43 @@ void InitializeMD(int MaxNumCustCMD )
 
     // this will set up the generic and custom
     // commands
-    initAllCMD(MaxNumCustCMD);
+    VisItInitAllCMD(md, MaxNumCustCMD);
 }                    
 
 
 VisIt_SimulationMetaData *VisItGetMetaData()
 {
-  // maximum number of UI components connections
-  // that you will be creating
-int MAX_NUMBER_CUST_CMD = 15;
+    // maximum number of UI components connections
+    // that you will be creating
+    int MAX_NUMBER_CUST_CMD = 15;
 
-  // if the first time setup the meta data
-  // and create meta data slots for the UI control
-  // Do this only once.
-  if (md == NULL )
-  {
-     InitializeMD(MAX_NUMBER_CUST_CMD);
+    // if the first time setup the meta data
+    // and create meta data slots for the UI control
+    // Do this only once.
+    if (md == NULL )
+    {
+      InitializeMD(MAX_NUMBER_CUST_CMD);
 
-     // set up the specific ui channel to control the
-     // ui compenents in the VisIt custom commands dialog
-     // These names should be the exact same name as defined
-     // in the interface file.
-
-     createCMD ( "MainTextLabel");
-     createCMD ( "ShellySpinBox1");
-     createCMD ( "progressBar1");
-     createCMD ( "Top_Button_1");
-     createCMD ( "ShellySlider_1");
-     createCMD ( "ShellyDial_1");
-     createCMD ( "ShellyLineEdit1");
-     createCMD ( "ShellyText_2");
-     createCMD ( "RadioButton1");
-     createCMD ( "RadioButton2");
-     createCMD ( "RadioButton3");
-     createCMD ( "LCDNumber1");
-     createCMD ( "CheckBox1");
-     createCMD ( "timeEdit1");
-     createCMD ( "dateEdit1");
-
-   }
+      // set up the specific ui channel to control the
+      // ui compenents in the VisIt custom commands dialog
+      // These names should be the exact same name as defined
+      // in the interface file.
+      VisItCreateCMD( *md, "MainTextLabel");
+      VisItCreateCMD( *md, "ShellySpinBox1");
+      VisItCreateCMD( *md, "progressBar1");
+      VisItCreateCMD( *md, "Top_Button_1");
+      VisItCreateCMD( *md, "ShellySlider_1");
+      VisItCreateCMD( *md, "ShellyDial_1");
+      VisItCreateCMD( *md, "ShellyLineEdit1");
+      VisItCreateCMD( *md, "ShellyText_2");
+      VisItCreateCMD( *md, "RadioButton1");
+      VisItCreateCMD( *md, "RadioButton2");
+      VisItCreateCMD( *md, "RadioButton3");
+      VisItCreateCMD( *md, "LCDNumber1");
+      VisItCreateCMD( *md, "CheckBox1");
+      VisItCreateCMD( *md, "timeEdit1");
+      VisItCreateCMD( *md, "dateEdit1");
+    }
 
     // now update the meta data so that the custom
     // command interface will be brought up to date
@@ -124,42 +125,40 @@ void Update_UI_Commands()
       static int timeStep = 0;
       char value[MAX_CMD_STR_LEN];
       char modValue[MAX_CMD_STR_LEN];
-#ifdef DEBUG_PRINT
-      printf ( "updating UI command data \n");
-#endif
+
      // move the progess bar and update the value in the spin box
-      setCMDValue ("progressBar1",  (timeStep *10)% 100);
-      setCMDValue ("ShellySpinBox1", timeStep);
-      setCMDValue ("LCDNumber1",timeStep);
+      VisItSetCMDValue (*md, "progressBar1",  (timeStep *10)% 100);
+      VisItSetCMDValue (*md, "ShellySpinBox1", timeStep);
+      VisItSetCMDValue (*md, "LCDNumber1",timeStep);
 
       // change the lable on the pushbutton
-      setCMDText  ("Top_Button_1",  "Simulation Text");
-      setCMDEnable ("Top_Button_1", 0);
-      setCMDIsOn ("CheckBox1", 0);
-      setCMDIsOn ("RadioButton1", 1);
-      setCMDIsOn ("RadioButton2", 0);
-                                          
-      setCMDText ("RadioButton1", "Label 1");
-      setCMDText ("RadioButton2", "Label 2");
-      setCMDText ("RadioButton3", "Label 3");
+      VisItSetCMDText(*md, "Top_Button_1",  "Simulation Text");
+      VisItSetCMDEnable(*md, "Top_Button_1", 0);
+      VisItSetCMDIsOn(*md, "CheckBox1", 0);
+      VisItSetCMDIsOn(*md, "RadioButton1", 1);
+      VisItSetCMDIsOn(*md, "RadioButton2", 0);
+
+      VisItSetCMDText(*md, "RadioButton1", "Label 1");
+      VisItSetCMDText(*md, "RadioButton2", "Label 2");
+      VisItSetCMDText(*md, "RadioButton3", "Label 3");
 
 
       // set the text on the lable
-      sprintf (  value, "%5d", timeStep *10);
-      strcat( value, " Simulation Label");
-      setCMDText  ("MainTextLabel", value);
-      setCMDText  ("CheckBox1", "New Label");
-      setCMDText  ("timeEdit1", "11:06:03");
-      setCMDText  ("dateEdit1", "Mon Jan 23 2006");
+      sprintf(value, "%5d", timeStep *10);
+      strcat( value, "Simulation Label");
+      VisItSetCMDText(*md, "MainTextLabel", value);
+      VisItSetCMDText(*md, "CheckBox1", "New Label");
+      VisItSetCMDText(*md, "timeEdit1", "11:06:03");
+      VisItSetCMDText(*md, "dateEdit1", "Mon Jan 23 2006");
 
       // move the slider and dial
-      setCMDValue ( "ShellySlider_1",(timeStep * 10) % 100);
-      setCMDValue ( "ShellyDial_1",timeStep % 360);
+      VisItSetCMDValue(*md, "ShellySlider_1",(timeStep * 10) % 100);
+      VisItSetCMDValue(*md,  "ShellyDial_1",timeStep % 360);
 
-      sprintf (  modValue, "%5d", timeStep % 360);
-      setCMDText ( "ShellyLineEdit1",modValue);
-      setCMDText ( "ShellyText_2",modValue);
-
+      sprintf (modValue, "%5d", timeStep % 360);
+      VisItSetCMDText(*md, "ShellyLineEdit1",modValue);
+      VisItSetCMDText(*md, "ShellyText_2",modValue);
+ 
       md->currentCycle = cycle;
       md->currentTime  = timeStep;
       md->currentMode  = runflag ? VISIT_SIMMODE_RUNNING : VISIT_SIMMODE_STOPPED;
