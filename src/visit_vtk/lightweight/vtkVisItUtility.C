@@ -8,6 +8,7 @@
 #include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkGenericCell.h>
+#include <vtkHexahedron.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
@@ -807,3 +808,87 @@ vtkVisItUtility::ContainsMixedGhostZoneTypes(vtkDataSet *ds)
     }
     return mixed;
 }
+
+
+// ****************************************************************************
+//  Function: CellContainsPoint
+//
+//  Purpose:
+//      Tests whether or not a cell contains a point.  Does this by testing
+//      the side the point lies on each face of the cell.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 18, 2006
+//
+// ****************************************************************************
+
+bool
+vtkVisItUtility::CellContainsPoint(vtkCell *cell, const float *pt)
+{
+    int cellType = cell->GetCellType();
+    if (cellType == VTK_HEXAHEDRON)
+    {
+        vtkHexahedron *hex = (vtkHexahedron *) cell;
+        vtkPoints *pts = hex->GetPoints();
+        float *pts_ptr = (float *) pts->GetVoidPointer(0);
+        static int faces[6][4] = { {0,4,7,3}, {1,2,6,5},
+                           {0,1,5,4}, {3,7,6,2},
+                           {0,3,2,1}, {4,5,6,7} };
+        for (int i = 0 ; i < 6 ; i++)
+        {
+            float dir1[3], dir2[3];
+            int idx0 = faces[i][0];
+            int idx1 = faces[i][1];
+            int idx2 = faces[i][3];
+            dir1[0] = pts_ptr[3*idx1] - pts_ptr[3*idx0];
+            dir1[1] = pts_ptr[3*idx1+1] - pts_ptr[3*idx0+1];
+            dir1[2] = pts_ptr[3*idx1+2] - pts_ptr[3*idx0+2];
+            dir2[0] = pts_ptr[3*idx0] - pts_ptr[3*idx2];
+            dir2[1] = pts_ptr[3*idx0+1] - pts_ptr[3*idx2+1];
+            dir2[2] = pts_ptr[3*idx0+2] - pts_ptr[3*idx2+2];
+            float cross[3];
+            cross[0] = dir1[1]*dir2[2] - dir1[2]*dir2[1];
+            cross[1] = dir1[2]*dir2[0] - dir1[0]*dir2[2];
+            cross[2] = dir1[0]*dir2[1] - dir1[1]*dir2[0];
+            float origin[3];
+            origin[0] = pts_ptr[3*idx0];
+            origin[1] = pts_ptr[3*idx0+1];
+            origin[2] = pts_ptr[3*idx0+2];
+
+            //
+            // The plane is of the form Ax + By + Cz - D = 0.
+            //
+            // Using the origin, we can calculate D:
+            // D = A*origin[0] + B*origin[1] + C*origin[2]
+            //
+            // We want to know if 'pt' gives:
+            // A*pt[0] + B*pt[1] + C*pt[2] - D >=? 0.
+            //
+            // We can substitute in D to get
+            // A*(pt[0]-origin[0]) + B*(pt[1]-origin[1]) + C*(pt[2-origin[2])
+            //    ?>= 0
+            //
+            float val  = cross[0]*(pt[0] - origin[0])
+                       + cross[1]*(pt[1] - origin[1])
+                       + cross[2]*(pt[2] - origin[2]);
+
+            if (val < 0.)
+                return false;
+        }
+        return true;
+    }
+
+    float closestPt[3];
+    int subId;
+    float pcoords[3];
+    float dist2;
+    float weights[100]; // MUST BE BIGGER THAN NPTS IN A CELL (ie 8).
+    float non_const_pt[3];
+    non_const_pt[0] = pt[0];
+    non_const_pt[1] = pt[1];
+    non_const_pt[2] = pt[2];
+    return (cell->EvaluatePosition(non_const_pt, closestPt, subId,
+                                  pcoords, dist2, weights) > 0);
+}
+
+

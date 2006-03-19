@@ -20,6 +20,7 @@
 #include <vtkFloatArray.h>
 #include <vtkGenericCell.h>
 #include <vtkPointData.h>
+#include <vtkRectilinearGrid.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnstructuredGridRelevantPointsFilter.h>
 #include <vtkUnstructuredGridWriter.h>
@@ -39,6 +40,9 @@
 #include <ExpressionException.h>
 #include <InvalidMergeException.h>
 #include <TimingsManager.h>
+
+
+using std::vector;
 
 
 // ****************************************************************************
@@ -270,6 +274,11 @@ avtPosCMFEAlgorithm::PerformCMFE(avtDataTree_p output_mesh,
 //  Programmer: Hank Childs
 //  Creation:   October 11, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Mar 18 09:42:29 PST 2006
+//    Add some more initializations.
+//
 // ****************************************************************************
 
 avtPosCMFEAlgorithm::DesiredPoints::DesiredPoints(bool isN, int nc)
@@ -279,6 +288,9 @@ avtPosCMFEAlgorithm::DesiredPoints::DesiredPoints(bool isN, int nc)
     map_to_ds = NULL;
     ds_start  = NULL;
     vals      = NULL;
+    total_nvals  = 0;
+    num_datasets = 0;
+    num_rgrids   = 0;
 }
 
 
@@ -288,15 +300,24 @@ avtPosCMFEAlgorithm::DesiredPoints::DesiredPoints(bool isN, int nc)
 //  Programmer: Hank Childs
 //  Creation:   October 11, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Mar 18 09:42:29 PST 2006
+//    Added the deletion of rgrid_pts.
+//
 // ****************************************************************************
 
 avtPosCMFEAlgorithm::DesiredPoints::~DesiredPoints()
 {
+    int   i;
+
     delete [] map_to_ds;
     delete [] ds_start;
     delete [] vals;
-    for (int i = 0 ; i < pt_list.size() ; i++)
+    for (i = 0 ; i < pt_list.size() ; i++)
         delete [] pt_list[i];
+    for (i = 0 ; i < rgrid_pts.size() ; i++)
+        delete [] rgrid_pts[i];
 }
 
 
@@ -309,25 +330,102 @@ avtPosCMFEAlgorithm::DesiredPoints::~DesiredPoints()
 //  Programmer: Hank Childs
 //  Creation:   October 11, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Mar 18 09:42:29 PST 2006
+//    Optimize for rectilinear grids.
+//
 // ****************************************************************************
 
 void
 avtPosCMFEAlgorithm::DesiredPoints::AddDataset(vtkDataSet *ds)
 {
-    int nvals = (isNodal ? ds->GetNumberOfPoints() : ds->GetNumberOfCells());
-    float *plist = new float[3*nvals];
-    pt_list.push_back(plist);
-    pt_list_size.push_back(nvals);
+    int  i;
 
-    for (int i = 0 ; i < nvals ; i++)
+    int nvals = (isNodal ? ds->GetNumberOfPoints() : ds->GetNumberOfCells());
+    if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
-        float *cur_pt = plist + 3*i;
-        if (isNodal)
-            ds->GetPoint(i, cur_pt);
-        else
+        //
+        // Get the rectilinear grid and determine its dimensions.  Be leery
+        // of situations where the grid is flat in a dimension.
+        //
+        vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) ds;
+        int dims[3];
+        rgrid->GetDimensions(dims);
+        if (!isNodal)
         {
-            vtkCell *cell = ds->GetCell(i);
-            vtkVisItUtility::GetCellCenter(cell, cur_pt);
+            dims[0] = (dims[0] > 1 ? dims[0]-1 : 1);
+            dims[1] = (dims[1] > 1 ? dims[1]-1 : 1);
+            dims[2] = (dims[2] > 1 ? dims[2]-1 : 1);
+        }
+
+        //
+        // Set up the X-coordinates.
+        //
+        vtkDataArray *x    = rgrid->GetXCoordinates();
+        float        *newX = new float[dims[0]];
+        for (i = 0 ; i < dims[0] ; i++)
+        {
+            if (isNodal)
+                newX[i] = x->GetTuple1(i);
+            else if (dims[0] == 1)
+                newX[i] = x->GetTuple1(i);
+            else
+                newX[i] = (x->GetTuple1(i) + x->GetTuple1(i+1)) / 2.;
+        }
+        rgrid_pts_size.push_back(dims[0]);
+        rgrid_pts.push_back(newX);
+
+        //
+        // Set up the Y-coordinates.
+        //
+        vtkDataArray *y    = rgrid->GetYCoordinates();
+        float        *newY = new float[dims[1]];
+        for (i = 0 ; i < dims[1] ; i++)
+        {
+            if (isNodal)
+                newY[i] = y->GetTuple1(i);
+            else if (dims[0] == 1)
+                newY[i] = y->GetTuple1(i);
+            else
+                newY[i] = (y->GetTuple1(i) + y->GetTuple1(i+1)) / 2.;
+        }
+        rgrid_pts_size.push_back(dims[1]);
+        rgrid_pts.push_back(newY);
+
+        //
+        // Set up the Z-coordinates.
+        //
+        vtkDataArray *z    = rgrid->GetZCoordinates();
+        float        *newZ = new float[dims[2]];
+        for (i = 0 ; i < dims[2] ; i++)
+        {
+            if (isNodal)
+                newZ[i] = z->GetTuple1(i);
+            else if (dims[0] == 1)
+                newZ[i] = z->GetTuple1(i);
+            else
+                newZ[i] = (z->GetTuple1(i) + z->GetTuple1(i+1)) / 2.;
+        }
+        rgrid_pts_size.push_back(dims[2]);
+        rgrid_pts.push_back(newZ);
+    }
+    else
+    {
+        float *plist = new float[3*nvals];
+        pt_list.push_back(plist);
+        pt_list_size.push_back(nvals);
+    
+        for (i = 0 ; i < nvals ; i++)
+        {
+            float *cur_pt = plist + 3*i;
+            if (isNodal)
+                ds->GetPoint(i, cur_pt);
+            else
+            {
+                vtkCell *cell = ds->GetCell(i);
+                vtkVisItUtility::GetCellCenter(cell, cur_pt);
+            }
         }
     }
 }
@@ -343,6 +441,11 @@ avtPosCMFEAlgorithm::DesiredPoints::AddDataset(vtkDataSet *ds)
 //
 //  Programmer: Hank Childs
 //  Creation:   October 11, 2005
+//
+//  Modifications:
+//
+//    Hank Childs, Sat Mar 18 09:42:29 PST 2006
+//    Add support for rectilinear grids.
 //
 // ****************************************************************************
 
@@ -360,25 +463,80 @@ avtPosCMFEAlgorithm::DesiredPoints::Finalize(void)
         delete [] map_to_ds;
 
     total_nvals  = 0;
-    num_datasets = pt_list_size.size();
-    for (i = 0 ; i < num_datasets ; i++)
+    num_rgrids = rgrid_pts.size() / 3;
+    int numNonRGrid = pt_list_size.size();
+    num_datasets = numNonRGrid + num_rgrids;
+    for (i = 0 ; i < numNonRGrid ; i++)
         total_nvals += pt_list_size[i];
+    rgrid_start = total_nvals;
+    for (i = 0 ; i < num_rgrids ; i++)
+    {
+        int nvals = rgrid_pts_size[3*i] * rgrid_pts_size[3*i+1]
+                  * rgrid_pts_size[3*i+2];
+        total_nvals += nvals;
+    }
+
+    int *ds_size = new int[num_datasets];
+    for (i = 0 ; i < numNonRGrid ; i++)
+        ds_size[i] = pt_list_size[i];
+    for (i = 0 ; i < num_rgrids ; i++)
+        ds_size[i+numNonRGrid] = rgrid_pts_size[3*i] * rgrid_pts_size[3*i+1]
+                               * rgrid_pts_size[3*i+2];
 
     ds_start = new int[num_datasets];
     ds_start[0] = 0;
     for (i = 1 ; i < num_datasets ; i++)
-        ds_start[i] = ds_start[i-1] + pt_list_size[i-1];
+        ds_start[i] = ds_start[i-1] + ds_size[i-1];
+    delete [] ds_size;
 
     map_to_ds = new int[total_nvals];
     index = 0;
-    for (i = 0 ; i < num_datasets ; i++)
+    for (i = 0 ; i < numNonRGrid ; i++)
         for (j = 0 ; j < pt_list_size[i] ; j++)
         {
             map_to_ds[index] = i;
             index++;
         }
+    for (i = 0 ; i < num_rgrids ; i++)
+    {
+        int nvals = rgrid_pts_size[3*i] * rgrid_pts_size[3*i+1]
+                  * rgrid_pts_size[3*i+2];
+        for (j = 0 ; j < nvals ; j++)
+        {
+            map_to_ds[index] = i+numNonRGrid;
+            index++;
+        }
+    }
 
     vals = new float[total_nvals*nComps];
+}
+
+
+// ****************************************************************************
+//  Method: DesiredPoints::GetRGrid
+//
+//  Purpose:
+//      Gets a rectilinear grid.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 18, 2006
+//
+// ****************************************************************************
+
+void
+avtPosCMFEAlgorithm::DesiredPoints::GetRGrid(int idx, const float *&x,
+                   const float *&y, const float *&z, int &nx, int &ny, int &nz)
+{
+    if (idx < 0 || idx >= num_rgrids)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+    x = rgrid_pts[3*idx];
+    y = rgrid_pts[3*idx+1];
+    z = rgrid_pts[3*idx+2];
+    nx = rgrid_pts_size[3*idx];
+    ny = rgrid_pts_size[3*idx+1];
+    nz = rgrid_pts_size[3*idx+2];
 }
 
 
@@ -390,6 +548,11 @@ avtPosCMFEAlgorithm::DesiredPoints::Finalize(void)
 //
 //  Programmer: Hank Childs
 //  Creation:   October 11, 2005
+//
+//  Modifications:
+//
+//    Hank Childs, Sat Mar 18 10:33:41 PST 2006
+//    Add support for rectilinear grids.
 //
 // ****************************************************************************
 
@@ -403,10 +566,25 @@ avtPosCMFEAlgorithm::DesiredPoints::GetPoint(int p, float *pt) const
     int ds = map_to_ds[p];
     int start = ds_start[ds];
     int rel_index = p-start;
-    float *ptr = pt_list[ds] + 3*rel_index;
-    pt[0] = ptr[0];
-    pt[1] = ptr[1];
-    pt[2] = ptr[2];
+    if (p < rgrid_start)
+    {
+        float *ptr = pt_list[ds] + 3*rel_index;
+        pt[0] = ptr[0];
+        pt[1] = ptr[1];
+        pt[2] = ptr[2];
+    }
+    else
+    {
+        int ds_rel_index = ds - rgrid_start;
+        int nX = rgrid_pts_size[3*ds_rel_index];
+        int xIdx = rel_index % nX;
+        pt[0] = rgrid_pts[3*ds_rel_index][xIdx];
+        int nY = rgrid_pts_size[3*ds_rel_index+1];
+        int yIdx = (rel_index/nX) % nY;
+        pt[1] = rgrid_pts[3*ds_rel_index+1][yIdx];
+        int zIdx = rel_index/(nX*nY);
+        pt[2] = rgrid_pts[3*ds_rel_index+2][zIdx];
+    }
 }
 
 
@@ -455,6 +633,127 @@ avtPosCMFEAlgorithm::DesiredPoints::GetValue(int ds_idx, int pt_idx) const
 
 
 // ****************************************************************************
+//  Method: DesiredPoints::GetProcessorsForGrid
+//
+//  Purpose:
+//      Uses the spatial partition to determine which processors a rectilinear
+//      grid overlaps with.  Also finds the boundaries of each of those
+//      processors.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 19, 2006
+//
+// ****************************************************************************
+
+void
+avtPosCMFEAlgorithm::DesiredPoints::GetProcessorsForGrid(int grid,
+                    std::vector<int> &procId, std::vector<float> &procBoundary,
+                    SpatialPartition &spat_part)
+{
+    float *xp = rgrid_pts[3*grid];
+    float *yp = rgrid_pts[3*grid+1];
+    float *zp = rgrid_pts[3*grid+2];
+    int nX = rgrid_pts_size[3*grid];
+    int nY = rgrid_pts_size[3*grid+1];
+    int nZ = rgrid_pts_size[3*grid+2];
+    float bounds[6];
+    bounds[0] = xp[0];
+    bounds[1] = xp[nX-1];
+    bounds[2] = yp[0];
+    bounds[3] = yp[nY-1];
+    bounds[4] = zp[0];
+    bounds[5] = zp[nZ-1];
+    spat_part.GetProcessorBoundaries(bounds, procId, procBoundary);
+}
+         
+
+// ****************************************************************************
+//  Method: DesiredPoints::GetSubgridForBoundary
+//
+//  Purpose:
+//      When a rectilinear grid overlaps with a region from the spatial
+//      partition, it is likely that parts of the grid are within the region
+//      and parts are outside the region.  If we naively send the whole
+//      grid to the processor that owns the region, it will have more points
+//      than it needs to sample.  The solution is to find the subgrid that
+//      lies totally within the boundary.  That is the purpose of this method.
+//
+//  Notes:      Even though a boundary may overlap a region, it is possible
+//              for this method to return "false" for no overlap.  This is 
+//              because the grid may overlap the region, but none of its
+//              points are actually within the region.
+//              As in:
+//                  G-------G
+//                  |       |
+//             R----+-------+----R
+//             |    |       |    |
+//             |    |       |    |
+//             |    |       |    |
+//             R----+-------+----R
+//                  |       |
+//                  G-------G
+//
+//             If R represents the boundaries of the region and G represents
+//             grid points on the grid, then no point in G lies within R,
+//             even though they overlap.  Obviously, this case comes up very
+//             rarely, as the grid must be as coarse as actual regions, but
+//             it does come up, so the caller must prepare for it.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 19, 2006
+//
+// ****************************************************************************
+
+bool
+avtPosCMFEAlgorithm::DesiredPoints::GetSubgridForBoundary(int grid,
+                                                 float *bounds, int *extents)
+{
+    float *xp = rgrid_pts[3*grid];
+    float *yp = rgrid_pts[3*grid+1];
+    float *zp = rgrid_pts[3*grid+2];
+    int nX = rgrid_pts_size[3*grid];
+    int nY = rgrid_pts_size[3*grid+1];
+    int nZ = rgrid_pts_size[3*grid+2];
+
+    int xStart = 0;
+    while (xp[xStart] < bounds[0] && xStart < nX)
+        xStart++;
+    int xEnd = nX-1;
+    while (xp[xEnd] > bounds[1] && xEnd > 0)
+        xEnd--;
+    if (xEnd < xStart)
+        return false;
+
+    int yStart = 0;
+    while (yp[yStart] < bounds[2] && yStart < nY)
+        yStart++;
+    int yEnd = nY-1;
+    while (yp[yEnd] > bounds[3] && yEnd > 0)
+        yEnd--;
+    if (yEnd < yStart)
+        return false;
+
+    int zStart = 0;
+    while (zp[zStart] < bounds[4] && zStart < nZ)
+        zStart++;
+    int zEnd = nZ-1;
+    while (zp[zEnd] > bounds[5] && zEnd > 0)
+        zEnd--;
+    if (zEnd < zStart)
+        return false;
+
+    extents[0] = xStart;
+    extents[1] = xEnd;
+    extents[2] = yStart;
+    extents[3] = yEnd;
+    extents[4] = zStart;
+    extents[5] = zEnd;
+
+    return true;
+}
+
+
+// ****************************************************************************
 //  Method: DesiredPoints::RelocatePointsUsingPartition
 //
 //  Purpose:
@@ -464,6 +763,11 @@ avtPosCMFEAlgorithm::DesiredPoints::GetValue(int ds_idx, int pt_idx) const
 //  Programmer: Hank Childs
 //  Creation:   October 12, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Mar 18 11:03:48 PST 2006
+//    Add support for rectilinear grids.
+//
 // ****************************************************************************
 
 void
@@ -471,7 +775,7 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
                                                    SpatialPartition &spat_part)
 {
 #ifdef PARALLEL
-    int   i, j;
+    int   i, j, k;
     int   nProcs = PAR_Size();
 
     int t0 = visitTimer->StartTimer();
@@ -494,22 +798,75 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
             pt_cts[proc]++;
         }
     }
+    vector<int> grids(nProcs, 0);
+    vector<int> total_size(nProcs, 0);
+    for (i = 0 ; i < num_rgrids ; i++) 
+    {
+        vector<int> procId;
+        vector<float> procBoundary;
+        GetProcessorsForGrid(i, procId, procBoundary, spat_part);
+        for (j = 0 ; j < procId.size() ; j++)
+        {
+            int extents[6];
+            float bounds[6];
+            for (k = 0 ; k < 6 ; k++)
+                bounds[k] = procBoundary[6*j+k];
+            bool overlaps = GetSubgridForBoundary(i, bounds, extents);
+            if (!overlaps)
+                continue;
+
+            grids[procId[j]]++;
+            int npts = (extents[1]-extents[0]+1)
+                     + (extents[3]-extents[2]+1)
+                     + (extents[5]-extents[4]+1);
+            total_size[procId[j]] += npts;
+        }
+    }
 
     // 
     // Now construct the messages to send to the other processors.
+    //
+
+    // 
+    // Construct the actual sizes for each message.
     //
     int *sendcount = new int[nProcs];
     int  total_msg_size = 0;
     for (j = 0 ; j < nProcs ; j++)
     {
-        sendcount[j] = 3*sizeof(float)*pt_cts[j];
+        sendcount[j] = sizeof(int); // npts for non-rgrids;
+        sendcount[j] += 3*sizeof(float)*pt_cts[j];
+        sendcount[j] += sizeof(int); // num rgrids;
+        sendcount[j] += 3*grids[j]*sizeof(int); // dims for each rgrid
+        sendcount[j] += total_size[j]*sizeof(float); // coords for all rgrids
         total_msg_size += sendcount[j];
     }
+
+    //
+    // Now allocate the memory and set up the "sub-messages", which allow
+    // us to directly access the memory based on which processor a piece
+    // of data is going to.
+    //
     char *big_send_msg = new char[total_msg_size];
     char **sub_ptr = new char*[nProcs];
     sub_ptr[0] = big_send_msg;
     for (i = 1 ; i < nProcs ; i++)
         sub_ptr[i] = sub_ptr[i-1] + sendcount[i-1];
+
+    //
+    // Now add the initial header info ... "how many points I have for your
+    // processor".
+    //
+    for (j = 0 ; j < nProcs ; j++)
+    {
+        int numFromMeToProcJ = pt_cts[j];
+        memcpy(sub_ptr[j], (void *) &numFromMeToProcJ, sizeof(int));
+        sub_ptr[j] += sizeof(int);
+    }
+
+    //
+    // Now add the actual points to the message.
+    //
     for (i = 0 ; i < pt_list_size.size() ; i++)
     {
         const int npts = pt_list_size[i];
@@ -525,7 +882,54 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
             sub_ptr[proc] += 3*sizeof(float);
         }
     }
-    delete [] sub_ptr;
+
+    //
+    // Now add the initial header info for "how many rgrids I have for your
+    // processor".
+    //
+    for (j = 0 ; j < nProcs ; j++)
+    {
+        int numGridsFromMeToProcJ = grids[j];
+        memcpy(sub_ptr[j], (void *) &numGridsFromMeToProcJ, sizeof(int));
+        sub_ptr[j] += sizeof(int);
+    }
+
+    //
+    // And add the actual information about the rgrid.
+    //
+    for (i = 0 ; i < num_rgrids ; i++) 
+    {
+        vector<int> procId;
+        vector<float> procBoundary;
+        GetProcessorsForGrid(i, procId, procBoundary, spat_part);
+        for (j = 0 ; j < procId.size() ; j++)
+        {
+            int extents[6];
+            float bounds[6];
+            for (k = 0 ; k < 6 ; k++)
+                bounds[k] = procBoundary[6*j+k];
+            bool overlaps = GetSubgridForBoundary(i, bounds, extents);
+            if (!overlaps)
+                continue;
+            int proc = procId[j];
+            int nX = extents[1] - extents[0] + 1;
+            int nY = extents[3] - extents[2] + 1;
+            int nZ = extents[5] - extents[4] + 1;
+            memcpy(sub_ptr[proc], (void *) &nX, sizeof(int));
+            sub_ptr[proc] += sizeof(int);
+            memcpy(sub_ptr[proc], (void *) &nY, sizeof(int));
+            sub_ptr[proc] += sizeof(int);
+            memcpy(sub_ptr[proc], (void *) &nZ, sizeof(int));
+            sub_ptr[proc] += sizeof(int);
+
+            memcpy(sub_ptr[proc],rgrid_pts[3*i] + extents[0],sizeof(float)*nX);
+            sub_ptr[proc] += sizeof(float)*nX;
+            memcpy(sub_ptr[proc],rgrid_pts[3*i+1]+extents[2],sizeof(float)*nY);
+            sub_ptr[proc] += sizeof(float)*nY;
+            memcpy(sub_ptr[proc],rgrid_pts[3*i+2]+extents[4],sizeof(float)*nZ);
+            sub_ptr[proc] += sizeof(float)*nZ;
+        }
+    }
 
     int *recvcount = new int[nProcs];
     MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, MPI_COMM_WORLD);
@@ -551,28 +955,76 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     delete [] big_send_msg;
 
     //
+    // Set up the buffers so we can read the information out.
+    //
+    sub_ptr[0] = big_recv_msg;
+    for (i = 1 ; i < nProcs ; i++)
+        sub_ptr[i] = sub_ptr[i-1] + recvcount[i-1];
+
+    //
     // Translate the buffers we just received into the points we should look
     // at.
     //
-    int totalRecvd = 0;
-    num_return_to_proc.resize(nProcs);
+    int numPts = 0;
+    pt_list_came_from.clear();
+    vector<float *> new_pt_list;
+    vector<int> new_pt_list_size;
     for (j = 0 ; j < nProcs ; j++)
     {
-        totalRecvd += recvcount[j];
-        num_return_to_proc[j] = recvcount[j] / (3*sizeof(float));
+        int numFromProcJ = 0;
+        memcpy((void *) &numFromProcJ, sub_ptr[j], sizeof(int));
+        sub_ptr[j] += sizeof(int);
+        if (numFromProcJ == 0)
+            continue;
+        float *newPts = new float[3*numFromProcJ];
+        memcpy(newPts, sub_ptr[j], numFromProcJ * 3 * sizeof(float));
+        new_pt_list.push_back(newPts);
+        new_pt_list_size.push_back(numFromProcJ);
+        pt_list_came_from.push_back(j);
+        sub_ptr[j] += numFromProcJ * 3 * sizeof(float);
     }
-    int numPts = totalRecvd / (3*sizeof(float));
-    float *newPts = new float[3*numPts];  // Deleted in UnRelocatePoints
-    memcpy(newPts, big_recv_msg, totalRecvd);
-    vector<float *> new_pt_list;
-    new_pt_list.push_back(newPts);
-    vector<int> new_pt_list_size;
-    new_pt_list_size.push_back(numPts);
 
-    delete [] recvmessages;
-    delete [] big_recv_msg;
-    delete [] recvcount;
-    delete [] recvdisp;
+    //
+    // Translate the buffers that correspond to rgrids.
+    //
+    vector<float *> new_rgrid_pts;
+    vector<int>     new_rgrid_pts_size;
+    rgrid_came_from.clear();
+    for (j = 0 ; j < nProcs ; j++)
+    {
+        int numGridsFromProcJToMe;
+        memcpy((void *) &numGridsFromProcJToMe, sub_ptr[j], sizeof(int));
+        sub_ptr[j] += sizeof(int);
+        for (k = 0 ; k < numGridsFromProcJToMe ; k++)
+        {
+            int nX, nY, nZ;
+            memcpy((void *) &nX, sub_ptr[j], sizeof(int));
+            sub_ptr[j] += sizeof(int);
+            memcpy((void *) &nY, sub_ptr[j], sizeof(int));
+            sub_ptr[j] += sizeof(int);
+            memcpy((void *) &nZ, sub_ptr[j], sizeof(int));
+            sub_ptr[j] += sizeof(int);
+
+            float *x = new float[nX];
+            memcpy(x, sub_ptr[j], sizeof(float)*nX);
+            sub_ptr[j] += sizeof(float)*nX;
+            float *y = new float[nY];
+            memcpy(y, sub_ptr[j], sizeof(float)*nY);
+            sub_ptr[j] += sizeof(float)*nY;
+            float *z = new float[nZ];
+            memcpy(z, sub_ptr[j], sizeof(float)*nZ);
+            sub_ptr[j] += sizeof(float)*nZ;
+
+            new_rgrid_pts.push_back(x);
+            new_rgrid_pts.push_back(y);
+            new_rgrid_pts.push_back(z);
+            new_rgrid_pts_size.push_back(nX);
+            new_rgrid_pts_size.push_back(nY);
+            new_rgrid_pts_size.push_back(nZ);
+
+            rgrid_came_from.push_back(j);
+        }
+    }
 
     //
     // Now take our relocated points and use them as the new "desired points."
@@ -581,6 +1033,17 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
     orig_pt_list_size = pt_list_size;
     pt_list = new_pt_list;
     pt_list_size = new_pt_list_size;
+
+    orig_rgrid_pts = rgrid_pts;
+    orig_rgrid_pts_size = rgrid_pts_size;
+    rgrid_pts = new_rgrid_pts;
+    rgrid_pts_size = new_rgrid_pts_size;
+
+    delete [] sub_ptr;
+    delete [] recvmessages;
+    delete [] big_recv_msg;
+    delete [] recvcount;
+    delete [] recvdisp;
 
     visitTimer->StopTimer(t0, "Spatial partitioning of desired points.");
 #endif
@@ -597,6 +1060,11 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
 //  Programmer: Hank Childs
 //  Creation:   October 12, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Mar 18 11:09:51 PST 2006
+//    Add support for rectilinear grids.
+//
 // ****************************************************************************
 
 void
@@ -608,15 +1076,61 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
     int   nProcs = PAR_Size();
 
     //
+    // Clean up the current points and restore the "orig" points.
+    // Do this first, because it will buy us a little memory in case we're
+    // close to going over.
+    //
+    for (i = 0 ; i < pt_list.size() ; i++)
+        delete [] pt_list[i];
+    for (i = 0 ; i < rgrid_pts.size() ; i++)
+        delete [] rgrid_pts[i];
+
+    //
     // We need to take the vals for our point list and send them back to the
     // processor they came from.
     //
     int *sendcount = new int[nProcs];
+    for (i = 0 ; i < nProcs ; i++)
+        sendcount[i] = 0;
+    for (i = 0 ; i < pt_list_came_from.size() ; i++)
+        sendcount[pt_list_came_from[i]]+=pt_list_size[i]*sizeof(float)*nComps;
+    for (i = 0 ; i < rgrid_came_from.size() ; i++)
+    {
+        int npts = rgrid_pts_size[3*i] * rgrid_pts_size[3*i+1]
+                 * rgrid_pts_size[3*i+2];
+        sendcount[rgrid_came_from[i]] += npts*sizeof(float)*nComps;
+    }
+
     int  totalSend = 0;
     for (i = 0 ; i < nProcs ; i++)
-    {
-        sendcount[i] = num_return_to_proc[i]*sizeof(float)*nComps;
         totalSend += sendcount[i];
+
+    //
+    // Set up the message that contains the actual point values.
+    //
+    char *big_send_msg = new char[totalSend];
+    char **sub_ptr = new char*[nProcs];
+    sub_ptr[0] = big_send_msg;
+    for (i = 1 ; i < nProcs ; i++)
+        sub_ptr[i] = sub_ptr[i-1] + sendcount[i-1];
+
+    float *vals_tmp = vals;
+    for (i = 0 ; i < pt_list_came_from.size() ; i++)
+    {
+        int msgGoingTo = pt_list_came_from[i];
+        memcpy(sub_ptr[msgGoingTo], vals_tmp, 
+               pt_list_size[i]*sizeof(float)*nComps);
+        sub_ptr[msgGoingTo] += pt_list_size[i]*sizeof(float)*nComps;
+        vals_tmp += pt_list_size[i]*nComps;
+    }
+    for (i = 0 ; i < rgrid_came_from.size() ; i++)
+    {
+        int msgGoingTo = rgrid_came_from[i];
+        int npts = rgrid_pts_size[3*i] * rgrid_pts_size[3*i+1]
+                 * rgrid_pts_size[3*i+2];
+        memcpy(sub_ptr[msgGoingTo], vals_tmp, npts*sizeof(float)*nComps);
+        sub_ptr[msgGoingTo] += npts*sizeof(float)*nComps;
+        vals_tmp += npts*nComps;
     }
 
     int *recvcount = new int[nProcs];
@@ -635,9 +1149,7 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
         recvdisp[j] = recvcount[j-1] + recvdisp[j-1];
     }
 
-    // Note that the "vals" array is already perfectly encoded to send
-    // directly into this call without further processing.
-    MPI_Alltoallv((char *) vals, sendcount, senddisp, MPI_CHAR,
+    MPI_Alltoallv(big_send_msg, sendcount, senddisp, MPI_CHAR,
                   big_recv_msg, recvcount, recvdisp, MPI_CHAR,
                   MPI_COMM_WORLD);
     delete [] sendcount;
@@ -647,12 +1159,14 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
     // Now put our point list back in order like it was never modified for
     // parallel reasons.
     //
-    delete [] pt_list[0]; // This is the list of points we used after the
-                          // relocation.  Delete it now.
     pt_list = orig_pt_list;
     pt_list_size = orig_pt_list_size;
     orig_pt_list.clear();
     orig_pt_list_size.clear();
+    rgrid_pts = orig_rgrid_pts;
+    rgrid_pts_size = orig_rgrid_pts_size;
+    orig_rgrid_pts.clear();
+    orig_rgrid_pts_size.clear();
     Finalize(); // Have it set up internal data structures based on the "new"
                 // (i.e. original) points list.
 
@@ -677,6 +1191,40 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
                 vals[idx++] = *p++;
             recvmessages[proc] += sizeof(float)*nComps;
         }
+    }
+    for (i = 0 ; i < num_rgrids ; i++) 
+    {
+        int realNX = rgrid_pts_size[3*i];
+        int realNY = rgrid_pts_size[3*i+1];
+        int realNZ = rgrid_pts_size[3*i+2];
+        int npts = realNX * realNY * realNZ;
+        vector<int> procId;
+        vector<float> procBoundary;
+        GetProcessorsForGrid(i, procId, procBoundary, spat_part);
+        for (j = 0 ; j < procId.size() ; j++)
+        {
+            int extents[6];
+            float bounds[6];
+            for (k = 0 ; k < 6 ; k++)
+                bounds[k] = procBoundary[6*j+k];
+            // Find out how much of the rectilinear grid overlapped with
+            // the boundary for processor procId[j].  How much overlap there
+            // is is how much data that processor is sending us back.
+            bool overlaps = GetSubgridForBoundary(i, bounds, extents);
+            if (!overlaps)
+                continue;
+            for (int z = extents[4] ; z <= extents[5] ; z++)
+                for (int y = extents[2] ; y <= extents[3] ; y++)
+                    for (int x = extents[0] ; x <= extents[1] ; x++)
+                    {
+                        int valIDX = z*realNX*realNY + y*realNX + x;
+                        float *p = (float *) recvmessages[procId[j]];
+                        for (k = 0 ; k < nComps ; k++)
+                            vals[idx + nComps*valIDX + k] = *p;
+                        recvmessages[procId[j]] += sizeof(float)*nComps;
+                    }
+        }
+        idx += npts*nComps;
     }
 
     delete [] recvmessages;
@@ -838,14 +1386,65 @@ avtPosCMFEAlgorithm::FastLookupGrouping::Finalize(void)
 //  Purpose:
 //      Evaluates the value at a position.  Does this for the grouping of
 //      meshes its been given and does it with fast lookups.
+//      This method is actually a thin layer on top of GetValueUsingList.
+//      It calls that method using the last successful list and then, if
+//      necessary, using a list that comes from the interval tree.
 //
 //  Programmer: Hank Childs
-//  Creation:   October 11, 2005
+//  Creation:   March 18, 2006
 //
 // ****************************************************************************
 
 bool
 avtPosCMFEAlgorithm::FastLookupGrouping::GetValue(const float *pt, float *val)
+{
+    //
+    // Start off by using the list from the previous search.  Searching the
+    // interval tree is so costly that this is a worthwhile "guess".
+    //
+    if (list_from_last_successful_search.size() > 0)
+    {
+        bool v = GetValueUsingList(list_from_last_successful_search, pt, val);
+        if (v)
+            return true;
+    }
+
+    //
+    // OK, we struck out with the list from the last winning search.  So
+    // get the correct list from the interval tree.
+    //
+    vector<int> list;
+    itree->GetDomainsListFromRange(pt, pt, list);
+    bool v = GetValueUsingList(list, pt, val);
+    if (v == true)
+        list_from_last_successful_search = list;
+    else
+        list_from_last_successful_search.clear();
+    return v;
+}
+
+
+// ****************************************************************************
+//  Method: FastLookupGrouping::GetValueUsingList
+//
+//  Purpose:
+//      Evaluates the value at a position.  Does this for the grouping of
+//      meshes its been given and does it with fast lookups.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 11, 2005
+//
+//  Modifications:
+//
+//    Hank Childs, Sat Mar 18 14:39:50 PST 2006
+//    Use the vtkVisItUtility method to see if a cell contains a point
+//    (it's faster).
+//
+// ****************************************************************************
+
+bool
+avtPosCMFEAlgorithm::FastLookupGrouping::GetValueUsingList(vector<int> &list,
+                                                   const float *pt, float *val)
 {
     float closestPt[3];
     int subId;
@@ -857,20 +1456,21 @@ avtPosCMFEAlgorithm::FastLookupGrouping::GetValue(const float *pt, float *val)
     non_const_pt[1] = pt[1];
     non_const_pt[2] = pt[2];
 
-    vector<int> list;
-    itree->GetDomainsListFromRange(pt, pt, list);
     for (int j = 0 ; j < list.size() ; j++)
     {
         int mesh = map_to_ds[list[j]];
         int index = list[j] - ds_start[mesh];
         vtkCell *cell = meshes[mesh]->GetCell(index);
-        int inCell = cell->EvaluatePosition(non_const_pt, closestPt, subId,
-                                            pcoords, dist2, weights);
+        bool inCell = vtkVisItUtility::CellContainsPoint(cell, pt);
         if (!inCell)
             continue;
 
         if (isNodal)
         {
+            // Need the weights.
+            cell->EvaluatePosition(non_const_pt, closestPt, subId,
+                                   pcoords, dist2, weights);
+
             vtkDataArray *arr = meshes[mesh]->GetPointData()
                                                    ->GetArray(varname.c_str());
             if (arr == NULL)
@@ -1155,6 +1755,11 @@ avtPosCMFEAlgorithm::SpatialPartition::~SpatialPartition()
 //  Programmer: Hank Childs
 //  Creation:   January 9, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Mar 18 10:15:23 PST 2006
+//    Add support for rectilinear grids.
+//
 // ****************************************************************************
 
 typedef enum
@@ -1177,6 +1782,8 @@ class Boundary
      bool             IsLeaf(void) { return (numProcs == 1); };
      void             AddCell(const float *);
      void             AddPoint(const float *);
+     void             AddRGrid(const float *, const float *, const float *,
+                               int, int, int);
      static void      SetIs2D(bool b) { is2D = b; };
      static void      PrepareSplitQuery(Boundary **, int);
      
@@ -1275,7 +1882,7 @@ Boundary::PrepareSplitQuery(Boundary **b_list, int listSize)
 
 
 // ****************************************************************************
-//  Method: Boundary::PrepareSplitQuery
+//  Method: Boundary::AddPoint
 //
 //  Purpose:
 //      Adds a point to the boundary.
@@ -1296,6 +1903,86 @@ Boundary::AddPoint(const float *pt)
             return;
         }
     numCells[npivots]++;
+}
+
+
+// ****************************************************************************
+//  Method: Boundary::AddRGrid
+//
+//  Purpose:
+//      Adds an rgrid to the boundary.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 18, 2006
+// 
+// ****************************************************************************
+
+void
+Boundary::AddRGrid(const float *x, const float *y, const float *z, int nX,
+                   int nY, int nZ)
+{
+    //
+    // Start by narrowing the total rgrid down to just the portion that is
+    // relevant to this boundary.
+    //
+    int xStart = 0;
+    while (x[xStart] < bounds[0] && xStart < nX)
+        xStart++;
+    int xEnd = nX-1;
+    while (x[xEnd] > bounds[1] && xEnd > 0)
+        xEnd--;
+    int yStart = 0;
+    while (y[yStart] < bounds[2] && yStart < nY)
+        yStart++;
+    int yEnd = nY-1;
+    while (y[yEnd] > bounds[3] && yEnd > 0)
+        yEnd--;
+    int zStart = 0;
+    while (z[zStart] < bounds[4] && zStart < nZ)
+        zStart++;
+    int zEnd = nZ-1;
+    while (z[zEnd] > bounds[5] && zEnd > 0)
+        zEnd--;
+
+    const float *arr  = NULL;
+    int          arrStart = 0;
+    int          arrEnd   = 0;
+    int          slab     = 0;
+
+    switch (axis)
+    {
+      case X_AXIS:
+        arr  = x;
+        arrStart = xStart;
+        arrEnd   = xEnd;
+        slab = (yEnd-yStart+1)*(zEnd-zStart+1);
+        break;
+      case Y_AXIS:
+        arr  = y;
+        arrStart = yStart;
+        arrEnd   = yEnd;
+        slab = (xEnd-xStart+1)*(zEnd-zStart+1);
+        break;
+      case Z_AXIS:
+        arr  = z;
+        arrStart = zStart;
+        arrEnd   = zEnd;
+        slab = (xEnd-xStart+1)*(yEnd-yStart+1);
+        break;
+    }
+
+    int curIdx = arrStart;
+    for (int i = 0 ; i < npivots ; i++)
+        while (curIdx <= arrEnd && arr[curIdx] < pivots[i])
+        {
+            curIdx++;
+            numCells[i] += slab;
+        }
+    while (curIdx <= arrEnd)
+    {
+        curIdx++;
+        numCells[npivots] += slab;
+    }
 }
 
 
@@ -1454,6 +2141,9 @@ Boundary::AttemptSplit(Boundary *&b1, Boundary *&b2)
 //    Hank Childs, Fri Mar 10 14:35:32 PST 2006
 //    Add fix for parallel engines of 1 processor.
 //
+//    Hank Childs, Sat Mar 18 10:15:23 PST 2006
+//    Add support for rectilinear meshes.
+//
 // ****************************************************************************
 
 void
@@ -1461,6 +2151,7 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
                                        FastLookupGrouping &flg, double *bounds)
 {
     int   i, j, k;
+    int t0 = visitTimer->StartTimer();
 
     if (itree != NULL)
         delete itree;
@@ -1525,8 +2216,9 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
         }
         it.Calculate(true);
 
-        // Now add each point to the boundary it falls in.
-        const int nPoints = dp.GetNumberOfPoints();
+        // Now add each point to the boundary it falls in.  Start by doing
+        // the points that come from unstructured or structured meshes.
+        const int nPoints = dp.GetRGridStart();
         vector<int> list;
         float pt[3];
         for (i = 0 ; i < nPoints ; i++)
@@ -1539,6 +2231,30 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
                 b->AddPoint(pt);
             }
         }
+
+        // Now do the points that come from rectlinear meshes.
+        int num_rgrid = dp.GetNumberOfRGrids();
+        for (i = 0 ; i < num_rgrid ; i++)
+        {
+            const float *x, *y, *z;
+            int          nX, nY, nZ;
+            dp.GetRGrid(i, x, y, z, nX, nY, nZ);
+            float min[3];
+            min[0] = x[0];
+            min[1] = y[0];
+            min[2] = z[0];
+            float max[3];
+            max[0] = x[nX-1];
+            max[1] = y[nY-1];
+            max[2] = z[nY-1];
+            it.GetDomainsListFromRange(min, max, list);
+            for (j = 0 ; j < list.size() ; j++)
+            {
+                Boundary *b = b_list[bin_lookup[list[j]]];
+                b->AddRGrid(x, y, z, nX, nY, nZ);
+            }
+        }
+
         // Now do the cells.  We are using the cell centers, which is a decent
         // approximation.
         vector<vtkDataSet *> meshes = flg.GetMeshes();
@@ -1646,6 +2362,8 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
         delete b_list[i];
     delete [] b_list;
     delete [] bin_lookup;
+
+    visitTimer->StopTimer(t0, "Creating spatial partition");
 }
 
 
@@ -1744,6 +2462,47 @@ avtPosCMFEAlgorithm::SpatialPartition::GetProcessorList(vtkCell *cell,
     maxs[2] = bounds[5];
 
     itree->GetDomainsListFromRange(mins, maxs, list);
+}
+
+
+// ****************************************************************************
+//  Method: SpatialPartition::GetProcessorBoundaries
+//
+//  Purpose:
+//      Gets the processor that contains this cell.  This should be called
+//      when a list of processors contain a cell.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 19, 2006
+//
+// ****************************************************************************
+
+void
+avtPosCMFEAlgorithm::SpatialPartition::GetProcessorBoundaries(float *bounds,
+                                std::vector<int> &list, std::vector<float> &db)
+{
+    list.clear();
+
+    float mins[3];
+    mins[0] = bounds[0];
+    mins[1] = bounds[2];
+    mins[2] = bounds[4];
+    float maxs[3];
+    maxs[0] = bounds[1];
+    maxs[1] = bounds[3];
+    maxs[2] = bounds[5];
+
+    itree->GetDomainsListFromRange(mins, maxs, list);
+
+    int numMatches = list.size();
+    db.resize(numMatches*6);
+    for (int i = 0 ; i < numMatches ; i++)
+    {
+        float domBounds[6];
+        itree->GetDomainExtents(list[i], domBounds);
+        for (int j = 0 ; j < 6 ; j++)
+            db[6*i+j] = domBounds[j];
+    }
 }
 
 

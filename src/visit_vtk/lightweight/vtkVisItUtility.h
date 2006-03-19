@@ -12,6 +12,14 @@ class vtkDataSet;
 class vtkPoints;
 class vtkRectilinearGrid;
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Sat Mar 18 14:16:09 PST 2006
+//    Added function CellContainsPoint.
+//
+// ****************************************************************************
+
 namespace vtkVisItUtility
 {
     VISIT_VTK_LIGHT_API vtkPoints  *GetPoints(vtkDataSet *);
@@ -41,6 +49,7 @@ namespace vtkVisItUtility
 
     VISIT_VTK_LIGHT_API void       GetCellCenter(vtkCell* cell, float center[3]);
     VISIT_VTK_LIGHT_API bool       ContainsMixedGhostZoneTypes(vtkDataSet *);
+    VISIT_VTK_LIGHT_API bool       CellContainsPoint(vtkCell *, const float *);
 }
 
 #endif
