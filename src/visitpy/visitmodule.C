@@ -325,14 +325,51 @@ static std::map<AnnotationObject *, int> localObjectReferenceCount;
 
 #ifdef THREADS
 #if defined(_WIN32)
-#define POLLING_SYNCHRONIZE
-static  CRITICAL_SECTION     mutex;
-static  HANDLE               threadHandle = INVALID_HANDLE_VALUE;
+static CRITICAL_SECTION      mutex;
+static HANDLE                threadHandle = INVALID_HANDLE_VALUE;
+static bool                  waitingForViewer = false;
+static ObserverToCallback   *synchronizeCallback = 0;
+static HANDLE                received_sync_from_viewer = INVALID_HANDLE_VALUE;
 #define THREAD_INIT()
 #define MUTEX_CREATE()       InitializeCriticalSection(&mutex)
 #define MUTEX_DESTROY() 
 #define MUTEX_LOCK()         EnterCriticalSection(&mutex)
 #define MUTEX_UNLOCK()       LeaveCriticalSection(&mutex)
+
+#define SYNC_COND_WAIT()     MUTEX_UNLOCK(); \
+                             if(keepGoing) \
+                             {\
+                                 waitingForViewer = true; \
+                                 WaitForSingleObject(received_sync_from_viewer, INFINITE); \
+                                 waitingForViewer = false; \
+                             }
+
+#define SYNC_WAKE_MAIN_THREAD() if(waitingForViewer) \
+                                    WakeMainThread(0, 0);
+
+#define SYNC_CREATE()        received_sync_from_viewer = CreateEvent(NULL, FALSE, FALSE, NULL);
+
+#define SYNC_DESTROY()       CloseHandle(received_sync_from_viewer);
+
+// ****************************************************************************
+// Function: WakeMainThread
+//
+// Purpose: 
+//   Called by the listener thread when SyncAttributes is read from the viewer.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 20 12:00:06 PST 2006
+//
+// Modifications:
+//
+// ****************************************************************************
+
+static void WakeMainThread(Subject *, void *)
+{
+    if(viewer->GetSyncAttributes()->GetSyncTag() == syncCount || !keepGoing)
+        SetEvent(received_sync_from_viewer);
+}
+
 #else
 // pthreads thread-related stuff.
 static pthread_attr_t        thread_atts;
@@ -352,7 +389,8 @@ static ObserverToCallback   *synchronizeCallback = 0;
                                  pthread_cond_wait(&received_sync_from_viewer, \
                                                    &mutex); \
                                  waitingForViewer = false; \
-                             }
+                             }\
+                             MUTEX_UNLOCK();
 
 #define SYNC_WAKE_MAIN_THREAD() if(waitingForViewer) \
                                     WakeMainThread(0, 0);
@@ -12104,6 +12142,12 @@ visit_eventloop(void *)
 //   Brad Whitlock, Tue Jan 10 12:06:50 PDT 2006
 //   I changed logging.
 //
+//   Brad Whitlock, Mon Mar 20 12:57:13 PDT 2006
+//   I made mutex unlocking be part of SYNC_COND_WAIT because the win32
+//   implementation has to have the mutex be unlocked at the start while the
+//   UNIX version unlocks it at the end. Making the mutex unlocking part of 
+//   the macro allows us to put it where we want.
+//
 // ****************************************************************************
 
 static int
@@ -12148,7 +12192,6 @@ Synchronize()
 
 #ifndef POLLING_SYNCHRONIZE
     SYNC_COND_WAIT();
-    MUTEX_UNLOCK();
 #else
     MUTEX_UNLOCK();
     while((syncAtts->GetSyncTag() != syncCount) && keepGoing)

@@ -181,6 +181,9 @@ import java.util.prefs.BackingStoreException;
 //   Brad Whitlock, Tue Mar 7 16:43:46 PST 2006
 //   Added RedoView.
 //
+//   Brad Whitlock, Thu Mar 16 16:23:50 PST 2006
+//   Added DDF attributes.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -240,6 +243,7 @@ public class ViewerProxy implements SimpleObserver
         processAtts = new ProcessAttributes();
         dbPluginInfoAtts = new DBPluginInfoAttributes();
         exportDBAtts = new ExportDBAttributes();
+        constructDDFAtts = new ConstructDDFAttributes();
         clientMethod = new ClientMethod();
         clientInformation = new ClientInformation();
         clientInformationList = new ClientInformationList();
@@ -337,6 +341,7 @@ public class ViewerProxy implements SimpleObserver
             xfer.Add(silAtts);
             xfer.Add(dbPluginInfoAtts);
             xfer.Add(exportDBAtts);
+            xfer.Add(constructDDFAtts);
             xfer.Add(clientMethod);
             xfer.Add(clientInformation);
             xfer.Add(clientInformationList);
@@ -1760,6 +1765,7 @@ public class ViewerProxy implements SimpleObserver
     public final ClientInformationList GetClientInformationList() { return clientInformationList; }
     public MovieAttributes GetMovieAttributes() { return movieAtts; }
     public MeshManagementAttributes GetMeshManagementAttributes() { return meshManagementAtts; }
+    public ConstructDDFAttributes GetDDFAttributes() { return constructDDFAtts; }
 
     public int GetPlotIndex(String plotName)
     {
@@ -1930,6 +1936,7 @@ public class ViewerProxy implements SimpleObserver
     private ProcessAttributes        processAtts;
     private DBPluginInfoAttributes   dbPluginInfoAtts;
     private ExportDBAttributes       exportDBAtts;
+    private ConstructDDFAttributes   constructDDFAtts;
     private ClientMethod             clientMethod;
     private ClientInformation        clientInformation;
     private ClientInformationList    clientInformationList;

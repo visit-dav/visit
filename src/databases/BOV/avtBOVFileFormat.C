@@ -46,6 +46,9 @@ static int FormatLine(char *line);
 //    Hank Childs, Fri Mar  4 16:02:03 PST 2005
 //    Do not read in the entire TOC in this file any more.
 //
+//    Brad Whitlock, Thu Mar 16 14:56:37 PST 2006
+//    Initialized byteOffset to 0 and set divideBrick to false.
+//
 // ****************************************************************************
 
 avtBOVFileFormat::avtBOVFileFormat(const char *fname)
@@ -105,6 +108,8 @@ avtBOVFileFormat::avtBOVFileFormat(const char *fname)
     hasBoundaries = false;
     nodalCentering = true;
     byteData = true;
+    byteOffset = 0;
+    divideBrick = false;
 
     haveReadTOC = false;
 }
@@ -297,6 +302,86 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
     return rv;
 }
 
+#define BRICKLET_READ
+#ifdef BRICKLET_READ
+// ****************************************************************************
+// Method: ReadBricklet
+//
+// Purpose: 
+//   This is a template function that knows how to use fseek to access
+//   a smaller brick of data within a BOV file.
+//
+// Arguments:
+//   fp        : The file pointer to use.
+//   dest      : The destination buffer for the data that gets read.
+//   full_size : The whole size (x,y,z) of the brick in the file.
+//   start     : The starting x,y,z that we want to read.
+//   end       : The ending x,y,z that we want to read.
+//   offset    : An additional amount (in bytes) to offset from the start
+//               of the file.
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 17 15:17:19 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template<class T>
+void
+ReadBricklet(FILE *fp, T *dest, const int *full_size, const int *start,
+    const int *end, int offset)
+{
+    T *ptr = dest;
+
+    // Seek to the right Z page
+    long zPage = start[2]*full_size[0]*full_size[1];
+    long seekOffset = zPage * sizeof(T) + offset;
+    if(seekOffset > 0)
+        fseek(fp, seekOffset, SEEK_SET);
+
+    // Now start reading the data
+    int dx = end[0] - start[0];
+    long extraseek = 0;
+    for(int z = start[2]; z < end[2]; ++z)
+    {
+         // Get to the starting data location in the zPage.
+         long corner = start[1]*full_size[0] + start[0];
+         seekOffset = (corner + extraseek) * sizeof(T);
+         if(seekOffset > 0)
+             fseek(fp, seekOffset, SEEK_CUR);
+         extraseek = 0;
+
+         for(int y = start[1]; y < end[1]; ++y)
+         {
+             // Read in a line of data in x.
+             fread((void *)ptr, sizeof(T), dx, fp);
+             ptr += dx;
+
+             // Seek to the next line
+             if(y < end[1]-1)
+             {
+                 long right = full_size[0] - end[0];
+                 long left = start[0];
+                 seekOffset = (right + left) * sizeof(T);
+                 if(seekOffset > 0)
+                     fseek(fp, seekOffset, SEEK_CUR);
+             }
+         }
+
+         // Seek to the next page
+         if(z < end[2]-1)
+         {
+             long right = full_size[0] - end[0];
+             long bottom = (full_size[1] - end[1]) * full_size[0];
+             extraseek = right + bottom;
+         }
+    }
+}
+#endif
 
 // ****************************************************************************
 //  Method: avtBOVFileFormat::GetVar
@@ -314,6 +399,9 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
 //    qualified pathnames.  Also add support for bytes vs floats.  Also
 //    add support for gzipped vs non-gzipped.  Also do a better job of closing
 //    file descriptors and freeing memory.
+//
+//    Brad Whitlock, Wed Mar 15 17:30:52 PST 2006
+//    Added more support for reading in a piece of a brick (divideBrick).
 //
 // ****************************************************************************
 
@@ -385,8 +473,9 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
     }
 
     vtkFloatArray *rv = vtkFloatArray::New();
-    if (hasBoundaries)
-    {
+
+    if(hasBoundaries)
+    { 
         int dx = bricklet_size[0] + 2;
         int x_start = (x_off == 0 ? 1 : 0);
         int x_stop  = (x_off >= nx-1 ? dx-1 : dx);
@@ -418,9 +507,21 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
         // Read in based on whether or not we have a gzipped file.
         //
         if (gzipped)
+        {
+            // Read past the specified offset.
+            if(byteOffset > 0)
+                gzseek(gz_handle, byteOffset, SEEK_SET);
+
             gzread(gz_handle, buff2, total_vals*unit_size);
+        }
         else
+        {
+            // Read past the specified offset.
+            if(byteOffset > 0)
+                fseek(file_handle, byteOffset, SEEK_SET);
+
             fread(buff2, unit_size, total_vals, file_handle);
+        }
 
         int ptId = 0;
         for (int i = z_start ; i < z_stop ; i++)
@@ -439,7 +540,132 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
         if (f_buff != NULL)
             delete [] f_buff;
     }
-    else
+    else if(divideBrick)
+    {
+        // Allocate enough memory for 1 bricklet.
+        unsigned int nvals = bricklet_size[0] * 
+                             bricklet_size[1] *
+                             bricklet_size[2];
+        rv->SetNumberOfTuples(nvals);
+        float *buff = (float *) rv->GetVoidPointer(0);
+        int x_start = x_off * bricklet_size[0];
+        int y_start = y_off * bricklet_size[1];
+        int z_start = z_off * bricklet_size[2];
+        int x_stop = x_start + bricklet_size[0];
+        int y_stop = y_start + bricklet_size[1];
+        int z_stop = z_start + bricklet_size[2];
+#ifdef BRICKLET_READ
+        if(!gzipped)
+        {
+            int start[3] = {x_start, y_start, z_start};
+            int stop[3] = {x_stop, y_stop, z_stop};
+
+            if(!byteData)
+            {
+                // Read the float data.
+                ReadBricklet(file_handle, buff, full_size, start, stop,
+                             byteOffset);
+            }
+            else
+            {
+                // Read the char data into a temp array.
+                unsigned char *cdata = new unsigned char[nvals];
+                ReadBricklet(file_handle, cdata, full_size, start, stop,
+                             byteOffset);
+
+                // Convert the char data into floats.
+                float *fptr = buff;
+                unsigned char *cptr = cdata;
+                for(unsigned int i = 0; i < nvals; ++i)
+                    *fptr++ = min + (max-min) * (*cptr++ / 255.);
+
+                delete [] cdata;
+            }
+        }
+        else
+#endif
+        {
+            //
+            // In this case, we have 1 big brick and we're going to chunk it
+            // up into bricklets so we can do some parallel processing upstream.
+            //
+
+            // Allocate enough memory to read the whole brick.
+            unsigned int whole_size = full_size[0] * full_size[1] *full_size[2];
+            float *whole_buff = 0;
+            if(byteData)
+                whole_buff = (float *)(new unsigned char[whole_size]);
+            else
+                whole_buff = new float[whole_size];
+            float *f_buff = (float *)whole_buff;
+            unsigned char *uc_buff = (unsigned char *)whole_buff;
+
+#ifndef BRICKLET_READ
+            if(gzipped)
+            {
+#endif
+            // Read past the specified offset.
+            if(byteOffset > 0)
+                gzseek(gz_handle, byteOffset, SEEK_SET);
+
+            // Read the whole dataset
+            gzread(gz_handle, whole_buff, whole_size * unit_size);
+#ifndef BRICKLET_READ
+            }
+            else
+            {
+                // Read past the specified offset.
+                if(byteOffset > 0)
+                    fseek(file_handle, byteOffset, SEEK_SET);
+
+                fread(whole_buff, unit_size, whole_size, file_handle);
+            }
+#endif
+            //
+            // Copy the piece that we want into the buffer.
+            //
+            int ptId = 0;
+            if (byteData)
+            {
+                for (int i = z_start ; i < z_stop ; i++)
+                {
+                    unsigned int Z = i*full_size[0]*full_size[1];
+                    for (int j = y_start ; j < y_stop ; j++)
+                    {
+                        unsigned int Y = j * full_size[0];
+                        for (int k = x_start ; k < x_stop ; k++)
+                        {
+                            unsigned int index = Z + Y + k;
+                            buff[ptId++] = min + (max-min)*(uc_buff[index]/255.);
+                        }
+                    }
+                }
+
+                // Delete the array containing the whole BOV
+                delete [] uc_buff;
+            }
+            else
+            {
+                for (int i = z_start ; i < z_stop ; i++)
+                {
+                    unsigned int Z = i*full_size[0]*full_size[1];
+                    for (int j = y_start ; j < y_stop ; j++)
+                    {
+                        unsigned int Y = j * full_size[0];
+                        for (int k = x_start ; k < x_stop ; k++)
+                        {
+                            unsigned int index = Z + Y + k;
+                            buff[ptId++] = f_buff[index];
+                        }
+                    }
+                }
+
+                // Delete the array containing the whole BOV
+                delete [] f_buff;
+            }
+        }
+    }
+    else // read the whole BOV
     {
         int nvals = bricklet_size[0] * bricklet_size[1] * bricklet_size[2];
         rv->SetNumberOfTuples(nvals);
@@ -460,9 +686,21 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
         // Read in based on whether or not we have a gzipped file.
         //
         if (gzipped)
+        {
+            // Read past the specified offset.
+            if(byteOffset > 0)
+                gzseek(gz_handle, byteOffset, SEEK_SET);
+
             gzread(gz_handle, buff, nvals*unit_size);
+        }
         else
+        {
+            // Read past the specified offset.
+            if(byteOffset > 0)
+                fseek(file_handle, byteOffset, SEEK_SET);
+
             fread(buff, unit_size, nvals, file_handle);
+        }
 
         if (byteData)
         {
@@ -711,6 +949,10 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Do not re-read the TOC for each call to this method.  Also added error
 //    checking previously in the constructor.
 //
+//    Brad Whitlock, Thu Mar 16 14:55:52 PST 2006
+//    I added support for byteOffset, which lets us skip a header. I also
+//    added support for divideBrick.
+//
 // ****************************************************************************
 
 void
@@ -879,6 +1121,17 @@ avtBOVFileFormat::ReadTOC(void)
             if (strstr(line, "zon") != NULL)
                 nodalCentering = false;
         }
+        else if (strcmp(line, "BYTE_OFFSET:") == 0)
+        {
+            line += strlen("BYTE_OFFSET:") + 1;
+            byteOffset = atoi(line);
+            byteOffset = byteOffset < 0 ? 0 : byteOffset;
+        }
+        else if (strcmp(line, "DIVIDE_BRICK:") == 0)
+        {
+            line += strlen("DIVIDE_BRICK:") + 1;
+            divideBrick = (strcmp(line, "true") == 0);
+        }
     }
 
     if (file_pattern == NULL)
@@ -917,6 +1170,15 @@ avtBOVFileFormat::ReadTOC(void)
     {
         debug1 << "Full size must be a multiple of bricklet size" << endl;
         EXCEPTION1(InvalidFilesException, fname);
+    }
+    if(divideBrick &&
+       (full_size[0] == bricklet_size[0] &&
+        full_size[1] == bricklet_size[1] &&
+        full_size[2] == bricklet_size[2]))
+    {
+        debug1 << "Turning off DIVIDE_BRICK because DATA_SIZE and "
+                  "DATA_BRICKLETS are the same size" << endl;
+        divideBrick = false;
     }
 }
 

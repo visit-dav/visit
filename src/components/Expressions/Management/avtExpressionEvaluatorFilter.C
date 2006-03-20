@@ -418,11 +418,11 @@ avtExpressionEvaluatorFilter::PerformRestriction(
             for (int i = 0 ; i < nVars ; i++)
             {
                 std::string name = info->GetDomainTupleName(i);
-                debug5 << "EEF::PerformRestriction:         " << name << endl;
+                debug5 << "EEF::PerformRestriction:         " << name.c_str() << endl;
                 candidates.insert(name);
             }
             std::string name = info->GetCodomainName();
-            debug5 << "EEF::PerformRestriction:         " << name << endl;
+            debug5 << "EEF::PerformRestriction:         " << name.c_str() << endl;
             candidates.insert(name);
         }
         else  // (expr != NULL)

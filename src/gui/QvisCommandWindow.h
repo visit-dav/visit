@@ -64,6 +64,7 @@ private:
     QString fileName(int index) const;
     void LoadScripts();
     void SaveScripts();
+    void UpdateMacroCheckBoxes();
 
     QTabWidget      *tabWidget;
     QButtonGroup    *executeButtonsGroup;

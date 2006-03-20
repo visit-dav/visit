@@ -474,7 +474,7 @@ avtDatabaseFactory::VisitFile(const char *visitFile, int timestep,
             // the whole path to the file. We don't need to prepend a 
             // path if it already contains one.
             if((fileName.find(":") != std::string::npos) ||
-               (fileName.size() > 0 && fileName[0] == '!')
+               (fileName.size() > 0 && fileName[0] == '!'))
                 continue;
 
             // If the filename begins with "./", remove it.

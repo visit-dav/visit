@@ -28,7 +28,7 @@ avtUniformBinningScheme::avtUniformBinningScheme(int nt, const float *r,
         // Must be a positive number of tuples
         EXCEPTION0(ImproperUseException);
     }
-    for (int i = 0 ; i < nt ; i++)
+    for (i = 0 ; i < nt ; i++)
     {
         if (r[2*i+1] <= r[2*i])
         {
@@ -46,7 +46,7 @@ avtUniformBinningScheme::avtUniformBinningScheme(int nt, const float *r,
     ranges  = new float[2*nt];
     nvals   = new int[nt];
     nBins   = 1;
-    for (int i = 0 ; i < ntuples ; i++)
+    for (i = 0 ; i < ntuples ; i++)
     {
         ranges[2*i]   = r[2*i];
         ranges[2*i+1] = r[2*i+1];
