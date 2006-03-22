@@ -62,6 +62,9 @@ class QObject;
 //   Brad Whitlock, Thu Aug 18 15:07:32 PST 2005
 //   Removed Split method and made it be a static function in the .C file.
 //
+//   Brad Whitlock, Wed Mar 22 12:05:43 PDT 2006
+//   I added GroupingInfo and added another argument to UpdateSingleMenu.
+//
 // ****************************************************************************
 
 class WINUTIL_API VariableMenuPopulator
@@ -110,13 +113,28 @@ private:
         int                     unsortedVariableIndex;
     };
 
+    class GroupingInfo
+    {
+    public:
+        GroupingInfo();
+        GroupingInfo(const GroupingInfo &obj);
+       ~GroupingInfo();
+        void operator = (const GroupingInfo &obj);
+
+        StringStringMap grouping;
+        bool            required;
+    };
+
+    typedef std::map<int, GroupingInfo *> IntGroupingInfoMap;
+
     void UpdateSingleMenu(QvisVariablePopupMenu *, VariableList &vars,
-                          QObject *, const char *slot);
-    void AddVars(VariableList &to, VariableList &from);
+                          QObject *, const char *slot, const GroupingInfo *);
+    bool AddVars(VariableList &to, VariableList &from);
     void AddExpression(const Expression &);
     void GetRelevantExpressions(ExpressionList &newExpressionList,
                                 const avtDatabaseMetaData *md,
                                 const ExpressionList &exprList);
+    void ClearGroupingInfo();
 
     // Keep track of the name of the database for which we have variables.
     std::string    cachedDBName;
@@ -126,6 +144,7 @@ private:
     VariableList   meshVars, scalarVars, materialVars, vectorVars, subsetVars,
                    speciesVars, curveVars, tensorVars, symmTensorVars,
                    labelVars, arrayVars;
+    IntGroupingInfoMap groupingInfo;
 };
 
 #endif
