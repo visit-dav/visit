@@ -413,7 +413,7 @@ fi
 rm -f lilac
 cat <<EOF > lilac
 
-./visit-install $verflag -c closed -g visit -b bdivp -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c closed -g visit -b bdivp -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "        install of visit on lilac"           >> resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1
@@ -442,24 +442,15 @@ then
 fi
 
 #
-# Install on the lc machines.
-#
-if [ $test = no ]
-then
-   scp visit-install sc1:
-   scp lc sc1:lc_install
-   ssh sc1 "chmod 750 lc_install;./lc_install"
-fi
-
-
 # Install on gauss.
 #
 rm -f gauss
 cat <<EOF > gauss
-#!/bin/sh
-./visit-install $verflag -c open -g visit -b bdivp -gw -l $ver linux-x86_64 /usr/gapps/visit > installlog 2>&1
+
+./visit-install $verflag -c closed -g visit -b bdivp -gw -l $ver linux-x86_64 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
-echo "        install of visit on gauss"           > resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "        install of visit on gauss"           >> resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
@@ -472,19 +463,27 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-x86_64/plugins/
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
 EOF
 
 if [ $gauss = true ]
 then
    if [ $test = no ]
    then
+      cat gauss >> lc
+
       scp gauss2:/usr/tmp/$user/gauss/visitbuild/visit$ver2.linux-x86_64.tar.gz .
-      scp visit$ver2.linux-x86_64.tar.gz gps15:
-      scp visit-install gps15:
-      scp gauss gps15:gauss_install
-      ssh gps15 "chmod 750 gauss_install;./gauss_install"
+      scp visit$ver2.linux-x86_64.tar.gz sc1:
    fi
+fi
+
+#
+# Install on the lc machines.
+#
+if [ $test = no ]
+then
+   scp visit-install sc1:
+   scp lc sc1:lc_install
+   ssh sc1 "chmod 750 lc_install;./lc_install"
 fi
 
 #

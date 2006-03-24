@@ -516,7 +516,6 @@ echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resu
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
 EOF
 
 if [ $gauss = true ]
