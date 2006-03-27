@@ -1397,6 +1397,9 @@ QvisGUIApplication::Quit()
 //    Brad Whitlock, Wed Jan 11 17:17:45 PST 2006
 //    I added code to parse -nowindowmetrics.
 //
+//    Brad Whitlock, Fri Mar 24 14:17:48 PST 2006
+//    Added support for specifying virtual databases on the command line.
+//
 // ****************************************************************************
 
 void
@@ -1446,12 +1449,46 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
                 {
 #if defined(_WIN32)
                     std::string tmpFileName(LongFileName(argv[i+1]));
+#else
+                    std::string tmpFileName(argv[i+1]);
+#endif
+                    // Remove quotes around the string if any exist.
+                    if(tmpFileName.size() > 0 &&
+                       (tmpFileName[0] == '\'' || tmpFileName[0] == '\"'))
+                    {
+                        tmpFileName = tmpFileName.substr(1, tmpFileName.size()-1);
+                    }
+                    // Remove quotes around the string if any exist.
+                    if(tmpFileName.size() > 0 &&
+                       (tmpFileName[tmpFileName.size()-1] == '\'' ||
+                        tmpFileName[tmpFileName.size()-1] == '\"'))
+                    {
+                        tmpFileName = tmpFileName.substr(0, tmpFileName.size()-1);
+                    }
+
+                    // If the string contains a "*" and the end of the string is
+                    // not " database" then add that suffix.
+                    std::string suffix(" database");
+                    if(tmpFileName.find("*") != std::string::npos)
+                    {
+                        if(tmpFileName.size() > suffix.size())
+                        {
+                            std::string tail(tmpFileName.substr(
+                                tmpFileName.size()-suffix.size(), suffix.size()));
+                            if(tail != suffix)
+                               tmpFileName += suffix;
+                        }
+                        else
+                            tmpFileName += suffix;
+                    }
+#if defined(_WIN32)
+                    // Add localhost to the start if a drive was given.
                     if(tmpFileName.substr(1,2) == ":\\")
                         tmpFileName = std::string("localhost:") + tmpFileName;
-                    loadFile = QualifiedFilename(tmpFileName);
-#else
-                    loadFile = QualifiedFilename(argv[i + 1]);
 #endif
+                    debug1 << "The -o option filename is: " << tmpFileName.c_str() << endl;
+
+                    loadFile = QualifiedFilename(tmpFileName);
                 }
                 else
                 {

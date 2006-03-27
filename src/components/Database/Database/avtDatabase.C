@@ -786,6 +786,10 @@ avtDatabase::GetNewMetaData(int timeState, bool forceReadAllCyclesTimes)
 //    Hank Childs, Thu Sep 22 15:49:34 PDT 2005
 //    Change side_volume to min_side_volume.  Add edge length as well.
 //
+//    Brad Whitlock, Thu Mar 23 09:38:44 PDT 2006
+//    Added code to limit the number of meshes that receive mesh quality
+//    expressions to 10.
+//
 // ****************************************************************************
 
 void
@@ -800,6 +804,8 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
     };
 
     int nmeshes = md->GetNumMeshes();
+    if (nmeshes > 10)
+        nmeshes = 10;
     for (int i = 0 ; i < nmeshes ; i++)
     {
         const avtMeshMetaData *mmd = md->GetMesh(i);
