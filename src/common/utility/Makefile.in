@@ -1,5 +1,5 @@
 #
-#                            Copyright 2000 - 2005
+#                            Copyright 2000 - 2006
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -62,6 +62,9 @@
 #    Brad Whitlock, Wed Feb 16 11:23:34 PDT 2005
 #    Added top level VisIt include.
 #
+#    Jeremy Meredith, Thu Mar 23 10:39:47 PDT 2006
+#    Added AtomicProperties.
+#
 ##############################################################################
 
 ##
@@ -76,9 +79,10 @@ LIBS=
 ##
 ## Files...
 ##
-SRC=BJHash.C NamingConvention.C StringHelpers.C Utility.C void_ref_ptr.C
-HDR=BJHash.h NamingConvention.h StringHelpers.h Utility.h ref_ptr.h \
-    array_ref_ptr.h void_ref_ptr.h
+SRC=AtomicProperties.C BJHash.C NamingConvention.C StringHelpers.C Utility.C\
+    void_ref_ptr.C
+HDR=AtomicProperties.h BJHash.h NamingConvention.h StringHelpers.h Utility.h\
+    ref_ptr.h array_ref_ptr.h void_ref_ptr.h
 OBJ=$(SRC:.C=.o)
 LIB=libutility
 NOT_DISTRIB=
