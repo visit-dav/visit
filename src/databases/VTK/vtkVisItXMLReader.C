@@ -29,6 +29,7 @@
 #include "vtkVisItXMLDataParser.h"
 #include "vtkVisItXMLFileReadTester.h"
 #include "vtkVisItZLibDataCompressor.h"
+#include "Utility.h"
 
 #include <sys/stat.h>
 
@@ -118,6 +119,9 @@ int vtkVisItXMLReader::CanReadFileVersion(int, int)
   return 1;
 }
 
+//    Mark C. Miller, Thu Mar 30 16:45:35 PST 2006
+//    Made it use VisItStat instead of stat
+//
 //----------------------------------------------------------------------------
 int vtkVisItXMLReader::OpenVTKFile()
 {
@@ -141,8 +145,8 @@ int vtkVisItXMLReader::OpenVTKFile()
   
   // Need to open a file.  First make sure it exists.  This prevents
   // an empty file from being created on older compilers.
-  struct stat fs;
-  if(stat(this->FileName, &fs) != 0)
+  VisItStat_t fs;
+  if(VisItStat(this->FileName, &fs) != 0)
     {
     vtkErrorMacro("Error opening file " << this->FileName);
     return 0;
@@ -463,13 +467,16 @@ vtkDataArray* vtkVisItXMLReader::CreateDataArray(vtkVisItXMLDataElement* da)
   return array;
 }
 
+//    Mark C. Miller, Thu Mar 30 16:45:35 PST 2006
+//    Made it use VisItStat instead of stat
+//
 //----------------------------------------------------------------------------
 int vtkVisItXMLReader::CanReadFile(const char* name)
 {
   // First make sure the file exists.  This prevents an empty file
   // from being created on older compilers.
-  struct stat fs;
-  if(stat(name, &fs) != 0) 
+  VisItStat_t fs;
+  if(VisItStat(name, &fs) != 0) 
     { 
     return 0; 
     }

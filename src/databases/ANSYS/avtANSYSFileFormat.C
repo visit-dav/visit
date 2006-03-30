@@ -29,6 +29,7 @@
 
 #include <TimingsManager.h>
 #include <DebugStream.h>
+#include <Utility.h>
 
 using     std::string;
 
@@ -147,6 +148,9 @@ avtANSYSFileFormat::ActivateTimestep()
 //   Brad Whitlock, Wed Jul 27 10:55:58 PDT 2005
 //   Fixed for win32.
 //
+//    Mark C. Miller, Thu Mar 30 16:45:35 PST 2006
+//    Made it use VisItStat instead of stat
+//
 // ****************************************************************************
 
 bool
@@ -172,20 +176,14 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
     int nCells = 100;
     if(nLines == ALL_LINES)
     {
-#if defined(_WIN32)
-        struct _stat statbuf;
-        _stat(name, &statbuf);
-        off_t fileSize = statbuf.st_size;
-#else
-        struct stat statbuf;
-        stat(name, &statbuf);
-        off_t fileSize = statbuf.st_size;
-#endif
+        VisItStat_t statbuf;
+        VisItStat(name, &statbuf);
+        VisItOff_t fileSize = statbuf.st_size;
 
         // Make a guess about the number of cells and points based on
         // the size of the file.
-        nPoints = fileSize / 190;
-        nCells  = fileSize / 210;
+        nPoints = fileSize / (VisItOff_t) 190;
+        nCells  = fileSize / (VisItOff_t) 210;
     }
     vtkPoints *pts = vtkPoints::New();
     pts->Allocate(nPoints);

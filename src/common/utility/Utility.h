@@ -5,6 +5,7 @@
 #ifndef UTILITY_H
 #define UTILITY_H
 #include <utility_exports.h>
+#include <visit-config.h>
 #include <string>
 #include <vector>
 
@@ -16,6 +17,21 @@ typedef void (ProcessDirectoryCallback)(void *, const std::string &, bool,
 typedef enum {CONFIGSTATE_IOERROR,
               CONFIGSTATE_FIRSTTIME,
               CONFIGSTATE_SUCCESS} ConfigStateEnum;
+
+#if defined(_WIN32)
+typedef struct _stat VisItStat_t;
+typedef off_t VisItOff_t;
+#else
+
+#if SIZEOF_OFF64_T > 4
+typedef struct stat64 VisItStat_t;
+typedef off64_t VisItOff_t;
+#else
+typedef struct stat VisItStat_t;
+typedef off_t VisItOff_t;
+#endif
+
+#endif
 
 //
 // Function Prototypes
@@ -52,6 +68,9 @@ UTILITY_API char *      GetSystemConfigFile(const char *filename = 0);
 
 int         UTILITY_API ConfigStateGetRunCount(ConfigStateEnum &code);
 void        UTILITY_API ConfigStateIncrementRunCount(ConfigStateEnum &code);
+
+int         UTILITY_API VisItStat(const char *filename, VisItStat_t *buf);
+int         UTILITY_API VisItFstat(int fd, VisItStat_t *buf);
 
 inline char *C_strdup(char const * const);
 inline char *CXX_strdup(char const * const);

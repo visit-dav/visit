@@ -8,6 +8,7 @@
 #include <vtkObjectFactory.h>
 #include <vtkByteSwap.h>
 #include <vtkPointData.h>
+#include <Utility.h>
 
 #include <sys/stat.h>
 
@@ -46,6 +47,8 @@ void vtkStimulateReader::ExecuteInformation()
 }
 
 
+//    Mark C. Miller, Thu Mar 30 16:45:35 PST 2006
+//    Made it use VisItStat instead of stat
 int vtkStimulateReader::OpenFile(void)
 {
   // Close file from any previous image
@@ -65,8 +68,8 @@ int vtkStimulateReader::OpenFile(void)
       return 0;
   }
 
-  struct stat fs;
-  if ( !stat( sdt_name, &fs) )
+  VisItStat_t fs;
+  if ( !VisItStat( sdt_name, &fs) )
     {
 #ifdef _WIN32
     this->File = new ifstream(sdt_name, ios::in | ios::binary);

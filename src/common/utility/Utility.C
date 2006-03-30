@@ -1340,3 +1340,57 @@ GetVisItLauncher()
     return std::string(GetVisItInstallationDirectory() + "/bin/visit");
 #endif
 }
+
+// ****************************************************************************
+// Method: VisItStat 
+//
+// Purpose: platform independent stat function that supports large files
+// when possible
+//
+// Programmer: Mark C. Miller 
+// Creation:   March 23, 2006 
+//
+// ****************************************************************************
+
+int
+VisItStat(const char *file_name, VisItStat_t *buf)
+{
+#if defined(_WIN32)
+   return _stat(name, &statbuf);
+#else
+
+#if SIZEOF_OFF64_T > 4
+    return stat64(file_name, buf);
+#else
+    return stat(file_name, buf);
+#endif
+
+#endif
+}
+
+// ****************************************************************************
+// Method: VisItFStat 
+//
+// Purpose: platform independent fstat function that supports large files
+// when possible
+//
+// Programmer: Mark C. Miller 
+// Creation:   March 23, 2006 
+//
+// ****************************************************************************
+
+int
+VisItFstat(int fd, VisItStat_t *buf)
+{
+#if defined(_WIN32)
+   return _fstat(fd, &statbuf);
+#else
+
+#if SIZEOF_OFF64_T > 4
+    return fstat64(fd, buf);
+#else
+    return fstat(fd, buf);
+#endif
+
+#endif
+}

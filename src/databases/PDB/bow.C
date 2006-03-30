@@ -27,6 +27,7 @@
 /* requires -I<this dir> to work */
 
 #include "bow.h"
+#include "Utility.h"
 
 //
 // Make some substitutions so the code is portable to Windows.
@@ -657,16 +658,19 @@ static void find_tmpdir(char *tmpdir)
 /* returns newly created buffer on success, 0 on failure */
 /* (mem_size() and mem_put() may be applied to return buffer) */
 
+/*    Mark C. Miller, Thu Mar 30 16:45:35 PST 2006 */
+/*    Made it use VisItStat instead of stat        */
+
 static char *fioX_read(bowglobal bg,char *pathsrc)
 {
     int id,n;
-    static struct stat st_store;
-    static struct stat *st = &st_store;
+    static VisItStat_t st_store;
+    static VisItStat_t *st = &st_store;
     char *buf;
 
     /* open for read, get size stat */
     if ((id=FILE_OPEN(pathsrc,O_RDONLY))<0) RET((char *)0)
-    if (fstat(id,st)) { FILE_CLOSE(id); RET((char *)0) }
+    if (VisItFstat(id,st)) { FILE_CLOSE(id); RET((char *)0) }
     n=st->st_size;
     if (n<=0) { FILE_CLOSE(id); RET((char *)0) }
     buf=(char *)(*bg->alloc)(bg->opaque,n);
@@ -694,13 +698,15 @@ static int fioX_write(char *pathdst,char *buf,int size)
 
 
 /* return 1 if dir and exists, 0 otherwise */
+/*    Mark C. Miller, Thu Mar 30 16:45:35 PST 2006 */
+/*    Made it use VisItStat instead of stat        */
 
 static int fioX_isdir(char *pathsrc)
 {
-    static struct stat st_store;
-    static struct stat *st = &st_store;
+    static VisItStat_t st_store;
+    static VisItStat_t *st = &st_store;
 
-    if (stat(pathsrc,st)) return 0;
+    if (VisItStat(pathsrc,st)) return 0;
     return ((st->st_mode&S_IFDIR)?1:0);
 }
 

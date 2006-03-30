@@ -3097,6 +3097,11 @@ AC_CHECK_SIZEOF(void *,0)
 
 AC_CHECK_SIZEOF(boolean,0)
 
+#
+# Use size of off64_t to determine which form of stat() calls to make
+#
+AC_CHECK_SIZEOF(off64_t)
+
 AC_C_BIGENDIAN
 
 dnl

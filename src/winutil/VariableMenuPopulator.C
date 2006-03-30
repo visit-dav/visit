@@ -1463,7 +1463,7 @@ VariableMenuPopulator::GroupingInfo::GroupingInfo() : grouping()
 }
 
 VariableMenuPopulator::GroupingInfo::GroupingInfo(
-    const VariableMenuPopulator::GroupingInfo::GroupingInfo &obj) :
+    const VariableMenuPopulator::GroupingInfo &obj) :
         grouping(obj.grouping)
 {
     required = obj.required;
@@ -1474,7 +1474,7 @@ VariableMenuPopulator::GroupingInfo::~GroupingInfo()
 }
 
 void VariableMenuPopulator::GroupingInfo::operator = (
-    const VariableMenuPopulator::GroupingInfo::GroupingInfo &obj)
+    const VariableMenuPopulator::GroupingInfo &obj)
 {
     grouping = obj.grouping;
     required = obj.required;
