@@ -101,7 +101,7 @@ avtNeighborFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     data->SetNumberOfComponents(1);
     data->SetNumberOfValues(nPoints);
 
-    float bounds[6];
+    double bounds[6];
     in_ds->GetBounds(bounds);
 
     // Create the point locator
@@ -118,13 +118,15 @@ avtNeighborFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         v->Delete();
 
         // And at the same time, set the distance data
-        float *coords = pts->GetPoint(id);
+        double coords[3];
+        pts->GetPoint(id, coords);
 
         // Find the closest 2 points, since the closest is itself of course.
         vtkIdList *closeId = vtkIdList::New();
         ptLoc->FindClosestNPoints(2, coords, closeId);
 
-        float *nearCoords = pts->GetPoint(closeId->GetId(1));
+        double nearCoords[3];
+        pts->GetPoint(closeId->GetId(1), nearCoords);
 
         float distance = (coords[0]-nearCoords[0])*(coords[0]-nearCoords[0]) +
                          (coords[1]-nearCoords[1])*(coords[1]-nearCoords[1]) +  
@@ -146,7 +148,7 @@ avtNeighborFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     // Make our best attempt at maintaining our extents.
     //
     double exts[2];
-    float range[2];
+    double range[2];
     data->GetRange(range, 0);
     exts[0] = range[0];
     exts[1] = range[1];

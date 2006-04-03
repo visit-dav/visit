@@ -320,10 +320,10 @@ vtkVisItUtility::CalculateRealID(const int cellId, const bool forCell, vtkDataSe
 
 int
 vtkVisItUtility::ComputeStructuredCoordinates(vtkRectilinearGrid *rgrid, 
-                                              float x[3], int ijk[3])
+                                              double x[3], int ijk[3])
 {
   int i, j;
-  float xPrev, xNext, tmp;
+  double xPrev, xNext, tmp;
   vtkDataArray *scalars[3];
  
   scalars[0] = rgrid->GetXCoordinates();
@@ -404,7 +404,7 @@ vtkVisItUtility::ComputeStructuredCoordinates(vtkRectilinearGrid *rgrid,
 // ****************************************************************************
 
 int
-vtkVisItUtility::FindCell(vtkDataSet *ds, float x[3])
+vtkVisItUtility::FindCell(vtkDataSet *ds, double x[3])
 {
     if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
@@ -427,8 +427,8 @@ vtkVisItUtility::FindCell(vtkDataSet *ds, float x[3])
         vtkIdType ptId, cellId;
         vtkCell *cell;
         int walk, found = -1, subId;
-        float pcoords[3], *weights = new float[8], diagLen, tol;
-        float closestPoint[3], dist2;
+        double pcoords[3], *weights = new double[8], diagLen, tol;
+        double closestPoint[3], dist2;
         vtkIdList *cellIds, *ptIds;
    
         vtkVisItPointLocator *locator = vtkVisItPointLocator::New();
@@ -438,7 +438,7 @@ vtkVisItUtility::FindCell(vtkDataSet *ds, float x[3])
  
         diagLen = ds->GetLength();
         if (nCells != 0)
-            tol = diagLen / (float) nCells;
+            tol = diagLen / (double) nCells;
         else
             tol = 1e-6;
 
@@ -458,7 +458,7 @@ vtkVisItUtility::FindCell(vtkDataSet *ds, float x[3])
             return -1;
         }
        
-        float minDist2 = FLT_MAX;
+        double minDist2 = FLT_MAX;
         cellIds = vtkIdList::New();
         cellIds->Allocate(8, 100);
         ptIds = vtkIdList::New();
@@ -702,20 +702,20 @@ vtkVisItUtility::ZoneGhostIdFromNonGhost(vtkDataSet *ds, const int zone)
 // ****************************************************************************
 
 void
-vtkVisItUtility::GetCellCenter(vtkCell* cell, float center[3])
+vtkVisItUtility::GetCellCenter(vtkCell* cell, double center[3])
 {
-    float parametricCenter[3] = {0., 0., 0.};
-    float coord[3] = {0., 0., 0.};
+    double parametricCenter[3] = {0., 0., 0.};
+    double coord[3] = {0., 0., 0.};
     int subId = -1;
     if (cell->GetNumberOfPoints() <= 27)
     {
-        float weights[27];
+        double weights[27];
         subId = cell->GetParametricCenter(parametricCenter);
         cell->EvaluateLocation(subId, parametricCenter, coord, weights);
     }
     else
     {
-        float *weights = new float[cell->GetNumberOfPoints()];
+        double *weights = new double[cell->GetNumberOfPoints()];
         subId = cell->GetParametricCenter(parametricCenter);
         cell->EvaluateLocation(subId, parametricCenter, coord, weights);
         delete [] weights;
@@ -823,20 +823,21 @@ vtkVisItUtility::ContainsMixedGhostZoneTypes(vtkDataSet *ds)
 // ****************************************************************************
 
 bool
-vtkVisItUtility::CellContainsPoint(vtkCell *cell, const float *pt)
+vtkVisItUtility::CellContainsPoint(vtkCell *cell, const double *pt)
 {
     int cellType = cell->GetCellType();
     if (cellType == VTK_HEXAHEDRON)
     {
         vtkHexahedron *hex = (vtkHexahedron *) cell;
         vtkPoints *pts = hex->GetPoints();
-        float *pts_ptr = (float *) pts->GetVoidPointer(0);
+        // vtkCell sets its points object data type to double. 
+        double *pts_ptr = (double *) pts->GetVoidPointer(0);
         static int faces[6][4] = { {0,4,7,3}, {1,2,6,5},
                            {0,1,5,4}, {3,7,6,2},
                            {0,3,2,1}, {4,5,6,7} };
         for (int i = 0 ; i < 6 ; i++)
         {
-            float dir1[3], dir2[3];
+            double dir1[3], dir2[3];
             int idx0 = faces[i][0];
             int idx1 = faces[i][1];
             int idx2 = faces[i][3];
@@ -846,11 +847,11 @@ vtkVisItUtility::CellContainsPoint(vtkCell *cell, const float *pt)
             dir2[0] = pts_ptr[3*idx0] - pts_ptr[3*idx2];
             dir2[1] = pts_ptr[3*idx0+1] - pts_ptr[3*idx2+1];
             dir2[2] = pts_ptr[3*idx0+2] - pts_ptr[3*idx2+2];
-            float cross[3];
+            double cross[3];
             cross[0] = dir1[1]*dir2[2] - dir1[2]*dir2[1];
             cross[1] = dir1[2]*dir2[0] - dir1[0]*dir2[2];
             cross[2] = dir1[0]*dir2[1] - dir1[1]*dir2[0];
-            float origin[3];
+            double origin[3];
             origin[0] = pts_ptr[3*idx0];
             origin[1] = pts_ptr[3*idx0+1];
             origin[2] = pts_ptr[3*idx0+2];
@@ -868,7 +869,7 @@ vtkVisItUtility::CellContainsPoint(vtkCell *cell, const float *pt)
             // A*(pt[0]-origin[0]) + B*(pt[1]-origin[1]) + C*(pt[2-origin[2])
             //    ?>= 0
             //
-            float val  = cross[0]*(pt[0] - origin[0])
+            double val  = cross[0]*(pt[0] - origin[0])
                        + cross[1]*(pt[1] - origin[1])
                        + cross[2]*(pt[2] - origin[2]);
 
@@ -878,12 +879,12 @@ vtkVisItUtility::CellContainsPoint(vtkCell *cell, const float *pt)
         return true;
     }
 
-    float closestPt[3];
+    double closestPt[3];
     int subId;
-    float pcoords[3];
-    float dist2;
-    float weights[100]; // MUST BE BIGGER THAN NPTS IN A CELL (ie 8).
-    float non_const_pt[3];
+    double pcoords[3];
+    double dist2;
+    double weights[100]; // MUST BE BIGGER THAN NPTS IN A CELL (ie 8).
+    double non_const_pt[3];
     non_const_pt[0] = pt[0];
     non_const_pt[1] = pt[1];
     non_const_pt[2] = pt[2];

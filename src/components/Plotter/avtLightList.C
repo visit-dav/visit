@@ -172,9 +172,9 @@ avtLightList::MakeAttributes() const
         l.SetDirection(lights[i].direction);
         l.SetBrightness(lights[i].brightness);
         ColorAttribute C;
-        C.SetRed(int(lights[i].color[0] * 255));
-        C.SetGreen(int(lights[i].color[1] * 255));
-        C.SetBlue(int(lights[i].color[2] * 255));
+        C.SetRed(int((float)lights[i].color[0] * 255));
+        C.SetGreen(int((float)lights[i].color[1] * 255));
+        C.SetBlue(int((float)lights[i].color[2] * 255));
         l.SetColor(C);
         l.SetEnabledFlag(lights[i].enabled);
     }

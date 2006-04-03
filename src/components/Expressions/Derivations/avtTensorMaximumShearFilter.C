@@ -72,7 +72,7 @@ avtTensorMaximumShearFilter::DoOperation(vtkDataArray *in, vtkDataArray *out,
     {
         for (int i = 0 ; i < ntuples ; i++)
         {
-            float *vals = in->GetTuple9(i);   
+            double *vals = in->GetTuple9(i);   
 
             double pressure = -(vals[0] + vals[4] + vals[8]) / 3.;
             double dev0 = vals[0] + pressure;

@@ -39,7 +39,7 @@ class QUERY_API avtActualCoordsQuery : public avtDatasetQuery
   protected:
     PickAttributes           pickAtts; 
     int                      actualId;
-    float                    actualCoords[3];
+    double                   actualCoords[3];
     virtual void             PreExecute(void);
     virtual void             PostExecute(void);
 };

@@ -47,21 +47,21 @@ class PIPELINE_API avtIntervalTree
 
     static void               Destruct(void *);
 
-    void                      GetExtents(float *) const;
-    void                      GetDomainsList(const float *, float,
+    void                      GetExtents(double *) const;
+    void                      GetDomainsList(const double *, double,
                                              std::vector<int> &) const;
-    void                      GetDomainsList(float [3], float[3],
+    void                      GetDomainsList(double [3], double[3],
                                              std::vector<int> &) const;
-    void                      GetDomainsListFromRange(const float *,
-                                                      const float *,
+    void                      GetDomainsListFromRange(const double *,
+                                                      const double *,
                                                       std::vector<int>&) const;
 
-    void                      AddDomain(int, float *);
+    void                      AddDomain(int, double *);
     void                      Calculate(bool = false);
 
     int                       GetNLeaves(void) const { return nDomains; };
-    int                       GetLeafExtents(int, float *) const;
-    void                      GetDomainExtents(int, float *) const;
+    int                       GetLeafExtents(int, double *) const;
+    void                      GetDomainExtents(int, double *) const;
 
   protected:
     int                       nDomains;
@@ -69,7 +69,7 @@ class PIPELINE_API avtIntervalTree
     int                       nDims;
     int                       vectorSize;
 
-    float                    *nodeExtents;
+    double                   *nodeExtents;
     int                      *nodeIDs;
 
     bool                      hasBeenCalculated;

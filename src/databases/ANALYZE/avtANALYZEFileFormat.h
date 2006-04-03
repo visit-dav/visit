@@ -34,7 +34,7 @@ class avtANALYZEFileFormat : public avtSTSDFileFormat
 
   protected:
     void                   Initialize();
-    void                   GetMeshExtents(float *) const;
+    void                   GetMeshExtents(double *) const;
 
     // DATA MEMBERS
     DSRObject              fileInformation;

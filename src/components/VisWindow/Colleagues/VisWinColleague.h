@@ -76,15 +76,15 @@ class VISWINDOW_API VisWinColleague
                               VisWinColleague(VisWindowColleagueProxy &);
     virtual                  ~VisWinColleague() {;};
 
-    virtual void              SetBackgroundColor(float, float, float) {;};
+    virtual void              SetBackgroundColor(double, double, double) {;};
     virtual void              SetGradientBackgroundColors(int,
-                                                          float, float, float,
-                                                          float, float, float)
+                                                      double, double, double,
+                                                      double, double, double)
                                                          {;};
     virtual void              SetBackgroundMode(int) {;};
-    virtual void              SetForegroundColor(float, float, float) {;};
+    virtual void              SetForegroundColor(double, double, double) {;};
 
-    virtual void              SetViewport(float, float, float, float) {;};
+    virtual void              SetViewport(double, double, double, double) {;};
 
     virtual void              Start2DMode(void)    {;};
     virtual void              Start3DMode(void)    {;};
@@ -105,7 +105,7 @@ class VISWINDOW_API VisWinColleague
     virtual void              SetSurfaceRepresentation(int) {;};
     virtual void              SetImmediateModeRendering(bool) {;};
 
-    virtual void              SetSpecularProperties(bool,float,float,
+    virtual void              SetSpecularProperties(bool,double,double,
                                                     const ColorAttribute&) {;};
 
     virtual void              UpdateView(void)     {;};

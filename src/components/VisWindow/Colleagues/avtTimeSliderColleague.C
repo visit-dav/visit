@@ -53,7 +53,7 @@ avtTimeSliderColleague::avtTimeSliderColleague(VisWindowColleagueProxy &m) :
     //
     // Create and position the time slider actor
     //
-    float rect[4];
+    double rect[4];
     GetSliderRect(DEFAULT_X, DEFAULT_Y, DEFAULT_WIDTH, DEFAULT_HEIGHT, rect);
     timeSlider = vtkTimeSliderActor::New();
     timeSlider->GetPositionCoordinate()->SetValue(rect[0], rect[1]);
@@ -76,16 +76,16 @@ avtTimeSliderColleague::avtTimeSliderColleague(VisWindowColleagueProxy &m) :
     textActor->SetHeight(rect[3]);
 
     // Make sure that the text actors initially has the right fg color.
-    float fgColor[3];
+    double fgColor[3];
     mediator.GetForegroundColor(fgColor);
     SetForegroundColor(fgColor[0], fgColor[1], fgColor[2]);
     textActor->GetTextProperty()->SetOpacity(1.);
 
     // Store the foreground color into the text color.
     int ifgColor[3];
-    ifgColor[0] = int(fgColor[0] * 255.f);
-    ifgColor[1] = int(fgColor[1] * 255.f);
-    ifgColor[2] = int(fgColor[2] * 255.f);
+    ifgColor[0] = int((float)fgColor[0] * 255.f);
+    ifgColor[1] = int((float)fgColor[1] * 255.f);
+    ifgColor[2] = int((float)fgColor[2] * 255.f);
     textColor = ColorAttribute(ifgColor[0], ifgColor[1], ifgColor[2], 255);
 
     // Make sure that the time slider initially shows the right time.
@@ -257,13 +257,13 @@ avtTimeSliderColleague::ShouldBeAddedToRenderer() const
 void
 avtTimeSliderColleague::SetOptions(const AnnotationObject &annot)
 {
-    float fColor[4];
+    double fColor[4];
 
 #define SetColorUsingColorAttribute(Source, Dest) {\
-    fColor[0] = float(annot.Get##Source().Red()) / 255.f; \
-    fColor[1] = float(annot.Get##Source().Green()) / 255.f; \
-    fColor[2] = float(annot.Get##Source().Blue()) / 255.f; \
-    fColor[3] = float(annot.Get##Source().Alpha()) / 255.f; \
+    fColor[0] = double(annot.Get##Source().Red()) / 255.; \
+    fColor[1] = double(annot.Get##Source().Green()) / 255.; \
+    fColor[2] = double(annot.Get##Source().Blue()) / 255.; \
+    fColor[3] = double(annot.Get##Source().Alpha()) / 255.; \
     timeSlider->Set##Dest(fColor); }
 
     // Get the current options.
@@ -283,23 +283,23 @@ avtTimeSliderColleague::SetOptions(const AnnotationObject &annot)
         useForegroundForTextColor = annot.GetUseForegroundForTextColor();
 
         // Compute the text opacity.
-        float tc[4];
-        tc[3] = float(textColor.Alpha()) / 255.f;
+        double tc[4];
+        tc[3] = double(textColor.Alpha()) / 255.;
 
         // Set the text color using the foreground color or the text color.
         if(useForegroundForTextColor)
         {
             // Get the foreground color.
-            float fgColor[3];
+            double fgColor[3];
             mediator.GetForegroundColor(fgColor);
             textActor->GetTextProperty()->SetColor(fgColor[0], fgColor[1], fgColor[2]);
         }
         else
         {
             // Compute the text color as floats.
-            tc[0] = float(textColor.Red()) / 255.f;
-            tc[1] = float(textColor.Green()) / 255.f;
-            tc[2] = float(textColor.Blue()) / 255.f;
+            tc[0] = double(textColor.Red()) / 255.;
+            tc[1] = double(textColor.Green()) / 255.;
+            tc[2] = double(textColor.Blue()) / 255.;
             textActor->GetTextProperty()->SetColor(tc[0], tc[1], tc[2]);
         }
 
@@ -333,11 +333,11 @@ avtTimeSliderColleague::SetOptions(const AnnotationObject &annot)
     if(!currentOptions.FieldsEqual(3, &annot) ||
        !currentOptions.FieldsEqual(4, &annot))
     {
-        const float *p1 = annot.GetPosition();
-        const float *p2 = annot.GetPosition2();
+        const double *p1 = annot.GetPosition();
+        const double *p2 = annot.GetPosition2();
 
         // Set the time slider's coordinates.
-        float rect[4];
+        double rect[4];
         GetSliderRect(p1[0], p1[1], p2[0], p2[1], rect);
         timeSlider->GetPositionCoordinate()->SetValue(rect[0], rect[1]);
         timeSlider->GetPosition2Coordinate()->SetValue(rect[2], rect[3]);
@@ -378,12 +378,12 @@ avtTimeSliderColleague::SetOptions(const AnnotationObject &annot)
     //
     if(timeDisplayModeChanged ||
        (timeDisplayMode == 3 &&
-        currentOptions.GetFloatAttribute1() != annot.GetFloatAttribute1())
+        currentOptions.GetDoubleAttribute1() != annot.GetDoubleAttribute1())
       )
     {
         if(timeDisplayMode == 3)
         {
-            timeSlider->SetParametricTime(annot.GetFloatAttribute1());
+            timeSlider->SetParametricTime(annot.GetDoubleAttribute1());
         }
         else
         {
@@ -440,31 +440,31 @@ avtTimeSliderColleague::GetOptions(AnnotationObject &annot)
     annot.SetVisible(GetVisible());
     annot.SetActive(GetActive());
 
-    const float *p1 = textActor->GetPosition();
-    const float *p2 = textActor->GetPosition2();
-    const float *p3 = timeSlider->GetPosition2();
+    const double *p1 = textActor->GetPosition();
+    const double *p2 = textActor->GetPosition2();
+    const double *p3 = timeSlider->GetPosition2();
     annot.SetPosition(p1);
     // Store the width and height in position2.
-    float p2wh[3];
+    double p2wh[3];
     p2wh[0] = p2[0];
     p2wh[1] = p2[1] + p3[1];
     p2wh[2] = p2[2];
     annot.SetPosition2(p2wh);
 
-    float fColor[4]; int iColor[4];
-#define FloatsToColorAttribute(Source, Dest) \
+    double fColor[4]; int iColor[4];
+#define DoublesToColorAttribute(Source, Dest) \
     timeSlider->Get##Source(fColor); \
-    iColor[0] = int(fColor[0] * 255.f); \
-    iColor[1] = int(fColor[1] * 255.f); \
-    iColor[2] = int(fColor[2] * 255.f); \
-    iColor[3] = int(fColor[3] * 255.f); \
+    iColor[0] = int((float)fColor[0] * 255.f); \
+    iColor[1] = int((float)fColor[1] * 255.f); \
+    iColor[2] = int((float)fColor[2] * 255.f); \
+    iColor[3] = int((float)fColor[3] * 255.f); \
     annot.Set##Dest(ColorAttribute(iColor[0],iColor[1],iColor[2],iColor[3]));
 
     // Store the text color and opacity.
     annot.SetTextColor(textColor);
     annot.SetUseForegroundForTextColor(useForegroundForTextColor);
-    FloatsToColorAttribute(StartColor, Color1);
-    FloatsToColorAttribute(EndColor, Color2);
+    DoublesToColorAttribute(StartColor, Color1);
+    DoublesToColorAttribute(EndColor, Color2);
     
     stringVector text;
     text.push_back(textFormatString);
@@ -478,7 +478,7 @@ avtTimeSliderColleague::GetOptions(AnnotationObject &annot)
     annot.SetIntAttribute1(rounded | shaded | tdsm);
 
     // Store the parametricTime from the time slider into float attribute 1.
-    annot.SetFloatAttribute1(timeSlider->GetParametricTime());
+    annot.SetDoubleAttribute1(timeSlider->GetParametricTime());
 }
 
 // ****************************************************************************
@@ -499,7 +499,7 @@ avtTimeSliderColleague::GetOptions(AnnotationObject &annot)
 // ****************************************************************************
 
 void
-avtTimeSliderColleague::SetForegroundColor(float r, float g, float b)
+avtTimeSliderColleague::SetForegroundColor(double r, double g, double b)
 {
     if(useForegroundForTextColor)
         textActor->GetTextProperty()->SetColor(r, g, b);
@@ -712,10 +712,10 @@ avtTimeSliderColleague::SetText(const char *formatString, const char *timeFormat
 //   
 // ****************************************************************************
 
-float
-avtTimeSliderColleague::SliderHeight(float height) const
+double
+avtTimeSliderColleague::SliderHeight(double height) const
 {
-    return height * 0.6f;
+    return height * 0.6;
 }
 
 // ****************************************************************************
@@ -732,8 +732,8 @@ avtTimeSliderColleague::SliderHeight(float height) const
 // ****************************************************************************
 
 void
-avtTimeSliderColleague::GetTextRect(float x, float y, float width,
-    float height, float *rect) const
+avtTimeSliderColleague::GetTextRect(double x, double y, double width,
+    double height, double *rect) const
 {
     rect[0] = x;
     rect[1] = y;
@@ -757,8 +757,8 @@ avtTimeSliderColleague::GetTextRect(float x, float y, float width,
 // ****************************************************************************
 
 void
-avtTimeSliderColleague::GetSliderRect(float x, float y, float width,
-    float height, float *rect) const
+avtTimeSliderColleague::GetSliderRect(double x, double y, double width,
+    double height, double *rect) const
 {
     rect[0] = x;
     rect[1] = y + height - SliderHeight(height);

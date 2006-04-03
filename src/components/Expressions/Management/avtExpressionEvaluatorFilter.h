@@ -98,9 +98,9 @@ class EXPRESSION_API avtExpressionEvaluatorFilter
     virtual void             ReleaseData(void);
 
     virtual bool             FindElementForPoint(const char *, const int, 
-                                 const int, const char *, float[3], int &);
+                                 const int, const char *, double[3], int &);
     virtual bool             QueryCoords(const std::string&, const int, 
-                                 const int, const int, float[3], const bool,
+                                 const int, const int, double[3], const bool,
                                  const bool, const char *mn = NULL);
 
     virtual void             GetDomainName(const std::string &, const int,

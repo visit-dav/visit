@@ -43,17 +43,17 @@ class PIPELINE_API avtSpatialBoxSelection : public avtDataSelection
 
     void                    SetInclusionMode(InclusionMode incMode)
                                 { inclusionMode = incMode; };
-    void                    SetMins(const float *_mins);
-    void                    SetMaxs(const float *_maxs);
+    void                    SetMins(const double *_mins);
+    void                    SetMaxs(const double *_maxs);
 
-    void                    GetMins(float *_mins) const;
-    void                    GetMaxs(float *_maxs) const;
+    void                    GetMins(double *_mins) const;
+    void                    GetMaxs(double *_maxs) const;
     InclusionMode           GetInclusionMode() const { return inclusionMode; };
 
     bool                    operator==(const avtSpatialBoxSelection &) const;
 
     void                    GetLogicalBounds(const int nodeCounts[3],
-                                             float *nodalCoords[3],
+                                             double *nodalCoords[3],
                                              int *firstZone, int *lastZone) const;
 
     void                    Compose(const avtSpatialBoxSelection& sel,
@@ -62,8 +62,8 @@ class PIPELINE_API avtSpatialBoxSelection : public avtDataSelection
   private:
 
     InclusionMode inclusionMode;
-    float mins[3];
-    float maxs[3];
+    double mins[3];
+    double maxs[3];
 
 };
 

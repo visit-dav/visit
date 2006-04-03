@@ -1408,8 +1408,8 @@ avtScatterFilter::PerformRestriction(avtPipelineSpecification_p spec)
             avtIntervalTree *it = GetMetaData()->GetDataExtents(names[i]);
             if(it != NULL)
             {
-                float minval = var[i].useMin ? var[i].min : SCATTER_FLOAT_MIN;
-                float maxval = var[i].useMax ? var[i].max : SCATTER_FLOAT_MAX;
+                double minval = var[i].useMin ? var[i].min : SCATTER_FLOAT_MIN;
+                double maxval = var[i].useMax ? var[i].max : SCATTER_FLOAT_MAX;
                 vector<int> dl;
                 it->GetDomainsListFromRange(&minval, &maxval, dl);
                 rv->GetDataSpecification()->GetRestriction()->RestrictDomains(dl);

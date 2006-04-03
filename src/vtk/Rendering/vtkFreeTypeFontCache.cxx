@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkFreeTypeFontCache.cxx,v $
-  Language:  C++
-  Date:      $Date: 2002/08/05 20:18:32 $
-  Version:   $Revision: 1.1 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -286,7 +283,7 @@ vtkFreeTypeFontCache::Entry* vtkFreeTypeFontCache::GetFont(vtkTextProperty *tpro
   unsigned char alpha = (opacity < 0.0) ? 255 : (unsigned char)(opacity*255.0);
   if (!override_color)
     {
-    float* tpropColor = tprop->GetColor();
+    double* tpropColor = tprop->GetColor();
     red   = (tpropColor[0] < 0.0) ? 0 : (unsigned char)(tpropColor[0] * 255.0);
     green = (tpropColor[1] < 0.0) ? 0 : (unsigned char)(tpropColor[1] * 255.0);
     blue  = (tpropColor[2] < 0.0) ? 0 : (unsigned char)(tpropColor[2] * 255.0);
@@ -322,7 +319,7 @@ vtkFreeTypeFontCache::Entry* vtkFreeTypeFontCache::GetFont(vtkTextProperty *tpro
 #endif
       && this->Entries[i]->FontSize  == tprop->GetFontSize()
 
-      && this->Entries[i]->Orientation == tprop->GetOrientation())
+      && this->Entries[i]->Orientation  == tprop->GetOrientation())
       {
 #if VTK_FTFC_REORDER
       // Make this the most recently used
@@ -460,7 +457,7 @@ vtkFreeTypeFontCache::Entry* vtkFreeTypeFontCache::GetFont(vtkTextProperty *tpro
   // Set orientation
 
   font->Horizontal(tprop->GetOrientation() == VTK_TEXT_HORIZONTAL ? 1 : 0);
-
+  
   // Set face size
 
   font->FaceSize(tprop->GetFontSize());

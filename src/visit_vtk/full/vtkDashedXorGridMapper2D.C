@@ -206,7 +206,7 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
 //
 // Win32 coding and macros
 //
-#define SET_FOREGROUND_F(rgba) if(validPen) DeleteObject(pen); \
+#define SET_FOREGROUND_D(rgba) if(validPen) DeleteObject(pen); \
       pen = CreatePen(PS_SOLID, 1, GetNearestColor(hdc, \
           RGB(int(255*rgba[0]),int(255*rgba[0]),int(255*rgba[0])))); \
       SelectObject(hdc, pen); \
@@ -238,14 +238,14 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
     SetROP2(hdc, R2_XORPEN);
 
     // Set the line color
-    float whitergb[] = {1.,1.,1.};
-    SET_FOREGROUND_F(whitergb);
+    double whitergb[] = {1.,1.,1.};
+    SET_FOREGROUND_D(whitergb);
 #elif defined(__APPLE__)
 //
 // MacOS X coding and macros
 //
 
-#define SET_FOREGROUND_F(rgba) \
+#define SET_FOREGROUND_D(rgba) \
     CGContextSetRGBStrokeColor(overlay->ctx, rgba[0], rgba[1], rgba[2], 1.);
 
 #define SET_FOREGROUND(rgba) \
@@ -302,8 +302,8 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
     }
     
     // Set the line color
-    float* actorColor = actor->GetProperty()->GetColor();
-    SET_FOREGROUND_F(actorColor);
+    double* actorColor = actor->GetProperty()->GetColor();
+    SET_FOREGROUND_D(actorColor);
 
     // Clear the window so it's ready for us to draw.
     CGRect r;
@@ -318,7 +318,7 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
 // X11 coding and macros
 //
 
-#define SET_FOREGROUND_F(rgba) \
+#define SET_FOREGROUND_D(rgba) \
       aColor.red = (unsigned short) (rgba[0] * 65535.0); \
       aColor.green = (unsigned short) (rgba[1] * 65535.0); \
       aColor.blue = (unsigned short) (rgba[2] * 65535.0); \
@@ -369,8 +369,8 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
     XGetWindowAttributes(displayId,windowId,&attr);
 
     // Set the line color
-    float* actorColor = actor->GetProperty()->GetColor();
-    SET_FOREGROUND_F(actorColor);
+    double* actorColor = actor->GetProperty()->GetColor();
+    SET_FOREGROUND_D(actorColor);
 #endif
 
     int numPts;
@@ -381,7 +381,7 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
     vtkCellArray *aPrim;
     vtkUnsignedCharArray *c=NULL;
     unsigned char *rgba;
-    float *ftmp;
+    double *ftmp;
     int cellScalars = 0;
     int cellNum = 0;
     int lastX, lastY, X, Y; 

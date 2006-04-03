@@ -1686,7 +1686,7 @@ avtBoxlib2DFileFormat::GetSpatialIntervalTree(DestructorFunction &df)
 
     for (int patch = 0 ; patch < totalPatches ; patch++)
     {
-        float bounds[6];
+        double bounds[6];
         bounds[0] = xMin[patch];
         bounds[1] = xMax[patch];
         bounds[2] = yMin[patch];

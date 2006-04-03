@@ -31,7 +31,7 @@ avtSpatialBoxSelection::avtSpatialBoxSelection()
 //
 // ****************************************************************************
 void
-avtSpatialBoxSelection::SetMins(const float *_mins)
+avtSpatialBoxSelection::SetMins(const double *_mins)
 {
     for (int i = 0; i < 3; i++)
         mins[i] = _mins[i];
@@ -45,7 +45,7 @@ avtSpatialBoxSelection::SetMins(const float *_mins)
 //
 // ****************************************************************************
 void
-avtSpatialBoxSelection::SetMaxs(const float *_maxs)
+avtSpatialBoxSelection::SetMaxs(const double *_maxs)
 {
     for (int i = 0; i < 3; i++)
         maxs[i] = _maxs[i];
@@ -59,7 +59,7 @@ avtSpatialBoxSelection::SetMaxs(const float *_maxs)
 //
 // ****************************************************************************
 void
-avtSpatialBoxSelection::GetMins(float *_mins) const
+avtSpatialBoxSelection::GetMins(double *_mins) const
 {
     for (int i = 0; i < 3; i++)
         _mins[i] = mins[i];
@@ -73,7 +73,7 @@ avtSpatialBoxSelection::GetMins(float *_mins) const
 //
 // ****************************************************************************
 void
-avtSpatialBoxSelection::GetMaxs(float *_maxs) const
+avtSpatialBoxSelection::GetMaxs(double *_maxs) const
 {
     for (int i = 0; i < 3; i++)
         _maxs[i] = maxs[i];
@@ -115,7 +115,7 @@ avtSpatialBoxSelection::operator==(const avtSpatialBoxSelection &sel) const
 // ****************************************************************************
 void
 avtSpatialBoxSelection::GetLogicalBounds(const int nodeCounts[3],
-    float *nodalCoords[3], int *firstZone, int *lastZone) const
+    double *nodalCoords[3], int *firstZone, int *lastZone) const
 {
     for (int i = 0; i < 3; i++)
     {

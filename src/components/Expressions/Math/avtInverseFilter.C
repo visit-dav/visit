@@ -72,8 +72,8 @@ avtInverseFilter::DoOperation(vtkDataArray *in, vtkDataArray *out,
     {
         for (int i = 0 ; i < ntuples ; i++)
         {
-            float *vals = in->GetTuple9(i);
-            float input[3][3];
+            double *vals = in->GetTuple9(i);
+            double input[3][3];
             input[0][0] = vals[0];
             input[0][1] = vals[1];
             input[0][2] = vals[2];
@@ -83,9 +83,9 @@ avtInverseFilter::DoOperation(vtkDataArray *in, vtkDataArray *out,
             input[2][0] = vals[6];
             input[2][1] = vals[7];
             input[2][2] = vals[8];
-            float output[3][3];
+            double output[3][3];
             vtkMath::Invert3x3(input, output);
-            float out_vals[9];
+            double out_vals[9];
             out_vals[0] = output[0][0];
             out_vals[1] = output[0][1];
             out_vals[2] = output[0][2];

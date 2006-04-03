@@ -11,7 +11,6 @@
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellTypes.h>
-#include <vtkIntArray.h>
 #include <vtkIdTypeArray.h>
 #include <vtkCellArray.h>
 #include <avtDatabaseMetaData.h>
@@ -385,7 +384,7 @@ avtTecplotFileFormat::ParseElements(int numElements, const string &elemType)
     cellTypes->SetNumberOfValues(numElements);
     unsigned char *ct = cellTypes->GetPointer(0);
 
-    vtkIntArray *cellLocations = vtkIntArray::New();
+    vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
     cellLocations->SetNumberOfValues(numElements);
     int *cl = cellLocations->GetPointer(0);
 

@@ -409,7 +409,7 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
         if (val >= lbound && val <= ubound)
         {
             outPD->CopyData(inPD, i, newId);
-            float pt[3];
+            double pt[3];
             in_ds->GetPoint(i, pt);
             pts->SetPoint(newId, pt);
             onevertex[0] = newId;
@@ -578,8 +578,8 @@ avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
     }
 
     avtPipelineSpecification_p spec = new avtPipelineSpecification(in_spec);
-    float min = atts.GetLbound();
-    float max = atts.GetUbound();
+    double min = atts.GetLbound();
+    double max = atts.GetUbound();
     vector<int> dl;
     it->GetDomainsListFromRange(&min, &max, dl);
     spec->GetDataSpecification()->GetRestriction()->RestrictDomains(dl);

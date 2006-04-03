@@ -586,7 +586,7 @@ avtBoundaryPlot::SetColors()
         unsigned char *colors = new unsigned char[numColors * 4];
         unsigned char *cptr = colors;
         avtColorTables *ct = avtColorTables::Instance();
-        int opacity = int(atts.GetOpacity()*255.);
+        int opacity = int((float)atts.GetOpacity()*255.f);
 
         //
         // Detect if we're using the default color table or a color table

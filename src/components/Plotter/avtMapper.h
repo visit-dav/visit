@@ -77,15 +77,15 @@ class PLOTTER_API avtMapper : public avtOriginatingDatasetSink
 
     void                       ReleaseData();
     avtDrawable_p              GetDrawable();
-    virtual bool               GetRange(float &, float &);
-    virtual bool               GetCurrentRange(float &, float &);
+    virtual bool               GetRange(double &, double &);
+    virtual bool               GetCurrentRange(double &, double &);
 
     virtual bool               GetLighting(void);
 
     virtual void               GlobalLightingOn(void);
     virtual void               GlobalLightingOff(void);
-    virtual void               GlobalSetAmbientCoefficient(const float);
-    float                      GetGlobalAmbientCoefficient() 
+    virtual void               GlobalSetAmbientCoefficient(const double);
+    double                     GetGlobalAmbientCoefficient() 
                                    { return globalAmbient; };
 
     void                       SetImmediateModeRendering(bool val);
@@ -99,7 +99,7 @@ class PLOTTER_API avtMapper : public avtOriginatingDatasetSink
                                    { return specularIsInappropriate; };
 
     virtual void                SetSurfaceRepresentation(int rep);
-    virtual void                SetSpecularProperties(bool,float,float,
+    virtual void                SetSpecularProperties(bool,double,double,
                                                       const ColorAttribute&);
 
   protected:
@@ -113,7 +113,7 @@ class PLOTTER_API avtMapper : public avtOriginatingDatasetSink
     int                        nMappers;
     vtkActor                 **actors;
 
-    float                      globalAmbient;
+    double                     globalAmbient;
 
     void                       ClearSelf(void);
     void                       SetUpMappers(void);

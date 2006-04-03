@@ -64,8 +64,8 @@ struct DBATTS_API avtMeshMetaData : public AttributeSubject
     bool          containsGlobalZoneIds;
 
     bool          hasSpatialExtents;
-    float         minSpatialExtents[3];
-    float         maxSpatialExtents[3];
+    double        minSpatialExtents[3];
+    double        maxSpatialExtents[3];
 
     std::string   xUnits;
     std::string   yUnits;
@@ -81,14 +81,14 @@ struct DBATTS_API avtMeshMetaData : public AttributeSubject
 
 public:
     avtMeshMetaData();
-    avtMeshMetaData(const float *, std::string, int, int, int, int, int, int,
+    avtMeshMetaData(const double *, std::string, int, int, int, int, int, int,
                     avtMeshType);
     avtMeshMetaData(std::string, int, int, int, int, int, int, avtMeshType);
     avtMeshMetaData(const avtMeshMetaData&);
     virtual ~avtMeshMetaData();
     const avtMeshMetaData &operator=(const avtMeshMetaData&);
     virtual void SelectAll();
-    void SetExtents(const float *);
+    void SetExtents(const double *);
     void UnsetExtents() { hasSpatialExtents = false; };
     void Print(ostream &, int = 0) const;
 };
@@ -111,8 +111,8 @@ struct DBATTS_API avtScalarMetaData : public AttributeSubject
     avtCentering  centering;
 
     bool          hasDataExtents;
-    float         minDataExtents;
-    float         maxDataExtents;
+    double        minDataExtents;
+    double        maxDataExtents;
 
     bool          validVariable;
     bool          treatAsASCII;
@@ -122,12 +122,12 @@ struct DBATTS_API avtScalarMetaData : public AttributeSubject
 public:
     avtScalarMetaData();
     avtScalarMetaData(std::string, std::string, avtCentering);
-    avtScalarMetaData(std::string, std::string, avtCentering, float, float);
+    avtScalarMetaData(std::string, std::string, avtCentering, double, double);
     avtScalarMetaData(const avtScalarMetaData&);
     virtual ~avtScalarMetaData();
     const avtScalarMetaData &operator=(const avtScalarMetaData&);
     virtual void SelectAll();
-    void SetExtents(const float *);
+    void SetExtents(const double *);
     void UnsetExtents() { hasDataExtents = false; };
     void Print(ostream &, int = 0) const;
 };
@@ -151,8 +151,8 @@ struct DBATTS_API avtVectorMetaData : public AttributeSubject
     int                  varDim;
 
     bool                 hasDataExtents;
-    float                minDataExtents;
-    float                maxDataExtents;
+    double               minDataExtents;
+    double               maxDataExtents;
 
     bool                 validVariable;
 
@@ -162,12 +162,12 @@ public:
     avtVectorMetaData();
     avtVectorMetaData(std::string, std::string, avtCentering, int);
     avtVectorMetaData(std::string, std::string, avtCentering, int, 
-                      const float *);
+                      const double *);
     avtVectorMetaData(const avtVectorMetaData&);
     virtual ~avtVectorMetaData();
     const avtVectorMetaData &operator=(const avtVectorMetaData&);
     virtual void SelectAll();
-    void SetExtents(const float *);
+    void SetExtents(const double *);
     void UnsetExtents() { hasDataExtents = false; };
     void Print(ostream &, int = 0) const;
 };
@@ -732,7 +732,7 @@ public:
 
     void         Print(ostream &, int = 0) const;
 
-    void         SetExtents(std::string, const float *);
+    void         SetExtents(std::string, const double *);
 
     virtual void SelectAll();
     virtual AttributeGroup *CreateSubAttributeGroup(int);

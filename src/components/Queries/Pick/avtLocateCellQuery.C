@@ -156,7 +156,7 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
     int topodim = dataAtts.GetTopologicalDimension(); 
 
 
-    float dist = minDist, isect[3] = { 0., 0., 0.};
+    double dist = minDist, isect[3] = { 0., 0., 0.};
     int foundCell = -1;
 
     // Find the cell, intersection point, and distance along the ray.
@@ -270,7 +270,7 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
 // ****************************************************************************
 
 int
-avtLocateCellQuery::RGridFindCell(vtkDataSet *ds, float &dist, float *isect)
+avtLocateCellQuery::RGridFindCell(vtkDataSet *ds, double &dist, double *isect)
 {
     return RGridIsect(vtkRectilinearGrid::SafeDownCast(ds), dist, isect); 
 }
@@ -298,16 +298,16 @@ avtLocateCellQuery::RGridFindCell(vtkDataSet *ds, float &dist, float *isect)
 // ****************************************************************************
 
 int
-avtLocateCellQuery::FindClosestCell(vtkDataSet *ds, float &minDist, float isect[3])
+avtLocateCellQuery::FindClosestCell(vtkDataSet *ds, double &minDist, double isect[3])
 {
     if (ds->GetNumberOfPoints() == 0)
     {
         return -1;
     }
     int foundCell = -1;
-    float *rayPt1 = pickAtts.GetRayPoint1();
-    float pt[3] = {rayPt1[0], rayPt1[1], 0.};
-    float dist, rad = minDist;
+    double *rayPt1 = pickAtts.GetRayPoint1();
+    double pt[3] = {rayPt1[0], rayPt1[1], 0.};
+    double dist, rad = minDist;
 
     vtkVisItCellLocator *cellLocator = vtkVisItCellLocator::New();
     cellLocator->SetDataSet(ds);
@@ -315,7 +315,7 @@ avtLocateCellQuery::FindClosestCell(vtkDataSet *ds, float &minDist, float isect[
     cellLocator->BuildLocator();
 
     int subId = 0;
-    float cp[3] = {0., 0., 0.};
+    double cp[3] = {0., 0., 0.};
     int success = cellLocator->FindClosestPointWithinRadius(pt, rad, cp, 
                                foundCell, subId, dist);
 

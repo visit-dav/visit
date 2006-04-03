@@ -36,7 +36,7 @@ vtkCxxRevisionMacro(vtkVisItCutter, "$Revision: 1.73 $");
 vtkStandardNewMacro(vtkVisItCutter);
 vtkCxxSetObjectMacro(vtkVisItCutter,CutFunction,vtkImplicitFunction);
 
-void CellContour(vtkCell *cell, float value, vtkDataArray *cellScalars,
+void CellContour(vtkCell *cell, double value, vtkDataArray *cellScalars,
                  vtkPointLocator *locator, vtkCellArray *newVerts,
                  vtkCellArray *newLines, vtkCellArray *newPolys,
                  vtkPointData *inPd, vtkPointData *outPd,
@@ -148,7 +148,7 @@ void vtkVisItCutter::DataSetCutter()
   vtkCellArray *newVerts, *newLines, *newPolys;
   vtkPoints *newPoints;
   vtkFloatArray *cutScalars;
-  float value, s;
+  double value, s;
   vtkPolyData *output = this->GetOutput();
   vtkDataSet *input=this->GetInput();
   vtkIdType estimatedSize, numCells=input->GetNumberOfCells();
@@ -242,7 +242,7 @@ void vtkVisItCutter::DataSetCutter()
         if ( !(++cut % progressInterval) )
           {
           vtkDebugMacro(<<"Cutting #" << cut);
-          this->UpdateProgress ((float)cut/numCuts);
+          this->UpdateProgress ((double)cut/numCuts);
           abortExecute = this->GetAbortExecute();
           }
 
@@ -292,7 +292,7 @@ void vtkVisItCutter::DataSetCutter()
         if ( !(++cut % progressInterval) )
           {
           vtkDebugMacro(<<"Cutting #" << cut);
-          this->UpdateProgress ((float)cut/numCuts);
+          this->UpdateProgress ((double)cut/numCuts);
           abortExecute = this->GetAbortExecute();
           }
         value = this->ContourValues->GetValue(iter);
@@ -365,7 +365,7 @@ void vtkVisItCutter::UnstructuredGridCutter()
   vtkCellArray *newVerts, *newLines, *newPolys;
   vtkPoints *newPoints;
   vtkFloatArray *cutScalars;
-  float value, s;
+  double value, s;
   vtkPolyData *output = this->GetOutput();
   vtkDataSet *input = this->GetInput();
   vtkIdType estimatedSize, numCells=input->GetNumberOfCells();
@@ -381,7 +381,7 @@ void vtkVisItCutter::UnstructuredGridCutter()
   int numContours = this->ContourValues->GetNumberOfContours();
   int abortExecute = 0;
 
-  float range[2];
+  double range[2];
 
 
   // Create objects to hold output of contour operation
@@ -466,7 +466,7 @@ void vtkVisItCutter::UnstructuredGridCutter()
         if ( !(++cut % progressInterval) )
           {
           vtkDebugMacro(<<"Cutting #" << cut);
-          this->UpdateProgress ((float)cut/numCuts);
+          this->UpdateProgress ((double)cut/numCuts);
           abortExecute = this->GetAbortExecute();
           }
 
@@ -493,7 +493,7 @@ void vtkVisItCutter::UnstructuredGridCutter()
           } // for all points in this cell
         
         int needCell = 0;
-        float val = this->ContourValues->GetValue(iter);
+        double val = this->ContourValues->GetValue(iter);
         if (val >= range[0] && val <= range[1]) 
           {
           needCell = 1;
@@ -510,7 +510,7 @@ void vtkVisItCutter::UnstructuredGridCutter()
             if ( !(++cut % progressInterval) )
               {
               vtkDebugMacro(<<"Cutting #" << cut);
-              this->UpdateProgress ((float)cut/numCuts);
+              this->UpdateProgress ((double)cut/numCuts);
               abortExecute = this->GetAbortExecute();
               }
             value = this->ContourValues->GetValue(iter);
@@ -556,7 +556,7 @@ void vtkVisItCutter::UnstructuredGridCutter()
       int needCell = 0;
       for (int cont = 0; cont < numContours; ++cont) 
         {
-        float val = this->ContourValues->GetValue(cont);
+        double val = this->ContourValues->GetValue(cont);
         if (val >= range[0] && val <= range[1]) 
           {
           needCell = 1;
@@ -575,7 +575,7 @@ void vtkVisItCutter::UnstructuredGridCutter()
           if ( !(++cut % progressInterval) )
             {
             vtkDebugMacro(<<"Cutting #" << cut);
-            this->UpdateProgress ((float)cut/numCuts);
+            this->UpdateProgress ((double)cut/numCuts);
             abortExecute = this->GetAbortExecute();
             }
           value = this->ContourValues->GetValue(iter);
@@ -679,7 +679,7 @@ void vtkVisItCutter::CreateDefaultLocator()
 //
 // ***************************************************************************
 void
-CellContour(vtkCell *cell, float value, 
+CellContour(vtkCell *cell, double value, 
                             vtkDataArray *cellScalars,
                             vtkPointLocator *locator,
                             vtkCellArray *newVerts,

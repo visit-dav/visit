@@ -175,9 +175,9 @@ Declaration: void SetRgba2(double c[4]);
 Definition:
 void ColorAttribute::SetRgba2(double c[4])
 {
-    color[0] = (unsigned char)(c[0] * 255.);
-    color[1] = (unsigned char)(c[1] * 255.);
-    color[2] = (unsigned char)(c[2] * 255.);
-    color[3] = (unsigned char)(c[3] * 255.);
+    color[0] = (unsigned char)((float)c[0] * 255.f);
+    color[1] = (unsigned char)((float)c[1] * 255.f);
+    color[2] = (unsigned char)((float)c[2] * 255.f);
+    color[3] = (unsigned char)((float)c[3] * 255.f);
 }
 

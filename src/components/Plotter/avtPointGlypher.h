@@ -40,7 +40,7 @@ class PLOTTER_API  avtPointGlypher
     virtual void               ScaleByVar(const std::string &) = 0;
     void                       DataScalingOff(void);
 
-    void                       SetScale(float);
+    void                       SetScale(double);
     void                       SetGlyphType(const int);
 
     void                       ColorByScalarOn(const std::string &);
@@ -49,7 +49,7 @@ class PLOTTER_API  avtPointGlypher
   protected:
     vtkPolyData               *glyph2D;
     vtkPolyData               *glyph3D;
-    float                      scale;
+    double                     scale;
     std::string                scalingVarName;
     std::string                coloringVarName;
     int                        scalingVarDim;

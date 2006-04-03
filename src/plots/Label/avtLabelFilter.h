@@ -42,7 +42,7 @@ class avtLabelFilter : public avtStreamer
         CreatedQuantizedNormals
     };
 
-    unsigned char             FindClosestVector(const float *vec) const;
+    unsigned char             FindClosestVector(const double *vec) const;
     QuantizationRetval        CreateQuantizedNormalsFromPointNormals(
                                   vtkDataSet *outDS, bool isMesh);
     QuantizationRetval        CreateQuantizedNormalsFromCellNormals(

@@ -1707,7 +1707,7 @@ avtEnzoFileFormat::GetAuxiliaryData(const char *var, int dom,
 
     for (int grid = 1 ; grid <= numGrids ; grid++)
     {
-        float bounds[6];
+        double bounds[6];
         bounds[0] = grids[grid].minSpatialExtents[0];
         bounds[1] = grids[grid].maxSpatialExtents[0];
         bounds[2] = grids[grid].minSpatialExtents[1];

@@ -287,6 +287,9 @@ public:
     virtual void StereoRenderComplete(void);
     virtual void StereoMidpoint(void);
 
+
+    virtual int* GetScreenSize() { return this->Size;} 
+
 protected:
     virtual void resizeEvent(QResizeEvent *);
     virtual void moveEvent(QMoveEvent *);

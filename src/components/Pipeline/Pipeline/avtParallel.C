@@ -1375,3 +1375,57 @@ UnifyMaximumValue(vector<int> &mymax, vector<int> &results)
 }
 
 
+// ****************************************************************************
+//  Function: GetDoubleArrayToRootProc
+//
+//  Purpose:
+//    Gets a double array to processor 0.  
+//
+//  Arguments:
+//    da        The doubee array.
+//    nd        The number of items in the array.
+//    success   Inidicates whether or not this processor has the double array. 
+//  
+//  Programmer: Kathleen Bonnell 
+//  Creation:   March 13, 2006 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+GetDoubleArrayToRootProc(double *da, int nd, bool &success)
+{
+#ifdef PARALLEL
+    int myRank, numProcs;
+    MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
+    int mpiGoodTag = GetUniqueMessageTag();
+    int mpiDoubleArrayTag = GetUniqueMessageTag();
+
+    if (myRank == 0)
+    {
+        MPI_Status stat, stat2;
+        int good; 
+        for (int i = 1; i < numProcs; i++)
+        {
+            MPI_Recv(&good, 1, MPI_INT, MPI_ANY_SOURCE,
+                     mpiGoodTag, MPI_COMM_WORLD, &stat);
+            if (good)
+            {
+                MPI_Recv(da, nd, MPI_DOUBLE, stat.MPI_SOURCE, mpiDoubleArrayTag,
+                         MPI_COMM_WORLD, &stat2);
+                success = good;
+            }
+        }
+    }
+    else
+    {
+        MPI_Send(&success, 1, MPI_INT, 0, mpiGoodTag, MPI_COMM_WORLD);
+        if (success)
+        {
+            MPI_Send(da, nd, MPI_DOUBLE, 0, mpiDoubleArrayTag, MPI_COMM_WORLD);
+        }    
+    }
+#endif
+}

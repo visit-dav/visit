@@ -63,8 +63,8 @@ class VISWINDOW_API VisWinTools : public VisWinColleague
                      VisWinTools(VisWindowColleagueProxy &);
     virtual         ~VisWinTools();
 
-    virtual void     SetBackgroundColor(float r, float g, float b);
-    virtual void     SetForegroundColor(float r, float g, float b);
+    virtual void     SetBackgroundColor(double r, double g, double b);
+    virtual void     SetForegroundColor(double r, double g, double b);
 
     virtual void     Start2DMode();
     virtual void     Stop2DMode();

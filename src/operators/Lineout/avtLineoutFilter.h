@@ -75,10 +75,10 @@ class avtLineoutFilter : public avtPluginStreamer
     bool                      useOriginalCells;
     vtkDataSet               *Sampling(vtkDataSet *, int);
     vtkDataSet               *NoSampling(vtkDataSet *, int);
-    vtkPolyData              *CreatePolys(vtkDataSet *, float *, float *,
+    vtkPolyData              *CreatePolys(vtkDataSet *, double *, double *,
                                           vtkPoints *, vtkIdList *);
-    vtkPolyData              *CreatePolysFromOrigCells(vtkDataSet *, float *, float *,
-                                          vtkPoints *, vtkIdList *);
+    vtkPolyData              *CreatePolysFromOrigCells(vtkDataSet *, double *, 
+                                          double *, vtkPoints *, vtkIdList *);
 };
 
 #endif

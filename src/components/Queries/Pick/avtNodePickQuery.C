@@ -157,7 +157,7 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
             return;
         }
 
-        float dist = vtkMath::Distance2BetweenPoints(pickAtts.GetPickPoint(), 
+        double dist = vtkMath::Distance2BetweenPoints(pickAtts.GetPickPoint(), 
                           ds->GetPoint(pickedNode)); 
         if (dist < minDist)
         {
@@ -270,7 +270,7 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
         {
            avtVector v1(pickAtts.GetCellPoint());
            v1 = (*transform) *v1;
-           float pp[3] = {v1.x, v1.y, v1.z};
+           double pp[3] = {v1.x, v1.y, v1.z};
             pickAtts.SetPickPoint(pp);
         }
     }
@@ -328,8 +328,9 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
 int
 avtNodePickQuery::DeterminePickedNode(vtkDataSet *ds)
 {
-    float *bnds = ds->GetBounds();
-    float *pp = pickAtts.GetPickPoint();
+    double *bnds = ds->GetBounds();
+    double *pp = pickAtts.GetPickPoint();
+#if 0
 
     if (pp[0] < bnds[0] || pp[0] > bnds[1] ||
         pp[1] < bnds[2] || pp[1] > bnds[3] ||
@@ -338,6 +339,7 @@ avtNodePickQuery::DeterminePickedNode(vtkDataSet *ds)
         return -1;
     }
 
+#endif
     int zone = vtkVisItUtility::FindCell(ds, pp);
 
     if (zone == -1)
@@ -384,7 +386,7 @@ avtNodePickQuery::Preparation(const avtDataAttributes &)
     //
     // Transform the point that will be used in locating the node. 
     //
-    float *pickPoint  = pickAtts.GetPickPoint();
+    double *pickPoint  = pickAtts.GetPickPoint();
     if (transform != NULL)
     {
         //

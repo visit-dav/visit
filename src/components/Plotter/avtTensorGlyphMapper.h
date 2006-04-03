@@ -47,7 +47,7 @@ class PLOTTER_API  avtTensorGlyphMapper : public avtMapper
 
     void                       ColorByMagOn(void);
     void                       ColorByMagOff(const unsigned char [3]);
-    void                       SetScale(float);
+    void                       SetScale(double);
     void                       SetScaleByMagnitude(bool);
     void                       SetAutoScale(bool);
     void                       SetLookupTable(vtkLookupTable *lut);
@@ -57,7 +57,7 @@ class PLOTTER_API  avtTensorGlyphMapper : public avtMapper
     vtkLookupTable            *lut;
     bool                       colorByMag;
     unsigned char              glyphColor[3];
-    float                      scale;
+    double                     scale;
     bool                       scaleByMagnitude;
     bool                       autoScale;
 

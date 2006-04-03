@@ -5430,14 +5430,14 @@ ViewerWindow::GetWindowAttributes() const
     c[1] = (unsigned char)(annot->GetForegroundColor().Green());
     c[2] = (unsigned char)(annot->GetForegroundColor().Blue());
     winAtts.SetForeground(c);
-    float gbg[3];
-    gbg[0] = float(annot->GetGradientColor1().Red()) / 255.;
-    gbg[1] = float(annot->GetGradientColor1().Green()) / 255.;
-    gbg[2] = float(annot->GetGradientColor1().Blue()) / 255.;
+    double gbg[3];
+    gbg[0] = double(annot->GetGradientColor1().Red()) / 255.;
+    gbg[1] = double(annot->GetGradientColor1().Green()) / 255.;
+    gbg[2] = double(annot->GetGradientColor1().Blue()) / 255.;
     winAtts.SetGradBG1(gbg);
-    gbg[0] = float(annot->GetGradientColor2().Red()) / 255.;
-    gbg[1] = float(annot->GetGradientColor2().Green()) / 255.;
-    gbg[2] = float(annot->GetGradientColor2().Blue()) / 255.;
+    gbg[0] = double(annot->GetGradientColor2().Red()) / 255.;
+    gbg[1] = double(annot->GetGradientColor2().Green()) / 255.;
+    gbg[2] = double(annot->GetGradientColor2().Blue()) / 255.;
     winAtts.SetGradBG2(gbg);
     int bgMode;
     if(annot->GetBackgroundMode() == 0)
@@ -5638,7 +5638,7 @@ ViewerWindow::GetPickAttributesForScreenPoint(double sx, double sy,
             }
             PickAttributes pick;
             pick.SetIncidentElements(netIds);
-            float sc[3];
+            double sc[3];
             sc[0] = sx;
             sc[1] = sy;
             sc[2] = 0.; 
@@ -6067,23 +6067,6 @@ ViewerWindow::UpdateVisualCueList(VisualCueList& visCues) const
 
 
 // ****************************************************************************
-//  Method: ViewerWindow::ScalePlots
-//
-//  Purpose:
-//    Notifies the vis window that the plots should be scaled. 
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   July 12, 2002 
-//
-// ****************************************************************************
- 
-void
-ViewerWindow::ScalePlots(const float v[3])
-{
-    visWindow->ScalePlots(v);
-}
-
-// ****************************************************************************
 // Method: ViewerWindow::SetAntialiasing
 //
 // Purpose: 
@@ -6145,7 +6128,7 @@ ViewerWindow::GetAntialiasing() const
 // ****************************************************************************
 
 void
-ViewerWindow::GetRenderTimes(float times[6]) const
+ViewerWindow::GetRenderTimes(double times[6]) const
 {
     visWindow->GetRenderTimes(times);
 }
@@ -6375,7 +6358,7 @@ ViewerWindow::GetSpecularFlag() const
 //
 // ****************************************************************************
 
-float
+double
 ViewerWindow::GetSpecularCoeff() const
 {
     return visWindow->GetSpecularCoeff();
@@ -6399,7 +6382,7 @@ ViewerWindow::GetSpecularCoeff() const
 // ****************************************************************************
 
 void
-ViewerWindow::SetSpecularProperties(bool flag, float coeff, float power,
+ViewerWindow::SetSpecularProperties(bool flag, double coeff, double power,
                                     const ColorAttribute &color)
 {
     visWindow->SetSpecularProperties(flag,coeff,power,color);
@@ -6419,7 +6402,7 @@ ViewerWindow::SetSpecularProperties(bool flag, float coeff, float power,
 //
 // ****************************************************************************
 
-float
+double
 ViewerWindow::GetSpecularPower() const
 {
     return visWindow->GetSpecularPower();
@@ -8429,7 +8412,7 @@ ViewerWindow::CopyInteractorAtts(const ViewerWindow *source)
 // ****************************************************************************
 
 void
-ViewerWindow::GlyphPick(const float pt1[3], const float pt2[3], 
+ViewerWindow::GlyphPick(const double pt1[3], const double pt2[3], 
                         int &dom, int &elNum, bool &forCell)
 {
     visWindow->GlyphPick(pt1, pt2, dom, elNum, forCell, GetNoWinMode()); 

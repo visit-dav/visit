@@ -415,17 +415,21 @@ avtPosCMFEAlgorithm::DesiredPoints::AddDataset(vtkDataSet *ds)
         float *plist = new float[3*nvals];
         pt_list.push_back(plist);
         pt_list_size.push_back(nvals);
-    
+   
+        double dcp[3]; 
         for (i = 0 ; i < nvals ; i++)
         {
             float *cur_pt = plist + 3*i;
             if (isNodal)
-                ds->GetPoint(i, cur_pt);
+                ds->GetPoint(i, dcp);
             else
             {
                 vtkCell *cell = ds->GetCell(i);
-                vtkVisItUtility::GetCellCenter(cell, cur_pt);
+                vtkVisItUtility::GetCellCenter(cell, dcp);
             }
+            cur_pt[0] = (float)dcp[0];
+            cur_pt[1] = (float)dcp[1];
+            cur_pt[2] = (float)dcp[2];
         }
     }
 }
@@ -1358,7 +1362,7 @@ avtPosCMFEAlgorithm::FastLookupGrouping::Finalize(void)
         for (j = 0 ; j < nCells ; j++)
         {
             vtkCell *cell = meshes[i]->GetCell(j);
-            float bounds[6];
+            double bounds[6];
             cell->GetBounds(bounds);
             itree->AddDomain(index, bounds);
 
@@ -1368,7 +1372,7 @@ avtPosCMFEAlgorithm::FastLookupGrouping::Finalize(void)
     }
     if (degenerate)
     {
-        float bounds[6] = { 0, 1, 0, 1, 0, 1 };
+        double bounds[6] = { 0, 1, 0, 1, 0, 1 };
         itree->AddDomain(0, bounds);
     }
 
@@ -1414,7 +1418,8 @@ avtPosCMFEAlgorithm::FastLookupGrouping::GetValue(const float *pt, float *val)
     // get the correct list from the interval tree.
     //
     vector<int> list;
-    itree->GetDomainsListFromRange(pt, pt, list);
+    double dpt[3] = {pt[0], pt[1] , pt[2]};
+    itree->GetDomainsListFromRange(dpt, dpt, list);
     bool v = GetValueUsingList(list, pt, val);
     if (v == true)
         list_from_last_successful_search = list;
@@ -1446,12 +1451,12 @@ bool
 avtPosCMFEAlgorithm::FastLookupGrouping::GetValueUsingList(vector<int> &list,
                                                    const float *pt, float *val)
 {
-    float closestPt[3];
+    double closestPt[3];
     int subId;
-    float pcoords[3];
-    float dist2;
-    float weights[100]; // MUST BE BIGGER THAN NPTS IN A CELL (ie 8).
-    float non_const_pt[3];
+    double pcoords[3];
+    double dist2;
+    double weights[100]; // MUST BE BIGGER THAN NPTS IN A CELL (ie 8).
+    double non_const_pt[3];
     non_const_pt[0] = pt[0];
     non_const_pt[1] = pt[1];
     non_const_pt[2] = pt[2];
@@ -1461,7 +1466,7 @@ avtPosCMFEAlgorithm::FastLookupGrouping::GetValueUsingList(vector<int> &list,
         int mesh = map_to_ds[list[j]];
         int index = list[j] - ds_start[mesh];
         vtkCell *cell = meshes[mesh]->GetCell(index);
-        bool inCell = vtkVisItUtility::CellContainsPoint(cell, pt);
+        bool inCell = vtkVisItUtility::CellContainsPoint(cell, non_const_pt);
         if (!inCell)
             continue;
 
@@ -2211,7 +2216,9 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
         {
             if (b_list[i]->IsDone())
                 continue;
-            it.AddDomain(nBins, b_list[i]->GetBoundary());
+            float *b = b_list[i]->GetBoundary();
+            double db[6] = {b[0], b[1], b[2], b[3], b[4], b[5]};
+            it.AddDomain(nBins, db);
             nBins++;
         }
         it.Calculate(true);
@@ -2224,7 +2231,8 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
         for (i = 0 ; i < nPoints ; i++)
         {
             dp.GetPoint(i, pt);
-            it.GetDomainsListFromRange(pt, pt, list);
+            double dpt[3] = {pt[0], pt[1], pt[2]};
+            it.GetDomainsListFromRange(dpt, dpt, list);
             for (j = 0 ; j < list.size() ; j++)
             {
                 Boundary *b = b_list[bin_lookup[list[j]]];
@@ -2239,11 +2247,11 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
             const float *x, *y, *z;
             int          nX, nY, nZ;
             dp.GetRGrid(i, x, y, z, nX, nY, nZ);
-            float min[3];
+            double min[3];
             min[0] = x[0];
             min[1] = y[0];
             min[2] = z[0];
-            float max[3];
+            double max[3];
             max[0] = x[nX-1];
             max[1] = y[nY-1];
             max[2] = z[nY-1];
@@ -2261,8 +2269,8 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
         for (i = 0 ; i < meshes.size() ; i++)
         {
             const int ncells = meshes[i]->GetNumberOfCells();
-            float bbox[6];
-            float pt[3];
+            double bbox[6];
+            double pt[3];
             for (j = 0 ; j < ncells ; j++)
             {
                 vtkCell *cell = meshes[i]->GetCell(j);
@@ -2271,10 +2279,11 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
                 pt[1] = (bbox[2] + bbox[3]) / 2.;
                 pt[2] = (bbox[4] + bbox[5]) / 2.;
                 it.GetDomainsListFromRange(pt, pt, list);
+                float fpt[3] = {pt[0], pt[1], pt[2]};
                 for (k = 0 ; k < list.size() ; k++)
                 {
                     Boundary *b = b_list[bin_lookup[list[k]]];
-                    b->AddPoint(pt);
+                    b->AddPoint(fpt);
                 }
             }
         }
@@ -2312,7 +2321,8 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
         if (b_list[i]->IsLeaf())
         {
             float *b = b_list[i]->GetBoundary();
-            itree->AddDomain(count++, b);
+            double db[6] = {b[0], b[1], b[2], b[3], b[4], b[5]};
+            itree->AddDomain(count++, db);
         }
     }
     itree->Calculate(true);
@@ -2341,7 +2351,8 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
         for (i = 0 ; i < nPoints ; i++)
         {
             dp.GetPoint(i, pt);
-            itree->GetDomainsListFromRange(pt, pt, list);
+            double dpt[3] = {(double)pt[0], (double)pt[1], (double)pt[2]};
+            itree->GetDomainsListFromRange(dpt, dpt, list);
             for (j = 0 ; j < list.size() ; j++)
             {
                 cnts[list[j]]++;
@@ -2382,7 +2393,9 @@ int
 avtPosCMFEAlgorithm::SpatialPartition::GetProcessor(float *pt)
 {
     vector<int> list;
-    itree->GetDomainsListFromRange(pt, pt, list);
+
+    double dpt[3] = {(double)pt[0], (double)pt[1],(double) pt[2]};
+    itree->GetDomainsListFromRange(dpt, dpt, list);
     if (list.size() <= 0)
     {
         EXCEPTION0(ImproperUseException);
@@ -2406,13 +2419,13 @@ avtPosCMFEAlgorithm::SpatialPartition::GetProcessor(float *pt)
 int
 avtPosCMFEAlgorithm::SpatialPartition::GetProcessor(vtkCell *cell)
 {
-    float bounds[6];
+    double bounds[6];
     cell->GetBounds(bounds);
-    float mins[3];
+    double mins[3];
     mins[0] = bounds[0];
     mins[1] = bounds[2];
     mins[2] = bounds[4];
-    float maxs[3];
+    double maxs[3];
     maxs[0] = bounds[1];
     maxs[1] = bounds[3];
     maxs[2] = bounds[5];
@@ -2450,13 +2463,13 @@ avtPosCMFEAlgorithm::SpatialPartition::GetProcessorList(vtkCell *cell,
 {
     list.clear();
 
-    float bounds[6];
+    double bounds[6];
     cell->GetBounds(bounds);
-    float mins[3];
+    double mins[3];
     mins[0] = bounds[0];
     mins[1] = bounds[2];
     mins[2] = bounds[4];
-    float maxs[3];
+    double maxs[3];
     maxs[0] = bounds[1];
     maxs[1] = bounds[3];
     maxs[2] = bounds[5];
@@ -2483,11 +2496,11 @@ avtPosCMFEAlgorithm::SpatialPartition::GetProcessorBoundaries(float *bounds,
 {
     list.clear();
 
-    float mins[3];
+    double mins[3];
     mins[0] = bounds[0];
     mins[1] = bounds[2];
     mins[2] = bounds[4];
-    float maxs[3];
+    double maxs[3];
     maxs[0] = bounds[1];
     maxs[1] = bounds[3];
     maxs[2] = bounds[5];
@@ -2498,7 +2511,7 @@ avtPosCMFEAlgorithm::SpatialPartition::GetProcessorBoundaries(float *bounds,
     db.resize(numMatches*6);
     for (int i = 0 ; i < numMatches ; i++)
     {
-        float domBounds[6];
+        double domBounds[6];
         itree->GetDomainExtents(list[i], domBounds);
         for (int j = 0 ; j < 6 ; j++)
             db[6*i+j] = domBounds[j];

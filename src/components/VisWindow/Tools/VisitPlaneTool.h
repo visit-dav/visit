@@ -60,7 +60,7 @@ class VISWINDOW_API VisitPlaneTool : public VisitInteractiveTool
     virtual void Start2DMode();
     virtual void Stop3DMode();
 
-    virtual void SetForegroundColor(float, float, float);
+    virtual void SetForegroundColor(double, double, double);
 
     virtual const char *  GetName() const { return "Plane"; };
     virtual avtToolInterface &GetInterface() { return Interface; };
@@ -99,7 +99,7 @@ class VISWINDOW_API VisitPlaneTool : public VisitInteractiveTool
 
     void CreatePlaneActor();
     void CreateVectorActor();
-    void SetAwayColor(float, float, float);
+    void SetAwayColor(double, double, double);
     void UpdateNormalVectorColor();
     bool FacingAway() const;
 
@@ -127,9 +127,9 @@ class VISWINDOW_API VisitPlaneTool : public VisitInteractiveTool
     void       DoTransformations();
     avtMatrix  GetTrackballMatrix(const avtVector&, const avtVector&,int = -1);
 
-    float              focalDepth;
-    float              originalScale;
-    float              originalDistance;
+    double              focalDepth;
+    double              originalScale;
+    double              originalDistance;
     double             translationDistance;
     bool               normalAway;
     bool               disableWhenNoPlots;

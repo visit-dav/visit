@@ -291,8 +291,8 @@ avtCurvePlot::SetAtts(const AttributeGroup *a)
 
     double rgba[4];
     atts.GetColor().GetRgba(rgba);
-    property->SetColor((float)rgba[0], (float)rgba[1], (float)rgba[2]);
-    curveLegend->SetColor((float)rgba[0], (float)rgba[1], (float)rgba[2]);
+    property->SetColor(rgba);
+    curveLegend->SetColor(rgba);
 
     if (atts.GetShowLegend())
     {
@@ -307,7 +307,7 @@ avtCurvePlot::SetAtts(const AttributeGroup *a)
     SetLineStyle(atts.GetLineStyle());
 
     decoMapper->SetLabel(atts.GetDesignator());
-    decoMapper->SetLabelColor((float)rgba[0], (float)rgba[1], (float)rgba[2]);
+    decoMapper->SetLabelColor(rgba);
     decoMapper->SetLabelVisibility(atts.GetShowLabels());
 
     if (atts.GetShowPoints())

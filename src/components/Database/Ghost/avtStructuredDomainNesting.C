@@ -16,6 +16,7 @@
 #include <vtkIntArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
 
 #define MAX_GHOST_LAYERS 2
 

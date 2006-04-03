@@ -50,26 +50,26 @@ class PLOTTER_API avtPickActor
     void               Hide();
     void               UnHide();
 
-    void               SetAttachmentPoint(const float newPos[3]);
-    void               SetAttachmentPoint(float x, float y, float z);
-    const float *      GetAttachmentPoint() { return attach; };
-    const float *      GetLetterPosition(void); 
+    void               SetAttachmentPoint(const double newPos[3]);
+    void               SetAttachmentPoint(double x, double y, double z);
+    const double *     GetAttachmentPoint() { return attach; };
+    const double *     GetLetterPosition(void); 
     void               SetMode3D(const bool);
     const bool         GetMode3D(void) const { return mode3D; };
-    void               SetScale(float);
+    void               SetScale(double);
     void               SetDesignator(const char *l);
-    void               SetForegroundColor(float fgr, float fgg, float fgb);
-    void               SetForegroundColor(float fg[3]);
+    void               SetForegroundColor(double fgr, double fgg, double fgb);
+    void               SetForegroundColor(double fg[3]);
     void               UpdateView();
-    void               Shift(const float vec[3]);
-    void               Translate(const float vec[3]);
-    void               ResetPosition(const float vec[3]);
+    void               Shift(const double vec[3]);
+    void               Translate(const double vec[3]);
+    void               ResetPosition(const double vec[3]);
     void               UseGlyph(const bool v) { useGlyph = v; } ;
 
   protected:
     bool               mode3D;
     bool               useGlyph;
-    float              attach[3];
+    double             attach[3];
     vtkFollower       *letterActor;
 
     vtkActor          *lineActor;

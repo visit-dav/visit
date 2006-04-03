@@ -1596,7 +1596,7 @@ avtFLASHFileFormat::GetAuxiliaryData(const char *var, int dom,
 
     for (int b = 0 ; b < numBlocks ; b++)
     {
-        float bounds[6];
+        double bounds[6];
         bounds[0] = blocks[b].minSpatialExtents[0];
         bounds[1] = blocks[b].maxSpatialExtents[0];
         bounds[2] = blocks[b].minSpatialExtents[1];

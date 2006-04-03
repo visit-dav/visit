@@ -86,7 +86,7 @@ class PLOTTER_API avtTransparencyActor
     void                             TurnOffInput(int);
     void                             TurnOnInput(int);
     void                             RemoveInput(int);
-    void                             InputWasModified(int, float=-1.0);
+    void                             InputWasModified(int, double=-1.0);
     void                             SetVisibility(int, bool);
     void                             VisibilityOff(void);
     void                             VisibilityOn(void);
@@ -99,7 +99,7 @@ class PLOTTER_API avtTransparencyActor
 
     void                             AddToRenderer(vtkRenderer *);
     void                             RemoveFromRenderer(vtkRenderer *);
-    void                             ScaleByVector(const float vec[3]);
+    void                             ScaleByVector(const double vec[3]);
 
     void                             SuspendRendering() { renderingSuspended = true;  }
     void                             ResumeRendering()  { renderingSuspended = false; }
@@ -113,7 +113,7 @@ class PLOTTER_API avtTransparencyActor
     std::vector<std::vector <vtkDataSetMapper *> >   mappers;
     std::vector<std::vector <vtkActor *> >           actors;
 
-    std::map<int,float>                              inputsOpacities;
+    std::map<int,double>                              inputsOpacities;
 
     std::vector<std::vector <vtkPolyData *> >        preparedDataset;
 

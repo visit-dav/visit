@@ -253,8 +253,8 @@ avtRevolvedSurfaceArea::GetCellArea(vtkCell *cell)
     }
 
     vtkPoints *pts = cell->GetPoints();
-    float p0[3];
-    float p1[3];
+    double p0[3];
+    double p1[3];
     pts->GetPoint(0, p0);
     pts->GetPoint(1, p1);
     double  x[2], y[2];

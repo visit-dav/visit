@@ -275,14 +275,14 @@ avtGeometryDrawable::VisibilityOff(void)
 // ****************************************************************************
 
 void
-avtGeometryDrawable::ShiftByVector(const float vec[3])
+avtGeometryDrawable::ShiftByVector(const double vec[3])
 {
     for (int i = 0 ; i < nActors ; i++)
     {
         if (actors[i] != NULL)
         {
             // VTK is ridiculous -- needs const.
-            float v[3];
+            double v[3];
             v[0] = vec[0];
             v[1] = vec[1];
             v[2] = vec[2];
@@ -307,14 +307,14 @@ avtGeometryDrawable::ShiftByVector(const float vec[3])
 // ****************************************************************************
 
 void
-avtGeometryDrawable::ScaleByVector(const float vec[3])
+avtGeometryDrawable::ScaleByVector(const double vec[3])
 {
     for (int i = 0 ; i < nActors ; i++)
     {
         if (actors[i] != NULL)
         {
             // VTK is ridiculous -- needs const.
-            float v[3];
+            double v[3];
             v[0] = vec[0];
             v[1] = vec[1];
             v[2] = vec[2];
@@ -447,7 +447,7 @@ avtGeometryDrawable::TurnLightingOff()
 // ****************************************************************************
 
 void
-avtGeometryDrawable::SetAmbientCoefficient(const float amb)
+avtGeometryDrawable::SetAmbientCoefficient(const double amb)
 {
    mapper->GlobalSetAmbientCoefficient(amb);
 }
@@ -504,7 +504,7 @@ avtGeometryDrawable::SetSurfaceRepresentation(int rep)
 // ****************************************************************************
 
 void
-avtGeometryDrawable::SetSpecularProperties(bool flag, float coeff, float power,
+avtGeometryDrawable::SetSpecularProperties(bool flag, double coeff, double power,
                                            const ColorAttribute &color)
 {
     if (mapper != NULL)
@@ -594,10 +594,10 @@ avtGeometryDrawable::MakeUnPickable()
 //
 // ****************************************************************************
 
-float
+double
 avtGeometryDrawable::GetZPosition()
 {
-    float zpos = 0.f;
+    double zpos = 0.;
     for (int i = 0 ; i < nActors ; i++)
     {
         if (actors[i] != NULL)

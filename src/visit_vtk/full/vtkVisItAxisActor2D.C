@@ -401,15 +401,15 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
 {
   int i, *x;
   vtkIdType ptIds[2];
-  float p1[3], p2[3], offset;
+  double p1[3], p2[3], offset;
   int numLabels, labelCount = 0;
-  float outRange[2], deltaX, deltaY, xTick[3];
-  float theta, val;
+  double outRange[2], deltaX, deltaY, xTick[3];
+  double theta, val;
   int *size, stringSize[2], maxLabelStringSize[2];
   char string[64];
-  float  proportion[VTK_MAX_LABELS];
-  float  ticksize[VTK_MAX_LABELS];
-  float  sin_theta, cos_theta;
+  double  proportion[VTK_MAX_LABELS];
+  double  ticksize[VTK_MAX_LABELS];
+  double  sin_theta, cos_theta;
 
   if ( this->GetMTime() < this->BuildTime &&
   viewport->GetMTime() < this->BuildTime )
@@ -462,10 +462,10 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
   // We'll do our computation in viewport coordinates. First determine the
   // location of the endpoints.
   x = this->Point1Coordinate->GetComputedViewportValue(viewport);
-  p1[0] = (float)x[0]; p1[1] = (float)x[1]; p1[2] = 0.0;
+  p1[0] = (double)x[0]; p1[1] = (double)x[1]; p1[2] = 0.0;
   this->LastPoint1[0] = x[0]; this->LastPoint1[1] = x[1];
   x = this->Point2Coordinate->GetComputedViewportValue(viewport);
-  p2[0] = (float)x[0]; p2[1] = (float)x[1]; p2[2] = 0.0;
+  p2[0] = (double)x[0]; p2[1] = (double)x[1]; p2[2] = 0.0;
   this->LastPoint2[0] = x[0]; this->LastPoint2[1] = x[1];
 
   vtkPoints *pts = vtkPoints::New();
@@ -494,7 +494,7 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
   sin_theta = sin(theta);
   cos_theta = cos(theta);
   xTick[2] = 0.0;
-  float temp[2];
+  double temp[2];
   for (i = 0 ; i < numLabels ; i++)
     {
     if (ticksize[i] == 2.0) // gridlines, draw them inside the viewport.
@@ -709,19 +709,19 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
 //  Creation:    November 1, 2002
 // ********************************************************************
   
-void vtkVisItAxisActor2D::SpecifiedComputeRange(float inRange[2],
-                                               float outRange[2],
+void vtkVisItAxisActor2D::SpecifiedComputeRange(double inRange[2],
+                                               double outRange[2],
                                                double majorMinimum,
                                                double majorMaximum,
                                                double majorSpacing,
                                                double minorSpacing,
-                                             int &numTicks, float *proportion,
-                                             float *ticksize, int minorVisible,
+                                             int &numTicks, double *proportion,
+                                             double *ticksize, int minorVisible,
                                              int drawGrids)
 {
   double minor_tick = 0.5;
   double major_tick = 1.;
-  float grid_tick = 2.;
+  double grid_tick = 2.;
   double sortedRange[2], range;
   double majorStart, majorEnd, minorStart, minorEnd, location;
 
@@ -753,8 +753,8 @@ void vtkVisItAxisActor2D::SpecifiedComputeRange(float inRange[2],
     location = minorStart;
     while (location < minorEnd && numTicks < VTK_MAX_LABELS)
       {
-      proportion[numTicks] = (float)((location - sortedRange[0]) / range);
-      ticksize[numTicks] = (float)minor_tick;
+      proportion[numTicks] = (double)((location - sortedRange[0]) / range);
+      ticksize[numTicks] = (double)minor_tick;
       numTicks++;
       location += minorSpacing;
       }
@@ -763,12 +763,12 @@ void vtkVisItAxisActor2D::SpecifiedComputeRange(float inRange[2],
   location = majorStart;
   while (location < majorEnd && numTicks < VTK_MAX_LABELS)
     {
-    proportion[numTicks] = (float)((location - sortedRange[0]) / range);
-    ticksize[numTicks] = (float)major_tick;
+    proportion[numTicks] = (double)((location - sortedRange[0]) / range);
+    ticksize[numTicks] = (double)major_tick;
     numTicks++;
     if (drawGrids)
       {
-      proportion[numTicks] = (float)((location - sortedRange[0]) / range);
+      proportion[numTicks] = (double)((location - sortedRange[0]) / range);
       ticksize[numTicks] = grid_tick;
       numTicks++;
       }
@@ -850,16 +850,16 @@ inline double fsign(double value, double sign)
 //
 // *******************************************************************
 
-void vtkVisItAxisActor2D::AdjustLabelsComputeRange(float inRange[2], 
-                                             float outRange[2], 
+void vtkVisItAxisActor2D::AdjustLabelsComputeRange(double inRange[2], 
+                                             double outRange[2], 
                                              int vtkNotUsed(inNumTicks),
-                                             int &numTicks, float *proportion, 
-                                             float *ticksize, int minorVisible,
+                                             int &numTicks, double *proportion, 
+                                             double *ticksize, int minorVisible,
                                              int drawGrids)
 {
   double minor_tick = 0.5;
   double major_tick = 1.;
-  float grid_tick = 2.;
+  double grid_tick = 2.;
   double sortedRange[2], range;
   double fxt, fnt, frac;
   double div, major, minor;
@@ -920,11 +920,11 @@ void vtkVisItAxisActor2D::AdjustLabelsComputeRange(float inRange[2],
   if (minor == 0)
     {
     numTicks = 3;
-    ticksize[0] = (float)major_tick;
+    ticksize[0] = (double)major_tick;
     proportion[0] = 0.0;
-    ticksize[1] = (float)major_tick;
+    ticksize[1] = (double)major_tick;
     proportion[1] = 0.5;
-    ticksize[2] = (float)major_tick;
+    ticksize[2] = (double)major_tick;
     proportion[2] = 1.0;
     return;
     }
@@ -949,8 +949,8 @@ void vtkVisItAxisActor2D::AdjustLabelsComputeRange(float inRange[2],
     location = minorStart;
     while (location < sortedRange[1] && numTicks < VTK_MAX_LABELS)
       {
-      proportion[numTicks] = (float)((location - sortedRange[0]) / range);
-      ticksize[numTicks] = (float)minor_tick;
+      proportion[numTicks] = (double)((location - sortedRange[0]) / range);
+      ticksize[numTicks] = (double)minor_tick;
       numTicks++;
       location += minor;
       }
@@ -959,12 +959,12 @@ void vtkVisItAxisActor2D::AdjustLabelsComputeRange(float inRange[2],
   location = majorStart;
   while (location < sortedRange[1] && numTicks < VTK_MAX_LABELS)
     {
-    proportion[numTicks] = (float)((location - sortedRange[0]) / range);
-    ticksize[numTicks] = (float)major_tick;
+    proportion[numTicks] = (double)((location - sortedRange[0]) / range);
+    ticksize[numTicks] = (double)major_tick;
     numTicks++;
     if (drawGrids)
       {
-      proportion[numTicks] = (float)((location - sortedRange[0]) / range);
+      proportion[numTicks] = (double)((location - sortedRange[0]) / range);
       ticksize[numTicks] = grid_tick;
       numTicks++;
       }
@@ -984,12 +984,12 @@ void vtkVisItAxisActor2D::AdjustLabelsComputeRange(float inRange[2],
 // Posiion text with respect to a point (xTick) where the angle of the line
 // from the point to the center of the text is given by theta. The offset
 // is the spacing between ticks and labels.
-void vtkVisItAxisActor2D::SetOffsetPosition(float xTick[3], float theta, 
+void vtkVisItAxisActor2D::SetOffsetPosition(double xTick[3], double theta, 
                                        int stringWidth, int stringHeight, 
                                        int offset, vtkActor2D *actor,
                                        int titleAtEnd)
 {
-  float x, y, center[2];
+  double x, y, center[2];
   int pos[2];
    
   if ( titleAtEnd )
@@ -1012,11 +1012,11 @@ void vtkVisItAxisActor2D::SetOffsetPosition(float xTick[3], float theta,
   actor->SetPosition(pos[0], pos[1]);
 }
 
-float vtkVisItAxisActor2D::ComputeStringOffset(float width, float height,
-                                          float theta)
+double vtkVisItAxisActor2D::ComputeStringOffset(double width, double height,
+                                          double theta)
 {
-  float f1 = height*cos(theta);
-  float f2 = width*sin(theta);
+  double f1 = height*cos(theta);
+  double f2 = width*sin(theta);
   return (1.2 * sqrt(f1*f1 + f2*f2));
 }
 

@@ -55,14 +55,14 @@ VisWinAnnotations::~VisWinAnnotations()
 //
 
 void
-VisWinAnnotations::SetBackgroundColor(float r, float g, float b)
+VisWinAnnotations::SetBackgroundColor(double r, double g, double b)
 {
     for(int i = 0; i < annotations.size(); ++i)
         annotations[i]->SetBackgroundColor(r, g, b);
 }
 
 void
-VisWinAnnotations::SetForegroundColor(float r, float g, float b)
+VisWinAnnotations::SetForegroundColor(double r, double g, double b)
 {
     for(int i = 0; i < annotations.size(); ++i)
         annotations[i]->SetForegroundColor(r, g, b);

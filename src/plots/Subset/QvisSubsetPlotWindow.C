@@ -483,7 +483,7 @@ QvisSubsetPlotWindow::UpdateWindow(bool doAll)
             break;
         case 10: // opacity
             overallOpacity->blockSignals(true);
-            overallOpacity->setValue(subsetAtts->GetOpacity() * 255.);
+            overallOpacity->setValue((float)subsetAtts->GetOpacity() * 255.f);
             overallOpacity->blockSignals(false);
             break;
         case 11: // wireframe

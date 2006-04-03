@@ -39,17 +39,17 @@ class PLOTTER_API avtLabelActor
     void               Hide();
     void               UnHide();
 
-    void               SetAttachmentPoint(const float newPos[3]);
-    const float *      GetAttachmentPoint() { return attach; };
-    void               SetScale(float);
+    void               SetAttachmentPoint(const double newPos[3]);
+    const double *     GetAttachmentPoint() { return attach; };
+    void               SetScale(double);
     void               SetDesignator(const char *l);
-    void               SetForegroundColor(float fgr, float fgg, float fgb);
-    void               SetForegroundColor(float fg[3]);
-    void               Shift(const float vec[3]);
-    float              ComputeScaleFactor();
+    void               SetForegroundColor(double fgr, double fgg, double fgb);
+    void               SetForegroundColor(double fg[3]);
+    void               Shift(const double vec[3]);
+    double             ComputeScaleFactor();
 
   protected:
-    float              attach[3];
+    double             attach[3];
     vtkFollower       *labelActor;
 
     vtkRenderer       *renderer; 

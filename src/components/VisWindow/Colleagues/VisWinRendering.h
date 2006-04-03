@@ -153,8 +153,8 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
                              VisWinRendering(VisWindowColleagueProxy &);
     virtual                 ~VisWinRendering();
 
-    virtual void             SetBackgroundColor(float, float, float);
-    virtual void             SetViewport(float, float, float, float);
+    virtual void             SetBackgroundColor(double, double, double);
+    virtual void             SetViewport(double, double, double, double);
    
     vtkRenderer             *GetCanvas(void);
     vtkRenderer             *GetBackground(void);
@@ -208,13 +208,13 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     virtual void             SetCloseCallback(void(*callback)(void *), void *) = 0;
     virtual void             SetHideCallback(void(*callback)(void *), void *) {};
     virtual void             SetShowCallback(void(*callback)(void *), void *) {};
-    float                    ComputeVectorTextScaleFactor(const float *pos, const float *vp = NULL);
+    double                    ComputeVectorTextScaleFactor(const double *pos, const double *vp = NULL);
 
     void                     SetRenderInfoCallback(void(*callback)(void *), void *);
     void                     SetAntialiasing(bool enabled);
     bool                     GetAntialiasing() const
                                  { return antialiasing; };
-    void                     GetRenderTimes(float times[6]) const;
+    void                     GetRenderTimes(double times[6]) const;
     void                     SetStereoRendering(bool enabled, int type);
     bool                     GetStereo() const
                                  { return stereo; };
@@ -226,13 +226,13 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     virtual void             SetSurfaceRepresentation(int rep);
     int                      GetSurfaceRepresentation() const
                                  { return surfaceRepresentation; };
-    virtual void             SetSpecularProperties(bool,float,float,
+    virtual void             SetSpecularProperties(bool,double,double,
                                                    const ColorAttribute&);
     bool                     GetSpecularFlag() const
                                  { return specularFlag; };
-    float                    GetSpecularCoeff() const
+    double                    GetSpecularCoeff() const
                                  { return specularCoeff; };
-    float                    GetSpecularPower() const
+    double                    GetSpecularPower() const
                                  { return specularPower; };
     const ColorAttribute    &GetSpecularColor() const
                                  { return specularColor; };
@@ -272,8 +272,8 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     int                           displayListMode;
     int                           surfaceRepresentation;
     bool                          specularFlag;
-    float                         specularCoeff;
-    float                         specularPower;
+    double                         specularCoeff;
+    double                         specularPower;
     ColorAttribute                specularColor;
     void(*renderInfo)(void *);
     void                         *renderInfoData;
@@ -281,11 +281,11 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     bool                          inMotion;
 
     // Variables to track frames per second.
-    float                         minRenderTime;
-    float                         maxRenderTime;
-    float                         summedRenderTime;
-    float                         nRenders;
-    float                         curRenderTimes[3];
+    double                         minRenderTime;
+    double                         maxRenderTime;
+    double                         summedRenderTime;
+    double                         nRenders;
+    double                         curRenderTimes[3];
 
     // stereo option
     static bool                   stereoEnabled;

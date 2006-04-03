@@ -79,8 +79,8 @@ public:
 
   // Description:
   // Sets the corner colors.
-  void SetColors(const float colors[4][3]);
-  void SetColor(int id, const float color[3]);
+  void SetColors(const double colors[4][3]);
+  void SetColor(int id, const double color[3]);
 
   // Description:
   // Sets the gradient fill mode. A value of 0 is top to bottom and a value
@@ -105,8 +105,8 @@ protected:
   void CreateBackground();
 
   int                 GradientFillMode;
-  float               GradientCoords[4];
-  float               GradientColors[4][3];
+  double               GradientCoords[4];
+  double               GradientColors[4][3];
   int                 NumRings;
   int                 NumRadialSteps;
   vtkPolyData         *GradientData;

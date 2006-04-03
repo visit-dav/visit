@@ -8,31 +8,31 @@
 vtkCxxRevisionMacro(vtkCSGCell, "$Revision: 1.17 $");
 vtkStandardNewMacro(vtkCSGCell);
 
-int vtkCSGCell::EvaluatePosition(float  vtkNotUsed(x)[3], 
-                                  float  vtkNotUsed(closestPoint)[3],
+int vtkCSGCell::EvaluatePosition(double  vtkNotUsed(x)[3], 
+                                  double  vtkNotUsed(closestPoint)[3],
                                   int&   vtkNotUsed(subId), 
-                                  float  vtkNotUsed(pcoords)[3], 
-                                  float& vtkNotUsed(dist2), 
-                                  float  *vtkNotUsed(weights))
+                                  double  vtkNotUsed(pcoords)[3], 
+                                  double& vtkNotUsed(dist2), 
+                                  double  *vtkNotUsed(weights))
 {
   return 0;
 }
 
 void vtkCSGCell::EvaluateLocation(int&  vtkNotUsed(subId), 
-                                   float vtkNotUsed(pcoords)[3],
-                                   float vtkNotUsed(x)[3],
-                                   float *vtkNotUsed(weights))
+                                   double vtkNotUsed(pcoords)[3],
+                                   double vtkNotUsed(x)[3],
+                                   double *vtkNotUsed(weights))
 {
 }
 
 int vtkCSGCell::CellBoundary(int vtkNotUsed(subId), 
-                            float vtkNotUsed(pcoords)[3], 
+                            double vtkNotUsed(pcoords)[3], 
                             vtkIdList *vtkNotUsed(pts))
 {
   return 0;
 }
 
-void vtkCSGCell::Contour(float vtkNotUsed(value), 
+void vtkCSGCell::Contour(double vtkNotUsed(value), 
                            vtkDataArray *vtkNotUsed(cellScalars), 
                            vtkPointLocator *vtkNotUsed(locator),
                            vtkCellArray *vtkNotUsed(verts), 
@@ -48,12 +48,12 @@ void vtkCSGCell::Contour(float vtkNotUsed(value),
 
 // Project point on line. If it lies between 0<=t<=1 and distance off line
 // is less than tolerance, intersection detected.
-int vtkCSGCell::IntersectWithLine(float vtkNotUsed(p1)[3], 
-                                   float vtkNotUsed(p2)[3], 
-                                   float vtkNotUsed(tol), 
-                                   float& vtkNotUsed(t),
-                                   float vtkNotUsed(x)[3], 
-                                   float pcoords[3], 
+int vtkCSGCell::IntersectWithLine(double vtkNotUsed(p1)[3], 
+                                   double vtkNotUsed(p2)[3], 
+                                   double vtkNotUsed(tol), 
+                                   double& vtkNotUsed(t),
+                                   double vtkNotUsed(x)[3], 
+                                   double pcoords[3], 
                                    int& vtkNotUsed(subId))
 {
   pcoords[0] = -10.0;
@@ -70,14 +70,14 @@ int vtkCSGCell::Triangulate(int vtkNotUsed(index),
 }
 
 void vtkCSGCell::Derivatives(int vtkNotUsed(subId), 
-                            float vtkNotUsed(pcoords)[3], 
-                            float *vtkNotUsed(values), 
+                            double vtkNotUsed(pcoords)[3], 
+                            double *vtkNotUsed(values), 
                             int vtkNotUsed(dim), 
-                            float *vtkNotUsed(derivs))
+                            double *vtkNotUsed(derivs))
 {
 }
 
-void vtkCSGCell::Clip(float vtkNotUsed(value), 
+void vtkCSGCell::Clip(double vtkNotUsed(value), 
                         vtkDataArray *vtkNotUsed(cellScalars), 
                         vtkPointLocator *vtkNotUsed(locator), 
                         vtkCellArray *vtkNotUsed(verts),    

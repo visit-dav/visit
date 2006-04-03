@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItDataReader.cxx,v $
-  Language:  C++
-  Date:      $Date: 2002/12/26 18:18:50 $
-  Version:   $Revision: 1.128 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -43,7 +40,7 @@
 #include <ctype.h>
 #include <sys/stat.h>
 
-vtkCxxRevisionMacro(vtkVisItDataReader, "$Revision: 1.128 $");
+vtkCxxRevisionMacro(vtkVisItDataReader, "$Revision: 1.130 $");
 vtkStandardNewMacro(vtkVisItDataReader);
 
 vtkCxxSetObjectMacro(vtkVisItDataReader, InputArray, vtkCharArray);
@@ -98,7 +95,11 @@ vtkVisItDataReader::vtkVisItDataReader()
 
   this->ReadAllScalars = 0;
   this->ReadAllVectors = 0;
+  this->ReadAllNormals = 0;
   this->ReadAllTensors = 0;
+  this->ReadAllColorScalars = 0;
+  this->ReadAllTCoords = 0;
+  this->ReadAllFields = 0;
 }  
 
 vtkVisItDataReader::~vtkVisItDataReader()
@@ -1224,10 +1225,10 @@ int vtkVisItDataReader::ReadScalarData(vtkDataSetAttributes *a, int numPts)
       {
       a->SetScalars(data);
       }
-    else if ( this->ReadAllScalars)
+    else if ( this->ReadAllScalars ) 
       {
       a->AddArray(data);
-      }
+      } 
     data->Delete();
     }
   else
@@ -1321,6 +1322,10 @@ int vtkVisItDataReader::ReadNormalData(vtkDataSetAttributes *a, int numPts)
     if ( ! skipNormal )
       {
       a->SetNormals(data);
+      }
+    else if ( this->ReadAllNormals )
+      {
+      a->AddArray(data);
       }
     data->Delete();
     }
@@ -1417,10 +1422,14 @@ int vtkVisItDataReader::ReadCoScalarData(vtkDataSetAttributes *a, int numPts)
 
     if ( data != NULL )
       {
+      data->SetName(name);
       if ( ! skipScalar ) 
         {
-        data->SetName(name);
         a->SetScalars(data);
+        }
+      else if ( this->ReadAllColorScalars )
+        {
+        a->AddArray(data);
         }
       data->Delete();
       }
@@ -1437,7 +1446,7 @@ int vtkVisItDataReader::ReadCoScalarData(vtkDataSetAttributes *a, int numPts)
     
     if ( data != NULL )
       {
-      if ( ! skipScalar ) 
+      if ( ! skipScalar || this->ReadAllColorScalars ) 
         {
         vtkUnsignedCharArray *scalars=vtkUnsignedCharArray::New();
         scalars->SetNumberOfComponents(numComp);
@@ -1451,7 +1460,14 @@ int vtkVisItDataReader::ReadCoScalarData(vtkDataSetAttributes *a, int numPts)
             scalars->SetValue(idx,(unsigned char)(255.0*data->GetValue(idx)));
             }
           }
-        a->SetScalars(scalars);
+        if ( ! skipScalar )
+          {
+          a->SetScalars(scalars);
+          }
+        else if ( this->ReadAllColorScalars )
+          {
+          a->AddArray(scalars);
+          }        
         scalars->Delete();
         }
       data->Delete();
@@ -1509,6 +1525,10 @@ int vtkVisItDataReader::ReadTCoordsData(vtkDataSetAttributes *a, int numPts)
     if ( ! skipTCoord )
       {
       a->SetTCoords(data);
+      }
+    else if ( this->ReadAllTCoords )
+      {
+      a->AddArray(data);
       }
     data->Delete();
     }
@@ -1774,7 +1794,7 @@ vtkFieldData *vtkVisItDataReader::ReadFieldData()
     if ( data != NULL )
       {
       data->SetName(name);
-      if ( ! skipField )
+      if ( ! skipField  || this->ReadAllFields )
         {
         f->AddArray(data);
         }
@@ -1787,7 +1807,7 @@ vtkFieldData *vtkVisItDataReader::ReadFieldData()
       }
     }
 
-  if ( skipField ) 
+  if ( skipField && ! this->ReadAllFields ) 
     {
     f->Delete();
     return NULL;
@@ -2118,6 +2138,8 @@ void vtkVisItDataReader::PrintSelf(ostream& os, vtkIndent indent)
     {
     os << indent << "Scalars Name: (None)\n";
     }
+  os << indent << "ReadAllScalars: " 
+     << (this->ReadAllScalars ? "On" : "Off") << "\n";
 
   if ( this->VectorsName )
     {
@@ -2127,6 +2149,8 @@ void vtkVisItDataReader::PrintSelf(ostream& os, vtkIndent indent)
     {
     os << indent << "Vectors Name: (None)\n";
     }
+  os << indent << "ReadAllVectors: " 
+     << (this->ReadAllVectors ? "On" : "Off") << "\n";
 
   if ( this->NormalsName )
     {
@@ -2136,6 +2160,8 @@ void vtkVisItDataReader::PrintSelf(ostream& os, vtkIndent indent)
     {
     os << indent << "Normals Name: (None)\n";
     }
+  os << indent << "ReadAllNormals: " 
+     << (this->ReadAllNormals ? "On" : "Off") << "\n";
 
   if ( this->TensorsName )
     {
@@ -2145,6 +2171,8 @@ void vtkVisItDataReader::PrintSelf(ostream& os, vtkIndent indent)
     {
     os << indent << "Tensors Name: (None)\n";
     }
+  os << indent << "ReadAllTensors: " 
+     << (this->ReadAllTensors ? "On" : "Off") << "\n";
 
   if ( this->TCoordsName )
     {
@@ -2154,6 +2182,8 @@ void vtkVisItDataReader::PrintSelf(ostream& os, vtkIndent indent)
     {
     os << indent << "Texture Coordinates Name: (None)\n";
     }
+  os << indent << "ReadAllTCoords: " 
+     << (this->ReadAllTCoords ? "On" : "Off") << "\n";
 
   if ( this->LookupTableName )
     {
@@ -2163,6 +2193,8 @@ void vtkVisItDataReader::PrintSelf(ostream& os, vtkIndent indent)
     {
     os << indent << "Lookup Table Name: (None)\n";
     }
+  os << indent << "ReadAllColorScalars: " 
+     << (this->ReadAllColorScalars ? "On" : "Off") << "\n";
 
   if ( this->FieldDataName )
     {
@@ -2172,6 +2204,8 @@ void vtkVisItDataReader::PrintSelf(ostream& os, vtkIndent indent)
     {
     os << indent << "Field Data Name: (None)\n";
     }
+  os << indent << "ReadAllFields: " 
+     << (this->ReadAllFields ? "On" : "Off") << "\n";
   
   os << indent << "InputStringLength: " << this->InputStringLength << endl;
 }

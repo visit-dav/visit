@@ -47,8 +47,8 @@ class VISWINDOW_API VisWinFrame : public VisWinColleague
                                  VisWinFrame(VisWindowColleagueProxy &);
     virtual                     ~VisWinFrame();
 
-    virtual void                 SetForegroundColor(float, float, float);
-    virtual void                 SetViewport(float, float, float, float);
+    virtual void                 SetForegroundColor(double, double, double);
+    virtual void                 SetViewport(double, double, double, double);
     virtual void                 UpdateView(void);
 
     virtual void                 Start2DMode(void);
@@ -75,7 +75,7 @@ class VISWINDOW_API VisWinFrame : public VisWinColleague
 
     void                         AddFrameToWindow(void);
     void                         RemoveFrameFromWindow(void);
-    void                         GetRange(float &, float &, float &, float &); 
+    void                         GetRange(double &, double &, double &, double &); 
     bool                         ShouldAddFrame(void);
 };
 

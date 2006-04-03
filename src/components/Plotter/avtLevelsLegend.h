@@ -69,21 +69,21 @@ class PLOTTER_API avtLevelsLegend : public avtLegend
                     avtLevelsLegend();
     virtual        ~avtLevelsLegend();
 
-    virtual void    GetLegendSize(float, float &, float &);
+    virtual void    GetLegendSize(double, double &, double &);
 
     void            SetColorBarVisibility(const int);
-    void            SetRange(float min, float max);
+    void            SetRange(double min, double max);
     void            SetLevels(const std::vector<double> &);
     void            SetLevels(const std::vector<std::string> &);
     void            SetLookupTable(vtkLookupTable *);
     void            SetLabelColorMap(const LevelColorMap &);
     void            SetReverseOrder(const bool);
     void            SetVarRangeVisibility(const int);
-    void            SetVarRange(float min, float max);
+    void            SetVarRange(double min, double max);
 
 
   protected:
-    float                      min, max;
+    double                     min, max;
     int                        nLevels;
 
     vtkLookupTable            *lut;
@@ -92,9 +92,9 @@ class PLOTTER_API avtLevelsLegend : public avtLegend
     int                        barVisibility;
     int                        rangeVisibility;
 
-    virtual void               ChangePosition(float, float);
+    virtual void               ChangePosition(double, double);
     virtual void               ChangeTitle(const char *);
-    virtual void               ChangeFontHeight(float);
+    virtual void               ChangeFontHeight(double);
 };
 
 

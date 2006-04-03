@@ -106,7 +106,7 @@ class avtStreamlineFilter : public avtStreamer
     virtual void              RefashionDataObjectInfo(void);
 
     vtkPolyData              *AddStartSphere(vtkPolyData *, float val,
-                                             float pt[3]);
+                                             double pt[3]);
 
     void                      SetZToZero(vtkPolyData *) const;
 };

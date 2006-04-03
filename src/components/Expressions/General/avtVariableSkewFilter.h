@@ -38,7 +38,8 @@ class EXPRESSION_API avtVariableSkewFilter : public avtBinaryMathFilter
     virtual void     DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                                  vtkDataArray *out, int ncomponents, int ntuples);
   private:
-    float            SkewTheValue(float val, float min, float max, float factor);
+    double           SkewTheValue(double val, double min, double max, 
+                                  double factor);
 };
 
 

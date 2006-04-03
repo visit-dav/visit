@@ -70,8 +70,8 @@ class AVTFILTERS_API avtRayTracer : public avtDatasetToImageFilter
     void                  SetSamplesPerRay(int);
     void                  SetBackgroundColor(const unsigned char [3]);
     void                  SetBackgroundMode(int mode);
-    void                  SetGradientBackgroundColors(const float [3],
-                                                      const float [3]);
+    void                  SetGradientBackgroundColors(const double [3],
+                                                      const double [3]);
     int                   GetSamplesPerRay(void)  { return samplesPerRay; };
     const int            *GetScreen(void)         { return screen; };
 
@@ -86,8 +86,8 @@ class AVTFILTERS_API avtRayTracer : public avtDatasetToImageFilter
     bool                  kernelBasedSampling;
     int                   backgroundMode;
     unsigned char         background[3];
-    float                 gradBG1[3];
-    float                 gradBG2[3];
+    double                gradBG1[3];
+    double                gradBG2[3];
     avtRayFunction       *rayfoo;
     
     avtImage_p            opaqueImage;

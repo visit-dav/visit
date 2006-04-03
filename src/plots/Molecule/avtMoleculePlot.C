@@ -533,7 +533,7 @@ avtMoleculePlot::GetLegend(void)
 void
 avtMoleculePlot::SetLegendRange()
 {
-    float min,max;
+    double min,max;
     mapper->GetCurrentDataRange(min,max);
 
     // Set attributes for continuous legend

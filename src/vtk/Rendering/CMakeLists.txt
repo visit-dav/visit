@@ -1,9 +1,6 @@
 SET(KIT Rendering)
 SET(UKIT RENDERING)
-SET(KIT_TCL_LIBS vtkGraphicsTCL vtkImagingTCL ${TCL_LIBRARY})
-IF (TK_LIBRARY)
-  SET(KIT_TCL_LIBS ${KIT_TCL_LIBS} ${TK_LIBRARY})
-ENDIF (TK_LIBRARY)
+SET(KIT_TCL_LIBS vtkGraphicsTCL vtkImagingTCL ${VTK_TK_LIBRARIES})
 IF(APPLE)
   SET(KIT_PYTHON_LIBS vtkGraphicsPythonD vtkImagingPythonD)
 ELSE(APPLE)
@@ -13,13 +10,14 @@ SET(KIT_JAVA_LIBS vtkGraphicsJava vtkImagingJava)
 IF (JAVA_AWT_LIBRARY)
   SET(KIT_JAVA_LIBS ${KIT_JAVA_LIBS} ${JAVA_AWT_LIBRARY})
 ENDIF (JAVA_AWT_LIBRARY)
-SET(KIT_LIBS vtkGraphics vtkImaging
+SET(KIT_LIBS vtkGraphics vtkImaging vtkIO
   vtkftgl
   vtkfreetype
 )
 
 SET( Kit_SRCS
 vtkAbstractMapper3D.cxx
+vtkAbstractVolumeMapper.cxx
 vtkAbstractPicker.cxx
 vtkAbstractPropPicker.cxx
 vtkActor.cxx
@@ -81,6 +79,7 @@ vtkProp3D.cxx
 vtkProp3DCollection.cxx
 vtkPropPicker.cxx
 vtkProperty.cxx
+vtkRayCastImageDisplayHelper.cxx
 vtkRecursiveSphereDirectionEncoder.cxx
 vtkRenderWindow.cxx
 vtkRenderWindowCollection.cxx
@@ -91,10 +90,15 @@ vtkRendererSource.cxx
 vtkScalarBarActor.cxx
 vtkScaledTextActor.cxx
 vtkSelectVisiblePoints.cxx
+vtkTesting.cxx
 vtkTextActor.cxx
 vtkTextMapper.cxx
 vtkTextProperty.cxx
 vtkTexture.cxx
+vtkUnstructuredGridBunykRayCastFunction.cxx
+vtkUnstructuredGridVolumeMapper.cxx
+vtkUnstructuredGridVolumeRayCastFunction.cxx
+vtkUnstructuredGridVolumeRayCastMapper.cxx
 vtkVRMLExporter.cxx
 vtkVolume.cxx
 vtkVolumeCollection.cxx
@@ -112,12 +116,6 @@ vtkWindowToImageFilter.cxx
 vtkWorldPointPicker.cxx
 )
 
-IF (VTK_HAVE_VG500)
-  SET( Kit_SRCS ${Kit_SRCS}
-    vtkVolumeProVG500Mapper.cxx
-    vtkOpenGLVolumeProVG500Mapper.cxx
-    )
-ENDIF (VTK_HAVE_VG500)
 IF (VTK_HAVE_VP1000)
   SET( Kit_SRCS ${Kit_SRCS}
     vtkVolumeProVP1000Mapper.cxx
@@ -126,12 +124,9 @@ IF (VTK_HAVE_VP1000)
 ENDIF (VTK_HAVE_VP1000)
 
 IF(VTK_USE_GL2PS)
-  SET( Kit_SRCS ${Kit_SRCS}
-      vtkGL2PSExporter.cxx
-  )
-  IF(WIN32)
-    ADD_DEFINITIONS(-DGL2PSDLL)
-  ENDIF(WIN32)
+  SET(Kit_SRCS ${Kit_SRCS} vtkGL2PSExporter.cxx)
+  SET(Kit_GL2PS_SRCS ${VTK_SOURCE_DIR}/Utilities/gl2ps/gl2ps.c)
+  ADD_DEFINITIONS(-DGL2PS_HAVE_ZLIB)
 ENDIF(VTK_USE_GL2PS)
 
 SET( KitOpenGL_SRCS
@@ -143,6 +138,7 @@ SET( KitOpenGL_SRCS
   vtkOpenGLPolyDataMapper.cxx
   vtkOpenGLPolyDataMapper2D.cxx
   vtkOpenGLProperty.cxx
+  vtkOpenGLRayCastImageDisplayHelper.cxx
   vtkOpenGLRenderWindow.cxx
   vtkOpenGLRenderer.cxx
   vtkOpenGLTexture.cxx
@@ -152,6 +148,7 @@ SET( KitOpenGL_SRCS
 
 SET_SOURCE_FILES_PROPERTIES(
 vtkAbstractMapper3D
+vtkAbstractVolumeMapper
 vtkAbstractPicker
 vtkAbstractPropPicker
 vtkCuller
@@ -163,6 +160,9 @@ vtkInteractorObserver
 vtkMapper
 vtkOpenGLRenderWindow
 vtkProp3D
+vtkRayCastImageDisplayHelper
+vtkUnstructuredGridVolumeMapper
+vtkUnstructuredGridVolumeRayCastFunction
 vtkVolumeMapper
 vtkVolumeRayCastFunction
 vtkVolumeTextureMapper
@@ -204,16 +204,13 @@ ENDIF(VTK_USE_X)
 # Build a list of libraries to link to vtkRendering.
 
 IF(VTK_USE_VOLUMEPRO)
-  IF(VTK_HAVE_VG500)
-    SET(KIT_LIBS ${KIT_LIBS} ${VLI_LIBRARY_FOR_VG500})
-  ENDIF(VTK_HAVE_VG500)
   IF(VTK_HAVE_VP1000)
     SET(KIT_LIBS ${KIT_LIBS} ${VLI_LIBRARY_FOR_VP1000})
   ENDIF(VTK_HAVE_VP1000)
 ENDIF(VTK_USE_VOLUMEPRO)
 
 IF(VTK_USE_GL2PS)
-  SET(KIT_LIBS ${KIT_LIBS} ${GL2PS_LIBRARY})
+  SET(KIT_LIBS ${KIT_LIBS} ${VTK_ZLIB_LIBRARIES})
 ENDIF(VTK_USE_GL2PS)
 
 IF (WIN32)
@@ -273,6 +270,7 @@ IF (VTK_USE_MANGLED_MESA)
                  vtkMesaPolyDataMapper.cxx
                  vtkMesaPolyDataMapper2D.cxx
                  vtkMesaProperty.cxx
+                 vtkMesaRayCastImageDisplayHelper.cxx
                  vtkMesaRenderWindow.cxx
                  vtkMesaRenderer.cxx
                  vtkMesaTexture.cxx
@@ -298,11 +296,27 @@ ELSE (VTK_USE_MANGLED_MESA)
 ENDIF(VTK_USE_MANGLED_MESA)
 SET(Kit_SRCS ${Kit_SRCS} ${KitOpenGL_SRCS})
 SET(Kit_EXTRA_SRCS ${Kit_FT_SRCS})
+
+IF(VTK_USE_GL2PS)
+SET(Kit_EXTRA_SRCS ${Kit_EXTRA_SRCS} ${Kit_GL2PS_SRCS})
+ENDIF(VTK_USE_GL2PS)
+
 SET(Kit_EXTRA_CMDS)
 SET(Kit_TCL_EXTRA_SRCS)
 SET(Kit_PYTHON_EXTRA_SRCS)
 SET(Kit_JAVA_EXTRA_SRCS)
 SET(Kit_TCL_EXTRA_CMDS)
+
+IF (TK_LIBRARY)
+  SET (HAVE_LIMITS_H ${CMAKE_HAVE_LIMITS_H})
+  SET (HAVE_UNISTD_H ${CMAKE_HAVE_UNISTD_H})
+  CONFIGURE_FILE(
+    ${CMAKE_CURRENT_SOURCE_DIR}/vtkTkInternals.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/vtkTkInternals.h)
+  INSTALL_FILES(/include/vtk 
+                FILES ${CMAKE_CURRENT_BINARY_DIR}/vtkTkInternals.h)
+  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
+ENDIF (TK_LIBRARY)
 
 IF (VTK_WRAP_TCL)
   IF(NOT VTK_USE_COCOA)
@@ -311,14 +325,16 @@ IF (VTK_WRAP_TCL)
        vtkTkImageViewerWidget.cxx)
   ENDIF(NOT VTK_USE_COCOA)
 
-  # find the tk internals for win32
-  IF (NOT WIN32)
-    IF(NOT APPLE)
-      SET(KitTCL_SRCS ${KitTCL_SRCS} 
-        vtkXRenderWindowTclInteractor.cxx)
-    ENDIF (NOT APPLE)
-  ENDIF (NOT WIN32) 
-  
+  # Use special interactor for X and Tk.
+  IF(VTK_USE_X)
+    SET(KitTCL_SRCS ${KitTCL_SRCS}
+      vtkXRenderWindowTclInteractor.cxx)
+  ENDIF(VTK_USE_X)
+
+  # if VTK_DISABLE_TK_INIT is not defined, then those widgets *will* be
+  # initialized by the Rendering kit. If *not* defined we need to do it
+  # manually when needed (for example, in vtkTkAppInit so that
+  # we can use them from the vtk executable
   IF (NOT VTK_DISABLE_TK_INIT)
    SET(Kit_TCL_EXTRA_CMDS 
      vtkTkRenderWidget 
@@ -333,10 +349,10 @@ ENDIF (VTK_WRAP_TCL)
 # Start of common section
 
 # Setup vtkInstantiator registration for this library's classes.
-VTK_MAKE_INSTANTIATOR2(vtk${KIT}Instantiator KitInstantiator_SRCS
-                       ${Kit_SRCS}
-                       EXPORT_MACRO VTK_${UKIT}_EXPORT
-                       HEADER_LOCATION ${VTK_BINARY_DIR})
+VTK_MAKE_INSTANTIATOR3(vtk${KIT}Instantiator KitInstantiator_SRCS
+                       "${Kit_SRCS}"
+                       VTK_${UKIT}_EXPORT
+                       ${VTK_BINARY_DIR} "")
 
 ADD_LIBRARY(vtk${KIT} ${Kit_SRCS} ${Kit_EXTRA_SRCS} ${KitInstantiator_SRCS})
 
@@ -422,7 +438,6 @@ ENDIF(LOCALUSERMACRODEFINED)
 # End of common section
 # -----------------------------------------------------------------
 
-
 IF (VTK_WRAP_TCL)
   IF (APPLE AND VTK_BUILD_SHARED_LIBS)
     IF(VTK_APPLE_SHARED_FLAGS_NEEDED)
@@ -439,13 +454,12 @@ IF (VTK_WRAP_PYTHON)
           vtkTkRenderWidgetPython.cxx
           vtkTkImageViewerWidgetPython.cxx
           )
-       ADD_LIBRARY(vtkRenderingPythonTkWidgets SHARED
-                   ${RenderingPythonTkWidgets_SRCS})
+         ADD_LIBRARY(vtkRenderingPythonTkWidgets SHARED
+                     ${RenderingPythonTkWidgets_SRCS})
        IF(APPLE OR WIN32)
          TARGET_LINK_LIBRARIES (vtkRenderingPythonTkWidgets
                                 vtk${KIT}
-                                ${TCL_LIBRARY}
-                                ${TK_LIBRARY})
+                                ${VTK_TK_LIBRARIES})
        ENDIF(APPLE OR WIN32)
        INSTALL_TARGETS(/lib/vtk vtkRenderingPythonTkWidgets)
      ENDIF(NOT VTK_USE_COCOA)
@@ -458,13 +472,3 @@ IF(VTK_USE_X)
   ENDIF(APPLE OR WIN32)
   ADD_DEFINITIONS(${CMAKE_X_CFLAGS})
 ENDIF(VTK_USE_X)
-
-CONFIGURE_FILE(
-${VTK_SOURCE_DIR}/${KIT}/tkInternals/.NoDartCoverage
-${VTK_BINARY_DIR}/${KIT}/tkInternals/.NoDartCoverage)
-
-IF(VTK_RENDERING_NEED_TK_INTERNAL AND TK_INTERNAL_PATH)
-  IF("${TK_INTERNAL_PATH}" MATCHES "${KIT}/tkInternals/tk")
-    SUBDIRS(tkInternals)
-  ENDIF("${TK_INTERNAL_PATH}" MATCHES "${KIT}/tkInternals/tk")
-ENDIF(VTK_RENDERING_NEED_TK_INTERNAL AND TK_INTERNAL_PATH)

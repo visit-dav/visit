@@ -139,7 +139,7 @@ avtFeatureEdgesFilter::ExecuteData(vtkDataSet *inDS, int, string)
         {
              origId[i] = ids->GetId(i);
              outPD->CopyData(inPD, ids->GetId(i), i);
-             float pt[3];
+             double pt[3];
              inDS->GetPoint(ids->GetId(i), pt);
              pts->SetPoint(i, pt);
         }

@@ -138,7 +138,7 @@ vtkLineLegend::RenderOverlay(vtkViewport *viewport)
 void 
 vtkLineLegend::BuildTitle(vtkViewport *viewport)
 {
-  float titleOrigin[3] = { 0., 0., 0. };
+  double titleOrigin[3] = { 0., 0., 0. };
   this->TitleMapper->SetInput(this->Title);
   int *viewSize = viewport->GetSize();
 
@@ -168,7 +168,7 @@ vtkLineLegend::BuildTitle(vtkViewport *viewport)
   titleOrigin[0] = 0;
   int legURy = LastOrigin[1] + LastSize[1];
   int distFromOrigin = (legURy-tsizePixels[1]-LastOrigin[1]);
-  titleOrigin[1] = (float)(distFromOrigin) /(float)viewSize[1] ; 
+  titleOrigin[1] = (double)(distFromOrigin) /(double)viewSize[1] ; 
   this->TitleActor->SetProperty(this->GetProperty());
 
   this->TitleActor->GetPositionCoordinate()->
@@ -183,23 +183,23 @@ void
 vtkLineLegend::BuildLine(vtkViewport *viewport)
 {
   this->TransformFilter->GetInput()->Update();
-  float *bounds = this->TransformFilter->GetInput()->GetBounds();
+  double *bounds = this->TransformFilter->GetInput()->GetBounds();
 
   //Get position information
   int *x1, *x2, *x3;
-  float p1[2], p2[2];
+  double p1[2], p2[2];
   x1 = this->PositionCoordinate->GetComputedViewportValue(viewport);
   x2 = this->Position2Coordinate->GetComputedViewportValue(viewport);
   x3 = this->TitleActor->GetPositionCoordinate()->
              GetComputedViewportValue(viewport);
 
-  p1[0] = (float)x1[0]; 
-  p1[1] = (float)x1[1]; 
-  p2[0] = (float)x2[0]; 
-  p2[1] = (float)x3[1]; 
+  p1[0] = (double)x1[0]; 
+  p1[1] = (double)x1[1]; 
+  p2[0] = (double)x2[0]; 
+  p2[1] = (double)x3[1]; 
 
   int tempi[2], fontSize;
-  float sf, twr, swr = 0.0;
+  double sf, twr, swr = 0.0;
 
   if ( (bounds[3]-bounds[2]) == 0.0 )
     {
@@ -211,8 +211,8 @@ vtkLineLegend::BuildLine(vtkViewport *viewport)
     }
 
   this->TitleMapper->GetSize(viewport,tempi);
-  twr = (float)tempi[0]/tempi[1];
-  float symbolSize = swr / (swr + twr);
+  twr = (double)tempi[0]/tempi[1];
+  double symbolSize = swr / (swr + twr);
 
   int size[2];
   size[0] = (int)(symbolSize*(p2[0] - p1[0]));
@@ -239,8 +239,8 @@ vtkLineLegend::BuildLine(vtkViewport *viewport)
     sf = size[1]/(bounds[3]-bounds[2]);
     }
 
-  float posX = p1[0];
-  float posY = p2[1] - 0.1*size[1]; 
+  double posX = p1[0];
+  double posY = p2[1] - 0.1*size[1]; 
   this->Transform->Identity();
   this->Transform->Translate(posX, posY, 0.0);
   this->Transform->Scale(sf, sf, 1);
@@ -352,14 +352,14 @@ vtkLineLegend::PrintSelf(ostream& os, vtkIndent indent)
 
 //----------------------------------------------------------------------------
 void 
-vtkLineLegend::SetPosition(float x[2]) 
+vtkLineLegend::SetPosition(double x[2]) 
 {
   this->SetPosition(x[0],x[1]);
 } 
 
 //----------------------------------------------------------------------------
 void 
-vtkLineLegend::SetPosition(float x, float y) 
+vtkLineLegend::SetPosition(double x, double y) 
 { 
   this->PositionCoordinate->SetCoordinateSystemToNormalizedViewport(); 
   this->PositionCoordinate->SetValue(x,y); 
@@ -374,21 +374,21 @@ vtkLineLegend::GetPosition2Coordinate()
 
 //----------------------------------------------------------------------------
 void 
-vtkLineLegend::SetPosition2(float x[2]) 
+vtkLineLegend::SetPosition2(double x[2]) 
 {
   this->SetPosition2(x[0],x[1]);
 } 
 
 //----------------------------------------------------------------------------
 void 
-vtkLineLegend::SetPosition2(float x, float y) 
+vtkLineLegend::SetPosition2(double x, double y) 
 { 
   this->Position2Coordinate->SetCoordinateSystemToNormalizedViewport(); 
   this->Position2Coordinate->SetValue(x,y); 
 } 
 
 //----------------------------------------------------------------------------
-float *
+double *
 vtkLineLegend::GetPosition2() 
 { 
   return this->Position2Coordinate->GetValue(); 

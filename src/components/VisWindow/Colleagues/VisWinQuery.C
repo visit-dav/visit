@@ -166,7 +166,7 @@ VisWinQuery::EndBoundingBox(void)
 // ****************************************************************************
 
 void
-VisWinQuery::SetForegroundColor(float fr, float fg, float fb)
+VisWinQuery::SetForegroundColor(double fr, double fg, double fb)
 {
     //
     // Set the color for the pick points.
@@ -224,8 +224,8 @@ VisWinQuery::UpdateView()
     {
         std::vector< PickEntry >::iterator it;
 
-        float transVec[3];
-        float shiftVec[3];
+        double transVec[3];
+        double shiftVec[3];
         CreateShiftVector(shiftVec, CalculateShiftDistance());
         if (mediator.GetFullFrameMode())
         {
@@ -238,7 +238,7 @@ VisWinQuery::UpdateView()
 
         for (it = pickPoints.begin() ; it != pickPoints.end() ; it++)
         {
-            const float *pos = it->pickActor->GetLetterPosition();
+            const double *pos = it->pickActor->GetLetterPosition();
             it->pickActor->SetScale(mediator.ComputeVectorTextScaleFactor(pos));
             if (mediator.GetMode() != WINMODE_3D)
             {
@@ -256,7 +256,7 @@ VisWinQuery::UpdateView()
         std::vector< LineEntry >::iterator it;
         for (it = lineOuts.begin() ; it != lineOuts.end() ; it++)
         {
-            const float *pos = it->lineActor->GetAttachmentPoint();
+            const double *pos = it->lineActor->GetAttachmentPoint();
             it->lineActor->SetScale(mediator.ComputeVectorTextScaleFactor(pos));
             it->lineActor->UpdateView();
         }
@@ -384,11 +384,11 @@ VisWinQuery::QueryIsValid(const VisualCueInfo *vqPoint, const VisualCueInfo *vqL
 void 
 VisWinQuery::Pick(const VisualCueInfo *vq)
 {
-    float pt[3];
-    vq->GetPointF(0,pt);
+    double pt[3];
+    vq->GetPointD(0,pt);
 
     avtPickActor_p pp = new avtPickActor;
-    float distance = CalculateShiftDistance();
+    double distance = CalculateShiftDistance();
     if (mediator.GetMode() == WINMODE_3D)
     {
         pp->SetMode3D(true);
@@ -397,7 +397,7 @@ VisWinQuery::Pick(const VisualCueInfo *vq)
     else
     {
         pp->SetMode3D(false);
-        float maxShift = mediator.GetMaxPlotZShift();
+        double maxShift = mediator.GetMaxPlotZShift();
         if (maxShift > distance)
             distance += maxShift;
         pp->SetAttachmentPoint(pt[0], pt[1], distance);
@@ -407,7 +407,7 @@ VisWinQuery::Pick(const VisualCueInfo *vq)
     
     pp->SetDesignator(vq->GetLabel().c_str());
 
-    float fg[3];
+    double fg[3];
     mediator.GetForegroundColor(fg);
     pp->SetForegroundColor(fg);
 
@@ -417,7 +417,7 @@ VisWinQuery::Pick(const VisualCueInfo *vq)
     // by GetCanvas routine.
     //
 
-    float shiftVec[3];
+    double shiftVec[3];
     CreateShiftVector(shiftVec, distance);
 
     if (mediator.GetFullFrameMode())
@@ -431,7 +431,7 @@ VisWinQuery::Pick(const VisualCueInfo *vq)
         shiftVec[2] /= scale;
         pp->Shift(shiftVec);
 
-        float transVec[3];
+        double transVec[3];
         CreateTranslationVector(scale, type, transVec);
         pp->Translate(transVec);
     }
@@ -577,8 +577,8 @@ VisWinQuery::Lineout(const VisualCueInfo *vq)
     // there are no z-buffer errors.  Note that canvas issues are hidden
     // by GetCanvas routine.
     //
-    float distance = 0.003;
-    float z_foc, z_pos, z_proj;
+    double distance = 0.003;
+    double z_foc, z_pos, z_proj;
     z_pos = mediator.GetCanvas()->GetActiveCamera()->GetPosition()[2];
     z_foc = mediator.GetCanvas()->GetActiveCamera()->GetFocalPoint()[2];
     z_proj = distance*(z_pos - z_foc);
@@ -593,7 +593,7 @@ VisWinQuery::Lineout(const VisualCueInfo *vq)
 
     if (mediator.GetFullFrameMode())
     {
-        float transVec[3];
+        double transVec[3];
         CreateTranslationVector(transVec);
         lo->Translate(transVec);
     }
@@ -692,8 +692,8 @@ VisWinQuery::UpdateQuery(const VisualCueInfo *vq)
             // there are no z-buffer errors.  Note that canvas issues are hidden
             // by GetCanvas routine.
             //
-            float distance = 0.003;
-            float z_foc, z_pos, z_proj;
+            double distance = 0.003;
+            double z_foc, z_pos, z_proj;
             z_pos = mediator.GetCanvas()->GetActiveCamera()->GetPosition()[2];
             z_foc = mediator.GetCanvas()->GetActiveCamera()->GetFocalPoint()[2];
             z_proj = distance*(z_pos - z_foc);
@@ -715,7 +715,7 @@ VisWinQuery::UpdateQuery(const VisualCueInfo *vq)
             it->lineActor->SetShowLabels(vq->GetShowLabel());
             if (mediator.GetFullFrameMode())
             {
-                float transVec[3];
+                double transVec[3];
                 CreateTranslationVector(transVec);
                 it->lineActor->Translate(transVec);
             }
@@ -803,7 +803,7 @@ VisWinQuery::FullFrameOn(const double scale, const int type)
 {
     if (scale > 0. && (!pickPoints.empty() || !lineOuts.empty()))
     {
-        float vec[3]; 
+        double vec[3]; 
         CreateTranslationVector(scale, type, vec);
         std::vector< PickEntry >::iterator it;
         for (it = pickPoints.begin() ; it != pickPoints.end() ; it++)
@@ -843,8 +843,8 @@ VisWinQuery::FullFrameOff()
 {
     if (!pickPoints.empty())
     {
-        float distance = CalculateShiftDistance();
-        float shiftVec[3];
+        double distance = CalculateShiftDistance();
+        double shiftVec[3];
         CreateShiftVector(shiftVec, distance);
         std::vector< PickEntry >::iterator it;
         for (it = pickPoints.begin() ; it != pickPoints.end() ; it++)
@@ -910,7 +910,7 @@ VisWinQuery::ReAddToWindow()
 // ****************************************************************************
 
 void
-VisWinQuery::CreateTranslationVector(float vec[3])
+VisWinQuery::CreateTranslationVector(double vec[3])
 {
     double scale;
     int type;
@@ -936,7 +936,7 @@ VisWinQuery::CreateTranslationVector(float vec[3])
 // ****************************************************************************
 
 void
-VisWinQuery::CreateTranslationVector(const double s, const int t, float vec[3])
+VisWinQuery::CreateTranslationVector(const double s, const int t, double vec[3])
 {
     if (t == 0) // x_axis
     {
@@ -973,11 +973,11 @@ VisWinQuery::CreateTranslationVector(const double s, const int t, float vec[3])
 // ****************************************************************************
 
 void
-VisWinQuery::CreateShiftVector(float vec[3], const float distance)
+VisWinQuery::CreateShiftVector(double vec[3], const double distance)
 {
     if (mediator.GetMode() == WINMODE_3D)
     {
-        float pos[3], foc[3];
+        double pos[3], foc[3];
         mediator.GetCanvas()->GetActiveCamera()->GetPosition(pos);
         mediator.GetCanvas()->GetActiveCamera()->GetFocalPoint(foc);
         vec[0] = distance*(pos[0] - foc[0]);
@@ -1016,10 +1016,10 @@ VisWinQuery::CreateShiftVector(float vec[3], const float distance)
 //
 // ****************************************************************************
 
-float
+double
 VisWinQuery::CalculateShiftDistance()
 {
-    float distance = 0.003;
+    double distance = 0.003;
 
     if (mediator.GetMode() == WINMODE_3D)
     {

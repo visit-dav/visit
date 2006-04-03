@@ -176,7 +176,7 @@ avtTerminatingDatasetSource::MergeExtents(vtkDataSet *ds)
 
     if (atts.GetTrueSpatialExtents()->HasExtents() == false)
     {
-        float bounds[6];
+        double bounds[6];
         if (ds->GetFieldData()->GetArray("avtOriginalBounds") != NULL)
         {
             vtkDataArray *arr = ds->GetFieldData()->GetArray("avtOriginalBounds");

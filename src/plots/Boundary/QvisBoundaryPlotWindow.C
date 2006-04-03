@@ -433,7 +433,7 @@ QvisBoundaryPlotWindow::UpdateWindow(bool doAll)
             break;
         case 10: // opacity
             overallOpacity->blockSignals(true);
-            overallOpacity->setValue(boundaryAtts->GetOpacity() * 255.);
+            overallOpacity->setValue((float)boundaryAtts->GetOpacity() * 255.f);
             overallOpacity->blockSignals(false);
             break;
         case 11: // wireframe

@@ -114,12 +114,24 @@ avtMagnitudeFilter::DeriveVariable(vtkDataSet *in_ds)
     vtkDataArray *results = vectorValues->NewInstance();
     results->SetNumberOfComponents(1);
     results->SetNumberOfTuples(ntuples);
-    
-    for (int i = 0 ; i < ntuples ; i++)
-    {
-        float *x   = vectorValues->GetTuple(i);
-        float  mag = sqrt(x[0]*x[0]+x[1]*x[1]+x[2]*x[2]);
-        results->SetTuple(i, &mag);
+
+#define COMPUTE_MAG(dtype) \
+{ \
+    dtype *x   = (dtype*)vectorValues->GetVoidPointer(0); \
+    dtype *r   = (dtype*)results->GetVoidPointer(0); \
+    for (int i = 0, idx = 0 ; i < ntuples ; i++, idx += 3) \
+    { \
+        r[i] = sqrt(x[idx+0]*x[idx+0]+x[idx+1]*x[idx+1]+x[idx+2]*x[idx+2]); \
+    } \
+} 
+
+    if (vectorValues->GetDataType() == VTK_FLOAT)
+    {    
+        COMPUTE_MAG(float);
+    }
+    else  // assuming double
+    {    
+        COMPUTE_MAG(double);
     }
 
     return results;

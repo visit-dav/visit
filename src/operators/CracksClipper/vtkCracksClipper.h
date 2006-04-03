@@ -13,10 +13,10 @@ public:
   vtkTypeMacro(AlwaysNegative, vtkImplicitFunction);
   static AlwaysNegative *New();
 
-  virtual float EvaluateFunction(float x[3])
-      { return -1.f; }
- virtual void EvaluateGradient(float x[3], float g[3]) 
-      {g[0] = g[1] = g[2] = 1.f; }; 
+  virtual double EvaluateFunction(double x[3])
+      { return -1.; }
+ virtual void EvaluateGradient(double x[3], double g[3]) 
+      {g[0] = g[1] = g[2] = 1.; }; 
 
   void SetReturnNeg(bool val) { returnNeg = val; }
 

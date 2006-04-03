@@ -223,7 +223,7 @@ void vtkRubberBandMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* act
 // ****************************************************************************
 #define STORE_POINT(P, X, Y) P.x = long((X) + borderL);  P.y = long((Y)+borderT);
 
-#define SET_FOREGROUND_F(rgba) if(validPen) DeleteObject(pen); \
+#define SET_FOREGROUND_D(rgba) if(validPen) DeleteObject(pen); \
       pen = CreatePen(PS_SOLID, 1, GetNearestColor(hdc, \
           RGB(int(255*rgba[0]),int(255*rgba[0]),int(255*rgba[0])))); \
       SelectObject(hdc, pen); \
@@ -269,8 +269,8 @@ void vtkRubberBandMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* act
     SetROP2(hdc, R2_XORPEN);
 
     // Set the line color
-    float whitergb[] = {1.,1.,1.};
-    SET_FOREGROUND_F(whitergb);
+    double whitergb[] = {1.,1.,1.};
+    SET_FOREGROUND_D(whitergb);
 #elif defined(__APPLE__)
 // ***************************************************************************
 //
@@ -280,7 +280,7 @@ void vtkRubberBandMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* act
 
 #define STORE_POINT(P, X, Y) cerr << "STORE_POINT macro for Mac." << endl;
 
-#define SET_FOREGROUND_F(rgba) \
+#define SET_FOREGROUND_D(rgba) \
     CGContextSetRGBStrokeColor(overlay->ctx, rgba[0], rgba[1], rgba[2], 1.);
 
 #define SET_FOREGROUND(rgba) \
@@ -345,8 +345,8 @@ CGContextMoveToPoint(overlay->ctx, X,H-(Y));
     }
     
     // Set the line color
-    float* actorColor = actor->GetProperty()->GetColor();
-    SET_FOREGROUND_F(actorColor);
+    double* actorColor = actor->GetProperty()->GetColor();
+    SET_FOREGROUND_D(actorColor);
 
     // Clear the window so it's ready for us to draw.
     CGRect r;
@@ -368,7 +368,7 @@ CGContextMoveToPoint(overlay->ctx, X,H-(Y));
 
 #define STORE_POINT(P, X, Y) P.x = short(X); P.y = short(Y);
 
-#define SET_FOREGROUND_F(rgba) \
+#define SET_FOREGROUND_D(rgba) \
       aColor.red = (unsigned short) (rgba[0] * 65535.0); \
       aColor.green = (unsigned short) (rgba[1] * 65535.0); \
       aColor.blue = (unsigned short) (rgba[2] * 65535.0); \
@@ -434,8 +434,8 @@ CGContextMoveToPoint(overlay->ctx, X,H-(Y));
     XGetWindowAttributes(displayId,windowId,&attr);
 
     // Set the line color
-    float* actorColor = actor->GetProperty()->GetColor();
-    SET_FOREGROUND_F(actorColor);
+    double* actorColor = actor->GetProperty()->GetColor();
+    SET_FOREGROUND_D(actorColor);
 #endif
 
     int numPts;
@@ -446,7 +446,7 @@ CGContextMoveToPoint(overlay->ctx, X,H-(Y));
     vtkCellArray *aPrim;
     vtkUnsignedCharArray *c=NULL;
     unsigned char *rgba;
-    float *ftmp;
+    double *ftmp;
     int cellScalars = 0;
     int cellNum = 0;
     int lastX, lastY, X, Y; 

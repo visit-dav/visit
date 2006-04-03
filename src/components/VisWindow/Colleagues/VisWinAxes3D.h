@@ -50,7 +50,7 @@ class VISWINDOW_API VisWinAxes3D : public VisWinColleague
                               VisWinAxes3D(VisWindowColleagueProxy &);
     virtual                  ~VisWinAxes3D();
 
-    virtual void              SetForegroundColor(float, float, float);
+    virtual void              SetForegroundColor(double, double, double);
     virtual void              UpdateView(void);
     virtual void              UpdatePlotList(std::vector<avtActor_p> &);
 
@@ -61,7 +61,7 @@ class VISWINDOW_API VisWinAxes3D : public VisWinColleague
     virtual void              NoPlots(void);
     virtual void              ReAddToWindow(void);
 
-    void                      SetBounds(float [6]);
+    void                      SetBounds(double [6]);
     void                      SetXTickVisibility(int, int);
     void                      SetYTickVisibility(int, int);
     void                      SetZTickVisibility(int, int);
@@ -91,7 +91,7 @@ class VISWINDOW_API VisWinAxes3D : public VisWinColleague
     vtkActor                 *axesBox;
 
     bool                      addedAxes3D;
-    float                     currentBounds[6];
+    double                     currentBounds[6];
     bool                      visibility;
 
     std::string               userXTitle;

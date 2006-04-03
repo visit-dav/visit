@@ -49,7 +49,7 @@ protected:
 private slots:
     void imageSourceChanged(const QString &);
     void imageSourceEdit(); 
-    void positionStartChanged(float, float);
+    void positionStartChanged(double, double);
     void widthChanged(int);
     void heightChanged(int);
     void maintainAspectRatio(bool);

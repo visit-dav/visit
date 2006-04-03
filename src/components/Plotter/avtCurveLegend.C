@@ -72,7 +72,7 @@ avtCurveLegend::~avtCurveLegend()
 // ****************************************************************************
 
 void
-avtCurveLegend::ChangePosition(float x, float y)
+avtCurveLegend::ChangePosition(double x, double y)
 {
     lineLegend->GetPositionCoordinate()->SetCoordinateSystemToNormalizedViewport();
     lineLegend->GetPositionCoordinate()->SetValue(x, y, 0.);
@@ -123,7 +123,7 @@ avtCurveLegend::ChangeTitle(const char *t)
 // ****************************************************************************
 
 void
-avtCurveLegend::ChangeFontHeight(float fh)
+avtCurveLegend::ChangeFontHeight(double fh)
 {
     lineLegend->SetFontHeight(fh);
 }
@@ -190,11 +190,11 @@ avtCurveLegend::SetLineStyle(_LineStyle ls)
 // ****************************************************************************
 
 void                  
-avtCurveLegend::SetColor(const float col[3])
+avtCurveLegend::SetColor(const double col[3])
 {
-    float r = col[0];
-    float g = col[1];
-    float b = col[2];
+    double r = col[0];
+    double g = col[1];
+    double b = col[2];
     lineLegend->GetLineProperty()->SetColor(r, g, b);
 }
 
@@ -215,7 +215,7 @@ avtCurveLegend::SetColor(const float col[3])
 // ****************************************************************************
 
 void                  
-avtCurveLegend::SetColor(float r, float g, float b)
+avtCurveLegend::SetColor(double r, double g, double b)
 {
     lineLegend->GetLineProperty()->SetColor(r, g, b);
 }

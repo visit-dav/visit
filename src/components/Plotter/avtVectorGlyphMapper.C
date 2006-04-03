@@ -459,7 +459,7 @@ avtVectorGlyphMapper::SetLineStyle(_LineStyle ls)
 // ****************************************************************************
 
 void
-avtVectorGlyphMapper::SetScale(float s)
+avtVectorGlyphMapper::SetScale(double s)
 {
     scale = s;
 
@@ -702,9 +702,9 @@ avtVectorGlyphMapper::ColorByMagOff(const unsigned char col[3])
             {
                 mappers[i]->ScalarVisibilityOff();
                 vtkProperty *prop = actors[i]->GetProperty();
-                float r = ((float) glyphColor[0]) / 255.;
-                float g = ((float) glyphColor[1]) / 255.;
-                float b = ((float) glyphColor[2]) / 255.;
+                double r = ((double) glyphColor[0]) / 255.;
+                double g = ((double) glyphColor[1]) / 255.;
+                double b = ((double) glyphColor[2]) / 255.;
                 prop->SetColor(r, g, b);
             }
         }
@@ -774,7 +774,7 @@ avtVectorGlyphMapper::SetLookupTable(vtkLookupTable *LUT)
 // ****************************************************************************
 
 void
-avtVectorGlyphMapper::SetMin(float minArg)
+avtVectorGlyphMapper::SetMin(double minArg)
 {
     if (setMin == true && min == minArg)
     {
@@ -827,7 +827,7 @@ avtVectorGlyphMapper::SetMinOff(void)
 // ****************************************************************************
 
 void
-avtVectorGlyphMapper::SetMax(float maxArg)
+avtVectorGlyphMapper::SetMax(double maxArg)
 {
     if (setMax == true && max == maxArg)
     {
@@ -890,8 +890,8 @@ avtVectorGlyphMapper::SetMappersMinMax(void)
         return;
     }
 
-    float mmin = 0.;
-    float mmax = 0.;
+    double mmin = 0.;
+    double mmax = 0.;
 
     if (limitsMode == 1 ) // use current plot extents
     {
@@ -932,7 +932,7 @@ avtVectorGlyphMapper::SetMappersMinMax(void)
 // ****************************************************************************
 
 bool
-avtVectorGlyphMapper::GetRange(float &rmin, float &rmax)
+avtVectorGlyphMapper::GetRange(double &rmin, double &rmax)
 {
     if (mappers == NULL)
     {
@@ -944,7 +944,7 @@ avtVectorGlyphMapper::GetRange(float &rmin, float &rmax)
         return false;
     }
 
-    float de[2];
+    double de[2];
     bool gotExtents = avtMapper::GetRange(de[0], de[1]);
 
     rmin = (setMin ? min : de[0]);
@@ -972,7 +972,7 @@ avtVectorGlyphMapper::GetRange(float &rmin, float &rmax)
 // ****************************************************************************
 
 bool
-avtVectorGlyphMapper::GetCurrentRange(float &rmin, float &rmax)
+avtVectorGlyphMapper::GetCurrentRange(double &rmin, double &rmax)
 {
     if (mappers == NULL)
     {
@@ -984,7 +984,7 @@ avtVectorGlyphMapper::GetCurrentRange(float &rmin, float &rmax)
         return false;
     }
 
-    float de[2];
+    double de[2];
     bool rv = avtMapper::GetCurrentRange(de[0], de[1]);
 
     rmin = (setMin ? min : de[0]);
@@ -1044,7 +1044,7 @@ avtVectorGlyphMapper::SetLimitsMode(const int lm)
 // ****************************************************************************
 
 bool
-avtVectorGlyphMapper::GetVarRange(float &rmin, float &rmax)
+avtVectorGlyphMapper::GetVarRange(double &rmin, double &rmax)
 {
     if (mappers == NULL)
     {

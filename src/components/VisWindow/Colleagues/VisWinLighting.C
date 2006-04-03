@@ -169,7 +169,7 @@ VisWinLighting::UpdateVTKLights()
 {
     numLightsEnabled = 0;
     int i, firstNonAmbient = -1, ambientCount = 0;
-    float ambientColor[3] = { 0., 0., 0.};
+    double ambientColor[3] = { 0., 0., 0.};
     avtLight aLight;
 
     vtkRenderer *canvas = mediator.GetCanvas();
@@ -182,9 +182,9 @@ VisWinLighting::UpdateVTKLights()
     for (i = 0; i < MAX_LIGHTS ; i++)
     {
         aLight = avtlights.Light(i);
-        lights[i]->SetColor((float) aLight.color[0],
-                            (float) aLight.color[1],
-                            (float) aLight.color[2]);
+        lights[i]->SetColor((double) aLight.color[0],
+                            (double) aLight.color[1],
+                            (double) aLight.color[2]);
         lights[i]->SetIntensity(aLight.brightness);
         lights[i]->SetFocalPoint(canvas->GetActiveCamera()->GetFocalPoint());
 
@@ -258,7 +258,7 @@ VisWinLighting::UpdateVTKLights()
         // Using an averaged ambientCoefficent for multiple ambient
         // lights yields a more pleasing visual result.
         //
-        ambientCoefficient /= (float) ambientCount;
+        ambientCoefficient /= (double) ambientCount;
         canvas->SetAmbient(ambientColor);
     }
     else
@@ -293,7 +293,7 @@ VisWinLighting::UpdateVTKLights()
 //
 // ****************************************************************************
 
-float
+double
 VisWinLighting::GetAmbientCoefficient()
 {
     return ambientCoefficient;
@@ -380,7 +380,7 @@ VisWinLighting::UpdateLightPositions()
         //  Get the camera's distance from the focal point.
         //
         vtkCamera *cam = mediator.GetCanvas()->GetActiveCamera();
-        float cpos[3], cfoc[3], proj[3], projLen = 0.;
+        double cpos[3], cfoc[3], proj[3], projLen = 0.;
 
         cam->GetPosition(cpos);
         cam->GetFocalPoint(cfoc);
@@ -402,7 +402,7 @@ VisWinLighting::UpdateLightPositions()
         //  so that vtk passes a unit vector for the light direction
         //  along the (inverse) direction vector to OpenGL.
         //
-        float pos[3];
+        double pos[3];
         avtLight aLight;
         for (i = 0; i < MAX_LIGHTS ; i++)
         {

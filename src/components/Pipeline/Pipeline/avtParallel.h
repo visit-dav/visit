@@ -50,6 +50,7 @@ PIPELINE_API int     GetUniqueStaticMessageTag();
 
 PIPELINE_API void    GetAttToRootProc(AttributeGroup &, int);
 PIPELINE_API void    GetFloatArrayToRootProc(float *, int, bool &);
+PIPELINE_API void    GetDoubleArrayToRootProc(double *, int, bool &);
 
 #endif
 

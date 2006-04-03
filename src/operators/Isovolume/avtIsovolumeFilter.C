@@ -409,8 +409,8 @@ avtIsovolumeFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
     avtIntervalTree *it = GetMetaData()->GetDataExtents(iso_var.c_str());
     if (it != NULL)
     {
-        float min = atts.GetLbound();
-        float max = atts.GetUbound();
+        double min = atts.GetLbound();
+        double max = atts.GetUbound();
         vector<int> dl;
         it->GetDomainsListFromRange(&min, &max, dl);
         spec->GetDataSpecification()->GetRestriction()->RestrictDomains(dl);

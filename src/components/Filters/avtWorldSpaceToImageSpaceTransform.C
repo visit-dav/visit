@@ -498,7 +498,7 @@ avtWorldSpaceToImageSpaceTransform::GetDomainsList(const avtViewInfo &view,
     int nDomains = tree->GetNLeaves();
     for (int i = 0 ; i < nDomains ; i++)
     {
-        float  extents[6];
+        double  extents[6];
         int    domain = tree->GetLeafExtents(i, extents);
         float  outpt[8][3];
         for (int j = 0 ; j < 8 ; j++)

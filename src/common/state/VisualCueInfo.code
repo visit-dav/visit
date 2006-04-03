@@ -66,7 +66,7 @@ VisualCueInfo::SetFromP(const PickAttributes *pa)
         return;
 
     SetCueType(PickPoint);
-    SetPointF(0,pa->GetPickPoint());
+    SetPointD(0,pa->GetPickPoint());
     SetLabel(pa->GetPickLetter());
     if ((pa->GetPickType() != PickAttributes::Zone) &&
         (pa->GetPickType() != PickAttributes::DomainZone))

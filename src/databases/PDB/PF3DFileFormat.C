@@ -1153,13 +1153,13 @@ PF3DFileFormat::GetAuxiliaryData(const char *var, int dom,
 
         if(minvals != 0 && maxvals != 0)
         {
-            float range[2];
+            double range[2];
             itree = new avtIntervalTree(GetNDomains(), 1);
             for(int dom = 0; dom < GetNDomains(); ++dom)
             {
                 int realDomain = GetRealDomainIndex(dom);
-                range[0] = float(minvals[realDomain]);
-                range[1] = float(maxvals[realDomain]);
+                range[0] = minvals[realDomain];
+                range[1] = maxvals[realDomain];
                 itree->AddDomain(dom, range);
             }
             itree->Calculate(true);
@@ -1173,7 +1173,7 @@ PF3DFileFormat::GetAuxiliaryData(const char *var, int dom,
         itree = new avtIntervalTree(GetNDomains(), 3);
         for(int dom = 0 ; dom < GetNDomains(); ++dom)
         {
-            float extents[6];
+            double extents[6];
             GetExtents(dom, extents);
             itree->AddDomain(dom, extents);
         }
@@ -1297,7 +1297,7 @@ PF3DFileFormat::GetLogicalExtents(int dom, int *globalorigin, int *size)
 // ****************************************************************************
 
 void
-PF3DFileFormat::GetExtents(int dom, float *extents)
+PF3DFileFormat::GetExtents(int dom, double *extents)
 {
 #if 0
     // Use the extents stored in the master's xyzloc array. Note that
@@ -1341,31 +1341,31 @@ PF3DFileFormat::GetExtents(int dom, float *extents)
            << size[1] << ", " << size[2] << ")\n";
 
     // Length of each side of the domain.
-    float domainEdgeLengthX = double(size[0]) * cellx;
-    float domainEdgeLengthY = double(size[1]) * celly;
-    float domainEdgeLengthZ = double(size[2]) * cellz;
+    double domainEdgeLengthX = double(size[0]) * cellx;
+    double domainEdgeLengthY = double(size[1]) * celly;
+    double domainEdgeLengthZ = double(size[2]) * cellz;
 
-    float Tx = float(globalorigin[0] - 1) / float(NX);
+    double Tx = double(globalorigin[0] - 1) / double(NX);
 
-//debug4 << "float Tx = float(domloc[0] - 1) / float(NX - 1);" << endl
-//       << "float Tx = float("<<domloc[0]<<" - 1) / float(" << NX << " - 1);\n"
-//       << "float Tx = " << Tx << endl;
+//debug4 << "double Tx = double(domloc[0] - 1) / double(NX - 1);" << endl
+//       << "double Tx = double("<<domloc[0]<<" - 1) / double(" << NX << " - 1);\n"
+//       << "double Tx = " << Tx << endl;
 
-    float Ty = float(globalorigin[1] - 1) / float(NY);
+    double Ty = double(globalorigin[1] - 1) / double(NY);
 
-//debug4 << "float Ty = float(domloc[2] - 1) / float(NY - 1);" << endl
-//       << "float Ty = float("<<domloc[2]<<" - 1) / float(" << NY << " - 1);\n"
-//       << "float Ty = " << Ty << endl;
+//debug4 << "double Ty = double(domloc[2] - 1) / double(NY - 1);" << endl
+//       << "double Ty = double("<<domloc[2]<<" - 1) / double(" << NY << " - 1);\n"
+//       << "double Ty = " << Ty << endl;
 
-    float Tz = float(globalorigin[2] - 1) / float(NZ);
-//debug4 << "float Tz = float(domloc[4] - 1) / float(NZ - 1);" << endl
-//       << "float Tz = float("<<domloc[4]<<" - 1) / float(" << NZ << " - 1);\n"
-//       << "float Tz = " << Tz << endl;
+    double Tz = double(globalorigin[2] - 1) / double(NZ);
+//debug4 << "double Tz = double(domloc[4] - 1) / double(NZ - 1);" << endl
+//       << "double Tz = double("<<domloc[4]<<" - 1) / double(" << NZ << " - 1);\n"
+//       << "double Tz = " << Tz << endl;
 
     // Origin of the domain.
-    float domainOriginX = Tx * (lenx / 2.) + (1. - Tx) * (-lenx / 2.);
-    float domainOriginY = Ty * (leny / 2.) + (1. - Ty) * (-leny / 2.);
-    float domainOriginZ = Tz * lenz;
+    double domainOriginX = Tx * (lenx / 2.) + (1. - Tx) * (-lenx / 2.);
+    double domainOriginY = Ty * (leny / 2.) + (1. - Ty) * (-leny / 2.);
+    double domainOriginZ = Tz * lenz;
 
     extents[0] = domainOriginX;
     extents[1] = extents[0] + domainEdgeLengthX;
@@ -1401,7 +1401,7 @@ PF3DFileFormat::GetMesh(int dom, const char *meshName)
     //
     // Calculate the extents of the domain.
     //
-    float extents[6];
+    double extents[6];
     GetExtents(dom, extents);
 
     //

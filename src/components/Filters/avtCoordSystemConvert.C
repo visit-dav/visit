@@ -215,15 +215,7 @@ avtCoordSystemConvert::TransformExtents(double *extents)
     rgrid->SetZCoordinates(z);
 
     vtkDataSet *rv = ExecuteData(rgrid, -1, "");
-    float new_extents[6];
-    rv->GetBounds(new_extents);
-
-    extents[0] = new_extents[0];
-    extents[1] = new_extents[1];
-    extents[2] = new_extents[2];
-    extents[3] = new_extents[3];
-    extents[4] = new_extents[4];
-    extents[5] = new_extents[5];
+    rv->GetBounds(extents);
 
     x->Delete();
     y->Delete();
@@ -311,9 +303,9 @@ SphericalToCartesian(vtkDataSet *in_ds, bool in2D)
     newPts->SetNumberOfPoints(npts);
     for (int i = 0 ; i < npts ; i++)
     {
-        float pt[3];
+        double pt[3];
         pts->GetPoint(i, pt);
-        float newpt[3];
+        double newpt[3];
         if (in2D)
         {
             newpt[0] = pt[0]*cos(pt[1]);
@@ -368,9 +360,9 @@ CylindricalToSpherical(vtkDataSet *in_ds, bool in2D)
     newPts->SetNumberOfPoints(npts);
     for (int i = 0 ; i < npts ; i++)
     {
-        float pt[3];
+        double pt[3];
         pts->GetPoint(i, pt);
-        float newpt[3];
+        double newpt[3];
         newpt[1] = pt[1];
         newpt[2] = atan2(pt[0], pt[2]);
         if (newpt[2] < 0.)
@@ -420,9 +412,9 @@ CartesianToCylindrical(vtkDataSet *in_ds, bool in2D)
     newPts->SetNumberOfPoints(npts);
     for (int i = 0 ; i < npts ; i++)
     {
-        float pt[3];
+        double pt[3];
         pts->GetPoint(i, pt);
-        float newpt[3];
+        double newpt[3];
         newpt[1] = atan2(pt[1], pt[0]);
         if (newpt[1] < 0.)
             newpt[1] = 2*vtkMath::Pi() + newpt[0];
@@ -478,7 +470,7 @@ FixWraparounds(vtkDataSet *in_ds, int comp_idx)
    
     for (i = 0 ; i < npts ; i++)
     {
-        float pt[3];
+        double pt[3];
         pts->GetPoint(i, pt);
         new_pts->SetPoint(2*i, pt);
         if (pt[comp_idx] > vtkMath::Pi())
@@ -510,7 +502,7 @@ FixWraparounds(vtkDataSet *in_ds, int comp_idx)
         bool closeToLow[8];
         for (j = 0 ; j < cellNPts ; j++)
         {
-            float pt[3];
+            double pt[3];
             pts->GetPoint(ids[j], pt);
             if (pt[comp_idx] > twoPiCutoff)
                 closeToTwoPi = true;

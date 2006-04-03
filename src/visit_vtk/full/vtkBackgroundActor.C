@@ -155,7 +155,7 @@ vtkBackgroundActor::CreateBackground()
         pts->Delete(); polys->Delete(); colors->Delete(); 
 
         // Add points to the vertex list.
-        float coord[3];
+        double coord[3];
         coord[2] = 0.0;
         coord[0] = this->GradientCoords[0];
         coord[1] = this->GradientCoords[1];
@@ -180,21 +180,21 @@ vtkBackgroundActor::CreateBackground()
 
         // Write the colors into the array directly
         unsigned char *rgb = colors->GetPointer(0);
-        rgb[0] = (unsigned char)(this->GradientColors[0][0] * 255.);
-        rgb[1] = (unsigned char)(this->GradientColors[0][1] * 255.);
-        rgb[2] = (unsigned char)(this->GradientColors[0][2] * 255.);
+        rgb[0] = (unsigned char)((float)this->GradientColors[0][0] * 255.f);
+        rgb[1] = (unsigned char)((float)this->GradientColors[0][1] * 255.f);
+        rgb[2] = (unsigned char)((float)this->GradientColors[0][2] * 255.f);
         rgb = colors->GetPointer(3);
-        rgb[0] = (unsigned char)(this->GradientColors[1][0] * 255.);
-        rgb[1] = (unsigned char)(this->GradientColors[1][1] * 255.);
-        rgb[2] = (unsigned char)(this->GradientColors[1][2] * 255.);
+        rgb[0] = (unsigned char)((float)this->GradientColors[1][0] * 255.f);
+        rgb[1] = (unsigned char)((float)this->GradientColors[1][1] * 255.f);
+        rgb[2] = (unsigned char)((float)this->GradientColors[1][2] * 255.f);
         rgb = colors->GetPointer(6);
-        rgb[0] = (unsigned char)(this->GradientColors[2][0] * 255.);
-        rgb[1] = (unsigned char)(this->GradientColors[2][1] * 255.);
-        rgb[2] = (unsigned char)(this->GradientColors[2][2] * 255.);
+        rgb[0] = (unsigned char)((float)this->GradientColors[2][0] * 255.f);
+        rgb[1] = (unsigned char)((float)this->GradientColors[2][1] * 255.f);
+        rgb[2] = (unsigned char)((float)this->GradientColors[2][2] * 255.f);
         rgb = colors->GetPointer(9);
-        rgb[0] = (unsigned char)(this->GradientColors[3][0] * 255.);
-        rgb[1] = (unsigned char)(this->GradientColors[3][1] * 255.);
-        rgb[2] = (unsigned char)(this->GradientColors[3][2] * 255.);
+        rgb[0] = (unsigned char)((float)this->GradientColors[3][0] * 255.f);
+        rgb[1] = (unsigned char)((float)this->GradientColors[3][1] * 255.f);
+        rgb[2] = (unsigned char)((float)this->GradientColors[3][2] * 255.f);
     }
     else
     {
@@ -214,38 +214,38 @@ vtkBackgroundActor::CreateBackground()
         this->GradientData->GetPointData()->SetScalars(colors);
         pts->Delete(); polys->Delete(); colors->Delete(); 
 
-        float CenterX = (this->GradientCoords[0] + this->GradientCoords[2]) * 0.5;
-        float CenterY = (this->GradientCoords[1] + this->GradientCoords[3]) * 0.5;
-        float dX = CenterX - this->GradientCoords[0];
-        float dY = CenterY - this->GradientCoords[1];
-        float Radius = sqrt(dX*dX + dY*dY) * 1.02;
-        float dTheta = 2 * 3.14159 / float(this->NumRadialSteps);
+        double CenterX = (this->GradientCoords[0] + this->GradientCoords[2]) * 0.5;
+        double CenterY = (this->GradientCoords[1] + this->GradientCoords[3]) * 0.5;
+        double dX = CenterX - this->GradientCoords[0];
+        double dY = CenterY - this->GradientCoords[1];
+        double Radius = sqrt(dX*dX + dY*dY) * 1.02;
+        double dTheta = 2 * 3.14159 / double(this->NumRadialSteps);
 
         // Add the first point and its color.
-        float coord[3];
+        double coord[3];
         coord[2] = 0.0;
         coord[0] = CenterX;
         coord[1] = CenterY;
         pts->SetPoint(0, coord);
         unsigned char *rgb = colors->GetPointer(0);
-        rgb[0] = (unsigned char)(this->GradientColors[0][0] * 255.);
-        rgb[1] = (unsigned char)(this->GradientColors[0][1] * 255.);
-        rgb[2] = (unsigned char)(this->GradientColors[0][2] * 255.);
+        rgb[0] = (unsigned char)((float)this->GradientColors[0][0] * 255.f);
+        rgb[1] = (unsigned char)((float)this->GradientColors[0][1] * 255.f);
+        rgb[2] = (unsigned char)((float)this->GradientColors[0][2] * 255.f);
 
         // Add the radial cells to the polydata.
         int ptIndex = 1;
         for(int ring = 0; ring < this->NumRings; ++ring)
         {
-            float t = (float(ring + 1) / float(this->NumRings));
-            float RingRadius = Radius * t;
-            float theta = 0.;
+            double t = (double(ring + 1) / double(this->NumRings));
+            double RingRadius = Radius * t;
+            double theta = 0.;
 
             // Figure the color for the points at this level of the ring.
-            float cR = (1 - t) * this->GradientColors[0][0] +
+            double cR = (1 - t) * this->GradientColors[0][0] +
                        t * this->GradientColors[1][0];
-            float cG = (1 - t) * this->GradientColors[0][1] +
+            double cG = (1 - t) * this->GradientColors[0][1] +
                        t * this->GradientColors[1][1];
-            float cB = (1 - t) * this->GradientColors[0][2] +
+            double cB = (1 - t) * this->GradientColors[0][2] +
                        t * this->GradientColors[1][2];
 
             for(int i = 0; i < this->NumRadialSteps; ++i, theta += dTheta)
@@ -257,9 +257,9 @@ vtkBackgroundActor::CreateBackground()
 
                 // Add the color.
                 rgb = colors->GetPointer(ptIndex * 3);
-                rgb[0] = (unsigned char)(cR * 255.);
-                rgb[1] = (unsigned char)(cG * 255.);
-                rgb[2] = (unsigned char)(cB * 255.);
+                rgb[0] = (unsigned char)((float)cR * 255.f);
+                rgb[1] = (unsigned char)((float)cG * 255.f);
+                rgb[2] = (unsigned char)((float)cB * 255.f);
                 ++ptIndex;
 
                 // Add the cell to the polydata.
@@ -297,7 +297,7 @@ vtkBackgroundActor::CreateBackground()
 int vtkBackgroundActor::RenderOverlay(vtkViewport *viewport)
 {
     // Get the normalized device coordinates in device coordinates.
-    float newPts[4];
+    double newPts[4];
     newPts[0] = 0.;
     newPts[1] = 0.;
     newPts[2] = 1.;
@@ -342,7 +342,7 @@ int vtkBackgroundActor::RenderOpaqueGeometry(vtkViewport *viewport)
     return 0;
 }
 
-void vtkBackgroundActor::SetColors(const float colors[4][3])
+void vtkBackgroundActor::SetColors(const double colors[4][3])
 {
     this->GradientColors[0][0] = colors[0][0];
     this->GradientColors[0][1] = colors[0][1];
@@ -362,7 +362,7 @@ void vtkBackgroundActor::SetColors(const float colors[4][3])
     this->Modified();
 }
 
-void vtkBackgroundActor::SetColor(int id, const float color[3])
+void vtkBackgroundActor::SetColor(int id, const double color[3])
 {
     if(id < 0 || id > 3)
         return;

@@ -2,29 +2,28 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItDataReader.h,v $
-  Language:  C++
-  Date:      $Date: 2002/12/26 18:18:50 $
-  Version:   $Revision: 1.73 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-// .NAME vtkVisItDataReader - helper superclass for objects that read vtk data files
+// .NAME vtkVisItDataReader - helper superclass for objects that read vtk 
+// data files
 // .SECTION Description
-// vtkVisItDataReader is a helper superclass that reads the vtk data file header,
-// dataset type, and attribute data (point and cell attributes such as
+// vtkVisItDataReader is a helper superclass that reads the vtk data file 
+// header, dataset type, and attribute data (point and cell attributes such as
 // scalars, vectors, normals, etc.) from a vtk data file.  See text for
 // the format of the various vtk file types.
 //
 // .SECTION See Also
-// vtkVisItPolyDataReader vtkVisItStructuredPointsReader vtkVisItStructuredGridReader
-// vtkUnsutructuredGridReader vtkVisItRectilinearGridReader
+// vtkVisItPolyDataReader vtkVisItStructuredPointsReader 
+// vtkVisItStructuredGridReader vtkVisItUnsutructuredGridReader 
+// vtkVisItRectilinearGridReader
 
 #ifndef __vtkVisItDataReader_h
 #define __vtkVisItDataReader_h
@@ -179,6 +178,48 @@ public:
   vtkGetStringMacro(FieldDataName);
 
   // Description:
+  // Enable reading all scalars. 
+  vtkSetMacro(ReadAllScalars,int);
+  vtkGetMacro(ReadAllScalars,int);
+  vtkBooleanMacro(ReadAllScalars,int);
+
+  // Description:
+  // Enable reading all vectors. 
+  vtkSetMacro(ReadAllVectors,int);
+  vtkGetMacro(ReadAllVectors,int);
+  vtkBooleanMacro(ReadAllVectors,int);
+
+  // Description:
+  // Enable reading all normals. 
+  vtkSetMacro(ReadAllNormals,int);
+  vtkGetMacro(ReadAllNormals,int);
+  vtkBooleanMacro(ReadAllNormals,int);
+
+  // Description:
+  // Enable reading all tensors. 
+  vtkSetMacro(ReadAllTensors,int);
+  vtkGetMacro(ReadAllTensors,int);
+  vtkBooleanMacro(ReadAllTensors,int);
+
+  // Description:
+  // Enable reading all color scalars. 
+  vtkSetMacro(ReadAllColorScalars,int);
+  vtkGetMacro(ReadAllColorScalars,int);
+  vtkBooleanMacro(ReadAllColorScalars,int);
+
+  // Description:
+  // Enable reading all tcoords. 
+  vtkSetMacro(ReadAllTCoords,int);
+  vtkGetMacro(ReadAllTCoords,int);
+  vtkBooleanMacro(ReadAllTCoords,int);
+
+  // Description:
+  // Enable reading all fields. 
+  vtkSetMacro(ReadAllFields,int);
+  vtkGetMacro(ReadAllFields,int);
+  vtkBooleanMacro(ReadAllFields,int);
+
+  // Description:
   // Open a vtk data file. Returns zero if error.
   int OpenVTKFile();
 
@@ -258,18 +299,6 @@ public:
   istream *GetIStream() {return this->IS;};
 //ETX
 
-  vtkSetMacro(ReadAllScalars,int);
-  vtkGetMacro(ReadAllScalars,int);
-  vtkBooleanMacro(ReadAllScalars,int);
-
-  vtkSetMacro(ReadAllVectors,int);
-  vtkGetMacro(ReadAllVectors,int);
-  vtkBooleanMacro(ReadAllVectors,int);
-
-  vtkSetMacro(ReadAllTensors,int);
-  vtkGetMacro(ReadAllTensors,int);
-  vtkBooleanMacro(ReadAllTensors,int);
-
 protected:
   vtkVisItDataReader();
   ~vtkVisItDataReader();
@@ -327,6 +356,14 @@ protected:
   char **FieldDataNameInFile;
   int FieldDataNameAllocSize;
   vtkTimeStamp CharacteristicsTime;
+ 
+  int ReadAllScalars;
+  int ReadAllVectors;
+  int ReadAllNormals;
+  int ReadAllTensors;
+  int ReadAllColorScalars;
+  int ReadAllTCoords;
+  int ReadAllFields;
 
   void InitializeCharacteristics();
   int CharacterizeFile(); //read entire file, storing important characteristics
@@ -339,11 +376,6 @@ protected:
   // Decode the name of array. This method is the inverse of 
   // vtkWriter::EncodeName.
   void DecodeArrayName(char *resname, const char* name);
-
-
-  int ReadAllScalars;
-  int ReadAllVectors;
-  int ReadAllTensors;
 
 private:
   vtkVisItDataReader(const vtkVisItDataReader&);  // Not implemented.

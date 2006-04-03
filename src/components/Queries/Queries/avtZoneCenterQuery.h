@@ -41,8 +41,8 @@ class QUERY_API avtZoneCenterQuery : public avtDatasetQuery
 
     virtual void             Execute(vtkDataSet*, const int){;};
 
-    bool                     FindGlobalCenter(float coord[3]);
-    bool                     FindLocalCenter(float coord[3]);
+    bool                     FindGlobalCenter(double coord[3]);
+    bool                     FindLocalCenter(double coord[3]);
 };
 
 #endif

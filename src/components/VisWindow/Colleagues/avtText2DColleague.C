@@ -52,16 +52,16 @@ avtText2DColleague::avtText2DColleague(VisWindowColleagueProxy &m)
     textActor->SetHeight(0.1);
 
     // Make sure that the actor initially has the right fg color.
-    float fgColor[3];
+    double fgColor[3];
     mediator.GetForegroundColor(fgColor);
     SetForegroundColor(fgColor[0], fgColor[1], fgColor[2]);
     textActor->GetTextProperty()->SetOpacity(1.);
 
     // Store the foreground color into the text color.
     int ifgColor[3];
-    ifgColor[0] = int(fgColor[0] * 255.f);
-    ifgColor[1] = int(fgColor[1] * 255.f);
-    ifgColor[2] = int(fgColor[2] * 255.f);
+    ifgColor[0] = int((float)fgColor[0] * 255.f);
+    ifgColor[1] = int((float)fgColor[1] * 255.f);
+    ifgColor[2] = int((float)fgColor[2] * 255.f);
     textColor = ColorAttribute(ifgColor[0], ifgColor[1], ifgColor[2], 255);
 }
 
@@ -227,23 +227,23 @@ avtText2DColleague::SetOptions(const AnnotationObject &annot)
         useForegroundForTextColor = annot.GetUseForegroundForTextColor();
 
         // Compute the text opacity.
-        float tc[4];
-        tc[3] = float(textColor.Alpha()) / 255.f;
+        double tc[4];
+        tc[3] = double(textColor.Alpha()) / 255.;
 
         // Set the text color using the foreground color or the text color.
         if(useForegroundForTextColor)
         {
             // Get the foreground color.
-            float fgColor[3];
+            double fgColor[3];
             mediator.GetForegroundColor(fgColor);
             textActor->GetTextProperty()->SetColor(fgColor[0], fgColor[1], fgColor[2]);
         }
         else
         {
-            // Compute the text color as floats.
-            tc[0] = float(textColor.Red()) / 255.f;
-            tc[1] = float(textColor.Green()) / 255.f;
-            tc[2] = float(textColor.Blue()) / 255.f;
+            // Compute the text color as double.
+            tc[0] = double(textColor.Red()) / 255.;
+            tc[1] = double(textColor.Green()) / 255.;
+            tc[2] = double(textColor.Blue()) / 255.;
             textActor->GetTextProperty()->SetColor(tc[0], tc[1], tc[2]);
         }
 
@@ -294,8 +294,8 @@ avtText2DColleague::SetOptions(const AnnotationObject &annot)
     if(!currentOptions.FieldsEqual(3, &annot) ||
        !currentOptions.FieldsEqual(4, &annot) || textChanged)
     {
-        const float *p1 = annot.GetPosition();
-        const float *p2 = annot.GetPosition2();
+        const double *p1 = annot.GetPosition();
+        const double *p2 = annot.GetPosition2();
         vtkCoordinate *pos = textActor->GetPositionCoordinate();
         pos->SetCoordinateSystemToNormalizedViewport();
         pos->SetValue(p1[0], p1[1], 0.);
@@ -342,7 +342,7 @@ avtText2DColleague::GetOptions(AnnotationObject &annot)
 
     annot.SetPosition(textActor->GetPosition());
     // Store the width and height in position2.
-    float p2wh[3];
+    double p2wh[3];
     p2wh[0] = textActor->GetWidth();
     p2wh[1] = textActor->GetHeight();
     p2wh[2] = 0.f;
@@ -390,7 +390,7 @@ avtText2DColleague::GetOptions(AnnotationObject &annot)
 // ****************************************************************************
 
 void
-avtText2DColleague::SetForegroundColor(float r, float g, float b)
+avtText2DColleague::SetForegroundColor(double r, double g, double b)
 {
     if(useForegroundForTextColor)
         textActor->GetTextProperty()->SetColor(r, g, b);

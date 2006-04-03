@@ -394,10 +394,10 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
 void
 avtMeshPlot::SetMeshColor(const unsigned char *col)
 {
-    float rgb[3];
-    rgb[0] = (float) col[0] / 255.0;
-    rgb[1] = (float) col[1] / 255.0;
-    rgb[2] = (float) col[2] / 255.0;
+    double rgb[3];
+    rgb[0] = (double) col[0] / 255.0;
+    rgb[1] = (double) col[1] / 255.0;
+    rgb[2] = (double) col[2] / 255.0;
     property->SetEdgeColor(rgb);
  
     if (wireframeRenderingIsInappropriate)
@@ -426,10 +426,10 @@ avtMeshPlot::SetMeshColor(const unsigned char *col)
 void
 avtMeshPlot::SetMeshColor(const double *col)
 {
-    float rgb[3];
-    rgb[0] = (float) col[0]; 
-    rgb[1] = (float) col[1];
-    rgb[2] = (float) col[2];
+    double rgb[3];
+    rgb[0] = col[0]; 
+    rgb[1] = col[1];
+    rgb[2] = col[2];
     property->SetEdgeColor(rgb);
  
     if (wireframeRenderingIsInappropriate)
@@ -463,10 +463,10 @@ avtMeshPlot::SetOpaqueColor(const unsigned char *col, bool force)
 {
     if (!wireframeRenderingIsInappropriate || force)
     {
-        float rgb[3];
-        rgb[0] = (float) col[0] / 255.0;
-        rgb[1] = (float) col[1] / 255.0;
-        rgb[2] = (float) col[2] / 255.0;
+        double rgb[3];
+        rgb[0] = (double) col[0] / 255.0;
+        rgb[1] = (double) col[1] / 255.0;
+        rgb[2] = (double) col[2] / 255.0;
         property->SetColor(rgb);
     }
 }
@@ -491,7 +491,7 @@ avtMeshPlot::SetOpaqueColor(const double *col, bool force)
 {
     if (!wireframeRenderingIsInappropriate || force)
     {
-        float rgb[3];
+        double rgb[3];
         rgb[0] = col[0];
         rgb[1] = col[1];
         rgb[2] = col[2];

@@ -38,7 +38,7 @@ All rights reserve
 // the axes to be set partially away from the actual bounding box to perhaps
 // prevent overlap of labels between the various axes.
 //
-// The Bounds instance variable (an array of six floats) is used to determine
+// The Bounds instance variable (an array of six doubles) is used to determine
 // the bounding box.
 // 
 // .SECTION See Also
@@ -82,11 +82,11 @@ public:
   // The bounds is used only when no Input or Prop is specified. The bounds
   // are specified according to (xmin,xmax, ymin,ymax, zmin,zmax), making
   // sure that the min's are less than the max's.
-  vtkSetVector6Macro(Bounds,float);
-  float *GetBounds();
-  void GetBounds(float& xmin, float& xmax, float& ymin, float& ymax, 
-                 float& zmin, float& zmax);
-  void GetBounds(float bounds[6]);
+  vtkSetVector6Macro(Bounds,double);
+  double *GetBounds();
+  void GetBounds(double& xmin, double& xmax, double& ymin, double& ymax, 
+                 double& zmin, double& zmax);
+  void GetBounds(double bounds[6]);
 
   // Description:
   // Set/Get the camera to perform scaling and translation of the 
@@ -148,8 +148,8 @@ public:
   // Specify an offset value to "pull back" the axes from the corner at
   // which they are joined to avoid overlap of axes labels. The 
   // "CornerOffset" is the fraction of the axis length to pull back.
-  vtkSetMacro(CornerOffset, float);
-  vtkGetMacro(CornerOffset, float);
+  vtkSetMacro(CornerOffset, double);
+  vtkGetMacro(CornerOffset, double);
 
   // Description:
   // Release any graphics resources that are being consumed by this actor.
@@ -244,7 +244,7 @@ protected:
   vtkVisItCubeAxesActor();
   ~vtkVisItCubeAxesActor();
 
-  float       Bounds[6]; //Define bounds explicitly
+  double       Bounds[6]; //Define bounds explicitly
 
   vtkCamera *Camera;
   int FlyMode;
@@ -291,7 +291,7 @@ protected:
   char  *XLabelFormat;
   char  *YLabelFormat;
   char  *ZLabelFormat;
-  float CornerOffset;
+  double CornerOffset;
   int   Inertia;
   int   RenderCount;
   int   InertiaLocs[3];
@@ -317,9 +317,9 @@ private:
   int lastXAxisDigits;
   int lastYAxisDigits;
   int lastZAxisDigits;
-  float LastXRange[2];
-  float LastYRange[2];
-  float LastZRange[2];
+  double LastXRange[2];
+  double LastYRange[2];
+  double LastZRange[2];
   int   LastFlyMode;
 
   int   renderAxesX[4];
@@ -337,15 +337,15 @@ private:
   bool ForceZLabelReset;
 
   // various helper methods
-  void  TransformBounds(vtkViewport *viewport, const float bounds[6], 
-                        float pts[8][3]);
-  void  AdjustAxes(float bounds[6], float xCoords[4][6], float yCoords[4][6], 
-                   float zCoords[4][6], float xRange[2], float yRange[2], 
-                   float zRange[2]);
+  void  TransformBounds(vtkViewport *viewport, const double bounds[6], 
+                        double pts[8][3]);
+  void  AdjustAxes(double bounds[6], double xCoords[4][6], double yCoords[4][6], 
+                   double zCoords[4][6], double xRange[2], double yRange[2], 
+                   double zRange[2]);
 
-  bool  ComputeTickSize(float bounds[6]);
-  void  AdjustValues(const float bounds[6]);
-  void  AdjustRange(const float bounds[6]);
+  bool  ComputeTickSize(double bounds[6]);
+  void  AdjustValues(const double bounds[6]);
+  void  AdjustRange(const double bounds[6]);
   void  BuildAxes(vtkViewport *);
   void  DetermineRenderAxes(vtkViewport *);
   void  SetNonDependentAttributes(void);

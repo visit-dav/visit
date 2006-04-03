@@ -48,7 +48,7 @@ class VISWINDOW_API VisitSphereTool : public VisitInteractiveTool
     virtual void Start2DMode();
     virtual void Stop3DMode();
 
-    virtual void SetForegroundColor(float, float, float);
+    virtual void SetForegroundColor(double, double, double);
 
     virtual const char *  GetName() const { return "Sphere"; };
     virtual avtToolInterface &GetInterface() { return Interface; };
@@ -85,9 +85,9 @@ class VISWINDOW_API VisitSphereTool : public VisitInteractiveTool
 
     void DoTransformations();
 
-    float              focalDepth;
-    float              originalScale;
-    float              originalDistance;
+    double              focalDepth;
+    double              originalScale;
+    double              originalDistance;
     double             translationDistance;
     bool               normalAway;
     bool               disableWhenNoPlots;

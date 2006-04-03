@@ -68,10 +68,10 @@ class QUERY_API avtLocateCellQuery : public avtLocateQuery
   protected:
     virtual void                    Execute(vtkDataSet *, const int);
     int                             RGridFindCell(vtkDataSet *, 
-                                                    float &, float*);
+                                                    double &, double*);
     int                             FindClosestCell(vtkDataSet *ds, 
-                                                    float &minDist, 
-                                                    float isect[3]);
+                                                    double &minDist, 
+                                                    double isect[3]);
 };
 
 

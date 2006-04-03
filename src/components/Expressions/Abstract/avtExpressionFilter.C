@@ -270,8 +270,8 @@ avtExpressionFilter::UpdateExtents(avtDataTree_p tree)
                 {
                     continue;
                 }
-                float *val = dat->GetTuple(i);
-                float value = 0;
+                double *val = dat->GetTuple(i);
+                double value = 0;
                 if (nvars == 1)
                     value = *val;
                 else if (nvars == 3)

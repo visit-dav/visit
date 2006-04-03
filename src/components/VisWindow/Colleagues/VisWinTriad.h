@@ -44,7 +44,7 @@ class VISWINDOW_API VisWinTriad : public VisWinColleague
                               VisWinTriad(VisWindowColleagueProxy &);
     virtual                  ~VisWinTriad();
 
-    virtual void              SetForegroundColor(float, float, float);
+    virtual void              SetForegroundColor(double, double, double);
 
     virtual void              Start3DMode(void);
     virtual void              Stop3DMode(void);

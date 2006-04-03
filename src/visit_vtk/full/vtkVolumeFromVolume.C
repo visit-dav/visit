@@ -8,7 +8,7 @@
 #include <vtkCellData.h>
 #include <vtkCellType.h>
 #include <vtkIdList.h>
-#include <vtkIntArray.h>
+#include <vtkIdTypeArray.h>
 #include <vtkPointData.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
@@ -714,8 +714,8 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
         {
             const CentroidPointEntry &ce = ce_list[j];
             idList->SetNumberOfIds(ce.nPts);
-            float pts[8][3];
-            float weights[8];
+            double pts[8][3];
+            double weights[8];
             float pt[3] = {0., 0., 0.};
             float weight_factor = 1. / ce.nPts;
             for (int k = 0 ; k < ce.nPts ; k++)
@@ -777,7 +777,7 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
     cellTypes->SetNumberOfValues(ncells);
     unsigned char *ct = cellTypes->GetPointer(0);
 
-    vtkIntArray *cellLocations = vtkIntArray::New();
+    vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
     cellLocations->SetNumberOfValues(ncells);
     int *cl = cellLocations->GetPointer(0);
 

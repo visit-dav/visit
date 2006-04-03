@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItZLibDataCompressor.cxx,v $
-  Language:  C++
-  Date:      $Date: 2002/10/16 18:23:07 $
-  Version:   $Revision: 1.1 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -20,12 +17,13 @@
 
 #include <zlib.h>
 
-vtkCxxRevisionMacro(vtkVisItZLibDataCompressor, "$Revision: 1.1 $");
+vtkCxxRevisionMacro(vtkVisItZLibDataCompressor, "$Revision: 1.3 $");
 vtkStandardNewMacro(vtkVisItZLibDataCompressor);
 
 //----------------------------------------------------------------------------
 vtkVisItZLibDataCompressor::vtkVisItZLibDataCompressor()
 {
+  this->CompressionLevel = Z_DEFAULT_COMPRESSION;
 }
 
 //----------------------------------------------------------------------------
@@ -37,6 +35,8 @@ vtkVisItZLibDataCompressor::~vtkVisItZLibDataCompressor()
 void vtkVisItZLibDataCompressor::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
+
+  os << indent << "CompressionLevel: " << this->CompressionLevel << endl;
 }
 
 //----------------------------------------------------------------------------
@@ -51,7 +51,7 @@ vtkVisItZLibDataCompressor::CompressBuffer(const unsigned char* uncompressedData
   const Bytef* ud = reinterpret_cast<const Bytef*>(uncompressedData);
   
   // Call zlib's compress function.
-  if(compress(cd, &compressedSize, ud, uncompressedSize) != Z_OK)
+  if(compress2(cd, &compressedSize, ud, uncompressedSize, this->CompressionLevel) != Z_OK)
     {
     vtkErrorMacro("Zlib error while compressing data.");
     return 0;

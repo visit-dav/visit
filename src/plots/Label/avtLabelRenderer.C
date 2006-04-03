@@ -775,8 +775,8 @@ avtLabelRenderer::WorldToDisplayMatrix() const
      // Set up view->display matrix
      vtkMatrix4x4 *M2 = vtkMatrix4x4::New();
      {
-         float *v = VTKRen->GetViewport();
-         float *a = VTKRen->GetAspect();
+         double *v = VTKRen->GetViewport();
+         double *a = VTKRen->GetAspect();
 
          M2->Identity();
          M2->Element[0][0] = (v[2]-v[0])/(2. * a[0]);

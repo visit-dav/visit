@@ -194,7 +194,7 @@ ZoomInteractor::StartRubberBand(int x, int y)
     shouldDrawGuides = win->GetInteractorAtts()->GetShowGuidelines();
 
     // Set the actor's color.
-    float fg[3];
+    double fg[3];
     proxy.GetForegroundColor(fg);
     rubberBandActor->GetProperty()->SetColor(fg[0], fg[1], fg[2]);
 

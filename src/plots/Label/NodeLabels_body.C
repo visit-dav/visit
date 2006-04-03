@@ -118,7 +118,7 @@ debug3 << "Labelling nodes with scalar data" << endl;
                 for(vtkIdType id = 0; id < npts; ++id)
                 {
                     BEGIN_LABEL
-                        float scalarVal = data->GetTuple1(id);
+                        double scalarVal = data->GetTuple1(id);
                         CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%g", scalarVal);
                     END_LABEL
                 }
@@ -131,7 +131,7 @@ debug3 << "Labelling nodes with 2d vector data" << endl;
             {
                 // const float *vert = p->GetPoint(id);
                 BEGIN_LABEL 
-                    float *vectorVal = data->GetTuple2(id);
+                    double *vectorVal = data->GetTuple2(id);
                     CREATE_LABEL(labelString, MAX_LABEL_SIZE, "<%g, %g>", vectorVal[0], vectorVal[1]);
                 END_LABEL
             }
@@ -143,7 +143,7 @@ debug3 << "Labelling nodes with 3d vector data" << endl;
             {
                 // const float *vert = p->GetPoint(id);
                 BEGIN_LABEL
-                    float *vectorVal = data->GetTuple3(id);
+                    double *vectorVal = data->GetTuple3(id);
                     CREATE_LABEL(labelString, MAX_LABEL_SIZE, "<%g, %g, %g>", vectorVal[0], vectorVal[1], vectorVal[2]);
                 END_LABEL
             }
@@ -156,7 +156,7 @@ debug3 << "Labelling nodes with 3d tensor data" << endl;
             {
                 // float *vert = cellCenters->GetTuple3(id);
                 BEGIN_LABEL
-                    float *tensorVal = data->GetTuple9(id);
+                    double *tensorVal = data->GetTuple9(id);
                     CREATE_LABEL(labelString, MAX_LABEL_SIZE,
                       "(%g, %g, %g)\n(%g, %g, %g)\n(%g, %g, %g)",
                              tensorVal[0], tensorVal[1], tensorVal[2],
@@ -181,7 +181,7 @@ debug3 << "Labelling nodes with 3d tensor data" << endl;
             {
                 BEGIN_LABEL
                     labelString[0] = '\0';
-                    float *vals = data->GetTuple(id);
+                    double *vals = data->GetTuple(id);
                     bool atStart = true;
                     for (int comp = 0 ; comp < nComps ; comp++)
                     {

@@ -45,7 +45,7 @@ class VISWINDOW_API VisitPointTool : public VisitInteractiveTool
     virtual void Start3DMode();
     virtual void Stop3DMode();
     
-    virtual void SetForegroundColor(float, float, float);
+    virtual void SetForegroundColor(double, double, double);
     
     virtual const char *  GetName() const { return "Point"; };
     virtual avtToolInterface &GetInterface() { return Interface; };
@@ -79,7 +79,7 @@ class VISWINDOW_API VisitPointTool : public VisitInteractiveTool
     void InitialActorSetup();
     void FinalActorSetup();
 
-    float                focalDepth;
+    double                focalDepth;
     avtVector            translationDistance;
     vtkActor            *guideActor;
     vtkPolyDataMapper   *guideMapper;

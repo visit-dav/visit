@@ -75,12 +75,12 @@ avtVariableSkewFilter::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     int in2ncomps = in2->GetNumberOfComponents();
     if (in1ncomps == 1 && in2ncomps == 1)
     {
-        float *r = in1->GetRange();
+        double *r = in1->GetRange();
         for (int i = 0 ; i < ntuples ; i++)
         {
-            float val1 = in1->GetComponent(i, 0);
-            float val2 = in2->GetComponent(i, 0);
-            float f = SkewTheValue(val1, r[0], r[1], val2);
+            double val1 = in1->GetComponent(i, 0);
+            double val2 = in2->GetComponent(i, 0);
+            double f = SkewTheValue(val1, r[0], r[1], val2);
             out->SetComponent(i, 0, f);
         }
     }
@@ -113,18 +113,18 @@ avtVariableSkewFilter::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
 //
 // ****************************************************************************
 
-float
-avtVariableSkewFilter::SkewTheValue(float val, float min, float max, 
-                                    float factor)
+double
+avtVariableSkewFilter::SkewTheValue(double val, double min, double max, 
+                                    double factor)
 {
     if (factor <= 0 || factor == 1. || min == max) 
         return val;
 
-    float range = max - min; 
-    float rangeInverse = 1. / range;
-    float logSkew = log(factor);
-    float k = range / (factor -1.);
-    float v2 = (val - min) * rangeInverse;
-    float temp =   k * (exp(v2 * logSkew) -1.) + min;
+    double range = max - min; 
+    double rangeInverse = 1. / range;
+    double logSkew = log(factor);
+    double k = range / (factor -1.);
+    double v2 = (val - min) * rangeInverse;
+    double temp =   k * (exp(v2 * logSkew) -1.) + min;
     return temp;
 }

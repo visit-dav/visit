@@ -129,17 +129,17 @@ VisWinView::SetViewInfo(const avtViewInfo &vI)
 void
 VisWinView::ResetView(void)
 {
-    float bounds[6];
+    double bounds[6];
     mediator.GetBounds(bounds);
 
     if (mediator.GetMode() == WINMODE_2D || mediator.GetMode() == WINMODE_CURVE)
     {
         vtkCamera *camera = mediator.GetCanvas()->GetActiveCamera();
-        float x_diff = fabs(bounds[0] - bounds[1]);
-        float y_diff = fabs(bounds[2] - bounds[3]);
-        float max_diff = (x_diff > y_diff ? x_diff : y_diff);
-        float x_center = (bounds[0] + bounds[1]) / 2.;
-        float y_center = (bounds[2] + bounds[3]) / 2.;
+        double x_diff = fabs(bounds[0] - bounds[1]);
+        double y_diff = fabs(bounds[2] - bounds[3]);
+        double max_diff = (x_diff > y_diff ? x_diff : y_diff);
+        double x_center = (bounds[0] + bounds[1]) / 2.;
+        double y_center = (bounds[2] + bounds[3]) / 2.;
 
         //
         // We always put 2D plots in parallel projection mode, so we
@@ -179,15 +179,15 @@ VisWinView::ResetView(void)
         //
         // Get the appropriate distance between the focal point and the camera.
         //
-        float focalPoint[3];
+        double focalPoint[3];
         camera->GetFocalPoint(focalPoint);
-        float position[3];
+        double position[3];
         camera->GetPosition(position);
        
-        float d2 = (focalPoint[0] - position[0])*(focalPoint[0] - position[0])
+        double d2 = (focalPoint[0] - position[0])*(focalPoint[0] - position[0])
                  + (focalPoint[1] - position[1])*(focalPoint[1] - position[1])
                  + (focalPoint[2] - position[2])*(focalPoint[2] - position[2]);
-        float distance = sqrt(d2);
+        double distance = sqrt(d2);
 
         //
         // Put the camera at the calculated distance away so we can preserve

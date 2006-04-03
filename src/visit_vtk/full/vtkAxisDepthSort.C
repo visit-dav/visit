@@ -127,7 +127,7 @@ vtkAxisDepthSort::Execute(void)
     // Start off by getting the center of the cell for each cell.
     //
     float *loc = new float[ncells*3];
-    float   *bnds = NULL;
+    double   *bnds = NULL;
     vtkGenericCell *cell = vtkGenericCell::New();
     for (i = 0 ; i < ncells ; i++)
     {

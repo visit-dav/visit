@@ -35,17 +35,17 @@ class PLOTTER_API  avtLabeledCurveMapper : public avtDecorationsMapper
                                avtLabeledCurveMapper();
     virtual                   ~avtLabeledCurveMapper();
 
-    void                       SetLabelColor(float [3]);
-    void                       SetLabelColor(float, float, float);
+    void                       SetLabelColor(double [3]);
+    void                       SetLabelColor(double, double, double);
     void                       SetLabel(std::string &);
-    void                       SetScale(float);
+    void                       SetScale(double);
     void                       SetLabelVisibility(bool);
 
   protected:
     std::string                label; 
     bool                       labelVis;
-    float                      labelColor[3];
-    float                      scale;
+    double                     labelColor[3];
+    double                     scale;
 
     vtkMaskPoints            **filter;
     int                        nFilters;

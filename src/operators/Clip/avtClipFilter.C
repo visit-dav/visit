@@ -316,7 +316,7 @@ avtClipFilter::GetAssignments(vtkDataSet *in_ds, const int *dims,
     bool *pt_dist = new bool[npts];
     for (i = 0 ; i < npts ; i++)
     {
-        float pt[3];
+        double pt[3];
         in_ds->GetPoint(i, pt);
         bool pos_dist = ifuncs->EvaluateFunction(pt) >= 0;
         pt_dist[i] = (pos_dist && !inverse) || (!pos_dist && inverse);
@@ -389,10 +389,8 @@ avtClipFilter::SetUpClipFunctions(vtkImplicitBoolean *funcs, bool &inv)
             orig = atts.GetPlane1Origin();
             norm = atts.GetPlane1Normal();
             vtkPlane *plane = vtkPlane::New();
-            // vtk requires floats, so send individually and do an
-            // implicit cast.
-            plane->SetNormal(norm[0], norm[1], norm[2]);
-            plane->SetOrigin(orig[0], orig[1], orig[2]);
+            plane->SetNormal(norm);
+            plane->SetOrigin(orig);
             funcs->AddFunction(plane);
             plane->Delete();
             success = true;
@@ -402,10 +400,8 @@ avtClipFilter::SetUpClipFunctions(vtkImplicitBoolean *funcs, bool &inv)
             orig = atts.GetPlane2Origin();
             norm = atts.GetPlane2Normal();
             vtkPlane *plane = vtkPlane::New();
-            // vtk requires floats, so send individually and do an
-            // implicit cast.
-            plane->SetNormal(norm[0], norm[1], norm[2]);
-            plane->SetOrigin(orig[0], orig[1], orig[2]);
+            plane->SetNormal(norm);
+            plane->SetOrigin(orig);
             funcs->AddFunction(plane);
             plane->Delete();
             success = true;
@@ -415,10 +411,8 @@ avtClipFilter::SetUpClipFunctions(vtkImplicitBoolean *funcs, bool &inv)
             orig = atts.GetPlane3Origin();
             norm = atts.GetPlane3Normal();
             vtkPlane *plane = vtkPlane::New();
-            // vtk requires floats, so send individually and do an
-            // implicit cast.
-            plane->SetNormal(norm[0], norm[1], norm[2]);
-            plane->SetOrigin(orig[0], orig[1], orig[2]);
+            plane->SetNormal(norm);
+            plane->SetOrigin(orig);
             funcs->AddFunction(plane);
             plane->Delete();
             success = true;
@@ -438,9 +432,7 @@ avtClipFilter::SetUpClipFunctions(vtkImplicitBoolean *funcs, bool &inv)
         double *cent;
         cent = atts.GetCenter();
         vtkSphere *sphere = vtkSphere::New();
-        // vtk requires floats, so send individually and do an
-        // implicit cast.
-        sphere->SetCenter(cent[0], cent[1], cent[2]);
+        sphere->SetCenter(cent);
         sphere->SetRadius(rad);
         funcs->AddFunction(sphere);
         sphere->Delete();

@@ -36,7 +36,7 @@ void vtkOBJWriter::WriteData()
   vtkDataArray *normals = NULL;
   vtkDataArray *tcoords = NULL;
   int i, idNext;
-  float *p;
+  double *p;
   vtkCellArray *cells;
   vtkIdType npts;
   vtkIdType *indx;

@@ -128,7 +128,7 @@ private:
     void ReadVariableInformation();
     void SetUpDomainConnectivity();
     int  GetNDomains() const;
-    void GetExtents(int dom, float *extents);
+    void GetExtents(int dom, double *extents);
     void GetLogicalExtents(int dom, int *globalorigin, int *size);
     void GetVarMinMaxArrays(const std::string &name,
                             const double **minvals,

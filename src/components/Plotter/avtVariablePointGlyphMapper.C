@@ -207,7 +207,7 @@ avtVariablePointGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
 // ****************************************************************************
 
 void
-avtVariablePointGlyphMapper::ColorBySingleColor(const float col[3])
+avtVariablePointGlyphMapper::ColorBySingleColor(const double col[3])
 {
     ColorByScalarOff();
 
@@ -246,35 +246,10 @@ avtVariablePointGlyphMapper::ColorBySingleColor(const float col[3])
 void
 avtVariablePointGlyphMapper::ColorBySingleColor(const unsigned char col[3])
 {
-    float fc[3];
-    fc[0] = (float)col[0] / 255.;
-    fc[1] = (float)col[1] / 255.;
-    fc[2] = (float)col[2] / 255.;
-    ColorBySingleColor(fc);
-}
-
-
-// ****************************************************************************
-//  Method: avtVariablePointGlyphMapper::ColorBySingleColor
-//
-//  Purpose:
-//    Tells the glyph mapper to color all of the glyphs the same color.
-//
-//  Arguments:
-//    col         The new color.
-//
-//  Programmer:   Kathleen Bonnell
-//  Creation:     November 12, 2004 
-//
-// ****************************************************************************
-
-void
-avtVariablePointGlyphMapper::ColorBySingleColor(const double col[3])
-{
-    float fc[3];
-    fc[0] = (float)col[0];
-    fc[1] = (float)col[1];
-    fc[2] = (float)col[2];
+    double fc[3];
+    fc[0] = (double)col[0] / 255.;
+    fc[1] = (double)col[1] / 255.;
+    fc[2] = (double)col[2] / 255.;
     ColorBySingleColor(fc);
 }
 

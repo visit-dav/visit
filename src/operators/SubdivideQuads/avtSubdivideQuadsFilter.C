@@ -354,7 +354,7 @@ avtSubdivideQuadsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         // of the cell, we should determine the middle, so we can use
         // it repeatedly later.
         //
-        float middle[3];
+        double middle[3];
         if (fanOut)
             vtkVisItUtility::GetCellCenter(cell, middle);
 
@@ -482,7 +482,7 @@ avtSubdivideQuadsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
                 bool jSpecial = (J == 0 || J == numColumns-1);
                 if (!iSpecial || !jSpecial)
                 {
-                    float w[4];
+                    double w[4];
                     w[0] = ((ratio-I) / ratio) * ((ratio-J) / ratio);
                     w[1] = ((I) / ratio) * ((ratio-J) / ratio);
                     w[3] = ((ratio-I) / ratio) * ((J) / ratio);

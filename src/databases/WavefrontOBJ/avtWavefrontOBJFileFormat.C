@@ -224,7 +224,7 @@ avtWavefrontOBJFileFormat::GetVar(const char *var)
     s1->SetNumberOfTuples(nPts);
     for (int i = 0 ; i < nPts ; i++)
     {
-        float *tuple = tcoords->GetTuple(i);
+        double *tuple = tcoords->GetTuple(i);
         s1->SetTuple1(i, tuple[varId]);
     }
 
@@ -294,7 +294,7 @@ avtWavefrontOBJFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     avtMeshType type = AVT_SURFACE_MESH;;
 
-    float bounds[6];
+    double bounds[6];
     dataset->GetBounds(bounds);
 
     if (bounds[4] == bounds[5])

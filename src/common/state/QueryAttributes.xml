@@ -28,7 +28,7 @@
     </Field>
     <Field name="resultsMessage" label="resultsMessage" type="string">
     </Field>
-    <Field name="worldPoint" label="worldPoint" type="floatArray" length="3">
+    <Field name="worldPoint" label="worldPoint" type="doubleArray" length="3">
       0.000000
       0.000000
       0.000000

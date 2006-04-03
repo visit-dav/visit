@@ -80,7 +80,7 @@ avtPolarCoordinatesFilter::DeriveVariable(vtkDataSet *in_ds)
             (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 3);
     for (int i = 0 ; i < npts ; i++)
     {
-        float pt[3];
+        double pt[3];
         in_ds->GetPoint(i, pt);
         
         float r = sqrt(pt[0]*pt[0] + pt[1]*pt[1] + pt[2]*pt[2]);

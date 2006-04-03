@@ -75,7 +75,7 @@ avtMoleculeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     if (natoms>0 && primary)
     {
         name = primary->GetName();
-        float *scalar = primary->GetTuple(0);
+        float *scalar = (float*)primary->GetVoidPointer(0);
 
         bool integral_type = true;
         int minval =  INT_MAX;

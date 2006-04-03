@@ -53,8 +53,8 @@ void vtkVisItCellDataToPointData::Execute()
   vtkCellData *inPD=input->GetCellData();
   vtkPointData *outPD=output->GetPointData();
   vtkIdList *cellIds;
-  float weight;
-  float *weights;
+  double weight;
+  double *weights;
 
   vtkDebugMacro(<<"Mapping cell data to point data");
 
@@ -70,7 +70,7 @@ void vtkVisItCellDataToPointData::Execute()
     cellIds->Delete();
     return;
     }
-  weights = new float[VTK_MAX_CELLS_PER_POINT];
+  weights = new double[VTK_MAX_CELLS_PER_POINT];
   
   // Pass the point data first. The fields and attributes
   // which also exist in the cell data of the input will
@@ -123,7 +123,7 @@ void vtkVisItCellDataToPointData::Execute()
     const int iOffset = 1;
     const int jOffset = (dims[0]-1);
     const int kOffset = (dims[0]-1)*(dims[1]-1);
-    float weights[4] = { 1., 0.5, 0.25, 0.125 };
+    double weights[4] = { 1., 0.5, 0.25, 0.125 };
     int nids_array[4] = { 1, 2, 4, 8 };
     int ids[8];
 
@@ -155,7 +155,7 @@ void vtkVisItCellDataToPointData::Execute()
           if (k == 0 || k == dims[2]-1)
             numBad++;
 
-          float weight = weights[3-numBad];
+          double weight = weights[3-numBad];
           int nids = nids_array[3-numBad];
 
           int id = 0;

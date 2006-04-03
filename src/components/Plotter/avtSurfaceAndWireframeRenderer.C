@@ -1027,7 +1027,7 @@ avtSurfaceAndWireframeRenderer::EdgePolysOff()
 // ****************************************************************************
 
 void
-avtSurfaceAndWireframeRenderer::SetScalarRange(float min, float max)
+avtSurfaceAndWireframeRenderer::SetScalarRange(double min, double max)
 {
     scalarRange = true;    
     range[0] = min; 
@@ -1111,7 +1111,7 @@ avtSurfaceAndWireframeRenderer::GlobalLightingOff()
 // ****************************************************************************
 
 void
-avtSurfaceAndWireframeRenderer::GlobalSetAmbientCoefficient(const float amb)
+avtSurfaceAndWireframeRenderer::GlobalSetAmbientCoefficient(const double amb)
 {
     globalAmbientCoeff = amb;
     if (!ignoreLighting)
@@ -1185,8 +1185,8 @@ avtSurfaceAndWireframeRenderer::LUTColorsChanged(const bool val)
 // ****************************************************************************
 
 void
-avtSurfaceAndWireframeRenderer::SetSpecularProperties(bool flag, float coeff, 
-    float power, const ColorAttribute &color)
+avtSurfaceAndWireframeRenderer::SetSpecularProperties(bool flag, double coeff, 
+    double power, const ColorAttribute &color)
 {
     if (ignoreLighting)
     {
@@ -1202,9 +1202,9 @@ avtSurfaceAndWireframeRenderer::SetSpecularProperties(bool flag, float coeff,
         int r = color.Red();
         int g = color.Green();
         int b = color.Blue();
-        prop->SetSpecularColor(float(r)/255.,
-                               float(g)/255.,
-                               float(b)/255.);
+        prop->SetSpecularColor(double(r)/255.,
+                               double(g)/255.,
+                               double(b)/255.);
     }
 }
 

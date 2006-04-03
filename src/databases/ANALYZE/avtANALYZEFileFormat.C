@@ -133,7 +133,7 @@ avtANALYZEFileFormat::Initialize()
 // ****************************************************************************
 
 void
-avtANALYZEFileFormat::GetMeshExtents(float *extents) const
+avtANALYZEFileFormat::GetMeshExtents(double *extents) const
 {
     int dims[3];
     dims[0] = int(fileInformation.data.dime.dim[1]);
@@ -142,9 +142,9 @@ avtANALYZEFileFormat::GetMeshExtents(float *extents) const
     debug1 << "avtANALYZEFileFormat::GetMeshExtents: mesh dims={" << dims[0]
            << ", " << dims[1] << ", " << dims[2] << "}" << endl;
 
-    float halfx = float(dims[0]) * fileInformation.data.dime.pixdim[1];
-    float halfy = float(dims[1]) * fileInformation.data.dime.pixdim[2];
-    float halfz = float(dims[2]) * fileInformation.data.dime.pixdim[3];
+    double halfx = double(dims[0]) * fileInformation.data.dime.pixdim[1];
+    double halfy = double(dims[1]) * fileInformation.data.dime.pixdim[2];
+    double halfz = double(dims[2]) * fileInformation.data.dime.pixdim[3];
     extents[0] = -halfx;
     extents[1] =  halfx;
     extents[2] = -halfy;
@@ -184,7 +184,7 @@ avtANALYZEFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     int block_origin = 0;
     int spatial_dimension = 3;
     int topological_dimension = 3;
-    float extents[6];
+    double extents[6];
     GetMeshExtents(extents);
     avtMeshMetaData *mmd = new avtMeshMetaData(
         meshname, nblocks, block_origin, 0, 0, spatial_dimension,
@@ -232,7 +232,7 @@ avtANALYZEFileFormat::GetMesh(const char *meshname)
     // Populate the coordinates.
     //
     vtkFloatArray *coords[3];
-    float extents[6];
+    double extents[6];
     GetMeshExtents(extents);
     int dims[3];
     dims[0] = int(fileInformation.data.dime.dim[1]);

@@ -119,7 +119,7 @@ avtLevelsLegend::~avtLevelsLegend()
 // ****************************************************************************
 
 void
-avtLevelsLegend::GetLegendSize(float maxSize, float &w, float &h)
+avtLevelsLegend::GetLegendSize(double maxSize, double &w, double &h)
 {
     w = 0.08;
 
@@ -129,8 +129,8 @@ avtLevelsLegend::GetLegendSize(float maxSize, float &w, float &h)
     // because this algorithm doesn't exactly match the algorithm in
     // vtkVerticalScalarBarActor.
     //
-    float fudge = 0.5;
-    float nLines = 0.0;
+    double fudge = 0.5;
+    double nLines = 0.0;
     if (title != NULL)        nLines += 1.0;
     if (databaseInfo != NULL) nLines += 2.0;
     if (varName != NULL)      nLines += 1.0;
@@ -146,8 +146,8 @@ avtLevelsLegend::GetLegendSize(float maxSize, float &w, float &h)
     //
     if (h > maxSize && barVisibility)
     {
-        float hTitles = h - (nLevels * 1.1 + 1.0 + fudge) * fontHeight;
-        float nLevelsSpace = (maxSize - hTitles) / (fontHeight * 1.1);
+        double hTitles = h - (nLevels * 1.1 + 1.0 + fudge) * fontHeight;
+        double nLevelsSpace = (maxSize - hTitles) / (fontHeight * 1.1);
         if (nLevelsSpace > 2.)
         {
             h = maxSize;
@@ -200,7 +200,7 @@ avtLevelsLegend::SetColorBarVisibility(const int val)
 // ****************************************************************************
 
 void
-avtLevelsLegend::SetRange(float nmin, float nmax)
+avtLevelsLegend::SetRange(double nmin, double nmax)
 {
     min = nmin;
     max = nmax;
@@ -391,7 +391,7 @@ avtLevelsLegend::SetVarRangeVisibility(const int val )
 // ****************************************************************************
 
 void
-avtLevelsLegend::SetVarRange(float nmin, float nmax)
+avtLevelsLegend::SetVarRange(double nmin, double nmax)
 {
     sBar->SetVarRange(nmin, nmax);
 }
@@ -415,7 +415,7 @@ avtLevelsLegend::SetVarRange(float nmin, float nmax)
 // ****************************************************************************
 
 void
-avtLevelsLegend::ChangePosition(float x, float y)
+avtLevelsLegend::ChangePosition(double x, double y)
 {
     sBar->GetPositionCoordinate()->SetCoordinateSystemToNormalizedViewport();
     sBar->GetPositionCoordinate()->SetValue(x, y, 0.);
@@ -466,7 +466,7 @@ avtLevelsLegend::ChangeTitle(const char *t)
 // ****************************************************************************
 
 void
-avtLevelsLegend::ChangeFontHeight(float fh)
+avtLevelsLegend::ChangeFontHeight(double fh)
 {
     sBar->SetFontHeight(fh);
 }

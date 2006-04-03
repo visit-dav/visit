@@ -918,38 +918,6 @@ unsigned char* vtkVisItXMLParseAsciiDataUnsignedChar(istream& is, int* length)
   return dataBuffer;
 }
 
-//----------------------------------------------------------------------------
-signed char* vtkVisItXMLParseAsciiDataSsignedChar(istream& is, int* length)
-{
-  int dataLength = 0;
-  int dataBufferSize = 64;
-
-  signed char* dataBuffer = new signed char[dataBufferSize];
-  signed char element;
-  short inElement;
-
-  while(is >> inElement)
-    {
-    element = inElement;
-    if(dataLength == dataBufferSize)
-      {
-      int newSize = dataBufferSize*2;
-      signed char* newBuffer = new signed char[newSize];
-      memcpy(newBuffer, dataBuffer, dataLength*sizeof(signed char));
-      delete [] dataBuffer;
-      dataBuffer = newBuffer;
-      dataBufferSize = newSize;
-      }
-    dataBuffer[dataLength++] = element;
-    }
-
-  if(length)
-    {
-    *length = dataLength;
-    }
-
-  return dataBuffer;
-}
 
 //----------------------------------------------------------------------------
 int vtkVisItXMLDataParser::ParseAsciiData(int wordType)

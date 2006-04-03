@@ -187,8 +187,8 @@ avtVectorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
 
                 for (int i = 0 ; i < nvals ; i++)
                 {
-                    float val1 = data1->GetTuple1(i);
-                    float val2 = data2->GetTuple1(i);
+                    double val1 = data1->GetTuple1(i);
+                    double val2 = data2->GetTuple1(i);
                     dv->SetTuple3(i, val1, val2, 0.);
                 }
             }
@@ -203,7 +203,7 @@ avtVectorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
                 
                 for (int i = 0 ; i < nvals ; i++)
                 {
-                    float vals[9];
+                    double vals[9];
                     vals[0] = data1->GetComponent(i, 0);
                     vals[1] = data1->GetComponent(i, 1);
                     vals[2] = 0.;
@@ -248,9 +248,9 @@ avtVectorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
                 
                 for (int i = 0 ; i < nvals ; i++)
                 {
-                    float val1 = data1->GetTuple1(i);
-                    float val2 = data2->GetTuple1(i);
-                    float val3 = data3->GetTuple1(i);
+                    double val1 = data1->GetTuple1(i);
+                    double val2 = data2->GetTuple1(i);
+                    double val3 = data3->GetTuple1(i);
                     dv->SetTuple3(i, val1, val2, val3);
                 }
             }
@@ -269,7 +269,7 @@ avtVectorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
                 
                 for (int i = 0 ; i < nvals ; i++)
                 {
-                    float entry[9];
+                    double entry[9];
                     data1->GetTuple(i, entry);
                     data2->GetTuple(i, entry+3);
                     data3->GetTuple(i, entry+6);

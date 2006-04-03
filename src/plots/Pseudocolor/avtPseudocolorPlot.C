@@ -485,7 +485,7 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
 void
 avtPseudocolorPlot::GetDataExtents(vector<double> &extents)
 {
-    float min, max;
+    double min, max;
 
     varLegend->GetRange(min, max);
 
@@ -687,14 +687,14 @@ avtPseudocolorPlot::SetLighting(bool lightingOn)
 void
 avtPseudocolorPlot::SetLimitsMode(int limitsMode)
 {
-    float min, max;
+    double min, max;
     //
     //  Retrieve the actual range of the data
     //
     glyphMapper->GetVarRange(min, max);
 
-    float userMin = atts.GetMinFlag() ? atts.GetMin() : min;
-    float userMax = atts.GetMaxFlag() ? atts.GetMax() : max;
+    double userMin = atts.GetMinFlag() ? atts.GetMin() : min;
+    double userMax = atts.GetMaxFlag() ? atts.GetMax() : max;
       
     if (dataExtents.size() == 2)
     {
@@ -770,7 +770,7 @@ avtPseudocolorPlot::SetLimitsMode(int limitsMode)
 // ****************************************************************************
 
 void
-avtPseudocolorPlot::SetOpacity(float opacity)
+avtPseudocolorPlot::SetOpacity(double opacity)
 {
     glyphMapper->SetOpacity(opacity);
     if (opacity < 1.)
@@ -810,7 +810,7 @@ avtPseudocolorPlot::SetOpacity(float opacity)
 void
 avtPseudocolorPlot::SetLegendRanges()
 {
-    float min, max;
+    double min, max;
 
     //
     // set and get the range for the legend's color bar labels 

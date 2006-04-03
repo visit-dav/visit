@@ -37,12 +37,11 @@ class PLOTTER_API  avtVariablePointGlyphMapper : virtual public avtVariableMappe
 
     void                       ColorBySingleColor(const unsigned char [3]);
     void                       ColorBySingleColor(const double [3]);
-    void                       ColorBySingleColor(const float [3]);
     virtual void               ScaleByVar(const std::string &);
     void                       SetGlyphType(const int type);
 
   protected:
-    float                      singleColor[3];
+    double                     singleColor[3];
 
     virtual void               CustomizeMappers(void);
 

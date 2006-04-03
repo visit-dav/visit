@@ -15,7 +15,7 @@ class vtkProperty;
 class vtkUnsignedCharArray;
 
 
-typedef struct lec { float r, g, b; } LEC;
+typedef struct lec { double r, g, b; } LEC;
 
 // ****************************************************************************
 //  Class: avtSurfaceAndWireframeRenderer
@@ -96,7 +96,7 @@ class PLOTTER_API avtSurfaceAndWireframeRenderer : public avtCustomRenderer
     void                      CreateDefaultLookupTable(void);
 
     void                      SetProperty(vtkProperty *);
-    void                      SetScalarRange(float, float);
+    void                      SetScalarRange(double, double);
                                              
     void                      ResolveTopologyOn();
     void                      ResolveTopologyOff();
@@ -121,9 +121,9 @@ class PLOTTER_API avtSurfaceAndWireframeRenderer : public avtCustomRenderer
 
     virtual void              GlobalLightingOn();
     virtual void              GlobalLightingOff();
-    virtual void              GlobalSetAmbientCoefficient(const float);
+    virtual void              GlobalSetAmbientCoefficient(const double);
     virtual void              SetSurfaceRepresentation(int);
-    virtual void              SetSpecularProperties(bool,float,float,
+    virtual void              SetSpecularProperties(bool,double,double,
                                                     const ColorAttribute&);
 
     void                      IgnoreLighting(const bool);
@@ -142,7 +142,7 @@ class PLOTTER_API avtSurfaceAndWireframeRenderer : public avtCustomRenderer
     bool                      scalarVisibility;
     bool                      resolveTopology;
     bool                      scalarRange;
-    float                     range[2];
+    double                    range[2];
     bool                      drawSurfaceVerts; 
     bool                      drawSurfaceLines; 
     bool                      drawSurfaceStrips; 
@@ -173,7 +173,7 @@ class PLOTTER_API avtSurfaceAndWireframeRenderer : public avtCustomRenderer
     std::vector<vtkDataSet*>   inputs;         
     int                        inputNum; 
     int                        lastWindowSize[2]; 
-    float                      globalAmbientCoeff;
+    double                     globalAmbientCoeff;
 };
 
 

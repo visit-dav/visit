@@ -51,21 +51,19 @@ class PLOTTER_API avtLineoutActor
     void               Hide();
     void               UnHide();
 
-    void               SetAttachmentPoint(float x, float y, float z);
     void               SetAttachmentPoint(double x, double y, double z);
-    const float       *GetAttachmentPoint() { return attach; };
-    void               SetPoint2(float x, float y, float z);
+    const double      *GetAttachmentPoint() { return attach; };
     void               SetPoint2(double x, double y, double z);
     void               SetMode3D(const bool);
-    void               SetScale(float);
+    void               SetScale(double);
     void               SetDesignator(const std::string &designator_);
     const std::string  GetDesignator() const;
           std::string  GetDesignator();
-    void               SetForegroundColor(float fgr, float fgg, float fgb);
-    void               SetForegroundColor(float fg[3]);
+    void               SetForegroundColor(double fgr, double fgg, double fgb);
+    void               SetForegroundColor(double fg[3]);
     void               UpdateView();
-    void               Shift(const float vec[3]);
-    void               Translate(const float vec[3]);
+    void               Shift(const double vec[3]);
+    void               Translate(const double vec[3]);
     void               ResetPosition(void);
 
     void               SetLineStyle(const int);
@@ -76,8 +74,8 @@ class PLOTTER_API avtLineoutActor
     bool               hidden;
     bool               mode3D;
     bool               showLabels;
-    float              attach[3];
-    float              pt2[3];
+    double             attach[3];
+    double             pt2[3];
     std::string        designator; 
     vtkFollower       *labelActor1;
     vtkFollower       *labelActor2;

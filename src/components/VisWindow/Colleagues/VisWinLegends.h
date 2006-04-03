@@ -47,7 +47,7 @@ class VISWINDOW_API VisWinLegends : public VisWinColleague
                                   VisWinLegends(VisWindowColleagueProxy &);
     virtual                      ~VisWinLegends();
 
-    virtual void                  SetForegroundColor(float, float, float);
+    virtual void                  SetForegroundColor(double, double, double);
     virtual void                  UpdatePlotList(std::vector<avtActor_p> &);
 
     void                          SetVisibility(bool db, bool legend);
@@ -59,10 +59,10 @@ class VISWINDOW_API VisWinLegends : public VisWinColleague
     bool                          legendVisible;
     bool                          homogeneous;
     
-    static const float            leftColumnPosition;
-    static const float            rightColumnPosition;
-    static const float            dbInfoHeight;
-    static const float            dbInfoWidth;
+    static const double            leftColumnPosition;
+    static const double            rightColumnPosition;
+    static const double            dbInfoHeight;
+    static const double            dbInfoWidth;
 
     void                          PositionLegends(std::vector<avtActor_p> &);
     void                          UpdateDBInfo(std::vector<avtActor_p> &);

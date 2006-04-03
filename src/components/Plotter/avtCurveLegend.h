@@ -34,15 +34,15 @@ class PLOTTER_API avtCurveLegend : public avtLegend
 
     void                       SetLineWidth(_LineWidth lw);
     void                       SetLineStyle(_LineStyle ls);
-    void                       SetColor(const float[3]);
-    void                       SetColor(float, float, float);
+    void                       SetColor(const double[3]);
+    void                       SetColor(double, double, double);
 
   protected:
     vtkLineLegend              *lineLegend;
 
-    virtual void               ChangePosition(float, float);
+    virtual void               ChangePosition(double, double);
     virtual void               ChangeTitle(const char *);
-    virtual void               ChangeFontHeight(float);
+    virtual void               ChangeFontHeight(double);
 };
 
 

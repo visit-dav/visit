@@ -1,5 +1,5 @@
 Function: Initialize
-Declaration: void Initialize(const float, const std::string &);
+Declaration: void Initialize(const double, const std::string &);
 Definition:
 // ****************************************************************************
 //  Method: MinMaxInfo::Initialize
@@ -15,7 +15,7 @@ Definition:
 // ****************************************************************************
 
 void
-MinMaxInfo::Initialize(const float val, const std::string &t)
+MinMaxInfo::Initialize(const double val, const std::string &t)
 {
     elementNum = -1;
     domain = -1;

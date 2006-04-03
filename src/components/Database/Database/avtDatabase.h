@@ -273,10 +273,10 @@ class DATABASE_API avtDatabase
  
     void                        Query(PickAttributes *);
     virtual bool                FindElementForPoint(const char *, const int, 
-                                    const int, const char *, float[3], int &)
+                                    const int, const char *, double[3], int &)
                                     { return false; } ;
     virtual bool                QueryCoords(const std::string &, const int, 
-                                    const int, const int, float[3], const bool,
+                                    const int, const int, double[3], const bool,
                                     const bool, const char *mn = NULL)
                                     { return false; } ;
 
@@ -376,7 +376,7 @@ class DATABASE_API avtDatabase
     virtual bool                QueryNodes(const std::string &, const int, 
                                            const int, bool &, const int,
                                            intVector &, intVector &, 
-                                           const bool, float [3],
+                                           const bool, double [3],
                                            const int, const bool, const bool,
                                            const bool, stringVector &,
                                            stringVector &, stringVector &,
@@ -389,7 +389,7 @@ class DATABASE_API avtDatabase
     virtual bool                QueryZones(const std::string &, const int,int &,
                                            bool &, const int, intVector &, 
                                            intVector &, const bool,
-                                           float [3], const int, const bool, 
+                                           double [3], const int, const bool, 
                                            const bool,  const bool, 
                                            stringVector &, stringVector &, 
                                            stringVector &, const bool, const bool, 

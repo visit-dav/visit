@@ -396,7 +396,7 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     cellTypes->SetNumberOfValues(ncells);
     unsigned char *ct = cellTypes->GetPointer(0);
 
-    vtkIntArray *cellLocations = vtkIntArray::New();
+    vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
     cellLocations->SetNumberOfValues(ncells);
     int *cl = cellLocations->GetPointer(0);
 

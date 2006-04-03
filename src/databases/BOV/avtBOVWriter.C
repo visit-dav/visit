@@ -369,7 +369,7 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
     ofile << "VARIABLE PALETTE MIN: " << min << endl;
     ofile << "VARIABLE PALETTE MAX: " << max << endl;
      
-    float bounds[6];
+    double bounds[6];
     rgrid->GetBounds(bounds);
     ofile << "BRICK ORIGIN: " << bounds[0] << " " << bounds[2] << " "
             << bounds[4] << endl;

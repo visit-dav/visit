@@ -2086,10 +2086,11 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             //
             // Set the compositer's background color
             //
-            const float *fbg = viswin->GetBackgroundColor();
-            unsigned char bg_r = (unsigned char) (fbg[0] * 255.0);
-            unsigned char bg_g = (unsigned char) (fbg[1] * 255.0);
-            unsigned char bg_b = (unsigned char) (fbg[2] * 255.0);
+            const double *fbg = viswin->GetBackgroundColor();
+            unsigned char bg_r = (unsigned char) ((float)fbg[0] * 255.f);
+            unsigned char bg_g = (unsigned char) ((float)fbg[1] * 255.f);
+            unsigned char bg_b = (unsigned char) ((float)fbg[2] * 255.f);
+
             imageCompositer->SetBackground(bg_r, bg_g, bg_b);
 
             //
@@ -2388,11 +2389,11 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
         (changedCtName == ctName))
     {
         bool extsAreDifferent = false;
-        static float curexts[6];
+        static double curexts[6];
         viswin->GetBounds(curexts);
         for (int i = 0; i < 6; i ++)
         {
-            if (curexts[i] != (float) vexts[i])
+            if (curexts[i] != (double) vexts[i])
             {
                 extsAreDifferent = true;
                 break;
@@ -2406,7 +2407,7 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
     avtExtentType extType = AVT_UNKNOWN_EXTENT_TYPE;
     avtExtentType_FromString(extstr, extType);
     viswin->SetViewExtentsType(extType);
-    float fexts[6];
+    double fexts[6];
     for (int i = 0; i < 6; i ++)
         fexts[i] = vexts[i];
     viswin->SetBounds(fexts);
@@ -2971,7 +2972,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
         {
             pa->SetDomain(domElFC[0]);
             pa->SetElementNumber(domElFC[1]);
-            float dummyPt[3] = { FLT_MAX, 0., 0.};
+            double dummyPt[3] = { FLT_MAX, 0., 0.};
             pa->SetPickPoint(dummyPt);
             pa->SetCellPoint(dummyPt);
             if (domElFC[2])
@@ -3008,7 +3009,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
         {
             if (skipLocate) // picking lines, set up pick atts appropriately
             {
-                float *pt = pa->GetRayPoint1();
+                double *pt = pa->GetRayPoint1();
                 pt[2] = 0.;
                 pa->SetRayPoint1(pt);
                 pa->SetRayPoint2(pt);
@@ -4035,8 +4036,7 @@ NetworkManager::PickForIntersection(const int winId, PickAttributes *pa)
     VisWindow *viswin = viswinMap[winId].viswin;
     if (viswin->FindIntersection(x, y, isect))
     {
-        float pp[3] = {isect[0], isect[1], isect[2] };
-        pa->SetPickPoint(pp);
+        pa->SetPickPoint(isect);
         pa->SetFulfilled(true);
     }
 }

@@ -150,14 +150,14 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
     void                          ClearPlots(void);
     void                          OrderPlots();
 
-    void                          GetBounds(float [6]);
-    void                          GetDataRange(float &, float &);
+    void                          GetBounds(double [6]);
+    void                          GetDataRange(double &, double &);
     void                          SetViewExtentsType(avtExtentType);
 
     void                          EndBoundingBox(void);
     void                          StartBoundingBox(void);
 
-    virtual void                  SetForegroundColor(float, float, float);
+    virtual void                  SetForegroundColor(double, double, double);
     virtual void                  UpdateView(void);
 
     virtual void                  Start3DMode(void);
@@ -168,22 +168,22 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
     virtual void                  MotionBegin(void);
     virtual void                  MotionEnd(void);
 
-    void                          SetBounds(const float [6]);
+    void                          SetBounds(const double [6]);
     void                          UnsetBounds(void);
 
     void                          TriggerPlotListUpdate(void);
 
     avtDataset_p                  GetAllDatasets(void);
 
-    void                          ScalePlots(const float [3]);
+    void                          ScalePlots(const double [3]);
     void                          TurnLightingOn(void);
     void                          TurnLightingOff(void);
-    void                          SetAmbientCoefficient(const float);
+    void                          SetAmbientCoefficient(const double);
 
     virtual void                  SetSurfaceRepresentation(int rep);
     virtual void                  SetImmediateModeRendering(bool val);
 
-    virtual void                  SetSpecularProperties(bool,float,float,
+    virtual void                  SetSpecularProperties(bool,double,double,
                                                         const ColorAttribute&);
 
     void                          SetExternalRenderCallback(
@@ -203,7 +203,7 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
 
     void                          MakeAllPickable(void);
     void                          MakeAllUnPickable(void);
-    float                         GetMaxZShift(void);
+    double                         GetMaxZShift(void);
 
   protected:
     std::vector< avtActor_p >     plots;
@@ -217,16 +217,16 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
     avtExtentType                 spatialExtentType;
 
     bool                          userSetBounds;
-    float                         currentBounds[6];
-    float                         setBounds[6];
+    double                         currentBounds[6];
+    double                         setBounds[6];
 
     bool                          sceneHasChanged;
 
-    void                          AdjustCamera(const float[6], const float[6]);
+    void                          AdjustCamera(const double[6], const double[6]);
     void                          CheckPlot(avtActor_p &);
-    void                          GetRealBounds(float [6]);
-    void                          SetBoundingBox(float *);
-    void                          ShiftPlots(float [3]);
+    void                          GetRealBounds(double [6]);
+    void                          SetBoundingBox(double *);
+    void                          ShiftPlots(double [3]);
     void                          UpdateScaleFactor(void);
 };
 

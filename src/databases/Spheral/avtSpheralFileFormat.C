@@ -827,7 +827,7 @@ avtSpheralFileFormat::GetVar(int dom, const char *field)
                     {
                         vtkDataArray *from = cache[dom].fields[i][fieldIndex];
                         int nT = from->GetNumberOfTuples();
-                        float tuple[24];
+                        double tuple[24];
                         for (int j = 0 ; j < nT ; j++)
                         {
                             from->GetTuple(j, tuple);

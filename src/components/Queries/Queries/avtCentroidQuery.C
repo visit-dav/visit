@@ -171,9 +171,9 @@ avtCentroidQuery::Execute(vtkDataSet *ds, const int dom)
         if (ghosts != NULL && ghosts->GetTuple1(i) != 0.)
             continue;
         vtkCell *cell = ds->GetCell(i);
-        float center[3];
+        double center[3];
         vtkVisItUtility::GetCellCenter(cell, center);
-        float mass = var->GetTuple1(i);
+        double mass = var->GetTuple1(i);
         C[0] += mass*center[0];
         C[1] += mass*center[1];
         C[2] += mass*center[2];

@@ -164,7 +164,7 @@ avtLabeledCurveMapper::SetDatasetInput(vtkDataSet *ds, int inNum)
     filter[inNum]->SetOnRatio(ds->GetNumberOfPoints()/5);
     filter[inNum]->GetOutput()->Update();
     vtkPoints *points = filter[inNum]->GetOutput()->GetPoints();
-    float pos[3];        
+    double pos[3];        
     vtkIdType i;
     for (i = 0; i < points->GetNumberOfPoints(); i++)
     {
@@ -194,7 +194,7 @@ avtLabeledCurveMapper::SetDatasetInput(vtkDataSet *ds, int inNum)
 // ****************************************************************************
 
 void
-avtLabeledCurveMapper::SetScale(float s)
+avtLabeledCurveMapper::SetScale(double s)
 {
     scale = s;
     for (int i = 0; i < actors.size(); i++)
@@ -219,7 +219,7 @@ avtLabeledCurveMapper::SetScale(float s)
 // ****************************************************************************
 
 void
-avtLabeledCurveMapper::SetLabelColor(float col[3])
+avtLabeledCurveMapper::SetLabelColor(double col[3])
 {
     labelColor[0] = col[0];
     labelColor[1] = col[1];
@@ -249,7 +249,7 @@ avtLabeledCurveMapper::SetLabelColor(float col[3])
 // ****************************************************************************
 
 void
-avtLabeledCurveMapper::SetLabelColor(float r, float g, float b)
+avtLabeledCurveMapper::SetLabelColor(double r, double g, double b)
 {
     labelColor[0] = r; 
     labelColor[1] = g; 

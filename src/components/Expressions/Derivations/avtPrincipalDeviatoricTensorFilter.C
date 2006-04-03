@@ -72,7 +72,7 @@ avtPrincipalDeviatoricTensorFilter::DoOperation(vtkDataArray *in,
     {
         for (int i = 0 ; i < ntuples ; i++)
         {
-            float *vals = in->GetTuple9(i);   
+            double *vals = in->GetTuple9(i);   
 
             double pressure = -(vals[0] + vals[4] + vals[8]) / 3.;
             double dev0 = vals[0] + pressure;
@@ -109,7 +109,7 @@ avtPrincipalDeviatoricTensorFilter::DoOperation(vtkDataArray *in,
                 princ2 = value*cos(angle);
             }
 
-            float out3[3];
+            double out3[3];
             out3[0] = princ0;
             out3[1] = princ1;
             out3[2] = princ2;

@@ -101,16 +101,16 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
     void                SetInteractor(VisitInteractor *i)
                                   { ProxiedSetInteractor(i); };
 
-    void                GetForegroundColor(float *fg)
+    void                GetForegroundColor(double *fg)
                                   { ProxiedGetForegroundColor(fg); };
 
-    void                GetViewport(float *vport)
+    void                GetViewport(double *vport)
                                   { ProxiedGetViewport(vport); };
 
     vtkRenderer        *GetBackground(void)
                                   { return ProxiedGetBackground(); };
 
-    void                GetBounds(float bounds[6])
+    void                GetBounds(double bounds[6])
                                   { ProxiedGetBounds(bounds); };
 
     vtkRenderer        *GetCanvas(void)
@@ -133,13 +133,13 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
     void                UpdatePlotList(std::vector<avtActor_p> &l)
                                   { ProxiedUpdatePlotList(l); };
 
-    float               ComputeVectorTextScaleFactor(const float *p, const float*v = NULL) 
+    double               ComputeVectorTextScaleFactor(const double *p, const double*v = NULL) 
                                   { return ProxiedComputeVectorTextScaleFactor(p, v); };
 
     bool                GetAmbientOn()
                                   { return ProxiedGetAmbientOn(); };
 
-    float               GetAmbientCoefficient()
+    double               GetAmbientCoefficient()
                                   { return ProxiedGetAmbientCoefficient(); };
 
     bool                GetLighting()
@@ -172,10 +172,10 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
     bool                GetSpecularFlag()
                                   { return ProxiedGetSpecularFlag(); };
 
-    float               GetSpecularCoeff()
+    double               GetSpecularCoeff()
                                   { return ProxiedGetSpecularCoeff(); };
 
-    float               GetSpecularPower()
+    double               GetSpecularPower()
                                   { return ProxiedGetSpecularPower(); };
 
     const ColorAttribute &GetSpecularColor()
@@ -201,7 +201,7 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
 
     void                RecalculateRenderOrder()
                                   { ProxiedRecalculateRenderOrder(); };
-    float               GetMaxPlotZShift()
+    double               GetMaxPlotZShift()
                                   { return ProxiedGetMaxPlotZShift(); };
 };
 

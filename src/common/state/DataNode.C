@@ -491,13 +491,23 @@ DataNode::AsLong() const
 float
 DataNode::AsFloat() const
 {
-    return *((float *)Data);
+    float rv = 0.f;
+    if (NodeType == FLOAT_NODE)
+        rv = *((float *)Data);
+    else if (NodeType == DOUBLE_NODE)
+        rv = float(*((double *)Data));
+    return rv;
 }
 
 double
 DataNode::AsDouble() const
 {
-    return *((double *)Data);
+    double rv = 0.;
+    if (NodeType == DOUBLE_NODE)
+        rv =  *((double *)Data);
+    else if (NodeType == FLOAT_NODE)
+        rv = double(*((float*)Data));
+    return rv;
 }
 
 const std::string &

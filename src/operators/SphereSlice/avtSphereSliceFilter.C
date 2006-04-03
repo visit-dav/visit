@@ -81,7 +81,7 @@ avtSphereSliceFilter::SetAtts(const AttributeGroup *a)
     origin[2] = atts.GetOrigin()[2];
     radius    = atts.GetRadius();
 
-    float coeffs[10];
+    double coeffs[10];
 
     coeffs[0] = 1.;
     coeffs[1] = 1.;

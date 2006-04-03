@@ -169,7 +169,7 @@ VisWinTools::~VisWinTools()
 // ****************************************************************************
 
 void
-VisWinTools::SetBackgroundColor(float r, float g, float b)
+VisWinTools::SetBackgroundColor(double r, double g, double b)
 {
     for(int i = 0; i < numTools; ++i)
         tools[i]->SetBackgroundColor(r, g, b);
@@ -194,7 +194,7 @@ VisWinTools::SetBackgroundColor(float r, float g, float b)
 // ****************************************************************************
 
 void
-VisWinTools::SetForegroundColor(float r, float g, float b)
+VisWinTools::SetForegroundColor(double r, double g, double b)
 {
     for(int i = 0; i < numTools; ++i)
         tools[i]->SetForegroundColor(r, g, b);
@@ -952,7 +952,7 @@ vtkHighlightActor2D::RegenerateHighlight()
     int    winWidth = helperRenderer->GetSize()[0];
     int    winHeight = helperRenderer->GetSize()[1];
     double v[4];
-    float  coord[3];
+    double  coord[3];
     vtkIdType    ptIds[4];
 
     coord[2] = 0.;
@@ -972,8 +972,8 @@ vtkHighlightActor2D::RegenerateHighlight()
                 helperRenderer->WorldToDisplay();
                 helperRenderer->GetDisplayPoint(v);
 
-                float dX = float((hpts[j].radius * winWidth) / SQRT_OF_2);
-                float dY = float((hpts[j].radius * winHeight) / SQRT_OF_2);
+                double dX = double((hpts[j].radius * winWidth) / SQRT_OF_2);
+                double dY = double((hpts[j].radius * winHeight) / SQRT_OF_2);
 
                 coord[0] = v[0] + dX;
                 coord[1] = v[1] + dY;

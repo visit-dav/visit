@@ -32,16 +32,16 @@ public:
     int  screenWidth() const       { return xScreenSize; };
     int  screenHeight() const      { return yScreenSize; };
     void setScreenPosition(int xp, int yp);
-    void setScreenPosition(float xp, float yp);
+    void setScreenPosition(double xp, double yp);
     int  screenX() const           { return xPosition; }
     int  screenY() const           { return yPosition; }
     int  pageIncrement() const     { return pageIncrement_; }
     void setPageIncrement(int val) { pageIncrement_ = val; }    
 signals:
     void screenPositionChanged(int newX, int newY);
-    void screenPositionChanged(float newX, float newY);
+    void screenPositionChanged(double newX, double newY);
     void intermediateScreenPositionChanged(int newX, int newY);
-    void intermediateScreenPositionChanged(float newX, float newY);
+    void intermediateScreenPositionChanged(double newX, double newY);
 public slots:
     void popupShow();
 protected:

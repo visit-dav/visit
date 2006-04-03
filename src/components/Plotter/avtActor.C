@@ -267,7 +267,7 @@ avtActor::Remove(vtkRenderer *renderingCanvas, vtkRenderer *decorationCanvas)
 // ****************************************************************************
 
 void
-avtActor::GetOriginalBounds(float bounds[6])
+avtActor::GetOriginalBounds(double bounds[6])
 {
     if (*behavior == NULL)
     {
@@ -293,7 +293,7 @@ avtActor::GetOriginalBounds(float bounds[6])
 // ****************************************************************************
 
 void
-avtActor::GetActualBounds(float bounds[6])
+avtActor::GetActualBounds(double bounds[6])
 {
     if (*behavior == NULL)
     {
@@ -510,16 +510,16 @@ avtActor::VisibilityOn(void)
 // ****************************************************************************
 
 void
-avtActor::ShiftByVector(const float vec[3])
+avtActor::ShiftByVector(const double vec[3])
 {
     //
     // Not all plots should be shifted by the same amount.  The behavior has
     // a factor (presumably between 0 and 1) that will determine by what
     // amount to shift.
     //
-    float f = behavior->GetShiftFactor();
+    double f = behavior->GetShiftFactor();
 
-    float v[3];
+    double v[3];
     v[0] = vec[0]*f;
     v[1] = vec[1]*f;
     v[2] = vec[2]*f;
@@ -547,7 +547,7 @@ avtActor::ShiftByVector(const float vec[3])
 // ****************************************************************************
 
 void
-avtActor::ScaleByVector(const float vec[3])
+avtActor::ScaleByVector(const double vec[3])
 {
     drawable->ScaleByVector(vec);
     if (*decorations != NULL)
@@ -578,7 +578,7 @@ avtActor::ScaleByVector(const float vec[3])
 // ****************************************************************************
 
 void
-avtActor::GetDataExtents(float &dmin, float &dmax) 
+avtActor::GetDataExtents(double &dmin, double &dmax) 
 {
     if (*behavior == NULL)
     {
@@ -708,7 +708,7 @@ avtActor::TurnLightingOff()
 // ****************************************************************************
 
 void
-avtActor::SetAmbientCoefficient(const float amb)
+avtActor::SetAmbientCoefficient(const double amb)
 {
     if (*(drawable) != NULL)
     {
@@ -779,7 +779,7 @@ avtActor::SetImmediateModeRendering(bool val)
 // ****************************************************************************
 
 void
-avtActor::SetSpecularProperties(bool flag, float coeff, float power,
+avtActor::SetSpecularProperties(bool flag, double coeff, double power,
                                 const ColorAttribute &color)
 {
     if (*(drawable) != NULL)
@@ -899,7 +899,7 @@ avtActor::MakeUnPickable()
 //
 // ****************************************************************************
 
-float
+double
 avtActor::GetZPosition()
 {
     return drawable->GetZPosition();

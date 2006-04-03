@@ -171,8 +171,8 @@ avtRayTracer::SetBackgroundMode(int mode)
 // ****************************************************************************
 
 void
-avtRayTracer::SetGradientBackgroundColors(const float bg1[3],
-                                               const float bg2[3])
+avtRayTracer::SetGradientBackgroundColors(const double bg1[3],
+                                          const double bg2[3])
 {
     gradBG1[0] = bg1[0];
     gradBG1[1] = bg1[1];

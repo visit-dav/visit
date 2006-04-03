@@ -1843,7 +1843,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         if (dext)
         {
             int dim = plot->GetSpatialDimension();
-            float pb[6] = { 0., 0., 0., 0., 0., 0.};
+            double pb[6] = { 0., 0., 0., 0., 0., 0.};
             for (int i = 0; i < 2*dim; i++)
             {
                 pb[i] = dext[i];
@@ -1891,8 +1891,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             else 
                 pickAtts->SetPickType(PickAttributes::CurveNode);
         }
-        float *rp1 = pd.rayPt1;
-        float *rp2 = pd.rayPt2;
+        double *rp1 = pd.rayPt1;
+        double *rp2 = pd.rayPt2;
         //
         // If in full-frame mode on a 2d plot, the ray points were computed
         // in the scaled full-frame space.  Reverse the scaling to get the 
@@ -1977,7 +1977,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             {
                 pickAtts->SetDomain(d);
                 pickAtts->SetElementNumber(e);
-                float dummyPt[3] = { FLT_MAX, 0., 0.};
+                double dummyPt[3] = { FLT_MAX, 0., 0.};
                 pickAtts->SetPickPoint(dummyPt);
                 pickAtts->SetCellPoint(dummyPt);
             }
@@ -1996,7 +1996,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         {
             pickAtts->SetDomain(dom);
             pickAtts->SetElementNumber(el);
-            float dummyPt[3] = { FLT_MAX, 0., 0.};
+            double dummyPt[3] = { FLT_MAX, 0., 0.};
             pickAtts->SetPickPoint(dummyPt);
             pickAtts->SetCellPoint(dummyPt);
         }

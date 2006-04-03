@@ -125,7 +125,7 @@ vtkBoxFilter::Execute(void)
     bool *isInBox;
     char *relativeToBox[3];
     float bxpts[8][3];
-    float bounds[6];
+    double bounds[6];
 
     //
     // Represents the connectivity between points that define the box.
@@ -144,7 +144,7 @@ vtkBoxFilter::Execute(void)
         isInBox= new bool[nPts];
         for (i = 0 ; i < nPts ; i++)
         {
-            float pt[3];
+            double pt[3];
             input->GetPoint(i, pt);
             if (pt[0] >= MinX && pt[0] <= MaxX && 
                 pt[1] >= MinY && pt[1] <= MaxY &&
@@ -192,7 +192,7 @@ vtkBoxFilter::Execute(void)
         //
         for (i = 0 ; i < nPts ; i++)
         {
-            float pt[3];
+            double pt[3];
             input->GetPoint(i, pt);
             int j;
             for (j = 0; j < 3; ++j)
@@ -326,21 +326,21 @@ vtkBoxFilter::Execute(void)
                         continue;
                     }
 
-                    float pt1[3];
+                    double pt1[3];
                     input->GetPoint(ptId, pt1);
                     
                     int k;
                     for (k = j + 1; k < nCellPts; ++k)
                     {
-                        float pt2[3];
+                        double pt2[3];
                         input->GetPoint(cellPts->GetId(k), pt2);
                         // Turn pt2 into a ray
-                        float ray[3];
+                        double ray[3];
                         ray[0] = pt2[0] - pt1[0];
                         ray[1] = pt2[1] - pt1[1];
                         ray[2] = pt2[2] - pt1[2];
                         
-                        float t;
+                        double t;
                         if (vtkBox::IntersectBox(bounds, pt1, ray, pt2, t)
                                 && t < 1)
                         {
@@ -358,15 +358,22 @@ vtkBoxFilter::Execute(void)
                     // box. In these cases, we check to see if the lines of
                     // the box intersect the cell.
                     //
-                    float xcoords[3];
-                    float t;
-                    float pcoords[3];
+                    double xcoords[3];
+                    double t;
+                    double pcoords[3];
+                    double dpt1[3], dpt2[3];
                     int subid;
                     for (j = 0; j < 24; j += 2)
                     {
                         float *pt1 = bxpts[boxLineMap[j]];
                         float *pt2 = bxpts[boxLineMap[j + 1]];
-                        if (cell->IntersectWithLine(pt1, pt2, 1e-6, t,
+                        dpt1[0] = pt1[0];
+                        dpt1[1] = pt1[1];
+                        dpt1[2] = pt1[2];
+                        dpt2[0] = pt2[0];
+                        dpt2[1] = pt2[1];
+                        dpt2[2] = pt2[2];
+                        if (cell->IntersectWithLine(dpt1, dpt2, 1e-6, t,
                                                     xcoords, pcoords, subid))
                         {
                             meetsCriteria = true;
@@ -392,7 +399,7 @@ vtkBoxFilter::Execute(void)
                 if (pointMap[ptId] == -1)
                 {
                     pointMap[ptId] = nextPointIndex;
-                    float pt[3];
+                    double pt[3];
                     input->GetPoint(ptId, pt);
                     pts->InsertNextPoint(pt);
                     outputPD->CopyData(inputPD, ptId, nextPointIndex);
@@ -557,7 +564,7 @@ avtBoxFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     if (GetInput()->GetInfo().GetAttributes().GetSelectionApplied(selID))
     {
         debug1 << "Bypassing Box operator because database plugin "
-                  "cliams to have applied the selection already" << endl;
+                  "claims to have applied the selection already" << endl;
         return in_ds;
     }
 
@@ -818,8 +825,8 @@ avtBoxFilter::PerformRestriction(avtPipelineSpecification_p spec)
         sel->SetInclusionMode(avtSpatialBoxSelection::Partial);
     else
         sel->SetInclusionMode(avtSpatialBoxSelection::Whole);
-    float mins[3] = {atts.GetMinx(), atts.GetMiny(), atts.GetMinz()};
-    float maxs[3] = {atts.GetMaxx(), atts.GetMaxy(), atts.GetMaxz()};
+    double mins[3] = {atts.GetMinx(), atts.GetMiny(), atts.GetMinz()};
+    double maxs[3] = {atts.GetMaxx(), atts.GetMaxy(), atts.GetMaxz()};
     sel->SetMins(mins);
     sel->SetMaxs(maxs);
     selID = rv->GetDataSpecification()->AddDataSelection(sel);
@@ -829,6 +836,7 @@ avtBoxFilter::PerformRestriction(avtPipelineSpecification_p spec)
     // which domains fall within the box and make sure we only read in those.
     //
     avtIntervalTree *it = GetMetaData()->GetSpatialExtents();
+
     if (it != NULL)
     {
         vector<int> dl;

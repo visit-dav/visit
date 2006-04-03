@@ -65,7 +65,7 @@ avtLine2DColleague::avtLine2DColleague(VisWindowColleagueProxy &m):
     pcoords->SetNumberOfComponents(3);
     pcoords->SetNumberOfTuples(2);
 
-    float pts[2][3] = { {0.25, 0.25, 0.0}, {0.75, 0.75, 0.0} };
+    double pts[2][3] = { {0.25, 0.25, 0.0}, {0.75, 0.75, 0.0} };
     for(int i = 0; i < 2; i++)
         pcoords->SetTuple(i, pts[i]);
 
@@ -120,7 +120,7 @@ avtLine2DColleague::avtLine2DColleague(VisWindowColleagueProxy &m):
     mapper->SetTransformCoordinate(pos);
 
     // Set a default color.
-    float fgColor[3];
+    double fgColor[3];
     mediator.GetForegroundColor(fgColor);
     actor->GetProperty()->SetColor(fgColor[0], fgColor[1], fgColor[2]);
 
@@ -199,7 +199,7 @@ avtLine2DColleague::makeArrows(vtkPolyData *a0, vtkPolyData *a1, bool makeLines)
     pcoordsBegin->SetNumberOfComponents(3);
     pcoordsBegin->SetNumberOfTuples(3);
 
-    float ptsBegin[3][3] = { {0., 0., 0.}, {1., 1., 0.}, {1., 0., 0.} };
+    double ptsBegin[3][3] = { {0., 0., 0.}, {1., 1., 0.}, {1., 0., 0.} };
     int i;
     for(i = 0; i < 3; i++)
         pcoordsBegin->SetTuple(i, ptsBegin[i]);
@@ -238,7 +238,7 @@ avtLine2DColleague::makeArrows(vtkPolyData *a0, vtkPolyData *a1, bool makeLines)
     pcoordsEnd->SetNumberOfComponents(3);
     pcoordsEnd->SetNumberOfTuples(3);
 
-    float ptsEnd[3][3] = { {0., 1., 0.}, {0., 0., 0.}, {1., 1., 0.} };
+    double ptsEnd[3][3] = { {0., 1., 0.}, {0., 0., 0.}, {1., 1., 0.} };
     for(i = 0; i < 3; i++)
         pcoordsEnd->SetTuple(i, ptsEnd[i]);
 
@@ -289,7 +289,7 @@ avtLine2DColleague::makeArrows(vtkPolyData *a0, vtkPolyData *a1, bool makeLines)
 
 void
 avtLine2DColleague::updateArrows(vtkPolyData *a0, vtkPolyData *a1,
-    float *p0, float *p1)
+    double *p0, double *p1)
 {
     if(beginArrowStyle > 0)
     {
@@ -442,8 +442,8 @@ avtLine2DColleague::SetOptions(const AnnotationObject &annot)
     AnnotationObject currentOptions;
     GetOptions(currentOptions);
 
-    float *p0 = (float *) annot.GetPosition();
-    float *p1 = (float *) annot.GetPosition2();
+    double *p0 = (double *) annot.GetPosition();
+    double *p1 = (double *) annot.GetPosition2();
 
     lineData->GetPoints()->SetPoint(0, p0[0], p0[1], 0.);
     lineData->GetPoints()->SetPoint(1, p1[0], p1[1], 0.);
@@ -451,10 +451,10 @@ avtLine2DColleague::SetOptions(const AnnotationObject &annot)
     actor->GetProperty()->SetLineWidth(annot.GetColor2().Red());
 
     ColorAttribute ca = annot.GetColor1();
-    actor->GetProperty()->SetColor(float(ca.Red()) / 255.,
-                                   float(ca.Green()) / 255.,
-                                   float(ca.Blue()) / 255.);
-    actor->GetProperty()->SetOpacity(float(ca.Alpha()) / 255.);
+    actor->GetProperty()->SetColor(double(ca.Red()) / 255.,
+                                   double(ca.Green()) / 255.,
+                                   double(ca.Blue()) / 255.);
+    actor->GetProperty()->SetOpacity(double(ca.Alpha()) / 255.);
 
     beginArrowStyle = annot.GetColor2().Green();
     endArrowStyle = annot.GetColor2().Blue();
@@ -538,13 +538,13 @@ avtLine2DColleague::GetOptions(AnnotationObject &annot)
     annot.SetPosition(lineData->GetPoints()->GetPoint(0));
     annot.SetPosition2(lineData->GetPoints()->GetPoint(1));
 
-    float *currColor = actor->GetProperty()->GetColor();
+    double *currColor = actor->GetProperty()->GetColor();
 
     ColorAttribute ca;
-    ca.SetRgba(int(currColor[0] * 255),
-               int(currColor[1] * 255),
-               int(currColor[2] * 255),
-               int(actor->GetProperty()->GetOpacity() * 255));
+    ca.SetRgba(int((float)currColor[0] * 255),
+               int((float)currColor[1] * 255),
+               int((float)currColor[2] * 255),
+               int((float)actor->GetProperty()->GetOpacity() * 255));
     annot.SetColor1(ca);
     ca.SetRgb((int) actor->GetProperty()->GetLineWidth(),
               beginArrowStyle,

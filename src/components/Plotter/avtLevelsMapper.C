@@ -23,7 +23,8 @@
 using std::string;
 using std::vector;
 
-const double INV_255 = 0.0039215686;
+const double INV_255 = 0.0039215686274509803377;
+
 
 
 // ****************************************************************************
@@ -149,7 +150,7 @@ avtLevelsMapper::~avtLevelsMapper()
 void
 avtLevelsMapper::CustomizeMappers(void)
 {
-    float col[4];
+    double col[4];
     for (int i = 0 ; i < nMappers ; i++)
     {
         if (mappers[i] != NULL)
@@ -161,7 +162,7 @@ avtLevelsMapper::CustomizeMappers(void)
             //
             GetLevelColor(labelsForColorMapping[i], col);
             vtkProperty* prop = actors[i]->GetProperty();
-            float spec_color[4];
+            double spec_color[4];
             if (prop->GetSpecular() > 0.)
                 prop->GetSpecularColor(spec_color);
             prop->SetColor(col[0], col[1], col[2]);
@@ -287,7 +288,7 @@ avtLevelsMapper::SetLineStyle(_LineStyle ls)
 // ****************************************************************************
 
 void
-avtLevelsMapper::SetPointSize(float s)
+avtLevelsMapper::SetPointSize(double s)
 {
     if ( actors == NULL )
     {
@@ -444,14 +445,14 @@ void
 avtLevelsMapper::SetColors(const ColorAttributeList &c)
 {
     cal = c;
-    float col[4];
+    double col[4];
     for (int i = 0; i < nMappers; i++)
     {
         if (mappers[i] != NULL)
         {
             GetLevelColor(labelsForColorMapping[i], col);
             vtkProperty* prop = actors[i]->GetProperty();
-            float spec_color[4];
+            double spec_color[4];
             if (prop->GetSpecular() > 0.)
                 prop->GetSpecularColor(spec_color);
             prop->SetColor(col[0], col[1], col[2]);
@@ -492,7 +493,7 @@ avtLevelsMapper::SetColors(const ColorAttributeList &c)
 // ****************************************************************************
 
 void
-avtLevelsMapper::GetLevelColor(const string &name, float col[4])
+avtLevelsMapper::GetLevelColor(const string &name, double col[4])
 {
     int nc = cal.GetNumColorAttributes();
     if (nc == 1)  // constant color for all levels
@@ -563,7 +564,7 @@ avtLevelsMapper::GetLevelColor(const string &name, float col[4])
 // ****************************************************************************
 
 void
-avtLevelsMapper::GetLevelColor(const int levelNum, float col[4])
+avtLevelsMapper::GetLevelColor(const int levelNum, double col[4])
 {
     int nc = cal.GetNumColorAttributes();
     if (nc == 1)  // constant color for all levels

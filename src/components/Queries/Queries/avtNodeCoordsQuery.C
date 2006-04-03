@@ -97,7 +97,7 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
     }
 
 
-    float coord[3] = {0., 0., 0.};
+    double coord[3] = {0., 0., 0.};
 
     bool success;
     if (queryAtts.GetUseGlobalId())
@@ -109,7 +109,7 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
         success = FindLocalCoord(coord);
     }
     
-    GetFloatArrayToRootProc(coord, 3, success);
+    GetDoubleArrayToRootProc(coord, 3, success);
 
     if (PAR_Rank() != 0)
         return;
@@ -213,7 +213,7 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
 // ****************************************************************************
 
 bool
-avtNodeCoordsQuery::FindLocalCoord(float coord[3])
+avtNodeCoordsQuery::FindLocalCoord(double coord[3])
 {
     intVector dlist;
 
@@ -286,7 +286,7 @@ avtNodeCoordsQuery::FindLocalCoord(float coord[3])
 // ****************************************************************************
 
 bool
-avtNodeCoordsQuery::FindGlobalCoord(float coord[3])
+avtNodeCoordsQuery::FindGlobalCoord(double coord[3])
 {
     int node        = queryAtts.GetElement(); 
     int ts          = queryAtts.GetTimeStep();

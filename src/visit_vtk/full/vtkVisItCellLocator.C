@@ -87,10 +87,10 @@ inline int vtkNeighborCells::InsertNextPoint(int *x)
 }
 
 int
-LineLineIsect(const float *, const float *, const float *, const float *, float *);
+LineLineIsect(const double *, const double *, const double *, const double *, double *);
 
 int
-EdgeLineIsect(vtkCell *cell, const float *, const float *, float *);
+EdgeLineIsect(vtkCell *cell, const double *, const double *, double *);
 
 // Construct with automatic computation of divisions, averaging
 // 25 cells per bucket.
@@ -134,7 +134,7 @@ vtkVisItCellLocator::vtkVisItCellLocator()
   this->UserBounds[5] = 0.;
   this->userBoundsSet = false;
  
-  this->MinCellLength = VTK_LARGE_FLOAT;
+  this->MinCellLength = VTK_DOUBLE_MAX;
 
   this->triangle = vtkTriangle::New();
   this->quad = vtkQuad::New();
@@ -223,13 +223,13 @@ int vtkVisItCellLocator::GenerateIndex(int offset, int numDivs, int i, int j,
 }
 
 static
-float
-GetParametricDistance(vtkCell *cell, float pcoords[3]);
+double
+GetParametricDistance(vtkCell *cell, double pcoords[3]);
 
 // Return intersection point (if any) of finite line with cells contained
 // in cell locator.
-int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], float tol,
-                                      float& t, float x[3], float pcoords[3],
+int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3], double tol,
+                                      double& t, double x[3], double pcoords[3],
                                       int &subId)
 {
   vtkIdType cellId = -1;
@@ -240,8 +240,8 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], float tol,
 
 // Return intersection point (if any) AND the cell which was intersected by
 // finite line
-int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], float tol,
-                                      float& t, float x[3], float pcoords[3],
+int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3], double tol,
+                                      double& t, double x[3], double pcoords[3],
                                       int &subId, vtkIdType &cellId)
 {
   vtkGenericCell *cell=vtkGenericCell::New();
@@ -273,30 +273,30 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], float tol,
 //    Rename ghost data array.
 //
 
-int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], float tol,
-                                      float& t, float x[3], float pcoords[3],
+int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3], double tol,
+                                      double& t, double x[3], double pcoords[3],
                                       int &subId, vtkIdType &cellId,
                                       vtkGenericCell *cell)
 {
-  float origin[3];
-  float direction1[3];
-  float direction2[3];
-  float direction3[3];
-  float hitPosition[3];
-  float hitCellBoundsPosition[3], cellBounds[6];
+  double origin[3];
+  double direction1[3];
+  double direction2[3];
+  double direction3[3];
+  double hitPosition[3];
+  double hitCellBoundsPosition[3], cellBounds[6];
   int hitCellBounds;
-  float result;
-  float bounds2[6];
+  double result;
+  double bounds2[6];
   int i, leafStart, prod, loop;
   vtkIdType bestCellId = -1, cId, tempCellId;
   int idx;
-  float tMax, dist[3];
+  double tMax, dist[3];
   int npos[3];
   int pos[3];
   int bestDir, cellIsGhost;
-  float stopDist, currDist;
-  float deltaT, pDistance, minPDistance = 1.0e38;
-  float length, maxLength = 0.0;
+  double stopDist, currDist;
+  double deltaT, pDistance, minPDistance = 1.0e38;
+  double length, maxLength = 0.0;
   vtkUnsignedCharArray *ghosts = 
     (vtkUnsignedCharArray *)this->DataSet->GetCellData()->GetArray("avtGhostZones");
   
@@ -376,7 +376,7 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], float tol,
       if (this->Tree[idx])
         {
         this->ComputeOctantBounds(pos[0]-1, pos[1]-1, pos[2]-1);
-        for (tMax = VTK_LARGE_FLOAT, tempCellId=0; 
+        for (tMax = VTK_DOUBLE_MAX, tempCellId=0; 
         tempCellId < this->Tree[idx]->GetNumberOfIds(); tempCellId++) 
           {
           cId = this->Tree[idx]->GetId(tempCellId);
@@ -438,7 +438,7 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], float tol,
         }
       
       // move to the next octant
-      tMax = VTK_LARGE_FLOAT;
+      tMax = VTK_DOUBLE_MAX;
       bestDir = 0;
       for (loop = 0; loop < 3; loop++)
         {
@@ -522,31 +522,31 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], float tol,
 //    Hank Childs, Fri Aug 27 15:15:20 PDT 2004
 //    Rename ghost data array.
 //
-int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], 
-                                      float& t, float x[3], float pcoords[3],
+int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3], 
+                                      double& t, double x[3], double pcoords[3],
                                       int &subId, vtkIdType &cellId)
 {
   vtkGenericCell *cell = vtkGenericCell::New();
 
-  float origin[3];
-  float direction1[3];
-  float direction2[3];
-  float direction3[3];
-  float hitPosition[3];
-  float hitCellBoundsPosition[3], cellBounds[6];
+  double origin[3];
+  double direction1[3];
+  double direction2[3];
+  double direction3[3];
+  double hitPosition[3];
+  double hitCellBoundsPosition[3], cellBounds[6];
   int hitCellBounds;
-  float result;
-  float bounds2[6];
+  double result;
+  double bounds2[6];
   int i, leafStart, prod, loop;
   vtkIdType bestCellId = -1, cId;
   int idx;
-  float tMax, dist[3];
+  double tMax, dist[3];
   int npos[3];
   int pos[3];
   int bestDir, cellIsGhost;
-  float stopDist, currDist;
-  float length, maxLength = 0.0;
-  float tempT, tempX[3], pc[3] = {0., 0., 0.};
+  double stopDist, currDist;
+  double length, maxLength = 0.0;
+  double tempT, tempX[3], pc[3] = {0., 0., 0.};
   int tempId;
   vtkUnsignedCharArray *ghosts = 
     (vtkUnsignedCharArray *)this->DataSet->GetCellData()->GetArray("avtGhostZones");
@@ -624,7 +624,7 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
       if (this->Tree[idx])
         {
         this->ComputeOctantBounds(pos[0]-1, pos[1]-1, pos[2]-1);
-        for (tMax = VTK_LARGE_FLOAT, cellId=0; 
+        for (tMax = VTK_DOUBLE_MAX, cellId=0; 
         cellId < this->Tree[idx]->GetNumberOfIds(); cellId++) 
           {
           cId = this->Tree[idx]->GetId(cellId);
@@ -666,11 +666,14 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
 
                 if (CellIntersectWithLine(cell, a0, a1, tempT, tempX, pc, tempId))
                   {
+#if 0
                   if (!this->IsInOctantBounds(tempX))
                    {
                    this->CellHasBeenVisited[cId] = 0; // mark the cell non-visited
                    }
                   else if (tempT < tMax) // it might be close
+#endif
+                  if (tempT < tMax) // it might be close
                     {
                     tMax = tempT;
                     t = tempT;
@@ -687,7 +690,7 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
         }
       
       // move to the next octant
-      tMax = VTK_LARGE_FLOAT;
+      tMax = VTK_DOUBLE_MAX;
       bestDir = 0;
       for (loop = 0; loop < 3; loop++)
         {
@@ -761,9 +764,9 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
 // ****************************************************************************
 
 // Return closest point (if any) AND the cell on which this closest point lies
-void vtkVisItCellLocator::FindClosestPoint(float x[3], float closestPoint[3], 
+void vtkVisItCellLocator::FindClosestPoint(double x[3], double closestPoint[3], 
                                       vtkGenericCell *cell, vtkIdType &cellId,
-                                      int &subId, float& dist2)
+                                      int &subId, double& dist2)
 {
   int i;
   vtkIdType j;
@@ -773,10 +776,10 @@ void vtkVisItCellLocator::FindClosestPoint(float x[3], float closestPoint[3],
   int leafStart;
   int level;
   int ijk[3];
-  float minDist2, refinedRadius2, distance2ToBucket;
-  float distance2ToCellBounds, cellBounds[6];
-  float pcoords[3], point[3], cachedPoint[3], weightsArray[6];
-  float *weights = weightsArray;
+  double minDist2, refinedRadius2, distance2ToBucket;
+  double distance2ToCellBounds, cellBounds[6];
+  double pcoords[3], point[3], cachedPoint[3], weightsArray[6];
+  double *weights = weightsArray;
   int nWeights = 6, nPoints, cellIsGhost;
   vtkIdList *cellIds;
   vtkUnsignedCharArray *ghosts =
@@ -797,7 +800,7 @@ void vtkVisItCellLocator::FindClosestPoint(float x[3], float closestPoint[3],
   
   // init
   dist2 = -1.0;
-  refinedRadius2 = VTK_LARGE_FLOAT;
+  refinedRadius2 = VTK_DOUBLE_MAX;
   
   //
   //  Find bucket point is in.  
@@ -820,7 +823,7 @@ void vtkVisItCellLocator::FindClosestPoint(float x[3], float closestPoint[3],
   //  cells in this bucket, search 1st level neighbors, and so on,
   //  until closest point found.
   //
-  for (closestCell=(-1),minDist2=VTK_LARGE_FLOAT,level=0;
+  for (closestCell=(-1),minDist2=VTK_DOUBLE_MAX,level=0;
   (closestCell == -1) && (level < this->NumberOfDivisions); level++)
     {
     this->GetBucketNeighbors(ijk, this->NumberOfDivisions, level);
@@ -880,7 +883,7 @@ void vtkVisItCellLocator::FindClosestPoint(float x[3], float closestPoint[3],
                       {
                       delete [] weights;
                       }
-                    weights = new float[2*nPoints];  // allocate some extra room
+                    weights = new double[2*nPoints];  // allocate some extra room
                     nWeights = 2*nPoints;
                     }
                 
@@ -983,7 +986,7 @@ void vtkVisItCellLocator::FindClosestPoint(float x[3], float closestPoint[3],
                     {
                     delete [] weights;
                     }
-                  weights = new float[2*nPoints];  // allocate some extra room
+                  weights = new double[2*nPoints];  // allocate some extra room
                   nWeights = 2*nPoints;
                   }
                 
@@ -1028,9 +1031,9 @@ void vtkVisItCellLocator::FindClosestPoint(float x[3], float closestPoint[3],
 
 
 // Return closest point (if any) AND the cell on which this closest point lies
-void vtkVisItCellLocator::FindClosestPoint(float x[3], float closestPoint[3],
+void vtkVisItCellLocator::FindClosestPoint(double x[3], double closestPoint[3],
                                       vtkIdType &cellId, int &subId,
-                                      float& dist2)
+                                      double& dist2)
 {
   vtkGenericCell *cell = vtkGenericCell::New();
   
@@ -1039,7 +1042,7 @@ void vtkVisItCellLocator::FindClosestPoint(float x[3], float closestPoint[3],
   cell->Delete();
 }
 
-int vtkVisItCellLocator::FindClosestPointWithinRadius(float x[3], float radius,
+int vtkVisItCellLocator::FindClosestPointWithinRadius(double x[3], double radius,
 // ****************************************************************************
 //  Modifications:
 //
@@ -1047,10 +1050,10 @@ int vtkVisItCellLocator::FindClosestPointWithinRadius(float x[3], float radius,
 //    Rename ghost data array.
 //
 // ****************************************************************************
-                                                 float closestPoint[3],
+                                                 double closestPoint[3],
                                                  vtkGenericCell *cell,
                                                  vtkIdType &cellId, int &subId,
-                                                 float& dist2, int &inside)
+                                                 double& dist2, int &inside)
 {
   int i;
   vtkIdType j;
@@ -1060,9 +1063,9 @@ int vtkVisItCellLocator::FindClosestPointWithinRadius(float x[3], float radius,
   int closestSubCell = -1;
   int leafStart;
   int ijk[3];
-  float minDist2;
-  float pcoords[3], point[3], cachedPoint[3], weightsArray[6];
-  float *weights = weightsArray;
+  double minDist2;
+  double pcoords[3], point[3], cachedPoint[3], weightsArray[6];
+  double *weights = weightsArray;
   int nWeights = 6, nPoints;
   int returnVal = 0;
   vtkIdList *cellIds; 
@@ -1070,9 +1073,9 @@ int vtkVisItCellLocator::FindClosestPointWithinRadius(float x[3], float radius,
   vtkUnsignedCharArray *ghosts =
     (vtkUnsignedCharArray *)this->DataSet->GetCellData()->GetArray("avtGhostZones");
   
-  float refinedRadius, radius2, refinedRadius2, distance2ToBucket;
-  float distance2ToCellBounds, cellBounds[6], currentRadius;
-  float distance2ToDataBounds, maxDistance;
+  double refinedRadius, radius2, refinedRadius2, distance2ToBucket;
+  double distance2ToCellBounds, cellBounds[6], currentRadius;
+  double distance2ToDataBounds, maxDistance;
   int ii, radiusLevels[3], radiusLevel, prevMinLevel[3], prevMaxLevel[3];
   
   leafStart = this->NumberOfOctants
@@ -1159,7 +1162,7 @@ int vtkVisItCellLocator::FindClosestPointWithinRadius(float x[3], float radius,
                 {
                 delete [] weights;
                 }
-              weights = new float[2*nPoints];  // allocate some extra room
+              weights = new double[2*nPoints];  // allocate some extra room
               nWeights = 2*nPoints;
               }
           
@@ -1299,7 +1302,7 @@ int vtkVisItCellLocator::FindClosestPointWithinRadius(float x[3], float radius,
                       {
                       delete [] weights;
                       }
-                    weights = new float[2*nPoints];  // allocate some extra room
+                    weights = new double[2*nPoints];  // allocate some extra room
                     nWeights = 2*nPoints;
                     }
                 
@@ -1331,7 +1334,7 @@ int vtkVisItCellLocator::FindClosestPointWithinRadius(float x[3], float radius,
     // ii appropriately
     if (refinedRadius < currentRadius && ii > 2) //always check ii==1
       {
-      ii = (int)((float)ii * (refinedRadius / currentRadius)) + 1;
+      ii = (int)((double)ii * (refinedRadius / currentRadius)) + 1;
       if (ii < 2)
         {
         ii = 2;
@@ -1359,11 +1362,11 @@ int vtkVisItCellLocator::FindClosestPointWithinRadius(float x[3], float radius,
   return returnVal;
 }
 
-int vtkVisItCellLocator::FindClosestPointWithinRadius(float x[3], float radius,
-                                                 float closestPoint[3],
+int vtkVisItCellLocator::FindClosestPointWithinRadius(double x[3], double radius,
+                                                 double closestPoint[3],
                                                  vtkGenericCell *cell,
                                                  vtkIdType &cellId,
-                                                 int &subId, float& dist2)
+                                                 int &subId, double& dist2)
 {
   int inside;
 
@@ -1372,10 +1375,10 @@ int vtkVisItCellLocator::FindClosestPointWithinRadius(float x[3], float radius,
                                        cell, cellId, subId, dist2, inside);
 }
 
-int vtkVisItCellLocator::FindClosestPointWithinRadius(float x[3], float radius,
-                                                 float closestPoint[3],
+int vtkVisItCellLocator::FindClosestPointWithinRadius(double x[3], double radius,
+                                                 double closestPoint[3],
                                                  vtkIdType &cellId, int &subId,
-                                                 float& dist2)
+                                                 double& dist2)
 {
   vtkGenericCell *cell = vtkGenericCell::New();
   int found, inside;
@@ -1462,8 +1465,8 @@ void vtkVisItCellLocator::GetBucketNeighbors(int ijk[3], int ndivs, int level)
 // layer before they can be used. Only buckets that have cells are placed
 // in the bucket list.
 //
-void vtkVisItCellLocator::GetOverlappingBuckets(float x[3], int vtkNotUsed(ijk)[3], 
-                                           float dist, 
+void vtkVisItCellLocator::GetOverlappingBuckets(double x[3], int vtkNotUsed(ijk)[3], 
+                                           double dist, 
                                            int prevMinLevel[3],
                                            int prevMaxLevel[3])
 {
@@ -1481,9 +1484,9 @@ void vtkVisItCellLocator::GetOverlappingBuckets(float x[3], int vtkNotUsed(ijk)[
   // Determine the range of indices in each direction
   for (i=0; i < 3; i++)
     {
-    minLevel[i] = (int) ((float) (((x[i]-dist) - this->Bounds[2*i])
+    minLevel[i] = (int) ((double) (((x[i]-dist) - this->Bounds[2*i])
                                   / this->H[i]));
-    maxLevel[i] = (int) ((float) (((x[i]+dist) - this->Bounds[2*i])
+    maxLevel[i] = (int) ((double) (((x[i]+dist) - this->Bounds[2*i])
                                   / this->H[i]));
     
     if ( minLevel[i] < 0 )
@@ -1597,7 +1600,7 @@ vtkIdList* vtkVisItCellLocator::GetCells(int octantId)
 //
 void vtkVisItCellLocator::BuildLocator()
   {
-  float *bounds, length, cellBounds[6], *boundsPtr;
+  double *bounds, length, cellBounds[6], *boundsPtr;
   vtkIdType numCells;
   int ndivs, product;
   int i, j, k, ijkMin[3], ijkMax[3];
@@ -1607,7 +1610,7 @@ void vtkVisItCellLocator::BuildLocator()
   int numCellsPerBucket = this->NumberOfCellsPerBucket;
   typedef vtkIdList *vtkIdListPtr;
   int prod, numOctants;
-  float hTol[3];
+  double hTol[3];
   
   if ( (this->Tree != NULL) && (this->BuildTime > this->MTime)
     && (this->BuildTime > this->DataSet->GetMTime()) )
@@ -1623,7 +1626,7 @@ void vtkVisItCellLocator::BuildLocator()
     return;
     }
 
-  this->MinCellLength = VTK_LARGE_FLOAT; 
+  this->MinCellLength = VTK_DOUBLE_MAX; 
   //  Make sure the appropriate data is available
   //
   if ( this->Tree )
@@ -1660,8 +1663,8 @@ void vtkVisItCellLocator::BuildLocator()
       l += diff * diff;
       }
       diff = sqrt(l);
-      if (diff > VTK_LARGE_FLOAT)
-        l = VTK_LARGE_FLOAT;
+      if (diff > VTK_DOUBLE_MAX)
+        l = VTK_DOUBLE_MAX;
       else 
         l= diff;
       //
@@ -1671,7 +1674,7 @@ void vtkVisItCellLocator::BuildLocator()
       if (l > length)
         {
         bounds = this->DataSet->GetBounds(); 
-        length = static_cast<float>(l);
+        length = static_cast<double>(l);
         }
     }
 
@@ -1714,7 +1717,7 @@ void vtkVisItCellLocator::BuildLocator()
 
   if (this->CacheCellBounds)
     {
-    this->CellBounds = new float [numCells][6];
+    this->CellBounds = new double [numCells][6];
     }
   
   //  Compute width of leaf octant in three directions
@@ -1731,7 +1734,7 @@ void vtkVisItCellLocator::BuildLocator()
   parentOffset = numOctants - (ndivs * ndivs * ndivs);
   product = ndivs * ndivs;
   boundsPtr = cellBounds;
-  float len2;
+  double len2;
   for (cellId=0; cellId<numCells; cellId++) 
     {
     if (this->CacheCellBounds)
@@ -1939,8 +1942,8 @@ void vtkVisItCellLocator::GenerateFace(int face, int numDivs, int i, int j, int 
 {
   int ii;
   vtkIdType ids[4];
-  float origin[3], x[3];
-  float h[3];
+  double origin[3], x[3];
+  double h[3];
 
   // define first corner; use ids[] as temporary array
   ids[0] = i; ids[1] = j; ids[2] = k;
@@ -2031,9 +2034,9 @@ void vtkVisItCellLocator::ClearCellHasBeenVisited(int id)
 // WARNING!!!!! Be very careful altering this routine.  Simple changes to this
 // routine can make is 25% slower!!!!
 //
-float vtkVisItCellLocator::Distance2ToBucket(float x[3], int nei[3])
+double vtkVisItCellLocator::Distance2ToBucket(double x[3], int nei[3])
 {
-  float bounds[6];
+  double bounds[6];
 
   bounds[0] =     nei[0]*this->H[0] + this->Bounds[0];
   bounds[1] = (nei[0]+1)*this->H[0] + this->Bounds[0];
@@ -2049,10 +2052,10 @@ float vtkVisItCellLocator::Distance2ToBucket(float x[3], int nei[3])
 //
 // WARNING!!!!! Be very careful altering this routine.  Simple changes to this
 // routine can make it 25% slower!!!!
-float vtkVisItCellLocator::Distance2ToBounds(float x[3], float bounds[6])
+double vtkVisItCellLocator::Distance2ToBounds(double x[3], double bounds[6])
 {
-  float distance;
-  float deltas[3];
+  double distance;
+  double deltas[3];
 
   // Are we within the bounds?
   if (x[0] >= bounds[0] && x[0] <= bounds[1]
@@ -2115,12 +2118,12 @@ void vtkVisItCellLocator::PrintSelf(ostream& os, vtkIndent indent)
 
 
 static
-float
-GetParametricDistance(vtkCell *cell, float pcoords[3])
+double
+GetParametricDistance(vtkCell *cell, double pcoords[3])
 {
   int i;
-  float pDist, pDistMax = 0.0f;
-  float pc[4];
+  double pDist, pDistMax = 0.0f;
+  double pc[4];
   switch (cell->GetCellType())
     {
     case VTK_TRIANGLE :
@@ -2220,8 +2223,8 @@ void vtkVisItCellLocator::ComputeOctantBounds(int i, int j, int k)
 }
 
 int
-vtkVisItCellLocator::CellIntersectWithLine(vtkCell *cell, float p1[3], float p2[3], 
-    float& t, float x[3], float pc[3], int& sub)
+vtkVisItCellLocator::CellIntersectWithLine(vtkCell *cell, double p1[3], double p2[3], 
+    double& t, double x[3], double pc[3], int& sub)
 {
   switch(cell->GetCellType())
     {
@@ -2262,12 +2265,13 @@ vtkVisItCellLocator::CellIntersectWithLine(vtkCell *cell, float p1[3], float p2[
 }
 
 int
-vtkVisItCellLocator::VertexIntersectWithLine(vtkVertex *cell, float p1[3], float p2[3], 
-    float& t, float x[3], float pcoords[3], int& subId)
+vtkVisItCellLocator::VertexIntersectWithLine(vtkVertex *cell, double p1[3], double p2[3], 
+    double& t, double x[3], double pcoords[3], int& subId)
 {
-  float cp[3];
-  float *X = cell->Points->GetPoint(0);
-  float dist = vtkLine::DistanceToLine(X, p1, p2, t, cp);
+  double cp[3];
+  double X[3];
+  cell->Points->GetPoint(0, X);
+  double dist = vtkLine::DistanceToLine(X, p1, p2, t, cp);
   pcoords[1] = pcoords[2] = 0.;
   if (dist == 0)
     {
@@ -2282,15 +2286,17 @@ vtkVisItCellLocator::VertexIntersectWithLine(vtkVertex *cell, float p1[3], float
 }
 
 int
-vtkVisItCellLocator::PolyVertexIntersectWithLine(vtkPolyVertex *cell, float p1[3], float p2[3], 
-    float& t, float x[3], float pcoords[3], int& subId)
+vtkVisItCellLocator::PolyVertexIntersectWithLine(vtkPolyVertex *cell, double p1[3], double p2[3], 
+    double& t, double x[3], double pcoords[3], int& subId)
 {
   int subTest, numPts=cell->Points->GetNumberOfPoints();
   
   vtkVertex *vertex = vtkVertex::New();
+  double pt[3];
   for (subId=0; subId < numPts; subId++)
     {
-    vertex->Points->SetPoint(0, cell->Points->GetPoint(subId));
+    cell->Points->GetPoint(subId, pt);
+    vertex->Points->SetPoint(0, pt);
 
     if ( VertexIntersectWithLine(vertex, p1, p2, t, x, pcoords, subTest) )
       {
@@ -2302,17 +2308,17 @@ vtkVisItCellLocator::PolyVertexIntersectWithLine(vtkPolyVertex *cell, float p1[3
 }
 
 int
-vtkVisItCellLocator::LineIntersectWithLine(vtkLine *cell, float p1[3], float p2[3], 
-    float& t, float x[3], float pcoords[3], int& subId)
+vtkVisItCellLocator::LineIntersectWithLine(vtkLine *cell, double p1[3], double p2[3], 
+    double& t, double x[3], double pcoords[3], int& subId)
 {
-  float *a1, *a2;
+  double a1[3], a2[3];
   int i;
 
   subId = 0;
   pcoords[1] = pcoords[2] = 0.0;
 
-  a1 = cell->Points->GetPoint(0);
-  a2 = cell->Points->GetPoint(1);
+  cell->Points->GetPoint(0, a1);
+  cell->Points->GetPoint(1, a2);
 
   if ( vtkLine::Intersection(p1, p2, a1, a2, t, pcoords[0]) == 2 )
     {
@@ -2326,15 +2332,15 @@ vtkVisItCellLocator::LineIntersectWithLine(vtkLine *cell, float p1[3], float p2[
 }
 
 int
-vtkVisItCellLocator::PolyLineIntersectWithLine(vtkPolyLine *cell, float p1[3], float p2[3], 
-    float& t, float x[3], float pcoords[3], int& subId)
+vtkVisItCellLocator::PolyLineIntersectWithLine(vtkPolyLine *cell, double p1[3], double p2[3], 
+    double& t, double x[3], double pcoords[3], int& subId)
 {
   int i, numLines=cell->Points->GetNumberOfPoints() - 1;
-  float *a1, *a2;
+  double a1[3], a2[3];
   for (subId=0; subId < numLines; subId++)
     {
-    a1 = cell->Points->GetPoint(subId);
-    a2 = cell->Points->GetPoint(subId+1);
+    cell->Points->GetPoint(subId, a1);
+    cell->Points->GetPoint(subId+1, a2);
     if ( vtkLine::Intersection(p1, p2, a1, a2, t, pcoords[0]) == 2)
       {
       for (i=0; i<3; i++)
@@ -2357,7 +2363,7 @@ vtkVisItCellLocator::PolyLineIntersectWithLine(vtkPolyLine *cell, float p1[3], f
 //   Use smaller eps for testing when DotProduct close to zero.
 //
 //   Kathleen Bonnell, Thu Sep 18 15:48:54 PDT 2003
-//   Cast multiplication to float before setting intersection point. 
+//   Cast multiplication to double before setting intersection point. 
 //
 //   Kathleen Bonnell, Fri Oct 10 10:46:48 PDT 2003 
 //   Remove eps for testing DotProduct.
@@ -2368,26 +2374,20 @@ vtkVisItCellLocator::PolyLineIntersectWithLine(vtkPolyLine *cell, float p1[3], f
 //
 // ****************************************************************************
 int
-vtkVisItCellLocator::TriangleIntersectWithLine(vtkTriangle *cell, float p1[3], 
-    float p2[3], float& t, float x[3], float pcoords[3], int& subId)
+vtkVisItCellLocator::TriangleIntersectWithLine(vtkTriangle *cell, double p1[3], 
+    double p2[3], double& t, double x[3], double pcoords[3], int& subId)
 {
-  float *fp1 = cell->GetPoints()->GetPoint(0);
-  float *fp2 = cell->GetPoints()->GetPoint(1);
-  float *fp3 = cell->GetPoints()->GetPoint(2);
-
-  double pt1[3] = {fp1[0], fp1[1], fp1[2]};
-  double pt2[3] = {fp2[0], fp2[1], fp2[2]};
-  double pt3[3] = {fp3[0], fp3[1], fp3[2]};
+  double pt1[3], pt2[3], pt3[3];
+  cell->Points->GetPoint(0, pt1);
+  cell->Points->GetPoint(1, pt2);
+  cell->Points->GetPoint(2, pt3);
  
-  double dp1[3] = {p1[0], p1[1], p1[2]};
-  double dp2[3] = {p2[0], p2[1], p2[2]};
-
   double e1[3], e2[3], p[3], s[3], q[3];
   double rayDir[3];
   double u, v, tmp, dt;
 
   int i;
-  SUB(rayDir, dp2, dp1);
+  SUB(rayDir, p2, p1);
   SUB(e1, pt2, pt1);
   SUB(e2, pt3, pt1);
 
@@ -2403,7 +2403,7 @@ vtkVisItCellLocator::TriangleIntersectWithLine(vtkTriangle *cell, float p1[3],
   }
 
   tmp = 1.0/tmp;
-  SUB(s, dp1, pt1);
+  SUB(s, p1, pt1);
 
   u = tmp * vtkMath::Dot(s, p);
 
@@ -2434,23 +2434,27 @@ vtkVisItCellLocator::TriangleIntersectWithLine(vtkTriangle *cell, float p1[3],
 
   for (i = 0; i < 3; i++)
     {
-    x[i] = (float) (dp1[i] + (float)(dt*rayDir[i]));
+    x[i] = (double) (p1[i] + (double)(dt*rayDir[i]));
     }
-  t = (float)dt;
+  t = (double)dt;
 
   return 1;
 }
 
 int
-vtkVisItCellLocator::TriStripIntersectWithLine(vtkTriangleStrip *cell, float p1[3], float p2[3], 
-    float& t, float x[3], float pcoords[3], int& subId)
+vtkVisItCellLocator::TriStripIntersectWithLine(vtkTriangleStrip *cell, double p1[3], double p2[3], 
+    double& t, double x[3], double pcoords[3], int& subId)
 {
   int subTest, numTris = cell->Points->GetNumberOfPoints()-2;
+  double a1[3], a2[3], a3[3];
   for (subId = 0; subId < numTris; subId++)
     {
-    this->triangle->Points->SetPoint(0,cell->Points->GetPoint(subId));
-    this->triangle->Points->SetPoint(1,cell->Points->GetPoint(subId+1));
-    this->triangle->Points->SetPoint(2,cell->Points->GetPoint(subId+2));
+    cell->Points->GetPoint(subId, a1);
+    cell->Points->GetPoint(subId+1, a2);
+    cell->Points->GetPoint(subId+2, a3);
+    this->triangle->Points->SetPoint(0, a1);
+    this->triangle->Points->SetPoint(1, a2);
+    this->triangle->Points->SetPoint(2, a3);
  
     if (this->TriangleIntersectWithLine(this->triangle, p1, p2, t, x, pcoords, subTest) )
       {
@@ -2471,31 +2475,31 @@ vtkVisItCellLocator::TriStripIntersectWithLine(vtkTriangleStrip *cell, float p1[
 // ****************************************************************************
 
 int
-vtkVisItCellLocator::PolygonIntersectWithLine(vtkPolygon *cell, float p1[3], float p2[3], 
-    float& t, float x[3], float pcoords[3], int& subId)
+vtkVisItCellLocator::PolygonIntersectWithLine(vtkPolygon *cell, double p1[3], double p2[3], 
+    double& t, double x[3], double pcoords[3], int& subId)
 {
   //
   // Only change from Polygon::IntersectWithLine is dependence upon tol.
   //
-  float *pt1, n[3];
-  float closestPoint[3];
-  float dist2;
+  double pt1[3], n[3];
+  double closestPoint[3];
+  double dist2;
   int npts = cell->GetNumberOfPoints();
-  float *weights;
+  double *weights;
  
   subId = 0;
   pcoords[0] = pcoords[1] = pcoords[2] = 0.0;
  
   // Define a plane to intersect with
   //
-  pt1 = cell->Points->GetPoint(1);
+  cell->Points->GetPoint(1, pt1);
   cell->ComputeNormal(cell->Points,n);
-  float tmpt = -1; 
+  double tmpt = -1; 
   // Intersect plane of the polygon with line
   //
   if ( ! vtkPlane::IntersectWithLine(p1,p2,n,pt1,tmpt,x) )
     {
-      if (tmpt != VTK_LARGE_FLOAT || !this->TestCoPlanar)
+      if (tmpt != VTK_DOUBLE_MAX || !this->TestCoPlanar)
           return 0;
 
        return EdgeLineIsect(cell, p1, p2, x);
@@ -2504,7 +2508,7 @@ vtkVisItCellLocator::PolygonIntersectWithLine(vtkPolygon *cell, float p1[3], flo
   t = tmpt; 
   // Evaluate position
   //
-  weights = new float[npts];
+  weights = new double[npts];
   if ( cell->EvaluatePosition(x, closestPoint, subId, pcoords, dist2, weights))
     {
       delete [] weights;
@@ -2523,24 +2527,22 @@ vtkVisItCellLocator::PolygonIntersectWithLine(vtkPolygon *cell, float p1[3], flo
 //
 // ****************************************************************************
 int
-vtkVisItCellLocator::PixelIntersectWithLine(vtkPixel *cell, float p1[3], float p2[3], 
-    float& t, float x[3], float pcoords[3], int& subId)
+vtkVisItCellLocator::PixelIntersectWithLine(vtkPixel *cell, double p1[3], double p2[3], 
+    double& t, double x[3], double pcoords[3], int& subId)
 {
-
   // rewriting pixel code only so that tol is not needed.
-  float *pt1, *pt4, n[3];
-  float closestPoint[3];
-  float dist2, weights[4];
+  double pt1[3], pt4[3], n[3];
+  double closestPoint[3];
+  double dist2, weights[4];
   int i;
- 
   subId = 0;
   pcoords[0] = pcoords[1] = pcoords[2] = 0.0;
 
   // 
   // Get normal for triangle
   // 
-  pt1 = cell->Points->GetPoint(0);
-  pt4 = cell->Points->GetPoint(3);
+  cell->Points->GetPoint(0, pt1);
+  cell->Points->GetPoint(3, pt4);
  
   n[0] = n[1] = n[2] = 0.0;
   for (i=0; i<3; i++)
@@ -2551,19 +2553,16 @@ vtkVisItCellLocator::PixelIntersectWithLine(vtkPixel *cell, float p1[3], float p
       break;
       }
     }
-
   //
   // Intersect plane of pixel with line.
   //
-  float tmpt = -1;
+  double tmpt = -1;
   if ( ! vtkPlane::IntersectWithLine(p1,p2,n,pt1,tmpt,x) )
   {
-      if (tmpt != VTK_LARGE_FLOAT || !this->TestCoPlanar)
+      if (tmpt != VTK_DOUBLE_MAX || !this->TestCoPlanar)
           return 0;
-
       return EdgeLineIsect(cell, p1, p2, x);
     }
-
   t = tmpt;
   //
   // Does intersection point lie within pixel? 
@@ -2577,14 +2576,17 @@ vtkVisItCellLocator::PixelIntersectWithLine(vtkPixel *cell, float p1[3], float p
 }
 
 int
-vtkVisItCellLocator::QuadIntersectWithLine(vtkQuad *cell, float p1[3], float p2[3], 
-    float& t, float x[3], float pcoords[3], int& subId)
+vtkVisItCellLocator::QuadIntersectWithLine(vtkQuad *cell, double p1[3], double p2[3], 
+    double& t, double x[3], double pcoords[3], int& subId)
 {
+  double a1[3], a2[3], a3[3], a4[3];
   int diagonalCase;
-  float d1 = vtkMath::Distance2BetweenPoints(cell->Points->GetPoint(0), 
-                                             cell->Points->GetPoint(2));
-  float d2 = vtkMath::Distance2BetweenPoints(cell->Points->GetPoint(1), 
-                                             cell->Points->GetPoint(3));
+  cell->Points->GetPoint(0, a1);
+  cell->Points->GetPoint(1, a2);
+  cell->Points->GetPoint(2, a3);
+  cell->Points->GetPoint(3, a4);
+  double d1 = vtkMath::Distance2BetweenPoints(a1, a3);
+  double d2 = vtkMath::Distance2BetweenPoints(a2, a4);
   subId = 0;
 
   // Figure out how to uniquely tessellate the quad. Watch out for 
@@ -2620,17 +2622,17 @@ vtkVisItCellLocator::QuadIntersectWithLine(vtkQuad *cell, float p1[3], float p2[
   switch (diagonalCase)
     {
     case 0:
-      this->triangle->Points->SetPoint(0,cell->Points->GetPoint(0));
-      this->triangle->Points->SetPoint(1,cell->Points->GetPoint(1));
-      this->triangle->Points->SetPoint(2,cell->Points->GetPoint(2));
+      this->triangle->Points->SetPoint(0,a1);
+      this->triangle->Points->SetPoint(1,a2);
+      this->triangle->Points->SetPoint(2,a3);
       if (TriangleIntersectWithLine(this->triangle, p1, p2, t, x, pcoords, subId) )
         {
         pcoords[0] = pcoords[0] + pcoords[1];
         return 1;
         }
-      this->triangle->Points->SetPoint(0,cell->Points->GetPoint(2));
-      this->triangle->Points->SetPoint(1,cell->Points->GetPoint(3));
-      this->triangle->Points->SetPoint(2,cell->Points->GetPoint(0));
+      this->triangle->Points->SetPoint(0,a3);
+      this->triangle->Points->SetPoint(1,a4);
+      this->triangle->Points->SetPoint(2,a1);
       if (TriangleIntersectWithLine(this->triangle, p1, p2, t, x, pcoords, subId)   )
         {
         pcoords[0] = 1.0 - (pcoords[0]+pcoords[1]);
@@ -2640,16 +2642,16 @@ vtkVisItCellLocator::QuadIntersectWithLine(vtkQuad *cell, float p1[3], float p2[
       return 0;
 
     case 1:
-      this->triangle->Points->SetPoint(0,cell->Points->GetPoint(0));
-      this->triangle->Points->SetPoint(1,cell->Points->GetPoint(1));
-      this->triangle->Points->SetPoint(2,cell->Points->GetPoint(3));
+      this->triangle->Points->SetPoint(0,a1);
+      this->triangle->Points->SetPoint(1,a2);
+      this->triangle->Points->SetPoint(2,a4);
       if (TriangleIntersectWithLine(this->triangle, p1, p2, t, x, pcoords, subId) )
         {  
         return 1;
         }
-      this->triangle->Points->SetPoint(0,cell->Points->GetPoint(2));
-      this->triangle->Points->SetPoint(1,cell->Points->GetPoint(3));
-      this->triangle->Points->SetPoint(2,cell->Points->GetPoint(1));
+      this->triangle->Points->SetPoint(0,a3);
+      this->triangle->Points->SetPoint(1,a4);
+      this->triangle->Points->SetPoint(2,a2);
       if (TriangleIntersectWithLine(this->triangle, p1, p2, t, x, pcoords, subId) )
         {
         pcoords[0] = 1.0 - pcoords[0];
@@ -2662,21 +2664,24 @@ vtkVisItCellLocator::QuadIntersectWithLine(vtkQuad *cell, float p1[3], float p2[
 }
 
 int
-vtkVisItCellLocator::TetraIntersectWithLine(vtkTetra *cell, float p1[3], float p2[3], 
-    float& t, float x[3], float pcoords[3], int& subId)
+vtkVisItCellLocator::TetraIntersectWithLine(vtkTetra *cell, double p1[3], double p2[3], 
+    double& t, double x[3], double pcoords[3], int& subId)
 {
   int intersection = 0;
-  float tTemp, pc[3], xTemp[3];
+  double tTemp, pc[3], xTemp[3], a1[3], a2[3], a3[3];
   int faceNum, *faceIds;
 
-  t = VTK_LARGE_FLOAT;
+  t = VTK_DOUBLE_MAX;
 
   for (faceNum = 0; faceNum < 4; faceNum++)
     {
     faceIds = cell->GetFaceArray(faceNum);
-    this->triangle->Points->SetPoint(0, cell->Points->GetPoint(faceIds[0]));
-    this->triangle->Points->SetPoint(1, cell->Points->GetPoint(faceIds[1]));
-    this->triangle->Points->SetPoint(2, cell->Points->GetPoint(faceIds[2]));
+    cell->Points->GetPoint(faceIds[0], a1);
+    cell->Points->GetPoint(faceIds[1], a2);
+    cell->Points->GetPoint(faceIds[2], a3);
+    this->triangle->Points->SetPoint(0, a1);
+    this->triangle->Points->SetPoint(1, a2);
+    this->triangle->Points->SetPoint(2, a3);
     if (this->TriangleIntersectWithLine(this->triangle, p1, p2, tTemp, xTemp, pc, subId))
       {
       intersection = 1;
@@ -2711,17 +2716,17 @@ vtkVisItCellLocator::TetraIntersectWithLine(vtkTetra *cell, float p1[3], float p
 }
 
 int
-vtkVisItCellLocator::VoxelIntersectWithLine(vtkVoxel *cell, float p1[3], float p2[3], 
-    float& t, float x[3], float pcoords[3], int& subId)
+vtkVisItCellLocator::VoxelIntersectWithLine(vtkVoxel *cell, double p1[3], double p2[3], 
+    double& t, double x[3], double pcoords[3], int& subId)
 {
-  float *minPt, *maxPt;
-  float bounds[6], p21[3];
+  double minPt[3], maxPt[3];
+  double bounds[6], p21[3];
   int i;
  
   subId = 0;
  
-  minPt = cell->Points->GetPoint(0);
-  maxPt = cell->Points->GetPoint(7);
+  cell->Points->GetPoint(0, minPt);
+  cell->Points->GetPoint(7, maxPt);
  
   for (i=0; i<3; i++)
     {
@@ -2746,19 +2751,23 @@ vtkVisItCellLocator::VoxelIntersectWithLine(vtkVoxel *cell, float p1[3], float p
 }
 
 int
-vtkVisItCellLocator::HexIntersectWithLine(vtkHexahedron *cell, float p1[3], float p2[3], 
-    float& t, float x[3], float pcoords[3], int& subId)
+vtkVisItCellLocator::HexIntersectWithLine(vtkHexahedron *cell, double p1[3], double p2[3], 
+    double& t, double x[3], double pcoords[3], int& subId)
 {
   int intersection = 0, faceNum, *faceIds;
-  float tTemp, xTemp[3], pc[3];
-  t = VTK_LARGE_FLOAT;
+  double tTemp, xTemp[3], pc[3], a1[3], a2[3], a3[3], a4[4];
+  t = VTK_DOUBLE_MAX;
   for (faceNum = 0; faceNum < 6; faceNum++)
     {
     faceIds = cell->GetFaceArray(faceNum);
-    this->quad->Points->SetPoint(0, cell->Points->GetPoint(faceIds[0]));
-    this->quad->Points->SetPoint(1, cell->Points->GetPoint(faceIds[1]));
-    this->quad->Points->SetPoint(2, cell->Points->GetPoint(faceIds[2]));
-    this->quad->Points->SetPoint(3, cell->Points->GetPoint(faceIds[3]));
+    cell->Points->GetPoint(faceIds[0], a1);
+    cell->Points->GetPoint(faceIds[1], a2);
+    cell->Points->GetPoint(faceIds[2], a3);
+    cell->Points->GetPoint(faceIds[3], a4);
+    this->quad->Points->SetPoint(0, a1);
+    this->quad->Points->SetPoint(1, a2);
+    this->quad->Points->SetPoint(2, a3);
+    this->quad->Points->SetPoint(3, a4);
     if (this->QuadIntersectWithLine(quad, p1, p2, tTemp, xTemp, pc, subId))
       {
       intersection = 1;
@@ -2800,22 +2809,25 @@ vtkVisItCellLocator::HexIntersectWithLine(vtkHexahedron *cell, float p1[3], floa
 }
 
 int
-vtkVisItCellLocator::WedgeIntersectWithLine(vtkWedge *cell, float p1[3], float p2[3], 
-    float& t, float x[3], float pcoords[3], int& subId)
+vtkVisItCellLocator::WedgeIntersectWithLine(vtkWedge *cell, double p1[3], double p2[3], 
+    double& t, double x[3], double pcoords[3], int& subId)
 {
   int intersection = 0;
-  float tTemp, xTemp[3], pc[3];
+  double tTemp, xTemp[3], pc[3], a1[3], a2[3], a3[3], a4[3];
   int faceNum, *faceIds;
 
-  t = VTK_LARGE_FLOAT;
+  t = VTK_DOUBLE_MAX;
 
   // faces 0 & 1 are triangle-faces, intersect them first
   for (faceNum = 0; faceNum < 2; faceNum++)
     {
     faceIds = cell->GetFaceArray(faceNum);
-    this->triangle->Points->SetPoint(0, cell->Points->GetPoint(faceIds[0])); 
-    this->triangle->Points->SetPoint(1, cell->Points->GetPoint(faceIds[1])); 
-    this->triangle->Points->SetPoint(2, cell->Points->GetPoint(faceIds[2])); 
+    cell->Points->GetPoint(faceIds[0], a1); 
+    cell->Points->GetPoint(faceIds[1], a2); 
+    cell->Points->GetPoint(faceIds[2], a3); 
+    this->triangle->Points->SetPoint(0, a1);
+    this->triangle->Points->SetPoint(1, a2);
+    this->triangle->Points->SetPoint(2, a3);
     if (this->TriangleIntersectWithLine(this->triangle, p1, p2, tTemp, xTemp, pc, subId))
       {
       intersection = 1;
@@ -2843,10 +2855,14 @@ vtkVisItCellLocator::WedgeIntersectWithLine(vtkWedge *cell, float p1[3], float p
   for (faceNum = 2; faceNum < 5; faceNum++)
     {
     faceIds = cell->GetFaceArray(faceNum);
-    this->quad->Points->SetPoint(0, cell->Points->GetPoint(faceIds[0]));
-    this->quad->Points->SetPoint(1, cell->Points->GetPoint(faceIds[1]));
-    this->quad->Points->SetPoint(2, cell->Points->GetPoint(faceIds[2]));
-    this->quad->Points->SetPoint(3, cell->Points->GetPoint(faceIds[3]));
+    cell->Points->GetPoint(faceIds[0], a1);
+    cell->Points->GetPoint(faceIds[1], a2);
+    cell->Points->GetPoint(faceIds[2], a3);
+    cell->Points->GetPoint(faceIds[3], a4);
+    this->quad->Points->SetPoint(0, a1);
+    this->quad->Points->SetPoint(1, a2);
+    this->quad->Points->SetPoint(2, a3);
+    this->quad->Points->SetPoint(3, a4);
     if (this->QuadIntersectWithLine(this->quad, p1, p2, tTemp, xTemp, pcoords, subId))
       {
       intersection = 1;
@@ -2877,23 +2893,27 @@ vtkVisItCellLocator::WedgeIntersectWithLine(vtkWedge *cell, float p1[3], float p
 }
 
 int
-vtkVisItCellLocator::PyramidIntersectWithLine(vtkPyramid *cell, float p1[3], float p2[3], 
-    float& t, float x[3], float pcoords[3], int& subId)
+vtkVisItCellLocator::PyramidIntersectWithLine(vtkPyramid *cell, double p1[3], double p2[3], 
+    double& t, double x[3], double pcoords[3], int& subId)
 {
   int intersection = 0;
   int faceNum;
   int *faceIds;
-  float xTemp[3], weights[5], pc[3], dist2, tTemp;
+  double xTemp[3], weights[5], pc[3], dist2, tTemp;
+  double a1[3], a2[3], a3[3], a4[3];
 
-  t = VTK_LARGE_FLOAT;
+  t = VTK_DOUBLE_MAX;
 
   // faces 1-4 are triangles, intersect them first.
   for (faceNum = 1; faceNum < 5; faceNum++)
     {
     faceIds = cell->GetFaceArray(faceNum);
-    this->triangle->Points->SetPoint(0, cell->Points->GetPoint(faceIds[0]));
-    this->triangle->Points->SetPoint(1, cell->Points->GetPoint(faceIds[1]));
-    this->triangle->Points->SetPoint(2, cell->Points->GetPoint(faceIds[2]));
+    cell->Points->GetPoint(faceIds[0], a1);
+    cell->Points->GetPoint(faceIds[1], a2);
+    cell->Points->GetPoint(faceIds[2], a3);
+    this->triangle->Points->SetPoint(0, a1);
+    this->triangle->Points->SetPoint(1, a2);
+    this->triangle->Points->SetPoint(2, a3);
     if (this->TriangleIntersectWithLine(this->triangle, p1, p2, tTemp, xTemp, pc, subId))
       {
       intersection = 1;
@@ -2912,10 +2932,14 @@ vtkVisItCellLocator::PyramidIntersectWithLine(vtkPyramid *cell, float p1[3], flo
     }
   // now intersect quad face 
   faceIds = cell->GetFaceArray(0);
-  this->quad->Points->SetPoint(0,  cell->Points->GetPoint(faceIds[0]));
-  this->quad->Points->SetPoint(1,  cell->Points->GetPoint(faceIds[1]));
-  this->quad->Points->SetPoint(2,  cell->Points->GetPoint(faceIds[2]));
-  this->quad->Points->SetPoint(3,  cell->Points->GetPoint(faceIds[3]));
+  cell->Points->GetPoint(faceIds[0], a1);
+  cell->Points->GetPoint(faceIds[1], a2);
+  cell->Points->GetPoint(faceIds[2], a3);
+  cell->Points->GetPoint(faceIds[3], a4);
+  this->quad->Points->SetPoint(0, a1);
+  this->quad->Points->SetPoint(1, a2);
+  this->quad->Points->SetPoint(2, a3);
+  this->quad->Points->SetPoint(3, a4);
 
   if (this->QuadIntersectWithLine(this->quad, p1, p2, tTemp, xTemp, pc, subId))
     {
@@ -2947,7 +2971,7 @@ vtkVisItCellLocator::PyramidIntersectWithLine(vtkPyramid *cell, float p1[3], flo
 // ****************************************************************************
 
 void 
-vtkVisItCellLocator::SetUserBounds(float b[6])
+vtkVisItCellLocator::SetUserBounds(double b[6])
 {
     for (int i = 0; i < 6; ++i)
         this->UserBounds[i] = b[i];
@@ -2980,12 +3004,12 @@ vtkVisItCellLocator::SetUserBounds(float b[6])
 // ****************************************************************************
 
 int
-LineLineIsect(const float *p1, const float *p2, const float *p3, 
-              const float *p4, float *isect)
+LineLineIsect(const double *p1, const double *p2, const double *p3, 
+              const double *p4, double *isect)
 {
-    float a1, a2, b1, b2, c1, c2, r1, r2, r3, r4;
-    float x1 = p1[0], x2 = p2[0], x3 = p3[0], x4 = p4[0]; 
-    float y1 = p1[1], y2 = p2[1], y3 = p3[1], y4 = p4[1]; 
+    double a1, a2, b1, b2, c1, c2, r1, r2, r3, r4;
+    double x1 = p1[0], x2 = p2[0], x3 = p3[0], x4 = p4[0]; 
+    double y1 = p1[1], y2 = p2[1], y3 = p3[1], y4 = p4[1]; 
 
     a1 = y2 - y1; 
     b1 = x1 - x2;
@@ -3011,7 +3035,7 @@ LineLineIsect(const float *p1, const float *p2, const float *p3,
         return 0;
     }
 
-    float denom = a1 * b2 - a2 * b1;
+    double denom = a1 * b2 - a2 * b1;
     if (denom == 0)
     { // COLLINEAR
         return 0;
@@ -3043,17 +3067,17 @@ LineLineIsect(const float *p1, const float *p2, const float *p3,
 //
 // ****************************************************************************
 int
-EdgeLineIsect(vtkCell *cell, const float *p1, const float *p2, float *x)
+EdgeLineIsect(vtkCell *cell, const double *p1, const double *p2, double *x)
 {
-    float *p3, *p4;
+    double p3[3], p4[3];
     bool isectedEdge = false;
     int numEdges = cell->GetNumberOfEdges();
     int i;
 
     for (i = 0; i < numEdges && !isectedEdge; i++)
     {
-        p3 = cell->GetEdge(i)->Points->GetPoint(0);
-        p4 = cell->GetEdge(i)->Points->GetPoint(1);
+        cell->GetEdge(i)->Points->GetPoint(0, p3);
+        cell->GetEdge(i)->Points->GetPoint(1, p4);
         isectedEdge = (bool) LineLineIsect(p1, p2, p3, p4, x);
     }
     return (isectedEdge ? 1 : 0); 
@@ -3080,32 +3104,32 @@ EdgeLineIsect(vtkCell *cell, const float *p1, const float *p2, float *x)
 //   Return both cell-centers AND intersection points. 
 //
 // ****************************************************************************
-int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], 
+int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3], 
                                       vtkPoints *ipts, vtkPoints *cpts,
                                       vtkIdList *cells)
 {
   this->TestCoPlanar = true;
   vtkGenericCell *cell = vtkGenericCell::New();
 
-  float origin[3];
-  float direction1[3];
-  float direction2[3];
-  float direction3[3];
-  float hitPosition[3];
-  float hitCellBoundsPosition[3], cellBounds[6];
+  double origin[3];
+  double direction1[3];
+  double direction2[3];
+  double direction3[3];
+  double hitPosition[3];
+  double hitCellBoundsPosition[3], cellBounds[6];
   int hitCellBounds;
-  float result;
-  float bounds2[6];
+  double result;
+  double bounds2[6];
   int i, leafStart, prod, loop;
   vtkIdType bestCellId = -1, cellId, cId;
   int idx;
-  float tMax, dist[3];
+  double tMax, dist[3];
   int npos[3];
   int pos[3];
   int bestDir, cellIsGhost;
-  float stopDist, currDist;
-  float length, maxLength = 0.0;
-  float tempT, tempX[3], pc[3] = {0., 0., 0.};
+  double stopDist, currDist;
+  double length, maxLength = 0.0;
+  double tempT, tempX[3], pc[3] = {0., 0., 0.};
   int tempId;
   vtkUnsignedCharArray *ghosts = 
     (vtkUnsignedCharArray *)this->DataSet->GetCellData()->GetArray("avtGhostZones");
@@ -3185,7 +3209,7 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
       if (this->Tree[idx])
         {
         this->ComputeOctantBounds(pos[0]-1, pos[1]-1, pos[2]-1);
-        for (tMax = VTK_LARGE_FLOAT, cellId=0; 
+        for (tMax = VTK_DOUBLE_MAX, cellId=0; 
         cellId < this->Tree[idx]->GetNumberOfIds(); cellId++) 
           {
           cId = this->Tree[idx]->GetId(cellId);
@@ -3221,7 +3245,6 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
                 // now, do the expensive GetCell call and the expensive
                 // intersect with line call
                 this->DataSet->GetCell(cId, cell);
-            
                 if (IgnoreLines && cell->GetCellType() == VTK_LINE)     
                   continue;
 
@@ -3239,7 +3262,7 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
         }
       
       // move to the next octant
-      tMax = VTK_LARGE_FLOAT;
+      tMax = VTK_DOUBLE_MAX;
       bestDir = 0;
       for (loop = 0; loop < 3; loop++)
         {
@@ -3316,32 +3339,32 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
 //
 // ****************************************************************************
 void
-vtkVisItCellLocator::FindClosestPointToLine(float a0[3], float a1[3],
-                                            float &dist2, vtkIdType &cellId)
+vtkVisItCellLocator::FindClosestPointToLine(double a0[3], double a1[3],
+                                            double &dist2, vtkIdType &cellId)
 {
     int npoints = this->DataSet->GetNumberOfPoints();
 
-    dist2 = VTK_LARGE_FLOAT;
+    dist2 = VTK_DOUBLE_MAX;
     cellId = -1;
 
     for (vtkIdType p=0; p<npoints; p++)
     {
-        float pt[3];
+        double pt[3];
         this->DataSet->GetPoint(p, pt);
 
         // v0 is vector along ray
-        float v0[3] = {a1[0]-a0[0], a1[1]-a0[1], a1[2]-a0[2]};
+        double v0[3] = {a1[0]-a0[0], a1[1]-a0[1], a1[2]-a0[2]};
 
         // v1 is vector from some point on ray to this node
-        float v1[3] = {a0[0]-pt[0], a0[1]-pt[1], a0[2]-pt[2]};
+        double v1[3] = {a0[0]-pt[0], a0[1]-pt[1], a0[2]-pt[2]};
 
         // cross product
-        float cp[3] = {v0[1]*v1[2] - v1[1]*v0[2],
+        double cp[3] = {v0[1]*v1[2] - v1[1]*v0[2],
                        v0[2]*v1[0] - v1[2]*v0[0],
                        v0[0]*v1[1] - v1[0]*v0[1]};
 
         // distance^2
-        float dist_squared = ((cp[0]*cp[0] + cp[1]*cp[1] + cp[2]*cp[2]) /
+        double dist_squared = ((cp[0]*cp[0] + cp[1]*cp[1] + cp[2]*cp[2]) /
                               (v0[0]*v0[0] + v0[1]*v0[1] + v0[2]*v0[2]));
 
         if (dist2 > dist_squared)

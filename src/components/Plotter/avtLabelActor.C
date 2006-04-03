@@ -104,9 +104,9 @@ avtLabelActor::Remove()
 // ****************************************************************************
 
 void 
-avtLabelActor::Shift(const float vec[3])
+avtLabelActor::Shift(const double vec[3])
 {
-    float newPos[3];
+    double newPos[3];
     newPos[0] = attach[0] * vec[0];
     newPos[1] = attach[1] * vec[1];
     newPos[2] = attach[2] * vec[2] ;
@@ -127,7 +127,7 @@ avtLabelActor::Shift(const float vec[3])
 // ****************************************************************************
 
 void 
-avtLabelActor::SetAttachmentPoint(const float pos[3])
+avtLabelActor::SetAttachmentPoint(const double pos[3])
 {
     attach[0] = pos[0];
     attach[1] = pos[1];
@@ -150,7 +150,7 @@ avtLabelActor::SetAttachmentPoint(const float pos[3])
 // ****************************************************************************
 
 void
-avtLabelActor::SetScale(float s)
+avtLabelActor::SetScale(double s)
 {
     labelActor->SetScale(s);
 }
@@ -197,7 +197,7 @@ void avtLabelActor::SetDesignator(const char *l)
 //
 // ****************************************************************************
 
-void avtLabelActor::SetForegroundColor(float fg[3])
+void avtLabelActor::SetForegroundColor(double fg[3])
 {
     labelActor->GetProperty()->SetColor(fg);
 }
@@ -217,7 +217,7 @@ void avtLabelActor::SetForegroundColor(float fg[3])
 //
 // ****************************************************************************
 
-void avtLabelActor::SetForegroundColor(float r, float g, float b)
+void avtLabelActor::SetForegroundColor(double r, double g, double b)
 {
     labelActor->GetProperty()->SetColor(r, g, b);
 }
@@ -271,17 +271,17 @@ void avtLabelActor::UnHide()
 //
 // ****************************************************************************
 
-float 
+double 
 avtLabelActor::ComputeScaleFactor()
 {
     if (renderer == NULL)
     {
         return -1.;
     }
-    float pos[3];
+    double pos[3];
     labelActor->GetPosition(pos);
  
-    float newX = pos[0], newY = pos[1], newZ = pos[2];
+    double newX = pos[0], newY = pos[1], newZ = pos[2];
     renderer->WorldToView(newX, newY, newZ);
     renderer->ViewToNormalizedViewport(newX, newY, newZ);
     renderer->NormalizedViewportToViewport(newX, newY);
@@ -292,23 +292,23 @@ avtLabelActor::ComputeScaleFactor()
     //  x and y directions, then the normalized dispaly creates a square, whose
     //  diagonal length is sqrt(2) or 1.4142134624.  
     // 
-    const float displayDiag = 1.4142135624; 
+    const double displayDiag = 1.4142135624; 
 
     // 
     //  We want to find a position P2, that creates a diagonal with the 
     //  original point that is 1/20th of the display diagonal.
     //
 
-    const float target = displayDiag * 0.0125;
+    const double target = displayDiag * 0.0125;
 
     //
     //  Since we are dealing with a right-isosceles-triangle the new position
     //  will be offset in both x and y directions by target * cos(45); 
     //
   
-    const float cos45 = 0.7604059656;
+    const double cos45 = 0.7604059656;
 
-    float offset = target * cos45;
+    double offset = target * cos45;
 
     newX += offset;
     newY += offset;
@@ -331,19 +331,19 @@ avtLabelActor::ComputeScaleFactor()
     // THIS MAY BE A DISPLAY-DEPENDENT RESULT! 
     // 
 
-    const float avgTextDiag = 1.3494765;
+    const double avgTextDiag = 1.3494765;
 
     //
     //  Calculate our scale factor, by determining the new target and using
     //  the avgTextDiag to normalize the results across all the pick letters.
     //
 
-    float dxsqr = (newX - pos[0]) * (newX - pos[0]);
-    float dysqr = (newY - pos[1]) * (newY - pos[1]);
-    float dzsqr = (newZ - pos[2]) * (newZ - pos[2]);
-    float worldTarget = sqrt(dxsqr + dysqr + dzsqr); 
+    double dxsqr = (newX - pos[0]) * (newX - pos[0]);
+    double dysqr = (newY - pos[1]) * (newY - pos[1]);
+    double dzsqr = (newZ - pos[2]) * (newZ - pos[2]);
+    double worldTarget = sqrt(dxsqr + dysqr + dzsqr); 
 
-    float scale = worldTarget / avgTextDiag;
+    double scale = worldTarget / avgTextDiag;
     SetScale(scale);
     return scale;
 }

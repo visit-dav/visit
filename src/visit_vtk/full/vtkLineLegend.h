@@ -25,17 +25,17 @@ public:
   // Access the Position instance variable. Reimplemented from base
   // class to ensure normalized viewport coordinates
   // This variable controls the lower left corner of the legend. 
-  void SetPosition(float,float);
-  void SetPosition(float x[2]);
+  void SetPosition(double,double);
+  void SetPosition(double x[2]);
 
   // Description:
   // Access the Position2 instance variable. This variable controls
   // the upper right corner of the legend. It is by default
   // relative to Position1 and in Normalized Viewport coordinates.
-  void SetPosition2(float,float);
-  void SetPosition2(float x[2]);
+  void SetPosition2(double,double);
+  void SetPosition2(double x[2]);
   vtkCoordinate *GetPosition2Coordinate();
-  float *GetPosition2();
+  double *GetPosition2();
  
   // Description:
   // Draw the legend and annotation text to the screen.
@@ -80,8 +80,8 @@ public:
 
   // Description:
   // Set/Get the font height for the annotation text.
-  vtkSetClampMacro(FontHeight, float, 0, 0.2);
-  vtkGetMacro(FontHeight, float);
+  vtkSetClampMacro(FontHeight, double, 0, 0.2);
+  vtkGetMacro(FontHeight, double);
 
   // Description:
   // Set/Get the title of the scalar bar actor,
@@ -102,8 +102,8 @@ public:
 
   // Description:
   // Set/Get the scalar bar width.
-  vtkSetClampMacro(BarWidth,float, 0.0, 0.5);
-  vtkGetMacro(BarWidth,float);
+  vtkSetClampMacro(BarWidth,double, 0.0, 0.5);
+  vtkGetMacro(BarWidth,double);
 
   // Shallow copy of a scalar bar actor. Overloads the virtual vtkProp method.
   void ShallowCopy(vtkProp *prop);
@@ -119,11 +119,11 @@ protected:
   int   Italic;
   int   Shadow;
   int   FontFamily;
-  float FontHeight;
+  double FontHeight;
 
   vtkCoordinate *Position2Coordinate;
 
-  float BarWidth;
+  double BarWidth;
   
   char          *Title;
   vtkTextMapper *TitleMapper;

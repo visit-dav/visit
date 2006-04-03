@@ -458,7 +458,7 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             break;
         case 12: // opacity
             opacitySlider->blockSignals(true);
-            opacitySlider->setValue(int(pcAtts->GetOpacity() * 255.));
+            opacitySlider->setValue(int((float)pcAtts->GetOpacity() * 255.f));
             opacitySlider->blockSignals(false);
             break;
         case 13: // colorTableName

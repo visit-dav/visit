@@ -130,7 +130,7 @@ VisWinAxes3D::~VisWinAxes3D()
 // ****************************************************************************
 
 void
-VisWinAxes3D::SetForegroundColor(float fr, float fg, float fb)
+VisWinAxes3D::SetForegroundColor(double fr, double fg, double fb)
 {
     axes->GetProperty()->SetColor(fr, fg, fb);
     axesBox->GetProperty()->SetColor(fr, fg, fb);
@@ -324,7 +324,7 @@ VisWinAxes3D::RemoveAxes3DFromWindow(void)
 // ****************************************************************************
 
 void
-VisWinAxes3D::SetBounds(float bounds[6])
+VisWinAxes3D::SetBounds(double bounds[6])
 {
     bool boundsChanged = false; 
 
@@ -345,9 +345,9 @@ VisWinAxes3D::SetBounds(float bounds[6])
         // Add a fudge-factor to prevent axes from being obscured by plots
         // that fill their full extents. 
         //
-        float fudgeX = (bounds[1] - bounds[0]) * 0.001;
-        float fudgeY = (bounds[3] - bounds[2]) * 0.001;
-        float fudgeZ = (bounds[5] - bounds[4]) * 0.001;
+        double fudgeX = (bounds[1] - bounds[0]) * 0.001;
+        double fudgeY = (bounds[3] - bounds[2]) * 0.001;
+        double fudgeZ = (bounds[5] - bounds[4]) * 0.001;
         currentBounds[0] = bounds[0] - fudgeX;
         currentBounds[1] = bounds[1] + fudgeX;
         currentBounds[2] = bounds[2] - fudgeY;

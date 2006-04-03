@@ -119,7 +119,7 @@ avtSARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     int block_origin = 0;
     int spatial_dimension = 3;
     int topological_dimension = 3;
-    float *extents = NULL;
+    double *extents = NULL;
     AddMeshToMetaData(md, "mesh", mt, extents, nblocks, block_origin,
                       spatial_dimension, topological_dimension);
 

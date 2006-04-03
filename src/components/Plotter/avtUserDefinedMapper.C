@@ -62,7 +62,7 @@ avtUserDefinedMapper::~avtUserDefinedMapper()
 // ****************************************************************************
 
 bool
-avtUserDefinedMapper::GetDataRange(float &rmin, float &rmax)
+avtUserDefinedMapper::GetDataRange(double &rmin, double &rmax)
 {
     if (mappers == NULL)
     {
@@ -92,7 +92,7 @@ avtUserDefinedMapper::GetDataRange(float &rmin, float &rmax)
 // ****************************************************************************
 
 bool
-avtUserDefinedMapper::GetCurrentDataRange(float &rmin, float &rmax)
+avtUserDefinedMapper::GetCurrentDataRange(double &rmin, double &rmax)
 {
     if (mappers == NULL)
     {
@@ -130,8 +130,8 @@ avtUserDefinedMapper::CustomizeMappers(void)
 {
     if (renderer->OperatesOnScalars())
     {
-        float mmin = 0.;
-        float mmax = 0.;
+        double mmin = 0.;
+        double mmax = 0.;
         GetRange(mmin, mmax);
     
         //
@@ -217,7 +217,7 @@ avtUserDefinedMapper::GlobalLightingOff()
 // ****************************************************************************
 
 void 
-avtUserDefinedMapper::GlobalSetAmbientCoefficient(const float amb)
+avtUserDefinedMapper::GlobalSetAmbientCoefficient(const double amb)
 {
     renderer->GlobalSetAmbientCoefficient(amb);
 }
@@ -243,7 +243,8 @@ avtUserDefinedMapper::GlobalSetAmbientCoefficient(const float amb)
 // ****************************************************************************
 
 void
-avtUserDefinedMapper::SetSpecularProperties(bool flag, float coeff, float power,
+avtUserDefinedMapper::SetSpecularProperties(bool flag, double coeff, 
+                                           double power,
                                            const ColorAttribute &color)
 {
     renderer->SetSpecularProperties(flag, coeff, power, color);

@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkOpenGLFreeTypeTextMapper.cxx,v $
-  Language:  C++
-  Date:      $Date: 2003/06/29 19:10:35 $
-  Version:   $Revision: 1.31 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -45,8 +42,56 @@
 #define VTK_FTTM_DEBUG_CD 0
 
 //----------------------------------------------------------------------------
+// GL2PS related internal helper functions.
+
+#ifdef VTK_USE_GL2PS
+static void
+vtkOpenGLFreeTypeTextMapper_GetGL2PSFontName(vtkTextProperty *tprop,
+                                             char *ps_font)
+{
+ // For speed we use ARIAL == 0, COURIER == 1, TIMES == 2
+  static char const *family[] = {"Helvetica", "Courier", "Times"};
+  static char const *italic[] = {"Oblique", "Oblique", "Italic"};
+  static char const *base[] = {"", "", "-Roman"};
+
+  int font = tprop->GetFontFamily();
+
+  if (font > 2)
+    {
+    sprintf(ps_font, "%s", tprop->GetFontFamilyAsString());
+    if (tprop->GetBold())
+      {
+      sprintf(ps_font, "%s%s", ps_font, "Bold");
+      }
+    if (tprop->GetItalic())
+      {
+      sprintf(ps_font, "%s%s", ps_font, "Italic");
+      }
+      return;
+    }
+
+  if (tprop->GetBold())
+    {
+    sprintf(ps_font, "%s-%s", family[font], "Bold");
+    if (tprop->GetItalic())
+      {
+      sprintf(ps_font, "%s%s", ps_font, italic[font]);
+      }
+    }
+  else if (tprop->GetItalic())
+    {
+    sprintf(ps_font, "%s-%s", family[font], italic[font]);
+    }
+  else
+    {
+    sprintf(ps_font, "%s%s", family[font], base[font]);
+    }
+}
+#endif
+
+//----------------------------------------------------------------------------
 #ifndef VTK_IMPLEMENT_MESA_CXX
-vtkCxxRevisionMacro(vtkOpenGLFreeTypeTextMapper, "$Revision: 1.31 $");
+vtkCxxRevisionMacro(vtkOpenGLFreeTypeTextMapper, "$Revision: 1.39 $");
 vtkStandardNewMacro(vtkOpenGLFreeTypeTextMapper);
 #endif
 
@@ -244,12 +289,12 @@ void vtkOpenGLFreeTypeTextMapper::RenderOverlay(vtkViewport* viewport,
   switch (tprop->GetVerticalJustification())
     {
     case VTK_TEXT_TOP: 
-      pos[0] = pos[0] - upVector[0] * (size[1] + this->LastLargestDescender);
-      pos[1] = pos[1] - upVector[1] * (size[1] + this->LastLargestDescender);
+      pos[0] = pos[0] - upVector[0] * (size[1] - this->LastLargestDescender);
+      pos[1] = pos[1] - upVector[1] * (size[1] - this->LastLargestDescender);
       break;
     case VTK_TEXT_CENTERED:
-      pos[0] = pos[0] - upVector[0] * (size[1] / 2 + this->LastLargestDescender / 2);
-      pos[1] = pos[1] - upVector[1] * (size[1] / 2 + this->LastLargestDescender / 2);
+      pos[0] = pos[0] - upVector[0] - (size[1] / 2 + this->LastLargestDescender / 2);
+      pos[1] = pos[1] - upVector[1] - (size[1] / 2 + this->LastLargestDescender / 2);
       break;
     case VTK_TEXT_BOTTOM: 
       break;
@@ -258,9 +303,9 @@ void vtkOpenGLFreeTypeTextMapper::RenderOverlay(vtkViewport* viewport,
   // Push a 2D matrix on the stack
 
   int *vsize = viewport->GetSize();
-  float *vport = viewport->GetViewport();
-  float *tileViewport = viewport->GetVTKWindow()->GetTileViewport();
-  float visVP[4];
+  double *vport = viewport->GetViewport();
+  double *tileViewport = viewport->GetVTKWindow()->GetTileViewport();
+  double visVP[4];
 
   visVP[0] = (vport[0] >= tileViewport[0]) ? vport[0] : tileViewport[0];
   visVP[1] = (vport[1] >= tileViewport[1]) ? vport[1] : tileViewport[1];
@@ -321,6 +366,7 @@ void vtkOpenGLFreeTypeTextMapper::RenderOverlay(vtkViewport* viewport,
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
     glEnable(GL_LIGHTING);
+    glDepthFunc(GL_LEQUAL);
     
     return;
     }
@@ -333,8 +379,7 @@ void vtkOpenGLFreeTypeTextMapper::RenderOverlay(vtkViewport* viewport,
   // to maintain backward compatibility for a while. Text mapper classes will
   // use the Actor2D color instead of the text prop color if this value is 
   // found (i.e. if the text prop color has not been set).
-
-  float* tpropColor = tprop->GetColor();
+  double* tpropColor = tprop->GetColor();
   if (tpropColor[0] < 0.0 && tpropColor[1] < 0.0 && tpropColor[2] < 0.0)
     {
     tpropColor = actor->GetProperty()->GetColor();
@@ -378,15 +423,7 @@ void vtkOpenGLFreeTypeTextMapper::RenderOverlay(vtkViewport* viewport,
 
 #ifdef VTK_USE_GL2PS
   char ps_font[64];
-  sprintf(ps_font, "%s", tprop->GetFontFamilyAsString());
-  if (tprop->GetBold())
-    {
-    sprintf(ps_font, "%s%s", ps_font, "Bold");
-    }
-  if (tprop->GetItalic())
-    {
-    sprintf(ps_font, "%s%s", ps_font, "Italic");
-    }
+  vtkOpenGLFreeTypeTextMapper_GetGL2PSFontName(tprop, ps_font);
 #endif // VTK_USE_GL2PS
 
   // Set up the shadow color

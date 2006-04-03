@@ -534,8 +534,6 @@ public:
     void ConvertFromLeftEyeToRightEye(void);
     void ConvertFromRightEyeToLeftEye(void);
 
-    void ScalePlots(const float [3]);
-
     void ChangeScalableRenderingMode(bool newMode);
     bool IsChangingScalableRenderingMode(bool toMode = false) const;
     bool DisableExternalRenderRequests();
@@ -545,7 +543,7 @@ public:
     // Rendering options.
     void SetAntialiasing(bool enabled);
     bool GetAntialiasing() const;
-    void GetRenderTimes(float times[6]) const;
+    void GetRenderTimes(double times[6]) const;
     void SetStereoRendering(bool enabled, int type);
     bool GetStereo() const;
     int  GetStereoType() const;
@@ -563,10 +561,10 @@ public:
     int  GetScalableActivationMode() const;
     int  SetScalableAutoThreshold(int threshold);
     int  GetScalableAutoThreshold() const;
-    void SetSpecularProperties(bool,float,float,const ColorAttribute&);
+    void SetSpecularProperties(bool,double,double,const ColorAttribute&);
     bool  GetSpecularFlag() const;
-    float GetSpecularCoeff() const;
-    float GetSpecularPower() const;
+    double GetSpecularCoeff() const;
+    double GetSpecularPower() const;
     const ColorAttribute &GetSpecularColor() const;
     void SetShadingProperties(bool,double);
     bool GetDoShading() const;
@@ -581,7 +579,7 @@ public:
     const InteractorAttributes *GetInteractorAtts() const;
     void CopyInteractorAtts(const ViewerWindow *);
 
-    void GlyphPick(const float pt3[3], const float pt2[3], 
+    void GlyphPick(const double pt3[3], const double pt2[3], 
                    int &dom, int &elNum, bool &forCell);
 
 private:

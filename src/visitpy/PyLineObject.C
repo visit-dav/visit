@@ -96,9 +96,9 @@ LineObject_SetPosition(PyObject *self, PyObject *args)
 {
     LineObjectObject *obj = (LineObjectObject *)self;
 
-    float *fvals = obj->data->GetPosition();
-/* CUSTOM - Had to make position ff, not fff. */
-    if(!PyArg_ParseTuple(args, "ff", &fvals[0], &fvals[1]))
+    double *dvals = obj->data->GetPosition();
+/* CUSTOM - Had to make position dd, not ddd. */
+    if(!PyArg_ParseTuple(args, "dd", &dvals[0], &dvals[1]))
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
@@ -114,13 +114,13 @@ LineObject_SetPosition(PyObject *self, PyObject *args)
             {
                 PyObject *item = PyTuple_GET_ITEM(tuple, i);
                 if(PyFloat_Check(item))
-                    fvals[i] = float(PyFloat_AS_DOUBLE(item));
+                    dvals[i] = (PyFloat_AS_DOUBLE(item));
                 else if(PyInt_Check(item))
-                    fvals[i] = float(PyInt_AS_LONG(item));
+                    dvals[i] = double(PyInt_AS_LONG(item));
                 else if(PyLong_Check(item))
-                    fvals[i] = float(PyLong_AsDouble(item));
+                    dvals[i] = (PyLong_AsDouble(item));
                 else
-                    fvals[i] = 0.;
+                    dvals[i] = 0.;
             }
         }
         else
@@ -140,7 +140,7 @@ LineObject_GetPosition(PyObject *self, PyObject *args)
     LineObjectObject *obj = (LineObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the position.
     PyObject *retval = PyTuple_New(3);
-    const float *position = obj->data->GetPosition();
+    const double *position = obj->data->GetPosition();
     for(int i = 0; i < 3; ++i)
         PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(double(position[i])));
     return retval;
@@ -151,9 +151,9 @@ LineObject_SetPosition2(PyObject *self, PyObject *args)
 {
     LineObjectObject *obj = (LineObjectObject *)self;
 
-    float *fvals = obj->data->GetPosition2();
-/* CUSTOM - Had to make position ff, not fff. */
-    if(!PyArg_ParseTuple(args, "ff", &fvals[0], &fvals[1]))
+    double *dvals = obj->data->GetPosition2();
+/* CUSTOM - Had to make position dd, not ddd. */
+    if(!PyArg_ParseTuple(args, "dd", &dvals[0], &dvals[1]))
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
@@ -169,13 +169,13 @@ LineObject_SetPosition2(PyObject *self, PyObject *args)
             {
                 PyObject *item = PyTuple_GET_ITEM(tuple, i);
                 if(PyFloat_Check(item))
-                    fvals[i] = float(PyFloat_AS_DOUBLE(item));
+                    dvals[i] = (PyFloat_AS_DOUBLE(item));
                 else if(PyInt_Check(item))
-                    fvals[i] = float(PyInt_AS_LONG(item));
+                    dvals[i] = double(PyInt_AS_LONG(item));
                 else if(PyLong_Check(item))
-                    fvals[i] = float(PyLong_AsDouble(item));
+                    dvals[i] = (PyLong_AsDouble(item));
                 else
-                    fvals[i] = 0.;
+                    dvals[i] = 0.;
             }
         }
         else
@@ -195,7 +195,7 @@ LineObject_GetPosition2(PyObject *self, PyObject *args)
     LineObjectObject *obj = (LineObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the position2.
     PyObject *retval = PyTuple_New(3);
-    const float *position2 = obj->data->GetPosition2();
+    const double *position2 = obj->data->GetPosition2();
     for(int i = 0; i < 3; ++i)
         PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(double(position2[i])));
     return retval;
@@ -532,7 +532,7 @@ LineObject_print(PyObject *v, FILE *fp, int flags)
         fprintf(fp, "active = 1\n");
     else
         fprintf(fp, "active = 0\n");
-    {   const float *position = obj->data->GetPosition();
+    {   const double *position = obj->data->GetPosition();
         fprintf(fp, "position = (");
         for(int i = 0; i < 3; ++i)
         {
@@ -542,7 +542,7 @@ LineObject_print(PyObject *v, FILE *fp, int flags)
         }
         fprintf(fp, ")\n");
     }
-    {   const float *position2 = obj->data->GetPosition2();
+    {   const double *position2 = obj->data->GetPosition2();
         fprintf(fp, "position2 = (");
         for(int i = 0; i < 3; ++i)
         {
@@ -622,7 +622,7 @@ PyLineObject_StringRepresentation(const AnnotationObject *atts)
     else
         SNPRINTF(tmpStr, 1000, "active = 0\n");
     str += tmpStr;
-    {   const float *position = atts->GetPosition();
+    {   const double *position = atts->GetPosition();
         SNPRINTF(tmpStr, 1000, "position = (");
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
@@ -638,7 +638,7 @@ PyLineObject_StringRepresentation(const AnnotationObject *atts)
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    {   const float *position2 = atts->GetPosition2();
+    {   const double *position2 = atts->GetPosition2();
         SNPRINTF(tmpStr, 1000, "position2 = (");
         str += tmpStr;
         for(int i = 0; i < 3; ++i)

@@ -3566,13 +3566,13 @@ RevolveDataSetHelper(T *ugrid, vtkDataSet *in_ds,
         GetRotationMatrix(angle, axis, mat);
         for (j = 0 ; j < npts ; j++)
         {
-            float pt[4];
+            double pt[4];
             in_ds->GetPoint(j, pt);
             pt[3] = 1.;
-            float outpt1[4];
+            double outpt1[4];
             mat->MultiplyPoint(pt, outpt1);
             outpt1[3] = 1.;
-            float outpt2[4];
+            double outpt2[4];
             transforms[transformId[j]]->MultiplyPoint(outpt1, outpt2);
             *ptr++ = outpt2[0];
             *ptr++ = outpt2[1];

@@ -130,7 +130,7 @@ avtThreeSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
     float y = atts.GetY();
     float z = atts.GetZ();
     
-    float bounds[6];
+    double bounds[6];
     in_ds->GetBounds(bounds);
 
     //
@@ -184,8 +184,8 @@ avtThreeSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 
         int i, j;
         int ijk[3];
-        float xyz[3];
-        float pcoords[3];
+        double xyz[3];
+        double pcoords[3];
         xyz[0] = x;
         xyz[1] = y;
         xyz[2] = z;

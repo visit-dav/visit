@@ -97,7 +97,7 @@ CGetSpatialExtents(avtDataRepresentation &data, void *se, bool &success)
         vtkDataSet *ds = data.GetDataVTK();
         if (ds->GetNumberOfCells() > 0 && ds->GetNumberOfPoints() > 0)
         {
-            float bounds[6];
+            double bounds[6];
             ds->GetBounds(bounds);
             double *fse = (double*)se;
 
@@ -111,11 +111,11 @@ CGetSpatialExtents(avtDataRepresentation &data, void *se, bool &success)
                 {
                     if (bounds[2*j] < fse[2*j])
                     {
-                        fse[2*j] = (double) bounds[2*j];
+                        fse[2*j] = bounds[2*j];
                     }
                     if (bounds[2*j+1] > fse[2*j+1])
                     {
-                        fse[2*j+1] = (double) bounds[2*j+1];
+                        fse[2*j+1] = bounds[2*j+1];
                     }
                 }
             }
@@ -123,7 +123,7 @@ CGetSpatialExtents(avtDataRepresentation &data, void *se, bool &success)
             {
                 for (int j = 0 ; j < 6 ; j++)
                 {
-                    fse[j] = (double) bounds[j];
+                    fse[j] = bounds[j];
                 }
             }
             success = true;
@@ -1256,7 +1256,7 @@ CFindMaximum(avtDataRepresentation &data, void *arg, bool &success)
         {
             if (workingOnPoints)
             {
-                float p[3];
+                double p[3];
                 ds->GetPoint(ind, p);
                 args->point[0] = p[0];
                 args->point[1] = p[1];
@@ -1264,7 +1264,7 @@ CFindMaximum(avtDataRepresentation &data, void *arg, bool &success)
             }
             else
             {
-                float point[3];
+                double point[3];
                 vtkVisItUtility::GetCellCenter(ds->GetCell(ind), point);
                 args->point[0] = point[0];
                 args->point[1] = point[1];
@@ -1362,7 +1362,7 @@ CFindMinimum(avtDataRepresentation &data, void *arg, bool &success)
         {
             if (workingOnPoints)
             {
-                float p[3];
+                double p[3];
                 ds->GetPoint(ind, p);
                 args->point[0] = p[0];
                 args->point[1] = p[1];
@@ -1370,7 +1370,7 @@ CFindMinimum(avtDataRepresentation &data, void *arg, bool &success)
             }
             else
             {
-                float point[3];
+                double point[3];
                 vtkVisItUtility::GetCellCenter(ds->GetCell(ind), point);
                 args->point[0] = point[0];
                 args->point[1] = point[1];
@@ -1539,7 +1539,7 @@ CLocateZone(avtDataRepresentation &data, void *arg, bool &success)
     if (cell == NULL)
         return;
 
-    float point[3];
+    double point[3];
     vtkVisItUtility::GetCellCenter(cell, point);
     args->point[0] = point[0];
     args->point[1] = point[1];
@@ -1700,7 +1700,7 @@ CLocateNode(avtDataRepresentation &data, void *arg, bool &success)
         return;
     }
 
-    float p[3];
+    double p[3];
     ds->GetPoint(indexToUse, p);
     args->point[0] = p[0];
     args->point[1] = p[1];

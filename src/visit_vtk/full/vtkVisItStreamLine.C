@@ -28,6 +28,7 @@
 #include "vtkVisItStreamLine.h"
 
 #include <vtkCellArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkGenericCell.h>
 #include <vtkInitialValueProblemSolver.h>
@@ -109,11 +110,11 @@ void vtkVisItStreamLine::Execute()
     vtkIdType ptId, i, id;
     int j;
     vtkIdList *pts;
-    float tOffset, x[3], v[3], s, r;
+    double tOffset, x[3], v[3], s, r;
     vtkPolyData   *output = this->GetOutput();
 
 #ifdef VORTICITY
-    float theta;
+    double theta;
     vtkPolyLine   *lineNormalGenerator = NULL;
     vtkFloatArray *normals = NULL;
     vtkFloatArray *rotation = 0;
@@ -253,7 +254,7 @@ void vtkVisItStreamLine::Execute()
     {
         // Rotate the normal vectors with stream vorticity
         int nPts=newPts->GetNumberOfPoints();
-        float normal[3], local1[3], local2[3], length, costheta, sintheta;
+        double normal[3], local1[3], local2[3], length, costheta, sintheta;
 
         lineNormalGenerator->GenerateSlidingNormals(newPts,newLines,normals);
     
@@ -329,19 +330,19 @@ vtkVisItStreamLine::ThreadedIntegrate( void *arg)
     vtkStreamer::StreamPoint           pt1, pt2;
     int                      i;
     vtkIdType                idxNext, ptId;
-    float                    d, step, dir;
-    float                    xNext[3], vel[3], *cellVel, derivs[9];
-    float                    *w, pcoords[3];
-    float                    coords[4];
+    double                    d, step, dir;
+    double                    xNext[3], vel[3], *cellVel, derivs[9];
+    double                    *w, pcoords[3];
+    double                    coords[4];
     vtkDataSet               *input;
     vtkGenericCell           *cell;
     vtkPointData             *pd;
     vtkDataArray             *inScalars;
     vtkDataArray             *inVectors;
-    vtkFloatArray            *cellVectors;
+    vtkDoubleArray           *cellVectors;
     vtkDataArray             *cellScalars=0;
-    float tOffset, vort[3];
-    float err;
+    double tOffset, vort[3];
+    double err;
     int nSavePts = 0, counter=0;
 
     thread_id = ((vtkMultiThreader::ThreadInfo *)(arg))->ThreadID;
@@ -354,7 +355,7 @@ vtkVisItStreamLine::ThreadedIntegrate( void *arg)
     inVectors = pd->GetVectors();
 
     cell = vtkGenericCell::New();
-    cellVectors = vtkFloatArray::New();
+    cellVectors = vtkDoubleArray::New();
     cellVectors->SetNumberOfComponents(3);
     cellVectors->Allocate(3*VTK_CELL_SIZE);
     if (inScalars)
@@ -364,7 +365,7 @@ vtkVisItStreamLine::ThreadedIntegrate( void *arg)
         cellScalars->Allocate(inScalars->GetNumberOfComponents()*VTK_CELL_SIZE);
     }
 
-    w = new float[input->GetMaxCellSize()];
+    w = new double[input->GetMaxCellSize()];
 
     // Set the function set to be integrated
     vtkInterpolatedVelocityField* func = vtkInterpolatedVelocityField::New();
@@ -382,9 +383,9 @@ vtkVisItStreamLine::ThreadedIntegrate( void *arg)
 
     // Used to avoid calling these function many times during
     // the integration
-    float termspeed = self->GetTerminalSpeed();
-    float maxtime = self->GetMaximumPropagationTime();
-    float savePointInterval = self->GetSavePointInterval();
+    double termspeed = self->GetTerminalSpeed();
+    double maxtime = self->GetMaximumPropagationTime();
+    double savePointInterval = self->GetSavePointInterval();
 
     // Take the largest of 2*maxtime or 100. It's simply an artificial
     // limit to the number of times to iterate to break out of a loop that
@@ -428,7 +429,7 @@ vtkVisItStreamLine::ThreadedIntegrate( void *arg)
                 {
                     if (!thread_id)
                     {
-                        self->UpdateProgress((float)ptId/self->GetNumberOfStreamers()
+                        self->UpdateProgress((double)ptId/self->GetNumberOfStreamers()
                                              +pt1.t/maxtime/self->GetNumberOfStreamers());
                     }
                     if (self->GetAbortExecute())
@@ -501,6 +502,7 @@ vtkVisItStreamLine::ThreadedIntegrate( void *arg)
                 {
                      // compute vorticity
                      inVectors->GetTuples(cell->PointIds, cellVectors);
+      
                      cellVel = cellVectors->GetPointer(0);
                      cell->Derivatives(0, pcoords, cellVel, 3, derivs);
                      vort[0] = derivs[7] - derivs[5];
@@ -586,10 +588,10 @@ void vtkVisItStreamLine::Integrate()
     vtkIdType ptId, i;
     int j, offset;
     vtkCell *cell;
-    float *v, *cellVel, derivs[9], xNext[3], vort[3];
-    float tol2;
-    float *w=new float[input->GetMaxCellSize()];
-    vtkFloatArray *cellVectors;
+    double *v, *cellVel, derivs[9], xNext[3], vort[3];
+    double tol2;
+    double *w=new double[input->GetMaxCellSize()];
+    vtkDoubleArray *cellVectors;
     vtkDataArray *cellScalars=0;
 
     vtkDebugMacro(<<"Generating streamers");
@@ -606,7 +608,7 @@ void vtkVisItStreamLine::Integrate()
         return;
     }
 
-    cellVectors = vtkFloatArray::New();
+    cellVectors = vtkDoubleArray::New();
     cellVectors->SetNumberOfComponents(3);
     cellVectors->Allocate(3*VTK_CELL_SIZE);
 

@@ -141,8 +141,8 @@ class MIR_API TetMIR : public MIR
     // This is the reconstructed output and supporting data structures
     struct ReconstructedCoord
     {
-        float x,y,z;
-        float weight[MAX_NODES_PER_ZONE];
+        double x,y,z;
+        double weight[MAX_NODES_PER_ZONE];
         int origzone;
         int orignode;
 

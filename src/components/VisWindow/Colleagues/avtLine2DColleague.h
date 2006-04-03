@@ -64,7 +64,7 @@ protected:
     bool ShouldBeAddedToRenderer() const;
     
     void makeArrows(vtkPolyData *, vtkPolyData *, bool);
-    void updateArrows(vtkPolyData *, vtkPolyData *, float *, float *);
+    void updateArrows(vtkPolyData *, vtkPolyData *, double *, double *);
 };
 
 

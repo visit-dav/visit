@@ -480,7 +480,7 @@ avtDuneFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
   int block_origin = 0;
   int spatial_dimension = 3;
   int topological_dimension = 0;
-  float *extents = NULL;
+  double *extents = NULL;
   //
   // Here's the call that tells the meta-data object that we have a mesh:
   //

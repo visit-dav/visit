@@ -68,10 +68,10 @@ VisWinBackground::~VisWinBackground()
 
 void
 VisWinBackground::SetGradientBackgroundColors(int gradStyle,
-    float c1R, float c1G, float c1B, float c2R, float c2G, float c2B)
+    double c1R, double c1G, double c1B, double c2R, double c2G, double c2B)
 {
     // Set the colors.
-    float c1[3], c2[3];
+    double c1[3], c2[3];
     c1[0] = c1R;
     c1[1] = c1G;
     c1[2] = c1B;

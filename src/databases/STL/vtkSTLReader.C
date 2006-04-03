@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkSTLReader.cxx,v $
-  Language:  C++
-  Date:      $Date: 2002/12/26 18:18:50 $
-  Version:   $Revision: 1.66 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -27,7 +24,7 @@
 
 #include <ctype.h>
 
-vtkCxxRevisionMacro(vtkSTLReader, "$Revision: 1.66 $");
+vtkCxxRevisionMacro(vtkSTLReader, "$Revision: 1.69 $");
 vtkStandardNewMacro(vtkSTLReader);
 
 #define VTK_ASCII 0
@@ -144,7 +141,7 @@ void vtkSTLReader::Execute()
     vtkIdType *pts = 0;
     vtkIdType nodes[3];
     vtkIdType npts = 0;
-    float *x;
+    double x[3];
     int nextCell=0;
 
     mergedPts = vtkPoints::New();
@@ -167,7 +164,7 @@ void vtkSTLReader::Execute()
       {
       for (i=0; i < 3; i++) 
         {
-        x = newPts->GetPoint(pts[i]);
+        newPts->GetPoint(pts[i],x);
         this->Locator->InsertUniquePoint(x, nodes[i]);
         }
 
@@ -335,12 +332,12 @@ int vtkSTLReader::ReadASCIISTL(FILE *fp, vtkPoints *newPts,
       this->UpdateProgress((newPolys->GetNumberOfCells()%50000)/50000.0);
       }
     done = (fscanf(fp,"%s", line)==EOF);
-    if (strcmp(line, "ENDSOLID") == 0) 
+    if ((strcmp(line, "ENDSOLID") == 0) || (strcmp(line, "endsolid") == 0)) 
       {
       currentSolid++;
       fgets(line, 255, fp);
       done = feof(fp);
-      while (strncmp(line, "SOLID", 5) && !done) 
+      while ((strstr(line, "SOLID") == 0) && (strstr(line, "solid") == 0) && !done) 
         {
         fgets(line, 255, fp);
         done = feof(fp);

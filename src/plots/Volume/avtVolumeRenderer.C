@@ -634,7 +634,7 @@ avtVolumeRenderer::GetScalars(vtkDataSet *ds, vtkDataArray *&data,
         vtkDataArray *logData = data->NewInstance();
         logData->SetNumberOfTuples(data->GetNumberOfTuples());
         logData->SetName(data->GetName());
-        float *range = data->GetRange();
+        double *range = data->GetRange();
         if (atts.GetUseColorVarMin())
         {
             range[0] = atts.GetColorVarMin();
@@ -674,7 +674,7 @@ avtVolumeRenderer::GetScalars(vtkDataSet *ds, vtkDataArray *&data,
         vtkDataArray *skewData = data->NewInstance();
         skewData->SetNumberOfTuples(data->GetNumberOfTuples());
         skewData->SetName(data->GetName());
-        float *range = data->GetRange();
+        double *range = data->GetRange();
         float skewFactor = atts.GetSkewFactor();
         if (atts.GetUseColorVarMin())
         {
@@ -684,10 +684,11 @@ avtVolumeRenderer::GetScalars(vtkDataSet *ds, vtkDataArray *&data,
         {
             range[1] = atts.GetColorVarMax();
         }
+        float frange[2] = {range[0], range[1]};
         for (int i = 0 ; i < data->GetNumberOfTuples() ; i++)
         {
             float f = data->GetTuple1(i);
-            f = ValueSkewed(f, range, skewFactor); 
+            f = ValueSkewed(f, frange, skewFactor); 
             skewData->SetTuple1(i, f);
         }
         data = skewData;

@@ -42,8 +42,8 @@ public:
     // Methods that are called in response to vis window events. These
     // method can be overridden to let the annotation decide what to do when
     // these vis window events happen.
-    virtual void SetBackgroundColor(float r, float g, float b) { };
-    virtual void SetForegroundColor(float r, float g, float b) { };
+    virtual void SetBackgroundColor(double r, double g, double b) { };
+    virtual void SetForegroundColor(double r, double g, double b) { };
     virtual void Start2DMode(void) { };
     virtual void Start3DMode(void) { };
     virtual void StartCurveMode(void) { };

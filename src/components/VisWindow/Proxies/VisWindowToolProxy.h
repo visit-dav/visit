@@ -47,13 +47,13 @@ class VISWINDOW_API VisWindowToolProxy : public VisWindowProtectionProxy
     void                EndBoundingBox()
                                   { ProxiedEndBoundingBox(); };
 
-    void                GetForegroundColor(float *fg)
+    void                GetForegroundColor(double *fg)
                                   { ProxiedGetForegroundColor(fg); };
 
     vtkRenderer        *GetBackground()
                                   { return ProxiedGetBackground(); };
 
-    void                GetBounds(float bounds[6])
+    void                GetBounds(double bounds[6])
                                   { ProxiedGetBounds(bounds); };
 
     vtkRenderer        *GetCanvas()

@@ -707,7 +707,7 @@ avtStreamlineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             float *vm = (float *)vortMag->GetVoidPointer(0);
             for(int i = 0; i < n; ++i)
             {
-                const float *val = vorticity->GetTuple3(i);
+                const double *val = vorticity->GetTuple3(i);
                 *vm++ = (float)sqrt(val[0]*val[0] + val[1]*val[1] + val[2]*val[2]);
             }
             // If there is a scalar array, remove it.
@@ -762,7 +762,7 @@ avtStreamlineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             // they start.
             if(sourceType == STREAMLINE_SOURCE_POINT)
             {
-                float pt[] = {pointSource[0], pointSource[1], 0.};
+                double pt[] = {pointSource[0], pointSource[1], 0.};
                 if(spatialDim > 2) pt[2] = pointSource[2];
                 vtkDataArray *arr = tubeData->GetPointData()->GetScalars();
                 float val = arr->GetTuple1(0);
@@ -787,13 +787,13 @@ avtStreamlineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
                         if(pts != NULL)
                         {
                             vtkDataArray *arr = streams->GetPointData()->GetScalars();
-                            float val = arr->GetTuple1(pts[0]);
+                            double val = arr->GetTuple1(pts[0]);
                             balls[i] = AddStartSphere(tubeData, val, ballPD->GetPoint(i));
                         }
                         else
                         {
-                            // There was no line for the point so add a ball colored
-                            // with zero speed.
+                            // There was no line for the point so add a ball 
+                            // colored with zero speed.
                             balls[i] = AddStartSphere(tubeData, 0., ballPD->GetPoint(i));
                         }
 
@@ -868,11 +868,21 @@ avtStreamlineFilter::SetZToZero(vtkPolyData *pd) const
     vtkPoints *pts = pd->GetPoints();
     if(pts != 0)
     {
-        for(int i = 0; i < pts->GetNumberOfPoints(); ++i)
+        if (pts->GetDataType() == VTK_FLOAT)
         {
-            float *p = pts->GetPoint(i);
-            if(p != 0)
-                p[2] = 0.f;
+            float *p = (float*)pts->GetVoidPointer(0);
+            for(int i = 0; i < pts->GetNumberOfPoints(); ++i)
+            {
+                p[3*i+2] = 0.f;
+            }
+        }
+        if (pts->GetDataType() == VTK_DOUBLE)
+        {
+            double *p = (double*)pts->GetVoidPointer(0);
+            for(int i = 0; i < pts->GetNumberOfPoints(); ++i)
+            {
+                p[3*i+2] = 0.;
+            }
         }
     }
 }
@@ -906,7 +916,7 @@ avtStreamlineFilter::SetZToZero(vtkPolyData *pd) const
 // ****************************************************************************
 
 vtkPolyData *
-avtStreamlineFilter::AddStartSphere(vtkPolyData *tubeData, float val, float pt[3])
+avtStreamlineFilter::AddStartSphere(vtkPolyData *tubeData, float val, double pt[3])
 {
     // Create the sphere polydata.
     vtkSphereSource *sphere = vtkSphereSource::New();

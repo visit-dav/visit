@@ -98,7 +98,7 @@ avtTrajectoryByZone::PostExecute(void)
         if (pickAtts.GetFulfilled())
         {
             // Special indication that the pick point should not be displayed.
-            float cp[3] = { FLT_MAX, FLT_MAX, FLT_MAX };
+            double cp[3] = { FLT_MAX, FLT_MAX, FLT_MAX };
             string msg;
             pickAtts.SetCellPoint(cp);
             pickAtts.CreateOutputString(msg);

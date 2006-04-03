@@ -40,7 +40,7 @@ class VISWINDOW_API VisWinLighting : public VisWinColleague
 
     void                          SetLightList(avtLightList & );
 
-    float                         GetAmbientCoefficient();
+    double                         GetAmbientCoefficient();
     bool                          GetAmbientOn();
     int                           GetNumLightsEnabled();
     void                          UpdateLightPositions();
@@ -55,7 +55,7 @@ class VISWINDOW_API VisWinLighting : public VisWinColleague
   protected:
     avtLightList                  avtlights;
     vtkLight                     *lights[MAX_LIGHTS];
-    float                         ambientCoefficient;
+    double                         ambientCoefficient;
     bool                          ambientOn;
     int                           numLightsEnabled;
 };

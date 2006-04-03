@@ -30,9 +30,9 @@
 
 #include <sys/stat.h>
 #include <ctype.h>
-#include <string>
+#include <vtkstd/string>
 
-vtkCxxRevisionMacro(vtkVisItEnSightGoldBinaryReader, "$Revision: 1.51 $");
+vtkCxxRevisionMacro(vtkVisItEnSightGoldBinaryReader, "$Revision: 1.52 $");
 vtkStandardNewMacro(vtkVisItEnSightGoldBinaryReader);
 
 // This is half the precision of an int.
@@ -118,10 +118,14 @@ int vtkVisItEnSightGoldBinaryReader::ReadGeometryFile(char* fileName, int timeSt
     vtkErrorMacro("A GeometryFileName must be specified in the case file.");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to geometry file: " << sfilename.c_str());
     }
@@ -914,10 +918,14 @@ int vtkVisItEnSightGoldBinaryReader::ReadMeasuredGeometryFile(char* fileName,
     vtkErrorMacro("A MeasuredFileName must be specified in the case file.");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to measured geometry file: " 
                   << sfilename.c_str());
@@ -1052,10 +1060,14 @@ int vtkVisItEnSightGoldBinaryReader::ReadScalarsPerNode(char* fileName,
     vtkErrorMacro("NULL ScalarPerNode variable file name");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to scalar per node file: " << sfilename.c_str());
     }
@@ -1225,10 +1237,14 @@ int vtkVisItEnSightGoldBinaryReader::ReadVectorsPerNode(char* fileName,
     vtkErrorMacro("NULL VectorPerNode variable file name");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to vector per node file: " << sfilename.c_str());
     }
@@ -1383,10 +1399,14 @@ int vtkVisItEnSightGoldBinaryReader::ReadTensorsPerNode(char* fileName,
     vtkErrorMacro("NULL TensorPerNode variable file name");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to tensor per node file: " << sfilename.c_str());
     }
@@ -1516,10 +1536,14 @@ int vtkVisItEnSightGoldBinaryReader::ReadScalarsPerElement(char* fileName,
     vtkErrorMacro("NULL ScalarPerElement variable file name");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to scalar per element file: " 
                   << sfilename.c_str());
@@ -1728,10 +1752,14 @@ int vtkVisItEnSightGoldBinaryReader::ReadVectorsPerElement(char* fileName,
     vtkErrorMacro("NULL VectorPerElement variable file name");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to vector per element file: " 
                   << sfilename.c_str());
@@ -1930,10 +1958,14 @@ int vtkVisItEnSightGoldBinaryReader::ReadTensorsPerElement(char* fileName,
     vtkErrorMacro("NULL TensorPerElement variable file name");
     return 0;
     }
-  std::string sfilename;
+  vtkstd::string sfilename;
   if (this->FilePath)
     {
     sfilename = this->FilePath;
+    if (sfilename.at(sfilename.length()-1) != '/')
+      {
+      sfilename += "/";
+      }
     sfilename += fileName;
     vtkDebugMacro("full path to  tensor per element file: " 
                   << sfilename.c_str());

@@ -56,7 +56,7 @@ vtkVisItTensorGlyph::~vtkVisItTensorGlyph()
 void vtkVisItTensorGlyph::Execute()
 {
   vtkDataArray *inTensors;
-  float *tensor;
+  double *tensor;
   vtkDataArray *inScalars;
   vtkIdType numPts, numSourcePts, numSourceCells, inPtId, i;
   int j;
@@ -66,7 +66,8 @@ void vtkVisItTensorGlyph::Execute()
   vtkPoints *newPts;
   vtkFloatArray *newScalars=NULL;
   vtkFloatArray *newNormals=NULL;
-  float *x, s;
+  double x[3]; 
+  float s;
   vtkTransform *trans;
   vtkCell *cell;
   vtkIdList *cellPts;
@@ -210,8 +211,8 @@ void vtkVisItTensorGlyph::Execute()
 
   for (inPtId=0; inPtId < numPts; inPtId++)
     {
-    float *inNode = NULL;
-    float *inCell = NULL;
+    double *inNode = NULL;
+    double *inCell = NULL;
     if (inOrigNodes)
       inNode = inOrigNodes->GetTuple(inPtId);
     if (inOrigCells)
@@ -339,7 +340,7 @@ void vtkVisItTensorGlyph::Execute()
       trans->Identity();
 
       // translate Source to Input point
-      x = input->GetPoint(inPtId);
+      input->GetPoint(inPtId, x);
       trans->Translate(x[0], x[1], x[2]);
 
       // normalized eigenvectors rotate object for eigen direction 0

@@ -117,7 +117,8 @@ void vtkVisItGlyph3D::Execute()
   vtkDataArray *newScalars=NULL;
   vtkDataArray *newVectors=NULL;
   vtkDataArray *newNormals=NULL;
-  float *x, *v = NULL, vNew[3], s = 0.0, vMag = 0.0, value;
+  double x[3], v[3];
+  double vNew[3], s = 0.0, vMag = 0.0, value;
   vtkTransform *trans = vtkTransform::New();
   vtkCell *cell;
   vtkIdList *cellPts;
@@ -125,7 +126,7 @@ void vtkVisItGlyph3D::Execute()
   vtkIdList *pts;
   vtkIdType ptIncr, cellId;
   int haveVectors, haveNormals;
-  float scalex,scaley,scalez, den;
+  double scalex,scaley,scalez, den;
   vtkPolyData *output = this->GetOutput();
   vtkPointData *outputPD = output->GetPointData();
   vtkCellData *outputCD = output->GetCellData();
@@ -396,7 +397,7 @@ void vtkVisItGlyph3D::Execute()
     scalex = scaley = scalez = 1.0;
     if ( ! (inPtId % 10000) )
       {
-      this->UpdateProgress ((float)inPtId/numPts);
+      this->UpdateProgress ((double)inPtId/numPts);
       if (this->GetAbortExecute())
         {
         break;
@@ -427,15 +428,15 @@ void vtkVisItGlyph3D::Execute()
       {
       if ( this->VectorMode == VTK_USE_NORMAL )
         {
-        v = inNormals->GetTuple(inPtId);
+        inNormals->GetTuple(inPtId, v);
         }
       else if (inVectors_forScaling)
         {
-        v = inVectors_forScaling->GetTuple(inPtId);
+        inVectors_forScaling->GetTuple(inPtId, v);
         }
       else 
         {
-        v = inVectors->GetTuple(inPtId);
+        inVectors->GetTuple(inPtId, v);
         }
       vMag = vtkMath::Norm(v);
       if ( this->ScaleMode == VTK_SCALE_BY_VECTORCOMPONENTS )
@@ -481,7 +482,7 @@ void vtkVisItGlyph3D::Execute()
         value = vMag;
         }
       
-      index = (int) ((float)(value - this->Range[0]) * numberOfSources / den);
+      index = (int) ((double)(value - this->Range[0]) * numberOfSources / den);
       index = (index < 0 ? 0 :
               (index >= numberOfSources ? (numberOfSources-1) : index));
       
@@ -516,8 +517,8 @@ void vtkVisItGlyph3D::Execute()
     // Now begin copying/transforming glyph
     trans->Identity();
    
-    float *inNode = NULL; 
-    float *inCell = NULL; 
+    double *inNode = NULL; 
+    double *inCell = NULL; 
     if (inOrigNodes)
     {
         inNode = inOrigNodes->GetTuple(inPtId);
@@ -549,7 +550,7 @@ void vtkVisItGlyph3D::Execute()
       }
     
     // translate Source to Input point
-    x = input->GetPoint(inPtId);
+    input->GetPoint(inPtId, x);
     trans->Translate(x[0], x[1], x[2]);
     
     if ( haveVectors )
@@ -574,7 +575,7 @@ void vtkVisItGlyph3D::Execute()
           vNew[0] = (v[0]+vMag) / 2.0;
           vNew[1] = v[1] / 2.0;
           vNew[2] = v[2] / 2.0;
-          trans->RotateWXYZ((float)180.0,vNew[0],vNew[1],vNew[2]);
+          trans->RotateWXYZ((double)180.0,vNew[0],vNew[1],vNew[2]);
           }
         }
       }
@@ -608,7 +609,7 @@ void vtkVisItGlyph3D::Execute()
 
     if (inVectors_forColoring && this->ColorMode == VTK_COLOR_BY_VECTOR)
       {
-      v = inVectors_forColoring->GetTuple(inPtId);
+      inVectors_forColoring->GetTuple(inPtId, v);
       vMag = vtkMath::Norm(v);
       for (i=0; i < numSourcePts; i++) 
         {

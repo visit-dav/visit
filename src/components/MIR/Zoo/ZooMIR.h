@@ -69,8 +69,8 @@ class MIR_API ZooMIR : public MIR
 
     struct ReconstructedCoord
     {
-        float x,y,z;
-        float weight[MAX_NODES_PER_ZONE];
+        double x,y,z;
+        double weight[MAX_NODES_PER_ZONE];
         int origzone;
     };
 

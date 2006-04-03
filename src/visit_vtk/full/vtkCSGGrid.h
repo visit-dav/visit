@@ -102,30 +102,30 @@ public:
   vtkIdType GetNumberOfCells();
   vtkIdType GetNumberOfPoints();
   vtkIdType GetNumberOfBoundaries() const;
-  float *GetPoint(vtkIdType ptId);
-  float *GetBoundary(vtkIdType bndId) const;
-  void GetPoint(vtkIdType id, float x[3]);
+  double *GetPoint(vtkIdType ptId);
+  double *GetBoundary(vtkIdType bndId) const;
+  void GetPoint(vtkIdType id, double x[3]);
 
   vtkCell *GetCell(vtkIdType cellId);
   void GetCell(vtkIdType cellId, vtkGenericCell *cell);
-  void GetCellBounds(vtkIdType cellId, float bounds[6]);
-  int FindPoint(float x, float y, float z) { return this->vtkDataSet::FindPoint(x, y, z);};
-  vtkIdType FindPoint(float x[3]);
-  vtkIdType FindCell(float x[3], vtkCell *cell, vtkIdType cellId, float tol2,
-                     int& subId, float pcoords[3], float *weights);
-  vtkIdType FindCell(float x[3], vtkCell *cell, vtkGenericCell *gencell,
-                     vtkIdType cellId, float tol2, int& subId, 
-                     float pcoords[3], float *weights);
-  vtkCell *FindAndGetCell(float x[3], vtkCell *cell, vtkIdType cellId, 
-                          float tol2, int& subId, float pcoords[3],
-                          float *weights);
+  void GetCellBounds(vtkIdType cellId, double bounds[6]);
+  int FindPoint(double x, double y, double z) { return this->vtkDataSet::FindPoint(x, y, z);};
+  vtkIdType FindPoint(double x[3]);
+  vtkIdType FindCell(double x[3], vtkCell *cell, vtkIdType cellId, double tol2,
+                     int& subId, double pcoords[3], double *weights);
+  vtkIdType FindCell(double x[3], vtkCell *cell, vtkGenericCell *gencell,
+                     vtkIdType cellId, double tol2, int& subId, 
+                     double pcoords[3], double *weights);
+  vtkCell *FindAndGetCell(double x[3], vtkCell *cell, vtkIdType cellId, 
+                          double tol2, int& subId, double pcoords[3],
+                          double *weights);
   int GetCellType(vtkIdType cellId);
   void GetCellPoints(vtkIdType cellId, vtkIdList *ptIds);
   void GetPointCells(vtkIdType ptId, vtkIdList *cellIds);
   void ComputeBounds();
-  void SetBounds(float minX, float maxX,
-                 float minY, float maxY,
-                 float minZ, float maxZ)
+  void SetBounds(double minX, double maxX,
+                 double minY, double maxY,
+                 double minZ, double maxZ)
       {Bounds[0] = minX; Bounds[1] = maxX;
        Bounds[2] = minY; Bounds[3] = maxY;
        Bounds[4] = minZ; Bounds[5] = maxZ;};
@@ -417,7 +417,7 @@ public:
         return retval;
     }
 
-    float *GetPoint(int i)
+    double *GetPoint(int i)
     {
         tmp[0] = (i & 01) ? x1 : x0;
         tmp[1] = (i & 02) ? y1 : y0;
@@ -491,7 +491,7 @@ public:
 
     double x0,y0,z0,x1,y1,z1;
     double f000,f001,f010,f011,f100,f101,f110,f111;
-    float tmp[3];
+    double tmp[3];
     vector<int> zids;
 };
 
@@ -500,7 +500,7 @@ public:
                            map<float, map<float,
                               map<float, int> > >& nodemap);
 
-  float tmpFloats[32];                       // temporary storage to help satisfy interface
+  double tmpFloats[32];                       // temporary storage to help satisfy interface
                                              //    requirements of vtkDataSet
 
   vtkPlanes *Universe;                       // The "universe" set (a maximally sized box)

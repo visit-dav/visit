@@ -105,13 +105,13 @@ public:
   // Description:
   // Specify the (min,max) axis range. This will be used in the generation
   // of labels, if labels are visible.
-  vtkSetVector2Macro(Range,float);
-  vtkGetVectorMacro(Range,float,2);
+  vtkSetVector2Macro(Range,double);
+  vtkGetVectorMacro(Range,double,2);
 
   // Description:
-  void   SetBounds(float[6]);
-  float *GetBounds(void);
-  void   GetBounds(float[6]);
+  void   SetBounds(double[6]);
+  double *GetBounds(void);
+  void   GetBounds(double[6]);
 
   // Description:
   // Set/Get the format with which to print the labels on the axis.
@@ -132,13 +132,13 @@ public:
 
   // Description:
   // Set/Get the size of the major tick marks 
-  vtkSetMacro(MajorTickSize, float);
-  vtkGetMacro(MajorTickSize, float);
+  vtkSetMacro(MajorTickSize, double);
+  vtkGetMacro(MajorTickSize, double);
   
   // Description:
   // Set/Get the size of the major tick marks 
-  vtkSetMacro(MinorTickSize, float);
-  vtkGetMacro(MinorTickSize, float);
+  vtkSetMacro(MinorTickSize, double);
+  vtkGetMacro(MinorTickSize, double);
 
   // Description:
   // Set/Get the location of the ticks.
@@ -184,12 +184,12 @@ public:
 
   // Description:
   // Set/Get the length to use when drawing gridlines. 
-  vtkSetMacro(GridlineXLength, float);
-  vtkGetMacro(GridlineXLength, float);
-  vtkSetMacro(GridlineYLength, float);
-  vtkGetMacro(GridlineYLength, float);
-  vtkSetMacro(GridlineZLength, float);
-  vtkGetMacro(GridlineZLength, float);
+  vtkSetMacro(GridlineXLength, double);
+  vtkGetMacro(GridlineXLength, double);
+  vtkSetMacro(GridlineYLength, double);
+  vtkGetMacro(GridlineYLength, double);
+  vtkSetMacro(GridlineZLength, double);
+  vtkGetMacro(GridlineZLength, double);
 
   // Description:
   // Set/Get the type of this axis.
@@ -239,23 +239,23 @@ public:
   // Shallow copy of an axis actor. Overloads the virtual vtkProp method.
   void ShallowCopy(vtkProp *prop);
 
-  float ComputeMaxLabelLength(const float [3]);
-  float ComputeTitleLength(const float [3]);
-  void SetLabelScale(const float);
-  void SetTitleScale(const float);
+  double ComputeMaxLabelLength(const double [3]);
+  double ComputeTitleLength(const double [3]);
+  void SetLabelScale(const double);
+  void SetTitleScale(const double);
 
 
   // Description:
   // Set/Get the starting position for minor and major tick points,
   // and the delta values that determine their spacing. 
-  vtkSetMacro(MinorStart, float);
-  vtkGetMacro(MinorStart, float);
-  vtkSetMacro(MajorStart, float);
-  vtkGetMacro(MajorStart, float);
-  vtkSetMacro(DeltaMinor, float);
-  vtkGetMacro(DeltaMinor, float);
-  vtkSetMacro(DeltaMajor, float);
-  vtkGetMacro(DeltaMajor, float);
+  vtkSetMacro(MinorStart, double);
+  vtkGetMacro(MinorStart, double);
+  vtkSetMacro(MajorStart, double);
+  vtkGetMacro(MajorStart, double);
+  vtkSetMacro(DeltaMinor, double);
+  vtkGetMacro(DeltaMinor, double);
+  vtkSetMacro(DeltaMajor, double);
+  vtkGetMacro(DeltaMajor, double);
 
   void SetLabels(const std::vector<std::string> &labels);
 
@@ -266,8 +266,8 @@ protected:
   ~vtkVisItAxisActor();
 
   char  *Title;
-  float  Range[2];
-  float  LastRange[2];
+  double  Range[2];
+  double  LastRange[2];
   char  *LabelFormat;
   int    NumberOfLabelsBuilt;
   int    MinorTicksVisible;
@@ -276,9 +276,9 @@ protected:
  
   int    DrawGridlines;
   int    LastDrawGridlines;
-  float  GridlineXLength;
-  float  GridlineYLength;
-  float  GridlineZLength;
+  double  GridlineXLength;
+  double  GridlineYLength;
+  double  GridlineZLength;
   
   int    AxisVisibility;
   int    TickVisibility;
@@ -288,14 +288,14 @@ protected:
   
   int    AxisType;
   int    AxisPosition;
-  float  Bounds[6];
+  double  Bounds[6];
   
 private:
   vtkVisItAxisActor(const vtkVisItAxisActor&);
   void operator=(const vtkVisItAxisActor&);
 
 
-  void TransformBounds(vtkViewport *, float bnds[6]);
+  void TransformBounds(vtkViewport *, double bnds[6]);
 
   void BuildLabels(vtkViewport *, bool);
   void SetLabelPositions(vtkViewport *, bool);
@@ -303,28 +303,28 @@ private:
   void BuildTitle(bool);
 
   void SetAxisPointsAndLines(void);
-  bool BuildTickPointsForXType(float p1[3], float p2[3], bool);
-  bool BuildTickPointsForYType(float p1[3], float p2[3], bool);
-  bool BuildTickPointsForZType(float p1[3], float p2[3], bool);
+  bool BuildTickPointsForXType(double p1[3], double p2[3], bool);
+  bool BuildTickPointsForYType(double p1[3], double p2[3], bool);
+  bool BuildTickPointsForZType(double p1[3], double p2[3], bool);
 
   bool TickVisibilityChanged(void);
 
   vtkCoordinate *Point1Coordinate;
   vtkCoordinate *Point2Coordinate;
 
-  float  MajorTickSize;
-  float  MinorTickSize;
+  double  MajorTickSize;
+  double  MinorTickSize;
 
-  float  MajorStart;
-  float  MinorStart;
+  double  MajorStart;
+  double  MinorStart;
 
-  float  DeltaMinor;
-  float  DeltaMajor;
+  double  DeltaMinor;
+  double  DeltaMajor;
 
   int    LastAxisPosition;
   int    LastAxisType;
   int    LastTickLocation;
-  float  LastLabelStart;
+  double  LastLabelStart;
 
   vtkPoints         *minorTickPts;
   vtkPoints         *majorTickPts;
