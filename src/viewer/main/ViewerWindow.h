@@ -530,6 +530,7 @@ public:
     void SetFullFrameMode(const bool mode);
     bool GetFullFrameMode() const;
     void GetScaleFactorAndType(double &s, int &t);
+    bool DoAllPlotsAxesHaveSameUnits();
 
     void ConvertFromLeftEyeToRightEye(void);
     void ConvertFromRightEyeToLeftEye(void);

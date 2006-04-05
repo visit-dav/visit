@@ -5726,3 +5726,15 @@ VisWindow::GetMaxPlotZShift()
     return plots->GetMaxZShift();
 }
 
+// ****************************************************************************
+//  Method:  VisWindow::DoAllPlotsAxesHaveSameUnits
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    April 5, 2006 
+//
+// ****************************************************************************
+bool
+VisWindow::DoAllPlotsAxesHaveSameUnits()
+{
+    return plots->DoAllPlotsAxesHaveSameUnits();
+}

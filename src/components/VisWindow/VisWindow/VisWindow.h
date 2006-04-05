@@ -410,6 +410,8 @@ public:
     bool                 GetFullFrameMode(void);
     void                 FullFrameOn(const double, const int);
     void                 FullFrameOff(void);
+    bool                 DoAllPlotsAxesHaveSameUnits();
+
 
     void                 ShowMenu(void);
     void                 HideMenu(void);
