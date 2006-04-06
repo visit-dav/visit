@@ -52,6 +52,7 @@
 #include <DataNode.h>
 
 #include <snprintf.h>
+#include <visit-hdf5.h>
 
 using std::vector;
 using std::string;
@@ -884,6 +885,9 @@ avtSAMRAIFileFormat::GetVectorVar(int patch, const char *visit_var_name)
 //    Made it use OpenFile instead of H5Fopen directly. Removed call to
 //    H5Fclose
 //
+//    Mark C. Miller, Thu Apr  6 17:06:33 PDT 2006
+//    Added conditional compilation for hssize_t type
+//
 // ****************************************************************************
 vtkDataArray *
 avtSAMRAIFileFormat::ReadVar(int patch, 
@@ -1014,7 +1018,11 @@ avtSAMRAIFileFormat::ReadVar(int patch,
         // create dataspace and selection to read directly into fbuf
         hsize_t nvals = num_alloc_comps * num_data_samples;
         hid_t memspace = H5Screate_simple(1, &nvals, &nvals);
+#if HDF5_VERSION_GE(1,6,4)
+        hsize_t start = i;
+#else
         hssize_t start = i;
+#endif
         hsize_t stride = num_alloc_comps;
         hsize_t count = num_data_samples;
         H5Sselect_hyperslab(memspace, H5S_SELECT_SET, &start, &stride, &count, NULL);

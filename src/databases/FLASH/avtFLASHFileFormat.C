@@ -29,6 +29,8 @@
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 
+#include <visit-hdf5.h>
+
 using std::vector;
 using std::string;
 
@@ -575,6 +577,9 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
 //    Added "new" style particle support where the HDF5 variable name
 //    containing particle data has changed.
 //
+//    Mark C. Miller, Thu Apr  6 17:06:33 PDT 2006
+//    Added conditional compilation for hssize_t type
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -659,7 +664,11 @@ avtFLASHFileFormat::GetVar(int domain, const char *varname)
         //
         // Set up a data space to read the right domain
         //
+#if HDF5_VERSION_GE(1,6,4)
+        hsize_t start[5];
+#else
         hssize_t start[5];
+#endif
         hsize_t stride[5], count[5];
     
         start[0]  = domain;
