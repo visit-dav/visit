@@ -30,7 +30,8 @@ class avtMoleculeRendererImplementation
                           float varmin, float varmax,
                           float ambient_coeff,
                           float spec_coeff, float spec_power,
-                          float spec_r, float spec_g, float spec_b) = 0;
+                          float spec_r, float spec_g, float spec_b, 
+                          const int *) = 0;
     virtual void   InvalidateColors() { };
     virtual void   SetLevelsLUT(avtLookupTable *) = 0;
 private:

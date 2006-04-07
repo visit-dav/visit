@@ -13,7 +13,9 @@
 // Creation:   Tue Mar 28 09:56:02 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 7 11:26:48 PDT 2006
+//   Added SetHint method.
+//
 // ****************************************************************************
 
 class avtOpenGLAtomTexturer
@@ -24,6 +26,12 @@ public:
 
     void BeginSphereTexturing();
     void EndSphereTexturing();
+
+    static const int HINT_SET_DEPTH;
+    static const int HINT_SET_SCREEN_WIDTH;
+    static const int HINT_SET_SCREEN_HEIGHT;
+
+    void SetHint(int hint, int value);
 
     typedef enum {TextureMode, ShaderMode} TexMode_t;
     TexMode_t GetMode();

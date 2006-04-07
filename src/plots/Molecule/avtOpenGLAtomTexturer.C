@@ -2,6 +2,10 @@
 #include <math.h>
 #include <DebugStream.h>
 
+//#ifndef TextureModeData
+//#define GLEW_SUPPORTED
+//#endif
+
 #ifdef GLEW_SUPPORTED
 #include <GL/glew.h>
 #endif
@@ -52,6 +56,8 @@ public:
     virtual ~TextureModeData();
     bool BeginSphereTexturing();
     void EndSphereTexturing();
+
+    void SetHint(int,int) {; };
 
     bool ModeAvailable() { return true; }
 private:
@@ -362,18 +368,29 @@ public:
     bool BeginSphereTexturing();
     void EndSphereTexturing();
 
+    void SetHint(int,int);
+
     bool ModeAvailable();
 private:
     void MakeTextures();
+    void FreeResources();
 
     // Shader-related data.
     static const char *GLSL_sphere_fragment_program_source;
     static const char *GLSL_sphere_vertex_program_source;
+    static const char *GLSL_spheredepth_fragment_program_source;
+    static const char *GLSL_spheredepth_vertex_program_source;
+    bool GLSL_set_depth;
     bool GLSL_init;
     bool GLSL_shaders_setup;
+    int  GLSL_screen_w, GLSL_screen_h;
     GLhandleARB f, v, p;
 };
 
+
+//
+// Just do basic, flat depth, no lighting.
+//
 const char *ShaderModeData::GLSL_sphere_vertex_program_source = 
 "varying vec4 C;"
 "varying float tx, ty;"
@@ -382,20 +399,21 @@ const char *ShaderModeData::GLSL_sphere_vertex_program_source =
 "    C = gl_Color;"
 "    tx = gl_MultiTexCoord0.x;"
 "    ty = gl_MultiTexCoord0.y;"
-"    vec4 pt = vec4(0.,0.,0., 1.);"
+"    float R = gl_Normal[0];"
+
+"    vec4 z0pt = gl_ModelViewProjectionMatrix * gl_Vertex;"
+
+"    vec4 pt = vec4(-R, R, 0., 1.);"
 "    if(tx == 0. && ty == 0.)"
-"       pt = vec4(-1., -1., 0., 1.);"
+"       pt = vec4(-R, -R, 0., 1.);"
 "    else if(tx == 1. && ty == 0.)"
-"       pt = vec4(1., -1., 0., 1.);"
+"       pt = vec4(R, -R, 0., 1.);"
 "    else if(tx == 1. && ty == 1.)"
-"       pt = vec4(1., 1., 0., 1.);"
-"    else"
-"       pt = vec4(-1., 1., 0., 1.);"
-"    mat4 imv = gl_ModelViewMatrixInverse;"
-"    float radius = gl_Normal[0];"
-"    vec4 pt2 = imv * (pt * radius);"
-"    vec4 pt3 = pt2 + gl_Vertex;"
-"    gl_Position = gl_ModelViewProjectionMatrix * pt3;"
+"       pt = vec4(R, R, 0., 1.);"
+"    vec4 pt2 = gl_ModelViewMatrixInverse * pt + gl_Vertex;"
+"    vec4 pt3 = gl_ModelViewProjectionMatrix * pt2;"
+"    pt3[2] = z0pt[2];"
+"    gl_Position = pt3;"
 "}";
 
 const char *ShaderModeData::GLSL_sphere_fragment_program_source =
@@ -416,6 +434,69 @@ const char *ShaderModeData::GLSL_sphere_fragment_program_source =
 "    gl_FragColor = mc;"
 "}";
 
+//
+// These programs try setting the depth of the fragment as well as 
+// the color. 
+//
+// Note: They currently do not create the same depth values as would
+//       be produced by the fixed functionality pipeline. I don't know why.
+//
+
+const char *ShaderModeData::GLSL_spheredepth_vertex_program_source = 
+"varying vec4 C;"
+"varying float tx, ty;"
+"varying float R;"
+"void main()"
+"{"
+"    C = gl_Color;"
+"    tx = gl_MultiTexCoord0.x;"
+"    ty = gl_MultiTexCoord0.y;"
+"    R = gl_Normal[0];"
+
+"    vec4 z0pt = gl_ModelViewProjectionMatrix * gl_Vertex;"
+
+"    vec4 pt = vec4(-R, R, 0., 1.);"
+"    if(tx == 0. && ty == 0.)"
+"       pt = vec4(-R, -R, 0., 1.);"
+"    else if(tx == 1. && ty == 0.)"
+"       pt = vec4(R, -R, 0., 1.);"
+"    else if(tx == 1. && ty == 1.)"
+"       pt = vec4(R, R, 0., 1.);"
+"    vec4 pt2 = gl_ModelViewMatrixInverse * pt + gl_Vertex;"
+"    vec4 pt3 = gl_ModelViewProjectionMatrix * pt2;"
+"    pt3[2] = z0pt[2];"
+"    gl_Position = pt3;"
+"}";
+
+const char *ShaderModeData::GLSL_spheredepth_fragment_program_source = 
+"uniform vec2 two_over_screen;"
+"varying vec4 C;"
+"varying float tx, ty;"
+"varying float R;"
+"void main()"
+"{"
+"    float x = tx * 2. - 1;"
+"    float y = ty * 2. - 1;"
+"    float x2y2 = x*x + y*y;"
+"    float z = 0.;"
+"    if(x2y2 > 1.)"
+"        discard;"
+"    z = sqrt(1. - x2y2);"
+"    vec4 mc = C * z;"
+"    mc.a = 1.;"
+"    gl_FragColor = mc;"
+
+"    float px = gl_FragCoord.x * two_over_screen[0] - 1.;"
+"    float py = gl_FragCoord.y * two_over_screen[1] - 1.;"
+"    float pz = gl_FragCoord.z * 2. - 1;"
+"    vec4 world = gl_ModelViewProjectionMatrixInverse * vec4(px,py,pz,1.);"
+"    world /= world.w;"
+"    world.z += z * R;"
+"    vec4 proj = gl_ModelViewProjectionMatrix * world;"
+"    gl_FragDepth = (proj.z / proj.w) / 2. + 0.5;"
+"}";
+
+
 // ****************************************************************************
 // Method: ShaderModeData::ShaderModeData
 //
@@ -433,6 +514,8 @@ ShaderModeData::ShaderModeData()
 {
     GLSL_shaders_setup = false;
     GLSL_init = false;
+    GLSL_set_depth = true;
+    GLSL_screen_w = GLSL_screen_h = 1;
 }
 
 // ****************************************************************************
@@ -450,6 +533,25 @@ ShaderModeData::ShaderModeData()
 
 ShaderModeData::~ShaderModeData()
 {
+    FreeResources();
+}
+
+// ****************************************************************************
+// Method: ShaderModeData::FreeResources
+//
+// Purpose: 
+//   Frees the resources allocated to the shaders.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 7 10:53:22 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ShaderModeData::FreeResources()
+{
     // Free the program.
     if(GLSL_shaders_setup)
     {
@@ -458,6 +560,47 @@ ShaderModeData::~ShaderModeData()
         glDeleteObjectARB(v);
         glDeleteObjectARB(f);
         glDeleteObjectARB(p);
+        GLSL_shaders_setup = false;
+    }
+}
+
+// ****************************************************************************
+// Method: ShaderModeData::SetHint
+//
+// Purpose: 
+//   Sets hints for the renderer.
+//
+// Arguments:
+//   hint : The hint to set.
+//   val  : The value to use for the hint.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 7 10:52:47 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ShaderModeData::SetHint(int hint, int val)
+{
+    if(hint == avtOpenGLAtomTexturer::HINT_SET_DEPTH)
+    {
+        bool d = val != 0;
+
+        // If the depth setting mode does not equal the one that we're
+        // currently using, free the shader so we will recreate it
+        // using the right shader programs.
+        if(GLSL_set_depth != d)
+            FreeResources();
+        GLSL_set_depth = d;
+    }
+    else if(GLSL_set_depth)
+    {
+        if(hint == avtOpenGLAtomTexturer::HINT_SET_SCREEN_WIDTH)
+            GLSL_screen_w = val;
+        else if(hint == avtOpenGLAtomTexturer::HINT_SET_SCREEN_WIDTH)
+            GLSL_screen_h = val;
     }
 }
 
@@ -498,7 +641,9 @@ ShaderModeData::ModeAvailable()
 // Creation:   Mon Mar 27 17:20:02 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 7 11:18:26 PDT 2006
+//   Added code to use alternate programs that also set the depth.
+//
 // ****************************************************************************
 
 bool
@@ -509,12 +654,24 @@ ShaderModeData::BeginSphereTexturing()
 
     if(!GLSL_shaders_setup)
     {
+        GLsizei loglen = 0;
+#define MAX_LOG_SIZE 2000
+        char *log = new char[MAX_LOG_SIZE];
+        memset(log, 0, MAX_LOG_SIZE);
+
+        int maxvarying = 0;
+        glGetIntegerv(GL_MAX_VARYING_FLOATS_ARB, &maxvarying);
+        debug1 << "Maximum # of varying floats:" << maxvarying << endl;
+
         // Create the shader program handle.
         p = glCreateProgramObjectARB();
 
         // Create the vertex program and link it to the program.
         v = glCreateShaderObjectARB(GL_VERTEX_SHADER_ARB);
-        glShaderSourceARB(v, 1, &GLSL_sphere_vertex_program_source, NULL);
+        if(GLSL_set_depth)
+            glShaderSourceARB(v, 1, &GLSL_spheredepth_vertex_program_source, NULL);
+        else
+            glShaderSourceARB(v, 1, &GLSL_sphere_vertex_program_source, NULL);
         glCompileShaderARB(v);
         int vc = 0;
         glGetObjectParameterivARB(v, GL_OBJECT_COMPILE_STATUS_ARB, &vc);
@@ -522,10 +679,16 @@ ShaderModeData::BeginSphereTexturing()
                << ((vc==1)?" compiled":" did not compile")
                << endl;
         glAttachObjectARB(p, v);
+        memset(log, 0, MAX_LOG_SIZE);
+        glGetInfoLogARB(v, MAX_LOG_SIZE, &loglen, log);
+        debug1 << "Vertex log:\n" << log << endl;
     
         // Create the fragment program and link it to the program.
         f = glCreateShaderObjectARB(GL_FRAGMENT_SHADER_ARB);
-        glShaderSourceARB(f, 1, &GLSL_sphere_fragment_program_source, NULL);
+        if(GLSL_set_depth)
+            glShaderSourceARB(f, 1, &GLSL_spheredepth_fragment_program_source, NULL);
+        else
+            glShaderSourceARB(f, 1, &GLSL_sphere_fragment_program_source, NULL);
         glCompileShaderARB(f);
         int fc = 0;
         glGetObjectParameterivARB(f, GL_OBJECT_COMPILE_STATUS_ARB, &fc);
@@ -533,6 +696,9 @@ ShaderModeData::BeginSphereTexturing()
                << ((fc==1)?" compiled":" did not compile")
                << endl;
         glAttachObjectARB(p, f);
+        memset(log, 0, MAX_LOG_SIZE);
+        glGetInfoLogARB(f, MAX_LOG_SIZE, &loglen, log);
+        debug1 << "Fragment log:\n" << log << endl;
 
         glLinkProgramARB(p);
  
@@ -542,6 +708,11 @@ ShaderModeData::BeginSphereTexturing()
                << ((pls==1)?" linked":" did not link")
                << endl;
 
+        memset(log, 0, MAX_LOG_SIZE);
+        glGetInfoLogARB(p, MAX_LOG_SIZE, &loglen, log);
+        debug1 << "Program log:\n" << log << endl;
+        delete [] log;
+
         GLSL_shaders_setup = true;
 
         if(vc == 0 || fc == 0 || pls == 0)
@@ -550,6 +721,17 @@ ShaderModeData::BeginSphereTexturing()
                       "not supported." << endl;
             return false;
         }
+    }
+
+    if(GLSL_set_depth)
+    {
+        // Pass the 2./screen_size to the fragment program via uniform
+        // vec2.
+        float two_over_screen[2];
+        two_over_screen[0] = 2. / float(GLSL_screen_w);
+        two_over_screen[1] = 2. / float(GLSL_screen_h);
+        GLint u = glGetUniformLocationARB(p, "two_over_screen");
+        glUniform1fvARB(u, 2, two_over_screen);
     }
 
     // Start using the shader.
@@ -589,6 +771,7 @@ public:
     bool ModeAvailable() { return false; }
     bool BeginSphereTexturing() { return false; };
     void EndSphereTexturing() { };
+    void SetHint(int,int) { };
 };
 #endif
 
@@ -599,6 +782,10 @@ public:
 ///
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
+
+const int avtOpenGLAtomTexturer::HINT_SET_DEPTH = 0;
+const int avtOpenGLAtomTexturer::HINT_SET_SCREEN_WIDTH = 1;
+const int avtOpenGLAtomTexturer::HINT_SET_SCREEN_HEIGHT = 2;
 
 avtOpenGLAtomTexturer::avtOpenGLAtomTexturer()
 {
@@ -611,6 +798,30 @@ avtOpenGLAtomTexturer::~avtOpenGLAtomTexturer()
 {
     delete (TextureModeData *) tData;
     delete (ShaderModeData *) sData;
+}
+
+// ****************************************************************************
+// Method: avtOpenGLAtomTexturer::SetHint
+//
+// Purpose: 
+//   Sets hints into the different shading implementations.
+//
+// Arguments:
+//   hint  : The hint to set.
+//   value : The value to use for the hint.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 7 11:25:36 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtOpenGLAtomTexturer::SetHint(int hint, int value)
+{
+    ((TextureModeData *)tData)->SetHint(hint, value);
+    ((ShaderModeData *)sData)->SetHint(hint, value);
 }
 
 // ****************************************************************************

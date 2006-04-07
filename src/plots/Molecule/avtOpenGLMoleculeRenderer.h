@@ -39,7 +39,8 @@ class avtOpenGLMoleculeRenderer : public avtMoleculeRendererImplementation
                                    float varmin, float varmax,
                                    float ambient_coeff,
                                    float spec_coeff, float spec_power,
-                                   float spec_r, float spec_g, float spec_b);
+                                   float spec_r, float spec_g, float spec_b,
+                                   const int *);
 
     virtual void   InvalidateColors();
 
