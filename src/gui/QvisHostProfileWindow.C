@@ -2883,7 +2883,12 @@ QvisHostProfileWindow::togglePostCommand(bool state)
 //  Programmer:  Hank Childs
 //  Creation:    December 2, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Apr 10 13:24:13 PST 2006
+//    Fixed preCommand/postCommand error.
+//
 // ****************************************************************************
+
 void
 QvisHostProfileWindow::preCommandChanged(const QString &portStr)
 {
@@ -2892,7 +2897,7 @@ QvisHostProfileWindow::preCommandChanged(const QString &portStr)
     {
         HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
         QString temp, msg;
-        temp = postCommand->displayText();
+        temp = preCommand->displayText();
         if(!temp.isEmpty())
         {
             current.SetHwAccelPreCommand(std::string(temp.latin1()));
