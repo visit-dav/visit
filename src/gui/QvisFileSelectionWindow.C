@@ -1530,7 +1530,11 @@ QvisFileSelectionWindow::ChangePath(bool allowPathChange)
 //   Brad Whitlock, Mon Sep 29 16:11:15 PST 2003
 //   I changed the routine so it uses "*" for the filter if the user tries
 //   to enter an invalid filter.
-//   
+//
+//   Brad Whitlock, Thu Apr 13 14:13:54 PST 2006
+//   Added exception handling to catch exceptions that are set because of
+//   of a previous inability to set the directory.
+//
 // ****************************************************************************
 
 bool
@@ -1559,13 +1563,31 @@ QvisFileSelectionWindow::ChangeFilter()
     }
 
     // If the filters are different, modify the filter in the fileserver.
+    bool exceptionErr = false;
     if(filter != fileServer->GetFilter() || forcedChange)
     {
         // Try and set the filter in the file server.
         if(filter.length() > 0)
         {
-            fileServer->SetFilter(filter);
-            fileServer->Notify();
+            TRY
+            {
+                fileServer->SetFilter(filter);
+                fileServer->Notify();
+            }
+            CATCH(GetFileListException)
+            {
+                Error("The MetaData server running could not get the file "
+                      "list for the current directory, which is required "
+                      "before setting the file filter. Try entering a "
+                      "valid path before changing the file filter.");
+                exceptionErr = true;
+            }
+            CATCH(VisItException)
+            {
+                Error("An error occured when trying to set the file filter.");
+                exceptionErr = true;
+            }
+            ENDTRY
         }
         else
         {
@@ -1579,7 +1601,7 @@ QvisFileSelectionWindow::ChangeFilter()
         filterLineEdit->setText(QString(fileServer->GetFilter().c_str()));
     }
 
-    return errFlag;
+    return errFlag || exceptionErr;
 }
 
 // ****************************************************************************
