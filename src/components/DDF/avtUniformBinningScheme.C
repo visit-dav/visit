@@ -79,6 +79,11 @@ avtUniformBinningScheme::~avtUniformBinningScheme()
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Mar 30 12:38:14 PST 2006
+//    Fix precision issue.
+//
 // ****************************************************************************
 
 int
@@ -88,8 +93,8 @@ avtUniformBinningScheme::GetBinId(const float *f) const
     int rv = 0;
     for (int i = 0 ; i < ntuples ; i++)
     {
-        float span = ranges[2*i+1] - ranges[2*i];
-        float dist = f[i] - ranges[2*i];
+        double span = ranges[2*i+1] - ranges[2*i];
+        double dist = f[i] - ranges[2*i];
         int tup_bin = (int)((dist / span)*nvals[i]);
         tup_bin = (tup_bin < 0 ? 0 : tup_bin);
         tup_bin = (tup_bin >= nvals[i] ? nvals[i]-1 : tup_bin);

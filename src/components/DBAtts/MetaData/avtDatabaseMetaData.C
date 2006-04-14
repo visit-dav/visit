@@ -6657,11 +6657,17 @@ avtDatabaseMetaData::CreateSubAttributeGroup(int n)
 //
 // Modifications:
 //   
+//   Hank Childs, Thu Mar 30 12:11:43 PST 2006
+//   Add some checking for indices.
+//
 // *******************************************************************
 
 const avtMeshMetaData *
 avtDatabaseMetaData::GetMesh(int n) const
 {
+    if (n < 0 || n >= meshes.size())
+        EXCEPTION2(BadIndexException, n, meshes.size());
+
     return meshes[n];
 }
 
@@ -6704,11 +6710,17 @@ avtDatabaseMetaData::GetMesh(const std::string &n) const
 //
 // Modifications:
 //   
+//   Hank Childs, Thu Mar 30 12:11:43 PST 2006
+//   Add some checking for indices.
+//
 // *******************************************************************
 
 const avtScalarMetaData *
 avtDatabaseMetaData::GetScalar(int n) const
 {
+    if (n < 0 || n >= scalars.size())
+        EXCEPTION2(BadIndexException, n, scalars.size());
+
     return scalars[n];
 }
 
@@ -6751,11 +6763,17 @@ avtDatabaseMetaData::GetScalar(const std::string &n) const
 //
 // Modifications:
 //   
+//   Hank Childs, Thu Mar 30 12:11:43 PST 2006
+//   Add some checking for indices.
+//
 // *******************************************************************
 
 const avtVectorMetaData *
 avtDatabaseMetaData::GetVector(int n) const
 {
+    if (n < 0 || n >= vectors.size())
+        EXCEPTION2(BadIndexException, n, vectors.size());
+
     return vectors[n];
 }
 
@@ -6796,11 +6814,17 @@ avtDatabaseMetaData::GetVector(const std::string &n) const
 // Programmer: Hank Childs
 // Creation:   September 20, 2003
 //
+//   Hank Childs, Thu Mar 30 12:11:43 PST 2006
+//   Add some checking for indices.
+//
 // ****************************************************************************
 
 const avtTensorMetaData *
 avtDatabaseMetaData::GetTensor(int n) const
 {
+    if (n < 0 || n >= tensors.size())
+        EXCEPTION2(BadIndexException, n, tensors.size());
+
     return tensors[n];
 }
 
@@ -6839,11 +6863,19 @@ avtDatabaseMetaData::GetTensor(const std::string &n) const
 // Programmer: Hank Childs
 // Creation:   September 20, 2003
 //
+// Modifications:
+//
+//   Hank Childs, Thu Mar 30 12:11:43 PST 2006
+//   Add some checking for indices.
+//
 // ****************************************************************************
 
 const avtSymmetricTensorMetaData *
 avtDatabaseMetaData::GetSymmTensor(int n) const
 {
+    if (n < 0 || n >= symm_tensors.size())
+        EXCEPTION2(BadIndexException, n, symm_tensors.size());
+
     return symm_tensors[n];
 }
 
@@ -6883,11 +6915,19 @@ avtDatabaseMetaData::GetSymmTensor(const std::string &n) const
 // Programmer: Hank Childs
 // Creation:   July 19, 2005
 //
+// Modifications:
+//
+//   Hank Childs, Thu Mar 30 12:11:43 PST 2006
+//   Add some checking for indices.
+//
 // ****************************************************************************
 
 const avtArrayMetaData *
 avtDatabaseMetaData::GetArray(int n) const
 {
+    if (n < 0 || n >= arrays.size())
+        EXCEPTION2(BadIndexException, n, arrays.size());
+
     return arrays[n];
 }
 
@@ -6928,11 +6968,17 @@ avtDatabaseMetaData::GetArray(const std::string &n) const
 //
 // Modifications:
 //   
+//   Hank Childs, Thu Mar 30 12:11:43 PST 2006
+//   Add some checking for indices.
+//
 // *******************************************************************
 
 const avtMaterialMetaData *
 avtDatabaseMetaData::GetMaterial(int n) const
 {
+    if (n < 0 || n >= materials.size())
+        EXCEPTION2(BadIndexException, n, materials.size());
+
     return materials[n];
 }
 
@@ -6978,11 +7024,17 @@ avtDatabaseMetaData::GetMaterial(const std::string &n) const
 //
 // Modifications:
 //   
+//   Hank Childs, Thu Mar 30 12:11:43 PST 2006
+//   Add some checking for indices.
+//
 // *******************************************************************
 
 const avtSpeciesMetaData *
 avtDatabaseMetaData::GetSpecies(int n) const
 {
+    if (n < 0 || n >= species.size())
+        EXCEPTION2(BadIndexException, n, species.size());
+
     return species[n];
 }
 
@@ -7026,11 +7078,17 @@ avtDatabaseMetaData::GetSpecies(const std::string &n) const
 //
 // Modifications:
 //   
+//   Hank Childs, Thu Mar 30 12:11:43 PST 2006
+//   Add some checking for indices.
+//
 // *******************************************************************
 
 const avtCurveMetaData *
 avtDatabaseMetaData::GetCurve(int n) const
 {
+    if (n < 0 || n >= curves.size())
+        EXCEPTION2(BadIndexException, n, curves.size());
+
     return curves[n];
 }
 
@@ -7071,11 +7129,20 @@ avtDatabaseMetaData::GetCurve(const std::string &n) const
 //
 // Programmer: Mark C. Miller 
 // Creation:   04Sep03 
+//
+// Modifications:
+//
+//   Hank Childs, Thu Mar 30 12:11:43 PST 2006
+//   Add some checking for indices.
+//
 // *******************************************************************
 
 const avtSILMetaData *
 avtDatabaseMetaData::GetSIL(int n) const
 {
+    if (n < 0 || n >= sils.size())
+        EXCEPTION2(BadIndexException, n, sils.size());
+
     return sils[n];
 }
 
@@ -7116,11 +7183,17 @@ avtDatabaseMetaData::GetSIL(const std::string &n) const
 //
 // Modifications:
 //   
+//   Hank Childs, Thu Mar 30 12:11:43 PST 2006
+//   Add some checking for indices.
+//
 // *******************************************************************
 
 const avtLabelMetaData *
 avtDatabaseMetaData::GetLabel(int n) const
 {
+    if (n < 0 || n >= labels.size())
+        EXCEPTION2(BadIndexException, n, labels.size());
+
     return labels[n];
 }
 
@@ -7163,11 +7236,17 @@ avtDatabaseMetaData::GetLabel(const std::string &n) const
 //
 // Modifications:
 //   
+//   Hank Childs, Thu Mar 30 12:11:43 PST 2006
+//   Add some checking for indices.
+//
 // *******************************************************************
 
 const avtDefaultPlotMetaData *
 avtDatabaseMetaData::GetDefaultPlot(int n) const
 {
+    if (n < 0 || n >= defaultPlots.size())
+        EXCEPTION2(BadIndexException, n, defaultPlots.size());
+
     return defaultPlots[n];
 }
 

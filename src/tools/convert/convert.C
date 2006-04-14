@@ -56,6 +56,9 @@ static void UsageAndExit(const char *);
 //    Mark C. Miller, Tue Feb  7 11:16:18 PST 2006
 //    Added return statement to main
 //
+//    Hank Childs, Thu Mar 30 11:57:05 PST 2006
+//    Add basic (i.e. non-crashing) support for write options.
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -155,6 +158,13 @@ int main(int argc, char *argv[])
     }
 
     //
+    // Set the write options as the default.  If we were clever, we would
+    // walk through the write options and have the user iterate over them
+    // from the command line.
+    //
+    edpi->SetWriteOptions(edpi->GetWriteOptions());
+
+    //
     // Make sure this format has a writer.
     //
     avtDatabaseWriter *wrtr = edpi->GetWriter();
@@ -195,23 +205,51 @@ int main(int argc, char *argv[])
     // Instantiate the database.
     //
     avtDatabase *db = NULL;
-    if (strstr(argv[1], ".visit") != NULL)
-        db = avtDatabaseFactory::VisitFile(argv[1], 0);
-    else
-        db = avtDatabaseFactory::FileList(argv+1, 1, 0);
+    TRY
+    {
+        if (strstr(argv[1], ".visit") != NULL)
+            db = avtDatabaseFactory::VisitFile(argv[1], 0);
+        else
+            db = avtDatabaseFactory::FileList(argv+1, 1, 0);
+    }
+    CATCH(...)
+    {
+        cerr << "The file " << argv[1] << " does not exist." << endl;
+        exit(EXIT_FAILURE);
+    }
+    ENDTRY
 
     //
     // Figure out which mesh to operate on.
     // Assume MetaData for timestep 0 is sufficient for what we need here
     //
     const avtDatabaseMetaData *md = db->GetMetaData(0);
-    if (md->GetNumMeshes() > 1)
+    const avtMeshMetaData *mmd = NULL;
+    std::string meshname = "";
+    if (md->GetNumMeshes() >= 1)
     {
-        cerr << "There are multiple meshes in the file.  This program can "
-             << "only\nhandle one mesh at a time.  I am using mesh: ";
-        cerr << md->GetMesh(0)->name << endl;
+        if (md->GetNumMeshes() > 1)
+        {
+            cerr << "There are multiple meshes in the file.  This program can "
+                 << "only\nhandle one mesh at a time.  I am using mesh: ";
+            cerr << md->GetMesh(0)->name << endl;
+        }
+        meshname = md->GetMesh(0)->name;
     }
-    const avtMeshMetaData *mmd = md->GetMesh(0);
+    else if (md->GetNumMeshes() < 1)
+    {
+        if (md->GetNumCurves() > 0)
+        {
+            cerr << "Cannot find any meshes, converting curves." << endl;
+            meshname = md->GetCurve(0)->name;
+        }
+        else
+        {
+            cerr << "Cannot find any valid meshes or curves to convert.\n"
+                 << "Giving up." << endl;
+            exit(EXIT_FAILURE);
+        }
+    }
 
     //
     // Hook up the expressions we have associated with the database, so
@@ -229,7 +267,7 @@ int main(int argc, char *argv[])
     cerr << "Operating on " << md->GetNumStates() << " timestep(s)." << endl;
     for (i = 0 ; i < md->GetNumStates() ; i++)
     {
-         avtDataObject_p dob = db->GetOutput(mmd->name.c_str(), i);
+         avtDataObject_p dob = db->GetOutput(meshname.c_str(), i);
          avtExpressionEvaluatorFilter eef;
          eef.SetInput(dob);
          dob = eef.GetOutput();

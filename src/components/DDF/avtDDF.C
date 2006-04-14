@@ -9,6 +9,8 @@
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkDataSetWriter.h>
 
 #include <avtBinningScheme.h>
 #include <avtDDFFunctionInfo.h>
@@ -131,8 +133,10 @@ avtDDF::ApplyFunction(vtkDataSet *ds)
         const char *varname = functionInfo->GetDomainTupleName(k).c_str();
         arr[k] = (isNodal ? ds->GetPointData()->GetArray(varname)
                           : ds->GetCellData()->GetArray(varname));
-        if (arr == NULL)
+        if (arr[k] == NULL)
+        {
             hasError = true;
+        }
     }
 
     if (hasError)
@@ -162,6 +166,54 @@ avtDDF::ApplyFunction(vtkDataSet *ds)
     delete [] v;
 
     return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtDDF::OutputDDF
+//
+//  Purpose:
+//      Outputs a DDF.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 30, 2006
+//
+// ****************************************************************************
+
+void
+avtDDF::OutputDDF(const std::string &ddfname)
+{
+    avtDDFFunctionInfo *i = GetFunctionInfo();
+    int numDims = i->GetDomainNumberOfTuples();
+    vtkDataSet *g = CreateGrid();
+    if (numDims > 1)
+    {
+        vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
+        char str[1024];
+        sprintf(str, "%s.vtk", ddfname.c_str());
+        wrtr->SetFileName(str);
+        wrtr->SetInput(g);
+        wrtr->Write();
+        wrtr->Delete();
+    }
+    else
+    {
+        vtkRectilinearGrid *r = (vtkRectilinearGrid *) g;
+        int dims[3];
+        r->GetDimensions(dims);
+        vtkDataArray *s = r->GetCellData()->GetArray(0);
+        vtkDataArray *x = r->GetXCoordinates();
+        char str[1024];
+        sprintf(str, "%s.ultra", ddfname.c_str());
+        ofstream ofile(str);
+        ofile << "# DDF " << ddfname << endl;
+        for (int j = 0 ; j < dims[0]-1 ; j++)
+        {
+            ofile << (x->GetTuple1(j) + x->GetTuple1(j+1)) / 2. << " "
+                  << s->GetTuple1(j) << endl;
+        }
+    }
+    g->Delete();
 }
 
 

@@ -3340,10 +3340,13 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
 //  Programmer:  Hank Childs
 //  Creation:    February 13, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Mar 30 12:40:13 PST 2006
+//    Have DDF class write out the data set.  Also make reference to DDF
+//    result in the first DDF, not the last.
+//
 // ****************************************************************************
-
-#include <vtkDataSetWriter.h>
-#include <vtkDataSet.h>
 
 void
 NetworkManager::ConstructDDF(int id, ConstructDDFAttributes *atts)
@@ -3389,16 +3392,19 @@ NetworkManager::ConstructDDF(int id, ConstructDDFAttributes *atts)
     // This should be cleaned up at some point.
     if (d != NULL)
     {
-        vtkDataSet *g = d->CreateGrid();
-        vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
-        char str[1024];
-        sprintf(str, "%s.vtk", atts->GetDdfName().c_str());
-        wrtr->SetFileName(str);
-        wrtr->SetInput(g);
-        wrtr->Write();
-        g->Delete();
-        ddf.push_back(d);
-        ddf_names.push_back(atts->GetDdfName());
+        d->OutputDDF(atts->GetDdfName());
+        bool foundMatch = false;
+        for (int i = 0 ; i < ddf_names.size() ; i++)
+            if (ddf_names[i] == atts->GetDdfName())
+            {
+                foundMatch = true;
+                ddf[i] = d;
+            }
+        if (!foundMatch)
+        {
+            ddf.push_back(d);
+            ddf_names.push_back(atts->GetDdfName());
+        }
     }
 }
 
