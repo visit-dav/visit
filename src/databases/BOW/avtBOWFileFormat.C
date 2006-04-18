@@ -522,6 +522,31 @@ avtBOWFileFormat::ActivateTimestep(int ts)
 }
 
 // ****************************************************************************
+// Method: avtBOWFileFormat::ComputeStrideAdjustedSize
+//
+// Purpose: 
+//   Adjusts domain size for stride.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 14 18:26:44 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtBOWFileFormat::ComputeStrideAdjustedSize(const int *domainSize,
+    int *adjustedSize) const
+{
+    adjustedSize[0] = domainSize[0] / header.stride[0];
+    adjustedSize[1] = domainSize[1] / header.stride[1];
+    adjustedSize[2] = domainSize[2] / header.stride[2];
+    adjustedSize[0] = (adjustedSize[0] < 1) ? 1 : adjustedSize[0];
+    adjustedSize[1] = (adjustedSize[1] < 1) ? 1 : adjustedSize[1];
+    adjustedSize[2] = (adjustedSize[2] < 1) ? 1 : adjustedSize[2];
+}
+
+// ****************************************************************************
 // Method: avtBOWFileFormat::ReadDomainConnectivity
 //
 // Purpose: 
@@ -666,24 +691,76 @@ avtBOWFileFormat::ReadDomainConnectivity()
     visitTimer->StopTimer(stage3, "stage3");
 
     //
-    // Populate the domain connectivity structure.
+    // If we're doing strides then we'll need to figure out new domain
+    // origins because dividing the origins by a stride that is not divisible
+    // will produce gaps or worse.
     //
-    int stage4 = visitTimer->StartTimer();
-    avtRectilinearDomainBoundaries *rdb = new avtRectilinearDomainBoundaries(true);
-    rdb->SetNumDomains(header.numblocks);
+    typedef std::map<int, int> IntIntMap;
+    IntIntMap X_OriginToSmallSize, Y_OriginToSmallSize, Z_OriginToSmallSize;
     for(int dom = 0; dom < header.numblocks; ++dom)
     {
         int *domainOrigin = &domainConnectivity[dom*6+3];
         int *domainSize = &domainConnectivity[dom*6];
 
+        int adjustedSize[3];
+        ComputeStrideAdjustedSize(domainSize, adjustedSize);
+
+        X_OriginToSmallSize[domainOrigin[0]] = adjustedSize[0];
+        Y_OriginToSmallSize[domainOrigin[1]] = adjustedSize[1];
+        Z_OriginToSmallSize[domainOrigin[2]] = adjustedSize[2];
+    }
+    IntIntMap X_OriginToOrigin, Y_OriginToOrigin, Z_OriginToOrigin;
+    int xorg = 0, yorg = 0, zorg = 0;
+    for(IntIntMap::const_iterator xi = X_OriginToSmallSize.begin();
+        xi != X_OriginToSmallSize.end(); ++xi)
+    {
+        X_OriginToOrigin[xi->first] = xorg;
+        xorg += xi->second;
+    }
+    for(IntIntMap::const_iterator yi = Y_OriginToSmallSize.begin();
+        yi != Y_OriginToSmallSize.end(); ++yi)
+    {
+        Y_OriginToOrigin[yi->first] = yorg;
+        yorg += yi->second;
+    }
+    for(IntIntMap::const_iterator zi = Z_OriginToSmallSize.begin();
+        zi != Z_OriginToSmallSize.end(); ++zi)
+    {
+        Z_OriginToOrigin[zi->first] = zorg;
+        zorg += zi->second;
+    }
+
+    //
+    // Populate the domain connectivity structure.
+    //
+    int stage4 = visitTimer->StartTimer();
+    avtRectilinearDomainBoundaries *rdb = new avtRectilinearDomainBoundaries(true);
+    rdb->SetNumDomains(header.numblocks);
+    debug4 << "Creating domain connectivity taking stride into account" << endl;
+    for(int dom = 0; dom < header.numblocks; ++dom)
+    {
+        int *domainOrigin = &domainConnectivity[dom*6+3];
+        int *domainSize = &domainConnectivity[dom*6];
+
+        int adjustedSize[3];
+        ComputeStrideAdjustedSize(domainSize, adjustedSize);
+
         int extents[6];
-        extents[0] = domainOrigin[0];
-        extents[1] = domainOrigin[0] + domainSize[0];
-        extents[2] = domainOrigin[1];
-        extents[3] = domainOrigin[1] + domainSize[1];
-        extents[4] = domainOrigin[2];
-        extents[5] = domainOrigin[2] + domainSize[2];
+        extents[0] = X_OriginToOrigin[domainOrigin[0]];
+        extents[1] = extents[0] + adjustedSize[0];
+        extents[2] = Y_OriginToOrigin[domainOrigin[1]];
+        extents[3] = extents[2] + adjustedSize[1];
+        extents[4] = Z_OriginToOrigin[domainOrigin[2]];
+        extents[5] = extents[4] + adjustedSize[2];
         rdb->SetIndicesForRectGrid(dom, extents);
+
+        debug4 << "\tDomain " << dom
+               << " size[" << adjustedSize[0]
+               << ", " << adjustedSize[1]
+               << ", " << adjustedSize[2] << "]"
+               << " offset[" << extents[0]
+               << ", " << extents[2]
+               << ", " << extents[4] << "]" << endl;
     }
     rdb->CalculateBoundaries();
     void_ref_ptr vr = void_ref_ptr(rdb,
@@ -903,10 +980,13 @@ avtBOWFileFormat::GetMesh(int timestate, int domain, const char *meshname)
     //
     // The number of nodes in each dimension.
     //
+    int adjustedSize[3];
+    ComputeStrideAdjustedSize(sizes, adjustedSize);
+
     int size[3];
-    size[0] = sizes[0] + 1;
-    size[1] = sizes[1] + 1;
-    size[2] = sizes[2] + 1;
+    size[0] = adjustedSize[0] + 1;
+    size[1] = adjustedSize[1] + 1;
+    size[2] = adjustedSize[2] + 1;
 
     //
     // Populate the coordinates.
@@ -962,8 +1042,7 @@ avtBOWFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 //  Modifications:
 //
 // ****************************************************************************
-#define DECOMPRESS_INTO_VTKMEM
-#ifdef DECOMPRESS_INTO_VTKMEM
+
 typedef struct {size_t size; void *ptr; int count;} VTK_Memory;
 
 void *vtk_bow_alloc(void *opaque, size_t size)
@@ -973,16 +1052,12 @@ void *vtk_bow_alloc(void *opaque, size_t size)
     VTK_Memory *m = (VTK_Memory *)opaque;
     if(m->size == size && ++m->count == 1)
     {
-//        debug4 << "\tvtk_bow_alloc: returning VTK memory for requested "
-//               << size << " byte allocation" << endl;
         retval = m->ptr;
     }
     else
     {
         long nLongs = (size / sizeof(long)) + (((size % sizeof(long)) > 0) ? 1 : 0);
         retval = (void *)(new long[nLongs]);
-//        debug4 << "\tvtk_bow_alloc: alloc " << retval << "(" << size
-//               << " bytes,  allocated " << nLongs << " longs)" << endl;
     }
 
     return retval;
@@ -993,11 +1068,9 @@ void vtk_bow_free(void *opaque, void *ptr)
     VTK_Memory *m = (VTK_Memory *)opaque;
     if(ptr != m->ptr)
     {
-//        debug4 << "\tvtk_bow_free: freeing memory" << endl;
         delete [] ((long *)ptr);
     }
 }
-#endif
 
 vtkDataArray *
 avtBOWFileFormat::GetVar(int timestate, int domain, const char *varname)
@@ -1020,17 +1093,27 @@ avtBOWFileFormat::GetVar(int timestate, int domain, const char *varname)
         //
         // Get the BOW info out of the data array.
         //
-#ifdef DECOMPRESS_INTO_VTKMEM
         VTK_Memory vtkmem;
         vtkmem.size = 0;
         vtkmem.ptr = 0;
         vtkmem.count = 0;
-        bowglobal bg = bowglobal_create(vtk_bow_alloc, vtk_bow_free,
-            (void *)&vtkmem);
-#else
-        bowglobal bg = bowglobal_create(my_bow_alloc, my_bow_free,
-            0);
-#endif
+        bowglobal bg;
+
+        bool directDecompress = true;
+        bool dataStride = (header.stride[0] != 1 ||
+                           header.stride[1] != 1 ||
+                           header.stride[2] != 1);
+        if(dataStride)
+        {
+            bg = bowglobal_create(my_bow_alloc, my_bow_free, 0);
+            directDecompress = false;
+        }
+        else
+        {
+            bg = bowglobal_create(vtk_bow_alloc, vtk_bow_free,
+                (void *)&vtkmem);
+        }
+
 
         bowinfo binf = bow_getbowinfo(bg, bow);
         if(binf == 0)
@@ -1044,11 +1127,16 @@ avtBOWFileFormat::GetVar(int timestate, int domain, const char *varname)
             debug4 << mName << "Allocated " << size
                    << " floats in which to decompress bow data" << endl;
             vtkFloatArray *fscalars = vtkFloatArray::New();
-            fscalars->SetNumberOfTuples(size);
-#ifdef DECOMPRESS_INTO_VTKMEM
-            vtkmem.size = size * sizeof(float);
-            vtkmem.ptr = fscalars->GetVoidPointer(0);
-#endif
+
+            if(directDecompress)
+            {
+                debug4 << mName << "Setting up buffer for direct decompression"
+                       << endl;
+
+                fscalars->SetNumberOfTuples(size);
+                vtkmem.size = size * sizeof(float);
+                vtkmem.ptr = fscalars->GetVoidPointer(0);
+            }
 
             //
             // Decompress the BOW into floats.
@@ -1056,41 +1144,95 @@ avtBOWFileFormat::GetVar(int timestate, int domain, const char *varname)
             debug4 << mName << "Calling bow2bof" << endl;
             float *f = bow2bof(bg, (char *)bow, 0);
 
-#ifndef DECOMPRESS_INTO_VTKMEM
-            // We did not decompress directly into VTK memory so copy
-            // the data into the VTK data array.
-            float *src = f;
-            float *dest = (float *)fscalars->GetVoidPointer(0);
-            if(delogify)
+            if(directDecompress)
             {
-                debug4 << mName << "Delogifying data" << endl;
-                for(int i = 0; i < size; ++i)
+                if(delogify)
                 {
-                    float tmp = *src++;
-                    *dest++ = DELOGIFY(tmp);
+                    debug4 << mName << "Delogifying data" << endl;
+                    float *src = (float *)fscalars->GetVoidPointer(0);
+                    for(int i = 0; i < size; ++i)
+                    {
+                        float tmp = *src;
+                        *src++ = DELOGIFY(tmp);
+                    }
+                }
+
+                vtkmem.size = 0;
+                vtkmem.ptr = 0;
+            }
+            else if(dataStride)
+            {
+                // Figure the size of the strided brick
+                int domSize[3];
+                domSize[0] = binf->xs[0];
+                domSize[1] = binf->ys[0];
+                domSize[2] = binf->zs[0];
+                int strideSize[3];
+                ComputeStrideAdjustedSize(domSize, strideSize);
+                size = strideSize[0] * strideSize[1] * strideSize[2];
+                fscalars->SetNumberOfTuples(size);
+
+                debug4 << mName << "Strided data size: "
+                       << strideSize[0] << ", "
+                       << strideSize[1] << ", "
+                       << strideSize[2] << endl;
+
+                debug4 << mName << "Copying strided data into smaller brick."
+                       << endl;
+                float *dest = (float *)fscalars->GetVoidPointer(0);
+                int nx = binf->xs[0];
+                int nxy = nx * binf->ys[0];
+                for(int k = 0; k < strideSize[2]; ++k)
+                {
+                    int zidx = k * header.stride[2];
+                    for(int j = 0; j < strideSize[1]; ++j)
+                    {
+                        int yidx = j * header.stride[1];
+                        for(int i = 0; i < strideSize[0]; ++i)
+                        {
+                            int xidx = i * header.stride[0];
+                            *dest++ = f[zidx*nxy + yidx*nx + xidx];
+                        }
+                    }
+                }
+
+                delete [] f;
+
+                if(delogify)
+                {
+                    debug4 << mName << "Delogifying data" << endl;
+                    float *val = (float *)fscalars->GetVoidPointer(0);
+                    for(int i = 0; i < size; ++i)
+                    {
+                        float tmp = *val;
+                        *val++ = DELOGIFY(tmp);
+                    }
                 }
             }
             else
             {
-                for(int i = 0; i < size; ++i)
-                    *dest++ = *src++;
-            }
-            delete [] f;
-#else
-            if(delogify)
-            {
-                debug4 << mName << "Delogifying data" << endl;
-                float *src = (float *)fscalars->GetVoidPointer(0);
-                for(int i = 0; i < size; ++i)
-                {
-                    float tmp = *src;
-                    *src++ = DELOGIFY(tmp);
-                }
-            }
+                // We did not decompress directly into VTK memory so copy
+                // the data into the VTK data array.
+                fscalars->SetNumberOfTuples(size);
 
-            vtkmem.size = 0;
-            vtkmem.ptr = 0;
-#endif
+                float *src = f;
+                float *dest = (float *)fscalars->GetVoidPointer(0);
+                if(delogify)
+                {
+                    debug4 << mName << "Delogifying data" << endl;
+                    for(int i = 0; i < size; ++i)
+                    {
+                        float tmp = *src++;
+                        *dest++ = DELOGIFY(tmp);
+                    }
+                }
+                else
+                {
+                    for(int i = 0; i < size; ++i)
+                        *dest++ = *src++;
+                }
+                delete [] f;
+            }
 
             retval = fscalars;
         }
@@ -1166,6 +1308,8 @@ avtBOWFileFormat::HeaderData::HeaderData()
     filenamepat = 0;
     strcpy(varname, "var");
     delogify = false;
+
+    stride[0] = stride[1] = stride[2] = 1;
 
     timeMethod = -1;
     m1_file = 0;
@@ -1292,6 +1436,14 @@ avtBOWFileFormat::HeaderData::Read(const char *filename)
                 timeMethod = 1;
             }
             else
+            {
+                EXCEPTION1(InvalidFilesException, filename);
+            }
+        }
+        else if(strncmp(line, "visit_stride ", 13) == 0)
+        {
+            if(sscanf(line+13,"%d %d %d",
+               &stride[0], &stride[1], &stride[2]) != 3)
             {
                 EXCEPTION1(InvalidFilesException, filename);
             }

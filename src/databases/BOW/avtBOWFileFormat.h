@@ -58,6 +58,8 @@ protected:
         char varname[100];
         bool delogify;
 
+        int stride[3];
+
         int   timeMethod;
         char  *m1_file;
         int    m2_nStates;
@@ -81,7 +83,7 @@ protected:
     void GetFilenameForDomain(char *filename, int len, int dom, int ts);
     char *GetBOWBytesForDomainAtTime(int dom, int ts, bool infoOnly);
     bool ReadSingleBOFDimensions(int dom, int ts, int *dimsize);
-
+    void ComputeStrideAdjustedSize(const int *domainSize, int *adjustedSize) const;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 };
