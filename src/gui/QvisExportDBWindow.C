@@ -79,6 +79,10 @@ QvisExportDBWindow::~QvisExportDBWindow()
 //   Brad Whitlock, Thu Jul 14 13:50:15 PST 2005
 //   Prevented "..." button max width from being set on MacOS X.
 //
+//   Hank Childs, Mon Apr 24 09:57:22 PDT 2006
+//   Tell the file format that is has "changed", so that it will always be
+//   up-to-date ('7177).
+//
 // ****************************************************************************
 
 void
@@ -159,6 +163,12 @@ QvisExportDBWindow::CreateWindowContents()
             this, SLOT(exportButtonClicked()));
     exportButtonLayout->addWidget(exportButton);
     exportButtonLayout->addStretch(50);
+
+    // The information about the file format is only updated when it is
+    // changed.  So if it is not changed, then it never updates.  So tell it
+    // now that it has changed, in case anyone tries to export a database using
+    // the first option (i.e. without changing it).
+    fileFormatChanged(0);
 }
 
 // ****************************************************************************

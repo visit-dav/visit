@@ -187,6 +187,9 @@ avtBOVFileFormat::ActivateTimestep(void)
 //    Hank Childs, Mon Sep 15 09:49:06 PDT 2003
 //    If we have zonal centering, then construct the mesh differently.
 //
+//    Hank Childs, Mon Apr 24 09:33:21 PDT 2006
+//    Add support for 2D BOV files.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -276,19 +279,27 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
 
     vtkFloatArray *z = vtkFloatArray::New();
     int dz = bricklet_size[2];
-    if (hasBoundaries)
+    if (dz == 1)
     {
-        dz = bricklet_size[2]+2;
-        if (z_off == 0)
-            dz -= 1;
-        if (z_off >= nz-1)
-            dz -= 1;
+        z->SetNumberOfTuples(1);
+        z->SetTuple1(0, 0.);
     }
-    if (! nodalCentering) 
-        dz += 1;
-    z->SetNumberOfTuples(dz);
-    for (i = 0 ; i < dz ; i++)
-        z->SetTuple1(i, z_start + i * (z_stop-z_start) / (dz-1));
+    else
+    {
+        if (hasBoundaries)
+        {
+            dz = bricklet_size[2]+2;
+            if (z_off == 0)
+                dz -= 1;
+            if (z_off >= nz-1)
+                dz -= 1;
+        }
+        if (! nodalCentering) 
+            dz += 1;
+        z->SetNumberOfTuples(dz);
+        for (i = 0 ; i < dz ; i++)
+            z->SetTuple1(i, z_start + i * (z_stop-z_start) / (dz-1));
+    }
 
     int dims[3] = { dx, dy, dz };
     rv->SetDimensions(dims);
@@ -866,6 +877,9 @@ avtBOVFileFormat::GetAuxiliaryData(const char *var, int domain,
 //    Hank Childs, Fri Mar  4 16:02:03 PST 2005
 //    Make sure we read the table of contents first.
 //
+//    Hank Childs, Fri Apr 21 16:59:48 PDT 2006
+//    Add support for 2D.
+//
 // ****************************************************************************
 
 void
@@ -876,6 +890,8 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     int ny = full_size[1] / bricklet_size[1];
     int nz = full_size[2] / bricklet_size[2];
 
+    int dim = (nz == 1 ? 2 : 3);
+
     int nbricks = nx*ny*nz;
  
     avtMeshMetaData *mesh = new avtMeshMetaData;
@@ -883,8 +899,8 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->meshType = AVT_RECTILINEAR_MESH;
     mesh->numBlocks = nbricks;
     mesh->blockOrigin = 0;
-    mesh->spatialDimension = 3;
-    mesh->topologicalDimension = 3;
+    mesh->spatialDimension = dim;
+    mesh->topologicalDimension = dim;
     mesh->blockTitle = "bricks";
     mesh->blockPieceName = "brick";
     mesh->hasSpatialExtents = false;
@@ -912,8 +928,13 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             extents[1]  = (x_off+1) * (bricklet_size[0]-correction);
             extents[2] = y_off * (bricklet_size[1]-correction);
             extents[3]  = (y_off+1) * (bricklet_size[1]-correction);
-            extents[4] = z_off * (bricklet_size[2]-correction);
-            extents[5]  = (z_off+1) * (bricklet_size[2]-correction);
+            if (dim > 2)
+            {
+                extents[4] = z_off * (bricklet_size[2]-correction);
+                extents[5]  = (z_off+1) * (bricklet_size[2]-correction);
+            }
+            else 
+                extents[4] = extents[5] = 0;
             rdb->SetIndicesForRectGrid(i, extents);
         }
         rdb->CalculateBoundaries();
@@ -1150,7 +1171,7 @@ avtBOVFileFormat::ReadTOC(void)
         bricklet_size[1] = full_size[1];
         bricklet_size[2] = full_size[2];
     }
-    if (dimensions[0] <= 0. || dimensions[1] <= 0. || dimensions[2] <= 0.)
+    if (dimensions[0] <= 0. || dimensions[1] <= 0. || dimensions[2] < 0.)
     {
         debug1 << "Invalid dimensions \"BRICK_SIZE\"" << endl;
         EXCEPTION1(InvalidFilesException, fname);
