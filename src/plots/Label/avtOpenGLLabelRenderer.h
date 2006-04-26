@@ -24,6 +24,9 @@
 //   Brad Whitlock, Thu Aug 4 10:35:24 PDT 2005
 //   Added some new helper methods.
 //
+//   Brad Whitlock, Tue Apr 25 10:15:48 PDT 2006
+//   Moved some point transformation code from the base class to here.
+//
 // ****************************************************************************
 
 class avtOpenGLLabelRenderer : public avtLabelRenderer
@@ -59,10 +62,16 @@ protected:
     void BeginSize2D(int);
     void EndSize2D();
 
+    float *TransformPoints(const float *inputPoints,
+                           const unsigned char *quantizedNormalIndices,
+                           int nPoints);
+
     float                  x_scale;
     float                  y_scale;
     int                    characterDisplayListIndices[256];
     bool                   characterDisplayListsCreated;
+
+    double                 pointXForm[4][4];
 
     int                    zBufferMode;
     float                 *zBuffer;

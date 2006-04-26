@@ -114,11 +114,15 @@ using std::vector;
 //   Brad Whitlock, Mon Nov 14 13:23:37 PST 2005
 //   Changed layout a little.
 //
+//   Brad Whitlock, Tue Apr 25 16:34:46 PST 2006
+//   Added operatorPlugins.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
     QWidget *parent, const char *name) : QWidget(parent, name), GUIBase(),
-    SimpleObserver(), menuPopulator(), varMenuPopulator(), plotPlugins()
+    SimpleObserver(), menuPopulator(), varMenuPopulator(), plotPlugins(),
+    operatorPlugins()
 {
     metaData = 0;
     plotList = 0;
@@ -880,6 +884,9 @@ QvisPlotManagerWidget::UpdateHideDeleteDrawButtonsEnabledState() const
 //   Brad Whitlock, Tue Dec 14 10:59:40 PDT 2004
 //   I changed the name of a slot.
 //
+//   Brad Whitlock, Tue Apr 25 16:30:59 PST 2006
+//   I set the new varMask member in the PluginEntry struct.
+//
 // ****************************************************************************
 
 void
@@ -892,6 +899,7 @@ QvisPlotManagerWidget::AddPlotType(const char *plotName, const int varTypes,
     entry.varMenu = new QvisVariablePopupMenu(plotPlugins.size(), plotMenu,
                                               plotName);
     entry.varTypes = varTypes;
+    entry.varMask = 1;
     connect(entry.varMenu, SIGNAL(activated(int, const QString &)),
             this, SLOT(addPlotHelper(int, const QString &)));
     // Add the plot plugin information to the plugin list.
@@ -949,15 +957,26 @@ QvisPlotManagerWidget::AddPlotType(const char *plotName, const int varTypes,
 //   I prevented icons from being created since applications on MacOS X don't
 //   get to put icons in the top menu.
 //
+//   Brad Whitlock, Tue Apr 25 16:32:06 PST 2006
+//   Added support for operators that set the contents of the variable menu.
+//
 // ****************************************************************************
 
 void
 QvisPlotManagerWidget::AddOperatorType(const char *operatorName,
+    const int varTypes, const int varMask, bool userSelectable,
     const char **iconData)
 {
     QString menuName(operatorName);
     menuName += QString(" . . .");
     int id = operatorMenu->count() - 3;
+
+    // Add the operator plugin information to the operator plugin list.
+    PluginEntry entry;
+    entry.varMenu = 0;
+    entry.varTypes = varTypes;
+    entry.varMask = varMask;
+    operatorPlugins.push_back(entry);
 
     if(iconData)
     {
@@ -979,13 +998,7 @@ QvisPlotManagerWidget::AddOperatorType(const char *operatorName,
         operatorAttsMenu->insertItem(menuName, operatorAttsMenu->count());
     }
 
-    //
-    // HACK!! Want to disable lineout from user selection.
-    //
-    if (strcmp(operatorName,  "Lineout") == 0)
-    {
-        operatorMenu->setItemEnabled(id, false);
-    }
+    operatorMenu->setItemEnabled(id, userSelectable);
 }
 
 // ****************************************************************************
@@ -1343,6 +1356,10 @@ QvisPlotManagerWidget::UpdatePlotAndOperatorMenuEnabledState()
 //   variables is hooked up to the menu. Finally, I added code to update
 //   the variable buttons that use the plot source.
 //
+//   Brad Whitlock, Tue Apr 25 16:37:26 PST 2006
+//   Added support for operators setting the type of variables that we want
+//   to appear in the variable list.
+//
 // ****************************************************************************
 
 void
@@ -1367,6 +1384,12 @@ QvisPlotManagerWidget::UpdateVariableMenu()
             bool changeVarLists = PopulateVariableLists(varMenuPopulator,
                 current.GetDatabaseName());
             int plotVarFlags = plotPlugins[current.GetPlotType()].varTypes;
+            for(int j = 0; j < current.GetOperators().size(); ++j)
+            {
+                int opid = current.GetOperators()[j];
+                plotVarFlags &= operatorPlugins[opid].varMask;
+                plotVarFlags |= operatorPlugins[opid].varTypes;
+            }
             bool flagsDiffer = (plotVarFlags != varMenuFlags);
             if(changeVarLists || flagsDiffer || varMenu->count() == 0)
             {

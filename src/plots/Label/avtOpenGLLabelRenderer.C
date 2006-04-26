@@ -46,6 +46,43 @@
 bool avtOpenGLLabelRenderer::zBufferWarningIssued = false;
 #endif
 
+//
+// Inline matrix operations
+//
+inline void
+matrix_mul(double retval[4][4], const double a[4][4], const double b[4][4])
+{
+    for(int i = 0; i < 4; ++i)
+    {
+        retval[i][0] = a[i][0] * b[0][0] +
+                       a[i][1] * b[1][0] +
+                       a[i][2] * b[2][0] +
+                       a[i][3] * b[3][0];
+        retval[i][1] = a[i][0] * b[0][1] +
+                       a[i][1] * b[1][1] +
+                       a[i][2] * b[2][1] +
+                       a[i][3] * b[3][1];
+        retval[i][2] = a[i][0] * b[0][2] +
+                       a[i][1] * b[1][2] +
+                       a[i][2] * b[2][2] +
+                       a[i][3] * b[3][2];
+        retval[i][3] = a[i][0] * b[0][3] +
+                       a[i][1] * b[1][3] +
+                       a[i][2] * b[2][3] +
+                       a[i][3] * b[3][3];
+    }
+}
+
+inline void
+matrix_mul_point(double out[4], const double M[4][4], const double pt[4])
+{
+    out[0] = pt[0]*M[0][0] + pt[1]*M[1][0] + pt[2]*M[2][0] + pt[3]*M[3][0];
+    out[1] = pt[0]*M[0][1] + pt[1]*M[1][1] + pt[2]*M[2][1] + pt[3]*M[3][1];
+    out[2] = pt[0]*M[0][2] + pt[1]*M[1][2] + pt[2]*M[2][2] + pt[3]*M[3][2];
+    out[3] = pt[0]*M[0][3] + pt[1]*M[1][3] + pt[2]*M[2][3] + pt[3]*M[3][3];
+}
+
+
 // ****************************************************************************
 // Method: avtOpenGLLabelRenderer::avtOpenGLLabelRenderer
 //
@@ -1094,6 +1131,105 @@ avtOpenGLLabelRenderer::DrawDynamicallySelectedLabels2D(bool drawNodeLabels,
 }
 
 // ****************************************************************************
+// Method: avtOpenGLLabelRenderer::TransformPoints
+//
+// Purpose: 
+//   Transforms an array of points from world space to normalized display
+//   space and returns a pointer to the transformed points.
+//
+// Arguments:
+//   inputPoints            : The input points.
+//   quantizedNormalIndices : Quantized normal indices so we know which
+//                            points are going to be visible. This way,
+//                            we don't transform points that won't be visible
+//                            anyway.
+//   nPoints                : The number of points to transform.
+//
+// Returns:    An array containing the transformed points.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 25 09:05:57 PDT 2004
+//
+// Modifications:
+//   Brad Whitlock, Tue Apr 25 10:20:49 PDT 2006
+//   I changed the code so it uses an internal transformation matrix
+//   (pointXForm) instead of using VTK matrices. This helps us to fix
+//   the problem with point locations and zooming since our new matrix is
+//   derived from information available in OpenGL instead of VTK.
+//
+// ****************************************************************************
+
+float *
+avtOpenGLLabelRenderer::TransformPoints(const float *inputPoints,
+    const unsigned char *quantizedNormalIndices, int nPoints)
+{
+     float *xformedpts = new float[3 * nPoints];
+
+     float *destPoints = xformedpts;
+     const float *pts = inputPoints;
+     if(quantizedNormalIndices == 0)
+     {
+         //
+         // We don't have information about the point to see whether it is
+         // visible so we transform all points.
+         //
+         for (int j = 0; j < nPoints; ++j)
+         {
+             double p1[4] = {0,0,0,1}; // set homogenous to 1.0
+             p1[0] = *pts++;
+             p1[1] = *pts++;
+             p1[2] = *pts++;
+             double p2[4];
+
+             matrix_mul_point(p2, pointXForm, p1);
+             if (p2[3] != 0)
+             {
+                 *destPoints++ = (p2[0]/p2[3]);
+                 *destPoints++ = (p2[1]/p2[3]);
+                 *destPoints++ = (p2[2]/p2[3]);
+             }
+         }
+     }
+     else
+     {
+         // Here we have a bunch of quantized normals and if the normal
+         // points away from the camera then we won't transform the point
+         // since it would be wasteful.
+         for (int j = 0; j < nPoints; ++j)
+         {
+             if(visiblePoint[quantizedNormalIndices[j]])
+             {
+                 double p1[4] = {0,0,0,1}; // set homogenous to 1.0
+                 p1[0] = *pts++;
+                 p1[1] = *pts++;
+                 p1[2] = *pts++;
+                 double p2[4];
+
+                 matrix_mul_point(p2, pointXForm, p1);
+                 if (p2[3] != 0)
+                 {
+                     *destPoints++ = (p2[0]/p2[3]);
+                     *destPoints++ = (p2[1]/p2[3]);
+                     *destPoints++ = (p2[2]/p2[3]);
+                 }
+             }
+             else
+             {
+                 // Store the origin for the point
+                 *destPoints++ = 0.f;
+                 *destPoints++ = 0.f;
+                 *destPoints++ = 0.f;
+                 pts += 3;
+             }
+         }
+     }
+
+     return xformedpts;
+}
+
+// ****************************************************************************
 // Method: PopulateBinsHelper
 //
 // Purpose: 
@@ -1404,6 +1540,11 @@ avtOpenGLLabelRenderer::PopulateBinsWithCellLabels3D()
 //   different colors and sizes for node vs. cell labels. Finally, I added
 //   optional z-buffering to the renderer.
 //
+//   Brad Whitlock, Tue Apr 25 10:13:42 PDT 2006
+//   I added code to get the current modelview and projection matrices so we
+//   can construct a point transformation matrix that we know will always be
+//   correct, regardless of how VTK camera has been set.
+//
 // ****************************************************************************
 
 void
@@ -1500,6 +1641,17 @@ avtOpenGLLabelRenderer::DrawLabels3D()
     //
     if((rendererAction & RENDERER_ACTION_INIT_ZBUFFER) != 0)
         InitializeZBuffer(haveNodeData, haveCellData);
+
+    //
+    // Initialize the transformation matrix that we'll use to transform points
+    // into normalized device space.
+    //
+    double modelview[4][4], projection[4][4], mtmp[4][4];
+    glGetDoublev(GL_MODELVIEW_MATRIX, (GLdouble *)modelview);
+    glGetDoublev(GL_PROJECTION_MATRIX, (GLdouble *)projection);
+    const double tonormdev[4][4] = {{0.5,0,0,0},{0,0.5,0,0},{0,0,0.5,0},{0.5,0.5,0.5,1}};
+    matrix_mul(mtmp, modelview, projection);
+    matrix_mul(pointXForm, mtmp, tonormdev);
 
     // Push the current matrices onto the stack and temporarily
     // override them so we can draw in screen space.
@@ -1628,9 +1780,6 @@ avtOpenGLLabelRenderer::DrawLabels3D()
         visitTimer->StopTimer(stageTimer, "Drawing all labels 3D");
     }
 
-#define TRANSFORM_POINT(P) VTKRen->WorldToView(P[0], P[1], P[2]); \
-                           VTKRen->ViewToNormalizedViewport(P[0], P[1], P[2]);
-
     // Restore the matrices.
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
@@ -1690,7 +1839,7 @@ void
 avtOpenGLLabelRenderer::InitializeZBuffer(bool haveNodeData,
     bool haveCellData)
 {
-    const char *mName = "avtOpenGLRenderer::InitializeZBuffer: ";
+    const char *mName = "avtOpenGLLabelRenderer::InitializeZBuffer: ";
     //
     // Figure out if we need the zbuffer for anything. If we need it then
     // read it back into a buffer that we allocated.
@@ -1829,17 +1978,21 @@ avtOpenGLLabelRenderer::InitializeZBuffer(bool haveNodeData,
 //   Brad Whitlock, Fri Aug 5 14:13:02 PST 2005
 //   Added coding to use the zbuffer to further restrict the labels that
 //   get rendered.
-//   
+//
+//   Brad Whitlock, Tue Apr 25 10:26:22 PDT 2006
+//   I made it use our own transformation matrix to transform the points.
+//
 // ****************************************************************************
 
 
 #define BEGIN_LABEL labelString = cellLabelsCache + MAX_LABEL_SIZE*id; if(!cellLabelsCached) {
 #define GET_THE_POINT const double *vert = cellCenters->GetTuple3(id);
+
 #define END_LABEL   } VISIBLE_POINT_PREDICATE\
                       { \
                           GET_THE_POINT \
                           double v[4] = {vert[0], vert[1], vert[2], 1.f}, vprime[4]; \
-                          M->MultiplyPoint(v, vprime); \
+                          matrix_mul_point(vprime, pointXForm, v);\
                           if (vprime[3] != 0.) \
                           { \
                               vprime[0] /= vprime[3]; \
@@ -1889,7 +2042,6 @@ avtOpenGLLabelRenderer::DrawAllCellLabels3D()
     // such that we immediately draw the labels without first transforming
     // them.
     //
-    vtkMatrix4x4 *M = WorldToDisplayMatrix();
     if(zBufferMode == ZBUFFER_USE_PROVIDED)
     {
     //
@@ -1982,7 +2134,6 @@ avtOpenGLLabelRenderer::DrawAllCellLabels3D()
 #undef ZBUFFER_PREDICATE_END
     }
 
-    M->Delete();
     cellLabelsCached = true;
 }
 #undef BEGIN_LABEL
@@ -2005,6 +2156,9 @@ avtOpenGLLabelRenderer::DrawAllCellLabels3D()
 //   Brad Whitlock, Fri Aug 5 14:13:02 PST 2005
 //   Added coding to use the zbuffer to further restrict the labels that
 //   get rendered.
+//
+//   Brad Whitlock, Tue Apr 25 10:26:22 PDT 2006
+//   I made it use our own transformation matrix to transform the points.
 //
 // ****************************************************************************
 
@@ -2041,7 +2195,6 @@ avtOpenGLLabelRenderer::DrawAllNodeLabels3D()
     // such that we immediately draw the labels without first transforming
     // them.
     //
-    vtkMatrix4x4 *M = WorldToDisplayMatrix();
     if(zBufferMode == ZBUFFER_USE_PROVIDED)
     {
     //
@@ -2134,8 +2287,6 @@ avtOpenGLLabelRenderer::DrawAllNodeLabels3D()
 #undef ZBUFFER_PREDICATE_START
 #undef ZBUFFER_PREDICATE_END
     }
- 
-    M->Delete();
 
     nodeLabelsCached = true;
 }

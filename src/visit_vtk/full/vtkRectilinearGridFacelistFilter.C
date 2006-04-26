@@ -129,7 +129,6 @@ SpecializedIndexer::SpecializedIndexer(int x, int y, int z)
        cellZBase = 1;
 }
 
-
 // ****************************************************************************
 //
 //  Hank Childs, Thu Aug 15 21:13:43 PDT 2002
@@ -167,6 +166,9 @@ SpecializedIndexer::SpecializedIndexer(int x, int y, int z)
 //
 //  Hank Childs, Tue Jan 24 09:53:16 PST 2006
 //  Add support for ghost nodes.
+//
+//  Brad Whitlock, Tue Apr 25 15:13:20 PST 2006
+//  Pass the field data after the shallow copy or it does not get passed.
 //
 // ****************************************************************************
 
@@ -540,8 +542,9 @@ void vtkRectilinearGridFacelistFilter::Execute()
      output = new_output;
   }
 
-  GetOutput()->GetFieldData()->ShallowCopy(GetInput()->GetFieldData());
   GetOutput()->ShallowCopy(output);
+  GetOutput()->GetFieldData()->ShallowCopy(GetInput()->GetFieldData());
+
   output->Delete();
 }
 

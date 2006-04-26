@@ -39,6 +39,7 @@
     if(data == 0 && atts.GetVarType() == LabelAttributes::LABEL_VT_VECTOR_VAR)
     {
         data = input->GetCellData()->GetVectors();
+        debug3 << "avtLabelRenderer looking for a vector variable." << endl;
     }
     if(data == 0)
     {
@@ -51,6 +52,7 @@
     }
     else
     {
+        debug3 << "avtLabelRenderer setting originalCells=data." << endl;
         originalCells = (vtkUnsignedIntArray *)data;
     }
 
@@ -61,6 +63,7 @@
 
     if(useGlobalLabel)
     {
+        debug3 << "avtLabelRenderer using global label." << endl;
         const char *gl = globalLabel.c_str();
         for(vtkIdType id = 0; id < nCells; id += skipIncrement)
         {
@@ -268,6 +271,7 @@ debug3 << "Labelling cells with original cell indices: "
 
             if(zdims == 0)
             {
+debug3 << "Labelling cells as 2D structured indices" << endl;
                 for(vtkIdType id = 0; id < nCells; id += skipIncrement)
                 {
                     // float *vert = cellCenters->GetTuple3(id);
@@ -281,6 +285,7 @@ debug3 << "Labelling cells with original cell indices: "
             }
             else
             {
+debug3 << "Labelling cells as 3D structured indices" << endl;
                 unsigned int xydims = xdims * ydims;
                 for(vtkIdType id = 0; id < nCells; id += skipIncrement)
                 {
@@ -298,6 +303,7 @@ debug3 << "Labelling cells with original cell indices: "
         }
         else
         {
+debug3 << "Labelling as indices" << endl;
             for(vtkIdType id = 0; id < nCells; id += skipIncrement)
             {
                 // float *vert = cellCenters->GetTuple3(id);
@@ -310,6 +316,7 @@ debug3 << "Labelling cells with original cell indices: "
     }
     else
     {
+        debug3 << "avtLabelRenderer: backup case for labelling cells." << endl;
         for(vtkIdType id = 0; id < nCells; id += skipIncrement)
         {
             // float *vert = cellCenters->GetTuple3(id);
