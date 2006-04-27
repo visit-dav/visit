@@ -10,6 +10,7 @@
       nc
       cdf
       elev
+      ncd
     </Extensions>
     <Files components="M">
       avtNETCDFFileFormat.C

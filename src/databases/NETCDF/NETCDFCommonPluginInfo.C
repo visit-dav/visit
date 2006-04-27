@@ -37,6 +37,7 @@ NETCDFCommonPluginInfo::GetDefaultExtensions()
     defaultExtensions.push_back("nc");
     defaultExtensions.push_back("cdf");
     defaultExtensions.push_back("elev");
+    defaultExtensions.push_back("ncd");
 
     return defaultExtensions;
 }
