@@ -62,6 +62,9 @@
 //    Hank Childs, Sun Mar  5 16:03:38 PST 2006
 //    Added time.
 //
+//    Hank Childs, Mon Mar 13 16:48:23 PST 2006
+//    Added minimum and maximum.
+//
 // ****************************************************************************
 struct ExprNameList
 {
@@ -104,6 +107,8 @@ const char *expr_math[] = {
     "floor",
     "ln",
     "log10",
+    "max",
+    "min",
     "mod",
     "round",
     "sqr",
@@ -939,6 +944,9 @@ QvisExpressionsWindow::displayAllVarsChanged()
 //    Change ordering of arguments for pos_cmfe, since the first pass was
 //    incorrect.
 //
+//    Hank Childs, Mon Mar 13 16:48:23 PST 2006
+//    Added min and max.
+//
 // ****************************************************************************
 
 void
@@ -985,6 +993,11 @@ QvisExpressionsWindow::insertFunction(int id)
     else if (str == "if")
     {
         definitionEdit->insert("(<condition>, <then-var>, <else-var>)");
+        doParens = false;
+    }
+    else if (str == "min" || str == "max")
+    {
+        definitionEdit->insert("(<var1>, <var2>)");
         doParens = false;
     }
 
