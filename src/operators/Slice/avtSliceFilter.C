@@ -1383,6 +1383,9 @@ avtSliceFilter::ProjectExtents(const double *b_in, double *b_out)
 //    Hank Childs, Tue Apr 13 09:48:57 PDT 2004
 //    Make normal-flipping cases work for all normal orientations.
 //
+//    Kathleen Bonnell, Fri Apr 28 15:44:39 PDT 2006
+//    Add an epsilon to check for origin close to bounds. 
+//
 // ****************************************************************************
 
 void
@@ -1401,29 +1404,31 @@ avtSliceFilter::SetPlaneOrientation(double *b)
     double ox = cachedOrigin[0];
     double oy = cachedOrigin[1];
     double oz = cachedOrigin[2];
+
+    double eps = 1e-16;
     if (normal[0] != 0. && normal[1] == 0. && normal[2] == 0.)
     {
-        if ((normal[0] > 0.) && (ox == b[0]))
+        if ((normal[0] > 0.) && ((ox > b[0] - eps) && (ox < b[0] + eps)))
             slicer->SetNormal(-normal[0], -normal[1], -normal[2]);
-        else if ((normal[0] < 0.) && (ox == b[1]))
+        else if ((normal[0] < 0.) && ((ox > b[1] -eps) && (ox < b[1] + eps)))
             slicer->SetNormal(-normal[0], -normal[1], -normal[2]);
         else
             slicer->SetNormal(normal[0], normal[1], normal[2]);
     }
     else if (normal[0] == 0. && normal[1] != 0. && normal[2] == 0.)
     {
-        if ((normal[1] > 0.) && (oy == b[2]))
+        if ((normal[1] > 0.) && ((oy > b[2] - eps) && (oy < b[2] + eps)))
             slicer->SetNormal(-normal[0], -normal[1], -normal[2]);
-        else if ((normal[1] < 0.) && (oy == b[3]))
+        else if ((normal[1] < 0.) && ((oy > b[3] - eps) && (oy < b[3] + eps)))
             slicer->SetNormal(-normal[0], -normal[1], -normal[2]);
         else
             slicer->SetNormal(normal[0], normal[1], normal[2]);
     }
     else if (normal[0] == 0. && normal[1] == 0. && normal[2] != 0.)
     {
-        if ((normal[2] > 0.) && (oz == b[4]))
+        if ((normal[2] > 0.) && ((oz > b[4] - eps) && (oz < b[4] + eps)))
             slicer->SetNormal(-normal[0], -normal[1], -normal[2]);
-        else if ((normal[2] < 0.) && (oz == b[5]))
+        else if ((normal[2] < 0.) && ((oz > b[5] - eps) && (oz < b[5] + eps)))
             slicer->SetNormal(-normal[0], -normal[1], -normal[2]);
         else
             slicer->SetNormal(normal[0], normal[1], normal[2]);

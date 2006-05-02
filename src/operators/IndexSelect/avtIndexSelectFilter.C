@@ -921,6 +921,11 @@ avtIndexSelectFilter::ReleaseData(void)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   August 4, 2005 
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon May  1 08:57:41 PDT 2006
+//    Changed call from OrigNodes to OrigElements, indicating that either
+//    nodes or zones are required, or both. 
+//
 // ****************************************************************************
 
 void
@@ -933,7 +938,7 @@ avtIndexSelectFilter::RefashionDataObjectInfo(void)
     // they are needed for pick. 
     //
 
-    GetOutput()->GetInfo().GetAttributes().SetOrigNodesRequiredForPick(true);
+    GetOutput()->GetInfo().GetAttributes().SetOrigElementsRequiredForPick(true);
 
     //
     // Zone Pick CANNOT use Original zone numbers on an Index selected plot

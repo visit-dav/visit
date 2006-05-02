@@ -159,6 +159,9 @@ class     avtExtents;
 //    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
 //    Added meshCoordType.
 //
+//    Kathleen Bonnell, Mon May  1 08:57:41 PDT 2006 
+//    Changed origNodesRequiredForPick to origElementsRequiredForPick.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -360,10 +363,10 @@ class PIPELINE_API avtDataAttributes
     void                     SetCanUseOrigZones(bool v)
                                    { canUseOrigZones = v; };
 
-    bool                     OrigNodesRequiredForPick(void) const
-                                   { return origNodesRequiredForPick; };
-    void                     SetOrigNodesRequiredForPick(bool v)
-                                   { origNodesRequiredForPick = v; };
+    bool                     OrigElementsRequiredForPick(void) const
+                                   { return origElementsRequiredForPick; };
+    void                     SetOrigElementsRequiredForPick(bool v)
+                                   { origElementsRequiredForPick = v; };
 
     avtMeshCoordType         GetMeshCoordType(void) const
                                    { return meshCoordType; };
@@ -394,7 +397,7 @@ class PIPELINE_API avtDataAttributes
     int                      numStates;
     bool                     mirOccurred;
     bool                     canUseOrigZones;
-    bool                     origNodesRequiredForPick;
+    bool                     origElementsRequiredForPick;
     avtMeshCoordType         meshCoordType;
 
     avtExtents              *trueSpatial;

@@ -569,6 +569,10 @@ avtBehavior::GetRenderOrder(bool antialiased)
 //    Kathleen Bonnell, Tue Aug 30 15:11:01 PDT 2005 
 //    Removed 'needNodes' from topodim == 0 portion of test. 
 //
+//    Kathleen Bonnell, Mon May  1 08:57:41 PDT 2006 
+//    Changed OrigNodesRequiredForPick to OrigElementsRequiredForPick, and
+//    check for presence of original nodes if !needZones.
+//
 // ****************************************************************************
 
 bool
@@ -626,10 +630,13 @@ avtBehavior::RequiresReExecuteForQuery(const bool needInvT,
             retval = !xformAvailable && !nodesAvailable;
         }
     }
-    else if (info.GetAttributes().OrigNodesRequiredForPick())
+    else if (info.GetAttributes().OrigElementsRequiredForPick())
     {
-        retval = !needZones && 
-                 !info.GetAttributes().GetContainsOriginalNodes();
+        if (needZones)
+            retval = info.GetAttributes().CanUseOrigZones() &&
+                     !info.GetAttributes().GetContainsOriginalCells();
+        else 
+            retval = !info.GetAttributes().GetContainsOriginalNodes();
     }
     return retval;
 }

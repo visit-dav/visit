@@ -487,6 +487,9 @@ avtThresholdFilter::GetThresholdVariable(vtkDataSet *in_ds, bool &isPoint)
 //    Hank Childs, Tue Sep 13 09:07:05 PDT 2005
 //    Add support for "PointsOnly".
 //
+//    Kathleen Bonnell, Mon May  1 08:50:46 PDT 2006 
+//    Set OrigElementsRequiredForPick. 
+//
 // ****************************************************************************
 
 void
@@ -497,6 +500,7 @@ avtThresholdFilter::RefashionDataObjectInfo(void)
     {
         GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(0);
     }
+    GetOutput()->GetInfo().GetAttributes().SetOrigElementsRequiredForPick(true);
 }
 
 
@@ -562,6 +566,9 @@ avtThresholdFilter::PreExecute(void)
 //    Hank Childs, Sun Mar 27 11:49:20 PST 2005
 //    Moved data members for structured mesh chunking to base class.
 //
+//    Kathleen Bonnell, Mon May  1 08:50:46 PDT 2006 
+//    Turn on Node & Zone numbers when appropriate. 
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -574,6 +581,14 @@ avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
     avtIntervalTree *it = GetMetaData()->GetDataExtents(thres_var.c_str());
     if (it == NULL)
     {
+        if (in_spec->GetDataSpecification()->MayRequireZones() ||
+            in_spec->GetDataSpecification()->MayRequireNodes())
+        {
+            // Turn on both Nodes and Zones, to prevent another re-execution if
+            // user switches between zone and node pick.
+            in_spec->GetDataSpecification()->TurnZoneNumbersOn();
+            in_spec->GetDataSpecification()->TurnNodeNumbersOn();
+        }
         return in_spec;
     }
 
@@ -583,6 +598,15 @@ avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
     vector<int> dl;
     it->GetDomainsListFromRange(&min, &max, dl);
     spec->GetDataSpecification()->GetRestriction()->RestrictDomains(dl);
+
+    if (spec->GetDataSpecification()->MayRequireZones() ||
+        spec->GetDataSpecification()->MayRequireNodes())
+    {
+        // Turn on both Nodes and Zones, to prevent another re-execution if
+        // user switches between zone and node pick.
+        spec->GetDataSpecification()->TurnZoneNumbersOn();
+        spec->GetDataSpecification()->TurnNodeNumbersOn();
+    }
 
     return spec;
 }

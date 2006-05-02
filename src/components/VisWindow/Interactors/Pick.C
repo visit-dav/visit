@@ -148,12 +148,19 @@ Pick::HandlePickCache()
 //  Creation:   March 6, 2006 
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri Apr 28 10:29:03 PDT 2006
+//    Set leftButtonDown to false before handling pick cache.  (Normally set
+//    to false by VisitInteractor after EndLeftButtonAction is complete.
+//    If pick requires a re-execution, then SetInteractor will be called in the
+//    course of the re-execution, and a second pick will be cached, 
+//    unnecessarily, unless leftButtonDown is false.
 //
 // ****************************************************************************
 
 void
 Pick::EndLeftButtonAction()
 {
+    leftButtonDown = false;
     if (!picking && !handlingCache)
         HandlePickCache();
 }

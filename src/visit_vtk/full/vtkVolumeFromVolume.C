@@ -9,6 +9,7 @@
 #include <vtkCellType.h>
 #include <vtkIdList.h>
 #include <vtkIdTypeArray.h>
+#include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
@@ -568,6 +569,10 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
 //    Only create points in the output that will actually be referenced.  Also
 //    generalized the shape list to reduce code.
 //
+//    Kathleen Bonnell, Mon May  1 08:50:46 PDT 2006 
+//    Don't interpolate avtOriginalNodeNumbers, use value from closest node
+//    instead. 
+//    
 // ****************************************************************************
 
 void
@@ -580,6 +585,9 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
     vtkPointData *outPD = output->GetPointData();
     vtkCellData  *outCD = output->GetCellData();
 
+    vtkIntArray *newOrigNodes = NULL;
+    vtkIntArray *origNodes = vtkIntArray::SafeDownCast(
+              inPD->GetArray("avtOriginalNodeNumbers"));
     //
     // If the isovolume only affects a small part of the dataset, we can save
     // on memory by only bringing over the points from the original dataset
@@ -620,6 +628,13 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
     int nOutPts = centroidStart + centroid_list.GetTotalNumberOfPoints();
     outPts->SetNumberOfPoints(nOutPts);
     outPD->CopyAllocate(inPD, nOutPts);
+    if (origNodes != NULL)
+    {
+        newOrigNodes = vtkIntArray::New();
+        newOrigNodes->SetNumberOfComponents(origNodes->GetNumberOfComponents());
+        newOrigNodes->SetNumberOfTuples(nOutPts);
+        newOrigNodes->SetName(origNodes->GetName());
+    }
 
     //
     // Copy over all the points from the input that are actually used in the
@@ -641,6 +656,8 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
         }
 
         outPD->CopyData(inPD, i, ptLookup[i]);
+        if (newOrigNodes)
+            newOrigNodes->SetTuple(ptLookup[i], origNodes->GetTuple(i));
     }
     int ptIdx = numUsed;
 
@@ -697,6 +714,11 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
             pt[2] = pt1[2]*p + pt2[2]*bp;
             outPts->SetPoint(ptIdx, pt);
             outPD->InterpolateEdge(inPD, ptIdx, pe.ptIds[0], pe.ptIds[1], bp);
+            if (newOrigNodes)
+            {
+                int id = (bp <= 0.5 ? pe.ptIds[0] : pe.ptIds[1]);
+                newOrigNodes->SetTuple(ptIdx, origNodes->GetTuple(id));
+            }
             ptIdx++;
         }
     }
@@ -740,6 +762,12 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
 
             outPts->SetPoint(ptIdx, pt);
             outPD->InterpolatePoint(outPD, ptIdx, idList, weights);
+            if (newOrigNodes)
+            {
+                // these 'created' nodes have no original designation
+                for (int z = 0; z < newOrigNodes->GetNumberOfComponents(); z++)
+                    newOrigNodes->SetComponent(ptIdx, z, -1);
+            }
             ptIdx++;
         }
     }
@@ -751,6 +779,14 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
     //
     output->SetPoints(outPts);
     outPts->Delete();
+
+    if (newOrigNodes)
+    {
+        // AddArray will overwrite an already existing array with 
+        // the same name, exactly what we want here.
+        outPD->AddArray(newOrigNodes);
+        newOrigNodes->Delete();
+    }
 
     //
     // Now set up the shapes and the cell data.
