@@ -190,6 +190,9 @@
 #   Brad Whitlock, Fri Mar 31 14:31:42 PST 2006
 #   Added BOW and TSurf readers
 #
+#   Brad Whitlock, Thu Apr 27 13:16:09 PST 2006
+#   Added ORNL points (GTC) format.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -203,7 +206,7 @@ CGNS=CGNS
 EXODUS=Exodus TimeVaryingExodus
 GDAL=GDAL
 HDF4=Cosmos Enzo ZeusMP
-HDF5=Tetrad SAMRAI CosmosPP Pixie FLASH Chombo
+HDF5=Tetrad SAMRAI CosmosPP Pixie FLASH Chombo GTC
 MILI=Mili
 NETCDF=NETCDF
 PDB=KullLite PDB
