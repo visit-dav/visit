@@ -323,11 +323,6 @@ avtResampleFilter::ResampleInput(void)
         bounds[3] = atts.GetMaxY();
         bounds[4] = atts.GetMinZ();
         bounds[5] = atts.GetMaxZ();
-        if (bounds[4] == bounds[5])
-        {
-            is3D = false;
-            bounds[5] += 0.1;
-        }
     }
     else
     {
@@ -341,6 +336,11 @@ avtResampleFilter::ResampleInput(void)
         {
             GetSpatialExtents(bounds);
         }
+    }
+    if (fabs(bounds[4]) < 1e-100 && fabs(bounds[5]) < 1e-100)
+    {
+        is3D = false;
+        bounds[5] += 0.1;
     }
 
     debug4 << "Resampling over space: " << bounds[0] << ", " << bounds[1]
@@ -394,7 +394,7 @@ avtResampleFilter::ResampleInput(void)
     // attributes.
     //
     int width, height, depth;
-    GetDimensions(width, height, depth, bounds);
+    GetDimensions(width, height, depth, bounds, is3D);
 
     //
     // If the selection this filter exists to create has already been handled,
@@ -681,6 +681,7 @@ avtResampleFilter::ResampleInput(void)
 //      height       The desired height.
 //      depth        The desired depth.
 //      bounds       The bounds of the dataset.
+//      is3D         Whether or not we should do 3D resampling.
 //
 //  Programmer: Hank Childs
 //  Creation:   April 5, 2001
@@ -700,14 +701,36 @@ avtResampleFilter::ResampleInput(void)
 //    Eric Brugger, Tue Jul 27 08:48:58 PDT 2004
 //    Add several casts to fix compile errors.
 //
+//    Hank Childs, Sat Apr 29 15:15:05 PDT 2006
+//    Add support for 2D.
+//
 // ****************************************************************************
 
 void
 avtResampleFilter::GetDimensions(int &width, int &height, int &depth,
-                                 const double *bounds)
+                                 const double *bounds, bool is3D)
 {
     if (atts.GetUseTargetVal())
     {
+        // If we have a 2D data set, this is an easy test, so calculate the
+        // sizes and return early.
+        if (!is3D)
+        {
+            if (bounds[1] > bounds[0] && bounds[3] > bounds[2])
+            {
+                double amtX = bounds[1] - bounds[0];
+                double amtY = bounds[3] - bounds[2];
+                double ratio = amtY / amtX;
+                double target = (double) atts.GetTargetVal();
+                target /= (ratio + 1.);
+                target = floor(sqrt(target)) + 1;
+                width = (int) (target);
+                height = (int) (target*ratio);
+                depth = 1;
+                return;
+            }
+        }
+
         double ratioX = 1.;
         double ratioY = 1.;
         double ratioZ = 1.;

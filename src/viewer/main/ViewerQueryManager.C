@@ -978,6 +978,9 @@ ViewerQueryManager::GetQueryClientAtts()
 //    If points were transformed, perform OrignalData SpatialExtents query
 //    like other queries. 
 //
+//    Hank Childs, Wed May 10 09:52:54 PDT 2006
+//    Don't crash if we can't get the query to complete ('7092).
+//
 // ****************************************************************************
 
 void         
@@ -1150,6 +1153,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
 
     bool retry; 
     int numAttempts = 0;
+    bool success = false;
 
     do
     {
@@ -1188,6 +1192,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                         qName.c_str());
                 Error(message);
             }
+            success = true;
         }
         CATCH2(VisItException, e)
         {
@@ -1205,8 +1210,8 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                 for (int i = 0 ; i < plotIds.size() ; i++)
                     plist->GetPlot(plotIds[i])->ClearCurrentActor();
                 oWin->GetPlotList()->UpdateFrame(); 
-                retry = true;
                 numAttempts++; 
+                retry = true;
             }
             else if ((e.GetExceptionType() == "InvalidDimensionsException") ||
                      (e.GetExceptionType() == "NonQueryableInputException"))
@@ -1241,6 +1246,14 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
         ENDTRY
     } while (retry && numAttempts < 2);
 
+    if (!success)
+    {
+        const char *msg = "VisIt was not able to execute the query.  Please "
+                          "contact a VisIt developer.";
+        Error(msg);
+        return;
+    }
+    
     if (canBeDLBPlots)
     {
         //
@@ -3160,6 +3173,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Brad Whitlock, Thu Nov 17 10:20:06 PDT 2005
 //    Added Best Fit Line query.
 //
+//    Hank Childs, Sat Apr 29 14:40:47 PDT 2006
+//    Added localized and elliptical compactness factor queries.
+//
 // ****************************************************************************
 
 void
@@ -3224,6 +3240,8 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Volume", dq, mr, basic, 1, 0, qt);
     queryTypes->AddQuery("Moment of Inertia", dq, mr, basic, 1, 0, qo);
     queryTypes->AddQuery("Centroid", dq, mr, basic, 1, 0, qo);
+    queryTypes->AddQuery("Localized Compactness Factor", dq, mr, basic, 1, 0, qt);
+    queryTypes->AddQuery("Elliptical Compactness Factor", dq, mr, basic, 1, 0, qt);
     queryTypes->AddQuery("Spherical Compactness Factor", dq, mr, basic, 1, 0, qt);
     queryTypes->AddQuery("Variable Sum", dq, vr, basic, 1, 0, qt);
     queryTypes->AddQuery("Watertight", dq, mr, basic, 1, 0, qo);

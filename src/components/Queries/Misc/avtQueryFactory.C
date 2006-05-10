@@ -11,10 +11,12 @@
 #include <avtCentroidQuery.h>
 #include <avtCompactnessQuery.h>
 #include <avtCycleQuery.h>
+#include <avtEllipticalCompactnessFactorQuery.h>
 #include <avtEulerianQuery.h>
 #include <avtIntegrateQuery.h>
 #include <avtL2NormQuery.h>
 #include <avtL2NormBetweenCurvesQuery.h>
+#include <avtLocalizedCompactnessFactorQuery.h>
 #include <avtKurtosisQuery.h>
 #include <avtMomentOfInertiaQuery.h>
 #include <avtNodeCoordsQuery.h>
@@ -159,6 +161,9 @@ avtQueryFactory::Instance()
 //    Kathleen Bonnell, Tue Jan 31 15:52:18 PST 2006 
 //    Added OriginalData SpatialExtents query.
 //
+//    Hank Childs, Sat Apr 29 14:40:47 PDT 2006
+//    Added localized and elliptical compactness factor queries.
+//
 // ****************************************************************************
 
 
@@ -245,6 +250,14 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (qname == "Spherical Compactness Factor")
     {
         query = new avtSphericalCompactnessFactorQuery();
+    }
+    else if (qname == "Localized Compactness Factor")
+    {
+        query = new avtLocalizedCompactnessFactorQuery();
+    }
+    else if (qname == "Elliptical Compactness Factor")
+    {
+        query = new avtEllipticalCompactnessFactorQuery();
     }
     else if (qname == "Watertight")
     {
