@@ -109,6 +109,8 @@ avtVariableSummationQuery::VerifyInput(void)
 //  Creation:   February 24, 2006 
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu May 11 10:32:54 PDT 2006
+//    Use condense filter for pointdata when the mesh has been mat selected.
 //
 // ****************************************************************************
 
@@ -131,8 +133,9 @@ avtVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
         cellData = true;
     }
 
-    if (dval.SubdivisionOccurred() || 
-       (!dval.GetOriginalZonesIntact() && cellData))
+    if ((dval.SubdivisionOccurred() || 
+       (!dval.GetOriginalZonesIntact() && cellData)) ||
+       (!cellData && !dval.GetZonesPreserved()))
     {
         // This will work for time-varying data, too.
 

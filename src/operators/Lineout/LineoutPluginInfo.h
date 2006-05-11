@@ -22,6 +22,10 @@ class LineoutAttributes;
 //    Brad Whitlock, Tue Apr 25 16:48:48 PST 2006
 //    Added new GUI methods.
 //
+//    Kathleen Bonnell, Tue May  9 15:45:04 PDT 2006
+//    Re-Add missing viewer methods: Removeable, Moveable and 
+//    AllowSubsequentOperators.
+//
 // ****************************************************************************
 
 class LineoutGeneralPluginInfo : public virtual GeneralOperatorPluginInfo
@@ -64,6 +68,10 @@ class LineoutViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public 
                                         const ViewerPlot *plot,
                                         const bool fromDefault);
     virtual const char **XPMIconData() const;
+
+    virtual bool Removeable() const                { return false; }
+    virtual bool Moveable() const                  { return false; }
+    virtual bool AllowsSubsequentOperators() const { return false; }
 
     static void InitializeGlobalObjects();
   private:

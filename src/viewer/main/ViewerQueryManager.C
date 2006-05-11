@@ -2736,6 +2736,9 @@ ViewerQueryManager::HandlePickCache()
 //    Kathleen Bonnell, Tue Aug 16 10:03:27 PDT 2005
 //    Check for non-hidden active plot before checking if EngineExists. 
 //
+//    Kathleen Bonnell, Tue May  9 15:45:04 PDT 2006 
+//    Added a couple of Pick aliases. 
+//
 // ****************************************************************************
 
 void         
@@ -2775,13 +2778,14 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
             pickAtts->SetVariables(vars);
         win->Pick((int)pt[0], (int)pt[1], NODE_PICK);
     }
-    else if (qName == "Pick" || qName == "NodePick")
+    else if (qName == "Pick" || qName == "ZonePick (aka Pick)" || 
+             qName == "NodePick" || qName == "PointPick (aka NodePick)")
     {
         if (!vars.empty())
             pickAtts->SetVariables(vars);
 
         INTERACTION_MODE imode  = win->GetInteractionMode();
-        if (qName == "Pick")
+        if (qName == "Pick" || qName == "ZonePick (aka Pick)")
             win->SetInteractionMode(ZONE_PICK);
         else
             win->SetInteractionMode(NODE_PICK);
@@ -3176,6 +3180,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Hank Childs, Sat Apr 29 14:40:47 PDT 2006
 //    Added localized and elliptical compactness factor queries.
 //
+//    Kathleen Bonnell, Tue May  9 15:45:04 PDT 2006 
+//    Added a couple of Pick aliases. 
+//
 // ****************************************************************************
 
 void
@@ -3247,7 +3254,9 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Watertight", dq, mr, basic, 1, 0, qo);
     queryTypes->AddQuery("Weighted Variable Sum", dq, vr, basic, 1, 0, qt);
     queryTypes->AddQuery("Pick", pq, pr, sp, 1, 0, qt);
+    queryTypes->AddQuery("ZonePick (aka Pick)", pq, pr, sp, 1, 0, qt);
     queryTypes->AddQuery("NodePick", pq, pr, sp, 1, 0, qt);
+    queryTypes->AddQuery("PointPick (aka NodePick)", pq, pr, sp, 1, 0, qt);
 
     int MinMaxVars = QUERY_SCALAR_VAR | QUERY_TENSOR_VAR | QUERY_VECTOR_VAR | 
             QUERY_SYMMETRIC_TENSOR_VAR | QUERY_MATSPECIES_VAR | QUERY_CURVE_VAR;

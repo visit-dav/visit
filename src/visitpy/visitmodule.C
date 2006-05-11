@@ -10661,6 +10661,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Brad Whitlock, Tue Mar 7 16:39:38 PST 2006
 //   Added RedoView.
 //
+//   Kathleen Bonnell, Tue May  9 15:45:04 PDT 2006 
+//   Added 'PointPick', an alias for 'NodePick'.
+//
 // ****************************************************************************
 
 static void
@@ -10842,6 +10845,7 @@ AddDefaultMethods()
                                                    visit_PickByGlobalNode_doc);
     AddMethod("PickByGlobalZone", visit_PickByGlobalZone,
                                                    visit_PickByGlobalZone_doc);
+    AddMethod("PointPick", visit_NodePick, visit_NodePick_doc);
     AddMethod("PrintWindow", visit_PrintWindow, visit_PrintWindow_doc);
     AddMethod("PromoteOperator", visit_PromoteOperator,
                                                     visit_PromoteOperator_doc);

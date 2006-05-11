@@ -59,6 +59,10 @@ avtUserDefinedMapper::~avtUserDefinedMapper()
 //  Programmer: Kathleen Bonnell 
 //  Creation:   October 4, 2001 
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue May  9 15:45:04 PDT 2006
+//    Set rmax when mappers==NULL (was setting rmin twice).
+//
 // ****************************************************************************
 
 bool
@@ -70,7 +74,7 @@ avtUserDefinedMapper::GetDataRange(double &rmin, double &rmax)
         // We have been asked for the range before the input has been set.
         //
         rmin = 0.;
-        rmin = 1.;
+        rmax = 1.;
         return false;
     }
 
@@ -89,6 +93,10 @@ avtUserDefinedMapper::GetDataRange(double &rmin, double &rmax)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   October 4, 2001 
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue May  9 15:45:04 PDT 2006
+//    Set rmax when mappers==NULL (was setting rmin twice).
+//
 // ****************************************************************************
 
 bool
@@ -100,7 +108,7 @@ avtUserDefinedMapper::GetCurrentDataRange(double &rmin, double &rmax)
         // We have been asked for the range before the input has been set.
         //
         rmin = 0.;
-        rmin = 1.;
+        rmax = 1.;
         return false;
     }
 

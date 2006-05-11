@@ -30,6 +30,8 @@
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>  
 #include <avtMaterial.h>
+#include <avtMixedVariable.h>
+#include <avtVariableCache.h>
 
 #include <BadDomainException.h>
 #include <DebugStream.h>
@@ -1114,8 +1116,7 @@ avtKullLiteFileFormat::CreateZoneMeshTags(vtkUnstructuredGrid *ugrid,
 //  Method: avtKullLiteFileFormat::GetVar
 //
 //  Purpose:
-//      This is only in to fill a required function for its parent.
-//      On use, it throws an exception.
+//      Gets a scalar variable.  This is only used to get the scalar "density".
 //
 //  Arguments:
 //      var    The desired varname.
@@ -1124,13 +1125,273 @@ avtKullLiteFileFormat::CreateZoneMeshTags(vtkUnstructuredGrid *ugrid,
 //  Programmer: Akira Haddox
 //  Creation:   June 18, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Wed May 10 16:06:57 PDT 2006
+//    Add support for reading in density.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtKullLiteFileFormat::GetVar(int fi, const char *var)
 {
-    EXCEPTION1(InvalidVariableException, var);
-    return NULL;
+    int   i, j;
+
+    if (strcmp(var, "density") != 0)
+    {
+        EXCEPTION1(InvalidVariableException, var);
+        return NULL;
+    }
+
+    avtMaterial *mat = (avtMaterial *) GetRealMaterial(fi);
+    if (mat == NULL)
+    {
+        EXCEPTION1(InvalidDBTypeException, "Can only get densities if there "
+                                           "is a material");
+    }
+
+    m_pdbFile = PD_open((char *) my_filenames[fi].c_str(), "r");
+    if (m_pdbFile == NULL)
+    {
+        Close();
+        EXCEPTION1(InvalidDBTypeException, "Cannot be a KullLite file, this "
+                   " is file not a valid PDB file.");
+    }
+
+    int nzones = mat->GetNZones();
+    vtkFloatArray *rv = vtkFloatArray::New();
+    rv->SetNumberOfTuples(nzones);
+    for (i = 0 ; i < nzones ; i++)
+        rv->SetTuple1(i, 0.);
+
+    bool *mixed = new bool[nzones];
+    for (i = 0 ; i < nzones ; i++)
+    {
+        mixed[i] = false;
+    }
+
+    // Read in the tags
+    if (m_tags == NULL)
+    {
+        m_tags = MAKE_N(pdb_taglist, 1);
+        if (PD_read(m_pdbFile, "MeshTags", m_tags) == false)
+        {
+            Close();
+            EXCEPTION1(InvalidVariableException, "No meshtag data.");
+        }
+    }
+
+    int nmats = m_names.size();
+    int *mats_per_zone = new int[nzones];
+    for (i = 0 ; i < nzones ; i++)
+        mats_per_zone[i] = 0;
+
+    for (i = 0 ; i < nmats ; i++)
+    {
+        string densityName = "mat_" + m_names[i] + "_densities";
+        for (j = 0; j < m_tags->num_tags; j++)
+            if (!strcmp(m_tags->tags[j].tagname, densityName.c_str()))
+                break;
+        if (j == m_tags->num_tags)
+        {
+            Close();
+            EXCEPTION1(InvalidFilesException, my_filenames[fi].c_str());
+        }
+        int densitySize = m_tags->tags[j].size;
+
+        double *densities = new double[densitySize];
+        if (PD_read(m_pdbFile, (char*)densityName.c_str(), densities) == false)
+        {
+            Close();
+            EXCEPTION1(InvalidFilesException, my_filenames[fi].c_str());
+        }
+        string zoneName = "mat_" + m_names[i] + "_zones";
+        int *zones = new int[densitySize];
+        if (PD_read(m_pdbFile, (char*)zoneName.c_str(), zones) == false)
+        {
+            Close();
+            EXCEPTION1(InvalidFilesException, my_filenames[fi].c_str());
+        }
+
+        string mixedName = "mat_" + m_names[i] + "_mixedZones";
+        for (j = 0; j < m_tags->num_tags; j++)
+            if (!strcmp(m_tags->tags[j].tagname, mixedName.c_str()))
+                break;
+        int mixedSize = 0;
+        if (j != m_tags->num_tags)
+            mixedSize = m_tags->tags[j].size;
+        int *mixedZ = new int[mixedSize];
+        if (mixedSize > 0)
+        {
+            if (PD_read(m_pdbFile, (char*)mixedName.c_str(), mixedZ) == false)
+            {
+                Close();
+                EXCEPTION1(InvalidFilesException, my_filenames[fi].c_str());
+            }
+        }
+
+        for (j = 0 ; j < mixedSize ; j++)
+            mixed[mixedZ[j]] = true;
+
+        string vfName = "mat_" + m_names[i] + "_volumeFractions";
+        double *vf = new double[mixedSize];
+        if (mixedSize > 0)
+        {
+            if (PD_read(m_pdbFile, (char*)vfName.c_str(), vf) == false)
+            {
+                Close();
+                EXCEPTION1(InvalidFilesException, my_filenames[fi].c_str());
+            }
+        }
+
+
+        for (j = 0 ; j < densitySize ; j++)
+        {
+            int zone = zones[j];
+            if (!mixed[zone])
+                rv->SetValue(zone, densities[j]);
+        }
+
+        if (mixedSize > 0)
+        {
+            int *lookup = new int[nzones];
+            for (j = 0 ; j < densitySize ; j++)
+                lookup[zones[j]] = j;
+ 
+            for (j = 0 ; j < mixedSize ; j++)
+            {
+                int z = mixedZ[j];
+                mats_per_zone[z]++;
+                int idx_to_density = lookup[z];
+                float density = densities[idx_to_density];
+                float val = rv->GetValue(z);
+                val += density*vf[j];
+                rv->SetValue(z, val);
+            }
+       
+            delete [] lookup;
+        }
+
+
+        delete [] zones;
+        delete [] vf;
+        delete [] densities;
+        delete [] mixedZ;
+    }
+
+    int mixlen = 0;
+    for (i = 0 ; i < nzones ; i++)
+        mixlen += mats_per_zone[i];
+
+    float *mixvals = new float[mixlen];
+    float **mix_ptr = new float*[nzones];
+    float *tmp = mixvals;
+    for (i = 0 ; i < nzones ; i++)
+        if (mats_per_zone[i] <= 0)
+            mix_ptr[i] = NULL;
+        else
+        {
+            mix_ptr[i] = tmp;
+            tmp += mats_per_zone[i];
+        }
+
+    //
+    // Now we have to read the data all over again so that we can set up
+    // the avtMixedVariable object.
+    //
+    for (i = 0 ; i < nmats ; i++)
+    {
+        string densityName = "mat_" + m_names[i] + "_densities";
+        for (j = 0; j < m_tags->num_tags; j++)
+            if (!strcmp(m_tags->tags[j].tagname, densityName.c_str()))
+                break;
+        if (j == m_tags->num_tags)
+        {
+            Close();
+            EXCEPTION1(InvalidFilesException, my_filenames[fi].c_str());
+        }
+        int densitySize = m_tags->tags[j].size;
+
+        double *densities = new double[densitySize];
+        if (PD_read(m_pdbFile, (char*)densityName.c_str(), densities) == false)
+        {
+            Close();
+            EXCEPTION1(InvalidFilesException, my_filenames[fi].c_str());
+        }
+        string zoneName = "mat_" + m_names[i] + "_zones";
+        int *zones = new int[densitySize];
+        if (PD_read(m_pdbFile, (char*)zoneName.c_str(), zones) == false)
+        {
+            Close();
+            EXCEPTION1(InvalidFilesException, my_filenames[fi].c_str());
+        }
+
+        string mixedName = "mat_" + m_names[i] + "_mixedZones";
+        for (j = 0; j < m_tags->num_tags; j++)
+            if (!strcmp(m_tags->tags[j].tagname, mixedName.c_str()))
+                break;
+        int mixedSize = 0;
+        if (j != m_tags->num_tags)
+            mixedSize = m_tags->tags[j].size;
+        int *mixedZ = new int[mixedSize];
+        if (mixedSize > 0)
+        {
+            if (PD_read(m_pdbFile, (char*)mixedName.c_str(), mixedZ) == false)
+            {
+                Close();
+                EXCEPTION1(InvalidFilesException, my_filenames[fi].c_str());
+            }
+        }
+
+        for (j = 0 ; j < mixedSize ; j++)
+            mixed[mixedZ[j]] = true;
+
+        string vfName = "mat_" + m_names[i] + "_volumeFractions";
+        double *vf = new double[mixedSize];
+        if (mixedSize > 0)
+        {
+            if (PD_read(m_pdbFile, (char*)vfName.c_str(), vf) == false)
+            {
+                Close();
+                EXCEPTION1(InvalidFilesException, my_filenames[fi].c_str());
+            }
+        }
+
+
+        if (mixedSize > 0)
+        {
+            int *lookup = new int[nzones];
+            for (j = 0 ; j < densitySize ; j++)
+                lookup[zones[j]] = j;
+ 
+            for (j = 0 ; j < mixedSize ; j++)
+            {
+                int z = mixedZ[j];
+                mats_per_zone[z]++;
+                int idx_to_density = lookup[z];
+                float density = densities[idx_to_density];
+                *(mix_ptr[z]) = density;
+                mix_ptr[z]++;
+            }
+       
+            delete [] lookup;
+        }
+
+        delete [] zones;
+        delete [] vf;
+        delete [] densities;
+        delete [] mixedZ;
+    }
+
+    avtMixedVariable *mv = new avtMixedVariable(mixvals, mixlen, "density");
+    void_ref_ptr vr = void_ref_ptr(mv, avtMixedVariable::Destruct);
+    cache->CacheVoidRef("density", AUXILIARY_DATA_MIXED_VARIABLE, timestep,fi,vr);
+    delete [] mixvals;
+    delete [] mix_ptr;
+
+    delete [] mats_per_zone;
+    delete [] mixed;
+    return rv;
 }
 
 
@@ -1593,6 +1854,9 @@ avtKullLiteFileFormat::GetRealMaterial(int domain)
 //     Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006 
 //     Set meshCoordType.
 //
+//     Hank Childs, Wed May 10 15:08:18 PDT 2006
+//     Add support for densities.
+//
 // ****************************************************************************
 
 void
@@ -1600,6 +1864,7 @@ avtKullLiteFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
     bool is3DMesh = true;
     bool isRZ = false;
+    bool hasDensities = false;
     if (my_filenames.size() > 0)
     {
         m_pdbFile = PD_open((char *) my_filenames[0].c_str(), "r");
@@ -1612,6 +1877,7 @@ avtKullLiteFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         is3DMesh = GetMeshDimension();
         if (!is3DMesh)
             isRZ = IsRZ();
+        hasDensities = ContainsDensities();
         Close();
     }
 
@@ -1711,6 +1977,11 @@ avtKullLiteFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
         AddMaterialToMetaData(md, "mesh_tags/nodes", "mesh_tags/nodes_mesh",
                               node_tags.size(), node_tags);
+    }
+
+    if (hasDensities)
+    {
+        AddScalarVarToMetaData(md, "density", "mesh", AVT_ZONECENT);
     }
 }
 
@@ -2213,6 +2484,31 @@ bool
 avtKullLiteFileFormat::IsRZ(void)
 {
     return (PD_inquire_type(m_pdbFile, "rz") ? true : false);
+}
+
+
+// ****************************************************************************
+//  Method: avtKullLiteFileFormat::ContainsDensities
+//
+//  Purpose:
+//      Determines if there are densities associated with the materials.
+//
+//  Returns:   True if there are densities, false otherwise.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 10, 2006
+//
+// ****************************************************************************
+
+bool
+avtKullLiteFileFormat::ContainsDensities(void)
+{
+    if (m_names.size() <= 0)
+        return false;
+    char name[1024];
+    sprintf(name, "mat_%s_densities", m_names[0].c_str());
+    bool rv = (PD_inquire_entry(m_pdbFile,name,0,NULL) != NULL ? true : false);
+    return rv;
 }
 
 
