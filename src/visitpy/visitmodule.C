@@ -220,6 +220,8 @@ public:
 //            // ever called by the 2nd thread. It cannot use Python.
 //            VisItErrorFunc(m->GetText().c_str());
         }
+        else if(m->GetSeverity() == MessageAttributes::ErrorClear)
+            errorFlag = 0;
         else if(m->GetSeverity() == MessageAttributes::Warning)
             fprintf(stderr, "VisIt: Warning - %s\n", m->GetText().c_str());
         else

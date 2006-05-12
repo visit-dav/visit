@@ -8177,27 +8177,60 @@ ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
 //   Modified scalable rendering controls to use activation mode and auto
 //   threshold
 //
+//   Brad Whitlock, Thu May 11 15:19:46 PST 2006
+//   I added code to clear the actors and update the frame when the image
+//   can't be externally rendered. This prevents a problem where we end up
+//   asking for an old plot on a new compute engine and it fails because
+//   the plot has never been seen on the new compute engine. Since this
+//   method seems to only be called from when we save or print images,
+//   and since we don't want that to fail if we can help it, clear the
+//   error message and then iterate through one more time. Hopefully, the
+//   right compute engine gets launched.
+//  
 // ****************************************************************************
+
 void
 ViewerWindow::ExternalRenderManual(avtDataObject_p& dob, int w, int h)
 {
+    const char *mName = "ViewerWindow::ExternalRenderManual: ";
     bool dummyBool;
-    ExternalRenderRequestInfo thisRequest;
+    int tries = 0;
+    bool success = false;
 
-    GetExternalRenderRequestInfo(thisRequest);
-
-    // adjust rendering request info for this manual render
-    int size[2] = {w, h};
-    thisRequest.winAtts.SetSize(size);
-    thisRequest.winAtts.GetRenderAtts().
-        SetScalableActivationMode(RenderingAttributes::Always);
-
-    bool success = ExternalRender(thisRequest, dummyBool, true, dob);
-
-    if (!success)
+    debug4 << mName << "start" << endl;
+    do
     {
+        debug4 << mName << "Calling GetExternalRenderRequestInfo" << endl;
+        ExternalRenderRequestInfo thisRequest;
+        GetExternalRenderRequestInfo(thisRequest);
+
+        // adjust rendering request info for this manual render
+        debug4 << mName << "Making it do scalable rendering always" << endl;
+        int size[2] = {w, h};
+        thisRequest.winAtts.SetSize(size);
+        thisRequest.winAtts.GetRenderAtts().
+            SetScalableActivationMode(RenderingAttributes::Always);
+
+        debug4 << mName << "Calling ExternalRender" << endl;
+        success = ExternalRender(thisRequest, dummyBool, true, dob);
+
+        if (!success)
+        {
+            debug4 << mName << "ExternalRender method returned false so"
+                   << "let's clear the actors in the plot list and "
+                   << "try to render again." << endl;
+            ErrorClear();
+            GetPlotList()->ClearActors();
+            GetPlotList()->UpdateFrame();
+        }
+
+        ++tries;
+    } while(!success && tries < 2);
+
+    if(!success)
         Warning("Unable to obtain rendered image from engine");
-    }
+
+    debug4 << mName << "end" << endl;
 }
 
 // ****************************************************************************

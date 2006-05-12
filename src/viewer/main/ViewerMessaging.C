@@ -70,6 +70,28 @@ Message(const char *message)
 }
 
 // ****************************************************************************
+// Function: ErrorClear
+//
+// Purpose:
+//   Sends an error clear message to the observers of the viewer's messageAtts
+//   subject.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu May 11 15:04:39 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ErrorClear()
+{
+    viewerSubject->ErrorClear();
+}
+
+// ****************************************************************************
 // Function: Status
 //
 // Purpose: 

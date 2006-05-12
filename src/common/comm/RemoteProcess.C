@@ -4,8 +4,7 @@
 
 #if defined(_WIN32)
 #include <process.h>
-#include <winsock2.h>
-#include <windows.h>
+#include <win32commhelpers.h>
 #else
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -469,6 +468,9 @@ RemoteProcess::GetProcessId() const
 //    Brad Whitlock, Tue Jan 17 13:37:17 PST 2006
 //    Added debug logging.
 //
+//    Brad Whitlock, Fri May 12 11:56:59 PDT 2006
+//    Added more Windows error logging.
+//
 // ****************************************************************************
 
 bool
@@ -484,6 +486,9 @@ RemoteProcess::GetSocketAndPort()
     {
         // Cannot open a socket.
         debug5 << mName << "Can't open a socket." << endl;
+#if defined(_WIN32)
+        LogWindowsSocketError(mName, "socket");
+#endif
         return false;
     }
     debug5 << mName << "Opened listen socket: " << listenSocketNum << endl;
@@ -505,12 +510,16 @@ RemoteProcess::GetSocketAndPort()
         if (bind(listenSocketNum, (struct sockaddr *)&sin, sizeof(sin)) < 0)
         {
             listenPortNum++;
+#if defined(_WIN32)
+            LogWindowsSocketError(mName, "bind");
+#endif
         }
         else
         {
             portFound = true;
         }
     }
+
     if (!portFound)
     {
         // Cannot find unused port.
@@ -668,7 +677,11 @@ RemoteProcess::AcceptSocket()
 
     // Disable Nagle algorithm.
 #if defined(_WIN32)
-    setsockopt(desc, IPPROTO_TCP, TCP_NODELAY, (const char FAR*)&opt, sizeof(int));
+    if(setsockopt(desc, IPPROTO_TCP, TCP_NODELAY, (const char FAR*)&opt, sizeof(int))
+       == SOCKET_ERROR)
+    {
+        LogWindowsSocketError(mName, "setsockopt");
+    }
 #else
     setsockopt(desc, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(int));
 #endif
@@ -697,6 +710,9 @@ RemoteProcess::AcceptSocket()
 //   Brad Whitlock, Tue Jan 17 13:41:47 PST 2006
 //   Added debug info.
 //
+//   Brad Whitlock, Fri May 12 12:02:10 PDT 2006
+//   Added more debug info for Windows.
+//
 // ****************************************************************************
 
 int
@@ -716,6 +732,10 @@ RemoteProcess::SingleThreadedAcceptSocket()
         len = sizeof(struct sockaddr);
         debug5 << mName << "waiting for accept() to return" << endl;
         desc = accept(listenSocketNum, (struct sockaddr *)&sin, &len);
+#if defined(_WIN32)
+        if(desc == INVALID_SOCKET)
+            LogWindowsSocketError(mName, "accept");
+#endif
     }
     while (desc == -1 && errno == EINTR && childDied[GetProcessId()] == false);
 
@@ -742,6 +762,9 @@ RemoteProcess::SingleThreadedAcceptSocket()
 //   Brad Whitlock, Fri Dec 6 12:13:27 PDT 2002
 //   I put a loop around the accept function call so that if we catch a
 //   signal during the accept, we have an opportunity to try it again.
+//
+//   Brad Whitlock, Fri May 12 12:02:38 PDT 2006
+//   Log Windows error messages.
 //
 // ****************************************************************************
 
@@ -771,6 +794,10 @@ static void *threaded_accept_callback(void *data)
 #endif
         len = sizeof(struct sockaddr);
         desc = accept(cb->listenSocketNum, (struct sockaddr *)cb->sin, &len);
+#if defined(_WIN32)
+        if(desc == INVALID_SOCKET)
+            LogWindowsSocketError("threaded_accept_callback", "accept");
+#endif
     } while(desc == -1 && errno == EINTR && childDied[cb->pid] == false);
 
     // Set the results into the callback struct that the other thread is polling.
@@ -1192,6 +1219,9 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
     bool remote = (remoteHost != std::string("localhost"));
     if(remote && (gethostbyname(remoteHost.c_str()) == NULL))
     {
+#if defined(_WIN32)
+        LogWindowsSocketError(mName, "gethostbyname,1");
+#endif
         EXCEPTION1(BadHostException, remoteHost);
     }
 
@@ -1203,6 +1233,9 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
     char localHostStr[256];
     if (gethostname(localHostStr, 256) == -1)
     {
+#if defined(_WIN32)
+        LogWindowsSocketError(mName, "gethostname");
+#endif
         // Couldn't get the hostname, it's probably invalid so
         // throw a BadHostException.
         EXCEPTION1(BadHostException, localHostStr);
@@ -1213,6 +1246,9 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
     struct hostent *localHostEnt = gethostbyname(localHostStr);
     if (localHostEnt == NULL)
     {
+#if defined(_WIN32)
+        LogWindowsSocketError(mName, "gethostbyname,2");
+#endif
         // Couldn't get the full host entry; it's probably invalid so
         // throw a BadHostException.
         EXCEPTION1(BadHostException, localHostStr);
@@ -1244,6 +1280,10 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
                     debug5 << mName << "gethostbyaddr returned: " << localHost.c_str()
                            << endl;
                 }
+#if defined(_WIN32)
+                else
+                    LogWindowsSocketError(mName, "gethostbyaddr");
+#endif
             }
         }
     }
@@ -1285,8 +1325,12 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
     // Start listening for connections.
     //
     debug5 << mName << "Start listening for connections." << endl;
+#if defined(_WIN32)
+    if(listen(listenSocketNum, 5) == SOCKET_ERROR)
+        LogWindowsSocketError(mName, "listen");
+#else
     listen(listenSocketNum, 5);
-
+#endif
     return true;
 }
 

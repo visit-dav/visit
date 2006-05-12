@@ -385,6 +385,9 @@ struct avtDefaultPlotMetaData;
 //    Hank Childs, Mon Feb 13 21:59:53 PST 2006
 //    Added ConstructDDF.
 //
+//    Brad Whitlock, Thu May 11 15:05:17 PST 2006
+//    Added ErrorClear.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -405,6 +408,7 @@ public:
     void Error(const char *message);
     void Warning(const char *message);
     void Message(const char *message);
+    void ErrorClear();
     void Status(const char *message);
     void Status(const char *message, int milliseconds);
     void Status(const char *sender, const char *message);

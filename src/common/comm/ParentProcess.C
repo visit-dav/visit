@@ -1,7 +1,6 @@
 #include <errno.h>
 #if defined(_WIN32)
-#include <winsock2.h>
-#include <windows.h>
+#include <win32commhelpers.h>
 #else
 #include <netdb.h>
 #include <netinet/in.h>
@@ -19,6 +18,7 @@
 #include <CommunicationHeader.h>
 #include <CouldNotConnectException.h>
 #include <IncompatibleVersionException.h>
+
 
 // ****************************************************************************
 // Method: ParentProcess::ParentProcess
@@ -88,6 +88,9 @@ ParentProcess::ParentProcess() : version(VERSION), localUserName()
 //    Brad Whitlock, Tue Mar 19 16:05:17 PST 2002
 //    Made it work on Windows.
 //
+//    Brad Whitlock, Fri May 12 11:49:43 PDT 2006
+//    We now copy the hostent on Windows, free it here.
+//
 // ****************************************************************************
 
 ParentProcess::~ParentProcess()
@@ -131,6 +134,12 @@ ParentProcess::~ParentProcess()
         writeConnections = 0;
         nWriteConnections = 0;
     }
+
+#if defined(_WIN32)
+    // On Windows, we make a copy. Free it now.
+    if(hostInfo != NULL)
+        FreeHostent((struct hostent *)hostInfo);
+#endif
 }
 
 // ****************************************************************************
@@ -221,7 +230,7 @@ ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
 
     // Log the arguments.
     debug5 << mName << "Called with (numRead=" << numRead 
-           << ", numWrite=, " << numWrite
+           << ", numWrite=" << numWrite
            << ", argc=" << *argc
            << ", argv={";
     for (i = 0; i < *argc ; ++i)
@@ -568,6 +577,9 @@ ParentProcess::GetWriteConnection(int i) const
 //   Brad Whitlock, Tue Jan 17 14:37:35 PST 2006
 //   Added debug logging.
 //
+//   Brad Whitlock, Fri May 12 11:50:15 PDT 2006
+//   Added more extensive debug logging for the Windows platform.
+//
 // ****************************************************************************
 
 int
@@ -594,6 +606,32 @@ ParentProcess::GetClientSocketDescriptor(int port)
     // Create a socket.
     // 
     debug5 << mName << "Creating a socket" << endl;
+#if defined(_WIN32)
+    s = socket(AF_INET, SOCK_STREAM, 0);
+    if (s == INVALID_SOCKET)
+    {
+        LogWindowsSocketError(mName, "socket");
+        return -1;
+    }
+
+    // Disable the Nagle algorithm 
+    debug5 << mName << "Setting socket options" << endl;
+    int opt = 1;
+    if(setsockopt(s, IPPROTO_TCP, TCP_NODELAY, (const char FAR *)&opt, sizeof(int))
+       == SOCKET_ERROR)
+    {
+        LogWindowsSocketError(mName, "setsockopt");
+    }
+
+    debug5 << mName << "Calling connect" << endl;
+    if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0)
+    {
+        LogWindowsSocketError(mName, "connect");
+        debug5 << mName << "Could not connect!" << endl;
+        closesocket(s);
+        return -1;
+    }
+#else
     s = socket(AF_INET, SOCK_STREAM, 0);
     if (s < 0)
     {
@@ -603,22 +641,15 @@ ParentProcess::GetClientSocketDescriptor(int port)
     // Disable the Nagle algorithm 
     debug5 << mName << "Setting socket options" << endl;
     int opt = 1;
-#if defined(_WIN32)
-    setsockopt(s, IPPROTO_TCP, TCP_NODELAY, (const char FAR *)&opt, sizeof(int));
-#else
     setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(int));
-#endif
     debug5 << mName << "Calling connect" << endl;
     if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0)
     {
         debug5 << mName << "Could not connect!" << endl;
-#if defined(_WIN32)
-        closesocket(s);
-#else
         close(s);
-#endif
         return -1;
     }
+#endif
 
     debug5 << mName << "Connected socket" << endl;
 
@@ -637,16 +668,27 @@ ParentProcess::GetClientSocketDescriptor(int port)
 // Creation:   Fri Jul 21 15:24:10 PST 2000
 //
 // Modifications:
+//   Brad Whitlock, Fri May 12 11:50:15 PDT 2006
+//   Added more extensive debug logging for the Windows platform.
 //   
 // ****************************************************************************
 
 void
 ParentProcess::GetHostInfo()
 {
-    debug5 << "ParentProcess::GetHostInfo: Calling gethostbyname(\""
+    const char *mName = "ParentProcess::GetHostInfo: ";
+    debug5 << mName << "Calling gethostbyname(\""
            << hostName.c_str() << "\")\n";
 
+#if defined(_WIN32)
+    // Create a copy of the hostent struct in case other WinSock
+    // functions want to modify it.
+    hostInfo = (void *)CopyHostent(gethostbyname(hostName.c_str()));
+    if(hostInfo == NULL)
+        LogWindowsSocketError(mName, "gethostbyname");
+#else
     hostInfo = (void *)gethostbyname(hostName.c_str());
+#endif
 }
 
 // ****************************************************************************
