@@ -83,6 +83,9 @@ avtDDFConstructor::~avtDDFConstructor()
 //    Hank Childs, Sat Feb 25 15:01:56 PST 2006
 //    Add support for time.
 //
+//    Hank Childs, Mon May 15 14:25:28 PDT 2006
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 avtDDF *
@@ -346,6 +349,7 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
                 }
             }
             delete [] arr;
+            delete [] args;
             delete [] leaves;
             delete [] isNodal;
         }

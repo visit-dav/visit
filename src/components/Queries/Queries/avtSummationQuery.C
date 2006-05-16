@@ -35,6 +35,9 @@ using     std::set;
 //    Kathleen Bonnell, Thu Mar  2 15:05:17 PST 2006
 //    Added sumFromOriginalElement.
 //
+//    Hank Childs, Tue May 16 09:18:41 PDT 2006
+//    Initial variables for averaging.
+//
 // ****************************************************************************
 
 avtSummationQuery::avtSummationQuery()
@@ -43,6 +46,7 @@ avtSummationQuery::avtSummationQuery()
     sumOnlyPositiveValues = false;
     sumFromOriginalElement = false;
     sum = 0.;
+    denomSum = 1.;
     sumType = "";
     strcpy(descriptionBuffer, "Summing up variable");
 }
@@ -207,12 +211,18 @@ avtSummationQuery::SumFromOriginalElement(bool val)
 //  Programmer: Kathleen Bonnell
 //  Creation:   September 30, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Tue May 16 09:18:41 PDT 2006
+//    Initialize denomSum.
+//
 // ****************************************************************************
 
 void
 avtSummationQuery::PreExecute(void)
 {
     sum = 0.;
+    denomSum = 0.;
 }
 
 
@@ -235,6 +245,9 @@ avtSummationQuery::PreExecute(void)
 //    Hank Childs, Thu Jan 12 14:58:07 PST 2006
 //    Add qualifier message if it exists.
 //
+//    Hank Childs, Tue May 16 09:18:41 PDT 2006
+//    Added support for averaging.
+//
 // ****************************************************************************
 
 void
@@ -244,9 +257,21 @@ avtSummationQuery::PostExecute(void)
     SumDoubleArrayAcrossAllProcessors(&sum, &newSum, 1);
     sum = newSum;
 
+    if (CalculateAverage())
+    {
+        double newDenomSum;
+        SumDoubleArrayAcrossAllProcessors(&denomSum, &newDenomSum, 1);
+        denomSum = newDenomSum;
+        if (denomSum != 0.)
+            sum /= denomSum;
+    }
+
     char buf[1024];
     std::string str;
-    str += "The total ";
+    if (CalculateAverage())
+        str += "The average ";
+    else
+        str += "The total ";
     SNPRINTF(buf, 1024, "%s", sumType.c_str());
     str += buf;
     str += " is ";
@@ -304,6 +329,9 @@ avtSummationQuery::PostExecute(void)
 //    cell was split into -- because when that original cell was split, the
 //    variable's value was passed intact to the new cells.
 //
+//    Hank Childs, Tue May 16 09:18:41 PDT 2006
+//    Add support for averaging.
+//
 // ****************************************************************************
 
 void
@@ -316,11 +344,28 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
         arr = ds->GetCellData()->GetArray(variableName.c_str());
         pointData = false;
     }
-
     if (arr == NULL)
     {
         EXCEPTION1(InvalidVariableException, variableName);
     }
+
+    vtkDataArray *arr2 = NULL;
+    bool doAverage = CalculateAverage();
+    if (doAverage)
+    {
+        if (pointData)
+            arr2 = ds->GetPointData()->GetArray(denomVariableName.c_str());
+        else 
+            arr2 = ds->GetCellData()->GetArray(denomVariableName.c_str());
+
+        if (arr2 == NULL)
+        {
+            // Note that we will get here if the centering is different
+            // between variableName and denomVariableName.
+            EXCEPTION1(InvalidVariableException, denomVariableName);
+        }
+    }
+
 
     vtkUnsignedCharArray *ghost_zones = NULL;
     if (!pointData && !sumGhostValues)
@@ -382,7 +427,7 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
             {
                 unsigned char g = ghost_zones->GetValue(i);
                 if (g != 0)
-                    val = 0.;
+                    continue;
             }
             else if (ghost_nodes != NULL)
             {
@@ -397,14 +442,14 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
                         allGhost = false;
                 }
                 if (allGhost)
-                    val = 0.;
+                    continue;
             }
         }
         else if (ghost_nodes != NULL)
         {
             unsigned char g = ghost_nodes->GetValue(i);
             if (g != 0)
-                val = 0.;
+                continue;
         }
         if (sumOnlyPositiveValues && val < 0.)
             continue;
@@ -422,8 +467,9 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
                 continue;
         } 
 
-
         sum += val;
+        if (doAverage)
+            denomSum += arr2->GetTuple1(i);
     }
     list->Delete();
 }

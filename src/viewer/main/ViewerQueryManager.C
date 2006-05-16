@@ -3183,6 +3183,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Kathleen Bonnell, Tue May  9 15:45:04 PDT 2006 
 //    Added a couple of Pick aliases. 
 //
+//    Hank Childs, Thu May 11 13:24:34 PDT 2006
+//    Added average mean curvature query.
+//
 // ****************************************************************************
 
 void
@@ -3250,6 +3253,7 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Localized Compactness Factor", dq, mr, basic, 1, 0, qt);
     queryTypes->AddQuery("Elliptical Compactness Factor", dq, mr, basic, 1, 0, qt);
     queryTypes->AddQuery("Spherical Compactness Factor", dq, mr, basic, 1, 0, qt);
+    queryTypes->AddQuery("Average Mean Curvature", dq, mr, basic, 1, 0, qt);
     queryTypes->AddQuery("Variable Sum", dq, vr, basic, 1, 0, qt);
     queryTypes->AddQuery("Watertight", dq, mr, basic, 1, 0, qo);
     queryTypes->AddQuery("Weighted Variable Sum", dq, vr, basic, 1, 0, qt);

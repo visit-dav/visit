@@ -122,6 +122,9 @@
 #   Hank Childs, Sat Apr 29 14:40:47 PDT 2006
 #   Added localized and elliptical compactness factor queries.
 #
+#   Hank Childs, Thu May 11 13:21:18 PDT 2006
+#   Added average mean curvature query.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -162,6 +165,7 @@ Queries_src= \
  Queries/avtActualDataNumNodesQuery.C  \
  Queries/avtActualDataNumZonesQuery.C  \
  Queries/avtAreaBetweenCurvesQuery.C  \
+ Queries/avtAverageMeanCurvatureQuery.C \
  Queries/avtBestFitLineQuery.C \
  Queries/avtCentroidQuery.C  \
  Queries/avtCompactnessQuery.C  \
