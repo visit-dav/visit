@@ -221,6 +221,11 @@ avtProteinDataBankFileFormat::GetMesh(int timestate, const char *meshname)
 //  Programmer: Jeremy Meredith
 //  Creation:   March 23, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Thu May 18 11:15:01 PDT 2006
+//    Fix UMR.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -314,6 +319,8 @@ avtProteinDataBankFileFormat::GetVar(int timestate, const char *varname)
         labels->SetNumberOfComponents(maxlen);
         labels->SetNumberOfTuples(atoms.size());
         char *cptr = (char *)labels->GetVoidPointer(0);
+        memset(cptr, 0, maxlen*atoms.size());  // Initialize all of this for
+                                            // purify, extents, etc.
         for (int i=0; i<atoms.size(); i++)
         {
             const char *n = ResiduenameToLongName(atoms[i].resname);
