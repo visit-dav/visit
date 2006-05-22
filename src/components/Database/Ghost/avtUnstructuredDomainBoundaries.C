@@ -327,6 +327,9 @@ CopyPointer(T *src, T *dest, int components,
 //    Hank Childs, Tue Jun 21 13:59:47 PDT 2005
 //    Fix UMR and memory leak.
 //
+//    Hank Childs, Fri May 19 13:29:29 PDT 2006
+//    Code around VTK memory leak.
+//
 // ****************************************************************************
 
 vector<vtkDataSet*>
@@ -473,7 +476,19 @@ avtUnstructuredDomainBoundaries::ExchangeMesh(vector<int>       domainNum,
         ghostCells->Delete();
         outm->SetUpdateGhostLevel(0);
 
-        outm->BuildLinks();
+        // This call is in lieu of "BuildLinks", which has a memory leak.
+        // This should be the non-leaking equivalent.
+        //
+        //outm->BuildLinks();
+        if (outm->GetCellLinks() != NULL)
+        {
+            vtkCellLinks *links = outm->GetCellLinks();
+            links->Allocate(outm->GetNumberOfPoints());
+            links->Register(outm);  // Adds a reference.
+            links->BuildLinks(outm, outm->GetCells());
+            links->Delete();   // Removes the reference
+        }
+
         out[d] = outm;
     }
 

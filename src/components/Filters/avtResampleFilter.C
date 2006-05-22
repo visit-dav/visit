@@ -303,6 +303,9 @@ avtResampleFilter::BypassResample(void)
 //    Don't allow the resampler to "send cells", because there is no
 //    second pass.
 //
+//    Hank Childs, Mon May 22 15:14:04 PDT 2006
+//    Fix UMR.
+//
 // ****************************************************************************
 
 void
@@ -314,7 +317,7 @@ avtResampleFilter::ResampleInput(void)
     bool is3D = true;
 
     avtDataset_p output = GetTypedOutput();
-    double bounds[6];
+    double bounds[6] = { 0, 0, 0, 0, 0, 0 };
     if (atts.GetUseBounds())
     {
         bounds[0] = atts.GetMinX();

@@ -365,6 +365,10 @@ AttributeGroup::InterpolateConst(const AttributeGroup *atts1,
 //    Brad Whitlock, Thu Dec 9 15:07:46 PST 2004
 //    Added variablename type.
 //
+//    Hank Childs, Fri May 19 16:33:41 PDT 2006
+//    Fix crash that can come when this method is called and attributes have
+//    not been fully initialized.
+//
 // ****************************************************************************
  
 void
@@ -383,6 +387,9 @@ AttributeGroup::InterpolateLinear(const AttributeGroup *atts1,
         void *addr1   = atts1->typeMap[i].address;
         void *addr2   = atts2->typeMap[i].address;
         int   length  = typeMap[i].length;
+
+        if (addrOut == NULL || addr1 == NULL || addr2 == NULL)
+            continue;
 
         switch (GetFieldType(i))
         {

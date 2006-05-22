@@ -145,7 +145,7 @@ avtEllipticalCompactnessFactorQuery::MidExecute(void)
     if (is2D)
     {
         float Amax = ((bounds[1] - bounds[0]) / 2.)*1.5;
-        float Bmax = (bounds[3])*0.5;
+        float Bmax = (bounds[3])*1.5;
         float Bmin = sqrt(total_volume * 0.75 / (M_PI*Amax));
         for (int i = 0 ; i < numGuesses ; i++)
         {

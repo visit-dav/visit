@@ -17,6 +17,7 @@
 
 #include <avtCallback.h>
 #include <avtConstantCreatorFilter.h>
+#include <avtDatasetExaminer.h>
 #include <avtLocalizedCompactnessExpression.h>
 #include <avtParallel.h>
 #include <avtResampleFilter.h>
@@ -164,6 +165,11 @@ avtLocalizedCompactnessFactorQuery::Execute(vtkDataSet *ds, const int dom)
 //  Programmer: Hank Childs
 //  Creation:   April 29, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Mon May 22 15:44:46 PDT 2006
+//    Make the resample region be only the region where there is actually data.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -177,6 +183,9 @@ avtLocalizedCompactnessFactorQuery::ApplyFilters(avtDataObject_p inData)
     avtSourceFromAVTDataset termsrc(ds);
     avtDataObject_p dob = termsrc.GetOutput();
 
+    double extents[6] = { 0, 0, 0, 0, 0, 0 };
+    avtDatasetExaminer::GetSpatialExtents(ds, extents);
+
     avtConstantCreatorFilter ccf;
     ccf.SetValue(1.0);
     ccf.SetInput(dob);
@@ -189,7 +198,13 @@ avtLocalizedCompactnessFactorQuery::ApplyFilters(avtDataObject_p inData)
     int res = (is2D ? 250000 : 2000000);
     res_atts.SetTargetVal(res);
     res_atts.SetUseTargetVal(true);
-    res_atts.SetUseBounds(false);
+    res_atts.SetUseBounds(true);
+    res_atts.SetMinX(extents[0]);
+    res_atts.SetMaxX(extents[1]);
+    res_atts.SetMinY(extents[2]);
+    res_atts.SetMaxY(extents[3]);
+    res_atts.SetMinZ(extents[4]);
+    res_atts.SetMaxZ(extents[5]);
     avtResampleFilter resf(&res_atts);
     resf.SetInput(dob);
     dob = resf.GetOutput();

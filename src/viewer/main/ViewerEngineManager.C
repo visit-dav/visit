@@ -307,12 +307,16 @@ static void UpdatePlotAttsCallback(void*,const string&,int,AttributeSubject*);
 //    Mark C. Miller, Mon Dec 13 17:25:55 PST 2004
 //    Removed rendering data member
 //
+//    Hank Childs, Mon May 22 07:20:55 PDT 2006
+//    Initialize inLaunch.
+//
 // ****************************************************************************
 
 ViewerEngineManager::ViewerEngineManager() : ViewerServerManager(),
     SimpleObserver()
 {
     executing = false;
+    inLaunch  = false;
     if (numRestarts == -1)
         numRestarts = 2;
     avtCallback::RegisterImageCallback(GetImageCallback, this);
@@ -516,6 +520,10 @@ ViewerEngineManager::EngineExists(const EngineKey &ek) const
 //    them with the cached host profile so they get picked up under a more
 //    appropriate set of circumstances.
 //
+//    Hank Childs, Fri May 19 17:31:50 PDT 2006
+//    Don't let an engine be launched if we are already in the process of
+//    launching it.
+//
 // ****************************************************************************
 
 bool
@@ -537,6 +545,9 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
     //
     if (EngineExists(ek))
         return true;
+
+    if (InLaunch())
+        return false;
 
     //
     // If an engine for the host doesn't already exist, create one.
@@ -573,7 +584,7 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
     // Set up the connection progress window.
     //
     ViewerConnectionProgressDialog *dialog =
-                       SetupConnectionProgressWindow(newEngine.proxy, ek.HostName());
+                 SetupConnectionProgressWindow(newEngine.proxy, ek.HostName());
 
     //
     // Send a status message.
@@ -600,20 +611,31 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
         //
         // Launch the engine.
         //
-        if (!ShouldShareBatchJob(ek.HostName()) && HostIsLocalHost(ek.HostName()))
-            newEngine.proxy->Create("localhost", chd, clientHostName,
-                              manualSSHPort, sshPort);
-        else
+        TRY
         {
-            // Use VisIt's launcher to start the remote engine.
-            newEngine.proxy->Create(ek.HostName(),  chd, clientHostName,
-                              manualSSHPort, sshPort,
-                              OpenWithLauncher, (void *)dialog,
-                              true);
+            inLaunch = true;
+            if (!ShouldShareBatchJob(ek.HostName()) && 
+                HostIsLocalHost(ek.HostName()))
+                newEngine.proxy->Create("localhost", chd, clientHostName,
+                                  manualSSHPort, sshPort);
+            else
+            {
+                // Use VisIt's launcher to start the remote engine.
+                newEngine.proxy->Create(ek.HostName(),  chd, clientHostName,
+                                  manualSSHPort, sshPort,
+                                  OpenWithLauncher, (void *)dialog, true);
+            }
         }
+        CATCH(...)
+        {
+            inLaunch = false;
+            RETHROW;
+        }
+        ENDTRY
 
         // Add the new engine to the engine list.
         engines[ek] = newEngine;
+        inLaunch = false;
 
         // Make the engine manager observe the proxy's status atts.
         newEngine.proxy->GetStatusAttributes()->Attach(this);
@@ -1080,6 +1102,25 @@ bool
 ViewerEngineManager::InExecute() const
 {
     return executing;
+}
+
+// ****************************************************************************
+// Method: ViewerEngineManager::InLaunch
+//
+// Purpose: 
+//   Returns whether or not any engine is launching.
+//
+// Programmer: Hank Childs
+// Creation:   May 22, 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerEngineManager::InLaunch() const
+{
+    return inLaunch;
 }
 
 // ****************************************************************************
