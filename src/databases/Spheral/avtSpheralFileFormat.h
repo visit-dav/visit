@@ -62,6 +62,10 @@ class avtSpheralFileFormat : public avtSTMDFileFormat
     virtual int           GetCycle(void) { return cycle; };
     virtual double        GetTime(void)  { return dtime; };
 
+    virtual double        GetTimeFromFilename(const char *) const;
+    virtual int           GetCycleFromFilename(const char *) const;
+
+
   protected:
     std::string           rootfile;
     int                   ndomains;

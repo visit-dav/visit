@@ -1130,6 +1130,9 @@ avtKullLiteFileFormat::CreateZoneMeshTags(vtkUnstructuredGrid *ugrid,
 //    Hank Childs, Wed May 10 16:06:57 PDT 2006
 //    Add support for reading in density.
 //
+//    Hank Childs, Tue May 23 08:03:56 PDT 2006
+//    Fixed memory leak.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1391,6 +1394,7 @@ avtKullLiteFileFormat::GetVar(int fi, const char *var)
 
     delete [] mats_per_zone;
     delete [] mixed;
+    delete mat;
     return rv;
 }
 
