@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Histogram" type="plot" label="Histogram" version="1.0" enabled="true" mdspecificcode="false" vartype="scalar" iconFile="Histogram.xpm">
+  <Plugin name="Histogram" type="plot" label="Histogram" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" vartype="scalar,array" iconFile="Histogram.xpm">
     <Attribute name="HistogramAttributes" purpose="Attributes for Histogram Plot" persistent="true" exportAPI="" exportInclude="" codefile="HistogramAttributes.code">
       <Enum name="OutputType">
         Curve
@@ -9,7 +9,14 @@
         Area
         RevolvedVolume
       </Enum>
-      <Field name="specifyRange" label="Specify Range?" type="bool">
+      <Enum name="BasedOn">
+        ManyVarsForSingleZone
+        ManyZonesForSingleVar
+      </Enum>
+      <Field name="basedOn" label="basedOn" type="enum" subtype="BasedOn">
+        ManyZonesForSingleVar
+      </Field>
+      <Field name="specifyRange" label="Specify Range?" type="bool" enabler="basedOn:ManyZonesForSingleVar">
         false
       </Field>
       <Field name="min" label="Minimum" type="double" enabler="specifyRange:true">
@@ -18,14 +25,20 @@
       <Field name="max" label="Maximum" type="double" enabler="specifyRange:true">
         1.000000
       </Field>
-      <Field name="outputType" label="Type of Output" type="enum" subtype="OutputType">
-        Block
-      </Field>
-      <Field name="numBins" label="Number of Bins" type="int">
+      <Field name="numBins" label="Number of Bins" type="int" enabler="basedOn:ManyZonesForSingleVar">
         32
       </Field>
-      <Field name="twoDAmount" label="Calculate 2D based on" type="enum" subtype="TwoDAmount">
+      <Field name="twoDAmount" label="Calculate 2D based on" type="enum" subtype="TwoDAmount" enabler="basedOn:ManyZonesForSingleVar">
         RevolvedVolume
+      </Field>
+      <Field name="domain" label="domain" type="int" enabler="basedOn:ManyVarsForSingleZone">
+        0
+      </Field>
+      <Field name="zone" label="zone" type="int" enabler="basedOn:ManyVarsForSingleZone">
+        0
+      </Field>
+      <Field name="outputType" label="Type of Output" type="enum" subtype="OutputType">
+        Block
       </Field>
       <Field name="lineStyle" label="Line Style" type="linestyle">
         0
@@ -34,12 +47,19 @@
         0
       </Field>
       <Field name="color" label="Color" type="color">
-        0
-        0
-        0
+        200
+        80
+        40
         255
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
+      <Function name="VarChangeRequiresReset" user="true" member="true">
+      </Function>
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Include file="header" quoted="false">
+        PickAttributes.h
+      </Include>
     </Attribute>
   </Plugin>

@@ -454,6 +454,9 @@ avtEnzoFileFormat::ReadParameterFile()
 //    Jeremy Meredith, Fri Feb 11 18:15:49 PST 2005
 //    Added HDF5 support.
 //
+//    Brad Whitlock, Mon Apr 3 11:04:09 PDT 2006
+//    Added tracer particle support.
+//
 // ****************************************************************************
 void
 avtEnzoFileFormat::DetermineVariablesFromGridFile()
@@ -517,6 +520,15 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
                     particleVarNames.push_back(name);
                 }
             }
+            else if (strlen(name) > 16 &&
+                     strncmp(name,"tracer_particles",16)==0)
+            {
+                // it's a particle variable; skip over coordinate arrays
+                if (strncmp(name,"tracer_particle_position_",25) != 0)
+                {
+                    tracerparticleVarNames.push_back(name);
+                }
+            }
         }
 
         SDend(file_handle); 
@@ -557,6 +569,15 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
                     if (strncmp(name,"particle_position_",18) != 0)
                     {
                         particleVarNames.push_back(name);
+                    }
+                }
+                else if (strlen(name) > 16 &&
+                         strncmp(name,"tracer_particles",16)==0)
+                {
+                    // it's a particle variable; skip over coordinate arrays
+                    if (strncmp(name,"tracer_particle_position_",25) != 0)
+                    {
+                        tracerparticleVarNames.push_back(name);
                     }
                 }
                 else
@@ -819,6 +840,10 @@ avtEnzoFileFormat::ActivateTimestep(void)
 //  Programmer: Jeremy Meredith
 //  Creation:   January  4, 2005
 //
+//  Modifications:
+//    Brad Whitlock, Mon Apr 3 11:05:13 PDT 2006
+//    Added tracerparticleVarNames.
+//
 // ****************************************************************************
 
 void
@@ -827,6 +852,7 @@ avtEnzoFileFormat::FreeUpResources(void)
     grids.clear();
     varNames.clear();
     particleVarNames.clear();
+    tracerparticleVarNames.clear();
     numGrids=0;
     numLevels=0;
 }
@@ -864,6 +890,9 @@ avtEnzoFileFormat::FreeUpResources(void)
 //
 //    Hank Childs, Wed Jan 11 09:40:17 PST 2006
 //    Change mesh type to AMR.
+//
+//    Brad Whitlock, Mon Apr 3 11:07:11 PDT 2006
+//    Added tracer particle support.
 //
 // ****************************************************************************
 
@@ -932,6 +961,24 @@ avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     pmesh->groupIds = groupIds;
     md->Add(pmesh);
 
+    pmesh = new avtMeshMetaData;
+    pmesh->name = "tracer_particles";
+    pmesh->originalName = "tracer_particles";
+    pmesh->meshType = AVT_POINT_MESH;
+    pmesh->topologicalDimension = 0;
+    pmesh->spatialDimension = dimension;
+    pmesh->hasSpatialExtents = false;
+    pmesh->numBlocks = numGrids;
+    pmesh->blockTitle = "Grids";
+    pmesh->blockPieceName = "grid";
+    pmesh->numGroups = numLevels;
+    pmesh->groupTitle = "Levels";
+    pmesh->groupPieceName = "level";
+    pmesh->blockNames = blockPieceNames;
+    pmesh->numGroups = numLevels;
+    pmesh->groupIds = groupIds;
+    md->Add(pmesh);
+
     // grid variables
     for (int v = 0 ; v < varNames.size(); v++)
     {
@@ -943,6 +990,13 @@ avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         AddScalarVarToMetaData(md, particleVarNames[p], "particles",
                                AVT_NODECENT);
+    }
+
+    // tracer particle variables
+    for (int tp = 0 ; tp < tracerparticleVarNames.size(); tp++)
+    {
+        AddScalarVarToMetaData(md, tracerparticleVarNames[tp],
+            "tracer_particles", AVT_NODECENT);
     }
 
 
@@ -1000,6 +1054,9 @@ avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Jeremy Meredith, Thu Sep  8 12:03:55 PDT 2005
 //    Added support for float32 coordinates in HDF4.
 //
+//    Brad Whitlock, Mon Apr 3 11:00:15 PDT 2006
+//    Added support for tracer_particles.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1056,9 +1113,14 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
             EXCEPTION1(InvalidFilesException, gridFileName);
         }
 
-        int32 var_index_x = SDnametoindex(file_handle, "particle_position_x");
-        int32 var_index_y = SDnametoindex(file_handle, "particle_position_y");
-        int32 var_index_z = dimension==3 ? SDnametoindex(file_handle, "particle_position_z") : -1;
+        bool is_particle = (strcmp(meshname, "particles") == 0);
+        const char *xn = is_particle ? "particle_position_x" : "tracer_particle_position_x";
+        const char *yn = is_particle ? "particle_position_y" : "tracer_particle_position_y";
+        const char *zn = is_particle ? "particle_position_z" : "tracer_particle_position_z";
+
+        int32 var_index_x = SDnametoindex(file_handle, xn);
+        int32 var_index_y = SDnametoindex(file_handle, yn);
+        int32 var_index_z = dimension==3 ? SDnametoindex(file_handle, zn) : -1;
         if (var_index_x < 0 || var_index_y < 0 ||
             (dimension==3 && var_index_z < 0))
         {
@@ -1208,10 +1270,15 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
         H5Eget_auto(&old_errorfunc, &old_clientdata);
         H5Eset_auto(NULL, NULL);
 
+        bool is_particle = (strcmp(meshname, "particles") == 0);
+        const char *xn = is_particle ? "particle_position_x" : "tracer_particle_position_x";
+        const char *yn = is_particle ? "particle_position_y" : "tracer_particle_position_y";
+        const char *zn = is_particle ? "particle_position_z" : "tracer_particle_position_z";
+
         // find the coordinate variables (if they exist)
-        hid_t var_id_x = H5Dopen(fileId, "particle_position_x");
-        hid_t var_id_y = H5Dopen(fileId, "particle_position_y");
-        hid_t var_id_z = dimension==3 ? H5Dopen(fileId, "particle_position_z") : -1;
+        hid_t var_id_x = H5Dopen(fileId, xn);
+        hid_t var_id_y = H5Dopen(fileId, yn);
+        hid_t var_id_z = dimension==3 ? H5Dopen(fileId, zn) : -1;
 
         // turn back on error reporting
         H5Eset_auto(old_errorfunc, old_clientdata);

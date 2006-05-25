@@ -224,7 +224,7 @@ QvisSaveWindow::CreateWindowContents()
     resolutionLayout->setSpacing(5);
     resolutionLayout->addRowSpacing(0, 10);
 
-    maintainAspectCheckBox = new QCheckBox("Maintain 1:1 apsect", resolutionBox,
+    maintainAspectCheckBox = new QCheckBox("Maintain 1:1 aspect", resolutionBox,
                                            "maintainAspectCheckBox");
     connect(maintainAspectCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(maintainAspectToggled(bool)));

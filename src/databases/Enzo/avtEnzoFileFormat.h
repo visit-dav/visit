@@ -108,6 +108,7 @@ class avtEnzoFileFormat : public avtSTMDFileFormat
 
     std::vector<std::string> varNames;
     std::vector<std::string> particleVarNames;
+    std::vector<std::string> tracerparticleVarNames;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
 

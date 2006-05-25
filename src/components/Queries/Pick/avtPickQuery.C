@@ -705,6 +705,9 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds)
 //    Kathleen Bonnell, Tue Aug 30 09:35:44 PDT 2005
 //    Compute MajorEigenvalue for tensors. 
 //
+//    Hank Childs, Thu May 25 08:31:28 PDT 2006
+//    Added support for array variables.
+//
 // ****************************************************************************
 
 void
@@ -713,7 +716,6 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
 {
     bool treatAsASCII = false;
     avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
-
 
     int element = pickAtts.GetElementNumber();
     stringVector userVars = pickAtts.GetVariables();
@@ -868,6 +870,8 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
                         pickAtts.GetPickVarInfo(varNum).SetVariableType("vector");
                     else if (nComponents == 9)
                         pickAtts.GetPickVarInfo(varNum).SetVariableType("tensor");
+                    else
+                        pickAtts.GetPickVarInfo(varNum).SetVariableType("array");
                 } 
                 delete [] temp; 
             }
@@ -891,6 +895,8 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
                     varInfo.SetVariableType("vector");
                 else if (nComponents == 9)
                     varInfo.SetVariableType("tensor");
+                else
+                    varInfo.SetVariableType("array");
             }
             pickAtts.AddPickVarInfo(varInfo);
         }

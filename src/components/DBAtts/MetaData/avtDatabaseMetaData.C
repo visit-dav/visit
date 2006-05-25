@@ -5580,6 +5580,10 @@ avtDatabaseMetaData::GetNDomains(std::string var) const
 //    Hank Childs, Sun Feb 19 10:57:47 PST 2006
 //    Only get information from expressions based on argument value.
 //
+//    Hank Childs, Wed May 24 11:00:03 PDT 2006
+//    For expression variables, return the type of the expression, not the
+//    type of a real variable in that expression.
+//
 // ****************************************************************************
 
 avtVarType
@@ -5591,12 +5595,10 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
     // name to work with.
     if (do_expr)
     {
-        ExprNode *tree = ParsingExprList::GetExpressionTree(var_in);
-        while (tree != NULL)
-        {
-            var_in = *tree->GetVarLeaves().begin();
-            tree = ParsingExprList::GetExpressionTree(var_in);
-        }
+        ParsingExprList *pel = ParsingExprList::Instance();
+        Expression *e = pel->GetExpression(var_in);
+        if (e != NULL)
+            return ParsingExprList::GetAVTType(e->GetType());
     }
 
     std::string var; 

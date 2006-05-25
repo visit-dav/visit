@@ -31,7 +31,7 @@
     </Field>
     <Field name="numSpecsPerMat" label="numSpecsPerMat" type="intVector">
     </Field>
-    <Field name="treatAsASCII" label="treatAsASCII" type="bool" internal = "true">
+    <Field name="treatAsASCII" label="treatAsASCII" type="bool" internal="true">
       false
     </Field>
     <Function name="PrintSelf" user="true" member="true">
@@ -43,6 +43,8 @@
     <Function name="PrintSymmetricTensor" user="true" member="true">
     </Function>
     <Function name="HasInfo" user="true" member="true">
+    </Function>
+    <Function name="PrintArray" user="true" member="true">
     </Function>
     <Include file="source" quoted="false">
       stdio.h

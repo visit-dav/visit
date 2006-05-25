@@ -134,6 +134,27 @@ avtBasicNETCDFFileFormat::FreeUpResources()
 }
 
 // ****************************************************************************
+// Method: avtBasicNETCDFFileFormat::GetCycleFromFilename
+//
+// Purpose: 
+//   Make it guess the cycle from the filename.
+//
+// Returns:    The cycle.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue May 16 14:00:37 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+avtBasicNETCDFFileFormat::GetCycleFromFilename(const char *f) const
+{
+    return GuessCycle(f);
+}
+
+// ****************************************************************************
 // Method: avtBasicNETCDFFileFormat::ActivateTimestep
 //
 // Purpose: 

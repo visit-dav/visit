@@ -24,6 +24,9 @@ class QUrlInfo;
 //   Brad Whitlock, Wed Mar 2 11:08:25 PDT 2005
 //   I made it use QvisFtp instead of qftp.
 //
+//   Brad Whitlock, Thu May 25 12:12:56 PDT 2006
+//   I added some new members.
+//
 // ****************************************************************************
 
 class QvisVisItUpdate : public QObject, GUIBase
@@ -64,7 +67,9 @@ private:
     QvisFtp     *ftp;
     QProcess    *installProcess;
     int          stage;
-    int          architecture;
+    QString      distName;
+    QString      configName;
+    QString      bankName;
     QString      latestVersion;
     QStringList  files;
     QStringList  downloads;

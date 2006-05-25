@@ -26,6 +26,7 @@
 #include <NoEngineException.h>
 #include <OperatorPluginManager.h>
 #include <PickAttributes.h>
+#include <PickVarInfo.h>
 #include <PlotPluginManager.h>
 #include <QueryAttributes.h>
 #include <QueryList.h>
@@ -1755,10 +1756,13 @@ ViewerQueryManager::ClearPickPoints()
 //    Vector is plotted.   Do GlyphPickf or Tensor plots.
 //
 //    Kathleen Bonnell, Thu Nov 17 13:39:42 PST 2005 
-//    Retrive topodim from plot and store in pickatts.  It is more reliable
+//    Retrieve topodim from plot and store in pickatts.  It is more reliable
 //    than attempting retrieval from pipeline.  For the same reason,
 //    determine if the input is 'LinesData' from the plot (spatdim = 2,
 //    and plot is Boundary or Contour).  Save in pickatts.
+//
+//    Hank Childs, Thu May 25 11:29:49 PDT 2006
+//    If we are picking on an array variable, make a histogram plot.
 //
 // ****************************************************************************
 
@@ -2104,6 +2108,89 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             // to process any more picks. 
             pickCache.clear();
             handlingCache = false;
+        }
+        else
+        {
+            //
+            // See if we got an array variable.  If so, create a histogram plot.
+            // Note we will only create one histogram.  So if there are multiple
+            // array variables, just choose the last one.
+            //
+            int np = pickAtts->GetNumPickVarInfos();
+            bool haveArray = false;
+            std::string arrayname;
+            for (int i = 0 ; i < np ; i++)
+            {
+                PickVarInfo &info = pickAtts->GetPickVarInfo(i);
+                if (info.GetVariableType() == "array")
+                {
+                    haveArray = true;
+                    arrayname = info.GetVariableName();
+                }
+            }
+            if (!haveArray)
+                return retval;
+    
+            int winId = win->GetWindowId();
+            ViewerWindow *resWin = 
+                    ViewerWindowManager::Instance()->GetTimeQueryWindow(-1);
+            if (resWin == NULL)
+            {
+                Error("Please choose a different window to place the histogram"
+                      " of the array variable into.");
+                return retval;
+            }
+    
+            if (!PlotPluginManager::Instance()->PluginAvailable(
+                                                              "Histogram_1.0"))
+            {
+                static bool issuedWarning = false;
+                Error("Could not create a histogram of the array variable, "
+                      "because the Histogram plugin is not available.");
+                issuedWarning = true;
+                return retval;
+            }
+
+            int plotType = 
+               PlotPluginManager::Instance()->GetEnabledIndex("Histogram_1.0");
+            ViewerPlotList *plotList =  resWin->GetPlotList();
+    
+            string hdbName = plot->GetSource();
+            plotList->SetHostDatabaseName(hdbName);
+            plotList->SetEngineKey(engineKey);
+            bool replacePlots = true;
+            int pid = plotList->AddPlot(plotType,arrayname,replacePlots,false);
+            ViewerPlot *resultsPlot = plotList->GetPlot(pid);
+
+            // This is a bit subtle.  We are sending the pick attributes in
+            // as the plot attributes.  Normally, plot plugins blindly copy
+            // the attributes from this method.  But the histogram plot is
+            // smart enough to check to see if the atts are histogram atts.
+            // If they are not histogram atts, and they *are* pick atts, then
+            // it will pull out the zone and domain.  Note that this is a very
+            // similar game plan to what lineout does for the curve plot.
+            resultsPlot->SetPlotAtts(pickAtts);
+
+            if (resultsPlot == NULL)
+            {
+                // There was an error somewhere else ... arrayname not valid?
+                return retval;
+            }
+            TRY
+            {
+                plotList->RealizePlots();
+                //
+                // If there was an error, the bad curve plot should not be left
+                // around muddying up the waters.
+                //
+                if (resultsPlot->GetErrorFlag())
+                    plotList->DeletePlot(resultsPlot, false);
+            }
+            CATCH2(VisItException, e)
+            {
+                plotList->DeletePlot(resultsPlot, false);
+            }
+            ENDTRY
         }
     }
     else
@@ -3907,7 +3994,7 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom,
 
     // 
     //  We can only do one variable (for now) for a time query,
-    //  so make sure we have the right onw.
+    //  so make sure we have the right now.
     // 
     string pvarName = pickAtts->GetVariables()[0];
     if (pvarName == "default")

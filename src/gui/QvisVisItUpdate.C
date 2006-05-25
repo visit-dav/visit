@@ -24,8 +24,8 @@
 
 //#define DEBUGGING
 #ifdef DEBUGGING
-#define CURRENT_VERSION "1.3.4"
-#define VISITARCHHOME   "/home/whitlocb/visitinstall/1.4.1/sun4-sunos5-sparc"
+#define CURRENT_VERSION "1.5.1"
+#define VISITARCHHOME   "/home/whitlocb/visitinstall/1.5.3b/linux-intel"
 #else
 #define CURRENT_VERSION VERSION
 #define VISITARCHHOME   getenv("VISITARCHHOME")
@@ -77,15 +77,17 @@ const char *distNames[] = {
 // Creation:   Tue Feb 15 12:22:32 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu May 25 12:03:28 PDT 2006
+//   Initialized some string members.
+//
 // ****************************************************************************
 
 QvisVisItUpdate::QvisVisItUpdate(QObject *parent, const char *name) :
     QObject(parent, name), GUIBase(), 
-    latestVersion(CURRENT_VERSION), files(), downloads()
+    latestVersion(CURRENT_VERSION), files(), downloads(), distName(),
+    configName("none"), bankName("bdivp")
 {
     stage = STAGE_CONNECT;
-    architecture = -1;
     ftp = 0;
     installProcess = 0;
 }
@@ -126,7 +128,10 @@ QvisVisItUpdate::~QvisVisItUpdate()
 // Modifications:
 //   Brad Whitlock, Wed Mar 2 11:13:28 PDT 2005
 //   I made it use QvisFtp.
-//   
+//
+//   Brad Whitlock, Thu May 25 12:04:40 PDT 2006
+//   I made it use the distName member.
+//
 // ****************************************************************************
 
 void
@@ -135,7 +140,7 @@ QvisVisItUpdate::provideLogin()
 #if defined(_WIN32)
     const char *platform = "win32";
 #else
-    const char *platform = distNames[architecture];
+    const char *platform = distName.isEmpty() ? "?" : distName.latin1();
 #endif
 
     // Get the number of startups.
@@ -205,7 +210,9 @@ QvisVisItUpdate::localTempDirectory() const
 // Creation:   Tue Feb 15 12:25:22 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu May 25 12:06:37 PDT 2006
+//   I made it use distName.
+//
 // ****************************************************************************
 
 void
@@ -221,12 +228,18 @@ QvisVisItUpdate::getRequiredFiles()
     //
     // Add files that are appropriate for the architecture.
     //
-    if(architecture != -1)
+    if(!distName.isEmpty())
     {
+        QString dottedName(".");
+        dottedName += (distName + ".");
+        debug1 << "Look for a file having \"" << dottedName.latin1()
+               << "\" in the name" << endl;
+
         for(int j = 0; j < files.count(); ++j)
         {
-            if(files[j].find(distNames[architecture]) != -1)
+            if(files[j].find(dottedName) != -1)
             {
+                debug1 << "Added " << files[j] << " to the list of downloads" << endl;
                 downloads += files[j];
                 break;
             }
@@ -279,7 +292,10 @@ QvisVisItUpdate::getInstallationDir() const
 // Creation:   Tue Feb 15 12:27:30 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu May 25 11:04:34 PDT 2006
+//   I made it pass the bank to visit-install and I changed how the platform
+//   we use is specified.
+//
 // ****************************************************************************
 
 void
@@ -317,8 +333,6 @@ QvisVisItUpdate::installVisIt()
         command.sprintf("chmod 700 %s", visit_install.latin1());
         system(command.latin1());
 
-        QString platform(distNames[architecture]);
-
         // Get the VisIt installation directory.
         QString installDir(getInstallationDir());
 
@@ -327,17 +341,21 @@ QvisVisItUpdate::installVisIt()
         {
             installProcess = new QProcess(visit_install, this, "visit-install");
             installProcess->addArgument("-c");
-            installProcess->addArgument("none");
+            installProcess->addArgument(configName);
+            installProcess->addArgument("-b");
+            installProcess->addArgument(bankName);
             installProcess->addArgument(latestVersion);
-            installProcess->addArgument(platform);
+            installProcess->addArgument(distName);
             installProcess->addArgument(installDir);
             connect(installProcess, SIGNAL(readyReadStdout()),
                     this, SLOT(readInstallerStdout()));
             connect(installProcess, SIGNAL(readyReadStderr()),
                     this, SLOT(readInstallerStderr()));
-            debug1 << "Going to run: visit_install -c none "
+            debug1 << "Going to run: visit-install -c "
+                   << configName.latin1()
+                   << " -b " << bankName.latin1() << " "
                    << latestVersion.latin1() << " "
-                   << platform.latin1() << " " 
+                   << distName.latin1() << " " 
                    << installDir.latin1() << endl;
         }
 #endif
@@ -393,12 +411,21 @@ QvisVisItUpdate::cleanUp()
 //   Brad Whitlock, Wed Mar 2 11:09:39 PDT 2005
 //   I made it use QvisFtp.
 //
+//   Brad Whitlock, Thu May 25 12:08:46 PDT 2006
+//   I changed the method so it tries to read a new ".installinfo" file if
+//   it exists. The ".installinfo" file contains information about how
+//   VisIt was installed and it allows us to download the right version of
+//   the VisIt distribution when we don't have enough information to tell
+//   from the archdir included in the path name.
+//
 // ****************************************************************************
 
 void
 QvisVisItUpdate::startUpdate()
 {
 #if !defined(_WIN32)
+    const char *mName = "QvisVisItUpdate::startUpdate: ";
+
     //
     // Try and determine the platform that should be downloaded.
     //
@@ -407,26 +434,94 @@ QvisVisItUpdate::startUpdate()
     if(archHome != 0)
     {
         QString arch(archHome);
-        int lastSlash = arch.findRev('/');
-        if(lastSlash != -1)
+
+        // Try and read the .installinfo file that tells us just how VisIt
+        // was installed. That way we can be sure that we pick up the right
+        // Linux or AIX installation.
+        QString installinfo(archHome);
+        if(installinfo[installinfo.length()-1] != '/')
+            installinfo += "/";
+        installinfo += ".installinfo";
+
+        debug1 << mName << "Opening " << installinfo.latin1() << endl;
+        FILE *fp = fopen(installinfo.latin1(), "rt");
+        if(fp != NULL)
         {
-            arch = arch.right(arch.length() - lastSlash - 1);
-            for(int i = 0; i < NARCH; ++i)
+            int fver = 0;
+            if(fscanf(fp, "%d;", &fver) == 1)
             {
-                if(arch == archNames[i])
+                char str[200];
+                for(int i = 0; i < 3; ++i)
                 {
-                    platformDetermined = true;
-                    architecture = i;
-                    break;
+                    int j = 0;
+                    for(; j < 200-1; ++j)
+                    {                        
+                        str[j] = (char)fgetc(fp);
+                        if(str[j] == ';' || str[j] < ' ')
+                            break;
+                    }
+                    str[j] = '\0';
+
+                    if(j >= 1)
+                    {
+                        debug1 << mName << "str = " << str << endl;
+                        if(i == 0)
+                            configName = str;
+                        else if(i == 1)
+                            bankName = str;
+                        else
+                        {
+                            distName = str;
+                            platformDetermined = true;
+                        }                          
+                    }
+                    else
+                    {
+                        debug1 << mName << "Error reading .installinfo file." << endl;
+                        break;
+                    }
+                }
+
+                debug1 << mName << "distName = " << distName << endl;
+                debug1 << mName << "configName = " << configName << endl;
+                debug1 << mName << "bankName = " << bankName << endl;
+            }
+            else
+                debug1 << mName << "Invalid .installinfo version" << endl;
+
+            fclose(fp);
+        }
+        else
+            debug1 << mName << "Could not open " << installinfo.latin1() << endl;
+
+        // We could not open the .installinfo file so let's try and
+        // determine the distName based on the archNames.
+        if(!platformDetermined)
+        {
+            debug1 << mName << "Guessing distribution name" << endl;
+            int lastSlash = arch.findRev('/');
+            if(lastSlash != -1)
+            {
+                arch = arch.right(arch.length() - lastSlash - 1);
+                for(int i = 0; i < NARCH; ++i)
+                {
+                    if(arch == archNames[i])
+                    {
+                        platformDetermined = true;
+                        distName = distNames[i];
+                        break;
+                    }
                 }
             }
-
-            if(!platformDetermined)
-                debug1 << "Unknown plaform: " << arch.latin1() << endl;
         }
+
+        if(!platformDetermined)
+            debug1 << mName << "Unknown plaform: " << arch.latin1() << endl;
+        else
+            debug1 << mName << "Distribution: " <<  distName.latin1() << endl;
     }
     else
-        debug1 << "VISITARCHHOME was not set." << endl;
+        debug1 << mName << "VISITARCHHOME was not set." << endl;
 
     if(!platformDetermined)
     {

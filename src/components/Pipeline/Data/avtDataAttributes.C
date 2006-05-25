@@ -2309,6 +2309,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Kathleen Bonnell, Mon May  1 08:57:41 PDT 2006 
 //    Changed origNodesRequiredForPick to origElementsRequiredForPick.
 //
+//    Hank Childs, Wed May 24 11:43:23 PDT 2006
+//    Check in fix suggested by Jeremy Meredith.
+//
 // ****************************************************************************
 
 int
@@ -2505,7 +2508,7 @@ avtDataAttributes::Read(char *input)
                 size += len;
                 input += len; 
             }
-            SetVariableSubnames(subnames);
+            SetVariableSubnames(subnames, varname.c_str());
         }
 
         SetCentering(centerings[i], varname.c_str());
