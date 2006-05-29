@@ -144,6 +144,10 @@ avtMeshFilter::~avtMeshFilter()
 //    Kathleen Bonnell, Tue Nov  2 10:37:14 PST 2004 
 //    No need to process this data if topological dimension is 0 (point mesh). 
 //
+//    Kathleen Bonnell, Tue May 16 09:41:46 PDT 2006 
+//    Removed call to SetSource(NULL), with new vtk pipeline, it also removes
+//    necessary information from the dataset. 
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -219,9 +223,9 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
         vtkGeometryFilter *geo = vtkGeometryFilter::New();
         geo->SetInput(revisedInput2);
         geo->Update();
-        revisedInput3 = geo->GetOutput();
+        revisedInput3 = geo->GetOutput()->NewInstance();
+        revisedInput3->ShallowCopy(geo->GetOutput());
         revisedInput3->Register(NULL);
-        revisedInput3->SetSource(NULL);
         geo->Delete();
     }
     else
@@ -288,9 +292,9 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
             append->AddInput(outDS);
             append->AddInput(opaquePolys);
             append->Update();
-            vtkPolyData *outPoly = append->GetOutput();
+            vtkPolyData *outPoly = vtkPolyData::New();
+            outPoly->ShallowCopy(append->GetOutput());
             rv = new avtDataTree(outPoly, dom, lab);
-            outPoly->SetSource(NULL);
             append->Delete();
         }
         else  

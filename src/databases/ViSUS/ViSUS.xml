@@ -1,6 +1,16 @@
 <?xml version="1.0"?>
-  <Plugin name="ViSUS" type="database" label="ViSUS" version="1.0" dbtype="MTSD">
-    <Extensions> idx vis </Extensions>
-    <CXXFLAGS> $(VISUS_INCLUDE) </CXXFLAGS>
-    <LIBS>     $(VISUS_LIB)      </LIBS>
+  <Plugin name="ViSUS" type="database" label="ViSUS" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false">
+    <CXXFLAGS>
+      $(VISUS_INCLUDE)
+    </CXXFLAGS>
+    <LIBS>
+      $(VISUS_LIB)
+      -lz
+    </LIBS>
+    <Extensions>
+      idx
+      vis
+    </Extensions>
+    <Attribute name="" purpose="" persistent="true">
+    </Attribute>
   </Plugin>

@@ -374,7 +374,7 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
 #endif
 
     int numPts;
-    vtkPolyData *input= (vtkPolyData *)this->Input;
+    vtkPolyData *input= vtkPolyData::SafeDownCast(this->GetInput());
     vtkIdType npts, *pts;
     int j;
     vtkPoints *p, *displayPts;

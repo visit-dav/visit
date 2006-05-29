@@ -10,6 +10,8 @@
 
 #include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
+#include <vtkDataSet.h>
+#include <vtkExecutive.h>
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -474,6 +476,10 @@ avtContourFilter::PreExecute(void)
 //    Instantiate cd2pd here inside this routine rather than using a data
 //    member.
 //
+//    Kathleen Bonnell, Tue May 16 09:57:29 PDT 2006 
+//    VTK pipeline changes: no more SetOutput method for filters, instead
+//    SetOutputData for the filter's Executive. 
+//
 // ****************************************************************************
 
 avtDataTree_p 
@@ -517,7 +523,7 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
         new_in_ds->GetCellData()->AddArray(cellVar);
         vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
         cd2pd->SetInput(new_in_ds);
-        cd2pd->SetOutput(toBeContoured);
+        cd2pd->GetExecutive()->SetOutputData(0, toBeContoured);
         cd2pd->Update();
         for (i = 0 ; i < in_ds->GetPointData()->GetNumberOfArrays() ; i++)
         {

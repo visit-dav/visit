@@ -42,20 +42,27 @@ public:
   // Description:
   // Set/Get the output of this reader.
   void SetOutput(vtkStructuredPoints *output);
-  vtkStructuredPoints *GetOutput(int idx)
-    {return (vtkStructuredPoints *) this->vtkSource::GetOutput(idx); };
+  vtkStructuredPoints *GetOutput(int idx);
   vtkStructuredPoints *GetOutput();
   
+  // Description:
+  // Read the meta information from the file.  This needs to be public to it
+  // can be accessed by vtkDataSetReader.
+  virtual int ReadMetaData(vtkInformation *outInfo);
+
 protected:
   vtkVisItStructuredPointsReader();
   ~vtkVisItStructuredPointsReader();
 
-  void Execute();
+  virtual int RequestData(vtkInformation *, vtkInformationVector **,
+                          vtkInformationVector *);
 
   // Default method performs Update to get information.  Not all the old
   // structured points sources compute information
-  void ExecuteInformation();
+  virtual int RequestInformation(vtkInformation *, vtkInformationVector **,
+                                 vtkInformationVector *);
 
+  virtual int FillOutputPortInformation(int, vtkInformation *);
 private:
   vtkVisItStructuredPointsReader(const vtkVisItStructuredPointsReader&);  // Not implemented.
   void operator=(const vtkVisItStructuredPointsReader&);  // Not implemented.

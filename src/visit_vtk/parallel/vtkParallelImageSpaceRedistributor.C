@@ -454,6 +454,10 @@ vtkParallelImageSpaceRedistributor::Execute(void)
 //    Jeremy Meredith, Thu Oct 21 18:21:50 PDT 2004
 //    Cleaned up a little.
 //
+//    Kathleen Bonnell, Tue May 16 09:41:46 PDT 2006 
+//    Removed call to SetSource(NULL), with new vtk pipeline, it also removes
+//    necessary information from the dataset. 
+//
 // **************************************************************************
 
 vtkPolyData *
@@ -472,7 +476,7 @@ vtkParallelImageSpaceRedistributor::GetDataVTK(unsigned char *asChar,
     asVTK->Update();
     
     asVTK->Register(NULL);
-    asVTK->SetSource(NULL);
+    //asVTK->SetSource(NULL);
     reader->Delete();
     charArray->Delete();
 

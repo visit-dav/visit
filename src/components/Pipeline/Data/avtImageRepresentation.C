@@ -444,7 +444,6 @@ avtImageRepresentation::GetImageVTK(void)
         {
             EXCEPTION0(NoInputException);
         }
-
         GetImageFromString(asChar, asCharLength, asVTK, zbuffer);
         if (zbuffer != NULL)
         {
@@ -690,6 +689,11 @@ CreateStringFromVTKInput(vtkImageData *img, unsigned char *&str, int &len)
 //
 //     Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
 //     Changed to use common data function for compression 
+//
+//     Kathleen Bonnell, Wed May 17 14:51:16 PDT 2006
+//     Removed call to SetSource(NULL) as it now removes information necessary
+//     for the dataset.
+//
 // ****************************************************************************
 
 void avtImageRepresentation::GetImageFromString(unsigned char *str,
@@ -720,8 +724,12 @@ void avtImageRepresentation::GetImageFromString(unsigned char *str,
     reader->SetInputArray(charArray);
     img = reader->GetOutput();
     img->Update();
+    img->SetScalarType(VTK_UNSIGNED_CHAR);
     img->Register(NULL);
-    img->SetSource(NULL);
+    //  calling SetSource sets' PipelineInformation to NULL, and then
+    //  vtkImageData no longer knows its scalar data type, and who knows
+    //  what else.
+    //img->SetSource(NULL);
     reader->Delete();
     charArray->Delete();
 

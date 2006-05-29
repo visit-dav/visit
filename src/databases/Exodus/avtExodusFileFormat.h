@@ -11,7 +11,7 @@
 #include <string>
 
 
-class     vtkExodusReader;
+class     vtkVisItExodusReader;
 
 class     avtVariableCache;
 
@@ -73,7 +73,7 @@ class avtExodusFileFormat : public avtMTSDFileFormat
                                            DestructorFunction &);
 
   protected:
-    vtkExodusReader            *reader;
+    vtkVisItExodusReader            *reader;
     int                         numBlocks;
     std::vector<bool>           validBlock;
     std::vector<int>            blockId;
@@ -87,9 +87,9 @@ class avtExodusFileFormat : public avtMTSDFileFormat
     // constructors being called in shared libraries for static objects.
     static std::vector< std::vector<std::string> > *globalFileLists;
 
-    vtkExodusReader            *GetReader(void);
+    vtkVisItExodusReader            *GetReader(void);
     void                        SetTimestep(int);
-    void                        LoadVariable(vtkExodusReader *, const char *);
+    void                        LoadVariable(vtkVisItExodusReader *, const char *);
     vtkDataSet                 *ForceRead(const char *);
     void                        ReadInFile(void);
     vtkDataSet                 *ReadMesh(int, const char *, bool);

@@ -9,6 +9,7 @@
 #include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
 #include <vtkDataSet.h>
+#include <vtkExecutive.h>
 #include <vtkPointData.h>
 #include <vtkPointDataToCellData.h>
 #include <vtkPolyData.h>
@@ -107,6 +108,10 @@ avtShiftCenteringFilter::~avtShiftCenteringFilter()
 //    Hank Childs, Fri Aug 27 16:02:58 PDT 2004
 //    Rename ghost data array.  Also add support for ghost nodes.
 //
+//    Kathleen Bonnell, Wed May 17 15:08:39 PDT 2006 
+//    Can no longer use SetOutput on a vtk filter, must grab the filters' 
+//    executive and SetOuputData. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -126,7 +131,7 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         //
         vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
         cd2pd->SetInput(inDS);
-        cd2pd->SetOutput(outDS);
+        cd2pd->GetExecutive()->SetOutputData(0, outDS);
         cd2pd->Update();
         cd2pd->Delete();
 
@@ -162,7 +167,7 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         vtkPointDataToCellData *pd2cd = vtkPointDataToCellData::New();
      
         pd2cd->SetInput(inDS);
-        pd2cd->SetOutput(outDS);
+        pd2cd->GetExecutive()->SetOutputData(0, outDS);
         pd2cd->Update();
         pd2cd->Delete();
 

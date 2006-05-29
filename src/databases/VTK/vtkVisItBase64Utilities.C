@@ -2,24 +2,22 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItBase64Utilities.cxx,v $
-  Language:  C++
-  Date:      $Date: 2002/10/28 14:42:03 $
-  Version:   $Revision: 1.1 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
 #include "vtkVisItBase64Utilities.h"
 #include "vtkObjectFactory.h"
+#include <assert.h>
 
 //----------------------------------------------------------------------------
-vtkCxxRevisionMacro(vtkVisItBase64Utilities, "$Revision: 1.1 $");
+vtkCxxRevisionMacro(vtkVisItBase64Utilities, "$Revision: 1.3 $");
 vtkStandardNewMacro(vtkVisItBase64Utilities);
 
 //----------------------------------------------------------------------------
@@ -31,6 +29,7 @@ static const unsigned char vtkVisItBase64UtilitiesEncodeTable[65] =
 //----------------------------------------------------------------------------
 inline static unsigned char vtkVisItBase64UtilitiesEncodeChar(unsigned char c)
 {
+  assert( c < 65 );
   return vtkVisItBase64UtilitiesEncodeTable[c];
 }
 

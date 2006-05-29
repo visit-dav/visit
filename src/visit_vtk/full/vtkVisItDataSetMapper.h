@@ -2,11 +2,8 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItDataSetMapper.h,v $
-  Language:  C++
-  Date:      $Date: 2002/05/28 03:33:50 $
-  Version:   $Revision: 1.54 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen 
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
@@ -15,7 +12,8 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-// .NAME vtkVisItDataSetMapper - map vtkDataSet and derived classes to graphics primitives
+// .NAME vtkVisItDataSetMapper - map vtkDataSet and derived classes to 
+// graphics primitives
 // .SECTION Description
 // vtkVisItDataSetMapper is a mapper to map data sets (i.e., vtkDataSet and 
 // all derived classes) to graphics primitives. The mapping procedure
@@ -75,6 +73,9 @@ protected:
   vtkDataSetSurfaceFilter *GeometryExtractor;
   vtkPolyDataMapper       *PolyDataMapper;
   PointTextureMode         PointTextureMethod;
+
+  virtual void ReportReferences(vtkGarbageCollector*);
+  virtual int FillInputPortInformation(int port, vtkInformation *info);
 private:
   vtkVisItDataSetMapper(const vtkVisItDataSetMapper&);  // Not implemented.
   void operator=(const vtkVisItDataSetMapper&);  // Not implemented.

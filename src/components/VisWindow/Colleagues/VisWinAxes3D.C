@@ -252,6 +252,10 @@ VisWinAxes3D::ShouldAddAxes3D()
 //  Programmer: Kathleen Bonnell
 //  Creation:   June 28, 2001
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed May 17 15:31:46 PDT 2006
+//    AddProp has been deprecated, use AddViewProp instead.
+//
 // ****************************************************************************
 
 void
@@ -271,7 +275,7 @@ VisWinAxes3D::AddAxes3DToWindow(void)
     // Add the axes to the background (note that we are using a different
     // renderer's camera -- the canvas').
     //
-    mediator.GetCanvas()->AddProp(axes);
+    mediator.GetCanvas()->AddViewProp(axes);
     mediator.GetCanvas()->AddActor(axesBox);
 
     addedAxes3D = true;
@@ -287,6 +291,10 @@ VisWinAxes3D::AddAxes3DToWindow(void)
 //  Programmer: Kathleen Bonnell
 //  Creation:   June 28, 2001
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed May 17 15:31:46 PDT 2006
+//    RemoveProp has been deprecated, use RemoveViewProp instead.
+//
 // ****************************************************************************
 
 void
@@ -297,7 +305,7 @@ VisWinAxes3D::RemoveAxes3DFromWindow(void)
         return;
     }
 
-    mediator.GetCanvas()->RemoveProp(axes);
+    mediator.GetCanvas()->RemoveViewProp(axes);
     mediator.GetCanvas()->RemoveActor(axesBox);
 
     addedAxes3D = false;

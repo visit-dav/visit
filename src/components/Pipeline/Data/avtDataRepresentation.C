@@ -558,6 +558,11 @@ avtDataRepresentation::GetDataString(int &length, DataSetType &dst, bool compres
 //
 //    Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
 //    Added compression
+//
+//    Kathleen Bonnell, Wed May 17 14:51:16 PDT 2006
+//    Removed call to SetSource(NULL) as it now removes information necessary
+//    to the dataset.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -662,7 +667,7 @@ avtDataRepresentation::GetDataVTK(void)
             }
 
             asVTK->Register(NULL);
-            asVTK->SetSource(NULL);
+            //asVTK->SetSource(NULL);
             reader->Delete();
             charArray->Delete();
             originalString = NULL;

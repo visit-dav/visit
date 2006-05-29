@@ -3,17 +3,16 @@
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItExtractRectilinearGrid.h,v $
 
-  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-// .NAME vtkVisItExtractRectilinearGrid - Extract a sub grid (VOI) from 
-// the structured rectilinear dataset.
+// .NAME vtkVisItExtractRectilinearGrid - Extract a sub grid (VOI) from the structured rectilinear dataset.
 // .SECTION Description
 // vtkVisItExtractRectilinearGrid rounds out the set of filters that extract
 // a subgrid out of a larger structured data set.  RIght now, this filter
@@ -21,26 +20,21 @@
 // strides like the vtkVisItExtract grid filter.
 
 // .SECTION See Also
-// vtkVisItExtractGrid vtkImageClip vtkGeometryFilter vtkVisItExtractGeometry 
-// vtkVisItExtractVOI vtkStructuredGridGeometryFilter
+// vtkVisItExtractGrid vtkImageClip vtkGeometryFilter vtkVisItExtractGeometry vtkVisItExtractVOI 
+// vtkStructuredGridGeometryFilter
 
 #ifndef __vtkVisItExtractRectilinearGrid_h
 #define __vtkVisItExtractRectilinearGrid_h
 
-#include <vtkRectilinearGridSource.h>
+#include <vtkRectilinearGridAlgorithm.h>
 #include <visit_vtk_exports.h>
 
-class VISIT_VTK_API vtkVisItExtractRectilinearGrid : public vtkRectilinearGridSource
+class VISIT_VTK_API vtkVisItExtractRectilinearGrid : public vtkRectilinearGridAlgorithm
 {
 public:
   static vtkVisItExtractRectilinearGrid *New();
-  vtkTypeRevisionMacro(vtkVisItExtractRectilinearGrid,vtkRectilinearGridSource);
+  vtkTypeRevisionMacro(vtkVisItExtractRectilinearGrid,vtkRectilinearGridAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
-
-  // Description:
-  // Set / get the input Grid or filter.
-  void SetInput(vtkRectilinearGrid *input);
-  vtkRectilinearGrid *GetInput();
 
   // Description:
   // Specify i-j-k (min,max) pairs to extract. The resulting structured grid
@@ -72,9 +66,9 @@ protected:
   vtkVisItExtractRectilinearGrid();
   ~vtkVisItExtractRectilinearGrid() {};
 
-  void Execute();
-  void ExecuteInformation();
-  void ComputeInputUpdateExtents(vtkDataObject *out);
+  virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+  virtual int RequestInformation(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+  virtual int RequestUpdateExtent(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
   
   int VOI[6];
   int SampleRate[3];

@@ -17,7 +17,7 @@ shell prompt.
     Python   2.1.2     Scripting Language     http://www.python.org
     Qt       3.3.2     GUI Toolkit            http://www.trolltech.com
     Silo     4.5       File I/O library       http://www.llnl.gov/bdiv/meshtv
-    VTK      20040323a Visualization Toolkit  http://www.kitware.com
+    VTK      5.0.0a    Visualization Toolkit  http://www.kitware.com
 
 
 The public version of VisIt has been built with the above listed versions
@@ -197,9 +197,9 @@ VTK/README.html file included in the VTK distribution for more information.
 #
 # Build CMake which is used by VTK to configure its distribution
 #
-gunzip cmake-1.8.1.tar.gz
-tar xf cmake-1.8.1.tar
-cd cmake-1.8.1
+gunzip cmake-2.2.3.tar.gz
+tar xf cmake-2.2.3.tar
+cd cmake-2.2.3
 #
 # We have experienced problems building CMake on aix with g++/gcc.
 # so for aix use the native compilers to build CMake: 
@@ -212,20 +212,20 @@ make
 # Build VTK
 #
 cd ..
-gunzip vtk_cvs_2004.03.23a.tar.gz
-tar xf vtk_cvs_2004.03.23a.tar
+gunzip vtk_cvs_5.0.0a.tar.gz
+tar xf vtk_cvs_5.0.0a.tar
 cd VTK
 #
 # On irix systems we have experienced problems with CMake not using the
 # -LANG:std for all the tests, so you will need to add it manually.
 #
-# env CXXFLAGS="-LANG:std" ../cmake-1.8.1/bin/cmake .
+# env CXXFLAGS="-LANG:std" ../cmake-2.2.3/bin/cmake .
 #
-../cmake-1.8.1/bin/cmake .
+../cmake-2.2.3/bin/cmake .
 #
 # Edit CMakeCache.txt.  Turn BUILD_SHARED_LIBS, VTK_USE_HYBRID,
-# VTK_USE_MANGLED_MESA, VTK_USE_ANSI_STDLIB, and CMAKE_SKIP_RPATH on, 
-# Turn BUILD_TESTING off.
+# VTK_USE_MANGLED_MESA, and VTK_USE_ANSI_STDLIB on. Turn VTK_USE_RPATH 
+# and BUILD_TESTING off.
 #
 # If you want to change the compilers you should modify CMAKE_CXX_COMPILER
 # and CMAKE_C_COMPILER.  If you want to change the compiler flags you should
@@ -249,7 +249,7 @@ cd VTK
 # If this should lead to errors related to standard C++ headers (e.g. stdio), 
 # remove the CMAKE_X_CFLAGS string and re-run cmake.
 #
-../cmake-1.8.1/bin/cmake .
+../cmake-2.2.3/bin/cmake .
 #
 # Edit CMakeCache.txt, setting MANGLED_MESA_INCLUDE_DIR, MANGLED_MESA_LIBRARY,
 # MANGLED_OSMESA_INCLUDE_DIR, MANGLED_OSMESA_LIBRARY, to point to the
@@ -264,7 +264,7 @@ cd VTK
 # Note that you need to be very careful in setting the above variables so
 # that you provide the appropriate filename or path.
 #
-../cmake-1.8.1/bin/cmake .
+../cmake-2.2.3/bin/cmake .
 
 #
 # On tru64 systems using g++ 3.0.4, several files in the Imaging directory
@@ -291,32 +291,34 @@ make
 # Install it in the visit directory under the vtk directory.
 #
 mkdir $VISITDIR/vtk
-mkdir $VISITDIR/vtk/2004.03.23a
-mkdir $VISITDIR/vtk/2004.03.23a/$VISITARCH
-mkdir $VISITDIR/vtk/2004.03.23a/$VISITARCH/{Common,Filtering,Graphics,Hybrid,IO,Imaging,Rendering,MangleMesaInclude,lib,vtkstd}
-cp vtkConfigure.h                   $VISITDIR/vtk/2004.03.23a/$VISITARCH
-cp vtkToolkits.h                    $VISITDIR/vtk/2004.03.23a/$VISITARCH
-cp vtk*Instantiator.h               $VISITDIR/vtk/2004.03.23a/$VISITARCH
-cp Utilities/expat/expat.h          $VISITDIR/vtk/2004.03.23a/$VISITARCH
-cp Utilities/expat/expatDllConfig.h $VISITDIR/vtk/2004.03.23a/$VISITARCH
-cp Utilities/zlib/zlib.h            $VISITDIR/vtk/2004.03.23a/$VISITARCH
-cp Utilities/zlib/zconf.h           $VISITDIR/vtk/2004.03.23a/$VISITARCH
-cp Utilities/zlib/zlibDllConfig.h   $VISITDIR/vtk/2004.03.23a/$VISITARCH
-cp Utilities/tiff/tiffio.h          $VISITDIR/vtk/2004.03.23a/$VISITARCH
-cp Utilities/tiff/tiff.h            $VISITDIR/vtk/2004.03.23a/$VISITARCH
-cp Utilities/tiff/tiffvers.h        $VISITDIR/vtk/2004.03.23a/$VISITARCH
-cp Utilities/tiff/tconf.h           $VISITDIR/vtk/2004.03.23a/$VISITARCH
-cp Utilities/tiff/tiffDllConfig.h   $VISITDIR/vtk/2004.03.23a/$VISITARCH
-cp Common/*.h                       $VISITDIR/vtk/2004.03.23a/$VISITARCH/Common
-cp Filtering/*.h                    $VISITDIR/vtk/2004.03.23a/$VISITARCH/Filtering
-cp Graphics/*.h                     $VISITDIR/vtk/2004.03.23a/$VISITARCH/Graphics
-cp Hybrid/*.h                       $VISITDIR/vtk/2004.03.23a/$VISITARCH/Hybrid
-cp IO/*.h                           $VISITDIR/vtk/2004.03.23a/$VISITARCH/IO
-cp Imaging/*.h                      $VISITDIR/vtk/2004.03.23a/$VISITARCH/Imaging
-cp Rendering/*.h                    $VISITDIR/vtk/2004.03.23a/$VISITARCH/Rendering
-cp MangleMesaInclude/*.h            $VISITDIR/vtk/2004.03.23a/$VISITARCH/MangleMesaInclude
-cp bin/*.so                         $VISITDIR/vtk/2004.03.23a/$VISITARCH/lib
-cp vtkstd/*                         $VISITDIR/vtk/2004.03.23a/$VISITARCH/vtkstd
+mkdir $VISITDIR/vtk/5.0.0a
+mkdir $VISITDIR/vtk/5.0.0a/$VISITARCH
+mkdir $VISITDIR/vtk/5.0.0a/$VISITARCH/{Common,Filtering,GenericFiltering,Graphics,Hybrid,IO,Imaging,MangleMesaInclude,Rendering,Utilities,VolumeRendering,lib,vtkstd,Utilities/vtktiff,Utilities/vtkexpat,Utilities/vtkzlib}
+cp vtkConfigure.h                   $VISITDIR/vtk/5.0.0a/$VISITARCH
+cp vtkToolkits.h                    $VISITDIR/vtk/5.0.0a/$VISITARCH
+cp vtk*Instantiator.h               $VISITDIR/vtk/5.0.0a/$VISITARCH
+cp Common/*.h                       $VISITDIR/vtk/5.0.0a/$VISITARCH/Common
+cp Common/*.txx                     $VISITDIR/vtk/5.0.0a/$VISITARCH/Common
+cp Filtering/*.h                    $VISITDIR/vtk/5.0.0a/$VISITARCH/Filtering
+cp Filtering/*.txx                  $VISITDIR/vtk/5.0.0a/$VISITARCH/Filtering
+cp GenericFiltering/*.h             $VISITDIR/vtk/5.0.0a/$VISITARCH/GenericFiltering
+cp Graphics/*.h                     $VISITDIR/vtk/5.0.0a/$VISITARCH/Graphics
+cp Hybrid/*.h                       $VISITDIR/vtk/5.0.0a/$VISITARCH/Hybrid
+cp IO/*.h                           $VISITDIR/vtk/5.0.0a/$VISITARCH/IO
+cp Imaging/*.h                      $VISITDIR/vtk/5.0.0a/$VISITARCH/Imaging
+cp Rendering/*.h                    $VISITDIR/vtk/5.0.0a/$VISITARCH/Rendering
+cp Utilities/*.h                    $VISITDIR/vtk/5.0.0a/$VISITARCH/Utilities
+cp Utilities/vtktiff/*.h            $VISITDIR/vtk/5.0.0a/$VISITARCH/Utilities/vtktiff
+cp Utilities/vtkexpat/*.h           $VISITDIR/vtk/5.0.0a/$VISITARCH/Utilities/vtkexpat
+cp Utilities/vtkzlib/*.h           $VISITDIR/vtk/5.0.0a/$VISITARCH/Utilities/vtkzlib
+cp VolumeRendering/*.h              $VISITDIR/vtk/5.0.0a/$VISITARCH/VolumeRendering
+cp MangleMesaInclude/*.h            $VISITDIR/vtk/5.0.0a/$VISITARCH/MangleMesaInclude
+cp vtkstd/*                         $VISITDIR/vtk/5.0.0a/$VISITARCH/vtkstd
+cp -d bin/*.so*                     $VISITDIR/vtk/5.0.0a/$VISITARCH/lib
+# For IRIX, solaris
+# cp -R bin/*.so* $VISITDIR/vtk/5.0.0a/$VISITARCH/lib
+# For true64, 
+# cp bin/*.so $VISITDIR/vtk/5.0.0a/$VISITARCH/lib
 cd ..
 
 #

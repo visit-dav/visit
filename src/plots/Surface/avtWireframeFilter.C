@@ -194,6 +194,9 @@ avtWireframeFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 //    Kathleen Bonnell, Fri May 13 15:39:41 PDT 2005 
 //    Fix memory leak.
 //
+//    Kathleen Bonnell, Tue May 16 13:50:50 PDT 2006 
+//    VTK api changes, GetNumberOfInputs now GetTotalNumerOfInputConnections.
+//
 // ****************************************************************************
 
 void
@@ -207,7 +210,7 @@ avtWireframeFilter::ReleaseData(void)
     geoFilter->SetOutput(p);
     p->Delete();
 
-    int nInputs = appendFilter->GetNumberOfInputs();
+    int nInputs = appendFilter->GetTotalNumberOfInputConnections();
     for (int i = nInputs-1 ; i >= 0 ; i--)
     {
         appendFilter->SetInputByNumber(i, NULL);

@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItXMLDataElement.cxx,v $
-  Language:  C++
-  Date:      $Date: 2003/09/03 14:17:23 $
-  Version:   $Revision: 1.16 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -23,7 +20,7 @@
 
 #include <ctype.h>
 
-vtkCxxRevisionMacro(vtkVisItXMLDataElement, "$Revision: 1.16 $");
+vtkCxxRevisionMacro(vtkVisItXMLDataElement, "$Revision: 1.24 $");
 vtkStandardNewMacro(vtkVisItXMLDataElement);
 
 //----------------------------------------------------------------------------
@@ -508,7 +505,7 @@ int vtkVisItXMLDataElement::GetScalarAttribute(const char* name,
 }
 
 //----------------------------------------------------------------------------
-#ifdef VTK_ID_TYPE_IS_NOT_BASIC_TYPE
+#ifdef VTK_USE_64BIT_IDS
 int vtkVisItXMLDataElement::GetScalarAttribute(const char* name, vtkIdType& value)
 {
   return this->GetVectorAttribute(name, 1, &value);
@@ -564,7 +561,7 @@ int vtkVisItXMLDataElement::GetVectorAttribute(const char* name, int length,
 }
 
 //----------------------------------------------------------------------------
-#ifdef VTK_ID_TYPE_IS_NOT_BASIC_TYPE
+#ifdef VTK_USE_64BIT_IDS
 int vtkVisItXMLDataElement::GetVectorAttribute(const char* name, int length,
                                           vtkIdType* data)
 {
@@ -611,7 +608,12 @@ int vtkVisItXMLDataElement::GetWordTypeAttribute(const char* name, int& value)
     }
   else if(strcmp(v, "Int8") == 0)
     {
+    // For compatibility, use char when it is signed.
+#if VTK_TYPE_CHAR_IS_SIGNED
     value = VTK_CHAR;
+#else
+    value = VTK_SIGNED_CHAR;
+#endif
     return 1;
     }
   else if(strcmp(v, "UInt8") == 0)
@@ -694,8 +696,11 @@ int vtkVisItXMLDataElement::GetWordTypeAttribute(const char* name, int& value)
 #elif VTK_SIZEOF_LONG == 8
     value = VTK_LONG;
     return 1;
-#elif VTK_SIZEOF_ID_TYPE == 8
-    value = VTK_ID_TYPE;
+#elif defined(VTK_TYPE_USE_LONG_LONG) && VTK_SIZEOF_LONG_LONG == 8
+    value = VTK_LONG_LONG;
+    return 1;
+#elif defined(VTK_TYPE_USE___INT64) && VTK_SIZEOF___INT64 == 8
+    value = VTK___INT64;
     return 1;
 #else
     vtkErrorMacro("Int64 support not compiled in VTK.");
@@ -712,6 +717,12 @@ int vtkVisItXMLDataElement::GetWordTypeAttribute(const char* name, int& value)
     return 1;
 #elif VTK_SIZEOF_LONG == 8
     value = VTK_UNSIGNED_LONG;
+    return 1;
+#elif defined(VTK_TYPE_USE_LONG_LONG) && VTK_SIZEOF_LONG_LONG == 8
+    value = VTK_UNSIGNED_LONG_LONG;
+    return 1;
+#elif defined(VTK_TYPE_USE___INT64) && defined(VTK_TYPE_CONVERT_UI64_TO_DOUBLE) && VTK_SIZEOF___INT64 == 8
+    value = VTK_UNSIGNED___INT64;
     return 1;
 #else
     vtkErrorMacro("UInt64 support not compiled in VTK.");
@@ -754,7 +765,7 @@ void vtkVisItXMLDataElement::SetUnsignedLongAttribute(const char* name,
 }
 
 //----------------------------------------------------------------------------
-#ifdef VTK_ID_TYPE_IS_NOT_BASIC_TYPE
+#ifdef VTK_USE_64BIT_IDS
 void vtkVisItXMLDataElement::SetIdTypeAttribute(const char* name, 
                                            vtkIdType value)
 {
@@ -810,7 +821,7 @@ void vtkVisItXMLDataElement::SetVectorAttribute(const char* name, int length,
 }
 
 //----------------------------------------------------------------------------
-#ifdef VTK_ID_TYPE_IS_NOT_BASIC_TYPE
+#ifdef VTK_USE_64BIT_IDS
 void vtkVisItXMLDataElement::SetVectorAttribute(const char* name, int length,
                                            const vtkIdType* data)
 {
@@ -839,7 +850,7 @@ void vtkVisItXMLDataElement::SeekInlineDataPosition(vtkVisItXMLDataParser* parse
     unsigned long pos = parser->TellG();
     this->InlineDataPosition = pos-1;
     }
-  
+
   // Seek to the data position.
   parser->SeekG(this->InlineDataPosition);
 }

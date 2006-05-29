@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItXMLUnstructuredDataReader.h,v $
-  Language:  C++
-  Date:      $Date: 2003/05/05 13:45:23 $
-  Version:   $Revision: 1.4 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -54,6 +51,11 @@ public:
   // actually reading data.
   void SetupUpdateExtent(int piece, int numberOfPieces, int ghostLevel);
   
+  // For the specified port, copy the information this reader sets up in
+  // SetupOutputInformation to outInfo
+  virtual void CopyOutputInformation(vtkInformation *outInfo, int port);
+
+
 protected:
   vtkVisItXMLUnstructuredDataReader();
   ~vtkVisItXMLUnstructuredDataReader();
@@ -75,7 +77,9 @@ protected:
   void SetupPieces(int numPieces);
   void DestroyPieces();
   
-  void SetupOutputInformation();
+  // Setup the output's information.
+  void SetupOutputInformation(vtkInformation *outInfo);
+
   void SetupOutputData();
   int ReadPiece(vtkVisItXMLDataElement* ePiece);
   int ReadPieceData();
@@ -106,6 +110,13 @@ protected:
   vtkVisItXMLDataElement** PointElements;
   vtkIdType* NumberOfPoints;
   
+  int PointsTimeStep;
+  unsigned long PointsOffset;
+  int PointsNeedToReadTimeStep(vtkVisItXMLDataElement *eNested);
+  int CellsNeedToReadTimeStep(vtkVisItXMLDataElement *eNested, int &cellstimestep, 
+    unsigned long &cellsoffset);
+
+
 private:
   vtkVisItXMLUnstructuredDataReader(const vtkVisItXMLUnstructuredDataReader&);  // Not implemented.
   void operator=(const vtkVisItXMLUnstructuredDataReader&);  // Not implemented.

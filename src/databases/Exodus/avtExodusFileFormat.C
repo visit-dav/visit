@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "vtkExodusReader.h"
+#include "vtkVisItExodusReader.h"
 #include <vtkCellData.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkPointData.h>
@@ -114,7 +114,7 @@ avtExodusFileFormat::ReadInFile(void)
     //
     // Do some initialization.
     //
-    vtkExodusReader *rdr = GetReader();
+    vtkVisItExodusReader *rdr = GetReader();
 
     //
     // Determine what the blocks are and how many there are.
@@ -230,7 +230,7 @@ avtExodusFileFormat::FreeUpResources(void)
 //
 // ****************************************************************************
 
-vtkExodusReader *
+vtkVisItExodusReader *
 avtExodusFileFormat::GetReader(void)
 {
     if (reader != NULL)
@@ -238,7 +238,7 @@ avtExodusFileFormat::GetReader(void)
         return reader;
     }
 
-    reader = vtkExodusReader::New();
+    reader = vtkVisItExodusReader::New();
     reader->SetFileName(filenames[0]);
     reader->SetGenerateNodeGlobalIdArray(1);
     reader->SetGenerateElementGlobalIdArray(1);
@@ -363,7 +363,7 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
     int   i;
 
-    vtkExodusReader *rdr = GetReader();
+    vtkVisItExodusReader *rdr = GetReader();
 
     int spatialDimension = rdr->GetDimensionality();
     string meshName = "Mesh";
@@ -815,7 +815,7 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
     }
     else if (strcmp(type, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
     {
-        // Unfortunately, without making broad changes to vtkExodusReader
+        // Unfortunately, without making broad changes to vtkVisItExodusReader
         // the only way to obtain global node ids is by first asking
         // the reader for the mesh and then taking them from that if
         // they are present. Fortunately, in most situations, the
@@ -917,7 +917,7 @@ avtExodusFileFormat::SetTimestep(int ts)
         EXCEPTION2(BadIndexException, ts, nTimesteps);
     }
 
-    vtkExodusReader *rdr = GetReader();
+    vtkVisItExodusReader *rdr = GetReader();
     rdr->SetTimeStep(ts+1);
 }
 
@@ -929,7 +929,7 @@ avtExodusFileFormat::SetTimestep(int ts)
 //      Tells the exodus reader which variables it should load.
 //
 //  Arguments:
-//      rdr     A vtkExodusReader.
+//      rdr     A vtkVisItExodusReader.
 //      name    The name of the variable.
 //
 //  Programmer: Hank Childs
@@ -938,7 +938,7 @@ avtExodusFileFormat::SetTimestep(int ts)
 // ****************************************************************************
 
 void
-avtExodusFileFormat::LoadVariable(vtkExodusReader *rdr, const char *name)
+avtExodusFileFormat::LoadVariable(vtkVisItExodusReader *rdr, const char *name)
 {
     int   i;
 
@@ -1008,7 +1008,7 @@ avtExodusFileFormat::LoadVariable(vtkExodusReader *rdr, const char *name)
 vtkDataSet *
 avtExodusFileFormat::ForceRead(const char *var)
 {
-    vtkExodusReader *rdr = GetReader();
+    vtkVisItExodusReader *rdr = GetReader();
 
     vtkDataSet *ds = rdr->GetOutput();
     ds->SetUpdatePiece(0);

@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItXMLPolyDataReader.h,v $
-  Language:  C++
-  Date:      $Date: 2003/05/05 13:45:23 $
-  Version:   $Revision: 1.3 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -75,6 +72,8 @@ protected:
   // UpdateInformation.
   virtual vtkIdType GetNumberOfCellsInPiece(int piece);
 
+  virtual int FillOutputPortInformation(int, vtkInformation*);
+
   // The size of the UpdatePiece.
   int TotalNumberOfVerts;
   int TotalNumberOfLines;
@@ -94,7 +93,17 @@ protected:
   vtkIdType* NumberOfLines;
   vtkIdType* NumberOfStrips;
   vtkIdType* NumberOfPolys;
-  
+
+  // For TimeStep support
+  int VertsTimeStep;
+  unsigned long VertsOffset;
+  int LinesTimeStep;
+  unsigned long LinesOffset;
+  int StripsTimeStep;
+  unsigned long StripsOffset;
+  int PolysTimeStep;
+  unsigned long PolysOffset;
+
 private:
   vtkVisItXMLPolyDataReader(const vtkVisItXMLPolyDataReader&);  // Not implemented.
   void operator=(const vtkVisItXMLPolyDataReader&);  // Not implemented.

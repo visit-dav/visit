@@ -1,25 +1,28 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkVisItExtractGrid.C,v $
+  Module:    $RCSfile: vtkVisItExtractGrid.cxx,v $
 
-  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include <vtkVisItExtractGrid.h>
+#include "vtkVisItExtractGrid.h"
 
 #include <vtkCellData.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkStructuredGrid.h>
 
-vtkCxxRevisionMacro(vtkVisItExtractGrid, "$Revision: 1.42 $");
+vtkCxxRevisionMacro(vtkVisItExtractGrid, "$Revision: 1.44 $");
 vtkStandardNewMacro(vtkVisItExtractGrid);
 
 // Construct object to extract all of the input data.
@@ -33,19 +36,22 @@ vtkVisItExtractGrid::vtkVisItExtractGrid()
   this->IncludeBoundary = 0;
 }
 
-
-void vtkVisItExtractGrid::ComputeInputUpdateExtents(vtkDataObject *vtkNotUsed(out))
+int vtkVisItExtractGrid::RequestUpdateExtent(
+  vtkInformation *vtkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
 {
-  vtkStructuredGrid *input = this->GetInput();
-  vtkStructuredGrid *output = this->GetOutput();
+  // get the info objects
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
   int i, ext[6], voi[6];
   int *inWholeExt, *outWholeExt, *updateExt;
   int rate[3];
 
-
-  inWholeExt = input->GetWholeExtent();
-  outWholeExt = output->GetWholeExtent();
-  updateExt = output->GetUpdateExtent();
+  inWholeExt = inInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT());
+  outWholeExt = outInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT());
+  updateExt = outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT());
 
   for (i = 0; i < 3; ++i)
     {
@@ -90,7 +96,6 @@ void vtkVisItExtractGrid::ComputeInputUpdateExtents(vtkDataObject *vtkNotUsed(ou
     ext[5] = voi[5];
     }
   
-  
   // I do not think we need this extra check, but it cannot hurt.
   if (ext[0] < inWholeExt[0])
     {
@@ -119,30 +124,27 @@ void vtkVisItExtractGrid::ComputeInputUpdateExtents(vtkDataObject *vtkNotUsed(ou
     ext[5] = inWholeExt[5];
     }  
   
-  input->SetUpdateExtent(ext);
+  inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), ext, 6);
   // We can handle anything.
-  input->SetRequestExactExtent(0);
+  inInfo->Set(vtkStreamingDemandDrivenPipeline::EXACT_EXTENT(), 0);
+
+  return 1;
 }
 
-
-
-void vtkVisItExtractGrid::ExecuteInformation()
+int vtkVisItExtractGrid::RequestInformation(
+  vtkInformation *vtkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
 {
-  vtkStructuredGrid *input= this->GetInput();
-  vtkStructuredGrid *output= this->GetOutput();
+  // get the info objects
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
   int i, outDims[3], voi[6], wholeExtent[6];
   int mins[3];
   int rate[3];
 
-  if (this->GetInput() == NULL)
-    {
-    vtkErrorMacro("Missing input");
-    return;
-    }
-
-  this->vtkStructuredGridToStructuredGridFilter::ExecuteInformation();
-
-  input->GetWholeExtent(wholeExtent);
+  inInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), wholeExtent);
 
   // Copy because we need to take union of voi and whole extent.
   for ( i=0; i < 6; i++ )
@@ -156,8 +158,9 @@ void vtkVisItExtractGrid::ExecuteInformation()
     if (voi[2*i+1] < voi[2*i] || voi[2*i+1] < wholeExtent[2*i] || 
         voi[2*i] > wholeExtent[2*i+1])
       {
-      output->SetWholeExtent(0,-1,0,-1,0,-1);
-      return;
+      outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),
+                   0,-1,0,-1,0,-1);
+      return 1;
       }
 
     // Make sure VOI is in the whole extent.
@@ -216,7 +219,10 @@ void vtkVisItExtractGrid::ExecuteInformation()
   wholeExtent[4] = mins[2];
   wholeExtent[5] = mins[2] + outDims[2] - 1;
 
-  output->SetWholeExtent(wholeExtent);
+  outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),
+               wholeExtent, 6);
+
+  return 1;
 }
 
 
@@ -228,12 +234,23 @@ void vtkVisItExtractGrid::ExecuteInformation()
 //
 // ****************************************************************************
 
-void vtkVisItExtractGrid::Execute()
+int vtkVisItExtractGrid::RequestData(
+  vtkInformation *vtkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
 {
-  vtkStructuredGrid *input= this->GetInput();
+  // get the info objects
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+  // get the input and ouptut
+  vtkStructuredGrid *input = vtkStructuredGrid::SafeDownCast(
+    inInfo->Get(vtkDataObject::DATA_OBJECT()));
+  vtkStructuredGrid *output = vtkStructuredGrid::SafeDownCast(
+    outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
   vtkPointData *pd=input->GetPointData();
   vtkCellData *cd=input->GetCellData();
-  vtkStructuredGrid *output= this->GetOutput();
   vtkPointData *outPD=output->GetPointData();
   vtkCellData *outCD=output->GetCellData();
   int i, j, k, uExt[6], voi[6];
@@ -251,7 +268,7 @@ void vtkVisItExtractGrid::Execute()
 
   inPts = input->GetPoints();
 
-  output->GetUpdateExtent(uExt);
+  outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uExt);
   inExt = input->GetExtent();
   inInc1 = (inExt[1]-inExt[0]+1);
   inInc2 = inInc1*(inExt[3]-inExt[2]+1);
@@ -265,7 +282,7 @@ void vtkVisItExtractGrid::Execute()
     }
 
   // Clip the VOI by the input whole extent
-  inWholeExt = input->GetWholeExtent();
+  inWholeExt = inInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT());
   for (i = 0; i < 3; ++i)
     {
     voi[i*2] = this->VOI[2*i];
@@ -280,20 +297,18 @@ void vtkVisItExtractGrid::Execute()
       }
     }
 
-  // Compute the shift.  The shift is necessary because the starting VOI 
-  // may not be on stride boundary.
-  // We need to duplicate the computation done in ExecuteInformtation for 
-  // the output whole extent.
+  // Compute the shift.
+  // The shift is necessary because the starting VOI may not be on stride boundary.
+  // We need to duplicate the computation done in 
+  // ExecuteInformtation for the output whole extent.
   // Use shift as temporary variable (output mins).
   shift[0] = (int)(floor( (float)(voi[0])/(float)(rate[0]) ));
   shift[1] = (int)(floor( (float)(voi[2])/(float)(rate[1]) ));
   shift[2] = (int)(floor( (float)(voi[4])/(float)(rate[2]) ));
-  // Take the different between the output and input mins 
-  // (in input coordinates).
+  // Take the different between the output and input mins (in input coordinates).
   shift[0] = voi[0] - (shift[0]*rate[0]);
   shift[1] = voi[2] - (shift[1]*rate[1]);
   shift[2] = voi[4] - (shift[2]*rate[2]);
-
 
   output->SetExtent(uExt);
 
@@ -307,7 +322,7 @@ void vtkVisItExtractGrid::Execute()
     output->GetPointData()->PassData(input->GetPointData());
     output->GetCellData()->PassData(input->GetCellData());
     vtkDebugMacro(<<"Passed data through bacause input and output are the same");
-    return;
+    return 1;
     }
 
   // Allocate necessary objects
@@ -348,7 +363,6 @@ void vtkVisItExtractGrid::Execute()
         idx = (iIn-inExt[0]) + jOffset + kOffset;
         newPts->SetPoint(newIdx,inPts->GetPoint(idx));
         outPD->CopyData(pd, idx, newIdx++);
-
         }
       }
     }
@@ -401,8 +415,9 @@ void vtkVisItExtractGrid::Execute()
 
   output->SetPoints(newPts);
   newPts->Delete();
-}
 
+  return 1;
+}
 
 void vtkVisItExtractGrid::PrintSelf(ostream& os, vtkIndent indent)
 {
@@ -423,5 +438,3 @@ void vtkVisItExtractGrid::PrintSelf(ostream& os, vtkIndent indent)
   os << indent << "Include Boundary: " 
      << (this->IncludeBoundary ? "On\n" : "Off\n");
 }
-
-

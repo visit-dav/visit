@@ -131,6 +131,10 @@ avtVTKFileFormat::~avtVTKFileFormat()
 //    Kathleen Bonnell, Thu Sep 22 15:37:13 PDT 2005 
 //    Support vtk xml file formats.
 //
+//    Kathleen Bonnell, Wed May 17 14:03:29 PDT 2006 
+//    Remove call to SetSource(NULL), as it now removes information necessary
+//    to the dataset.
+//
 // ****************************************************************************
 
 void
@@ -166,7 +170,7 @@ avtVTKFileFormat::ReadInDataset(void)
         // so we don't eat up too many file descriptors.
         //
         dataset->Update();
-        dataset->SetSource(NULL);
+        //dataset->SetSource(NULL);
         reader->Delete();
     }
     else if (extension == "vti")
@@ -176,7 +180,7 @@ avtVTKFileFormat::ReadInDataset(void)
         dataset = reader->GetOutput();
         dataset->Register(NULL);
         dataset->Update();
-        dataset->SetSource(NULL);
+        //dataset->SetSource(NULL);
         reader->Delete();
     } 
     else if (extension == "vtr") 
@@ -187,7 +191,7 @@ avtVTKFileFormat::ReadInDataset(void)
         dataset = reader->GetOutput();
         dataset->Register(NULL);
         dataset->Update();
-        dataset->SetSource(NULL);
+        //dataset->SetSource(NULL);
         reader->Delete();
     } 
     else if (extension == "vts")
@@ -198,7 +202,7 @@ avtVTKFileFormat::ReadInDataset(void)
         dataset = reader->GetOutput();
         dataset->Register(NULL);
         dataset->Update();
-        dataset->SetSource(NULL);
+        //dataset->SetSource(NULL);
         reader->Delete();
     } 
     else if (extension == "vtp") 
@@ -208,7 +212,7 @@ avtVTKFileFormat::ReadInDataset(void)
         dataset = reader->GetOutput();
         dataset->Register(NULL);
         dataset->Update();
-        dataset->SetSource(NULL);
+        //dataset->SetSource(NULL);
         reader->Delete();
     } 
     else if (extension == "vtu") 
@@ -219,7 +223,7 @@ avtVTKFileFormat::ReadInDataset(void)
         dataset = reader->GetOutput();
         dataset->Register(NULL);
         dataset->Update();
-        dataset->SetSource(NULL);
+        //dataset->SetSource(NULL);
         reader->Delete();
     } 
 

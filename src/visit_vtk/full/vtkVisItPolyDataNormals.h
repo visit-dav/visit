@@ -2,9 +2,11 @@
 #define __vtkVisItPolyDataNormals_h
 
 #include <visit_vtk_exports.h>
-#include "vtkPolyDataToPolyDataFilter.h"
+#include <vtkPolyDataAlgorithm.h>
 
 class vtkPolyData;
+class vtkInformation;
+class vtkInformationVector;
 
 // ****************************************************************************
 //  Class:  vtkVisItPolyDataNormals
@@ -16,11 +18,10 @@ class vtkPolyData;
 //  Creation:    August 12, 2003
 //
 // ****************************************************************************
-class VISIT_VTK_API vtkVisItPolyDataNormals
-    : public vtkPolyDataToPolyDataFilter
+class VISIT_VTK_API vtkVisItPolyDataNormals : public vtkPolyDataAlgorithm
 {
   public:
-    vtkTypeRevisionMacro(vtkVisItPolyDataNormals,vtkPolyDataToPolyDataFilter);
+    vtkTypeRevisionMacro(vtkVisItPolyDataNormals,vtkPolyDataAlgorithm);
 
     static vtkVisItPolyDataNormals *New();
 
@@ -34,10 +35,11 @@ class VISIT_VTK_API vtkVisItPolyDataNormals
     ~vtkVisItPolyDataNormals() {};
 
     // Usual data generation method
-    void Execute();
-    void ExecutePointWithoutSplitting();
-    void ExecutePointWithSplitting();
-    void ExecuteCell();
+    int RequestData(vtkInformation*, vtkInformationVector**,
+                     vtkInformationVector*);
+    void ExecutePointWithoutSplitting(vtkPolyData*, vtkPolyData*);
+    void ExecutePointWithSplitting(vtkPolyData*, vtkPolyData*);
+    void ExecuteCell(vtkPolyData *, vtkPolyData*);
 
     float FeatureAngle;
     bool  Splitting;

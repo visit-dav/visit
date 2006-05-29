@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItXMLUnstructuredGridReader.cxx,v $
-  Language:  C++
-  Date:      $Date: 2003/05/05 13:45:23 $
-  Version:   $Revision: 1.5 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -23,8 +20,12 @@
 #include "vtkUnsignedCharArray.h"
 #include "vtkUnstructuredGrid.h"
 #include "vtkVisItXMLDataElement.h"
+#include "vtkInformation.h"
+#include "vtkStreamingDemandDrivenPipeline.h"
 
-vtkCxxRevisionMacro(vtkVisItXMLUnstructuredGridReader, "$Revision: 1.5 $");
+#include <assert.h>
+
+vtkCxxRevisionMacro(vtkVisItXMLUnstructuredGridReader, "$Revision: 1.12 $");
 vtkStandardNewMacro(vtkVisItXMLUnstructuredGridReader);
 
 //----------------------------------------------------------------------------
@@ -40,14 +41,16 @@ vtkVisItXMLUnstructuredGridReader::vtkVisItXMLUnstructuredGridReader()
   
   this->CellElements = 0;
   this->NumberOfCells = 0;
+  this->CellsTimeStep = -1;
+  this->CellsOffset   = (unsigned long)-1; //almost invalid state
 }
 
 //----------------------------------------------------------------------------
 vtkVisItXMLUnstructuredGridReader::~vtkVisItXMLUnstructuredGridReader()
 {
-  if(this->NumberOfPieces) 
-    { 
-    this->DestroyPieces(); 
+  if(this->NumberOfPieces)
+    {
+    this->DestroyPieces();
     }
 }
 
@@ -60,23 +63,19 @@ void vtkVisItXMLUnstructuredGridReader::PrintSelf(ostream& os, vtkIndent indent)
 //----------------------------------------------------------------------------
 void vtkVisItXMLUnstructuredGridReader::SetOutput(vtkUnstructuredGrid *output)
 {
-  this->Superclass::SetNthOutput(0, output);
+  this->GetExecutive()->SetOutputData(0, output);
 }
 
 //----------------------------------------------------------------------------
 vtkUnstructuredGrid* vtkVisItXMLUnstructuredGridReader::GetOutput()
 {
-  if(this->NumberOfOutputs < 1)
-    {
-    return 0;
-    }
-  return static_cast<vtkUnstructuredGrid*>(this->Outputs[0]);
+  return this->GetOutput(0);
 }
 
 //----------------------------------------------------------------------------
 vtkUnstructuredGrid* vtkVisItXMLUnstructuredGridReader::GetOutput(int idx)
 {
-  return static_cast<vtkUnstructuredGrid*>(this->Superclass::GetOutput(idx));
+  return vtkUnstructuredGrid::SafeDownCast( this->GetOutputDataObject(idx) );
 }
 
 //----------------------------------------------------------------------------
@@ -115,8 +114,7 @@ void vtkVisItXMLUnstructuredGridReader::SetupPieces(int numPieces)
   this->Superclass::SetupPieces(numPieces);
   this->NumberOfCells = new vtkIdType[numPieces];
   this->CellElements = new vtkVisItXMLDataElement*[numPieces];
-  int i;
-  for(i=0;i < numPieces; ++i)
+  for(int i=0;i < numPieces; ++i)
     {
     this->CellElements[i] = 0;
     }
@@ -161,7 +159,10 @@ void vtkVisItXMLUnstructuredGridReader::SetupOutputData()
 //----------------------------------------------------------------------------
 int vtkVisItXMLUnstructuredGridReader::ReadPiece(vtkVisItXMLDataElement* ePiece)
 {
-  if(!this->Superclass::ReadPiece(ePiece)) { return 0; }
+  if(!this->Superclass::ReadPiece(ePiece))
+    {
+    return 0;
+    }
   int i;
   
   if(!ePiece->GetScalarAttribute("NumberOfCells",
@@ -240,7 +241,10 @@ int vtkVisItXMLUnstructuredGridReader::ReadPieceData()
   this->SetProgressRange(progressRange, 0, fractions);
   
   // Let the superclass read its data.
-  if(!this->Superclass::ReadPieceData()) { return 0; }
+  if(!this->Superclass::ReadPieceData())
+    {
+    return 0;
+    }
   
   vtkUnstructuredGrid* output = this->GetOutput();
   
@@ -256,22 +260,27 @@ int vtkVisItXMLUnstructuredGridReader::ReadPieceData()
   this->SetProgressRange(progressRange, 1, fractions);
   
   // Read the Cells.
-  vtkVisItXMLDataElement *eCells = this->CellElements[this->Piece];
-  if (eCells)
+  vtkVisItXMLDataElement* eCells = this->CellElements[this->Piece];
+  if(eCells)
     {
-    // Read the array.
-    if(!this->ReadCellArray(this->NumberOfCells[this->Piece],
-                            this->TotalNumberOfCells,
-                            eCells,
-                            output->GetCells()))
+//    int needToRead = this->CellsNeedToReadTimeStep(eNested, 
+//      this->CellsTimeStep, this->CellsOffset);
+//    if( needToRead )
       {
-      return 0;
+      // Read the array.
+      if(!this->ReadCellArray(this->NumberOfCells[this->Piece],
+                              this->TotalNumberOfCells,
+                              eCells,
+                              output->GetCells()))
+        {
+        return 0;
+        }
       }
     }
   
   // Construct the cell locations.
   vtkIdTypeArray* locations = output->GetCellLocationsArray();
-  int* locs = locations->GetPointer(this->StartCell);
+  vtkIdType* locs = locations->GetPointer(this->StartCell);
   vtkIdType* begin = output->GetCells()->GetData()->GetPointer(startLoc);
   vtkIdType* cur = begin;
   vtkIdType i;
@@ -341,3 +350,13 @@ int vtkVisItXMLUnstructuredGridReader::ReadArrayForCells(vtkVisItXMLDataElement*
   return this->ReadData(da, outArray->GetVoidPointer(startCell*components),
                         outArray->GetDataType(), 0, numCells*components);
 }
+
+
+//----------------------------------------------------------------------------
+int vtkVisItXMLUnstructuredGridReader::FillOutputPortInformation(int, vtkInformation *info)
+{
+  info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+  return 1;
+}
+
+

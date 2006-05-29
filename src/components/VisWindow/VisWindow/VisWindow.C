@@ -3789,6 +3789,10 @@ VisWindow::ProcessResizeEvent(void *data)
 //   Kathleen Bonnell, Tue Mar  7 08:27:25 PST 2006 
 //   Expanded 'intersection only' to handle SR mode.
 //
+//  Kathleen Bonnell, Thu May  4 09:28:56 PDT 2006
+//  With VTK 5.0, DisplayToView no longer uses Aspect in caluclation of 
+//  ViewPoint, so do the calculation of ViewPoint after retrieval.
+// 
 // ****************************************************************************
 
 void
@@ -3855,20 +3859,22 @@ VisWindow::Pick(int x, int y)
     // Transform the point from display to view coordinates.
     //
     double viewPoint[4];
+    double *aspect = ren->GetAspect();
 
     ren->SetDisplayPoint(x, y, displayCoords[2]);
     ren->DisplayToView();
     double *viewCoords = ren->GetViewPoint();
 
-    viewPoint[0] = viewCoords[0];
-    viewPoint[1] = viewCoords[1];
+    // ren->DisplayToView no longer uses Aspect in caluclation of ViewPoint,
+    // so handle it here.
+    viewPoint[0] = viewCoords[0] *aspect[0];
+    viewPoint[1] = viewCoords[1] *aspect[1];
     viewPoint[2] = viewCoords[2];
     viewPoint[3] = 1.0;
 
     // Compensate for window centering and scaling.
     double *windowCenter = cam->GetWindowCenter();
     double focalDisk = cam->GetFocalDisk();
-    double *aspect = ren->GetAspect();
 
     viewPoint[0] = viewPoint[0] -
         (aspect[0] - 1.) * windowCenter[0] * focalDisk;

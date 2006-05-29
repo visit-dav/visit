@@ -11,11 +11,16 @@
 // Programmer: Mark C. Miller 
 // Creation:   October 25, 2005 
 //
+// Modifications:
+//   Kathleen Bonnell, Wed May 17 10:58:54 PDT 2006
+//   Added stub for vtkWriter::SetInput(vtkDataObject*).
+//
 // ****************************************************************************
 
 class vtkPolyData;
 class vtkDataSet;
 class vtkImageData;
+class vtkDataObject;
 
 class vtkAppendFilter {
   public:
@@ -49,6 +54,11 @@ class vtkDataSetWriter {
 class vtkDataWriter {
   public:
     char *RegisterAndGetOutputString();
+};
+
+class vtkWriter {
+  public:
+    void  SetInput(vtkDataObject*);
 };
 
 class vtkPolyDataReader {

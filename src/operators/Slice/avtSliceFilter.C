@@ -7,6 +7,7 @@
 #include <float.h>
 
 #include <vtkCell.h>
+#include <vtkExecutive.h>
 #include <vtkFloatArray.h>
 #include <vtkMath.h>
 #include <vtkMatrix4x4.h>
@@ -916,6 +917,10 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
 //    Added comment regarding not by-passing this operator even if
 //    data selection is applied
 //
+//    Kathleen Bonnell, Wed May 17 10:28:40 PDT 2006 
+//    VTK filters no longer have a SetOutput method, Use SetOuputData from
+//    the filter's executive instead.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -966,7 +971,7 @@ avtSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
     if (atts.GetProject2d())
     {
         transform->SetInput(slicer->GetOutput());
-        transform->SetOutput(out_ds);
+        transform->GetExecutive()->SetOutputData(0, out_ds);
 
         //
         // Update will check the modifed time and call Execute.  We have no
@@ -1021,6 +1026,10 @@ avtSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 //    Hank Childs, Fri Mar 11 07:37:05 PST 2005
 //    Fix non-problem size leak introduced with last fix.
 //
+//    Kathleen Bonnell, Wed May 17 10:28:40 PDT 2006 
+//    VTK filters no longer have a SetOutput method, Use SetOuputData from the
+//    filter's executive instead.  Use SetInputConnection to set a NULL input.
+//
 // ****************************************************************************
 
 void
@@ -1028,14 +1037,14 @@ avtSliceFilter::ReleaseData(void)
 {
     avtPluginStreamer::ReleaseData();
 
-    slicer->SetInput(NULL);
+    slicer->SetInputConnection(0, NULL);
     vtkPolyData *p = vtkPolyData::New();
-    slicer->SetOutput(p);
+    slicer->GetExecutive()->SetOutputData(0, p);
     p->Delete();
 
-    transform->SetInput(NULL);
+    transform->SetInputConnection(0, NULL);
     p = vtkPolyData::New();
-    transform->SetOutput(p);
+    transform->GetExecutive()->SetOutputData(0, p);
     p->Delete();
 
     if (celllist != NULL)
@@ -1239,6 +1248,10 @@ ProjectExtentsCallback(const double *in, double *out, void *args)
 //    because we changed the filter type from vtkTransformPolyDataFilter to
 //    vtkTransformFilter to avoid '6471.
 //
+//    Kathleen Bonnell, Wed May 17 10:28:40 PDT 2006 
+//    VTK filters no longer have a SetOutput method, Use SetOuputData from the
+//    filter's executive instead.  
+//
 // ****************************************************************************
 
 void
@@ -1256,7 +1269,7 @@ avtSliceFilter::ProjectExtents(const double *b_in, double *b_out)
     // Clean up leftovers from previous executions.
     //
     vtkPolyData *new_output = vtkPolyData::New();
-    transform->SetOutput(new_output);
+    transform->GetExecutive()->SetOutputData(0, new_output);
     new_output->Delete();
     slicer->SetCellList(NULL, 0);
 

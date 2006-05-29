@@ -378,6 +378,10 @@ avtCompactnessQuery::PostExecute(void)
 //    Hank Childs, Mon Aug 30 17:15:30 PDT 2004
 //    Remove call to SetGhostLevel.
 //
+//    Kathleen Bonnell, Wed May 17 15:22:06 PDT 2006 
+//    Remove call to SetSoure(NULL) as it now removes information necessary
+//    for the dataset.
+//
 // ****************************************************************************
 
 void
@@ -465,7 +469,7 @@ avtCompactnessQuery::Execute1(vtkDataSet *ds, const int dom)
     boundaryFilter->GetOutput()->Update();
 
     vtkPolyData *allLines = boundaryFilter->GetOutput();
-    allLines->SetSource(NULL);
+    //allLines->SetSource(NULL);
 
     gzFilter1->SetInput(allLines);
     vtkDataSet *ds_1d_nogz = gzFilter1->GetOutput();

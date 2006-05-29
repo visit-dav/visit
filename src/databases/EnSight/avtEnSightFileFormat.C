@@ -17,6 +17,7 @@
 #include <vtkVisItEnSightGoldReader.h>
 #include <vtkVisItEnSight6BinaryReader.h>
 #include <vtkVisItEnSight6Reader.h>
+#include <vtkVisItGenericEnSightReader.h>
 
 #include <avtDatabaseMetaData.h>
 

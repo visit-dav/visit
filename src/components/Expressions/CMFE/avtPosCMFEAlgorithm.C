@@ -1528,6 +1528,12 @@ avtPosCMFEAlgorithm::FastLookupGrouping::GetValueUsingList(vector<int> &list,
 //  Programmer: Hank Childs
 //  Creation:   October 12, 2005
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue May 16 09:41:46 PDT 2006
+//    Changed GetNumberOfInputs to GetTotalNumberOfInputConnections, due to
+//    VTK api changes.  Removed call to SetSource(NULL) as it also removes
+//    necessary information from the dataset.
+//
 // ****************************************************************************
 
 void
@@ -1637,7 +1643,7 @@ avtPosCMFEAlgorithm::FastLookupGrouping::RelocateDataUsingPartition(
     char **msg_tmp = new char *[nProcs];
     for (j = 0 ; j < nProcs ; j++)
     {
-        if (appenders[j]->GetNumberOfInputs() == 0)
+        if (appenders[j]->GetTotalNumberOfInputConnections() == 0)
         {
             sendcount[j] = 0;
             msg_tmp[j]   = NULL;
@@ -1711,7 +1717,8 @@ avtPosCMFEAlgorithm::FastLookupGrouping::RelocateDataUsingPartition(
         vtkUnstructuredGrid *ugrid = reader->GetOutput();
         ugrid->Update();
         AddMesh(ugrid);
-        ugrid->SetSource(NULL);
+        // using SetSource(NULL) on vtkDataSets is no longer a good idea.
+        //ugrid->SetSource(NULL);
         reader->Delete();
         charArray->Delete();
     }

@@ -2,16 +2,13 @@
 
   Program:   Visualization Toolkit
   Module:    $RCSfile: vtkVisItXMLStructuredGridReader.cxx,v $
-  Language:  C++
-  Date:      $Date: 2003/05/05 13:45:23 $
-  Version:   $Revision: 1.7 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -21,19 +18,22 @@
 #include "vtkStructuredGrid.h"
 #include "vtkVisItXMLDataElement.h"
 #include "vtkVisItXMLDataParser.h"
+#include "vtkInformation.h"
+#include "vtkStreamingDemandDrivenPipeline.h"
 
-vtkCxxRevisionMacro(vtkVisItXMLStructuredGridReader, "$Revision: 1.7 $");
+vtkCxxRevisionMacro(vtkVisItXMLStructuredGridReader, "$Revision: 1.11 $");
 vtkStandardNewMacro(vtkVisItXMLStructuredGridReader);
 
 //----------------------------------------------------------------------------
 vtkVisItXMLStructuredGridReader::vtkVisItXMLStructuredGridReader()
 {
   // Copied from vtkStructuredGridReader constructor:
-  this->SetOutput(vtkStructuredGrid::New());
+  vtkStructuredGrid *output = vtkStructuredGrid::New();
+  this->SetOutput(output);
   // Releasing data for pipeline parallism.
   // Filters will know it is empty. 
-  this->Outputs[0]->ReleaseData();
-  this->Outputs[0]->Delete();
+  output->ReleaseData();
+  output->Delete();
   this->PointElements = 0;
 }
 
@@ -52,23 +52,19 @@ void vtkVisItXMLStructuredGridReader::PrintSelf(ostream& os, vtkIndent indent)
 //----------------------------------------------------------------------------
 void vtkVisItXMLStructuredGridReader::SetOutput(vtkStructuredGrid *output)
 {
-  this->Superclass::SetNthOutput(0, output);
+  this->GetExecutive()->SetOutputData(0, output);
 }
 
 //----------------------------------------------------------------------------
 vtkStructuredGrid* vtkVisItXMLStructuredGridReader::GetOutput()
 {
-  if(this->NumberOfOutputs < 1)
-    {
-    return 0;
-    }
-  return static_cast<vtkStructuredGrid*>(this->Outputs[0]);
+  return this->GetOutput(0);
 }
 
 //----------------------------------------------------------------------------
 vtkStructuredGrid* vtkVisItXMLStructuredGridReader::GetOutput(int idx)
 {
-  return static_cast<vtkStructuredGrid*>(this->Superclass::GetOutput(idx));
+  return vtkStructuredGrid::SafeDownCast( this->GetOutputDataObject(idx) );
 }
   
 
@@ -136,45 +132,36 @@ int vtkVisItXMLStructuredGridReader::ReadPiece(vtkVisItXMLDataElement* ePiece)
   return 1;
 }
 
-//----------------------------------------------------------------------------
-void vtkVisItXMLStructuredGridReader::SetupOutputInformation()
-{
-  this->Superclass::SetupOutputInformation();  
-  vtkStructuredGrid* output = this->GetOutput();
-  
-  // Create the points array.
-  vtkPoints* points = vtkPoints::New();
-  
-  // Use the configuration of the first piece since all are the same.
-  vtkVisItXMLDataElement* ePoints = this->PointElements[0];
-  if(ePoints)
-    {
-    // Non-empty volume.
-    vtkDataArray* a = this->CreateDataArray(ePoints->GetNestedElement(0));
-    if(a)
-      {
-      a->SetNumberOfTuples(this->GetNumberOfPoints());
-      points->SetData(a);
-      a->Delete();
-      }
-    else
-      {
-      this->InformationError = 1;
-      }
-    }
-  
-  output->SetPoints(points);
-  points->Delete();
-}
 
 //----------------------------------------------------------------------------
 void vtkVisItXMLStructuredGridReader::SetupOutputData()
 {
   this->Superclass::SetupOutputData();
   
-  // Allocate the points array.
-  vtkStructuredGrid* output = this->GetOutput();
-  output->GetPoints()->GetData()->SetNumberOfTuples(this->GetNumberOfPoints());
+  // Create the points array.
+  vtkPoints* points = vtkPoints::New();
+  
+  // Use the configuration of the first piece since all are the same.
+  vtkVisItXMLDataElement* ePoints = this->PointElements[0];
+  if (ePoints)
+    {
+    // Non-zero volume.
+    vtkDataArray* a = this->CreateDataArray(ePoints->GetNestedElement(0));
+    if (a)
+      {
+      // Allocate the points array.
+      a->SetNumberOfTuples( this->GetNumberOfPoints() );
+      points->SetData(a);
+      a->Delete();
+      }
+    else
+      {
+      this->DataError = 1;
+      }
+    }
+  
+  this->GetOutput()->SetPoints(points);
+  points->Delete();
 }
 
 //----------------------------------------------------------------------------
@@ -183,7 +170,7 @@ int vtkVisItXMLStructuredGridReader::ReadPieceData()
   // The amount of data read by the superclass's ReadPieceData comes
   // from point/cell data (we read point specifications here).
   int dims[3] = {0,0,0};
-  this->ComputePointDimensions(this->SubExtent, dims);  
+  this->ComputePointDimensions(this->SubExtent, dims);
   vtkIdType superclassPieceSize =
     (this->NumberOfPointArrays*dims[0]*dims[1]*dims[2]+
      this->NumberOfCellArrays*(dims[0]-1)*(dims[1]-1)*(dims[2]-1));
@@ -229,3 +216,10 @@ int vtkVisItXMLStructuredGridReader::ReadPieceData()
   return this->ReadArrayForPoints(ePoints->GetNestedElement(0),
                                   output->GetPoints()->GetData());
 }
+
+
+int vtkVisItXMLStructuredGridReader::FillOutputPortInformation(int, vtkInformation *info)
+  {
+  info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkStructuredGrid");
+  return 1;
+  }

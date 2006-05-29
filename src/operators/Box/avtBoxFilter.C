@@ -600,6 +600,11 @@ avtBoxFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //
 //  Programmer: Hank Childs
 //  Creation:   April 24, 2005
+// 
+//  Modifications:
+//    Kathleen Bonnell, Wed May 17 10:46:58 PDT 2006
+//    Removed call to SetSource(NULL) as it now removes information necessary
+//    for the dataset.
 //
 // ****************************************************************************
 
@@ -633,7 +638,7 @@ avtBoxFilter::GeneralExecute(vtkDataSet *in_ds)
     vtkUnstructuredGrid *newDS = bf->GetOutput();
     newDS->Update();
     newDS->Register(NULL);
-    newDS->SetSource(NULL);
+    //newDS->SetSource(NULL);
     bf->Delete();
     return newDS;
 
@@ -655,6 +660,10 @@ avtBoxFilter::GeneralExecute(vtkDataSet *in_ds)
 //    coordinates was one.  I also fixed the logic to properly handle
 //    the case where the end of the range corresponded to a coordinate
 //    value and the amount of cell in range flag was some.
+//
+//    Kathleen Bonnell, Wed May 17 10:46:58 PDT 2006
+//    Removed call to SetSource(NULL) as it now removes information necessary
+//    for the dataset.
 //
 // ****************************************************************************
 
@@ -753,7 +762,7 @@ avtBoxFilter::RectilinearExecute(vtkRectilinearGrid *in_ds)
 
     vtkRectilinearGrid *rv = extract->GetOutput();
     rv->Register(NULL);
-    rv->SetSource(NULL);
+    //rv->SetSource(NULL);
     extract->Delete();
 
     return rv;

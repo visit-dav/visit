@@ -549,6 +549,10 @@ avtImageFileFormat::ProcessDataSelections(int *xmin, int *xmax,
 //    Hank Childs, Thu Mar 17 15:33:44 PST 2005
 //    Add support for the stimulate image format.
 //
+//    Kathleen Bonnell, Wed May 17 14:14:04 PDT 2006 
+//    Remove call to SetSource(NULL), as it now removes information necessary
+//    for the dataset. 
+//
 // *****************************************************************************
 
 void avtImageFileFormat::ReadInImage(void)
@@ -599,7 +603,7 @@ void avtImageFileFormat::ReadInImage(void)
         image = reader->GetOutput();
         image->Register(NULL);
         image->Update();
-        image->SetSource(NULL);
+        //image->SetSource(NULL);
         reader->Delete();
     }
     else if ((image_fext == "png") || (image_fext == "PNG"))
@@ -609,7 +613,7 @@ void avtImageFileFormat::ReadInImage(void)
         image = reader->GetOutput();
         image->Register(NULL);
         image->Update();
-        image->SetSource(NULL);
+        //image->SetSource(NULL);
         reader->Delete();
     }
     else if ((image_fext == "jpg") || (image_fext == "jpeg") || 
@@ -620,7 +624,7 @@ void avtImageFileFormat::ReadInImage(void)
         image = reader->GetOutput();
         image->Register(NULL);
         image->Update();
-        image->SetSource(NULL);
+        //image->SetSource(NULL);
         reader->Delete();
     }
     else if ((image_fext == "tif") || (image_fext == "tiff") || 
@@ -631,7 +635,7 @@ void avtImageFileFormat::ReadInImage(void)
         image = reader->GetOutput();
         image->Register(NULL);
         image->Update();
-        image->SetSource(NULL);
+        //image->SetSource(NULL);
         reader->Delete();
     }
     else if ((image_fext == "bmp") || (image_fext == "BMP"))
@@ -643,7 +647,7 @@ void avtImageFileFormat::ReadInImage(void)
         image = reader->GetOutput();
         image->Register(NULL);
         image->Update();
-        image->SetSource(NULL);
+        //image->SetSource(NULL);
         reader->Delete();
     }
     else if ((image_fext == "spr") || (image_fext == "SPR") || 
@@ -654,7 +658,7 @@ void avtImageFileFormat::ReadInImage(void)
         image = reader->GetOutput();
         image->Register(NULL);
         image->Update();
-        image->SetSource(NULL);
+        //image->SetSource(NULL);
         reader->GetOrigin(xStart, yStart);
         reader->GetStep(xStep, yStep);
         reader->Delete();

@@ -26,6 +26,9 @@ class vtkCallbackCommand;
 class vtkDataArrayCollection;
 class vtkDataArraySelection;
 class vtkIdListCollection;
+//BTX
+class TranslationTableType;
+//ETX
 
 class vtkVisItGenericEnSightReader : public vtkDataSetSource
 {
@@ -49,8 +52,8 @@ public:
   
   // Description:
   // Get the number of variables listed in the case file.
-  int GetNumberOfVariables() { return this->NumberOfVariables; }
-  int GetNumberOfComplexVariables() { return this->NumberOfComplexVariables; }
+  vtkGetMacro(NumberOfVariables, int);
+  vtkGetMacro(NumberOfComplexVariables, int);
 
   // Description:
   // Get the number of variables of a particular type.
@@ -70,11 +73,11 @@ public:
 
   // Description:
   // Get the nth description for a non-complex variable.
-  char* GetDescription(int n);
+  const char* GetDescription(int n);
   
   // Description:
   // Get the nth description for a complex variable.
-  char* GetComplexDescription(int n);
+  const char* GetComplexDescription(int n);
   
   // Description:
   // Get the nth description of a particular variable type.  Returns NULL if no
@@ -85,7 +88,7 @@ public:
   // SCALAR_PER_MEASURED_NODE = 6; VECTOR_PER_MEASURED_NODE = 7;
   // COMPLEX_SCALAR_PER_NODE = 8; COMPLEX_VECTOR_PER_NODE 9;
   // COMPLEX_SCALAR_PER_ELEMENT  = 10; COMPLEX_VECTOR_PER_ELEMENT = 11
-  char* GetDescription(int n, int type);
+  const char* GetDescription(int n, int type);
   
   // Description:
   // Get the variable type of variable n.
@@ -202,8 +205,8 @@ protected:
   
   // Description:
   // Add a variable description to the appropriate array.
-  void AddVariableDescription(char* description);
-  void AddComplexVariableDescription(char* description);
+  void AddVariableDescription(const char* description);
+  void AddComplexVariableDescription(const char* description);
 
   // Description:
   // Add a variable type to the appropriate array.
@@ -300,7 +303,15 @@ protected:
   // Whether the SelectionModified callback should invoke Modified.
   // This is used when we are copying to/from the internal reader.
   int SelectionModifiedDoNotCallModified;
-  
+
+  // Insert a partId and return the 'realId' that should be used.
+  int InsertNewPartId(int partId);
+
+//BTX
+  // Wrapper around an stl map
+  TranslationTableType *TranslationTable;
+//ETX
+
 private:
   vtkVisItGenericEnSightReader(const vtkVisItGenericEnSightReader&);  // Not implemented.
   void operator=(const vtkVisItGenericEnSightReader&);  // Not implemented.

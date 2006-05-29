@@ -433,6 +433,13 @@ vtkQtRenderWindow::SetRGBAPixelData(int x1, int y1, int x2, int y2,
                             front, blend);
 }
 
+int 
+vtkQtRenderWindow::GetZbufferData( int x1, int y1, int x2, int y2, float *data)
+{
+    data = GetZbufferData(x1, y1, x2, y2);
+    return 1;
+} 
+
 // Modifications by LLNL:
 //      y_hi and x_hi removed since they were not being used.
 float *vtkQtRenderWindow::GetZbufferData( int x1, int y1, int x2, int y2  ) {

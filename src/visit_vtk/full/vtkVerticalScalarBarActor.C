@@ -14,6 +14,7 @@
 #include <vtkCellData.h>
 #include <vtkObjectFactory.h>
 #include <vtkPolyData.h>
+#include <vtkProperty2D.h>
 #include <vtkTextProperty.h>
 #include <vtkViewport.h>
 #include <vtkWindow.h>
@@ -329,6 +330,7 @@ void vtkVerticalScalarBarActor::BuildTitle(vtkViewport *viewport)
   tprop->SetItalic(this->Italic);
   tprop->SetShadow(this->Shadow);
   tprop->SetFontFamily(this->FontFamily);
+  tprop->SetColor(this->GetProperty()->GetColor());
 
   //
   // Set the title position in reference to the legend origin as a
@@ -390,6 +392,7 @@ void vtkVerticalScalarBarActor::BuildRange(vtkViewport *viewport)
   rprop->SetItalic(this->Italic);
   rprop->SetShadow(this->Shadow);
   rprop->SetFontFamily(this->FontFamily);
+  rprop->SetColor(this->GetProperty()->GetColor());
 
   this->RangeActor->SetProperty(this->GetProperty());
 
@@ -514,6 +517,7 @@ BuildLabels(vtkViewport * viewport, double bo, double bw, double bh, int nLabels
     tprop->SetItalic(this->Italic);
     tprop->SetShadow(this->Shadow);
     tprop->SetFontFamily(this->FontFamily);
+    tprop->SetColor(this->GetProperty()->GetColor());
 
     labelOrig[1] = (offset + (double)i*delta);
     this->LabelActors[i]->GetPositionCoordinate()->

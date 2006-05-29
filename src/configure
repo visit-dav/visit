@@ -2608,12 +2608,12 @@ if test -n "$VTK"; then
 echo "${ECHO_T}found" >&6
     VTK_DIR=$VTK
     VTK_INCROOT="$""(TOPDIR)/include/vtk"
-    VTK_INCLUDES="-I$VTK_INCROOT -I$VTK_INCROOT/Common -I$VTK_INCROOT/Filtering -I$VTK_INCROOT/Graphics -I$VTK_INCROOT/Hybrid -I$VTK_INCROOT/IO -I$VTK_INCROOT/Imaging -I$VTK_INCROOT/Rendering"
-    VTK_LIBS="-lvtkCommon -lvtkDICOMParser -lvtkFiltering -lvtkGraphics -lvtkHybrid -lvtkIO -lvtkImaging -lvtkRendering -lvtkzlib -lvtkexpat -lvtkjpeg -lvtkpng -lvtktiff -lvtkftgl -lvtkfreetype $MESA_LIBS $GL_LIBS "
+    VTK_INCLUDES="-I$VTK_INCROOT -I$VTK_INCROOT/Common -I$VTK_INCROOT/Filtering -I$VTK_INCROOT/Graphics -I$VTK_INCROOT/Hybrid -I$VTK_INCROOT/IO -I$VTK_INCROOT/Imaging -I$VTK_INCROOT/Rendering -I$VTK_INCROOT/Utilities"
+    VTK_LIBS="-lvtkCommon -lvtkDICOMParser -lvtkFiltering -lvtkGraphics -lvtkHybrid -lvtkIO -lvtkImaging -lvtkRendering -lvtkzlib -lvtkexpat -lvtkjpeg -lvtkpng -lvtktiff -lvtkftgl -lvtkfreetype -lvtksys -lvtkexoIIc -lvtkMPEG2Encode -lvtkNetCDF $MESA_LIBS $GL_LIBS "
     if test "$SHORT_UNAME" = "darwin"; then
         VTK_LIGHTWEIGHT_LIBS=$VTK_LIBS
     else
-        VTK_LIGHTWEIGHT_LIBS="-lvtkCommon -lvtkFiltering -lvtkzlib -lvtkexpat"
+        VTK_LIGHTWEIGHT_LIBS="-lvtkCommon -lvtkFiltering -lvtkzlib -lvtkexpat -lvtksys"
     fi
 else
     echo "$as_me:$LINENO: result: not found" >&5
@@ -6462,7 +6462,7 @@ else
       HDF5_INCLUDE="-I$DEFAULT_HDF5_INCLUDE $HDF5_INCLUDE"
    fi
    if test "$DEFAULT_HDF5_LIB" != "" ; then
-      HDF5_LIB="$DEFAULT_HDF5_LIB/libhdf5.$H5_LIBEXT $HDF5_LIB"
+      HDF5_LIB="$DEFAULT_HDF5_LIB/libhdf5.$H5_LIBEXT -lz $HDF5_LIB"
    fi
 fi
 if test "$HDF5_LIB" != "" ; then

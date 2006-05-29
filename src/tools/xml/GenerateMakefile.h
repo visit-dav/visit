@@ -284,7 +284,8 @@ class MakefileGeneratorPlugin
         out << "  -I"<<vtkdir<<"/Hybrid \\"<<endl;
         out << "  -I"<<vtkdir<<"/IO \\"<<endl;
         out << "  -I"<<vtkdir<<"/Imaging \\"<<endl;
-        out << "  -I"<<vtkdir<<"/Rendering"<<endl;
+        out << "  -I"<<vtkdir<<"/Rendering \\"<<endl;
+        out << "  -I"<<vtkdir<<"/Utilities"<<endl;
         out << "MOC="<<visithome<<"/bin/moc" << endl;
         if(type == "database")
             out << "CXXFLAGS=$(CXXFLAGSORIG)";

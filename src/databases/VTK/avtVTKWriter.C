@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include <vtkDataSet.h>
 #include <vtkDataSetWriter.h>
 
 #include <avtDatabaseMetaData.h>
