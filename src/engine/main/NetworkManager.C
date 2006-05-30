@@ -1787,6 +1787,11 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Fixed bug in selecting which cellCounts entries to store as global
 //    cell counts for the whole network
 //
+//    Brad Whitlock, Tue May 30 14:01:56 PST 2006
+//    Added code to set up annotations before adding plots in some cases so
+//    annotations that depend on plots being added in order to update 
+//    themselves get the opportunity to do so.
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -1821,6 +1826,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         avtDataObjectWriter_p writer;
         bool needToSetUpWindowContents = false;
         int *cellCounts = new int[2 * plotIds.size()];
+        bool handledAnnotations = false;
 
         // put all the plot objects into the VisWindow
         viswin->SetScalableRendering(false);
@@ -1845,6 +1851,21 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             viswin->ClearPlots();
             imageBasedPlots.clear();
             visitTimer->StopTimer(t3, "Clearing plots out of vis window");
+
+            //
+            // If we're doing all annotations on the engine then we need to add
+            // the annotations to the window before we add plots so the annotations
+            // that depend on the plot list being updated in order to change their
+            // text with respect to time can update.
+            //
+            if(annotMode == 2)
+            {
+                UpdateVisualCues(windowID);
+                SetAnnotationAttributes(annotationAttributes,
+                                        annotationObjectList, visualCueList,
+                                        frameAndState, windowID, annotMode);
+                handledAnnotations = true;
+            }
 
             // see if there are any non-mesh plots in the list
             bool hasNonMeshPlots = HasNonMeshPlots(plotIds);
@@ -2003,10 +2024,13 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             //
             // Add annotations if necessary 
             //
-            UpdateVisualCues(windowID);
-            SetAnnotationAttributes(annotationAttributes,
-                                    annotationObjectList, visualCueList,
-                                    frameAndState, windowID, annotMode);
+            if(!handledAnnotations)
+            {
+                UpdateVisualCues(windowID);
+                SetAnnotationAttributes(annotationAttributes,
+                                        annotationObjectList, visualCueList,
+                                        frameAndState, windowID, annotMode);
+            }
 
             debug5 << "Rendering " << viswin->GetNumPrimitives() 
                    << " primitives.  Balanced speedup = " 

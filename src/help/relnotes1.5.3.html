@@ -1,0 +1,78 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.5.3 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.5.3 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.5.3</font></b></p>
+<ul>
+<li>VisIt can now create Histogram plots of array variables when using the pick capabilities. This new feature allows you to more easily view data such as energy groups. Successive picks on an array variable update the Histogram plot with data from the new pick point.</li>
+<li>Menu creation is now over 10 times faster, making VisIt's GUI respond faster when opening files that contain many variables.</li>
+<li>VisIt now uses VTK 5.0, bringing VisIt up to date with advances in the VTK library.</li>
+<li>VisIt now includes a Molecule plot that allows you to plot and examine molecular structures and data on those structures such as element type, residue type, and sequence id. The Molecule plot provides controls for setting the plot's appearance. For example, you can choose from a variety of sphere or ball and stick representations and you can choose from the new molecule-related built-in color tables that allow you to color your plot using coloring schemes from popular tools such as Jmol and Rasmol.</li>
+<li>VisIt includes a new Protein Databank database reader plug-in that allows VisIt to read molecular structures from Protein Databank files.</li>
+<li>VisIt's BOV database reader plug-in has been improved so it can read bricks of integer and double precision data in addition to the previously supported byte and float formats. The reader can also now read files containing multi-component data such as complex, vector, or array variables. The improved BOV reader makes it much more likely that VisIt will read binary files created by simple 2D and 3D simulations that use an implicit grid, including some Fortran simulation codes.</li>
+<li>VisIt's BOV database reader plug-in has been enhanced to understand a new
+ <i>DIVIDE_BRICKLETS</i> keyword that allows the reader to split up a large file into many domains that can be processed in parallel.</li>
+<li>VisIt's BOV database reader plug-in can now import 2D data.</i>
+<li>VisIt now includes <i>elliptical</i> and <i>localized compactness factor</i> queries.</li>
+<li>VisIt now includes <i>mean curvature</i> and <i>Gaussian curvature</i> expressions that allow you to find peaks and valleys in scalar fields. In addition, an <i>average mean curvature</i> query was added.</li>
+<li>VisIt now includes <i>min</i> and <i>max</i> expressions so creating conditional expressions is easier.</li>
+<li>VisIt's Variables menu can now accept scalar data when a Curve plot is the active plot, allowing you to change the variable in a Lineout curve.</li>
+<li>VisIt now includes a GTC database reader plug-in, making it possible to read data created by Oak Ridge National Laboratory's GTC simulation code.</li>
+<li>VisIt's KullLite database reader plug-in has been enhanced so it can read scalar fields from the files.</li>
+<li>VisIt's Spheral database reader plug-in can now return accurate cycle and time values.</li>
+<li>VisIt's Enzo database reader plug-in now supports tracer particles.</li>
+<li>The <i>NodePick</i> query now has a <i>PointQuery</i> alias in the Query window.</li>
+<li>The Python Interface Manual has been updated to fix a flaw in the documentation for the <i>CreateAnnotationObject</i> function.</li>
+<li>VisIt's download pages now include a DNS lookup disclaimer that can indicate to certain users the reasons why they cannot download VisIt.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.5.3</font></b></p>
+<ul>
+<li>The "flip" option in VisIt's Slice operator sometimes caused plots to disappear after changing time states.</li>
+<li>VisIt's viewer crashes when you attempt to add an operator after a Lineout operator through VisIt's Python interface.</li>
+<li>VisIt crashes when performing a query that causes the compute engine to crash.</li>
+<li>VisIt's FLASH database reader plug-in was not registering its patch nesting when changing time steps, leading to rendering anomalies.</li>
+<li>Zone pick fails when picking on a Mili database.</li>
+<li>An uncaught exception in VisIt's GUI was causing VisIt to terminate.</li>
+<li>Printing an image of a visualization window causes VisIt to crash if screen-capture is not enabled and the compute engine has exited.</li>
+<li>Movie-making in VisIt ceases to work when the compute engine is re-launched if the plot list contains plots from a database with 1 time state and plots that use a database with multiple time states. VisIt proceeds to save out zero-length image files.</li>
+<li>VisIt's Save options window contained a typo.</li>
+<li>Some of VisIt's plot attributes windows contained a typo.</li>
+<li>The <i>visit-convert</i> program crashes if its input files do not exist.</li>
+<li>The <i>visit-convert</i> program crashes when trying to convert Curv2D data files into VTK files.</li>
+<li>VisIt can no longer correctly open a filename that contains a hostname when the filename is passed via the <i>-o</i> command line option.</li>
+<li>Node pick does not return the right values after applying a Clip operator.</li>
+<li>The <i>VariableSum</i> query is not taking the SIL restriction into account for nodal Mili data files.</li>
+<li>High aspect meshes cause the Volume plot to crash during the resampling phase.</li>
+<li>VisIt's <i>Check for updates</i> feature failed on MacOS X because of a new required argument to the <i>visit-install</i> installation script. The update feature has been improved so it can more reliably determine which version of VisIt was installed, making it more likely that VisIt will update itself with a compatible version on platforms where many binary distributions are provided.</li>
+<li>Plotting a mesh from a VTK files composed of quadratic triangles resulted in no data in the visualization window. VisIt's face list filter has been improved so it breaks up these higher order cells into linear triangular cells.</li>
+<li>The Label plot does not draw 3D labels in quite the right location once you have zoomed in on the plot.</li>
+<li>Pick no longer works for array variables.</li>
+<li>VisIt's ghost zone communication routine contains a large memory leak.</li>
+<li>Scalable rendering can cause the <i>Engine chooser dialog</i> to appear again once you have dismissed it and you are waiting for your compute engine to launch.</li>
+<li>VisIt's time slider annotation object prints "Time=0" for all time states of an animation when scalable rendering is used while making a movie.</li>
+<li>The pre-command for hardware-accelerated host profiles was not working as expected.</li>
+<li>VisIt's basic NETCDF reader plug-in crashes the compute engine when you change time states.</li>
+<li>Database export into the BOV file format fails due to an initialization problem.</li>
+<li>Imgvol files cannot be read in the MacOS X version of VisIt.</li>
+<li>VisIt's basic NETCDF reader can no longer guess cycle numbers from filenames.</li>
+<li>VisIt does not use the latest DDF when there is name conflict.</li>
+<li>Throwing an exception in the <i>ActivateTimestep</i> method of an MTMD database 
+plug-in can cause the compute engine to crash.</li>
+<li>Pseudocolor plot's of the "p" variable from the multi_rect2d.silo example dataset are no longer correct.</li>
+<li>The VisIt Web site contains a bad link on the data download page.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes1.5.2.html">VisIt 1.5.2 Release Notes</a>.</p>
+</body>
+</html>

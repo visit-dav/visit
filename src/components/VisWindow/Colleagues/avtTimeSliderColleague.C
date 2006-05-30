@@ -610,9 +610,12 @@ avtTimeSliderColleague::SetFrameAndState(int nFrames,
 // Creation:   Wed Dec 3 12:46:37 PDT 2003
 //
 // Modifications:
-//    Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005 
-//    Send timeFormatString to SetText method.
-//   
+//   Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005 
+//   Send timeFormatString to SetText method.
+//
+//   Brad Whitlock, Tue May 30 14:33:05 PST 2006
+//   I made it look for a plot that is time-varying.
+//
 // ****************************************************************************
 
 void
@@ -620,7 +623,19 @@ avtTimeSliderColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 {
     if(lst.size() > 0 && textFormatString != 0)
     {
-        avtDataAttributes &atts = lst[0]->GetBehavior()->GetInfo().GetAttributes();
+        // Look for the first plot that uses a database with multiple time
+        // states. If one is not found then we will use the first plot.
+        int plotIndex = 0;
+        for(int i = 0; i < lst.size(); ++i)
+        {
+            avtDataAttributes &atts = lst[i]->GetBehavior()->GetInfo().GetAttributes();
+            if(atts.GetNumStates() > 1)
+            {
+                plotIndex = i;
+                break;
+            }
+        }
+        avtDataAttributes &atts = lst[plotIndex]->GetBehavior()->GetInfo().GetAttributes();
         currentTime = atts.GetTime();
 
         std::string formatString(textFormatString);
