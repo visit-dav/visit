@@ -601,6 +601,11 @@ ReadIOConvert(fileName)
  *
  * SIDE EFFECTS:    none
  *
+ * MODIFICATIONS:
+ *  
+ *   Hank Childs, Thu Jun  1 11:29:35 PDT 2006
+ *   Fix buffer overwrite.
+ *
  *===========================================================================*/
 static boolean
 ReadPPM(mf, fpointer)
@@ -611,7 +616,7 @@ ReadPPM(mf, fpointer)
     char    string[71];
     char    *inputLine;
     int        height = 0, width = 0, maxVal=255;
-    uint8_mpeg_t   junk[4096];
+    uint8_mpeg_t   junk[16384];
     register int y;
     int        state;
     int     safe_read_count;
