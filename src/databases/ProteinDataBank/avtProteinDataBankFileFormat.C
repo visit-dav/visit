@@ -898,6 +898,10 @@ avtProteinDataBankFileFormat::ReadAtomsForModel(int model)
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 23, 2006
 //
+//  Modifications:
+//    Brad Whitlock, Fri Jun 2 13:15:47 PST 2006
+//    Added Jeremy's fix for yet another style of ATOM line.
+//
 // ****************************************************************************
 Atom::Atom(const char *line)
 {
@@ -942,6 +946,11 @@ Atom::Atom(const char *line)
         if(line[12] == ' ' || (line[12] >= '0' && line[12] <= '9'))
         {
             element[0] = line[13];
+            element[1] = '\0';
+        }
+        else if (line[13] >= '0' && line[13] <= '9')
+        {
+            element[0] = line[12];
             element[1] = '\0';
         }
         else
