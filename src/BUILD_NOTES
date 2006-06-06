@@ -200,20 +200,38 @@ VTK/README.html file included in the VTK distribution for more information.
 gunzip cmake-2.2.3.tar.gz
 tar xf cmake-2.2.3.tar
 cd cmake-2.2.3
+
+# We have experienced problems with CMake not using the right compilers 
+# even if specified on the command line, so they should be set in your
+# environemnt: 
+# e.g.
+#    setenv CC=xlc
+#    setenv CXX=xlC
+# or
+#    setenv CC=gcc-3.2
+#    setenv CXX=g++-3.2
+#
+
 #
 # We have experienced problems building CMake on aix with g++/gcc.
 # so for aix use the native compilers to build CMake: 
 # env CXX=xlC CC=xlc CXXFLAGS="" CFLAGS="" ./bootstrap
 # otherwise:
 env CXXFLAGS=""  CFLAGS="" ./bootstrap
+
+# We have experienced problems with CMake's build of its curses version,
+# (ccmake) either with the curses header or library.  (Mainly with AIX).
+# To prevent CMake from attempting to build ccmake, open CMakeCache.txt
+# and set CURSES_LIBRARY:FILEPATH=   to ""
+
 make
 
 #
 # Build VTK
 #
 cd ..
-gunzip vtk_cvs_5.0.0a.tar.gz
-tar xf vtk_cvs_5.0.0a.tar
+gunzip vtk_5.0.0a.tar.gz
+tar xf vtk_5.0.0a.tar
 cd VTK
 #
 # On irix systems we have experienced problems with CMake not using the
@@ -1162,6 +1180,7 @@ SAF files.  The third group of options are used when building with support
 for reading exodus files.
 
 If you have any problems send e-mail to visit-help@llnl.gov.
+
 
 
 
