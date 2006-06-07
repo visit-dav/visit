@@ -74,7 +74,11 @@
 
 using     std::string;
 
+#if defined(__GNUC__) && ((__GNUC__ < 3) || (__GNUC__ == 3 && __GNUC_MINOR__ < 2))
+#define DELOGIFY(V) ((V>=0.0)?1.0:-1.0) * pow(10.0, 16.0 * fabs(V) - 8.0)
+#else
 #define DELOGIFY(V) ((V>=0.0f)?1.0f:-1.0f) * powf(10.0f, 16.0f * fabsf(V) - 8.0f)
+#endif
 
 #define DEBUG_PRINT
 #ifdef DEBUG_PRINT

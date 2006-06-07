@@ -29,9 +29,6 @@ user=`whoami`
 #
 emailName=brugger1@llnl.gov
 case $user in
-   ahern)
-      emailName=ahern1@llnl.gov
-      ;;
    kbonnell)
       emailName=bonnell2@llnl.gov
       ;;
@@ -41,14 +38,11 @@ case $user in
    childs)
       emailName=childs3@llnl.gov
       ;;
-   jennings)
-      emailName=jennings4@llnl.gov
+   mcmiller)
+      emailName=miller86@llnl.gov
       ;;
-   meredith)
-      emailName=meredith6@llnl.gov
-      ;;
-   murguia)
-      emailName=murguia1@llnl.gov
+   miller)
+      emailName=miller86@llnl.gov
       ;;
    whitlocb)
       emailName=whitlock2@llnl.gov
@@ -66,6 +60,7 @@ berg=true
 up=true
 pengra=true
 thunder=true
+vertex=true
 
 ver=undefined
 verflag=-private
@@ -87,6 +82,7 @@ do
          up=false
          pengra=false
          thunder=false
+         vertex=false
          shift
          ;;
       -hoth)
@@ -151,6 +147,14 @@ do
          ;;
       +thunder)
          thunder=true
+         shift
+         ;;
+      -vertex)
+         vertex=false
+         shift
+         ;;
+      +vertex)
+         vertex=true
          shift
          ;;
       -v)
@@ -365,7 +369,7 @@ if [ $berg = true ]
 then
    if [ $test = no ]
    then
-      scp berg:/p/glocal1/$user/berg/visitbuild/visit$ver2.aix.tar.gz .
+      scp berg:/g/g17/$user/berg/visitbuild/visit$ver2.aix.tar.gz .
       scp visit$ver2.aix.tar.gz gps15:
       scp visit-install gps15:
       scp berg gps15:berg_install
@@ -483,9 +487,45 @@ then
 fi
 
 #
+# Install on vertex.
+#
+rm -f vertex
+cat <<EOF > vertex
+#!/bin/sh
+./visit-install -private -c open -g visit -b bdivp -gw -l $ver linux-x86_64 /usr/gapps/visit > installlog 2>&1
+rm -f resultlog
+echo "        install of visit on vertex"          > resultlog 2>&1
+echo "       ----------------------------"         >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/linux-x86_64/bin       >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "The database plugins:"                       >> resultlog 2>&1
+ls /usr/gapps/visit/$ver/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $vertex = true ]
+then
+   if [ $test = no ]
+   then
+      scp vertex2:/usr/tmp/$user/vertex/visitbuild/visit$ver2.linux-x86_64.tar.gz .
+      scp visit$ver2.linux-x86_64.tar.gz gps15:
+      scp visit-install gps15:
+      scp vertex gps15:vertex_install
+      ssh gps15 "chmod 750 vertex_install;./vertex_install"
+   fi
+fi
+
+#
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot quad gps berg up pengra thunder
+   rm -f hoth sunspot quad gps berg up pengra thunder vertex
 fi
