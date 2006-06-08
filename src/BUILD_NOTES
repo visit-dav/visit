@@ -16,7 +16,7 @@ shell prompt.
     Mesa     5.0       3-D Graphics Library   http://www.mesa3d.org/
     Python   2.1.2     Scripting Language     http://www.python.org
     Qt       3.3.2     GUI Toolkit            http://www.trolltech.com
-    Silo     4.5       File I/O library       http://www.llnl.gov/bdiv/meshtv
+    Silo     4.5.1     File I/O library       http://www.llnl.gov/bdiv/meshtv
     VTK      5.0.0a    Visualization Toolkit  http://www.kitware.com
 
 
@@ -39,7 +39,7 @@ build and install those libraries prior to building VisIt.
     =======  =======  ===========            ====================
     Boxlib   ???      An AMR I/O library     ???
     HDF4     2.4.1    File I/O library       http://hdf.ncsa.uiuc.edu/hdf4.html
-    HDF5     1.6.0    File I/O library       http://hdf.ncsa.uiuc.edu/HDF5/
+    HDF5     1.6.5    File I/O library       http://hdf.ncsa.uiuc.edu/HDF5/
     Mili     1.09     File I/O library       (none)
     netCDF   3.6.0    File I/O library       http://www.unidata.ucar.edu/packages/netcdf/
     CGNS     2.4      File I/O library       http://www.cgns.org
@@ -598,8 +598,8 @@ Silo, read the BUILD_NOTES file in the Silo distribution for more information.
 #
 # Build Silo
 #
-sh silo051121.sh
-cd silo051121
+sh silo060605.sh
+cd silo060605
 
 #
 #
@@ -616,7 +616,7 @@ cd silo051121
 # If you want to build silo with hdf5 support then use the commented configure
 # line.  If you want to build silo with hdf5 support you must first build hdf5,
 # which is described later in this document.
-# env CFLAGS=-O2 ./configure --without-readline -with-hdf5=$VISITDIR/hdf5/1.6.0/$VISITARCH/include,$VISITDIR/hdf5/1.6.0/$VISITARCH/lib --without-exodus
+# env CFLAGS=-O2 ./configure --without-readline -with-hdf5=$VISITDIR/hdf5/1.6.5/$VISITARCH/include,$VISITDIR/hdf5/1.6.5/$VISITARCH/lib --without-exodus
 #
 env CFLAGS=-O2 ./configure --without-readline --without-hdf5 --without-exodus
 make
@@ -625,12 +625,12 @@ make
 # Install it in the visit directory under the silo directory.
 #
 mkdir $VISITDIR/silo
-mkdir $VISITDIR/silo/4.5
-mkdir $VISITDIR/silo/4.5/$VISITARCH
-mkdir $VISITDIR/silo/4.5/$VISITARCH/{include,lib}
-cp silo/silo/silo.{h,inc}   $VISITDIR/silo/4.5/$VISITARCH/include
-cp silo/sdx/sdx.{h,inc}     $VISITDIR/silo/4.5/$VISITARCH/include
-cp lib/libsilo.a            $VISITDIR/silo/4.5/$VISITARCH/lib
+mkdir $VISITDIR/silo/4.5.1
+mkdir $VISITDIR/silo/4.5.1/$VISITARCH
+mkdir $VISITDIR/silo/4.5.1/$VISITARCH/{include,lib}
+cp silo/silo/silo.{h,inc}   $VISITDIR/silo/4.5.1/$VISITARCH/include
+cp silo/sdx/sdx.{h,inc}     $VISITDIR/silo/4.5.1/$VISITARCH/include
+cp lib/libsilo.a            $VISITDIR/silo/4.5.1/$VISITARCH/lib
 cd ..
 
 
@@ -1123,9 +1123,9 @@ More information about building VisIt follows after that.
 #
 # Build and install it in the visit directory.
 #
-gunzip visit060327.tar.gz
-tar xf visit060327.tar
-cd visit060327/config-site
+gunzip visit060612.tar.gz
+tar xf visit060612.tar
+cd visit060612/config-site
 echo VISITHOME=$VISITDIR > `hostname`.conf
 sed "s/ARCH/$VISITARCH/" Template.conf >> `hostname`.conf
 cd ..
@@ -1143,14 +1143,14 @@ clearcase_bin/visit-bin-dist
 # Use the appropriate install command based on the operating system on
 # which you built VisIt.
 #
-clearcase_bin/visit-install 1.5.2 aix $VISITDIR
-clearcase_bin/visit-install 1.5.2 darwin $VISITDIR
-clearcase_bin/visit-install 1.5.2 irix6 $VISITDIR
-clearcase_bin/visit-install 1.5.2 linux $VISITDIR
-clearcase_bin/visit-install 1.5.2 linux-ia64 $VISITDIR
-clearcase_bin/visit-install 1.5.2 linux-x86_64 $VISITDIR
-clearcase_bin/visit-install 1.5.2 osf1 $VISITDIR
-clearcase_bin/visit-install 1.5.2 sunos5 $VISITDIR
+clearcase_bin/visit-install 1.5.3 aix $VISITDIR
+clearcase_bin/visit-install 1.5.3 darwin $VISITDIR
+clearcase_bin/visit-install 1.5.3 irix6 $VISITDIR
+clearcase_bin/visit-install 1.5.3 linux $VISITDIR
+clearcase_bin/visit-install 1.5.3 linux-ia64 $VISITDIR
+clearcase_bin/visit-install 1.5.3 linux-x86_64 $VISITDIR
+clearcase_bin/visit-install 1.5.3 osf1 $VISITDIR
+clearcase_bin/visit-install 1.5.3 sunos5 $VISITDIR
 
 When running the configure script you can enable or disable certain dependent
 packages.  All the configure options are listed at the beginning of the
