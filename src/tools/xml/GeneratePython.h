@@ -132,6 +132,9 @@ inline char toupper(char c)
 //    Changed string representation coding and removed most print coding by
 //    making it use the string coding.
 //
+//    Hank Childs, Fri Jun  9 09:50:37 PDT 2006
+//    Added copyright string.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1950,6 +1953,7 @@ class PythonGeneratorAttribute
 
     void WriteHeader(ostream &h)
     {
+        h << copyright_str << endl;
         h << "#ifndef PY_" << name.upper() << "_H" << endl;
         h << "#define PY_" << name.upper() << "_H" << endl;
         h << "#include <Python.h>" << endl;
@@ -2410,6 +2414,7 @@ class PythonGeneratorAttribute
 
     void WriteSource(ostream &c)
     {
+        c << copyright_str << endl;
         c << "#include <Py" << name << ".h>" << endl;
         c << "#include <ObserverToCallback.h>" << endl;
         WriteIncludedHeaders(c);

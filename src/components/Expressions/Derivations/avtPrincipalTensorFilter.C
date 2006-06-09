@@ -99,6 +99,9 @@ avtPrincipalTensorFilter::~avtPrincipalTensorFilter()
 //    Hank Childs, Thu Jun 17 08:16:40 PDT 2004
 //    Fix typo that caused bad derivation.
 //
+//    Hank Childs, Fri Jun  9 14:22:43 PDT 2006
+//    Comment out currently unused variable.
+//
 // ****************************************************************************
 
 void
@@ -116,7 +119,7 @@ avtPrincipalTensorFilter::DoOperation(vtkDataArray *in, vtkDataArray *out,
             double dev1 = vals[4] + pressure;
             double dev2 = vals[8] + pressure;
 
-            double invariant0 = dev0 + dev1 + dev2;
+            // double invariant0 = dev0 + dev1 + dev2;
             double invariant1 = 0.5*(dev0*dev0 + dev1*dev1 + dev2*dev2);
             invariant1 += vals[1]*vals[1] + vals[2]*vals[2] + vals[5]*vals[5];
             double invariant2 = -dev0*dev1*dev2;

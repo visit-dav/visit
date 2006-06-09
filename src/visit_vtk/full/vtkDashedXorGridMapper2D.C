@@ -196,6 +196,9 @@ vtkDashedXorGridMapper2D::SetDots(int drawn, int spaced)
 //    Brad Whitlock, Mon Mar 13 11:22:50 PDT 2006
 //    Added MacOS X implementation.
 //
+//    Hank Childs, Fri Jun  9 12:54:36 PDT 2006
+//    Remove unused variable.
+//
 // ****************************************************************************
 
 void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* actor)
@@ -385,7 +388,6 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
     int cellScalars = 0;
     int cellNum = 0;
     int lastX, lastY, X, Y; 
-    int currSize = 1024;
  
     vtkDebugMacro (<< "vtkDashedXorGridMapper2D::RenderOverlay");
 

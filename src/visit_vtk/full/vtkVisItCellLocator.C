@@ -3103,6 +3103,9 @@ EdgeLineIsect(vtkCell *cell, const double *p1, const double *p2, double *x)
 //   Kathleen Bonnell, Thu May 19 11:34:05 PDT 2005 
 //   Return both cell-centers AND intersection points. 
 //
+//   Hank Childs, Fri Jun  9 13:13:20 PDT 2006
+//   Remove unused variable.
+//
 // ****************************************************************************
 int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3], 
                                       vtkPoints *ipts, vtkPoints *cpts,
@@ -3134,7 +3137,6 @@ int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3],
   vtkUnsignedCharArray *ghosts = 
     (vtkUnsignedCharArray *)this->DataSet->GetCellData()->GetArray("avtGhostZones");
 
-  int ncells = this->DataSet->GetNumberOfCells();
   int ncellsTested = 0;
   // convert the line into i,j,k coordinates
   tMax = 0.0;

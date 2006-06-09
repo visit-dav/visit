@@ -48,6 +48,8 @@
 #include <VisWindow.h>
 #include <VisWindowColleagueProxy.h>
 
+#include <DebugStream.h>
+
 
 // ****************************************************************************
 //  Method: VisWinFrame constructor
@@ -690,6 +692,9 @@ VisWinFrame::UpdateView(void)
 //    I rewrote the routine to get the range from the curve or 2d view from
 //    the vis window.
 //
+//    Hank Childs, Fri Jun  9 14:51:31 PDT 2006
+//    Add case to switch statement.
+//
 // ****************************************************************************
 
 void
@@ -716,6 +721,9 @@ VisWinFrame::GetRange(double &min_x, double &max_x, double &min_y, double &max_y
         min_y = viewCurve.range[0];
         max_y = viewCurve.range[1];
         }
+        break;
+      default:
+        debug1 << "Asked for range from non-2D window." << endl;
         break;
     }
 }

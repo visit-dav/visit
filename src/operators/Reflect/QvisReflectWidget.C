@@ -363,6 +363,9 @@ QvisReflectWidget::redrawScene(QPainter *painter)
 //   Brad Whitlock, Fri Aug 22 09:02:18 PDT 2003
 //   Changed how the background brush is selected so it works on MacOS X.
 //
+//   Hank Childs, Thu Jun  8 14:08:18 PDT 2006
+//   Fix compiler warnings for casting.
+//
 // ****************************************************************************
 
 void
@@ -405,10 +408,10 @@ QvisReflectWidget::redrawScene2D(QPainter *painter)
     vector3 y1 = renderer.transform_world_point(vec_create(0, -axes_size, axes_size));
     painter->setPen(colorGroup().foreground());
     const char *x = "+X";
-    painter->drawText(x0.x, x0.y + h, "-X");
-    painter->drawText(x1.x - fontMetrics().width(x), x1.y + h, x);
-    painter->drawText(y0.x + 5, y0.y + h, "+Y");
-    painter->drawText(y1.x + 5, y1.y, "-Y");
+    painter->drawText((int) x0.x, (int) (x0.y + h), "-X");
+    painter->drawText((int) (x1.x - fontMetrics().width(x)), (int) (x1.y + h), x);
+    painter->drawText((int) (y0.x + 5), (int) (y0.y + h), "+Y");
+    painter->drawText((int) (y1.x + 5), (int) (y1.y), "-Y");
 }
 
 // ****************************************************************************
@@ -556,6 +559,9 @@ QvisReflectWidget::setupCamera()
 //   Brad Whitlock, Fri Aug 22 09:03:06 PDT 2003
 //   I changed how the brush is selected so it works on MacOS X.
 //
+//   Hank Childs, Thu Jun  8 14:08:18 PDT 2006
+//   Fix compiler warnings for casting.
+//
 // ****************************************************************************
 
 void
@@ -618,9 +624,9 @@ QvisReflectWidget::setupAndDraw(QPainter *p)
             vector3 p1 = renderer.transform_world_point(vec_create(0, axes_size, 0));
             vector3 p2 = renderer.transform_world_point(vec_create(0, 0, axes_size));
 
-            p->drawText(p0.x + 5, p0.y + 5, "+X");
-            p->drawText(p1.x, p1.y - 5, "+Y");
-            p->drawText(p2.x - 20, p2.y + 5, "+Z");
+            p->drawText((int) (p0.x + 5), (int) (p0.y + 5), "+X");
+            p->drawText((int) (p1.x), (int) (p1.y - 5), "+Y");
+            p->drawText((int) (p2.x - 20), (int) (p2.y + 5), "+Z");
         }
         else
         {
@@ -631,9 +637,9 @@ QvisReflectWidget::setupAndDraw(QPainter *p)
             vector3 p1 = renderer.transform_world_point(vec_create(0, axes_size, 0));
             vector3 p2 = renderer.transform_world_point(vec_create(0, 0, -axes_size));
 
-            p->drawText(p0.x + 5, p0.y + 5, "-X");
-            p->drawText(p1.x, p1.y - 5, "+Y");
-            p->drawText(p2.x - 20, p2.y + 5, "-Z");
+            p->drawText((int) (p0.x + 5), (int) (p0.y + 5), "-X");
+            p->drawText((int) (p1.x), (int) (p1.y - 5), "+Y");
+            p->drawText((int) (p2.x - 20), (int) (p2.y + 5), "-Z");
         }
     }
 }

@@ -269,6 +269,9 @@ avtDatasetExaminer::GetSpatialExtents(std::vector<avtDataTree_p> &l,double *se)
 //    Kathleen Bonnell, Thu Mar 11 10:14:20 PST 2004 
 //    DataExtents now always has only 2 components. 
 //
+//    Hank Childs, Fri Jun  9 13:25:31 PDT 2006
+//    Remove unused variable
+//
 // ****************************************************************************
  
 bool
@@ -283,7 +286,6 @@ avtDatasetExaminer::GetDataExtents(avtDataset_p &ds, double *de,
     avtDataTree_p dataTree = ds->dataTree;
 
     bool foundExtents = false;
-    int dim = ds->GetInfo().GetAttributes().GetVariableDimension(varname);
     de[0] = +DBL_MAX;
     de[1] = -DBL_MAX;
  

@@ -122,6 +122,9 @@ avtOriginalDataSpatialExtentsQuery::ApplyFilters(avtDataObject_p inData)
 //
 //  Modifications:
 //
+//    Hank Childs, Fri Jun  9 14:43:27 PDT 2006
+//    Remove unused variable.
+//
 // ****************************************************************************
 
 void
@@ -140,7 +143,7 @@ avtOriginalDataSpatialExtentsQuery::PerformQuery(QueryAttributes *qA)
     double extents[6] = {0., 0., 0., 0., 0., 0.};
     char msg[1024];
 
-    bool success = avtDatasetExaminer::GetSpatialExtents(input, extents);
+    avtDatasetExaminer::GetSpatialExtents(input, extents);
     UnifyMinMax(extents, 6);
     int dim = input->GetInfo().GetAttributes().GetSpatialDimension();
     if (dim == 1)

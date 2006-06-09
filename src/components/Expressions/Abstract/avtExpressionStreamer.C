@@ -164,14 +164,15 @@ avtExpressionStreamer::~avtExpressionStreamer()
 //    Hank Childs, Sun Feb 19 10:26:49 PST 2006
 //    Fix a crash.
 //
+//    Hank Childs, Fri Jun  9 14:18:11 PDT 2006
+//    Remove unused variable.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtExpressionStreamer::ExecuteData(vtkDataSet *in_ds, int index,
                                  std::string label)
 {
-    int   i;
-
     //
     // Sometimes we are asked to calculate a variable twice.  The easiest way
     // to catch this is to see if we already have the requested variable and

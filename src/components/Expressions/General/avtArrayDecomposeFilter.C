@@ -114,12 +114,17 @@ avtArrayDecomposeFilter::~avtArrayDecomposeFilter()
 //  Programmer:   Hank Childs
 //  Creation:     July 21, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  9 14:22:43 PDT 2006
+//    Remove unused variable.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtArrayDecomposeFilter::DeriveVariable(vtkDataSet *in_ds)
 {
-    int    i, j;
+    int    i;
 
     if (activeVariable == NULL)
         EXCEPTION1(ExpressionException, "Asked to decompose an array, but did "

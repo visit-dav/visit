@@ -163,6 +163,9 @@ using std::vector;
 //    Allow assignment operator and 'SetProperty' methods from codefile to 
 //    replace default generated methods. 
 //
+//    Hank Childs, Thu Jun  8 16:52:47 PDT 2006
+//    Added copyright.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1608,6 +1611,7 @@ class AttsGeneratorAttribute
     // ------------------------------------------------------------------------
     void WriteHeader(ostream &h)
     {
+        h << copyright_str << endl;
         h << "#ifndef " << name.upper() << "_H" << endl;
         h << "#define " << name.upper() << "_H" << endl;
         if(!exportInclude.isEmpty())
@@ -2459,6 +2463,7 @@ class AttsGeneratorAttribute
     void WriteSource(ostream &c)
     {
         int i;
+        c << copyright_str << endl;
         c << "#include <" << name << ".h>" << endl;
         WriteSourceIncludes(c);
 

@@ -116,6 +116,11 @@ static const char   *GetOriginalVariableName(const avtDatabaseMetaData *,
 //  Programmer: Mark C. Miller 
 //  Creation:   April 4, 2005 
 // 
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  9 14:03:55 PDT 2006
+//    Add return statement for unmet cases.
+//
 // ****************************************************************************
 
 static const char *DataArrayTypeName(vtkDataArray *arr)
@@ -136,6 +141,8 @@ static const char *DataArrayTypeName(vtkDataArray *arr)
         case VTK_DOUBLE:         return "double";
         case VTK_ID_TYPE:        return "vtkIdType";
     }
+
+    return "<does not match any known type>";
 }
 
 // ****************************************************************************
@@ -149,6 +156,10 @@ static const char *DataArrayTypeName(vtkDataArray *arr)
 //  Modifications:
 //     Mark C. Miller, Tue Sep 13 20:07:48 PDT 2005
 //     Made it just take data type as arg instead of a vtkDataArray
+//
+//    Hank Childs, Fri Jun  9 14:03:55 PDT 2006
+//    Add return statement for unmet cases.
+//
 // ****************************************************************************
 
 static int
@@ -170,6 +181,8 @@ PrecisionInBytes(int dataType)
         case VTK_DOUBLE:         return sizeof(double);
         case VTK_ID_TYPE:        return sizeof(vtkIdType);
     }
+
+    return -1;
 }
 
 // ****************************************************************************

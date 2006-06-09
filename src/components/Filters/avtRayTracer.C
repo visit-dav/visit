@@ -229,6 +229,12 @@ avtRayTracer::SetGradientBackgroundColors(const double bg1[3],
 //  Programmer: Hank Childs
 //  Creation:   December 4, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  9 13:47:29 PDT 2006
+//    Replace 3 with numPerTile (oversight that it wasn't coded that way
+//    originally).
+//
 // ****************************************************************************
 
 int
@@ -239,7 +245,7 @@ avtRayTracer::GetNumberOfStages(int screenX, int screenY, int screenZ)
 #ifdef PARALLEL
     numPerTile = 5;
 #endif
-    return 3*nD*nD;
+    return numPerTile*nD*nD;
 }
 
 

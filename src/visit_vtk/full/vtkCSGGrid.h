@@ -295,6 +295,15 @@ protected:
 private:
 
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  9 12:54:36 PDT 2006
+//    Re-order arguments to constructor to match declaration order (addresses
+//    compiler warning).
+//
+// ****************************************************************************
+
 class Box
 {
 public:
@@ -310,9 +319,9 @@ public:
         const vector<int>& _zids,
         double g000, double g001, double g010, double g011,
         double g100, double g101, double g110, double g111)
-        : x0(x),y0(y),z0(z),x1(X),y1(Y),z1(Z), zids(_zids),
+        : x0(x),y0(y),z0(z),x1(X),y1(Y),z1(Z),
           f000(g000), f001(g001), f010(g010), f011(g011),
-          f100(g100), f101(g101), f110(g110), f111(g111) {};
+          f100(g100), f101(g101), f110(g110), f111(g111), zids(_zids) {};
 
     FuncState EvalFuncState(vtkImplicitFunction *func, double tol);
 

@@ -83,19 +83,19 @@ int vtkVisItContourFilter::RequestData(
     int do_type = input->GetDataObjectType();
     if (do_type == VTK_RECTILINEAR_GRID)
     {
-        RectilinearGridExecute(input, output);
+        return RectilinearGridExecute(input, output);
     }
     else if (do_type == VTK_STRUCTURED_GRID)
     {
-        StructuredGridExecute(input, output);
+        return StructuredGridExecute(input, output);
     }
     else if (do_type == VTK_UNSTRUCTURED_GRID)
     {
-        UnstructuredGridExecute(input, output);
+        return UnstructuredGridExecute(input, output);
     }
     else
     {
-        GeneralExecute(input, output);
+        return GeneralExecute(input, output);
     }
 }
 
@@ -137,7 +137,7 @@ vtkVisItContourFilter::GetPointScalars(vtkDataSet *in_ds)
 //
 // ****************************************************************************
 
-void
+int
 vtkVisItContourFilter::StructuredGridExecute(vtkDataSet *input, 
                                              vtkPolyData *output)
 {
@@ -148,8 +148,7 @@ vtkVisItContourFilter::StructuredGridExecute(vtkDataSet *input,
     sg->GetDimensions(pt_dims);
     if (pt_dims[0] <= 1 || pt_dims[1] <= 1 || pt_dims[2] <= 1)
     {
-        GeneralExecute(input, output);
-        return;
+        return GeneralExecute(input, output);
     }
     int                nCells = sg->GetNumberOfCells();
     vtkPoints         *inPts  = sg->GetPoints();
@@ -166,7 +165,7 @@ vtkVisItContourFilter::StructuredGridExecute(vtkDataSet *input,
 
     float *var = GetPointScalars(input);
     if (var == NULL)
-        return;
+        return 0;
 
     int cell_dims[3];
     cell_dims[0] = pt_dims[0]-1;
@@ -230,6 +229,7 @@ vtkVisItContourFilter::StructuredGridExecute(vtkDataSet *input,
     }
 
     sfv.ConstructPolyData(inPD, inCD, output, pts_ptr);
+    return 1;
 }
 
 // ****************************************************************************
@@ -243,7 +243,7 @@ vtkVisItContourFilter::StructuredGridExecute(vtkDataSet *input,
 //
 // ****************************************************************************
 
-void 
+int 
 vtkVisItContourFilter::RectilinearGridExecute(vtkDataSet *input,
                                               vtkPolyData *output)
 {
@@ -254,8 +254,7 @@ vtkVisItContourFilter::RectilinearGridExecute(vtkDataSet *input,
     rg->GetDimensions(pt_dims);
     if (pt_dims[0] <= 1 || pt_dims[1] <= 1 || pt_dims[2] <= 1)
     {
-        GeneralExecute(input, output);
-        return;
+        return GeneralExecute(input, output);
     }
 
     int           nCells = rg->GetNumberOfCells();
@@ -273,7 +272,7 @@ vtkVisItContourFilter::RectilinearGridExecute(vtkDataSet *input,
 
     float *var = GetPointScalars(input);
     if (var == NULL)
-        return;
+        return 0;
 
     int cell_dims[3];
     cell_dims[0] = pt_dims[0]-1;
@@ -337,6 +336,7 @@ vtkVisItContourFilter::RectilinearGridExecute(vtkDataSet *input,
     }
 
     sfv.ConstructPolyData(inPD, inCD, output, pt_dims, X, Y, Z);
+    return 1;
 }
 
 // Modifications:
@@ -345,7 +345,7 @@ vtkVisItContourFilter::RectilinearGridExecute(vtkDataSet *input,
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-void 
+int 
 vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
                                                vtkPolyData *output)
 {
@@ -382,7 +382,7 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
     float *pts_ptr = (float *) inPts->GetVoidPointer(0);
     float *var = GetPointScalars(input);
     if (var == NULL)
-        return;
+        return 0;
 
 
     int nToProcess = (CellList != NULL ? CellListSize : nCells);
@@ -509,17 +509,19 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
     }
 
     stuff_I_cant_contour->Delete();
+    return 1;
 }
 
 
-void 
+int 
 vtkVisItContourFilter::GeneralExecute(vtkDataSet *input, vtkPolyData* output)
 {
-    ContourDataset(input, output);
+    return ContourDataset(input, output);
 }
 
-void vtkVisItContourFilter::ContourDataset(vtkDataSet *in_ds,
-                                           vtkPolyData *out_pd)
+int
+vtkVisItContourFilter::ContourDataset(vtkDataSet *in_ds,
+                                      vtkPolyData *out_pd)
 {
     vtkContourFilter *contour = vtkContourFilter::New();
     contour->SetNumberOfContours(1);
@@ -531,6 +533,7 @@ void vtkVisItContourFilter::ContourDataset(vtkDataSet *in_ds,
     out_pd->ShallowCopy(contour->GetOutput());
     
     contour->Delete();
+    return 1;
 }
 
 void vtkVisItContourFilter::PrintSelf(ostream& os, vtkIndent indent)

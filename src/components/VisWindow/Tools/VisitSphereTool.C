@@ -376,6 +376,9 @@ VisitSphereTool::UpdateView()
 //   Fix memory leak: Delete vtkMatrix4x4 m, register sphereData, 
 //   delete source.
 //   
+//   Hank Childs, Thu Jun  8 11:27:37 PDT 2006
+//   Fix compiler warning for casts.
+//
 // ****************************************************************************
 
 void
@@ -386,8 +389,8 @@ VisitSphereTool::CreateSphereActor()
     source->SetCenter(0, 0, 0);
     source->SetRadius(SPHERE_SIZE);
     source->SetLatLongTessellation(1);
-    source->SetPhiResolution(15.);
-    source->SetThetaResolution(15.);
+    source->SetPhiResolution(15);
+    source->SetThetaResolution(15);
     sphereData = source->GetOutput();
     sphereData->Register(NULL);
 

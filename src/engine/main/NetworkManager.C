@@ -1356,11 +1356,15 @@ NetworkManager::GetScalableThreshold(int windowID) const
 //  Programmer: Mark C. Miller 
 //  Creation:   November 3, 2005 
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  9 15:05:25 PDT 2006
+//    Remove unused variable.
+//
 // ****************************************************************************
 bool
 NetworkManager::GetShouldUseCompression(int windowID) const
 {
-    int scalableAutoThreshold;
     RenderingAttributes::TriStateMode compressionActivationMode;
 
     // since we're in a const method, we can't use the [] operator to index

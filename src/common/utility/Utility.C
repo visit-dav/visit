@@ -417,6 +417,9 @@ WildcardStringMatch(const char *p, const char *s)
 //   Brad Whitlock, Fri Jul 11 14:18:21 PST 2003
 //   Made it work on Windows.
 //
+//   Hank Childs, Thu Jun  8 16:13:20 PDT 2006
+//   Fix warning regarding uninitialized variable.
+//
 // ****************************************************************************
 
 bool
@@ -482,7 +485,7 @@ ReadAndProcessDirectory(const std::string &directory,
         // file permissions.
         gid_t gids[100];
         int ngids = 0;
-        uid_t uid;
+        uid_t uid = 0;
         if(checkAccess)
         {
             uid = getuid();

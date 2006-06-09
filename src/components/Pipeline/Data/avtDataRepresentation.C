@@ -66,11 +66,6 @@ using std::string;
 bool          avtDataRepresentation::initializedNullDataset = false;
 vtkDataSet   *avtDataRepresentation::nullDataset = NULL;
 
-//
-// Function Prototypes
-//
-
-static DataSetType DatasetTypeForVTK(vtkDataSet *);
 
 // ****************************************************************************
 //  Method: avtDataRepresentation default constructor

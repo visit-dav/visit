@@ -615,7 +615,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">true</Field>
-                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-compiler" "xlc" </Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                 <Field name="parallel" type="bool">false</Field>
             </Object>
             <Object name="HostProfile">

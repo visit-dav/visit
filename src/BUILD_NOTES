@@ -368,7 +368,12 @@ tar xf qt-x11-free-3.3.2.tar
 cd qt-x11-free-3.3.2
 setenv QTDIR `pwd`
 set path=($QTDIR/bin $path)
+
 setenv LD_LIBRARY_PATH $QTDIR/lib:$LD_LIBRARY_PATH
+# NOTE: if LD_LIBRARY_PATH is not set in your environment, this command will
+# fail.  In this case, just issue:
+# setenv LD_LIBRARY_PATH $QTDIR/lib
+
 setenv LD_LIBRARYN32_PATH $QTDIR/lib:$LD_LIBRARYN32_PATH     # SGI
 setenv LD_LIBRARY64_PATH $QTDIR/lib:$LD_LIBRARY64_PATH       # SGI
 
@@ -874,6 +879,12 @@ On irix systems if you want to build a 64 bit version you will need to
 precede the configure command with "env CC="cc -O2 -64" CFLAGS="-O2 -64".
 The CC part is to get around a bug in their make system.
 
+On aix systems you will need to specify the appropriate flags to build
+either a 32 bit or 64 bit version.  To build a 32 bit version, preceed the
+configure command with "env CC="xlc -q32" AR="ar -X 32"".  To build a 64
+bit version, preceed the configure command with "env CC="xlc -q64" AR="ar
+ -X 64"".
+
 On itanium (ia64) systems you will need to add -fPIC to the compile flags.
 This can be done by preceding the configure command with "env CFLAGS=-fPIC".
 
@@ -917,8 +928,9 @@ This can be done by adding the line "CXXFLAGS += -fPIC" and "FFLAGS += -fPIC"
 near the top of the file GNUmakefile.
 
 On opteron systems you will need to add "-m64 -fPIC" to the compile flags.
-This can be done byy adding the line "CXXFLAGS += "-m64 -fPIC"" and
-"FFLAGS += -m64 -fPIC" near the top of the file GNUmakefile.
+This can be done by adding the line "CXXFLAGS += -m64 -fPIC" and
+"FFLAGS += -m64 -fPIC" near the top of the file GNUmakefile.  You also will
+probably want to add optimization flags (i.e. -O2).
 
 #
 # Boxlib builds either a 2d or 3d version and VisIt needs both, so you will
@@ -950,6 +962,10 @@ This can be done byy adding the line "CXXFLAGS += "-m64 -fPIC"" and
 # Start off by building the 3d version.
 #
 gmake -f GNUmakefile
+#
+# If the make fails with complaints about the header file "limits", try
+# moving the directory "std" to "std.old" and issuing another make command.
+#
 
 #
 # Install the 3d version in the visit directory under the boxlib directory.
@@ -1181,5 +1197,16 @@ most common plugins are built.
 The second group of options are used when building with support for reading
 SAF files.  The third group of options are used when building with support
 for reading exodus files.
+
+Some platforms (especially SUSE) have compilation problems with 
+"plots/Volume/avtOpenGL3DTextureVolumeRenderer.C".  We are currently working
+on using an extension wrangler type approach to deal with this.  In the
+interim, you can avoid this problem by adding:
+
+#ifndef VTK_IMPLEMENT_MESA_CXX
+extern PFNGLTEXIMAGE3DEXTPROC glTexImage3D;
+#endif
+
+to the file after the standard includes.
 
 If you have any problems send e-mail to visit-help@llnl.gov.

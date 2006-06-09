@@ -80,6 +80,11 @@ struct ResampledMat;
 //    Mark C. Miller, Thu Feb  9 21:06:10 PST 2006
 //    Renamed Array class to VisItArray to avoid name collisions with
 //    third-party libs
+//
+//    Hank Childs, Fri Jun  9 13:47:29 PDT 2006
+//    Reorder member initializers to match declaration order (and remove
+//    compiler warning).
+//
 // ****************************************************************************
 class MIR_API ZooMIR : public MIR
 {
@@ -124,7 +129,7 @@ class MIR_API ZooMIR : public MIR
     class EdgeHashEntry
     {
       public:
-        EdgeHashEntry() : id1(-1), id2(-1), ptId(-1), matno(-1), next(NULL) { }
+        EdgeHashEntry() : id1(-1), id2(-1), matno(-1), ptId(-1), next(NULL) { }
         ~EdgeHashEntry() { }
  
         void            SetEndpoints(int i1, int i2) { id1 = i1; id2 = i2;              }

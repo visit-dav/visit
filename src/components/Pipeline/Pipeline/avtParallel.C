@@ -59,15 +59,15 @@ using std::vector;
 #ifdef PARALLEL
 static MPI_Op AVT_MPI_MINMAX = MPI_OP_NULL;
 static int mpiTagUpperBound = 32767;
+
+// If MPI was already initalized for us, we don't need to finalize either
+static bool  we_initialized_MPI = true;
 #endif
 
 // Minimum value for use in GetUniqueMessageTag
 // So that certain other tags can be hard-coded with values < MIN_TAG_VALUE
 // if they should be needed prior to MPI_Init
 #define MIN_TAG_VALUE 100
-
-// If MPI was already initalized for us, we don't need to finalize either
-static bool  we_initialized_MPI = true;
 
 // Variables to hold process size information
 static int   par_rank = 0, par_size = 1;

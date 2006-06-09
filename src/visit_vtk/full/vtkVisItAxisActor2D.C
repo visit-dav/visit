@@ -395,6 +395,9 @@ void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 //   Eric Brugger, Mon Jul 26 16:11:37 PDT 2004
 //   Correct a bug with a misplaced closing parenthesis.
 //
+//   Hank Childs, Thu Jun  8 11:10:12 PDT 2006
+//   Add formal cast to remove compiler warning.
+//
 // ****************************************************************************
 
 void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
@@ -642,7 +645,7 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
       // Fudge factor, the height of the digits varies roughly from
       // 0.61 to 0.68 of the font height.  Use 0.68 to be conservative.
       // This centers the labels properly on the tick marks.
-      stringSize[1] = 0.68 * stringSize[1];
+      stringSize[1] = (int) (0.68 * stringSize[1]);
       this->SetOffsetPosition(xTick, theta, stringSize[0], stringSize[1],
                               this->TickOffset, 
                               this->LabelActors[labelCount++], 0);

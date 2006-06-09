@@ -151,11 +151,16 @@ vtkLineLegend::~vtkLineLegend()
 
 
 //-----------------------------------------------------------------------------
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  9 12:54:36 PDT 2006
+//    Removed unused variable.
+//
+//-----------------------------------------------------------------------------
 int 
 vtkLineLegend::RenderOverlay(vtkViewport *viewport)
 {
   int renderedSomething = 0;
-  int i;
   
   // Everything is built, just have to render
   if (this->Title != NULL && this->TitleOkayToDraw && this->TitleVisibility)
@@ -216,6 +221,12 @@ vtkLineLegend::BuildTitle(vtkViewport *viewport)
 
 // Build the line for this actor 
 //-----------------------------------------------------------------------------
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  9 12:54:36 PDT 2006
+//    Removed unused variable.
+//
+//-----------------------------------------------------------------------------
 void 
 vtkLineLegend::BuildLine(vtkViewport *viewport)
 {
@@ -235,7 +246,7 @@ vtkLineLegend::BuildLine(vtkViewport *viewport)
   p2[0] = (double)x2[0]; 
   p2[1] = (double)x3[1]; 
 
-  int tempi[2], fontSize;
+  int tempi[2];
   double sf, twr, swr = 0.0;
 
   if ( (bounds[3]-bounds[2]) == 0.0 )
@@ -286,11 +297,16 @@ vtkLineLegend::BuildLine(vtkViewport *viewport)
 
 
 //-----------------------------------------------------------------------------
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  9 12:54:36 PDT 2006
+//    Removed unused variable.
+//
+//-----------------------------------------------------------------------------
 int 
 vtkLineLegend::RenderOpaqueGeometry(vtkViewport *viewport)
 {
   int renderedSomething = 0;
-  int i;
  
   // Check to see whether we have to rebuild everything
   if ( viewport->GetMTime() > this->BuildTime || 

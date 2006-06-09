@@ -1868,6 +1868,9 @@ QvisSpectrumBar::paintEvent(QPaintEvent *e)
 //   Brad Whitlock, Wed Mar 13 10:09:38 PDT 2002
 //   Made it use a single pixmap.
 //   
+//   Hank Childs, Thu Jun  8 13:52:35 PDT 2006
+//   Fix compiler warning for casting.
+//
 // ****************************************************************************
 
 void
@@ -1881,7 +1884,7 @@ QvisSpectrumBar::resizeEvent(QResizeEvent *)
             controlHeight = 60;
 
         controlsArea.setHeight(controlHeight);
-        slider.setWidth(controlsArea.height() / 1.6);
+        slider.setWidth((int)(controlsArea.height() / 1.6));
         slider.setHeight(controlsArea.height());
 
         controlsArea.setX(margin);

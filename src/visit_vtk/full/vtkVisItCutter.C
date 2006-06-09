@@ -677,6 +677,11 @@ void vtkVisItCutter::CreateDefaultLocator()
 //    each call to Contour (based on celltype being used).  Concatenate them
 //    at the end in the proper order: Verts, Lines, Polys.
 //
+//    Kathleen Bonnell, Fri Jun  9 07:11:34 PDT 2006 
+//    Kitware changed the 'contour' method for each cell type, but their
+//    fix still doesn't handle out-of-order cells.  Pass an empty cell array 
+//    when appropriate, to work around their 'fix' (and prevent possible MSE). 
+// 
 // ***************************************************************************
 void
 CellContour(vtkCell *cell, double value, 
@@ -691,6 +696,7 @@ CellContour(vtkCell *cell, double value,
                             vtkCellData *line_outCD,
                             vtkCellData *poly_outCD)
 {
+  vtkCellArray *empty = vtkCellArray::New();
   switch (cell->GetCellType())
     {
     case VTK_VERTEX:
@@ -699,8 +705,8 @@ CellContour(vtkCell *cell, double value,
     case VTK_POLY_LINE:
       // These cell types only create verts when contoured, so
       // pass the contour method the outCD for verts.
-      cell->Contour(value, cellScalars, locator, newVerts, newLines, 
-                    newPolys, inPD, outPD, inCD, cellId, vert_outCD);
+      cell->Contour(value, cellScalars, locator, newVerts, empty, 
+                    empty, inPD, outPD, inCD, cellId, vert_outCD);
       break;
     case VTK_TRIANGLE:
     case VTK_TRIANGLE_STRIP:
@@ -709,8 +715,8 @@ CellContour(vtkCell *cell, double value,
     case VTK_QUAD:
       // These cell types only create lines when contoured, so
       // pass the contour method the outCD for lines.
-      cell->Contour(value, cellScalars, locator, newVerts, newLines, 
-                    newPolys, inPD, outPD, inCD, cellId, line_outCD);
+      cell->Contour(value, cellScalars, locator, empty, newLines, 
+                    empty, inPD, outPD, inCD, cellId, line_outCD);
       break;
     case VTK_TETRA:
     case VTK_VOXEL:
@@ -719,12 +725,13 @@ CellContour(vtkCell *cell, double value,
     case VTK_PYRAMID:
       // These cell types only create polys when contoured, so
       // pass the contour method the outCD for polys.
-      cell->Contour(value, cellScalars, locator, newVerts, newLines, 
+      cell->Contour(value, cellScalars, locator, empty, empty, 
                     newPolys, inPD, outPD, inCD, cellId, poly_outCD);
       break;
     default:
       break;
     } // switch cell-type
+    empty->Delete();
 }
 
 void vtkVisItCutter::PrintSelf(ostream& os, vtkIndent indent)

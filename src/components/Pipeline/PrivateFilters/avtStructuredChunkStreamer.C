@@ -84,6 +84,11 @@ avtStructuredChunkStreamer::~avtStructuredChunkStreamer()
 //  Programmer: Hank Childs
 //  Creation:   April 27, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  9 13:25:31 PDT 2006
+//    Comment out currently unused variable to remove compiler warning.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -91,8 +96,8 @@ avtStructuredChunkStreamer::ExecuteDataTree(vtkDataSet *in_ds, int domain,
                                             std::string label)
 {
     int ds_type = in_ds->GetDataObjectType();
-    bool haveStructured = (ds_type == VTK_RECTILINEAR_GRID ||
-                           ds_type == VTK_STRUCTURED_GRID);
+    // bool haveStructured = (ds_type == VTK_RECTILINEAR_GRID ||
+    //                        ds_type == VTK_STRUCTURED_GRID); 
     bool downstreamOptimizations = false;
     int dims[3] = { 0, 0, 0 };
     if (ds_type == VTK_RECTILINEAR_GRID)

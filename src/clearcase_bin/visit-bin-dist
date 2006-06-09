@@ -471,7 +471,6 @@ set vtklibs="libvtkCommon libvtkDICOMParser libvtkFiltering libvtkGraphics libvt
 #
 if ("$VTKLibs" == "TRUE") then
     foreach vtklib ($vtklibs)
-       echo "processing $vtklib"
        if (! -e $VisItDir/lib/$vtklib.$SHLIB_SOEXT) then
            echo " "
            echo "Error: Missing VTK libraries in $VisItDir/lib. aborting ..."
@@ -820,7 +819,7 @@ ln -s "python/lib/$pyver/config/lib${pyver}.$SHLIB_SOEXT" $libdir
 if ("$VTKLibs" == "TRUE") then
     foreach vtklib ($vtklibs)
        if ("$SHLIB_SOEXT" == "so") then
-           if ("$os" == "aix") then
+           if ("$os" == "aix" || "$os" == "osf") then
                cp $VisItDir/lib/$vtklib.so $libdir/$vtklib.so
            else
                cp $VisItDir/lib/$vtklib.so.5.0.0 $libdir/$vtklib.so.5.0.0

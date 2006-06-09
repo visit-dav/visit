@@ -123,6 +123,9 @@ avtDDFConstructor::~avtDDFConstructor()
 //    Hank Childs, Mon May 15 14:25:28 PDT 2006
 //    Fix memory leak.
 //
+//    Hank Childs, Fri Jun  9 13:44:39 PDT 2006
+//    Fix problem with mixed centering. Also add "default" to switch statement.
+//
 // ****************************************************************************
 
 avtDDF *
@@ -238,6 +241,9 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
         break;
       case ConstructDDFAttributes::Variance:
         R2Foperator = new avtR2Fvariance(nBins, atts->GetUndefinedValue());
+        break;
+      default:
+        // Caught in logic below
         break;
     }
     if (R2Foperator == NULL)
@@ -380,7 +386,7 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
                             float cval = (coDomIsNodal
                                                  ? codomain->GetTuple1(ptId)
                                                  : codomain->GetTuple1(l));
-                            R2Foperator->AddData(binId,codomain->GetTuple1(l));
+                            R2Foperator->AddData(binId,cval);
                         }
                     }
                 }

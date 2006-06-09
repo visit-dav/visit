@@ -55,11 +55,11 @@ protected:
                           vtkInformationVector *);
   virtual int FillInputPortInformation(int, vtkInformation *);
 
-  void RectilinearGridExecute(vtkDataSet *, vtkPolyData*);
-  void StructuredGridExecute(vtkDataSet *, vtkPolyData*);
-  void UnstructuredGridExecute(vtkDataSet *, vtkPolyData*);
-  void GeneralExecute(vtkDataSet *, vtkPolyData*);
-  void ContourDataset(vtkDataSet *, vtkPolyData *);
+  int RectilinearGridExecute(vtkDataSet *, vtkPolyData*);
+  int StructuredGridExecute(vtkDataSet *, vtkPolyData*);
+  int UnstructuredGridExecute(vtkDataSet *, vtkPolyData*);
+  int GeneralExecute(vtkDataSet *, vtkPolyData*);
+  int ContourDataset(vtkDataSet *, vtkPolyData *);
   
   float Isovalue;
 

@@ -57,6 +57,11 @@ class     vtkDataArray;
 //  Programmer: Hank Childs
 //  Creation:   March 13, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  9 14:26:59 PDT 2006
+//    Change return value of SetDoMinimum from bool (mistake) to void (correct)
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtMinMaxExpression : public avtBinaryMathFilter
@@ -69,7 +74,7 @@ class EXPRESSION_API avtMinMaxExpression : public avtBinaryMathFilter
                                  { return "avtMinMaxExpression"; };
     virtual const char       *GetDescription(void)
                                  { return "Calculating min or max"; };
-    bool                      SetDoMinimum(bool b) { doMin = b; };
+    void                      SetDoMinimum(bool b) { doMin = b; };
 
   protected:
     bool             doMin;

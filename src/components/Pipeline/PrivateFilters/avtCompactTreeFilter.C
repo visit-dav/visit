@@ -136,6 +136,9 @@ avtCompactTreeFilter::avtCompactTreeFilter()
 //    Kathleen Bonnell, Wed May 17 14:51:16 PDT 2006 
 //    Changed GetNumberofInputs to GetTotalNumberOfInputConnections. 
 //
+//    Hank Childs, Fri Jun  9 13:25:31 PDT 2006
+//    Use ifdef PARALLELs to remove compiler warnings.
+//
 // ****************************************************************************
 
 void
@@ -156,14 +159,16 @@ avtCompactTreeFilter::Execute(void)
 
     if (parallelMerge)
     {
+#ifdef PARALLEL
         int mpiSendDataTag    = GetUniqueMessageTag();
         int mpiSendObjSizeTag = GetUniqueMessageTag();
+#endif
 
         avtDataObject_p bigDS = GetTypedInput()->Clone();
         if (PAR_UIProcess())
         {
-            int nprocs = PAR_Size();
 #ifdef PARALLEL
+            int nprocs = PAR_Size();
             for (int i = 1 ; i < nprocs ; i++)
             {
                 avtDataObjectReader reader;

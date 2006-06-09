@@ -94,6 +94,9 @@ using std::vector;
 //    Hank Childs, Tue May 24 10:19:40 PDT 2005
 //    Add hasoptions.
 //
+//    Hank Childs, Fri Jun  9 09:46:13 PDT 2006
+//    Added copyright string.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1825,6 +1828,7 @@ class AttsGeneratorAttribute
     void WriteSource(ostream &h)
     {
         bool generatePlugin = (pluginType == "plot" || pluginType == "operator");
+        h << java_copyright_str << endl;
 
         if(pluginType == "plot")
             h << "package llnl.visit.plots;" << endl;

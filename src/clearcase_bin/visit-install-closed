@@ -28,7 +28,7 @@ sunset=true
 sc=true
 tidalwave=true
 white=true
-pu=true
+purple=true
 lilac=true
 gauss=true
 
@@ -49,7 +49,7 @@ do
          sc=false
          tidalwave=false
          white=false
-         pu=false
+         purple=false
          lilac=false
          gauss=false
          shift
@@ -63,7 +63,7 @@ do
          sc=true
          tidalwave=true
          white=true
-         pu=true
+         purple=true
          lilac=true
          shift
          ;;
@@ -107,12 +107,12 @@ do
          white=true
          shift
          ;;
-      -pu)
-         pu=false
+      -purple)
+         purple=false
          shift
          ;;
-      +pu)
-         pu=true
+      +purple)
+         purple=true
          shift
          ;;
       -lilac)
@@ -374,15 +374,15 @@ then
 fi
 
 #
-# Install on pu.
+# Install on purple.
 #
-rm -f pu
-cat <<EOF > pu
+rm -f purple
+cat <<EOF > purple
 
 ./visit-install -private -c closed -g visit -b bdivp -gw -l $ver aix64-xlc /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
-echo "        install of visit on pu"              >> resultlog 2>&1
-echo "       ------------------------"             >> resultlog 2>&1
+echo "        install of visit on purple"          >> resultlog 2>&1
+echo "       ----------------------------"         >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
@@ -396,13 +396,13 @@ echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/ibm-aix-pwr64-xlc\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
-if [ $pu = true ]
+if [ $purple = true ]
 then
    if [ $test = no ]
    then
-      cat pu >> lc
+      cat purple >> lc
 
-      scp pu:/p/gpu1/$user/pu/visitbuild/visit$ver2.aix64-xlc.tar.gz .
+      scp purple:/p/gp1/$user/purple/visitbuild/visit$ver2.aix64-xlc.tar.gz .
       scp visit$ver2.aix64-xlc.tar.gz sc1:
    fi
 fi
@@ -491,5 +491,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f bdiv hitit sunset lc sc tidalwave white pu lilac gauss
+   rm -f bdiv hitit sunset lc sc tidalwave white purple lilac gauss
 fi
