@@ -89,7 +89,7 @@ LDFLAGS=-L../lib @PY_LDFLAGS@ @LDFLAGS@
 LIBS=@LIBS@ -lviewerproxy -lviewerrpc -lcomm -lmisc -lstate -lutility \
      -lplugin -ldbatts -lavtexceptions -lexpr -lparser @PY_LIB@
 CXXFLAGS=@CXXFLAGS@ @PY_CXXFLAGS@ -I. -I../include/visit
-CFLAGS=@CFLAGS@ -I. -I../include/visit
+CFLAGS=@CFLAGS@ @PY_CXXFLAGS@ -I. -I../include/visit
 
 
 ##
