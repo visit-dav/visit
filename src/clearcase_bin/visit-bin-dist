@@ -237,6 +237,9 @@
 #    Eric Brugger, Wed Jun  7 16:26:14 PDT 2006
 #    I modified the script to handle the new vtk library naming conventions.
 #
+#    Hank Childs, Tue Jun 13 14:43:52 PDT 2006
+#    Copy over .txx files from VTK headers.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -870,6 +873,7 @@ mkdir $incdir/vtk/IO
 mkdir $incdir/vtk/Imaging
 mkdir $incdir/vtk/MangleMesaInclude
 mkdir $incdir/vtk/Rendering
+mkdir $incdir/vtk/vtkstd
 mkdir $incdir/python
 mkdir $incdir/qt
 mkdir $incdir/qt/private
@@ -887,18 +891,32 @@ cp $VisItDir/include/visit/avt[N-Z]*.h          $incdir/visit
 cp $VisItDir/include/visit/[b-z]*.h             $incdir/visit
 cp $VisItDir/include/mesa/GL/*.h                $incdir/mesa/GL
 cp $VisItDir/include/vtk/*.h                    $incdir/vtk
+cp $VisItDir/include/vtk/*.txx                  $incdir/vtk
 cp $VisItDir/include/vtk/Common/[a-uw-zA-Z]*.h   $incdir/visit
+cp $VisItDir/include/vtk/Common/[a-uw-zA-Z]*.txx $incdir/visit
 cp $VisItDir/include/vtk/Common/v[a-su-zA-Z]*.h  $incdir/visit
+cp $VisItDir/include/vtk/Common/v[a-su-zA-Z]*.txx $incdir/visit
 cp $VisItDir/include/vtk/Common/vt[a-jl-zA-Z]*.h $incdir/vtk/Common
+cp $VisItDir/include/vtk/Common/vt[a-jl-zA-Z]*.txx $incdir/vtk/Common
 cp $VisItDir/include/vtk/Common/vtk[a-zA-J]*.h   $incdir/vtk/Common
+cp $VisItDir/include/vtk/Common/vtk[a-zA-J]*.txx $incdir/vtk/Common
 cp $VisItDir/include/vtk/Common/vtk[K-Z]*.h      $incdir/vtk/Common
+cp $VisItDir/include/vtk/Common/vtk[K-Z]*.txx    $incdir/vtk/Common
 cp $VisItDir/include/vtk/Filtering/*.h          $incdir/vtk/Filtering
+cp $VisItDir/include/vtk/Filtering/*.txx        $incdir/vtk/Filtering
 cp $VisItDir/include/vtk/Graphics/*.h           $incdir/vtk/Graphics
+cp $VisItDir/include/vtk/Graphics/*.txx         $incdir/vtk/Graphics
 cp $VisItDir/include/vtk/Hybrid/*.h             $incdir/vtk/Hybrid
+cp $VisItDir/include/vtk/Hybrid/*.txx           $incdir/vtk/Hybrid
 cp $VisItDir/include/vtk/IO/*.h                 $incdir/vtk/IO
+cp $VisItDir/include/vtk/IO/*.txx               $incdir/vtk/IO
 cp $VisItDir/include/vtk/Imaging/*.h            $incdir/vtk/Imaging
+cp $VisItDir/include/vtk/Imaging/*.txx          $incdir/vtk/Imaging
 cp $VisItDir/include/vtk/MangleMesaInclude/*.h  $incdir/vtk/MangleMesaInclude
+cp $VisItDir/include/vtk/MangleMesaInclude/*.txx $incdir/vtk/MangleMesaInclude
 cp $VisItDir/include/vtk/Rendering/*.h          $incdir/vtk/Rendering
+cp $VisItDir/include/vtk/Rendering/*.txx        $incdir/vtk/Rendering
+cp $VisItDir/include/vtk/vtkstd/*               $incdir/vtk/vtkstd
 cp $VisItDir/include/python/*.h                 $incdir/python
 
 #

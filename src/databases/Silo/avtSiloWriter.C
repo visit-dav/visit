@@ -513,6 +513,13 @@ avtSiloWriter::ConstructChunkOptlist(const avtDatabaseMetaData *md)
 //  Programmer: Hank Childs
 //  Creation:   September 11, 2003
 //
+//  Modifications:
+//    Mark C. Miller, Tue Jun 13 10:22:35 PDT 2006
+//    Added call to temporarily disable checksums in Silo just in case they
+//    might have been enabled, since PDB driver can't do checksumming.
+//    Nonetheless, PDB only checks during file creation and otherwise silently
+//    ignores the setting.
+//
 // ****************************************************************************
 
 void
@@ -524,8 +531,10 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
     //
     char filename[1024];
     sprintf(filename, "%s.%d.silo", stem.c_str(), chunk);
+    int oldEnable = DBSetEnableChecksums(0);
     DBfile *dbfile = DBCreate(filename, 0, DB_LOCAL, 
                               "Silo file written by VisIt", DB_PDB);
+    DBSetEnableChecksums(oldEnable);
     
     //
     // Use sub-routines to do the mesh-type specific writes.
