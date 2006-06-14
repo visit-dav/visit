@@ -578,6 +578,14 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //    Mark C. Miller, Tue Mar  9 09:13:03 PST 2004
 //    Relocated bulk of WriteHeader code to here
 //
+//    Hank Childs, Wed Jun 14 14:05:19 PDT 2006
+//    Added the changes done on June 13th by Mark Miller for "WriteChunk" to
+//    this method as well.  The following are Mark's comments:
+//    Added call to temporarily disable checksums in Silo just in case they
+//    might have been enabled, since PDB driver can't do checksumming.
+//    Nonetheless, PDB only checks during file creation and otherwise silently
+//    ignores the setting.
+//
 // ****************************************************************************
 
 void
@@ -599,8 +607,10 @@ avtSiloWriter::CloseFile(void)
     {
         char filename[1024];
         sprintf(filename, "%s.silo", stem.c_str());
+        int oldEnable = DBSetEnableChecksums(0);
         DBfile *dbfile = DBCreate(filename, 0, DB_LOCAL, 
                                   "Silo file written by VisIt", DB_PDB);
+        DBSetEnableChecksums(oldEnable);
 
         ConstructMultimesh(dbfile, mmd);
         for (i = 0 ; i < headerScalars.size() ; i++)

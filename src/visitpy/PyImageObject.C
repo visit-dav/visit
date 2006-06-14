@@ -50,6 +50,12 @@
 // Programmer: xml2python
 // Creation:   Thu Sep 2 08:34:00 PDT 2004
 //
+// Modifications:
+//
+//   Hank Childs, Wed Jun 14 17:33:39 PDT 2006
+//   Make sure UpdateAnnotationHelper is called every time a "Set" method is
+//   called.
+//
 // ****************************************************************************
 
 /* CUSTOM - Functions that we need in visitmodule.C */
@@ -91,6 +97,8 @@ ImageObject_SetVisible(PyObject *self, PyObject *args)
 
     // Set the visible in the object.
     obj->data->SetVisible(ival != 0);
+/*CUSTOM*/
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -115,6 +123,8 @@ ImageObject_SetActive(PyObject *self, PyObject *args)
 
     // Set the active in the object.
     obj->data->SetActive(ival != 0);
+/*CUSTOM*/
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -166,6 +176,8 @@ ImageObject_SetPosition(PyObject *self, PyObject *args)
 
     // Mark the position in the object as modified.
     obj->data->SelectPosition();
+/*CUSTOM*/
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -243,6 +255,8 @@ ImageObject_SetTransparencyColor(PyObject *self, PyObject *args)
 /* CUSTOM */
     obj->data->SetColor1(ca);
     //obj->data->SetTransparencyColor(ca);
+/*CUSTOM*/
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -277,6 +291,8 @@ ImageObject_SetUseTransparencyColor(PyObject *self, PyObject *args)
 /* CUSTOM */
     obj->data->SetIntAttribute1(ival != 0);
     //obj->data->SetUseTransparencyColor(ival != 0);
+/*CUSTOM*/
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -307,6 +323,8 @@ ImageObject_SetWidth(PyObject *self, PyObject *args)
     if(obj->data->GetFontShadow())
         obj->data->GetPosition2()[1] = ival;
     //obj->data->SetWidth(ival);
+/*CUSTOM*/
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -337,6 +355,8 @@ ImageObject_SetHeight(PyObject *self, PyObject *args)
     if(obj->data->GetFontShadow())
         obj->data->GetPosition2()[0] = ival;
     //obj->data->SetHeight(ival);
+/*CUSTOM*/
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -365,6 +385,8 @@ ImageObject_SetMaintainAspectRatio(PyObject *self, PyObject *args)
 /* CUSTOM */
     obj->data->SetFontShadow(ival != 0);
     //obj->data->SetMaintainAspectRatio(ival != 0);
+/*CUSTOM*/
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -413,6 +435,8 @@ ImageObject_SetImage(PyObject *self, PyObject *args)
 
     // Mark the text in the object as modified.
     obj->data->SelectText();
+/*CUSTOM*/
+    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -525,7 +549,6 @@ ImageObject_setattr(PyObject *self, char *name, PyObject *args)
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
     bool retval = false;
-    bool update = true;
 
     if(strcmp(name, "visible") == 0)
         retval = (ImageObject_SetVisible(self, tuple) != NULL);
@@ -545,15 +568,6 @@ ImageObject_setattr(PyObject *self, char *name, PyObject *args)
         retval = (ImageObject_SetMaintainAspectRatio(self, tuple) != NULL);
     else if(strcmp(name, "image") == 0)
         retval = (ImageObject_SetImage(self, tuple) != NULL);
-    else
-        update = false;
-
-/* CUSTOM - Added this, and references to update above. */
-    if(update)
-    {
-        ImageObjectObject *obj = (ImageObjectObject *)self;
-        UpdateAnnotationHelper(obj->data);
-    }
 
     Py_DECREF(tuple);
     return retval ? 0 : -1;
