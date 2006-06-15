@@ -69,6 +69,9 @@ class vtkRectilinearGrid;
 //    Kathleen Bonnell, Mon Jun 27 15:46:29 PDT 2005
 //    Removed ijk args from RGridIsect, made it return int instead of bool. 
 //
+//    Kathleen Bonnell, Wed Jun 14 16:41:03 PDT 2006
+//    Add ApplyFilters.
+//
 // ****************************************************************************
 
 class QUERY_API avtLocateQuery : public avtDatasetQuery
@@ -90,6 +93,7 @@ class QUERY_API avtLocateQuery : public avtDatasetQuery
     virtual void                    PreExecute(void);
     virtual void                    PostExecute(void);
     virtual void                    VerifyInput(void);
+    virtual avtDataObject_p         ApplyFilters(avtDataObject_p);
     bool                            RayIntersectsDataSet(vtkDataSet *);
     int                             RGridIsect(vtkRectilinearGrid *, 
                                                double &dist, 
