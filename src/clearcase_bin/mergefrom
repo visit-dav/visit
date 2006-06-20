@@ -1,0 +1,22 @@
+#!/usr/bin/env perl
+
+$vobnm = "VisIt";
+$nargs = scalar(@ARGV);
+if ($nargs == 1)
+{
+    $branch = shift(@ARGV);
+} elsif ($nargs == 2)
+{
+    $branch = shift(@ARGV);
+    $vobnm = "Silo";
+} else {
+    print STDERR "Invalid number of arguments. Please specify one branch and, optionally '-silo'.\n";
+    exit(1);
+}
+
+if ($branch eq "main")
+{
+    system("cleartool findmerge /data_vobs/$vobnm -fver /main -merge -gmerge -whynot");
+} else {
+    system("cleartool findmerge /data_vobs/$vobnm -fver /main/$branch -merge -gmerge -whynot");
+}

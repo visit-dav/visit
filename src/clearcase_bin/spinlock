@@ -1,0 +1,38 @@
+#!/bin/env perl
+
+$WARNINGS = 1;
+
+$which = shift;
+$user = shift;
+$projnm = shift;
+
+$silo_opt = "";
+if ($projnm eq silo)
+{
+    $silo_opt = "-silo";
+}
+
+$sleep_time = 5;
+
+print STDERR "\nWaiting for the ${which}line to be unlocked.  Checking every $sleep_time seconds.\n";
+
+$locked = 0;
+do
+{
+    do
+    {
+        sleep($sleep_time);
+        print STDERR "Checking to see if the ${which}line is available...";
+        $status = system("/view/visit_VOBowner_main/data_vobs/VisIt/clearcase_bin/lock${which}.script $user $silo_opt -ls 2>/dev/null 1>/dev/null");
+        $status /= 256;
+
+        print STDERR "no.\n" if ($status != 0);
+        print STDERR "yes!\n" if ($status == 0);
+    } until ($status == 0);
+
+    print STDERR "\nThe ${which}line is available for locking!\n";
+    $status = system("/view/visit_VOBowner_main/data_vobs/VisIt/clearcase_bin/lock${which}.script $user $silo_opt -nospin");
+    $status /= 256;
+    $locked = 1 if ($status == 4);
+    print STDERR "\nSomeone got it before you did (or something went wrong)...\n" unless ($locked == 1);
+} until ($locked == 1);

@@ -1,0 +1,2 @@
+#!/bin/sh
+ssh -x visit@hoth "/usr/atria/bin/cleartool startview visit_VOBowner_main ; /view/visit_VOBowner_main/data_vobs/VisIt/clearcase_bin/lockmain.script `whoami` $* ; /usr/atria/bin/cleartool endview visit_VOBowner_main"
