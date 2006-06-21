@@ -98,6 +98,7 @@
 #include <MessageAttributes.h>
 #include <PickAttributes.h>
 #include <Plot.h>
+#include <PlotInfoAttributes.h>
 #include <PlotList.h>
 #include <PluginManagerAttributes.h>
 #include <ProcessAttributes.h>
@@ -6646,6 +6647,69 @@ visit_GetQueryOutputValue(PyObject *self, PyObject *args)
 
 
 // ****************************************************************************
+// Function: visit_GetOutputArray
+//
+// Purpose:
+//   Returns the output array for the active plot.
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   June 20, 2006 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetOutputArray(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int winId = -1;
+    int plotId = -1;
+    if (!PyArg_ParseTuple(args, "i", &plotId))
+    {
+        if (!PyArg_ParseTuple(args, "ii", &plotId, &winId))
+        {
+        }
+        PyErr_Clear();
+    }
+    PyObject *retval;
+    MUTEX_LOCK();
+        viewer->UpdatePlotInfoAtts(plotId, winId);
+    MUTEX_UNLOCK();
+    // Wait until viewer has finished updating the plot Info atts
+    int error = Synchronize();
+    // Retrieve the update plot info atts.
+    PlotInfoAttributes *pia = viewer->GetPlotInfoAtts();
+    if (pia == NULL)
+    {
+        retval = PyString_FromString("Plot did not define an output array."); 
+    }
+    else
+    {
+        doubleVector vals = pia->GetOutputArray();
+        if (vals.size() == 0)
+          retval = PyString_FromString("Plot did not define an output array." );
+        else
+        {
+            PyObject *tuple = PyTuple_New(vals.size());
+            for(int j = 0; j < vals.size(); ++j)
+            {
+                PyObject *item = PyFloat_FromDouble(vals[j]);
+                if(item == NULL)
+                    continue;
+                PyTuple_SET_ITEM(tuple, j, item);
+            }
+            retval = tuple;
+        }
+    }
+    return retval;
+}
+
+
+// ****************************************************************************
 // Function: ListCategoryHelper
 //
 // Purpose: 
@@ -10703,6 +10767,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Kathleen Bonnell, Tue May  9 15:45:04 PDT 2006 
 //   Added 'PointPick', an alias for 'NodePick'.
 //
+//   Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
+//   Added GetOutputArray.
+//
 // ****************************************************************************
 
 static void
@@ -10846,6 +10913,8 @@ AddDefaultMethods()
                                                      visit_GetQueryOutput_doc);
     AddMethod("GetQueryOutputValue", visit_GetQueryOutputValue,
                                                      visit_GetQueryOutput_doc);
+    AddMethod("GetOutputArray", visit_GetOutputArray,
+                                                     visit_GetOutputArray_doc);
     AddMethod("GetRenderingAttributes", visit_GetRenderingAttributes,
                                              visit_GetRenderingAttributes_doc);
     AddMethod("GetQueryOverTimeAttributes", visit_GetQueryOverTimeAttributes,

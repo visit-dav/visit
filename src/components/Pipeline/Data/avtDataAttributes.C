@@ -46,6 +46,8 @@
 #include <avtDataObjectString.h>
 #include <avtDataObjectWriter.h>
 #include <avtExtents.h>
+#include <BufferConnection.h>
+#include <PlotInfoAttributes.h>
 
 #include <BadIndexException.h>
 #include <ImproperUseException.h>
@@ -133,6 +135,9 @@ using     std::sort;
 //    Kathleen Bonnell, Mon May  1 08:57:41 PDT 2006 
 //    Changed origNodesRequiredForPick to origElementsRequiredForPick.
 //
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
+//    Added plotInfoAtts. 
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes()
@@ -187,6 +192,7 @@ avtDataAttributes::avtDataAttributes()
     canUseOrigZones = true;
     origElementsRequiredForPick = false;
     meshCoordType = AVT_XY;
+    plotInfoAtts = NULL;
 }
 
 
@@ -232,6 +238,9 @@ avtDataAttributes::~avtDataAttributes()
 //
 //    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
 //    Delete invTransform.
+//
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
+//    Added plotInfoAtts. 
 //
 // ****************************************************************************
 
@@ -305,6 +314,11 @@ avtDataAttributes::DestructSelf(void)
         delete transform;
         transform = NULL;
     }
+    if (plotInfoAtts != NULL)
+    {
+        delete plotInfoAtts;
+        plotInfoAtts = NULL;
+    }
 }
 
 
@@ -362,6 +376,9 @@ avtDataAttributes::DestructSelf(void)
 //
 //    Kathleen Bonnell, Mon May  1 08:57:41 PDT 2006 
 //    Changed origNodesRequiredForPick to origElementsRequiredForPick.
+//
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
+//    Added plotInfoAtts. 
 //
 // ****************************************************************************
 
@@ -622,6 +639,12 @@ avtDataAttributes::Print(ostream &out)
         out << "The mesh coord tyep is ZR " << endl;
         break; 
     }
+    out << "PlotInfoAttributes: ";
+    if (plotInfoAtts == NULL)
+        out << "Not Set";
+    else 
+        plotInfoAtts->PrintSelf(out);
+    out << endl;
 }
 
 
@@ -720,6 +743,9 @@ avtDataAttributes::Print(ostream &out)
 //    Kathleen Bonnell, Mon May  1 08:57:41 PDT 2006 
 //    Changed origNodesRequiredForPick to origElementsRequiredForPick.
 //
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
+//    Added plotInfoAtts. 
+//
 // ****************************************************************************
 
 void
@@ -805,6 +831,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     canUseOrigZones = di.canUseOrigZones;
     origElementsRequiredForPick = di.origElementsRequiredForPick;
     meshCoordType = di.meshCoordType;
+    SetPlotInfoAtts(di.plotInfoAtts);
 }
 
 
@@ -907,6 +934,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //
 //    Kathleen Bonnell, Mon May  1 08:57:41 PDT 2006 
 //    Changed origNodesRequiredForPick to origElementsRequiredForPick.
+//
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
+//    Added plotInfoAtts. 
 //
 // ****************************************************************************
 
@@ -1112,6 +1142,7 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     mirOccurred |= da.mirOccurred;
     canUseOrigZones &= da.canUseOrigZones;
     origElementsRequiredForPick |= da.origElementsRequiredForPick;
+    SetPlotInfoAtts(da.plotInfoAtts);
 }
 
 
@@ -2120,6 +2151,9 @@ avtDataAttributes::SetTime(double d)
 //    Kathleen Bonnell, Mon May  1 08:57:41 PDT 2006 
 //    Changed origNodesRequiredForPick to origElementsRequiredForPick.
 //
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
+//    Added plotInfoAtts. 
+//
 // ****************************************************************************
 
 void
@@ -2245,6 +2279,8 @@ avtDataAttributes::Write(avtDataObjectString &str,
     WriteInvTransform(str, wrtr);
     WriteTransform(str, wrtr);
 
+    WritePlotInfoAtts(str, wrtr);
+
     delete [] vals;
 }
 
@@ -2348,6 +2384,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //
 //    Hank Childs, Wed May 24 11:43:23 PDT 2006
 //    Check in fix suggested by Jeremy Meredith.
+//
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
+//    Added plotInfoAtts. 
 //
 // ****************************************************************************
 
@@ -2657,6 +2696,10 @@ avtDataAttributes::Read(char *input)
     input += s; 
     size  += s;
 
+    s = ReadPlotInfoAtts(input); 
+    input += s; 
+    size  += s;
+
     return size;
 }
 
@@ -2764,7 +2807,7 @@ avtDataAttributes::WriteLabels(avtDataObjectString &str,
 //    Reads the label information from a stream.
 //
 //  Arguments:
-//    input     The string (stream) to write to.
+//    input     The string (stream) to read from.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   September 18, 2001
@@ -3849,6 +3892,136 @@ avtDataAttributes::TransformSpatialExtents(avtDataAttributes &outAtts,
         ProjectExtentsCallback(in, out, args);
         outAtts.GetCumulativeCurrentSpatialExtents()->Set(out);
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtDataAttributes::WritePlotInfoAtts
+//
+//  Purpose:
+//      Writes the data object information to a stream.
+//
+//  Arguments:
+//      str     The string (stream) to write to.
+//      wrtr    The writer that handles conversion to the destination format.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 20, 2006 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtDataAttributes::WritePlotInfoAtts(avtDataObjectString &str,
+                                     const avtDataObjectWriter *wrtr)
+{
+    if (plotInfoAtts == NULL)
+    {
+        wrtr->WriteInt(str, 0);
+        return;
+    }
+
+    BufferConnection buf;
+
+    plotInfoAtts->SelectAll();
+    plotInfoAtts->Write(buf);
+    int size = plotInfoAtts->CalculateMessageSize(buf);
+
+    unsigned char *b1 = new unsigned char[size];
+    char *b2 = new char[size];
+    for (int i = 0; i < size; i++)
+    {
+        buf.Read(b1+i);
+        b2[i] = (char)b1[1];
+    }
+    
+    wrtr->WriteInt(str, size);
+    str.Append((char*) b1, size,
+                  avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
+    delete [] b1;
+    delete [] b2;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataAttributes::ReadPlotInfoAtts
+//
+//  Purpose:
+//    Reads the label information from a stream.
+//
+//  Arguments:
+//    input     The string (stream) to write to.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 20, 2006 
+//
+// ****************************************************************************
+
+int
+avtDataAttributes::ReadPlotInfoAtts(char *input)
+{
+    int size = 0;
+    int piaSize;
+    memcpy(&piaSize, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+
+    if (piaSize == 0)
+    {
+        if (plotInfoAtts != NULL)
+        {
+            delete [] plotInfoAtts;
+            plotInfoAtts == NULL;
+        }
+        return size;
+    }
+    if (plotInfoAtts == NULL)
+    {
+        plotInfoAtts = new PlotInfoAttributes();
+    }
+    unsigned char *b = new unsigned char[piaSize];
+    for (int i = 0; i < piaSize; i++)
+    {
+        b[i] = (unsigned char)input[i];
+    }
+    input += piaSize;
+    size += piaSize;
+
+    BufferConnection buf;
+    buf.Append(b, piaSize);
+    plotInfoAtts->Read(buf);
+    delete [] b;
+
+    return size;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataAttributes::SetPlotInfoAtts
+//
+//  Purpose:
+//    Sets the PlotInfoAtts according to the passed argument.
+//
+//  Arguments:
+//    pia       The new plotInfoAtts.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 20, 2006
+//
+// ****************************************************************************
+
+void
+avtDataAttributes::SetPlotInfoAtts(const PlotInfoAttributes *pia)
+{
+    if (pia == NULL)
+    {
+        return;
+    }
+    if (plotInfoAtts == NULL)
+    {
+        plotInfoAtts = new PlotInfoAttributes();
+    }
+    *plotInfoAtts = *pia;
 }
 
 

@@ -715,4 +715,22 @@ avtBehavior::GetDataExtents(double &dmin, double &dmax)
 }
 
 
+// ****************************************************************************
+//  Method: avtBehavior::GetPlotInfoAtts
+//
+//  Purpose:
+//
+//  Returns:
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   June 20, 2006 
+//
+//  Modifications:
+//
+// ****************************************************************************
 
+const PlotInfoAttributes *
+avtBehavior::GetPlotInfoAtts() 
+{
+    return info.GetAttributes().GetPlotInfoAtts();
+}

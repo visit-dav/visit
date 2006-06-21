@@ -59,6 +59,7 @@ class EngineKey;
 class EngineProxy;
 class PickAttributes;
 class Plot;
+class PlotInfoAttributes;
 class PlotQueryInfo;
 class ViewerPlotList;
 class ViewerPlotPluginInfo;
@@ -256,6 +257,9 @@ class avtToolInterface;
 //    Brad Whitlock, Wed Jan 11 14:52:22 PST 2006
 //    I added SessionContainsErrors.
 //
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
+//    Added GetPlotInfoAtts. 
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot
@@ -427,6 +431,9 @@ class VIEWER_API ViewerPlot
     int GetWindowId(void) const;
 
     void UpdateDataExtents();
+
+    const PlotInfoAttributes *GetPlotInfoAtts(void);
+
   protected:
     void CopyHelper(const ViewerPlot &);
     bool MoveOperator(const int operatorIndex, bool promote);

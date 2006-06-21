@@ -47,6 +47,7 @@
 #include <vtkPolyData.h>
 #include <InvalidDimensionsException.h>
 #include <NoInputException.h>
+#include <PlotInfoAttributes.h>
 
 #include <DebugStream.h>
 
@@ -122,6 +123,9 @@ avtCurveConstructorFilter::~avtCurveConstructorFilter()
 //
 //    Hank Childs, Wed Jan  4 11:21:59 PST 2006
 //    Allocate the size of the verts array front-end.
+//
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
+//    Save the curve points in output array to be added to PlotInfoAttributes.
 //
 // ****************************************************************************
 
@@ -322,12 +326,19 @@ void avtCurveConstructorFilter::Execute()
     nPoints = sortedPts->GetNumberOfPoints();
     int vertsSize = (nPoints) * (1+1);
     verts->Allocate(vertsSize);
-    for (i = 0; i < nPoints-1; i++)
+    outputArray.clear();
+    for (i = 0; i < nPoints; i++)
     {
-        ptIds[0] = i; 
-        ptIds[1] = i+1; 
-        lines->InsertNextCell(2, ptIds);        
-        verts->InsertNextCell(1, ptIds);        
+        if (i < nPoints-1)
+        {
+            ptIds[0] = i; 
+            ptIds[1] = i+1; 
+            lines->InsertNextCell(2, ptIds);        
+            verts->InsertNextCell(1, ptIds);        
+        }
+        sortedPts->GetPoint(i, pt);
+        outputArray.push_back(pt[0]);
+        outputArray.push_back(pt[1]);
     } 
     // need to add one last vertex:
     ptIds[0] = ptIds[1];
@@ -401,5 +412,29 @@ void
 avtCurveConstructorFilter::RefashionDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetAttributes().SetSpatialDimension(2);
+}
+
+
+// ****************************************************************************
+//  Method: avtCurveConstructorFilter::PostExecute
+//
+//  Purpose:
+//    Saves the curve data to an output array in PlotInfoAtts.  
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 20, 2006 
+//
+// ****************************************************************************
+
+void
+avtCurveConstructorFilter::PostExecute(void)
+{
+
+#ifdef PARALLEL
+    BroadcastDoubleVector(outputArray, PAR_Rank());
+#endif
+    PlotInfoAttributes plotInfoAtts ;
+    plotInfoAtts.SetOutputArray(outputArray);
+    GetOutput()->GetInfo().GetAttributes().SetPlotInfoAtts(&plotInfoAtts);
 }
 

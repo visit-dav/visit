@@ -121,3 +121,24 @@ AttributeSubject::CreateCompatible(const std::string &) const
     return 0;
 }
 
+// ****************************************************************************
+// Method: AttributeSubject::TypeName
+//
+// Purpose: 
+//   Returns the name of the type.
+//
+// Returns:    The name of the type.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   June 20, 2006 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string 
+AttributeSubject::TypeName() const
+{
+    return "AttributeSubject";
+}
+

@@ -4855,3 +4855,22 @@ ViewerPlot::GetMeshType() const
     else 
         return AVT_UNKNOWN_MESH;
 }
+
+
+// ****************************************************************************
+//  Method: ViewerPlot::GetPlotInfoAtts
+//
+//  Purpose: Return the PlotInfoAttributes for this plot. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   June 20, 2006 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+const PlotInfoAttributes *
+ViewerPlot::GetPlotInfoAtts() 
+{
+    return (*plotList[cacheIndex])->GetPlotInfoAtts();
+}

@@ -87,6 +87,7 @@
 #include <MessageAttributes.h>
 #include <MovieAttributes.h>
 #include <PickAttributes.h>
+#include <PlotInfoAttributes.h>
 #include <PlotList.h>
 #include <PluginManagerAttributes.h>
 #include <PrinterAttributes.h>
@@ -202,6 +203,9 @@ using std::string;
 //    Hank Childs, Mon Jul 18 16:00:32 PDT 2005
 //    Initialize qt_argv.
 //
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
+//    Add plotInfoAtts. 
+//
 // ****************************************************************************
 
 ViewerSubject::ViewerSubject() : xfer(), clients(), viewerRPC(), 
@@ -288,6 +292,7 @@ ViewerSubject::ViewerSubject() : xfer(), clients(), viewerRPC(),
     clientInformationList = 0;
     movieAtts = 0;
     logRPC = 0;
+    plotInfoAtts = 0;
 
     //
     // Set some flags related to viewer windows.
@@ -342,6 +347,9 @@ ViewerSubject::ViewerSubject() : xfer(), clients(), viewerRPC(),
 //    Hank Childs, Mon Jul 18 16:00:32 PDT 2005
 //    Free qt_argv.
 //
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
+//    Add plotInfoAtts. 
+//
 // ****************************************************************************
 
 ViewerSubject::~ViewerSubject()
@@ -370,6 +378,7 @@ ViewerSubject::~ViewerSubject()
     delete clientInformationList;
     delete movieAtts;
     delete logRPC;
+    delete plotInfoAtts;
 
     delete viewerState;
     delete inputConnection;
@@ -624,6 +633,9 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //   Hank Childs, Mon Feb 13 21:54:12 PST 2006
 //   Added construct ddf attributes.
 //
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
+//    Add plotInfoAtts. 
+//
 // ****************************************************************************
 
 void
@@ -648,6 +660,7 @@ ViewerSubject::CreateState()
     clientInformationList = new ClientInformationList;
     movieAtts = new MovieAttributes;
     logRPC    = new ViewerRPC;
+    plotInfoAtts    = new PlotInfoAttributes;
 
     //
     // Connect the client attribute subjects.
@@ -667,6 +680,7 @@ ViewerSubject::CreateState()
     viewerState->Add(clientMethod,          false);
     viewerState->Add(clientInformation,     false);
     viewerState->Add(clientInformationList, false);
+    viewerState->Add(plotInfoAtts, false);
 
     // Objects that can go to the client whenever.
     viewerState->Add(pluginAtts,   false);
@@ -7092,6 +7106,9 @@ ViewerSubject::SendKeepAlives()
 //    Added code to broadcast the RPC to be executed to all clients so one
 //    client can log the actions taken by another.
 //
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
+//    Add UpdatePlotInfoAtts. 
+//
 // ****************************************************************************
 
 void
@@ -7429,6 +7446,9 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::ConstructDDFRPC:
         ConstructDDF();
+        break;
+    case ViewerRPC::UpdatePlotInfoAttsRPC:
+        UpdatePlotInfoAtts();
         break;
     case ViewerRPC::MaxRPC:
         break;
@@ -8450,4 +8470,68 @@ ViewerSubject::ResizeWindow()
         viewerRPC.GetWindowId()-1,
         viewerRPC.GetIntArg1(),
         viewerRPC.GetIntArg2());
+}
+
+
+// ****************************************************************************
+// Method: ViewerSubject::UpdatePlotInfoAtts
+//
+// Purpose: 
+//   Retrieve appropriate PlotInfoAttributes.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   June 20, 2006 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::UpdatePlotInfoAtts()
+{
+    int winId = viewerRPC.GetWindowId() -1;
+    int plotId = viewerRPC.GetIntArg1();
+    ViewerWindow *win = NULL;
+    plotInfoAtts->Reset();
+
+    if (winId < 0)
+    {
+        win = ViewerWindowManager::Instance()->GetActiveWindow();
+    }
+    else 
+    {
+        win = ViewerWindowManager::Instance()->GetWindow(winId);
+    }
+    if (win != NULL)
+    {
+        ViewerPlotList *plist = win->GetPlotList();
+        if (plotId < 0)
+        {
+            intVector ids;
+            plist->GetActivePlotIDs(ids);
+            if (ids.size() > 0)
+                plotId = ids[0];
+        }
+        if (plotId >= 0)
+        {
+            ViewerPlot *plot = plist->GetPlot(plotId);
+            if (plot != NULL)
+            {
+                const PlotInfoAttributes *current = plot->GetPlotInfoAtts();
+                if (current != NULL)
+                {
+                    *plotInfoAtts = *current;
+                }
+            }
+            else
+            {
+            Warning("Invalid PlotId");
+            }
+        }
+    }
+    else
+    {
+        Warning("Invalid WindowId");
+    }
+    plotInfoAtts->Notify();
 }

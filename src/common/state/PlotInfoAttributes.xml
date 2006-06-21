@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+  <Attribute name="PlotInfoAttributes" purpose="contains info set by the executed plot." persistent="false" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="PlotInfoAttributes.code">
+    <Field name="outputArray" label="outputArray" type="doubleVector" internal="true">
+    </Field>
+    <Function name="PrintSelf" user="true" member="true">
+    </Function>
+    <Function name="Reset" user="true" member="true">
+    </Function>
+    <Include file="header" quoted="false"> 
+      visitstream.h
+    </Include>
+  </Attribute>
