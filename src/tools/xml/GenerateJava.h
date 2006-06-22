@@ -1828,7 +1828,7 @@ class AttsGeneratorAttribute
     void WriteSource(ostream &h)
     {
         bool generatePlugin = (pluginType == "plot" || pluginType == "operator");
-        h << java_copyright_str << endl;
+        h << java_copyright_str.c_str() << endl;
 
         if(pluginType == "plot")
             h << "package llnl.visit.plots;" << endl;

@@ -1,13 +1,13 @@
-                      Building VisIt on MacOS X 10.3
-                     ================================
+                   Building VisIt on MacOS X 10.3 (PPC)
+                  ======================================
 
-   This document describes how to build VisIt on MacOS X. Building on MacOS X,
-while similar enough to other versions of UNIX but there are enough differences
-to warrant these special instructions. Most of the differences arise from how
-MacOS X provides support for advanced linking options such as prebinding, which
-helps applications launch faster. We build VisIt and all of its support
-libraries with prebinding enabled because it substantially improves VisIt's
-startup time on MacOS X. Unfortunately, prebinding introduces a lot of
+   This document describes how to build VisIt on MacOS X 10.3 PowerPC. Building
+on MacOS X, while similar enough to other versions of UNIX but there are enough 
+differences to warrant these special instructions. Most of the differences 
+arise from how MacOS X provides support for advanced linking options such as 
+prebinding, which helps applications launch faster. We build VisIt and all of
+its support libraries with prebinding enabled because it substantially improves
+VisIt's startup time on MacOS X. Unfortunately, prebinding introduces a lot of
 complexity with respect to building VisIt's support libraries because they each
 have varying degrees of support for MacOS X. In fact, only Qt has built-in
 support for prebinding. To enable prebinding for all of the other support
@@ -27,12 +27,12 @@ shell prompt.
     Mesa     5.0.2    3-D Graphics Library   http://www.mesa3d.org/
     Python   2.3.3    Scripting Language     http://www.python.org
     Qt       3.3.1    GUI Toolkit            http://www.trolltech.com
-    VTK      20031028 Visualization Toolkit  http://www.kitware.com
+    VTK      5.0.0a   Visualization Toolkit  http://www.kitware.com
     
     Optional Version  Description            For More Information
     ======== =======  ===========            ====================
-    HDF5     1.6.0    I/O library            http://hdf.ncsa.uiuc.edu/HDF5/
-    Silo     4.4.3    File I/O library       http://www.llnl.gov/bdiv/meshtv
+    HDF5     1.6.5    I/O library            http://hdf.ncsa.uiuc.edu/HDF5/
+    Silo     4.5.1    File I/O library       http://www.llnl.gov/bdiv/meshtv
                                              ftp://ftp.llnl.gov/pub/visit/3rd_party/silo051121.sh
     Mili     1.09     I/O library            (none)
     HDF4     2.0      I/O library            http://hdf.ncsa.uiuc.edu/release4/obtain.html
@@ -45,11 +45,13 @@ shell prompt.
 The public version of VisIt has been built with the above listed versions
 of the libraries, so it is known to work properly with those versions.  For
 all the packages except VTK and Qt, you can probably use newer versions of the
-packages and VisIt should work properly.  For Mesa, you must build a mangled
+packages and VisIt should work properly. Be advised, however, that if you use
+different versions of the packages then the prebinding offsets that are provided
+in this document may no longer be valid. For Mesa, you must build a mangled
 version of Mesa.  The distribution provided has already been set up to build
 a mangled version so no additional work is required if you use it.  For VTK,
-you must use the October 28, 2003 distribution provided. The version of Qt
-used to build VisIt on MacOS X must be greater than or equal to 3.0.
+you must use the 5.0.0a distribution provided on the VisIt Web site. The version 
+of Qt used to build VisIt on MacOS X must be greater than or equal to 3.0.
 
 Most of the third party libraries necessary to build VisIt are available for
 download from ftp://ftp.llnl.gov/pub/visit/3rd_party.  It is suggested that
@@ -336,9 +338,9 @@ Building CMake in order to build VTK
 CMake is a cross-platform make system used to build VTK. Before building VTK,
 we must build CMake
 
-gunzip cmake-1.8.1.tar.gz
-tar xf cmake-1.8.1.tar
-cd cmake-1.8.1
+gunzip cmake-2.2.3.tar.gz
+tar xf cmake-2.2.3.tar
+cd cmake-2.2.3
 env CXXFLAGS="" ./bootstrap
 make
 cd ..
@@ -352,8 +354,8 @@ for all its visualization functionality. Follow the directions listed below
 to build VTK.  If you have any problems building or installing VTK, read the
 VTK/README.html file included in the VTK distribution for more information.
 
-gunzip vtk_cvs_2003_10_28.tar.gz
-tar xf vtk_cvs_2003_10_28.tar
+gunzip vtk-5.0.0a.tar.gz
+tar xvf vtk-5.0.0.a.tar
 
 
 Source code and build modifications:
@@ -372,7 +374,7 @@ ensure that you produce VTK libraries that meet VisIt's needs.
    -twolevel_namespace. Also delete the -U flag and its argument.
 
 2. Edit VTK/Utilities/ftgl/CMakeLists.txt and look for:
-   SET (VTKFTGL_LIBS "${VTKFTGL_LIBS};${OPENGL_LIBRARY}"). Add the following
+   SET (VTKFTGL_LIBS "${VTKFTGL_LIBS};${OPENGL_gl_LIBRARY}"). Add the following
    code after the above string:
 
       IF (FTGL_SUPPORT_MANGLE_MESA)
@@ -450,11 +452,6 @@ ensure that you produce VTK libraries that meet VisIt's needs.
        }
    #endif
 
-7. Replace vtkCamera.cxx with VisIt's vtkCamera. Issue the following command
-   to do so:
-     cp $VISITSOURCE/visit_vtk/full/vtkCamera.C VTK/Rendering/vtkCamera.cxx
-     cp $VISITSOURCE/visit_vtk/full/vtkCamera.h VTK/Rendering/vtkCamera.h
-
 You may have noticed that we don't do anything in VTK to preclude the use of
 vtkCarbonRenderWindow, even though it cannot support Mesa. We register an
 override of vtkCarbonRenderWindow later in VisIt's visit_vtk library that
@@ -467,7 +464,7 @@ Configuring VTK:
 ================
 
 cd VTK
-../cmake-1.8.1/bin/ccmake .
+../cmake-2.2.3/bin/ccmake .
 
 The above ccmake program is a menu for configuring VTK. Follow these steps to 
 configure VTK and generate its makefiles. You must perform these steps before
@@ -482,7 +479,6 @@ you can build VTK.
     SHARED_LIBS                        ON
     CMAKE_BUILD_TYPE                   Release
     CMAKE_VERBOSE_MAKEFILE             TRUE
-    VTK_USE_HYBRID                     ON
     BUILD_TESTING                      OFF
     CMAKE_CXX_FLAGS_RELEASE            -O2
     CMAKE_C_FLAGS_RELEASE              -O2
@@ -499,8 +495,6 @@ you can build VTK.
 
    Option                              Value
    =================================================
-   OSMESA_INCLUDE_DIR                  $VISITHOME/mesa/include
-   OSMESA_LIBRARY                      $VISITHOME/mesa/lib/libOSMesa.dylib
    MANGLED_MESA_INCLUDE_DIR            $VISITHOME/mesa/include
    MANGLED_MESA_LIBRARY                $VISITHOME/mesa/lib/libMesaGL.dylib
    MANGLED_OSMESA_INCLUDE              $VISITHOME/mesa/include
@@ -529,21 +523,28 @@ and never touch.
 
 Library                 Segment Offset (hex)
 =============================================
-libvtkzlib.dylib        20be6000
-libvtkjpeg.dylib        20bf5000
-libvtkpng.dylib         20c18000
-libvtktiff.dylib        20c3b000
-libvtkexpat.dylib       20c86000
-libvtkfreetype.dylib    20ca8000
-libvtkftgl.dylib        20cfc000
-libvtkDICOMParser.dylib 20d17000
-libvtkCommon.dylib      20dec000
-libvtkFiltering.dylib   21111000
-libvtkGraphics.dylib    2125b000
-libvtkIO.dylib          21601000
-libvtkImaging.dylib     2192d000
-libvtkRendering.dylib   21d06000
-libvtkHybrid.dylib      22081000
+libvtkzlib.dylib              20be6000
+libvtkjpeg.dylib              20bf7000
+libvtkpng.dylib               20c1f000
+libvtktiff.dylib              20c44000
+libvtkexpat.dylib             20c92000
+libvtkfreetype.dylib          20cbb000
+libvtkftgl.dylib              20d3c000
+libvtkDICOMParser.dylib       20d59000
+libvtksys.dylib               20e3f000
+libvtkNetCDF.dylib            20f39000
+libexoIIc.dylib               20f83000
+libvtkMPEG2Encode.dylib       20fae000
+libvtkCommon.dylib            20fc1000
+libvtkFiltering.dylib         21271000
+libvtkGraphics.dylib          215f4000
+libvtkGenericFiltering.dylib  21ce4000
+libvtkIO.dylib                21ddc000
+libvtkImaging.dylib           221d0000
+libvtkRendering.dylib         2264f000
+libvtkHybrid.dylib            229c9000
+libvtkWidgets.dylib           22c4e000
+libvtkVolumeRendering.dylib   22d83000
 
 Since we added -prebind to the flags that are used when trying to link a shared
 library, we can open each Makefile for the projects listed above and add the
@@ -552,15 +553,15 @@ remove all of the shared libraries in the VTK/bin directory so make will cause
 a relink of the libraries as we build them one by one.
 
 Example:
-   1. cd Utilities/zlib
-   2. vi Makefile
+   1. cd Utilities/vtkzlib/CMakeFiles/vtkzlib.dir
+   2. vi build.make
    3. Search for -prebind
    4. After -prebind, add:
-      -Wl,-seg1addr,0x20be6000,-install_name,@executable_path/../lib/libvtkzlib.dylib,-compatibility_version,4.2,-current_version,4.2,-undefined,dynamic_lookup
+      -Wl,-seg1addr,0x20be6000,-install_name,@executable_path/../lib/libvtkzlib.dylib,-compatibility_version,5.0,-current_version,5.0,-undefined,dynamic_lookup
       
       Be sure to use the right library name in for the -install_name linker flag since that
       name is put into the library so the runtime linker can find the library relative
-      to the executable's path. This helps make applications double-clickable.
+      to the executable's path.
       
    5. Save and exit vi
    6. make
@@ -577,43 +578,48 @@ Note: Be sure that you use a different offset for each library or prebinding wil
 # Install VTK in the visit directory under the vtk directory.
 #
 mkdir $VISITPATH/vtk
-mkdir $VISITPATH/vtk/{Common,Filtering,Graphics,Hybrid,IO,Imaging,Rendering,MangleMesaInclude,lib}
+mkdir $VISITPATH/vtk/{Common,Filtering,GenericFiltering,Graphics,Hybrid,IO,Imaging,Rendering,MangleMesaInclude,Utilities,VolumeRendering,lib,vtkstd,Utilities/vtktiff,Utilities/vtkexpat,Utilities/vtkzlib,Utilities/vtkjpeg}
 cp vtkConfigure.h                 $VISITPATH/vtk
 cp vtkToolkits.h                  $VISITPATH/vtk
 cp vtk*Instantiator.h             $VISITPATH/vtk
-cp Utilities/zlib/zlib.h          $VISITPATH/vtk
-cp Utilities/zlib/zconf.h         $VISITPATH/vtk
-cp Utilities/zlib/zlibDllConfig.h $VISITPATH/vtk
-cp Utilities/tiff/*.h             $VISITPATH/vtk
 cp Common/*.h                     $VISITPATH/vtk/Common
+cp Common/*.txx                   $VISITPATH/vtk/Common
 cp Filtering/*.h                  $VISITPATH/vtk/Filtering
+cp Filtering/*.txx                $VISITPATH/vtk/Filtering
+cp GenericFiltering/*.h           $VISITPATH/vtk/GenericFiltering
 cp Graphics/*.h                   $VISITPATH/vtk/Graphics
 cp Hybrid/*.h                     $VISITPATH/vtk/Hybrid
 cp IO/*.h                         $VISITPATH/vtk/IO
 cp Imaging/*.h                    $VISITPATH/vtk/Imaging
 cp Rendering/*.h                  $VISITPATH/vtk/Rendering
+cp Utilities/*.h                  $VISITPATH/vtk/Utilities
+cp Utilities/vtktiff/*.h          $VISITPATH/vtk/Utilities/vtktiff
+cp Utilities/vtkexpat/*.h         $VISITPATH/vtk/Utilities/vtkexpat
+cp Utilities/vtkzlib/*.h          $VISITPATH/vtk/Utilities/vtkzlib
+cp Utilities/vtkjpeg/*.h          $VISITPATH/vtk/Utilities/vtkjpeg
+cp VolumeRendering/*.h            $VISITPATH/vtk/VolumeRendering
 cp MangleMesaInclude/*.h          $VISITPATH/vtk/MangleMesaInclude
+cp vtkstd/*                       $VISITPATH/vtk/vtkstd
 cp bin/*.dylib                    $VISITPATH/vtk/lib
-cd ..
 
 #
 # Install the VTK JPEG library under the visit directory in case the
 # computer does not have a JPEG library.
 #
 mkdir $VISITPATH/jpeg $VISITPATH/jpeg/include $VISITPATH/jpeg/lib
-cp Utilities/jpeg/*.h             $VISITPATH/jpeg/include
+cp Utilities/vtkjpeg/*.h          $VISITPATH/jpeg/include
 cp bin/libvtkjpeg.dylib           $VISITPATH/jpeg/lib/libjpeg.dylib
+cd ..
 
-
-The next offset after libvtkHybrid.dylib, which has an offset of 0x22081000 and
-a library size of 2,406,052 (0x24b6a4) bytes is:
+The next offset after libvtkVolumeRendering.dylib, which has an offset of 0x22d83000 and
+a library size of 6039752 bytes is:
 
 # Next offset
-offset = 0x22081000 + int(float(0x24b6a4) * 1.05)
+offset = 0x22d83000 + int(1.05 * 6039752)
 # Align the offset to 0x1000 byte boundaries
 offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
-offset = 0x222ea000
+offset = 0x23390000
 
 ===============================================================================
 Building Python as a prebound dynamic library
@@ -644,19 +650,16 @@ cd tmplib
 ar -x ../libpython2.3.a
 echo "char **environ=0;" > environhack.c
 gcc -o environhack.o -c environhack.c
-gcc -dynamiclib -prebind -Wl,-seg1addr,0x222ea000,-install_name,@executable_path/../lib/libpython2.3.dylib,-compatibility_version,2.3.3,-current_version,2.3.3,-undefined,dynamic_lookup -twolevel_namespace -o libpython2.3.dylib *.o  -framework Carbon
+gcc -dynamiclib -prebind -Wl,-seg1addr,0x23390000,-install_name,@executable_path/../lib/libpython2.3.dylib,-compatibility_version,2.3.3,-current_version,2.3.3,-undefined,dynamic_lookup -twolevel_namespace -o libpython2.3.dylib *.o  -framework Carbon
 cp libpython2.3.dylib $VISITPATH/python/lib/python2.3/config/libpython2.3.dylib
 cd ../..
 
-The next offset after libpython.dylib, which has an offset of 0x222ea000 and a library
-size of 3,311,968 (0x328960) bytes is:
-
 # Next offset
-offset = 0x222ea000 + int(float(0x328960) * 1.05)
+offset = 0x23390000 + int(1.05 * 3311968)
 # Align the offset to 0x1000 byte boundaries
 offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
-offset = 0x2263c000
+offset = 0x236e2000
 
 ===============================================================================
 Building HDF5 as a prebound dynamic library (optional)
@@ -670,8 +673,8 @@ should be built with support for HDF5 when possible. If you don't want to build
 HDF5, you can skip this section but you will have to take care that you do not
 attempt to build Silo with support for HDF5.
 
-tar zxvf hdf5-1.6.0.tar.gz
-cd hdf5-1.6.0
+tar zxvf hdf5-1.6.5.tar.gz
+cd hdf5-1.6.5
 env CFLAGS="-O2 -fPIC" ./configure
 make
 
@@ -680,7 +683,7 @@ make
 # address of the library and make it be prebound. We'll build our own
 # version of the library using the prebuilt sources.
 cd src
-gcc -dynamiclib -prebind -twolevel_namespace -Wl,-seg1addr,0x2263c000,-install_name,@executable_path/../lib/libhdf5.dylib,-compatibility_version,1.6,-current_version,1.6,-undefined,dynamic_lookup -o libhdf5.dylib *.lo -lz
+gcc -dynamiclib -prebind -twolevel_namespace -Wl,-seg1addr,0x236e2000,-install_name,@executable_path/../lib/libhdf5.dylib,-compatibility_version,1.6,-current_version,1.6.5,-undefined,dynamic_lookup -o libhdf5.dylib *.lo -lz
 
 # Install HDF5
 mkdir $VISITPATH/hdf5
@@ -690,15 +693,15 @@ cp libhdf5.dylib $VISITPATH/hdf5/lib
 cp *.h $VISITPATH/hdf5/include
 cd ../..
 
-The next offset after libhdf5.dylib, which has an offset of 0x2263c000 and
-a library size of 1,055,884 (0x101c8c) bytes is:
+The next offset after libhdf5.dylib, which has an offset of 0x236e2000 and
+a library size of 1,107,364 bytes is:
 
 # Next offset
-offset = 0x2263c000 + int(float(0x101c8c) * 1.05)
+offset = 0x2263c000 + int(1.05 * 1107364)
 # Align the offset to 0x1000 byte boundaries
 offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
-offset = 0x2274b000
+offset = 0x237fe000
 
 ===============================================================================
 Building Mili as a prebound dynamic library  (optional)
@@ -720,7 +723,7 @@ the Mili's src directory
 
 CC=gcc
 CFLAGS = -I. -O2 -fno-common -fPIC
-MILI_LDFLAGS=-Wl,-seg1addr,0x227e5000,-undefined,dynamic_lookup
+MILI_LDFLAGS=-Wl,-seg1addr,0x237fe000,-undefined,dynamic_lookup
 LDFLAGS=-dynamiclib -prebind -twolevel_namespace -Wl,-install_name,@executable_path/../lib/$@
 .SUFFIXES : .o .c
 MILI_SRC=mili.c direc.c param.c io.c util.c dep.c svar.c srec.c mesh_u.c wrap_c.c io_mem.c eprtf.c sarray.c gahl.c
@@ -742,15 +745,15 @@ cp mili.h $VISITPATH/mili
 cp mili_enum.h $VISITPATH/mili
 cd ../..
 
-The next offset after libmili.dylib, which has an offset of 0x227b1000 and
-a library size of 109,556 (0x1abf4) bytes is:
+The next offset after libmili.dylib, which has an offset of 0x237fe000 and
+a library size of 114,160 bytes is:
 
 # Next offset
-offset = 0x227e8000 + int(float(0x1abf4) * 1.05)
+offset = 0x237fe000 + int(1.05 * 114160)
 # Align the offset to 0x1000 byte boundaries
 offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
-offset = 0x22805000
+offset = 0x2381c000
 
 ==============================================================================
 Building HDF4 as a prebound dynamic library  (optional)
@@ -769,8 +772,12 @@ cd HDF4.2r0
 vi configure
 # Comment out lines 7147-7169 because the script exits with a failure to
 # calculate the size of int*. Insert, at line 7178, ac_cv_sizeof_intp=4
-# Save the file and exit.
-env CFLAGS="-O2 -fno-common" ./configure --with-jpeg=$VISITPATH/jpeg --disable-fortran
+# Save the file and exit. Note that as of VTK 5.0, the names in the VTK
+# jpeg library are mangled so they have a "vtk_" prefix. HDF4 can be built
+# against the VTK jpeg library just fine once you get past configure, which
+# does not like VTK's mangled jpeg library.
+# 
+env CFLAGS="-O2 -fno-common -I$VISITPATH/vtk/Utilities" ./configure --with-jpeg=$VISITPATH/jpeg --disable-fortran
 make
 
 # Relink libdf and install it.
@@ -778,7 +785,7 @@ cd hdf/src
 mkdir tmp
 cd tmp
 ar -x ../libdf.a
-gcc -dynamiclib -prebind -twolevel_namespace -o libdf.dylib *.o -L$VISITPATH/jpeg/lib -ljpeg -lz -Wl,-seg1addr,0x22805000,-install_name,@executable_path/../lib/libdf.dylib,-compatibility_version,2.0,-current_version,2.0,-undefined,dynamic_lookup
+gcc -dynamiclib -prebind -twolevel_namespace -o libdf.dylib *.o -L$VISITPATH/jpeg/lib -ljpeg -lz -Wl,-seg1addr,0x2381c000,-install_name,@executable_path/../lib/libdf.dylib,-compatibility_version,2.0,-current_version,2.0,-undefined,dynamic_lookup
 mkdir $VISITPATH/hdf4
 mkdir $VISITPATH/hdf4/lib
 mkdir $VISITPATH/hdf4/include
@@ -789,7 +796,7 @@ cd ../../../mfhdf/libsrc
 mkdir tmp
 cd tmp
 ar -x ../libmfhdf.a
-gcc -dynamiclib -prebind -twolevel_namespace -o libmfhdf.dylib *.o L$VISITPATH/jpeg/lib -L$VISITPATH/hdf4/lib -ljpeg -ldf -Wl,-seg1addr,0x228a0000,-install_name,@executable_path/../lib/libmfhdf.dylib,-compatibility_version,2.0,-current_version,2.0,-undefined,dynamic_lookup
+gcc -dynamiclib -prebind -twolevel_namespace -o libmfhdf.dylib *.o -L$VISITPATH/jpeg/lib -L$VISITPATH/hdf4/lib -ljpeg -ldf -Wl,-seg1addr,0x238b8000,-install_name,@executable_path/../lib/libmfhdf.dylib,-compatibility_version,2.0,-current_version,2.0,-undefined,dynamic_lookup
 mv libmfhdf.dylib $VISITPATH/hdf4/lib
 cd ../../..
 
@@ -798,15 +805,15 @@ cp hdf/src/*.h      $VISITPATH/hdf4/include
 cp mfhdf/libsrc/*.h $VISITPATH/hdf4/include
 cd ..
 
-The next offset after libmfhdf.dylib, which has an offset of 0x228a0000 and
+The next offset after libmfhdf.dylib, which has an offset of 0x238b8000 and
 a library size of 112876 bytes is:
 
 # Next offset
-offset = 0x228a0000 + int(float(112876) * 1.05)
+offset = 0x238b8000 + int(1.2 * 112876)
 # Align the offset to 0x1000 byte boundaries
 offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
-offset = 0x228bf000
+offset = 0x238da000
 
 ==============================================================================
 Building NetCDF as a prebound dynamic library  (optional)
@@ -836,17 +843,17 @@ cd libsrc
 mkdir tmp
 cd tmp
 ar -x ../libnetcdf.a
-gcc -dynamiclib -prebind -twolevel_namespace -o libnetcdf.dylib *.o -Wl,-seg1addr,0x228bf000,-install_name,@executable_path/../lib/libnetcdf.dylib,-compatibility_version,3.6.0,-current_version,3.6.0,-undefined,dynamic_lookup
+gcc -dynamiclib -prebind -twolevel_namespace -o libnetcdf.dylib *.o -Wl,-seg1addr,0x238da000,-install_name,@executable_path/../lib/libnetcdf.dylib,-compatibility_version,3.6.0,-current_version,3.6.0,-undefined,dynamic_lookup
 rm $VISITPATH/netcdf/3.6.0/lib/*.a
 mv libnetcdf.dylib $VISITPATH/netcdf/3.6.0/lib
 cd ../../..
 
 # Next offset
-offset = 0x228bf000 + int(float(194968) * 1.05)
+offset = 0x238da000 + int(1.2 * 194968)
 # Align the offset to 0x1000 byte boundaries
 offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
-offset = 0x228f1000
+offset = 0x23914000
 
 ===============================================================================
 Building CGNS as a prebound dynamic library  (optional)
@@ -879,17 +886,17 @@ cd DARWIN
 mkdir tmp
 cd tmp
 ar -x ../libcgns.a
-gcc -dynamiclib -prebind -twolevel_namespace -o libcgns.dylib *.o -Wl,-seg1addr,0x228f1000,-install_name,@executable_path/../lib/libcgns.dylib,-compatibility_version,2.4.0,-current_version,2.4.0,-undefined,dynamic_lookup
+gcc -dynamiclib -prebind -twolevel_namespace -o libcgns.dylib *.o -Wl,-seg1addr,0x23914000,-install_name,@executable_path/../lib/libcgns.dylib,-compatibility_version,2.4.0,-current_version,2.4.0,-undefined,dynamic_lookup
 rm $VISITPATH/cgns/2.4/lib/libcgns.a
 cp libcgns.dylib $VISITPATH/cgns/2.4/lib
 cd ../../../
 
 # Next offset
-offset = 0x228f1000 + int(float(468428) * 1.05)
+offset = 0x23914000 + int(1.2 * 468428)
 # Align the offset to 0x1000 byte boundaries
 offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
-offset = 0x2296a000
+offset = 0x2399e000
 
 ===============================================================================
 Building GDAL as a prebound dynamic library  (optional)
@@ -917,17 +924,17 @@ cd .libs
 mkdir tmp
 cd tmp
 ar -x ../libgdal.a
-g++ -dynamiclib -prebind -twolevel_namespace -o libgdal.dylib *.o -Wl,-seg1addr,0x2296a000,-install_name,@executable_path/../lib/libgdal.dylib,-compatibility_version,1.3.0,-current_version,1.3.0,-undefined,dynamic_lookup
+g++ -dynamiclib -prebind -twolevel_namespace -o libgdal.dylib *.o -Wl,-seg1addr,0x2399e000,-install_name,@executable_path/../lib/libgdal.dylib,-compatibility_version,1.3.0,-current_version,1.3.0,-undefined,dynamic_lookup
 rm $VISITPATH/gdal/1.3.0/lib/libgdal.*
 cp libgdal.dylib $VISITPATH/gdal/1.3.0/lib
 cd ../../..
 
 # Next offset
-offset = 0x2296a000 + int(float(4840812) * 1.05)
+offset = 0x2399e000 + int(1.2 * 4840812)
 # Align the offset to 0x1000 byte boundaries
 offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
-offset = 0x22e43000
+offset = 0x23f29000
 
 
 ===============================================================================
@@ -950,7 +957,7 @@ set NETCDFINC=$VISITPATH/netcdf/3.6.0/include
 gcc -O2 -I/usr/include/malloc -I../include -I$NETCDFINC -fno-common -c *.c
 
 # Build a prebound dynamic library
-gcc -dynamiclib -prebind -twolevel_namespace -Wl,-seg1addr,0x22e43000,-install_name,@executable_path/../lib/libexoIIv2c.dylib,-compatibility_version,2.0.5,-current_version,2.0.5,-undefined,dynamic_lookup -o libexoIIv2c.dylib *.o -L$NETCDFLIB -lnetcdf
+gcc -dynamiclib -prebind -twolevel_namespace -Wl,-seg1addr,0x23f29000,-install_name,@executable_path/../lib/libexoIIv2c.dylib,-compatibility_version,2.0.5,-current_version,2.0.5,-undefined,dynamic_lookup -o libexoIIv2c.dylib *.o -L$NETCDFLIB -lnetcdf
 
 # Install Exodus
 mkdir $VISITPATH/exodusII
@@ -962,11 +969,11 @@ cp $VISITPATH/netcdf/3.6.0/include/netcdf.h $VISITPATH/exodusII/include
 cd ../../../../../
 
 # Next offset
-offset = 0x22e43000 + int(float(149480) * 1.05)
+offset = 0x23f29000 + int(1.2 * 149480)
 # Align the offset to 0x1000 byte boundaries
 offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
-offset = 0x22e6a000
+offset = 0x23f55000
 
 
 ===============================================================================
@@ -988,11 +995,13 @@ for HDF5. If you choose to disable HDF5 support, the offsets will not be
 affected since the HDF5 version of the Silo library should be larger.
 
 # Build silo source into an archive library
-sh silo051121.sh
-cd silo051121
+sh silo060605.sh
+cd silo060605
 # Set the values of some helper variables (tcsh)
-set HDF5INCLUDE=$VISITDIR/hdf5/include
-set HDF5LIB=$VISITDIR/hdf5/lib
+HDF5INCLUDE=$VISITPATH/hdf5/include
+export HDF5INCLUDE
+HDF5LIB=$VISITPATH/hdf5/lib
+export HDF5LIB
 env CFLAGS="-O2 -fno-common -fPIC" ./configure --disable-sdx --without-readline --without-exodus --with-hdf5=$HDF5INCLUDE,$HDF5LIB
 make
 
@@ -1002,29 +1011,28 @@ cd lib
 mkdir tmplib
 cd tmplib
 ar -x ../libsilo.a
-gcc -dynamiclib -prebind -twolevel_namespace -Wl,-seg1addr,0x33e43000,-install_name,@executable_path/../lib/libsilo.dylib,-compatibility_version,4.4.3,-current_version,4.4.3,-undefined,dynamic_lookup -o ../libsilo.dylib *.o -L$HDF5LIB -lhdf5
-cd ..
+gcc -dynamiclib -prebind -twolevel_namespace -Wl,-seg1addr,0x23f55000,-install_name,@executable_path/../lib/libsilo.dylib,-compatibility_version,4.4.3,-current_version,4.4.3,-undefined,dynamic_lookup -o ../libsilo.dylib *.o -L$HDF5LIB -lhdf5
+cd ../..
 
 # Install Silo
-mkdir $VISITDIR/silo
-mkdir $VISITDIR/silo/include
-mkdir $VISITDIR/silo/lib
-cp silo/silo/silo.h   $VISITDIR/silo/include
-cp silo/silo/silo.inc $VISITDIR/silo/include
-cp silo/sdx/sdx.h     $VISITDIR/silo/include
-cp silo/sdx/sdx.inc   $VISITDIR/silo/include
-cp lib/libsilo.dylib  $VISITDIR/silo/lib
+mkdir $VISITPATH/silo
+mkdir $VISITPATH/silo/include
+mkdir $VISITPATH/silo/lib
+cp silo/silo/silo.h   $VISITPATH/silo/include
+cp silo/silo/silo.inc $VISITPATH/silo/include
+cp silo/sdx/sdx.h     $VISITPATH/silo/include
+cp silo/sdx/sdx.inc   $VISITPATH/silo/include
+cp lib/libsilo.dylib  $VISITPATH/silo/lib
 cd ..
 
-The next offset after libsilo.dylib, which has an offset of 0x33e43000 and a library
-size of 669,216 (0xa3620) bytes is:
+The next offset after libsilo.dylib:
 
 # Next offset
-offset = 0x33e43000 + int(float(0xa3620) * 1.05)
+offset = 0x23f55000 + int(1.2 * 682896)
 # Align the offset to 0x1000 byte boundaries
 offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
-offset = 0x33eef000
+offset = 0x2401e000
 
 ===============================================================================
 Building VisIt with prebinding
@@ -1036,14 +1044,14 @@ reserve a memory range after the Python library. Suppose all other
 libraries that we want can fit in 10Mb. If that assumption becomes invalid,
 we can recalculate the offset for the VisIt libraries. The starting address
 for the VisIt libraries using the current assumptions would then be:
-0x33eef000 + 10Mb
+0x2401e000 + 10Mb
 
 # Next offset
-offset = 0x33eef000 + 0x2faf080
+offset = 0x2401e000 + 10000000
 # Align the offset to 0x1000 byte boundaries
 offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
-offset = 0x36e9f000
+offset = 0x249a8000
 
 VisIt uses GNU's autoconf system to provide platform independence when
 building VisIt in a UNIX environment. Autoconf creates a script called
@@ -1054,9 +1062,9 @@ More information about building VisIt follows after that.
 #
 # Unzipping VisIt's source code distribution
 #
-gunzip visit060327.tar.gz
-tar xf visit060327.tar
-cd visit060327
+gunzip visit060612.tar.gz
+tar xf visit060612.tar
+cd visit060612
 
 #
 # HDF5 and Silo

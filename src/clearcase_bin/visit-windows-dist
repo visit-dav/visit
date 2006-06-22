@@ -53,6 +53,9 @@
 #   optional -nodist argument that can make the script use an existing
 #   source distribution.
 #
+#   Brad Whitlock, Tue Jun 13 16:44:22 PST 2006
+#   Added VisIt 1.5.3 and VTK 5.0 updates.
+#
 #------------------------------------------------------------------------------
 
 if(`pwd` != "/data_vobs/VisIt") then
@@ -122,6 +125,7 @@ mkdir include/VisIt
 # blowing it away.
 cp $VISITSRC/include/visit/lite_pdb.h include/VisIt
 cp $VISITSRC/include/visit/lite_score.h include/VisIt
+cp $VISITSRC/include/visit/visit-hdf5.h include/VisIt
 # Remove the $VISITSRC/include/visit directory since it's full of symlinks and Windows
 # will not honor them.
 echo "Removing old visit include directory..."
@@ -175,14 +179,19 @@ end
 # Put the VTK header files into include/VTK
 #
 echo "Copying VTK include files to include/VTK..."
-foreach hdrdir (Common Filtering Graphics Hybrid IO Imaging Rendering)
+foreach hdrdir (Common Filtering GenericFiltering Graphics Hybrid IO Imaging Rendering VolumeRendering)
     foreach hdrfile (`find $TOPDIR/include/vtk/$hdrdir -name "*.h"`)
         cp $hdrfile include/VTK
     end
 end
+# Copy TXX files
+cp $TOPDIR/include/vtk/Common/*.txx    include/VTK
+cp $TOPDIR/include/vtk/Filtering/*.txx include/VTK
+# Copy vtkstd
+cp -R $TOPDIR/include/vtk/vtkstd include/VTK
+# Copy mangled mesa
 mkdir include/VTK/MangleMesaInclude
 cp $TOPDIR/include/vtk/MangleMesaInclude/*.h include/VTK/MangleMesaInclude
-cp $TOPDIR/include/vtk/expat.h include/VTK
 
 
 #
@@ -229,7 +238,7 @@ end
 #
 foreach buildmode (Debug Release)
     cd $VisItDev/bin/$buildmode
-    foreach DLL (MesaGL.dll hdf5dll.dll osmesa.dll silohdf5.dll sziplib.dll zlib.dll libbz2.dll)
+    foreach DLL (MesaGL.dll hdf5dll.dll osmesa.dll silohdf5.dll szlibdll.dll zlib.dll libbz2.dll)
         cp $DLL ../MSVC7.Net/$buildmode
     end
 end

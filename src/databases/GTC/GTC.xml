@@ -2,5 +2,5 @@
   <Plugin name="GTC" type="database" label="GTC" version="1.0" dbtype="STSD">
     <Extensions> h5 </Extensions>
     <CXXFLAGS> $(HDF5_INCLUDE) </CXXFLAGS>
-    <LIBS>     $(HDF5_LIB)     </LIBS>
+    <LIBS>     $(HDF5_LIB)  $(ZLIB_LIB) </LIBS>
   </Plugin>

@@ -130,8 +130,9 @@ void lib_quit_bow();
     
 #define finfo finfo_BOWFIX
     /* lib_include "unistd.h" */
+#ifndef _WIN32
 #include "unistd.h"
-
+#endif
     
 #undef finfo
     /* lib_include "fcntl.h" */

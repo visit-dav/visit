@@ -223,7 +223,7 @@ class InfoGeneratorPlugin
     {
         if (type=="operator")
         {
-            h << copyright_str << endl;
+            h << copyright_str.c_str() << endl;
             h << "// ************************************************************************* //" << endl;
             h << "//  File: "<<name<<"PluginInfo.h" << endl;
             h << "// ************************************************************************* //" << endl;
@@ -314,7 +314,7 @@ class InfoGeneratorPlugin
         }
         else if (type=="plot")
         {
-            h << copyright_str << endl;
+            h << copyright_str.c_str() << endl;
             h << "// ************************************************************************* //" << endl;
             h << "//                               "<<name<<"PluginInfo.h                            //" << endl;
             h << "// ************************************************************************* //" << endl;
@@ -415,7 +415,7 @@ class InfoGeneratorPlugin
         }
         else if (type=="database")
         {
-            h << copyright_str << endl;
+            h << copyright_str.c_str() << endl;
             h << "// ****************************************************************************" << endl;
             h << "//                               "<<name<<"PluginInfo.h" << endl;
             h << "// ****************************************************************************" << endl;
@@ -503,7 +503,7 @@ class InfoGeneratorPlugin
     }
     void WriteInfoSource(ostream &c)
     {
-        c << copyright_str << endl;
+        c << copyright_str.c_str() << endl;
         c << "// ************************************************************************* //" << endl;
         c << "//  File: "<<name<<"PluginInfo.C" << endl;
         c << "// ************************************************************************* //" << endl;
@@ -634,7 +634,7 @@ class InfoGeneratorPlugin
     {
         if (type=="database")
         {
-            c << copyright_str << endl;
+            c << copyright_str.c_str() << endl;
             c << "#include <"<<name<<"PluginInfo.h>" << endl;
             if (dbtype != "Custom")
             {
@@ -813,7 +813,7 @@ class InfoGeneratorPlugin
         }
         else
         {
-            c << copyright_str << endl;
+            c << copyright_str.c_str() << endl;
             c << "// ************************************************************************* //" << endl;
             c << "//  File: "<<name<<"CommonPluginInfo.C" << endl;
             c << "// ************************************************************************* //" << endl;
@@ -868,7 +868,7 @@ class InfoGeneratorPlugin
         if (type=="database")
             return;
 
-        c << copyright_str << endl;
+        c << copyright_str.c_str() << endl;
         c << "// ************************************************************************* //" << endl;
         c << "//  File: "<<name<<"GUIPluginInfo.C" << endl;
         c << "// ************************************************************************* //" << endl;
@@ -1034,7 +1034,7 @@ class InfoGeneratorPlugin
         if (type=="database")
             return;
 
-        c << copyright_str << endl;
+        c << copyright_str.c_str() << endl;
         c << "// ************************************************************************* //" << endl;
         c << "//  File: "<<name<<"ViewerPluginInfo.C" << endl;
         c << "// ************************************************************************* //" << endl;
@@ -1316,7 +1316,7 @@ class InfoGeneratorPlugin
     {
         if (type=="database")
         {
-            c << copyright_str << endl;
+            c << copyright_str.c_str() << endl;
             c << "#include <"<<name<<"PluginInfo.h>" << endl;
             c << "" << endl;
             AddMacOSXMacro(c, "MDServer");
@@ -1345,7 +1345,7 @@ class InfoGeneratorPlugin
     {
         if (type=="database")
         {
-            c << copyright_str << endl;
+            c << copyright_str.c_str() << endl;
             c << "#include <"<<name<<"PluginInfo.h>" << endl;
             if (haswriter)
                 c << "#include <avt"<<name<<"Writer.h>" << endl;
@@ -1394,7 +1394,7 @@ class InfoGeneratorPlugin
         }
         else
         {
-            c << copyright_str << endl;
+            c << copyright_str.c_str() << endl;
             c << "// ************************************************************************* //" << endl;
             c << "//  File: "<<name<<"EnginePluginInfo.C" << endl;
             c << "// ************************************************************************* //" << endl;
@@ -1468,7 +1468,7 @@ class InfoGeneratorPlugin
         if (type=="database")
             return;
 
-        c << copyright_str << endl;
+        c << copyright_str.c_str() << endl;
         c << "// ************************************************************************* //" << endl;
         c << "//                        "<<name<<"ScriptingPluginInfo.C" << endl;
         c << "// ************************************************************************* //" << endl;

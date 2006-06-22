@@ -1358,7 +1358,7 @@ class WindowGeneratorAttribute
 
     void WriteHeader(ostream &h)
     {
-        h << copyright_str << endl;
+        h << copyright_str.c_str() << endl;
         h << "#ifndef " << windowname.upper() << "_H" << endl;
         h << "#define " << windowname.upper() << "_H" << endl;
         h << endl;
@@ -1478,7 +1478,7 @@ class WindowGeneratorAttribute
 
     void WriteSource(ostream &c)
     {
-        c << copyright_str << endl;
+        c << copyright_str.c_str() << endl;
         c << "#include \""<<windowname<<".h\"" << endl;
         c << endl;
         c << "#include <"<<name<<".h>" << endl;

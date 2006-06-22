@@ -186,7 +186,7 @@ class AVTGeneratorPlugin
             return;
         }
 
-        h << copyright_str << endl;
+        h << copyright_str.c_str() << endl;
         h << "// ************************************************************************* //" << endl;
         h << "//                                 avt"<<name<<"Plot.h                             //" << endl;
         h << "// ************************************************************************* //" << endl;
@@ -259,7 +259,7 @@ class AVTGeneratorPlugin
             cerr << "Must be of type plot!" << endl;
             return;
         }
-        c << copyright_str << endl;
+        c << copyright_str.c_str() << endl;
         c << "// ************************************************************************* //" << endl;
         c << "//                             avt"<<name<<"Plot.C                                 //" << endl;
         c << "// ************************************************************************* //" << endl;
@@ -469,7 +469,7 @@ class AVTGeneratorPlugin
     {
         if (type=="operator")
         {
-            h << copyright_str << endl;
+            h << copyright_str.c_str() << endl;
             h << "// ************************************************************************* //" << endl;
             h << "//  File: avt"<<name<<"Filter.h" << endl;
             h << "// ************************************************************************* //" << endl;
@@ -522,7 +522,7 @@ class AVTGeneratorPlugin
         }
         else if (type=="plot")
         {
-            h << copyright_str << endl;
+            h << copyright_str.c_str() << endl;
             h << "// ************************************************************************* //" << endl;
             h << "//                              avt"<<name<<"Filter.h                              //" << endl;
             h << "// ************************************************************************* //" << endl;
@@ -572,7 +572,7 @@ class AVTGeneratorPlugin
     {
         if (type=="operator")
         {
-            c << copyright_str << endl;
+            c << copyright_str.c_str() << endl;
             c << "// ************************************************************************* //" << endl;
             c << "//  File: avt"<<name<<"Filter.C" << endl;
             c << "// ************************************************************************* //" << endl;
@@ -689,7 +689,7 @@ class AVTGeneratorPlugin
         }
         else if (type=="plot")
         {
-            c << copyright_str << endl;
+            c << copyright_str.c_str() << endl;
             c << "// ************************************************************************* //" << endl;
             c << "//                              avt"<<name<<"Filter.C                              //" << endl;
             c << "// ************************************************************************* //" << endl;
@@ -776,7 +776,7 @@ class AVTGeneratorPlugin
     {
         if (dbtype == "STSD")
         {
-            h << copyright_str << endl;
+            h << copyright_str.c_str() << endl;
             h << "" << endl;
             h << "// ************************************************************************* //" << endl;
             h << "//                            avt"<<name<<"FileFormat.h                           //" << endl;
@@ -847,7 +847,7 @@ class AVTGeneratorPlugin
         }
         else if (dbtype == "MTSD")
         {
-            h << copyright_str << endl;
+            h << copyright_str.c_str() << endl;
             h << "// ************************************************************************* //" << endl;
             h << "//                            avt"<<name<<"FileFormat.h                           //" << endl;
             h << "// ************************************************************************* //" << endl;
@@ -922,7 +922,7 @@ class AVTGeneratorPlugin
         }
         else if (dbtype == "STMD")
         {
-            h << copyright_str << endl;
+            h << copyright_str.c_str() << endl;
             h << "// ************************************************************************* //" << endl;
             h << "//                            avt"<<name<<"FileFormat.h                           //" << endl;
             h << "// ************************************************************************* //" << endl;
@@ -991,7 +991,7 @@ class AVTGeneratorPlugin
         }
         else if (dbtype == "MTMD")
         {
-            h << copyright_str << endl;
+            h << copyright_str.c_str() << endl;
             h << "// ************************************************************************* //" << endl;
             h << "//                            avt"<<name<<"FileFormat.h                           //" << endl;
             h << "// ************************************************************************* //" << endl;
@@ -1066,7 +1066,7 @@ class AVTGeneratorPlugin
     {
         if (dbtype == "STSD")
         {
-            c << copyright_str << endl;
+            c << copyright_str.c_str() << endl;
             c << "// ************************************************************************* //" << endl;
             c << "//                            avt"<<name<<"FileFormat.C                           //" << endl;
             c << "// ************************************************************************* //" << endl;
@@ -1372,7 +1372,7 @@ class AVTGeneratorPlugin
         }
         else if (dbtype == "MTSD")
         {
-            c << copyright_str << endl;
+            c << copyright_str.c_str() << endl;
             c << "// ************************************************************************* //" << endl;
             c << "//                            avt"<<name<<"FileFormat.C                           //" << endl;
             c << "// ************************************************************************* //" << endl;
@@ -1702,7 +1702,7 @@ class AVTGeneratorPlugin
         }
         else if (dbtype == "STMD")
         {
-            c << copyright_str << endl;
+            c << copyright_str.c_str() << endl;
             c << "// ************************************************************************* //" << endl;
             c << "//                            avt"<<name<<"FileFormat.C                           //" << endl;
             c << "// ************************************************************************* //" << endl;
@@ -2017,7 +2017,7 @@ class AVTGeneratorPlugin
         }
         else if (dbtype == "MTMD")
         {
-            c << copyright_str << endl;
+            c << copyright_str.c_str() << endl;
             c << "// ************************************************************************* //" << endl;
             c << "//                            avt"<<name<<"FileFormat.C                           //" << endl;
             c << "// ************************************************************************* //" << endl;
@@ -2357,7 +2357,7 @@ class AVTGeneratorPlugin
     }
     void WriteFileFormatOptionsHeader(ostream &h)
     {
-        h << copyright_str << endl;
+        h << copyright_str.c_str() << endl;
         h << "// ************************************************************************* //" << endl;
         h << "//                             avt"<<name<<"Options.h                              //" << endl;
         h << "// ************************************************************************* //" << endl;
@@ -2389,7 +2389,7 @@ class AVTGeneratorPlugin
     }
     void WriteFileFormatOptionsSource(ostream &h)
     {
-        h << copyright_str << endl;
+        h << copyright_str.c_str() << endl;
         h << "// ************************************************************************* //" << endl;
         h << "//                             avt"<<name<<"Options.C                              //" << endl;
         h << "// ************************************************************************* //" << endl;
@@ -2471,7 +2471,7 @@ class AVTGeneratorPlugin
     }
     void WriteFileFormatWriterHeader(ostream &h)
     {
-        h << copyright_str << endl;
+        h << copyright_str.c_str() << endl;
         h << "// ************************************************************************* //" << endl;
         h << "//                             avt"<<name<<"Writer.h                              //" << endl;
         h << "// ************************************************************************* //" << endl;
@@ -2524,7 +2524,7 @@ class AVTGeneratorPlugin
     }
     void WriteFileFormatWriterSource(ostream &c)
     {
-        c << copyright_str << endl;
+        c << copyright_str.c_str() << endl;
         c << "// ************************************************************************* //" << endl;
         c << "//                              avt"<<name<<"Writer.C                             //" << endl;
         c << "// ************************************************************************* //" << endl;

@@ -45,6 +45,9 @@
 #include <avtBasicNETCDFFileFormat.h>
 #include <avtLODIFileFormat.h>
 #include <avtLODIParticleFileFormat.h>
+#include <avtFVCOM_STSDFileFormat.h>
+#include <avtFVCOM_MTSDFileFormat.h>
+#include <avtFVCOMParticleFileFormat.h>
 
 // ****************************************************************************
 // Method: NETCDF_CreateFileFormatInterface
@@ -101,6 +104,24 @@ NETCDF_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
                 debug4 << "Database is avtLODIFileFormat" << endl;
             }
 
+            if(flavor == -1 && avtFVCOM_STSDFileFormat::Identify(f))
+            {
+                flavor = 3;
+                debug4 << "Database is avtFVCOM_STSDFileFormat" << endl;
+            }
+
+            if(flavor == -1 && avtFVCOM_MTSDFileFormat::Identify(f))
+            {
+                flavor = 4;
+                debug4 << "Database is avtFVCOM_MTSDFileFormat" << endl;
+            }
+
+            if(flavor == -1 && avtFVCOMParticleFileFormat::Identify(f))
+            {
+                flavor = 5;
+                debug4 << "Database is avtFVCOMParticleFileFormat" << endl;
+            }
+
             if(flavor == -1)
                 debug4 << "Database is avtBasicNETCDFFileFormat" << endl;
         }
@@ -121,6 +142,15 @@ NETCDF_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
             break;
         case 2:
             ffi = avtLODIParticleFileFormat::CreateInterface(f, list, nList, nBlock);
+            break;
+        case 3:
+            ffi = avtFVCOM_STSDFileFormat::CreateInterface(f, list, nList, nBlock);
+            break;
+        case 4:
+            ffi = avtFVCOM_MTSDFileFormat::CreateInterface(f, list, nList, nBlock);
+            break;
+        case 5:
+            ffi = avtFVCOMParticleFileFormat::CreateInterface(f, list, nList, nBlock);
             break;
         default:
             ffi = avtBasicNETCDFFileFormat::CreateInterface(f, list, nList, nBlock);

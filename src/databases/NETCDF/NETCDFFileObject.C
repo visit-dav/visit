@@ -202,12 +202,19 @@ NETCDFFileObject::IsOpen() const
 bool 
 NETCDFFileObject::Open()
 {
+    const char *mName = "NETCDFFileObject::Open: ";
     int id = INVALID_FILE_HANDLE;
     int status;
     if((status = nc_open(filename.c_str(), NC_NOWRITE, &id)) == NC_NOERR)
+    {
         ncid = id;
+        debug4 << mName << filename.c_str() << " was opened." << endl;
+    }
     else
+    {
+        debug4 << mName << "Could not open " << filename.c_str() << ": ";
         HandleError(status);
+    }
 
     return ncid != INVALID_FILE_HANDLE;
 }
@@ -836,7 +843,11 @@ NETCDFFileObject::AutoOpen()
 {
     bool retval = true;
     if(ncid == INVALID_FILE_HANDLE)
+    {
+        debug4 << "NETCDFFileObject::AutoOpen: need to open " << filename.c_str()
+               << ". Calling Open." << endl;
         retval = Open();
+    }
     return retval;
 }
 

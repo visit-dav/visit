@@ -36,6 +36,7 @@
 *****************************************************************************/
 
 #include "avtOpenGLAtomTexturer.h"
+#include <vtkConfigure.h>
 #include <math.h>
 #include <DebugStream.h>
 
