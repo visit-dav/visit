@@ -741,12 +741,27 @@ PF3DFileFormat::FilenameForDomain(int realDomain)
     const char *mName = "PF3DFileFormat::FilenameForDomain: ";
     
     std::string prefix, middle, f(filenames[0]);
+    debug4 << mName << "FilenameForDomain(" << realDomain << ") = "
+           << f.c_str() << endl;
 
     // Find the directory prefix based on the path of the first master file.
     std::string::size_type index = f.rfind(SLASH_STRING);
+    std::string vizDir("viz");
     if(index != std::string::npos)
     {
-        prefix = f.substr(0, index - 4);
+        std::string path(f.substr(0, index));
+        debug4 << mName << "path = " << path << endl;
+
+        std::string::size_type index2 = path.rfind(SLASH_STRING);
+        if(index2 != std::string::npos)
+        {
+            vizDir = path.substr(index2+1);
+            prefix = path.substr(0, index2);
+        }
+        else
+            prefix = f.substr(0, index);
+        debug4 << mName << "vizDir = " << vizDir << endl;
+        debug4 << mName << "prefix = " << prefix << endl;
     }
     debug4 << mName << "visnam_path = "
            << master.Get_visname_for_domain(realDomain, 0) << endl;
@@ -769,6 +784,15 @@ PF3DFileFormat::FilenameForDomain(int realDomain)
             middle = std::string(SLASH_STRING) + middle;
         if(middle[middle.size()-1] != SLASH_CHAR)
             middle += SLASH_STRING;
+
+        // Replace "viz" with something else, if required.
+        std::string rhs(middle.substr(1,middle.size()-1));
+        std::string::size_type nextSlash = rhs.find(SLASH_STRING);
+        if(rhs.substr(nextSlash) != vizDir)
+        {
+            middle = std::string(SLASH_STRING) + vizDir + 
+                     rhs.substr(nextSlash, rhs.size() - nextSlash);
+        }
     }
     debug4 << mName << "middle = " << middle.c_str() << endl;
 
@@ -1028,10 +1052,29 @@ PF3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 int varTotalElements = 0;
                 int *vardims = 0, varndims = 0;
                 smd->validVariable = false;
-                if(domainPDB->SymbolExists(int_nams[i].c_str(), &varType,
+
+                // If the master file contains grp_size entries then this
+                // file is a multi-domain PF3D file and we need to cd into
+                // a directory before checking for the variable.
+                std::string varName(int_nams[i]);
+                varName = master.Get_dom_prefix_for_domain(0) + varName;
+
+                if(domainPDB->SymbolExists(varName.c_str(), &varType,
                      &varTotalElements, &vardims, &varndims))
                 {
+                    debug4 << int_nams[i].c_str() << " dims={";
+                    for(int n = 0; n < varndims; ++n)
+                        debug4 << ", " << vardims[n];
+                    debug4 << "}" << endl;
+
                     smd->validVariable = varndims == 3;
+                }
+                else
+                {
+                    debug4 << "domainPDB->SymbolExists returned false "
+                              "when trying to determine the number of "
+                              "dimensions in: " << int_nams[i].c_str()
+                           << endl;
                 }
             }
 #endif
@@ -1494,7 +1537,7 @@ PF3DFileFormat::GetMesh(int dom, const char *meshName)
 }
 
 // ****************************************************************************
-// Method: PF3DFileFormat::GetVar
+// Method: PF3DFileFormat::GetVariableIndex
 //
 // Purpose: 
 //   Returns the named scalar variable.
@@ -1687,6 +1730,9 @@ PF3DFileFormat::GetBOFKey(int realDomain, const char *varName) const
 //   I added code to serve up 3D char arrays as floats. I've also disabled
 //   BOF caching with the CACHE_BOF macro.
 //
+//   Brad Whitlock, Thu Jun 22 16:46:22 PST 2006
+//   Added support for multiple domains in a file.
+//
 // ****************************************************************************
 
 PF3DFileFormat::BOF *
@@ -1727,10 +1773,15 @@ PF3DFileFormat::GetBOF(int realDomain, const char *varName)
 
             int varIndex = GetVariableIndex(varName);
 
+            // If there is a domain prefix then we need to add that to
+            // the variables that we want to read.
+            std::string domainDir(master.Get_dom_prefix_for_domain(realDomain));
+            std::string realVarName(domainDir + int_nams[varIndex]);
+
             //
             // Read the data from the PDB file.
-            //
-            data = domainPDB->ReadValues(int_nams[varIndex].c_str(),
+            // 
+            data = domainPDB->ReadValues(realVarName.c_str(),
                                          &dataType, &nTotalElements,
                                          &dims, &nDims, 0);
 
@@ -1834,7 +1885,7 @@ PF3DFileFormat::GetBOF(int realDomain, const char *varName)
                         retval->data = fptr;
 
                         double vmax = 1.;
-                        std::string varMax(varName);
+                        std::string varMax(domainDir + varName);
                         varMax += "max";
                         if(strstr(int_nams[varIndex].c_str(), "byt") != 0 &&
                            domainPDB->GetDouble(varMax.c_str(), &vmax))
@@ -2048,6 +2099,55 @@ PF3DFileFormat::GetVar(int dom, const char *varName)
     }
 
     return scalars;
+}
+
+// ****************************************************************************
+// Method: PF3DFileFormat::PopulateIOInformation
+//
+// Purpose: 
+//   Tells VisIt which domains are grouped together to improve load balancing.
+//
+// Arguments:
+//   ioInfo : The I/O information that we're going to populate.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 22 17:38:37 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PF3DFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
+{
+    const char *mName = "avtPF3DFileFormat::PopulateIOInformation: ";
+    int nGroups = master.Get_num_grp_size();
+    if(nGroups > 0)
+    {
+        vector<vector<int> > groups;
+        for(int i = 0; i < nGroups; ++i)
+        {
+            int grp_size = master.Get_grp_size(i);
+            const long *grp_members = master.Get_grp_members(i);
+            if(grp_size > 0 && grp_members != 0)
+            {
+                vector<int> thisGroup;
+                debug4 << mName << "Adding I/O group " << i << " {";
+
+                for(int j = 0; j < grp_size; ++j)
+                {
+                    debug4 << grp_members[j] << ", ";
+                    thisGroup.push_back(int(grp_members[j]));
+                }
+                debug4 << "}" << endl;
+                if(thisGroup.size() > 0)
+                    groups.push_back(thisGroup);
+            }
+        }
+
+        ioInfo.SetNDomains(master.GetNDomains());
+        ioInfo.AddHints(groups);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2542,6 +2642,64 @@ PF3DFileFormat::MasterInformation::GetMaxArray(const std::string &varName) const
         val = (const double *)(m->data);
 
     return val;
+}
+
+std::string
+PF3DFileFormat::MasterInformation::Get_dom_prefix_for_domain(int dom) const
+{
+    std::string retval;
+
+    const MemberData *m = FindMember("dom_prefix");
+    if(m != 0)
+    {
+        char *cptr = ((char *)m->data) + dom * m->dims[0];
+        retval = std::string(cptr);
+        if(retval.size() > 0)
+        {
+            if(retval[0] != '/')
+                retval = std::string(SLASH_STRING) + retval;
+            if(retval[retval.size()-1] != '/')
+                retval = retval + std::string(SLASH_STRING);
+        }
+    }
+
+    return retval;
+}
+
+int
+PF3DFileFormat::MasterInformation::Get_num_grp_size() const
+{
+    int retval = 0;
+    const MemberData *m = FindMember("grp_size");
+    if(m != 0)
+        retval = m->dims[0];
+
+    return retval;
+}
+
+int 
+PF3DFileFormat::MasterInformation::Get_grp_size(int grp) const
+{
+    int retval = 0;
+    const MemberData *m = FindMember("grp_size");
+    if(m != 0)
+        retval = int(((const long *)(m->data))[grp]);
+
+    return retval;
+}
+
+const long *
+PF3DFileFormat::MasterInformation::Get_grp_members(int grp) const
+{
+    const long *retval = 0;
+    const MemberData *m = FindMember("grp_members");
+    if(m != 0)
+    {
+        retval = (const long *)(m->data);
+        retval += grp * m->dims[1];
+    }
+
+    return retval;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
