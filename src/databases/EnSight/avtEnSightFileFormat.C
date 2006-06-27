@@ -46,6 +46,7 @@
 
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
+#include <vtkDataArrayCollection.h>
 #include <vtkDataArraySelection.h>
 #include <vtkPointData.h>
 #include <vtkStructuredGrid.h>
@@ -417,13 +418,26 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
 //  Programmer: Hank Childs
 //  Creation:   April 23, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Tue Jun 27 10:04:51 PDT 2006
+//    I made the method set the time state that we want to look at.
+//
 // ****************************************************************************
 
 void
 avtEnSightFileFormat::PrepReader(int ts)
 {
-    // We should be doing something about timesteps here.
-    //vtkDataArrayCollection *coll = reader->GetTimeSets();
+    // Get the times.
+    const char *mName = "avtEnSightFileFormat::PrepReader: ";
+    debug4 << mName << "start" << endl;
+    std::vector<double> times;
+    GetTimes(times);
+
+    // Tell the reader which time we want to look at .
+    debug4 << mName << "Setting time state to " << ts << " time="
+           << times[ts] << endl;
+    reader->SetTimeValue(times[ts]);
+    debug4 << mName << "end" << endl;
 }
 
 
@@ -436,14 +450,69 @@ avtEnSightFileFormat::PrepReader(int ts)
 //  Programmer: Hank Childs
 //  Creation:   April 23, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Tue Jun 27 10:04:11 PDT 2006
+//    I made it return the real number of time states.
+//
 // ****************************************************************************
 
 int
 avtEnSightFileFormat::GetNTimesteps(void)
 {
-    return 1;
+    const char *mName = "avtEnSightFileFormat::GetNTimesteps: ";
+
+    debug4 << mName << "start" << endl;
+    std::vector<double> times;
+    GetTimes(times);
+    
+    debug4 << mName << "end. returning " << times.size() << endl;
+    return times.size();
 }
 
+// ****************************************************************************
+// Method: avtEnSightFileFormat::GetTimes
+//
+// Purpose: 
+//   Returns the list of times from the file.
+//
+// Arguments:
+//   times : The list of times that we want to return.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 27 10:05:13 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtEnSightFileFormat::GetTimes(std::vector<double> &times)
+{
+    times.clear();
+
+    // Update the reader so it gets the times. This is really the first
+    // plugin method called so we need to do the update.
+    if (!doneUpdate)
+    {
+        reader->Update();
+        doneUpdate = true;
+    }
+
+    // Iterate through the time arrays for the reader and package them
+    // up into a vector.
+    debug4 << "avtEnSightFileFormat::GetTimes {";
+    vtkDataArrayCollection *tsc = reader->GetTimeSets();
+    for(int i = 0; i < tsc->GetNumberOfItems(); ++i)
+    {
+        vtkDataArray *t = tsc->GetItem(i);
+        for(int j = 0; j < t->GetNumberOfTuples(); ++j)
+        {
+            times.push_back(t->GetComponent(j,0));
+            debug4 << ", " << t->GetComponent(j,0);
+        }
+    }
+    debug4 << "}" << endl;
+}
 
 // ****************************************************************************
 //  Method: avtEnSightFileFormat::GetMesh
