@@ -26,7 +26,7 @@ user=`whoami`
 hitit=true
 sunset=true
 sc=true
-tidalwave=true
+tidalwave=false
 white=true
 purple=true
 lilac=true
@@ -188,7 +188,7 @@ EOF
 rm -f hitit
 cat <<EOF > hitit
 
-./visit-install -r -private -c closed -g visit -b bdivp -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
+./visit-install -r -private -c closed -g visit -b bdivp -gw -l $ver linux_rhel3 /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "        install of visit on hitit"           >> resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1
@@ -211,8 +211,8 @@ then
    then
       cat hitit >> bdiv
 
-      scp -P 22 hitit:/gscratch/$user/hitit/visitbuild/visit$ver2.linux.tar.gz .
-      scp -P 22 visit$ver2.linux.tar.gz sunset:
+      scp -P 22 hitit:/gscratch/$user/hitit/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_rhel3.tar.gz
+      scp -P 22 visit$ver2.linux_rhel3.tar.gz sunset:
    fi
 fi
 
@@ -413,7 +413,7 @@ fi
 rm -f lilac
 cat <<EOF > lilac
 
-./visit-install -private -c closed -g visit -b bdivp -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c closed -g visit -b bdivp -gw -l $ver linux_chaos /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "        install of visit on lilac"           >> resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1
@@ -436,8 +436,8 @@ then
    then
       cat lilac >> lc
 
-      scp lilac3:/usr/tmp/$user/lilac/visitbuild/visit$ver2.linux.tar.gz .
-      scp visit$ver2.linux.tar.gz sc1:
+      scp lilac3:/usr/tmp/$user/lilac/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
+      scp visit$ver2.linux_chaos.tar.gz sc1:
    fi
 fi
 
@@ -448,7 +448,6 @@ rm -f gauss
 cat <<EOF > gauss
 
 ./visit-install $verflag -c closed -g visit -b bdivp -gw -l $ver linux-x86_64 /usr/gapps/visit > installlog 2>&1
-rm -f resultlog
 echo ""                                            >> resultlog 2>&1
 echo "        install of visit on gauss"           >> resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1

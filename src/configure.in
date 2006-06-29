@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce configure.
 dnl 
 dnl 
 dnl 
-dnl                            Copyright 2000 - 2005
+dnl                            Copyright 2000 - 2006
 dnl                 The Regents of the University of California.
 dnl                             All rights reserved.
 dnl 
@@ -1296,12 +1296,22 @@ AC_PROG_CXX
 AC_PROG_CXXCPP
 AC_PROG_CC
 AC_PROG_CPP
+AC_PROG_F77
 
 # Keep checking for programs.
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 AC_CHECK_PROG(MAKEDEPEND,makedepend,makedepend)
 AC_ISC_POSIX
+
+dnl
+dnl Set BUILD_FORTRAN based on how F77 is defined
+dnl
+BUILD_FORTRAN=""
+if test -n "$F77"; then
+    BUILD_FORTRAN="\$(BUILD_FORTRAN)"
+fi
+AC_SUBST(BUILD_FORTRAN)
 
 dnl
 dnl If they didn't specify any CXXFLAGS through an environment variable,
@@ -3259,6 +3269,10 @@ COMMON_FILES="common/Makefile
               common/utility/Makefile"
 
 TOOLS_FILES="tools/Makefile
+             tools/DataManualExamples/Makefile
+             tools/DataManualExamples/CreatingCompatible/Makefile
+             tools/DataManualExamples/CreatingCompatibleAdvanced/Makefile
+             tools/DataManualExamples/Simulations/Makefile
              tools/annotations/Makefile
              tools/avtprep/Makefile
              tools/clipeditor/Makefile
@@ -3300,7 +3314,9 @@ OPERATOR_FILES="operators/Makefile"
 DATABASE_FILES="databases/Makefile"
 
 DATA_FILES="data/Makefile"
-SIMULATION_PROTOTYPE_FILES="sim/lib/Makefile"
+SIMULATION_PROTOTYPE_FILES="sim/Makefile
+                            sim/examples/Makefile
+                            sim/lib/Makefile"
 CQSCORE_FILES="cqscore/Makefile"
 THIRD_PARTY_BUILTIN_FILES="third_party_builtin/Makefile
                            third_party_builtin/bzip2/Makefile"
