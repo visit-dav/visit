@@ -46,6 +46,7 @@
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkSlicer.h>
+#include <vtkExecutive.h>
 
 #include <DebugStream.h>
 
@@ -157,6 +158,9 @@ avtThreeSliceFilter::Equivalent(const AttributeGroup *a)
 //
 //    Hank Childs, Tue Jun 17 10:43:20 PDT 2003
 //    Clean up memory leaks.
+//
+//    Kathleen Bonnell, Thu Jul  6 13:30:38 PDT 2006  
+//    Fix to work with new vtk pipeline changes. 
 //
 // ****************************************************************************
 
@@ -335,16 +339,18 @@ avtThreeSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
         out_ds[i] = vtkPolyData::New();
     
         slicer->SetInput(in_ds);
-        slicer->SetOutput(out_ds[i]);
         slicer->Update();
+        out_ds[i]->ShallowCopy(slicer->GetOutput());
 
         merger->AddInput(out_ds[i]);
         if (cellList[i])
             delete[] cellList[i];
     }
         
-    slicer->SetInput(NULL);
-    slicer->SetOutput(NULL);
+    slicer->SetInputConnection(0,NULL);
+    vtkPolyData *p = vtkPolyData::New();
+    slicer->GetExecutive()->SetOutputData(0, p);
+    p->Delete();
 
     vtkPolyData *rv = vtkPolyData::New();
 
