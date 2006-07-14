@@ -50,6 +50,7 @@ gps=true
 berg=true
 up=true
 pengra=true
+pengra_icc=true
 thunder=true
 vertex=true
 
@@ -71,6 +72,7 @@ do
          berg=false
          up=false
          pengra=false
+         pengra_icc=false
          thunder=false
          vertex=false
          shift
@@ -129,6 +131,14 @@ do
          ;;
       +pengra)
          pengra=true
+         shift
+         ;;
+      -pengra_icc)
+         pengra_icc=false
+         shift
+         ;;
+      +pengra_icc)
+         pengra_icc=true
          shift
          ;;
       -thunder)
@@ -524,6 +534,56 @@ then
 fi
 
 #
+# Build an icc version on pengra.
+#
+rm -f pengra_icc
+cat <<EOF > pengra_icc
+#!/bin/sh
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
+fi
+if test ! -d /usr/tmp/$user/pengra ; then
+   mkdir /usr/tmp/$user/pengra
+fi
+rm -rf /usr/tmp/$user/pengra/visitbuild
+mkdir /usr/tmp/$user/pengra/visitbuild
+mv pengra_icc_$dist.tar.gz /usr/tmp/$user/pengra/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/pengra/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+env CC=icc CXX=icpc CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
+make -j 3 >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist -compiler icc >> ../buildlog 2>&1
+mv visit\$ver2.linux-icc.tar.gz ..
+cd ..
+rm -f resultlog
+echo "        build of visit on pengra_icc"   > resultlog 2>&1
+echo "       ------------------------------"  >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $pengra_icc = true ]
+then
+   if [ $test = no ]
+   then
+      scp pengra_icc pengra2:pengra_icc_buildit
+      scp $dist.tar.gz pengra2:pengra_icc_$dist.tar.gz
+      ssh pengra2 "chmod 750 pengra_icc_buildit;./pengra_icc_buildit" &
+   fi
+fi
+
+#
 # Build on thunder.
 #
 rm -f thunder
@@ -628,5 +688,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot quad gps berg up pengra thunder vertex
+   rm -f hoth sunspot quad gps berg up pengra pengra_icc thunder vertex
 fi

@@ -64,10 +64,10 @@ operating systems.  It is suggested that you use the same compilers.
 
    Operating System                        Compiler
    ================                        ========
-   AIX 5.1                                 g++ 3.1
+   AIX 5.1                                 g++ 3.1 or xlc
    IRIX64 6.5                              MIPSpro 7.3.1.2m or MIPSpro 7.41
    Redhad Enterprise Linux 3 (x86)         g++ 2.96 or g++ 3.2.3
-   Redhad Enterprise Linux 4 (x86, ia64)   g++ 3.2.3
+   Redhad Enterprise Linux 4 (x86, ia64)   g++ 3.2.3 or icc 9.0
    Redhad Enterprise Linux 4 (x86_64)      g++ 3.4.4
    Solaris 7                               g++ 2.95.2 or g++ 3.2
    Tru64 5.1                               g++ 3.3.3
@@ -83,6 +83,21 @@ It is essential that you build all the dependent packages and VisIt using
 the same c++ compiler or you will encounter linking problems because different
 compilers or different versions of the same compiler may use different name
 mangling schemes.
+
+If you want to specify the compiler for a particular package that is
+using configure, the typical way to do so is by setting the CC and CXX
+environment variables.  This is typically done as follows:
+
+   env CC="your C compiler" CXX="your C++ compiler" ./configure
+
+where some common values for CC and CXX are:
+
+    Operating System      CC               CXX
+    ================      ========         ======     
+    Various               gcc              g++
+    Linux (x86, ia64)     icc              icpc
+    AIX                   xlc              xlC
+    IRIX64 6.5            cc               CC
 
 If you are using gmake or are building on an SGI and your machine has
 multiple CPUs, you may speed up the build process for many of the products
@@ -111,6 +126,7 @@ setenv VISITARCH altix_gcc_3.3.3
 setenv VISITARCH chaos_3_ia64_elan4_gcc_3.2.3
 setenv VISITARCH chaos_3_x86_64_ib_gcc_3.4.4
 setenv VISITARCH chaos_3_x86_elan3_gcc_3.2.3
+setenv VISITARCH chaos_3_x86_elan3_icc_9.0
 setenv VISITARCH irix64_cc_7.3.1.2_64
 setenv VISITARCH irix64_cc_7.41_64
 setenv VISITARCH linux_rhel3_gcc_3.2.3
@@ -136,6 +152,11 @@ tar xf Mesa-5.0-mangled.tar
 cd Mesa-5.0
 
 #
+# Mesa causes the engine to crash when built with icc 9.0 in the routine
+# mesa_test_os_sse_exception_support, so don't use it.  The gcc version
+# is compatible with icc 9.0, so you may build Mesa with it and the rest
+# of VisIt with icc 9.0.
+#
 # To build Mesa, one of the following targets should probably be used.  The
 # complete list of targets is available by typing "make" in the Mesa-5.0
 # directory.
@@ -146,6 +167,7 @@ cd Mesa-5.0
 #  make irix6-64-dso         for SGI systems with IRIX 6.x, make 64-bit DSOs
 #  make linux                for Linux systems, make shared .so libs
 #  make linux-alpha          for Linux on Alpha systems
+#  make linux-icc            for Linux systems using icc, make shared .so libs
 #  make osf1-sl              for DEC Alpha systems with OSF/1, make shared libs
 #  make solaris-x86          for PCs with Solaris
 #  make solaris-x86-gcc      for PCs with Solaris using GCC
@@ -210,6 +232,9 @@ cd cmake-2.2.3
 # or
 #    setenv CC=gcc-3.2
 #    setenv CXX=g++-3.2
+# or
+#    setenv CC=icc
+#    setenv CXX=icpc
 #
 
 #
@@ -301,6 +326,22 @@ cd VTK
 # "-timplicit_local -no_implicit_include" are not supported compiler
 # options when building cmake.  Ignore them, the options appear to be
 # necessary for things to build properly.
+#
+
+#
+# On linux systems using icc 9.0, ./Graphics/vtkQuadricClustering.cxx will
+# not compile because of an internal compiler error.  You will need to
+# replace lines 231 - 233:
+#     this->NumberOfDivisions[0] = (int)x > 0 ? (int)x : 1;
+#     this->NumberOfDivisions[1] = (int)y > 0 ? (int)y : 1;
+#     this->NumberOfDivisions[2] = (int)z > 0 ? (int)z : 1;
+# with the lines:
+#     int ix = (int) ceil((bounds[1]-this->Bounds[0])/this->DivisionSpacing[0]);
+#     int iy = (int) ceil((bounds[3]-this->Bounds[2])/this->DivisionSpacing[1]);
+#     int iz = (int) ceil((bounds[5]-this->Bounds[4])/this->DivisionSpacing[2]);
+#     this->NumberOfDivisions[0] = ix > 0 ? ix : 1;
+#     this->NumberOfDivisions[1] = iy > 0 ? iy : 1;
+#     this->NumberOfDivisions[2] = iz > 0 ? iz : 1;
 #
 make
 
@@ -459,6 +500,7 @@ setenv LD_LIBRARY64_PATH $QTDIR/lib:$LD_LIBRARY64_PATH       # SGI
 ./configure -platform irix-cc-64 -shared -qt-libpng
 ./configure -platform linux-g++ -shared -qt-libpng
 ./configure -platform linux-g++-64 -shared -qt-libpng
+./configure -platform linux-icc -shared -qt-libpng
 ./configure -platform solaris-g++ -shared -qt-libpng
 ./configure -platform tru64-g++ -shared -qt-libpng
 
@@ -760,6 +802,28 @@ tar xf mili.tar
 cd Mili
 
 #
+# To get mili to build its library without a fortran compiler you will
+# need to remove the fortran object files from the libmili dependencies.
+# Remove "${MILI_f_SRC:.f=.o} ${MILI_F_SRC:.F=.o}" from src/Makefile.in.
+#
+# If you want to use a C compiler other than cc do the following:
+#
+#   In the file configure.in, change the line:
+#   dnl AC_PROG_CC
+#   to:
+#   AC_PROG_CC
+#
+#   Run autoconf:
+#   autoconf
+#
+#   Add the line:
+#   CC = @CC@
+#
+#   to the files src/Makefile.in and tests/Makefile.in before the line:
+#   CFLAGS = @CFLAGS@
+#
+#   When you run configure you will need to set CC to the desired compiler.
+#
 # On irix systems, if you want to build a 64 bit version will need to override
 # the default compiler options.  You will need to replace all occurances of
 # "-n32" with "-64" in the configure script.
@@ -802,6 +866,9 @@ cd Mili
 # after the line
 #
 # host=`${CONFIG_SHELL-/bin/sh} $ac_config_sub $host_alias`
+#
+# If you do not have a fortran compiler on your system then the fortran
+# test examples will fail to build.  This is ok.
 #
 ./configure
 make
@@ -920,6 +987,14 @@ Boxlib does not work on Solaris or Irix systems.  We had to modify boxlib
 to use it with VisIt so you will need to contact us for the source code if
 you wish to build it.
 
+Boxlib does not build with icc since it includes fortran code which will
+lead to unsatisfied externals at runtime.  Most of the fortran consists of
+interface routines which could be removed by commenting out all the lines
+after the comment "Fortran interface routines." near the bottom of the file
+Make.package.  Unfortunately, the C routines call two fortran routines,
+which could probably be fairly easily rewritten in C.  Unfortunately that
+hasn't been done yet.  The routines are FORT_FASTCOPY and FORT_FASTSETVAL.
+
 You will need to modify GNUmakefile so that it doesn't use MPI.  To do this
 change "USE_MPI   = TRUE" to "USE_MPI   = FALSE".
 
@@ -940,12 +1015,25 @@ probably want to add optimization flags (i.e. -O2).
 # You will need to modify GNUmakefile to set the compiler.  Typically, this
 # will involve replacing "KCC" with the name of your c++ compiler in the
 # line "COMP      = KCC".  If the compiler doesn't match one of the ones
-# in the file ../mk/Make.defs, you will need to create an entry for it
-# in that file.  The only value of COMP that it understands and is relevant
-# for VisIt is g++.  If the g++ compiler is referenced by anything other
-# than g++, the easiest thing is to change all occurances of g++ with the
+# in the file ../mk/Make.defs, you will need to create an entry for it in
+# that file.  The only values of COMP that it understands and are relevant
+# for VisIt are g++ and Intel.  If the g++ compiler is referenced by anything
+# other than g++, the easiest thing is to change all occurances of g++ with the
 # other name in the file ../mk/Make.defs.  For example if the compiler is
 # g++-3.2.3, then change all occurances of g++ to g++-3.2.3.
+#
+# If you are building with icc, you should change "COMP      = KCC" to
+# "COMP      = Intel".
+#
+# If you are using icc 9.0 you should add the following lines
+#
+#    ifeq ($(findstring Version 9.0, $(__icc_version)), Version 9.0)
+#        ICC_VERSION := 9.0
+#        ICC_MAJOR_VERSION := 9
+#        ICC_MINOR_VERSION := 0
+#    endif
+#
+# to ../mk/Make.defs at the end of the section "ifeq ($(COMP),Intel)".
 #
 # If you are building with xlC, you should change "COMP      = KCC" to
 # "COMP      = xlC" and add the following lines to ../mk/Make.defs.
@@ -1117,7 +1205,7 @@ mkdir $VISITDIR/gdal/1.3.0/$VISITARCH
 # you will need to add "--without-mysql" at the end of the following configure
 # command.
 #
-env CXXFLAGS="-O2" CFLAGS="-O2" ./configure --prefix=$VISITDIR/gdal/1.3.0/$VISITARCH --with-gif=internal --with-png=internal --with-jpeg=internal --with-libz=internal --with-netcdf=no --without-jasper --enable-static --disable-shared --without-python
+env CXXFLAGS="-O2" CFLAGS="-O2" ./configure --prefix=$VISITDIR/gdal/1.3.0/$VISITARCH --with-libtiff=internal --with-gif=internal --with-png=internal --with-jpeg=internal --with-libz=internal --with-netcdf=no --without-jasper --enable-static --disable-shared --without-python
 make
 
 #
