@@ -44,6 +44,8 @@ build and install those libraries prior to building VisIt.
     netCDF   3.6.0    File I/O library       http://www.unidata.ucar.edu/packages/netcdf/
     CGNS     2.4      File I/O library       http://www.cgns.org
     GDAL     1.3.0    GIS reader library     http://www.gdal.org
+    CFITSIO  3006     File I/O library       http://heasarc.gsfc.nasa.gov/docs/heasarc/fits.html
+
 
 Most of the third party libraries necessary to build VisIt are available for
 download from ftp://ftp.llnl.gov/pub/visit/3rd_party.  It is suggested that
@@ -1210,6 +1212,48 @@ make
 
 #
 # Install GDAL in the visit directory under the gdal directory
+#
+make install
+cd ..
+
+
+CFITSIO (Optional)
+===================
+
+CFITSIO is a library for reading FITS files. FITS stands for `Flexible Image 
+Transport System' and is the standard astronomical data format endorsed by 
+both NASA and the IAU. FITS is much more than an image format (such as JPG 
+or GIF) and is primarily designed to store scientific data sets consisting 
+of multi-dimensional arrays (1-D spectra, 2-D images or 3-D data cubes) and
+2-dimensional tables containing rows and columns of data.
+
+#
+# Build CFITSIO
+#
+gunzip cfitsio3006.tar.gz
+tar xvf cfitsio3006.tar
+cd cfitsio
+
+mkdir $VISITDIR/cfitsio
+mkdir $VISITDIR/cfitsio/3006
+mkdir $VISITDIR/cfitsio/3006/$VISITARCH
+
+#
+# You should specify the compiler because otherwise CFITSIO's configure
+# script will first look for a proprietary compiler before reverting to
+# gcc. If you want to use gcc or another compiler from the beginning then
+# you should provide it on the configure line.
+#
+# On AIX systems where you build 64 bit libraries using xlc, add the following
+# to the front of the configure line:
+#    CC=xlc CFLAGS="-q64 -O2"
+#
+#
+env CC=gcc ./configure --prefix=$VISITDIR/cfitsio/3006/$VISITARCH 
+make
+
+#
+# Install CFITSIO in the visit directory under the cfitsio directory
 #
 make install
 cd ..

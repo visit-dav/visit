@@ -607,6 +607,9 @@ dnl
 dnl    Shelly Prevost, Mon Mar 13 16:14:47 PST 2006
 dnl    Moved the location of the simulation Makefile from sim to sim/lib.
 dnl
+dnl    Brad Whitlock, Thu Jul 20 11:55:51 PDT 2006
+dnl    Added CFITSIO support.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2498,6 +2501,50 @@ AC_SUBST(GDAL)
 AC_SUBST(GDAL_INCLUDE)
 AC_SUBST(GDAL_LIB)
 AC_SUBST(GDAL_LIBS)
+
+#
+# Look for CFITSIO
+#
+AC_MSG_CHECKING(for CFITSIO)
+CFITSIO=""
+CFITSIO_INCLUDE=""
+CFITSIO_LIB=""
+AC_ARG_WITH(CFITSIO,
+	    [  --with-cfitsio=INC-DIR,LIB-DIR     Location of CFITSIO header and library],
+           CFITSIO_specified="yes",
+           CFITSIO_specified="no"
+           )
+if test "$SHORT_UNAME" = "darwin"; then
+    CFITSIO_LIBEXT="dylib"
+else
+    CFITSIO_LIBEXT="a"
+fi
+if test "$CFITSIO_specified" = "yes"; then
+   if test "$withval" != "no"; then
+      CFITSIO_INCLUDE="-I`echo $withval |cut -f1 -d,`"
+      CFITSIO_LIB="`echo $withval |cut -f2 -d, -s`/libcfitsio.$CFITSIO_LIBEXT"
+   fi
+else
+   if test "$DEFAULT_CFITSIO_INCLUDE" != "" ; then
+      CFITSIO_INCLUDE="-I$DEFAULT_CFITSIO_INCLUDE $CFITSIO_INCLUDE"
+   fi
+   if test "$DEFAULT_CFITSIO_LIB" != "" ; then
+      CFITSIO_LIB="$DEFAULT_CFITSIO_LIB/libcfitsio.$CFITSIO_LIBEXT $CFITSIO_LIB"
+   fi
+fi
+if test "$CFITSIO_LIB" != "" ; then
+   if test "$CFITSIO_INCLUDE" != "" ; then
+      CFITSIO="$""(CFITSIO)"
+      AC_MSG_RESULT(yes)
+   else
+      AC_MSG_RESULT(no)
+   fi
+else
+   AC_MSG_RESULT(no)
+fi
+AC_SUBST(CFITSIO)
+AC_SUBST(CFITSIO_INCLUDE)
+AC_SUBST(CFITSIO_LIB)
 
 #
 # Add Some include paths to the engine's CPPFLAGS.

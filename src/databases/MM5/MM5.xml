@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+  <Plugin name="MM5" type="database" label="MM5" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false">
+    <Extensions>
+      mm5
+    </Extensions>
+    <Files components="M">
+      avtMM5FileFormat.C
+      MM5.C
+    </Files>
+    <Files components="E">
+      avtMM5FileFormat.C
+      MM5.C
+    </Files>
+    <Attribute name="" purpose="" persistent="false">
+    </Attribute>
+  </Plugin>

@@ -102,6 +102,10 @@ class SiloDir
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 12, 2001
 //
+//  Modifications:
+//    Mark C. Miller, Thu Jul 20 15:45:55 PDT 2006
+//    Added IsOpen()
+//
 // ****************************************************************************
 class SiloFile
 {
@@ -112,6 +116,7 @@ class SiloFile
     SiloFile(const QString &name);
     ~SiloFile();
 
+    bool          IsOpen() const { return db != 0; };
     void         *GetVar(const QString &name);
     int           GetVarType(const QString &name);
     int           GetVarLength(const QString &name);

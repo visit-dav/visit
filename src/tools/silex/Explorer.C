@@ -49,20 +49,32 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 12, 2001
 //
+//  Modifications:
+//    Mark C. Miller, Thu Jul 20 15:45:55 PDT 2006
+//    Made it deal with failure to construct SiloView
+//  
 // ****************************************************************************
 Explorer::Explorer(const QString &file, QWidget *p, const QString &n)
     : QMainWindow(p,n)
 {
     view = new SiloView(file,
                         this, "SiloView");
-    setCentralWidget(view);
-    setCaption("Explorer: "+file);
+    if (!view->HasSiloFile())
+    {
+        delete view;
+        view = 0;
+    }
+    else
+    {
+        setCentralWidget(view);
+        setCaption("Explorer: "+file);
 
-    QPopupMenu *filemenu = new QPopupMenu( this );
-    menuBar()->insertItem(tr("&File"),filemenu);
-    filemenu->insertItem( "&Open",  this, SLOT(open()),  CTRL+Key_O );
-    filemenu->insertSeparator();
-    filemenu->insertItem( "E&xit", this, SLOT(close()),  CTRL+Key_X );
+        QPopupMenu *filemenu = new QPopupMenu( this );
+        menuBar()->insertItem(tr("&File"),filemenu);
+        filemenu->insertItem( "&Open",  this, SLOT(open()),  CTRL+Key_O );
+        filemenu->insertSeparator();
+        filemenu->insertItem( "E&xit", this, SLOT(close()),  CTRL+Key_X );
+    }
 }
 
 // ****************************************************************************
@@ -71,9 +83,14 @@ Explorer::Explorer(const QString &file, QWidget *p, const QString &n)
 //  Programmer:  Jeremy Meredith
 //  Creation:    May 17, 2004
 //
+//  Modifications:
+//    Mark C. Miller,Thu Jul 20 15:45:55 PDT 2006
+//    Added deletion of view
 // ****************************************************************************
 Explorer::~Explorer()
 {
+    if (view) delete view;
+    view = 0;
 }
 
 // ****************************************************************************

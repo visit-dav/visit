@@ -1046,7 +1046,7 @@ static void log_RedoViewRPC(ViewerRPC *rpc, char *str)
 
 static void log_InvertBackgroundRPC(ViewerRPC *rpc, char *str)
 {
-    SNPRINTF(str, SLEN, "InvertBackground()\n");
+    SNPRINTF(str, SLEN, "InvertBackgroundColor()\n");
 }
 
 static void log_ClearPickPointsRPC(ViewerRPC *rpc, char *str)
