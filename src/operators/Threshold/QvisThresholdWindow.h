@@ -39,9 +39,8 @@
 #define QVISTHRESHOLDWINDOW_H
 
 #include <QvisOperatorWindow.h>
-#include <AttributeSubject.h>
+#include <ThresholdAttributes.h>
 
-class ThresholdAttributes;
 class QLabel;
 class QCheckBox;
 class QLineEdit;
@@ -67,45 +66,69 @@ class QvisVariableButton;
 // Creation:   Fri Apr 12 14:41:06 PST 2002
 //
 // Modifications:
+//
 //   Brad Whitlock, Fri Dec 10 09:39:57 PDT 2004
 //   Added a variable button.
 //
 //   Hank Childs, Thu Sep 15 15:31:34 PDT 2005
 //   Added windowing for creating point meshes.
 //
+//   Mark Blair, Tue Mar  7 13:25:00 PST 2006
+//   Upgraded to support multiple threshold variables.
+//
 // ****************************************************************************
 
 class QvisThresholdWindow : public QvisOperatorWindow
 {
     Q_OBJECT
-  public:
+
+public:
     QvisThresholdWindow(const int type,
-                         ThresholdAttributes *subj,
-                         const char *caption = 0,
-                         const char *shortName = 0,
-                         QvisNotepadArea *notepad = 0);
-    virtual ~QvisThresholdWindow();
-    virtual void CreateWindowContents();
-  protected:
-    void UpdateWindow(bool doAll);
-    virtual void GetCurrentValues(int which_widget);
-  private slots:
-    void amountChanged(int val);
-    void meshTypeChanged(int val);
-    void lboundProcessText();
-    void uboundProcessText();
-    void variableChanged(const QString &);
-  private:
-    QButtonGroup        *amount;
-    QButtonGroup        *meshType;
-    QLabel              *amountLabel;
-    QLineEdit           *lbound;
-    QLineEdit           *ubound;
-    QvisVariableButton  *variable;
+                        ThresholdAttributes *subj,
+                        const char *caption = 0,
+                        const char *shortName = 0,
+                        QvisNotepadArea *notepad = 0);
+    virtual            ~QvisThresholdWindow();
+    virtual void        CreateWindowContents();
+
+protected:
+    void                UpdateWindow(bool doAll);
+    virtual void        GetCurrentValues(int which_widget);
+
+private slots:
+    void                apply();
+    void                outputMeshTypeChanged(int buttonID);
+    void                zonePortionChanged(int buttonID);
+    void                lowerBoundChanged();
+    void                upperBoundChanged();
+    void                prevVarClicked();
+    void                nextVarClicked();
+    void                variableAdded(const QString &variableToAdd);
+    void                variableDeleted(const QString &variableToDelete);
+    void                variableSwapped(const QString &variableToSwapIn);
+
+private:
+    void                UpdateShownFields();
+    void                RecordGUIAttributeChangeIfActuallyChanged();
+
+    QButtonGroup        *outputMeshType;
+    QButtonGroup        *zonePortion;
+    QLabel              *zonePortionLabel;
+    QLineEdit           *lowerBound;
+    QLineEdit           *upperBound;
+    QLabel              *shownVariable;
+    QPushButton         *showPrevVariable;
+    QPushButton         *showNextVariable;
+    QvisVariableButton  *addVariable;
+    QvisVariableButton  *deleteVariable;
+    QvisVariableButton  *swapVariable;
+
+    const QBitmap       *leftArrowBitmap;
+    const QBitmap       *rightArrowBitmap;
 
     ThresholdAttributes *atts;
+    ThresholdAttributes  latestGUIAtts;
+    bool                 changedAttsInGUI;
 };
-
-
 
 #endif
