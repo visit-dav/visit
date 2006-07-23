@@ -1833,11 +1833,14 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    annotations that depend on plots being added in order to update 
 //    themselves get the opportunity to do so.
 //
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    Added leftEye arg as well as logic to force rendering for one or the
+//    other eye.
 // ****************************************************************************
 
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
-    int windowID)
+    int windowID, bool leftEye)
 {
     int i;
     DataNetwork *origWorkingNet = workingNet;
@@ -1860,6 +1863,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
     int *const &frameAndState = viswinInfo.frameAndState;
     std::vector<int>& plotsCurrentlyInWindow = viswinMap[windowID].plotsCurrentlyInWindow;
     std::vector<avtPlot_p>& imageBasedPlots = viswinMap[windowID].imageBasedPlots;
+    bool &handleLeftRightEye = viswinMap[windowID].handleLeftRightEye;
 
     TRY
     {
@@ -1868,6 +1872,12 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         bool needToSetUpWindowContents = false;
         int *cellCounts = new int[2 * plotIds.size()];
         bool handledAnnotations = false;
+
+        //
+        // Explicitly specify left or right eye for crystal-eyes stereo 
+        //
+        if (handleLeftRightEye)
+            viswin->SetStereoRendering(true, leftEye ? 4 : 5);
 
         // put all the plot objects into the VisWindow
         viswin->SetScalableRendering(false);
@@ -2431,6 +2441,13 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 200
 //    Modified to use viswinMap
 //
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    Added code to support stereo rendering. Some stereo modes (e.g. crystal
+//    eyes) require images in separate buffers for left/right eyes. Such
+//    modes are handled by multiple external render requests to the engine.
+//    Other modes (e.g. Red-Blue) can be rendered in a single ext. render.
+//    Consequently, the engine's viswin object is put into stereo mode only
+//    for certain cases.
 // ****************************************************************************
 void
 NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
@@ -2448,6 +2465,7 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
     WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
     std::string &extentTypeString = viswinInfo.extentTypeString;
     std::string &changedCtName = viswinInfo.changedCtName;
+    bool &handleLeftRightEye = viswinInfo.handleLeftRightEye;
 
     // do nothing if nothing changed
     if ((windowAttributes == atts) && (extentTypeString == extstr) &&
@@ -2561,6 +2579,42 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
     if (viswin->GetSurfaceRepresentation() != atts.GetRenderAtts().GetGeometryRepresentation())
        viswin->SetSurfaceRepresentation(atts.GetRenderAtts().GetGeometryRepresentation());
     viswin->SetDisplayListMode(0);  // never
+
+    //
+    // Only enable stereo rendering in the viswin object for non-crystal-eyes modes
+    //
+    if (atts.GetRenderAtts().GetStereoRendering())
+    {
+        if (viswin->GetStereo() != true)
+        {
+            if (atts.GetRenderAtts().GetStereoType() == RenderingAttributes::CrystalEyes)
+                handleLeftRightEye = true;
+            else
+            {
+                viswin->SetStereoRendering(true, atts.GetRenderAtts().GetStereoType());
+                handleLeftRightEye = false;
+            }
+        }
+        else
+        {
+            if (viswin->GetStereoType() != atts.GetRenderAtts().GetStereoType())
+            {
+                if (atts.GetRenderAtts().GetStereoType() == RenderingAttributes::CrystalEyes)
+                    handleLeftRightEye = true;
+                else
+                {
+                    viswin->SetStereoRendering(true, atts.GetRenderAtts().GetStereoType());
+                    handleLeftRightEye = false;
+                }
+            }
+        }
+    }
+    else
+    {
+        if (viswin->GetStereo() != false)
+            viswin->SetStereoRendering(false, 0);
+        handleLeftRightEye = false;
+    }
 
     windowAttributes = atts;
     extentTypeString = extstr;
@@ -2964,6 +3018,8 @@ NetworkManager::StopQueryMode(void)
 //    Kathleen Bonnell, Wed Jun 14 16:41:03 PDT 2006
 //    Send silr and pipeline Index (via QueryAtts) to LocateQuery. 
 //
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    Added bool for leftEye to Render calls.
 // ****************************************************************************
  
 void
@@ -3015,7 +3071,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
             //
             intVector pids;
             pids.push_back(id);
-            Render(pids, false, 0, winId);
+            Render(pids, false, 0, winId, true);
         }
         int d = -1, e = -1;
         double t = +FLT_MAX; 
@@ -4119,7 +4175,7 @@ NetworkManager::PickForIntersection(const int winId, PickAttributes *pa)
 
     if (needRender)
     {
-        Render(validIds, false, 0, winId);
+        Render(validIds, false, 0, winId, true);
     }
     int x, y; 
     double isect[3];

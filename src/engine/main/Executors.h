@@ -1317,6 +1317,8 @@ RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
 //    Register one more callback, which can lead to an exception if we don't
 //    do this, when a warning is issued during SR.
 //
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    Added leftEye to Render call to support stereo SR
 // ****************************************************************************
 template<>
 void
@@ -1346,7 +1348,8 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
         // do the render
         avtDataObjectWriter_p writer =
             netmgr->Render(rpc->GetIDs(),rpc->GetSendZBuffer(),
-                           rpc->GetAnnotMode(), rpc->GetWindowID());
+                           rpc->GetAnnotMode(), rpc->GetWindowID(),
+                           rpc->GetLeftEye());
 
         // Send the data back to the viewer.
         bool useCompression = netmgr->GetShouldUseCompression(rpc->GetWindowID());

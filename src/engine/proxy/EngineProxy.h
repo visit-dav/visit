@@ -275,6 +275,9 @@ class ExportDBAttributes;
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added mesh management attributes to ReadDataObject
+//
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    Added bool arg (leftEye) to Render method to support stereo SR
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -346,7 +349,7 @@ public:
                                              const std::string,
                                              const int winID);
 
-    avtDataObjectReader_p    Render(bool, const intVector&, int, int,
+    avtDataObjectReader_p    Render(bool, const intVector&, int, int, bool,
                                  void (*waitCB)(void *), void *cbData);
 
     avtDataObjectReader_p    Execute(bool, void (*waitCB)(void*),void *cbData);

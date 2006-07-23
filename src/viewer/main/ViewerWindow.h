@@ -390,6 +390,11 @@ class ViewerToolbar;
 //
 //    Brad Whitlock, Tue Mar 7 17:35:28 PST 2006
 //    I added view stacks.
+//    
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    Added leftEye to external render methods. Added scalableStereoType
+//    to store knowledge of stereo mode for cases where it is not appropriate
+//    to actually put the visWindow into stereo.
 //
 // ****************************************************************************
 
@@ -638,13 +643,13 @@ private:
     void UpdateLastExternalRenderRequestInfo(
              const ExternalRenderRequestInfo& newRequest);
     void GetExternalRenderRequestInfo(
-             ExternalRenderRequestInfo& theRequest) const;
+             ExternalRenderRequestInfo& theRequest, bool leftEye) const;
     bool CanSkipExternalRender(
              const ExternalRenderRequestInfo& thisRequest) const;
     bool ExternalRender(const ExternalRenderRequestInfo& thisRequest,
              bool& shouldTurnOffScalableRendering, bool doAllAnnotations,
              avtDataObject_p& dob);
-    void ExternalRenderAuto(avtDataObject_p& dob);
+    void ExternalRenderAuto(avtDataObject_p& dob, bool leftEye);
 
     static void ShowCallback(void *);
     static void HideCallback(void *);
@@ -680,6 +685,7 @@ private:
 
     bool            isChangingScalableRenderingMode;
     bool            targetScalableRenderingMode;
+    int             scalableStereoType;
     std::string     nameOfCtChangedSinceLastRender;
     bool            isCompressingScalableImage;
     int             compressionActivationMode;

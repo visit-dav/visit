@@ -64,13 +64,16 @@
 //    Brad Whitlock, Thu Jan 13 13:44:47 PST 2005
 //    Initialized member values.
 //
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    Added leftEye to support stereo SR
 // ****************************************************************************
 
-RenderRPC::RenderRPC() : NonBlockingRPC("i*bii"), ids()
+RenderRPC::RenderRPC() : NonBlockingRPC("i*biib"), ids()
 {
     sendZBuffer = false;
     annotMode = 0;
     windowID = 0;
+    leftEye = true;
 }
 
 // ****************************************************************************
@@ -112,16 +115,20 @@ RenderRPC::~RenderRPC()
 //
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added window id
+//
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    Added leftEye to support stereo SR
 // ****************************************************************************
 
 void
 RenderRPC::operator()(const intVector& ids_, bool sendZBuffer_,
-    int annotMode_, int windowID_)
+    int annotMode_, int windowID_, bool leftEye_)
 {
     SetIDs(ids_);
     SetSendZBuffer(sendZBuffer_);
     SetAnnotMode(annotMode_);
     SetWindowID(windowID_);
+    SetLeftEye(leftEye_);
 
     Execute();
 }
@@ -144,6 +151,9 @@ RenderRPC::operator()(const intVector& ids_, bool sendZBuffer_,
 //
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added window id
+//
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    Added leftEye to support stereo SR
 // ****************************************************************************
 
 void
@@ -153,6 +163,7 @@ RenderRPC::SelectAll()
     Select(1, (void*)&sendZBuffer);
     Select(2, (void*)&annotMode);
     Select(3, (void*)&windowID);
+    Select(4, (void*)&leftEye);
 }
 
 
@@ -181,6 +192,8 @@ RenderRPC::SelectAll()
 //    Fixed critical bug in SetWindowID where the address of the argument was
 //    being taken for the Select call.
 //
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    Added leftEye to support stereo SR
 // ****************************************************************************
 
 void
@@ -211,6 +224,13 @@ RenderRPC::SetWindowID(int windowID_)
     Select(3, (void*)&windowID);
 }
 
+void
+RenderRPC::SetLeftEye(bool leftEye_)
+{
+    leftEye = leftEye_;
+    Select(4, (void*)&leftEye);
+}
+
 
 
 // ****************************************************************************
@@ -232,6 +252,9 @@ RenderRPC::SetWindowID(int windowID_)
 //
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added window id
+//
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    Added leftEye to support stereo SR
 // ****************************************************************************
 
 const intVector&
@@ -256,4 +279,10 @@ int
 RenderRPC::GetWindowID() const
 {
     return windowID;
+}
+
+bool
+RenderRPC::GetLeftEye() const
+{
+    return leftEye;
 }

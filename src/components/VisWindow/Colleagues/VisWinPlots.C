@@ -941,6 +941,9 @@ VisWinPlots::Stop3DMode(void)
 //    the camera as the image is zoomed by dividing the offset by the image
 //    zoom.
 //
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    Passed cam to extRenderedImagesActor to support stereo SR mode
+//
 // ****************************************************************************
 
 void
@@ -953,7 +956,7 @@ VisWinPlots::UpdateView()
     // with its sorting algorithms.
     //
     transparencyActor->PrepareForRender(cam);
-    extRenderedImagesActor->PrepareForRender();
+    extRenderedImagesActor->PrepareForRender(cam);
 
     //
     // Pull the wireframe actors a little closer to the camera to make sure

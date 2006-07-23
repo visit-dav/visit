@@ -68,6 +68,29 @@ using std::vector;
 using std::map;
 
 // ****************************************************************************
+//  Function: GetCameraLeftEye 
+//
+//  Purpose: Access to private data member of vtkCamera necessary to support
+//           Stereo rendering in SR mode. To do this, we create a simple
+//           derived class of vtkCamera that has a public method to return
+//           the left eye information from vtkCamera.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   July 21, 2006 
+//
+// ****************************************************************************
+class vtkVisItERIACamera : vtkCamera
+{
+  public:
+    int GetLeftEye() const { return LeftEye; };
+};
+static bool GetCameraLeftEye(const vtkCamera *const vtkCam)
+{
+    const vtkVisItERIACamera *const eriaCam = (vtkVisItERIACamera*) vtkCam;
+    return eriaCam->GetLeftEye() == 1;
+}
+
+// ****************************************************************************
 //  Method: avtExternallyRenderedImagesActor constructor
 //
 //  Programmer: Mark C. Miller 
@@ -160,14 +183,28 @@ avtExternallyRenderedImagesActor::RegisterExternalRenderCallback(
 //  Programmer: Mark C. Miller
 //  Creation:   January 13, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Fri Jul 21 08:05:15 PDT 2006
+//    Build a buffer of args to pass multiple args to call back
+//
 // ****************************************************************************
  
 void
-avtExternallyRenderedImagesActor::DoExternalRender(avtDataObject_p &dob)
+avtExternallyRenderedImagesActor::DoExternalRender(avtDataObject_p &dob,
+    bool leftEye)
 {
+    static unsigned char argsBuf[256];
+    int i = 0;
+
+    // build buffer of args to pass to Viewer
+    memcpy(&argsBuf[0], &extRenderCallbackArgs, sizeof(extRenderCallbackArgs));
+    i += sizeof(extRenderCallbackArgs);
+    memcpy(&argsBuf[i], &leftEye, sizeof(leftEye));
+
     if (extRenderCallback != NULL)
     {
-        extRenderCallback(extRenderCallbackArgs, dob);
+        extRenderCallback(argsBuf, dob);
     }
     else
     {
@@ -195,10 +232,14 @@ avtExternallyRenderedImagesActor::DoExternalRender(avtDataObject_p &dob)
 //  Programmer: Mark C. Miller 
 //  Creation:   January 9, 2003 
 //
+//  Modifications:
+//    Mark C. Miller, Fri Jul 21 08:05:15 PDT 2006
+//    Added vtkCamera argument to support stereo SR mode
+//
 // ****************************************************************************
  
 void
-avtExternallyRenderedImagesActor::PrepareForRender(void)
+avtExternallyRenderedImagesActor::PrepareForRender(const vtkCamera *const cam)
 {
    // return early if we're not supposed to be making external render requests
    if (!makeExternalRenderRequests)
@@ -216,7 +257,7 @@ avtExternallyRenderedImagesActor::PrepareForRender(void)
    CopyTo(dummyDob, dummyData);
 
    avtDataObject_p dob = dummyDob; 
-   DoExternalRender(dob);
+   DoExternalRender(dob, GetCameraLeftEye(cam));
 
    if ((*dob != *dummyDob) && (*dob != NULL))
    {
