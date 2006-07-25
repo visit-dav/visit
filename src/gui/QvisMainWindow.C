@@ -43,6 +43,7 @@
 #include <qmenubar.h>
 #include <qpopupmenu.h>
 #include <qcombobox.h>
+#include <qsplitter.h>
 #include <qstatusbar.h>
 #include <qpushbutton.h>
 #include <qtooltip.h>
@@ -53,6 +54,7 @@
 #include <QvisPostableWindow.h>
 #include <QvisPlotManagerWidget.h>
 
+#include <DataNode.h>
 #include <StatusSubject.h>
 #include <FileServerList.h>
 #include <GlobalAttributes.h>
@@ -278,6 +280,9 @@
 //
 //    Brad Whitlock, Mon Mar 13 17:19:28 PST 2006
 //    Changed print option to Ctrl+P.
+//
+//    Brad Whitlock, Mon Jul 24 17:43:18 PST 2006
+//    Added splitters.
 //
 // ****************************************************************************
 
@@ -510,34 +515,30 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     updateVisItId = helpPopup->insertItem( tr("Check for new version . . ."), this, SIGNAL(updateVisIt()));
 
     // Make a central widget to contain the other widgets
-    central = new QWidget( this );
-    setCentralWidget( central );
-
-    //
-    // Create the top layout manager. It will vary depending on the 
-    // main window's layout mode.
-    //
-    if(orientation < 2)
-        topLayout = new QVBoxLayout(central, 5);
-    else
-        topLayout = new QHBoxLayout(central, 5);
+    splitter = new QSplitter(this);
+    splitter->setOrientation(QSplitter::Vertical);
+    setCentralWidget(splitter);
 
     //
     // Create the file panel and make it an observer of the file server.
     //
-    QVBoxLayout *middleLayout = new QVBoxLayout(topLayout);
-    filePanel = new QvisFilePanel(central, "FilePanel");
+    QVBox *panel1 = new QVBox(splitter);
+    panel1->setMargin(5);
+    filePanel = new QvisFilePanel(panel1, "FilePanel");
     connect(filePanel, SIGNAL(reopenOnNextFrame()),
             this, SIGNAL(reopenOnNextFrame()));
     filePanel->ConnectFileServer(fileServer);
     filePanel->ConnectWindowInformation(viewer->GetWindowInformation());
-    middleLayout->addWidget(filePanel);
 
     // Create the global area.
-    CreateGlobalArea(middleLayout);
+    QVBox *panel2 = new QVBox(splitter);
+    panel2->setMargin(5);
+    QWidget *topOfHBox = new QWidget(panel2);
+    CreateGlobalArea(topOfHBox);
+    splitter->setResizeMode(panel2,QSplitter::Stretch);
 
     // Create the plot Manager.
-    plotManager = new QvisPlotManagerWidget(menuBar(), central, "plotManager");
+    plotManager = new QvisPlotManagerWidget(menuBar(), panel2, "plotManager");
     plotManager->ConnectPlotList(viewer->GetPlotList());
     plotManager->ConnectFileServer(fileServer);
     plotManager->ConnectGlobalAttributes(viewer->GetGlobalAttributes());
@@ -546,16 +547,13 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     plotManager->ConnectWindowInformation(viewer->GetWindowInformation());
     plotManager->ConnectDatabaseMetaData(viewer->GetDatabaseMetaData());
     plotManager->viewer = viewer;
-#ifdef Q_WS_MACX
-    topLayout->addWidget(plotManager, 200);
-#else
-    topLayout->addWidget(plotManager, 150);
-#endif
 
     // Create the notepad widget. Use a big stretch factor so the
     // notpad widget will fill all the remaining space.
-    notepad = new QvisNotepadArea( central );
-    topLayout->addWidget(notepad, 300);
+    notepad = new QvisNotepadArea( splitter );
+
+    QValueList<int> splitterSizes;
+    int nVisiblePanels = 2;
 
     if(qApp->desktop()->height() < 1024)
     {
@@ -564,6 +562,23 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
         notepad->hide();
         QvisPostableWindow::SetPostEnabled(false);
     }
+    else
+        ++nVisiblePanels;
+
+    // May want to read these from the config file but here are the defaults.
+    int hgt = qApp->desktop()->height();
+    if(nVisiblePanels == 2)
+    {
+        splitterSizes.push_back(int(hgt * 0.5));
+        splitterSizes.push_back(int(hgt * 0.5));
+    }
+    else
+    {
+        splitterSizes.push_back(int(hgt * 0.3));
+        splitterSizes.push_back(int(hgt * 0.3));
+        splitterSizes.push_back(int(hgt * 0.4));
+    }
+    splitter->setSizes(splitterSizes);
 
     // Create the output button and put it in the status bar as a
     // permanent widget.
@@ -672,45 +687,45 @@ QvisMainWindow::~QvisMainWindow()
 // ****************************************************************************
 
 void
-QvisMainWindow::CreateGlobalArea(QLayout *tl)
+QvisMainWindow::CreateGlobalArea(QWidget *par)
 {
-    QGridLayout *globalLayout = new QGridLayout(tl, 2, 7);
+    QGridLayout *globalLayout = new QGridLayout(par, 2, 7);
     globalLayout->setSpacing(0);
     globalLayout->setColStretch(2, 50);
     globalLayout->setColStretch(5, 50);
 
-    activeWindowComboBox = new QComboBox(false, central,
+    activeWindowComboBox = new QComboBox(false, par,
         "activeWindowComboBox");
     connect(activeWindowComboBox, SIGNAL(activated(int)),
             this, SLOT(winset(int)));
     activeWindowComboBox->insertItem("1");
     QLabel *activeWindowLabel = new QLabel(activeWindowComboBox, 
-       "Active window", central, "activeWindowLabel");
+       "Active window", par, "activeWindowLabel");
     globalLayout->addMultiCellWidget(activeWindowLabel, 0, 0, 0, 1, Qt::AlignCenter);
     globalLayout->addMultiCellWidget(activeWindowComboBox, 1, 1, 0, 1);
 
-    QLabel *maintainLabel = new QLabel("Maintain limits", central);
+    QLabel *maintainLabel = new QLabel("Maintain limits", par);
     globalLayout->addMultiCellWidget(maintainLabel, 0, 0, 3, 4, Qt::AlignCenter);
 
-    maintainViewCheckBox = new QCheckBox("view", central,
+    maintainViewCheckBox = new QCheckBox("view", par,
         "maintainViewCheckBox");
     connect(maintainViewCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(maintainViewToggled(bool)));
     globalLayout->addWidget(maintainViewCheckBox, 1, 3);
 
-    maintainDataCheckBox = new QCheckBox("data", central,
+    maintainDataCheckBox = new QCheckBox("data", par,
         "maintainDataCheckBox");
     connect(maintainDataCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(maintainDataToggled(bool)));
     globalLayout->addWidget(maintainDataCheckBox, 1, 4);
 
-    replacePlotsCheckBox = new QCheckBox("Replace plots", central,
+    replacePlotsCheckBox = new QCheckBox("Replace plots", par,
         "replacePlotsCheckBox");
     connect(replacePlotsCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(replacePlotsToggled(bool)));
     globalLayout->addWidget(replacePlotsCheckBox, 0, 6);
 
-    autoUpdateCheckBox = new QCheckBox("Auto update", central,
+    autoUpdateCheckBox = new QCheckBox("Auto update", par,
         "autoUpdateCheckBox");
     connect(autoUpdateCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(autoUpdateToggled(bool)));
@@ -1450,14 +1465,182 @@ QvisMainWindow::GetPlotManager()
 // Creation:   Tue Jan 29 12:50:49 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jul 24 17:43:44 PST 2006
+//   I made it use a splitter.
+//
 // ****************************************************************************
 
 void
 QvisMainWindow::SetOrientation(int orientation)
 {
-    topLayout->setDirection((orientation < 2) ? QBoxLayout::TopToBottom :
-                            QBoxLayout::LeftToRight);
+    splitter->setOrientation((orientation < 2) ? QSplitter::Vertical :
+                             QBoxLayout::Horizontal);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::CreateNode
+//
+// Purpose: 
+//   Saves the main window's attributes to the config file.
+//
+// Arguments:
+//   parentNode : The node in which to save the attributes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 25 10:14:53 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::CreateNode(DataNode *parentNode)
+{
+    DataNode *node = new DataNode("MainWin");
+    parentNode->AddNode(node);
+
+    // Add generic window attributes
+    node->AddNode(new DataNode("x", x()));
+    node->AddNode(new DataNode("y", y()));
+    node->AddNode(new DataNode("width", width()));
+    node->AddNode(new DataNode("height", height()));
+
+    // Add splitter values as a proportion of the window height.
+    QValueList<int> splitterSizes(splitter->sizes());
+    floatVector ss;
+    for(int i = 0; i < splitterSizes.size(); ++i)
+        ss.push_back(float(splitterSizes[i]) / 
+                     float(splitter->height()));
+    if(ss.size() >= 2)
+        node->AddNode(new DataNode("SPLITTER_VALUES", ss));
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::SetFromNode
+//
+// Purpose: 
+//   Sets the size, position, and splitter values for the main window.
+//
+// Arguments:
+//   parentNode : The node containing the MainWin node.
+//   borders    : Window borders.
+//
+// Notes:      This method only reads the height component of the window if
+//             it is available because it uses the height for determining
+//             how the splitter should be placed. If the overrideGeometry
+//             flag is passed in then it means that the geometry was already
+//             passed on the command line or was already read from the
+//             config file.
+// 
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 25 10:13:38 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::SetFromNode(DataNode *parentNode, bool overrideGeometry,
+    const int *overrideGUISize, const int *overrideGUILocation,
+    const int *borders)
+{
+    const char *mName = "QvisMainWindow::SetFromNode: ";
+
+    DataNode *winNode = 0, *node = 0;
+    int w = width();
+    int h = height();
+    QValueList<int> splitterSizes;
+
+    if((winNode = parentNode->GetNode("MainWin")) != 0)
+    {
+        DataNode *node = 0;
+        bool xy_set = false, wh_set = false;
+        int x = 0, y = 0;
+
+        debug1 << mName << "Initializing the main window because it was "
+                  "in the config file." << endl;
+
+        // See if any attributes are set.
+        if((node = winNode->GetNode("height")) != 0)
+        {
+            h = node->AsInt();
+            wh_set = true;
+        }
+
+        // Override the settings in the file.
+        if(overrideGeometry)
+        {
+            debug1 << mName << "Overriding geometry from config file." << endl;
+            w = overrideGUISize[0];
+            h = overrideGUISize[1];
+            x = overrideGUILocation[0];
+            y = overrideGUILocation[1];
+            wh_set = true;
+            xy_set = true;
+        }
+
+        // Make sure that the window will fit on the screen.
+        FitToScreen(x, y, w, h);
+
+        // Look for the splitter values for this screen size.
+        if((node = winNode->GetNode("SPLITTER_VALUES")) != 0)
+        {
+            const floatVector &ss = node->AsFloatVector();
+    
+            if(ss.size() >= 2)
+            {
+                float sum = 0.;
+                int i;
+                for(i = 0; i < ss.size(); ++i)
+                    sum += ss[i];
+
+                if(sum >= 0.9 && sum <= 1.)
+                {
+                    debug1 << mName << "Using saved splitter values {";
+                    for(i = 0; i < ss.size(); ++i)
+                    {
+                        splitterSizes.push_back(int(ss[i] * h));
+                        debug1 << ", " << ss[i];
+                    }
+                    debug1 << "}" << endl;
+                }
+                else
+                {
+                    debug1 << mName << "Ignoring splitter values because "
+                        "their sum is not close enough to 1." << endl;
+                }
+            }
+            else
+            {
+                debug1 << mName << "Ignoring splitter values because there "
+                    "are not enough of them." << endl;
+            }
+        }
+        else
+        {
+            debug1 << mName << "Could not locate key SPLITTER_VALUES"  
+                   " so the default splitter values will be used."
+                   << endl;
+        }
+    }
+
+    // Default splitter values.
+    if(splitterSizes.size() == 0)
+    {
+        debug1 << mName << "Using default splitter values." << endl;
+        if(notepad->isVisible())
+        {
+            splitterSizes.push_back(int(0.3 * h));
+            splitterSizes.push_back(int(0.3 * h));
+            splitterSizes.push_back(int(0.4 * h));
+        }
+        else
+        {
+            splitterSizes.push_back(int(0.5 * h));
+            splitterSizes.push_back(int(0.5 * h));
+        }
+    }
+    splitter->setSizes(splitterSizes);
 }
 
 //

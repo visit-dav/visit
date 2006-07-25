@@ -309,6 +309,9 @@ class SplashScreen;
 //    Brad Whitlock, Tue Mar 7 10:19:37 PDT 2006
 //    Added UpdateSavedConfigFile.
 //
+//    Brad Whitlock, Tue Jul 25 12:31:39 PDT 2006
+//    Added support for -geometry.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -349,6 +352,9 @@ private:
     void ProcessWindowConfigSettings(DataNode *settings);
     void SetOrientation(int orientation);
     virtual bool WriteConfigFile(const char *filename);
+    void ReadSavedMainWindowGeometry(DataNode *node,
+                                     bool &wh_set, int &w, int &h,
+                                     bool &xy_set, int &x, int &y);
 
     void ReadPluginWindowConfigs(DataNode *parentNode, const char *configVersion);
     void WritePluginWindowConfigs(DataNode *parentNode);
@@ -519,6 +525,10 @@ private:
     int                          screenW;
     int                          screenH;
     bool                         useWindowMetrics;
+    // Command line gui geometry.
+    bool                         savedGUIGeometry;
+    int                          savedGUISize[2];
+    int                          savedGUILocation[2];
 
     // Some appearance attributes
     QString                      foregroundColor;

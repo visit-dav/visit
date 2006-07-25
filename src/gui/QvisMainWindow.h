@@ -47,6 +47,7 @@ class QPixmap;
 class QPushButton;
 class QComboBox;
 class QCheckBox;
+class QSplitter;
 class QvisFilePanel;
 class QvisNotepadArea;
 class QvisPlotManagerWidget;
@@ -179,6 +180,10 @@ class WindowInformation;
 //
 //   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //   Added mesh management attributes window
+//
+//   Brad Whitlock, Tue Jul 25 09:42:39 PDT 2006
+//   Added support for a splitter.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -201,6 +206,9 @@ public:
     const TimeFormat &GetTimeStateFormat() const;
     bool GetShowSelectedFiles() const;
     bool GetAllowFileSelectionChange() const;
+
+    virtual void CreateNode(DataNode *);
+    virtual void SetFromNode(DataNode *, bool, const int *, const int *, const int *);
 signals:
     void quit();
     void iconifyWindows(bool = false);
@@ -307,13 +315,13 @@ private slots:
     void lockTools();
     void lockView();
 private:
-    void CreateGlobalArea(QLayout *tl);
+    void CreateGlobalArea(QWidget *par);
     void UpdateFileMenuPopup(QPopupMenu *, int);
     void UpdateGlobalArea(bool doAll);
     void UpdateWindowList(bool doList);
     void UpdateWindowMenu(bool updateWindowNums);
 private:
-    QWidget                   *central;
+    QSplitter                 *splitter;
     QBoxLayout                *topLayout;
     QvisFilePanel             *filePanel;
     QvisPlotManagerWidget     *plotManager;

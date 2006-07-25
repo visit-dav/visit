@@ -72,6 +72,7 @@ class DataNode;
 //
 //   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //   Added StringToDoubleList utility which was duplicated in other gui classes 
+//
 // ****************************************************************************
 
 class GUI_API QvisWindowBase : public QMainWindow, public GUIBase
@@ -92,11 +93,11 @@ public:
     static void StringToDoubleList(const char *str, doubleVector &dv,
                     int max=INT_MAX);
 
+    static void FitToScreen(int &x, int &y, int &w, int &h);
+
 public slots:
     virtual void show();
 protected:
-    void FitToScreen(int &x, int &y, int &w, int &h) const;
-
     bool saveWindowDefaults;
 };
 
