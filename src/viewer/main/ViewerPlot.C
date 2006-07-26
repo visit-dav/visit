@@ -4874,3 +4874,30 @@ ViewerPlot::GetPlotInfoAtts()
 {
     return (*plotList[cacheIndex])->GetPlotInfoAtts();
 }
+
+// ****************************************************************************
+// Method: ViewerPlot::SetFullFrameScaling
+//
+// Purpose: 
+//   Returns whether the plot's mapper needed to use fullframe scaling.
+//
+// Arguments:
+//   useScale : True if scaling should be used.
+//   s        : The scale vector.
+//
+// Returns:    True if fullframe scaling was used by the mapper.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jul 24 14:02:31 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerPlot::SetFullFrameScaling(bool useScale, double *s)
+{
+    return plotList[cacheIndex]->GetMapper()->SetFullFrameScaling(useScale,s);
+}

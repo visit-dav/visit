@@ -103,8 +103,6 @@ public:
     OutputMeshType         GetOutputMeshType() const;
     const std::string     &GetShownVariable() const;
           std::string     &GetShownVariable();
-    const std::string     &GetVariable() const;   // Same as GetShownVariable
-          std::string     &GetVariable();         // Same as GetShownVariable
     ZonePortion            GetZonePortion() const;
     double                 GetLowerBound() const;
     double                 GetUpperBound() const;

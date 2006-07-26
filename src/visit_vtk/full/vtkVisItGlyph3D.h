@@ -253,6 +253,9 @@ public:
   void SelectVectorsForScaling(const char *fieldName) 
     {this->SetVectorsForScaling(fieldName);}
 
+  int SetFullFrameScaling(int useIt, const double *s);
+
+
 protected:
   vtkVisItGlyph3D();
   ~vtkVisItGlyph3D();
@@ -291,6 +294,9 @@ protected:
   vtkSetStringMacro(ScalarsForScaling);
   vtkSetStringMacro(VectorsForColoring);
   vtkSetStringMacro(VectorsForScaling);
+
+  int    UseFullFrameScaling;
+  double FullFrameScaling[3];
 
 private:
   vtkVisItGlyph3D(const vtkVisItGlyph3D&);  // Not implemented.

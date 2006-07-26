@@ -397,3 +397,30 @@ avtVariablePointGlyphMapper::SetGlyphType(const int type)
     }
 }
 
+// ****************************************************************************
+// Method: avtVariablePointGlyphMapper::SetFullFrameScaling
+//
+// Purpose: 
+//   Sets a fullframe scale factor that can be used by the mapper to compensate
+//   for the stretching that fullframe mode performs on geometry.
+//
+// Arguments:
+//   useScale : True if the scale is used.
+//   s        : The fullframe scale vector.
+//
+// Returns:    True if any vtk mappers use the scale.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jul 24 13:55:54 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtVariablePointGlyphMapper::SetFullFrameScaling(bool useScale, const double *s)
+{
+    return avtPointGlypher::ProtectedSetFullFrameScaling(useScale, s);
+}

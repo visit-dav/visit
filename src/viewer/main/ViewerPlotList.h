@@ -418,6 +418,7 @@ public:
                                                  const std::string &database,
                                                  const std::string &var,
                                                  int state);
+    bool SetFullFrameScaling(bool, double *);
 
     void CreateNode(DataNode *);
     bool SetFromNode(DataNode *);

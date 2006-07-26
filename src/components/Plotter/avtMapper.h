@@ -104,6 +104,9 @@ class   ColorAttribute;
 //    SetSurfaceRepresentation from avtGeometryDrawable so that derived 
 //    mappers may override.
 //
+//    Brad Whitlock, Mon Jul 24 13:53:46 PST 2006
+//    Added SetFullFrameScaling.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtMapper : public avtOriginatingDatasetSink
@@ -138,6 +141,9 @@ class PLOTTER_API avtMapper : public avtOriginatingDatasetSink
     virtual void                SetSurfaceRepresentation(int rep);
     virtual void                SetSpecularProperties(bool,double,double,
                                                       const ColorAttribute&);
+
+    virtual bool               SetFullFrameScaling(bool, const double *)
+                                   { return false; };
 
   protected:
     bool                       immediateMode;

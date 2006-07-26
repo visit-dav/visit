@@ -122,7 +122,8 @@ avtThresholdFilter::SetAtts(const AttributeGroup *a)
 {
     atts = *(const ThresholdAttributes*)a;
     
-    SetActiveVariable(atts.GetVariable().c_str());
+    if (atts.GetShownVariable() != std::string("default"))
+        SetActiveVariable(atts.GetShownVariable().c_str());
 }
 
 
@@ -679,7 +680,9 @@ avtPipelineSpecification_p
 avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
 {
     const char *pipelineVar = in_spec->GetDataSpecification()->GetVariable();
-
+    
+    atts.SwitchToPipelineVariable(std::string(pipelineVar));
+    
     avtPipelineSpecification_p outSpec = new avtPipelineSpecification(in_spec);
 
     const std::vector<CharStrRef> curSecondaryVars =
@@ -692,7 +695,7 @@ avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
     for (listedVarNum = 0; listedVarNum < curListedVars.size(); listedVarNum++)
     {
         curListedVar = curListedVars[listedVarNum].c_str();
-
+        
         if (strcmp(curListedVar, pipelineVar) != 0)
         {
             for (secVarNum = 0; secVarNum < curSecondaryVars.size(); secVarNum++)

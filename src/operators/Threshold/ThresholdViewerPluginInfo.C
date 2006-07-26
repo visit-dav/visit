@@ -194,12 +194,12 @@ ThresholdViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
 {
     std::string plotVarName = plot->GetVariableName();
     stringVector curVarNames;
-
+    
     if (fromDefault)
     {
         curVarNames = defaultAtts->GetListedVariables();
-
-        if (curVarNames[0] == std::string("__default__"))
+        
+        if (curVarNames[0] == std::string("default"))
         {
             defaultAtts->SwitchToPipelineVariable(plotVarName);
         }
@@ -210,7 +210,7 @@ ThresholdViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
     {
         curVarNames = clientAtts->GetListedVariables();
 
-        if (curVarNames[0] == std::string("__default__"))
+        if (curVarNames[0] == std::string("default"))
         {
             clientAtts->SwitchToPipelineVariable(plotVarName);
         }

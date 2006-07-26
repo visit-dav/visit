@@ -8064,3 +8064,39 @@ ViewerPlotList::GetWindowId() const
 {
     return window->GetWindowId();
 }
+
+// ****************************************************************************
+// Method: ViewerPlotList::SetFullFrameScaling
+//
+// Purpose: 
+//   Sets the fullframe factor used by the window into the plots so their
+//   mappers can compensate for any unwanted stretching.
+//
+// Arguments:
+//   useScale : True if scaling should be used.
+//   scale    : The scale vector to use.
+//
+// Returns:    True if any plots changed their settings.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jul 24 14:05:33 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerPlotList::SetFullFrameScaling(bool useScale, double *scale)
+{
+    int i;
+    bool retval = false;
+    for (int i = 0; i < nPlots; i++)
+    {
+        if (plots[i].realized)
+            retval |= plots[i].plot->SetFullFrameScaling(useScale, scale);
+    }
+
+    return retval;
+}

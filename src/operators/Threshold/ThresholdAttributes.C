@@ -148,7 +148,7 @@ ThresholdAttributes::ZonePortion_FromString(
 ThresholdAttributes::ThresholdAttributes() : AttributeSubject("is*ii*d*d*")
 {
     outputMeshType = (int)InputZones;
-    listedVarNames.push_back(std::string("__default__"));
+    listedVarNames.push_back(std::string("default"));
     shownVarPosition = 0;
     zonePortions.push_back((int)PartOfZone);
     lowerBounds.push_back(-1e+37);
@@ -682,7 +682,7 @@ ThresholdAttributes::SwitchToPipelineVariable(const std::string &pipelineVarName
 {
     for (int varPosition = 0; varPosition < listedVarNames.size(); varPosition++)
     {
-        if (listedVarNames[varPosition] == std::string("__default__"))
+        if (listedVarNames[varPosition] == std::string("default"))
         {
             listedVarNames[varPosition] = pipelineVarName_;
         }
@@ -927,20 +927,6 @@ ThresholdAttributes::GetShownVariable() const
 
 std::string &
 ThresholdAttributes::GetShownVariable()
-{
-    return listedVarNames[shownVarPosition];
-}
-
-
-const std::string &
-ThresholdAttributes::GetVariable() const
-{
-    return listedVarNames[shownVarPosition];
-}
-
-
-std::string &
-ThresholdAttributes::GetVariable()
 {
     return listedVarNames[shownVarPosition];
 }

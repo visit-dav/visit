@@ -116,7 +116,6 @@ avtVectorGlyphMapper::avtVectorGlyphMapper(vtkPolyData *g)
     limitsMode = 0;  // use original data extents
 }
 
-
 // ****************************************************************************
 //  Method: avtVectorGlyphMapper destructor
 //
@@ -1097,3 +1096,44 @@ avtVectorGlyphMapper::GetVarRange(double &rmin, double &rmax)
     return rv;
 }
 
+// ****************************************************************************
+// Method: avtVectorGlyphMapper::SetFullFrameScaling
+//
+// Purpose: 
+//   Sets a fullframe scale factor that can be used by the mapper to compensate
+//   for the stretching that fullframe mode performs on geometry.
+//
+// Arguments:
+//   useScale : True if the scale is used.
+//   s        : The fullframe scale vector.
+//
+// Returns:    True if any vtk mappers use the scale.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jul 24 13:55:54 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtVectorGlyphMapper::SetFullFrameScaling(bool useScale, const double *s)
+{
+    bool retval = false;
+
+    if (glyphFilter != NULL)
+    {
+        for (int i = 0 ; i < nGlyphFilters ; i++)
+        {
+            if (glyphFilter[i] != NULL)
+            {
+                if(glyphFilter[i]->SetFullFrameScaling(useScale?1:0, s))
+                    retval = true;
+            }
+        }
+    }
+
+    return retval;
+}
