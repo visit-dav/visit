@@ -63,7 +63,6 @@
 #include <WindowInformation.h>
 #include <Utility.h>
 #include <ViewerProxy.h>
-#include <GetMetaDataException.h>
 #include <avtDatabaseMetaData.h>
 
 // Include the XPM files used for the icons.
@@ -389,6 +388,9 @@ QvisFilePanel::~QvisFilePanel()
 //   Brad Whitlock, Sun Jan 25 01:28:55 PDT 2004
 //   I added support for multiple time sliders.
 //
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interface to FileServerList::GetMetaData
+//
 // ****************************************************************************
 
 void
@@ -429,7 +431,11 @@ QvisFilePanel::SetTimeStateFormat(const TimeFormat &m)
                 if(HaveFileInformation(item->file))
                 {
                     // See if the file is a database
-                    const avtDatabaseMetaData *md = fileServer->GetMetaData(item->file);
+                    const avtDatabaseMetaData *md =
+                        fileServer->GetMetaData(item->file,
+                                                GetStateForSource(item->file),
+                                                FileServerList::ANY_STATE,
+                                               !FileServerList::GET_NEW_MD);
                     if(md != 0 && md->GetNumStates() > 1)
                     {
                         int j, maxts = QMIN(md->GetNumStates(), item->childCount());
@@ -580,6 +586,8 @@ QvisFilePanel::UpdateFileList(bool doAll)
 //   I added code to detect when node names are long and set the horizontal
 //   scrollbar mode of the listview appropriately.
 //
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interface to FileServerList::GetMetaData
 // ****************************************************************************
 
 void
@@ -616,7 +624,10 @@ QvisFilePanel::RepopulateFileList()
             else if(fileServer->HaveOpenedFile(*pos))
             {
                 const avtDatabaseMetaData *md =
-                    fileServer->GetMetaData(*pos);
+                    fileServer->GetMetaData(*pos,
+                                    GetStateForSource(*pos),
+                                    FileServerList::ANY_STATE,
+                                   !FileServerList::GET_NEW_MD);
                 if(md != 0 && md->GetNumStates() > 1)
                     someFilesHaveMultipleTimeStates = true;
             }
@@ -1173,6 +1184,8 @@ QvisFilePanel::UpdateTimeFieldText(int timeState)
 //   Fixed a small bug with how the cycles are displayed when we have a
 //   virtual file that does not have all of the cycle numbers.
 //
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interface to FileServerList::GetMetaData
 // ****************************************************************************
 
 void
@@ -1206,6 +1219,7 @@ QvisFilePanel::ExpandDatabases()
     for(i = 0; i < count; ++i)
     {
         QvisListViewFileItem *item = items[i];
+
         if(item != 0)
         {
             if(item->firstChild() == 0)
@@ -1216,7 +1230,11 @@ QvisFilePanel::ExpandDatabases()
             else if(HaveFileInformation(item->file))
             {
                 // See if the file is a database
-                const avtDatabaseMetaData *md = fileServer->GetMetaData(item->file);
+                const avtDatabaseMetaData *md =
+                    fileServer->GetMetaData(item->file,
+                                            GetStateForSource(item->file),
+                                            FileServerList::ANY_STATE,
+                                           !FileServerList::GET_NEW_MD);
                 if(md != 0 && md->GetNumStates() > 1)
                 {
                     if(md->GetNumStates() != item->childCount())
@@ -1338,13 +1356,19 @@ QvisFilePanel::ExpandDatabaseItem(QvisListViewFileItem *item)
 //   Brad Whitlock, Tue Apr 6 12:22:24 PDT 2004
 //   I made it set files with 1 time state to have their time state be 0.
 //
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interface to FileServerList::GetMetaData
 // ****************************************************************************
 
 void
 QvisFilePanel::ExpandDatabaseItemUsingMetaData(QvisListViewFileItem *item)
 {
     // See if the file is a database
-    const avtDatabaseMetaData *md = fileServer->GetMetaData(item->file);
+    const avtDatabaseMetaData *md =
+        fileServer->GetMetaData(item->file,
+                                GetStateForSource(item->file),
+                                FileServerList::ANY_STATE,
+                               !FileServerList::GET_NEW_MD);
     if(md != 0)
     {
         if(md->GetNumStates() > 1)
@@ -1585,6 +1609,8 @@ QvisFilePanel::FormattedTimeString(const double t, bool accurate) const
 //
 // Modifications:
 //   
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interface to FileServerList::GetMetaData
 // ****************************************************************************
 
 bool
@@ -1592,7 +1618,10 @@ QvisFilePanel::DisplayVirtualDBInformation(const QualifiedFilename &file) const
 {
     bool retval = true;
 
-    const avtDatabaseMetaData *md = fileServer->GetMetaData(file);
+    const avtDatabaseMetaData *md =
+        fileServer->GetMetaData(file, GetStateForSource(file),
+                                FileServerList::ANY_STATE,
+                               !FileServerList::GET_NEW_MD);
     if(md != 0 && md->GetNumStates() > 1 && md->GetIsVirtualDatabase())
     {
         int nts = fileServer->GetVirtualFileDefinitionSize(file);
@@ -1802,6 +1831,8 @@ QvisFilePanel::UpdateFileSelection()
 //
 // Modifications:
 //   
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interface to FileServerList::GetMetaData
 // ****************************************************************************
 
 bool
@@ -1824,7 +1855,9 @@ QvisFilePanel::HighlightedItemIsInvalid() const
                FileIsExpanded(ci->file))
             {
                 const avtDatabaseMetaData *md = fileServer->
-                    GetMetaData(ci->file);
+                    GetMetaData(ci->file, GetStateForSource(ci->file),
+                                FileServerList::ANY_STATE,
+                               !FileServerList::GET_NEW_MD);
                 if(md != 0)
                 {
                     // We've opened the file before. If the highlighted item
@@ -1859,6 +1892,8 @@ QvisFilePanel::HighlightedItemIsInvalid() const
 //
 // Modifications:
 //   
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interface to FileServerList::GetMetaData
 // ****************************************************************************
 
 bool
@@ -1882,7 +1917,10 @@ QvisFilePanel::UpdateReplaceButtonEnabledState()
             }
             else
             {
-                const avtDatabaseMetaData *md = fileServer->GetMetaData(ci->file);
+                const avtDatabaseMetaData *md =
+                    fileServer->GetMetaData(ci->file, GetStateForSource(ci->file),
+                                            FileServerList::ANY_STATE,
+                                           !FileServerList::GET_NEW_MD);
                 if(md != 0)
                 {
                     if(md->GetNumStates() > 1)
@@ -2732,6 +2770,8 @@ QvisFilePanel::fileCollapsed(QListViewItem *item)
 //   I made the check for multiple states use the metadata instead of the
 //   globalAtts.
 //
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interface to FileServerList::GetMetaData
 // ****************************************************************************
 
 void
@@ -2746,8 +2786,12 @@ QvisFilePanel::fileExpanded(QListViewItem *item)
 
     // If the file is a database then we want to update the file selection so
     // the current cycle will be selected.
-    if(fileItem->file == fileServer->GetOpenFile() &&
-       fileServer->GetMetaData()->GetNumStates() > 1)
+    const QualifiedFilename &qf = fileServer->GetOpenFile();
+    if(fileItem->file == qf && fileServer->
+                               GetMetaData(qf, GetStateForSource(qf),
+                                               FileServerList::ANY_STATE,
+                                              !FileServerList::GET_NEW_MD)->
+                                               GetNumStates() > 1)
     {
         UpdateFileSelection();
     }
@@ -3261,6 +3305,8 @@ QvisFilePanel::sliderChange(int val)
 //   Brad Whitlock, Mon Oct 13 16:05:11 PST 2003
 //   I changed the code so it's possible to enter time into the text field.
 //
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interface to FileServerList::GetMetaData
 // ****************************************************************************
 
 void
@@ -3271,7 +3317,12 @@ QvisFilePanel::processTimeText()
     if(temp.isEmpty())
         return;
 
-    const avtDatabaseMetaData *md = fileServer->GetMetaData();
+    const avtDatabaseMetaData *md = fileServer->GetMetaData(
+                                        fileServer->GetOpenFile(),
+                                        GetStateForSource(fileServer->GetOpenFile()),
+                                        FileServerList::ANY_STATE,
+                                       !FileServerList::GET_NEW_MD);
+
     int  index = 0;
     bool okay = false;
 

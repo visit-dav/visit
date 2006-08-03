@@ -135,6 +135,8 @@ QvisFileInformationWindow::CreateWindowContents()
 //
 // Modifications:
 //
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interfaces to GetMetaData and GetSIL
 // ****************************************************************************
 
 void
@@ -142,18 +144,14 @@ QvisFileInformationWindow::UpdateWindow(bool doAll)
 {
     if(fileServer->FileChanged() || doAll)
     {
-        const avtDatabaseMetaData *md = fileServer->GetMetaData();
+        const QualifiedFilename &qf = fileServer->GetOpenFile();
+        const avtDatabaseMetaData *md =
+            fileServer->GetMetaData(qf, GetStateForSource(qf),
+                                   !FileServerList::ANY_STATE,
+                                    FileServerList::GET_NEW_MD);
 
         if(md != 0)
         {
-
-            // get MetaData directly from server if its not invariant
-            if (md->GetMustRepopulateOnStateChange())
-            {
-                md = fileServer->GetMetaDataFromMDServer(
-                                     fileServer->GetOpenFile(),
-                                     fileServer->GetOpenFileTimeState());
-            }
 
             ostrstream os;
             os << "File = " << fileServer->GetOpenFile().FullName().c_str()

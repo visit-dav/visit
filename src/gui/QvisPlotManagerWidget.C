@@ -528,6 +528,9 @@ QvisPlotManagerWidget::CreateMenus(QMenuBar *menuBar)
 //   Jeremy Meredith, Tue Aug 24 16:21:15 PDT 2004
 //   Made it observe metadata directly so it knows when to update things.
 //
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Moved an UpdatePlotVariableMenu call out of a too constraining if test 
+//   Added conditional for changes in winInfo's time slider's current states
 // ****************************************************************************
 
 void
@@ -551,6 +554,7 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
     {
         UpdatePlotList();
         UpdateVariableMenu();
+        UpdatePlotVariableMenu();
 
         // If the number of plots is zero and the currently active file
         // is no longer in the applied file list, set the fileServer to
@@ -562,8 +566,6 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
             SetUpdate(false);
             fileServer->CloseFile();
             fileServer->Notify();
-
-            UpdatePlotVariableMenu();
         }
 
         // If we have set the cursor in the past, then restore it now.
@@ -648,6 +650,25 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
             // If the active source changed then the variable list needs
             // to change.
             UpdatePlotVariableMenu();
+        }
+
+        // handle changes in time slider current states
+        if (windowInfo->IsSelected(3))
+        {
+            const avtDatabaseMetaData *md =
+                fileServer->GetMetaData(fileServer->GetOpenFile(),
+                                GetStateForSource(fileServer->GetOpenFile()),
+                                FileServerList::ANY_STATE,
+                               !FileServerList::GET_NEW_MD);
+
+            // Although the innards of the called routines, here, also
+            // check MustRepopulationOnStateChange, checking here saves
+            // some GUI work, too.
+            if (md && md->GetMustRepopulateOnStateChange())
+            {
+                UpdateVariableMenu();
+                UpdatePlotVariableMenu();
+            }
         }
     }
     else if(TheChangedSubject == pluginAtts)
@@ -1097,6 +1118,9 @@ QvisPlotManagerWidget::EnablePluginMenus()
 //   Mark C. Miller, Thu Mar 18 20:36:59 PST 2004
 //   Added code to get metadata directly from server if it is not invariant
 //
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interfaces to GetMetaData and GetSIL
+//   Added else case to GetSIL for ANY_STATE
 // ****************************************************************************
 
 bool
@@ -1104,20 +1128,41 @@ QvisPlotManagerWidget::PopulateVariableLists(VariableMenuPopulator &populator,
     const QualifiedFilename &filename)
 {
     // Get a pointer to the specified file's metadata object.
-    const avtDatabaseMetaData *md = fileServer->GetMetaData(filename);
+    const avtDatabaseMetaData *md =
+        fileServer->GetMetaData(filename,
+                                GetStateForSource(filename),
+                                 FileServerList::ANY_STATE,
+                                !FileServerList::GET_NEW_MD);
 
-    // get MetaData directly from server if its not invariant
     if (md && md->GetMustRepopulateOnStateChange())
     {
-        md = fileServer->GetMetaDataFromMDServer(
-                             fileServer->GetOpenFile(),
-                             fileServer->GetOpenFileTimeState());
-    }
+        // we need metadata and sil for current state
+        md = fileServer->GetMetaData(filename,
+                                     GetStateForSource(filename),
+                                    !FileServerList::ANY_STATE,
+                                     FileServerList::GET_NEW_MD);
 
-    const avtSIL *sil = fileServer->GetSIL(filename);
+        const avtSIL *sil =
+            fileServer->GetSIL(filename,
+                               GetStateForSource(filename),
+                              !FileServerList::ANY_STATE,
+                               FileServerList::GET_NEW_MD);
     
-    return populator.PopulateVariableLists(filename.FullName(),
-                                           md, sil, exprList);
+        return populator.PopulateVariableLists(filename.FullName(),
+                                               md, sil, exprList);
+    }
+    else
+    {
+        // any metadata and sill will do
+        const avtSIL *sil =
+            fileServer->GetSIL(filename,
+                               GetStateForSource(filename),
+                               FileServerList::ANY_STATE,
+                              !FileServerList::GET_NEW_MD);
+    
+        return populator.PopulateVariableLists(filename.FullName(),
+                                               md, sil, exprList);
+    }
 }
 
 // ****************************************************************************

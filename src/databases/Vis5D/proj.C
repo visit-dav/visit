@@ -106,6 +106,10 @@ static void pandg_back( float *lat, float *lon, float a, float b, float r )
  * Initialize all map projection stuff.
  * Input:  ctx - the projection context
  * Return:  1 = success, 0 = failure
+ *
+ * Modifications:
+ *   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+ *   Fixed problems compiling pow on Aix
  */
 int setup_ctx_projection(ProjectionContext *ctx, int Projection, 
     float *projargs, int Nr, int Nc)
@@ -221,7 +225,7 @@ int setup_ctx_projection(ProjectionContext *ctx, int Projection,
          /* Cone is in [-1,1] */
          ctx->ConeFactor = RADIUS * sin(lat1)
                           / (ctx->ColInc * ctx->Cone
-                             * pow(tan(lat1/2.0), ctx->Cone) );
+                             * pow(tan(lat1/2.0), (double) ctx->Cone) );
 
          break;
       case PROJ_STEREO:

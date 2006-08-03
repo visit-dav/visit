@@ -2325,6 +2325,8 @@ QvisGUIApplication::AddViewerSpaceArguments()
 //   Brad Whitlock, Mon Mar 21 15:23:57 PST 2005
 //   Added save movie.
 //
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Moved WindowInformation ahead of plot list in list of observers 
 // ****************************************************************************
 
 void
@@ -2375,8 +2377,8 @@ QvisGUIApplication::CreateMainWindow()
     mainWin->ConnectMessageAttr(&message);
     mainWin->ConnectGUIMessageAttributes();
     mainWin->ConnectGlobalAttributes(viewer->GetGlobalAttributes());
-    mainWin->ConnectPlotList(viewer->GetPlotList());
     mainWin->ConnectWindowInformation(viewer->GetWindowInformation());
+    mainWin->ConnectPlotList(viewer->GetPlotList());
     mainWin->ConnectViewerStatusAttributes(viewer->GetStatusAttributes());
 
     // Move and resize the GUI so that we can get accurate size and
@@ -2577,6 +2579,9 @@ QvisGUIApplication::SetupWindows()
 //
 //   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //   Added mesh management attributes window
+//
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interfaces to GetMetaData and GetSIL
 // ****************************************************************************
 
 QvisWindowBase *
@@ -2760,8 +2765,10 @@ QvisGUIApplication::WindowFactory(int i)
                                               windowNames[i], "Simulations",
                                               mainWin->GetNotepad());
           swin->ConnectStatusAttributes(viewer->GetStatusAttributes());
-          swin->SetNewMetaData(fileServer->GetOpenFile(),
-                               fileServer->GetMetaData());
+          const QualifiedFilename &qf = fileServer->GetOpenFile();
+          swin->SetNewMetaData(qf,fileServer->GetMetaData(qf, GetStateForSource(qf),
+                                                         !FileServerList::ANY_STATE,
+                                                          FileServerList::GET_NEW_MD));
           win = swin;
         }
         break;
@@ -5658,13 +5665,16 @@ QvisGUIApplication::UpdateMetaDataAttributes(Subject *subj, void *data)
 //    Jeremy Meredith, Thu Apr 28 17:49:31 PDT 2005
 //    Changed the exact information sent to the Simulations window.
 //
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interfaces to GetMetaData and GetSIL
 // ****************************************************************************
 
 void
 QvisGUIApplication::HandleMetaDataUpdate()
 {
     // Poke the metadata into the file server
-    fileServer->SetOpenFileMetaData(viewer->GetDatabaseMetaData());
+    fileServer->SetOpenFileMetaData(viewer->GetDatabaseMetaData(),
+                                    GetStateForSource(fileServer->GetOpenFile()));
 
     // Poke the SIL into the file server
     avtSIL *sil = new avtSIL(*viewer->GetSILAtts());
@@ -5695,10 +5705,13 @@ QvisGUIApplication::HandleMetaDataUpdate()
     string simWinName = windowNames[WINDOW_SIMULATION];
     if (otherWindows.count(simWinName))
     {
+        const QualifiedFilename &qf = fileServer->GetOpenFile();
+        int ts = GetStateForSource(qf);
         QvisSimulationWindow *simWin =
             (QvisSimulationWindow*)otherWindows[simWinName];
-        simWin->SetNewMetaData(fileServer->GetOpenFile(),
-                               fileServer->GetMetaData());
+        simWin->SetNewMetaData(qf, fileServer->GetMetaData(qf,GetStateForSource(qf),
+                                                           !FileServerList::ANY_STATE,
+                                                           !FileServerList::GET_NEW_MD));
     }
 }
 

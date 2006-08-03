@@ -104,6 +104,11 @@
 //    Added TimeSinceInit method, changed name of TimeSinceLastCall to
 //    TimeSinceLine
 //
+//    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//    Added Finalize method
+//
+//    Mark C. Miller, Thu Aug  3 13:33:20 PDT 2006
+//    Added StopAllUnstoppedTimers, ClearValues and GetNValues()
 // ****************************************************************************
 
 class MISC_API TimingsManager
@@ -116,6 +121,7 @@ class MISC_API TimingsManager
     static double              TimeSinceInit();
 
     static TimingsManager     *Initialize(const char *);
+    static void                Finalize();
     void                       SetFilename(const std::string &s);
 
     void                       Enable(void);
@@ -148,8 +154,12 @@ class MISC_API TimingsManager
     static double              DiffTime(const struct TIMEINFO &startTime,
                                         const struct TIMEINFO &endTime);
 
+    void                       StopAllUnstoppedTimers();
+
     virtual void               PlatformStartTimer(void) = 0;
     virtual double             PlatformStopTimer(int) = 0;
+    virtual int                GetNValues() const = 0;
+    virtual void               ClearValues() = 0;
 };
 
 class MISC_API SystemTimingsManager : public TimingsManager
@@ -157,6 +167,10 @@ class MISC_API SystemTimingsManager : public TimingsManager
   public:
                                SystemTimingsManager() {;};
     virtual                   ~SystemTimingsManager() {;};
+    void                       ClearValues()
+                                   { values.clear(); };
+    int                        GetNValues() const
+                                   { return values.size(); };
 
   protected:
     std::vector<TIMEINFO>      values;
@@ -169,6 +183,10 @@ class MISC_API MPITimingsManager : public TimingsManager
   public:
                                MPITimingsManager() {;};
     virtual                   ~MPITimingsManager() {;};
+    void                       ClearValues()
+                                   { values.clear(); };
+    int                        GetNValues() const
+                                   { return values.size(); };
 
   protected:
     std::vector<double>        values;

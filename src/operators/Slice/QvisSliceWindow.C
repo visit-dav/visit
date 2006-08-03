@@ -1344,6 +1344,8 @@ QvisSliceWindow::normalTypeChanged(int index)
 //
 //  Modifications:
 //
+//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//   Changed interface to FileServerList::GetMetaData
 // ****************************************************************************
 
 void
@@ -1354,7 +1356,10 @@ QvisSliceWindow::UpdateMeshNames()
     if (fileServer) 
     {
         const avtDatabaseMetaData *md = 
-            fileServer->GetMetaData(fileServer->GetOpenFile());
+            fileServer->GetMetaData(fileServer->GetOpenFile(),
+                                    GetStateForSource(fileServer->GetOpenFile()),
+                                    !FileServerList::ANY_STATE,
+                                    !FileServerList::GET_NEW_MD);
         if (md)
         {
             stringVector meshNames = md->GetAllMeshNames();

@@ -1893,6 +1893,8 @@ QvisFileSelectionWindow::setEnabled(bool val)
 void
 QvisFileSelectionWindow::okClicked()
 {
+    int i;
+
     // Hide the remove path window.
     recentPathsRemovalWindow->hide();
 
@@ -1902,9 +1904,14 @@ QvisFileSelectionWindow::okClicked()
     // Sort the intermediate file list before storing it.
     std::sort(intermediateFileList.begin(), intermediateFileList.end());
 
+    // build vector of assciated time states
+    std::vector<int> timeStates;
+    for (i = 0; i < intermediateFileList.size(); ++i)
+        timeStates.push_back(GetStateForSource(intermediateFileList[i]));
+
     // Store the intermediate file list into the file server's 
     // selected file list.
-    fileServer->SetAppliedFileList(intermediateFileList);
+    fileServer->SetAppliedFileList(intermediateFileList, timeStates);
     fileServer->Notify();
 
     // Get the virtual file definitions now that we've selected files.
@@ -1918,7 +1925,7 @@ QvisFileSelectionWindow::okClicked()
     // See if the open file is in the intermediate file list and if it is
     // in there and it is a virtual file, check for new states on the viewer.
     //
-    for(int i = 0; i < intermediateFileList.size(); ++i)
+    for(i = 0; i < intermediateFileList.size(); ++i)
     {
         if(intermediateFileList[i].IsVirtual())
         {
