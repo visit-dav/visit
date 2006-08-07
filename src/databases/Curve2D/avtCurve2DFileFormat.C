@@ -44,8 +44,10 @@
 #include <vector>
 #include <string>
 
-#include <vtkCellArray.h>
-#include <vtkPolyData.h>
+#include <vtkFloatArray.h>
+#include <vtkPointData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkVisItUtility.h>
 
 #include <avtDatabaseMetaData.h>
 
@@ -53,6 +55,7 @@
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
 
+#include <float.h>
 
 using std::vector;
 using std::string;
@@ -147,7 +150,6 @@ avtCurve2DFileFormat::GetMesh(const char *name)
             // increment its reference count.
             //
             curves[i]->Register(NULL);
-        
             return curves[i];
         }
     }
@@ -204,6 +206,9 @@ avtCurve2DFileFormat::GetVar(const char *name)
 //    Hank Childs, Fri Aug  1 21:01:51 PDT 2003
 //    Mark curves as "curve" type.
 //
+//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
+//    Added DataExtents to CurveMetaData. 
+//
 // ****************************************************************************
 
 void
@@ -218,6 +223,9 @@ avtCurve2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         avtCurveMetaData *curve = new avtCurveMetaData;
         curve->name = curveNames[i];
+        curve->hasDataExtents = true;
+        curve->minDataExtents = dataExtents[i*2];
+        curve->maxDataExtents = dataExtents[i*2+1];
         md->Add(curve);
     }
 }
@@ -259,6 +267,12 @@ avtCurve2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //
 //    Kathleen Bonnell, Fri Oct 28 13:02:51 PDT 2005
 //    Parse 'TIME' and 'CYCLE' from headers not followed by data values. 
+//
+//    Kathleen Bonnell, Mon Jul 31 10:15:00 PDT 2006 
+//    Represent curve as 1D RectilinearGrid instead of PolyData. 
+//
+//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
+//    Save DataExtents. 
 //
 // ****************************************************************************
 
@@ -398,6 +412,7 @@ avtCurve2DFileFormat::ReadFile(void)
     //
     int start = 0;
     cutoff.push_back(xl.size());  // Make logic easier.
+    int curveIndex = 0;
     for (int i = 0 ; i < cutoff.size() ; i++)
     {
         if (start == cutoff[i])
@@ -408,35 +423,36 @@ avtCurve2DFileFormat::ReadFile(void)
         //
         // Add all of the points to an array.
         //
-        vtkPolyData *pd  = vtkPolyData::New();
-        vtkPoints   *pts = vtkPoints::New();
-        pd->SetPoints(pts);
         int nPts = cutoff[i] - start;
-        pts->SetNumberOfPoints(nPts);
+        vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(nPts,VTK_FLOAT);
+ 
+        vtkFloatArray    *vals = vtkFloatArray::New();
+        vals->SetNumberOfComponents(1);
+        vals->SetNumberOfTuples(nPts);
+        if (curveNames.size() != 0) 
+            vals->SetName(curveNames[curveIndex++].c_str());
+        else 
+            vals->SetName("curve");
+
+        rg->GetPointData()->SetScalars(vals);
+        vtkDataArray *xc = rg->GetXCoordinates();
+
+        double dmin = FLT_MAX;
+        double dmax = -FLT_MAX;
         for (int j = 0 ; j < nPts ; j++)
         {
-            pts->SetPoint(j, xl[start+j], yl[start+j], 0.);
+            xc->SetComponent(j,  0, xl[start+j]);
+            vals->SetValue(j, yl[start+j]);
+            if (yl[start+j] < dmin)
+                dmin = yl[start+j];
+            if (yl[start+j] > dmax)
+                dmax = yl[start+j];
         }
  
-        //
-        // Connect the points up with line segments.
-        //
-        vtkCellArray *line = vtkCellArray::New();
-        pd->SetLines(line);
-        for (int k = 1 ; k < nPts ; k++)
-        {
-            if (k < (nPts-1) && breakpoint_following[start+k-1])
-            {
-                continue;
-            }
-            line->InsertNextCell(2);
-            line->InsertCellPoint(k-1);
-            line->InsertCellPoint(k);
-        }
-
-        pts->Delete();
-        line->Delete();
-        curves.push_back(pd);
+        vals->Delete();
+        curves.push_back(rg);
+        dataExtents.push_back(dmin);
+        dataExtents.push_back(dmax);
 
         //
         // Set ourselves up for the next iteration.

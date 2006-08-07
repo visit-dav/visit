@@ -41,9 +41,22 @@
 
 #include <avtLineoutFilter.h>
 
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
+#include <vtkDataSetRemoveGhostCells.h>
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
+#include <vtkIdList.h>
 #include <vtkLineoutFilter.h>
+#include <vtkMath.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkUnsignedIntArray.h>
+#include <vtkVisItCellLocator.h>
+#include <vtkVisItUtility.h>
+
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
 #include <avtMetaData.h>
@@ -54,15 +67,6 @@
 #include <UnexpectedValueException.h>
 #include <DebugStream.h>
 
-#include <vtkVisItCellLocator.h>
-#include <vtkUnsignedIntArray.h>
-#include <vtkDataSetRemoveGhostCells.h>
-#include <vtkPoints.h>
-#include <vtkIdList.h>
-#include <vtkMath.h>
-#include <vtkCellData.h>
-#include <vtkPointData.h>
-#include <vtkCellArray.h>
 #include <maptypes.h>
 #include <set>
 
@@ -378,45 +382,54 @@ avtLineoutFilter::PostExecute(void)
 //    closest point along the line defined by pt1 and pt2, and use it to
 //    calculate distance.
 //
+//    Kathleen Bonnell, Mon Jul 31 10:15:00 PDT 2006 
+//    Create RectilinearGrid instead of PolyData for curve representation. 
+//
 // ****************************************************************************
 
-vtkPolyData *
-avtLineoutFilter::CreatePolys(vtkDataSet *ds, double *pt1, double *pt2,
+vtkRectilinearGrid *
+avtLineoutFilter::CreateRGrid(vtkDataSet *ds, double *pt1, double *pt2,
                               vtkPoints *pts, vtkIdList *cells)
 {
-    vtkPolyData *polys = vtkPolyData::New();
     bool pointData = true; 
     vtkDataArray *scalars = ds->GetPointData()->GetScalars();
+                  
     if (scalars == NULL)
     {
         pointData = false;
         scalars = ds->GetCellData()->GetScalars();
         if (scalars == NULL)
         {
-            return polys;
+            return NULL;
         }
     }
+
     int npts = pts->GetNumberOfPoints();
-    double currentPoint[3], closestPoint[3];
-    double newPoint[3] = {0., 0., 0.};
-    vtkPoints *outPts = vtkPoints::New();
-    polys->SetPoints(outPts);
-    outPts->Delete();
+    int ptsType = pts->GetDataType();
+    int sType = scalars->GetDataType();
+    int dType = (sType < ptsType ? sType : ptsType);
+    vtkRectilinearGrid *rgrid = vtkVisItUtility::Create1DRGrid(0, dType);
+    vtkDataArray *outXC = rgrid->GetXCoordinates();
+    vtkDataArray *outVal = outXC->NewInstance(); 
+    rgrid->GetPointData()->SetScalars(outVal);
+    outVal->Delete();
+
     vtkIdList *ptIds = vtkIdList::New();
+    double currentPoint[3], closestPoint[3];
     double sum = 0.;
     int i, j;
-    double oldX = -1.;
+    double newX = 0., oldX = -1., newVal = 0.;
     bool requiresSort = false;
     for (i = 0; i < npts; i++)
     {
         pts->GetPoint(i, currentPoint);
         ClosestPointOnLine(pt1, pt2, currentPoint, closestPoint);
-        newPoint[0] = sqrt(vtkMath::Distance2BetweenPoints(pt1, closestPoint));
-        if (newPoint[0] < oldX)
+        newX = sqrt(vtkMath::Distance2BetweenPoints(pt1, closestPoint));
+        if (newX < oldX)
         {
             requiresSort = true;
         }
-        oldX = newPoint[0];
+        oldX = newX;
         if (pointData)
         {
             sum = 0;
@@ -427,51 +440,43 @@ avtLineoutFilter::CreatePolys(vtkDataSet *ds, double *pt1, double *pt2,
             if (numCellPts > 0)
                sum /= (double) numCellPts;
 
-            newPoint[1] = sum;
+            newVal = sum;
         }
         else 
         {
-            newPoint[1] = scalars->GetTuple1(cells->GetId(i));
+            newVal = scalars->GetTuple1(cells->GetId(i));
         }
-        outPts->InsertNextPoint(newPoint);
+        outXC->InsertNextTuple1(newX);
+        outVal->InsertNextTuple1(newVal);
     }
     ptIds->Delete();
+    rgrid->SetDimensions(outXC->GetNumberOfTuples(), 1 , 1);
 
-    vtkPoints *sortedPts;
     if (requiresSort)
     {
-        sortedPts = vtkPoints::New();
+        vtkDataArray *sortedXC = outXC->NewInstance();
+        vtkDataArray *sortedVal = outVal->NewInstance();
         DoubleIntMap sortedIds;
         double x;
-        for (i = 0; i < outPts->GetNumberOfPoints(); i++)
+        for (i = 0; i < outXC->GetNumberOfTuples(); i++)
         {
-            x = outPts->GetPoint(i)[0];
+            x = outXC->GetTuple1(i);
             sortedIds.insert(DoubleIntMap::value_type(x, i));
         }
         DoubleIntMap::iterator it;
         for (it = sortedIds.begin(); it != sortedIds.end(); it++)
         {
-            sortedPts->InsertNextPoint(outPts->GetPoint((*it).second));
+            sortedXC->InsertNextTuple1(outXC->GetTuple1((*it).second));
+            sortedVal->InsertNextTuple1(outVal->GetTuple1((*it).second));
         }
-        polys->SetPoints(sortedPts);
-        sortedPts->Delete();
-    }
-    else
-    {
-        sortedPts = outPts;
-    }
-
-    vtkCellArray *verts = vtkCellArray::New();
-    polys->SetVerts(verts);
-    verts->Delete();
-
-    verts->InsertNextCell(sortedPts->GetNumberOfPoints());
-    for (i = 0; i < sortedPts->GetNumberOfPoints(); i++)
-    {
-        verts->InsertCellPoint(i);
+        rgrid->SetXCoordinates(sortedXC);
+        rgrid->GetPointData()->SetScalars(sortedVal);
+        sortedXC->Delete();
+        sortedVal->Delete();
+        rgrid->SetDimensions(sortedXC->GetNumberOfTuples(), 1, 1);
     }
 
-    return polys;
+    return rgrid;
 }
 
 
@@ -502,6 +507,9 @@ avtLineoutFilter::CreatePolys(vtkDataSet *ds, double *pt1, double *pt2,
 //    Added logic to determine if the cell-centers or the intersection points
 //    should be used in creating the curve. 
 //
+//    Kathleen Bonnell, Mon Jul 31 10:15:00 PDT 2006 
+//    Create RectilinearGrid instead of PolyData for the curves. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -531,16 +539,16 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
 
         if (!useOriginalCells)
         {
-            rv = CreatePolys(in_ds, pt1, pt2, pts, cells);
+            rv = CreateRGrid(in_ds, pt1, pt2, pts, cells);
         }
         else 
         {
-            rv = CreatePolysFromOrigCells(in_ds, pt1, pt2, pts, cells);
+            rv = CreateRGridFromOrigCells(in_ds, pt1, pt2, pts, cells);
         }
-        if (rv->GetNumberOfCells() == 0 ||
+        if (rv == NULL || rv->GetNumberOfCells() == 0 ||
             rv->GetNumberOfPoints() == 0)
         {
-            debug5 << "CreatePolys returned empty DS for domain " 
+            debug5 << "CreateRGrid returned empty DS for domain " 
                    << domain << "." << endl;
             rv = NULL;
         }
@@ -664,13 +672,15 @@ avtLineoutFilter::Sampling(vtkDataSet *in_ds, int domain)
 //    Brad Whitlock, Wed Nov 3 10:16:32 PDT 2004
 //    Fixed on win32.
 //
+//    Kathleen Bonnell, Mon Jul 31 10:15:00 PDT 2006 
+//    Create RectilinearGrid instead of PolyData for the curves. 
+//
 // ****************************************************************************
 
-vtkPolyData *
-avtLineoutFilter::CreatePolysFromOrigCells(vtkDataSet *ds, double *pt1, double *pt2,
-                              vtkPoints *pts, vtkIdList *cells)
+vtkRectilinearGrid *
+avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1, 
+    double *pt2, vtkPoints *pts, vtkIdList *cells)
 {
-    vtkPolyData *polys = vtkPolyData::New();
     bool pointData = true; 
     vtkDataArray *scalars = ds->GetPointData()->GetScalars();
     if (scalars == NULL)
@@ -679,7 +689,7 @@ avtLineoutFilter::CreatePolysFromOrigCells(vtkDataSet *ds, double *pt1, double *
         scalars = ds->GetCellData()->GetScalars();
         if (scalars == NULL)
         {
-            return polys;
+            return NULL;
         }
     }
 
@@ -741,13 +751,19 @@ avtLineoutFilter::CreatePolysFromOrigCells(vtkDataSet *ds, double *pt1, double *
     }
 
     double closestPoint[3];
-    double newPoint[3] = {0., 0., 0.};
-    vtkPoints *outPts = vtkPoints::New();
-    polys->SetPoints(outPts);
-    outPts->Delete();
+    double newX = 0., oldX = -1, newVal = 0.;
+
+    int ptsType = pts->GetDataType();
+    int sType = scalars->GetDataType();
+    int dType = (sType < ptsType ? sType : ptsType);
+    vtkRectilinearGrid *rgrid = vtkVisItUtility::Create1DRGrid(0, dType);
+
+    vtkDataArray *outXC = rgrid->GetXCoordinates();
+    vtkDataArray *outVal = outXC->NewInstance();
+    rgrid->GetPointData()->SetScalars(outVal);
+    outVal->Delete();
     vtkIdList *ptIds = vtkIdList::New();
     double sum = 0.;
-    double oldX = -1.;
     bool requiresSort = false;
     
     for (i = 0; i < cellInfoList.size(); i++)
@@ -755,24 +771,25 @@ avtLineoutFilter::CreatePolysFromOrigCells(vtkDataSet *ds, double *pt1, double *
         int nDups = cellInfoList[i].currCell.size();
         if (nDups == 1)
         {
-            ClosestPointOnLine(pt1, pt2, cellInfoList[i].isect[0].x, closestPoint);
-            newPoint[0] = sqrt(vtkMath::Distance2BetweenPoints(pt1, closestPoint));
+        ClosestPointOnLine(pt1, pt2, cellInfoList[i].isect[0].x, closestPoint);
+        newX = sqrt(vtkMath::Distance2BetweenPoints(pt1, closestPoint));
         }
         else
         {
             sum = 0.;
             for (j = 0; j < nDups; j++)
             {
-                ClosestPointOnLine(pt1, pt2, cellInfoList[i].isect[j].x, closestPoint);
+                ClosestPointOnLine(pt1, pt2, cellInfoList[i].isect[j].x, 
+                                   closestPoint);
                 sum += vtkMath::Distance2BetweenPoints(pt1, closestPoint);
             }
-            newPoint[0] = sqrt(sum/(double)nDups);
+            newX = sqrt(sum/(double)nDups);
         }
-        if (newPoint[0] < oldX)
+        if (newX < oldX)
         {
             requiresSort = true;
         }
-        oldX = newPoint[0];
+        oldX = newX;
         if (pointData)
         {
             if (nDups == 1)
@@ -784,7 +801,7 @@ avtLineoutFilter::CreatePolysFromOrigCells(vtkDataSet *ds, double *pt1, double *
                     sum += scalars->GetTuple1(ptIds->GetId(j));
                 if (numCellPts > 0)
                    sum /= (double) numCellPts;
-                newPoint[1] = sum;
+                newVal = sum;
             }
             else 
             {
@@ -805,62 +822,55 @@ avtLineoutFilter::CreatePolysFromOrigCells(vtkDataSet *ds, double *pt1, double *
                 } 
                 if (uniquePts.size() > 0)
                    sum /= (double) uniquePts.size();
-                newPoint[1] = sum;
+                newVal = sum;
             }
         }
         else 
         {
             if (nDups == 1)
             {
-                newPoint[1] = scalars->GetTuple1(cellInfoList[i].currCell[0]);
+                newVal = scalars->GetTuple1(cellInfoList[i].currCell[0]);
             }
             else
             {
-                newPoint[1] = 0.;
+                newVal = 0.;
                 for (j = 0; j < nDups; j++)
-                    newPoint[1] += scalars->GetTuple1(cellInfoList[i].currCell[j]);
-                newPoint[1] /= (double) cellInfoList[i].currCell.size();
+                    newVal += scalars->GetTuple1(cellInfoList[i].currCell[j]);
+                newVal /= (double) cellInfoList[i].currCell.size();
             }
         }
-        outPts->InsertNextPoint(newPoint);
+        outXC->InsertNextTuple1(newX);
+        outVal->InsertNextTuple1(newVal);
     }
     ptIds->Delete();
+    rgrid->SetDimensions(outXC->GetNumberOfTuples(), 1, 1);
 
-    vtkPoints *sortedPts;
     if (requiresSort)
     {
-        sortedPts = vtkPoints::New();
+        vtkDataArray *sortedXC = outXC->NewInstance();
+        vtkDataArray *sortedVal = outVal->NewInstance();
         DoubleIntMap sortedIds;
         double x;
-        for (i = 0; i < outPts->GetNumberOfPoints(); i++)
+        for (i = 0; i < outXC->GetNumberOfTuples(); i++)
         {
-            x = outPts->GetPoint(i)[0];
+            x = outXC->GetTuple1(i);
             sortedIds.insert(DoubleIntMap::value_type(x, i));
         }
         DoubleIntMap::iterator it;
         for (it = sortedIds.begin(); it != sortedIds.end(); it++)
         {
-            sortedPts->InsertNextPoint(outPts->GetPoint((*it).second));
+            sortedXC->InsertNextTuple1(outXC->GetTuple1((*it).second));
+            sortedVal->InsertNextTuple1(outVal->GetTuple1((*it).second));
         }
-        polys->SetPoints(sortedPts);
-        sortedPts->Delete();
-    }
-    else
-    {
-        sortedPts = outPts;
-    }
-
-    vtkCellArray *verts = vtkCellArray::New();
-    polys->SetVerts(verts);
-    verts->Delete();
-
-    verts->InsertNextCell(sortedPts->GetNumberOfPoints());
-    for (i = 0; i < sortedPts->GetNumberOfPoints(); i++)
-    {
-        verts->InsertCellPoint(i);
+        rgrid->SetXCoordinates(sortedXC);
+        rgrid->GetPointData()->SetScalars(sortedVal);
+        rgrid->SetDimensions(sortedXC->GetNumberOfTuples(), 1, 1);
+        sortedXC->Delete();
+        sortedVal->Delete();
     }
 
-    return polys;
+
+    return rgrid;
 }
 
 

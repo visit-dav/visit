@@ -90,6 +90,9 @@ class vtkUnstructuredGrid;
 //    Kathleen Bonnell, Fri Apr 28 10:57:21 PDT 2006 
 //    Add PerformRestriction. 
 //
+//    Kathleen Bonnell, Mon Jul 31 11:11:28 PDT 2006 
+//    Add Clip1DRGrid. 
+//
 // ****************************************************************************
 
 class avtClipFilter : public avtPluginStructuredChunkStreamer
@@ -121,6 +124,8 @@ class avtClipFilter : public avtPluginStructuredChunkStreamer
 
   private:
     bool                     SetUpClipFunctions(vtkImplicitBoolean *, bool&);
+    vtkRectilinearGrid      *Clip1DRGrid(vtkImplicitBoolean *, bool,
+                                         vtkRectilinearGrid*);
 };
 
 

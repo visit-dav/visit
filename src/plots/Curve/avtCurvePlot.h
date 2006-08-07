@@ -36,7 +36,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                                 avtCurvePlot.h                             //
+//                                avtCurvePlot.h                             //
 // ************************************************************************* //
 
 #ifndef AVT_CURVE_PLOT_H
@@ -51,8 +51,9 @@
 
 class     avtCurveFilter;
 class     avtCurveLegend;
-class     avtUserDefinedMapper;
 class     avtLabeledCurveMapper;
+class     avtUserDefinedMapper;
+class     avtWarpFilter;
 class     vtkProperty;
 
 
@@ -74,6 +75,9 @@ class     vtkProperty;
 //    
 //    Kathleen Bonnell, Thu Oct 27 15:12:13 PDT 2005 
 //    Added Legend. 
+//    
+//    Kathleen Bonnell, Wed Jul 12 08:30:04 PDT 2006 
+//    Added warp filter. 
 //    
 // ****************************************************************************
 
@@ -104,7 +108,8 @@ class avtCurvePlot : public avtLineDataPlot
     avtLabeledCurveMapper          *decoMapper;
     vtkProperty                    *property;
 
-    avtCurveFilter                *CurveFilter;
+    avtCurveFilter                 *CurveFilter;
+    avtWarpFilter                  *WarpFilter;
 
     virtual avtMapper          *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);

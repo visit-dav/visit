@@ -44,7 +44,10 @@
 // For qsort
 #include <stdlib.h>
 
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkPointData.h>
+#include <vtkRectilinearGrid.h>
 
 #include <avtCurveConstructorFilter.h>
 #include <avtDatasetSink.h>
@@ -131,6 +134,9 @@ avtCurveComparisonQuery::~avtCurveComparisonQuery()
 //    Kathleen Bonnell, Thu May 12 17:21:34 PDT 2005
 //    Fix memory leak.
 //
+//    Kathleen Bonnell, Thu Jul 27 17:43:38 PDT 2006 
+//    Curves now represented as 1D RectilinearGrids.
+// 
 // ****************************************************************************
 
 void 
@@ -214,27 +220,29 @@ avtCurveComparisonQuery::Execute(void)
     //
     // Construct the first curve.
     //
-    int n1 = curve1->GetNumberOfPoints();
+    vtkDataArray *xc = ((vtkRectilinearGrid*)curve1)->GetXCoordinates();
+    vtkDataArray *sc = curve1->GetPointData()->GetScalars();
+    int n1 = xc->GetNumberOfTuples();
     float *n1x = new float[n1];
     float *n1y = new float[n1];
     for (i = 0 ; i < n1 ; i++)
     {
-         curve1->GetPoint(i, pt);
-         n1x[i] = pt[0];
-         n1y[i] = pt[1];
+         n1x[i] = xc->GetTuple1(i);
+         n1y[i] = sc->GetTuple1(i);
     }
 
     //
     // Construct the second curve.
     //
-    int n2 = curve2->GetNumberOfPoints();
+    xc = ((vtkRectilinearGrid*)curve2)->GetXCoordinates();
+    sc = curve2->GetPointData()->GetScalars();
+    int n2 = xc->GetNumberOfTuples();
     float *n2x = new float[n2];
     float *n2y = new float[n2];
     for (i = 0 ; i < n2 ; i++)
     {
-         curve2->GetPoint(i, pt);
-         n2x[i] = pt[0];
-         n2y[i] = pt[1];
+         n2x[i] = xc->GetTuple1(i);
+         n2y[i] = sc->GetTuple1(i);
     }
 
     //

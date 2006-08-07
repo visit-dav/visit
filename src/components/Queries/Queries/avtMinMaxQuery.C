@@ -249,6 +249,9 @@ avtMinMaxQuery::PreExecute()
 //    Hank Childs, Tue Aug 30 15:24:00 PDT 2005
 //    Fix memory leak.
 //
+//    Kathleen Bonnell, Mon Jul 31 08:19:38 PDT 2006 
+//    Curves now respresented as 1D RectilinearGrids. 
+//
 // ****************************************************************************
 
 void 
@@ -264,7 +267,6 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
     vtkUnsignedCharArray *ghostNodes = 
            (vtkUnsignedCharArray*)ds->GetPointData()->GetArray("avtGhostNodes");
     vtkDataArray *data = NULL;
-    vtkPoints *pts = NULL;
     string var = queryAtts.GetVariables()[0];
     int varType = queryAtts.GetVarTypes()[0];
     int ts = queryAtts.GetTimeStep();
@@ -288,8 +290,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
     }
     else if (varType == QueryAttributes::Curve) 
     {
-        pts = vtkVisItUtility::GetPoints(ds);
-        data = pts->GetData();
+        data = ds->GetPointData()->GetScalars();
         nodeCentered = true;
         elementName = "node";
     }
@@ -298,8 +299,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
         //
         //  This allows Lineouts to be queried for minMax.
         //
-        pts = vtkVisItUtility::GetPoints(ds);
-        data = pts->GetData();
+        data = ds->GetPointData()->GetScalars();
         nodeCentered = true;
         elementName = "node";
         scalarCurve = true;
@@ -337,12 +337,6 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
     {
         switch(varType)
         {
-            case QueryAttributes::Scalar :
-                if (!scalarCurve)
-                    val = data->GetComponent(elNum, 0);
-                else 
-                    val = data->GetComponent(elNum, 1);
-                break; 
             case QueryAttributes::Vector :
                 data->GetTuple(elNum, x);
                 val = sqrt(x[0]*x[0]+x[1]*x[1]+x[2]*x[2]);
@@ -352,9 +346,8 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
                 data->GetTuple(elNum, x9);
                 val = MajorEigenvalue(x9);
                 break; 
+            case QueryAttributes::Scalar :
             case QueryAttributes::Curve :
-                val = data->GetComponent(elNum, 1);
-                break; 
             default:
                 val = data->GetComponent(elNum, 0);
                 break; 
@@ -539,9 +532,6 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
         if (haveMax2)
             FinalizeZoneCoord(ds, origCells, maxInfo2, zonesPreserved);
     }
-
-    if (pts != NULL)
-        pts->Delete();
 }
 
 

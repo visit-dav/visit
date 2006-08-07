@@ -49,7 +49,7 @@
 #include <visitstream.h>
 
 
-class     vtkPolyData;
+class     vtkRectilinearGrid;
 
 
 // ****************************************************************************
@@ -68,6 +68,12 @@ class     vtkPolyData;
 //
 //    Kathleen Bonnell, Fri Oct 28 13:02:51 PDT 2005 
 //    Added methods GetTime, GetCycle, and members curveTime, curveCycle.
+//
+//    Kathleen Bonnell, Mon Jul 31 10:15:00 PDT 2006 
+//    Represent curve as 1D RectilinearGrid instead of PolyData. 
+//
+//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
+//    Added dataExtents. 
 //
 // ****************************************************************************
 
@@ -100,8 +106,9 @@ class avtCurve2DFileFormat : public avtSTSDFileFormat
     std::string           filename;
     bool                  readFile;
 
-    std::vector<vtkPolyData *> curves;
+    std::vector<vtkRectilinearGrid *> curves;
     std::vector<std::string>   curveNames;
+    std::vector<double>        dataExtents;
     double                     curveTime;
     int                        curveCycle;
 

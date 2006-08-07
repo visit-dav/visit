@@ -44,7 +44,9 @@
 #include <avtCurveFilter.h>
 #include <avtCurveLegend.h>
 #include <avtCompactTreeFilter.h>
-#include <avtSurfaceAndWireframeRenderer.h>                                                          
+#include <avtSurfaceAndWireframeRenderer.h> 
+#include <avtWarpFilter.h>
+
 #include <LineAttributes.h>
 
 #include <avtUserDefinedMapper.h>
@@ -69,6 +71,9 @@
 //    Kathleen Bonnell, Thu Oct 27 15:12:13 PDT 2005 
 //    Added a legend.
 //    
+//    Kathleen Bonnell, Wed Jul 12 08:30:04 PDT 2006 
+//    Added warp filter. 
+//    
 // ****************************************************************************
 
 avtCurvePlot::avtCurvePlot()
@@ -77,6 +82,7 @@ avtCurvePlot::avtCurvePlot()
     curveLegend->SetTitle("Curve");
 
     CurveFilter = new avtCurveFilter();
+    WarpFilter = new avtWarpFilter();
     renderer = avtSurfaceAndWireframeRenderer::New();
     avtCustomRenderer_p ren;
     CopyTo(ren, renderer);
@@ -124,6 +130,9 @@ avtCurvePlot::avtCurvePlot()
 //    Kathleen Bonnell, Fri Jul 12 16:53:11 PDT 2002  
 //    Delete the decorations mapper. 
 //    
+//    Kathleen Bonnell, Wed Jul 12 08:30:04 PDT 2006 
+//    Added warp filter. 
+//    
 // ****************************************************************************
 
 avtCurvePlot::~avtCurvePlot()
@@ -147,6 +156,11 @@ avtCurvePlot::~avtCurvePlot()
     {
         delete decoMapper;
         decoMapper = NULL;
+    }
+    if (WarpFilter != NULL)
+    {
+        delete WarpFilter;
+        WarpFilter = NULL;
     }
 }
 
@@ -253,12 +267,17 @@ avtCurvePlot::ApplyOperators(avtDataObject_p input)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   October 22, 2002 
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jul 12 08:30:04 PDT 2006 
+//    Added warp filter. 
+//    
 // ****************************************************************************
 
 avtDataObject_p
 avtCurvePlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
-    return input;
+    WarpFilter->SetInput(input);
+    return WarpFilter->GetOutput();
 }
 
 
@@ -410,6 +429,10 @@ avtCurvePlot::SetLineStyle(int ls)
 //  Programmer: Hank Childs
 //  Creation:   September 12, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jul 12 08:30:04 PDT 2006 
+//    Added warp filter. 
+//    
 // ****************************************************************************
  
 void
@@ -420,6 +443,10 @@ avtCurvePlot::ReleaseData(void)
     if (CurveFilter != NULL)
     {
         CurveFilter->ReleaseData();
+    }
+    if (WarpFilter != NULL)
+    {
+        WarpFilter->ReleaseData();
     }
 }
 

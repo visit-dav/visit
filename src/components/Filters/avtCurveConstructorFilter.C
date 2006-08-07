@@ -43,8 +43,12 @@
 #include <avtDataTree.h>
 
 #include <vtkCellArray.h>
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkVisItUtility.h>
 #include <InvalidDimensionsException.h>
 #include <NoInputException.h>
 #include <PlotInfoAttributes.h>
@@ -54,7 +58,7 @@
 #ifdef PARALLEL
 #include <mpi.h>
 #include <avtParallel.h>
-#include <vtkPolyDataReader.h>
+#include <vtkDataSetReader.h>
 #include <vtkDataSetWriter.h>
 #include <vtkCharArray.h>
 #endif
@@ -127,6 +131,11 @@ avtCurveConstructorFilter::~avtCurveConstructorFilter()
 //    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
 //    Save the curve points in output array to be added to PlotInfoAttributes.
 //
+//    Kathleen Bonnell, Mon Jul 31 16:50:55 PDT 2006 
+//    Changed reader from PolyData to DataSetReader, as curves can now be
+//    represented as 1D RectilinearGrids.  Modified logic to handle
+//    Rectilinear Grids as needed.
+//
 // ****************************************************************************
 
 void avtCurveConstructorFilter::Execute()
@@ -158,7 +167,7 @@ void avtCurveConstructorFilter::Execute()
                     MPI_COMM_WORLD, &stat);
            for (j = 0; j < nds; j++)
            {
-               vtkPolyDataReader *reader = vtkPolyDataReader::New(); 
+               vtkDataSetReader *reader = vtkDataSetReader::New(); 
                reader->ReadFromInputStringOn();
                MPI_Recv(&size, 1, MPI_INT, stat.MPI_SOURCE, mpiSizeTag,
                          MPI_COMM_WORLD, &stat2);
@@ -245,11 +254,20 @@ void avtCurveConstructorFilter::Execute()
 
     for (j = 0; j < nleaves; j++)
     {
-        npts = ((vtkPolyData*)ds[j])->GetNumberOfPoints();
-        x = ((vtkPolyData*)ds[j])->GetPoint(0)[0]; 
+        vtkDataArray *data = NULL;
+        if (ds[j]->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+        {
+            data = ((vtkRectilinearGrid*)ds[j])->GetXCoordinates();
+        }
+        else if (ds[j]->GetDataObjectType() == VTK_POLY_DATA)
+        {
+            data = ((vtkPolyData*)ds[j])->GetPoints()->GetData();
+        }
+        npts = data->GetNumberOfTuples();
+        x = data->GetComponent(0, 0);
         minX.insert(DoubleIntMap::value_type(x, j));
         mm[j*2] = x;
-        mm[j*2+1] = ((vtkPolyData*)ds[j])->GetPoint(npts-1)[0]; 
+        mm[j*2+1] = data->GetComponent(npts-1, 0); 
     }
 
     bool requiresSort = false;
@@ -262,93 +280,100 @@ void avtCurveConstructorFilter::Execute()
         }
     }
     delete [] mm;
-    vtkPolyData *outPolys = vtkPolyData::New();
-    
-    vtkPoints *inPts; 
-    vtkPoints *outPts  = vtkPoints::New();
-    outPolys->SetPoints(outPts);
-    outPts->Delete();
 
-    vtkCellArray *lines   = vtkCellArray::New();
-    outPolys->SetLines(lines);
-    lines->Delete();
+    vtkDataArray *inXC; 
+    vtkDataArray *inVal; 
 
-    vtkCellArray *verts   = vtkCellArray::New();
-    outPolys->SetVerts(verts);
-    verts->Delete();
-
+    int dtype = VTK_FLOAT;
+    if (ds[0]->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+        dtype = ((vtkRectilinearGrid*)ds[0])->GetXCoordinates()->GetDataType();
+    else 
+        dtype = ((vtkPolyData*)ds[0])->GetPoints()->GetData()->GetDataType();
+    vtkRectilinearGrid *outGrid = vtkVisItUtility::Create1DRGrid(0, dtype);
+    vtkDataArray *outXC  = outGrid->GetXCoordinates();
+    vtkDataArray *outVal = outXC->NewInstance();
+    outGrid->GetPointData()->SetScalars(outVal);
+    outVal->Delete();
     int nPoints; 
-    double pt[3];
-    vtkIdType i, ptIds[2];
+    vtkIdType i;
 
     //
     //  Ensure that the output is 2d by setting z-component to zero.
     //
     DoubleIntMap::iterator it;
+    int index = 0;
     for (it = minX.begin(); it != minX.end(); it++)
     {
-        inPts = ((vtkPolyData*)ds[(*it).second])->GetPoints();
-        nPoints = inPts->GetNumberOfPoints();
-        for (i = 0; i < nPoints; i++)
+        if (ds[(*it).second]->GetDataObjectType() == VTK_RECTILINEAR_GRID)
         {
-            inPts->GetPoint(i, pt);
-            pt[2] = 0; 
-            outPts->InsertNextPoint(pt);
+            inXC  = ((vtkRectilinearGrid*)ds[(*it).second])->GetXCoordinates();
+            inVal = ((vtkRectilinearGrid*)ds[(*it).second])->GetPointData()->
+                    GetScalars();
+            nPoints = inXC->GetNumberOfTuples();
+            for (i = 0; i < nPoints; i++, index++)
+            {
+                outXC->InsertNextTuple1(inXC->GetTuple1(i));
+                outVal->InsertNextTuple1(inVal->GetTuple1(i));
+            }
+        }
+        else if (ds[(*it).second]->GetDataObjectType() == VTK_POLY_DATA)
+        {
+            inXC  = ((vtkPolyData*)ds[(*it).second])->GetPoints()->GetData();
+            nPoints = inXC->GetNumberOfTuples();
+            for (i = 0; i < nPoints; i++, index++)
+            {
+                outXC->InsertNextTuple1(inXC->GetComponent(i, 0));
+                outVal->InsertNextTuple1(inXC->GetComponent(i, 1));
+            }
         }
     }
 
     // 
     // Sort if necessary
     // 
-    vtkPoints *sortedPts;
+    vtkDataArray *sortedXC;
+    vtkDataArray *sortedVal;
     if (requiresSort)
     {
-        sortedPts = vtkPoints::New();
+        sortedXC = outXC->NewInstance();
+        sortedVal = outVal->NewInstance();
         DoubleIntMap sortedIds;
-        nPoints = outPts->GetNumberOfPoints();
+        nPoints = outXC->GetNumberOfTuples();
         for (i = 0; i < nPoints; i++)
         {
-            x = outPts->GetPoint(i)[0]; 
+            x = outXC->GetTuple1(i); 
             sortedIds.insert(DoubleIntMap::value_type(x, i));
         }
         DoubleIntMap::iterator it;
         for (it = sortedIds.begin(); it != sortedIds.end(); it++)
         {
-            sortedPts->InsertNextPoint(outPts->GetPoint((*it).second));
+            sortedXC->InsertNextTuple1(outXC->GetTuple1((*it).second));
+            sortedVal->InsertNextTuple1(outVal->GetTuple1((*it).second));
         }
-        outPolys->SetPoints(sortedPts);
-        sortedPts->Delete();
+        outGrid->SetXCoordinates(sortedXC);
+        outGrid->GetPointData()->SetScalars(sortedVal);
+        sortedXC->Delete();
+        sortedVal->Delete();
     }
     else
     {
-        sortedPts = outPts;
+        sortedXC  = outXC;
+        sortedVal = outVal;
     }
-    nPoints = sortedPts->GetNumberOfPoints();
-    int vertsSize = (nPoints) * (1+1);
-    verts->Allocate(vertsSize);
+    nPoints = sortedXC->GetNumberOfTuples();
+    outGrid->SetDimensions(nPoints, 1, 1);
     outputArray.clear();
     for (i = 0; i < nPoints; i++)
     {
-        if (i < nPoints-1)
-        {
-            ptIds[0] = i; 
-            ptIds[1] = i+1; 
-            lines->InsertNextCell(2, ptIds);        
-            verts->InsertNextCell(1, ptIds);        
-        }
-        sortedPts->GetPoint(i, pt);
-        outputArray.push_back(pt[0]);
-        outputArray.push_back(pt[1]);
+        outputArray.push_back(sortedXC->GetTuple1(i));
+        outputArray.push_back(sortedVal->GetTuple1(i));
     } 
-    // need to add one last vertex:
-    ptIds[0] = ptIds[1];
-    verts->InsertNextCell(1, ptIds);        
 
     const char *varname = (pipelineVariable != NULL ? pipelineVariable : "");
 
-    avtDataRepresentation dr(outPolys, -1, varname);
+    avtDataRepresentation dr(outGrid, -1, varname);
     outTree = new avtDataTree(dr);
-    outPolys->Delete();
+    outGrid->Delete();
 
     SetOutputDataTree(outTree);
 
@@ -406,12 +431,17 @@ avtCurveConstructorFilter::PerformRestriction(avtPipelineSpecification_p spec)
 //  Programmer: Kathleen Bonnell
 //  Creation:   December 23, 2002 
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Jul 31 16:50:55 PDT 2006
+//    Changed Spatial dimension to 1, as curves are not represented as 
+//    1D RectilinearGrid.
+//
 // ****************************************************************************
 
 void
 avtCurveConstructorFilter::RefashionDataObjectInfo(void)
 {
-    GetOutput()->GetInfo().GetAttributes().SetSpatialDimension(2);
+    GetOutput()->GetInfo().GetAttributes().SetSpatialDimension(1);
 }
 
 

@@ -50,7 +50,7 @@
 #include <QueryOverTimeAttributes.h>
 #include <SILRestrictionAttributes.h>
 
-class vtkPolyData;
+class vtkRectilinearGrid;
 
 // ****************************************************************************
 //  Class: avtQueryOverTimeFilter
@@ -77,6 +77,10 @@ class vtkPolyData;
 //
 //    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
 //    Added CreatePolys method, and members useTimeForXAxis, nResultsToStore. 
+//
+//    Kathleen Bonnell, Thu Jul 27 17:43:38 PDT 2006 
+//    Curves now represented as 1D RectilinearGrid, Renamed CreatedPolys to
+//    CreateRGRid.
 //
 // ****************************************************************************
 
@@ -112,7 +116,7 @@ class QUERY_API avtQueryOverTimeFilter : public avtTimeLoopFilter,
 
     virtual void          CreateFinalOutput(void);
     virtual bool          ExecutionSuccessful(void) { return success; } ;
-    vtkPolyData          *CreatePolys(const doubleVector &, 
+    vtkRectilinearGrid   *CreateRGrid(const doubleVector &, 
                                       const doubleVector &);
 };
 

@@ -371,6 +371,9 @@ QvisExpressionsWindow::~QvisExpressionsWindow()
 //    Hank Childs, Thu Jul 21 11:12:43 PDT 2005
 //    Add support for array mesh variables.
 //
+//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
+//    Changed numtypes to 7 to support CurveMeshVar.
+//
 // ****************************************************************************
 
 void
@@ -431,7 +434,7 @@ QvisExpressionsWindow::CreateWindowContents()
     typeLabel = new QLabel("Type", f2, "typeLabel");
     typeList = new QComboBox(f2, "typeList");
     int numtypes = Expression::GetNumTypes();
-    numtypes = 6;  // HACK!!!  Variable types after 6 currently fail.  FIXME!!!
+    numtypes = 7;  // HACK!!!  Variable types after 6 currently fail.  FIXME!!!
     int i;
     for (i=1; i < numtypes ; i++)
         typeList->insertItem(Expression::GetTypeString((Expression::ExprType)i));

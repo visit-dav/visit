@@ -883,6 +883,13 @@ static void log_SetAppearanceRPC(ViewerRPC *rpc, char *str)
     MESSAGE_COMMENT("SetAppearance", str, MSG_UNSUPPORTED);
 }
 
+//*****************************************************************************
+//  Modifications:
+//    Kathleen Bonnell, Thu Aug  3 09:25:00 PDT 2006
+//    Added CurveMeshVar
+// 
+//*****************************************************************************
+
 static void log_ProcessExpressionsRPC(ViewerRPC *rpc, char *str)
 {
     std::string exprList("");
@@ -903,6 +910,8 @@ static void log_ProcessExpressionsRPC(ViewerRPC *rpc, char *str)
             fx = "DefineTensorExpression";
         else if(expr.GetType() == Expression::ArrayMeshVar)
             fx = "DefineArrayExpression";
+        else if(expr.GetType() == Expression::CurveMeshVar)
+            fx = "DefineCurveExpression";
         else if(expr.GetType() == Expression::Mesh)
             fx = "DefineMeshExpression";
         else if(expr.GetType() == Expression::Material)

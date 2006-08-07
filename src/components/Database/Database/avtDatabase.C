@@ -364,14 +364,17 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006 
 //    Added meshCoordType.
 //
+//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
+//    Add Variable and DataExtents from CurveMetaData. 
+//
 // ****************************************************************************
 
 void
 avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
-                                           const char *var,
-                                           int ts,
-                                           const vector<bool> &selectionsApplied,
-                                           avtDataSpecification_p spec)
+                                          const char *var,
+                                          int ts,
+                                          const vector<bool> &selectionsApplied,
+                                          avtDataSpecification_p spec)
 {
     int   i;
 
@@ -588,12 +591,32 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         const avtCurveMetaData *cmd = GetMetaData(ts)->GetCurve(var_list[i]);
         if (cmd != NULL)
         {
+            atts.AddVariable(var_list[i]);
+            atts.SetVariableDimension(1, var_list[i]);
+            atts.SetVariableType(AVT_CURVE, var_list[i]);
+            atts.SetCentering(cmd->centering, var_list[i]);
             atts.SetTopologicalDimension(1);
-            atts.SetSpatialDimension(2);
+            atts.SetSpatialDimension(1);
             atts.SetXUnits(cmd->xUnits);
             atts.SetXLabel(cmd->xLabel);
             atts.SetYUnits(cmd->yUnits);
             atts.SetYLabel(cmd->yLabel);
+            if (cmd->hasDataExtents)
+            {
+                double extents [2];
+                extents[0] = cmd->minDataExtents;
+                extents[1] = cmd->maxDataExtents;
+                atts.GetTrueDataExtents(var_list[i])->Set(extents);
+            }
+            else
+            {
+                double extents[2];
+                if (GetExtentsFromAuxiliaryData(spec, var_list[i],
+                        AUXILIARY_DATA_DATA_EXTENTS, extents))
+                {
+                    atts.GetTrueDataExtents(var_list[i])->Set(extents);
+                }
+            }
         }
 
         const avtLabelMetaData *lmd = GetMetaData(ts)->GetLabel(var_list[i]);

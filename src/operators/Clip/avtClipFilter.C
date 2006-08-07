@@ -36,7 +36,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtClipFilter.C                              //
+//                             avtClipFilter.C                               //
 // ************************************************************************* //
 
 #include <avtClipFilter.h>
@@ -58,12 +58,12 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkVisItClipper.h>
 #include <vtkVisItUtility.h>
-#include <vtkDataSetWriter.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <BadVectorException.h>
 #include <TimingsManager.h>
+#include <maptypes.h>
 
 
 // ****************************************************************************
@@ -243,6 +243,9 @@ avtClipFilter::Equivalent(const AttributeGroup *a)
 //    Renamed to ProcessOneChunk.  Changed memory management.  Fix small
 //    memory leak in error condition.
 //
+//    Kathleen Bonnell, Mon Jul 31 11:32:48 PDT 2006 
+//    Handle 1D RectilinearGrids. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -287,13 +290,26 @@ avtClipFilter::ProcessOneChunk(vtkDataSet *inDS, int dom, std::string, bool)
     }
     else
     {
-        outDS = vtkUnstructuredGrid::New();
-        fastClipper->SetInput(inDS);
-        fastClipper->SetOutput((vtkUnstructuredGrid*)outDS);
-        fastClipper->SetClipFunction(ifuncs);
-        fastClipper->SetInsideOut(inverse);
-
-        fastClipper->Update();
+        bool doFast = true;
+        if  (inDS->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+        {
+            int dims[3];       
+            ((vtkRectilinearGrid*)inDS)->GetDimensions(dims);
+            if (dims[2] <= 1)
+            {
+                doFast = false;
+                outDS = Clip1DRGrid(ifuncs, inverse, (vtkRectilinearGrid*)inDS);
+            }
+        }
+        if (doFast)
+        {
+            outDS = vtkUnstructuredGrid::New();
+            fastClipper->SetInput(inDS);
+            fastClipper->SetOutput((vtkUnstructuredGrid*)outDS);
+            fastClipper->SetClipFunction(ifuncs);
+            fastClipper->SetInsideOut(inverse);
+            fastClipper->Update();
+        }
     }
 
     ifuncs->Delete();
@@ -540,3 +556,103 @@ avtClipFilter::PerformRestriction(avtPipelineSpecification_p spec)
     return spec;
 }
 
+
+// ****************************************************************************
+//  Method: avtClipFilter::Clip1DRGrid
+//
+//  Purpose:
+//    Clips a 1D RectlinearGrid, and returns same.
+//
+//  Arguments:
+//    ifuncs    The function to use in clipping.
+//    inv       Whether or not the clip is an Inverse clip.
+//    inGrid    The input grid.
+//
+//  Returns:
+//    The clipped 1D RectlinearGrid.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   July 31, 2006 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkRectilinearGrid *
+avtClipFilter::Clip1DRGrid(vtkImplicitBoolean *ifuncs, bool inv,
+     vtkRectilinearGrid *inGrid)
+{
+    vtkDataArray *inXC = inGrid->GetXCoordinates();
+    vtkDataArray *inVal = inGrid->GetPointData()->GetScalars();
+
+    vtkRectilinearGrid *outGrid = 
+        vtkVisItUtility::Create1DRGrid(0, inXC->GetDataType());
+    vtkDataArray *outXC = outGrid->GetXCoordinates();
+    vtkDataArray *outVal = inVal->NewInstance();
+
+    int nx = inXC->GetNumberOfTuples();
+
+    double lastX = inXC->GetTuple1(0);
+    double lastVal = inVal->GetTuple1(0);
+    double lastDist = ifuncs->EvaluateFunction(lastX, 0., 0.);
+    if (lastDist > 0 && !inv)
+    {
+        outXC->InsertNextTuple1(lastX);
+        outVal->InsertNextTuple1(lastVal);
+    }
+
+    int i, nPts = inXC->GetNumberOfTuples();
+
+    for (int i = 1; i < nPts; i++)
+    {
+        int whichCase = 0;
+        double x = inXC->GetTuple1(i);
+        double val = inVal->GetTuple1(i);
+        double dist = ifuncs->EvaluateFunction(x, 0., 0.);
+
+        if ((dist > 0 && !inv) || (lastDist <= 0 && inv))
+            whichCase += 1;
+        if ((dist <= 0 && inv) || (lastDist > 0 && !inv))
+            whichCase += 2;
+
+        double x1, x2, d1, d2, v1, v2, newX, newVal;
+        switch(whichCase)
+        {
+            case 1 : 
+                x1 = x; d1 = dist; v1 = val;
+                x2 = lastX; d2 = lastDist; v2 = lastVal;
+                break;
+            case 2 : 
+                x2 = x; d2 = dist; v2 = val;
+                x1 = lastX; d1 = lastDist, v1 = lastVal;
+                break;
+            case 3 : 
+                newX = x;
+                newVal = val;
+                break;
+            case 0 :
+            default : 
+                break;
+        }
+        if (whichCase) 
+        {
+            if (whichCase != 3)
+            {
+                double percent = 1. - ((0. - d1)/(d2-d1));
+                double bp = 1. -percent;
+                newX =  x1*percent + x2*bp;     
+                newVal = v1*percent + v2*bp;
+            }
+            outXC->InsertNextTuple1(newX);
+            outVal->InsertNextTuple1(newVal);
+        }
+        lastX = x;
+        lastVal = val;
+        lastDist = dist;
+    }
+ 
+    outGrid->GetPointData()->SetScalars(outVal);
+    outGrid->SetDimensions(outXC->GetNumberOfTuples(), 1, 1);
+    outVal->Delete();
+    return outGrid;
+}

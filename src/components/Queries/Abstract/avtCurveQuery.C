@@ -41,7 +41,10 @@
 
 #include <avtCurveQuery.h>
 
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkPointData.h>
+#include <vtkRectilinearGrid.h>
 
 #include <avtCurveConstructorFilter.h>
 #include <avtSourceFromAVTDataset.h>
@@ -128,6 +131,10 @@ avtCurveQuery::ApplyFilters(avtDataObject_p inData)
 //  Programmer: Hank Childs
 //  Creation:   October 4, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Jul 27 17:43:38 PDT 2006
+//    Curves now represented as 1D RectilinearGrids.
+//
 // ****************************************************************************
 
 void
@@ -137,15 +144,15 @@ avtCurveQuery::Execute(vtkDataSet *ds, const int)
     // Construct the curve.  This is heavily assuming that the input is a
     // well-formed curve from the curve constructor filter.
     //
-    int np = ds->GetNumberOfPoints();
+    vtkDataArray *xc = ((vtkRectilinearGrid*)ds)->GetXCoordinates();
+    vtkDataArray *sc = ds->GetPointData()->GetScalars();
+    int np = xc->GetNumberOfTuples();
     float *x = new float[np];
     float *y = new float[np];
-    double pt[3];
     for (int i = 0 ; i < np ; i++)
     {
-         ds->GetPoint(i, pt);
-         x[i] = pt[0];
-         y[i] = pt[1];
+         x[i] = xc->GetTuple1(i);
+         y[i] = sc->GetTuple1(i);
     }
 
     //

@@ -1268,6 +1268,7 @@ const char *visit_DefineExpression_doc =
 "DefineTensorExpression(variableName, expression)\n"
 "DefineVectorExpression(variableName, expression)\n"
 "DefineArrayExpression(variableName, expression)\n"
+"DefineCurveExpression(variableName, expression)\n"
 "\n"
 "\n"
 "Arguments:\n"

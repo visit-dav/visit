@@ -220,6 +220,9 @@ avtExpressionEvaluatorFilter::Execute(void)
 //    Hank Childs, Fri Jun  9 14:34:50 PDT 2006
 //    Add default to switch statement.
 //
+//    Kathleen Bonnell, Wed Aug  2 17:54:47 PDT 2006
+//    Support CurveMeshVar expressions. 
+//
 // ****************************************************************************
 
 void
@@ -256,11 +259,16 @@ avtExpressionEvaluatorFilter::VerifyVariableTypes(void)
           case Expression::ArrayMeshVar:
             et_as_avt = AVT_ARRAY_VAR;
             break;
+          case Expression::CurveMeshVar:
+            et_as_avt = AVT_CURVE;
+            break;
           default:
             // Handled in logic below.
             break;
         }
-        if (vt != et_as_avt)
+        // consider a ScalarVar to be equivalent to a Curve Expression.
+        if (vt != et_as_avt &&
+           (!(vt == AVT_SCALAR_VAR && et_as_avt == AVT_CURVE)))
         {
             char msg[1024];
             sprintf(msg, "The expression variable \"%s\" was declared to be of"
