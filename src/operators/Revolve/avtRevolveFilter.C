@@ -288,7 +288,7 @@ avtRevolveFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
              }
              for (j = 0 ; j < nsteps-1 ; j++)
              {
-                 vtkIdType hex[6];
+                 vtkIdType hex[8];
                  hex[0] = npts*j + pt0;
                  hex[1] = npts*j + pt1;
                  hex[2] = npts*j + pt2;

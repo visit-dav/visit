@@ -45,6 +45,7 @@
 #include <qlayout.h>
 #include <qlineedit.h>
 #include <qspinbox.h>
+#include <qstringlist.h>
 #include <qvbox.h>
 #include <qbuttongroup.h>
 #include <qradiobutton.h>

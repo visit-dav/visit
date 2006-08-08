@@ -901,6 +901,9 @@ PP_ZFileReader::InitializeVarStorage()
 //   Hank Childs, Fri Nov 18 11:31:31 PST 2005
 //   Label the axes appropriately.
 //
+//   Brad Whitlock, Tue Aug 8 10:09:50 PDT 2006
+//   Enabled revolved mesh on Windows.
+//
 // ****************************************************************************
 
 void
@@ -979,14 +982,12 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
     mmd->yLabel = "R-Axis";
     md->Add(mmd);
 
-#if !defined(_WIN32)
     // Add a revolved mesh.
     mmd = new avtMeshMetaData(
         "revolved_mesh", 1, 0, cellOrigin, 0, 3, 3, AVT_UNSTRUCTURED_MESH);
     mmd->hasSpatialExtents = false;
     mmd->cellOrigin = 1;
     md->Add(mmd);
-#endif
 
     // Determine the size of the problem.
     int problemSize = kmax * lmax * nCycles;
@@ -1063,14 +1064,13 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
                         logicalMeshVar, "logical_mesh", centering);
                     md->Add(smd);
 
-#if !defined(_WIN32)
                     // Add the variable over the revolved mesh.
                     std::string revolvedMeshVar(std::string("revolved_mesh/") +
                                                 newStr);
                     smd = new avtScalarMetaData(revolvedMeshVar,
                         "revolved_mesh", centering);
                     md->Add(smd);
-#endif
+
                     // Add the variable over the mesh to the metadata.
                     std::string meshVar(std::string("mesh/") + newStr);
                     smd = new avtScalarMetaData(meshVar, "mesh", centering);
@@ -1100,11 +1100,10 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
         avtMaterialMetaData *mmd = new avtMaterialMetaData("material",
             "mesh", materialNames.size(), materialNames);
         md->Add(mmd);
-#if !defined(_WIN32)
+
         mmd = new avtMaterialMetaData("material2",
             "revolved_mesh", materialNames.size(), materialNames);
         md->Add(mmd);
-#endif
 
         //
         // Look for evidence of mixed materials.
@@ -3571,6 +3570,9 @@ GetRotationMatrix(double angle, const double axis[3], vtkMatrix4x4 *mat)
 //     Hank Childs, Fri Nov 18 09:04:37 PST 2005
 //     Add new arguments for point-dependent transformations.
 //
+//     Brad Whitlock, Tue Aug 8 10:08:08 PDT 2006
+//     Fixed a memory overwrite that killed us on Windows.
+//
 // ****************************************************************************
 
 template <class T>
@@ -3695,7 +3697,7 @@ RevolveDataSetHelper(T *ugrid, vtkDataSet *in_ds,
              int npts_times_j1 = npts;
              for (j = 0 ; j < niter-1 ; j++)
              {
-                 vtkIdType hex[6];
+                 vtkIdType hex[8];
                  hex[0] = npts_times_j + pt0;
                  hex[1] = npts_times_j + pt1;
                  hex[2] = npts_times_j + pt2;
