@@ -2177,6 +2177,10 @@ ViewerSubject::GetOperatorFactory() const
 //    Brad Whitlock, Wed Jan 11 17:40:16 PST 2006
 //    I added support for -nowindowmetrics.
 //
+//    Mark C. Miller, Wed Aug  9 18:59:30 PDT 2006
+//    Pass "-stereo" to engine. Allow "-timings" in addition to "-timing"
+//    Changed interface to SetStereoEnabled to void args
+//
 // ****************************************************************************
 
 void
@@ -2352,7 +2356,8 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
             appearanceAtts->SetFontDescription(argv2[i + 1]);
             ++i;
         }
-        else if (strcmp(argv2[i], "-timing") == 0)
+        else if (strcmp(argv2[i], "-timing") == 0 ||
+                 strcmp(argv2[i], "-timings") == 0)
         {
             //
             // Enable timing and pass the option to child processes.
@@ -2390,8 +2395,9 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
         }
         else if (strcmp(argv2[i], "-stereo") == 0)
         {
-            VisWinRendering::SetStereoEnabled(true);
+            VisWinRendering::SetStereoEnabled();
             defaultStereoToOn = true;
+            unknownArguments.push_back(argv2[i]);
         }
         else if (strcmp(argv2[i], "-launchengine") == 0)
         {
