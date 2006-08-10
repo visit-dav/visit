@@ -1250,9 +1250,9 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
     // whether or not remoteHost is valid if it equals "localhost" since
     // in that case we'll be spawning a local process.
     //
+    remoteHost = rHost;
     debug5 << mName << "Calling gethostbyname(\"" << remoteHost.c_str()
            << "\") to look up the name of the remote host" << endl;
-    remoteHost = rHost;
     bool remote = (remoteHost != std::string("localhost"));
     if(remote && (gethostbyname(remoteHost.c_str()) == NULL))
     {
