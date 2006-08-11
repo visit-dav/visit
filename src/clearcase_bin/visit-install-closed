@@ -27,7 +27,7 @@ hitit=true
 sunset=true
 sc=true
 tidalwave=false
-white=true
+ice=true
 purple=true
 lilac=true
 gauss=true
@@ -48,7 +48,7 @@ do
          sunset=false
          sc=false
          tidalwave=false
-         white=false
+         ice=false
          purple=false
          lilac=false
          gauss=false
@@ -62,7 +62,7 @@ do
       +lc)
          sc=true
          tidalwave=true
-         white=true
+         ice=true
          purple=true
          lilac=true
          shift
@@ -99,12 +99,12 @@ do
          tidalwave=true
          shift
          ;;
-      -white)
-         white=false
+      -ice)
+         ice=false
          shift
          ;;
-      +white)
-         white=true
+      +ice)
+         ice=true
          shift
          ;;
       -purple)
@@ -340,15 +340,15 @@ then
 fi
 
 #
-# Install on white.
+# Install on ice.
 #
-rm -f white
-cat <<EOF > white
+rm -f ice
+cat <<EOF > ice
 
 ./visit-install -private -c closed -g visit -b bdivp -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
-echo "        install of visit on white"           >> resultlog 2>&1
-echo "       ---------------------------"          >> resultlog 2>&1
+echo "        install of visit on ice"             >> resultlog 2>&1
+echo "       -------------------------"            >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
@@ -362,13 +362,13 @@ echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/ibm-aix-pwr/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/ibm-aix-pwr\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
-if [ $white = true ]
+if [ $ice = true ]
 then
    if [ $test = no ]
    then
-      cat white >> lc
+      cat ice >> lc
 
-      scp white:/p/gw1/$user/white/visitbuild/visit$ver2.aix.tar.gz .
+      scp ice:/p/gi1/$user/ice/visitbuild/visit$ver2.aix.tar.gz .
       scp visit$ver2.aix.tar.gz sc1:
    fi
 fi
@@ -490,5 +490,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f bdiv hitit sunset lc sc tidalwave white purple lilac gauss
+   rm -f bdiv hitit sunset lc sc tidalwave ice purple lilac gauss
 fi

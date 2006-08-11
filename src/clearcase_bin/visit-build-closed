@@ -23,7 +23,7 @@ hitit=true
 sunset=true
 sc=true
 tidalwave=false
-white=true
+ice=true
 purple=true
 lilac=true
 gauss=true
@@ -43,7 +43,7 @@ do
          sunset=false
          sc=false
          tidalwave=false
-         white=false
+         ice=false
          purple=false
          lilac=false
          gauss=false
@@ -81,12 +81,12 @@ do
          tidalwave=true
          shift
          ;;
-      -white)
-         white=false
+      -ice)
+         ice=false
          shift
          ;;
-      +white)
-         white=true
+      +ice)
+         ice=true
          shift
          ;;
       -purple)
@@ -333,22 +333,22 @@ then
 fi
 
 #
-# Build on white, both serial and parallel versions.
+# Build on ice, both serial and parallel versions.
 #
-rm -f white
-cat <<EOF > white
+rm -f ice
+cat <<EOF > ice
 #!/bin/sh
 PATH=/usr/local/bin:\$PATH
-if test ! -d /p/gw1/$user ; then
-   mkdir /p/gw1/$user
+if test ! -d /p/gi1/$user ; then
+   mkdir /p/gi1/$user
 fi
-if test ! -d /p/gw1/$user/white ; then
-   mkdir /p/gw1/$user/white
+if test ! -d /p/gi1/$user/ice ; then
+   mkdir /p/gi1/$user/ice
 fi
-rm -rf /p/gw1/$user/white/visitbuild
-mkdir /p/gw1/$user/white/visitbuild
-mv white_$dist.tar.gz /p/gw1/$user/white/visitbuild/$dist.tar.gz
-cd /p/gw1/$user/white/visitbuild
+rm -rf /p/gi1/$user/ice/visitbuild
+mkdir /p/gi1/$user/ice/visitbuild
+mv ice_$dist.tar.gz /p/gi1/$user/ice/visitbuild/$dist.tar.gz
+cd /p/gi1/$user/ice/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 cp /usr/gapps/visit/bz2/bzlib.h include
@@ -359,8 +359,8 @@ gmake -j 6 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist -make gmake >> ../buildlog 2>&1
 mv visit\$ver2.aix.tar.gz ..
 cd ..
-echo "        build of visit on white"        > resultlog 2>&1
-echo "       -------------------------"       >> resultlog 2>&1
+echo "        build of visit on ice"          > resultlog 2>&1
+echo "       -----------------------"         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
@@ -372,13 +372,13 @@ echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
-if [ $white = true ]
+if [ $ice = true ]
 then
    if [ $test = no ]
    then
-      scp white white:white_buildit
-      scp $dist.tar.gz white:white_$dist.tar.gz
-      ssh white "chmod 750 white_buildit;./white_buildit" &
+      scp ice ice:ice_buildit
+      scp $dist.tar.gz ice:ice_$dist.tar.gz
+      ssh ice "chmod 750 ice_buildit;./ice_buildit" &
    fi
 fi
 
@@ -535,5 +535,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hitit sunset sc tidalwave white purple lilac gauss
+   rm -f hitit sunset sc tidalwave ice purple lilac gauss
 fi
