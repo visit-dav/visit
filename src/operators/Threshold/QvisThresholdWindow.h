@@ -76,6 +76,9 @@ class QvisVariableButton;
 //   Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //   Upgraded to support multiple threshold variables.
 //
+//   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
+//   Now accommodates an empty list of threshold variables.
+//
 // ****************************************************************************
 
 class QvisThresholdWindow : public QvisOperatorWindow
@@ -115,7 +118,9 @@ private:
     QButtonGroup        *zonePortion;
     QLabel              *zonePortionLabel;
     QLineEdit           *lowerBound;
+    QLabel              *lowerBoundLabel;
     QLineEdit           *upperBound;
+    QLabel              *upperBoundLabel;
     QLabel              *shownVariable;
     QPushButton         *showPrevVariable;
     QPushButton         *showNextVariable;

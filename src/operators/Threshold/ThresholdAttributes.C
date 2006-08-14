@@ -45,6 +45,9 @@
 #include <DataNode.h>
 
 
+static std::string NoVariablesInList = std::string("(no variables in list)");
+
+
 //
 // Enum conversion methods for ThresholdAttributes::OutputMeshType
 //
@@ -145,7 +148,7 @@ ThresholdAttributes::ZonePortion_FromString(
 //
 // ****************************************************************************
 
-ThresholdAttributes::ThresholdAttributes() : AttributeSubject("is*ii*d*d*")
+ThresholdAttributes::ThresholdAttributes() : AttributeSubject("is*ii*d*d*s")
 {
     outputMeshType = (int)InputZones;
     listedVarNames.push_back(std::string("default"));
@@ -153,6 +156,7 @@ ThresholdAttributes::ThresholdAttributes() : AttributeSubject("is*ii*d*d*")
     zonePortions.push_back((int)PartOfZone);
     lowerBounds.push_back(-1e+37);
     upperBounds.push_back(+1e+37);
+    defaultVarName = std::string("(default)");
 }
 
 
@@ -175,7 +179,7 @@ ThresholdAttributes::ThresholdAttributes() : AttributeSubject("is*ii*d*d*")
 // ****************************************************************************
 
 ThresholdAttributes::ThresholdAttributes(const ThresholdAttributes &obj) :
-    AttributeSubject("is*ii*d*d*")
+    AttributeSubject("is*ii*d*d*s")
 {
     outputMeshType = obj.outputMeshType;
     listedVarNames = obj.listedVarNames;
@@ -183,6 +187,7 @@ ThresholdAttributes::ThresholdAttributes(const ThresholdAttributes &obj) :
     zonePortions = obj.zonePortions;
     lowerBounds = obj.lowerBounds;
     upperBounds = obj.upperBounds;
+    defaultVarName = obj.defaultVarName;
 
     SelectAll();
 }
@@ -238,6 +243,7 @@ ThresholdAttributes::operator = (const ThresholdAttributes &obj)
     zonePortions = obj.zonePortions;
     lowerBounds = obj.lowerBounds;
     upperBounds = obj.upperBounds;
+    defaultVarName = obj.defaultVarName;
 
     SelectAll();
 }
@@ -270,7 +276,8 @@ ThresholdAttributes::operator == (const ThresholdAttributes &obj) const
             (shownVarPosition == obj.shownVarPosition) &&
             (zonePortions == obj.zonePortions) &&
             (lowerBounds == obj.lowerBounds) &&
-            (upperBounds == obj.upperBounds));
+            (upperBounds == obj.upperBounds) &&
+            (defaultVarName == obj.defaultVarName));
 }
 
 
@@ -526,6 +533,12 @@ ThresholdAttributes::CreateNode(
         node->AddNode(new DataNode("upperBounds", upperBounds));
     }
 
+    if (completeSave || !FieldsEqual(6, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("defaultVarName", defaultVarName));
+    }
+
     // Add the node to the parent node.
     if (addToParent || forceAdd)
         parentNode->AddNode(node);
@@ -598,6 +611,11 @@ ThresholdAttributes::SetFromNode(DataNode *parentNode)
     if ((node = searchNode->GetNode("upperBounds")) != NULL)
     {
         SetUpperBounds(node->AsDoubleVector());
+    }
+
+    if ((node = searchNode->GetNode("defaultVarName")) != NULL)
+    {
+        SetDefaultVarName(node->AsString());
     }
 }
 
@@ -678,6 +696,33 @@ ThresholdAttributes::SetUpperBounds(const doubleVector &upperBounds_)
 
 
 void
+ThresholdAttributes::SetDefaultVarName(const std::string &defaultVarName_)
+{
+    defaultVarName = defaultVarName_;
+    Select(6, (void *)&defaultVarName);
+}
+
+
+bool
+ThresholdAttributes::AttributesAreConsistent() const
+{
+    int varListSize = listedVarNames.size();
+    
+    if ((zonePortions.size() != varListSize) ||
+        (lowerBounds.size()  != varListSize) ||
+        (upperBounds.size()  != varListSize))
+    {
+        return false;
+    }
+    
+    if ((shownVarPosition >= varListSize) && (varListSize > 0))
+        return false;
+        
+    return true;
+}
+
+
+void
 ThresholdAttributes::SwitchToPipelineVariable(const std::string &pipelineVarName_)
 {
     for (int varPosition = 0; varPosition < listedVarNames.size(); varPosition++)
@@ -746,23 +791,28 @@ ThresholdAttributes::ChangeUpperBound(double newUpperBound_)
 //
 // Modifications:
 //   
+//   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
+//   Now accommodates an empty list of threshold variables.
+//
 // ****************************************************************************
 
 void
 ThresholdAttributes::InsertVariable(const std::string &variable_)
 {
     int varPosition;
+    std::string insertVarName =
+        (variable_ == defaultVarName) ? std::string("default") : variable_;
 
-    for (varPosition = 0; varPosition < listedVarNames.size(); varPosition++ )
+    for (varPosition = 0; varPosition < listedVarNames.size(); varPosition++)
     {
-        if (listedVarNames[varPosition] == variable_) break;
+        if (listedVarNames[varPosition] == insertVarName) break;
     }
 
     if (varPosition >= listedVarNames.size())
     {
         shownVarPosition = listedVarNames.size(); // Will be correct new position.
 
-        listedVarNames.push_back(variable_);
+        listedVarNames.push_back(insertVarName);
         zonePortions.push_back((int)PartOfZone);
         lowerBounds.push_back(-1e+37);
         upperBounds.push_back(+1e+37);
@@ -788,18 +838,23 @@ ThresholdAttributes::InsertVariable(const std::string &variable_)
 //
 // Modifications:
 //   
+//   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
+//   Now accommodates an empty list of threshold variables.
+//
 // ****************************************************************************
 
 void
 ThresholdAttributes::DeleteVariable(const std::string &variable_)
 {
-    if (listedVarNames.size() == 1) return;
+    if (listedVarNames.size() == 0) return;
 
-    int varPosition;
+    int varPosition, newListSize;
+    std::string deleteVarName =
+        (variable_ == defaultVarName) ? std::string("default") : variable_;
 
     for (varPosition = 0; varPosition < listedVarNames.size(); varPosition++)
     {
-        if (listedVarNames[varPosition] == variable_) break;
+        if (listedVarNames[varPosition] == deleteVarName) break;
     }
 
     if (varPosition < listedVarNames.size())
@@ -808,12 +863,11 @@ ThresholdAttributes::DeleteVariable(const std::string &variable_)
         zonePortions.erase(zonePortions.begin() + varPosition);
         lowerBounds.erase(lowerBounds.begin() + varPosition);
         upperBounds.erase(upperBounds.begin() + varPosition);
-
-        if (varPosition <= shownVarPosition)
-        {
-            shownVarPosition =
-            (shownVarPosition + zonePortions.size() - 1) % zonePortions.size();
-        }
+        
+        if ((newListSize = listedVarNames.size()) == 0)
+            shownVarPosition = 0;
+        else if (varPosition <= shownVarPosition)
+            shownVarPosition = (shownVarPosition + newListSize - 1) % newListSize;
 
         Select(1, (void *)&listedVarNames);
         Select(2, (void *)&shownVarPosition);
@@ -836,16 +890,27 @@ ThresholdAttributes::DeleteVariable(const std::string &variable_)
 //
 // Modifications:
 //   
+//   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
+//   Now accommodates an empty list of threshold variables.
+//
 // ****************************************************************************
 
 void
 ThresholdAttributes::SwapVariable(const std::string &variable_)
 {
     int varPosition;
+    std::string swapVarName =
+        (variable_ == defaultVarName) ? std::string("default") : variable_;
+        
+    if (listedVarNames.size() == 0)
+    {
+        InsertVariable(swapVarName);
+        return;
+    }
 
     for (varPosition = 0; varPosition < listedVarNames.size(); varPosition++)
     {
-        if (listedVarNames[varPosition] == variable_) break;
+        if (listedVarNames[varPosition] == swapVarName) break;
     }
 
     if (varPosition < listedVarNames.size()) return;
@@ -869,12 +934,15 @@ ThresholdAttributes::SwapVariable(const std::string &variable_)
 //
 // Modifications:
 //   
+//   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
+//   Now accommodates an empty list of threshold variables.
+//
 // ****************************************************************************
 
 void
 ThresholdAttributes::ShowPreviousVariable()
 {
-    if (listedVarNames.size() == 1) return;
+    if (listedVarNames.size() < 2) return;
 
     shownVarPosition =
         (shownVarPosition + listedVarNames.size() - 1) % listedVarNames.size();
@@ -894,12 +962,15 @@ ThresholdAttributes::ShowPreviousVariable()
 //
 // Modifications:
 //   
+//   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
+//   Now accommodates an empty list of threshold variables.
+//
 // ****************************************************************************
 
 void
 ThresholdAttributes::ShowNextVariable()
 {
-    if (listedVarNames.size() == 1) return;
+    if (listedVarNames.size() < 2) return;
 
     shownVarPosition = (shownVarPosition + 1) % listedVarNames.size();
     Select(2, (void *)&shownVarPosition);
@@ -921,6 +992,9 @@ ThresholdAttributes::GetOutputMeshType() const
 const std::string &
 ThresholdAttributes::GetShownVariable() const
 {
+    if (listedVarNames.size() == 0)
+        return NoVariablesInList;
+
     return listedVarNames[shownVarPosition];
 }
 
@@ -928,6 +1002,9 @@ ThresholdAttributes::GetShownVariable() const
 std::string &
 ThresholdAttributes::GetShownVariable()
 {
+    if (listedVarNames.size() == 0)
+        return NoVariablesInList;
+
     return listedVarNames[shownVarPosition];
 }
 
@@ -935,6 +1012,9 @@ ThresholdAttributes::GetShownVariable()
 ThresholdAttributes::ZonePortion
 ThresholdAttributes::GetZonePortion() const
 {
+    if (listedVarNames.size() == 0)
+        return ThresholdAttributes::PartOfZone;
+
     return (ZonePortion)zonePortions[shownVarPosition];
 }
 
@@ -942,6 +1022,9 @@ ThresholdAttributes::GetZonePortion() const
 double
 ThresholdAttributes::GetLowerBound() const
 {
+    if (listedVarNames.size() == 0)
+        return -1e+37;
+
     return lowerBounds[shownVarPosition];
 }
 
@@ -949,6 +1032,9 @@ ThresholdAttributes::GetLowerBound() const
 double
 ThresholdAttributes::GetUpperBound() const
 {
+    if (listedVarNames.size() == 0)
+        return +1e+37;
+
     return upperBounds[shownVarPosition];
 }
 
@@ -978,6 +1064,20 @@ const doubleVector &
 ThresholdAttributes::GetUpperBounds() const
 {
     return upperBounds;
+}
+
+
+const std::string &
+ThresholdAttributes::GetDefaultVarName() const
+{
+    return defaultVarName;
+}
+
+
+std::string &
+ThresholdAttributes::GetDefaultVarName()
+{
+    return defaultVarName;
 }
 
 
@@ -1020,6 +1120,7 @@ ThresholdAttributes::SelectAll()
     Select(3, (void *)&zonePortions);
     Select(4, (void *)&lowerBounds);
     Select(5, (void *)&upperBounds);
+    Select(6, (void *)&defaultVarName);
 }
 
 
@@ -1127,6 +1228,13 @@ ThresholdAttributes::SelectUpperBounds()
 }
 
 
+void
+ThresholdAttributes::SelectDefaultVarName()
+{
+    Select(6, (void *)&defaultVarName);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1161,6 +1269,7 @@ ThresholdAttributes::GetFieldName(int index) const
         case 3: return "zonePortions";
         case 4: return "lowerBounds";
         case 5: return "upperBounds";
+        case 6: return "defaultVarName";
         default: return "invalid index";
     }
 }
@@ -1195,6 +1304,7 @@ ThresholdAttributes::GetFieldType(int index) const
         case 3: return FieldType_intVector;
         case 4: return FieldType_doubleVector;
         case 5: return FieldType_doubleVector;
+        case 6: return FieldType_string;
         default: return FieldType_unknown;
     }
 }
@@ -1229,6 +1339,7 @@ ThresholdAttributes::GetFieldTypeName(int index) const
         case 3: return "intVector";
         case 4: return "doubleVector";
         case 5: return "doubleVector";
+        case 6: return "string";
         default: return "invalid index";
     }
 }
@@ -1288,6 +1399,11 @@ ThresholdAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case 5:
         {  // new scope
         retval = (upperBounds == obj.upperBounds);
+        }
+        break;
+    case 6:
+        {  // new scope
+        retval = (defaultVarName == obj.defaultVarName);
         }
         break;
     default: retval = false;
