@@ -216,6 +216,9 @@ avtContourFilter::~avtContourFilter()
 //    Refine our ghost zone request a bit -- only request when we have a zonal
 //    quantity.
 //
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -293,7 +296,7 @@ avtContourFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
         double val = isoValues[i];
 
         vector<int> list;
-        it->GetDomainsList(eqn, val, list);
+        it->GetElementsList(eqn, val, list);
 
         //
         // list just has the domains for one contour.  Union this with

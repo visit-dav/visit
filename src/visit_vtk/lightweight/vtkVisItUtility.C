@@ -1007,3 +1007,35 @@ vtkVisItUtility::Create1DRGrid(int nXCoords, int type)
     yz->Delete(); 
     return rgrid;
 }
+
+// ****************************************************************************
+//  Function: PointsEqual
+//
+//  Purpose:
+//    Compares two 3d points for equality.
+//
+//  Arguments:
+//    pt1       The first point.
+//    pt2       The second point.
+//
+//  Returns:
+//    True if points are equal, false otherwise. 
+// 
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 14, 2006
+//
+// ****************************************************************************
+
+bool 
+vtkVisItUtility::PointsEqual(double pt1[3], double pt2[3])
+{
+    double eps = 1e-6;
+    bool e1 = false, e2 = false, e3 = false;
+    if ((pt1[0] > pt2[0] - eps) && (pt1[0] < pt2[0]+eps))
+        e1 = true;
+    if ((pt1[1] > pt2[1] - eps) && (pt1[1] < pt2[1]+eps))
+        e2 = true;
+    if ((pt1[2] > pt2[2] - eps) && (pt1[2] < pt2[2]+eps))
+        e3 = true;
+    return e1 && e2 && e3;
+}

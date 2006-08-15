@@ -855,6 +855,9 @@ avtBoxFilter::RefashionDataObjectInfo(void)
 //    Hank Childs, Fri Aug 12 13:40:39 PDT 2005
 //    Add support for interval trees.
 //
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -886,7 +889,7 @@ avtBoxFilter::PerformRestriction(avtPipelineSpecification_p spec)
     if (it != NULL)
     {
         vector<int> dl;
-        it->GetDomainsListFromRange(mins, maxs, dl);
+        it->GetElementsListFromRange(mins, maxs, dl);
         rv->GetDataSpecification()->GetRestriction()->RestrictDomains(dl);
     }
 

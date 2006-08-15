@@ -74,6 +74,199 @@ bool      avtDatabase::onlyServeUpMetaData = false;
 
 
 // ****************************************************************************
+//  Function: RectilinearDecompCost 
+//
+//  Purpose:
+//      Compute the "cost" of a decomposition in terms of the amount of
+//      communication algorithms might require. Note, this is part of the
+//      domain decomposition algorithm taken from Matt O'Brien's domain
+//      decomposition library
+//      
+//  Programmer: Mark C. Miller (plagerized from Matt O'Brien)
+//  Creation:   September 20, 2004 
+//
+//  Modification:
+//
+//    Mark C. Miller, Mon Aug 14 13:59:33 PDT 2006
+//    Moved here from ViSUS plugin so it can be used by other plugins
+//
+// ****************************************************************************
+double
+avtDatabase::RectilinearDecompCost(int i, int j, int k, int nx, int ny, int nz)
+{
+    double costtot;
+
+    i--;
+    j--;
+    k--;
+
+    costtot = 0;
+
+    /* estimate cost based on size of communicating surfaces */
+
+    costtot+=i*((ny*nz));
+    costtot+=j*((nx*nz));
+    costtot+=k*((ny*nx));
+    costtot+=2*i*j*((nz));
+    costtot+=2*i*k*((ny));
+    costtot+=2*j*k*((nx));
+    costtot+=4*i*j*k;
+
+    return(costtot);
+}
+
+// ****************************************************************************
+//  Function: DetermineRectilinearDecomposition 
+//
+//  Purpose:
+//      Decides how to decompose the problem into numbers of processors along
+//      each independent axis. This code was taken from Matt O'Brien's domain
+//      decomposition library
+//      
+//  Programmer: Mark C. Miller (plagerized from Matt O'Brien)
+//  Creation:   September 20, 2004 
+//
+//  Modification:
+//
+//    Mark C. Miller, Mon Aug 14 13:59:33 PDT 2006
+//    Moved here from ViSUS plugin so it can be used by other plugins
+//
+// ****************************************************************************
+double
+avtDatabase::ComputeRectilinearDecomposition(int ndims, int n, int nx, int ny, int nz,
+   int *imin, int *jmin, int *kmin)
+{
+    int i,j;
+    double cost, costmin = 1e80;
+
+    if (ndims == 2)
+    {
+        if (nz != 1)
+            nz = 1;
+    }
+
+    /* find all two or three product factors of the number of domains
+       and evaluate the communication cost */
+
+   for (i = 1; i <= n; i++)
+   {
+      if (n%i == 0)
+      {
+         if (ndims == 3)
+         {
+            for (j = 1; j <= i; j++)
+            {
+               if ((i%j) == 0)
+               {
+                  cost = RectilinearDecompCost(j, i/j, n/i, nx, ny, nz);
+                  
+                  if (cost < costmin)
+                  {
+                     *imin = j;
+                     *jmin = i/j;
+                     *kmin = n/i;
+                     costmin = cost;
+                  }
+               }
+            }
+         }
+         else
+         {
+            cost = RectilinearDecompCost(i, n/i, 1, nx, ny, nz);
+            
+            if (cost < costmin)
+            {
+               *imin = i;
+               *jmin = n/i;
+               *kmin = 1;
+               costmin = cost;
+            }
+         } 
+      }
+   }
+
+   return costmin;
+}
+
+// ****************************************************************************
+//  Function: ComputeDomainLogicalCoords
+//
+//  Purpose: Given the number of domains along each axis in a decomposition
+//  and the rank of a processor, this routine will determine the domain logical
+//  coordinates of the processor's domain
+//      
+//  Programmer: Mark C. Miller
+//  Creation:   September 20, 2004 
+//
+//  Modification:
+//
+//    Mark C. Miller, Mon Aug 14 13:59:33 PDT 2006
+//    Moved here from ViSUS plugin so it can be used by other plugins
+//
+// ****************************************************************************
+void
+avtDatabase::ComputeDomainLogicalCoords(int dataDim, int domCount[3], int rank,
+    int domLogicalCoords[3])
+{
+    int r = rank;
+
+    // handle Z (K logical) axis
+    if (dataDim == 3)
+    {
+        domLogicalCoords[2] = r / (domCount[1]*domCount[0]);
+        r = r % (domCount[1]*domCount[0]);
+    }
+
+    // handle Y (J logical) axis
+    domLogicalCoords[1] = r / domCount[0];
+    r = r % domCount[0];
+
+    // handle X (I logical) axis
+    domLogicalCoords[0] = r;
+}
+
+// ****************************************************************************
+//  Function: ComputeDomainBounds 
+//
+//  Purpose: Given the global zone count along an axis, the domain count for
+//  the same axis and a domain's logical index along the same axis, compute
+//  the starting global zone index along this axis and the count of zones
+//  along this axis for the associated domain.
+//      
+//  Programmer: Mark C. Miller
+//  Creation:   September 20, 2004 
+//
+//  Modification:
+//
+//    Mark C. Miller, Mon Aug 14 13:59:33 PDT 2006
+//    Moved here from ViSUS plugin so it can be used by other plugins
+//
+// ****************************************************************************
+void
+avtDatabase::ComputeDomainBounds(int globalZoneCount, int domCount, int domLogicalCoord,
+    int *globalZoneStart, int *zoneCount)
+{
+    int domZoneCount       = globalZoneCount / domCount;
+    int domsWithExtraZones = globalZoneCount % domCount;
+    int domZoneCountPlus1  = domZoneCount;
+    if (domsWithExtraZones > 0)
+        domZoneCountPlus1 = domZoneCount + 1;
+
+    int i;
+    int stepSize = domZoneCount;
+    *globalZoneStart = 0;
+    for (i = 0; i < domLogicalCoord; i++)
+    {
+        *globalZoneStart += stepSize;
+        if (i >= domCount - domsWithExtraZones)
+            stepSize = domZoneCountPlus1;
+    }
+    if (i >= domCount - domsWithExtraZones)
+        stepSize = domZoneCountPlus1;
+    *zoneCount = stepSize;
+}
+
+// ****************************************************************************
 //  Method: avtDatabase constructor
 //
 //  Arguments:

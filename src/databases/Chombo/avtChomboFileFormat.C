@@ -1299,6 +1299,10 @@ avtChomboFileFormat::GetVectorVar(int domain, const char *varname)
 //  Programmer: Hank Childs
 //  Creation:   January 22, 2006
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
+//
 // ****************************************************************************
 
 void *
@@ -1332,7 +1336,7 @@ avtChomboFileFormat::GetAuxiliaryData(const char *var, int dom,
                 bounds[4] = lowK[patch]*dx[level];
                 bounds[5] = bounds[4] + (hiK[patch]-lowK[patch])*dx[level];
             }
-            itree->AddDomain(patch, bounds);
+            itree->AddElement(patch, bounds);
         }
         itree->Calculate(true);
 

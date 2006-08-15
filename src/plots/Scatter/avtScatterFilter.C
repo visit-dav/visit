@@ -1355,7 +1355,9 @@ avtScatterFilter::NeedSpatialExtents() const
 // Creation:   Mon Jul 18 11:42:11 PDT 2005
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//   API change for avtIntervalTree.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -1448,7 +1450,7 @@ avtScatterFilter::PerformRestriction(avtPipelineSpecification_p spec)
                 double minval = var[i].useMin ? var[i].min : SCATTER_FLOAT_MIN;
                 double maxval = var[i].useMax ? var[i].max : SCATTER_FLOAT_MAX;
                 vector<int> dl;
-                it->GetDomainsListFromRange(&minval, &maxval, dl);
+                it->GetElementsListFromRange(&minval, &maxval, dl);
                 rv->GetDataSpecification()->GetRestriction()->RestrictDomains(dl);
             }
         }

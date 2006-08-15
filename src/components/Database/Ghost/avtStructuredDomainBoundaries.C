@@ -3016,6 +3016,9 @@ avtStructuredDomainBoundaries::SetIndicesForAMRPatch(int domain,
 //    Hank Childs, Fri Jun  9 14:18:11 PDT 2006
 //    Remove unused variable.
 //
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
+//
 // ****************************************************************************
 
 void
@@ -3038,7 +3041,7 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
     {
         for (j = 0 ; j < 6 ; j++)
             extf[j] = (double) extents[6*i+j];
-        itree.AddDomain(i, extf);
+        itree.AddElement(i, extf);
     }
     itree.Calculate(true);
 
@@ -3053,7 +3056,7 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
         max_vec[1] = (double) extents[6*i+3];
         max_vec[2] = (double) extents[6*i+5];
         vector<int> list;
-        itree.GetDomainsListFromRange(min_vec, max_vec, list);
+        itree.GetElementsListFromRange(min_vec, max_vec, list);
 
         // To get the "match" entry correct, we have to sort the list.  This
         // will ensure that we can predict what a domain's match number will be

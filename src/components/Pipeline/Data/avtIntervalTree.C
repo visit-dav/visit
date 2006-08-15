@@ -46,13 +46,14 @@
 #endif
 
 #include <avtIntervalTree.h>
+#include <float.h>
 
 #include <IntervalTreeNotCalculatedException.h>
 #include <BadDomainException.h>
 
-#include <vtkBox.h>
+#include <vtkCellIntersections.h>
+#include <vtkVisItUtility.h>
 
-using     std::vector;
 
 
 //
@@ -85,13 +86,17 @@ static double    EquationsValueAtPoint(const double *, int, int, int,
 static bool     Intersects(const double *, double, int, int, const double *);
 static bool     Intersects(double [3], double[3], int, int, const double *);
 static int      QsortBoundsSorter(const void *arg1, const void *arg2);
+static bool     IntersectsWithRay(double [3], double[3], int, int, 
+                                  const double *, double[3]);
+static bool     IntersectsWithLine(double [3], double[3], int, int, 
+                                   const double *, double[3]);
 
 
 // ****************************************************************************
 //  Method: avtIntervalTree constructor
 //
 //  Arguments:
-//     doms     The number of domains.
+//     els      The number of elements.
 //     dims     The number of dimensions for the field.
 //
 //  Programmer: Hank Childs
@@ -104,28 +109,28 @@ static int      QsortBoundsSorter(const void *arg1, const void *arg2);
 //
 // ****************************************************************************
 
-avtIntervalTree::avtIntervalTree(int doms, int dims)
+avtIntervalTree::avtIntervalTree(int els, int dims)
 {
-    nDomains    = doms;
+    nElements    = els;
     nDims       = dims;
     hasBeenCalculated = false;
 
     //
-    // A vector for one domain should have the min and max for each dimension.
+    // A vector for one element should have the min and max for each dimension.
     // 
     vectorSize  = 2*nDims;
 
     //
     // Calculate number of nodes needed to make a complete binary tree when
-    // there should be nDomains leaf nodes.
+    // there should be nElements leaf nodes.
     //
     int numCompleteTrees = 1, exp = 1;
-    while (2*exp < nDomains)
+    while (2*exp < nElements)
     {
         numCompleteTrees = 2*numCompleteTrees + 1;
         exp *= 2;
     }
-    nNodes = numCompleteTrees + 2 * (nDomains - exp);
+    nNodes = numCompleteTrees + 2 * (nElements - exp);
 
     nodeExtents = new double[nNodes*vectorSize];
     nodeIDs     = new int[nNodes];
@@ -201,7 +206,7 @@ avtIntervalTree::GetExtents(double *extents) const
     }
 
     //
-    // Copy the root cell into the extents.
+    // Copy the root element into the extents.
     //
     for (int i = 0 ; i < nDims*2 ; i++)
     {
@@ -211,10 +216,10 @@ avtIntervalTree::GetExtents(double *extents) const
 
 
 // ****************************************************************************
-//  Method: avtIntervalTree::AddDomain
+//  Method: avtIntervalTree::AddElement
 //
 //  Purpose:
-//      Adds the extents for one domain.
+//      Adds the extents for one element.
 //
 //  Programmer: Hank Childs
 //  Creation:   August 8, 2000
@@ -222,19 +227,19 @@ avtIntervalTree::GetExtents(double *extents) const
 // ****************************************************************************
 
 void
-avtIntervalTree::AddDomain(int domain, double *d)
+avtIntervalTree::AddElement(int element, double *d)
 {
     //
     // Sanity Check
     //
-    if (domain < 0 || domain >= nDomains)
+    if (element < 0 || element >= nElements)
     {
-        EXCEPTION2(BadDomainException, domain, nDomains);
+        EXCEPTION2(BadDomainException, element, nElements);
     }
 
     for (int i = 0 ; i < vectorSize ; i++)
     {
-        nodeExtents[domain*vectorSize + i] = d[i];
+        nodeExtents[element*vectorSize + i] = d[i];
     }
 }
 
@@ -276,7 +281,7 @@ avtIntervalTree::Calculate(bool alreadyCollectedAllInformation)
 //  Method: avtIntervalTree::CollectInformation
 //
 //  Purpose:
-//      If we are doing the job in parallel, the domains were split across all
+//      If we are doing the job in parallel, the elements were split across all
 //      the nodes.  Collect the information here.
 //
 //  Note:       Does nothing in the serial case.
@@ -295,7 +300,7 @@ avtIntervalTree::CollectInformation(void)
     // initialized to have value 0., we can do an MPI_SUM and get the correct
     // list on processor 0.
     //
-    int totalElements = nDomains*vectorSize;
+    int totalElements = nElements*vectorSize;
     double *outBuff = new double[totalElements];
     MPI_Allreduce(nodeExtents, outBuff, totalElements, MPI_FLOAT, MPI_SUM,
                MPI_COMM_WORLD);
@@ -335,32 +340,35 @@ avtIntervalTree::ConstructTree(void)
     //
     int totalSize = vectorSize+1;
     globalNDims = nDims;
-    FloatInt  *bounds = new FloatInt[nDomains*totalSize];
-    for (i = 0 ; i < nDomains ; i++)
+    FloatInt  *bounds = new FloatInt[nElements*totalSize];
+    for (i = 0 ; i < nElements ; i++)
     {
         for (j = 0 ; j < vectorSize ; j++)
             bounds[totalSize*i+j].f = nodeExtents[vectorSize*i+j];
         bounds[totalSize*i+(totalSize-1)].b = i;
     }
 
-    int      offsetStack[100];   // Only need log nDomains
-    int      nodeStack  [100];   // Only need log nDomains
-    int      sizeStack  [100];   // Only need log nDomains
-    int      depthStack [100];   // Only need log nDomains
+    int      offsetStack[100];   // Only need log nElements
+    int      nodeStack  [100];   // Only need log nElements
+    int      sizeStack  [100];   // Only need log nElements
+    int      depthStack [100];   // Only need log nElements
     int      stackCount = 0;
 
     //
     // Initialize the arguments for the stack
     //
     offsetStack[0]  = 0;
-    sizeStack  [0]  = nDomains;
+    sizeStack  [0]  = nElements;
     depthStack [0]  = 0;
     nodeStack  [0]  = 0;
     ++stackCount;
 
     int currentOffset, currentSize, currentDepth, leftSize, currentNode;
+    int count = 0;
+    int thresh = (nElements > 10 ? nElements/10 : 1);
     while (stackCount > 0)
     {
+        count++;
         --stackCount;
         currentOffset = offsetStack[stackCount];
         currentSize   = sizeStack  [stackCount];
@@ -378,8 +386,11 @@ avtIntervalTree::ConstructTree(void)
         }
 
         globalCurrentDepth = currentDepth;
-        qsort(bounds + currentOffset*totalSize, currentSize,
-              totalSize*sizeof(FloatInt), QsortBoundsSorter);
+        if (count % thresh == 0)
+        {
+            qsort(bounds + currentOffset*totalSize, currentSize,
+                  totalSize*sizeof(FloatInt), QsortBoundsSorter);
+        }
 
         leftSize = SplitSize(currentSize);
 
@@ -525,17 +536,17 @@ avtIntervalTree::SplitSize(int size)
 
 
 // ****************************************************************************
-//  Method: avtIntervalTree::GetDomainsList
+//  Method: avtIntervalTree::GetElementsList
 //
 //  Purpose:
-//      Takes in a linear equation and determines which domains have values
+//      Takes in a linear equation and determines which elements have values
 //      that satisfy the equation.
 //      The equation is of the form:  params[0]*x + params[1]*y ... = solution
 //
 //  Arguments:
 //      params        The coefficients of the linear equation.
 //      solution      The right hand side (solution) of the linear equation.
-//      list          The list of domains that satisfy the linear equation.
+//      list          The list of elements that satisfy the linear equation.
 //
 //  Programmer: Hank Childs
 //  Creation:   October 27, 1999
@@ -548,8 +559,8 @@ avtIntervalTree::SplitSize(int size)
 // ****************************************************************************
 
 void
-avtIntervalTree::GetDomainsList(const double *params, double solution,
-                                vector<int> &list) const
+avtIntervalTree::GetElementsList(const double *params, double solution,
+                                intVector &list) const
 {
     if (hasBeenCalculated == false)
     {
@@ -562,8 +573,8 @@ avtIntervalTree::GetDomainsList(const double *params, double solution,
     int nodeStackSize = 0;
 
     //
-    // Populate the stack by putting on the root domain.  This domain contains
-    // all the other domains in its extents.
+    // Populate the stack by putting on the root element.  This element contains
+    // all the other elements in its extents.
     //
     nodeStack[0] = 0;
     nodeStackSize++;
@@ -600,17 +611,17 @@ avtIntervalTree::GetDomainsList(const double *params, double solution,
 
 
 // ****************************************************************************
-//  Method: avtIntervalTree::GetDomainsListFromRange
+//  Method: avtIntervalTree::GetElementsListFromRange
 //
 //  Purpose:
-//      Takes in a linear equation and determines which domains have values
+//      Takes in a linear equation and determines which elements have values
 //      that satisfy the equation.
 //      The equation is of the form:  params[0]*x + params[1]*y ... = solution
 //
 //  Arguments:
 //      params        The coefficients of the linear equation.
 //      solution      The right hand side (solution) of the linear equation.
-//      list          The list of domains that satisfy the linear equation.
+//      list          The list of elements that satisfy the linear equation.
 //
 //  Programmer: Hank Childs
 //  Creation:   May 14, 2003
@@ -623,8 +634,8 @@ avtIntervalTree::GetDomainsList(const double *params, double solution,
 // ****************************************************************************
  
 void
-avtIntervalTree::GetDomainsListFromRange(const double *min_vec,
-                                 const double *max_vec, vector<int> &list) const
+avtIntervalTree::GetElementsListFromRange(const double *min_vec,
+                                 const double *max_vec, intVector &list) const
 {
     if (hasBeenCalculated == false)
     {
@@ -637,8 +648,8 @@ avtIntervalTree::GetDomainsListFromRange(const double *min_vec,
     int nodeStackSize = 0;
  
     //
-    // Populate the stack by putting on the root domain.  This domain contains
-    // all the other domains in its extents.
+    // Populate the stack by putting on the root element.  This element contains
+    // all the other element in its extents.
     //
     nodeStack[0] = 0;
     nodeStackSize++;
@@ -856,14 +867,14 @@ EquationsValueAtPoint(const double *params, int block, int point, int nDims,
 //
 //  Arguments:
 //      leafIndex    The index of the leaf.
-//      extents      A place to put the extents of the domain.
+//      extents      A place to put the extents of the element.
 //
-//  Returns:         The domains this leaf comes from.
+//  Returns:         The element this leaf comes from.
 //
-//  Note:            The input integer is _not_ the domain number.  It is the
+//  Note:            The input integer is _not_ the element number.  It is the
 //                   leaf number.  This is done to prevent having to search
-//                   the nodeIDs list for each domain.  This routine is only
-//                   useful when iterating over all domains.
+//                   the nodeIDs list for each element.  This routine is only
+//                   useful when iterating over all elements.
 //
 //  Programmer:      Hank Childs
 //  Creation:        December 15, 2000
@@ -873,7 +884,7 @@ EquationsValueAtPoint(const double *params, int block, int point, int nDims,
 int
 avtIntervalTree::GetLeafExtents(int leafIndex, double *extents) const
 {
-    int   nodeIndex = nNodes-nDomains + leafIndex;
+    int   nodeIndex = nNodes-nElements + leafIndex;
     for (int i = 0 ; i < vectorSize ; i++)
     {
         extents[i] = nodeExtents[vectorSize*nodeIndex + i];
@@ -884,14 +895,14 @@ avtIntervalTree::GetLeafExtents(int leafIndex, double *extents) const
 
 
 // ****************************************************************************
-//  Method: avtIntervalTree::GetDomainExtents
+//  Method: avtIntervalTree::GetElementExtents
 //
 //  Purpose:
-//      Gets the extents for a domain.
+//      Gets the extents for a element.
 //
 //  Arguments:
-//      domainIndex  The index of the domain.
-//      extents      A place to put the extents of the domain.
+//      elementIndex  The index of the element.
+//      extents      A place to put the extents of the element.
 //
 //  Programmer:      Hank Childs
 //  Creation:        December 15, 2000
@@ -899,12 +910,12 @@ avtIntervalTree::GetLeafExtents(int leafIndex, double *extents) const
 // ****************************************************************************
 
 void
-avtIntervalTree::GetDomainExtents(int domainIndex, double *extents) const
+avtIntervalTree::GetElementExtents(int elementIndex, double *extents) const
 {
-    int   startIndex = nNodes-nDomains;
+    int   startIndex = nNodes-nElements;
     for (int i = startIndex ; i < nNodes ; i++)
     {
-        if (nodeIDs[i] == domainIndex)
+        if (nodeIDs[i] == elementIndex)
         {
             for (int j = 0 ; j < vectorSize ; j++)
             {
@@ -944,7 +955,6 @@ Intersects(double origin[3], double rayDir[3], int block, int nDims,
 {
     double bnds[6] = { 0., 0., 0., 0., 0., 0.};
     double coord[3] = { 0., 0., 0.};
-    double t;
 
     for (int i = 0; i < nDims; i++)
     {
@@ -952,7 +962,7 @@ Intersects(double origin[3], double rayDir[3], int block, int nDims,
         bnds[2*i+1] = nodeExtents[block*nDims*2 + 2*i + 1];
     }
 
-    if (vtkBox::IntersectBox(bnds, origin, rayDir, coord, t))
+    if (vtkCellIntersections::IntersectBox(bnds, origin, rayDir, coord))
         return true;
     else 
         return false;
@@ -960,19 +970,19 @@ Intersects(double origin[3], double rayDir[3], int block, int nDims,
 
 
 // ****************************************************************************
-//  Method: avtIntervalTree::GetDomainsList
+//  Method: avtIntervalTree::GetElementsList
 //
 //  Purpose:
-//      Takes in a ray origin and direction,  and determines which domains have 
+//      Takes in a ray origin and direction, and determines which elements have 
 //      are intersected by the ray. 
 //
-//  Notes: Copied from GetDomainLists for an equation, just changed the
+//  Notes: Copied from GetElementLists for an equation, just changed the
 //         args and the call to Intersects.
 //
 //  Arguments:
 //      origin        The ray origin. 
 //      rayDir        The ray direction.
-//      list          The list of domains that satisfy the linear equation.
+//      list          The list of elements that satisfy the linear equation.
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   December 19, 2003 
@@ -985,8 +995,8 @@ Intersects(double origin[3], double rayDir[3], int block, int nDims,
 // ****************************************************************************
 
 void
-avtIntervalTree::GetDomainsList(double origin[3], double rayDir[3],
-                                vector<int> &list) const
+avtIntervalTree::GetElementsList(double origin[3], double rayDir[3],
+                                intVector &list) const
 {
     if (hasBeenCalculated == false)
     {
@@ -999,8 +1009,8 @@ avtIntervalTree::GetDomainsList(double origin[3], double rayDir[3],
     int nodeStackSize = 0;
 
     //
-    // Populate the stack by putting on the root domain.  This domain contains
-    // all the other domains in its extents.
+    // Populate the stack by putting on the root element.  This element contains
+    // all the other elements in its extents.
     //
     nodeStack[0] = 0;
     nodeStackSize++;
@@ -1033,4 +1043,262 @@ avtIntervalTree::GetDomainsList(double origin[3], double rayDir[3],
             }
         }
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtIntervalTree::GetElementsListFromRay
+//
+//  Purpose:
+//    Takes in a ray origin and direction,  and determines which elements 
+//    are intersected by the ray. 
+//
+//  Notes: Copied from GetElementsLists for an equation, just changed the
+//         args and the call to Intersects.
+//
+//  Arguments:
+//    origin    The ray origin. 
+//    rayDir    The ray direction.
+//    list      The list of elements that satisfy the linear equation.
+//    pts       The intersection points. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 15, 2006 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtIntervalTree::GetElementsListFromRay(double origin[3], double rayDir[3],
+                          intVector &list, doubleVector &pts) const
+{
+    if (hasBeenCalculated == false)
+    {
+        EXCEPTION0(IntervalTreeNotCalculatedException);
+    }
+
+    double isect[3];
+    list.clear();
+
+    int nodeStack[100]; // Only need log amount
+    int nodeStackSize = 0;
+
+    //
+    // Populate the stack by putting on the root element.  This element contains
+    // all the other elements in its extents.
+    //
+    nodeStack[0] = 0;
+    nodeStackSize++;
+
+    while (nodeStackSize > 0)
+    {
+        nodeStackSize--;
+        int stackIndex = nodeStack[nodeStackSize];
+        if (IntersectsWithRay(origin, rayDir, stackIndex, nDims, nodeExtents,
+                              isect))
+        {
+            //
+            // The equation has a solution contained by the current extents.
+            //
+            if (nodeIDs[stackIndex] < 0)
+            {
+                //
+                // This is not a leaf, so put children on stack
+                //
+                nodeStack[nodeStackSize] = 2 * stackIndex + 1;
+                nodeStackSize++;
+                nodeStack[nodeStackSize] = 2 * stackIndex + 2;
+                nodeStackSize++;
+            }
+            else
+            {
+                //
+                // Leaf node, put in list
+                //
+                list.push_back(nodeIDs[stackIndex]);
+                pts.push_back(isect[0]);
+                pts.push_back(isect[1]);
+                pts.push_back(isect[2]);
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtIntervalTree::GetElementsListFromLine
+//
+//  Purpose:
+//    Takes in line endpoints, determines which elements 
+//    are intersected by the line. 
+//
+//  Notes: Copied from GetElementsLists for an equation, just changed the
+//         args and the call to Intersects.
+//
+//  Arguments:
+//    pt1       The first endpoint.
+//    pt2       The second endpoint.
+//    list      The list of elements that satisfy the linear equation.
+//    pts       The intersection points. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 14, 2006 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtIntervalTree::GetElementsListFromLine(double pt1[3], double pt2[3],
+                          intVector &list, doubleVector &pts) const
+{
+    if (hasBeenCalculated == false)
+    {
+        EXCEPTION0(IntervalTreeNotCalculatedException);
+    }
+
+    double isect[3];
+    double dir[3] = {pt2[0] - pt1[0], pt2[1]-pt1[1], pt2[2]-pt1[2]};
+    list.clear();
+
+    int nodeStack[100]; // Only need log amount
+    int nodeStackSize = 0;
+
+    //
+    // Populate the stack by putting on the root element.  This element contains
+    // all the other elements in its extents.
+    //
+    nodeStack[0] = 0;
+    nodeStackSize++;
+
+    while (nodeStackSize > 0)
+    {
+        nodeStackSize--;
+        int stackIndex = nodeStack[nodeStackSize];
+        if (IntersectsWithRay(pt1, dir, stackIndex, nDims, nodeExtents, isect))
+        {
+            //
+            // The equation has a solution contained by the current extents.
+            //
+            if (nodeIDs[stackIndex] < 0)
+            {
+                //
+                // This is not a leaf, so put children on stack
+                //
+                nodeStack[nodeStackSize] = 2 * stackIndex + 1;
+                nodeStackSize++;
+                nodeStack[nodeStackSize] = 2 * stackIndex + 2;
+                nodeStackSize++;
+            }
+            else
+            {
+                //
+                // Leaf node, put in list
+                //
+                double isect2[3];
+                if (IntersectsWithLine(pt1, pt2, stackIndex, nDims, 
+                                       nodeExtents, isect))
+                {  
+                    int suc2 = IntersectsWithLine(pt2, pt1, stackIndex, 
+                                              nDims, nodeExtents, isect2);
+                    if (suc2 && !vtkVisItUtility::PointsEqual(isect, isect2))
+                    {
+                        list.push_back(nodeIDs[stackIndex]);
+                        pts.push_back(isect[0]);
+                        pts.push_back(isect[1]);
+                        pts.push_back(isect[2]);
+                    } // if 
+                } // if 
+            } // else
+        } // If IntersectsRay
+    } // while
+}
+
+
+// ****************************************************************************
+//  Function: IntersectsWithRay
+//
+//  Purpose:
+//    Determine if the range of values for the current node is intersected 
+//    by the line designated by origin and rayDir. 
+//
+//  Arguments:
+//    origin    The origin of the ray. 
+//    rayDir    The xyz components of the ray direction.
+//    block     The block in the nodeExtents that should be checked for an
+//              intersection.
+//    nDims     The number of dimensions of the var.
+//    nodeExtents  The extents at each node.
+//    isect     A place to store the intersection point of the line with the
+//              node. 
+//
+//  Returns:    true if there is an intersection, false otherwise.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   August 14, 2006 
+//
+// ****************************************************************************
+
+bool
+IntersectsWithRay(double origin[3], double rayDir[3], int block, 
+           int nDims, const double *nodeExtents, double isect[3])
+{
+    double bnds[6] = { 0., 0., 0., 0., 0., 0.};
+    double coord[3] = { 0., 0., 0.}, t;
+
+    for (int i = 0; i < nDims; i++)
+    {
+        bnds[2*i] = nodeExtents[block*nDims*2 + 2*i];
+        bnds[2*i+1] = nodeExtents[block*nDims*2 + 2*i + 1];
+    }
+
+    if (vtkCellIntersections::IntersectBox(bnds, origin, rayDir, isect))
+        return true;
+    else 
+        return false;
+}
+
+
+// ****************************************************************************
+//  Function: IntersectsWithLine
+//
+//  Purpose:
+//    Determine if the range of values for the current node is intersected 
+//    by the line designated by pt1 and pt2. 
+//
+//  Arguments:
+//    pt1       The first endpoint.
+//    pt2       The second endpoint
+//    block     The block in the nodeExtents that should be checked for an
+//              intersection.
+//    nDims     The number of dimensions of the var.
+//    nodeExtents  The extents at each node.
+//    isect     A place to store the intersection point of the line with the
+//              node. 
+//
+//  Returns:    true if there is an intersection, false otherwise.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   August 14, 2006 
+//
+// ****************************************************************************
+
+bool
+IntersectsWithLine(double pt1[3], double pt2[3], int block,  int nDims,
+           const double *nodeExtents, double isect[3])
+{
+    double bnds[6] = { 0., 0., 0., 0., 0., 0.};
+    double coord[3] = { 0., 0., 0.}, t;
+
+    for (int i = 0; i < nDims; i++)
+    {
+        bnds[2*i] = nodeExtents[block*nDims*2 + 2*i];
+        bnds[2*i+1] = nodeExtents[block*nDims*2 + 2*i + 1];
+    }
+
+    if (vtkCellIntersections::LineIntersectBox(bnds,pt1, pt2, isect))
+        return true;
+    else 
+        return false;
 }

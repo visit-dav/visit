@@ -83,6 +83,9 @@ class vtkRectilinearGrid;
 //    Kathleen Bonnell, Mon Jul 31 10:15:00 PDT 2006 
 //    Curves represented as 1D RectilinearGrids instead of PolyData.
 //
+//    Kathleen Bonnell, Mon Aug 14 18:00:43 PDT 2006
+//    Added ndims. 
+//
 // ****************************************************************************
 
 class avtLineoutFilter : public avtPluginStreamer
@@ -119,6 +122,8 @@ class avtLineoutFilter : public avtPluginStreamer
                                           vtkPoints *, vtkIdList *);
     vtkRectilinearGrid       *CreateRGridFromOrigCells(vtkDataSet *, double *, 
                                           double *, vtkPoints *, vtkIdList *);
+
+   int ndims;
 };
 
 #endif

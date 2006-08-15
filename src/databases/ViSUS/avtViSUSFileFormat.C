@@ -54,6 +54,7 @@
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 #include <avtLogicalSelection.h>
 #include <avtSpatialBoxSelection.h>
@@ -70,179 +71,6 @@
 using     std::map;
 using     std::string;
 using     std::vector;
-
-// ****************************************************************************
-//  Function: DecompCost 
-//
-//  Purpose:
-//      Compute the "cost" of a decomposition in terms of the amount of
-//      communication algorithms might require. Note, this is part of the
-//      domain decomposition algorithm taken from Matt O'Brien's domain
-//      decomposition library
-//      
-//  Programmer: Mark C. Miller (plagerized from Matt O'Brien)
-//  Creation:   September 20, 2004 
-//
-// ****************************************************************************
-static double
-DecompCost(int i, int j, int k, int nx, int ny, int nz)
-{
-    double costtot;
-
-    i--;
-    j--;
-    k--;
-
-    costtot = 0;
-
-    /* estimate cost based on size of communicating surfaces */
-
-    costtot+=i*((ny*nz));
-    costtot+=j*((nx*nz));
-    costtot+=k*((ny*nx));
-    costtot+=2*i*j*((nz));
-    costtot+=2*i*k*((ny));
-    costtot+=2*j*k*((nx));
-    costtot+=4*i*j*k;
-
-    return(costtot);
-}
-
-// ****************************************************************************
-//  Function: DetermineDecomposition 
-//
-//  Purpose:
-//      Decides how to decompose the problem into numbers of processors along
-//      each independent axis. This code was take from Matt O'Brien's domain
-//      decomposition library
-//      
-//  Programmer: Mark C. Miller (plagerized from Matt O'Brien)
-//  Creation:   September 20, 2004 
-//
-// ****************************************************************************
-static double
-DetermineDecomposition(int ndims, int n, int nx, int ny, int nz,
-   int *imin, int *jmin, int *kmin)
-{
-    int i,j;
-    double cost, costmin = 1e80;
-
-    if (ndims == 2)
-    {
-        if (nz != 1)
-            nz = 1;
-    }
-
-    /* find all two or three product factors of the number of domains
-       and evaluate the communication cost */
-
-   for (i = 1; i <= n; i++)
-   {
-      if (n%i == 0)
-      {
-         if (ndims == 3)
-         {
-            for (j = 1; j <= i; j++)
-            {
-               if ((i%j) == 0)
-               {
-                  cost = DecompCost(j, i/j, n/i, nx, ny, nz);
-                  
-                  if (cost < costmin)
-                  {
-                     *imin = j;
-                     *jmin = i/j;
-                     *kmin = n/i;
-                     costmin = cost;
-                  }
-               }
-            }
-         }
-         else
-         {
-            cost = DecompCost(i, n/i, 1, nx, ny, nz);
-            
-            if (cost < costmin)
-            {
-               *imin = i;
-               *jmin = n/i;
-               *kmin = 1;
-               costmin = cost;
-            }
-         } 
-      }
-   }
-
-   return costmin;
-}
-
-// ****************************************************************************
-//  Function: ComputeDomainLogicalCoords
-//
-//  Purpose: Given the number of domains along each axis and the rank of a
-//  processor, this routine will determine the domain logical coordinates
-//  of the processor's domain
-//      
-//  Programmer: Mark C. Miller
-//  Creation:   September 20, 2004 
-//
-// ****************************************************************************
-static void
-ComputeDomainLogicalCoords(int dataDim, int domCount[3], int rank,
-    int domLogicalCoords[3])
-{
-    int r = rank;
-
-    // handle Z (K logical) axis
-    if (dataDim == 3)
-    {
-        domLogicalCoords[2] = r / (domCount[1]*domCount[0]);
-        r = r % (domCount[1]*domCount[0]);
-    }
-
-    // handle Y (J logical) axis
-    domLogicalCoords[1] = r / domCount[0];
-    r = r % domCount[0];
-
-    // handle X (I logical) axis
-    domLogicalCoords[0] = r;
-}
-
-// ****************************************************************************
-//  Function: ComputeDomainBounds 
-//
-//  Purpose: Given the global zone count along an axis, the domain count for
-//  the same axis and a domain's logical index along the same axis, compute
-//  the starting global zone index along this axis and the count of zones
-//  along this axis for the associated domain.
-//      
-//  Programmer: Mark C. Miller
-//  Creation:   September 20, 2004 
-//
-// ****************************************************************************
-static void
-ComputeDomainBounds(int globalZoneCount, int domCount, int domLogicalCoord,
-    int *globalZoneStart, int *zoneCount)
-{
-    int domZoneCount       = globalZoneCount / domCount;
-    int domsWithExtraZones = globalZoneCount % domCount;
-    int domZoneCountPlus1  = domZoneCount;
-    if (domsWithExtraZones > 0)
-        domZoneCountPlus1 = domZoneCount + 1;
-
-    int i;
-    int stepSize = domZoneCount;
-    *globalZoneStart = 0;
-    for (i = 0; i < domLogicalCoord; i++)
-    {
-        *globalZoneStart += stepSize;
-        if (i >= domCount - domsWithExtraZones)
-            stepSize = domZoneCountPlus1;
-    }
-    if (i >= domCount - domsWithExtraZones)
-        stepSize = domZoneCountPlus1;
-    *zoneCount = stepSize;
-}
 
 // ****************************************************************************
 //  Method: avtViSUSFileFormat::SetupRectilinearCoordinates
@@ -586,6 +414,9 @@ avtViSUSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //  Modifications:
 //    Removed restriction on power-of-2 index select
 //
+//    Mark C. Miller, Tue Aug 15 15:28:11 PDT 2006
+//    Moved DomainDecomp functions to avtDatabase
+//
 // ****************************************************************************
 void
 avtViSUSFileFormat::SetupDomainAndZoneIndexing(int *outputZoneCounts,
@@ -723,7 +554,7 @@ avtViSUSFileFormat::SetupDomainAndZoneIndexing(int *outputZoneCounts,
     // Determine a logical domain decomposition of the set of output zones 
     //
     int domCount[3]; 
-    DetermineDecomposition(dataDimension, procCount,
+    avtDatabase::ComputeRectilinearDecomposition(dataDimension, procCount,
         numOutputZones[0], numOutputZones[1], numOutputZones[2],
         &domCount[0], &domCount[1], &domCount[2]);
 
@@ -736,7 +567,7 @@ avtViSUSFileFormat::SetupDomainAndZoneIndexing(int *outputZoneCounts,
     // Determine this processor's logical domain indices
     //
     int domLogicalCoords[3];
-    ComputeDomainLogicalCoords(dataDimension, domCount, procNum,
+    avtDatabase::ComputeDomainLogicalCoords(dataDimension, domCount, procNum,
         domLogicalCoords);
 
     debug1 << "Processor " << procNum << " domain logical coords: "
@@ -768,6 +599,10 @@ avtViSUSFileFormat::SetupDomainAndZoneIndexing(int *outputZoneCounts,
 //  Programmer: mcmiller -- generated by xml2avt
 //  Creation:   Tue Sep 14 19:55:29 PST 2004
 //
+//  Moficiations:
+//
+//    Mark C. Miller, Tue Aug 15 15:28:11 PDT 2006
+//    Moved Domain decomp. functions to avtDatabase
 // ****************************************************************************
 
 vtkDataSet *
@@ -794,7 +629,7 @@ avtViSUSFileFormat::GetMesh(int, const char *meshname)
         // compute the bounds, in terms of output zone numbers,
         // of this processor's domain.
         //
-        ComputeDomainBounds(numOutputZones[i], domCount[i], domLogicalCoords[i],
+        avtDatabase::ComputeDomainBounds(numOutputZones[i], domCount[i], domLogicalCoords[i],
             &zoneStart[i], &zoneCount[i]);
 
         nodeCount[i] = zoneCount[i] + 1;
@@ -900,7 +735,7 @@ avtViSUSFileFormat::GetVar(int ts, const char *varname)
         // compute the bounds, in terms of output zone numbers,
         // of this processor's domain.
         //
-        ComputeDomainBounds(numOutputZones[i], domCount[i], domLogicalCoords[i],
+        avtDatabase::ComputeDomainBounds(numOutputZones[i], domCount[i], domLogicalCoords[i],
             &zoneStart[i], &zoneCount[i]);
 
         actualMin[i] = startInputZones[i]+zoneStart[i]*stepInputZones[i];

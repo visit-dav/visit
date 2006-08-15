@@ -43,10 +43,10 @@
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkCellIntersections.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetRemoveGhostCells.h>
-#include <vtkDoubleArray.h>
-#include <vtkFloatArray.h>
+#include <vtkGenericCell.h>
 #include <vtkIdList.h>
 #include <vtkLineoutFilter.h>
 #include <vtkMath.h>
@@ -54,7 +54,6 @@
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkUnsignedIntArray.h>
-#include <vtkVisItCellLocator.h>
 #include <vtkVisItUtility.h>
 
 #include <avtDatasetExaminer.h>
@@ -85,7 +84,7 @@ struct CellInfo
     vector<Point> isect;  
 } ;
 
-void ClosestPointOnLine(const double *, const double *, const double*, double *);
+void ClosestPointOnLine(const double*, const double*, const double*, double*);
 bool CanUseCellPoints(double *pt1, double *pt2, double *cpt);
 
 // ****************************************************************************
@@ -98,12 +97,16 @@ bool CanUseCellPoints(double *pt1, double *pt2, double *cpt);
 //    Kathleen Bonnell, Wed Oct 20 17:20:38 PDT 2004
 //    Initialize useOriginalCells.
 //
+//    Kathleen Bonnell, Mon Aug 14 18:12:09 PDT 2006 
+//    Initialize ndims.
+//
 // ****************************************************************************
 
 avtLineoutFilter::avtLineoutFilter()
 {
     OverrideTrueSpatialExtents();
     useOriginalCells = false;
+    ndims = 2;
 }
 
 
@@ -258,6 +261,9 @@ avtLineoutFilter::RefashionDataObjectInfo(void)
 //    Modified to test topological dimenions, so that lineouts of point-var
 //    or lines data will be disallowed.  Lineouts of 3d now allowed.
 //
+//    Kathleen Bonnell, Mon Aug 14 18:12:09 PDT 2006 
+//    Grab spatial dimension. 
+//
 // ****************************************************************************
  
 void
@@ -267,6 +273,7 @@ avtLineoutFilter::VerifyInput(void)
     {
         EXCEPTION2(InvalidDimensionsException, "Lineout", "2D or 3D");
     }
+    ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
 }
 
 
@@ -289,6 +296,9 @@ avtLineoutFilter::VerifyInput(void)
 //  Modifications:
 //    Kathleen Bonnell, Wed Oct 20 17:20:38 PDT 2004
 //    Set useOriginalCells.
+//
+//   Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//   API change for avtIntervalTree.
 //
 // ****************************************************************************
 
@@ -319,8 +329,8 @@ avtLineoutFilter::PerformRestriction(avtPipelineSpecification_p spec)
     double *pt2 = atts.GetPoint2();
     double rayDir[3] = {pt2[0]-pt1[0], pt2[1]-pt1[1], pt2[2]-pt1[2]};   
 
-    vector<int> domains;
-    it->GetDomainsList(pt1, rayDir, domains);
+    intVector domains;
+    it->GetElementsList(pt1, rayDir, domains);
     rv->GetDataSpecification()->GetRestriction()->RestrictDomains(domains);
 
     return rv;
@@ -510,63 +520,217 @@ avtLineoutFilter::CreateRGrid(vtkDataSet *ds, double *pt1, double *pt2,
 //    Kathleen Bonnell, Mon Jul 31 10:15:00 PDT 2006 
 //    Create RectilinearGrid instead of PolyData for the curves. 
 //
+//    Kathleen Bonnell, Mon Aug 14 18:12:09 PDT 2006 
+//    Use avtIntervalTree and vtkCellIntersections(new) instead of
+//    vtkVisItCellLocator, for better accuracy. 
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
 {
+    bool rgrid = in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID;
+    vtkDataSet *rv = NULL;
+
     double *pt1 = atts.GetPoint1();
     double *pt2 = atts.GetPoint2();
 
-    vtkVisItCellLocator *locator = vtkVisItCellLocator::New();
-    locator->SetDataSet(in_ds);
-    locator->SetIgnoreGhosts(true);
-    locator->BuildLocator();
+    //
+    // Use interval tree to find intersected cells
+    //
 
-    vtkPoints *ipts = vtkPoints::New();
-    vtkPoints *cpts = vtkPoints::New();
-    vtkIdList *cells = vtkIdList::New();
-    vtkDataSet *rv = NULL;
-    int success = locator->IntersectWithLine(pt1, pt2, ipts, cpts, cells);
-
-    if (success)
+    int ncells = in_ds->GetNumberOfCells();
+    avtIntervalTree itree(ncells, ndims);
+    double bounds[6];
+    for (int i = 0; i < ncells; i++)
     {
-        vtkPoints *pts;
-        if (CanUseCellPoints(pt1, pt2, cpts->GetPoint(0)))
-            pts = cpts;
-        else
-            pts = ipts;
+        in_ds->GetCellBounds(i, bounds);
+        itree.AddElement(i, bounds);
+    }
+    itree.Calculate();
 
-        if (!useOriginalCells)
+    intVector isectedCells;
+    doubleVector isectedPts;
+    intVector lineCells;
+    doubleVector linePts;
+    itree.GetElementsListFromLine(pt1, pt2, lineCells, linePts);
+
+    if (lineCells.size() == 0) 
+    {
+        debug5 << "avtIntervalTree returned NO intersected cells for domain " 
+               << domain << "." << endl;
+        return NULL;
+    }
+
+    vtkUnsignedCharArray *ghosts = 
+       (vtkUnsignedCharArray *)in_ds->GetCellData()->GetArray("avtGhostZones");
+
+    vtkCellIntersections *cellIntersections = NULL;
+    vtkGenericCell *cell;
+    double isect[3], pc[3], p1[3], t;
+    int sub;
+    bool endPointInCell = false;
+    if (!rgrid)
+    {
+        cellIntersections = vtkCellIntersections::New();
+        cellIntersections->SetTestCoPlanar(true);
+        cell = vtkGenericCell::New();
+    }
+    
+    for (int i = 0; i < lineCells.size(); i++)
+    {
+        //
+        // Want to skip ghost zones!!
+        //
+        if (ghosts && ghosts->GetComponent(lineCells[i], 0))
         {
-            rv = CreateRGrid(in_ds, pt1, pt2, pts, cells);
+            continue;
         }
-        else 
+    
+        bool doMore = true;
+        if (!rgrid)
         {
-            rv = CreateRGridFromOrigCells(in_ds, pt1, pt2, pts, cells);
+            //
+            // do a bit more checking if not a rectlinearGrid, as the interval 
+            // tree only calculated intersections with a cell's bounding box.
+            //
+
+            in_ds->GetCell(lineCells[i], cell);
+            double isect2[3];
+            // Check both directions of the line, because we don't want
+            // to intersect only a node.
+            if (cellIntersections->CellIntersectWithLine(cell, pt1, pt2, 
+                                        t, isect, pc, sub) &&
+                cellIntersections->CellIntersectWithLine(cell, pt2, pt1, 
+                                        t, isect2, pc, sub))
+            {
+                if (vtkVisItUtility::PointsEqual(isect, isect2))
+                {
+                    // Discard single-point intersections that are equivalent
+                    // to an endpoint.
+                    doMore = false;
+                    if (vtkVisItUtility::CellContainsPoint(cell, pt1))
+                    {
+                        if (!vtkVisItUtility::PointsEqual(pt1, isect))
+                        {
+                            p1[0] = pt1[0];    
+                            p1[1] = pt1[1];    
+                            p1[2] = pt1[2];    
+                            doMore = true;
+                        }
+                    }
+                    else if (vtkVisItUtility::CellContainsPoint(cell, pt2))
+                    {
+                        if (!vtkVisItUtility::PointsEqual(pt2, isect))
+                        {
+                            p1[0] = pt2[0];    
+                            p1[1] = pt2[1];    
+                            p1[2] = pt2[2];    
+                            doMore = true;
+                        }
+                    }
+                } // points equal
+                else
+                {
+                    p1[0] = isect[0];
+                    p1[1] = isect[1];
+                    p1[2] = isect[2];
+                    doMore = true;
+                }
+            } // isects both directions
+            else 
+            {
+                doMore = false;
+            }
+        } // rgrid
+        else
+        {
+            p1[0] = linePts[i*3];
+            p1[1] = linePts[i*3+1];
+            p1[2] = linePts[i*3+2];
         }
-        if (rv == NULL || rv->GetNumberOfCells() == 0 ||
-            rv->GetNumberOfPoints() == 0)
+        if (doMore)
         {
-            debug5 << "CreateRGrid returned empty DS for domain " 
-                   << domain << "." << endl;
-            rv = NULL;
+            bool dupFound = false; 
+            for (int j = 0; j < isectedCells.size() && !dupFound; j++)
+            {
+                double p2[3];
+                p2[0] = isectedPts[j*3];
+                p2[1] = isectedPts[j*3+1];
+                p2[2] = isectedPts[j*3+2];
+                if (vtkVisItUtility::PointsEqual(p1, p2))
+                {
+                    dupFound = true;
+                    if (lineCells[i] < isectedCells[j])
+                        isectedCells[j] = lineCells[i];
+                }
+            }
+            if (!dupFound)
+            {
+                isectedCells.push_back(lineCells[i]);
+                isectedPts.push_back(p1[0]);
+                isectedPts.push_back(p1[1]);
+                isectedPts.push_back(p1[2]);
+            }
+        }
+    }
+
+    vtkIdList *cells = vtkIdList::New();
+    vtkPoints *pts = vtkPoints::New();
+    double cpt[3];
+    vtkVisItUtility::GetCellCenter(in_ds->GetCell(isectedCells[0]), cpt);
+    if (CanUseCellPoints(pt1, pt2, cpt))
+    {
+        pts->InsertNextPoint(cpt);
+        cells->InsertNextId(isectedCells[0]);
+        for (int i = 1; i < isectedCells.size(); i++)
+        {
+            cells->InsertNextId(isectedCells[i]);
+            vtkVisItUtility::GetCellCenter(in_ds->GetCell(isectedCells[i]),cpt);
+            pts->InsertNextPoint(cpt);
         }
     }
     else
     {
-        debug5 << "vtkVisItCellLocator returned empty DS for domain " 
-               << domain << "." << endl;
+        for (int i = 0; i < isectedCells.size(); i++)
+        {
+            cpt[0] = isectedPts[i*3];
+            cpt[1] = isectedPts[i*3+1];
+            cpt[2] = isectedPts[i*3+2];
+            pts->InsertNextPoint(cpt);
+            cells->InsertNextId(isectedCells[i]);
+        }
     }
 
-    cpts->Delete();
-    ipts->Delete();
+    if (!useOriginalCells)
+    {
+        rv = CreateRGrid(in_ds, pt1, pt2, pts, cells);
+    }
+    else 
+    {
+        rv = CreateRGridFromOrigCells(in_ds, pt1, pt2, pts, cells);
+    }
+    if (rv->GetNumberOfCells() == 0 ||
+        rv->GetNumberOfPoints() == 0)
+    {
+        debug5 << "avtIntervalTree returned empty DS for domain " 
+                   << domain << "." << endl;
+        rv = NULL;
+    }
+   
     cells->Delete();
-    locator->Delete();
+    pts->Delete();
+
+    if (!rgrid)
+    {
+        cellIntersections->Delete();
+        cell->Delete();
+    }
 
     ManageMemory(rv);
     if (rv != NULL)
         rv->Delete();
+
     return rv;
 }
 
@@ -675,6 +839,9 @@ avtLineoutFilter::Sampling(vtkDataSet *in_ds, int domain)
 //    Kathleen Bonnell, Mon Jul 31 10:15:00 PDT 2006 
 //    Create RectilinearGrid instead of PolyData for the curves. 
 //
+//    Kathleen Bonnell, Mon Aug 14 18:12:09 PDT 2006 
+//    Remove unnecessary if(origCells) statements. 
+//
 // ****************************************************************************
 
 vtkRectilinearGrid *
@@ -713,33 +880,28 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
     {
         currentCell = cells->GetId(i); 
         pts->GetPoint(i, center);
-        if (origCells)
+
+        origCell = (int)origCells->GetComponent(currentCell, 1); 
+        origDomain = (int)origCells->GetComponent(currentCell, 0);
+        for (j = 0, dup = false; j < cellInfoList.size() && !dup; j++)
         {
-            origCell = (int)origCells->GetComponent(currentCell, 1); 
-            origDomain = (int)origCells->GetComponent(currentCell, 0);
-            for (j = 0, dup = false; j < cellInfoList.size() && !dup; j++)
+            if ((origCell == cellInfoList[j].origCell) &&
+                (origDomain == cellInfoList[j].origDomain))
             {
-                if ((origCell == cellInfoList[j].origCell) &&
-                    (origDomain == cellInfoList[j].origDomain))
-                {
-                    dup = true;
-                    cellInfoList[j].currCell.push_back(currentCell);
-                    Point p;
-                    p.x[0]  = center[0];
-                    p.x[1]  = center[1];
-                    p.x[2]  = center[2];
-                    cellInfoList[j].isect.push_back(p);
-                }
+                dup = true;
+                cellInfoList[j].currCell.push_back(currentCell);
+                Point p;
+                p.x[0]  = center[0];
+                p.x[1]  = center[1];
+                p.x[2]  = center[2];
+                cellInfoList[j].isect.push_back(p);
             }
         }
         if (!dup)
         {
             CellInfo a;
-            if (origCells)
-            {
-                a.origCell = origCell;
-                a.origDomain = origDomain;
-            }
+            a.origCell = origCell;
+            a.origDomain = origDomain;
             a.currCell.push_back(currentCell);
             Point p;
             p.x[0]  = center[0];
@@ -949,3 +1111,4 @@ CanUseCellPoints(double *pt1, double *pt2, double *cpt)
         c /= lenAB;
     return (c < lenAB);
 }
+

@@ -264,6 +264,9 @@ typedef struct {
 //    Hank Childs, Wed Jan 11 09:15:23 PST 2006
 //    Add AddTimeDerivativeExpressions.
 //
+//    Mark C. Miller, Tue Aug 15 15:28:11 PDT 2006
+//    Added static domain decomposition help functions
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -329,6 +332,18 @@ class DATABASE_API avtDatabase
                                       { return fileFormat; };
 
     void                        ClearMetaDataAndSILCache();
+
+    // methods useful for decomposing rectlinear data on the fly during read
+    static double               RectilinearDecompCost(int i, int j, int k,
+                                    int nx, int ny, int nz);
+    static double               ComputeRectilinearDecomposition(int ndims,
+                                    int n, int nx, int ny, int nz,
+                                    int *imin, int *jmin, int *kmin);
+    static void                 ComputeDomainLogicalCoords(int dataDim,
+                                    int domCount[3], int rank,
+                                    int domLogicalCoords[3]);
+    static void                 ComputeDomainBounds(int globalZoneCount, int domCount,
+                                    int domLogicalCoord, int *globalZoneStart, int *zoneCount);
 
   protected:
     std::list<CachedMDEntry>               metadata;

@@ -797,6 +797,86 @@ NETCDFFileObject::ReadVariableInto(const char *varname, TypeEnum t, void *arr)
 }
 
 // ****************************************************************************
+// Method: NETCDFFileObject::ReadVariableInto
+//
+// Purpose: 
+//   Reads the specified variable in its into a user-provided array.
+//
+// Arguments:
+//   varname : The variable that we want to read.
+//   t       : The representation that we want to use for the variable. The
+//             NetCDF library performs conversions as necessary.
+//   starts  : starting node index on each axis of hyperslab to read
+//   counts  : number of nodes on each axis of hyperslab to read
+//   arr     : The data array into which the variable will be read.
+//
+// Returns:    True if the variable is read; false otherwise.
+//
+// Programmer: Mark C. Miller 
+// Creation:   August 14, 2006 
+//   
+// ****************************************************************************
+
+bool
+NETCDFFileObject::ReadVariableInto(const char *varname, TypeEnum t,
+    const int *const starts, const int *const counts, void *arr)
+{
+    int i, ndims, *dims = 0;
+    TypeEnum type;
+    if(!InqVariable(varname, &type, &ndims, &dims))
+    {
+        if (dims) delete [] dims;
+        return false;
+    }
+    delete [] dims;
+
+    size_t *startz = new size_t[ndims];
+    size_t *countz = new size_t[ndims];
+    debug4 << "Doing a partial read with nc_get_vara..." << endl;
+    for (i = 0; i < ndims; i++)
+    {
+        startz[i] = (size_t) starts[i];
+        countz[i] = (size_t) counts[i];
+        debug4 << "   dimension " << i << ": start = " << startz[i]
+               << ", count = " << countz[i] << endl;
+    }
+
+    bool retval = false;
+#define READVARAINTO(T, FUNC) \
+        {\
+            int varId;\
+            if(GetVarId(varname, &varId))\
+            {\
+                int status = FUNC(GetFileHandle(), varId,\
+                                  startz, countz, (T*)arr);\
+                if(status == NC_NOERR)\
+                    retval = true;\
+                else\
+                    HandleError(status);\
+            }\
+        }
+    if(t == CHARARRAY_TYPE)
+        READVARAINTO(char, nc_get_vara_text)
+    else if(t == UCHARARRAY_TYPE)
+        READVARAINTO(unsigned char, nc_get_vara_uchar)
+    else if(t == SHORTARRAY_TYPE)
+        READVARAINTO(short, nc_get_vara_short)
+    else if(t == INTEGERARRAY_TYPE)
+        READVARAINTO(int, nc_get_vara_int)
+    else if(t == LONGARRAY_TYPE)
+        READVARAINTO(long, nc_get_vara_long)
+    else if(t == FLOATARRAY_TYPE)
+        READVARAINTO(float, nc_get_vara_float)
+    else if(t == DOUBLEARRAY_TYPE)
+        READVARAINTO(double, nc_get_vara_double)
+
+    delete [] startz;
+    delete [] countz;
+
+    return retval;
+}
+
+// ****************************************************************************
 // Method: NETCDFFileObject::ReadVariableIntoAsFloat
 //
 // Purpose: 

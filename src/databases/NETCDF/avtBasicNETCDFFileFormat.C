@@ -41,6 +41,7 @@
 
 #include <avtBasicNETCDFFileFormat.h>
 #include <NETCDFFileObject.h>
+#include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 #include <avtSTSDFileFormatInterface.h>
 #include <DebugStream.h>
@@ -58,6 +59,10 @@
 #include <vtkDoubleArray.h>
 
 #include <InvalidVariableException.h>
+
+#ifdef PARALLEL
+#include <avtParallel.h>
+#endif
 
 // ****************************************************************************
 // Method: avtBasicNETCDFFileFormat::CreateInterface
@@ -114,6 +119,9 @@ avtBasicNETCDFFileFormat::CreateInterface(NETCDFFileObject *f,
 //   Brad Whitlock, Wed Apr 26 17:40:20 PST 2006
 //   Initialized meshNamesCreated.
 //
+//   Mark C. Miller, Tue Aug 15 15:28:11 PDT 2006
+//   Added procNum, procCount to support on-the-fly parallel decomposition
+//
 // ****************************************************************************
 
 avtBasicNETCDFFileFormat::avtBasicNETCDFFileFormat(const char *filename) :
@@ -121,6 +129,12 @@ avtBasicNETCDFFileFormat::avtBasicNETCDFFileFormat(const char *filename) :
 {
     fileObject = new NETCDFFileObject(filename);
     meshNamesCreated = false;
+    procNum = 0;
+    procCount = 1;
+#ifdef PARALLEL
+    procNum = PAR_Rank();
+    procCount = PAR_Size();
+#endif
 }
 
 avtBasicNETCDFFileFormat::avtBasicNETCDFFileFormat(const char *filename,
@@ -128,6 +142,12 @@ avtBasicNETCDFFileFormat::avtBasicNETCDFFileFormat(const char *filename,
 {
     fileObject = f;
     meshNamesCreated = false;
+    procNum = 0;
+    procCount = 1;
+#ifdef PARALLEL
+    procNum = PAR_Rank();
+    procCount = PAR_Size();
+#endif
 }
 
 // ****************************************************************************
@@ -234,6 +254,8 @@ avtBasicNETCDFFileFormat::ActivateTimestep()
 //    the valid variable check, I was able to make 4+ dimensional arrays
 //    safely appear in the variable lists.
 //
+//    Mark C. Miller, Tue Aug 15 15:28:11 PDT 2006
+//    Added call to SetFormatCanDoDomainDecomposition
 // ****************************************************************************
 
 void
@@ -382,6 +404,7 @@ avtBasicNETCDFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
                         if(md != 0)
                         {
+                            md->SetFormatCanDoDomainDecomposition(true);
                             avtMeshMetaData *mmd = new avtMeshMetaData(meshName, 
                                 1, 1, 1, 0, nValidDims, nValidDims,
                                 AVT_RECTILINEAR_MESH);
@@ -419,10 +442,13 @@ avtBasicNETCDFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //
 // Modifications:
 //   
+//   Mark C. Miller, Tue Aug 15 15:28:11 PDT 2006
+//   Added code to support on-the-fly domain decomposition 
 // ****************************************************************************
 
 bool
-avtBasicNETCDFFileFormat::ReturnValidDimensions(const intVector &dims, int validDims[3], int &nValidDims)
+avtBasicNETCDFFileFormat::ReturnValidDimensions(const intVector &dims, int validDims[3], int &nValidDims,
+    int dimStarts[3], int dimCounts[3])
 {
     int i;
     const char *mName = "avtBasicNETCDFFileFormat::ReturnValidDimensions: ";
@@ -457,7 +483,71 @@ avtBasicNETCDFFileFormat::ReturnValidDimensions(const intVector &dims, int valid
     }
     debug4 << ")" << endl;
 
-    return nCells == nValues;
+    if (nCells != nValues)
+        return false;
+
+    //
+    // We won't decompose something that is smaller than some threshold
+    //
+    if (nValues < 100000)
+    {
+        debug4 << "This data set (" << nValues
+               << ") is below the threshold (100000) to decompose" << endl;
+        for (i = 0; i < nValidDims; i++)
+        {
+            dimStarts[i] = 0;
+            dimCounts[i] = validDims[i];
+        }
+        return true;
+    }
+
+    //
+    // Above, we're counting nodes (e.g. mesh lines). The decomposition
+    // stuff operates on zones.
+    //
+    int validZDims[3];
+    for (i = 0; i < nValidDims; i++)
+        validZDims[i] = validDims[i]-1;
+
+    //
+    // Ok, now compute the zone-oriented domain decomposition
+    //
+    int domCount[3];
+    avtDatabase::ComputeRectilinearDecomposition(
+        nValidDims, procCount,
+        validZDims[0], validZDims[1], validZDims[2],
+        &domCount[0], &domCount[1], &domCount[2]);
+
+    debug4 << "Decomposition: " << domCount[0] << ", "
+           << domCount[1] << ", " << domCount[2] << endl;
+
+    //
+    // Determine this processor's logical domain (e.g. domain ijk) indices
+    //
+    int domLogicalCoords[3];
+    avtDatabase::ComputeDomainLogicalCoords(nValidDims, domCount, procNum,
+        domLogicalCoords);
+
+    debug4 << "Processor " << procNum << " domain logical coords: "
+           << domLogicalCoords[0] << ", " << domLogicalCoords[1] << ", "
+           << domLogicalCoords[2] << endl;
+
+    //
+    // compute the bounds, in terms of output zone numbers,
+    // of this processor's domain.
+    //
+    if (dimStarts && dimCounts)
+    {
+        debug4 << "Processor " << procNum << " zone-centered bounds..." << endl;
+        for (i = 0; i < nValidDims; i++)
+        {
+            avtDatabase::ComputeDomainBounds(validZDims[i], domCount[i], domLogicalCoords[i],
+                &dimStarts[i], &dimCounts[i]);
+            dimCounts[i]++; // convert to # of zones to # of nodes  
+            debug4 << "   start[" << i << "] = " << dimStarts[i]
+                   << ",  count[" << i << "] = " << dimCounts[i]-1 << endl;
+        }
+    }
 }
 
 // ****************************************************************************
@@ -477,6 +567,9 @@ avtBasicNETCDFFileFormat::ReturnValidDimensions(const intVector &dims, int valid
 // Modifications:
 //   Brad Whitlock, Wed Apr 26 17:56:15 PST 2006
 //   I made it call PopulateDatabaseMetaData.
+//
+//   Mark C. Miller, Tue Aug 15 15:28:11 PDT 2006
+//   Added code to support on-the-fly domain decomp
 //
 // ****************************************************************************
 
@@ -535,8 +628,11 @@ avtBasicNETCDFFileFormat::GetMesh(const char *var)
 
             // Return the dimensions that we should care about.
             int validDims[3];
+            int dimStarts[3];
+            int dimCounts[3];
             int nValidDims;
-            ReturnValidDimensions(mesh->second, validDims, nValidDims);
+            ReturnValidDimensions(mesh->second, validDims, nValidDims,
+                dimStarts, dimCounts);
 
             //
             // Populate the coordinates.  Put in 3D points with z=0 if
@@ -551,11 +647,11 @@ avtBasicNETCDFFileFormat::GetMesh(const char *var)
 
                 if (i < nValidDims)
                 {
-                    dims[i] = validDims[i];
+                    dims[i] = dimCounts[i];
                     coords[i]->SetNumberOfTuples(dims[i]);
                     for (j = 0 ; j < dims[i] ; j++)
                     {
-                        coords[i]->SetComponent(j, 0, j);
+                        coords[i]->SetComponent(j, 0, dimStarts[i]+j);
                     }
                 }
                 else
@@ -601,8 +697,31 @@ avtBasicNETCDFFileFormat::GetMesh(const char *var)
 // Creation:   Thu Aug 18 18:06:49 PST 2005
 //
 // Modifications:
+//
+//   Mark C. Miller, Tue Aug 15 15:28:11 PDT 2006
+//   Added logic to support on-the-fly domain decomposition. Added macro to
+//   do a partial read
 //   
 // ****************************************************************************
+
+#ifdef PARALLEL
+
+#define READVAR(VTKTYPE) \
+        {\
+            VTKTYPE *arr = VTKTYPE::New();\
+            arr->SetNumberOfComponents(1);\
+            arr->SetNumberOfTuples(nElems);\
+            debug4 << "Allocated a " << \
+                    #VTKTYPE \
+                   << " of " << nElems << " elements" << endl; \
+            if(fileObject->ReadVariableInto(var, t, dimStarts, dimCounts,\
+                                            arr->GetVoidPointer(0)))\
+                retval = arr;\
+            else\
+                arr->Delete();\
+        }
+
+#else
 
 #define READVAR(VTKTYPE) \
         {\
@@ -618,6 +737,8 @@ avtBasicNETCDFFileFormat::GetMesh(const char *var)
                 arr->Delete();\
         }
 
+#endif
+
 vtkDataArray *
 avtBasicNETCDFFileFormat::GetVar(const char *var)
 {
@@ -630,12 +751,18 @@ avtBasicNETCDFFileFormat::GetVar(const char *var)
    
     if(fileObject->InqVariable(var, &t, &ndims, &dims))
     {
+        int i, validDims[3], dimStarts[3], dimCounts[3], nValidDims;
+        intVector vdims;
+        for (i = 0; i < ndims; i++) vdims.push_back(dims[i]);
+        ReturnValidDimensions(vdims, validDims, nValidDims,
+            dimStarts, dimCounts);
+
         debug4 << "avtBasicNETCDFFileFormat::GetVar: var=" << var << ", dims={";
         int nElems = 1;
-        for(int i = 0; i < ndims; ++i)
+        for(i = 0; i < ndims; ++i)
         {
-            debug4 << ", " << dims[i];
-            nElems *= dims[i];
+            debug4 << ", " << dimCounts[i];
+            nElems *= dimCounts[i];
         }
         debug4 << "}" << endl;
 

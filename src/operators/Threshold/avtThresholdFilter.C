@@ -728,6 +728,9 @@ avtThresholdFilter::PreExecute(void)
 //    Mark Blair, Tue Aug  8 17:47:00 PDT 2006
 //    Now accommodates an empty list of threshold variables; does pass-through.
 //
+//   Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//   API change for avtIntervalTree.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -802,7 +805,7 @@ avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
 
             if (atLeastOneTree)
             {
-                it->GetDomainsListFromRange(&lowerBound, &upperBound, varDomains);
+                it->GetElementsListFromRange(&lowerBound, &upperBound, varDomains);
 
                 for (curDomNum = 0; curDomNum < curDomains.size(); curDomNum++)
                 {
@@ -822,7 +825,7 @@ avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
             }
             else
             {
-                it->GetDomainsListFromRange(&lowerBound, &upperBound, curDomains);
+                it->GetElementsListFromRange(&lowerBound, &upperBound, curDomains);
                 atLeastOneTree = true;
             }
         }

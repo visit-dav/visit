@@ -60,6 +60,9 @@ class avtFileFormatInterface;
 //    Brad Whitlock, Tue May 16 14:00:05 PST 2006
 //    Added override of GetCycleFromFilename.
 //
+//    Mark C. Miller, Tue Aug 15 15:28:11 PDT 2006
+//    Added args to ReturnValidDimensions and procNum/Count data members
+//    to support on-the-fly domain decomp
 // ****************************************************************************
 
 class avtBasicNETCDFFileFormat : public avtSTSDFileFormat
@@ -85,7 +88,9 @@ protected:
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
     bool                   ReturnValidDimensions(const intVector &dims,
                                                  int validDims[3],
-                                                 int &nValidDims);
+                                                 int &nValidDims,
+                                                 int dimStarts[3] = 0, 
+                                                 int dimCounts[3] = 0);
 private:
     
     NETCDFFileObject      *fileObject;
@@ -93,6 +98,9 @@ private:
     typedef std::map<std::string, intVector> MeshNameMap;
     bool                   meshNamesCreated;
     MeshNameMap            meshNames;
+
+    int                    procNum;
+    int                    procCount;
 };
 
 #endif
