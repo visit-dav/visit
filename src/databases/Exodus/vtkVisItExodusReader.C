@@ -712,6 +712,8 @@ void vtkVisItExodusReader::ReadGeometry(int exoid, vtkUnstructuredGrid *output)
 //   Brad Whitlock, Mon Nov 14 14:25:23 PST 2005
 //   Added SHELL4 element.
 //
+//   Mark C. Miller, Wed Aug  9 19:40:30 PDT 2006
+//   Changed new[] of ids to malloc to be consistent with VTK's use of free 
 //----------------------------------------------------------------------------
 void vtkVisItExodusReader::ReadCells(int exoid, vtkUnstructuredGrid *output)
 {
@@ -919,7 +921,8 @@ void vtkVisItExodusReader::ReadCells(int exoid, vtkUnstructuredGrid *output)
   // add global element ids if requested
   if (this->GenerateElementGlobalIdArray)
     {
-    int *ids = new int[this->NumberOfElements];
+    // vtk assumes malloc was used when it goes to delete
+    int *ids = (int*) malloc(this->NumberOfElements * sizeof(int));
     int exgenm = ex_get_elem_num_map(exoid, ids);
 
     // only do something with this data if it isn't

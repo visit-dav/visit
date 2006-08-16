@@ -169,6 +169,8 @@ class avtKullLiteFileFormat : public avtSTMDFileFormat
     void         *GetMeshTagMaterial(const char *, int);
 
     void          Close();
+
+    bool          GetTypeOfMesh(char *result, int size);
 };
 
 

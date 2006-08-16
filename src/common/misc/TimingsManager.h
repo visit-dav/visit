@@ -109,6 +109,10 @@
 //
 //    Mark C. Miller, Thu Aug  3 13:33:20 PDT 2006
 //    Added StopAllUnstoppedTimers, ClearValues and GetNValues()
+//
+//    Mark C. Miller, Tue Aug 15 20:20:58 PDT 2006
+//    Eliminated numTimings. Fixed bug where DumpTimings would ClearValues
+//    but not also reset numTimings.
 // ****************************************************************************
 
 class MISC_API TimingsManager
@@ -143,7 +147,6 @@ class MISC_API TimingsManager
     std::string                filename;
     bool                       openedFile;
     int                        numCurrentTimings;
-    int                        numTimings;
     bool                       enabled;
     bool                       withholdOutput;
     bool                       outputAllTimings;
@@ -156,7 +159,7 @@ class MISC_API TimingsManager
 
     void                       StopAllUnstoppedTimers();
 
-    virtual void               PlatformStartTimer(void) = 0;
+    virtual int                PlatformStartTimer(void) = 0;
     virtual double             PlatformStopTimer(int) = 0;
     virtual int                GetNValues() const = 0;
     virtual void               ClearValues() = 0;
@@ -173,8 +176,8 @@ class MISC_API SystemTimingsManager : public TimingsManager
                                    { return values.size(); };
 
   protected:
-    std::vector<TIMEINFO>      values;
-    virtual void               PlatformStartTimer(void);
+    std::vector<struct TIMEINFO> values;
+    virtual int                PlatformStartTimer(void);
     virtual double             PlatformStopTimer(int);
 };
 
@@ -190,7 +193,7 @@ class MISC_API MPITimingsManager : public TimingsManager
 
   protected:
     std::vector<double>        values;
-    virtual void               PlatformStartTimer(void);
+    virtual int                PlatformStartTimer(void);
     virtual double             PlatformStopTimer(int);
 };
 

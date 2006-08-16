@@ -170,13 +170,15 @@ TimingsManager::TimeSinceInit()
 //    Jeremy Meredith, Fri Oct  4 16:47:47 PDT 2002
 //    Added number of current timings.
 //
+//    Mark C. Miller, Tue Aug 15 20:20:58 PDT 2006
+//    Eliminated numTimings
+//
 // ****************************************************************************
 
 TimingsManager::TimingsManager()
 {
     filename          = ".timings";
     openedFile        = false;
-    numTimings        = 0;
     numCurrentTimings = 0;
     enabled           = false;
     withholdOutput    = false;
@@ -407,23 +409,18 @@ TimingsManager::OutputAllTimings(void)
 //    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
 //    Added ability to force acquisition of timing info even if we're not
 //    logging timings to files
+//
+//    Mark C. Miller, Tue Aug 15 20:20:58 PDT 2006
+//    Eliminated numTimings. Made code a little more robust.
 // ****************************************************************************
 
 int
 TimingsManager::StartTimer(bool forced)
 {
-    //
-    // Return if timings disabled.
-    //
     if (!enabled && !forced)
-    {
         return -1;
-    }
-
-    PlatformStartTimer();
-    numTimings        += 1;
     numCurrentTimings += 1;
-    return numTimings-1;
+    return PlatformStartTimer();
 }
 
 
@@ -456,6 +453,9 @@ TimingsManager::StartTimer(bool forced)
 //    Mark C. Miller, Wed Nov  2 09:07:05 PST 2005
 //    Added code to force return of timing info even if logging is not enabled
 //
+//    Mark C. Miller, Tue Aug 15 20:20:58 PDT 2006
+//    Eliminated numTimings. Moved error message to PlatformStopTimer. Made
+//    a little more robust.
 // ****************************************************************************
 
 double
@@ -465,23 +465,14 @@ TimingsManager::StopTimer(int index, const std::string &summary, bool forced)
 
     if (enabled || forced)
     {
-        if (index < 0 || index >= numTimings)
+        t = PlatformStopTimer(index);
+        times.push_back(t);
+        numCurrentTimings -= 1;
+        if (enabled)
         {
-            debug1 << "Invalid timing index (" << index << ") was specified."
-                   << endl;
-        }
-        else
-        {
-            numCurrentTimings -= 1;
-
-            t = PlatformStopTimer(index);
-            times.push_back(t);
-            if (enabled)
-            {
-                char indented[1000];
-                sprintf(indented, "%*s%s", 3*numCurrentTimings, " ", summary.c_str());
-                summaries.push_back(indented);
-            }
+            char indented[1000];
+            sprintf(indented, "%*s%s", 3*numCurrentTimings, " ", summary.c_str());
+            summaries.push_back(indented);
         }
     }
 
@@ -696,14 +687,17 @@ TimingsManager::DiffTime(const struct TIMEINFO &startTime,
 //    Mark C. Miller Wed Apr 21 12:42:13 PDT 2004
 //    I made it use GetCurrentTime
 //
+//    Mark C. Miller, Tue Aug 15 20:20:58 PDT 2006
+//    Made it return current length of values array 
 // ****************************************************************************
 
-void
+int
 SystemTimingsManager::PlatformStartTimer(void)
 {
     struct TIMEINFO t;
     GetCurrentTimeInfo(t);
     values.push_back(t);
+    return values.size()-1;
 }
 
 // ****************************************************************************
@@ -736,11 +730,19 @@ SystemTimingsManager::PlatformStartTimer(void)
 //    Moved bulk of implementation to DiffTime so code could be shared
 //    with TOATimer
 //
+//    Mark C. Miller, Tue Aug 15 20:20:58 PDT 2006
+//    Moved debug message from StopTimer to here 
 // ****************************************************************************
 
 double
 SystemTimingsManager::PlatformStopTimer(int index)
 {
+    if (index < 0 || index > values.size()-1)
+    {
+        debug1 << "Invalid timing index (" << index << ") specified." << endl;
+        return 0.0;
+    }
+
     struct TIMEINFO endTime;
     GetCurrentTimeInfo(endTime);
     return DiffTime(values[index], endTime);
@@ -755,9 +757,13 @@ SystemTimingsManager::PlatformStopTimer(int index)
 //  Programmer: Hank Childs
 //  Creation:   March 10, 2001
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Aug 15 20:20:58 PDT 2006
+//    Made it return current length of values array 
 // ****************************************************************************
 
-void
+int
 MPITimingsManager::PlatformStartTimer(void)
 {
     double t = 0.;
@@ -765,6 +771,7 @@ MPITimingsManager::PlatformStartTimer(void)
     t = MPI_Wtime();
 #endif
     values.push_back(t);
+    return values.size()-1;
 }
 
 
@@ -785,11 +792,21 @@ MPITimingsManager::PlatformStartTimer(void)
 //  Programmer:  Hank Childs
 //  Creation:    March 10, 2001
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Aug 15 20:20:58 PDT 2006
+//    Moved debug message from StopTimer to here 
 // ****************************************************************************
 
 double
 MPITimingsManager::PlatformStopTimer(int index)
 {
+    if (index < 0 || index > values.size()-1)
+    {
+        debug1 << "Invalid timing index (" << index << ") specified." << endl;
+        return 0.0;
+    }
+
     double t = 0.;
     double tick = 1.;
 #ifdef PARALLEL
@@ -799,5 +816,3 @@ MPITimingsManager::PlatformStopTimer(int index)
 #endif
     return (t - values[index])*tick;
 }
-
-
