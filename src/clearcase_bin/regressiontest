@@ -260,7 +260,7 @@ rm -f plugins/*/*.so
 
 # clean everything
 clearmake clean
-uncleanedFiles=`find . -regex '.*\.o$'`
+uncleanedFiles=`find . -regex '.*\.o$' | grep -v -e '_pure_p9_c0_'`
 if test ! "$uncleanedFiles" = ""; then
     rm -f mailmsg
     echo -e $msghdr_build  >> mailmsg
@@ -353,7 +353,9 @@ skipList="scalable,parallel:tests/databases/boxlib.py \
           serial:tests/databases/ProteinDataBank.py \
           parallel:tests/databases/ProteinDataBank.py \
           scalable,parallel:tests/databases/ProteinDataBank.py \
-	  scalable,parallel:tests/operators/transform.py"
+	  scalable,parallel:tests/operators/transform.py \
+	  parallel:tests/hybrid/lineout.py \
+	  scalable,parallel:tests/hybrid/lineout.py"
 
 #
 # Make sure that there isn't anything in ~/.visit that could
