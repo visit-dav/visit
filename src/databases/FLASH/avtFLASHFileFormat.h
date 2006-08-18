@@ -70,6 +70,9 @@
 //    Hank Childs, Fri Apr 28 14:20:35 PDT 2006
 //    Added activate timestep.
 //
+//    Kathleen Bonnell, Thu Jul 20 11:22:13 PDT 2006
+//    Added methods and structs to support for FLASH3 formats.
+//
 // ****************************************************************************
 
 class avtFLASHFileFormat : public avtSTMDFileFormat
@@ -108,6 +111,13 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
     void DetermineGlobalLogicalExtentsForAllBlocks();
     void ReadParticleAttributes();
 
+    // FLASH3 support
+    void ReadParticleAttributes_FLASH3();
+    void ReadVersionInfo();
+    void ReadIntegerScalars();
+    void ReadRealScalars();
+    void ReadParticleVar(hid_t pointId, const char *, double *);
+
   protected:
     struct SimParams
     {
@@ -136,12 +146,26 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
         void Print(ostream&);
     };
 
+    // FLASH3 support
+    struct IntegerScalars
+    {
+        char name[20];
+        int value;
+    };
+    
+    struct RealScalars
+    {
+        char name[20];
+        double value;
+    }; 
+
   protected:
     std::string               filename;
     int                       dimension;
     int                       numBlocks;
     int                       numLevels;
     int                       numParticles;
+    int                       fileFormatVersion;
     std::string               particleHDFVarName;
     hid_t                     fileId;
     SimParams                 simParams;
