@@ -524,6 +524,9 @@ avtLineoutFilter::CreateRGrid(vtkDataSet *ds, double *pt1, double *pt2,
 //    Use avtIntervalTree and vtkCellIntersections(new) instead of
 //    vtkVisItCellLocator, for better accuracy. 
 //
+//    Kathleen Bonnell, Mon Aug 21 13:34:18 PDT 2006 
+//    Tell IntervalTree to NOT do communication (via arg to constructor). 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -540,7 +543,7 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
     //
 
     int ncells = in_ds->GetNumberOfCells();
-    avtIntervalTree itree(ncells, ndims);
+    avtIntervalTree itree(ncells, ndims, false);
     double bounds[6];
     for (int i = 0; i < ncells; i++)
     {
@@ -1030,7 +1033,6 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
         sortedXC->Delete();
         sortedVal->Delete();
     }
-
 
     return rgrid;
 }

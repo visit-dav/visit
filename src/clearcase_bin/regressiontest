@@ -266,7 +266,7 @@ if test ! "$uncleanedFiles" = ""; then
     echo -e $msghdr_build  >> mailmsg
     echo -e "make clean missed these files..." >> mailmsg
     echo -e $uncleanedFiles >> mailmsg
-    echo -e "The are being removed manually" >> mailmsg
+    echo -e "They are being removed manually" >> mailmsg
     echo -e $msg_yourfault >> mailmsg
     echo -e $msg_userlist  >> mailmsg
     for user in $users; do
@@ -276,7 +276,7 @@ if test ! "$uncleanedFiles" = ""; then
     echo -e $msghdr_build  >> mailmsg
     echo -e "make clean missed some files..." >> mailmsg
     echo -e $uncleanedFiles >> mailmsg
-    echo -e "The are being removed manually" >> mailmsg
+    echo -e "They are being removed manually" >> mailmsg
     echo -e $msg_userlist  >> mailmsg
     for user in $logrecipients; do
         sendregressionmail $user mailmsg
@@ -353,9 +353,7 @@ skipList="scalable,parallel:tests/databases/boxlib.py \
           serial:tests/databases/ProteinDataBank.py \
           parallel:tests/databases/ProteinDataBank.py \
           scalable,parallel:tests/databases/ProteinDataBank.py \
-	  scalable,parallel:tests/operators/transform.py \
-	  parallel:tests/hybrid/lineout.py \
-	  scalable,parallel:tests/hybrid/lineout.py"
+	  scalable,parallel:tests/operators/transform.py" 
 
 #
 # Make sure that there isn't anything in ~/.visit that could
@@ -428,13 +426,20 @@ export LD_LIBRARY_PATH
 env CXXFLAGS="-O2" ./configure --enable-parallel 1>> buildlog 2>&1
 rm -f plugins/*/*.so
 (cd data; clearmake clean 1> /dev/null 2>&1 )
-clearmake -J 2 1>> buildlog 2>&1
+clearmake clean
+clearmake -J 4 1>> buildlog 2>&1
 
 # make sure all needed data files exist
 cd data
 make test 1> /dev/null 2>&1
 #          (we should probably check for errors here)
 cd ..
+
+#
+# Make directory for where to store core files
+#
+rm -rf test/cores
+mkdir test/cores
 
 # run the test
 cd test

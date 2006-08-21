@@ -995,18 +995,6 @@ void avtMFIXFileFormat::SkipBytes(istream& in, int n)
   in.read(this->DataBuffer,n); // maybe seekg instead
 }
 //----------------------------------------------------------------------------
-// ****************************************************************************
-// Method: avtMFIXFileFormat::GetBlockOfDoubles
-//
-// Programmer: MFIX team
-// Creation:   Tue Jun 20 09:37:27 PDT 2006
-//
-// Modifications:
-//   Brad Whitlock, Tue Jun 20 09:37:45 PDT 2006
-//   Fixed a bug that could clobber the stack.
-//
-// ****************************************************************************
-
 void avtMFIXFileFormat::GetBlockOfDoubles(istream& in, std::vector<double> &v, int n)
 {
   const int numberOfDoublesInBlock = 512/sizeof(double);
@@ -1039,17 +1027,6 @@ void avtMFIXFileFormat::GetBlockOfDoubles(istream& in, std::vector<double> &v, i
     }
 }
 //----------------------------------------------------------------------------
-// ****************************************************************************
-// Method: avtMFIXFileFormat::GetBlockOfInts
-//
-// Programmer: MFIX team
-// Creation:   Tue Jun 20 09:37:27 PDT 2006
-//
-// Modifications:
-//   Brad Whitlock, Tue Jun 20 09:37:45 PDT 2006
-//   Fixed a bug that could clobber the stack.
-//
-// ****************************************************************************
 void avtMFIXFileFormat::GetBlockOfInts(istream& in, std::vector<int> &v, int n)
 {
   const int numberOfIntsInBlock = 512/sizeof(int);
@@ -1620,7 +1597,7 @@ void avtMFIXFileFormat::MakeTimeStepTable()
 
   for(int i=0; i<VariableNames.size(); i++)
     {
-    int timestepIncrement = this->MaxTimeStep/this->VariableTimesteps[i];
+    int timestepIncrement = (int)((float)this->MaxTimeStep/(float)this->VariableTimesteps[i] + 0.5);
     int timestep = 1;
     for (int j=0; j<this->MaxTimeStep; j++)
       {
@@ -1628,7 +1605,7 @@ void avtMFIXFileFormat::MakeTimeStepTable()
       timestepIncrement--;
       if (timestepIncrement <= 0)
         {
-        timestepIncrement = this->MaxTimeStep/this->VariableTimesteps[i];
+        timestepIncrement = (int)((float)this->MaxTimeStep/(float)this->VariableTimesteps[i] + 0.5);
         timestep++;
         }
       if (timestep > this->VariableTimesteps[i]) 
@@ -2342,24 +2319,7 @@ void avtMFIXFileFormat::GetVariableAtTimestep(int vari , int tstep,
   this->GetBlockOfFloats (in, v, this->IJKMaximum2);
   in.close();
 }
-
 //----------------------------------------------------------------------------
-// ****************************************************************************
-// Method: avtMFIXFileFormat::GetBlockOfFloats
-//
-// Purpose: 
-//   Gets a block of floats from the MFIX file.
-//
-// Programmer: MFIX team
-// Creation:   Tue Jun 20 09:32:55 PDT 2006
-//
-// Modifications:
-//   Brad Whitlock, Tue Jun 20 09:33:27 PDT 2006
-//   I changed (char*)&tempArray to (char*)tempArray so the reader would
-//   no longer overwrite the stack and kill VisIt.
-//
-// ****************************************************************************
-
 void avtMFIXFileFormat::GetBlockOfFloats(istream& in, vtkFloatArray *v, int n)
 {
   float *tempArray = new float[this->numberOfFloatsInBlock];
@@ -2395,8 +2355,7 @@ void avtMFIXFileFormat::GetBlockOfFloats(istream& in, vtkFloatArray *v, int n)
         }
       }
     }
-
-   delete [] tempArray;
+  delete [] tempArray;
 }
 //----------------------------------------------------------------------------
 void avtMFIXFileFormat::SwapFloat(float &value)

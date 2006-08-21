@@ -9,11 +9,10 @@
 
 #include <vector>
 #include <string>
+#include <vtkFloatArray.h>
 #include "vtkHexahedron.h"
 #include "vtkWedge.h"
 #include "vtkQuad.h"
-
-class vtkFloatArray;
 
 
 // ****************************************************************************

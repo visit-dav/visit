@@ -107,13 +107,18 @@ static bool     IntersectsWithLine(double [3], double[3], int, int,
 //    Mark C. Miller, Mon Oct 18 14:36:49 PDT 2004
 //    Added hasBeenCalculated
 //
+//    Kathleen Bonnell, Mon Aug 21 13:34:18 PDT 2006 
+//    Add default bool arg -- specifies whether or not this tree
+//    will required collective communication. 
+//
 // ****************************************************************************
 
-avtIntervalTree::avtIntervalTree(int els, int dims)
+avtIntervalTree::avtIntervalTree(int els, int dims, bool rc)
 {
     nElements    = els;
     nDims       = dims;
     hasBeenCalculated = false;
+    requiresCommunication = rc;
 
     //
     // A vector for one element should have the min and max for each dimension.
@@ -263,12 +268,15 @@ avtIntervalTree::AddElement(int element, double *d)
 //    Mark C. Miller, Mon Oct 18 14:36:49 PDT 2004
 //    Added hasBeenCalculated
 //
+//    Kathleen Bonnell, Mon Aug 21 13:34:18 PDT 2006 
+//    Added requiresCommunication.
+//
 // ****************************************************************************
 
 void
 avtIntervalTree::Calculate(bool alreadyCollectedAllInformation)
 {
-    if (!alreadyCollectedAllInformation)
+    if (requiresCommunication && !alreadyCollectedAllInformation)
     {
         CollectInformation();
     }
