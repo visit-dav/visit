@@ -36,53 +36,61 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtRandomFilter.h                             //
+//                            avtLineScanFilter.h                            //
 // ************************************************************************* //
 
-#ifndef AVT_RANDOM_FILTER_H
-#define AVT_RANDOM_FILTER_H
+#ifndef AVT_LINE_SCAN_FILTER_H
+#define AVT_LINE_SCAN_FILTER_H
 
-#include <avtSingleInputExpressionFilter.h>
 
-class     vtkDataArray;
-class     ArgsExpr;
-class     ExprPipelineState;
+#include <avtStreamer.h>
+#include <filters_exports.h>
+#include <string>
+
 
 // ****************************************************************************
-//  Class: avtRandomFilter
+//  Class: avtLineScanFilter
 //
 //  Purpose:
-//      Creates a random number at each point.  Mostly used for odd effects in
-//      movie-making.
-//          
+//      This should really be a query, not a filter.  It sums all of the values
+//      for a variable.
+//
 //  Programmer: Hank Childs
-//  Creation:   March 7, 2003
+//  Creation:   July 6, 2006
 //
 //  Modifications:
 //
-//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
-//    Moved inlined constructor and destructor definitions to .C files
-//    because certain compilers have problems with them.
-//
-//    Hank Childs, Mon Jul 10 09:03:13 PDT 2006
-//    Added PreExecute.
+//    Hank Childs, Fri Jul 28 09:44:24 PDT 2006
+//    Added CylindricalExecute.
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtRandomFilter : public avtSingleInputExpressionFilter
+class AVTFILTERS_API avtLineScanFilter : public avtStreamer
 {
   public:
-                              avtRandomFilter();
-    virtual                  ~avtRandomFilter();
+                                    avtLineScanFilter();
+    virtual                        ~avtLineScanFilter();
 
-    virtual const char       *GetType(void) { return "avtRandomFilter"; };
-    virtual const char       *GetDescription(void)
-                                           {return "Assigning random #.";};
-    virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
+    void                            SetNumberOfLines(int);
+
+    virtual const char             *GetType(void)
+                                             { return "avtLineScanFilter"; };
+    virtual const char             *GetDescription(void)
+                                             { return "Scanning lines"; };
+    virtual void                    RefashionDataObjectInfo(void);
+    virtual void                    SetRandomSeed(int s) { seed = s; };
+
   protected:
-    virtual void              PreExecute(void);
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
-    virtual bool              IsPointVariable(void)  { return true; };
+    int                             nLines;
+    int                             seed;
+    double                         *lines;
+
+    virtual void                    PreExecute(void);
+    virtual void                    PostExecute(void);
+
+    virtual vtkDataSet             *ExecuteData(vtkDataSet *, int,std::string);
+    virtual vtkDataSet             *CartesianExecute(vtkDataSet *);
+    virtual vtkDataSet             *CylindricalExecute(vtkDataSet *);
 };
 
 

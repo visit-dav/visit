@@ -15,6 +15,7 @@
       DomainZoneVars
       ActualData
       ActualDataVars
+      LineDistribution
     </Enum>
     <Enum name="Groups">
       CurveRelated

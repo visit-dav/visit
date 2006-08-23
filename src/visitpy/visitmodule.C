@@ -8399,6 +8399,9 @@ visit_WriteConfigFile(PyObject *self, PyObject *args)
 //   Brad Whitlock, Tue Jan 4 16:19:15 PST 2005
 //   strcasecmp does not exist on Windows so I made it use _strnicmp.
 //
+//   Hank Childs, Tue Aug  1 12:20:56 PDT 2006
+//   Add support for line distributions.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -8408,14 +8411,19 @@ visit_Query(PyObject *self, PyObject *args)
 
     char *queryName;
     int arg1 = 0, arg2 = 0;
+    double darg1 = 0., darg2 = 0.;
     PyObject *tuple = NULL;
-    if (!PyArg_ParseTuple(args, "sii|O", &queryName, &arg1, &arg2, &tuple))
+    if (!PyArg_ParseTuple(args, "siidd|O", &queryName, &arg1, 
+                                    &arg2, &darg1, &darg2, &tuple))
     {
-        if (!PyArg_ParseTuple(args, "si|O", &queryName, &arg1, &tuple))
+        if (!PyArg_ParseTuple(args, "sii|O", &queryName, &arg1, &arg2, &tuple))
         {
-            if (!PyArg_ParseTuple(args, "s|O", &queryName, &tuple))
+            if (!PyArg_ParseTuple(args, "si|O", &queryName, &arg1, &tuple))
             {
-                return NULL;
+                if (!PyArg_ParseTuple(args, "s|O", &queryName, &tuple))
+                {
+                        return NULL;
+                }
             }
         }
         PyErr_Clear();
@@ -8454,7 +8462,8 @@ visit_Query(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        viewer->DatabaseQuery(qname.c_str(), vars, false, arg1, arg2, doGlobal);
+        viewer->DatabaseQuery(qname.c_str(), vars, false, arg1, arg2, doGlobal,
+                              darg1, darg2);
     MUTEX_UNLOCK();
 
     // Return the success value.

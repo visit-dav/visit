@@ -6351,6 +6351,9 @@ ViewerSubject::CopyPlotsToWindow(int from, int to)
 //   Kathleen Bonnell, Wed Dec 15 17:12:47 PST 2004 
 //   Added another bool arg to qm->DatabaseQuery. 
 //   
+//   Hank Childs, Tue Jul 11 14:34:06 PDT 2006
+//   Add double arguments.
+//
 // ****************************************************************************
 
 void
@@ -6366,7 +6369,8 @@ ViewerSubject::DatabaseQuery()
     qm->DatabaseQuery(vw, viewerRPC.GetQueryName(), viewerRPC.GetQueryVariables(),
                       viewerRPC.GetBoolFlag(), 
                       viewerRPC.GetIntArg1(), viewerRPC.GetIntArg2(),
-                      (bool)viewerRPC.GetIntArg3());
+                      (bool)viewerRPC.GetIntArg3(), viewerRPC.GetDoubleArg1(),
+                      viewerRPC.GetDoubleArg2());
 
     // Clear the status
     ClearStatus();

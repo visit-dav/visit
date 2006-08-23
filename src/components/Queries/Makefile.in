@@ -150,6 +150,15 @@
 #   Hank Childs, Thu May 11 13:21:18 PDT 2006
 #   Added average mean curvature query.
 #
+#   Hank Childs, Sat Jul  8 11:03:08 PDT 2006
+#   Added chord length distribution.
+#
+#   Hank Childs, Thu Jul 20 11:19:17 PDT 2006
+#   Added mass distribution.
+#
+#   Hank Childs, Wed Aug  2 14:53:35 PDT 2006
+#   Added avtLineScanQuery.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -193,15 +202,18 @@ Queries_src= \
  Queries/avtAverageMeanCurvatureQuery.C \
  Queries/avtBestFitLineQuery.C \
  Queries/avtCentroidQuery.C  \
+ Queries/avtChordLengthDistributionQuery.C  \
  Queries/avtCompactnessQuery.C  \
  Queries/avtCycleQuery.C  \
  Queries/avtEllipticalCompactnessFactorQuery.C  \
  Queries/avtEulerianQuery.C \
  Queries/avtIntegrateQuery.C  \
  Queries/avtKurtosisQuery.C  \
+ Queries/avtLineScanQuery.C  \
  Queries/avtL2NormQuery.C  \
  Queries/avtL2NormBetweenCurvesQuery.C  \
  Queries/avtLocalizedCompactnessFactorQuery.C  \
+ Queries/avtMassDistributionQuery.C  \
  Queries/avtMinMaxQuery.C  \
  Queries/avtMomentOfInertiaQuery.C  \
  Queries/avtNodeCoordsQuery.C \

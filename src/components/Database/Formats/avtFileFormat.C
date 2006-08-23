@@ -69,7 +69,7 @@ const int    avtFileFormat::INVALID_CYCLE = -INT_MAX;
 const double avtFileFormat::INVALID_TIME  = -DBL_MAX;
 
 const int    avtFileFormat::FORMAT_INVALID_CYCLE = INVALID_CYCLE + 1;
-const double avtFileFormat::FORMAT_INVALID_TIME  = INVALID_TIME + 1;
+const double avtFileFormat::FORMAT_INVALID_TIME  = INVALID_TIME / 10.0;
 
 
 // ****************************************************************************

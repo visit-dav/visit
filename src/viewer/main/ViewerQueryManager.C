@@ -1019,13 +1019,17 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Hank Childs, Wed May 10 09:52:54 PDT 2006
 //    Don't crash if we can't get the query to complete ('7092).
 //
+//    Hank Childs, Tue Jul 11 14:34:06 PDT 2006
+//    Added double arguments.
+//
 // ****************************************************************************
 
 void         
 ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                             const stringVector &vars, const bool doTimeQuery,
                             const int arg1, const int arg2,
-                            const bool elementIsGlobal)
+                            const bool elementIsGlobal,
+                            const double darg1, const double darg2)
 {
     queryClientAtts->SetResultsMessage("");
     queryClientAtts->SetResultsValue(0.);
@@ -1158,6 +1162,8 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
 
     qa.SetElement(arg1);
     qa.SetDomain(arg2);
+    qa.SetDarg1(darg1);
+    qa.SetDarg2(darg2);
     if (qName == "Variable by Zone") 
         qa.SetElementType(QueryAttributes::Zone);
     else if (qName == "Variable by Node")
@@ -3310,6 +3316,12 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Hank Childs, Thu May 11 13:24:34 PDT 2006
 //    Added average mean curvature query.
 //
+//    Hank Childs, Sat Jul  8 11:24:45 PDT 2006
+//    Added chord length distribution query.
+//
+//    Hank Childs, Thu Jul 20 11:23:07 PDT 2006
+//    Add mass distribution query.
+//
 // ****************************************************************************
 
 void
@@ -3346,6 +3358,7 @@ ViewerQueryManager::InitializeQueryList()
     QueryList::WindowType dz  = QueryList::DomainZone;
     QueryList::WindowType dzv = QueryList::DomainZoneVars;
     QueryList::WindowType ad  = QueryList::ActualData;
+    QueryList::WindowType ld  = QueryList::LineDistribution;
     //QueryList::WindowType av = QueryList::ActualDataVars;
  
     QueryList::QueryMode qo = QueryList::QueryOnly;
@@ -3363,6 +3376,8 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Time", dq, tr, basic, 1, 0, qo);
     queryTypes->AddQuery("L2Norm", dq, cr, basic, 1, 0, qo);
     queryTypes->AddQuery("Kurtosis", dq, cr, basic, 1, 0, qo);
+    queryTypes->AddQuery("Chord Length Distribution", dq, mr, ld, 1, 0, qo);
+    queryTypes->AddQuery("Mass Distribution", dq, vr, ld, 1, 0, qo);
     queryTypes->AddQuery("Skewness", dq, cr, basic, 1, 0, qo);
     queryTypes->AddQuery("Integrate", dq, cr, basic, 1, 0, qo);
     queryTypes->AddQuery("L2Norm Between Curves", dq, cr, basic, 2, 0, qo);

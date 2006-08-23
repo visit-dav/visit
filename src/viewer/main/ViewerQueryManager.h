@@ -217,6 +217,9 @@ typedef struct {
 //    Kathleen Bonnell, Tue Jan 17 11:30:15 PST 2006 
 //    Removed SetLineoutsTimeSlider.
 //
+//    Hank Childs, Tue Jul 11 14:34:06 PDT 2006
+//    Added double arguments to DatabaseQuery.
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -230,7 +233,8 @@ class VIEWER_API ViewerQueryManager
                             const std::vector<std::string> &vars,
                             const bool doTimeQuery,
                             const int arg1, const int arg2,
-                            const bool elementIsGlobal);
+                            const bool elementIsGlobal,
+                            const double darg1, const double darg2);
     bool            VerifySingleInputQuery(ViewerPlotList *, const int,
                             const std::string &,
                             const std::vector<std::string> &,

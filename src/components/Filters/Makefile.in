@@ -89,6 +89,9 @@
 #    Brad Whitlock, Thu Jan 26 15:29:46 PST 2006
 #    Added more libs for MacOS X prebinding.
 #
+#    Hank Childs, Thu Jul  6 17:25:57 PDT 2006
+#    Added avtLineScanFilter.
+#
 ##############################################################################
 
 ##
@@ -115,6 +118,7 @@ SRC=\
  avtGhostZoneFilter.C \
  avtImageCommunicator.C \
  avtImageCompositer.C \
+ avtLineScanFilter.C \
  avtMassVoxelExtractor.C \
  avtPointToGlyphFilter.C \
  avtRayCompositer.C \

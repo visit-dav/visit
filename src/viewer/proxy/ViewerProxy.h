@@ -445,6 +445,9 @@ class Xfer;
 //    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
 //    Added UpdatePlotInfoAtts, GetPlotInfoAtts.
 //
+//    Hank Childs, Mon Jul 10 17:36:41 PDT 2006
+//    Add more args to DatabaseQuery.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -665,7 +668,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void SuppressQueryOutput(bool onOff);
     void DatabaseQuery(const std::string &queryName, const stringVector &vars,
                        const bool = false, const int arg1 = 0, const int arg2 = 0,
-                       const bool = false);
+                       const bool = false, const double darg1 = 0., const double darg2 = 0.);
     void PointQuery(const std::string &queryName, const double pt[3],
                     const stringVector &vars, const bool = false,
                     const int arg1 = -1, const int arg2 = -1,
