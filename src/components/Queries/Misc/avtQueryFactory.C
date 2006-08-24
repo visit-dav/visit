@@ -50,6 +50,7 @@
 #include <avtChordLengthDistributionQuery.h>
 #include <avtCompactnessQuery.h>
 #include <avtCycleQuery.h>
+#include <avtDistanceFromBoundaryQuery.h>
 #include <avtEllipticalCompactnessFactorQuery.h>
 #include <avtEulerianQuery.h>
 #include <avtIntegrateQuery.h>
@@ -213,6 +214,9 @@ avtQueryFactory::Instance()
 //    Hank Childs, Thu Jul 20 11:23:07 PDT 2006
 //    Added mass distribution query.
 //
+//    Hank Childs, Mon Aug  7 18:05:38 PDT 2006
+//    Added distance from boundary query.
+//
 // ****************************************************************************
 
 
@@ -277,6 +281,14 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (qname == "Mass Distribution")
     {
         avtMassDistributionQuery *mdq = new avtMassDistributionQuery();
+        mdq->SetNumberOfLines(qa->GetElement()); // Element == intarg1
+        mdq->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
+        mdq->SetRange(qa->GetDarg1(), qa->GetDarg2()); 
+        query = mdq;
+    }
+    else if (qname == "Distance From Boundary")
+    {
+        avtDistanceFromBoundaryQuery *mdq = new avtDistanceFromBoundaryQuery();
         mdq->SetNumberOfLines(qa->GetElement()); // Element == intarg1
         mdq->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
         mdq->SetRange(qa->GetDarg1(), qa->GetDarg2()); 

@@ -159,6 +159,9 @@
 #   Hank Childs, Wed Aug  2 14:53:35 PDT 2006
 #   Added avtLineScanQuery.
 #
+#   Hank Childs, Mon Aug  7 18:05:38 PDT 2006
+#   Added distance from boundary.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -205,6 +208,7 @@ Queries_src= \
  Queries/avtChordLengthDistributionQuery.C  \
  Queries/avtCompactnessQuery.C  \
  Queries/avtCycleQuery.C  \
+ Queries/avtDistanceFromBoundaryQuery.C  \
  Queries/avtEllipticalCompactnessFactorQuery.C  \
  Queries/avtEulerianQuery.C \
  Queries/avtIntegrateQuery.C  \

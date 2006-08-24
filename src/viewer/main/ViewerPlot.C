@@ -4893,11 +4893,17 @@ ViewerPlot::GetPlotInfoAtts()
 // Creation:   Mon Jul 24 14:02:31 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 24 13:49:40 PST 2006
+//   Made a check for NULL first to prevent a crash.
+//
 // ****************************************************************************
 
 bool
 ViewerPlot::SetFullFrameScaling(bool useScale, double *s)
 {
-    return plotList[cacheIndex]->GetMapper()->SetFullFrameScaling(useScale,s);
+    bool retval = false;
+    if(*plotList[cacheIndex] != NULL)
+        retval = plotList[cacheIndex]->GetMapper()->SetFullFrameScaling(useScale,s);
+
+    return retval;
 }

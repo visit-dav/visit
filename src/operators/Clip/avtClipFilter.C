@@ -246,6 +246,9 @@ avtClipFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Bonnell, Mon Jul 31 11:32:48 PDT 2006 
 //    Handle 1D RectilinearGrids. 
 //
+//    Kathleen Bonnell, Thu Aug 24 16:23:16 PDT 2006 
+//    Fix determination of 1D rgrid. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -295,7 +298,7 @@ avtClipFilter::ProcessOneChunk(vtkDataSet *inDS, int dom, std::string, bool)
         {
             int dims[3];       
             ((vtkRectilinearGrid*)inDS)->GetDimensions(dims);
-            if (dims[2] <= 1)
+            if (dims[1] <= 1 && dims[2] <= 1)
             {
                 doFast = false;
                 outDS = Clip1DRGrid(ifuncs, inverse, (vtkRectilinearGrid*)inDS);

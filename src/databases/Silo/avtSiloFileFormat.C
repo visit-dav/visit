@@ -7561,7 +7561,11 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, const char *tmn,
                                        silomat->mix_next,
                                        silomat->mix_zone,
                                        silomat->mix_vf,
-                                       dom_string);
+                                       dom_string
+#ifdef DBOPT_ALLOWMAT0
+                                       ,silomat->allowmat0
+#endif
+                                       );
 
     if (matList != silomat->matlist)
         delete [] matList;
@@ -7723,9 +7727,6 @@ avtSiloFileFormat::CalcExternalFacelist(DBfile *dbfile, char *mesh)
 //    Hank Childs, Thu Sep 20 17:43:31 PDT 2001
 //    Set nDomains with early returns.
 //
-//    Mark C. Miller, Mon Aug 21 14:27:32 PDT 2006
-//    Made it return without error if first mesh is NOT a multimesh
-//
 // ****************************************************************************
 
 void
@@ -7774,12 +7775,7 @@ avtSiloFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
 
     DBmultimesh *mm = GetMultimesh("", meshname.c_str());
     if (mm == NULL)
-    {
-        debug1 << "Cannot populate I/O Information because the first "
-               << "mesh is apparently not a multi-mesh." << endl;
-        ioInfo.SetNDomains(0);
-        return;
-    }
+        EXCEPTION1(InvalidFilesException, meshname.c_str());
 
     vector<string> filenames;
     vector<vector<int> > groups;
