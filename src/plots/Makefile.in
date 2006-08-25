@@ -139,6 +139,9 @@
 #    Brad Whitlock, Jeremy Meredith, Fri Feb 10 15:47:12 PST 2006
 #    Added Molecule plot.
 #
+#    Mark Blair, Mon Aug 21 18:29:00 PDT 2006
+#    Added ParallelAxis plot.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -150,8 +153,8 @@ all: message
 OPTIONAL=Topology
 
 REQUIRED=Boundary Contour Curve FilledBoundary Histogram Label Mesh Molecule \
-         Pseudocolor Scatter Streamline Subset Surface Tensor Truecolor Vector \
-         Volume
+         ParallelAxis Pseudocolor Scatter Streamline Subset Surface Tensor \
+         Truecolor Vector Volume
 
 SUBDIRS=$(REQUIRED) @PLOT_OPTIONAL_DIRS@
 ALLSUBDIRS=$(REQUIRED) $(OPTIONAL)

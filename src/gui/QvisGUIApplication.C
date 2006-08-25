@@ -5733,6 +5733,12 @@ QvisGUIApplication::HandleMetaDataUpdate()
 // Creation:   Tue Dec 14 09:29:05 PDT 2004
 //
 // Modifications:
+//
+//      Mark Blair, Mon Aug 21 18:29:00 PDT 2006
+//      Pass additional information to plot wizard being created.
+//   
+//      Mark Blair, Tue Aug 22 16:12:00 PDT 2006
+//      Changed interface to GetMetaData.
 //   
 // ****************************************************************************
 
@@ -5745,9 +5751,14 @@ QvisGUIApplication::AddPlot(int plotType, const QString &varName)
         plotPluginManager->GetEnabledID(plotType));
 
     // Try and create a wizard for the desired plot type.
+    const QualifiedFilename &qf = fileServer->GetOpenFile();
+    const avtDatabaseMetaData *md =
+        fileServer->GetMetaData(qf, GetStateForSource(qf),
+        !FileServerList::ANY_STATE, !FileServerList::GET_NEW_MD);
     QString wName; wName.sprintf("plot_wizard_%d", plotType);
     QvisWizard *wiz = GUIInfo->CreatePluginWizard(
-        viewer->GetPlotAttributes(plotType), mainWin, wName.latin1());
+        viewer->GetPlotAttributes(plotType), mainWin, varName.latin1(),
+        md, viewer->GetExpressionList(), wName.latin1());
 
     if(wiz == 0)
     {

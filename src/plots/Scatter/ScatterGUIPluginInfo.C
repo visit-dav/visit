@@ -151,12 +151,16 @@ ScatterGUIPluginInfo::CreatePluginWindow(int type, AttributeSubject *attr,
 // Creation:   Tue Dec 14 09:48:06 PDT 2004
 //
 // Modifications:
-//   
+//
+//      Mark Blair, Mon Aug 21 18:29:00 PDT 2006
+//      Made argument sequence compatible with upgraded base class.
+//
 // ****************************************************************************
 
 QvisWizard *
 ScatterGUIPluginInfo::CreatePluginWizard(AttributeSubject *attr,
-    QWidget *parent, const char *name)
+    QWidget *parent, const std::string &varName, const avtDatabaseMetaData *md,
+    const ExpressionList *expList, const char *name)
 {
     return new QvisScatterPlotWizard(attr, parent, name);
 }
