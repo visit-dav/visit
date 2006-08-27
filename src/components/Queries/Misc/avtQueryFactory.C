@@ -53,6 +53,7 @@
 #include <avtDistanceFromBoundaryQuery.h>
 #include <avtEllipticalCompactnessFactorQuery.h>
 #include <avtEulerianQuery.h>
+#include <avtExpectedValueQuery.h>
 #include <avtIntegrateQuery.h>
 #include <avtL2NormQuery.h>
 #include <avtL2NormBetweenCurvesQuery.h>
@@ -217,6 +218,9 @@ avtQueryFactory::Instance()
 //    Hank Childs, Mon Aug  7 18:05:38 PDT 2006
 //    Added distance from boundary query.
 //
+//    Hank Childs, Fri Aug 25 15:40:35 PDT 2006
+//    Added expected value query.
+//
 // ****************************************************************************
 
 
@@ -227,6 +231,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     bool actualData = qa->GetDataType() == QueryAttributes::ActualData;
 
     avtDataObjectQuery *query = NULL;
+    bool foundAQuery = false;
 
     if (qname == "Surface area" || qname == "2D area" ||
         qname == "3D surface area")
@@ -260,6 +265,10 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (qname == "Integrate")
     {
         query = new avtIntegrateQuery();
+    }
+    else if (qname == "Expected Value")
+    {
+        query = new avtExpectedValueQuery();
     }
     else if (qname == "Time")
     {
@@ -302,17 +311,21 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     {
         query = new avtSkewnessQuery();
     }
-#if 0
     // problem with multiple input queries, so don't do them here
     else if (qname == "L2Norm Between Curves")
     {
+#if 0
         query = new avtL2NormBetweenCurvesQuery();
+#endif
+        foundAQuery = true;
     }
     else if (qname == "Area Between Curves")
     {
+#if 0
         query = new avtAreaBetweenCurvesQuery();
-    }
 #endif
+        foundAQuery = true;
+    }
     else if (qname == "Variable Sum")
     {
         query = new avtVariableSummationQuery();
@@ -435,6 +448,14 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (qname == "Average Mean Curvature")
     {
         query = new avtAverageMeanCurvatureQuery();
+    }
+
+    if (query == NULL && !foundAQuery)
+    {
+        EXCEPTION1(VisItException, "No query to execute was found. "
+             " Developers: if you are developing this query, make sure that "
+             "the name specified in the ViewerQueryManager matches that of "
+             "the avtQueryFactory.");
     }
 
     return query;

@@ -36,60 +36,46 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           ExprPipelineState                               //
+//                          avtExpectedValueQuery.h                          //
 // ************************************************************************* //
 
-#ifndef EXPR_PIPELINE_STATE_H
-#define EXPR_PIPELINE_STATE_H
+#ifndef AVT_EXPECTED_VALUE_QUERY_H
+#define AVT_EXPECTED_VALUE_QUERY_H
 
-#include <avtDataObject.h>
-#include <expression_exports.h>
+#include <query_exports.h>
 
-class avtExpressionFilter;
+#include <avtCurveQuery.h>
+
 
 // ****************************************************************************
-//   Class: ExprPipelineState
+//  Class: avtExpectedValueQuery
 //
-//   Purpose:
-//     Holds information about the pipeline state for expressions.
+//  Purpose:
+//    A query that calculates the expected value of a probability density
+//    function.  That is, for a function f(x), it calculate the integral
+//    x*f(x) over the entire domain, which return the expected value.
 //
-//  Programmer: Sean Ahern
-//  Creation:   Thu Nov 21 15:15:07 PST 2002
-//
-//  Modifications:
-//    Kathleen Bonnell, Thu Apr 22 14:42:38 PDT 2004
-//    Moved code to new Source file.  Added ReleaseData method.
-//
-//    Hank Childs, Fri Dec 31 11:50:07 PST 2004
-//    Add a Clear method.
-//
-//    Hank Childs, Fri Aug 25 17:26:59 PDT 2006
-//    Add method GetNumNames.
+//  Programmer: Hank Childs
+//  Creation:   August 25, 2006
 //
 // ****************************************************************************
 
-class EXPRESSION_API ExprPipelineState
+class QUERY_API avtExpectedValueQuery : public avtCurveQuery
 {
-public:
-                    ExprPipelineState();
-                   ~ExprPipelineState();
+  public:
+                              avtExpectedValueQuery();
+    virtual                  ~avtExpectedValueQuery();
 
-    void            PushName(std::string s) {name_stack.push_back(s);} 
-    std::string     PopName();
-    int             GetNumNames(void) const { return name_stack.size(); };
+    virtual const char       *GetType(void)  { return "avtExpectedValueQuery"; };
+    virtual const char       *GetDescription(void)
+                                     { return "Calculating expected value."; };
 
-    void            SetDataObject(avtDataObject_p d) {dataObject = d;}
-    avtDataObject_p GetDataObject() {return dataObject;}
-    void            AddFilter(avtExpressionFilter *f) {filters.push_back(f);}
-    std::vector<avtExpressionFilter*>& GetFilters() {return filters;}
-
-    void            ReleaseData(void);
-    void            Clear();
-
-protected:
-    std::vector<std::string>    name_stack;
-    avtDataObject_p             dataObject;
-    std::vector<avtExpressionFilter*> filters;
+  protected:
+    virtual double            CurveQuery(int, const float *, const float *);
+    virtual std::string       CreateMessage(double);
 };
 
+
 #endif
+
+

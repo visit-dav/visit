@@ -162,6 +162,9 @@
 #   Hank Childs, Mon Aug  7 18:05:38 PDT 2006
 #   Added distance from boundary.
 #
+#   Hank Childs, Sun Aug 27 16:38:52 PDT 2006
+#   Added expected value query.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -211,6 +214,7 @@ Queries_src= \
  Queries/avtDistanceFromBoundaryQuery.C  \
  Queries/avtEllipticalCompactnessFactorQuery.C  \
  Queries/avtEulerianQuery.C \
+ Queries/avtExpectedValueQuery.C  \
  Queries/avtIntegrateQuery.C  \
  Queries/avtKurtosisQuery.C  \
  Queries/avtLineScanQuery.C  \

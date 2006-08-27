@@ -3325,6 +3325,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Hank Childs, Mon Aug  7 18:05:38 PDT 2006
 //    Add distance from boundary query.
 //
+//    Hank Childs, Fri Aug 25 15:42:12 PDT 2006
+//    Add expected value query.
+//
 // ****************************************************************************
 
 void
@@ -3384,6 +3387,7 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Distance From Boundary", dq, vr, ld, 1, 0, qo);
     queryTypes->AddQuery("Skewness", dq, cr, basic, 1, 0, qo);
     queryTypes->AddQuery("Integrate", dq, cr, basic, 1, 0, qo);
+    queryTypes->AddQuery("Expected Value", dq, cr, basic, 1, 0, qo);
     queryTypes->AddQuery("L2Norm Between Curves", dq, cr, basic, 2, 0, qo);
     queryTypes->AddQuery("Area Between Curves", dq, cr, basic, 2, 0, qo);
     queryTypes->AddQuery("Revolved volume", dq, mr, basic, 1, 0, qo);

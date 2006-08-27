@@ -36,60 +36,102 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           ExprPipelineState                               //
+//                           avtExpectedValueQuery.C                         //
 // ************************************************************************* //
 
-#ifndef EXPR_PIPELINE_STATE_H
-#define EXPR_PIPELINE_STATE_H
+#include <avtExpectedValueQuery.h>
 
-#include <avtDataObject.h>
-#include <expression_exports.h>
+#include <stdio.h>
 
-class avtExpressionFilter;
 
 // ****************************************************************************
-//   Class: ExprPipelineState
+//  Method: avtExpectedValueQuery constructor
 //
-//   Purpose:
-//     Holds information about the pipeline state for expressions.
+//  Purpose:
+//      Defines the constructor.  Note: this should not be inlined in the header
+//      because it causes problems for certain compilers.
 //
-//  Programmer: Sean Ahern
-//  Creation:   Thu Nov 21 15:15:07 PST 2002
-//
-//  Modifications:
-//    Kathleen Bonnell, Thu Apr 22 14:42:38 PDT 2004
-//    Moved code to new Source file.  Added ReleaseData method.
-//
-//    Hank Childs, Fri Dec 31 11:50:07 PST 2004
-//    Add a Clear method.
-//
-//    Hank Childs, Fri Aug 25 17:26:59 PDT 2006
-//    Add method GetNumNames.
+//  Programmer: Hank Childs
+//  Creation:   August 25, 2006
 //
 // ****************************************************************************
 
-class EXPRESSION_API ExprPipelineState
+avtExpectedValueQuery::avtExpectedValueQuery()
 {
-public:
-                    ExprPipelineState();
-                   ~ExprPipelineState();
+    ;
+}
 
-    void            PushName(std::string s) {name_stack.push_back(s);} 
-    std::string     PopName();
-    int             GetNumNames(void) const { return name_stack.size(); };
 
-    void            SetDataObject(avtDataObject_p d) {dataObject = d;}
-    avtDataObject_p GetDataObject() {return dataObject;}
-    void            AddFilter(avtExpressionFilter *f) {filters.push_back(f);}
-    std::vector<avtExpressionFilter*>& GetFilters() {return filters;}
+// ****************************************************************************
+//  Method: avtExpectedValueQuery destructor
+//
+//  Purpose:
+//      Defines the destructor.  Note: this should not be inlined in the header
+//      because it causes problems for certain compilers.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 25, 2006
+//
+// ****************************************************************************
 
-    void            ReleaseData(void);
-    void            Clear();
+avtExpectedValueQuery::~avtExpectedValueQuery()
+{
+    ;
+}
 
-protected:
-    std::vector<std::string>    name_stack;
-    avtDataObject_p             dataObject;
-    std::vector<avtExpressionFilter*> filters;
-};
 
-#endif
+// ****************************************************************************
+//  Method: avtExpectedValueQuery::CurveQuery
+//
+//  Purpose:
+//      Computes the expected value: the integral of x*f(x) dx.
+//
+//  Programmer:   Hank Childs
+//  Creation:     August 25, 2006
+//
+// ****************************************************************************
+
+double
+avtExpectedValueQuery::CurveQuery(int n1, const float *x1, const float *y1)
+{
+    //
+    // Pretty straightforward.  We are going to calculate the integral as
+    // the sum of a series of trapezoids.  We are not handling the case
+    // where the trapezoid is degenerate (because the function crossed
+    // the line y=0).  We will then multiply the trapezoid by the height
+    // of the trapezoid.
+    //
+    double integral = 0;
+    for (int i = 0 ; i < n1-1 ; i++)
+    {
+        double height = x1[i+1] - x1[i];
+        double base1 = y1[i] - 0.;
+        double base2 = y1[i+1] - 0.;
+        integral += ((x1[i+1]+x1[i])/2.)*(base1+base2)*height / 2.;
+    }
+
+    return integral;
+}
+
+
+// ****************************************************************************
+//  Method: avtExpectedValueQuery::CreateMessage
+//
+//  Purpose:
+//      Creates a message for the integrate query.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 25, 2006
+//
+// ****************************************************************************
+
+std::string
+avtExpectedValueQuery::CreateMessage(double ev)
+{
+    char msg[1024];
+    sprintf(msg, "The expected value is %g.", ev);
+    std::string m = msg;
+    return m;
+}
+
+

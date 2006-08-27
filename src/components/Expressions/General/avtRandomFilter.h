@@ -67,6 +67,11 @@ class     ExprPipelineState;
 //    Hank Childs, Mon Jul 10 09:03:13 PDT 2006
 //    Added PreExecute.
 //
+//    Hank Childs, Thu Aug 24 11:24:41 PDT 2006
+//    Remove PreExecute, since it was not successfully accomplishing its
+//    purpose (setting up the seed for the random number generator in a
+//    reproducible way).
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtRandomFilter : public avtSingleInputExpressionFilter
@@ -80,7 +85,6 @@ class EXPRESSION_API avtRandomFilter : public avtSingleInputExpressionFilter
                                            {return "Assigning random #.";};
     virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
   protected:
-    virtual void              PreExecute(void);
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual bool              IsPointVariable(void)  { return true; };
 };
