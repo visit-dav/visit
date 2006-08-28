@@ -69,6 +69,9 @@ class     vtkDataArray;
 //    Hank Childs, Thu May 19 10:44:29 PDT 2005
 //    Add support for sub-types operating directly on the mesh.
 //
+//    Hank Childs, Mon Aug 28 10:29:49 PDT 2006
+//    Declare the variable dimension.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtVerdictFilter : public avtSingleInputExpressionFilter
@@ -95,6 +98,7 @@ class EXPRESSION_API avtVerdictFilter : public avtSingleInputExpressionFilter
     virtual bool              RequiresSizeCalculation() { return false; };
 
     virtual bool              IsPointVariable() {  return false; };
+    virtual int               GetVariableDimension(void) { return 1; };
 };
 
 #endif
