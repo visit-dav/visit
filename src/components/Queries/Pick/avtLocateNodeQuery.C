@@ -121,6 +121,10 @@ avtLocateNodeQuery::~avtLocateNodeQuery()
 //    Set foundElement = foundNode when points not transformed only if
 //    ghost zones not created.
 //
+//    Kathleen Bonnell, Tue Aug 29 08:04:41 PDT 2006 
+//    Set foundElement = foundNode only if OriginalZones intact (eg not
+//    clipped, contoured, etc). 
+//
 // ****************************************************************************
 
 void
@@ -184,7 +188,8 @@ avtLocateNodeQuery::Execute(vtkDataSet *ds, const int dom)
                 int comp = origNodes->GetNumberOfComponents() -1;
                 foundElement = (int) origNodes->GetComponent(foundNode, comp);
             }
-            else if ((info.GetValidity().GetZonesPreserved()   ||
+            else if (info.GetValidity().GetOriginalZonesIntact() &&
+                     (info.GetValidity().GetZonesPreserved()   ||
                      !info.GetValidity().GetPointsWereTransformed()) &&
                      info.GetAttributes().GetContainsGhostZones() 
                         != AVT_CREATED_GHOSTS)
