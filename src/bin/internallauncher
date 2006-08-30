@@ -121,8 +121,9 @@ $0 = shift @ARGV;
 #    Brad Whitlock, Wed Jan 11 17:46:19 PST 2006
 #    Added help for -nowindowmetrics.
 #
-#    Hank Childs, Mon Aug 28 08:41:22 PDT 2006
-#    Add tracking of CLI usage for OMB study.
+#    Jeremy Meredith, Mon Aug 28 17:23:42 EDT 2006
+#    When launching the engine, choose the serial one if the number of
+#    processors is 1.
 #
 ###############################################################################
 
@@ -791,8 +792,14 @@ if (($exe_name eq "makemili") or ($exe_name eq "visitconvert"))
 # Determine the version number of the executable.
 if ($exe_name eq "engine")
 {
-    $exe_name .= "_ser" if (!$parallel);
-    $exe_name .= "_par" if ($parallel);
+    if (!$parallel || ($procs_set && $procs==1))
+    {
+        $exe_name .= "_ser";
+    }
+    else
+    {
+        $exe_name .= "_par";
+    }
 
     # if we've designated a parallel launcher, then we are sharing
     # one batch job between the mdserver and engine (through the vcl)
@@ -1030,18 +1037,6 @@ if ($logging and $exe_name eq "mdserver")
     $info = "$user_info"." "."$host_info"." "."$date_info"."\n";
 
     $filename=">>$visitdir/usagelog";
-    open(USERINFO, $filename);
-    print USERINFO "$info";
-    close(USERINFO);
-}
-if ($logging and $exe_name eq "cli")
-{
-    chomp ( $user_info = `whoami` );
-    chomp ( $host_info = `hostname` );
-    chomp ( $date_info = `date` );
-    $info = "$user_info"." "."$host_info"." "."$date_info"."\n";
-
-    $filename=">>$visitdir/cli_usagelog";
     open(USERINFO, $filename);
     print USERINFO "$info";
     close(USERINFO);

@@ -165,6 +165,9 @@ class SILAttributes;
 //    Kathleen Bonnell, Tue Jul  5 14:46:52 PDT 2005 
 //    Added DetermineRealVarType method. 
 //
+//    Jeremy Meredith, Mon Aug 28 16:55:01 EDT 2006
+//    Added ability to force using a specific plugin when opening a file.
+//
 // ****************************************************************************
 
 class ViewerFileServer : public ViewerServerManager
@@ -218,7 +221,8 @@ public:
     //
     const avtDatabaseMetaData *GetMetaDataForState(const std::string &host,
                                                    const std::string &filename,
-                                                   int timeState);
+                                                   int timeState,
+                                                   const std::string &forcedFileType = "");
 
     //
     // Use this method when you need to determine if the metadata for a
@@ -318,7 +322,8 @@ protected:
     const avtDatabaseMetaData *GetMetaDataHelper(const std::string &host, 
                                                  const std::string &db,
                                                  int timeState,
-                                                 bool forceReadAllCyclesAndTimes);
+                                                 bool forceReadAllCyclesAndTimes,
+                                                 const std::string &forcedFileType = "");
     const avtSIL *GetSILHelper(const std::string &host, 
                                const std::string &db,
                                int timeState);

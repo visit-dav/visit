@@ -48,6 +48,9 @@
 //    Jeremy Meredith, Thu Jun 24 10:38:05 PDT 2004
 //    Added Voxel and Pixel shapes.
 //
+//    Jeremy Meredith, Tue Aug 29 16:13:43 EDT 2006
+//    Added Line and Vertex shapes.
+//
 // ----------------------------------------------------------------------------
 
 #ifndef SHAPE_H
@@ -69,6 +72,8 @@ enum ShapeType
     ST_QUAD,
     ST_TRIANGLE,
     ST_PIXEL,
+    ST_VERTEX,
+    ST_LINE,
     ST_POINT
 };
 
@@ -134,6 +139,7 @@ struct Shape
     void MakeCopyOf(Shape *s, QuadTransform &xform);
     void MakeCopyOf(Shape *s, PixelTransform &xform);
     void MakeCopyOf(Shape *s, TriTransform &xform);
+    void MakeCopyOf(Shape *s, LineTransform &xform);
 
     DataSet *dataset;
 };

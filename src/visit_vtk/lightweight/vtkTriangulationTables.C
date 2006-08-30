@@ -43,6 +43,9 @@
 //    Jeremy Meredith, Wed Jun 23 15:11:41 PDT 2004
 //    Added pixel and voxel tables.
 //
+//    Jeremy Meredith, Tue Aug 29 14:06:42 EDT 2006
+//    Added line segment table.
+//
 
 #include <vtkTriangulationTables.h>
 
@@ -838,5 +841,10 @@ int pixelVerticesFromEdges[4][2] =
     {1,3},
     {2,3},
     {0,2}
+};
+
+int lineVerticesFromEdges[1][2] =
+{
+    {0,1}
 };
 

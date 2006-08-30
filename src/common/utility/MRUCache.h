@@ -108,6 +108,11 @@ using std::vector;
 //    Added find methods. Renamed existing find to exists. Added
 //    CallbackDelete specialization.
 //
+//    Jeremy Meredith, Mon Aug 28 18:04:57 EDT 2006
+//    Newer gcc's won't resolve unqualified members of a dependent base in 
+//    templates.  See [temp.dep]/3 in the ANSI C++ Standard.  Using explicit
+//    this-> fixes it (as would adding explicit "using" declaration).
+//
 // ****************************************************************************
 
 // tags for which kind of delete to call on cache pre-emption
@@ -230,7 +235,7 @@ class MRUCache<kT,vT,MRUCache_DontDelete,nS> : public MRUCacheBase<kT,vT,MRUCach
 {
    public:
       MRUCache() : MRUCacheBase<kT,vT,MRUCache_DontDelete,nS>() {} ;
-     ~MRUCache() { clear(); };
+     ~MRUCache() { this->clear(); };
    private:
       void deleteit(vT& item) {} ;
 };
@@ -241,7 +246,7 @@ class MRUCache<kT,vT,MRUCache_Delete,nS> : public MRUCacheBase<kT,vT,MRUCache_De
 {
    public:
       MRUCache() : MRUCacheBase<kT,vT,MRUCache_Delete,nS>() {} ;
-     ~MRUCache() { clear(); };
+     ~MRUCache() { this->clear(); };
    private:
       void deleteit(vT& item) { delete item; } ;
 };
@@ -252,7 +257,7 @@ class MRUCache<kT,vT,MRUCache_ArrayDelete,nS> : public MRUCacheBase<kT,vT,MRUCac
 {
    public:
       MRUCache() : MRUCacheBase<kT,vT,MRUCache_ArrayDelete,nS>() {} ;
-     ~MRUCache() { clear(); };
+     ~MRUCache() { this->clear(); };
    private:
       void deleteit(vT& item) { delete [] item; } ;
 };
@@ -263,7 +268,7 @@ class MRUCache<kT,vT,MRUCache_Free,nS> : public MRUCacheBase<kT,vT,MRUCache_Free
 {
    public:
       MRUCache() : MRUCacheBase<kT,vT,MRUCache_Free,nS>() {} ;
-     ~MRUCache() { clear(); };
+     ~MRUCache() { this->clear(); };
    private:
       void deleteit(vT& item) { free (item); } ;
 };
@@ -274,7 +279,7 @@ class MRUCache<kT,vT,MRUCache_CallbackDelete,nS> : public MRUCacheBase<kT,vT,MRU
 {
    public:
       MRUCache(MRUCache_DeleteCallback cb) : MRUCacheBase<kT,vT,MRUCache_CallbackDelete,nS>(), delCb(cb) {};
-     ~MRUCache() { clear(); };
+     ~MRUCache() { this->clear(); };
    private:
       MRUCache() : MRUCacheBase<kT,vT,MRUCache_CallbackDelete,nS>(), delCb(0) {};
       MRUCache_DeleteCallback  delCb;

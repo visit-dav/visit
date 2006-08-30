@@ -53,6 +53,10 @@
 //    Jeremy Meredith, Thu Jun 24 10:38:05 PDT 2004
 //    Added Voxel and Pixel shapes.
 //
+//    Jeremy Meredith, Tue Aug 29 16:13:43 EDT 2006
+//    Added Line and Vertex shapes.  Added error messages for default 
+//    cases in switch statements.
+//
 // ----------------------------------------------------------------------------
 
 #include "Shape.h"
@@ -65,6 +69,7 @@
 #include "DataSet.h"
 
 using std::vector;
+using std::swap;
 
 int  Shape::duplicateFacesRemoval = 0;
 bool Shape::lighting = false;
@@ -262,7 +267,42 @@ Shape::Shape(ShapeType st, int sc, DataSet *ds)
         quads = NULL;
         break;
 
+      case ST_LINE:
+        nverts = 2;
+
+        xc[0] =  0;        yc[0] =  -1;        zc[0] =  0;
+        xc[1] =  0;        yc[1] =  +1;        zc[1] =  0;
+
+        nedges = 1;
+        edges = lineVerticesFromEdges;
+
+        ntris = 0;
+        tris = NULL;
+
+        nquads = 0;
+        quads = NULL;
+        break;
+
+      case ST_VERTEX:
+        nverts = 1;
+
+        xc[0] =  0;        yc[0] =   0;        zc[0] =  0;
+
+        nedges = 0;
+        edges = NULL;
+
+        ntris = 0;
+        tris = NULL;
+
+        nquads = 0;
+        quads = NULL;
+        break;
+
       case ST_POINT:
+        cerr << "Error\n";
+        exit(1);
+
+      default:
         cerr << "Error\n";
         exit(1);
     }
@@ -367,6 +407,30 @@ Shape::Shape(ShapeType st, Shape *parent, int c, int n, const char *nodes, DataS
         ntris  = 0;
         nquads = 0;
         break;
+
+      case ST_LINE:
+        nverts = 2;
+        nedges = 1;
+        edges  = lineVerticesFromEdges;
+        ntris  = 0;
+        tris   = NULL;
+        nquads = 0;
+        quads  = NULL;
+        break;
+
+      case ST_VERTEX:
+        nverts = 1;
+        nedges = 0;
+        edges  = NULL;;
+        ntris  = 0;
+        tris   = NULL;
+        nquads = 0;
+        quads  = NULL;
+        break;
+
+      default:
+        cerr << "ERROR";
+        exit(1);
     }
 
     splitCase = 0;
@@ -795,6 +859,10 @@ Shape::Invert()
 
       case ST_POINT:
         break;
+
+      default:
+        cerr << "ERROR";
+        exit(1);
     }
 
     Init();
@@ -970,6 +1038,36 @@ Shape::CheckCopyOf(Shape *s)
 
       case ST_POINT:
         cerr << "Error\n";
+        exit(1);
+        break;
+
+      case ST_LINE:
+        ncases = 2;
+        for (i=0; i<ncases; i++)
+        {
+            bool okay = true;
+            for (int p=0; p<2; p++)
+            {
+                if (s->pointcase[p] !=
+                    this->pointcase[lineTransforms[i].n[p]])
+                {
+                    okay = false;
+                }
+            }
+            if (okay)
+            {
+                return i;
+            }
+        }
+        break;
+
+      case ST_VERTEX:
+        // no copied cases for vertices; just fall through
+        break;
+
+      default:
+        cerr << "Error\n";
+        exit(1);
         break;
     }
 
@@ -1026,8 +1124,23 @@ Shape::Shape(Shape *copy, int xformID, Shape *parent, DataSet *ds)
         MakeCopyOf(copy, triTransforms[xformID]);
         break;
 
+      case ST_LINE:
+        MakeCopyOf(copy, lineTransforms[xformID]);
+        break;
+
+      case ST_VERTEX:
+        cerr << "Error: ST_VERTEX has no transformations.\n";
+        exit(1);
+        break;
+
       case ST_POINT:
+        cerr << "Error: ST_POINT does not support transformations.\n";
+        exit(1);
+        break;
+
+      default:
         cerr << "Error\n";
+        exit(1);
         break;
     }
 
@@ -1184,6 +1297,27 @@ Shape::MakeCopyOf(Shape *s, PixelTransform &xform)
 
 void
 Shape::MakeCopyOf(Shape *s, TriTransform &xform)
+{
+    for (int i=0; i<nverts; i++)
+    {
+        char c1 = s->parentNodes[i];
+        char c2 = c1;
+        if (c1 >= '0' && c1 <= '9')
+        {
+            c2 = xform.n[c1 - '0'] + '0';
+        }
+        else if (c1 >= 'a' && c1 <= 'l')
+        {
+            c2 = xform.e[c1 - 'a'];
+        }
+        parentNodes[i] = c2;
+    }
+    if (xform.f)
+        Invert();
+}
+
+void
+Shape::MakeCopyOf(Shape *s, LineTransform &xform)
 {
     for (int i=0; i<nverts; i++)
     {

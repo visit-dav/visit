@@ -256,6 +256,11 @@ avtBasicNETCDFFileFormat::ActivateTimestep()
 //
 //    Mark C. Miller, Tue Aug 15 15:28:11 PDT 2006
 //    Added call to SetFormatCanDoDomainDecomposition
+//
+//    Jeremy Meredith, Mon Aug 28 17:39:33 EDT 2006
+//    Added test to make sure a variable had >0 dimensions before examining
+//    them.
+//
 // ****************************************************************************
 
 void
@@ -309,6 +314,9 @@ avtBasicNETCDFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         {
             // Count the number of variable dimensions that are greater
             // than 1.
+            if (varndims == 0)
+                continue;
+
             int nDims = 0;
             int maxDim = dimSizes[vardims[0]];
             int maxDimIndex = 0;

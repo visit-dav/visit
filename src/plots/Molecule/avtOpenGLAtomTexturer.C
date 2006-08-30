@@ -40,9 +40,9 @@
 #include <math.h>
 #include <DebugStream.h>
 
-//#ifndef TextureModeData
-//#define GLEW_SUPPORTED
-//#endif
+#ifndef TextureModeData
+#define GLEW_SUPPORTED
+#endif
 
 #ifdef GLEW_SUPPORTED
 #include <GL/glew.h>
@@ -637,7 +637,7 @@ ShaderModeData::SetHint(int hint, int val)
     {
         if(hint == avtOpenGLAtomTexturer::HINT_SET_SCREEN_WIDTH)
             GLSL_screen_w = val;
-        else if(hint == avtOpenGLAtomTexturer::HINT_SET_SCREEN_WIDTH)
+        else if(hint == avtOpenGLAtomTexturer::HINT_SET_SCREEN_HEIGHT)
             GLSL_screen_h = val;
     }
 }

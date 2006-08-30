@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+  <Plugin name="CTRL" type="database" label="CTRL" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false">
+    <Extensions>
+      ctrl
+      CTRL
+    </Extensions>
+    <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

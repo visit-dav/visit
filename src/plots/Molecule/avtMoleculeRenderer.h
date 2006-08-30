@@ -59,6 +59,8 @@ class avtMoleculeRendererImplementation;
 //  Creation:   February  3, 2006
 //
 //  Modifications:
+//    Jeremy Meredith, Tue Aug 29 13:20:08 EDT 2006
+//    Changed spec coeffs to doubles.
 //
 // ****************************************************************************
 
@@ -95,7 +97,7 @@ class avtMoleculeRenderer : public avtCustomRenderer
     virtual void GlobalLightingOn();
     virtual void GlobalLightingOff();
     virtual void GlobalSetAmbientCoefficient(const float);
-    virtual void SetSpecularProperties(bool,float,float,
+    virtual void SetSpecularProperties(bool,double,double,
                                        const ColorAttribute&);
 
     float ambient_coeff;

@@ -64,11 +64,13 @@ class avtExtractMolInfoFilter;
 //  Creation:   Februray 14, 2006
 //
 //  Modifications:
+//    Jeremy Meredith, Tue Aug 29 13:19:09 EDT 2006
+//    Changed to point data plot.
 //
 // ****************************************************************************
 
 class
-avtMoleculePlot : public avtSurfaceDataPlot
+avtMoleculePlot : public avtPointDataPlot
 {
   public:
     avtMoleculePlot();

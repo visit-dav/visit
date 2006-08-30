@@ -412,11 +412,15 @@ ViewerFileServer::GetMetaData(const std::string &host,
 //   Added bool argument to force reading of all cycles and times
 //   to call to GetMetaDataHelper
 //   
+//   Jeremy Meredith, Mon Aug 28 16:55:01 EDT 2006
+//   Added ability to force using a specific plugin when opening a file.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
 ViewerFileServer::GetMetaDataForState(const std::string &host, 
-    const std::string &db, int timeState)
+    const std::string &db, int timeState,
+    const std::string &forcedFileType)
 {
     //
     // Make sure a valid state was passed.
@@ -461,7 +465,8 @@ ViewerFileServer::GetMetaDataForState(const std::string &host,
     }
 
     const bool forceReadAllCyclesAndTimes = false;
-    return GetMetaDataHelper(host, db, timeState, forceReadAllCyclesAndTimes);
+    return GetMetaDataHelper(host, db, timeState, forceReadAllCyclesAndTimes,
+                             forcedFileType);
 }
 
 // ****************************************************************************
@@ -492,11 +497,16 @@ ViewerFileServer::GetMetaDataForState(const std::string &host,
 //
 //   Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //   Added use of tryHarderCyclesTimes in call to GetMetaData
+//
+//   Jeremy Meredith, Mon Aug 28 16:55:01 EDT 2006
+//   Added ability to force using a specific plugin when opening a file.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
 ViewerFileServer::GetMetaDataHelper(const std::string &host, 
-    const std::string &db, int timeState, bool forceReadAllCyclesAndTimes)
+    const std::string &db, int timeState, bool forceReadAllCyclesAndTimes,
+    const std::string &forcedFileType)
 {
     // Try and start a server if one does not exist.
     NoFaultStartServer(host);
@@ -524,7 +534,8 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
                 const avtDatabaseMetaData *md =
                     servers[host]->proxy->GetMetaData(db, timeState,
                                               forceReadAllCyclesAndTimes ||
-                                              tryHarderCyclesTimes);
+                                              tryHarderCyclesTimes,
+                                              forcedFileType);
 
                 if(md != NULL)
                 {

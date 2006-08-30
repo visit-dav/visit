@@ -389,6 +389,8 @@ avtMoleculePlot::ApplyRenderingTransformation(avtDataObject_p input)
 //  Creation:   February  3, 2006
 //
 //  Modifications:
+//    Jeremy Meredith, Mon Aug 28 18:25:52 EDT 2006
+//    Account for model number directory prefix.
 //
 // ****************************************************************************
 
@@ -397,9 +399,13 @@ avtMoleculePlot::CustomizeBehavior(void)
 {
     SetLegendRange();
 
-    if (string(varname) == "element" ||
-        string(varname) == "resseq"  ||
-        string(varname) == "restype")
+    string v(varname);
+    if (v == "element" ||
+        v == "resseq"  ||
+        v == "restype" ||
+        (v.length()>8 && v.substr(v.length()-8) == "/element") ||
+        (v.length()>7 && v.substr(v.length()-7) == "/resseq")  ||
+        (v.length()>8 && v.substr(v.length()-8) == "/restype"))
     {
         behavior->SetLegend(levelsLegendRefPtr);
     }
@@ -442,7 +448,7 @@ avtMoleculePlot::CustomizeMapper(avtDataObjectInformation &info)
 void
 avtMoleculePlot::ReleaseData(void)
 {
-    avtSurfaceDataPlot::ReleaseData();
+    avtPointDataPlot::ReleaseData();
 }
 
 
@@ -460,6 +466,12 @@ avtMoleculePlot::ReleaseData(void)
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 23, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Aug 28 18:18:17 EDT 2006
+//    Bonds are now line segments cells, and atoms are both points and
+//    vertex cells.  This means we cannot look at cell data when looking
+//    for atom arrays.  Also, account for model number directory prefix.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -471,20 +483,14 @@ avtMoleculePlot::EnhanceSpecification(avtPipelineSpecification_p spec)
     vector<string> added_vars;
 
     //
-    // We always want the "bonds" array
-    //
-    if (string(primaryVariable) != "bonds")
-    {
-        added_vars.push_back("bonds");
-    }
-
-    //
     // Determine if we need the "element" array
     //
     if (atts.GetScaleRadiusBy() == MoleculeAttributes::Covalent ||
         atts.GetScaleRadiusBy() == MoleculeAttributes::Atomic)
     {
-        if (string(primaryVariable) != "element")
+        string pv(primaryVariable);
+        if (pv != "element" &&
+            (pv.length()<=8 || pv.substr(pv.length()-8) != "/element"))
         {
             added_vars.push_back("element");
         }
@@ -516,9 +522,10 @@ avtMoleculePlot::EnhanceSpecification(avtPipelineSpecification_p spec)
     }
 
     //
-    // We *always* need zone numbers
+    // We *always* need node numbers.  I think we need zone numbers, too!
     //
     nds->TurnZoneNumbersOn();
+    nds->TurnNodeNumbersOn();
 
     //
     // Create the new pipeline spec from the data spec, and return
@@ -541,13 +548,21 @@ avtMoleculePlot::EnhanceSpecification(avtPipelineSpecification_p spec)
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 23, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Aug 28 18:25:52 EDT 2006
+//    Account for model number directory prefix.
+//
 // ****************************************************************************
 avtLegend_p
 avtMoleculePlot::GetLegend(void)
 {
-    if (string(varname) == "element" ||
-        string(varname) == "resseq"  ||
-        string(varname) == "restype")
+    string v(varname);
+    if (v == "element" ||
+        v == "resseq"  ||
+        v == "restype" ||
+        (v.length()>8 && v.substr(v.length()-8) == "/element") ||
+        (v.length()>7 && v.substr(v.length()-7) == "/resseq")  ||
+        (v.length()>8 && v.substr(v.length()-8) == "/restype"))
     {
         return levelsLegendRefPtr;
     }
@@ -577,6 +592,9 @@ avtMoleculePlot::GetLegend(void)
 //
 //    Hank Childs, Thu May 18 11:16:20 PDT 2006
 //    Fix UMRs.
+//
+//    Jeremy Meredith, Mon Aug 28 18:27:19 EDT 2006
+//    Account for model number directory prefix.
 //
 // ****************************************************************************
 
@@ -622,7 +640,8 @@ avtMoleculePlot::SetLegendRange()
         string colortablename = "";
         int    numcolors = 0;
 
-        if (varName == "element")
+        if (varName == "element" ||
+            (varName.length()>8 && varName.substr(varName.length()-8) == "/element"))
         {
             colortablename = atts.GetElementColorTable();
             if (colortablename == "Default")
@@ -632,7 +651,8 @@ avtMoleculePlot::SetLegendRange()
 
             levelsLegend->SetLabelColorMap(elementColorMap);
         }
-        else if (varName == "resseq")
+        else if (varName == "resseq" ||
+                 (varName.length()>7 && varName.substr(varName.length()-7) == "/resseq"))
         {
             colortablename = atts.GetResidueSequenceColorTable();
             if (colortablename == "Default")
@@ -655,7 +675,8 @@ avtMoleculePlot::SetLegendRange()
             // Make the renderer use the levelsLUT for colors.
             renderer->SetLevelsLUT(levelsLUT);
         }
-        else if (varName == "restype")
+        else if (varName == "restype" ||
+                 (varName.length()>8 && varName.substr(varName.length()-8) == "/restype"))
         {
             colortablename = atts.GetResidueTypeColorTable();
             if (colortablename == "Default")

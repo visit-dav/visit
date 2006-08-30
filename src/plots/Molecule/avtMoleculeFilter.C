@@ -99,16 +99,24 @@ avtMoleculeFilter::~avtMoleculeFilter()
 //  Creation:     March 23, 2006
 //
 //  Modifications:
+//    Jeremy Meredith, Mon Aug 28 18:18:17 EDT 2006
+//    Bonds are now line segments cells, and atoms are both points and
+//    vertex cells.  This means we cannot look at cell data when looking
+//    for atom arrays.  Also, account for model number directory prefix.
 //
 // ****************************************************************************
 
 vtkDataSet *
 avtMoleculeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
-    int natoms = in_ds->GetNumberOfCells();
-    vtkDataArray *primary = in_ds->GetCellData()->GetScalars();
-    if (!primary)
-        primary = in_ds->GetPointData()->GetScalars();
+    int natoms = in_ds->GetNumberOfPoints();
+    vtkDataArray *primary = in_ds->GetPointData()->GetScalars();
+    if (primary && !primary->IsA("vtkFloatArray"))
+    {
+        debug4<<"avtMoleculeFilter::ExecuteData: primary var wasn't a float\n";
+        return  in_ds;
+    }
+
     if (natoms>0 && primary)
     {
         name = primary->GetName();
@@ -179,8 +187,8 @@ avtMoleculeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 void
 avtMoleculeFilter::RefashionDataObjectInfo(void)
 {
-    // We probably don't need this.
-    //GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(0);
+    // We're pretending it's a point plot
+    GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(0);
 
     // Don't bother with the normals.
     GetOutput()->GetInfo().GetValidity().SetNormalsAreInappropriate(true);
@@ -266,13 +274,17 @@ avtMoleculeFilter::PreExecute()
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 23, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Aug 28 18:29:47 EDT 2006
+//    Account for model number directory prefix.
+//
 // ****************************************************************************
 void
 avtMoleculeFilter::PostExecute()
 {
     vector<string> labels;
 
-    if (name == "element")
+    if (name == "element" || (name.length()>8 && name.substr(name.length()-8)=="/element"))
     {
         for (set<int>::iterator it = used_values.begin();
              it != used_values.end();
@@ -281,7 +293,7 @@ avtMoleculeFilter::PostExecute()
             labels.push_back(element_names[*it - 1]);
         }
     }
-    else if (name == "restype")
+    else if (name == "restype" || (name.length()>8 && name.substr(name.length()-8)=="/restype"))
     {
         // Poke on/off state, and the short and long names of all of 
         // the known residue names into the labels. We send them all 

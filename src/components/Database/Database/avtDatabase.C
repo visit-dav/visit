@@ -560,6 +560,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
 //    Add Variable and DataExtents from CurveMetaData. 
 //
+//    Jeremy Meredith, Mon Aug 28 16:45:10 EDT 2006
+//    Added unit cell vectors.  Added nodesAreCritical.
+//
 // ****************************************************************************
 
 void
@@ -621,6 +624,8 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
             haveSetTrueSpatialExtents = true;
         }
         atts.SetMeshCoordType(mmd->meshCoordType);
+        atts.SetNodesAreCritical(mmd->nodesAreCritical);
+        atts.SetUnitCellVectors(mmd->unitCellVectors);
     }
 
     //

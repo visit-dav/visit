@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+  <Plugin name="CreateBonds" type="operator" label="CreateBonds" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" iconFile="CreateBonds.xpm">
+    <Attribute name="CreateBondsAttributes" purpose="Attributes for the CreateBondsOperator" persistent="true" exportAPI="" exportInclude="">
+      <Field name="elementVariable" label="Variable for atomic number" type="variablename" vartypes="01000000000">
+        element
+      </Field>
+      <Field name="atomicNumber1" label="Second atomic number" type="intVector">
+      </Field>
+      <Field name="atomicNumber2" label="Second atomic number" type="intVector">
+      </Field>
+      <Field name="minDist" label="Minimum distance" type="doubleVector">
+      </Field>
+      <Field name="maxDist" label="Maximum distance" type="doubleVector">
+      </Field>
+      <Field name="simpleAlgorithmFlag" label="simpleAlgorithmFlag" type="bool">
+        false
+      </Field>
+      <Field name="simpleMinDistWithH" label="simpleMinDistWithH" type="double">
+        0.400000
+      </Field>
+      <Field name="simpleMaxDistWithH" label="simpleMaxDistWithH" type="double">
+        1.200000
+      </Field>
+      <Field name="simpleMinDistNonH" label="simpleMinDistNonH" type="double">
+        0.400000
+      </Field>
+      <Field name="simpleMaxDistNonH" label="simpleMaxDistNonH" type="double">
+        1.900000
+      </Field>
+      <Field name="maxBondsClamp" label="maxBondsClamp" type="int">
+        10
+      </Field>
+    </Attribute>
+  </Plugin>

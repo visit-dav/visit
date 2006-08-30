@@ -67,6 +67,9 @@ class vtkUnstructuredGrid;
 //    Renamed without the "3D" because I also made it support 2D.
 //    Changed it to a single cutoff for scalars to make the math more robust.
 //
+//    Jeremy Meredith, Tue Aug 29 13:43:56 EDT 2006
+//    Added support for forcing removal of entire cells instead of clipping.
+//
 // ****************************************************************************
 class VISIT_VTK_API vtkVisItClipper
     : public vtkDataSetToUnstructuredGridFilter
@@ -77,6 +80,7 @@ class VISIT_VTK_API vtkVisItClipper
 
     static vtkVisItClipper *New();
 
+    virtual void SetRemoveWholeCells(bool);
     virtual void SetClipFunction(vtkImplicitFunction*);
     virtual void SetClipScalars(float*, float);
     virtual void SetInsideOut(bool);
@@ -100,6 +104,7 @@ class VISIT_VTK_API vtkVisItClipper
     int *CellList;
     int  CellListSize;
   private:
+    bool   removeWholeCells;
     bool   insideOut;
     vtkImplicitFunction *clipFunction;
     float *scalarArray;

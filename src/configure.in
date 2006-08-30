@@ -610,6 +610,12 @@ dnl
 dnl    Brad Whitlock, Thu Jul 20 11:55:51 PDT 2006
 dnl    Added CFITSIO support.
 dnl
+dnl    Jeremy Meredith, Mon Aug 28 17:35:44 EDT 2006
+dnl    Forced test for glTexImage3D to occur in C++ mode; the library
+dnl    may have it, but without a correct prototype it will fail to
+dnl    compile in the main code.  Sometimes to pick it up we need to
+dnl    define GL_GLEXT_PROTOTYPES, so I added a check for that as well.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -751,6 +757,12 @@ else
 fi
 AC_SUBST(CXXFLAGS)
 
+#
+# Get the simple C++ tests out of the way
+#
+AC_LANG_CPLUSPLUS
+AC_TRY_LINK[]
+AC_LANG_C
 
 #
 # Check to see if the parallel version is enabled.
@@ -846,12 +858,14 @@ if test "$SHORT_UNAME" = "darwin"; then
 fi
 AC_SUBST(GL_LIBS)
 
+
 #
 # Check for 3D texturing support in OpenGL
 #
+AC_LANG_CPLUSPLUS
 oldlibs="$LIBS"
 LIBS="$LIBS $GL_LIBS"
-AC_MSG_CHECKING(for glTexImage3D in OpenGL)
+AC_MSG_CHECKING(for glTexImage3D using only default gl.h)
 AC_TRY_LINK([#ifdef __APPLE__
 #include <OpenGL/gl.h>
 #else
@@ -862,8 +876,31 @@ AC_TRY_LINK([#ifdef __APPLE__
             
             AC_DEFINE(HAVE_GL_TEX_IMAGE_3D)
             AC_MSG_RESULT(yes),
+            try_glext_proto="yes"
             AC_MSG_RESULT(no));
+
+if test -n "$try_glext_proto"; then
+    AC_MSG_CHECKING(for glTexImage3D by adding GL_GLEXT_PROTOTYPES define)
+    AC_TRY_LINK([
+    #define GL_GLEXT_PROTOTYPES
+    #ifdef __APPLE__
+    #include <OpenGL/gl.h>
+    #else
+    #include <GL/gl.h>
+    #endif],
+	    [glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, 0,0,0,
+                          0, GL_RGBA, GL_UNSIGNED_BYTE, 0);],
+            
+            AC_DEFINE(HAVE_GL_TEX_IMAGE_3D)
+            AC_DEFINE(NEED_GLEXT_PROTO)
+            AC_MSG_RESULT(yes),
+            AC_MSG_RESULT(no));
+fi
+
 LIBS="$oldlibs"
+
+
+AC_LANG_C
 
 #
 # Set up some VTK variables.

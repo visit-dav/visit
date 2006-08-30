@@ -61,6 +61,9 @@
 //    Brad Whitlock, Mon Mar 27 16:27:18 PST 2006
 //    Added support for imposter rendering.
 //
+//    Jeremy Meredith, Tue Aug 29 11:28:15 EDT 2006
+//    Changed point locations to doubles.
+//
 // ****************************************************************************
 
 class avtOpenGLMoleculeRenderer : public avtMoleculeRendererImplementation
@@ -107,7 +110,7 @@ class avtOpenGLMoleculeRenderer : public avtMoleculeRendererImplementation
 
     bool cylinders_calculated;
     void CalculateCylPts();
-    void DrawCylinderBetweenTwoPoints(float*, float *, float r, int);
+    void DrawCylinderBetweenTwoPoints(double *, double *, float r, int);
 
     int            numcolors;
     unsigned char *colors;

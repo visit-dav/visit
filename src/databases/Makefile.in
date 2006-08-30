@@ -227,6 +227,9 @@
 #   Brad Whitlock, Thu Jul 20 11:54:34 PDT 2006
 #   Added FITS reader.
 #
+#   Jeremy Meredith, Wed Jul 26 17:21:58 EDT 2006
+#   Added VASP and CTRL molecular formats.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -246,10 +249,44 @@ NETCDF=NETCDF
 PDB=KullLite PDB
 SAF=SAF
 SAMPLES=Rect Hex
-REQUIRED=ANALYZE ANSYS AUXFile BOV BOW CMAT Curve2D Dune EnSight Image Lines \
- MFIX MM5 NASTRAN OpenFOAM OVERFLOW PATRAN PLOT2D PLOT3D Point3D ProteinDataBank \
- SAR STL Shapefile Silo SimV1 Spheral TFT TSurf Tecplot Vis5D Vista VTK \
- WavefrontOBJ Xmdv
+REQUIRED=\
+ ANALYZE \
+ ANSYS \
+ AUXFile \
+ BOV \
+ BOW \
+ CMAT \
+ CTRL \
+ Curve2D \
+ Dune \
+ EnSight \
+ Image \
+ Lines \
+ MFIX \
+ MM5 \
+ NASTRAN \
+ OpenFOAM \
+ OVERFLOW \
+ PATRAN \
+ PLOT2D \
+ PLOT3D \
+ Point3D \
+ ProteinDataBank \
+ SAR \
+ STL \
+ Shapefile \
+ Silo \
+ SimV1 \
+ Spheral \
+ TFT \
+ TSurf \
+ Tecplot \
+ VASP \
+ Vis5D \
+ Vista \
+ VTK \
+ WavefrontOBJ \
+ Xmdv
 VISUS=ViSUS
 CFITSIO=FITS
 

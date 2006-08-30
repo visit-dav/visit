@@ -170,6 +170,10 @@ class Xfer;
 //    virtual database is stored along with the definition in case we have to
 //    reread the definition later.
 //
+//    Jeremy Meredith, Mon Aug 28 16:48:30 EDT 2006
+//    Added ability to force using a specific plugin when reading
+//    the metadata from a file (if it causes the file to be opened).
+//
 // ****************************************************************************
 
 class MDServerConnection
@@ -215,7 +219,9 @@ public:
     Connection *GetWriteConnection() const;
 
     // Functions used by the RPC Executors.
-    void ReadMetaData(std::string file, int timeState, bool forceReadAllCyclesAndTimes);
+    void ReadMetaData(std::string file, int timeState,
+                      bool forceReadAllCyclesAndTimes,
+                      std::string forcedFileType);
     avtDatabaseMetaData *GetCurrentMetaData() const;
 
     void ReadSIL(std::string file, int timeState);
@@ -309,7 +315,8 @@ private:
     static VirtualFileInformationMap  virtualFiles;
 
     avtDatabase               *GetDatabase(std::string, int timeState,
-                                           bool forceReadAllCyclesAndTimes);
+                                           bool forceReadAllCyclesAndTimes,
+                                           std::string forcedFileType="");
 };
 
 #endif

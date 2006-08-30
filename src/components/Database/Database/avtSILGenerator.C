@@ -83,6 +83,9 @@ static SILCategoryRole CategoryFromCollectionClassName(string classStr);
 //    Jeremy Meredith, August 25, 2005
 //    Added group origin.
 //
+//    Jeremy Meredith, Mon Aug 28 16:25:07 EDT 2006
+//    Added scalar enumeration types.
+//
 // ****************************************************************************
 
 void
@@ -165,6 +168,20 @@ avtSILGenerator::CreateSIL(avtDatabaseMetaData *md, avtSIL *sil)
             }
         }
         matListList.push_back(matList);
+
+        //
+        // Add scalar enumerations if they exist
+        //
+
+        for (int j=0; j<md->GetNumScalars(); j++)
+        {
+            const avtScalarMetaData *smd = md->GetScalar(j);
+            if (smd->isEnumeration &&
+                smd->meshName == mesh->name)
+            {
+                AddEnumScalars(sil, topIndex, smd);
+            }
+        }
 
         //
         // IF WE EVER WANT TO STOP USING SIL MATRICES, THE BELOW CODE CAN BE
@@ -608,6 +625,42 @@ avtSILGenerator::AddMaterialSubsets(avtSIL *sil, const vector<int> &domList,
  
         sil->AddCollection(coll);
     }
+}
+
+
+// ****************************************************************************
+//  Method:  avtSILGenerator::AddEnumScalars
+//
+//  Purpose:
+//    Adds collections for an enumerated scalar to the SIL.
+//
+//  Arguments:
+//      sil        The sil to add the species to.
+//      top        The index of the whole
+//      smd        The meta data for the enumerated scalar
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 28, 2006
+//
+// ****************************************************************************
+void
+avtSILGenerator::AddEnumScalars(avtSIL *sil, int top,
+                                const avtScalarMetaData *smd)
+{
+    int nEnums = smd->enumValues.size();
+    vector<int> enumList;
+    for (int k=0; k<nEnums; k++)
+    {
+        char name[1024];
+        sprintf(name, "%s", smd->enumNames[k].c_str());
+        avtSILSet_p set = new avtSILSet(name, -1);
+        int dIndex = sil->AddSubset(set);
+        enumList.push_back(dIndex);
+    }
+    avtSILEnumeratedNamespace *ns = new avtSILEnumeratedNamespace(enumList);
+    avtSILCollection_p coll = new avtSILCollection(smd->name, SIL_ENUMERATION,
+                                                   top, ns);
+    sil->AddCollection(coll);
 }
 
 

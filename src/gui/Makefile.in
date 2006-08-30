@@ -343,6 +343,14 @@
 #    Shelly Prevost, Wed Nov 16 10:46:36 PST 2005
 #    Added QUI_LIBS for dynamic ui loading.  Added SimCommandSlots.
 #
+#    Jeremy Meredith, Wed Aug  9 15:39:14 EDT 2006
+#    Added QvisElementButton.  Refactored QvisColorGridWidget into
+#    QvisGridWidget and added QvisPeriodicTableWidget.
+#    Added QvisFileOpenWindow, and split out QFileSelectionListBoxItem
+#    and QVirtualFileListBoxItem from QvisFileSelectionWindow.
+#    Changed moc file builds to automatic rule so it picks up the
+#    dependencies correctly.
+#
 ##############################################################################
 
 ##
@@ -392,15 +400,18 @@ HDRMOC = \
     QvisDelayedWindowObserver.h \
     QvisDelayedWindowSimpleObserver.h \
     QvisMeshManagementWindow.h \
+    QvisElementButton.h \
     QvisEngineWindow.h \
     QvisExportDBWindow.h \
     QvisExpressionsWindow.h \
     QvisFileInformationWindow.h \
     QvisFilePanel.h \
     QvisFileSelectionWindow.h \
+    QvisFileOpenWindow.h \
     QvisFtp.h \
     QvisGaussianOpacityBar.h \
     QvisGlobalLineoutWindow.h \
+    QvisGridWidget.h \
     QvisGUIApplication.h \
     QvisHelpWindow.h \
     QvisHostProfileWindow.h \
@@ -421,6 +432,7 @@ HDRMOC = \
     QvisOpacitySlider.h \
     QvisOperatorWindow.h \
     QvisOutputWindow.h \
+    QvisPeriodicTableWidget.h \
     QvisPickWindow.h \
     QvisPlotListBox.h \
     QvisPlotManagerWidget.h \
@@ -484,6 +496,8 @@ SRC = \
     NameSimplifier.C \
     mini3D.C \
     QualifiedFilename.C \
+    QFileSelectionListBoxItem.C \
+    QVirtualFileListBoxItem.C \
     QvisListViewFileItem.C \
     QvisPlotListBoxItem.C \
     QvisSubsetListViewItem.C \
@@ -550,8 +564,8 @@ moc: $(SRCMOC)
 ##
 ## Source file specific rules
 ##
-${SRCMOC}:
-	${MOC} ${@:_moc.C=.h} > $@
+.h_moc.C:
+	$(MOC) $< > $@
 
 main.o: main.C QvisMainWindow.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c main.C

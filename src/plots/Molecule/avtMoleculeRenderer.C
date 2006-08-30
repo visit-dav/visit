@@ -66,6 +66,8 @@
 //  Creation:    March 23, 2006
 //
 //  Modifications:
+//    Jeremy Meredith, Mon Aug 28 18:13:46 EDT 2006
+//    Initialize specular parameters.
 //
 // ****************************************************************************
 avtMoleculeRenderer::avtMoleculeRenderer()
@@ -78,6 +80,10 @@ avtMoleculeRenderer::avtMoleculeRenderer()
 
     ambient_coeff = 0;
     spec_coeff = 0;
+    spec_power = 0;
+    spec_r = 0;
+    spec_g = 0;
+    spec_b = 0;
 }
 
 // ****************************************************************************
@@ -186,6 +192,11 @@ avtMoleculeRenderer::Render(vtkDataSet *ds)
     }
 
     // get data set
+    if (ds->GetDataObjectType() != VTK_POLY_DATA)
+    {
+        EXCEPTION1(ImproperUseException,
+                   "Inappropriate mesh type for Molecule Plot ");
+    }
     vtkPolyData *polydata = (vtkPolyData*)ds;
 
 
@@ -325,8 +336,8 @@ avtMoleculeRenderer::GlobalLightingOff()
 //
 // ****************************************************************************
 void
-avtMoleculeRenderer::SetSpecularProperties(bool flag, float coeff, 
-                                           float power,
+avtMoleculeRenderer::SetSpecularProperties(bool flag, double coeff, 
+                                           double power,
                                            const ColorAttribute &color)
 {
     spec_coeff = flag ? coeff : 0;

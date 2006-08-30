@@ -1620,11 +1620,14 @@ ViewerProxy::ConnectToMetaDataServer(const std::string &hostName,
 //    I made it possible to tell the viewer that we don't want to add default
 //    plots even if the database has them.
 //   
+//    Jeremy Meredith, Mon Aug 28 16:55:01 EDT 2006
+//    Added ability to force using a specific plugin when opening a file.
+//
 // ****************************************************************************
 
 void
 ViewerProxy::OpenDatabase(const std::string &database, int timeState,
-    bool addDefaultPlots)
+    bool addDefaultPlots, const std::string &forcedFileType)
 {
     //
     // Set the rpc type and arguments.
@@ -1633,6 +1636,7 @@ ViewerProxy::OpenDatabase(const std::string &database, int timeState,
     viewerRPC->SetDatabase(database);
     viewerRPC->SetIntArg1(timeState);
     viewerRPC->SetBoolFlag(addDefaultPlots);
+    viewerRPC->SetStringArg1(forcedFileType);
 
     //
     // Issue the RPC.
@@ -5299,7 +5303,7 @@ ViewerProxy::SetWindowArea(int x, int y, int w, int h)
 //
 //   Kathleen Bonnell, Wed Dec 15 17:12:47 PST 2004 
 //   Added optional bool globalflag.
-//   
+//
 //   Hank Childs, Mon Jul 10 17:37:14 PDT 2006
 //   Added two double arguments.
 //

@@ -5,6 +5,7 @@
         Domain
         Group
         Material
+        EnumScalar
         Unknown
       </Enum>
       <Enum name="ColoringMethod">

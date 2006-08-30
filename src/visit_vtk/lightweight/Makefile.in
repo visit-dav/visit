@@ -75,6 +75,12 @@
 #    Kathleen Bonnell, Mon Aug 14 11:39:22 PDT 2006 
 #    Added vtkCellIntersections. 
 #
+#    Jeremy Meredith, Tue Aug 22 16:28:36 EDT 2006
+#    Added vtkEnumThreshold.
+#
+#    Jeremy Meredith, Tue Aug 29 14:27:57 EDT 2006
+#    Added ClipCasesLin and ClipCasesVtx.
+#
 ##############################################################################
 
 ##
@@ -88,6 +94,7 @@
 ##
 SRC=InitVTKNoGraphics.C \
     ClipCasesHex.C \
+    ClipCasesLin.C \
     ClipCasesPix.C \
     ClipCasesPyr.C \
     ClipCasesQua.C \
@@ -95,9 +102,11 @@ SRC=InitVTKNoGraphics.C \
     ClipCasesTri.C \
     ClipCasesWdg.C \
     ClipCasesVox.C \
+    ClipCasesVtx.C \
     vtkCellIntersections.C \
     vtkDataSetFromVolume.C \
     vtkDebugStream.C \
+    vtkEnumThreshold.C \
     vtkPolyDataRelevantPointsFilter.C \
     vtkTriangulationTables.C \
     vtkUnstructuredGridBoundaryFilter.C \

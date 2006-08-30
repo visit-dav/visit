@@ -43,7 +43,6 @@
 
 #include <vtkCell.h>
 #include <vtkCellData.h>
-#include <vtkClipPolyData.h>
 #include <vtkDataSet.h>
 #include <vtkIdList.h>
 #include <vtkImplicitBoolean.h>
@@ -246,15 +245,17 @@ avtClipFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Bonnell, Mon Jul 31 11:32:48 PDT 2006 
 //    Handle 1D RectilinearGrids. 
 //
-//    Kathleen Bonnell, Thu Aug 24 16:23:16 PDT 2006 
-//    Fix determination of 1D rgrid. 
+//    Jeremy Meredith, Tue Aug 29 13:36:22 EDT 2006
+//    Removed vtkClipPolyData; our fast clipper now supports poly data.
+//    Made use of "nodesAreCritical", which specifies that cells should
+//    be used for connectivity only, not interpolation, which means that
+//    clip should either keep the cell whole or remove it entirely.
 //
 // ****************************************************************************
 
 vtkDataSet *
 avtClipFilter::ProcessOneChunk(vtkDataSet *inDS, int dom, std::string, bool)
 {
-    vtkClipPolyData *clipPoly = vtkClipPolyData::New();
     vtkVisItClipper *fastClipper = vtkVisItClipper::New();
     vtkImplicitBoolean *ifuncs = vtkImplicitBoolean::New();
  
@@ -263,56 +264,39 @@ avtClipFilter::ProcessOneChunk(vtkDataSet *inDS, int dom, std::string, bool)
     if (!funcSet)
     {
         // we have no functions to work with!
-        clipPoly->Delete();
         fastClipper->Delete();
         ifuncs->Delete();
         return inDS;
     }
+
+    bool nodesAreCritical =  GetInput()->
+                                  GetInfo().GetAttributes().NodesAreCritical();
 
     //
     // Set up and apply the clipping filters
     // 
     vtkDataSet *outDS = NULL;
 
-    if (inDS->GetDataObjectType() == VTK_POLY_DATA)
+    bool doFast = true;
+    if  (inDS->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
-        outDS = vtkPolyData::New();
-        clipPoly->SetInput((vtkPolyData*)inDS);
-        clipPoly->SetOutput((vtkPolyData*)outDS);
-        clipPoly->SetClipFunction(ifuncs);
-        clipPoly->GenerateClipScalarsOff();
-        if (inverse)
+        int dims[3];       
+        ((vtkRectilinearGrid*)inDS)->GetDimensions(dims);
+        if (dims[2] <= 1)
         {
-            clipPoly->InsideOutOn();
+            doFast = false;
+            outDS = Clip1DRGrid(ifuncs, inverse, (vtkRectilinearGrid*)inDS);
         }
-        else 
-        {
-            clipPoly->InsideOutOff();
-        }
-        clipPoly->Update();
     }
-    else
+    if (doFast)
     {
-        bool doFast = true;
-        if  (inDS->GetDataObjectType() == VTK_RECTILINEAR_GRID)
-        {
-            int dims[3];       
-            ((vtkRectilinearGrid*)inDS)->GetDimensions(dims);
-            if (dims[1] <= 1 && dims[2] <= 1)
-            {
-                doFast = false;
-                outDS = Clip1DRGrid(ifuncs, inverse, (vtkRectilinearGrid*)inDS);
-            }
-        }
-        if (doFast)
-        {
-            outDS = vtkUnstructuredGrid::New();
-            fastClipper->SetInput(inDS);
-            fastClipper->SetOutput((vtkUnstructuredGrid*)outDS);
-            fastClipper->SetClipFunction(ifuncs);
-            fastClipper->SetInsideOut(inverse);
-            fastClipper->Update();
-        }
+        outDS = vtkUnstructuredGrid::New();
+        fastClipper->SetInput(inDS);
+        fastClipper->SetOutput((vtkUnstructuredGrid*)outDS);
+        fastClipper->SetClipFunction(ifuncs);
+        fastClipper->SetInsideOut(inverse);
+        fastClipper->SetRemoveWholeCells(nodesAreCritical);
+        fastClipper->Update();
     }
 
     ifuncs->Delete();
@@ -331,7 +315,6 @@ avtClipFilter::ProcessOneChunk(vtkDataSet *inDS, int dom, std::string, bool)
         }
     }
 
-    clipPoly->Delete();
     fastClipper->Delete();
     return outDS;  // Calling function will free outDS.
 }

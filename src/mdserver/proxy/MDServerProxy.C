@@ -397,16 +397,23 @@ MDServerProxy::GetFileList(const std::string &filter,
 //
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added bool to forceReadAllCyclesAndTimes
+//
+//    Jeremy Meredith, Mon Aug 28 16:48:30 EDT 2006
+//    Added ability to force using a specific plugin when reading
+//    the metadata from a file (if it causes the file to be opened).
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
 MDServerProxy::GetMetaData(const string &file, int timeState,
-    bool forceReadAllCyclesTimes)
+                           bool forceReadAllCyclesTimes,
+                           const string &forcedFileType)
 {
-    // Try and get the file list from the MD Server. This could throw an
+    // Try and get the meta data from the MD Server. This could throw an
     // exception, but we don't want to catch it here.
     const avtDatabaseMetaData *md = getMetaDataRPC(file, timeState,
-                                        forceReadAllCyclesTimes);
+                                                   forceReadAllCyclesTimes,
+                                                   forcedFileType);
 
 #ifdef DEBUG
     // Write the metadata to stdout.
@@ -437,7 +444,7 @@ MDServerProxy::GetMetaData(const string &file, int timeState,
 const SILAttributes *
 MDServerProxy::GetSIL(const string &file, int timeState)
 {
-    // Try and get the file list from the MD Server. This could throw an
+    // Try and get the SIL from the MD Server. This could throw an
     // exception, but we don't want to catch it here.
     const SILAttributes *s = getSILRPC(file, timeState);
 

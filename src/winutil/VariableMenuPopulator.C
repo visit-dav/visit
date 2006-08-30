@@ -300,6 +300,10 @@ VariableMenuPopulator::ClearGroupingInfo()
 //   I made it clear out the variable grouping information. I also added
 //   timing code.
 //
+//   Jeremy Meredith, Thu Aug 24 11:31:58 EDT 2006
+//   For now, keep enumerated scalars out of the subset variable types.
+//   When the other infrastructure is ready, we can add them back.
+//
 // ****************************************************************************
 
 bool
@@ -490,7 +494,7 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
             //
             if (role == SIL_MATERIAL)
                 materialVars.AddVariable(varName, validVariable);
-            else
+            else if (role != SIL_ENUMERATION)
                 subsetVars.AddVariable(varName, validVariable);
         }
     }

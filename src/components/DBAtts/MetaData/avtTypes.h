@@ -68,7 +68,8 @@ enum avtSubsetType
     AVT_DOMAIN_SUBSET      = 0,
     AVT_GROUP_SUBSET,     /* 1 */
     AVT_MATERIAL_SUBSET,  /* 2 */
-    AVT_UNKNOWN_SUBSET    /* 3 */
+    AVT_ENUMSCALAR_SUBSET,/* 3 */
+    AVT_UNKNOWN_SUBSET    /* 4 */
 };
 
 
