@@ -245,11 +245,17 @@ avtClipFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Bonnell, Mon Jul 31 11:32:48 PDT 2006 
 //    Handle 1D RectilinearGrids. 
 //
+//    Kathleen Bonnell, Thu Aug 24 16:23:16 PDT 2006 
+//    Fix determination of 1D rgrid. 
+//
 //    Jeremy Meredith, Tue Aug 29 13:36:22 EDT 2006
 //    Removed vtkClipPolyData; our fast clipper now supports poly data.
 //    Made use of "nodesAreCritical", which specifies that cells should
 //    be used for connectivity only, not interpolation, which means that
 //    clip should either keep the cell whole or remove it entirely.
+//
+//    Hank Childs, Thu Aug 31 11:08:53 PDT 2006
+//    Fix up bad merge.
 //
 // ****************************************************************************
 
@@ -282,7 +288,7 @@ avtClipFilter::ProcessOneChunk(vtkDataSet *inDS, int dom, std::string, bool)
     {
         int dims[3];       
         ((vtkRectilinearGrid*)inDS)->GetDimensions(dims);
-        if (dims[2] <= 1)
+        if (dims[1] <= 1 && dims[2] <= 1)
         {
             doFast = false;
             outDS = Clip1DRGrid(ifuncs, inverse, (vtkRectilinearGrid*)inDS);

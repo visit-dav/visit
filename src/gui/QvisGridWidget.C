@@ -62,6 +62,9 @@
 //   Jeremy Meredith, Tue Aug 29 12:42:24 EDT 2006
 //   Refactored much of QvisColorGridWidget into this class.
 //
+//   Jeremy Meredith, Thu Aug 31 15:47:38 EDT 2006
+//   Initialize isPopup.
+//
 // ****************************************************************************
 
 QvisGridWidget::QvisGridWidget(QWidget *parent, const char *name,
@@ -69,7 +72,6 @@ QvisGridWidget::QvisGridWidget(QWidget *parent, const char *name,
 {
     numRows = 1;
     numColumns = 1;
-
     drawFrame = false;
 
     currentActiveItem = -1;
@@ -87,6 +89,7 @@ QvisGridWidget::QvisGridWidget(QWidget *parent, const char *name,
     setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,
         QSizePolicy::MinimumExpanding));
 
+    isPopup = false;
     timer = NULL;
 }
 
@@ -120,6 +123,8 @@ QvisGridWidget::~QvisGridWidget()
 // Creation:   August 11, 2006
 //
 // Modifications:
+//    Jeremy Meredith, Thu Aug 31 15:48:05 EDT 2006
+//    Only initialize timer and mouse tracking if we are a popup.
 //   
 // ****************************************************************************
 
@@ -128,13 +133,16 @@ QvisGridWidget::setIsPopup(bool ip)
 {
     isPopup = ip;
 
-    // Create the timer.
-    timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(hide()));
+    if (isPopup)
+    {
+        // Create the timer.
+        timer = new QTimer(this);
+        connect(timer, SIGNAL(timeout()), this, SLOT(hide()));
 
-    // Turn on mouse tracking for this widget so we can dispatch mouse
-    // events to child widgets.
-    setMouseTracking(true);
+        // Turn on mouse tracking for this widget so we can dispatch mouse
+        // events to child widgets.
+        setMouseTracking(true);
+    }
 }
 
 // ****************************************************************************
@@ -1093,6 +1101,8 @@ QvisGridWidget::drawSelectedItem(QPainter *paint, int index)
 // Creation:   Fri Oct 26 14:29:39 PST 2001
 //
 // Modifications:
+//    Jeremy Meredith, Thu Aug 31 15:47:12 EDT 2006
+//    Added support for subclasses being popups.
 //   
 // ****************************************************************************
 
@@ -1100,7 +1110,7 @@ void
 QvisGridWidget::show()
 {
     QWidget::show();
-    if (isPopup)
+    if (isPopup && timer)
         timer->start(15000, true);
 }
 
@@ -1114,6 +1124,8 @@ QvisGridWidget::show()
 // Creation:   Fri Oct 26 15:00:47 PST 2001
 //
 // Modifications:
+//    Jeremy Meredith, Thu Aug 31 15:47:12 EDT 2006
+//    Added support for subclasses being popups.
 //   
 // ****************************************************************************
 
@@ -1121,7 +1133,7 @@ void
 QvisGridWidget::hide()
 {
     QWidget::hide();
-    if (isPopup)
+    if (isPopup && timer)
         timer->stop();
 }
 
