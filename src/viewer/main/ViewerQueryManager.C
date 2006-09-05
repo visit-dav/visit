@@ -3328,6 +3328,10 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Hank Childs, Fri Aug 25 15:42:12 PDT 2006
 //    Add expected value query.
 //
+//    Hank Childs, Mon Aug 28 16:56:43 PDT 2006
+//    Added the "ShapeRelated" group of queries and added some new chord 
+//    and ray length distribution queries.
+//
 // ****************************************************************************
 
 void
@@ -3355,6 +3359,7 @@ ViewerQueryManager::InitializeQueryList()
     QueryList::Groups pr = QueryList::PickRelated;
     QueryList::Groups tr = QueryList::TimeRelated;
     QueryList::Groups vr = QueryList::VariableRelated;
+    QueryList::Groups sr = QueryList::ShapeRelated;
 
     QueryList::WindowType basic = QueryList::Basic;
     QueryList::WindowType sp  = QueryList::SinglePoint;
@@ -3377,14 +3382,17 @@ ViewerQueryManager::InitializeQueryList()
         queryTypes->AddQuery("Lineout", lq, vr, dp, 1, 0, qo);
     }
     queryTypes->AddQuery("Eulerian", dq, mr, basic, 1, 0, qo);
-    queryTypes->AddQuery("Compactness", dq, mr, basic, 1, 0, qo);
+    queryTypes->AddQuery("Compactness", dq, sr, basic, 1, 0, qo);
     queryTypes->AddQuery("Cycle", dq, tr, basic, 1, 0, qo);
     queryTypes->AddQuery("Time", dq, tr, basic, 1, 0, qo);
     queryTypes->AddQuery("L2Norm", dq, cr, basic, 1, 0, qo);
     queryTypes->AddQuery("Kurtosis", dq, cr, basic, 1, 0, qo);
-    queryTypes->AddQuery("Chord Length Distribution", dq, mr, ld, 1, 0, qo);
-    queryTypes->AddQuery("Mass Distribution", dq, vr, ld, 1, 0, qo);
-    queryTypes->AddQuery("Distance From Boundary", dq, vr, ld, 1, 0, qo);
+    queryTypes->AddQuery("Chord Length Distribution (individual)", dq, sr, ld, 1, 0, qo);
+    queryTypes->AddQuery("Chord Length Distribution (aggregate)", dq, sr, ld, 1, 0, qo);
+    queryTypes->AddQuery("Ray Length Distribution (individual)", dq, sr, ld, 1, 0, qo);
+    queryTypes->AddQuery("Ray Length Distribution (aggregate)", dq, sr, ld, 1, 0, qo);
+    queryTypes->AddQuery("Mass Distribution", dq, sr, ld, 1, 0, qo);
+    queryTypes->AddQuery("Distance From Boundary", dq, sr, ld, 1, 0, qo);
     queryTypes->AddQuery("Skewness", dq, cr, basic, 1, 0, qo);
     queryTypes->AddQuery("Integrate", dq, cr, basic, 1, 0, qo);
     queryTypes->AddQuery("Expected Value", dq, cr, basic, 1, 0, qo);
@@ -3397,9 +3405,9 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Volume", dq, mr, basic, 1, 0, qt);
     queryTypes->AddQuery("Moment of Inertia", dq, mr, basic, 1, 0, qo);
     queryTypes->AddQuery("Centroid", dq, mr, basic, 1, 0, qo);
-    queryTypes->AddQuery("Localized Compactness Factor", dq, mr, basic, 1, 0, qt);
-    queryTypes->AddQuery("Elliptical Compactness Factor", dq, mr, basic, 1, 0, qt);
-    queryTypes->AddQuery("Spherical Compactness Factor", dq, mr, basic, 1, 0, qt);
+    queryTypes->AddQuery("Localized Compactness Factor", dq, sr, basic, 1, 0, qt);
+    queryTypes->AddQuery("Elliptical Compactness Factor", dq, sr, basic, 1, 0, qt);
+    queryTypes->AddQuery("Spherical Compactness Factor", dq, sr, basic, 1, 0, qt);
     queryTypes->AddQuery("Average Mean Curvature", dq, mr, basic, 1, 0, qt);
     queryTypes->AddQuery("Variable Sum", dq, vr, basic, 1, 0, qt);
     queryTypes->AddQuery("Watertight", dq, mr, basic, 1, 0, qo);

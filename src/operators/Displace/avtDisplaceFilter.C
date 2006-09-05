@@ -54,6 +54,7 @@
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
+#include <InvalidDimensionsException.h>
 
 
 // ****************************************************************************
@@ -305,6 +306,47 @@ avtDisplaceFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     }
 
     return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtDisplaceFilter::PreExecute
+//
+//  Purpose:
+//      Check to see if the "default" variable is a valid variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 5, 2006
+//
+// ****************************************************************************
+
+void
+avtDisplaceFilter::PreExecute(void)
+{
+    avtPluginStreamer::PreExecute();
+
+    const char *displace_var = atts.GetVariable().c_str();
+    if (strcmp(displace_var, "default") == 0)
+        displace_var = pipelineVariable;
+
+    avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
+    if (inAtts.ValidVariable(displace_var))
+    {
+        if (inAtts.GetVariableDimension() != 3)
+        {
+            EXCEPTION2(InvalidDimensionsException, "The displace operator",
+                        "vector");
+        }
+    }
+    else
+    {
+        // let it pass through and see what happens
+        debug1 << "The displace operator was checking to see if the input "
+               << "variable was valid and found that the input data "
+               << "attributes did not have a valid entry for it.  Rather "
+               << "throw an error, normal processing is proceeding, with "
+               << "hopes that the ExecuteData method can succeed." << endl;
+    }
 }
 
 

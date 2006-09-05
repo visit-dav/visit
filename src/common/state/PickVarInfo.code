@@ -584,6 +584,11 @@ Definition:
 // Programmer: Hank Childs
 // Creation:   May 24, 2006
 //
+// Modifications:
+//
+//   Hank Childs, Tue Sep  5 17:05:32 PDT 2006
+//   Fix indexing bug.
+//
 // ****************************************************************************
 
 void
@@ -592,7 +597,7 @@ PickVarInfo::PrintArray(std::string &os,
 {
     int j;
 
-    int offset = tuple*ncomps;
+    int offset = tuple*(ncomps+1);
     char line[2048];
     for (j = 0 ; j < buff_len ; j++)
         os += " ";

@@ -58,6 +58,7 @@ typedef   void  (*UpdatePlotAttributesCallback)(void *, const std::string &,
                                                 int, AttributeSubject*);
 typedef   ref_ptr<avtDatabase> (*GetDatabaseCallback)(void *,
                                        const std::string &, int, const char *);
+typedef   void  (*ResetTimeoutCallback)(void *, int);
 
 
 #include <WindowAttributes.h>
@@ -95,6 +96,9 @@ typedef   ref_ptr<avtDatabase> (*GetDatabaseCallback)(void *,
 //
 //    Hank Childs, Tue Feb 28 14:12:16 PST 2006
 //    Added rendering exceptions.
+//
+//    Hank Childs, Tue Sep  5 10:51:08 PDT 2006
+//    Added ResetTimeout callback.
 //
 // ****************************************************************************
 
@@ -143,6 +147,10 @@ class PIPELINE_API avtCallback
     static std::string           GetRenderingException(void)
                                        { return (haveRenderingException
                                          ? renderingExceptionMessage : ""); };
+ 
+    static void                  RegisterResetTimeoutCallback(
+                                           ResetTimeoutCallback, void *);
+    static void                  ResetTimeout(int);
 
   protected:
     static WarningCallback       warningCallback;
@@ -166,6 +174,9 @@ class PIPELINE_API avtCallback
 
     static bool                  haveRenderingException;
     static std::string           renderingExceptionMessage;
+
+    static ResetTimeoutCallback  resetTimeoutCallback;
+    static void                 *resetTimeoutCallbackArgs;
 };
 
 

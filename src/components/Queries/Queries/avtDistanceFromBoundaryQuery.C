@@ -36,7 +36,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                          avtDistanceFromBoundaryQuery.C                       //
+//                       avtDistanceFromBoundaryQuery.C                      //
 // ************************************************************************* //
 
 #include <avtDistanceFromBoundaryQuery.h>
@@ -45,7 +45,6 @@
 #include <math.h>
 
 #include <vtkCellData.h>
-#include <vtkCleanPolyData.h>
 #include <vtkExecutive.h>
 #include <vtkIdList.h>
 #include <vtkPolyData.h>
@@ -54,6 +53,8 @@
 #include <avtParallel.h>
 #include <avtSourceFromAVTDataset.h>
 #include <avtTerminatingSource.h>
+#include <avtTotalSurfaceAreaQuery.h>
+#include <avtTotalVolumeQuery.h>
 #include <avtWeightedVariableSummationQuery.h>
 
 #include <DebugStream.h>
@@ -141,6 +142,32 @@ avtDistanceFromBoundaryQuery::PostExecute(void)
     summer.PerformQuery(&qa);
     double totalMass = qa.GetResultsValue()[0];
 
+    bool didVolume = false;
+    bool didSA     = false;
+    if (totalMass == 0.)
+    {
+        if (dob->GetInfo().GetAttributes().GetTopologicalDimension() == 3)
+        {
+            avtTotalVolumeQuery tvq;
+            avtDataObject_p dob = GetInput();
+            tvq.SetInput(dob);
+            QueryAttributes qa;
+            tvq.PerformQuery(&qa);
+            totalMass = qa.GetResultsValue()[0];
+            didVolume = true;
+        }
+        else
+        {
+            avtTotalSurfaceAreaQuery saq;
+            avtDataObject_p dob = GetInput();
+            saq.SetInput(dob);
+            QueryAttributes qa;
+            saq.PerformQuery(&qa);
+            totalMass = qa.GetResultsValue()[0];
+            didSA = true;
+        }
+    }
+
     int times = 0;
     char name[1024];
     sprintf(name, "dfb%d.ult", times++);
@@ -159,11 +186,12 @@ avtDistanceFromBoundaryQuery::PostExecute(void)
     }
 
     char msg[1024];
-    sprintf(msg, "The distribution of mass over distance from the boundary "
+    const char *mass_string = (didVolume ? "volume" : (didSA ? "area" : "mass"));
+    sprintf(msg, "The distribution of %s over distance from the boundary "
                  "has been outputted as an "
                  "Ultra file (%s), which can then be imported into VisIt.  The"
-                 " total mass considered was %f\n", 
-                 name, totalMass);
+                 " total %s considered was %f\n", 
+                 mass_string, name, mass_string, totalMass);
     SetResultMessage(msg);
     SetResultValue(0.);
 
@@ -198,9 +226,11 @@ avtDistanceFromBoundaryQuery::PostExecute(void)
         double binWidth = (maxLength-minLength) / numBins;
         for (int i = 0 ; i < numBins ; i++)
         {
-            double x = minLength + (i+0.5)*binWidth;
+            double x1 = minLength + (i)*binWidth;
+            double x2 = minLength + (i+1)*binWidth;
             double y = (totalMass*mass[i]) / (totalMassFromLines*binWidth); 
-            ofile << x << " " << y << endl;
+            ofile << x1 << " " << y << endl;
+            ofile << x2 << " " << y << endl;
         }
     }
 }
@@ -224,48 +254,20 @@ avtDistanceFromBoundaryQuery::ExecuteLineScan(vtkPolyData *pd)
 {
     int extraMsg = 100;
     int totalProg = totalNodes * extraMsg;
-    UpdateProgress(extraMsg*currentNode, totalProg);
-
-    //
-    // Check to make sure we have a mass variable before running clean
-    // poly data, since that takes a *long* time.
-    //
-    if (pd->GetCellData()->GetArray(varname.c_str()) == NULL)
-    {
-        EXCEPTION1(VisItException, "This query is only set up for zonal"
-                                   " variables.  You should be applying this "
-                                   "query to a pseudocolor plot of density.");
-    }
-
-    vtkCleanPolyData *cpd = vtkCleanPolyData::New();  //Glue together intersecting segments
-    cpd->SetToleranceIsAbsolute(0);
-    cpd->SetTolerance(1e-7);
-    cpd->SetInput(pd);
-    vtkPolyData *output = cpd->GetOutput();
-    output->Update();
-
-    UpdateProgress(extraMsg*currentNode+extraMsg/3, totalProg);
 
     //Get array of cast lines
     vtkIntArray *lineids = (vtkIntArray *) 
-                                  output->GetCellData()->GetArray("avtLineID");
+                                  pd->GetCellData()->GetArray("avtLineID");
     if (lineids == NULL)
         EXCEPTION0(ImproperUseException);
         
-    int npts = output->GetNumberOfPoints();
+    int npts = pd->GetNumberOfPoints();
     vector<bool> usedPoint(npts, false);
     
-    vtkDataArray *arr = output->GetCellData()->GetArray(varname.c_str());
-    if (arr == NULL)
-    {
-        EXCEPTION1(VisItException, "This query is only set up for zonal"
-                                   " variables.  You should be applying this "
-                                   "query to a pseudocolor plot of density.");
-    }
+    vtkDataArray *arr = pd->GetCellData()->GetArray(varname.c_str());
 
-    //output of cleanpolydata
-    output->BuildLinks();
-    output->BuildCells();
+    pd->BuildLinks();
+    pd->BuildCells();
 
     int amtPerMsg = npts / extraMsg + 1;
     UpdateProgress(extraMsg*currentNode+2*extraMsg/3, totalProg);
@@ -277,7 +279,7 @@ avtDistanceFromBoundaryQuery::ExecuteLineScan(vtkPolyData *pd)
         if (usedPoint[i])
             continue;
         int seg1 = 0, seg2 = 0;
-        int numMatches = GetCellsForPoint(i, output, lineids, -1, seg1, seg2);
+        int numMatches = GetCellsForPoint(i, pd, lineids, -1, seg1, seg2);
         if (numMatches == 0)
             continue;
         if (numMatches > 2)
@@ -293,12 +295,12 @@ avtDistanceFromBoundaryQuery::ExecuteLineScan(vtkPolyData *pd)
         if (numMatches == 1)
         {
             oneSide   = i;
-            otherSide = WalkChain(output, i, seg1, usedPoint, lineids, lineid);
+            otherSide = WalkChain(pd, i, seg1, usedPoint, lineids, lineid);
         }
         else if (numMatches == 2)
         {
-            oneSide   = WalkChain(output, i, seg1, usedPoint, lineids, lineid);
-            otherSide = WalkChain(output, i, seg2, usedPoint, lineids, lineid);
+            oneSide   = WalkChain(pd, i, seg1, usedPoint, lineids, lineid);
+            otherSide = WalkChain(pd, i, seg2, usedPoint, lineids, lineid);
         }
         if (oneSide == -1 || otherSide == -1)
         {
@@ -309,7 +311,7 @@ avtDistanceFromBoundaryQuery::ExecuteLineScan(vtkPolyData *pd)
         }
 
         // Drop values from the line into the appropriate mass bins
-        WalkLine(oneSide, otherSide, output, lineids, lineid, arr);
+        WalkLine(oneSide, otherSide, pd, lineids, lineid, arr);
 
         int currentMilestone = (int)(((float) i) / amtPerMsg);
         if (currentMilestone > lastMilestone)
@@ -320,9 +322,6 @@ avtDistanceFromBoundaryQuery::ExecuteLineScan(vtkPolyData *pd)
             lastMilestone = currentMilestone;
         }
     }
-    vtkCellArray *lines = output->GetLines();
-
-    cpd->Delete();
 }
 
 
@@ -339,6 +338,11 @@ avtDistanceFromBoundaryQuery::ExecuteLineScan(vtkPolyData *pd)
 //
 //  Programmer: David Bremer
 //  Creation:   August 23, 2006
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Aug 29 15:00:05 PDT 2006
+//    Modify a "should I do A or B comment?" to say "here I will do A".
 //
 // ****************************************************************************
 
@@ -364,7 +368,7 @@ avtDistanceFromBoundaryQuery::WalkLine(int startPtId, int endPtId, vtkPolyData *
     // Walk segments in the line
     while (curPtId != endPtId)
     {
-        double curSegDen = arr->GetTuple1(curCellId);
+        double curSegDen = (arr != NULL ? arr->GetTuple1(curCellId) : 1.);
         int newPtId, newCellId;
         WalkChain1(output, curPtId, curCellId, lineids, lineid, 
                    newPtId, newCellId);
@@ -405,8 +409,7 @@ avtDistanceFromBoundaryQuery::WalkLine(int startPtId, int endPtId, vtkPolyData *
                                               - (distToEdge + dist - minLength);
                     distToContrib -= lenUnusedPartOfBin;
                 }
-                // Should I clamp the bin number, or exclude lengths 
-                //outside the range of interest?
+                // Put lengths that are outside the range into the maximum bin
                 int clampedBin = (currBin < 0) ? 0: 
                                      (currBin >= numBins) ? numBins-1: currBin;
                 mass[clampedBin] += distToContrib * curSegDen;

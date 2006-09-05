@@ -36,11 +36,11 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                      avtChordLengthDistributionQuery.h                    //
+//                 avtIndividualRayLengthDistributionQuery.h                 //
 // ************************************************************************* //
 
-#ifndef AVT_CHORD_LENGTH_DISTRIBUTION_QUERY_H
-#define AVT_CHORD_LENGTH_DISTRIBUTION_QUERY_H
+#ifndef AVT_INDIVIDUAL_RAY_LENGTH_DISTRIBUTION_QUERY_H
+#define AVT_INDIVIDUAL_RAY_LENGTH_DISTRIBUTION_QUERY_H
 
 #include <query_exports.h>
 
@@ -48,33 +48,39 @@
 
 
 // ****************************************************************************
-//  Class: avtChordLengthDistributionQuery
+//  Class: avtIndividualRayLengthDistributionQuery
 //
 //  Purpose:
-//    A query that calculates the chord length distribution.
+//    A query that calculates a probability density function of how much mass
+//    a particle at a random location and direction inside a shape will 
+//    encounter before it exits the shape.  Mass in this case is defined as
+//    linear mass.
 //
 //  Programmer: Hank Childs
-//  Creation:   July 7, 2006
+//  Creation:   August 28, 2006
 //
 // ****************************************************************************
 
-class QUERY_API avtChordLengthDistributionQuery : public avtLineScanQuery
+class QUERY_API avtIndividualRayLengthDistributionQuery : public avtLineScanQuery
 {
   public:
-                              avtChordLengthDistributionQuery();
-    virtual                  ~avtChordLengthDistributionQuery();
+                              avtIndividualRayLengthDistributionQuery();
+    virtual                  ~avtIndividualRayLengthDistributionQuery();
 
     virtual const char       *GetType(void) 
-                                 { return "avtChordLengthDistributionQuery"; };
+                                 { return "avtIndividualRayLengthDistributionQuery"; };
     virtual const char       *GetDescription(void)
-                          { return "Calculating chord length distribution."; };
+                                 { return "Calculating probability distribution of mass."; };
 
   protected:
-    int                      *numChords;
+    double                   *count;
 
     virtual void              PreExecute(void);
     virtual void              PostExecute(void);
     virtual void              ExecuteLineScan(vtkPolyData *);
+
+    void                      WalkLine(int startPtId, int endPtId, vtkPolyData *output, 
+                                       vtkIntArray *lineids, int lineid, vtkDataArray *arr);
 };
 
 

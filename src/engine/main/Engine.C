@@ -103,9 +103,10 @@ const char *dummy_string1 = "DEBUG_MEMORY_LEAKS";
 // Static data
 Engine *Engine::instance = NULL;
 
-// Static method
+// Static methods
 static void WriteByteStreamToSocket(NonBlockingRPC *, Connection *,
                                     avtDataObjectString &);
+static void ResetEngineTimeout(void *p, int secs);
 
 // Initial connection timeout of 5 minutes (300 seconds)
 #define INITIAL_CONNECTION_TIMEOUT 60
@@ -418,6 +419,12 @@ Engine::Finalize(void)
 //
 //    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //    Added timer
+//
+//    Hank Childs, Tue Sep  5 10:45:13 PDT 2006
+//    Add a callback to avtCallback to reset the timer.  This is for
+//    functionality that takes a long time: queries over time and line scan
+//    queries.
+//
 // ****************************************************************************
 
 void
@@ -469,6 +476,8 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     // Set up the alarm signal handler.
     signal(SIGALRM, Engine::AlarmHandler);
 #endif
+
+    avtCallback::RegisterResetTimeoutCallback(ResetEngineTimeout, this);
 
     // Create some RPC objects and make Xfer observe them.
     quitRPC                         = new QuitRPC;
@@ -2236,3 +2245,25 @@ Engine::GetProcessAttributes()
     return procAtts;
 
 }
+
+
+// ****************************************************************************
+//  Function: ResetEngineTimeout
+//
+//  Purpose:
+//      A static function that calls ResetTimeout.  This is meant to be a 
+//      callback for libraries.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 5, 2006
+//
+// ****************************************************************************
+
+static void
+ResetEngineTimeout(void *p, int secs)
+{
+    Engine *e = (Engine *) p;
+    e->ResetTimeout(secs);
+}
+
+

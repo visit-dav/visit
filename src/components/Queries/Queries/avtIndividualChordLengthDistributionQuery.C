@@ -36,16 +36,15 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                      avtChordLengthDistributionQuery.C                    //
+//              avtIndividualChordLengthDistributionQuery.C                  //
 // ************************************************************************* //
 
-#include <avtChordLengthDistributionQuery.h>
+#include <avtIndividualChordLengthDistributionQuery.h>
 
 #include <stdio.h>
 #include <math.h>
 
 #include <vtkCellData.h>
-#include <vtkCleanPolyData.h>
 #include <vtkIdList.h>
 #include <vtkPolyData.h>
 
@@ -58,7 +57,7 @@
 
 
 // ****************************************************************************
-//  Method: avtChordLengthDistributionQuery constructor
+//  Method: avtIndividualChordLengthDistributionQuery constructor
 //
 //  Purpose:
 //      Defines the constructor.  Note: this should not be inlined in the header
@@ -69,14 +68,14 @@
 //
 // ****************************************************************************
 
-avtChordLengthDistributionQuery::avtChordLengthDistributionQuery()
+avtIndividualChordLengthDistributionQuery::avtIndividualChordLengthDistributionQuery()
 {
     numChords = new int[numBins];
 }
 
 
 // ****************************************************************************
-//  Method: avtChordLengthDistributionQuery destructor
+//  Method: avtIndividualChordLengthDistributionQuery destructor
 //
 //  Purpose:
 //      Defines the destructor.  Note: this should not be inlined in the header
@@ -87,14 +86,14 @@ avtChordLengthDistributionQuery::avtChordLengthDistributionQuery()
 //
 // ****************************************************************************
 
-avtChordLengthDistributionQuery::~avtChordLengthDistributionQuery()
+avtIndividualChordLengthDistributionQuery::~avtIndividualChordLengthDistributionQuery()
 {
     delete [] numChords;;
 }
 
 
 // ****************************************************************************
-//  Method: avtChordLengthDistributionQuery::PreExecute
+//  Method: avtIndividualChordLengthDistributionQuery::PreExecute
 //
 //  Purpose:
 //      Does some initialization work before the query executes.
@@ -105,7 +104,7 @@ avtChordLengthDistributionQuery::~avtChordLengthDistributionQuery()
 // ****************************************************************************
 
 void
-avtChordLengthDistributionQuery::PreExecute(void)
+avtIndividualChordLengthDistributionQuery::PreExecute(void)
 {
     avtLineScanQuery::PreExecute();
 
@@ -117,7 +116,7 @@ avtChordLengthDistributionQuery::PreExecute(void)
 
 
 // ****************************************************************************
-//  Method: avtChordLengthDistributionQuery::PostExecute
+//  Method: avtIndividualChordLengthDistributionQuery::PostExecute
 //
 //  Purpose:
 //      Outputs the chord counts.
@@ -125,16 +124,21 @@ avtChordLengthDistributionQuery::PreExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   July 8, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Sep  1 15:13:33 PDT 2006
+//    Output a histogram, not a curve.
+//
 // ****************************************************************************
 
 void
-avtChordLengthDistributionQuery::PostExecute(void)
+avtIndividualChordLengthDistributionQuery::PostExecute(void)
 {
     int   i;
 
     int times = 0;
     char name[1024];
-    sprintf(name, "cld%d.ult", times++);
+    sprintf(name, "cld_i%d.ult", times++);
 
     if (PAR_Rank() == 0)
     {
@@ -145,7 +149,7 @@ avtChordLengthDistributionQuery::PostExecute(void)
             if (ifile.fail())
                 lookingForUnused = false;
             else
-                sprintf(name, "cld%d.ult", times++);
+                sprintf(name, "cld_i%d.ult", times++);
         }
     }
 
@@ -169,10 +173,10 @@ avtChordLengthDistributionQuery::PostExecute(void)
             totalArea += binWidth*numChords[i];
         if (totalArea == 0.)
         {
-            sprintf(msg, "The mass distribution could not be calculated "
-                    "becuase none of the lines intersected the data set."
-                    "  If you have used a fairly large number of lines, then "
-                    "this may be indicative of an error state.");
+            sprintf(msg, "The chord length distribution could not be "
+                   "calculated because none of the lines intersected "
+                   "the data set. If you have used a fairly large number "
+                   "of lines, then this may be indicative of an error state.");
             SetResultMessage(msg);
             return;
         }
@@ -184,21 +188,23 @@ avtChordLengthDistributionQuery::PostExecute(void)
             SetResultMessage(msg);
             return;
         }
-        ofile << "# Chord length distribution" << endl;
+        ofile << "# Chord length distribution (individual)" << endl;
 
         for (int i = 0 ; i < numBins ; i++)
         {
-            double x = minLength + (i+0.5)*binWidth;
+            double x1 = minLength + (i)*binWidth;
+            double x2 = minLength + (i+1)*binWidth;
             double y = numChords[i] / totalArea; // Make it be a distribution ...
                                                  // the area under the curve: 1
-            ofile << x << " " << y << endl;
+            ofile << x1 << " " << y << endl;
+            ofile << x2 << " " << y << endl;
         }
     }
 }
 
 
 // ****************************************************************************
-//  Method: avtChordLengthDistributionQuery::ExecuteLineScan
+//  Method: avtIndividualChordLengthDistributionQuery::ExecuteLineScan
 //
 //  Purpose:
 //      Examines the input data.  Note that the line scan filter will organize
@@ -211,29 +217,24 @@ avtChordLengthDistributionQuery::PostExecute(void)
 // ****************************************************************************
 
 void
-avtChordLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
+avtIndividualChordLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
 {
-    vtkCleanPolyData *cpd = vtkCleanPolyData::New();
-    cpd->SetInput(pd);
-    vtkPolyData *output = cpd->GetOutput();
-    output->Update();
-
     vtkIntArray *lineids = (vtkIntArray *) 
-                                  output->GetCellData()->GetArray("avtLineID");
+                                  pd->GetCellData()->GetArray("avtLineID");
     if (lineids == NULL)
         EXCEPTION0(ImproperUseException);
         
-    int npts = output->GetNumberOfPoints();
+    int npts = pd->GetNumberOfPoints();
     vector<bool> usedPoint(npts, false);
     
-    output->BuildLinks();
-    output->BuildCells();
+    pd->BuildLinks();
+    pd->BuildCells();
     for (int i = 0 ; i < npts ; i++)
     {
         if (usedPoint[i])
             continue;
         int seg1, seg2;
-        int numMatches = GetCellsForPoint(i, output, lineids, -1, seg1, seg2);
+        int numMatches = GetCellsForPoint(i, pd, lineids, -1, seg1, seg2);
         if (numMatches == 0)
             continue;
         if (numMatches > 2)
@@ -249,12 +250,12 @@ avtChordLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
         if (numMatches == 1)
         {
             oneSide   = i;
-            otherSide = WalkChain(output, i, seg1, usedPoint, lineids, lineid);
+            otherSide = WalkChain(pd, i, seg1, usedPoint, lineids, lineid);
         }
         else if (numMatches == 2)
         {
-            oneSide   = WalkChain(output, i, seg1, usedPoint, lineids, lineid);
-            otherSide = WalkChain(output, i, seg2, usedPoint, lineids, lineid);
+            oneSide   = WalkChain(pd, i, seg1, usedPoint, lineids, lineid);
+            otherSide = WalkChain(pd, i, seg2, usedPoint, lineids, lineid);
         }
         if (oneSide == -1 || otherSide == -1)
         {
@@ -265,8 +266,8 @@ avtChordLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
         }
         double pt1[3];
         double pt2[3];
-        output->GetPoint(oneSide, pt1);
-        output->GetPoint(otherSide, pt2);
+        pd->GetPoint(oneSide, pt1);
+        pd->GetPoint(otherSide, pt2);
         double dist = sqrt((pt2[0]-pt1[0])*(pt2[0]-pt1[0]) + 
                            (pt2[1]-pt1[1])*(pt2[1]-pt1[1]) + 
                            (pt2[2]-pt1[2])*(pt2[2]-pt1[2]));
@@ -277,9 +278,6 @@ avtChordLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
             bin = numBins-1;
         numChords[bin]++;
     }
-    vtkCellArray *lines = output->GetLines();
-
-    cpd->Delete();
 }
 
 

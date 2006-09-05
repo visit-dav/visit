@@ -23,6 +23,8 @@
       PickRelated
       TimeRelated
       VariableRelated
+      ShapeRelated
+      NumGroups
     </Enum>
     <Enum name="QueryMode">
       QueryOnly

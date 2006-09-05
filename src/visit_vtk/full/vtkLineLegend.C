@@ -200,6 +200,7 @@ vtkLineLegend::BuildTitle(vtkViewport *viewport)
   tprop->SetItalic(this->Italic);
   tprop->SetShadow(this->Shadow);
   tprop->SetFontFamily(this->FontFamily);
+  tprop->SetColor(this->GetProperty()->GetColor());
 
   //
   // Set the title position in reference to the legend origin as a
