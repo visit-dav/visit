@@ -257,6 +257,9 @@ avtClipFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Thu Aug 31 11:08:53 PDT 2006
 //    Fix up bad merge.
 //
+//    Hank Childs, Wed Sep  6 16:49:15 PDT 2006
+//    Fix memory issue.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -272,6 +275,12 @@ avtClipFilter::ProcessOneChunk(vtkDataSet *inDS, int dom, std::string, bool)
         // we have no functions to work with!
         fastClipper->Delete();
         ifuncs->Delete();
+        // The chunk streamer filters (which clip inherits from) has the model
+        // that the base class will remove a reference (i.e. ->Delete()) the
+        // returned data set.  This is a different model that the normal
+        // streamer classes where you do your own memory management.  So we need
+        // to increment the reference count of this object before returning;
+        inDS->Register(NULL);
         return inDS;
     }
 
