@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="NETCDF" type="database" label="NETCDF" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false">
+  <Plugin name="NETCDF" type="database" label="NETCDF" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false">
     <CXXFLAGS>
       $(NETCDF_INCLUDE)
     </CXXFLAGS>
@@ -22,6 +22,7 @@
       avtFVCOMReader.C
       avtFVCOMParticleFileFormat.C
       avtFVCOM_MTSDFileFormat.C
+      avtFVCOM_MTMDFileFormat.C
       NETCDFFileObject.C
     </Files>
     <Files components="E">
@@ -34,6 +35,7 @@
       avtFVCOMReader.C
       avtFVCOMParticleFileFormat.C
       avtFVCOM_MTSDFileFormat.C
+      avtFVCOM_MTMDFileFormat.C
       NETCDFFileObject.C
     </Files>
     <Attribute name="" purpose="" persistent="true">

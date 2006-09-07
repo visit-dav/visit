@@ -51,6 +51,14 @@ public:
     virtual vtkDataArray  *GetVar(int, const char *);
     virtual vtkDataArray  *GetVectorVar(int, const char *);
 
+    virtual void          *GetAuxiliaryData(const char *var,
+                                            int timeState,
+                                            const char *type,
+                                            void *args,
+                                            DestructorFunction &);
+
+
+
 protected:
     // DATA MEMBERS
 

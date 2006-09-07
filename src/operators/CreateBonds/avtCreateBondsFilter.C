@@ -303,7 +303,7 @@ avtCreateBondsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     for (int i=0; i<natoms; i++)
     {
         int ctr = 0;
-        for (int j=natoms-1; j>=0 && ctr<max_per_atom; j--)
+        for (int j=natoms-1; j>i && ctr<max_per_atom; j--)
         {
             if (i==j)
                 continue;
