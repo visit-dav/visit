@@ -76,6 +76,10 @@ using std::string;
 //   Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //   Upgraded to support multiple threshold variables.
 //
+//   Mark Blair, Wed Sep  6 19:33:00 PDT 2006
+//   Removed problematic mechanism for accommodating ExtentsAttributes from
+//   extents tool.
+//
 // ****************************************************************************
 
 QvisThresholdWindow::QvisThresholdWindow(const int type,
@@ -86,9 +90,6 @@ QvisThresholdWindow::QvisThresholdWindow(const int type,
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
     atts = subj;
-
-    latestGUIAtts = *subj;
-    changedAttsInGUI = false;
 }
 
 
@@ -276,6 +277,10 @@ QvisThresholdWindow::CreateWindowContents()
 //   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
 //   Now accommodates an empty list of threshold variables.
 //
+//   Eric Brugger, Fri Sep  8 11:10:09 PDT 2006
+//   Changed the way a conversion between std::string and QString was done
+//   to eliminate a runtime link error on the ibm.
+//
 // ****************************************************************************
 
 void
@@ -284,8 +289,6 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
     QString fieldString;
     std::string shownVarName;
 
-    if (changedAttsInGUI) *atts = latestGUIAtts;
-    
     bool varListIsEmpty =
         (atts->GetShownVariable() == std::string("(no variables in list)"));
     bool enableZonePortion = (!varListIsEmpty &&
@@ -309,7 +312,7 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
                 if (shownVarName == std::string("default"))
                     shownVarName = atts->GetDefaultVarName();
 
-                shownVariable->setText(QString(shownVarName));
+                shownVariable->setText(QString(shownVarName.c_str()));
 
                 break;
 
@@ -377,6 +380,10 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
 //   Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //   Added support for multiple threshold variables.
 //
+//   Mark Blair, Wed Sep  6 19:33:00 PDT 2006
+//   Removed problematic mechanism for accommodating ExtentsAttributes from
+//   extents tool.
+//
 // ****************************************************************************
 
 void
@@ -390,7 +397,7 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
         // Nothing for amount
     }
 
-    // Do lbound
+    // Do lowerBound
     if ((which_widget == 1) || doAll) {
         temp = lowerBound->displayText().simplifyWhiteSpace();
 
@@ -415,7 +422,7 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do ubound
+    // Do upperbound
     if ((which_widget == 2) || doAll) {
         temp = upperBound->displayText().simplifyWhiteSpace();
 
@@ -439,8 +446,6 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
             }
         }
     }
-
-    RecordGUIAttributeChangeIfActuallyChanged();
 }
 
 
@@ -455,9 +460,6 @@ void
 QvisThresholdWindow::apply()
 {
     QvisOperatorWindow::apply();
-
-    latestGUIAtts = *atts;
-    changedAttsInGUI = false;
 }
 
 
@@ -470,7 +472,6 @@ QvisThresholdWindow::outputMeshTypeChanged(int buttonID)
     if (newOutputMeshType != atts->GetOutputMeshType())
     {
         atts->SetOutputMeshType(newOutputMeshType);
-        RecordGUIAttributeChangeIfActuallyChanged();
         
         bool enableZonePortion =
             ((newOutputMeshType == ThresholdAttributes::InputZones) &&
@@ -493,8 +494,6 @@ QvisThresholdWindow::zonePortionChanged(int buttonID)
     if (newZonePortion != atts->GetZonePortion())
     {
         atts->ChangeZonePortion(newZonePortion);
-        RecordGUIAttributeChangeIfActuallyChanged();
-
         Apply();
     }
 }
@@ -568,8 +567,16 @@ QvisThresholdWindow::variableSwapped(const QString &variableToSwapIn)
 //
 // Modifications:
 //   
-//    Mark Blair, Tue Aug  8 17:47:00 PDT 2006
-//    Now accommodates an empty list of threshold variables.
+//   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
+//   Now accommodates an empty list of threshold variables.
+//
+//   Mark Blair, Wed Sep  6 19:33:00 PDT 2006
+//   Removed problematic mechanism for accommodating ExtentsAttributes from
+//   extents tool.
+//
+//    Eric Brugger, Fri Sep  8 11:10:09 PDT 2006
+//    Changed the way a conversion between std::string and QString was done
+//    to eliminate a runtime link error on the ibm.
 //
 // ****************************************************************************
 
@@ -586,7 +593,7 @@ QvisThresholdWindow::UpdateShownFields()
     if (shownVarName == std::string("default"))
         shownVarName = atts->GetDefaultVarName();
 
-    shownVariable->setText(QString(shownVarName));
+    shownVariable->setText(QString(shownVarName.c_str()));
 
     zonePortion->setButton((int)atts->GetZonePortion());
 
@@ -613,31 +620,6 @@ QvisThresholdWindow::UpdateShownFields()
     upperBound->setReadOnly(varListIsEmpty);
     upperBoundLabel->setEnabled(!varListIsEmpty);
 
-    RecordGUIAttributeChangeIfActuallyChanged();
-
     SetUpdate(false);
     Apply();
-}
-
-
-// ****************************************************************************
-// Method: QvisThresholdWindow::RecordGUIAttributeChangeIfActuallyChanged
-//
-// Purpose: Record pending attribute changes so they can be restored if the
-//          Threshold window is updated with an attribute subject that does
-//          not yet incorporate those changes.
-//
-// Programmer: Mark Blair
-// Creation:   Tue Mar  7 13:25:00 PST 2006
-//
-// ****************************************************************************
-
-void
-QvisThresholdWindow::RecordGUIAttributeChangeIfActuallyChanged()
-{
-    if (*atts != latestGUIAtts)
-    {
-        latestGUIAtts = *atts;
-        changedAttsInGUI = true;
-    }
 }

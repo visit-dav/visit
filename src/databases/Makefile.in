@@ -233,6 +233,9 @@
 #   Tom Fogal, Fri Sep  1 15:58:15 PDT 2006
 #   Added the GGCM reader.
 #
+#   Hank Childs, Fri Sep  8 14:33:44 PDT 2006
+#   Added the Fluent reader (for Brian Dotson and Terry Jordan).
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -264,6 +267,7 @@ REQUIRED=\
  Dune \
  EnSight \
  GGCM \
+ Fluent \
  Image \
  Lines \
  MFIX \

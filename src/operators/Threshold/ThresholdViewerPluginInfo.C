@@ -191,6 +191,9 @@ ThresholdViewerPluginInfo::GetClientAtts(AttributeSubject *atts)
 //     Now accommodates an empty list of threshold variables; does pass-through.
 //     Also checks for attribute consistency.
 //
+//     Mark Blair, Wed Sep  6 19:13:00 PDT 2006
+//     Corrected bad policy: Was sometimes changing user's defaults explicitly.
+//
 // ****************************************************************************
 
 void
@@ -200,7 +203,12 @@ ThresholdViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
 {
     bool setVarListEmpty = false;
     std::string plotVarName = plot->GetVariableName();
-    ThresholdAttributes *initAtts = fromDefault ? defaultAtts : clientAtts;
+    ThresholdAttributes *initAtts;
+    
+    if (fromDefault)
+        *initAtts = *defaultAtts;
+    else
+        *initAtts = *clientAtts;
     
     stringVector initVarNames    = initAtts->GetListedVarNames();
     intVector initZonePortions   = initAtts->GetZonePortions();

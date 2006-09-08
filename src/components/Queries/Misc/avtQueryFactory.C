@@ -60,6 +60,7 @@
 #include <avtIntegrateQuery.h>
 #include <avtL2NormQuery.h>
 #include <avtL2NormBetweenCurvesQuery.h>
+#include <avtLineScanTransformQuery.h>
 #include <avtLocalizedCompactnessFactorQuery.h>
 #include <avtKurtosisQuery.h>
 #include <avtMassDistributionQuery.h>
@@ -228,6 +229,9 @@ avtQueryFactory::Instance()
 //    Added aggregate and individual variants of chord and ray length
 //    distributions.
 //
+//    Dave Bremer, Thu Sep  7 16:16:41 PDT 2006
+//    Added line scan transform query.
+//
 // ****************************************************************************
 
 
@@ -284,6 +288,15 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (qname == "L2Norm")
     {
         query = new avtL2NormQuery();
+    }
+    else if (qname == "Line Scan Transform")
+    {
+        avtLineScanTransformQuery *lst =
+                                new avtLineScanTransformQuery();
+        lst->SetNumberOfLines(qa->GetElement()); // Element == intarg1
+        lst->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
+        lst->SetRange(qa->GetDarg1(), qa->GetDarg2()); 
+        query = lst;
     }
     else if (qname == "Chord Length Distribution (aggregate)")
     {

@@ -216,47 +216,57 @@ void avtOpenFOAMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, in
 //      meshname    The name of the mesh of interest.  This can be ignored if
 //                  there is only one mesh.
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Sep  7 08:49:09 PDT 2006
+//    Change a little logic so debug statements execute
+//
 // ****************************************************************************
 
-vtkDataSet * avtOpenFOAMFileFormat::GetMesh(int timestate, int domain, const char *meshname)
+vtkDataSet * 
+avtOpenFOAMFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 {
-  //CreateFaces = true;
-  debug5 << "Get domain: " <<domain<<endl;
-  //internal mesh
-  if(domain == 0)
+    //CreateFaces = true;
+    debug5 << "Get domain: " <<domain<<endl;
+    vtkDataSet *rv = NULL;
+  
+    //internal mesh
+    if(domain == 0)
     {
-    debug5<<"InternalMesh"<<endl;
-    return MakeInternalMesh();
+        debug5<<"InternalMesh"<<endl;
+        rv = MakeInternalMesh();
+    }
+  
+    //boundary meshes
+    else if (domain <= NumBoundaries)
+    {
+      debug5<<BoundaryNames[domain -1]<<endl;
+      rv = GetBoundaryMesh(timestate, domain - 1);
     }
 
-  //boundary meshes
-  else if (domain <= NumBoundaries)
+    //point zone meshes
+    else if (domain <= NumBoundaries + NumPointZones)
     {
-    debug5<<BoundaryNames[domain -1]<<endl;
-    return GetBoundaryMesh(timestate, domain - 1);
+      debug5<<PointZoneNames[domain - 1 - NumBoundaries]<<endl;
+      rv = GetPointZoneMesh(timestate, domain - 1 - NumBoundaries);
     }
 
-  //point zone meshes
-  else if (domain <= NumBoundaries + NumPointZones)
+    //face zone meshes
+    else if (domain <= NumBoundaries + NumPointZones + NumFaceZones)
     {
-    debug5<<PointZoneNames[domain - 1 - NumBoundaries]<<endl;
-    return GetPointZoneMesh(timestate, domain - 1 - NumBoundaries);
+      debug5<<FaceZoneNames[domain - 1 - NumBoundaries - NumPointZones]<<endl;
+      rv = GetFaceZoneMesh(timestate, domain - 1 - NumBoundaries - NumPointZones);
     }
 
-  //face zone meshes
-  else if (domain <= NumBoundaries + NumPointZones + NumFaceZones)
+    //cell zone meshes
+    else if (domain <= NumBoundaries + NumPointZones + NumFaceZones + NumCellZones)
     {
-    debug5<<FaceZoneNames[domain - 1 - NumBoundaries - NumPointZones]<<endl;
-    return GetFaceZoneMesh(timestate, domain - 1 - NumBoundaries - NumPointZones);
+      debug5<<CellZoneNames[domain - 1 - NumBoundaries - NumPointZones - NumFaceZones]<<endl;
+      rv = GetCellZoneMesh(timestate, domain - 1 - NumBoundaries - NumPointZones - NumFaceZones);
     }
 
-  //cell zone meshes
-  else if (domain <= NumBoundaries + NumPointZones + NumFaceZones + NumCellZones)
-    {
-    debug5<<CellZoneNames[domain - 1 - NumBoundaries - NumPointZones - NumFaceZones]<<endl;
-    return GetCellZoneMesh(timestate, domain - 1 - NumBoundaries - NumPointZones - NumFaceZones);
-    }
-  debug5<<"got domain: "<<domain<<endl;
+    debug5<<"got domain: "<<domain<<endl;
+    return rv;
 }
 
 
@@ -276,32 +286,41 @@ vtkDataSet * avtOpenFOAMFileFormat::GetMesh(int timestate, int domain, const cha
 //                 regardless of block origin.
 //      varname    The name of the variable requested.
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Sep  7 08:49:09 PDT 2006
+//    Change a little logic so debug statements execute
+//
 // ****************************************************************************
 
-vtkDataArray * avtOpenFOAMFileFormat::GetVar(int timestate, int domain, const char *varname)
+vtkDataArray * 
+avtOpenFOAMFileFormat::GetVar(int timestate, int domain, const char *varname)
 {
-  debug5<<"Get var: "<<varname<<endl;
+    debug5<<"Get var: "<<varname<<endl;
+    vtkDataArray *rv = NULL;
 
-  //Populate the tempdata with internal mesh data
-  //necessary for zero gradient boundaries
-  if(FirstVar)
+    //Populate the tempdata with internal mesh data
+    //necessary for zero gradient boundaries
+    if(FirstVar)
     {
-    TempData = GetInternalVariableAtTimestep(std::string(varname), timestate);
-    FirstVar = false;
+        TempData = GetInternalVariableAtTimestep(std::string(varname), timestate);
+        FirstVar = false;
     }
+  
+    //internal domain scalar data
+    if(domain == 0)
+        //return GetInternalVariableAtTimestep(std::string(varname), timestate);
+        rv = TempData;
 
-  //internal domain scalar data
-  if(domain == 0)
-    //return GetInternalVariableAtTimestep(std::string(varname), timestate);
-    return TempData;
+    //boundary domains scalar data
+    else if (domain <= NumBoundaries)
+        rv = GetBoundaryVariableAtTimestep(domain-1, std::string(varname), timestate);
 
-  //boundary domains scalar data
-  else if (domain <= NumBoundaries)
-    return GetBoundaryVariableAtTimestep(domain-1, std::string(varname), timestate);
+    else
+        debug5 << "Return NULL for scalar data" << endl;
 
-  //no other domains have scalar data - return null
-  else
-    return NULL;
+    debug5 << "Got var: " << varname << endl;
+    return rv;
 }
 
 
@@ -324,32 +343,42 @@ vtkDataArray * avtOpenFOAMFileFormat::GetVar(int timestate, int domain, const ch
 //  Programmer: root -- generated by xml2avt
 //  Creation:   Wed Jun 7 16:01:15 PST 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Sep  7 08:49:09 PDT 2006
+//    Change a little logic so debug statements execute
+//
 // ****************************************************************************
 
-vtkDataArray *  avtOpenFOAMFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
+vtkDataArray *
+avtOpenFOAMFileFormat::GetVectorVar(int timestate, int domain, 
+                                    const char *varname)
 {
-  debug5<<"Get Vector Var: "<<varname<<endl;
+    debug5<<"Get Vector Var: "<<varname<<endl;
+    vtkDataArray *rv = NULL;
 
-  //Populate the tempdata with internal mesh data
-  //necessary for zero gradient boundaries
-  if(FirstVectorVar)
+    //Populate the tempdata with internal mesh data
+    //necessary for zero gradient boundaries
+    if(FirstVectorVar)
     {
-    TempData = GetInternalVariableAtTimestep(std::string(varname), timestate);
-    FirstVectorVar = false;
+        TempData = GetInternalVariableAtTimestep(std::string(varname), timestate);
+        FirstVectorVar = false;
     }
-
-  //internal domain vector data  
-  if(domain == 0)
-    //return GetInternalVariableAtTimestep(std::string(varname), timestate);
-    return TempData;
-
-  //boundary domains vector data
-  else if (domain <= NumBoundaries)
-    return GetBoundaryVariableAtTimestep(domain-1, std::string(varname), timestate);
-
-  //no other domains have vector data - return null
-  else
-    return NULL;
+  
+    //internal domain vector data  
+    if(domain == 0)
+      //return GetInternalVariableAtTimestep(std::string(varname), timestate);
+        rv = TempData;
+  
+    //boundary domains vector data
+    else if (domain <= NumBoundaries)
+        rv = GetBoundaryVariableAtTimestep(domain-1, std::string(varname), timestate);
+  
+    else
+        debug5 << "Returning NULL for vector data" << endl;
+  
+    debug5 << "Got vector var: " << varname << endl;
+    return rv;
 }
 
 // ****************************************************************************
@@ -1501,7 +1530,8 @@ std::string avtOpenFOAMFileFormat::GetDataType(std::string path, std::string fil
 //  returns the values for a request variable for the internal mesh
 //
 // ****************************************************************************
-vtkFloatArray * avtOpenFOAMFileFormat::GetInternalVariableAtTimestep( std::string varName, int timeState)
+vtkFloatArray * avtOpenFOAMFileFormat::GetInternalVariableAtTimestep(
+                                            std::string varName, int timeState)
 {
   std::stringstream varPath;
   varPath << PathPrefix << Steps[timeState] << "/" << varName;
@@ -1717,7 +1747,8 @@ vtkFloatArray * avtOpenFOAMFileFormat::GetInternalVariableAtTimestep( std::strin
 //  returns the values for a request variable for a bondary region
 //
 // ****************************************************************************
-vtkFloatArray * avtOpenFOAMFileFormat::GetBoundaryVariableAtTimestep(int boundaryIndex, std::string varName, int timeState)
+vtkFloatArray * avtOpenFOAMFileFormat::GetBoundaryVariableAtTimestep(
+                         int boundaryIndex, std::string varName, int timeState)
 {
   std::stringstream varPath;
   varPath << PathPrefix << Steps[timeState] << "/" << varName;
@@ -1881,15 +1912,18 @@ vtkFloatArray * avtOpenFOAMFileFormat::GetBoundaryVariableAtTimestep(int boundar
     }
 
 //CREATE VECTOR ARRAYS
-  else if(foamClass == "volVectorField")
-    {
-    while(temp.find(BoundaryNames[boundaryIndex]) == std::string::npos)
+  else if (foamClass == "volVectorField")
+  {
+    while (temp.find(BoundaryNames[boundaryIndex]) == std::string::npos)
       std::getline(input, temp);
-    while(temp.find("}") == std::string::npos && temp.find("value") == std::string::npos)
+
+    while (temp.find("}") == std::string::npos 
+          && temp.find("value") == std::string::npos)
         std::getline(input, temp);  //find value
+
     //nonuniform
     if(!(temp.find("nonuniform") == std::string::npos))
-      {
+    {
       //create an array
       std::getline(input,temp);
       tokenizer.str(temp);
@@ -1899,46 +1933,61 @@ vtkFloatArray * avtOpenFOAMFileFormat::GetBoundaryVariableAtTimestep(int boundar
 
       //binary data
       if(binaryWriteFormat)
-        {
-        //insert values into the array
-        char paren = input.get(); //throw out (
-        for(int i = 0; i < vectorCount; i++)
-          {
-          input.read((char *) &value, sizeof(double));
-          data->InsertComponent(i, 0, value);
-          input.read((char *) &value, sizeof(double));
-          data->InsertComponent(i, 1, value);
-          input.read((char *) &value, sizeof(double));
-          data->InsertComponent(i, 2, value);
-          }
-        }
-
-        //ascii data
-        else
-          {
+      {
           //insert values into the array
-          std::getline(input, temp); //discard (
+          char paren = input.get(); //throw out (
           for(int i = 0; i < vectorCount; i++)
+          {
+              input.read((char *) &value, sizeof(double));
+              data->InsertComponent(i, 0, value);
+              input.read((char *) &value, sizeof(double));
+              data->InsertComponent(i, 1, value);
+              input.read((char *) &value, sizeof(double));
+              data->InsertComponent(i, 2, value);
+          }
+      }
+
+      //ascii data
+      else
+      {
+          //no values
+          if(temp.find(";") == std::string::npos)
+          {
+            data->SetNumberOfComponents(3);
+            for(int i = 0; i < NFaces; i++)
             {
-            tokenizer.str("");
-            tokenizer.clear();
-            std::getline(input,temp);
-
-            //REMOVE BRACKETS
-            temp.erase(temp.begin()+temp.find("("));
-            temp.erase(temp.begin()+temp.find(")"));
-
-            //GRAB X,Y,&Z VALUES
-            tokenizer.str(temp);
-            tokenizer >> value;
-            data->InsertComponent(i, 0, value);
-            tokenizer >> value;
-            data->InsertComponent(i, 1, value);
-            tokenizer >> value;
-            data->InsertComponent(i, 2, value);
+              data->InsertComponent(i, 0, 0);
+              data->InsertComponent(i, 1, 0);
+              data->InsertComponent(i, 2, 0);
             }
           }
-        }
+          //values
+          else
+          {
+            //insert values into the array
+            std::getline(input, temp); //discard (
+            for(int i = 0; i < vectorCount; i++)
+            {
+              tokenizer.str("");
+              tokenizer.clear();
+              std::getline(input,temp);
+
+              //REMOVE BRACKETS
+              temp.erase(temp.begin()+temp.find("("));
+              temp.erase(temp.begin()+temp.find(")"));
+
+              //GRAB X,Y,&Z VALUES
+              tokenizer.str(temp);
+              tokenizer >> value;
+              data->InsertComponent(i, 0, value);
+              tokenizer >> value;
+              data->InsertComponent(i, 1, value);
+              tokenizer >> value;
+              data->InsertComponent(i, 2, value);
+            }
+          }
+      }
+    }
 
     //uniform
     else if(!(temp.find("uniform") == std::string::npos))
@@ -1966,20 +2015,20 @@ vtkFloatArray * avtOpenFOAMFileFormat::GetBoundaryVariableAtTimestep(int boundar
     //zero gradient
     //or others without "value" entry
     else
-      {
-      double value1;
-      int cellId;
-      data->SetNumberOfComponents(3);
-      for(int i = 0; i < NFaces; i++)
+    {
+        double value1;
+        int cellId;
+        data->SetNumberOfComponents(3);
+        for(int i = 0; i < NFaces; i++)
         {
-        cellId = FaceOwner->GetValue(this->StartFace + i);
-        data->InsertComponent(i, 0, TempData->GetComponent(cellId, 0));
-        data->InsertComponent(i, 1, TempData->GetComponent(cellId, 1));
-        data->InsertComponent(i, 2, TempData->GetComponent(cellId, 2));
+            cellId = FaceOwner->GetValue(this->StartFace + i);
+            data->InsertComponent(i, 0, TempData->GetComponent(cellId, 0));
+            data->InsertComponent(i, 1, TempData->GetComponent(cellId, 1));
+            data->InsertComponent(i, 2, TempData->GetComponent(cellId, 2));
         }
-      return data;
-      }
+        return data;
     }
+  }
   debug5<<"Boundary data read."<<endl;
   return data;
 }

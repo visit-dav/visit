@@ -61,6 +61,11 @@ class     vtkIntArray;
 //  Programmer: Hank Childs
 //  Creation:   August 2, 2006
 //
+//  Modifications:
+//    Dave Bremer, Thu Sep  7 17:44:25 PDT 2006
+//    Added lines member as a way to give base classes access to the
+//    line parameters during the Execute call.
+//
 // ****************************************************************************
 
 class QUERY_API avtLineScanQuery : public avtDatasetQuery
@@ -87,6 +92,8 @@ class QUERY_API avtLineScanQuery : public avtDatasetQuery
     double                    maxLength;
     int                       numLinesPerIteration;
     std::string               varname;
+
+    const double             *lines;  //Set only during Execute.  Stores data for use by base classes.
 
     virtual void              PreExecute(void);
     virtual void              Execute(vtkDataSet *, int);

@@ -492,6 +492,7 @@ static void AddQuadraticTriangle(vtkIdType *, int, HashEntryList &);
 static void AddQuadraticQuad(vtkIdType *, int, HashEntryList &);
 static void AddQuadraticTetrahedron(vtkIdType *, int, HashEntryList &);
 static void AddQuadraticHexahedron(vtkIdType *, int, HashEntryList &);
+static void AddUnknownCell(vtkCell *, int, HashEntryList &);
 
 static int  LoopOverAllCells(vtkUnstructuredGrid *, HashEntryList &);
 static void LoopOverPolygonalCells(vtkUnstructuredGrid *, vtkPolyData *,
@@ -1916,6 +1917,9 @@ LoopOverPolygonalCells(vtkUnstructuredGrid *input, vtkPolyData *output,
 //   Added cases to add the faces of quadratic cells to the hash entry list
 //   as sets of linear triangles.
 //
+//   Hank Childs, Fri Sep  8 14:38:54 PDT 2006
+//   Add support for unexpected cell types.
+//
 // ****************************************************************************
 
 int
@@ -1987,6 +1991,9 @@ LoopOverAllCells(vtkUnstructuredGrid *input, HashEntryList &list)
           case VTK_QUADRATIC_HEXAHEDRON:
             AddQuadraticHexahedron(pts, cellId, list);
             break;
+
+          default:
+            AddUnknownCell(input->GetCell(cellId), cellId, list);
         }
     }
 
@@ -2352,3 +2359,46 @@ AddQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
         list.AddTri(nodes, cellId);
     }
 }
+
+
+// ****************************************************************************
+// Function: AddUnknownCell
+//
+// Purpose: 
+//     Adds a cell of unknown type by using VTK general interface methods.
+//
+// Programmer: Hank Childs
+// Creation:   September 7, 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+AddUnknownCell(vtkCell *cell, int cellId, HashEntryList &list)
+{
+    vtkIdList *pt_ids = cell->GetPointIds();
+    int nFaces = cell->GetNumberOfFaces();
+    vtkIdType nodes[4];
+    for (int i = 0 ; i < nFaces ; i++)
+    {
+        vtkCell *face = cell->GetFace(i);
+        if (face->GetCellType() == VTK_TRIANGLE)
+        {
+            nodes[0] = face->GetPointId(0);
+            nodes[1] = face->GetPointId(1);
+            nodes[2] = face->GetPointId(2);
+            list.AddTri(nodes, cellId);
+        }
+        else if (face->GetCellType() == VTK_QUAD)
+        {
+            nodes[0] = face->GetPointId(0);
+            nodes[1] = face->GetPointId(1);
+            nodes[2] = face->GetPointId(2);
+            nodes[3] = face->GetPointId(3);
+            list.AddQuad(nodes, cellId);
+        }
+    }
+}
+
+

@@ -36,66 +36,50 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtLineScanFilter.h                            //
+//                       avtLineScanTransformQuery.h                         //
 // ************************************************************************* //
 
-#ifndef AVT_LINE_SCAN_FILTER_H
-#define AVT_LINE_SCAN_FILTER_H
+#ifndef AVT_LINE_SCAN_TRANSFORM_QUERY_H
+#define AVT_LINE_SCAN_TRANSFORM_QUERY_H
 
+#include <query_exports.h>
 
-#include <avtStreamer.h>
-#include <filters_exports.h>
-#include <string>
+#include <avtLineScanQuery.h>
 
 
 // ****************************************************************************
-//  Class: avtLineScanFilter
+//  Class: avtDistanceFromBoundaryQuery
 //
 //  Purpose:
-//      This should really be a query, not a filter.  It sums all of the values
-//      for a variable.
+//    A query that calculates a probability density function of where the
+//    mass lies.
 //
-//  Programmer: Hank Childs
-//  Creation:   July 6, 2006
-//
-//  Modifications:
-//
-//    Hank Childs, Fri Jul 28 09:44:24 PDT 2006
-//    Added CylindricalExecute.
-//
-//    Dave Bremer, Thu Sep  7 16:38:28 PDT 2006
-//    Added accessor for line parameters.
+//  Programmer: David Bremer
+//  Creation:   August 8, 2006
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtLineScanFilter : public avtStreamer
+class QUERY_API avtLineScanTransformQuery : public avtLineScanQuery
 {
   public:
-                                    avtLineScanFilter();
-    virtual                        ~avtLineScanFilter();
+                              avtLineScanTransformQuery();
+    virtual                  ~avtLineScanTransformQuery();
 
-    void                            SetNumberOfLines(int);
-
-    virtual const char             *GetType(void)
-                                             { return "avtLineScanFilter"; };
-    virtual const char             *GetDescription(void)
-                                             { return "Scanning lines"; };
-    virtual void                    RefashionDataObjectInfo(void);
-    virtual void                    SetRandomSeed(int s) { seed = s; };
-
-    virtual const double           *GetLines() const { return lines; }
+    virtual const char       *GetType(void) 
+                                 { return "avtLineScanTransformQuery"; };
+    virtual const char       *GetDescription(void)
+                                 { return "Calculating the line scan transform."; };
 
   protected:
-    int                             nLines;
-    int                             seed;
-    double                         *lines;
+    double                   *lengths;
+    int                       numLineIntersections;
 
-    virtual void                    PreExecute(void);
-    virtual void                    PostExecute(void);
+    virtual void              PreExecute(void);
+    virtual void              PostExecute(void);
+    virtual void              ExecuteLineScan(vtkPolyData *);
 
-    virtual vtkDataSet             *ExecuteData(vtkDataSet *, int,std::string);
-    virtual vtkDataSet             *CartesianExecute(vtkDataSet *);
-    virtual vtkDataSet             *CylindricalExecute(vtkDataSet *);
+//            void              WalkLine(int startPtId, int endPtId, vtkPolyData *output, 
+//                                       vtkIntArray *lineids, int lineid, vtkDataArray *arr);
 };
 
 
