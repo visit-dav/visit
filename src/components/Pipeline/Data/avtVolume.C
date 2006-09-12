@@ -242,6 +242,9 @@ avtVolume::Restrict(int minw, int maxw, int minh, int maxh)
 //    Hank Childs, Sun Jan  1 17:46:21 PST 2006
 //    Added call to avtRay::Finalize for kernel based sampling.
 //
+//    Hank Childs, Tue Sep 12 08:57:39 PDT 2006
+//    Added support for ray functions that need pixel indices.
+//
 // ****************************************************************************
 
 void
@@ -253,6 +256,8 @@ avtVolume::GetPixels(avtRayFunction *rayfoo,unsigned char *data,float *zbuffer)
     int fullheight = (restrictedMaxHeight-restrictedMinHeight+1);
     int numRays = fullwidth*fullheight;
     int currentTenth = 0;
+    bool needPixelIndices = rayfoo->NeedPixelIndices();
+
     for (int i = restrictedMinHeight ; i <= restrictedMaxHeight ; i++)
     {
         if (rays[i] != NULL)
@@ -289,6 +294,8 @@ avtVolume::GetPixels(avtRayFunction *rayfoo,unsigned char *data,float *zbuffer)
                     // Get the value of the ray.
                     //
                     rays[i][j]->Finalize();
+                    if (needPixelIndices)
+                        rayfoo->SetPixelIndex(j, i);
                     rayfoo->GetRayValue(rays[i][j], g, rgb, zbuffer[index]);
 
                     //

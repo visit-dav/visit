@@ -36,6 +36,7 @@
 *****************************************************************************/
 
 #include "VisItEngineV1.h"
+#include "TimingsManager.h"
 
 #include <Engine.h>
 #include <LostConnectionException.h>
@@ -76,10 +77,17 @@
 //    Jeremy Meredith, Wed May 25 13:25:45 PDT 2005
 //    Disabled our own signal handlers.
 //
+//    Shelly Prevost, Tue Sep 12 15:59:51 PDT 2006
+//    I initialize the timer if it isn't already initialized by now.
+//
 // ****************************************************************************
 
 void *get_engine()
 {
+    // Make sure the timer is initialized. In visit this is normally
+    // done in the main function but for the simulation it's done here.
+    if ( visitTimer == NULL)
+        TimingsManager::Initialize( "Simulation");
     Engine *engine = Engine::Instance();
     return (void*)engine;
 }

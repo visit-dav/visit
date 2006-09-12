@@ -55,11 +55,19 @@
 //  Programmer: Hank Childs
 //  Creation:   December 1, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Sep 11 14:59:30 PDT 2006
+//    Initialize primaryVariableIndex and pixelIndices.
+//
 // ****************************************************************************
 
 avtRayFunction::avtRayFunction(avtLightingModel *l)
 {
     lighting = l;
+    primaryVariableIndex = 0;
+    pixelIndexI = 0;
+    pixelIndexJ = 0;
 }
 
 

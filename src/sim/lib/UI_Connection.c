@@ -34,21 +34,6 @@
 * DAMAGE.
 *
 *****************************************************************************/
-
-/***************************************************************************/
-/*                          UI_Connection.c  -  description
-*
-* This files implements the simulation side of the connections to the Visit Custom UI.
-* It decodes the signals sent over the wire from the visit QT signals and re-issues
-* Them on this side.
-
- *                             -------------------
- * Programmer: Shelly Prevost
- * Date      : Tue Dec 6 2005
- *
- * Modifications:
- 
-/***************************************************************************/
  
 #include "UI_Connection.h"
 #include <stdlib.h>
@@ -60,25 +45,25 @@ static int lastSigConnection =0;
 sigInfoConnect sigConnections[MAX_SIG_CONNECTIONS];
 
 
-// ****************************************************************************
-// Function: char *VisItParseCommand ( const char *cmd, char *signalName, char *buttonName )
-//
-// Purpose:
-//   Relays the valued Changed signal from the VisIt custom UI to the simulation side
-//
-// Arguments:
-//   cmd        : Command to pass on to the connected slots
-//   signalName : type of signal
-//   buttonName : name of ui component that issued the signal
-//
-// Programmer: Shelly Prevost
-// Creation:   Tue Dec 6 2005
-//
-// Modifications:
-//
-// ****************************************************************************
+/*****************************************************************************
+** Function: char *VisItParseCommand ( const char *cmd, char *signalName, char *buttonName )
+**
+** Purpose:
+**   Relays the valued Changed signal from the VisIt custom UI to the simulation side
+**
+** Arguments:
+**   cmd        : Command to pass on to the connected slots
+**   signalName : type of signal
+**   buttonName : name of ui component that issued the signal
+**
+** Programmer: Shelly Prevost
+** Creation:   Tue Dec 6 2005
+**
+** Modifications:
+**
+** *****************************************************************************/
 
-char *VisItParseCommand( const char *cmd, char *signalName, char *buttonName )
+char *VisItParseCommand( char *cmd, char *signalName, char *buttonName )
 {
     char *str = strdup (cmd );
     char *tok = NULL;
@@ -101,23 +86,23 @@ char *VisItParseCommand( const char *cmd, char *signalName, char *buttonName )
 }
 
 
-// ****************************************************************************
-// Function: void VisItClickedSignal ( const char *cmd )
-//
-// Purpose:
-//   Relays the clicked signal from the VisIt custom UI to the simulation side
-//
-// Arguments:
-//   cmd : Command to pass on to the connected slots
-//
-// Programmer: Shelly Prevost
-// Creation:   Tue Dec 6 2005
-//
-// Modifications:
-//
-// ****************************************************************************
+/*****************************************************************************
+** Function: void VisItClickedSignal ( const char *cmd )
+**
+** Purpose:
+**   Relays the clicked signal from the VisIt custom UI to the simulation side
+**
+** Arguments:
+**   cmd : Command to pass on to the connected slots
+**
+** Programmer: Shelly Prevost
+** Creation:   Tue Dec 6 2005
+**
+** Modifications:
+**
+** ****************************************************************************/
 
-void VisItClickedSignal( const char *cmd )
+void VisItClickedSignal( char *cmd )
 {
     int i;
 
@@ -140,23 +125,23 @@ void VisItClickedSignal( const char *cmd )
 }
 
 
-// ****************************************************************************
-// Function: VisItValueChangedSignal ( const char *cmd )
-//
-// Purpose:
-//   Relays the valued Changed signal from the VisIt custom UI to the simulation side
-//
-// Arguments:
-//   cmd : Command to pass on to the connected slots
-//
-// Programmer: Shelly Prevost
-// Creation:   Tue Dec 6 2005
-//
-// Modifications:
-//
-// ****************************************************************************
+/******************************************************************************
+** Function: VisItValueChangedSignal ( const char *cmd )
+**
+** Purpose:
+**   Relays the valued Changed signal from the VisIt custom UI to the simulation side
+**
+** Arguments:
+**   cmd : Command to pass on to the connected slots
+**
+** Programmer: Shelly Prevost
+** Creation:   Tue Dec 6 2005
+**
+** Modifications:
+**
+** *****************************************************************************/
 
-void VisItValueChangedSignal( const char *cmd )
+void VisItValueChangedSignal( char *cmd )
 {
     int i;
     char sig[64];
@@ -173,27 +158,27 @@ void VisItValueChangedSignal( const char *cmd )
           }
         }
     }
-    
+
     fprintf(stderr, "SIGNAL ValueChanged with command '%s'\n", cmd);
 }
 
 
 
-// ****************************************************************************
-// Function: void VisItTextChangedSignal ( const char *cmd )
-//
-// Purpose:
-//   Relays the valued Changed signal from the VisIt custom UI to the simulation side
-//
-// Arguments:
-//   cmd : Command to pass on to the connected slots
-//
-// Programmer: Shelly Prevost
-// Creation:   Tue Dec 6 2005
-//
-// Modifications:
-//
-// ****************************************************************************
+/*****************************************************************************
+** Function: void VisItTextChangedSignal ( const char *cmd )
+**
+** Purpose:
+**   Relays the valued Changed signal from the VisIt custom UI to the simulation side
+**
+** Arguments:
+**   cmd : Command to pass on to the connected slots
+**
+** Programmer: Shelly Prevost
+** Creation:   Tue Dec 6 2005
+**
+** Modifications:
+**
+** *****************************************************************************/
 
 void VisItTextChangedSignal( const char *cmd )
 {
@@ -202,21 +187,21 @@ void VisItTextChangedSignal( const char *cmd )
 
 
 
-// ****************************************************************************
-// Function: void VisItActivatedSignal ( const char *cmd )
-//
-// Purpose:
-//   Relays the valued Changed signal from the VisIt custom UI to the simulation side
-//
-// Arguments:
-//   cmd : Command to pass on to the connected slots
-//
-// Programmer: Shelly Prevost
-// Creation:   Tue Dec 6 2005
-//
-// Modifications:
-//
-// ****************************************************************************
+/*****************************************************************************
+** Function: void VisItActivatedSignal ( const char *cmd )
+**
+** Purpose:
+**   Relays the valued Changed signal from the VisIt custom UI to the simulation side
+**
+** Arguments:
+**   cmd : Command to pass on to the connected slots
+**
+** Programmer: Shelly Prevost
+** Creation:   Tue Dec 6 2005
+**
+** Modifications:
+**
+** *****************************************************************************/
 
 void VisItActivatedSignal( const char *cmd )
 {
@@ -225,21 +210,21 @@ void VisItActivatedSignal( const char *cmd )
 
 
 
-// ****************************************************************************
-// Function: void VisItCurrentChangedSignal ( const char *cmd )
-//
-// Purpose:
-//   Relays the valued Changed signal from the VisIt custom UI to the simulation side
-//
-// Arguments:
-//   cmd : Command to pass on to the connected slots
-//
-// Programmer: Shelly Prevost
-// Creation:   Tue Dec 6 2005
-//
-// Modifications:
-//
-// ****************************************************************************
+/*****************************************************************************
+** Function: void VisItCurrentChangedSignal ( const char *cmd )
+**
+** Purpose:
+**   Relays the valued Changed signal from the VisIt custom UI to the simulation side
+**
+** Arguments:
+**   cmd : Command to pass on to the connected slots
+**
+** Programmer: Shelly Prevost
+** Creation:   Tue Dec 6 2005
+**
+** Modifications:
+**
+** **************************************************************************** */
 
 void VisItCurrentChangedSignal( const char *cmd )
 {
@@ -247,23 +232,23 @@ void VisItCurrentChangedSignal( const char *cmd )
 }
 
 
-// ****************************************************************************
-// Function: void VisItAddConnection ( char * name, char* sig, slotFunc theSlot )
-//
-// Purpose:
-//   Relays the valued Changed signal from the VisIt custom UI to the simulation side
-//
-// Arguments:
-//   name       : Name of the ui component that will issue the signal
-//   sig        : type of signal
-//   theSlot    : The callback that should be called with the named ui issues a sig
-//
-// Programmer: Shelly Prevost
-// Creation:   Tue Dec 6 2005
-//
-// Modifications:
-//
-// ****************************************************************************
+/*****************************************************************************
+** Function: void VisItAddConnection ( char * name, char* sig, slotFunc theSlot )
+**
+** Purpose:
+**   Relays the valued Changed signal from the VisIt custom UI to the simulation side
+**
+** Arguments:
+**   name       : Name of the ui component that will issue the signal
+**   sig        : type of signal
+**   theSlot    : The callback that should be called with the named ui issues a sig
+**
+** Programmer: Shelly Prevost
+** Creation:   Tue Dec 6 2005
+**
+** Modifications:
+**
+** *****************************************************************************/
 
 void VisItAddConnection( char * name, char* sig, slotFunc theSlot )
 {
@@ -279,26 +264,26 @@ void VisItAddConnection( char * name, char* sig, slotFunc theSlot )
 
 
 
-// ****************************************************************************
-// Function: void VisItProcessCustomCommand ( const char *cmd)
-//
-// Purpose:
-//   Relays the valued Changed signal from the VisIt custom UI to the simulation side
-//
-// Arguments:
-//   cmd : Command to pass on to the connected slots
-//
-// Programmer: Shelly Prevost
-// Creation:   Tue Dec 6 2005
-//
-// Modifications:
-//
-// ****************************************************************************
+/******************************************************************************
+** Function: void VisItProcessCustomCommand ( const char *cmd)
+**
+** Purpose:
+**   Relays the valued Changed signal from the VisIt custom UI to the simulation side
+**
+** Arguments:
+**   cmd : Command to pass on to the connected slots
+**
+** Programmer: Shelly Prevost
+** Creation:   Tue Dec 6 2005
+**
+** Modifications:
+**
+** *****************************************************************************/
 
-void VisItProcessCustomCommand( const char *cmd)
+void VisItProcessCustomCommand( char *cmd)
 {
-    // These are the signal that are generated by
-    // the custom UI in VisIt
+    /*These are the signal that are generated by
+    the custom UI in VisIt    */
     int i;
     char sig[64];
     char ui_component[256];

@@ -23,6 +23,7 @@
         Splatting
         Texture3D
         RayCasting
+        RayCastingIntegration
       </Enum>
       <Enum name="GradientType">
         CenteredDifferences

@@ -234,6 +234,9 @@
 #    Brad Whitlock, Thu Jan 26 15:27:04 PST 2006
 #    Added -lbz2 for MacOS X
 #
+#    Hank Childs, Mon Sep 11 15:02:43 PDT 2006
+#    Added avtIntegrationRF.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -270,6 +273,7 @@ Data_src= \
   Data/avtImage.C \
   Data/avtImagePartition.C \
   Data/avtImageRepresentation.C \
+  Data/avtIntegrationRF.C \
   Data/avtIntervalTree.C \
   Data/avtLightingModel.C \
   Data/avtLogicalSelection.C \

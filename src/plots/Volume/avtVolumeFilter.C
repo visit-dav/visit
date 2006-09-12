@@ -50,6 +50,7 @@
 #include <avtCompositeRF.h>
 #include <avtDatasetExaminer.h>
 #include <avtFlatLighting.h>
+#include <avtIntegrationRF.h>
 #include <avtOpacityMap.h>
 #include <avtOpacityMapSamplePointArbitrator.h>
 #include <avtParallel.h>
@@ -227,6 +228,9 @@ avtVolumeFilter::Execute(void)
 //    Hank Childs, Sat Jan  7 17:50:22 PST 2006
 //    Use weighting variable for kernel based sampling.
 //
+//    Hank Childs, Mon Sep 11 14:46:07 PDT 2006
+//    Add support for the integration ray function.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -263,6 +267,25 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     range[1] = (artificialMax ? atts.GetColorVarMax() : actualRange[1]);
     om.SetMin(range[0]);
     om.SetMax(range[1]);
+
+    if (atts.GetRendererType() == VolumeAttributes::RayCastingIntegration)
+    {
+        if (!artificialMin)
+            range[0] = 0.;
+        if (!artificialMax)
+        {
+/* Don't need this code, because the rays will be in depth ... 0->1.
+            double bounds[6];
+            GetSpatialExtents(bounds);
+            UnifyMinMax(bounds, 6);
+            double diag = sqrt((bounds[1]-bounds[0])*(bounds[1]-bounds[0]) +
+                               (bounds[3]-bounds[2])*(bounds[3]-bounds[2]) +
+                               (bounds[5]-bounds[4])*(bounds[5]-bounds[4]));
+            range[1] = (actualRange[1]*diag) / 2.;
+ */
+            range[1] = (actualRange[1]) / 4.;
+        }
+    }
 
     avtFlatLighting fl;
     avtLightingModel *lm = &fl;
@@ -384,16 +407,24 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
         om2->SetMax(range[1]);
         // LEAK!!
     }
-    avtCompositeRF rayfoo(lm, &om, om2);
-    rayfoo.SetColorVariableIndex(primIndex);
-    rayfoo.SetOpacityVariableIndex(opacIndex);
+    avtCompositeRF *compositeRF = new avtCompositeRF(lm, &om, om2);
+    avtIntegrationRF *integrateRF = new avtIntegrationRF(lm);
+
+    compositeRF->SetColorVariableIndex(primIndex);
+    compositeRF->SetOpacityVariableIndex(opacIndex);
+    integrateRF->SetPrimaryVariableIndex(primIndex);
+    integrateRF->SetRange(range[0], range[1]);
     if (atts.GetSampling() == VolumeAttributes::KernelBased)
     {
         software->SetKernelBasedSampling(true);
-        rayfoo.SetWeightVariableIndex(vl.nvars);
+        compositeRF->SetWeightVariableIndex(vl.nvars);
     }
     
-    software->SetRayFunction(&rayfoo);
+    if (atts.GetRendererType() == VolumeAttributes::RayCastingIntegration)
+        software->SetRayFunction(integrateRF);
+    else
+        software->SetRayFunction(compositeRF);
+
     software->SetSamplesPerRay(atts.GetSamplesPerRay());
 
     const int *size = window.GetSize();
@@ -403,6 +434,8 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     avtViewInfo vi;
     CreateViewInfoFromViewAttributes(vi, view);
     software->SetView(vi);
+    if (atts.GetRendererType() == VolumeAttributes::RayCastingIntegration)
+        integrateRF->SetWindowSize(size[0], size[1]);
 
     //
     // Set the volume renderer's background color and mode from the
@@ -426,11 +459,16 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     avtDataObject_p dob = software->GetOutput();
     dob->Update(GetGeneralPipelineSpecification());
 
+    if (atts.GetRendererType() == VolumeAttributes::RayCastingIntegration)
+        integrateRF->OutputRawValues("integration.data");
+
     //
     // Free up some memory and clean up.
     //
     delete software;
     avtRay::SetArbitrator(NULL);
+    delete compositeRF;
+    delete integrateRF;
 
     //
     // Copy the output of the volume renderer to our output.

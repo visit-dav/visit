@@ -73,6 +73,10 @@ class     avtRay;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Mon Sep 11 14:59:30 PDT 2006
+//    Add method SetPrimaryIndex.  Also add methods for needing pixel
+//    indices.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtRayFunction
@@ -82,15 +86,23 @@ class PIPELINE_API avtRayFunction
     virtual             ~avtRayFunction();
 
     bool                 NeedsGradients(void);
+    void                 SetPrimaryVariableIndex(int vi)
+                                    { primaryVariableIndex = vi; };
 
     virtual void         GetRayValue(const avtRay *, const avtGradients *,
                                      unsigned char rgb[3], float) = 0;
     virtual bool         CanContributeToPicture(int,
                                           const float (*)[AVT_VARIABLE_LIMIT]);
     virtual float        ClassifyForShading(float x) { return x; };
+    virtual bool         NeedPixelIndices(void) { return false; };
+
+    void                 SetPixelIndex(int i, int j)
+                             { pixelIndexI = i; pixelIndexJ = j; };
 
   protected:
     avtLightingModel    *lighting;
+    int                  primaryVariableIndex;
+    int                  pixelIndexI, pixelIndexJ;
 
     virtual bool         NeedsGradientsForFunction(void) = 0;
     inline int           IndexOfDepth(const float &, const int &);

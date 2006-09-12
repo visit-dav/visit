@@ -56,7 +56,7 @@
 #include <InvalidVariableException.h>
 
 #include <visitstream.h>
-
+                                                    
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkFieldData.h>
@@ -353,6 +353,10 @@ avtSimV1FileFormat::FreeUpResources(void)
 //    Brad Whitlock, Wed Mar 1 15:46:40 PST 2006
 //    I added expressions to the metadata.
 //
+//    Shelly Prevost, Tue Sep 12 15:42:17 PDT 2006
+//    I added code to copy all the fields in the
+//    generic command array.
+//
 // ****************************************************************************
 
 void
@@ -505,6 +509,12 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
         avtSimulationCommandSpecification *scs = new avtSimulationCommandSpecification;
         scs->SetName(scc->name);
+        scs->SetText(scc->text);
+        scs->SetValue(scc->value);
+        scs->SetIsOn(scc->isOn);
+        scs->SetUiType(scc->uiType);
+        scs->SetClassName(scc->className);
+        scs->SetSignal(scc->signal);
         scs->SetArgumentType(t);
         scs->SetEnabled(scc->enabled);
         md->GetSimInfo().AddAvtSimulationCommandSpecification(*scs);

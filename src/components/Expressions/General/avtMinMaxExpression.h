@@ -74,7 +74,7 @@ class EXPRESSION_API avtMinMaxExpression : public avtBinaryMathFilter
                                  { return "avtMinMaxExpression"; };
     virtual const char       *GetDescription(void)
                                  { return "Calculating min or max"; };
-    void                      SetDoMinimum(bool b) { doMin = b; };
+    bool                      SetDoMinimum(bool b) { doMin = b; return true; };
 
   protected:
     bool             doMin;

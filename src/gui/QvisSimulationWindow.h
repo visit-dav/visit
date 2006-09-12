@@ -53,6 +53,10 @@ class StatusAttributes;
 class QLineEdit;
 class QListView;
 class QString;
+class QSpinBox;
+class QCheckBox;
+        
+class QHBoxLayout;
 
 class avtSimulationCommandSpecification;
 
@@ -80,6 +84,10 @@ class avtSimulationCommandSpecification;
 //    Brad Whitlock, Tue Jan 31 16:42:59 PST 2006
 //    I added some new methods to contain some refactored code.
 //
+//    Shelly Prevost, Friday Sept. 1, 2006 PST
+//    Added time limits and step UI, added a message window
+//    added slot function to pass time setting to the simulation
+//
 // ****************************************************************************
 
 class GUI_API QvisSimulationWindow : public QvisPostableWindowObserver
@@ -89,7 +97,7 @@ class GUI_API QvisSimulationWindow : public QvisPostableWindowObserver
     typedef QMap<QString, StatusAttributes*> SimulationStatusMap;
     typedef QMap<QString, avtDatabaseMetaData*> SimulationMetaDataMap;
 public:
-    QvisSimulationWindow(EngineList *engineList,
+    QvisSimulationWindow(EngineList *engineList,    
                      const char *caption = 0,
                      const char *shortName = 0,
                      QvisNotepadArea *notepad = 0);
@@ -98,13 +106,14 @@ public:
     virtual void Update(Subject *TheChangedSubject);
     virtual void SubjectRemoved(Subject *TheRemovedSubject);
     
-    void UpdateCustomUIComponent(avtSimulationCommandSpecification *cmd);
+    void UpdateUIComponent(QWidget *window,avtSimulationCommandSpecification *cmd);
     void ConnectStatusAttributes(StatusAttributes *s);
     void SetNewMetaData(const QualifiedFilename &qf,
                         const avtDatabaseMetaData *md);
 private:
     void UpdateWindow(bool doAll);
     void UpdateCustomUI(avtDatabaseMetaData *md);
+    void UpdateSimulationUI (avtDatabaseMetaData *md);
     void UpdateStatusArea();
     void UpdateInformation(int index);
     void UpdateInformation(const QString &key);
@@ -114,7 +123,6 @@ private:
     void AddMetaDataEntry(const QString &key);
     void RemoveMetaDataEntry(const QString &key);
     void UpdateMetaDataEntry(const QString &key);
-
     void CreateCommandUI();
     QString GetUIFileDirectory() const;
     QString GetUIFile() const;
@@ -135,6 +143,10 @@ private slots:
     void executePushButtonCommand6();
     void executePushButtonCommand7();
     void executePushButtonCommand8();
+    void executeEnableTimeRange();
+    void executeSpinBoxStartCommand();
+    void executeSpinBoxStopCommand();
+    void executeSpinBoxStepCommand();
 
 private:
     EngineList           *engines;
@@ -150,6 +162,15 @@ private:
     QListView        *simInfo;
     QLabel           *simulationMode;
     QProgressBar     *totalProgressBar;
+    QHBoxLayout      *progressLayout;
+    QHBoxLayout      *progressLayout2;
+    QLineEdit        *startCycle;
+    QLineEdit        *stopCycle;
+    QLineEdit        *stepCycle;
+    QCheckBox        *enableTimeRange;
+    QLabel           *startLabel;
+    QLabel           *stopLabel;
+    QLabel           *stepLabel;
     QPushButton      *interruptEngineButton;
     QPushButton      *closeEngineButton;
     QPushButton      *clearCacheButton;

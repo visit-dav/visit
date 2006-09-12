@@ -35,31 +35,55 @@
 *
 *****************************************************************************/
 
-#ifndef UI_CONNECTION_H
-#define UI_CONNECTION_H
+// ************************************************************************* //
+//                              avtIntegrationRF.h                           //
+// ************************************************************************* //
 
-/*****************************************************************************
-** Helper Functions:
-**
-** Purpose:
-**   These function handle the connecting to VisIt from the simulation. It makes it
-**   far less error prone to use the Simulation Steering API.
-**
-** Notes:
-**
-** Programmer: Shelly Prevost
-** Creation:   Dec. 6, 2005
-**
-** Modifications:
-**
-**
-****************************************************************************/
+#ifndef AVT_INTEGRATION_RF_H
+#define AVT_INTEGRATION_RF_H
 
-typedef void (*slotFunc) (char * cmd);
-typedef struct signalInfo { char *name; char* sig; slotFunc slot; } sigInfoConnect;
+#include <pipeline_exports.h>
 
-void VisItProcessCustomCommand( char *cmd);
-void VisItAddConnection(char * name, char* sig, slotFunc theSlot );
-char *VisItParseCommand( char *cmd, char *signalName, char *buttonName );
+#include <avtRayFunction.h>
+
+
+// ****************************************************************************
+//  Class: avtIntegrationRF
+//
+//  Purpose:
+//      The derived type of ray function that will perform the integration
+//      of $int_0^{maxX} \rho(X) dx$ for each ray.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 8, 2006
+//
+// ****************************************************************************
+
+class PIPELINE_API avtIntegrationRF : public avtRayFunction
+{
+  public:
+                        avtIntegrationRF(avtLightingModel *);
+    virtual            ~avtIntegrationRF();
+
+    virtual void        GetRayValue(const avtRay *, const avtGradients *,
+                                    unsigned char rgb[3], float);
+    virtual bool        NeedPixelIndices(void) { return true; };
+
+    static void         SetWindowSize(int, int);
+    static void         OutputRawValues(const char *);
+
+    void                SetRange(double m1, double m2)
+                                  { min = m1; max = m2; };
+
+  protected:
+    static int          windowSize[2];
+    static double      *vals;
+    double              min, max;
+
+    virtual bool        NeedsGradientsForFunction(void) { return false; };
+};
+
 
 #endif
+
+
