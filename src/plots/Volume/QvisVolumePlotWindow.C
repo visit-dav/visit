@@ -248,6 +248,9 @@ QvisVolumePlotWindow::~QvisVolumePlotWindow()
 //   Hank Childs, Mon Sep 11 10:34:32 PDT 2006
 //   I added the RayCastingIntegration option.
 //
+//   Hank Childs, Thu Sep 14 09:44:50 PDT 2006
+//   I qualified the integration mode to include "grey scale".
+//
 // ****************************************************************************
 
 void
@@ -544,7 +547,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     rendererTypesComboBox->insertItem("Splatting",0);
     rendererTypesComboBox->insertItem("3D Texturing",1);
     rendererTypesComboBox->insertItem("Ray casting: compositing",2);
-    rendererTypesComboBox->insertItem("Ray casting: integration",3);
+    rendererTypesComboBox->insertItem("Ray casting: integration (grey scale)",3);
     connect(rendererTypesComboBox, SIGNAL(activated(int)),
             this, SLOT(rendererTypeChanged(int)));
     rendererOptionsLayout->addWidget(new QLabel(rendererTypesComboBox,

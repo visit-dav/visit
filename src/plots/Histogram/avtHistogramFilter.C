@@ -195,6 +195,9 @@ avtHistogramFilter::PreExecute(void)
 //    Hank Childs, Wed May 24 11:27:24 PDT 2006
 //    Add support for array variables.
 //
+//    Hank Childs, Thu Sep 14 09:16:23 PDT 2006
+//    Fix indexing bug pointed out by Matt Wheeler.
+//
 // ****************************************************************************
 
 void
@@ -331,7 +334,7 @@ avtHistogramFilter::PostExecute(void)
         //
         // Now add the polygons in the middle.
         //
-        vtkIdType quad[2];
+        vtkIdType quad[4];
         for (int i = 0 ; i < workingNumBins ; i++)
         {
             quad[0] = 4*i;
