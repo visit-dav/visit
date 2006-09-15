@@ -298,7 +298,7 @@ avtGGCMFileFormat::GetVectorVar(int timestate, const char *varname)
     char *fields[4];
     VectorNames(varname, fields);
 
-    fields[4] = NULL;
+    fields[3] = NULL;
     debug4 << "avtGGCMFileFormat::GetVectorVar(" << timestate << ", {"
            << fields[0] << ", " << fields[1] << ", " << fields[2] << "})"
            << std::endl;
@@ -434,7 +434,7 @@ static void DeriveGridFile(const char *tdf, char **grid)
     assert(tdf);
 
     *grid = strdup(tdf);
-    tmp = rindex(*grid, 'f');
+    tmp = strrchr(*grid, 'f');
     if(tmp) {
         tmp -= 2; /* back 2 chars to '3' in "3df" */
         tmp[0] = 'g';
@@ -470,6 +470,7 @@ static std::vector<std::string> DeriveVectors(const MHDdata *md)
     const char *prev = "";
     size_t p_len; /* previous length */
     size_t c_len; /* current length */
+    int i;
 
     for(cur = md; cur; cur = cur->next) {
         /* can't be same data if fields are different lengths */
@@ -480,8 +481,8 @@ static std::vector<std::string> DeriveVectors(const MHDdata *md)
                 char *tmp;
                 tmp = strdup(prev);
                 tmp[p_len-1] = '\0'; /* get rid of the 'y' */
+                for (i=0; i < p_len-1; ++i) tmp[i] = toupper(tmp[i]);
                 std::string vec(tmp);
-                std::transform(vec.begin(), vec.end(), vec.begin(), toupper);
                 vectors.push_back(vec);
                 free(tmp);
             }
@@ -501,14 +502,18 @@ static std::vector<std::string> DeriveScalars(const MHDdata *md)
     const MHDdata *cur;
     const char *s;
     size_t len;
+    int i;
 
     for(cur = md; cur; cur = cur->next) {
         s = cur->field_name;
         len = strlen(s);
         if(s[len-1] != 'x' && s[len-1] != 'y' && s[len-1] != 'z') {
-            std::string scalar(s);
-            std::transform(scalar.begin(), scalar.end(), scalar.begin(), toupper);
+            char *tmp;
+            tmp = strdup(s);
+            for (i = 0; i < len; ++i) tmp[i] = toupper(tmp[i]);
+            std::string scalar(tmp);
             scalars.push_back(scalar);
+            free(tmp);
         }
     }
     return scalars;

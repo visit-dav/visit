@@ -1,6 +1,7 @@
-#include <string>
 #include <MRUCache.h>
-#include <stream.h>
+#include <visitstream.h>
+#include <string>
+#include <stdio.h>
 
 using std::string;
 
@@ -19,7 +20,7 @@ void DeleteAFoo(void *p)
     free(fp);
 }
 
-main()
+int main()
 {
     int i;
 
@@ -32,7 +33,7 @@ main()
 
 
     // load caches and see how things behave
-    for (int i = 0; i < 2*CACHE_SIZE; i++)
+    for (i = 0; i < 2*CACHE_SIZE; i++)
     {
         cerr << "Iteration " << i << endl;
         char tmp[256];

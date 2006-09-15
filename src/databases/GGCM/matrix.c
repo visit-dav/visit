@@ -79,6 +79,7 @@ void m_free(float ***M)
 {
     unsigned int x, y;
     int *meta;
+    int i,j;
 
     /* since 'M' was allocated by m_alloc, the 3 unsigned ints prior to M's
      * base address will be the dimensions of the array */
@@ -89,7 +90,6 @@ void m_free(float ***M)
     x = meta[0];
     y = meta[1];
 
-    int i,j;
     for(i=0; i < x; ++i) {
         for(j=0; j < y; ++j) {
             free(M[i][j]);

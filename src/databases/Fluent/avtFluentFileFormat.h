@@ -11,7 +11,6 @@
 
 // Fluent plugin
 #include <visitstream.h>
-#include <iomanip.h>
 #include <stdlib.h>
 #include <sstream>
 

@@ -53,6 +53,7 @@
 #include <avtParallel.h>
 #include <avtSourceFromAVTDataset.h>
 #include <avtTerminatingSource.h>
+#include <avtTotalRevolvedVolumeQuery.h>
 #include <avtTotalSurfaceAreaQuery.h>
 #include <avtTotalVolumeQuery.h>
 #include <avtWeightedVariableSummationQuery.h>
@@ -128,6 +129,11 @@ avtMassDistributionQuery::PreExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   July 20, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Sep 15 17:03:39 PDT 2006
+//    Add support for RZ meshes.
+//
 // ****************************************************************************
 
 void
@@ -142,8 +148,9 @@ avtMassDistributionQuery::PostExecute(void)
     summer.PerformQuery(&qa);
     double totalMass = qa.GetResultsValue()[0];
 
-    bool didVolume = false;
-    bool didSA     = false;
+    bool didVolume  = false;
+    bool didRVolume = false;
+    bool didSA      = false;
     if (totalMass == 0.)
     {
         if (dob->GetInfo().GetAttributes().GetTopologicalDimension() == 3)
@@ -155,6 +162,17 @@ avtMassDistributionQuery::PostExecute(void)
             tvq.PerformQuery(&qa);
             totalMass = qa.GetResultsValue()[0];
             didVolume = true;
+        }
+        else if (dob->GetInfo().GetAttributes().GetMeshCoordType() == AVT_RZ
+              || dob->GetInfo().GetAttributes().GetMeshCoordType() == AVT_ZR)
+        {
+            avtTotalRevolvedVolumeQuery rvq;
+            avtDataObject_p dob = GetInput();
+            rvq.SetInput(dob);
+            QueryAttributes qa;
+            rvq.PerformQuery(&qa);
+            totalMass = qa.GetResultsValue()[0];
+            didRVolume = true;
         }
         else
         {
@@ -186,7 +204,9 @@ avtMassDistributionQuery::PostExecute(void)
     }
 
     char msg[1024];
-    const char *mass_string = (didVolume ? "volume" : (didSA ? "area" : "mass"));
+    const char *mass_string = (didVolume ? "volume" : 
+                              (didRVolume ? "revolved volume" : 
+                              (didSA ? "area" : "mass")));
     sprintf(msg, "The %s distribution has been outputted as an "
                  "Ultra file (%s), which can then be imported into VisIt.  The"
                  " total %s considered was %f\n", 

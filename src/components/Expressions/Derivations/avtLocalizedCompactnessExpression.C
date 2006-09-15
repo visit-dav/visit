@@ -99,6 +99,11 @@ avtLocalizedCompactnessExpression::~avtLocalizedCompactnessExpression()
 //  Programmer:   Hank Childs
 //  Creation:     April 29, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Sep 15 16:55:45 PDT 2006
+//    Add support for XY meshes (as opposed to RZ meshes).
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -122,6 +127,9 @@ avtLocalizedCompactnessExpression::DeriveVariable(vtkDataSet *in_ds)
     int dims[3];
     rgrid->GetDimensions(dims);
     
+    bool isRZ = (GetInput()->GetInfo().GetAttributes().GetMeshCoordType()
+                 == AVT_RZ);
+
     const char *varname = activeVariable;
     vtkDataArray *var = in_ds->GetPointData()->GetArray(varname);
     if (var == NULL)
@@ -199,10 +207,10 @@ avtLocalizedCompactnessExpression::DeriveVariable(vtkDataSet *in_ds)
                         float rad_squared = (x2-x)*(x2-x) + (y2-y)*(y2-y);
                         if (rad_squared > radius*radius)
                             continue;
-                        totalWeight += y2;
+                        totalWeight += (isRZ ? y2 : 1.);
                         int idx = jj*dims[0] + ii;
                         if (var->GetTuple1(idx) != 0.)
-                            weightInside += y2;
+                            weightInside += (isRZ ? y2 : 1.);
                     }
                 int idx = j*dims[0] + i;
                 float compactness = weightInside / totalWeight;

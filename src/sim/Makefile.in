@@ -31,6 +31,8 @@
 # product endorsement purposes.
 #
 # Modifications:
+#   Eric Brugger, Wed Sep 13 14:45:12 PDT 2006
+#   Removed examples from SUBDIRS so that it will not be built by default.
 #
 ##############################################################################
 
@@ -38,7 +40,7 @@
 @VARIABLES@
 @DIRTARGETS@
 
-SUBDIRS=lib examples
+SUBDIRS=lib
 
 message:
 	@echo

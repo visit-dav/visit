@@ -751,11 +751,14 @@ VisIt_MeshData *VisItGetMesh(int domain, const char *name)
     }
     else
     {
+        int okay;
+        int lname;
+
         mesh->meshType = VISIT_MESHTYPE_UNKNOWN;
 
         /* Get the mesh */
-        int okay = VISIT_ERROR;
-        int lname = strlen(name);
+        okay = VISIT_ERROR;
+        lname = strlen(name);
         if((okay = F_VISITGETMESH(&meshid, &domain, name, &lname)) != VISIT_OKAY)
         {
             FREE(mesh);
