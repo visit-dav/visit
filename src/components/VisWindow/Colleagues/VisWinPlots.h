@@ -173,6 +173,9 @@ class avtTransparencyActor;
 //    Kathleen Bonnell, Mon Jun 27 14:54:36 PDT 2005 
 //    Added GetMaxZShift. 
 //
+//    Brad Whitlock, Mon Sep 18 11:13:40 PDT 2006
+//    Added SetColorTexturingFlag.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinPlots : public VisWinColleague
@@ -222,6 +225,7 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
 
     virtual void                  SetSpecularProperties(bool,double,double,
                                                         const ColorAttribute&);
+    virtual void                  SetColorTexturingFlag(bool);
 
     void                          SetExternalRenderCallback(
                                       VisCallbackWithDob *cb, void *data);

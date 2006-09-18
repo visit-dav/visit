@@ -5456,6 +5456,39 @@ visit_SetRenderingAttributes(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_SetColorTexturingEnabled
+//
+// Purpose: 
+//   This function sets the color texturing mode in the rendering atts.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 18 11:36:24 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetColorTexturingEnabled(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int value = 0;
+    if (!PyArg_ParseTuple(args, "i", &value))
+        return NULL;
+
+    MUTEX_LOCK();
+        RenderingAttributes *ra = viewer->GetRenderingAttributes();
+        ra->SetColorTexturingFlag(value != 0);
+        ra->Notify();
+        viewer->SetRenderingAttributes();
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Function: visit_SetWindowMode
 //
 // Purpose:
@@ -10791,6 +10824,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Kathleen Bonnell, Tue Aug  1 09:13:45 PDT 2006 
 //   Added DefineCurveExpression.
 //
+//   Brad Whitlock, Mon Sep 18 11:38:05 PDT 2006
+//   Added SetColorTexturingEnabled.
+//
 // ****************************************************************************
 
 static void
@@ -11143,6 +11179,7 @@ AddDefaultMethods()
     AddMethod("TurnMaterialsOn", visit_TurnMaterialsOn, visit_Turn_doc);
     AddMethod("QueriesOverTime",  visit_QueriesOverTime,
                                                     visit_QueriesOverTime_doc);
+    AddMethod("SetColorTexturingEnabled", visit_SetColorTexturingEnabled, NULL);
 
     //
     // Lighting

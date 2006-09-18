@@ -56,6 +56,8 @@
 #    endorsement purposes.
 #
 # Modifications:
+#   Brad Whitlock, Fri Apr 7 15:08:10 PST 2006
+#   Added GLEW library.
 #
 ##############################################################################
 
@@ -63,7 +65,7 @@
 @VARIABLES@
 @DIRTARGETS@
 
-SUBDIRS=@BUILD_BZIP2@
+SUBDIRS=@BUILD_BZIP2@ @BUILD_GLEW@
 
 message:
 	@echo

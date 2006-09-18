@@ -1,5 +1,11 @@
 <?xml version="1.0"?>
   <Plugin name="Volume" type="plot" label="Volume" version="1.1" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" vartype="scalar,species" iconFile="Volume.xpm">
+    <CXXFLAGS>
+      $(GLEW_INCLUDE)
+    </CXXFLAGS>
+    <LIBS>
+      $(GLEW_LIBS) $(GL_LIBS)
+    </LIBS>
     <Files components="V">
       avtVolumeRenderer.C
       avtVolumeFilter.C

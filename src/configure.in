@@ -616,6 +616,10 @@ dnl    may have it, but without a correct prototype it will fail to
 dnl    compile in the main code.  Sometimes to pick it up we need to
 dnl    define GL_GLEXT_PROTOTYPES, so I added a check for that as well.
 dnl
+dnl    Brad Whitlock, Fri Sep 15 10:31:23 PDT 2006
+dnl    Added support for GLEW library and removed GL_GLEXT_PROTOTYPES. Also
+dnl    fixed a problem with building beta versions on the Mac.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -857,48 +861,6 @@ if test "$SHORT_UNAME" = "darwin"; then
     AC_MSG_RESULT(found $GL_LIBS)
 fi
 AC_SUBST(GL_LIBS)
-
-
-#
-# Check for 3D texturing support in OpenGL
-#
-AC_LANG_CPLUSPLUS
-oldlibs="$LIBS"
-LIBS="$LIBS $GL_LIBS"
-AC_MSG_CHECKING(for glTexImage3D using only default gl.h)
-AC_TRY_LINK([#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#endif],
-	    [glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, 0,0,0,
-                          0, GL_RGBA, GL_UNSIGNED_BYTE, 0);],
-            
-            AC_DEFINE(HAVE_GL_TEX_IMAGE_3D)
-            AC_MSG_RESULT(yes),
-            try_glext_proto="yes"
-            AC_MSG_RESULT(no));
-
-if test -n "$try_glext_proto"; then
-    AC_MSG_CHECKING(for glTexImage3D by adding GL_GLEXT_PROTOTYPES define)
-    AC_TRY_LINK([
-    #define GL_GLEXT_PROTOTYPES
-    #ifdef __APPLE__
-    #include <OpenGL/gl.h>
-    #else
-    #include <GL/gl.h>
-    #endif],
-	    [glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, 0,0,0,
-                          0, GL_RGBA, GL_UNSIGNED_BYTE, 0);],
-            
-            AC_DEFINE(HAVE_GL_TEX_IMAGE_3D)
-            AC_DEFINE(NEED_GLEXT_PROTO)
-            AC_MSG_RESULT(yes),
-            AC_MSG_RESULT(no));
-fi
-
-LIBS="$oldlibs"
-
 
 AC_LANG_C
 
@@ -1318,6 +1280,25 @@ if test "$Usebzip2" = "yes"; then
 fi
 AC_SUBST(BUILD_BZIP2)
 AC_SUBST(BZIP2_LIBS)
+
+dnl
+dnl Disable building glew. Only necessary if glew won't build somewhere 
+dnl
+AC_ARG_ENABLE(glew,
+   [  --disable-glew         do not build or use glew library -- disables detection of OpenGL extensions],
+   Useglew="$enable_glew", Useglew=yes)
+BUILD_GLEW=""
+GLEW_LIBS=""
+GLEW_INCLUDE=""
+if test "$Useglew" = "yes"; then
+    BUILD_GLEW="glew"
+    AC_DEFINE(HAVE_LIBGLEW)
+    GLEW_LIBS="-lGLEW"
+    GLEW_INCLUDE="-I$""(TOPDIR)/include/glew"
+fi
+AC_SUBST(BUILD_GLEW)
+AC_SUBST(GLEW_INCLUDE)
+AC_SUBST(GLEW_LIBS)
 
 dnl
 dnl Make note if no CXXFLAGS have STILL yet been specified; this is the
@@ -3019,23 +3000,24 @@ case $SHORT_UNAME in
 
     # Set SHLIB_TMPDIR so that libraries are created directly in the lib directory.
     SHLIB_TMPDIR="$""(TOPDIR)/lib/"
+    COMPATIBILITY_VERSION=`sed -e "s/b//" VERSION`
     # Set SHLIB_LIBS so the right libraries are added to the link line but also ensure
     # that the shared library is created with a unique starting address so we can
     # prebind.
-    SHLIB_LIBS="$""(LIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../lib/$""(LIB).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_SERLIBS="$""(SERLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../lib/$""(LIB)_ser.dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_PARLIBS="$""(PARLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../lib/$""(LIB)_par.dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_LIBS="$""(LIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../lib/$""(LIB).dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_SERLIBS="$""(SERLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../lib/$""(LIB)_ser.dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_PARLIBS="$""(PARLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../lib/$""(LIB)_par.dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
 
     #
     # Targets for creating prebound plugins.
     #
-    SHLIB_ILIBS="$""(ILIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libI$""(PLUGINNAME).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_GLIBS="$""(GLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libG$""(PLUGINNAME).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_SLIBS="$""(SLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libS$""(PLUGINNAME).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_VLIBS="$""(VLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libV$""(PLUGINNAME).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_MLIBS="$""(MLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libM$""(PLUGINNAME).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_ESERLIBS="$""(ESERLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libE$""(PLUGINNAME)_ser.dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_EPARLIBS="$""(EPARLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libE$""(PLUGINNAME)_par.dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_ILIBS="$""(ILIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libI$""(PLUGINNAME).dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_GLIBS="$""(GLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libG$""(PLUGINNAME).dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_SLIBS="$""(SLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libS$""(PLUGINNAME).dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_VLIBS="$""(VLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libV$""(PLUGINNAME).dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_MLIBS="$""(MLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libM$""(PLUGINNAME).dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_ESERLIBS="$""(ESERLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libE$""(PLUGINNAME)_ser.dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_EPARLIBS="$""(EPARLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libE$""(PLUGINNAME)_par.dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
 
     PREBIND_LIBS="$""(PREBIND_LIBS)"
     # Create the address.txt file with the initial offset for the VisIt libraries.
@@ -3399,7 +3381,8 @@ SIMULATION_PROTOTYPE_FILES="sim/Makefile
                             sim/lib/Makefile"
 CQSCORE_FILES="cqscore/Makefile"
 THIRD_PARTY_BUILTIN_FILES="third_party_builtin/Makefile
-                           third_party_builtin/bzip2/Makefile"
+                           third_party_builtin/bzip2/Makefile
+                           third_party_builtin/glew/Makefile"
 
 if test "$enable_scripting" = "yes"; then
     VISITPY_FILES="visitpy/Makefile"

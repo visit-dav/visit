@@ -107,6 +107,9 @@ class   ColorAttribute;
 //    Brad Whitlock, Mon Jul 24 13:53:46 PST 2006
 //    Added SetFullFrameScaling.
 //
+//    Brad Whitlock, Mon Sep 18 11:26:26 PDT 2006
+//    Added SetColorTexturingFlag.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtMapper : public avtOriginatingDatasetSink
@@ -138,9 +141,11 @@ class PLOTTER_API avtMapper : public avtOriginatingDatasetSink
     bool                       GetSpecularIsInappropriate()
                                    { return specularIsInappropriate; };
 
-    virtual void                SetSurfaceRepresentation(int rep);
-    virtual void                SetSpecularProperties(bool,double,double,
-                                                      const ColorAttribute&);
+    virtual void               SetSurfaceRepresentation(int rep);
+    virtual void               SetSpecularProperties(bool,double,double,
+                                                     const ColorAttribute&);
+
+    virtual void               SetColorTexturingFlag(bool) {; }
 
     virtual bool               SetFullFrameScaling(bool, const double *)
                                    { return false; };

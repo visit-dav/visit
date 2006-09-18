@@ -92,7 +92,11 @@ class QvisOpacitySlider;
 //   Added compression controls
 //
 //   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
-//   Added fpsLabel 
+//   Added fpsLabel.
+//
+//   Brad Whitlock, Mon Sep 18 10:44:21 PDT 2006
+//   Added color texturing check box.
+//
 // ****************************************************************************
 
 class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
@@ -131,6 +135,7 @@ private slots:
     void specularPowerChanged(int, const void*);
     void shadowToggled(bool);
     void shadowStrengthChanged(int, const void*);
+    void colorTexturingToggled(bool);
 private:
     RenderingAttributes *renderAtts;
     WindowInformation   *windowInfo;
@@ -162,6 +167,7 @@ private:
     QCheckBox         *shadowToggle;
     QLabel            *shadowStrengthLabel;
     QvisOpacitySlider *shadowStrengthSlider;
+    QCheckBox    *colorTexturingToggle;
 
     // Labels to display renderer information.
     QLabel       *scalrenUsingLabel;

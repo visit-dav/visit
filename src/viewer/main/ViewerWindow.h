@@ -615,6 +615,8 @@ public:
     void SetShadingProperties(bool,double);
     bool GetDoShading() const;
     double GetShadingStrength() const;
+    void SetColorTexturingFlag(bool);
+    bool GetColorTexturingFlag() const;
     int GetCompressionActivationMode() const;
     int SetCompressionActivationMode(int);
     bool GetIsCompressingScalableImage() const;

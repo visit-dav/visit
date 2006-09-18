@@ -45,6 +45,9 @@ class vtkOpenGLRenderer;
 //    Brad Whitlock, Tue Dec 6 13:35:41 PST 2005
 //    I changed it to a 1-pass texturing method.
 //
+//    Brad Whitlock, Thu Aug 24 16:06:03 PST 2006
+//    I added support for color texturing for point data.
+//
 // ****************************************************************************
 
 class VISIT_VTK_API vtkVisItOpenGLPolyDataMapper : public vtkPolyDataMapper
@@ -77,6 +80,11 @@ public:
   // Sets/Gets the point texturing method. 
   vtkSetMacro(PointTextureMethod, PointTextureMode);
   vtkGetMacro(PointTextureMethod, PointTextureMode);
+
+  // Description:
+  // Sets/Gets the whether color texturing is enabled.
+  vtkSetMacro(EnableColorTexturing, bool);
+  vtkGetMacro(EnableColorTexturing, bool);
 
 protected:
   vtkVisItOpenGLPolyDataMapper();
@@ -138,6 +146,24 @@ protected:
   // Makes the sphere textures used when PointTextureMethod is
   // equal to TEXTURE_USING_POINTSPRITES.
   void MakeTextures();
+
+  bool          EnableColorTexturing;
+  bool          ColorTexturingAllowed;
+  bool          ColorTextureLoaded;
+  bool          ColorTextureLooksDiscrete;
+  unsigned int  ColorTextureName;
+  float        *ColorTexture;
+  int           ColorTextureSize;
+  bool          OpenGLSupportsVersion1_2;
+  bool          GLEW_initialized;
+
+  bool MapScalarsWithTextureSupport(double);
+  void BeginColorTexturing();
+  void EndColorTexturing();
+  bool UsesPointData(vtkDataSet *input, int scalarMode,
+                     int arrayAccessMode, int arrayId, const char *arrayName,
+                     int& offset);
+
 private:
   // Description:
   // -1 if uninitialized, 0 if not supported, 1 if the point sprite
