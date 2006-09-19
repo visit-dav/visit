@@ -206,9 +206,9 @@ ThresholdViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
     ThresholdAttributes *initAtts;
     
     if (fromDefault)
-        *initAtts = *defaultAtts;
+        initAtts = new ThresholdAttributes(*defaultAtts);
     else
-        *initAtts = *clientAtts;
+        initAtts = new ThresholdAttributes(*clientAtts);
     
     stringVector initVarNames    = initAtts->GetListedVarNames();
     intVector initZonePortions   = initAtts->GetZonePortions();
@@ -261,6 +261,8 @@ ThresholdViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
     initAtts->SetDefaultVarName(plotVarName);
 
     *(ThresholdAttributes *)atts = *initAtts;
+    
+    delete initAtts;
 }
 
 // ****************************************************************************

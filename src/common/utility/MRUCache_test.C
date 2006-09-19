@@ -3,9 +3,13 @@
 #include <string>
 #include <stdio.h>
 
+#define CACHE_SIZE 20
+
 using std::string;
 
-#define CACHE_SIZE 20
+// define some types via a typedef
+typedef MRUCache<string, char*, MRUCache_Free, CACHE_SIZE> FreeCache;
+typedef MRUCache<string, int*, MRUCache_Delete, CACHE_SIZE> DelCache;
 
 typedef struct {
    int a;
@@ -26,9 +30,9 @@ int main()
 
     // make caches for each of the kinds of delete
     MRUCache<string, int, MRUCache_DontDelete, CACHE_SIZE> dontCache;
-    MRUCache<string, char*, MRUCache_Free, CACHE_SIZE> freeCache;
+    FreeCache freeCache;
     MRUCache<string, foo_t*, MRUCache_CallbackDelete, CACHE_SIZE> callbackCache(DeleteAFoo);
-    MRUCache<string, int*, MRUCache_Delete, CACHE_SIZE> delCache;
+    DelCache delCache;
     MRUCache<string, float*, MRUCache_ArrayDelete, CACHE_SIZE> adelCache;
 
 
@@ -62,4 +66,28 @@ int main()
         adelCache[tmpStr] = fltp;
     }
 
+    DelCache::iterator it;
+    const string fullName = "item 2";
+    const int n = fullName.size();
+    int j = 0;
+    vector<string> keysToRemove;
+
+    cerr << "Iterating to find and remove all keys beginning with \"" << fullName.c_str() << "\"" << endl; 
+    for (it = delCache.begin(); it != delCache.end(); it++)
+    {
+        if (fullName.compare(0, n, it->first, 0, n) == 0)
+            keysToRemove.push_back(it->first);
+    }
+    for (j = 0; j < keysToRemove.size(); j++)
+    {
+        dontCache.remove(keysToRemove[j]);
+        freeCache.remove(keysToRemove[j]);
+        callbackCache.remove(keysToRemove[j]);
+        delCache.remove(keysToRemove[j]);
+        adelCache.remove(keysToRemove[j]);
+        cerr << "Removed item with key \"" << keysToRemove[j].c_str() << "\"" << endl;
+    }
+    cerr << "Iterating to see what remains in cache" << endl;
+    for (it = delCache.begin(); it != delCache.end(); it++)
+        cerr << "Item with key \"" << it->first.c_str() << "\" still in cache" << endl;
 }

@@ -1518,27 +1518,38 @@ FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
 //   
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Made fileMetaData and SILData MRUCache's
+//
+//   Mark C. Miller, Mon Sep 18 16:24:12 PDT 2006
+//   Changed to build list of keys to remove beforing removing keyed values.
+//   Because gnu's compare(0,n,string) is buggy, use compare(0,n,string,0,n)
 // ****************************************************************************
 
 void
 FileServerList::ClearFile(const QualifiedFilename &filename)
 {
     const string& fullName = filename.FullName();
-    int n = fullName.size();
+    const int n = fullName.size();
+    vector<string> keysToRemove;
+    int i;
 
     FileMetaDataMap::iterator mdit;
     for (mdit = fileMetaData.begin(); mdit != fileMetaData.end(); mdit++)
     {
-        if (fullName.compare(0, n, mdit->first) == 0)
-            fileMetaData.remove(mdit->first);
+        if (fullName.compare(0, n, mdit->first, 0, n) == 0)
+            keysToRemove.push_back(mdit->first);
     }
+    for (i = 0; i < keysToRemove.size(); i++)
+        fileMetaData.remove(keysToRemove[i]);
 
+    keysToRemove.clear();
     SILMap::iterator sit;
     for (sit = SILData.begin(); sit != SILData.end(); sit++)
     {
-        if (fullName.compare(0, n, sit->first) == 0)
-            SILData.remove(sit->first);
+        if (fullName.compare(0, n, sit->first, 0, n) == 0)
+            keysToRemove.push_back(sit->first);
     }
+    for (i = 0; i < keysToRemove.size(); i++)
+        SILData.remove(keysToRemove[i]);
 }
 
 // ****************************************************************************

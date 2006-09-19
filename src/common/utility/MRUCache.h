@@ -316,6 +316,11 @@ bool MRUCacheBase<kT,vT,dM,nS>::exists(const kT& key) const
 //  Programmer: Mark C. Miller 
 //  Creation:   October 6, 2003 
 //
+//  Modifications:
+//    Mark C. Miller, Mon Sep 18 14:22:13 PDT 2006
+//    Worked around apparent STL bug on AIX where the const kT& key arg for kT
+//    being type string was getting changed to "" after calling cache.erase(k)
+//
 // ****************************************************************************
 template<class kT, class vT, MRUCache_DeleteMethod dM, size_t nS>
 void MRUCacheBase<kT,vT,dM,nS>::remove(const kT& key)
@@ -328,8 +333,8 @@ void MRUCacheBase<kT,vT,dM,nS>::remove(const kT& key)
    deleteit(k->second);
 
    // erase slots from the cache
-   cache.erase(k);
    typename map<kT,int>::iterator j = age.find(key);
+   cache.erase(k);
    age.erase(j);
 }
 
