@@ -1494,7 +1494,9 @@ QvisMainWindow::SetOrientation(int orientation)
 // Creation:   Tue Jul 25 10:14:53 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Sep 19 12:06:45 PDT 2006
+//   Compensate for window decorations on the Mac.
+//
 // ****************************************************************************
 
 void
@@ -1504,10 +1506,18 @@ QvisMainWindow::CreateNode(DataNode *parentNode)
     parentNode->AddNode(node);
 
     // Add generic window attributes
+#if defined(Q_WS_MACX)
+    int yval = y() > 0 ? 20 : 0;
+    node->AddNode(new DataNode("x", x()));
+    node->AddNode(new DataNode("y", y() - yval));
+    node->AddNode(new DataNode("width", width()));
+    node->AddNode(new DataNode("height", height() + yval));
+#else
     node->AddNode(new DataNode("x", x()));
     node->AddNode(new DataNode("y", y()));
     node->AddNode(new DataNode("width", width()));
     node->AddNode(new DataNode("height", height()));
+#endif
 
     // Add splitter values as a proportion of the window height.
     QValueList<int> splitterSizes(splitter->sizes());

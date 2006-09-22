@@ -246,6 +246,9 @@
 #    Brad Whitlock, Fri Sep 15 10:28:51 PDT 2006
 #    I added support for the GLEW library.
 #
+#    Eric Brugger, Fri Sep 22 12:01:25 PDT 2006
+#    Copy the gcc libraries if they are present.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -770,9 +773,17 @@ if("$os" == "darwin") then
 endif
 
 #
-# Copy the VisIt libraries to the distribution.
+# Copy the gcc libraries to the distribution if present.
 #
 echo "Copying libraries to the distribution..."
+if (-e $VisItDir/lib/libgcc_s*) then
+    cp $VisItDir/lib/libgcc_s* $libdir
+    cp $VisItDir/lib/libstdc++* $libdir
+endif
+
+#
+# Copy the VisIt libraries to the distribution.
+#
 cp `ls $VisItDir/lib/*.$SHLIB_SOEXT | grep -v libvtk | grep -v libqt | grep -v libqui | grep -v libpython` $libdir
 cp $VisItDir/lib/libvtkqt.$SHLIB_SOEXT $libdir
 cp $VisItDir/lib/libqtviswindow.$SHLIB_SOEXT $libdir

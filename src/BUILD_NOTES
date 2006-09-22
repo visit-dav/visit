@@ -40,7 +40,7 @@ build and install those libraries prior to building VisIt.
     Boxlib   ???      An AMR I/O library     ???
     HDF4     2.4.1    File I/O library       http://hdf.ncsa.uiuc.edu/hdf4.html
     HDF5     1.6.5    File I/O library       http://hdf.ncsa.uiuc.edu/HDF5/
-    Mili     1.09     File I/O library       (none)
+    Mili     1.10     File I/O library       (none)
     netCDF   3.6.0    File I/O library       http://www.unidata.ucar.edu/packages/netcdf/
     CGNS     2.4      File I/O library       http://www.cgns.org
     GDAL     1.3.0    GIS reader library     http://www.gdal.org
@@ -67,11 +67,11 @@ operating systems.  It is suggested that you use the same compilers.
    Operating System                        Compiler
    ================                        ========
    AIX 5.1                                 g++ 3.1 or xlc
-   IRIX64 6.5                              MIPSpro 7.3.1.2m or MIPSpro 7.41
-   Redhad Enterprise Linux 3 (x86)         g++ 2.96 or g++ 3.2.3
+   IRIX64 6.5                              MIPSpro 7.41
+   Redhad Enterprise Linux 3 (x86)         g++ 3.2.3
    Redhad Enterprise Linux 4 (x86, ia64)   g++ 3.2.3 or icc 9.0
    Redhad Enterprise Linux 4 (x86_64)      g++ 3.4.4
-   Solaris 7                               g++ 2.95.2 or g++ 3.2
+   Solaris 7                               g++ 3.2
    Tru64 5.1                               g++ 3.3.3
 
 The following compilers will *NOT* work with VisIt.  They will either not
@@ -88,9 +88,10 @@ mangling schemes.
 
 If you want to specify the compiler for a particular package that is
 using configure, the typical way to do so is by setting the CC and CXX
-environment variables.  This is typically done as follows:
+environment variables.  This is done as follows:
 
-   env CC="your C compiler" CXX="your C++ compiler" ./configure
+   setenv CC "your C compiler"
+   setenv CXX "your C++ compiler"
 
 where some common values for CC and CXX are:
 
@@ -132,7 +133,7 @@ setenv VISITARCH chaos_3_x86_elan3_icc_9.0
 setenv VISITARCH irix64_cc_7.3.1.2_64
 setenv VISITARCH irix64_cc_7.41_64
 setenv VISITARCH linux_rhel3_gcc_3.2.3
-setenv VISITARCH linux_redhat_gcc_2.96
+setenv VISITARCH linux_redhat7_gcc_3.2.3
 setenv VISITARCH solaris_gcc_2.95.2
 setenv VISITARCH solaris_gcc_3.2
 setenv VISITARCH tru64_5_gcc_3.3.3
@@ -224,20 +225,6 @@ VTK/README.html file included in the VTK distribution for more information.
 gunzip cmake-2.2.3.tar.gz
 tar xf cmake-2.2.3.tar
 cd cmake-2.2.3
-
-# We have experienced problems with CMake not using the right compilers
-# even if specified on the command line, so they should be set in your
-# environemnt:
-# e.g.
-#    setenv CC=xlc
-#    setenv CXX=xlC
-# or
-#    setenv CC=gcc-3.2
-#    setenv CXX=g++-3.2
-# or
-#    setenv CC=icc
-#    setenv CXX=icpc
-#
 
 #
 # We have experienced problems building CMake on aix with g++/gcc.
@@ -838,9 +825,9 @@ script.
 #
 # Build Mili.
 #
-gunzip mili.tar.gz
-tar xf mili.tar
-cd Mili
+gunzip mili-1.10.tar.gz
+tar xf mili-1.10.tar
+cd mili
 
 #
 # To get mili to build its library without a fortran compiler you will
@@ -860,7 +847,7 @@ cd Mili
 #   Add the line:
 #   CC = @CC@
 #
-#   to the files src/Makefile.in and tests/Makefile.in before the line:
+#   to the files src/Makefile.in and test/Makefile.in before the line:
 #   CFLAGS = @CFLAGS@
 #
 #   When you run configure you will need to set CC to the desired compiler.
@@ -871,42 +858,10 @@ cd Mili
 #
 # On itanium (ia64) systems you will need to add -fPIC to the compiler options
 # in the configure script.  Add -fPIC to CFLAGS and FFLAGS below the line
-# containing "-pc-linux" in the configure script.
+# containing "-unknown-linux" in the configure script.
 #
 # On opteron systems you will need to add "-m64 -fPIC" to the CFLAGS and
 # FFLAGS.
-#
-# The configure script doesn't recognize newer operating systems such as
-# itanium (ia64) and opteron systems.  In order to fix this you will need to
-# add the lines:
-#
-#   ia64-unknown-linux)
-#     CFLAGS="-O2 -fPIC -DHAVEINT8"
-#     FFLAGS="-O2 -fPIC"
-#     mili_lib_path_spec="-L../src"
-#     ;;
-#   x86_64-unknown-linux)
-#     CFLAGS="-O2 -m64 -fPIC -DHAVEINT8"
-#     FFLAGS="-O2 -m64 -fPIC"
-#     mili_lib_path_spec="-L../src"
-#     ;;
-#
-# after the lines:
-#
-#   *-pc-linux*)
-#     CFLAGS="-g -DHAVEINT8"
-#     FFLAGS="-g"
-#     mili_lib_path_spec="-L../src"
-#     ;;
-#
-# You will also need to add one of the two lines below
-#
-# host=ia64-unknown-linux
-# host=x86_64-unknown-linux
-#
-# after the line
-#
-# host=`${CONFIG_SHELL-/bin/sh} $ac_config_sub $host_alias`
 #
 # If you do not have a fortran compiler on your system then the fortran
 # test examples will fail to build.  This is ok.
@@ -918,11 +873,11 @@ make
 # Install it in the visit directory under the mili directory.
 #
 mkdir $VISITDIR/mili
-mkdir $VISITDIR/mili/1.09
-mkdir $VISITDIR/mili/1.09/$VISITARCH
-cp src/mili.h      $VISITDIR/mili/1.09/$VISITARCH
-cp src/mili_enum.h $VISITDIR/mili/1.09/$VISITARCH
-cp src/libmili.a   $VISITDIR/mili/1.09/$VISITARCH
+mkdir $VISITDIR/mili/1.10
+mkdir $VISITDIR/mili/1.10/$VISITARCH
+cp src/mili.h      $VISITDIR/mili/1.10/$VISITARCH
+cp src/mili_enum.h $VISITDIR/mili/1.10/$VISITARCH
+cp src/libmili.a   $VISITDIR/mili/1.10/$VISITARCH
 cd ..
 
 HDF4 (Optional)

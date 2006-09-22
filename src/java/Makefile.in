@@ -180,6 +180,7 @@ NamespaceAttributes.java \
 PickAttributes.java \
 PickVarInfo.java \
 Plot.java \
+PlotInfoAttributes.java \
 PlotList.java \
 Plugin.java \
 PluginManagerAttributes.java \

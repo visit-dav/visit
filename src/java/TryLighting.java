@@ -74,6 +74,9 @@ import llnl.visit.plots.PseudocolorAttributes;
 //   Brad Whitlock, Thu Jul 14 12:08:42 PDT 2005
 //   I made it set the Pseudocolor plot atts's color table to "Default".
 //
+//   Brad Whitlock, Fri Sep 22 15:15:02 PST 2006
+//   I fixed a problem with the brightness of lights 2,3 being set to 0.
+//
 // ****************************************************************************
 
 public class TryLighting extends RunViewer implements SimpleObserver
@@ -125,6 +128,7 @@ public class TryLighting extends RunViewer implements SimpleObserver
             newLight1.SetType(LightAttributes.LIGHTTYPE_OBJECT);
             newLight1.SetDirection(0,0,-1);
             newLight1.SetColor(new ColorAttribute(255,0,0));
+            newLight1.SetBrightness(1.);
             newLight1.SetEnabledFlag(true);
             ll.SetLight0(newLight1);
             ll.Notify();
@@ -137,6 +141,7 @@ public class TryLighting extends RunViewer implements SimpleObserver
             newLight2.SetType(LightAttributes.LIGHTTYPE_OBJECT);
             newLight2.SetDirection(-1,0,0);
             newLight2.SetColor(new ColorAttribute(0,255,0));
+            newLight2.SetBrightness(1.);
             newLight2.SetEnabledFlag(true);
             ll.SetLight1(newLight2);
             ll.Notify();
@@ -149,6 +154,7 @@ public class TryLighting extends RunViewer implements SimpleObserver
             newLight3.SetType(LightAttributes.LIGHTTYPE_OBJECT);
             newLight3.SetDirection(0,-1,0);
             newLight3.SetColor(new ColorAttribute(0,0,255));
+            newLight3.SetBrightness(1.);
             newLight3.SetEnabledFlag(true);
             ll.SetLight2(newLight3);
             ll.Notify();
