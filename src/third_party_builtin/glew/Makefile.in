@@ -90,7 +90,8 @@ LIB=libGLEW
 all: message $(LIBSHARED)
 
 clean:
-	$(RM) $(OBJ) $(SRC) $(LIBSHARED)
+	$(RM) $(OBJ) $(LIBSHARED) credits.html
+	$(RM) -rf glew
 	$(RM) -R ../../include/glew
 
 credits.html:
