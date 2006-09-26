@@ -776,7 +776,7 @@ endif
 # Copy the gcc libraries to the distribution if present.
 #
 echo "Copying libraries to the distribution..."
-if (-e $VisItDir/lib/libgcc_s*) then
+if ((-e $VisItDir/lib/libgcc_s.so.1) || (-e $VisItDir/lib/libgcc_s.a)) then
     cp $VisItDir/lib/libgcc_s* $libdir
     cp $VisItDir/lib/libstdc++* $libdir
 endif

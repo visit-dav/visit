@@ -422,6 +422,10 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
 //    Brad Whitlock, Tue Jun 27 10:04:51 PDT 2006
 //    I made the method set the time state that we want to look at.
 //
+//    Brad Whitlock, Tue Sep 26 09:37:44 PDT 2006
+//    Set the doneUpdate flag to false so the reader gets the right values
+//    after setting the time value.
+//
 // ****************************************************************************
 
 void
@@ -437,6 +441,7 @@ avtEnSightFileFormat::PrepReader(int ts)
     debug4 << mName << "Setting time state to " << ts << " time="
            << times[ts] << endl;
     reader->SetTimeValue(times[ts]);
+    doneUpdate = false;
     debug4 << mName << "end" << endl;
 }
 
