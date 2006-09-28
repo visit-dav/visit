@@ -53,12 +53,15 @@
 //
 // Modifications:
 //   
+//   Hank Childs, Tue Sep 26 14:08:00 PDT 2006
+//   Remove class qualification for constructor, which xlC disliked.
+//
 // ****************************************************************************
 
 class vtkUserDefinedMapperBridge2 : public vtkUserDefinedMapperBridge
 {
 public:
-    vtkUserDefinedMapperBridge2::vtkUserDefinedMapperBridge2() :
+    vtkUserDefinedMapperBridge2() :
         vtkUserDefinedMapperBridge(), label()
     {
         rendererAction = RENDERER_ACTION_NOTHING;
