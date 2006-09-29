@@ -449,6 +449,8 @@ LineoutListItem::DeleteOriginatingPlot()
 //  Creation:   March 4, 2003
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri Sep 29 10:08:46 PDT 2006
+//    Ensure queries in removed slots get deleted.
 //
 // ****************************************************************************
 
@@ -472,6 +474,10 @@ LineoutListItem::DeleteResultsPlot(ViewerPlot *vp)
         }
     }
     nQueries= nQueriesNew;
+    for (int j = nQueries; j < nQueriesAlloc; j++)
+    {
+        queries[j] = (ViewerQuery *)0;
+    }
     return found;
 }
 
