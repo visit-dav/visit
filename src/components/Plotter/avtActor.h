@@ -126,7 +126,10 @@ class     avtTransparencyActor;
 //    Added MakePickable and MakeUnPickable. 
 //
 //    Kathleen Bonnell, Mon Jun 27 14:48:12 PDT 2005 
-//    Added GetZPosition. 
+//    Added GetZPosition.
+//
+//    Mark Blair, Wed Aug 30 14:09:00 PDT 2006
+//    Added SetTypeName and GetTypeName.
 //
 //    Brad Whitlock, Mon Sep 18 11:19:11 PDT 2006
 //    Added SetColorTexturingFlag.
@@ -143,6 +146,9 @@ class PLOTTER_API avtActor
     avtBehavior_p                 GetBehavior(void) { return behavior; };
     void                          SetDrawable(avtDrawable_p);
     void                          SetDecorations(avtDrawable_p);
+
+    void                          SetTypeName(const char *typeName_);
+    const char                   *GetTypeName();
 
     void                          Add(vtkRenderer *, vtkRenderer *);
     void                          Remove(vtkRenderer *, vtkRenderer *);
@@ -193,6 +199,8 @@ class PLOTTER_API avtActor
     avtTransparencyActor         *transparencyActor;
     int                           transparencyIndex;
     bool                          isVisible;
+    
+    const char                   *typeName;
 
     vtkRenderer                  *renderer;
 };

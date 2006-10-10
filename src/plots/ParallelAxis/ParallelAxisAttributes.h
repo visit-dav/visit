@@ -1,6 +1,17 @@
 #ifndef PARALLEL_AXIS_ATTRIBUTES_H
 #define PARALLEL_AXIS_ATTRIBUTES_H
 
+#define AXIS_VAR_DATA_FILE_NAME   "__AXIS_VARIABLE_DATA__"
+
+#define PCP_LEFT_AXIS_X_FRACTION          0.04
+#define PCP_RIGHT_AXIS_X_FRACTION         0.96
+#define PCP_H_BOTTOM_AXIS_Y_FRACTION      0.09
+#define PCP_V_BOTTOM_AXIS_Y_FRACTION      0.12
+#define PCP_H_TOP_AXIS_Y_FRACTION         0.93
+#define PCP_V_TOP_AXIS_Y_FRACTION         0.88
+
+#define PCP_MAX_HORIZONTAL_TITLE_AXES     7
+
 #include <AttributeSubject.h>
 
 #include <vector>
@@ -18,6 +29,9 @@
 // Creation:   Mon Mar 27 18:24:00 PST 2006
 //
 // Modifications:
+//   
+//    Mark Blair, Wed Sep 20 10:59:41 PDT 2006
+//    Added time ordinals, for those operators and tools that need them.
 //   
 // ****************************************************************************
 
@@ -44,6 +58,8 @@ public:
     void SetAxisMaxima(const doubleVector &axisMaxima_);
     void SetExtentMinima(const doubleVector &extentMinima_);
     void SetExtentMaxima(const doubleVector &extentMaxima_);
+    void SetExtMinTimeOrds(const intVector &extMinTimeOrds_);
+    void SetExtMaxTimeOrds(const intVector &extMaxTimeOrds_);
 
     // Property changing methods
     void InsertAxis(const std::string &axisName_);
@@ -51,6 +67,7 @@ public:
     void SwitchToLeftAxis(const std::string &axisName_);
     void ShowPreviousAxisVariableData();
     void ShowNextAxisVariableData();
+    bool UpdateAxisBoundsIfPossible();
 
     // Property getting methods
     const stringVector          &GetOrderedAxisNames() const;
@@ -66,9 +83,20 @@ public:
     const doubleVector          &GetAxisMaxima() const;
     const doubleVector          &GetExtentMinima() const;
     const doubleVector          &GetExtentMaxima() const;
+    const intVector             &GetExtMinTimeOrds() const;
+    const intVector             &GetExtMaxTimeOrds() const;
 
     // Property selection methods
-    virtual void SelectAll();
+    virtual void        SelectAll();
+
+    void                SelectOrderedAxisNames();
+    void                SelectShownVarAxisPosition();
+    void                SelectAxisMinima();
+    void                SelectAxisMaxima();
+    void                SelectExtentMinima();
+    void                SelectExtentMaxima();
+    void                SelectExtMinTimeOrds();
+    void                SelectExtMaxTimeOrds();
 
     // Python compatibility methods
     void                SetShownVarAxisPosition(int);
@@ -79,13 +107,8 @@ public:
     doubleVector       &GetAxisMaxima();
     doubleVector       &GetExtentMinima();
     doubleVector       &GetExtentMaxima();
-
-    void                SelectOrderedAxisNames();
-    void                SelectShownVarAxisPosition();
-    void                SelectAxisMinima();
-    void                SelectAxisMaxima();
-    void                SelectExtentMinima();
-    void                SelectExtentMaxima();
+    intVector          &GetExtMinTimeOrds();
+    intVector          &GetExtMaxTimeOrds();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -109,6 +132,8 @@ private:
     doubleVector        axisMaxima;
     doubleVector        extentMinima;
     doubleVector        extentMaxima;
+    intVector           extMinTimeOrds;
+    intVector           extMaxTimeOrds;
 };
 
 #endif

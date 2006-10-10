@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+  <Attribute name="ExtentsAttributes" purpose="Attributes for extents tool" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="scalarNames" label="scalarNames" type="stringVector"> default </Field>
+    <Field name="scalarMinima" label="scalarMinima" type="doubleVector"> -1e+37 </Field>
+    <Field name="scalarMaxima" label="scalarMaxima" type="doubleVector"> 1e+37 </Field>
+    <Field name="minima" label="minima" type="doubleVector"> 0.0 </Field>
+    <Field name="maxima" label="maxima" type="doubleVector"> 1.0 </Field>
+    <Field name="minTimeOrdinals" label="minTimeOrdinals" type="intVector"> 0 </Field>
+    <Field name="maxTimeOrdinals" label="maxTimeOrdinals" type="intVector"> 0 </Field>
+    <Field name="leftSliderX" label="leftSliderX" type="double"> 0.04 </Field>
+    <Field name="rightSliderX" label="rightSliderX" type="double"> 0.96 </Field>
+    <Field name="slidersBottomY" label="slidersBottomY" type="double"> 0.12 </Field>
+    <Field name="slidersTopY" label="slidersTopY" type="double"> 0.88 </Field>
+  </Attribute>
+

@@ -274,6 +274,9 @@
 #    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
 #    Added PlotInfoAttributes.
 #
+#    Mark Blair, Wed Aug 30 14:09:00 PDT 2006
+#    Added ExtentsAttributes.
+#
 ##############################################################################
 
 ##
@@ -320,6 +323,7 @@ SRC=    AnimationAttributes.C \
         ExportDBAttributes.C \
         Expression.C \
         ExpressionList.C \
+        ExtentsAttributes.C \
         GaussianControlPoint.C \
         GaussianControlPointList.C \
         GlobalAttributes.C \

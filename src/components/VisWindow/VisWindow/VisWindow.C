@@ -221,6 +221,9 @@ VisWindow::VisWindow(bool callInit)
 //    Kathleen Bonnell, Thu Sep  2 13:40:25 PDT 2004 
 //    Initialize pickForIntersectionOnly.
 //
+//    Mark Blair, Mon Sep 25 11:41:09 PDT 2006
+//    Initialize with axis annotations enabled.
+//
 // ****************************************************************************
 
 void
@@ -251,6 +254,7 @@ VisWindow::Initialize(VisWinRendering *ren)
     SetBackgroundColor(1., 1., 1.);
     SetForegroundColor(0., 0., 0.);
     SetViewport(0., 0., 1., 1.);
+    EnableAxisAnnotations();
     EnableUpdates();
     NoPlots();
 
@@ -1865,6 +1869,87 @@ VisWindow::NoPlots(void)
     }
 }
 
+// ****************************************************************************
+//  Method: VisWindow::EnableAxisAnnotations
+//
+//  Purpose: Enable conventional axis annotations in the vis window.
+//
+//  Note: The ParallelAxis plot is an example of a plot in which the axes are
+//        a major component and in which the plot is meaningless without them.
+//        Thus the axes in such a plot are best treated as part of the plot
+//        itself and not as an associated Annotation object.
+//
+//  Programmer: Mark Blair
+//  Creation:   Mon Sep 25 11:41:09 PDT 2006
+//
+// ****************************************************************************
+
+void VisWindow::EnableAxisAnnotations()
+{
+    axisAnnotationsEnabled = true;
+}
+
+
+// ****************************************************************************
+//  Method: VisWindow::DisableAxisAnnotations
+//
+//  Purpose: Disable conventional axis annotations in the vis window.
+//
+//  Note: The ParallelAxis plot is an example of a plot in which the axes are
+//        a major component and in which the plot is meaningless without them.
+//        Thus the axes in such a plot are best treated as part of the plot
+//        itself and not as an associated Annotation object.
+//
+//  Programmer: Mark Blair
+//  Creation:   Mon Sep 25 11:41:09 PDT 2006
+//
+// ****************************************************************************
+
+void VisWindow::DisableAxisAnnotations()
+{
+    axisAnnotationsEnabled = false;
+}
+
+
+// ****************************************************************************
+//  Method: VisWindow::AxisAnnotationsEnabled
+//
+//  Purpose: Returns true if conventional axis annotations are enabled in the
+//           vis window.
+//
+//  Note: The ParallelAxis plot is an example of a plot in which the axes are
+//        a major component and in which the plot is meaningless without them.
+//        Thus the axes in such a plot are best treated as part of the plot
+//        itself and not as an associated Annotation object.
+//
+//  Programmer: Mark Blair
+//  Creation:   Mon Sep 25 11:41:09 PDT 2006
+//
+// ****************************************************************************
+
+bool VisWindow::AxisAnnotationsEnabled() const
+{
+    return axisAnnotationsEnabled;
+}
+
+
+// ****************************************************************************
+//  Method: VisWindow::DisableAxisAnnotationsIfInappropriate
+//
+// Purpose: Disable conventional axis annotations in the vis window if the type
+//          of plot to be added to the window should never use them.
+//
+//  Programmer: Mark Blair
+//  Creation:   Mon Sep 25 11:41:09 PDT 2006
+//
+// ****************************************************************************
+
+void VisWindow::DisableAxisAnnotationsIfInappropriate(avtActor_p &plotActor)
+{
+    // Maybe other cases too.
+    if (strcmp(plotActor->GetTypeName(), "ParallelAxis") == 0)
+        DisableAxisAnnotations();       
+}
 
 // ****************************************************************************
 //  Method: VisWindow::AddPlot
@@ -1882,12 +1967,18 @@ VisWindow::NoPlots(void)
 //
 //    Kathleen Bonnell, Mon Jun 18 14:56:09 PDT 2001 
 //    Reset bounds for axes3D after plot is added.
+//
+//    Mark Blair, Mon Sep 25 11:41:09 PDT 2006
+//    Disable axis annotations if adding a type of plot to the vis window in
+//    which axis annotations are inappropriate.
 // 
 // ****************************************************************************
 
 void
 VisWindow::AddPlot(avtActor_p &p)
 {
+    DisableAxisAnnotationsIfInappropriate(p);
+
     plots->AddPlot(p);
     double bnds[6];
     plots->GetBounds(bnds);
@@ -1940,6 +2031,25 @@ void
 VisWindow::ClearPlots(void)
 {
     plots->ClearPlots();
+}
+
+
+// ****************************************************************************
+//  Method: VisWindow::GetPlotListIndex
+//
+//  Purpose: If plot identified by name is among the plots for this VisWindow,
+//           returns that plot's index in the window's list of active plots.
+//           Otherwise returns -1.
+//
+//  Programmer: Mark Blair
+//  Creation:   Wed Aug 30 14:09:00 PDT 2006
+//
+// ****************************************************************************
+
+int
+VisWindow::GetPlotListIndex(const char *plotName)
+{
+    return plots->GetPlotListIndex(plotName);
 }
 
 

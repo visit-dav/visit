@@ -2614,7 +2614,10 @@ ViewerPlot::GetReader() const
 //    unnecessary Exception handling.
 // 
 //    Kathleen Bonnell, Fri Jan  7 13:00:32 PST 2005 
-//    Removed unnecessary TRY-CATCH block surrounding retrieval of units. 
+//    Removed unnecessary TRY-CATCH block surrounding retrieval of units.
+//
+//    Mark Blair, Wed Aug 30 14:09:00 PDT 2006
+//    Set actor's type name to its plot type name.
 //
 // ****************************************************************************
 
@@ -2824,6 +2827,8 @@ ViewerPlot::CreateActor(bool createNew,
         }
 
         this->SetActor(actor);
+
+        actor->SetTypeName(GetPlotName());
 
         // Indicate that this plot has no error.
         this->errorFlag = false;

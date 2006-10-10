@@ -171,7 +171,10 @@ class avtTransparencyActor;
 //    Removed bool for antialiasing arg from OrderPlots
 //
 //    Kathleen Bonnell, Mon Jun 27 14:54:36 PDT 2005 
-//    Added GetMaxZShift. 
+//    Added GetMaxZShift.
+//
+//    Mark Blair, Wed Aug 30 14:19:00 PDT 2006
+//    Added GetPlotListIndex.
 //
 //    Brad Whitlock, Mon Sep 18 11:13:40 PDT 2006
 //    Added SetColorTexturingFlag.
@@ -189,6 +192,8 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
 
     void                          ClearPlots(void);
     void                          OrderPlots();
+    
+    int                           GetPlotListIndex(const char *plotName);
 
     void                          GetBounds(double [6]);
     void                          GetDataRange(double &, double &);

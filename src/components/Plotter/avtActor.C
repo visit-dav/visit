@@ -73,6 +73,9 @@
 //    Chris Wojtan, Fri Jul 23 14:13:44 PDT 2004
 //    Initialize isVisible to true.
 //
+//    Mark Blair, Wed Aug 30 14:09:00 PDT 2006
+//    Initialize typeName to indicate unknown.
+//
 // ****************************************************************************
 
 avtActor::avtActor()
@@ -84,6 +87,7 @@ avtActor::avtActor()
     transparencyActor      = NULL;
     transparencyIndex      = -1;
     isVisible              = true;
+    typeName               = "<unknown>";
 }
 
 
@@ -179,6 +183,44 @@ avtActor::SetDecorations(avtDrawable_p d)
     }
 }
 
+
+// ****************************************************************************
+//  Method: avtActor::SetTypeName
+//
+//  Purpose: Sets the actor's type name.  This can be set, for instance, to the
+//           type name of the actor's associated plot.
+//
+//  Arguments:
+//      typeName : The type name to be associated with the actor.
+//
+//  Programmer: Mark Blair
+//  Creation:   Wed Aug 30 14:09:00 PDT 2006
+//
+// ****************************************************************************
+
+void avtActor::SetTypeName(const char *typeName_)
+{
+    typeName = typeName_;
+}
+
+
+// ****************************************************************************
+//  Method: avtActor::GetTypeName
+//
+//  Purpose: Gets the actor's type name (such as type name of associated plot).
+//
+//  Arguments:
+//      typeName : The type name associated with the actor.
+//
+//  Programmer: Mark Blair
+//  Creation:   Wed Aug 30 14:09:00 PDT 2006
+//
+// ****************************************************************************
+
+const char *avtActor::GetTypeName()
+{
+    return typeName;
+}
 
 
 // ****************************************************************************

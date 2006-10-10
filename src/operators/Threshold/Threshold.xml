@@ -28,7 +28,10 @@
 	1e+37
       </Field>
       <Field name="defaultVarName" label="defaultVarName" type="string">
-	(default)
+	default
+      </Field>
+      <Field name="defaultVarIsScalar" label="defaultVarIsScalar" type="bool">
+	false
       </Field>
     </Attribute>
   </Plugin>

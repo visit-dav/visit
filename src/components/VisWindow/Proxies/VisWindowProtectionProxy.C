@@ -198,6 +198,47 @@ VisWindowProtectionProxy::ProxiedGetViewport(double vport[4])
 
 
 // ****************************************************************************
+//  Method: VisWindowProtectionProxy::ProxiedGetSize
+//
+//  Purpose: Gets pixel dimensions of the renderable portion of the VisWindow
+//           through its friend access.
+//
+//  Arguments:
+//      width  : A reference to an int that is used to return the subwindow width.
+//      height : A reference to an int that is used to return the subwindow height.
+//
+//  Programmer: Mark Blair
+//  Creation:   Wed Aug 30 14:09:00 PDT 2006
+//
+// ****************************************************************************
+
+void VisWindowProtectionProxy::ProxiedGetSize(int &width, int &height) const
+{
+    viswin->GetSize(width, height);
+}
+
+
+// ****************************************************************************
+//  Method: VisWindowProtectionProxy::ProxiedGetWindowSize
+//
+//  Purpose: Gets pixel dimensions of the VisWindow through its friend access.
+//
+//  Arguments:
+//      width  : A reference to an int that is used to return the window width.
+//      height : A reference to an int that is used to return the window height.
+//
+//  Programmer: Mark Blair
+//  Creation:   Wed Aug 30 14:09:00 PDT 2006
+//
+// ****************************************************************************
+
+void VisWindowProtectionProxy::ProxiedGetWindowSize(int &width, int &height) const
+{
+    viswin->GetWindowSize(width, height);
+}
+
+
+// ****************************************************************************
 //  Method: VisWindowProtectionProxy::ProxiedGetBackground
 //
 //  Purpose:
@@ -428,6 +469,28 @@ VisWindowProtectionProxy::ProxiedEnableUpdates()
 }
 
 // ****************************************************************************
+//  Method: VisWindowProtectionProxy::ProxiedGetPlotListIndex
+//
+//  Purpose: Uses friend access to determine the index of a name-identified
+//           plot in this VisWindow's list of plots.  Returns -1 if the plot
+//           does not exist in the list.
+//
+//  Arguments:
+//      plotName:  Name of the plot whose list index is being queried.
+//
+//  Programmer: Mark Blair
+//  Creation:   Wed Aug 30 14:09:00 PDT 2006
+//
+// ****************************************************************************
+
+int
+VisWindowProtectionProxy::ProxiedGetPlotListIndex(const char *plotName)
+{
+    return viswin->GetPlotListIndex(plotName);
+}
+
+
+// ****************************************************************************
 //  Method: VisWindowProtectionProxy::ProxiedHasPlots
 //
 //  Purpose:
@@ -445,6 +508,24 @@ void
 VisWindowProtectionProxy::ProxiedHasPlots(bool p)
 {
     viswin->HasPlots(p);
+}
+
+
+// ****************************************************************************
+//  Method: VisWindowProtectionProxy::ProxiedAxisAnnotationsEnabled
+//
+//  Purpose: Uses friend access to determine whether 2-D axis annotations are
+//           enabled in the vis window.
+//
+//  Programmer: Mark Blair
+//  Creation:   Tue Sep 26 11:32:36 PDT 2006
+//
+// ****************************************************************************
+
+bool
+VisWindowProtectionProxy::ProxiedAxisAnnotationsEnabled()
+{
+    return viswin->AxisAnnotationsEnabled();
 }
 
 

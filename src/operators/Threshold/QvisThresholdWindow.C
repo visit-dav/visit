@@ -80,6 +80,11 @@ using std::string;
 //   Removed problematic mechanism for accommodating ExtentsAttributes from
 //   extents tool.
 //
+//   Mark Blair, Thu Sep 21 15:16:27 PDT 2006
+//   Added support for input from Extents tool.  Certain Threshold changes are
+//   preserved when viewer sends attributes that do not know about the changes.
+//   (See full explanation in header of RestoreAppropriateUnappliedAttributes.)
+//
 // ****************************************************************************
 
 QvisThresholdWindow::QvisThresholdWindow(const int type,
@@ -89,7 +94,8 @@ QvisThresholdWindow::QvisThresholdWindow(const int type,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
-    atts = subj;
+    atts       = subj;
+    guiVarAtts = new ThresholdAttributes(*subj);
 }
 
 
@@ -104,11 +110,18 @@ QvisThresholdWindow::QvisThresholdWindow(const int type,
 //
 // Modifications:
 //   
+//   Mark Blair, Thu Sep 21 15:16:27 PDT 2006
+//   Need to delete GUI variable list object.
+//
 // ****************************************************************************
 
 QvisThresholdWindow::~QvisThresholdWindow()
 {
-    // nothing here
+    if (guiVarAtts != NULL)
+    {
+        delete guiVarAtts;
+        guiVarAtts = NULL;
+    }
 }
 
 
@@ -281,16 +294,25 @@ QvisThresholdWindow::CreateWindowContents()
 //   Changed the way a conversion between std::string and QString was done
 //   to eliminate a runtime link error on the ibm.
 //
+//   Mark Blair, Thu Sep 21 15:16:27 PDT 2006
+//   Restore appropriate unapplied changes when Threshold attributes are
+//   received from the viewer that do not yet know about these changes.
+//
+//   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
+//   Handle default scalar variable flag, display default variable as "default"
+//   once again.
+//
 // ****************************************************************************
 
 void
 QvisThresholdWindow::UpdateWindow(bool doAll)
 {
-    QString fieldString;
-    std::string shownVarName;
+    RestoreAppropriateUnappliedAttributes();
 
+    QString fieldString;
+    std::string shownVarName = atts->GetShownVariable();
     bool varListIsEmpty =
-        (atts->GetShownVariable() == std::string("(no variables in list)"));
+        (shownVarName == std::string("(no variables in list)"));
     bool enableZonePortion = (!varListIsEmpty &&
         (atts->GetOutputMeshType() == ThresholdAttributes::InputZones));
 
@@ -307,11 +329,6 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
                 break;
 
             case 2:  // shownVarPosition
-                shownVarName = atts->GetShownVariable();
-                
-                if (shownVarName == std::string("default"))
-                    shownVarName = atts->GetDefaultVarName();
-
                 shownVariable->setText(QString(shownVarName.c_str()));
 
                 break;
@@ -352,6 +369,9 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
                 
             case 6:   // defaultVarName
                 break;
+                
+            case 7:   // defaultVarIsScalar
+                break;
         }
     }
 }
@@ -384,6 +404,9 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
 //   Removed problematic mechanism for accommodating ExtentsAttributes from
 //   extents tool.
 //
+//   Mark Blair, Thu Sep 21 15:16:27 PDT 2006
+//   Added support for input from Extents tool.  Save pending GUI changes.
+//
 // ****************************************************************************
 
 void
@@ -391,7 +414,7 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
 {
     bool okay, doAll = (which_widget == -1);
     QString msg, temp;
-
+    
     // Do amount
     if ((which_widget == 0) || doAll) {
         // Nothing for amount
@@ -446,6 +469,8 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
             }
         }
     }
+    
+    *guiVarAtts = *atts;
 }
 
 
@@ -459,6 +484,7 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
 void
 QvisThresholdWindow::apply()
 {
+    *atts = *guiVarAtts;
     QvisOperatorWindow::apply();
 }
 
@@ -472,6 +498,7 @@ QvisThresholdWindow::outputMeshTypeChanged(int buttonID)
     if (newOutputMeshType != atts->GetOutputMeshType())
     {
         atts->SetOutputMeshType(newOutputMeshType);
+        *guiVarAtts = *atts;
         
         bool enableZonePortion =
             ((newOutputMeshType == ThresholdAttributes::InputZones) &&
@@ -494,6 +521,8 @@ QvisThresholdWindow::zonePortionChanged(int buttonID)
     if (newZonePortion != atts->GetZonePortion())
     {
         atts->ChangeZonePortion(newZonePortion);
+        *guiVarAtts = *atts;
+        
         Apply();
     }
 }
@@ -574,9 +603,15 @@ QvisThresholdWindow::variableSwapped(const QString &variableToSwapIn)
 //   Removed problematic mechanism for accommodating ExtentsAttributes from
 //   extents tool.
 //
-//    Eric Brugger, Fri Sep  8 11:10:09 PDT 2006
-//    Changed the way a conversion between std::string and QString was done
-//    to eliminate a runtime link error on the ibm.
+//   Eric Brugger, Fri Sep  8 11:10:09 PDT 2006
+//   Changed the way a conversion between std::string and QString was done
+//   to eliminate a runtime link error on the ibm.
+//
+//   Mark Blair, Thu Sep 21 15:16:27 PDT 2006
+//   Added support for input from Extents tool.  Save pending GUI changes.
+//
+//   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
+//   Display default variable as "default" once again.
 //
 // ****************************************************************************
 
@@ -586,13 +621,10 @@ QvisThresholdWindow::UpdateShownFields()
     QString fieldString;
     std::string shownVarName = atts->GetShownVariable();
     bool varListIsEmpty =
-        (atts->GetShownVariable() == std::string("(no variables in list)"));
+        (shownVarName == std::string("(no variables in list)"));
     bool enableZonePortion = (!varListIsEmpty &&
         (atts->GetOutputMeshType() == ThresholdAttributes::InputZones));
     
-    if (shownVarName == std::string("default"))
-        shownVarName = atts->GetDefaultVarName();
-
     shownVariable->setText(QString(shownVarName.c_str()));
 
     zonePortion->setButton((int)atts->GetZonePortion());
@@ -619,7 +651,89 @@ QvisThresholdWindow::UpdateShownFields()
 
     upperBound->setReadOnly(varListIsEmpty);
     upperBoundLabel->setEnabled(!varListIsEmpty);
+    
+    *guiVarAtts = *atts;
 
     SetUpdate(false);
     Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisThresholdWindow::RestoreAppropriateUnappliedAttributes
+//
+// Purpose: All changes the user has made in the Threshold GUI since its Apply
+//          button was last clicked will be restored, EXCEPT for minima and
+//          maxima of variables that were not newly selected since then.  Those
+//          values are left untouched because they may have been changed more
+//          recently by an Extents tool in a different vis window whose tools
+//          are locked to the tools in this Threshold operator's vis window.
+//
+// Programmer: Mark Blair
+// Creation:   Thu Sep 21 15:16:27 PDT 2006
+//
+// Modifications:
+//
+//   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
+//   Handles "default" as a threshold variable name.
+//
+//   Mark Blair, Thu Oct  5 18:24:43 PDT 2006
+//   Do not restore if current applied attributes look like default attributes;
+//   probably reinitializing.
+//
+// ****************************************************************************
+
+void
+QvisThresholdWindow::RestoreAppropriateUnappliedAttributes()
+{
+    stringVector viewerVarNames  = atts->GetListedVarNames();
+    doubleVector viewerVarMinima = atts->GetLowerBounds();
+    doubleVector viewerVarMaxima = atts->GetUpperBounds();
+
+    stringVector guiVarNames  = guiVarAtts->GetListedVarNames();
+    doubleVector guiVarMinima = guiVarAtts->GetLowerBounds();
+    doubleVector guiVarMaxima = guiVarAtts->GetUpperBounds();
+    
+    int viewerVarCount = viewerVarNames.size();
+    int guiVarCount    = guiVarNames.size();
+    int viewerVarNum, guiVarNum;
+    std::string viewerVarName;
+    
+    for (viewerVarNum = 0; viewerVarNum < viewerVarCount; viewerVarNum++)
+    {
+        if (viewerVarMinima[viewerVarNum] > -9e+36) break;
+        if (viewerVarMaxima[viewerVarNum] < +9e+36) break;
+    }
+    
+    if (viewerVarNum >= viewerVarCount)
+    {
+        *guiVarAtts = *atts;
+        return;
+    }
+    
+    for (viewerVarNum = 0; viewerVarNum < viewerVarCount; viewerVarNum++)
+    {
+        viewerVarName = viewerVarNames[viewerVarNum];
+        
+        for (guiVarNum = 0; guiVarNum < guiVarCount; guiVarNum++)
+        {
+            if (guiVarNames[guiVarNum] == viewerVarName) break;
+            
+            if (viewerVarName == std::string("default"))
+            {
+                if (guiVarNames[guiVarNum] == atts->GetDefaultVarName()) break;
+            }
+        }
+        
+        if (guiVarNum < guiVarCount)
+        {
+            guiVarMinima[guiVarNum] = viewerVarMinima[viewerVarNum];
+            guiVarMaxima[guiVarNum] = viewerVarMaxima[viewerVarNum];
+        }
+    }
+    
+    guiVarAtts->SetLowerBounds(guiVarMinima);
+    guiVarAtts->SetUpperBounds(guiVarMaxima);
+    
+    *atts = *guiVarAtts;
 }

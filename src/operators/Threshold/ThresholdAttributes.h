@@ -60,6 +60,13 @@
 //   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
 //   Now accommodates an empty list of threshold variables.
 //
+//   Mark Blair, Thu Sep 28 12:07:05 PDT 2006
+//   Added SupplyMissingDefaultsIfAppropriate.
+//
+//   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
+//   Added SwitchDefaultToTrueVariableNameIfScalar and flag that indicates
+//   whether default plot variable is scalar.
+//
 // ****************************************************************************
 
 class ThresholdAttributes : public AttributeSubject
@@ -100,9 +107,11 @@ public:
     void SetLowerBounds(const doubleVector &lowerBounds_);
     void SetUpperBounds(const doubleVector &upperBounds_);
     void SetDefaultVarName(const std::string &defaultVarName_);
+    void SetDefaultVarIsScalar(bool defaultVarIsScalar_);
 
+    void SupplyMissingDefaultsIfAppropriate();
     bool AttributesAreConsistent() const;
-    void SwitchToPipelineVariable(const std::string &pipelineVarName_);
+    void SwitchDefaultToTrueVariableNameIfScalar();
 
     // Property getting methods
     OutputMeshType         GetOutputMeshType() const;
@@ -113,6 +122,7 @@ public:
     double                 GetUpperBound() const;
     const std::string     &GetDefaultVarName() const;
           std::string     &GetDefaultVarName();
+    bool                   GetDefaultVarIsScalar() const;
 
     const stringVector    &GetListedVariables() const;
     const intVector       &GetZonePortions() const;
@@ -153,6 +163,7 @@ public:
     void                   SelectLowerBounds();
     void                   SelectUpperBounds();
     void                   SelectDefaultVarName();
+    void                   SelectDefaultVarIsScalar();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -184,6 +195,7 @@ private:
     doubleVector        lowerBounds;
     doubleVector        upperBounds;
     std::string         defaultVarName;
+    bool                defaultVarIsScalar;
 };
 
 #endif

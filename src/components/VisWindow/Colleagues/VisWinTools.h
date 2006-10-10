@@ -51,6 +51,7 @@ class VisitLineTool;
 class VisitPlaneTool;
 class VisitPointTool;
 class VisitSphereTool;
+class VisitExtentsTool;
 class vtkHighlightActor2D;
 
 // ****************************************************************************
@@ -90,7 +91,10 @@ class vtkHighlightActor2D;
 //
 //   Kathleen Bonnell, Wed Dec  3 16:49:14 PST 2003 
 //   Renamed 'ReAddToWindow' to 'ReAddToolsToWindow', as tools get re-added
-//   at a different time than other colleagues. 
+//   at a different time than other colleagues.
+//
+//   Mark Blair, Wed Aug 30 14:19:00 PDT 2006
+//   Added the extents tool.
 //
 // ****************************************************************************
 
@@ -145,6 +149,7 @@ class VISWINDOW_API VisWinTools : public VisWinColleague
     VisitPlaneTool       *planeTool;
     VisitPointTool       *pointTool;
     VisitSphereTool      *sphereTool;
+    VisitExtentsTool     *extentsTool;
 };
 
 #endif

@@ -1,9 +1,7 @@
 #include <QvisParallelAxisPlotWindow.h>
-
 #include <ParallelAxisAttributes.h>
-#include <PlotInfoAttributes.h>
-#include <ObserverToCallback.h>
-#include <SyncAttributes.h>
+
+#include <ViewerProxy.h>
 
 #include <math.h>
 #include <stdio.h>
@@ -26,7 +24,6 @@
 
 #include <QvisVariableButton.h>
 
-#include <ViewerProxy.h>
 #include <DebugStream.h>
 
 #include <vector>
@@ -169,6 +166,9 @@ QvisParallelAxisPlotWindow::CreateWindowContents()
 //      Removed widgets that display axis extents and extents selected by
 //      Extents tool.  These were considered unnecessary.
 //
+//      Mark Blair, Wed Sep 20 10:59:41 PDT 2006
+//      Accommodates time ordinals, for those operators and tools that need them.
+//
 // ****************************************************************************
 
 void
@@ -209,6 +209,14 @@ QvisParallelAxisPlotWindow::UpdateWindow(bool doAll)
             break;   // Do nothing.
 
         case 5:   // Uses ParallelAxisAttributes::extentMaxima
+
+            break;   // Do nothing.
+
+        case 6:   // Uses ParallelAxisAttributes::extMinTimeOrds
+
+            break;   // Do nothing.
+
+        case 7:   // Uses ParallelAxisAttributes::extMaxTimeOrds
 
             break;   // Do nothing.
         }
@@ -485,11 +493,21 @@ QvisParallelAxisPlotWindow::leftAxisSelected(const QString &axisToSelect)
 //      Removed widgets that display axis extents and extents selected by
 //      Extents tool.  These were considered unnecessary.
 //
+//      Mark Blair, Wed Sep 20 10:59:41 PDT 2006
+//      Fixed range error that can occur when shown variable and list of axis
+//      are temporarily out of sync.
+//
 // ****************************************************************************
 
 void
 QvisParallelAxisPlotWindow::UpdateShownFields(bool applyvalues)
 {
+    if (latestGUIShownPos >= parAxisAtts->GetAxisMinima().size())
+    {
+        debug1 << "ParallelAxis plot attribute consistency error." << endl;
+        latestGUIShownPos = parAxisAtts->GetAxisMinima().size() - 1;
+    }
+
     parAxisAtts->SetShownVariableAxisPosition(latestGUIShownPos);
 
     QString fieldString = parAxisAtts->GetShownVariableAxisName().c_str();

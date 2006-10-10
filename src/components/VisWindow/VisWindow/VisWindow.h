@@ -351,7 +351,14 @@ class VisitInteractor;
 //
 //    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
 //    Added 3 most recent rendering times to set of times returned
-//    by GetRenderTimes
+//    by GetRenderTimes.
+//
+//    Mark Blair, Wed Aug 30 14:09:00 PDT 2006
+//    Added GetPlotListIndex.
+//
+//    Mark Blair, Mon Sep 25 11:41:09 PDT 2006
+//    Added axis annotation enable/disable flag and methods.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -364,6 +371,7 @@ public:
     void                 AddPlot(avtActor_p &);
     void                 RemovePlot(avtActor_p &);
     void                 ClearPlots(void);
+    int                  GetPlotListIndex(const char *plotName);
 
     void                 SetBounds(const double [6]);
     void                 GetBounds(double [6]) const;
@@ -605,6 +613,7 @@ protected:
 
     WINDOW_MODE                        mode;
     bool                               updatesEnabled;
+    bool                               axisAnnotationsEnabled;
     bool                               hasPlots;
     bool                               pickForIntersectionOnly;
 
@@ -639,6 +648,11 @@ protected:
     void                 HasPlots(bool);
     void                 HasPlots();
     void                 NoPlots();
+
+    void                 EnableAxisAnnotations();
+    void                 DisableAxisAnnotations();
+    bool                 AxisAnnotationsEnabled() const;
+    void                 DisableAxisAnnotationsIfInappropriate(avtActor_p &plotActor);
 
     void                 SetInteractor(VisitInteractor *);
     void                 GetViewport(double *);

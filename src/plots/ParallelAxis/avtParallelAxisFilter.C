@@ -5,6 +5,7 @@
 #include <avtParallelAxisFilter.h>
 
 #include <ParallelAxisAttributes.h>
+#include <PlotInfoAttributes.h>
 
 #include <limits.h>
 #include <float.h>
@@ -13,6 +14,7 @@
 #include <visitstream.h>
 
 #include <unistd.h>
+#include <sys/types.h>
 
 #include <vector>
 #include <string>
@@ -237,8 +239,14 @@ avtParallelAxisFilter::PreExecute(void)
     domainCount = GetInputDataTree()->GetNumberOfLeaves();
 
     ComputeCurrentDataExtentsOverAllDomains();
-    
-    // Eventually store data extents in PlotInfoAttributes object right here.
+
+/*  Temporarily disable this until PlotInfoAttributes can be accessed by the
+    Extents tool.  Use kludge scratch file in the meantime.
+
+    StoreDataExtentsForOutsideQueries();
+*/
+
+    WriteAxisVariableNamesAndExtentsFile();  // FIX ME!  Kludge scratch file.
 
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
    
@@ -653,9 +661,7 @@ avtParallelAxisFilter::SetupParallelAxis (int plotAxisNum)
 // *****************************************************************************
 //  Method: avtParallelAxisPlot::ComputeCurrentDataExtentsOverAllDomains
 //
-//  Purpose: Computes extent of a scalar input variable or extent of each
-//           component variable in an array input variable over all domains in
-//           the input.
+//  Purpose: Computes extent of each axis's scalar variable.
 //
 //  Programmer: Mark Blair
 //  Creation:   Mon Mar 27 18:24:00 PST 2006
@@ -708,16 +714,98 @@ avtParallelAxisFilter::ComputeCurrentDataExtentsOverAllDomains()
         }
     }
     
+    parAxisAtts.SetAxisMinima(curAxisMinima);
+    parAxisAtts.SetAxisMaxima(curAxisMaxima);
+}
+
+
+// *****************************************************************************
+//  Method: avtParallelAxisPlot::StoreDataExtentsForOutsideQueries
+//
+//  Purpose: Stores name of each axis's scalar variable and that variable's
+//           extent in a data structure that can be queried by viewer functions.
+//
+//  Programmer: Mark Blair
+//  Creation:   Fri Sep  1 14:51:00 PDT 2006
+//
+//  Modifications:
+//
+// *****************************************************************************
+
+void
+avtParallelAxisFilter::StoreDataExtentsForOutsideQueries()
+{
+    stringVector curAxisVarNames = parAxisAtts.GetOrderedAxisNames();
+    doubleVector curAxisMinima   = parAxisAtts.GetAxisMinima();
+    doubleVector curAxisMaxima   = parAxisAtts.GetAxisMaxima();
+    
+    const char *axisVarName;
+    int axisVarNameLen, axisNum, charNum;
+
     extentsArray.clear();
 
     for (axisNum = 0; axisNum < curAxisMinima.size(); axisNum++)
     {
+        axisVarName = curAxisVarNames[axisNum].c_str();
+        axisVarNameLen = strlen(axisVarName);
+        
+        for (charNum = 0; charNum < axisVarNameLen; charNum++)
+        {
+            extentsArray.push_back((double)axisVarName[charNum]);
+        }
+        
+        extentsArray.push_back(0.0);
+
         extentsArray.push_back(curAxisMinima[axisNum]);
         extentsArray.push_back(curAxisMaxima[axisNum]);
     }
 
-    parAxisAtts.SetAxisMinima(curAxisMinima);
-    parAxisAtts.SetAxisMaxima(curAxisMaxima);
+    extentsArray.push_back(0.0);
+    
+    PlotInfoAttributes plotInfoAtts;
+    plotInfoAtts.SetOutputArray(extentsArray);
+    GetOutput()->GetInfo().GetAttributes().SetPlotInfoAtts(&plotInfoAtts);
+}
+
+
+// *****************************************************************************
+//  Method: avtParallelAxisFilter::WriteAxisVariableNamesAndExtentsFile
+//
+//  Purpose: Writes each axis's scalar variable name, along with the extent of
+//           the variable, into a file for use by the Extents tool.
+//
+//  Note: This is a KLUDGE intended for use only until PlotInfoAttributes can be
+//        used to communicate with the Extents tool.  Scratch file communication
+//        will of course fail if the viewer and the engine are running on
+//        different file systems.
+//
+//  Programmer: Mark Blair
+//  Creation:   Fri Sep 02 14:37:00 PDT 2005
+//
+//  Modifications:
+//
+// *****************************************************************************
+
+bool avtParallelAxisFilter::WriteAxisVariableNamesAndExtentsFile()
+{
+    FILE *avdFileStream;
+    
+    unlink (AXIS_VAR_DATA_FILE_NAME);
+
+    if ((avdFileStream = fopen(AXIS_VAR_DATA_FILE_NAME, "w")) == NULL) return false;
+
+    const stringVector curAxisVarNames = parAxisAtts.GetOrderedAxisNames();
+    const doubleVector curAxisMinima   = parAxisAtts.GetAxisMinima();
+    const doubleVector curAxisMaxima   = parAxisAtts.GetAxisMaxima();
+
+    for (int axisNum = 0; axisNum < curAxisVarNames.size(); axisNum++ ) {
+        fprintf(avdFileStream, "%s %f %f\n", curAxisVarNames[axisNum].c_str(),
+        curAxisMinima[axisNum], curAxisMaxima[axisNum]);
+    }
+
+    fclose(avdFileStream);
+
+    return true;
 }
 
 
