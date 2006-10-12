@@ -280,6 +280,7 @@ REQUIRED=\
  PLOT3D \
  Point3D \
  ProteinDataBank \
+ SAMI \
  SAR \
  STL \
  Shapefile \
