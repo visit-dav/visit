@@ -202,10 +202,6 @@ int vtkVisItCellLocator::GenerateIndex(int offset, int numDivs, int i, int j,
   return 0;
 }
 
-static
-double
-GetParametricDistance(vtkCell *cell, double pcoords[3]);
-
 // Return intersection point (if any) of finite line with cells contained
 // in cell locator.
 int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3], double tol,
@@ -401,7 +397,7 @@ int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3], double to
                    }
                   else if (t < (tMax+deltaT)) // it might be close
                     {
-                    pDistance = GetParametricDistance(cell, pcoords);
+                    pDistance = cell->GetParametricDistance(pcoords);
                     if (pDistance < minPDistance || 
                         (pDistance == minPDistance && t <tMax))
                       {
@@ -649,7 +645,7 @@ int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3],
                   continue;
 
                 if (this->CellIntersections->CellIntersectWithLine(
-                    cell, a0, a1, tempT, tempX, pc, tempId))
+                    cell, a0, a1, tempT, tempX))
                   {
 #if 0
                   if (!this->IsInOctantBounds(tempX))
@@ -2100,103 +2096,6 @@ void vtkVisItCellLocator::PrintSelf(ostream& os, vtkIndent indent)
 }
  
 
-
-
-static
-double
-GetParametricDistance(vtkCell *cell, double pcoords[3])
-{
-  int i;
-  double pDist, pDistMax = 0.0f;
-  double pc[4];
-  switch (cell->GetCellType())
-    {
-    case VTK_TRIANGLE :
-    case VTK_QUADRATIC_TRIANGLE :
-      {
-      pc[0] = pcoords[0];    
-      pc[1] = pcoords[1];    
-      pc[2] = 1.0 - pcoords[0] - pcoords[1];    
-
-      for (i=0; i<3; i++)
-        {
-        if ( pc[i] < 0.0 ) 
-          {
-          pDist = -pc[i];
-          }
-        else if ( pc[i] > 1.0 ) 
-          {
-          pDist = pc[i] - 1.0f;
-          }
-        else //inside the cell in the parametric direction
-          {
-          pDist = 0.0;
-          }
-        if ( pDist > pDistMax )
-          {
-          pDistMax = pDist;
-          }
-        }
-      }
-      break;
-    case VTK_TETRA :
-    case VTK_QUADRATIC_TETRA :
-      {
-      pc[0] = pcoords[0];    
-      pc[1] = pcoords[1];    
-      pc[2] = pcoords[2];    
-      pc[3] = 1.0 - pcoords[0] - pcoords[1] - pcoords[2];    
-      for (i=0; i<4; i++)
-        {
-        if ( pc[i] < 0.0 ) 
-          {
-          pDist = -pc[i];
-          }
-        else if ( pc[i] > 1.0 ) 
-          {
-          pDist = pc[i] - 1.0f;
-          }
-        else //inside the cell in the parametric direction
-          {
-          pDist = 0.0;
-          }
-        if ( pDist > pDistMax )
-          {
-          pDistMax = pDist;
-          }
-        }
-      }
-      break;
-    default :
-      {
-      pc[0] = pcoords[0];    
-      pc[1] = pcoords[1];    
-      pc[2] = pcoords[2];    
-      for (i=0; i<3; i++)
-        {
-        if ( pc[i] < 0.0 ) 
-          {
-          pDist = -pc[i];
-          }
-        else if ( pc[i] > 1.0 ) 
-          {
-          pDist = pc[i] - 1.0f;
-          }
-        else //inside the cell in the parametric direction
-          {
-          pDist = 0.0;
-          }
-        if ( pDist > pDistMax )
-          {
-          pDistMax = pDist;
-          }
-        }
-      }
-      break;
-    }
-  return pDistMax;
-}
-
 void vtkVisItCellLocator::ComputeOctantBounds(int i, int j, int k)
 {
   this->OctantBounds[0] = this->Bounds[0]       + i*H[0];
@@ -2398,7 +2297,7 @@ int vtkVisItCellLocator::IntersectWithLine(double a0[3], double a1[3],
                   continue;
 
                 if (this->CellIntersections->CellIntersectWithLine(
-                      cell, a0, a1, tempT, tempX, pc, tempId))
+                      cell, a0, a1, tempT, tempX))
                   {
                   cells->InsertNextId(cId);
                   ipts->InsertNextPoint(tempX);

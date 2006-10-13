@@ -59,6 +59,10 @@ class vtkDataSet;
 //  Programmer: Kathleen Bonnell
 //  Creation:   Thu Oct 13 08:17:36 PDT 2005
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Oct 13 11:05:01 PDT 2006
+//    Removed int arg from RemoveCracks method.
+//
 // ****************************************************************************
 
 class avtCracksClipperFilter : public avtPluginStreamer
@@ -87,7 +91,7 @@ class avtCracksClipperFilter : public avtPluginStreamer
 
   private:
     bool                  NeedsProcessing(vtkDataSet *, bool *np);
-    vtkDataSet           *RemoveCracks(vtkDataSet *inds, int whichCrack);
+    vtkDataSet           *RemoveCracks(vtkDataSet *inds);
     void                  RemoveExtraArrays(vtkDataSet *ds, bool v = false);
 };
 

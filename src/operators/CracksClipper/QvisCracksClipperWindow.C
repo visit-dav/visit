@@ -112,11 +112,11 @@ QvisCracksClipperWindow::CreateWindowContents()
 {
     QGridLayout *mainLayout = new QGridLayout(topLayout, 7,4,10, "mainLayout");
 
-    // Use Crack 1
-    useCrack1 = new QCheckBox("Use Crack 1", central, "useCrack1");
-    connect(useCrack1, SIGNAL(toggled(bool)),
-        this, SLOT(useCrack1Changed(bool)));
-    mainLayout->addWidget(useCrack1, 0, 0);
+    // Show Crack 1
+    showCrack1 = new QCheckBox("Show Crack 1", central, "showCrack1");
+    connect(showCrack1, SIGNAL(toggled(bool)),
+        this, SLOT(showCrack1Changed(bool)));
+    mainLayout->addWidget(showCrack1, 0, 0);
 
     // Crack 1 Variable
     mainLayout->addWidget(new QLabel("Crack 1 Variable", central, 
@@ -127,11 +127,11 @@ QvisCracksClipperWindow::CreateWindowContents()
         this, SLOT(crack1VarChanged(const QString &)));
     mainLayout->addMultiCellWidget(crack1Var, 1, 1, 1, 3);
 
-    // Use Crack 2
-    useCrack2 = new QCheckBox("Use Crack 2", central, "useCrack2");
-    connect(useCrack2, SIGNAL(toggled(bool)),
-        this, SLOT(useCrack2Changed(bool)));
-    mainLayout->addWidget(useCrack2, 2, 0);
+    // Show Crack 2
+    showCrack2 = new QCheckBox("Show Crack 2", central, "showCrack2");
+    connect(showCrack2, SIGNAL(toggled(bool)),
+        this, SLOT(showCrack2Changed(bool)));
+    mainLayout->addWidget(showCrack2, 2, 0);
 
     // Crack 2 Variable
     mainLayout->addWidget(new QLabel("Crack 2 Variable", central, 
@@ -142,11 +142,11 @@ QvisCracksClipperWindow::CreateWindowContents()
         this, SLOT(crack2VarChanged(const QString &)));
     mainLayout->addMultiCellWidget(crack2Var, 3, 3, 1, 3);
 
-    // Use Crack 3
-    useCrack3 = new QCheckBox("Use Crack 3", central, "useCrack3");
-    connect(useCrack3, SIGNAL(toggled(bool)),
-        this, SLOT(useCrack3Changed(bool)));
-    mainLayout->addWidget(useCrack3, 4, 0);
+    // Show Crack 3
+    showCrack3 = new QCheckBox("Show Crack 3", central, "showCrack3");
+    connect(showCrack3, SIGNAL(toggled(bool)),
+        this, SLOT(showCrack3Changed(bool)));
+    mainLayout->addWidget(showCrack3, 4, 0);
 
     // Crack 3 Variable
     mainLayout->addWidget(new QLabel("Crack 3 Variable", central, 
@@ -214,14 +214,14 @@ QvisCracksClipperWindow::UpdateWindow(bool doAll)
             temp = atts->GetStrainVar().c_str();
             strainVar->setText(temp);
             break;
-          case 4: //useCrack1
-            useCrack1->setChecked(atts->GetUseCrack1());
+          case 4: //showCrack1
+            showCrack1->setChecked(atts->GetShowCrack1());
             break;
-          case 5: //useCrack2
-            useCrack2->setChecked(atts->GetUseCrack2());
+          case 5: //showCrack2
+            showCrack2->setChecked(atts->GetShowCrack2());
             break;
-          case 6: //useCrack3
-            useCrack3->setChecked(atts->GetUseCrack3());
+          case 6: //showCrack3
+            showCrack3->setChecked(atts->GetShowCrack3());
             break;
         }
     }
@@ -271,22 +271,22 @@ QvisCracksClipperWindow::GetCurrentValues(int which_widget)
         // Nothing for strainVar
     }
 
-    // Do useCrack1
+    // Do showCrack1
     if(which_widget == 4 || doAll)
     {
-        // Nothing for useCrack1
+        // Nothing for showCrack1
     }
 
-    // Do useCrack2
+    // Do showCrack2
     if(which_widget == 5 || doAll)
     {
-        // Nothing for useCrack2
+        // Nothing for showCrack2
     }
 
-    // Do useCrack3
+    // Do showCrack3
     if(which_widget == 6 || doAll)
     {
-        // Nothing for useCrack3
+        // Nothing for showCrack3
     }
 
 }
@@ -334,25 +334,25 @@ QvisCracksClipperWindow::strainVarChanged(const QString &var)
 
 
 void
-QvisCracksClipperWindow::useCrack1Changed(bool val)
+QvisCracksClipperWindow::showCrack1Changed(bool val)
 {
-    atts->SetUseCrack1(val);
+    atts->SetShowCrack1(val);
     Apply();
 }
 
 
 void
-QvisCracksClipperWindow::useCrack2Changed(bool val)
+QvisCracksClipperWindow::showCrack2Changed(bool val)
 {
-    atts->SetUseCrack2(val);
+    atts->SetShowCrack2(val);
     Apply();
 }
 
 
 void
-QvisCracksClipperWindow::useCrack3Changed(bool val)
+QvisCracksClipperWindow::showCrack3Changed(bool val)
 {
-    atts->SetUseCrack3(val);
+    atts->SetShowCrack3(val);
     Apply();
 }
 

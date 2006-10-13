@@ -63,6 +63,9 @@
 //    Hank Childs, Thu May 19 10:55:30 PDT 2005
 //    Added support for operating on rectilinear meshes directly.
 //
+//    Kathleen Bonnell, Fri Sep 15 09:23:50 PDT 2006 
+//    Added useVerdictHex.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtVMetricVolume : public avtVerdictFilter
@@ -74,12 +77,15 @@ class EXPRESSION_API avtVMetricVolume : public avtVerdictFilter
 
     void               UseOnlyPositiveVolumes(bool val)
                                   { useOnlyPositiveVolumes = val; };
+    void               UseVerdictHex(bool val)
+                                  { useVerdictHex = val; };
 
     virtual bool       OperateDirectlyOnMesh(vtkDataSet *);
     virtual void       MetricForWholeMesh(vtkDataSet *, vtkDataArray *);
 
   protected:
     bool               useOnlyPositiveVolumes;
+    bool               useVerdictHex;
 };
 
 

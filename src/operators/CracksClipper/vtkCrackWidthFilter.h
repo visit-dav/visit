@@ -41,21 +41,10 @@
 #include <vtkDataSetToDataSetFilter.h>
 
 class vtkCell;
-class vtkVertex;
-class vtkPolyVertex;
-class vtkLine;
-class vtkPolyLine;
-class vtkTriangle;
-class vtkTriangleStrip;
-class vtkPolygon;
-class vtkPixel;
+class vtkMassProperties;
 class vtkQuad;
-class vtkTetra;
-class vtkVoxel;
-class vtkHexahedron;
-class vtkWedge;
-class vtkPyramid;
-
+class vtkSlicer;
+class vtkTriangle;
 
 // ****************************************************************************
 //  Class:  vtkCrackWidthFilter
@@ -69,6 +58,13 @@ class vtkPyramid;
 //  Creation:    August 22, 2005 
 //
 //  Modifications:
+//    Kathleen Bonnell, Wed Sep 13 07:42:59 PDT 2006
+//    Remove individual cell intersection methods, use vtkCellIntersections 
+//    class instead.
+//
+//    Kathleen Bonnell, Fri Oct 13 11:05:01 PDT 2006 
+//    Removed use of vtkCellIntersections, added vtkMassProperties, vtkSlicer.
+//    Changed args for CrackWidthForCell.
 //
 // ****************************************************************************
 
@@ -108,59 +104,12 @@ class vtkCrackWidthFilter : public vtkDataSetToDataSetFilter
     char *Crack3Var;
     char *StrainVar;
 
-    double  CrackWidthForCell(vtkCell *cell, const double *center,
-           const double cellLength, const double delta, const double *dir);
+    vtkSlicer *Slicer;
+    vtkMassProperties *MassProp;
 
-    int CellIntersectWithLine(vtkCell *, double [3], double [3], 
-                                double&, double [3]);
-
-    int VertexIntersectWithLine(vtkVertex *, double [3], double [3], 
-                                double&, double [3]);
-
-    int PolyVertexIntersectWithLine(vtkPolyVertex *, double [3], double [3], 
-                                double&, double [3]);
-
-    int LineIntersectWithLine(vtkLine *, double [3], double [3], 
-                                double&, double [3]);
-
-    int PolyLineIntersectWithLine(vtkPolyLine *, double [3], double [3], 
-                                double&, double [3]);
-
-    int TriangleIntersectWithLine(vtkTriangle *, double [3], double [3], 
-                                double&, double [3]);
-
-    int TriStripIntersectWithLine(vtkTriangleStrip *, double [3], double [3], 
-                                double&, double [3]);
-
-    int PolygonIntersectWithLine(vtkPolygon *, double [3], double [3], 
-                                double&, double [3]);
-
-    int PixelIntersectWithLine(vtkPixel *, double [3], double [3], 
-                                double&, double [3]);
-
-    int QuadIntersectWithLine(vtkQuad *, double [3], double [3], 
-                                double&, double [3]);
-
-    int TetraIntersectWithLine(vtkTetra *, double [3], double [3], 
-                                double&, double [3]);
-
-    int VoxelIntersectWithLine(vtkVoxel *, double [3], double [3], 
-                                double&, double [3]);
-
-    int HexIntersectWithLine(vtkHexahedron *, double [3], double [3], 
-                                double&, double [3]);
-
-    int WedgeIntersectWithLine(vtkWedge *, double [3], double [3], 
-                                double&, double [3]);
-
-    int PyramidIntersectWithLine(vtkPyramid *, double [3], double [3], 
-                                double&, double [3]);
-
-    int LineLineIsect(const double *, const double *, const double *, 
-                      const double *, double *);
-
-    int EdgeLineIsect(vtkCell *cell, const double *, const double *, double *);
-
+    double  CrackWidthForCell(vtkCell *cell, int cellId, const double *center,
+           const double delta, const double *dir,
+           const double zvol, const double L1L2);
 
     vtkCrackWidthFilter(const vtkCrackWidthFilter&);  // Not implemented.
     void operator=(const vtkCrackWidthFilter&);  // Not implemented.

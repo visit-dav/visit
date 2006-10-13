@@ -74,8 +74,6 @@ public:
   vtkBooleanMacro(TestCoPlanar,int);
 
   int CellIntersectWithLine(vtkCell *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
-  int CellIntersectWithLine(vtkCell *, double [3], double [3], 
                                 double&, double [3]);
 
   static int IntersectBox(const double[6], const double [3],
@@ -93,46 +91,46 @@ private:
 
 
   int VertexIntersectWithLine(vtkVertex *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
+                                double&, double [3]);
 
   int PolyVertexIntersectWithLine(vtkPolyVertex *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
+                                double&, double [3]);
 
   int LineIntersectWithLine(vtkLine *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
+                                double&, double [3]);
 
   int PolyLineIntersectWithLine(vtkPolyLine *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
+                                double&, double [3]);
 
   int TriangleIntersectWithLine(vtkTriangle *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
+                                double&, double [3]);
 
   int TriStripIntersectWithLine(vtkTriangleStrip *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
+                                double&, double [3]);
 
   int PolygonIntersectWithLine(vtkPolygon *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
+                                double&, double [3]);
 
   int PixelIntersectWithLine(vtkPixel *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
+                                double&, double [3]);
 
   int QuadIntersectWithLine(vtkQuad *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
+                                double&, double [3]);
 
   int TetraIntersectWithLine(vtkTetra *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
+                                double&, double [3]);
 
   int VoxelIntersectWithLine(vtkVoxel *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
+                                double&, double [3]);
 
   int HexIntersectWithLine(vtkHexahedron *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
+                                double&, double [3]);
 
   int WedgeIntersectWithLine(vtkWedge *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
+                                double&, double [3]);
 
   int PyramidIntersectWithLine(vtkPyramid *, double [3], double [3], 
-                                double&, double [3], double [3], int &);
+                                double&, double [3]);
 
   vtkTriangle *triangle;
   vtkQuad *quad;

@@ -499,6 +499,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Hank Childs, Fri Oct  6 15:45:26 PDT 2006
 //      Add inverse of Abel transform.
 //
+//      Kathleen Bonnell, Fri Sep 15 09:55:55 PDT 2006 
+//      Added volume2.  (does a different hex-volume calculation).
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -668,6 +671,12 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtVMetricTaper();
     else if (functionName == "volume")
         f = new avtVMetricVolume();
+    else if (functionName == "volume2")
+    {
+        avtVMetricVolume *vol = new avtVMetricVolume();
+        vol->UseVerdictHex(false);
+        f = vol;
+    }
     else if (functionName == "min_edge_length")
     {
         avtEdgeLength *el = new avtEdgeLength();
