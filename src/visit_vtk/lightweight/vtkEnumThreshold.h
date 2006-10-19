@@ -40,7 +40,7 @@
 
 #ifndef __vtkEnumThreshold_h
 #define __vtkEnumThreshold_h
-#include <visit_vtk_exports.h>
+#include <visit_vtk_light_exports.h>
 
 #include "vtkUnstructuredGridAlgorithm.h"
 
@@ -49,7 +49,7 @@
 
 class vtkDataArray;
 
-class VISIT_VTK_API vtkEnumThreshold : public vtkUnstructuredGridAlgorithm
+class VISIT_VTK_LIGHT_API vtkEnumThreshold : public vtkUnstructuredGridAlgorithm
 {
   public:
     static vtkEnumThreshold *New();

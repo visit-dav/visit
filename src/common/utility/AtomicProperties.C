@@ -356,227 +356,227 @@ unsigned char rasmolcolors[MAX_ELEMENT_NUMBER][3] = {
 };
 
 float covalent_radius[MAX_ELEMENT_NUMBER] = {
-    0.32, // H  1
-    0.93, // He 2
-    1.23, // Li 3
-    0.90, // Be 4
-    0.82, // B  5
-    0.77, // C  6
-    0.75, // N  7
-    0.73, // O  8
-    0.72, // F  9
-    0.71, // Ne 10
-    1.54, // Na 11
-    1.36, // Mg 12
-    1.18, // Al 13
-    1.11, // Si 14
-    1.06, // P  15
-    1.02, // S  16
-    0.99, // Cl 17
-    0.98, // Ar 18
-    2.03, // K  19
-    1.74, // Ca 20
-    1.44, // Sc 21
-    1.32, // Ti 22
-    1.22, // V  23
-    1.18, // Cr 24
-    1.17, // Mn 25
-    1.17, // Fe 26
-    1.16, // Co 27
-    1.15, // Ni 28
-    1.17, // Cu 29
-    1.25, // Zn 30
-    1.26, // Ga 31
-    1.22, // Ge 32
-    1.20, // As 33
-    1.16, // Se 34
-    1.14, // Br 35
-    1.12, // Kr 36
-    2.16, // Rb 37
-    1.91, // Sr 38
-    1.62, // Y  39
-    1.45, // Zr 40
-    1.34, // Nb 41
-    1.30, // Mo 42
-    1.27, // Tc 43
-    1.25, // Ru 44
-    1.25, // Rh 45
-    1.28, // Pd 46
-    1.34, // Ag 47
-    1.48, // Cd 48
-    1.44, // In 49
-    1.41, // Sn 50
-    1.40, // Sb 51
-    1.36, // Te 52
-    1.33, // I  53
-    1.31, // Xe 54
-    2.35, // Cs 55
-    1.98, // Ba 56
-    1.69, // La 57
-    1.65, // Ce 58
-    1.65, // Pr 59
-    1.64, // Nd 60
-    1.63, // Pm 61
-    1.62, // Sm 62
-    1.85, // Eu 63
-    1.61, // Gd 64
-    1.59, // Tb 65
-    1.59, // Dy 66
-    1.58, // Ho 67
-    1.57, // Er 68
-    1.56, // Tm 69
-    1.74, // Yb 70
-    1.56, // Lu 71
-    1.44, // Hf 72
-    1.34, // Ta 73
-    1.30, // W  74
-    1.28, // Re 75
-    1.26, // Os 76
-    1.27, // Ir 77
-    1.30, // Pt 78
-    1.34, // Au 79
-    1.49, // Hg 80
-    1.48, // Tl 81
-    1.47, // Pb 82
-    1.46, // Bi 83
-    1.46, // Po 84
-    1.45, // At 85
-    0.1,  //
-    0.1,  //
-    0.1,  //
-    0.1,  //
-    1.65, // Th 90
-    0.1,  //
-    1.42, // U  92
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1
+    0.32f, // H  1
+    0.93f, // He 2
+    1.23f, // Li 3
+    0.90f, // Be 4
+    0.82f, // B  5
+    0.77f, // C  6
+    0.75f, // N  7
+    0.73f, // O  8
+    0.72f, // F  9
+    0.71f, // Ne 10
+    1.54f, // Na 11
+    1.36f, // Mg 12
+    1.18f, // Al 13
+    1.11f, // Si 14
+    1.06f, // P  15
+    1.02f, // S  16
+    0.99f, // Cl 17
+    0.98f, // Ar 18
+    2.03f, // K  19
+    1.74f, // Ca 20
+    1.44f, // Sc 21
+    1.32f, // Ti 22
+    1.22f, // V  23
+    1.18f, // Cr 24
+    1.17f, // Mn 25
+    1.17f, // Fe 26
+    1.16f, // Co 27
+    1.15f, // Ni 28
+    1.17f, // Cu 29
+    1.25f, // Zn 30
+    1.26f, // Ga 31
+    1.22f, // Ge 32
+    1.20f, // As 33
+    1.16f, // Se 34
+    1.14f, // Br 35
+    1.12f, // Kr 36
+    2.16f, // Rb 37
+    1.91f, // Sr 38
+    1.62f, // Y  39
+    1.45f, // Zr 40
+    1.34f, // Nb 41
+    1.30f, // Mo 42
+    1.27f, // Tc 43
+    1.25f, // Ru 44
+    1.25f, // Rh 45
+    1.28f, // Pd 46
+    1.34f, // Ag 47
+    1.48f, // Cd 48
+    1.44f, // In 49
+    1.41f, // Sn 50
+    1.40f, // Sb 51
+    1.36f, // Te 52
+    1.33f, // I  53
+    1.31f, // Xe 54
+    2.35f, // Cs 55
+    1.98f, // Ba 56
+    1.69f, // La 57
+    1.65f, // Ce 58
+    1.65f, // Pr 59
+    1.64f, // Nd 60
+    1.63f, // Pm 61
+    1.62f, // Sm 62
+    1.85f, // Eu 63
+    1.61f, // Gd 64
+    1.59f, // Tb 65
+    1.59f, // Dy 66
+    1.58f, // Ho 67
+    1.57f, // Er 68
+    1.56f, // Tm 69
+    1.74f, // Yb 70
+    1.56f, // Lu 71
+    1.44f, // Hf 72
+    1.34f, // Ta 73
+    1.30f, // W  74
+    1.28f, // Re 75
+    1.26f, // Os 76
+    1.27f, // Ir 77
+    1.30f, // Pt 78
+    1.34f, // Au 79
+    1.49f, // Hg 80
+    1.48f, // Tl 81
+    1.47f, // Pb 82
+    1.46f, // Bi 83
+    1.46f, // Po 84
+    1.45f, // At 85
+    0.1f,  //
+    0.1f,  //
+    0.1f,  //
+    0.1f,  //
+    1.65f, // Th 90
+    0.1f,  //
+    1.42f, // U  92
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f
 };
 
 float atomic_radius[MAX_ELEMENT_NUMBER] = {
-    0.79, // H  1
-    0.49, // He 2
-    2.05, // Li 3
-    1.40, // Be 4
-    1.17, // B  5
-    0.91, // C  6
-    0.75, // N  7
-    0.65, // O  8
-    0.57, // F  9
-    0.51, // Ne 10
-    2.23, // Na 11
-    1.72, // Mg 12
-    1.82, // Al 13
-    1.46, // Si 14
-    1.23, // P  15
-    1.09, // S  16
-    0.97, // Cl 17
-    0.88, // Ar 18
-    2.77, // K  19
-    2.23, // Ca 20
-    2.09, // Sc 21
-    2.00, // Ti 22
-    1.92, // V  23
-    1.85, // Cr 24
-    1.79, // Mn 25
-    1.72, // Fe 26
-    1.67, // Co 27
-    1.62, // Ni 28
-    1.57, // Cu 29
-    1.53, // Zn 30
-    1.81, // Ga 31
-    1.52, // Ge 32
-    1.33, // As 33
-    1.22, // Se 34
-    1.12, // Br 35
-    1.03, // Kr 36
-    2.98, // Rb 37
-    2.45, // Sr 38
-    2.27, // Y  39
-    2.16, // Zr 40
-    2.08, // Nb 41
-    2.01, // Mo 42
-    1.95, // Tc 43
-    1.89, // Ru 44
-    1.83, // Rh 45
-    1.79, // Pd 46
-    1.75, // Ag 47
-    1.71, // Cd 48
-    2.00, // In 49
-    1.72, // Sn 50
-    1.53, // Sb 51
-    1.42, // Te 52
-    1.32, // I  53
-    1.24, // Xe 54
-    3.34, // Cs 55
-    2.78, // Ba 56
-    2.74, // La 57
-    2.70, // Ce 58
-    2.67, // Pr 59
-    2.64, // Nd 60
-    2.62, // Pm 61
-    2.59, // Sm 62
-    2.56, // Eu 63
-    2.54, // Gd 64
-    2.51, // Tb 65
-    2.49, // Dy 66
-    2.47, // Ho 67
-    2.45, // Er 68
-    2.42, // Tm 69
-    2.40, // Yb 70
-    2.25, // Lu 71
-    2.16, // Hf 72
-    2.09, // Ta 73
-    2.02, // W  74
-    1.97, // Re 75
-    1.92, // Os 76
-    1.87, // Ir 77
-    1.83, // Pt 78
-    1.79, // Au 79
-    1.76, // Hg 80
-    2.08, // Tl 81
-    1.81, // Pb 82
-    1.63, // Bi 83
-    1.53, // Po 84
-    1.43, // At 85
-    1.34, // Rn 86
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1,
-    .1
+    0.79f, // H  1
+    0.49f, // He 2
+    2.05f, // Li 3
+    1.40f, // Be 4
+    1.17f, // B  5
+    0.91f, // C  6
+    0.75f, // N  7
+    0.65f, // O  8
+    0.57f, // F  9
+    0.51f, // Ne 10
+    2.23f, // Na 11
+    1.72f, // Mg 12
+    1.82f, // Al 13
+    1.46f, // Si 14
+    1.23f, // P  15
+    1.09f, // S  16
+    0.97f, // Cl 17
+    0.88f, // Ar 18
+    2.77f, // K  19
+    2.23f, // Ca 20
+    2.09f, // Sc 21
+    2.00f, // Ti 22
+    1.92f, // V  23
+    1.85f, // Cr 24
+    1.79f, // Mn 25
+    1.72f, // Fe 26
+    1.67f, // Co 27
+    1.62f, // Ni 28
+    1.57f, // Cu 29
+    1.53f, // Zn 30
+    1.81f, // Ga 31
+    1.52f, // Ge 32
+    1.33f, // As 33
+    1.22f, // Se 34
+    1.12f, // Br 35
+    1.03f, // Kr 36
+    2.98f, // Rb 37
+    2.45f, // Sr 38
+    2.27f, // Y  39
+    2.16f, // Zr 40
+    2.08f, // Nb 41
+    2.01f, // Mo 42
+    1.95f, // Tc 43
+    1.89f, // Ru 44
+    1.83f, // Rh 45
+    1.79f, // Pd 46
+    1.75f, // Ag 47
+    1.71f, // Cd 48
+    2.00f, // In 49
+    1.72f, // Sn 50
+    1.53f, // Sb 51
+    1.42f, // Te 52
+    1.32f, // I  53
+    1.24f, // Xe 54
+    3.34f, // Cs 55
+    2.78f, // Ba 56
+    2.74f, // La 57
+    2.70f, // Ce 58
+    2.67f, // Pr 59
+    2.64f, // Nd 60
+    2.62f, // Pm 61
+    2.59f, // Sm 62
+    2.56f, // Eu 63
+    2.54f, // Gd 64
+    2.51f, // Tb 65
+    2.49f, // Dy 66
+    2.47f, // Ho 67
+    2.45f, // Er 68
+    2.42f, // Tm 69
+    2.40f, // Yb 70
+    2.25f, // Lu 71
+    2.16f, // Hf 72
+    2.09f, // Ta 73
+    2.02f, // W  74
+    1.97f, // Re 75
+    1.92f, // Os 76
+    1.87f, // Ir 77
+    1.83f, // Pt 78
+    1.79f, // Au 79
+    1.76f, // Hg 80
+    2.08f, // Tl 81
+    1.81f, // Pb 82
+    1.63f, // Bi 83
+    1.53f, // Po 84
+    1.43f, // At 85
+    1.34f, // Rn 86
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f,
+    .1f
 };
 
 const char *element_names[MAX_ELEMENT_NUMBER] = {
@@ -1250,7 +1250,7 @@ int ResiduenameToNumber(const char *name)
     }
 
     // Nope -- cache the name for next time.
-    snprintf(lastname,10,"%s",name);
+    SNPRINTF(lastname,10,"%s",name);
 
     InitializeAtomicPropertyMaps();
 
@@ -1362,9 +1362,9 @@ static void PrintColorTablesFor_avtColorTables()
     {
         char s[1000];
         float v = float(i)/float(KNOWN_AMINO_ACIDS-1);
-        float r = float(shapelycolors[i][0]) / 255.;
-        float g = float(shapelycolors[i][1]) / 255.;
-        float b = float(shapelycolors[i][2]) / 255.;
+        float r = float(shapelycolors[i][0]) / 255.f;
+        float g = float(shapelycolors[i][1]) / 255.f;
+        float b = float(shapelycolors[i][2]) / 255.f;
         char sv[100];
         SNPRINTF(sv, 100, "%.3f", v);
         strcat(sv,"f,");
@@ -1387,9 +1387,9 @@ static void PrintColorTablesFor_avtColorTables()
     {
         char s[1000];
         float v = float(i)/float(KNOWN_AMINO_ACIDS-1);
-        float r = float(aminocolors[i][0]) / 255.;
-        float g = float(aminocolors[i][1]) / 255.;
-        float b = float(aminocolors[i][2]) / 255.;
+        float r = float(aminocolors[i][0]) / 255.f;
+        float g = float(aminocolors[i][1]) / 255.f;
+        float b = float(aminocolors[i][2]) / 255.f;
         char sv[100];
         SNPRINTF(sv, 100, "%.3f", v);
         strcat(sv,"f,");
@@ -1412,9 +1412,9 @@ static void PrintColorTablesFor_avtColorTables()
     {
         char s[1000];
         float v = float(i)/float(MAX_ELEMENT_NUMBER-1);
-        float r = float(jmolcolors[i][0]) / 255.;
-        float g = float(jmolcolors[i][1]) / 255.;
-        float b = float(jmolcolors[i][2]) / 255.;
+        float r = float(jmolcolors[i][0]) / 255.f;
+        float g = float(jmolcolors[i][1]) / 255.f;
+        float b = float(jmolcolors[i][2]) / 255.f;
         char sv[100];
         SNPRINTF(sv, 100, "%.3f", v);
         strcat(sv,"f,");
@@ -1437,9 +1437,9 @@ static void PrintColorTablesFor_avtColorTables()
     {
         char s[1000];
         float v = float(i)/float(MAX_ELEMENT_NUMBER-1);
-        float r = float(rasmolcolors[i][0]) / 255.;
-        float g = float(rasmolcolors[i][1]) / 255.;
-        float b = float(rasmolcolors[i][2]) / 255.;
+        float r = float(rasmolcolors[i][0]) / 255.f;
+        float g = float(rasmolcolors[i][1]) / 255.f;
+        float b = float(rasmolcolors[i][2]) / 255.f;
         char sv[100];
         SNPRINTF(sv, 100, "%.3f", v);
         strcat(sv,"f,");

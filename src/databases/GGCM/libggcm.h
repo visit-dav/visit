@@ -127,7 +127,7 @@ float *ggcm_field(MHDdata * data, int nx, int ny, int nz,
                   char * const field_name);
 
 /** Create a 3D GGCM MHD field matrix */
-float ***ggcm_field_matrix(MHDdata * const data, int nx, int ny, int nz,
+float ***ggcm_field_matrix(const MHDdata * data, int nx, int ny, int nz,
                            char field_name[128]);
 /** Create a 3D GGCM MHD field matrix */
 __deprecated float ***ggcmFieldMatrix(const MHDdata *data,

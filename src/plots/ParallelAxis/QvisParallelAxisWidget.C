@@ -442,7 +442,7 @@ QvisParallelAxisWidget::drawAxisTitles(QPainter *painter)
             charXPos = axisX - fontMetrics().width(QChar(*(axisTitle.c_str())))/2;
             charYPos = (charNum+1)*charSpacing + axisBottomY;
 
-            painter->drawText(charXPos, charYPos, QString(titleChar));
+            painter->drawText(charXPos, charYPos, QString(titleChar.c_str()));
         }
     }
 }

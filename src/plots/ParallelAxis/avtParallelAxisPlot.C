@@ -5,7 +5,6 @@
 #include <avtParallelAxisPlot.h>
 #include <avtParallelAxisFilter.h>
 
-#include <ParallelAxisAttributes.h>
 
 #include <ColorAttribute.h>
 

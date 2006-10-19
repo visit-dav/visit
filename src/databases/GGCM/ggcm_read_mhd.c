@@ -120,11 +120,11 @@ MHDdata *ggcm_read_metadata(const char *filename)
     char *line;                   /* temp buffer for junking lines */
     int fields = 0;               /* more fields to read? */
 
-    head = prev = cur = malloc(sizeof(MHDdata));
+    head = prev = cur = (MHDdata *)malloc(sizeof(MHDdata));
     head->mhd_fp = fopen(filename, "r");
 
     len = 1024;
-    line = malloc(len);
+    line = (char *)malloc(len);
     while((fields = ggcm_read_field_metadata(cur)) != 0) {
         prev = cur;
         /* how many lines should we skip? */
@@ -142,7 +142,7 @@ MHDdata *ggcm_read_metadata(const char *filename)
             fgets(line, len, cur->mhd_fp);
         }
 
-        cur->next = malloc(sizeof(MHDdata)); /* need another elem in the list */
+        cur->next = (MHDdata *)malloc(sizeof(MHDdata)); /* need another elem in the list */
         cur->next->mhd_fp = cur->mhd_fp;     /* field_metadata needs a good FP */
 
         cur = cur->next;

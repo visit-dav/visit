@@ -4,7 +4,6 @@
 
 #include <avtParallelAxisFilter.h>
 
-#include <ParallelAxisAttributes.h>
 #include <PlotInfoAttributes.h>
 
 #include <limits.h>
@@ -13,7 +12,6 @@
 #include <string.h>
 #include <visitstream.h>
 
-#include <unistd.h>
 #include <sys/types.h>
 
 #include <vector>
