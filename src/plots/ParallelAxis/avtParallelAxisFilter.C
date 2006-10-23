@@ -10,6 +10,7 @@
 #include <float.h>
 #include <math.h>
 #include <string.h>
+#include <unistd.h>
 #include <visitstream.h>
 
 #include <sys/types.h>

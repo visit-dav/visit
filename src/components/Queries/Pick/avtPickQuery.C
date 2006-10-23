@@ -220,6 +220,9 @@ avtPickQuery::PreExecute(void)
 //    Kathleen Bonnell, Thu Jul  1 16:41:57 PDT 2004 
 //    Removed mpi calls, use GetAttToRootProc instead. 
 //
+//    Kathleen Bonnell, Mon Oct 23 08:37:09 PDT 2006
+//    Changed error message.
+//
 // ****************************************************************************
 
 void
@@ -248,7 +251,9 @@ avtPickQuery::PostExecute(void)
         if (!pickAtts.GetFulfilled() && !pickAtts.GetError())
         {
             pickAtts.SetError(true);
-            pickAtts.SetErrorMessage("Chosen pick did not intersect surface.");
+            pickAtts.SetErrorMessage("Pick could not retrieve the requested "
+              "information, possibly due to a bad expression in its variables "
+              "list. Please check the requested variables list and try again.");
         }
     }
 }

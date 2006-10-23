@@ -5692,7 +5692,7 @@ _ACEOF
     # Check for SYSV versus BSD style pseudo-ttys
     echo "$as_me:$LINENO: checking for SYSV vs BSD style ptys" >&5
 echo $ECHO_N "checking for SYSV vs BSD style ptys... $ECHO_C" >&6
-    if test "$UNAME" = "Linux" || test "$UNAME" = "AIX" || test "$UNAME" = "Darwin"; then
+    if test "$UNAME" = "AIX" || test "$UNAME" = "Darwin"; then
         echo "$as_me:$LINENO: result: BSD" >&5
 echo "${ECHO_T}BSD" >&6
     else

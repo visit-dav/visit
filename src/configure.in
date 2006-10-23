@@ -625,6 +625,12 @@ dnl    Made it handle situation where there was a libsiloh5.a but not also
 dnl    a libsilo.a in the DEFAULT_SILO_LIBRARY directory. Previously, it
 dnl    would attempt to find there a libsilo.a and if not, fail to correctly
 dnl    set SILO_LIB variable.
+dnl
+dnl    Eric Brugger, Mon Oct 23 13:26:26 PDT 2006
+dnl    Modified the test that determines wether to use BSD or SYSV pseudo
+dnl    terminals to use the normal test instead of assuming it is BSD on
+dnl    Linux.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1434,7 +1440,7 @@ if test "$USE_PTY" = "yes"; then
 
     # Check for SYSV versus BSD style pseudo-ttys
     AC_MSG_CHECKING(for SYSV vs BSD style ptys)
-    if test "$UNAME" = "Linux" || test "$UNAME" = "AIX" || test "$UNAME" = "Darwin"; then
+    if test "$UNAME" = "AIX" || test "$UNAME" = "Darwin"; then
         AC_MSG_RESULT(BSD)
     else
         AC_TRY_LINK([#include <stdlib.h>], grantpt(0),
