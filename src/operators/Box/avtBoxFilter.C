@@ -815,11 +815,19 @@ avtBoxFilter::RectilinearExecute(vtkRectilinearGrid *in_ds)
 //  Programmer: Hank Childs
 //  Creation:   November 13, 2001
 //
+//  Modifications:
+//    Kathleen Bonnell,
+//    Ensure that Zones and Nodes are invalidated, regardless of dimension.
+// 
 // ****************************************************************************
 
 void
 avtBoxFilter::RefashionDataObjectInfo(void)
 {
+    // Zone and node numberings will change
+    GetOutput()->GetInfo().GetValidity().InvalidateZones();
+    GetOutput()->GetInfo().GetValidity().InvalidateNodes();
+
     avtDataAttributes &a = GetOutput()->GetInfo().GetAttributes();
     avtExtents *exts = a.GetEffectiveSpatialExtents();
     if (exts->GetDimension() != 3)
@@ -837,8 +845,6 @@ avtBoxFilter::RefashionDataObjectInfo(void)
     bounds[4] = atts.GetMinz();
     bounds[5] = atts.GetMaxz();
     exts->Set(bounds);
-
-    GetOutput()->GetInfo().GetValidity().InvalidateZones();
 }
 
 // ****************************************************************************

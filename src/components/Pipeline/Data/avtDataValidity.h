@@ -102,6 +102,9 @@ class     avtDataObjectWriter;
 //    Kathleen Bonnell, Thu Mar  2 14:04:06 PST 2006 
 //    Added ZonesSplit() and GetOriginalZonesIntact().
 //
+//    Kathleen Bonnell, Thu Oct 26 09:17:08 PDT 2006 
+//    Added InvalidateNodes and GetNodesPreserved.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataValidity
@@ -136,7 +139,13 @@ class PIPELINE_API avtDataValidity
                                    { zonesPreserved = false; };
     bool                     GetZonesPreserved(void) const
                                    { return zonesPreserved; };
-
+    // 
+    //  Indicates that node numberings have changed. 
+    // 
+    void                     InvalidateNodes(void)
+                                   { nodesPreserved = false; };
+    bool                     GetNodesPreserved(void) const
+                                   { return nodesPreserved; };
     // 
     //  This has more to do with zone being split, by
     //  clipping, slicing, etc.
@@ -217,6 +226,7 @@ class PIPELINE_API avtDataValidity
 
   protected:
     bool                     zonesPreserved;
+    bool                     nodesPreserved;
     bool                     originalZonesIntact;
     bool                     spatialMetaDataPreserved;
     bool                     dataMetaDataPreserved;
