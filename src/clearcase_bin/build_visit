@@ -1,0 +1,961 @@
+#!/bin/ksh
+# *****************************************************************************
+#   Script: build_visit
+#
+#   Purpose:
+#       A script that performs a complete build of VisIt and its support
+#       libraries.  The script will detect if support libraries have already
+#       been built and, if so, use those pre-built libraries.
+#
+#   Warning:
+#       This script is only expected to work for Linux systems.  If you need
+#       to build VisIt for another platform, you should consult the
+#       BUILD_NOTES that come with the VisIt source.  That document contains
+#       instructions on how to build VisIt and its third party libraries.
+#
+#   This script has been tested and is known to work with the following OS/
+#   compiler combinations:
+#
+#	OS	Hardware	Compiler	Machine
+#	-----	--------	--------	-------
+#       RHEL3,	x86,		GCC 3.4.6	staples.llnl.gov
+#       RHEL3, 	x86,		GCC 3.2.3	hoth.llnl.gov
+#       CHAOS, 	x86_64,		GCC 3.4.5	vertex.llnl.gov
+#       CHAOS,	ia64, 		GCC 3.4.5	thunder.llnl.gov
+#       SuSE,   x86_64,		GCC 4.0.2	antares.lbl.gov
+#       SuSE,   x86_64,		GCC 4.1.0	octagon.lbl.gov
+#
+#   It is believed that this script will also work with other Linux variations.
+#   Please send feedback to visit-help@llnl.gov if you run into problems 
+#   so that this script can be improved in the future.  If you have built
+#   VisIt using this script on an OS/hardware/compiler combination not listed
+#   above, please send a note to visit-help@llnl.gov, so we can add that
+#   information to the script.
+#
+#   Setup:
+#       This script assumes you have downloaded the VisIt source code and 
+#       the necessary third party libraries and that they are placed in the
+#       current directory.  If it does not locate these libraries, it will
+#       fail immediately.
+#       You must have:
+#          Qt		qt-x11-free-3.3.2.tar.gz
+#          Mesa		Mesa-5.0-mangled.tar
+#          Python	Python-2.1.2.tar
+#          VTK		vtk-5.0.0a.tar
+#          CMake	cmake-2.2.3.tar
+#          Silo		silo060605.sh          
+#
+#   Layout:
+#     Section 1:                    setting up inputs/environment variables
+#     Function 1, check_files:      ensures input files are available
+#     Function 2, build_mesa:       build mangled Mesa
+#     Function 3, build_qt:         build Qt
+#     Function 4, build_cmake:      build CMake (like configure, for VTK)
+#     Function 5, build_vtk:        build VTK
+#     Function 6, build_python:     build Python
+#     Function 7, build_silo:       build Silo
+#     Function 8, build_visit:      build the VisIt source code
+#     Section 2:                    oversees build process (calls Functions 1-8)
+#
+#   Programmer: Hank Childs (with large portions borrowed from BUILD_NOTES,
+#                            which is maintained by Eric Brugger)
+#   Creation:   October 21, 2006
+#
+# *****************************************************************************
+
+
+# *************************************************************************** #
+#                       Section 1, setting up inputs                          #
+# --------------------------------------------------------------------------- #
+# This section sets up the inputs to the VisIt script.  This is where you can #
+# specify which compiler to use, which versions of the third party libraries, #
+# etc.  Note that this script is really only known to work with gcc.          #
+# *************************************************************************** #
+
+export THIRD_PARTY_LOCATION="./visit"
+export ARCH="Linux"  # You can change this to say RHEL, SuSE, Fedora, etc.
+export C_COMPILER="gcc"
+export CPP_COMPILER="g++"
+export C_OPT_FLAGS="-O2"
+export CPP_OPT_FLAGS="-O2"
+
+export QT_PLATFORM="linux-g++"
+if [[ "$(uname -m)" == "x86_64" ]] ; then
+   C_OPT_FLAGS="$C_OPT_FLAGS -m64 -fPIC"
+   CPP_OPT_FLAGS="$CPP_OPT_FLAGS -m64 -fPIC"
+   QT_PLATFORM="linux-g++-64"
+fi
+if [[ "$(uname -m)" == "ia64" ]] ; then
+   C_OPT_FLAGS="$C_OPT_FLAGS -fPIC"
+   CPP_OPT_FLAGS="$CPP_OPT_FLAGS -fPIC"
+   QT_PLATFORM="linux-g++-64"
+fi
+
+#
+# OPTIONS
+#
+export DO_HDF5="no"    # "yes" or "no"
+export DO_SILO="yes"   # "yes" or "no"
+parallel="no"
+
+#
+# TARBALL LOCATIONS AND VERSIONS
+#
+export VISIT_FILE="visit060918.tar"
+
+export VTK_FILE="vtk-5.0.0a.tar"
+export VTK_VERSION="5.0.0a"
+export CMAKE_FILE="cmake-2.2.3.tar"
+export CMAKE_VERSION="2.2.3"
+
+export MESA_FILE="Mesa-5.0-mangled.tar"
+export MESA_VERSION="5.0"
+export MESA_DIR="Mesa-5.0"  # The directory contained in the tarball
+export MESA_TARGET="linux"
+
+export PYTHON_FILE="Python-2.1.2.tar"
+export PYTHON_VERSION="2.1.2"
+
+export QT_FILE="qt-x11-free-3.3.2.tar"
+export QT_VERSION="3.3.2"
+
+export SILO_FILE="silo060605.sh"
+export SILO_VERSION="4.5.1"
+
+
+# *************************************************************************** #
+#                         Function 1, check_files                             #
+# --------------------------------------------------------------------------- #
+# This function will check to make sure that all of the necessary files       #
+# actually exist.                                                             #
+# *************************************************************************** #
+
+function check_files
+{
+    #
+    # VTK
+    #
+    HAVE_VTK_ALREADY="NO"
+    HAVE_VTK_TARBALL="NO"
+    if [[ -d $VISITDIR/vtk/$VTK_VERSION/$VISITARCH ]] ; then
+       HAVE_VTK_ALREADY="YES"
+    fi
+    if [[ -f $VTK_FILE || -f ${VTK_FILE}.gz ]] ; then
+       if [[ -f $CMAKE_FILE || -f ${CMAKE_FILE}.gz ]] ; then
+           HAVE_VTK_TARBALL="YES"
+       fi
+    fi
+    
+    if [[ "$HAVE_VTK_ALREADY" = "NO" && "$HAVE_VTK_TARBALL" = "NO" ]] ; then
+       echo "Unable to build VisIt.  VTK is not available."
+       return 1
+    fi
+    
+    #
+    # Mesa
+    #
+    HAVE_MESA_ALREADY="NO"
+    HAVE_MESA_TARBALL="NO"
+    if [[ -d $VISITDIR/mesa/$MESA_VERSION/$VISITARCH ]] ; then
+       HAVE_MESA_ALREADY="YES"
+    fi
+    if [[ -f $MESA_FILE || -f ${MESA_FILE}.gz ]] ; then
+       HAVE_MESA_TARBALL="YES"
+    fi
+    
+    if [[ "$HAVE_MESA_ALREADY" = "NO" && "$HAVE_MESA_TARBALL" = "NO" ]] ; then
+       echo "Unable to build VisIt.  Mesa is not available."
+       return 1
+    fi
+    
+    #
+    # Qt
+    #
+    HAVE_QT_ALREADY="NO"
+    HAVE_QT_TARBALL="NO"
+    if [[ -d $VISITDIR/qt/$QT_VERSION/$VISITARCH ]] ; then
+       HAVE_QT_ALREADY="YES"
+    fi
+    if [[ -f $QT_FILE || -f ${QT_FILE}.gz ]] ; then
+       HAVE_QT_TARBALL="YES"
+    fi
+    if [[ "$HAVE_QT_ALREADY" = "NO" && "$HAVE_QT_TARBALL" = "NO" ]] ; then
+       echo "Unable to build VisIt.  Qt is not available."
+       return 1
+    fi
+    
+    #
+    # Python
+    #
+    HAVE_PYTHON_ALREADY="NO"
+    HAVE_PYTHON_TARBALL="NO"
+    if [[ -d $VISITDIR/python/$PYTHON_VERSION/$VISITARCH ]] ; then
+       HAVE_PYTHON_ALREADY="YES"
+    fi
+    if [[ -f $PYTHON_FILE || -f ${PYTHON_FILE}.gz ]] ; then
+       HAVE_PYTHON_TARBALL="YES"
+    fi
+    
+    if [[ "$HAVE_PYTHON_ALREADY" = "NO" && "$HAVE_PYTHON_TARBALL" = "NO" ]] ; then
+       echo "Unable to build VisIt.  Python is not available."
+       return 1
+    fi
+    
+    #
+    # Silo
+    #
+    HAVE_SILO_ALREADY="NO"
+    HAVE_SILO_TARBALL="NO"
+    if [[ -d $VISITDIR/silo/$SILO_VERSION/$VISITARCH ]] ; then
+       HAVE_SILO_ALREADY="YES"
+    fi
+    if [[ -f $SILO_FILE || -f ${SILO_FILE}.gz ]] ; then
+       HAVE_SILO_TARBALL="YES"
+    fi
+
+    if [[ "$HAVE_SILO_ALREADY" = "NO" && "$HAVE_SILO_TARBALL" = "NO" ]] ; then
+       echo "Unable to build VisIt.  Silo is not available."
+       return 1
+    fi
+}
+
+
+# *************************************************************************** #
+#                          Function 2, build_mesa                             #
+# *************************************************************************** #
+
+function build_mesa
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    if [[ -f ${MESA_FILE}.gz ]] ; then
+       gunzip ${MESA_FILE}.gz
+       if [[ $? != 0 ]] ; then
+          echo "Unable to unzip ${MESA_FILE}.gz.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+
+    #
+    # Untar the file.
+    #
+    tar xf ${MESA_FILE}
+    if [[ $? != 0 ]] ; then
+       echo "Unable to untar $MESA_FILE.  Corrupted file or out of space on device?"
+       return 1
+    fi
+    
+    
+    #
+    # Build Mesa.
+    #
+    cd ${MESA_DIR}
+    echo "Invoking command to build Mangled Mesa"
+    make $MESA_TARGET
+    if [[ $? != 0 ]] ; then
+       echo "Mesa build failed.  Giving up"
+       return 1
+    fi
+    
+    
+    #
+    # Install into the VisIt third party location.
+    #
+    echo "Installing Mesa"
+    mkdir $VISITDIR/mesa
+    mkdir $VISITDIR/mesa/${MESA_VERSION}
+    mkdir $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH
+    mkdir $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/{include,lib}
+    mkdir $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/include/GL
+    cp include/GL/*.h $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/include/GL
+    cp lib/*.so $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib
+    echo "Done with Mesa"
+
+    return 0
+}
+
+
+# *************************************************************************** #
+#                          Function 3, build_qt                               #
+# *************************************************************************** #
+
+function build_qt
+{
+    echo "Beginning build of Qt"
+
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    if [[ -f ${QT_FILE}.gz ]] ; then
+       gunzip ${QT_FILE}.gz
+       if [[ $? != 0 ]] ; then
+          echo "Unable to unzip ${QT_FILE}.gz.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    #
+    # Untar the file.
+    #
+    echo "About to do an untar"
+    tar xf ${QT_FILE}
+    if [[ $? != 0 ]] ; then
+       echo "Unable to untar $QT_FILE.  Corrupted file or out of space on device?"
+       return 1
+    fi
+    echo "Done with untar"
+
+    #
+    # Set up environment variables for Qt.
+    #
+    QT_DIR=${QT_FILE%.tar}
+    cd ${QT_DIR}
+    export QTDIR=$PWD
+    export PATH=$QTDIR/bin:$PATH
+    export LD_LIBRARY_PATH=$QTDIR/lib:$LD_LIBRARY_PATH
+
+    #
+    # Check to see if we are going to have to issue a "-thread" flag.
+    #
+    THREAD=""
+    HAS_THREAD=$(./configure -help | grep threaded)
+    if [[ "$HAS_THREAD" != "" ]] ; then
+       THREAD="-thread"
+       echo "Adding threading option"
+    fi
+
+    #
+    # 64-bit Linux systems are often inconsistent about placing its X-libraries.
+    # Qt assumes that they are in the directory /usr/X11R6/lib64.  Some machines
+    # have them in /usr/X11R6/lib.  If they do, correct the qmake.conf file
+    # with this information.
+    #
+    if [[ "$QT_PLATFORM" == "linux-g++-64" ]] ; then
+       # By placing in environment variable, it removes extraneously whitespace,
+       # making "cut" command easier to form.
+       QT_X11DIR_TMP=$(cat mkspecs/${QT_PLATFORM}/qmake.conf | grep QMAKE_LIBDIR_X11)
+       QT_X11DIR=$(echo $QT_X11DIR_TMP | cut -d' ' -f3)
+       if [[ ! -d $QT_X11DIR ]] ; then
+          if [[ -d "/usr/X11R6/lib" ]] ; then
+             echo "Replacing Qt's X11 dir ($QT_X11DIR) with /usr/X11R6/lib"
+             # Convert all '/' to "\/" for later sed'ding
+             SED_STR1=$(echo $QT_X11DIR | sed 's/\//\\\//g')
+             cat mkspecs/${QT_PLATFORM}/qmake.conf | sed 's/'${SED_STR1}'/\/usr\/X11R6\/lib/g' > tmp.conf
+             mv -f mkspecs/${QT_PLATFORM}/qmake.conf mkspecs/${QT_PLATFORM}/qmake.conf.orig
+             mv -f tmp.conf mkspecs/${QT_PLATFORM}/qmake.conf
+          fi
+       fi
+    fi
+
+    if [[ "$HAS_THREAD" != "" ]] ; then
+       cat mkspecs/${QT_PLATFORM}/qmake.conf | sed 's/qt-mt/qt/g' > tmp.conf
+       mv -f mkspecs/${QT_PLATFORM}/qmake.conf mkspecs/${QT_PLATFORM}/qmake.conf.orig2
+       mv -f tmp.conf mkspecs/${QT_PLATFORM}/qmake.conf
+    fi
+
+    #
+    # Call configure
+    #
+    echo "yes" | ./configure -platform ${QT_PLATFORM} -shared -qt-libpng $THREAD
+    if [[ $? != 0 ]] ; then
+       echo "Qt configure failed.  Giving up"
+       return 1
+    fi
+    
+    #
+    # If we had to thread, then the libraries will have a "-mt" appended, which
+    # screws up other makefiles.  So modify the Makefile to remove the "-mt".
+    #
+    if [[ "$HAS_THREAD" != "" ]] ; then
+       cat src/Makefile | sed 's/qt-mt/qt/g' > Makefile.tmp
+       mv -f src/Makefile src/Makefile.orig
+       mv -f Makefile.tmp src/Makefile
+       cat tools/designer/uilib/Makefile | sed 's/qt-mt/qt/g' > Makefile2.tmp
+       mv -f tools/designer/uilib/Makefile tools/designer/uilib/Makefile.orig
+       mv -f Makefile2.tmp tools/designer/uilib/Makefile
+        
+    fi
+    
+    #
+    # Build Qt.  Issue only the targets that we need.
+    #
+    make symlinks src-qmake src-moc sub-src
+    if [[ $? != 0 ]] ; then
+       echo "Qt build failed.  Giving up"
+       return 1
+    fi
+    cd tools/designer/uilib
+    make
+    if [[ $? != 0 ]] ; then
+       echo "Qt build for libqui failed.  Giving up"
+       return 1
+    fi
+    cd ../../../
+    
+    #
+    # Install into the VisIt third party location.
+    #
+    echo "Installing Qt"
+    echo "Installing to directory $VISITDIR/qt"
+    mkdir $VISITDIR/qt
+    mkdir $VISITDIR/qt/${QT_VERSION}
+    mkdir $VISITDIR/qt/${QT_VERSION}/$VISITARCH
+    mkdir $VISITDIR/qt/${QT_VERSION}/$VISITARCH/{bin,include,lib}
+    mkdir $VISITDIR/qt/${QT_VERSION}/$VISITARCH/include/private 
+    cp bin/{designer,findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/${QT_VERSION}/$VISITARCH/bin
+    cd include; cp *.h $VISITDIR/qt/${QT_VERSION}/$VISITARCH/include
+    cp private/*.h $VISITDIR/qt/${QT_VERSION}/$VISITARCH/include/private
+    cd ../lib;find . -print | cpio -pvmud $VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib
+    cd ../..
+    echo "Done with Qt"
+}
+
+
+# *************************************************************************** #
+#                          Function 4, build_cmake                            #
+# *************************************************************************** #
+
+function build_cmake
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    if [[ -f ${CMAKE_FILE}.gz ]] ; then
+       gunzip ${CMAKE_FILE}.gz
+       if [[ $? != 0 ]] ; then
+          echo "Unable to unzip ${CMAKE_FILE}.gz.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    #
+    # Untar the file.
+    #
+    tar xf ${CMAKE_FILE}
+    if [[ $? != 0 ]] ; then
+       echo "Unable to untar $CMAKE_FILE.  Corrupted file or out of space on device?"
+       return 1
+    fi
+
+    #
+    # Issue "bootstrap", which takes the place of configure for CMake.
+    #
+    CMAKE_DIR=${CMAKE_FILE%.tar}
+    cd ${CMAKE_DIR}
+    env CXXFLAGS="" CFLAGS="" ./bootstrap
+    if [[ $? != 0 ]] ; then
+       echo "Bootstrap for cmake failed, giving up."
+       return 1
+    fi
+
+    #
+    # Build the CMake program.
+    #
+    make
+    if [[ $? != 0 ]] ; then
+       echo "Cannot build cmake, giving up."
+       return 1
+    fi
+
+    print "Successfully built CMake"
+    cd ..
+}
+
+
+# *************************************************************************** #
+#                            Function 5, build_vtk                            #
+# *************************************************************************** #
+
+function build_vtk
+{
+    #
+    # CMake is the build system for VTK.  Call another script that will build
+    # that program.
+    #
+    build_cmake
+    if [[ $? != 0 ]] ; then
+       echo "Unable to build cmake.  Giving up"
+       return 1
+    fi
+    
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    if [[ -f ${VTK_FILE}.gz ]] ; then
+       gunzip ${VTK_FILE}.gz
+       if [[ $? != 0 ]] ; then
+          echo "Unable to unzip ${VTK_FILE}.gz.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    #
+    # Untar the file.
+    #
+    tar xf ${VTK_FILE}
+    if [[ $? != 0 ]] ; then
+       echo "Unable to untar $VTK_FILE.  Corrupted file or out of space on device?"
+       return 1
+    fi
+
+    #
+    # Execute CMake, which will set up the Makefiles for VTK.  (like configure)
+    #
+    cd VTK
+    CMAKE_DIR=../${CMAKE_FILE%.tar}/bin/
+    ${CMAKE_DIR}/cmake \
+     -DBUILD_SHARED_LIBS:BOOL=ON\
+     -DBUILD_TESTING:BOOL=OFF\
+     -DUSE_ANSI_STD_LIB:BOOL=ON\
+     -DVTK_USE_MANGLED_MESA:BOOL=ON\
+     -DVTK_USE_HYBRID:BOOL=ON\
+     -DCMAKE_CXX_FLAGS:STRING=${CPP_OPT_FLAGS}\
+     -DCMAKE_CXX_COMPILER:STRING=${CPP_COMPILER}\
+     -DCMAKE_C_FLAGS:STRING=${C_OPT_FLAGS}\
+     -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\  -DMANGLED_MESA_INCLUDE_DIR:PATH=$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include\  -DMANGLED_MESA_LIBRARY:FILEPATH=$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.so\  -DMANGLED_OSMESA_INCLUDE:PATH=$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include\  -DMANGLED_OSMESA_LIBRARY:FILEPATH=$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.so\
+     .
+
+    if [[ $? != 0 ]] ; then
+       echo "Cannot get CMAKE to create the makefiles.  Giving up."
+       return 1
+    fi
+
+    #
+    # Now build VTK.
+    #
+    make
+    if [[ $? != 0 ]] ; then
+       echo "VTK did not build correctly.  Giving up."
+       return 1
+    fi
+
+    #
+    # Install into the VisIt third party location.
+    #
+    
+    # Save off this directory for later
+    cd MangleMesaInclude
+    export BAD_MESA=$PWD
+    cd ..
+
+    echo "Installing VTK"
+    mkdir $VISITDIR/vtk
+    mkdir $VISITDIR/vtk/${VTK_VERSION}
+    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH
+    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/{Common,Filtering,GenericFiltering,Graphics,Hybrid,IO,Imaging,MangleMesaInclude,Rendering,Utilities,VolumeRendering,lib,vtkstd,Utilities/vtktiff,Utilities/vtkexpat,Utilities/vtkzlib}
+    cp vtkConfigure.h                   $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH
+    cp vtkToolkits.h                    $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH
+    cp vtk*Instantiator.h               $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH
+    cp Common/*.h                       $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Common
+    cp Common/*.txx                     $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Common
+    cp Filtering/*.h                    $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Filtering
+    cp Filtering/*.txx                  $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Filtering
+    cp GenericFiltering/*.h             $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/GenericFiltering
+    cp Graphics/*.h                     $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Graphics
+    cp Hybrid/*.h                       $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Hybrid
+    cp IO/*.h                           $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/IO
+    cp Imaging/*.h                      $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Imaging
+    cp Rendering/*.h                    $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Rendering
+    cp Utilities/*.h                    $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities
+    cp Utilities/vtktiff/*.h            $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtktiff
+    cp Utilities/vtkexpat/*.h           $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkexpat
+    cp Utilities/vtkzlib/*.h            $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkzlib
+    cp VolumeRendering/*.h              $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/VolumeRendering
+    cp MangleMesaInclude/*.h            $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude
+    cp vtkstd/*                         $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/vtkstd
+    cp -d bin/*.so*                     $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib
+    
+    #
+    # The MangleMesa headers have absolute paths.  Correct these headers now for
+    # the new location they have been copied into.
+    #
+    cd $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude 
+    SED_STR1=$(echo $BAD_MESA | sed 's/\//\\\//g')  
+    # Converts all '/' to "\/" for later sed'ding 
+    SED_STR2=$(echo $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude | sed 's/\//\\\//g')
+    for i in *.h ; do
+       cat $i | sed 's/'${SED_STR1}'/'${SED_STR2}'/g' > tmp.h
+       mv -f tmp.h $i
+    done
+    echo "Done with VTK"
+}
+
+
+# *************************************************************************** #
+#                         Function 6, build_python                            #
+# *************************************************************************** #
+
+function build_python
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    if [[ -f ${PYTHON_FILE}.gz ]] ; then
+       gunzip ${PYTHON_FILE}.gz
+       if [[ $? != 0 ]] ; then
+          echo "Unable to unzip ${PYTHON_FILE}.gz.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    #
+    # Untar the file.
+    #
+    tar xf ${PYTHON_FILE}
+    if [[ $? != 0 ]] ; then
+       echo "Unable to untar $PYTHON_FILE.  Corrupted file or out of space on device?"
+       return 1
+    fi
+
+    #
+    # Call configure
+    #
+    PYTHON_DIR=${PYTHON_FILE%.tar}
+    cd ${PYTHON_DIR}
+    echo "Invoking command to build Python"
+    env OPT="$C_OPT_FLAGS" ./configure --prefix=$VISITDIR/python/$VISITARCH
+    if [[ $? != 0 ]] ; then
+       echo "Python configure failed.  Giving up"
+       return 1
+    fi
+
+    #
+    # Build Python.
+    #
+    make
+    if [[ $? != 0 ]] ; then
+       echo "Python build failed.  Giving up"
+       return 1
+    fi
+    make install
+    if [[ $? != 0 ]] ; then
+       echo "Python build (make install) failed.  Giving up"
+       return 1
+    fi
+
+    #
+    # Create a shared library and copy that to the third party install location
+    #
+    echo "Creating shared library"
+    mkdir tmpdir
+    cd tmpdir
+    ar -x ../libpython2.1.a
+    g++ -shared -o ../libpython2.1.so *.o
+    cd ..
+    rm -rf tmpdir
+    cp libpython2.1.so $VISITDIR/python/$VISITARCH/lib/python2.1/config/libpython2.1.so
+    cd ..
+    echo "Done with Python"
+}
+
+
+# *************************************************************************** #
+#                            Function 7, build_silo                           #
+# *************************************************************************** #
+
+function build_silo
+{
+    #
+    # Run the shell script that effectively "untars" Silo.
+    #
+    sh ${SILO_FILE}
+    if [[ $? != 0 ]] ; then
+       echo "Unable to run Silo script.  Corrupted file or out of space on device?"   return 1
+    fi
+
+    #
+    # Call configure
+    #
+    SILO_DIR=${SILO_FILE%.sh}
+    cd ${SILO_DIR}
+    echo "Invoking command to configure Silo"
+    env CXX="$CPP_COMPILER" CC="$C_COMPILER" CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CPP_OPT_FLAGS" ./configure --without-readline --without-hdf5 --without-exodus
+    if [[ $? != 0 ]] ; then
+       echo "Silo configure failed.  Giving up"
+       return 1
+    fi
+
+    #
+    # Build Silo
+    #
+    echo "Building Silo"
+    make
+    if [[ $? != 0 ]] ; then
+       echo "Silo build failed.  Giving up"
+       return 1
+    fi
+
+    #
+    # Install into the VisIt third party location.
+    #
+    echo "Installing Silo"
+    mkdir $VISITDIR/silo
+    mkdir $VISITDIR/silo/${SILO_VERSION}
+    mkdir $VISITDIR/silo/${SILO_VERSION}/$VISITARCH
+    mkdir $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/{include,lib}
+    cp silo/silo/silo.{h,inc}   $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include
+    cp silo/sdx/sdx.{h,inc}     $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include
+    cp lib/libsilo.a            $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib
+    cd ..
+    echo "Done with Silo"
+}
+
+
+# *************************************************************************** #
+#                          Function 8, build_visit                            #
+# *************************************************************************** #
+
+function build_visit
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    if [[ -f ${VISIT_FILE}.gz ]] ; then
+       gunzip ${VISIT_FILE}.gz
+       if [[ $? != 0 ]] ; then
+          echo "Unable to unzip ${VISIT_FILE}.gz.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    #
+    # Untar the file.
+    #
+    tar xf ${VISIT_FILE}
+    if [[ $? != 0 ]] ; then
+       echo "Unable to untar $VISIT_FILE.  Corrupted file or out of space on device?"
+       return 1
+    fi
+
+    #
+    # Set up the config-site file, which gives configure the information it
+    # needs about the third party libraries.
+    #
+    VISIT_DIR=${VISIT_FILE%.tar}
+    cd ${VISIT_DIR}
+    cd config-site
+    echo VISITHOME=$VISITDIR > `hostname`.conf
+    sed "s/ARCH/$VISITARCH/" Template.conf >> `hostname`.conf
+    cd ..
+
+    #
+    # Set up environment variables for the configure step.
+    #
+    PARFLAGS=""
+    if [[ "$parallel" = "yes" ]] ; then
+       PARFLAGS="--enable-parallel"
+    fi
+    
+    QTDIR=""
+
+    #
+    # Call configure
+    # 
+    env CC="$C_COMPILER" CXX="$CPP_COMPILER" CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CPP_OPT_FLAGS" ./configure ${PARFLAGS}
+    if [[ $? != 0 ]] ; then
+       echo "VisIt configure failed.  Giving up"
+       return 1
+    fi
+
+    #
+    # Build VisIt
+    #
+    make
+    if [[ $? != 0 ]] ; then
+       echo "VisIt build failed.  Giving up"
+       return 1
+    fi
+    print "All indications are that VisIt successfully built."
+}
+
+
+# *************************************************************************** #
+#                       Section 2, building VisIt                             #
+# --------------------------------------------------------------------------- #
+# This section does some set up for building VisIt, and then calls the        #
+# functions to build the third party libraries and VisIt itself.              #
+# *************************************************************************** #
+
+export THIRD_PARTY_LOCATION="./visit"
+export ARCH="Linux"  # You can change this to say RHEL, SuSE, Fedora, etc.
+export VISITARCH=${ARCH}_${C_COMPILER}-${COMPILER}
+if [[ "$CPP_COMPILER" == "g++" ]] ; then
+   VERSION=$(g++ -v 2>&1 | grep version | cut -d' ' -f3)
+   if [[ ${#VERSION} == 5 ]] ; then
+      VISITARCH=${VISITARCH}${VERSION}
+   fi
+fi
+
+if [[ ! -d $THIRD_PARTY_LOCATION ]] ; then
+   if [[ "$THIRD_PARTY_LOCATION" == "./visit" ]] ; then
+      mkdir $THIRD_PARTY_LOCATION
+      if [[ $? != 0 ]] ; then
+          echo "Unable to write files to the third party library location."
+          echo "Bailing out."
+          exit 1
+      fi
+   else
+      echo "The location to install the third party libraries is not valid."
+      echo "Bailing out"
+      exit 1
+   fi
+fi
+
+
+START_DIR=$PWD
+cd $THIRD_PARTY_LOCATION
+if [[ $? != 0 ]] ; then
+   echo "Unable to access the third party location"
+   echo "Bailing out."
+   exit 1
+fi
+export VISITDIR=$PWD
+cd $START_DIR
+
+#
+# Now make sure that we have everything we need to build VisIt, so we can bail
+# out early if we are headed for failure.
+#
+check_files
+
+
+#
+# Later we will build Qt.  We are going to bypass their licensing agreement,
+# so echo it here.
+#
+echo "During this build process, this script will build Qt.  When Qt is "
+echo "built, this script confirms that you accept their license."
+echo "So please type \"yes\" to accept (in advance) their license "
+echo "offer for the Qt/X11 Free Edition, licensed under the Q Public License"
+echo "(QPL) or the GNU General Public License (GPL)"
+read RESPONSE
+while [[ "$RESPONSE" != "yes" ]] ; do
+   echo "Please type \"yes\" to accept their license offer for the "
+   echo "Qt/X11 Free Edition, licensed under the Q Public License (QPL) "
+   echo "or the GNU General Public License (GPL)"
+   read RESPONSE
+done
+
+
+#
+# Log the start time.  Especially helpful if there are multiple starts
+# dumped into the same log.
+#
+LINES="------------------------------------------------------------" 
+echo $LINES >> build_visit_log
+echo -n "Starting build_visit at " >> build_visit_log
+date >> build_visit_log
+echo $LINES >> build_visit_log
+
+
+#
+# We are now ready to build.  Start with Mesa.
+#
+cd $START_DIR
+if [[ -d $VISITDIR/mesa/$MESA_VERSION/$VISITARCH ]] ; then
+   echo "Skipping Mesa build.  Mesa is already installed."
+else
+   echo "Building Mesa"
+   build_mesa >> build_visit_log 2>&1
+   if [[ $? != 0 ]] ; then
+      echo "Unable to build or install Mesa.  Bailing out."
+      echo "More information about the failed build can be found in \"build_visit_log\""
+      exit 1
+   fi
+   echo "Done building Mesa"
+fi
+
+
+#
+# Build Qt
+#
+cd $START_DIR
+if [[ -d $VISITDIR/qt/$QT_VERSION/$VISITARCH ]] ; then
+   echo "Skipping Qt build.  Qt is already installed."
+else
+   echo "Building Qt"
+   build_qt >> build_visit_log 2>&1
+   if [[ $? != 0 ]] ; then
+      echo "Unable to build or install Qt.  Bailing out."
+      echo "More information about the failed build can be found in \"build_visit_log\""
+      exit 1
+   fi
+   echo "Done building Qt"
+fi
+
+
+#
+# Build VTK
+#
+cd $START_DIR
+if [[ -d $VISITDIR/vtk/$VTK_VERSION/$VISITARCH ]] ; then
+   echo "Skipping VTK build.  VTK is already installed."
+else
+   echo "Building VTK"
+   build_vtk >> build_visit_log 2>&1
+   if [[ $? != 0 ]] ; then
+      echo "Unable to build or install VTK.  Bailing out."
+      echo "More information about the failed build can be found in \"build_visit_log\""
+      exit 1
+   fi
+   echo "Done building VTK"
+fi
+
+
+#
+# Build Python
+#
+cd $START_DIR
+if [[ -d $VISITDIR/python/$VISITARCH ]] ; then
+   echo "Skipping Python build.  Python is already installed."
+else
+   echo "Building Python"
+   build_python >> build_visit_log 2>&1
+   if [[ $? != 0 ]] ; then
+      echo "Unable to build or install Python.  Bailing out."
+      echo "More information about the failed build can be found in \"build_visit_log\""
+      exit 1
+   fi
+   echo "Done building Python"
+fi
+
+
+#
+# Build Silo
+#
+cd $START_DIR
+if [[ -d $VISITDIR/silo/${SILO_VERSION}/$VISITARCH ]] ; then
+   echo "Skipping Silo build.  Silo is already installed."
+else
+   echo "Building Silo"
+   build_silo >> build_visit_log 2>&1
+   if [[ $? != 0 ]] ; then
+      echo "Unable to build or install Silo.  Bailing out."
+      echo "More information about the failed build can be found in \"build_visit_log\""
+      exit 1
+   fi
+   echo "Done building Silo"
+fi
+
+
+#
+# Build the actual VisIt code
+#
+cd $START_DIR
+echo "Building VisIt"
+build_visit >> build_visit_log 2>&1
+if [[ $? != 0 ]] ; then
+   echo "Unable to build or install VisIt.  Bailing out."
+   echo "More information about the failed build can be found in \"build_visit_log\""
+   exit 1
+fi
+echo "Done building VisIt"
+
+echo "You may now try to run VisIt by cd'ing into the ${VISIT_FILE%.tar}/bin "
+echo "directory and invoking \"visit\"."
+echo "If you run into problems, contact visit-help@llnl.gov"
+
+exit 0
+
