@@ -61,6 +61,14 @@
 #                            which is maintained by Eric Brugger)
 #   Creation:   October 21, 2006
 #
+#   Modifications:
+#
+#     Hank Childs, Mon Oct 30 17:18:24 PST 2006
+#     Fixed two bugs: (1) forgot to check return value of function that checks
+#     to make sure third party libraries are there.  (2) construction of
+#     "visit-arch" string involved undefined variable, which caused problems
+#     on some platforms.
+#
 # *****************************************************************************
 
 
@@ -132,6 +140,7 @@ export SILO_VERSION="4.5.1"
 
 function check_files
 {
+    rv=0
     #
     # VTK
     #
@@ -148,7 +157,7 @@ function check_files
     
     if [[ "$HAVE_VTK_ALREADY" = "NO" && "$HAVE_VTK_TARBALL" = "NO" ]] ; then
        echo "Unable to build VisIt.  VTK is not available."
-       return 1
+       rv=1
     fi
     
     #
@@ -165,7 +174,7 @@ function check_files
     
     if [[ "$HAVE_MESA_ALREADY" = "NO" && "$HAVE_MESA_TARBALL" = "NO" ]] ; then
        echo "Unable to build VisIt.  Mesa is not available."
-       return 1
+       rv=1
     fi
     
     #
@@ -181,7 +190,7 @@ function check_files
     fi
     if [[ "$HAVE_QT_ALREADY" = "NO" && "$HAVE_QT_TARBALL" = "NO" ]] ; then
        echo "Unable to build VisIt.  Qt is not available."
-       return 1
+       rv=1
     fi
     
     #
@@ -198,7 +207,7 @@ function check_files
     
     if [[ "$HAVE_PYTHON_ALREADY" = "NO" && "$HAVE_PYTHON_TARBALL" = "NO" ]] ; then
        echo "Unable to build VisIt.  Python is not available."
-       return 1
+       rv=1
     fi
     
     #
@@ -215,8 +224,14 @@ function check_files
 
     if [[ "$HAVE_SILO_ALREADY" = "NO" && "$HAVE_SILO_TARBALL" = "NO" ]] ; then
        echo "Unable to build VisIt.  Silo is not available."
+       rv=1
+    fi
+
+    if [[ $rv != 0 ]] ; then
        return 1
     fi
+
+    return 0
 }
 
 
@@ -780,11 +795,11 @@ function build_visit
 
 export THIRD_PARTY_LOCATION="./visit"
 export ARCH="Linux"  # You can change this to say RHEL, SuSE, Fedora, etc.
-export VISITARCH=${ARCH}_${C_COMPILER}-${COMPILER}
+export VISITARCH=${ARCH}_${C_COMPILER}
 if [[ "$CPP_COMPILER" == "g++" ]] ; then
    VERSION=$(g++ -v 2>&1 | grep version | cut -d' ' -f3)
    if [[ ${#VERSION} == 5 ]] ; then
-      VISITARCH=${VISITARCH}${VERSION}
+      VISITARCH=${VISITARCH}-${VERSION}
    fi
 fi
 
@@ -819,6 +834,10 @@ cd $START_DIR
 # out early if we are headed for failure.
 #
 check_files
+if [[ $? != 0 ]] ; then
+   echo "Stopping build because third party libraries aren't available."
+   exit 1
+fi
 
 
 #
