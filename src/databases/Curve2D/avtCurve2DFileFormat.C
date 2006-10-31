@@ -49,6 +49,9 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkVisItUtility.h>
 
+#include <snprintf.h>
+
+#include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
 
 #include <DebugStream.h>
@@ -274,11 +277,34 @@ avtCurve2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
 //    Save DataExtents. 
 //
+//    Mark C. Miller, Tue Oct 31 20:33:29 PST 2006
+//    Replaced Exception on INVALID_POINT with warning macro.
+//    Added VALID_XVALUE for case where X but no Y is given at the END of
+//    a curve specification and interpreted it as a "zone-centered" curve.
+//    Added logic to re-center curve for the "zone-centered" case
 // ****************************************************************************
+
+#define INVALID_POINT_WARNING(X)                                        \
+{                                                                       \
+    char msg[512] = "Further warnings will be supressed";               \
+    if (invalidPointCount++ < 6)                                        \
+    {                                                                   \
+        SNPRINTF(msg, sizeof(msg),"Encountered invalid point "          \
+            "at or near line %d beginning with \"%s\"",                 \
+            lineCount, lineName.c_str());                               \
+    }                                                                   \
+    if (!avtCallback::IssueWarning(msg))                                \
+        cerr << msg << endl;                                            \
+    xl.push_back(X);                                                    \
+    yl.push_back(yl[yl.size()-1]);                                      \
+    breakpoint_following.push_back(false);                              \
+}
 
 void
 avtCurve2DFileFormat::ReadFile(void)
 {
+    int invalidPointCount = 0;
+    int lineCount = 1;
     ifstream ifile(filename.c_str());
 
     if (ifile.fail())
@@ -295,9 +321,13 @@ avtCurve2DFileFormat::ReadFile(void)
     vector<float> yl;
     vector<bool>  breakpoint_following;
     vector<int>   cutoff;
+    vector<avtCentering> centering;
+    avtCentering useCentering = AVT_NODECENT;
     string  headerName = "";
     curveTime = INVALID_TIME;
     curveCycle = INVALID_CYCLE;
+    CurveToken lastt = VALID_POINT;
+    float lastx;
     while (!ifile.eof())
     {
         float   x, y;
@@ -329,6 +359,7 @@ avtCurve2DFileFormat::ReadFile(void)
                 xl.push_back(x);
                 yl.push_back(y);
                 breakpoint_following.push_back(false);
+                useCentering = AVT_NODECENT;
             }
             break;
           }
@@ -365,6 +396,7 @@ avtCurve2DFileFormat::ReadFile(void)
             {
                 headerName = lineName;
             }
+            centering.push_back(useCentering);
             cutoff.push_back(xl.size());
             break;
           }
@@ -376,9 +408,29 @@ avtCurve2DFileFormat::ReadFile(void)
           }
           case INVALID_POINT:
           {
-            EXCEPTION1(InvalidFilesException, filename.c_str());
+              INVALID_POINT_WARNING(xl[xl.size()-1]);
+              break;
+          }
+          case VALID_XVALUE:
+          {
+              if (lastt == VALID_XVALUE)
+              {
+                  INVALID_POINT_WARNING(x);
+                  useCentering = AVT_NODECENT;
+              }
+              else
+              {
+                  xl.push_back(x);
+                  yl.push_back(yl[yl.size()-1]);
+                  breakpoint_following.push_back(false);
+                  useCentering = AVT_ZONECENT;
+              }
+              break;
           }
        }
+       lastt = t;
+       lastx = x;
+       lineCount++;
     }  
 
     // If we parsed a header not followed by data values, see if
@@ -407,11 +459,13 @@ avtCurve2DFileFormat::ReadFile(void)
             }
         }
     }
+
     //
     // Now we can construct the curve as vtkPolyData.
     //
     int start = 0;
-    cutoff.push_back(xl.size());  // Make logic easier.
+    cutoff.push_back(xl.size());       // Make logic easier.
+    centering.push_back(useCentering); //      ditto
     int curveIndex = 0;
     for (int i = 0 ; i < cutoff.size() ; i++)
     {
@@ -423,7 +477,7 @@ avtCurve2DFileFormat::ReadFile(void)
         //
         // Add all of the points to an array.
         //
-        int nPts = cutoff[i] - start;
+        int nPts = cutoff[i] - start - (centering[i] == AVT_NODECENT ? 0 : 1);
         vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(nPts,VTK_FLOAT);
  
         vtkFloatArray    *vals = vtkFloatArray::New();
@@ -441,7 +495,10 @@ avtCurve2DFileFormat::ReadFile(void)
         double dmax = -FLT_MAX;
         for (int j = 0 ; j < nPts ; j++)
         {
-            xc->SetComponent(j,  0, xl[start+j]);
+            if (centering[i] == AVT_NODECENT)
+                xc->SetComponent(j,  0, xl[start+j]);
+            else
+                xc->SetComponent(j,  0, (xl[start+j]+xl[start+j+1])/2.0);
             vals->SetValue(j, yl[start+j]);
             if (yl[start+j] < dmin)
                 dmin = yl[start+j];
@@ -509,6 +566,9 @@ avtCurve2DFileFormat::ReadFile(void)
 //    Hank Childs, Fri Jul 29 14:34:39 PDT 2005
 //    Add support for tabs.
 //
+//    Mark C. Miller, Tue Oct 31 20:33:29 PST 2006
+//    Added code to detect more closely possible errors from strtod.
+//    Added logic to handle VALID_XVALUE case.
 // ****************************************************************************
 
 CurveToken
@@ -573,20 +633,29 @@ avtCurve2DFileFormat::GetPoint(ifstream &ifile, float &x, float &y, string &ln)
     char *ystr = NULL;
 
     x = (float) strtod(line, &ystr);
-    if (ystr == NULL)
+    if (((x == 0.0) && (ystr == line)) || (errno == ERANGE))
     {
         return INVALID_POINT;
+    }
+    if (ystr == NULL)
+    {
+        return VALID_XVALUE;
     }
     ystr = strstr(ystr, " ");
     if (ystr == NULL || ystr == line)
     {
-        return INVALID_POINT;
+        return VALID_XVALUE;
     }
     
     // Get past the space.
     ystr++;
 
-    y = (float) strtod(ystr, NULL);
+    char *tmpstr;
+    y = (float) strtod(ystr, &tmpstr);
+    if (((y == 0.0) && (tmpstr == ystr)) || (errno == ERANGE))
+    {
+        return INVALID_POINT;
+    }
 
     ln = "";
     return VALID_POINT;

@@ -279,6 +279,10 @@ TimingsManager::Finalize()
 //
 //    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //    Moved bulk of code setting filename from constructor to here
+//
+//    Kathleen Bonnell, Tue Oct 31 16:38:28 PST 2006 
+//    Added different if-test for Windows platform. 
+//
 // ****************************************************************************
 
 void
@@ -291,7 +295,11 @@ TimingsManager::SetFilename(const std::string &fname)
     // Make sure that the filename includes the whole path so all .timings
     // files will be written to the right directory.
     //
+#if defined(_WIN32)
+    if (!(fname[0] == 'C' && fname[1] == ':'))
+#else
     if (fname[0] != SLASH_CHAR)
+#endif
     {
         char currentDir[1024];
 #if defined(_WIN32)
@@ -732,12 +740,17 @@ SystemTimingsManager::PlatformStartTimer(void)
 //
 //    Mark C. Miller, Tue Aug 15 20:20:58 PDT 2006
 //    Moved debug message from StopTimer to here 
+//
+//    Kathleen Bonnell, Tue Oct 31 16:38:28 PST 2006 
+//    Changed if-test since .size() returns UNSIGNED_INT on Windows platform,
+//    and if size is zero, subtracting 1 yields incorrect results. 
+//
 // ****************************************************************************
 
 double
 SystemTimingsManager::PlatformStopTimer(int index)
 {
-    if (index < 0 || index > values.size()-1)
+    if (index < 0 || index >= values.size())
     {
         debug1 << "Invalid timing index (" << index << ") specified." << endl;
         return 0.0;
@@ -796,12 +809,17 @@ MPITimingsManager::PlatformStartTimer(void)
 //
 //    Mark C. Miller, Tue Aug 15 20:20:58 PDT 2006
 //    Moved debug message from StopTimer to here 
+//
+//    Kathleen Bonnell, Tue Oct 31 16:38:28 PST 2006 
+//    Changed if-test since .size() returns UNSIGNED_INT on Windows platform,
+//    and if size is zero, subtracting 1 yields incorrect results. 
+//
 // ****************************************************************************
 
 double
 MPITimingsManager::PlatformStopTimer(int index)
 {
-    if (index < 0 || index > values.size()-1)
+    if (index < 0 || index >= values.size())
     {
         debug1 << "Invalid timing index (" << index << ") specified." << endl;
         return 0.0;
