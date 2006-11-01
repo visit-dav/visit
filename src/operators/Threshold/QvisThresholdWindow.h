@@ -88,6 +88,12 @@ class QvisVariableButton;
 //   preserved when viewer sends attributes that do not know about the changes.
 //   (See full explanation in header of RestoreAppropriateUnappliedAttributes.)
 //
+//   Mark Blair, Tue Oct 31 20:18:10 PST 2006
+//   Previous change undone.  Too much conflict when multiple vis windows in
+//   use.  All unapplied Threshold GUI changes are now lost if user dismisses
+//   then reopens GUI, or if user moves an arrowhead in Extents tool of a second
+//   vis window tool-locked to the Threshold operator's vis window.  Too bad.
+//
 // ****************************************************************************
 
 class QvisThresholdWindow : public QvisOperatorWindow
@@ -121,7 +127,10 @@ private slots:
 
 private:
     void                UpdateShownFields();
+
+/* No longer used --- see update comment above for 9/21/06
     void                RestoreAppropriateUnappliedAttributes();
+*/
 
     QButtonGroup        *outputMeshType;
     QButtonGroup        *zonePortion;
@@ -141,7 +150,10 @@ private:
     const QBitmap       *rightArrowBitmap;
 
     ThresholdAttributes *atts;
+
+/* No longer used --- see update comment above for 9/21/06
     ThresholdAttributes *guiVarAtts;
+*/
 };
 
 #endif

@@ -55,6 +55,7 @@ class     vtkRenderer;
 
 class     VisWindow;
 class     VisitInteractor;
+class     PlotInfoAttributes;
 
 
 // ****************************************************************************
@@ -139,6 +140,9 @@ class     VisitInteractor;
 //    Mark Blair, Tue Sep 26 11:32:36 PDT 2006
 //    Added ProxiedAxisAnnotationsEnabled.
 //
+//    Mark Blair, Wed Oct 25 15:12:55 PDT 2006
+//    Added ProxiedGetPlotInfoAtts.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowProtectionProxy
@@ -168,9 +172,10 @@ class VISWINDOW_API VisWindowProtectionProxy
     void                ProxiedGetViewport(double vport[4]);
     void                ProxiedGetSize(int &width, int &height) const;
     void                ProxiedGetWindowSize(int &width, int &height) const;
-    int                 ProxiedGetPlotListIndex(const char *plotName);
     void                ProxiedHasPlots(bool);
     bool                ProxiedHasPlots();
+    int                 ProxiedGetPlotListIndex(const char *plotName);
+    const PlotInfoAttributes *ProxiedGetPlotInfoAtts(const char *plotName);
     bool                ProxiedAxisAnnotationsEnabled();
     bool                ProxiedUpdatesEnabled();
     void                ProxiedDisableUpdates();

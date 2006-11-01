@@ -1,8 +1,6 @@
 #ifndef PARALLEL_AXIS_ATTRIBUTES_H
 #define PARALLEL_AXIS_ATTRIBUTES_H
 
-#define AXIS_VAR_DATA_FILE_NAME   "__AXIS_VARIABLE_DATA__"
-
 #define PCP_LEFT_AXIS_X_FRACTION          0.04
 #define PCP_RIGHT_AXIS_X_FRACTION         0.96
 #define PCP_H_BOTTOM_AXIS_Y_FRACTION      0.09
@@ -11,6 +9,16 @@
 #define PCP_V_TOP_AXIS_Y_FRACTION         0.88
 
 #define PCP_MAX_HORIZONTAL_TITLE_AXES     7
+
+#define PCP_DRAW_AXIS_TITLE               0x00000001
+#define PCP_DRAW_AXIS_LIMITS              0x00000002
+#define PCP_DRAW_EXTENTS_TOOL_LIMITS      0x00000004
+#define PCP_DRAW_ALL_LABELS              (PCP_DRAW_AXIS_TITLE          |       \
+                                          PCP_DRAW_AXIS_LIMITS         |       \
+                                          PCP_DRAW_EXTENTS_TOOL_LIMITS )
+
+#define PCP_LABELS_NOW_VISIBLE            0x00010000
+#define PCP_LABEL_VISIBILITY_SET_BY_USER  0x00020000
 
 #include <AttributeSubject.h>
 
@@ -32,6 +40,10 @@
 //   
 //    Mark Blair, Wed Sep 20 10:59:41 PDT 2006
 //    Added time ordinals, for those operators and tools that need them.
+//   
+//    Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//    Added attributes to support non-uniform axis spacing.  Also removed
+//    UpdateAxisBoundsIfPossible, since scratch file is no longer used.
 //   
 // ****************************************************************************
 
@@ -60,6 +72,10 @@ public:
     void SetExtentMaxima(const doubleVector &extentMaxima_);
     void SetExtMinTimeOrds(const intVector &extMinTimeOrds_);
     void SetExtMaxTimeOrds(const intVector &extMaxTimeOrds_);
+    void SetPlotDrawsAxisLabels(bool plotDrawsAxisLabels_);
+    void SetAxisGroupNames(const stringVector &axisGroupNames_);
+    void SetAxisLabelStates(const intVector &axisLabelStates_);
+    void SetAxisXIntervals(const doubleVector &axisXIntervals_);
 
     // Property changing methods
     void InsertAxis(const std::string &axisName_);
@@ -67,7 +83,6 @@ public:
     void SwitchToLeftAxis(const std::string &axisName_);
     void ShowPreviousAxisVariableData();
     void ShowNextAxisVariableData();
-    bool UpdateAxisBoundsIfPossible();
 
     // Property getting methods
     const stringVector          &GetOrderedAxisNames() const;
@@ -85,6 +100,10 @@ public:
     const doubleVector          &GetExtentMaxima() const;
     const intVector             &GetExtMinTimeOrds() const;
     const intVector             &GetExtMaxTimeOrds() const;
+    bool                         GetPlotDrawsAxisLabels() const;
+    const stringVector          &GetAxisGroupNames() const;
+    const intVector             &GetAxisLabelStates() const;
+    const doubleVector          &GetAxisXIntervals() const;
 
     // Property selection methods
     virtual void        SelectAll();
@@ -97,6 +116,10 @@ public:
     void                SelectExtentMaxima();
     void                SelectExtMinTimeOrds();
     void                SelectExtMaxTimeOrds();
+    void                SelectPlotDrawsAxisLabels();
+    void                SelectAxisGroupNames();
+    void                SelectAxisLabelStates();
+    void                SelectAxisXIntervals();
 
     // Python compatibility methods
     void                SetShownVarAxisPosition(int);
@@ -109,6 +132,9 @@ public:
     doubleVector       &GetExtentMaxima();
     intVector          &GetExtMinTimeOrds();
     intVector          &GetExtMaxTimeOrds();
+    stringVector       &GetAxisGroupNames();
+    intVector          &GetAxisLabelStates();
+    doubleVector       &GetAxisXIntervals();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -134,6 +160,10 @@ private:
     doubleVector        extentMaxima;
     intVector           extMinTimeOrds;
     intVector           extMaxTimeOrds;
+    bool                plotDrawsAxisLabels;
+    stringVector        axisGroupNames;
+    intVector           axisLabelStates;
+    doubleVector        axisXIntervals;
 };
 
 #endif

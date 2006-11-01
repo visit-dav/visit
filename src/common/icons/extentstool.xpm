@@ -27,7 +27,7 @@ static const char * extentstool_xpm[] = {
 "_      c #81E8FC",
 ":      c #5FB8FB",
 "<      c #54A4FD",
-"?      c #FF80C0",
+"?      c #FF0000",
 "   ...        ...        ...   ",
 "   ...      ???????      ...   ",
 "   ...       ?????       ...   ",

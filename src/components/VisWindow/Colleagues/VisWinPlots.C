@@ -618,6 +618,38 @@ VisWinPlots::GetPlotListIndex(const char *plotName)
 
 
 // ****************************************************************************
+//  Method: VisWinPlots::GetPlotInfoAtts
+//
+//  Purpose: If plot identified by name is among the plots for this VisWindow,
+//           returns pointer to any attributes that were pushed by that plot.
+//           Returns NULL if no such plot exists or if no attributes were
+//           pushed by the plot.
+//
+//  Arguments:
+//      plotName : Name (type name) of the plot being queried
+//
+//  Programmer: Mark Blair
+//  Creation:   Wed Oct 25 15:12:55 PDT 2006
+//
+// ****************************************************************************
+
+const PlotInfoAttributes *
+VisWinPlots::GetPlotInfoAtts(const char *plotName)
+{
+    int plotIndex;
+
+    for (plotIndex = 0; plotIndex < plots.size(); plotIndex++)
+    {
+        if (strcmp(plots[plotIndex]->GetTypeName(), plotName) == 0) break;
+    }
+    
+    if (plotIndex >= plots.size()) return NULL;
+    
+    return plots[plotIndex]->GetBehavior()->GetPlotInfoAtts();
+}
+
+
+// ****************************************************************************
 //  Method: VisWinPlots::SetViewExtentsType
 //
 //  Purpose:

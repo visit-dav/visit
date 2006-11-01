@@ -17,11 +17,14 @@
 //
 //    Mark Blair, Wed Sep 20 10:59:41 PDT 2006
 //    Added time ordinals, for those operators and tools that need them.
+//
+//    Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//    Added attributes to support non-uniform axis spacing.
 //   
 // ****************************************************************************
 
 ParallelAxisAttributes::ParallelAxisAttributes() :
-    AttributeSubject("s*id*d*d*d*i*i*")
+    AttributeSubject("s*id*d*d*d*i*i*bs*i*d*")
 {
     orderedAxisNames.push_back(std::string("default"));
     shownVarAxisPosition = 0;
@@ -31,6 +34,10 @@ ParallelAxisAttributes::ParallelAxisAttributes() :
     extentMaxima.push_back(1.0);
     extMinTimeOrds.push_back(0);
     extMaxTimeOrds.push_back(0);
+    plotDrawsAxisLabels = true;
+    axisGroupNames.push_back(std::string("(not_in_a_group)"));
+    axisLabelStates.push_back(PCP_DRAW_ALL_LABELS | PCP_LABELS_NOW_VISIBLE);
+    axisXIntervals.push_back(-1.0);
 }
 
 
@@ -47,10 +54,13 @@ ParallelAxisAttributes::ParallelAxisAttributes() :
 //    Mark Blair, Wed Sep 20 10:59:41 PDT 2006
 //    Added time ordinals, for those operators and tools that need them.
 //   
+//    Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//    Added attributes to support non-uniform axis spacing.
+//   
 // ****************************************************************************
 
 ParallelAxisAttributes::ParallelAxisAttributes(
-    const ParallelAxisAttributes &obj) : AttributeSubject("s*id*d*d*d*i*i*")
+    const ParallelAxisAttributes &obj) : AttributeSubject("s*id*d*d*d*i*i*bs*i*d*")
 {
     orderedAxisNames = obj.orderedAxisNames;
     shownVarAxisPosition = obj.shownVarAxisPosition;
@@ -60,6 +70,10 @@ ParallelAxisAttributes::ParallelAxisAttributes(
     extentMaxima = obj.extentMaxima;
     extMinTimeOrds = obj.extMinTimeOrds;
     extMaxTimeOrds = obj.extMaxTimeOrds;
+    plotDrawsAxisLabels = obj.plotDrawsAxisLabels;
+    axisGroupNames = obj.axisGroupNames;
+    axisLabelStates = obj.axisLabelStates;
+    axisXIntervals = obj.axisXIntervals;
 
     SelectAll();
 }
@@ -96,6 +110,9 @@ ParallelAxisAttributes::~ParallelAxisAttributes()
 //    Mark Blair, Wed Sep 20 10:59:41 PDT 2006
 //    Added time ordinals, for those operators and tools that need them.
 //   
+//    Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//    Added attributes to support non-uniform axis spacing.
+//   
 // ****************************************************************************
 
 ParallelAxisAttributes& 
@@ -111,6 +128,10 @@ ParallelAxisAttributes::operator = (const ParallelAxisAttributes &obj)
     extentMaxima = obj.extentMaxima;
     extMinTimeOrds = obj.extMinTimeOrds;
     extMaxTimeOrds = obj.extMaxTimeOrds;
+    plotDrawsAxisLabels = obj.plotDrawsAxisLabels;
+    axisGroupNames = obj.axisGroupNames;
+    axisLabelStates = obj.axisLabelStates;
+    axisXIntervals = obj.axisXIntervals;
 
     SelectAll();
 
@@ -131,6 +152,9 @@ ParallelAxisAttributes::operator = (const ParallelAxisAttributes &obj)
 //    Mark Blair, Wed Sep 20 10:59:41 PDT 2006
 //    Added time ordinals, for those operators and tools that need them.
 //   
+//    Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//    Added attributes to support non-uniform axis spacing.
+//   
 // ****************************************************************************
 
 bool
@@ -145,7 +169,11 @@ ParallelAxisAttributes::operator == (const ParallelAxisAttributes &obj) const
             (extentMinima == obj.extentMinima) &&
             (extentMaxima == obj.extentMaxima) &&
             (extMinTimeOrds == obj.extMinTimeOrds) &&
-            (extMaxTimeOrds == obj.extMaxTimeOrds));
+            (extMaxTimeOrds == obj.extMaxTimeOrds) &&
+            (plotDrawsAxisLabels == obj.plotDrawsAxisLabels) &&
+            (axisGroupNames == obj.axisGroupNames) &&
+            (axisLabelStates == obj.axisLabelStates) &&
+            (axisXIntervals == obj.axisXIntervals));
 }
 
 
@@ -218,7 +246,7 @@ ParallelAxisAttributes::CopyAttributes(const AttributeGroup *atts)
     else if (atts->TypeName() == "ExtentsAttributes")
     {
         const ExtentsAttributes *extAtts = (const ExtentsAttributes *)atts;
-
+        
         stringVector toolVarNames     = extAtts->GetScalarNames();
         doubleVector toolVarMinima    = extAtts->GetScalarMinima();
         doubleVector toolVarMaxima    = extAtts->GetScalarMaxima();
@@ -257,7 +285,7 @@ ParallelAxisAttributes::CopyAttributes(const AttributeGroup *atts)
                 }
             }
         }
-
+        
         retval = true;
     }
 
@@ -284,6 +312,9 @@ ParallelAxisAttributes::CopyAttributes(const AttributeGroup *atts)
 //    Mark Blair, Wed Sep 20 10:59:41 PDT 2006
 //    Added time ordinals, for those operators and tools that need them.
 //   
+//    Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//    Removed ExtentsAttributes case, which no longer occurs.
+//   
 // ****************************************************************************
 
 AttributeSubject *
@@ -294,74 +325,6 @@ ParallelAxisAttributes::CreateCompatible(const std::string &tname) const
     if (TypeName() == tname)
     {
         retval = new ParallelAxisAttributes(*this);
-    }
-    else if (tname == "ExtentsAttributes")
-    {
-        stringVector curAxisNames = orderedAxisNames;
-        doubleVector curAxisMinima;
-        doubleVector curAxisMaxima;
-        doubleVector curExtentMinima = extentMinima;
-        doubleVector curExtentMaxima = extentMaxima;
-        intVector    curMinTimeOrds = extMinTimeOrds;
-        intVector    curMaxTimeOrds = extMaxTimeOrds;
-
-        int axisCount = curAxisNames.size();
-        int axisNum;
-        double trueAxisMin, trueAxisMax, axisMargin;
-
-        ParallelAxisAttributes parAxisAtts = *this;
-
-        // FIX ME!  The following call gets axis names and extents from a
-        // scratch file written by the engine.  Obviously this will not work
-        // if the engine and viewer are running on different file systems.
-
-        parAxisAtts.UpdateAxisBoundsIfPossible();
-
-        for (axisNum = 0; axisNum < axisCount; axisNum++)
-        {
-            if ((trueAxisMin = parAxisAtts.axisMinima[axisNum]) < -9e+36)
-            {
-                curAxisMinima.push_back(-1e+37);
-                curAxisMaxima.push_back(+1e+37);
-            }
-            else
-            {
-                trueAxisMax = parAxisAtts.axisMaxima[axisNum];
-                axisMargin = (trueAxisMax - trueAxisMin) * 0.05;
-
-                curAxisMinima.push_back(trueAxisMin - axisMargin);
-                curAxisMaxima.push_back(trueAxisMax + axisMargin);
-            }
-        }
-
-        ExtentsAttributes *extAtts = new ExtentsAttributes;
-
-        extAtts->SetScalarNames(curAxisNames);
-
-        extAtts->SetScalarMinima(curAxisMinima);
-        extAtts->SetScalarMaxima(curAxisMaxima);
-
-        extAtts->SetMinima(curExtentMinima);
-        extAtts->SetMaxima(curExtentMaxima);
-        
-        extAtts->SetMinTimeOrdinals(curMinTimeOrds);
-        extAtts->SetMaxTimeOrdinals(curMaxTimeOrds);
-
-        if (axisCount > PCP_MAX_HORIZONTAL_TITLE_AXES)
-        {
-            extAtts->SetSlidersBottomY(PCP_V_BOTTOM_AXIS_Y_FRACTION);
-            extAtts->SetSlidersTopY(PCP_V_TOP_AXIS_Y_FRACTION);
-        }
-        else
-        {
-            extAtts->SetSlidersBottomY(PCP_H_BOTTOM_AXIS_Y_FRACTION);
-            extAtts->SetSlidersTopY(PCP_H_TOP_AXIS_Y_FRACTION);
-        }
-
-        extAtts->SetLeftSliderX(PCP_LEFT_AXIS_X_FRACTION);
-        extAtts->SetRightSliderX(PCP_RIGHT_AXIS_X_FRACTION);
-        
-        retval = extAtts;
     }
 
     return retval;
@@ -412,6 +375,9 @@ ParallelAxisAttributes::NewInstance(bool copy) const
 //
 //    Mark Blair, Wed Sep 20 10:59:41 PDT 2006
 //    Added time ordinals, for those operators and tools that need them.
+//   
+//    Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//    Added attributes to support non-uniform axis spacing.
 //   
 // ****************************************************************************
 
@@ -467,6 +433,26 @@ ParallelAxisAttributes::CreateNode(
         node->AddNode(new DataNode("extMaxTimeOrds", extMaxTimeOrds));
     }
 
+    if (completeSave || !FieldsEqual(8, &defaultObject)) {
+        addToParent = true;
+        node->AddNode(new DataNode("plotDrawsAxisLabels", plotDrawsAxisLabels));
+    }
+
+    if (completeSave || !FieldsEqual(9, &defaultObject)) {
+        addToParent = true;
+        node->AddNode(new DataNode("axisGroupNames", axisGroupNames));
+    }
+
+    if (completeSave || !FieldsEqual(10, &defaultObject)) {
+        addToParent = true;
+        node->AddNode(new DataNode("axisLabelStates", axisLabelStates));
+    }
+
+    if (completeSave || !FieldsEqual(11, &defaultObject)) {
+        addToParent = true;
+        node->AddNode(new DataNode("axisXIntervals", axisXIntervals));
+    }
+
     // Add the node to the parent node.
     if (addToParent || forceAdd)
         parentNode->AddNode(node);
@@ -490,6 +476,9 @@ ParallelAxisAttributes::CreateNode(
 //   
 //    Mark Blair, Wed Sep 20 10:59:41 PDT 2006
 //    Added time ordinals, for those operators and tools that need them.
+//   
+//    Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//    Added attributes to support non-uniform axis spacing.
 //   
 // ****************************************************************************
 
@@ -533,6 +522,22 @@ ParallelAxisAttributes::SetFromNode(DataNode *parentNode)
 
     if ((node = searchNode->GetNode("extMaxTimeOrds")) != 0) {
         SetExtMaxTimeOrds(node->AsIntVector());
+    }
+
+    if ((node = searchNode->GetNode("plotDrawsAxisLabels")) != 0) {
+        SetPlotDrawsAxisLabels(node->AsBool());
+    }
+
+    if ((node = searchNode->GetNode("axisGroupNames")) != 0) {
+        SetAxisGroupNames(node->AsStringVector());
+    }
+
+    if ((node = searchNode->GetNode("axisLabelStates")) != 0) {
+        SetAxisLabelStates(node->AsIntVector());
+    }
+
+    if ((node = searchNode->GetNode("axisXIntervals")) != 0) {
+        SetAxisXIntervals(node->AsDoubleVector());
     }
 }
 
@@ -606,6 +611,38 @@ ParallelAxisAttributes::SetExtMaxTimeOrds(const intVector &extMaxTimeOrds_)
 }
 
 
+void
+ParallelAxisAttributes::SetPlotDrawsAxisLabels(bool plotDrawsAxisLabels_)
+{
+    plotDrawsAxisLabels = plotDrawsAxisLabels_;
+    Select(8, (void *)&plotDrawsAxisLabels);
+}
+
+
+void
+ParallelAxisAttributes::SetAxisGroupNames(const stringVector &axisGroupNames_)
+{
+    axisGroupNames = axisGroupNames_;
+    Select(9, (void *)&axisGroupNames);
+}
+
+
+void
+ParallelAxisAttributes::SetAxisLabelStates(const intVector &axisLabelStates_)
+{
+    axisLabelStates = axisLabelStates_;
+    Select(10, (void *)&axisLabelStates);
+}
+
+
+void
+ParallelAxisAttributes::SetAxisXIntervals(const doubleVector &axisXIntervals_)
+{
+    axisXIntervals = axisXIntervals_;
+    Select(11, (void *)&axisXIntervals);
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Methods to change a given attribute.  When an attribute is "changed", its
 // value is not only set to the new value, but the values of one or more other
@@ -622,8 +659,10 @@ ParallelAxisAttributes::InsertAxis(const std::string &axisName_)
     std::string newAxisName = axisName_;
 
     int curAxisCount = orderedAxisNames.size();
-    int axisPosition, insertPosition, saveMinTimeOrd, saveMaxTimeOrd;
-    double saveAxisMin, saveAxisMax, saveExtentMin, saveExtentMax;
+    int axisPosition, insertPosition;
+    int saveMinTimeOrd, saveMaxTimeOrd, saveLabelState;
+    double saveAxisMin, saveAxisMax, saveExtentMin, saveExtentMax, saveXInterval;
+    std::string saveGroupName;
 
     stringVector::iterator axisNamesIt;
     doubleVector::iterator axisMinIt;
@@ -632,6 +671,9 @@ ParallelAxisAttributes::InsertAxis(const std::string &axisName_)
     doubleVector::iterator extentMaxIt;
     intVector::iterator minTimeOrdIt;
     intVector::iterator maxTimeOrdIt;
+    stringVector::iterator groupNamesIt;
+    intVector::iterator labelStateIt;
+    doubleVector::iterator xIntervalIt;
 
     for (axisPosition = 0; axisPosition < curAxisCount; axisPosition++)
     {
@@ -648,6 +690,9 @@ ParallelAxisAttributes::InsertAxis(const std::string &axisName_)
         saveExtentMax  = extentMaxima[axisPosition];
         saveMinTimeOrd = extMinTimeOrds[axisPosition];
         saveMaxTimeOrd = extMaxTimeOrds[axisPosition];
+        saveGroupName  = axisGroupNames[axisPosition];
+        saveLabelState = axisLabelStates[axisPosition];
+        saveXInterval  = axisXIntervals[axisPosition];
 
         axisNamesIt  = orderedAxisNames.begin() + axisPosition;
         axisMinIt    = axisMinima.begin()       + axisPosition;
@@ -656,6 +701,9 @@ ParallelAxisAttributes::InsertAxis(const std::string &axisName_)
         extentMaxIt  = extentMaxima.begin()     + axisPosition;
         minTimeOrdIt = extMinTimeOrds.begin()   + axisPosition;
         maxTimeOrdIt = extMaxTimeOrds.begin()   + axisPosition;
+        groupNamesIt = axisGroupNames.begin()   + axisPosition;
+        labelStateIt = axisLabelStates.begin()  + axisPosition;
+        xIntervalIt  = axisXIntervals.begin()   + axisPosition;
 
         orderedAxisNames.erase(axisNamesIt);
         axisMinima.erase(axisMinIt);
@@ -664,6 +712,9 @@ ParallelAxisAttributes::InsertAxis(const std::string &axisName_)
         extentMaxima.erase(extentMaxIt);
         extMinTimeOrds.erase(minTimeOrdIt);
         extMaxTimeOrds.erase(maxTimeOrdIt);
+        axisGroupNames.erase(groupNamesIt);
+        axisLabelStates.erase(labelStateIt);
+        axisXIntervals.erase(xIntervalIt);
 
         if (axisPosition < shownVarAxisPosition)
             insertPosition = shownVarAxisPosition;
@@ -678,6 +729,9 @@ ParallelAxisAttributes::InsertAxis(const std::string &axisName_)
         saveExtentMax  = 1.0;
         saveMinTimeOrd = 0;
         saveMaxTimeOrd = 0;
+        saveGroupName  = std::string("(not_in_a_group)");
+        saveLabelState = PCP_DRAW_ALL_LABELS | PCP_LABELS_NOW_VISIBLE;
+        saveXInterval  = -1.0;
 
         insertPosition = ++shownVarAxisPosition;
     }
@@ -689,6 +743,9 @@ ParallelAxisAttributes::InsertAxis(const std::string &axisName_)
     extentMaxIt  = extentMaxima.begin()     + insertPosition;
     minTimeOrdIt = extMinTimeOrds.begin()   + insertPosition;
     maxTimeOrdIt = extMaxTimeOrds.begin()   + insertPosition;
+    groupNamesIt = axisGroupNames.begin()   + insertPosition;
+    labelStateIt = axisLabelStates.begin()  + insertPosition;
+    xIntervalIt  = axisXIntervals.begin()   + insertPosition;
 
     orderedAxisNames.insert(axisNamesIt, newAxisName);
     axisMinima.insert(axisMinIt, saveAxisMin);
@@ -697,6 +754,9 @@ ParallelAxisAttributes::InsertAxis(const std::string &axisName_)
     extentMaxima.insert(extentMaxIt, saveExtentMax);
     extMinTimeOrds.insert(minTimeOrdIt, saveMinTimeOrd);
     extMaxTimeOrds.insert(maxTimeOrdIt, saveMaxTimeOrd);
+    axisGroupNames.insert(groupNamesIt, saveGroupName);
+    axisLabelStates.insert(labelStateIt, saveLabelState);
+    axisXIntervals.insert(xIntervalIt, saveXInterval);
 
     SelectAll();
 }
@@ -726,6 +786,9 @@ ParallelAxisAttributes::DeleteAxis(const std::string &axisName_, int minAxisCoun
         extentMaxima.erase(extentMaxima.begin() + axisPosition);
         extMinTimeOrds.erase(extMinTimeOrds.begin() + axisPosition);
         extMaxTimeOrds.erase(extMaxTimeOrds.begin() + axisPosition);
+        axisGroupNames.erase(axisGroupNames.begin() + axisPosition);
+        axisLabelStates.erase(axisLabelStates.begin() + axisPosition);
+        axisXIntervals.erase(axisXIntervals.begin() + axisPosition);
 
         if (axisPosition <= shownVarAxisPosition)
         {
@@ -744,9 +807,10 @@ ParallelAxisAttributes::SwitchToLeftAxis(const std::string &axisName_)
     std::string newAxisName = axisName_;
 
     int curAxisCount = orderedAxisNames.size();
-    int axisPosition, insertPosition, saveMinTimeOrd, saveMaxTimeOrd;
-    double saveAxisMin, saveAxisMax, saveExtentMin, saveExtentMax;
+    int axisPosition, saveMinTimeOrd, saveMaxTimeOrd, saveLabelState;
+    double saveAxisMin, saveAxisMax, saveExtentMin, saveExtentMax, saveXInterval;
     std::string orderedAxisName;
+    std::string saveGroupName;
 
     shownVarAxisPosition = 0;
 
@@ -768,6 +832,9 @@ ParallelAxisAttributes::SwitchToLeftAxis(const std::string &axisName_)
         saveExtentMax  = extentMaxima[axisPosition];
         saveMinTimeOrd = extMinTimeOrds[axisPosition];
         saveMaxTimeOrd = extMaxTimeOrds[axisPosition];
+        saveGroupName  = axisGroupNames[axisPosition];
+        saveLabelState = axisLabelStates[axisPosition];
+        saveXInterval  = axisXIntervals[axisPosition];
 
         orderedAxisNames.erase(orderedAxisNames.begin() + axisPosition);
         axisMinima.erase(axisMinima.begin() + axisPosition);
@@ -776,6 +843,9 @@ ParallelAxisAttributes::SwitchToLeftAxis(const std::string &axisName_)
         extentMaxima.erase(extentMaxima.begin() + axisPosition);
         extMinTimeOrds.erase(extMinTimeOrds.begin() + axisPosition);
         extMaxTimeOrds.erase(extMaxTimeOrds.begin() + axisPosition);
+        axisGroupNames.erase(axisGroupNames.begin() + axisPosition);
+        axisLabelStates.erase(axisLabelStates.begin() + axisPosition);
+        axisXIntervals.erase(axisXIntervals.begin() + axisPosition);
     }
     else
     {
@@ -785,6 +855,9 @@ ParallelAxisAttributes::SwitchToLeftAxis(const std::string &axisName_)
         saveExtentMax  = 1.0;
         saveMinTimeOrd = 0;
         saveMaxTimeOrd = 0;
+        saveGroupName  = std::string("(not_in_a_group)");
+        saveLabelState = PCP_DRAW_ALL_LABELS | PCP_LABELS_NOW_VISIBLE;
+        saveXInterval  = -1.0;
     }
 
     orderedAxisNames.insert(orderedAxisNames.begin(), newAxisName);
@@ -794,6 +867,9 @@ ParallelAxisAttributes::SwitchToLeftAxis(const std::string &axisName_)
     extentMaxima.insert(extentMaxima.begin(), saveExtentMax);
     extMinTimeOrds.insert(extMinTimeOrds.begin(), saveMinTimeOrd);
     extMaxTimeOrds.insert(extMaxTimeOrds.begin(), saveMaxTimeOrd);
+    axisGroupNames.insert(axisGroupNames.begin(), saveGroupName);
+    axisLabelStates.insert(axisLabelStates.begin(), saveLabelState);
+    axisXIntervals.insert(axisXIntervals.begin(), saveXInterval);
     
     SelectAll();
 }
@@ -817,63 +893,6 @@ ParallelAxisAttributes::ShowNextAxisVariableData()
 
     shownVarAxisPosition = (shownVarAxisPosition + 1) % orderedAxisNames.size();
     Select(1, (void *)&shownVarAxisPosition);
-}
-
-
-// *****************************************************************************
-// Method::ParallelAxisAttributes::UpdateAxisBoundsIfPossible
-//
-// Purpose: If needed, try to update coordinate axis bounds with data for axes
-//          last plotted, if any ParallelAxis plot has yet been made.  This
-//          data is recorded in a file written by the ParallelAxis filter.
-//
-// Note: FIX ME!  This was intended as a stopgap measure.  Obviously if the
-//       engine and viewer are running on different file systems, this will
-//       fail.  TCP communication from the ParallelAxis filter to the viewer
-//       is clearly needed.
-//
-// Programmer: Mark Blair
-// Creation:   Fri Aug 19 15:12:00 PDT 2005
-//
-// Modifications:
-//   
-// *****************************************************************************
-
-bool ParallelAxisAttributes::UpdateAxisBoundsIfPossible()
-{
-    FILE *avdFileStream;
-    bool updatedAllBounds = true;
-    int axisNum;
-    float fileAxisMin, fileAxisMax;
-    std::string fileAxisVarName;
-    char fileAxisVarChars[161];
-
-    if ((avdFileStream = fopen(AXIS_VAR_DATA_FILE_NAME, "r")) == NULL)
-    {
-        debug1 << "No ParallelAxis scratch file found!" << endl;
-        debug1 << "   Engine and viewer running on different file systems?" << endl;
-
-        return false;
-    }
-    
-    while (fscanf(avdFileStream,"%s %f %f",fileAxisVarChars,&fileAxisMin,&fileAxisMax) == 3) {
-        fileAxisVarName = std::string(fileAxisVarChars);
-
-        for (axisNum = 0; axisNum < axisMinima.size(); axisNum++ ) {
-            if (orderedAxisNames[axisNum] == fileAxisVarName) {
-                axisMinima[axisNum] = (double)fileAxisMin;
-                axisMaxima[axisNum] = (double)fileAxisMax;
-
-                break;
-            }
-        }
-        
-        if (axisNum >= axisMinima.size()) updatedAllBounds = false;
-    }
-
-    fclose(avdFileStream);
-
-    return updatedAllBounds;
 }
 
 
@@ -906,7 +925,7 @@ ParallelAxisAttributes::GetShownVariableAxisName()
 int
 ParallelAxisAttributes::GetShownVariableAxisPosition() const
 {
-    return (shownVarAxisPosition);
+    return shownVarAxisPosition;
 }
 
 
@@ -987,6 +1006,34 @@ ParallelAxisAttributes::GetExtMaxTimeOrds() const
 }
 
 
+bool
+ParallelAxisAttributes::GetPlotDrawsAxisLabels() const
+{
+    return plotDrawsAxisLabels;
+}
+
+
+const stringVector &
+ParallelAxisAttributes::GetAxisGroupNames() const
+{
+    return axisGroupNames;
+}
+
+
+const intVector &
+ParallelAxisAttributes::GetAxisLabelStates() const
+{
+    return axisLabelStates;
+}
+
+
+const doubleVector &
+ParallelAxisAttributes::GetAxisXIntervals() const
+{
+    return axisXIntervals;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1002,19 +1049,29 @@ ParallelAxisAttributes::GetExtMaxTimeOrds() const
 //
 // Modifications:
 //   
+//    Mark Blair, Wed Sep 20 10:59:41 PDT 2006
+//    Added time ordinals, for those operators and tools that need them.
+//   
+//    Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//    Added attributes to support non-uniform axis spacing.
+//   
 // ****************************************************************************
 
 void
 ParallelAxisAttributes::SelectAll()
 {
-    Select(0, (void *)&orderedAxisNames);
-    Select(1, (void *)&shownVarAxisPosition);
-    Select(2, (void *)&axisMinima);
-    Select(3, (void *)&axisMaxima);
-    Select(4, (void *)&extentMinima);
-    Select(5, (void *)&extentMaxima);
-    Select(6, (void *)&extMinTimeOrds);
-    Select(7, (void *)&extMaxTimeOrds);
+    Select( 0, (void *)&orderedAxisNames);
+    Select( 1, (void *)&shownVarAxisPosition);
+    Select( 2, (void *)&axisMinima);
+    Select( 3, (void *)&axisMaxima);
+    Select( 4, (void *)&extentMinima);
+    Select( 5, (void *)&extentMaxima);
+    Select( 6, (void *)&extMinTimeOrds);
+    Select( 7, (void *)&extMaxTimeOrds);
+    Select( 8, (void *)&plotDrawsAxisLabels);
+    Select( 9, (void *)&axisGroupNames);
+    Select(10, (void *)&axisLabelStates);
+    Select(11, (void *)&axisXIntervals);
 }
 
 
@@ -1074,6 +1131,34 @@ ParallelAxisAttributes::SelectExtMaxTimeOrds()
 }
 
 
+void
+ParallelAxisAttributes::SelectPlotDrawsAxisLabels()
+{
+    Select(8, (void *)&plotDrawsAxisLabels);
+}
+
+
+void
+ParallelAxisAttributes::SelectAxisGroupNames()
+{
+    Select(9, (void *)&axisGroupNames);
+}
+
+
+void
+ParallelAxisAttributes::SelectAxisLabelStates()
+{
+    Select(10, (void *)&axisLabelStates);
+}
+
+
+void
+ParallelAxisAttributes::SelectAxisXIntervals()
+{
+    Select(11, (void *)&axisXIntervals);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Python compatibility methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1097,7 +1182,7 @@ ParallelAxisAttributes::GetOrderedAxisNames()
 int
 ParallelAxisAttributes::GetShownVarAxisPosition() const
 {
-    return (shownVarAxisPosition);
+    return shownVarAxisPosition;
 }
 
 
@@ -1143,6 +1228,27 @@ ParallelAxisAttributes::GetExtMaxTimeOrds()
 }
 
 
+stringVector &
+ParallelAxisAttributes::GetAxisGroupNames()
+{
+    return axisGroupNames;
+}
+
+
+intVector &
+ParallelAxisAttributes::GetAxisLabelStates()
+{
+    return axisLabelStates;
+}
+
+
+doubleVector &
+ParallelAxisAttributes::GetAxisXIntervals()
+{
+    return axisXIntervals;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1161,6 +1267,9 @@ ParallelAxisAttributes::GetExtMaxTimeOrds()
 //    Mark Blair, Wed Sep 20 10:59:41 PDT 2006
 //    Added time ordinals, for those operators and tools that need them.
 //   
+//    Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//    Added attributes to support non-uniform axis spacing.
+//   
 // ****************************************************************************
 
 std::string
@@ -1176,6 +1285,10 @@ ParallelAxisAttributes::GetFieldName(int index) const
         case  5: return "extentMaxima";
         case  6: return "extMinTimeOrds";
         case  7: return "extMaxTimeOrds";
+        case  8: return "plotDrawsAxisLabels";
+        case  9: return "axisGroupNames";
+        case 10: return "axisLabelStates";
+        case 11: return "axisXIntervals";
         default: return "invalid index";
     }
 }
@@ -1194,6 +1307,9 @@ ParallelAxisAttributes::GetFieldName(int index) const
 //    Mark Blair, Wed Sep 20 10:59:41 PDT 2006
 //    Added time ordinals, for those operators and tools that need them.
 //   
+//    Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//    Added attributes to support non-uniform axis spacing.
+//   
 // ****************************************************************************
 
 AttributeGroup::FieldType
@@ -1209,6 +1325,10 @@ ParallelAxisAttributes::GetFieldType(int index) const
         case  5: return FieldType_doubleVector;
         case  6: return FieldType_intVector;
         case  7: return FieldType_intVector;
+        case  8: return FieldType_bool;
+        case  9: return FieldType_stringVector;
+        case 10: return FieldType_intVector;
+        case 11: return FieldType_doubleVector;
         default: return FieldType_unknown;
     }
 }
@@ -1227,6 +1347,9 @@ ParallelAxisAttributes::GetFieldType(int index) const
 //    Mark Blair, Wed Sep 20 10:59:41 PDT 2006
 //    Added time ordinals, for those operators and tools that need them.
 //   
+//    Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//    Added attributes to support non-uniform axis spacing.
+//   
 // ****************************************************************************
 
 std::string
@@ -1242,6 +1365,10 @@ ParallelAxisAttributes::GetFieldTypeName(int index) const
         case  5: return "doubleVector";
         case  6: return "intVector";
         case  7: return "intVector";
+        case  8: return "bool";
+        case  9: return "stringVector";
+        case 10: return "intVector";
+        case 11: return "doubleVector";
         default: return "invalid index";
     }
 }
@@ -1259,6 +1386,9 @@ ParallelAxisAttributes::GetFieldTypeName(int index) const
 //   
 //    Mark Blair, Wed Sep 20 10:59:41 PDT 2006
 //    Added time ordinals, for those operators and tools that need them.
+//   
+//    Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//    Added attributes to support non-uniform axis spacing.
 //   
 // ****************************************************************************
 
@@ -1309,6 +1439,26 @@ ParallelAxisAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (extMaxTimeOrds == obj.extMaxTimeOrds);
         }
         break;
+    case 8:
+        {  // new scope
+        retval = (plotDrawsAxisLabels == obj.plotDrawsAxisLabels);
+        }
+        break;
+    case 9:
+        {  // new scope
+        retval = (axisGroupNames == obj.axisGroupNames);
+        }
+        break;
+    case 10:
+        {  // new scope
+        retval = (axisLabelStates == obj.axisLabelStates);
+        }
+        break;
+    case 11:
+        {  // new scope
+        retval = (axisXIntervals == obj.axisXIntervals);
+        }
+        break;
     default:
         retval = false;
     }
@@ -1345,6 +1495,9 @@ ParallelAxisAttributes::ChangesRequireRecalculation(
 //    Mark Blair, Wed Sep 20 10:59:41 PDT 2006
 //    Added time ordinals, for those operators and tools that need them.
 //   
+//    Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//    Added attributes to support non-uniform axis spacing.
+//   
 // ****************************************************************************
 
 bool ParallelAxisAttributes::AttributesAreConsistent() const
@@ -1356,12 +1509,15 @@ bool ParallelAxisAttributes::AttributesAreConsistent() const
     if (axisNamesSize < 2)
         return false;
     
-    if ((axisMinima.size()     != axisNamesSize) ||
-        (axisMaxima.size()     != axisNamesSize) ||
-        (extentMinima.size()   != axisNamesSize) ||
-        (extentMaxima.size()   != axisNamesSize) ||
-        (extMinTimeOrds.size() != axisNamesSize) ||
-        (extMaxTimeOrds.size() != axisNamesSize))
+    if ((axisMinima.size()      != axisNamesSize) ||
+        (axisMaxima.size()      != axisNamesSize) ||
+        (extentMinima.size()    != axisNamesSize) ||
+        (extentMaxima.size()    != axisNamesSize) ||
+        (extMinTimeOrds.size()  != axisNamesSize) ||
+        (extMaxTimeOrds.size()  != axisNamesSize) ||
+        (axisGroupNames.size()  != axisNamesSize) ||
+        (axisLabelStates.size() != axisNamesSize) ||
+        (axisXIntervals.size()  != axisNamesSize))
     {
         return false;
     }
