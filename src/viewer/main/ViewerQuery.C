@@ -424,7 +424,7 @@ ViewerQuery::CreateLineout(const bool fromDefault)
     // If the original plot list has a time slider corresponding to the
     // the originating plot's hostdabase name, make sure that
     // the the new plot list uses the same time slider.
-    if(origList->TimeSliderExists(hdbName))
+    if (origList->TimeSliderExists(hdbName))
     {
         int state, nStates;
         origList->GetTimeSliderStates(hdbName, state, nStates);
@@ -544,11 +544,12 @@ ViewerQuery::Update(Subject *TheChangedSubject)
                         ->CreateCompatible("Line");
                  lineAtts->SetInteractive(temp->GetInteractive());
                  //
-                 //  If endpoints, or reflineLabels have changed, update the refline. 
+                 //  If endpoints, or reflineLabels have changed, update the 
+                 //  refline. 
                  //
                  if (!(lineAtts->FieldsEqual(0, temp)) ||
                      !(lineAtts->FieldsEqual(1, temp)) ||
-                     (lineAtts->GetReflineLabels() != temp->GetReflineLabels())) 
+                     (lineAtts->GetReflineLabels() != temp->GetReflineLabels()))
                  {
                      lineAtts->SetPoint1(temp->GetPoint1());
                      lineAtts->SetPoint2(temp->GetPoint2());
@@ -566,9 +567,9 @@ ViewerQuery::Update(Subject *TheChangedSubject)
                          ViewerOperator *oper = resultsPlot->GetOperator(i);
                          if (strcmp(oper->GetName(), "Slice") == 0)
                          {
-                             PlaneAttributes *planeAtts = (PlaneAttributes *)oper-> 
-                                 GetOperatorAtts()->CreateCompatible("PlaneAttributes");
-
+                             PlaneAttributes *planeAtts = 
+                                 (PlaneAttributes *)oper->GetOperatorAtts()->
+                                 CreateCompatible("PlaneAttributes");
                              UpdateLineFromSlice(planeAtts);
                              delete planeAtts;
                              break;

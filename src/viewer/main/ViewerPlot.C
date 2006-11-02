@@ -68,6 +68,8 @@
 #include <ViewerOperator.h>
 #include <ViewerOperatorFactory.h>
 #include <ViewerPlotList.h>
+#include <GlobalLineoutAttributes.h>
+#include <ViewerQueryManager.h>
 #include <ViewerSubject.h>
 #include <ViewerWindowManager.h>
 
@@ -543,12 +545,17 @@ ViewerPlot::GetState() const
 //   Kathleen Bonnell, Thu Feb  3 16:02:01 PST 2005
 //   Update queryAtts so that lineouts can update when time changes.
 //   
+//   Kathleen Bonnell, Wed Nov  1 13:50:32 PST 2006 
+//   Add another test for CreateCurve. 
+//   
 // ****************************************************************************
 
 void
 ViewerPlot::SetCacheIndex(int newCacheIndex)
 {
-    if(FollowsTime() &&
+    if((FollowsTime()  ||
+       (ViewerQueryManager::Instance()->GetGlobalLineoutAtts()->
+        GetCurveOption() == GlobalLineoutAttributes::CreateCurve)) &&
        newCacheIndex >= 0 &&
        newCacheIndex < cacheSize)
     {
@@ -559,7 +566,8 @@ ViewerPlot::SetCacheIndex(int newCacheIndex)
             queryAtts->SetNewFrameIndex(newCacheIndex);
             queryAtts->Notify();
         }
-        cacheIndex = newCacheIndex;
+        if (FollowsTime())
+            cacheIndex = newCacheIndex;
     }
 }
 

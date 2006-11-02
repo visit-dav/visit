@@ -509,6 +509,9 @@ ViewerQueryManager::AddQuery(ViewerWindow *origWin, Line *lineAtts,
 //   Kathleen Bonnell, Tue Jan 17 11:30:15 PST 2006
 //   Removed call to SetTimeSlider.
 //
+//   Kathleen Bonnell, Thu Nov  2 13:52:00 PST 2006 
+//   Added test for FreezeInTime when determining if lineout FollwowsTime.
+//
 // ****************************************************************************
 
 void
@@ -586,6 +589,10 @@ ViewerQueryManager::SimpleAddQuery(ViewerQuery_p query, ViewerPlot *oplot,
     //
     if (gla->GetDynamic() && 
         gla->GetCurveOption() == GlobalLineoutAttributes::CreateCurve)
+    {
+        lineoutList[index]->SetLineoutsFollowTime(false);
+    }
+    else if (gla->GetFreezeInTime())
     {
         lineoutList[index]->SetLineoutsFollowTime(false);
     }
@@ -2684,7 +2691,6 @@ ViewerQueryManager::SetDynamicLineout(bool newMode)
         else 
             lineoutList[i]->StopObservingPlot();
     }
-
 }
 
 // ****************************************************************************
@@ -4706,4 +4712,47 @@ ViewerQueryManager::EngineExistsForQuery(ViewerPlot *plot)
               "  Please ensure the plot has finished drawing and try again.");
     }
     return engineExists;
+}
+
+ 
+// ****************************************************************************
+//  Method: ViewerQueryManager::CloneQuery
+//
+//  Purpose:
+//    Clones an existing query and give the clone a new time state.
+//
+//  Arguments:
+//    toBeCloned   The query to be cloned.
+//    ts           The time step for the cloned query.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 22, 2006 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerQueryManager::CloneQuery(ViewerQuery *toBeCloned, int newTS, int oldTS)
+{
+    ViewerQuery *clone = new ViewerQuery(toBeCloned, newTS);
+
+    ViewerPlot   *oplot = clone->GetOriginatingPlot();
+    ViewerWindow *owin  = clone->GetOriginatingWindow();
+    ViewerWindow *rwin  = clone->GetResultsWindow();
+    //
+    //  Determine the correct list in which to store the query.
+    //
+    int i, index = -1;
+    for (i = 0; i < nLineouts && index == -1; i++)
+    {
+        if (lineoutList[i]->Matches(oplot, owin, rwin))
+        {
+            index = i;
+        }
+    }
+    if (index != -1)
+    {
+        lineoutList[index]->AddQuery(clone);
+    }
 }

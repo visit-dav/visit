@@ -220,6 +220,9 @@ typedef struct {
 //    Hank Childs, Tue Jul 11 14:34:06 PDT 2006
 //    Added double arguments to DatabaseQuery.
 //
+//    Kathleen Bonnell, Wed Nov  1 13:50:32 PST 2006 
+//    Added CloneQuery.
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -325,6 +328,8 @@ class VIEWER_API ViewerQueryManager
 
     void            SuppressQueryOutput(bool onOff)
                         { suppressQueryOutput = onOff; } ;
+
+    void            CloneQuery(ViewerQuery *, int, int);
 
   protected:
                     ViewerQueryManager();

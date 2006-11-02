@@ -65,6 +65,9 @@ class QLineEdit;
 //   Added widgets for new atts (colorOption, curveOption).  Modified
 //   'dynamic' widget. 
 //   
+//   Kathleen Bonnell, Fri Feb  4 07:10:27 PST 2005
+//   Added freezeInTime widget.
+//
 // ****************************************************************************
 
 class GUI_API QvisGlobalLineoutWindow : public QvisPostableWindowObserver
@@ -86,6 +89,7 @@ class GUI_API QvisGlobalLineoutWindow : public QvisPostableWindowObserver
     void Apply(bool ignore = false);
   private slots:
     void dynamicChanged(bool);
+    void freezeInTimeChanged(bool);
     void createWindowChanged(bool);
     void windowIdProcessText();
     void samplingOnChanged(bool);
@@ -99,7 +103,6 @@ class GUI_API QvisGlobalLineoutWindow : public QvisPostableWindowObserver
     QCheckBox *samplingOn;
     QLineEdit *numSamples;
     QCheckBox *createReflineLabels;
-    QLabel *createWindowLabel;
     QLabel *windowIdLabel;
     QLabel *numSamplesLabel;
 
@@ -113,6 +116,7 @@ class GUI_API QvisGlobalLineoutWindow : public QvisPostableWindowObserver
     QLabel       *curveLabel;
     QComboBox    *colorOptions;
     QLabel       *colorLabel;
+    QCheckBox    *freezeInTime;
 
     GlobalLineoutAttributes *atts;
 };
