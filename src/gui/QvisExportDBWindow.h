@@ -67,6 +67,9 @@ class ExportDBAttributes;
 //   Brad Whitlock, Mon Jun 27 13:51:01 PST 2005
 //   Added a directory selection button.
 //
+//   Brad Whitlock, Thu Nov 2 18:01:00 PST 2006
+//   I made a widget be a class member so I can disable it.
+//
 // ****************************************************************************
 
 class GUI_API QvisExportDBWindow : public QvisPostableWindowObserver
@@ -96,6 +99,8 @@ protected slots:
 private:
     QLineEdit           *filenameLineEdit;
     QLineEdit           *directoryNameLineEdit;
+    QPushButton         *directorySelectButton;
+    QLabel              *directoryNameLabel;
     QComboBox           *fileFormatComboBox;
     ExportDBAttributes  *exportDBAtts;
     QvisVariableButton  *varsButton;

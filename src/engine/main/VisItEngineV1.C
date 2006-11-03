@@ -121,6 +121,8 @@ int get_descriptor(void *e)
     return engine->GetInputSocket();
 }
 
+#include <DebugStream.h>
+
 int process_input(void *e)
 {
     Engine *engine = (Engine*)(e);
@@ -136,6 +138,10 @@ int process_input(void *e)
     {
         // Lost connection to the viewer!
         CATCH_RETURN2(1, 0);
+    }
+    CATCH2(VisItException, e)
+    {
+        debug1 << "Caught a damn VisIt exception: " << e.Message() << endl;
     }
     CATCHALL (...)
     {

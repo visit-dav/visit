@@ -3178,13 +3178,28 @@ ViewerEngineManager::SetExportDBAtts(ExportDBAttributes *e)
 //  Programmer: Hank Childs
 //  Creation:   May 25, 2005
 //
+//  Modifications:
+//    Brad Whitlock, Fri Nov 3 09:49:33 PDT 2006
+//    Prevented non-sim data from being exported to a simulation.
+//
 // ****************************************************************************
 
 bool
 ViewerEngineManager::ExportDatabase(const EngineKey &ek, int id)
 {
     ENGINE_PROXY_RPC_BEGIN("ExportDatabase");
-    engine->ExportDatabase(id, exportDBAtts);
+    // If we're trying to export to a simulation but the data is not from
+    // a simulation then issue an error message.
+    if(exportDBAtts->GetDb_type() == "SimV1" && !ek.IsSimulation())
+    {
+        Error("VisIt can only export data to a simulation if the "
+              "data being exported originated in a simulation.");
+        CATCH_RETURN2(1, false);
+    }
+    else
+    {
+        engine->ExportDatabase(id, exportDBAtts);
+    }
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
 

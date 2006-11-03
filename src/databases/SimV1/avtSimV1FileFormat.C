@@ -357,6 +357,9 @@ avtSimV1FileFormat::FreeUpResources(void)
 //    I added code to copy all the fields in the
 //    generic command array.
 //
+//    Brad Whitlock, Fri Nov 3 10:29:21 PDT 2006
+//    Fixed memory leak.
+//
 // ****************************************************************************
 
 void
@@ -507,33 +510,46 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                        "Invalid command argument type in "
                        "VisIt_SimulationControlCommand.");
         }
-        avtSimulationCommandSpecification *scs = new avtSimulationCommandSpecification;
-        scs->SetName(scc->name);
-        scs->SetText(scc->text);
-        scs->SetValue(scc->value);
-        scs->SetIsOn(scc->isOn);
-        scs->SetUiType(scc->uiType);
-        scs->SetClassName(scc->className);
-        scs->SetSignal(scc->signal);
-        scs->SetArgumentType(t);
-        scs->SetEnabled(scc->enabled);
-        md->GetSimInfo().AddAvtSimulationCommandSpecification(*scs);
+        avtSimulationCommandSpecification scs;
+        scs.SetName(scc->name);
+#if 0
+// Having these fields set prevents the simulations that I've tried from
+// being able to return metadata. For an example of one that would not 
+// work due to these lines of code, check out 
+// tools/DataManualExamples/Simulations/writeback.c
+//
+// That simulation has NULL values for these strings, since they are
+// not necessary (or were not necessary until recently) for simulations
+// to provide simple commands to the GUI. These fields should not be
+// required because they work with widgets that go into the Sim window
+// instead of to a custom UI window.
+//
+        scs.SetText(scc->text);
+        scs.SetValue(scc->value);
+        scs.SetIsOn(scc->isOn);
+        scs.SetUiType(scc->uiType);
+        scs.SetClassName(scc->className);
+        scs.SetSignal(scc->signal);
+#endif
+        scs.SetArgumentType(t);
+        scs.SetEnabled(scc->enabled);
+        md->GetSimInfo().AddAvtSimulationCommandSpecification(scs);
     }
  
     for (int c=0; c<vsmd->numCustomCommands; c++)
     {
         VisIt_SimulationControlCommand *scc = &vsmd->customCommands[c];
         avtSimulationCommandSpecification::CommandArgumentType t;
-        avtSimulationCommandSpecification *scs = new avtSimulationCommandSpecification;
-        scs->SetName(scc->name);
-        scs->SetText(scc->text);
-        scs->SetValue(scc->value);
-        scs->SetIsOn(scc->isOn);
-        scs->SetUiType(scc->uiType);
-        scs->SetClassName(scc->className);
-        scs->SetArgumentType(t);
-        scs->SetEnabled(scc->enabled);
-        md->GetSimInfo().AddAvtSimulationCustCommandSpecification(*scs);
+        avtSimulationCommandSpecification scs;
+        scs.SetName(scc->name);
+        scs.SetText(scc->text);
+        scs.SetValue(scc->value);
+        scs.SetIsOn(scc->isOn);
+        scs.SetUiType(scc->uiType);
+        scs.SetClassName(scc->className);
+        scs.SetArgumentType(t);
+        scs.SetEnabled(scc->enabled);
+        md->GetSimInfo().AddAvtSimulationCustCommandSpecification(scs);
     }
  
     for (int mat=0; mat<vsmd->numMaterials; mat++)
