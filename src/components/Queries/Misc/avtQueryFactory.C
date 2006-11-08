@@ -76,6 +76,7 @@
 #include <avtTotalRevolvedSurfaceAreaQuery.h>
 #include <avtTotalRevolvedVolumeQuery.h>
 #include <avtTotalSurfaceAreaQuery.h>
+#include <avtTotalLengthQuery.h>
 #include <avtTotalVolumeQuery.h>
 #include <avtTrajectoryByNode.h>
 #include <avtTrajectoryByZone.h>
@@ -236,6 +237,9 @@ avtQueryFactory::Instance()
 //    Added Volume2, which calculates hex-volumes differently than
 //    Volume (which uses verdict).
 //
+//    Hank Childs, Fri Nov  3 15:49:40 PST 2006
+//    Added total length query.
+//
 // ****************************************************************************
 
 
@@ -260,6 +264,10 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (qname == "Volume2")
     {
         query = new avtTotalVolumeQuery(false);
+    }
+    else if (qname == "Total Length")
+    {
+        query = new avtTotalLengthQuery();
     }
     else if (qname == "Revolved volume")
     {

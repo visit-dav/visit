@@ -171,6 +171,9 @@
 #   Dave Bremer, Thu Sep  7 16:15:12 PDT 2006
 #   Added line scan transform query.
 #
+#   Hank Childs, Fri Nov  3 15:29:19 PST 2006
+#   Added total length query.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -245,6 +248,7 @@ Queries_src= \
  Queries/avtSphericalCompactnessFactorQuery.C  \
  Queries/avtSummationQuery.C  \
  Queries/avtTimeQuery.C  \
+ Queries/avtTotalLengthQuery.C \
  Queries/avtTotalRevolvedSurfaceAreaQuery.C \
  Queries/avtTotalRevolvedVolumeQuery.C \
  Queries/avtTotalSurfaceAreaQuery.C \

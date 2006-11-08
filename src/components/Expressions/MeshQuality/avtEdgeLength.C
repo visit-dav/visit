@@ -116,12 +116,34 @@ avtEdgeLength::DeriveVariable(vtkDataSet *in_ds)
 //    Hank Childs, Fri Jun  9 14:34:50 PDT 2006
 //    Removed unused variable.
 //
+//    Hank Childs, Fri Nov  3 16:05:12 PST 2006
+//    Add support for actual edges.  Also have vertices return 0.
+//
 // ****************************************************************************
  
 double
 avtEdgeLength::GetEdgeLength(vtkCell *cell)
 {
     int  i;
+
+    int celltype = cell->GetCellType();
+    if (celltype == VTK_VERTEX)
+        return 0.;
+
+    if (celltype == VTK_LINE)
+    {
+        double pt1[3], pt2[3], a[3];
+
+        vtkPoints *pts = cell->GetPoints();
+        pts->GetPoint(0, pt1);
+        pts->GetPoint(1, pt2);
+        a[0] = pt2[0] - pt1[0]; 
+        a[1] = pt2[1] - pt1[1]; 
+        a[2] = pt2[2] - pt1[2]; 
+
+        double length = sqrt(a[0]*a[0] + a[1]*a[1] + a[2]*a[2]);
+        return length;
+    }
 
     //
     // Calculate the value of each edge and then return the minimum or maximum.
