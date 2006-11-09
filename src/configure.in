@@ -631,6 +631,9 @@ dnl    Modified the test that determines wether to use BSD or SYSV pseudo
 dnl    terminals to use the normal test instead of assuming it is BSD on
 dnl    Linux.
 dnl
+dnl    Brad Whitlock, Thu Nov 9 14:27:00 PST 2006
+dnl    Made sure data manual examples get their Makefiles created.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -3351,6 +3354,10 @@ COMMON_FILES="common/Makefile
               common/utility/Makefile"
 
 TOOLS_FILES="tools/Makefile
+             tools/DataManualExamples/Makefile
+             tools/DataManualExamples/CreatingCompatible/Makefile
+             tools/DataManualExamples/CreatingCompatibleAdvanced/Makefile
+             tools/DataManualExamples/Simulations/Makefile
              tools/annotations/Makefile
              tools/avtprep/Makefile
              tools/clipeditor/Makefile

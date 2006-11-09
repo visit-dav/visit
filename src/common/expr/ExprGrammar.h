@@ -54,6 +54,10 @@
 //    Jeremy Meredith, Wed Nov 24 11:45:56 PST 2004
 //    Refactored the expression-specific stuff to its own library.
 //
+//    Brad Whitlock, Fri Oct 6 11:49:02 PDT 2006
+//    I made the symbols be static in the ExprGrammar class so there are no
+//    conflicts with Python 2.5.
+//
 // ****************************************************************************
 class EXPR_API ExprGrammar : public Grammar
 {
@@ -61,56 +65,55 @@ class EXPR_API ExprGrammar : public Grammar
     ExprGrammar();
     ~ExprGrammar();
     bool Initialize();
+
+    // ------------------------------------------------------------------------
+    // TERMINALS
+    // ------------------------------------------------------------------------
+    static Symbol T_Plus;
+    static Symbol T_Mult;
+    static Symbol T_Minus;
+    static Symbol T_Slash;
+    static Symbol T_Exp;
+    static Symbol T_Mod;
+    static Symbol T_LBracket;
+    static Symbol T_RBracket;
+    static Symbol T_LParen;
+    static Symbol T_RParen;
+    static Symbol T_LCarat;
+    static Symbol T_RCarat;
+    static Symbol T_LBrace;
+    static Symbol T_RBrace;
+    static Symbol T_Pound;
+    static Symbol T_Equal;
+    static Symbol T_At;
+    static Symbol T_Comma;
+    static Symbol T_Colon;
+    static Symbol T_Ident;
+    static Symbol T_Integer;
+    static Symbol T_Float;
+    static Symbol T_String;
+    static Symbol T_Bool;
+
+    // ------------------------------------------------------------------------
+    // NON-TERMINALS
+    // ------------------------------------------------------------------------
+    static Symbol Expr;
+    static Symbol Constant;
+    static Symbol Vector;
+    static Symbol List;
+    static Symbol ListElems;
+    static Symbol ListElem;
+    static Symbol Function;
+    static Symbol Args;
+    static Symbol Arg;
+    static Symbol PathSpec;
+    static Symbol MultiSlash;
+    static Symbol Variable;
+    static Symbol Database;
+    static Symbol DBSpec;
+    static Symbol PathMachSpec;
+    static Symbol MachSpec;
+    static Symbol TimeSpec;
 };
-
-// ------------------------------------------------------------------------
-// TERMINALS
-// ------------------------------------------------------------------------
-extern Symbol T_Plus;
-extern Symbol T_Mult;
-extern Symbol T_Minus;
-extern Symbol T_Slash;
-extern Symbol T_Exp;
-extern Symbol T_Mod;
-extern Symbol T_LBracket;
-extern Symbol T_RBracket;
-extern Symbol T_LParen;
-extern Symbol T_RParen;
-extern Symbol T_LCarat;
-extern Symbol T_RCarat;
-extern Symbol T_LBrace;
-extern Symbol T_RBrace;
-extern Symbol T_Pound;
-extern Symbol T_Equal;
-extern Symbol T_At;
-extern Symbol T_Comma;
-extern Symbol T_Colon;
-extern Symbol T_Ident;
-extern Symbol T_Integer;
-extern Symbol T_Float;
-extern Symbol T_String;
-extern Symbol T_Bool;
-
-
-// ------------------------------------------------------------------------
-// NON-TERMINALS
-// ------------------------------------------------------------------------
-extern EXPR_API Symbol Expr;
-extern EXPR_API Symbol Constant;
-extern EXPR_API Symbol Vector;
-extern EXPR_API Symbol List;
-extern EXPR_API Symbol ListElems;
-extern EXPR_API Symbol ListElem;
-extern EXPR_API Symbol Function;
-extern EXPR_API Symbol Args;
-extern EXPR_API Symbol Arg;
-extern EXPR_API Symbol PathSpec;
-extern EXPR_API Symbol MultiSlash;
-extern EXPR_API Symbol Variable;
-extern EXPR_API Symbol Database;
-extern EXPR_API Symbol DBSpec;
-extern EXPR_API Symbol PathMachSpec;
-extern EXPR_API Symbol MachSpec;
-extern EXPR_API Symbol TimeSpec;
 
 #endif

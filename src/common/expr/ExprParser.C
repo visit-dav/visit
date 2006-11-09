@@ -140,6 +140,10 @@ ExprParser::ExprParser(ExprNodeFactory *f) : Parser(), factory(f)
 //    Jeremy Meredith, Fri Sep  2 16:57:48 PDT 2005
 //    Improved error message to TimeSpec slightly.
 //
+//    Brad Whitlock, Fri Oct 6 11:49:02 PDT 2006
+//    I made the symbols be static in the ExprGrammar class so there are no
+//    conflicts with Python 2.5.
+//
 // ****************************************************************************
 ParseTreeNode*
 ExprParser::ApplyRule(const Symbol           &sym,
@@ -149,7 +153,7 @@ ExprParser::ApplyRule(const Symbol           &sym,
                       Pos                     p)
 {
     ParseTreeNode *node = NULL;
-    if (sym == Expr)
+    if (sym == ExprGrammar::Expr)
     {
         switch (rule->GetID())
         {
@@ -235,7 +239,7 @@ ExprParser::ApplyRule(const Symbol           &sym,
             break;
             */
         }
-    } else if (sym == Constant)
+    } else if (sym == ExprGrammar::Constant)
     {
         switch (rule->GetID())
         {
@@ -256,7 +260,7 @@ ExprParser::ApplyRule(const Symbol           &sym,
                                          ((BoolConst *)T[0])->GetValue());
             break;
         }
-    } else if (sym == Vector)
+    } else if (sym == ExprGrammar::Vector)
     {
         switch (rule->GetID())
         {
@@ -272,7 +276,7 @@ ExprParser::ApplyRule(const Symbol           &sym,
                                              (ExprNode*)(E[5]));
             break;
         }
-    } else if (sym == List)
+    } else if (sym == ExprGrammar::List)
     {
         switch (rule->GetID())
         {
@@ -280,7 +284,7 @@ ExprParser::ApplyRule(const Symbol           &sym,
             node = E[1];
             break;
         }
-    } else if (sym == ListElems)
+    } else if (sym == ExprGrammar::ListElems)
     {
         switch (rule->GetID())
         {
@@ -291,7 +295,7 @@ ExprParser::ApplyRule(const Symbol           &sym,
             node = new ListExpr(p, (ListElemExpr*)(E[0]));
             break;
         }
-    } else if (sym == ListElem)
+    } else if (sym == ExprGrammar::ListElem)
     {
         switch (rule->GetID())
         {
@@ -308,7 +312,7 @@ ExprParser::ApplyRule(const Symbol           &sym,
                                     (ExprNode*)(E[4]));
             break;
         }
-    } else if (sym == Function)
+    } else if (sym == ExprGrammar::Function)
     {
         switch (rule->GetID())
         {
@@ -322,7 +326,7 @@ ExprParser::ApplyRule(const Symbol           &sym,
                                                (ArgsExpr*)(E[2]));
             break;
         }
-    } else if (sym == Args)
+    } else if (sym == ExprGrammar::Args)
     {
         switch (rule->GetID())
         {
@@ -333,7 +337,7 @@ ExprParser::ApplyRule(const Symbol           &sym,
             node = new ArgsExpr(p, (ArgExpr*)(E[0]));
             break;
         }
-    } else if (sym == Arg)
+    } else if (sym == ExprGrammar::Arg)
     {
         switch (rule->GetID())
         {
@@ -349,7 +353,7 @@ ExprParser::ApplyRule(const Symbol           &sym,
             node = new ArgExpr(p, (ExprParseTreeNode*)E[0], p.GetText(text));
             break;
         }
-    } else if (sym == PathSpec)
+    } else if (sym == ExprGrammar::PathSpec)
     {
         switch (rule->GetID())
         {
@@ -369,7 +373,7 @@ ExprParser::ApplyRule(const Symbol           &sym,
             node = new PathExpr(p, ((Identifier*)T[0])->GetVal());
             break;
         }
-    } else if (sym == MultiSlash)
+    } else if (sym == ExprGrammar::MultiSlash)
     {
         switch (rule->GetID())
         {
@@ -380,7 +384,7 @@ ExprParser::ApplyRule(const Symbol           &sym,
             node = new DummyNode(p);
             break;
         }
-    } else if (sym == Variable)
+    } else if (sym == ExprGrammar::Variable)
     {
         switch (rule->GetID())
         {
@@ -400,7 +404,7 @@ ExprParser::ApplyRule(const Symbol           &sym,
                                           false);
             break;
         }
-    } else if (sym == Database)
+    } else if (sym == ExprGrammar::Database)
     {
         switch (rule->GetID())
         {
@@ -408,7 +412,7 @@ ExprParser::ApplyRule(const Symbol           &sym,
             node = E[1];
             break;
         }
-    } else if (sym == DBSpec)
+    } else if (sym == ExprGrammar::DBSpec)
     {
         switch (rule->GetID())
         {
@@ -433,7 +437,7 @@ ExprParser::ApplyRule(const Symbol           &sym,
                            (TimeExpr*)(E[2]));
             break;
         }
-    } else if (sym == MachSpec)
+    } else if (sym == ExprGrammar::MachSpec)
     {
         switch (rule->GetID())
         {
@@ -441,7 +445,7 @@ ExprParser::ApplyRule(const Symbol           &sym,
             node = new MachExpr(p, ((Identifier*)T[1])->GetVal());
             break;
         }
-    } else if (sym == TimeSpec)
+    } else if (sym == ExprGrammar::TimeSpec)
     {
         switch (rule->GetID())
         {

@@ -59,58 +59,62 @@
 //    Jeremy Meredith, Wed Jun  8 17:04:23 PDT 2005
 //    Made symbols all be associated with a dictionary.
 //
+//    Brad Whitlock, Fri Oct 6 11:49:02 PDT 2006
+//    I made the symbols be static in the ExprGrammar class so there are no
+//    conflicts with Python 2.5.
+//
 
 Dictionary D;
 
 // ------------------------------------------------------------------------
 // TERMINALS
 // ------------------------------------------------------------------------
-Symbol T_Plus          (D, '+');
-Symbol T_Mult          (D, '*');
-Symbol T_Minus         (D, '-');
-Symbol T_Slash         (D, '/');
-Symbol T_Exp           (D, '^');
-Symbol T_Mod           (D, '%');
-Symbol T_LBracket      (D, '[');
-Symbol T_RBracket      (D, ']');
-Symbol T_LParen        (D, '(');
-Symbol T_RParen        (D, ')');
-Symbol T_LCarat        (D, '<');
-Symbol T_RCarat        (D, '>');
-Symbol T_LBrace        (D, '{');
-Symbol T_RBrace        (D, '}');
-Symbol T_Pound         (D, '#');
-Symbol T_Equal         (D, '=');
-Symbol T_At            (D, '@');
-Symbol T_Comma         (D, ',');
-Symbol T_Colon         (D, ':');
-Symbol T_Ident         (D, TT_Identifier,   "Identifier");
-Symbol T_Integer       (D, TT_IntegerConst, "Integer");
-Symbol T_Float         (D, TT_FloatConst,   "Float");
-Symbol T_String        (D, TT_StringConst,  "String");
-Symbol T_Bool          (D, TT_BoolConst,    "Bool");
+Symbol ExprGrammar::T_Plus          (D, '+');
+Symbol ExprGrammar::T_Mult          (D, '*');
+Symbol ExprGrammar::T_Minus         (D, '-');
+Symbol ExprGrammar::T_Slash         (D, '/');
+Symbol ExprGrammar::T_Exp           (D, '^');
+Symbol ExprGrammar::T_Mod           (D, '%');
+Symbol ExprGrammar::T_LBracket      (D, '[');
+Symbol ExprGrammar::T_RBracket      (D, ']');
+Symbol ExprGrammar::T_LParen        (D, '(');
+Symbol ExprGrammar::T_RParen        (D, ')');
+Symbol ExprGrammar::T_LCarat        (D, '<');
+Symbol ExprGrammar::T_RCarat        (D, '>');
+Symbol ExprGrammar::T_LBrace        (D, '{');
+Symbol ExprGrammar::T_RBrace        (D, '}');
+Symbol ExprGrammar::T_Pound         (D, '#');
+Symbol ExprGrammar::T_Equal         (D, '=');
+Symbol ExprGrammar::T_At            (D, '@');
+Symbol ExprGrammar::T_Comma         (D, ',');
+Symbol ExprGrammar::T_Colon         (D, ':');
+Symbol ExprGrammar::T_Ident         (D, TT_Identifier,   "Identifier");
+Symbol ExprGrammar::T_Integer       (D, TT_IntegerConst, "Integer");
+Symbol ExprGrammar::T_Float         (D, TT_FloatConst,   "Float");
+Symbol ExprGrammar::T_String        (D, TT_StringConst,  "String");
+Symbol ExprGrammar::T_Bool          (D, TT_BoolConst,    "Bool");
 
 
 // ------------------------------------------------------------------------
 // NON-TERMINALS
 // ------------------------------------------------------------------------
-Symbol Expr            (D,  "Expr"         );
-Symbol Constant        (D,  "Constant"     );
-Symbol Vector          (D,  "Vector"       );
-Symbol List            (D,  "List"         );
-Symbol ListElems       (D,  "ListElems"    );
-Symbol ListElem        (D,  "ListElem"     );
-Symbol Function        (D,  "Function"     );
-Symbol Args            (D,  "Args"         );
-Symbol Arg             (D,  "Arg"          );
-Symbol PathSpec        (D,  "PathSpec"     );
-Symbol MultiSlash      (D,  "MultiSlash"   );
-Symbol Variable        (D,  "Variable"     );
-Symbol Database        (D,  "Database"     );
-Symbol DBSpec          (D,  "DBSpec"       );
-Symbol PathMachSpec    (D,  "PathMachSpec" );
-Symbol MachSpec        (D,  "MachSpec"     );
-Symbol TimeSpec        (D,  "TimeSpec"     );
+Symbol ExprGrammar::Expr            (D,  "Expr"         );
+Symbol ExprGrammar::Constant        (D,  "Constant"     );
+Symbol ExprGrammar::Vector          (D,  "Vector"       );
+Symbol ExprGrammar::List            (D,  "List"         );
+Symbol ExprGrammar::ListElems       (D,  "ListElems"    );
+Symbol ExprGrammar::ListElem        (D,  "ListElem"     );
+Symbol ExprGrammar::Function        (D,  "Function"     );
+Symbol ExprGrammar::Args            (D,  "Args"         );
+Symbol ExprGrammar::Arg             (D,  "Arg"          );
+Symbol ExprGrammar::PathSpec        (D,  "PathSpec"     );
+Symbol ExprGrammar::MultiSlash      (D,  "MultiSlash"   );
+Symbol ExprGrammar::Variable        (D,  "Variable"     );
+Symbol ExprGrammar::Database        (D,  "Database"     );
+Symbol ExprGrammar::DBSpec          (D,  "DBSpec"       );
+Symbol ExprGrammar::PathMachSpec    (D,  "PathMachSpec" );
+Symbol ExprGrammar::MachSpec        (D,  "MachSpec"     );
+Symbol ExprGrammar::TimeSpec        (D,  "TimeSpec"     );
 
 
 // ****************************************************************************
