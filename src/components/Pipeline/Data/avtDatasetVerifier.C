@@ -158,6 +158,10 @@ avtDatasetVerifier::VerifyDatasets(int nlist, vtkDataSet **list,
 //    Hank Childs, Tue Jul  5 16:22:56 PDT 2005
 //    Add variable names to warning message ['6368].
 //
+//    Kathleen Bonnell, Mon Nov 13 17:32:26 PST 2006 
+//    Regrab 'pt_var' or 'cell_var' after call to CorrectVarMismatch, as this
+//    method invalidates the pointers.
+//
 // ****************************************************************************
 
 void
@@ -230,6 +234,8 @@ avtDatasetVerifier::VerifyDataset(vtkDataSet *ds, int dom)
         if (nscalars != nPts)
         {
             CorrectVarMismatch(pt_var, ds->GetPointData(), nPts); 
+            // CorrectVarMismatch invalidates pt_var pointer. Grab it again.
+            pt_var = ds->GetPointData()->GetArray(i);
             IssueVarMismatchWarning(nscalars, nPts,true,dom,pt_var->GetName());
         }
         if (pt_var->GetDataType() == VTK_UNSIGNED_CHAR &&
@@ -256,6 +262,8 @@ avtDatasetVerifier::VerifyDataset(vtkDataSet *ds, int dom)
         if (nscalars != nCells)
         {
             CorrectVarMismatch(cell_var, ds->GetCellData(), nCells);
+            // CorrectVarMismatch invalidates cell_var pointer. Grab it again.
+            cell_var = ds->GetCellData()->GetArray(i);
             bool issueWarning = true;
             vtkUnsignedCharArray *gz = (vtkUnsignedCharArray *)
                                  ds->GetCellData()->GetArray("avtGhostZones");
@@ -384,6 +392,15 @@ avtDatasetVerifier::IssueVarMismatchWarning(int nVars, int nUnits,bool isPoint,
 //    Kathleen Bonnell, Fri Nov 12 08:22:29 PST 2004
 //    Changed args.  Reworked method to handle more than just Scalar vars.
 //
+//    Kathleen Bonnell, Mon Nov 13 17:32:26 PST 2006 
+//    Removed tests for 'isActiveAttribute'.  Always use 'AddArray' instead
+//    of 'SetScalars' etc, because 'AddArray' overwrites the array in-place
+//    preserving the order of the arrays in vtkDataSetAttributes, whereas 
+//    'SetScalars' and the like DOES NOT.  This is important due to the
+//    fact that this method is called from within a for-loop that is looping
+//    over all the arrays in 'atts' by index number.  Want to preserve the
+//    original ordering!  AddArray also does not destroy active attributes.
+//
 // ****************************************************************************
 
 void
@@ -403,20 +420,6 @@ avtDatasetVerifier::CorrectVarMismatch(vtkDataArray *var,
     if (name != NULL)
     {
         newVar->SetName(name);
-        //
-        // Determine if this var is the active Attribute 
-        // (Scalar,Vector, Tensor)
-        //
-        const char *attributeName;
-        if (nComponents == 1 && atts->GetScalars())
-            attributeName = atts->GetScalars()->GetName();
-        else if (nComponents == 3 && atts->GetVectors())
-            attributeName = atts->GetVectors()->GetName();
-        else if (nComponents == 9 && atts->GetTensors())
-            attributeName = atts->GetTensors()->GetName();
-        else 
-            attributeName = "";
-        isActiveAttribute = (strcmp(attributeName, name) == 0); 
     }
 
     //
@@ -451,26 +454,11 @@ avtDatasetVerifier::CorrectVarMismatch(vtkDataArray *var,
     //
     // Now make the new var be the official var.  We couldn't do this
     // before since registering it may have freed the original var and we
-    // still wanted it.  Set* replaces the currently active Attribute 
-    // (Vectors, Scalars), so only do it if the var we are replacing was the 
-    // active Attribute, otherwise use AddArray to replace the old var.
+    // still wanted it.  AddArray replaces the old var, preserving the
+    // order of arrays as well as the 'active' attributes.
     //
-    if (!isActiveAttribute)
-    {
-        atts->AddArray(newVar);
-    }
-    else if (nComponents == 1)
-    {
-        atts->SetScalars(newVar);
-    }
-    else if (nComponents == 3)
-    {
-        atts->SetVectors(newVar);
-    }
-    else if (nComponents == 9)
-    {
-        atts->SetTensors(newVar);
-    }
+    atts->AddArray(newVar);
+
     if (nComponents > 1)
     {
         delete [] defaultTuple; 
