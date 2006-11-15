@@ -109,6 +109,9 @@
 //    Hank Childs, Fri Oct  6 15:47:04 PDT 2006
 //    Added abel_inversion.
 //
+//    Mark C. Miller, Wed Nov 15 12:47:05 PST 2006
+//    Added zonetype expression
+//
 // ****************************************************************************
 struct ExprNameList
 {
@@ -251,6 +254,7 @@ const char *expr_mesh[] = {
     "revolved_volume",
     "volume",
     "zoneid",
+    "zonetype",
     NULL
 };
 

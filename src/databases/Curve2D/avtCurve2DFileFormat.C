@@ -58,7 +58,9 @@
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
 
+#include <errno.h>
 #include <float.h>
+#include <stdlib.h>
 
 using std::vector;
 using std::string;
@@ -282,21 +284,40 @@ avtCurve2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Added VALID_XVALUE for case where X but no Y is given at the END of
 //    a curve specification and interpreted it as a "zone-centered" curve.
 //    Added logic to re-center curve for the "zone-centered" case
+//
+//    Mark C. Miller, Wed Nov 15 16:24:06 PST 2006
+//    Deal with possible exception during INVALID_POINT_WARNING. Fix
+//    lack of suppression of more than 5 lines of errors. Fix possible
+//    reference to array index -1 when xl.size() or yl.size()==0
 // ****************************************************************************
 
 #define INVALID_POINT_WARNING(X)                                        \
 {                                                                       \
-    char msg[512] = "Further warnings will be supressed";               \
     if (invalidPointCount++ < 6)                                        \
     {                                                                   \
-        SNPRINTF(msg, sizeof(msg),"Encountered invalid point "          \
-            "at or near line %d beginning with \"%s\"",                 \
-            lineCount, lineName.c_str());                               \
+        char msg[512] = "Further warnings will be supressed";           \
+        if (invalidPointCount < 6)                                      \
+        {                                                               \
+            SNPRINTF(msg, sizeof(msg),"Encountered invalid point "      \
+                "at or near line %d beginning with \"%s\"",             \
+                lineCount, lineName.c_str());                           \
+        }                                                               \
+        TRY                                                             \
+        {                                                               \
+            if (!avtCallback::IssueWarning(msg))                        \
+                cerr << msg << endl;                                    \
+        }                                                               \
+        CATCH(VisItException)                                           \
+        {                                                               \
+            cerr << msg << endl;                                        \
+        }                                                               \
+        ENDTRY                                                          \
     }                                                                   \
-    if (!avtCallback::IssueWarning(msg))                                \
-        cerr << msg << endl;                                            \
     xl.push_back(X);                                                    \
-    yl.push_back(yl[yl.size()-1]);                                      \
+    if (yl.size())                                                      \
+        yl.push_back(yl[yl.size()-1]);                                  \
+    else                                                                \
+        yl.push_back(X);                                                \
     breakpoint_following.push_back(false);                              \
 }
 
@@ -408,7 +429,14 @@ avtCurve2DFileFormat::ReadFile(void)
           }
           case INVALID_POINT:
           {
-              INVALID_POINT_WARNING(xl[xl.size()-1]);
+              if (xl.size())
+              {
+                  INVALID_POINT_WARNING(xl[xl.size()-1]);
+              }
+              else
+              {
+                  INVALID_POINT_WARNING(0);
+              }
               break;
           }
           case VALID_XVALUE:
@@ -569,6 +597,9 @@ avtCurve2DFileFormat::ReadFile(void)
 //    Mark C. Miller, Tue Oct 31 20:33:29 PST 2006
 //    Added code to detect more closely possible errors from strtod.
 //    Added logic to handle VALID_XVALUE case.
+//
+//    Mark C. Miller, Wed Nov 15 16:24:06 PST 2006
+//    Reset errno before calling strtod
 // ****************************************************************************
 
 CurveToken
@@ -632,6 +663,7 @@ avtCurve2DFileFormat::GetPoint(ifstream &ifile, float &x, float &y, string &ln)
 
     char *ystr = NULL;
 
+    errno = 0;
     x = (float) strtod(line, &ystr);
     if (((x == 0.0) && (ystr == line)) || (errno == ERANGE))
     {
@@ -651,6 +683,7 @@ avtCurve2DFileFormat::GetPoint(ifstream &ifile, float &x, float &y, string &ln)
     ystr++;
 
     char *tmpstr;
+    errno = 0;
     y = (float) strtod(ystr, &tmpstr);
     if (((y == 0.0) && (tmpstr == ystr)) || (errno == ERANGE))
     {
