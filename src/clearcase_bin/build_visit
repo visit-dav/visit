@@ -41,7 +41,7 @@
 #          Qt		qt-x11-free-3.3.2.tar.gz
 #          Mesa		Mesa-5.0-mangled.tar
 #          Python	Python-2.1.2.tar
-#          VTK		vtk-5.0.0a.tar
+#          VTK		vtk-5.0.0b.tar
 #          CMake	cmake-2.2.3.tar
 #          Silo		silo060605.sh          
 #
@@ -111,8 +111,8 @@ parallel="no"
 #
 export VISIT_FILE="visit060918.tar"
 
-export VTK_FILE="vtk-5.0.0a.tar"
-export VTK_VERSION="5.0.0a"
+export VTK_FILE="vtk-5.0.0b.tar"
+export VTK_VERSION="5.0.0b"
 export CMAKE_FILE="cmake-2.2.3.tar"
 export CMAKE_VERSION="2.2.3"
 

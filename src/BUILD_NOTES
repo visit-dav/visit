@@ -17,7 +17,7 @@ shell prompt.
     Python   2.1.2     Scripting Language     http://www.python.org
     Qt       3.3.2     GUI Toolkit            http://www.trolltech.com
     Silo     4.5.1     File I/O library       http://www.llnl.gov/bdiv/meshtv
-    VTK      5.0.0a    Visualization Toolkit  http://www.kitware.com
+    VTK      5.0.0b    Visualization Toolkit  http://www.kitware.com
 
 
 The public version of VisIt has been built with the above listed versions
@@ -243,8 +243,8 @@ make
 # Build VTK
 #
 cd ..
-gunzip vtk-5.0.0a.tar.gz
-tar xf vtk-5.0.0a.tar
+gunzip vtk-5.0.0b.tar.gz
+tar xf vtk-5.0.0b.tar
 cd VTK
 #
 # On irix systems we have experienced problems with CMake not using the
@@ -377,34 +377,34 @@ make
 # Install it in the visit directory under the vtk directory.
 #
 mkdir $VISITDIR/vtk
-mkdir $VISITDIR/vtk/5.0.0a
-mkdir $VISITDIR/vtk/5.0.0a/$VISITARCH
-mkdir $VISITDIR/vtk/5.0.0a/$VISITARCH/{Common,Filtering,GenericFiltering,Graphics,Hybrid,IO,Imaging,MangleMesaInclude,Rendering,Utilities,VolumeRendering,lib,vtkstd,Utilities/vtktiff,Utilities/vtkexpat,Utilities/vtkzlib}
-cp vtkConfigure.h                   $VISITDIR/vtk/5.0.0a/$VISITARCH
-cp vtkToolkits.h                    $VISITDIR/vtk/5.0.0a/$VISITARCH
-cp vtk*Instantiator.h               $VISITDIR/vtk/5.0.0a/$VISITARCH
-cp Common/*.h                       $VISITDIR/vtk/5.0.0a/$VISITARCH/Common
-cp Common/*.txx                     $VISITDIR/vtk/5.0.0a/$VISITARCH/Common
-cp Filtering/*.h                    $VISITDIR/vtk/5.0.0a/$VISITARCH/Filtering
-cp Filtering/*.txx                  $VISITDIR/vtk/5.0.0a/$VISITARCH/Filtering
-cp GenericFiltering/*.h             $VISITDIR/vtk/5.0.0a/$VISITARCH/GenericFiltering
-cp Graphics/*.h                     $VISITDIR/vtk/5.0.0a/$VISITARCH/Graphics
-cp Hybrid/*.h                       $VISITDIR/vtk/5.0.0a/$VISITARCH/Hybrid
-cp IO/*.h                           $VISITDIR/vtk/5.0.0a/$VISITARCH/IO
-cp Imaging/*.h                      $VISITDIR/vtk/5.0.0a/$VISITARCH/Imaging
-cp Rendering/*.h                    $VISITDIR/vtk/5.0.0a/$VISITARCH/Rendering
-cp Utilities/*.h                    $VISITDIR/vtk/5.0.0a/$VISITARCH/Utilities
-cp Utilities/vtktiff/*.h            $VISITDIR/vtk/5.0.0a/$VISITARCH/Utilities/vtktiff
-cp Utilities/vtkexpat/*.h           $VISITDIR/vtk/5.0.0a/$VISITARCH/Utilities/vtkexpat
-cp Utilities/vtkzlib/*.h            $VISITDIR/vtk/5.0.0a/$VISITARCH/Utilities/vtkzlib
-cp VolumeRendering/*.h              $VISITDIR/vtk/5.0.0a/$VISITARCH/VolumeRendering
-cp MangleMesaInclude/*.h            $VISITDIR/vtk/5.0.0a/$VISITARCH/MangleMesaInclude
-cp vtkstd/*                         $VISITDIR/vtk/5.0.0a/$VISITARCH/vtkstd
-cp -d bin/*.so*                     $VISITDIR/vtk/5.0.0a/$VISITARCH/lib
+mkdir $VISITDIR/vtk/5.0.0b
+mkdir $VISITDIR/vtk/5.0.0b/$VISITARCH
+mkdir $VISITDIR/vtk/5.0.0b/$VISITARCH/{Common,Filtering,GenericFiltering,Graphics,Hybrid,IO,Imaging,MangleMesaInclude,Rendering,Utilities,VolumeRendering,lib,vtkstd,Utilities/vtktiff,Utilities/vtkexpat,Utilities/vtkzlib}
+cp vtkConfigure.h                   $VISITDIR/vtk/5.0.0b/$VISITARCH
+cp vtkToolkits.h                    $VISITDIR/vtk/5.0.0b/$VISITARCH
+cp vtk*Instantiator.h               $VISITDIR/vtk/5.0.0b/$VISITARCH
+cp Common/*.h                       $VISITDIR/vtk/5.0.0b/$VISITARCH/Common
+cp Common/*.txx                     $VISITDIR/vtk/5.0.0b/$VISITARCH/Common
+cp Filtering/*.h                    $VISITDIR/vtk/5.0.0b/$VISITARCH/Filtering
+cp Filtering/*.txx                  $VISITDIR/vtk/5.0.0b/$VISITARCH/Filtering
+cp GenericFiltering/*.h             $VISITDIR/vtk/5.0.0b/$VISITARCH/GenericFiltering
+cp Graphics/*.h                     $VISITDIR/vtk/5.0.0b/$VISITARCH/Graphics
+cp Hybrid/*.h                       $VISITDIR/vtk/5.0.0b/$VISITARCH/Hybrid
+cp IO/*.h                           $VISITDIR/vtk/5.0.0b/$VISITARCH/IO
+cp Imaging/*.h                      $VISITDIR/vtk/5.0.0b/$VISITARCH/Imaging
+cp Rendering/*.h                    $VISITDIR/vtk/5.0.0b/$VISITARCH/Rendering
+cp Utilities/*.h                    $VISITDIR/vtk/5.0.0b/$VISITARCH/Utilities
+cp Utilities/vtktiff/*.h            $VISITDIR/vtk/5.0.0b/$VISITARCH/Utilities/vtktiff
+cp Utilities/vtkexpat/*.h           $VISITDIR/vtk/5.0.0b/$VISITARCH/Utilities/vtkexpat
+cp Utilities/vtkzlib/*.h            $VISITDIR/vtk/5.0.0b/$VISITARCH/Utilities/vtkzlib
+cp VolumeRendering/*.h              $VISITDIR/vtk/5.0.0b/$VISITARCH/VolumeRendering
+cp MangleMesaInclude/*.h            $VISITDIR/vtk/5.0.0b/$VISITARCH/MangleMesaInclude
+cp vtkstd/*                         $VISITDIR/vtk/5.0.0b/$VISITARCH/vtkstd
+cp -d bin/*.so*                     $VISITDIR/vtk/5.0.0b/$VISITARCH/lib
 # For IRIX, solaris
-# cp -R bin/*.so* $VISITDIR/vtk/5.0.0a/$VISITARCH/lib
+# cp -R bin/*.so* $VISITDIR/vtk/5.0.0b/$VISITARCH/lib
 # For true64, 
-# cp bin/*.so $VISITDIR/vtk/5.0.0a/$VISITARCH/lib
+# cp bin/*.so $VISITDIR/vtk/5.0.0b/$VISITARCH/lib
 cd ..
 
 #
