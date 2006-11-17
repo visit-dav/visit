@@ -40,6 +40,7 @@
 #include <viewer_exports.h>
 #include <ConfigManager.h>
 #include <string>
+#include <vectortypes.h>
 
 // Forward declarations
 class AttributeSubject;
@@ -94,6 +95,9 @@ class ViewerSubject;
 //    Brad Whitlock, Thu Feb 17 16:06:02 PST 2005
 //    I made WriteConfig return a bool.
 //
+//    Brad Whitlock, Fri Nov 10 10:58:11 PDT 2006
+//    I added arguments to ImportEntireState.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerConfigManager : public ConfigManager
@@ -112,7 +116,8 @@ public:
     void Add(AttributeSubject *subject);
 
     void ExportEntireState(const std::string &filename);
-    void ImportEntireState(const std::string &filename, bool);
+    void ImportEntireState(const std::string &filename, bool,
+                           const stringVector &, bool);
 
 private:
     bool                             writeDetail;

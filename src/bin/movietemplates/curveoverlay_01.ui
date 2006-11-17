@@ -1,0 +1,150 @@
+<!DOCTYPE UI><UI version="3.1" stdsetdef="1">
+<class>SEQUENCE_2</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>SEQUENCE_2</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>545</width>
+            <height>252</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Curve properties</string>
+    </property>
+    <widget class="QLayoutWidget">
+        <property name="name">
+            <cstring>layout8</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>20</y>
+                <width>523</width>
+                <height>114</height>
+            </rect>
+        </property>
+        <grid>
+            <property name="name">
+                <cstring>unnamed</cstring>
+            </property>
+            <property name="spacing">
+                <number>10</number>
+            </property>
+            <widget class="QLabel" row="1" column="0">
+                <property name="name">
+                    <cstring>CurveVariableLabel</cstring>
+                </property>
+                <property name="text">
+                    <string>Curve variable</string>
+                </property>
+            </widget>
+            <widget class="QLabel" row="2" column="0">
+                <property name="name">
+                    <cstring>CurveTitleLabel</cstring>
+                </property>
+                <property name="text">
+                    <string>Curve title</string>
+                </property>
+            </widget>
+            <spacer row="3" column="0" rowspan="1" colspan="2">
+                <property name="name">
+                    <cstring>spacer4</cstring>
+                </property>
+                <property name="orientation">
+                    <enum>Horizontal</enum>
+                </property>
+                <property name="sizeType">
+                    <enum>Expanding</enum>
+                </property>
+                <property name="sizeHint">
+                    <size>
+                        <width>521</width>
+                        <height>20</height>
+                    </size>
+                </property>
+            </spacer>
+            <widget class="QvisFileLineEdit" row="0" column="1">
+                <property name="name">
+                    <cstring>CURVE_DATABASE</cstring>
+                </property>
+            </widget>
+            <widget class="QLineEdit" row="1" column="1">
+                <property name="name">
+                    <cstring>CURVE_VARIABLE</cstring>
+                </property>
+            </widget>
+            <widget class="QLineEdit" row="2" column="1">
+                <property name="name">
+                    <cstring>CURVE_TITLE</cstring>
+                </property>
+            </widget>
+            <widget class="QLabel" row="0" column="0">
+                <property name="name">
+                    <cstring>CurveDatabaseLabel</cstring>
+                </property>
+                <property name="text">
+                    <string>Curve database</string>
+                </property>
+            </widget>
+        </grid>
+    </widget>
+    <spacer>
+        <property name="name">
+            <cstring>spacer1</cstring>
+        </property>
+        <property name="orientation">
+            <enum>Vertical</enum>
+        </property>
+        <property name="sizeType">
+            <enum>Expanding</enum>
+        </property>
+        <property name="sizeHint">
+            <size>
+                <width>50</width>
+                <height>80</height>
+            </size>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>240</x>
+                <y>150</y>
+                <width>50</width>
+                <height>80</height>
+            </rect>
+        </property>
+    </spacer>
+</widget>
+<customwidgets>
+    <customwidget>
+        <class>QvisFileLineEdit</class>
+        <header location="global">/data_vobs/VisIt/gui/QvisFileLineEdit.h</header>
+        <sizehint>
+            <width>-1</width>
+            <height>-1</height>
+        </sizehint>
+        <container>0</container>
+        <sizepolicy>
+            <hordata>5</hordata>
+            <verdata>5</verdata>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        <pixmap>image0</pixmap>
+        <signal>returnPressed()</signal>
+        <signal>textChanged(const QString &amp;)</signal>
+    </customwidget>
+</customwidgets>
+<images>
+    <image name="image0">
+        <data format="XPM.GZ" length="23078">789ced9b6b73d3461486bff32b3c9c6f4c678b6fb2359d7e20dc0a49801020814e3fac242b4ec8855c49d2e97fef39cfc68e6c39d4833bd31a490fd87eb5672f3eefee6a13869f1f34b6dfac371efc7ceff4cc9feda68d74e84f1a0fb2f38383abdffff8f5cf7bf75b9d7ea3d36c34bbfd46ebfe4ff7ee3bdf481bf2900bdd43370df40aba65989621ba6d50be8aee18945fa0bb06e50fd191817e86ee19e8d7e8be61da5fa26383f63ea0bd417ce83f31d07be8d440f7d19941fd0c3d30280fe3cb0dfadb37dde4a2fc31ba65a0bfa2db06fa10dd31687f03dd35286fa22383f21ced0dcadfa11303fd129d19c49fa30706fac434e9c71f394273a13fa13b06dfe7141d1994e36fab6fd05f848e0de2e9af95189487fa0383faefd1b9816e9bc67ec6e3190fe9217ff205dd32d04fd05d8378878e0cca3fa3fb069afedbb181663eb4bdc1f8b6d089817e854e0de2f1a79d19941fa37383f28fa699ae219f311a43d1299a84529ffc76ba061abf3b9141bca07b06e5f8d5e91b940fd0de40339e4e62101fca5303fd163d30d0617cb941fd03d32caf907ffa67fa85f1efa25b06f5c93fe967fe7afce94606f1ccff6ecf20fe113a362867be76bd41fd2b7466109fa0738372be3fd33f8c87f5c0740cf381f58ffd8c47988fa433ac27da8bb8688ff51b2506e5acc72835d08c27ca0cf453f4c040b3bfb0dd04bfd9cf7a2d83f6f103fb42ff2d3409e1fb919f5edf4087f2d840b33ff5bc81663df43203cdfc65f985fed87f682ee41bbffaa981663df63383f1b01ff77303cd7e11770cf40b3486519ff9114706fdb1be622ee2597f7162504e3ee2d4a07c139d1bb447fbbe6510cf7cf59181667ff17d037d868e0deaefa01303cd7ee80706fdb1dfb2fd84f9fa1ccd0247b3ffb05cc2fec67e9f740dcaf13be91bb4d7417351be8e4e0dea93ef24334c6f30de6460509ff1f23809f385fed2a6417bccc7b465d01efb0dcb378c8ff9c9f40cf909edf50cdae379997a8372e63bc30bf39bf1a65ce8df4cf3380beb9dfcb1fcc2f7df46b3008867fd32fdc2fc62bfcbbc815e439300f41b746aa0c95fc685663fcc06069a7c65b98166bef0b8223f9e781e1f61bde3e7a06d10df45b3c1117f8dee1a9407cd0246337f073d83f6384f0c6203cd7e897d613ef3fd196e583f3c1f065c68f2c5e33ff8cbf3246f1ad4e77cc1e32ecc47f64b1e1f61bfe2fbb31d87f5c77983ed8ff10bf9cc2383faf897f70ccac93fcb39cc57f2c1720beb85e76bee0dcac9479e188c8ff59da706f1ec7ff9c040f33cc8b9c2fcaea912b5e7d5a3f6bc7ad49e578fdaf3ea517b5e3d6acfab47edf98f84936fe04751d39ebba4664911f3fcced9907cd3735fb384a40b7afead1da2e6ff495a7b5e39d2daf30559be1ca4b5e70bb27c39486bcf1764f97290d69e2fc8f2e520fd973ccfdc60aefe72b733ced5b0541a5ab98d99c5bc3dcd4f6871d7ede9983e1746366b8465aaebf9be3b98abbfe1b8ceac8c865686dfcce3bc3dcd4f68f1507b3d725ff4d3b13bb9738465aaebf9a93bbbc9d2b9bb705fdda5bb527ded1ee9e715f7d83da1fca97ba631cfdd6f37b12fdc4bb7aa395e2bb4528c5977af54bdd6d7f5a99edeb80dbdbfe7deba4dee9623adfd4bfdfbcebd771fd4d155b7e5b6f5fe47f7c93d744dd772ed718b1ded2ff4fac595d7f9748dc9beabea79d7453759eab9be8b6da58a73227a47bc24926ac9b1967fbdf94d50d8417b92c940728d490bad8c636447866e4576655767cd8aec157b92cf5a6b5f0ef4f550d5ac486d438ee44b18931ccb89ea53399373b990af72a9ea6ad4a25c8f7e47258fa63d2fd798ecbbaa9eeb9f95519e75ad883cd67c3cd1f7a7f2ccd6823cd7fb874414f7762fb69637f5d3c5442ba3984f1af1829297fa69b2a75519caaaee25fbe819918ce55ad6e442efe8da9757aaf774267a79adea8d6c681b6f67f43aed79a9c654df55f57cf76647f59a8d6b7d6feb7a7ba6f7af6553dec97bdd19bdaedfa9ccca07deaf46391eb7328ab199b345c9f668ce8c62e42373e693fb200f67478edbb7d6ae461e4a53efb7745e3e97b67eeacce875daf3728dc9be2be9b9742597b5a2e7eaf510cf23bdf3517a9aa9199e8f4f4821b7b7ad8c620ec74e6e05276f63a4af2fb1eedadebb599185f6277af452fcd706ef67f43ae5f9748d52df95f45c3fc5e36c793d31b1b7930f7db753914ffed9f3422b3731761a086774dbb1ed2c5d8839d2f39ff85463576745dee979a623e3673d9ffb1d3f2cf75af27caac674dfcbecb9dff57b7e6ffa7dae75def29fc7d9b273d901f9b3e7eba9bebfd2dd51d7a1df1f67f6cc1f943d2fb4328ac974d718ea89ff899ecb86feb018e38ff45c15793ba1d9fa2e45dee979a2911bfed89fb8157faacfe8c95e67793e55a3d4f7327b7e66ab74fa7d1ecffdb9cef9db6c9dbbbedff717f60c95757fa44ff6c8ede869de7b5be95b8573fb84e78556c6317e570efda5bf74c7e12c5e88d9d6b3fe6b3d9f1deb4f52528ebccb737d7dafcfe5551de195bf9e68f10ecfa76b94faaea4e705fef1b718fe916cfa15595b34e67fc4127bbed0cfe7b7df7f9edf5cfd5854dc733d4bc5df358a65a6e29e5792e5cb415a7bbe20cb9783b4f6bc72a40b799ed62c25dfeff97f3d5f6bbe9beff5bc669951e7effe7f2eb5e73f24c57f392a338aaa3daf1eb5e7d5a3f6bc7ad49e578fdaf3ea71ffaf5feefd0d48eadb21</data>
+    </image>
+</images>
+<layoutdefaults spacing="6" margin="11"/>
+<includehints>
+    <includehint>qvisfilelineedit.h</includehint>
+</includehints>
+</UI>

@@ -659,6 +659,9 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void WriteConfigFile();
     void ExportEntireState(const std::string &filename);
     void ImportEntireState(const std::string &filename, bool inVisItDir);
+    void ImportEntireStateWithDifferentSources(const std::string &filename,
+                                               bool inVisItDir,
+                                               const stringVector &sources);
 
     // Methods for dealing with plot SIL restrictions.
     avtSILRestriction_p GetPlotSILRestriction() 

@@ -1,0 +1,615 @@
+<!DOCTYPE UI><UI version="3.1" stdsetdef="1">
+<class>SEQUENCE_1</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>SEQUENCE_1</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>600</width>
+            <height>489</height>
+        </rect>
+    </property>
+    <property name="sizePolicy">
+        <sizepolicy>
+            <hsizetype>7</hsizetype>
+            <vsizetype>7</vsizetype>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+    </property>
+    <property name="caption">
+        <string>2D plots</string>
+    </property>
+    <widget class="QLayoutWidget">
+        <property name="name">
+            <cstring>layout3</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>10</y>
+                <width>580</width>
+                <height>70</height>
+            </rect>
+        </property>
+        <grid>
+            <property name="name">
+                <cstring>unnamed</cstring>
+            </property>
+            <widget class="QLabel" row="1" column="0">
+                <property name="name">
+                    <cstring>VariableLabel</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>2</hsizetype>
+                        <vsizetype>2</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                    <size>
+                        <width>100</width>
+                        <height>0</height>
+                    </size>
+                </property>
+                <property name="text">
+                    <string>Variable</string>
+                </property>
+            </widget>
+            <widget class="QvisFileLineEdit" row="0" column="1">
+                <property name="name">
+                    <cstring>DATABASE</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>7</hsizetype>
+                        <vsizetype>2</vsizetype>
+                        <horstretch>10</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+            </widget>
+            <widget class="QLabel" row="0" column="0">
+                <property name="name">
+                    <cstring>DatabaseLabel</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>2</hsizetype>
+                        <vsizetype>2</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                    <size>
+                        <width>100</width>
+                        <height>0</height>
+                    </size>
+                </property>
+                <property name="text">
+                    <string>Source</string>
+                </property>
+            </widget>
+            <widget class="QvisVariableButton" row="1" column="1">
+                <property name="name">
+                    <cstring>PLOT_VAR</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>2</hsizetype>
+                        <vsizetype>2</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+                <property name="defaultVariable" stdset="0">
+                    <string>scalar</string>
+                </property>
+                <property name="varTypes" stdset="0">
+                    <number>2</number>
+                </property>
+            </widget>
+        </grid>
+    </widget>
+    <widget class="QLayoutWidget">
+        <property name="name">
+            <cstring>layout5</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>11</x>
+                <y>171</y>
+                <width>580</width>
+                <height>240</height>
+            </rect>
+        </property>
+        <grid>
+            <property name="name">
+                <cstring>unnamed</cstring>
+            </property>
+            <widget class="QLabel" row="1" column="0">
+                <property name="name">
+                    <cstring>ClassificationLabel</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>2</hsizetype>
+                        <vsizetype>2</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                    <size>
+                        <width>100</width>
+                        <height>0</height>
+                    </size>
+                </property>
+                <property name="text">
+                    <string>Classification text</string>
+                </property>
+            </widget>
+            <widget class="QLineEdit" row="2" column="1">
+                <property name="name">
+                    <cstring>TITLE</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>2</hsizetype>
+                        <vsizetype>2</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+            </widget>
+            <widget class="QLineEdit" row="4" column="1">
+                <property name="name">
+                    <cstring>YAXIS_TEXT</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>2</hsizetype>
+                        <vsizetype>2</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+            </widget>
+            <widget class="QLabel" row="4" column="0">
+                <property name="name">
+                    <cstring>YAxisLabel</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>2</hsizetype>
+                        <vsizetype>2</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                    <size>
+                        <width>100</width>
+                        <height>0</height>
+                    </size>
+                </property>
+                <property name="text">
+                    <string>Y-Axis Title</string>
+                </property>
+            </widget>
+            <widget class="QLineEdit" row="3" column="1">
+                <property name="name">
+                    <cstring>XAXIS_TEXT</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>2</hsizetype>
+                        <vsizetype>2</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+            </widget>
+            <widget class="QLabel" row="2" column="0">
+                <property name="name">
+                    <cstring>TitleLabel</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>2</hsizetype>
+                        <vsizetype>2</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                    <size>
+                        <width>100</width>
+                        <height>0</height>
+                    </size>
+                </property>
+                <property name="text">
+                    <string>Title</string>
+                </property>
+            </widget>
+            <widget class="QLayoutWidget" row="6" column="1">
+                <property name="name">
+                    <cstring>layout7</cstring>
+                </property>
+                <hbox>
+                    <property name="name">
+                        <cstring>unnamed</cstring>
+                    </property>
+                    <widget class="QvisColorButton">
+                        <property name="name">
+                            <cstring>GRADIENT_BGCOLOR1</cstring>
+                        </property>
+                        <property name="sizePolicy">
+                            <sizepolicy>
+                                <hsizetype>2</hsizetype>
+                                <vsizetype>2</vsizetype>
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                            </sizepolicy>
+                        </property>
+                    </widget>
+                    <widget class="QLabel">
+                        <property name="name">
+                            <cstring>GradientBackground2Label</cstring>
+                        </property>
+                        <property name="sizePolicy">
+                            <sizepolicy>
+                                <hsizetype>2</hsizetype>
+                                <vsizetype>2</vsizetype>
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                            </sizepolicy>
+                        </property>
+                        <property name="text">
+                            <string>Gradient color 2</string>
+                        </property>
+                        <property name="alignment">
+                            <set>AlignVCenter|AlignRight</set>
+                        </property>
+                    </widget>
+                    <widget class="QvisColorButton">
+                        <property name="name">
+                            <cstring>GRADIENT_BGCOLOR2</cstring>
+                        </property>
+                        <property name="sizePolicy">
+                            <sizepolicy>
+                                <hsizetype>2</hsizetype>
+                                <vsizetype>2</vsizetype>
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                            </sizepolicy>
+                        </property>
+                    </widget>
+                </hbox>
+            </widget>
+            <widget class="QLabel" row="6" column="0">
+                <property name="name">
+                    <cstring>GradientBackground1Label</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>2</hsizetype>
+                        <vsizetype>2</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                    <size>
+                        <width>100</width>
+                        <height>0</height>
+                    </size>
+                </property>
+                <property name="text">
+                    <string>Gradient color 1</string>
+                </property>
+            </widget>
+            <widget class="QLabel" row="3" column="0">
+                <property name="name">
+                    <cstring>XAxisLabel</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>2</hsizetype>
+                        <vsizetype>2</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                    <size>
+                        <width>100</width>
+                        <height>0</height>
+                    </size>
+                </property>
+                <property name="text">
+                    <string>X-Axis Title</string>
+                </property>
+            </widget>
+            <widget class="QvisColorButton" row="0" column="1">
+                <property name="name">
+                    <cstring>CLASSIFICATION_TEXTCOLOR</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>2</hsizetype>
+                        <vsizetype>2</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+            </widget>
+            <widget class="QLineEdit" row="5" column="1">
+                <property name="name">
+                    <cstring>ZAXIS_TEXT</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>2</hsizetype>
+                        <vsizetype>2</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+            </widget>
+            <widget class="QLabel" row="5" column="0">
+                <property name="name">
+                    <cstring>ZAxisLabel</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>2</hsizetype>
+                        <vsizetype>2</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                    <size>
+                        <width>100</width>
+                        <height>0</height>
+                    </size>
+                </property>
+                <property name="text">
+                    <string>Z-Axis Title</string>
+                </property>
+            </widget>
+            <widget class="QLineEdit" row="1" column="1">
+                <property name="name">
+                    <cstring>CLASSIFICATION_TEXT</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>2</hsizetype>
+                        <vsizetype>2</vsizetype>
+                        <horstretch>10</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+            </widget>
+            <widget class="QLabel" row="0" column="0">
+                <property name="name">
+                    <cstring>ClassificationLabel_2</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>2</hsizetype>
+                        <vsizetype>2</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                    <size>
+                        <width>170</width>
+                        <height>0</height>
+                    </size>
+                </property>
+                <property name="text">
+                    <string>Classification text color</string>
+                </property>
+            </widget>
+        </grid>
+    </widget>
+    <widget class="QLayoutWidget">
+        <property name="name">
+            <cstring>layout4</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>90</y>
+                <width>390</width>
+                <height>70</height>
+            </rect>
+        </property>
+        <grid>
+            <property name="name">
+                <cstring>unnamed</cstring>
+            </property>
+            <widget class="QLabel" row="0" column="0">
+                <property name="name">
+                    <cstring>textLabel1</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>2</hsizetype>
+                        <vsizetype>5</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                    <size>
+                        <width>270</width>
+                        <height>0</height>
+                    </size>
+                </property>
+                <property name="text">
+                    <string>Number of slice sequences</string>
+                </property>
+            </widget>
+            <widget class="QSpinBox" row="0" column="1">
+                <property name="name">
+                    <cstring>NSLICE_SEQUENCES</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>2</hsizetype>
+                        <vsizetype>0</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                    <size>
+                        <width>50</width>
+                        <height>0</height>
+                    </size>
+                </property>
+                <property name="maxValue">
+                    <number>100</number>
+                </property>
+                <property name="minValue">
+                    <number>1</number>
+                </property>
+                <property name="value">
+                    <number>3</number>
+                </property>
+            </widget>
+            <widget class="QLabel" row="1" column="0">
+                <property name="name">
+                    <cstring>textLabel1_2</cstring>
+                </property>
+                <property name="sizePolicy">
+                    <sizepolicy>
+                        <hsizetype>2</hsizetype>
+                        <vsizetype>5</vsizetype>
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                    </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                    <size>
+                        <width>270</width>
+                        <height>0</height>
+                    </size>
+                </property>
+                <property name="text">
+                    <string>Number of frames per slice sequence</string>
+                </property>
+            </widget>
+            <widget class="QSpinBox" row="1" column="1">
+                <property name="name">
+                    <cstring>NFRAMES_PER_SLICE</cstring>
+                </property>
+                <property name="minimumSize">
+                    <size>
+                        <width>50</width>
+                        <height>0</height>
+                    </size>
+                </property>
+                <property name="maxValue">
+                    <number>1000</number>
+                </property>
+                <property name="minValue">
+                    <number>10</number>
+                </property>
+                <property name="value">
+                    <number>30</number>
+                </property>
+            </widget>
+        </grid>
+    </widget>
+</widget>
+<customwidgets>
+    <customwidget>
+        <class>QvisColorButton</class>
+        <header location="global">/data_vobs/VisIt/gui/QvisColorButton.h</header>
+        <sizehint>
+            <width>40</width>
+            <height>25</height>
+        </sizehint>
+        <container>0</container>
+        <sizepolicy>
+            <hordata>5</hordata>
+            <verdata>5</verdata>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        <pixmap>image0</pixmap>
+        <signal>selectedColor(const QColor &amp;)</signal>
+        <signal>selectedColor(const QColor &amp;, const void *)</signal>
+    </customwidget>
+    <customwidget>
+        <class>QvisVariableButton</class>
+        <header location="global">/data_vobs/VisIt/gui/QvisVariableButton.h</header>
+        <sizehint>
+            <width>-1</width>
+            <height>-1</height>
+        </sizehint>
+        <container>0</container>
+        <sizepolicy>
+            <hordata>5</hordata>
+            <verdata>5</verdata>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        <pixmap>image1</pixmap>
+        <signal>activated(const QString &amp;)</signal>
+        <slot access="public" specifier="">slot()</slot>
+        <slot access="public" specifier="">changeVariable(int, const QString &amp;)</slot>
+        <property type="Int">varTypes</property>
+        <property type="String">defaultVariable</property>
+        <property type="String">variable</property>
+    </customwidget>
+    <customwidget>
+        <class>QvisFileLineEdit</class>
+        <header location="global">/data_vobs/VisIt/gui/QvisFileLineEdit.h</header>
+        <sizehint>
+            <width>-1</width>
+            <height>-1</height>
+        </sizehint>
+        <container>0</container>
+        <sizepolicy>
+            <hordata>5</hordata>
+            <verdata>5</verdata>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        <pixmap>image2</pixmap>
+        <signal>returnPressed()</signal>
+        <signal>textChanged(const QString &amp;)</signal>
+    </customwidget>
+</customwidgets>
+<images>
+    <image name="image0">
+        <data format="XPM.GZ" length="2369">789cd3d7528808f055d0d2e72a2e492cc94c5648ce482c52d04a29cdcdad8c8eb5ade65232375130b25430513054d2e1524a54485650364d034110570fc44d4a0541103709c44d4b330002105719c20501b062aa01da98a64c39a0a6698989a8a625510212474d1b356dd4b451d3464d1b350d9f6989140214d328350cd934ea002a9b566bcd0500226bccc1</data>
+    </image>
+    <image name="image1">
+        <data format="XPM.GZ" length="12478">789ced9759531b471446dff9152afa8d4a5da35d53a93cb0ef186c6c63a7f230236900b19845aca9fcf7dcef0c498011b88a04a75cb44e0173747b463d5fdf1ed96f262adb1b6b9589376367c374b8d7ad7477d3d3ca44effcf0f0fad7df7ef97d6cbc5a6f55ea49a53ad9a8d4c67f1a1bb7b4d2ad84495ef800af0a7998c76b82fa195e17f82cde10f82ade149c7f8ab705f523bc23a8efe289a0be82a7027f8f6782f13dbc2ba8efe33d81efe17d815fe3b9c0e7e4dc5e71bfc77843e093784be0db7847e01ff144309f25bc2ba8bfc5fb82fa149e0b9ccfaff1c24ff0bac0cff186e07a9ff0a6c03fe3a9c06b7826f01bbc2bf021de13f83b3c177cde959ce52cf2d8c4ab029fc179e11ff086c0d7f1a6c0b7f08ec0fb7822f0169e0a9cfcea5d811fe07d81d31fc451e4459d8f2fe6d3c59b82fa22de1138fdda4804e33b782aa8d31f8d4c50dfc0bb02afca69e7229f3a5e15781b6781b81efd471cc57a2ee02d81b31ecdb6e07cf657331538ebd1cc049ee1b9c02fe4b467b13fd94fad9ac059ff562618cf7e695705f580d70575f627d329f2633fb45b02ff8a7704ce7e6f7705e7e7784f5067ffb773812fcbd9eee4172ef19ae07cd68be52afa89fdd0690abc18df1238f3613ae417c8a39309fc10cf05e39b72969feb07fa39690b9cf9271d819377d2139ccffe4d72814fcbd97ec5fcd9afb453317f3e3f6d09ae477fa66d413dc13b82bae189a0be8367823acfc3b42f709e77692e70c66755c1f96b380d4d9df9d24e459e5f701a843acffbac2da8377002a5cefecd12419d7e667a45bfb2be192fc6f37d92f5847c937ecffa82f1f45fceaba847ee123329133329133329133329f330130baf92f4e94cfeef55fafe5816337948cca44ccca44ccca44ccca44ccca44ccca44ccca44ccca4cccb64625d4badc751df8f72dbb15ddbb381eddb811df27e6a47f6d58eed84a3533f3ab3a19d7b65f4d80bff39b64bbbb26b1f796353fefeb4cdd8accdd9bc2dfc00992cfa7d2cf9df655bb1555bb375f7b7b6619bfef7dded7dceda7bff5126a91f6df91da7f6c12ba3c6a6f6d13ef9ef815f6fcbb6fde8b37db1493fbf6a35b7fa33e698dee53b64d2f0b9afd88235fdf35aee6deb58b2390ce67efdd78c420869604621f39af756e83d36d67642df134843ee951dffbb1bfc7f6a61cf6de09d7216f6ff4d2a0fde7fa1e74938f0191f8623fffd55fd128ec34138d15dd9deed7c66435a1c8553ced0ec8e468f2d4698ae767b8e1d8533b7a1f7d94938f7a38b67addd88445e30934bffb4f970e52bb8e376edb3be0a37e1e24e26477fcfebded1e36395c93f236de95ef7e7cf9b67399117cc64e02b39e5cf9275aeb2eff739edefce7c3b93c7c73ec8a4eae366b129dfa36bcf9be7c89c5eecbbd8bf3d786690d09c1f0fbddbbd076cffe94c1e1f7b3f933013e66d2e2c84451b84a530f8113209cbfa9e082b1ce7fead31085361d59fbca9359fcce4d1b1f733f1df97fe2439f3beeadace7f9748fc37db28622665622665622665622665622665622665622665be9d898f787d3c9d49fa3a792a9348cc6414319332319332319332e37ffc3cf62780159573</data>
+    </image>
+    <image name="image2">
+        <data format="XPM.GZ" length="23078">789ced9b6b73d3461486bff32b3c9c6f4c678b6fb2359d7e20dc0a49801020814e3fac242b4ec8855c49d2e97fef39cfc68e6c39d4833bd31a490fd87eb5672f3eefee6a13869f1f34b6dfac371efc7ceff4cc9feda68d74e84f1a0fb2f38383abdffff8f5cf7bf75b9d7ea3d36c34bbfd46ebfe4ff7ee3bdf481bf2900bdd43370df40aba65989621ba6d50be8aee18945fa0bb06e50fd191817e86ee19e8d7e8be61da5fa26383f63ea0bd417ce83f31d07be8d440f7d19941fd0c3d30280fe3cb0dfadb37dde4a2fc31ba65a0bfa2db06fa10dd31687f03dd35286fa22383f21ced0dcadfa11303fd129d19c49fa30706fac434e9c71f394273a13fa13b06dfe7141d1994e36fab6fd05f848e0de2e9af95189487fa0383faefd1b9816e9bc67ec6e3190fe9217ff205dd32d04fd05d8378878e0cca3fa3fb069afedbb181663eb4bdc1f8b6d089817e854e0de2f1a79d19941fa37383f28fa699ae219f311a43d1299a84529ffc76ba061abf3b9141bca07b06e5f8d5e91b940fd0de40339e4e62101fca5303fd163d30d0617cb941fd03d32caf907ffa67fa85f1efa25b06f5c93fe967fe7afce94606f1ccff6ecf20fe113a362867be76bd41fd2b7466109fa0738372be3fd33f8c87f5c0740cf381f58ffd8c47988fa433ac27da8bb8688ff51b2506e5acc72835d08c27ca0cf453f4c040b3bfb0dd04bfd9cf7a2d83f6f103fb42ff2d3409e1fb919f5edf4087f2d840b33ff5bc81663df43203cdfc65f985fed87f682ee41bbffaa981663df63383f1b01ff77303cd7e11770cf40b3486519ff9114706fdb1be622ee2597f7162504e3ee2d4a07c139d1bb447fbbe6510cf7cf59181667ff17d037d868e0deaefa01303cd7ee80706fdb1dfb2fd84f9fa1ccd0247b3ffb05cc2fec67e9f740dcaf13be91bb4d7417351be8e4e0dea93ef24334c6f30de6460509ff1f23809f385fed2a6417bccc7b465d01efb0dcb378c8ff9c9f40cf909edf50cdae379997a8372e63bc30bf39bf1a65ce8df4cf3380beb9dfcb1fcc2f7df46b3008867fd32fdc2fc62bfcbbc815e439300f41b746aa0c95fc685663fcc06069a7c65b98166bef0b8223f9e781e1f61bde3e7a06d10df45b3c1117f8dee1a9407cd0246337f073d83f6384f0c6203cd7e897d613ef3fd196e583f3c1f065c68f2c5e33ff8cbf3246f1ad4e77cc1e32ecc47f64b1e1f61bfe2fbb31d87f5c77983ed8ff10bf9cc2383faf897f70ccac93fcb39cc57f2c1720beb85e76bee0dcac9479e188c8ff59da706f1ec7ff9c040f33cc8b9c2fcaea912b5e7d5a3f6bc7ad49e578fdaf3ea517b5e3d6acfab47edf98f84936fe04751d39ebba4664911f3fcced9907cd3735fb384a40b7afead1da2e6ff495a7b5e39d2daf30559be1ca4b5e70bb27c39486bcf1764f97290d69e2fc8f2e520fd973ccfdc60aefe72b733ced5b0541a5ab98d99c5bc3dcd4f6871d7ede9983e1746366b8465aaebf9be3b98abbfe1b8ceac8c865686dfcce3bc3dcd4f68f1507b3d725ff4d3b13bb9738465aaebf9a93bbbc9d2b9bb705fdda5bb527ded1ee9e715f7d83da1fca97ba631cfdd6f37b12fdc4bb7aa395e2bb4528c5977af54bdd6d7f5a99edeb80dbdbfe7deba4dee9623adfd4bfdfbcebd771fd4d155b7e5b6f5fe47f7c93d744dd772ed718b1ded2ff4fac595d7f9748dc9beabea79d7453759eab9be8b6da58a73227a47bc24926ac9b1967fbdf94d50d8417b92c940728d490bad8c636447866e4576655767cd8aec157b92cf5a6b5f0ef4f550d5ac486d438ee44b18931ccb89ea53399373b990af72a9ea6ad4a25c8f7e47258fa63d2fd798ecbbaa9eeb9f95519e75ad883cd67c3cd1f7a7f2ccd6823cd7fb874414f7762fb69637f5d3c5442ba3984f1af1829297fa69b2a75519caaaee25fbe819918ce55ad6e442efe8da9757aaf774267a79adea8d6c681b6f67f43aed79a9c654df55f57cf76647f59a8d6b7d6feb7a7ba6f7af6553dec97bdd19bdaedfa9ccca07deaf46391eb7328ab199b345c9f668ce8c62e42373e693fb200f67478edbb7d6ae461e4a53efb7745e3e97b67eeacce875daf3728dc9be2be9b9742597b5a2e7eaf510cf23bdf3517a9aa9199e8f4f4821b7b7ad8c620ec74e6e05276f63a4af2fb1eedadebb599185f6277af452fcd706ef67f43ae5f9748d52df95f45c3fc5e36c793d31b1b7930f7db753914ffed9f3422b3731761a086774dbb1ed2c5d8839d2f39ff85463576745dee979a623e3673d9ffb1d3f2cf75af27caac674dfcbecb9dff57b7e6ffa7dae75def29fc7d9b273d901f9b3e7eba9bebfd2dd51d7a1df1f67f6cc1f943d2fb4328ac974d718ea89ff899ecb86feb018e38ff45c15793ba1d9fa2e45dee979a2911bfed89fb8157faacfe8c95e67793e55a3d4f7327b7e66ab74fa7d1ecffdb9cef9db6c9dbbbedff717f60c95757fa44ff6c8ede869de7b5be95b8573fb84e78556c6317e570efda5bf74c7e12c5e88d9d6b3fe6b3d9f1deb4f52528ebccb737d7dafcfe5551de195bf9e68f10ecfa76b94faaea4e705fef1b718fe916cfa15595b34e67fc4127bbed0cfe7b7df7f9edf5cfd5854dc733d4bc5df358a65a6e29e5792e5cb415a7bbe20cb9783b4f6bc72a40b799ed62c25dfeff97f3d5f6bbe9beff5bc669951e7effe7f2eb5e73f24c57f392a338aaa3daf1eb5e7d5a3f6bc7ad49e578fdaf3ea71ffaf5feefd0d48eadb21</data>
+    </image>
+</images>
+<layoutdefaults spacing="6" margin="11"/>
+<includehints>
+    <includehint>qvisfilelineedit.h</includehint>
+    <includehint>qvisvariablebutton.h</includehint>
+    <includehint>qviscolorbutton.h</includehint>
+    <includehint>qviscolorbutton.h</includehint>
+    <includehint>qviscolorbutton.h</includehint>
+</includehints>
+</UI>

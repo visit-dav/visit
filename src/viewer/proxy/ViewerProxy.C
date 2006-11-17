@@ -4278,6 +4278,37 @@ ViewerProxy::ImportEntireState(const std::string &filename, bool inVisItDir)
 }
 
 // ****************************************************************************
+// Method: ViewerProxy::ImportEntireStateWithDifferentSources
+//
+// Purpose: 
+//   Tells the viewer to set its entire state using the values stored in
+//   the named file. It uses the sources that are provided instead of the
+//   sources in the file.
+//
+// Arguments:
+//   filename   : The name of the file to read for the state.
+//   inVisItDir : Whether the session file is in the .visit directory.
+//   sources    : The list of sources to use.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Nov 10 09:32:48 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::ImportEntireStateWithDifferentSources(const std::string &filename, 
+    bool inVisItDir, const stringVector &sources)
+{
+    viewerRPC->SetRPCType(ViewerRPC::ImportEntireStateWithDifferentSourcesRPC);
+    viewerRPC->SetVariable(filename);
+    viewerRPC->SetBoolFlag(inVisItDir);
+    viewerRPC->SetProgramOptions(sources);
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
 // Method: ViewerProxy::SetCenterOfRotation
 //
 // Purpose: 

@@ -58,7 +58,9 @@ class CancelledObserver;
 // Creation:   Thu Oct 27 14:08:04 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Nov 14 15:20:22 PST 2006
+//   Added another complete signal.
+//
 // ****************************************************************************
 
 class QvisSessionFileDatabaseLoader : public QObject, public GUIBase
@@ -72,6 +74,7 @@ public:
     void Start(const QString &sfn);
 signals:
     void complete(const QString &);
+    void complete(const QString &, const stringVector &);
     void loadFile(const QString &);
 protected slots:
     void ProcessFile();

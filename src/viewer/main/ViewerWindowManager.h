@@ -51,6 +51,7 @@
 #include <avtView2D.h>
 #include <avtView3D.h>
 #include <vectortypes.h>
+#include <map>
 
 //
 // Flags to use in calls to the UpdateWindowInformation method.
@@ -360,6 +361,9 @@ typedef struct {
 //    Brad Whitlock, Tue Mar 7 17:33:54 PST 2006
 //    I removed the view stacks.
 //
+//    Brad Whitlock, Thu Nov 9 16:41:47 PST 2006
+//    Made some interface changes to allow db parameterized sessions.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public QObject
@@ -512,8 +516,10 @@ class VIEWER_API ViewerWindowManager : public QObject
     DatabaseCorrelation *CreateMultiWindowCorrelation(const intVector &windowIds);
     void CloseDatabase(const std::string &dbName);
 
-    void CreateNode(DataNode *parentNode, bool detailed);
-    void SetFromNode(DataNode *parentNode);
+    void CreateNode(DataNode *parentNode, 
+                    const std::map<std::string, std::string> &, bool detailed);
+    void SetFromNode(DataNode *parentNode,
+                     const std::map<std::string, std::string> &);
     static bool SessionContainsErrors(DataNode *);
 
     static GlobalAttributes              *GetClientAtts();
@@ -549,6 +555,8 @@ class VIEWER_API ViewerWindowManager : public QObject
     static void                          SetClientInteractorAttsFromDefault();
     static void                          SetDefaultInteractorAttsFromClient();
 
+    void GetDatabasesForWindows(const intVector &,stringVector &) const;
+
   signals:
     void createWindow(ViewerWindow *);
     void deleteWindow(ViewerWindow *);
@@ -566,7 +574,6 @@ class VIEWER_API ViewerWindowManager : public QObject
                                  bool screenCapture, bool leftEye);
     avtImage_p CreateTiledImage(int width, int height, bool leftEye);
     avtDataset_p GetDataset(int windowIndex, bool&);
-    void GetDatabasesForWindows(const intVector &,stringVector &) const;
     bool AskForCorrelationPermission(const char *, const char *,
                                      const stringVector &dbs) const;
     DatabaseCorrelation *CreateMultiWindowCorrelationHelper(const stringVector &dbs);

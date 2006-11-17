@@ -634,6 +634,9 @@ dnl
 dnl    Brad Whitlock, Thu Nov 9 14:27:00 PST 2006
 dnl    Made sure data manual examples get their Makefiles created.
 dnl
+dnl    Brad Whitlock, Tue Sep 19 17:04:41 PST 2006
+dnl    Added mpeg2encode support.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -3365,7 +3368,9 @@ TOOLS_FILES="tools/Makefile
              tools/curv3dprep/Makefile
              tools/doxygenate/Makefile
              tools/escan/Makefile
+             tools/imagetools/Makefile
              tools/makemili/Makefile
+             tools/mpeg2encode/Makefile
              tools/mpeg_encode/Makefile
              tools/prep/Makefile
              tools/silex/Makefile

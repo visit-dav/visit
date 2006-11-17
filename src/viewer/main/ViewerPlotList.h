@@ -256,6 +256,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Brad Whitlock, Wed Jan 11 14:54:42 PST 2006
 //    Added SessionContainsErrors.
 //
+//    Brad Whitlock, Thu Nov 9 16:47:17 PST 2006
+//    Added an argument to CreateNode and SetFromNode.
+//
 // ****************************************************************************
 
 
@@ -420,8 +423,8 @@ public:
                                                  int state);
     bool SetFullFrameScaling(bool, double *);
 
-    void CreateNode(DataNode *);
-    bool SetFromNode(DataNode *);
+    void CreateNode(DataNode *, const std::map<std::string, std::string> &);
+    bool SetFromNode(DataNode *, const std::map<std::string, std::string> &);
     static bool SessionContainsErrors(DataNode *);
   protected:
     bool        AskForCorrelationPermission(const stringVector &dbs) const;

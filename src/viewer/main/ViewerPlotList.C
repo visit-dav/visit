@@ -7360,7 +7360,7 @@ ViewerPlotList::GetNKeyframesWasUserSet() const
 //
 // Arguments:
 //   parentNode : The node to which we're saving information.
-//
+//   
 // Programmer: Brad Whitlock
 // Creation:   Wed Jul 16 13:09:04 PST 2003
 //
@@ -7383,7 +7383,8 @@ ViewerPlotList::GetNKeyframesWasUserSet() const
 // ****************************************************************************
 
 void
-ViewerPlotList::CreateNode(DataNode *parentNode)
+ViewerPlotList::CreateNode(DataNode *parentNode, 
+    const std::map<std::string, std::string> &dbToSource)
 {
     if(parentNode == 0)
         return;
@@ -7404,12 +7405,29 @@ ViewerPlotList::CreateNode(DataNode *parentNode)
         for(StringIntMap::const_iterator ts = timeSliders.begin();
             ts != timeSliders.end(); ++ts)
         {
-            tsNode->AddNode(new DataNode(ts->first, ts->second));
+            // See if we can map the time slider name to a source id.
+            std::string tsName(ts->first);
+            std::map<std::string, std::string>::const_iterator pos =
+                dbToSource.find(tsName);
+            if(pos != dbToSource.end())
+                tsName = pos->second;
+
+            // Save the time slider information.
+            tsNode->AddNode(new DataNode(tsName, ts->second));
         }        
         plotlistNode->AddNode(tsNode);
 
         if(HasActiveTimeSlider())
-            plotlistNode->AddNode(new DataNode("activeTimeSlider", activeTimeSlider));
+        {
+            // Map time slider name to source name, if needed.
+            std::string activeTS(activeTimeSlider);
+            std::map<std::string,std::string>::const_iterator pos = 
+                dbToSource.find(activeTS);
+            if(pos != dbToSource.end())
+                activeTS = pos->second;
+
+            plotlistNode->AddNode(new DataNode("activeTimeSlider", activeTS));
+        }
     }
 
     //
@@ -7436,10 +7454,16 @@ ViewerPlotList::CreateNode(DataNode *parentNode)
         //
         plotNode->AddNode(new DataNode("pluginID",
             std::string(plots[i].plot->GetPluginID())));
-        plotNode->AddNode(new DataNode("hostName",
-            std::string(plots[i].plot->GetHostName())));
-        plotNode->AddNode(new DataNode("databaseName",
-            std::string(plots[i].plot->GetDatabaseName())));
+
+        // Determine the plot source's source id and add that node instead
+        // of saving host and database.
+        std::string plotSource(plots[i].plot->GetSource());
+        std::map<std::string, std::string>::const_iterator pos =
+                dbToSource.find(plotSource);
+        if(pos != dbToSource.end())
+            plotSource = pos->second;
+        plotNode->AddNode(new DataNode("sourceID", plotSource));
+
         plotNode->AddNode(new DataNode("variableName",
             plots[i].plot->GetVariableName()));
         plotNode->AddNode(new DataNode("active", plots[i].active));
@@ -7456,9 +7480,13 @@ ViewerPlotList::CreateNode(DataNode *parentNode)
     //
     // Add information specific to the animation.
     //
-    plotlistNode->AddNode(new DataNode("hostName", hostName));
-    if (sourceToSave != "")
-        plotlistNode->AddNode(new DataNode("databaseName", sourceToSave));
+    std::string s2s(ViewerFileServer::ComposeDatabaseName(hostName, sourceToSave));
+    std::map<std::string,std::string>::const_iterator it = 
+        dbToSource.find(s2s);
+    if(it != dbToSource.end())
+        s2s = it->second;
+    plotlistNode->AddNode(new DataNode("activeSource", s2s));
+
     plotlistNode->AddNode(new DataNode("nPlots", numRealPlots));
     plotlistNode->AddNode(new DataNode("keyframeMode", keyframeMode));
     plotlistNode->AddNode(new DataNode("nKeyframes", nKeyframes));
@@ -7475,6 +7503,7 @@ ViewerPlotList::CreateNode(DataNode *parentNode)
 //
 // Arguments:
 //   parentNode : The config file information DataNode pointer.
+//   sourceToDB : The source to DB map.
 //
 // Returns:    True if we have created plots that should be realized;
 //             False otherwise.
@@ -7506,10 +7535,14 @@ ViewerPlotList::CreateNode(DataNode *parentNode)
 //   Brad Whitlock, Fri Apr 2 15:51:59 PST 2004
 //   I added support for keyframing.
 //
+//   Brad Whitlock, Fri Nov 10 10:05:39 PDT 2006
+//   I added support for restoring with a new list of sources.
+//
 // ****************************************************************************
 
 bool
-ViewerPlotList::SetFromNode(DataNode *parentNode)
+ViewerPlotList::SetFromNode(DataNode *parentNode,
+    const std::map<std::string, std::string> &sourceToDB)
 {
     DataNode *node;
     ViewerFileServer *fs = ViewerFileServer::Instance();
@@ -7522,21 +7555,56 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
     if(plotlistNode == 0)
         return false;
 
-    // Make sure that the host, database, and host+database get set.
-    if((node = plotlistNode->GetNode("hostName")) != 0)
-        hostName = node->AsString();
-    if((node = plotlistNode->GetNode("databaseName")) != 0)
-        databaseName = node->AsString();
-    if(hostName.size() > 0 && databaseName.size() > 0)
+    // Get the active source.
+    if((node = plotlistNode->GetNode("activeSource")) != 0)
     {
-        // Expand the database name.
-        databaseName = fs->ExpandedFileName(hostName, databaseName);
-        hostDatabaseName = fs->ComposeDatabaseName(hostName, databaseName);
-        debug1 << "The active source will be: " << databaseName.c_str()
-               << ", " << hostDatabaseName.c_str() << endl;
+        // Get the source
+        std::string sourceName(node->AsString());
+        std::map<std::string, std::string>::const_iterator pos =
+            sourceToDB.find(sourceName);
+        if(pos != sourceToDB.end())
+            sourceName = pos->second;
+
+        // Split the source into hostName, databaseName.
+        ViewerFileServer::SplitHostDatabase(sourceName, hostName, databaseName);
+        hostDatabaseName = sourceName;
     }
     else
-        hostDatabaseName = "";
+    {
+    //
+    // BEGIN_REMOVE_IN_1.7
+    //
+    // Handle pre 1.5.5 session files. Remove in future versions.
+    //
+        if(sourceToDB.size() > 0)
+        {
+            Warning("Your session file was saved before VisIt 1.5.5. If "
+                    "you want to restore your session file using a different "
+                    "list of data sources then you will first have to load "
+                    "your session into VisIt 1.5.5 and save it before "
+                    "attempting to restore the session with a different "
+                    "list of sources.");
+        }
+
+        // Make sure that the host, database, and host+database get set.
+        if((node = plotlistNode->GetNode("hostName")) != 0)
+            hostName = node->AsString();
+        if((node = plotlistNode->GetNode("databaseName")) != 0)
+            databaseName = node->AsString();
+        if(hostName.size() > 0 && databaseName.size() > 0)
+        {
+            // Expand the database name.
+            databaseName = fs->ExpandedFileName(hostName, databaseName);
+            hostDatabaseName = fs->ComposeDatabaseName(hostName, databaseName);
+            debug1 << "The active source will be: " << databaseName.c_str()
+                   << ", " << hostDatabaseName.c_str() << endl;
+        }
+        else
+            hostDatabaseName = "";
+    //
+    // END_REMOVE_IN_1.7
+    //
+    }
     engineKey = EngineKey(hostName, "");
 
     int expectedPlots = 0;
@@ -7607,6 +7675,16 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
                 // be expanded.
                 //
                 std::string tsHost, tsDB, tsName(ts->GetKey());
+                std::map<std::string, std::string>::const_iterator pos =
+                    sourceToDB.find(tsName);
+                if(pos != sourceToDB.end())
+                {
+                    debug3 << "Replacing time slider name \"" 
+                           << tsName.c_str() << "\" with \"" 
+                           << pos->second.c_str() << "\"" << endl;
+                    tsName = pos->second;
+                }
+
                 if(tsName.find(":") != std::string::npos)
                 {
                     debug3 << "Time slider before name expansion: "
@@ -7619,10 +7697,16 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
                 //
                 // See if there is a database correlation for the time slider
                 // that we want to define. If there isn't then we're processing
-                // a pre 1.3 session file and we need to make a new correlation
-                // it its file has metadata and that metadata is for a
-                // time-varying file. Don't create the correlation if the
-                // time slider is the keyframing time slider.
+                // a pre 1.3 session file or a post 1.5.4 session file and we 
+                // need to make a new correlation it its file has metadata and 
+                // that metadata is for a time-varying file. Don't create the 
+                // correlation if the time slider is the keyframing time slider.
+                //
+                // Note that for post 1.5.4 session files, we have to create
+                // the database correlation here because we no longer save
+                // database correlations that involve a single database since
+                // post 1.5.4 session files can be restored with different
+                // databases.
                 //
                 DatabaseCorrelation *correlation = cL->FindCorrelation(tsName);
                 if(correlation == 0 && tsName != KF_TIME_SLIDER)
@@ -7634,7 +7718,7 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
                      const avtDatabaseMetaData *md = fs->GetMetaData(tsHost, tsDB);
                      if(md != 0 && md->GetNumStates() > 1)
                      {
-                         stringVector dbs; dbs.push_back(ts->GetKey());
+                         stringVector dbs; dbs.push_back(tsName);
                          DatabaseCorrelation *c = fs->CreateDatabaseCorrelation(
                              tsName, dbs, 0, md->GetNumStates());
                          if(c)
@@ -7675,6 +7759,11 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
     if(atsNode != 0 && atsNode->GetNodeType() == STRING_NODE)
     {
         std::string tsName(atsNode->AsString());
+        // Convert the source id back into a source name.
+        std::map<std::string,std::string>::const_iterator pos =
+            sourceToDB.find(tsName);
+        if(pos != sourceToDB.end())
+            tsName = pos->second;
 
         //
         // Pre 1.3 session files might not have fully expanded names. If the
@@ -7727,14 +7816,35 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
             pluginID = node->AsString();
         else
             haveRequiredFields = false;
-        if((node = plotNode->GetNode("hostName")) != 0)
-            plotHost = node->AsString();
+
+        if((node = plotNode->GetNode("sourceID")) != 0)
+        {
+            // Replace the source id with a source name.
+            std::string plotSource(node->AsString());
+            std::map<std::string, std::string>::const_iterator pos =
+                sourceToDB.find(plotSource);
+            if(pos != sourceToDB.end())
+                plotSource = pos->second;
+            ViewerFileServer::SplitHostDatabase(plotSource, plotHost, plotDB);
+        }
         else
-            haveRequiredFields = false;
-        if((node = plotNode->GetNode("databaseName")) != 0)
-            plotDB = node->AsString();
-        else
-            haveRequiredFields = false;
+        {
+        //
+        // BEGIN_REMOVE_IN_1.7
+        //
+            if((node = plotNode->GetNode("hostName")) != 0)
+                plotHost = node->AsString();
+            else
+                haveRequiredFields = false;
+            if((node = plotNode->GetNode("databaseName")) != 0)
+                plotDB = node->AsString();
+            else
+                haveRequiredFields = false;
+        //
+        // END_REMOVE_IN_1.7
+        //
+        }
+
         if((node = plotNode->GetNode("variableName")) != 0)
             plotVar = node->AsString();
         else

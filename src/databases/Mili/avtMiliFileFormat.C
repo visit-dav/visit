@@ -2094,7 +2094,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         mesh->meshType = AVT_UNSTRUCTURED_MESH;
         mesh->numBlocks = ndomains;
         mesh->blockOrigin = 0;
-        mesh->cellOrigin = 123; // Bob Corey says all mili writers so far are Fortran
+        mesh->cellOrigin = 1; // Bob Corey says all mili writers so far are Fortran
         mesh->spatialDimension = dims;
         mesh->topologicalDimension = dims;
         mesh->blockTitle = "processors";
@@ -2127,7 +2127,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 fnmesh->meshType = AVT_POINT_MESH;
                 fnmesh->numBlocks = ndomains;
                 fnmesh->blockOrigin = 0;
-                fnmesh->cellOrigin = 123; // All mili writers so far are Fortran
+                fnmesh->cellOrigin = 1; // All mili writers so far are Fortran
                 fnmesh->spatialDimension = dims;
                 fnmesh->topologicalDimension = 0;
                 fnmesh->blockTitle = "processors";
@@ -2140,7 +2140,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 nofnmesh->meshType = AVT_UNSTRUCTURED_MESH;
                 nofnmesh->numBlocks = ndomains;
                 nofnmesh->blockOrigin = 0;
-                nofnmesh->cellOrigin = 123; // All mili writers so far are Fortran
+                nofnmesh->cellOrigin = 1; // All mili writers so far are Fortran
                 nofnmesh->spatialDimension = dims;
                 nofnmesh->topologicalDimension = dims;
                 nofnmesh->blockTitle = "processors";

@@ -69,6 +69,9 @@ class DBPluginInfoAttributes;
 // Creation:   August  9, 2006
 //
 // Modifications:
+//   Brad Whitlock, Wed Nov 15 10:59:10 PDT 2006
+//   I changed the window so it can be used as a file selection window in
+//   other contexts.
 //
 // ****************************************************************************
 
@@ -82,8 +85,17 @@ public:
     virtual void SubjectRemoved(Subject *TheRemovedSubject);
     virtual void ConnectSubjects(HostProfileList *hpl,
                                  DBPluginInfoAttributes *dbp);
+
+    typedef enum
+    {
+        SelectFilename,
+        OpenFiles
+    } UsageMode;
+
+    void SetUsageMode(UsageMode m);
 signals:
-    void selectedFilesChanged();
+    void selectedFile(const QString &);
+    void selectCancelled();
 public slots:
     virtual void show();
     virtual void showMinimized();
@@ -131,6 +143,7 @@ private:
     FileServerList         *fs;
     HostProfileList        *profiles;
     DBPluginInfoAttributes *dbplugins;
+    UsageMode               usageMode;
 
     QComboBox       *hostComboBox;
     QComboBox       *pathComboBox;

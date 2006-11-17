@@ -281,10 +281,62 @@ const int QvisVariableButton::Arrays           = VAR_CATEGORY_ARRAY;
 //   
 // ****************************************************************************
 
+QvisVariableButton::QvisVariableButton(QWidget *parent, const char *name) :
+    QPushButton(parent, name), defaultVariable("default")
+{
+    instances.append(this);
+
+    addDefault = true;
+    addExpr = true;
+    usePlotSource = true;
+    changeTextOnVarChange = true;
+    varTypes = -1;
+    setText(defaultVariable);
+
+    //
+    // Create this button's menu and add the menus for the
+    // variable types in which this variable button is interested.
+    //
+    menu = new QvisVariablePopupMenu(0, this, "varMenu");
+    connect(menu, SIGNAL(activated(int, const QString &)),
+            this, SLOT(changeVariable(int, const QString &)));
+    connect(menu, SIGNAL(aboutToShow()),
+            this, SLOT(connectMenu()));
+    connect(menu, SIGNAL(aboutToHide()),
+            this, SLOT(deferredDisconnectMenu()));
+    // Insert some standard menu options.
+    UpdateMenu();
+    setPopup(menu);
+}
+
+// ****************************************************************************
+// Method: QvisVariableButton::QvisVariableButton
+//
+// Purpose: 
+//   Constructor for the QvisVariableButton class.
+//
+// Arguments:
+//   addDefault_ : Tells the object to add a menu option for the "default" var.
+//   addExpr_    : Tells the object to add a menu option for creating expressions.
+//   usePlot     : Tells the object whether it should use the menus for the 
+//                 plot source or active source.
+//   mask        : The types of variables that should appear in the menu.
+//   parent      : The widget's parent.
+//   name        : The widget's name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Dec 9 16:45:44 PST 2004
+//
+// Modifications:
+//   Brad Whitlock, Thu Nov 16 16:56:03 PST 2006
+//   Added variable.
+//
+// ****************************************************************************
+
 QvisVariableButton::QvisVariableButton(bool addDefault_, bool addExpr_,
     bool usePlot, int mask, QWidget *parent, const char *name) :
     QPushButton(parent, name),
-    defaultVariable("default")
+    variable("default"), defaultVariable("default")
 {
     instances.append(this);
 
@@ -393,6 +445,49 @@ QvisVariableButton::UpdateMenu()
             }
         }
     }
+}
+
+// ****************************************************************************
+// Method: QvisVariableButton::getVariable
+//
+// Purpose: 
+//   Gets the variable.
+//
+// Returns:    The variable.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 16 16:54:59 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const QString &
+QvisVariableButton::getVariable() const
+{
+    return variable;
+}
+
+// ****************************************************************************
+// Method: QvisVariableButton::setVariable
+//
+// Purpose: 
+//   Sets the variable for the menu.
+//
+// Arguments:
+//   var : the new variable.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 16 16:55:21 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVariableButton::setVariable(const QString &var)
+{
+    changeVariable(0, var);
 }
 
 // ****************************************************************************
@@ -629,7 +724,9 @@ QvisVariableButton::ConnectExpressionCreation(QObject *receiver,
 // Creation:   Thu Dec 9 16:53:50 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Nov 16 16:53:34 PST 2006
+//   Keep track of the variable that the user selected so it can be queried.
+//
 // ****************************************************************************
 
 void
@@ -649,6 +746,8 @@ QvisVariableButton::changeVariable(int, const QString &var)
         // Set the text on the button.
         if(changeTextOnVarChange)
             setText(var);
+
+        variable = var;
 
         // Tell other Qt objects that we chose a variable.
         emit activated(var);

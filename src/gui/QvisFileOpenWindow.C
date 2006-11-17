@@ -93,6 +93,8 @@ using std::string;
 // Note: Taken largely from QvisFileSelectWindow
 //
 // Modifications:
+//   Brad Whitlock, Wed Nov 15 15:35:41 PST 2006
+//   Added usageMode.
 //
 // ****************************************************************************
 
@@ -109,6 +111,8 @@ QvisFileOpenWindow::QvisFileOpenWindow(const char *winCaption) :
     databasePixmap = 0;
 
     recentPathsRemovalWindow = 0;
+
+    usageMode = OpenFiles;
 
     // Set the progress callback that we want to use while we
     // connect to the mdserver.
@@ -145,6 +149,28 @@ QvisFileOpenWindow::~QvisFileOpenWindow()
 }
 
 // ****************************************************************************
+// Method: QvisFileOpenWindow::SetUsageMode
+//
+// Purpose: 
+//   Sets the usage mode for the window.
+//
+// Arguments:
+//   m : The new usage mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 15 15:39:53 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFileOpenWindow::SetUsageMode(QvisFileOpenWindow::UsageMode m)
+{
+    usageMode = m;
+}
+
+// ****************************************************************************
 // Method: QvisFileOpenWindow::CreateWindowContents
 //
 // Purpose: 
@@ -157,6 +183,8 @@ QvisFileOpenWindow::~QvisFileOpenWindow()
 // Note: Taken largely from QvisFileSelectWindow
 //
 // Modifications:
+//   Brad Whitlock, Wed Nov 15 15:37:44 PST 2006
+//   Added usageMode.
 //
 // ****************************************************************************
 
@@ -277,7 +305,10 @@ QvisFileOpenWindow::CreateWindowContents()
     QVBox *fileVBox = new QVBox(listSplitter, "fileVBox");
     new QLabel("Files", fileVBox, "fileLabel");
     fileList = new QListBox(fileVBox, "fileList");
-    fileList->setSelectionMode(QListBox::Extended);
+    if(usageMode == OpenFiles)
+        fileList->setSelectionMode(QListBox::Extended);
+    else
+        fileList->setSelectionMode(QListBox::Single);
     fileList->setMinimumWidth(minColumnWidth * 20);
     connect(fileList, SIGNAL(doubleClicked(QListBoxItem *)),
             this, SLOT(selectFileDblClick(QListBoxItem *)));
@@ -1357,6 +1388,8 @@ QvisFileOpenWindow::setEnabled(bool val)
 // Note: Taken largely from QvisFileSelectWindow
 //
 // Modifications:
+//   Brad Whitlock, Wed Nov 15 15:15:01 PST 2006
+//   Added code to emit a signal.
 //
 // ****************************************************************************
 
@@ -1364,6 +1397,7 @@ void
 QvisFileOpenWindow::okClicked()
 {
     // Add all the selected files to the intermediate file list.
+    QualifiedFilename emitFile;
     for (int i = 0; i < fileList->count(); ++i)
     {
         if (!fileList->isSelected(i))
@@ -1387,6 +1421,10 @@ QvisFileOpenWindow::okClicked()
                 }
             }
         }
+
+        // Save the name of the first file.
+        if(emitFile.Empty())
+            emitFile = item->GetFilename();
 
         viewer->OpenDatabase(item->GetFilename().FullName().c_str(), 0,
                              true, forcedFormat);
@@ -1461,6 +1499,10 @@ QvisFileOpenWindow::okClicked()
             }
         }
     }
+
+    // We selected a file so emit the name of that file.
+    if(usageMode == SelectFilename)
+        emit selectedFile(QString(emitFile.FullName().c_str()));
 }
 
 // ****************************************************************************
@@ -1477,6 +1519,8 @@ QvisFileOpenWindow::okClicked()
 // Note: Taken largely from QvisFileSelectWindow
 //
 // Modifications:
+//   Brad Whitlock, Wed Nov 15 15:14:46 PST 2006
+//   Added code to emit a signal.
 //
 // ****************************************************************************
 
@@ -1492,6 +1536,10 @@ QvisFileOpenWindow::cancelClicked()
 
     // Hide the window.
     hide();
+
+    // We did not select a file so tell clients.
+    if(usageMode == SelectFilename)
+        emit selectCancelled();
 }
 
 // ****************************************************************************
@@ -1696,20 +1744,6 @@ QvisFileOpenWindow::selectFileDblClick(QListBoxItem *item)
 {
     // Make this do an Open action instead of a Select action
     okClicked();
-
-    /*
-    // Unselect all the files.
-    for(int i = 0; i < fileList->count(); ++i)
-        fileList->setSelected(i, false);
-
-    // Add the file to the list.
-    QFileSelectionListBoxItem *item2 = (QFileSelectionListBoxItem *)item;
-    if(AddFile(item2->GetFilename()))
-    {
-        //UpdateSelectedFileList();
-    }
-
-    */
 }
 
 // ****************************************************************************

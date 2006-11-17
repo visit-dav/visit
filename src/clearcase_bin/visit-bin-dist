@@ -249,6 +249,10 @@
 #    Eric Brugger, Fri Sep 22 12:01:25 PDT 2006
 #    Copy the gcc libraries if they are present.
 #
+#    Brad Whitlock, Wed Sep 20 11:45:24 PDT 2006
+#    I made it use mpeg2encode and I added code to copy the movietemplates
+#    directory. I also added code to copy missing Python XML modules.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -513,6 +517,7 @@ set platforms="hp-hpux-pa sgi-irix6-mips2 sun4-sunos5-sparc ibm-aix-pwr ibm-aix-
 foreach platform ($platforms)
    mkdir distribution/visit/$Version/$platform
    mkdir distribution/visit/$Version/$platform/bin
+   mkdir distribution/visit/$Version/$platform/bin/movietemplates
    mkdir distribution/visit/$Version/$platform/lib
    mkdir distribution/visit/$Version/$platform/include
    mkdir distribution/visit/$Version/$platform/help
@@ -701,6 +706,8 @@ cp $VisItDir/exe/curv3dprep    $bindir
 cp $VisItDir/exe/text2polys    $bindir
 cp $VisItDir/exe/time_annotation $bindir
 cp $VisItDir/exe/visitconvert_ser $bindir
+cp $VisItDir/exe/visit_composite  $bindir
+cp $VisItDir/exe/visit_transition $bindir
 if(-e $VisItDir/exe/visitconvert_par) then
    cp $VisItDir/exe/visitconvert_par $bindir/visitconvert_par
 endif
@@ -708,7 +715,7 @@ if(-e $VisItDir/exe/makemili_ser) then
    cp $VisItDir/exe/makemili_ser $bindir/makemili_ser
 endif
 # Copy the MPEG encoder and the makemovie script.
-cp $VisItDir/exe/mpeg_encode   $bindir
+cp $VisItDir/exe/mpeg2encode   $bindir
 cp $VisItDir/bin/makemovie.py  $bindir
 cp $VisItDir/bin/makemoviemain.py  $bindir
 # copy surfcomp
@@ -718,14 +725,21 @@ cp $VisItDir/bin/linkedit.py   $bindir
 if(-e $VisItDir/address.txt) then
    cp $VisItDir/address.txt distribution/visit/$Version/$visitbindir/
 endif
+# Copy the movie templates
+cp $VisItDir/bin/movietemplates/*.mt  $bindir/movietemplates
+cp $VisItDir/bin/movietemplates/*.ui  $bindir/movietemplates
+cp $VisItDir/bin/movietemplates/*.py  $bindir/movietemplates
+cp $VisItDir/bin/movietemplates/*.{bmp,jpg,gif,tif} $bindir/movietemplates
 
 #
 # Make symlinks for the programs
 #
 ln -s frontendlauncher distribution/visit/bin/visitconvert
+ln -s frontendlauncher distribution/visit/bin/visit_composite
+ln -s frontendlauncher distribution/visit/bin/visit_transition
 ln -s frontendlauncher distribution/visit/bin/curv3dprep
 ln -s frontendlauncher distribution/visit/bin/makemili
-ln -s frontendlauncher distribution/visit/bin/mpeg_encode
+ln -s frontendlauncher distribution/visit/bin/mpeg2encode
 ln -s frontendlauncher distribution/visit/bin/silex
 ln -s frontendlauncher distribution/visit/bin/surfcomp
 ln -s frontendlauncher distribution/visit/bin/text2polys
@@ -839,6 +853,10 @@ mkdir $libdir/python/lib/$pyver/lib-dynload
 #mkdir $libdir/python/lib/$pyver/plat-...?
 mkdir $libdir/python/lib/$pyver/site-packages
 mkdir $libdir/python/lib/$pyver/site-packages/PIL
+mkdir $libdir/python/lib/$pyver/xml
+mkdir $libdir/python/lib/$pyver/xml/dom
+mkdir $libdir/python/lib/$pyver/xml/parsers
+mkdir $libdir/python/lib/$pyver/xml/sax
 cp $VisItDir/lib/python/lib/$pyver/*.txt                $libdir/python/lib/$pyver
 cp $VisItDir/lib/python/lib/$pyver/*.py                 $libdir/python/lib/$pyver
 cp $VisItDir/lib/python/lib/$pyver/*.pyc                $libdir/python/lib/$pyver
@@ -848,6 +866,11 @@ cp $VisItDir/lib/python/lib/$pyver/config/*             $libdir/python/lib/$pyve
 cp $VisItDir/lib/python/lib/$pyver/lib-dynload/*        $libdir/python/lib/$pyver/lib-dynload
 cp $VisItDir/lib/python/lib/$pyver/site-packages/PIL.*  $libdir/python/lib/$pyver/site-packages
 cp $VisItDir/lib/python/lib/$pyver/site-packages/PIL/*  $libdir/python/lib/$pyver/site-packages/PIL
+cp $VisItDir/lib/python/lib/$pyver/xml/*.{py,pyc,pyo}        $libdir/python/lib/$pyver/xml
+cp $VisItDir/lib/python/lib/$pyver/xml/dom/*.{py,pyc,pyo}    $libdir/python/lib/$pyver/xml/dom
+cp $VisItDir/lib/python/lib/$pyver/xml/parser/*.{py,pyc,pyo} $libdir/python/lib/$pyver/xml/parser
+cp $VisItDir/lib/python/lib/$pyver/xml/sax/*.{py,pyc,pyo}    $libdir/python/lib/$pyver/xml/sax
+
 ln -s "python/lib/$pyver/config/lib${pyver}.$SHLIB_SOEXT" $libdir
 
 #

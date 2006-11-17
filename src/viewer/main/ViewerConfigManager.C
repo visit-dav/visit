@@ -44,6 +44,7 @@
 #include <ViewerMessaging.h>
 #include <DebugStream.h>
 #include <Utility.h>
+#include <snprintf.h>
 
 // ****************************************************************************
 //  Method: ViewerConfigManager::ViewerConfigManager
@@ -507,7 +508,7 @@ ViewerConfigManager::ExportEntireState(const std::string &filename)
 
 void
 ViewerConfigManager::ImportEntireState(const std::string &filename,
-    bool inVisItDir)
+    bool inVisItDir, const stringVector &sources, bool useProvidedSources)
 {
     std::string file2(filename);
 
@@ -547,8 +548,71 @@ ViewerConfigManager::ImportEntireState(const std::string &filename,
             DataNode *viewerNode = visitRoot->GetNode("VIEWER");
             if(viewerNode != 0)
             {
+                std::map<std::string,std::string> sourceToDB;
+
+                if(useProvidedSources)
+                {
+                    if(sources.size() == 0)
+                    {
+                        Error("The list of sources used to restore the session "
+                              "was empty. The session could not be restored.");
+                        return;
+                    }
+                    else
+                    {
+                        int nSourceIds = sources.size();
+                        DataNode *vsNode = viewerNode->GetNode("ViewerSubject");
+                        DataNode *sourceMapNode = 0;
+                        if(vsNode != 0 && 
+                           (sourceMapNode = vsNode->GetNode("SourceMap")) != 0)
+                        {
+                            if(sourceMapNode->GetNumChildren() > nSourceIds)
+                                nSourceIds = sourceMapNode->GetNumChildren();
+                        }
+
+                        // Use the list of sources that the user provided
+                        // so we can override what's in the sesssion file.
+                        // This lets restore the session with new databases.
+                        for(int i = 0; i < nSourceIds; ++i)
+                        {
+                            char tmp[100];
+                            SNPRINTF(tmp, 100, "SOURCE%02d", i);
+                            if(i < sources.size())
+                                sourceToDB[std::string(tmp)] = sources[i];
+                            else
+                            {
+                                // pad the list of sources
+                                sourceToDB[std::string(tmp)] = sources[sources.size()-1];
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // Get the SourceMap node and use it to construct a map
+                    // that lets the rest of the session reading routines
+                    // pick out the right database name when they see a 
+                    // given source id.
+                    DataNode *vsNode = viewerNode->GetNode("ViewerSubject");
+                    DataNode *sourceMapNode = 0;
+                    if(vsNode != 0 && 
+                       (sourceMapNode = vsNode->GetNode("SourceMap")) != 0)
+                    {
+                        DataNode **srcFields = sourceMapNode->GetChildren();
+                        for(int i = 0; i < sourceMapNode->GetNumChildren(); ++i)
+                        {
+                            if(srcFields[i]->GetNodeType() == STRING_NODE)
+                            {
+                                std::string key(srcFields[i]->GetKey());
+                                std::string db(srcFields[i]->AsString());
+                                sourceToDB[key] = db;
+                            }
+                        }
+                    }
+                }               
+
                 // Let the parent read its settings.
-                bool fatalError = parent->SetFromNode(viewerNode);
+                bool fatalError = parent->SetFromNode(viewerNode, sourceToDB);
 
                 if(fatalError)
                 {

@@ -307,8 +307,11 @@ public:
     bool                       GetTryHarderCyclesTimes() const
                                    { return tryHarderCyclesTimes; }
 
-    void                       CreateNode(DataNode *, bool detailed);
-    void                       SetFromNode(DataNode *);
+    void                       CreateNode(DataNode *, 
+                                          const std::map<std::string,std::string> &,
+                                          bool detailed);
+    void                       SetFromNode(DataNode *,
+                                           const std::map<std::string,std::string> &);
     std::string                GetPluginErrors(const std::string &host);
 
     void                       UpdateDBPluginInfo(const std::string &host);

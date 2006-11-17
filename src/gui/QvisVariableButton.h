@@ -69,18 +69,33 @@ class VariableMenuPopulator;
 //   Hank Childs, Tue Jul 19 14:39:43 PDT 2005
 //   Added Array var support.
 //
+//   Brad Whitlock, Tue Sep 26 15:39:40 PST 2006
+//   Added another constructor and some properties so they can be exposed
+//   in Qt designer.
+//
 // ****************************************************************************
 
 class GUI_API QvisVariableButton : public QPushButton
 {
     Q_OBJECT
+    Q_PROPERTY(int varTypes READ getVarTypes WRITE setVarTypes )
+    Q_PROPERTY(QString variable READ getVariable WRITE setVariable )
+    Q_PROPERTY(QString defaultVariable READ getDefaultVariable WRITE setDefaultVariable )
 public:
+    QvisVariableButton(QWidget *parent, const char *name = 0);
     QvisVariableButton(bool addDefault_, bool addExpr_, bool usePlot,
         int mask, QWidget *parent, const char *name = 0);
     virtual ~QvisVariableButton();
 
     virtual void setText(const QString &);
+
     virtual void setDefaultVariable(const QString &);
+    QString getDefaultVariable() const { return defaultVariable; }
+    int  getVarTypes() const { return varTypes; }
+    void setVarTypes(int t) { varTypes = t; }
+
+    const QString &getVariable() const;
+    void setVariable(const QString &t);
 
     void setChangeTextOnVariableChange(bool);
 
@@ -142,6 +157,7 @@ private:
     bool                      usePlotSource;
     bool                      changeTextOnVarChange;
     int                       varTypes;
+    QString                   variable;
     QString                   defaultVariable;
     QvisVariablePopupMenu    *menu;
 };

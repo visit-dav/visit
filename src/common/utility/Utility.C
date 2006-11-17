@@ -542,7 +542,7 @@ ReadAndProcessDirectory(const std::string &directory,
                 }
             }
 
-            (*processOneFile)(data, fileName, isdir, (long)s.st_size, canaccess);
+            (*processOneFile)(data, fileName, isdir, canaccess, (long)s.st_size);
             retval = true;
         }
  

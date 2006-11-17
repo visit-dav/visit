@@ -1831,10 +1831,10 @@ ViewerFileServer::GetDatabaseCorrelationList()
 // Creation:   Fri Jan 30 22:58:13 PST 2004
 //
 // Modifications:
-//   
 //   Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //   Added logic to decide if we need to force reading of all cycles
 //   and times when getting meta data
+//
 // ****************************************************************************
 
 DatabaseCorrelation *
@@ -2410,13 +2410,67 @@ ViewerFileServer::GetOpenDatabases() const
 // Creation:   Thu Mar 25 16:50:05 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Nov 9 16:36:16 PST 2006
+//   I added code to make sure that database correlations use the source
+//   ids instead of databases when their information is saved. We will fill
+//   in the blanks for the correlation when we read it back in.
+//
 // ****************************************************************************
 
 void
-ViewerFileServer::CreateNode(DataNode *parentNode, bool detailed)
+ViewerFileServer::CreateNode(DataNode *parentNode, 
+    const std::map<std::string, std::string> &dbToSource, bool detailed)
 {
-    databaseCorrelationList->CreateNode(parentNode, detailed, false);
+    // Create a copy of the database correlation list.
+    DatabaseCorrelationList dbcl(*databaseCorrelationList);
+    dbcl.ClearDatabaseCorrelations();
+    for(int i = 0; 
+        i < databaseCorrelationList->GetNumDatabaseCorrelations(); ++i)
+    {
+        const DatabaseCorrelation &corr = 
+            databaseCorrelationList->GetDatabaseCorrelation(i);
+        // Let's only save out correlations that have more than 1 db.
+        if(corr.GetNumDatabases() > 1)
+        {
+            // Map database names to source names.
+            const stringVector &dbNames = corr.GetDatabaseNames();
+            stringVector sourceIds;
+            for(int j = 0; j < dbNames.size(); ++j)
+            {
+                std::map<std::string, std::string>::const_iterator pos =
+                    dbToSource.find(dbNames[j]);
+                if(pos == dbToSource.end())
+                    sourceIds.push_back(dbNames[j]);
+                else
+                    sourceIds.push_back(pos->second);
+            }
+
+            // Create a copy of the correlation but override its database
+            // names with source ids. Also, note that we're not using a
+            // copy constructor because we want most of the correlation
+            // information to be absent so we can repopulate it on session read
+            // in case a new database is chosen.
+            DatabaseCorrelation modCorr;                       
+            if(corr.GetMethod() != DatabaseCorrelation::UserDefinedCorrelation)
+            {
+                modCorr.SetName(corr.GetName());
+                modCorr.SetNumStates(corr.GetNumStates());
+                modCorr.SetMethod(corr.GetMethod());
+            }
+            else
+            {
+               // A user-defined correlation should be saved mostly as-is.
+               modCorr = corr;
+            }
+            modCorr.SetDatabaseNames(sourceIds);
+
+            // Add the modified correlation to the list.
+            dbcl.AddDatabaseCorrelation(modCorr);
+        }
+    }
+
+    // Add the database correlation list information to the session.
+    dbcl.CreateNode(parentNode, detailed, false);
 }
 
 // ****************************************************************************
@@ -2427,78 +2481,77 @@ ViewerFileServer::CreateNode(DataNode *parentNode, bool detailed)
 //
 // Arguments:
 //   parentNode : The node on which to look for attribute nodes.
+//   sourceToDB : The map of source ids -> database names.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar 25 16:49:01 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Nov 10 13:44:40 PST 2006
+//   I rewrote the method to handle creation of database correlations 
+//   using replacement sources.
+//
 // ****************************************************************************
 
 void
-ViewerFileServer::SetFromNode(DataNode *parentNode)
+ViewerFileServer::SetFromNode(DataNode *parentNode,
+    const std::map<std::string,std::string> &sourceToDB)
 {
     DataNode *cLNode = parentNode->GetNode("DatabaseCorrelationList");
     if(cLNode != 0)
     {
-        //
-        // We need to iterate through the correlations and expand
-        // their names and databases so we have valid correlations
-        // if the names contain ".." or "~".
-        //
-        // Note that this code depends on the structure of the
-        // DatabaseCorrelation and DatabaseCorrelationList state objects.
-        //
-        DataNode **children = cLNode->GetChildren();
-        for(int i = 0; i < cLNode->GetNumChildren(); ++i)
-        {
-            if(children[i]->GetKey() == "DatabaseCorrelation")
-            {
-                std::string h, db;
+        // Read the database correlation list into a temporary.
+        DatabaseCorrelationList dbcl;
+        dbcl.SetFromNode(parentNode);
 
-                //
-                // Expand the correlation name if it is a database name.
-                //
-                DataNode *nameNode = children[i]->GetNode("name");
-                if(nameNode != 0 && nameNode->GetNodeType() == STRING_NODE)
+        // Since the database correlations in the temporary may
+        // not have complete information, let's recreate the 
+        // database correlations.
+        databaseCorrelationList->ClearDatabaseCorrelations();
+        for(int i = 0; i < dbcl.GetNumDatabaseCorrelations(); ++i)
+        {
+            const DatabaseCorrelation &corr = dbcl[i];
+            if(corr.GetMethod() != DatabaseCorrelation::UserDefinedCorrelation)
+            {
+                // Translate the source names in the database correlation into
+                // database names using the sourceToDB map.
+                stringVector dbNames;
+                const stringVector &sourceNames = corr.GetDatabaseNames();
+                for(int j = 0; j < sourceNames.size(); ++j)
                 {
-                    std::string name(nameNode->AsString());
-                    if(name.find(':') != std::string::npos)
-                    {
-                        debug3 << "Correlation name before was: "
-                               << name.c_str() << endl;
-                        ExpandDatabaseName(name, h, db);
-                        debug3 << "Correlation name after is: "
-                               << name.c_str() << endl;
-                        nameNode->SetString(name);
-                    }
+                    std::map<std::string,std::string>::const_iterator pos =
+                        sourceToDB.find(sourceNames[j]);
+                    if(pos != sourceToDB.end())
+                        dbNames.push_back(pos->second);
+                    else
+                        dbNames.push_back(sourceNames[j]);
                 }
 
-                //
-                // Expand the names of the databases used by the correlation.
-                //
-                DataNode *dbsNode = children[i]->GetNode("databaseNames");
-                if(dbsNode != 0 && dbsNode->GetNodeType() == STRING_VECTOR_NODE)
+                // Create a new database correlation based on the inputs for the
+                // one that we read from the session file.
+                DatabaseCorrelation *newCorr = CreateDatabaseCorrelation(
+                    corr.GetName(), dbNames, corr.GetMethod(), -1);
+
+                // If we were able to create a database correlation then add it
+                // to the database correlation list.
+                if(newCorr != 0)
                 {
-                    stringVector dbs(dbsNode->AsStringVector());
-                    for(int j = 0; j < dbs.size(); ++j)
-                    {
-                        debug3 << "Database name before was: "
-                               << dbs[j].c_str() << endl;
-                        ExpandDatabaseName(dbs[j], h, db);
-                        debug3 << "Database name after is: "
-                               << dbs[j].c_str() << endl;
-                    }
-                    dbsNode->SetStringVector(dbs);
+                    databaseCorrelationList->AddDatabaseCorrelation(*newCorr);
+                    delete newCorr;
                 }
             }
+            else
+            {
+                // We read in a user-defined database correlation. 
+                // Don't mess with it.
+                databaseCorrelationList->AddDatabaseCorrelation(corr);
+            }
         }
-
+              
         //
-        // Now that the correlation list contains valid correlations, read
-        // it into the actual correlation list state object.
+        // Now that the correlation list contains valid correlations,
+        // notify clients.
         //
-        databaseCorrelationList->SetFromNode(parentNode);
         databaseCorrelationList->Notify();
     }
 }

@@ -130,6 +130,7 @@
       ExportColorTableRPC
       ExportEntireStateRPC
       ImportEntireStateRPC
+      ImportEntireStateWithDifferentSourcesRPC
       ResetPickAttributesRPC
       AddAnnotationObjectRPC
       HideActiveAnnotationObjectsRPC

@@ -224,6 +224,9 @@ import java.util.prefs.BackingStoreException;
 //   Brad Whitlock, Fri Sep 22 14:17:25 PST 2006
 //   Added PlotInfoAttributes.
 //
+//   Brad Whitlock, Fri Nov 10 09:36:57 PDT 2006
+//   Added ImportEntireStateWithDifferentSources RPC.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -1119,6 +1122,16 @@ public class ViewerProxy implements SimpleObserver
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_IMPORTENTIRESTATERPC);
         rpc.SetVariable(filename);
         rpc.SetBoolFlag(inVisItDir);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean ImportEntireStateWithDifferentSources(String filename, boolean inVisItDir, Vector sources)
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_IMPORTENTIRESTATERWITHDIFFERENTSOURCESRPC);
+        rpc.SetVariable(filename);
+        rpc.SetBoolFlag(inVisItDir);
+        rpc.SetProgramOptions(sources);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }

@@ -4091,6 +4091,52 @@ visit_RestoreSession(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_RestoreSessionWithDifferentSources
+//
+// Purpose:
+//   Tells the viewer to read in a session file but use a different list of
+//   databases when restoring it.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Nov 10 11:16:04 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_RestoreSessionWithDifferentSources(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *filename;    
+    int sessionStoredInVisItDir = 1;
+    PyObject *tuple = 0;
+    if(!PyArg_ParseTuple(args, "siO", &filename, &sessionStoredInVisItDir,
+        &tuple))
+        return NULL;
+
+    // Make sure it's a tuple.
+    stringVector dbs;
+    if(!GetStringVectorFromPyObject(tuple, dbs))
+    {
+        VisItErrorFunc("Arguments must be sessionFile, int, "
+                       "tuple of database names");
+        return NULL;
+    }
+
+    MUTEX_LOCK();
+        viewer->ImportEntireStateWithDifferentSources(filename,
+            sessionStoredInVisItDir!=0, dbs);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Function: visit_SaveSession
 //
 // Purpose:
@@ -10212,7 +10258,7 @@ PopulateMethodArgs(ClientMethod *m, PyObject *obj)
         for(int i = 0; i < PyTuple_Size(obj) && noErrors; ++i)
             noErrors = PopulateMethodArgs(m, PyTuple_GET_ITEM(obj, i));
     }
-    else if(PyTuple_Check(obj))
+    else if(PyList_Check(obj))
     {
         // Extract arguments from the tuple.
         for(int i = 0; i < PyList_Size(obj) && noErrors; ++i)
@@ -10827,6 +10873,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Brad Whitlock, Mon Sep 18 11:38:05 PDT 2006
 //   Added SetColorTexturingEnabled.
 //
+//   Brad Whitlock, Fri Nov 10 11:20:08 PDT 2006
+//   Added RestoreSessionWithDifferentSources.
+//
 // ****************************************************************************
 
 static void
@@ -11041,6 +11090,9 @@ AddDefaultMethods()
     AddMethod("ResetView", visit_ResetView, visit_ResetView_doc);
     AddMethod("ResizeWindow", visit_ResizeWindow, visit_ResizeWindow_doc);
     AddMethod("RestoreSession", visit_RestoreSession,visit_RestoreSession_doc);
+    AddMethod("RestoreSessionWithDifferentSources", 
+              visit_RestoreSessionWithDifferentSources,
+              visit_RestoreSession_doc);
     AddMethod("SaveSession", visit_SaveSession, visit_SaveSession_doc);
     AddMethod("SaveWindow", visit_SaveWindow, visit_SaveWindow_doc);
     AddMethod("SetActivePlots", visit_SetActivePlots,visit_SetActivePlots_doc);

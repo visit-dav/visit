@@ -93,6 +93,9 @@
 #    Hank Childs, Wed Apr  6 13:13:10 PDT 2005
 #    Added visit writer.
 #
+#    Brad Whitlock, Tue Sep 19 17:37:36 PST 2006
+#    Added mpeg2encode and imagetools.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -103,8 +106,8 @@ MILI=makemili
 
 OPTIONAL=avtprep classwriter doxygenate prep windowmaker
 
-SUBDIRS=annotations convert curv3dprep @MILI@ mpeg_encode silex surfcomp \
-        writer xml xmledit
+SUBDIRS=imagetools annotations convert curv3dprep @MILI@ mpeg2encode silex \
+        surfcomp writer xml xmledit
 
 message:
 	@echo

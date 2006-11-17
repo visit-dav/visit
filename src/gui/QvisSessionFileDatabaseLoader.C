@@ -194,7 +194,10 @@ QvisSessionFileDatabaseLoader::Start(const QString &sfn)
 // Creation:   Thu Oct 27 16:25:44 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Nov 14 15:21:02 PST 2006
+//   I made this method emit a new complete signal that sends the databases
+//   vector in the argument list.
+//
 // ****************************************************************************
 
 void
@@ -217,10 +220,11 @@ QvisSessionFileDatabaseLoader::ProcessFile()
             }
             else
             {
-                debug1 << mName << "telling VisIt that is can load the "
+                debug1 << mName << "telling VisIt that it can load the "
                           "session file: " << sessionFile.latin1() << endl;
                 
                 emit complete(sessionFile);
+                emit complete(sessionFile, databases);
             }
         }
         else

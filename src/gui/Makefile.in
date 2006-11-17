@@ -351,6 +351,16 @@
 #    Changed moc file builds to automatic rule so it picks up the
 #    dependencies correctly.
 #
+#    Brad Whitlock, Tue Sep 26 10:14:46 PDT 2006
+#    I added MovieTemplateConfig, QvisWidgetFactory, QvisViewportWidget,
+#    QvisPredefinedViewports, QvisSequenceView, QvisSequenceButton,
+#    MovieSequence, MovieSequenceFactory, MovieSequenceScripting,
+#    QvisFileLineEdit, MovieSequenceTransition, MovieSequenceViewportTransition,
+#    WidgetDataNode, QvisSequenceTransition, QvisCompositeTransition,
+#    MovieSequenceRotate, QvisRotationTransition, AccessViewerSession, 
+#    QvisSessionSourceChanger, QvisSessionSourceChangerDialog,
+#    QvisFileOpenDialog.
+#
 ##############################################################################
 
 ##
@@ -394,6 +404,7 @@ HDRMOC = \
     QvisColorTableButton.h \
     QvisColorTableWindow.h \
     QvisCommandWindow.h \
+    QvisCompositeTransition.h \
     QvisDatabaseCorrelationListWindow.h \
     QvisDatabaseCorrelationWindow.h \
     QvisDelayedWindow.h \
@@ -405,8 +416,10 @@ HDRMOC = \
     QvisExportDBWindow.h \
     QvisExpressionsWindow.h \
     QvisFileInformationWindow.h \
+    QvisFileLineEdit.h \
     QvisFilePanel.h \
     QvisFileSelectionWindow.h \
+    QvisFileOpenDialog.h \
     QvisFileOpenWindow.h \
     QvisFtp.h \
     QvisGaussianOpacityBar.h \
@@ -441,6 +454,7 @@ HDRMOC = \
     QvisPostableWindow.h \
     QvisPostableWindowObserver.h \
     QvisPostableWindowSimpleObserver.h \
+    QvisPredefinedViewports.h \
     QvisPreferencesWindow.h \
     QvisQueryOverTimeWindow.h \
     QvisQueryWindow.h \
@@ -451,7 +465,12 @@ HDRMOC = \
     QvisScreenPositionEdit.h \
     QvisScreenPositioner.h \
     QvisScribbleOpacityBar.h \
+    QvisSequenceButton.h \
+    QvisSequenceTransition.h \
+    QvisSequenceView.h \
     QvisSessionFileDatabaseLoader.h \
+    QvisSessionSourceChanger.h \
+    QvisSessionSourceChangerDialog.h \
     QvisSimulationWindow.h \
     QvisSpectrumBar.h \
     QvisSubsetListView.h \
@@ -463,6 +482,7 @@ HDRMOC = \
     QvisVariableButtonHelper.h \
     QvisVCRControl.h \
     QvisViewWindow.h \
+    QvisViewportWidget.h \
     QvisVisItUpdate.h \
     QvisWindowBase.h \
     QvisWizard.h \
@@ -488,11 +508,21 @@ HDR = ${HDRMOC} \
 # All of the sources that are not Qt objects.
 SRC = \
     ${HDRMOC:.h=.C} \
+    AccessViewerSession.C \
     ColorTableObserver.C \
     FileServerList.C \
     GUIBase.C \
     KFBase.C \
     KFListViewItem.C \
+    MovieSequence.C \
+    MovieSequenceCompositeTransition.C \
+    MovieSequenceCurrentPlots.C \
+    MovieSequenceFactory.C \
+    MovieSequenceRotate.C \
+    MovieSequenceScripting.C \
+    MovieSequenceTransition.C \
+    MovieTemplateConfig.C \
+    MovieUtility.C \
     NameSimplifier.C \
     mini3D.C \
     QualifiedFilename.C \
@@ -500,9 +530,12 @@ SRC = \
     QVirtualFileListBoxItem.C \
     QvisListViewFileItem.C \
     QvisPlotListBoxItem.C \
+    QvisRotationTransition.C \
     QvisSubsetListViewItem.C \
     QvisAnnotationObjectInterfaceFactory.C \
-    QvisHelpListViewItem.C
+    QvisHelpListViewItem.C \
+    QvisWidgetFactory.C \
+    WidgetDataNode.C
 
 # Where main() is.
 MAINSRC = main.C
