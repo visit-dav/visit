@@ -309,7 +309,6 @@ int avtFluentFileFormat::OpenCaseFile(const char *filename)
 
   if (FluentCaseFile.is_open())
     {
-    cout << "Successfully opened " << filename << endl;
     return 1;
     }
   else
@@ -330,7 +329,6 @@ int avtFluentFileFormat::OpenDataFile(const char *filename)
 
   if (FluentDataFile.is_open())
     {
-    cout << "Successfully opened " << dfilename << endl;
     return 1;
     }
   else
