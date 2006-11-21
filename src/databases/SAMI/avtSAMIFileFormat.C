@@ -107,6 +107,9 @@ SiloTypeToVTKType(int siloType)
 //    Mark C. Miller, Mon Oct 16 13:20:06 PDT 2006
 //    Made it more tolerant of Silo read errors and more descriptive error
 //    messages.
+//
+//    Mark C. Miller, Tue Nov 21 10:39:12 PST 2006
+//    Fixed error reading from 'meshData' after freeing it
 // ****************************************************************************
 
 avtSAMIFileFormat::avtSAMIFileFormat(const char *filename)
@@ -154,7 +157,7 @@ avtSAMIFileFormat::avtSAMIFileFormat(const char *filename)
     int *globalMeshData = (int *) DBGetVar(dbFile, "global_mesh_data");
     if (globalMeshData)
     {
-        nmats  = meshData[4];
+        nmats  = globalMeshData[4];
         free(globalMeshData);
     }
 }

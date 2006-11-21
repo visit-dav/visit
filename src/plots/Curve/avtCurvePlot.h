@@ -45,7 +45,7 @@
 
 #include <avtLegend.h>
 #include <avtPlot.h>
-#include <avtSurfaceAndWireframeRenderer.h>
+#include <avtCurveRenderer.h>
 
 #include <CurveAttributes.h>
 
@@ -103,7 +103,7 @@ class avtCurvePlot : public avtLineDataPlot
     avtCurveLegend                *curveLegend;
     avtLegend_p                    curveLegendRefPtr;
 
-    avtSurfaceAndWireframeRenderer_p renderer;
+    avtCurveRenderer_p              renderer;
     avtUserDefinedMapper           *mapper;
     avtLabeledCurveMapper          *decoMapper;
     vtkProperty                    *property;

@@ -239,6 +239,70 @@ private:
 int QvisSaveMovieWizardListViewItem::staticKeyIndex = 0;
 
 // ****************************************************************************
+// Method: EnsureDirectoryExists
+//
+// Purpose: 
+//   Makes sure that a directory exists.
+//
+// Arguments:
+//   name       : The directory to make sure exists (Can contain a filename
+//                on the end).
+//   nameIsFile : True if the name is a file; False otherwise.
+//
+// Returns:    True if the directory exists or was created.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov 21 14:05:35 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static bool
+EnsureDirectoryExists(std::string &name, bool nameIsFile)
+{
+    QString dirName;
+    if(nameIsFile)
+    {
+        std::string::size_type pos = name.rfind(SLASH_STRING);
+        if(pos != std::string::npos)
+        {
+            dirName = QString(name.substr(0, pos).c_str());
+        }
+        else
+            dirName = QString(name.c_str());
+    }
+    else
+        dirName = QString(name.c_str());
+
+    // Use a QDir object to see if the directory exists.
+    bool exists = false;
+    QDir dir(dirName);
+    debug1 << "EnsureDirectoryExists: dir=" << dirName.latin1()
+           << endl;
+    if(!dir.exists(dirName))
+    {
+        exists = dir.mkdir(dirName);
+        if(exists)
+            debug1 << "EnsureDirectoryExists: directory was created." << endl;
+        else
+        {
+            debug1 << "EnsureDirectoryExists: directory could not "
+                      "be created." << endl;
+        }
+    }
+    else
+    {
+        exists = true;
+        debug1 << "EnsureDirectoryExists: directory exists." << endl;
+    }
+
+    return exists;
+}
+
+// ****************************************************************************
 // Method: QvisSaveMovieWizard::QvisSaveMovieWizard
 //
 // Purpose: 
@@ -473,7 +537,9 @@ QvisSaveMovieWizard::Exec()
 // Creation:   Mon Nov 13 16:36:40 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Nov 21 14:38:09 PST 2006
+//   Added code to make sure the destination directories exist.
+//
 // ****************************************************************************
 
 void
@@ -554,6 +620,9 @@ QvisSaveMovieWizard::WriteTemplateSpecification()
             }
             debug1 << mName << "templateFile = " << templateFile.c_str() << endl;
             debug1 << mName << "sessionFile = " << sessionFile.c_str() << endl;
+
+            // Make sure that the template's destination directory exists.
+            EnsureDirectoryExists(templateFile, true);
 
             //
             // If we are saving this template for the first time, rather than 
@@ -650,6 +719,9 @@ QvisSaveMovieWizard::WriteTemplateSpecification()
                     debug1 << "\t" << page3_sessionSources->getSources()[i] << endl;
             }
         }
+
+        // Make sure that the template's destination directory exists.
+        EnsureDirectoryExists(specificationFile, true);
 
         // Write the template values to the new file.
         debug1 << mName << "Using template file: " << templateFile.c_str() << endl;

@@ -2651,7 +2651,9 @@ MDServerConnection::GetDatabase(string file, int timeState,
 
                 // Try and make a database out of the filenames.
                 currentDatabase = avtDatabaseFactory::FileList(names,
-                    fileNames.size(), timeState, NULL, forceReadAllCyclesAndTimes);
+                    fileNames.size(), timeState, 
+                    forcedFileType=="" ? NULL : forcedFileType.c_str(),
+                    forceReadAllCyclesAndTimes);
 
                 // Free the memory that we used.
                 for(i = 0; i < fileNames.size(); ++i)

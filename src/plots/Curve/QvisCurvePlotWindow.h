@@ -45,7 +45,9 @@ class CurveAttributes;
 class QLabel;
 class QNarrowLineEdit;
 class QCheckBox;
+class QComboBox;
 class QButtonGroup;
+class QSpinBox;
 class QvisColorButton;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
@@ -71,7 +73,10 @@ class QvisLineWidthWidget;
 //   
 //   Kathleen Bonnell, Mon Oct 31 17:05:35 PST 2005
 //   Added cycleColors, colorLabel.
-//   
+//
+//   Brad Whitlock, Mon Nov 20 13:25:30 PST 2006
+//   Added controls to control symbol-based rendering.
+//
 // ****************************************************************************
 
 class QvisCurvePlotWindow : public QvisPostableWindowObserver
@@ -102,10 +107,16 @@ class QvisCurvePlotWindow : public QvisPostableWindowObserver
     void showPointsChanged(bool val);
     void processPointSizeText();
     void cycleColorsChanged(bool val);
+
+    void renderModeChanged(int);
+    void symbolTypeChanged(int);
+    void symbolDensityChanged(int);
   private:
     int plotType;
     QvisLineStyleWidget *lineStyle;
+    QLabel              *lineStyleLabel;
     QvisLineWidthWidget *lineWidth;
+    QLabel              *lineWidthLabel;
     QCheckBox           *cycleColors;
     QvisColorButton     *color;
     QLabel              *colorLabel;
@@ -114,6 +125,11 @@ class QvisCurvePlotWindow : public QvisPostableWindowObserver
     QCheckBox           *showPoints;
     QNarrowLineEdit     *pointSize;
     QLabel              *pointSizeLabel;
+    QButtonGroup        *renderMode;
+    QComboBox           *symbolType;
+    QLabel              *symbolTypeLabel;
+    QSpinBox            *symbolDensity;
+    QLabel              *symbolDensityLabel;
 
     CurveAttributes *atts;
 };

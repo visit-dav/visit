@@ -35,24 +35,21 @@
 *
 *****************************************************************************/
 
-#ifndef PY_CURVEATTRIBUTES_H
-#define PY_CURVEATTRIBUTES_H
-#include <Python.h>
-#include <CurveAttributes.h>
+#include <avtMesaCurveRenderer.h>
 
-//
-// Functions exposed to the VisIt module.
-//
-void            PyCurveAttributes_StartUp(CurveAttributes *subj, void *data);
-void            PyCurveAttributes_CloseDown();
-PyMethodDef    *PyCurveAttributes_GetMethodTable(int *nMethods);
-bool            PyCurveAttributes_Check(PyObject *obj);
-CurveAttributes *PyCurveAttributes_FromPyObject(PyObject *obj);
-PyObject       *PyCurveAttributes_NewPyObject();
-PyObject       *PyCurveAttributes_WrapPyObject(const CurveAttributes *attr);
-void            PyCurveAttributes_SetDefaults(const CurveAttributes *atts);
-std::string     PyCurveAttributes_GetLogString();
-std::string     PyCurveAttributes_ToString(const CurveAttributes *, const char *);
-
+#if !defined(_WIN32)
+// Mangle the GL calls to mgl.
+#include <GL/gl_mangle.h>
 #endif
 
+//
+// Define avtOpenGLCurveRenderer as avtMesaCurveRenderer so we can include
+// the source for the OpenGL Curve renderer to get a Mesa Curve renderer.
+//
+#define avtOpenGLCurveRenderer avtMesaCurveRenderer
+#define VTK_IMPLEMENT_MESA_CXX
+
+// Include the source
+#include <avtOpenGLCurveRenderer.C>
+
+#undef avtOpenGLCurveRenderer

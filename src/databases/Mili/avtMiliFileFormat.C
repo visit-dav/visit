@@ -546,6 +546,10 @@ read_results(Famid &dbid, int ts, int sr, int rank,
 //    Mark C. Miller, Wed Nov 15 01:46:16 PST 2006
 //    Added a "no_free_nodes" mesh by ghost labeling sanded nodes. Added
 //    the logic to label sanded nodes here.
+//
+//    Mark C. Miller, Tue Nov 21 10:16:42 PST 2006
+//    Fixed leak of sand_arr. Made it request sand_arr only if the
+//    no_free_nodes mesh was requested
 // ****************************************************************************
 
 vtkDataSet *
@@ -668,39 +672,41 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
             // N/A ghost node type for all those nodes that belong to
             // zones that are NOT sanded.
             //
-            vtkFloatArray *sand_arr = (vtkFloatArray *) GetVar(ts, dom, "sand");
-            if (sand_arr && strstr(mesh, no_free_nodes_str))
+            if (strstr(mesh, no_free_nodes_str))
             {
-                float *sand_vals = (float*) sand_arr->GetVoidPointer(0);
+                vtkFloatArray *sand_arr = (vtkFloatArray *) GetVar(ts, dom, "sand");
+                if (sand_arr)
+                {
+                    float *sand_vals = (float*) sand_arr->GetVoidPointer(0);
 
-                vtkUnsignedCharArray *ghost_nodes = vtkUnsignedCharArray::New();
-                ghost_nodes->SetName("avtGhostNodes");
-                ghost_nodes->SetNumberOfTuples(nnodes[dom][mesh_id]);
-                unsigned char *gnp = ghost_nodes->GetPointer(0);
-                for (i = 0 ; i < nnodes[dom][mesh_id]; i++)
-                {
-                    gnp[i] = 0;
-                    avtGhostData::AddGhostNodeType(gnp[i],
-                        NODE_NOT_APPLICABLE_TO_PROBLEM);
-                }
-                for (int cell = 0; cell < ncells[dom][mesh_id]; cell++)
-                {
-                    if (sand_vals[cell] > 0.5) // element status is "good"
+                    vtkUnsignedCharArray *ghost_nodes = vtkUnsignedCharArray::New();
+                    ghost_nodes->SetName("avtGhostNodes");
+                    ghost_nodes->SetNumberOfTuples(nnodes[dom][mesh_id]);
+                    unsigned char *gnp = ghost_nodes->GetPointer(0);
+                    for (i = 0 ; i < nnodes[dom][mesh_id]; i++)
                     {
-                        vtkIdType npts = 0, *pts = 0;
-                        rv->GetCellPoints(cell, npts, pts);
-                        if (npts && pts)
+                        gnp[i] = 0;
+                        avtGhostData::AddGhostNodeType(gnp[i],
+                            NODE_NOT_APPLICABLE_TO_PROBLEM);
+                    }
+                    for (int cell = 0; cell < ncells[dom][mesh_id]; cell++)
+                    {
+                        if (sand_vals[cell] > 0.5) // element status is "good"
                         {
-                            for (int node = 0; node < npts; node++)
-                                avtGhostData::RemoveGhostNodeType(gnp[pts[node]],
-                                    NODE_NOT_APPLICABLE_TO_PROBLEM);
+                            vtkIdType npts = 0, *pts = 0;
+                            rv->GetCellPoints(cell, npts, pts);
+                            if (npts && pts)
+                            {
+                                for (int node = 0; node < npts; node++)
+                                    avtGhostData::RemoveGhostNodeType(gnp[pts[node]],
+                                        NODE_NOT_APPLICABLE_TO_PROBLEM);
+                            }
                         }
                     }
+                    sand_arr->Delete();
+                    rv->GetPointData()->AddArray(ghost_nodes);
+                    ghost_nodes->Delete();
                 }
-
-                sand_arr->Delete();
-                rv->GetPointData()->AddArray(ghost_nodes);
-                ghost_nodes->Delete();
             }
         }
     }

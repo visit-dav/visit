@@ -56,6 +56,9 @@
 #   Brad Whitlock, Tue Jun 13 16:44:22 PST 2006
 #   Added VisIt 1.5.3 and VTK 5.0 updates.
 #
+#   Brad Whitlock, Tue Nov 21 16:38:58 PST 2006
+#   Added code to copy movie templates.
+#
 #------------------------------------------------------------------------------
 
 if(`pwd` != "/data_vobs/VisIt") then
@@ -221,6 +224,8 @@ foreach configdir (Debug Release MSVC7.Net/Debug MSVC7.Net/Release)
     $SCRIPTDIR/converttextfile $SCRIPTDIR/visit-config-ornl.ini   bin/$configdir/visit-config-ornl.ini
     mkdir bin/$configdir/help
     cp $VISITSRC/help/*.{html,helpml} bin/$configdir/help
+    mkdir bin/$configdir/movietemplates
+    cp $VISITSRC/bin/movietemplates/*.{py,mt,bmp,ui} bin/$configdir/movietemplates
     mkdir bin/$configdir/databases
     mkdir bin/$configdir/operators
     mkdir bin/$configdir/plots
