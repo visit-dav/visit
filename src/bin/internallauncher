@@ -134,7 +134,7 @@ $0 = shift @ARGV;
 #    Brad Whitlock, Tue Nov 21 16:30:17 PST 2006
 #    Prevent -compiler flag from being passed on to most programs since
 #    they either can't deal with it or don't need it because they don't
-#    start other VisIt components.
+#    start other VisIt components. Added -viewer_geometry, -window_anchor.
 #
 ###############################################################################
 
@@ -202,6 +202,15 @@ $usage = "
                              standard X Windows geometry specification. This
                              option can be used to set the size of images
                              generated from scripts and movies.
+
+        -viewer_geometry <spec> What portion of the screen the viewer windows
+                                will use. This is a standard X Windows geometry
+                                specification. This option overrides the
+                                -geometry option that the GUI passes to the
+                                viewer.
+
+        -window_anchor <x,y> The x,y position on the screen where VisIt's GUI
+                             will show its windows (Main window excluded).
         -style <style>       One of: windows,cde,motif,sgi.
         -background <color>  Background color for GUI.
         -foreground <color>  Foreground color for GUI.

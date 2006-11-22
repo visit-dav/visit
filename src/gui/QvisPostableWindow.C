@@ -179,6 +179,9 @@ QvisPostableWindow::CreateNode(DataNode *parentNode)
 //   Hank Childs, Mon Nov 14 16:25:27 PST 2005
 //   Don't allow windows to come up off the screen.
 //
+//   Brad Whitlock, Wed Nov 22 09:56:26 PDT 2006
+//   Added code to override the window location if an anchor has been provided.
+//
 // ****************************************************************************
 
 void
@@ -238,6 +241,9 @@ QvisPostableWindow::SetFromNode(DataNode *parentNode, const int *borders)
         h = node->AsInt();
         wh_set = true;
     }
+
+    // Possibly override the window anchor location.
+    xy_set |= GetWindowAnchorLocation(x, y);
 
     // Make sure that the window will fit on the screen.
     FitToScreen(x, y, w, h);

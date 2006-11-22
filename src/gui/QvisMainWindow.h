@@ -190,6 +190,9 @@ class WindowInformation;
 //   Brad Whitlock, Tue Nov 14 15:33:47 PST 2006
 //   Added restoreSessionWithSources.
 //
+//   Brad Whitlock, Wed Nov 22 10:53:21 PDT 2006
+//   Added override of show method.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -272,6 +275,8 @@ signals:
     void restoreSessionWithSources();
     void reopenOnNextFrame();
 public slots:
+    virtual void show();
+
     void unreadOutput(bool);
     void updateNotAllowed();
     void SetTimeStateFormat(const TimeFormat &fmt);

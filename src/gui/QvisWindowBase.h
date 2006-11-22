@@ -95,10 +95,16 @@ public:
 
     static void FitToScreen(int &x, int &y, int &w, int &h);
 
+    static void SetWindowAnchorLocation(int, int);
+    static bool GetWindowAnchorLocation(int &, int &);
+
 public slots:
     virtual void show();
 protected:
     bool saveWindowDefaults;
+private:
+    static bool windowAnchorSet;
+    static int  windowAnchor[2];
 };
 
 // Create a type for a vector of postable windows.

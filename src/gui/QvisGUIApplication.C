@@ -1515,6 +1515,9 @@ QvisGUIApplication::Quit()
 //    Brad Whitlock, Tue Jul 25 11:32:46 PDT 2006
 //    Added support for -geometry.
 //
+//    Brad Whitlock, Wed Nov 22 10:08:49 PDT 2006
+//    Added -window_anchor.
+//
 // ****************************************************************************
 
 void
@@ -1692,6 +1695,32 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
             {
                 cerr << "A malformed geometry string was provided:"
                      << argv[i+1] << endl;
+            }
+            ++i;
+        }
+        else if(current == std::string("-window_anchor"))
+        {
+            if(i + 1 >= argc)
+            {
+                cerr << "The -window_anchor option must be followed by an x,y location."
+                     << endl;
+                continue;
+            }
+            int x,y;
+            if(sscanf(argv[i+1], "%d,%d", &x, &y) == 2)
+            {
+                if(x < 0 || y < 0)
+                {
+                    cerr << "The -window_anchor option only accepts values "
+                    "greater than or equal to zero." << endl;
+                }
+                else
+                    QvisWindowBase::SetWindowAnchorLocation(x, y);
+            }
+            else
+            {
+                cerr << "The argument provided to the -window_anchor argument "
+                "was invalid." << endl;
             }
             ++i;
         }

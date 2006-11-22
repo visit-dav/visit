@@ -40,7 +40,12 @@
 #include <vectortypes.h>
 #include <qapplication.h>
 
+// Global vars.
 static QWidget *parentOfEveryWindow = 0;
+
+// Class static
+bool QvisWindowBase::windowAnchorSet = false;
+int  QvisWindowBase::windowAnchor[2] = {0,0};
 
 // *****************************************************************************
 // Method: QvisWindowBase::QvisWindowBase
@@ -205,6 +210,9 @@ QvisWindowBase::CreateNode(DataNode *parentNode)
 //   Hank Childs, Mon Nov 14 16:25:27 PST 2005
 //   Don't allow windows to come up off the screen.
 //
+//   Brad Whitlock, Wed Nov 22 09:56:26 PDT 2006
+//   Added code to override the window location if an anchor has been provided.
+//
 // ****************************************************************************
 
 void
@@ -250,6 +258,9 @@ QvisWindowBase::SetFromNode(DataNode *parentNode, const int *borders)
         h = node->AsInt();
         wh_set = true;
     }
+
+    // Possibly override the window anchor location.
+    xy_set |= GetWindowAnchorLocation(x, y);
 
     // Make sure that the window will fit on the screen.
     FitToScreen(x, y, w, h);
@@ -352,6 +363,9 @@ QvisWindowBase::ProcessOldVersions(DataNode *, const char *)
 //   Brad Whitlock, Thu Apr 19 09:30:01 PDT 2001
 //   Added code to raise the window when it is shown.
 //
+//   Brad Whitlock, Wed Nov 22 10:00:18 PDT 2006
+//   Added code to move the window if an anchor has been set.
+//
 // ****************************************************************************
 
 void
@@ -359,6 +373,14 @@ QvisWindowBase::show()
 {
     // Indicate that the window should be saved.
     saveWindowDefaults = true;
+
+    // Move the window in case it has not been moved already in SetFromNode.
+    int wx, wy;
+    if(GetWindowAnchorLocation(wx, wy) &&
+       (wx != x() || wy != y()))
+    {
+        QMainWindow::move(wx, wy);
+    }
 
     QMainWindow::show();
     QMainWindow::raise();
@@ -424,3 +446,60 @@ QvisWindowBase::StringToDoubleList(const char *str, doubleVector &dv, int max)
         }
     } while(offset < length);
 }
+
+// ****************************************************************************
+// Method: QvisWindowBase::SetWindowAnchorLocation
+//
+// Purpose: 
+//   Sets the window anchor location where windows will appear.
+//
+// Arguments:
+//   wx : The x location where windows will appear.
+//   wy : The y location where windows will appear.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 22 09:53:10 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisWindowBase::SetWindowAnchorLocation(int wx, int wy)
+{
+    windowAnchorSet = true;
+    windowAnchor[0] = wx;
+    windowAnchor[1] = wy;
+}
+
+// ****************************************************************************
+// Method: QvisWindowBase::GetWindowAnchorLocation
+//
+// Purpose: 
+//   Gets the window anchor location if one has been set.
+//
+// Arguments:
+//   wx : The return value for the x window location.
+//   wy : The return value for the y window location.
+//
+// Returns:    True if the window anchor was set; False otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 22 09:54:12 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+QvisWindowBase::GetWindowAnchorLocation(int &wx, int &wy)
+{
+    bool ret = windowAnchorSet;
+    if(ret)
+    {
+        wx = windowAnchor[0];
+        wy = windowAnchor[1];
+    }
+    return ret;
+}
+
