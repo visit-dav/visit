@@ -45,6 +45,8 @@
 
 #include <avtDataObjectString.h>
 #include <avtDataObjectInformation.h>
+#include <AttributeGroup.h>
+#include <BufferConnection.h>
 
 #include <NoInputException.h>
 
@@ -393,6 +395,57 @@ avtDataObjectWriter::WriteDouble(avtDataObjectString &str, const double *data,
         str.Append((char *)buffer, nbytes,
             avtDataObjectString::DATA_OBJECT_STRING_OWNS_REFERENCE_AFTER_CALL);
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtDataObjectWriter::WriteAtts
+//
+//  Purpose:
+//    Writes an AttributeGroup, in the format of the destination machine, 
+//    to a string.
+//
+//  Arguments:
+//    str        The data object string to write into.
+//    atts       The AttributeGroup to write.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    November 27, 2006
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtDataObjectWriter::WriteAtts(avtDataObjectString &str, 
+                               AttributeGroup *atts) const
+{
+    if (atts == NULL)
+    {
+        WriteInt(str, 0);
+        return;
+    }
+
+    BufferConnection buf;
+    buf.SetDestinationFormat(destinationFormat);
+
+    atts->SelectAll();
+    atts->Write(buf);
+    int size = atts->CalculateMessageSize(buf);
+
+    unsigned char *b1 = new unsigned char[size];
+    char *b2 = new char[size];
+    for (int i = 0; i < size; i++)
+    {
+        buf.Read(b1+i);
+        b2[i] = (char)b1[i];
+    }
+    
+    WriteInt(str, size);
+    str.Append((char*) b2, size,
+                  avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
+    delete [] b1;
+    delete [] b2;
 }
 
 

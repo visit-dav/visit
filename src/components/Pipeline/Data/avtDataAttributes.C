@@ -3978,6 +3978,8 @@ avtDataAttributes::TransformSpatialExtents(avtDataAttributes &outAtts,
 //  Creation:   June 20, 2006 
 //
 //  Modifications:
+//    Kathleen Bonnell, Mon Nov 27 12:21:47 PST 2006
+//    Removed PlotInfoAtts specific code, call WriteAtts on writer instead.
 //
 // ****************************************************************************
 
@@ -3985,31 +3987,7 @@ void
 avtDataAttributes::WritePlotInfoAtts(avtDataObjectString &str,
                                      const avtDataObjectWriter *wrtr)
 {
-    if (plotInfoAtts == NULL)
-    {
-        wrtr->WriteInt(str, 0);
-        return;
-    }
-
-    BufferConnection buf;
-
-    plotInfoAtts->SelectAll();
-    plotInfoAtts->Write(buf);
-    int size = plotInfoAtts->CalculateMessageSize(buf);
-
-    unsigned char *b1 = new unsigned char[size];
-    char *b2 = new char[size];
-    for (int i = 0; i < size; i++)
-    {
-        buf.Read(b1+i);
-        b2[i] = (char)b1[1];
-    }
-    
-    wrtr->WriteInt(str, size);
-    str.Append((char*) b1, size,
-                  avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
-    delete [] b1;
-    delete [] b2;
+    wrtr->WriteAtts(str, plotInfoAtts);
 }
 
 
@@ -4025,6 +4003,10 @@ avtDataAttributes::WritePlotInfoAtts(avtDataObjectString &str,
 //  Programmer: Kathleen Bonnell
 //  Creation:   June 20, 2006 
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Nov 27 12:32:24 PST 2006
+//    Correctly delete plotInfoAtts.
+//
 // ****************************************************************************
 
 int
@@ -4039,7 +4021,7 @@ avtDataAttributes::ReadPlotInfoAtts(char *input)
     {
         if (plotInfoAtts != NULL)
         {
-            delete [] plotInfoAtts;
+            delete plotInfoAtts;
             plotInfoAtts == NULL;
         }
         return size;
@@ -4077,6 +4059,10 @@ avtDataAttributes::ReadPlotInfoAtts(char *input)
 //  Programmer: Kathleen Bonnell
 //  Creation:   June 20, 2006
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Nov 27 12:32:24 PST 2006
+//    Delete plotInfoAtts if necessary when pia is NULL.
+//
 // ****************************************************************************
 
 void
@@ -4084,6 +4070,11 @@ avtDataAttributes::SetPlotInfoAtts(const PlotInfoAttributes *pia)
 {
     if (pia == NULL)
     {
+        if (plotInfoAtts != NULL)
+        {
+            delete plotInfoAtts;
+            plotInfoAtts = NULL;
+        }
         return;
     }
     if (plotInfoAtts == NULL)
