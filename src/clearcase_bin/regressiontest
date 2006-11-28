@@ -175,6 +175,12 @@
 #    Mark C. Miller, Mon Nov 27 18:06:02 PST 2006
 #    Copied data from debug build to optimized. Added sending of failed build
 #    email for optimized runs
+#
+#    Mark C. Miller, Tue Nov 28 23:13:08 PST 2006
+#    Changed CL args for setting error thresholds during tests
+#
+#    Mark C. Miller, Tue Nov 28 23:50:15 PST 2006
+#    Changed maxdiff to meddiff
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -426,6 +432,7 @@ ipcs -q | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -q 1> /dev/null 2>&1
 
 # copy the data dir for use in optimized testing
 cp -R data /gscratch/visit_test/. 1> /dev/null 2>&1
+chmod -R g+rX /gscratch/visit_test/data
 
 # rebuild an optimized visit
 cleartool startview visit_VOBowner_testopt  1> /dev/null 2>&1
@@ -483,11 +490,13 @@ rm -rf test/cores
 mkdir test/cores
 
 # run the test
+#    - pixdiff is max % of pixels that can be different
+#    - meddiff is max median diff (in grayscale) of in any one pixel
 cd test
 if test "$skipList" = ""; then
-    ./runtest -q -p -m optimized -d "$curdate" -notrackmem -minor-error 8 -major-error 20 
+    ./runtest -q -p -m optimized -d "$curdate" -notrackmem -pixdiff 10 -meddiff 10
 else
-    ./runtest -q -s "$skipList" -p -m optimized -d "$curdate" -notrackmem -minor-error 8 -major-error 20
+    ./runtest -q -s "$skipList" -p -m optimized -d "$curdate" -notrackmem -pixdiff 10 -meddiff 10
 fi
 curerror=$?
 if test ! "$curerror" = "0"; then

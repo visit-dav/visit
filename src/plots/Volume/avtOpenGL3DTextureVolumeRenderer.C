@@ -109,6 +109,7 @@ avtOpenGL3DTextureVolumeRenderer::avtOpenGL3DTextureVolumeRenderer()
     volumetex = NULL;
     volumetexId = 0;
 
+#ifndef VTK_IMPLEMENT_MESA_CXX
 #ifdef HAVE_LIBGLEW
     GLenum err = glewInit();
     if(err != GLEW_OK)
@@ -118,6 +119,7 @@ avtOpenGL3DTextureVolumeRenderer::avtOpenGL3DTextureVolumeRenderer()
     }
     else
         glew_initialized = true;
+#endif
 #endif
 }
 

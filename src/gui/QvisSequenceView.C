@@ -40,6 +40,7 @@
 #include <qdrawutil.h>
 #include <qfontmetrics.h>
 #include <qpainter.h>
+#include <qstringlist.h>
 
 // ****************************************************************************
 // Method: QvisSequenceView::QvisSequenceView

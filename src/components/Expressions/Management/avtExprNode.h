@@ -41,6 +41,7 @@
 #include <ExprNode.h>
 #include <expression_exports.h>
 
+class avtExpressionFilter;
 class ExprPipelineState;
 
 //  Modifications:
@@ -52,6 +53,9 @@ class ExprPipelineState;
 //    base classes.  Made FunctionExpr and MachExpr use names
 //    instead of Identifier tokens.  These two changes were to
 //    remove Token references from the parse tree node classes.
+//
+//    Kathleen Bonnell, Fri Nov 17 08:32:54 PST 2006 
+//    Added private CreateFilters(string) for FuncExpr class. 
 
 
 class EXPRESSION_API avtExprNode : public virtual ExprNode
@@ -136,6 +140,8 @@ class EXPRESSION_API avtFunctionExpr : public avtExprNode, public FunctionExpr
     avtFunctionExpr(const Pos &p, std::string n, ArgsExpr *e=NULL)
         : avtExprNode(p), FunctionExpr(p,n,e), ExprNode(p) {}
     virtual void CreateFilters(ExprPipelineState *);
+  private:
+    avtExpressionFilter *CreateFilters(std::string);
 };
 
 class EXPRESSION_API avtVarExpr : public avtExprNode, public VarExpr

@@ -13,6 +13,12 @@
 //
 // Modifications:
 //
+//     Mark Blair, Thu Sep 14 16:44:17 PDT 2006
+//     Added methods to support slider change time ordinal lists.
+//   
+//     Mark Blair, Thu Nov  2 12:33:23 PST 2006
+//     Added methods to support selective axis labeling in associated plot.
+//
 // ****************************************************************************
 
 
@@ -74,6 +80,34 @@ void avtExtentsToolInterface::SetMaxTimeOrdinals(const intVector &maxTimeOrdinal
 {
     ExtentsAttributes *extAtts = (ExtentsAttributes *)atts;
     extAtts->SetMaxTimeOrdinals(maxTimeOrdinals_);
+}
+
+
+void avtExtentsToolInterface::SetToolDrawsAxisLabels(bool toolDrawsAxisLabels_)
+{
+    ExtentsAttributes *extAtts = (ExtentsAttributes *)atts;
+    extAtts->SetToolDrawsAxisLabels(toolDrawsAxisLabels_);
+}
+
+
+void avtExtentsToolInterface::SetAxisGroupNames(const stringVector &axisGroupNames_)
+{
+    ExtentsAttributes *extAtts = (ExtentsAttributes *)atts;
+    extAtts->SetAxisGroupNames(axisGroupNames_);
+}
+
+
+void avtExtentsToolInterface::SetAxisLabelStates(const intVector &axisLabelStates_)
+{
+    ExtentsAttributes *extAtts = (ExtentsAttributes *)atts;
+    extAtts->SetAxisLabelStates(axisLabelStates_);
+}
+
+
+void avtExtentsToolInterface::SetAxisXIntervals(const doubleVector &axisXIntervals_)
+{
+    ExtentsAttributes *extAtts = (ExtentsAttributes *)atts;
+    extAtts->SetAxisXIntervals(axisXIntervals_);
 }
 
 
@@ -151,6 +185,34 @@ const intVector &avtExtentsToolInterface::GetMaxTimeOrdinals() const
 {
     ExtentsAttributes *extAtts = (ExtentsAttributes *)atts;
     return extAtts->GetMaxTimeOrdinals();
+}
+
+
+bool avtExtentsToolInterface::GetToolDrawsAxisLabels() const
+{
+    ExtentsAttributes *extAtts = (ExtentsAttributes *)atts;
+    return extAtts->GetToolDrawsAxisLabels();
+}
+
+
+const stringVector &avtExtentsToolInterface::GetAxisGroupNames() const
+{
+    ExtentsAttributes *extAtts = (ExtentsAttributes *)atts;
+    return extAtts->GetAxisGroupNames();
+}
+
+
+const intVector &avtExtentsToolInterface::GetAxisLabelStates() const
+{
+    ExtentsAttributes *extAtts = (ExtentsAttributes *)atts;
+    return extAtts->GetAxisLabelStates();
+}
+
+
+const doubleVector &avtExtentsToolInterface::GetAxisXIntervals() const
+{
+    ExtentsAttributes *extAtts = (ExtentsAttributes *)atts;
+    return extAtts->GetAxisXIntervals();
 }
 
 

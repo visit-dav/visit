@@ -60,6 +60,7 @@
 #include <avtDeterminantFilter.h>
 #include <avtEigenvalueFilter.h>
 #include <avtEigenvectorFilter.h>
+#include <avtExpressionFilter.h>
 #include <avtInverseFilter.h>
 #include <avtTraceFilter.h>
 #include <avtTensorMaximumShearFilter.h>
@@ -406,6 +407,383 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //     Creates the avt filters that are necessary to complete the given
 //     function.
 //
+// Notes:  
+//     Moved from public CreateFilters(ExprPipelineState) method, so as to 
+//     remove nested-if blocks.  Too many nested blocks cause compile failure 
+//     on Win32.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 17, 2006
+//
+// Modifications:
+//
+// ****************************************************************************
+
+avtExpressionFilter *
+avtFunctionExpr::CreateFilters(string functionName)
+{
+    if (functionName == "sin")
+        return new avtSinFilter();
+    if (functionName == "cos")
+        return new avtCosFilter();
+    if (functionName == "tan")
+        return new avtTanFilter();
+    if (functionName == "atan")
+        return new avtArctanFilter();
+    if (functionName == "asin")
+        return new avtArcsinFilter();
+    if (functionName == "acos")
+        return new avtArccosFilter();
+    if (functionName == "deg2rad")
+        return new avtDegreeToRadianFilter();
+    if (functionName == "rad2deg")
+        return new avtRadianToDegreeFilter();
+    if (functionName == "ln")
+        return new avtNaturalLogFilter();
+    if ((functionName == "log") || (functionName == "log10"))
+        return new avtBase10LogFilter();
+    if (functionName == "sqrt")
+        return new avtSquareRootFilter();
+    if ((functionName == "sq") || (functionName == "sqr"))
+        return new avtSquareFilter();
+    if (functionName == "mod")
+        return new avtModuloFilter();
+    if (functionName == "ceil")
+        return new avtCeilingFilter();
+    if (functionName == "floor")
+        return new avtFloorFilter();
+    if (functionName == "round")
+        return new avtRoundFilter();
+    if ((functionName == "random") || (functionName == "rand"))
+        return new avtRandomFilter();
+    if (functionName == "cross")
+        return new avtVectorCrossProductFilter();
+    if (functionName == "dot")
+        return new avtBinaryMultiplyFilter();
+    if (functionName == "array_compose")
+        return new avtArrayComposeFilter();
+    if (functionName == "array_decompose")
+        return new avtArrayDecomposeFilter();
+    if (functionName == "matvf")
+        return new avtMatvfFilter();
+    if (functionName == "mirvf")
+        return new avtMIRvfFilter();
+    if (functionName == "materror")
+        return new avtMatErrorFilter();
+    if (functionName == "specmf")
+        return new avtSpecMFFilter();
+    if (functionName == "nmats")
+        return new avtNMatsFilter();
+    if (functionName == "zonetype")
+        return new avtZoneTypeFilter();
+    if (functionName == "localized_compactness")
+        return new avtLocalizedCompactnessExpression();
+    if (functionName == "recenter")
+        return new avtRecenterFilter();
+    if (functionName == "det" || functionName == "determinant")
+        return new avtDeterminantFilter();
+    if (functionName == "eigenvalue")
+        return new avtEigenvalueFilter();
+    if (functionName == "eigenvector")
+        return new avtEigenvectorFilter();
+    if (functionName == "inverse")
+        return new avtInverseFilter();
+    if (functionName == "trace")
+        return new avtTraceFilter();
+    if (functionName == "effective_tensor")
+        return new avtEffectiveTensorFilter();
+    if (functionName == "tensor_maximum_shear")
+        return new avtTensorMaximumShearFilter();
+    if (functionName == "principal_tensor")
+        return new avtPrincipalTensorFilter();
+    if (functionName == "principal_deviatoric_tensor")
+        return new avtPrincipalDeviatoricTensorFilter();
+    if (functionName == "degree")
+        return new avtDegreeFilter();
+    if (functionName == "cylindrical")
+        return new avtCylindricalCoordinatesFilter();
+    if (functionName == "polar")
+        return new avtPolarCoordinatesFilter();
+    if (functionName == "coord" || functionName == "coords")
+        return new avtMeshCoordinateFilter();
+    if (functionName == "procid")
+        return new avtProcessorIdFilter();
+    if (functionName == "mean_curvature")
+    {
+        avtCurvatureExpression *c = new avtCurvatureExpression;
+        c->DoGaussCurvature(false);
+        return c;
+    }
+    if (functionName == "gauss_curvature")
+    {
+        avtCurvatureExpression *c = new avtCurvatureExpression;
+        c->DoGaussCurvature(true);
+        return c;
+    }
+    if (functionName == "ijk_gradient" || functionName == "ij_gradient")
+    {
+        avtGradientFilter *g = new avtGradientFilter();
+        g->SetDoLogicalGradient(true);
+        return g;
+    }
+    if (functionName == "gradient")
+        return new avtGradientFilter();
+    if (functionName == "curl")
+        return new avtCurlFilter();
+    if (functionName == "divergence")
+        return new avtDivergenceFilter();
+    if (functionName == "laplacian" || functionName == "Laplacian")
+        return new avtLaplacianFilter();
+    if (functionName == "resrad")
+        return new avtResradFilter();
+    if (functionName == "magnitude")
+        return new avtMagnitudeFilter();
+    if (functionName == "relative_difference")
+        return new avtRelativeDifferenceFilter();
+    if (functionName == "var_skew")
+        return new avtVariableSkewFilter();
+    if (functionName == "apply_ddf")
+        return new avtApplyDDFExpression();
+    if (functionName == "if")
+        return new avtConditionalFilter();
+    if (functionName == "and")
+        return new avtLogicalAndFilter();
+    if (functionName == "or")
+        return new avtLogicalOrFilter();
+    if (functionName == "not")
+        return new avtLogicalNegationFilter();
+    if (functionName == "le" || functionName == "lte")
+        return new avtTestLessThanOrEqualToFilter();
+    if (functionName == "ge" || functionName == "gte")
+        return new avtTestGreaterThanOrEqualToFilter();
+    if (functionName == "lt")
+        return new avtTestLessThanFilter();
+    if (functionName == "gt")
+        return new avtTestGreaterThanFilter();
+    if (functionName == "eq" || functionName == "equal" || 
+             functionName == "equals")
+        return new avtTestEqualToFilter();
+    if (functionName == "ne" || functionName == "neq" ||
+             functionName == "notequal" || functionName == "notequals")
+        return new avtTestNotEqualToFilter();
+    if (functionName == "neighbor")
+        return new avtNeighborFilter();
+    if (functionName == "external_node")
+        return new avtExternalNodeExpression();
+    if (functionName == "node_degree")
+        return new avtNodeDegreeFilter();
+    // Begin Verdict Metrics
+    if (functionName == "area")
+        return new avtVMetricArea();
+    if (functionName == "aspect")
+        return new avtVMetricAspectRatio();
+    if (functionName == "skew")
+        return new avtVMetricSkew();
+    if (functionName == "taper")
+        return new avtVMetricTaper();
+    if (functionName == "volume")
+        return new avtVMetricVolume();
+    if (functionName == "volume2")
+    {
+        avtVMetricVolume *vol = new avtVMetricVolume();
+        vol->UseVerdictHex(false);
+        return vol;
+    }
+    if (functionName == "min_edge_length")
+    {
+        avtEdgeLength *el = new avtEdgeLength();
+        el->SetTakeMin(true);
+        return el;
+    }
+    if (functionName == "max_edge_length")
+    {
+        avtEdgeLength *el = new avtEdgeLength();
+        el->SetTakeMin(false);
+        return el;
+    }
+    if (functionName == "min_side_volume")
+    {
+        avtSideVolume *sv = new avtSideVolume();
+        sv->SetTakeMin(true);
+        return sv;
+    }
+    if (functionName == "max_side_volume")
+    {
+        avtSideVolume *sv = new avtSideVolume();
+        sv->SetTakeMin(false);
+        return sv;
+    }
+    if (functionName == "stretch")
+        return new avtVMetricStretch();
+    if (functionName == "diagonal")
+        return new avtVMetricDiagonal();
+    if (functionName == "dimension")
+        return new avtVMetricDimension();
+    if (functionName == "oddy")
+        return new avtVMetricOddy();
+    if (functionName == "condition")
+        return new avtVMetricCondition();
+    if (functionName == "jacobian")
+        return new avtVMetricJacobian();
+    if (functionName == "scaled_jacobian")
+        return new avtVMetricScaledJacobian();
+    if (functionName == "shear")
+        return new avtVMetricShear();
+    if (functionName == "shape")
+        return new avtVMetricShape();
+    if (functionName == "relative_size")
+        return new avtVMetricRelativeSize();
+    if (functionName == "shape_and_size")
+        return new avtVMetricShapeAndSize();
+    if (functionName == "aspect_gamma")
+        return new avtVMetricAspectGamma();
+    if (functionName == "warpage")
+        return new avtVMetricWarpage();
+    if (functionName == "largest_angle")
+        return new avtVMetricLargestAngle();
+    if (functionName == "smallest_angle")
+        return new avtVMetricSmallestAngle();
+    if (functionName == "revolved_volume")
+        return new avtRevolvedVolume;
+    if (functionName == "revolved_surface_area")
+        return new avtRevolvedSurfaceArea;
+    if (functionName == "conservative_smoothing")
+        return new avtConservativeSmoothingExpression;
+    if (functionName == "mean_filter")
+        return new avtMeanFilterExpression;
+    if (functionName == "median_filter")
+        return new avtMedianFilterExpression;
+    if (functionName == "abel_inversion")
+        return new avtAbelInversionExpression;
+    if (functionName == "conn_cmfe")
+        return new avtConnCMFEExpression;
+    if (functionName == "pos_cmfe")
+        return new avtPosCMFEExpression;
+    if (functionName == "eval_transform")
+        return new avtEvalTransformExpression;
+    if (functionName == "symm_transform")
+        return new avtSymmTransformExpression;
+    if (functionName == "eval_plane")
+        return new avtEvalPlaneExpression;
+    if (functionName == "symm_plane")
+        return new avtSymmPlaneExpression;
+    if (functionName == "time")
+        return new avtTimeExpression;
+    if (functionName == "surface_normal" || 
+             functionName == "point_surface_normal")
+    {
+        avtSurfaceNormalExpression *ff = new avtSurfaceNormalExpression;
+        ff->DoPointNormals(true);
+        return ff;
+    }
+    if (functionName == "cell_surface_normal")
+    {
+        avtSurfaceNormalExpression *ff = new avtSurfaceNormalExpression;
+        ff->DoPointNormals(false);
+        return ff;
+    }
+    if (functionName == "zoneid")
+    {
+        avtDataIdFilter *ff = new avtDataIdFilter;
+        ff->CreateZoneIds();
+        ff->CreateLocalNumbering();
+        return ff;
+    }
+    if (functionName == "global_zoneid")
+    {
+        avtDataIdFilter *ff = new avtDataIdFilter;
+        ff->CreateZoneIds();
+        ff->CreateGlobalNumbering();
+        return ff;
+    }
+    if (functionName == "nodeid")
+    {
+        avtDataIdFilter *ff = new avtDataIdFilter;
+        ff->CreateNodeIds();
+        ff->CreateLocalNumbering();
+        return ff;
+    }
+    if (functionName == "global_nodeid")
+    {
+        avtDataIdFilter *ff = new avtDataIdFilter;
+        ff->CreateNodeIds();
+        ff->CreateGlobalNumbering();
+        return ff;
+    }
+    if (functionName == "biggest_neighbor")
+    {
+        avtNeighborEvaluatorFilter *ff = new avtNeighborEvaluatorFilter;
+        ff->SetEvaluationType(avtNeighborEvaluatorFilter::BIGGEST_NEIGHBOR);
+        return ff;
+    }
+    if (functionName == "smallest_neighbor")
+    {
+        avtNeighborEvaluatorFilter *ff = new avtNeighborEvaluatorFilter;
+        ff->SetEvaluationType(avtNeighborEvaluatorFilter::SMALLEST_NEIGHBOR);
+        return ff;
+    }
+    if (functionName == "neighbor_average")
+    {
+        avtNeighborEvaluatorFilter *ff = new avtNeighborEvaluatorFilter;
+        ff->SetEvaluationType(avtNeighborEvaluatorFilter::AVERAGE_NEIGHBOR);
+        return ff;
+    }
+    if (functionName == "cylindrical_radius")
+    {
+        avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;
+        ecm->SetMacro("cylindrical", 0);
+        return ecm;
+    }
+    if (functionName == "cylindrical_theta")
+    {
+        avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;
+        ecm->SetMacro("cylindrical", 1);
+        return ecm;
+    }
+    if (functionName == "polar_radius")
+    {
+        avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;
+        ecm->SetMacro("polar", 0);
+        return ecm;
+    }
+    if (functionName == "polar_theta")
+    {
+        avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;
+        ecm->SetMacro("polar", 1);
+        return ecm;
+    }
+    if (functionName == "polar_phi")
+    {
+        avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;
+        ecm->SetMacro("polar", 2);
+        return ecm;
+    }
+    if (functionName == "distance_to_best_fit_line")
+        return new avtDistanceToBestFitLineFilter(true);
+    if (functionName == "distance_to_best_fit_line2")
+        return new avtDistanceToBestFitLineFilter(false);
+    if (functionName == "min" || functionName == "minimum")
+    {
+        avtMinMaxExpression *mm = new avtMinMaxExpression;
+        mm->SetDoMinimum(true);
+        return mm;
+    }
+    if (functionName == "max" || functionName == "maximum")
+    {
+        avtMinMaxExpression *mm = new avtMinMaxExpression;
+        mm->SetDoMinimum(false);
+        return mm;
+    }
+    return NULL;
+}
+
+// ****************************************************************************
+// Method: avtFunctionExpr::CreateFilters
+//
+// Purpose:
+//     Creates the avt filters that are necessary to complete the given
+//     function.
+//
 // Programmer: Sean Ahern
 //
 // Modifications:
@@ -503,369 +881,20 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Kathleen Bonnell, Fri Sep 15 09:55:55 PDT 2006 
 //      Added volume2.  (does a different hex-volume calculation).
 //
+//      Kathleen Bonnell, Fri Nov 17 08:32:54 PST 2006
+//      Moved actual creation of filters to private CreateFilters method,
+//      which does not have nested-if blocks, too many of which cause
+//      a compile failure on Win32.
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
 {
     // Figure out which filter to add and add it.
     string functionName = name;
-    avtExpressionFilter *f = NULL;
+    avtExpressionFilter *f = CreateFilters(functionName);
 
-    if (functionName == "sin")
-        f = new avtSinFilter();
-    else if (functionName == "cos")
-        f = new avtCosFilter();
-    else if (functionName == "tan")
-        f = new avtTanFilter();
-    else if (functionName == "atan")
-        f = new avtArctanFilter();
-    else if (functionName == "asin")
-        f = new avtArcsinFilter();
-    else if (functionName == "acos")
-        f = new avtArccosFilter();
-    else if (functionName == "deg2rad")
-        f = new avtDegreeToRadianFilter();
-    else if (functionName == "rad2deg")
-        f = new avtRadianToDegreeFilter();
-    else if (functionName == "abs")
-        f = new avtAbsValFilter();
-    else if (functionName == "ln")
-        f = new avtNaturalLogFilter();
-    else if ((functionName == "log") || (functionName == "log10"))
-        f = new avtBase10LogFilter();
-    else if (functionName == "sqrt")
-        f = new avtSquareRootFilter();
-    else if ((functionName == "sq") || (functionName == "sqr"))
-        f = new avtSquareFilter();
-    else if (functionName == "mod")
-        f = new avtModuloFilter();
-    else if (functionName == "ceil")
-        f = new avtCeilingFilter();
-    else if (functionName == "floor")
-        f = new avtFloorFilter();
-    else if (functionName == "round")
-        f = new avtRoundFilter();
-    else if ((functionName == "random") || (functionName == "rand"))
-        f = new avtRandomFilter();
-    else if (functionName == "cross")
-        f = new avtVectorCrossProductFilter();
-    else if (functionName == "dot")
-        f = new avtBinaryMultiplyFilter();
-    else if (functionName == "array_compose")
-        f = new avtArrayComposeFilter();
-    else if (functionName == "array_decompose")
-        f = new avtArrayDecomposeFilter();
-    else if (functionName == "matvf")
-        f = new avtMatvfFilter();
-    else if (functionName == "mirvf")
-        f = new avtMIRvfFilter();
-    else if (functionName == "materror")
-        f = new avtMatErrorFilter();
-    else if (functionName == "specmf")
-        f = new avtSpecMFFilter();
-    else if (functionName == "nmats")
-        f = new avtNMatsFilter();
-    else if (functionName == "zonetype")
-        f = new avtZoneTypeFilter();
-    else if (functionName == "localized_compactness")
-        f = new avtLocalizedCompactnessExpression();
-    else if (functionName == "recenter")
-        f = new avtRecenterFilter();
-    else if (functionName == "det" || functionName == "determinant")
-        f = new avtDeterminantFilter();
-    else if (functionName == "eigenvalue")
-        f = new avtEigenvalueFilter();
-    else if (functionName == "eigenvector")
-        f = new avtEigenvectorFilter();
-    else if (functionName == "inverse")
-        f = new avtInverseFilter();
-    else if (functionName == "trace")
-        f = new avtTraceFilter();
-    else if (functionName == "effective_tensor")
-        f = new avtEffectiveTensorFilter();
-    else if (functionName == "tensor_maximum_shear")
-        f = new avtTensorMaximumShearFilter();
-    else if (functionName == "principal_tensor")
-        f = new avtPrincipalTensorFilter();
-    else if (functionName == "principal_deviatoric_tensor")
-        f = new avtPrincipalDeviatoricTensorFilter();
-    else if (functionName == "degree")
-        f = new avtDegreeFilter();
-    else if (functionName == "cylindrical")
-        f = new avtCylindricalCoordinatesFilter();
-    else if (functionName == "polar")
-        f = new avtPolarCoordinatesFilter();
-    else if (functionName == "coord" || functionName == "coords")
-        f = new avtMeshCoordinateFilter();
-    else if (functionName == "procid")
-        f = new avtProcessorIdFilter();
-    else if (functionName == "mean_curvature")
-    {
-        avtCurvatureExpression *c = new avtCurvatureExpression;
-        c->DoGaussCurvature(false);
-        f = c;
-    }
-    else if (functionName == "gauss_curvature")
-    {
-        avtCurvatureExpression *c = new avtCurvatureExpression;
-        c->DoGaussCurvature(true);
-        f = c;
-    }
-    else if (functionName == "ijk_gradient" || functionName == "ij_gradient")
-    {
-        avtGradientFilter *g = new avtGradientFilter();
-        g->SetDoLogicalGradient(true);
-        f = g;
-    }
-    else if (functionName == "gradient")
-        f = new avtGradientFilter();
-    else if (functionName == "curl")
-        f = new avtCurlFilter();
-    else if (functionName == "divergence")
-        f = new avtDivergenceFilter();
-    else if (functionName == "laplacian" || functionName == "Laplacian")
-        f = new avtLaplacianFilter();
-    else if (functionName == "resrad")
-        f = new avtResradFilter();
-    else if (functionName == "magnitude")
-        f = new avtMagnitudeFilter();
-    else if (functionName == "relative_difference")
-        f = new avtRelativeDifferenceFilter();
-    else if (functionName == "var_skew")
-        f = new avtVariableSkewFilter();
-    else if (functionName == "apply_ddf")
-        f = new avtApplyDDFExpression();
-    else if (functionName == "if")
-        f = new avtConditionalFilter();
-    else if (functionName == "and")
-        f = new avtLogicalAndFilter();
-    else if (functionName == "or")
-        f = new avtLogicalOrFilter();
-    else if (functionName == "not")
-        f = new avtLogicalNegationFilter();
-    else if (functionName == "le" || functionName == "lte")
-        f = new avtTestLessThanOrEqualToFilter();
-    else if (functionName == "ge" || functionName == "gte")
-        f = new avtTestGreaterThanOrEqualToFilter();
-    else if (functionName == "lt")
-        f = new avtTestLessThanFilter();
-    else if (functionName == "gt")
-        f = new avtTestGreaterThanFilter();
-    else if (functionName == "eq" || functionName == "equal" || 
-             functionName == "equals")
-        f = new avtTestEqualToFilter();
-    else if (functionName == "ne" || functionName == "neq" ||
-             functionName == "notequal" || functionName == "notequals")
-        f = new avtTestNotEqualToFilter();
-    else if (functionName == "neighbor")
-        f = new avtNeighborFilter();
-    else if (functionName == "external_node")
-        f = new avtExternalNodeExpression();
-    else if (functionName == "node_degree")
-        f = new avtNodeDegreeFilter();
-    // Begin Verdict Metrics
-    else if (functionName == "area")
-        f = new avtVMetricArea();
-    else if (functionName == "aspect")
-        f = new avtVMetricAspectRatio();
-    else if (functionName == "skew")
-        f = new avtVMetricSkew();
-    else if (functionName == "taper")
-        f = new avtVMetricTaper();
-    else if (functionName == "volume")
-        f = new avtVMetricVolume();
-    else if (functionName == "volume2")
-    {
-        avtVMetricVolume *vol = new avtVMetricVolume();
-        vol->UseVerdictHex(false);
-        f = vol;
-    }
-    else if (functionName == "min_edge_length")
-    {
-        avtEdgeLength *el = new avtEdgeLength();
-        el->SetTakeMin(true);
-        f = el;
-    }
-    else if (functionName == "max_edge_length")
-    {
-        avtEdgeLength *el = new avtEdgeLength();
-        el->SetTakeMin(false);
-        f = el;
-    }
-    else if (functionName == "min_side_volume")
-    {
-        avtSideVolume *sv = new avtSideVolume();
-        sv->SetTakeMin(true);
-        f = sv;
-    }
-    else if (functionName == "max_side_volume")
-    {
-        avtSideVolume *sv = new avtSideVolume();
-        sv->SetTakeMin(false);
-        f = sv;
-    }
-    else if (functionName == "stretch")
-        f = new avtVMetricStretch();
-    else if (functionName == "diagonal")
-        f = new avtVMetricDiagonal();
-    else if (functionName == "dimension")
-        f = new avtVMetricDimension();
-    else if (functionName == "oddy")
-        f = new avtVMetricOddy();
-    else if (functionName == "condition")
-        f = new avtVMetricCondition();
-    else if (functionName == "jacobian")
-        f = new avtVMetricJacobian();
-    else if (functionName == "scaled_jacobian")
-        f = new avtVMetricScaledJacobian();
-    else if (functionName == "shear")
-        f = new avtVMetricShear();
-    else if (functionName == "shape")
-        f = new avtVMetricShape();
-    else if (functionName == "relative_size")
-        f = new avtVMetricRelativeSize();
-    else if (functionName == "shape_and_size")
-        f = new avtVMetricShapeAndSize();
-    else if (functionName == "aspect_gamma")
-        f = new avtVMetricAspectGamma();
-    else if (functionName == "warpage")
-        f = new avtVMetricWarpage();
-    else if (functionName == "largest_angle")
-        f = new avtVMetricLargestAngle();
-    else if (functionName == "smallest_angle")
-        f = new avtVMetricSmallestAngle();
-    else if (functionName == "revolved_volume")
-        f = new avtRevolvedVolume;
-    else if (functionName == "revolved_surface_area")
-        f = new avtRevolvedSurfaceArea;
-    else if (functionName == "conservative_smoothing")
-        f = new avtConservativeSmoothingExpression;
-    else if (functionName == "mean_filter")
-        f = new avtMeanFilterExpression;
-    else if (functionName == "median_filter")
-        f = new avtMedianFilterExpression;
-    else if (functionName == "abel_inversion")
-        f = new avtAbelInversionExpression;
-    else if (functionName == "conn_cmfe")
-        f = new avtConnCMFEExpression;
-    else if (functionName == "pos_cmfe")
-        f = new avtPosCMFEExpression;
-    else if (functionName == "eval_transform")
-        f = new avtEvalTransformExpression;
-    else if (functionName == "symm_transform")
-        f = new avtSymmTransformExpression;
-    else if (functionName == "eval_plane")
-        f = new avtEvalPlaneExpression;
-    else if (functionName == "symm_plane")
-        f = new avtSymmPlaneExpression;
-    else if (functionName == "time")
-        f = new avtTimeExpression;
-    else if (functionName == "surface_normal" || 
-             functionName == "point_surface_normal")
-    {
-        avtSurfaceNormalExpression *ff = new avtSurfaceNormalExpression;
-        ff->DoPointNormals(true);
-        f = ff;
-    }
-    else if (functionName == "cell_surface_normal")
-    {
-        avtSurfaceNormalExpression *ff = new avtSurfaceNormalExpression;
-        ff->DoPointNormals(false);
-        f = ff;
-    }
-    else if (functionName == "zoneid")
-    {
-        avtDataIdFilter *ff = new avtDataIdFilter;
-        ff->CreateZoneIds();
-        ff->CreateLocalNumbering();
-        f = ff;
-    }
-    else if (functionName == "global_zoneid")
-    {
-        avtDataIdFilter *ff = new avtDataIdFilter;
-        ff->CreateZoneIds();
-        ff->CreateGlobalNumbering();
-        f = ff;
-    }
-    else if (functionName == "nodeid")
-    {
-        avtDataIdFilter *ff = new avtDataIdFilter;
-        ff->CreateNodeIds();
-        ff->CreateLocalNumbering();
-        f = ff;
-    }
-    else if (functionName == "global_nodeid")
-    {
-        avtDataIdFilter *ff = new avtDataIdFilter;
-        ff->CreateNodeIds();
-        ff->CreateGlobalNumbering();
-        f = ff;
-    }
-    else if (functionName == "biggest_neighbor")
-    {
-        avtNeighborEvaluatorFilter *ff = new avtNeighborEvaluatorFilter;
-        ff->SetEvaluationType(avtNeighborEvaluatorFilter::BIGGEST_NEIGHBOR);
-        f = ff;
-    }
-    else if (functionName == "smallest_neighbor")
-    {
-        avtNeighborEvaluatorFilter *ff = new avtNeighborEvaluatorFilter;
-        ff->SetEvaluationType(avtNeighborEvaluatorFilter::SMALLEST_NEIGHBOR);
-        f = ff;
-    }
-    else if (functionName == "neighbor_average")
-    {
-        avtNeighborEvaluatorFilter *ff = new avtNeighborEvaluatorFilter;
-        ff->SetEvaluationType(avtNeighborEvaluatorFilter::AVERAGE_NEIGHBOR);
-        f = ff;
-    }
-    else if (functionName == "cylindrical_radius")
-    {
-        avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;
-        ecm->SetMacro("cylindrical", 0);
-        f = ecm;
-    }
-    else if (functionName == "cylindrical_theta")
-    {
-        avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;
-        ecm->SetMacro("cylindrical", 1);
-        f = ecm;
-    }
-    else if (functionName == "polar_radius")
-    {
-        avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;
-        ecm->SetMacro("polar", 0);
-        f = ecm;
-    }
-    else if (functionName == "polar_theta")
-    {
-        avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;
-        ecm->SetMacro("polar", 1);
-        f = ecm;
-    }
-    else if (functionName == "polar_phi")
-    {
-        avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;
-        ecm->SetMacro("polar", 2);
-        f = ecm;
-    }
-    else if (functionName == "distance_to_best_fit_line")
-        f = new avtDistanceToBestFitLineFilter(true);
-    else if (functionName == "distance_to_best_fit_line2")
-        f = new avtDistanceToBestFitLineFilter(false);
-    else if (functionName == "min" || functionName == "minimum")
-    {
-        avtMinMaxExpression *mm = new avtMinMaxExpression;
-        mm->SetDoMinimum(true);
-        f = mm;
-    }
-    else if (functionName == "max" || functionName == "maximum")
-    {
-        avtMinMaxExpression *mm = new avtMinMaxExpression;
-        mm->SetDoMinimum(false);
-        f = mm;
-    }
-    else
+    if (f == NULL)
     {
         string error =
             string("avtFunctionExpr::CreateFilters: "

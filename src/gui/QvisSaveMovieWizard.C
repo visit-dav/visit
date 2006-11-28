@@ -2639,7 +2639,7 @@ QvisSaveMovieWizard::page5_Update(int flags)
             te = !s->ReadOnly();
             allowUI = s->SupportsCustomUI();
             if(allowUI)
-                uiName = s->GetUIFile();
+                uiName = QString(s->GetUIFile().c_str());
         }
 
         // Set the name of the viewport.
@@ -3590,7 +3590,7 @@ QvisSaveMovieWizard::AddSequencePages()
                         debug3 << "FAILED to create";
                         if(badUIFiles.length() > 0)
                             badUIFiles += ", ";
-                        badUIFiles += s->GetUIFile();
+                        badUIFiles += QString(s->GetUIFile().c_str());
                         ++noLoadCount;
                     }
                     debug3 << " user interface for sequence "

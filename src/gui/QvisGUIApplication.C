@@ -6898,7 +6898,7 @@ QvisGUIApplication::SaveMovieMain()
 
             // Set the output directory.
             QString outputDir(movieAtts->GetOutputDirectory().c_str());
-            if(outputDir[outputDir.length()-1] == SLASH_CHAR)
+            if(outputDir.endsWith((char*)SLASH_CHAR))
                 outputDir = outputDir.left(outputDir.length()-1);
             outputDir = MakeCodeSlashes(outputDir);
             code += "    movie.outputDir = \"" + outputDir + "\"\n";
@@ -6949,7 +6949,7 @@ QvisGUIApplication::SaveMovieMain()
         {
             // Create a name for the session file.
             QString sessionName(movieAtts->GetOutputDirectory().c_str());
-            if(sessionName[sessionName.length()-1] != SLASH_CHAR)
+            if(!sessionName.endsWith((char*)SLASH_CHAR))
                 sessionName += SLASH_STRING;
             sessionName += QString(movieAtts->GetOutputName().c_str());
 

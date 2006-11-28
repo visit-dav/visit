@@ -293,8 +293,8 @@ void vtkOpenGLFreeTypeTextMapper::RenderOverlay(vtkViewport* viewport,
       pos[1] = pos[1] - upVector[1] * (size[1] - this->LastLargestDescender);
       break;
     case VTK_TEXT_CENTERED:
-      pos[0] = pos[0] - upVector[0] - (size[1] / 2 + this->LastLargestDescender / 2);
-      pos[1] = pos[1] - upVector[1] - (size[1] / 2 + this->LastLargestDescender / 2);
+      pos[0] = pos[0] - upVector[0] * (size[1] / 2 + this->LastLargestDescender / 2);
+      pos[1] = pos[1] - upVector[1] * (size[1] / 2 + this->LastLargestDescender / 2);
       break;
     case VTK_TEXT_BOTTOM: 
       break;

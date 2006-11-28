@@ -66,7 +66,7 @@ public:
     void setNFrames(int);
     int getNFrames() const;
 
-    bool setReverse(bool);
+    void setReverse(bool);
     bool getReverse() const;
 
 private:

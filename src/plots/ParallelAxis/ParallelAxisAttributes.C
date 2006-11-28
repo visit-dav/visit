@@ -1,6 +1,5 @@
 #include <ParallelAxisAttributes.h>
 #include <DataNode.h>
-#include <ExtentsAttributes.h>
 
 #include <DebugStream.h>
 
@@ -36,7 +35,7 @@ ParallelAxisAttributes::ParallelAxisAttributes() :
     extMaxTimeOrds.push_back(0);
     plotDrawsAxisLabels = true;
     axisGroupNames.push_back(std::string("(not_in_a_group)"));
-    axisLabelStates.push_back(PCP_DRAW_ALL_LABELS | PCP_LABELS_NOW_VISIBLE);
+    axisLabelStates.push_back(EA_DRAW_ALL_LABELS | EA_LABELS_NOW_VISIBLE);
     axisXIntervals.push_back(-1.0);
 }
 
@@ -228,6 +227,10 @@ ParallelAxisAttributes::TypeName() const
 //    Mark Blair, Wed Sep 20 10:59:41 PDT 2006
 //    Added time ordinals, for those operators and tools that need them.
 //   
+//    Mark Blair, Thu Nov  2 12:33:23 PST 2006
+//    Added support for non-uniform axis spacing and axis labeling by Extents
+//    tool when enabled.
+//   
 // ****************************************************************************
 
 bool
@@ -254,6 +257,9 @@ ParallelAxisAttributes::CopyAttributes(const AttributeGroup *atts)
         doubleVector toolSliderMaxima = extAtts->GetMaxima();
         intVector    toolMinTimeOrds  = extAtts->GetMinTimeOrdinals();
         intVector    toolMaxTimeOrds  = extAtts->GetMaxTimeOrdinals();
+        stringVector toolGroupNames   = extAtts->GetAxisGroupNames();
+        intVector    toolLabelStates  = extAtts->GetAxisLabelStates();
+        doubleVector toolXIntervals   = extAtts->GetAxisXIntervals();
 
         int toolVarCount = toolVarNames.size();
         int axisCount = orderedAxisNames.size();
@@ -280,11 +286,17 @@ ParallelAxisAttributes::CopyAttributes(const AttributeGroup *atts)
                     
                     extMinTimeOrds[axisNum] = toolMinTimeOrds[toolVarNum];
                     extMaxTimeOrds[axisNum] = toolMaxTimeOrds[toolVarNum];
+                    
+                    axisGroupNames[axisNum]  = toolGroupNames[toolVarNum];
+                    axisLabelStates[axisNum] = toolLabelStates[toolVarNum];
+                    axisXIntervals[axisNum]  = toolXIntervals[toolVarNum];
 
                     break;
                 }
             }
         }
+        
+        plotDrawsAxisLabels = !extAtts->GetToolDrawsAxisLabels();
         
         retval = true;
     }
@@ -730,7 +742,7 @@ ParallelAxisAttributes::InsertAxis(const std::string &axisName_)
         saveMinTimeOrd = 0;
         saveMaxTimeOrd = 0;
         saveGroupName  = std::string("(not_in_a_group)");
-        saveLabelState = PCP_DRAW_ALL_LABELS | PCP_LABELS_NOW_VISIBLE;
+        saveLabelState = EA_DRAW_ALL_LABELS | EA_LABELS_NOW_VISIBLE;
         saveXInterval  = -1.0;
 
         insertPosition = ++shownVarAxisPosition;
@@ -856,7 +868,7 @@ ParallelAxisAttributes::SwitchToLeftAxis(const std::string &axisName_)
         saveMinTimeOrd = 0;
         saveMaxTimeOrd = 0;
         saveGroupName  = std::string("(not_in_a_group)");
-        saveLabelState = PCP_DRAW_ALL_LABELS | PCP_LABELS_NOW_VISIBLE;
+        saveLabelState = EA_DRAW_ALL_LABELS | EA_LABELS_NOW_VISIBLE;
         saveXInterval  = -1.0;
     }
 

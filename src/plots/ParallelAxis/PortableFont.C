@@ -208,6 +208,9 @@ PortableFont::StrokeText (std::vector<std::vector<float> > *strokeList,
 //
 //  Modifications:
 //
+//     Mark Blair, Mon Nov 20 16:54:21 PST 2006
+//     No longer stripping low-order '0' characters from E-format exponents.
+//
 // *****************************************************************************
 
 void
@@ -217,20 +220,23 @@ PortableFont::DoubleNumericalString(char doubleLabel[], double doubleValue)
 
     if (doubleValue < -9e+36)
     {
-        strcpy(doubleLabel, "(min unknown)");
+        strcpy(doubleLabel, "min");
         return;
     }
 
     if (doubleValue > +9e+36)
     {
-        strcpy(doubleLabel, "(max unknown)");
+        strcpy(doubleLabel, "max");
         return;
     }
 
     sprintf (doubleLabel, "%g", doubleValue);
 
+    if (strchr(doubleLabel, 'e') != NULL) return;
+    if (strchr(doubleLabel, 'E') != NULL) return;
+    
     if ((labelLen = strlen(doubleLabel)) < 3) return;
-
+    
     for (labelCharID = labelLen - 1; labelCharID > 1; labelCharID--)
     {
         if (doubleLabel[labelCharID]   != '0') break;

@@ -10,7 +10,9 @@
 #include <float.h>
 #include <math.h>
 #include <string.h>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 #include <visitstream.h>
 
 #include <sys/types.h>
@@ -126,7 +128,7 @@ avtParallelAxisFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
 {
     if (!parAxisAtts.AttributesAreConsistent())
         return in_spec;
-
+        
     const char *inPipelineVar = in_spec->GetDataSpecification()->GetVariable();
     std::string curPipelineVar(inPipelineVar);
     
@@ -342,11 +344,6 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
 
     axisCount = curAxisVarNames.size();
 
-    // if (domain == 0)
-    // {
-    //     cout << "Entered ExecuteDataTree: domain = " << domain << endl;
-    // }
-
     if (in_ds == NULL) return NULL;
     if (varTupleIndices.size() != axisCount) return NULL;
 
@@ -430,11 +427,12 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
         SetupParallelAxis(axisNum);
     }
 
-    InitializeDataTupleInput();
+    bool plotDrawsAxisLabels = parAxisAtts.GetPlotDrawsAxisLabels();
+    floatVector inputTuple = floatVector(axisCount);
+    
+    InitializeDataTupleInput(plotDrawsAxisLabels);
     InitializeOutputDataSets();
     
-    floatVector inputTuple = floatVector(axisCount);
-
     if (plotCellData && (pointArrayCount > 0))
     {
         pointIdList = vtkIdList::New();
@@ -508,8 +506,8 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
         if (!drewAnnotations)
         {
             DrawCoordinateAxes();
-            DrawCoordinateAxisLabels();
-            DrawCoordinateAxisTitles();
+            if (plotDrawsAxisLabels) DrawCoordinateAxisLabels();
+            if (plotDrawsAxisLabels) DrawCoordinateAxisTitles();
 
             drewAnnotations = true;
         }
@@ -531,11 +529,6 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
     outputDataSets[3]->Delete();
 
     delete [] outputDataSets;
-
-    // if (domain == domainCount - 1)
-    // {
-    //     cout << "Leaving ExecuteDataTree: (highest) domain = " << domain << endl;
-    // }
 
     return outputDataTree;
 }
@@ -864,10 +857,13 @@ avtParallelAxisFilter::InitializePlotAtts()
 //
 // Modifications:
 //
+//     Mark Blair, Wed Nov  8 16:01:27 PST 2006
+//     Applies extents to input data only when Extents tool is active.
+//
 // *****************************************************************************
 
 void
-avtParallelAxisFilter::InitializeDataTupleInput()
+avtParallelAxisFilter::InitializeDataTupleInput(bool drawAxisLabels)
 {
     useVerticalText = (axisCount > PCP_MAX_HORIZONTAL_TITLE_AXES);
 
@@ -978,8 +974,7 @@ avtParallelAxisFilter::InitializeDataTupleInput()
     }
 
     double moveOffset;
-    double axisSpan, axisMinSpan, axisMaxSpan, minArrowOffset, maxArrowOffset;
-    doubleVector dTrans;
+    double axisSpan, axisMinSpan, axisMaxSpan;
 
     if (useVerticalText)
     {
@@ -987,6 +982,12 @@ avtParallelAxisFilter::InitializeDataTupleInput()
 
         movedAxisTitleY = bottomAxisY - moveOffset;
         movedTopLabelY  = topAxisY    + moveOffset;
+
+        for (axisNum = 0; axisNum < axisCount; axisNum++)
+        {
+            moveTitles[axisNum]    = true;
+            moveTopLabels[axisNum] = true;
+        }
     }
 
     for (axisNum = 0; axisNum < axisCount; axisNum++)
@@ -998,27 +999,7 @@ avtParallelAxisFilter::InitializeDataTupleInput()
 
         if ((axisMinSpan/axisSpan > 0.0001) || (axisMaxSpan/axisSpan > 0.0001))
         {
-            applySubranges[axisNum] = true;
-
-            dTrans = dataTransforms[axisNum];
-
-            minArrowOffset = axisMinSpan * dTrans[1];
-            maxArrowOffset = axisMaxSpan * dTrans[1];
-
-            if (useVerticalText)
-            {
-                drawBottomLabels[axisNum] = false;
-                drawBottomBounds[axisNum] = true;
-                drawTopBounds[axisNum]    = true;
-
-                if (minArrowOffset < arrowHeight) moveTitles[axisNum]    = true;
-                if (maxArrowOffset < arrowHeight) moveTopLabels[axisNum] = true;
-            }
-            else
-            {
-                if (minArrowOffset >= arrowHeight) drawBottomBounds[axisNum] = true;
-                if (maxArrowOffset >= arrowHeight) drawTopBounds[axisNum]    = true;
-            }
+            applySubranges[axisNum] = !drawAxisLabels;
         }
     }
     
@@ -1435,7 +1416,7 @@ void
 avtParallelAxisFilter::DrawCoordinateAxisTitles()
 {
     if (textPlotter == NULL) textPlotter = new PortableFont;
-
+    
     bool centerIt;
     int thickness;
     double axisX, titleX, titleY;
@@ -1534,7 +1515,10 @@ avtParallelAxisFilter::DrawCoordinateAxisTitles()
 //          coordinate axis.  These are placed at the bottom and top of the axis.
 //
 // Notes: Adapted from more general "parallel coordinate plot" package developed
-//        earlier.
+//        earlier.  Subrange bounds are currently (8 June 2006) not drawn by the
+//        plot.  Future plans call for the Extents tool, which is used to select
+//        the subrange bounds, to draw those bounds on the plot axes when the
+//        tool is enabled.
 //
 // Programmer: Mark Blair
 // Creation:   Thu Jun  8 17:18:00 PDT 2006
