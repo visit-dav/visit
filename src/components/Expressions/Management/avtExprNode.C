@@ -438,6 +438,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtDegreeToRadianFilter();
     if (functionName == "rad2deg")
         return new avtRadianToDegreeFilter();
+    if (functionName == "abs")
+        return new avtAbsValFilter();
     if (functionName == "ln")
         return new avtNaturalLogFilter();
     if ((functionName == "log") || (functionName == "log10"))

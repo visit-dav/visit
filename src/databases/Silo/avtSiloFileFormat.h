@@ -154,6 +154,9 @@ typedef struct
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Removed CanCacheVariable 
+//
+//    Mark C. Miller, Wed Nov 29 15:08:21 PST 2006
+//    Added connectivityIsTimeVarying
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -194,6 +197,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     DBfile              **dbfiles;
     int                   tocIndex;
     bool                  readGlobalInfo;
+    bool                  connectivityIsTimeVarying;
     bool                  hasDisjointElements;
 
     static bool           madeGlobalSiloCalls;
