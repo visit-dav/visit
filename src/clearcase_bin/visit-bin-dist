@@ -10,7 +10,8 @@
 # Usage:
 #    visit-bin-dist [-c] [-g] [-h] [-make <make_command>] [-md <visit_dir>]
 #                   [-nd] [-nmesa] [-npython] [-nqt] [-nstrip] [-nvtk]
-#                   [-os <operating_system>]
+#                   [-os <operating_system>] [-compiler <compiler>]
+#                   [-switch <switch_type>]
 #
 # Modifications:
 #    Jeremy Meredith, Fri May 11 14:15:01 PDT 2001
@@ -246,12 +247,17 @@
 #    Brad Whitlock, Fri Sep 15 10:28:51 PDT 2006
 #    I added support for the GLEW library.
 #
-#    Eric Brugger, Fri Sep 22 12:01:25 PDT 2006
-#    Copy the gcc libraries if they are present.
-#
 #    Brad Whitlock, Wed Sep 20 11:45:24 PDT 2006
 #    I made it use mpeg2encode and I added code to copy the movietemplates
 #    directory. I also added code to copy missing Python XML modules.
+#
+#    Eric Brugger, Fri Sep 22 12:01:25 PDT 2006
+#    Copy the gcc libraries if they are present.
+#
+#    Eric Brugger, Fri Nov 17 12:42:20 PST 2006
+#    I added the -switch option.  I removed support for linux-alpha.  I
+#    modified the script to only create the platform directory for the
+#    platform that the distribution includes instead of all the platforms.
 #
 #------------------------------------------------------------------------------
 
@@ -265,6 +271,8 @@ set VisItDir = `pwd`
 set OSGiven = "FALSE"
 set CompilerGiven = "FALSE"
 set compiler = ""
+set SwitchGiven = "FALSE"
+set switch = ""
 set Strip = "TRUE"
 set Make = "make"
 set Help = "FALSE"
@@ -338,6 +346,12 @@ while ($#argv >= 1)
                set CompilerGiven = TRUE
                breaksw
 
+      case -switch:
+               shift
+               set switch = $1
+               set SwitchGiven = TRUE
+               breaksw
+
       default:
                echo " "
                echo ">>>>>>>>>>  Illegal option $1  <<<<<<<<<<"
@@ -351,7 +365,8 @@ if ($Help == TRUE) then
    echo "Usage: visit-bin-dist [-c] [-g] [-h] [-make <make_command>]"
    echo "                      [-md <visit_dir>] [-nd] [-nmesa]"
    echo "                      [-npython] [-nqt] [-nstrip] [-nvtk]"
-   echo "                      [-os <operating_system>]"
+   echo "                      [-os <operating_system>] [-compiler <compiler>]"
+   echo "                      [-switch <switch>]"
    echo ""
    echo "       -c             Compress the resultant package."
    echo "       -g             Gzip the resultant package.  (default)"
@@ -366,6 +381,7 @@ if ($Help == TRUE) then
    echo "       -nvtk          No VTK libraries."
    echo "       -os os         Operating system."
    echo "       -compiler cc   Compiler."
+   echo "       -switch switch Switch type."
    exit (1)
 endif
 
@@ -502,66 +518,6 @@ if ("$VTKLibs" == "TRUE") then
 endif
 
 #
-# Make the directory structure shell.
-#
-mkdir distribution/visit
-mkdir distribution/visit/bin
-if ($DataFiles == "TRUE") then
-   mkdir distribution/visit/data
-endif
-
-mkdir distribution/visit/$Version
-mkdir distribution/visit/$Version/bin
-ln -s $Version distribution/visit/current
-set platforms="hp-hpux-pa sgi-irix6-mips2 sun4-sunos5-sparc ibm-aix-pwr ibm-aix-pwr-xlc ibm-aix-pwr64 ibm-aix-pwr64-xlc dec-osf1-alpha linux-intel linux-intel-icc linux-ia64 linux-alpha linux-x86_64 darwin-ppc"
-foreach platform ($platforms)
-   mkdir distribution/visit/$Version/$platform
-   mkdir distribution/visit/$Version/$platform/bin
-   mkdir distribution/visit/$Version/$platform/bin/movietemplates
-   mkdir distribution/visit/$Version/$platform/lib
-   mkdir distribution/visit/$Version/$platform/include
-   mkdir distribution/visit/$Version/$platform/help
-   mkdir distribution/visit/$Version/$platform/plugins
-   mkdir distribution/visit/$Version/$platform/plugins/plots
-   mkdir distribution/visit/$Version/$platform/plugins/operators
-   mkdir distribution/visit/$Version/$platform/plugins/databases
-   mkdir distribution/visit/$Version/$platform/java
-   mkdir distribution/visit/$Version/$platform/libsim
-   mkdir distribution/visit/$Version/$platform/libsim/V1
-   mkdir distribution/visit/$Version/$platform/libsim/V1/include
-   mkdir distribution/visit/$Version/$platform/libsim/V1/lib
-end
-
-#
-# Create and copy in the sample data files.
-#
-if ($DataFiles == "TRUE") then
-   echo "Creating data generation programs..."
-   set pwd = `pwd`
-   cd $VisItDir/data
-   $Make
-   echo "Generating data files..."
-   ./globe
-   ./multi_test
-   ./testall
-   ./noise
-   ./tire
-   rm multi_point* multi_rect* multi_curv* poly3d.silo
-   cp *.silo $pwd/distribution/visit/data
-   if (-e ./correlationtest) then
-      ./correlationtest
-       cp db{A,B}00.pdb $pwd/distribution/visit/data
-   endif
-   cd $pwd/distribution/visit/data
-   cd $pwd
-endif
-
-#
-# Find the executables built and copy them to the appropriate bin
-# directory.
-#
-
-#
 # Determine the os version string and hardware os string.
 #
 switch ($os)
@@ -639,13 +595,14 @@ switch ($os)
             set osver = linux-ia64
             set visitbindir = linux-ia64
             breaksw
-         case alpha:
-            set osver = linux-alpha
-            set visitbindir = linux-alpha
-            breaksw
          case x86_64:
-            set osver = linux-x86_64
-            set visitbindir = linux-x86_64
+            if (("$SwitchGiven" == "TRUE") && ("$switch" == "ib")) then
+                set osver = linux-x86_64-ib
+                set visitbindir = linux-x86_64-ib
+            else
+                set osver = linux-x86_64
+                set visitbindir = linux-x86_64
+            endif
             breaksw
       endsw
       breaksw
@@ -657,6 +614,9 @@ switch ($os)
       breaksw
 endsw
 
+#
+# Set a bunch of paths used later in the script.
+#
 set verdir = distribution/visit/$Version
 set bindir = distribution/visit/$Version/$visitbindir/bin
 set libdir = distribution/visit/$Version/$visitbindir/lib
@@ -666,6 +626,58 @@ set plugindir = distribution/visit/$Version/$visitbindir/plugins
 set javadir = distribution/visit/$Version/$visitbindir/java
 set simv1dir = distribution/visit/$Version/$visitbindir/libsim/V1
 set frameworkdir = distribution/visit/$Version/$visitbindir/Frameworks
+
+#
+# Make the directory structure shell.
+#
+mkdir distribution/visit
+mkdir distribution/visit/bin
+if ($DataFiles == "TRUE") then
+   mkdir distribution/visit/data
+endif
+
+mkdir distribution/visit/$Version
+mkdir distribution/visit/$Version/bin
+ln -s $Version distribution/visit/current
+mkdir distribution/visit/$Version/$visitbindir
+mkdir distribution/visit/$Version/$visitbindir/bin
+mkdir distribution/visit/$Version/$visitbindir/bin/movietemplates
+mkdir distribution/visit/$Version/$visitbindir/lib
+mkdir distribution/visit/$Version/$visitbindir/include
+mkdir distribution/visit/$Version/$visitbindir/help
+mkdir distribution/visit/$Version/$visitbindir/plugins
+mkdir distribution/visit/$Version/$visitbindir/plugins/plots
+mkdir distribution/visit/$Version/$visitbindir/plugins/operators
+mkdir distribution/visit/$Version/$visitbindir/plugins/databases
+mkdir distribution/visit/$Version/$visitbindir/java
+mkdir distribution/visit/$Version/$visitbindir/libsim
+mkdir distribution/visit/$Version/$visitbindir/libsim/V1
+mkdir distribution/visit/$Version/$visitbindir/libsim/V1/include
+mkdir distribution/visit/$Version/$visitbindir/libsim/V1/lib
+
+#
+# Create and copy in the sample data files.
+#
+if ($DataFiles == "TRUE") then
+   echo "Creating data generation programs..."
+   set pwd = `pwd`
+   cd $VisItDir/data
+   $Make
+   echo "Generating data files..."
+   ./globe
+   ./multi_test
+   ./testall
+   ./noise
+   ./tire
+   rm multi_point* multi_rect* multi_curv* poly3d.silo
+   cp *.silo $pwd/distribution/visit/data
+   if (-e ./correlationtest) then
+      ./correlationtest
+       cp db{A,B}00.pdb $pwd/distribution/visit/data
+   endif
+   cd $pwd/distribution/visit/data
+   cd $pwd
+endif
 
 #
 # Copy the launch scripts

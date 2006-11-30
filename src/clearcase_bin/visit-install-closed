@@ -300,8 +300,8 @@ then
    then
       cat sc >> lc
 
-      scp sc1:/nfs/tmp1/$user/sc/visitbuild/visit$ver2.osf1.tar.gz .
-      scp visit$ver2.osf1.tar.gz sc1:
+      scp sc7:/nfs/tmp0/$user/sc/visitbuild/visit$ver2.osf1.tar.gz .
+      scp visit$ver2.osf1.tar.gz lilac3:
    fi
 fi
 
@@ -335,7 +335,7 @@ then
       cat tidalwave >> lc
 
       scp tidalwave:/fc/san1/$user/tidalwave/visitbuild/visit$ver2.irix6.tar.gz .
-      scp visit$ver2.irix6.tar.gz sc1:
+      scp visit$ver2.irix6.tar.gz lilac3:
    fi
 fi
 
@@ -369,7 +369,7 @@ then
       cat ice >> lc
 
       scp ice:/p/gi1/$user/ice/visitbuild/visit$ver2.aix.tar.gz .
-      scp visit$ver2.aix.tar.gz sc1:
+      scp visit$ver2.aix.tar.gz lilac3:
    fi
 fi
 
@@ -403,7 +403,7 @@ then
       cat purple >> lc
 
       scp purple:/p/gscratch3/$user/purple/visitbuild/visit$ver2.aix64-xlc.tar.gz .
-      scp visit$ver2.aix64-xlc.tar.gz sc1:
+      scp visit$ver2.aix64-xlc.tar.gz lilac3:
    fi
 fi
 
@@ -437,7 +437,7 @@ then
       cat lilac >> lc
 
       scp lilac3:/usr/tmp/$user/lilac/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
-      scp visit$ver2.linux_chaos.tar.gz sc1:
+      scp visit$ver2.linux_chaos.tar.gz lilac3:
    fi
 fi
 
@@ -447,21 +447,21 @@ fi
 rm -f gauss
 cat <<EOF > gauss
 
-./visit-install $verflag -c closed -g visit -b bdivp -gw -l $ver linux-x86_64 /usr/gapps/visit > installlog 2>&1
+./visit-install $verflag -c closed -g visit -b bdivp -gw -l $ver linux-x86_64-ib /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "        install of visit on gauss"           >> resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver/linux-x86_64/bin       >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/linux-x86_64-ib/bin    >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/linux-x86_64-ib/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/linux-x86_64-ib/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-x86_64-ib/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls /usr/gapps/visit/$ver/linux-x86_64-ib/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-x86_64-ib\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
 if [ $gauss = true ]
@@ -470,8 +470,8 @@ then
    then
       cat gauss >> lc
 
-      scp gauss2:/usr/tmp/$user/gauss/visitbuild/visit$ver2.linux-x86_64.tar.gz .
-      scp visit$ver2.linux-x86_64.tar.gz sc1:
+      scp gauss2:/usr/tmp/$user/gauss/visitbuild/visit$ver2.linux-x86_64-ib.tar.gz .
+      scp visit$ver2.linux-x86_64-ib.tar.gz lilac3:
    fi
 fi
 
@@ -480,9 +480,9 @@ fi
 #
 if [ $test = no ]
 then
-   scp visit-install sc1:
-   scp lc sc1:lc_install
-   ssh sc1 "chmod 750 lc_install;./lc_install"
+   scp visit-install lilac3:
+   scp lc lilac3:lc_install
+   ssh lilac3 "chmod 750 lc_install;./lc_install"
 fi
 
 #

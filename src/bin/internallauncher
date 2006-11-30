@@ -131,10 +131,20 @@ $0 = shift @ARGV;
 #    When launching the engine, choose the serial one if the number of
 #    processors is 1.
 #
+#    Eric Brugger, Fri Nov 17 16:01:04 PST 2006
+#    Added support for multiple switch types.  Added linux-x86_64-ib platform.
+#
 #    Brad Whitlock, Tue Nov 21 16:30:17 PST 2006
 #    Prevent -compiler flag from being passed on to most programs since
 #    they either can't deal with it or don't need it because they don't
 #    start other VisIt components. Added -viewer_geometry, -window_anchor.
+#
+#    Eric Brugger, Tue Nov 28 15:06:42 PST 2006
+#    Added support for the psub/mpirun launch method.
+#
+#    Eric Brugger, Wed Nov 29 12:54:32 PST 2006
+#    Modified the psub arguments to pass both -np and -g to indicate the
+#    number of processors.
 #
 ###############################################################################
 
@@ -331,6 +341,7 @@ $fullusage = "$usage
                              /bin is automatically appended to this path.
         -publicpluginsonly   Disable all plugins but the default ones.
         -compiler <cc>       Require version built with the specified compiler.
+        -switch <switch>     Require version built for the specified switch.
 
     Developer options
     ---------------------------------------------------------------------------
@@ -445,6 +456,7 @@ $add_movie_args = 0;
 $envonly        = 0;
 $logging        = 0;
 $req_compiler   = "";
+$req_switch     = "";
 $use_new_console = 0;
 $visit_sets_up_environment = 0;
 $pre_command = "";
@@ -503,6 +515,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-newconsole")       { $use_new_console = 1; }
     elsif ($arg eq "-break")            { if($debug_gdb) {$bp = shift; push @breakpoints, $bp; } else {push @visitargs, $arg;}}
     elsif ($arg eq "-compiler")         { $req_compiler = shift; }
+    elsif ($arg eq "-switch")           { $req_switch = shift; push @visitargs, "-switch", $req_switch; }
     elsif ($arg eq "-totalview" )       {
                                           $debug_totalview = shift;
                                           push @norun, $debug_totalview;
@@ -759,7 +772,12 @@ for ($os) {
             push @supportedarchs, "linux-ia64";
         }
         elsif ($mach =~ /x86_64/) {
-            push @supportedarchs, "linux-x86_64";
+            if ($req_switch eq "ib") {
+                push @supportedarchs, "linux-x86_64-ib";
+            }
+            else {
+                push @supportedarchs, "linux-x86_64";
+            }
         }
         else {
             if ($req_compiler eq "icc") {
@@ -1197,6 +1215,10 @@ if ($procs_set or ($parallel and $parlaunch_set))
         {
             $sublauncherargs = "-n $procs";
         }
+        elsif ($sublauncher eq "mpirun" and $procs_set)
+        {
+            $sublauncherargs = "-np $procs";
+        }
 
         if (grep(/csh/, "$ENV{SHELL}"))
         {
@@ -1211,11 +1233,14 @@ if ($procs_set or ($parallel and $parlaunch_set))
         @parcmd = ("psub");
         push @parcmd, @launchargs if $launchargs_set;
         push @parcmd, "-x";
-        # Use -g to set procs if we have multiple processors per node.
+        # Use both -g and -np to set procs if we have multiple processors
+        # per node.  On some machines the -np is used and the -g ignored
+        # and on others it is the opposite.
         # Otherwise, syntax is not accepted, so use -ln.
         if ($procs_set and $nodes_set)
         {
             push @parcmd, "-g",  $procs;
+            push @parcmd, "-np", $procs;
             push @parcmd, "-ln", $nodes;
         }
         elsif ($procs_set)

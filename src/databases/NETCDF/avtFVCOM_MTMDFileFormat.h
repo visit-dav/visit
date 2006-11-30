@@ -104,6 +104,9 @@ class avtFVCOM_MTMDFileFormat : public avtMTMDFileFormat
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
     bool  init;
+    
+    
+    //    int status;
 
     size_t ndoms;
     size_t nfnames;
