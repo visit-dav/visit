@@ -76,6 +76,8 @@ extern void VisItSetCMD ( VisIt_SimulationMetaData mdd, VisIt_SimulationControlC
 extern void VisItUpdateMainSimWinGUI ( VisIt_SimulationMetaData mdd, char *name, char *data, int enable );
 extern void VisItInitGenericCMD (VisIt_SimulationMetaData mdd, int index,char *name, char *text,char *value, int enable );
 extern void VisItLabelGenericButton (VisIt_SimulationMetaData *mdd, int button, char *text,int enable );
+extern void VisItSetStatusMessage (VisIt_SimulationMetaData mdd, char *text, char *color);
+extern void VisItAddStripChartDataPoint( VisIt_SimulationMetaData mdd, double dataX,double dataY, int enable );
 enum VisItCommandTypes { STATUS_MESSAGE = 9, TIME_LABEL,TIME_VALUE, STEP_LABEL, STEP_VALUE};
 #ifdef __cplusplus
 }

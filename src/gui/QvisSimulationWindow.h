@@ -55,8 +55,10 @@ class QListView;
 class QString;
 class QSpinBox;
 class QCheckBox;
+class QGridLayout;
         
 class QHBoxLayout;
+class VisItSimStripChart;
 
 class avtSimulationCommandSpecification;
 
@@ -88,6 +90,9 @@ class avtSimulationCommandSpecification;
 //    Added time limits and step UI, added a message window
 //    added slot function to pass time setting to the simulation
 //
+//    Shelly Prevost Tue Nov 28 17:12:04 PST 2006
+//    Added strip chart widget and support methods.
+//
 // ****************************************************************************
 
 class GUI_API QvisSimulationWindow : public QvisPostableWindowObserver
@@ -110,6 +115,7 @@ public:
     void ConnectStatusAttributes(StatusAttributes *s);
     void SetNewMetaData(const QualifiedFilename &qf,
                         const avtDatabaseMetaData *md);
+    void SpecialWidgetUpdate(avtSimulationCommandSpecification *cmd);
 private:
     void UpdateWindow(bool doAll);
     void UpdateCustomUI(avtDatabaseMetaData *md);
@@ -147,6 +153,9 @@ private slots:
     void executeSpinBoxStartCommand();
     void executeSpinBoxStopCommand();
     void executeSpinBoxStepCommand();
+    void executeEnableStripChartLimits();
+    void executeMinLimitStripChart();
+    void executeMaxLimitStripChart();
 
 private:
     EngineList           *engines;
@@ -158,26 +167,34 @@ private:
     SimulationStatusMap   statusMap;
     SimulationMetaDataMap metadataMap;
 
-    QComboBox        *simCombo;
-    QListView        *simInfo;
-    QLabel           *simulationMode;
-    QProgressBar     *totalProgressBar;
-    QHBoxLayout      *progressLayout;
-    QHBoxLayout      *progressLayout2;
-    QLineEdit        *startCycle;
-    QLineEdit        *stopCycle;
-    QLineEdit        *stepCycle;
-    QCheckBox        *enableTimeRange;
-    QLabel           *startLabel;
-    QLabel           *stopLabel;
-    QLabel           *stepLabel;
-    QPushButton      *interruptEngineButton;
-    QPushButton      *closeEngineButton;
-    QPushButton      *clearCacheButton;
-    QLineEdit        *simCommandEdit;
-    QWidget          *DynamicCommandsWin;
-    QPushButton      *cmdButtons[9];
-    QMap<int,int>     simulationToEngineListMap;
+    QComboBox          *simCombo;
+    QListView          *simInfo;
+    QLabel             *simulationMode;
+    QProgressBar       *totalProgressBar;
+    QHBoxLayout        *progressLayout;
+    QHBoxLayout        *progressLayout2;
+    QLineEdit          *startCycle;
+    QLineEdit          *stopCycle;
+    QLineEdit          *stepCycle;
+    QCheckBox          *enableTimeRange;
+    QLabel             *startLabel;
+    QLabel             *stopLabel;
+    QLabel             *stepLabel;
+    QPushButton        *interruptEngineButton;
+    QPushButton        *closeEngineButton;
+    QPushButton        *clearCacheButton;
+    QLineEdit          *simCommandEdit;
+    QWidget            *DynamicCommandsWin;
+    QPushButton        *cmdButtons[9];
+    QMap<int,int>      simulationToEngineListMap;
+    // Strip Chart widgets
+    VisItSimStripChart *stripChart;
+    QCheckBox          *enableStripChartLimits;
+    QLineEdit          *maxLimitEdit;
+    QLabel             *maxLimitLabel;
+    QLineEdit          *minLimitEdit;
+    QLabel             *minLimitLabel;
+    QGridLayout        *chartLayout;
 };
 
 #endif

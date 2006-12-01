@@ -36,6 +36,7 @@
 *****************************************************************************/
 
 #include <QvisSimulationWindow.h>
+#include <QvisStripChart.h>
 #include <qlabel.h>
 #include <qlineedit.h>
 #include <qtextedit.h>
@@ -61,6 +62,7 @@
 #include <qmetaobject.h>
 #include <qdatetimeedit.h>
 #include <qfile.h>
+#include <qscrollview.h>
 
 #include <DebugStream.h>
 #include <EngineList.h>
@@ -78,6 +80,8 @@ using std::vector;
 
 #define CUSTOM_BUTTON 5
 #define NUM_GENRIC_BUTTONS 6
+#define MESSAGE_WIDGET_NAME "MessageViewerTextEdit"
+#define STRIP_CHART_WIDGET_NAME "StripChart"
 
 // ****************************************************************************
 // Method: QvisSimulationWindow::QvisSimulationWindow
@@ -153,6 +157,9 @@ QvisSimulationWindow::~QvisSimulationWindow()
 //   Shelly Prevost, Tue Sep 12 14:53:40 PDT 2006
 //   I added a new set of time range text boxes and activation checkbox.
 //   I Added an message box to display simulation code messages.
+//
+//   Shelly Prevost Tue Nov 28 17:01:58 PST 2006
+//   I added the strip chart widget to the main simulatioin window.
 // ****************************************************************************
 
 void
@@ -264,15 +271,51 @@ QvisSimulationWindow::CreateWindowContents()
    
     topLayout->addSpacing(10);
     
-        // Create the group box and generic buttons.
+        // Create the status message widgets.
     QLabel *messageLabel = new QLabel(central,"MessageViewerLabel");
     messageLabel->setText("Message Viewer");
     topLayout->addWidget(messageLabel);
 
-    QTextEdit *messageViewer = new QTextEdit(central, "MessageViewerTextEdit");
+    QTextEdit *messageViewer = new QTextEdit(central, MESSAGE_WIDGET_NAME);
     messageViewer->setReadOnly( true );
-    messageViewer->setMaximumHeight( 40 );
+    messageViewer->setMaximumHeight( 100 );
     topLayout->addWidget(messageViewer);
+        
+    // create the strip chart widgets
+    QLabel *stripChartTitleLabel = new QLabel(central,"StripChartTitleLabel");
+    stripChartTitleLabel->setText("Strip Chart View");
+    topLayout->addWidget(stripChartTitleLabel);
+
+    stripChart = new VisItSimStripChart(central,STRIP_CHART_WIDGET_NAME,2000,500);
+    QScrollView *sc = new QScrollView(central,"StipChartScrollWindow");
+    sc->setCaption( "VisIt Strip Chart");
+    sc->addChild(stripChart);
+    topLayout->addWidget(sc);
+    sc->show();
+    
+    chartLayout =  new QGridLayout(topLayout);
+        
+    minLimitEdit = new QLineEdit(central,"MinLimitEdit");
+    minLimitEdit->setEnabled(false); 
+    minLimitLabel = new QLabel(central,"MinLimitLabel");
+    minLimitLabel->setText("Min Limit");
+    chartLayout->addWidget(minLimitLabel,0,0);
+    chartLayout->addWidget(minLimitEdit,0,1);
+    connect(minLimitEdit,SIGNAL(textChanged(const QString&)),this,SLOT(executeMinLimitStripChart()));
+    
+    maxLimitEdit = new QLineEdit(central,"MaxLimitEdit");
+    maxLimitEdit->setEnabled(false); 
+    maxLimitLabel = new QLabel(central,"MaxLimitLabel");
+    maxLimitLabel->setText("Max Limit");
+    chartLayout->addWidget(maxLimitLabel,0,2);
+    chartLayout->addWidget(maxLimitEdit,0,3);
+    connect(maxLimitEdit,SIGNAL(textChanged(const QString&)),this,SLOT(executeMaxLimitStripChart()));
+
+    enableStripChartLimits = new QCheckBox(central,"EnableStripChartLimits");
+    enableStripChartLimits->setText("Enable Out of Bounds limit");
+    connect(enableStripChartLimits,SIGNAL(stateChanged(int)),this,SLOT(executeEnableStripChartLimits()));
+    chartLayout->addMultiCellWidget(enableStripChartLimits,1,1,0,2);
+
 
 }
 
@@ -977,6 +1020,10 @@ QvisSimulationWindow::UpdateCustomUI (avtDatabaseMetaData *md)
 // Creation:   August 25, 2006
 //
 // Modifications:
+//   Shelly Prevost Fri Dec  1 10:36:07 PST 2006
+//   To support the Strip Chart and other special widgets it
+//   additional processing was required. I added a function call
+//   to do this.
 //
 // ****************************************************************************
 
@@ -988,6 +1035,40 @@ QvisSimulationWindow::UpdateSimulationUI (avtDatabaseMetaData *md)
     for (int c=NUM_GENRIC_BUTTONS; c<numCommands; c++)
     {
         UpdateUIComponent (this,&(md->GetSimInfo().GetAvtSimulationCommandSpecification(c)));
+        SpecialWidgetUpdate (&(md->GetSimInfo().GetAvtSimulationCommandSpecification(c)));
+    }
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::SpecialWidgetUpdate
+//
+// Purpose:
+//   Some Widgets need special processing in addition to their
+//   data being updated. This method calls the proper methods
+//   to do the processing.
+//
+// Arguments:
+//   cmd:  ui data information
+//
+// Programmer: Shelly Prevost
+// Creation:   Tue Nov 28 17:12:04 PST 2006
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisSimulationWindow::SpecialWidgetUpdate (avtSimulationCommandSpecification *cmd)
+{
+    QObject *ui = NULL;
+    ui  = this->child(cmd->GetName().c_str());
+    if ( !strcmp (STRIP_CHART_WIDGET_NAME,cmd->GetName().c_str()))
+    {
+         const QString dataX(cmd->GetText().c_str());
+         const QString dataY(cmd->GetValue().c_str());
+         stripChart->setEnable(cmd->GetEnabled()); 
+         stripChart->addDataPoint(dataX.toDouble(),dataY.toDouble());   
+         stripChart->update();
     }
 }
 // ****************************************************************************
@@ -1062,6 +1143,9 @@ QvisSimulationWindow::UpdateStatusArea()
 //   Remove hard coded number of buttons and use a definded const instead.
 //   Added Update SimulationUi call now that the main window needs to be
 //   updated also.
+//
+//   Shelly Prevost, Tue Nov 28 17:12:04 PST 2006
+//   Removed hard code button number
 //
 // ****************************************************************************
 
@@ -1183,8 +1267,7 @@ QvisSimulationWindow::UpdateInformation(int index)
                 {
                     QString bName = QString(md->GetSimInfo().GetAvtSimulationCommandSpecification(c).GetName().c_str());
                     cmdButtons[c]->setText(bName);
-                    // **** MSP **** remove after fixing custome UI enabling
-                    if ( c != 5 )cmdButtons[c]->setEnabled(e);
+                    if ( c != CUSTOM_BUTTON  )cmdButtons[c]->setEnabled(e);
                     cmdButtons[c]->show();
                 }
                 else
@@ -1881,6 +1964,42 @@ QvisSimulationWindow::executeEnableTimeRange()
 }
 
 // ****************************************************************************
+// Method: QvisSimulationWindow::executeEnableStripChartLimits()
+//
+// Purpose:
+//   This method is called when the user clicks on the enable button
+//   for the stip chart ui. It will set the upper and lower bounds for
+//   checking simiulation data for out of band problems.
+//
+// Programmer: Shelly Prevost
+// Creation:   Fri Dec  1 10:36:07 PST 2006  
+//
+// Modifications:
+//
+//
+// ****************************************************************************
+void
+QvisSimulationWindow::executeEnableStripChartLimits()
+{
+    int simindex = simCombo->currentItem();
+    if (simindex < 0)
+        return;
+    int index = simulationToEngineListMap[simindex];
+    string host = engines->GetEngines()[index];
+    string sim  = engines->GetSimulationName()[index];
+
+    QString cmd = enableStripChartLimits->text();
+    cmd = "clicked();EnableStripChartLimits;QCheckBox;Simulations;" + cmd;
+    viewer->SendSimulationCommand(host, sim, cmd.latin1());
+
+    bool enabled = enableStripChartLimits->isChecked();
+    maxLimitEdit->setEnabled(enabled);       
+    minLimitEdit->setEnabled(enabled); 
+    stripChart->enableOutOfBandLimits(enabled);      
+
+}
+
+// ****************************************************************************
 // Method: QvisSimulationWindow::executeSpinBoxStartCommand()
 //
 // Purpose:
@@ -1891,7 +2010,9 @@ QvisSimulationWindow::executeEnableTimeRange()
 // Creation:   December 21, 2005
 //
 // Modifications:
-//
+//    Shelly Prevost Fri Dec  1 10:36:07 PST 2006
+//    Corrected the widget name being passed to the simulation in the
+//    command string.
 //
 // ****************************************************************************
 void 
@@ -1905,7 +2026,7 @@ QvisSimulationWindow::executeSpinBoxStartCommand()
     string sim  = engines->GetSimulationName()[index];
 
     QString cmd = startCycle->text();
-    cmd = "returnedPressed();Start;QLineEdit;Simulations;" + cmd;
+    cmd = "returnedPressed();StartCycle;QLineEdit;Simulations;" + cmd;
     
     if (!cmd.isEmpty())
     {
@@ -1924,7 +2045,9 @@ QvisSimulationWindow::executeSpinBoxStartCommand()
 // Creation:   December 21, 2005
 //
 // Modifications:
-//
+//    Shelly Prevost Fri Dec  1 10:36:07 PST 2006
+//    Corrected the widget name being passed to the simulation in the
+//    command string.
 //
 // ****************************************************************************
 void 
@@ -1938,7 +2061,7 @@ QvisSimulationWindow::executeSpinBoxStepCommand()
     string sim  = engines->GetSimulationName()[index];
 
     QString cmd1 = stepCycle->text();
-    cmd1 = "returnedPressed();Step;QLineEdit;Simulations;" + cmd1;
+    cmd1 = "returnedPressed();StepCycle;QLineEdit;Simulations;" + cmd1;
     
      if (!cmd1.isEmpty())
     {     
@@ -1957,7 +2080,9 @@ QvisSimulationWindow::executeSpinBoxStepCommand()
 // Creation:   December 21, 2005
 //
 // Modifications:
-//
+//    Shelly Prevost Fri Dec  1 10:36:07 PST 2006
+//    Corrected the widget name being passed to the simulation in the
+//    command string.
 //
 // ****************************************************************************
 void 
@@ -1971,9 +2096,71 @@ QvisSimulationWindow::executeSpinBoxStopCommand()
     string sim  = engines->GetSimulationName()[index];
     
     QString cmd2 = stopCycle->text();
-    cmd2 = "returnedPressed();Stop;QLineEdit;Simulations;" + cmd2;
+    cmd2 = "returnedPressed();StopCycle;QLineEdit;Simulations;" + cmd2;
     if (!cmd2.isEmpty())
     {
         viewer->SendSimulationCommand(host, sim, cmd2.latin1()); 
     }
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::executeMinLimitStripChart()
+//
+// Purpose:
+//   This method is called when the when the user changes the value
+//   in the limit strip chart line edit widget. It set the limits 
+//   for the strip chart and sends them to the simulation.
+//
+// Programmer: Shelly Prevost
+// Creation:   Thu Nov 30 17:21:39 PST 2006
+//
+// Modifications:
+//
+//
+// ****************************************************************************
+void 
+QvisSimulationWindow::executeMinLimitStripChart()
+{
+    int simindex = simCombo->currentItem();
+    if (simindex < 0)
+        return;
+    int index = simulationToEngineListMap[simindex];
+    string host = engines->GetEngines()[index];
+    string sim  = engines->GetSimulationName()[index];
+    QString cmd2 = minLimitEdit->text();
+    QString cmd3 = maxLimitEdit->text();
+    stripChart->setOutOfBandLimits( cmd3.toDouble(), cmd2.toDouble());
+    cmd2 = "returnedPressed();MinLimitEdit;QLineEdit;Simulations;" + cmd2;
+    viewer->SendSimulationCommand(host, sim, cmd2.latin1()); 
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::executeMaxLimitStripChart()
+//
+// Purpose:
+//   This method is called when the when the user changes the value
+//   in the limit strip chart line edit widget. It set the limits 
+//   for the strip chart and sends them to the simulation.
+//
+// Programmer: Shelly Prevost
+// Creation:   Thu Nov 30 17:21:39 PST 2006
+//
+// Modifications:
+//
+//
+// ****************************************************************************
+void 
+QvisSimulationWindow::executeMaxLimitStripChart()
+{
+    int simindex = simCombo->currentItem();
+    if (simindex < 0)
+        return;
+    int index = simulationToEngineListMap[simindex];
+    string host = engines->GetEngines()[index];
+    string sim  = engines->GetSimulationName()[index];
+    QString cmd2 = minLimitEdit->text();
+    QString cmd3 = maxLimitEdit->text();
+    stripChart->setOutOfBandLimits( cmd3.toDouble(), cmd2.toDouble());
+    cmd2 = "returnedPressed();MaxLimitEdit;QLineEdit;Simulations;" + cmd3;
+    viewer->SendSimulationCommand(host, sim, cmd2.latin1()); 
 }

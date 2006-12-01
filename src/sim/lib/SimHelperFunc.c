@@ -46,6 +46,9 @@
 /* set to maximum length of command name string  */
 #define MAX_CMD_STR_LEN 64
 
+#define MESSAGE_WIDGET_NAME "MessageViewerTextEdit"
+#define STRIP_CHART_WIDGET_NAME "StripChart"
+
 /* current number of active channels to the custom
    UI update information in the meta data. */
 int VisIt_CurrentIndex = 0;
@@ -136,7 +139,45 @@ void VisItUpdateMainSimWinGUI ( VisIt_SimulationMetaData mdd, char *name, char *
          strncpy(mdd.genericCommands[index].text, data,  MAX_CMD_STR_LEN-1);
       }
     }
+}/*****************************************************************************
+** Function: void VisItAddStripChartDataPoint( VisIt_SimulationMetaData mdd, 
+**                                             double dataX, double dataY, int enable )
+**
+** Purpose:
+**   Searches for a match between name and a name in the metat data GENERIC
+**   command array. If it does not find no data is set.
+**   If it does find a match the text field is updated
+**
+** Arguments:
+**   mdd  : meta data structure holding the commands arrays
+**   name : name of the ui component to search for.
+**
+** Programmer: Shelly Prevost
+** Creation:   Wed Nov 29 16:02:29 PST 2006
+**
+** Modifications:
+**
+** **************************************************************************** */
+
+void VisItAddStripChartDataPoint( VisIt_SimulationMetaData mdd, double dataX,double dataY, int enable )
+{
+    int index;
+    char dataXStr[MAX_CMD_STR_LEN];
+    char dataYStr[MAX_CMD_STR_LEN];
+    
+    index = VisItFindCMD (mdd, STRIP_CHART_WIDGET_NAME, false);
+
+    if ( (index >= 0) && ( index < mdd.numGenericCommands))
+    {
+      sprintf (mdd.genericCommands[index].text, "%10f", dataX);     
+      sprintf (mdd.genericCommands[index].value, "%10f", dataY); 
+      //printf ( "new data = %s %s enabled = %d\n", //mdd.genericCommands[index].text,mdd.genericCommands[index].value,enable);
+      if ( enable != -1 )
+         mdd.genericCommands[index].enabled = enable;   
+    }
 }
+
+
 
 /*****************************************************************************
 ** Function: void VisItCreateCMD ( VisIt_SimulationMetaData mdd, char *name )
@@ -363,6 +404,38 @@ void VisItInitGenericCMD (VisIt_SimulationMetaData mdd, int index,char *name, ch
 }
 
 /*****************************************************************************
+** Function: void VisItSetMessage  (VisIt_SimulationMetaData &mdd,char *name, char
+**                                     *text,char *value, int enable )
+**
+** Purpose:
+**   Sets the message displayed in the main simulation window to 
+**
+** Arguments:
+**   mdd  : meta data structure holding the commands arrays
+**   text : the text to change it too.
+**   color: Qt color to set the text too.
+**
+** Programmer: Shelly Prevost
+** Creation:   Tue Nov 28 16:15:32 PST 2006
+**
+** Modifications:
+**
+** *****************************************************************************/
+void VisItSetStatusMessage (VisIt_SimulationMetaData mdd, char *text, char *color)
+{
+    int index;
+    index = VisItFindCMD (mdd, MESSAGE_WIDGET_NAME, false);
+    
+    if ( (index >= 0) && ( index < mdd.numGenericCommands))
+    {
+      strncpy(mdd.genericCommands[index].text, text,  MAX_CMD_STR_LEN-1);
+      strncpy(mdd.genericCommands[index].value, color,  MAX_CMD_STR_LEN-1);
+      mdd.genericCommands[index].argType = VISIT_CMDARG_NONE;
+      mdd.genericCommands[index].enabled = false;
+    }
+}
+
+/*****************************************************************************
 ** Function: vvoid VisItLabelGenericButton (VisIt_SimulationMetaData mdd, int button,
 **                                           char *text,int enable )
 **
@@ -464,7 +537,7 @@ void VisItInitAllCMD(VisIt_SimulationMetaData *mdd, int MaxNumCustCMD  )
    mdd->genericCommands = malloc(sizeof(VisIt_SimulationControlCommand) *mdd->numGenericCommands);
    for ( i =0; i <mdd->numGenericCommands; i++) VisItInitCMD(&mdd->genericCommands[i]);
 
-   VisItInitGenericCMD (*mdd, index++,"halt", "halt","NONE", 1 );
+   VisItInitGenericCMD (*mdd, index++,"halt", "halt","NONE", 1 ); 
    VisItInitGenericCMD (*mdd, index++,"step", "step","NONE", 1 );
    VisItInitGenericCMD (*mdd, index++,"run", "run","NONE", 1 );
    VisItInitGenericCMD (*mdd, index++,"restart", "restart","NONE", 1 );
@@ -473,8 +546,9 @@ void VisItInitAllCMD(VisIt_SimulationMetaData *mdd, int MaxNumCustCMD  )
    VisItInitGenericCMD (*mdd, index++,"StartLabel", "Start","NONE", 1 );
    VisItInitGenericCMD (*mdd, index++,"StepLabel", "Step","NONE", 1 );
    VisItInitGenericCMD (*mdd, index++,"StopLabel", "Stop","NONE", 1 );
-   VisItInitGenericCMD (*mdd, index++,"MessageViewerTextEdit", "-","NONE", 1 );
+   VisItInitGenericCMD (*mdd, index++,MESSAGE_WIDGET_NAME, "-","black", 1 );
    VisItInitGenericCMD (*mdd, index++,"MessageViewerLabel", "Message Viewer","NONE", 1 );
+   VisItInitGenericCMD (*mdd, index++,STRIP_CHART_WIDGET_NAME, "0.0","0.0", 0 );
    
    /* VisItInitGenericCMD (*mdd, index++,"StartLineEdit", "0.0000","10", 1 );
       VisItInitGenericCMD (*mdd, index++,"StepLineEdit", "1.0000","NONE", 1 );
