@@ -117,6 +117,9 @@
 #    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 #    Added LibPipelineStubs
 #
+#    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+#    Added Database/PointerNotInCacheException
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -134,6 +137,7 @@ Database_src= \
   Database/InvalidTimeStepException.C \
   Database/InvalidVariableException.C \
   Database/InvalidZoneTypeException.C \
+  Database/PointerNotInCacheException.C \
   Database/SiloException.C
 
 Pipeline_src= \

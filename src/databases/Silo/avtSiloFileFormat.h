@@ -157,6 +157,10 @@ typedef struct
 //
 //    Mark C. Miller, Wed Nov 29 15:08:21 PST 2006
 //    Added connectivityIsTimeVarying
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Removed RegisterDataSelections. Was only used by CSG stuff 
+//    Added dontForceSingle. Added support for CSG multimeshes and CSG vars
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -189,13 +193,10 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     void                  ActivateTimestep(void);
 
-    virtual void           RegisterDataSelections(
-                               const std::vector<avtDataSelection_p> &selList,
-                               std::vector<bool> *selectionsApplied);
-
   protected:
     DBfile              **dbfiles;
     int                   tocIndex;
+    int                   dontForceSingle; // used primarily for testing
     bool                  readGlobalInfo;
     bool                  connectivityIsTimeVarying;
     bool                  hasDisjointElements;
@@ -235,10 +236,18 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     void                  ReadDir(DBfile *,const char *,avtDatabaseMetaData *);
     void                  DoRootDirectoryWork(avtDatabaseMetaData*);
     void                  BroadcastGlobalInfo(avtDatabaseMetaData*);
+    void                  StoreMultimeshInfo(const char *const dirname, int which_mm,
+                                             const char *const name_w_dir,
+                                             int meshnum, const DBmultimesh *const mm);
+    void                  AddCSGMultimesh(const char *const dirname, int which_mm,
+                                          const char *const multimesh_name,
+                                          avtDatabaseMetaData *md,
+                                          const DBmultimesh *const mm, DBfile *dbfile);
 
     vtkDataArray         *GetQuadVar(DBfile *, const char *, const char *,int);
     vtkDataArray         *GetUcdVar(DBfile *, const char *, const char *, int);
     vtkDataArray         *GetPointVar(DBfile *, const char *);
+    vtkDataArray         *GetCsgVar(DBfile *, const char *);
 
     vtkDataArray         *GetStandardVectorVar(int, const char *);
 
@@ -246,6 +255,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
                                            int);
     vtkDataArray         *GetUcdVectorVar(DBfile*,const char*,const char*,int);
     vtkDataArray         *GetPointVectorVar(DBfile *, const char *);
+    vtkDataArray         *GetCsgVectorVar(DBfile *, const char *);
 
     vtkDataSet           *CreateCurvilinearMesh(DBquadmesh *);
     vtkDataSet           *CreateRectilinearMesh(DBquadmesh *);

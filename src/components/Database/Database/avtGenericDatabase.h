@@ -51,6 +51,7 @@
 #include <avtMaterial.h>
 #include <avtSpecies.h>
 #include <avtVariableCache.h>
+#include <avtTransformManager.h>
 
 #include <vectortypes.h>
 
@@ -295,6 +296,8 @@ class     PickVarInfo;
 //    Jeremy Meredith, Mon Aug 28 16:39:17 EDT 2006
 //    Added support for enumerated scalars.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added transform manager. Added data spec to GetMaterial method.
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -331,6 +334,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     avtVariableCache           cache;
     vtkDataArray              *nonCachableVariableReference;
     vtkDataSet                *nonCachableMeshReference;
+
+    avtTransformManager       *xformManager;
 
     int                        lastTimestep;
 
@@ -416,7 +421,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     void_ref_ptr               GetMIR(int, const char *, int, vtkDataSet*,
                                       avtMaterial *, int, bool, bool, bool,
                                       bool, int, int, float, bool, bool&, bool&,bool);
-    avtMaterial               *GetMaterial(int, const char *, int);
+    avtMaterial               *GetMaterial(int, const char *, int, const avtDataSpecification_p = 0);
     avtSpecies                *GetSpecies(int, const char *, int);
     void                       GetMaterialIndices(avtMaterial *,
                                                   stringVector &, 

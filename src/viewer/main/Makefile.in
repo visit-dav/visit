@@ -295,6 +295,8 @@
 #    Brad Whitlock, Fri Sep 15 16:43:17 PST 2006
 #    Added libGLEW.
 #
+#    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+#    Added FILIB_LIBS
 ##############################################################################
 
 ##
@@ -316,7 +318,7 @@ LIBS=-L../../lib -L../../vtkqt -lengineproxy -lenginerpc -lviewerrpc \
      -lavtfilters_ser -lavtwriter_ser -lavtview -lpipeline_ser -lvisit_vtk \
      -llightweight_visit_vtk -lparallel_visit_vtk_ser -lvtkqt -lwinutil \
      @QT_LIBS@ -lproxybase -lmisc -lcomm -lstate -lutility -lavtexceptions \
-     $(VTK_LIBS) $(X_LIBS) $(BZIP2_LIBS) $(GLEW_LIBS) @LIBS@ @PTHREAD_LIB@
+     $(VTK_LIBS) $(X_LIBS) $(BZIP2_LIBS) $(GLEW_LIBS) $(FILIB_LIBS) @LIBS@ @PTHREAD_LIB@
 
 LDFLAGS=@LDFLAGS@ @QT_LDFLAGS@
 LIBDEP=

@@ -294,6 +294,8 @@
 #    Brad Whitlock, Fri Sep 15 14:56:55 PST 2006
 #    Added -I../../include.
 #
+#    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+#    Added FILIB_INCLUDE
 ##############################################################################
 
 ##
@@ -365,7 +367,7 @@ SRC=InitVTK.C \
     vtkVolumeFromVolume.C
 
 
-CPPFLAGS=@VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ -I. -I../../include $(GLEW_INCLUDE)
+CPPFLAGS=-I$(TOPDIR)/include @VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ $(FILIB_INCLUDE) -I../../include -I. $(GLEW_INCLUDE)
 
 OBJ=$(SRC:.C=.o) $(OPENGL_OBJ) $(MESA_OBJ)
 LIB=libvisit_vtk

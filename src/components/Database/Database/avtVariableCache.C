@@ -60,14 +60,7 @@ const char *avtVariableCache::SYMMETRIC_TENSORS_NAME = "SYMMETRIC_TENSORS";
 const char *avtVariableCache::LABELS_NAME = "LABELS";
 const char *avtVariableCache::ARRAYS_NAME = "ARRAYS";
 const char *avtVariableCache::DATASET_NAME = "DATASET";
-const char *avtVariableCache::NATIVE_SCALARS_NAME = "NATIVE_SCALARS";
-const char *avtVariableCache::NATIVE_VECTORS_NAME = "NATIVE_VECTORS";
-const char *avtVariableCache::NATIVE_TENSORS_NAME = "NATIVE_TENSORS";
-const char *avtVariableCache::NATIVE_SYMMETRIC_TENSORS_NAME =
-                                  "NATIVE_SYMMETRIC_TENSORS";
-const char *avtVariableCache::NATIVE_ARRAYS_NAME = "NATIVE_ARRAYS";
-const char *avtVariableCache::NATIVE_DATASET_NAME = "NATIVE_DATASET";
-
+const char *avtVariableCache::DATA_SPECIFICATION = "DATA_SPECIFICATION";
 
 // ****************************************************************************
 //  Method: avtVariableCache::DestructVTKObject 
@@ -238,6 +231,11 @@ avtVariableCache::GetVTKObject(const char *var, const char *type, int timestep,
 //  Programmer: Hank Childs
 //  Creation:   May 22, 2001
 //
+//  Modifications:
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added RemoveObjectPointerPair to ensure we don't have a pair with obj
+//    already recorded
 // ****************************************************************************
 
 void
@@ -263,10 +261,192 @@ avtVariableCache::CacheVTKObject(const char *name, const char *type,
         vtkVars.push_back(v);
     }
 
+    RemoveObjectPointerPair(obj);
     avtCachedVTKObject *cvo = new avtCachedVTKObject(obj);
     v->CacheItem(material, timestep, domain, cvo);
 }
 
+// ****************************************************************************
+//  Method: avtVariableCache::OneDomain::GetItem
+//
+//  Purpose: Like GetItem, except only tests for existence of item's pointer
+//  and, if found, returns the dom associated with the item, if requested.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   December 3, 2006 
+// 
+// ****************************************************************************
+bool avtVariableCache::OneDomain::GetItem(int *dom,
+    avtCachableItem *theItem) const
+{
+    if ((item->GetItemType() == theItem->GetItemType()) &&
+        (item->GetItemType() == avtCachableItem::VTKObject))
+    {
+        avtCachedVTKObject *thisObj = (avtCachedVTKObject *) item;
+        avtCachedVTKObject *theObj = (avtCachedVTKObject *) theItem;
+        vtkObject *thisVTKObject = thisObj->GetVTKObject();
+        vtkObject *theVTKObject = theObj->GetVTKObject();
+        if (thisVTKObject->GetMTime() == theVTKObject->GetMTime())
+        {
+            if (dom) *dom = GetDomain();
+            return true;
+        }
+    }
+    else if ((item->GetItemType() == theItem->GetItemType()) &&
+             (item->GetItemType() == avtCachableItem::VoidRef))
+    {
+        avtCachedVoidRef *thisRef = (avtCachedVoidRef *) item;
+        avtCachedVoidRef *theRef = (avtCachedVoidRef *) theItem;
+        if (theRef && theRef->GetVoidRef() == thisRef->GetVoidRef())
+        {
+            if (dom) *dom = GetDomain();
+            return true;
+        }
+    }
+    return false;
+}
+
+// ****************************************************************************
+//  Method: avtVariableCache::OneTimestep::GetItem
+//
+//  Purpose: Like GetItem, except only tests for existence of item's pointer
+//  and, if found, returns other information associated with the item if
+//  requested.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   December 3, 2006 
+// 
+// ****************************************************************************
+bool
+avtVariableCache::OneTimestep::GetItem(int *ts, int *dom,
+    avtCachableItem *theItem) const
+{
+    std::vector<OneDomain *>::const_iterator it;
+    for (it = domains.begin() ; it != domains.end() ; it++)
+    {
+        if ((*it)->GetItem(dom, theItem))
+        {
+            if (ts) *ts = GetTimestep();
+            return true;
+        }
+    }
+    return false;
+}
+
+// ****************************************************************************
+//  Method: avtVariableCache::OneMat::GetItem
+//
+//  Purpose: Like GetItem, except only tests for existence of item's pointer
+//  and, if found, returns other information associated with the item if
+//  requested.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   December 3, 2006 
+// 
+// ****************************************************************************
+bool
+avtVariableCache::OneMat::GetItem(int *ts, int *dom,
+    const char **mat, avtCachableItem *theItem) const
+{
+    std::vector<OneTimestep *>::const_iterator it;
+    for (it = timesteps.begin() ; it != timesteps.end() ; it++)
+    {
+        if ((*it)->GetItem(ts, dom, theItem))
+        {
+            if (mat) *mat = GetMaterial();
+            return true;
+        }
+    }
+    return false;
+}
+
+// ****************************************************************************
+//  Method: avtVariableCache::OneVar::GetItem
+//
+//  Purpose: Like GetItem, except only tests for existence of item's pointer
+//  and, if found, returns other information associated with the item if
+//  requested.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   December 3, 2006 
+// 
+// ****************************************************************************
+bool
+avtVariableCache::OneVar::GetItem(
+    const char **name, const char **_type,
+    int *ts, int *dom, const char **mat,
+    avtCachableItem *theItem) const
+{
+    std::vector<OneMat *>::const_iterator it;
+    for (it = materials.begin() ; it != materials.end() ; it++)
+    {
+        if ((*it)->GetItem(ts, dom, mat, theItem))
+        {
+            if (name) *name = GetVar();
+            if (_type) *_type = GetType();
+            return true;
+        }
+    }
+    return false;
+}
+
+// ****************************************************************************
+//  Method: avtVariableCache::GetVTKObjectKey
+//
+//  Purpose: Given a vtkObject pointer, find it in the cache and return other
+//  information associated with it. If the pointer is paired, use the paired
+//  pointer to find it. Otherwise, use the originally given pointer.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   December 3, 2006 
+// 
+// ****************************************************************************
+bool
+avtVariableCache::GetVTKObjectKey(
+    const char **name, const char **type,
+    int *ts, int *dom, const char **mat,
+    vtkObject *theObj) const
+{
+    vtkObject *tmpObj = FindObjectPointerPair(theObj);
+    if (tmpObj) theObj = tmpObj;
+
+    // theItem needs to live only for duration of this method
+    avtCachedVTKObject theItem(theObj);
+    std::vector<OneVar *>::const_iterator it;
+    for (it = vtkVars.begin() ; it != vtkVars.end() ; it++)
+    {
+        if ((*it)->GetItem(name, type, ts, dom, mat, &theItem))
+            return true;
+    }
+    return false;
+}
+
+// ****************************************************************************
+//  Method: avtVariableCache::GetVoidRefKey
+//
+//  Purpose: Given a void_ref_ptr pointer, find it in the cache and return
+//  other information associated with it. If the pointer is paired, use the
+//  paired pointer to find it. Otherwise, use the originally given pointer.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   December 3, 2006 
+// 
+// ****************************************************************************
+bool
+avtVariableCache::GetVoidRefKey(
+    const char **name, const char **type,
+    int *ts, int *dom, void_ref_ptr vrp) const
+{
+    // theItem needs to live only for duration of this method
+    avtCachedVoidRef theItem(vrp);
+    std::vector<OneVar *>::const_iterator it;
+    for (it = voidRefVars.begin() ; it != voidRefVars.end() ; it++)
+    {
+        if ((*it)->GetItem(name, type, ts, dom, 0, &theItem))
+            return true;
+    }
+    return false;
+}
 
 // ****************************************************************************
 //  Method: avtVariableCache::HasVoidRef
@@ -419,12 +599,35 @@ avtVariableCache::CacheVoidRef(const char *name, const char *type,
 //  Programmer: Hank Childs
 //  Creation:   January 7, 2002
 //
+//  Modifications:
+//
+//    Mark C. Miller, Thu Nov 30 19:58:19 PST 2006
+//    Added code to clear out the objectPointerMap for pointer pairs
+//
 // ****************************************************************************
 
 void
 avtVariableCache::ClearTimestep(int ts)
 {
     int   i;
+
+    // clear out objectPointerMap items *before* vtkVars and voidRefVars
+    std::vector<std::map<vtkObject*,vtkObject*>::iterator> itemsToRemove;
+    std::map<vtkObject*,vtkObject*>::iterator it;
+    for (it = objectPointerMap.begin(); it != objectPointerMap.end(); it++)
+    {
+        int objts;
+
+        GetVTKObjectKey(0, 0, &objts, 0, 0, it->second);
+        if (objts == ts)
+        {
+            itemsToRemove.push_back(it);
+        }
+    }
+    for (i = 0 ; i < itemsToRemove.size() ; i++)
+    {
+        objectPointerMap.erase(itemsToRemove[i]);
+    }
     for (i = 0 ; i < vtkVars.size() ; i++)
     {
         vtkVars[i]->ClearTimestep(ts);
@@ -434,7 +637,6 @@ avtVariableCache::ClearTimestep(int ts)
         voidRefVars[i]->ClearTimestep(ts);
     }
 }
-
 
 // ****************************************************************************
 //  Method: OneDomain constructor
@@ -883,7 +1085,8 @@ avtVariableCache::OneVar::CacheItem(const char *material, int timestep,
 // ****************************************************************************
 
 avtCachableItem *
-avtVariableCache::OneVar::GetItem(const char *material,int timestep,int domain)
+avtVariableCache::OneVar::GetItem(const char *material,
+    int timestep,int domain)
 {
     std::vector<OneMat *>::iterator it;
     for (it = materials.begin() ; it != materials.end() ; it++)
@@ -1069,6 +1272,66 @@ avtVariableCache::OneDomain::Print(ostream &out, int indent)
     out << "Item = " << item << endl;
 }
 
+// ****************************************************************************
+//  Method: avtVariableCache::AddObjectPointerPair 
+//
+//  Purpose: Manager object pointers for cases where generic database returns
+//  copies of what is cached. So far, this only happens for vtkObject pointers
+//  and not VoidRef pointers.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   December 3, 2006 
+//
+// ****************************************************************************
+void
+avtVariableCache::AddObjectPointerPair(
+    vtkObject *o1, vtkObject *o2)
+{
+    objectPointerMap[o1] = o2;
+};
+
+// ****************************************************************************
+//  Method: avtVariableCache::RemoveObjectPointerPair
+//
+//  Purpose: Manager object pointers for cases where generic database returns
+//  copies of what is cached
+//
+//  Programmer: Mark C. Miller
+//  Creation:   December 3, 2006 
+//
+// ****************************************************************************
+bool
+avtVariableCache::RemoveObjectPointerPair(vtkObject *o1)
+{
+    std::map<vtkObject*,vtkObject*>::iterator it =
+        objectPointerMap.find(o1);
+    if (it != objectPointerMap.end())
+    {
+        objectPointerMap.erase(it);
+        return true;
+    }
+    return false;
+}
+
+// ****************************************************************************
+//  Method: avtVariableCache::FindObjectPointerPair
+//
+//  Purpose: Manager object pointers for cases where generic database returns
+//  copies of what is cached
+//
+//  Programmer: Mark C. Miller
+//  Creation:   December 3, 2006 
+//
+// ****************************************************************************
+vtkObject*
+avtVariableCache::FindObjectPointerPair(vtkObject *o1) const
+{
+    std::map<vtkObject*,vtkObject*>::const_iterator it =
+        objectPointerMap.find(o1);
+    if (it != objectPointerMap.end())
+        return it->second;
+    return 0;
+}
 
 inline void 
 Indent(ostream &out, int n)
@@ -1079,17 +1342,23 @@ Indent(ostream &out, int n)
     }
 }
 
-
 // ****************************************************************************
 //  Method: avtCachedVoidRef constructor
 //
 //  Programmer: Hank Childs
 //  Creation:   May 22, 2001
+//
+//  Modifications:
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added setting of itemType so one impl. of GetItem is sufficient for
+//    both types of items
 //    
 // ****************************************************************************
 
 avtCachedVoidRef::avtCachedVoidRef(void_ref_ptr vr)
 {
+    itemType = VoidRef;
     voidRef = vr;
 }
 
@@ -1118,10 +1387,16 @@ avtCachedVoidRef::~avtCachedVoidRef()
 //  Programmer: Hank Childs
 //  Creation:   May 22, 2001
 //    
+//  Modifications:
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added setting of itemType so one impl. of GetItem is sufficient for
+//    both types of items
 // ****************************************************************************
 
 avtCachedVTKObject::avtCachedVTKObject(vtkObject *o)
 {
+    itemType = VTKObject;
     obj = o;
     if (obj != NULL)
     {
@@ -1146,5 +1421,3 @@ avtCachedVTKObject::~avtCachedVTKObject()
         obj = NULL;
     }
 }
-
-

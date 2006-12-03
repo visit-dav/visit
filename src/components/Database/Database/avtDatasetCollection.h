@@ -47,6 +47,7 @@
 #include <vector>
 #include <string>
 
+#include <array_ref_ptr.h>
 #include <void_ref_ptr.h>
 
 #include <avtDataTree.h>
@@ -77,6 +78,8 @@ class     avtMixedVariable;
 //    Hank Childs, Sun Mar 13 10:41:17 PST 2005
 //    Fixed problem with memory leak.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added code for setting/getting Var and Vars2nd
 // ****************************************************************************
 
 struct DATABASE_API avtDatasetCollection
@@ -90,6 +93,14 @@ struct DATABASE_API avtDatasetCollection
     std::vector<std::vector<std::string> >  matnames;
     std::vector<bool>                       needsMatSelect;
     std::vector<int>                        numMats;
+    void                                    SetVar(const char *cvar)
+                                                {  var = cvar; };
+    const std::string                       GetVar() const
+                                                { return var; };
+    void                                    SetVars2nd(const std::vector<CharStrRef> &v2nd)
+                                                { vars2nd = v2nd; };
+    const std::vector<CharStrRef>          &GetVars2nd() const
+                                                { return vars2nd; };
     void                                    SetNumMaterials(int dom,int nmats);
     int                                     GetNDomains(void)
                                                 { return nDomains; };
@@ -120,8 +131,10 @@ struct DATABASE_API avtDatasetCollection
     std::vector<void_ref_ptr>              &GetAllMixVars(int i);
     void                                    ReplaceMixVar(int i,
                                                           void_ref_ptr mix);
- 
+
   private:
+    std::string                             var;
+    std::vector<CharStrRef>                 vars2nd;
     int                                     nDomains;
     vtkDataSet                           ***vtkds;
     avtMaterial                           **materials;

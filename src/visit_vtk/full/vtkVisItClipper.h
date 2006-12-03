@@ -70,6 +70,9 @@ class vtkUnstructuredGrid;
 //    Jeremy Meredith, Tue Aug 29 13:43:56 EDT 2006
 //    Added support for forcing removal of entire cells instead of clipping.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added flag to use zero-crossings of the implicit function. 
+//    Added flat to compute inside and out in single execute.
 // ****************************************************************************
 class VISIT_VTK_API vtkVisItClipper
     : public vtkDataSetToUnstructuredGridFilter
@@ -84,6 +87,9 @@ class VISIT_VTK_API vtkVisItClipper
     virtual void SetClipFunction(vtkImplicitFunction*);
     virtual void SetClipScalars(float*, float);
     virtual void SetInsideOut(bool);
+    virtual void SetComputeInsideAndOut(bool);
+    virtual void SetUseZeroCrossings(bool);
+    virtual vtkUnstructuredGrid *GetOtherOutput();
 
     void SetCellList(int *, int);
     virtual void SetUpClipFunction(int) { ; };
@@ -110,6 +116,10 @@ class VISIT_VTK_API vtkVisItClipper
     float *scalarArray;
     float  scalarCutoff;
     bool   scalarFlip;
+    bool   useZeroCrossings;
+    bool   computeInsideAndOut;
+
+    vtkUnstructuredGrid *otherOutput;
 
     vtkVisItClipper(const vtkVisItClipper&);  // Not implemented.
     void operator=(const vtkVisItClipper&);  // Not implemented.

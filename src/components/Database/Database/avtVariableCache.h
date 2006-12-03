@@ -45,6 +45,7 @@
 #include <database_exports.h>
 
 #include <visitstream.h>
+#include <map>
 #include <vector>
 
 #include <void_ref_ptr.h>
@@ -92,6 +93,14 @@ class   vtkObject;
 //    Hank Childs, Tue Jul 19 15:49:08 PDT 2005
 //    Add support for arrays.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Removed 'NATIVE' cache tags, added DATA_SPECIFICATION tag. Added methods
+//    to support getting object's keys from cache given the object's pointer
+//    Added a map of pointer pairs to deal with cases where generic db returns
+//    copies of objects in the cache. Added itemTypes to CacheableItem to
+//    impl. single GetItem method for both classes (maybe should have
+//    implemented separately for each cacheable item type)
+//
 // ****************************************************************************
 
 class DATABASE_API avtVariableCache
@@ -107,12 +116,7 @@ class DATABASE_API avtVariableCache
     static const char     *LABELS_NAME;
     static const char     *ARRAYS_NAME;
     static const char     *DATASET_NAME;
-    static const char     *NATIVE_SCALARS_NAME;
-    static const char     *NATIVE_VECTORS_NAME;
-    static const char     *NATIVE_TENSORS_NAME;
-    static const char     *NATIVE_SYMMETRIC_TENSORS_NAME;
-    static const char     *NATIVE_ARRAYS_NAME;
-    static const char     *NATIVE_DATASET_NAME;
+    static const char     *DATA_SPECIFICATION;
 
     vtkObject             *GetVTKObject(const char *name, const char *type,
                                         int ts, int domain, const char *mat);
@@ -120,12 +124,22 @@ class DATABASE_API avtVariableCache
                                           int ts, int domain, const char *mat,
                                           vtkObject *);
 
+    // given a VTK object pointer, find that object in the cache and return
+    // the "key" (name, type, ts, domain, mat) where it is stored in the cache 
+    bool                   GetVTKObjectKey(const char **name, const char **type,
+                               int *ts, int *dom, const char **mat,
+                               vtkObject *obj) const;
+
     bool                   HasVoidRef(const char *name, const char *type,
                                       int ts, int domain);
     void_ref_ptr           GetVoidRef(const char *name, const char *type,
                                       int ts, int domain);
     void                   CacheVoidRef(const char *name, const char *type,
                                         int ts, int domain, void_ref_ptr);
+
+    bool                   GetVoidRefKey(const char **name, const char **type,
+                                         int *ts, int *domain, void_ref_ptr vrp) const;
+
     void                   ClearTimestep(int);
 
     void                   Print(ostream &);
@@ -134,6 +148,12 @@ class DATABASE_API avtVariableCache
     // in the VoidRef cache so that the Auxiliary data interface can 
     // return vtkDataArrays (e.g. global node/zone ids)
     static void            DestructVTKObject(void *vtkObj);
+
+    // functions to help transform manager find items in cache
+    void                   AddObjectPointerPair(vtkObject *o1,
+                                                vtkObject *o2);
+    bool                   RemoveObjectPointerPair(vtkObject *o1);
+    vtkObject             *FindObjectPointerPair(vtkObject *o1) const;
 
   protected:
 
@@ -144,8 +164,9 @@ class DATABASE_API avtVariableCache
         virtual          ~OneDomain();
     
         void              CacheItem(avtCachableItem *);
-        int               GetDomain(void)   { return domain; };
+        int               GetDomain(void) const  { return domain; };
         avtCachableItem  *GetItem(void)     { return item; };
+        bool              GetItem(int *dom, avtCachableItem *) const;
     
         void              Print(ostream &, int);
 
@@ -162,7 +183,8 @@ class DATABASE_API avtVariableCache
         
         void                        CacheItem(int, avtCachableItem *);
         avtCachableItem            *GetItem(int);
-        int                         GetTimestep(void) { return timestep; };
+        bool                        GetItem(int *ts, int *dom, avtCachableItem *) const;
+        int                         GetTimestep(void) const { return timestep; };
     
         void                        Print(ostream &, int);
 
@@ -179,7 +201,9 @@ class DATABASE_API avtVariableCache
 
         void                        CacheItem(int, int, avtCachableItem *);
         avtCachableItem            *GetItem(int, int);
-        const char                 *GetMaterial(void) { return material; };
+        const char                 *GetMaterial(void) const { return material; };
+        bool                        GetItem(int *ts, int *dom,
+                                        const char **mat, avtCachableItem *) const;
         void                        ClearTimestep(int);
     
         void                        Print(ostream &, int);
@@ -198,8 +222,11 @@ class DATABASE_API avtVariableCache
         void                         CacheItem(const char *, int, int,
                                                avtCachableItem *);
         avtCachableItem             *GetItem(const char *, int, int);
-        const char                  *GetVar(void)   { return var; };
-        const char                  *GetType(void)  { return type; };
+        const char                  *GetVar(void) const { return var; };
+        const char                  *GetType(void) const { return type; };
+        bool                         GetItem(const char **name, const char **_type,
+                                         int *ts, int *dom, const char **mat,
+                                         avtCachableItem *) const;
         void                         ClearTimestep(int);
     
         void                         Print(ostream &, int);
@@ -212,14 +239,25 @@ class DATABASE_API avtVariableCache
 
     std::vector<OneVar *>            vtkVars;
     std::vector<OneVar *>            voidRefVars;
+
+    std::map<vtkObject*, vtkObject*> objectPointerMap;
 };
 
 
 class DATABASE_API  avtCachableItem
 {
   public:
+
+   typedef enum {
+       VTKObject,
+       VoidRef
+   } CachableItemType;
                           avtCachableItem();
    virtual               ~avtCachableItem();
+   CachableItemType       GetItemType() const { return itemType; };
+
+  protected:
+    CachableItemType      itemType;
 };
 
 
@@ -228,7 +266,6 @@ class DATABASE_API  avtCachedVTKObject : public avtCachableItem
   public:
                           avtCachedVTKObject(vtkObject *);
     virtual              ~avtCachedVTKObject();
-
     vtkObject            *GetVTKObject(void)  { return obj; };
 
   protected:
@@ -241,7 +278,6 @@ class DATABASE_API  avtCachedVoidRef : public avtCachableItem
   public:
                          avtCachedVoidRef(void_ref_ptr);
     virtual             ~avtCachedVoidRef();
-
     void_ref_ptr         GetVoidRef(void)  { return voidRef; };
 
   protected:

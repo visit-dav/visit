@@ -67,12 +67,14 @@ using std::vector;
 //   Brad Whitlock, Tue Oct 7 09:37:42 PDT 2003
 //   Added playbackModeButtonGroup.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added AllExtraButtons
 // ****************************************************************************
 
 QvisMeshManagementWindow::QvisMeshManagementWindow(MeshManagementAttributes *subj,
     const char *caption, const char *shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(subj, caption, shortName, notepad,
-                               QvisPostableWindowObserver::ApplyButton)
+                               QvisPostableWindowObserver::AllExtraButtons)
 {
     mmAtts = subj;
 }
@@ -346,10 +348,48 @@ QvisMeshManagementWindow::Apply(bool ignore)
 // Qt Slot functions...
 //
 
+// ****************************************************************************
+// Method: QvisMeshManagementWindow::apply
+//
+// Purpose:
+//   Qt slot function called when apply button is clicked.
+//
+// ****************************************************************************
+
 void
 QvisMeshManagementWindow::apply()
 {
     Apply(true);
+}
+
+// ****************************************************************************
+// Method: QvisMeshManagementWindow::makeDefault
+//
+// Purpose:
+//   Qt slot function called when "Make default" button is clicked.
+//
+// ****************************************************************************
+
+void
+QvisMeshManagementWindow::makeDefault()
+{
+    GetCurrentValues();
+    mmAtts->Notify();
+    viewer->SetDefaultMeshManagementAttributes();
+}
+
+// ****************************************************************************
+// Method: QvisMeshManagementWindow::makeDefault
+//
+// Purpose:
+//   Qt slot function called when "Make default" button is clicked.
+//
+// ****************************************************************************
+
+void
+QvisMeshManagementWindow::reset()
+{
+    viewer->ResetMeshManagementAttributes();
 }
 
 void

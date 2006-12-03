@@ -45,6 +45,7 @@
 #include <vtkPlane.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
+#include <vtkQuadric.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
@@ -62,6 +63,115 @@
 
 vtkCxxRevisionMacro(vtkVisItClipper, "$Revision: 1.00 $");
 vtkStandardNewMacro(vtkVisItClipper);
+
+//
+// Function: AdjustPercentToZeroCrossing
+//
+// Purpose: Given coordinate array, point ids and linear estimate of
+// a cut, use quadric to compute actual zero crossing and adjust the
+// percent value to hit the zero crossing
+//
+//  Programmer: Mark C. Miller
+//  Creation:   December 3, 2006 
+//
+static void
+AdjustPercentToZeroCrossing(const float *const pts, int ptId1, int ptId2,
+    vtkImplicitFunction *func, float *percent)
+{
+    if (func == 0)
+        return;
+
+    // we only handle general quadrics at the moment
+    if (strcmp(func->GetClassName(), "vtkQuadric") != 0)
+        return;
+
+    //
+    // quadric equation coefficient array indexing...
+    // x^2   y^2   z^2    xy    xz    yz    x    y    z    1
+    //  0     1     2     3     4     5     6    7    8    9
+    //
+    vtkQuadric *quadric = vtkQuadric::SafeDownCast(func);
+    const double *a = quadric->GetCoefficients();
+
+    // quick check for planar functions. They're linear and so
+    // 'percent' is already correct
+    if (a[0] == 0.0 && a[1] == 0.0 && a[2] == 0.0 &&
+        a[3] == 0.0 && a[4] == 0.0 && a[5] == 0.0)
+        return;
+
+    //
+    // We'll define a "ray" between points p0 and p1 such that a
+    // point along it is defined by p(t) = p0 + t * (p1 - p0).
+    // When t==0, p(t)==p0 and when t==1, p(t)==p1. So, along
+    // the edge between the points p0 and p1, 0<=t<=1
+    //
+    const float *const p0 = pts + 3*ptId1;
+    const float *const p1 = pts + 3*ptId2;
+
+    // origin of "ray" to intersect against the quadric surface
+    double x0 = p0[0];
+    double y0 = p0[1];
+    double z0 = p0[2];
+
+    // direction (non-normalized) of ray to intersect quadric surface
+    double xd = p1[0] - x0;
+    double yd = p1[1] - y0;
+    double zd = p1[2] - z0;
+
+    //
+    // compute quadratic equation coefficients for ray/quadric intersection
+    // At^2 + Bt + C = 0
+    //
+    // These equations were obtained from various web resources. However,
+    // I am suspect of the equation for the B coefficient as cited on the
+    // web. Several sources cite the equation with the commented line. However,
+    // there is an assemtry in it where the coefficient of the a[5] term does
+    // not include a xd*z0 contribution analagous to the a[3] and a[4] terms.
+    // Empirical results from its use have shown that indeed it is in error.
+    // The commented line and this comment is left here in case anyone
+    // bothers to check this math against available sources.
+    //
+    double A = a[0]*xd*xd + a[1]*yd*yd + a[2]*zd*zd +
+               a[3]*xd*yd + a[4]*yd*zd + a[5]*xd*zd;
+    double B = 2*a[0]*x0*xd + 2*a[1]*y0*yd + 2*a[2]*z0*zd +
+               //a[3]*(x0*yd+y0*xd) + a[4]*(y0*zd+yd*z0) + a[5]*x0*zd +
+               a[3]*(x0*yd+xd*y0) + a[4]*(y0*zd+yd*z0) + a[5]*(x0*zd+xd*z0) +
+               a[6]*xd + a[7]*yd +a[8]*zd;
+    double C = a[0]*x0*x0 + a[1]*y0*y0 + a[2]*z0*z0 +
+               a[3]*x0*y0 + a[4]*y0*z0 + a[5]*x0*z0 +
+               a[6]*x0 + a[7]*y0 + a[8]*z0 + a[9];
+
+    //
+    // compute the root(s) of the quadratic equation
+    //
+    double t = 0.0;
+    if (A == 0)
+    {
+        //
+        // We get here if the quadric is really just linear
+        //
+        if (B == 0)
+            t = 0.0;
+        else
+            t = -C / B;
+    }
+    else
+    {
+        //
+        // We get here only when the quadric is indeed non-linear
+        //
+        double disc = B*B - 4*A*C;
+        if (disc >= 0.0)
+        {
+            t = (-B - sqrt(disc)) / (2*A);
+            if (t < 0)
+                t = (-B + sqrt(disc)) / (2*A);
+        }
+    }
+
+    if (t > 0.0 && t <= 1.0)
+        *percent = 1.0-t;
+}
 
 // ****************************************************************************
 //  Constructor:  vtkVisItClipper::vtkVisItClipper
@@ -81,6 +191,9 @@ vtkVisItClipper::vtkVisItClipper()
     insideOut = false;
     clipFunction = NULL;
     removeWholeCells = false;
+    useZeroCrossings = false;
+    computeInsideAndOut = false;
+    otherOutput = NULL;
 }
 
 // ****************************************************************************
@@ -94,6 +207,28 @@ vtkVisItClipper::vtkVisItClipper()
 // ****************************************************************************
 vtkVisItClipper::~vtkVisItClipper()
 {
+    if (otherOutput)
+        otherOutput->Delete();
+}
+
+void
+vtkVisItClipper::SetUseZeroCrossings(bool use)
+{
+    if (use && clipFunction && 
+        (strcmp(clipFunction->GetClassName(), "vtkQuadric") != 0))
+    {
+        vtkErrorMacro("UseZeroCrossings set to true allowed only with "
+                      "vtkQuadric implicit functions");
+        return;
+    }
+
+    useZeroCrossings = use;
+}
+
+void
+vtkVisItClipper::SetComputeInsideAndOut(bool compute)
+{
+    computeInsideAndOut = compute;
 }
 
 void
@@ -106,6 +241,13 @@ vtkVisItClipper::SetCellList(int *cl, int size)
 void
 vtkVisItClipper::SetClipFunction(vtkImplicitFunction *func)
 {
+    if (useZeroCrossings && (strcmp(func->GetClassName(), "vtkQuadric") != 0))
+    {
+        vtkErrorMacro("Only vtkQuadric implicit functions "
+                      "allowed with UseZeroCrossings set to true");
+        return;
+    }
+
     // Set the clip function
     clipFunction = func;
 
@@ -173,6 +315,11 @@ vtkVisItClipper::SetRemoveWholeCells(bool rwc)
     removeWholeCells = rwc;
 }
 
+vtkUnstructuredGrid*
+vtkVisItClipper::GetOtherOutput()
+{
+    return otherOutput;
+}
 
 // ****************************************************************************
 //  Method:  vtkVisItClipper::Execute
@@ -265,6 +412,9 @@ vtkVisItClipper::Execute()
 //    Added support for line and vertex output shapes (though
 //    structured grids shouldn't be outputting any, of course).
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added code to adjust percent to new percent consistent with zero
+//    crossing of implicit func.
 // ****************************************************************************
 
 void
@@ -449,6 +599,12 @@ vtkVisItClipper::StructuredGridExecute(void)
                         int ptId2 = ((cellI + X_val[pt2]) +
                                      (cellJ + Y_val[pt2])*ptstrideY +
                                      (cellK + Z_val[pt2])*ptstrideZ);
+
+                        // deal with exact zero crossings if requested
+                        if (clipFunction && useZeroCrossings)
+                            AdjustPercentToZeroCrossing(pts_ptr, ptId1, ptId2,
+                                clipFunction, &percent);
+                                
                         shape[p] = vfv.AddPoint(ptId1, ptId2, percent);
                     }
                     else if (pt >= N0 && pt <= N3)
@@ -550,6 +706,9 @@ vtkVisItClipper::StructuredGridExecute(void)
 //    Added support for line and vertex output shapes (though
 //    rectilinear grids shouldn't be outputting any, of course).
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added code to adjust percent to new percent consistent with zero
+//    crossing of implicit func.
 // ****************************************************************************
 
 void vtkVisItClipper::RectilinearGridExecute(void)
@@ -735,6 +894,21 @@ void vtkVisItClipper::RectilinearGridExecute(void)
                         int ptId2 = ((cellI + X_val[pt2]) +
                                      (cellJ + Y_val[pt2])*ptstrideY +
                                      (cellK + Z_val[pt2])*ptstrideZ);
+
+                        // deal with exact zero crossings if requested
+                        if (clipFunction && useZeroCrossings)
+                        {
+                            float pt[6];
+                            pt[0] = X[cellI + X_val[pt1]];
+                            pt[1] = Y[cellJ + Y_val[pt1]];
+                            pt[2] = Z[cellK + Z_val[pt1]];
+                            pt[3] = X[cellI + X_val[pt2]];
+                            pt[4] = Y[cellJ + Y_val[pt2]];
+                            pt[5] = Z[cellK + Z_val[pt2]];
+                            AdjustPercentToZeroCrossing(pt, 0, 1,
+                                clipFunction, &percent);
+                        }
+
                         shape[p] = vfv.AddPoint(ptId1, ptId2, percent);
                     }
                     else if (pt >= N0 && pt <= N3)
@@ -834,6 +1008,9 @@ void vtkVisItClipper::RectilinearGridExecute(void)
 //    Added support for "atomic" cells that must be removed
 //    entirely if they cannot be left whole.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added code to compute both sides of clip in one execute. Added code
+//    to adjust percent to zero crossings if requested.
 // ****************************************************************************
 void vtkVisItClipper::UnstructuredGridExecute(void)
 {
@@ -862,6 +1039,8 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
                          : CellListSize*5 + 100);
 
     vtkVolumeFromVolume vfv(ug->GetNumberOfPoints(), ptSizeGuess);
+    vtkVolumeFromVolume vfvOut(ug->GetNumberOfPoints(), ptSizeGuess);
+    vtkVolumeFromVolume *useVFV;
 
     vtkUnstructuredGrid *stuff_I_cant_clip = vtkUnstructuredGrid::New();
     stuff_I_cant_clip->SetPoints(ug->GetPoints());
@@ -999,12 +1178,15 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
             }
 
             int            interpIDs[4];
+            int            interpIDsOut[4];
             for (j = 0 ; j < numOutput ; j++)
             {
                 unsigned char shapeType = *splitCase++;
                 {
                     int npts;
                     int interpID = -1;
+                    int interpIDOut = -1;
+                    int interpIDtmp;
                     int color    = -1;
                     switch (shapeType)
                     {
@@ -1041,7 +1223,7 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
                         color = *splitCase++;
                         break;
                       case ST_PNT:
-                        interpID = *splitCase++;
+                        interpIDtmp = *splitCase++;
                         color    = *splitCase++;
                         npts     = *splitCase++;
                         break;
@@ -1051,13 +1233,25 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
                                    "the ClipCases.");
                     }
 
+                    useVFV = &vfv;
                     if ((!insideOut && color == COLOR0) ||
                         ( insideOut && color == COLOR1))
                     {
-                        // We don't want this one; it's the wrong side.
-                        splitCase += npts;
-                        continue;
+                        if (computeInsideAndOut)
+                        {
+                            useVFV = &vfvOut;
+                        }
+                        else
+                        {
+                            // We don't want this one; it's the wrong side.
+                            splitCase += npts;
+                            continue;
+                        }
                     }
+                    if (useVFV == &vfv)
+                        interpID = interpIDtmp;
+                    else
+                        interpIDOut = interpIDtmp;
 
                     int shape[8];
                     for (int p = 0 ; p < npts ; p++)
@@ -1090,11 +1284,20 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
                             // percent to the range [1e-4, 1. - 1e-4] here.
                             int ptId1 = pts[pt1];
                             int ptId2 = pts[pt2];
-                            shape[p] = vfv.AddPoint(ptId1, ptId2, percent);
+
+                            // deal with exact zero crossings if requested
+                            if (clipFunction && useZeroCrossings)
+                                AdjustPercentToZeroCrossing(pts_ptr, ptId1, ptId2,
+                                    clipFunction, &percent);
+                                
+                            shape[p] = useVFV->AddPoint(ptId1, ptId2, percent);
                         }
                         else if (pt >= N0 && pt <= N3)
                         {
-                            shape[p] = interpIDs[pt - N0];
+                            if (useVFV == &vfv)
+                                shape[p] = interpIDs[pt - N0];
+                            else
+                                shape[p] = interpIDsOut[pt - N0];
                         }
                         else
                         {
@@ -1107,36 +1310,39 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
                     switch (shapeType)
                     {
                       case ST_HEX:
-                        vfv.AddHex(cellId,
+                        useVFV->AddHex(cellId,
                                    shape[0], shape[1], shape[2], shape[3],
                                    shape[4], shape[5], shape[6], shape[7]);
                         break;
                       case ST_WDG:
-                        vfv.AddWedge(cellId,
+                        useVFV->AddWedge(cellId,
                                      shape[0], shape[1], shape[2],
                                      shape[3], shape[4], shape[5]);
                         break;
                       case ST_PYR:
-                        vfv.AddPyramid(cellId, shape[0], shape[1],
+                        useVFV->AddPyramid(cellId, shape[0], shape[1],
                                        shape[2], shape[3], shape[4]);
                         break;
                       case ST_TET:
-                        vfv.AddTet(cellId, shape[0], shape[1], shape[2], shape[3]);
+                        useVFV->AddTet(cellId, shape[0], shape[1], shape[2], shape[3]);
                         break;
                       case ST_QUA:
-                        vfv.AddQuad(cellId, shape[0], shape[1], shape[2], shape[3]);
+                        useVFV->AddQuad(cellId, shape[0], shape[1], shape[2], shape[3]);
                         break;
                       case ST_TRI:
-                        vfv.AddTri(cellId, shape[0], shape[1], shape[2]);
+                        useVFV->AddTri(cellId, shape[0], shape[1], shape[2]);
                         break;
                       case ST_LIN:
-                        vfv.AddLine(cellId, shape[0], shape[1]);
+                        useVFV->AddLine(cellId, shape[0], shape[1]);
                         break;
                       case ST_VTX:
-                        vfv.AddVertex(cellId, shape[0]);
+                        useVFV->AddVertex(cellId, shape[0]);
                         break;
                       case ST_PNT:
-                        interpIDs[interpID] = vfv.AddCentroidPoint(npts, shape);
+                        if (useVFV == &vfv)
+                            interpIDs[interpID] = useVFV->AddCentroidPoint(npts, shape);
+                        else
+                            interpIDsOut[interpIDOut] = useVFV->AddCentroidPoint(npts, shape);
                         break;
                     }
                 }
@@ -1169,13 +1375,36 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
         appender->GetOutput()->Update();
 
         output->ShallowCopy(appender->GetOutput());
+
+        if (computeInsideAndOut)
+        {
+            appender->RemoveInput(just_from_zoo);
+            just_from_zoo->Delete();
+
+            just_from_zoo = vtkUnstructuredGrid::New();
+            vfvOut.ConstructDataSet(inPD, inCD, just_from_zoo, pts_ptr);
+
+            appender->AddInput(just_from_zoo);
+            appender->GetOutput()->Update();
+
+            if (otherOutput) otherOutput->Delete();
+            otherOutput = vtkUnstructuredGrid::New();
+            otherOutput->ShallowCopy(appender->GetOutput());
+        }
+
         appender->Delete();
-        not_from_zoo->Delete();
         just_from_zoo->Delete();
+        not_from_zoo->Delete();
     }
     else
     {
         vfv.ConstructDataSet(inPD, inCD, output, pts_ptr);
+        if (computeInsideAndOut)
+        {
+            if (otherOutput) otherOutput->Delete();
+            otherOutput = vtkUnstructuredGrid::New();
+            vfvOut.ConstructDataSet(inPD, inCD, otherOutput, pts_ptr);
+        }
     }
 
     stuff_I_cant_clip->Delete();
@@ -1208,6 +1437,9 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
 //    Added support for "atomic" cells that must be removed
 //    entirely if they cannot be left whole.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added code to adjust percent to new percent consistent with zero
+//    crossing of implicit func.
 // ****************************************************************************
 void vtkVisItClipper::PolyDataExecute(void)
 {
@@ -1450,6 +1682,12 @@ void vtkVisItClipper::PolyDataExecute(void)
                             // percent to the range [1e-4, 1. - 1e-4] here.
                             int ptId1 = pts[pt1];
                             int ptId2 = pts[pt2];
+
+                            // deal with exact zero crossings if requested
+                            if (clipFunction && useZeroCrossings)
+                                AdjustPercentToZeroCrossing(pts_ptr, ptId1, ptId2,
+                                    clipFunction, &percent);
+                                
                             shape[p] = vfv.AddPoint(ptId1, ptId2, percent);
                         }
                         else if (pt >= N0 && pt <= N3)

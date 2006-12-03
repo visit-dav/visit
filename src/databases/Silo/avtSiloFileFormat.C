@@ -51,6 +51,7 @@
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkCellType.h>
+#include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkIdList.h>
 #include <vtkIdTypeArray.h>
@@ -125,7 +126,6 @@ template<class T>
 static void RemoveValuesForSkippedZones(vector<int>& zoneRangesSkipped,
                 T *inArray, int inArraySize, T *outArray); 
 
-
 bool avtSiloFileFormat::madeGlobalSiloCalls = false;
 
 // ****************************************************************************
@@ -160,17 +160,31 @@ bool avtSiloFileFormat::madeGlobalSiloCalls = false;
 //
 //    Mark C. Miller, Wed Nov 29 15:08:21 PST 2006
 //    Initialized connectivityIsTimeVarying
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added ability to turn forcing single precision off to support testing
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name)
     : avtSTMDFileFormat(&toc_name, 1)
 {
+    dontForceSingle = 0;
+
     if (!madeGlobalSiloCalls)
     {
+#ifdef PARALLEL
+        if (PAR_Rank() == 0)
+#endif
+            dontForceSingle = getenv("VISIT_SILO_DONT_FORCE_SINGLE") != 0;
+#ifdef PARALLEL
+        BroadcastInt(dontForceSingle);
+#endif
+
         //
         // Take no chances with precision errors.
         //
-        DBForceSingle(1);
+        if (dontForceSingle == 0)
+            DBForceSingle(1);
     
         //
         // If there is ever a problem with Silo, we want it to throw an
@@ -236,26 +250,6 @@ avtSiloFileFormat::~avtSiloFileFormat()
 {
     FreeUpResources();
     delete [] dbfiles;
-}
-
-// ****************************************************************************
-//  Method: avtSiloFileFormat::RegisterDataSelections
-//
-//  Purpose:
-//      For CSG meshes, we want to obtain resample selection information.
-//      So, we implement, this method here.
-//
-//  Programmer: Mark C. Miller
-//  Creation:   August 16, 2005 
-//
-// ****************************************************************************
-void
-avtSiloFileFormat::RegisterDataSelections(
-    const vector<avtDataSelection_p> &sels,
-    vector<bool> *selectionsApplied)
-{
-    selList     = sels;
-    selsApplied = selectionsApplied;
 }
 
 // ****************************************************************************
@@ -994,8 +988,16 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Mark C. Miller, Thu Jul 13 22:41:56 PDT 2006
 //    Added reading of material colors, if available
 //
+//    Mark C. Miller, Thu Jul  6 15:14:46 PDT 2006
+//    Fixed case where GetCsgmesh can return csgm but not csgm->zones
+//
 //    Mark C. Miller, Wed Nov 29 15:08:21 PST 2006
 //    Set value for connectivityIsTimeVarying
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Removed all EXCEPTIONs from this routine except for NULL toc to make
+//    the plugin more fault tolerant. Added code to support multi-block CSG
+//    meshes
 // ****************************************************************************
 
 void
@@ -1239,42 +1241,59 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     //
     for (i = 0 ; i < nmultimesh ; i++)
     {
-        DBmultimesh *mm = GetMultimesh(dirname, multimesh_names[i]);
-        if (mm == NULL)
-            EXCEPTION1(InvalidVariableException, multimesh_names[i]);
-        RegisterDomainDirs(mm->meshnames, mm->nblocks, dirname);
-
-        // Find the first non-empty mesh
-        int meshnum = 0;
-        int silo_mt = -1;
         bool valid_var = true;
-        while (string(mm->meshnames[meshnum]) == "EMPTY")
+        int silo_mt = -1;
+        int meshnum = 0;
+        DBmultimesh *mm = GetMultimesh(dirname, multimesh_names[i]);
+        if (mm)
         {
-            meshnum++;
-            if (meshnum >= mm->nblocks)
+            RegisterDomainDirs(mm->meshnames, mm->nblocks, dirname);
+
+            // Find the first non-empty mesh
+            while (string(mm->meshnames[meshnum]) == "EMPTY")
+            {
+                meshnum++;
+                if (meshnum >= mm->nblocks)
+                {
+                    debug1 << "Invalidating mesh \"" << multimesh_names[i] 
+                           << "\" since all its blocks are EMPTY." << endl;
+                    valid_var = false;
+                    break;
+                }
+            }
+
+            TRY
+            {
+                if (valid_var)
+                    silo_mt = GetMeshtype(dbfile, mm->meshnames[meshnum]);
+            }
+            CATCH(SiloException)
             {
                 debug1 << "Invalidating mesh \"" << multimesh_names[i] 
-                       << "\" since all its blocks are EMPTY." << endl;
+                       << "\" since its first non-empty block (" << mm->meshnames[meshnum]
+                       << ") is invalid." << endl;
                 valid_var = false;
-                break;
             }
+            ENDTRY
         }
-
-        TRY
+        else
         {
-            if (valid_var)
-                silo_mt = GetMeshtype(dbfile, mm->meshnames[meshnum]);
-        }
-        CATCH(SiloException)
-        {
-            debug1 << "Invalidating mesh \"" << multimesh_names[i] 
-                   << "\" since its first non-empty block (" << mm->meshnames[meshnum]
-                   << ") is invalid." << endl;
+            debug1 << "Invalidating mesh \"" << multimesh_names[i] << "\"" << endl;
             valid_var = false;
         }
-        ENDTRY
 
-        avtMeshType   mt;
+        //
+        // CSG meshes require special handling because we use CSG
+        // "regions" in place of VisIt's notion of "domains" and the
+        // pieces of the multi-mesh as VisIt's "groups."
+        //
+        if (silo_mt == DB_CSGMESH)
+        {
+            AddCSGMultimesh(dirname, i, multimesh_names[i], md, mm, dbfile);
+            continue;
+        }
+
+        avtMeshType mt = AVT_UNKNOWN_MESH;
         avtMeshCoordType mct = AVT_XY;
         int ndims;
         int tdims;
@@ -1293,7 +1312,12 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                                           realvar);
                 DBucdmesh *um = DBGetUcdmesh(correctFile, realvar);
                 if (um == NULL)
-                    EXCEPTION1(InvalidVariableException, mm->meshnames[meshnum]);
+                {
+                    debug1 << "Invalidating mesh \"" << multimesh_names[i] 
+                           << "\" since its first non-empty block (" << mm->meshnames[meshnum]
+                           << ") is invalid." << endl;
+                    break;
+                }
                 ndims = um->ndims;
                 tdims = ndims; 
                 cellOrigin = um->origin;
@@ -1328,7 +1352,12 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                                           realvar);
                 DBpointmesh *pm = DBGetPointmesh(correctFile, realvar);
                 if (pm == NULL)
-                    EXCEPTION1(InvalidVariableException, mm->meshnames[meshnum]);
+                {
+                    debug1 << "Invalidating mesh \"" << multimesh_names[i] 
+                           << "\" since its first non-empty block (" << mm->meshnames[meshnum]
+                           << ") is invalid." << endl;
+                    break;
+                }
                 ndims = pm->ndims;
                 tdims = 0;
                 cellOrigin = pm->origin;
@@ -1349,76 +1378,6 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 DBFreePointmesh(pm);
             }
             break;
-#ifdef DBCSG_INNER // remove after silo-4.5 is released
-          case DB_CSGMESH:
-            {
-                char   *realvar;
-                DBfile *correctFile = dbfile;
-                DetermineFileAndDirectory(mm->meshnames[meshnum], correctFile,
-                                          realvar);
-                long mask = DBGetDataReadMask();
-                DBSetDataReadMask(mask|DBCSGMZonelist|DBCSGZonelistZoneNames);
-                DBcsgmesh *csgm = DBGetCsgmesh(correctFile, realvar);
-                if (csgm == NULL)
-                    EXCEPTION1(InvalidVariableException, csgmesh_names[i]);
-                DBSetDataReadMask(mask);
-
-                double   extents[6];
-                double  *extents_to_use = NULL;
-                if (!((csgm->min_extents[0] == 0.0 && csgm->max_extents[0] == 0.0 &&
-                       csgm->min_extents[1] == 0.0 && csgm->max_extents[1] == 0.0 &&
-                       csgm->min_extents[2] == 0.0 && csgm->max_extents[2] == 0.0) ||
-                      (csgm->min_extents[0] == -DBL_MAX && csgm->max_extents[0] == DBL_MAX &&
-                       csgm->min_extents[1] == -DBL_MAX && csgm->max_extents[1] == DBL_MAX &&
-                       csgm->min_extents[2] == -DBL_MAX && csgm->max_extents[2] == DBL_MAX)))
-                {
-                    for (j = 0 ; j < csgm->ndims ; j++)
-                    {
-                        extents[2*j    ] = csgm->min_extents[j];
-                        extents[2*j + 1] = csgm->max_extents[j];
-                    }
-                    extents_to_use = extents;
-                }
-
-                char *name_w_dir = GenerateName(dirname, csgmesh_names[i]);
-                avtMeshMetaData *mmd = new avtMeshMetaData(extents_to_use, name_w_dir,
-                                    csgm->zones->nzones, 0, csgm->origin, 0,
-                                    csgm->ndims, csgm->ndims, AVT_CSG_MESH);
-                if (csgm->units[0] != NULL)
-                   mmd->xUnits = csgm->units[0];
-                if (csgm->units[1] != NULL)
-                   mmd->yUnits = csgm->units[1];
-                if (csgm->units[2] != NULL)
-                   mmd->zUnits = csgm->units[2];
-
-                if (csgm->labels[0] != NULL)
-                    mmd->xLabel = csgm->labels[0];
-                if (csgm->labels[1] != NULL)
-                    mmd->yLabel = csgm->labels[1];
-                if (csgm->labels[2] != NULL)
-                    mmd->zLabel = csgm->labels[2];
-
-                mmd->blockTitle = "regions";
-                if (csgm->zones->zonenames)
-                {
-                    vector<string> znames;
-                    for (j = 0; j < csgm->zones->nzones; j++)
-                        znames.push_back(csgm->zones->zonenames[j]);
-                    mmd->blockNames = znames;
-                }
-
-                //
-                // CSG meshes require special load balancing
-                //
-                mmd->loadBalanceScheme = LOAD_BALANCE_DBPLUGIN_DYNAMIC;
-
-                md->Add(mmd);
-
-                delete [] name_w_dir;
-                DBFreeCsgmesh(csgm);
-            }
-            break;
-#endif
           case DB_QUAD_RECT:
             {
                 mt = AVT_RECTILINEAR_MESH;
@@ -1428,7 +1387,12 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                                           realvar);
                 DBquadmesh *qm = DBGetQuadmesh(correctFile, realvar);
                 if (qm == NULL)
-                    EXCEPTION1(InvalidVariableException, mm->meshnames[meshnum]);
+                {
+                    debug1 << "Invalidating mesh \"" << multimesh_names[i] 
+                           << "\" since its first non-empty block (" << mm->meshnames[meshnum]
+                           << ") is invalid." << endl;
+                    break;
+                }
                 ndims = qm->ndims;
                 tdims = ndims;
                 cellOrigin = qm->origin;
@@ -1463,7 +1427,12 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                                           realvar);
                 DBquadmesh *qm = DBGetQuadmesh(correctFile, realvar);
                 if (qm == NULL)
-                    EXCEPTION1(InvalidVariableException, mm->meshnames[meshnum]);
+                {
+                    debug1 << "Invalidating mesh \"" << multimesh_names[i] 
+                           << "\" since its first non-empty block (" << mm->meshnames[meshnum]
+                           << ") is invalid." << endl;
+                    break;
+                }
                 ndims = qm->ndims;
                 tdims = ndims; 
                 cellOrigin = qm->origin;
@@ -1501,7 +1470,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 
         char *name_w_dir = GenerateName(dirname, multimesh_names[i]);
         avtMeshMetaData *mmd = new avtMeshMetaData(name_w_dir,
-                                   mm->nblocks, mm->blockorigin, cellOrigin,
+                                   mm?mm->nblocks:0, mm?mm->blockorigin:0, cellOrigin,
                                    groupOrigin, ndims, tdims, mt);
         mmd->validVariable = valid_var;
         mmd->groupTitle = "blocks";
@@ -1519,21 +1488,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 
         // Store off the important info about this multimesh
         // so we can match other multi-objects to it later
-        actualMeshName.push_back(name_w_dir);
-        firstSubMesh.push_back((meshnum < mm->nblocks) ?
-                               mm->meshnames[meshnum] : "");
-        blocksForMesh.push_back(mm->nblocks);
-        allSubMeshDirs.push_back(vector<string>());
-        for (int j=0; j<mm->nblocks; j++)
-        {
-            string dir,var;
-            SplitDirVarName(mm->meshnames[j], dirname, dir,var);
-            if (j==meshnum)
-                firstSubMeshVarName.push_back(var);
-            allSubMeshDirs[i].push_back(dir);
-        }
-        if (meshnum >= mm->nblocks)
-            firstSubMeshVarName.push_back("");
+        StoreMultimeshInfo(dirname, i, name_w_dir, meshnum, mm);
 
         delete [] name_w_dir;
     }
@@ -1545,11 +1500,15 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     {
         char   *realvar;
         DBfile *correctFile = dbfile;
+        bool valid_var = true;
 
         DetermineFileAndDirectory(qmesh_names[i], correctFile, realvar);
         DBquadmesh *qm = DBGetQuadmesh(correctFile, realvar);
         if (qm == NULL)
-            EXCEPTION1(InvalidVariableException, qmesh_names[i]);
+        {
+            valid_var = false;
+            qm = DBAllocQuadmesh(); // to fool code block below
+        }
 
         avtMeshType   mt;
         switch (qm->coordtype)
@@ -1567,7 +1526,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 
         double extents[6];
         double *extents_to_use = NULL;
-        if (nTimesteps == 1)
+        if (nTimesteps == 1 && valid_var)
         {
             if (qm->datatype == DB_DOUBLE)
             {
@@ -1613,6 +1572,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         if (qm->ndims == 2 && qm->coord_sys == DB_CYLINDRICAL)
             mmd->meshCoordType = AVT_RZ;
 
+        mmd->validVariable = valid_var;
         mmd->groupTitle = "blocks";
         mmd->groupPieceName = "block";
         md->Add(mmd);
@@ -1628,15 +1588,19 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     {
         char   *realvar;
         DBfile *correctFile = dbfile;
+        bool valid_var = true;
 
         DetermineFileAndDirectory(ucdmesh_names[i], correctFile, realvar);
         DBucdmesh *um = DBGetUcdmesh(correctFile, realvar);
         if (um == NULL)
-            EXCEPTION1(InvalidVariableException, ucdmesh_names[i]);
+        {
+            valid_var = false;
+            um = DBAllocUcdmesh(); // to fool code block below
+        }
 
         double   extents[6];
         double  *extents_to_use = NULL;
-        if (nTimesteps == 1)
+        if (nTimesteps == 1 && valid_var)
         {
             if (um->datatype == DB_DOUBLE)
             {
@@ -1683,6 +1647,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         mmd->groupTitle = "blocks";
         mmd->groupPieceName = "block";
         mmd->disjointElements = hasDisjointElements;
+        mmd->validVariable = valid_var;
         md->Add(mmd);
 
         delete [] name_w_dir;
@@ -1696,17 +1661,22 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     {
         char   *realvar;
         DBfile *correctFile = dbfile;
+        bool valid_var = true;
 
         DetermineFileAndDirectory(ptmesh_names[i], correctFile, realvar);
         DBpointmesh *pm = DBGetPointmesh(correctFile, realvar);
         if (pm == NULL)
-            EXCEPTION1(InvalidFilesException, ptmesh_names[i]);
+        {
+            valid_var = false;
+            pm = DBAllocPointmesh(); // to fool code block below
+        }
 
         char *name_w_dir = GenerateName(dirname, ptmesh_names[i]);
         avtMeshMetaData *mmd = new avtMeshMetaData(name_w_dir, 1, 0,pm->origin,
                                               0, pm->ndims, 0, AVT_POINT_MESH);
         mmd->groupTitle = "blocks";
         mmd->groupPieceName = "block";
+        mmd->validVariable = valid_var;
         if (pm->units[0] != NULL)
             mmd->xUnits = pm->units[0];
         if (pm->units[1] != NULL)
@@ -1734,11 +1704,15 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     {
         char   *realvar;
         DBfile *correctFile = dbfile;
+        bool valid_var = true;
 
         DetermineFileAndDirectory(curve_names[i], correctFile, realvar);
         DBcurve *cur = DBGetCurve(correctFile, realvar);
         if (cur == NULL)
-            EXCEPTION1(InvalidFilesException, curve_names[i]);
+        {
+            valid_var = false;
+            cur = DBAllocCurve(); // to fool code block below
+        }
 
         char *name_w_dir = GenerateName(dirname, curve_names[i]);
 
@@ -1751,6 +1725,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             cmd->xUnits = cur->xunits;
         if (cur->yunits != NULL)
             cmd->yUnits = cur->yunits;
+        cmd->validVariable = valid_var;
         md->Add(cmd);
 
         delete [] name_w_dir;
@@ -1765,6 +1740,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     {
         char   *realvar;
         DBfile *correctFile = dbfile;
+        bool valid_var = true;
 
         DetermineFileAndDirectory(csgmesh_names[i], correctFile, realvar);
 
@@ -1773,9 +1749,15 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         long mask = DBGetDataReadMask();
         DBSetDataReadMask(mask|DBCSGMZonelist|DBCSGZonelistZoneNames);
         DBcsgmesh *csgm = DBGetCsgmesh(correctFile, realvar);
-        if (csgm == NULL)
-            EXCEPTION1(InvalidVariableException, csgmesh_names[i]);
         DBSetDataReadMask(mask);
+        if (csgm == NULL || csgm->zones == NULL)
+        {
+            debug1 << "Unable to read mesh \"" << csgmesh_names[i]
+                   << "\". Skipping it" << endl; 
+            valid_var = false;
+            csgm = DBAllocCsgmesh();
+            csgm->zones = DBAllocCSGZonelist();
+        }
 
         double   extents[6];
         double  *extents_to_use = NULL;
@@ -1813,6 +1795,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             mmd->zLabel = csgm->labels[2];
 
         mmd->blockTitle = "regions";
+        mmd->validVariable = valid_var;
         if (csgm->zones->zonenames)
         {
             vector<string> znames;
@@ -1820,11 +1803,6 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 znames.push_back(csgm->zones->zonenames[j]);
             mmd->blockNames = znames;
         }
-
-        //
-        // CSG meshes require special load balancing
-        //
-        mmd->loadBalanceScheme = LOAD_BALANCE_DBPLUGIN_DYNAMIC;
 
         md->Add(mmd);
 
@@ -1838,51 +1816,55 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     //
     for (i = 0 ; i < nmultivar ; i++)
     {
-        DBmultivar *mv = GetMultivar(dirname, multivar_names[i]);
-        if (mv == NULL)
-            EXCEPTION1(InvalidVariableException, multivar_names[i]);
-
-        // Find the first non-empty mesh
+        string meshname;
         int meshnum = 0;
         bool valid_var = true;
-        while (string(mv->varnames[meshnum]) == "EMPTY")
+        DBmultivar *mv = GetMultivar(dirname, multivar_names[i]);
+        if (mv != NULL)
         {
-            meshnum++;
-            if (meshnum >= mv->nvars)
+            // Find the first non-empty mesh
+            while (string(mv->varnames[meshnum]) == "EMPTY")
             {
-                debug1 << "Invalidating variable \"" << multivar_names[i] 
-                       << "\" since all its blocks are EMPTY." << endl;
+                meshnum++;
+                if (meshnum >= mv->nvars)
+                {
+                    debug1 << "Invalidating variable \"" << multivar_names[i] 
+                           << "\" since all its blocks are EMPTY." << endl;
+                    valid_var = false;
+                    break;
+                }
+            }
+
+            TRY
+            {
+                // NOTE: There is an explicit assumption that the corresponding
+                //       multimesh has already been read.  Thus it must reside
+                //       in the same directory (or a previously read one) as
+                //       this variable.
+                if (valid_var)
+                {
+                    meshname = DetermineMultiMeshForSubVariable(dbfile,
+                                                                multivar_names[i],
+                                                                mv->varnames,
+                                                                mv->nvars, dirname);
+                    debug5 << "Variable " << multivar_names[i] 
+                           << " is defined on mesh " << meshname.c_str() << endl;
+                }
+            }
+            CATCH(SiloException)
+            {
+                debug1 << "Invalidating var \"" << multivar_names[i] 
+                       << "\" since its first non-empty block (" << mv->varnames[meshnum]
+                       << ") is invalid." << endl;
                 valid_var = false;
-                break;
             }
+            ENDTRY
         }
-
-        string meshname;
-
-        TRY
+        else
         {
-            // NOTE: There is an explicit assumption that the corresponding
-            //       multimesh has already been read.  Thus it must reside
-            //       in the same directory (or a previously read one) as
-            //       this variable.
-            if (valid_var)
-            {
-                meshname = DetermineMultiMeshForSubVariable(dbfile,
-                                                            multivar_names[i],
-                                                            mv->varnames,
-                                                            mv->nvars, dirname);
-                debug5 << "Variable " << multivar_names[i] 
-                       << " is defined on mesh " << meshname.c_str() << endl;
-            }
-        }
-        CATCH(SiloException)
-        {
-            debug1 << "Invalidating var \"" << multivar_names[i] 
-                   << "\" since its first non-empty block (" << mv->varnames[meshnum]
-                   << ") is invalid." << endl;
+            debug1 << "Invalidating var \"" << multivar_names[i] << "\"" << endl;
             valid_var = false;
         }
-        ENDTRY
 
         avtCentering   centering;
         bool           treatAsASCII = false;
@@ -1905,7 +1887,10 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                     DBucdvar *uv = NULL;
                     uv = DBGetUcdvar(correctFile, realvar);
                     if (uv == NULL)
-                        EXCEPTION1(InvalidVariableException, mv->varnames[meshnum]);
+                    {
+                        valid_var = false;
+                        break;
+                    }
                     centering = (uv->centering == DB_ZONECENT ? AVT_ZONECENT 
                                                               : AVT_NODECENT);
                     nvals = uv->nvals;
@@ -1920,7 +1905,10 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 {
                     DBquadvar *qv = DBGetQuadvar(correctFile, realvar);
                     if (qv == NULL)
-                        EXCEPTION1(InvalidVariableException, mv->varnames[meshnum]);
+                    {
+                        valid_var = false;
+                        break;
+                    }
                     centering = (qv->align[0] == 0. ? AVT_NODECENT 
                                                     : AVT_ZONECENT);
                     nvals = qv->nvals;
@@ -1936,7 +1924,10 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                     centering = AVT_NODECENT;   // Only one possible
                     DBmeshvar *pv = DBGetPointvar(correctFile, realvar);
                     if (pv == NULL)
-                        EXCEPTION1(InvalidVariableException, mv->varnames[meshnum]);
+                    {
+                        valid_var = false;
+                        break;
+                    }
                     nvals = pv->nvals;
                     treatAsASCII = (pv->ascii_labels);
                     if(pv->units != 0)
@@ -1953,7 +1944,10 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                     centering = csgv->centering == DB_BNDCENT ? AVT_NODECENT
                                                               : AVT_ZONECENT;
                     if (csgv == NULL)
-                        EXCEPTION1(InvalidVariableException, mv->varnames[meshnum]);
+                    {
+                        valid_var = false;
+                        break;
+                    }
                     nvals = csgv->nvals;
                     treatAsASCII = (csgv->ascii_labels);
                     if(csgv->units != 0)
@@ -2004,10 +1998,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     {
         char   *realvar = NULL;
         DBfile *correctFile = dbfile;
+        bool valid_var = true;
         DetermineFileAndDirectory(qvar_names[i], correctFile, realvar);
         DBquadvar *qv = DBGetQuadvar(correctFile, realvar);
         if (qv == NULL)
-            EXCEPTION1(InvalidVariableException, qvar_names[i]);
+        {
+            valid_var = false;
+            qv = DBAllocQuadvar();
+        }
 
         char meshname[256];
         DBInqMeshname(correctFile, realvar, meshname);
@@ -2028,6 +2026,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
                                                     meshname_w_dir, centering);
             smd->treatAsASCII = (qv->ascii_labels);
+            smd->validVariable = valid_var;
             if(qv->units != 0)
             {
                 smd->hasUnits = true;
@@ -2039,6 +2038,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         {
             avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
                                          meshname_w_dir, centering, qv->nvals);
+            vmd->validVariable = valid_var;
             if(qv->units != 0)
             {
                 vmd->hasUnits = true;
@@ -2058,10 +2058,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     {
         char   *realvar = NULL;
         DBfile *correctFile = dbfile;
+        bool valid_var = true;
         DetermineFileAndDirectory(ucdvar_names[i], correctFile, realvar);
         DBucdvar *uv = DBGetUcdvar(correctFile, realvar);
         if (uv == NULL)
-            EXCEPTION1(InvalidVariableException, ucdvar_names[i]);
+        {
+            valid_var = false;
+            uv = DBAllocUcdvar();
+        }
 
         char meshname[256];
         DBInqMeshname(correctFile, realvar, meshname);
@@ -2081,6 +2085,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         {
             avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
                                                     meshname_w_dir, centering);
+            smd->validVariable = valid_var;
             smd->treatAsASCII = (uv->ascii_labels);
             if(uv->units != 0)
             {
@@ -2093,6 +2098,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         {
             avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
                                          meshname_w_dir, centering, uv->nvals);
+            vmd->validVariable = valid_var;
             if(uv->units != 0)
             {
                 vmd->hasUnits = true;
@@ -2112,10 +2118,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     {
         char   *realvar = NULL;
         DBfile *correctFile = dbfile;
+        bool valid_var = true;
         DetermineFileAndDirectory(ptvar_names[i], correctFile, realvar);
         DBmeshvar *pv = DBGetPointvar(correctFile, realvar);
         if (pv == NULL)
-            EXCEPTION1(InvalidVariableException, ptvar_names[i]);
+        {
+            valid_var = false;
+            pv = DBAllocMeshvar();
+        }
 
         char meshname[256];
         DBInqMeshname(correctFile, realvar, meshname);
@@ -2130,6 +2140,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
                                                 meshname_w_dir, AVT_NODECENT);
             smd->treatAsASCII = (pv->ascii_labels);
+            smd->validVariable = valid_var;
             if(pv->units != 0)
             {
                 smd->hasUnits = true;
@@ -2141,6 +2152,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         {
             avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
                                       meshname_w_dir, AVT_NODECENT, pv->nvals);
+            vmd->validVariable = valid_var;
             if(pv->units != 0)
             {
                 vmd->hasUnits = true;
@@ -2161,10 +2173,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     {
         char   *realvar = NULL;
         DBfile *correctFile = dbfile;
+        bool valid_var = true;
         DetermineFileAndDirectory(csgvar_names[i], correctFile, realvar);
         DBcsgvar *csgv = DBGetCsgvar(correctFile, realvar);
         if (csgv == NULL)
-            EXCEPTION1(InvalidVariableException, csgvar_names[i]);
+        {
+            valid_var = false;
+            csgv = DBAllocCsgvar();
+        }
 
         char meshname[256];
         DBInqMeshname(correctFile, realvar, meshname);
@@ -2186,6 +2202,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
                                                     meshname_w_dir, centering);
             smd->treatAsASCII = (csgv->ascii_labels);
+            smd->validVariable = valid_var;
             if(csgv->units != 0)
             {
                 smd->hasUnits = true;
@@ -2197,6 +2214,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         {
             avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
                                          meshname_w_dir, centering, csgv->nvals);
+            vmd->validVariable = valid_var;
             if(csgv->units != 0)
             {
                 vmd->hasUnits = true;
@@ -2217,10 +2235,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     {
         char   *realvar = NULL;
         DBfile *correctFile = dbfile;
+        bool valid_var = true;
         DetermineFileAndDirectory(mat_names[i], correctFile, realvar);
         DBmaterial *mat = DBGetMaterial(correctFile, realvar);
         if (mat == NULL)
-            EXCEPTION1(InvalidVariableException, mat_names[i]);
+        {
+            valid_var = false;
+            mat = DBAllocMaterial();
+        }
 
         char meshname[256];
         DBInqMeshname(correctFile, realvar, meshname);
@@ -2275,7 +2297,9 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         else
             mmd = new avtMaterialMetaData(name_w_dir, meshname_w_dir,
                                           mat->nmat, matnames);
+        mmd->validVariable = valid_var;
         md->Add(mmd);
+#warning FIX MATERIAL PROBLEMS FOR CSG
 
         delete [] name_w_dir;
         delete [] meshname_w_dir;
@@ -2287,13 +2311,16 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     //
     for (i = 0 ; i < nmultimat ; i++)
     {
+        bool valid_var = true;
         DBmultimat *mm = GetMultimat(dirname, multimat_names[i]);
         if (mm == NULL)
-            EXCEPTION1(InvalidVariableException, multimat_names[i]);
+        {
+            valid_var = false;
+            mm = DBAllocMultimat(0);
+        }
 
         // Find the first non-empty mesh
         int meshnum = 0;
-        bool valid_var = true;
         while (string(mm->matnames[meshnum]) == "EMPTY")
         {
             meshnum++;
@@ -2395,6 +2422,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 
         mmd->validVariable = valid_var;
         md->Add(mmd);
+#warning FIX MATERIAL PROBLEMS FOR CSG 
 
         delete [] name_w_dir;
         DBFreeMaterial(mat);
@@ -2407,11 +2435,15 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     {
         char   *realvar = NULL;
         DBfile *correctFile = dbfile;
+        bool valid_var = true;
         DetermineFileAndDirectory(matspecies_names[i], correctFile, realvar);
 
         DBmatspecies *spec = DBGetMatspecies(correctFile, realvar);
         if (spec == NULL)
-            EXCEPTION1(InvalidVariableException, matspecies_names[i]);
+        {
+            valid_var = false;
+            spec = DBAllocMatspecies();
+        }
 
         char meshname[256];
         GetMeshname(dbfile, spec->matname, meshname);
@@ -2849,6 +2881,36 @@ avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
     BroadcastInt(groupInfo.numgroups);
     BroadcastIntVector(groupInfo.ids,  rank);
 #endif
+}
+
+// ****************************************************************************
+//  Method:  avtSiloFileFormat::StoreMultimeshInfo
+//
+//  Purpose: Update plugin's cache of multimesh variables and names used in
+//           facilitating matching variable to mesh 
+//
+//  Programmer:  Mark C. Miller (moved from ReadDir)
+//  Creation:    June 26, 2006 
+// ****************************************************************************
+void
+avtSiloFileFormat::StoreMultimeshInfo(const char *const dirname, int which_mm,
+const char *const name_w_dir, int meshnum, const DBmultimesh *const mm)
+{
+    actualMeshName.push_back(name_w_dir);
+    firstSubMesh.push_back((meshnum < mm->nblocks) ?
+                            mm->meshnames[meshnum] : "");
+    blocksForMesh.push_back(mm->nblocks);
+    allSubMeshDirs.push_back(vector<string>());
+    for (int j=0; j<mm->nblocks; j++)
+    {
+        string dir,var;
+        SplitDirVarName(mm->meshnames[j], dirname, dir,var);
+        if (j==meshnum)
+            firstSubMeshVarName.push_back(var);
+        allSubMeshDirs[which_mm].push_back(dir);
+    }
+    if (meshnum >= mm->nblocks)
+        firstSubMeshVarName.push_back("");
 }
 
 
@@ -3574,6 +3636,144 @@ AddDefvars(const char *defvars, avtDatabaseMetaData *md)
     delete [] dv_tmp;
 }
 
+// ****************************************************************************
+//  Method: avtSiloFileFormat::AddCSGMultimesh
+//
+//  Purpose: Handle special requirements for multi-meshes composed of CSG
+//           meshes
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   June 26, 2006 
+// ****************************************************************************
+void
+avtSiloFileFormat::AddCSGMultimesh(const char *const dirname, int which_mm,
+    const char *const multimesh_name, avtDatabaseMetaData *md,
+    const DBmultimesh *const mm, DBfile *dbfile)
+{
+    int i,j;
+    int nregions = 0;
+    int ndims = -1;
+    int meshnum = -1;
+    vector<string> blockPieceNames;
+    vector<int> groupIds;
+    string xUnits, yUnits, zUnits;
+    string xLabel, yLabel, zLabel;
+    double   extents[6] = {DBL_MAX, -DBL_MAX, DBL_MAX, -DBL_MAX, DBL_MAX, -DBL_MAX};
+    double  *extents_to_use = NULL;
+
+    long mask = DBGetDataReadMask();
+    DBSetDataReadMask(mask|DBCSGMZonelist|DBCSGZonelistZoneNames);
+
+    for (i = 0; i < mm->nblocks; i++)
+    {
+        if (string(mm->meshnames[i]) == "EMPTY")
+            continue;
+
+        char   *realvar;
+        DBfile *correctFile = dbfile;
+        DetermineFileAndDirectory(mm->meshnames[i], correctFile, realvar);
+        DBcsgmesh *csgm = DBGetCsgmesh(correctFile, realvar);
+        if (csgm == NULL)
+            EXCEPTION1(InvalidVariableException, multimesh_name);
+
+        if (!((csgm->min_extents[0] == 0.0 && csgm->max_extents[0] == 0.0 &&
+               csgm->min_extents[1] == 0.0 && csgm->max_extents[1] == 0.0 &&
+               csgm->min_extents[2] == 0.0 && csgm->max_extents[2] == 0.0) ||
+              (csgm->min_extents[0] == -DBL_MAX && csgm->max_extents[0] == DBL_MAX &&
+               csgm->min_extents[1] == -DBL_MAX && csgm->max_extents[1] == DBL_MAX &&
+               csgm->min_extents[2] == -DBL_MAX && csgm->max_extents[2] == DBL_MAX)))
+        {
+            for (j = 0 ; j < csgm->ndims ; j++)
+            {
+   
+                if (csgm->min_extents[j] < extents[2*j])
+                    extents[2*j] = csgm->min_extents[j];
+                if (csgm->max_extents[j] > extents[2*j+1])
+                    extents[2*j+1] = csgm->max_extents[j];
+            }
+            extents_to_use = extents;
+        }
+
+        if (csgm->zones->zonenames)
+        {
+            for (j = 0; j < csgm->zones->nzones; j++)
+            {
+                blockPieceNames.push_back(csgm->zones->zonenames[j]);
+                groupIds.push_back(i);
+            }
+        }
+
+        nregions += csgm->zones->nzones;
+
+        if (csgm->ndims > ndims)
+            ndims = csgm->ndims;
+
+        if (meshnum == -1)
+        {
+            meshnum = i;
+
+            if (csgm->units[0] != NULL)
+                xUnits = csgm->units[0];
+            if (csgm->units[1] != NULL)
+                yUnits = csgm->units[1];
+            if (csgm->units[2] != NULL)
+                zUnits = csgm->units[2];
+
+            if (csgm->labels[0] != NULL)
+                xLabel = csgm->labels[0];
+            if (csgm->labels[1] != NULL)
+                yLabel = csgm->labels[1];
+            if (csgm->labels[2] != NULL)
+                zLabel = csgm->labels[2];
+        }
+
+        DBFreeCsgmesh(csgm);
+
+    }
+    DBSetDataReadMask(mask);
+
+
+    // a value for meshnum of -1 at this point indicates
+    // no non-EMPTY blocks found
+    if (meshnum != -1)
+    {
+
+        char *name_w_dir = GenerateName(dirname, multimesh_name);
+        avtMeshMetaData *mmd = new avtMeshMetaData(extents_to_use, name_w_dir,
+                                       nregions, 0, 0, 0, ndims, ndims, AVT_CSG_MESH);
+
+        mmd->blockTitle = "regions";
+        mmd->blockPieceName = "region";
+        mmd->blockNames = blockPieceNames;
+        mmd->xUnits = xUnits;
+        mmd->yUnits = yUnits;
+        mmd->zUnits = zUnits;
+        mmd->xLabel = xLabel;
+        mmd->yLabel = yLabel;
+        mmd->zLabel = zLabel;
+        //mmd->loadBalanceScheme = LOAD_BALANCE_DBPLUGIN_DYNAMIC;
+
+        if (mm->nblocks > 1)
+        {
+            mmd->numGroups = mm->nblocks;
+            mmd->groupTitle = "blocks";
+            mmd->groupPieceName = "block";
+            md->Add(mmd);
+            md->AddGroupInformation(mm->nblocks, nregions, groupIds);
+        }
+        else
+        {
+            md->Add(mmd);
+        }
+
+        // Store off the important info about this multimesh
+        // so we can match other multi-objects to it later
+        StoreMultimeshInfo(dirname, which_mm, name_w_dir, meshnum, mm);
+
+        delete [] name_w_dir;
+    }
+}
+
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::GetVar
@@ -3613,11 +3813,18 @@ AddDefvars(const char *defvars, avtDatabaseMetaData *md)
 //    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
 //    Changed call to OpenFile() to GetFile()
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added code to convert domain id for CSG meshes; no-op for other meshes.
+//    Added support for CSG variables.
 // ****************************************************************************
 
 vtkDataArray *
 avtSiloFileFormat::GetVar(int domain, const char *v)
 {
+    // for CSG meshes, each domain is a csgregion and a group of regions
+    // forms a visit "domain". So, we need to re-map the domain id
+    metadata->ConvertCSGDomainToBlockAndRegion(v, &domain, 0);
+
     int localdomain = domain;
     if (blocksForMultivar.count(v))
     {
@@ -3656,7 +3863,7 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
     // Sort out the bad cases.
     //
     if (type != DB_UCDVAR && type != DB_QUADVAR && type != DB_POINTVAR
-        && type != DB_MULTIVAR)
+        && type != DB_CSGVAR && type != DB_MULTIVAR)
     {
         EXCEPTION1(InvalidVariableException, var);
     }
@@ -3711,6 +3918,10 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
     {
         rv = GetPointVar(domain_file, directory_var);
     }
+    else if (type == DB_CSGVAR)
+    {
+        rv = GetCsgVar(domain_file, directory_var);
+    }
 
     //
     // This may be leaked if an exception is thrown after it is allocated.
@@ -3760,11 +3971,18 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
 //    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
 //    Changed call to OpenFile() to GetFile()
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added code to convert domain id for CSG meshes; no-op for other meshes.
+//    Added support for CSG variables.
 // ****************************************************************************
 
 vtkDataArray *
 avtSiloFileFormat::GetVectorVar(int domain, const char *v)
 {
+    // for CSG meshes, each domain is a csgregion and a group of regions
+    // forms a visit "domain". So, we need to re-map the domain id
+    metadata->ConvertCSGDomainToBlockAndRegion(v, &domain, 0);
+
     debug5 << "Reading in vector variable " << v << ", domain " << domain
            << endl;
     
@@ -3857,6 +4075,10 @@ avtSiloFileFormat::GetVectorVar(int domain, const char *v)
     else if (type == DB_POINTVAR)
     {
         rv = GetPointVectorVar(domain_file, directory_var);
+    }
+    else if (type == DB_CSGVAR)
+    {
+        rv = GetCsgVectorVar(domain_file, directory_var);
     }
 
     //
@@ -3994,6 +4216,8 @@ avtSiloFileFormat::GetUcdVectorVar(DBfile *dbfile, const char *vname,
 //    I modified the routine to use nvals as the number of components in
 //    the variable.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added support for double precision quad vars (for testing xform mngr)
 // ****************************************************************************
 
 vtkDataArray *
@@ -4018,13 +4242,28 @@ avtSiloFileFormat::GetQuadVectorVar(DBfile *dbfile, const char *vname,
     //
     // Populate the variable.  This assumes it is a scalar variable.
     //
-    vtkFloatArray   *vectors = vtkFloatArray::New();
+    vtkDataArray *vectors;
+    if (qv->datatype == DB_DOUBLE)
+        vectors = vtkDoubleArray::New();
+    else
+        vectors = vtkFloatArray::New();
     vectors->SetNumberOfComponents(3);
     vectors->SetNumberOfTuples(qv->nels);
-    for (int i = 0 ; i < qv->nels ; i++)
+    if (qv->datatype == DB_DOUBLE)
     {
-        float v3 = (qv->nvals == 3 ? qv->vals[2][i] : 0.);
-        vectors->SetTuple3(i, qv->vals[0][i], qv->vals[1][i], v3);
+        double *v1 = (double *) qv->vals[0];
+        double *v2 = (double *) qv->vals[1];
+        double *v3 = (double *) (qv->nvals == 3 ? qv->vals[2] : 0);
+        for (int i = 0 ; i < qv->nels ; i++)
+            vectors->SetTuple3(i, v1[i], v2[i], v3 ? v3[i] : 0.);
+    }
+    else
+    {
+        for (int i = 0 ; i < qv->nels ; i++)
+        {
+            float v3 = (qv->nvals == 3 ? qv->vals[2][i] : 0.);
+            vectors->SetTuple3(i, qv->vals[0][i], qv->vals[1][i], v3);
+        }
     }
 
     DBFreeQuadvar(qv);
@@ -4087,6 +4326,12 @@ avtSiloFileFormat::GetPointVectorVar(DBfile *dbfile, const char *vname)
     return vectors;
 }
 
+vtkDataArray *
+avtSiloFileFormat::GetCsgVectorVar(DBfile *dbfile, const char *vname)
+{
+    EXCEPTION1(InvalidVariableException, vname);
+    return 0;
+}
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::GetMesh
@@ -4124,11 +4369,17 @@ avtSiloFileFormat::GetPointVectorVar(DBfile *dbfile, const char *vname)
 //    Mark C. Miller, Thu Mar  2 00:03:40 PST 2006
 //    Added support for curves
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added code convert domain id for CSG meshes; no-op for other meshes.
 // ****************************************************************************
 
 vtkDataSet *
 avtSiloFileFormat::GetMesh(int domain, const char *m)
 {
+    // for CSG meshes, each domain is a csgregion and a group of regions
+    // forms a visit "domain". So, we need to re-map the domain id
+    metadata->ConvertCSGDomainToBlockAndRegion(m, &domain, 0);
+
     debug5 << "Reading in domain " << domain << ", mesh " << m << endl;
     debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
 
@@ -4405,7 +4656,28 @@ avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
 //    Hank Childs, Fri Jul  5 15:03:23 PDT 2002
 //    Add the name of the mixed variable to its constructor.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added support for double precision quad vars (for testing xform mngr)
 // ****************************************************************************
+
+template <class T>
+static void CopyAndReorderQuadVar(T* var2, int nx, int ny, int nz, const void *const src)
+{
+    const T *const var  = (const T *const) src;
+    int nxy = nx * ny;
+    int nyz = ny * nz;
+
+    for (int k = 0; k < nz; k++)
+    {
+        for (int j = 0; j < ny; j++)
+        {
+            for (int i = 0; i < nx; i++)
+            {
+                var2[k*nxy + j*nx + i] = var[k + j*nz + i*nyz];
+            }
+        }
+    }
+}
 
 vtkDataArray *
 avtSiloFileFormat::GetQuadVar(DBfile *dbfile, const char *vname,
@@ -4429,57 +4701,32 @@ avtSiloFileFormat::GetQuadVar(DBfile *dbfile, const char *vname,
     //
     // Populate the variable.  This assumes it is a scalar variable.
     //
-    vtkFloatArray   *scalars = vtkFloatArray::New();
+    vtkDataArray *scalars;
+    if (qv->datatype == DB_DOUBLE)
+        scalars = vtkDoubleArray::New();
+    else
+        scalars = vtkFloatArray::New();
     scalars->SetNumberOfTuples(qv->nels);
     if (qv->major_order == DB_ROWMAJOR || qv->ndims <= 1)
     {
-        float        *ptr     = (float *) scalars->GetVoidPointer(0);
-        memcpy(ptr, qv->vals[0], sizeof(float)*qv->nels);
+        int size = sizeof(float);
+        if (qv->datatype == DB_DOUBLE)
+            size = sizeof(double);
+        void *ptr = scalars->GetVoidPointer(0);
+        memcpy(ptr, qv->vals[0], size*qv->nels);
     }
     else
     {
-        float    *var2 = (float *) scalars->GetVoidPointer(0);
-        float    *var  = qv->vals[0];
+        void *var2 = scalars->GetVoidPointer(0);
+        void *var  = qv->vals[0];
 
-        int       i, j, k;
-        int       nx, ny, nz, nxy, nyz;
-
-        switch (qv->ndims)
-        {
-          case 2:
-            nx = qv->dims[0];
-            ny = qv->dims[1];
-
-            for (j = 0; j < ny; j++)
-            {
-                for (i = 0; i < nx; i++)
-                {
-                    var2[j*nx + i] = var[j + i*ny];
-                }
-            }
-
-            break;
-
-          case 3:
-            nx = qv->dims[0];
-            ny = qv->dims[1];
-            nz = qv->dims[2];
-            nxy = qv->dims[0] * qv->dims[1];
-            nyz = qv->dims[1] * qv->dims[2];
-
-            for (k = 0; k < nz; k++)
-            {
-                for (j = 0; j < ny; j++)
-                {
-                    for (i = 0; i < nx; i++)
-                    {
-                        var2[k*nxy + j*nx + i] = var[k + j*nz + i*nyz];
-                    }
-                }
-            }
-
-            break;
-        }
+        int nx = qv->dims[0];
+        int ny = qv->dims[1];
+        int nz = qv->ndims == 3 ? qv->dims[2] : 1;
+        if (qv->datatype == DB_DOUBLE)
+            CopyAndReorderQuadVar((double *) var2, nx, ny, nz, var);
+        else
+            CopyAndReorderQuadVar((float *) var2, nx, ny, nz, var);
     }
 
     if (qv->mixvals != NULL && qv->mixvals[0] != NULL)
@@ -4554,6 +4801,46 @@ avtSiloFileFormat::GetPointVar(DBfile *dbfile, const char *vname)
     memcpy(ptr, mv->vals[0], sizeof(float)*mv->nels);
 
     DBFreeMeshvar(mv);
+
+    return scalars;
+}
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetCsgVar
+//
+//  Purpose: Gets a CSG variable
+//
+//  Programmer: Mark C. Miller
+//  Creation:   December 3, 2006 
+//
+// ****************************************************************************
+vtkDataArray *
+avtSiloFileFormat::GetCsgVar(DBfile *dbfile, const char *vname)
+{
+    //
+    // It's ridiculous, but Silo does not have all of the `const's in their
+    // library, so let's cast it away.
+    //
+    char *varname  = const_cast<char *>(vname);
+
+    //
+    // Get the Silo construct.
+    //
+    DBcsgvar *csgv = DBGetCsgvar(dbfile, varname);
+    if (csgv == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
+    //
+    // Populate the variable.  This assumes it is a scalar variable.
+    //
+    vtkFloatArray   *scalars = vtkFloatArray::New();
+    scalars->SetNumberOfTuples(csgv->nels);
+    float        *ptr     = (float *) scalars->GetVoidPointer(0);
+    memcpy(ptr, csgv->vals[0], sizeof(float)*csgv->nels);
+
+    DBFreeCsgvar(csgv);
 
     return scalars;
 }
@@ -5667,7 +5954,51 @@ avtSiloFileFormat::CreateRectilinearMesh(DBquadmesh *qm)
 //    Hank Childs, Wed Jan 14 13:40:33 PST 2004
 //    Marginal improvement in performance.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added support for double precision coordinates in a quad mesh
 // ****************************************************************************
+
+template <class T>
+static void CopyQuadCoordinates(T *dest, int nx, int ny, int nz, int morder,
+    const T *const c0, const T *const c1, const T *const c2)
+{
+    int i, j, k;
+
+    if (morder == DB_ROWMAJOR)
+    {
+        int nxy = nx * ny; 
+        for (k = 0; k < nz; k++)
+        {
+            for (j = 0; j < ny; j++)
+            {
+                for (i = 0; i < nx; i++)
+                {
+                    int idx = k*nxy + j*nx + i;
+                    *dest++ = c0 ? c0[idx] : 0.;
+                    *dest++ = c1 ? c1[idx] : 0.;
+                    *dest++ = c2 ? c2[idx] : 0.;
+                }
+            }
+        }
+    }
+    else
+    {
+        int nyz = ny * nz; 
+        for (k = 0; k < nz; k++)
+        {
+            for (j = 0; j < ny; j++)
+            {
+                for (i = 0; i < nx; i++)
+                {
+                    int idx = k + j*nz + i*nyz;
+                    *dest++ = c0 ? c0[idx] : 0.;
+                    *dest++ = c1 ? c1[idx] : 0.;
+                    *dest++ = c2 ? c2[idx] : 0.;
+                }
+            }
+        }
+    }
+}
 
 vtkDataSet *
 avtSiloFileFormat::CreateCurvilinearMesh(DBquadmesh *qm)
@@ -5690,113 +6021,30 @@ avtSiloFileFormat::CreateCurvilinearMesh(DBquadmesh *qm)
     sgrid->SetDimensions(dims);
 
     //
+    // vtkPoints assumes float data type
+    //
+    if (qm->datatype == DB_DOUBLE)
+        points->SetDataTypeToDouble();
+
+    //
     // Populate the coordinates.  Put in 3D points with z=0 if the mesh is 2D.
     //
+    int nx = qm->dims[0];
+    int ny = qm->dims[1];
+    int nz = qm->ndims <= 2 ? 1 : qm->dims[2];
     points->SetNumberOfPoints(qm->nnodes);
-    float *pts = (float *) points->GetVoidPointer(0);
-    if (qm->major_order == DB_ROWMAJOR)
+    void *pts = points->GetVoidPointer(0);
+    if (qm->datatype == DB_DOUBLE)
     {
-        int       i, j, k;
-        int       nx, ny, nz, nxy;
-        float    *coord0, *coord1, *coord2;
-        float    *tmp = pts;
-
-        switch (qm->ndims)
-        {
-          case 2:
-            nx = qm->dims[0];
-            ny = qm->dims[1];
-            coord0 = qm->coords[0];
-            coord1 = qm->coords[1];
-
-            for (j = 0; j < ny; j++)
-            {
-                for (i = 0; i < nx; i++)
-                {
-                   *tmp++ = coord0[j*nx + i];
-                   *tmp++ = coord1[j*nx + i];
-                   *tmp++ = 0.;
-                }
-            }
-
-            break;
-
-          case 3:
-            nx = qm->dims[0];
-            ny = qm->dims[1];
-            nz = qm->dims[2];
-            nxy = qm->dims[0] * qm->dims[1];
-            coord0 = qm->coords[0];
-            coord1 = qm->coords[1];
-            coord2 = qm->coords[2];
-
-            for (k = 0; k < nz; k++)
-            {
-                for (j = 0; j < ny; j++)
-                {
-                    for (i = 0; i < nx; i++)
-                    {
-                        *tmp++ = *coord0++;
-                        *tmp++ = *coord1++;
-                        *tmp++ = *coord2++;
-                    }
-                }
-            }
-
-            break;
-        }
+        CopyQuadCoordinates((double *) pts, nx, ny, nz, qm->major_order,
+            (double *) qm->coords[0], (double *) qm->coords[1],
+            qm->ndims <= 2 ? 0 : (double *) qm->coords[2]);
     }
     else
     {
-        int       i, j, k;
-        int       nx, ny, nz, nyz;
-        float    *coord0, *coord1, *coord2;
-        float    *tmp = pts;
-
-        switch (qm->ndims)
-        {
-          case 2:
-            nx = qm->dims[0];
-            ny = qm->dims[1];
-            coord0 = qm->coords[0];
-            coord1 = qm->coords[1];
-
-            for (j = 0; j < ny; j++)
-            {
-                for (i = 0; i < nx; i++)
-                {
-                   *tmp++ = coord0[j + i*ny];
-                   *tmp++ = coord1[j + i*ny];
-                   *tmp++ = 0.;
-                }
-            }
-
-            break;
-
-          case 3:
-            nx = qm->dims[0];
-            ny = qm->dims[1];
-            nz = qm->dims[2];
-            nyz = qm->dims[1] * qm->dims[2];
-            coord0 = qm->coords[0];
-            coord1 = qm->coords[1];
-            coord2 = qm->coords[2];
-
-            for (k = 0; k < nz; k++)
-            {
-                for (j = 0; j < ny; j++)
-                {
-                    for (i = 0; i < nx; i++)
-                    {
-                        *tmp++ = coord0[k + j*nz + i*nyz];
-                        *tmp++ = coord1[k + j*nz + i*nyz];
-                        *tmp++ = coord2[k + j*nz + i*nyz];
-                    }
-                }
-            }
-
-            break;
-        }
+        CopyQuadCoordinates((float *) pts, nx, ny, nz, qm->major_order,
+            (float *) qm->coords[0], (float *) qm->coords[1],
+            qm->ndims <= 2 ? 0 : (float *) qm->coords[2]);
     }
 
     return sgrid;
@@ -6074,6 +6322,8 @@ avtSiloFileFormat::GetPointMesh(DBfile *dbfile, const char *mn)
 //    Added some more primitives. Moved discretization calls to
 //    generic database
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Changed interface to vtkCSGGrid class to accept raw Silo representation
 // ****************************************************************************
 
 vtkDataSet *
@@ -6085,7 +6335,6 @@ avtSiloFileFormat::GetCSGMesh(DBfile *dbfile, const char *mn, int dom)
 #ifdef MDSERVER
     return 0;
 #else
-    int   i, j;
 
     //
     // Allow empty data sets
@@ -6113,147 +6362,10 @@ avtSiloFileFormat::GetCSGMesh(DBfile *dbfile, const char *mn, int dom)
     //
     vtkCSGGrid *csggrid   = vtkCSGGrid::New(); 
 
-    //
-    // Build up the boundaries
-    //
-    vector<int> bids;
-    char *pc = (char*) csgm->coeffs;
-    for (i = 0; i < csgm->nbounds; i++)
-    {
-        int j, ncoeffs = 0;
-
-        switch (csgm->typeflags[i])
-        {
-            case DBCSG_SPHERE_PR:
-            {
-                ncoeffs = 4;
-                double coeffs[4];
-                for (j = 0; j < ncoeffs; j++)
-                    coeffs[j] = ((float*)pc)[j];
-                bids.push_back(csggrid->AddBoundary(vtkCSGGrid::SPHERE_PR,
-                                                    ncoeffs,
-                                                    coeffs));
-                break;
-            }
-            case DBCSG_PLANE_X:
-            {
-                ncoeffs = 1;
-                double coeffs[1];
-                for (j = 0; j < ncoeffs; j++)
-                    coeffs[j] = ((float*)pc)[j];
-                bids.push_back(csggrid->AddBoundary(vtkCSGGrid::PLANE_X,
-                                                    ncoeffs,
-                                                    coeffs));
-                break;
-            }
-            case DBCSG_PLANE_Y:
-            {
-                ncoeffs = 1;
-                double coeffs[1];
-                for (j = 0; j < ncoeffs; j++)
-                    coeffs[j] = ((float*)pc)[j];
-                bids.push_back(csggrid->AddBoundary(vtkCSGGrid::PLANE_Y,
-                                                    ncoeffs,
-                                                    coeffs));
-                break;
-            }
-            case DBCSG_PLANE_Z:
-            {
-                ncoeffs = 1;
-                double coeffs[1];
-                for (j = 0; j < ncoeffs; j++)
-                    coeffs[j] = ((float*)pc)[j];
-                bids.push_back(csggrid->AddBoundary(vtkCSGGrid::PLANE_Z,
-                                                    ncoeffs,
-                                                    coeffs));
-                break;
-            }
-            case DBCSG_CYLINDER_PNLR:
-            {
-                ncoeffs = 8;
-                double coeffs[8];
-                for (j = 0; j < ncoeffs; j++)
-                    coeffs[j] = ((float*)pc)[j];
-                bids.push_back(csggrid->AddBoundary(vtkCSGGrid::CYLINDER_PNLR,
-                                                    ncoeffs,
-                                                    coeffs));
-                break;
-            }
-            case DBCSG_QUADRIC_G:
-            {
-                ncoeffs = 10;
-                double coeffs[10];
-                for (j = 0; j < ncoeffs; j++)
-                    coeffs[j] = ((float*)pc)[j];
-                bids.push_back(csggrid->AddBoundary(vtkCSGGrid::QUADRIC_G,
-                                                    ncoeffs,
-                                                    coeffs));
-                break;
-            }
-        }
-
-        if (csgm->datatype == DB_DOUBLE)
-            pc += ncoeffs * sizeof(double);
-        else
-            pc += ncoeffs * sizeof(float);
-    }
-
-    //
-    // Build up the regions
-    //
-    vector<int> rids;
-    DBcsgzonelist *csgzl = csgm->zones;
-    for (i = 0; i < csgzl->nregs; i++)
-    {
-        switch (csgzl->typeflags[i])
-        {
-            case DBCSG_INNER:
-            {
-                rids.push_back(csggrid->AddRegion(csgzl->leftids[i],
-                                                  vtkCSGGrid::INNER));
-                break;
-            }
-            case DBCSG_OUTER:
-            {
-                rids.push_back(csggrid->AddRegion(csgzl->leftids[i],
-                                                  vtkCSGGrid::OUTER));
-                break;
-            }
-            case DBCSG_INTERSECT:
-            {
-                rids.push_back(csggrid->AddRegion(csgzl->leftids[i],
-                                                  csgzl->rightids[i],
-                                                  vtkCSGGrid::INTERSECT));
-                break;
-            }
-            case DBCSG_UNION:
-            {
-                rids.push_back(csggrid->AddRegion(csgzl->leftids[i],
-                                                  csgzl->rightids[i],
-                                                  vtkCSGGrid::UNION));
-                break;
-            }
-            case DBCSG_DIFF:
-            {
-                rids.push_back(csggrid->AddRegion(csgzl->leftids[i],
-                                                  csgzl->rightids[i],
-                                                  vtkCSGGrid::DIFF));
-                break;
-            }
-        }
-    }
-
-    //
-    // Enumerate the cells (that is, the complete region specifications)
-    //
-    for (i = 0; i < csgzl->nzones; i++)
-    {
-        csggrid->AddCell(csgzl->zonelist[i]);
-    }
-
     double minX = -10.0, minY = -10.0, minZ = -10.0;
     double maxX =  10.0, maxY =  10.0, maxZ =  10.0;
 
+    // set bounds *before* anything else
     if (!((csgm->min_extents[0] == 0.0 && csgm->max_extents[0] == 0.0 &&
            csgm->min_extents[1] == 0.0 && csgm->max_extents[1] == 0.0 &&
            csgm->min_extents[2] == 0.0 && csgm->max_extents[2] == 0.0) ||
@@ -6269,6 +6381,15 @@ avtSiloFileFormat::GetCSGMesh(DBfile *dbfile, const char *mn, int dom)
         maxZ = csgm->max_extents[2];
     }
     csggrid->SetBounds(minX, maxX, minY, maxY, minZ, maxZ);
+
+    if (csgm->datatype == DB_DOUBLE)
+        csggrid->AddBoundaries(csgm->nbounds, csgm->typeflags, csgm->lcoeffs, (double*) csgm->coeffs);
+    else
+        csggrid->AddBoundaries(csgm->nbounds, csgm->typeflags, csgm->lcoeffs, (float*) csgm->coeffs);
+    csggrid->AddRegions(csgm->zones->nregs, csgm->zones->leftids, csgm->zones->rightids,
+                        csgm->zones->typeflags, 0, 0);
+    csggrid->AddZones(csgm->zones->nzones, csgm->zones->zonelist);
+
 
     DBFreeCsgmesh(csgm);
 
@@ -6768,12 +6889,18 @@ avtSiloFileFormat::GetComponent(DBfile *dbfile, char *var, char *compname)
 //    Mark C. Miller, Mon Oct 18 13:02:37 PDT 2004
 //    Added support for data/spatial extents
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added code to convert CSG domain id; no-op for other meshes
 // ****************************************************************************
 
 void *
 avtSiloFileFormat::GetAuxiliaryData(const char *var, int domain,
                               const char *type, void *, DestructorFunction &df)
 {
+    // for CSG meshes, each domain is a csgregion and a group of regions
+    // forms a visit "domain". So, we need to re-map the domain id
+    metadata->ConvertCSGDomainToBlockAndRegion(var, &domain, 0);
+
     void *rv = NULL;
     if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
     {
@@ -7206,6 +7333,9 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
 //    Hank Childs, Wed Jul 13 10:04:33 PDT 2005
 //    Fix memory leak.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Moved code to set data read mask back to its original value to *before*
+//    throwing of exeption.
 // ****************************************************************************
 
 vtkDataArray *
@@ -7237,9 +7367,9 @@ avtSiloFileFormat::GetGlobalNodeIds(int dom, const char *mesh)
     long mask = DBGetDataReadMask();
     DBSetDataReadMask(DBUMGlobNodeNo);
     DBucdmesh *um = DBGetUcdmesh(domain_file, directory_mesh);
+    DBSetDataReadMask(mask);
     if (um == NULL)
         EXCEPTION1(InvalidVariableException, mesh);
-    DBSetDataReadMask(mask);
 
     vtkIntArray *rv = NULL;
     if (um->gnodeno != NULL)
@@ -7280,6 +7410,9 @@ avtSiloFileFormat::GetGlobalNodeIds(int dom, const char *mesh)
 //    Mark C. Miller, Tue Jun 28 17:28:56 PDT 2005
 //    Made it handle the new "EMPTY" domain convention
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Moved code to set data read mask back to its original value to *before*
+//    throwing of exeption.
 // ****************************************************************************
 
 vtkDataArray *
@@ -7307,9 +7440,9 @@ avtSiloFileFormat::GetGlobalZoneIds(int dom, const char *mesh)
     long mask = DBGetDataReadMask();
     DBSetDataReadMask(DBUMZonelist|DBZonelistGlobZoneNo);
     DBucdmesh *um = DBGetUcdmesh(domain_file, directory_mesh);
+    DBSetDataReadMask(mask);
     if (um == NULL)
         EXCEPTION1(InvalidVariableException, mesh);
-    DBSetDataReadMask(mask);
 
     vtkIntArray *rv = NULL;
     if (um->zones->gzoneno != NULL)
@@ -7686,6 +7819,9 @@ avtSiloFileFormat::CalcSpecies(DBfile *dbfile, char *specname)
 //    Hank Childs, Tue Jun 13 14:23:48 PDT 2006
 //    Add flag to read mask.  The current flag works with PDB, but not HDF5.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Moved code to set data read mask back to its original value to *before*
+//    throwing of exeption.
 // ****************************************************************************
 
 avtFacelist *
@@ -7700,10 +7836,10 @@ avtSiloFileFormat::CalcExternalFacelist(DBfile *dbfile, char *mesh)
     long mask = DBGetDataReadMask();
     DBSetDataReadMask(DBUMFacelist | DBFacelistInfo);
     DBucdmesh *um = DBGetUcdmesh(correctFile, realvar);
+    DBSetDataReadMask(mask);
     if (um == NULL)
         EXCEPTION1(InvalidVariableException, mesh);
     DBfacelist *fl = um->faces;
-    DBSetDataReadMask(mask);
 
     if (fl == NULL)
     {
@@ -8403,6 +8539,8 @@ PrepareDirName(const char *dirvar, const char *curdir)
 //
 //  Modifications:
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Fixed memory problem when strlen dirvar is zero
 // ****************************************************************************
 
 void
@@ -8411,8 +8549,15 @@ SplitDirVarName(const char *dirvar, const char *curdir,
 {
     dir="";
     var="";
+    int len;
 
-    int len = strlen(dirvar);
+    if (!dirvar || ((len = strlen(dirvar)) == 0))
+    {
+        dir=curdir;
+        var="";
+        return;
+    }
+
     const char *last = dirvar + (len-1);
     while (*last != '/' && last > dirvar)
     {

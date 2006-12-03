@@ -57,6 +57,10 @@
 //  Programmer: Hank Childs
 //  Creation:   September 24, 2002
 //
+//  Modifications:
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added operator==
 // ****************************************************************************
 
 typedef void (*DestructorFunction)(void *);
@@ -70,6 +74,7 @@ class UTILITY_API void_ref_ptr
     ~void_ref_ptr();
     void Assign(void *rhs, DestructorFunction);
     void operator=(const void_ref_ptr &rhs);
+    bool operator==(const void_ref_ptr &rhs) const;
     void *operator*();
     int *GetN() const;
     void Print(ostream&);
@@ -184,6 +189,12 @@ inline void *
 void_ref_ptr::operator*()
 {
     return p;
+}
+
+inline bool
+void_ref_ptr::operator==(const void_ref_ptr &rhs) const
+{
+    return (p == rhs.p);
 }
 
 inline int *

@@ -137,6 +137,9 @@ using     std::map;
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added members for mesh discretization 
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added initialization of flatness tolerance.
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts,
@@ -165,6 +168,7 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
     maintainOriginalConnectivity = false;
     needNativePrecision = false;
     discTol = 0.01;
+    flatTol = 0.05;
     discMode = 1; // adaptive
     discBoundaryOnly = false;
     passNativeCSG = false;
@@ -263,6 +267,9 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added members for mesh discretization 
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added initialization of flatness tolerance.
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
@@ -290,6 +297,7 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
     maintainOriginalConnectivity = false;
     needNativePrecision = false;
     discTol = 0.01;
+    flatTol = 0.05;
     discMode = 1; // adaptive
     discBoundaryOnly = false;
     passNativeCSG = false;
@@ -532,6 +540,9 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec)
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added members for mesh discretization 
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added flatness tolerance.
 // ****************************************************************************
 
 avtDataSpecification &
@@ -588,6 +599,7 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
     needNativePrecision             = spec.needNativePrecision;
     admissibleDataTypes             = spec.admissibleDataTypes;
     discTol                         = spec.discTol;
+    flatTol                         = spec.flatTol;
     discMode                        = spec.discMode;
     discBoundaryOnly                = spec.discBoundaryOnly;
     passNativeCSG                   = spec.passNativeCSG;
@@ -686,6 +698,9 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added members for mesh discretization 
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added flatness tolerance.
 // ****************************************************************************
 
 bool
@@ -852,6 +867,9 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
         return false;
 
     if (discTol != ds.discTol)
+        return false;
+
+    if (flatTol != ds.flatTol)
         return false;
    
     if (discMode != ds.discMode)

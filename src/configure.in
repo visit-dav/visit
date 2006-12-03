@@ -1579,9 +1579,57 @@ AC_SUBST(ZLIB_INCLUDE)
 AC_SUBST(ZLIB_LIB)
 
 dnl
+dnl check for fast interval library (filib)
+dnl
+VISIT_VTK_CPPFLAGS=""
+VISIT_VTK_LDFLAGS=""
+AC_MSG_CHECKING(for filib)
+FILIB_INCLUDE=""
+FILIB_LIB=""
+FILIB_LIBS=""
+AC_ARG_WITH(filib,
+	    [  --with-filib=INC-DIR,LIB-DIR     Location of filib header and library],
+           filib_specified="yes",
+           filib_specified="no"
+           )
+if test "$SHORT_UNAME" = "darwin"; then
+    FI_LIBEXT="dylib"
+else
+    FI_LIBEXT="a"
+fi
+if test "$filib_specified" = "yes"; then
+   if test "$withval" != "no"; then
+      FILIB_INCLUDE="-I`echo $withval |cut -f1 -d,`"
+      FILIB_LIB="-L`echo $withval |cut -f2 -d, -s`"
+   fi
+else
+   if test "$DEFAULT_FILIB_INCLUDE" != "" ; then
+      FILIB_INCLUDE="-I$DEFAULT_FILIB_INCLUDE $FILIB_INCLUDE"
+   fi
+   if test "$DEFAULT_FILIB_LIB" != "" ; then
+      FILIB_LIB="-L$DEFAULT_FILIB_LIB"
+   fi
+fi
+if test "$FILIB_LIB" != "" ; then
+   if test "$FILIB_INCLUDE" != "" ; then
+      AC_MSG_RESULT(yes)
+      AC_DEFINE(HAVE_FILIB)
+      FILIB_LIBS="-lfi -lprim -lieee"
+      VISIT_VTK_CPPFLAGS="$VISIT_VTK_CPPFLAGS $FILIB_INCLUDE"
+      VISIT_VTK_LDFLAGS="$VISIT_VTK_LDFLAGS""$""(FILIB_LIB)"
+   else
+      AC_MSG_RESULT(no)
+   fi
+else
+   AC_MSG_RESULT(no)
+fi
+AC_SUBST(FILIB_INCLUDE)
+AC_SUBST(FILIB_LIB)
+AC_SUBST(FILIB_LIBS)
+
+dnl
 dnl  Is HDF5 present?
 dnl
-dnl  It's needed for the SAF driver. Normally check for hdf5.h and libhdf5.a but
 dnl  skip the test if `--without-hdf5' is specified. Alternate directories can
 dnl  be specified for hdf5.h and/or libhdf5.a by giving the names like this:
 dnl  `--with-hdf5=INC,LIB' (if only the LIB directory is given then it must
@@ -1640,249 +1688,6 @@ fi
 AC_SUBST(HDF5)
 AC_SUBST(HDF5_INCLUDE)
 AC_SUBST(HDF5_LIB)
-
-dnl
-dnl  Are the VBT and DSL libraries present?
-dnl
-dnl  It's needed for the SAF driver. Normally check for dsl.h, vbt.h, libdsl.a,
-dnl  and libvbt.a but skip the test if `--without-vbt' is specified. Alternate
-dnl  directories can be specified for dsl.h, vbt.h and/or libdsl.a, libhdf5.a by
-dnl  giving the names like this: `--with-hdf5=INC,LIB' (note that if only the
-dnl  LIB directory is specified then it must still be preceded by a comma).
-dnl  Both DSL and VBT always come as a pair so it's only necessary to specify
-dnl  the vbt locations.
-dnl
-dnl  Note that testing for VBT/DSL requires the use of HDF and ZLIB.
-dnl
-
-saved_CPPFLAGS="$CPPFLAGS"
-saved_CFLAGS="$CFLAGS"
-saved_LDFLAGS="$LDFLAGS"
-saved_LIBS="$LIBS"
-
-AC_ARG_WITH(vbt,
-	    [  --with-vbt=INC-DIR,LIB-DIR      Location of VBT/DSL headers and libraries],
-	    ,withval=yes)
-case $withval in
-    yes)
-	#
-	# Header
-	#
-
-	CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE"
-	AC_CHECK_HEADERS(dsl.h)
-	AC_CHECK_HEADERS(vbt.h)
-	CPPFLAGS="$saved_CPPFLAGS"
-
-	#
-	# Library
-	#
-
-	CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE"
-	AC_CHECK_LIB(dsl, DSL_open_file,
-					 VBT_LIB="-ldsl $VBT_LIB"
-					 AC_DEFINE(HAVE_LIBDSL)
-				       ,
-		    , $HDF5_LIB $ZLIB_LIB
-		    )
-	CPPFLAGS="$saved_CPPFLAGS"
-	CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE"
-	AC_CHECK_LIB(vbt, VBT_Open,
-				    VBT_LIB="-lvbt $VBT_LIB"
-				    AC_DEFINE(HAVE_LIBVBT)
-				  ,
-		    , $VBT_LIB $HDF5_LIB $ZLIB_LIB
-		    )
-	CPPFLAGS="$saved_CPPFLAGS"
-	LIBS="$saved_LIBS"
-	;;
-    no)
-	AC_MSG_CHECKING(for vbt/dsl)
-	AC_MSG_RESULT(suppressed)
-	;;
-    *)
-	#
-	# Header
-	#
-
-	vbt_inc="`echo $withval |cut -f1 -d,`"
-	if test "X" != "$vbt_inc"; then
-	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE -I$vbt_inc"
-	    AC_CHECK_HEADERS(dsl.h,found_dsl=true,found_dsl=false)
-	    AC_CHECK_HEADERS(vbt.h,found_vbt=true,found_vbt=false)
-	    if test $found_dsl = true; then
-		if test $found_dsl = true; then
-		    VBT_INCLUDE="-I$vbt_inc $VBT_INCLUDE"
-		fi
-	    fi
-	    CPPFLAGS="$saved_CPPFLAGS"
-	else
-	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE"
-	    AC_CHECK_HEADERS(dsl.h)
-	    AC_CHECK_HEADERS(vbt.h)
-	    CPPFLAGS="$saved_CPPFLAGS"
-	fi
-
-	#
-	# Library
-	#
-
-	vbt_lib="`echo $withval |cut -f2 -d, -s`"
-	if test "X" != "$vbt_lib"; then
-	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE $VBT_INCLUDE"
-	    LDFLAGS="$LDFLAGS -L$vbt_lib"
-	    AC_CHECK_LIB(dsl,DSL_open_file,found_dsl=true,found_dsl=false,$HDF5_LIB $ZLIB_LIB)
-	    if test $found_dsl = true; then
-	       VBT_TMP_LIB="-ldsl"
-	    fi
-	    LIBS="$saved_LIBS"
-	    LDFLAGS="$saved_LDFLAGS"
-	    CPPFLAGS="$saved_CPPFLAGS"
-
-	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE $VBT_INCLUDE"
-	    LDFLAGS="$LDFLAGS -L$vbt_lib"
-	    AC_CHECK_LIB(vbt,VBT_Open,found_vbt=true,found_vbt=false,$VBT_TMP_LIB $HDF5_LIB $ZLIB_LIB)
-	    LIBS="$saved_LIBS"
-	    LDFLAGS="$saved_LDFLAGS"
-	    CPPFLAGS="$saved_CPPFLAGS"
-	    if test $found_vbt = true; then
-		AC_DEFINE(HAVE_LIBVBT)
-		if test $found_dsl = true; then
-		    VBT_LIB="-L$vbt_lib -lvbt -ldsl"
-		    AC_DEFINE(HAVE_LIBDSL)
-		else
-		    VBT_LIB="-L$vbt_lib -lvbt"
-		fi
-	    else
-		if test $found_dsl = true; then
-		    VBT_LIB="-L$vbt_lib -ldsl"
-		    AC_DEFINE(HAVE_LIBDSL)
-		else
-		    VBT_LIB=""
-		fi
-	    fi
-	else
-	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE $VBT_INCLUDE"
-	    AC_CHECK_LIB(dsl,DSL_open_file,found_dsl=true,$HDF5_LIB $ZLIB_LIB)
-	    CPPFLAGS="$saved_CPPFLAGS"
-	    LIBS="$saved_LIBS"
-	    if test $found_dsl = true; then
-		VBT_LIB="-ldsl $VBT_LIB"
-		AC_DEFINE(HAVE_LIBDSL)
-	    fi
-	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE $VBT_INCLUDE"
-	    AC_CHECK_LIB(vbt,VBT_Open,found_vbt=true,,$VBT_LIB $HDF5_LIB $ZLIB_LIB)
-	    if test $found_vbt = true; then
-		VBT_LIB="-lvbt $VBT_LIB"
-		AC_DEFINE(HAVE_LIBVBT)
-	    fi
-	    CPPFLAGS="$saved_CPPFLAGS"
-	    LIBS="$saved_LIBS"
-	fi
-	;;
-esac
-AC_SUBST(VBT_INCLUDE)
-AC_SUBST(VBT_LIB)
-
-dnl
-dnl  Is the SAF library present?
-dnl
-dnl  It's needed for the SAF driver. Normally check for saf.h and libsafapi.a
-dnl  but skip the test if `--without-saf' is specified. Alternate directories
-dnl  can be specified for saf.h and/or libsafapi.a by giving the names like
-dnl  this: `--with-saf=INC,LIB' (note that if only the LIB directory is
-dnl  specified then it must still be preceded by a comma).
-dnl
-dnl  Note that testing for SAF requires the use of VBT/DSL, HDF, and ZLIB.
-dnl
-
-saved_CPPFLAGS="$CPPFLAGS"
-saved_CFLAGS="$CFLAGS"
-saved_LDFLAGS="$LDFLAGS"
-saved_LIBS="$LIBS"
-
-SAF=""
-AC_ARG_WITH(saf,
-	    [  --with-saf=INC-DIR,LIB-DIR      Location of SAF headers and libraries],
-	    ,withval=yes)
-case $withval in
-    yes)
-	#
-	# Header
-	#
-
-	CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE $VBT_INCLUDE"
-	AC_CHECK_HEADERS(saf.h)
-	CPPFLAGS="$saved_CPPFLAGS"
-
-	#
-	# Library
-	#
-
-	CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE $VBT_INCLUDE"
-	AC_CHECK_LIB(safapi, saf_open_database,
-						SAF_LIB="-lsafapi $SAF_LIB"
-                                                SAF="$""(SAF)"
-					      ,
-		    ,$VBT_LIB $HDF5_LIB $ZLIB_LIB
-		    )
-	LIBS="$saved_LIBS"
-	CPPFLAGS="$saved_CPPFLAGS"
-	;;
-    no)
-	AC_MSG_CHECKING(for safapi)
-	AC_MSG_RESULT(suppressed)
-	;;
-    *)
-	#
-	# Header
-	#
-
-	saf_inc="`echo $withval |cut -f1 -d,`"
-	if test "X" != "$saf_inc"; then
-	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE $VBT_INCLUDE -I$saf_inc"
-	    AC_CHECK_HEADERS(saf.h,SAF_INCLUDE="-I$saf_inc $SAF_INCLUDE")
-	    CPPFLAGS="$saved_CPPFLAGS"
-	else
-	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE $VBT_INCLUDE"
-	    AC_CHECK_HEADERS(saf.h)
-	    CPPFLAGS="$saved_CPPFLAGS"
-	fi
-
-	#
-	# Library
-	#
-
-	saf_lib="`echo $withval |cut -f2 -d, -s`"
-	if test "X" != "$saf_lib"; then
-	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE $VBT_INCLUDE $SAF_INCLUDE"
-	    LDFLAGS="-L$saf_lib $LDFLAGS"
-	    AC_CHECK_LIB(safapi, saf_open_database,
-						    SAF_LIB="-L$saf_lib -lsafapi $SAF_LIB"
-                                                    SAF="$""(SAF)"
-						  ,
-			,$VBT_LIB $HDF5_LIB $ZLIB_LIB
-			)
-	    LIBS="$saved_LIBS"
-	    LDFLAGS="$saved_LDFLAGS"
-	    CPPFLAGS="$saved_CPPFLAGS"
-	else
-	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE $VBT_INCLUDE $SAF_INCLUDE"
-	    AC_CHECK_LIB(safapi, saf_open_database,
-						    SAF_LIB="-lsafapi $SAF_LIB"
-                                                    SAF="$""(SAF)"
-						  ,
-			,$VBT_LIB $HDF5_LIB $ZLIB_LIB
-			)
-	    LIBS="$saved_LIBS"
-	    LDFLAGS="$saved_LDFLAGS"
-	    CPPFLAGS="$saved_CPPFLAGS"
-	fi
-	;;
-esac
-AC_SUBST(SAF)
-AC_SUBST(SAF_INCLUDE)
-AC_SUBST(SAF_LIB)
 
 dnl
 #
@@ -2621,6 +2426,7 @@ AC_SUBST(COMPONENT_CPPFLAGS)
 
 VISIT_VTK_CPPFLAGS="$VISIT_VTK_CPPFLAGS $VTK_INCLUDES -I$""(TOPDIR)/include/visit"
 AC_SUBST(VISIT_VTK_CPPFLAGS)
+AC_SUBST(VISIT_VTK_LDFLAGS)
 
 #
 # Check to see if we can compile with Gui support. If we can't then
@@ -3130,6 +2936,7 @@ CREATE_NETCDF_LINK=""
 CREATE_CGNS_LINK=""
 CREATE_GDAL_LINK=""
 CREATE_EXODUS_LINK=""
+CREATE_FILIB_LINK=""
 case $SHORT_UNAME in
   darwin)
     if test "$SILO_LIB" != "" ; then
@@ -3156,6 +2963,9 @@ case $SHORT_UNAME in
     if test "$EXODUS_LIB" != "" ; then
         CREATE_EXODUS_LINK="create_exodus_link"
     fi
+    if test "$FILIB_LIBS" != ""; then
+        CREATE_FILIB_LINK="libfilib"
+    fi
   ;;
 esac
 AC_SUBST(CREATE_SILO_LINK)
@@ -3166,6 +2976,7 @@ AC_SUBST(CREATE_NETCDF_LINK)
 AC_SUBST(CREATE_CGNS_LINK)
 AC_SUBST(CREATE_GDAL_LINK)
 AC_SUBST(CREATE_EXODUS_LINK)
+AC_SUBST(CREATE_FILIB_LINK)
 
 #
 # Check for library functions that can work around, or that we have

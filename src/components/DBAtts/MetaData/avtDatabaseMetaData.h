@@ -604,6 +604,9 @@ public:
 //    Add a Boolean array to "DetermineVarType", since the database does not
 //    want results from expressions.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added ConvertCSGDomainToBlockAndRegion due to manner in which CSG
+//    mesh "domains" are handled
 //----------------------------------------------------------------------------
 
 class DBATTS_API avtDatabaseMetaData : public AttributeSubject
@@ -789,6 +792,9 @@ public:
     void                AddExpression(Expression *);
     const Expression   *GetExpression(int) const;
     int                 GetNumberOfExpressions(void) const;
+
+    bool         ConvertCSGDomainToBlockAndRegion(
+                     const char *const var, int *domain, int *region) const; 
 
     int          GetNDomains(std::string) const;
     avtVarType   DetermineVarType(std::string, bool = true) const;

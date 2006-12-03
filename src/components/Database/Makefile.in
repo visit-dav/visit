@@ -146,6 +146,8 @@
 #    Brad Whitlock, Thu Jan 26 15:38:25 PST 2006
 #    Added -lbz2 for Mac.
 #
+#    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+#    Aded Database/avtTransformManager.C
 ##############################################################################
 
 @SET_MAKE@
@@ -164,7 +166,8 @@ Database_src= \
   Database/avtIOInformation.C \
   Database/avtSILGenerator.C \
   Database/avtSourceFromDatabase.C \
-  Database/avtVariableCache.C
+  Database/avtVariableCache.C \
+  Database/avtTransformManager.C
 Formats_src= \
   Formats/avtFileFormat.C \
   Formats/avtFileFormatInterface.C \

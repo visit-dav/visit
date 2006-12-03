@@ -1248,6 +1248,8 @@ avtBOVFileFormat::GetAuxiliaryData(const char *var, int domain,
 //    Brad Whitlock, Thu May 4 14:39:35 PST 2006
 //    Added support for multi-component data.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Fixed leaks of Expression objects 
 // ****************************************************************************
 
 void
@@ -1290,16 +1292,16 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         md->Add(vmd);
 
         // Add expressions to get the real and imaginary components
-        Expression *mag = new Expression;
-        mag->SetName("real");
-        mag->SetDefinition(std::string(varname) + "[0]");
-        mag->SetType(Expression::ScalarMeshVar);
-        md->AddExpression(mag);
-        Expression *phase = new Expression;
-        phase->SetName("imaginary");
-        phase->SetDefinition(std::string(varname) + "[1]");
-        phase->SetType(Expression::ScalarMeshVar);
-        md->AddExpression(phase);
+        Expression mag;
+        mag.SetName("real");
+        mag.SetDefinition(std::string(varname) + "[0]");
+        mag.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&mag);
+        Expression phase;
+        phase.SetName("imaginary");
+        phase.SetDefinition(std::string(varname) + "[1]");
+        phase.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&phase);
     }
     else if(dataNumComponents == 3)
     {
@@ -1320,15 +1322,15 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         char n[30], def[200];
         for(int i = 0; i < dataNumComponents; ++i)
         {
-            SNPRINTF(n, 30, "comp%02d", i);
+            SNPRINTF(n, sizeof(n), "comp%02d", i);
             amd->compNames.push_back(n);
 
-            SNPRINTF(def, 300, "array_decompose(%s, %d)", varname, i);
-            Expression *e = new Expression;
-            e->SetName(n);
-            e->SetDefinition(def);
-            e->SetType(Expression::ScalarMeshVar);
-            md->AddExpression(e);
+            SNPRINTF(def, sizeof(def), "array_decompose(%s, %d)", varname, i);
+            Expression e;
+            e.SetName(n);
+            e.SetDefinition(def);
+            e.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&e);
         }
         md->Add(amd);
     }

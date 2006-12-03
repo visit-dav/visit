@@ -144,12 +144,16 @@ vtkVolumeFromVolume::CentroidPointList::GetTotalNumberOfPoints(void) const
 }
 
 
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Fixed off-by-one error in test to resize list
+//
 int
 vtkVolumeFromVolume::CentroidPointList::AddPoint(int npts, int *pts)
 {
     if (currentPoint >= pointsPerList)
     {
-        if (currentList >= listSize+1)
+        if (currentList >= listSize)
         {
             CentroidPointEntry **tmpList = new CentroidPointEntry*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
@@ -253,6 +257,9 @@ vtkVolumeFromVolume::HexList::~HexList()
 //    Hank Childs, Thu Oct 21 15:32:07 PDT 2004
 //    Fix bug where we run out of memory.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Fixed off-by-one error in test to resize list
+//
 // ****************************************************************************
 
 void
@@ -262,7 +269,7 @@ vtkVolumeFromVolume::HexList::AddHex(int cellId,
 {
     if (currentShape >= shapesPerList)
     {
-        if ((currentList+1) >= listSize)
+        if (currentList >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
@@ -308,6 +315,9 @@ vtkVolumeFromVolume::WedgeList::~WedgeList()
 //    Hank Childs, Thu Oct 21 15:32:07 PDT 2004
 //    Fix bug where we run out of memory.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Fixed off-by-one error in test to resize list
+//
 // ****************************************************************************
 
 void
@@ -317,7 +327,7 @@ vtkVolumeFromVolume::WedgeList::AddWedge(int cellId,
 {
     if (currentShape >= shapesPerList)
     {
-        if ((currentList+1) >= listSize)
+        if (currentList >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
@@ -361,6 +371,9 @@ vtkVolumeFromVolume::PyramidList::~PyramidList()
 //    Hank Childs, Thu Oct 21 15:32:07 PDT 2004
 //    Fix bug where we run out of memory.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Fixed off-by-one error in test to resize list
+//
 // ****************************************************************************
 
 void
@@ -369,7 +382,7 @@ vtkVolumeFromVolume::PyramidList::AddPyramid(int cellId, int v1, int v2,
 {
     if (currentShape >= shapesPerList)
     {
-        if ((currentList+1) >= listSize)
+        if (currentList >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
@@ -412,6 +425,9 @@ vtkVolumeFromVolume::TetList::~TetList()
 //    Hank Childs, Thu Oct 21 15:32:07 PDT 2004
 //    Fix bug where we run out of memory.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Fixed off-by-one error in test to resize list
+//
 // ****************************************************************************
 
 void
@@ -419,7 +435,7 @@ vtkVolumeFromVolume::TetList::AddTet(int cellId, int v1,int v2,int v3,int v4)
 {
     if (currentShape >= shapesPerList)
     {
-        if ((currentList+1) >= listSize)
+        if (currentList >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
@@ -461,6 +477,9 @@ vtkVolumeFromVolume::QuadList::~QuadList()
 //    Hank Childs, Thu Oct 21 15:32:07 PDT 2004
 //    Fix bug where we run out of memory.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Fixed off-by-one error in test to resize list
+//
 // ****************************************************************************
 
 void
@@ -468,7 +487,7 @@ vtkVolumeFromVolume::QuadList::AddQuad(int cellId, int v1,int v2,int v3,int v4)
 {
     if (currentShape >= shapesPerList)
     {
-        if ((currentList+1) >= listSize)
+        if (currentList >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
@@ -510,6 +529,9 @@ vtkVolumeFromVolume::TriList::~TriList()
 //    Hank Childs, Thu Oct 21 15:32:07 PDT 2004
 //    Fix bug where we run out of memory.
 //
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Fixed off-by-one error in test to resize list
+//
 // ****************************************************************************
 
 void
@@ -517,7 +539,7 @@ vtkVolumeFromVolume::TriList::AddTri(int cellId, int v1,int v2,int v3)
 {
     if (currentShape >= shapesPerList)
     {
-        if ((currentList+1) >= listSize)
+        if (currentList >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
@@ -553,12 +575,16 @@ vtkVolumeFromVolume::LineList::~LineList()
 {
 }
  
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Fixed off-by-one error in test to resize list
+//
 void
 vtkVolumeFromVolume::LineList::AddLine(int cellId, int v1,int v2)
 {
     if (currentShape >= shapesPerList)
     {
-        if ((currentList+1) >= listSize)
+        if (currentList >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
@@ -593,12 +619,16 @@ vtkVolumeFromVolume::VertexList::~VertexList()
 {
 }
  
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Fixed off-by-one error in test to resize list
+//
 void
 vtkVolumeFromVolume::VertexList::AddVertex(int cellId, int v1)
 {
     if (currentShape >= shapesPerList)
     {
-        if ((currentList+1) >= listSize)
+        if (currentList >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
@@ -693,6 +723,19 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
 //    Kathleen Bonnell, Mon May  1 08:50:46 PDT 2006 
 //    Don't interpolate avtOriginalNodeNumbers, use value from closest node
 //    instead. 
+//
+//    Mark C. Miller, Tue Nov  7 20:35:07 PST 2006
+//    Through emperical analysis running the code and printing values, I
+//    discovered that for centroid points, the point indices that were
+//    getting assigned were too large by 1. Apparently, centroid points
+//    are initially identified using negative point ids (see AddCentroidPoint)
+//    starting from -1. This -1 offset was not being taken into account when
+//    doing the index arithmetic for the cases involving centroid points.
+//    There were two lines of code that were modified tagged with '-1 offset'
+//    in-line comments. This corrected a slew of cases I discovered. However,
+//    even after making this change, I have encountered some cases where I
+//    still see the too large by 1 problem but with very low probablility of
+//    occurance.
 //    
 // ****************************************************************************
 
@@ -866,7 +909,7 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
                 weights[k] = 1.0 * weight_factor;
                 int id = 0;
                 if (ce.ptIds[k] < 0)
-                    id = centroidStart-1 - ce.ptIds[k];
+                    id = centroidStart-1 - (ce.ptIds[k]+1); // -1 offset
                 else if (ce.ptIds[k] >= numPrevPts)
                     id = numUsed + (ce.ptIds[k] - numPrevPts);
                 else
@@ -955,7 +998,7 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
                 for (l = 0 ; l < shapesize ; l++)
                 {
                     if (list[l+1] < 0)
-                        ids[l] = centroidStart-1 - list[l+1];
+                        ids[l] = centroidStart-1 - (list[l+1]+1); // -1 offset
                     else if (list[l+1] >= numPrevPts)
                         ids[l] = numUsed + (list[l+1] - numPrevPts);
                     else

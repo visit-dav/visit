@@ -659,6 +659,9 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added mesh management attributes 
+//
+//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//    Added setting of flatness tolerance to data spec for CSG stuff
 // ****************************************************************************
 
 void
@@ -715,6 +718,7 @@ NetworkManager::StartNetwork(const string &format,
     dspec->SetMaxMaterialsPerZone(matopts.GetMaxMaterialsPerZone());
     dspec->SetIsovolumeMIRVF(matopts.GetIsoVolumeFraction());
     dspec->SetDiscTol(meshopts.GetDiscretizationTolerance()[0]);
+    dspec->SetFlatTol(meshopts.GetDiscretizationTolerance()[1]);
     dspec->SetDiscMode(meshopts.GetDiscretizationMode());
     dspec->SetDiscBoundaryOnly(meshopts.GetDiscretizeBoundaryOnly());
     dspec->SetPassNativeCSG(meshopts.GetPassNativeCSG());

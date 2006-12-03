@@ -384,5 +384,3 @@ avtDatasetCollection::AssembleDataTree(std::vector<int> &domains)
  
     return new avtDataTree(nDomains, avtds);
 }
-
-

@@ -170,7 +170,9 @@ public:
   void GetCellNeighbors(vtkIdType cellId, vtkIdList *ptIds,
                         vtkIdList *cellIds);
 
+  void BuildVTKImplicitFunction(int zoneId, vtkImplicitFunction **func) const;
 
+#if 1
   //
   // A discretize method that returns the surfaces only
   //
@@ -187,14 +189,15 @@ public:
                                    double minX = -10.0, double maxX = 10.0,
                                    double minY = -10.0, double maxY = 10.0,
                                    double minZ = -10.0, double maxZ = 10.0);
+#endif
 
   //
   // A discretize method that returns the entire spatial bounding
   // box, meshed adaptively, though discontinuously to a specified
   // tolerance (smallest edge length)
   //
-  vtkUnstructuredGrid *DiscretizeSpace(int specificZone = -1, int rank=0, int nprocs=1,
-                                       double tol = 0.01,
+  vtkUnstructuredGrid *DiscretizeSpace3(int specificZone = -1, int rank=0, int nprocs=1,
+                                       double discTol = 0.01, double flatTol = 0.01,
                                        double minX = -10.0, double maxX = 10.0,
                                        double minY = -10.0, double maxY = 10.0,
                                        double minZ = -10.0, double maxZ = 10.0);
@@ -267,7 +270,25 @@ public:
   // Add a cell (really just a complete region expression)
   vtkIdType AddCell(vtkIdType regId);
   vtkIdType GetCellRegionId(vtkIdType cellId) const;
-  
+
+  //
+  // Silo convenience functions
+  //
+  void AddBoundaries(int nbounds, const int *const typeflags, int lcoeffs,
+                const double *const coeffs);
+  void AddBoundaries(int nbounds, const int *const typeflags, int lcoeffs,
+                const float *const coeffs);
+  void AddRegions(int nregions, const int *const lids, const int *const rids,
+                  const int *const typeflags,
+                  int lxforms, const double *const xforms);
+#if 0
+  void AddRegions(int nregions, const int *const lids, const int *const rids,
+                  const int *const typeflags,
+                  int lxforms, const float *const xforms);
+#endif
+
+  void AddZones(int nzones, const int *const zoneIds);
+
 protected:
   vtkCSGGrid();
   ~vtkCSGGrid();
@@ -292,6 +313,13 @@ protected:
                                              // boundaries and binary expressions of other regions 
   vtkIdTypeArray *CellRegionIds;             // Indices into Regions of the "completed" regions
 
+
+  int numBoundaries;
+  double *gridBoundaries;
+  int numRegions;
+  int *leftIds, *rightIds, *regTypeFlags;
+  int numZones;
+  int *gridZones;
 private:
 
 
@@ -323,7 +351,10 @@ public:
           f000(g000), f001(g001), f010(g010), f011(g011),
           f100(g100), f101(g101), f110(g110), f111(g111), zids(_zids) {};
 
-    FuncState EvalFuncState(vtkImplicitFunction *func, double tol);
+    FuncState EvalBoxStateOfBoundary(const double *const a, double tol) const;
+
+    bool IsFlatEnough2(const double *const a, int bndId, double tol);
+    bool CanBeCut2(const double *const a, map<int,int>, double tol);
 
     static FuncState ValState2(double val)
         { return val > 0.0 ? GT_ZERO :  LT_ZERO; };
@@ -541,10 +572,33 @@ public:
     vector<int> zids;
 };
 
+  static void AddCutZones(vtkUnstructuredGrid *cutBox, vtkPoints *points,
+                           vtkUnstructuredGrid *ugrid,
+                           map<float, map<float, map<float, int> > >& nodemap);
   static void MakeMeshZone(const Box *aBox, vtkPoints *points,
                            vtkUnstructuredGrid *ugrid,
-                           map<float, map<float,
-                              map<float, int> > >& nodemap);
+                           map<float, map<float, map<float, int> > >& nodemap);
+  bool MakeMeshZonesByCuttingBox4(const Box *aBox,
+                           const map<int,int>& boundaryToStateMap,
+                           map<int,int>& boundaryToSenseMap, int zoneId,
+                           vtkPoints *points, vtkUnstructuredGrid *ugrid,
+                           map<float, map<float, map<float, int> > >& nodemap);
+  bool MakeMeshZonesByCuttingBox2(const Box *aBox,
+                           const map<int,int>& boundaryToStateMap,
+                           map<int,int>& boundaryToSenseMap, int zoneId,
+                           vtkPoints *points, vtkUnstructuredGrid *ugrid,
+                           map<float, map<float, map<float, int> > >& nodemap);
+  static void MakeMeshZonesByCuttingBox(const Box *aBox,
+                           map<vtkImplicitFunction*,Box::FuncState> funcToStateMap,
+                           vector<RegionOp> senses,
+                           vtkPoints *points, vtkUnstructuredGrid *ugrid,
+                           map<float, map<float, map<float, int> > >& nodemap);
+  void AddBoundariesForZone2(int, vector<int> *bnds, vector<int> *senses);
+  void AddBoundariesForZone(vtkImplicitFunction *func,
+                                   vector<vtkImplicitFunction*> *bnds,
+                                   vector<RegionOp> *senses);
+  int EvalBoxStateOfRegion(const Box *const curBox, int regId,
+        map<int,int>& boundaryToStateMap, double tol);
 
   double tmpFloats[32];                       // temporary storage to help satisfy interface
                                              //    requirements of vtkDataSet
