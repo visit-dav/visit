@@ -737,6 +737,9 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
 //    still see the too large by 1 problem but with very low probablility of
 //    occurance.
 //    
+//    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
+//    Undid above change 
+//    
 // ****************************************************************************
 
 void
@@ -909,7 +912,7 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
                 weights[k] = 1.0 * weight_factor;
                 int id = 0;
                 if (ce.ptIds[k] < 0)
-                    id = centroidStart-1 - (ce.ptIds[k]+1); // -1 offset
+                    id = centroidStart-1 - ce.ptIds[k];
                 else if (ce.ptIds[k] >= numPrevPts)
                     id = numUsed + (ce.ptIds[k] - numPrevPts);
                 else
@@ -998,7 +1001,7 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
                 for (l = 0 ; l < shapesize ; l++)
                 {
                     if (list[l+1] < 0)
-                        ids[l] = centroidStart-1 - (list[l+1]+1); // -1 offset
+                        ids[l] = centroidStart-1 - list[l+1];
                     else if (list[l+1] >= numPrevPts)
                         ids[l] = numUsed + (list[l+1] - numPrevPts);
                     else

@@ -43,12 +43,15 @@
 
 #include <avtSILRestrictionTraverser.h>
 
+#include <DebugStream.h>
 #include <ImproperUseException.h>
 
 #include <vtkSystemIncludes.h>
 
 #include <vector>
 #include <map>
+
+#include <visit-config.h>
 
 using     std::vector;
 using     std::map;
@@ -140,6 +143,9 @@ using     std::map;
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added initialization of flatness tolerance.
+//
+//    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
+//    Set discMode based on existence of FI library
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts,
@@ -169,7 +175,11 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
     needNativePrecision = false;
     discTol = 0.01;
     flatTol = 0.05;
+#if HAVE_FILIB
     discMode = 1; // adaptive
+#else
+    discMode = 0; // uniform 
+#endif
     discBoundaryOnly = false;
     passNativeCSG = false;
 
@@ -1361,6 +1371,35 @@ avtDataSpecification::GetAdmissibleDataTypes() const
 }
 
 // ****************************************************************************
+//  Method: avtDataSpecification::SetDiscMode
+//
+//  Purpose: Set discretization mode (for CSG). Handle logic for missing libs 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 4, 2006 
+//
+//  Modifications:
+//
+//    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
+//    Made it more robust if FI library not available. 
+// ****************************************************************************
+
+void
+avtDataSpecification::SetDiscMode(int mode)
+{
+    discMode = mode;
+#if !HAVE_FILIB
+    if (discMode == 1) // Adaptive
+    {
+        debug1 << "Adaptive not available. "
+                  "Missing fast interval library (filib). "
+                  "Overriding to Uniform." << endl;
+        discMode = 0;
+    }
+#endif
+};
+
+// ****************************************************************************
 //  Method: avtSILSpecification::GetDomainList
 //
 //  Purpose:
@@ -1544,3 +1583,4 @@ avtSILSpecification::operator==(const avtSILSpecification &s)
 
     return true;
 }
+

@@ -131,6 +131,9 @@ avtDatabase::RectilinearDecompCost(int i, int j, int k, int nx, int ny, int nz)
 //    Mark C. Miller, Mon Aug 14 13:59:33 PDT 2006
 //    Moved here from ViSUS plugin so it can be used by other plugins
 //
+//    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
+//    Fixed UMR
+//
 // ****************************************************************************
 double
 avtDatabase::ComputeRectilinearDecomposition(int ndims, int n, int nx, int ny, int nz,
@@ -140,10 +143,7 @@ avtDatabase::ComputeRectilinearDecomposition(int ndims, int n, int nx, int ny, i
     double cost, costmin = 1e80;
 
     if (ndims == 2)
-    {
-        if (nz != 1)
-            nz = 1;
-    }
+        nz = 1;
 
     /* find all two or three product factors of the number of domains
        and evaluate the communication cost */

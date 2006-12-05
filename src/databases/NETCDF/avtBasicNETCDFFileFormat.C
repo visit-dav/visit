@@ -455,6 +455,9 @@ avtBasicNETCDFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //
 //   Mark C. Miller, Wed Aug 16 14:45:22 PDT 2006
 //   Fixed possible exit without initializing all contents of starts/counts
+//
+//   Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
+//   Fixed UMRs
 // ****************************************************************************
 
 bool
@@ -540,7 +543,7 @@ avtBasicNETCDFFileFormat::ReturnValidDimensions(const intVector &dims, int valid
     //
     // Ok, now compute the zone-oriented domain decomposition
     //
-    int domCount[3];
+    int domCount[3] = {0, 0, 0};
     avtDatabase::ComputeRectilinearDecomposition(
         nValidDims, procCount,
         validZDims[0], validZDims[1], validZDims[2],
@@ -552,7 +555,7 @@ avtBasicNETCDFFileFormat::ReturnValidDimensions(const intVector &dims, int valid
     //
     // Determine this processor's logical domain (e.g. domain ijk) indices
     //
-    int domLogicalCoords[3];
+    int domLogicalCoords[3] = {0, 0, 0};
     avtDatabase::ComputeDomainLogicalCoords(nValidDims, domCount, procNum,
         domLogicalCoords);
 

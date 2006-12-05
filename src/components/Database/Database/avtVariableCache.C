@@ -603,6 +603,9 @@ avtVariableCache::CacheVoidRef(const char *name, const char *type,
 //
 //    Mark C. Miller, Thu Nov 30 19:58:19 PST 2006
 //    Added code to clear out the objectPointerMap for pointer pairs
+//   
+//    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
+//    Fixed UMR 
 //
 // ****************************************************************************
 
@@ -616,10 +619,9 @@ avtVariableCache::ClearTimestep(int ts)
     std::map<vtkObject*,vtkObject*>::iterator it;
     for (it = objectPointerMap.begin(); it != objectPointerMap.end(); it++)
     {
-        int objts;
+        int objts = -1;
 
-        GetVTKObjectKey(0, 0, &objts, 0, 0, it->second);
-        if (objts == ts)
+        if (GetVTKObjectKey(0, 0, &objts, 0, 0, it->second) && objts == ts)
         {
             itemsToRemove.push_back(it);
         }

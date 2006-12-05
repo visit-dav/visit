@@ -172,6 +172,11 @@
 #   Hank Childs, Fri Oct  6 15:33:13 PDT 2006
 #   Added avtAbelInversionExpression.
 #
+#   Thomas R. Treadway, Tue Dec  5 14:56:31 PST 2006
+#   Added avtDisplacementFilter, avtStrainAlmansiFilter
+#   avtStrainGreenLagrangeFilter, avtStrainInfinitesimalFilter
+#   avtStrainRateFilter, and avtStrainTensorFilter
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -219,11 +224,17 @@ CMFE_src= \
 
 Derivations_src=\
   Derivations/avtCurvatureExpression.C \
+  Derivations/avtDisplacementFilter.C \
   Derivations/avtEffectiveTensorFilter.C \
   Derivations/avtLocalizedCompactnessExpression.C \
-  Derivations/avtTensorMaximumShearFilter.C \
   Derivations/avtPrincipalDeviatoricTensorFilter.C \
-  Derivations/avtPrincipalTensorFilter.C 
+  Derivations/avtPrincipalTensorFilter.C \
+  Derivations/avtStrainAlmansiFilter.C \
+  Derivations/avtStrainGreenLagrangeFilter.C \
+  Derivations/avtStrainInfinitesimalFilter.C \
+  Derivations/avtStrainRateFilter.C \
+  Derivations/avtStrainTensorFilter.C \
+  Derivations/avtTensorMaximumShearFilter.C
 
 General_src= \
   General/avtApplyDDFExpression.C \

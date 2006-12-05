@@ -2081,6 +2081,10 @@ avtMiliFileFormat::GetNTimesteps()
 //    Suppress creation of "no_free_nodes" flavors of expressions when
 //    not needed
 //    
+//    Thomas R. Treadway, Tue Dec  5 15:14:11 PST 2006
+//    Added a derived strain and displacement algorithms
+//    
+//    
 // ****************************************************************************
 
 void
@@ -2439,52 +2443,557 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
             Expression p_dev_strain1_expr;
             p_dev_strain1_expr.SetName("derived/"+dirs[i]+"prin_dev_strain/1");
-            p_dev_strain1_expr.SetDefinition(
-                                         "principal_deviatoric_tensor(<"+dirs[i]+"strain>)[0]");
+            p_dev_strain1_expr.SetDefinition
+                ("principal_deviatoric_tensor(<"+dirs[i]+"strain>)[0]");
             p_dev_strain1_expr.SetType(Expression::ScalarMeshVar);
             md->AddExpression(&p_dev_strain1_expr);
 
             Expression p_dev_strain2_expr;
             p_dev_strain2_expr.SetName("derived/"+dirs[i]+"prin_dev_strain/2");
-            p_dev_strain2_expr.SetDefinition(
-                                         "principal_deviatoric_tensor(<"+dirs[i]+"strain>)[1]");
+            p_dev_strain2_expr.SetDefinition
+                ("principal_deviatoric_tensor(<"+dirs[i]+"strain>)[1]");
             p_dev_strain2_expr.SetType(Expression::ScalarMeshVar);
             md->AddExpression(&p_dev_strain2_expr);
 
             Expression p_dev_strain3_expr;
             p_dev_strain3_expr.SetName("derived/"+dirs[i]+"prin_dev_strain/3");
-            p_dev_strain3_expr.SetDefinition(
-                                         "principal_deviatoric_tensor(<"+dirs[i]+"strain>)[2]");
+            p_dev_strain3_expr.SetDefinition
+                ("principal_deviatoric_tensor(<"+dirs[i]+"strain>)[2]");
             p_dev_strain3_expr.SetType(Expression::ScalarMeshVar);
             md->AddExpression(&p_dev_strain3_expr);
 
             Expression maxshr_expr;
             maxshr_expr.SetName("derived/"+dirs[i]+"max_shear_strain");
-            maxshr_expr.SetDefinition("tensor_maximum_shear(<"+dirs[i]+"strain>)");
+            maxshr_expr.SetDefinition
+                ("tensor_maximum_shear(<"+dirs[i]+"strain>)");
             maxshr_expr.SetType(Expression::ScalarMeshVar);
             md->AddExpression(&maxshr_expr);
 
             Expression prin_strain1_expr;
             prin_strain1_expr.SetName("derived/"+dirs[i]+"prin_strain/1");
-            prin_strain1_expr.SetDefinition("principal_tensor(<"+dirs[i]+"strain>)[0]");
+            prin_strain1_expr.SetDefinition
+                ("principal_tensor(<"+dirs[i]+"strain>)[0]");
             prin_strain1_expr.SetType(Expression::ScalarMeshVar);
             md->AddExpression(&prin_strain1_expr);
 
             Expression prin_strain2_expr;
             prin_strain2_expr.SetName("derived/"+dirs[i]+"prin_strain/2");
-            prin_strain2_expr.SetDefinition("principal_tensor(<"+dirs[i]+"strain>)[1]");
+            prin_strain2_expr.SetDefinition
+                ("principal_tensor(<"+dirs[i]+"strain>)[1]");
             prin_strain2_expr.SetType(Expression::ScalarMeshVar);
             md->AddExpression(&prin_strain2_expr);
 
             Expression prin_strain3_expr;
             prin_strain3_expr.SetName("derived/"+dirs[i]+"prin_strain/3");
-            prin_strain3_expr.SetDefinition("principal_tensor(<"+dirs[i]+"strain>)[2]");
+            prin_strain3_expr.SetDefinition
+                ("principal_tensor(<"+dirs[i]+"strain>)[2]");
             prin_strain3_expr.SetType(Expression::ScalarMeshVar);
             md->AddExpression(&prin_strain3_expr);
         }
     }
     CATCH(InvalidVariableException)
     {
+    // If strain not given compute the strain at nodes given 
+    // the current geometry and the initial configuration.
+      for (i = 0; i < dirs.size(); i++)
+      {
+        string tmpmeshname = "mesh1";
+        if (dirs[i] != "") 
+        {
+            tmpmeshname += "_"+string(no_free_nodes_str);
+        }
+        string tmpvarname = "derived/"+dirs[i]+"strain/initial_strain_coords";
+        string tmpvelname = dirs[i]+"nodvel";
+        Expression initial_coords_expr;
+        initial_coords_expr.SetName(tmpvarname);
+        initial_coords_expr.SetDefinition
+            ("conn_cmfe(coord(<[0]i:"+tmpmeshname+">),"+tmpmeshname+")");
+        initial_coords_expr.SetType(Expression::VectorMeshVar);
+        initial_coords_expr.SetHidden(true);
+        md->AddExpression(&initial_coords_expr);
+
+        Expression strain_green_expr;
+        strain_green_expr.SetName("derived/"+dirs[i]+"strain/green_lagrange");
+        strain_green_expr.SetDefinition(
+           "strain_green_lagrange("+tmpmeshname+",<"+tmpvarname+">)");
+        strain_green_expr.SetType(Expression::TensorMeshVar);
+        md->AddExpression(&strain_green_expr);
+
+        Expression strain_infinitesimal_expr;
+        strain_infinitesimal_expr.SetName
+            ("derived/"+dirs[i]+"strain/infinitesimal");
+        strain_infinitesimal_expr.SetDefinition(
+           "strain_infinitesimal("+tmpmeshname+",<"+tmpvarname+">)");
+        strain_infinitesimal_expr.SetType(Expression::TensorMeshVar);
+        md->AddExpression(&strain_infinitesimal_expr);
+
+        Expression strain_almansi_expr;
+        strain_almansi_expr.SetName("derived/"+dirs[i]+"strain/almansi");
+        strain_almansi_expr.SetDefinition(
+           "strain_almansi("+tmpmeshname+",<"+tmpvarname+">)");
+        strain_almansi_expr.SetType(Expression::TensorMeshVar);
+        md->AddExpression(&strain_almansi_expr);
+
+        Expression strain_rate_expr;
+        strain_rate_expr.SetName("derived/"+dirs[i]+"strain/rate");
+        strain_rate_expr.SetDefinition(
+           "strain_rate("+tmpmeshname+",<"+tmpvelname+">)");
+        strain_rate_expr.SetType(Expression::TensorMeshVar);
+        md->AddExpression(&strain_rate_expr);
+
+// green_lagrange strain
+        Expression straingx_expr;
+        straingx_expr.SetName
+            ("derived/"+dirs[i]+"strain/green_lagrange_strain/x");
+        straingx_expr.SetDefinition
+            ("<derived/"+dirs[i]+"strain/green_lagrange>[0][0]");
+        straingx_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&straingx_expr);
+
+        Expression straingy_expr;
+        straingy_expr.SetName
+            ("derived/"+dirs[i]+"strain/green_lagrange_strain/y");
+        straingy_expr.SetDefinition
+            ("<derived/"+dirs[i]+"strain/green_lagrange>[1][1]");
+        straingy_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&straingy_expr);
+
+        Expression straingz_expr;
+        straingz_expr.SetName
+            ("derived/"+dirs[i]+"strain/green_lagrange_strain/z");
+        straingz_expr.SetDefinition
+            ("<derived/"+dirs[i]+"strain/green_lagrange>[2][2]");
+        straingz_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&straingz_expr);
+
+        Expression straingxy_expr;
+        straingxy_expr.SetName
+            ("derived/"+dirs[i]+"strain/green_lagrange_strain/xy");
+        straingxy_expr.SetDefinition
+            ("<derived/"+dirs[i]+"strain/green_lagrange>[0][1]");
+        straingxy_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&straingxy_expr);
+
+        Expression straingxz_expr;
+        straingxz_expr.SetName
+            ("derived/"+dirs[i]+"strain/green_lagrange_strain/xz");
+        straingxz_expr.SetDefinition
+            ("<derived/"+dirs[i]+"strain/green_lagrange>[0][2]");
+        straingxz_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&straingxz_expr);
+
+        Expression straingyz_expr;
+        straingyz_expr.SetName
+            ("derived/"+dirs[i]+"strain/green_lagrange_strain/yz");
+        straingyz_expr.SetDefinition
+            ("<derived/"+dirs[i]+"strain/green_lagrange>[1][2]");
+        straingyz_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&straingyz_expr);
+
+        Expression sgeff_expr;
+        sgeff_expr.SetName
+            ("derived/"+dirs[i]+"strain/green_lagrange_strain/eff_strain");
+        sgeff_expr.SetDefinition
+           ("effective_tensor(<derived/"+dirs[i]+"strain/green_lagrange>)");
+        sgeff_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&sgeff_expr);
+
+        Expression p_dev_straing1_expr;
+        p_dev_straing1_expr.SetName
+           ("derived/"+dirs[i]+"strain/green_lagrange_strain/prin_dev_strain/1");
+        p_dev_straing1_expr.SetDefinition
+           ("principal_deviatoric_tensor(<derived/"+dirs[i]+
+           "strain/green_lagrange>)[0]");
+        p_dev_straing1_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&p_dev_straing1_expr);
+
+        Expression p_dev_straing2_expr;
+        p_dev_straing2_expr.SetName
+           ("derived/"+dirs[i]+
+           "strain/green_lagrange_strain/prin_dev_strain/2");
+        p_dev_straing2_expr.SetDefinition
+           ("principal_deviatoric_tensor(<derived/"+dirs[i]+
+           "strain/green_lagrange>)[1]");
+        p_dev_straing2_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&p_dev_straing2_expr);
+
+        Expression p_dev_straing3_expr;
+        p_dev_straing3_expr.SetName
+           ("derived/"+dirs[i]+
+           "strain/green_lagrange_strain/prin_dev_strain/3");
+        p_dev_straing3_expr.SetDefinition
+           ("principal_deviatoric_tensor(<derived/"+dirs[i]+
+           "strain/green_lagrange>)[2]");
+        p_dev_straing3_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&p_dev_straing3_expr);
+
+        Expression maxshrg_expr;
+        maxshrg_expr.SetName
+           ("derived/"+dirs[i]+"strain/green_lagrange_strain/max_shear_strain");
+        maxshrg_expr.SetDefinition
+           ("tensor_maximum_shear(<derived/"+dirs[i]+"strain/green_lagrange>)");
+        maxshrg_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&maxshrg_expr);
+
+        Expression prin_straing1_expr;
+        prin_straing1_expr.SetName
+           ("derived/"+dirs[i]+"strain/green_lagrange_strain/prin_strain/1");
+        prin_straing1_expr.SetDefinition
+           ("principal_tensor(<derived/"+dirs[i]+"strain/green_lagrange>)[0]");
+        prin_straing1_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&prin_straing1_expr);
+
+        Expression prin_straing2_expr;
+        prin_straing2_expr.SetName
+           ("derived/"+dirs[i]+"strain/green_lagrange_strain/prin_strain/2");
+        prin_straing2_expr.SetDefinition
+           ("principal_tensor(<derived/"+dirs[i]+"strain/green_lagrange>)[1]");
+        prin_straing2_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&prin_straing2_expr);
+
+        Expression prin_straing3_expr;
+        prin_straing3_expr.SetName
+           ("derived/"+dirs[i]+"strain/green_lagrange_strain/prin_strain/3");
+        prin_straing3_expr.SetDefinition
+           ("principal_tensor(<derived/"+dirs[i]+"strain/green_lagrange>)[2]");
+        prin_straing3_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&prin_straing3_expr);
+
+// infinitesimal strain
+        Expression strainix_expr;
+        strainix_expr.SetName
+            ("derived/"+dirs[i]+"strain/infinitesimal_strain/x");
+        strainix_expr.SetDefinition
+            ("<derived/"+dirs[i]+"strain/infinitesimal>[0][0]");
+        strainix_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainix_expr);
+
+        Expression strainiy_expr;
+        strainiy_expr.SetName
+            ("derived/"+dirs[i]+"strain/infinitesimal_strain/y");
+        strainiy_expr.SetDefinition
+            ("<derived/"+dirs[i]+"strain/infinitesimal>[1][1]");
+        strainiy_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainiy_expr);
+
+        Expression strainiz_expr;
+        strainiz_expr.SetName
+            ("derived/"+dirs[i]+"strain/infinitesimal_strain/z");
+        strainiz_expr.SetDefinition
+            ("<derived/"+dirs[i]+"strain/infinitesimal>[2][2]");
+        strainiz_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainiz_expr);
+
+        Expression strainixy_expr;
+        strainixy_expr.SetName
+            ("derived/"+dirs[i]+"strain/infinitesimal_strain/xy");
+        strainixy_expr.SetDefinition
+            ("<derived/"+dirs[i]+"strain/infinitesimal>[0][1]");
+        strainixy_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainixy_expr);
+
+        Expression strainixz_expr;
+        strainixz_expr.SetName
+            ("derived/"+dirs[i]+"strain/infinitesimal_strain/xz");
+        strainixz_expr.SetDefinition
+            ("<derived/"+dirs[i]+"strain/infinitesimal>[0][2]");
+        strainixz_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainixz_expr);
+
+        Expression strainiyz_expr;
+        strainiyz_expr.SetName
+            ("derived/"+dirs[i]+"strain/infinitesimal_strain/yz");
+        strainiyz_expr.SetDefinition
+            ("<derived/"+dirs[i]+"strain/infinitesimal>[1][2]");
+        strainiyz_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainiyz_expr);
+
+        Expression sieff_expr;
+        sieff_expr.SetName
+            ("derived/"+dirs[i]+"strain/infinitesimal_strain/eff_strain");
+        sieff_expr.SetDefinition
+           ("effective_tensor(<derived/"+dirs[i]+"strain/infinitesimal>)");
+        sieff_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&sieff_expr);
+
+        Expression p_dev_straini1_expr;
+        p_dev_straini1_expr.SetName
+           ("derived/"+dirs[i]+"strain/infinitesimal_strain/prin_dev_strain/1");
+        p_dev_straini1_expr.SetDefinition
+           ("principal_deviatoric_tensor(<derived/"+dirs[i]+
+           "strain/infinitesimal>)[0]");
+        p_dev_straini1_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&p_dev_straini1_expr);
+
+        Expression p_dev_straini2_expr;
+        p_dev_straini2_expr.SetName
+           ("derived/"+dirs[i]+
+           "strain/infinitesimal_strain/prin_dev_strain/2");
+        p_dev_straini2_expr.SetDefinition
+           ("principal_deviatoric_tensor(<derived/"+dirs[i]+
+           "strain/infinitesimal>)[1]");
+        p_dev_straini2_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&p_dev_straini2_expr);
+
+        Expression p_dev_straini3_expr;
+        p_dev_straini3_expr.SetName
+           ("derived/"+dirs[i]+
+           "strain/infinitesimal_strain/prin_dev_strain/3");
+        p_dev_straini3_expr.SetDefinition
+           ("principal_deviatoric_tensor(<derived/"+dirs[i]+
+           "strain/infinitesimal>)[2]");
+        p_dev_straini3_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&p_dev_straini3_expr);
+
+        Expression maxshri_expr;
+        maxshri_expr.SetName
+           ("derived/"+dirs[i]+
+           "strain/infinitesimal_strain/max_shear_strain");
+        maxshri_expr.SetDefinition
+           ("tensor_maximum_shear(<derived/"+dirs[i]+
+           "strain/infinitesimal>)");
+        maxshri_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&maxshri_expr);
+
+        Expression prin_straini1_expr;
+        prin_straini1_expr.SetName
+           ("derived/"+dirs[i]+
+           "strain/infinitesimal_strain/prin_strain/1");
+        prin_straini1_expr.SetDefinition
+           ("principal_tensor(<derived/"+dirs[i]+
+           "strain/infinitesimal>)[0]");
+        prin_straini1_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&prin_straini1_expr);
+
+        Expression prin_straini2_expr;
+        prin_straini2_expr.SetName
+           ("derived/"+dirs[i]+
+           "strain/infinitesimal_strain/prin_strain/2");
+        prin_straini2_expr.SetDefinition
+           ("principal_tensor(<derived/"+dirs[i]+
+           "strain/infinitesimal>)[1]");
+        prin_straini2_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&prin_straini2_expr);
+
+        Expression prin_straini3_expr;
+        prin_straini3_expr.SetName
+           ("derived/"+dirs[i]+"strain/infinitesimal_strain/prin_strain/3");
+        prin_straini3_expr.SetDefinition
+           ("principal_tensor(<derived/"+dirs[i]+"strain/infinitesimal>)[2]");
+        prin_straini3_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&prin_straini3_expr);
+
+// almansi strain
+        Expression strainax_expr;
+        strainax_expr.SetName("derived/"+dirs[i]+"strain/almansi_strain/x");
+        strainax_expr.SetDefinition
+            ("<derived/"+dirs[i]+"strain/almansi>[0][0]");
+        strainax_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainax_expr);
+
+        Expression strainay_expr;
+        strainay_expr.SetName
+            ("derived/"+dirs[i]+"strain/almansi_strain/y");
+        strainay_expr.SetDefinition
+            ("<derived/"+dirs[i]+"strain/almansi>[1][1]");
+        strainay_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainay_expr);
+
+        Expression strainaz_expr;
+        strainaz_expr.SetName("derived/"+dirs[i]+"strain/almansi_strain/z");
+        strainaz_expr.SetDefinition
+            ("<derived/"+dirs[i]+"strain/almansi>[2][2]");
+        strainaz_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainaz_expr);
+
+        Expression strainaxy_expr;
+        strainaxy_expr.SetName("derived/"+dirs[i]+"strain/almansi_strain/xy");
+        strainaxy_expr.SetDefinition
+            ("<derived/"+dirs[i]+"strain/almansi>[0][1]");
+        strainaxy_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainaxy_expr);
+
+        Expression strainaxz_expr;
+        strainaxz_expr.SetName("derived/"+dirs[i]+"strain/almansi_strain/xz");
+        strainaxz_expr.SetDefinition
+            ("<derived/"+dirs[i]+"strain/almansi>[0][2]");
+        strainaxz_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainaxz_expr);
+
+        Expression strainayz_expr;
+        strainayz_expr.SetName("derived/"+dirs[i]+"strain/almansi_strain/yz");
+        strainayz_expr.SetDefinition
+            ("<derived/"+dirs[i]+"strain/almansi>[1][2]");
+        strainayz_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainayz_expr);
+
+        Expression saeff_expr;
+        saeff_expr.SetName
+            ("derived/"+dirs[i]+"strain/almansi_strain/eff_strain");
+        saeff_expr.SetDefinition
+           ("effective_tensor(<derived/"+dirs[i]+"strain/almansi>)");
+        saeff_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&saeff_expr);
+
+        Expression p_dev_straina1_expr;
+        p_dev_straina1_expr.SetName
+           ("derived/"+dirs[i]+"strain/almansi_strain/prin_dev_strain/1");
+        p_dev_straina1_expr.SetDefinition
+           ("principal_deviatoric_tensor(<derived/"+dirs[i]+
+           "strain/almansi>)[0]");
+        p_dev_straina1_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&p_dev_straina1_expr);
+
+        Expression p_dev_straina2_expr;
+        p_dev_straina2_expr.SetName
+           ("derived/"+dirs[i]+"strain/almansi_strain/prin_dev_strain/2");
+        p_dev_straina2_expr.SetDefinition
+           ("principal_deviatoric_tensor(<derived/"+dirs[i]+
+           "strain/almansi>)[1]");
+        p_dev_straina2_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&p_dev_straina2_expr);
+
+        Expression p_dev_straina3_expr;
+        p_dev_straina3_expr.SetName
+           ("derived/"+dirs[i]+"strain/almansi_strain/prin_dev_strain/3");
+        p_dev_straina3_expr.SetDefinition
+           ("principal_deviatoric_tensor(<derived/"+dirs[i]+
+           "strain/almansi>)[2]");
+        p_dev_straina3_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&p_dev_straina3_expr);
+
+        Expression maxshra_expr;
+        maxshra_expr.SetName
+           ("derived/"+dirs[i]+"strain/almansi_strain/max_shear_strain");
+        maxshra_expr.SetDefinition
+           ("tensor_maximum_shear(<derived/"+dirs[i]+"strain/almansi>)");
+        maxshra_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&maxshra_expr);
+
+        Expression prin_straina1_expr;
+        prin_straina1_expr.SetName
+           ("derived/"+dirs[i]+"strain/almansi_strain/prin_strain/1");
+        prin_straina1_expr.SetDefinition
+           ("principal_tensor(<derived/"+dirs[i]+"strain/almansi>)[0]");
+        prin_straina1_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&prin_straina1_expr);
+
+        Expression prin_straina2_expr;
+        prin_straina2_expr.SetName
+           ("derived/"+dirs[i]+"strain/almansi_strain/prin_strain/2");
+        prin_straina2_expr.SetDefinition
+           ("principal_tensor(<derived/"+dirs[i]+"strain/almansi>)[1]");
+        prin_straina2_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&prin_straina2_expr);
+
+        Expression prin_straina3_expr;
+        prin_straina3_expr.SetName
+           ("derived/"+dirs[i]+"strain/almansi_strain/prin_strain/3");
+        prin_straina3_expr.SetDefinition
+           ("principal_tensor(<derived/"+dirs[i]+"strain/almansi>)[2]");
+        prin_straina3_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&prin_straina3_expr);
+
+// Rate strain
+        Expression strainrx_expr;
+        strainrx_expr.SetName("derived/"+dirs[i]+"strain/rate_strain/x");
+        strainrx_expr.SetDefinition("<derived/"+dirs[i]+"strain/rate>[0][0]");
+        strainrx_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainrx_expr);
+
+        Expression strainry_expr;
+        strainry_expr.SetName("derived/"+dirs[i]+"strain/rate_strain/y");
+        strainry_expr.SetDefinition("<derived/"+dirs[i]+"strain/rate>[1][1]");
+        strainry_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainry_expr);
+
+        Expression strainrz_expr;
+        strainrz_expr.SetName("derived/"+dirs[i]+"strain/rate_strain/z");
+        strainrz_expr.SetDefinition("<derived/"+dirs[i]+"strain/rate>[2][2]");
+        strainrz_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainrz_expr);
+
+        Expression strainrxy_expr;
+        strainrxy_expr.SetName("derived/"+dirs[i]+"strain/rate_strain/xy");
+        strainrxy_expr.SetDefinition("<derived/"+dirs[i]+"strain/rate>[0][1]");
+        strainrxy_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainrxy_expr);
+
+        Expression strainrxz_expr;
+        strainrxz_expr.SetName("derived/"+dirs[i]+"strain/rate_strain/xz");
+        strainrxz_expr.SetDefinition("<derived/"+dirs[i]+"strain/rate>[0][2]");
+        strainrxz_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainrxz_expr);
+
+        Expression strainryz_expr;
+        strainryz_expr.SetName("derived/"+dirs[i]+"strain/rate_strain/yz");
+        strainryz_expr.SetDefinition("<derived/"+dirs[i]+"strain/rate>[1][2]");
+        strainryz_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainryz_expr);
+
+        Expression sreff_expr;
+        sreff_expr.SetName("derived/"+dirs[i]+"strain/rate_strain/eff_strain");
+        sreff_expr.SetDefinition
+           ("effective_tensor(<derived/"+dirs[i]+"strain/rate>)");
+        sreff_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&sreff_expr);
+
+        Expression p_dev_strainr1_expr;
+        p_dev_strainr1_expr.SetName
+           ("derived/"+dirs[i]+"strain/rate_strain/prin_dev_strain/1");
+        p_dev_strainr1_expr.SetDefinition
+           ("principal_deviatoric_tensor(<derived/"+dirs[i]+"strain/rate>)[0]");
+        p_dev_strainr1_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&p_dev_strainr1_expr);
+
+        Expression p_dev_strainr2_expr;
+        p_dev_strainr2_expr.SetName
+           ("derived/"+dirs[i]+"strain/rate_strain/prin_dev_strain/2");
+        p_dev_strainr2_expr.SetDefinition
+           ("principal_deviatoric_tensor(<derived/"+dirs[i]+"strain/rate>)[1]");
+        p_dev_strainr2_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&p_dev_strainr2_expr);
+
+        Expression p_dev_strainr3_expr;
+        p_dev_strainr3_expr.SetName
+           ("derived/"+dirs[i]+"strain/rate_strain/prin_dev_strain/3");
+        p_dev_strainr3_expr.SetDefinition
+           ("principal_deviatoric_tensor(<derived/"+dirs[i]+"strain/rate>)[2]");
+        p_dev_strainr3_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&p_dev_strainr3_expr);
+
+        Expression maxshrr_expr;
+        maxshrr_expr.SetName
+           ("derived/"+dirs[i]+"strain/rate_strain/max_shear_strain");
+        maxshrr_expr.SetDefinition
+           ("tensor_maximum_shear(<derived/"+dirs[i]+"strain/rate>)");
+        maxshrr_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&maxshrr_expr);
+
+        Expression prin_strainr1_expr;
+        prin_strainr1_expr.SetName
+           ("derived/"+dirs[i]+"strain/rate_strain/prin_strain/1");
+        prin_strainr1_expr.SetDefinition
+           ("principal_tensor(<derived/"+dirs[i]+"strain/rate>)[0]");
+        prin_strainr1_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&prin_strainr1_expr);
+
+        Expression prin_strainr2_expr;
+        prin_strainr2_expr.SetName
+           ("derived/"+dirs[i]+"strain/rate_strain/prin_strain/2");
+        prin_strainr2_expr.SetDefinition
+           ("principal_tensor(<derived/"+dirs[i]+"strain/rate>)[1]");
+        prin_strainr2_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&prin_strainr2_expr);
+
+        Expression prin_strainr3_expr;
+        prin_strainr3_expr.SetName
+           ("derived/"+dirs[i]+"strain/rate_strain/prin_strain/3");
+        prin_strainr3_expr.SetDefinition
+           ("principal_tensor(<derived/"+dirs[i]+"strain/rate>)[2]");
+        prin_strainr3_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&prin_strainr3_expr);
+      }
     }
     ENDTRY
 
@@ -2596,6 +3105,58 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     }
     CATCH(InvalidVariableException)
     {
+        for (i = 0; i < ndirs.size(); i++)
+        {   
+            string tmpmeshname = "mesh1";
+            if (dirs[i] != "") 
+                tmpmeshname += "_"+string(no_free_nodes_str);
+            string tmpvarname = 
+                "derived/"+dirs[i]+"displacement/initial_disp_coords";
+                                                              
+            Expression initial_disp_coords;                   
+            initial_disp_coords.SetName(tmpvarname);          
+            initial_disp_coords.SetDefinition                 
+                ("conn_cmfe(coord(<[0]i:"+tmpmeshname+">),"+tmpmeshname+")");
+            initial_disp_coords.SetType(Expression::VectorMeshVar);
+            initial_disp_coords.SetHidden(true);              
+            md->AddExpression(&initial_disp_coords);          
+                                                              
+            Expression noddisp;                               
+            noddisp.SetName("derived/"+dirs[i]+"displacement/vec");
+            noddisp.SetDefinition(                            
+               "displacement("+tmpmeshname+",<"+tmpvarname+">)");
+            noddisp.SetType(Expression::VectorMeshVar);       
+            noddisp.SetHidden(true);                          
+            md->AddExpression(&noddisp);                      
+                                                              
+            Expression dispx_expr;                            
+            dispx_expr.SetName("derived/"+dirs[i]+"displacement/x");
+            dispx_expr.SetDefinition                          
+                ("<derived/"+dirs[i]+"displacement/vec>[0]"); 
+            dispx_expr.SetType(Expression::ScalarMeshVar);    
+            md->AddExpression(&dispx_expr);                   
+                                                              
+            Expression dispy_expr;                            
+            dispy_expr.SetName("derived/"+dirs[i]+"displacement/y");
+            dispy_expr.SetDefinition                          
+                ("<derived/"+dirs[i]+"displacement/vec>[1]"); 
+            dispy_expr.SetType(Expression::ScalarMeshVar);    
+            md->AddExpression(&dispy_expr);                   
+                                                              
+            Expression dispz_expr;                            
+            dispz_expr.SetName("derived/"+dirs[i]+"displacement/z");
+            dispz_expr.SetDefinition                          
+                ("<derived/"+dirs[i]+"displacement/vec>[2]"); 
+            dispz_expr.SetType(Expression::ScalarMeshVar);    
+            md->AddExpression(&dispz_expr);                   
+                                                              
+            Expression dispmag_expr;                          
+            dispmag_expr.SetName("derived/"+dirs[i]+"displacement/mag");    
+            dispmag_expr.SetDefinition                        
+                ("magnitude(<derived/"+dirs[i]+"displacement/vec>)");       
+            dispmag_expr.SetType(Expression::ScalarMeshVar);  
+            md->AddExpression(&dispmag_expr);                 
+        }
     }
     ENDTRY
 
