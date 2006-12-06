@@ -577,7 +577,7 @@ BuildMappedArray(vtkDataArray *da, const vector<int> &valsToMap)
 }
 
 // ****************************************************************************
-//  Function: DontConvertArray 
+//  Function: IsInternalAVTArray 
 //
 //  Purpose: Filter certain internal AVT arrays that should not undergo
 //  conversion 
@@ -587,7 +587,7 @@ BuildMappedArray(vtkDataArray *da, const vector<int> &valsToMap)
 //
 // ****************************************************************************
 static bool
-DontConvertArray(vtkDataArray *da)
+IsInternalAVTArray(vtkDataArray *da)
 {
     if (strncmp(da->GetName(), "avt", 3) == 0)
         return true;
@@ -644,6 +644,10 @@ avtTransformManager::FreeUpResources(int lastts)
 //    Made it handle cases where vars are not cached in generic db's cache.
 //    Made it ignore certain internal AVT arrays. 
 //    Added more debugging output.
+//
+//    Mark C. Miller, Wed Dec  6 13:40:17 PST 2006
+//    Fixed use of SetScalars|Vectors|Tensors and AddArray for copying
+//    over various cell/point data arrays.
 // ****************************************************************************
 vtkDataSet *
 avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
@@ -719,6 +723,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
                 }
                 vtkDataSet *tmprv = rv->NewInstance();
                 tmprv->CopyStructure(rv);
+                tmprv->GetFieldData()->ShallowCopy(rv->GetFieldData());
                 rv = tmprv;
             }
         }
@@ -729,6 +734,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
             //rv = ds;
             rv = ds->NewInstance();
             rv->CopyStructure(ds);
+            rv->GetFieldData()->ShallowCopy(ds->GetFieldData());
         }
 
         //
@@ -738,7 +744,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
         for (i = 0; i < cd->GetNumberOfArrays(); i++)
         {
             vtkDataArray *da = cd->GetArray(i);
-            if (!DontConvertArray(da) && 
+            if (!IsInternalAVTArray(da) && 
                 (!IsAdmissibleDataType(admissibleDataTypes, da->GetDataType()) ||
                  (!needNativePrecision && PrecisionInBytes(da) > sizeof(float))))
             {
@@ -765,19 +771,28 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
                             newda->Delete();
                         }
                     }
-                    if (i == 0)
-                        rv->GetCellData()->SetScalars(newda);
-                    else
-                        rv->GetCellData()->AddArray(newda);
+                    switch (newda->GetNumberOfComponents())
+                    {
+                        case 1: rv->GetCellData()->SetScalars(newda); break;
+                        case 3: rv->GetCellData()->SetVectors(newda); break;
+                        default: rv->GetCellData()->SetTensors(newda); break;
+                    }
                 }
             }
             else if (pass == 1)
             {
                 debug5 << "avtTransformManager: Passing along array \"" << da->GetName() << "\"" << endl;
-                if (i == 0)
-                    rv->GetCellData()->SetScalars(da);
-                else
+                if (IsInternalAVTArray(da))
                     rv->GetCellData()->AddArray(da);
+                else
+                {
+                    switch (da->GetNumberOfComponents())
+                    {
+                        case 1: rv->GetCellData()->SetScalars(da); break;
+                        case 3: rv->GetCellData()->SetVectors(da); break;
+                        default: rv->GetCellData()->SetTensors(da); break;
+                    }
+                }
             }
         }
 
@@ -788,7 +803,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
         for (i = 0; i < pd->GetNumberOfArrays(); i++)
         {
             vtkDataArray *da = pd->GetArray(i);
-            if (!DontConvertArray(da) &&
+            if (!IsInternalAVTArray(da) &&
                 (!IsAdmissibleDataType(admissibleDataTypes, da->GetDataType()) ||
                  (!needNativePrecision && PrecisionInBytes(da) > sizeof(float))))
             {
@@ -819,19 +834,28 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
                             cerr << "Not caching this array" << endl;
                         }
                     }
-                    if (i == 0)
-                        rv->GetPointData()->SetScalars(newda);
-                    else
-                        rv->GetPointData()->AddArray(newda);
+                    switch (newda->GetNumberOfComponents())
+                    {
+                        case 1: rv->GetPointData()->SetScalars(newda); break;
+                        case 3: rv->GetPointData()->SetVectors(newda); break;
+                        default: rv->GetPointData()->SetTensors(newda); break;
+                    }
                 }
             }
             else if (pass == 1)
             {
                 debug5 << "avtTransformManager: Passing along array \"" << da->GetName() << "\"" << endl;
-                if (i == 0)
-                    rv->GetPointData()->SetScalars(da);
-                else
+                if (IsInternalAVTArray(da))
                     rv->GetPointData()->AddArray(da);
+                else
+                {
+                    switch (da->GetNumberOfComponents())
+                    {
+                        case 1: rv->GetPointData()->SetScalars(da); break;
+                        case 3: rv->GetPointData()->SetVectors(da); break;
+                        default: rv->GetPointData()->SetTensors(da); break;
+                    }
+                }
             }
         }
     }
@@ -851,6 +875,11 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
 //  Programmer: Mark C. Miller 
 //  Creation:   December 4, 2006 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Dec  6 13:40:17 PST 2006
+//    Fixed use of SetScalars|Vectors|Tensors and AddArray for copying
+//    over various cell data arrays.
 // ****************************************************************************
 vtkDataSet *
 avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
@@ -930,6 +959,7 @@ avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
             // dataset collection
             vtkDataSet *rv = (vtkDataSet *) dgrid->NewInstance();
             rv->CopyStructure(dgrid);
+            rv->GetFieldData()->ShallowCopy(dgrid->GetFieldData());
 
             //
             // Now handle any cell data on this mesh. CSGGrids can have only cell data
@@ -954,10 +984,17 @@ avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
                     {
                         cache.CacheVTKObject(vname, type, ts, dom, mat, newda);
                         newda->Delete();
-                        if (i == 0)
-                            rv->GetCellData()->SetScalars(newda);
-                        else
+                        if (IsInternalAVTArray(newda))
                             rv->GetCellData()->AddArray(newda);
+                        else
+                        {
+                            switch (newda->GetNumberOfComponents())
+                            {
+                                case 1: rv->GetCellData()->SetScalars(newda); break;
+                                case 3: rv->GetCellData()->SetVectors(newda); break;
+                                default: rv->GetCellData()->SetTensors(newda); break;
+                            }
+                        }
                     }
                 }
             }
