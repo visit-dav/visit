@@ -62,6 +62,9 @@ public:
     ClearCacheRPC();
     virtual ~ClearCacheRPC();
 
+    const std::string TypeName() const { return "ClearCacheRPC";};
+
+
     // Invokation methods.
     void operator()(const std::string &filename, bool clearAllCaches);
 

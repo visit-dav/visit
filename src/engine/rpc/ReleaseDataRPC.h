@@ -58,6 +58,8 @@ public:
     ReleaseDataRPC();
     virtual ~ReleaseDataRPC();
 
+    const std::string TypeName() const { return "ReleaseDataRPC";};
+
     // Invokation method
     void operator()(int);
 

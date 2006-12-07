@@ -66,6 +66,8 @@ public:
     DefineVirtualDatabaseRPC();
     virtual ~DefineVirtualDatabaseRPC();
 
+    const std::string TypeName() const { return "DefineVirtualDatabaseRPC";};
+
     void operator()(const std::string &fileFormat,
                     const std::string &wholeName,
                     const std::string &pathToTimesteps,

@@ -62,6 +62,8 @@ class ENGINE_RPC_API PrepareOperatorRPC : public BlockingRPC
     PrepareOperatorRPC();
     ~PrepareOperatorRPC();
 
+    const std::string TypeName() const { return "PrepareOperatorRPC";};
+
     void SetApplyOperatorRPC(ApplyOperatorRPC*);
     ApplyOperatorRPC *GetApplyOperatorRPC();
 
@@ -94,6 +96,8 @@ class ENGINE_RPC_API ApplyOperatorRPC : public BlockingRPC
   public:
     ApplyOperatorRPC();
     virtual ~ApplyOperatorRPC();
+
+    const std::string TypeName() const { return "ApplyOperatorRPC";};
 
     void operator()(const std::string&, const AttributeSubject*);
 
