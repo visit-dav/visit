@@ -66,7 +66,7 @@
 #include <DebugStream.h>
 
 #ifdef HAVE_FILIB
-#include <Interval.h>
+#include <filib/Interval.h>
 using filib::Interval;
 #endif
 
