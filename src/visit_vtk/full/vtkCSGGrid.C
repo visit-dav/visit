@@ -65,9 +65,9 @@
 
 #include <DebugStream.h>
 
-#ifdef HAVE_FILIB
-#include <filib/Interval.h>
-using filib::Interval;
+#ifdef HAVE_BILIB
+#include <boost/numeric/interval.hpp>
+using boost::numeric::interval;
 #endif
 
 #include <deque>
@@ -210,13 +210,13 @@ bool
 vtkCSGGrid::Box::IsFlatEnough2(const double *const gridBoundaries,
     int boundaryId, double tol)
 {
-#ifdef HAVE_FILIB
+#ifdef HAVE_BILIB
     const double *const a = &gridBoundaries[boundaryId * NUM_QCOEFFS]; 
 
     // compute spatial box
-    Interval X(x0,x1);
-    Interval Y(y0,y1);
-    Interval Z(z0,z1);
+    interval<double> X(x0,x1);
+    interval<double> Y(y0,y1);
+    interval<double> Z(z0,z1);
 
     // quick check for planar functions. They're always flat
     if (a[0] == 0.0 && a[1] == 0.0 && a[2] == 0.0 &&
@@ -224,23 +224,23 @@ vtkCSGGrid::Box::IsFlatEnough2(const double *const gridBoundaries,
         return true;
 
     // compute gradient box components (e.g. intervals of grad components)
-    Interval gradX = 2*a[0]*X + a[3]*Y + a[5]*Z + a[6];
-    Interval gradY = 2*a[1]*Y + a[3]*X + a[4]*Z + a[7];
-    Interval gradZ = 2*a[2]*Z + a[4]*Y + a[5]*X + a[8];
+    interval<double> gradX = 2*a[0]*X + a[3]*Y + a[5]*Z + a[6];
+    interval<double> gradY = 2*a[1]*Y + a[3]*X + a[4]*Z + a[7];
+    interval<double> gradZ = 2*a[2]*Z + a[4]*Y + a[5]*X + a[8];
 
     //
     // see if the grad-box contains the origin. If so, it
     // means that gradient direction varies over entire 360 deg
     //
-    if (inf(gradX)<0.0 && sup(gradX)>0.0 &&
-        inf(gradY)<0.0 && sup(gradY)>0.0 &&
-        inf(gradZ)<0.0 && sup(gradZ)>0.0)
+    if (lower(gradX)<0.0 && upper(gradX)>0.0 &&
+        lower(gradY)<0.0 && upper(gradY)>0.0 &&
+        lower(gradZ)<0.0 && upper(gradZ)>0.0)
         return false;   
 
     // compute vector to center of grad box
-    double vgx = (inf(gradX) + sup(gradX)) / 2.0;
-    double vgy = (inf(gradY) + sup(gradY)) / 2.0;
-    double vgz = (inf(gradZ) + sup(gradZ)) / 2.0;
+    double vgx = (lower(gradX) + upper(gradX)) / 2.0;
+    double vgy = (lower(gradY) + upper(gradY)) / 2.0;
+    double vgz = (lower(gradZ) + upper(gradZ)) / 2.0;
 
     // find diagonal of grad box most orthogonal to vector vg 
     double mindotp = DBL_MAX;
@@ -249,9 +249,9 @@ vtkCSGGrid::Box::IsFlatEnough2(const double *const gridBoundaries,
     {
         int dmx = (d & 0x01) ? -1 : 1;
         int dmy = (d & 0x02) ? -1 : 1;
-        double dvx = dmx * (sup(gradX) - inf(gradX));
-        double dvy = dmy * (sup(gradY) - inf(gradY));
-        double dvz =       (sup(gradZ) - inf(gradZ));
+        double dvx = dmx * (upper(gradX) - lower(gradX));
+        double dvy = dmy * (upper(gradY) - lower(gradY));
+        double dvz =       (upper(gradZ) - lower(gradZ));
 
         double dotp = vgx * dvx + vgy * dvy + vgz * dvz;
         if (dotp < 0.0) dotp = -dotp;
@@ -264,12 +264,12 @@ vtkCSGGrid::Box::IsFlatEnough2(const double *const gridBoundaries,
     }
 
     // build vectors spanning maximum range of angles of grad box
-    double ax = (dmxmin ==  1) ? sup(gradX) : inf(gradX);
-    double ay = (dmymin ==  1) ? sup(gradY) : inf(gradY);
-    double az =                  sup(gradZ);
-    double bx = (dmxmin == -1) ? sup(gradX) : inf(gradX);
-    double by = (dmymin == -1) ? sup(gradY) : inf(gradY);
-    double bz =                               inf(gradZ);
+    double ax = (dmxmin ==  1) ? upper(gradX) : lower(gradX);
+    double ay = (dmymin ==  1) ? upper(gradY) : lower(gradY);
+    double az =                  upper(gradZ);
+    double bx = (dmxmin == -1) ? upper(gradX) : lower(gradX);
+    double by = (dmymin == -1) ? upper(gradY) : lower(gradY);
+    double bz =                               lower(gradZ);
     double maga = sqrt(ax*ax + ay*ay + az*az);
     double magb = sqrt(bx*bx + by*by + bz*bz);
     double cos_theta = (ax*bx + ay*by + az*bz) / (maga * magb);
@@ -277,9 +277,9 @@ vtkCSGGrid::Box::IsFlatEnough2(const double *const gridBoundaries,
     double theta = acos(cos_theta);
 
     // compute length of spatial box diagonal
-    double db =  sqrt((sup(X)-inf(X)) * (sup(X)-inf(X)) +
-                      (sup(Y)-inf(Y)) * (sup(Y)-inf(Y)) +
-                      (sup(Z)-inf(Z)) * (sup(Z)-inf(Z)));
+    double db =  sqrt((upper(X)-lower(X)) * (upper(X)-lower(X)) +
+                      (upper(Y)-lower(Y)) * (upper(Y)-lower(Y)) +
+                      (upper(Z)-lower(Z)) * (upper(Z)-lower(Z)));
 
     //if (((1-cos(theta/2)) / (2*sin(theta/2))) < tol)
     //    return true;
@@ -297,14 +297,14 @@ vtkCSGGrid::Box::IsFlatEnough2(const double *const gridBoundaries,
 
 #if 0
     // square of length of box diagonal 
-    double db =  (sup(gradX)-inf(gradX)) * (sup(gradX)-inf(gradX)) +
-                 (sup(gradY)-inf(gradY)) * (sup(gradY)-inf(gradY)) +
-                 (sup(gradZ)-inf(gradZ)) * (sup(gradZ)-inf(gradZ));
+    double db =  (upper(gradX)-lower(gradX)) * (upper(gradX)-lower(gradX)) +
+                 (upper(gradY)-lower(gradY)) * (upper(gradY)-lower(gradY)) +
+                 (upper(gradZ)-lower(gradZ)) * (upper(gradZ)-lower(gradZ));
 
     // square of distance to center of box 
-    double dc = ((sup(gradX)+inf(gradX)) * (sup(gradX)+inf(gradX)) +
-                 (sup(gradY)+inf(gradY)) * (sup(gradY)+inf(gradY)) +
-                 (sup(gradZ)+inf(gradZ)) * (sup(gradZ)+inf(gradZ))) / 4.0;
+    double dc = ((upper(gradX)+lower(gradX)) * (upper(gradX)+lower(gradX)) +
+                 (upper(gradY)+lower(gradY)) * (upper(gradY)+lower(gradY)) +
+                 (upper(gradZ)+lower(gradZ)) * (upper(gradZ)+lower(gradZ))) / 4.0;
 
     if (dc < 0.0) dc = -dc;
     if (dc > 0.0)
@@ -343,18 +343,18 @@ vtkCSGGrid::Box::CanBeCut2(const double *const gridBoundaries,
 vtkCSGGrid::Box::FuncState
 vtkCSGGrid::Box::EvalBoxStateOfBoundary(const double *const a, double tol) const
 {
-#ifdef HAVE_FILIB
-    Interval X(x0,x1);
-    Interval Y(y0,y1);
-    Interval Z(z0,z1);
+#ifdef HAVE_BILIB
+    interval<double> X(x0,x1);
+    interval<double> Y(y0,y1);
+    interval<double> Z(z0,z1);
 
-    Interval v = a[0]*sqr(X) + a[1]*sqr(Y) + a[2]*sqr(Z) + 
+    interval<double> v = a[0]*square(X) + a[1]*square(Y) + a[2]*square(Z) + 
                  a[3]*X*Y + a[4]*Y*Z + a[5]*X*Z + 
                  a[6]*X + a[7]*Y + a[8]*Z + a[9];
 
-    if ((inf(v) < 0) && (sup(v) < 0))
+    if ((lower(v) < 0) && (upper(v) < 0))
         return LT_ZERO;
-    else if ((inf(v) > 0) && (sup(v) > 0))
+    else if ((lower(v) > 0) && (upper(v) > 0))
         return GT_ZERO;
     else
         return EQ_ZERO;

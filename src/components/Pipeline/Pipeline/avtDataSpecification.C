@@ -175,7 +175,7 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
     needNativePrecision = false;
     discTol = 0.01;
     flatTol = 0.05;
-#if HAVE_FILIB
+#if HAVE_BILIB
     discMode = 1; // adaptive
 #else
     discMode = 0; // uniform 
@@ -1388,11 +1388,11 @@ void
 avtDataSpecification::SetDiscMode(int mode)
 {
     discMode = mode;
-#if !HAVE_FILIB
+#if !HAVE_BILIB
     if (discMode == 1) // Adaptive
     {
         debug1 << "Adaptive not available. "
-                  "Missing fast interval library (filib). "
+                  "Missing boost interval template library. "
                   "Overriding to Uniform." << endl;
         discMode = 0;
     }

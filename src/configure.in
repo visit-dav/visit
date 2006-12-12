@@ -1302,7 +1302,7 @@ dnl
 dnl Disable building glew. Only necessary if glew won't build somewhere 
 dnl
 AC_ARG_ENABLE(glew,
-   [  --disable-glew         do not build or use glew library -- disables detection of OpenGL extensions],
+   [  --disable-glew          do not build or use glew library -- disables detection of OpenGL extensions],
    Useglew="$enable_glew", Useglew=yes)
 BUILD_GLEW=""
 GLEW_LIBS=""
@@ -1318,20 +1318,18 @@ AC_SUBST(GLEW_INCLUDE)
 AC_SUBST(GLEW_LIBS)
 
 dnl
-dnl Disable building filib. Only necessary if filib won't build somewhere 
+dnl Disable building boost interval library. Only necessary if boost-interval
+dnl headers prevent VisIt from building somewhere
 dnl
-AC_ARG_ENABLE(filib,
-   [  --disable-filib         do not build or use filib library -- disables adaptive CSG discretization],
-   Usefilib="$enable_filib", Usefilib=yes)
-BUILD_FILIB=""
-FILIB_LIBS=""
-if test "$Usefilib" = "yes"; then
-    BUILD_FILIB="filib"
-    AC_DEFINE(HAVE_FILIB)
-    FILIB_LIBS="-lfi -lprim -lieee"
+AC_ARG_ENABLE(bilib,
+   [  --disable-bilib         do not use boost interval template library -- disables adaptive CSG discretization],
+   Usebilib="$enable_bilib", Usebilib=yes)
+BUILD_BILIB=""
+if test "$Usebilib" = "yes"; then
+    BUILD_BILIB="bilib"
+    AC_DEFINE(HAVE_BILIB)
 fi
-AC_SUBST(BUILD_FILIB)
-AC_SUBST(FILIB_LIBS)
+AC_SUBST(BUILD_BILIB)
 
 dnl
 dnl Make note if no CXXFLAGS have STILL yet been specified; this is the
@@ -3184,7 +3182,7 @@ CQSCORE_FILES="cqscore/Makefile"
 THIRD_PARTY_BUILTIN_FILES="third_party_builtin/Makefile
                            third_party_builtin/bzip2/Makefile
                            third_party_builtin/glew/Makefile
-                           third_party_builtin/filib/Makefile"
+                           third_party_builtin/bilib/Makefile"
 
 if test "$enable_scripting" = "yes"; then
     VISITPY_FILES="visitpy/Makefile"
