@@ -161,6 +161,10 @@ typedef struct
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Removed RegisterDataSelections. Was only used by CSG stuff 
 //    Added dontForceSingle. Added support for CSG multimeshes and CSG vars
+//
+//    Mark C. Miller, Wed Dec 13 16:55:30 PST 2006
+//    Added method/data member for explicit multivar to multimesh mapping to
+//    support time-invariant multimeshes stored in separate files from vars.
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -222,6 +226,8 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     std::vector<DBmultimatspecies *>          multimatspecies;
     std::vector<std::string>                  multimatspec_name;
 
+    std::map<std::string, std::string>        multivarToMultimeshMap;
+
     GroupInfo                                 groupInfo;
 
     std::map<std::string, std::vector<int> >  arbMeshZoneRangesToSkip;
@@ -275,6 +281,8 @@ class avtSiloFileFormat : public avtSTMDFileFormat
                              int *&, int &, int *&, int &, int *&, bool, bool);
     void                  FindGmapConnectivity(DBfile *, int &, int *&, int *&,
                                      int &, int *&, int &, int *&, bool, bool);
+
+    void                  GetMultivarToMultimeshMap(DBfile *);
 
     avtFacelist          *CalcExternalFacelist(DBfile *, char *);
     avtMaterial          *CalcMaterial(DBfile *, char *, const char *, int dom);
