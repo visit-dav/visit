@@ -60,7 +60,7 @@ up=true
 pengra=true
 pengra_icc=true
 thunder=true
-vertex=true
+prism=true
 yana=true
 
 ver=undefined
@@ -83,7 +83,7 @@ do
          pengra=false
          pengra_icc=false
          thunder=false
-         vertex=false
+         prism=false
          yana=false
          shift
          ;;
@@ -151,12 +151,12 @@ do
          thunder=true
          shift
          ;;
-      -vertex)
-         vertex=false
+      -prism)
+         prism=false
          shift
          ;;
-      +vertex)
-         vertex=true
+      +prism)
+         prism=true
          shift
          ;;
       -yana)
@@ -497,15 +497,15 @@ then
 fi
 
 #
-# Install on vertex.
+# Install on prism.
 #
-rm -f vertex
-cat <<EOF > vertex
+rm -f prism
+cat <<EOF > prism
 #!/bin/sh
 ./visit-install -private -c open -g visit -b bdivp -gw -l $ver linux-x86_64-ib /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
-echo "        install of visit on vertex"          > resultlog 2>&1
-echo "       ----------------------------"         >> resultlog 2>&1
+echo "        install of visit on prism"           > resultlog 2>&1
+echo "       ---------------------------"          >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
@@ -520,15 +520,15 @@ ls /usr/gapps/visit/$ver/linux-x86_64-ib/plugins/databases/libI* | sed "s/\/usr\
 mail $emailName < resultlog
 EOF
 
-if [ $vertex = true ]
+if [ $prism = true ]
 then
    if [ $test = no ]
    then
-      scp vertex0:/usr/tmp/$user/vertex/visitbuild/visit$ver2.linux-x86_64-ib.tar.gz .
+      scp prism0:/usr/tmp/$user/prism/visitbuild/visit$ver2.linux-x86_64-ib.tar.gz .
       scp visit$ver2.linux-x86_64-ib.tar.gz pengra2:
       scp visit-install pengra2:
-      scp vertex pengra2:vertex_install
-      ssh pengra2 "chmod 750 vertex_install;./vertex_install"
+      scp prism pengra2:prism_install
+      ssh pengra2 "chmod 750 prism_install;./prism_install"
    fi
 fi
 
@@ -573,5 +573,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot quad berg up pengra pengra_icc thunder vertex yana
+   rm -f hoth sunspot quad berg up pengra pengra_icc thunder prism yana
 fi

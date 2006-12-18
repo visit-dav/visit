@@ -70,6 +70,7 @@
 #include <PointerNotInCacheException.h>
 
 #include <DebugStream.h>
+#include <Utility.h>
 #include <snprintf.h>
 
 #include <vectortypes.h>
@@ -1091,7 +1092,7 @@ avtTransformManager::TransformMaterialDataset(const avtDatabaseMetaData *const m
             for (j = 0; j < nmats; j++)
             {
                 matnos[j] = j;
-                matnames[j] = strndup((*mat)->GetMaterials()[j].c_str(), 1024);
+                matnames[j] = CXX_strndup((*mat)->GetMaterials()[j].c_str(), 1024);
             }
 
             char dom_string[128];

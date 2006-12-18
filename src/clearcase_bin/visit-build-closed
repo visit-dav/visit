@@ -20,9 +20,9 @@ user=`whoami`
 # Parse the execute line, providing default values for error checking.
 #
 hitit=true
+crier=true
 sunset=true
 sc=true
-tidalwave=false
 ice=true
 purple=true
 lilac=true
@@ -40,9 +40,9 @@ do
    case $1 in
       -none)
          hitit=false
+         crier=false
          sunset=false
          sc=false
-         tidalwave=false
          ice=false
          purple=false
          lilac=false
@@ -55,6 +55,14 @@ do
          ;;
       +hitit)
          hitit=true
+         shift
+         ;;
+      -crier)
+         crier=false
+         shift
+         ;;
+      +crier)
+         crier=true
          shift
          ;;
       -sunset)
@@ -71,14 +79,6 @@ do
          ;;
       +sc)
          sc=true
-         shift
-         ;;
-      -tidalwave)
-         tidalwave=false
-         shift
-         ;;
-      +tidalwave)
-         tidalwave=true
          shift
          ;;
       -ice)
@@ -196,6 +196,57 @@ then
 fi
 
 #
+# Build on crier.
+#
+rm -f crier
+cat <<EOF > crier
+#!/bin/sh
+if test ! -e /export/scratch/$user ; then
+   mkdir /export/scratch/$user
+fi
+if test ! -e /export/scratch/$user/crier ; then
+   mkdir /export/scratch/$user/crier
+fi
+rm -rf /export/scratch/$user/crier/visitbuild
+mkdir /export/scratch/$user/crier/visitbuild
+mv crier_$dist.tar.gz /export/scratch/$user/crier/visitbuild/$dist.tar.gz
+cd /export/scratch/$user/crier/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/gapps/visit/gcc/3.2.3/linux_redhat7/lib
+export LD_LIBRARY_PATH
+env CXXFLAGS=-O2 ./configure >> ../buildlog 2>&1
+make -j 4 >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
+mv visit\$ver2.linux.tar.gz ..
+cd ..
+rm -f resultlog
+echo "        build of visit on crier"        > resultlog 2>&1
+echo "       -------------------------"       >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+EOF
+ 
+if [ $crier = true ]
+then
+   if [ $test = no ]
+   then
+      scp -P 22 crier crier:crier_buildit
+      scp -P 22 $dist.tar.gz crier:crier_$dist.tar.gz
+      ssh -p 22 crier "chmod 750 crier_buildit;./crier_buildit" &
+   fi
+fi
+
+#
 # Build on sunset.
 #
 rm -f sunset
@@ -270,11 +321,9 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
-cp /usr/local/tools/gnu/gcc/3.3.3_tru64_5/lib/libgcc_s.so.1 lib
-cp /usr/local/tools/gnu/gcc/3.3.3_tru64_5/lib/libstdc++.so.5 lib
+env CXXFLAGS=-O2 MAKE=gmake ./configure --disable-bilib --enable-parallel >> ../buildlog 2>&1
 cd databases/Fluent
-sed "s/\\\$(CXXFLAGSORIG)/-isystem \\/usr\\/local\\/include -Wno-deprecated/" Makefile > Makefile+;rm Makefile;mv Makefile+ Makefile
+sed "s/\\\$(CXXFLAGSORIG)/-Wno-deprecated/" Makefile > Makefile+;rm Makefile;mv Makefile+ Makefile
 cd ../..
 gmake -j 3 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist -make gmake >> ../buildlog 2>&1
@@ -297,57 +346,9 @@ if [ $sc = true ]
 then
    if [ $test = no ]
    then
-      scp sc sc7:sc_buildit
-      scp $dist.tar.gz sc7:sc_$dist.tar.gz
-      ssh sc7 "chmod 750 sc_buildit;./sc_buildit" &
-   fi
-fi
-
-#
-# Build on tidalwave, both serial and parallel versions.
-#
-rm -f tidalwave
-cat <<EOF > tidalwave
-#!/bin/sh
-if test ! -d /fc/san1/$user ; then
-   mkdir /fc/san1/$user
-fi
-if test ! -d /fc/san1/$user/tidalwave ; then
-   mkdir /fc/san1/$user/tidalwave
-fi
-rm -rf /fc/san1/$user/tidalwave/visitbuild
-mkdir /fc/san1/$user/tidalwave/visitbuild
-mv tidalwave_$dist.tar.gz /fc/san1/$user/tidalwave/visitbuild/$dist.tar.gz
-cd /fc/san1/$user/tidalwave/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
-env PARALLEL=20 make -P >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
-mv visit\$ver2.irix6.tar.gz ..
-cd ..
-echo "        build of visit on tidalwave"    > resultlog 2>&1
-echo "       -----------------------------"   >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
-
-if [ $tidalwave = true ]
-then
-   if [ $test = no ]
-   then
-      scp tidalwave tidalwave:tidalwave_buildit
-      scp $dist.tar.gz tidalwave:tidalwave_$dist.tar.gz
-      ssh tidalwave "chmod 750 tidalwave_buildit;./tidalwave_buildit" &
+      scp sc sc8:sc_buildit
+      scp $dist.tar.gz sc8:sc_$dist.tar.gz
+      ssh sc8 "chmod 750 sc_buildit;./sc_buildit" &
    fi
 fi
 
@@ -374,11 +375,6 @@ cp /usr/gapps/visit/bz2/bzlib.h include
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
-cp /usr/local/tools/gnu/gcc/3.1_aix_5/lib/libgcc_s.a lib
-cp /usr/local/tools/gnu/gcc/3.1_aix_5/lib/libstdc++.a lib
-cd databases/Fluent
-sed "s/\\\$(CXXFLAGSORIG)/-D_LARGEFILE64_SOURCE -Wall -Wno-sign-compare -Wno-deprecated/" Makefile > Makefile+;rm Makefile;mv Makefile+ Makefile
-cd ../..
 gmake -j 6 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist -make gmake >> ../buildlog 2>&1
 mv visit\$ver2.aix.tar.gz ..
@@ -476,8 +472,6 @@ cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
-cp /lib/libgcc_s.so.1 lib
-cp /usr/lib/libstdc++.so.5 lib
 make -j 3 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.linux.tar.gz ..
@@ -528,8 +522,6 @@ cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
-cp /usr/local/tools/gnu/gcc/3.4.4_RH_chaos_3_x86_64/usr/lib64/libgcc_s.so.1 lib
-cp /usr/local/tools/gnu/gcc/3.4.4_RH_chaos_3_x86_64/usr/lib64/libstdc++.so.6 lib
 make -j 3 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist -switch ib >> ../buildlog 2>&1
 mv visit\$ver2.linux-x86_64-ib.tar.gz ..
@@ -563,5 +555,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hitit sunset sc tidalwave ice purple lilac gauss
+   rm -f hitit crier sunset sc ice purple lilac gauss
 fi

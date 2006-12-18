@@ -23,10 +23,10 @@ user=`whoami`
 #
 # Parse the execute line, providing default values for error checking.
 #
+crier=true
 hitit=true
 sunset=true
 sc=true
-tidalwave=false
 ice=true
 purple=true
 lilac=true
@@ -44,27 +44,22 @@ for abc
 do
    case $1 in
       -none)
+         crier=false
          hitit=false
          sunset=false
          sc=false
-         tidalwave=false
          ice=false
          purple=false
          lilac=false
          gauss=false
          shift
          ;;
-      +bdiv)
-         hitit=true
-         sunset=true
+      -crier)
+         crier=false
          shift
          ;;
-      +lc)
-         sc=true
-         tidalwave=true
-         ice=true
-         purple=true
-         lilac=true
+      +crier)
+         crier=true
          shift
          ;;
       -hitit)
@@ -89,14 +84,6 @@ do
          ;;
       +sc)
          sc=true
-         shift
-         ;;
-      -tidalwave)
-         tidalwave=false
-         shift
-         ;;
-      +tidalwave)
-         tidalwave=true
          shift
          ;;
       -ice)
@@ -172,23 +159,48 @@ ver2=`echo $ver | tr "." "_"`
 ver=`echo $ver2 | tr "_" "."`
 
 #
-# Create the header for the install script for the B Division network.
+# Install on crier.
 #
-rm -f bdiv
-cat <<EOF > bdiv
+rm -f crier
+cat <<EOF > crier
 #!/bin/sh
-
-rm -f resultlog
-touch resultlog
+./visit-install -r -private -c closed -g visit -b bdivp -gw -l $ver linux_rhel3 /usr/gapps/visit > installlog 2>&1
+mv /usr/gapps/visit/$ver/linux-intel /usr/gapps/visit/$ver/linux-intel-2.4.29
+echo ""                                            >> resultlog 2>&1
+echo "        install of visit on crier"           >> resultlog 2>&1
+echo "       ---------------------------"          >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/linux-intel/bin        >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/linux-intel-2.4.29/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/linux-intel-2.4.29/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-intel-2.4.29/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "The database plugins:"                       >> resultlog 2>&1
+ls /usr/gapps/visit/$ver/linux-intel-2.4.29/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-intel-2.4.29\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
+
+if [ $crier = true ]
+then
+   if [ $test = no ]
+   then
+      scp -P 22 crier:/gscratch/$user/crier/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_rhel3.tar.gz
+      scp -P 22 visit$ver2.linux_rhel3.tar.gz sunset:
+      scp visit-install sunset:
+      scp crier sunset:crier_install
+      ssh sunset "chmod 750 crier_install;./crier_install"
+   fi
+fi
 
 #
 # Install on hitit.
 #
 rm -f hitit
 cat <<EOF > hitit
-
-./visit-install -r -private -c closed -g visit -b bdivp -gw -l $ver linux_rhel3 /usr/gapps/visit > installlog 2>&1
+#!/bin/sh
+./visit-install -private -c closed -g visit -b bdivp -gw -l $ver linux_redhat7 /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "        install of visit on hitit"           >> resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1
@@ -209,10 +221,11 @@ if [ $hitit = true ]
 then
    if [ $test = no ]
    then
-      cat hitit >> bdiv
-
-      scp -P 22 hitit:/gscratch/$user/hitit/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_rhel3.tar.gz
-      scp -P 22 visit$ver2.linux_rhel3.tar.gz sunset:
+      scp -P 22 hitit:/gscratch/$user/hitit/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_redhat7.tar.gz
+      scp -P 22 visit$ver2.linux_redhat7.tar.gz sunset:
+      scp visit-install sunset:
+      scp hitit sunset:hitit_install
+      ssh sunset "chmod 750 hitit_install;./hitit_install"
    fi
 fi
 
@@ -221,8 +234,8 @@ fi
 #
 rm -f sunset
 cat <<EOF > sunset
-
-./visit-install -private -c closed -g visit -b bdivp -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
+#!/bin/sh
+./visit-install $verflag -c closed -g visit -b bdivp -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "        install of visit on sunset"          >> resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1
@@ -243,40 +256,20 @@ if [ $sunset = true ]
 then
    if [ $test = no ]
    then
-      cat sunset >> bdiv
-
       scp -P 22 sunset:/export/scratch/$user/sunset/visitbuild/visit$ver2.sunos5.tar.gz .
       scp -P 22 visit$ver2.sunos5.tar.gz sunset:
+      scp visit-install sunset:
+      scp sunset sunset:sunset_install
+      ssh sunset "chmod 750 sunset_install;./sunset_install"
    fi
 fi
-
-#
-# Install on the B Division network.
-#
-if [ $test = no ]
-then
-   scp -P 22 visit-install sunset:
-   scp -P 22 bdiv sunset:bdiv_install
-   ssh -p 22 sunset "chmod 750 bdiv_install;./bdiv_install"
-fi
-
-#
-# Create the header for the install script for the lc machines.
-#
-rm -f lc
-cat <<EOF > lc
-#!/bin/sh
-
-rm -f resultlog
-touch resultlog
-EOF
 
 #
 # Install on sc.
 #
 rm -f sc
 cat <<EOF > sc
-
+#!/bin/sh
 ./visit-install -r -private -c closed -g visit -b bdivp -gw -l $ver osf1 /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "        install of visit on sc"              >> resultlog 2>&1
@@ -298,44 +291,11 @@ if [ $sc = true ]
 then
    if [ $test = no ]
    then
-      cat sc >> lc
-
-      scp sc7:/nfs/tmp0/$user/sc/visitbuild/visit$ver2.osf1.tar.gz .
+      scp sc8:/nfs/tmp0/$user/sc/visitbuild/visit$ver2.osf1.tar.gz .
       scp visit$ver2.osf1.tar.gz lilac3:
-   fi
-fi
-
-#
-# Install on tidalwave.
-#
-rm -f tidalwave
-cat <<EOF > tidalwave
-
-./visit-install -private -c closed -g visit -b bdivp -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "        install of visit on tidalwave"       >> resultlog 2>&1
-echo "       -------------------------------"      >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k /usr/gapps/visit                             >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver/sgi-irix6-mips2/bin    >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/sgi-irix6-mips2/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/sgi-irix6-mips2/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/sgi-irix6-mips2/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver/sgi-irix6-mips2/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/sgi-irix6-mips2\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
-
-if [ $tidalwave = true ]
-then
-   if [ $test = no ]
-   then
-      cat tidalwave >> lc
-
-      scp tidalwave:/fc/san1/$user/tidalwave/visitbuild/visit$ver2.irix6.tar.gz .
-      scp visit$ver2.irix6.tar.gz lilac3:
+      scp visit-install lilac3:
+      scp sc lilac3:sc_install
+      ssh lilac3 "chmod 750 sc_install;./sc_install"
    fi
 fi
 
@@ -344,7 +304,7 @@ fi
 #
 rm -f ice
 cat <<EOF > ice
-
+#!/bin/sh
 ./visit-install -private -c closed -g visit -b bdivp -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "        install of visit on ice"             >> resultlog 2>&1
@@ -366,10 +326,11 @@ if [ $ice = true ]
 then
    if [ $test = no ]
    then
-      cat ice >> lc
-
       scp ice:/p/gi1/$user/ice/visitbuild/visit$ver2.aix.tar.gz .
       scp visit$ver2.aix.tar.gz lilac3:
+      scp visit-install lilac3:
+      scp ice lilac3:sc_install
+      ssh lilac3 "chmod 750 ice_install;./ice_install"
    fi
 fi
 
@@ -378,7 +339,7 @@ fi
 #
 rm -f purple
 cat <<EOF > purple
-
+#!/bin/sh
 ./visit-install -private -c closed -g visit -b bdivp -gw -l $ver aix64-xlc /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "        install of visit on purple"          >> resultlog 2>&1
@@ -400,10 +361,11 @@ if [ $purple = true ]
 then
    if [ $test = no ]
    then
-      cat purple >> lc
-
       scp purple:/p/gscratch3/$user/purple/visitbuild/visit$ver2.aix64-xlc.tar.gz .
       scp visit$ver2.aix64-xlc.tar.gz lilac3:
+      scp visit-install lilac3:
+      scp purple lilac3:sc_install
+      ssh lilac3 "chmod 750 purple_install;./purple_install"
    fi
 fi
 
@@ -412,7 +374,7 @@ fi
 #
 rm -f lilac
 cat <<EOF > lilac
-
+#!/bin/sh
 ./visit-install -private -c closed -g visit -b bdivp -gw -l $ver linux_chaos /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "        install of visit on lilac"           >> resultlog 2>&1
@@ -434,10 +396,11 @@ if [ $lilac = true ]
 then
    if [ $test = no ]
    then
-      cat lilac >> lc
-
       scp lilac3:/usr/tmp/$user/lilac/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
       scp visit$ver2.linux_chaos.tar.gz lilac3:
+      scp visit-install lilac3:
+      scp lilac lilac3:sc_install
+      ssh lilac3 "chmod 750 lilac_install;./lilac_install"
    fi
 fi
 
@@ -446,7 +409,7 @@ fi
 #
 rm -f gauss
 cat <<EOF > gauss
-
+#!/bin/sh
 ./visit-install $verflag -c closed -g visit -b bdivp -gw -l $ver linux-x86_64-ib /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "        install of visit on gauss"           >> resultlog 2>&1
@@ -468,21 +431,12 @@ if [ $gauss = true ]
 then
    if [ $test = no ]
    then
-      cat gauss >> lc
-
       scp gauss2:/usr/tmp/$user/gauss/visitbuild/visit$ver2.linux-x86_64-ib.tar.gz .
       scp visit$ver2.linux-x86_64-ib.tar.gz lilac3:
+      scp visit-install lilac3:
+      scp gauss lilac3:sc_install
+      ssh lilac3 "chmod 750 gauss_install;./gauss_install"
    fi
-fi
-
-#
-# Install on the lc machines.
-#
-if [ $test = no ]
-then
-   scp visit-install lilac3:
-   scp lc lilac3:lc_install
-   ssh lilac3 "chmod 750 lc_install;./lc_install"
 fi
 
 #
@@ -490,5 +444,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f bdiv hitit sunset lc sc tidalwave ice purple lilac gauss
+   rm -f hitit sunset sc ice purple lilac gauss
 fi

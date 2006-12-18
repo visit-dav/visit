@@ -128,7 +128,7 @@ avtSAMIFileFormat::avtSAMIFileFormat(const char *filename)
     DBSetEnableChecksums(1);
 #endif
 
-    if ((dbFile = DBOpen(filename, DB_UNKNOWN, DB_READ)) == 0)
+    if ((dbFile = DBOpen((char *)filename, DB_UNKNOWN, DB_READ)) == 0)
     {
         EXCEPTION1(InvalidFilesException, filename);
     }
@@ -381,7 +381,7 @@ avtSAMIFileFormat::GetMesh(const char *meshname)
 
     if (strncmp(meshname, "nodesets/", 9) == 0)
     {
-        int nssize = DBGetVarLength(dbFile, meshname);
+        int nssize = DBGetVarLength(dbFile, (char *)meshname);
         if (nssize == 0)
         {
             char tmpMsg[512];
@@ -389,7 +389,7 @@ avtSAMIFileFormat::GetMesh(const char *meshname)
             EXCEPTION1(InvalidFilesException, tmpMsg);
         }
 
-        int *nodelist = (int *) DBGetVar(dbFile, meshname);
+        int *nodelist = (int *) DBGetVar(dbFile, (char *)meshname);
         if (nodelist == 0)
         {
             char tmpMsg[512];
