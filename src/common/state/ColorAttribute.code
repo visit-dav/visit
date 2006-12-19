@@ -1160,7 +1160,7 @@ bool ColorAttribute::SetByName(const char *const colorName)
 }
 
 Function: GetByName
-Declaration: const char *const GetByName() const;
+Declaration: const char *GetByName() const;
 Definition:
 // **************************************************************************
 // Method: ColorAttribute::GetName
@@ -1171,7 +1171,7 @@ Definition:
 // Creation:   July 13, 2006
 // **************************************************************************
 
-const char *const ColorAttribute::GetByName() const
+const char *ColorAttribute::GetByName() const
 {
     for (int i = 0; i < numNamedColors; i++)
     {

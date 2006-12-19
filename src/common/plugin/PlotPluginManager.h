@@ -98,6 +98,9 @@ class ScriptingPlotPluginInfo;
 //    purpose (which really is unrelated to FreeCommonPluginInfo and 
 //    GetCommonPluginInfo).
 //
+//    Brad Whitlock, Wed Nov 22 16:30:48 PST 2006
+//    Added const char * argument to Initialize function.
+//
 // ****************************************************************************
 
 class PLUGIN_API PlotPluginManager : public PluginManager
@@ -105,7 +108,8 @@ class PLUGIN_API PlotPluginManager : public PluginManager
   public:
     virtual                        ~PlotPluginManager();
 
-    static void                     Initialize(const PluginCategory, bool=false);
+    static void                     Initialize(const PluginCategory,
+                                               bool=false, const char * = 0);
     static PlotPluginManager       *Instance();
 
     virtual void                    ReloadPlugins();

@@ -129,7 +129,7 @@ Macro_GetRecord()
 bool
 LogFile_Open(const char *filename)
 {
-    logFile = fopen("visit.py", "wb");
+    logFile = fopen(filename, "wb");
     if(logFile)
     {
         fprintf(logFile, "# Visit %s log file\n", VERSION);

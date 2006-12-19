@@ -62,11 +62,16 @@ DatabasePluginManager *DatabasePluginManager::instance=0;
 //  Creation:   August 22, 2002
 //
 //  Modifications:
+//    Brad Whitlock, Wed Nov 22 16:31:59 PST 2006
+//    I made it call SetPluginDir since it's no longer done in the base
+//    class's constructor.
 //
 // ****************************************************************************
 
 DatabasePluginManager::DatabasePluginManager() : PluginManager("database")
 {
+    // Make it use VISITPLUGINDIR.
+    SetPluginDir(0);
 }
 
 // ****************************************************************************

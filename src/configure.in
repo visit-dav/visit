@@ -1051,7 +1051,7 @@ AC_SUBST(MDSERVEROBJ)
 #
 AC_MSG_CHECKING(if scripting features are enabled)
 AC_ARG_ENABLE(scripting,
-              [  --disable-scripting     build without Python scripting capability],
+              [  --disable-scripting     build without CLI Python scripting capability],
               UseScripting="$enable_scripting", UseScripting=yes)
 if test "X$UseScripting" = "Xyes"; then
     AC_MSG_RESULT(yes)
@@ -1060,6 +1060,21 @@ if test "X$UseScripting" = "Xyes"; then
     VISITPY="visitpy"
     SCRIPTINGLIB="$""(SDSO)"
     SCRIPTINGOBJ="$""(SOBJ)"
+
+    #
+    # Check to see if VisIt module should be built.
+    #
+    AC_MSG_CHECKING(if VisIt Python module will be built)
+    AC_ARG_ENABLE(visitmodule,
+                  [  --enable-visitmodule     build a VisIt Python module],
+                  [UsePythonModule=yes])
+    if test "X$UsePythonModule" = "Xyes"; then
+        AC_MSG_RESULT(yes)
+        PY_BUILD_VISITMODULE="visitmodule"
+    else
+        AC_MSG_RESULT(no)
+        PY_BUILD_VISITMODULE=""
+    fi
 else
     AC_MSG_RESULT(no)
     enable_scripting=no
@@ -1067,10 +1082,13 @@ else
     VISITPY=""
     SCRIPTINGLIB=""
     SCRIPTINGOBJ=""
+    PY_BUILD_VISITMODULE=""
 fi
 AC_SUBST(VISITPY)
 AC_SUBST(SCRIPTINGLIB)
 AC_SUBST(SCRIPTINGOBJ)
+AC_SUBST(PY_BUILD_VISITMODULE)
+
 
 # Check to see if the --disable-gui configure flag was given. If
 # if was then we will use the enable_gui variable later on to see

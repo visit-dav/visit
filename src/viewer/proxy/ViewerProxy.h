@@ -451,6 +451,9 @@ class Xfer;
 //    Jeremy Meredith, Mon Aug 28 16:55:01 EDT 2006
 //    Added ability to force using a specific plugin when opening a file.
 //
+//    Brad Whitlock, Wed Nov 22 14:18:14 PST 2006
+//    Added a new override of Create.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -467,6 +470,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
 
     void AddArgument(const std::string &arg);
     void Create(int *argc = 0, char ***argv = 0);
+    void Create(const char *, int *argc = 0, char ***argv = 0);
     void Close();
     void Detach();
     void LoadPlugins();

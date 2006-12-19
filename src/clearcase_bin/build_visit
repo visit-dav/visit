@@ -40,7 +40,7 @@
 #       You must have:
 #          Qt		qt-x11-free-3.3.2.tar.gz
 #          Mesa		Mesa-5.0-mangled.tar
-#          Python	Python-2.1.2.tar
+#          Python	Python-2.5.tgz
 #          VTK		vtk-5.0.0b.tar
 #          CMake	cmake-2.2.3.tar
 #          Silo		silo060605.sh          
@@ -68,6 +68,9 @@
 #     to make sure third party libraries are there.  (2) construction of
 #     "visit-arch" string involved undefined variable, which caused problems
 #     on some platforms.
+#
+#     Brad Whitlock, Fri Dec 15 11:51:40 PDT 2006
+#     Added support for Python 2.5.
 #
 # *****************************************************************************
 
@@ -121,8 +124,8 @@ export MESA_VERSION="5.0"
 export MESA_DIR="Mesa-5.0"  # The directory contained in the tarball
 export MESA_TARGET="linux"
 
-export PYTHON_FILE="Python-2.1.2.tar"
-export PYTHON_VERSION="2.1.2"
+export PYTHON_FILE="Python-2.5.tgz"
+export PYTHON_VERSION="2.5"
 
 export QT_FILE="qt-x11-free-3.3.2.tar"
 export QT_VERSION="3.3.2"
@@ -605,20 +608,9 @@ function build_vtk
 function build_python
 {
     #
-    # Unzip the file, provided a gzipped file exists.
-    #
-    if [[ -f ${PYTHON_FILE}.gz ]] ; then
-       gunzip ${PYTHON_FILE}.gz
-       if [[ $? != 0 ]] ; then
-          echo "Unable to unzip ${PYTHON_FILE}.gz.  Corrupted file or out of space on device?"
-          return 1
-       fi
-    fi
-
-    #
     # Untar the file.
     #
-    tar xf ${PYTHON_FILE}
+    tar zxf ${PYTHON_FILE}
     if [[ $? != 0 ]] ; then
        echo "Unable to untar $PYTHON_FILE.  Corrupted file or out of space on device?"
        return 1
@@ -627,10 +619,10 @@ function build_python
     #
     # Call configure
     #
-    PYTHON_DIR=${PYTHON_FILE%.tar}
+    PYTHON_DIR=${PYTHON_FILE%.tgz}
     cd ${PYTHON_DIR}
-    echo "Invoking command to build Python"
-    env OPT="$C_OPT_FLAGS" ./configure --prefix=$VISITDIR/python/$VISITARCH
+    echo "Invoking command to build Python: env OPT=\"$C_OPT_FLAGS\" CXX=\"$CPP_COMPILER\" CC=\"$C_COMPILER\" ./configure --prefix=$VISITDIR/python/$VISITARCH"
+    env OPT="$C_OPT_FLAGS" CXX="$CPP_COMPILER" CC="$C_COMPILER" ./configure --prefix=$VISITDIR/python/$VISITARCH
     if [[ $? != 0 ]] ; then
        echo "Python configure failed.  Giving up"
        return 1
@@ -656,11 +648,11 @@ function build_python
     echo "Creating shared library"
     mkdir tmpdir
     cd tmpdir
-    ar -x ../libpython2.1.a
-    g++ -shared -o ../libpython2.1.so *.o
+    ar -x ../libpython$PYTHON_VERSION.a
+    $C_COMPILER $C_OPT_FLAGS -shared -o ../libpython$PYTHON_VERSION.so *.o
     cd ..
     rm -rf tmpdir
-    cp libpython2.1.so $VISITDIR/python/$VISITARCH/lib/python2.1/config/libpython2.1.so
+    cp libpython$PYTHON_VERSION.so $VISITDIR/python/$VISITARCH/lib/python$PYTHON_VERSION/config/
     cd ..
     echo "Done with Python"
 }

@@ -146,6 +146,9 @@
 #    Hank Childs, Mon Feb 13 21:13:27 PST 2006
 #    Added ConstructDDFAttributes.
 #
+#    Brad Whitlock, Wed Nov 22 12:01:56 PDT 2006
+#    I changed how the visit module gets built.
+#
 ##############################################################################
 
 ##
@@ -223,9 +226,9 @@ HDR= \
     PyWindowInformation.h
 
 OBJ=$(SRC:.C=.o)
-LIB=visitmodule
-LIBNAME=$(LIB).@SHLIB_SOEXT@
 CLI=$(tmpbin)/cli
+
+PY_BUILD_VISITMODULE=@PY_BUILD_VISITMODULE@
 
 ##
 ## Override the certain variables with values from configure.
@@ -239,9 +242,7 @@ CXXFLAGS=@CXXFLAGS@ @PY_CXXFLAGS@ -I. -I../include/visit
 ##
 ## Standard targets...
 ##
-all:  message $(CLI) $(LIBSHARED)
-	$(RM) ../exe/$(LIBNAME)
-	mv $(LIBSHARED) ../exe/$(LIBNAME)
+all:  message $(CLI) $(PY_BUILD_VISITMODULE)
 
 $(CLI): $(OBJ) cli.o
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $(OBJ) cli.o @PY_CLI_LIB@ $(LIBS)
@@ -250,8 +251,15 @@ pure: $(OBJ) cli.o
 	purify $(CXX) -o $(CLI) $(CXXFLAGS) $(LDFLAGS) $(OBJ) cli.o @PY_CLI_LIB@ $(LIBS)
 
 clean:
-	$(RM) $(LIBSTATIC) $(LIBSHARED) ../exe/$(LIBNAME) $(CLI)
+	$(RM) $(CLI)
 	$(RM) $(OBJ) cli.o
+
+visitmodule:
+	$(PYTHON) build_visitmodule.py build
+	cp `find . -name visitmodule.@SHLIB_SOEXT@` $(libdir)
+	$(PYTHON) build_visitfrontend.py build
+	cp `find . -name visit.@SHLIB_SOEXT@` $(libdir)
+	$(PYTHON) build_visitfrontend.py install
 
 message:
 	@echo
@@ -267,4 +275,3 @@ message:
 ## Automatic dependency stuff
 ##
 @TARGETS@
-@LIBTARGETS@
