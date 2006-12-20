@@ -481,8 +481,8 @@ if ($logging == true) then
     chmod 666 $dir/$version+/usagelog
     chmod 666 $dir/$version+/cli_usagelog
     if ($group_ownership != none) then
-        chgrp $group_ownership $dir/$version/usagelog
-        chgrp $group_ownership $dir/$version/cli_usagelog
+        chgrp $group_ownership $dir/$version+/usagelog
+        chgrp $group_ownership $dir/$version+/cli_usagelog
     endif
 endif
 

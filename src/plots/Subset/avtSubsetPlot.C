@@ -92,6 +92,10 @@ using std::pair;
 //    Kathleen Bonnell, Fri Nov 12 11:47:49 PST 2004 
 //    Changed mapper type to avtLevelsPointGlyphMapper. 
 //
+//    Hank Childs, Wed Dec 20 09:25:42 PST 2006
+//    Make new method calls in response to changing behavior from facelist
+//    filters and ghost zone creation.
+//
 // ****************************************************************************
 
 avtSubsetPlot::avtSubsetPlot()
@@ -117,9 +121,13 @@ avtSubsetPlot::avtSubsetPlot()
     wf    = new avtFeatureEdgesFilter();
     gzfl  = new avtGhostZoneAndFacelistFilter();
     gzfl->SetForceFaceConsolidation(true);
+    gzfl->GhostDataMustBeRemoved();
+    gzfl->MustCreatePolyData();
     gz    = new avtGhostZoneFilter();
+    gz->GhostDataMustBeRemoved();
     fl    = new avtFacelistFilter();
     fl->SetForceFaceConsolidation(true);
+    fl->MustCreatePolyData();
     sub   = new avtSubsetFilter();
     smooth= new avtSmoothPolyDataFilter();
 }

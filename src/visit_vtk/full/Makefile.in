@@ -296,6 +296,10 @@
 #
 #    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 #    Added FILIB_INCLUDE
+#
+#    Hank Childs, Mon Dec 18 14:52:36 PST 2006
+#    Added rectilinear mapper code.
+#
 ##############################################################################
 
 ##
@@ -307,9 +311,11 @@
 ##
 ## Files...
 ##
-OPENGL_SRC=vtkVisItOpenGLPolyDataMapper.C
+OPENGL_SRC=vtkVisItOpenGLPolyDataMapper.C \
+    vtkOpenGLRectilinearGridMapper.C
 
 MESA_SRC=vtkOSMesaRenderWindow.C \
+    vtkMesaRectilinearGridMapper.C \
     vtkVisItMesaPolyDataMapper.C
 
 SRC=InitVTK.C \
@@ -329,6 +335,7 @@ SRC=InitVTK.C \
     vtkPPMWriter.C \
     vtkRGBWriter.C \
     vtkRectilinearGridFacelistFilter.C \
+    vtkRectilinearGridMapper.C \
     vtkRubberBandMapper2D.C \
     vtkSkewLookupTable.C \
     vtkSlicer.C \

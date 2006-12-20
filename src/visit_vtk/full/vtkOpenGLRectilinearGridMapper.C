@@ -1,0 +1,966 @@
+/*=========================================================================
+
+  Program:   Visualization Toolkit
+  Module:    $RCSfile: vtkOpenGLRectilinearGridMapper.cxx,v $
+  Language:  C++
+  Date:      $Date: 2003/04/28 19:13:10 $
+  Version:   $Revision: 1.78 $
+
+  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  All rights reserved.
+  See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
+
+     This software is distributed WITHOUT ANY WARRANTY; without even 
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     PURPOSE.  See the above copyright notice for more information.
+
+=========================================================================*/
+#include "vtkOpenGLRectilinearGridMapper.h"
+
+#include <vtkPoints.h>
+#include "vtkCellArray.h"
+#include "vtkCellData.h"
+#include "vtkCommand.h"
+#include "vtkDataArray.h"
+#include "vtkMatrix4x4.h"
+#include "vtkObjectFactory.h"
+#include "vtkOpenGLRenderer.h"
+#include "vtkPlane.h"
+#include "vtkPlaneCollection.h"
+#include "vtkPointData.h"
+#include "vtkRectilinearGrid.h"
+#include "vtkPolygon.h"
+#include "vtkProperty.h"
+#include "vtkTimerLog.h"
+#include "vtkTriangle.h"
+#include "vtkRenderWindow.h"
+
+#include "vtkLookupTable.h"
+#include "vtkSkewLookupTable.h"
+
+static const int dlSize = 8192;
+
+#ifndef VTK_IMPLEMENT_MESA_CXX
+  #include <visit-config.h>
+  #ifdef HAVE_LIBGLEW
+    #include <GL/glew.h>
+  #endif
+  #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
+    #include <OpenGL/gl.h>
+  #else
+    #if defined(_WIN32)
+       #include <windows.h>
+    #endif
+    #include <GL/gl.h>
+  #endif
+#endif
+
+#include <math.h>
+
+#ifndef VTK_IMPLEMENT_MESA_CXX
+vtkCxxRevisionMacro(vtkOpenGLRectilinearGridMapper, "$Revision: 1.78 $");
+vtkStandardNewMacro(vtkOpenGLRectilinearGridMapper);
+#endif
+
+static float vtk1Over255[] = {
+0.f, 0.00392157f, 0.00784314f, 0.0117647f, 0.0156863f, 0.0196078f, 0.0235294f,
+0.027451f, 0.0313725f, 0.0352941f, 0.0392157f, 0.0431373f, 0.0470588f, 0.0509804f,
+0.054902f, 0.0588235f, 0.0627451f, 0.0666667f, 0.0705882f, 0.0745098f, 0.0784314f,
+0.0823529f, 0.0862745f, 0.0901961f, 0.0941176f, 0.0980392f, 0.101961f, 0.105882f,
+0.109804f, 0.113725f, 0.117647f, 0.121569f, 0.12549f, 0.129412f, 0.133333f,
+0.137255f, 0.141176f, 0.145098f, 0.14902f, 0.152941f, 0.156863f, 0.160784f,
+0.164706f, 0.168627f, 0.172549f, 0.176471f, 0.180392f, 0.184314f, 0.188235f,
+0.192157f, 0.196078f, 0.2f, 0.203922f, 0.207843f, 0.211765f, 0.215686f, 0.219608f,
+0.223529f, 0.227451f, 0.231373f, 0.235294f, 0.239216f, 0.243137f, 0.247059f,
+0.25098f, 0.254902f, 0.258824f, 0.262745f, 0.266667f, 0.270588f, 0.27451f,
+0.278431f, 0.282353f, 0.286275f, 0.290196f, 0.294118f, 0.298039f, 0.301961f,
+0.305882f, 0.309804f, 0.313725f, 0.317647f, 0.321569f, 0.32549f, 0.329412f,
+0.333333f, 0.337255f, 0.341176f, 0.345098f, 0.34902f, 0.352941f, 0.356863f,
+0.360784f, 0.364706f, 0.368627f, 0.372549f, 0.376471f, 0.380392f, 0.384314f,
+0.388235f, 0.392157f, 0.396078f, 0.4f, 0.403922f, 0.407843f, 0.411765f, 0.415686f,
+0.419608f, 0.423529f, 0.427451f, 0.431373f, 0.435294f, 0.439216f, 0.443137f,
+0.447059f, 0.45098f, 0.454902f, 0.458824f, 0.462745f, 0.466667f, 0.470588f,
+0.47451f, 0.478431f, 0.482353f, 0.486275f, 0.490196f, 0.494118f, 0.498039f,
+0.501961f, 0.505882f, 0.509804f, 0.513725f, 0.517647f, 0.521569f, 0.52549f,
+0.529412f, 0.533333f, 0.537255f, 0.541176f, 0.545098f, 0.54902f, 0.552941f,
+0.556863f, 0.560784f, 0.564706f, 0.568627f, 0.572549f, 0.576471f, 0.580392f,
+0.584314f, 0.588235f, 0.592157f, 0.596078f, 0.6f, 0.603922f, 0.607843f, 0.611765f,
+0.615686f, 0.619608f, 0.623529f, 0.627451f, 0.631373f, 0.635294f, 0.639216f,
+0.643137f, 0.647059f, 0.65098f, 0.654902f, 0.658824f, 0.662745f, 0.666667f,
+0.670588f, 0.67451f, 0.678431f, 0.682353f, 0.686275f, 0.690196f, 0.694118f,
+0.698039f, 0.701961f, 0.705882f, 0.709804f, 0.713725f, 0.717647f, 0.721569f,
+0.72549f, 0.729412f, 0.733333f, 0.737255f, 0.741176f, 0.745098f, 0.74902f,
+0.752941f, 0.756863f, 0.760784f, 0.764706f, 0.768627f, 0.772549f, 0.776471f,
+0.780392f, 0.784314f, 0.788235f, 0.792157f, 0.796078f, 0.8f, 0.803922f, 0.807843f,
+0.811765f, 0.815686f, 0.819608f, 0.823529f, 0.827451f, 0.831373f, 0.835294f,
+0.839216f, 0.843137f, 0.847059f, 0.85098f, 0.854902f, 0.858824f, 0.862745f,
+0.866667f, 0.870588f, 0.87451f, 0.878431f, 0.882353f, 0.886275f, 0.890196f,
+0.894118f, 0.898039f, 0.901961f, 0.905882f, 0.909804f, 0.913725f, 0.917647f,
+0.921569f, 0.92549f, 0.929412f, 0.933333f, 0.937255f, 0.941176f, 0.945098f,
+0.94902f, 0.952941f, 0.956863f, 0.960784f, 0.964706f, 0.968627f, 0.972549f,
+0.976471f, 0.980392f, 0.984314f, 0.988235f, 0.992157f, 0.996078f, 1.f
+};
+
+
+vtkOpenGLRectilinearGridMapper::vtkOpenGLRectilinearGridMapper()
+{
+  this->ListStart = 0;
+  this->doingDisplayLists = false;
+  this->primsInCurrentList = 0;
+  this->nLists = 0;
+  this->CurrentList = 0;
+
+  this->EnableColorTexturing = false;
+  this->ColorTexturingAllowed = false;
+  this->ColorTextureLoaded = false;
+  this->ColorTextureName = 0;
+  this->ColorTexture = 0;
+  this->ColorTextureSize = 0;
+  this->ColorTextureLooksDiscrete = false;
+  this->OpenGLSupportsVersion1_2 = false;
+#ifndef VTK_IMPLEMENT_MESA_CXX
+  this->GLEW_initialized = false;
+#endif
+}
+
+// Destructor (don't call ReleaseGraphicsResources() since it is virtual
+vtkOpenGLRectilinearGridMapper::~vtkOpenGLRectilinearGridMapper()
+{
+  if (this->LastWindow)
+    {
+    this->ReleaseGraphicsResources(this->LastWindow);
+    }
+
+  if (this->ColorTexture != 0)
+      delete [] this->ColorTexture;
+}
+
+// ****************************************************************************
+// Release the graphics resources used by this mapper.  In this case, release
+// the display list if any.
+// ****************************************************************************
+
+void vtkOpenGLRectilinearGridMapper::ReleaseGraphicsResources(vtkWindow *win)
+{
+  if (this->ListStart && win)
+    {
+    win->MakeCurrent();
+    glDeleteLists(this->ListStart,nLists);
+    this->ListStart = 0;
+    }
+  this->LastWindow = NULL; 
+
+  if (this->ColorTextureLoaded)
+    {
+        win->MakeCurrent();
+        glDeleteTextures(1, &this->ColorTextureName);
+        this->ColorTextureLoaded = false;
+    }
+}
+
+void vtkOpenGLRectilinearGridMapper::Render(vtkRenderer *ren, vtkActor *act)
+{
+  vtkIdType numPts;
+  vtkRectilinearGrid *input= this->GetInput();
+  vtkPlaneCollection *clipPlanes;
+  vtkPlane *plane;
+  int i, numClipPlanes;
+  double planeEquation[4];
+
+  //
+  // make sure that we've been properly initialized
+  //
+  if (ren->GetRenderWindow()->CheckAbortStatus())
+    {
+    return;
+    }
+
+  if ( input == NULL )
+    {
+    vtkErrorMacro(<< "No input!");
+    return;
+    }
+  else
+    {
+    this->InvokeEvent(vtkCommand::StartEvent,NULL);
+    input->Update();
+    this->InvokeEvent(vtkCommand::EndEvent,NULL);
+
+    numPts = input->GetNumberOfPoints();
+    }
+
+  if (numPts == 0)
+    {
+    vtkDebugMacro(<< "No points!");
+    return;
+    }
+
+  if ( this->LookupTable == NULL )
+    {
+    this->CreateDefaultLookupTable();
+    }
+
+// make sure our window is current
+  ren->GetRenderWindow()->MakeCurrent();
+
+  clipPlanes = this->ClippingPlanes;
+
+  if (clipPlanes == NULL)
+    {
+    numClipPlanes = 0;
+    }
+  else
+    {
+    numClipPlanes = clipPlanes->GetNumberOfItems();
+    if (numClipPlanes > 6)
+      {
+      vtkErrorMacro(<< "OpenGL guarantees at most 6 additional clipping planes");
+      }
+    }
+
+  for (i = 0; i < numClipPlanes; i++)
+    {
+     glEnable((GLenum)(GL_CLIP_PLANE0+i));
+    }
+
+  if ( clipPlanes )
+    {
+    vtkMatrix4x4 *actorMatrix = vtkMatrix4x4::New();
+    act->GetMatrix( actorMatrix );
+    actorMatrix->Invert();
+
+    double origin[4], normal[3], point[4];
+
+    for (i = 0; i < numClipPlanes; i++)
+      {
+      plane = (vtkPlane *)clipPlanes->GetItemAsObject(i);
+
+      plane->GetOrigin(origin);
+      plane->GetNormal(normal);
+
+      point[0] = origin[0] + normal[0];
+      point[1] = origin[1] + normal[1];
+      point[2] = origin[2] + normal[2];
+
+      origin[3] = point[3] = 1.0;
+
+      actorMatrix->MultiplyPoint( origin, origin );
+      actorMatrix->MultiplyPoint( point, point );
+
+      if ( origin[3] != 1.0 )
+        {
+        origin[0] /= origin[3];
+        origin[1] /= origin[3];
+        origin[2] /= origin[3];
+        }
+
+      if ( point[3] != 1.0 )
+        {
+        point[0] /= point[3];
+        point[1] /= point[3];
+        point[2] /= point[3];
+        }
+
+      normal[0] = point[0] - origin[0];
+      normal[1] = point[1] - origin[1];
+      normal[2] = point[2] - origin[2];
+
+      planeEquation[0] = normal[0];
+      planeEquation[1] = normal[1];
+      planeEquation[2] = normal[2];
+      planeEquation[3] = -(planeEquation[0]*origin[0]+
+                           planeEquation[1]*origin[1]+
+                           planeEquation[2]*origin[2]);
+      glClipPlane((GLenum)(GL_CLIP_PLANE0+i),planeEquation);
+      }
+
+    actorMatrix->Delete();
+    }
+
+  //
+  // if something has changed regenerate colors and display lists
+  // if required
+  //
+  int noAbort=1;
+  if ( this->GetMTime() > this->BuildTime ||
+       input->GetMTime() > this->BuildTime ||
+       act->GetProperty()->GetMTime() > this->BuildTime ||
+       ren->GetRenderWindow() != this->LastWindow)
+    {
+    // Sets this->Colors as side effect.
+    this->ColorTexturingAllowed = this->MapScalarsWithTextureSupport(
+        act->GetProperty()->GetOpacity());
+
+    if (!this->ImmediateModeRendering &&
+        !this->GetGlobalImmediateModeRendering())
+      {
+      vtkTimerLog::MarkStartEvent("Building display list");
+      this->ReleaseGraphicsResources(ren->GetRenderWindow());
+      this->LastWindow = ren->GetRenderWindow();
+
+      // get a unique display list id
+      int nCells = input->GetNumberOfCells();
+      this->nLists = nCells / dlSize;
+      if ((nCells % dlSize) != 0)
+          this->nLists++;
+      this->nLists += 1; // For the "uber display list"
+      this->ListStart = glGenLists(this->nLists);
+
+      this->CurrentList = this->ListStart+1;
+      this->doingDisplayLists = true;
+      this->primsInCurrentList = 0;
+      noAbort = this->Draw(ren,act);
+
+      // Now make an uber-display-list that calls all of the other display
+      // lists.
+      glNewList(this->ListStart,GL_COMPILE);
+
+      // Note that lastList will almost always be ListStart+nLists.
+      // However: not all the draw methods know how to break up DLs into
+      // smaller ones.  So there is a chance that CurrentList is smaller...
+      int lastList = this->CurrentList;
+
+      for (int i = this->ListStart+1 ; i <= lastList ; i++)
+        {
+        glCallList(i);
+        }
+      glEndList();
+      vtkTimerLog::MarkEndEvent("Building display list");
+
+      // Time the actual drawing
+      this->Timer->StartTimer();
+      // Turn on color texturing if it's enabled.
+      this->BeginColorTexturing();
+      glCallList(this->ListStart);
+      this->EndColorTexturing();
+      this->Timer->StopTimer();
+      }
+    else
+      {
+      this->ReleaseGraphicsResources(ren->GetRenderWindow());
+      this->LastWindow = ren->GetRenderWindow();
+      }
+    if (noAbort)
+      {
+      this->BuildTime.Modified();
+      }
+    }
+  // if nothing changed but we are using display lists, draw it
+  else
+    {
+    if (!this->ImmediateModeRendering &&
+        !this->GetGlobalImmediateModeRendering())
+      {
+      // Time the actual drawing
+      this->Timer->StartTimer();
+      this->BeginColorTexturing();
+      glCallList(this->ListStart);
+      this->EndColorTexturing();
+      this->Timer->StopTimer();
+      }
+    }
+
+  // if we are in immediate mode rendering we always
+  // want to draw the primitives here
+  if (this->ImmediateModeRendering ||
+      this->GetGlobalImmediateModeRendering())
+    {
+    // sets this->Colors as side effect
+    this->ColorTexturingAllowed = this->MapScalarsWithTextureSupport(
+        act->GetProperty()->GetOpacity());
+
+    // Time the actual drawing
+    this->Timer->StartTimer();
+    this->doingDisplayLists = false;
+    this->BeginColorTexturing();
+    this->Draw(ren,act);
+    this->EndColorTexturing();
+    this->Timer->StopTimer();
+    }
+
+  this->TimeToDraw = (float)this->Timer->GetElapsedTime();
+
+  // If the timer is not accurate enough, set it to a small
+  // time so that it is not zero
+  if ( this->TimeToDraw == 0.0 )
+    {
+    this->TimeToDraw = 0.0001;
+    }
+
+  for (i = 0; i < numClipPlanes; i++)
+    {
+    glDisable((GLenum)(GL_CLIP_PLANE0+i));
+    }
+}
+
+int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
+{
+   int  i;
+
+   vtkRectilinearGrid *input = this->GetInput();
+   int dims[3];
+   input->GetDimensions(dims);
+   if (dims[2] != 1)
+   {
+       cerr << "3D grid ... aborting!" << endl;
+       return 0;
+   }
+
+   if (this->doingDisplayLists)
+   {
+       glNewList(this->CurrentList,GL_COMPILE);
+       this->primsInCurrentList = 0;
+   }
+
+   glDisable(GL_LIGHTING);
+   const unsigned char *colors = NULL;
+   if (this->Colors != NULL)
+       colors = this->Colors->GetPointer(0);
+
+   vtkProperty *prop = act->GetProperty();
+   glDisable( GL_COLOR_MATERIAL );
+   if (colors)
+   {
+       GLenum lmcolorMode;
+       if (this->ScalarMaterialMode == VTK_MATERIALMODE_DEFAULT)
+       {
+           if (prop->GetAmbient() > prop->GetDiffuse())
+           {
+               lmcolorMode = GL_AMBIENT;
+           }
+           else
+           {
+               lmcolorMode = GL_DIFFUSE;
+           }
+       }
+       else if (this->ScalarMaterialMode == VTK_MATERIALMODE_AMBIENT_AND_DIFFUSE)
+       {
+           lmcolorMode = GL_AMBIENT_AND_DIFFUSE;
+       }
+       else if (this->ScalarMaterialMode == VTK_MATERIALMODE_AMBIENT)
+       {
+           lmcolorMode = GL_AMBIENT;
+       }
+       else // if (this->ScalarMaterialMode == VTK_MATERIALMODE_DIFFUSE)
+       {
+           lmcolorMode = GL_DIFFUSE;
+       }
+
+       glColorMaterial( GL_FRONT_AND_BACK, lmcolorMode);
+       glEnable( GL_COLOR_MATERIAL );
+   }
+
+   vtkUnsignedCharArray *gz = (vtkUnsignedCharArray *) 
+                               input->GetCellData()->GetArray("avtGhostZones");
+   unsigned char *ghost_zones = NULL;
+   if (gz != NULL)
+       ghost_zones = gz->GetPointer(0);
+   vtkUnsignedCharArray *gn = (vtkUnsignedCharArray *) 
+                              input->GetPointData()->GetArray("avtGhostNodes");
+   unsigned char *ghost_nodes = NULL;
+   if (gn != NULL)
+       ghost_nodes = gn->GetPointer(0);
+
+   bool nodeData = true;
+   if ( (this->ScalarMode == VTK_SCALAR_MODE_USE_CELL_DATA ||
+         this->ScalarMode == VTK_SCALAR_MODE_USE_CELL_FIELD_DATA ||
+         !input->GetPointData()->GetScalars() )
+         && this->ScalarMode != VTK_SCALAR_MODE_USE_POINT_FIELD_DATA)
+     {
+     nodeData = false;
+     }
+
+   float *X = new float[dims[0]];
+   for (i = 0 ; i < dims[0] ; i++)
+       X[i] = input->GetXCoordinates()->GetTuple1(i);
+   float *Y = new float[dims[1]];
+   for (i = 0 ; i < dims[1] ; i++)
+       Y[i] = input->GetYCoordinates()->GetTuple1(i);
+   float *Z = new float[dims[2]];
+   for (i = 0 ; i < dims[2] ; i++)
+       Z[i] = input->GetZCoordinates()->GetTuple1(i);
+
+   bool normalQuadOrder = true;
+   if (dims[0] > 1 && X[1] < X[0])
+       normalQuadOrder = !normalQuadOrder;
+   if (dims[1] > 1 && Y[1] < Y[0])
+       normalQuadOrder = !normalQuadOrder;
+   int normalquadorder[4] = { 0, 1, 3, 2 };
+   int otherquadorder[4] = { 0, 2, 3, 1 };
+   int *quadorder = (normalQuadOrder ? normalquadorder : otherquadorder);
+
+   glBegin(GL_QUADS);
+   for (int i = 0 ; i < dims[0]-1 ; i++)
+       for (int j = 0 ; j < dims[1]-1 ; j++)
+       {
+           if (ghost_zones != NULL)
+               if (*(ghost_zones++) != '\0')
+                   continue;
+           if (ghost_nodes != NULL)
+           {
+               int p0 = j*dims[0]+i;
+               int p1 = j*dims[0]+i+1;
+               int p2 = (j+1)*dims[0]+i;
+               int p3 = (j+1)*dims[0]+i+1;
+               if (ghost_nodes[p0] && ghost_nodes[p1] && ghost_nodes[p2]
+                   && ghost_nodes[p3])
+                  continue;
+           }
+
+           if (colors == NULL)
+           {
+               for (int k = 0 ; k < 4 ; k++)
+               {
+                   glVertex3f(X[i + quadorder[k] % 2], Y[j + quadorder[k]/2],
+                              Z[0]);
+               }
+           }
+           else
+           {
+               if (!nodeData)
+               {
+                   int idx = j*(dims[0]-1) + i;
+                   if (!this->ColorTexturingAllowed)
+                       glColor4ubv(colors + 4*idx);
+                   else
+                       glTexCoord1f(vtk1Over255[(colors + 4*idx)[0]]);
+                   for (int k = 0 ; k < 4 ; k++)
+                   {
+                       glVertex3f(X[i + quadorder[k] % 2], 
+                                  Y[j + quadorder[k]/2], Z[0]);
+                   }
+               }
+               else
+               {
+                   for (int k = 0 ; k < 4 ; k++)
+                   {
+                       int idx = (j + quadorder[k]/2)*dims[0] + 
+                                 (i+(quadorder[k]%2));
+                       if (!this->ColorTexturingAllowed)
+                           glColor4ubv(colors + 4*idx);
+                       else
+                           glTexCoord1f(vtk1Over255[colors[4*idx]]);
+                       glVertex3f(X[i + quadorder[k] % 2], 
+                                  Y[j + quadorder[k]/2], Z[0]);
+                   }
+               }
+           }
+
+           if (this->doingDisplayLists)
+           {
+               this->primsInCurrentList++;
+               if (this->primsInCurrentList >= dlSize)
+               {
+                   glEnd();
+                   glEndList();
+                   this->CurrentList++;
+                   glNewList(this->CurrentList,GL_COMPILE);
+                   glBegin(GL_QUADS);
+                   this->primsInCurrentList = 0;
+               }
+           }
+       }
+   glEnd();
+   glEnable(GL_LIGHTING);
+   if (this->doingDisplayLists)
+       glEndList();
+
+   delete [] X;
+   delete [] Y;
+   delete [] Z;
+
+   return 1;
+}
+
+
+void vtkOpenGLRectilinearGridMapper::PrintSelf(ostream& os, vtkIndent indent)
+{
+  this->Superclass::PrintSelf(os,indent);
+}
+
+// ****************************************************************************
+// Method: vtkOpenGLRectilinearGridMapper::MapScalarsWithTextureSupport
+//
+// Purpose:
+//   This method calls MapScalars to use the lookup tables to set this->Colors.
+//   Along the way, we also determine if we have point data and whether color
+//   texturing should be used.
+//
+// Arguments:
+//   opacity : The actor opacity.
+//
+// Returns:    True if we will use color texturing.
+//
+// Note:       This method calls MapScalars and performs the steps necessary
+//             for setting up color texturing. Once it is determined that
+//             we want to use color texturing, this method changes the colors
+//             in the LUT so it will produce red values [0,255] to serve as
+//             indices into the color texture. We also set up the array that
+//             we use as the color texture array.
+//
+// Note:       Taken wholesale from routine written by Brad Whitlock
+//             for vtkVisItOpenGLPolyDataMapper.
+//
+// Programmer: Hank Childs
+// Creation:   December 19, 2006
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+vtkOpenGLRectilinearGridMapper::MapScalarsWithTextureSupport(double opacity)
+{
+    bool saveColors = this->EnableColorTexturing &&
+                      this->LookupTable != NULL &&
+                      this->LookupTable->IsA("vtkLookupTable");
+
+    if(saveColors)
+    {
+        // Let's make sure that we have nodal data.
+        if(!this->UsesPointData(
+                this->GetInput(), this->ScalarMode, this->ArrayAccessMode,
+                this->ArrayId, this->ArrayName, this->ArrayComponent))
+        {
+            saveColors = false;
+        }
+    }
+
+    vtkLookupTable *LUT_src = (vtkLookupTable *)this->LookupTable;
+    LUT_src->Register(NULL);
+    if(saveColors)
+    {
+        vtkLookupTable *LUT = NULL;
+        if (LUT_src->IsA("vtkSkewLookupTable"))
+        {
+            vtkSkewLookupTable *sLUT = vtkSkewLookupTable::New();
+            sLUT->DeepCopy(LUT_src);
+            vtkSkewLookupTable *lut2 = (vtkSkewLookupTable *) LUT_src;
+            sLUT->SetSkewFactor(lut2->GetSkewFactor());
+            LUT = sLUT;
+        }
+        else
+        {
+            LUT = vtkLookupTable::New();
+            LUT->DeepCopy(LUT_src);
+        }
+
+        // Save the LUT's colors into a color texture.
+        int NewColorTextureSize = LUT->GetNumberOfTableValues();
+        int two_to_the_power = 2;
+        for(int power = 1; power < 32; ++power)
+        {
+            if(two_to_the_power >= NewColorTextureSize)
+            {
+                NewColorTextureSize = two_to_the_power;
+                break;
+            }
+            two_to_the_power <<= 1;
+        }
+
+        float *NewColorTexture = new float[NewColorTextureSize * 4];
+        memset(NewColorTexture, 0, sizeof(float) * NewColorTextureSize);
+        for(int i = 0; i < LUT->GetNumberOfTableValues(); ++i)
+        {
+            double *rgba = LUT->GetTableValue(i);
+            NewColorTexture[4*i] = rgba[0];
+            NewColorTexture[4*i+1] = rgba[1];
+            NewColorTexture[4*i+2] = rgba[2];
+            NewColorTexture[4*i+3] = rgba[3];
+        }
+
+        // Replace the current LUT's colors with black->white that we can use
+        // as texture indices.
+        for(int i = 0; i < LUT->GetNumberOfTableValues(); ++i)
+        {
+            double r,g,b,a;
+            r = double(i) / double(LUT->GetNumberOfTableValues()-1);
+            g = b = 0.;
+            a = 1.;
+            LUT->SetTableValue(i, r,g,b,a);
+        }
+
+        // Analyize the colors so we can make a guess as to whether the
+        // colors in the LUT came from a continuous or discrete lookup
+        // table. Just assume that the color table is discrete if the
+        // colors are the same for 3 consecutive bins if we sample some
+        // number of locations in the color table.
+        int same_count = 0;
+        for(int i = 0; i < 5; ++i)
+        {
+            float t = float(i) / float(LUT->GetNumberOfTableValues()-1);
+            int index = int(t * (LUT->GetNumberOfTableValues() - 2));
+
+            unsigned char c0[3], c1[3];
+            c0[0] = (unsigned char)(255. * NewColorTexture[(index * 4) + 0]);
+            c0[1] = (unsigned char)(255. * NewColorTexture[(index * 4) + 1]);
+            c0[2] = (unsigned char)(255. * NewColorTexture[(index * 4) + 2]);
+
+            c1[0] = (unsigned char)(255. * NewColorTexture[((index+1) * 4) + 0]);
+            c1[1] = (unsigned char)(255. * NewColorTexture[((index+1) * 4) + 1]);
+            c1[2] = (unsigned char)(255. * NewColorTexture[((index+1) * 4) + 2]);
+
+            if(c0[0] == c1[0] && c0[1] == c1[1] && c0[2] == c1[2])
+            {
+                ++same_count;
+            }
+        }
+        this->ColorTextureLooksDiscrete = same_count >= 3;
+
+        // Save the texture array.
+        if(this->ColorTexture)
+            delete [] this->ColorTexture;
+        this->ColorTexture = NewColorTexture;
+        this->ColorTextureSize = NewColorTextureSize;
+        SetLookupTable(LUT);
+        LUT->Delete();
+    }
+
+    // sets this->Colors as side effect
+    this->MapScalars(opacity);
+
+    if(saveColors)
+    {
+        SetLookupTable(LUT_src);
+        LUT_src->Delete();
+
+#ifdef GL_VERSION_1_2
+        // Figure out the OpenGL version.
+        const char *gl_ver = (const char *)glGetString(GL_VERSION);
+        int major, minor;
+        if(sscanf(gl_ver, "%d.%d", &major, &minor) == 2)
+        {
+            if(major == 1)
+                this->OpenGLSupportsVersion1_2 = minor >= 2;
+            else
+                this->OpenGLSupportsVersion1_2 = major > 1;
+        }
+        else
+        {
+#endif
+            this->OpenGLSupportsVersion1_2 = false;
+#ifdef GL_VERSION_1_2
+        }
+#endif
+    }
+
+    return saveColors;
+}
+
+// ****************************************************************************
+// Method: vtkOpenGLRectilinearGridMapper::BeginColorTexturing
+//
+// Purpose:
+//   Begins color texturing if it is enabled.
+//
+// Note:       Taken wholesale from routine written by Brad Whitlock
+//             for vtkVisItOpenGLPolyDataMapper.
+//
+// Programmer: Hank Childs
+// Creation:   December 19, 2006
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+vtkOpenGLRectilinearGridMapper::BeginColorTexturing()
+{
+    if(!this->ColorTexturingAllowed)
+        return;
+
+    if(!this->ColorTextureLoaded)
+    {
+        glGenTextures(1, &this->ColorTextureName);
+        glBindTexture(GL_TEXTURE_1D, this->ColorTextureName);
+
+#ifdef GL_VERSION_1_2
+        // If we have OpenGL 1.2 then let's use clamp to edge so the colors
+        // for the min/max texture values won't be blended with the border
+        // color when we use GL_LINEAR.
+        if(this->OpenGLSupportsVersion1_2)
+        {
+            glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        }
+        else
+        {
+#endif
+            glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+            glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+#ifdef GL_VERSION_1_2
+        }
+#endif
+
+        // Vary the filter based on what we think of the color table. Discrete
+        // color tables won't have their colors blended.
+        GLint m = this->ColorTextureLooksDiscrete ? GL_NEAREST : GL_LINEAR;
+        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, m);
+        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, m);
+        glTexImage1D(GL_TEXTURE_1D, 0, 4, this->ColorTextureSize,
+                     0, GL_RGBA, GL_FLOAT, (void *)this->ColorTexture);
+        this->ColorTextureLoaded = true;
+    }
+
+    if(this->ColorTextureLoaded)
+    {
+        // Turn on texturing.
+        glEnable(GL_TEXTURE_1D);
+        glBindTexture(GL_TEXTURE_1D, this->ColorTextureName);
+        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    }
+
+    // Make the appropriate changes in the vtk1Over255 lookup table
+    // so we can change the lookups so the first and last ones are not
+    // used when we do GL_NEAREST. This may make the colors slightly off
+    // but we won't get color values blended between the first and last
+    // texture elements and the border color.
+    if(!this->OpenGLSupportsVersion1_2)
+    {
+        if(this->ColorTextureLooksDiscrete)
+        {
+            vtk1Over255[0] = 0.f;
+            vtk1Over255[255] = 1.f;
+        }
+        else
+        {
+            vtk1Over255[0] = 1. / 255.f;
+            vtk1Over255[255] = 254. / 255.f;
+        }
+    }
+
+    //
+    // Enable specular color splitting so the specular highlights are done
+    // after texturing. This ensures that the specular highlights look
+    // right when we're in texturing mode.
+    //
+#ifdef VTK_IMPLEMENT_MESA_CXX
+    // Mesa
+    glEnable(GL_COLOR_SUM_EXT);
+    glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
+#else
+    // OpenGL
+#if HAVE_LIBGLEW
+    if(!this->GLEW_initialized)
+    {
+        this->GLEW_initialized = glewInit() == GLEW_OK;
+    }
+    if(this->GLEW_initialized && GLEW_EXT_secondary_color)
+    {
+        glEnable(GL_COLOR_SUM_EXT);
+        glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
+    }
+#endif
+#endif
+}
+
+
+// ****************************************************************************
+// Method: vtkOpenGLRectilinearGridMapper::EndColorTexturing
+//
+// Purpose:
+//   Ends color texturing if it is enabled.
+//
+// Note:       Taken wholesale from routine written by Brad Whitlock
+//             for vtkVisItOpenGLPolyDataMapper.
+//
+// Programmer: Hank Childs
+// Creation:   December 19, 2006
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+vtkOpenGLRectilinearGridMapper::EndColorTexturing()
+{
+    if(!this->ColorTexturingAllowed)
+        return;
+
+    // Turn off color texturing.
+    if(this->ColorTextureLoaded)
+    {
+        glDisable(GL_TEXTURE_1D);
+    }
+
+#ifdef VTK_IMPLEMENT_MESA_CXX
+    // Mesa
+    glDisable(GL_COLOR_SUM_EXT);
+#else
+    // OpenGL
+#if HAVE_LIBGLEW
+    if(this->GLEW_initialized && GLEW_EXT_secondary_color)
+        glDisable(GL_COLOR_SUM_EXT);
+#endif
+#endif
+}
+
+
+// ****************************************************************************
+// Method: vtkOpenGLRectilinearGridMapper::UsesPointData
+//
+// Purpose:
+//   Follows the same rules as the GetScalars method except that it returns
+//   true if the scalars are point data or false otherwise.
+//
+// Note:       We use this method to determine whether we have point data
+//             so we can enable color texturing.
+//
+// Note:       Taken wholesale from routine written by Brad Whitlock
+//             for vtkVisItOpenGLPolyDataMapper.
+//
+// Programmer: Hank Childs
+// Creation:   December 19, 2006
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+vtkOpenGLRectilinearGridMapper::UsesPointData(vtkDataSet *input, int scalarMode,
+    int arrayAccessMode, int arrayId, const char *arrayName, int& offset)
+{
+  vtkDataArray *scalars=NULL;
+  vtkPointData *pd;
+  bool usesPointData = false;
+
+  // make sure we have an input
+  if ( !input )
+    {
+    return usesPointData;
+    }
+
+  // get and scalar data according to scalar mode
+  if ( scalarMode == VTK_SCALAR_MODE_DEFAULT )
+    {
+    if (input->GetPointData()->GetScalars() != 0)
+      {
+      usesPointData = true;
+      }
+    }
+  else if ( scalarMode == VTK_SCALAR_MODE_USE_POINT_DATA )
+    {
+    usesPointData = true;
+    }
+  else if ( scalarMode == VTK_SCALAR_MODE_USE_POINT_FIELD_DATA )
+    {
+    pd = input->GetPointData();
+    if (arrayAccessMode == VTK_GET_ARRAY_BY_ID)
+      {
+      scalars = pd->GetArray(arrayId);
+      }
+    else
+      {
+      scalars = pd->GetArray(arrayName);
+      }
+
+    if ( scalars && (offset < scalars->GetNumberOfComponents()) )
+      {
+          usesPointData = true;
+      }
+    }
+
+  return usesPointData;
+}
+
+

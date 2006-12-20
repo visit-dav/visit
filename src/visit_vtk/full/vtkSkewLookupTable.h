@@ -52,6 +52,19 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // .SECTION See Also
 // vtkLookupTable
 
+// WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+//
+//  The modules vtkVisItOpenGLPolyDataMapper and 
+//  vtkOpenGLRectilinearGridMapper make a copy of the lookup
+//  table.  When they do, they have special coding for dealing with skew
+//  lookup tables.  This special coding is necessary because the
+//  routine vtkLookupTable::DeepCopy is not virtual.
+//
+//  So: if you modify this class, especially if you add new data members,
+//  please look at the mapper classes and search for
+//  vtkSkewLookupTable to see if modifications are necessary.
+//
+// WARNING WARNING WARNING WARNING WARNING WARNING WARNING
 
 #ifndef __vtkSkewLookupTable_h
 #define __vtkSkewLookupTable_h

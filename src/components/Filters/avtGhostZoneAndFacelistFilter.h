@@ -74,6 +74,10 @@ class   avtFacelistFilter;
 //    Hank Childs, Fri Sep 23 10:38:31 PDT 2005
 //    Add support for edge lists.
 //
+//    Hank Childs, Wed Dec 20 09:34:20 PST 2006
+//    Add support for new methods with facelist filter and ghost zone filter
+//    to ensure that ghosts are removed and polydata is produced.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtGhostZoneAndFacelistFilter :
@@ -92,6 +96,8 @@ class AVTFILTERS_API avtGhostZoneAndFacelistFilter :
     void                  SetCreate3DCellNumbers(bool val);
     void                  SetForceFaceConsolidation(bool);
     void                  SetCreateEdgeListFor2DDatasets(bool val);
+    void                  GhostDataMustBeRemoved();
+    void                  MustCreatePolyData();
 
     virtual void          ReleaseData(void);
 

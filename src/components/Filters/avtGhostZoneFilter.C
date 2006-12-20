@@ -45,6 +45,7 @@
 #include <vtkDataSet.h>
 #include <vtkDataSetRemoveGhostCells.h>
 #include <vtkPointData.h>
+#include <vtkUnsignedCharArray.h>
 
 #include <DebugStream.h>
 
@@ -59,11 +60,16 @@
 //  Programmer: Hank Childs
 //  Creation:   February 5, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Dec 20 09:25:42 PST 2006
+//    Initialize ghostDataMustBeRemoved.
+//
 // ****************************************************************************
 
 avtGhostZoneFilter::avtGhostZoneFilter()
 {
-    ;
+    ghostDataMustBeRemoved = false;
 }
 
 
@@ -125,6 +131,9 @@ avtGhostZoneFilter::~avtGhostZoneFilter()
 //    Change the way we access the vtkDataSetRemoveGhostCells filter, since
 //    it can change type of output.
 //
+//    Hank Childs, Tue Dec 19 09:52:33 PST 2006
+//    Allow rectilinear grids to pass through.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -146,6 +155,66 @@ avtGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
         //  No ghost cells, no need to use this filter.
         //
         debug5 << "No Ghost Zones present! domain:  " << domain << endl;
+        return in_ds;
+    }
+
+    //
+    // Check to see if the data is all ghost.  If so, then we don't need
+    // to go any further.
+    //
+    if (haveGhostZones)
+    {
+        vtkUnsignedCharArray *ghost_zones = (vtkUnsignedCharArray *)
+                               in_ds->GetCellData()->GetArray("avtGhostZones");
+        unsigned char *gz = ghost_zones->GetPointer(0);
+        bool allGhost = true;
+        const int nCells = in_ds->GetNumberOfCells();
+        for (int i = 0 ; i < nCells ; i++)
+        {
+            if (gz[i] == '\0')
+            {
+                allGhost = false;
+                break;
+            }
+        }
+
+        if (allGhost)
+        {
+            debug5 << "Domain " << domain << " contains only ghosts.  Removing"
+                   << endl;
+            return NULL;
+        }
+    }
+    if (haveGhostNodes)
+    {
+        vtkUnsignedCharArray *ghost_nodes = (vtkUnsignedCharArray *)
+                               in_ds->GetPointData()->GetArray("avtGhostNodes");
+        unsigned char *gn = ghost_nodes->GetPointer(0);
+        bool allGhost = true;
+        const int nCells = in_ds->GetNumberOfCells();
+        for (int i = 0 ; i < nCells ; i++)
+        {
+            if (gn[i] == '\0')
+            {
+                allGhost = false;
+                break;
+            }
+        }
+
+        if (allGhost)
+        {
+            debug5 << "Domain " << domain << " contains only ghosts.  Removing"
+                   << endl;
+            return NULL;
+        }
+    }
+
+    if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID && 
+        !ghostDataMustBeRemoved)
+    {
+        debug5 << "Allow rectilinear grid to travel through with ghost data;"
+               << " depending on mapper to remove ghost data during render." 
+               << endl;
         return in_ds;
     }
 

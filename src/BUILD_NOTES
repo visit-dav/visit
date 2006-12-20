@@ -194,10 +194,10 @@ cp include/GL/*.h $VISITDIR/mesa/5.0/$VISITARCH/include/GL
 #
 # cd lib
 # ar -x libMesaGL.a
-# g++ -Wl,-G -shared -o libMesaGL.so -Wl,-bmaxdata:0x70000000 -Wl,-brtl *.o
+# xlC -G -brtl -Wl,-blpdata -Wl,-bmaxdata:0x70000000 -o libMesaGL.so *.o
 # rm *.o
 # ar -x libOSMesa.a
-# g++ -Wl,-G -shared -o libOSMesa.so -Wl,-bmaxdata:0x70000000 -Wl,-brtl *.o
+# xlC -G -brtl -Wl,-blpdata -Wl,-bmaxdata:0x70000000 -o libOSMesa.so *.o
 # rm *.o
 # cd ..
 #
@@ -269,14 +269,6 @@ cd VTK
 # to add "-64" to the compiler and linker flags.  These include CMAKE_C_FLAGS,
 # CMAKE_CXX_FLAGS, CMAKE_EXE_LINKER_FLAGS, CMAKE_MODULE_LINKER_FLAGS, and
 # CMAKE_SHARED_LINKER_FLAGS,
-#
-# On aix systems you will need to specify "-mminimal-toc" for CMAKE_CXX_FLAGS.
-# You may also experience problems with X11 headers. The default X11 headers
-# files that cmake finds are not C++ compliant. Change "/usr/lpp/X11/include"
-# to "/usr/include" for CMAKE_X_CFLAGS, X11_X11_INCLUDE_PATH,
-# X11_Xlib_INCLUDE_PATH and X11_Xutil_INCLUDE_PATH.
-# If this should lead to errors related to standard C++ headers (e.g. stdio), 
-# remove the CMAKE_X_CFLAGS string and re-run cmake.
 #
 ../cmake-2.2.3/bin/cmake .
 #
@@ -521,7 +513,6 @@ setenv LD_LIBRARY64_PATH $QTDIR/lib:$LD_LIBRARY64_PATH       # SGI
 # all linux versions except for opteron systems, in which case you should
 # use the linux-g++-64 platform.
 #
-./configure -platform aix-g++ -shared -no-largefile -qt-libpng
 ./configure -platform aix-xlc -shared -qt-libpng
 ./configure -platform aix-xlc-64 -shared -qt-libpng
 ./configure -platform irix-cc-64 -shared -qt-libpng
@@ -535,12 +526,6 @@ setenv LD_LIBRARY64_PATH $QTDIR/lib:$LD_LIBRARY64_PATH       # SGI
 # On tru64 systems you will need to make the following changes to
 # the file mkspecs/tru64-g++/qmake.conf:
 # set QMAKE_LIBDIR_OPENGL to "/usr/shlib"
-#
-# On aix systems, when using the aix-g++ platform, qt will normally find non
-# c++ compliant X11 header files in /usr/lpp/X11/include.  You will need to
-# make the following changes to the file mkspecs/aix-g++/qmake.conf:
-# remove "/usr/X11R6/include" from QMAKE_INCDIR_X11
-# remove "/usr/X11R6/include" from QMAKE_INCDIR_OPENGL
 #
 
 #
@@ -580,94 +565,6 @@ cd ../..
 #
 # ln -s libqt.so.3.3.2 $VISITDIR/qt/3.3.2/$VISITARCH/lib/libqt.so
 # ln -s libqui.so.1.0.0 $VISITDIR/qt/3.3.2/$VISITARCH/lib/libqui.so
-#
-
-#
-# Build Qt 3.0.2
-#
-gunzip qt-x11-free-3.0.2.tar.gz
-tar xf qt-x11-free-3.0.2.tar
-cd qt-x11-free-3.0.2
-setenv QTDIR `pwd`
-# Use the appropriate configure command based on the operating system on
-# which you are building Qt.
-./configure -platform aix-g++ -shared -qt-libpng
-./configure -platform irix-64 -shared -qt-libpng
-./configure -platform linux-g++ -shared -qt-libpng
-./configure -platform solaris-g++ -shared -qt-libpng
-./configure -platform tru64-g++ -shared -qt-libpng
-#
-# On tru64 systems you will need to make the following changes to
-# the file mkspecs/tru64-g++/qmake.conf:
-# remove "/usr/X11R6/include" from QMAKE_INCDIR_X11
-# remove "/usr/X11R6/lib"     from QMAKE_LIBDIR_X11
-# remove "/usr/X11R6/include" from QMAKE_INCDIR_OPENGL
-# set QMAKE_LIBDIR_OPENGL to "/usr/shlib"
-#
-# On aix systems you will need to make the following changes to
-# the file mkspecs/aix-g++/qmake.conf:
-# remove "/usr/X11R6/include" from QMAKE_INCDIR_X11
-# remove "/usr/X11R6/include" from QMAKE_INCDIR_OPENGL
-#
-make
-
-#
-# Install it in the visit directory under the qt directory.
-#
-mkdir $VISITDIR/qt
-mkdir $VISITDIR/qt/3.0.2
-mkdir $VISITDIR/qt/3.0.2/$VISITARCH
-mkdir $VISITDIR/qt/3.0.2/$VISITARCH/{bin,include,lib}
-cp bin/{designer,findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/3.0.2/$VISITARCH/bin
-cd include; cp *.h $VISITDIR/qt/3.0.2/$VISITARCH/include
-cp private/*.h $VISITDIR/qt/3.0.2/$VISITARCH/include/private
-cd ../lib;find . -print | cpio -pvmud $VISITDIR/qt/3.0.2/$VISITARCH/lib
-cd ../..
-#
-# On aix systems you will need to add an additional link to the lib
-# directory so that the loader can find the library.
-#
-# ln -s libqt.so.3.0.2  $VISITDIR/qt/3.0.2/$VISITARCH/lib/libqt.so
-#
-
-#
-# Build Qt 2.3.0
-#
-gunzip qt-x11-2.3.0.tar.gz
-tar xf qt-x11-2.3.0.tar
-cd qt-2.3.0
-setenv QTDIR `pwd`
-# Use the appropriate configure command based on the operating system on
-# which you are building Qt.
-./configure -platform aix-g++ -shared -qt-libpng
-./configure -platform irix-64 -shared -qt-libpng
-./configure -platform linux-g++ -shared -qt-libpng
-./configure -platform solaris-g++ -shared -qt-libpng
-./configure -platform tru64-g++ -shared -qt-libpng
-#
-# On aix systems you will need to make the following changes to
-# the file mkspecs/aix-g++/qmake.conf:
-# remove "/usr/X11R6/include" from QMAKE_INCDIR_X11
-# remove "/usr/X11R6/include" from QMAKE_INCDIR_OPENGL
-#
-make
-
-#
-# Install it in the visit directory under the qt directory.
-#
-mkdir $VISITDIR/qt
-mkdir $VISITDIR/qt/2.3.0
-mkdir $VISITDIR/qt/2.3.0/$VISITARCH
-mkdir $VISITDIR/qt/2.3.0/$VISITARCH/{bin,include,lib}
-cp bin/{designer,findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/2.3.0/$VISITARCH/bin
-cd include; cp *.h $VISITDIR/qt/2.3.0/$VISITARCH/include
-cd ../lib;find . -print | cpio -pvmud $VISITDIR/qt/2.3.0/$VISITARCH/lib
-cd ../..
-#
-# On aix systems you will need to add an additional link to the lib
-# directory so that the loader can find the library.
-#
-# ln -s libqt.so.2.3.0 $VISITDIR/qt/2.3.0/$VISITARCH/lib/libqt.so
 #
 
 Silo
@@ -1287,10 +1184,7 @@ configure script or can listed by the configure script by typing
   --enable-buildall       build all plugins
 
   --with-netcdf=INC,LIB   Location of NetCDF header and library
-
   --with-hdf5=INC,LIB     Location of HDF5 header and library
-  --with-vbt=INC,LIB      Location of VBT/DSL headers and libraries
-  --with-saf=INC,LIB      Location of SAF headers and libraries
 
   --with-exodus[=<DIR>]           enable Exodus driver
   --with-exodus-include[=<DIR>]   specify Exodus include path
@@ -1303,8 +1197,8 @@ enable buildall option builds all the VisIt plugins.  By default, only the
 most common plugins are built.
 
 The second group of options are used when building with support for reading
-SAF files.  The third group of options are used when building with support
-for reading exodus files.
+netcf files or files based on hdf5.  The third group of options are used when
+building with support for reading exodus files.
 
 Some platforms (especially SUSE) have compilation problems with 
 "plots/Volume/avtOpenGL3DTextureVolumeRenderer.C".  We are currently working

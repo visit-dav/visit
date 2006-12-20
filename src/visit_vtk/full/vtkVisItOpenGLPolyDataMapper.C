@@ -35,6 +35,7 @@
 #include "vtkRenderWindow.h"
 
 #include "vtkLookupTable.h"
+#include "vtkSkewLookupTable.h"
 
 static const int dlSize = 8192;
 
@@ -4295,6 +4296,14 @@ vtkVisItOpenGLPolyDataMapper::UsesPointData(vtkDataSet *input, int scalarMode,
 //
 // Modifications:
 //   
+//   Hank Childs, Tue Dec 19 13:14:41 PST 2006
+//   Fix problem where the LUT was getting modified.  The LUT is shared by
+//   many mappers, so its modification means that each of those mappers are
+//   essentially modified as well.  This means that any time one modifies
+//   the LUT (as this routine previously did), then each mapper that depends
+//   on it can no longer use its display list.  (And the display generation
+//   depended on this routine, so it snowballed.)  ['7625]
+//
 // ****************************************************************************
 
 bool
@@ -4324,9 +4333,24 @@ vtkVisItOpenGLPolyDataMapper::MapScalarsWithTextureSupport(double opacity)
         }
     }
 
+    vtkLookupTable *LUT_src = (vtkLookupTable *)this->LookupTable;
+    LUT_src->Register(NULL);
     if(saveColors)
     {
-        vtkLookupTable *LUT = (vtkLookupTable *)this->LookupTable;
+        vtkLookupTable *LUT = NULL;
+        if (LUT_src->IsA("vtkSkewLookupTable"))
+        {
+            vtkSkewLookupTable *sLUT = vtkSkewLookupTable::New();
+            sLUT->DeepCopy(LUT_src);
+            vtkSkewLookupTable *lut2 = (vtkSkewLookupTable *) LUT_src;
+            sLUT->SetSkewFactor(lut2->GetSkewFactor());
+            LUT = sLUT;
+        }
+        else
+        {
+            LUT = vtkLookupTable::New();
+            LUT->DeepCopy(LUT_src);
+        }
 
         // Save the LUT's colors into a color texture.
         int NewColorTextureSize = LUT->GetNumberOfTableValues();
@@ -4395,6 +4419,8 @@ vtkVisItOpenGLPolyDataMapper::MapScalarsWithTextureSupport(double opacity)
             delete [] this->ColorTexture;
         this->ColorTexture = NewColorTexture;
         this->ColorTextureSize = NewColorTextureSize;
+        SetLookupTable(LUT);
+        LUT->Delete();
     }
     
     // sets this->Colors as side effect
@@ -4402,14 +4428,8 @@ vtkVisItOpenGLPolyDataMapper::MapScalarsWithTextureSupport(double opacity)
  
     if(saveColors)
     {
-        // Restore the LUT's real colors.
-        vtkLookupTable *LUT = (vtkLookupTable *)this->LookupTable;
-        const float *rgba = this->ColorTexture;
-        for(int i = 0; i < LUT->GetNumberOfTableValues(); ++i)
-        {
-            LUT->SetTableValue(i, rgba[4*i], rgba[4*i+1],
-                                  rgba[4*i+2], rgba[4*i+3]);
-        }
+        SetLookupTable(LUT_src);
+        LUT_src->Delete();
 
 #ifdef GL_VERSION_1_2
         // Figure out the OpenGL version.
