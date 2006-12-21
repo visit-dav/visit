@@ -336,7 +336,6 @@ avtIndividualRayLengthDistributionQuery::WalkLine(int startPtId, int endPtId,
 
         // Walk bins that overlap this segment, first with respect to the start point,
         // then with respect to the end point.
-        int ii;
         double massForThisSegment = dist*curSegDen;
         double massAfterThisSegment = massEncounteredSoFar+massForThisSegment;
     

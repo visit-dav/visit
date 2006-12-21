@@ -132,14 +132,14 @@ void VisItSimStripChart::paintEvent( QPaintEvent * )
     
     // start drawing the data n times step away from the right
     // hand edge of the window.
-    timeShift =  int(w - ( (delta/2.0) * points.count()));
+    timeShift =  int(w - ( (delta/2.0) * points.size()));
     // do we have data to draw and are we enabled?
     if ( points.empty()) return; 
     if ( !enabled ) return;
 
     // display the grid
     paintGrid( &paint);
-    QPoint startOffset = QPoint(points.first().x(),0); 
+    QPoint startOffset = QPoint(points.front().x(),0); 
     Points::iterator it;
     // connect all points together to make the graph
     for( it = points.begin(); it != points.end(); )
@@ -222,8 +222,8 @@ void VisItSimStripChart::paintGrid(QPainter *paint)
     middle = (range/2.0)+minPoint;
 
     if ( points.empty()) return;
-    int timeStep = points.first().x();
-    float last = points.last().x();
+    int timeStep = points.front().x();
+    float last = points.back().x();
     for ( int i=int(0); i<last*delta; i+= int(delta*10)) 
     {   
         // draw verticle lines
@@ -300,9 +300,9 @@ void VisItSimStripChart::addDataPoint( double x, double y )
 {
     float additionalMargin;
     if (points.size() < 2)
-        additionalMargin =0.3;
+        additionalMargin =0.3f;
         else
-            additionalMargin = 0.2;
+            additionalMargin = 0.2f;
 
     if (maxPoint < y) 
     {
@@ -318,7 +318,7 @@ void VisItSimStripChart::addDataPoint( double x, double y )
     // add point
     //QPoint data(int(x),int(y));
     QPoint data(x,y);
-    points.append( data);
+    points.push_back(data);
 
 }
 

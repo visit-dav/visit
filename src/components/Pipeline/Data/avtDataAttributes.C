@@ -4022,7 +4022,7 @@ avtDataAttributes::ReadPlotInfoAtts(char *input)
         if (plotInfoAtts != NULL)
         {
             delete plotInfoAtts;
-            plotInfoAtts == NULL;
+            plotInfoAtts = NULL;
         }
         return size;
     }

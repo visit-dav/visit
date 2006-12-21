@@ -1043,7 +1043,6 @@ GetScalarRange(T *buf, int n, double *exts)
 void
 GetDataScalarRange(vtkDataSet *ds, double *exts, const char *vname)
 {
-    int i;
     vtkDataArray *da = NULL;
     if (ds->GetPointData()->GetArray(vname))
     {
@@ -1152,8 +1151,6 @@ GetMagnitudeRange(T *buf, int n, int ncomps, double *exts)
 void
 GetDataMagnitudeRange(vtkDataSet *ds, double *exts, const char *vname)
 {
-    int  i, j;
-
     exts[0] = +FLT_MAX;
     exts[1] = 0;
 

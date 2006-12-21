@@ -904,8 +904,6 @@ bool
 AxiallySymmetricLineIntersection(const double *P1, const double *D1,
                                  int block, const double *nodeExtents)
 {
-    int  i;
-
     double Zmin = nodeExtents[4*block];
     double Zmax = nodeExtents[4*block+1];
     double Rmin = nodeExtents[4*block+2];

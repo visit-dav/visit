@@ -24,6 +24,9 @@ static const char usage[] =
 "        -cli                 Run with the Command Line Interface\n"
 "        -silex               Run silex\n"
 "        -xmledit             Run xmledit\n"
+"        -mpeg2encode         Run mpeg2encode program for movie-making\n"
+"        -composite           Run composite program for movie-making\n"
+"        -transition          Run transition program for movie-making\n"
 "\n"
 "    Window arguments:\n"
 "        -small               Use a smaller desktop area/window size\n"
@@ -103,6 +106,9 @@ int ReadKey(const char *key, char **keyval);
  *
  *   Brad Whitlock, Tue Sep 19 17:09:57 PST 2006
  *   Added support for mpeg2enc.exe so we can create MPEG movies on Windows.
+ * 
+ *   Brad Whitlock, Thu Dec 21 14:52:11 PST 2006
+ *   Added support for transition and composite programs.
  *
  *****************************************************************************/
 
@@ -176,6 +182,11 @@ main(int argc, char *argv[])
         else if(ARG("-mpeg2encode"))
         {
             strcpy(component, "mpeg2enc.exe");
+            addVISITARGS = 1;
+        }
+        else if(ARG("-transition"))
+        {
+            strcpy(component, "visit_transition");
             addVISITARGS = 1;
         }
         else if(ARG("-composite"))

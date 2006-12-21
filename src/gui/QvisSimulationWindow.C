@@ -402,7 +402,6 @@ QvisSimulationWindow::GetUIFile() const
             // get ui filename from value array
             avtDatabaseMetaData *md = metadataMap[key];
             QString uiFilename;
-            QListViewItem *item;
             const stringVector &names  = md->GetSimInfo().GetOtherNames();
             const stringVector &values = md->GetSimInfo().GetOtherValues();
                   

@@ -878,10 +878,10 @@ cp $VisItDir/lib/python/lib/$pyver/config/*             $libdir/python/lib/$pyve
 cp $VisItDir/lib/python/lib/$pyver/lib-dynload/*        $libdir/python/lib/$pyver/lib-dynload
 cp $VisItDir/lib/python/lib/$pyver/site-packages/PIL.*  $libdir/python/lib/$pyver/site-packages
 cp $VisItDir/lib/python/lib/$pyver/site-packages/PIL/*  $libdir/python/lib/$pyver/site-packages/PIL
-cp $VisItDir/lib/python/lib/$pyver/xml/*.{py,pyc,pyo}        $libdir/python/lib/$pyver/xml
-cp $VisItDir/lib/python/lib/$pyver/xml/dom/*.{py,pyc,pyo}    $libdir/python/lib/$pyver/xml/dom
-cp $VisItDir/lib/python/lib/$pyver/xml/parser/*.{py,pyc,pyo} $libdir/python/lib/$pyver/xml/parser
-cp $VisItDir/lib/python/lib/$pyver/xml/sax/*.{py,pyc,pyo}    $libdir/python/lib/$pyver/xml/sax
+cp $VisItDir/lib/python/lib/$pyver/xml/*.{py,pyc,pyo}         $libdir/python/lib/$pyver/xml
+cp $VisItDir/lib/python/lib/$pyver/xml/dom/*.{py,pyc,pyo}     $libdir/python/lib/$pyver/xml/dom
+cp $VisItDir/lib/python/lib/$pyver/xml/parsers/*.{py,pyc,pyo} $libdir/python/lib/$pyver/xml/parsers
+cp $VisItDir/lib/python/lib/$pyver/xml/sax/*.{py,pyc,pyo}     $libdir/python/lib/$pyver/xml/sax
 
 ln -s "python/lib/$pyver/config/lib${pyver}.$SHLIB_SOEXT" $libdir
 

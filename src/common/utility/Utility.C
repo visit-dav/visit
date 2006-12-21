@@ -1237,6 +1237,9 @@ GetIsDevelopmentVersion()
 //   Brad Whitlock, Thu Jul 14 10:49:42 PDT 2005
 //   I made it use the isDevelopmentDir library variable.
 //
+//   Brad Whitlock, Thu Dec 21 18:55:46 PST 2006
+//   Added missing code for win32 development.
+//
 // ****************************************************************************
 
 std::string
@@ -1256,6 +1259,25 @@ GetVisItInstallationDirectory(const char *version)
     {
         installDir = visitHome;
         delete [] visitHome;
+    }
+    else
+    {
+        // Use the VISITDEVDIR environment var.
+        std::string visitdev;
+        char *devdir = getenv("VISITDEVDIR");
+        if(devdir == 0)
+            visitdev = std::string("C:\\VisItDev") + std::string(version);
+        else
+            visitdev = std::string(devdir);
+#ifdef USING_MSVC6
+#ifdef _DEBUG
+        installDir = visitdev + "\\bin\\Debug";
+#else
+        installDir = visitdev + "\\bin\\Release";
+#endif
+#else
+        installDir = visitdev + "\\bin\\MSVC7.Net\\Release";
+#endif
     }
     return installDir;
 #else
@@ -1341,7 +1363,7 @@ GetVisItArchitectureDirectory(const char *version)
         archDir = visitdev + "\\bin\\Release";
 #endif
 #else
-        archDir = visitdev + "\\MSVC7.Net\\bin\\Release";
+        archDir = visitdev + "\\bin\\MSVC7.Net\\Release";
 #endif
     }
     return archDir;

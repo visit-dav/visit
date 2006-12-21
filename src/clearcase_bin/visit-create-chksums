@@ -100,6 +100,7 @@ do
    $cmd Mesa-4.1-mangled.tar.gz             >> ../visit$version/$output
    $cmd Mesa-5.0-mangled.tar.gz             >> ../visit$version/$output
    $cmd Python-2.1.2.tar.gz                 >> ../visit$version/$output
+   $cmd Python-2.4.2.tgz                    >> ../visit$version/$output
    $cmd qt-x11-2.3.0.tar.gz                 >> ../visit$version/$output
    $cmd qt-x11-free-3.0.2.tar.gz            >> ../visit$version/$output
    $cmd qt-x11-free-3.3.2.tar.gz            >> ../visit$version/$output
@@ -115,6 +116,7 @@ do
    $cmd vtk_cvs_2003_10_28.tar.gz           >> ../visit$version/$output
    $cmd vtk_cvs_2003_10_28c.tar.gz          >> ../visit$version/$output
    $cmd vtk-5.0.0a.tar.gz                   >> ../visit$version/$output
+   $cmd vtk-5.0.0b.tar.gz                   >> ../visit$version/$output
    cd ../visit$version
 
    shift
