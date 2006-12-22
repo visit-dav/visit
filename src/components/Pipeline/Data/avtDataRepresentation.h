@@ -48,6 +48,7 @@
 #include <string>
 
 class  vtkDataSet;
+class  avtWebpage;
 
 
 typedef enum
@@ -95,6 +96,10 @@ typedef enum
 //
 //    Mark C. Miller, Wed Nov 16 13:31:19 PST 2005
 //    Added compression
+//
+//    Hank Childs, Thu Dec 21 10:07:40 PST 2006
+//    Add support for debug dumps
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataRepresentation
@@ -123,6 +128,8 @@ class PIPELINE_API avtDataRepresentation
 
     int                 GetDomain(void) { return domain; };
     std::string         GetLabel(void)  { return label; };
+
+    const char         *DebugDump(avtWebpage *, const char *);
 
   protected:
     vtkDataSet         *asVTK;

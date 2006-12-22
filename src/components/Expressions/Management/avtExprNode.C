@@ -140,6 +140,8 @@
 #include <avtSymmTransformExpression.h>
 #include <avtEvalPlaneExpression.h>
 #include <avtSymmPlaneExpression.h>
+#include <avtEvalPointExpression.h>
+#include <avtSymmPointExpression.h>
 #include <avtTimeExpression.h>
 #include <avtMinMaxExpression.h>
 
@@ -427,6 +429,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    avtStrainInfinitesimalFilter, avtStrainRateFilter, and
 //    avtDisplacementFilter
 //
+//    Hank Childs, Fri Dec 22 10:03:40 PST 2006
+//    Added eval_point and symm_point.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -689,6 +694,10 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtEvalPlaneExpression;
     if (functionName == "symm_plane")
         return new avtSymmPlaneExpression;
+    if (functionName == "eval_point")
+        return new avtEvalPointExpression;
+    if (functionName == "symm_point")
+        return new avtSymmPointExpression;
     if (functionName == "time")
         return new avtTimeExpression;
     if (functionName == "surface_normal" || 

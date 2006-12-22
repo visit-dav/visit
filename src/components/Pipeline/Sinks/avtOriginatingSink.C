@@ -44,6 +44,8 @@
 #include <snprintf.h>
 
 #include <avtPipelineSpecification.h>
+#include <avtParallel.h>
+#include <avtWebpage.h>
 
 #include <AbortException.h>
 #include <DebugStream.h>
@@ -58,7 +60,8 @@
 
 GuideFunction    avtOriginatingSink::guideFunction     = NULL;
 void            *avtOriginatingSink::guideFunctionArgs = NULL;
-
+bool             avtOriginatingSink::debugDump         = false;
+avtWebpage      *avtOriginatingSink::webpage           = NULL;
 
 
 // ****************************************************************************
@@ -142,6 +145,9 @@ avtOriginatingSink::~avtOriginatingSink()
 void
 avtOriginatingSink::Execute(avtPipelineSpecification_p pipelineSpec)
 {
+    if (debugDump)
+        InitializeWebpage();
+
     int pipelineIndex = pipelineSpec->GetPipelineIndex();
     if (pipelineIndex < 0)
     {
@@ -209,6 +215,9 @@ avtOriginatingSink::Execute(avtPipelineSpecification_p pipelineSpec)
     }
 
     InputIsReady();
+
+    if (debugDump)
+        FinalizeWebpage();
 }
 
 
@@ -295,6 +304,100 @@ avtOriginatingSink::GetGuideFunction(GuideFunction &foo, void *&args)
 {
     foo  = guideFunction;
     args = guideFunctionArgs;
+}
+
+
+// ****************************************************************************
+//  Method: avtOriginatingSink::InitializeWebpage
+//
+//  Purpose:
+//      Opens up a file stream to write a webpage to.  (For debugDump mode.)
+//
+//  Programmer: Hank Childs
+//  Creation:   December 21, 2006
+//
+// ****************************************************************************
+
+void
+avtOriginatingSink::InitializeWebpage(void)
+{
+    if (webpage != NULL)
+    {
+        debug1 << "NOTE: already an existing webpage ... maybe there were "
+               << "nested execution calls ...\n" 
+               << "or maybe there was an error the last time." << endl;
+        delete webpage;
+    }
+
+    static int id = 0;
+    char name[128];
+    if (PAR_Size() > 1)
+    {
+        int rank = PAR_Rank();
+        sprintf(name, "visit_dump_%d.%d.html", id, rank);
+    }
+    else
+        sprintf(name, "visit_dump_%d.html", id);
+
+    webpage = new avtWebpage(name);
+    webpage->InitializePage("VisIt pipeline contents");
+    char title[128];
+    sprintf(title, "Pipeline %d", id);
+    webpage->WriteTitle(title);
+
+    id++;
+}
+
+
+// ****************************************************************************
+//  Method: avtOriginatingSink::FinalizeWebpage
+//
+//  Purpose:
+//      Closes file stream we were writing a webpage to.  (For debugDump mode.)
+//
+//  Programmer: Hank Childs
+//  Creation:   December 21, 2006
+//
+// ****************************************************************************
+
+void
+avtOriginatingSink::FinalizeWebpage(void)
+{
+    if (webpage == NULL)
+    {
+        debug1 << "NOTE: webpage has already been closed ... shouldn't "
+               << "happen ... maybe there were "
+               << "nested execution calls ...\n"  << endl;
+        return;
+    }
+
+    webpage->FinalizePage();
+    delete webpage;
+    webpage = NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtOriginatingSink::DumpString
+//
+//  Purpose:
+//      Dumps a string to the webpage.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 21, 2006
+//
+// ****************************************************************************
+
+void
+avtOriginatingSink::AddDumpReference(const char *filename, const char *listing)
+{
+    if (webpage == NULL)
+    {
+        debug1 << "Unable to dump info to webpage" << endl;
+        return;
+    }
+
+    webpage->AddLink(filename, listing);
 }
 
 

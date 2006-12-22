@@ -45,6 +45,7 @@
 #include <pipeline_exports.h>
 
 #include <vector>
+#include <string>
 #include <set>
 #include <ref_ptr.h>
 
@@ -56,6 +57,7 @@ using std::set;
  
 class vtkDataSet;
 class avtDataTree;
+class avtWebpage;
 
 typedef ref_ptr<avtDataTree> avtDataTree_p;
 
@@ -113,6 +115,9 @@ typedef void (*TraverseFunc)(avtDataRepresentation &, void *, bool &);
 //    Hank Childs, Fri Jan  9 10:04:22 PST 2004
 //    Added GetAllDomainIds.
 //
+//    Hank Childs, Thu Dec 21 10:06:47 PST 2006
+//    Add support for debug dumps.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataTree
@@ -164,6 +169,7 @@ class PIPELINE_API avtDataTree
 
     void                     WriteTreeStructure(ostream &, int indent = 0);
 
+    void                     DebugDump(avtWebpage *, const char *, int, int);
 
   private:
     int                      nChildren;

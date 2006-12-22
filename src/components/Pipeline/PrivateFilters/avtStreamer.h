@@ -90,6 +90,9 @@
 //    Hank Childs, Mon Dec 27 10:58:14 PST 2004
 //    Made inheritance virtual.
 //
+//    Hank Childs, Thu Dec 21 09:17:43 PST 2006
+//    Remove support for debug dumps.
+//
 // **************************************************************************** 
 
 class PIPELINE_API avtStreamer : virtual public avtDataTreeStreamer
@@ -99,7 +102,6 @@ class PIPELINE_API avtStreamer : virtual public avtDataTreeStreamer
     virtual                 ~avtStreamer();
 
     virtual void             ReleaseData(void);
-    static void              DebugDump(bool d) {debugDump = d;}
 
   protected:
     vtkDataSet              *lastDataset;
@@ -108,7 +110,6 @@ class PIPELINE_API avtStreamer : virtual public avtDataTreeStreamer
     virtual vtkDataSet      *ExecuteData(vtkDataSet *, int, std::string) = 0;
 
     void                     ManageMemory(vtkDataSet *);
-    static bool              debugDump;
 };
 
 

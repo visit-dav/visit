@@ -177,6 +177,9 @@
 #   avtStrainGreenLagrangeFilter, avtStrainInfinitesimalFilter
 #   avtStrainRateFilter, and avtStrainTensorFilter
 #
+#   Hank Childs, Fri Dec 22 09:56:13 PST 2006
+#   Added avtEvalPointExpression and avtSymmPointExpression.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -213,11 +216,13 @@ Conditional_src= \
 CMFE_src= \
   CMFE/avtCMFEExpression.C \
   CMFE/avtConnCMFEExpression.C \
+  CMFE/avtEvalPointExpression.C \
   CMFE/avtEvalPlaneExpression.C \
   CMFE/avtEvalTransformExpression.C \
   CMFE/avtPosCMFEAlgorithm.C \
   CMFE/avtPosCMFEExpression.C \
   CMFE/avtSymmEvalExpression.C \
+  CMFE/avtSymmPointExpression.C \
   CMFE/avtSymmPlaneExpression.C \
   CMFE/avtSymmTransformExpression.C
 

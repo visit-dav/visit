@@ -54,6 +54,7 @@ class     AttributeGroup;
 
 class     avtDynamicAttribute;
 class     avtMetaData;
+class     avtWebpage;
 
 
 // ****************************************************************************
@@ -89,6 +90,9 @@ class     avtMetaData;
 //    Hank Childs, Tue Jun  7 14:55:40 PDT 2005
 //    Add friend status to the facade filter.
 //
+//    Hank Childs, Thu Dec 21 09:17:43 PST 2006
+//    Add support for debug dumps.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtFilter
@@ -113,9 +117,14 @@ class PIPELINE_API avtFilter
     avtPipelineSpecification_p          GetGeneralPipelineSpecification(void);
     virtual void                        ReleaseData(void);
 
+    static void                         DebugDump(bool d) {debugDump = d;}
+
   protected:
     bool                                modified;
     bool                                inExecute;
+
+    static bool                         debugDump;
+    avtWebpage                         *webpage;
     std::vector<avtDynamicAttribute *>  dynamicAttributes;
 
     virtual void                        Execute(void) = 0;
@@ -157,6 +166,9 @@ class PIPELINE_API avtFilter
     void                                RegisterDynamicAttribute(
                                                         avtDynamicAttribute *);
     void                                ResolveDynamicAttributes(void);
+
+    void                                DumpDataObject(avtDataObject_p,
+                                                       const char *);
 };
 
 

@@ -49,6 +49,7 @@
 #include <avtDataRepresentation.h>
 #include <avtDataSetWriter.h>
 #include <avtSourceFromAVTDataset.h>
+#include <avtWebpage.h>
 
 
 // ****************************************************************************
@@ -480,6 +481,29 @@ avtDataset::SetActiveVariable(const char *name)
         bool success;
         dataTree->Traverse(CSetActiveVariable, (void *) &args, success);
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtDataset::DebugDump
+//
+//  Purpose:
+//      Does a DebugDump
+//
+//  Programmer: Hank Childs
+//  Creation:   December 21, 2006
+//
+// ****************************************************************************
+
+void
+avtDataset::DebugDump(avtWebpage *webpage, const char *prefix)
+{
+    avtDataObject::DebugDump(webpage, prefix);
+    webpage->AddSubheading("Data tree");
+    webpage->StartTable();
+    webpage->AddTableHeader4("Node ID", "Parent ID", "Type", "Description");
+    dataTree->DebugDump(webpage, prefix, 0, -1);
+    webpage->EndTable();
 }
 
 

@@ -48,6 +48,7 @@
 
 class     avtDataObjectString;
 class     avtDataObjectWriter;
+class     avtWebpage;
 
 
 // ****************************************************************************
@@ -104,6 +105,9 @@ class     avtDataObjectWriter;
 //
 //    Kathleen Bonnell, Thu Oct 26 09:17:08 PDT 2006 
 //    Added InvalidateNodes and GetNodesPreserved.
+//
+//    Hank Childs, Thu Dec 21 10:11:30 PST 2006
+//    Add support for debug dumps.
 //
 // ****************************************************************************
 
@@ -223,6 +227,8 @@ class PIPELINE_API avtDataValidity
     void                     SetErrorMessage(std::string &s)
                                                           { errorString = s; };
     std::string             &GetErrorMessage(void) { return errorString; };
+
+    void                     DebugDump(avtWebpage *);
 
   protected:
     bool                     zonesPreserved;

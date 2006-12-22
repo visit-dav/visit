@@ -36,83 +36,43 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtOriginatingSink.h                          //
+//                           avtSymmPointExpression.h                        //
 // ************************************************************************* //
 
-#ifndef AVT_ORIGINATING_SINK_H
-#define AVT_ORIGINATING_SINK_H
-
-#include <pipeline_exports.h>
-
-#include <avtDataObjectSink.h>
-#include <avtPipelineSpecification.h>
-
-class     avtWebpage;
+#ifndef AVT_SYMM_POINT_EXPRESSION_H
+#define AVT_SYMM_POINT_EXPRESSION_H
 
 
-typedef  bool (*GuideFunction)(void *, int);
+#include <avtMacroExpressionFilter.h>
 
 
 // ****************************************************************************
-//  Class: avtOriginatingSink
+//  Class: avtSymmPointExpression
 //
 //  Purpose:
-//      This sink object serves as the originator of a pipeline.  It 
-//      understands that there are many pipelines and what its pipeline index
-//      is.  It also understands that dynamic load balancing may occur and
-//      that it may have to execute a pipeline multiple times.
+//      Uses the EvalPointExpression to calculate differences.
 //
 //  Programmer: Hank Childs
-//  Creation:   May 29, 2001
-//
-//  Modifications:
-//
-//    Hank Childs, Fri Sep 28 13:18:47 PDT 2001
-//    Added DynamicLoadBalanceCleanUp.
-//
-//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
-//    Moved inlined destructor definition to .C file because certain compilers 
-//    have problems with them.
-//
-//    Hank Childs, Wed Mar  2 11:16:01 PST 2005
-//    Take a full-blown pipeline specification rather than a data spec and a
-//    pipeline index.
-//
-//    Hank Childs, Thu Dec 21 09:43:22 PST 2006
-//    Add support for debug dumps
+//  Creation:   December 21, 2006
 //
 // ****************************************************************************
 
-class PIPELINE_API avtOriginatingSink : virtual public avtDataObjectSink
+class EXPRESSION_API avtSymmPointExpression : public avtMacroExpressionFilter
 {
   public:
-                              avtOriginatingSink();
-    virtual                  ~avtOriginatingSink();
+                              avtSymmPointExpression();
+    virtual                  ~avtSymmPointExpression();
 
-    void                      Execute(avtPipelineSpecification_p);
-
-    static void               SetGuideFunction(GuideFunction, void *);
-    static void               GetGuideFunction(GuideFunction &, void *&);
-
-    static void               DebugDump(bool d) {debugDump = d;}
-    static void               AddDumpReference(const char *, const char *);
+    virtual const char       *GetType(void) 
+                               { return "avtSymmPointExpression"; };
+    virtual const char       *GetDescription(void)
+                               { return "Calculating the SymmPoint"; };
 
   protected:
-    virtual void              InputIsReady(void);
-    virtual void              DynamicLoadBalanceCleanUp(void);
-
-    static bool               debugDump;
-    static avtWebpage        *webpage;
-
-    void                      FinalizeWebpage(void);
-    void                      InitializeWebpage(void);
-
-  private:
-    static GuideFunction      guideFunction;
-    static void              *guideFunctionArgs;
+    virtual void              GetMacro(std::vector<std::string> &,
+                                  std::string &ne, Expression::ExprType &type);
 };
 
 
 #endif
-
 

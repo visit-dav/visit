@@ -1128,7 +1128,7 @@ public class ViewerProxy implements SimpleObserver
 
     public boolean ImportEntireStateWithDifferentSources(String filename, boolean inVisItDir, Vector sources)
     {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_IMPORTENTIRESTATERWITHDIFFERENTSOURCESRPC);
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_IMPORTENTIRESTATEWITHDIFFERENTSOURCESRPC);
         rpc.SetVariable(filename);
         rpc.SetBoolFlag(inVisItDir);
         rpc.SetProgramOptions(sources);
