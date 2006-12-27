@@ -144,6 +144,9 @@ avtCondenseDatasetFilter::~avtCondenseDatasetFilter()
 //    for point meshes so it agrees with the debug log message about skipping
 //    relevant points.
 //
+//    Hank Childs, Wed Dec 27 10:27:48 PST 2006
+//    Allow ghost data to pass through for structured grids.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -174,6 +177,10 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
                     ((strcmp(name, "avtOriginalNodeNumbers") == 0) ||
                      (strcmp(name, "avtOriginalCellNumbers") == 0)))
                     continue;
+                else if (strcmp(name, "avtGhostNodes") == 0 &&
+                     (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
+                      in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID))
+                    continue;
                 else
                     no_vars->GetPointData()->RemoveArray(name);
             }
@@ -191,6 +198,10 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
                 if (keepNodeZone && 
                     ((strcmp(name, "avtOriginalNodeNumbers") == 0) ||
                      (strcmp(name, "avtOriginalCellNumbers") == 0)))
+                    continue;
+                else if (strcmp(name, "avtGhostZones") == 0 &&
+                     (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
+                      in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID))
                     continue;
                 else
                     no_vars->GetCellData()->RemoveArray(name);

@@ -70,6 +70,9 @@
 //    Eric Brugger, Wed Jul 16 11:32:57 PDT 2003
 //    Modified to work with the new way legends are managed.
 //
+//    Hank Childs, Wed Dec 27 13:49:15 PST 2006
+//    Tell ghost filter to always remove ghost data.
+//
 // ****************************************************************************
 
 avtVectorPlot::avtVectorPlot()
@@ -78,6 +81,7 @@ avtVectorPlot::avtVectorPlot()
     glyph        = vtkVectorGlyph::New();
     vectorFilter = new avtVectorFilter(true, 10);
     ghostFilter  = new avtGhostZoneFilter();
+    ghostFilter->GhostDataMustBeRemoved();
     glyphMapper  = new avtVectorGlyphMapper(glyph->GetOutput());
     avtLUT       = new avtLookupTable();
 

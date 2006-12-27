@@ -547,6 +547,9 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain)
 //    Hank Childs, Wed Dec 20 17:23:26 PST 2006
 //    Better support for degenerate curvilinear meshes.
 //
+//    Hank Childs, Wed Dec 27 10:14:27 PST 2006
+//    Allow for curvilinear meshes to pass through unfacelisted.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -565,11 +568,20 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds)
     if (dstype == VTK_RECTILINEAR_GRID && !mustCreatePolyData
         && !forceFaceConsolidation)
     {
-         vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) in_ds;
-         int dims[3];
-         rgrid->GetDimensions(dims);
-         if (dims[2] == 1)
-             return in_ds;
+        vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) in_ds;
+        int dims[3];
+        rgrid->GetDimensions(dims);
+        if (dims[2] == 1)
+            return in_ds;
+    }
+
+    if (dstype == VTK_STRUCTURED_GRID && !mustCreatePolyData)
+    {
+        vtkStructuredGrid *sgrid = (vtkStructuredGrid *) in_ds;
+        int dims[3];
+        sgrid->GetDimensions(dims);
+        if (dims[2] == 1)
+            return in_ds;
     }
 
     //

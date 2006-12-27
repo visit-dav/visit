@@ -300,6 +300,9 @@
 #    Hank Childs, Mon Dec 18 14:52:36 PST 2006
 #    Added rectilinear mapper code.
 #
+#    Hank Childs, Wed Dec 27 09:59:14 PST 2006
+#    Added curvilinear mapper modules.
+#
 ##############################################################################
 
 ##
@@ -312,10 +315,12 @@
 ## Files...
 ##
 OPENGL_SRC=vtkVisItOpenGLPolyDataMapper.C \
-    vtkOpenGLRectilinearGridMapper.C
+    vtkOpenGLRectilinearGridMapper.C \
+    vtkOpenGLStructuredGridMapper.C
 
 MESA_SRC=vtkOSMesaRenderWindow.C \
     vtkMesaRectilinearGridMapper.C \
+    vtkMesaStructuredGridMapper.C \
     vtkVisItMesaPolyDataMapper.C
 
 SRC=InitVTK.C \
@@ -340,6 +345,7 @@ SRC=InitVTK.C \
     vtkSkewLookupTable.C \
     vtkSlicer.C \
     vtkStructuredGridFacelistFilter.C \
+    vtkStructuredGridMapper.C \
     vtkSurfaceFilter.C \
     vtkSurfaceFromVolume.C \
     vtkTensorReduceFilter.C \

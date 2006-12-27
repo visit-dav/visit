@@ -115,6 +115,9 @@
 //    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004 
 //    Replaced avtPointGlyphMapper with avtVariablePointGlyphMapper.
 //
+//    Hank Childs, Wed Dec 27 13:51:01 PST 2006
+//    Make sure that ghost data is removed.
+//
 // ****************************************************************************
 
 avtMeshPlot::avtMeshPlot()
@@ -123,13 +126,14 @@ avtMeshPlot::avtMeshPlot()
     smooth             = new avtSmoothPolyDataFilter();
     ghostAndFaceFilter = new avtGhostZoneAndFacelistFilter;
     ghostAndFaceFilter->SetUseFaceFilter(true);
+    ghostAndFaceFilter->GhostDataMustBeRemoved();
+    ghostAndFaceFilter->MustCreatePolyData();
     renderer = avtSurfaceAndWireframeRenderer::New();
     avtCustomRenderer_p cr;
     CopyTo(cr, renderer);
     mapper = new avtUserDefinedMapper(cr);
 
     glyphMapper = new avtVariablePointGlyphMapper;
-
     
     property = vtkProperty::New();
     property->SetAmbient(1.);
