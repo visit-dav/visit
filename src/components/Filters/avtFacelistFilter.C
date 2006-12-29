@@ -46,7 +46,8 @@
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkCellTypes.h>
-#include <vtkDisjointCubesFacelistFilter.h>
+#include <vtkVisItExtractGrid.h>
+#include <vtkVisItExtractRectilinearGrid.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
@@ -214,11 +215,14 @@ avtFacelistFilter::SetCreateEdgeListFor2DDatasets(bool val)
 
 
 // ****************************************************************************
-//  Method: avtFacelistFilter::ExecuteData
+//  Method: avtFacelistFilter::ExecuteDataTree
 //
 //  Purpose:
-//      Calcualtes the external faces of a mesh and returns the result as
-//      poly-data.
+//      Calcualtes the external faces of a mesh.  For unstructured meshes,
+//      this returns the result as poly-data.  For 2D structured meshes, 
+//      this is a no-op (unless the output must be poly-data, in which case
+//      it is poly-data).  For 3D structured meshes, the output is 6 2D
+//      structured meshes.
 //
 //  Arguments:
 //      in_ds      The input dataset.
@@ -257,10 +261,14 @@ avtFacelistFilter::SetCreateEdgeListFor2DDatasets(bool val)
 //    Correct error in Topo = 2D, Spatial = 3D case where meshes 
 //    could pass through "unfacelisted".
 //
+//    Hank Childs, Thu Dec 28 09:10:40 PST 2006
+//    Renamed method to ExecuteDataTree. 
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtFacelistFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
+avtDataTree_p
+avtFacelistFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, 
+                                   std::string label)
 {
     int tDim = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
     int sDim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
@@ -288,6 +296,7 @@ avtFacelistFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
     }
 
     vtkDataSet *out_ds = NULL;
+    avtDataTree_p out_dt;
     switch (tDim)
     {
       // Points and lines
@@ -296,6 +305,8 @@ avtFacelistFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
         if (in_ds->GetDataObjectType() != VTK_STRUCTURED_GRID &&
             in_ds->GetDataObjectType() != VTK_RECTILINEAR_GRID)
         {
+            in_ds->Register(NULL); // We will decrement this at the bottom
+                                   // of this routine.
             out_ds = in_ds; 
         }
         else
@@ -314,12 +325,7 @@ avtFacelistFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 
       // 3D meshes
       case 3:
-        if (dis_elem)
-        {
-            out_ds = TakeFacesForDisjointElementMesh(in_ds, domain);
-        }
-        else
-            out_ds = Take3DFaces(in_ds, domain);
+        out_dt = Take3DFaces(in_ds, domain, label);
         break;
 
       default:
@@ -335,7 +341,13 @@ avtFacelistFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
         in_ds = orig_in_ds;
     }
 
-    return out_ds;
+    if (out_ds != NULL)
+    {
+        out_dt = new avtDataTree(1, &out_ds, domain, label);
+        out_ds->Delete();
+    }
+
+    return out_dt;
 }
 
 
@@ -404,106 +416,271 @@ avtFacelistFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 //    Hank Childs, Fri Mar 11 08:11:03 PST 2005
 //    Instantiate VTK filters on the fly.
 //
+//    Hank Childs, Thu Dec 28 09:20:10 PST 2006
+//    Have structured grids return 6 2D grids.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain)
+avtDataTree_p
+avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label)
 {
-    vtkDataSet  *out_ds = NULL;
+    vtkDataSet    *out_ds = NULL;
+    avtDataTree_p  out_dt;
     vtkPolyData *pd = vtkPolyData::New();
     bool         hasCellData = (in_ds->GetCellData()->GetNumberOfArrays() > 0 
                                 ? true : false);
 
-    vtkRectilinearGridFacelistFilter *rf = vtkRectilinearGridFacelistFilter::New();
+    vtkRectilinearGridFacelistFilter *rf = 
+                                       vtkRectilinearGridFacelistFilter::New();
     rf->SetForceFaceConsolidation(forceFaceConsolidation ? 1 : 0);
-    vtkStructuredGridFacelistFilter *sf = vtkStructuredGridFacelistFilter::New();
-    vtkUnstructuredGridFacelistFilter *uf = vtkUnstructuredGridFacelistFilter::New();
-    switch (in_ds->GetDataObjectType())
+    vtkStructuredGridFacelistFilter *sf = 
+                                        vtkStructuredGridFacelistFilter::New();
+    vtkUnstructuredGridFacelistFilter *uf = 
+                                      vtkUnstructuredGridFacelistFilter::New();
+    int dstype = in_ds->GetDataObjectType();
+    if (dstype == VTK_RECTILINEAR_GRID)
     {
-      case VTK_RECTILINEAR_GRID:
-        rf->SetInput((vtkRectilinearGrid *) in_ds);
-        rf->Update();
-        out_ds = rf->GetOutput();
-        break;
-
-      case VTK_STRUCTURED_GRID:
-        sf->SetInput((vtkStructuredGrid *) in_ds);
-        sf->Update();
-        out_ds = sf->GetOutput();
-        break;
-
-      case VTK_UNSTRUCTURED_GRID:
+        vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) in_ds;
+        if (mustCreatePolyData || forceFaceConsolidation)
         {
-            avtFacelist *fl = NULL;
-            avtDataValidity &v = GetInput()->GetInfo().GetValidity();
-            if (v.GetUsingAllData() && v.GetZonesPreserved())
-            {
-                avtMetaData *md = GetMetaData();
-                fl = md->GetExternalFacelist(domain);
-            }
+            rf->SetInput(rgrid);
+            rf->Update();
+            out_ds = rf->GetOutput();
+        }
+        else
+        {
+            int voi[6];
+            int dims[3];
+            rgrid->GetDimensions(dims);
 
-            //
-            // Some facelists from Silo files cannot calculate zonal variables,
-            // so disregard the facelist in this case.
-            //
-            if (fl != NULL && hasCellData && 
-                !fl->CanCalculateZonalVariables())
+            vtkVisItExtractRectilinearGrid *imin = 
+                                         vtkVisItExtractRectilinearGrid::New();
+            voi[0] = voi[1] = 0;
+            voi[2] = 0; 
+            voi[3] = dims[1];
+            voi[4] = 0; 
+            voi[5] = dims[2];
+            imin->SetVOI(voi);
+            imin->SetInput(rgrid);
+            imin->Update();
+            vtkVisItExtractRectilinearGrid *imax = 
+                                         vtkVisItExtractRectilinearGrid::New();
+            voi[0] = voi[1] = dims[0]-1;
+            imax->SetVOI(voi);
+            imax->SetInput(rgrid);
+            imax->Update();
+
+            vtkVisItExtractRectilinearGrid *jmin = 
+                                         vtkVisItExtractRectilinearGrid::New();
+            voi[0] = 0;
+            voi[1] = dims[0];
+            voi[2] = 0; 
+            voi[3] = 0;
+            voi[4] = 0; 
+            voi[5] = dims[2];
+            jmin->SetVOI(voi);
+            jmin->SetInput(rgrid);
+            jmin->Update();
+
+            vtkVisItExtractRectilinearGrid *jmax = 
+                                         vtkVisItExtractRectilinearGrid::New();
+            voi[2] = voi[3] = dims[1]-1;
+            jmax->SetVOI(voi);
+            jmax->SetInput(rgrid);
+            jmax->Update();
+
+            vtkVisItExtractRectilinearGrid *kmin = 
+                                         vtkVisItExtractRectilinearGrid::New();
+            voi[0] = 0;
+            voi[1] = dims[0];
+            voi[2] = 0; 
+            voi[3] = dims[1];
+            voi[4] = 0; 
+            voi[5] = 0;
+            kmin->SetVOI(voi);
+            kmin->SetInput(rgrid);
+            kmin->Update();
+            vtkVisItExtractRectilinearGrid *kmax = 
+                                         vtkVisItExtractRectilinearGrid::New();
+            voi[4] = voi[5] = dims[2]-1;
+            kmax->SetVOI(voi);
+            kmax->SetInput(rgrid);
+            kmax->Update();
+
+            vtkDataSet *ds_list[6];
+            ds_list[0] = imin->GetOutput();
+            ds_list[1] = imax->GetOutput();
+            ds_list[2] = jmin->GetOutput();
+            ds_list[3] = jmax->GetOutput();
+            ds_list[4] = kmin->GetOutput();
+            ds_list[5] = kmax->GetOutput();
+            out_dt = new avtDataTree(6, ds_list, domain, label);
+
+            imin->Delete();
+            imax->Delete();
+            jmin->Delete();
+            jmax->Delete();
+            kmin->Delete();
+            kmax->Delete();
+        }
+    }
+    else if (dstype == VTK_STRUCTURED_GRID)
+    {
+        vtkStructuredGrid *sgrid = (vtkStructuredGrid *) in_ds;
+        if (mustCreatePolyData)
+        {
+            sf->SetInput(sgrid);
+            sf->Update();
+            out_ds = sf->GetOutput();
+        }
+        else
+        {
+            // 6 faces
+            int voi[6];
+            int dims[3];
+            sgrid->GetDimensions(dims);
+
+            vtkVisItExtractGrid *imin = vtkVisItExtractGrid::New();
+            voi[0] = voi[1] = 0;
+            voi[2] = 0; 
+            voi[3] = dims[1];
+            voi[4] = 0; 
+            voi[5] = dims[2];
+            imin->SetVOI(voi);
+            imin->SetInput(sgrid);
+            imin->Update();
+            vtkVisItExtractGrid *imax = vtkVisItExtractGrid::New();
+            voi[0] = voi[1] = dims[0]-1;
+            imax->SetVOI(voi);
+            imax->SetInput(sgrid);
+            imax->Update();
+
+            vtkVisItExtractGrid *jmin = vtkVisItExtractGrid::New();
+            voi[0] = 0;
+            voi[1] = dims[0];
+            voi[2] = 0; 
+            voi[3] = 0;
+            voi[4] = 0; 
+            voi[5] = dims[2];
+            jmin->SetVOI(voi);
+            jmin->SetInput(sgrid);
+            jmin->Update();
+
+            vtkVisItExtractGrid *jmax = vtkVisItExtractGrid::New();
+            voi[2] = voi[3] = dims[1]-1;
+            jmax->SetVOI(voi);
+            jmax->SetInput(sgrid);
+            jmax->Update();
+
+            vtkVisItExtractGrid *kmin = vtkVisItExtractGrid::New();
+            voi[0] = 0;
+            voi[1] = dims[0];
+            voi[2] = 0; 
+            voi[3] = dims[1];
+            voi[4] = 0; 
+            voi[5] = 0;
+            kmin->SetVOI(voi);
+            kmin->SetInput(sgrid);
+            kmin->Update();
+            vtkVisItExtractGrid *kmax = vtkVisItExtractGrid::New();
+            voi[4] = voi[5] = dims[2]-1;
+            kmax->SetVOI(voi);
+            kmax->SetInput(sgrid);
+            kmax->Update();
+
+            vtkDataSet *ds_list[6];
+            ds_list[0] = imin->GetOutput();
+            ds_list[1] = imax->GetOutput();
+            ds_list[2] = jmin->GetOutput();
+            ds_list[3] = jmax->GetOutput();
+            ds_list[4] = kmin->GetOutput();
+            ds_list[5] = kmax->GetOutput();
+            out_dt = new avtDataTree(6, ds_list, domain, label);
+
+            imin->Delete();
+            imax->Delete();
+            jmin->Delete();
+            jmax->Delete();
+            kmin->Delete();
+            kmax->Delete();
+        }
+    }
+    else if (dstype == VTK_UNSTRUCTURED_GRID)
+    {
+        avtFacelist *fl = NULL;
+        avtDataValidity &v = GetInput()->GetInfo().GetValidity();
+        if (v.GetUsingAllData() && v.GetZonesPreserved())
+        {
+            avtMetaData *md = GetMetaData();
+            fl = md->GetExternalFacelist(domain);
+        }
+
+        //
+        // Some facelists from Silo files cannot calculate zonal variables,
+        // so disregard the facelist in this case.
+        //
+        if (fl != NULL && hasCellData && 
+            !fl->CanCalculateZonalVariables())
+        {
+            fl = NULL;
+        }
+
+        //
+        // Even if the domain does not have facelists, the database should
+        // return a facelist with no cells if others have facelists.
+        //
+        if (fl != NULL)
+        {
+            debug5 << "Ugrid using facelist from files for domain "
+                   << domain << endl;
+            TRY
             {
+                fl->CalcFacelist((vtkUnstructuredGrid *) in_ds, pd);
+                out_ds = pd;
+            }
+            CATCH (BadIndexException)
+            {
+                debug1 << "The facelist was invalid.  This often happens "
+                       << "with history variables." << endl;
+                debug1 << "The facelist will be calculated by hand."<<endl;
                 fl = NULL;
             }
-
-            //
-            // Even if the domain does not have facelists, the database should
-            // return a facelist with no cells if others have facelists.
-            //
-            if (fl != NULL)
-            {
-                debug5 << "Ugrid using facelist from files for domain "
-                       << domain << endl;
-                TRY
-                {
-                    fl->CalcFacelist((vtkUnstructuredGrid *) in_ds, pd);
-                    out_ds = pd;
-                }
-                CATCH (BadIndexException)
-                {
-                    debug1 << "The facelist was invalid.  This often happens "
-                           << "with history variables." << endl;
-                    debug1 << "The facelist will be calculated by hand."<<endl;
-                    fl = NULL;
-                }
-                ENDTRY
-            }
-
-            if (fl == NULL) // Value could have changed since last test.
-            {
-                debug5 << "Ugrid forced to calculate facelist for domain "
-                       << domain << endl;
-                uf->SetInput((vtkUnstructuredGrid *) in_ds);
-                uf->Update();
-                out_ds = uf->GetOutput();
-            }
+            ENDTRY
         }
-        break;
 
-      default:
+        if (fl == NULL) // Value could have changed since last test.
+        {
+            debug5 << "Ugrid forced to calculate facelist for domain "
+                   << domain << endl;
+            uf->SetInput((vtkUnstructuredGrid *) in_ds);
+            uf->Update();
+            out_ds = uf->GetOutput();
+        }
+    }
+    else
+    {
         // We don't know what type this is.  It is probably a mistake that
         // this was called, so minimize the damage by passing this through.
         debug1 << "Unknown meshtype encountered in facelist filter, passing "
                << "input through as output." << endl;
         out_ds = in_ds;
-        break;
     }
 
-    ManageMemory(out_ds);
-    debug4 << "Facelist filter reduction for domain " << domain 
+
+    if (out_ds != NULL)
+    {
+        debug4 << "Facelist filter reduction for domain " << domain 
            << ": input has " << in_ds->GetNumberOfCells() << " cells, out has " 
            << out_ds->GetNumberOfCells() << endl;
+        out_dt = new avtDataTree(1, &out_ds, domain, label);
+    }
+
     pd->Delete();
     rf->Delete();
     sf->Delete();
     uf->Delete();
-    return out_ds;
+
+    return out_dt;
 }
 
 
@@ -550,6 +727,10 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain)
 //    Hank Childs, Wed Dec 27 10:14:27 PST 2006
 //    Allow for curvilinear meshes to pass through unfacelisted.
 //
+//    Hank Childs, Thu Dec 28 09:23:45 PST 2006
+//    Change memory management, since inheritance from DataTreeStreamer,
+//    means that we can no longer access "ManageMemory".
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -562,6 +743,7 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds)
     //
     if (dstype == VTK_POLY_DATA)
     {
+        in_ds->Register(NULL);
         return in_ds;
     }
 
@@ -572,7 +754,10 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds)
         int dims[3];
         rgrid->GetDimensions(dims);
         if (dims[2] == 1)
+        {
+            in_ds->Register(NULL);
             return in_ds;
+        }
     }
 
     if (dstype == VTK_STRUCTURED_GRID && !mustCreatePolyData)
@@ -581,7 +766,10 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds)
         int dims[3];
         sgrid->GetDimensions(dims);
         if (dims[2] == 1)
+        {
+            in_ds->Register(NULL);
             return in_ds;
+        }
     }
 
     //
@@ -673,9 +861,6 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds)
         idlist->Delete();
     }
 
-    ManageMemory(out_ds);
-    out_ds->Delete();
-
     return out_ds;
 }
 
@@ -694,6 +879,12 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds)
 //
 //  Programmer: Hank Childs
 //  Creation:   September 23, 2005
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Dec 28 09:48:44 PST 2006
+//    Change memory management, since re-inheritance from avtDataTreeStreamer,
+//    means "ManageMemory" is not available.
 //
 // ****************************************************************************
 
@@ -911,77 +1102,12 @@ avtFacelistFilter::FindEdges(vtkDataSet *in_ds)
         outCD->CopyData(inCD, edges[i].cellId, i);
     }
     
-    ManageMemory(out_ds);
-    out_ds->Delete();
     delete [] edges;
     delete [] usedPt;
     delete [] ptLookup;
     delete [] reverseLookup;
 
     return out_ds;
-}
-
-
-// ****************************************************************************
-//  Method: avtFacelistFilter::TakeFacesForDisjointElementMesh
-//
-//  Purpose:
-//      Calculates the external faces for meshes that are made up of disjoint
-//      elements.
-//
-//  Arguments:
-//      in_ds   The input dataset.
-//      dom     The domain index of the dataset.
-//
-//  Returns:    The external faces.
-//
-//  Programmer: Hank Childs
-//  Creation:   August 18, 2002
-//
-// ****************************************************************************
-
-vtkDataSet *
-avtFacelistFilter::TakeFacesForDisjointElementMesh(vtkDataSet *in_ds, int dom)
-{
-    //
-    // Make sure we are dealing with an unstructured grid.
-    //
-    int type = in_ds->GetDataObjectType();
-    if (type != VTK_UNSTRUCTURED_GRID)
-    {
-        debug5 << "Cannot work with disjoint mesh because it is not "
-               << "unstructured." << endl;
-        return Take3DFaces(in_ds, dom);
-    }
-
-    //
-    // Make sure that we only have hexahedrons.
-    //
-    vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) in_ds;
-    vtkCellTypes *types = vtkCellTypes::New();
-    ugrid->GetCellTypes(types);
-    int ntypes = types->GetNumberOfTypes();
-    int cell_type  = types->GetCellType(0);
-    types->Delete();
-    if (ntypes != 1 || cell_type != VTK_HEXAHEDRON)
-    {
-        debug5 << "Cannot work with disjoint mesh because it is not made up "
-               << "solely of hexahedrons." << endl;
-        return Take3DFaces(in_ds, dom);
-    }
-
-    //
-    // Use the disjoint cubes facelist filter to find the external faces.
-    //
-    vtkDisjointCubesFacelistFilter *dcff =
-                                         vtkDisjointCubesFacelistFilter::New();
-    dcff->SetInput(ugrid);
-    dcff->Update();
-
-    vtkDataSet *output = dcff->GetOutput();
-    ManageMemory(output);
-    dcff->Delete();
-    return output;
 }
 
 
@@ -1001,6 +1127,9 @@ avtFacelistFilter::TakeFacesForDisjointElementMesh(vtkDataSet *in_ds, int dom)
 //
 //  Modifications:
 //
+//    Hank Childs, Thu Dec 28 09:23:45 PST 2006
+//    Change memory management, since "ManageMemory" is no longer available.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1010,6 +1139,7 @@ avtFacelistFilter::ConvertToPolys(vtkDataSet *in_ds, int tDim)
 
     if (dstype != VTK_STRUCTURED_GRID && dstype != VTK_RECTILINEAR_GRID)
     {
+        in_ds->Register(NULL);
         return in_ds;
     }
 
@@ -1050,9 +1180,6 @@ avtFacelistFilter::ConvertToPolys(vtkDataSet *in_ds, int tDim)
         out_ds->SetLines(cells);
     }
     cells->Delete();
-
-    ManageMemory(out_ds);
-    out_ds->Delete();
 
     return out_ds;
 }

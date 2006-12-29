@@ -45,6 +45,7 @@ vtkStructuredGridMapper *vtkStructuredGridMapper::New()
 //----------------------------------------------------------------------------
 vtkStructuredGridMapper::vtkStructuredGridMapper()
 {
+  this->SceneIs3D = true;
 }
 
 //----------------------------------------------------------------------------

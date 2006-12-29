@@ -146,6 +146,10 @@ avtVariableMapper::~avtVariableMapper()
 //    Brad Whitlock, Fri Aug 25 10:41:25 PDT 2006
 //    Added code to enable color texturing in the mapper.
 //
+//    Hank Childs, Thu Dec 28 11:08:51 PST 2006
+//    Tell our mapper whether or not the scene is 3D.  (This is needed so
+//    the rectilinear grid mapper can decide whether or not to do lighting.)
+//
 // ****************************************************************************
 
 void
@@ -197,6 +201,8 @@ avtVariableMapper::CustomizeMappers(void)
             {
                 vtkVisItDataSetMapper *m = (vtkVisItDataSetMapper *)mappers[i];
                 m->SetEnableColorTexturing(colorTexturingFlag);
+                m->SetSceneIs3D(GetInput()->GetInfo().GetAttributes().
+                                                   GetSpatialDimension() == 3);
             }
         }
         if (actors[i] != NULL)

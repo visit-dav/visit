@@ -57,6 +57,7 @@ pengra_icc=true
 thunder=true
 prism=true
 yana=true
+davinci=true
 
 dist=undefined
 
@@ -79,6 +80,7 @@ do
          thunder=false
          prism=false
          yana=false
+         davinci=false
          shift
          ;;
       -hoth)
@@ -159,6 +161,14 @@ do
          ;;
       +yana)
          yana=true
+         shift
+         ;;
+      -davinci)
+         davinci=false
+         shift
+         ;;
+      +davinci)
+         davinci=true
          shift
          ;;
       -d)
@@ -691,9 +701,50 @@ then
 fi
 
 #
+# Build on davinci.
+#
+rm -f davinci
+cat <<EOF > davinci
+#!/bin/sh
+mv davinci_$dist.tar.gz $dist.tar.gz
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
+make -j 4 >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
+mv visit\$ver2.linux-ia64.tar.gz ..
+cd ..
+rm -f resultlog
+echo "        build of visit on davinci"      > resultlog 2>&1
+echo "       ---------------------------"     >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $davinci = true ]
+then
+   if [ $test = no ]
+   then
+      scp davinci davinci.nersc.gov:davinci_buildit
+      scp $dist.tar.gz davinci.nersc.gov:davinci_$dist.tar.gz
+      ssh davinci.nersc.gov "chmod 750 davinci_buildit;./davinci_buildit" &
+   fi
+fi
+
+#
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot quad berg up pengra pengra_icc thunder prism yana
+   rm -f hoth sunspot quad berg up pengra pengra_icc thunder prism yana davinci
 fi

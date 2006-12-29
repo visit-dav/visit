@@ -42,9 +42,13 @@
 #include <avtVertexNormalsFilter.h>
 
 #include <vtkPolyData.h>
+#include <vtkStructuredGrid.h>
 #include <vtkVisItPolyDataNormals.h>
+#include <vtkVisItStructuredGridNormals.h>
 
 #include <avtDataset.h>
+
+#include <DebugStream.h>
 
 
 // ****************************************************************************
@@ -150,6 +154,9 @@ avtVertexNormalsFilter::~avtVertexNormalsFilter()
 //    Removed call to SetSource(NULL), with new vtk pipeline, it also removes
 //    necessary information from the dataset. 
 //
+//    Hank Childs, Thu Dec 28 15:25:50 PST 2006
+//    Add support for direct normals calculation of structured grids.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -172,38 +179,66 @@ avtVertexNormalsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         return in_ds;
     }
 
-    if (in_ds->GetDataObjectType() != VTK_POLY_DATA)
+    if (in_ds->GetDataObjectType() == VTK_POLY_DATA)
     {
-        return in_ds;
+        vtkPolyData *pd = (vtkPolyData *)in_ds;
+    
+        bool pointNormals = true;
+        if (atts.ValidActiveVariable())
+        {
+            avtCentering cent = atts.GetCentering();
+            if (cent == AVT_ZONECENT)
+                pointNormals = false;
+        }
+        vtkVisItPolyDataNormals *normals = vtkVisItPolyDataNormals::New();
+        normals->SetInput(pd);
+        normals->SetFeatureAngle(45.);
+        if (pointNormals)
+            normals->SetNormalTypeToPoint();
+        else
+            normals->SetNormalTypeToCell();
+        normals->SetSplitting(true);
+        normals->Update();
+    
+        vtkPolyData *out_ds = normals->GetOutput();
+        //out_ds->SetSource(NULL);
+        ManageMemory(out_ds);
+        normals->Delete();
+    
+        return out_ds;
+    }
+    else if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+    {
+        vtkStructuredGrid *sgrid = (vtkStructuredGrid *)in_ds;
+    
+        bool pointNormals = true;
+        if (atts.ValidActiveVariable())
+        {
+            avtCentering cent = atts.GetCentering();
+            if (cent == AVT_ZONECENT)
+                pointNormals = false;
+        }
+        vtkVisItStructuredGridNormals *normals = 
+                                            vtkVisItStructuredGridNormals::New();
+        normals->SetInput(sgrid);
+        if (pointNormals)
+            normals->SetNormalTypeToPoint();
+        else
+            normals->SetNormalTypeToCell();
+
+        normals->Update();
+    
+        vtkStructuredGrid *out_ds = normals->GetOutput();
+        //out_ds->SetSource(NULL);
+        ManageMemory(out_ds);
+        normals->Delete();
+    
+        return out_ds;
     }
 
-    vtkPolyData *pd = (vtkPolyData *)in_ds;
-
-    bool pointNormals = true;
-    if (atts.ValidActiveVariable())
-    {
-        avtCentering cent = atts.GetCentering();
-        if (cent == AVT_ZONECENT)
-            pointNormals = false;
-    }
-    vtkVisItPolyDataNormals *normals = vtkVisItPolyDataNormals::New();
-    normals->SetInput(pd);
-    normals->SetFeatureAngle(45.);
-    if (pointNormals)
-        normals->SetNormalTypeToPoint();
-    else
-        normals->SetNormalTypeToCell();
-    normals->SetSplitting(true);
-    normals->Update();
-
-    vtkPolyData *out_ds = normals->GetOutput();
-    out_ds->Register(NULL);
-    //out_ds->SetSource(NULL);
-    ManageMemory(out_ds);
-    out_ds->Delete();
-    normals->Delete();
-
-    return out_ds;
+    // Don't know what to do with other grid types.
+    debug1 << "Sent unsupported grid type into normals filter" << endl;
+    return in_ds;
 }
 
 
