@@ -3701,6 +3701,13 @@ NetworkManager::ExportDatabase(int id, ExportDBAttributes *atts)
 //
 //  Programmer:  Mark C. Miller 
 //  Creation:    24May03 
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Jan  3 14:15:47 PST 2007
+//    Initialize argument to prevent UMR.  (The array being initialized is
+//    not used for rank != 0.  Regardless, this fixes a purify error.)
+//
 // ****************************************************************************
 static double
 RenderBalance(int numTrianglesIHave)
@@ -3708,7 +3715,7 @@ RenderBalance(int numTrianglesIHave)
    double balance = 1.0;
 
 #ifdef PARALLEL
-   int rank, size, *triCounts;
+   int rank, size, *triCounts = NULL;
 
    balance = -1.0;
    rank = PAR_Rank();

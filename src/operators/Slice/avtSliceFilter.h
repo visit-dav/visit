@@ -115,6 +115,10 @@ class avtPointAttribute;
 //    vtkTransformPolyDataFilter does not pass on names of vectors, which
 //    can screw us up down stream. ['6471]
 //
+//    Hank Childs, Fri Dec 29 15:02:34 PST 2006
+//    Add some new methods.  The "ExecuteData" method got too crowded and
+//    some aspects are being put in their own method.
+//
 // ****************************************************************************
 
 class avtSliceFilter : public avtPluginStreamer
@@ -157,6 +161,10 @@ class avtSliceFilter : public avtPluginStreamer
 
     void                    GetOrigin(double &, double &, double &);
     void                    SetUpProjection(void);
+
+    bool                    CanIntersectPlane(vtkDataSet *);
+    bool                    OutputCanBeRectilinear(vtkRectilinearGrid *);
+    vtkRectilinearGrid     *RectilinearToRectilinearSlice(vtkRectilinearGrid*);
 };
 
 

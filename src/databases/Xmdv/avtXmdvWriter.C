@@ -109,6 +109,9 @@ avtXmdvWriter::OpenFile(const string &stemname)
 //    Hank Childs, Tue Sep 27 08:39:14 PDT 2005
 //    Added support for vectors.
 //
+//    Hank Childs, Wed Jan  3 14:21:28 PST 2007
+//    Fix problem with parallel initialization.
+//
 // ****************************************************************************
 
 void
@@ -117,9 +120,6 @@ avtXmdvWriter::WriteHeaders(const avtDatabaseMetaData *md,
                            vector<string> &materials)
 {
     int  i;
-
-    if (!PAR_UIProcess())
-        return;
 
     scalars = s;
     vectors = v;
@@ -173,15 +173,18 @@ avtXmdvWriter::WriteHeaders(const avtDatabaseMetaData *md,
     int nblocks = md->GetMesh(0)->numBlocks;
     if (nblocks > 1)
     {
-        char filename[1024];
-        sprintf(filename, "%s.visit", stem.c_str());
-        ofstream ofile(filename);
-        ofile << "!NBLOCKS " << nblocks << endl;
-        for (int i = 0 ; i < nblocks ; i++)
+        if (PAR_UIProcess())
         {
-            char chunkname[1024];
-            sprintf(chunkname, "%s.%03d.okc", stem.c_str(), i);
-            ofile << chunkname << endl;
+            char filename[1024];
+            sprintf(filename, "%s.visit", stem.c_str());
+            ofstream ofile(filename);
+            ofile << "!NBLOCKS " << nblocks << endl;
+            for (int i = 0 ; i < nblocks ; i++)
+            {
+                char chunkname[1024];
+                sprintf(chunkname, "%s.%03d.okc", stem.c_str(), i);
+                ofile << chunkname << endl;
+            }
         }
         onlyOneBlock = false;
     }
@@ -369,3 +372,5 @@ avtXmdvWriter::CloseFile(void)
 {
     // CLOSE FILES
 }
+
+
