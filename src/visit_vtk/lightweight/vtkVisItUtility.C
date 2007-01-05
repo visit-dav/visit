@@ -860,11 +860,18 @@ vtkVisItUtility::ContainsMixedGhostZoneTypes(vtkDataSet *ds)
 //  Programmer: Hank Childs
 //  Creation:   March 18, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jan  5 11:01:40 PST 2007
+//    Add support for degenerate hexes (faces inside out).
+//
 // ****************************************************************************
 
 bool
 vtkVisItUtility::CellContainsPoint(vtkCell *cell, const double *pt)
 {
+    int   i;
+
     int cellType = cell->GetCellType();
     if (cellType == VTK_HEXAHEDRON)
     {
@@ -875,7 +882,19 @@ vtkVisItUtility::CellContainsPoint(vtkCell *cell, const double *pt)
         static int faces[6][4] = { {0,4,7,3}, {1,2,6,5},
                            {0,1,5,4}, {3,7,6,2},
                            {0,3,2,1}, {4,5,6,7} };
-        for (int i = 0 ; i < 6 ; i++)
+
+        double center[3] = { 0., 0., 0. };
+        for (i = 0 ; i < 8 ; i++)
+        {
+            center[0] += pts_ptr[3*i];
+            center[1] += pts_ptr[3*i+1];
+            center[2] += pts_ptr[3*i+2];
+        }
+        center[0] /= 8.;
+        center[1] /= 8.;
+        center[2] /= 8.;
+
+        for (i = 0 ; i < 6 ; i++)
         {
             double dir1[3], dir2[3];
             int idx0 = faces[i][0];
@@ -909,11 +928,24 @@ vtkVisItUtility::CellContainsPoint(vtkCell *cell, const double *pt)
             // A*(pt[0]-origin[0]) + B*(pt[1]-origin[1]) + C*(pt[2-origin[2])
             //    ?>= 0
             //
-            double val  = cross[0]*(pt[0] - origin[0])
+            double val1 = cross[0]*(pt[0] - origin[0])
                        + cross[1]*(pt[1] - origin[1])
                        + cross[2]*(pt[2] - origin[2]);
 
-            if (val < 0.)
+            //
+            // If the hexahedron is inside out, then val1 could be
+            // negative, because the face orientation is wrong.
+            // Find the sign for the cell center.
+            //
+            double val2 = cross[0]*(center[0] - origin[0])
+                       + cross[1]*(center[1] - origin[1])
+                       + cross[2]*(center[2] - origin[2]);
+
+            // 
+            // If the point in question (pt) and the center are on opposite
+            // sides of the cell, then declare the point outside the cell.
+            //
+            if (val1*val2 < 0.)
                 return false;
         }
         return true;

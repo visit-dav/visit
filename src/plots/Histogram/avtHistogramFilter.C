@@ -198,6 +198,9 @@ avtHistogramFilter::PreExecute(void)
 //    Hank Childs, Thu Sep 14 09:16:23 PDT 2006
 //    Fix indexing bug pointed out by Matt Wheeler.
 //
+//    Hank Childs, Fri Jan  5 11:49:31 PST 2007
+//    Reverse indexing for bins that have negative values.
+//
 // ****************************************************************************
 
 void
@@ -337,10 +340,20 @@ avtHistogramFilter::PostExecute(void)
         vtkIdType quad[4];
         for (int i = 0 ; i < workingNumBins ; i++)
         {
-            quad[0] = 4*i;
-            quad[1] = 4*i+2;
-            quad[2] = 4*i+3;
-            quad[3] = 4*i+1;
+            if (bins[i] >= 0.)
+            {
+                quad[0] = 4*i;
+                quad[1] = 4*i+2;
+                quad[2] = 4*i+3;
+                quad[3] = 4*i+1;
+            }
+            else
+            {
+                quad[0] = 4*i;
+                quad[1] = 4*i+1;
+                quad[2] = 4*i+3;
+                quad[3] = 4*i+2;
+            }
             output->InsertNextCell(VTK_QUAD, 4, quad);
         }
     }
