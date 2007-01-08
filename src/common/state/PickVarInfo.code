@@ -163,6 +163,9 @@ Definition:
 //   Hank Childs, Thu May 25 08:35:12 PDT 2006
 //   Add support for arrays.
 //
+//   Mark C. Miller, Mon Jan  8 20:48:30 PST 2007
+//   Initialized buff at top to avoid possible creation of code blocks where
+//   buff is uninitialized (as for tensor/array variables)
 // ****************************************************************************
 void
 PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
@@ -171,6 +174,7 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
     int matOffset = 0, mixOffset = 0;
     int nMats;
     char buff[256];
+    buff[0] = '\0';
     os = variableName;
     os +=  ":  ";
     bool centeringsMatch = false;

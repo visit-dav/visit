@@ -98,6 +98,9 @@ class     ExprPipelineState;
 //    Made Recenter be a static, public function.  Also improved implementation
 //    of GetVariableDimension.
 //
+//    Hank Childs, Mon Jan  8 10:17:15 PST 2007
+//    Added method to determine variable type of variable.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionFilter : virtual public 
@@ -134,6 +137,13 @@ class EXPRESSION_API avtExpressionFilter : virtual public
 
     virtual int              GetVariableDimension();
     virtual avtVarType       GetVariableType() { return AVT_UNKNOWN_TYPE; };
+
+    //
+    // The method "GetVariableType" declares what the variable type of the
+    // output is.  This method will determine the variable type of an
+    // existing variable.
+    //
+    avtVarType               DetermineVariableType(std::string &);
 
     void                     UpdateExtents(avtDataTree_p);
 };
