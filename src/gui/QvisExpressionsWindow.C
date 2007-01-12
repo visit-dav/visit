@@ -115,6 +115,9 @@
 //    Hank Childs, Fri Dec 22 10:27:45 PST 2006
 //    Added symm_point.
 //
+//    Hank Childs, Fri Jan 12 13:20:33 PST 2007
+//    Added array_compose_with_bins
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -228,6 +231,7 @@ const char *expr_tensor[] = {
 
 const char *expr_array[] = {
     "array_compose",
+    "array_compose_with_bins",
     "array_decompose",
     NULL
 };
@@ -1009,6 +1013,9 @@ QvisExpressionsWindow::displayAllVarsChanged()
 //    Hank Childs, Fri Dec 22 10:31:40 PST 2006
 //    Added symm_point.
 //
+//    Hank Childs, Fri Jan 12 13:20:33 PST 2007
+//    Added array_compose and array_compose_with_bins.
+//
 // ****************************************************************************
 
 void
@@ -1062,9 +1069,26 @@ QvisExpressionsWindow::insertFunction(int id)
         definitionEdit->insert("(<condition>, <then-var>, <else-var>)");
         doParens = false;
     }
-    else if (str == "min" || str == "max")
+    else if (str == "min" || str == "max" || str == "cross" || str == "mod" ||
+             str == "and" || str == "or")
     {
         definitionEdit->insert("(<var1>, <var2>)");
+        doParens = false;
+    }
+    else if (str == "array_compose")
+    {
+        definitionEdit->insert("(<var1>, <var2>, ..., <varN>)");
+        doParens = false;
+    }
+    else if (str == "array_compose_with_bins")
+    {
+        definitionEdit->insert("(<var1>, <var2>, ..., <varN>, [b1, b2, ..., bN+1])");
+        doParens = false;
+    }
+    else if (str == "eq" || str == "ge" || str == "gt" || 
+             str == "le" || str == "lt" || str == "ne")
+    {
+        definitionEdit->insert("(<var-LHS>, <var-RHS>)");
         doParens = false;
     }
 

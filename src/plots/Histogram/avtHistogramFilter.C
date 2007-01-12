@@ -201,6 +201,9 @@ avtHistogramFilter::PreExecute(void)
 //    Hank Childs, Fri Jan  5 11:49:31 PST 2007
 //    Reverse indexing for bins that have negative values.
 //
+//    Hank Childs, Fri Jan 12 15:27:01 PST 2007
+//    Use bin spacing if possible.
+//
 // ****************************************************************************
 
 void
@@ -249,6 +252,17 @@ avtHistogramFilter::PostExecute(void)
 
     vtkPolyData *output = vtkPolyData::New();
 
+    bool spaceBins = false;
+    vector<double> ranges;
+    if (atts.GetBasedOn() == atts.ManyVarsForSingleZone)
+        if (atts.GetUseBinWidths() == true)
+        {
+            ranges = 
+                 GetInput()->GetInfo().GetAttributes().GetVariableBinRanges();
+            if (ranges.size() == workingNumBins+1)
+                spaceBins = true;
+        }
+
     if (atts.GetOutputType() == HistogramAttributes::Curve)
     {
         vtkPoints *pts = vtkPoints::New();
@@ -257,7 +271,10 @@ avtHistogramFilter::PostExecute(void)
         for (i = 0 ; i < workingNumBins ; i++)
         {
             float pt[3];
-            pt[0] = workingMin + (i+0.5)*jump;
+            if (spaceBins)
+                pt[0] = (ranges[i]+ranges[i+1])/2.;
+            else
+                pt[0] = workingMin + (i+0.5)*jump;
             pt[1] = bins[i];
             pt[2] = 0.;
             pts->SetPoint(i, pt);
@@ -290,7 +307,10 @@ avtHistogramFilter::PostExecute(void)
             //
             // Do the last two points for bin i.
             //
-            pt[0] = jump*i + workingMin;
+            if (spaceBins)
+                pt[0] = ranges[i];
+            else
+                pt[0] = jump*i + workingMin;
             pt[1] = 0.;
             pts->SetPoint(ptIndex++, pt);
 
@@ -300,7 +320,10 @@ avtHistogramFilter::PostExecute(void)
             //
             // Now do the first two points for bin i+1.
             //
-            pt[0] = jump*(i+1) + workingMin;
+            if (spaceBins)
+                pt[0] = ranges[i+1];
+            else
+                pt[0] = jump*(i+1) + workingMin;
             pt[1] = 0.;
             pts->SetPoint(ptIndex++, pt);
 
@@ -372,8 +395,16 @@ avtHistogramFilter::PostExecute(void)
         hi  = (hi  > bins[i] ? hi  : bins[i]);
     }
     double extents[6];
-    extents[0] = workingMin;
-    extents[1] = workingMax;
+    if (spaceBins)
+    {
+        extents[0] = ranges[0];
+        extents[1] = ranges[workingNumBins];
+    }
+    else
+    {
+        extents[0] = workingMin;
+        extents[1] = workingMax;
+    }
     if (atts.GetBasedOn() == HistogramAttributes::ManyZonesForSingleVar)
         extents[2] = 0.;  // We always start from 0.  lo is misleading.
     else

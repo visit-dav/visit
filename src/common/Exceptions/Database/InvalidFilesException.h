@@ -41,11 +41,13 @@
 
 #ifndef INVALID_FILES_EXCEPTION_H
 #define INVALID_FILES_EXCEPTION_H
+
 #include <avtexception_exports.h>
 
 #include <DatabaseException.h>
 
 #include <string>
+#include <vector>
 
 
 // ****************************************************************************
@@ -65,12 +67,20 @@
 //    Jeremy Meredith, Wed Aug 11 16:27:32 PDT 2004
 //    Adding a new constructor that allows a more informative message.
 //
+//    Hank Childs, Thu Jan 11 15:49:54 PST 2007
+//    Add a new constructor for the plugin types tried.
+//
 // ****************************************************************************
 
 class AVTEXCEPTION_API InvalidFilesException : public DatabaseException
 {
   public:
                           InvalidFilesException(const char *);
+                          InvalidFilesException(const char *, 
+                                                std::vector<std::string> &);
+                          InvalidFilesException(const char *, 
+                                                std::vector<std::string> &,
+                                                const char *);
                           InvalidFilesException(const char * const *, int);
                           InvalidFilesException(const std::string&,
                                                            const std::string&);

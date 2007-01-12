@@ -437,6 +437,10 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Changed interface to lb->AddDatabase 
+//
+//    Hank Childs, Thu Jan 11 16:10:12 PST 2007
+//    Added argument to DatabaseFactory calls.
+//
 // ****************************************************************************
 
 NetnodeDB *
@@ -486,11 +490,13 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
         avtDatabase *db = NULL;
         NetnodeDB *netDB = NULL;
         const char *filename_c = filename.c_str();
+        std::vector<std::string> plugins;  // unused
         if (filename.length() >= 6 &&
             filename.substr(filename.length() - 6) == ".visit")
-            db = avtDatabaseFactory::VisitFile(filename_c, time, format);
+            db = avtDatabaseFactory::VisitFile(filename_c, time, plugins, format);
         else
-            db = avtDatabaseFactory::FileList(&filename_c, 1, time, format);
+            db = avtDatabaseFactory::FileList(&filename_c, 1, time, plugins, 
+                                              format);
         db->SetFullDBName(filename);
 
         // If we want to open the file at a later timestep, get the
@@ -772,8 +778,12 @@ NetworkManager::StartNetwork(const string &format,
 //   Hank Childs, Fri Oct  7 09:30:57 PDT 2005
 //   Tell the database what its full name is.
 //
-//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
-//    Changed interface to lb->AddDatabase 
+//   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//   Changed interface to lb->AddDatabase 
+//
+//   Hank Childs, Thu Jan 11 16:10:12 PST 2007
+//   Added argument to DatabaseFactory calls.
+//
 // ****************************************************************************
 
 void
@@ -864,6 +874,7 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
         if(format.size() > 0)
             defaultFormat = format.c_str();
 
+        std::vector<std::string> plugins;  // unused
         if (filesWithPath.size() > 0)
         {
             // Make an array of pointers that we can pass to the database
@@ -873,7 +884,7 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
             for(int i = 0; i < filesWithPath.size(); ++i)
                 names[i] = filesWithPath[i].c_str();
             db = avtDatabaseFactory::FileList(names, filesWithPath.size(),
-                                              time, defaultFormat);
+                                              time, plugins, defaultFormat);
             delete [] names;
             names = 0;
 
@@ -883,9 +894,10 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
                    << "definition for " << dbName.c_str() << endl;
         }
         else if (dbName.substr(dbName.length() - 6) == ".visit")
-            db = avtDatabaseFactory::VisitFile(dbName_c, time, defaultFormat);
+            db = avtDatabaseFactory::VisitFile(dbName_c, time, plugins,
+                                               defaultFormat);
         else
-            db = avtDatabaseFactory::FileList(&dbName_c, 1, time,
+            db = avtDatabaseFactory::FileList(&dbName_c, 1, time, plugins,
                                               defaultFormat);
         db->SetFullDBName(dbName);
 

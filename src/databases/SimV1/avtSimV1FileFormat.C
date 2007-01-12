@@ -363,6 +363,9 @@ avtSimV1FileFormat::FreeUpResources(void)
 //    Brad Whitlock, Fri Nov 3 10:29:21 PDT 2006
 //    Fixed memory leak.
 //
+//    Brad Whitlock, Wed Jan 10 12:19:53 PDT 2007
+//    Added check for NULL strings coming from the simulation commands.
+//
 // ****************************************************************************
 
 void
@@ -513,14 +516,15 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                        "Invalid command argument type in "
                        "VisIt_SimulationControlCommand.");
         }
+#define NOT_NULL(S) ((S) != 0 ? (S) : "")
         avtSimulationCommandSpecification scs;
-        scs.SetName(scc->name);
-        scs.SetText(scc->text);
-        scs.SetValue(scc->value);
+        scs.SetName(NOT_NULL(scc->name));
+        scs.SetText(NOT_NULL(scc->text));
+        scs.SetValue(NOT_NULL(scc->value));
         scs.SetIsOn(scc->isOn);
-        scs.SetUiType(scc->uiType);
-        scs.SetClassName(scc->className);
-        scs.SetSignal(scc->signal);
+        scs.SetUiType(NOT_NULL(scc->uiType));
+        scs.SetClassName(NOT_NULL(scc->className));
+        scs.SetSignal(NOT_NULL(scc->signal));
         scs.SetArgumentType(t);
         scs.SetEnabled(scc->enabled);
         md->GetSimInfo().AddAvtSimulationCommandSpecification(scs);
@@ -532,12 +536,12 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         avtSimulationCommandSpecification::CommandArgumentType t;
         t =  avtSimulationCommandSpecification::CmdArgString;
         avtSimulationCommandSpecification scs;
-        scs.SetName(scc->name);
-        scs.SetText(scc->text);
-        scs.SetValue(scc->value);
+        scs.SetName(NOT_NULL(scc->name));
+        scs.SetText(NOT_NULL(scc->text));
+        scs.SetValue(NOT_NULL(scc->value));
         scs.SetIsOn(scc->isOn);
-        scs.SetUiType(scc->uiType);
-        scs.SetClassName(scc->className);
+        scs.SetUiType(NOT_NULL(scc->uiType));
+        scs.SetClassName(NOT_NULL(scc->className));
         scs.SetArgumentType(t);
         scs.SetEnabled(scc->enabled);
         md->GetSimInfo().AddAvtSimulationCustCommandSpecification(scs);

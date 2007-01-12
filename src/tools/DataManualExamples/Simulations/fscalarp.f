@@ -47,17 +47,90 @@ c-----------------------------------------------------------------
       program main
       implicit none
       include "visitfortransiminterface.inc"
+      include "mpif.h"
 ccc   local variables
       integer err
+ccc   PARALLEL state common block
+      integer par_rank, par_size
+      common /PARALLEL/ par_rank, par_size
+      save /PARALLEL/
+
+      call MPI_INIT(err)
+
+c     Determine the rank and size of this MPI task so we can tell
+c     VisIt's libsim about it.
+      call MPI_COMM_RANK(MPI_COMM_WORLD, par_rank, err)
+      call MPI_COMM_SIZE(MPI_COMM_WORLD, par_size, err)
+      if(par_size.gt.1) then
+          err = visitsetparallel(1)
+      endif
+      err = visitsetparallelrank(par_rank)
 
       err = visitsetupenv()
-      err = visitinitializesim("fsim9", 5,
-     . "Demonstrates creating curve metadata", 36,
-     . "/no/useful/path", 15,
-     . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN,
-     . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN)
+c     Have the master process write the sim file.
+      if(par_rank.eq.0) then
+          err = visitinitializesim("fscalarp", 8,
+     .     "Demonstrates scalar data access function", 40,
+     .     "/no/useful/path", 15,
+     .     VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN,
+     .     VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN)
+      endif
+
       call mainloop()
+
+      call MPI_FINALIZE(err)
       stop
+      end
+
+c-----------------------------------------------------------------
+c processvisitcommand
+c-----------------------------------------------------------------
+
+      integer function processvisitcommand()
+      implicit none
+      include "mpif.h"
+      include "visitfortransiminterface.inc"
+ccc   PARALLEL state common block
+      integer par_rank, par_size
+      common /PARALLEL/ par_rank, par_size
+      integer command, e, doloop, success, ret
+      integer VISIT_COMMAND_PROCESS
+      integer VISIT_COMMAND_SUCCESS
+      integer VISIT_COMMAND_FAILURE
+      parameter (VISIT_COMMAND_PROCESS = 0)
+      parameter (VISIT_COMMAND_SUCCESS = 1)
+      parameter (VISIT_COMMAND_FAILURE = 2)
+
+      if(par_rank.eq.0) then
+          success = visitprocessenginecommand()
+
+          if(success.gt.0) then
+              command = VISIT_COMMAND_SUCCESS
+              ret = 1
+          else
+              command = VISIT_COMMAND_FAILURE
+              ret = 0
+          endif
+
+          call MPI_BCAST(command,1,MPI_INTEGER,0,MPI_COMM_WORLD,e)
+      else
+          doloop = 1
+2345      call MPI_BCAST(command,1,MPI_INTEGER,0,MPI_COMM_WORLD,e)
+          if(command.eq.VISIT_COMMAND_PROCESS) then
+              success = visitprocessenginecommand()
+          elseif(command.eq.VISIT_COMMAND_SUCCESS) then
+              ret = 1
+              doloop = 0
+          else
+              ret = 0
+              doloop = 0
+          endif
+
+          if(doloop.ne.0) then
+              goto 2345
+          endif
+      endif
+      processvisitcommand = ret
       end
 
 c-----------------------------------------------------------------
@@ -65,19 +138,25 @@ c mainloop
 c-----------------------------------------------------------------
       subroutine mainloop()
       implicit none
+      include "mpif.h"
       include "visitfortransiminterface.inc"
+ccc   functions
+      integer processvisitcommand
 ccc   local variables
-      integer visitstate, result, blocking
+      integer visitstate, result, blocking, ierr
 ccc   SIMSTATE common block
       integer runflag, simcycle
       real simtime
-      common /SIMSTATE/ runflag, simcycle, simtime
+      common /SIMSTATE/ runflag,simcycle,simtime
       save /SIMSTATE/
+ccc   PARALLEL state common block
+      integer par_rank, par_size
+      common /PARALLEL/ par_rank, par_size
 
 c     main loop
       runflag = 1
       simcycle = 0
-      simtime = 0.
+      simtime = 0
       do 10
           if(runflag.eq.1) then
               blocking = 0 
@@ -85,7 +164,12 @@ c     main loop
               blocking = 1
           endif
 
-          visitstate = visitdetectinput(blocking, -1)
+c         Detect input from VisIt on processor 0 and then broadcast
+c         the results of that input to all processors.
+          if(par_rank.eq.0) then
+              visitstate = visitdetectinput(blocking, -1)
+          endif
+          call MPI_BCAST(visitstate,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
 
           if (visitstate.lt.0) then
               goto 1234
@@ -101,7 +185,7 @@ c     main loop
               endif
           elseif (visitstate.eq.2) then
               runflag = 0
-              if (visitprocessenginecommand().eq.0) then
+              if (processvisitcommand().eq.0) then
                   result = visitdisconnect()
                   runflag = 1
               endif
@@ -110,14 +194,35 @@ c     main loop
 1234  end
 
       subroutine simulate_one_timestep()
-c Simulate one time step
 ccc   SIMSTATE common block
       integer runFlag, simcycle
       real simtime
-      common /SIMSTATE/ runflag, simcycle, simtime
+      common /SIMSTATE/ runflag,simcycle,simtime
+ccc   PARALLEL state common block
+      integer par_rank, par_size
+      common /PARALLEL/ par_rank, par_size
+ccc   RECTMESH common block
+      integer NX, NY
+      parameter (NX = 4)
+      parameter (NY = 5)
+      real rmx(NX), rmy(NY), zonal(NX-1,NY-1)
+      integer rmdims(3), rmndims
+      common /RECTMESH/ rmdims, rmndims, rmx, rmy, zonal
+      save /RECTMESH/
+c Rectilinear mesh data
+      data rmndims /2/
+      data rmdims /4, 5, 1/
+      data rmx/0., 1., 2.5, 5./
+      data rmy/0., 2., 2.25, 2.55,  5./
+      data zonal/1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,11.,12./
+
+c Simulate one time step
       simcycle = simcycle + 1
       simtime = simtime + 0.0134
-      write (6,*) 'Simulating time step: cycle=',simcycle, ' time=', simtime
+      if(par_rank.eq.0) then
+          write (6,*) 'Simulating time step: cycle=',simcycle, 
+     .    ' time=', simtime
+      endif
       call sleep(1)
       end
 
@@ -138,6 +243,18 @@ c---------------------------------------------------------------------------
       integer     lcmd, lstringdata, intdata
       real        floatdata
       include "visitfortransiminterface.inc"
+ccc   SIMSTATE common block
+      integer runflag, simcycle
+      real simtime
+      common /SIMSTATE/ runflag,simcycle,simtime
+c     Handle the commands that we define in visitgetmetadata.
+      if(visitstrcmp(cmd, lcmd, "halt", 4).eq.0) then
+          runflag = 0
+      elseif(visitstrcmp(cmd, lcmd, "step", 4).eq.0) then
+          call simulate_one_timestep()
+      elseif(visitstrcmp(cmd, lcmd, "run", 3).eq.0) then
+          runflag = 1
+      endif
       end
 
 c---------------------------------------------------------------------------
@@ -145,8 +262,9 @@ c visitbroadcastintfunction
 c---------------------------------------------------------------------------
       integer function visitbroadcastintfunction(value, sender)
       implicit none
-      integer value, sender
-c     REPLACE WITH MPI COMMUNICATION IF SIMULATION IS PARALLEL
+      include "mpif.h"
+      integer value, sender, IERR
+      call MPI_BCAST(value,1,MPI_INTEGER,sender,MPI_COMM_WORLD,ierr)
       visitbroadcastintfunction = 0
       end
 
@@ -155,9 +273,10 @@ c visitbroadcaststringfunction
 c---------------------------------------------------------------------------
       integer function visitbroadcaststringfunction(str, lstr, sender)
       implicit none
+      include "mpif.h"
       character*8 str
-      integer     lstr, sender
-c     REPLACE WITH MPI COMMUNICATION IF SIMULATION IS PARALLEL
+      integer     lstr, sender, IERR
+      call MPI_BCAST(str,lstr,MPI_CHARACTER,sender,MPI_COMM_WORLD,ierr)
       visitbroadcaststringfunction = 0
       end
 
@@ -166,7 +285,11 @@ c visitslaveprocesscallback
 c---------------------------------------------------------------------------
       subroutine visitslaveprocesscallback ()
       implicit none
-c     REPLACE WITH MPI COMMUNICATION IF SIMULATION IS PARALLEL
+      include "mpif.h"
+      integer c, ierr, VISIT_COMMAND_PROCESS
+      parameter (VISIT_COMMAND_PROCESS = 0)
+      c = VISIT_COMMAND_PROCESS
+      call MPI_BCAST(c,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
       end
 
 c---------------------------------------------------------------------------
@@ -179,8 +302,12 @@ c---------------------------------------------------------------------------
 ccc   SIMSTATE common block
       integer runflag, simcycle
       real simtime
-      common /SIMSTATE/ runflag, simcycle, simtime
-      integer err, tdim, sdim, mesh, mt, scalar, curve
+      common /SIMSTATE/ runflag,simcycle,simtime
+ccc   PARALLEL state common block
+      integer par_rank, par_size
+      common /PARALLEL/ par_rank, par_size
+c     Local variables
+      integer err, tdim, sdim, mesh, mt, scalar, curve, mat, e
 
       err = visitmdsetcycletime(handle, simcycle, simtime)
       if(runflag.eq.1) then
@@ -189,27 +316,14 @@ ccc   SIMSTATE common block
           err = visitmdsetrunning(handle, VISIT_SIMMODE_STOPPED)
       endif
 
-c     Add a 2D rectilinear mesh
+c     Add a 2D rectilinear mesh with as many domains as we have processors
       mt = VISIT_MESHTYPE_RECTILINEAR
       tdim = 2
       sdim = 2
-      mesh = visitmdmeshcreate(handle, "mesh2d", 6, mt, tdim, sdim, 1)
+      mesh = visitmdmeshcreate(handle, "mesh2d", 6, mt, tdim, sdim, 
+     . par_size)
       if(mesh.ne.VISIT_INVALID_HANDLE) then
           err = visitmdmeshsetunits(handle, mesh, "cm", 2)
-          err = visitmdmeshsetlabels(handle, mesh, "Width", 5,
-     .    "Height", 6, "Depth", 5)
-          err = visitmdmeshsetblocktitle(handle, mesh, "Domains", 7)
-          err = visitmdmeshsetblockpiecename(handle, mesh, "domain", 6)
-      endif
-
-c     Add a 3D curvilinear mesh
-      tdim = 3
-      sdim = 3
-      mt = VISIT_MESHTYPE_CURVILINEAR
-      mesh = visitmdmeshcreate(handle, "mesh3d", 6, mt, tdim, 
-     .                         sdim, 1)
-      if(mesh.ne.VISIT_INVALID_HANDLE) then
-          err = visitmdmeshsetunits(handle, mesh, "Miles", 5)
           err = visitmdmeshsetlabels(handle, mesh, "Width", 5,
      .    "Height", 6, "Depth", 5)
           err = visitmdmeshsetblocktitle(handle, mesh, "Domains", 7)
@@ -219,19 +333,18 @@ c     Add a 3D curvilinear mesh
 c     Add a zonal variable on mesh2d.
       scalar = visitmdscalarcreate(handle, "zonal", 5, "mesh2d", 6,
      . VISIT_VARCENTERING_ZONE)
-c     Add a nodal variable on mesh3d.
-      scalar = visitmdscalarcreate(handle, "nodal", 5, "mesh3d", 6,
-     . VISIT_VARCENTERING_NODE)
 
-c     Add a curve variable
-      curve = visitmdcurvecreate(handle, "sine", 4)
-      if(curve.ne.VISIT_INVALID_HANDLE) then
-          err = visitmdcurvesetlabels(handle, curve, "angle", 5,
-     .                                "amplitude", 9)
-          err = visitmdcurvesetunits(handle, curve, "radians", 7,
-     .                               VISIT_F77NULLSTRING,
-     .                               VISIT_F77NULLSTRINGLEN)
-      endif
+c     Add some expressions
+      e = visitmdexpressioncreate(handle, "zvec", 4,
+     . "{zonal, zonal}", 14, VISIT_VARTYPE_VECTOR)
+
+c     Add simulation commands
+      err = visitmdaddsimcommand(handle, "halt", 4, VISIT_CMDARG_NONE,
+     .                           1)
+      err = visitmdaddsimcommand(handle, "step", 4, VISIT_CMDARG_NONE,
+     .                           1)
+      err = visitmdaddsimcommand(handle, "run", 3, VISIT_CMDARG_NONE,
+     .                           1)
 
       visitgetmetadata = VISIT_OKAY
       end
@@ -243,8 +356,43 @@ c---------------------------------------------------------------------------
       implicit none
       character*8 name
       integer     handle, domain, lname
-      include "visitfortransiminterface.inc"
-      visitgetmesh = VISIT_ERROR
+      include "visitfortransiminterface.inc" 
+ccc   RECTMESH common block (shared with simulate_one_timestep)
+      integer NX, NY
+      parameter (NX = 4)
+      parameter (NY = 5)
+      real rmx(NX), rmy(NY), zonal(NX-1,NY-1)
+      integer rmdims(3), rmndims
+      common /RECTMESH/ rmdims, rmndims, rmx, rmy, zonal
+
+ccc   local variables
+      integer m, baseindex(3), minrealindex(3), maxrealindex(3), i
+      real rmz, rmx2(NX)
+
+      m = VISIT_ERROR
+      if(visitstrcmp(name, lname, "mesh2d", 6).eq.0) then
+          rmz = 0.
+          baseindex(1) = 1
+          baseindex(2) = 1
+          baseindex(3) = 1
+          minrealindex(1) = 0
+          minrealindex(2) = 0
+          minrealindex(3) = 0
+          maxrealindex(1) = rmdims(1)-1
+          maxrealindex(2) = rmdims(2)-1
+          maxrealindex(3) = rmdims(3)-1
+c Create a rectilinear rmesh here by offsetting the mesh in X based
+c on the domain number.
+          do 20 i = 1, NX
+             rmx2(i) = rmx(i) + (5. * real(domain))
+20        continue
+c Let VisIt own the data because otherwise the rmx2 coordinate
+c array would go out of scope. This means a copy.
+          m = visitmeshrectilinear2(handle, baseindex, minrealindex,
+     .        maxrealindex, rmdims, rmndims, rmx2, rmy, rmz,
+     .        VISIT_OWNER_COPY)
+      endif
+      visitgetmesh = m
       end
 
 c---------------------------------------------------------------------------
@@ -255,7 +403,26 @@ c---------------------------------------------------------------------------
       character*8 name
       integer     handle, domain, lname
       include "visitfortransiminterface.inc"
-      visitgetscalar = VISIT_ERROR
+ccc   RECTMESH common block
+      integer NX, NY
+      parameter (NX = 4)
+      parameter (NY = 5)
+      real rmx(NX), rmy(NY), zonal(NX-1,NY-1)
+      integer rmdims(3), rmndims
+      common /RECTMESH/ rmdims, rmndims, rmx, rmy, zonal
+ccc   local vars
+      integer m, sdims(3)
+      m = VISIT_ERROR
+      if(visitstrcmp(name, lname, "zonal", 5).eq.0) then
+c A zonal variable has 1 less value in each dimension as there
+c are nodes. Send back REAL data.
+          sdims(1) = rmdims(1)-1
+          sdims(2) = rmdims(2)-1
+          sdims(3) = rmdims(3)-1
+          m = visitscalarsetdataf(handle, zonal, sdims, rmndims)
+      endif
+
+      visitgetscalar = m
       end
 
 
@@ -277,7 +444,14 @@ c---------------------------------------------------------------------------
       implicit none
       integer handle
       include "visitfortransiminterface.inc"
-      visitgetdomainlist = VISIT_OKAY
+ccc   PARALLEL state common block
+      integer par_rank, par_size
+      common /PARALLEL/ par_rank, par_size
+
+c     Tell VisIt that there are as many domains as processors and this
+c     processor just has one of them.
+      visitgetdomainlist = visitsetdomainlist(handle, par_size, 
+     . par_rank,1)
       end
 
 c---------------------------------------------------------------------------

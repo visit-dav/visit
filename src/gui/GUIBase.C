@@ -414,6 +414,10 @@ GUIBase::RestoreCursor()
 //   Brad Whitlock, Tue Apr 6 08:26:37 PDT 2004
 //   I removed some code that set globalAtts.
 //
+//   Hank Childs, Fri Jan 12 09:56:29 PST 2007
+//   Do not issue an error if you can't open a file ... the viewer will do this
+//   for us.
+//
 // ****************************************************************************
 
 bool
@@ -479,7 +483,10 @@ GUIBase::SetOpenDataFile(const QualifiedFilename &qf, int timeState,
             msg.sprintf("VisIt could not open the file %s.\n\nThe metadata "
                         "server returned the following message:\n\n%s",
                         qf.FullName().c_str(), gmde.Message().c_str());
-            Error(msg);
+            debug1 << msg << endl;
+            debug1 << "Not issuing an error message because the viewer will "
+                   << "cover that." << endl;
+            //Error(msg);
             retval = false;
         }
         ENDTRY

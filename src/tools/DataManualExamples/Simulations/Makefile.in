@@ -31,6 +31,8 @@
 # product endorsement purposes.
 #
 # Modifications:
+#   Brad Whitlock, Fri Jan 12 12:04:08 PDT 2007
+#   Added targets for fscalarp.
 #
 ##############################################################################
 
@@ -130,11 +132,18 @@ OBJ_UNSTRUCTURED=unstructured.o
 FUNSTRUCTURED=funstructured
 FOBJ_UNSTRUCTURED=funstructured.o
 
+CURVE=curve
+OBJ_CURVE=curve.o
+FCURVE=fcurve
+FOBJ_CURVE=fcurve.o
+
 # Scalar simulations
 SCALAR=scalar
 OBJ_SCALAR=scalar.o
 FSCALAR=fscalar
 FOBJ_SCALAR=fscalar.o
+FSCALAR_PAR=fscalarp
+FOBJ_SCALAR_PAR=fscalarp.o
 
 # Writeback demonstration
 WRITEBACK=writeback
@@ -159,9 +168,9 @@ metadata:  $(SIM5) $(SIM6) $(SIM7) $(SIM8) $(SIM9) $(SIM10) $(SIM11) $(SIM12)
 
 fmetadata: $(FSIM5) $(FSIM6) $(FSIM7) $(FSIM8) $(FSIM9) $(FSIM10) $(FSIM11) $(FSIM12)
 
-meshsims: $(MESH) $(UNSTRUCTURED)
+meshsims: $(MESH) $(UNSTRUCTURED) $(CURVE) $(POINT)
 
-fmeshsims: $(FMESH) $(FUNSTRUCTURED)
+fmeshsims: $(FMESH) $(FUNSTRUCTURED) $(FCURVE) $(FPOINT)
 
 scalarsims: $(SCALAR) 
 
@@ -190,10 +199,11 @@ cleanmetadata:
 cleanmesh:
 	$(RM) $(MESH) $(OBJ_MESH) $(FMESH) $(FOBJ_MESH)
 	$(RM) $(POINT) $(OBJ_POINT) $(FPOINT) $(FOBJ_POINT)
+	$(RM) $(CURVE) $(OBJ_CURVE) $(FCURVE) $(FOBJ_CURVE)
 	$(RM) $(UNSTRUCTURED) $(OBJ_UNSTRUCTURED) $(FUNSTRUCTURED) $(FOBJ_UNSTRUCTURED)
 
 cleanscalar:
-	$(RM) $(SCALAR) $(OBJ_SCALAR) $(FSCALAR) $(FOBJ_SCALAR)
+	$(RM) $(SCALAR) $(OBJ_SCALAR) $(FSCALAR) $(FOBJ_SCALAR) $(FSCALAR_PAR) $(FOBJ_SCALAR_PAR)
 
 $(SIM1): $(OBJ_SIM1)
 	$(CC) -o $(SIM1) $(OBJ_SIM1) $(LDFLAGS) $(LIBS)
@@ -286,12 +296,23 @@ $(UNSTRUCTURED): $(OBJ_UNSTRUCTURED)
 $(FUNSTRUCTURED): $(FOBJ_UNSTRUCTURED)
 	$(F77) -o $(FUNSTRUCTURED) $(FOBJ_UNSTRUCTURED) $(LDFLAGS) $(FLIBS)
 
+$(CURVE): $(OBJ_CURVE)
+	$(CC) -o $(CURVE) $(OBJ_CURVE) $(LDFLAGS) $(LIBS) -lm
+
+$(FCURVE): $(FOBJ_CURVE)
+	$(F77) -o $(FCURVE) $(FOBJ_CURVE) $(LDFLAGS) $(FLIBS)
+
 $(SCALAR): $(OBJ_SCALAR)
 	$(CC) -o $(SCALAR) $(OBJ_SCALAR) $(LDFLAGS) $(LIBS)
 
 $(FSCALAR): $(FOBJ_SCALAR)
 	$(F77) -o $(FSCALAR) $(FOBJ_SCALAR) $(LDFLAGS) $(FLIBS)
 
+fscalarp.o:
+	mpif77 -o fscalarp.o $(F77FLAGS) -c fscalarp.f
+
+$(FSCALAR_PAR): $(FOBJ_SCALAR_PAR)
+	mpif77 -o $(FSCALAR_PAR) $(FOBJ_SCALAR_PAR) $(LDFLAGS) $(FLIBS) $(PARLIBS)
 
 $(WRITEBACK): $(OBJ_WRITEBACK)
 	$(CC) -o $(WRITEBACK) $(OBJ_WRITEBACK) $(LDFLAGS) $(LIBS)

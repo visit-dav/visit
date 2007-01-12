@@ -501,6 +501,9 @@ ViewerFileServer::GetMetaDataForState(const std::string &host,
 //   Jeremy Meredith, Mon Aug 28 16:55:01 EDT 2006
 //   Added ability to force using a specific plugin when opening a file.
 //
+//   Hank Childs, Fri Jan 12 09:12:11 PST 2007
+//   Clean up error message a bit.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
@@ -567,10 +570,20 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
             CATCH2(GetMetaDataException, gmde)
             {
                 char msg[1000];
-                SNPRINTF(msg, 1000, "VisIt cannot read the metadata for the file "
-                         "\"%s\" on host %s.\n\nThe metadata server returned "
-                         "the following message:\n\n%s", db.c_str(),
-                        host.c_str(), gmde.Message().c_str());
+                if (host == "localhost")
+                {
+                    SNPRINTF(msg, 1000, "VisIt could not read from the file "
+                             "\"%s\".\n\nThe generated error message"
+                             " was:\n\n%s", db.c_str(),
+                            gmde.Message().c_str());
+                }
+                else
+                {
+                    SNPRINTF(msg, 1000, "VisIt could not read from the file "
+                             "\"%s\" on host %s.\n\nThe generated error message"
+                             " was:\n\n%s", db.c_str(),
+                            host.c_str(), gmde.Message().c_str());
+                }
                 Error(msg);
             }
             CATCH(LostConnectionException)
@@ -586,7 +599,23 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
                 }
 
                 ++numAttempts;
-                tryAgain = (numAttempts < 2);
+                int numTries = 2;
+                tryAgain = (numAttempts < numTries);
+                if (numAttempts == numTries)
+                {
+                    char message[512];
+                    SNPRINTF(message, 512, "VisIt was unable to open \"%s\"."
+                              "  Each attempt to open it caused VisIt's "
+                              "metadata server to crash.  This can occur when "
+                              "the file is corrupted, or when the underlying "
+                              "file format has changed and VisIt's readers "
+                              "have not been updated yet, or when the reader "
+                              "VisIt is using"
+                              " for your file format is not robust.  Please "
+                              "check whether the file is corrupted and, if "
+                              "not, contact a VisIt developer.", db.c_str());
+                    Error(message);
+                }
 
                 TRY
                 {

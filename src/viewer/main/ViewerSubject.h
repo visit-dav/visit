@@ -432,6 +432,10 @@ struct avtDefaultPlotMetaData;
 //    Jeremy Meredith, Mon Aug 28 16:55:01 EDT 2006
 //    Added ability to force using a specific plugin when opening a file.
 //
+//    Hank Childs, Thu Jan 11 15:33:07 PST 2007
+//    Added return value for OpenDatabase so that we can do a better job
+//    when opening a bad file.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -507,7 +511,7 @@ private:
     void DeIconifyAllWindows();
     void ShowAllWindows();
     void HideAllWindows();
-    void OpenDatabase();
+    bool OpenDatabase();
     void CloseDatabase();
     void ActivateDatabase();
     void CheckForNewStates();

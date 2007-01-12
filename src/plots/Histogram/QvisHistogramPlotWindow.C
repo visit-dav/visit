@@ -67,7 +67,7 @@ using std::string;
 //   Constructor
 //
 // Programmer: xml2window
-// Creation:   Wed May 24 09:22:33 PDT 2006
+// Creation:   Fri Jan 12 15:22:02 PST 2007
 //
 // Modifications:
 //   
@@ -92,7 +92,7 @@ QvisHistogramPlotWindow::QvisHistogramPlotWindow(const int type,
 //   Destructor
 //
 // Programmer: xml2window
-// Creation:   Wed May 24 09:22:33 PDT 2006
+// Creation:   Fri Jan 12 15:22:02 PST 2007
 //
 // Modifications:
 //   
@@ -110,7 +110,7 @@ QvisHistogramPlotWindow::~QvisHistogramPlotWindow()
 //   Creates the widgets for the window.
 //
 // Programmer: xml2window
-// Creation:   Wed May 24 09:22:33 PDT 2006
+// Creation:   Fri Jan 12 15:22:02 PST 2007
 //
 // Modifications:
 //   
@@ -119,7 +119,7 @@ QvisHistogramPlotWindow::~QvisHistogramPlotWindow()
 void
 QvisHistogramPlotWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 12,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 13,2,  10, "mainLayout");
 
 
     basedOnLabel = new QLabel("Histogram based on", central, "basedOnLabel");
@@ -192,8 +192,13 @@ QvisHistogramPlotWindow::CreateWindowContents()
             this, SLOT(zoneProcessText()));
     mainLayout->addWidget(zone, 7,1);
 
+    useBinWidths = new QCheckBox("Use bin widths?", central, "useBinWidths");
+    connect(useBinWidths, SIGNAL(toggled(bool)),
+            this, SLOT(useBinWidthsChanged(bool)));
+    mainLayout->addWidget(useBinWidths, 8,0);
+
     outputTypeLabel = new QLabel("Type of Output", central, "outputTypeLabel");
-    mainLayout->addWidget(outputTypeLabel,8,0);
+    mainLayout->addWidget(outputTypeLabel,9,0);
     outputType = new QButtonGroup(central, "outputType");
     outputType->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *outputTypeLayout = new QHBoxLayout(outputType);
@@ -204,28 +209,28 @@ QvisHistogramPlotWindow::CreateWindowContents()
     outputTypeLayout->addWidget(outputTypeOutputTypeBlock);
     connect(outputType, SIGNAL(clicked(int)),
             this, SLOT(outputTypeChanged(int)));
-    mainLayout->addWidget(outputType, 8,1);
+    mainLayout->addWidget(outputType, 9,1);
 
     lineStyleLabel = new QLabel("Line Style", central, "lineStyleLabel");
-    mainLayout->addWidget(lineStyleLabel,9,0);
+    mainLayout->addWidget(lineStyleLabel,10,0);
     lineStyle = new QvisLineStyleWidget(0, central, "lineStyle");
     connect(lineStyle, SIGNAL(lineStyleChanged(int)),
             this, SLOT(lineStyleChanged(int)));
-    mainLayout->addWidget(lineStyle, 9,1);
+    mainLayout->addWidget(lineStyle, 10,1);
 
     lineWidthLabel = new QLabel("Line Width", central, "lineWidthLabel");
-    mainLayout->addWidget(lineWidthLabel,10,0);
+    mainLayout->addWidget(lineWidthLabel,11,0);
     lineWidth = new QvisLineWidthWidget(0, central, "lineWidth");
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
-    mainLayout->addWidget(lineWidth, 10,1);
+    mainLayout->addWidget(lineWidth, 11,1);
 
     colorLabel = new QLabel("Color", central, "colorLabel");
-    mainLayout->addWidget(colorLabel,11,0);
+    mainLayout->addWidget(colorLabel,12,0);
     color = new QvisColorButton(central, "color");
     connect(color, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(colorChanged(const QColor&)));
-    mainLayout->addWidget(color, 11,1);
+    mainLayout->addWidget(color, 12,1);
 
 }
 
@@ -237,7 +242,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: xml2window
-// Creation:   Wed May 24 09:22:33 PDT 2006
+// Creation:   Fri Jan 12 15:22:02 PST 2007
 //
 // Modifications:
 //   
@@ -317,6 +322,14 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
                 zone->setEnabled(false);
                 zoneLabel->setEnabled(false);
             }
+            if (atts->GetBasedOn() == HistogramAttributes::ManyVarsForSingleZone)
+            {
+                useBinWidths->setEnabled(true);
+            }
+            else
+            {
+                useBinWidths->setEnabled(false);
+            }
             basedOn->setButton(atts->GetBasedOn());
             break;
           case 1: //specifyRange
@@ -350,35 +363,38 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
             temp.setNum(atts->GetMax());
             max->setText(temp);
             break;
-          case 4: //outputType
-            outputType->setButton(atts->GetOutputType());
-            break;
-          case 5: //numBins
+          case 4: //numBins
             temp.sprintf("%d", atts->GetNumBins());
             numBins->setText(temp);
             break;
-          case 6: //twoDAmount
+          case 5: //twoDAmount
             twoDAmount->setButton(atts->GetTwoDAmount());
             break;
-          case 7: //domain
+          case 6: //domain
             temp.sprintf("%d", atts->GetDomain());
             domain->setText(temp);
             break;
-          case 8: //zone
+          case 7: //zone
             temp.sprintf("%d", atts->GetZone());
             zone->setText(temp);
             break;
-          case 9: //lineStyle
+          case 8: //useBinWidths
+            useBinWidths->setChecked(atts->GetUseBinWidths());
+            break;
+          case 9: //outputType
+            outputType->setButton(atts->GetOutputType());
+            break;
+          case 10: //lineStyle
             lineStyle->blockSignals(true);
             lineStyle->SetLineStyle(atts->GetLineStyle());
             lineStyle->blockSignals(false);
             break;
-          case 10: //lineWidth
+          case 11: //lineWidth
             lineWidth->blockSignals(true);
             lineWidth->SetLineWidth(atts->GetLineWidth());
             lineWidth->blockSignals(false);
             break;
-          case 11: //color
+          case 12: //color
             tempcolor = QColor(atts->GetColor().Red(),
                                atts->GetColor().Green(),
                                atts->GetColor().Blue());
@@ -396,7 +412,7 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: xml2window
-// Creation:   Wed May 24 09:22:33 PDT 2006
+// Creation:   Fri Jan 12 15:22:02 PST 2007
 //
 // Modifications:
 //   
@@ -462,14 +478,8 @@ QvisHistogramPlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do outputType
-    if(which_widget == 4 || doAll)
-    {
-        // Nothing for outputType
-    }
-
     // Do numBins
-    if(which_widget == 5 || doAll)
+    if(which_widget == 4 || doAll)
     {
         temp = numBins->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -490,13 +500,13 @@ QvisHistogramPlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do twoDAmount
-    if(which_widget == 6 || doAll)
+    if(which_widget == 5 || doAll)
     {
         // Nothing for twoDAmount
     }
 
     // Do domain
-    if(which_widget == 7 || doAll)
+    if(which_widget == 6 || doAll)
     {
         temp = domain->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -517,7 +527,7 @@ QvisHistogramPlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do zone
-    if(which_widget == 8 || doAll)
+    if(which_widget == 7 || doAll)
     {
         temp = zone->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -537,20 +547,32 @@ QvisHistogramPlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do lineStyle
+    // Do useBinWidths
+    if(which_widget == 8 || doAll)
+    {
+        // Nothing for useBinWidths
+    }
+
+    // Do outputType
     if(which_widget == 9 || doAll)
+    {
+        // Nothing for outputType
+    }
+
+    // Do lineStyle
+    if(which_widget == 10 || doAll)
     {
         // Nothing for lineStyle
     }
 
     // Do lineWidth
-    if(which_widget == 10 || doAll)
+    if(which_widget == 11 || doAll)
     {
         // Nothing for lineWidth
     }
 
     // Do color
-    if(which_widget == 11 || doAll)
+    if(which_widget == 12 || doAll)
     {
         // Nothing for color
     }
@@ -565,7 +587,7 @@ QvisHistogramPlotWindow::GetCurrentValues(int which_widget)
 //   Called to apply changes in the subject.
 //
 // Programmer: xml2window
-// Creation:   Wed May 24 09:22:33 PDT 2006
+// Creation:   Fri Jan 12 15:22:02 PST 2007
 //
 // Modifications:
 //   
@@ -598,7 +620,7 @@ QvisHistogramPlotWindow::Apply(bool ignore)
 //   Qt slot function called when apply button is clicked.
 //
 // Programmer: xml2window
-// Creation:   Wed May 24 09:22:33 PDT 2006
+// Creation:   Fri Jan 12 15:22:02 PST 2007
 //
 // Modifications:
 //   
@@ -618,7 +640,7 @@ QvisHistogramPlotWindow::apply()
 //   Qt slot function called when "Make default" button is clicked.
 //
 // Programmer: xml2window
-// Creation:   Wed May 24 09:22:33 PDT 2006
+// Creation:   Fri Jan 12 15:22:02 PST 2007
 //
 // Modifications:
 //   
@@ -640,7 +662,7 @@ QvisHistogramPlotWindow::makeDefault()
 //   Qt slot function called when reset button is clicked.
 //
 // Programmer: xml2window
-// Creation:   Wed May 24 09:22:33 PDT 2006
+// Creation:   Fri Jan 12 15:22:02 PST 2007
 //
 // Modifications:
 //   
@@ -689,20 +711,9 @@ QvisHistogramPlotWindow::maxProcessText()
 
 
 void
-QvisHistogramPlotWindow::outputTypeChanged(int val)
-{
-    if(val != atts->GetOutputType())
-    {
-        atts->SetOutputType(HistogramAttributes::OutputType(val));
-        Apply();
-    }
-}
-
-
-void
 QvisHistogramPlotWindow::numBinsProcessText()
 {
-    GetCurrentValues(5);
+    GetCurrentValues(4);
     Apply();
 }
 
@@ -721,7 +732,7 @@ QvisHistogramPlotWindow::twoDAmountChanged(int val)
 void
 QvisHistogramPlotWindow::domainProcessText()
 {
-    GetCurrentValues(7);
+    GetCurrentValues(6);
     Apply();
 }
 
@@ -729,8 +740,27 @@ QvisHistogramPlotWindow::domainProcessText()
 void
 QvisHistogramPlotWindow::zoneProcessText()
 {
-    GetCurrentValues(8);
+    GetCurrentValues(7);
     Apply();
+}
+
+
+void
+QvisHistogramPlotWindow::useBinWidthsChanged(bool val)
+{
+    atts->SetUseBinWidths(val);
+    Apply();
+}
+
+
+void
+QvisHistogramPlotWindow::outputTypeChanged(int val)
+{
+    if(val != atts->GetOutputType())
+    {
+        atts->SetOutputType(HistogramAttributes::OutputType(val));
+        Apply();
+    }
 }
 
 

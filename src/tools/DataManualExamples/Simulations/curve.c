@@ -1,4 +1,41 @@
-/* SIMPLE PARALLEL SIMULATION SKELETON */
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Produced at the Lawrence Livermore National Laboratory
+* All rights reserved.
+*
+* This file is part of VisIt. For details, see http://www.llnl.gov/visit/. The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or materials provided with the distribution.
+*  - Neither the name of the UC/LLNL nor  the names of its contributors may be
+*    used to  endorse or  promote products derived from  this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED.  IN  NO  EVENT  SHALL  THE  REGENTS  OF  THE  UNIVERSITY OF
+* CALIFORNIA, THE U.S.  DEPARTMENT  OF  ENERGY OR CONTRIBUTORS BE  LIABLE  FOR
+* ANY  DIRECT,  INDIRECT,  INCIDENTAL,  SPECIAL,  EXEMPLARY,  OR CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+/* SIMPLE SIMULATION SKELETON */
 #include <VisItControlInterface_V1.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,7 +49,23 @@ static int    runFlag = 1;
 static int    simcycle = 0;
 static double simtime = 0.;
 
-/* Callback function for control commands. */
+/******************************************************************************
+ *
+ * Purpose: Callback function for control commands.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jan 12 13:39:59 PST 2007
+ *
+ * Input Arguments:
+ *   cmd         : The command string that we want the sim to execute.
+ *   int_data    : Integer argument for the command.
+ *   float_data  : Float argument for the command.
+ *   string_data : String argument for the command.
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
 void ControlCommandCallback(const char *cmd,
     int int_data, float float_data,
     const char *string_data)
@@ -24,6 +77,17 @@ void ControlCommandCallback(const char *cmd,
     else if(strcmp(cmd, "run") == 0)
         runFlag = 1;
 }
+
+/******************************************************************************
+ *
+ * Purpose: This is the main event loop function.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jan 12 13:35:53 PST 2007
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
 
 void mainloop(void)
 {
@@ -72,6 +136,21 @@ void mainloop(void)
     } while(!simulation_done() && err == 0);
 }
 
+/******************************************************************************
+ *
+ * Purpose: This is the main function for the program.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jan 12 13:36:17 PST 2007
+ *
+ * Input Arguments:
+ *   argc : The number of command line arguments.
+ *   argv : The command line arguments.
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
 int main(int argc, char **argv)
 {
     /* Initialize environment variables. */
@@ -103,6 +182,17 @@ void simulate_one_timestep(void)
 
 /* DATA ACCESS FUNCTIONS */
 #include <VisItDataInterface_V1.h>
+
+/******************************************************************************
+ *
+ * Purpose: This callback function returns simulation metadata.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jan 12 13:37:17 PST 2007
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
 
 VisIt_SimulationMetaData *VisItGetMetaData(void)
 {
@@ -179,22 +269,6 @@ VisIt_SimulationMetaData *VisItGetMetaData(void)
     md->curves[0].xLabel = strdup("angle");
     md->curves[0].yLabel = strdup("amplitude");
 
-    /* Add a material variable. */
-    md->numMaterials = 1;
-    sz = sizeof(VisIt_MaterialMetaData) * md->numMaterials;
-    md->materials = (VisIt_MaterialMetaData *)malloc(sz);
-    memset(md->materials, 0, sz);
-
-    md->materials[0].name = strdup("mat");
-    md->materials[0].meshName = strdup("mesh2d");
-    md->materials[0].numMaterials = 3;
-    /* Allocate memory to store the list of material names. */
-    md->materials[0].materialNames = (const char **)malloc(sizeof(char *) *
-        md->materials[0].numMaterials);
-    md->materials[0].materialNames[0] = strdup("Iron");
-    md->materials[0].materialNames[1] = strdup("Copper");
-    md->materials[0].materialNames[2] = strdup("Nickel");
-
     /* Add some expressions. */
     md->numExpressions = 2;
     sz = sizeof(VisIt_ExpressionMetaData) * md->numExpressions;
@@ -202,7 +276,7 @@ VisIt_SimulationMetaData *VisItGetMetaData(void)
     memset(md->expressions, 0, sz);
 
     md->expressions[0].name = strdup("zvec");
-    md->expressions[0].definition = strdup("{zonal, zonal, zonal}");
+    md->expressions[0].definition = strdup("{zonal, zonal}");
     md->expressions[0].vartype = VISIT_VARTYPE_VECTOR;
 
     md->expressions[1].name = strdup("nid");
@@ -256,6 +330,17 @@ double nodal[2][3][4] = {
    {{1.,2.,3.,4.},{5.,6.,7.,8.},{9.,10.,11.,12}},
    {{13.,14.,15.,16.},{17.,18.,19.,20.},{21.,22.,23.,24.}}
 };
+
+/******************************************************************************
+ *
+ * Purpose: This callback function returns meshes.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jan 12 13:37:17 PST 2007
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
 
 VisIt_MeshData *VisItGetMesh(int domain, const char *name)
 {
@@ -344,6 +429,17 @@ VisIt_MeshData *VisItGetMesh(int domain, const char *name)
     return mesh;
 }
 
+/******************************************************************************
+ *
+ * Purpose: This callback function returns scalars.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jan 12 13:37:17 PST 2007
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
 VisIt_ScalarData *VisItGetScalar(int domain, const char *name)
 {
     size_t sz = sizeof(VisIt_ScalarData);
@@ -371,6 +467,17 @@ VisIt_ScalarData *VisItGetScalar(int domain, const char *name)
 
     return scalar;
 }
+
+/******************************************************************************
+ *
+ * Purpose: This callback function returns a curve.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jan 12 13:37:17 PST 2007
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
 
 VisIt_CurveData *VisItGetCurve(const char *name)
 {
@@ -404,6 +511,17 @@ VisIt_CurveData *VisItGetCurve(const char *name)
 
     return curve;
 }
+
+/******************************************************************************
+ *
+ * Purpose: This callback function returns a domain list.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jan 12 13:37:17 PST 2007
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
 
 VisIt_DomainList *VisItGetDomainList(void)
 {

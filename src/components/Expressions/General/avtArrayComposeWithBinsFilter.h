@@ -35,61 +35,57 @@
 *
 *****************************************************************************/
 
-/* SIMPLE SIMULATION SKELETON */
-#include <VisItControlInterface_V1.h>
-#include <stdio.h>
+// ************************************************************************* //
+//                       avtArrayComposeWithBinsFilter.h                     //
+// ************************************************************************* //
 
-#include <stubs.c>
+#ifndef AVT_ARRAY_COMPOSE_WITH_BINS_FILTER_H
+#define AVT_ARRAY_COMPOSE_WITH_BINS_FILTER_H
 
-/******************************************************************************
- *
- * Purpose: This is the main event loop function.
- *
- * Programmer: Brad Whitlock
- * Date:       Fri Jan 12 13:35:53 PST 2007
- *
- * Modifications:
- *
- *****************************************************************************/
+#include <avtMultipleInputExpressionFilter.h>
 
-void mainloop(void)
+#include <vector>
+
+class     vtkDataArray;
+class     ArgsExpr;
+class     ExprPipelineState;
+
+
+// ****************************************************************************
+//  Class: avtArrayComposeWithBinsFilter
+//
+//  Purpose:
+//      ComposeWithBinss scalar variables into an array.
+//          
+//  Programmer: Hank Childs
+//  Creation:   January 12, 2007
+//
+// ****************************************************************************
+
+class EXPRESSION_API avtArrayComposeWithBinsFilter 
+    : public avtMultipleInputExpressionFilter
 {
-    do
-    {
-        simulate_one_timestep();
-        write_vis_dump();
-    } while(!simulation_done());
-}
+  public:
+                              avtArrayComposeWithBinsFilter();
+    virtual                  ~avtArrayComposeWithBinsFilter();
 
-/******************************************************************************
- *
- * Purpose: This is the main function for the program.
- *
- * Programmer: Brad Whitlock
- * Date:       Fri Jan 12 13:36:17 PST 2007
- *
- * Input Arguments:
- *   argc : The number of command line arguments.
- *   argv : The command line arguments.
- *
- * Modifications:
- *
- *****************************************************************************/
+    virtual const char       *GetType(void) 
+                                 { return "avtArrayComposeWithBinsFilter"; };
+    virtual const char       *GetDescription(void)
+                                     { return "Composing an array"; };
+    virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
+    virtual int               NumVariableArguments(void) { return nvars; };
 
-int main(int argc, char **argv)
-{
-    /* Initialize envuronment variables. */
-    VisItSetupEnvironment();
-    /* Write out .sim file that VisIt uses to connect. */
-    VisItInitializeSocketAndDumpSimFile("sim3",
-        "Moved do..while to mainloop function",
-        "/path/to/where/sim/was/started", NULL, NULL);
+  protected:
+    int                       nvars;
+    vector<double>            binRanges;
 
-    /* Read input problem setup, geometry, data. */
-    read_input_deck();
+    virtual void              RefashionDataObjectInfo(void);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual avtVarType        GetVariableType(void) { return AVT_ARRAY_VAR; };
+};
 
-    /* Call the main loop. */
-    mainloop();
 
-    return 0;
-}
+#endif
+
+

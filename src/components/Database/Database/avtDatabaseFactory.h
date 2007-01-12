@@ -46,6 +46,8 @@
 
 #include <stdlib.h> // For NULL
 
+#include <string>
+#include <vector>
 
 class avtDatabase;
 class CommonDatabasePluginInfo;
@@ -78,14 +80,20 @@ class CommonDatabasePluginInfo;
 //
 //    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //    Added bool args for forcing reading of all cycles/times
+//
+//    Hank Childs, Thu Jan 11 15:56:53 PST 2007
+//    Added argument for list of plugins attempted.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabaseFactory
 {
   public:
     static avtDatabase           *FileList(const char * const *, int, int,
+                                           std::vector<std::string> &,
                                            const char * = NULL, bool = false);
     static avtDatabase           *VisitFile(const char *, int,
+                                           std::vector<std::string> &,
                                             const char * = NULL, bool = false);
     static void                   SetDefaultFormat(const char *);
 

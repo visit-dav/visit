@@ -11,6 +11,12 @@
 !   to create expression metadata. I also added functions to create 
 !   point meshes and unstructured meshes.
 !
+!   Brad Whitlock, Thu Jan 11 14:49:17 PST 2007
+!   Added "2" versions of some of the mesh functions to allow the 
+!   owner parameter to be passed so we can have VisIt own the data
+!   instead of the default "sim owns the data". We want to do this
+!   when we're passing data that can go out of scope.
+!
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 !... Commonly useful declarations
@@ -82,12 +88,20 @@
 
       external visitmeshrectilinear
       integer  visitmeshrectilinear
+      external visitmeshrectilinear2
+      integer  visitmeshrectilinear2
       external visitmeshcurvilinear
       integer  visitmeshcurvilinear
+      external visitmeshcurvilinear2
+      integer  visitmeshcurvilinear2
       external visitmeshpoint
       integer  visitmeshpoint
+      external visitmeshpoint2
+      integer  visitmeshpoint2
       external visitmeshunstructured
       integer  visitmeshunstructured
+      external visitmeshunstructured2
+      integer  visitmeshunstructured2
 
       external visitscalarsetdata
       integer  visitscalarsetdata
@@ -190,6 +204,8 @@
       parameter   (VISIT_OWNER_SIM                   = 0)
       integer      VISIT_OWNER_VISIT                 
       parameter   (VISIT_OWNER_VISIT                 = 1)
+      integer      VISIT_OWNER_COPY                 
+      parameter   (VISIT_OWNER_COPY                  = 2)
 
 !... Cell Types
       integer      VISIT_CELL_BEAM                   
