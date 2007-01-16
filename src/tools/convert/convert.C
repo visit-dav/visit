@@ -96,6 +96,10 @@ static void UsageAndExit(const char *);
 //    Hank Childs, Thu Mar 30 11:57:05 PST 2006
 //    Add basic (i.e. non-crashing) support for write options.
 //
+//    Hank Childs, Tue Jan 16 08:37:36 PST 2007
+//    Add support for logging which plugins were attempted when a database
+//    open fails.
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -242,12 +246,13 @@ int main(int argc, char *argv[])
     // Instantiate the database.
     //
     avtDatabase *db = NULL;
+    std::vector<std::string> pluginList;
     TRY
     {
         if (strstr(argv[1], ".visit") != NULL)
-            db = avtDatabaseFactory::VisitFile(argv[1], 0);
+            db = avtDatabaseFactory::VisitFile(argv[1], 0, pluginList);
         else
-            db = avtDatabaseFactory::FileList(argv+1, 1, 0);
+            db = avtDatabaseFactory::FileList(argv+1, 1, 0, pluginList);
     }
     CATCH(...)
     {
@@ -255,6 +260,19 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
     ENDTRY
+
+    if (db == NULL)
+    {
+        cerr << "Could not open file " << argv[1] << ".  Tried using plugins ";
+        for (int i = 0 ; i < pluginList.size() ; i++)
+        {
+            cerr << pluginList[i];
+            if (i != pluginList.size()-1)
+                cerr << ", ";
+            else
+                cerr << endl;
+        }
+    }
 
     //
     // Figure out which mesh to operate on.
