@@ -446,6 +446,10 @@ avtPlot::Execute(avtDataObject_p input, avtPipelineSpecification_p spec,
 //    Hank Childs, Wed Mar  2 11:11:59 PST 2005
 //    Pass a pipeline specification to the sink, not a data specification.
 //
+//    Hank Childs, Thu May 25 16:45:41 PDT 2006
+//    Tell the intermediate data object that it is not transient (we need it
+//    for queries).
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -468,6 +472,7 @@ avtPlot::Execute(avtDataObject_p input, avtPipelineSpecification_p spec,
     //
     avtDataObject_p dob = ApplyOperators(input);
     CopyTo(intermediateDataObject, dob);
+    intermediateDataObject->SetTransientStatus(false);
     dob = ApplyRenderingTransformation(dob);
         
     if (strcmp(dob->GetType(), "avtDataset") == 0)

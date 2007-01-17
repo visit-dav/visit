@@ -44,6 +44,7 @@
 #include <avtDataObjectSource.h>
 #include <avtQueryableSource.h>
 #include <avtTerminatingSource.h>
+#include <avtWebpage.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -59,11 +60,17 @@
 //  Programmer: Hank Childs
 //  Creation:   May 23, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Thu May 25 16:45:41 PDT 2006
+//    Initialize transient.
+//
 // ****************************************************************************
 
 avtDataObject::avtDataObject(avtDataObjectSource *src)
 {
     source = src;
+    transient = true;
 }
 
 
@@ -417,11 +424,29 @@ avtDataObject::ReleaseData(void)
 //  Programmer: Hank Childs
 //  Creation:   December 21, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Jan 17 09:50:11 PST 2007
+//    Add transient to dump.
+//
 // ****************************************************************************
 
 void
 avtDataObject::DebugDump(avtWebpage *webpage, const char *prefix)
 {
+    if (transient)
+    {
+        webpage->AddHeading("This data object is transient");
+        webpage->AddSubheading("(It will be deleted after the "
+                               "filter is executed.)");
+    }
+    else
+    {
+        webpage->AddHeading("This data object is not transient");
+        webpage->AddSubheading("(It will not be deleted after the "
+                               "filter is executed ... probably so that "
+                               "queries can be performed against it.)");
+    }
     info.DebugDump(webpage);
 }
 

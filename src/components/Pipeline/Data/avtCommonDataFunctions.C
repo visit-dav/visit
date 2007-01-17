@@ -341,7 +341,8 @@ CGetNumberOfZones(avtDataRepresentation &data, void *sum, bool &)
 //      Converts unstructured grids to poly data.
 //
 //  Arguments:
-//    data      The data from which to calculate number of cells.
+//    data      The data which may be an unstructured grid, but should be
+//              a poly data.
 //    <unused>
 //    <unused> 
 //
@@ -391,6 +392,44 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *, bool &)
         data = new_data;
         out_pd->Delete();
     }
+}
+
+
+// ****************************************************************************
+//  Method: CBreakVTKPipelineConnections
+//
+//  Purpose:
+//      Breaks all VTK pipeline connections by creating shallow copies.
+//
+//  Arguments:
+//    data      The data from which to calculate number of cells.
+//    <unused>
+//    <unused> 
+//
+//  Notes:
+//      This method is designed to be used as the function parameter of
+//      avtDataTree::Iterate.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 16, 2007
+//
+// ****************************************************************************
+
+void
+CBreakVTKPipelineConnections(avtDataRepresentation &data, void *, bool &)
+{
+    if (!data.Valid())
+    {
+        return; // This is a problem, but no need to flag it for this...
+    }
+
+    vtkDataSet *ds = data.GetDataVTK();
+    vtkDataSet *newDS = (vtkDataSet *) ds->NewInstance();
+    newDS->ShallowCopy(ds);
+    avtDataRepresentation new_data(newDS, data.GetDomain(),
+                                   data.GetLabel());
+    data = new_data;
+    newDS->Delete();
 }
 
 

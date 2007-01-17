@@ -184,6 +184,10 @@ avtFilter::UpdateProgress(int current, int total)
 //    Moved timings code from avtDataTreeStreamer to this routine so that
 //    all filters are timed.
 //
+//    Hank Childs, Thu May 25 16:45:41 PDT 2006
+//    Release data for all transient data when we are done executing, 
+//    regardless of whether or not we're streaming.
+//
 //    Hank Childs, Thu Dec 21 09:15:00 PST 2006
 //    Add support for the "-dump" option.
 //
@@ -262,7 +266,8 @@ avtFilter::Update(avtPipelineSpecification_p spec)
     //
     // If we are doing dynamic load balancing, clean up as we go.
     //
-    if (GetInput()->GetInfo().GetValidity().GetIsThisDynamic())
+    if (GetInput()->GetInfo().GetValidity().GetIsThisDynamic() ||
+        GetInput()->IsTransient())
     {
         if (GetInput()->GetSource() != NULL)
             GetInput()->GetSource()->ReleaseData();
@@ -1090,6 +1095,9 @@ avtFilter::ExamineSpecification(avtPipelineSpecification_p)
 //    class's method.  Left this one in place so that the debug statement
 //    would stick around (very useful for debugging).
 //
+//    Hank Childs, Wed Jan 17 11:14:17 PST 2007
+//    Tell the filter that it has been modified when it releases its data.
+//
 // ****************************************************************************
 
 void
@@ -1097,6 +1105,7 @@ avtFilter::ReleaseData(void)
 {
     debug3 << "Filter " << GetType() << " releasing its data" << endl;
     avtDataObjectSource::ReleaseData();
+    modified = true;
 }
 
 

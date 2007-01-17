@@ -146,6 +146,10 @@ $0 = shift @ARGV;
 #    Modified the psub arguments to pass both -np and -g to indicate the
 #    number of processors.
 #
+#    Jeremy Meredith, Wed Jan 17 15:53:46 EST 2007
+#    Made GDB only set paths to the main program source directory
+#    for the executable being launched.
+#
 ###############################################################################
 
 
@@ -1469,20 +1473,38 @@ else
             print GDBFILE "directory $ENV{VISITHOME}/components/VisWindow/Proxies\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/VisWindow/Tools\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/VisWindow/VisWindow\n";
-            print GDBFILE "directory $ENV{VISITHOME}/engine/main\n";
+            if ($exe_name eq "engine_ser" or $exe_name eq "engine_par")
+            {
+                print GDBFILE "directory $ENV{VISITHOME}/engine/main\n";
+            }
             print GDBFILE "directory $ENV{VISITHOME}/engine/proxy\n";
             print GDBFILE "directory $ENV{VISITHOME}/engine/rpc\n";
-            print GDBFILE "directory $ENV{VISITHOME}/gui\n";
-            print GDBFILE "directory $ENV{VISITHOME}/launcher/main\n";
+            if ($exe_name eq "gui")
+            {
+                print GDBFILE "directory $ENV{VISITHOME}/gui\n";
+            }
+            if ($exe_name eq "vcl")
+            {
+                print GDBFILE "directory $ENV{VISITHOME}/launcher/main\n";
+            }
             print GDBFILE "directory $ENV{VISITHOME}/launcher/proxy\n";
             print GDBFILE "directory $ENV{VISITHOME}/launcher/rpc\n";
-            print GDBFILE "directory $ENV{VISITHOME}/mdserver/main\n";
+            if ($exe_name eq "mdserver")
+            {
+                print GDBFILE "directory $ENV{VISITHOME}/mdserver/main\n";
+            }
             print GDBFILE "directory $ENV{VISITHOME}/mdserver/proxy\n";
             print GDBFILE "directory $ENV{VISITHOME}/mdserver/rpc\n";
-            print GDBFILE "directory $ENV{VISITHOME}/viewer/main\n";
+            if ($exe_name eq "viewer")
+            {
+                print GDBFILE "directory $ENV{VISITHOME}/viewer/main\n";
+            }
             print GDBFILE "directory $ENV{VISITHOME}/viewer/proxy\n";
             print GDBFILE "directory $ENV{VISITHOME}/viewer/rpc\n";
-            print GDBFILE "directory $ENV{VISITHOME}/visitpy\n";
+            if ($exe_name eq "cli")
+            {
+                print GDBFILE "directory $ENV{VISITHOME}/visitpy\n";
+            }
             print GDBFILE "directory $ENV{VISITHOME}/visit_vtk/full\n";
             print GDBFILE "directory $ENV{VISITHOME}/visit_vtk/lightweight\n";
             print GDBFILE "directory $ENV{VISITHOME}/vtkqt\n";

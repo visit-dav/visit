@@ -493,17 +493,27 @@ avtDataset::SetActiveVariable(const char *name)
 //  Programmer: Hank Childs
 //  Creation:   December 21, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Jan 17 11:02:43 PST 2007
+//    Add support for bad data trees.
+//
 // ****************************************************************************
 
 void
 avtDataset::DebugDump(avtWebpage *webpage, const char *prefix)
 {
     avtDataObject::DebugDump(webpage, prefix);
-    webpage->AddSubheading("Data tree");
-    webpage->StartTable();
-    webpage->AddTableHeader4("Node ID", "Parent ID", "Type", "Description");
-    dataTree->DebugDump(webpage, prefix, 0, -1);
-    webpage->EndTable();
+    if (*dataTree != NULL)
+    {
+        webpage->AddSubheading("Data tree");
+        webpage->StartTable();
+        webpage->AddTableHeader4("Node ID", "Parent ID", "Type", "Description");
+        dataTree->DebugDump(webpage, prefix, 0, -1);
+        webpage->EndTable();
+    }
+    else
+        webpage->AddSubheading("NULL data tree ... very bad");
 }
 
 
