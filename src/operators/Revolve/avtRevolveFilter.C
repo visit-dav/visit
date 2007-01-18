@@ -350,6 +350,10 @@ avtRevolveFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //    Kathleen Bonnell, Mon Apr 14 09:57:39 PDT 2003 
 //    Set CanUseTransform to false.
 //
+//    Dave Bremer, Wed Dec 20 16:22:06 PST 2006
+//    Set the coord system of the output to be XY (cylindrical meshes are
+//    not cylindrical after you revolve them).
+//
 // ****************************************************************************
 
 void
@@ -376,6 +380,11 @@ avtRevolveFilter::RefashionDataObjectInfo(void)
     // This filter invalidates any transform matrix in the pipeline.
     //
     outAtts.SetCanUseTransform(false);
+
+    //
+    // The output will not be cylindrical.  Not cylindrical -> XY
+    //
+    outAtts.SetMeshCoordType(AVT_XY);
 
     //
     // Now revolve the extents.

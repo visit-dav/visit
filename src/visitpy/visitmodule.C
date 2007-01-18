@@ -8487,11 +8487,11 @@ visit_WriteConfigFile(PyObject *self, PyObject *args)
 //   Kathleen Bonnell, Thu Apr 22 15:28:31 PDT 2004 
 //   Changed arg1 default to 1 (is used to specify 'actual' data). 
 //
-//   Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004 
-//   Changed arg1 default to 0 (is used to specify 'original' data). 
+//   Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004
+//   Changed arg1 default to 0 (is used to specify 'original' data).
 //
-//   Kathleen Bonnell, Tue Dec 28 16:23:43 PST 2004 
-//   Support 'Global' in query name, to designate use of global id. 
+//   Kathleen Bonnell, Tue Dec 28 16:23:43 PST 2004
+//   Support 'Global' in query name, to designate use of global id.
 //
 //   Brad Whitlock, Tue Jan 4 16:19:15 PST 2005
 //   strcasecmp does not exist on Windows so I made it use _strnicmp.
@@ -8499,34 +8499,45 @@ visit_WriteConfigFile(PyObject *self, PyObject *args)
 //   Hank Childs, Tue Aug  1 12:20:56 PDT 2006
 //   Add support for line distributions.
 //
+//   Dave Bremer, Wed Jan 17 19:02:51 PST 2007
+//   Added parsing appropriate for the Hohlraum flux query.
+//
 // ****************************************************************************
 
 STATIC PyObject *
 visit_Query(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
-
     char *queryName;
     int arg1 = 0, arg2 = 0;
-    double darg1 = 0., darg2 = 0.;
+    doubleVector darg1(3), darg2(3);
     PyObject *tuple = NULL;
-    if (!PyArg_ParseTuple(args, "siidd|O", &queryName, &arg1, 
-                                    &arg2, &darg1, &darg2, &tuple))
+
+    if (!PyArg_ParseTuple(args, "sidddddd|O", &queryName, &arg1,
+                          &(darg1[0]), &(darg1[1]), &(darg1[2]),
+                          &(darg2[0]), &(darg2[1]), &(darg2[2]), &tuple))
     {
-        if (!PyArg_ParseTuple(args, "sii|O", &queryName, &arg1, &arg2, &tuple))
+        darg1.resize(1);
+        darg2.resize(1);
+        if (!PyArg_ParseTuple(args, "siidd|O", &queryName, &arg1,
+                              &arg2, &(darg1[0]), &(darg2[0]), &tuple))
         {
-            if (!PyArg_ParseTuple(args, "si|O", &queryName, &arg1, &tuple))
+            darg1.resize(0);
+            darg2.resize(0);
+            if (!PyArg_ParseTuple(args, "sii|O", &queryName, &arg1, &arg2, &tuple))
             {
-                if (!PyArg_ParseTuple(args, "s|O", &queryName, &tuple))
+                if (!PyArg_ParseTuple(args, "si|O", &queryName, &arg1, &tuple))
                 {
+                    if (!PyArg_ParseTuple(args, "s|O", &queryName, &tuple))
+                    {
                         return NULL;
+                    }
                 }
             }
+            PyErr_Clear();
         }
-        PyErr_Clear();
     }
-
-    // Check for global flag. 
+    // Check for global flag.
     std::string qname(queryName);
     bool doGlobal = false;
 #if defined(_WIN32)
@@ -8559,7 +8570,7 @@ visit_Query(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        viewer->DatabaseQuery(qname.c_str(), vars, false, arg1, arg2, doGlobal,
+        viewer->DatabaseQuery(qname, vars, false, arg1, arg2, doGlobal,
                               darg1, darg2);
     MUTEX_UNLOCK();
 
@@ -8571,15 +8582,15 @@ visit_Query(PyObject *self, PyObject *args)
 // ****************************************************************************
 // Function: visit_SuppressQueryOutputOn
 //
-// Purpose: 
+// Purpose:
 //   Turns on the suppression of query output (the automatic printing
 //   of the QueryOutput string.)
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   July 27, 2005 
+// Programmer: Kathleen Bonnell
+// Creation:   July 27, 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 STATIC PyObject *

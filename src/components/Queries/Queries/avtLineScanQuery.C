@@ -172,7 +172,7 @@ avtLineScanQuery::GetCellsForPoint(int ptId, vtkPolyData *pd,
             seg2 = curId;
             numMatches++;
         }
-        else 
+        else
         {
             // This is an error condition.  It is believed to occur when
             // a line coincides with an edge.  Empirically, it is believed
@@ -364,7 +364,11 @@ avtLineScanQuery::Execute(vtkDataSet *ds, const int chunk)
 //  
 //    Dave Bremer, Thu Sep  7 16:43:27 PDT 2006
 //    Set the lines member.
-//    
+//
+//    Dave Bremer, Thu Dec  7 17:12:17 PST 2006
+//    Made the construction of the line scan filter virtual, so I could
+//    build it differently in the derived class avtHohlraumFluxQuery.
+//
 // ****************************************************************************
 
 void
@@ -379,6 +383,7 @@ avtLineScanQuery::Execute(avtDataTree_p tree)
     avtPipelineSpecification_p pspec =
         input->GetTerminatingSource()->GetGeneralPipelineSpecification();
     varname = pspec->GetDataSpecification()->GetVariable();
+
     for (int i = 0 ; i < numPasses ; i++)
     {
         int numForLast = (numLines % numLinesPerIteration);
@@ -394,21 +399,21 @@ avtLineScanQuery::Execute(avtDataTree_p tree)
         avtSourceFromAVTDataset termsrc(ds);
         avtDataObject_p dob = termsrc.GetOutput();
     
-        avtLineScanFilter filt;
-        filt.SetNumberOfLines(linesForThisPass);
-        filt.SetRandomSeed(i);
-        filt.SetInput(dob);
-
+        avtLineScanFilter *filt = CreateLineScanFilter();
+        filt->SetNumberOfLines(linesForThisPass);
+        filt->SetRandomSeed(i);
+        filt->SetInput(dob);
         //
         // Cause our artificial pipeline to execute.
         //
-        filt.GetOutput()->Update(pspec);
-        lines = filt.GetLines();
+        filt->GetOutput()->Update(pspec);
+        lines = filt->GetLines();
 
-        avtDataset_p ds2 = filt.GetTypedOutput();
+        avtDataset_p ds2 = filt->GetTypedOutput();
         avtDataTree_p tree = ds2->GetDataTree();
         ExecuteTree(tree);
         lines = NULL;
+        delete filt;
 
         //
         // Reset the timeout for the next iteration.
@@ -501,6 +506,26 @@ avtLineScanQuery::ExecuteTree(avtDataTree_p inDT)
             }
         }
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtLineScanQuery::CreateLineScanFilter
+//
+//  Purpose:
+//      Create the line scan filter using a virtual function, so that
+//      derived classes can build the filter in different ways.
+//
+//  Programmer: David Bremer
+//  Creation:   Dec 6, 2006
+//
+// ****************************************************************************
+
+avtLineScanFilter *
+avtLineScanQuery::CreateLineScanFilter()
+{
+    avtLineScanFilter *r = new avtLineScanFilter;
+    return r;
 }
 
 

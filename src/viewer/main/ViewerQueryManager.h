@@ -193,10 +193,10 @@ typedef struct {
 //    Added ResetLineoutColor.
 //
 //    Kathleen Bonnell, Wed Dec 15 17:16:17 PST 2004 
-//    Added bool arg to DatabaseQuery and PointQuery. 
+//    Added bool arg to DatabaseQuery and PointQuery.
 //
 //    Kathleen Bonnell, Fri Feb  4 07:10:27 PST 2005 
-//    Added SetLineoutsFollowTime, SetLineoutsTimeSlider. Made 
+//    Added SetLineoutsFollowTime, SetLineoutsTimeSlider. Made
 //    SetDynamicLinenout private, and GetColor public. 
 //
 //    Kathleen Bonnell, Wed Mar 23 15:09:16 PST 2005 
@@ -237,7 +237,7 @@ class VIEWER_API ViewerQueryManager
                             const bool doTimeQuery,
                             const int arg1, const int arg2,
                             const bool elementIsGlobal,
-                            const double darg1, const double darg2);
+                            const doubleVector darg1, const doubleVector darg2);
     bool            VerifySingleInputQuery(ViewerPlotList *, const int,
                             const std::string &,
                             const std::vector<std::string> &,

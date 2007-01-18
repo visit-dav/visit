@@ -4698,6 +4698,7 @@ const char *visit_Query_doc =
 "Query(name, arg1, arg2) -> integer\n"
 "Query(name, arg1, arg2, variables) -> integer\n"
 "Query(name, arg1, arg2, arg3, arg4, variables) -> integer\n"
+"Query(\"Hohlraum Flux\", numLines, x, y, z, radius, theta, phi, (\"var1\", \"var2\")) -> integer\n"
 "\n"
 "\n"
 "Arguments:\n"

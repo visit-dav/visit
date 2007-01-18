@@ -63,10 +63,10 @@
     </Field>
     <Field name="yUnits" label="yUnits" type="string">
     </Field>
-    <Field name="darg1" label="darg1" type="double">
+    <Field name="darg1" label="darg1" type="doubleVector">
       0.000000
     </Field>
-    <Field name="darg2" label="darg2" type="double">
+    <Field name="darg2" label="darg2" type="doubleVector">
       0.000000
     </Field>
     <Function name="Reset" user="true" member="true">

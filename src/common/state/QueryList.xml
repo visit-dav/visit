@@ -16,6 +16,7 @@
       ActualData
       ActualDataVars
       LineDistribution
+      HohlraumFlux
     </Enum>
     <Enum name="Groups">
       CurveRelated

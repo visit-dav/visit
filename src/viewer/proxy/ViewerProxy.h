@@ -403,7 +403,7 @@ class Xfer;
 //    Added metaData and GetDatabaseMetaData.  Added silAtts and GetSILAtts.
 //
 //    Kathleen Bonnell, Wed Dec 15 17:12:47 PST 2004 
-//    Added bool arg to DatabaseQuery and PointQuery. 
+//    Added bool arg to DatabaseQuery and PointQuery.
 //
 //    Mark C. Miller, Tue Mar  8 17:59:40 PST 2005
 //    Added QueryProcessAttributes and GetProcessAttributes
@@ -679,7 +679,9 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void SuppressQueryOutput(bool onOff);
     void DatabaseQuery(const std::string &queryName, const stringVector &vars,
                        const bool = false, const int arg1 = 0, const int arg2 = 0,
-                       const bool = false, const double darg1 = 0., const double darg2 = 0.);
+                       const bool = false,
+                       const doubleVector &darg1 = doubleVector(),
+                       const doubleVector &darg2 = doubleVector());
     void PointQuery(const std::string &queryName, const double pt[3],
                     const stringVector &vars, const bool = false,
                     const int arg1 = -1, const int arg2 = -1,

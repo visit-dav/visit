@@ -253,10 +253,10 @@
     </Field>
     <Field name="stringArg2" label="stringArg2" type="string">
     </Field>
-    <Field name="doubleArg1" label="doubleArg1" type="double">
+    <Field name="doubleArg1" label="doubleArg1" type="doubleVector">
       0.000000
     </Field>
-    <Field name="doubleArg2" label="doubleArg2" type="double">
+    <Field name="doubleArg2" label="doubleArg2" type="doubleVector">
       0.000000
     </Field>
     <Function name="SetWindowArea" user="true" member="true">
