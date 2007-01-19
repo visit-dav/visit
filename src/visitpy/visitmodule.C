@@ -8502,39 +8502,45 @@ visit_WriteConfigFile(PyObject *self, PyObject *args)
 //   Dave Bremer, Wed Jan 17 19:02:51 PST 2007
 //   Added parsing appropriate for the Hohlraum flux query.
 //
+//   Dave Bremer, Fri Jan 19 16:46:19 PST 2007
+//   Patched to call PyErr_Clear() after each failed attempt to parse
+//   the tuple.  
+//
 // ****************************************************************************
 
 STATIC PyObject *
 visit_Query(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
-    char *queryName;
+    char *queryName = NULL;
     int arg1 = 0, arg2 = 0;
     doubleVector darg1(3), darg2(3);
     PyObject *tuple = NULL;
-
     if (!PyArg_ParseTuple(args, "sidddddd|O", &queryName, &arg1,
                           &(darg1[0]), &(darg1[1]), &(darg1[2]),
                           &(darg2[0]), &(darg2[1]), &(darg2[2]), &tuple))
     {
+        PyErr_Clear();
         darg1.resize(1);
         darg2.resize(1);
         if (!PyArg_ParseTuple(args, "siidd|O", &queryName, &arg1,
                               &arg2, &(darg1[0]), &(darg2[0]), &tuple))
         {
+            PyErr_Clear();
             darg1.resize(0);
             darg2.resize(0);
             if (!PyArg_ParseTuple(args, "sii|O", &queryName, &arg1, &arg2, &tuple))
             {
+                PyErr_Clear();
                 if (!PyArg_ParseTuple(args, "si|O", &queryName, &arg1, &tuple))
                 {
+                    PyErr_Clear();
                     if (!PyArg_ParseTuple(args, "s|O", &queryName, &tuple))
                     {
                         return NULL;
                     }
                 }
             }
-            PyErr_Clear();
         }
     }
     // Check for global flag.
