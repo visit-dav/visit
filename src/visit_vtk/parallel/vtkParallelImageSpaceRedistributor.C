@@ -59,6 +59,8 @@
 #include <vtkPolyDataReader.h>
 #include <vtkPolyDataRelevantPointsFilter.h>
 
+#include <avtParallel.h>
+
 #include <ImproperUseException.h>
 #include <NoInputException.h>
 #include <TimingsManager.h>
@@ -203,6 +205,8 @@ vtkParallelImageSpaceRedistributor::GetOutput()
 //    vtkPolyDataRelevantPointsFilter to prevent communicating needless
 //    point data.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 void
 vtkParallelImageSpaceRedistributor::Execute(void)
@@ -381,7 +385,7 @@ vtkParallelImageSpaceRedistributor::Execute(void)
     //
     vector<int> recvCount(size);
     MPI_Alltoall(&sendCount[0], 1, MPI_INT,
-                 &recvCount[0], 1, MPI_INT, MPI_COMM_WORLD);
+                 &recvCount[0], 1, MPI_INT, VISIT_MPI_COMM);
 
     int totalRecv = 0;
     for (i = 0 ; i < size ; i++)
@@ -418,7 +422,7 @@ vtkParallelImageSpaceRedistributor::Execute(void)
     unsigned char *big_recv_buffer = new unsigned char[totalRecv];
     MPI_Alltoallv(big_send_buffer, &sendCount[0], &sendDisp[0], MPI_CHAR,
                   big_recv_buffer, &recvCount[0], &recvDisp[0], MPI_CHAR,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
     visitTimer->StopTimer(TH_communicate, "communicate");
     visitTimer->DumpTimings();
 

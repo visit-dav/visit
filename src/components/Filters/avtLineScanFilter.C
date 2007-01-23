@@ -434,6 +434,10 @@ AssignToProc(int val, int nlines)
 //  Programmer: Hank Childs
 //  Creation:   July 6, 2006
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -550,7 +554,7 @@ avtLineScanFilter::PostExecute(void)
     }
 
     int *recvcount = new int[nprocs];
-    MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, MPI_COMM_WORLD);
+    MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, VISIT_MPI_COMM);
     char **recvmessages = new char*[nprocs];
     char *big_recv_buff = CreateMessageStrings(recvmessages,recvcount, nprocs);
 
@@ -574,7 +578,7 @@ avtLineScanFilter::PostExecute(void)
     //
     MPI_Alltoallv(sendmessages[0], sendcount, senddisp, MPI_CHAR,
                   recvmessages[0], recvcount, recvdisp, MPI_CHAR,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
 
     delete [] senddisp;
     delete [] recvdisp;

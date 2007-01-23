@@ -536,6 +536,8 @@ LoadBalancer::DetermineAppropriateScheme(avtPipelineSpecification_p input)
 //    Changed DBPLUGIN_DYNAMIC scheme so that every processors gets the
 //    complete list of domains
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 avtDataSpecification_p
@@ -762,7 +764,7 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
                 // get the completed domain number
                 MPI_Status stat;
                 MPI_Recv(&domain, 1, MPI_INT, MPI_ANY_SOURCE,
-                         lastDomDoneMsg, MPI_COMM_WORLD, &stat);
+                         lastDomDoneMsg, VISIT_MPI_COMM, &stat);
                 int processor = stat.MPI_SOURCE;
 
                 // -1 means the first pass by the slave; nothing completed yet
@@ -843,13 +845,13 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
                 // send the new domain number to that processor
                 debug5 << "LoadBalancer Master: sending domain " 
                        << domain << " to processor "<<processor<<"\n";
-                MPI_Send(&domain, 1, MPI_INT, processor, newDomToDoMsg, MPI_COMM_WORLD);
+                MPI_Send(&domain, 1, MPI_INT, processor, newDomToDoMsg, VISIT_MPI_COMM);
             }
 
             // we're all done -- -2 means to abort, -1 means to send results
             int status = abort ? -2 : -1;
             for (int i=1; i<nProcs; i++)
-                MPI_Send(&status, 1, MPI_INT, i, newDomToDoMsg,MPI_COMM_WORLD);
+                MPI_Send(&status, 1, MPI_INT, i, newDomToDoMsg,VISIT_MPI_COMM);
 
             if (abort)
                 EXCEPTION0(AbortException);
@@ -858,7 +860,7 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
             UpdateProgress(1,0);
             lbInfo.complete = true;
             new_data->GetRestriction()->TurnOffAll();
-            MPI_Barrier(MPI_COMM_WORLD);
+            MPI_Barrier(VISIT_MPI_COMM);
         }
         else
         {
@@ -868,11 +870,11 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
 
             // send our last completed domain to the master
             int domain = lbInfo.current;
-            MPI_Send(&domain, 1, MPI_INT, 0, lastDomDoneMsg, MPI_COMM_WORLD);
+            MPI_Send(&domain, 1, MPI_INT, 0, lastDomDoneMsg, VISIT_MPI_COMM);
 
             // get our new work unit
             MPI_Status stat;
-            MPI_Recv(&domain, 1, MPI_INT, 0, newDomToDoMsg, MPI_COMM_WORLD, &stat);
+            MPI_Recv(&domain, 1, MPI_INT, 0, newDomToDoMsg, VISIT_MPI_COMM, &stat);
             lbInfo.current = domain;
 
             if (domain == -2)
@@ -884,7 +886,7 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
                 //  -1 is a tag for "no work" -- we are all done
                 lbInfo.complete = true;
                 new_data->GetRestriction()->TurnOffAll();
-                MPI_Barrier(MPI_COMM_WORLD);
+                MPI_Barrier(VISIT_MPI_COMM);
             }
             else
             {

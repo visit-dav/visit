@@ -51,6 +51,7 @@
 #include <vtkUnsignedIntArray.h>
 
 #include <avtFacelist.h>
+#include <avtParallel.h>
 
 #include <BadDomainException.h>
 #include <BadIndexException.h>
@@ -541,6 +542,10 @@ avtMultiFacelist::CalcFacelist(vtkUnstructuredGrid *ug, int d, vtkPolyData *pd)
 //  Programmer: Hank Childs
 //  Creation:   October 27, 2000
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -560,7 +565,7 @@ avtMultiFacelist::Calculate(void)
     }
 
     MPI_Allreduce(validFLInt, validFLIntOut, numDomains, MPI_INT, MPI_MAX,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
 
     for (i = 0 ; i < numDomains ; i++)
     {

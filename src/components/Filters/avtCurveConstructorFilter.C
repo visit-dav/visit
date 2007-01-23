@@ -140,6 +140,8 @@ avtCurveConstructorFilter::~avtCurveConstructorFilter()
 //    Add handling for error case where a tree is not empty, but it has no
 //    leaves (so it really is "IsEmpty").
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void avtCurveConstructorFilter::Execute()
@@ -153,8 +155,8 @@ void avtCurveConstructorFilter::Execute()
     //
     int myRank, numProcs;
 
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
-    MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+    MPI_Comm_size(VISIT_MPI_COMM, &numProcs);
+    MPI_Comm_rank(VISIT_MPI_COMM, &myRank);
     int mpiNdsTag = GetUniqueMessageTag();
     int mpiSizeTag = GetUniqueMessageTag();
     int mpiDataTag = GetUniqueMessageTag();
@@ -168,16 +170,16 @@ void avtCurveConstructorFilter::Execute()
            MPI_Status stat2;
            int nds = 0, size = 0;
            MPI_Recv(&nds, 1, MPI_INT, MPI_ANY_SOURCE, mpiNdsTag,
-                    MPI_COMM_WORLD, &stat);
+                    VISIT_MPI_COMM, &stat);
            for (j = 0; j < nds; j++)
            {
                vtkDataSetReader *reader = vtkDataSetReader::New(); 
                reader->ReadFromInputStringOn();
                MPI_Recv(&size, 1, MPI_INT, stat.MPI_SOURCE, mpiSizeTag,
-                         MPI_COMM_WORLD, &stat2);
+                         VISIT_MPI_COMM, &stat2);
                char *str = new char[size];
                MPI_Recv(str, size, MPI_CHAR, stat.MPI_SOURCE, mpiDataTag,
-                        MPI_COMM_WORLD, &stat2);
+                        VISIT_MPI_COMM, &stat2);
                vtkCharArray *charArray = vtkCharArray::New();
                charArray->SetArray((char*)str, size, 1);
                reader->SetInputArray(charArray);
@@ -197,12 +199,12 @@ void avtCurveConstructorFilter::Execute()
         int i = 0, size = 0, nleaves = 0;
         if (inTree->IsEmpty())
         {
-            MPI_Send(&nleaves, 1, MPI_INT, 0, mpiNdsTag, MPI_COMM_WORLD);
+            MPI_Send(&nleaves, 1, MPI_INT, 0, mpiNdsTag, VISIT_MPI_COMM);
             return;
         }
 
         vtkDataSet **ds = inTree->GetAllLeaves(nleaves);
-        MPI_Send(&nleaves, 1, MPI_INT, 0, mpiNdsTag, MPI_COMM_WORLD);
+        MPI_Send(&nleaves, 1, MPI_INT, 0, mpiNdsTag, VISIT_MPI_COMM);
  
         vtkDataSetWriter *writer = vtkDataSetWriter::New();
         writer->WriteToOutputStringOn();
@@ -215,8 +217,8 @@ void avtCurveConstructorFilter::Execute()
             size =  writer->GetOutputStringLength();
             str  =  writer->RegisterAndGetOutputString();
 
-            MPI_Send(&size, 1, MPI_INT, 0, mpiSizeTag, MPI_COMM_WORLD);
-            MPI_Send(str, size, MPI_CHAR, 0, mpiDataTag, MPI_COMM_WORLD);
+            MPI_Send(&size, 1, MPI_INT, 0, mpiSizeTag, VISIT_MPI_COMM);
+            MPI_Send(str, size, MPI_CHAR, 0, mpiDataTag, VISIT_MPI_COMM);
             delete [] str; //allocated by writer
         }
         writer->Delete(); 

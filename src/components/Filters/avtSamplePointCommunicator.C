@@ -65,13 +65,17 @@
 //  Programmer: Hank Childs
 //  Creation:   January 24, 2001
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 avtSamplePointCommunicator::avtSamplePointCommunicator()
 {
 #ifdef PARALLEL
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
-    MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+    MPI_Comm_size(VISIT_MPI_COMM, &numProcs);
+    MPI_Comm_rank(VISIT_MPI_COMM, &myRank);
 #else
     numProcs = 1; myRank = 0;
 #endif
@@ -421,6 +425,10 @@ avtSamplePointCommunicator::EstablishImagePartitionBoundaries(void)
 //  Programmer: Hank Childs
 //  Creation:   January 24, 2001
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 char *
@@ -433,7 +441,7 @@ avtSamplePointCommunicator::CommunicateMessages(char **sendmessages,
     //
     // Figure out how much each processor needs to send/receive.
     //
-    MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, MPI_COMM_WORLD);
+    MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, VISIT_MPI_COMM);
 
     //
     // Create a buffer we can receive into.
@@ -461,7 +469,7 @@ avtSamplePointCommunicator::CommunicateMessages(char **sendmessages,
     //
     MPI_Alltoallv(sendmessages[0], sendcount, senddisp, MPI_CHAR,
                   recvmessages[0], recvcount, recvdisp, MPI_CHAR,
-                  MPI_COMM_WORLD);
+                  VISIT_MPI_COMM);
 
     delete [] senddisp;
     delete [] recvdisp;

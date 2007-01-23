@@ -164,6 +164,8 @@ MPIXfer::ReadHeader()
 //    Mark C. Miller, Thu Jun 10 09:08:18 PDT 2004
 //    Added arg for interrupt message tag
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -177,7 +179,7 @@ MPIXfer::SendInterruption(int mpiInterruptTag)
         MPI_Request *request = new MPI_Request[size];
         for (int i=1; i<size; i++)
         {
-            MPI_Isend(buf, 1, MPI_CHAR, i, mpiInterruptTag, MPI_COMM_WORLD, &request[i]);
+            MPI_Isend(buf, 1, MPI_CHAR, i, mpiInterruptTag, VISIT_MPI_COMM, &request[i]);
         }
 
         // Then wait for them all to read the command
@@ -223,6 +225,8 @@ MPIXfer::SendInterruption(int mpiInterruptTag)
 //    parallel simulation because slave processes need some way to know
 //    that the next command coming is visit-specific.
 //
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -277,7 +281,7 @@ MPIXfer::Process()
                         if (slaveProcessInstruction)
                             slaveProcessInstruction();
                         MPI_Bcast((void *)&buf, 1, PAR_STATEBUFFER,
-                                  0, MPI_COMM_WORLD);
+                                  0, VISIT_MPI_COMM);
 
                         buf.nbytes = 0;
                     }
@@ -289,7 +293,7 @@ MPIXfer::Process()
                     if (slaveProcessInstruction)
                         slaveProcessInstruction();
                     MPI_Bcast((void *)&buf, 1, PAR_STATEBUFFER,
-                              0, MPI_COMM_WORLD);
+                              0, VISIT_MPI_COMM);
                 }
 
                 // Read the object from the newInput into its local copy.

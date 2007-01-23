@@ -53,6 +53,10 @@
 //  Programmer: Mark C. Miller 
 //  Creation:   February 12, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 avtImageCompositer::avtImageCompositer()
@@ -63,7 +67,7 @@ avtImageCompositer::avtImageCompositer()
    mpiRoot = -1;
    mpiRank = 0;
 #ifdef PARALLEL
-   mpiComm = MPI_COMM_WORLD;
+   mpiComm = VISIT_MPI_COMM;
    MPI_Comm_rank(mpiComm, &mpiRank);
    mpiRoot = 0;
 #endif

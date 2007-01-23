@@ -57,6 +57,7 @@
 #include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 #include <avtLogicalSelection.h>
+#include <avtParallel.h>
 #include <avtSpatialBoxSelection.h>
 
 #include <DebugStream.h>
@@ -328,6 +329,9 @@ avtViSUSFileFormat::GetNTimesteps(void)
 //    Mark C. Miller, Tue Aug 16 13:56:55 PDT 2005
 //    Added calls to GetFile/GetTimeInfo
 //    Added call to IDX_get_time_rank_min_max 
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
 void
@@ -338,8 +342,8 @@ avtViSUSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     procNum = 0;
     procCount = 1;
 #ifdef PARALLEL
-    MPI_Comm_rank(MPI_COMM_WORLD, &procNum);
-    MPI_Comm_size(MPI_COMM_WORLD, &procCount);
+    MPI_Comm_rank(VISIT_MPI_COMM, &procNum);
+    MPI_Comm_size(VISIT_MPI_COMM, &procCount);
 #endif
 
     ignoreDataSelections = getenv("VISIT_VISUS_IGNORE_SELECTIONS") != 0;
