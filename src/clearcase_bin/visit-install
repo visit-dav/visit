@@ -120,6 +120,9 @@
 #    Sean Ahern, Wed Jan 17 14:20:07 EST 2007
 #    Added documentation for "-c ornl" or "-c nersc".
 #
+#    Mark C. Miller, Thu Jan 25 20:15:18 PST 2007
+#    I added mkgrdbl.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -334,6 +337,7 @@ if ($append == false) then
    if (-e $dir/bin/legacylauncher-)      rm -f $dir/bin/legacylauncher-
    if (-e $dir/bin/frontendlauncher-)    rm -f $dir/bin/frontendlauncher-
    if (-e $dir/bin/xml2plugin-)          rm -f $dir/bin/xml2plugin-
+   if (-e $dir/bin/mkgrdbl-)          rm -f $dir/bin/mkgrdbl-
    if (-e $dir/bin/visit-)       rm -f $dir/bin/visit- # not what it used to be
    if ($beta == true) then
       if (-e $dir/beta-)         rm -f $dir/beta-
@@ -355,6 +359,7 @@ else
 endif
 cp distribution/visit/bin/frontendlauncher $dir/bin/frontendlauncher+
 cp distribution/visit/bin/xml2plugin       $dir/bin/xml2plugin+
+cp distribution/visit/bin/mkgrdbl       $dir/bin/mkgrdbl+
 
 if (-e $dir/$version+)           rm -rf $dir/$version+
 if ($append == false) then
@@ -453,6 +458,7 @@ chmod $dir_permission $dir/bin
 chmod $dir_permission $dir/bin/legacylauncher+
 chmod $dir_permission $dir/bin/frontendlauncher+
 chmod $dir_permission $dir/bin/xml2plugin+
+chmod $dir_permission $dir/bin/mkgrdbl+
 chmod $dir_permission $dir/data
 chmod $file_permission $dir/data/*
 chmod $dir_permission $dir/$version+
@@ -471,6 +477,7 @@ if ($group_ownership != none) then
     chgrp $group_ownership $dir/bin/legacylauncher+
     chgrp $group_ownership $dir/bin/frontendlauncher+
     chgrp $group_ownership $dir/bin/xml2plugin+
+    chgrp $group_ownership $dir/bin/mkgrdbl+
     chgrp $group_ownership $dir/data
     chgrp $group_ownership $dir/data/*
     find $dir/$version+ -type d -exec chgrp $group_ownership {} \;
@@ -505,6 +512,7 @@ if ($append == false) then
    if (-e $dir/bin/legacylauncher) mv $dir/bin/legacylauncher $dir/bin/legacylauncher-
    if (-e $dir/bin/frontendlauncher) mv $dir/bin/frontendlauncher $dir/bin/frontendlauncher-
    if (-e $dir/bin/xml2plugin) mv $dir/bin/xml2plugin $dir/bin/xml2plugin-
+   if (-e $dir/bin/mkgrdbl) mv $dir/bin/mkgrdbl $dir/bin/mkgrdbl-
    if ($beta == true) then
       if (-e $dir/beta)          mv $dir/beta      $dir/beta-
    else if ($private == false) then
@@ -541,6 +549,8 @@ if (-e bin/frontendlauncher)     rm -f bin/frontendlauncher
 mv bin/frontendlauncher+ bin/frontendlauncher
 if (-e bin/xml2plugin)           rm -f bin/xml2plugin
 mv bin/xml2plugin+ bin/xml2plugin
+if (-e bin/mkgrdbl)           rm -f bin/mkgrdbl
+mv bin/mkgrdbl+ bin/mkgrdbl
 if ($beta == true) then
    if (-e beta)                  rm -f beta
    ln -s $version beta

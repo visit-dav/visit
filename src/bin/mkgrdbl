@@ -1,0 +1,457 @@
+#!/bin/bash
+
+# ----------------------------------------------------------------------------
+# Purpose: Make file(s) or dir(s) readable by putting them in group in common
+# between owner and specified user as well as the entire directory path from
+# where the files exist to a point in the filesystem where the owner is NOT
+# the owner
+#
+# This script will find all the groups in common with the users specified
+# by the -u option. If you wish, you can excluded yourself from the process
+# with the -e option. If all you want to do is see the list of groups the
+# specified users have in common, use the -p option. If you have a preferred 
+# group(s) you want to be tried, specify them using the -g option.
+#
+# This script will confirm and, where necessary, change group ownership and
+# permissions to ensure that all users specified can read the specified
+# file(s). It will also recusively ascend the directory hierarchy ensuring
+# group ownership and permissions in the containing directories until it
+# reaches a directory not owned by the user invoking the script. It tries
+# NOT to change group ownership & permissions where it thinks the existing
+# permissions are sufficient. However, you can override this behavior and
+# force it to unify the group ownership and permissions using the -unify
+# option. That will cause all file(s) and dir(s) to be set to the specified
+# group ownership with read permission.
+#
+# This script will save the commands necessary to undo its effects in a
+# 'save undo file.' You can disable this feature using the -nosv option.
+#
+# Programmer: Mark C. Miller
+# Creation:   January 25, 2007
+#
+# ----------------------------------------------------------------------------
+#
+
+# ----------------------------------------------------------------------------
+# Purpose: Given a space separated 'ls -l' style permissions string
+# (e.g. - r w - r w - r - -), compute the base 8 digits required to set it so
+# in a chmod call.
+#
+# Programmer: Mark C. Miller
+# Creation:   January 25, 2007
+#
+# ----------------------------------------------------------------------------
+buildModDigits () {
+    local permChars=$*
+    local result
+    local digit
+    local i
+
+    i=0
+    digit=0
+    for pChar in $permChars; do
+        case $pChar in
+            r)
+	        digit=`expr $digit + 4`
+	        ;;
+	    w)
+	        digit=`expr $digit + 2`
+	        ;;
+	    x)
+	        digit=`expr $digit + 1`
+	        ;;
+            *)
+                ;;
+        esac
+        if test $i -eq 3 || test $i -eq 6 || test $i -eq 9; then
+	    result="${result}${digit}"
+	    digit=0
+	fi
+	i=`expr $i + 1`
+    done
+
+    echo $result
+}
+
+# ----------------------------------------------------------------------------
+# Purpose: Execute the commands to change group and group permissions of a
+# file or directory. Optionally, add commands necessary to undo this to the
+# saveUndoFile and output debugging info.
+#
+# Programmer: Mark C. Miller
+# Creation:   January 25, 2007
+#
+# ----------------------------------------------------------------------------
+changeGroupAndPerms () {
+
+    local theFile=$1
+    local theNewGroup=$2
+    local oldPerms
+    local oldGroup
+
+    # build undo commands if needed
+    if test $noSaveUndo -ne 1; then
+        oldGroup=`ls -ld $theFile | tr -s ' ' | cut -d' ' -f4`
+        oldPerms=`ls -ld $theFile | tr -s ' ' | cut -d' ' -f1 | sed -e 's/\([Xdrwx-]\)/\1 /g'`
+	modVal=`buildModDigits $oldPerms`
+	echo "chgrp $oldGroup $theFile" >> $saveUndoFile
+	echo "chmod $modVal $theFile" >> $saveUndoFile
+    fi
+
+    if test $debug -eq 1; then
+        oldGroup=`ls -ld $theFile | tr -s ' ' | cut -d' ' -f4`
+        oldPerms=`ls -ld $theFile | tr -s ' ' | cut -d' ' -f1`
+        echo -n "\"$theFile\" $oldPerms $oldGroup --> "
+    fi
+
+    # do the change grp 
+    chgrp $theNewGroup $theFile 1>/dev/null 2>&1
+    if test $? -ne 0; then
+        return 1
+    fi
+
+    # do the change mod
+    chmod g+rX $theFile 1>/dev/null 2>&1
+    if test $? -ne 0; then
+        return 2
+    fi
+
+    if test $debug -eq 1; then
+        newGroup=`ls -ld $theFile | tr -s ' ' | cut -d' ' -f4`
+        newPerms=`ls -ld $theFile | tr -s ' ' | cut -d' ' -f1`
+        echo "$newPerms $newGroup"
+    fi
+
+    return 0
+}
+
+optError=0
+otherUsers=
+preferredGroups=
+theFiles=
+printOnly=0
+excludeSelf=0
+debug=0
+noSaveUndo=0
+saveUndoFile="$0_undo_$$"
+unifyGroup=0
+origArgs=$*
+for options
+do
+   case $1 in
+      "")
+         # handle empty argument
+         ;;
+      -u|-users)
+         if test -z "$2"; then
+             echo "Expected username or quoted list of username(s) for $1"
+             optError=1
+         else
+             otherUsers=(${otherUsers[*]} $2)
+             shift 2
+         fi
+         ;;
+      -g|-groups)
+         if test -z "$2"; then
+             echo "Expected groupname or quoted list of groupnames(s) for $1"
+             optError=1
+         else
+             preferredGroups=(${preferredGroups[*]} $2)
+	     unifyGroup=1
+             shift 2
+         fi
+         ;;
+      -nosv|-no_save_undo)
+         noSaveUndo=1
+         shift
+         ;;
+      -p|-print)
+         printOnly=1
+	 noSaveUndo=1
+         shift
+         ;;
+      -e|-exself)
+         excludeSelf=1
+         shift
+         ;;
+      -unify|-unify_group)
+         unifyGroup=1
+         shift
+         ;;
+      -help)
+         optError=1
+         shift
+         ;;
+      -d|-debug)
+         debug=1
+	 shift
+	 ;;
+      -*)
+         echo "Unknown option $1"
+         optError=1
+         shift
+         ;;
+      *)
+         theFiles="$theFiles $1"
+         shift
+         ;;
+   esac
+done
+
+if test "$optError" = "1"; then
+    echo "Usage:  $0 <options> [files/dirs]"
+    echo "Available options:"
+    echo "        -help           display this help message"
+    echo "        -u  | -users    quoted list of space separated usernames(s)."
+    echo "                        Multiple -u options are also allowed."
+    echo "        -e  | -exself   exclude yourself from the user list"
+    echo "        -g  | -groups   quoted list of space separated preferred groupnames(s)."
+    echo "                        Multiple -g options are also allowed."
+    echo "        -p  | -print    just print list of common group(s) and then exit."
+    echo "        -d  | -debug    print some debugging information while running"
+    echo "        -nosv | -no_save_undo do not attempt to save an undo script"
+    echo "        -unify | -unify_group make group of all files and path the same"
+    echo "        <files/dirs>    list of files/dirs to process."
+    exit 1
+fi
+
+#
+# init the save undo file
+#
+if test $noSaveUndo -ne 1; then
+    rm -f $saveUndoFile
+    echo "#!/bin/sh" > $saveUndoFile
+    echo >> $saveUndoFile
+    echo "# ---------------------------------------------------" >> $saveUndoFile
+    echo "# This shell script was automatically generated by $0" >> $saveUndoFile
+    echo "# It contains all the commands necessary to undo" >> $saveUndoFile
+    echo "# the effects of the following command..." >> $saveUndoFile
+    echo "#" >> $saveUndoFile
+    echo "# $0 $origArgs" >> $saveUndoFile 
+    echo "#" >> $saveUndoFile
+    echo "# invoked by `whoami` " >> $saveUndoFile
+    echo "# on `date` " >> $saveUndoFile
+    echo "# in directory \"`pwd`\"" >> $saveUndoFile
+    echo "#" >> $saveUndoFile
+    echo "# To run it, simply enter the command \"$saveUndoFile\"" >> $saveUndoFile
+    echo "# Note: If this script is ever executed, upon completion" >> $saveUndoFile
+    echo "# it will automatically remove itself" >> $saveUndoFile
+    echo "# --------------------------------------------------" >> $saveUndoFile
+    echo >> $saveUndoFile
+    chmod 750 $saveUndoFile
+fi
+
+#
+# Initialize the list of commonGroups
+#
+commonGroups=
+startIndex=0
+if test $excludeSelf -eq 1; then
+    commonGroups=(`groups ${otherUsers[0]} | cut -d':' -f2`)
+    startIndex=1
+else
+    commonGroups=(`groups`)
+fi
+
+#
+# Find the group(s) in common between all specified users
+#
+i=$startIndex
+while test $i -lt ${#otherUsers[*]};
+do
+
+    if test $debug -eq 1; then
+        echo "Working on user \"${otherUsers[$i]}\""
+    fi
+
+    #
+    # confirm this is a known user 
+    #
+    id ${otherUsers[$i]} 1>/dev/null 2>&1
+    if test $? -ne 0; then
+       echo "\"${otherUsers[$i]}\" does not appear to be a known"
+       echo "user on this system. Skipping it."
+       i=`expr $i + 1`
+       continue
+    fi
+
+    #
+    # skip this user if it is the same as the user id running
+    # this script
+    #
+    if test `id -un` = ${otherUsers[$i]}; then
+        if test $debug -eq 1; then
+            echo "    skipping it" 
+        fi
+        i=`expr $i + 1`
+        continue
+    fi
+
+    #
+    # get groups for this user
+    #
+    thisGroups=(`groups ${otherUsers[$i]} | cut -d':' -f2`)
+    if test $debug -eq 1; then
+        echo "    groups: ${thisGroups[*]}"
+    fi
+
+    #
+    # iterate over groups. eliminating any not in list 
+    #
+    unset newCommonGroups
+    newCommonGroups=
+    j=0
+    while test $j -lt ${#commonGroups[*]};
+    do
+
+	if test $debug -eq 1; then
+            echo -n "    Working on group \"${commonGroups[$j]}\""
+        fi
+
+        hasGroup=`echo ${thisGroups[*]} | grep ${commonGroups[$j]}`
+	if test -n "$hasGroup"; then
+	    newCommonGroups=(${newCommonGroups[*]} ${commonGroups[$j]})
+	    if test $debug -eq 1; then
+	        echo "...keeping it"
+	    fi
+	else
+	    if test $debug -eq 1; then
+	        echo "...eliminating it"
+	    fi
+	fi
+	if test $debug -eq 1; then
+	    echo "    current groups \"${newCommonGroups[*]}\""
+        fi
+
+        j=`expr $j + 1`
+    done
+
+    #
+    # Update common groups
+    #
+    unset commonGroups
+    commonGroups=(${newCommonGroups[*]})
+    if test $debug -eq 1; then
+        echo "Current list of common groups is \"${commonGroups[*]}\""
+    fi
+
+    i=`expr $i + 1`
+done
+
+#
+# Re-sort common groups according to preferred ordering, if specified
+#
+if test ${#preferredGroups[0]} -ne 0; then
+    prefCommonGroups=
+    for g in ${preferredGroups[*]}; do
+        hasPrefGroup=`echo ${commonGroups[*]} | grep $g`
+        if test -n "$hasPrefGroup"; then
+            prefCommonGroups=(${prefCommonGroups[*]} $g)
+        fi
+    done
+    origCommonGroups=
+    for g in ${commonGroups[*]}; do
+        hasGroup=`echo ${prefCommonGroups[*]} | grep $g`
+        if test -z "$hasGroup"; then
+            origCommonGroups=(${origCommonGroups[*]} $g)
+	fi
+    done
+    unset commonGroups
+    commonGroups=(${prefCommonGroups[*]} ${origCommonGroups[*]})
+fi
+
+#
+# If only the common group(s) were requested, return that and exit
+#
+if test $printOnly -eq 1; then
+    echo "common groups: ${commonGroups[*]}"
+    exit 0
+fi
+
+#
+# Main loop to chgrp/chmod the file(s) and dir(s)
+# We loop over groups so that if we fail anywhere on a group
+# we will try another group in the list
+#
+for g in ${commonGroups[*]}; do
+
+    hadErrors=0
+    for f in $theFiles; do
+
+        #
+	# do the file itself
+	#
+        if test $unifyGroup -eq 1; then
+            changeGroupAndPerms $f $g
+	    if test $? -ne 0; then
+	        hadErrors=1
+	        break
+            fi
+        else
+            oldGroup=`ls -ld $f | tr -s ' ' | cut -d' ' -f4`
+	    okGroup=`echo ${commonGroups[*]} | grep $oldGroup`
+	    if test -z "$okGroup"; then
+                changeGroupAndPerms $f $g
+	        if test $? -ne 0; then
+	            hadErrors=1
+	            break
+                fi
+	    fi
+        fi
+
+	#
+        # now, do the path to 'top'
+	# (this could be optimized. we do it for each file
+	# in the list but may often be re-doing it for files in
+	# the same dir)
+	#
+	theDir=`dirname $f`
+	pushd $theDir 1>/dev/null 2>&1
+	while true; do
+
+	    curDir=`pwd`
+            theDirOwner=`ls -ld $curDir | tr -s ' ' | cut -d' ' -f3`
+	    if test ! $theDirOwner = `whoami`; then
+	        break
+            fi
+
+            if test $unifyGroup -eq 1; then
+                changeGroupAndPerms $curDir $g
+	        if test $? -ne 0; then
+	            hadErrors=1
+	            break
+                fi
+	    else
+                oldGroup=`ls -ld $curDir | tr -s ' ' | cut -d' ' -f4`
+	        okGroup=`echo ${commonGroups[*]} | grep $oldGroup`
+	        if test -z "$okGroup"; then
+                    changeGroupAndPerms $curDir $g
+	            if test $? -ne 0; then
+	                hadErrors=1
+	                break
+                    fi
+	        fi
+	    fi
+
+	    cd ..
+	done
+	popd 1>/dev/null 2>&1
+    done
+
+    #
+    # if we managed to chgrp/chmod all the files,
+    # break out of the loop. Otherwise try another group
+    #
+    if test $hadErrors -eq 0; then
+        break
+    fi
+done
+
+if test $noSaveUndo -ne 1; then
+    echo "rm -f \$0" >> $saveUndoFile
+fi
+
+if test $hadErrors -ne 0; then
+    echo "Unable to chgrp/chmod all specified files"
+    exit 1
+fi
