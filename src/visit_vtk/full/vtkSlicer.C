@@ -84,6 +84,9 @@ void vtkSlicer::Execute()
 //   Brad Whitlock, Thu Aug 12 14:51:27 PST 2004
 //   Added float casts to the pow() arguments so it builds on MSVC7.Net.
 //
+//   Hank Childs, Sat Jan 27 12:45:03 PST 2007
+//   Add check for 1xJxK and Ix1xK meshes (instead of crashing).
+//
 ///////////////////////////////////////////////////////////////////////////////
 
 void
@@ -94,7 +97,7 @@ vtkSlicer::StructuredGridExecute(void)
     vtkStructuredGrid *sg = (vtkStructuredGrid *) GetInput();
     int pt_dims[3];
     sg->GetDimensions(pt_dims);
-    if (pt_dims[2] <= 1)
+    if (pt_dims[0] <= 1 || pt_dims[1] <= 1 || pt_dims[2] <= 1)
     {
         GeneralExecute();
         return;
@@ -185,6 +188,9 @@ vtkSlicer::StructuredGridExecute(void)
 //   Brad Whitlock, Thu Aug 12 14:51:27 PST 2004
 //   Added float casts to the pow() arguments so it builds on MSVC7.Net.
 //
+//   Hank Childs, Sat Jan 27 12:45:03 PST 2007
+//   Add check for 1xJxK and Ix1xK meshes (instead of crashing).
+//
 ///////////////////////////////////////////////////////////////////////////////
 
 void vtkSlicer::RectilinearGridExecute(void)
@@ -194,7 +200,7 @@ void vtkSlicer::RectilinearGridExecute(void)
     vtkRectilinearGrid *rg = (vtkRectilinearGrid *) GetInput();
     int pt_dims[3];
     rg->GetDimensions(pt_dims);
-    if (pt_dims[2] <= 1)
+    if (pt_dims[0] <= 1 || pt_dims[1] <= 1 || pt_dims[2] <= 1)
     {
         GeneralExecute();
         return;

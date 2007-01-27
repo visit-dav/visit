@@ -41,12 +41,13 @@
 
 #include <avtThresholdFilter.h>
 
-#include <vtkDataSet.h>
 #include <vtkCellData.h>
-#include <vtkPointData.h>
-#include <vtkPolyData.h>
 #include <vtkDataArray.h>
 #include <vtkDataObject.h>
+#include <vtkDataSet.h>
+#include <vtkIdList.h>
+#include <vtkPointData.h>
+#include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkThreshold.h>
@@ -546,6 +547,9 @@ avtThresholdFilter::GetAssignments(vtkDataSet *in_ds, const int *dims,
 //    Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //    Rewrote to support multi-variable thresholding.
 //
+//    Hank Childs, Sat Jan 27 12:53:20 PST 2007
+//    Only add points that are actually incident to cells.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -612,6 +616,12 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
     outPointData->CopyAllocate(inPointData, plotPointCount*curVarCount);
     outMeshPoints->Delete();
 
+    bool needToSeeIfPointIsIncidentToCell = true;
+    if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+        needToSeeIfPointIsIncidentToCell = false;
+    if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+        needToSeeIfPointIsIncidentToCell = false;
+    vtkIdList *idList = vtkIdList::New();
     for (inPointID = 0; inPointID < inPointCount; inPointID++)
     {
         for (curVarNum = 0; curVarNum < curVarCount; curVarNum++)
@@ -622,7 +632,18 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
             if (doubleValue > curUpperBounds[curVarNum]) break;
         }
 
-        if (curVarNum >= curVarCount)
+        bool shouldAdd = true;
+        if (curVarNum < curVarCount)
+            shouldAdd = false;
+
+        if (shouldAdd && needToSeeIfPointIsIncidentToCell)
+        {
+            in_ds->GetPointCells(inPointID, idList);
+            if (idList->GetNumberOfIds() <= 0)
+                shouldAdd = false;
+        }
+
+        if (shouldAdd)
         {
             outPointData->CopyData(inPointData, inPointID, outPointID);
             in_ds->GetPoint(inPointID, pointXYZ);
@@ -632,6 +653,7 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
         }
     }
 
+    idList->Delete();
     return outputMesh;
 }
 

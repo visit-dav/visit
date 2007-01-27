@@ -17,6 +17,10 @@ Definition:
 //
 // Modifications:
 //
+//   Hank Childs, Sat Jan 27 12:03:56 PST 2007
+//   Fix indexing bug that can come up with huge numbers of colors.  This
+//   bug ultimately led to memory overwrites and a crash.
+//
 // ****************************************************************************
 
 void
@@ -199,9 +203,9 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
             {
                 for(i = 0; i < color_start_i; i++)
                 {
-                    dest[c++] = (unsigned char)(c1_r[0] * 255);
-                    dest[c++] = (unsigned char)(c1_g[0] * 255);
-                    dest[c++] = (unsigned char)(c1_b[0] * 255);
+                    dest[3*i+0] = (unsigned char)(c1_r[0] * 255);
+                    dest[3*i+1] = (unsigned char)(c1_g[0] * 255);
+                    dest[3*i+2] = (unsigned char)(c1_b[0] * 255);
                 }
             }
 
@@ -222,9 +226,9 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
             for(i = color_start_i; i < color_end_i; i++)
             {
                 // Store the colors as 24 bit rgb.
-                dest[c++] = (unsigned char)(r_sum * 255);
-                dest[c++] = (unsigned char)(g_sum * 255);
-                dest[c++] = (unsigned char)(b_sum * 255);
+                dest[3*i+0] = (unsigned char)(r_sum * 255);
+                dest[3*i+1] = (unsigned char)(g_sum * 255);
+                dest[3*i+2] = (unsigned char)(b_sum * 255);
 
                 // Add the color deltas.
                 r_sum += delta_r; g_sum += delta_g; b_sum += delta_b;
@@ -234,17 +238,17 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
             {
                 for(i = color_end_i; i < ncolors; i++)
                 {
-                    dest[c++] = (unsigned char)(c2_r[0] * 255);
-                    dest[c++] = (unsigned char)(c2_g[0] * 255);
-                    dest[c++] = (unsigned char)(c2_b[0] * 255);
+                    dest[3*i+0] = (unsigned char)(c2_r[0] * 255);
+                    dest[3*i+1] = (unsigned char)(c2_g[0] * 255);
+                    dest[3*i+2] = (unsigned char)(c2_b[0] * 255);
                 }
             }
         }
         else
         {
-            dest[c++] = (unsigned char)(c1_r[0] * 255);
-            dest[c++] = (unsigned char)(c1_g[0] * 255);
-            dest[c++] = (unsigned char)(c1_b[0] * 255);
+            dest[3*color_start_i+0] = (unsigned char)(c1_r[0] * 255);
+            dest[3*color_start_i+1] = (unsigned char)(c1_g[0] * 255);
+            dest[3*color_start_i+2] = (unsigned char)(c1_b[0] * 255);
         }
 
         c1_pos++;
