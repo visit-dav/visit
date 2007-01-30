@@ -437,21 +437,6 @@ setenv LD_LIBRARYN32_PATH $QTDIR/lib:$LD_LIBRARYN32_PATH     # SGI
 setenv LD_LIBRARY64_PATH $QTDIR/lib:$LD_LIBRARY64_PATH       # SGI
 
 #
-# On linux systems using the gcc 2.96 compiler, the compiler has a bug that
-# causes most of the text fields that contain numeric values to have 1
-# added to the 6th digit.  For example, 1 is displayed as 1.00001. To
-# correct this problem you will need to replace the code in the function
-# doubleToString in the file src/tools/qlocale.cpp with
-#
-#     char str[80];
-#     sprintf(str, "%g", d);
-#     QString num_str(str);
-#
-#     return num_str;
-#
-# You will also need to add "#include <stdio.h>" at the beginning of the
-# file to get the prototype for sprintf.
-#
 # On tru64 systems qt generates some unaligned access errors. To
 # correct the problem change the following two code blocks in
 # src/tools/qlocale.cpp.
@@ -869,6 +854,10 @@ after the comment "Fortran interface routines." near the bottom of the file
 Make.package.  Unfortunately, the C routines call two fortran routines,
 which could probably be fairly easily rewritten in C.  Unfortunately that
 hasn't been done yet.  The routines are FORT_FASTCOPY and FORT_FASTSETVAL.
+
+You should turn off subscript range checking with the g77 compiler. To do
+this comment out the 2 lines that contain "-ffortran-bounds-check" from the
+file ../mk/Make.Linux.
 
 You will need to modify GNUmakefile so that it doesn't use MPI.  To do this
 change "USE_MPI   = TRUE" to "USE_MPI   = FALSE".

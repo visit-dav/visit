@@ -124,6 +124,9 @@ avtPickByNodeQuery::~avtPickByNodeQuery()
 //    Kathleen Bonnell, Wed May 11 17:14:03 PDT 200 
 //    Convert varnmames to Global names when the DB supplied the ids. 
 //
+//    Kathleen Bonnell, Tue Jan 30 16:25:23 PST 2007 
+//    Send nodeid to RetrieveVarInfo.
+//
 // ****************************************************************************
 
 void
@@ -175,7 +178,7 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
         GetNodeCoords(ds, nodeid);    
         if (RetrieveZones(ds, nodeid))
         {
-            RetrieveVarInfo(ds);
+            RetrieveVarInfo(ds, nodeid);
             pickAtts.SetFulfilled(true);
         }
         else

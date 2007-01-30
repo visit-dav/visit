@@ -23,11 +23,12 @@
 #define __vtkRectilinearGridMapper_h
 
 #include "vtkMapper.h"
+#include <visit_vtk_exports.h>
 
 class vtkRectilinearGrid;
 class vtkRenderer;
 
-class VTK_RENDERING_EXPORT vtkRectilinearGridMapper : public vtkMapper 
+class VISIT_VTI_API vtkRectilinearGridMapper : public vtkMapper 
 {
 public:
   static vtkRectilinearGridMapper *New();

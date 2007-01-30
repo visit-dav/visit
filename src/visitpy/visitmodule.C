@@ -11865,7 +11865,11 @@ ReadVisItPluginDir(const char *visitProgram)
     if(command == NULL)
         return NULL;
     sprintf(command, "%s -env", visitProgram);
+#ifndef _WIN32
     p = popen(command, "r");
+#else
+    p = _popen(command, "r");
+#endif
     if(p == NULL)
     {
         free(command);
@@ -11891,8 +11895,11 @@ ReadVisItPluginDir(const char *visitProgram)
             break;
         }
     }
-
+#ifndef _WIN32
     pclose(p);
+#else
+    _pclose(p);
+#endif
     free(command);
 
     return VISITPLUGINDIR;

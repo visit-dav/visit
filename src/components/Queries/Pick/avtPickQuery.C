@@ -714,6 +714,30 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds)
 //  Method: avtPickQuery::RetrieveVarInfo
 //
 //  Purpose:
+//    Convenience method, so derived types don't need to pass new args.
+//
+//  Arguments:
+//    ds        The dataset to retrieve information from.
+//    elNum     The element number in question.
+//
+//  Programmer: Kathleen Bonnell  
+//  Creation:   Januay 30, 3007 
+//
+//  Modifications:
+//    
+// ****************************************************************************
+
+void
+avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int elNum)
+{
+    RetrieveVarInfo(ds, elNum, pickAtts.GetIncidentElements());
+}
+
+
+// ****************************************************************************
+//  Method: avtPickQuery::RetrieveVarInfo
+//
+//  Purpose:
 //    Retrieves the variable information from the dataset and stores it
 //    in pickAtts.
 //
