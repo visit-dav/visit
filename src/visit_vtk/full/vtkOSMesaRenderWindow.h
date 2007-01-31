@@ -33,7 +33,7 @@
 class vtkIdList;
 class vtkOSMesaRenderWindowInternal;
 
-class VISIT_VTK_EXPORTS vtkOSMesaRenderWindow : public vtkMesaRenderWindow
+class VISIT_VTK_API vtkOSMesaRenderWindow : public vtkMesaRenderWindow
 {
 public:
   static vtkOSMesaRenderWindow *New();

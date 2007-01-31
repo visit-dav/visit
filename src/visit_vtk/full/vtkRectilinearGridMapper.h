@@ -28,7 +28,7 @@
 class vtkRectilinearGrid;
 class vtkRenderer;
 
-class VISIT_VTI_API vtkRectilinearGridMapper : public vtkMapper 
+class VISIT_VTK_API vtkRectilinearGridMapper : public vtkMapper 
 {
 public:
   static vtkRectilinearGridMapper *New();
