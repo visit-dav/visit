@@ -34,6 +34,11 @@
 * DAMAGE.
 *
 *****************************************************************************/
+// Uncomment this line to make this plugin load array variables as
+// avtArrayMetaData objects and expressions for each of the components
+// Otherwise, this plugin will load components of the arrays as
+// avtScalarMetaData objects and an expression for the whole array
+//#define USE_DECOMPOSE
 
 #include <MaterialEncoder.h>
 
@@ -58,6 +63,8 @@
 #include <avtMaterial.h>
 #include <avtMixedVariable.h>
 #include <avtVariableCache.h>
+
+#include <Expression.h>
 
 #include <DebugStream.h>
 #include <snprintf.h>
@@ -904,6 +911,8 @@ PP_ZFileReader::InitializeVarStorage()
 //   Brad Whitlock, Tue Aug 8 10:09:50 PDT 2006
 //   Enabled revolved mesh on Windows.
 //
+//   Mark C. Miller, Sat Feb  3 00:42:05 PST 2007
+//   Added support for array variables
 // ****************************************************************************
 
 void
@@ -1008,81 +1017,201 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
     {
         for(int j = 0; j < numVars; ++j)
         {
-            bool problemSized = false;
             int length = 1;
+            int freeDimNums[10] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
+            int freeDimSizes[10] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
+            int numFreeDims = 0;
+            int numDims;
+            int kmaxDim = -1, lmaxDim = -1, cyclesDim = -1;
             syment *ep = 0;
 
             // Check to see if the  variable is problem sized.
             if((ep = PD_inquire_entry(pdbPtr, varList[j], 0, NULL)) != NULL)
             {
-                // Figure out the number of dimensions and the number of
-                // elements that are in the entire array.
+                // Figure out which of the dimension are kmax, lmax,
+                // and cycles, if applicable.
+                int dimNum = 0;
+                int freeDimNum = 0;
                 dimdes *dimptr = PD_entry_dimensions(ep);
                 while(dimptr != 0)
                 {
-                    length *= dimptr->number;
+                    if ((kmaxDim == -1) && (kmax == dimptr->number))
+                        kmaxDim = dimNum;
+                    else if ((lmaxDim == -1) && (lmax == dimptr->number))
+                        lmaxDim = dimNum;
+                    else if ((cyclesDim == -1) && (nCycles > 1) &&
+                             (nCycles == dimptr->number))
+                        cyclesDim = dimNum;
+                    dimNum++;
                     dimptr = dimptr->next;
                 }
 
-                problemSized = (length == problemSize);
+                // figure out which dims are the 'free' dims of the array
+                int dimCount = dimNum;
+                dimNum = 0;
+                dimptr = PD_entry_dimensions(ep);
+                while(dimptr != 0)
+                {
+                    length *= dimptr->number;
+
+                    if ((dimNum != kmaxDim) && (dimNum != lmaxDim) &&
+                        (dimNum != cyclesDim))
+                    {
+                        freeDimNums[freeDimNum] = dimNum;
+                        freeDimSizes[freeDimNum] = dimptr->number;
+                        freeDimNum++;
+                    }
+                    dimNum++;
+                    dimptr = dimptr->next;
+                }
+                numFreeDims = freeDimNum;
+                numDims = dimNum;
             }
 
-            //
-            // If the variable is problem sized then consider it as a
-            // candidate for being a plottable variable.
-            //
-            if(problemSized)
+            if ((kmaxDim == -1) || (lmaxDim == -1) || 
+                ((numDims > 2) && (nCycles > 1) && (cyclesDim == -1)))
             {
-                debug4 << "\t" << varList[j] << " (problem sized)";
-                char *s = strstr(varList[j], "@");
-                if(s != 0)
+                debug4 << "\t" << varList[j] << " skipped because dimensions "
+                    "don't coincide with mesh" << endl;
+                continue;
+            }
+
+            char *s = strstr(varList[j], "@");
+            if (s == 0)
+            {
+                debug4 << "\t" << varList[j] << " skipped because it is "
+                    "missing separator character '@'" << endl;
+                continue;
+            }
+
+            debug4 << "\t" << varList[j] << " (problem sized x " << length/problemSize << ")";
+
+            int len = s - varList[j];
+            char *newCStr = new char[len + 1];
+            strncpy(newCStr, varList[j], len);
+            newCStr[len] = '\0';
+            std::string newStr(newCStr);
+
+            avtCentering centering;
+            if(VariableIsNodal(newStr))
+            {
+                centering = AVT_NODECENT;
+                debug4 << "(nodal)";
+            }
+            else
+            {
+                centering = AVT_ZONECENT;
+                debug4 << "(zonal)";
+            }
+
+            debug4 << " added as " << newCStr << endl;
+
+            // add logical, revolved, and mesh equivalents of this var
+            const char *const meshNames[] = {"logical_mesh", "revolved_mesh", "mesh"};
+            for (int m = 0; m < 3; m++)
+            {
+#if defined (_WIN32)
+                if (m == 1) continue; // skip revolved mesh on windows
+#endif
+                std::string theMeshName = meshNames[m];
+                std::string theVarName = theMeshName + "/" + newStr;
+
+                if (numFreeDims == 0)
                 {
-                    int len = s - varList[j];
-                    char *newCStr = new char[len + 1];
-                    strncpy(newCStr, varList[j], len);
-                    newCStr[len] = '\0';
-                    std::string newStr(newCStr);
-
-                    avtCentering centering;
-                    if(VariableIsNodal(newStr))
-                    {
-                        centering = AVT_NODECENT;
-                        debug4 << "(nodal)";
-                    }
-                    else
-                    {
-                        centering = AVT_ZONECENT;
-                        debug4 << "(zonal)";
-                    }
-
-                    debug4 << " added as " << newCStr << endl;
-
-                    // Add the variable over the logical mesh to the metadata.
-                    std::string logicalMeshVar(std::string("logical_mesh/") +
-                                               newStr);
                     avtScalarMetaData *smd = new avtScalarMetaData(
-                        logicalMeshVar, "logical_mesh", centering);
+                        theVarName, theMeshName, centering);
                     md->Add(smd);
+                }
+                else
+                {
+                    int c;
+                    int totSize = 1;
+                    for (c = 0; c < numFreeDims; c++)
+                        totSize *= freeDimSizes[c];
 
-                    // Add the variable over the revolved mesh.
-                    std::string revolvedMeshVar(std::string("revolved_mesh/") +
-                                                newStr);
-                    smd = new avtScalarMetaData(revolvedMeshVar,
-                        "revolved_mesh", centering);
-                    md->Add(smd);
+#ifdef USE_DECOMPOSE
+                    avtArrayMetaData *amd = new avtArrayMetaData(theVarName, theMeshName,
+                        centering, totSize);
+#endif
 
-                    // Add the variable over the mesh to the metadata.
-                    std::string meshVar(std::string("mesh/") + newStr);
-                    smd = new avtScalarMetaData(meshVar, "mesh", centering);
-                    md->Add(smd);
+                    //
+                    // Build component names and for each component add either
+                    // avtScalarMetaData objects or define as expressions
+                    //
+                    std::vector<std::string> compNames;
+                    std::string composeStr = "array_compose(";
+                    int dimIdx[10] = {0,0,0,0,0,0,0,0,0,0};
+                    for (c = 0; c < totSize; c++)
+                    {
+                        int fd;
 
-                    // Add the variable to the variable map.
-                    VariableData *v = new VariableData(varList[j]);
-                    varStorage[newStr] = v;
+                        std::string compVarName = theVarName + "_comps/comp";
+                        for (fd = 0; fd < numFreeDims; fd++)
+                        {
+                            char thisComp[10];
+                            SNPRINTF(thisComp, sizeof(thisComp), "_%03d", dimIdx[fd]);
+                            compVarName += thisComp;
+                        }
+                        compNames.push_back(compVarName);
+                        composeStr += ("<" + compVarName + ">");
+                        if (c < totSize - 1)
+                            composeStr += ",";
 
-                    delete [] newCStr;
+                        //
+                        // Add either an expression or scalar object for this comp
+                        //
+#ifdef USE_DECOMPOSE
+                        char def[200];
+                        SNPRINTF(def, sizeof(def), "array_decomose(<%s>,%d)",
+                            theVarName.c_str(), c);
+                        Expression e;
+                        e.SetName(compVarName);
+                        e.SetDefinition(def);
+                        e.SetType(Expression::ScalarMeshVar);
+                        md->AddExpression(&e);
+#else
+                        debug5 << "Adding variable \"" << compVarName << "\" on mesh \"" << theMeshName << "\"" << endl;
+                        avtScalarMetaData *smd = new avtScalarMetaData(
+                            compVarName, theMeshName, centering);
+                        md->Add(smd);
+#endif
+
+                        //
+                        // Update this component's logical indexing
+                        //
+                        for (fd = 0; fd < numFreeDims; fd++)
+                        {
+                            if (dimIdx[fd] < freeDimSizes[fd] - 1)
+                            {
+                                dimIdx[fd]++;
+                                break;
+                            }
+                            else
+                            {
+                                dimIdx[fd] = 0;
+                                if (fd+1 < numFreeDims)
+                                    dimIdx[fd+1]++;
+                            }
+                        }
+                    }
+                    composeStr += ")";
+#ifdef USE_DECOMPOSE
+                    amd->compNames = compNames
+#else
+                    Expression e;
+                    e.SetName(theVarName);
+                    e.SetDefinition(composeStr);
+                    e.SetType(Expression::ArrayMeshVar);
+                    md->AddExpression(&e);
+#endif
                 }
             }
+
+            // Add the variable to the variable map.
+            VariableData *v = new VariableData(varList[j]);
+            varStorage[newStr] = v;
+
+            delete [] newCStr;
         }
 
         debug4 << endl << endl;
@@ -2830,6 +2959,8 @@ PP_ZFileReader::GetRayVar(int state, const std::string &varStr)
 //   routine only be called on non-revolved meshes since it's not worth it
 //   to revolve that information.
 //
+//   Mark C. Miller, Sat Feb  3 00:42:05 PST 2007
+//   Added support for array variables and their components
 // ****************************************************************************
 
 vtkDataArray *
@@ -2853,6 +2984,7 @@ PP_ZFileReader::GetVar(int state, const char *var)
     std::string revolved("revolved_mesh/");
     std::string ray("ray/");
     std::string ray3d("ray3d/");
+    std::string compBase("_comps/comp_");
     bool wantRevolvedMesh = false;
     if(varStr.substr(0, meshName.size()) == meshName)
         varStr = varStr.substr(meshName.size());
@@ -2874,10 +3006,55 @@ PP_ZFileReader::GetVar(int state, const char *var)
         return GetRayVar(state, varStr);
     }
 
+#ifndef USE_DECOMPOSE
+    //
+    // See if this is really a component of a VisIt array variable
+    // and determine its indexing, if so
+    //
+    bool isArrayComponent = false;
+    int dimIdx[10] = {0,0,0,0,0,0,0,0,0,0};
+    std::string::size_type anStart = varStr.find(compBase);
+    if (anStart != std::string::npos)
+    {
+        int j = 0;
+        std::string::size_type d = anStart + compBase.size();
+        while (d < varStr.size())
+        {
+            dimIdx[j++] = atoi(varStr.substr(d,3).c_str());
+            d += 4;
+        }
+        isArrayComponent = true;
+        varStr = varStr.substr(0, anStart);
+    }
+#endif
+
     //
     // Read in the data for the variable if it hasn't been read yet.
     //
     ReadVariable(varStr);
+    VariableData *data = varStorage[varStr];
+
+    //
+    // Compute offset into array data read from PDB
+    //
+    int offset = 0;
+    int mult = lmax * kmax;
+    if (isArrayComponent)
+    {
+        int freeDimNum = 0;
+        for (int r = 0; r < data->nDims; r++)
+        {
+            // skip dimensions we already account for
+            if ((data->dims[r] == kmax) ||
+                (data->dims[r] == lmax) ||
+                (data->dims[r] == nCycles))
+                continue;
+
+            offset += mult * dimIdx[freeDimNum++];
+            mult *= data->dims[r];
+        }
+    }
+    offset += mult * ((state < nCycles) ? state : 0);
 
     //
     // Determine the variable centering and use that to figure out how
@@ -2913,8 +3090,6 @@ PP_ZFileReader::GetVar(int state, const char *var)
     // Now that the variable is in memory, put it in a VTK data structure.
     //
     vtkDataArray *scalars = 0;
-    VariableData *data = varStorage[varStr];
-
     if(data->dataType == INTEGERARRAY_TYPE)
     {
         vtkIntArray *iscalars = vtkIntArray::New();
@@ -2924,7 +3099,7 @@ PP_ZFileReader::GetVar(int state, const char *var)
 
         // Get a pointer to the start of the VariableData object's data array.
         const int *dataPointer = (const int *)data->data;
-        dataPointer += ((state < nCycles) ? (state * nnodes) : 0);
+        dataPointer += offset;
 
         //
         // Copy the data appropriately.
@@ -2949,7 +3124,7 @@ PP_ZFileReader::GetVar(int state, const char *var)
 
         // Get a pointer to the start of the VariableData object's data array.
         const double *dataPointer = (const double *)data->data;
-        dataPointer += ((state < nCycles) ? (state * nnodes) : 0);
+        dataPointer += offset;
 
         //
         // Copy the data appropriately.
@@ -2974,7 +3149,7 @@ PP_ZFileReader::GetVar(int state, const char *var)
 
         // Get a pointer to the start of the VariableData object's data array.
         const float *dataPointer = (const float *)data->data;
-        dataPointer += ((state < nCycles) ? (state * nnodes) : 0);
+        dataPointer += offset;
 
         //
         // Copy the data appropriately.
