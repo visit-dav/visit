@@ -198,6 +198,9 @@ avtOpenGL3DTextureVolumeRenderer::~avtOpenGL3DTextureVolumeRenderer()
 //    I made it revert (for Windows) to glTexImage3D_ptr if the
 //    texture3D extension is not available.
 //
+//    Hank Childs, Tue Feb  6 15:41:58 PST 2007
+//    Give an error that the user can see if 3D texturing is not available.
+//
 // ****************************************************************************
 
 void
@@ -211,6 +214,7 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
                                          float *gx, float *gy, float *gz,
                                          float *gmn)
 {
+    static bool haveIssuedWarning = false;
 #ifndef VTK_IMPLEMENT_MESA_CXX
     // OpenGL mode
 #ifdef HAVE_LIBGLEW
@@ -226,12 +230,26 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
         if(glTexImage3D_ptr == 0)
         {
             debug1 << "The glTexImage3D function was not located." << endl;
+            if (!haveIssuedWarning)
+            {
+                avtCallback::IssueWarning("3D textured volume rendering is not "
+                           "available, because the OpenGL functions cannot be "
+                           "located.");
+                haveIssuedWarning = true;
+            }
             return;
         }
 #else
         debug1 << "avtOpenGL3DTextureVolumeRenderer::Render: "
                   "returning because there is no texture3D extension."
                << endl;
+        if (!haveIssuedWarning)
+        {
+            avtCallback::IssueWarning("3D textured volume rendering is not "
+                       "available, because the 3D texturing extensions can "
+                       "not be located.");
+            haveIssuedWarning = true;
+        }
         return;
 #endif
     }
@@ -242,6 +260,12 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
               "returning because there is no texture3D. The "
               "version of OpenGL is too old."
            << endl;
+    if (!haveIssuedWarning)
+    {
+        avtCallback::IssueWarning("3D textured volume rendering is not "
+                   "available, because the version of OpenGL is too old.");
+        haveIssuedWarning = true;
+    }
     return;
 #endif
 #endif

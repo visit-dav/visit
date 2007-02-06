@@ -276,7 +276,12 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
 //    Kathleen Bonnell, Fri Mar  4 13:55:09 PST 2005 
 //    Account for Log scaling when determining vmin and vmax. 
 //
+//    Hank Childs, Tue Feb  6 15:39:01 PST 2007
+//    Treat the values for "min" and "max" as min and max, not as log(min),
+//    log(max).  That is 6 was being treated as 10^6.  No longer.
+//
 // ****************************************************************************
+
 void
 avtVolumeRenderer::Initialize(vtkDataSet *ds)
 {
@@ -301,6 +306,10 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
     }
     else //if (atts.GetScaling() == VolumeAttributes::Log10)
     {
+        if (vmin > 0)
+            vmin = log10(vmin);
+        if (vmax > 0)
+            vmax = log10(vmax);
         if (varmin > 0)
         {
             float logVarMin = log10(varmin);
@@ -317,10 +326,14 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
     if (atts.GetUseColorVarMin())
     {
         vmin = atts.GetColorVarMin();
+        if (atts.GetScaling() == VolumeAttributes::Log10 && vmin > 0)
+            vmin = log10(vmin);
     }
     if (atts.GetUseColorVarMax())
     {
         vmax = atts.GetColorVarMax();
+        if (atts.GetScaling() == VolumeAttributes::Log10 && vmax > 0)
+            vmax = log10(vmax);
     }
     if (vmin >= vmax)
     {
@@ -347,10 +360,14 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
         if (atts.GetUseColorVarMin())
         {
             omin = atts.GetColorVarMin();
+            if (atts.GetScaling() == VolumeAttributes::Log10 && omin > 0)
+                omin = log10(omin);
         }
         if (atts.GetUseColorVarMax())
         {
             omax = atts.GetColorVarMax();
+            if (atts.GetScaling() == VolumeAttributes::Log10 && omax > 0)
+                omax = log10(omax);
         }
     }
     if (omin >= omax)
@@ -625,7 +642,12 @@ avtVolumeRenderer::SetAtts(const AttributeGroup *a)
 //    Kathleen Bonnell, Fri Mar  4 13:55:09 PST 2005 
 //    Account for different scaling methods. 
 //
+//    Hank Childs, Tue Feb  6 15:37:12 PST 2007
+//    Accurately account for log plotting.  Includes dismissing the -1e+38
+//    when looking for negative values.
+//
 // ****************************************************************************
+
 bool
 avtVolumeRenderer::GetScalars(vtkDataSet *ds, vtkDataArray *&data,
                                   vtkDataArray *&opac)
@@ -671,7 +693,8 @@ avtVolumeRenderer::GetScalars(vtkDataSet *ds, vtkDataArray *&data,
         vtkDataArray *logData = data->NewInstance();
         logData->SetNumberOfTuples(data->GetNumberOfTuples());
         logData->SetName(data->GetName());
-        double *range = data->GetRange();
+        float range[2];
+        GetRange(data, range[0], range[1]);
         if (atts.GetUseColorVarMin())
         {
             range[0] = atts.GetColorVarMin();
@@ -695,16 +718,15 @@ avtVolumeRenderer::GetScalars(vtkDataSet *ds, vtkDataArray *&data,
             {
                 f = log10(f);
             }
-            else 
+            else if (f > -1e+37)
             {
                 f = log10(range[0]);
             }
             logData->SetTuple1(i, f);
         }
-        range = logData->GetRange();
+        GetRange(logData, range[0], range[1]);
         data = logData;
         data->Register(NULL);
-        range = data->GetRange();
     }
     else if (atts.GetScaling() == VolumeAttributes::Skew)
     {

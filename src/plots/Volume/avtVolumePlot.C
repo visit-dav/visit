@@ -231,6 +231,10 @@ avtVolumePlot::Create()
 //    Eric Brugger, Wed Jul 16 11:35:47 PDT 2003
 //    Modified to work with the new way legends are managed.
 //
+//    Hank Childs, Tue Feb  6 15:12:04 PST 2007
+//    Have the legend reflect the scaling (log, linear, skew).  Also make sure
+//    that accurate numbers are put the legends range.
+//
 // ****************************************************************************
 
 void
@@ -243,8 +247,9 @@ avtVolumePlot::SetAtts(const AttributeGroup *a)
 
     SetLegendOpacities();
 
-    double min, max;
-    varLegend->GetRange(min, max);
+    double min = 0., max = 1.;
+    if (*(mapper->GetInput()) != NULL)
+        mapper->GetRange(min, max);
     if (atts.GetUseColorVarMin())
     {
         min = atts.GetColorVarMin();
@@ -254,6 +259,12 @@ avtVolumePlot::SetAtts(const AttributeGroup *a)
         max = atts.GetColorVarMax();
     }
     varLegend->SetRange(min, max);
+    if (atts.GetScaling() == VolumeAttributes::Linear)
+        varLegend->SetScaling(0);
+    else if (atts.GetScaling() == VolumeAttributes::Log10)
+        varLegend->SetScaling(1);
+    else if (atts.GetScaling() == VolumeAttributes::Skew)
+        varLegend->SetScaling(2, atts.GetSkewFactor());
 
     SetLegend(atts.GetLegendFlag());
 }

@@ -807,6 +807,9 @@ avtExodusFileFormat::GetVectorVar(int ts, const char *var)
 //    Rename cache object to avoid namespace conflict with base class.
 //    Also increment reference counts of arrays that are becoming void refs.
 //
+//    Hank Childs, Tue Feb  6 15:47:22 PST 2007
+//    Do not assume that global node ids exist.
+//
 // ****************************************************************************
 
 void *
@@ -888,7 +891,8 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
         //
         // Return what we came here for
         //
-        gnodeIds->Register(NULL);
+        if (gnodeIds != NULL)
+            gnodeIds->Register(NULL);
         df = avtVariableCache::DestructVTKObject;
         return (void*) gnodeIds;
     }

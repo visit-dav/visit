@@ -123,6 +123,10 @@
 #    Mark C. Miller, Thu Jan 25 20:15:18 PST 2007
 #    I added mkgrdbl.
 #
+#    Hank Childs, Tue Feb  6 09:38:58 PST 2007
+#    Fix bug with installing on Macs.  There are two files named "gui" 
+#    for Mac, which screwed up an assumption.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -375,7 +379,9 @@ cd distribution/visit/$version
 if("$os" == "darwin") then
     set platformDir = "darwin-ppc"
 else
-    set findgui = `find . -name gui`
+    # On Mac, there are multiple "gui"s that match the find command.
+    # The "head -1" finds the first one, which is the one we want.
+    set findgui = `find . -name gui | head -1`
     set platformBin = `echo "$findgui" | sed -e "s/gui//"`
     set savepwd = `pwd`
     cd $platformBin/..

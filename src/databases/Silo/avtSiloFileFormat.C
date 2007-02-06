@@ -96,6 +96,8 @@
 
 #include <visit-config.h>
 
+#include <snprintf.h>
+
 #ifdef PARALLEL
 #include <mpi.h>
 #include <avtParallel.h>
@@ -6646,6 +6648,10 @@ avtSiloFileFormat::GetRelativeVarName(const char *initVar, const char *newVar,
 //    Mark C. Miller, Wed Dec 13 16:55:30 PST 2006
 //    Added code to use explicit multivar to multimesh mapping information,
 //    when available.
+//
+//    Mark C. Miller, Tue Feb  6 19:39:35 PST 2007
+//    Added Brad's fix for reducing large amount of string matching in 
+//    'fuzzy' matching logic. Also added matching on block counts.
 // ****************************************************************************
 
 string
@@ -6739,21 +6745,31 @@ avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
     SplitDirVarName(subMesh, curdir, dir, varmesh);
     for (i = 0 ; i < size ; i++)
     {
-        if (firstSubMeshVarName[i] == varmesh)
+        if (firstSubMeshVarName[i] == varmesh &&
+            blocksForMesh[i] == nblocks)
         {
+#ifndef MDSERVER
+
+            string *dirs = new string[nblocks];
+            for (int k = 0; k < nblocks; k++)
+                SplitDirVarName(varname[k], curdir, dirs[k], varmesh);
+
             for (int j = 0; j < allSubMeshDirs[i].size(); j++)
             {
                 int match = -1;
                 for (int k = 0; k < nblocks && match == -1; k++)
                 {
-                    SplitDirVarName(varname[k], curdir, dir, varmesh);
-                    if (dir == allSubMeshDirs[i][j])
+                    if (dirs[k] == allSubMeshDirs[i][j])
                     {
                         match = k;
                     }
                 }
                 blocksForMultivar[name].push_back(match);
             }
+
+            delete [] dirs;
+
+#endif
             return actualMeshName[i];
         }
     }
@@ -6763,10 +6779,11 @@ avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
     // levels above us determine what the right thing to do is.
     //
     char str[1024];
-    sprintf(str, "Was not able to match variable \"%s\" and its first \n" 
-                 "non-empty submesh %s in file %s to a standard multi-mesh.\n"
-                 "This typically leads to failure.\n",
-            varname[meshnum], subMesh, subMeshWithFile);
+    SNPRINTF(str, sizeof(str), "Was not able to match multivar \"%s\" and its first \n" 
+                 "non-empty submesh \"%s\" in file %s to a multi-mesh.\n"
+                 "This typically leads to the variable being invalidated\n"
+                 "(grayed out) in the GUI",
+            name, varname[meshnum], subMeshWithFile);
     EXCEPTION1(SiloException, str);
 }
 
@@ -7922,6 +7939,9 @@ avtSiloFileFormat::CalcExternalFacelist(DBfile *dbfile, char *mesh)
 //    Hank Childs, Thu Sep 20 17:43:31 PDT 2001
 //    Set nDomains with early returns.
 //
+//    Mark C. Miller, Thu Feb  1 19:44:03 PST 2007
+//    Exclude CSG meshes from consideration
+//
 // ****************************************************************************
 
 void
@@ -7941,9 +7961,19 @@ avtSiloFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
     // If there are different sized meshes, then we need to give up.  
     // Check to see.
     //
-    int blocks = metadata->GetMesh(0)->numBlocks;
-    for (i = 1 ; i < nMeshes ; i++)
+    int blocks = -1;
+    int firstNonCSGMesh = -1;
+    for (i = 0 ; i < nMeshes ; i++)
     {
+        if (metadata->GetMesh(i)->meshType == AVT_CSG_MESH)
+            continue;
+
+        if (blocks == -1)
+            blocks = metadata->GetMesh(i)->numBlocks;
+
+        if (firstNonCSGMesh == -1)
+            firstNonCSGMesh = i;
+
         if (metadata->GetMesh(i)->numBlocks != blocks)
         {
             debug1 << "Cannot populate I/O Information since the meshes have "
@@ -7966,7 +7996,7 @@ avtSiloFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
     // the same and pick the first one.  This is done for I/O optimizations, so
     // it is okay to be wrong if our assumption is not true.
     //
-    string meshname = metadata->GetMesh(0)->name;
+    string meshname = metadata->GetMesh(firstNonCSGMesh)->name;
 
     DBmultimesh *mm = GetMultimesh("", meshname.c_str());
     if (mm == NULL)
