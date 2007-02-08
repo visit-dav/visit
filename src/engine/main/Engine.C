@@ -1871,6 +1871,11 @@ Engine::EngineAbortCallback(void *data)
 //    Mark C. Miller, Fri Nov 11 09:45:42 PST 2005
 //    Adding timing stuff to throttle progress messages to once per second
 //
+//    Hank Childs, Thu Feb  8 10:37:19 PST 2007
+//    Add better support for queries over time.  They have a ton of stages,
+//    but the current logic makes sure each stage is reported.  If there is
+//    a ton of stages, then we should allow for some stages to not be reported.
+//
 // ****************************************************************************
 
 void
@@ -1882,7 +1887,7 @@ Engine::EngineUpdateProgressCallback(void *data, const char *type, const char *d
         EXCEPTION1(VisItException,
                    "EngineUpdateProgressCallback called with no RPC set.");
 
-    if (total == 0)
+    if (total == 0 && rpc->GetMaxStageNum() < 30)
     {
         if (cur == 0)
         {
@@ -1911,7 +1916,12 @@ Engine::EngineUpdateProgressCallback(void *data, const char *type, const char *d
         static double timeOfLastProgressCallback = -1.0;
         double timeOfThisProgressCallback = TOA_THIS_LINE;
 
-        if (timeOfThisProgressCallback < timeOfLastProgressCallback + 1.0)
+        double timeBetween = 1.0;
+        if (rpc->GetMaxStageNum() >= 30)
+            timeBetween = 0.1;
+        if (total == 0 && cur != 0)
+            rpc->SetCurStageNum(rpc->GetCurStageNum()+1);
+        if (timeOfThisProgressCallback < timeOfLastProgressCallback + timeBetween)
             return;
 
         timeOfLastProgressCallback = timeOfThisProgressCallback;

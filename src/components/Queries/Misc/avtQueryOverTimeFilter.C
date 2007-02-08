@@ -85,6 +85,9 @@ using std::string;
 //    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
 //    Initialize useTimeforXAxis and nResultsToStore. 
 //
+//    Hank Childs, Thu Feb  8 09:54:01 PST 2007
+//    Initialize numAdditionalFilters.
+//
 // ****************************************************************************
 
 avtQueryOverTimeFilter::avtQueryOverTimeFilter(const AttributeGroup *a)
@@ -94,6 +97,24 @@ avtQueryOverTimeFilter::avtQueryOverTimeFilter(const AttributeGroup *a)
     finalOutputCreated = false;
     useTimeForXAxis = true;
     nResultsToStore = 1;
+
+    TRY
+    {
+        QueryAttributes qatts = atts.GetQueryAtts();
+        qatts.SetTimeStep(currentTime);
+        avtDataObjectQuery *query = avtQueryFactory::Instance()->
+            CreateQuery(&qatts);
+        numAdditionalFilters = query->GetNFilters()+1; // 1 for query itself
+    }
+    CATCHALL(...)
+    {
+        numAdditionalFilters = 2; // it's a guess
+        debug1 << "There was a problem trying to instantiate a query for "
+               << "a query over time.  Stifling the error handling, because "
+               << "this problem will be caught later when we are better "
+               << "prepared to do error handling." << endl;
+    }         
+    ENDTRY
 }
 
 

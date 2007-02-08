@@ -121,6 +121,10 @@ avtTimeLoopFilter::~avtTimeLoopFilter()
 //    Hank Childs, Tue Sep  5 14:07:59 PDT 2006
 //    Reset the timeout through a callback, in case this takes a long time.
 //
+//    Hank Childs, Wed Feb  7 13:18:28 PST 2007
+//    Coordinate with the terminating source (which issues progress
+//    updates) to get better progress.
+//
 // ****************************************************************************
 
 bool
@@ -132,6 +136,14 @@ avtTimeLoopFilter::Update(avtPipelineSpecification_p spec)
     avtSILRestriction_p orig_SILR = orig_DS->GetRestriction();
 
     FinalizeTimeLoop();
+
+    //
+    // This will tell the terminating source how many executions we are doing.
+    // That in turn will allow the progress to work correctly.
+    //
+    int numIters = (actualEnd-startTime)/stride+1;
+    avtTerminatingSource *src = GetTerminatingSource();
+    src->SetNumberOfExecutions(numIters);
 
     for (i = startTime; i < actualEnd; i+= stride)
     {

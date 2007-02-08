@@ -7011,12 +7011,19 @@ avtGenericDatabase::CreateStructuredIndices(avtDatasetCollection &dsc,
 //    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
 //    Changed 'vector<int>' to 'intVector', and 'vector<bool>' to 'boolVector'.
 //
+//    Hank Childs, Thu Feb  8 09:26:19 PST 2007
+//    Add a stage for the transform manager ... it is always called.
+//
 // ****************************************************************************
 
 int
 avtGenericDatabase::NumStagesForFetch(avtDataSpecification_p spec)
 {
     int numStages = 1;   // Always one for I/O.
+    
+    bool  alwaysCallTransformManager = true;
+    if (alwaysCallTransformManager)
+        numStages++;
 
     avtSILRestriction_p silr = spec->GetRestriction();
     avtSILRestrictionTraverser trav(silr);
