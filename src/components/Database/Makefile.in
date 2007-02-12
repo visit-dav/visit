@@ -148,6 +148,10 @@
 #
 #    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 #    Aded Database/avtTransformManager.C
+#
+#    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
+#    Added $(GLEW_LIBS)  
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -192,7 +196,7 @@ CPPFLAGS=-I../../include @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libdatabase
-LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)
+LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS)
 COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lplugin -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk $(LIBS_FOR_MACOSX_PREBINDING)
 SERLIBS=$(COMMONLIBS) -lmir_ser -lpipeline_ser -lavtmath_ser $(VTK_LIBS)
 PARLIBS=$(COMMONLIBS) -lmir_par -lpipeline_par -lavtmath_par $(VTK_LIBS) @SHLIB_MPI_LIBS@

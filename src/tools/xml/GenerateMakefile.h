@@ -180,6 +180,10 @@
 //    Brad Whitlock, Mon Jan 30 11:49:15 PDT 2006
 //    Added QUI_LIBS to the link line for GUI plugins.
 //
+//    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
+//    Re ordered $(PY_CXXFLAGS)
+//    Added $(GLEW_LIBS) for Mac dependences
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -327,11 +331,11 @@ class MakefileGeneratorPlugin
         if(type == "database")
             out << "CXXFLAGS=$(CXXFLAGSORIG)";
         else
-            out << "CXXFLAGS=$(CXXFLAGSORIG) $(QT_CXXFLAGS) $(PY_CXXFLAGS)";
+            out << "CXXFLAGS=$(CXXFLAGSORIG) $(QT_CXXFLAGS)";
         for (int i=0; i<cxxflags.size(); i++)
             out << " " << cxxflags[i];
         out << endl;
-        out << "CPPFLAGS=$(CPPFLAGSORIG) $(VTK_INCLUDE) -I. -I"<<visithome<<"/include -I"<<visithome<<"/include/visit" << endl;
+        out << "CPPFLAGS=$(CPPFLAGSORIG) $(VTK_INCLUDE) -I. -I"<<visithome<<"/include -I"<<visithome<<"/include/visit $(PY_CXXFLAGS)" << endl;
         if(type == "database")
             out << "LDFLAGS=$(LDFLAGSORIG) ";
         else
@@ -408,8 +412,8 @@ class MakefileGeneratorPlugin
                 out << libs[i] << " ";
             out << endl;
             out << "" << endl;
-            out << "ELIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)" << endl;
-            out << "VLIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)" << endl;
+            out << "ELIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS)" << endl;
+            out << "VLIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS)" << endl;
             out << "ILIBS=" << endl;
             out << "GLIBS=-lgui -lmdserverproxy -lviewerproxy -lproxybase "
                    "-lmdserverrpc -lviewerrpc -lwinutil -ldbatts -lavtexceptions "
@@ -555,8 +559,8 @@ class MakefileGeneratorPlugin
                 out << libs[i] << " ";
             out << endl;
             out << "" << endl;
-            out << "ELIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)" << endl;
-            out << "VLIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)" << endl;
+            out << "ELIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS)" << endl;
+            out << "VLIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS)" << endl;
             out << "ILIBS=" << endl;
             out << "GLIBS=-lgui -lmdserverproxy -lviewerproxy -lproxybase -lmdserverrpc -lviewerrpc -lwinutil -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lplugin -lexpr -lparser -lutility -lI$(PLUGINNAME) $(QT_LDFLAGS) $(QT_LIBS) $(QUI_LIBS) $(X_LIBS)" << endl;
             out << "SLIBS=-lstate -lmisc -lcomm -lutility $(PY_LIB) -lI$(PLUGINNAME)" << endl;
@@ -625,8 +629,8 @@ class MakefileGeneratorPlugin
                 out << libs[i] << " ";
             out << endl;
             out << "" << endl;
-            out << "ELIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)" << endl;
-            out << "MLIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)" << endl;
+            out << "ELIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS)" << endl;
+            out << "MLIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS)" << endl;
             out << "ILIBS=" << endl;
             out << "MLIBS=-lpipeline_ser -ldatabase_ser -lmir_ser -lavtmath_ser -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk  -L" << visitplugininstall << "/databases -lI$(PLUGINNAME) $(MLIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;
             out << "ESERLIBS=-lpipeline_ser -ldatabase_ser -lmir_ser -lavtmath_ser -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk  -L" << visitplugininstall << "/databases -lI$(PLUGINNAME) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;

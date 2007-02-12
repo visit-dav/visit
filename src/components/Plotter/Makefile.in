@@ -194,6 +194,9 @@
 #    Brad Whitlock, Thu Nov 3 11:05:59 PDT 2005
 #    Added support for Mesa vs OpenGL build.
 #
+#    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
+#    Added $(GLEW_LIBS)  for Mac dependences
+#
 ##############################################################################
 
 ##
@@ -228,7 +231,7 @@ CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o) $(SEROPENGL_OBJ) $(SERMESA_OBJ)
 PAROBJ=$(SRC:.C=_par.o) $(PAROPENGL_OBJ) $(PARMESA_OBJ)
 LIB=libplotter
-LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)
+LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS)
 SERLIBS=-ldbatts -lmisc -lcomm -lstate -lexpr -lparser -lutility -lpipeline_ser -lavtview -lavtmath_ser -lavtfilters_ser -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS)
 PARLIBS=-ldbatts -lmisc -lcomm -lstate -lexpr -lparser -lutility -lpipeline_par -lavtview -lavtmath_par -lavtfilters_par -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS)
 

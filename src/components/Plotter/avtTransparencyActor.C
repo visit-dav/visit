@@ -935,6 +935,11 @@ avtTransparencyActor::SetUpActor(void)
 //    getting shipped down as is (i.e. not poly data).  This means we must
 //    add normals and remove ghost data.
 //
+//    Hank Childs, Mon Feb 12 14:02:16 PST 2007
+//    Make sure that the colors that get generated are directly related
+//    to the poly data we are rendering.  Some mappers are linked to 
+//    vtkRectilinearGrids or vtkStructuredGrids.
+//
 // ****************************************************************************
 
 void
@@ -1041,6 +1046,7 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
         pd = gf->GetOutput();
         pd->Update();
     }
+    mapper->SetInput(pd);
 
     //
     // Create the output dataset that we will be creating an RGBA field for.

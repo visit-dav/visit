@@ -306,10 +306,12 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
     }
     else //if (atts.GetScaling() == VolumeAttributes::Log10)
     {
-        if (vmin > 0)
-            vmin = log10(vmin);
-        if (vmax > 0)
-            vmax = log10(vmax);
+        // No need to do this ... vmin and vmax are already log10
+        // if (vmin > 0)
+        //     vmin = log10(vmin);
+        // if (vmax > 0)
+        //     vmax = log10(vmax);
+
         if (varmin > 0)
         {
             float logVarMin = log10(varmin);

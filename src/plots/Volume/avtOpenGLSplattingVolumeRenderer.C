@@ -107,6 +107,9 @@ avtOpenGLSplattingVolumeRenderer::avtOpenGLSplattingVolumeRenderer()
 //    an implementation of avtCustomRenderer, so it has no
 //    ReleaseGraphicsResources method.
 //
+//    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
+//    The gcc-4.x compiler no longer just warns about automatic type conversion.
+//
 // ****************************************************************************
 avtOpenGLSplattingVolumeRenderer::~avtOpenGLSplattingVolumeRenderer()
 {
@@ -114,7 +117,7 @@ avtOpenGLSplattingVolumeRenderer::~avtOpenGLSplattingVolumeRenderer()
     // Assumes context is current
     if (alphatexId != 0)
     {
-        glDeleteTextures(1, &alphatexId);
+        glDeleteTextures(1, (GLuint*)&alphatexId);
         alphatexId = 0;
     }
 }
@@ -167,6 +170,9 @@ avtOpenGLSplattingVolumeRenderer::~avtOpenGLSplattingVolumeRenderer()
 //    Eric Brugger, Tue Jul 27 11:46:25 PDT 2004
 //    Change a double constant to a float constant to fix a compile error.
 //
+//    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
+//    The gcc-4.x compiler no longer just warns about automatic type conversion.
+//
 // ****************************************************************************
 
 void
@@ -197,7 +203,7 @@ avtOpenGLSplattingVolumeRenderer::Render(vtkRectilinearGrid *grid,
                 alphatex[i*GRIDSIZE+j] = gu*gv;
             }
         }
-        glGenTextures(1, &alphatexId);
+        glGenTextures(1, (GLuint*)&alphatexId);
         glBindTexture(GL_TEXTURE_2D, alphatexId);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA,
                      GRIDSIZE,GRIDSIZE,0, GL_ALPHA, GL_FLOAT, alphatex);

@@ -74,6 +74,9 @@
 #    Brad Whitlock, Mon Jan 30 11:05:00 PDT 2006
 #    Added another MacOS X lib.
 #
+#    Thomas R. Treadway, Wed Feb  7 17:53:04 PST 2007
+#    Added $(GLEW_LIBS) for MacOS X.
+#
 ##############################################################################
 
 ##
@@ -93,7 +96,7 @@ CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@ @VTKQT_CPPFLAGS@
 
 OBJ=$(SRC:.C=.o)
 LIB=libqtviswindow
-LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)
+LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS)
 LIBS=-ldbatts -lviswindow_ser -lpipeline_ser -lavtfilters_ser -lavtmath_ser -lavtview -lavtexceptions -lplotter_ser -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lmisc -lstate -lcomm -lexpr -lparser -lutility $(LIBS_FOR_MACOSX_PREBINDING) @VTKQT_LIBS@ $(VTK_LIBS) $(X_LIBS)
 
 ##

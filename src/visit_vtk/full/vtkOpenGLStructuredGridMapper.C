@@ -14,6 +14,11 @@
      the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
      PURPOSE.  See the above copyright notice for more information.
 
+// Modifications:
+//
+//    Thomas R. Treadway, Wed Feb  7 16:29:06 PST 2007
+//    The gcc-4.x compiler no longer just warns about automatic type conversion.
+//
 =========================================================================*/
 #include "vtkOpenGLStructuredGridMapper.h"
 
@@ -153,7 +158,7 @@ void vtkOpenGLStructuredGridMapper::ReleaseGraphicsResources(vtkWindow *win)
   if (this->ColorTextureLoaded)
     {
         win->MakeCurrent();
-        glDeleteTextures(1, &this->ColorTextureName);
+        glDeleteTextures(1, (GLuint*)&this->ColorTextureName);
         this->ColorTextureLoaded = false;
     }
 }
@@ -803,6 +808,9 @@ vtkOpenGLStructuredGridMapper::MapScalarsWithTextureSupport(double opacity)
 //
 // Modifications:
 //
+//    Thomas R. Treadway, Wed Feb  7 16:29:06 PST 2007
+//    The gcc-4.x compiler no longer just warns about automatic type conversion.
+//
 // ****************************************************************************
 
 void
@@ -813,7 +821,7 @@ vtkOpenGLStructuredGridMapper::BeginColorTexturing()
 
     if(!this->ColorTextureLoaded)
     {
-        glGenTextures(1, &this->ColorTextureName);
+        glGenTextures(1, (GLuint*)&this->ColorTextureName);
         glBindTexture(GL_TEXTURE_1D, this->ColorTextureName);
 
 #ifdef GL_VERSION_1_2

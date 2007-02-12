@@ -1095,13 +1095,16 @@ vtkQtRenderWindow::GetEventPending()
 //
 // Modifications:
 //   
+//   Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
+//   The gcc-4.x compiler no longer just warns about automatic type conversion.
+//   
 // ****************************************************************************
 
 int
 vtkQtRenderWindow::GetDepthBufferSize()
 {
     int bits;
-    glGetIntegerv(GL_DEPTH_BITS, &bits);
+    glGetIntegerv(GL_DEPTH_BITS, (GLint*)&bits);
 
     return bits;
 }
