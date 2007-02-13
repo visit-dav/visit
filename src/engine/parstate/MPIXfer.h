@@ -37,6 +37,9 @@
 
 #ifndef MPI_XFER_H
 #define MPI_XFER_H
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
 #include <engine_parstate_exports.h>
 #include <Xfer.h>
 
@@ -74,6 +77,8 @@
 //    parallel simulation because slave processes need some way to know
 //    that the next command coming is visit-specific.
 //
+//    Mark C. Miller, Tue Feb 13 16:24:58 PST 2007
+//    Added VisIt_MPI_Bcast method
 // ****************************************************************************
 
 class ENGINE_PARSTATE_API MPIXfer : public Xfer
@@ -87,6 +92,9 @@ public:
 
     void SetEnableReadHeader(bool val);
     static void SetSlaveProcessInstructionCallback(void (*)());
+
+    static int VisIt_MPI_Bcast(void *buf, int count, MPI_Datatype datatype,
+                                int root, MPI_Comm comm);
 protected:
     bool ReadHeader();
 private:

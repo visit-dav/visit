@@ -42,10 +42,12 @@
 #include <BufferConnection.h>
 #include <AttributeSubject.h>
 #include <DebugStream.h>
+#include <TimingsManager.h>
 
 #include <visitstream.h>
 
 void (*MPIXfer::slaveProcessInstruction)() = NULL;
+const int UI_BCAST_TAG = GetUniqueStaticMessageTag();
 
 // ****************************************************************************
 // Method: MPIXfer::MPIXfer
@@ -280,7 +282,7 @@ MPIXfer::Process()
                     {
                         if (slaveProcessInstruction)
                             slaveProcessInstruction();
-                        MPI_Bcast((void *)&buf, 1, PAR_STATEBUFFER,
+                        VisIt_MPI_Bcast((void *)&buf, 1, PAR_STATEBUFFER,
                                   0, VISIT_MPI_COMM);
 
                         buf.nbytes = 0;
@@ -292,7 +294,7 @@ MPIXfer::Process()
                 {
                     if (slaveProcessInstruction)
                         slaveProcessInstruction();
-                    MPI_Bcast((void *)&buf, 1, PAR_STATEBUFFER,
+                    VisIt_MPI_Bcast((void *)&buf, 1, PAR_STATEBUFFER,
                               0, VISIT_MPI_COMM);
                 }
 
@@ -376,5 +378,172 @@ MPIXfer::SetSlaveProcessInstructionCallback(void (*spi)())
     slaveProcessInstruction = spi;
 }
 
+// ****************************************************************************
+//  Function: VisIt_MPI_Bcast 
+//
+//  Purpose: A smarter broadcast that gives VisIt control over polling
+//  behavior. MPI's Bcast method can wind up doing a 'spin-wait' eating cpu
+//  resources. Our implementation, here, is both similar and different to
+//  that.
+//
+//  In our Bcast method, all processors (except for root) start by posting a
+//  non-blocking receive. A non-blocking receive can be tested for completion
+//  using MPI_Test. All processors (again except for root), enter a polling
+//  loop calling MPI_Test to check to see if the receive completed. For the
+//  first several seconds of inactivity, they poll as fast as they can (this
+//  is equivalent to MPI's spin-wait behavior). However, after not too much
+//  time, they begin to introduce delays, using nanosleep, into this polling
+//  loop. The delays substantially reduce the load on the cpu.
+//  
+//  The broadcast itself is initiated at the root and proceeds in tree-like
+//  fashion. The root sends a message to the highest power of 2 ranked 
+//  processor that is less than the communicator size. As that processor
+//  completes its recieve, it exits from its polling loop and enters the
+//  're-send to other processors' phase of the broadcast. It begins to send
+//  messages to other processors and, simultaneously, the root also continues
+//  to send messages to other processors. More processors complete their
+//  recieves and then send the message on to still other processors. This
+//  continues in tree-like fashion based on the MPI rank of the processors
+//  until everyone has finished sending messages to those they are responsible
+//  for. As the process continues, all odd-numbered processors only ever
+//  execute a receive. All even numbered processors execute the receive and
+//  then a variable number of sends depending on their rank relative to the
+//  next closest power-of-2.
+//
+//  In the case of a 13 processor run, this is how the broadcast phase would
+//  proceed...
+//
+//  1) P0->P8
+//  2) PO->P4                          P8->P12
+//  3) P0->P2,         P4->P6,         P8->P10
+//  4) P0->P1, P2->P3, P4->P5, P6->P7, P8->P9, P10->P11
+//
+//  The first thing each processor does is to compute who it will recieve
+//  the message from. That is determined by zeroing the lowest-order '1' bit
+//  in the binary expression of the processor's rank. The difference between
+//  that processor and the executing processor is a power-of-2. The executing
+//  processor then sends the message to all processors that are above it in
+//  rank by all powers-of-2 between 1 and the difference less one power of 2. 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   February 12, 2007 
+// ****************************************************************************
+int
+MPIXfer::VisIt_MPI_Bcast(void *buf, int count, MPI_Datatype datatype, int root,
+    MPI_Comm comm)
+{
+    int rank = PAR_Rank();
+    int size = PAR_Size();
+    MPI_Status mpiStatus;
 
+    //
+    // Make proc 0 the root if it isn't already
+    //
+    if (root != 0)
+    {
+        if (rank == root) // only original root does this
+            MPI_Send(buf, count, datatype, 0, UI_BCAST_TAG, comm);
+        if (rank == 0)    // only new root (zero) does this
+            MPI_Recv(buf, count, datatype, root, UI_BCAST_TAG, comm, &mpiStatus);
+        root = 0;         // everyone does this
+    }
+
+    //
+    // Compute who the executing proc. will recieve its message from.
+    //
+    int srcProc = 0;
+    for (int i = 0; i < 31; i++)
+    {
+        int mask = 0x00000001;
+        int bit = (rank >> i) & mask;
+        if (bit == 1)
+        {
+            int mask1 = ~(0x00000001 << i);
+            srcProc = (rank & mask1);
+            break;
+        }
+    }
+
+    //
+    // Polling Phase
+    //
+    if (rank != 0) 
+    {
+        //
+        // Everyone posts a non-blocking recieve
+        //
+        MPI_Request bcastRecv;
+        MPI_Irecv(buf, count, datatype, srcProc, UI_BCAST_TAG, comm, &bcastRecv);
+
+        //
+        // Main polling loop
+        //
+        double startedIdlingAt = TOA_THIS_LINE;
+        int mpiFlag;
+        bool first1 = true;
+        bool first2 = true;
+        while (true)
+        {
+            // non-blocking test for recv completion
+            MPI_Test(&bcastRecv, &mpiFlag, &mpiStatus);
+            if (mpiFlag == 1)
+                break;
+
+            //
+            // Note: We could add logic here to deal with engine idle timeout
+            // instead of using the alarm mechanism we currently use.
+            //
+
+            //
+            // Insert nanosleeps into the polling loop as determined by
+            // amount of time we've been sitting here in this loop
+            //
+            double idleTime = TOA_THIS_LINE - startedIdlingAt;
+            if (idleTime > 60.0)
+            {
+                if (first2)
+                    debug5 << "VisIt_MPI_Bcast started using  0.5 sec. nanosleep" << endl;
+                first2 = false;
+                struct timespec ts = {0, 500000000}; // 1/2 second
+                nanosleep(&ts, 0);
+            }
+            else if (idleTime > 5.0)
+            {
+                if (first1)
+                    debug5 << "VisIt_MPI_Bcast started using 0.05 sec. nanosleep" << endl;
+                first1 = false;
+                struct timespec ts = {0, 50000000}; // 1/20th second
+                nanosleep(&ts, 0);
+            }
+        }
+    }
+
+    //
+    // Send on to other processors phase
+    //
+
+    //
+    // Determine highest rank proc above the executing proc
+    // that it is responsible to send a message to. 
+    //
+    int deltaProc = (rank - srcProc) >> 1;
+    if (rank == 0)
+    {
+        deltaProc = 1;
+        while ((deltaProc << 1) < PAR_Size())
+            deltaProc = deltaProc << 1;
+    }
+
+    //
+    // Send message to other procs the executing proc is responsible for 
+    //
+    while (deltaProc > 0)
+    {
+        if (rank + deltaProc < size)
+            MPI_Send(buf, count, datatype, rank + deltaProc, UI_BCAST_TAG, comm);
+        deltaProc = deltaProc >> 1;
+    }
+
+    return 0;
+}
 #endif
