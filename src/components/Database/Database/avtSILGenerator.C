@@ -245,8 +245,14 @@ avtSILGenerator::CreateSIL(avtDatabaseMetaData *md, avtSIL *sil)
 //
 //  Modifications:
 //
-//     Mark C. Miller, 04Sep03, added cat argument, renamed 2nd arg to 'parent'
-//     Mark C. Miller, 14Sep03, added onlyCreateSets argument
+//     Mark C. Miller, September 3, 2003
+//     Added cat argument, renamed 2nd arg to 'parent'
+//
+//     Mark C. Miller, September 14, 2003
+//     Added onlyCreateSets argument
+//
+//     Dave Bremer, Mon Feb 12 17:20:43 PST 2007
+//     Add support format strings.
 //
 // ****************************************************************************
 
@@ -265,7 +271,10 @@ avtSILGenerator::AddSubsets(avtSIL *sil, int parent, int num, int origin,
         }
         else
         {
-            sprintf(name, "%s%d", unit.c_str(), i+origin);
+            if (strstr(unit.c_str(), "%") != NULL)
+                sprintf(name, unit.c_str(), i+origin);
+            else
+                sprintf(name, "%s%d", unit.c_str(), i+origin);
         }
 
         // determine "identifier" for the set (only "domains" get non -1) 
@@ -322,6 +331,9 @@ avtSILGenerator::AddSubsets(avtSIL *sil, int parent, int num, int origin,
 //    Jeremy Meredith, Wed Aug 24 12:42:53 PDT 2005
 //    Added an origin.
 //
+//     Dave Bremer, Mon Feb 12 17:20:43 PST 2007
+//     Add support format strings.
+//
 // ****************************************************************************
  
 void
@@ -339,7 +351,10 @@ avtSILGenerator::AddGroups(avtSIL *sil, int top, int numGroups, int origin,
     for (i = 0 ; i < numGroups ; i++)
     {
         char name[1024];
-        sprintf(name, "%s%d", piece.c_str(), i+origin);
+        if (strstr(piece.c_str(), "%") != NULL) {
+            sprintf(name, piece.c_str(), i+origin);
+        } else
+            sprintf(name, "%s%d", piece.c_str(), i+origin);
  
         avtSILSet_p set = new avtSILSet(name, -1);
  

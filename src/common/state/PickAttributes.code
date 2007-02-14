@@ -33,6 +33,9 @@ Definition:
 //   Hank Childs, Thu Jun  8 16:21:44 PDT 2006
 //   Initialize showId to avoid compiler warning.
 //
+//   Kathleen Bonnell, Tue Feb 13 12:41:28 PST 2007 
+//   If meshCoordType not XY, add (Z,R) or (R,Z) to point info.
+//
 // ****************************************************************************
 void
 PickAttributes::PrintSelf(ostream &os)
@@ -81,19 +84,18 @@ PickAttributes::PrintSelf(ostream &os)
     }
     else if (cellPoint[0] != FLT_MAX)
     {
-        if (!needTransformMessage)
+        os << "PickedPoint: ";
+        if (meshCoordType == AVT_RZ)
+            os << "(Z,R) ";
+        else if (meshCoordType == AVT_ZR)
+            os << "(R,Z) ";
+        if (needTransformMessage)
         {
-            os << "PickedPoint: <" << cellPoint[0] << ", " 
-                                   << cellPoint[1] << ", " 
-                                   << cellPoint[2] << ">\n";
+            os << " (in transformed space) " ;
         }
-        else 
-        {
-            os << "PickedPoint:  (in transformed space) <" 
-               << cellPoint[0] << ", " 
-               << cellPoint[1] << ", " 
-               << cellPoint[2] << ">\n";
-        }
+        os << "<" << cellPoint[0] << ", " 
+                  << cellPoint[1] << ", " 
+                  << cellPoint[2] << ">\n";
     }
     if (pickType == Zone || pickType == DomainZone)
     {
@@ -244,6 +246,13 @@ Definition:
 //   Hank Childs, Thu Jun  8 16:21:44 PDT 2006
 //   Initialize showId to avoid compiler warning.
 //
+//   Kathleen Bonnell, Tue Feb 13 12:41:28 PST 2007 
+//   If meshCoordType not XY, add (Z,R) or (R,Z) to point info.
+//
+//   Dave Bremer, Tue Feb 13 15:56:02 PST 2007
+//   Add support for blockPieceName as a template string, into which
+//   we print the domain.
+//
 // ****************************************************************************
 void
 PickAttributes::CreateOutputString(std::string &os, bool withLetter)
@@ -286,6 +295,12 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     std::string domStr = (blockPieceName == "" ? "domain" : blockPieceName);
     std::string grpStr = (groupPieceName == "" ? "group" : groupPieceName);
 
+    if (domain != -1 && strstr(domStr.c_str(), "%") != NULL)
+    {
+        SNPRINTF(buff, 512, domStr.c_str(), domain);
+        domStr = buff;
+    }
+    
     if (showTimeStep)
     {
         SNPRINTF(buff, 512, "  timestep %d", timeStep);
@@ -306,6 +321,13 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         SNPRINTF(buff, 512, "\n%s\n", meshInfo.c_str());
         os += buff;
     }
+
+    std::string point = "Point";
+    if (meshCoordType == AVT_RZ)
+        point += " (Z,R)";
+    else if (meshCoordType == AVT_ZR)
+        point += " (R,Z)";
+
     if (pickType == CurveNode)
     {
         SNPRINTF(buff, 512, "Point: <%f, %f>\n", nodePoint[0], nodePoint[1]);
@@ -323,26 +345,26 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         {
             if (!needTransformMessage)
             {
-                SNPRINTF(buff, 512, "Point: <%f, %f>\n",
-                        cellPoint[0], cellPoint[1]);
+                SNPRINTF(buff, 512, "%s: <%f, %f>\n",
+                        point.c_str(), cellPoint[0], cellPoint[1]);
             }
             else 
             {
-                SNPRINTF(buff, 512, "Point: (in transformed space)\n        <%f, %f>\n",
-                        cellPoint[0], cellPoint[1]);
+                SNPRINTF(buff, 512, "%s: (in transformed space)\n        <%f, %f>\n",
+                        point.c_str(), cellPoint[0], cellPoint[1]);
             }
         }
         else 
         {
             if (!needTransformMessage)
             {
-                SNPRINTF(buff, 512, "Point: <%f, %f, %f>\n",
-                        cellPoint[0], cellPoint[1], cellPoint[2]);
+                SNPRINTF(buff, 512, "%s: <%f, %f, %f>\n",
+                        point.c_str(), cellPoint[0], cellPoint[1], cellPoint[2]);
             }
             else 
             {
-                SNPRINTF(buff, 512, "Point: (in transformed space) \n       <%f, %f, %f>\n",
-                        cellPoint[0], cellPoint[1], cellPoint[2]);
+                SNPRINTF(buff, 512, "%s: (in transformed space) \n       <%f, %f, %f>\n",
+                        point.c_str(), cellPoint[0], cellPoint[1], cellPoint[2]);
             }
         }
         os += buff;
@@ -563,6 +585,9 @@ Definition:
 //   Kathleen Bonnell, Fri Jul  8 14:27:26 PDT 2005 
 //   Reset hasMixedGhostTypes. 
 //
+//   Kathleen Bonnell, Tue Feb 13 12:41:28 PST 2007 
+//   Reset meshCoordType. 
+//
 // ****************************************************************************
 
 void
@@ -579,6 +604,7 @@ PickAttributes::PrepareForNewPick()
     needTransformMessage = false;
     ghostType = 0;
     hasMixedGhostTypes = -1;
+    meshCoordType = AVT_XY;
 
     if (!incidentElements.empty())
         incidentElements.clear();
@@ -852,6 +878,10 @@ Definition:
 //   Hank Childs, Thu Jun  8 16:21:44 PDT 2006
 //   Initialize showId to avoid compiler warning.
 //
+//   Dave Bremer, Tue Feb 13 15:56:02 PST 2007
+//   Add support for blockPieceName as a template string, into which
+//   we print the domain.
+//
 // ****************************************************************************
 
 void
@@ -888,7 +918,15 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
     {
         if (domain != -1)
         {
-            SNPRINTF(buff, 512, "  %s %d", domStr.c_str(), domain);
+            if (strstr(domStr.c_str(), "%") != NULL)
+            {
+                buff[0] = ' ';
+                buff[1] = ' ';
+                SNPRINTF(buff+2, 510, domStr.c_str(), domain);
+            }
+            else
+                SNPRINTF(buff, 512, "  %s %d", domStr.c_str(), domain);
+
             os += buff;
         }
     }

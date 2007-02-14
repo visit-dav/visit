@@ -223,6 +223,9 @@ avtPickQuery::PreExecute(void)
 //    Kathleen Bonnell, Mon Oct 23 08:37:09 PDT 2006
 //    Changed error message.
 //
+//    Kathleen Bonnell, Tue Feb 13 12:48:14 PST 2007 
+//    Send the MeshCoordType to the returning PickAtts.
+//
 // ****************************************************************************
 
 void
@@ -256,6 +259,7 @@ avtPickQuery::PostExecute(void)
               "list. Please check the requested variables list and try again.");
         }
     }
+    pickAtts.SetMeshCoordType(GetInput()->GetInfo().GetAttributes().GetMeshCoordType());
 }
 
 

@@ -38,6 +38,7 @@
 #include <Engine.h>
 #include <Executors.h>
 
+#include <errno.h>
 #include <stdlib.h>
 #if !defined(_WIN32)
 #include <strings.h>
@@ -1014,6 +1015,9 @@ Engine::ProcessInput()
 //    Change DebugDump method from avtStreamer to avtFilter, since it is
 //    now supported at a higher level.
 //
+//    Mark C. Miller, Wed Feb 14 15:22:33 PST 2007
+//    Added -ui-bcast-thresholds CL option
+//
 // ****************************************************************************
 
 void
@@ -1067,8 +1071,9 @@ Engine::ProcessCommandLine(int argc, char **argv)
             if (i+1 < argc)
             {
                 char *endptr = 0;
+                errno = 0;
                 long int to = strtol(argv[i+1], &endptr, 10);
-                if (*(argv[i+1]) != '\0' && *endptr == '\0')
+                if (*(argv[i+1]) != '\0' && *endptr == '\0' && errno == 0)
                 {
                     timeout = (int) to;
                 }
@@ -1083,6 +1088,46 @@ Engine::ProcessCommandLine(int argc, char **argv)
             {
                 cerr << "-timeout option ignored due to missing argument." << endl;
                 debug1 << "-timeout option ignored due to missing argument." << endl;
+            }
+        }
+        else if (strcmp(argv[i], "-ui-bcast-thresholds") == 0)
+        {
+            if (i+1 < argc)
+            {
+                char *endptr = 0;
+                errno = 0;
+                long int tval = strtol(argv[i+1], &endptr, 10);
+                if (*(argv[i+1]) != '\0' && *endptr == '\0' && errno == 0)
+                {
+                    int nanoSecsOfSleeps = (int) tval;
+                    int secsOfSpinBeforeSleeps = -1;
+
+                    if (i+2 < argc)
+                    {
+                        endptr = 0;
+                        errno = 0;
+                        tval = strtol(argv[i+2], &endptr, 10);
+                        if (*(argv[i+2]) != '\0' && *endptr == '\0' && errno == 0)
+                        {
+                            secsOfSpinBeforeSleeps = (int) tval;
+                            i++;
+                        }
+                    }
+#ifdef PARALLEL
+                    MPIXfer::SetUIBcastThresholds(nanoSecsOfSleeps, secsOfSpinBeforeSleeps);
+#endif
+                }
+                else
+                {
+                    cerr << "-ui-bcast-thresholds option ignored due to bad argument." << endl;
+                    debug1 << "-ui-bcast-thresholds option ignored due to bad argument." << endl;
+                }
+                i++;
+            }
+            else
+            {
+                cerr << "-ui-bcast-thresholds option ignored due to missing argument." << endl;
+                debug1 << "-ui-bcast-thresholds option ignored due to missing argument." << endl;
             }
         }
         else if (strcmp(argv[i], "-dump") == 0)

@@ -95,12 +95,18 @@ public:
 
     static int VisIt_MPI_Bcast(void *buf, int count, MPI_Datatype datatype,
                                 int root, MPI_Comm comm);
+    static void SetUIBcastThresholds(int nssleep, int spinsecs)
+        { nanoSecsOfSleeps = nssleep;
+          if (spinsecs >= 0) secsOfSpinBeforeSleeps = spinsecs; };
+
 protected:
     bool ReadHeader();
 private:
     bool enableReadHeader;
     int  readsSinceReadHeaderDisabled;
     static void (*slaveProcessInstruction)();
+    static int nanoSecsOfSleeps;
+    static int secsOfSpinBeforeSleeps;
 };
 
 #endif
