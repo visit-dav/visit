@@ -216,6 +216,10 @@ QvisHostProfileWindow::~QvisHostProfileWindow()
 //   Eric Brugger, Tue Nov 28 13:48:04 PST 2006
 //   Added a psub/mpirun launch option.
 //
+//   Eric Brugger, Thu Feb 15 12:14:34 PST 2007
+//   Added support for additional sublauncher arguments.  Replaced the qsub
+//   launch option with qsub/mpiexec and qsub/srun.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::CreateWindowContents()
@@ -354,7 +358,8 @@ QvisHostProfileWindow::CreateWindowContents()
     launchMethod->insertItem("yod");
     launchMethod->insertItem("dmpirun");
     launchMethod->insertItem("bsub");
-    launchMethod->insertItem("qsub");
+    launchMethod->insertItem("qsub/mpiexec");
+    launchMethod->insertItem("qsub/srun");
     connect(launchMethod, SIGNAL(activated(const QString &)),
             this, SLOT(launchMethodChanged(const QString &)));
     launchCheckBox = new QCheckBox("Parallel launch method",
@@ -374,6 +379,17 @@ QvisHostProfileWindow::CreateWindowContents()
             this, SLOT(toggleLaunchArgs(bool)));
     parLayout->addMultiCellWidget(launchArgsCheckBox, prow, prow, 0, 1);
     parLayout->addMultiCellWidget(launchArgs, prow, prow, 2, 3);
+    prow++;
+
+    sublaunchArgs = new QLineEdit(parGroup, "sublaunchArgs");
+    connect(sublaunchArgs, SIGNAL(returnPressed()),
+            this, SLOT(processSublaunchArgsText()));
+    sublaunchArgsCheckBox = new QCheckBox("Additional sublauncher arguments",
+                                      parGroup, "sublaunchArgsLabel");
+    connect(sublaunchArgsCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleSublaunchArgs(bool)));
+    parLayout->addMultiCellWidget(sublaunchArgsCheckBox, prow, prow, 0, 1);
+    parLayout->addMultiCellWidget(sublaunchArgs, prow, prow, 2, 3);
     prow++;
 
     partitionName = new QLineEdit(parGroup, "partitionName");
@@ -858,6 +874,9 @@ QvisHostProfileWindow::UpdateProfileList()
 //   Hank Childs, Sat Dec  3 20:55:49 PST 2005
 //   Added support for new hardware acceleration options.
 //
+//   Eric Brugger, Thu Feb 15 12:14:34 PST 2007
+//   Added support for additional sublauncher arguments.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::UpdateActiveProfile()
@@ -881,6 +900,8 @@ QvisHostProfileWindow::UpdateActiveProfile()
     machinefile->blockSignals(true);
     launchArgsCheckBox->blockSignals(true);
     launchArgs->blockSignals(true);
+    sublaunchArgsCheckBox->blockSignals(true);
+    sublaunchArgs->blockSignals(true);
     launchCheckBox->blockSignals(true);
     launchMethod->blockSignals(true);
     activeProfileCheckBox->blockSignals(true);
@@ -924,6 +945,8 @@ QvisHostProfileWindow::UpdateActiveProfile()
         machinefile->setText("");
         launchArgsCheckBox->setChecked(false);
         launchArgs->setText("");
+        sublaunchArgsCheckBox->setChecked(false);
+        sublaunchArgs->setText("");
         loadBalancing->setButton(0);
         engineArguments->setText("");
         activeProfileCheckBox->setChecked(false);
@@ -979,6 +1002,11 @@ QvisHostProfileWindow::UpdateActiveProfile()
             launchArgs->setText(current.GetLaunchArgs().c_str());
         else
             launchArgs->setText("");
+        sublaunchArgsCheckBox->setChecked(parEnabled && current.GetSublaunchArgsSet());
+        if (parEnabled && current.GetSublaunchArgsSet())
+            sublaunchArgs->setText(current.GetSublaunchArgs().c_str());
+        else
+            sublaunchArgs->setText("");
         if (parEnabled)
             numProcessors->setValue(current.GetNumProcessors());
         else
@@ -1071,6 +1099,8 @@ QvisHostProfileWindow::UpdateActiveProfile()
     machinefile->blockSignals(false);
     launchArgsCheckBox->blockSignals(false);
     launchArgs->blockSignals(false);
+    sublaunchArgsCheckBox->blockSignals(false);
+    sublaunchArgs->blockSignals(false);
     launchCheckBox->blockSignals(false);
     launchMethod->blockSignals(false);
     activeProfileCheckBox->blockSignals(false);
@@ -1155,6 +1185,9 @@ QvisHostProfileWindow::ReplaceLocalHost()
 //    Hank Childs, Sat Dec  3 20:55:49 PST 2005
 //    Added support for new hardware acceleration options.
 //
+//    Eric Brugger, Thu Feb 15 12:14:34 PST 2007
+//    Added support for additional sublauncher arguments.
+//
 // ****************************************************************************
 
 void
@@ -1185,6 +1218,8 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
     launchMethod->setEnabled(parEnabled && current->GetLaunchMethodSet());
     launchArgsCheckBox->setEnabled(parEnabled);
     launchArgs->setEnabled(parEnabled && current->GetLaunchArgsSet());
+    sublaunchArgsCheckBox->setEnabled(parEnabled);
+    sublaunchArgs->setEnabled(parEnabled && current->GetSublaunchArgsSet());
     numProcLabel->setEnabled(parEnabled);
     numProcessors->setEnabled(parEnabled);
     numNodesCheckBox->setEnabled(parEnabled);
@@ -1280,6 +1315,9 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
 //
 //   Jeremy Meredith, Thu Sep 15 16:39:35 PDT 2005
 //   Added machinefile and useVisItScriptForEnv.
+//
+//   Eric Brugger, Thu Feb 15 12:14:34 PST 2007
+//   Added support for additional sublauncher arguments.
 //
 // ****************************************************************************
 bool
@@ -1587,6 +1625,15 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
         temp = machinefile->displayText();
         temp = temp.stripWhiteSpace();
         current.SetMachinefile(std::string(temp.latin1()));
+    }
+    widget++;
+
+    // Do the sublauncher args
+    if(current.GetParallel() && (which_widget == widget || doAll))
+    {
+        temp = sublaunchArgs->displayText();
+        temp = temp.stripWhiteSpace();
+        current.SetSublaunchArgs(std::string(temp.latin1()));
     }
     widget++;
 
@@ -2257,6 +2304,58 @@ QvisHostProfileWindow::processLaunchArgsText()
 {
     // Update the launch args text.
     if(!GetCurrentValues(10))
+        SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::toggleSublaunchArgs
+//
+// Purpose: 
+//   This is a Qt slot function that enables the sublaunchArgs widget.
+//
+// Programmer: Eric Brugger
+// Creation:   February 15, 2007
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::toggleSublaunchArgs(bool state)
+{
+    cerr << "QvisHostProfileWindow::toggleSublaunchArgs" << endl;
+    HostProfileList *profiles = (HostProfileList *)subject;
+    if(profiles->GetActiveProfile() >= 0)
+    {
+        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
+        current.SetSublaunchArgsSet(state);
+        profiles->MarkActiveProfile();
+        UpdateWindowSensitivity();
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::processSublaunchArgsText
+//
+// Purpose: 
+//   This is a Qt slot function that sets the sublaunch args for the active
+//   host profile.
+//
+// Programmer: Eric Brugger
+// Creation:   February 15, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::processSublaunchArgsText()
+{
+    // Update the sublaunch args text.
+    if(!GetCurrentValues(16))
         SetUpdate(false);
     Apply();
 }

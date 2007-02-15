@@ -57,6 +57,7 @@ pengra_icc=true
 thunder=true
 prism=true
 yana=true
+xchem=true
 davinci=true
 
 dist=undefined
@@ -80,6 +81,7 @@ do
          thunder=false
          prism=false
          yana=false
+         xchem=false
          davinci=false
          shift
          ;;
@@ -161,6 +163,14 @@ do
          ;;
       +yana)
          yana=true
+         shift
+         ;;
+      -xchem)
+         xchem=false
+         shift
+         ;;
+      +xchem)
+         xchem=true
          shift
          ;;
       -davinci)
@@ -701,6 +711,60 @@ then
 fi
 
 #
+# Build on xchem.
+#
+rm -f xchem
+cat <<EOF > xchem
+#!/bin/sh
+PATH=/usr/X11R6/bin:\$PATH
+if test ! -d tmp ; then
+   mkdir tmp
+fi
+if test ! -d tmp/$user ; then
+   mkdir tmp/$user
+fi
+if test ! -d tmp/$user/xchem ; then
+   mkdir tmp/$user/xchem
+fi
+rm -rf tmp/$user/xchem/visitbuild
+mkdir tmp/$user/xchem/visitbuild
+mv xchem_$dist.tar.gz tmp/$user/xchem/visitbuild/$dist.tar.gz
+cd tmp/$user/xchem/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule >> ../buildlog 2>&1
+make -j 3 >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ..
+cd ..
+rm -f resultlog
+echo "        build of visit on xchem"        > resultlog 2>&1
+echo "       -------------------------"       >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $xchem = true ]
+then
+   if [ $test = no ]
+   then
+      scp xchem xchem:xchem_buildit
+      scp $dist.tar.gz xchem:xchem_$dist.tar.gz
+      ssh xchem "chmod 750 xchem_buildit;./xchem_buildit" &
+   fi
+fi
+
+#
 # Build on davinci.
 #
 rm -f davinci
@@ -746,5 +810,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot quad berg up pengra pengra_icc thunder prism yana davinci
+   rm -f hoth sunspot quad berg up pengra pengra_icc thunder prism yana xchem davinci
 fi
