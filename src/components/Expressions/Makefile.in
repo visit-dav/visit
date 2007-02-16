@@ -183,8 +183,11 @@
 #   Hank Childs, Fri Jan 12 13:18:17 PST 2007
 #   Added avtArrayComposeWithBins.
 #
-#    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
-#    Added $(GLEW_LIBS)  
+#   Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
+#   Added $(GLEW_LIBS)  
+#
+#   Sean Ahern, Wed Feb  7 18:59:25 EST 2007
+#   Added avtNormalizeFilter.
 #
 ##############################################################################
 
@@ -269,6 +272,7 @@ General_src= \
   General/avtMinMaxExpression.C \
   General/avtNMatsFilter.C \
   General/avtNeighborEvaluatorFilter.C \
+  General/avtNormalizeFilter.C \
   General/avtProcessorIdFilter.C \
   General/avtRelativeDifferenceFilter.C \
   General/avtResradFilter.C \

@@ -81,6 +81,7 @@
 #include <avtMagnitudeFilter.h>
 #include <avtNeighborFilter.h>
 #include <avtNodeDegreeFilter.h>
+#include <avtNormalizeFilter.h>
 #include <avtMatvfFilter.h>
 #include <avtMIRvfFilter.h>
 #include <avtMatErrorFilter.h>
@@ -571,6 +572,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtResradFilter();
     if (functionName == "magnitude")
         return new avtMagnitudeFilter();
+    if (functionName == "normalize")
+        return new avtNormalizeFilter();
     if (functionName == "relative_difference")
         return new avtRelativeDifferenceFilter();
     if (functionName == "var_skew")
