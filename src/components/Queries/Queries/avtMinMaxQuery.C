@@ -172,11 +172,16 @@ avtMinMaxQuery::VerifyInput()
 //    Kathleen Bonnell, Tue Jul  6 17:05:42 PDT 2004 
 //    Init minInfo1/2, maxInfo1/2.
 //
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtMinMaxQuery::PreExecute()
 {
+    avtDatasetQuery::PreExecute();
+
     avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
     dimension = data.GetSpatialDimension();
     topoDim = data.GetTopologicalDimension();

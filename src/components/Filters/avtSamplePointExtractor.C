@@ -228,13 +228,18 @@ avtSamplePointExtractor::SetKernelBasedSampling(bool val)
 //  Programmer: Hank Childs
 //  Creation:   November 19, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 12:14:04 EST 2007
+//    Set rectilinearGridsAreInWorldSpace based on the passed in value
+//    (which might be false), not to true.
+//
 // ****************************************************************************
 
 void
 avtSamplePointExtractor::SetRectilinearGridsAreInWorldSpace(bool val,
                  const avtViewInfo &v, double a)
 {
-    rectilinearGridsAreInWorldSpace = true;
+    rectilinearGridsAreInWorldSpace = val;
     viewInfo = v;
     aspect = a;
 }
@@ -682,6 +687,10 @@ avtSamplePointExtractor::KernelBasedSample(vtkDataSet *ds)
 //  Programmer: Hank Childs
 //  Creation:   January 1, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 void
@@ -689,8 +698,12 @@ avtSamplePointExtractor::RasterBasedSample(vtkDataSet *ds)
 {
     if (modeIs3D && ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
+        avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+        const double *xform = NULL;
+        if (atts.GetRectilinearGridHasTransform())
+            xform = atts.GetRectilinearGridTransform();
         massVoxelExtractor->SetGridsAreInWorldSpace(
-                            rectilinearGridsAreInWorldSpace, viewInfo, aspect);
+           rectilinearGridsAreInWorldSpace, viewInfo, aspect, xform);
         massVoxelExtractor->Extract((vtkRectilinearGrid *) ds);
         return;
     }
@@ -1651,3 +1664,29 @@ avtSamplePointExtractor::SendCellsMode(bool mode)
 }
 
 
+// ****************************************************************************
+//  Method:  avtSamplePointExtractor::FilterUnderstandsTransformedRectMesh
+//
+//  Purpose:
+//    If this filter returns true, this means that it correctly deals
+//    with rectilinear grids having an implied transform set in the
+//    data attributes.  It can do this conditionally if desired.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 15, 2007
+//
+// ****************************************************************************
+
+bool
+avtSamplePointExtractor::FilterUnderstandsTransformedRectMesh()
+{
+    // Raster-based sampling has been extended to handle these
+    // meshes.  Kernel-based has not.
+    if (kernelBasedSampling)
+        return false;
+    else
+        return true;
+}

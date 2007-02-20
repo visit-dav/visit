@@ -641,11 +641,16 @@ avtSurfaceFilter::PerformRestriction(avtPipelineSpecification_p spec)
 //    Hank Childs, Tue Feb  1 13:09:37 PST 2005
 //    Initialize haveIssuedWarning.
 //
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtSurfaceFilter::PreExecute(void)
 {
+    avtStreamer::PreExecute();
+
     if (stillNeedExtents)
     {
         const char *varname = pipelineVariable;

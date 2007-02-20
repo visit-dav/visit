@@ -95,11 +95,16 @@ avtNeighborEvaluatorFilter::~avtNeighborEvaluatorFilter()
 //  Programmer: Hank Childs
 //  Creation:   January 20, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtNeighborEvaluatorFilter::PreExecute(void)
 {
+    avtSingleInputExpressionFilter::PreExecute();
     haveIssuedWarning = false;
 }
 

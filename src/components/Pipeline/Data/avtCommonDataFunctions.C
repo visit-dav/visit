@@ -52,10 +52,16 @@
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetMapper.h>
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
 #include <vtkIntArray.h>
 #include <vtkMath.h>
+#include <vtkMatrix4x4.h>
+#include <vtkMatrixToLinearTransform.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkStructuredGrid.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
@@ -124,19 +130,56 @@ void GetDataMajorEigenvalueRange(vtkDataSet *, double *, const char *);
 //    Hank Childs, Tue Nov  6 14:41:52 PST 2001
 //    Make sure that there are no UMRs.
 //
+//    Jeremy Meredith, Thu Feb 15 12:55:16 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//    For these grids, we apply the transform to all eight corners of the
+//    grid and compare each for the min/max along every coordinate axis.
+//    Note that both the spatial extents array and the implied transform
+//    must be passed in as input now.
+//
 // ****************************************************************************
 
 void 
-CGetSpatialExtents(avtDataRepresentation &data, void *se, bool &success)
+CGetSpatialExtents(avtDataRepresentation &data, void *info, bool &success)
 {
+    typedef struct {double *se; const double *xform;} tmpstruct;
+    double *fse = ((tmpstruct*)info)->se;
+    const double *xform = ((tmpstruct*)info)->xform;
+
     if (data.Valid())
     {
         vtkDataSet *ds = data.GetDataVTK();
-        if (ds->GetNumberOfCells() > 0 && ds->GetNumberOfPoints() > 0)
+        if (xform && ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
         {
             double bounds[6];
             ds->GetBounds(bounds);
-            double *fse = (double*)se;
+            float min_pt_in[4] = {bounds[0],bounds[2],bounds[4],1};
+            float max_pt_in[4] = {bounds[1],bounds[3],bounds[5],1};
+            float corner[2][4];
+            vtkMatrix4x4::PointMultiply(xform, min_pt_in, corner[0]);
+            vtkMatrix4x4::PointMultiply(xform, max_pt_in, corner[1]);
+            for (int i=0; i<=1; i++)
+            {
+                for (int j=0; j<=1; j++)
+                {
+                    for (int k=0; k<=1; k++)
+                    {
+                        float pt[3] = {corner[i][0],corner[j][1],corner[k][2]};
+                        for (int axis=0; axis<3; axis++)
+                        {
+                            if (fse[2*axis] > pt[axis])
+                                fse[2*axis] = pt[axis];
+                            if (fse[2*axis+1] < pt[axis])
+                                fse[2*axis+1] = pt[axis];
+                        }
+                    }
+                }
+            }
+        }
+        else if (ds->GetNumberOfCells() > 0 && ds->GetNumberOfPoints() > 0)
+        {
+            double bounds[6];
+            ds->GetBounds(bounds);
 
             //
             // If we have gotten extents from another data rep, then merge the
@@ -2285,5 +2328,171 @@ CGetCompressionInfoFromDataString(const unsigned char *dstr,
         sscanf((char*) &dstr[len-10], "% 10.6f", &timeToCompress);
         if (timec) *timec = timeToCompress;
         if (ratioc) *ratioc = (float) uncompressedLen / (float) len;
+    }
+}
+
+
+
+
+// ****************************************************************************
+//  Function:  CApplyTransformToRectGrid
+//
+//  Purpose:
+//    Transform a rectilinear grid into a curvilinear one.
+//
+//  Arguments:
+//    data       the data for which rect grids should be transformed
+//    xform      the transform
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 15, 2007
+//
+// ****************************************************************************
+void
+CApplyTransformToRectGrid(avtDataRepresentation &data,
+                          void *xform_, bool &)
+{
+    if (!data.Valid())
+    {
+        return;
+    }
+
+    vtkDataSet *ds = data.GetDataVTK();
+    if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) ds;
+        double *xform = (double*)xform_;
+
+        vtkMatrix4x4 *t = vtkMatrix4x4::New();
+        t->DeepCopy(xform);
+
+        // The below code taken almost verbatim from
+        //  avtTransform::TransformRectilinearToCurvilinear
+        vtkMatrixToLinearTransform *trans = vtkMatrixToLinearTransform::New();
+        trans->SetInput(t);
+
+        int  dims[3];
+        rgrid->GetDimensions(dims);
+
+        int  numPts = dims[0]*dims[1]*dims[2];
+
+        vtkPoints *pts = vtkPoints::New();
+        pts->SetNumberOfPoints(numPts);
+
+        vtkDataArray *x = rgrid->GetXCoordinates();
+        vtkDataArray *y = rgrid->GetYCoordinates();
+        vtkDataArray *z = rgrid->GetZCoordinates();
+
+        int index = 0;
+        for (int k = 0 ; k < dims[2] ; k++)
+        {
+            for (int j = 0 ; j < dims[1] ; j++)
+            {
+                for (int i = 0 ; i < dims[0] ; i++)
+                {
+                    float inpoint[4];
+                    inpoint[0] = x->GetComponent(i,0);
+                    inpoint[1] = y->GetComponent(j,0);
+                    inpoint[2] = z->GetComponent(k,0);
+                    inpoint[3] = 1.;
+
+                    float outpoint[4];
+                    t->MultiplyPoint(inpoint, outpoint);
+
+                    outpoint[0] /= outpoint[3];
+                    outpoint[1] /= outpoint[3];
+                    outpoint[2] /= outpoint[3];
+
+                    pts->SetPoint(index++, outpoint);
+                }
+            }
+        }
+
+        vtkStructuredGrid *out = vtkStructuredGrid::New();
+        out->SetDimensions(dims);
+        out->SetPoints(pts);
+        pts->Delete();
+        out->GetCellData()->ShallowCopy(rgrid->GetCellData());
+        out->GetPointData()->ShallowCopy(rgrid->GetPointData());
+
+        // NOTE: We do not transform vector data here.
+        //       This is different from the behavior of the 
+        //       avtTransform code, because vectors will have been
+        //       created (e.g. by the database) in the transformed
+        //       space already.  The normals filter does not create
+        //       normals for rectilinear grids, but just in case,
+        //       we'll transform them here anyway because they
+        //       will have been created in the normalized space.
+        vtkDataArray *normals = rgrid->GetPointData()->GetNormals();
+        if (normals)
+        {
+            vtkDataArray *arr = normals->NewInstance();
+            arr->SetNumberOfComponents(3);
+            arr->Allocate(3*normals->GetNumberOfTuples());
+            trans->TransformNormals(normals, arr);
+            arr->SetName(normals->GetName());
+            out->GetPointData()->RemoveArray(normals->GetName());
+            out->GetPointData()->SetNormals(arr);
+            arr->Delete();
+        }
+        normals = rgrid->GetCellData()->GetNormals();
+        if (normals)
+        {
+            vtkDataArray *arr = normals->NewInstance();
+            arr->SetNumberOfComponents(3);
+            arr->Allocate(3*normals->GetNumberOfTuples());
+            trans->TransformNormals(normals, arr);
+            arr->SetName(normals->GetName());
+            out->GetCellData()->RemoveArray(normals->GetName());
+            out->GetCellData()->SetNormals(arr);
+            arr->Delete();
+        }
+        // ... end code from avtTransform::TransformRectilinearToCurvilinear
+
+        // and set the output data set
+        avtDataRepresentation new_data(out, data.GetDomain(),
+                                       data.GetLabel());
+        data = new_data;
+        out->Delete();
+    }
+}
+
+// ****************************************************************************
+//  Function:  CInsertRectilinearTransformInfoIntoDataset
+//
+//  Purpose:
+//    This is used when we break out of the AVT pipeline and have
+//    no "good" way to carry along a rectilinear transform, so we
+//    need to insert it as field data.
+//
+//  Arguments:
+//    data       the data for which rect grids should be transformed
+//    xform      the transform
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 15, 2007
+//
+// ****************************************************************************
+
+void
+CInsertRectilinearTransformInfoIntoDataset(avtDataRepresentation &data,
+                                           void *xform_, bool &)
+{
+    if (!data.Valid())
+    {
+        return; // This is a problem, but no need to flag it for this...
+    }
+
+    vtkDataSet *ds = data.GetDataVTK();
+    if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) ds;
+        double *xform = (double*)xform_;
+        vtkDoubleArray *xformarray = vtkDoubleArray::New();
+        xformarray->SetName("RectilinearGridTransform");
+        xformarray->SetNumberOfTuples(16);
+        for (int i=0; i<16; i++)
+            xformarray->SetComponent(i, 0, xform[i]);
+        rgrid->GetFieldData()->AddArray(xformarray);
     }
 }

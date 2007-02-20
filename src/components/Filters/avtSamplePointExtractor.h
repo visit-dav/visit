@@ -108,6 +108,9 @@ class  avtRayFunction;
 //    Hank Childs, Tue Feb 28 08:25:33 PST 2006
 //    Added PreExecute.
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtSamplePointExtractor 
@@ -174,6 +177,8 @@ class AVTFILTERS_API avtSamplePointExtractor
 
     void                      KernelBasedSample(vtkDataSet *);
     void                      RasterBasedSample(vtkDataSet *);
+
+    virtual bool              FilterUnderstandsTransformedRectMesh();
 };
 
 

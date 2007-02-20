@@ -72,6 +72,9 @@ class     vtkMatrix4x4;
 //    Added support for accepting grids that need to do a world space to
 //    image space conversion as well.  Also changed API to AVTFILTERS_API.
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtMassVoxelExtractor : public avtExtractor
@@ -83,10 +86,12 @@ class AVTFILTERS_API avtMassVoxelExtractor : public avtExtractor
 
     void             Extract(vtkRectilinearGrid *);
 
-    void             SetGridsAreInWorldSpace(bool, const avtViewInfo &,double);
+    void             SetGridsAreInWorldSpace(bool, const avtViewInfo &,double,
+                                             const double *);
 
   protected:
     bool             gridsAreInWorldSpace;
+    bool             pretendGridsAreInWorldSpace;
     avtViewInfo      view;
     double           aspect;
     double           cur_clip_range[2];

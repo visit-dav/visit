@@ -60,11 +60,17 @@ avtSamplePointsToSamplePointsFilter::~avtSamplePointsToSamplePointsFilter()
 //  Programmer: Hank Childs
 //  Creation:   November 28, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtSamplePointsToSamplePointsFilter::PreExecute(void)
 {
+    avtSamplePointsToDataObjectFilter::PreExecute();
+
     avtSamplePoints_p in  = GetTypedInput();
     avtSamplePoints_p out = GetTypedOutput();
     out->SetNumberOfVariables(in->GetNumberOfVariables());

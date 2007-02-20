@@ -685,3 +685,28 @@ avtVolumeFilter::VerifyInput(void)
     }
 }
 
+
+// ****************************************************************************
+//  Method:  avtVolumeFilter::FilterUnderstandsTransformedRectMesh
+//
+//  Purpose:
+//    If this filter returns true, this means that it correctly deals
+//    with rectilinear grids having an implied transform set in the
+//    data attributes.  It can do this conditionally if desired.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 15, 2007
+//
+// ****************************************************************************
+
+bool
+avtVolumeFilter::FilterUnderstandsTransformedRectMesh()
+{
+    // The resampling and raycasting algorithms now all understand
+    // these kinds of grids, so we can now safely return true.
+    return true;
+}
+

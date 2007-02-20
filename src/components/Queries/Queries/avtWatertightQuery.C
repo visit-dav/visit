@@ -158,11 +158,17 @@ avtWatertightQuery::ApplyFilters(avtDataObject_p inData)
 //  Programmer: Hank Childs
 //  Creation:   September 23, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtWatertightQuery::PreExecute(void)
 {
+    avtDatasetQuery::PreExecute();
+
     foundExternalNode = false;
 }
 

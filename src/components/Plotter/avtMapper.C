@@ -171,11 +171,27 @@ avtMapper::ChangedInput(void)
 //  Programmer: Hank Childs
 //  Creation:   June 6, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 void
 avtMapper::InputIsReady(void)
 {
+    avtDataAttributes &inatts = GetInput()->GetInfo().GetAttributes();
+    if (inatts.GetRectilinearGridHasTransform())
+    {
+        // The renderer is smart enough to apply any extra transform
+        // needed for rectilinear grids, but it will not have access
+        // to the avtDataAttributes.  Instead, we insert the transform
+        // as a field variable in any vtkRectilinearGrids.
+        avtDataTree_p tree = GetInputDataTree();
+        bool dummy;
+        tree->Traverse(CInsertRectilinearTransformInfoIntoDataset,
+                       (void*)inatts.GetRectilinearGridTransform(), dummy);
+    }
     SetUpMappers();
 }
 

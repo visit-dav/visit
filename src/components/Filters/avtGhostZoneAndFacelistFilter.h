@@ -78,6 +78,9 @@ class   avtFacelistFilter;
 //    Add support for new methods with facelist filter and ghost zone filter
 //    to ensure that ghosts are removed and polydata is produced.
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtGhostZoneAndFacelistFilter :
@@ -113,6 +116,7 @@ class AVTFILTERS_API avtGhostZoneAndFacelistFilter :
     virtual void          ChangedInput(void);
     virtual avtPipelineSpecification_p
                           PerformRestriction(avtPipelineSpecification_p);
+    virtual bool          FilterUnderstandsTransformedRectMesh();
 };
 
 

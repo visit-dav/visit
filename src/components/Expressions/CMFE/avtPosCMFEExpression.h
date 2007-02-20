@@ -62,6 +62,14 @@ class     ConstExpr;
 //  Programmer: Hank Childs
 //  Creation:   October 10, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jan 18 11:04:51 EST 2007
+//    Report explicitly that this filter does NOT understand transformed
+//    rectilinear grids.  This method should default to returning false
+//    anyway, but there are specific reasons this filter cannot yet be
+//    optimized in this fashion, so ensure that even if other CMFE's change
+//    to default to true, this one remains false until it can be fixed.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtPosCMFEExpression : public avtCMFEExpression
@@ -79,6 +87,7 @@ class EXPRESSION_API avtPosCMFEExpression : public avtCMFEExpression
                                           const std::string &);
     virtual bool              UseIdenticalSIL(void) { return false; };
     virtual bool              HasDefaultVariable(void) { return true; };
+    virtual bool              FilterUnderstandsTransformedRectMesh();
 };
 
 

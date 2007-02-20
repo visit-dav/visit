@@ -219,11 +219,16 @@ avtReflectFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Wed Jun 25 09:30:59 PDT 2003
 //    Fix stupid cut-n-paste bug.
 //
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtReflectFilter::PreExecute(void)
 {
+    avtDataTreeStreamer::PreExecute();
+
     //
     // Calculating the extents may require parallel communication.  Only do
     // this if we are sure that we will need the extents.

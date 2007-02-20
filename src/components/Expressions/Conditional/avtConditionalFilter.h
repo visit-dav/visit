@@ -61,6 +61,10 @@
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//    Simple conditionals can handle these with no modifications.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtConditionalFilter 
@@ -78,6 +82,8 @@ class EXPRESSION_API avtConditionalFilter
 
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+
+    virtual bool              FilterUnderstandsTransformedRectMesh();
 };
 
 

@@ -102,6 +102,10 @@ class     vtkDataArray;
 //    Hank Childs, Tue Jan 16 15:58:02 PST 2007
 //    Added CBreakVTKPipelineConnections.
 //
+//    Jeremy Meredith, Thu Feb 15 13:07:12 EST 2007
+//    Added CApplyTransformToRectGrid and
+//    CInsertRectilinearTransformInfoIntoDataset.
+//
 // ****************************************************************************
 
 //
@@ -131,6 +135,11 @@ PIPELINE_API void CGetNumberOfNodes(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfRealZones(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CConvertUnstructuredGridToPolyData(avtDataRepresentation &,
                                                      void *, bool &);
+PIPELINE_API void CApplyTransformToRectGrid(avtDataRepresentation &,
+                                            void *, bool &);
+PIPELINE_API void CInsertRectilinearTransformInfoIntoDataset(
+                                                  avtDataRepresentation &,
+                                                  void *, bool &);
 
 PIPELINE_API void GetDataRange(vtkDataSet *, double *, const char *);
 PIPELINE_API double MajorEigenvalue(float *);

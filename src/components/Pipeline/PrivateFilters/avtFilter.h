@@ -93,6 +93,11 @@ class     avtWebpage;
 //    Hank Childs, Thu Dec 21 09:17:43 PST 2006
 //    Add support for debug dumps.
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//    All filters can now report that they understand these grids, though
+//    the virtual default in this base class is that each does not.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtFilter
@@ -140,6 +145,8 @@ class PIPELINE_API avtFilter
 
     void                                PassOnDataObjectInfo(void);
     virtual void                        RefashionDataObjectInfo(void);
+
+    virtual bool                        FilterUnderstandsTransformedRectMesh();
 
     virtual void                        PreExecute(void);
     virtual void                        PostExecute(void);

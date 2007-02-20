@@ -908,11 +908,16 @@ avtOnionPeelFilter::PostExecute()
 //    Kathleen Bonnell, Tue Jan 18 19:37:46 PST 2005 
 //    Removed warning for non-connected input. 
 //
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void 
 avtOnionPeelFilter::PreExecute()
 {
+    avtPluginStreamer::PreExecute();
+
     successfullyExecuted = false;
 
     if (atts.GetUseGlobalId() &&  

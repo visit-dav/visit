@@ -253,10 +253,16 @@ avtMoleculeFilter::PerformRestriction(avtPipelineSpecification_p spec)
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 23, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 13:39:40 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 void
 avtMoleculeFilter::PreExecute()
 {
+    avtStreamer::PreExecute();
+
     used_values.clear();
     name = "";
 }

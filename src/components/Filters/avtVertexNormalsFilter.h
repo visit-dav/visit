@@ -71,6 +71,9 @@
 //    Decide whether or not to do point normals internally to this filter
 //    (removed interface so that this could be decided externally).
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtVertexNormalsFilter : public avtStreamer
@@ -85,6 +88,7 @@ class AVTFILTERS_API avtVertexNormalsFilter : public avtStreamer
 
   protected:
     virtual vtkDataSet  *ExecuteData(vtkDataSet *, int, std::string);
+    virtual bool         FilterUnderstandsTransformedRectMesh();
 };
 
 

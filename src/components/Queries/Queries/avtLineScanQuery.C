@@ -111,11 +111,17 @@ avtLineScanQuery::~avtLineScanQuery()
 //  Programmer: Hank Childs
 //  Creation:   July 20, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtLineScanQuery::PreExecute(void)
 {
+    avtDatasetQuery::PreExecute();
+
     if (numBins <= 0)
     {
         EXCEPTION1(VisItException, "There must be at least one bin.");

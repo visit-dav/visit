@@ -78,6 +78,9 @@
 //    Add tolerance for merging points when cleaning poly data.  Also add
 //    an option to do merging in parallel.
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCompactTreeFilter : public avtDatasetToDatasetFilter
@@ -107,6 +110,8 @@ class PIPELINE_API avtCompactTreeFilter : public avtDatasetToDatasetFilter
     bool                  parallelMerge;
     bool                  createCleanPolyData;
     double                tolerance;
+
+    virtual bool          FilterUnderstandsTransformedRectMesh();
 };
 
 

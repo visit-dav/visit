@@ -259,16 +259,19 @@ avtVerdictFilter::DeriveVariable(vtkDataSet *in_ds)
 //    Hank Childs, Thu Oct 17 08:07:53 PDT 2002
 //    Update for new verdict interface.
 //
+//    Jeremy Meredith, Thu Feb 15 11:54:16 EST 2007
+//    Execute inherited PreExecute unconditionally before everything else.
+//
 // ****************************************************************************
 
 void
 avtVerdictFilter::PreExecute()
 {
+    avtExpressionFilter::PreExecute();
+
 #ifdef HAVE_VERDICT
     if (!RequiresSizeCalculation())
         return;
-
-    avtExpressionFilter::PreExecute();
 
     VerdictSizeData.Clear();
 

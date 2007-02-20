@@ -563,6 +563,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Jeremy Meredith, Mon Aug 28 16:45:10 EDT 2006
 //    Added unit cell vectors.  Added nodesAreCritical.
 //
+//    Jeremy Meredith, Thu Feb 15 12:53:11 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 void
@@ -626,6 +629,11 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         atts.SetMeshCoordType(mmd->meshCoordType);
         atts.SetNodesAreCritical(mmd->nodesAreCritical);
         atts.SetUnitCellVectors(mmd->unitCellVectors);
+        if (mmd->rectilinearGridHasTransform)
+        {
+            atts.SetRectilinearGridHasTransform(true);
+            atts.SetRectilinearGridTransform(mmd->rectilinearGridTransform);
+        }
     }
 
     //

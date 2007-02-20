@@ -708,3 +708,26 @@ avtRayTracer::PerformRestriction(avtPipelineSpecification_p spec)
 }
 
 
+// ****************************************************************************
+//  Method:  avtRayTracer::FilterUnderstandsTransformedRectMesh
+//
+//  Purpose:
+//    If this filter returns true, this means that it correctly deals
+//    with rectilinear grids having an implied transform set in the
+//    data attributes.  It can do this conditionally if desired.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 15, 2007
+//
+// ****************************************************************************
+bool
+avtRayTracer::FilterUnderstandsTransformedRectMesh()
+{
+    // There's nothing special about the raytracer that might
+    // not understand these meshes.  At a lower level, filters
+    // like the sample point extractor report this correctly.
+    return true;
+}

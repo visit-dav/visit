@@ -149,11 +149,17 @@ avtConnCompReduceFilter::Equivalent(const AttributeGroup *a)
 //  Programmer: Hank Childs
 //  Creation:   October 29, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtConnCompReduceFilter::PreExecute(void)
 {
+    avtPluginStreamer::PreExecute();
+
     haveIssuedWarning = false;
 }
 

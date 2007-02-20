@@ -41,6 +41,7 @@
 
 #include <avtCHGCARFileFormat.h>
 
+#include <float.h>
 #include <string>
 
 #include <vtkFloatArray.h>
@@ -60,6 +61,7 @@
 
 using     std::string;
 
+#define  ALLOW_TRANSFORMED_RECTILINEAR_GRIDS
 
 // ****************************************************************************
 //  Method: avtCHGCAR constructor
@@ -127,20 +129,68 @@ avtCHGCARFileFormat::FreeUpResources(void)
 //  Programmer: Jeremy Meredith
 //  Creation:   August 29, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 13:35:04 EST 2007
+//    I just added a bunch of infrastructure to visit to support
+//    rectilinear grids in transformed space.  Make use of it
+//    here (though this can be disabled by removing the #define at the
+//    top of the file for now).
+//
 // ****************************************************************************
 
 void
 avtCHGCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
+    int i, j, k;
     ReadAllMetaData();
 
     avtMeshMetaData *mmd = new avtMeshMetaData("mesh", 1, 0,0,0,
                                                3, 3,
-                                               AVT_CURVILINEAR_MESH);
+                                               AVT_RECTILINEAR_MESH);
+
     for (int i=0; i<9; i++)
     {
-        mmd->unitCellVectors[i] = unitCell[i/3][i%3];
+       mmd->unitCellVectors[i] = unitCell[i/3][i%3];
     }
+
+#ifdef ALLOW_TRANSFORMED_RECTILINEAR_GRIDS
+    for (i=0; i<4; i++)
+    {
+        for (j=0; j<4; j++)
+        {
+            if (i<3 && j<3)
+                mmd->rectilinearGridTransform[i*4+j] = unitCell[j][i];
+            else if (i==j)
+                mmd->rectilinearGridTransform[i*4+j] = 1.0;
+            else
+                mmd->rectilinearGridTransform[i*4+j] = 0.0;
+        }
+    }
+    mmd->rectilinearGridHasTransform = true;
+
+    double extents[6] = { DBL_MAX,-DBL_MAX,DBL_MAX,-DBL_MAX,DBL_MAX,-DBL_MAX };
+    for (i=0; i<=1; i++)
+    {
+        for (j=0; j<=1; j++)
+        {
+            for (k=0; k<=1; k++)
+            {
+                for (int axis=0; axis<3; axis++)
+                {
+                    double v = (mmd->unitCellVectors[3*0 + axis] * float(i) +
+                                mmd->unitCellVectors[3*1 + axis] * float(j) +
+                                mmd->unitCellVectors[3*2 + axis] * float(k));
+                    if (extents[2*axis] > v)
+                        extents[2*axis] = v;
+                    if (extents[2*axis+1] < v)
+                        extents[2*axis+1] = v;
+                }
+            }
+        }
+    }
+    mmd->SetExtents(extents);
+#endif
+
     md->Add(mmd);
 
     AddScalarVarToMetaData(md, "charge", "mesh", AVT_NODECENT);
@@ -162,16 +212,48 @@ avtCHGCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Programmer: Jeremy Meredith
 //  Creation:   August 29, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 13:35:04 EST 2007
+//    I just added a bunch of infrastructure to visit to support
+//    rectilinear grids in transformed space.  Make use of it
+//    here (when it's not disabled) by returning a unit-size rectilinear
+//    grid (i.e. fractional lattice coordinates) instead of cartesian
+//    coordinates in a curvilinear grid.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtCHGCARFileFormat::GetMesh(const char *meshname)
 {
+#ifdef ALLOW_TRANSFORMED_RECTILINEAR_GRIDS
     if (strcmp(meshname, "mesh") != 0)
     {
         EXCEPTION1(InvalidVariableException, meshname);
     }
 
+    vtkRectilinearGrid   *rgrid   = vtkRectilinearGrid::New(); 
+
+    vtkFloatArray   *coords[3];
+    for (int i = 0 ; i < 3 ; i++)
+    {
+        coords[i] = vtkFloatArray::New();
+        coords[i]->SetNumberOfTuples(meshdims[i]);
+
+        for (int j = 0 ; j < meshdims[i] ; j++)
+        {
+            coords[i]->SetComponent(j, 0, float(j) / float(origdims[i]) );
+        }
+    }
+    rgrid->SetDimensions(meshdims);
+    rgrid->SetXCoordinates(coords[0]);
+    rgrid->SetYCoordinates(coords[1]);
+    rgrid->SetZCoordinates(coords[2]);
+    coords[0]->Delete();
+    coords[1]->Delete();
+    coords[2]->Delete();
+
+    return rgrid;
+#else    
     vtkStructuredGrid    *sgrid   = vtkStructuredGrid::New(); 
     vtkPoints            *points  = vtkPoints::New();
     sgrid->SetPoints(points);
@@ -213,6 +295,7 @@ avtCHGCARFileFormat::GetMesh(const char *meshname)
         }
     }
     return sgrid;
+#endif
 }
 
 
@@ -230,6 +313,12 @@ avtCHGCARFileFormat::GetMesh(const char *meshname)
 //  Programmer: Jeremy Meredith
 //  Creation:   August 29, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 13:37:37 EST 2007
+//    Fixed a crash occurring because we returned a vtkDataArray without
+//    adding a new reference to it -- it was deleted elsewhere in visit
+//    when we didn't know about it.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -239,6 +328,7 @@ avtCHGCARFileFormat::GetVar(const char *varname)
 
     if (string(varname) == "charge")
     {
+        values->Register(NULL);
         return values;
     }
 

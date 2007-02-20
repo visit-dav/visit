@@ -84,6 +84,9 @@ class   avtRayFunction;
 //    Hank Childs, Mon Jan 16 11:11:47 PST 2006
 //    Add support for kernel based sampling.
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtRayTracer : public avtDatasetToImageFilter
@@ -133,6 +136,7 @@ class AVTFILTERS_API avtRayTracer : public avtDatasetToImageFilter
     virtual avtPipelineSpecification_p
                           PerformRestriction(avtPipelineSpecification_p);
     static int            GetNumberOfDivisions(int, int, int);
+    virtual bool          FilterUnderstandsTransformedRectMesh();
 };
 
 

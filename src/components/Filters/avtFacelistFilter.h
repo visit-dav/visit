@@ -108,6 +108,9 @@ class   avtMultiFacelist;
 //    Re-inherit from data tree streamer (a single input may now produce
 //    multiple outputs ... 3D structured grid gives 6 2D structured grids).
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtFacelistFilter : public avtDataTreeStreamer
@@ -148,6 +151,7 @@ class AVTFILTERS_API avtFacelistFilter : public avtDataTreeStreamer
     virtual void                         RefashionDataObjectInfo(void);
     virtual avtPipelineSpecification_p   PerformRestriction(
                                                    avtPipelineSpecification_p);
+    virtual bool                        FilterUnderstandsTransformedRectMesh();
 };
 
 

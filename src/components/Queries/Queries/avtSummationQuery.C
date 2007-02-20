@@ -253,11 +253,16 @@ avtSummationQuery::SumFromOriginalElement(bool val)
 //    Hank Childs, Tue May 16 09:18:41 PDT 2006
 //    Initialize denomSum.
 //
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtSummationQuery::PreExecute(void)
 {
+    avtDatasetQuery::PreExecute();
+
     sum = 0.;
     denomSum = 0.;
 }

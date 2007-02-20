@@ -67,6 +67,9 @@
 //    Hank Childs, Fri Dec  3 14:28:02 PST 2004
 //    Added variable name argument to SearchDataForDataExtents.
 //
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetToDataObjectFilter
@@ -85,6 +88,7 @@ class PIPELINE_API avtDatasetToDataObjectFilter
 
     void               InputSetActiveVariable(const char *);
     virtual void       SearchDataForDataExtents(double *, const char *);
+    virtual void       PreExecute(void);
 };
 
 

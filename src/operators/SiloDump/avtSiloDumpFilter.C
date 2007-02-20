@@ -340,11 +340,17 @@ avtSiloDumpFilter::Equivalent(const AttributeGroup *a)
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtSiloDumpFilter::PreExecute()
 {
+    avtPluginStreamer::PreExecute();
+
     // set up the filename
     char file[256];
 #ifdef PARALLEL

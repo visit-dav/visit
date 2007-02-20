@@ -138,11 +138,17 @@ avtSmoothFilter::Equivalent(const AttributeGroup *a)
 //  Programmer: Hank Childs
 //  Creation:   August 14, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtSmoothFilter::PreExecute(void)
 {
+    avtPluginStreamer::PreExecute();
+
     issuedWarning = false;
 }
 

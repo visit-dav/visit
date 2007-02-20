@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2007, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -879,6 +879,10 @@ avtWorldSpaceToImageSpaceTransform::PreExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   November 19, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -891,7 +895,56 @@ avtWorldSpaceToImageSpaceTransform::ExecuteData(vtkDataSet *in_ds, int domain,
         return in_ds;
     }
 
+    // Since we're applying a transform to the data, an existing
+    // implied transform will ned to change.  Update it here.
+    avtDataAttributes &inatts = GetInput()->GetInfo().GetAttributes();
+    avtDataAttributes &outatts = GetOutput()->GetInfo().GetAttributes();
+    if (inatts.GetRectilinearGridHasTransform())
+    {
+        // Get the world-to-image transform and its inverse.
+        const double *W_to_I = *transform->Element;
+        double        I_to_W[16];
+        vtkMatrix4x4::Invert(W_to_I, I_to_W);
+
+        // We need to apply a similarity transform to get the new
+        // rectilinear grid transform that should be passed down.
+        const double *old_xform = inatts.GetRectilinearGridTransform();
+        double        new_xform[16];
+
+        double        tmp[16];
+
+        vtkMatrix4x4::Multiply4x4(W_to_I, old_xform, tmp);
+        vtkMatrix4x4::Multiply4x4(tmp, I_to_W, new_xform);
+
+        // We've created the new transform; set it in the output.
+        outatts.SetRectilinearGridHasTransform(true);
+        outatts.SetRectilinearGridTransform(new_xform);
+    }
+
     return avtTransform::ExecuteData(in_ds, domain, label);
 }
 
 
+
+// ****************************************************************************
+//  Method:  avtWorldSpaceToImageSpaceTransform::FilterUnderstandsTransformedRectMesh
+//
+//  Purpose:
+//    If this filter returns true, this means that it correctly deals
+//    with rectilinear grids having an implied transform set in the
+//    data attributes.  It can do this conditionally if desired.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 15, 2007
+//
+// ****************************************************************************
+
+bool
+avtWorldSpaceToImageSpaceTransform::FilterUnderstandsTransformedRectMesh()
+{
+    // We've fixed this filter to do the right thing for these meshes.
+    return true;
+}

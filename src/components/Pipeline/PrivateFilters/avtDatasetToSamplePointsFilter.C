@@ -104,11 +104,16 @@ avtDatasetToSamplePointsFilter::~avtDatasetToSamplePointsFilter()
 //    Hank Childs, Wed Jul 23 14:59:55 PDT 2003
 //    Account for not sampling VTK and AVT variables.
 //
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtDatasetToSamplePointsFilter::PreExecute(void)
 {
+    avtDatasetToDataObjectFilter::PreExecute();
+
     avtDataset_p ds = GetTypedInput();
     VarList vl;
     vl.nvars = -1;

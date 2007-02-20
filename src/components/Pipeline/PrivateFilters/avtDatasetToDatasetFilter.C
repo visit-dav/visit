@@ -120,11 +120,16 @@ avtDatasetToDatasetFilter::~avtDatasetToDatasetFilter()
 //    Make sure that if we haven't asked for an "active variable", that we
 //    get the "pipeline variable".
 //
+//    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
+//    Call inherited PreExecute before everything else.
+//
 // ****************************************************************************
 
 void
 avtDatasetToDatasetFilter::PreExecute(void)
 {
+    avtDatasetToDataObjectFilter::PreExecute();
+
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
 
     if (switchVariables)
