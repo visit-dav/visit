@@ -69,9 +69,9 @@ class avtMirandaFileFormat : public avtMTMDFileFormat
                            avtMirandaFileFormat(const char *, DBOptionsAttributes *);
     virtual               ~avtMirandaFileFormat() {;};
 
-    virtual void          *GetAuxiliaryData(const char *var, const char *type,
-                                            int timestep, int domain,void *args, 
-                                            DestructorFunction &);
+    virtual void          *GetAuxiliaryData(const char *var, int timestate, 
+                                            int domain, const char *type, 
+                                            void *args, DestructorFunction &);
     
     virtual void           GetCycles(std::vector<int> &c)    {c = aCycles;}
     virtual void           GetTimes(std::vector<double> &t)  {t = aSimTimes;}
@@ -97,8 +97,13 @@ class avtMirandaFileFormat : public avtMTMDFileFormat
     
     vector<string>         aVarNames;
     vector<int>            aVarNumComps;
-    vector<vector<float> > aVarMinMax;
+    vector<vector<float> > aVarMinMax;    // Current Miranda dumps write min/max
+                                          // of last timestep, so for now this 
+                                          // is almost unused.
 
+    vector<string>         aMatNames;     // Material names. Size is 0 if there
+                                          // is no material set. If present, the
+                                          // material set comes after all vars.
     vector<int>            aCycles;
     vector<double>         aSimTimes;
     

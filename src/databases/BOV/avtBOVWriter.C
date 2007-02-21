@@ -127,6 +127,15 @@ avtBOVWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //      this isn't a generally useful thing to do, but it is good for scaling
 //      studies.
 //
+//  Arguments:
+//      rgrid          The rectilinear grid we are sampling *from*.
+//      ptr            The data defined on rgrid.
+//      samples        The buffer to write the interpolated values into.
+//      brick_bounds   The bounds of the brick we are supposed to interpolate
+//                     onto.
+//      brick_dims     The dimensions of the brick we are supposed to 
+//                     interpolate onto.
+//
 //  Programmer: Hank Childs
 //  Creation:   September 11, 2004
 //

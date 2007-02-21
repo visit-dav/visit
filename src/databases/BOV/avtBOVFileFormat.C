@@ -96,6 +96,9 @@ static int FormatLine(char *line);
 //    Changed how dataFormat was initialized and added init for
 //    dataNumComponents.
 //
+//    Hank Childs, Wed Feb 21 11:07:25 PST 2007
+//    byteToFloatTransform was initialized twice ... removed one.
+//
 // ****************************************************************************
 
 avtBOVFileFormat::avtBOVFileFormat(const char *fname)
@@ -159,7 +162,6 @@ avtBOVFileFormat::avtBOVFileFormat(const char *fname)
     dataNumComponents = 1;
     byteOffset = 0;
     divideBrick = false;
-    byteToFloatTransform = false;
 
     haveReadTOC = false;
 }
@@ -740,6 +742,10 @@ avtBOVFileFormat::ReadWholeAndExtractBrick(void *dest, bool gzipped,
 //    for ints and doubles. Finally, I added support for reading in tuples
 //    that have multiple components.
 //
+//    Hank Childs, Wed Feb 21 11:07:25 PST 2007
+//    Only do a byte-to-float transform if the data we get from the file is 
+//    really byte data.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -986,7 +992,7 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
     //
     // If we need to apply the byte to float transform, do it now.
     //
-    if(byteToFloatTransform)
+    if (byteToFloatTransform && dataFormat == ByteData)
     {
         debug4 << mName << "Transforming byte data to float data" << endl;
         vtkFloatArray *fa = vtkFloatArray::New();
