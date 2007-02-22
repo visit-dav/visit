@@ -123,6 +123,10 @@
 #    Thomas R. Treadway, Tue Feb 13 16:20:12 PST 2007
 #    Added an dmg option to create a Mac disk image.
 #
+#    Eric Brugger, Wed Feb 21 15:36:59 PST 2007
+#    Added code to delete the link bin/convert in case it is there
+#    from a previous installation.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -530,6 +534,12 @@ foreach prog ($programs)
     rm -f $prog
     ln -s frontendlauncher $prog
 end
+
+#
+# Remove the symbolic link for "convert" in case it is there from a previous
+# installation.
+#
+rm -f convert
 
 #
 # Make the symbolic links for the version

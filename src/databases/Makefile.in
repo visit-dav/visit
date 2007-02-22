@@ -1,4 +1,4 @@
-#                         Copyright (c) 2000 - 2006
+#                         Copyright (c) 2000 - 2007
 #                 The Regents of the University of California
 #            Produced at the Lawrence Livermore National Laboratory
 #            Written by Sean Ahern, Kathleen Bonnell, Eric Brugger,
@@ -242,6 +242,9 @@
 #   Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 #   Removed reference to SAF
 #
+#   Dave Bremer, Thu Feb 22 12:03:34 PST 2007
+#   Added Miranda RAW reader
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -276,6 +279,7 @@ REQUIRED=\
  Image \
  Lines \
  MFIX \
+ Miranda \
  MM5 \
  NASTRAN \
  OpenFOAM \
