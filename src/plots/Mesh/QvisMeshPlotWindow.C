@@ -633,7 +633,7 @@ QvisMeshPlotWindow::Apply(bool ignore)
         meshAtts->Notify();
 
         // Tell the viewer to set the mesh attributes.
-        viewer->SetPlotOptions(plotType);
+        GetViewerMethods()->SetPlotOptions(plotType);
     }
     else
         meshAtts->Notify();
@@ -683,7 +683,7 @@ QvisMeshPlotWindow::makeDefault()
     // Tell the viewer to set the default mesh attributes.
     GetCurrentValues(-1);
     meshAtts->Notify();
-    viewer->SetDefaultPlotOptions(plotType);
+    GetViewerMethods()->SetDefaultPlotOptions(plotType);
 }
 
 // ****************************************************************************
@@ -705,7 +705,7 @@ QvisMeshPlotWindow::reset()
 {
     // Tell the viewer to reset the mesh attributes to the last
     // applied values.
-    viewer->ResetPlotOptions(plotType);
+    GetViewerMethods()->ResetPlotOptions(plotType);
 }
 
 // ****************************************************************************

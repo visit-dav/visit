@@ -25,6 +25,7 @@
       TimeRelated
       VariableRelated
       ShapeRelated
+      ConnectedComponentsRelated
       NumGroups
     </Enum>
     <Enum name="QueryMode">

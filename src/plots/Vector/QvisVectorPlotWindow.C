@@ -734,7 +734,7 @@ QvisVectorPlotWindow::Apply(bool ignore)
         vectorAtts->Notify();
 
         // Tell the viewer to set the vector attributes.
-        viewer->SetPlotOptions(plotType);
+        GetViewerMethods()->SetPlotOptions(plotType);
     }
     else
         vectorAtts->Notify();
@@ -756,7 +756,7 @@ QvisVectorPlotWindow::makeDefault()
     // Tell the viewer to set the default vector attributes.
     GetCurrentValues(-1);
     vectorAtts->Notify();
-    viewer->SetDefaultPlotOptions(plotType);
+    GetViewerMethods()->SetDefaultPlotOptions(plotType);
 }
 
 void
@@ -764,7 +764,7 @@ QvisVectorPlotWindow::reset()
 {
     // Tell the viewer to reset the aslice attributes to the last
     // applied values.
-    viewer->ResetPlotOptions(plotType);
+    GetViewerMethods()->ResetPlotOptions(plotType);
 }
 
 // ****************************************************************************

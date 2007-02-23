@@ -38,8 +38,8 @@
 #ifndef VIEWER_ACTION_BASE_H
 #define VIEWER_ACTION_BASE_H
 #include <viewer_exports.h>
-#include <qobject.h>
 #include <ViewerRPC.h>
+#include <ViewerBase.h>
 
 class DataNode;
 class QPopupMenu;
@@ -71,9 +71,12 @@ class ViewerWindowManager;
 //   Brad Whitlock, Wed Apr 27 15:13:38 PST 2005
 //   I added CopyFrom.
 //
+//   Brad Whitlock, Mon Feb 12 17:20:49 PST 2007
+//   Inherit ViewerBase.
+//
 // ****************************************************************************
 
-class VIEWER_API ViewerActionBase : public QObject
+class VIEWER_API ViewerActionBase : public ViewerBase
 {
     Q_OBJECT
 public:

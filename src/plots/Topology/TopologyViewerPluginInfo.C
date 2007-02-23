@@ -201,7 +201,7 @@ TopologyViewerPluginInfo::AllocAvtPlot()
 
 void
 TopologyViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *, const char *)
+    ViewerPlot *)
 {
     *(TopologyAttributes*)atts = *defaultAtts;
 }

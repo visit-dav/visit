@@ -53,6 +53,8 @@
 #include <avtTypes.h>
 #include <set>
 
+#include <ViewerPlot.h>
+
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 
@@ -223,15 +225,18 @@ BoundaryViewerPluginInfo::AllocAvtPlot()
 //    Brad Whitlock, Fri Mar 26 15:15:38 PST 2004
 //    I made it use passed in metadata.
 //
+//    Brad Whitlock, Wed Feb 21 14:27:15 PST 2007
+//    Changed API.
+//
 // ****************************************************************************
 
 void
 BoundaryViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *md, const char *varName)
+    ViewerPlot *plot)
 {
     *(BoundaryAttributes*)atts = *defaultAtts;
 
-    PrivateSetPlotAtts(atts, md, varName);
+    PrivateSetPlotAtts(atts, plot);
 }
 
 // ****************************************************************************
@@ -261,13 +266,16 @@ BoundaryViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
 //    Brad Whitlock, Fri Mar 26 15:15:38 PST 2004
 //    I made it use passed in metadata.
 //
+//    Brad Whitlock, Wed Feb 21 14:27:15 PST 2007
+//    Changed API.
+//
 // ****************************************************************************
 
 void
 BoundaryViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *md, const char *varName)
+    ViewerPlot *plot)
 {
-    PrivateSetPlotAtts(atts, md, varName);
+    PrivateSetPlotAtts(atts, plot);
 }
 
 // ****************************************************************************
@@ -303,11 +311,14 @@ BoundaryViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
 //    Brad Whitlock, Fri Mar 26 15:15:38 PST 2004
 //    I made it use passed in metadata.
 //
+//    Brad Whitlock, Wed Feb 21 14:27:15 PST 2007
+//    Changed API.
+//
 // ****************************************************************************
 
 void
 BoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
-    const avtDatabaseMetaData *md, const char *varName)
+    ViewerPlot *plot)
 {
     BoundaryAttributes *boundaryAtts = (BoundaryAttributes *)atts;
 
@@ -315,6 +326,7 @@ BoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     // Get the meta-data and initialize the boundary names and colors in the
     // new BoundaryAttributes object.
     //
+    const avtDatabaseMetaData *md = plot->GetMetaData();
     if (md == NULL)
     {
         return;
@@ -322,11 +334,11 @@ BoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
 
     avtDatabaseMetaData *nonConstmd = const_cast <avtDatabaseMetaData *>(md);
 
-    string vn(varName);
+    string vn(plot->GetVariableName());
 
     const avtMaterialMetaData *mat = NULL;
 
-    string meshName = nonConstmd->MeshForVar(varName);
+    string meshName = nonConstmd->MeshForVar(vn);
     avtMeshMetaData *mesh = 
         const_cast <avtMeshMetaData *> (md->GetMesh(meshName));
 
@@ -401,7 +413,7 @@ BoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
           break;
 
       default:
-          EXCEPTION1(InvalidVariableException, varName);
+          EXCEPTION1(InvalidVariableException, vn);
           break;
     }
     
@@ -485,13 +497,16 @@ BoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
 //    Brad Whitlock, Fri Mar 26 15:15:38 PST 2004
 //    I made it use passed in metadata.
 //
+//    Brad Whitlock, Wed Feb 21 14:31:20 PST 2007
+//    Changed API.
+//
 // ****************************************************************************
 
 void
 BoundaryViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *md, const char *varName)
+    ViewerPlot *plot)
 {
-    PrivateSetPlotAtts(atts, md, varName);
+    PrivateSetPlotAtts(atts, plot);
 }
 
 // ****************************************************************************

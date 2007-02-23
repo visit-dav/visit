@@ -71,6 +71,9 @@
 #    Brad Whitlock, Wed Jan 5 09:25:20 PDT 2005
 #    Added -lexpr for MacOS X.
 #
+#    Brad Whitlock, Tue Feb 20 11:45:46 PDT 2007
+#    Moved QvisColorTableButton and 2 others from the gui.
+#
 ##############################################################################
 
 ##
@@ -86,7 +89,10 @@ MOC=@QT_MOC@
 ##
 ## Files...
 ##
-HDRMOC = QvisVariablePopupMenu.h
+HDRMOC = QvisColorTableButton.h \
+         QvisVariableButton.h \
+         QvisVariableButtonHelper.h \
+         QvisVariablePopupMenu.h
 HDR=VariableMenuPopulator.h WindowMetrics.h ${HDRMOC}
 SRC=${HDR:.h=.C}
 SRCMOC=${HDRMOC:.h=_moc.C}

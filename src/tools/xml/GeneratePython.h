@@ -2491,6 +2491,8 @@ class PythonGeneratorPlugin
     vector<QString> efiles;     // engine
     bool customwfiles;
     vector<QString> wfiles;     // widget
+    bool customvwfiles;
+    vector<QString> vwfiles;    // viewer widget
 
     PythonGeneratorAttribute *atts;
   public:

@@ -548,34 +548,34 @@ static void log_AddOperatorRPC(ViewerRPC *rpc, char *str)
 
 static void log_PromoteOperatorRPC(ViewerRPC *rpc, char *str)
 {
-    int applyAll = viewer->GetGlobalAttributes()->GetApplyOperator() ? 1 : 0;
+    int applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1 : 0;
     SNPRINTF(str, SLEN, "PromoteOperator(%d, %d)\n", rpc->GetOperatorType(),
              applyAll);
 }
 
 static void log_DemoteOperatorRPC(ViewerRPC *rpc, char *str)
 {
-    int applyAll = viewer->GetGlobalAttributes()->GetApplyOperator() ? 1 : 0;
+    int applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1 : 0;
     SNPRINTF(str, SLEN, "DemoteOperator(%d, %d)\n", rpc->GetOperatorType(),
              applyAll);
 }
 
 static void log_RemoveOperatorRPC(ViewerRPC *rpc, char *str)
 {
-    int applyAll = viewer->GetGlobalAttributes()->GetApplyOperator() ? 1 : 0;
+    int applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1 : 0;
     SNPRINTF(str, SLEN, "RemoveOperator(%d, %d)\n", rpc->GetOperatorType(),
              applyAll);
 }
 
 static void log_RemoveLastOperatorRPC(ViewerRPC *rpc, char *str)
 {
-    int applyAll = viewer->GetGlobalAttributes()->GetApplyOperator() ? 1 : 0;
+    int applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1 : 0;
     SNPRINTF(str, SLEN, "RemoveLastOperator(%d)\n", applyAll);
 }
 
 static void log_RemoveAllOperatorsRPC(ViewerRPC *rpc, char *str)
 {
-    int applyAll = viewer->GetGlobalAttributes()->GetApplyOperator() ? 1 : 0;
+    int applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1 : 0;
     SNPRINTF(str, SLEN, "RemoveAllOperators(%d)\n", applyAll);
 }
 
@@ -894,7 +894,7 @@ static void log_ProcessExpressionsRPC(ViewerRPC *rpc, char *str)
 {
     std::string exprList("");
 
-    ExpressionList *list = viewer->GetExpressionList();
+    ExpressionList *list = viewer->GetViewerState()->GetExpressionList();
     for(int i = 0; i < list->GetNumExpressions(); ++i)
     {
         const Expression &expr = list->GetExpression(i);
@@ -936,7 +936,7 @@ static void log_ProcessExpressionsRPC(ViewerRPC *rpc, char *str)
 static void log_SetLightListRPC(ViewerRPC *rpc, char *str)
 {
     std::string s;
-    LightList *lightlist = viewer->GetLightList();
+    LightList *lightlist = viewer->GetViewerState()->GetLightList();
     for(int i = 0; i < lightlist->NumLights(); ++i)
     {
         char objName[20];
@@ -967,7 +967,7 @@ static void log_SetAnimationAttributesRPC(ViewerRPC *rpc, char *str)
 {
     // Note - there's no function to set all of the annotation atts at the same
     //        so we're just setting the animation timeout for now.
-    AnimationAttributes *atts = viewer->GetAnimationAttributes();
+    AnimationAttributes *atts = viewer->GetViewerState()->GetAnimationAttributes();
     SNPRINTF(str, SLEN, "SetAnimationTimeout(%d)\n", atts->GetTimeout());
 }
 
@@ -2206,7 +2206,7 @@ void
 SS_log_ViewCurve(const std::string &s)
 {
     if(LogFile_GetEnabled() && logLevel == 0 && 
-       viewer->GetWindowInformation()->GetViewDimension() == 1)
+       viewer->GetViewerState()->GetWindowInformation()->GetViewDimension() == 1)
     {
         const char *v = "SetViewCurve(ViewCurveAtts)\n";
 
@@ -2243,7 +2243,7 @@ void
 SS_log_View2D(const std::string &s)
 {
     if(LogFile_GetEnabled() && logLevel == 0 && 
-       viewer->GetWindowInformation()->GetViewDimension() == 2)
+       viewer->GetViewerState()->GetWindowInformation()->GetViewDimension() == 2)
     {
         const char *v = "SetView2D(View2DAtts)\n";
 
@@ -2280,7 +2280,7 @@ void
 SS_log_View3D(const std::string &s)
 {
     if(LogFile_GetEnabled() && logLevel == 0 && 
-       viewer->GetWindowInformation()->GetViewDimension() == 3)
+       viewer->GetViewerState()->GetWindowInformation()->GetViewDimension() == 3)
     {
         const char *v = "SetView3D(View3DAtts)\n";
 

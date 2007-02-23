@@ -189,6 +189,9 @@
 #   Sean Ahern, Wed Feb  7 18:59:25 EST 2007
 #   Added avtNormalizeFilter.
 #
+#   Cyrus Harrison, Wed Feb 21 09:34:52 PST 2007
+#   Added avtConnComponentsExpression
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -255,6 +258,7 @@ General_src= \
   General/avtArrayComposeFilter.C \
   General/avtArrayComposeWithBinsFilter.C \
   General/avtArrayDecomposeFilter.C \
+  General/avtConnComponentsExpression.C \
   General/avtCurlFilter.C \
   General/avtDataIdFilter.C \
   General/avtDegreeFilter.C \
@@ -283,7 +287,8 @@ General_src= \
   General/avtVariableSkewFilter.C \
   General/avtVectorComposeFilter.C \
   General/avtVectorDecomposeFilter.C \
-  General/avtZoneTypeFilter.C
+  General/avtZoneTypeFilter.C 
+
 
 ImageProcessing_src= \
   ImageProcessing/avtAbelInversionExpression.C \

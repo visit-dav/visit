@@ -37,7 +37,7 @@
 
 #ifndef VIEWER_CLIENT_CONNECTION_H
 #define VIEWER_CLIENT_CONNECTION_H
-#include <qobject.h>
+#include <ViewerBase.h>
 #include <SimpleObserver.h>
 #include <vectortypes.h>
 
@@ -66,9 +66,12 @@ class ViewerState;
 //   instead of using the typedef because that was causing a mysterious
 //   compilation error in MSVC6.0.
 //
+//   Brad Whitlock, Mon Feb 12 17:56:51 PST 2007
+//   Changed base class.
+//
 // ****************************************************************************
 
-class ViewerClientConnection : public QObject, public SimpleObserver
+class ViewerClientConnection : public ViewerBase, public SimpleObserver
 {
     Q_OBJECT
 public:

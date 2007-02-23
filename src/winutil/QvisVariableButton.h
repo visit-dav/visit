@@ -40,7 +40,7 @@
 #include <qpushbutton.h>
 #include <qobjectlist.h>
 #include <string>
-#include <gui_exports.h>
+#include <winutil_exports.h>
 
 class QvisVariableButtonHelper;
 class QvisVariablePopupMenu;
@@ -75,7 +75,7 @@ class VariableMenuPopulator;
 //
 // ****************************************************************************
 
-class GUI_API QvisVariableButton : public QPushButton
+class WINUTIL_API QvisVariableButton : public QPushButton
 {
     Q_OBJECT
     Q_PROPERTY(int varTypes READ getVarTypes WRITE setVarTypes )

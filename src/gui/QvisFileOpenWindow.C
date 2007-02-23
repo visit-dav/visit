@@ -1426,8 +1426,8 @@ QvisFileOpenWindow::okClicked()
         if(emitFile.Empty())
             emitFile = item->GetFilename();
 
-        viewer->OpenDatabase(item->GetFilename().FullName().c_str(), 0,
-                             true, forcedFormat);
+        GetViewerMethods()->OpenDatabase(item->GetFilename().FullName().c_str(),
+            0, true, forcedFormat);
     }
 
     // Hide the remove path window.
@@ -1494,7 +1494,7 @@ QvisFileOpenWindow::okClicked()
                     // time states so the information about the file remains
                     // up to date.
                     //
-                    viewer->CheckForNewStates(fileName);
+                    GetViewerMethods()->CheckForNewStates(fileName);
                 }
             }
         }

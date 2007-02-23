@@ -89,6 +89,7 @@
 #include <PickAttributes.h>
 #include <PlotInfoAttributes.h>
 #include <PlotList.h>
+#include <PostponedAction.h>
 #include <PluginManagerAttributes.h>
 #include <PrinterAttributes.h>
 #include <ProcessAttributes.h>
@@ -103,6 +104,7 @@
 #include <SyncAttributes.h>
 #include <QueryOverTimeAttributes.h>
 #include <Utility.h>
+#include <ViewerRPC.h>
 #include <Xfer.h>
 
 #include <ViewerActionBase.h>
@@ -116,6 +118,8 @@
 #include <ViewerFileServer.h>
 #include <ViewerMessageBuffer.h>
 #include <ViewerMetaDataObserver.h>
+#include <ViewerMethods.h>
+#include <ViewerObserverToSignal.h>
 #include <ViewerOperatorFactory.h>
 #include <ViewerPasswordWindow.h>
 #include <ViewerPlot.h>
@@ -123,7 +127,6 @@
 #include <ViewerPlotList.h>
 #include <ViewerPopupMenu.h>
 #include <ViewerQueryManager.h>
-#include <ViewerRPCObserver.h>
 #include <ViewerServerManager.h>
 #include <ViewerState.h>
 #include <ViewerSILAttsObserver.h>
@@ -137,6 +140,7 @@
 
 #include <qapplication.h>
 #include <qsocketnotifier.h>
+#include <QvisColorTableButton.h>
 #include <DebugStream.h>
 #include <TimingsManager.h>
 #include <WindowMetrics.h>
@@ -206,10 +210,14 @@ using std::string;
 //    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
 //    Add plotInfoAtts. 
 //
+//    Brad Whitlock, Mon Feb 12 17:36:41 PST 2007
+//    Changed base class to ViewerBase.
+//
 // ****************************************************************************
 
-ViewerSubject::ViewerSubject() : xfer(), clients(), viewerRPC(), 
-    postponedAction(), borders(), shift(), preshift(), geometry(),
+ViewerSubject::ViewerSubject() : ViewerBase(0, "ViewerSubject"), 
+    xfer(), clients(),
+    borders(), shift(), preshift(), geometry(),
     engineParallelArguments(), unknownArguments(), clientArguments()
 {
     //
@@ -224,7 +232,6 @@ ViewerSubject::ViewerSubject() : xfer(), clients(), viewerRPC(),
     // We start out with no ParentProcess object and it's only temporary anyway.
     //
     parent = 0;
-    viewerState = 0;
     inputConnection = 0;
 
     //
@@ -280,19 +287,8 @@ ViewerSubject::ViewerSubject() : xfer(), clients(), viewerRPC(),
     clientMethodObserver = 0;
     clientInformationObserver = 0;
     syncObserver = 0;
-    messageAtts = 0;
-    statusAtts = 0;
-    appearanceAtts = 0;
-    syncAtts = 0;
-    metaData = 0;
-    silAtts = 0;
-    procAtts = 0;
-    clientMethod = 0;
-    clientInformation = 0;
-    clientInformationList = 0;
-    movieAtts = 0;
-    logRPC = 0;
-    plotInfoAtts = 0;
+    colorTableObserver = 0;
+
 
     //
     // Set some flags related to viewer windows.
@@ -316,9 +312,8 @@ ViewerSubject::ViewerSubject() : xfer(), clients(), viewerRPC(),
     //
     plotFactory = 0;
     operatorFactory = 0;
-    messageBuffer = 0;
+    messageBuffer = new ViewerMessageBuffer;
     messagePipe[0] = -1; messagePipe[1] = -1;
-    pluginAtts = 0;
     qt_argv = NULL;
 
     viewerSubject = this;   // FIX_ME Hack, this should be removed.
@@ -353,6 +348,9 @@ ViewerSubject::ViewerSubject() : xfer(), clients(), viewerRPC(),
 //    Mark C. Miller, Wed Jan 10 11:50:51 PST 2007
 //    Fixed mismatched delete for configFileName
 //
+//    Brad Whitlock, Mon Feb 12 10:33:39 PDT 2007
+//    Delete the ViewerState and ViewerMethods objects.
+//
 // ****************************************************************************
 
 ViewerSubject::~ViewerSubject()
@@ -362,28 +360,16 @@ ViewerSubject::~ViewerSubject()
     delete postponedActionObserver;
     delete clientMethodObserver;
     delete clientInformationObserver;
+    delete colorTableObserver;
 
     delete plotFactory;
     delete operatorFactory;
     delete configMgr;
-    delete messageAtts;
-    delete statusAtts;
-    delete pluginAtts;
-    delete appearanceAtts;
-    delete syncAtts;
     delete syncObserver;
     delete [] configFileName;
-    delete metaData;
-    delete silAtts;
-    delete procAtts;
-    delete clientMethod;
-    delete clientInformation;
-    delete clientInformationList;
-    delete movieAtts;
-    delete logRPC;
-    delete plotInfoAtts;
 
-    delete viewerState;
+    delete GetViewerState();
+    delete GetViewerMethods();
     delete inputConnection;
 
     if (qt_argv != NULL)
@@ -476,7 +462,7 @@ ViewerSubject::Connect(int *argc, char ***argv)
     for(int i = 0; i < *argc; ++i)
         argv2[i] = (*argv)[i];
     argv2[*argc] = "-font";
-    argv2[*argc+1] = (char*)appearanceAtts->GetFontDescription().c_str();
+    argv2[*argc+1] = (char*)GetViewerState()->GetAppearanceAttributes()->GetFontDescription().c_str();
     argv2[*argc+2] = NULL;
     mainApp = new QApplication(argc2, argv2, !nowin);
     CustomizeAppearance();
@@ -557,6 +543,9 @@ ViewerSubject::Connect(int *argc, char ***argv)
 //    Updated since I moved Get*ConfigFile to Utility.h instead of having
 //    them be ConfigManager methods.
 //
+//    Brad Whitlock, Mon Feb 12 12:23:11 PDT 2007
+//    I made it use ViewerState.
+//
 // ****************************************************************************
 
 void
@@ -610,8 +599,8 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
     else
         localSettings = configMgr->ReadConfigFile(configFile);
     delete [] configFile;
-    configMgr->Add(appearanceAtts);
-    configMgr->Add(pluginAtts);
+    configMgr->Add(GetViewerState()->GetAppearanceAttributes());
+    configMgr->Add(GetViewerState()->GetPluginManagerAttributes());
     configMgr->ProcessConfigSettings(systemSettings);
     configMgr->ProcessConfigSettings(localSettings);
     configMgr->ClearSubjects();
@@ -636,89 +625,61 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //   Hank Childs, Mon Feb 13 21:54:12 PST 2006
 //   Added construct ddf attributes.
 //
-//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
-//    Add plotInfoAtts. 
+//   Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
+//   Add plotInfoAtts. 
+//
+//   Brad Whitlock, Mon Feb 12 11:05:27 PDT 2007
+//   Rewrote to use ViewerState.
 //
 // ****************************************************************************
 
 void
 ViewerSubject::CreateState()
 {
-    // Create the messaging attributes.
-    messageAtts = new MessageAttributes;
-    statusAtts = new StatusAttributes;
-    // Create the appearance attributes.
-    appearanceAtts = new AppearanceAttributes;
-    // Create the sync attributes.
-    syncAtts = new SyncAttributes;
-    // Create the plugin attributes
-    pluginAtts = new PluginManagerAttributes;
-    messageBuffer = new ViewerMessageBuffer;
-    // Create the metadata and sil attributes
-    metaData = new avtDatabaseMetaData;
-    silAtts = new SILAttributes;
-    procAtts = new ProcessAttributes;
-    clientMethod = new ClientMethod;
-    clientInformation = new ClientInformation;
-    clientInformationList = new ClientInformationList;
-    movieAtts = new MovieAttributes;
-    logRPC    = new ViewerRPC;
-    plotInfoAtts    = new PlotInfoAttributes;
+    ViewerState *s = GetViewerState();
 
+    // The ViewerState object automatically creates its own state objects in
+    // the right order. However, certain objects in the viewer use their own
+    // copies and it is those objects that we need to use in the ViewerState
+    // object, etc. Let's override the values of some of the objects in the
+    // ViewerState object with those of the other viewer objects.
     //
-    // Connect the client attribute subjects.
-    //
-    viewerState = new ViewerState;
-    // objects that we don't want to send to the client unless we have to.
-    viewerState->Add(&viewerRPC);
-    viewerState->Add(&postponedAction);
-    viewerState->Add(syncAtts,     false);
-    viewerState->Add(messageAtts,  false);
-    viewerState->Add(statusAtts,   false);
-    viewerState->Add(metaData,     false);
-    viewerState->Add(silAtts,      false);
-    viewerState->Add(ViewerFileServer::Instance()->GetDBPluginInfoAtts(), false);
-    viewerState->Add(ViewerEngineManager::Instance()->GetExportDBAtts(),  false);
-    viewerState->Add(ViewerEngineManager::Instance()->GetConstructDDFAtts(),  false);
-    viewerState->Add(clientMethod,          false);
-    viewerState->Add(clientInformation,     false);
-    viewerState->Add(clientInformationList, false);
-    viewerState->Add(plotInfoAtts, false);
+    // Since the important viewer objects now inherit from ViewerBase, they should
+    // use the object from ViewerState *ViewerBase::GetState() when possible 
+    // instead of maintaining their own objects. If we eventually switch to that
+    // paradigm then we can delete this code!
 
-    // Objects that can go to the client whenever.
-    viewerState->Add(pluginAtts,   false);
-    viewerState->Add(appearanceAtts);
-    viewerState->Add(ViewerWindowManager::GetClientAtts());
-    viewerState->Add(ViewerFileServer::Instance()->GetDatabaseCorrelationList());
-    viewerState->Add(ViewerPlotList::GetClientAtts());
-    viewerState->Add(ViewerEngineManager::GetClientAtts());
-    viewerState->Add(ViewerWindowManager::GetSaveWindowClientAtts());
-    viewerState->Add(ViewerEngineManager::GetEngineList());
-    viewerState->Add(avtColorTables::Instance()->GetColorTables());
-    viewerState->Add(ParsingExprList::Instance()->GetList());
-    viewerState->Add(ViewerWindowManager::Instance()->GetAnnotationClientAtts());
-    viewerState->Add(ViewerPlotList::GetClientSILRestrictionAtts());
-    viewerState->Add(ViewerWindowManager::Instance()->GetViewCurveClientAtts());
-    viewerState->Add(ViewerWindowManager::Instance()->GetView2DClientAtts());
-    viewerState->Add(ViewerWindowManager::Instance()->GetView3DClientAtts());
-    viewerState->Add(ViewerWindowManager::Instance()->GetLightListClientAtts());
-    viewerState->Add(ViewerWindowManager::Instance()->GetAnimationClientAtts());
-    viewerState->Add(ViewerQueryManager::Instance()->GetPickClientAtts());
-    viewerState->Add(ViewerWindowManager::Instance()->GetPrinterClientAtts());
-    viewerState->Add(ViewerWindowManager::Instance()->GetWindowInformation());
-    viewerState->Add(ViewerWindowManager::Instance()->GetRenderingAttributes());
-    viewerState->Add(ViewerWindowManager::Instance()->GetKeyframeClientAtts());
-    viewerState->Add(ViewerQueryManager::Instance()->GetQueryTypes());
-    viewerState->Add(ViewerQueryManager::Instance()->GetQueryClientAtts());
-    viewerState->Add(ViewerEngineManager::GetMaterialClientAtts());
-    viewerState->Add(ViewerQueryManager::Instance()->GetGlobalLineoutClientAtts());
-    viewerState->Add(ViewerWindowManager::GetAnnotationObjectList());
-    viewerState->Add(ViewerQueryManager::Instance()->GetQueryOverTimeClientAtts());
-    viewerState->Add(ViewerWindowManager::Instance()->GetInteractorClientAtts());
-    viewerState->Add(procAtts);
-    viewerState->Add(movieAtts);
-    viewerState->Add(ViewerEngineManager::GetMeshManagementClientAtts());
-    viewerState->Add(logRPC);
+    s->SetDBPluginInfoAttributes(ViewerFileServer::Instance()->GetDBPluginInfoAtts(), false);
+    s->SetExportDBAttributes(ViewerEngineManager::Instance()->GetExportDBAtts(),  false);
+    s->SetConstructDDFAttributes(ViewerEngineManager::Instance()->GetConstructDDFAtts(),  false);
+    s->SetGlobalAttributes(ViewerWindowManager::GetClientAtts(), false);
+    s->SetDatabaseCorrelationList(ViewerFileServer::Instance()->GetDatabaseCorrelationList(), false);
+    s->SetPlotList(ViewerPlotList::GetClientAtts(), false);
+    s->SetHostProfileList(ViewerEngineManager::GetClientAtts(), false);
+    s->SetSaveWindowAttributes(ViewerWindowManager::GetSaveWindowClientAtts(), false);
+    s->SetEngineList(ViewerEngineManager::GetEngineList(), false);
+    s->SetColorTableAttributes(avtColorTables::Instance()->GetColorTables(), false);
+    s->SetExpressionList(ParsingExprList::Instance()->GetList(), false);
+    s->SetAnnotationAttributes(ViewerWindowManager::Instance()->GetAnnotationClientAtts(), false);
+    s->SetSILRestrictionAttributes(ViewerPlotList::GetClientSILRestrictionAtts(), false);
+    s->SetViewCurveAttributes(ViewerWindowManager::Instance()->GetViewCurveClientAtts(), false);
+    s->SetView2DAttributes(ViewerWindowManager::Instance()->GetView2DClientAtts(), false);
+    s->SetView3DAttributes(ViewerWindowManager::Instance()->GetView3DClientAtts(), false);
+    s->SetLightList(ViewerWindowManager::Instance()->GetLightListClientAtts(), false);
+    s->SetAnimationAttributes(ViewerWindowManager::Instance()->GetAnimationClientAtts(), false);
+    s->SetPickAttributes(ViewerQueryManager::Instance()->GetPickClientAtts(), false);
+    s->SetPrinterAttributes(ViewerWindowManager::Instance()->GetPrinterClientAtts(), false);
+    s->SetWindowInformation(ViewerWindowManager::Instance()->GetWindowInformation(), false);
+    s->SetRenderingAttributes(ViewerWindowManager::Instance()->GetRenderingAttributes(), false);
+    s->SetKeyframeAttributes(ViewerWindowManager::Instance()->GetKeyframeClientAtts(), false);
+    s->SetQueryList(ViewerQueryManager::Instance()->GetQueryTypes(), false);
+    s->SetQueryAttributes(ViewerQueryManager::Instance()->GetQueryClientAtts(), false);
+    s->SetMaterialAttributes(ViewerEngineManager::GetMaterialClientAtts(), false);
+    s->SetGlobalLineoutAttributes(ViewerQueryManager::Instance()->GetGlobalLineoutClientAtts(), false);
+    s->SetAnnotationObjectList(ViewerWindowManager::GetAnnotationObjectList(), false);
+    s->SetQueryOverTimeAttributes(ViewerQueryManager::Instance()->GetQueryOverTimeClientAtts(), false);
+    s->SetInteractorAttributes(ViewerWindowManager::Instance()->GetInteractorClientAtts(), false);
+    s->SetMeshManagementAttributes(ViewerEngineManager::GetMeshManagementClientAtts(), false);
 }
 
 // ****************************************************************************
@@ -749,8 +710,8 @@ ViewerSubject::ConnectXfer()
     //
     // Set up all of the objects that have been added to viewerState so far.
     //
-    for(int i = 0; i < viewerState->GetNObjects(); ++i)
-        xfer.Add(viewerState->GetStateObject(i));
+    for(int i = 0; i < GetViewerState()->GetNumStateObjects(); ++i)
+        xfer.Add(GetViewerState()->GetStateObject(i));
 
     //
     // Set up special opcodes and their handler.
@@ -780,6 +741,10 @@ ViewerSubject::ConnectXfer()
 //   Brad Whitlock, Thu May 5 19:22:00 PST 2005
 //   Added new observers for client information.
 //
+//   Brad Whitlock, Mon Feb 12 11:06:42 PDT 2007
+//   Made it use ViewerState and renamed a class for translating 
+//   Subject/Observer into Qt signals. Added color table observer.
+//
 // ****************************************************************************
 
 void
@@ -804,32 +769,32 @@ ViewerSubject::ConnectObjectsAndHandlers()
     // Create an observer for the viewerRPC object. The RPC's are actually
     // handled by the ViewerSubject by a slot function.
     //
-    viewerRPCObserver = new ViewerRPCObserver(&viewerRPC);
-    connect(viewerRPCObserver, SIGNAL(executeRPC()),
+    viewerRPCObserver = new ViewerObserverToSignal(GetViewerState()->GetViewerRPC());
+    connect(viewerRPCObserver, SIGNAL(execute()),
             this, SLOT(HandleViewerRPC()));
 
     //
     // Create an observer for the postponedAction object. The actions are
     // actually handled by the ViewerSubject by a slot function.
     //
-    postponedActionObserver = new ViewerRPCObserver(&postponedAction);
-    connect(postponedActionObserver, SIGNAL(executeRPC()),
+    postponedActionObserver = new ViewerObserverToSignal(GetViewerState()->GetPostponedAction());
+    connect(postponedActionObserver, SIGNAL(execute()),
             this, SLOT(HandlePostponedAction()));
 
     //
     // Create an observer for the syncAtts object. Each time the object
     // updates, send the attributes back to the client.
     //
-    syncObserver = new ViewerRPCObserver(syncAtts);
-    connect(syncObserver, SIGNAL(executeRPC()),
+    syncObserver = new ViewerObserverToSignal(GetViewerState()->GetSyncAttributes());
+    connect(syncObserver, SIGNAL(execute()),
             this, SLOT(HandleSync()));
 
     //
     // Create an observer for the clientMethod object. Each time the object
     // updates, send it back to the client.
     //
-    clientMethodObserver = new ViewerRPCObserver(clientMethod);
-    connect(clientMethodObserver, SIGNAL(executeRPC()),
+    clientMethodObserver = new ViewerObserverToSignal(GetViewerState()->GetClientMethod());
+    connect(clientMethodObserver, SIGNAL(execute()),
             this, SLOT(HandleClientMethod()));
 
     //
@@ -837,9 +802,17 @@ ViewerSubject::ConnectObjectsAndHandlers()
     // object updates, add it to the clientInformationList and send it back
     // to the client.
     //
-    clientInformationObserver = new ViewerRPCObserver(clientInformation);
-    connect(clientInformationObserver, SIGNAL(executeRPC()),
+    clientInformationObserver = new ViewerObserverToSignal(GetViewerState()->GetClientInformation());
+    connect(clientInformationObserver, SIGNAL(execute()),
             this, SLOT(HandleClientInformation()));
+
+    //
+    // Create an observer for color table attributes so we can update the color
+    // table buttons that we use in the viewer.
+    //
+    colorTableObserver = new ViewerObserverToSignal(GetViewerState()->GetColorTableAttributes());
+    connect(colorTableObserver, SIGNAL(execute()),
+            this, SLOT(HandleColorTable()));
 
     //
     // Create a timer that activates every 5 minutes to send a keep alive
@@ -905,37 +878,44 @@ ViewerSubject::ConnectObjectsAndHandlers()
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added MeshManagementAttributes
+//
+//    Brad Whitlock, Fri Feb 23 11:33:26 PDT 2007
+//    Made it use ViewerState when only client attributes are needed.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::ConnectConfigManager()
 {
     //
-    // Create the configuration manager and connect objects that can be
-    // written to the config file.
+    // Connect objects that can be written to the config file. Note that
+    // we don't hook up some fancy mechanism for viewer state because
+    // viewer state contains all of the client attributes and some objects
+    // have client attributes and default attributes. We want to hook up
+    // default attributes if they are available.
     //
-    configMgr->Add(ViewerWindowManager::GetClientAtts());
-    configMgr->Add(ViewerEngineManager::GetClientAtts());
-    configMgr->Add(ViewerWindowManager::GetSaveWindowClientAtts());
-    configMgr->Add(avtColorTables::Instance()->GetColorTables());
-    configMgr->Add(ParsingExprList::Instance()->GetList());
-    configMgr->Add(ViewerWindowManager::GetAnimationClientAtts());
+    configMgr->Add(GetViewerState()->GetGlobalAttributes());
+    configMgr->Add(GetViewerState()->GetHostProfileList());
+    configMgr->Add(GetViewerState()->GetSaveWindowAttributes());
+    configMgr->Add(GetViewerState()->GetColorTableAttributes());
+    configMgr->Add(GetViewerState()->GetExpressionList());
+    configMgr->Add(GetViewerState()->GetAnimationAttributes());
     configMgr->Add(ViewerWindowManager::GetAnnotationDefaultAtts());
-    configMgr->Add(ViewerWindowManager::GetViewCurveClientAtts());
-    configMgr->Add(ViewerWindowManager::GetView2DClientAtts());
-    configMgr->Add(ViewerWindowManager::GetView3DClientAtts());
+    configMgr->Add(GetViewerState()->GetViewCurveAttributes());
+    configMgr->Add(GetViewerState()->GetView2DAttributes());
+    configMgr->Add(GetViewerState()->GetView3DAttributes());
     configMgr->Add(ViewerWindowManager::GetLightListDefaultAtts());
     configMgr->Add(ViewerWindowManager::GetWindowAtts());
-    configMgr->Add(ViewerWindowManager::GetWindowInformation());
-    configMgr->Add(ViewerWindowManager::GetPrinterClientAtts());
-    configMgr->Add(ViewerWindowManager::GetRenderingAttributes());
+    configMgr->Add(GetViewerState()->GetWindowInformation());
+    configMgr->Add(GetViewerState()->GetPrinterAttributes());
+    configMgr->Add(GetViewerState()->GetRenderingAttributes());
     configMgr->Add(ViewerEngineManager::GetMaterialDefaultAtts());
     configMgr->Add(ViewerEngineManager::GetMeshManagementDefaultAtts());
     configMgr->Add(ViewerWindowManager::GetDefaultAnnotationObjectList());
     configMgr->Add(ViewerQueryManager::Instance()->GetPickDefaultAtts());
     configMgr->Add(ViewerQueryManager::Instance()->GetQueryOverTimeDefaultAtts());
     configMgr->Add(ViewerWindowManager::Instance()->GetInteractorDefaultAtts());
-    configMgr->Add(movieAtts);
+    configMgr->Add(GetViewerState()->GetMovieAttributes());
 }
 
 // ****************************************************************************
@@ -952,13 +932,15 @@ ViewerSubject::ConnectConfigManager()
 // Creation:   Fri Jul 25 12:02:41 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Feb 13 13:55:42 PST 2007
+//   Made it use ViewerState.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::InformClientOfPlugins() const
 {
-    pluginAtts->Notify();
+    GetViewerState()->GetPluginManagerAttributes()->Notify();
 }
 
 // ****************************************************************************
@@ -1055,7 +1037,7 @@ ViewerSubject::HeavyInitialization()
         // client using our BroadcastToAllClients callback function.
         //
         ViewerClientConnection *client = new ViewerClientConnection(parent,
-            checkParent, viewerState, this, "connection0");
+            checkParent, GetViewerState(), this, "connection0");
         client->SetupSpecialOpcodeHandler(SpecialOpcodeCallback, (void *)this);
         parent = 0;
         inputConnection = new BufferConnection;
@@ -1093,7 +1075,9 @@ ViewerSubject::HeavyInitialization()
 // Creation:   Mon May 2 13:51:34 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Feb 12 11:59:15 PDT 2007
+//   Made it use ViewerState.
+//
 // ****************************************************************************
 
 void
@@ -1114,7 +1098,7 @@ ViewerSubject::AddInputToXfer(ViewerClientConnection *client,
     // that we don't send ViewerRPC, postponedAction, syncAtts, messageAtts,
     // statusAtts, metaData, silAtts.
     if(client != 0 &&
-       subj->GetGuido() >= ViewerClientConnection::FreelyExchangedState)
+       subj->GetGuido() >= GetViewerState()->FreelyExchangedState())
     {
         for(int i = 0; i < clients.size(); ++i)
         {
@@ -1281,6 +1265,9 @@ ViewerSubject::Execute()
 //    Jeremy Meredith, Wed Nov  5 13:25:50 PST 2003
 //    Added ability to have plugins disabled by default.
 //
+//    Brad Whitlock, Mon Feb 12 12:03:10 PDT 2007
+//    I made it use ViewerState.
+//
 // ****************************************************************************
 
 void
@@ -1296,6 +1283,7 @@ ViewerSubject::InitializePluginManagers()
 
     PlotPluginManager     *pmgr = PlotPluginManager::Instance();
     OperatorPluginManager *omgr = OperatorPluginManager::Instance();
+    PluginManagerAttributes *pluginAtts = GetViewerState()->GetPluginManagerAttributes();
 
     //
     // Go through the saved plugin atts and remove the ones
@@ -1404,6 +1392,9 @@ ViewerSubject::InitializePluginManagers()
 //   Brad Whitlock, Mon May 2 11:47:10 PDT 2005
 //   I added code to add the plot attributes to the viewerState.
 //
+//   Brad Whitlock, Mon Feb 12 12:04:49 PDT 2007
+//   Changed how plots are registered with ViewerState.
+//
 // ****************************************************************************
 
 void
@@ -1441,7 +1432,7 @@ ViewerSubject::LoadPlotPlugins()
         if (attr != 0)
         {
             xfer.Add(attr);
-            viewerState->Add(attr);
+            GetViewerState()->RegisterPlotAttributes(attr);
         }
 
         if (defaultAttr != 0)
@@ -1471,6 +1462,9 @@ ViewerSubject::LoadPlotPlugins()
 //
 //   Brad Whitlock, Mon May 2 11:47:10 PDT 2005
 //   I added code to add the plot attributes to the viewerState.
+//
+//   Brad Whitlock, Mon Feb 12 12:04:49 PDT 2007
+//   Changed how operators are registered with ViewerState.
 //
 // ****************************************************************************
 
@@ -1509,7 +1503,7 @@ ViewerSubject::LoadOperatorPlugins()
         if (attr != 0)
         {
             xfer.Add(attr);
-            viewerState->Add(attr);
+            GetViewerState()->RegisterOperatorAttributes(attr);
         }
 
         if(defaultAttr)
@@ -1574,11 +1568,11 @@ ViewerSubject::ProcessConfigFileSettings()
 
     // Add the appearanceAtts *after* the config settings have been read. This
     // prevents overwriting the attributes and sending them to the client.
-    configMgr->Add(appearanceAtts);
+    configMgr->Add(GetViewerState()->GetAppearanceAttributes());
 
     // Add the pluginAtts *after* the config settings have been read.
     // First, tell the client which plugins we've really loaded.
-    configMgr->Add(pluginAtts);
+    configMgr->Add(GetViewerState()->GetPluginManagerAttributes());
 
     // Copy the default annotation attributes into the client annotation
     // attributes.
@@ -1964,39 +1958,39 @@ ViewerSubject::CustomizeAppearance()
     // Set the style and inform the widgets.
     //
 #if QT_VERSION < 300
-    if (appearanceAtts->GetStyle() == "cde")
+    if (GetViewerState()->GetAppearanceAttributes()->GetStyle() == "cde")
         mainApp->setStyle(new QCDEStyle);
-    else if (appearanceAtts->GetStyle() == "windows")
+    else if (GetViewerState()->GetAppearanceAttributes()->GetStyle() == "windows")
         mainApp->setStyle(new QWindowsStyle);
-    else if (appearanceAtts->GetStyle() == "platinum")
+    else if (GetViewerState()->GetAppearanceAttributes()->GetStyle() == "platinum")
         mainApp->setStyle(new QPlatinumStyle);
 #if QT_VERSION >= 230
-    else if (appearanceAtts->GetStyle() == "sgi")
+    else if (GetViewerState()->GetAppearanceAttributes()->GetStyle() == "sgi")
         mainApp->setStyle(new QSGIStyle);
 #endif
     else
         mainApp->setStyle(new QMotifStyle);
 #else
     // Set the style via the style name.
-    mainApp->setStyle(appearanceAtts->GetStyle().c_str());
+    mainApp->setStyle(GetViewerState()->GetAppearanceAttributes()->GetStyle().c_str());
 #endif
 
     //
     // Set the colors and inform the widgets.
     //
-    if(appearanceAtts->GetStyle() != "aqua" &&
-       appearanceAtts->GetStyle() != "macintosh")
+    if(GetViewerState()->GetAppearanceAttributes()->GetStyle() != "aqua" &&
+       GetViewerState()->GetAppearanceAttributes()->GetStyle() != "macintosh")
     {
-        QColor bg(appearanceAtts->GetBackground().c_str());
-        QColor fg(appearanceAtts->GetForeground().c_str());
+        QColor bg(GetViewerState()->GetAppearanceAttributes()->GetBackground().c_str());
+        QColor fg(GetViewerState()->GetAppearanceAttributes()->GetForeground().c_str());
         QColor btn(bg);
 
         // Put the converted RGB format color into the appearance attributes.
         char tmp[20];
         SNPRINTF(tmp, 20, "#%02x%02x%02x", bg.red(), bg.green(), bg.blue());
-        appearanceAtts->SetBackground(tmp);
+        GetViewerState()->GetAppearanceAttributes()->SetBackground(tmp);
         SNPRINTF(tmp, 20, "#%02x%02x%02x", fg.red(), fg.green(), fg.blue());
-        appearanceAtts->SetForeground(tmp);
+        GetViewerState()->GetAppearanceAttributes()->SetForeground(tmp);
 
         int h,s,v;
         fg.hsv(&h,&s,&v);
@@ -2311,7 +2305,7 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
 
             // Store the background color in the viewer's appearance
             // attributes so the gui will be colored properly on startup.
-            appearanceAtts->SetBackground(std::string(argv2[i+1]));
+            GetViewerState()->GetAppearanceAttributes()->SetBackground(std::string(argv2[i+1]));
             ++i;
         }
         else if(strcmp(argv2[i], "-config") == 0)
@@ -2335,7 +2329,7 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
 
             // Store the foreground color in the viewer's appearance
             // attributes so the gui will be colored properly on startup.
-            appearanceAtts->SetForeground(std::string(argv2[i+1]));
+            GetViewerState()->GetAppearanceAttributes()->SetForeground(std::string(argv2[i+1]));
             ++i;
         }
         else if (strcmp(argv2[i], "-style") == 0)
@@ -2364,7 +2358,7 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
                 clientArguments.push_back(argv2[i]);
                 clientArguments.push_back(argv2[i+1]);
 
-                appearanceAtts->SetStyle(argv2[i+1]);
+                GetViewerState()->GetAppearanceAttributes()->SetStyle(argv2[i+1]);
             }
             ++i;
         }
@@ -2380,7 +2374,7 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
             clientArguments.push_back(argv2[i]);
             clientArguments.push_back(argv2[i+1]);
 
-            appearanceAtts->SetFontDescription(argv2[i + 1]);
+            GetViewerState()->GetAppearanceAttributes()->SetFontDescription(argv2[i + 1]);
             ++i;
         }
         else if (strcmp(argv2[i], "-timing") == 0 ||
@@ -2519,296 +2513,6 @@ ViewerSubject::MessageRendererThread(const char *message)
     messageBuffer->AddString(message);
     QTimer::singleShot(1, this, SLOT(ProcessRendererMessage()));
 #endif
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::Error
-//
-// Purpose: 
-//   Sends an error message to the GUI.
-//
-// Arguments:
-//   message : The message that gets sent to the GUI.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Apr 23 13:41:01 PST 2001
-//
-// Modifications:
-//   Brad Whitlock, Tue May 20 14:24:51 PST 2003
-//   Updated MessageAttributes.
-//
-//   Brad Whitlock, Fri Mar 19 16:12:00 PST 2004
-//   Added code to print errors to debug1.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::Error(const char *message)
-{
-    if ((message == 0) || (strlen(message) < 1))
-        return;
-
-    // Send the message to the observers of the viewer's messageAtts.
-    messageAtts->SetText(std::string(message));
-    messageAtts->SetSeverity(MessageAttributes::Error);
-    messageAtts->Notify();
-
-    debug1 << "Error - " << message << endl;
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::Warning
-//
-// Purpose: 
-//   Sends a warning message to the GUI.
-//
-// Arguments:
-//   message : The message that gets sent to the GUI.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Apr 23 13:41:01 PST 2001
-//
-// Modifications:
-//   Brad Whitlock, Tue May 20 14:24:51 PST 2003
-//   Updated MessageAttributes.
-//
-//   Brad Whitlock, Fri Mar 19 16:12:00 PST 2004
-//   Added code to print errors to debug1.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::Warning(const char *message)
-{
-    if ((message == 0) || (strlen(message) < 1))
-        return;
-
-    // Send the message to the observers of the viewer's messageAtts.
-    messageAtts->SetText(std::string(message));
-    messageAtts->SetSeverity(MessageAttributes::Warning);
-    messageAtts->Notify();
-
-    debug1 << "Warning - " << message << endl;
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::Message
-//
-// Purpose: 
-//   Sends a message to the GUI.
-//
-// Arguments:
-//   message : The message that gets sent to the GUI.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Apr 23 13:41:01 PST 2001
-//
-// Modifications:
-//   Brad Whitlock, Tue May 20 14:24:51 PST 2003
-//   Updated MessageAttributes.
-//   
-//   Brad Whitlock, Fri Mar 19 16:12:00 PST 2004
-//   Added code to print errors to debug1.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::Message(const char *message)
-{
-    if ((message == 0) || (strlen(message) < 1))
-        return;
-
-    // Send the message to the observers of the viewer's messageAtts.
-    messageAtts->SetText(std::string(message));
-    messageAtts->SetSeverity(MessageAttributes::Message);
-    messageAtts->Notify();
-
-    debug1 << "Message - " << message << endl;
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ErrorClear
-//
-// Purpose: 
-//   Sends a clear errors message to the clients.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu May 11 15:06:36 PST 2006
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ErrorClear()
-{
-    // Send the message to the observers of the viewer's messageAtts.
-    debug1 << "Sending ErrorClear message to clients." << endl;
-    messageAtts->SetText("");
-    messageAtts->SetSeverity(MessageAttributes::ErrorClear);
-    messageAtts->Notify();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::Status
-//
-// Purpose: 
-//   Sends a status message to the GUI.
-//
-// Arguments:
-//   message : The status message that is sent.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Apr 30 14:38:09 PST 2001
-//
-// Modifications:
-//    Jeremy Meredith, Fri Jun 29 15:09:08 PDT 2001
-//    Added the MessageType field.
-//
-//    Brad Whitlock, Fri Sep 21 13:26:46 PST 2001
-//    Added the duration field.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::Status(const char *message)
-{
-    statusAtts->SetSender("viewer");
-    statusAtts->SetClearStatus(false);
-    statusAtts->SetMessageType(1);
-    statusAtts->SetStatusMessage(message);
-    statusAtts->SetDuration(StatusAttributes::DEFAULT_DURATION);
-    statusAtts->Notify();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::Status
-//
-// Purpose: 
-//   Sends a status message to the GUI.
-//
-// Arguments:
-//   message      : The status message that is sent.
-//   milliseconds : The duration of time that the status message is displayed.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Sep 21 13:24:52 PST 2001
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-ViewerSubject::Status(const char *message, int milliseconds)
-{
-    statusAtts->SetSender("viewer");
-    statusAtts->SetClearStatus(false);
-    statusAtts->SetMessageType(1);
-    statusAtts->SetStatusMessage(message);
-    statusAtts->SetDuration(milliseconds);
-    statusAtts->Notify();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::Status
-//
-// Purpose: 
-//   Sends a status message for a component other than the viewer.
-//
-// Arguments:
-//   sender  : The name of the component sending the message.
-//   message : The message to be sent.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue May 1 12:06:22 PDT 2001
-//
-// Modifications:
-//    Jeremy Meredith, Fri Jun 29 15:09:08 PDT 2001
-//    Added the MessageType field.
-//   
-//    Brad Whitlock, Fri Sep 21 13:26:46 PST 2001
-//    Added the duration field.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::Status(const char *sender, const char *message)
-{
-    statusAtts->SetSender(sender);
-    statusAtts->SetClearStatus(false);
-    statusAtts->SetMessageType(1);
-    statusAtts->SetStatusMessage(message);
-    statusAtts->SetDuration(StatusAttributes::DEFAULT_DURATION);
-    statusAtts->Notify();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::Status
-//
-// Purpose: 
-//   Sends a status message for a component other than the viewer. This
-//   message includes percent done, etc.
-//
-// Arguments:
-//   sender       : The component that sent the status update. This is a
-//                  host name for an engine that sent the message.
-//   percent      : The percent through the current stage.
-//   curStage     : The number of the current stage.
-//   curStageName : The name of the current stage.
-//   maxStage     : The maximum number of stages.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Apr 30 14:39:30 PST 2001
-//
-// Modifications:
-//    Jeremy Meredith, Fri Jun 29 15:09:08 PDT 2001
-//    Added the MessageType field.
-//   
-//    Brad Whitlock, Fri Sep 21 13:26:46 PST 2001
-//    Added the duration field.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::Status(const char *sender, int percent, int curStage,
-    const char *curStageName, int maxStage)
-{
-    statusAtts->SetSender(sender);
-    statusAtts->SetClearStatus(false);
-    statusAtts->SetMessageType(2);
-    statusAtts->SetPercent(percent);
-    statusAtts->SetCurrentStage(curStage);
-    statusAtts->SetCurrentStageName(curStageName);
-    statusAtts->SetMaxStage(maxStage);
-    statusAtts->SetDuration(StatusAttributes::DEFAULT_DURATION);
-    statusAtts->Notify();
-}
-
-// ****************************************************************************
-// Method: ViewerSubject::ClearStatus
-//
-// Purpose: 
-//   Sends an empty message to the status bar to clear it.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Apr 30 14:33:37 PST 2001
-//
-// Modifications:
-//    Jeremy Meredith, Tue Jul  3 15:21:37 PDT 2001
-//    Also set all percentages/stages to zeroes.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ClearStatus(const char *sender)
-{
-    statusAtts->SetSender((sender == 0) ? "viewer" : sender);
-    statusAtts->SetClearStatus(true);
-    statusAtts->SetPercent(0);
-    statusAtts->SetCurrentStage(0);
-    statusAtts->SetCurrentStageName("");
-    statusAtts->SetMaxStage(0);
-    statusAtts->Notify();
 }
 
 // ****************************************************************************
@@ -2984,9 +2688,9 @@ ViewerSubject::Close()
     //
     // Tell all of the clients to quit.
     //
-    clientMethod->SetMethodName("Quit");
-    clientMethod->ClearArgs();
-    BroadcastToAllClients((void *)this, clientMethod);
+    GetViewerState()->GetClientMethod()->SetMethodName("Quit");
+    GetViewerState()->GetClientMethod()->ClearArgs();
+    BroadcastToAllClients((void *)this, GetViewerState()->GetClientMethod());
 
     //
     // Break out of the application loop.
@@ -3010,8 +2714,8 @@ ViewerSubject::Close()
 void
 ViewerSubject::CopyAnnotationsToWindow()
 {
-    int from = viewerRPC.GetWindowLayout();
-    int to = viewerRPC.GetWindowId();
+    int from = GetViewerState()->GetViewerRPC()->GetWindowLayout();
+    int to = GetViewerState()->GetViewerRPC()->GetWindowId();
     CopyAnnotationsToWindow(from, to);
 }
 
@@ -3031,8 +2735,8 @@ ViewerSubject::CopyAnnotationsToWindow()
 void
 ViewerSubject::CopyLightingToWindow()
 {
-    int from = viewerRPC.GetWindowLayout();
-    int to = viewerRPC.GetWindowId();
+    int from = GetViewerState()->GetViewerRPC()->GetWindowLayout();
+    int to = GetViewerState()->GetViewerRPC()->GetWindowId();
     CopyLightingToWindow(from, to);
 }
 
@@ -3052,8 +2756,8 @@ ViewerSubject::CopyLightingToWindow()
 void
 ViewerSubject::CopyViewToWindow()
 {
-    int from = viewerRPC.GetWindowLayout();
-    int to = viewerRPC.GetWindowId();
+    int from = GetViewerState()->GetViewerRPC()->GetWindowLayout();
+    int to = GetViewerState()->GetViewerRPC()->GetWindowId();
     CopyViewToWindow(from, to);
 }
 
@@ -3073,8 +2777,8 @@ ViewerSubject::CopyViewToWindow()
 void
 ViewerSubject::CopyPlotsToWindow()
 {
-    int from = viewerRPC.GetWindowLayout();
-    int to = viewerRPC.GetWindowId();
+    int from = GetViewerState()->GetViewerRPC()->GetWindowLayout();
+    int to = GetViewerState()->GetViewerRPC()->GetWindowId();
     CopyPlotsToWindow(from, to);
 }
 
@@ -3267,10 +2971,10 @@ ViewerSubject::SendSimulationCommand()
     //
     // Get the rpc arguments.
     //
-    const std::string &hostName = viewerRPC.GetProgramHost();
-    const std::string &simName  = viewerRPC.GetProgramSim();
-    const std::string &command  = viewerRPC.GetStringArg1();
-    const std::string &argument = viewerRPC.GetStringArg2();
+    const std::string &hostName = GetViewerState()->GetViewerRPC()->GetProgramHost();
+    const std::string &simName  = GetViewerState()->GetViewerRPC()->GetProgramSim();
+    const std::string &command  = GetViewerState()->GetViewerRPC()->GetStringArg1();
+    const std::string &argument = GetViewerState()->GetViewerRPC()->GetStringArg2();
 
     //
     // Perform the RPC.
@@ -4178,9 +3882,9 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
 bool
 ViewerSubject::OpenDatabase()
 {
-    int ts = OpenDatabaseHelper(viewerRPC.GetDatabase(), viewerRPC.GetIntArg1(),
-                       viewerRPC.GetBoolFlag(), true,
-                       viewerRPC.GetStringArg1());
+    int ts = OpenDatabaseHelper(GetViewerState()->GetViewerRPC()->GetDatabase(), GetViewerState()->GetViewerRPC()->GetIntArg1(),
+                       GetViewerState()->GetViewerRPC()->GetBoolFlag(), true,
+                       GetViewerState()->GetViewerRPC()->GetStringArg1());
     return (ts >= 0 ? true : false);
 }
 
@@ -4204,7 +3908,7 @@ ViewerSubject::OpenDatabase()
 void
 ViewerSubject::ActivateDatabase()
 {
-    const std::string &database = viewerRPC.GetDatabase();
+    const std::string &database = GetViewerState()->GetViewerRPC()->GetDatabase();
 
     //
     // Expand the database name to its full path just in case.
@@ -4260,9 +3964,9 @@ ViewerSubject::CheckForNewStates()
     // Add new states to the specified database and update the metadata,
     // correlations, and plot list caches.
     //
-    debug1 << "CheckForNewStates: " << viewerRPC.GetDatabase().c_str() << endl;
+    debug1 << "CheckForNewStates: " << GetViewerState()->GetViewerRPC()->GetDatabase().c_str() << endl;
 
-    ViewerWindowManager::Instance()->CheckForNewStates(viewerRPC.GetDatabase());
+    ViewerWindowManager::Instance()->CheckForNewStates(GetViewerState()->GetViewerRPC()->GetDatabase());
 }
 
 // ****************************************************************************
@@ -4333,8 +4037,8 @@ ViewerSubject::ReOpenDatabase()
     //
     // Get the rpc arguments.
     //
-    std::string hostDatabase(viewerRPC.GetDatabase());
-    bool forceClose = (viewerRPC.GetIntArg1() == 1);
+    std::string hostDatabase(GetViewerState()->GetViewerRPC()->GetDatabase());
+    bool forceClose = (GetViewerState()->GetViewerRPC()->GetIntArg1() == 1);
 
     //
     // Expand the filename.
@@ -4513,8 +4217,8 @@ ViewerSubject::ReOpenDatabase()
 void
 ViewerSubject::ReplaceDatabase()
 {
-    debug4 << "ReplaceDatabase: db=" << viewerRPC.GetDatabase().c_str()
-           << ", time=" << viewerRPC.GetIntArg1() << endl;
+    debug4 << "ReplaceDatabase: db=" << GetViewerState()->GetViewerRPC()->GetDatabase().c_str()
+           << ", time=" << GetViewerState()->GetViewerRPC()->GetIntArg1() << endl;
 
     //
     // If the replace is merely changing the timestate, then turn on
@@ -4525,14 +4229,14 @@ ViewerSubject::ReplaceDatabase()
     if(win == 0)
         return;
 
-    if (viewerRPC.GetDatabase() == win->GetPlotList()->GetHostDatabaseName())
+    if (GetViewerState()->GetViewerRPC()->GetDatabase() == win->GetPlotList()->GetHostDatabaseName())
         win->SetMergeViewLimits(true);
 
     //
     // First open the database.
     //
-    int timeState = viewerRPC.GetIntArg1();
-    timeState = OpenDatabaseHelper(viewerRPC.GetDatabase(), timeState,
+    int timeState = GetViewerState()->GetViewerRPC()->GetIntArg1();
+    timeState = OpenDatabaseHelper(GetViewerState()->GetViewerRPC()->GetDatabase(), timeState,
                                    false, false);
 
     //
@@ -4644,7 +4348,7 @@ ViewerSubject::OverlayDatabase()
     //
     // First open the database.
     //
-    OpenDatabaseHelper(viewerRPC.GetDatabase(), 0, false, true);
+    OpenDatabaseHelper(GetViewerState()->GetViewerRPC()->GetDatabase(), 0, false, true);
 
     //
     // Now perform the database replacement.
@@ -4676,7 +4380,7 @@ ViewerSubject::OverlayDatabase()
 void
 ViewerSubject::CloseDatabase()
 {
-    ViewerWindowManager::Instance()->CloseDatabase(viewerRPC.GetDatabase());
+    ViewerWindowManager::Instance()->CloseDatabase(GetViewerState()->GetViewerRPC()->GetDatabase());
 }
 
 // ****************************************************************************
@@ -4699,7 +4403,7 @@ ViewerSubject::CloseDatabase()
 void
 ViewerSubject::CreateDatabaseCorrelation()
 {
-    const std::string &name = viewerRPC.GetDatabase();
+    const std::string &name = GetViewerState()->GetViewerRPC()->GetDatabase();
 
     //
     // Make sure that the correlation does not have the same name as
@@ -4717,8 +4421,8 @@ ViewerSubject::CreateDatabaseCorrelation()
     else
     {
         ViewerWindowManager::Instance()->CreateDatabaseCorrelation(
-            name, viewerRPC.GetProgramOptions(),
-            viewerRPC.GetIntArg1(), 0, viewerRPC.GetIntArg2());
+            name, GetViewerState()->GetViewerRPC()->GetProgramOptions(),
+            GetViewerState()->GetViewerRPC()->GetIntArg1(), 0, GetViewerState()->GetViewerRPC()->GetIntArg2());
         ViewerWindowManager::Instance()->UpdateWindowInformation(
             WINDOWINFO_TIMESLIDERS | WINDOWINFO_ANIMATION);
     }
@@ -4743,8 +4447,8 @@ ViewerSubject::AlterDatabaseCorrelation()
     // Alter the database correlation and update all of the windows that
     // used it.
     ViewerWindowManager::Instance()->AlterDatabaseCorrelation(
-        viewerRPC.GetDatabase(), viewerRPC.GetProgramOptions(),
-        viewerRPC.GetIntArg1(), viewerRPC.GetIntArg2());
+        GetViewerState()->GetViewerRPC()->GetDatabase(), GetViewerState()->GetViewerRPC()->GetProgramOptions(),
+        GetViewerState()->GetViewerRPC()->GetIntArg1(), GetViewerState()->GetViewerRPC()->GetIntArg2());
 }
 
 // ****************************************************************************
@@ -4764,7 +4468,7 @@ void
 ViewerSubject::DeleteDatabaseCorrelation()
 {
     // Delete the database correlation and update the windows that used it.
-    const std::string &name = viewerRPC.GetDatabase();
+    const std::string &name = GetViewerState()->GetViewerRPC()->GetDatabase();
     ViewerWindowManager::Instance()->DeleteDatabaseCorrelation(name);
 }
 
@@ -4803,8 +4507,8 @@ ViewerSubject::OpenComputeEngine()
     //
     // Get the rpc arguments.
     //
-    const string       &hostName = viewerRPC.GetProgramHost();
-    const stringVector &options  = viewerRPC.GetProgramOptions();
+    const string       &hostName = GetViewerState()->GetViewerRPC()->GetProgramHost();
+    const stringVector &options  = GetViewerState()->GetViewerRPC()->GetProgramOptions();
 
     //
     // Perform the rpc.
@@ -4866,8 +4570,8 @@ ViewerSubject::CloseComputeEngine()
     //
     // Get the rpc arguments.
     //
-    const string &hostName = viewerRPC.GetProgramHost();
-    const string &simName  = viewerRPC.GetProgramSim();
+    const string &hostName = GetViewerState()->GetViewerRPC()->GetProgramHost();
+    const string &simName  = GetViewerState()->GetViewerRPC()->GetProgramSim();
 
     //
     // We're closing the engine so reset all of the network ids for plots that
@@ -4902,8 +4606,8 @@ ViewerSubject::OpenMDServer()
     //
     // Get the rpc arguments.
     //
-    const std::string &hostName = viewerRPC.GetProgramHost();
-    const stringVector &options = viewerRPC.GetProgramOptions();
+    const std::string &hostName = GetViewerState()->GetViewerRPC()->GetProgramHost();
+    const stringVector &options = GetViewerState()->GetViewerRPC()->GetProgramOptions();
     ViewerFileServer::Instance()->NoFaultStartServer(hostName, options);
 }
 
@@ -4924,7 +4628,7 @@ ViewerSubject::UpdateDBPluginInfo()
     //
     // Get the rpc arguments.
     //
-    const std::string &hostName = viewerRPC.GetProgramHost();
+    const std::string &hostName = GetViewerState()->GetViewerRPC()->GetProgramHost();
 
     //
     // Perform the RPC.
@@ -5061,8 +4765,8 @@ ViewerSubject::ClearCache()
     //
     // Get the rpc arguments.
     //
-    const std::string &hostName = viewerRPC.GetProgramHost();
-    const std::string &simName  = viewerRPC.GetProgramSim();
+    const std::string &hostName = GetViewerState()->GetViewerRPC()->GetProgramHost();
+    const std::string &simName  = GetViewerState()->GetViewerRPC()->GetProgramSim();
 
     //
     // Perform the RPC.
@@ -5111,7 +4815,7 @@ ViewerSubject::SetDefaultPlotOptions()
     //
     // Get the rpc arguments.
     //
-    int       type = viewerRPC.GetPlotType();
+    int       type = GetViewerState()->GetViewerRPC()->GetPlotType();
 
     //
     // Perform the rpc.
@@ -5143,7 +4847,7 @@ ViewerSubject::ResetPlotOptions()
     //
     // Get the rpc arguments.
     //
-    int plot = viewerRPC.GetPlotType();
+    int plot = GetViewerState()->GetViewerRPC()->GetPlotType();
 
     //
     // Update the client so it has the default attributes.
@@ -5176,7 +4880,7 @@ ViewerSubject::SetDefaultOperatorOptions()
     //
     // Get the rpc arguments.
     //
-    int       type = viewerRPC.GetOperatorType();
+    int       type = GetViewerState()->GetViewerRPC()->GetOperatorType();
 
     //
     // Perform the rpc.
@@ -5209,7 +4913,7 @@ ViewerSubject::ResetOperatorOptions()
     //
     // Get the rpc arguments.
     //
-    int oper = viewerRPC.GetOperatorType();
+    int oper = GetViewerState()->GetViewerRPC()->GetOperatorType();
 
     //
     // Update the client so it has the default attributes.
@@ -5340,7 +5044,7 @@ ViewerSubject::DeleteViewKeyframe()
     //
     // Get the rpc arguments.
     //
-    int frame = viewerRPC.GetFrame();
+    int frame = GetViewerState()->GetViewerRPC()->GetFrame();
  
     //
     // Perform the rpc.
@@ -5367,8 +5071,8 @@ ViewerSubject::MoveViewKeyframe()
     //
     // Get the rpc arguments.
     //
-    int oldFrame = viewerRPC.GetIntArg1();
-    int newFrame = viewerRPC.GetIntArg2();
+    int oldFrame = GetViewerState()->GetViewerRPC()->GetIntArg1();
+    int newFrame = GetViewerState()->GetViewerRPC()->GetIntArg2();
  
     //
     // Perform the rpc.
@@ -5426,7 +5130,7 @@ ViewerSubject::UpdateColorTable()
     //
     // Get the rpc arguments.
     //
-    const char *ctName = viewerRPC.GetColorTableName().c_str();
+    const char *ctName = GetViewerState()->GetViewerRPC()->GetColorTableName().c_str();
 
     //
     // Perform the rpc.
@@ -5457,7 +5161,7 @@ ViewerSubject::ExportColorTable()
     //
     // Perform the rpc.
     //
-    const std::string &ctName = viewerRPC.GetColorTableName();
+    const std::string &ctName = GetViewerState()->GetViewerRPC()->GetColorTableName();
     std::string msg;
     if(avtColorTables::Instance()->ExportColorTable(ctName, msg))
     {
@@ -5553,7 +5257,7 @@ ViewerSubject::WriteConfigFile()
 void
 ViewerSubject::ExportEntireState()
 {
-    configMgr->ExportEntireState(viewerRPC.GetVariable());
+    configMgr->ExportEntireState(GetViewerState()->GetViewerRPC()->GetVariable());
 }
 
 // ****************************************************************************
@@ -5581,8 +5285,8 @@ void
 ViewerSubject::ImportEntireState()
 {
     stringVector empty;
-    configMgr->ImportEntireState(viewerRPC.GetVariable(),
-                                 viewerRPC.GetBoolFlag(),
+    configMgr->ImportEntireState(GetViewerState()->GetViewerRPC()->GetVariable(),
+                                 GetViewerState()->GetViewerRPC()->GetBoolFlag(),
                                  empty, false);
     configMgr->NotifyIfSelected();
 }
@@ -5603,9 +5307,9 @@ ViewerSubject::ImportEntireState()
 void
 ViewerSubject::ImportEntireStateWithDifferentSources()
 {
-     configMgr->ImportEntireState(viewerRPC.GetVariable(),
-                                  viewerRPC.GetBoolFlag(),
-                                  viewerRPC.GetProgramOptions(), true);
+     configMgr->ImportEntireState(GetViewerState()->GetViewerRPC()->GetVariable(),
+                                  GetViewerState()->GetViewerRPC()->GetBoolFlag(),
+                                  GetViewerState()->GetViewerRPC()->GetProgramOptions(), true);
      configMgr->NotifyIfSelected();
 }
 
@@ -5708,7 +5412,7 @@ void
 ViewerSubject::AddAnnotationObject()
 {
     ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    wM->AddAnnotationObject(viewerRPC.GetIntArg1());
+    wM->AddAnnotationObject(GetViewerState()->GetViewerRPC()->GetIntArg1());
 }
 
 // ****************************************************************************
@@ -6150,7 +5854,7 @@ ViewerSubject::SetRenderingAttributes()
 void
 ViewerSubject::SetWindowArea()
 {
-    const char *area = viewerRPC.GetWindowArea().c_str();
+    const char *area = GetViewerState()->GetViewerRPC()->GetWindowArea().c_str();
     
     //
     // Recalculate the layouts and reposition the windows.
@@ -6208,10 +5912,10 @@ ViewerSubject::ConnectToMetaDataServer()
     // Write the arguments to the debug logs
     //
     debug4 << "Telling mdserver on host "
-           << viewerRPC.GetProgramHost().c_str()
+           << GetViewerState()->GetViewerRPC()->GetProgramHost().c_str()
            << " to connect to another client." << endl;
     debug4 << "Arguments:" << endl;
-    const stringVector &sv = viewerRPC.GetProgramOptions();
+    const stringVector &sv = GetViewerState()->GetViewerRPC()->GetProgramOptions();
     for(int i = 0; i < sv.size(); ++i)
          debug4 << "\t" << sv[i].c_str() << endl;
 
@@ -6220,8 +5924,8 @@ ViewerSubject::ConnectToMetaDataServer()
     // the specified host to connect to another process.
     //
     ViewerFileServer::Instance()->ConnectServer(
-        viewerRPC.GetProgramHost(),
-        viewerRPC.GetProgramOptions()); 
+        GetViewerState()->GetViewerRPC()->GetProgramHost(),
+        GetViewerState()->GetViewerRPC()->GetProgramOptions()); 
 
     visitTimer->StopTimer(timeid, "Time spent telling mdserver to connect to client.");
 
@@ -6229,7 +5933,7 @@ ViewerSubject::ConnectToMetaDataServer()
     // Check to see if there were errors in mdserver plugin initialization
     //
     string err = ViewerFileServer::Instance()->
-                                GetPluginErrors(viewerRPC.GetProgramHost());
+                                GetPluginErrors(GetViewerState()->GetViewerRPC()->GetProgramHost());
     if (!err.empty())
     {
         Warning(err.c_str());
@@ -6372,7 +6076,7 @@ ViewerSubject::ToggleMaintainDataMode(int windowIndex)
 void
 ViewerSubject::SetViewExtentsType()
 {
-     avtExtentType viewType = (avtExtentType)viewerRPC.GetWindowLayout();
+     avtExtentType viewType = (avtExtentType)GetViewerState()->GetViewerRPC()->GetWindowLayout();
      ViewerWindowManager::Instance()->SetViewExtentsType(viewType);
 }
 
@@ -6485,16 +6189,16 @@ ViewerSubject::DatabaseQuery()
 {
     // Send the client a status message.
     QString msg;
-    msg.sprintf("Performing %s query...", viewerRPC.GetQueryName().c_str());
+    msg.sprintf("Performing %s query...", GetViewerState()->GetViewerRPC()->GetQueryName().c_str());
     Status(msg.latin1());
 
     ViewerWindow *vw = ViewerWindowManager::Instance()->GetActiveWindow();
     ViewerQueryManager *qm = ViewerQueryManager::Instance();
-    qm->DatabaseQuery(vw, viewerRPC.GetQueryName(), viewerRPC.GetQueryVariables(),
-                      viewerRPC.GetBoolFlag(), 
-                      viewerRPC.GetIntArg1(), viewerRPC.GetIntArg2(),
-                      (bool)viewerRPC.GetIntArg3(), viewerRPC.GetDoubleArg1(),
-                      viewerRPC.GetDoubleArg2());
+    qm->DatabaseQuery(vw, GetViewerState()->GetViewerRPC()->GetQueryName(), GetViewerState()->GetViewerRPC()->GetQueryVariables(),
+                      GetViewerState()->GetViewerRPC()->GetBoolFlag(), 
+                      GetViewerState()->GetViewerRPC()->GetIntArg1(), GetViewerState()->GetViewerRPC()->GetIntArg2(),
+                      (bool)GetViewerState()->GetViewerRPC()->GetIntArg3(), GetViewerState()->GetViewerRPC()->GetDoubleArg1(),
+                      GetViewerState()->GetViewerRPC()->GetDoubleArg2());
 
     // Clear the status
     ClearStatus();
@@ -6530,15 +6234,15 @@ ViewerSubject::PointQuery()
 {
     // Send the client a status message.
     QString msg;
-    msg.sprintf("Performing %s query...", viewerRPC.GetQueryName().c_str());
+    msg.sprintf("Performing %s query...", GetViewerState()->GetViewerRPC()->GetQueryName().c_str());
     Status(msg.latin1());
 
     ViewerQueryManager *qm = ViewerQueryManager::Instance();
-    qm->PointQuery(viewerRPC.GetQueryName(), viewerRPC.GetQueryPoint1(),
-                   viewerRPC.GetQueryVariables(),
-                   viewerRPC.GetIntArg1(), viewerRPC.GetIntArg2(),
-                   viewerRPC.GetBoolFlag(),
-                   (bool)viewerRPC.GetIntArg3()); 
+    qm->PointQuery(GetViewerState()->GetViewerRPC()->GetQueryName(), GetViewerState()->GetViewerRPC()->GetQueryPoint1(),
+                   GetViewerState()->GetViewerRPC()->GetQueryVariables(),
+                   GetViewerState()->GetViewerRPC()->GetIntArg1(), GetViewerState()->GetViewerRPC()->GetIntArg2(),
+                   GetViewerState()->GetViewerRPC()->GetBoolFlag(),
+                   (bool)GetViewerState()->GetViewerRPC()->GetIntArg3()); 
 
     // Clear the status
     ClearStatus();
@@ -6571,12 +6275,12 @@ ViewerSubject::LineQuery()
 {
     // Send the client a status message.
     QString msg;
-    msg.sprintf("Performing %s query...", viewerRPC.GetQueryName().c_str());
+    msg.sprintf("Performing %s query...", GetViewerState()->GetViewerRPC()->GetQueryName().c_str());
     Status(msg.latin1());
 
-    ViewerQueryManager::Instance()->StartLineQuery( viewerRPC.GetQueryName().c_str(),
-              viewerRPC.GetQueryPoint1(), viewerRPC.GetQueryPoint2(),
-              viewerRPC.GetQueryVariables(), viewerRPC.GetIntArg1());
+    ViewerQueryManager::Instance()->StartLineQuery( GetViewerState()->GetViewerRPC()->GetQueryName().c_str(),
+              GetViewerState()->GetViewerRPC()->GetQueryPoint1(), GetViewerState()->GetViewerRPC()->GetQueryPoint2(),
+              GetViewerState()->GetViewerRPC()->GetQueryVariables(), GetViewerState()->GetViewerRPC()->GetIntArg1());
     MessageRendererThread("finishLineQuery;");
 }
 
@@ -6959,8 +6663,8 @@ ViewerSubject::ProcessRendererMessage()
             syncObserver->SetUpdate(false);
 
             // Send the sync to all clients.
-            syncAtts->SetSyncTag(tag);
-            syncAtts->Notify();
+            GetViewerState()->GetSyncAttributes()->SetSyncTag(tag);
+            GetViewerState()->GetSyncAttributes()->Notify();
         }
     }
 }
@@ -7249,6 +6953,9 @@ ViewerSubject::SendKeepAlives()
 //    Hank Childs, Fri Jan 12 10:02:32 PST 2007
 //    If there was a failure from an RPC, then don't call update actions.
 //
+//    Brad Whitlock, Mon Feb 12 16:35:16 PST 2007
+//    Made it use ViewerState.
+//
 // ****************************************************************************
 
 void
@@ -7265,21 +6972,21 @@ ViewerSubject::HandleViewerRPC()
     // logRPC, which should be logged when received unless it is a
     // SetStateLoggingRPC.
     //
-    logRPC->SetRPCType(ViewerRPC::SetStateLoggingRPC);
-    logRPC->SetBoolFlag(false);
-    BroadcastToAllClients((void*)this, logRPC);
-    logRPC->CopyAttributes(&viewerRPC);
-    BroadcastToAllClients((void*)this, logRPC);
+    GetViewerState()->GetLogRPC()->SetRPCType(ViewerRPC::SetStateLoggingRPC);
+    GetViewerState()->GetLogRPC()->SetBoolFlag(false);
+    BroadcastToAllClients((void*)this, GetViewerState()->GetLogRPC());
+    GetViewerState()->GetLogRPC()->CopyAttributes(GetViewerState()->GetViewerRPC());
+    BroadcastToAllClients((void*)this, GetViewerState()->GetLogRPC());
 
     debug5 << "Handling "
-           << ViewerRPC::ViewerRPCType_ToString(viewerRPC.GetRPCType()).c_str()
+           << ViewerRPC::ViewerRPCType_ToString(GetViewerState()->GetViewerRPC()->GetRPCType()).c_str()
            << " RPC." << endl;
 
     //
     // Handle the RPC. Note that these should be replaced with actions.
     //
     bool everythingOK = true;
-    switch(viewerRPC.GetRPCType())
+    switch(GetViewerState()->GetViewerRPC()->GetRPCType())
     {
     case ViewerRPC::CloseRPC:
         actionHandled = true;
@@ -7601,7 +7308,7 @@ ViewerSubject::HandleViewerRPC()
         // an action.
         actionMgr = ViewerWindowManager::Instance()->
             GetActiveWindow()->GetActionManager();
-        actionMgr->HandleAction(viewerRPC);
+        actionMgr->HandleAction(*GetViewerState()->GetViewerRPC());
         actionHandled = true;
     }
 
@@ -7614,12 +7321,12 @@ ViewerSubject::HandleViewerRPC()
         ViewerWindowManager::Instance()->UpdateActions();
 
     // Tell the clients that it's okay to start logging again.
-    logRPC->SetRPCType(ViewerRPC::SetStateLoggingRPC);
-    logRPC->SetBoolFlag(true);
-    BroadcastToAllClients((void*)this, logRPC);
+    GetViewerState()->GetLogRPC()->SetRPCType(ViewerRPC::SetStateLoggingRPC);
+    GetViewerState()->GetLogRPC()->SetBoolFlag(true);
+    BroadcastToAllClients((void*)this, GetViewerState()->GetLogRPC());
 
     debug5 << "Done handling "
-           << ViewerRPC::ViewerRPCType_ToString(viewerRPC.GetRPCType()).c_str()
+           << ViewerRPC::ViewerRPCType_ToString(GetViewerState()->GetViewerRPC()->GetRPCType()).c_str()
            << " RPC." << endl;
 }
 
@@ -7647,6 +7354,9 @@ ViewerSubject::HandleViewerRPC()
 //   Brad Whitlock, Mon May 2 13:51:01 PST 2005
 //   I made it use AddInputToXfer.
 //
+//   Brad Whitlock, Tue Feb 13 14:03:48 PST 2007
+//   Made it use ViewerState.
+//
 // ****************************************************************************
 
 void
@@ -7665,11 +7375,12 @@ ViewerSubject::PostponeAction(ViewerActionBase *action)
     //
 
     // Store the action information into the postponedAction object.
-    postponedAction.SetWindow(action->GetWindow()->GetWindowId());
-    postponedAction.SetRPC(action->GetArgs());
+    GetViewerState()->GetPostponedAction()->SetWindow(
+        action->GetWindow()->GetWindowId());
+    GetViewerState()->GetPostponedAction()->SetRPC(action->GetArgs());
 
     // Add the postponed input to the xfer object so it can be executed later.
-    AddInputToXfer(0, &postponedAction);
+    AddInputToXfer(0, GetViewerState()->GetPostponedAction());
 
     debug4 << "Postponing execution of  " << action->GetName()
            << " action." << endl;
@@ -7696,14 +7407,18 @@ ViewerSubject::PostponeAction(ViewerActionBase *action)
 //   logged. Maybe this should only be done if there's a client that has a
 //   MacroRecord client method
 //
+//   Brad Whitlock, Mon Feb 12 17:04:45 PST 2007
+//   Made it use ViewerState.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::HandlePostponedAction()
 {
     ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    int index = postponedAction.GetWindow();
-    ViewerRPC::ViewerRPCType t = postponedAction.GetRPC().GetRPCType();
+    int index = GetViewerState()->GetPostponedAction()->GetWindow();
+    ViewerRPC::ViewerRPCType t = GetViewerState()->GetPostponedAction()->
+        GetRPC().GetRPCType();
     const char *tName = ViewerRPC::ViewerRPCType_ToString(t).c_str();
     ViewerWindow *win = wM->GetWindow(index);
     if(win != 0)
@@ -7719,37 +7434,37 @@ ViewerSubject::HandlePostponedAction()
         // logRPC, which should be logged when received unless it is a
         // SetStateLoggingRPC.
         //
-        logRPC->SetRPCType(ViewerRPC::SetStateLoggingRPC);
-        logRPC->SetBoolFlag(false);
-        BroadcastToAllClients((void*)this, logRPC);
+        GetViewerState()->GetLogRPC()->SetRPCType(ViewerRPC::SetStateLoggingRPC);
+        GetViewerState()->GetLogRPC()->SetBoolFlag(false);
+        BroadcastToAllClients((void*)this, GetViewerState()->GetLogRPC());
         // Tell the logging client to log a change to set the window to the
         // window that originated the RPC.
         if(win != wM->GetActiveWindow())
         {
-            logRPC->SetRPCType(ViewerRPC::SetActiveWindowRPC);
-            logRPC->SetWindowId(win->GetWindowId()+1);
-            BroadcastToAllClients((void*)this, logRPC);
+            GetViewerState()->GetLogRPC()->SetRPCType(ViewerRPC::SetActiveWindowRPC);
+            GetViewerState()->GetLogRPC()->SetWindowId(win->GetWindowId()+1);
+            BroadcastToAllClients((void*)this, GetViewerState()->GetLogRPC());
         }
-        logRPC->CopyAttributes(&postponedAction.GetRPC());
-        BroadcastToAllClients((void*)this, logRPC);
+        GetViewerState()->GetLogRPC()->CopyAttributes(&GetViewerState()->
+            GetPostponedAction()->GetRPC());
+        BroadcastToAllClients((void*)this, GetViewerState()->GetLogRPC());
 
 
         // Handle the action.
-        actionMgr->HandleAction(postponedAction.GetRPC());
-
+        actionMgr->HandleAction(GetViewerState()->GetPostponedAction()->GetRPC());
 
         // Tell the logging client to log a change to set the window back to
         // The current active window.
         if(win != wM->GetActiveWindow())
         {
-            logRPC->SetRPCType(ViewerRPC::SetActiveWindowRPC);
-            logRPC->SetWindowId(wM->GetActiveWindow()->GetWindowId()+1);
-            BroadcastToAllClients((void*)this, logRPC);
+            GetViewerState()->GetLogRPC()->SetRPCType(ViewerRPC::SetActiveWindowRPC);
+            GetViewerState()->GetLogRPC()->SetWindowId(wM->GetActiveWindow()->GetWindowId()+1);
+            BroadcastToAllClients((void*)this, GetViewerState()->GetLogRPC());
         }
         // Tell the clients that it's okay to start logging again.
-        logRPC->SetRPCType(ViewerRPC::SetStateLoggingRPC);
-        logRPC->SetBoolFlag(true);
-        BroadcastToAllClients((void*)this, logRPC);
+        GetViewerState()->GetLogRPC()->SetRPCType(ViewerRPC::SetStateLoggingRPC);
+        GetViewerState()->GetLogRPC()->SetBoolFlag(true);
+        BroadcastToAllClients((void*)this, GetViewerState()->GetLogRPC());
     }
     else
     {
@@ -7902,7 +7617,7 @@ void
 ViewerSubject::HandleSync()
 {
     char msg[100];
-    SNPRINTF(msg, 100, "Sync %d;", syncAtts->GetSyncTag());
+    SNPRINTF(msg, 100, "Sync %d;", GetViewerState()->GetSyncAttributes()->GetSyncTag());
     MessageRendererThread(msg);
 }
 
@@ -7917,13 +7632,15 @@ ViewerSubject::HandleSync()
 // Creation:   Wed May 4 16:48:36 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Feb 12 16:37:46 PST 2007
+//   Made it use ViewerState.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::HandleClientMethod()
 {
-    if(clientMethod->GetMethodName() == "_QueryClientInformation")
+    if(GetViewerState()->GetClientMethod()->GetMethodName() == "_QueryClientInformation")
     {
         debug1 << "One of the clients is coded such that it sends the"
                   " _QueryClientInformation method back to the viewer. "
@@ -7933,10 +7650,10 @@ ViewerSubject::HandleClientMethod()
     else
     {
         debug1 << "Broadcasting client method: "
-               << clientMethod->GetMethodName().c_str() << " to all "
+               << GetViewerState()->GetClientMethod()->GetMethodName().c_str() << " to all "
                << clients.size() << " client(s)." << endl;
     
-        BroadcastToAllClients((void *)this, clientMethod);
+        BroadcastToAllClients((void *)this, GetViewerState()->GetClientMethod());
     }
 }
 
@@ -7950,7 +7667,9 @@ ViewerSubject::HandleClientMethod()
 // Creation:   Thu May 5 19:23:49 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Feb 12 16:36:28 PST 2007
+//   Made it use ViewerState.
+//
 // ****************************************************************************
 
 void
@@ -7958,12 +7677,13 @@ ViewerSubject::HandleClientInformation()
 {
     debug5 << "Received client information. Sending new client information "
               "list to all clients." << endl;
-    clientInformationList->AddClientInformation(*clientInformation);
+    GetViewerState()->GetClientInformationList()->AddClientInformation(
+        *GetViewerState()->GetClientInformation());
 
     // Print the client information list to the debug logs.
-    for(int i = 0; i < clientInformationList->GetNumClientInformations(); ++i)
+    for(int i = 0; i < GetViewerState()->GetClientInformationList()->GetNumClientInformations(); ++i)
     {
-        const ClientInformation &client = clientInformationList->operator[](i);
+        const ClientInformation &client = GetViewerState()->GetClientInformationList()->operator[](i);
         debug3 << "client["<< i << "] = " << client.GetClientName().c_str()
                << endl;
         debug3 << "methods:" << endl;
@@ -7975,7 +7695,7 @@ ViewerSubject::HandleClientInformation()
         debug3 << endl;
     }
 
-    BroadcastToAllClients((void *)this, clientInformationList);
+    BroadcastToAllClients((void *)this, GetViewerState()->GetClientInformationList());
 }
 
 // ****************************************************************************
@@ -7989,7 +7709,9 @@ ViewerSubject::HandleClientInformation()
 // Creation:   Thu May 5 19:26:45 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Feb 12 16:39:49 PST 2007
+//   Made it use ViewerState.
+//
 // ****************************************************************************
 
 void
@@ -7998,12 +7720,12 @@ ViewerSubject::DiscoverClientInformation()
     debug1 << "DiscoverClientInformation: clear the client information list "
               "and send _QueryClientInformation to all clients. " << endl;
     // Clear out what we know about the clients.
-    clientInformationList->ClearClientInformations();
+    GetViewerState()->GetClientInformationList()->ClearClientInformations();
 
     // Ask the current set of clients to tell us about themselves.
-    clientMethod->SetMethodName("_QueryClientInformation");
-    clientMethod->ClearArgs();
-    BroadcastToAllClients((void *)this, clientMethod);
+    GetViewerState()->GetClientMethod()->SetMethodName("_QueryClientInformation");
+    GetViewerState()->GetClientMethod()->ClearArgs();
+    BroadcastToAllClients((void *)this, GetViewerState()->GetClientMethod());
 }
 
 // ****************************************************************************
@@ -8257,6 +7979,9 @@ ViewerSubject::ResetInteractorAttributes()
 //   Brad Whitlock, Tue May 10 16:36:54 PST 2005
 //   Made it work on Win32.
 //
+//   Brad Whitlock, Mon Feb 12 12:11:16 PDT 2007
+//   Made it use ViewerState.
+//
 // ****************************************************************************
 
 void
@@ -8264,11 +7989,11 @@ ViewerSubject::GetProcessAttributes()
 {
     ProcessAttributes tmpAtts;
 
-    string componentName = Init::ComponentIDToName(viewerRPC.GetIntArg1());
+    string componentName = Init::ComponentIDToName(GetViewerState()->GetViewerRPC()->GetIntArg1());
     if (componentName == "engine")
     {
-        const std::string &hostName = viewerRPC.GetProgramHost();
-        const std::string &simName  = viewerRPC.GetProgramSim();
+        const std::string &hostName = GetViewerState()->GetViewerRPC()->GetProgramHost();
+        const std::string &simName  = GetViewerState()->GetViewerRPC()->GetProgramSim();
 
         ViewerEngineManager *vem = ViewerEngineManager::Instance();
         vem->GetProcInfo(EngineKey(hostName, simName), tmpAtts);
@@ -8306,9 +8031,9 @@ ViewerSubject::GetProcessAttributes()
         return;
     }
 
-    *procAtts = tmpAtts;
-    procAtts->SelectAll();
-    procAtts->Notify();
+    *GetViewerState()->GetProcessAttributes() = tmpAtts;
+    GetViewerState()->GetProcessAttributes()->SelectAll();
+    GetViewerState()->GetProcessAttributes()->Notify();
 }
 
 // ****************************************************************************
@@ -8328,9 +8053,9 @@ ViewerSubject::GetProcessAttributes()
 void
 ViewerSubject::OpenClient()
 {
-    const std::string &clientName = viewerRPC.GetDatabase();
-    const std::string &program = viewerRPC.GetProgramHost();
-    stringVector programOptions(viewerRPC.GetProgramOptions());
+    const std::string &clientName = GetViewerState()->GetViewerRPC()->GetDatabase();
+    const std::string &program = GetViewerState()->GetViewerRPC()->GetProgramHost();
+    stringVector programOptions(GetViewerState()->GetViewerRPC()->GetProgramOptions());
 
     debug1 << "ViewerSubject::OpenClient" << endl;
 
@@ -8338,7 +8063,7 @@ ViewerSubject::OpenClient()
     // Create a new viewer client connection.
     //
     ViewerClientConnection *newClient = new 
-        ViewerClientConnection(viewerState, this, clientName.c_str());
+        ViewerClientConnection(GetViewerState(), this, clientName.c_str());
     newClient->SetupSpecialOpcodeHandler(SpecialOpcodeCallback, (void *)this);
     ViewerConnectionProgressDialog *dialog = 0;
 
@@ -8457,6 +8182,9 @@ ViewerSubject::ReadFromSimulationAndProcess(int socket)
 //    Jeremy Meredith, Mon Apr  4 17:34:17 PDT 2005
 //    Made sure we notify clients about the right metadata.
 //
+//    Brad Whitlock, Mon Feb 12 17:00:19 PST 2007
+//    Made it use ViewerState.
+//
 // ****************************************************************************
 
 void
@@ -8467,13 +8195,13 @@ ViewerSubject::HandleMetaDataUpdated(const string &host,
     // Handle MetaData updates
     ViewerFileServer *fs = ViewerFileServer::Instance();
 
-    *metaData = *md;
-    fs->SetSimulationMetaData(host, file, *metaData);
+    *GetViewerState()->GetDatabaseMetaData() = *md;
+    fs->SetSimulationMetaData(host, file, *GetViewerState()->GetDatabaseMetaData());
     // The file server will modify the metadata slightly; make sure
     // we picked up the new one.
-    *metaData = *fs->GetMetaData(host, file);
-    metaData->SelectAll();
-    metaData->Notify();
+    *GetViewerState()->GetDatabaseMetaData() = *fs->GetMetaData(host, file);
+    GetViewerState()->GetDatabaseMetaData()->SelectAll();
+    GetViewerState()->GetDatabaseMetaData()->Notify();
 }
 
 
@@ -8494,6 +8222,8 @@ ViewerSubject::HandleMetaDataUpdated(const string &host,
 //  Creation:    August 25, 2004
 //
 //  Modifications:
+//    Brad Whitlock, Mon Feb 12 17:01:12 PST 2007
+//    I made it use ViewerState.
 //
 // ****************************************************************************
 
@@ -8505,10 +8235,55 @@ ViewerSubject::HandleSILAttsUpdated(const string &host,
     // Handle SIL updates
     ViewerFileServer *fs = ViewerFileServer::Instance();
 
-    *silAtts = *sa;
-    fs->SetSimulationSILAtts(host, file, *silAtts);
-    silAtts->SelectAll();
-    silAtts->Notify();
+    *GetViewerState()->GetSILAttributes() = *sa;
+    fs->SetSimulationSILAtts(host, file, *GetViewerState()->GetSILAttributes());
+    GetViewerState()->GetSILAttributes()->SelectAll();
+    GetViewerState()->GetSILAttributes()->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::HandleColorTable
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the color table attributes
+//   update. The purpose is to update all color table buttons so they have the
+//   right list of color table names.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 20 11:56:19 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::HandleColorTable()
+{
+    ColorTableAttributes *colorAtts = GetViewerState()->GetColorTableAttributes();
+
+    // For when we have pixmaps later, here are the rules...
+    // 1. if just #0 is ever selected, we're adding/deleting colortables.
+    // 2. If just #1 is selected , we're modifying a color table.
+    // 3. If just #2 is selected, we're changing the default colormap. This is
+    //    only of concern if I decide to show what the default is in a widget.
+
+    // If the names or the color table attributes are changing, then we
+    // have to update the widget.
+    if(colorAtts->IsSelected(0) || colorAtts->IsSelected(1))
+    {
+        // Clear all of the color tables.
+        QvisColorTableButton::clearAllColorTables();
+
+        int nNames = colorAtts->GetNames().size();
+        const stringVector &names = colorAtts->GetNames();
+        for(int i = 0; i < nNames; ++i)
+        {
+            QvisColorTableButton::addColorTable(names[i].c_str());
+        }
+
+        // Update all of the QvisColorTableButton widgets.
+        QvisColorTableButton::updateColorTableButtons();
+    }
 }
 
 // ****************************************************************************
@@ -8525,7 +8300,7 @@ void
 ViewerSubject::SetTryHarderCyclesTimes()
 {
     ViewerFileServer *fs = ViewerFileServer::Instance();
-    fs->SetTryHarderCyclesTimes(viewerRPC.GetIntArg1());
+    fs->SetTryHarderCyclesTimes(GetViewerState()->GetViewerRPC()->GetIntArg1());
 }
 
 
@@ -8546,7 +8321,7 @@ void
 ViewerSubject::SuppressQueryOutput()
 {
     ViewerQueryManager::Instance()->
-        SuppressQueryOutput(viewerRPC.GetBoolFlag());
+        SuppressQueryOutput(GetViewerState()->GetViewerRPC()->GetBoolFlag());
 }
 
 // ****************************************************************************
@@ -8566,9 +8341,9 @@ void
 ViewerSubject::MoveWindow()
 {
     ViewerWindowManager::Instance()->MoveWindow(
-        viewerRPC.GetWindowId()-1,
-        viewerRPC.GetIntArg1(),
-        viewerRPC.GetIntArg2());
+        GetViewerState()->GetViewerRPC()->GetWindowId()-1,
+        GetViewerState()->GetViewerRPC()->GetIntArg1(),
+        GetViewerState()->GetViewerRPC()->GetIntArg2());
 }
 
 // ****************************************************************************
@@ -8588,11 +8363,11 @@ void
 ViewerSubject::MoveAndResizeWindow()
 {
     ViewerWindowManager::Instance()->MoveAndResizeWindow(
-        viewerRPC.GetWindowId()-1,
-        viewerRPC.GetIntArg1(),
-        viewerRPC.GetIntArg2(),
-        viewerRPC.GetIntArg3(),
-        viewerRPC.GetWindowLayout());
+        GetViewerState()->GetViewerRPC()->GetWindowId()-1,
+        GetViewerState()->GetViewerRPC()->GetIntArg1(),
+        GetViewerState()->GetViewerRPC()->GetIntArg2(),
+        GetViewerState()->GetViewerRPC()->GetIntArg3(),
+        GetViewerState()->GetViewerRPC()->GetWindowLayout());
 }
 
 // ****************************************************************************
@@ -8612,9 +8387,9 @@ void
 ViewerSubject::ResizeWindow()
 {
     ViewerWindowManager::Instance()->ResizeWindow(
-        viewerRPC.GetWindowId()-1,
-        viewerRPC.GetIntArg1(),
-        viewerRPC.GetIntArg2());
+        GetViewerState()->GetViewerRPC()->GetWindowId()-1,
+        GetViewerState()->GetViewerRPC()->GetIntArg1(),
+        GetViewerState()->GetViewerRPC()->GetIntArg2());
 }
 
 
@@ -8628,16 +8403,18 @@ ViewerSubject::ResizeWindow()
 // Creation:   June 20, 2006 
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Feb 12 12:12:43 PDT 2007
+//   I made it use ViewerState.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::UpdatePlotInfoAtts()
 {
-    int winId = viewerRPC.GetWindowId() -1;
-    int plotId = viewerRPC.GetIntArg1();
+    int winId = GetViewerState()->GetViewerRPC()->GetWindowId() -1;
+    int plotId = GetViewerState()->GetViewerRPC()->GetIntArg1();
     ViewerWindow *win = NULL;
-    plotInfoAtts->Reset();
+    GetViewerState()->GetPlotInfoAttributes()->Reset();
 
     if (winId < 0)
     {
@@ -8665,7 +8442,7 @@ ViewerSubject::UpdatePlotInfoAtts()
                 const PlotInfoAttributes *current = plot->GetPlotInfoAtts();
                 if (current != NULL)
                 {
-                    *plotInfoAtts = *current;
+                    *GetViewerState()->GetPlotInfoAttributes() = *current;
                 }
             }
             else
@@ -8678,5 +8455,5 @@ ViewerSubject::UpdatePlotInfoAtts()
     {
         Warning("Invalid WindowId");
     }
-    plotInfoAtts->Notify();
+    GetViewerState()->GetPlotInfoAttributes()->Notify();
 }

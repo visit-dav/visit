@@ -101,17 +101,11 @@ class FilledBoundaryViewerPluginInfo: public virtual ViewerPlotPluginInfo, publi
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
 
-    virtual void ReInitializePlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    virtual void ReInitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
 
-    virtual void ResetPlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    virtual void ResetPlotAtts(AttributeSubject *atts, ViewerPlot *);
 
     virtual const char **XPMIconData() const;
     virtual int GetVariableTypes() const;
@@ -121,9 +115,7 @@ class FilledBoundaryViewerPluginInfo: public virtual ViewerPlotPluginInfo, publi
     static FilledBoundaryAttributes *defaultAtts;
     static FilledBoundaryAttributes *clientAtts;
 
-    void   PrivateSetPlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    void   PrivateSetPlotAtts(AttributeSubject *atts, ViewerPlot *);
 };
 
 class FilledBoundaryEnginePluginInfo: public virtual EnginePlotPluginInfo, public virtual FilledBoundaryCommonPluginInfo

@@ -365,6 +365,10 @@
 #    I added QvisStripChart.C and QvisStripChart.h to support the new
 #    strip chart widget in the simulation window.
 #
+#    Brad Whitlock, Tue Feb 20 11:44:24 PDT 2007
+#    Moved QvisColorTableButton, QvisVariableButton QvisVariableButtonHelper
+#    to winutil.
+#
 ##############################################################################
 
 ##
@@ -405,7 +409,6 @@ HDRMOC = \
     QvisColorGridWidget.h \
     QvisColorManagerWidget.h \
     QvisColorSelectionWidget.h \
-    QvisColorTableButton.h \
     QvisColorTableWindow.h \
     QvisCommandWindow.h \
     QvisCompositeTransition.h \
@@ -483,8 +486,6 @@ HDRMOC = \
     QvisText2DInterface.h \
     QvisTimeSliderInterface.h \
     QvisTurnDownButton.h \
-    QvisVariableButton.h \
-    QvisVariableButtonHelper.h \
     QvisVCRControl.h \
     QvisViewWindow.h \
     QvisViewportWidget.h \

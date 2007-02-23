@@ -42,6 +42,7 @@
 #ifndef VIEWER_PLOT_H
 #define VIEWER_PLOT_H
 #include <viewer_exports.h>
+#include <ViewerBase.h>
 #include <avtDataObjectReader.h>
 #include <avtActor.h>
 #include <avtTypes.h>
@@ -61,9 +62,10 @@ class PickAttributes;
 class Plot;
 class PlotInfoAttributes;
 class PlotQueryInfo;
+class ViewerObserverToSignal;
+class ViewerOperator;
 class ViewerPlotList;
 class ViewerPlotPluginInfo;
-class ViewerOperator;
 class avtDatabaseMetaData;
 class avtToolInterface;
 
@@ -260,10 +262,14 @@ class avtToolInterface;
 //    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
 //    Added GetPlotInfoAtts. 
 //
+//    Brad Whitlock, Mon Feb 12 12:18:39 PDT 2007
+//    I made it inherit ViewerBase and I added support for alternate displays.
+//
 // ****************************************************************************
 
-class VIEWER_API ViewerPlot
+class VIEWER_API ViewerPlot : public ViewerBase
 {
+  Q_OBJECT
   public:
     ViewerPlot(const int type_,
                ViewerPlotPluginInfo *viewerPluginInfo_,
@@ -414,15 +420,25 @@ class VIEWER_API ViewerPlot
     avtMeshType    GetMeshType() const;
 
     //
+    // Let the plot manage its custom display, if one exists.
+    //
+    void AlternateDisplayHide();
+    void AlternateDisplayShow();
+    void AlternateDisplayIconify();
+    void AlternateDisplayDeIconify();
+    void AlternateDisplayClear();
+    void AlternateDisplayUpdatePlotAttributes();
+    void AlternateDisplaySetAllowClientUpdates(bool);
+    bool AlternateDisplayAllowClientUpdates() const;
+
+    //
     // Let the plot read/write itself to a config file.
     //
     void CreateNode(DataNode *);
     void SetFromNode(DataNode *);
     static bool SessionContainsErrors(DataNode *);
     void InitializePlot(Plot &p) const;
-
-    void RegisterViewerPlotList(ViewerPlotList *vpl)
-                                 { viewerPlotList = vpl; };
+    void RegisterViewerPlotList(ViewerPlotList *vpl);
 
     bool CloneNetwork(void) { return clonedNetworkId != -1; };
     void SetCloneId(int id) { clonedNetworkId = id; } ;
@@ -443,10 +459,19 @@ class VIEWER_API ViewerPlot
     void CheckCache(const int f0, const int f1, const bool force);
     void ResizeCache(int size);
 
+  signals:
+    void AlternateDisplayChangedPlotAttributes(ViewerPlot *);
+  private slots:
+    void emitAlternateDisplayChangedPlotAttributes();
   private:
     ViewerPlotList         *viewerPlotList;
     int                     type;
     ViewerPlotPluginInfo   *viewerPluginInfo;
+
+    void                   *alternateDisplay;
+    ViewerObserverToSignal *alternateDisplayObserver;
+    bool                    updateFromAlternateDisplay;
+    bool                    alternateDisplayAllowsClientUpdates;
 
     int                     networkID;
     EngineKey               engineKey;

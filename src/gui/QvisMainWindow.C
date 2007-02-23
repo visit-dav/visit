@@ -309,7 +309,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
     // Make the main window observe the viewer's message attributes. This is
     // how messages from the viewer get put into the error window.
-    viewerMessageAtts = viewer->GetMessageAttributes();
+    viewerMessageAtts = GetViewerState()->GetMessageAttributes();
     viewerMessageAtts->Attach(this);
 
     // Make the main window observe the file server's message attributes.
@@ -536,7 +536,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     connect(filePanel, SIGNAL(reopenOnNextFrame()),
             this, SIGNAL(reopenOnNextFrame()));
     filePanel->ConnectFileServer(fileServer);
-    filePanel->ConnectWindowInformation(viewer->GetWindowInformation());
+    filePanel->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
 
     // Create the global area.
     QVBox *panel2 = new QVBox(splitter);
@@ -547,14 +547,13 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
     // Create the plot Manager.
     plotManager = new QvisPlotManagerWidget(menuBar(), panel2, "plotManager");
-    plotManager->ConnectPlotList(viewer->GetPlotList());
+    plotManager->ConnectPlotList(GetViewerState()->GetPlotList());
     plotManager->ConnectFileServer(fileServer);
-    plotManager->ConnectGlobalAttributes(viewer->GetGlobalAttributes());
-    plotManager->ConnectExpressionList(viewer->GetExpressionList());
-    plotManager->ConnectPluginManagerAttributes(viewer->GetPluginManagerAttributes());
-    plotManager->ConnectWindowInformation(viewer->GetWindowInformation());
-    plotManager->ConnectDatabaseMetaData(viewer->GetDatabaseMetaData());
-    plotManager->viewer = viewer;
+    plotManager->ConnectGlobalAttributes(GetViewerState()->GetGlobalAttributes());
+    plotManager->ConnectExpressionList(GetViewerState()->GetExpressionList());
+    plotManager->ConnectPluginManagerAttributes(GetViewerState()->GetPluginManagerAttributes());
+    plotManager->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
+    plotManager->ConnectDatabaseMetaData(GetViewerState()->GetDatabaseMetaData());
 
     // Create the notepad widget. Use a big stretch factor so the
     // notpad widget will fill all the remaining space.
@@ -1820,7 +1819,7 @@ QvisMainWindow::reopenFile(int fileIndex)
 
         // Tell the viewer to replace all of the plots having
         // databases that match the file we're re-opening.
-        viewer->ReOpenDatabase(sources[fileIndex], false);
+        GetViewerMethods()->ReOpenDatabase(sources[fileIndex], false);
     }
 }
 
@@ -1859,7 +1858,7 @@ QvisMainWindow::closeFile(int fileIndex)
         // file is not being used then the viewer will allow it. Otherwise
         // the viewer will issue a warning message.
         //
-        viewer->CloseDatabase(sources[fileIndex]);
+        GetViewerMethods()->CloseDatabase(sources[fileIndex]);
 
         // Update the file panel based on what's selected.
         filePanel->UpdateOpenButtonState();
@@ -1870,70 +1869,70 @@ void
 QvisMainWindow::windowAdd()
 {
     // Tell the viewer to add a window
-    viewer->AddWindow();
+    GetViewerMethods()->AddWindow();
 }
 
 void
 QvisMainWindow::windowClone()
 {
     // Tell the viewer to clone a window
-    viewer->CloneWindow();
+    GetViewerMethods()->CloneWindow();
 }
 
 void
 QvisMainWindow::windowDelete()
 {
     // Tell the viewer to delete a window
-    viewer->DeleteWindow();
+    GetViewerMethods()->DeleteWindow();
 }
 
 void
 QvisMainWindow::windowClearAll()
 {
     // Tell the viewer to clear all windows.
-    viewer->ClearAllWindows();    
+    GetViewerMethods()->ClearAllWindows();    
 }
 
 void
 QvisMainWindow::windowLayout1x1()
 {
     // Tell the viewer to change the layout.
-    viewer->SetWindowLayout(1);
+    GetViewerMethods()->SetWindowLayout(1);
 }
 
 void
 QvisMainWindow::windowLayout1x2()
 {
     // Tell the viewer to change the layout.
-    viewer->SetWindowLayout(2);
+    GetViewerMethods()->SetWindowLayout(2);
 }
 
 void
 QvisMainWindow::windowLayout2x2()
 {
     // Tell the viewer to change the layout.
-    viewer->SetWindowLayout(4);
+    GetViewerMethods()->SetWindowLayout(4);
 }
 
 void
 QvisMainWindow::windowLayout2x3()
 {
     // Tell the viewer to change the layout.
-    viewer->SetWindowLayout(6);
+    GetViewerMethods()->SetWindowLayout(6);
 }
 
 void
 QvisMainWindow::windowLayout2x4()
 {
     // Tell the viewer to change the layout.
-    viewer->SetWindowLayout(8);
+    GetViewerMethods()->SetWindowLayout(8);
 }
 
 void
 QvisMainWindow::windowLayout3x3()
 {
     // Tell the viewer to change the layout.
-    viewer->SetWindowLayout(9);
+    GetViewerMethods()->SetWindowLayout(9);
 }
 
 // ****************************************************************************
@@ -2230,7 +2229,7 @@ QvisMainWindow::SetAllowFileSelectionChange(bool val)
 void
 QvisMainWindow::maintainViewToggled(bool)
 {
-    viewer->ToggleMaintainViewMode();
+    GetViewerMethods()->ToggleMaintainViewMode();
 }
 
 // ****************************************************************************
@@ -2253,7 +2252,7 @@ QvisMainWindow::maintainViewToggled(bool)
 void
 QvisMainWindow::maintainDataToggled(bool)
 {
-    viewer->ToggleMaintainDataMode();
+    GetViewerMethods()->ToggleMaintainDataMode();
 }
 
 // ****************************************************************************
@@ -2332,7 +2331,7 @@ QvisMainWindow::winset(int index)
         globalAtts->Notify();
 
         // Tell the viewer...
-        viewer->SetActiveWindow(globalAtts->GetWindows()[index]);
+        GetViewerMethods()->SetActiveWindow(globalAtts->GetWindows()[index]);
     }
 }
 
@@ -2386,7 +2385,7 @@ QvisMainWindow::copyView(int id)
     name = name.right(name.length() - 7);
     int from = name.toInt();
     int to = globalAtts->GetActiveWindow() + 1;
-    viewer->CopyViewToWindow(from, to);
+    GetViewerMethods()->CopyViewToWindow(from, to);
 }
 
 // ****************************************************************************
@@ -2413,7 +2412,7 @@ QvisMainWindow::copyLighting(int id)
     name = name.right(name.length() - 7);
     int from = name.toInt();
     int to = globalAtts->GetActiveWindow() + 1;
-    viewer->CopyLightingToWindow(from, to);
+    GetViewerMethods()->CopyLightingToWindow(from, to);
 }
 
 // ****************************************************************************
@@ -2440,7 +2439,7 @@ QvisMainWindow::copyAnnotations(int id)
     name = name.right(name.length() - 7);
     int from = name.toInt();
     int to = globalAtts->GetActiveWindow() + 1;
-    viewer->CopyAnnotationsToWindow(from, to);
+    GetViewerMethods()->CopyAnnotationsToWindow(from, to);
 }
 
 // ****************************************************************************
@@ -2467,7 +2466,7 @@ QvisMainWindow::copyPlots(int id)
     name = name.right(name.length() - 7);
     int from = name.toInt();
     int to = globalAtts->GetActiveWindow() + 1;
-    viewer->CopyPlotsToWindow(from, to);
+    GetViewerMethods()->CopyPlotsToWindow(from, to);
 }
 
 // ****************************************************************************
@@ -2496,12 +2495,12 @@ QvisMainWindow::copyAll(int id)
     name = name.right(name.length() - 7);
     int from = name.toInt();
     int to = globalAtts->GetActiveWindow() + 1;
-    viewer->DisableRedraw();
-    viewer->CopyViewToWindow(from, to);
-    viewer->CopyLightingToWindow(from, to);
-    viewer->CopyAnnotationsToWindow(from, to);
-    viewer->CopyPlotsToWindow(from, to);
-    viewer->RedrawWindow();
+    GetViewerMethods()->DisableRedraw();
+    GetViewerMethods()->CopyViewToWindow(from, to);
+    GetViewerMethods()->CopyLightingToWindow(from, to);
+    GetViewerMethods()->CopyAnnotationsToWindow(from, to);
+    GetViewerMethods()->CopyPlotsToWindow(from, to);
+    GetViewerMethods()->RedrawWindow();
 }
 
 // ****************************************************************************
@@ -2520,7 +2519,7 @@ QvisMainWindow::copyAll(int id)
 void
 QvisMainWindow::clearPlots()
 {
-    viewer->ClearWindow();
+    GetViewerMethods()->ClearWindow();
 }
 
 // ****************************************************************************
@@ -2539,7 +2538,7 @@ QvisMainWindow::clearPlots()
 void
 QvisMainWindow::clearReferenceLines()
 {
-    viewer->ClearReferenceLines();
+    GetViewerMethods()->ClearReferenceLines();
 }
 
 // ****************************************************************************
@@ -2558,7 +2557,7 @@ QvisMainWindow::clearReferenceLines()
 void
 QvisMainWindow::clearPickPoints()
 {
-    viewer->ClearPickPoints();
+    GetViewerMethods()->ClearPickPoints();
 }
 
 // ****************************************************************************
@@ -2578,7 +2577,7 @@ QvisMainWindow::clearPickPoints()
 void
 QvisMainWindow::toggleNavigateMode()
 {
-    viewer->ToggleBoundingBoxMode();
+    GetViewerMethods()->ToggleBoundingBoxMode();
 }
 
 // ****************************************************************************
@@ -2599,7 +2598,7 @@ QvisMainWindow::toggleNavigateMode()
 void
 QvisMainWindow::toggleSpinMode()
 {
-    viewer->ToggleSpinMode();
+    GetViewerMethods()->ToggleSpinMode();
 }
 
 // ****************************************************************************
@@ -2619,7 +2618,7 @@ QvisMainWindow::toggleSpinMode()
 void
 QvisMainWindow::toggleFullFrameMode()
 {
-    viewer->ToggleFullFrameMode();
+    GetViewerMethods()->ToggleFullFrameMode();
 }
 
 // ****************************************************************************
@@ -2639,7 +2638,7 @@ QvisMainWindow::toggleFullFrameMode()
 void
 QvisMainWindow::lockTime()
 {
-    viewer->ToggleLockTime();
+    GetViewerMethods()->ToggleLockTime();
 }
 
 // ****************************************************************************
@@ -2659,7 +2658,7 @@ QvisMainWindow::lockTime()
 void
 QvisMainWindow::lockTools()
 {
-    viewer->ToggleLockTools();
+    GetViewerMethods()->ToggleLockTools();
 }
 
 // ****************************************************************************
@@ -2679,5 +2678,5 @@ QvisMainWindow::lockTools()
 void
 QvisMainWindow::lockView()
 {
-    viewer->ToggleLockViewMode();
+    GetViewerMethods()->ToggleLockViewMode();
 }

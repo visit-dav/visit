@@ -115,6 +115,7 @@ class PLOTTER_API avtCustomRenderer
     void                    RegisterOverrideRenderCallback(
                                                OverrideRenderCallback, void *);
     void                    SetVTKRenderer(vtkRenderer *r);
+    virtual void            SetAlternateDisplay(void *dpy);
 
   protected:
     avtViewInfo             view;

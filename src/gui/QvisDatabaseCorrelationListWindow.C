@@ -336,7 +336,7 @@ QvisDatabaseCorrelationListWindow::UpdateButtons()
             // Check to see if the correlation is a source. If it is not
             // then allow it to be deletd or edited.
             //
-            GlobalAttributes *globalAtts = viewer->GetGlobalAttributes();
+            GlobalAttributes *globalAtts = GetViewerState()->GetGlobalAttributes();
             const stringVector &src = globalAtts->GetSources();
             if(std::find(src.begin(), src.end(), realName) == src.end())
             {
@@ -551,7 +551,7 @@ QvisDatabaseCorrelationListWindow::deleteCorrelation()
     {
         std::string shortName(correlationListBox->text(highlightedCorrelation).latin1());
         std::string realName(nameMap[shortName]);
-        viewer->DeleteDatabaseCorrelation(realName);
+        GetViewerMethods()->DeleteDatabaseCorrelation(realName);
         editButton->setEnabled(false);
         deleteButton->setEnabled(false);
     }

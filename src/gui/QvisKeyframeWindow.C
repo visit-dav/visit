@@ -572,11 +572,11 @@ QvisKeyframeWindow::timeChanged(int t)
        (windowInfo->GetTimeSliders()[windowInfo->GetActiveTimeSlider()] !=
         KF_TIME_SLIDER))
     {
-        viewer->SetActiveTimeSlider(KF_TIME_SLIDER);
+        GetViewerMethods()->SetActiveTimeSlider(KF_TIME_SLIDER);
     }
 
     // Set the active time slider to the kf time slider???
-    viewer->SetTimeSliderState(t);
+    GetViewerMethods()->SetTimeSliderState(t);
 }
 
 // ****************************************************************************
@@ -894,7 +894,7 @@ QvisKeyframeWindow::UpdatePlotList()
         KFListViewItem *plotitem;
         if (plotMap.count(current.GetId()) == 0)
         {
-            plotitem = AddPlotToWindow(viewer->GetPlotAttributes(type),
+            plotitem = AddPlotToWindow(GetViewerState()->GetPlotAttributes(type),
                                        plotname, fileitem);
             plotMap[current.GetId()] = plotitem;
         }
@@ -1129,7 +1129,7 @@ QvisKeyframeWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             int val = temp.toInt(&okay);
-            viewer->AnimationSetNFrames(val);
+            GetViewerMethods()->AnimationSetNFrames(val);
         }
 
         if(!okay)
@@ -1138,7 +1138,7 @@ QvisKeyframeWindow::GetCurrentValues(int which_widget)
                 "Resetting to the last good value of %d.",
                 kfAtts->GetNFrames());
             Message(msg);
-            viewer->AnimationSetNFrames(kfAtts->GetNFrames());
+            GetViewerMethods()->AnimationSetNFrames(kfAtts->GetNFrames());
         }
     }
 }
@@ -1180,7 +1180,7 @@ QvisKeyframeWindow::Apply(bool ignore)
 
         kfAtts->Notify();
 
-        viewer->SetKeyframeAttributes();
+        GetViewerMethods()->SetKeyframeAttributes();
     }
     else
         kfAtts->Notify();
@@ -1239,14 +1239,14 @@ QvisKeyframeWindow::stateKFClicked()
 
     if (item->GetPlotId() >= 0)
     {
-        viewer->SetPlotDatabaseState(item->GetPlotId(), pos, state);
+        GetViewerMethods()->SetPlotDatabaseState(item->GetPlotId(), pos, state);
     }
     else
     {
         KFListViewItem *p = (KFListViewItem*)item->nextSibling();
         while (p)
         {
-            viewer->SetPlotDatabaseState(p->GetPlotId(), pos, state);
+            GetViewerMethods()->SetPlotDatabaseState(p->GetPlotId(), pos, state);
             p = (KFListViewItem*)p->nextSibling();
         }
     }

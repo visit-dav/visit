@@ -38,6 +38,7 @@
 #ifndef VIEWER_ACTION_MANAGER_H
 #define VIEWER_ACTION_MANAGER_H
 #include <viewer_exports.h>
+#include <ViewerBase.h>
 #include <ViewerRPC.h>
 #include <string>
 #include <vector>
@@ -78,9 +79,12 @@ typedef ViewerRPC::ViewerRPCType ActionIndex;
 //   Brad Whitlock, Fri Apr 15 17:08:31 PST 2005
 //   I added CopyFrom.
 //
+//   Brad Whitlock, Mon Feb 12 17:54:31 PST 2007
+//   Added ViewerBase base class.
+//
 // ****************************************************************************
 
-class VIEWER_API ViewerActionManager
+class VIEWER_API ViewerActionManager : public ViewerBase
 {
     typedef std::vector<ActionIndex> ActionIndexVector;
 

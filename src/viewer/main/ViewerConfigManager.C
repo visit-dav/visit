@@ -41,7 +41,6 @@
 // For the state objects we're going to save out/read in.
 #include <AttributeSubject.h>
 #include <ViewerSubject.h>
-#include <ViewerMessaging.h>
 #include <DebugStream.h>
 #include <Utility.h>
 #include <snprintf.h>
@@ -72,9 +71,13 @@
 //    Brad Whitlock, Mon Jun 30 12:25:34 PDT 2003
 //    I made it require a pointer to its parent ViewerSubject.
 //
+//    Brad Whitlock, Mon Feb 12 18:02:12 PST 2007
+//    Made it use ViewerBase.
+//
 // ****************************************************************************
 
-ViewerConfigManager::ViewerConfigManager(ViewerSubject *vs) : ConfigManager()
+ViewerConfigManager::ViewerConfigManager(ViewerSubject *vs) : 
+    ViewerBase(0, "ViewerConfigManager"), ConfigManager()
 {
     parent = vs;
     writeDetail = false;

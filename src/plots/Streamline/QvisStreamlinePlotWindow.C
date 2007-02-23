@@ -1048,7 +1048,7 @@ QvisStreamlinePlotWindow::Apply(bool ignore)
         GetCurrentValues(-1);
         streamAtts->Notify();
 
-        viewer->SetPlotOptions(plotType);
+        GetViewerMethods()->SetPlotOptions(plotType);
     }
     else
         streamAtts->Notify();
@@ -1097,7 +1097,7 @@ QvisStreamlinePlotWindow::makeDefault()
 {
     GetCurrentValues(-1);
     streamAtts->Notify();
-    viewer->SetDefaultPlotOptions(plotType);
+    GetViewerMethods()->SetDefaultPlotOptions(plotType);
 }
 
 
@@ -1117,7 +1117,7 @@ QvisStreamlinePlotWindow::makeDefault()
 void
 QvisStreamlinePlotWindow::reset()
 {
-    viewer->ResetPlotOptions(plotType);
+    GetViewerMethods()->ResetPlotOptions(plotType);
 }
 
 

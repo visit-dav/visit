@@ -1749,7 +1749,7 @@ QvisFileSelectionWindow::okClicked()
                     // time states so the information about the file remains
                     // up to date.
                     //
-                    viewer->CheckForNewStates(fileName);
+                    GetViewerMethods()->CheckForNewStates(fileName);
                 }
             }
         }

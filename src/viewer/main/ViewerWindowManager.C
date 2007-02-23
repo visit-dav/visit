@@ -75,15 +75,14 @@
 #include <ViewerActionManager.h>
 #include <ViewerEngineManager.h>
 #include <ViewerFileServer.h>
-#include <ViewerWindow.h>
-#include <ViewerWindowManagerAttributes.h>
-#include <ViewerMessaging.h>
 #include <ViewerPlotList.h>
 #include <ViewerPlot.h>
 #include <ViewerOperator.h>
 #include <ViewerQueryManager.h>
 #include <ViewerSubject.h>
 #include <ViewerToolbar.h>
+#include <ViewerWindow.h>
+#include <ViewerWindowManagerAttributes.h>
 #include <VisWindow.h>
 #include <VisItException.h>
 #include <VisitInteractor.h>
@@ -197,9 +196,12 @@ extern ViewerSubject  *viewerSubject;
 //    Brad Whitlock, Tue Mar 7 17:32:54 PST 2006
 //    I removed most of the view stacking members.
 //
+//    Brad Whitlock, Mon Feb 12 17:38:27 PST 2007
+//    Changed base class.
+//
 // ****************************************************************************
 
-ViewerWindowManager::ViewerWindowManager() : QObject()
+ViewerWindowManager::ViewerWindowManager() : ViewerBase(0, "ViewerWindowManager")
 {
     layout       = 1;
     layoutIndex  = 0;
@@ -1036,6 +1038,9 @@ ViewerWindowManager::FileInUse(const std::string &host,
 //   Brad Whitlock, Wed Jan 22 16:45:24 PST 2003
 //   I added code to turn off animation.
 //
+//   Brad Whitlock, Wed Feb 7 17:01:41 PST 2007
+//   Added call to AlternateDisplayIconify.
+//
 // ****************************************************************************
 
 void
@@ -1049,7 +1054,13 @@ ViewerWindowManager::IconifyAllWindows()
     for(int windowIndex = 0; windowIndex < maxWindows; ++windowIndex)
     {
         if(windows[windowIndex] != 0)
+        {
             windows[windowIndex]->Iconify();
+
+            // Show all of the windows for plots that have alternate displays.
+            for(int i = 0; i < windows[windowIndex]->GetPlotList()->GetNumPlots(); ++i)
+                windows[windowIndex]->GetPlotList()->GetPlot(i)->AlternateDisplayIconify();
+        }
     }
 }
 
@@ -1067,6 +1078,9 @@ ViewerWindowManager::IconifyAllWindows()
 //   I added code to enable animation if it was going before the windows
 //   were iconified.
 //
+//   Brad Whitlock, Wed Feb 7 17:01:18 PST 2007
+//   Added call to AlternateDisplayDeIconify.
+//
 // ****************************************************************************
 
 void
@@ -1079,7 +1093,13 @@ ViewerWindowManager::DeIconifyAllWindows()
     for(int windowIndex = 0; windowIndex < maxWindows; ++windowIndex)
     {
         if(windows[windowIndex] != 0)
+        {
             windows[windowIndex]->DeIconify();
+
+            // Show all of the windows for plots that have alternate displays.
+            for(int i = 0; i < windows[windowIndex]->GetPlotList()->GetNumPlots(); ++i)
+                windows[windowIndex]->GetPlotList()->GetPlot(i)->AlternateDisplayDeIconify();
+        }
     }
 }
 
@@ -1093,8 +1113,11 @@ ViewerWindowManager::DeIconifyAllWindows()
 // Creation:   Tue Apr 16 12:37:12 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Feb 7 16:59:40 PST 2007
+//   Added call to AlternateDisplayShow.
+//
 // ****************************************************************************
+
 void
 ViewerWindowManager::ShowAllWindows()
 {
@@ -1117,8 +1140,14 @@ ViewerWindowManager::ShowAllWindows()
                 windows[windowIndex]->SetLocation(x_locations[windowIndex],
                                                   y_locations[windowIndex]);
             }
+
+            // Show all of the windows for plots that have alternate displays.
+            for(int i = 0; i < windows[windowIndex]->GetPlotList()->GetNumPlots(); ++i)
+                windows[windowIndex]->GetPlotList()->GetPlot(i)->AlternateDisplayShow();
         }
     }
+
+    
 }
 
 // ****************************************************************************
@@ -1131,8 +1160,11 @@ ViewerWindowManager::ShowAllWindows()
 // Creation:   Tue Apr 16 12:37:12 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Feb 7 17:00:16 PST 2007
+//   Added call to AlternateDisplayHide.
+//
 // ****************************************************************************
+
 void
 ViewerWindowManager::HideAllWindows()
 {
@@ -1141,7 +1173,13 @@ ViewerWindowManager::HideAllWindows()
     for (int windowIndex = 0; windowIndex < maxWindows; ++windowIndex)
     {
         if (windows[windowIndex] != 0)
+        {
             windows[windowIndex]->Hide();
+
+            // Show all of the windows for plots that have alternate displays.
+            for(int i = 0; i < windows[windowIndex]->GetPlotList()->GetNumPlots(); ++i)
+                windows[windowIndex]->GetPlotList()->GetPlot(i)->AlternateDisplayHide();
+        }
     }
 }
 

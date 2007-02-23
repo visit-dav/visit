@@ -60,7 +60,7 @@ bool installprivate = false;
 std::string copyright_str = 
 "/*****************************************************************************\n"
 "*\n"
-"* Copyright (c) 2000 - 2006, The Regents of the University of California\n"
+"* Copyright (c) 2000 - 2007, The Regents of the University of California\n"
 "* Produced at the Lawrence Livermore National Laboratory\n"
 "* All rights reserved.\n"
 "*\n"
@@ -98,7 +98,7 @@ std::string copyright_str =
 std::string java_copyright_str = 
 "// ***************************************************************************\n"
 "//\n"
-"// Copyright (c) 2000 - 2006, The Regents of the University of California\n"
+"// Copyright (c) 2000 - 2007, The Regents of the University of California\n"
 "// Produced at the Lawrence Livermore National Laboratory\n"
 "// All rights reserved.\n"
 "//\n"

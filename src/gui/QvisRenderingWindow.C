@@ -797,7 +797,7 @@ QvisRenderingWindow::Apply(bool ignore)
     if(AutoUpdate() || ignore)
     {
         renderAtts->Notify();
-        viewer->SetRenderingAttributes();
+        GetViewerMethods()->SetRenderingAttributes();
     }
     else
         renderAtts->Notify();

@@ -457,7 +457,7 @@ QvisSimulationWindow::CreateCommandUI()
     // Dynamically create the custom UI be reading in it's xml file.
     int simindex = simCombo->currentItem();
     int index = simulationToEngineListMap[simindex];
-    SimCommandSlots *CommandConnections = new SimCommandSlots(viewer,
+    SimCommandSlots *CommandConnections = new SimCommandSlots(GetViewerProxy(),
         engines, index);
     DynamicCommandsWin  = QWidgetFactory::create(fname, CommandConnections);
     
@@ -829,7 +829,7 @@ QvisSimulationWindow::SetNewMetaData(const QualifiedFilename &qf,
         QString key;
         std::string host = qf.host;
         if (host == "localhost")
-            host = viewer->GetLocalHostName();
+            host = GetViewerProxy()->GetLocalHostName();
 
         std::string path = qf.PathAndFile();
 
@@ -1554,7 +1554,7 @@ QvisSimulationWindow::closeEngine()
                              0, 1 ) == 0)
     {
         // The user actually chose to close the engine.
-        viewer->CloseComputeEngine(host, sim);
+        GetViewerMethods()->CloseComputeEngine(host, sim);
     }
 }
 
@@ -1581,7 +1581,7 @@ QvisSimulationWindow::interruptEngine()
     string host = engines->GetEngines()[index];
     string sim  = engines->GetSimulationName()[index];
 
-    viewer->InterruptComputeEngine(host, sim);
+    GetViewerProxy()->InterruptComputeEngine(host, sim);
 }
 
 // ****************************************************************************
@@ -1643,10 +1643,10 @@ QvisSimulationWindow::clearCache()
     string host = engines->GetEngines()[index];
     string sim  = engines->GetSimulationName()[index];
 
-    if (viewer->GetLocalHostName() == host)
-        viewer->ClearCache("localhost", sim);
+    if (GetViewerProxy()->GetLocalHostName() == host)
+        GetViewerMethods()->ClearCache("localhost", sim);
     else
-        viewer->ClearCache(host, sim);
+        GetViewerMethods()->ClearCache(host, sim);
 }
 
 // ****************************************************************************
@@ -1704,7 +1704,7 @@ QvisSimulationWindow::executeSimCommand()
     QString cmd = simCommandEdit->displayText();
     if (!cmd.isEmpty())
     {
-        viewer->SendSimulationCommand(host, sim, cmd.latin1());
+        GetViewerMethods()->SendSimulationCommand(host, sim, cmd.latin1());
         simCommandEdit->clear();
     }
 }
@@ -1739,7 +1739,7 @@ QvisSimulationWindow::executePushButtonCommand(int bi)
     cmd = "clicked();" + cmd + ";QPushButton;Simulations;NONE";
     if (!cmd.isEmpty())
     {
-        viewer->SendSimulationCommand(host, sim, cmd.latin1());
+        GetViewerMethods()->SendSimulationCommand(host, sim, cmd.latin1());
     }
 }
 
@@ -1952,7 +1952,7 @@ QvisSimulationWindow::executeEnableTimeRange()
 
     if (!cmd.isEmpty())
     {
-        viewer->SendSimulationCommand(host, sim, cmd.latin1());
+        GetViewerMethods()->SendSimulationCommand(host, sim, cmd.latin1());
     }
     
     bool enabled = enableTimeRange->isChecked();
@@ -1989,7 +1989,7 @@ QvisSimulationWindow::executeEnableStripChartLimits()
 
     QString cmd = enableStripChartLimits->text();
     cmd = "clicked();EnableStripChartLimits;QCheckBox;Simulations;" + cmd;
-    viewer->SendSimulationCommand(host, sim, cmd.latin1());
+    GetViewerMethods()->SendSimulationCommand(host, sim, cmd.latin1());
 
     bool enabled = enableStripChartLimits->isChecked();
     maxLimitEdit->setEnabled(enabled);       
@@ -2029,7 +2029,7 @@ QvisSimulationWindow::executeSpinBoxStartCommand()
     
     if (!cmd.isEmpty())
     {
-        viewer->SendSimulationCommand(host, sim, cmd.latin1());
+        GetViewerMethods()->SendSimulationCommand(host, sim, cmd.latin1());
     }
 }
 
@@ -2064,7 +2064,7 @@ QvisSimulationWindow::executeSpinBoxStepCommand()
     
      if (!cmd1.isEmpty())
     {     
-        viewer->SendSimulationCommand(host, sim, cmd1.latin1());
+        GetViewerMethods()->SendSimulationCommand(host, sim, cmd1.latin1());
     }
 }
 
@@ -2098,7 +2098,7 @@ QvisSimulationWindow::executeSpinBoxStopCommand()
     cmd2 = "returnedPressed();StopCycle;QLineEdit;Simulations;" + cmd2;
     if (!cmd2.isEmpty())
     {
-        viewer->SendSimulationCommand(host, sim, cmd2.latin1()); 
+        GetViewerMethods()->SendSimulationCommand(host, sim, cmd2.latin1()); 
     }
 }
 
@@ -2130,7 +2130,7 @@ QvisSimulationWindow::executeMinLimitStripChart()
     QString cmd3 = maxLimitEdit->text();
     stripChart->setOutOfBandLimits( cmd3.toDouble(), cmd2.toDouble());
     cmd2 = "returnedPressed();MinLimitEdit;QLineEdit;Simulations;" + cmd2;
-    viewer->SendSimulationCommand(host, sim, cmd2.latin1()); 
+    GetViewerMethods()->SendSimulationCommand(host, sim, cmd2.latin1()); 
 }
 
 // ****************************************************************************
@@ -2161,5 +2161,5 @@ QvisSimulationWindow::executeMaxLimitStripChart()
     QString cmd3 = maxLimitEdit->text();
     stripChart->setOutOfBandLimits( cmd3.toDouble(), cmd2.toDouble());
     cmd2 = "returnedPressed();MaxLimitEdit;QLineEdit;Simulations;" + cmd3;
-    viewer->SendSimulationCommand(host, sim, cmd2.latin1()); 
+    GetViewerMethods()->SendSimulationCommand(host, sim, cmd2.latin1()); 
 }

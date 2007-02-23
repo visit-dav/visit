@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2007, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -87,6 +87,12 @@
 #include <avtWatertightQuery.h>
 #include <avtWeightedVariableSummationQuery.h>
 #include <avtZoneCenterQuery.h>
+#include <avtConnComponentsQuery.h>
+#include <avtConnComponentsAreaQuery.h>
+#include <avtConnComponentsCentroidQuery.h>
+#include <avtConnComponentsVolumeQuery.h>
+#include <avtConnComponentsVariableQuery.h>
+#include <avtConnComponentsWeightedVariableQuery.h>
 
 
 #include <QueryAttributes.h>
@@ -243,6 +249,9 @@ avtQueryFactory::Instance()
 //
 //    Dave Bremer, Fri Dec  8 17:52:22 PST 2006
 //    Added hohlraum flux query.
+//
+//    Cyrus Harrison, Tue Feb 20 15:20:14 PST 2007
+//    Added connected components queries.
 //
 // ****************************************************************************
 
@@ -528,6 +537,31 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
         mdq->SetThetaPhi(qa->GetDarg2()[1], qa->GetDarg2()[2]);
         query = mdq;
     }
+    else if( qname == "Number of Connected Components")
+    {
+        query = new avtConnComponentsQuery();
+    }
+    else if( qname == "Connected Component Centroids")
+    {
+        query = new avtConnComponentsCentroidQuery();
+    }
+    else if( qname == "Connected Component Area")
+    {
+        query = new avtConnComponentsAreaQuery();
+    }
+    else if( qname == "Connected Component Volume")
+    {
+        query = new avtConnComponentsVolumeQuery();
+    }
+    else if( qname == "Connected Component Variable Sum")
+    {
+        query = new avtConnComponentsVariableQuery();
+    }
+    else if( qname == "Connected Component Weighted Variable Sum")
+    {
+        query = new avtConnComponentsWeightedVariableQuery();
+    }
+
 
     if (query == NULL && !foundAQuery)
     {

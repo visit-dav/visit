@@ -173,7 +173,7 @@ QvisSessionFileDatabaseLoader::Start(const QString &sfn)
     sessionFile = sfn;
     if(cancelledObserver == 0)
         cancelledObserver = new CancelledObserver(
-            viewer->GetMessageAttributes());
+            GetViewerState()->GetMessageAttributes());
     cancelledObserver->cancelled = false;
 
     ProcessFile();

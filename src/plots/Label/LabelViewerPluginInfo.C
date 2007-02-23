@@ -44,6 +44,7 @@
 #include <avtDatabaseMetaData.h>
 #include <Expression.h>
 #include <DebugStream.h>
+#include <ViewerPlot.h>
 
 #if defined(__APPLE__)
 #define GetViewerInfo Label_GetViewerInfo
@@ -205,14 +206,17 @@ LabelViewerPluginInfo::AllocAvtPlot()
 //    Added code to set the variableType in the plot attributes using the
 //    metadata.
 //
+//    Brad Whitlock, Wed Feb 21 14:27:15 PST 2007
+//    Changed API.
+//
 // ****************************************************************************
 
 void
 LabelViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *md, const char *varName)
+    ViewerPlot *plot)
 {
     *(LabelAttributes*)atts = *defaultAtts;
-    PrivateSetPlotAtts(atts, md, varName);
+    PrivateSetPlotAtts(atts, plot);
 }
 
 // ****************************************************************************
@@ -231,13 +235,16 @@ LabelViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
 //    Brad Whitlock, Fri Mar 26 15:22:11 PST 2004
 //    I made it use passed in metadata.
 //
+//    Brad Whitlock, Wed Feb 21 14:27:15 PST 2007
+//    Changed API.
+//
 // ****************************************************************************
 
 void
 LabelViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *md, const char *varName)
+    ViewerPlot *plot)
 {
-    PrivateSetPlotAtts(atts, md, varName);
+    PrivateSetPlotAtts(atts, plot);
 }
 
 // ****************************************************************************
@@ -256,13 +263,16 @@ LabelViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
 //    Brad Whitlock, Fri Mar 26 15:22:11 PST 2004
 //    I made it use passed in metadata.
 //
+//    Brad Whitlock, Wed Feb 21 14:27:15 PST 2007
+//    Changed API.
 // ****************************************************************************
+
 void
 LabelViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *md, const char *varName)
+    ViewerPlot *plot)
 
 {
-    ReInitializePlotAtts(atts, md, varName);
+    ReInitializePlotAtts(atts, plot);
 }
 
 // ****************************************************************************
@@ -330,24 +340,28 @@ LabelViewerPluginInfo::XPMIconData() const
 //   a scalar. This allows us to get the right type for things made up of
 //   scalars such as vectors.
 //
+//   Brad Whitlock, Wed Feb 21 14:27:15 PST 2007
+//   Changed API.
+//
 // ****************************************************************************
 
 void
 LabelViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
-    const avtDatabaseMetaData *md, const char *varName)
+    ViewerPlot *plot)
 {
     LabelAttributes *labelAtts = (LabelAttributes *)atts;
 
     //
     // Get the meta-data and initialize the variable type in the atts.
     //
+    const avtDatabaseMetaData *md = plot->GetMetaData();
     if (md == NULL)
     {
         labelAtts->SetVarType(LabelAttributes::LABEL_VT_UNKNOWN_TYPE);
         return;
     }
 
-    avtSubsetType st = md->DetermineSubsetType(varName);
+    avtSubsetType st = md->DetermineSubsetType(plot->GetVariableName());
     if(st != AVT_UNKNOWN_SUBSET && st != AVT_MATERIAL_SUBSET)
     {
         labelAtts->SetVarType(LabelAttributes::LABEL_VT_SUBSET);
@@ -355,7 +369,7 @@ LabelViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     }
     else
     {
-        avtVarType t = md->DetermineVarType(varName);
+        avtVarType t = md->DetermineVarType(plot->GetVariableName());
 
         if(t == AVT_SCALAR_VAR)
         {
@@ -366,7 +380,7 @@ LabelViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
             for(int i = 0; i < md->GetNumberOfExpressions(); ++i)
             {
                 const Expression *e = md->GetExpression(i);
-                if(e->GetName() == varName)
+                if(e->GetName() == plot->GetVariableName())
                 {
                     if(e->GetType() == Expression::VectorMeshVar)
                         t = AVT_VECTOR_VAR;

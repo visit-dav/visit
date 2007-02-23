@@ -390,7 +390,11 @@ QvisPlotListBox::NeedsToBeRegenerated(const PlotList *pl,
 // Creation:   Fri Dec 5 16:20:58 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Feb 23 14:17:32 PST 2007
+//   Changed code so it checks all plots and updates any active flags that
+//   are different in the plot objects. This ensures that the list box will
+//   stay consistent between updates that cause its items to be regenerated.
+//
 // ****************************************************************************
 
 bool
@@ -400,17 +404,20 @@ QvisPlotListBox::NeedToUpdateSelection(const PlotList *pl) const
 
     if(pl->GetNumPlots() == count())
     {
+        bool anyDiffer = false;
         for(int i = 0; i < pl->GetNumPlots(); ++i)
         {
             QvisPlotListBoxItem *lbi = (QvisPlotListBoxItem *)item(i);
             const Plot &newPlot = pl->operator[](i);
-            const Plot &currentPlot = lbi->GetPlot();
+            Plot &currentPlot = lbi->GetPlot();
 
-            bool nu = newPlot.GetActiveFlag() != currentPlot.GetActiveFlag();
-
-            if(nu) return true;
+            if(newPlot.GetActiveFlag() != currentPlot.GetActiveFlag())
+            {
+                currentPlot.SetActiveFlag(newPlot.GetActiveFlag());
+                anyDiffer = true;
+            }
         }
-        return false;
+        return anyDiffer;
     }
 
     return retval;

@@ -879,7 +879,8 @@ QvisFilePanel::UpdateAnimationControls(bool doAll)
             // Use a name simplifier to shorten the source names.
             //
             NameSimplifier simplifier;
-            const stringVector &sources = viewer->GetGlobalAttributes()->GetSources();
+            const stringVector &sources = GetViewerState()->
+                GetGlobalAttributes()->GetSources();
             for(i = 0; i < sources.size(); ++i)
                 simplifier.AddName(sources[i]);
             stringVector shortNames;
@@ -946,7 +947,8 @@ QvisFilePanel::UpdateAnimationControls(bool doAll)
     if(windowInfo->IsSelected(1) /*activeTimeSlider*/ ||
        windowInfo->IsSelected(3) /*timeSliderCurrentStates*/ || doAll)
     {
-        DatabaseCorrelationList *cL = viewer->GetDatabaseCorrelationList();
+        DatabaseCorrelationList *cL = GetViewerState()->
+            GetDatabaseCorrelationList();
         DatabaseCorrelation *activeTSCorrelation = 0;
         if(activeTS >= 0)
         {
@@ -963,7 +965,7 @@ QvisFilePanel::UpdateAnimationControls(bool doAll)
             currentState = windowInfo->GetTimeSliderCurrentStates()[activeTS];
             nTotalStates = activeTSCorrelation->GetNumStates();
         }
-        else if(viewer->GetKeyframeAttributes()->GetEnabled())
+        else if(GetViewerState()->GetKeyframeAttributes()->GetEnabled())
         {
             //
             // Keyframing is enabled so we must be using the keyframing time
@@ -972,7 +974,7 @@ QvisFilePanel::UpdateAnimationControls(bool doAll)
             // length of the time slider.
             //
             currentState = windowInfo->GetTimeSliderCurrentStates()[activeTS];
-            nTotalStates = viewer->GetKeyframeAttributes()->GetNFrames();
+            nTotalStates = GetViewerState()->GetKeyframeAttributes()->GetNFrames();
         }
 
         animationPosition->blockSignals(true);
@@ -1061,7 +1063,8 @@ QvisFilePanel::UpdateTimeFieldText(int timeState)
         //
         // Look for a database correlation with that name.
         //
-        DatabaseCorrelationList *dbCorrelations = viewer->GetDatabaseCorrelationList();
+        DatabaseCorrelationList *dbCorrelations = GetViewerState()->
+            GetDatabaseCorrelationList();
         DatabaseCorrelation *correlation = dbCorrelations->FindCorrelation(tsName);
         if(correlation)
         {
@@ -1705,7 +1708,8 @@ QvisFilePanel::UpdateFileSelection()
         const std::string &activeTSName = windowInfo->GetTimeSliders()[activeTS];
 
         // Get the correlation for the active time slider
-        DatabaseCorrelationList *correlations = viewer->GetDatabaseCorrelationList();
+        DatabaseCorrelationList *correlations = GetViewerState()->
+            GetDatabaseCorrelationList();
         correlation = correlations->FindCorrelation(activeTSName);
 
         if(correlation)
@@ -1939,7 +1943,7 @@ QvisFilePanel::UpdateReplaceButtonEnabledState()
             if(!enabled)
             {
                 std::string highlightFile(ci->file.FullName());
-                PlotList *pl = viewer->GetPlotList();
+                PlotList *pl = GetViewerState()->GetPlotList();
                 for(int i = 0; i < pl->GetNumPlots(); ++i)
                 {
                     const Plot &current = pl->operator[](i);
@@ -2069,12 +2073,12 @@ QvisFilePanel::OpenFile(const QualifiedFilename &qf, int timeState, bool reOpen)
     {
         // Tell the viewer to replace all of the plots having
         // databases that match the file we're re-opening.
-        viewer->ReOpenDatabase(qf.FullName().c_str(), false);
+        GetViewerMethods()->ReOpenDatabase(qf.FullName().c_str(), false);
     }
     else
     {
         // Tell the viewer to open the database.
-        viewer->OpenDatabase(qf.FullName().c_str(), timeState, true);
+        GetViewerMethods()->OpenDatabase(qf.FullName().c_str(), timeState, true);
     }
 
     // Update the Replace and Overlay buttons.
@@ -2125,7 +2129,7 @@ QvisFilePanel::ReplaceFile(const QualifiedFilename &filename, int timeState)
     SetOpenDataFile(filename, timeState, this, false);
 
     // Tell the viewer to replace the database.
-    viewer->ReplaceDatabase(filename.FullName().c_str(), timeState);
+    GetViewerMethods()->ReplaceDatabase(filename.FullName().c_str(), timeState);
 
     // Update the Replace and Overlay buttons.
     UpdateReplaceButtonEnabledState();
@@ -2171,7 +2175,7 @@ QvisFilePanel::OverlayFile(const QualifiedFilename &filename)
     SetOpenDataFile(filename, 0, this, false);
 
     // Tell the viewer to replace the database.
-    viewer->OverlayDatabase(filename.FullName().c_str());
+    GetViewerMethods()->OverlayDatabase(filename.FullName().c_str());
 
     // Set the enabled state for the Replace and Overlay buttons.
     UpdateReplaceButtonEnabledState();
@@ -2385,7 +2389,7 @@ QvisFilePanel::SetTimeSliderState(int state)
          //
          if(state != currentState)
          {
-             viewer->SetTimeSliderState(state);
+             GetViewerMethods()->SetTimeSliderState(state);
          }
          else
          {  
@@ -2581,7 +2585,7 @@ void
 QvisFilePanel::backwardStep()
 {
     // Tell the viewer to go to the previous frame.
-    viewer->TimeSliderPreviousState();
+    GetViewerMethods()->TimeSliderPreviousState();
 }
 
 // ****************************************************************************
@@ -2602,7 +2606,7 @@ void
 QvisFilePanel::reversePlay()
 {
     // Tell the viewer to play the animation in reverse.
-    viewer->AnimationReversePlay();
+    GetViewerMethods()->AnimationReversePlay();
 }
 
 // ****************************************************************************
@@ -2622,8 +2626,9 @@ QvisFilePanel::reversePlay()
 void
 QvisFilePanel::stop()
 {
-    // Tell the viewer to stop the animation.
-    viewer->AnimationStop();
+    // Tell the viewer to stop the animation. Use the viewer proxy because
+    // it has an additional mechanism for making the animation stop quicker.
+    GetViewerProxy()->AnimationStop();
 }
 
 // ****************************************************************************
@@ -2644,7 +2649,7 @@ void
 QvisFilePanel::play()
 {
     // Tell the viewer to play the animation.
-    viewer->AnimationPlay();
+    GetViewerMethods()->AnimationPlay();
 }
 
 // ****************************************************************************
@@ -2685,10 +2690,10 @@ QvisFilePanel::forwardStep()
     else
     {
         // Tell the viewer to go to the next frame.
-        viewer->AnimationNextFrame();
+        GetViewerMethods()->AnimationNextFrame();
     }
 #else
-    viewer->TimeSliderNextState();
+    GetViewerMethods()->TimeSliderNextState();
 #endif
 }
 
@@ -3042,10 +3047,10 @@ QvisFilePanel::openFileDblClick(QListViewItem *item)
             // If the correlation for the active time slider does not use the
             // database that we just double-clicked, 
             //
-            WindowInformation *windowInfo = viewer->GetWindowInformation();
+            WindowInformation *windowInfo = GetViewerState()->GetWindowInformation();
             int activeTS = windowInfo->GetActiveTimeSlider();
             std::string activeTSName, src(fileItem->file.FullName());
-            DatabaseCorrelationList *cL = viewer->GetDatabaseCorrelationList();
+            DatabaseCorrelationList *cL = GetViewerState()->GetDatabaseCorrelationList();
 
             if(activeTS >= 0)
             {
@@ -3058,7 +3063,7 @@ QvisFilePanel::openFileDblClick(QListViewItem *item)
                               "time state because the active time slider does "
                               "not use the database that we double clicked.\n";
                     activeTSName = src;
-                    viewer->SetActiveTimeSlider(activeTSName);
+                    GetViewerMethods()->SetActiveTimeSlider(activeTSName);
                 }
             }
 
@@ -3068,7 +3073,7 @@ QvisFilePanel::openFileDblClick(QListViewItem *item)
             // database has the database time state that we want opened.
             //
             state = GetTimeSliderStateForDatabaseState(activeTSName, src, state);
-            viewer->SetTimeSliderState(state);
+            GetViewerMethods()->SetTimeSliderState(state);
         }
         else
         {
@@ -3463,7 +3468,7 @@ QvisFilePanel::changeActiveTimeSlider(int tsIndex)
     {
         const stringVector &tsNames = windowInfo->GetTimeSliders();
         if(tsIndex >= 0 && tsIndex < tsNames.size())
-            viewer->SetActiveTimeSlider(tsNames[tsIndex]);
+            GetViewerMethods()->SetActiveTimeSlider(tsNames[tsIndex]);
     }
 }
 

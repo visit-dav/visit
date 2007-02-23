@@ -42,7 +42,7 @@
 #ifndef VIEWER_QUERY_MANAGER_H
 #define VIEWER_QUERY_MANAGER_H
 #include <viewer_exports.h>
-
+#include <ViewerBase.h>
 #include <PickPointInfo.h>
 #include <ColorAttribute.h>
 #include <ViewerQuery.h>
@@ -223,9 +223,12 @@ typedef struct {
 //    Kathleen Bonnell, Wed Nov  1 13:50:32 PST 2006 
 //    Added CloneQuery.
 //
+//    Brad Whitlock, Mon Feb 12 17:44:20 PST 2007
+//    Added ViewerBase.
+//
 // ****************************************************************************
     
-class VIEWER_API ViewerQueryManager 
+class VIEWER_API ViewerQueryManager : public ViewerBase
 {
   public:
                    ~ViewerQueryManager();

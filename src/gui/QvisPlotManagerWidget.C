@@ -1663,7 +1663,7 @@ void
 QvisPlotManagerWidget::hidePlots()
 {
     // hide the active plots.
-    viewer->HideActivePlots();
+    GetViewerMethods()->HideActivePlots();
 }
 
 // ****************************************************************************
@@ -1690,7 +1690,7 @@ QvisPlotManagerWidget::deletePlots()
     SetWaitCursor();
 
     // delete the active plots.
-    viewer->DeleteActivePlots();
+    GetViewerMethods()->DeleteActivePlots();
 }
 
 // ****************************************************************************
@@ -1711,7 +1711,7 @@ void
 QvisPlotManagerWidget::drawPlots()
 {
     // Draw the plots.
-    viewer->DrawPlots();
+    GetViewerMethods()->DrawPlots();
 }
 
 // ****************************************************************************
@@ -1813,8 +1813,8 @@ QvisPlotManagerWidget::setActivePlots()
         // Tell the viewer the new active plots.
         if(newPlotSelection.size() > 0)
         {
-            viewer->SetActivePlots(newPlotSelection, newOperatorSelection,
-                                   newExpandedPlots);
+            GetViewerMethods()->SetActivePlots(newPlotSelection, 
+                newOperatorSelection, newExpandedPlots);
         }
     }
 }
@@ -1838,9 +1838,9 @@ QvisPlotManagerWidget::setActivePlots()
 void
 QvisPlotManagerWidget::promoteOperator(int operatorIndex)
 {
-    viewer->PromoteOperator(operatorIndex);
+    GetViewerMethods()->PromoteOperator(operatorIndex);
     if(AutoUpdate())
-        viewer->DrawPlots();
+        GetViewerMethods()->DrawPlots();
 }
 
 // ****************************************************************************
@@ -1862,9 +1862,9 @@ QvisPlotManagerWidget::promoteOperator(int operatorIndex)
 void
 QvisPlotManagerWidget::demoteOperator(int operatorIndex)
 {
-    viewer->DemoteOperator(operatorIndex);
+    GetViewerMethods()->DemoteOperator(operatorIndex);
     if(AutoUpdate())
-        viewer->DrawPlots();
+        GetViewerMethods()->DrawPlots();
 }
 
 // ****************************************************************************
@@ -1886,9 +1886,9 @@ QvisPlotManagerWidget::demoteOperator(int operatorIndex)
 void
 QvisPlotManagerWidget::removeOperator(int operatorIndex)
 {
-    viewer->RemoveOperator(operatorIndex);
+    GetViewerMethods()->RemoveOperator(operatorIndex);
     if(AutoUpdate())
-        viewer->DrawPlots();
+        GetViewerMethods()->DrawPlots();
 }
 
 // ****************************************************************************
@@ -1918,7 +1918,7 @@ QvisPlotManagerWidget::changeVariable(int, const QString &varName)
 {
     // Tell the viewer to change the variables of the selected
     // plots to a new variable.
-    viewer->ChangeActivePlotsVar(varName.latin1());
+    GetViewerMethods()->ChangeActivePlotsVar(varName.latin1());
 }
 
 // ****************************************************************************
@@ -1984,9 +1984,9 @@ void
 QvisPlotManagerWidget::operatorAction(int index)
 {
     if(index == REMOVE_LAST_OPERATOR_ID)
-        viewer->RemoveLastOperator();
+        GetViewerMethods()->RemoveLastOperator();
     else if(index == REMOVE_ALL_OPERATORS_ID)
-        viewer->RemoveAllOperators();
+        GetViewerMethods()->RemoveAllOperators();
     else
         emit addOperator(index);
 }
@@ -2035,5 +2035,5 @@ QvisPlotManagerWidget::sourceChanged(int index)
 {
     const stringVector &sources = globalAtts->GetSources();
     if(index >= 0 && index < sources.size())
-        viewer->ActivateDatabase(sources[index]);
+        GetViewerMethods()->ActivateDatabase(sources[index]);
 }

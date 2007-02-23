@@ -67,7 +67,7 @@
 #include <ViewerEngineManager.h>
 #include <ParsingExprList.h>
 #include <ViewerFileServer.h>
-#include <ViewerMessaging.h>
+#include <ViewerMethods.h>
 #include <ViewerOperator.h>
 #include <ViewerOperatorFactory.h>
 #include <ViewerPlot.h>
@@ -193,9 +193,13 @@ PlaybackMode_FromString(const std::string &s,
 //    Brad Whitlock, Tue Apr 6 23:24:12 PST 2004
 //    I added nKeyframesWasUserSet.
 //
+//    Brad Whitlock, Mon Feb 12 17:41:27 PST 2007
+//    Added ViewerBase base class.
+//
 // ****************************************************************************
 
 ViewerPlotList::ViewerPlotList(ViewerWindow *const viewerWindow) : 
+    ViewerBase(0, "ViewerPlotList"),
     hostDatabaseName(), hostName(), databaseName(), timeSliders()
 {
     window           = viewerWindow;
@@ -3195,6 +3199,7 @@ ViewerPlotList::NewPlot(int type, const EngineKey &ek,
                                        silr, plotState, nStates,
                                        cacheIndex, cacheSize);
         plot->RegisterViewerPlotList(this);
+
     }
     CATCH(VisItException)
     {
@@ -4733,6 +4738,9 @@ ViewerPlotList::SetActivePlots(const intVector &activePlots,
         if (activePlots[i] < nPlots)
         {
             plots[activePlots[i]].active = true;
+
+            // Make sure its alternate display is showing.
+            plots[activePlots[i]].plot->AlternateDisplayShow();
         }
     }
 
@@ -5604,7 +5612,7 @@ CreatePlot(void *info)
                     "The %s plot of variable \"%s\" yielded no data.",
                     plotInfo->plot->GetPlotName(),
                     plotInfo->plot->GetVariableName().c_str());
-                Warning(message);
+                plotInfo->plotList->Warning(message);
             }
 
         }
@@ -8208,4 +8216,78 @@ ViewerPlotList::SetFullFrameScaling(bool useScale, double *scale)
     }
 
     return retval;
+}
+
+// ****************************************************************************
+// Method: ViewerPlotList::AlternateDisplayChangedPlotAttributes
+//
+// Purpose: 
+//   This is a Qt slot function that we get from ViewerPlot objects when
+//   their attributes are changed via their alternate displays.
+//
+// Arguments:
+//   plot : The ViewerPlot object that was changed.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 14 11:58:39 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlotList::AlternateDisplayChangedPlotAttributes(ViewerPlot *plot)
+{
+    // Determine the plot index.
+    int activePlotCount = 0;
+    int activePlotIndex = -1;
+    int plotIndex = -1;
+    for (int i = 0; i < nPlots; i++)
+    {
+        if(plots[i].active)
+        {
+            activePlotCount++;
+            activePlotIndex = i;
+        }
+        if (plots[i].plot == plot)
+            plotIndex = i;
+    }
+ 
+    if(plotIndex != -1 &&
+       (activePlotCount > 1 || plotIndex != activePlotIndex))
+    {
+        // If we found the plot in the list then make it be the
+        // selected plot so its attributes will be sent to the
+        // clients.
+        intVector selectedPlots;
+        selectedPlots.push_back(plotIndex);
+        GetViewerMethods()->SetActivePlots(selectedPlots);
+    }
+
+    if(plot->AlternateDisplayAllowClientUpdates())
+    {
+        //
+        // If we're allowing updates to go back to the client spontaneously
+        // caused by actions in the alternate display then send back the
+        // attributes now and then perform a SetPlotOptions RPC so this can
+        // all be logged in the clients.
+        //
+        // This path can be slower for continuous actions such as sliders
+        // so try not to take this path in such cases.
+        //
+        ViewerPlotFactory *plotFactory = viewerSubject->GetPlotFactory();
+        AttributeSubject *cAtts = plotFactory->GetClientAtts(plot->GetType());
+        if(cAtts->CopyAttributes(plot->GetPlotAtts()))
+        {
+            cAtts->Notify();
+            GetViewerMethods()->SetPlotOptions(plot->GetType());
+        }
+    }
+    else
+    {
+        // This path does not send plot attributes back to the client but
+        // it is a much faster way to make the alternate display update
+        // a window.
+        UpdateFrame();
+    }
 }

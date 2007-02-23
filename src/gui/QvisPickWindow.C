@@ -822,7 +822,7 @@ QvisPickWindow::Apply(bool ignore)
         // observers about them.
         GetCurrentValues(-1);
         pickAtts->Notify();
-        viewer->SetPickAttributes();
+        GetViewerMethods()->SetPickAttributes();
     }
     else
     {
@@ -948,7 +948,7 @@ QvisPickWindow::makeDefault()
     // Tell the viewer to set the default pc attributes.
     GetCurrentValues(-1);
     pickAtts->Notify();
-    viewer->SetDefaultPickAttributes();
+    GetViewerMethods()->SetDefaultPickAttributes();
 }
 
 // ****************************************************************************
@@ -969,7 +969,7 @@ QvisPickWindow::reset()
     // Tell the viewer to reset the pick attributes to the last
     // applied values.
     //
-    viewer->ResetPickAttributes();
+    GetViewerMethods()->ResetPickAttributes();
 }
 
 

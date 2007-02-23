@@ -405,10 +405,14 @@ public:
 //   Brad Whitlock, Tue Mar 7 17:58:19 PST 2006
 //   I added RedoViewAction.
 //
+//   Brad Whitlock, Mon Feb 12 17:55:07 PST 2007
+//   Added ViewerBase base class.
+//
 // ****************************************************************************
 
 
-ViewerActionManager::ViewerActionManager(ViewerWindow *win) : actionGroups()
+ViewerActionManager::ViewerActionManager(ViewerWindow *win) : 
+    ViewerBase(0, "ViewerActionManager"), actionGroups()
 {
     // Create an action array large enough to contain all of the actions.
     actions = new ViewerActionBase *[(int)ViewerRPC::MaxRPC];

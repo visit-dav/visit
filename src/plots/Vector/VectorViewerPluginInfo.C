@@ -201,7 +201,7 @@ VectorViewerPluginInfo::AllocAvtPlot()
 
 void
 VectorViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *, const char *)
+    ViewerPlot *)
 {
     *(VectorAttributes*)atts = *defaultAtts;
 }

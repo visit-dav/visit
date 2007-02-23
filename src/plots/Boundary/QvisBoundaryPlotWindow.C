@@ -808,7 +808,7 @@ QvisBoundaryPlotWindow::Apply(bool ignore)
         boundaryAtts->Notify();
 
         // Tell the viewer to set the boundary plot attributes.
-        viewer->SetPlotOptions(plotType);
+        GetViewerMethods()->SetPlotOptions(plotType);
     }
     else
         boundaryAtts->Notify();
@@ -864,7 +864,7 @@ QvisBoundaryPlotWindow::makeDefault()
     // Tell the viewer to set the default boundary plot attributes.
     GetCurrentValues(-1);
     boundaryAtts->Notify();
-    viewer->SetDefaultPlotOptions(plotType);
+    GetViewerMethods()->SetDefaultPlotOptions(plotType);
 }
 
 // ****************************************************************************
@@ -888,7 +888,7 @@ QvisBoundaryPlotWindow::reset()
 {
     // Tell the viewer to reset the boundary plot attributes to the last
     // applied values.
-    viewer->ResetPlotOptions(plotType);
+    GetViewerMethods()->ResetPlotOptions(plotType);
 }
 
 // ****************************************************************************

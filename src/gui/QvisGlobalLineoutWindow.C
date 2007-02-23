@@ -471,7 +471,7 @@ QvisGlobalLineoutWindow::Apply(bool ignore)
         GetCurrentValues(-1);
         atts->Notify();
 
-        viewer->SetGlobalLineoutAttributes();
+        GetViewerMethods()->SetGlobalLineoutAttributes();
     }
     else
         atts->Notify();

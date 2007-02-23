@@ -89,6 +89,9 @@
 //    Hank Childs, Tue May 24 09:41:53 PDT 2005
 //    Add hasoptions.
 //
+//    Brad Whitlock, Fri Feb 23 17:11:23 PST 2007
+//    Added viewer widgets.
+//
 // ****************************************************************************
 
 class Plugin
@@ -125,6 +128,8 @@ class Plugin
     vector<QString> efiles;     // engine
     bool customwfiles;
     vector<QString> wfiles;     // widget
+    bool customvwfiles;
+    vector<QString> vwfiles;    // viewer widget
     vector<QString> defaultgfiles;
     vector<QString> defaultsfiles;
     vector<QString> defaultvfiles;
@@ -150,12 +155,14 @@ class Plugin
         custommfiles = false;
         customefiles = false;
         customwfiles = false;
+        customvwfiles = false;
         gfiles.clear();
         sfiles.clear();
         vfiles.clear();
         mfiles.clear();
         efiles.clear();
         wfiles.clear();
+        vwfiles.clear();
         if (type == "database")
         {
             QString filter = QString("avt") + name + "FileFormat.C";
@@ -288,6 +295,14 @@ class Plugin
             WriteTagAttr(out, "components", "W");
             FinishOpenTag(out);
             WriteValues(out, wfiles, indent);
+            WriteCloseTag(out, "Files", indent);
+        }
+        if (customvwfiles)
+        {
+            StartOpenTag(out, "Files", indent);
+            WriteTagAttr(out, "components", "VW");
+            FinishOpenTag(out);
+            WriteValues(out, vwfiles, indent);
             WriteCloseTag(out, "Files", indent);
         }
 

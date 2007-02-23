@@ -457,7 +457,7 @@ QvisTensorPlotWindow::Apply(bool ignore)
         tensorAtts->Notify();
 
         // Tell the viewer to set the tensor attributes.
-        viewer->SetPlotOptions(plotType);
+        GetViewerMethods()->SetPlotOptions(plotType);
     }
     else
         tensorAtts->Notify();
@@ -479,7 +479,7 @@ QvisTensorPlotWindow::makeDefault()
     // Tell the viewer to set the default tensor attributes.
     GetCurrentValues(-1);
     tensorAtts->Notify();
-    viewer->SetDefaultPlotOptions(plotType);
+    GetViewerMethods()->SetDefaultPlotOptions(plotType);
 }
 
 void
@@ -487,7 +487,7 @@ QvisTensorPlotWindow::reset()
 {
     // Tell the viewer to reset the aslice attributes to the last
     // applied values.
-    viewer->ResetPlotOptions(plotType);
+    GetViewerMethods()->ResetPlotOptions(plotType);
 }
 
 // ****************************************************************************

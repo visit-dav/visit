@@ -1396,7 +1396,7 @@ QvisVolumePlotWindow::Apply(bool ignore)
         volumeAtts->Notify();
 
         // Tell the viewer to set the volume plot attributes.
-        viewer->SetPlotOptions(plotType);
+        GetViewerMethods()->SetPlotOptions(plotType);
 
     }
     else
@@ -1472,7 +1472,7 @@ QvisVolumePlotWindow::makeDefault()
     // Tell the viewer to set the default contour plot attributes.
     GetCurrentValues(-1);
     volumeAtts->Notify();
-    viewer->SetDefaultPlotOptions(plotType);
+    GetViewerMethods()->SetDefaultPlotOptions(plotType);
 }
 
 // ****************************************************************************
@@ -1494,7 +1494,7 @@ QvisVolumePlotWindow::reset()
 {
     // Tell the viewer to reset the contour plot attributes to the last
     // applied values.
-    viewer->ResetPlotOptions(plotType);
+    GetViewerMethods()->ResetPlotOptions(plotType);
 }
 
 // ****************************************************************************

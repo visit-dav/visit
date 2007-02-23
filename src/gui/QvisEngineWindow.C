@@ -692,7 +692,7 @@ QvisEngineWindow::closeEngine()
                              0, 1 ) == 0)
     {
         // The user actually chose to close the engine.
-        viewer->CloseComputeEngine(host, sim);
+        GetViewerMethods()->CloseComputeEngine(host, sim);
     }
 }
 
@@ -721,7 +721,7 @@ QvisEngineWindow::interruptEngine()
     string host = engines->GetEngines()[index];
     string sim  = engines->GetSimulationName()[index];
 
-    viewer->InterruptComputeEngine(host, sim);
+    GetViewerProxy()->InterruptComputeEngine(host, sim);
 }
 
 // ****************************************************************************
@@ -749,10 +749,10 @@ QvisEngineWindow::clearCache()
     string host = engines->GetEngines()[index];
     string sim  = engines->GetSimulationName()[index];
 
-    if(viewer->GetLocalHostName() == host)
-        viewer->ClearCache("localhost", sim);
+    if(GetViewerProxy()->GetLocalHostName() == host)
+        GetViewerMethods()->ClearCache("localhost", sim);
     else
-        viewer->ClearCache(host, sim);
+        GetViewerMethods()->ClearCache(host, sim);
 }
 
 // ****************************************************************************

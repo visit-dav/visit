@@ -209,7 +209,7 @@ void
 QvisSubsetWindow::UpdateWindow(bool)
 {
     // Get a reference to the SIL restriction in the viewer proxy.
-    avtSILRestriction_p restriction = viewer->GetPlotSILRestriction();
+    avtSILRestriction_p restriction = GetViewerProxy()->GetPlotSILRestriction();
 
     // If we're looking at what is probably a new SIL restriction, update
     // the contents of the listviews.
@@ -502,7 +502,7 @@ void
 QvisSubsetWindow::ItemClicked(QvisSubsetListViewItem *item, int lvNextIndex)
 {
     // Get a reference to the viewer proxy's SIL restriction.
-    avtSILRestriction_p restriction = viewer->GetPlotSILRestriction();
+    avtSILRestriction_p restriction = GetViewerProxy()->GetPlotSILRestriction();
 
     // Get the collection from the sil.
     avtSILCollection_p collection = restriction->GetSILCollection(item->id());
@@ -674,7 +674,7 @@ QvisSubsetWindow::UpdateColumnWidths()
 void
 QvisSubsetWindow::UpdateCheckMarks(int lvIndex)
 {
-    avtSILRestriction_p restriction = viewer->GetPlotSILRestriction();
+    avtSILRestriction_p restriction = GetViewerProxy()->GetPlotSILRestriction();
     avtSILRestrictionTraverser trav(restriction);
 
     for(int i = 0; i < listViews.size(); ++i)
@@ -727,7 +727,7 @@ QvisSubsetWindow::UpdateCheckMarks(int lvIndex)
 void
 QvisSubsetWindow::TurnOnOff(int index, bool val, bool checkSelection)
 {
-    avtSILRestriction_p restriction = viewer->GetPlotSILRestriction();
+    avtSILRestriction_p restriction = GetViewerProxy()->GetPlotSILRestriction();
     restriction->SuspendCorrectnessChecking();
 
     QListViewItemIterator it(listViews[index].lv);
@@ -793,7 +793,7 @@ QvisSubsetWindow::TurnOnOff(int index, bool val, bool checkSelection)
 void
 QvisSubsetWindow::TurnReverse(int index, bool checkSelection)
 {
-    avtSILRestriction_p restriction = viewer->GetPlotSILRestriction();
+    avtSILRestriction_p restriction = GetViewerProxy()->GetPlotSILRestriction();
     restriction->SuspendCorrectnessChecking();
 
     QListViewItemIterator it(listViews[index].lv);
@@ -914,7 +914,7 @@ QvisSubsetWindow::Apply(bool ignore)
         // Indicate that we do not want the window to update when we apply
         // the values.
         SetUpdate(false);
-        viewer->SetPlotSILRestriction();
+        GetViewerProxy()->SetPlotSILRestriction();
     }
 }
 
@@ -1029,7 +1029,7 @@ QvisSubsetWindow::listviewChecked(QvisSubsetListViewItem *item)
         // Get whether or not the item is selected. Since the item is
         // a top-level item, it must be a set. Therefore, we want to
         // set the set's selected status in the SIL restriction.
-        avtSILRestriction_p restriction = viewer->GetPlotSILRestriction();
+        avtSILRestriction_p restriction = GetViewerProxy()->GetPlotSILRestriction();
         if(item->isOn())
             restriction->TurnOnSet(item->id());
         else

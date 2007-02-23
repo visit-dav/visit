@@ -65,10 +65,13 @@ ViewerWindowManager *ViewerActionBase::windowMgr = 0;
 //   Brad Whitlock, Fri Apr 15 09:06:46 PDT 2005
 //   Added rpcType initialization.
 //
+//   Brad Whitlock, Mon Feb 12 17:21:16 PST 2007
+//   ViewerBase initialization.
+//
 // ****************************************************************************
 
 ViewerActionBase::ViewerActionBase(ViewerWindow *win, const char *name) :
-    QObject(0, name)
+    ViewerBase(0, name)
 {
     window = win;
     windowId = window->GetWindowId();

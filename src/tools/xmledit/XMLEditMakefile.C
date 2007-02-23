@@ -61,11 +61,14 @@
 //    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
 //    Allow for mdserver-specific code in a plugin's source files.
 //
+//    Brad Whitlock, Fri Feb 23 17:47:37 PST 2007
+//    Added viewer widgets.
+//
 // ****************************************************************************
 XMLEditMakefile::XMLEditMakefile(QWidget *p, const QString &n)
     : QFrame(p, n)
 {
-    QGridLayout *topLayout = new QGridLayout(this, 10,2, 5);
+    QGridLayout *topLayout = new QGridLayout(this, 11,2, 5);
     int row = 0;
 
     topLayout->addWidget(new QLabel("CXXFLAGS", this), row, 0);
@@ -89,6 +92,12 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p, const QString &n)
     topLayout->addMultiCellWidget(GFiles, row,row, 1,2);
     row++;
 
+    customWFiles = new QCheckBox("GUI Widget Files", this);
+    WFiles = new QLineEdit(this);
+    topLayout->addWidget(customWFiles, row, 0);
+    topLayout->addMultiCellWidget(WFiles, row,row, 1,2);
+    row++;
+
     customSFiles = new QCheckBox("Scripting Files", this);
     SFiles = new QLineEdit(this);
     topLayout->addWidget(customSFiles, row, 0);
@@ -101,6 +110,12 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p, const QString &n)
     topLayout->addMultiCellWidget(VFiles, row,row, 1,2);
     row++;
 
+    customVWFiles = new QCheckBox("Viewer Widget Files", this);
+    VWFiles = new QLineEdit(this);
+    topLayout->addWidget(customVWFiles, row, 0);
+    topLayout->addMultiCellWidget(VWFiles, row,row, 1,2);
+    row++;
+
     customMFiles = new QCheckBox("MDServer Files", this);
     MFiles = new QLineEdit(this);
     topLayout->addWidget(customMFiles, row, 0);
@@ -111,12 +126,6 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p, const QString &n)
     EFiles = new QLineEdit(this);
     topLayout->addWidget(customEFiles, row, 0);
     topLayout->addMultiCellWidget(EFiles, row,row, 1,2);
-    row++;
-
-    customWFiles = new QCheckBox("Widget Files", this);
-    WFiles = new QLineEdit(this);
-    topLayout->addWidget(customWFiles, row, 0);
-    topLayout->addMultiCellWidget(WFiles, row,row, 1,2);
     row++;
 
     mdSpecificCode = new QCheckBox("Plugin has code specific to the MDServer", this);
@@ -144,6 +153,8 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p, const QString &n)
             this, SLOT(efilesTextChanged(const QString&)));
     connect(WFiles, SIGNAL(textChanged(const QString&)),
             this, SLOT(wfilesTextChanged(const QString&)));
+    connect(VWFiles, SIGNAL(textChanged(const QString&)),
+            this, SLOT(vwfilesTextChanged(const QString&)));
     connect(customGFiles, SIGNAL(clicked()),
             this, SLOT(customgfilesChanged()));
     connect(customSFiles, SIGNAL(clicked()),
@@ -156,6 +167,8 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p, const QString &n)
             this, SLOT(customefilesChanged()));
     connect(customWFiles, SIGNAL(clicked()),
             this, SLOT(customwfilesChanged()));
+    connect(customVWFiles, SIGNAL(clicked()),
+            this, SLOT(customvwfilesChanged()));
     connect(mdSpecificCode, SIGNAL(clicked()),
             this, SLOT(mdSpecificCodeChanged()));
 }
@@ -175,6 +188,9 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p, const QString &n)
 //
 //    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
 //    Allow for mdserver-specific code in a plugin's source files.
+//
+//    Brad Whitlock, Fri Feb 23 17:49:59 PST 2007
+//    Added viewer widgets.
 //
 // ****************************************************************************
 void
@@ -218,6 +234,11 @@ XMLEditMakefile::UpdateWindowContents()
         else
             WFiles->setText(JoinValues(p->defaultwfiles, ' '));
         customWFiles->setChecked(p->customwfiles);
+        if (p->customvwfiles)
+            VWFiles->setText(JoinValues(p->vwfiles, ' '));
+        else
+            VWFiles->setText("");
+        customVWFiles->setChecked(p->customvwfiles);
         mdSpecificCode->setChecked(p->has_MDS_specific_code);
     }
 
@@ -242,6 +263,9 @@ XMLEditMakefile::UpdateWindowContents()
 //    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
 //    Allow for mdserver-specific code in a plugin's source files.
 //
+//    Brad Whitlock, Fri Feb 23 17:52:42 PST 2007
+//    Added viewer widgets.
+//
 // ****************************************************************************
 void
 XMLEditMakefile::UpdateWindowSensitivity()
@@ -263,6 +287,8 @@ XMLEditMakefile::UpdateWindowSensitivity()
     customEFiles->setEnabled(plugin);
     WFiles->setEnabled(plugin && xmldoc->plugin->customwfiles);
     customWFiles->setEnabled(plugin);
+    VWFiles->setEnabled(plugin && xmldoc->plugin->customvwfiles);
+    customVWFiles->setEnabled(plugin);
     mdSpecificCode->setEnabled(plugin);
 }
 
@@ -286,6 +312,9 @@ XMLEditMakefile::UpdateWindowSensitivity()
 //    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
 //    Allow for mdserver-specific code in a plugin's source files.
 //
+//    Brad Whitlock, Fri Feb 23 17:53:03 PST 2007
+//    Added viewer widgets.
+//
 // ****************************************************************************
 void
 XMLEditMakefile::BlockAllSignals(bool block)
@@ -305,6 +334,8 @@ XMLEditMakefile::BlockAllSignals(bool block)
     customEFiles->blockSignals(block);
     WFiles->blockSignals(block);
     customWFiles->blockSignals(block);
+    VWFiles->blockSignals(block);
+    customVWFiles->blockSignals(block);
     mdSpecificCode->blockSignals(block);
 }
 
@@ -431,6 +462,19 @@ XMLEditMakefile::wfilesTextChanged(const QString &text)
 }
 
 // ****************************************************************************
+//  Method:  XMLEditMakefile::vwfilesTextChanged
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Fri Feb 23 17:53:33 PST 2007
+//
+// ****************************************************************************
+void
+XMLEditMakefile::vwfilesTextChanged(const QString &text)
+{
+    xmldoc->plugin->vwfiles = SplitValues(text);
+}
+
+// ****************************************************************************
 //  Method:  XMLEditMakefile::customgfilesChanged
 //
 //  Programmer:  Jeremy Meredith
@@ -511,6 +555,20 @@ void
 XMLEditMakefile::customwfilesChanged()
 {
     xmldoc->plugin->customwfiles = customWFiles->isChecked();
+    UpdateWindowContents();
+}
+
+// ****************************************************************************
+//  Method:  XMLEditMakefile::customvwfilesChanged
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Fri Feb 23 17:54:08 PST 2007
+//
+// ****************************************************************************
+void
+XMLEditMakefile::customvwfilesChanged()
+{
+    xmldoc->plugin->customvwfiles = customVWFiles->isChecked();
     UpdateWindowContents();
 }
 

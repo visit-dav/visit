@@ -42,6 +42,7 @@
 #ifndef VIEWER_WINDOW_H
 #define VIEWER_WINDOW_H
 #include <viewer_exports.h>
+#include <ViewerBase.h>
 #include <avtActor.h>
 #include <avtDataset.h>
 #include <avtImage.h>
@@ -403,14 +404,17 @@ class ViewerToolbar;
 //    Brad Whitlock, Thu Nov 9 16:45:04 PST 2006
 //    Added argument to CreateNode.
 //
+//    Brad Whitlock, Mon Feb 12 17:41:58 PST 2007
+//    Added ViewerBase base class.
+//
 // ****************************************************************************
 
-class VIEWER_API ViewerWindow
+class VIEWER_API ViewerWindow : public ViewerBase
 {
     friend class ViewerToolbar;
 public:
     ViewerWindow(int id = 0);
-    ~ViewerWindow();
+    virtual ~ViewerWindow();
 
     ViewerPopupMenu     *GetPopupMenu() const;
     ViewerToolbar       *GetToolbar() const;

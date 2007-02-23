@@ -37,7 +37,6 @@
 
 #include <ViewActions.h>
 #include <ViewAttributes.h>
-#include <ViewerMessaging.h>
 #include <ViewerPlotList.h>
 #include <ViewerPopupMenu.h>
 #include <ViewerToolbar.h>

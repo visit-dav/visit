@@ -150,6 +150,8 @@ class PLOTTER_API avtMapper : public avtOriginatingDatasetSink
     virtual bool               SetFullFrameScaling(bool, const double *)
                                    { return false; };
 
+    virtual void               SetAlternateDisplay(void *) {; }
+
   protected:
     bool                       immediateMode;
     bool                       specularIsInappropriate;

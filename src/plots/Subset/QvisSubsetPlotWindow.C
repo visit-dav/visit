@@ -866,7 +866,7 @@ QvisSubsetPlotWindow::Apply(bool ignore)
         subsetAtts->Notify();
 
         // Tell the viewer to set the subset plot attributes.
-        viewer->SetPlotOptions(plotType);
+        GetViewerMethods()->SetPlotOptions(plotType);
     }
     else
         subsetAtts->Notify();
@@ -923,7 +923,7 @@ QvisSubsetPlotWindow::makeDefault()
     // Tell the viewer to set the default subset plot attributes.
     GetCurrentValues(-1);
     subsetAtts->Notify();
-    viewer->SetDefaultPlotOptions(plotType);
+    GetViewerMethods()->SetDefaultPlotOptions(plotType);
 }
 
 // ****************************************************************************
@@ -945,7 +945,7 @@ QvisSubsetPlotWindow::reset()
 {
     // Tell the viewer to reset the subset plot attributes to the last
     // applied values.
-    viewer->ResetPlotOptions(plotType);
+    GetViewerMethods()->ResetPlotOptions(plotType);
 }
 
 // ****************************************************************************

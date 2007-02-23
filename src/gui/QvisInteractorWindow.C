@@ -309,7 +309,7 @@ QvisInteractorWindow::Apply(bool ignore)
     {
         GetCurrentValues(-1);
         atts->Notify();
-        viewer->SetInteractorAttributes();
+        GetViewerMethods()->SetInteractorAttributes();
     }
     else
         atts->Notify();
@@ -359,7 +359,7 @@ QvisInteractorWindow::makeDefault()
 {
     GetCurrentValues(-1);
     atts->Notify();
-    viewer->SetDefaultInteractorAttributes();
+    GetViewerMethods()->SetDefaultInteractorAttributes();
 }
 
 
@@ -379,7 +379,7 @@ QvisInteractorWindow::makeDefault()
 void
 QvisInteractorWindow::reset()
 {
-    viewer->ResetInteractorAttributes();
+    GetViewerMethods()->ResetInteractorAttributes();
 }
 
 

@@ -53,6 +53,8 @@
 #include <avtTypes.h>
 #include <set>
 
+#include <ViewerPlot.h>
+
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 
@@ -223,15 +225,18 @@ FilledBoundaryViewerPluginInfo::AllocAvtPlot()
 //    Brad Whitlock, Fri Mar 26 15:19:50 PST 2004
 //    I made it use passed in metadata.
 //
+//    Brad Whitlock, Wed Feb 21 14:31:20 PST 2007
+//    Changed API.
+//
 // ****************************************************************************
 
 void
 FilledBoundaryViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *md, const char *varName)
+    ViewerPlot *plot)
 {
     *(FilledBoundaryAttributes*)atts = *defaultAtts;
 
-    PrivateSetPlotAtts(atts, md, varName);
+    PrivateSetPlotAtts(atts, plot);
 }
 
 // ****************************************************************************
@@ -261,14 +266,17 @@ FilledBoundaryViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
 //    Brad Whitlock, Fri Mar 26 15:19:50 PST 2004
 //    I made it use passed in metadata.
 //
+//    Brad Whitlock, Wed Feb 21 14:31:20 PST 2007
+//    Changed API.
+//
 // ****************************************************************************
 
 void
 FilledBoundaryViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *md, const char *varName)
+    ViewerPlot *plot)
 
 {
-    PrivateSetPlotAtts(atts, md, varName);
+    PrivateSetPlotAtts(atts, plot);
 }
 
 // ****************************************************************************
@@ -322,11 +330,14 @@ FilledBoundaryViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
 //    Mark C. Miller, Thu Jul 13 22:41:56 PDT 2006
 //    Added use of colorNames from avtMaterialMetaData, if specified 
 //
+//    Brad Whitlock, Wed Feb 21 14:31:20 PST 2007
+//    Changed API.
+//
 // ****************************************************************************
 
 void
 FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
-    const avtDatabaseMetaData *md, const char *varName)
+    ViewerPlot *plot)
 {
     FilledBoundaryAttributes *boundaryAtts = (FilledBoundaryAttributes *)atts;
 
@@ -334,6 +345,7 @@ FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     // Get the meta-data and initialize the boundary names and colors in the
     // new FilledBoundaryAttributes object.
     //
+    const avtDatabaseMetaData *md = plot->GetMetaData();
     if (md == NULL)
     {
         return;
@@ -341,11 +353,11 @@ FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
 
     avtDatabaseMetaData *nonConstmd = const_cast <avtDatabaseMetaData *>(md);
 
-    string vn(varName);
+    string vn(plot->GetVariableName());
 
     const avtMaterialMetaData *mat = NULL;
 
-    string meshName = nonConstmd->MeshForVar(varName);
+    string meshName = nonConstmd->MeshForVar(vn);
     avtMeshMetaData *mesh = 
         const_cast <avtMeshMetaData *> (md->GetMesh(meshName));
 
@@ -422,7 +434,7 @@ FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
           break;
 
       default:
-          EXCEPTION1(InvalidVariableException, varName);
+          EXCEPTION1(InvalidVariableException, vn);
           break;
     }
     
@@ -537,9 +549,9 @@ FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
 
 void
 FilledBoundaryViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *md, const char *varName)
+    ViewerPlot *plot)
 {
-    PrivateSetPlotAtts(atts, md, varName);
+    PrivateSetPlotAtts(atts, plot);
 }
 
 // ****************************************************************************

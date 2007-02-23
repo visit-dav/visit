@@ -87,6 +87,9 @@
 //    Brad Whitlock, Wed Jun 14 15:32:44 PST 2006
 //    Added vtkFiltering.lib to the list of libs for database plugins.
 //
+//    Brad Whitlock, Fri Feb 23 17:18:42 PST 2007
+//    Added viewer widgets.
+//
 // ****************************************************************************
 
 class ProjectFileGeneratorPlugin
@@ -121,6 +124,8 @@ class ProjectFileGeneratorPlugin
     vector<QString> efiles;     // engine
     bool customwfiles;
     vector<QString> wfiles;     // widgets
+    bool customvwfiles;
+    vector<QString> vwfiles;    // viewer widgets
     vector<QString> defaultgfiles;
     vector<QString> defaultsfiles;
     vector<QString> defaultvfiles;
@@ -145,12 +150,14 @@ class ProjectFileGeneratorPlugin
         custommfiles = false;
         customefiles = false;
         customwfiles = false;
+        customvwfiles = false;
         gfiles.clear();
         sfiles.clear();
         vfiles.clear();
         mfiles.clear();
         efiles.clear();
         wfiles.clear();
+        vwfiles.clear();
         if (type == "database")
         {
             QString filter = QString("avt") + name + "FileFormat.C";
@@ -996,6 +1003,18 @@ protected:
         srcFiles.push_back("avt"+name + "Plot.C");
         srcFiles.push_back(atts->name + ".C");
 
+        if(customvwfiles)
+        {
+            for (int i=0; i<vwfiles.size(); i++)
+            {
+                if(vwfiles[i].right(2) == ".h")
+                {
+                    srcFiles.push_back(vwfiles[i].left(vwfiles[i].length() - 2) + ".C");
+                    srcFiles.push_back(vwfiles[i].left(vwfiles[i].length() - 2) + "_moc.C");
+                }
+            }
+        }
+
         if (customvfiles)
             AddElements(srcFiles, vfiles);
         else
@@ -1194,6 +1213,18 @@ protected:
         srcFiles.push_back(name + "CommonPluginInfo.C");
         srcFiles.push_back(name + "ViewerPluginInfo.C");
         srcFiles.push_back(atts->name + ".C");
+
+        if(customvwfiles)
+        {
+            for (int i=0; i<vwfiles.size(); i++)
+            {
+                if(vwfiles[i].right(2) == ".h")
+                {
+                    srcFiles.push_back(vwfiles[i].left(vwfiles[i].length() - 2) + ".C");
+                    srcFiles.push_back(vwfiles[i].left(vwfiles[i].length() - 2) + "_moc.C");
+                }
+            }
+        }
 
         if (customvfiles)
             AddElements(srcFiles, vfiles);

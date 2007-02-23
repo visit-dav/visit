@@ -53,6 +53,8 @@
 #include <avtTypes.h>
 #include <set>
 
+#include <ViewerPlot.h>
+
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 
@@ -223,15 +225,18 @@ SubsetViewerPluginInfo::AllocAvtPlot()
 //    Brad Whitlock, Fri Mar 26 15:22:11 PST 2004
 //    I made it use passed in metadata.
 //
+//    Brad Whitlock, Wed Feb 21 14:31:20 PST 2007
+//    Changed API.
+//
 // ****************************************************************************
 
 void
 SubsetViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *md, const char *varName)
+    ViewerPlot *plot)
 {
     *(SubsetAttributes*)atts = *defaultAtts;
 
-    PrivateSetPlotAtts(atts, md, varName);
+    PrivateSetPlotAtts(atts, plot);
 }
 
 // ****************************************************************************
@@ -261,14 +266,17 @@ SubsetViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
 //    Brad Whitlock, Fri Mar 26 15:22:11 PST 2004
 //    I made it use passed in metadata.
 //
+//    Brad Whitlock, Wed Feb 21 14:31:20 PST 2007
+//    Changed API.
+//
 // ****************************************************************************
 
 void
 SubsetViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *md, const char *varName)
+    ViewerPlot *plot)
 
 {
-    PrivateSetPlotAtts(atts, md, varName);
+    PrivateSetPlotAtts(atts, plot);
 }
 
 // ****************************************************************************
@@ -307,11 +315,14 @@ SubsetViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
 //    Jeremy Meredith, Fri Aug 25 16:59:42 EDT 2006
 //    Support enumerated scalar type subsets.
 //
+//    Brad Whitlock, Wed Feb 21 14:31:20 PST 2007
+//    Changed API.
+//
 // ****************************************************************************
 
 void
 SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
-    const avtDatabaseMetaData *md, const char *varName)
+    ViewerPlot *plot)
 {
     SubsetAttributes *subsetAtts = (SubsetAttributes *)atts;
 
@@ -319,6 +330,7 @@ SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     // Get the meta-data and initialize the subset names and colors in the
     // new SubsetAttributes object.
     //
+    const avtDatabaseMetaData *md = plot->GetMetaData();
     if (md == NULL)
     {
         return;
@@ -326,12 +338,12 @@ SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
 
     avtDatabaseMetaData *nonConstmd = const_cast <avtDatabaseMetaData *>(md);
 
-    string vn(varName);
+    string vn(plot->GetVariableName());
 
     const avtMaterialMetaData *mat = NULL;
     const avtScalarMetaData *smd = NULL;
 
-    string meshName = nonConstmd->MeshForVar(varName);
+    string meshName = nonConstmd->MeshForVar(vn);
     avtMeshMetaData *mesh = 
         const_cast <avtMeshMetaData *> (md->GetMesh(meshName));
 
@@ -421,7 +433,7 @@ SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
           break;
 
       default:
-          EXCEPTION1(InvalidVariableException, varName);
+          EXCEPTION1(InvalidVariableException, vn);
           break;
     }
     
@@ -505,13 +517,16 @@ SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
 //    Brad Whitlock, Fri Mar 26 15:22:11 PST 2004
 //    I made it use passed in metadata.
 //
+//    Brad Whitlock, Wed Feb 21 14:31:20 PST 2007
+//    Changed API.
+//
 // ****************************************************************************
 
 void
 SubsetViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *md, const char *varName)
+    ViewerPlot *plot)
 {
-    PrivateSetPlotAtts(atts, md, varName);
+    PrivateSetPlotAtts(atts, plot);
 }
 
 // ****************************************************************************

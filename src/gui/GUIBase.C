@@ -97,6 +97,106 @@ GUIBase::~GUIBase()
 }
 
 // ****************************************************************************
+// Method: SetViewerProxy
+//
+// Purpose: 
+//   Set the viewer proxy.
+//
+// Arguments:
+//   p : The viewer proxy.
+//
+// Note:       We have this method now because I made the proxy private in
+//             the base class because I want subclasses to use access methods
+//             that would make it easier to combine the gui and viewer in
+//             a single process if we ever decide to do that.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 13 09:29:47 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+GUIBase::SetViewerProxy(ViewerProxy *p)
+{
+    viewer = p;
+}
+
+// ****************************************************************************
+// Method: GUIBase::GetViewerProxy
+//
+// Purpose: 
+//   Get the ViewerProxy.
+//
+// Returns:    A pointer to the viewer proxy.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 13 09:31:03 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ViewerProxy *
+GUIBase::GetViewerProxy() const
+{
+    return viewer;
+}
+
+// ****************************************************************************
+// Method: GUIBase::GetViewerState
+//
+// Purpose: 
+//   Returns the ViewerState object.
+//
+// Returns:    The viewer proxy's ViewerState object.
+//
+// Note:       We provide this access method to make it less likely that 
+//             subclasses will access ViewerState directly through the proxy.
+//             This access pattern would make it easier to combine the gui
+//             and viewer.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 13 09:31:26 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ViewerState *
+GUIBase::GetViewerState() const
+{
+    return viewer->GetViewerState();
+}
+
+// ****************************************************************************
+// Method: GUIBase::GetViewerMethods
+//
+// Purpose: 
+//   Returns the GetViewerMethods object.
+//
+// Returns:    The viewer proxy's GetViewerMethods object.
+//
+// Note:       We provide this access method to make it less likely that 
+//             subclasses will access GetViewerMethods directly through the .
+//             proxy This access pattern would make it easier to combine the 
+//             gui and viewer.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 13 09:31:26 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ViewerMethods *
+GUIBase::GetViewerMethods() const
+{
+    return viewer->GetViewerMethods();
+}
+
+// ****************************************************************************
 // Method: GUIBase::Error
 //
 // Purpose: 
@@ -521,7 +621,7 @@ GUIBase::GetStateForSource(const QualifiedFilename &source) const
 {
     int retval = 0;
 
-    WindowInformation *windowInfo = viewer->GetWindowInformation();
+    WindowInformation *windowInfo = GetViewerState()->GetWindowInformation();
     int activeTS = windowInfo->GetActiveTimeSlider();
 
     if(activeTS >= 0)
@@ -530,7 +630,7 @@ GUIBase::GetStateForSource(const QualifiedFilename &source) const
         // can get the number of states in the correlation.
         const stringVector &tsNames = windowInfo->GetTimeSliders();
         const std::string &activeTSName = tsNames[activeTS];
-        DatabaseCorrelationList *cL = viewer->GetDatabaseCorrelationList();
+        DatabaseCorrelationList *cL = GetViewerState()->GetDatabaseCorrelationList();
         DatabaseCorrelation *correlation = cL->FindCorrelation(activeTSName);
  
         //
@@ -612,11 +712,11 @@ GUIBase::GetTimeSliderStateForDatabaseState(const std::string &activeTSName,
 
     if(activeTSName != "")
     {
-        WindowInformation *windowInfo = viewer->GetWindowInformation();
+        WindowInformation *windowInfo = GetViewerState()->GetWindowInformation();
 
         // Try and find a correlation for the active time slider so we
         // can get the number of states in the correlation.
-        DatabaseCorrelationList *cL = viewer->GetDatabaseCorrelationList();
+        DatabaseCorrelationList *cL = GetViewerState()->GetDatabaseCorrelationList();
         DatabaseCorrelation *correlation = cL->FindCorrelation(activeTSName);
  
         //
@@ -659,7 +759,7 @@ GUIBase::GetTimeSliderStateForDatabaseState(const std::string &activeTSName,
 void
 GUIBase::OpenActiveSourceInFileServer()
 {
-    WindowInformation *windowInfo = viewer->GetWindowInformation();
+    WindowInformation *windowInfo = GetViewerState()->GetWindowInformation();
     const std::string &activeSource = windowInfo->GetActiveSource();
     QualifiedFilename qf(activeSource);
 

@@ -632,7 +632,7 @@ KFListView::contentsMouseReleaseEvent(QMouseEvent *e)
                 {
                     if (item->GetPlotId() >= 0)
                     {
-                        viewer->MovePlotDatabaseKeyframe(item->GetPlotId(),
+                        GetViewerMethods()->MovePlotDatabaseKeyframe(item->GetPlotId(),
                                                          oldpos, newpos);
                     }
                     else
@@ -640,7 +640,7 @@ KFListView::contentsMouseReleaseEvent(QMouseEvent *e)
                         KFListViewItem *p = (KFListViewItem*)item->nextSibling();
                         while (p)
                         {
-                            viewer->MovePlotDatabaseKeyframe(p->GetPlotId(),
+                            GetViewerMethods()->MovePlotDatabaseKeyframe(p->GetPlotId(),
                                                              oldpos, newpos);
                             p = (KFListViewItem*)p->nextSibling();
                         }
@@ -648,18 +648,18 @@ KFListView::contentsMouseReleaseEvent(QMouseEvent *e)
                 }
                 else if (item->IsView())
                 {
-                    viewer->MoveViewKeyframe(oldpos, newpos);
+                    GetViewerMethods()->MoveViewKeyframe(oldpos, newpos);
                 }
                 else
                 {
-                    viewer->MovePlotKeyframe(item->GetPlotId(), oldpos, newpos);
+                    GetViewerMethods()->MovePlotKeyframe(item->GetPlotId(), oldpos, newpos);
                 }
             }
             else if (item->EndptSelected())
             {
                 int beg = time2i(item->GetSelectedEndptBegin());
                 int end = time2i(item->GetSelectedEndptEnd());
-                viewer->SetPlotFrameRange(item->GetPlotId(),
+                GetViewerMethods()->SetPlotFrameRange(item->GetPlotId(),
                                           QMIN(beg,end), QMAX(beg,end));
             }
         }
@@ -686,7 +686,7 @@ KFListView::contentsMouseReleaseEvent(QMouseEvent *e)
                 {
                     if (item->GetPlotId() >= 0)
                     {
-                        viewer->DeletePlotDatabaseKeyframe(item->GetPlotId(),
+                        GetViewerMethods()->DeletePlotDatabaseKeyframe(item->GetPlotId(),
                                                            pos);
                     }
                     else
@@ -694,7 +694,7 @@ KFListView::contentsMouseReleaseEvent(QMouseEvent *e)
                         KFListViewItem *p = (KFListViewItem*)item->nextSibling();
                         while (p)
                         {
-                            viewer->DeletePlotDatabaseKeyframe(p->GetPlotId(),
+                            GetViewerMethods()->DeletePlotDatabaseKeyframe(p->GetPlotId(),
                                                                pos);
                             p = (KFListViewItem*)p->nextSibling();
                         }
@@ -702,11 +702,11 @@ KFListView::contentsMouseReleaseEvent(QMouseEvent *e)
                 }
                 else if (item->IsView())
                 {
-                    viewer->DeleteViewKeyframe(pos);
+                    GetViewerMethods()->DeleteViewKeyframe(pos);
                 }
                 else
                 {
-                    viewer->DeletePlotKeyframe(item->GetPlotId(), pos);
+                    GetViewerMethods()->DeletePlotKeyframe(item->GetPlotId(), pos);
                 }
             }
         }

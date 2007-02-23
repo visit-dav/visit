@@ -49,8 +49,6 @@
 
 #include <DebugStream.h>
 
-const int ViewerClientConnection::FreelyExchangedState = 12;
-
 // ****************************************************************************
 // Method: ViewerClientConnection::ViewerClientConnection
 //
@@ -67,11 +65,13 @@ const int ViewerClientConnection::FreelyExchangedState = 12;
 // Creation:   Tue May 31 13:36:05 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Feb 12 17:57:18 PST 2007
+//   Changed base class.
+//
 // ****************************************************************************
 
 ViewerClientConnection::ViewerClientConnection(const ViewerState *s,
-    QObject *parent, const char *name) : QObject(parent, name),
+    QObject *parent, const char *name) : ViewerBase(parent, name),
     SimpleObserver()
 {
     notifier = 0;
@@ -83,7 +83,7 @@ ViewerClientConnection::ViewerClientConnection(const ViewerState *s,
 
     // Hook Xfer up to the objects in the viewerState object.
     xfer = new Xfer;
-    for(int i = 0; i < viewerState->GetNObjects(); ++i)
+    for(int i = 0; i < viewerState->GetNumStateObjects(); ++i)
     {
         xfer->Add(viewerState->GetStateObject(i));
         viewerState->GetStateObject(i)->Attach(this);
@@ -118,7 +118,7 @@ ViewerClientConnection::ViewerClientConnection(const ViewerState *s,
 
 ViewerClientConnection::ViewerClientConnection(ParentProcess *p,
     QSocketNotifier *sn, const ViewerState *s, QObject *parent,
-    const char *name) : QObject(parent, name)
+    const char *name) : ViewerBase(parent, name)
 {
     notifier = sn;
     connect(notifier, SIGNAL(activated(int)),
@@ -134,8 +134,8 @@ ViewerClientConnection::ViewerClientConnection(ParentProcess *p,
     xfer->SetOutputConnection(parentProcess->GetReadConnection());
 
     viewerState = new ViewerState(*s);
-    for(int i = 0; i < viewerState->GetNObjects(); ++i)
-    {
+    for(int i = 0; i < viewerState->GetNumStateObjects(); ++i)
+    {    
         xfer->Add(viewerState->GetStateObject(i));
         viewerState->GetStateObject(i)->Attach(this);
     }
@@ -268,7 +268,8 @@ ViewerClientConnection::LaunchClient(const std::string &program,
     // are: ViewerRPC, PostponedRPC, syncAtts, messageAtts, statusAtts,
     // metaData, silAtts.
     debug1 << mName << "Sending state objects to client." << endl;
-    for(i = FreelyExchangedState; i < viewerState->GetNObjects(); ++i)
+    for(i = viewerState->FreelyExchangedState(); 
+        i < viewerState->GetNumStateObjects(); ++i)
     {
         viewerState->GetStateObject(i)->SelectAll();
         SetUpdate(false);
@@ -368,24 +369,6 @@ ViewerClientConnection::Update(Subject *subj)
     }
 }
 
-#if 0
-//
-// Do I need this? Let purify tell me!
-//
-void
-ViewerClientConnection::SubjectRemoved(Subject *TheRemovedSubject)
-{
-    for(int i = 0; i < viewerState->GetNObjects(); ++i)
-    {
-        if((AttributeSubject *)TheRemovedSubject == viewerState->GetStateObject(i))
-        {
-            TheRemovedSubject->Detach(this);
-        }
-    }
-}
-#endif
-
-
 // ****************************************************************************
 // Method: ViewerClientConnection::BroadcastToClient
 //
@@ -412,7 +395,7 @@ ViewerClientConnection::BroadcastToClient(AttributeSubject *src)
 
     // Start at 2 because we don't want to send ViewerRPC or
     // PostponedAction back to the client.
-    if(index >= 2 && index < viewerState->GetNObjects())
+    if(index >= 2 && index < viewerState->GetNumStateObjects())
     {
         AttributeSubject *dest = viewerState->GetStateObject(index);
 

@@ -1115,7 +1115,7 @@ QvisSaveWindow::saveWindow()
     Apply();
     if(isVisible() && !posted())
         hide();
-    viewer->SaveWindow();
+    GetViewerMethods()->SaveWindow();
 }
 
 // ****************************************************************************

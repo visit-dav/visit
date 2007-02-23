@@ -212,7 +212,7 @@ CurveViewerPluginInfo::AllocAvtPlot()
 
 void
 CurveViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const avtDatabaseMetaData *, const char *)
+    ViewerPlot *)
 {
     *(CurveAttributes*)atts = *defaultAtts;
     SetColor(atts);

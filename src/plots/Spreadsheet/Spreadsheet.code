@@ -1,0 +1,10 @@
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const SpreadsheetAttributes &) const;
+Definition:
+
+bool
+SpreadsheetAttributes::ChangesRequireRecalculation(const SpreadsheetAttributes &obj) const
+{
+    return (subsetName != obj.subsetName);
+}
+

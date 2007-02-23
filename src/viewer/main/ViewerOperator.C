@@ -71,11 +71,14 @@
 //    Kathleen Bonnell, Thu Sep 11 11:37:51 PDT 2003 
 //    Added fromDefault arg, passed to InitializeOperatorAtts. 
 //
+//    Brad Whitlock, Mon Feb 12 17:50:29 PST 2007
+//    Added ViewerBase base class.
+//
 // ****************************************************************************
 
 ViewerOperator::ViewerOperator(const int type_, 
-                               ViewerOperatorPluginInfo *viewerPluginInfo_,
-                               ViewerPlot *plot_, const bool fromDefault)
+    ViewerOperatorPluginInfo *viewerPluginInfo_,
+    ViewerPlot *plot_, const bool fromDefault) : ViewerBase(0, "ViewerOperator")
 {
     type              = type_;
     viewerPluginInfo  = viewerPluginInfo_;

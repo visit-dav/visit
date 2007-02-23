@@ -64,7 +64,7 @@
 #include <ViewerEngineManager.h>
 #include <ParsingExprList.h>
 #include <ViewerFileServer.h>
-#include <ViewerMessaging.h>
+#include <ViewerObserverToSignal.h>
 #include <ViewerOperator.h>
 #include <ViewerOperatorFactory.h>
 #include <ViewerPlotList.h>
@@ -92,6 +92,13 @@ extern ViewerSubject *viewerSubject;   // FIX_ME This is a hack.
 //
 #define min(x,y) ((x) < (y) ? (x) : (y))
 #define max(x,y) ((x) > (y) ? (x) : (y))
+
+#if 1
+// temp
+#include <qmainwindow.h>
+#include <qtable.h>
+#endif
+
 
 //
 // This is a static member of ViewerPlot.
@@ -175,6 +182,9 @@ vector<double> ViewerPlot::nullDataExtents;
 //    Kathleen Bonnell, Tue Jan 11 16:16:48 PST 2005
 //    Initialize 'isLabel'. 
 //
+//    Brad Whitlock, Wed Feb 7 16:40:25 PST 2007
+//    Added alternateDisplay and made it inherit ViewerBase.
+//
 // ****************************************************************************
 
 ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
@@ -185,7 +195,8 @@ ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
     const int nStates,      // The number of total database states
     const int cacheIndex_,  // The initial active cache index
     const int nCacheEntries // The number of cache entries.
-    ) : engineKey(ek_), hostName(hostName_), databaseName(databaseName_),
+    ) : ViewerBase(0,"ViewerPlot"), 
+        engineKey(ek_), hostName(hostName_), databaseName(databaseName_),
         variableName(variableName_)
 {
     //
@@ -209,7 +220,7 @@ ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
     viewerPlotList      = NULL;
     bgColor[0] = bgColor[1] = bgColor[2] = 1.0; 
     fgColor[0] = fgColor[1] = fgColor[2] = 0.0; 
-    spatialExtentsType = AVT_ORIGINAL_EXTENTS;
+    spatialExtentsType  = AVT_ORIGINAL_EXTENTS;
 
     //
     // Initialize operator related members.
@@ -256,23 +267,28 @@ ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
     }
 
     //
-    // Use the constructor's arguments to initialize the object further.
-    // Once the object is initialized, set the initialized attributes into
-    // the plot keyframes.
+    // Initialize alternate display stuff.
     //
-    const avtDatabaseMetaData *md = ViewerFileServer::Instance()->
-        GetMetaDataForState(hostName, databaseName, state);
-    if(md == 0)
-        EXCEPTION1(InvalidVariableException, variableName);
-    viewerPluginInfo->InitializePlotAtts(curPlotAtts, md,
-                                         variableName.c_str());
-    plotAtts            = new AttributeSubjectMap;
-    plotAtts->SetAtts(0, curPlotAtts);
+    alternateDisplay = 0;
+    alternateDisplayObserver = new ViewerObserverToSignal(curPlotAtts);
+    connect(alternateDisplayObserver, SIGNAL(execute()),
+            this, SLOT(emitAlternateDisplayChangedPlotAttributes()));
+    updateFromAlternateDisplay = false;
+    alternateDisplayAllowsClientUpdates = true;
 
     //
     // Initialize the plot's SIL restriction.
     //
     silr = silr_;
+
+    //
+    // Use the constructor's arguments to initialize the object further.
+    // Once the object is initialized, set the initialized attributes into
+    // the plot keyframes.
+    //
+    viewerPluginInfo->InitializePlotAtts(curPlotAtts, this);
+    plotAtts = new AttributeSubjectMap;
+    plotAtts->SetAtts(0, curPlotAtts);
 }
 
 // ****************************************************************************
@@ -326,6 +342,9 @@ ViewerPlot::ViewerPlot(const ViewerPlot &obj) : engineKey(obj.engineKey),
 //    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
 //    Added an engine key to map this plot to the engine used to create it.
 //
+//    Brad Whitlock, Wed Feb 7 16:39:54 PST 2007
+//    Added alternateDisplay.
+//
 // ****************************************************************************
 
 ViewerPlot::~ViewerPlot()
@@ -345,6 +364,13 @@ ViewerPlot::~ViewerPlot()
         }
         delete [] operators;
     }
+
+    //
+    // Delete the alternate display observer.
+    disconnect(alternateDisplayObserver, SIGNAL(execute()),
+            this, SLOT(emitAlternateDisplayChangedPlotAttributes()));
+    delete alternateDisplayObserver;
+    alternateDisplayObserver = 0;
     
     //
     // Delete the database attributes.
@@ -357,6 +383,15 @@ ViewerPlot::~ViewerPlot()
     //
     delete plotAtts;
     delete curPlotAtts;
+
+    //
+    // If the plot has an alternate display then delete it.
+    //
+    if(alternateDisplay != 0)
+    {
+        viewerPluginInfo->AlternateDisplayDestroy(alternateDisplay);
+        alternateDisplay = 0;
+    }
 
     //
     // Delete the list of plots, actors and readers.
@@ -409,9 +444,12 @@ ViewerPlot::operator = (const ViewerPlot &obj)
 // Creation:   Fri Apr 2 10:53:56 PDT 2004
 //
 // Modifications:
-//    Kathleen Bonnell, Tue Jan 11 16:16:48 PST 2005
-//    Initialize 'isLabel'. 
-//   
+//   Kathleen Bonnell, Tue Jan 11 16:16:48 PST 2005
+//   Initialize 'isLabel'. 
+//
+//   Brad Whitlock, Wed Feb 14 12:15:57 PDT 2007
+//   Added code for alternate displays.
+//
 // ****************************************************************************
 
 void
@@ -493,6 +531,16 @@ ViewerPlot::CopyHelper(const ViewerPlot &obj)
         actorList[i]  = 0;
         readerList[i] = 0;
     }
+
+    //
+    // Initialize alternate display stuff.
+    //
+    alternateDisplay = 0;
+    alternateDisplayObserver = new ViewerObserverToSignal(curPlotAtts);
+    connect(alternateDisplayObserver, SIGNAL(execute()),
+            this, SLOT(emitAlternateDisplayChangedPlotAttributes()));
+    updateFromAlternateDisplay = false;
+    alternateDisplayAllowsClientUpdates = true;
 }
 
 // ****************************************************************************
@@ -976,6 +1024,9 @@ ViewerPlot::PrepareCacheForReplace(int newCacheIndex, int newNumStates,
 //    I added code to set the engine key to be the new host if the host
 //    is changing.
 //
+//    Brad Whitlock, Wed Feb 14 10:23:02 PDT 2007
+//    Added code to update the alternate display.
+//
 // ****************************************************************************
 
 void
@@ -1020,8 +1071,7 @@ ViewerPlot::SetHostDatabaseName(const EngineKey &key,
     databaseName = database;
     if (reInit)
     {
-        viewerPluginInfo->ReInitializePlotAtts(curPlotAtts, GetMetaData(),
-            variableName.c_str());
+        viewerPluginInfo->ReInitializePlotAtts(curPlotAtts, this);
 
         delete plotAtts;
         plotAtts = new AttributeSubjectMap;
@@ -1031,6 +1081,9 @@ ViewerPlot::SetHostDatabaseName(const EngineKey &key,
             queryAtts->SetChangeType(PlotQueryInfo::Database);
             queryAtts->Notify();
         }
+
+        // Update the attributes in the plot's alternate display.
+        AlternateDisplayUpdatePlotAttributes();
     }
 }
 
@@ -1254,6 +1307,9 @@ ViewerPlot::GetExpressions() const
 //    Kathleen Bonnell, Wed Nov  3 16:51:24 PST 2004 
 //    Removed call to set the avtPlot's mesh type. 
 // 
+//    Brad Whitlock, Wed Feb 14 10:23:38 PDT 2007
+//    Added code to update the plot's alternate display.
+//
 // ****************************************************************************
 
 bool
@@ -1356,13 +1412,15 @@ ViewerPlot::SetVariableName(const std::string &name)
         const avtDatabaseMetaData *md;
         if((md = GetMetaData()) != 0)
         {
-            viewerPluginInfo->ResetPlotAtts(curPlotAtts, md,
-                variableName.c_str());
+            viewerPluginInfo->ResetPlotAtts(curPlotAtts, this);
             viewerPluginInfo->SetClientAtts(curPlotAtts);
 
             delete plotAtts;
             plotAtts = new AttributeSubjectMap;
             plotAtts->SetAtts(0, curPlotAtts);
+
+            // Update the attributes in the plot's alternate display.
+            AlternateDisplayUpdatePlotAttributes();
         }
     }
 
@@ -2627,6 +2685,9 @@ ViewerPlot::GetReader() const
 //    Mark Blair, Wed Aug 30 14:09:00 PDT 2006
 //    Set actor's type name to its plot type name.
 //
+//    Brad Whitlock, Wed Feb 7 16:45:07 PST 2007
+//    Added code to support alternate displays.
+//
 // ****************************************************************************
 
 void
@@ -2790,8 +2851,7 @@ ViewerPlot::CreateActor(bool createNew,
         {
             if (plotList[cacheIndex]->AttributesDependOnDatabaseMetaData())
             {
-                viewerPluginInfo->ReInitializePlotAtts(curPlotAtts,
-                    GetMetaData(), variableName.c_str());
+                viewerPluginInfo->ReInitializePlotAtts(curPlotAtts, this);
                 viewerPluginInfo->SetClientAtts(curPlotAtts);
 
                 // ok, now set the plotAtts map, being careful not to introduce
@@ -2808,6 +2868,7 @@ ViewerPlot::CreateActor(bool createNew,
     plotList[cacheIndex]->SetIndex(networkID);
     plotList[cacheIndex]->SetCurrentSILRestriction(silr);
 
+
     // assume the actor has data
     actorHasNoData = false;
     TRY
@@ -2816,6 +2877,17 @@ ViewerPlot::CreateActor(bool createNew,
         bool countPolysOnly = false;
         if (actor->GetDataObject()->GetNumberOfCells(countPolysOnly) == 0)
             actorHasNoData = true;
+
+        // If the plot has an alternate display so it does not have to necessarily
+        // display into the vis window then create that display if it has not
+        // yet been created.
+        if(alternateDisplay == 0)
+            alternateDisplay = viewerPluginInfo->AlternateDisplayCreate(this);
+        if(alternateDisplay != 0)
+        {
+            plotList[cacheIndex]->GetMapper()->SetAlternateDisplay(alternateDisplay);
+            AlternateDisplayUpdatePlotAttributes();
+        }
 
         //
         // Set the actor's units from the data attributes.
@@ -2904,6 +2976,9 @@ ViewerPlot::CreateActor(bool createNew,
 //    Brad Whitlock, Mon Apr 5 09:39:22 PDT 2004
 //    I changed how we iterate over the cache.
 //
+//    Brad Whitlock, Wed Feb 7 16:43:54 PST 2007
+//    Clear the alternate display if it exists.
+//
 // ****************************************************************************
 
 void
@@ -2919,6 +2994,11 @@ ViewerPlot::ClearActors()
         actorList[i]  = (avtActor *)0;
         readerList[i] = (avtDataObjectReader *)0;
     }
+
+    //
+    // Tell the alternate display to clear itself if it exists.
+    //
+    AlternateDisplayClear();
 }
 
 // ****************************************************************************
@@ -3435,6 +3515,9 @@ ViewerPlot::SetPlotAttsFromClient()
 //   I fixed a bug that happened when trying to set the atts on the first
 //   frame of a keyframe animation.
 //
+//   Brad Whitlock, Wed Feb 14 10:20:53 PDT 2007
+//   Added code to set the alternate display's plot atts.
+//
 // ****************************************************************************
 
 bool
@@ -3477,6 +3560,10 @@ ViewerPlot::SetPlotAtts(const AttributeSubject *atts)
         // Invalidate the cache if necessary for all items.
         CheckCache(0, cacheSize-1, false);
     }
+
+    // The current plot attributes changed so tell the alternate
+    // display about it.
+    AlternateDisplayUpdatePlotAttributes();
 
     return true;
 }
@@ -4650,6 +4737,33 @@ ViewerPlot::InitializePlot(Plot &plot) const
 }
 
 // ****************************************************************************
+// Method: ViewerPlot::RegisterViewerPlotList
+//
+// Purpose: 
+//   Associates the plot with the given plot list.
+//
+// Arguments:
+//   vpl : The plot list that will own the plot.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 14 12:12:15 PDT 2007
+//
+// Modifications:
+//   Brad Whitlock, Wed Feb 14 12:12:44 PDT 2007
+//   I moved the method from ViewerPlot.h and I added code to hook up the
+//   new signals/slots.
+//
+// ****************************************************************************
+
+void
+ViewerPlot::RegisterViewerPlotList(ViewerPlotList *vpl)
+{
+    viewerPlotList = vpl;
+    connect(this, SIGNAL(AlternateDisplayChangedPlotAttributes(ViewerPlot*)),
+            vpl, SLOT(AlternateDisplayChangedPlotAttributes(ViewerPlot*)));
+}
+
+// ****************************************************************************
 // Method: ViewerPlot::SetOpaqueMeshIsAppropriate
 //
 // Purpose: 
@@ -4920,3 +5034,205 @@ ViewerPlot::SetFullFrameScaling(bool useScale, double *s)
 
     return retval;
 }
+
+// ****************************************************************************
+// Method: ViewerPlot::AlternateDisplayHide
+//
+// Purpose: 
+//   Tells the plot's alternate display to hide.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 23 15:13:59 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::AlternateDisplayHide()
+{
+    if(alternateDisplay != 0)
+        viewerPluginInfo->AlternateDisplayHide(alternateDisplay);
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::AlternateDisplayShow
+//
+// Purpose: 
+//   Tells the plot's alternate display to show itself.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 23 15:13:59 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::AlternateDisplayShow()
+{
+    if(alternateDisplay != 0)
+        viewerPluginInfo->AlternateDisplayShow(alternateDisplay);
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::AlternateDisplayDeIconify
+//
+// Purpose: 
+//   Tells the plot's alternate display to show normally.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 23 15:13:59 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::AlternateDisplayDeIconify()
+{
+    if(alternateDisplay != 0)
+        viewerPluginInfo->AlternateDisplayDeIconify(alternateDisplay);
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::AlternateDisplayIconify
+//
+// Purpose: 
+//   Tells the plot's alternate display to iconify.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 23 15:13:59 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::AlternateDisplayIconify()
+{
+    if(alternateDisplay != 0)
+        viewerPluginInfo->AlternateDisplayIconify(alternateDisplay);
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::AlternateDisplayClear
+//
+// Purpose: 
+//   Tells the plot's alternate display to clear out its data display.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 23 15:13:59 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::AlternateDisplayClear()
+{
+    if(alternateDisplay != 0)
+        viewerPluginInfo->AlternateDisplayClear(alternateDisplay);
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::AlternateDisplayUpdatePlotAttributes
+//
+// Purpose: 
+//   Tells the plot's alternate display to update its display of the plot's
+//   attributes since they have changed.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 23 15:13:59 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::AlternateDisplayUpdatePlotAttributes()
+{
+    if(alternateDisplay != 0 && !updateFromAlternateDisplay)
+    {
+        // Turn off the alternateDisplayObserver because we are changing the plot
+        // attributes here and it is not changing the plot atts. This ensures that
+        // when this method is called, we know that it was not a result of
+        // the alternate display.
+        alternateDisplayObserver->SetUpdate(false);
+        curPlotAtts->Notify();
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::emitAlternateDisplayChangedPlotAttributes
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the alternate display
+//   changes the plot attributes via a Notify() call. We use that notification
+//   to get here via an observer to signal class. We set the plot attributes
+//   and then delegate to ViewerPlotList the responsibility for updating the
+//   window and sending attributes to the clients.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 23 15:15:52 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::emitAlternateDisplayChangedPlotAttributes()
+{
+    // Make sure that the current plot attributes get put into the plotAtts.
+    updateFromAlternateDisplay = true;
+    SetPlotAtts(curPlotAtts);
+    updateFromAlternateDisplay = false;
+
+    // Tell ViewerSubject that the plot atts changed so it can make the plot be the
+    // active plot and have it send the updated plot attributes to the clients.
+    emit AlternateDisplayChangedPlotAttributes(this);
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::AlternateDisplaySetAllowClientUpdates
+//
+// Purpose: 
+//   Sets whether sending data to clients is allows when processing a Notify()
+//   caused by the alternate display.
+//
+// Arguments:
+//   val : True if client updates are allowed.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 23 15:22:18 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::AlternateDisplaySetAllowClientUpdates(bool val)
+{
+    alternateDisplayAllowsClientUpdates = val;
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::AlternateDisplayAllowClientUpdates
+//
+// Purpose: 
+//   Returns whether the client can be sent new state during an update
+//   caused by the alternate display.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 23 15:23:15 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerPlot::AlternateDisplayAllowClientUpdates() const
+{
+    return alternateDisplayAllowsClientUpdates;
+}
+

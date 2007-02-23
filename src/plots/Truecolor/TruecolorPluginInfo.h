@@ -100,9 +100,7 @@ class TruecolorViewerPluginInfo: public virtual ViewerPlotPluginInfo, public vir
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts,
-        const avtDatabaseMetaData *md,
-        const char *variableName);
+    virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
     virtual int GetVariableTypes() const;
 
     static void InitializeGlobalObjects();

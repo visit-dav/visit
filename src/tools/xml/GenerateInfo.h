@@ -201,6 +201,8 @@ class InfoGeneratorPlugin
     vector<QString> efiles;     // engine
     bool customwfiles;
     vector<QString> wfiles;     // widgets
+    bool customvwfiles;
+    vector<QString> vwfiles;    // viewer widgets
 
     Attribute *atts;
   public:
@@ -383,8 +385,7 @@ class InfoGeneratorPlugin
             h << "    virtual avtPlot *AllocAvtPlot();" << endl;
             h << endl;
             h << "    virtual void InitializePlotAtts(AttributeSubject *atts," << endl;
-            h << "        const avtDatabaseMetaData *md," << endl;
-            h << "        const char *variableName);" << endl;
+            h << "        ViewerPlot *);" << endl;
             if(iconFile.length() > 0)
                 h << "    virtual const char **XPMIconData() const;" << endl;
             h << "    virtual int GetVariableTypes() const;" << endl;
@@ -1224,7 +1225,7 @@ class InfoGeneratorPlugin
         else if (type=="plot")
         {
             c << name<<"ViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts," << endl
-              << "    const avtDatabaseMetaData *, const char *)" << endl;
+              << "    ViewerPlot *)" << endl;
             c << "{" << endl;
             c << "    *("<<atts->name<<"*)atts = *defaultAtts;" << endl;
             c << "}" << endl;

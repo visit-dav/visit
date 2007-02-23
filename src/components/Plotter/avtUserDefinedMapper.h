@@ -81,6 +81,9 @@ class     vtkUserDefinedMapperBridge;
 //    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004 
 //    Added SetSurfaceRepresentation and SetSpecularProperties.
 //
+//    Brad Whitlock, Wed Feb 7 16:03:22 PST 2007
+//    Added SetAlternateDisplay.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtUserDefinedMapper : public avtMapper
@@ -98,6 +101,8 @@ class PLOTTER_API avtUserDefinedMapper : public avtMapper
     virtual void               SetSurfaceRepresentation(int rep);
     virtual void               SetSpecularProperties(bool,double,double,
                                                       const ColorAttribute&);
+
+    virtual void               SetAlternateDisplay(void *);
   protected:
     avtCustomRenderer_p        renderer;
     vtkDataSetMapper          *CreateMapper(void);

@@ -87,7 +87,7 @@ QvisOnionPeelWindow::QvisOnionPeelWindow(const int type,
     silTopSet = -1;
     silNumSets = -1;
     silNumCollections = -1;
-    silAtts = viewer->GetSILRestrictionAttributes();
+    silAtts = GetViewerState()->GetSILRestrictionAttributes();
     silAtts->Attach(this);
 }
 
@@ -471,7 +471,7 @@ QvisOnionPeelWindow::FillCategoryBox()
 
     if (silTopSet > -1)
     {
-        avtSILRestriction_p restriction = viewer->GetPlotSILRestriction();
+        avtSILRestriction_p restriction = GetViewerProxy()->GetPlotSILRestriction();
         avtSILSet_p current = restriction->GetSILSet(silTopSet);
         const std::vector<int> &mapsOut = current->GetMapsOut();
         for (int j = 0; j < mapsOut.size(); ++j)
@@ -543,7 +543,7 @@ QvisOnionPeelWindow::FillSubsetBox()
 
     if (cn != defaultItem) 
     {
-        avtSILRestriction_p restriction = viewer->GetPlotSILRestriction();
+        avtSILRestriction_p restriction = GetViewerProxy()->GetPlotSILRestriction();
 
         //
         // Fill  with sets under the currently selected category.

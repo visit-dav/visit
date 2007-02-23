@@ -661,7 +661,7 @@ QvisPseudocolorPlotWindow::Apply(bool ignore)
         pcAtts->Notify();
 
         // Tell the viewer to set the pc attributes.
-        viewer->SetPlotOptions(plotType);
+        GetViewerMethods()->SetPlotOptions(plotType);
     }
     else
         pcAtts->Notify();
@@ -683,7 +683,7 @@ QvisPseudocolorPlotWindow::makeDefault()
     // Tell the viewer to set the default pc attributes.
     GetCurrentValues(-1);
     pcAtts->Notify();
-    viewer->SetDefaultPlotOptions(plotType);
+    GetViewerMethods()->SetDefaultPlotOptions(plotType);
 }
 
 void
@@ -691,7 +691,7 @@ QvisPseudocolorPlotWindow::reset()
 {
     // Tell the viewer to reset the aslice attributes to the last
     // applied values.
-    viewer->ResetPlotOptions(plotType);
+    GetViewerMethods()->ResetPlotOptions(plotType);
 }
 
 void

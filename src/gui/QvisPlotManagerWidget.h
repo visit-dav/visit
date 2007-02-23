@@ -48,7 +48,6 @@
 
 // Forward declarations.
 class  avtDatabaseMetaData;
-class  ViewerProxy;
 class  PlotList;
 class  ExpressionList;
 class  FileServerList;

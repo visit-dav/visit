@@ -2524,7 +2524,7 @@ QvisAnnotationWindow::Apply(bool dontIgnore)
         GetCurrentValues(-1);
 
         annotationAtts->Notify();
-        viewer->SetAnnotationAttributes();
+        GetViewerMethods()->SetAnnotationAttributes();
     }
     else
         annotationAtts->Notify();
@@ -2558,7 +2558,7 @@ QvisAnnotationWindow::ApplyObjectList(bool dontIgnore)
 
     if(AutoUpdate() || dontIgnore)
     {
-        viewer->SetAnnotationObjectOptions();
+        GetViewerMethods()->SetAnnotationObjectOptions();
     }
 }
 
@@ -2680,10 +2680,10 @@ QvisAnnotationWindow::makeDefault()
 {
     // Tell the viewer to set the default annotation attributes.
     annotationAtts->Notify();
-    viewer->SetDefaultAnnotationAttributes();
+    GetViewerMethods()->SetDefaultAnnotationAttributes();
 
     annotationObjectList->Notify();
-    viewer->SetDefaultAnnotationObjectList();
+    GetViewerMethods()->SetDefaultAnnotationObjectList();
 }
 
 // ****************************************************************************
@@ -2707,11 +2707,11 @@ QvisAnnotationWindow::reset()
 {
     // Tell the viewer to reset the annotation attributes to the last applied
     // values.
-    viewer->ResetAnnotationAttributes();
+    GetViewerMethods()->ResetAnnotationAttributes();
 
     // Tell the viewer to reset the annotation object list to the last applied
     // values.
-    viewer->ResetAnnotationObjectList();
+    GetViewerMethods()->ResetAnnotationObjectList();
 }
 
 // ****************************************************************************
@@ -4155,7 +4155,7 @@ QvisAnnotationWindow::addNewAnnotationObject(int annotType)
     //
     // Tell the viewer to create a new annotation object.
     //
-    viewer->AddAnnotationObject(annotType);
+    GetViewerMethods()->AddAnnotationObject(annotType);
 }
 
 // ****************************************************************************
@@ -4215,7 +4215,7 @@ QvisAnnotationWindow::hideActiveAnnotations()
     ApplyObjectList(true);
 
     // Tell the viewer to hide the active annotations.
-    viewer->HideActiveAnnotationObjects();
+    GetViewerMethods()->HideActiveAnnotationObjects();
 }
 
 // ****************************************************************************
@@ -4242,5 +4242,5 @@ QvisAnnotationWindow::deleteActiveAnnotations()
     ApplyObjectList(true);
 
     // Tell the viewer to delete the active annotations.
-    viewer->DeleteActiveAnnotationObjects();
+    GetViewerMethods()->DeleteActiveAnnotationObjects();
 }

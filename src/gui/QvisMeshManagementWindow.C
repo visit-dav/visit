@@ -350,7 +350,7 @@ QvisMeshManagementWindow::Apply(bool ignore)
             mmAtts->Notify();
         }
 
-        viewer->SetMeshManagementAttributes();
+        GetViewerMethods()->SetMeshManagementAttributes();
         GUIBase::Warning("Note:  These settings only apply to new plots.  "
                          "To apply them to current plots, re-open the file.");
 
@@ -393,7 +393,7 @@ QvisMeshManagementWindow::makeDefault()
 {
     GetCurrentValues();
     mmAtts->Notify();
-    viewer->SetDefaultMeshManagementAttributes();
+    GetViewerMethods()->SetDefaultMeshManagementAttributes();
 }
 
 // ****************************************************************************
@@ -407,7 +407,7 @@ QvisMeshManagementWindow::makeDefault()
 void
 QvisMeshManagementWindow::reset()
 {
-    viewer->ResetMeshManagementAttributes();
+    GetViewerMethods()->ResetMeshManagementAttributes();
 }
 
 void
