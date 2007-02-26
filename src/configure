@@ -9632,14 +9632,14 @@ fi
 if test "$visus_specified" = "yes"; then
    if test "$withval" != "no"; then
       VISUS_INCLUDE="-I`echo $withval |cut -f1 -d,`"
-      VISUS_LIB="-L`echo $withval |cut -f2 -d, -s` -lvisusidx -lvisus -lstreaming"
+      VISUS_LIB="-L`echo $withval |cut -f2 -d, -s` -lidx_io -lidx_i -llocal -lz"
    fi
 else
    if test "$DEFAULT_VISUS_INCLUDE" != "" ; then
       VISUS_INCLUDE="-I$DEFAULT_VISUS_INCLUDE"
    fi
    if test "$DEFAULT_VISUS_LIB" != "" ; then
-      VISUS_LIB="-L$DEFAULT_VISUS_LIB -lvisusidx -lvisus -lstreaming"
+      VISUS_LIB="-L$DEFAULT_VISUS_LIB -lidx_io -lidx_i -llocal -lz"
    fi
 fi
 if test "$VISUS_LIB" != "" ; then
