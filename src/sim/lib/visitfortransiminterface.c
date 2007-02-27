@@ -118,7 +118,8 @@ char *visit_fstring_copy_string(char *src, int len)
 
 char *visit_fstring_to_cstring(char *ptr, int len)
 {
-    if(ptr != fcdtocp_ptr)
+    if((ptr != fcdtocp_ptr) ||
+       (fcdtocp_data != NULL && strncmp(fcdtocp_data, ptr, len) != 0))
     {
         fcdtocp_ptr = ptr;
         FREE(fcdtocp_data);
@@ -168,6 +169,8 @@ extern void F_VISITCOMMANDCALLBACK(const char*, int*, int*, float*, const char*,
 #define F_VISITATTEMPTCONNECTION    F77_ID(visitattemptconnection_,visitattemptconnection,VISITATTEMPTCONNECTION)
 #define F_VISITPROCESSENGINECOMMAND F77_ID(visitprocessenginecommand_,visitprocessenginecommand,VISITPROCESSENGINECOMMAND)
 #define F_VISITTIMESTEPCHANGED      F77_ID(visittimestepchanged_,visittimestepchanged,VISITTIMESTEPCHANGED)
+#define F_VISITUPDATEPLOTS          F77_ID(visitupdateplots_,visitupdateplots,VISITUPDATEPLOTS)
+#define F_VISITEXECUTECOMMAND       F77_ID(visitexecutecommand_,visitexecutecommand,VISITEXECUTECOMMAND)
 #define F_VISITDISCONNECT           F77_ID(visitdisconnect_,visitdisconnect,VISITDISCONNECT)
 #define F_VISITGETLASTERROR         F77_ID(visitgetlasterror_,visitgetlasterror,VISITGETLASTERROR)
 
@@ -521,6 +524,48 @@ F_VISITTIMESTEPCHANGED(void)
 }
 
 /******************************************************************************
+ * Function: F_VISITUPDATEPLOTS
+ *
+ * Purpose:   Allows FORTRAN to notify VisIt that that plots should be recreated.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Thu Jan 25 15:14:13 PST 2007
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITUPDATEPLOTS(void)
+{
+    VisItUpdatePlots();
+    return VISIT_OKAY;
+}
+
+/******************************************************************************
+ * Function: F_VISITEXECUTECOMMAND
+ *
+ * Purpose:   Allows FORTRAN to tell VisIt a command that should be interpreted.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Thu Jan 25 15:14:13 PST 2007
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITEXECUTECOMMAND(VISIT_F77STRING command, int *lcommand)
+{
+    char *f_command = NULL;
+    COPY_FORTRAN_STRING(f_command, command, lcommand);
+    VisItExecuteCommand(f_command);
+    FREE(f_command);
+
+    return VISIT_OKAY;
+}
+
+/******************************************************************************
  * Function: F_VISITDISCONNECT
  *
  * Purpose:   Allows FORTRAN to disconnect VisIt from the simulation.
@@ -865,7 +910,6 @@ VisIt_MaterialData *VisItGetMaterial(int domain, const char *name)
             int i, sz = 1;
             mat = ALLOC(VisIt_MaterialData,1);
             memset(mat, 0, sizeof(VisIt_MaterialData));
-
             mat->nMaterials = ml->nmatnames;
             mat->materialNumbers = (int*)malloc(ml->nmatnames * sizeof(int));
             for(i = 0; i < ml->nmatnames; ++i)
@@ -2732,8 +2776,8 @@ F_VISITMATERIALADD(int *mhandle, VISIT_F77STRING matname, int *lmatname)
         char *f_matname = NULL;
         COPY_FORTRAN_STRING(f_matname, matname, lmatname);
         MaterialList_AddMaterial(ml, f_matname);
-        FREE(f_matname);
         retval = ml->nmatnames-1;
+        FREE(f_matname);
     }
     else
         fprintf(stderr, "visitmaterialadd: An invalid material handle was passed.\n");
@@ -2776,7 +2820,7 @@ F_VISITMATERIALADDCLEAN(int *mhandle, int *cell, int *matno)
         {
             int i, cellid = -1;
             if(ml->ndims == 1)
-                cellid = cell[0];
+                cellid = cell[0]-1;
             else if(ml->ndims == 2)
             {
                 cellid = ml->dims[0] * (cell[1]-1) + (cell[0]-1);
@@ -2837,7 +2881,7 @@ F_VISITMATERIALADDMIXED(int *mhandle, int *cell, int *matnos, float *matvf,
         {
             int i, cellid = -1;
             if(ml->ndims == 1)
-                cellid = cell[0];
+                cellid = cell[0]-1;
             else if(ml->ndims == 2)
             {
                 cellid = ml->dims[0] * (cell[1]-1) + (cell[0]-1);

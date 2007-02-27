@@ -58,6 +58,9 @@ extern "C" {
 //    Jeremy Meredith, Fri Mar 18 08:28:33 PST 2005
 //    Added simulation control support.
 //
+//    Brad Whitlock, Thu Jan 25 17:55:04 PST 2007
+//    Added update_plots and execute_command.
+//
 // ****************************************************************************
 
 void   *get_engine();
@@ -66,6 +69,8 @@ int     initialize(void*, int argc, char *argv[]);
 int     connect_to_viewer(void*, int argc, char *argv[]);
 int     process_input(void*);
 void    time_step_changed(void*);
+void    update_plots(void *);
+void    execute_command(void *, const char *);
 void    disconnect();
 void    set_slave_process_callback(void(*)());
 void    set_command_callback(void*,void(*)(const char*,int,float,const char*));

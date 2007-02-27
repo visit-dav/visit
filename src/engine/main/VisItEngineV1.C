@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2007, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -82,6 +82,9 @@
 //    Shelly Prevost, Tue Sep 12 15:59:51 PDT 2006
 //    I initialize the timer if it isn't already initialized by now.
 //
+//    Brad Whitlock, Thu Jan 25 15:08:59 PST 2007
+//    Added new functions.
+//
 // ****************************************************************************
 
 void *get_engine()
@@ -159,6 +162,24 @@ void time_step_changed(void *e)
 {
     Engine *engine = (Engine*)(e);
     engine->SimulationTimeStepChanged();
+}
+
+void update_plots(void *e)
+{
+    Engine *engine = (Engine*)(e);
+    engine->SimulationInitiateCommand("UpdatePlots");
+}
+
+void execute_command(void *e, const char *command)
+{
+    if(command != NULL)
+    {
+        Engine *engine = (Engine*)(e);
+        std::string cmd("Interpret:");
+        cmd += command;
+        
+        engine->SimulationInitiateCommand(cmd.c_str());
+    }
 }
 
 void disconnect()

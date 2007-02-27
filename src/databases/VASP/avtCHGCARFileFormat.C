@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2007, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -107,12 +107,17 @@ avtCHGCARFileFormat::avtCHGCARFileFormat(const char *fn)
 //  Programmer: Jeremy Meredith
 //  Creation:   August 29, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Feb 27 11:10:46 EST 2007
+//    Don't delete "values" if it's a NULL pointer.
+//
 // ****************************************************************************
 
 void
 avtCHGCARFileFormat::FreeUpResources(void)
 {
-    values->Delete();
+    if (values)
+        values->Delete();
     values = NULL;
     values_read = false;
 }

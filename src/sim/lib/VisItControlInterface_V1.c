@@ -93,6 +93,8 @@ static int   (*v_processinput)(void*) = NULL;
 static int   (*v_initialize)(void*,int,char**) = NULL;
 static int   (*v_connectviewer)(void*,int,char**) = NULL;
 static void  (*v_time_step_changed)(void*) = NULL;
+static void  (*v_update_plots)(void*) = NULL;
+static void  (*v_execute_command)(void*,const char*) = NULL;
 static void  (*v_disconnect)() = NULL;
 static void  (*v_set_slave_process_callback)(void(*)()) = NULL;
 static void  (*v_set_command_callback)(void*,void(*)(const char*,int,
@@ -643,6 +645,8 @@ static function_pointer dlsym_function(void *h, const char *n)
 * Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
 *
 * Modifications:
+*   Brad Whitlock, Thu Jan 25 14:58:26 PST 2007
+*   Added update plots and execute_command.
 *
 *******************************************************************************/
 static int LoadVisItLibrary(void)
@@ -710,6 +714,8 @@ static int LoadVisItLibrary(void)
    SAFE_DLSYM(v_initialize, int (*)(void *, int, char **), "initialize");
    SAFE_DLSYM(v_connectviewer, int (*)(void *, int, char **), "connect_to_viewer");
    SAFE_DLSYM(v_time_step_changed, void (*)(void *), "time_step_changed");
+   SAFE_DLSYM(v_update_plots, void (*)(void *), "update_plots");
+   SAFE_DLSYM(v_execute_command, void (*)(void *,int), "execute_command");
    SAFE_DLSYM(v_disconnect, void (*)(), "disconnect");
    SAFE_DLSYM(v_set_slave_process_callback, void (*)(void (*)()), "set_slave_process_callback");
    SAFE_DLSYM(v_set_command_callback, void (*)(void*,void (*)(const char*,int,float,const char*)), "set_command_callback");
@@ -1219,6 +1225,46 @@ void VisItTimeStepChanged(void)
     if (engine && v_time_step_changed)
     {
         v_time_step_changed(engine);
+    }
+}
+
+/*******************************************************************************
+*
+* Name: VisItUpdatePlots
+*
+* Purpose: Tell VisIt to update its plots.
+*
+* Author: Brad Whitlock, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
+*
+*******************************************************************************/
+void VisItUpdatePlots(void)
+{
+    /* Make sure the function exists before using it. */
+    if (engine && v_update_plots)
+    {
+        v_update_plots(engine);
+    }
+}
+
+/*******************************************************************************
+*
+* Name: VisItExecuteCommand
+*
+* Purpose: Tell VisIt to execute a command.
+*
+* Author: Brad Whitlock, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
+*
+*******************************************************************************/
+void VisItExecuteCommand(const char *command)
+{
+    /* Make sure the function exists before using it. */
+    if (engine && v_execute_command)
+    {
+        v_execute_command(engine, command);
     }
 }
 

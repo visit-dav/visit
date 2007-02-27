@@ -17,6 +17,9 @@
 !   instead of the default "sim owns the data". We want to do this
 !   when we're passing data that can go out of scope.
 !
+!   Brad Whitlock, Thu Jan 25 15:09:56 PST 2007
+!   Added visitupdateplots and visitexecutecommand
+!
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 !... Commonly useful declarations
@@ -40,12 +43,14 @@
       external visitinitializesim,visitsetparallel,visitsetparallelrank
       external visitdetectinput,visitattemptconnection
       external visitprocessenginecommand,visittimestepchanged
+      external visitupdateplots,visitexecutecommand
       external visitdisconnect,visitgetlasterror
 
       integer  visitsetdirectory,visitsetoptions,visitsetupenv
       integer  visitinitializesim,visitsetparallel,visitsetparallelrank
       integer  visitdetectinput,visitattemptconnection
       integer  visitprocessenginecommand,visittimestepchanged
+      integer  visitupdateplots,visitexecutecommand
       integer  visitdisconnect,visitgetlasterror
  
 !... Functions for the data interface

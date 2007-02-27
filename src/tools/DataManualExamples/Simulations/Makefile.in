@@ -34,6 +34,9 @@
 #   Brad Whitlock, Fri Jan 12 12:04:08 PDT 2007
 #   Added targets for fscalarp.
 #
+#   Brad Whitlock, Thu Jan 25 15:48:50 PST 2007
+#   Added targets for updateplots and material examples.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -145,6 +148,10 @@ FOBJ_SCALAR=fscalar.o
 FSCALAR_PAR=fscalarp
 FOBJ_SCALAR_PAR=fscalarp.o
 
+# Material demonstration
+FMATERIAL=fmaterial
+FOBJ_MATERIAL=fmaterial.o
+
 # Writeback demonstration
 WRITEBACK=writeback
 WRITEBACK_PAR=writeback_par
@@ -152,17 +159,28 @@ SRC_WRITEBACK=writeback.c
 OBJ_WRITEBACK=$(SRC_WRITEBACK:.c=.o)
 OBJ_WRITEBACK_PAR=$(SRC_WRITEBACK:.c=_par.o)
 
+# UpdatePlots demonstration
+UPDATEPLOTS=updateplots
+UPDATEPLOTS_PAR=updateplots_par
+SRC_UPDATEPLOTS=updateplots.c
+OBJ_UPDATEPLOTS=$(SRC_UPDATEPLOTS:.c=.o)
+OBJ_UPDATEPLOTS_PAR=$(SRC_UPDATEPLOTS:.c=_par.o)
+
+FUPDATEPLOTS=fupdateplots
+FSRC_UPDATEPLOTS=fupdateplots.f
+FOBJ_UPDATEPLOTS=fupdateplots.o
+
 .SUFFIXES: _par.o
 
 all: allc @BUILD_FORTRAN@
 
 allc: libsimdemo metadata meshsims scalarsims
 
-allfortran: flibsimdemo fmetadata fmeshsims fscalarsims
+allfortran: flibsimdemo fmetadata fmeshsims fscalarsims fmaterialsims
 
-libsimdemo: $(SIM1) $(SIM2) $(SIM2P) $(SIM3) $(SIM3P) $(SIM4) $(SIM4P) $(WRITEBACK) $(WRITEBACK_PAR)
+libsimdemo: $(SIM1) $(SIM2) $(SIM2P) $(SIM3) $(SIM3P) $(SIM4) $(SIM4P) $(WRITEBACK) $(WRITEBACK_PAR) $(UPDATEPLOTS) $(UPDATEPLOTS_PAR)
 
-flibsimdemo: $(FSIM4)
+flibsimdemo: $(FSIM4) $(FUPDATEPLOTS)
 
 metadata:  $(SIM5) $(SIM6) $(SIM7) $(SIM8) $(SIM9) $(SIM10) $(SIM11) $(SIM12)
 
@@ -172,11 +190,13 @@ meshsims: $(MESH) $(UNSTRUCTURED) $(CURVE) $(POINT)
 
 fmeshsims: $(FMESH) $(FUNSTRUCTURED) $(FCURVE) $(FPOINT)
 
+fmaterialsims: $(FMATERIAL)
+
 scalarsims: $(SCALAR) 
 
 fscalarsims: $(FSCALAR)
 
-clean: cleanlibsim cleanmetadata cleanmesh cleanscalar
+clean: cleanlibsim cleanmetadata cleanmesh cleanscalar cleanmaterial
 
 cleanlibsim:
 	$(RM) $(SIM1) $(OBJ_SIM1)
@@ -185,6 +205,9 @@ cleanlibsim:
 	$(RM) $(SIM4) $(OBJ_SIM4) $(SIM4P) $(OBJ_SIM4P) $(FSIM4) $(FOBJ_SIM4)
 	$(RM) $(WRITEBACK) $(OBJ_WRITEBACK)
 	$(RM) $(WRITEBACK_PAR) $(OBJ_WRITEBACK_PAR)
+	$(RM) $(UPDATEPLOTS) $(OBJ_UPDATEPLOTS)
+	$(RM) $(UPDATEPLOTS_PAR) $(OBJ_UPDATEPLOTS_PAR) 
+	$(RM) $(FUPDATEPLOTS) $(FOBJ_UPDATEPLOTS)
 
 cleanmetadata:
 	$(RM) $(SIM5) $(OBJ_SIM5) $(FSIM5) $(FOBJ_SIM5)
@@ -204,6 +227,9 @@ cleanmesh:
 
 cleanscalar:
 	$(RM) $(SCALAR) $(OBJ_SCALAR) $(FSCALAR) $(FOBJ_SCALAR) $(FSCALAR_PAR) $(FOBJ_SCALAR_PAR)
+
+cleanmaterial:
+	$(RM) $(FMATERIAL) (FOBJ_MATERIAL)
 
 $(SIM1): $(OBJ_SIM1)
 	$(CC) -o $(SIM1) $(OBJ_SIM1) $(LDFLAGS) $(LIBS)
@@ -277,6 +303,14 @@ $(SIM12): $(OBJ_SIM12)
 $(FSIM12): $(FOBJ_SIM12)
 	$(F77) -o $(FSIM12) $(FOBJ_SIM12) $(LDFLAGS) $(FLIBS)
 
+$(UPDATEPLOTS): $(OBJ_UPDATEPLOTS)
+	$(CC) -o $(UPDATEPLOTS) $(OBJ_UPDATEPLOTS) $(LDFLAGS) $(LIBS)
+
+$(UPDATEPLOTS_PAR): $(OBJ_UPDATEPLOTS_PAR)
+	$(CC) -o $(UPDATEPLOTS_PAR) $(OBJ_UPDATEPLOTS_PAR) $(LDFLAGS) $(LIBS) $(PARLIBS)
+
+$(FUPDATEPLOTS): $(FOBJ_UPDATEPLOTS)
+	$(F77) -o $(FUPDATEPLOTS) $(FOBJ_UPDATEPLOTS) $(LDFLAGS) $(LIBS) $(FLIBS)
 
 $(MESH): $(OBJ_MESH)
 	$(CC) -o $(MESH) $(OBJ_MESH) $(LDFLAGS) $(LIBS)
@@ -313,6 +347,9 @@ fscalarp.o:
 
 $(FSCALAR_PAR): $(FOBJ_SCALAR_PAR)
 	mpif77 -o $(FSCALAR_PAR) $(FOBJ_SCALAR_PAR) $(LDFLAGS) $(FLIBS) $(PARLIBS)
+
+$(FMATERIAL): $(FOBJ_MATERIAL)
+	$(F77) -o $(FMATERIAL) $(FOBJ_MATERIAL) $(LDFLAGS) $(FLIBS)
 
 $(WRITEBACK): $(OBJ_WRITEBACK)
 	$(CC) -o $(WRITEBACK) $(OBJ_WRITEBACK) $(LDFLAGS) $(LIBS)

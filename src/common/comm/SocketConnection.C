@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2007, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -175,6 +175,10 @@ SocketConnection::Fill()
 //   Brad Whitlock, Tue Mar 26 13:29:20 PST 2002
 //   Made it use socket functions so it is more portable.
 //
+//   Brad Whitlock, Thu Jan 25 18:42:50 PST 2007
+//   I made it use MSG_NOSIGNAL so we don't get a signal in the event that
+//   we can't write to the socket.
+//
 // ****************************************************************************
 
 void
@@ -195,7 +199,7 @@ SocketConnection::Flush()
 #if defined(_WIN32)
             send(descriptor, (const char FAR *)buf, count, 0);
 #else
-            send(descriptor, (const void *)buf, count, 0);
+            send(descriptor, (const void *)buf, count, MSG_NOSIGNAL);
 #endif
 
             count = 0;

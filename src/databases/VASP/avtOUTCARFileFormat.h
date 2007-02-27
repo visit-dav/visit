@@ -64,6 +64,10 @@ struct Atom
 //  Programmer: Jeremy Meredith
 //  Creation:   August 29, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Feb 23 15:22:37 EST 2007
+//    Added support for seeking directly to preset timesteps.
+//
 // ****************************************************************************
 
 class avtOUTCARFileFormat : public avtMTSDFileFormat
@@ -99,6 +103,8 @@ class avtOUTCARFileFormat : public avtMTSDFileFormat
 
     int ntimesteps;
     int natoms;
+
+    std::vector<istream::pos_type>   file_positions;
 
     std::vector<float>               free_energy;
     std::vector< std::vector<Atom> > allatoms;

@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2007, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -99,6 +99,7 @@
 #include <RenderingAttributes.h>
 #include <SaveWindowAttributes.h>
 #include <SILRestrictionAttributes.h>
+#include <SimulationCommand.h>
 #include <SocketConnection.h>
 #include <StatusAttributes.h>
 #include <SyncAttributes.h>
@@ -112,6 +113,7 @@
 #include <ViewerConnectionProgressDialog.h>
 #include <ParsingExprList.h>
 #include <ViewerClientConnection.h>
+#include <ViewerCommandFromSimObserver.h>
 #include <ViewerConfigManager.h>
 #include <ViewerEngineManager.h>
 #include <ViewerRemoteProcessChooser.h>
@@ -546,6 +548,9 @@ ViewerSubject::Connect(int *argc, char ***argv)
 //    Brad Whitlock, Mon Feb 12 12:23:11 PDT 2007
 //    I made it use ViewerState.
 //
+//    Hank Childs, Mon Feb 26 11:33:37 PST 2007
+//    Issue a warning when a config file was not found.
+//
 // ****************************************************************************
 
 void
@@ -556,6 +561,7 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
     //
     // Look for config file, related flags.
     //
+    bool specifiedConfig = false;
     for (int i = 1 ; i < argc ; i++)
     {
         if (strcmp(argv[i], "-noconfig") == 0)
@@ -569,6 +575,7 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-config") == 0 && (i+1) < argc && !noconfig)
         {
+            specifiedConfig = true;
             if(configFileName != 0)
             {
                 delete [] configFileName;
@@ -594,6 +601,13 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
         systemSettings = configMgr->ReadConfigFile(configFile);
     delete [] configFile;
     configFile = GetDefaultConfigFile(configFileName);
+    if (specifiedConfig && strcmp(configFile, configFileName) != 0)
+    {
+        cerr << "\n\nYou specified a config file with the \"-config\" option,"
+                " but the config file could not be located.  Note that this "
+                "may be because you must fully qualify the directory of the "
+                "config file.\n\n\n";
+    }
     if (noconfig)
         localSettings = NULL;
     else
@@ -2672,11 +2686,24 @@ ViewerSubject::SetFromNode(DataNode *parentNode,
 //    Brad Whitlock, Mon May 9 08:32:20 PDT 2005
 //    I made it tell all clients to quit.
 //
+//    Brad Whitlock, Thu Jan 25 18:06:08 PST 2007
+//    Disconnect socket notifiers so simulations can't send any more commands.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::Close()
 {
+    //
+    // Don't accept any more input from simulations.
+    //
+    std::map<EngineKey,QSocketNotifier*>::iterator it;
+    for(it = engineKeyToNotifier.begin(); it != engineKeyToNotifier.end(); ++it)
+    {
+        disconnect(it->second, SIGNAL(activated(int)),
+                   this, SLOT(ReadFromSimulationAndProcess(int)));
+    }
+
     //
     // Perform the rpc.
     //
@@ -3563,6 +3590,9 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
 //    Hank Childs, Thu Jan 11 15:33:07 PST 2007
 //    Return an invalid time state when the file open fails.
 //
+//    Brad Whitlock, Thu Jan 25 18:48:15 PST 2007
+//    Hooked up code to handle requests from the simulation.
+//
 // ****************************************************************************
 
 int
@@ -3748,6 +3778,16 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
                         this,
                         SLOT(HandleSILAttsUpdated(const std::string&,const std::string&,
                                                   const SILAttributes*)));
+
+                engineCommandObserver[ek] = new ViewerCommandFromSimObserver(
+                                   vem->GetCommandFromSimulation(ek), ek, db);
+                connect(engineCommandObserver[ek],
+                        SIGNAL(execute(const EngineKey&,const std::string&,
+                                       const std::string &)),
+                        this,
+                        SLOT(HandleCommandFromSimulation(const EngineKey&,const std::string&,
+                                                         const std::string &)));
+
             }
         }
         else
@@ -8132,7 +8172,12 @@ ViewerSubject::OpenClient()
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 25, 2004
 //
+//  Modifications:
+//    Brad Whitlock, Thu Jan 25 14:20:24 PST 2007
+//    Added engineCommandObserver.
+//
 // ****************************************************************************
+
 void
 ViewerSubject::ReadFromSimulationAndProcess(int socket)
 {
@@ -8153,9 +8198,11 @@ ViewerSubject::ReadFromSimulationAndProcess(int socket)
         ViewerEngineManager::Instance()->CloseEngine(ek);
         delete engineMetaDataObserver[ek];
         delete engineSILAttsObserver[ek];
+        delete engineCommandObserver[ek];
         delete engineKeyToNotifier[ek];
         engineMetaDataObserver.erase(ek);
         engineSILAttsObserver.erase(ek);
+        engineCommandObserver.erase(ek);
         engineKeyToNotifier.erase(ek);
     }
     ENDTRY
@@ -8283,6 +8330,51 @@ ViewerSubject::HandleColorTable()
 
         // Update all of the QvisColorTableButton widgets.
         QvisColorTableButton::updateColorTableButtons();
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::HandleCommandFromSimulation
+//
+// Purpose: 
+//   This method gets called when we need to handle commands that come from
+//   the simulation.
+//
+// Arguments:
+//   key     : The engine key.
+//   db      : The database that was open.
+//   command : The command to execute.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 25 14:50:19 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::HandleCommandFromSimulation(const EngineKey &key, 
+    const std::string &db, const std::string &command)
+{
+    debug1 << "HandleCommandFromSimulation: key=" << key.ID().c_str()
+           << ", db=" << db.c_str() << ", command=\"" << command.c_str() << "\""
+           << endl;
+
+    if(command == "UpdatePlots")
+    {
+        // The simulation told us that it wants us to update all of the plots 
+        // that use it as a source.
+        ViewerWindowManager::Instance()->ReplaceDatabase(key, db, 0, false, true);
+    }
+    else if(command.substr(0,10) == "Interpret:")
+    {
+        // The simulation told us to interpret some python code.
+        stringVector args;
+        args.push_back(command.substr(10, command.size()-10));
+        GetViewerState()->GetClientMethod()->SetMethodName("Interpret");
+        GetViewerState()->GetClientMethod()->ClearArgs();
+        GetViewerState()->GetClientMethod()->SetStringArgs(args);
+        BroadcastToAllClients((void *)this, GetViewerState()->GetClientMethod());
     }
 }
 

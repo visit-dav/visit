@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2007, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -543,6 +543,9 @@ avtStreamlineFilter::ReleaseData(void)
 //    I moved all of the code to create the filters to this method so
 //    the output from the last domain is not used for all domains.
 //
+//    Hank Childs, Fri Feb 23 09:22:20 PST 2007
+//    Fix memory leaks.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -568,6 +571,7 @@ avtStreamlineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     streamline->SetTerminalSpeed(0.01);
     vtkRungeKutta4 *integrator = vtkRungeKutta4::New();
     streamline->SetIntegrator(integrator);
+    integrator->Delete();
 
     bool showTube = displayMethod == STREAMLINE_DISPLAY_TUBES;
     int spatialDim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
