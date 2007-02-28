@@ -1,0 +1,492 @@
+#!/bin/sh
+
+# ----------------------------------------------------------------------------
+# Purpose: Help make clean plugin tarballs with instructive README, email
+# them to users, install them and uninstall them. 
+#
+# While developing on plugin code, the plugin directory can wind up with
+# a lot of extraneous files. This script helps to make a clean tarball,
+# as well as adding a instructive README file to it to inform users how
+# to build and install it.
+#
+# You can use this script to packup a tarball, optionally email it.
+# provide a one-line comment as to the plugin update's purprose. You can
+# use this script to install and uninstall plugins.
+#
+# Programmer: Mark C. Miller
+# Creation:   February 28, 2007
+#
+# ----------------------------------------------------------------------------
+#
+
+#
+# Clean up the plugin dir from extraneous files. We could opt to remove
+# everything that doesn't look like its part of the plugin here. That would
+# be good. However, I am not sure how to reliably do that. Maybe from looking
+# at the xml file?
+#
+cleanPluginDir () {
+    pushd $1
+    rm -f .depend .cmake.depend .cmake.state Makefile *.o
+    rm -f *PluginInfo*.[Ch]
+    chmod -f 664 *
+    popd
+}
+
+#
+# Buil the README file to be included in the tarball
+#
+makeReadmeFile () {
+
+cat > $1 <<- EOF
+    This directory contains the source code for a VisIt database plugin.
+
+    This particular distribution includes modifications to address the
+    following problem(s)....
+
+    $commentString
+
+    For versions of VisIt 1.6 or newer, you can use the 'visit_plugin'
+    command to install and uninstall this plugin. Just type the command
+        % visit_plugin -install .
+    to install the plugin in ~/.visit/<arch>/plugins/databases/. 
+        % visit_plugin -uninstall .
+    to uninstall it and remove it from ~/.visit/<arch>/plugins/databases.
+
+    Note that if you run VisIt in client/server mode, you will need to
+    make sure to install the plugin on both the client machine (usually
+    your desktop machine) and the server.
+
+    When you start VisIt, it looks in ~/.visit/<arch>/plugins for any
+    plugins you have installed in your home directory and then it looks
+    in the public installation directory. In this way, plugins in your
+    home directory override plugins in the public directory. You can
+    disable this behavior by adding '-publicpluginsonly' on the command
+    line to launch VisIt.
+
+    If you would like VisIt to test the plugin and automatically uninstall
+    it if the test fails, give the command
+        % visit_plugin -install . -testrun <Filename>:<PlotType>:<Varname>
+    VisIt will build the plugin, install it and then attempt to open the
+    specified file and display the specified plot with the specified
+    variable.  If this test fails, VisIt will automatically uninstall
+    the plugin and inform you of the failure.
+
+    For versions of VisIt older than 1.6, the following commands will
+    install the plugin when executed in the directory in which this README
+    file exists.
+        % xml2info -clobber <pluginname>.xml
+        % xml2makefile -clobber <pluginname>.xml
+        % make
+    Likewise, to uninstall the plugin, from the directory in which this
+    README file exists, issue the following command
+        % make clean
+    You can then re-install it by re-running the commands used to install
+    it.
+
+    If you have problems, email visit-help@llnl.gov
+EOF
+
+}
+
+#
+# Tarup the plugin directory
+#
+packagePluginDir () {
+    typeset theDir=$1
+    mkdir $TMPDIR/${theDir}_tmp.$$
+    cp -R $theDir $TMPDIR/${theDir}_tmp.$$/. 1>/dev/null 2>&1
+    cleanPluginDir $TMPDIR/${theDir}_tmp.$$/$theDir 1>/dev/null 2>&1
+    pushd $TMPDIR/${theDir}_tmp.$$ 1>/dev/null 2>&1
+    makeReadmeFile $theDir/README 1>/dev/null 2>&1
+    tar cf - $theDir | gzip > $theDir.tar.gz
+    popd 1>/dev/null 2>&1
+    cp $TMPDIR/${theDir}_tmp.$$/$theDir.tar.gz .
+    rm -rf $TMPDIR/${theDir}_tmp.$$
+}
+
+#
+# Given a plugin tarball, test that we can actually build it.
+#
+testBuildPluginTarball () {
+    typeset theTarball=$1
+    typeset deleteIt=$2
+    vers=
+    if test -n "$requiredVersions"; then
+        vers="-v `echo $requiredVersions | cut -d' ' -f1`"
+    fi
+    thePluginName=`basename $theTarball .tar.gz`
+    mkdir $TMPDIR/${theTarball}_tmp.$$
+    cp $theTarball $TMPDIR/${theTarball}_tmp.$$/.
+    pushd $TMPDIR/${theTarball}_tmp.$$ 1>/dev/null 2>&1
+    gunzip < $theTarball | tar xf -
+    cd $thePluginName
+    xml2info $vers -clobber $thePluginName.xml 1>/dev/null 2>&1
+    xml2makefile $vers -clobber $thePluginName.xml 1>/dev/null 2>&1
+    make -j 2 1>/dev/null 2>&1
+    hadError=$?
+    if test -z "$deleteIt" || test $deleteIt -ne 0; then
+        make clean 1>/dev/null 2>&1
+        rm -rf $TMPDIR/${theTarball}_tmp.$$
+        echo $hadError
+    else
+        echo $hadError $TMPDIR/${theTarball}_tmp.$$
+    fi
+    popd 1>/dev/null 2>&1
+}
+
+#
+# Given a plugin tarball, test that VisIt will actually run with
+# Again, version control is important
+#
+testRunPluginTarball () {
+    typeset tarballDir=$1
+    vers=
+    if test -n "$requiredVersions"; then
+        vers="-v `echo $requiredVersions | cut -d' ' -f1`"
+    fi
+    fileName=`echo $testRun | cut -d':' -f1`
+    plotType=`echo $testRun | cut -d':' -f2`
+    varName=`echo $testRun | cut -d':' -f3`
+    mkdir $TMPDIR/visit_plugin_test.$$
+    pushd $TMPDIR/visit_plugin_test.$$ 1>/dev/null 2>&1
+    cat > visit_plugin_test.py <<- EOF
+import sys
+try:
+    OpenDatabase("$fileName")
+    msg = GetLastError()
+    AddPlot("$plotType","$varName")
+    msg = msg + GetLastError()
+    DrawPlots()
+    msg = msg + GetLastError()
+    SaveWindow()
+    msg = msg + GetLastError()
+    if msg == "":
+        print "###PASSED###"
+        sys.exit(0)
+    else:
+        print "###FAILED###"
+        sys.exit(1)
+except:
+    print "###FAILED###"
+    sys.exit(1)
+EOF
+    passedIt=`visit $vers -debug 5 -cli -nowin -s visit_plugin_test.py 2>&1 | grep '###PASSED###'`
+    if test -z "$passedIt"; then
+        origDir=`pushd 1>/dev/null 2>&1; pwd ; pushd 1>/dev/null`
+        cp *.log $origDir/.
+    fi
+    popd 1>/dev/null 2>&1
+    rm -rf $TMPDIR/visit_plugin_test.$$
+    pushd $tarballDir 1>/dev/null 2>&1
+    make clean 1>/dev/null 2>&1
+    popd 1>/dev/null 2>&1
+    rm -rf $tarballDir
+    if test -n "$passedIt"; then
+        echo 0
+    else
+        echo 1
+    fi
+}
+
+#
+# Handle Command Line Arguments
+#
+action=
+optError=0
+pluginName=
+requiredVersions=
+origArgs=$*
+testBuild=0
+testRun=
+commentString="user requested update `date`"
+dontRemoveTarball=0
+for options
+do
+   case $1 in
+      "")
+         # handle empty argument
+         ;;
+      -v|-version)
+         if test -z "$2"; then
+             echo "Expected version number or quoted list of version numbers(s) for $1"
+             optError=1
+         else
+             requiredVersions="$requiredVersions $2"
+             shift 2
+         fi
+         ;;
+      -p|-pack)
+         if test -n "$action"; then
+             echo "Action has already been specified as \"$action\""
+             optError=1
+         else
+             action="pack"
+         fi
+         shift
+         ;;
+      -i|-install)
+         if test -n "$action"; then
+             echo "Action has already been specified as \"$action\""
+             optError=1
+         else
+             action="install"
+         fi
+         shift
+         ;;
+      -u|-uninstall)
+         if test -n "$action"; then
+             echo "Action has already been specified as \"$action\""
+             optError=1
+         else
+             action="uninstall"
+         fi
+         shift
+         ;;
+      -tb|-testbuild)
+         testBuild=1
+         shift
+         ;;
+      -tr|-testrun)
+         if test -z "$2"; then
+             echo "Expected colon separated list of <Filename:PlotType:VarName> for $1"
+             optError=1
+         else
+         testBuild=1
+             testRun=$2
+             shift 2
+         fi
+         ;;
+      -e|-email)
+         if test -z "$2"; then
+             echo "Expected email address or quoted list of email address(s) for $1"
+             optError=1
+         else
+             emailRecipients="$emailRecipients $2"
+             shift 2
+         fi
+         ;;
+      -c|-comment)
+         if test -z "$2"; then
+             echo "Expected quoted string for $1"
+             optError=1
+         else
+             commentString=$2
+             shift 2
+         fi
+         ;;
+      -dr|-dontremove)
+         dontRemoveTarball=1
+         shift
+         ;;
+      -help)
+         optError=1
+         shift
+         ;;
+      -*)
+         echo "Unknown option $1"
+         optError=1
+         shift
+         ;;
+      *)
+         if test -z "$pluginName"; then
+             pluginName=$1
+         else
+             echo "Plugin name already specified as $pluginName."
+             echo "Unknown option $1"
+             optError=1
+         fi
+         shift
+         ;;
+   esac
+done
+
+if test $optError -eq 0 && test -z "$action"; then
+    optError=1
+    echo "************************************************"
+    echo "************************************************"
+    echo "No action specified. Specify one of -p, -i or -u"
+    echo "************************************************"
+    echo "************************************************"
+fi
+
+if test "$optError" = "1"; then
+    echo "Usage:  $0 <options> [dirs]"
+    echo "Available options:"
+    echo "        -help             display this help message"
+    echo "        -v  | -versions   quoted list of space separated version numbers(s)."
+    echo "                          Multiple -v options are also allowed."
+    echo "        -p  | -pack       Pack up the plugin into a tarball for email."
+    echo "        -i  | -install    Install the plugin."
+    echo "        -u  | -uninstall  Uninstall the plugin."
+    echo "        -tb | -testbuild  After packing up, test that it will build."
+    echo "        -tr | -testrun <Filename:PlotType:VarName>"
+    echo "                          After packing up, test that it will run with"
+    echo "                          specified plot and variable. -tr implies -tb."
+    echo "        -dr | dontremove  Don't remove the tarball after its emailed."
+    echo "        -e  | -email      email address or quoted list of email addresses"
+    echo "                          to send tarball too."
+    echo "        -c  | -comment    Add a short comment to the email/readme file indicating"
+    echo "                          what is new about this plugin."
+    echo "        <plugin name>     plugin name to process (e.g. SAMI or CGNS)."
+    echo "                          If -p is specified, $0 will search for directories with"
+    echo "                          the given name to package up. If -i is specified, $0 will"
+    echo "                          search for .tar.gz files with the given name."
+    exit 1
+fi
+
+#
+# This is supposed to be the email of the person executing this
+# script (e.g. a VisIt developer most likely). I don't have
+# a good way of generating it from a login name.
+#
+execEmail=unknown
+
+#
+# handle pack, install, uninstall actions.
+#
+if test $action = pack; then
+    tarballsToRemove=
+    if test -d $pluginName; then
+
+        #
+        # Make up the tarball
+        #
+        echo -n "Making tarball..."
+        packagePluginDir $pluginName
+        echo "Done"
+
+        #
+        # Test run it, if requested.
+        #
+        if test -n "$testRun"; then
+            echo -n "Testing Build..."
+            buildResult=`testBuildPluginTarball $pluginName.tar.gz 0`
+            buildError=`echo $buildResult | cut -d' ' -f1`
+            buildDir=`echo $buildResult | cut -d' ' -f2`
+            if test $buildError -ne 0; then
+                echo "Test Build failed"
+                pushd $buildDir 1>/dev/null 2>&1
+                make clean 1>/dev/null 2>&1
+                popd 1>/dev/null 2>&1
+                rm -rf $buildDir
+                exit 1
+            else
+                echo "Passed"
+                echo -n "Now testing run..."
+            fi
+            if test `testRunPluginTarball $buildDir` -ne 0; then
+                echo "Test Run failed. Check debug logs copied to `pwd`."
+                pushd $buildDir 1>/dev/null 2>&1
+                make clean 1>/dev/null 2>&1
+                popd 1>/dev/null 2>&1
+                rm -rf $buildDir
+                exit 1
+            else
+                echo "Passed"
+                echo "Plugin tarball is good."
+                pushd $buildDir 1>/dev/null 2>&1
+                make clean 1>/dev/null 2>&1
+                popd 1>/dev/null 2>&1
+                rm -rf $buildDir
+            fi
+            echo "Tests passed"
+
+        #
+        # Just test build it, if requested
+        #
+        elif test $testBuild -ne 0; then
+            echo -n "Testing Build..."
+            if test `testBuildPluginTarball $pluginName.tar.gz` -ne 0; then
+                echo "Test Build failed"
+                exit 1
+            fi
+            echo "Passed"
+            echo "Plugin tarball is good."
+        fi
+    else
+        echo "Unable to find a plugin directory with name \"$pluginName\""
+        exit 1
+    fi
+
+    #
+    # Email tarball to recipients if specified
+    #
+    for em in $emailRecipients; do
+        cat > mutt.msg <<-EOF
+The attached tarball is a VisIt plugin. This update is being
+furnished to you to address the following problem...
+
+$commentString
+
+To build and install this plugin, untar it
+(gunzip < $pluginName.tar.gz | tar xvf -), cd into the directory
+and follow the instructions in the README file there.
+EOF
+         if test "$execEmail" = "unknown"; then
+             mutt -s "Updated $pluginName plugin" -a $pluginName.tar.gz $em < mutt.msg
+         else
+             mutt -c $execEmail -s "Updated $pluginName plugin" -a $pluginName.tar.gz $em < mutt.msg
+         fi
+         tarballsToRemove="$tarballsToRemove $pluginName.tar.gz"
+         rm -f mutt.msg
+    done
+
+    #
+    # Delete tarball if we have no reason not to
+    #
+    if test -n "$emailRecipients" && test $dontRemoveTarball -eq 0; then
+        rm -f $tarballsToRemove
+    fi
+
+elif test $action = install; then
+
+    #
+    # Try to install the plugin
+    #
+    if test -f $pluginName.tar.gz; then
+        buildResult=`testBuildPluginTarball $pluginName.tar.gz 0`
+        buildError=`echo $buildResult | cut -d' ' -f1`
+        buildDir=`echo $buildResult | cut -d' ' -f2`
+        if test $buildError -ne 0; then
+            echo "Install failed"
+            pushd $buildDir 1>/dev/null 2>&1
+            make clean 1>/dev/null 2>&1
+            popd 1>/dev/null 2>&1
+            exit 1
+        else
+            echo "Installed successfully."
+            echo "To UNinstall it, use $0 -uninstall"
+            rm -rf $buildDir
+        fi
+    else
+        echo "Unable to find a plugin tarball with name \"$pluginName.tar.gz\""
+        exit 1
+    fi
+
+elif test $action = uninstall; then
+
+    #
+    # Remove the plugin files from ~/.visit
+    # 
+    filesToRemove=`ls ~/.visit/*/plugins/databases/lib?${pluginName}* 2>/dev/null`
+    if test $? -ne 0 || test -z "$filesToRemove"; then
+        echo "Unable to find any installed plugin files associated with \"$pluginName\""
+        exit 1
+    fi
+    echo "Preparing to remove the following files..."
+    for f in $filesToRemove; do
+        echo "    $f"
+    done
+    echo -n "Are you sure you want to remove them (type 'yes' if so)? "
+    read ans
+    if test -n "$ans" && test $ans = yes; then
+        rm -rf $filesToRemove
+        if test $? -ne 0; then
+            echo "Unable to remove the files"
+            exit 1
+        fi
+    fi
+fi
+
+exit 0

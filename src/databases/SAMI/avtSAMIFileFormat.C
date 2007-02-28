@@ -110,6 +110,10 @@ SiloTypeToVTKType(int siloType)
 //
 //    Mark C. Miller, Tue Nov 21 10:39:12 PST 2006
 //    Fixed error reading from 'meshData' after freeing it
+//
+//    Mark C. Miller, Mon Feb 26 21:37:13 PST 2007
+//    Made it deal with older SAMI files where mesh_data did not include
+//    the 'ndims' member (entry [7]) and was assumed 3.
 // ****************************************************************************
 
 avtSAMIFileFormat::avtSAMIFileFormat(const char *filename)
@@ -134,6 +138,7 @@ avtSAMIFileFormat::avtSAMIFileFormat(const char *filename)
     }
 
     int *meshData = (int *) DBGetVar(dbFile, "mesh_data");
+    int meshDataLen = DBGetVarLength(dbFile, "mesh_data");
     if (meshData == 0)
     {
         char tmpMsg[512];
@@ -148,7 +153,10 @@ avtSAMIFileFormat::avtSAMIFileFormat(const char *filename)
     nmats  = meshData[4];
     nslides = meshData[5];
     iorigin = meshData[6];
-    ndims  = meshData[7];
+    if (meshDataLen < 8)
+        ndims = 3;
+    else
+        ndims  = meshData[7];
     free(meshData);
 
     //
