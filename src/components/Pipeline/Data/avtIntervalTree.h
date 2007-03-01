@@ -80,6 +80,9 @@
 //    Add default bool arg to constructor -- specifies whether or not this tree
 //    will required collective communication. 
 //
+//    Hank Childs, Thu Mar  1 16:57:34 PST 2007
+//    Add a method to get the dimension (for error checking).
+//
 // ****************************************************************************
 
 class PIPELINE_API avtIntervalTree
@@ -92,6 +95,7 @@ class PIPELINE_API avtIntervalTree
     static void               Destruct(void *);
 
     void                      GetExtents(double *) const;
+    int                       GetDimension(void) const { return nDims; };
     void                      GetElementsList(const double *, double,
                                              std::vector<int> &) const;
     void                      GetElementsList(double [3], double[3],

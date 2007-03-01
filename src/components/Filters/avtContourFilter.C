@@ -219,6 +219,14 @@ avtContourFilter::~avtContourFilter()
 //    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
 //    API change for avtIntervalTree.
 //
+//    Hank Childs, Thu Mar  1 16:43:48 PST 2007
+//    Improve chances that we will get to use the interval tree.  The old
+//    logic did not retrieve the extents from the interval tree (for setting
+//    isolevels), even though it was possible.  Also, we were disabling
+//    dynamic load balancing even when it was possible.  If the min and max
+//    were explicitly set, then we could set a percent or nLevels without
+//    needing to know the actual data extents.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -249,6 +257,17 @@ avtContourFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
     if (!skipGhost)
         spec->GetDataSpecification()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
 
+    //
+    // Get the interval tree of data extents.
+    //
+    avtIntervalTree *it = GetMetaData()->GetDataExtents();
+    if (it->GetDimension() != 1)
+    {
+        debug1 << "The interval tree returned for the contour variable "
+               << "is not for a scalar.  Internal error?" << endl;
+        it = NULL;
+    }
+
     if (atts.GetContourMethod() == ContourOpAttributes::Level ||
         atts.GetContourMethod() == ContourOpAttributes::Percent)
     {
@@ -257,12 +276,20 @@ avtContourFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
         // must do static load balancing if we don't know what those extents
         // are.
         //
-        double extents[2]; 
-        if (TryDataExtents(extents, varname))
+        double extents[2] = { 0., 0. }; 
+        stillNeedExtents = true;
+        if (atts.GetMinFlag() && atts.GetMaxFlag())
+            stillNeedExtents = false;  // wouldn't use them anyway
+        else if (TryDataExtents(extents, varname))
+            stillNeedExtents = false;
+        else if (it != NULL)
         {
-            SetIsoValues(extents[0], extents[1]);
+            it->GetExtents(extents);
             stillNeedExtents = false;
         }
+
+        if (!stillNeedExtents)
+            SetIsoValues(extents[0], extents[1]);
         else
         {
             spec->NoDynamicLoadBalancing();
@@ -270,10 +297,6 @@ avtContourFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
         }
     }
 
-    //
-    // Get the interval tree of data extents.
-    //
-    avtIntervalTree *it = GetMetaData()->GetDataExtents();
     if (it == NULL)
     {
         debug5 << "Cannot use interval tree for contour filter, no "
@@ -323,12 +346,8 @@ avtContourFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
     //
     vector<int> list;
     for (i = 0 ; i < useList.size() ; i++)
-    {
         if (useList[i])
-        {
             list.push_back(i);
-        }
-    }
 
     spec->GetDataSpecification()->GetRestriction()->RestrictDomains(list);
 
