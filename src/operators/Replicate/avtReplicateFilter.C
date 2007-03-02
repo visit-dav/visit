@@ -295,7 +295,7 @@ avtReplicateFilter::ExecuteDataTree(vtkDataSet *in_ds, int dom, string str)
     const avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
     const float *unitcell = datts.GetUnitCellVectors();
 
-    for (int i=0; i<3; i++)
+    for (i=0; i<3; i++)
     {
         if (atts.GetUseUnitCellVectors())
         {

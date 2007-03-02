@@ -38,6 +38,7 @@
 #ifndef QVIS_VARIABLE_BUTTON_HELPER_H
 #define QVIS_VARIABLE_BUTTON_HELPER_H
 #include <qobject.h>
+#include <winutil_exports.h>
 
 class QvisVariableButton;
 
@@ -56,7 +57,7 @@ class QvisVariableButton;
 //   
 // ****************************************************************************
 
-class QvisVariableButtonHelper : public QObject
+class WINUTIL_API QvisVariableButtonHelper : public QObject
 {
     Q_OBJECT
 public:
