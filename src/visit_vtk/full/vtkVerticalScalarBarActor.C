@@ -464,6 +464,10 @@ void vtkVerticalScalarBarActor::BuildRange(vtkViewport *viewport)
 //    Hank Childs, Wed Sep  8 17:51:43 PDT 2004
 //    Allocate a big enough buffer for long labels.
 //
+//    Hank Childs, Sat Mar  3 12:52:28 PST 2007
+//    Add support for collapsing discrete tables that have each entry
+//    as the same color.
+//
 // ****************************************************************************
 
 void vtkVerticalScalarBarActor:: 
@@ -505,7 +509,11 @@ BuildLabels(vtkViewport * viewport, double bo, double bw, double bh, int nLabels
           idx = i;
       else 
           idx = this->NumberOfLabelsBuilt - 1 - i;
-      sprintf(labelString, definedLabels[idx].c_str());
+      bool singleColor = ShouldCollapseDiscrete();
+      if (singleColor)
+        strcpy(labelString, "All");
+      else
+        sprintf(labelString, definedLabels[idx].c_str());
       this->LabelMappers[i]->SetInput(labelString);
       }
     }
@@ -668,11 +676,17 @@ void vtkVerticalScalarBarActor:: BuildTics(double origin, double width,
 //    Be a little more loose on using an auxiliary lookup table, since
 //    near-constant plots are getting drawn incorrectly.
 //
+//    Hank Childs, Sat Mar  3 12:52:28 PST 2007
+//    Add support for collapsing discrete tables that have each entry
+//    as the same color.
+//
 // **********************************************************************
 
 void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
 {
   int *viewSize = viewport->GetSize();
+
+  bool singleColor = ShouldCollapseDiscrete();
 
   //
   // Determine the size and position of the color bar
@@ -703,6 +717,11 @@ void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
     }
 
   barWidth = (int) (this->BarWidth * viewSize[0]);
+  if (singleColor)
+    {
+    barOrigin += barHeight-barWidth;
+    barHeight = barWidth;
+    }
 
   //
   // Determine the number of colors in the color bar.
@@ -710,10 +729,15 @@ void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
   int numColors, numLabels; 
   if ( this->UseDefinedLabels && !this->definedLabels.empty() )
     {
-    numColors = this->definedLabels.size();
-    if ((this->FontHeight * 1.1 * numColors * viewSize[1]) > barHeight)
-        numColors = (int) (barHeight / (this->FontHeight * 1.1 * viewSize[1]));
-    numLabels = numColors;
+    if (singleColor)
+      numColors = numLabels = 1;
+    else
+      {
+      numColors = this->definedLabels.size();
+      if ((this->FontHeight * 1.1 * numColors * viewSize[1]) > barHeight)
+          numColors = (int) (barHeight / (this->FontHeight * 1.1 * viewSize[1]));
+      numLabels = numColors;
+      }
     }
   else
     {
@@ -827,6 +851,59 @@ void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
     }
 
 } // BuildColorBar
+
+
+bool
+vtkVerticalScalarBarActor::ShouldCollapseDiscrete(void)
+{
+  if (!this->UseDefinedLabels || this->definedLabels.empty() )
+      return false;
+  if (definedLabels.size() <= 1)
+      return false;
+
+
+  double *lutRange = this->LookupTable->GetRange();
+  unsigned char *rgba;
+  unsigned char  rgba_base[4];
+  LevelColorMap::iterator it;
+  if ((it = labelColorMap.find(definedLabels[0])) != labelColorMap.end())
+    {
+    vtkIdType colorIndex = it->second;
+    rgba = LookupTable->GetPointer(colorIndex);
+    }
+  else
+    {
+    rgba = LookupTable->MapValue((double)0);
+    }
+  rgba_base[0] = rgba[0];
+  rgba_base[1] = rgba[1];
+  rgba_base[2] = rgba[2];
+  rgba_base[3] = rgba[3];
+  
+  for (int i = 1 ; i < definedLabels.size() ; i++)
+    {
+    if ((it = labelColorMap.find(definedLabels[i])) != labelColorMap.end())
+      {
+      vtkIdType colorIndex = it->second;
+      rgba = LookupTable->GetPointer(colorIndex);
+      }
+    else
+      {
+      rgba = LookupTable->MapValue((double)i);
+      }
+    if (rgba_base[0] != rgba[0])
+      return false;
+    if (rgba_base[1] != rgba[1])
+      return false;
+    if (rgba_base[2] != rgba[2])
+      return false;
+    if (rgba_base[3] != rgba[3])
+      return false;
+    }
+
+  // All the colors are equal
+  return true;
+}
 
 
 // *********************************************************************

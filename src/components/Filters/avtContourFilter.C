@@ -261,7 +261,7 @@ avtContourFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
     // Get the interval tree of data extents.
     //
     avtIntervalTree *it = GetMetaData()->GetDataExtents();
-    if (it->GetDimension() != 1)
+    if (it != NULL && it->GetDimension() != 1)
     {
         debug1 << "The interval tree returned for the contour variable "
                << "is not for a scalar.  Internal error?" << endl;

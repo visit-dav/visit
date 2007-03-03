@@ -177,6 +177,10 @@ avtStreamlinePlot::GetMapper(void)
 //
 //  Modifications:
 //
+//    Hank Childs, Sat Mar  3 10:56:01 PST 2007
+//    Test to make sure we have a valid variable before asking for its 
+//    centering.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -184,9 +188,14 @@ avtStreamlinePlot::ApplyOperators(avtDataObject_p input)
 {
     avtDataObject_p dob = input; 
 
+    // Try to determine the centering.  If we have an expression, we won't
+    // be able to.  So be conservative and assume the worst.
+    avtCentering centering = AVT_ZONECENT;
+    if (input->GetInfo().GetAttributes().ValidVariable(varname))
+        centering = input->GetInfo().GetAttributes().GetCentering(varname);
+
     // If the variable centering is zonal, convert it to nodal or the
     // streamline filter will not play with it.
-    avtCentering centering = input->GetInfo().GetAttributes().GetCentering();
     if(centering == AVT_ZONECENT)
     {
         if(shiftCenteringFilter != NULL)
@@ -265,6 +274,10 @@ avtStreamlinePlot::CustomizeBehavior(void)
 //    Added support for coloring by vorticity. I also added support for
 //    ribbons.
 //
+//    Hank Childs, Sat Mar  3 09:52:01 PST 2007
+//    Set use whole box for the streamline filter.  Also don't show a 
+//    color bar if the coloring is constant.
+//
 // ****************************************************************************
 
 void
@@ -302,6 +315,7 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     streamlineFilter->SetSphereSource(atts.GetSphereOrigin(),
                                       atts.GetSphereRadius());
     streamlineFilter->SetBoxSource(atts.GetBoxExtents());
+    streamlineFilter->SetUseWholeBox(atts.GetUseWholeBox());
     streamlineFilter->SetColoringMethod(int(atts.GetColoringMethod()));
 
     //
@@ -331,6 +345,10 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     //
     // Update the legend.
     //
+    if (atts.GetColoringMethod() == StreamlineAttributes::Solid)
+        varLegend->SetColorBarVisibility(0);
+    else
+        varLegend->SetColorBarVisibility(1);
     SetLegend(atts.GetLegendFlag());
 }
 

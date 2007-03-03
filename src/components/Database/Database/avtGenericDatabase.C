@@ -410,6 +410,11 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Hank Childs, Fri Mar  2 13:06:58 PST 2007
+//    Do not check for "MustMaintainOriginalConnectivity()" here.  If we wait
+//    until a lower level, it makes it easier to issue an error message.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -648,11 +653,7 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     if (ghostType != NO_GHOST_DATA)
         ghostDataIsNeeded = true;
 
-    bool canCreateGhostData = true;
-    if (spec->MustMaintainOriginalConnectivity())
-        canCreateGhostData = false;
-
-    if (canCreateGhostData && ghostDataIsNeeded)
+    if (ghostDataIsNeeded)
     {
         didGhosts = CommunicateGhosts(ghostType, datasetCollection, domains, 
                                       spec, src, allDomains, 
@@ -4805,6 +4806,10 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+// 
+//    Hank Childs, Sat Mar  3 08:34:29 PST 2007
+//    Issue a warning if we must "MaintainOriginalConnectivity".
+//
 // ****************************************************************************
 
 bool
@@ -4882,7 +4887,6 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
 
     visitTimer->StopTimer(portion1, "Prepatory time for ghost zone creation."
                                     "  This also counts synchronization.");
-    int portion2 = visitTimer->StartTimer();
 
     //
     // The unstructured mesh domain boundaries code can create situations
@@ -4899,11 +4903,37 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     }
 
     //
+    // Some filters (namely MatVF) access data from the database (namely
+    // avtMaterials) where the creation of ghost zones will screw up 
+    // their indexing of the data.  In this case, they set 
+    // "MaintainOriginalConnectivity" flag in the contract.  If that is the
+    // case, we should *not* create ghost zones.  Also, this logic should
+    // not be moved to earlier in the pipeline.  If it was earlier, we 
+    // wouldn't know if we could really create ghost zones, so we wouldn't
+    // know whether or not to issue a warning.
+    //
+    if (spec->MustMaintainOriginalConnectivity() && 
+        ghostType == GHOST_ZONE_DATA)
+    {
+        static bool issuedWarning = false;
+        const char *warning = "Because of the way VisIt organizes data, "
+              "it is not possible to create ghost zones for this plot.  "
+              "This problem is likely coming about because you are " 
+              "using the matvf expression.  Contact a VisIt developer "
+              "for more information.  This message will only be issued "
+              "once per session.";
+        avtCallback::IssueWarning(warning);
+        issuedWarning = true;
+        return false;
+    }
+
+    //
     // Now its decision time.  We know what tools we can use -- whether or not
     // we have domain boundary information and whether or not we can use global
     // node ids.  We also know what kind of ghost data we need.  So call the
     // proper subroutine to do it.
     //
+    int portion2 = visitTimer->StartTimer();
     bool s = false;
     if (ghostType == GHOST_NODE_DATA)
     {

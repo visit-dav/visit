@@ -83,6 +83,10 @@ class vtkAppendPolyData;
 //   Brad Whitlock, Tue Jan 4 10:56:47 PDT 2005
 //   Removed the integrator member since it was not being used.
 //
+//   Hank Childs, Sat Mar  3 09:43:57 PST 2007
+//   Add new data member: useWholeBox.  Also added method PreExecute to 
+//   support it.  Added PostExecute method to get the extents right.
+//
 // ****************************************************************************
 
 class avtStreamlineFilter : public avtStreamer
@@ -109,6 +113,8 @@ class avtStreamlineFilter : public avtStreamer
                                              double U[3], double R);
     void                      SetSphereSource(double O[3], double R);
     void                      SetBoxSource(double E[6]);
+    void                      SetUseWholeBox(bool b)
+                                      { useWholeBox = b; };
 
     void                      SetDisplayMethod(int d);
     void                      SetShowStart(bool);
@@ -133,6 +139,7 @@ class avtStreamlineFilter : public avtStreamer
     double planeOrigin[3], planeNormal[3], planeUpAxis[3], planeRadius;
     double sphereOrigin[3], sphereRadius;
     double boxExtents[6];
+    bool   useWholeBox;
 
     // Internal filters.
     vtkVisItStreamLine       *streamline;
@@ -141,6 +148,8 @@ class avtStreamlineFilter : public avtStreamer
 
     virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
     virtual void              RefashionDataObjectInfo(void);
+    virtual void              PreExecute(void);
+    virtual void              PostExecute(void);
 
     vtkPolyData              *AddStartSphere(vtkPolyData *, float val,
                                              double pt[3]);

@@ -111,6 +111,9 @@ typedef std::vector<double> doubleVector;
 //    Eric Brugger, Wed Jul 16 08:29:27 PDT 2003
 //    I added a number of labels argument to BuildTics and BuildLabels.
 //
+//    Hank Childs, Sat Mar  3 13:25:15 PST 2007
+//    Added method "ShouldCollapseDiscrete".
+//
 // ****************************************************************************
 
 class VISIT_VTK_API vtkVerticalScalarBarActor : public vtkActor2D
@@ -316,6 +319,7 @@ protected:
   virtual void BuildColorBar(vtkViewport *);
 
   double SkewTheValue(double, double, double);
+  bool   ShouldCollapseDiscrete(void);
 
   vtkLookupTable *LookupTable;
   int   MaximumNumberOfColors;

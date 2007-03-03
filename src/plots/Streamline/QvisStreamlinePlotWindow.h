@@ -68,6 +68,9 @@ class StreamlineAttributes;
 //   Brad Whitlock, Mon Jan 3 15:32:24 PST 2005
 //   Added override of ProcessOldVersions.
 //
+//   Hank Childs, Sat Mar  3 09:11:44 PST 2007
+//   Added useWholeBox.
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -115,6 +118,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void singleColorChanged(const QColor &color);
     void legendFlagChanged(bool val);
     void lightingFlagChanged(bool val);
+    void useWholeBoxChanged(bool val);
     void boxExtentsProcessText();
   private:
     int plotType;
@@ -140,6 +144,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLabel    *sphereOriginLabel;
     QLineEdit *sphereRadius;
     QLabel    *sphereRadiusLabel;
+    QCheckBox *useWholeBox;
     QLineEdit *boxExtents[3];
     QLabel    *boxExtentsLabel[3];
     QSpinBox  *pointDensity;
