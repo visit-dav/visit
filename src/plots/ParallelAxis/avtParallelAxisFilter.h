@@ -66,13 +66,6 @@
 
 #define PCP_ALTERNATE_DATA_CURVE_COLOR    0xc0c0c0ff
 
-#define PCP_LEFT_AXIS_X_FRACTION          0.04
-#define PCP_RIGHT_AXIS_X_FRACTION         0.96
-#define PCP_H_BOTTOM_AXIS_Y_FRACTION      0.09
-#define PCP_V_BOTTOM_AXIS_Y_FRACTION      0.12
-#define PCP_H_TOP_AXIS_Y_FRACTION         0.93
-#define PCP_V_TOP_AXIS_Y_FRACTION         0.88
-
 #define PCP_H_TITLE_Y_FRACTION            0.01
 #define PCP_V_TITLE_Y_FRACTION            0.11
 #define PCP_V_TITLE_X_OFFSET_FRACTION     0.0025
@@ -133,6 +126,12 @@ class vtkPoints;
 //      Mark Blair, Wed Nov  8 16:01:27 PST 2006
 //      Changed InitializeDataTupleInput API.
 //
+//      Mark Blair, Wed Dec 20 17:52:01 PST 2006
+//      Added support for non-uniform axis spacing.
+//
+//      Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//      Now supports all variable axis spacing and axis group conventions.
+//
 // ****************************************************************************
 
 class avtParallelAxisFilter : public avtDataTreeStreamer
@@ -164,10 +163,12 @@ protected:
 private:
     void                        SetupParallelAxis (int plotAxisNum);
     void                        ComputeCurrentDataExtentsOverAllDomains();
+    void                        DetermineAxisBoundsAndGroupNames();
     void                        StoreAxisAttributesForOutsideQueries();
 
     void                        InitializePlotAtts();
-    void                        InitializeDataTupleInput(bool drawAxisLabels);
+    void                        InitializeDataTupleInput(bool drawLabelsAndTitles,
+                                    bool selectedVarsOnly);
     void                        InitializeOutputDataSets();
     void                        InputDataTuple(const floatVector &inputTuple);
 
@@ -178,7 +179,9 @@ private:
     void                        DrawDataSubrangeBounds();
 
     ParallelAxisAttributes      parAxisAtts;
-
+    
+    bool                        sendNullOutput;
+    
     int                         parallelRank;
     bool                        drewAnnotations;
 
@@ -191,6 +194,11 @@ private:
     doubleVector                axisAttsArray;
 
     int                         axisCount;
+    int                         leftPlotAxisID;
+    int                         rightPlotAxisID;
+    int                         leftSelectedAxisID;
+    int                         rightSelectedAxisID;
+
     int                         tickMarkIntervals;
 
     double                      bottomAxisY;
@@ -198,6 +206,7 @@ private:
 
     bool                        useVerticalText;
 
+    doubleVector                plotAxisXPositions;
     doubleVector                plotAxisMinima;
     doubleVector                plotAxisMaxima;
     doubleVector                subrangeMinima;

@@ -86,7 +86,7 @@ QvisParallelAxisPlotWindow::QvisParallelAxisPlotWindow(const int type,
     plotType = type;
     parAxisAtts = parAxisAtts_;
 
-    latestGUIShownPos = parAxisAtts->GetShownVariableAxisPosition();
+    latestGUIShownOrd = parAxisAtts->GetShownVariableAxisOrdinal();
 }
 
 
@@ -208,6 +208,9 @@ QvisParallelAxisPlotWindow::CreateWindowContents()
 //      Mark Blair, Thu Oct 26 18:40:28 PDT 2006
 //      Accommodates widgets that support non-uniform axis spacing.
 //
+//      Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//      Now supports all variable axis spacing and axis group conventions.
+//
 // ****************************************************************************
 
 void
@@ -229,7 +232,7 @@ QvisParallelAxisPlotWindow::UpdateWindow(bool doAll)
 
             break;   // Do nothing.
 
-        case 1:   // Uses ParallelAxisAttributes::shownVarAxisPosition
+        case 1:   // Uses ParallelAxisAttributes::shownVarAxisOrdinal
 
             UpdateShownFields(false);
 
@@ -259,7 +262,7 @@ QvisParallelAxisPlotWindow::UpdateWindow(bool doAll)
 
             break;   // Do nothing.
 
-        case 8:   // Uses ParallelAxisAttributes::plotDrawsAxisLabels
+        case 8:   // Uses ParallelAxisAttributes::plotToolModeFlags
 
             break;   // Do nothing.
 
@@ -267,11 +270,23 @@ QvisParallelAxisPlotWindow::UpdateWindow(bool doAll)
 
             break;   // Do nothing.
 
-        case 10:   // Uses ParallelAxisAttributes::axisLabelStates
+        case 10:   // Uses ParallelAxisAttributes::axisInfoFlagSets
 
             break;   // Do nothing.
 
-        case 11:   // Uses ParallelAxisAttributes::axisXIntervals
+        case 11:   // Uses ParallelAxisAttributes::axisXPositions
+
+            break;   // Do nothing.
+
+        case 12:   // Uses ParallelAxisAttributes::axisAttributeVariables
+
+            break;   // Do nothing.
+
+        case 13:   // Uses ParallelAxisAttributes::attributesPerAxis
+
+            break;   // Do nothing.
+
+        case 14:   // Uses ParallelAxisAttributes::axisAttributeData
 
             break;   // Do nothing.
         }
@@ -320,6 +335,9 @@ QvisParallelAxisPlotWindow::GetCurrentValues(int which_widget)
 //
 // Modifications:
 //
+//     Mark Blair, Mon Feb 26 17:57:42 PST 2007
+//     Accommodates changed API.
+//
 // ****************************************************************************
 
 void
@@ -333,6 +351,9 @@ QvisParallelAxisPlotWindow::Apply(bool ignore)
         parAxisAtts->Notify();
 
         // Tell the viewer to set the ParallelAxis plot attributes.
+/* debug 022607
+        GetViewerMethods()->SetPlotOptions(plotType);
+*/
         GetViewerMethods()->SetPlotOptions(plotType);
     }
     else
@@ -378,6 +399,9 @@ QvisParallelAxisPlotWindow::apply()
 //
 // Modifications:
 //   
+//     Mark Blair, Mon Feb 26 17:57:42 PST 2007
+//     Accommodates changed API.
+//
 // ****************************************************************************
 
 void
@@ -386,6 +410,9 @@ QvisParallelAxisPlotWindow::makeDefault()
     // Tell the viewer to set the default high dimension plot attributes.
     GetCurrentValues(-1);
     parAxisAtts->Notify();
+/* debug 022607
+    GetViewerMethods()->SetDefaultPlotOptions(plotType);
+*/
     GetViewerMethods()->SetDefaultPlotOptions(plotType);
 }
 
@@ -432,7 +459,7 @@ void
 QvisParallelAxisPlotWindow::prevAxisClicked()
 {
     parAxisAtts->ShowPreviousAxisVariableData();
-    latestGUIShownPos = parAxisAtts->GetShownVariableAxisPosition();
+    latestGUIShownOrd = parAxisAtts->GetShownVariableAxisOrdinal();
 
     UpdateShownFields(true);
 }
@@ -455,7 +482,7 @@ void
 QvisParallelAxisPlotWindow::nextAxisClicked()
 {
     parAxisAtts->ShowNextAxisVariableData();
-    latestGUIShownPos = parAxisAtts->GetShownVariableAxisPosition();
+    latestGUIShownOrd = parAxisAtts->GetShownVariableAxisOrdinal();
 
     UpdateShownFields(true);
 }
@@ -479,7 +506,7 @@ void
 QvisParallelAxisPlotWindow::axisAdded(const QString &axisToAdd)
 {
     parAxisAtts->InsertAxis(axisToAdd.latin1());
-    latestGUIShownPos = parAxisAtts->GetShownVariableAxisPosition();
+    latestGUIShownOrd = parAxisAtts->GetShownVariableAxisOrdinal();
 
     UpdateShownFields(true);
 }
@@ -503,7 +530,7 @@ void
 QvisParallelAxisPlotWindow::axisDeleted(const QString &axisToDelete)
 {
     parAxisAtts->DeleteAxis(axisToDelete.latin1(), 2);
-    latestGUIShownPos = parAxisAtts->GetShownVariableAxisPosition();
+    latestGUIShownOrd = parAxisAtts->GetShownVariableAxisOrdinal();
 
     UpdateShownFields(true);
 }
@@ -527,7 +554,7 @@ void
 QvisParallelAxisPlotWindow::leftAxisSelected(const QString &axisToSelect)
 {
     parAxisAtts->SwitchToLeftAxis(axisToSelect.latin1());
-    latestGUIShownPos = parAxisAtts->GetShownVariableAxisPosition();
+    latestGUIShownOrd = parAxisAtts->GetShownVariableAxisOrdinal();
 
     UpdateShownFields(true);
 }
@@ -557,18 +584,18 @@ QvisParallelAxisPlotWindow::leftAxisSelected(const QString &axisToSelect)
 void
 QvisParallelAxisPlotWindow::UpdateShownFields(bool applyvalues)
 {
-    if (latestGUIShownPos >= parAxisAtts->GetAxisMinima().size())
+    if (latestGUIShownOrd >= parAxisAtts->GetAxisMinima().size())
     {
         debug1 << "ParallelAxis plot attribute consistency error." << endl;
-        latestGUIShownPos = parAxisAtts->GetAxisMinima().size() - 1;
+        latestGUIShownOrd = parAxisAtts->GetAxisMinima().size() - 1;
     }
 
-    parAxisAtts->SetShownVariableAxisPosition(latestGUIShownPos);
+    parAxisAtts->SetShownVariableAxisOrdinal(latestGUIShownOrd);
 
     QString fieldString = parAxisAtts->GetShownVariableAxisName().c_str();
     axisVariable->setText(fieldString);
 
-    fieldString.setNum(parAxisAtts->GetShownVariableAxisNormalHumanPosition());
+    fieldString.setNum(parAxisAtts->GetShownVariableAxisNormalHumanOrdinal());
     axisPosition->setText(fieldString);
 
     if (applyvalues)

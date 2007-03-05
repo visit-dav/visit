@@ -98,9 +98,7 @@
 avtParallelAxisFilter::avtParallelAxisFilter(ParallelAxisAttributes &atts)
 {
     parAxisAtts = atts;
-
     parallelRank = PAR_Rank();
-    drewAnnotations = false;
 }
 
 
@@ -132,15 +130,20 @@ avtParallelAxisFilter::~avtParallelAxisFilter()
 //
 //  Modifications:
 //
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Now accepts input data of any dimension.
+//
 // ****************************************************************************
  
 void
 avtParallelAxisFilter::VerifyInput(void)
 {
+/*
     if  (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() != 3)
     {
         EXCEPTION2(InvalidDimensionsException, "ParallelAxis", " 3-D ");
     }
+ */
 }
 
 
@@ -164,7 +167,12 @@ avtPipelineSpecification_p
 avtParallelAxisFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
 {
     if (!parAxisAtts.AttributesAreConsistent())
+    {
+        debug3 << "PCP/aPAF/PR1: ParallelAxis plot attributes are inconsistent."
+               << endl;
+
         return in_spec;
+    }
         
     const char *inPipelineVar = in_spec->GetDataSpecification()->GetVariable();
     std::string curPipelineVar(inPipelineVar);
@@ -177,13 +185,9 @@ avtParallelAxisFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
     for (int axisNum = 0; axisNum < curAxisVarNames.size(); axisNum++)
     {
         if (curAxisVarNames[axisNum] == curPipelineVar)
-        {
             varTupleIndices.push_back(0);
-        }
         else
-        {
             varTupleIndices.push_back(-1);
-        }
     }
 
     avtPipelineSpecification_p outSpec = new avtPipelineSpecification(in_spec);
@@ -267,9 +271,12 @@ avtParallelAxisFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
 //
 //  Modifications:
 //
-//      Mark Blair, Thu Oct 26 18:40:28 PDT 2006
-//      No longer writes scratch file, which is no longer necessary.  Also added
-//      support for non-uniform axis spacing.
+//     Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//     No longer writes scratch file, which is no longer necessary.  Also added
+//     support for non-uniform axis spacing.
+//
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Now supports all variable axis spacing and axis group conventions.
 //
 // *****************************************************************************
 
@@ -279,10 +286,92 @@ avtParallelAxisFilter::PreExecute(void)
     avtDatasetToDatasetFilter::PreExecute();
 
     domainCount = GetInputDataTree()->GetNumberOfLeaves();
+    
+    if (!parAxisAtts.AttributesAreConsistent())
+    {
+        debug3 << "PCP/aPAF/PE1: ParallelAxis plot attributes are inconsistent."
+               << endl;
+        
+        sendNullOutput = true;
+        return;
+    }
+
+    stringVector curAxisVarNames = parAxisAtts.GetOrderedAxisNames();
+    intVector    curAxisFlagSets = parAxisAtts.GetAxisInfoFlagSets();
+        
+    axisCount = curAxisVarNames.size();
+    sendNullOutput = false;
 
     ComputeCurrentDataExtentsOverAllDomains();
+    
+    if (sendNullOutput) return;
+    
+    int axisNum, axisInfoFlagSet;
+    
+    if ((parAxisAtts.GetPlotToolModeFlags() & EA_TOOL_DRAWS_AXIS_INFO_FLAG) == 0)
+    {
+        leftPlotAxisID     = 0; rightPlotAxisID     = axisCount - 1;
+        leftSelectedAxisID = 0; rightSelectedAxisID = axisCount - 1;
+    }
+    else
+    {
+        leftPlotAxisID     = -1; rightPlotAxisID     = -1;
+        leftSelectedAxisID = -1; rightSelectedAxisID = -1;
+    
+        for (axisNum = 0; axisNum < axisCount; axisNum++)
+        {
+            axisInfoFlagSet = curAxisFlagSets[axisNum];
+        
+            if ((axisInfoFlagSet & EA_LEFT_SHOWN_AXIS_FLAG) != 0)
+                leftPlotAxisID = axisNum;
+            if ((axisInfoFlagSet & EA_RIGHT_SHOWN_AXIS_FLAG) != 0)
+                rightPlotAxisID = axisNum;
+        
+            if ((axisInfoFlagSet & EA_LEFT_SELECTED_AXIS_FLAG) != 0)
+                leftSelectedAxisID = axisNum;
+            if ((axisInfoFlagSet & EA_RIGHT_SELECTED_AXIS_FLAG) != 0)
+                rightSelectedAxisID = axisNum;
+        }
+    
+        if (leftPlotAxisID  == -1) sendNullOutput = true;
+        if (rightPlotAxisID == -1) sendNullOutput = true;
 
-    StoreAxisAttributesForOutsideQueries();
+        if (leftPlotAxisID >= rightPlotAxisID) sendNullOutput = true;
+    
+        if (leftSelectedAxisID  == -1) sendNullOutput = true;
+        if (rightSelectedAxisID == -1) sendNullOutput = true;
+
+        if (leftSelectedAxisID >= rightSelectedAxisID) sendNullOutput = true;
+        
+        if (leftSelectedAxisID  <  leftPlotAxisID) sendNullOutput = true;
+        if (rightSelectedAxisID > rightPlotAxisID) sendNullOutput = true;
+    }
+    
+    if (sendNullOutput)
+    {
+        debug3 << "PCP/aPAF/PE2: ParallelAxis plot shown/selected axis marks "
+               << "missing or out of order." << endl;
+        return;
+    }
+
+    parAxisAtts.RecalculateAxisXPositions(leftPlotAxisID, rightPlotAxisID);
+    DetermineAxisBoundsAndGroupNames();
+
+    int plotToolModeFlags = parAxisAtts.GetPlotToolModeFlags();
+    
+    if ((plotToolModeFlags & EA_TOOL_DRAWS_AXIS_INFO_FLAG) == 0)
+        parAxisAtts.IdentifyReasonableAxesToLabel();
+    else if ((plotToolModeFlags & EA_AXIS_INFO_AUTO_LAYOUT_FLAG) != 0)
+    {
+        parAxisAtts.IdentifyReasonableAxesToLabel();   // Redundant but intuitive
+        
+        plotToolModeFlags ^= EA_AXIS_INFO_AUTO_LAYOUT_FLAG;
+        parAxisAtts.SetPlotToolModeFlags(plotToolModeFlags);
+    }
+    
+    useVerticalText = ((plotToolModeFlags & EA_VERTICAL_TEXT_AXIS_INFO_FLAG) != 0);
+    
+    drewAnnotations = false;
 
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
    
@@ -301,6 +390,9 @@ avtParallelAxisFilter::PreExecute(void)
 //  Creation:   Mon Mar 27 18:24:00 PST 2006
 //
 //  Modifications:
+//
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Axis attribute for outside queries now stored after filter is executed.
 //
 // ****************************************************************************
 
@@ -340,6 +432,8 @@ avtParallelAxisFilter::PostExecute(void)
     outAtts.SetYLabel("");
 
     outAtts.SetXUnits(""); outAtts.SetYUnits("");
+
+    StoreAxisAttributesForOutsideQueries();
 }
 
 // ****************************************************************************
@@ -359,30 +453,43 @@ avtParallelAxisFilter::PostExecute(void)
 //
 //  Modifications:
 //
-//      Mark Blair, Fri Jun  9 14:29:00 PDT 2006
-//      Rewrote to eliminate use of the ParallelCoordinatePlot class.  Code
-//      adapted from that class was added directly to the filter code.
+//     Mark Blair, Fri Jun  9 14:29:00 PDT 2006
+//     Rewrote to eliminate use of the ParallelCoordinatePlot class.  Code
+//     adapted from that class was added directly to the filter code.
 //
-//      Mark Blair, Wed Aug 16 16:46:00 PDT 2006
-//      Added check for attribute consistency.
+//     Mark Blair, Wed Aug 16 16:46:00 PDT 2006
+//     Added check for attribute consistency.
+//
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Now supports all variable axis spacing and axis group conventions.
 //
 // ****************************************************************************
 
 avtDataTree_p 
 avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
 {
-    if (!parAxisAtts.AttributesAreConsistent())
+    if (sendNullOutput) return NULL;
+
+    if (in_ds == NULL)
     {
-        debug1 << "ParallelAxis plot attributes are inconsistent." << endl;
+        debug3 << "PCP/aPAF/EDT/1: ParallelAxis plot input is NULL." << endl;
+        return NULL;
+    }
+
+    if (varTupleIndices.size() != axisCount)
+    {
+        debug3 << "PCP/aPAF/EDT/2: ParallelAxis plot internal data is "
+               << "inconsistent." << endl;
         return NULL;
     }
 
     stringVector curAxisVarNames = parAxisAtts.GetOrderedAxisNames();
-
-    axisCount = curAxisVarNames.size();
-
-    if (in_ds == NULL) return NULL;
-    if (varTupleIndices.size() != axisCount) return NULL;
+    
+    int plotToolModeFlags = parAxisAtts.GetPlotToolModeFlags();
+    bool drawLabelsAndTitles =
+        ((plotToolModeFlags & EA_TOOL_DRAWS_AXIS_INFO_FLAG) == 0);
+    bool selectedVarsOnly =
+        ((plotToolModeFlags & EA_THRESHOLD_SELECTED_ONLY_FLAG) != 0);
 
     int cellArrayCount  = in_ds->GetCellData()->GetNumberOfArrays();
     int pointArrayCount = in_ds->GetPointData()->GetNumberOfArrays();
@@ -392,8 +499,19 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
     bool plotCellData  = (cellArrayCount > 0);
     int plotTupleCount = (plotCellData) ? cellCount : pointCount;
 
-    if (cellArrayCount + pointArrayCount == 0) return NULL;
-    if (plotTupleCount == 0) return NULL;
+    if (cellArrayCount + pointArrayCount == 0)
+    {
+        debug3 << "PCP/aPAF/EDT/3: No ParallelAxis plot input data arrays found."
+               << endl;
+        return NULL;
+    }
+
+    if (plotTupleCount == 0)
+    {
+        debug3 << "PCP/aPAF/EDT/4: ParallelAxis plot input data array "
+               << "is of zero length." << endl;
+        return NULL;
+    }
 
     // If the input contains both cell data and point data, then by convention
     // the cell data takes precedence.  In this case, the value of a point
@@ -401,8 +519,9 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
     // value of that variable over all vertices of the cell.  (mb)
 
     const std::string pipeVariableName = pipelineVariable;
-    
-    int axisNum, tupleCount, tupleNum, varTupleIndex, componentCount;
+
+    int axisNum;
+    int tupleCount, tupleNum, varTupleIndex, componentCount;
     int cellVertexCount, vertexNum, valueNum;
     bool arrayIsCellData, dataBadOrMissing;
     std::string arrayName;
@@ -446,8 +565,8 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
             
         if (dataBadOrMissing)
         {
-            debug1 << "Input data array " << arrayName << " is bad or missing."
-                   << endl;
+            debug3 << "PCP/aPAF/EDT/5: ParallelAxis plot input data array "
+                   << arrayName << " is bad or missing." << endl;
             return NULL;
         }
     
@@ -464,10 +583,9 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
         SetupParallelAxis(axisNum);
     }
 
-    bool plotDrawsAxisLabels = parAxisAtts.GetPlotDrawsAxisLabels();
     floatVector inputTuple = floatVector(axisCount);
     
-    InitializeDataTupleInput(plotDrawsAxisLabels);
+    InitializeDataTupleInput(drawLabelsAndTitles, selectedVarsOnly);
     InitializeOutputDataSets();
     
     if (plotCellData && (pointArrayCount > 0))
@@ -535,7 +653,7 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
     {
         pointIdList->Delete();
     }
-    
+
     DrawDataCurves();
 
     if (parallelRank == 0)
@@ -543,8 +661,8 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
         if (!drewAnnotations)
         {
             DrawCoordinateAxes();
-            if (plotDrawsAxisLabels) DrawCoordinateAxisLabels();
-            if (plotDrawsAxisLabels) DrawCoordinateAxisTitles();
+            if (drawLabelsAndTitles) DrawCoordinateAxisLabels();
+            if (drawLabelsAndTitles) DrawCoordinateAxisTitles();
 
             drewAnnotations = true;
         }
@@ -589,7 +707,7 @@ avtParallelAxisFilter::RefashionDataObjectInfo(void)
 {
     avtDataAttributes &inAtts  = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-   
+    
     outAtts.SetTopologicalDimension(inAtts.GetTopologicalDimension()-1);
 
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
@@ -654,27 +772,31 @@ avtParallelAxisFilter::ReleaseData(void)
 //
 //  Modifications:
 //
+//     Mark Blair, Wed Dec 20 17:52:01 PST 2006
+//     Added support for non-uniform axis spacing.
+//
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Removed the aesthetic 5% margin between data extrema and axis extrema.
+//
 // ****************************************************************************
 
 void
 avtParallelAxisFilter::SetupParallelAxis (int plotAxisNum)
 {
-    const stringVector curAxisVarNames = parAxisAtts.GetOrderedAxisNames();
-    const doubleVector curAxisMinima   = parAxisAtts.GetAxisMinima();
-    const doubleVector curAxisMaxima   = parAxisAtts.GetAxisMaxima();
-    const doubleVector curExtentMinima = parAxisAtts.GetExtentMinima();
-    const doubleVector curExtentMaxima = parAxisAtts.GetExtentMaxima();
+    const stringVector curAxisVarNames   = parAxisAtts.GetOrderedAxisNames();
+    const doubleVector curAxisXPositions = parAxisAtts.GetAxisXPositions();
+    const doubleVector curAxisMinima     = parAxisAtts.GetAxisMinima();
+    const doubleVector curAxisMaxima     = parAxisAtts.GetAxisMaxima();
+    const doubleVector curExtentMinima   = parAxisAtts.GetExtentMinima();
+    const doubleVector curExtentMaxima   = parAxisAtts.GetExtentMaxima();
 
-    double trueAxisMin   = curAxisMinima[plotAxisNum];
-    double trueAxisMax   = curAxisMaxima[plotAxisNum];
-    double trueAxisRange = trueAxisMax - trueAxisMin;
-    double plotAxisRange = trueAxisRange * 1.1;
-    double rangeMargin   = trueAxisRange * 0.05;
-    double plotAxisMin   = trueAxisMin - rangeMargin;
-    double plotAxisMax   = trueAxisMax + rangeMargin;
+    double plotAxisMin   = curAxisMinima[plotAxisNum];
+    double plotAxisRange = curAxisMaxima[plotAxisNum] - plotAxisMin;
+
+    plotAxisXPositions.push_back(curAxisXPositions[plotAxisNum]);
 
     plotAxisMinima.push_back(plotAxisMin);
-    plotAxisMaxima.push_back(plotAxisMax);
+    plotAxisMaxima.push_back(curAxisMaxima[plotAxisNum]);
 
     subrangeMinima.push_back(
         plotAxisMin + plotAxisRange*curExtentMinima[plotAxisNum]);
@@ -701,10 +823,17 @@ void
 avtParallelAxisFilter::ComputeCurrentDataExtentsOverAllDomains()
 {
     stringVector curAxisVarNames = parAxisAtts.GetOrderedAxisNames();
+    
+    if (varTupleIndices.size() != curAxisVarNames.size())
+    {
+        debug3 << "PCP/aPAF/CCDEOAD/1: ParallelAxis plot internal data is "
+               << "inconsistent." << endl;
+        sendNullOutput = true;
+        return;
+    }
+
     doubleVector curAxisMinima   = parAxisAtts.GetAxisMinima();
     doubleVector curAxisMaxima   = parAxisAtts.GetAxisMaxima();
-
-    if (varTupleIndices.size() != curAxisVarNames.size()) return;
 
     int axisNum;
     std::string axisVarName;
@@ -712,7 +841,7 @@ avtParallelAxisFilter::ComputeCurrentDataExtentsOverAllDomains()
     double *axisMinimum, *axisMaximum;
     double varDataExtent[2];
 
-    for (axisNum = 0; axisNum < curAxisVarNames.size(); axisNum++)
+    for (axisNum = 0; axisNum < axisCount; axisNum++)
     {
         axisVarName = curAxisVarNames[axisNum];
 
@@ -747,6 +876,133 @@ avtParallelAxisFilter::ComputeCurrentDataExtentsOverAllDomains()
 
 
 // *****************************************************************************
+//  Method: avtParallelAxisPlot::DetermineAxisBoundsAndGroupNames
+//
+//  Purpose: This method determines the min and max bounds of each axis in the
+//           plot, based on group associations of the axes, individual extents
+//           of the input data for each axis, and any forced axis bounds that
+//           may have been supplied by the user.  Also sets the text name of
+//           the axis group to which each axis belongs.
+//
+//  Programmer: Mark Blair
+//  Creation:   Wed Feb  7 17:54:18 PST 2007
+//
+//  Modifications:
+//
+// *****************************************************************************
+
+void
+avtParallelAxisFilter::DetermineAxisBoundsAndGroupNames()
+{
+    stringVector curAxisVarNames = parAxisAtts.GetOrderedAxisNames();
+    doubleVector curAxisMinima   = parAxisAtts.GetAxisMinima();
+    doubleVector curAxisMaxima   = parAxisAtts.GetAxisMaxima();
+
+    stringVector curAxisAttVars = parAxisAtts.GetAxisAttributeVariables();
+    doubleVector curAxisAttData = parAxisAtts.GetAxisAttributeData();
+    
+    intVector    axisGroupIDNums;
+    stringVector axisGroupNames;
+    
+    intVector    groupIDList;
+    doubleVector groupAxisMinima;
+    doubleVector groupAxisMaxima;
+    
+    int attVarCount = curAxisAttVars.size();
+    int attributesPerAxis = parAxisAtts.GetAttributesPerAxis();
+    int dummyGroupID = PCP_FIRST_DUMMY_AXIS_GROUP_ID;
+    int axisID, axisGroupID, attVarID, attValueMap, groupIDNum;
+    double axisMinimum, axisMaximum;
+    double *axisAttData;
+    std::string axisName;
+    
+    char groupName[81];
+
+    for (axisID = 0; axisID < axisCount; axisID++)
+    {
+        axisName = curAxisVarNames[axisID];
+        
+        for (attVarID = 0; attVarID < attVarCount; attVarID++)
+        {
+            if (curAxisAttVars[attVarID] == axisName) break;
+        }
+        
+        if (attVarID < attVarCount)
+        {
+            axisAttData = &curAxisAttData[attVarID*(attributesPerAxis+1)];
+            attValueMap = (int)axisAttData[attributesPerAxis];
+            
+            if ((attValueMap & PCP_GROUP_ID_ATTRIBUTE_FLAG) != 0)
+            {
+                axisGroupID = (int)axisAttData[PCP_GROUP_ID_ATTRIBUTE_OFFSET];
+                sprintf(groupName, "group_%d", axisGroupID);
+            }
+            else
+            {
+                axisGroupID = dummyGroupID++;
+                strcpy(groupName, "(not_in_a_group)");
+            }
+
+            for (groupIDNum = 0; groupIDNum < groupIDList.size(); groupIDNum++)
+            {
+                if (groupIDList[groupIDNum] == axisGroupID) break;
+            }
+            
+            if (groupIDNum >= groupIDList.size())
+            {
+                groupIDNum = groupIDList.size();
+                
+                groupIDList.push_back(axisGroupID);
+                groupAxisMinima.push_back(+1e+37);
+                groupAxisMaxima.push_back(-1e+37);
+            }
+            
+            if ((attValueMap & PCP_LOWER_BOUND_ATTRIBUTE_FLAG) != 0)
+                axisMinimum = axisAttData[PCP_LOWER_BOUND_ATTRIBUTE_OFFSET];
+            else
+                axisMinimum = curAxisMinima[axisID];
+            
+            if ((attValueMap & PCP_UPPER_BOUND_ATTRIBUTE_FLAG) != 0)
+                axisMaximum = axisAttData[PCP_UPPER_BOUND_ATTRIBUTE_OFFSET];
+            else
+                axisMaximum = curAxisMaxima[axisID];
+                
+            if (axisMinimum < groupAxisMinima[groupIDNum])
+                groupAxisMinima[groupIDNum] = axisMinimum;
+            if (axisMaximum > groupAxisMaxima[groupIDNum])
+                groupAxisMaxima[groupIDNum] = axisMaximum;
+        }
+        else
+        {
+            groupIDNum = groupIDList.size();
+
+            groupIDList.push_back(dummyGroupID); dummyGroupID++;
+            groupAxisMinima.push_back(curAxisMinima[axisID]);
+            groupAxisMaxima.push_back(curAxisMaxima[axisID]);
+
+            strcpy(groupName, "(not_in_a_group)");
+        }
+            
+        axisGroupIDNums.push_back(groupIDNum);
+        axisGroupNames.push_back(std::string(groupName));
+    }
+
+    for (axisID = 0; axisID < axisCount; axisID++)
+    {
+        groupIDNum = axisGroupIDNums[axisID];
+        
+        curAxisMinima[axisID] = groupAxisMinima[groupIDNum];
+        curAxisMaxima[axisID] = groupAxisMaxima[groupIDNum];
+    }
+    
+    parAxisAtts.SetAxisMinima(curAxisMinima);
+    parAxisAtts.SetAxisMaxima(curAxisMaxima);
+    
+    parAxisAtts.SetAxisGroupNames(axisGroupNames);
+}
+
+
+// *****************************************************************************
 //  Method: avtParallelAxisPlot::StoreAxisAttributesForOutsideQueries
 //
 //  Purpose: Stores name of each axis's scalar variable and that variable's
@@ -758,8 +1014,11 @@ avtParallelAxisFilter::ComputeCurrentDataExtentsOverAllDomains()
 //
 //  Modifications:
 //
-//    Mark Blair, Thu Oct 26 18:40:28 PDT 2006
-//    Added support for non-uniform axis spacing.
+//     Mark Blair, Thu Oct 26 18:40:28 PDT 2006
+//     Added support for non-uniform axis spacing.
+//
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Added axis flag attributes to exported axis attribute data.
 //   
 // *****************************************************************************
 
@@ -774,21 +1033,20 @@ avtParallelAxisFilter::StoreAxisAttributesForOutsideQueries()
     doubleVector curSliderMaxima = parAxisAtts.GetExtentMaxima();
     intVector    curMinTimeOrds  = parAxisAtts.GetExtMinTimeOrds();
     intVector    curMaxTimeOrds  = parAxisAtts.GetExtMaxTimeOrds();
-    intVector    curLabelStates  = parAxisAtts.GetAxisLabelStates();
-    doubleVector curXIntervals   = parAxisAtts.GetAxisXIntervals();
+    intVector    curInfoFlagSets = parAxisAtts.GetAxisInfoFlagSets();
+    doubleVector curXPositions   = parAxisAtts.GetAxisXPositions();
     
     axisCount = curAxisNames.size();
     
     const char *axisName, *groupName;
     int axisNameLen, groupNameLen, axisNum, charNum;
-    double trueAxisMin, trueAxisMax, minWithMargin, maxWithMargin, axisMargin;
 
     axisAttsArray.clear();
 
     axisAttsArray.push_back(PCP_LEFT_AXIS_X_FRACTION);
     axisAttsArray.push_back(PCP_RIGHT_AXIS_X_FRACTION);
 
-    if (axisCount > PCP_MAX_HORIZONTAL_TITLE_AXES)
+    if (useVerticalText)
     {
         axisAttsArray.push_back(PCP_V_BOTTOM_AXIS_Y_FRACTION);
         axisAttsArray.push_back(PCP_V_TOP_AXIS_Y_FRACTION);
@@ -798,7 +1056,9 @@ avtParallelAxisFilter::StoreAxisAttributesForOutsideQueries()
         axisAttsArray.push_back(PCP_H_BOTTOM_AXIS_Y_FRACTION);
         axisAttsArray.push_back(PCP_H_TOP_AXIS_Y_FRACTION);
     }
-
+    
+    axisAttsArray.push_back((double)(parAxisAtts.GetPlotToolModeFlags()));
+    
     for (axisNum = 0; axisNum < axisCount; axisNum++)
     {
         axisName = curAxisNames[axisNum].c_str();
@@ -821,28 +1081,14 @@ avtParallelAxisFilter::StoreAxisAttributesForOutsideQueries()
         
         axisAttsArray.push_back(0.0);
 
-        if ((trueAxisMin = curAxisMinima[axisNum]) < -9e+36)
-        {
-            minWithMargin = -1e+37;
-            maxWithMargin = +1e+37;
-        }
-        else
-        {
-            trueAxisMax = curAxisMaxima[axisNum];
-            axisMargin = (trueAxisMax - trueAxisMin) * 0.05;
-            
-            minWithMargin = trueAxisMin - axisMargin;
-            maxWithMargin = trueAxisMax + axisMargin;
-        }
-
-        axisAttsArray.push_back(minWithMargin);
-        axisAttsArray.push_back(maxWithMargin);
+        axisAttsArray.push_back(curAxisMinima[axisNum]);
+        axisAttsArray.push_back(curAxisMaxima[axisNum]);
         axisAttsArray.push_back(curSliderMinima[axisNum]);
         axisAttsArray.push_back(curSliderMaxima[axisNum]);
         axisAttsArray.push_back((double)curMinTimeOrds[axisNum]);
         axisAttsArray.push_back((double)curMaxTimeOrds[axisNum]);
-        axisAttsArray.push_back((double)curLabelStates[axisNum]);
-        axisAttsArray.push_back(curXIntervals[axisNum]);
+        axisAttsArray.push_back((double)curInfoFlagSets[axisNum]);
+        axisAttsArray.push_back(curXPositions[axisNum]);
     }
 
     axisAttsArray.push_back(0.0);
@@ -866,11 +1112,15 @@ avtParallelAxisFilter::StoreAxisAttributesForOutsideQueries()
 //
 // Modifications:
 //
+//     Mark Blair, Wed Dec 20 17:52:01 PST 2006
+//     Added support for non-uniform axis spacing.
+//
 // *****************************************************************************
 
 void
 avtParallelAxisFilter::InitializePlotAtts()
 {
+    plotAxisXPositions.clear();
     plotAxisMinima.clear(); plotAxisMaxima.clear();
     subrangeMinima.clear(); subrangeMaxima.clear();
 
@@ -897,36 +1147,42 @@ avtParallelAxisFilter::InitializePlotAtts()
 //     Mark Blair, Wed Nov  8 16:01:27 PST 2006
 //     Applies extents to input data only when Extents tool is active.
 //
+//     Mark Blair, Wed Dec 20 17:52:01 PST 2006
+//     Added support for non-uniform axis spacing.
+//
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Now supports all variable axis spacing and axis group conventions.
+//
 // *****************************************************************************
 
 void
-avtParallelAxisFilter::InitializeDataTupleInput(bool drawAxisLabels)
+avtParallelAxisFilter::InitializeDataTupleInput(
+    bool drawLabelsAndTitles, bool selectedVarsOnly)
 {
-    useVerticalText = (axisCount > PCP_MAX_HORIZONTAL_TITLE_AXES);
-
     double leftAxisX = PCP_LEFT_AXIS_X_FRACTION;
-    double axisSpacing = (PCP_RIGHT_AXIS_X_FRACTION - PCP_LEFT_AXIS_X_FRACTION) /
-                         (double)(axisCount-1);
+    double plotWidth = PCP_RIGHT_AXIS_X_FRACTION - PCP_LEFT_AXIS_X_FRACTION;
     double tickSpacing;
 
     if (useVerticalText)
     {
         bottomAxisY = PCP_V_BOTTOM_AXIS_Y_FRACTION;
         topAxisY    = PCP_V_TOP_AXIS_Y_FRACTION;
-
-        tickSpacing = (PCP_V_TOP_AXIS_Y_FRACTION - PCP_V_BOTTOM_AXIS_Y_FRACTION) /
-                      (double)PCP_DEFAULT_TICK_MARK_INTERVALS;
     }
     else
     {
         bottomAxisY = PCP_H_BOTTOM_AXIS_Y_FRACTION;
         topAxisY    = PCP_H_TOP_AXIS_Y_FRACTION;
-
-        tickSpacing = (PCP_H_TOP_AXIS_Y_FRACTION - PCP_H_BOTTOM_AXIS_Y_FRACTION) /
-                      (double)PCP_DEFAULT_TICK_MARK_INTERVALS;
     }
-
+    
+    if (!drawLabelsAndTitles)
+    {
+        bottomAxisY += EA_TOOL_BUTTON_MARGIN_FRACTION;
+        topAxisY    -= EA_TOOL_MARK_MARGIN_FRACTION;
+    }
+    
     double axisHeight = topAxisY - bottomAxisY;
+
+    tickSpacing = axisHeight / (double)PCP_DEFAULT_TICK_MARK_INTERVALS;
 
     if (useVerticalText)
     {
@@ -957,6 +1213,16 @@ avtParallelAxisFilter::InitializeDataTupleInput(bool drawAxisLabels)
         titleCharHeight = PCP_H_TITLE_CHAR_HEIGHT_FRACTION;
     }
 
+    if (!drawLabelsAndTitles)
+    {
+        axisTitleY   += EA_TOOL_BUTTON_MARGIN_FRACTION;
+        bottomLabelY += EA_TOOL_BUTTON_MARGIN_FRACTION;
+        bottomBoundY += EA_TOOL_BUTTON_MARGIN_FRACTION;
+
+        topLabelY -= EA_TOOL_MARK_MARGIN_FRACTION;
+        topBoundY -= EA_TOOL_MARK_MARGIN_FRACTION;
+    }
+    
     labelCharWidth  = PCP_LABEL_CHAR_WIDTH_FRACTION;
     labelCharHeight = PCP_LABEL_CHAR_HEIGHT_FRACTION;
     boundCharWidth  = PCP_BOUND_CHAR_WIDTH_FRACTION;
@@ -980,7 +1246,7 @@ avtParallelAxisFilter::InitializeDataTupleInput(bool drawAxisLabels)
 
         axisScale = axisHeight / (plotAxisMaxima[axisNum] - plotAxisMinima[axisNum]);
 
-        dataTransform->push_back((double)axisNum*axisSpacing + leftAxisX);
+        dataTransform->push_back(plotAxisXPositions[axisNum]*plotWidth + leftAxisX);
         dataTransform->push_back(axisScale);
         dataTransform->push_back(bottomAxisY - axisScale*plotAxisMinima[axisNum]);
 
@@ -1029,6 +1295,12 @@ avtParallelAxisFilter::InitializeDataTupleInput(bool drawAxisLabels)
 
     for (axisNum = 0; axisNum < axisCount; axisNum++)
     {
+        if (selectedVarsOnly)
+        {
+            if (axisNum <  leftSelectedAxisID) continue;
+            if (axisNum > rightSelectedAxisID) continue;
+        }
+
         axisSpan = plotAxisMaxima[axisNum] - plotAxisMinima[axisNum];
 
         axisMinSpan = subrangeMinima[axisNum] - plotAxisMinima[axisNum];
@@ -1036,7 +1308,7 @@ avtParallelAxisFilter::InitializeDataTupleInput(bool drawAxisLabels)
 
         if ((axisMinSpan/axisSpan > 0.0001) || (axisMaxSpan/axisSpan > 0.0001))
         {
-            applySubranges[axisNum] = !drawAxisLabels;
+            applySubranges[axisNum] = !drawLabelsAndTitles;
         }
     }
     
@@ -1147,41 +1419,43 @@ avtParallelAxisFilter::InitializeOutputDataSets()
 //
 // Modifications:
 //
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Now supports all variable axis spacing and axis group conventions.
+//
 // *****************************************************************************
 
 void
 avtParallelAxisFilter::InputDataTuple(const floatVector &inputTuple)
 {
-    int axisNum;
-    double inputCoord;
+    int axisID;
+    double plotAxisMin, plotAxisMax, inputCoord;
     doubleVector dTrans;
 
     float outputCoords[3];
     outputCoords[2] = 0.0;
 
-    for (axisNum = 0; axisNum < axisCount; axisNum++)
+    for (axisID = 0; axisID < axisCount; axisID++)
     {
-        if (applySubranges[axisNum])
+        if (applySubranges[axisID])
         {
-            if (inputTuple[axisNum] < subrangeMinima[axisNum]) break;
-            if (inputTuple[axisNum] > subrangeMaxima[axisNum]) break;
+            if (inputTuple[axisID] < subrangeMinima[axisID]) break;
+            if (inputTuple[axisID] > subrangeMaxima[axisID]) break;
         }
     }
     
-    if (axisNum < axisCount) return;
+    if (axisID < axisCount) return;
 
-    for (axisNum = 0; axisNum < axisCount; axisNum++)
+    for (axisID = leftPlotAxisID; axisID <= rightPlotAxisID; axisID++)
     {
-        if ((inputCoord = (double)inputTuple[axisNum]) < plotAxisMinima[axisNum])
-        {
-            inputCoord = plotAxisMinima[axisNum];
-        }
-        else if (inputCoord > plotAxisMaxima[axisNum])
-        {
-            inputCoord = plotAxisMaxima[axisNum];
-        }
+        plotAxisMin = plotAxisMinima[axisID];
+        plotAxisMax = plotAxisMaxima[axisID];
 
-        dTrans = dataTransforms[axisNum];
+        if ((inputCoord = (double)inputTuple[axisID]) < plotAxisMin)
+            inputCoord = plotAxisMin;
+        else if (inputCoord > plotAxisMax)
+            inputCoord = plotAxisMax;
+
+        dTrans = dataTransforms[axisID];
 
         outputCoords[0] = (float)dTrans[0];
         outputCoords[1] = (float)(dTrans[1]*inputCoord + dTrans[2]);
@@ -1214,12 +1488,13 @@ avtParallelAxisFilter::DrawDataCurves()
 {
     vtkIdType vtkPointIDs[2];
 
-    vtkIdType segmentCount = (vtkIdType)(axisCount - 1);
+    vtkIdType segmentCount = (vtkIdType)(rightPlotAxisID - leftPlotAxisID);
+    int plotAxisCount = (int)segmentCount + 1;
     vtkIdType firstVTKPointID, segmentNum;
 
     for (int curveNum = 0; curveNum < outputCurveCount; curveNum++)
     {
-        firstVTKPointID = (vtkIdType)(curveNum * axisCount);
+        firstVTKPointID = (vtkIdType)(curveNum * plotAxisCount);
 
         for (segmentNum = 0; segmentNum < segmentCount; segmentNum++)
         {
@@ -1259,9 +1534,9 @@ avtParallelAxisFilter::DrawCoordinateAxes()
     float outputCoords[3];
     outputCoords[2] = 0.0;
 
-    for (int axisNum = 0; axisNum < axisCount; axisNum++)
+    for (int axisID = leftPlotAxisID; axisID <= rightPlotAxisID; axisID++)
     {
-        axisX = dataTransforms[axisNum][0];
+        axisX = dataTransforms[axisID][0];
 
         outputCoords[0] = (float)axisX;
         outputCoords[1] = (float)bottomAxisY;
@@ -1283,7 +1558,7 @@ avtParallelAxisFilter::DrawCoordinateAxes()
 
     vtkIdType vtkPointIDs[2];
 
-    int segmentCount = axisCount * tickMarkIntervals;
+    int segmentCount = (rightPlotAxisID - leftPlotAxisID + 1) * tickMarkIntervals;
 
     for (int segmentNum = 0; segmentNum < segmentCount; segmentNum++)
     {
@@ -1312,12 +1587,17 @@ avtParallelAxisFilter::DrawCoordinateAxes()
 //
 // Modifications:
 //
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Now draws bound labels for an axis only if its labels are flagged visible.
+//
 // *****************************************************************************
 
 void
 avtParallelAxisFilter::DrawCoordinateAxisLabels()
 {
     if (textPlotter == NULL) textPlotter = new PortableFont;
+    
+    intVector axisInfoFlagSets = parAxisAtts.GetAxisInfoFlagSets();
 
     bool drawIt, centerIt;
     int labelLen;
@@ -1326,11 +1606,13 @@ avtParallelAxisFilter::DrawCoordinateAxisLabels()
     std::vector<floatVector> *strokeList = new std::vector<floatVector>;
     char axisLabel[81];
 
-    for (int axisNum = 0; axisNum < axisCount; axisNum++)
+    for (int axisID = leftPlotAxisID; axisID <= rightPlotAxisID; axisID++)
     {
-        minOrMax = plotAxisMinima[axisNum];
-        labelY = (moveTitles[axisNum]) ? movedAxisTitleY : bottomLabelY;
-        drawIt = drawBottomLabels[axisNum];
+        if ((axisInfoFlagSets[axisID] & EA_AXIS_INFO_SHOWN_FLAG) == 0) continue;
+
+        minOrMax = plotAxisMinima[axisID];
+        labelY = (moveTitles[axisID]) ? movedAxisTitleY : bottomLabelY;
+        drawIt = drawBottomLabels[axisID];
 
         for (int labelNum = 0; labelNum < 2; labelNum++)
         {
@@ -1339,7 +1621,7 @@ avtParallelAxisFilter::DrawCoordinateAxisLabels()
                 textPlotter->DoubleNumericalString(axisLabel, minOrMax);
                 labelLen = strlen(axisLabel);
 
-                axisX = dataTransforms[axisNum][0];
+                axisX = dataTransforms[axisID][0];
 
                 if (useVerticalText)
                 {
@@ -1351,7 +1633,7 @@ avtParallelAxisFilter::DrawCoordinateAxisLabels()
                     else
                     {
                         orientation = PortableFont::Upward;
-                        xOffset = (drawBottomBounds[axisNum]) ?
+                        xOffset = (drawBottomBounds[axisID]) ?
                         topLabelXOff2 : topLabelXOff1;
                     }
 
@@ -1365,7 +1647,7 @@ avtParallelAxisFilter::DrawCoordinateAxisLabels()
                     labelX = axisX;
                     centerIt = true;
 
-                    if (axisNum == 0)
+                    if (axisID == leftPlotAxisID)
                     {
                         if (labelLen > 2)
                         {
@@ -1373,7 +1655,7 @@ avtParallelAxisFilter::DrawCoordinateAxisLabels()
                             centerIt = false;
                         }
                     }
-                    else if (axisNum == axisCount-1)
+                    else if (axisID == rightPlotAxisID)
                     {
                         if (labelLen > 2)
                         {
@@ -1388,8 +1670,8 @@ avtParallelAxisFilter::DrawCoordinateAxisLabels()
                 labelX, labelY, labelCharWidth, labelCharHeight, 4, axisLabel);
             }
 
-            minOrMax = plotAxisMaxima[axisNum];
-            labelY = (moveTopLabels[axisNum]) ? movedTopLabelY : topLabelY;
+            minOrMax = plotAxisMaxima[axisID];
+            labelY = (moveTopLabels[axisID]) ? movedTopLabelY : topLabelY;
             drawIt = true;
         }
     }
@@ -1414,7 +1696,8 @@ avtParallelAxisFilter::DrawCoordinateAxisLabels()
     }
 
     vtkIdType vtkPointIDs[2];
-    int axisVertexID = axisCount * tickMarkIntervals * 2;
+    int axisVertexID =
+        (rightPlotAxisID - leftPlotAxisID + 1) * tickMarkIntervals * 2;
 
     for (strokeNum = 0; strokeNum < strokeList->size(); strokeNum++)
     {
@@ -1447,6 +1730,9 @@ avtParallelAxisFilter::DrawCoordinateAxisLabels()
 //
 // Modifications:
 //
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Now draws title of an axis only if its title is flagged visible.
+//
 // *****************************************************************************
 
 void
@@ -1454,6 +1740,8 @@ avtParallelAxisFilter::DrawCoordinateAxisTitles()
 {
     if (textPlotter == NULL) textPlotter = new PortableFont;
     
+    intVector axisInfoFlagSets = parAxisAtts.GetAxisInfoFlagSets();
+
     bool centerIt;
     int thickness;
     double axisX, titleX, titleY;
@@ -1474,26 +1762,28 @@ avtParallelAxisFilter::DrawCoordinateAxisTitles()
         titleY = axisTitleY;
     }
 
-    for (int axisNum = 0; axisNum < axisCount; axisNum++)
+    for (int axisID = leftPlotAxisID; axisID <= rightPlotAxisID; axisID++)
     {
-        axisX = dataTransforms[axisNum][0];
+        if ((axisInfoFlagSets[axisID] & EA_AXIS_INFO_SHOWN_FLAG) == 0) continue;
+
+        axisX = dataTransforms[axisID][0];
 
         if (useVerticalText)
         {
-            titleY = (moveTitles[axisNum]) ? movedAxisTitleY : axisTitleY;
+            titleY = (moveTitles[axisID]) ? movedAxisTitleY : axisTitleY;
             titleX = axisX + axisTitleXOff;
         }
         else
         {
-            if (axisNum == 0)
+            if (axisID == leftPlotAxisID)
             {
                 titleX = axisX - titleCharWidth;
                 centerIt = false;
             }
-            else if (axisNum == axisCount-1)
+            else if (axisID == rightPlotAxisID)
             {
                 titleX = axisX -
-                    (double)(plotAxisTitles[axisNum].length()-1)*titleCharWidth*1.5;
+                    (double)(plotAxisTitles[axisID].length()-1)*titleCharWidth*1.5;
                 centerIt = false;
             }
             else
@@ -1503,7 +1793,7 @@ avtParallelAxisFilter::DrawCoordinateAxisTitles()
             }
         }
 
-        strcpy (axisTitle, plotAxisTitles[axisNum].c_str());
+        strcpy (axisTitle, plotAxisTitles[axisID].c_str());
 
         textPlotter->StrokeText(strokeList, orientation, centerIt,
         titleX, titleY, titleCharWidth, titleCharHeight, thickness, axisTitle);
@@ -1570,8 +1860,8 @@ avtParallelAxisFilter::DrawDataSubrangeBounds()
     if (textPlotter == NULL) textPlotter = new PortableFont;
 
     bool drawIt, centerIt;
-    int axisNum, boundNum, boundLabelLen;
-    double subrangeMinY, subrangeMaxY, halfSegmentLen, verticalOffset;
+    int boundNum, boundLabelLen;
+    double subrangeMinY, subrangeMaxY;
     double minOrMax, axisX, xOffset, boundX, boundY;
     PortableFont::PF_ORIENTATION orientation;
     doubleVector dTrans;
@@ -1582,19 +1872,19 @@ avtParallelAxisFilter::DrawDataSubrangeBounds()
     outputCoords[2] = 0.0;
 
 
-    for (int axisNum = 0; axisNum < axisCount; axisNum++)
+    for (int axisID = leftPlotAxisID; axisID <= rightPlotAxisID; axisID++)
     {
-        if (!applySubranges[axisNum]) continue;
+        if (!applySubranges[axisID]) continue;
 
-        dTrans = dataTransforms[axisNum];
+        dTrans = dataTransforms[axisID];
 
         axisX = dTrans[0];
-        subrangeMinY = dTrans[1]*subrangeMinima[axisNum] + dTrans[2];
-        subrangeMaxY = dTrans[1]*subrangeMaxima[axisNum] + dTrans[2];
+        subrangeMinY = dTrans[1]*subrangeMinima[axisID] + dTrans[2];
+        subrangeMaxY = dTrans[1]*subrangeMaxima[axisID] + dTrans[2];
 
-        minOrMax = subrangeMinima[axisNum];
-        boundY = (moveTitles[axisNum]) ? movedAxisTitleY : bottomBoundY;
-        drawIt = drawBottomBounds[axisNum];
+        minOrMax = subrangeMinima[axisID];
+        boundY = (moveTitles[axisID]) ? movedAxisTitleY : bottomBoundY;
+        drawIt = drawBottomBounds[axisID];
 
         for (boundNum = 0; boundNum < 2; boundNum++)
         {
@@ -1626,7 +1916,7 @@ avtParallelAxisFilter::DrawDataSubrangeBounds()
                     boundX = axisX;
                     centerIt = true;
 
-                    if (axisNum == 0)
+                    if (axisID == leftPlotAxisID)
                     {
                         if (boundLabelLen > 2)
                         {
@@ -1634,7 +1924,7 @@ avtParallelAxisFilter::DrawDataSubrangeBounds()
                             centerIt = false;
                         }
                     }
-                    else if (axisNum == axisCount-1)
+                    else if (axisID == rightPlotAxisID)
                     {
                         if (boundLabelLen > 2)
                         {
@@ -1649,9 +1939,9 @@ avtParallelAxisFilter::DrawDataSubrangeBounds()
                 boundX, boundY, boundCharWidth, boundCharHeight, 4, boundLabel);
             }
 
-            minOrMax = subrangeMaxima[axisNum];
-            boundY = (moveTopLabels[axisNum]) ? movedTopLabelY : topBoundY;
-            drawIt = drawTopBounds[axisNum];
+            minOrMax = subrangeMaxima[axisID];
+            boundY = (moveTopLabels[axisID]) ? movedTopLabelY : topBoundY;
+            drawIt = drawTopBounds[axisID];
         }
     }
 

@@ -54,7 +54,10 @@
 //     Added methods to support slider change time ordinal lists.
 //   
 //     Mark Blair, Thu Nov  2 12:33:23 PST 2006
-//     Added methods to support selective axis labeling in associated plot.
+//     Added methods to support selective axis information in associated plot.
+//
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Now supports all variable axis spacing and axis group conventions.
 //
 // ****************************************************************************
 
@@ -120,10 +123,10 @@ void avtExtentsToolInterface::SetMaxTimeOrdinals(const intVector &maxTimeOrdinal
 }
 
 
-void avtExtentsToolInterface::SetToolDrawsAxisLabels(bool toolDrawsAxisLabels_)
+void avtExtentsToolInterface::SetPlotToolModeFlags(int plotToolModeFlags_)
 {
     ExtentsAttributes *extAtts = (ExtentsAttributes *)atts;
-    extAtts->SetToolDrawsAxisLabels(toolDrawsAxisLabels_);
+    extAtts->SetPlotToolModeFlags(plotToolModeFlags_);
 }
 
 
@@ -134,17 +137,17 @@ void avtExtentsToolInterface::SetAxisGroupNames(const stringVector &axisGroupNam
 }
 
 
-void avtExtentsToolInterface::SetAxisLabelStates(const intVector &axisLabelStates_)
+void avtExtentsToolInterface::SetAxisInfoFlagSets(const intVector &axisInfoFlagSets_)
 {
     ExtentsAttributes *extAtts = (ExtentsAttributes *)atts;
-    extAtts->SetAxisLabelStates(axisLabelStates_);
+    extAtts->SetAxisInfoFlagSets(axisInfoFlagSets_);
 }
 
 
-void avtExtentsToolInterface::SetAxisXIntervals(const doubleVector &axisXIntervals_)
+void avtExtentsToolInterface::SetAxisXPositions(const doubleVector &axisXPositions_)
 {
     ExtentsAttributes *extAtts = (ExtentsAttributes *)atts;
-    extAtts->SetAxisXIntervals(axisXIntervals_);
+    extAtts->SetAxisXPositions(axisXPositions_);
 }
 
 
@@ -225,10 +228,10 @@ const intVector &avtExtentsToolInterface::GetMaxTimeOrdinals() const
 }
 
 
-bool avtExtentsToolInterface::GetToolDrawsAxisLabels() const
+int avtExtentsToolInterface::GetPlotToolModeFlags() const
 {
     ExtentsAttributes *extAtts = (ExtentsAttributes *)atts;
-    return extAtts->GetToolDrawsAxisLabels();
+    return extAtts->GetPlotToolModeFlags();
 }
 
 
@@ -239,17 +242,17 @@ const stringVector &avtExtentsToolInterface::GetAxisGroupNames() const
 }
 
 
-const intVector &avtExtentsToolInterface::GetAxisLabelStates() const
+const intVector &avtExtentsToolInterface::GetAxisInfoFlagSets() const
 {
     ExtentsAttributes *extAtts = (ExtentsAttributes *)atts;
-    return extAtts->GetAxisLabelStates();
+    return extAtts->GetAxisInfoFlagSets();
 }
 
 
-const doubleVector &avtExtentsToolInterface::GetAxisXIntervals() const
+const doubleVector &avtExtentsToolInterface::GetAxisXPositions() const
 {
     ExtentsAttributes *extAtts = (ExtentsAttributes *)atts;
-    return extAtts->GetAxisXIntervals();
+    return extAtts->GetAxisXPositions();
 }
 
 

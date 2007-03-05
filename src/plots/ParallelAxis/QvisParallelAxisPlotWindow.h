@@ -115,7 +115,7 @@ private:
     QvisVariableButton          *deleteAxis;
     QvisVariableButton          *leftAxis;
 
-    int                          latestGUIShownPos;
+    int                          latestGUIShownOrd;
 };
 
 

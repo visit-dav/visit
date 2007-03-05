@@ -55,29 +55,48 @@
 //     Added slider change time ordinal lists.
 //   
 //     Mark Blair, Thu Nov  2 12:33:23 PST 2006
-//     Added attributes to support selective axis labeling in associated plot.
+//     Added attributes to support selective axis information in associated plot.
+//
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Added attributes to support  all variable axis spacing and axis group
+//     conventions.
 //
 // ****************************************************************************
 
-ExtentsAttributes::ExtentsAttributes() : AttributeSubject("s*d*d*d*d*i*i*bs*i*d*dddd")
+ExtentsAttributes::ExtentsAttributes() : AttributeSubject("s*d*d*d*d*i*i*is*i*d*dddd")
 {
+    int allAxesInfoFlags = EA_THRESHOLD_BY_EXTENT_FLAG |
+                           EA_SHOW_ALL_AXIS_INFO_FLAGS | EA_AXIS_INFO_SHOWN_FLAG;
+    int axisInfoFlags, extentNum;
+    
     scalarNames.clear();
     scalarMinima.clear(); scalarMaxima.clear();
     minima.clear(); maxima.clear();
     minTimeOrdinals.clear(); maxTimeOrdinals.clear();
-
-    for (int extentNum = 0; extentNum < EA_DEFAULT_NUMBER_OF_EXTENTS; extentNum++)
+    axisGroupNames.clear();
+    axisInfoFlagSets.clear();
+    axisXPositions.clear();
+    
+    for (extentNum = 0; extentNum < EA_DEFAULT_NUMBER_OF_EXTENTS; extentNum++)
     {
+        axisInfoFlags = allAxesInfoFlags;
+        
+        if (extentNum == 0)
+            axisInfoFlags |= EA_LEFT_SHOWN_AXIS_FLAG | EA_LEFT_SELECTED_AXIS_FLAG;
+        else if (extentNum == EA_DEFAULT_NUMBER_OF_EXTENTS-1)
+            axisInfoFlags |= EA_RIGHT_SHOWN_AXIS_FLAG | EA_RIGHT_SELECTED_AXIS_FLAG;
+
         scalarNames.push_back("default");
         scalarMinima.push_back(-1e+37); scalarMaxima.push_back(1e+37);
         minima.push_back(0.0); maxima.push_back(1.0);
         minTimeOrdinals.push_back(0); maxTimeOrdinals.push_back(0);
         axisGroupNames.push_back(std::string("(not_in_a_group)"));
-        axisLabelStates.push_back(EA_DRAW_ALL_LABELS | EA_LABELS_NOW_VISIBLE);
-        axisXIntervals.push_back(-1.0);
+        axisInfoFlagSets.push_back(axisInfoFlags);
+        axisXPositions.push_back(
+            (double)extentNum / (double)(EA_DEFAULT_NUMBER_OF_EXTENTS-1));
     }
 
-    toolDrawsAxisLabels = false;
+    plotToolModeFlags = EA_AXIS_INFO_AUTO_LAYOUT_FLAG;
 
     leftSliderX    = EA_DEFAULT_LEFT_SLIDER_X;
     rightSliderX   = EA_DEFAULT_RIGHT_SLIDER_X;
@@ -100,12 +119,16 @@ ExtentsAttributes::ExtentsAttributes() : AttributeSubject("s*d*d*d*d*i*i*bs*i*d*
 //     Added slider change time ordinal lists.
 //   
 //     Mark Blair, Thu Nov  2 12:33:23 PST 2006
-//     Added attributes to support selective axis labeling in associated plot.
+//     Added attributes to support selective axis information in associated plot.
+//
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Added attributes to support  all variable axis spacing and axis group
+//     conventions.
 //
 // ****************************************************************************
 
 ExtentsAttributes::ExtentsAttributes(const ExtentsAttributes &obj) :
-    AttributeSubject("s*d*d*d*d*i*i*bs*i*d*dddd")
+    AttributeSubject("s*d*d*d*d*i*i*is*i*d*dddd")
 {
     scalarNames = obj.scalarNames;
 
@@ -118,11 +141,11 @@ ExtentsAttributes::ExtentsAttributes(const ExtentsAttributes &obj) :
     minTimeOrdinals = obj.minTimeOrdinals;
     maxTimeOrdinals = obj.maxTimeOrdinals;
     
-    toolDrawsAxisLabels = obj.toolDrawsAxisLabels;
+    plotToolModeFlags = obj.plotToolModeFlags;
     
-    axisGroupNames  = obj.axisGroupNames;
-    axisLabelStates = obj.axisLabelStates;
-    axisXIntervals  = obj.axisXIntervals;
+    axisGroupNames   = obj.axisGroupNames;
+    axisInfoFlagSets = obj.axisInfoFlagSets;
+    axisXPositions   = obj.axisXPositions;
 
     leftSliderX    = obj.leftSliderX;
     rightSliderX   = obj.rightSliderX;
@@ -165,7 +188,10 @@ ExtentsAttributes::~ExtentsAttributes()
 //     Added slider change time ordinal lists.
 //   
 //     Mark Blair, Thu Nov  2 12:33:23 PST 2006
-//     Added support for selective axis labeling in associated plot.
+//     Added support for selective axis information in associated plot.
+//
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Now supports all variable axis spacing and axis group conventions.
 //
 // ****************************************************************************
 
@@ -182,11 +208,11 @@ void ExtentsAttributes::operator = (const ExtentsAttributes &obj)
     minTimeOrdinals = obj.minTimeOrdinals;
     maxTimeOrdinals = obj.maxTimeOrdinals;
 
-    toolDrawsAxisLabels = obj.toolDrawsAxisLabels;
+    plotToolModeFlags = obj.plotToolModeFlags;
     
-    axisGroupNames  = obj.axisGroupNames;
-    axisLabelStates = obj.axisLabelStates;
-    axisXIntervals  = obj.axisXIntervals;
+    axisGroupNames   = obj.axisGroupNames;
+    axisInfoFlagSets = obj.axisInfoFlagSets;
+    axisXPositions   = obj.axisXPositions;
 
     leftSliderX    = obj.leftSliderX;
     rightSliderX   = obj.rightSliderX;
@@ -211,27 +237,30 @@ void ExtentsAttributes::operator = (const ExtentsAttributes &obj)
 //     Added slider change time ordinal lists.
 //   
 //     Mark Blair, Thu Nov  2 12:33:23 PST 2006
-//     Added support for selective axis labeling in associated plot.
+//     Added support for selective axis information in associated plot.
+//
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Now supports all variable axis spacing and axis group conventions.
 //
 // ****************************************************************************
 
 bool ExtentsAttributes::operator == (const ExtentsAttributes &obj) const
 {
-    return ((scalarNames         == obj.scalarNames) &&
-            (scalarMinima        == obj.scalarMinima) &&
-            (scalarMaxima        == obj.scalarMaxima) &&
-            (minima              == obj.minima) &&
-            (maxima              == obj.maxima) &&
-            (minTimeOrdinals     == obj.minTimeOrdinals) &&
-            (maxTimeOrdinals     == obj.maxTimeOrdinals) &&
-            (toolDrawsAxisLabels == obj.toolDrawsAxisLabels) &&
-            (axisGroupNames      == obj.axisGroupNames) &&
-            (axisLabelStates     == obj.axisLabelStates) &&
-            (axisXIntervals      == obj.axisXIntervals) &&
-            (leftSliderX         == obj.leftSliderX) &&
-            (rightSliderX        == obj.rightSliderX) &&
-            (slidersBottomY      == obj.slidersBottomY) &&
-            (slidersTopY         == obj.slidersTopY));
+    return ((scalarNames       == obj.scalarNames) &&
+            (scalarMinima      == obj.scalarMinima) &&
+            (scalarMaxima      == obj.scalarMaxima) &&
+            (minima            == obj.minima) &&
+            (maxima            == obj.maxima) &&
+            (minTimeOrdinals   == obj.minTimeOrdinals) &&
+            (maxTimeOrdinals   == obj.maxTimeOrdinals) &&
+            (plotToolModeFlags == obj.plotToolModeFlags) &&
+            (axisGroupNames    == obj.axisGroupNames) &&
+            (axisInfoFlagSets  == obj.axisInfoFlagSets) &&
+            (axisXPositions    == obj.axisXPositions) &&
+            (leftSliderX       == obj.leftSliderX) &&
+            (rightSliderX      == obj.rightSliderX) &&
+            (slidersBottomY    == obj.slidersBottomY) &&
+            (slidersTopY       == obj.slidersTopY));
 }
 
 
@@ -358,7 +387,10 @@ AttributeSubject *ExtentsAttributes::NewInstance(bool copy) const
 //     Added slider change time ordinal lists.
 //   
 //     Mark Blair, Thu Nov  2 12:33:23 PST 2006
-//     Added support for selective axis labeling in associated plot.
+//     Added support for selective axis information in associated plot.
+//
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Now supports all variable axis spacing and axis group conventions.
 //
 // ****************************************************************************
 
@@ -371,10 +403,10 @@ void ExtentsAttributes::SelectAll()
     Select( 4, (void *)&maxima);
     Select( 5, (void *)&minTimeOrdinals);
     Select( 6, (void *)&maxTimeOrdinals);
-    Select( 7, (void *)&toolDrawsAxisLabels);
+    Select( 7, (void *)&plotToolModeFlags);
     Select( 8, (void *)&axisGroupNames);
-    Select( 9, (void *)&axisLabelStates);
-    Select(10, (void *)&axisXIntervals);
+    Select( 9, (void *)&axisInfoFlagSets);
+    Select(10, (void *)&axisXPositions);
     Select(11, (void *)&leftSliderX);
     Select(12, (void *)&rightSliderX);
     Select(13, (void *)&slidersBottomY);
@@ -402,7 +434,10 @@ void ExtentsAttributes::SelectAll()
 //     Added slider change time ordinal lists.
 //   
 //     Mark Blair, Thu Nov  2 12:33:23 PST 2006
-//     Added support for selective axis labeling in associated plot.
+//     Added support for selective axis information in associated plot.
+//
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Now supports all variable axis spacing and axis group conventions.
 //
 // ****************************************************************************
 
@@ -463,7 +498,7 @@ bool ExtentsAttributes::CreateNode(
     if (completeSave || !FieldsEqual(7, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("toolDrawsAxisLabels", toolDrawsAxisLabels));
+        node->AddNode(new DataNode("plotToolModeFlags", plotToolModeFlags));
     }
 
     if (completeSave || !FieldsEqual(8, &defaultObject))
@@ -475,13 +510,13 @@ bool ExtentsAttributes::CreateNode(
     if (completeSave || !FieldsEqual(9, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("axisLabelStates", axisLabelStates));
+        node->AddNode(new DataNode("axisInfoFlagSets", axisInfoFlagSets));
     }
 
     if (completeSave || !FieldsEqual(10, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("axisXIntervals", axisXIntervals));
+        node->AddNode(new DataNode("axisXPositions", axisXPositions));
     }
 
     if (completeSave || !FieldsEqual(11, &defaultObject))
@@ -533,7 +568,10 @@ bool ExtentsAttributes::CreateNode(
 //     Added slider change time ordinal lists.
 //   
 //     Mark Blair, Thu Nov  2 12:33:23 PST 2006
-//     Added support for selective axis labeling in associated plot.
+//     Added support for selective axis information in associated plot.
+//
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Now supports all variable axis spacing and axis group conventions.
 //
 // ****************************************************************************
 
@@ -567,17 +605,17 @@ void ExtentsAttributes::SetFromNode(DataNode *parentNode)
     if ((node = searchNode->GetNode("maxTimeOrdinals")) != NULL)
         SetMaxTimeOrdinals(node->AsIntVector());
 
-    if ((node = searchNode->GetNode("toolDrawsAxisLabels")) != NULL)
-        SetToolDrawsAxisLabels(node->AsBool());
+    if ((node = searchNode->GetNode("plotToolModeFlags")) != NULL)
+        SetPlotToolModeFlags(node->AsInt());
 
     if ((node = searchNode->GetNode("axisGroupNames")) != NULL)
         SetAxisGroupNames(node->AsStringVector());
 
-    if ((node = searchNode->GetNode("axisLabelStates")) != NULL)
-        SetAxisLabelStates(node->AsIntVector());
+    if ((node = searchNode->GetNode("axisInfoFlagSets")) != NULL)
+        SetAxisInfoFlagSets(node->AsIntVector());
 
-    if ((node = searchNode->GetNode("axisXIntervals")) != NULL)
-        SetAxisXIntervals(node->AsDoubleVector());
+    if ((node = searchNode->GetNode("axisXPositions")) != NULL)
+        SetAxisXPositions(node->AsDoubleVector());
 
     if ((node = searchNode->GetNode("leftSliderX")) != NULL)
         SetLeftSliderX(node->AsDouble());
@@ -647,10 +685,10 @@ void ExtentsAttributes::SetMaxTimeOrdinals(const intVector &maxTimeOrdinals_)
 }
 
 
-void ExtentsAttributes::SetToolDrawsAxisLabels(bool toolDrawsAxisLabels_)
+void ExtentsAttributes::SetPlotToolModeFlags(int plotToolModeFlags_)
 {
-    toolDrawsAxisLabels = toolDrawsAxisLabels_;
-    Select(7, (void *)&toolDrawsAxisLabels);
+    plotToolModeFlags = plotToolModeFlags_;
+    Select(7, (void *)&plotToolModeFlags);
 }
 
 
@@ -661,17 +699,17 @@ void ExtentsAttributes::SetAxisGroupNames(const stringVector &axisGroupNames_)
 }
 
 
-void ExtentsAttributes::SetAxisLabelStates(const intVector &axisLabelStates_)
+void ExtentsAttributes::SetAxisInfoFlagSets(const intVector &axisInfoFlagSets_)
 {
-    axisLabelStates = axisLabelStates_;
-    Select(9, (void *)&axisLabelStates);
+    axisInfoFlagSets = axisInfoFlagSets_;
+    Select(9, (void *)&axisInfoFlagSets);
 }
 
 
-void ExtentsAttributes::SetAxisXIntervals(const doubleVector &axisXIntervals_)
+void ExtentsAttributes::SetAxisXPositions(const doubleVector &axisXPositions_)
 {
-    axisXIntervals = axisXIntervals_;
-    Select(10, (void *)&axisXIntervals);
+    axisXPositions = axisXPositions_;
+    Select(10, (void *)&axisXPositions);
 }
 
 
@@ -750,9 +788,9 @@ const intVector &ExtentsAttributes::GetMaxTimeOrdinals() const
 }
 
 
-bool ExtentsAttributes::GetToolDrawsAxisLabels() const
+int ExtentsAttributes::GetPlotToolModeFlags() const
 {
-    return toolDrawsAxisLabels;
+    return plotToolModeFlags;
 }
 
 
@@ -762,15 +800,15 @@ const stringVector &ExtentsAttributes::GetAxisGroupNames() const
 }
 
 
-const intVector &ExtentsAttributes::GetAxisLabelStates() const
+const intVector &ExtentsAttributes::GetAxisInfoFlagSets() const
 {
-    return axisLabelStates;
+    return axisInfoFlagSets;
 }
 
 
-const doubleVector &ExtentsAttributes::GetAxisXIntervals() const
+const doubleVector &ExtentsAttributes::GetAxisXPositions() const
 {
-    return axisXIntervals;
+    return axisXPositions;
 }
 
 
@@ -851,9 +889,9 @@ void ExtentsAttributes::SelectMaxTimeOrdinals()
 }
 
 
-void ExtentsAttributes::SelectToolDrawsAxisLabels()
+void ExtentsAttributes::SelectPlotToolModeFlags()
 {
-    Select (7, (void *)&toolDrawsAxisLabels);
+    Select (7, (void *)&plotToolModeFlags);
 }
 
 
@@ -863,15 +901,15 @@ void ExtentsAttributes::SelectAxisGroupNames()
 }
 
 
-void ExtentsAttributes::SelectAxisLabelStates()
+void ExtentsAttributes::SelectAxisInfoFlagSets()
 {
-    Select (9, (void *)&axisLabelStates);
+    Select (9, (void *)&axisInfoFlagSets);
 }
 
 
-void ExtentsAttributes::SelectAxisXIntervals()
+void ExtentsAttributes::SelectAxisXPositions()
 {
-    Select (10, (void *)&axisXIntervals);
+    Select (10, (void *)&axisXPositions);
 }
 
 
@@ -918,7 +956,10 @@ void ExtentsAttributes::SelectSlidersTopY()
 //     Added slider change time ordinal lists.
 //   
 //     Mark Blair, Thu Nov  2 12:33:23 PST 2006
-//     Added support for selective axis labeling in associated plot.
+//     Added support for selective axis information in associated plot.
+//
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Now supports all variable axis spacing and axis group conventions.
 //
 // ****************************************************************************
 
@@ -932,10 +973,10 @@ std::string ExtentsAttributes::GetFieldName(int index) const
         case  4:  return "maxima";
         case  5:  return "minTimeOrdinals";
         case  6:  return "maxTimeOrdinals";
-        case  7:  return "toolDrawsAxisLabels";
+        case  7:  return "plotToolModeFlags";
         case  8:  return "axisGroupNames";
-        case  9:  return "axisLabelStates";
-        case 10:  return "axisXIntervals";
+        case  9:  return "axisInfoFlagSets";
+        case 10:  return "axisXPositions";
         case 11:  return "leftSliderX";
         case 12:  return "rightSliderX";
         case 13:  return "slidersBottomY";
@@ -959,7 +1000,10 @@ std::string ExtentsAttributes::GetFieldName(int index) const
 //     Added slider change time ordinal lists.
 //   
 //     Mark Blair, Thu Nov  2 12:33:23 PST 2006
-//     Added support for selective axis labeling in associated plot.
+//     Added support for selective axis information in associated plot.
+//
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Now supports all variable axis spacing and axis group conventions.
 //
 // ****************************************************************************
 
@@ -973,7 +1017,7 @@ AttributeGroup::FieldType ExtentsAttributes::GetFieldType(int index) const
         case  4:  return FieldType_doubleVector;
         case  5:  return FieldType_intVector;
         case  6:  return FieldType_intVector;
-        case  7:  return FieldType_bool;
+        case  7:  return FieldType_int;
         case  8:  return FieldType_stringVector;
         case  9:  return FieldType_intVector;
         case 10:  return FieldType_doubleVector;
@@ -1000,7 +1044,10 @@ AttributeGroup::FieldType ExtentsAttributes::GetFieldType(int index) const
 //     Added slider change time ordinal lists.
 //   
 //     Mark Blair, Thu Nov  2 12:33:23 PST 2006
-//     Added support for selective axis labeling in associated plot.
+//     Added support for selective axis information in associated plot.
+//
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Now supports all variable axis spacing and axis group conventions.
 //
 // ****************************************************************************
 
@@ -1014,7 +1061,7 @@ std::string ExtentsAttributes::GetFieldTypeName(int index) const
         case  4:  return "doubleVector";
         case  5:  return "intVector";
         case  6:  return "intVector";
-        case  7:  return "bool";
+        case  7:  return "int";
         case  8:  return "stringVector";
         case  9:  return "intVector";
         case 10:  return "doubleVector";
@@ -1041,7 +1088,10 @@ std::string ExtentsAttributes::GetFieldTypeName(int index) const
 //     Added slider change time ordinal lists.
 //   
 //     Mark Blair, Thu Nov  2 12:33:23 PST 2006
-//     Added support for selective axis labeling in associated plot.
+//     Added support for selective axis information in associated plot.
+//
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Now supports all variable axis spacing and axis group conventions.
 //
 // ****************************************************************************
 
@@ -1079,7 +1129,7 @@ bool ExtentsAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
             break;
 
         case 7:
-            if (obj.toolDrawsAxisLabels != toolDrawsAxisLabels) return false;
+            if (obj.plotToolModeFlags != plotToolModeFlags) return false;
             break;
 
         case 8:
@@ -1087,11 +1137,11 @@ bool ExtentsAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
             break;
 
         case 9:
-            if (obj.axisLabelStates != axisLabelStates) return false;
+            if (obj.axisInfoFlagSets != axisInfoFlagSets) return false;
             break;
 
         case 10:
-            if (obj.axisXIntervals != axisXIntervals) return false;
+            if (obj.axisXPositions != axisXPositions) return false;
             break;
 
         case 11:

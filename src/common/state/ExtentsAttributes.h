@@ -37,6 +37,7 @@
 
 #ifndef EXTENTSATTRIBUTES_H
 #define EXTENTSATTRIBUTES_H
+
 #include <state_exports.h>
 #include <AttributeSubject.h>
 
@@ -47,15 +48,45 @@
 #define EA_DEFAULT_SLIDERS_BOTTOM_Y      0.12
 #define EA_DEFAULT_SLIDERS_TOP_Y         0.88
 
-#define EA_DRAW_AXIS_TITLE               0x00000001
-#define EA_DRAW_AXIS_LIMITS              0x00000002
-#define EA_DRAW_EXTENTS_TOOL_LIMITS      0x00000004
-#define EA_DRAW_ALL_LABELS              (EA_DRAW_AXIS_TITLE          |         \
-                                         EA_DRAW_AXIS_LIMITS         |         \
-                                         EA_DRAW_EXTENTS_TOOL_LIMITS )
+#define EA_TOOL_BUTTON_MARGIN_FRACTION   0.08
+#define EA_TOOL_MARK_MARGIN_FRACTION     0.02
 
-#define EA_LABELS_NOW_VISIBLE            0x00010000
-#define EA_LABEL_VISIBILITY_SET_BY_USER  0x00020000
+#define EA_TOOL_DRAWS_AXIS_INFO_FLAG     0x00000001
+#define EA_SHOW_MARKED_AXES_ONLY_FLAG    0x00000002
+#define EA_SHOW_LIMITED_AXIS_INFO_FLAG   0x00000004
+#define EA_THRESHOLD_SELECTED_ONLY_FLAG  0x00000008
+
+#define EA_AXIS_INFO_AUTO_LAYOUT_FLAG    0x00000100
+#define EA_VERTICAL_TEXT_AXIS_INFO_FLAG  0x00000200
+#define EA_PLOT_AXES_WERE_MODIFIED_FLAG  0x00000400
+
+#define EA_LEFT_SHOWN_AXIS_FLAG          0x00000001
+#define EA_LEFT_SELECTED_AXIS_FLAG       0x00000002
+#define EA_RIGHT_SHOWN_AXIS_FLAG         0x00000100
+#define EA_RIGHT_SELECTED_AXIS_FLAG      0x00000200
+#define EA_SHOWN_AXIS_FLAGS             (EA_LEFT_SHOWN_AXIS_FLAG |             \
+                                         EA_RIGHT_SHOWN_AXIS_FLAG )
+#define EA_SELECTED_AXIS_FLAGS          (EA_LEFT_SELECTED_AXIS_FLAG |          \
+                                         EA_RIGHT_SELECTED_AXIS_FLAG )
+#define EA_AXIS_SEQUENCE_FLAGS          (EA_SHOWN_AXIS_FLAGS |                 \
+                                         EA_SELECTED_AXIS_FLAGS )
+
+#define EA_SHOW_AXIS_TITLE_ONLY_FLAG     0x00010000
+#define EA_SHOW_AXIS_LIMITS_ONLY_FLAG    0x00020000
+#define EA_SHOW_SLIDER_LIMITS_ONLY_FLAG  0x00040000
+#define EA_SHOW_AXIS_SLIDERS_ONLY_FLAG   0x00080000
+#define EA_SHOW_ALL_AXIS_INFO_FLAGS     (EA_SHOW_AXIS_TITLE_ONLY_FLAG |        \
+                                         EA_SHOW_AXIS_LIMITS_ONLY_FLAG |       \
+                                         EA_SHOW_SLIDER_LIMITS_ONLY_FLAG |     \
+                                         EA_SHOW_AXIS_SLIDERS_ONLY_FLAG )
+                                         
+#define EA_AXIS_INFO_SHOWN_FLAG          0x01000000
+#define EA_THRESHOLD_BY_EXTENT_FLAG      0x02000000
+
+#define EA_PREFERRED_VIEWPORT_LEFT_X     0.02
+#define EA_PREFERRED_VIEWPORT_RIGHT_X    0.98
+#define EA_PREFERRED_VIEWPORT_BOTTOM_Y   0.06
+#define EA_PREFERRED_VIEWPORT_TOP_Y      0.98
 
 // ****************************************************************************
 // Class: ExtentsAttributes
@@ -71,7 +102,10 @@
 //     Added methods and members related to slider change time ordinals.
 //
 //     Mark Blair, Thu Nov  2 12:33:23 PST 2006
-//     Added methods and members for selective axis labeling in associated plot.
+//     Added methods and members for selective axis info in associated plot.
+//
+//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//     Now supports all variable axis spacing and axis group conventions.
 //
 // ****************************************************************************
 
@@ -99,10 +133,10 @@ public:
     void SetMaxima(const doubleVector &maxima_);
     void SetMinTimeOrdinals(const intVector &minTimeOrdinals_);
     void SetMaxTimeOrdinals(const intVector &maxTimeOrdinals_);
-    void SetToolDrawsAxisLabels(bool toolDrawsAxisLabels_);
+    void SetPlotToolModeFlags(int plotToolModeFlags_);
     void SetAxisGroupNames(const stringVector &axisGroupNames_);
-    void SetAxisLabelStates(const intVector &axisLabelStates_);
-    void SetAxisXIntervals(const doubleVector &axisXIntervals_);
+    void SetAxisInfoFlagSets(const intVector &axisInfoFlagSets_);
+    void SetAxisXPositions(const doubleVector &axisXPositions_);
     void SetLeftSliderX(double leftSliderX_);
     void SetRightSliderX(double rightSliderX_);
     void SetSlidersBottomY(double slidersBottomY_);
@@ -116,10 +150,10 @@ public:
     const doubleVector &GetMaxima() const;
     const intVector    &GetMinTimeOrdinals() const;
     const intVector    &GetMaxTimeOrdinals() const;
-    bool                GetToolDrawsAxisLabels() const;
+    int                 GetPlotToolModeFlags() const;
     const stringVector &GetAxisGroupNames() const;
-    const intVector    &GetAxisLabelStates() const;
-    const doubleVector &GetAxisXIntervals() const;
+    const intVector    &GetAxisInfoFlagSets() const;
+    const doubleVector &GetAxisXPositions() const;
     double              GetLeftSliderX() const;
     double              GetRightSliderX() const;
     double              GetSlidersBottomY() const;
@@ -136,10 +170,10 @@ public:
     void SelectMaxima();
     void SelectMinTimeOrdinals();
     void SelectMaxTimeOrdinals();
-    void SelectToolDrawsAxisLabels();
+    void SelectPlotToolModeFlags();
     void SelectAxisGroupNames();
-    void SelectAxisLabelStates();
-    void SelectAxisXIntervals();
+    void SelectAxisInfoFlagSets();
+    void SelectAxisXPositions();
     void SelectLeftSliderX();
     void SelectRightSliderX();
     void SelectSlidersBottomY();
@@ -163,10 +197,10 @@ private:
     doubleVector maxima;
     intVector    minTimeOrdinals;
     intVector    maxTimeOrdinals;
-    bool         toolDrawsAxisLabels;
+    int          plotToolModeFlags;
     stringVector axisGroupNames;
-    intVector    axisLabelStates;
-    doubleVector axisXIntervals;
+    intVector    axisInfoFlagSets;
+    doubleVector axisXPositions;
 
     double       leftSliderX;
     double       rightSliderX;

@@ -89,6 +89,7 @@ protected:
 
     void InitializeParallelAxisAttributes(const std::string &varName);
     bool UniqueAxisVariableName(const std::string &varName);
+    void CompleteFinalAxisSequence();
     
     QFrame                 *pages[MAX_WIZARD_SELECTABLE_AXES*2 - 2];
     QvisParallelAxisWidget *thumbnails[MAX_WIZARD_SELECTABLE_AXES*2 - 2];

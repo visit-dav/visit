@@ -403,6 +403,9 @@ QvisParallelAxisPlotWizard::CreateFinishPage(QFrame **f,
 //    Mark Blair, Thu Oct 26 18:40:28 PDT 2006
 //    Added support for non-uniform axis spacing.
 //
+//    Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//    Now supports all variable axis spacing and axis group conventions.
+//
 // ****************************************************************************
 
 void
@@ -416,8 +419,10 @@ QvisParallelAxisPlotWizard::InitializeParallelAxisAttributes(const std::string &
     intVector    minTimeOrds;
     intVector    maxTimeOrds;
     stringVector groupNames;
-    intVector    labelStates;
-    doubleVector xIntervals;
+    intVector    infoFlagSets;
+    doubleVector xPositions;
+    stringVector attributeVars;
+    doubleVector attributeData;
     
     axisNames.push_back(varName);
     axisMins.push_back(-1e+37);
@@ -427,21 +432,29 @@ QvisParallelAxisPlotWizard::InitializeParallelAxisAttributes(const std::string &
     minTimeOrds.push_back(0);
     maxTimeOrds.push_back(0);
     groupNames.push_back(std::string("(not_in_a_group)"));
-    labelStates.push_back(EA_DRAW_ALL_LABELS | EA_LABELS_NOW_VISIBLE);
-    xIntervals.push_back(-1.0);
+    infoFlagSets.push_back(EA_THRESHOLD_BY_EXTENT_FLAG |
+        EA_SHOW_ALL_AXIS_INFO_FLAGS | EA_AXIS_INFO_SHOWN_FLAG);
+    xPositions.push_back(-1.0);
+    attributeVars.push_back(varName);
+    
+    for (int attDataID = 0; attDataID <= PCP_ATTRIBUTES_PER_AXIS; attDataID++)
+        attributeData.push_back(0.0);
 
     parAxisAtts->SetOrderedAxisNames(axisNames);
-    parAxisAtts->SetShownVariableAxisPosition(0);
+    parAxisAtts->SetShownVariableAxisOrdinal(0);
     parAxisAtts->SetAxisMinima(axisMins);
     parAxisAtts->SetAxisMaxima(axisMaxs);
     parAxisAtts->SetExtentMinima(extMins);
     parAxisAtts->SetExtentMaxima(extMaxs);
     parAxisAtts->SetExtMinTimeOrds(minTimeOrds);
     parAxisAtts->SetExtMaxTimeOrds(maxTimeOrds);
-    parAxisAtts->SetPlotDrawsAxisLabels(true);
+    parAxisAtts->SetPlotToolModeFlags(EA_AXIS_INFO_AUTO_LAYOUT_FLAG);
     parAxisAtts->SetAxisGroupNames(groupNames);
-    parAxisAtts->SetAxisLabelStates(labelStates);
-    parAxisAtts->SetAxisXIntervals(xIntervals);
+    parAxisAtts->SetAxisInfoFlagSets(infoFlagSets);
+    parAxisAtts->SetAxisXPositions(xPositions);
+    parAxisAtts->SetAxisAttributeVariables(attributeVars);
+    parAxisAtts->SetAttributesPerAxis(PCP_ATTRIBUTES_PER_AXIS);
+    parAxisAtts->SetAxisAttributeData(attributeData);
 }
 
 
@@ -474,6 +487,46 @@ QvisParallelAxisPlotWizard::UniqueAxisVariableName(const std::string &varName)
     }
     
     return ((axisNum >= curAxisCount));
+}
+
+
+// ****************************************************************************
+// Method: QvisParallelAxisPlotWizard::CompleteFinalAxisSequence
+//
+// Purpose: Sets some attribute values consistent with the final number of axes
+//          selected by the user.
+//
+// Programmer: Mark Blair
+// Creation:   Mon Feb  5 18:06:34 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisParallelAxisPlotWizard::CompleteFinalAxisSequence()
+{
+    int axisID, attDataID;
+    intVector infoFlagSets = parAxisAtts->GetAxisInfoFlagSets();
+    stringVector finalAxisNames = parAxisAtts->GetOrderedAxisNames();
+    doubleVector finalAxisAttData;
+    
+    parAxisAtts->SetAxisAttributeVariables(finalAxisNames);
+
+    for (axisID = 0; axisID < curAxisCount-1; axisID++)
+        infoFlagSets[axisID] &= (0xffffffff ^ EA_RIGHT_SELECTED_AXIS_FLAG);
+
+    infoFlagSets[curAxisCount-1] |= EA_RIGHT_SELECTED_AXIS_FLAG;
+            
+    parAxisAtts->SetAxisInfoFlagSets(infoFlagSets);
+    
+    for (attDataID = 0; attDataID < curAxisCount*(PCP_ATTRIBUTES_PER_AXIS+1);
+         attDataID++)
+    {
+        finalAxisAttData.push_back(0.0);
+    }
+
+    parAxisAtts->SetAxisAttributeData(finalAxisAttData);
 }
 
 
@@ -515,7 +568,7 @@ QvisParallelAxisPlotWizard::next()
 {
     int curPageIndex = indexOf(currentPage());
     int nextPageIndex = curPageIndex + 1;
-    
+
     if ((curPageIndex & 1) == 0)   // Select axis variable name page
     {
         std::string newVarName = axisVarNames[curAxisCount];
@@ -533,6 +586,8 @@ QvisParallelAxisPlotWizard::next()
         
         if (nextPageIndex == MAX_WIZARD_SELECTABLE_AXES*2 - 3)   // Finish page
         {
+            CompleteFinalAxisSequence();
+
             thumbnails[nextPageIndex]->setNumberOfAxes(curAxisCount);
             thumbnails[nextPageIndex]->setAxisTitles(axisVarNames);
             thumbnails[nextPageIndex]->redrawAllAxes(true);
@@ -550,9 +605,11 @@ QvisParallelAxisPlotWizard::next()
         {
             thumbnails[nextPageIndex]->redrawAllAxes(false);
         }
-        else
+        else    // Finish page
         {
-            nextPageIndex = MAX_WIZARD_SELECTABLE_AXES*2 - 3;   // Finish page;
+            CompleteFinalAxisSequence();
+
+            nextPageIndex = MAX_WIZARD_SELECTABLE_AXES*2 - 3;
 
             thumbnails[nextPageIndex]->setNumberOfAxes(curAxisCount);
             thumbnails[nextPageIndex]->setAxisTitles(axisVarNames);

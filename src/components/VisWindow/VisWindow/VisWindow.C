@@ -65,6 +65,7 @@
 #include <AnnotationObjectList.h>
 #include <ColorAttribute.h>
 #include <LineAttributes.h>
+#include <ExtentsAttributes.h>
 
 #include <avtCallback.h>
 #include <avtPlot.h>
@@ -794,7 +795,7 @@ VisWindow::SetViewport(double vl, double vb, double vr, double vt)
     viewportRight  = (vr < 0. ? 0. : (vr > 1. ? 1. : vr));
     viewportBottom = (vb < 0. ? 0. : (vb > 1. ? 1. : vb));
     viewportTop    = (vt < 0. ? 0. : (vt > 1. ? 1. : vt));
-
+    
     std::vector< VisWinColleague * >::iterator it;
     for (it = colleagues.begin() ; it != colleagues.end() ; it++)
     {
@@ -1939,8 +1940,13 @@ bool VisWindow::AxisAnnotationsEnabled() const
 // Purpose: Disable conventional axis annotations in the vis window if the type
 //          of plot to be added to the window should never use them.
 //
-//  Programmer: Mark Blair
-//  Creation:   Mon Sep 25 11:41:09 PDT 2006
+// Programmer: Mark Blair
+// Creation:   Mon Sep 25 11:41:09 PDT 2006
+//
+// Modifications:
+//
+//    Mark Blair, Tue Dec  5 12:58:17 PST 2006
+//    Uses larger viewport if no 2D axis annotations, since space is available.
 //
 // ****************************************************************************
 
@@ -1948,7 +1954,11 @@ void VisWindow::DisableAxisAnnotationsIfInappropriate(avtActor_p &plotActor)
 {
     // Maybe other cases too.
     if (strcmp(plotActor->GetTypeName(), "ParallelAxis") == 0)
-        DisableAxisAnnotations();       
+    {
+        DisableAxisAnnotations();
+        SetViewport(EA_PREFERRED_VIEWPORT_LEFT_X, EA_PREFERRED_VIEWPORT_BOTTOM_Y,
+                    EA_PREFERRED_VIEWPORT_RIGHT_X, EA_PREFERRED_VIEWPORT_TOP_Y);
+    }
 }
 
 // ****************************************************************************
@@ -2682,7 +2692,10 @@ VisWindow::Render(void)
 //    Kathleen Bonnell, Tue Apr 27 13:29:46 PDT 2004 
 //    Added call to Render after call to FullFrameOn in Curve mode, to ensure 
 //    that the changes show up immediately on the screen.
-// 
+//
+//    Mark Blair, Tue Dec  5 12:58:17 PST 2006
+//    Uses larger viewport if already set by a 2D plot that wants to use it.
+//
 // ****************************************************************************
 
 void
@@ -2699,7 +2712,13 @@ VisWindow::UpdateView()
         if (viewport[0] != viewportLeft || viewport[1] != viewportRight ||
             viewport[2] != viewportBottom || viewport[3] != viewportTop)
         {
-            SetViewport(viewport[0], viewport[2], viewport[1], viewport[3]);
+            if ((viewportLeft   != EA_PREFERRED_VIEWPORT_LEFT_X  ) ||
+                (viewportRight  != EA_PREFERRED_VIEWPORT_RIGHT_X ) ||
+                (viewportBottom != EA_PREFERRED_VIEWPORT_BOTTOM_Y) ||
+                (viewportTop    != EA_PREFERRED_VIEWPORT_TOP_Y   ))
+            {   // Currently, only ParallelAxis plot uses the larger viewport.
+                SetViewport(viewport[0], viewport[2], viewport[1], viewport[3]);
+            }
         }
 
         view2D.SetViewInfoFromView(viewInfo, size);
@@ -2730,8 +2749,14 @@ VisWindow::UpdateView()
             viewCurve.viewport[2] != viewportBottom ||
             viewCurve.viewport[3] != viewportTop)
         {
-            SetViewport(viewCurve.viewport[0], viewCurve.viewport[2],
-                        viewCurve.viewport[1], viewCurve.viewport[3]);
+            if ((viewportLeft   != EA_PREFERRED_VIEWPORT_LEFT_X  ) ||
+                (viewportRight  != EA_PREFERRED_VIEWPORT_RIGHT_X ) ||
+                (viewportBottom != EA_PREFERRED_VIEWPORT_BOTTOM_Y) ||
+                (viewportTop    != EA_PREFERRED_VIEWPORT_TOP_Y   ))
+            {   // Currently, only ParallelAxis plot uses the larger viewport.
+                SetViewport(viewCurve.viewport[0], viewCurve.viewport[2],
+                            viewCurve.viewport[1], viewCurve.viewport[3]);
+            }
         }
 
         viewCurve.SetViewInfoFromView(viewInfo, size);
