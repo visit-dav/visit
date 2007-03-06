@@ -484,7 +484,7 @@ setenv LD_LIBRARY64_PATH $QTDIR/lib:$LD_LIBRARY64_PATH       # SGI
 # qt won't by default compile the QGL widget.  To determine if the OpenGL
 # library was built with threading run the following command:
 #
-#     ./configure --help
+#     ./configure -platform <platform-type> -shared --help
 #
 # If the output contains:
 #
@@ -492,7 +492,8 @@ setenv LD_LIBRARY64_PATH $QTDIR/lib:$LD_LIBRARY64_PATH       # SGI
 #     The Qt OpenGL module requires Qt to be configured with -thread.
 #
 # then you will need to add "-thread" to the configure line below.
-#
+# (platform-type should be substituted with the appropriate platform below.)
+# 
 # Use the appropriate configure command based on the operating system on
 # which you are building Qt.  You should use the linux-g++ platform for
 # all linux versions except for opteron systems, in which case you should

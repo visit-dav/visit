@@ -195,6 +195,7 @@ void VisitExtentsTool::DoOneTimeInitializations()
     buttonQuadsActor    = NULL; buttonQuadsMapper    = NULL; buttonQuadsData    = NULL;
     buttonLogosActor    = NULL; buttonLogosMapper    = NULL; buttonLogosData    = NULL;
     buttonChecksActor   = NULL; buttonChecksMapper   = NULL; buttonChecksData   = NULL;
+    markSlidersActor    = NULL; markSlidersMapper    = NULL; markSlidersData    = NULL;
     axisExtensionsActor = NULL; axisExtensionsMapper = NULL; axisExtensionsData = NULL;
     axisSlidersActor    = NULL; axisSlidersMapper    = NULL; axisSlidersData    = NULL;
     

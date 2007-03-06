@@ -148,18 +148,22 @@ vtkVolumeFromVolume::CentroidPointList::GetTotalNumberOfPoints(void) const
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Fixed off-by-one error in test to resize list
 //
+//    Sean Ahern, Mon Mar  5 15:35:00 EST 2007
+//    Fixed test for resizing list.  You really do need the +1.
+//    Initialized new entries.
+//
 int
 vtkVolumeFromVolume::CentroidPointList::AddPoint(int npts, int *pts)
 {
     if (currentPoint >= pointsPerList)
     {
-        if (currentList >= listSize)
+        if ((currentList+1) >= listSize)
         {
             CentroidPointEntry **tmpList = new CentroidPointEntry*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
-            {
                 tmpList[i] = list[i];
-            }
+            for (int i = listSize ; i < listSize*2 ; i++)
+                tmpList[i] = NULL;
             listSize *= 2;
             delete [] list;
             list = tmpList;
@@ -259,6 +263,10 @@ vtkVolumeFromVolume::HexList::~HexList()
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Fixed off-by-one error in test to resize list
+//    
+//    Sean Ahern, Mon Mar  5 15:43:19 EST 2007
+//    Fixed test for resizing list.  You really do need the +1.
+//    Initialized new entries.
 //
 // ****************************************************************************
 
@@ -269,13 +277,14 @@ vtkVolumeFromVolume::HexList::AddHex(int cellId,
 {
     if (currentShape >= shapesPerList)
     {
-        if (currentList >= listSize)
+        if ((currentList+1) >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
-            {
                 tmpList[i] = list[i];
-            }
+            for (int i = listSize ; i < listSize*2 ; i++)
+                tmpList[i] = NULL;
+
             listSize *= 2;
             delete [] list;
             list = tmpList;
@@ -318,6 +327,10 @@ vtkVolumeFromVolume::WedgeList::~WedgeList()
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Fixed off-by-one error in test to resize list
 //
+//    Sean Ahern, Mon Mar  5 15:44:05 EST 2007
+//    Fixed test for resizing list.  You really do need the +1.
+//    Initialized new entries.
+//
 // ****************************************************************************
 
 void
@@ -327,13 +340,13 @@ vtkVolumeFromVolume::WedgeList::AddWedge(int cellId,
 {
     if (currentShape >= shapesPerList)
     {
-        if (currentList >= listSize)
+        if ((currentList+1) >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
-            {
                 tmpList[i] = list[i];
-            }
+            for (int i = listSize ; i < listSize*2 ; i++)
+                tmpList[i] = NULL;
             listSize *= 2;
             delete [] list;
             list = tmpList;
@@ -374,6 +387,10 @@ vtkVolumeFromVolume::PyramidList::~PyramidList()
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Fixed off-by-one error in test to resize list
 //
+//    Sean Ahern, Mon Mar  5 15:44:05 EST 2007
+//    Fixed test for resizing list.  You really do need the +1.
+//    Initialized new entries.
+//
 // ****************************************************************************
 
 void
@@ -382,13 +399,13 @@ vtkVolumeFromVolume::PyramidList::AddPyramid(int cellId, int v1, int v2,
 {
     if (currentShape >= shapesPerList)
     {
-        if (currentList >= listSize)
+        if ((currentList+1) >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
-            {
                 tmpList[i] = list[i];
-            }
+            for (int i = listSize ; i < listSize*2 ; i++)
+                tmpList[i] = NULL;
             listSize *= 2;
             delete [] list;
             list = tmpList;
@@ -428,6 +445,10 @@ vtkVolumeFromVolume::TetList::~TetList()
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Fixed off-by-one error in test to resize list
 //
+//    Sean Ahern, Mon Mar  5 15:44:05 EST 2007
+//    Fixed test for resizing list.  You really do need the +1.
+//    Initialized new entries.
+//
 // ****************************************************************************
 
 void
@@ -435,13 +456,13 @@ vtkVolumeFromVolume::TetList::AddTet(int cellId, int v1,int v2,int v3,int v4)
 {
     if (currentShape >= shapesPerList)
     {
-        if (currentList >= listSize)
+        if ((currentList+1) >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
-            {
                 tmpList[i] = list[i];
-            }
+            for (int i = listSize ; i < listSize*2 ; i++)
+                tmpList[i] = NULL;
             listSize *= 2;
             delete [] list;
             list = tmpList;
@@ -480,6 +501,10 @@ vtkVolumeFromVolume::QuadList::~QuadList()
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Fixed off-by-one error in test to resize list
 //
+//    Sean Ahern, Mon Mar  5 15:44:05 EST 2007
+//    Fixed test for resizing list.  You really do need the +1.
+//    Initialized new entries.
+//
 // ****************************************************************************
 
 void
@@ -487,13 +512,13 @@ vtkVolumeFromVolume::QuadList::AddQuad(int cellId, int v1,int v2,int v3,int v4)
 {
     if (currentShape >= shapesPerList)
     {
-        if (currentList >= listSize)
+        if ((currentList+1) >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
-            {
                 tmpList[i] = list[i];
-            }
+            for (int i = listSize ; i < listSize*2 ; i++)
+                tmpList[i] = NULL;
             listSize *= 2;
             delete [] list;
             list = tmpList;
@@ -532,6 +557,10 @@ vtkVolumeFromVolume::TriList::~TriList()
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Fixed off-by-one error in test to resize list
 //
+//    Sean Ahern, Mon Mar  5 15:44:05 EST 2007
+//    Fixed test for resizing list.  You really do need the +1.
+//    Initialized new entries.
+//
 // ****************************************************************************
 
 void
@@ -539,13 +568,13 @@ vtkVolumeFromVolume::TriList::AddTri(int cellId, int v1,int v2,int v3)
 {
     if (currentShape >= shapesPerList)
     {
-        if (currentList >= listSize)
+        if ((currentList+1) >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
-            {
                 tmpList[i] = list[i];
-            }
+            for (int i = listSize ; i < listSize*2 ; i++)
+                tmpList[i] = NULL;
             listSize *= 2;
             delete [] list;
             list = tmpList;
@@ -579,18 +608,22 @@ vtkVolumeFromVolume::LineList::~LineList()
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Fixed off-by-one error in test to resize list
 //
+//    Sean Ahern, Mon Mar  5 15:44:05 EST 2007
+//    Fixed test for resizing list.  You really do need the +1.
+//    Initialized new entries.
+//
 void
 vtkVolumeFromVolume::LineList::AddLine(int cellId, int v1,int v2)
 {
     if (currentShape >= shapesPerList)
     {
-        if (currentList >= listSize)
+        if ((currentList+1) >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
-            {
                 tmpList[i] = list[i];
-            }
+            for (int i = listSize ; i < listSize*2 ; i++)
+                tmpList[i] = NULL;
             listSize *= 2;
             delete [] list;
             list = tmpList;
@@ -623,18 +656,22 @@ vtkVolumeFromVolume::VertexList::~VertexList()
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Fixed off-by-one error in test to resize list
 //
+//    Sean Ahern, Mon Mar  5 15:44:05 EST 2007
+//    Fixed test for resizing list.  You really do need the +1.
+//    Initialized new entries.
+//
 void
 vtkVolumeFromVolume::VertexList::AddVertex(int cellId, int v1)
 {
     if (currentShape >= shapesPerList)
     {
-        if (currentList >= listSize)
+        if ((currentList+1) >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
-            {
                 tmpList[i] = list[i];
-            }
+            for (int i = listSize ; i < listSize*2 ; i++)
+                tmpList[i] = NULL;
             listSize *= 2;
             delete [] list;
             list = tmpList;

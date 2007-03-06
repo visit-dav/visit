@@ -319,12 +319,6 @@ struct NormalEntry
     }
 };
 
-// These #defines are good for up to 4 million feature-edge nodes
-// along the surface of an object.  I really hope this will last
-// us for a while....
-#define MAX_NORMAL_LISTS 1024
-#define NORMAL_LIST_LEN  4096
-
 // ****************************************************************************
 //  Class:  NormalList
 //
@@ -336,11 +330,16 @@ struct NormalEntry
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 13, 2003
+//  
+//  Modifications:
+//      Sean Ahern, Mon Mar  5 14:47:42 EST 2007
+//      Removed fixed length on normal lists.
 //
 // ****************************************************************************
 class NormalList
 {
-  public:
+#define NORMAL_LIST_LEN  4096
+public:
     NormalEntry *normals;
 
     // Constructor
@@ -351,7 +350,9 @@ class NormalList
 
         poolListIndex = 0;
         poolIndex = 0;
-        pool[poolListIndex] = new NormalEntry[NORMAL_LIST_LEN];
+        poolSize = 1024;    // Initial
+        pool = new NormalEntry*[poolSize];
+        pool[0] = new NormalEntry[NORMAL_LIST_LEN];
     }
 
     // Destructor
@@ -360,6 +361,7 @@ class NormalList
         delete[] normals;
         for (int i=0; i<=poolListIndex; i++)
             delete[] pool[i];
+        delete[] pool;
     }
 
     // Gets a new entry from the allocation pool
@@ -372,6 +374,19 @@ class NormalList
         {
             poolListIndex++;
             poolIndex = 0;
+
+            if (poolListIndex >= poolSize)
+            {
+                // Double the length of the pool to make space for the next
+                // one we might want.
+                NormalEntry **newPool = new NormalEntry*[poolSize*2];
+                for(int i=0;i<poolListIndex;i++)
+                    newPool[i] = pool[i];
+                poolSize *= 2;
+                delete [] pool;
+                pool = newPool;
+            }
+
             pool[poolListIndex] = new NormalEntry[NORMAL_LIST_LEN];
         }
 
@@ -397,9 +412,10 @@ class NormalList
         return pool[n];
     }
 
-  protected:
+protected:
     int           originalSize;
-    NormalEntry  *pool[MAX_NORMAL_LISTS];
+    NormalEntry  **pool;
+    int           poolSize;
     int           poolListIndex;
     int           poolIndex;
 };

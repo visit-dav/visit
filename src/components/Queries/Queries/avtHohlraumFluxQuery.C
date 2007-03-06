@@ -194,15 +194,6 @@ avtHohlraumFluxQuery::ExecuteLineScan(vtkPolyData *pd)
     cpd->SetInput(pd);
     vtkPolyData *output = cpd->GetOutput();
     output->Update();
-
-    
-    // For debugging, write the polydata
-    ofstream outfile;
-    outfile.open( "lines.vtk" );
-    output->Print(outfile);
-    outfile.close();
-    
-    
     
     UpdateProgress(extraMsg*currentNode+extraMsg/3, totalProg);
 
