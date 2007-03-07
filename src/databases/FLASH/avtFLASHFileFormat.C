@@ -193,7 +193,6 @@ avtFLASHFileFormat::avtFLASHFileFormat(const char *cfilename)
     dimension = 0;
     numBlocks = 0;
     numLevels = 0;
-    simParamsHaveBeenRead = false;
 
     // do HDF5 library initialization on consturction of first instance
     if (avtFLASHFileFormat::objcnt == 0)
@@ -240,28 +239,6 @@ avtFLASHFileFormat::ActivateTimestep(void)
 }
 
 // ****************************************************************************
-//  Method: avtFLASHFileFormat::GetCycleFromFilename
-//
-//  Purpose: Try to get a cycle number from a file name 
-//
-//  Notes: Although all this method does is simply call the format's base
-//  class implementation of GuessCycle, doing this is a way for the FLASH 
-//  format to "bless" the guesses that that method makes. Otherwise, VisIt
-//  wouldn't know that FLASH thinks those guesses are good. See notes in
-//  avtSTXXFileFormatInterface::SetDatabaseMetaData for further explanation.
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   March 5, 2007 
-//
-// ****************************************************************************
-
-int
-avtFLASHFileFormat::GetCycleFromFilename(const char *f) const
-{
-    return GuessCycle(f);
-}
-
-// ****************************************************************************
 //  Method: avtFLASHFileFormat::GetCycle
 //
 //  Purpose: Do as little work on file meta data as possible to get
@@ -270,25 +247,25 @@ avtFLASHFileFormat::GetCycleFromFilename(const char *f) const
 //  Programmer: Mark C. Miller 
 //  Creation:   March 5, 2007 
 //
+//  Modifications:
+//    Mark C. Miller, Tue Mar  6 23:41:33 PST 2007
+//    Removed optimization to avoid re-reading simulation parameters between
+//    calls to GetCycle and/or GetTime because we actually need to do only
+//    a partial read of them.
+//
 // ****************************************************************************
 
 int
 avtFLASHFileFormat::GetCycle()
 {
-    if (simParamsHaveBeenRead)
-    {
-        return simParams.nsteps;
-    }
-    else
-    {
-        hid_t file_id = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
-        if (file_id < 0)
-            return INVALID_CYCLE;
-        ReadVersionInfo(file_id);
-        ReadSimulationParameters(file_id);
-        H5Fclose(file_id);
-        return simParams.nsteps;
-    }
+    const bool timeAndCycleOnly = true;
+    hid_t file_id = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+    if (file_id < 0)
+        return INVALID_CYCLE;
+    ReadVersionInfo(file_id);
+    ReadSimulationParameters(file_id, timeAndCycleOnly);
+    H5Fclose(file_id);
+    return simParams.nsteps;
 }
 
 // ****************************************************************************
@@ -300,25 +277,25 @@ avtFLASHFileFormat::GetCycle()
 //  Programmer: Mark C. Miller 
 //  Creation:   March 5, 2007 
 //
+//  Modifications:
+//    Mark C. Miller, Tue Mar  6 23:41:33 PST 2007
+//    Removed optimization to avoid re-reading simulation parameters between
+//    calls to GetCycle and/or GetTime because we actually need to do only
+//    a partial read of them.
+//
 // ****************************************************************************
 
 double
 avtFLASHFileFormat::GetTime()
 {
-    if (simParamsHaveBeenRead)
-    {
-        return simParams.time;
-    }
-    else
-    {
-        hid_t file_id = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
-        if (file_id < 0)
-            return INVALID_TIME;
-        ReadVersionInfo(file_id);
-        ReadSimulationParameters(file_id);
-        H5Fclose(file_id);
-        return simParams.time;
-    }
+    const bool timeAndCycleOnly = true;
+    hid_t file_id = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+    if (file_id < 0)
+        return INVALID_TIME;
+    ReadVersionInfo(file_id);
+    ReadSimulationParameters(file_id, timeAndCycleOnly);
+    H5Fclose(file_id);
+    return simParams.time;
 }
 
 
@@ -1403,8 +1380,12 @@ void avtFLASHFileFormat::ReadRefinementLevels()
 //    Kathleen Bonnell, Thu Jul 20 11:22:13 PDT 2006
 //    Added support for FLASH3 file versions.
 //
+//    Mark C. Miller, Tue Mar  6 23:41:33 PST 2007
+//    Added bool for reading just enough to get cycle/time info
+//
 // ****************************************************************************
-void avtFLASHFileFormat::ReadSimulationParameters(hid_t file_id)
+void avtFLASHFileFormat::ReadSimulationParameters(hid_t file_id,
+    bool timeAndCycleOnly)
 {
     if (fileFormatVersion < FLASH3)
     {
@@ -1441,6 +1422,9 @@ void avtFLASHFileFormat::ReadSimulationParameters(hid_t file_id)
         ReadIntegerScalars(file_id);
         ReadRealScalars(file_id);
     }
+
+    if (timeAndCycleOnly)
+        return;
 
     // Sanity check: size of the gid array better match number of blocks
     //               reported in the simulation parameters
@@ -1481,7 +1465,6 @@ void avtFLASHFileFormat::ReadSimulationParameters(hid_t file_id)
         block_ndims[2] = simParams.nzb+1;
         block_zdims[2] = simParams.nzb;
     }
-    simParamsHaveBeenRead = true;
 }
 
 // ****************************************************************************

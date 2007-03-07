@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
-  <Plugin name="Shapefile" type="database" label="ESRI Shapefile" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false">
+  <Plugin name="Shapefile" type="database" label="ESRI Shapefile" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false">
+    <LIBS>
+      -lGLU
+    </LIBS>
     <Extensions>
       shp
       shx
@@ -15,6 +18,6 @@
       esriShapefile.C
       dbfFile.C
     </Files>
-    <Attribute name="" purpose="" persistent="false">
+    <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

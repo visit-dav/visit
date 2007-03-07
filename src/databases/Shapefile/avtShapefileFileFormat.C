@@ -68,6 +68,9 @@
 //    Brad Whitlock, Wed Feb 28 16:02:49 PST 2007
 //    Added VISIT_SHAPEFILE_POLYGONS_AS_LINES environment variable.
 //
+//    Brad Whitlock, Tue Mar 6 18:02:28 PST 2007
+//    Added VISIT_SHAPEFILE_NO_TESSELLATION.
+//
 // ****************************************************************************
 
 avtShapefileFileFormat::avtShapefileFileFormat(const char *filename)
@@ -80,6 +83,11 @@ avtShapefileFileFormat::avtShapefileFileFormat(const char *filename)
     // Record whether we'll use polygons as lines. Let's not do it by
     // default.
     polygonsAsLines = (getenv("VISIT_SHAPEFILE_POLYGONS_AS_LINES") != 0);
+
+    // Disable tessellation.
+    tessellatePolygons = true;
+    if(getenv("VISIT_SHAPEFILE_NO_TESSELLATION") != 0)
+        tessellatePolygons = false;
 }
 
 // ****************************************************************************
@@ -178,6 +186,9 @@ avtShapefileFileFormat::ActivateTimestep(void)
 //   Brad Whitlock, Tue Feb 27 11:46:22 PDT 2007
 //   Added call to CountShapeTypes to set the numShapeTypes member.
 //
+//   Brad Whitlock, Tue Mar 6 18:03:15 PST 2007
+//   Added nRepeats.
+//
 // ****************************************************************************
 
 static void
@@ -244,7 +255,6 @@ avtShapefileFileFormat::Initialize()
             if(rcErr == esriReadErrorSuccess)
             {
                 /*fprintf(stderr, "Record %d: ", header.recordNumber);*/
-                newShape.shapeType = header.shapeType;
                 switch(header.shapeType)
                 {
                 case esriNullShape:
@@ -316,7 +326,9 @@ avtShapefileFileFormat::Initialize()
                 {
                     if(keepReading)
                     {
+                        newShape.shapeType = header.shapeType;
                         newShape.shape = s;
+                        newShape.nRepeats = 1;
                         shapes.push_back(newShape);
                     }
                     else
@@ -582,7 +594,9 @@ avtShapefileFileFormat::CountShapes(esriShapeType_t shapeType) const
 // Creation:   Mon Mar 28 02:59:42 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Mar 6 18:04:52 PST 2007
+//   Added polygon tessellation.
+//
 // ****************************************************************************
 
 int
@@ -599,7 +613,12 @@ avtShapefileFileFormat::CountCellsForShape(esriShapeType_t shapeType) const
                 nCells += ((esriPolyLine_t *)shapes[i].shape)->numParts;
                 break;
             case esriPolygon:
-                nCells += ((esriPolygon_t *)shapes[i].shape)->numParts;
+                if(tessellatePolygons)
+                    // We treat polygons specially since they could have been
+                    // split up due to tesselation.
+                    nCells += shapes[i].nRepeats;
+                else
+                    nCells += ((esriPolygon_t *)shapes[i].shape)->numParts;
                 break;
             case esriMultiPoint:
                 nCells += ((esriMultiPoint_t *)shapes[i].shape)->numPoints;
@@ -653,6 +672,9 @@ avtShapefileFileFormat::CountCellsForShape(esriShapeType_t shapeType) const
 //    Brad Whitlock, Tue Feb 27 11:13:08 PDT 2007
 //    Count the shape types elsewhere.
 //
+//    Brad Whitlock, Tue Mar 6 18:06:02 PST 2007
+//    Added tessellated mesh that the variables will use.
+//
 // ****************************************************************************
 
 void
@@ -662,7 +684,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // 2D, no data
     //
     std::string  meshname;
-    stringVector meshes;
+    stringVector meshes, tessmeshes;
     intVector    is3D;
     int polygonTopDim = polygonsAsLines ? 1 : 2;
 
@@ -673,6 +695,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         debug4 << npts << " points for esriPoint." << endl;
         AddMeshToMetaData(md, meshname, AVT_POINT_MESH, NULL, 1, 0, 2, 0);
         meshes.push_back(meshname);
+        tessmeshes.push_back(meshname);
         is3D.push_back(0);
     }
 
@@ -682,6 +705,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         debug4 << npts << " points for esriPolyLine." << endl;
         AddMeshToMetaData(md, meshname, AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 2, 1);
         meshes.push_back(meshname);
+        tessmeshes.push_back(meshname);
         is3D.push_back(0);
     }
 
@@ -691,6 +715,15 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         debug4 << npts << " points for esriPolygon." << endl;
         AddMeshToMetaData(md, meshname, AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 2, polygonTopDim);
         meshes.push_back(meshname);
+
+        if(tessellatePolygons)
+        {
+            std::string tessname("tessellated_polygon");
+            AddMeshToMetaData(md, tessname, AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 2, polygonTopDim);
+            tessmeshes.push_back(tessname);
+        }
+        else
+            tessmeshes.push_back(meshname);
         is3D.push_back(0);
     }
 
@@ -700,6 +733,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         debug4 << npts << " points for esriMultiPoint." << endl;
         AddMeshToMetaData(md, meshname, AVT_POINT_MESH, NULL, 1, 0, 2, 0);
         meshes.push_back(meshname);
+        tessmeshes.push_back(meshname);
         is3D.push_back(0);
     }
 
@@ -713,6 +747,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddMeshToMetaData(md, meshname, AVT_POINT_MESH, NULL, 1, 0, 2, 0);
         AddScalarVarToMetaData(md, "pointM_measure", meshname, AVT_NODECENT);
         meshes.push_back(meshname);
+        tessmeshes.push_back(meshname);
         is3D.push_back(0);
     }
 
@@ -723,6 +758,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddMeshToMetaData(md, meshname, AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 2, 1);
         AddScalarVarToMetaData(md, "polylineM_measure", meshname, AVT_NODECENT);
         meshes.push_back(meshname);
+        tessmeshes.push_back(meshname);
         is3D.push_back(0);
     }
 
@@ -733,6 +769,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddMeshToMetaData(md, meshname, AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 2, polygonTopDim);
         AddScalarVarToMetaData(md, "polygonM_measure", meshname, AVT_NODECENT);
         meshes.push_back(meshname);
+        tessmeshes.push_back(meshname);
         is3D.push_back(0);
     }
 
@@ -743,6 +780,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddMeshToMetaData(md, meshname, AVT_POINT_MESH, NULL, 1, 0, 2, 0);
         AddScalarVarToMetaData(md, "multipointM_measure", meshname, AVT_NODECENT);
         meshes.push_back(meshname);
+        tessmeshes.push_back(meshname);
         is3D.push_back(0);
     }
 
@@ -756,6 +794,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddMeshToMetaData(md, meshname, AVT_POINT_MESH, NULL, 1, 0, 3, 0);
         AddScalarVarToMetaData(md, "pointZ_measure", meshname, AVT_NODECENT);
         meshes.push_back(meshname);
+        tessmeshes.push_back(meshname);
         is3D.push_back(1);
     }
 
@@ -766,6 +805,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddMeshToMetaData(md, meshname, AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 3, 1);
         AddScalarVarToMetaData(md, "polylineZ_measure", meshname, AVT_NODECENT);
         meshes.push_back(meshname);
+        tessmeshes.push_back(meshname);
         is3D.push_back(1);
     }
 
@@ -776,6 +816,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddMeshToMetaData(md, meshname, AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 3, polygonTopDim);
         AddScalarVarToMetaData(md, "polygonZ_measure", meshname, AVT_NODECENT);
         meshes.push_back(meshname);
+        tessmeshes.push_back(meshname);
         is3D.push_back(1);
     }
 
@@ -786,6 +827,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddMeshToMetaData(md, meshname, AVT_POINT_MESH, NULL, 1, 0, 3, 0);
         AddScalarVarToMetaData(md, "multipointZ_measure", meshname, AVT_NODECENT);
         meshes.push_back(meshname);
+        tessmeshes.push_back(meshname);
         is3D.push_back(1);
     }
 
@@ -796,13 +838,14 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddMeshToMetaData(md, meshname, AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 3, polygonTopDim);
         AddScalarVarToMetaData(md, "multipatch_measure", meshname, AVT_NODECENT);
         meshes.push_back(meshname);
+        tessmeshes.push_back(meshname);
         is3D.push_back(1);
     }
 
     //
-    // Add the DBF file's records to the metadata. Note that we're adding
-    // the string variables but we're marking them as invalid since VisIt
-    // can't support them yet.
+    // Add the DBF file's records to the metadata. Note that we define labels
+    // on the original mesh but we define scalars on the tessellated mesh. This
+    // is because VisIt does not need to draw the labels as filled polygons.
     //
     if(dbfFile != 0)
     {
@@ -833,7 +876,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     avtScalarMetaData *smd = new avtScalarMetaData;
                     smd->name = varName;
                     smd->originalName = varName;
-                    smd->meshName = meshes[m];
+                    smd->meshName = tessmeshes[m];
                     smd->centering = AVT_ZONECENT;
                     smd->hasDataExtents = false;
                     smd->minDataExtents = 0.f;
@@ -865,18 +908,18 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         Expression expr;
         expr.SetName("x");
-        expr.SetDefinition(std::string("coord(") + meshes[0] + ")[0]");
+        expr.SetDefinition(std::string("coord(") + tessmeshes[0] + ")[0]");
         expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&expr);
 
         expr.SetName("y");
-        expr.SetDefinition(std::string("coord(") + meshes[0] + ")[1]");
+        expr.SetDefinition(std::string("coord(") + tessmeshes[0] + ")[1]");
         md->AddExpression(&expr);
 
         if(is3D[0] == 1)
         {
             expr.SetName("z");
-            expr.SetDefinition(std::string("coord(") + meshes[0] + ")[2]");
+            expr.SetDefinition(std::string("coord(") + tessmeshes[0] + ")[2]");
             md->AddExpression(&expr);
         }
     }
@@ -886,22 +929,131 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         {
             Expression expr;
             expr.SetName(meshes[m] + "_x");
-            expr.SetDefinition(std::string("coord(") + meshes[m] + ")[0]");
+            expr.SetDefinition(std::string("coord(") + tessmeshes[m] + ")[0]");
             expr.SetType(Expression::ScalarMeshVar);
             md->AddExpression(&expr);
 
             expr.SetName(meshes[m] + "_y");
-            expr.SetDefinition(std::string("coord(") + meshes[m] + ")[1]");
+            expr.SetDefinition(std::string("coord(") + tessmeshes[m] + ")[1]");
             md->AddExpression(&expr);
 
             if(is3D[m] == 1)
             {
                 expr.SetName(meshes[m] + "_z");
-                expr.SetDefinition(std::string("coord(") + meshes[m] + ")[2]");
+                expr.SetDefinition(std::string("coord(") + tessmeshes[m] + ")[2]");
                 md->AddExpression(&expr);
             }
         }
     }
+}
+
+// ****************************************************************************
+// Method: avtShapefileFileFormat::GetMesh_TessellatedPolygon
+//
+// Purpose: 
+//   Takes the input mesh and tessellates the polygon cells and returns a polydata.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 6 18:08:41 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+#ifndef MDSERVER
+// We're not in the mdserver so include some helper classes.
+#include <PolygonToTriangles.C>
+#endif
+
+vtkDataSet *
+avtShapefileFileFormat::GetMesh_TessellatedPolygon()
+{
+#ifdef MDSERVER
+    return 0;
+#else
+    const char *mName = "avtShapefileFileFormat::GetMesh_TessellatedPolygon: ";
+    int npts = CountMemberPoints(esriPolygon);
+
+    // Allocate some points.
+    vtkPoints *pts = vtkPoints::New();
+    pts->Allocate(npts);
+
+    VertexManager      uniqueVerts(pts);
+    PolygonToTriangles tess(&uniqueVerts);
+
+    // Go through each cell and tesselate into triangles.
+    debug5 << mName << "Start tessellation." << endl;
+    for(int i = 0; i < shapes.size(); ++i)
+    {
+        if(shapes[i].shapeType == esriPolygon)
+        {
+            esriPolygon_t *pg = (esriPolygon_t *)shapes[i].shape;
+
+            debug5 << "\tsplitting polygon " << i << "...";
+            tess.BeginPolygon();
+            for(int part = 0; part < pg->numParts; ++part)
+            {
+                int start = pg->parts[part];
+                int end = (part < pg->numParts-1) ? 
+                   pg->parts[part+1] : pg->numPoints;
+                int index = 0;
+
+                tess.BeginContour();
+                for(int j = start; j < end-1; ++j, ++index)
+                {
+                    // Stash the point
+                    double v[3];
+                    v[0] = pg->points[j].x;
+                    v[1] = pg->points[j].y;
+                    v[2] = 0.f;
+
+                    tess.AddVertex(v);
+                }
+                tess.EndContour();
+            }
+            tess.EndPolygon();
+
+            // Store off the number of times this shape's data will need to
+            // be repeated in the data.
+            shapes[i].nRepeats = tess.GetNumTrianglesInLastPolygon();
+
+            debug5 << " into " << shapes[i].nRepeats << " triangles." << endl;
+        }
+    }
+
+    pts->Squeeze();
+
+    vtkDataSet *ret = NULL;
+    if(tess.GetNumTriangles() > 0)
+    {
+        // Allocate polydata. The number of cells probably will be larger than
+        // we allocate so it will grow as we insert.
+        vtkPolyData *pd = vtkPolyData::New();
+        pd->SetPoints(pts);
+        pd->Allocate(shapes.size() * 3);
+
+        // Now that we've tesselated everything, let's create the cells for it.
+        for(int i = 0; i < tess.GetNumTriangles(); ++i)
+        {
+            int a,b,c;
+            vtkIdType verts[3];
+            tess.GetTriangle(i, a, b, c);
+            verts[0] = a;
+            verts[1] = b;
+            verts[2] = c;
+            pd->InsertNextCell(VTK_TRIANGLE, 3, verts);
+        }
+        pd->Squeeze();
+        ret = pd;
+    }
+    else
+    {
+        debug5 << mName << "No cells made from triangulated polygons" << endl;
+    }
+    pts->Delete();
+
+    return ret;
+#endif
 }
 
 // ****************************************************************************
@@ -920,6 +1072,8 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Creation:   Thu Mar 24 12:18:02 PDT 2005
 //
 //  Modifications:
+//    Brad Whitlock, Tue Mar 6 18:07:53 PST 2007
+//    Added tessellated mesh.
 //
 // ****************************************************************************
 
@@ -939,6 +1093,8 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
        shapeType = esriPolyLine;
     else if(strcmp(meshname, "polygon") == 0)
        shapeType = esriPolygon;
+    else if(strcmp(meshname, "tessellated_polygon") == 0)
+       return GetMesh_TessellatedPolygon();
     else if(strcmp(meshname, "multipoint") == 0)
        shapeType = esriMultiPoint;
     else if(strcmp(meshname, "pointM") == 0)
@@ -1367,8 +1523,9 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
 //   data array.
 //
 // Arguments:
-//   shape     : A pointer to a shape.
-//   shapeType : The type of the shape.
+//   TheShape  : A pointer to an esriShape shape.
+//   tessMesh  : True if we're asking for the number of repeats needed for 
+//               the tessellated mesh; False otherwise.
 //
 // Returns:    The number of times data should be repeated for the shape.
 //
@@ -1378,21 +1535,28 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
 // Creation:   Fri Apr 1 23:38:01 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 7 08:49:19 PDT 2007
+//   Pass in the shape container instead and added support for tessellated 
+//   polygons.
+//
 // ****************************************************************************
 
 int
-avtShapefileFileFormat::GetNumRepeats(void *shape, esriShapeType_t shapeType) const
+avtShapefileFileFormat::GetNumRepeats(const esriShape &TheShape, bool tessMesh) const
 {
     int nr = 1;
+    void *shape = TheShape.shape;
 
-    switch(shapeType)
+    switch(TheShape.shapeType)
     {
     case esriPolyLine:
         nr = ((esriPolyLine_t *)shape)->numParts;
         break;
     case esriPolygon:
-        nr = ((esriPolygon_t *)shape)->numParts;
+        if(tessMesh && tessellatePolygons)
+            nr = TheShape.nRepeats;
+        else
+            nr = ((esriPolygon_t *)shape)->numParts;
         break;
     case esriMultiPoint:
         nr = ((esriMultiPoint_t *)shape)->numPoints;
@@ -1566,7 +1730,7 @@ avtShapefileFileFormat::GetVar(const char *varname)
                     {
                         int nr = 1;
                         if(shapes[i].shapeType == shapeType)
-                            nr = GetNumRepeats(shapes[i].shape, shapeType);
+                            nr = GetNumRepeats(shapes[i], false);
 
                         // Repeat the string field value for all cells in the shape.
                         for(int j = 0; j < nr; ++j)
@@ -1605,7 +1769,7 @@ avtShapefileFileFormat::GetVar(const char *varname)
                     {
                         int nr = 1;
                         if(shapes[i].shapeType == shapeType)
-                            nr = GetNumRepeats(shapes[i].shape, shapeType);
+                            nr = GetNumRepeats(shapes[i], true);
 
                         // Repeat the field value for all cells in the shape.
                         for(int j = 0; j < nr; ++j)

@@ -77,6 +77,9 @@
 //    Added support for Cycles/Times. Added methods to explicitly initialize
 //    and finalize the hdf5 library
 //
+//    Mark C. Miller, Tue Mar  6 23:41:33 PST 2007
+//    Removed simParamsHaveBeenRead; Added bool to ReadSimulationParameters
+//
 // ****************************************************************************
 
 class avtFLASHFileFormat : public avtSTMDFileFormat
@@ -93,7 +96,6 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
     virtual void           ActivateTimestep(void);
 
     int                    GetCycle();
-    int                    GetCycleFromFilename(const char *f) const;
     double                 GetTime();
 
     virtual void          *GetAuxiliaryData(const char *var, int,
@@ -111,7 +113,7 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
 
     void BuildDomainNesting();
 
-    void ReadSimulationParameters(hid_t file_id);
+    void ReadSimulationParameters(hid_t file_id, bool timeAndCycleOnly = false);
     void ReadBlockStructure();
     void ReadBlockExtents();
     void ReadRefinementLevels();
@@ -182,7 +184,6 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
     std::string               particleHDFVarName;
     hid_t                     fileId;
     SimParams                 simParams;
-    bool                      simParamsHaveBeenRead;
     std::vector<Block>        blocks;
     int                       numChildrenPerBlock;
     int                       numNeighborsPerBlock;
