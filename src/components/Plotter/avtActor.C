@@ -703,6 +703,12 @@ avtActor::GetDataObject(void)
 //  Programmer: Hank Childs
 //  Creation:   July 7, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Mar  8 11:08:53 PST 2007
+//    Initialize the transparency actor with a good default.  If there should
+//    be a scale factor, that will be determined later.
+//
 // ****************************************************************************
 
 void
@@ -710,7 +716,11 @@ avtActor::SetTransparencyActor(avtTransparencyActor *actor)
 {
     transparencyActor = actor;
     transparencyIndex = drawable->SetTransparencyActor(transparencyActor);
+
+    double vec[3] = { 1, 1, 1 };
+    transparencyActor->ScaleByVector(vec);
 }
+
 
 // ****************************************************************************
 //  Method: avtActor::UpdateScaleFactor

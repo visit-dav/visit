@@ -21,6 +21,10 @@
 #   Mark C. Miller, Tue Mar  6 09:12:07 PST 2007
 #   Fixed errors when plugin wasn't specified
 #
+#   Mark C. Miller, March 7, 2007
+#   Moved all instructions to single place. Made it send a single email
+#   for all recipients so all could see who received it.
+#
 # ----------------------------------------------------------------------------
 #
 
@@ -41,33 +45,79 @@ cleanPluginDir () {
 #
 # Buil the README file to be included in the tarball
 #
-makeReadmeFile () {
-
+makeInstructionsFile () {
 cat > $1 <<- EOF
-    This directory contains the source code for a VisIt database plugin.
+    The associated tarball is a VisIt plugin. This update is being
+    furnished to you to address the following problem(s)...
 
-    This particular distribution includes modifications to address the
-    following problem(s)....
+        $commentString
 
-    $commentString
+    Commands for installing and UNinstalling (VisIt 1.6 and newer)
+    --------------------------------------------------------------
+    (Note: no '.tar.gz' after the plugin's name)
+    % visit_plugin -install $pluginName 
+    % visit_plugin -uninstall $pluginName
 
-    For versions of VisIt 1.6 or newer, you can use the 'visit_plugin'
-    command to install and uninstall this plugin. Just type the command
-        % visit_plugin -install .
-    to install the plugin in ~/.visit/<arch>/plugins/databases/. 
-        % visit_plugin -uninstall .
-    to uninstall it and remove it from ~/.visit/<arch>/plugins/databases.
+    Commands for installing and UNinstalling (VisIt 1.5.5 and older)
+    ----------------------------------------------------------------
+    % gunzip < $pluginName.tar.gz | tar xvf -
+    % cd $pluginName
+    To install...
+    % xml2info -clobber <pluginname>.xml
+    % xml2makefile -clobber <pluginname>.xml
+    % make
+    To UNinstall...
+    % make clean
 
+    If you have problems, email visit-help@llnl.gov
+
+    Additional information to be aware of
+    -------------------------------------
     Note that if you run VisIt in client/server mode, you will need to
     make sure to install the plugin on both the client machine (usually
     your desktop machine) and the server.
 
-    When you start VisIt, it looks in ~/.visit/<arch>/plugins for any
-    plugins you have installed in your home directory and then it looks
-    in the public installation directory. In this way, plugins in your
-    home directory override plugins in the public directory. You can
-    disable this behavior by adding '-publicpluginsonly' on the command
-    line to launch VisIt.
+    If you are running a version of VisIt that is older than the most
+    current release, be aware there is always a chance the plugin will
+    not install or, once installed, not run correctly. You may be
+    required to update either VisIt and/or the third party I/O library(s)
+    this plugin may require. 
+EOF
+
+    if test $testBuild -ne 0; then
+        if test -n "$testRun"; then
+            cat >> $1 <<- EOF
+
+    Prior to sending you this tarball, it was confirmed to build and
+    run correctly with version $versionBuiltWith of VisIt.
+
+EOF
+        else
+            cat >> $1 <<- EOF
+
+    Prior to sending you this tarball, it was confirmed to build with
+    version $versionBuiltWith of VisIt.
+
+EOF
+	fi
+    fi
+
+cat >> $1 <<- EOF
+    The commands to install and uninstall a plugin create and remove
+    shared libraries in ~/.visit/<arch>/plugins/databases.
+    When VisIt starts up, it looks in ~/.visit/<arch>/plugins/databases
+    for any plugins you have installed in your home directory. We call
+    these 'private' plugins. Then it looks in the public installation
+    directory.  In this way, plugins in your home directory override
+    plugins in the public directory. You can disable this behavior by
+    adding '-publicpluginsonly' on the command line to launch VisIt.
+
+    Over time, as you install private plugins and/or VisIt, you can wind
+    up having private plugins that are not compatibile with the version
+    of VisIt you are running. VisIt will warn you of this occurance during
+    startup and ignore your private plugin in favor of the public one.
+    To correct this situation, simply uninstall your private plugin
+    following the instructions here.
 
     If you would like VisIt to test the plugin and automatically uninstall
     it if the test fails, give the command
@@ -76,22 +126,7 @@ cat > $1 <<- EOF
     specified file and display the specified plot with the specified
     variable.  If this test fails, VisIt will automatically uninstall
     the plugin and inform you of the failure.
-
-    For versions of VisIt older than 1.6, the following commands will
-    install the plugin when executed in the directory in which this README
-    file exists.
-        % xml2info -clobber <pluginname>.xml
-        % xml2makefile -clobber <pluginname>.xml
-        % make
-    Likewise, to uninstall the plugin, from the directory in which this
-    README file exists, issue the following command
-        % make clean
-    You can then re-install it by re-running the commands used to install
-    it.
-
-    If you have problems, email visit-help@llnl.gov
 EOF
-
 }
 
 #
@@ -103,7 +138,7 @@ packagePluginDir () {
     cp -R $theDir $TMPDIR/${theDir}_tmp.$$/. 1>/dev/null 2>&1
     cleanPluginDir $TMPDIR/${theDir}_tmp.$$/$theDir 1>/dev/null 2>&1
     pushd $TMPDIR/${theDir}_tmp.$$ 1>/dev/null 2>&1
-    makeReadmeFile $theDir/README 1>/dev/null 2>&1
+    makeInstructionsFile $theDir/README 1>/dev/null 2>&1
     tar cf - $theDir | gzip > $theDir.tar.gz
     popd 1>/dev/null 2>&1
     cp $TMPDIR/${theDir}_tmp.$$/$theDir.tar.gz .
@@ -203,6 +238,7 @@ pluginName=
 requiredVersions=
 origArgs=$*
 testBuild=0
+versionBuiltWith=
 testRun=
 commentString="user requested update `date`"
 dontRemoveTarball=0
@@ -315,15 +351,6 @@ if test $optError -eq 0 && test -z "$action"; then
     echo "************************************************"
 fi
 
-if test $optError -eq 0 && test -z "$pluginName"; then
-    optError=1
-    echo "********************"
-    echo "********************"
-    echo "No plugin specified."
-    echo "********************"
-    echo "********************"
-fi
-
 if test "$optError" = "1"; then
     echo "Usage:  $0 <options> [dirs]"
     echo "Available options:"
@@ -355,6 +382,15 @@ fi
 # a good way of generating it from a login name.
 #
 execEmail=unknown
+
+#
+# Set the versionBuilWith variable if we every need it
+#
+if test -n "$requiredVersions"; then
+    versionBuiltWith=`echo $requiredVersions | cut -d' ' -f1`
+else
+    versionBuiltWith=`visit -version 2>&1 | cut -d' ' -f7 | cut -d'.' -f1-3`
+fi
 
 #
 # handle pack, install, uninstall actions.
@@ -426,36 +462,16 @@ if test $action = pack; then
     #
     # Email tarball to recipients if specified
     #
-    if test -f $pluginName.tar.gz; then
-        for em in $emailRecipients; do
-            cat > mutt.msg <<-EOF
-The attached tarball is a VisIt plugin. This update is being
-furnished to you to address the following problem...
-
-$commentString
-
-To build and install this plugin,
-
-    % visit_plugin -install $pluginName
-
-Note: no '.tar.gz' after the plugin's name.
-
-For versions of VisIt older than 1.6...
-
-    % gunzip < $pluginName.tar.gz | tar xvf -
-
-cd into the directory and follow the instructions in
-the README file there.
-EOF
-             if test "$execEmail" = "unknown"; then
-                 mutt -s "Updated $pluginName plugin" -a $pluginName.tar.gz $em < mutt.msg
-             else
-                 mutt -c $execEmail -s "Updated $pluginName plugin" -a $pluginName.tar.gz $em < mutt.msg
-             fi
-             tarballsToRemove="$tarballsToRemove $pluginName.tar.gz"
-	     sleep 3
-             rm -f mutt.msg
-        done
+    if test -n "$emailRecipients"; then
+        makeInstructionsFile mutt.msg 1>/dev/null 2>&1
+        if test "$execEmail" = "unknown"; then
+            mutt -s "Updated $pluginName plugin" -a $pluginName.tar.gz $emailRecipients < mutt.msg
+        else
+            mutt -c $execEmail -s "Updated $pluginName plugin" -a $pluginName.tar.gz $emailRecipients < mutt.msg
+        fi
+        tarballsToRemove="$tarballsToRemove $pluginName.tar.gz"
+	sleep 3
+        rm -f mutt.msg
     fi
 
     #
@@ -482,7 +498,7 @@ elif test $action = install; then
             exit 1
         else
             echo "Installed successfully."
-            echo "To UNinstall it, use $0 -uninstall"
+            echo "To UNinstall it, use $0 -uninstall $pluginName"
             rm -rf $buildDir
         fi
     else

@@ -578,6 +578,10 @@ avtTransparencyActor::VisibilityOn(void)
 //    library.  Disable axis sort in parallel because it's only slowing us
 //    down (never use it).  
 //
+//    Hank Childs, Thu Mar  8 13:08:34 PST 2007
+//    Make sure that the transparent geometry gets turned off when we render
+//    something 2D.
+//    
 // ****************************************************************************
 
 void
@@ -586,6 +590,10 @@ avtTransparencyActor::PrepareForRender(vtkCamera *cam)
     // if this is a 2D plot, we don't need to sort anything
     if (is2Dimensional)
     {
+        if (!TransparenciesExist())
+        {
+            myActor->SetVisibility(0);
+        }
         return;
     }
 
