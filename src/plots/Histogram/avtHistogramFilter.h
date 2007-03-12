@@ -65,6 +65,9 @@
 //    Hank Childs, Wed May 24 10:00:12 PDT 2006
 //    Added support for array variables.
 //
+//    Cyrus Harrison, Fri Mar  9 09:11:34 PST 2007
+//    Added support for point histograms and true "Frequency" histograms
+//
 // ****************************************************************************
 
 class avtHistogramFilter : public avtStreamer
@@ -93,8 +96,10 @@ class avtHistogramFilter : public avtStreamer
     virtual avtPipelineSpecification_p
                               PerformRestriction(avtPipelineSpecification_p);
 
-    virtual void              StandardExecute(vtkDataSet *);
+    virtual void              FreqzExecute(vtkDataSet *);
+    virtual void              WeightedExecute(vtkDataSet *);
     virtual void              ArrayVarExecute(vtkDataSet *, int);
+
 };
 
 

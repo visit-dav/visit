@@ -186,6 +186,9 @@
 //
 //    Brad Whitlock, Fri Feb 23 17:07:43 PST 2007
 //    Added support for viewer widgets.
+// 
+//    Cyrus Harrison, Wed Mar  7 08:55:37 PST 2007
+//    Allow for engine-specific code in a plugin's source files.
 //
 // ****************************************************************************
 
@@ -202,6 +205,7 @@ class MakefileGeneratorPlugin
     bool    hasoptions;
     bool    enabledByDefault;
     bool    has_MDS_specific_code;
+    bool    hasEngineSpecificCode;
     bool    onlyEnginePlugin;
     bool    noEnginePlugin;
 
@@ -242,6 +246,7 @@ class MakefileGeneratorPlugin
     {
         enabledByDefault = true;
         has_MDS_specific_code = false;
+        hasEngineSpecificCode = false;
         customgfiles = false;
         customsfiles = false;
         customvfiles = false;
@@ -399,6 +404,11 @@ class MakefileGeneratorPlugin
                     out << " " << defaultvfiles[i];
             out << endl;
             out << "ESRC="<<name<<"EnginePluginInfo.C";
+            if(hasEngineSpecificCode)
+            {
+                out << endl;
+                out << "ESPECIFICSRC=";
+            }
             if (customefiles)
                 for (int i=0; i<efiles.size(); i++)
                     out << " " << efiles[i];
@@ -462,8 +472,8 @@ class MakefileGeneratorPlugin
 
             // Add the rest of the viewer operator libs
             out << "-lI$(PLUGINNAME) $(VTK_LIBS)" << endl;
-            out << "ESERLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser -lavtmath_ser -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lI$(PLUGINNAME) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;
-            out << "EPARLIBS=-lpipeline_par -lplotter_par -lavtfilters_par -lavtmath_par -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par -lI$(PLUGINNAME) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
+            out << "ESERLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser -lavtmath_ser -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lexpressions_ser -lI$(PLUGINNAME) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;
+            out << "EPARLIBS=-lpipeline_par -lplotter_par -lavtfilters_par -lavtmath_par -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par -lexpressions_par -lI$(PLUGINNAME) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
             out << "" << endl;
             out << "IDSO="<<visitplugininstall<<"/operators/libI"<<name<<"Operator" << PLUGIN_EXTENSION << endl;
             out << "GDSO="<<visitplugininstall<<"/operators/libG"<<name<<"Operator" << PLUGIN_EXTENSION << endl;
@@ -539,7 +549,14 @@ class MakefileGeneratorPlugin
                 for (int i=0; i<defaultvfiles.size(); i++)
                     out << " " << defaultvfiles[i];
             out << endl;
-            out << "ESRC="<<name<<"EnginePluginInfo.C avt"<<name<<"Plot.C";
+            out << "ESRC="<<name<<"EnginePluginInfo.C";
+            if(hasEngineSpecificCode)
+            {
+                out << endl;
+                out << "ESPECIFICSRC=";
+            }
+            out << " avt"<<name<<"Plot.C";
+
             if (customefiles)
             {
                 for (int i=0; i<efiles.size(); i++)
@@ -594,8 +611,8 @@ class MakefileGeneratorPlugin
             out << "GLIBS=-lgui -lmdserverproxy -lviewerproxy -lproxybase -lmdserverrpc -lviewerrpc -lwinutil -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lplugin -lexpr -lparser -lutility -lI$(PLUGINNAME) $(QT_LDFLAGS) $(QT_LIBS) $(QUI_LIBS) $(X_LIBS)" << endl;
             out << "SLIBS=-lstate -lmisc -lcomm -lutility $(PY_LIB) -lI$(PLUGINNAME)" << endl;
             out << "VLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser -lavtmath_ser -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lI$(PLUGINNAME) $(VLIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;
-            out << "ESERLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser -lavtmath_ser -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lI$(PLUGINNAME) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;
-            out << "EPARLIBS=-lpipeline_par -lplotter_par -lavtfilters_par -lavtmath_par -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par -lI$(PLUGINNAME) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
+            out << "ESERLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser -lavtmath_ser -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lexpressions_ser -lI$(PLUGINNAME) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;
+            out << "EPARLIBS=-lpipeline_par -lplotter_par -lavtfilters_par -lavtmath_par -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par -lexpressions_par -lI$(PLUGINNAME) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
             out << "" << endl;
             out << "IDSO="<<visitplugininstall<<"/plots/libI"<<name<<"Plot" << PLUGIN_EXTENSION << endl;
             out << "GDSO="<<visitplugininstall<<"/plots/libG"<<name<<"Plot" << PLUGIN_EXTENSION << endl;
@@ -637,6 +654,12 @@ class MakefileGeneratorPlugin
                     out << " " << defaultmfiles[i];
             out << endl;
             out << "ESRC="<<name<<"EnginePluginInfo.C";
+            if(hasEngineSpecificCode)
+            {
+                out << endl;
+                out << "ESPECIFICSRC=";
+            }
+
             if (haswriter)
             {
                 out << " avt" << name << "Writer.C";
@@ -683,8 +706,8 @@ class MakefileGeneratorPlugin
         out << "SOBJ=$(COMMONSRC:.C=.o) $(SSRC:.C=.o)" << endl;
         out << "VOBJ=$(COMMONSRC:.C=.o) $(VSRC:.C=.o)" << vGraphicsObjects << endl;
         out << "MOBJ=$(COMMONSRC:.C=.o) $(MSRC:.C=.o) $(MSPECIFICSRC:.C=_mds.o)" << endl;
-        out << "ESEROBJ=$(COMMONSRC:.C=.o) $(ESRC:.C=.o)" << eserGraphicsObjects << endl;
-        out << "EPAROBJ=$(COMMONSRC:.C=.o) $(ESRC:.C=_par.o)" << eparGraphicsObjects << endl;
+        out << "ESEROBJ=$(COMMONSRC:.C=.o) $(ESRC:.C=.o)     $(ESPECIFICSRC:.C=_eng.o)" << eserGraphicsObjects << endl;
+        out << "EPAROBJ=$(COMMONSRC:.C=.o) $(ESRC:.C=_par.o) $(ESPECIFICSRC:.C=_par_eng.o)" << eparGraphicsObjects << endl;
         out << "" << endl;
         out << "MOCSRC = $(WIDGETS:.h=_moc.C)" << endl;
         out << "MOCOBJ = $(MOCSRC:.C=.o)" << endl;

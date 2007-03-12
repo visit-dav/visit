@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Histogram" type="plot" label="Histogram" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" vartype="scalar,array" iconFile="Histogram.xpm">
+  <Plugin name="Histogram" type="plot" label="Histogram" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="true" onlyengine="false" noengine="false" vartype="scalar,array" iconFile="Histogram.xpm">
     <Attribute name="HistogramAttributes" purpose="Attributes for Histogram Plot" persistent="true" exportAPI="" exportInclude="" codefile="HistogramAttributes.code">
       <Enum name="OutputType">
         Curve
@@ -13,8 +13,19 @@
         ManyVarsForSingleZone
         ManyZonesForSingleVar
       </Enum>
-      <Field name="basedOn" label="basedOn" type="enum" subtype="BasedOn">
+      <Enum name="BinContribution">
+        Auto
+        Frequency
+        Weighted
+      </Enum>
+      <Field name="basedOn" label="Histogram based on" type="enum" subtype="BasedOn">
         ManyZonesForSingleVar
+      </Field>
+      <Field name="histogramType" label="Histogram Method" type="enum" subtype="BinContribution" enabler="basedOn:ManyZonesForSingleVar">
+        Auto
+      </Field>
+      <Field name="twoDAmount" label="2D weight contribution" type="enum" subtype="TwoDAmount" enabler="histogramType:Weighted">
+        RevolvedVolume
       </Field>
       <Field name="specifyRange" label="Specify Range?" type="bool" enabler="basedOn:ManyZonesForSingleVar">
         false
@@ -27,9 +38,6 @@
       </Field>
       <Field name="numBins" label="Number of Bins" type="int" enabler="basedOn:ManyZonesForSingleVar">
         32
-      </Field>
-      <Field name="twoDAmount" label="Calculate 2D based on" type="enum" subtype="TwoDAmount" enabler="basedOn:ManyZonesForSingleVar">
-        RevolvedVolume
       </Field>
       <Field name="domain" label="domain" type="int" enabler="basedOn:ManyVarsForSingleZone">
         0

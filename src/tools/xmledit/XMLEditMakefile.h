@@ -62,6 +62,9 @@ class QCheckBox;
 //    Brad Whitlock, Fri Feb 23 17:47:21 PST 2007
 //    Added viewer widgets.
 //
+//    Cyrus Harrison, Wed Mar  7 09:17:11 PST 2007
+//    Allow for engine-specific code in a plugin's source files.
+//
 // ****************************************************************************
 class XMLEditMakefile : public QFrame
 {
@@ -91,6 +94,7 @@ class XMLEditMakefile : public QFrame
     void customwfilesChanged();
     void customvwfilesChanged();
     void mdSpecificCodeChanged();
+    void engSpecificCodeChanged();
   private:
     XMLDocument     *xmldoc;
 
@@ -112,6 +116,7 @@ class XMLEditMakefile : public QFrame
     QCheckBox       *customVWFiles;
     QLineEdit       *VWFiles;
     QCheckBox       *mdSpecificCode;
+    QCheckBox       *engSpecificCode;
 };
 
 #endif

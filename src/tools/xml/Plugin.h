@@ -92,6 +92,9 @@
 //    Brad Whitlock, Fri Feb 23 17:11:23 PST 2007
 //    Added viewer widgets.
 //
+//    Cyrus Harrison, Wed Mar  7 09:11:05 PST 2007
+//    Allow for engine-specific code in a plugin's source files.
+//
 // ****************************************************************************
 
 class Plugin
@@ -109,6 +112,7 @@ class Plugin
     bool hasoptions;
     bool enabledByDefault;
     bool has_MDS_specific_code;
+    bool hasEngineSpecificCode;
     bool onlyEnginePlugin;
     bool noEnginePlugin;
 
@@ -149,6 +153,7 @@ class Plugin
     {
         enabledByDefault = true;
         has_MDS_specific_code = false;
+        hasEngineSpecificCode = false;
         customgfiles = false;
         customsfiles = false;
         customvfiles = false;
@@ -199,6 +204,7 @@ class Plugin
         WriteTagAttr(out, "version", version);
         WriteTagAttr(out, "enabled", Bool2Text(enabledByDefault));
         WriteTagAttr(out, "mdspecificcode", Bool2Text(has_MDS_specific_code));
+        WriteTagAttr(out, "engspecificcode", Bool2Text(hasEngineSpecificCode));
         WriteTagAttr(out, "onlyengine", Bool2Text(onlyEnginePlugin));
         WriteTagAttr(out, "noengine", Bool2Text(noEnginePlugin));
 

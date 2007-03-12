@@ -138,6 +138,9 @@ inline char toupper(char c)
 //    Brad Whitlock, Tue Nov 21 10:24:37 PDT 2006
 //    Added support for line style symbols.
 //
+//    Cyrus Harrison, Wed Mar  7 09:52:17 PST 2007
+//    Allow for engine-specific code in a plugin's source files.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -2474,6 +2477,7 @@ class PythonGeneratorPlugin
     QString dbtype;
     bool    enabledByDefault;
     bool    has_MDS_specific_code;
+    bool    hasEngineSpecificCode;
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
@@ -2504,6 +2508,7 @@ class PythonGeneratorPlugin
     {
         enabledByDefault = true;
         has_MDS_specific_code = false;
+        hasEngineSpecificCode = false;
     }
     void Print(ostream &out)
     {
