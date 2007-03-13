@@ -231,6 +231,9 @@ avtVolumeFilter::Execute(void)
 //    Hank Childs, Mon Sep 11 14:46:07 PDT 2006
 //    Add support for the integration ray function.
 //
+//    Hank Childs, Tue Mar 13 16:13:05 PDT 2007
+//    Pass distance to integration ray function.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -435,7 +438,10 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     CreateViewInfoFromViewAttributes(vi, view);
     software->SetView(vi);
     if (atts.GetRendererType() == VolumeAttributes::RayCastingIntegration)
+    {
+        integrateRF->SetDistance(view.GetFarPlane()-view.GetNearPlane());
         integrateRF->SetWindowSize(size[0], size[1]);
+    }
 
     //
     // Set the volume renderer's background color and mode from the

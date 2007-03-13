@@ -57,6 +57,11 @@
 //  Programmer: Hank Childs
 //  Creation:   September 8, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Mar 13 16:13:05 PDT 2007
+//    Add support for setting distance along the plane.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtIntegrationRF : public avtRayFunction
@@ -74,11 +79,14 @@ class PIPELINE_API avtIntegrationRF : public avtRayFunction
 
     void                SetRange(double m1, double m2)
                                   { min = m1; max = m2; };
+    void                SetDistance(double d) { distance = d; };
 
   protected:
     static int          windowSize[2];
     static double      *vals;
+    static bool         issuedWarning;
     double              min, max;
+    double              distance;
 
     virtual bool        NeedsGradientsForFunction(void) { return false; };
 };

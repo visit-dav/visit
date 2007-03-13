@@ -41,6 +41,8 @@
 
 #include <avtConditionalFilter.h>
 
+#include <snprintf.h>
+
 #include <math.h>
 
 #include <vtkCellData.h>
@@ -102,6 +104,11 @@ avtConditionalFilter::~avtConditionalFilter()
 //  Programmer:   Hank Childs
 //  Creation:     August 20, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Mar 13 10:02:16 PDT 2007
+//    Improve error message.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -144,8 +151,11 @@ avtConditionalFilter::DeriveVariable(vtkDataSet *in_ds)
 
     if (data2 == NULL)
     {
-        EXCEPTION1(ExpressionException, 
-                   "The first two variables have different centering.");
+        char msg[1024];
+        SNPRINTF(msg, 1024, 
+                   "the first two arguments to \"if\" (%s and %s) have "
+                   " different centerings.", varnames[0], varnames[1]);
+        EXCEPTION1(ExpressionException, msg);
     }
 
     // Get the third variable.
@@ -156,8 +166,11 @@ avtConditionalFilter::DeriveVariable(vtkDataSet *in_ds)
     
     if (data3 == NULL)
     {
-        EXCEPTION1(ExpressionException, 
-               "The first and third variables have different centering.");
+        char msg[1024];
+        SNPRINTF(msg, 1024, 
+                   "the first and third arguments to \"if\" (%s and %s) have "
+                   " different centerings.", varnames[0], varnames[2]);
+        EXCEPTION1(ExpressionException, msg);
     }
 
     //
