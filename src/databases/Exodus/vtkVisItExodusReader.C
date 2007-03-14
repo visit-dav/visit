@@ -104,6 +104,9 @@ vtkStandardNewMacro(vtkVisItExodusReader);
 //    Hank Childs, Wed Jul 14 07:49:06 PDT 2004
 //    Initialize alreadyDoneExecuteInfo.
 //
+//    Eric Brugger, Fri Mar  9 14:11:35 PST 2007
+//    Initialize the element block names.
+//
 //----------------------------------------------------------------------------
 // Description:
 // Instantiate object with NULL filename.
@@ -124,8 +127,9 @@ vtkVisItExodusReader::vtkVisItExodusReader()
   this->NumberOfPointDataArrays = 0;
   this->NumberOfCellDataArrays = 0;
   this->NumberOfBlockElements = vtkIntArray::New();
-  this->CellVarTruthTable = vtkIntArray::New();
   this->BlockIds = vtkIntArray::New();  
+  this->BlockNames = vtkStringArray::New();
+  this->CellVarTruthTable = vtkIntArray::New();
   this->PointDataArrayLength = 0;
   this->PointDataArrayNames = NULL;
   this->PointDataArrayNumberOfComponents = NULL;
@@ -152,6 +156,10 @@ vtkVisItExodusReader::vtkVisItExodusReader()
 //  Modifications:
 //    Hank Childs, Sat Apr 17 07:44:05 PDT 2004
 //    Destruct times.
+//
+//    Eric Brugger, Fri Mar  9 14:11:35 PST 2007
+//    Destruct the element block names.
+//
 //----------------------------------------------------------------------------
 vtkVisItExodusReader::~vtkVisItExodusReader()
 {
@@ -163,6 +171,8 @@ vtkVisItExodusReader::~vtkVisItExodusReader()
   this->NumberOfBlockElements = NULL;
   this->BlockIds->Delete();
   this->BlockIds = NULL;
+  this->BlockNames->Delete();
+  this->BlockNames = NULL;
   this->CellVarTruthTable->Delete();
   this->CellVarTruthTable = NULL;
   
@@ -420,6 +430,9 @@ void vtkVisItExodusReader::LoadTimes()
 //   No longer load the times, since that is so costly.  Also, only call this
 //   function one time.
 //
+//   Eric Brugger, Fri Mar  9 14:11:35 PST 2007
+//   Read the element block names.
+//
 //----------------------------------------------------------------------------
 
 int vtkVisItExodusReader::RequestInformation(
@@ -489,6 +502,7 @@ int vtkVisItExodusReader::RequestInformation(
   this->BlockIds->SetNumberOfValues(this->NumberOfBlocks);
   ids = this->BlockIds->GetPointer((int)(0));
   error = ex_get_elem_blk_ids (exoid, ids);
+  this->BlockNames->Reset();
   for (i = 0; i < this->NumberOfBlocks; ++i)
     {
     error = ex_get_elem_block (exoid, ids[i], elem_type,
@@ -501,6 +515,18 @@ int vtkVisItExodusReader::RequestInformation(
       }
     
     this->NumberOfBlockElements->InsertValue(i, num_elem_in_block);
+
+    char name[MAX_STR_LENGTH];
+
+    error = ex_get_name (exoid, EX_ELEM_BLOCK, ids[i], name);
+
+    if (error < 0)
+      {
+      vtkErrorMacro("Error: " << error << " reading block names from file " 
+                    << this->FileName);
+      }
+
+    this->BlockNames->InsertValue(i, name);
     }
 
   // Read the attribute array information.
@@ -1646,6 +1672,20 @@ int vtkVisItExodusReader::GetBlockId(int blockIdx)
 }
 
 //----------------------------------------------------------------------------
+const char *vtkVisItExodusReader::GetBlockName(int blockIdx)
+{
+  if (blockIdx < 0 || blockIdx >= this->NumberOfBlocks)
+    {
+    vtkErrorMacro("Block index " << blockIdx 
+                  << " is out of range.  The Current number of blocks is : " 
+                  << this->NumberOfBlocks);
+    return 0;
+    }
+  
+  return this->BlockNames->GetValue(blockIdx);
+}
+
+//----------------------------------------------------------------------------
 const char *vtkVisItExodusReader::GetPointDataArrayName(int arrayIdx)
 {
   if (arrayIdx < 0 || arrayIdx >= this->NumberOfPointDataArrays)
@@ -1823,6 +1863,12 @@ void vtkVisItExodusReader::CheckForProblems(vtkUnstructuredGrid *output)
   
   
 //----------------------------------------------------------------------------
+// Modifications:
+//   Eric Brugger, Fri Mar  9 14:11:35 PST 2007
+//   Print the element block names.
+//
+//----------------------------------------------------------------------------
+
 void vtkVisItExodusReader::PrintSelf(ostream& os, vtkIndent indent)
 {
   int idx;
@@ -1878,6 +1924,11 @@ void vtkVisItExodusReader::PrintSelf(ostream& os, vtkIndent indent)
     {
     os << indent << "  " << this->NumberOfBlockElements->GetValue(idx)
        << " elements in block " << this->BlockIds->GetValue(idx) << "\n";
+    }
+  os << indent << "BlockNames: " << "\n";
+  for (idx = 0; idx < this->NumberOfBlocks; ++idx)
+    {
+    os << indent << "  " << this->BlockNames->GetValue(idx) << "\n";
     }
   os << indent << "BlockRange: " << this->StartBlock << ", " << this->EndBlock << endl;
   os << indent << "NumberOfTimeSteps: " << this->NumberOfTimeSteps << "\n";

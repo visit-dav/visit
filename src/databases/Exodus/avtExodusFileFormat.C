@@ -141,6 +141,9 @@ avtExodusFileFormat::RegisterFileList(const char *const *list, int nlist)
 //    Hank Childs, Mon Aug 23 13:41:54 PDT 2004
 //    Rename cache object to avoid namespace conflict with base class.
 //
+//    Eric Brugger, Fri Mar  9 14:43:07 PST 2007
+//    Added support for element block names.
+//
 // ****************************************************************************
 
 void
@@ -159,6 +162,7 @@ avtExodusFileFormat::ReadInFile(void)
     numBlocks = rdr->GetNumberOfBlocks();
     validBlock.resize(numBlocks);
     blockId.resize(numBlocks);
+    blockName.resize(numBlocks);
     for (i = 0 ; i < numBlocks; i++)
     {
         if (rdr->GetNumberOfElementsInBlock(i) != 0)
@@ -170,6 +174,7 @@ avtExodusFileFormat::ReadInFile(void)
             validBlock[i] = false;
         }
         blockId[i] = rdr->GetBlockId(i);
+        blockName[i] = rdr->GetBlockName(i);
     }
 
     //
@@ -387,6 +392,9 @@ avtExodusFileFormat::GetNTimesteps(void)
 //    Added timeState arg since this is an MTXX database. Nonetheless,
 //    timeState argument is ununsed
 //
+//    Eric Brugger, Fri Mar  9 14:43:07 PST 2007
+//    Added support for element block names.
+//
 // ****************************************************************************
 
 void
@@ -435,11 +443,27 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     //
     string materialName = "ElementBlock";
     vector<string> matNames;
-    for (i = 0 ; i < numBlocks ; i++)
+    if (numBlocks > 0 && blockName[0] == "")
     {
-        char name[128];
-        sprintf(name, "%d", sortedBlockIds[i]);
-        matNames.push_back(name);
+        //
+        // Sort the block ids so the user thinks we know what we are doing.
+        //
+        vector<int> sortedBlockIds = blockId;
+        sort(sortedBlockIds.begin(), sortedBlockIds.end());
+
+        for (i = 0 ; i < numBlocks ; i++)
+        {
+            char name[128];
+            sprintf(name, "%d", sortedBlockIds[i]);
+            matNames.push_back(name);
+        }
+    }
+    else
+    {
+        for (i = 0 ; i < numBlocks ; i++)
+        {
+            matNames.push_back(blockName[i]);
+        }
     }
     AddMaterialToMetaData(md, materialName, meshName, numBlocks, matNames);
 
@@ -810,6 +834,9 @@ avtExodusFileFormat::GetVectorVar(int ts, const char *var)
 //    Hank Childs, Tue Feb  6 15:47:22 PST 2007
 //    Do not assume that global node ids exist.
 //
+//    Eric Brugger, Fri Mar  9 14:43:07 PST 2007
+//    Added support for element block names.
+//
 // ****************************************************************************
 
 void *
@@ -833,14 +860,25 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
 
         int nzones = ds->GetNumberOfCells();
 
-        vector<int> sortedBlockIds = blockId;
-        sort(sortedBlockIds.begin(), sortedBlockIds.end());
         std::vector<std::string> mats(numBlocks);
-        for (i = 0 ; i < numBlocks ; i++)
+        if (numBlocks > 0 && blockName[0] == "")
         {
-            char num[1024];
-            sprintf(num, "%d", sortedBlockIds[i]);
-            mats[i] = num;
+            vector<int> sortedBlockIds = blockId;
+            sort(sortedBlockIds.begin(), sortedBlockIds.end());
+
+            for (i = 0 ; i < numBlocks ; i++)
+            {
+                char num[1024];
+                sprintf(num, "%d", sortedBlockIds[i]);
+                mats[i] = num;
+            }
+        }
+        else
+        {
+            for (i = 0 ; i < numBlocks ; i++)
+            {
+                mats[i] = blockName[i];
+            }
         }
 
         int *mat_0 = new int[nzones];

@@ -770,7 +770,19 @@ fi
 rm -f davinci
 cat <<EOF > davinci
 #!/bin/sh
-mv davinci_$dist.tar.gz $dist.tar.gz
+if test ! -d tmp ; then
+   mkdir tmp
+fi
+if test ! -d tmp/$user ; then
+   mkdir tmp/$user
+fi
+if test ! -d tmp/$user/davinci; then
+   mkdir tmp/$user/davinci
+fi
+rm -rf tmp/$user/davinci/visitbuild
+mkdir tmp/$user/davinci/visitbuild
+mv davinci_$dist.tar.gz tmp/$user/davinci/visitbuild/$dist.tar.gz
+cd tmp/$user/davinci/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`

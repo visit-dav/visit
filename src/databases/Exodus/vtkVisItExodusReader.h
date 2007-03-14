@@ -66,6 +66,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //   Hank Childs, Sun Jun 27 10:31:18 PDT 2004
 //   Added support for reading global node numbers.
 //
+//   Eric Brugger, Fri Mar  9 14:10:43 PST 2007
+//   Added support for reading element block names.
+//
 
 #ifndef __vtkVisItExodusReader_h
 #define __vtkVisItExodusReader_h
@@ -73,6 +76,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include "vtkUnstructuredGridAlgorithm.h"
 #include "vtkIntArray.h"
+#include "vtkStringArray.h"
 
 class vtkVisItExodusReader : public vtkUnstructuredGridAlgorithm 
 {
@@ -147,6 +151,7 @@ public:
   vtkGetMacro(NumberOfCellDataArrays, int);
   int GetNumberOfElementsInBlock(int blockIdx);
   int GetBlockId(int blockIdx);
+  const char *GetBlockName(int blockIdx);
   const char *GetPointDataArrayName(int arrayIdx);
   int GetPointDataArrayNumberOfComponents(int arrayIdx);
   const char *GetCellDataArrayName(int arrayIdx);
@@ -231,6 +236,7 @@ protected:
   float *Times;
   vtkIntArray *NumberOfBlockElements;
   vtkIntArray *BlockIds;
+  vtkStringArray *BlockNames;
   vtkIntArray *CellVarTruthTable;
   bool alreadyDoneExecuteInfo;
   
