@@ -55,6 +55,10 @@ class QCheckBox;
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Wed Mar 7 16:04:45 PST 2007
+//    Added control to turn off keyframe.
+//
 // ****************************************************************************
 class XMLEditAttribute : public QFrame
 {
@@ -72,8 +76,9 @@ class XMLEditAttribute : public QFrame
     void exportAPITextChanged(const QString&);
     void exportIncludeTextChanged(const QString&);
     void persistentChanged();
+    void keyframeChanged();
   private:
-    XMLDocument     *xmldoc;
+    XMLDocument   *xmldoc;
 
     QLineEdit     *name;
     QLineEdit     *purpose;
@@ -81,6 +86,7 @@ class XMLEditAttribute : public QFrame
     QLineEdit     *exportAPI;
     QLineEdit     *exportInclude;
     QCheckBox     *persistent;
+    QCheckBox     *keyframe;
 };
 
 #endif

@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+  <Attribute name="avtSILCollectionMetaData" purpose="Contains SIL collection metadata attributes" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtSILCollectionMetaData.code">
+    <Enum name="CollectionType">
+      Class
+      PureCollection
+      CollectionAndSets
+      Unknown
+    </Enum>
+    <Field name="classOfCollection" label="Class of collection" type="string" access="public">
+    </Field>
+    <Field name="defaultMemberBasename" label="Default member base name" type="string" access="public">
+    </Field>
+    <Field name="collectionSize" label="Collection size" type="int" access="public">
+      -1
+    </Field>
+    <Field name="collectionIdOfParent" label="Collection id of parent" type="int" access="public">
+      -1
+    </Field>
+    <Field name="indexOfParent" label="Index of parent" type="int" access="public">
+      -1
+    </Field>
+    <Field name="collectionIdOfChildren" label="Collection id of children" type="int" access="public">
+      -1
+    </Field>
+    <Field name="indicesOfChildren" label="Indices of children" type="intVector" access="public">
+    </Field>
+    <Function name="avtSILCollectionMetaData2" user="true" member="true">
+    </Function>
+    <Function name="Print" user="true" member="true">
+    </Function>
+    <Function name="GetSize" user="true" member="true">
+    </Function>
+    <Function name="GetType" user="true" member="true">
+    </Function>
+    <Function name="GetClassName" user="true" member="true">
+    </Function>
+    <Include file="source" quoted="false">
+      ImproperUseException.h
+    </Include>
+  </Attribute>

@@ -259,7 +259,7 @@ avtDatabaseWriter::Write(const std::string &filename,
                     ExpressionList *el = pel->GetList();
                     for (i = 0 ; i < el->GetNumExpressions() ; i++)
                     {
-                        const Expression &expr = el->GetExpression(i);
+                        const Expression &expr = el->GetExpressions(i);
                         if (expr.GetName() == varlist[j])
                         {
                             Expression::ExprType type = expr.GetType();

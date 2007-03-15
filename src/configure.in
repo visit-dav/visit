@@ -652,6 +652,9 @@ dnl
 dnl    Eric Brugger, Fri Mar  9 10:56:59 PST 2007
 dnl    Removed the exodus and netcdf libraries from the list of vtk libraries.
 dnl
+dnl    Brad Whitlock, Tue Mar 13 18:20:38 PST 2007
+dnl    Changed how Python is used in CLI.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2413,6 +2416,51 @@ AC_SUBST(CFITSIO_LIB)
 AC_SUBST(CFITSIO_LIBDIR)
 
 #
+# Look for TSTT
+# Note: to make it easier to support a variety of implementations
+# of TSTT, we treat the TSTT_INCLUDE and TSTT_LIB symbols a little
+# differently here than for other libs. Here, they are expected
+# to include the -I and -L compiler/linker option flags and can
+# contain multiple of them. The TSTT_LIB symbol also needs to
+# include the -lxxx linker options too.
+#
+AC_MSG_CHECKING(for a TSTT Implementation)
+TSTT=""
+TSTT_INCLUDE=""
+TSTT_LIB=""
+AC_ARG_WITH(tstt,
+            [  --with-tstt=INC-DIR,LIB-DIR      -I and -L/-l compiler options for TSTT],
+           tstt_specified="yes",
+           tstt_specified="no"
+           )
+if test "$tstt_specified" = "yes"; then
+   if test "$withval" != "no"; then
+      TSTT_INCLUDE="`echo $withval |cut -f1 -d,`"
+      TSTT_LIB="`echo $withval |cut -f2- -d, -s`"
+   fi
+else
+   if test "$DEFAULT_TSTT_INCLUDE" != "" ; then
+      TSTT_INCLUDE="$DEFAULT_TSTT_INCLUDE"
+   fi
+   if test "$DEFAULT_TSTT_LIB" != "" ; then
+      TSTT_LIB="$DEFAULT_TSTT_LIB"
+   fi
+fi
+if test "$TSTT_LIB" != "" ; then
+   if test "$TSTT_INCLUDE" != "" ; then
+      TSTT="$""(TSTT)"
+      AC_MSG_RESULT(yes)
+   else
+      AC_MSG_RESULT(no)
+   fi
+else
+   AC_MSG_RESULT(no)
+fi
+AC_SUBST(TSTT)
+AC_SUBST(TSTT_INCLUDE)
+AC_SUBST(TSTT_LIB)
+
+#
 # Add Some include paths to the engine's CPPFLAGS.
 #
 ENGINE_CPPFLAGS="$ENGINE_CPPFLAGS $VTK_INCLUDES"
@@ -3254,7 +3302,10 @@ THIRD_PARTY_BUILTIN_FILES="third_party_builtin/Makefile
                            third_party_builtin/bilib/Makefile"
 
 if test "$enable_scripting" = "yes"; then
-    VISITPY_FILES="visitpy/Makefile"
+    VISITPY_FILES="visitpy/Makefile
+                   visitpy/visitpy/Makefile
+                   visitpy/cli/Makefile
+                   visitpy/visitmodule/Makefile"
 else
     VISITPY_FILES=""
 fi

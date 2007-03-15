@@ -570,7 +570,7 @@ avtBoundaryPlot::SetColors()
         ColorAttribute ca(atts.GetSingleColor());
         ca.SetAlpha((unsigned char)(float(ca.Alpha()) * atts.GetOpacity()));
         ColorAttributeList cal;
-        cal.AddColorAttribute(ca);
+        cal.AddColors(ca);
 
         avtLUT->SetLUTColorsWithOpacity(ca.GetColor(), 1);
         levelsMapper->SetColors(cal);
@@ -585,7 +585,7 @@ avtBoundaryPlot::SetColors()
     else if (atts.GetColorType() == BoundaryAttributes::ColorByMultipleColors)
     {
         ColorAttributeList cal(atts.GetMultiColor());
-        int numColors = cal.GetNumColorAttributes();
+        int numColors = cal.GetNumColors();
 
         //
         //  Create colors from original color table. 
@@ -619,7 +619,7 @@ avtBoundaryPlot::SetColors()
     else // ColorByColorTable
     {
         ColorAttributeList cal(atts.GetMultiColor());
-        int numColors = cal.GetNumColorAttributes();
+        int numColors = cal.GetNumColors();
         unsigned char *colors = new unsigned char[numColors * 4];
         unsigned char *cptr = colors;
         avtColorTables *ct = avtColorTables::Instance();

@@ -1,0 +1,91 @@
+Function: avtDefaultPlotMetaData2
+Declaration: avtDefaultPlotMetaData(const std::string &, const std::string &);
+Definition:
+// ****************************************************************************
+//  Method: avtDefaultPlotMetaData constructor
+//
+//  Arguments:
+//      p        The name of the plugin.
+//      v        The name of the variable the plot is applied on.
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    September 04, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtDefaultPlotMetaData::avtDefaultPlotMetaData(const std::string &p, 
+    const std::string &v) : AttributeSubject(avtDefaultPlotMetaData::TypeMapFormatString)
+{
+    // Initialize all
+    *this = avtDefaultPlotMetaData();
+
+    // Override members
+    pluginID      = p;
+    plotVar       = v;
+}
+
+Function: AddAttribute
+Declaration: void AddAttribute(const std::string& attr);
+Definition:
+// ****************************************************************************
+//  Method: avtDefaultPlotMetaData::AddAttribute
+//
+//  Arguments:
+//      attr  : the attribute to be added
+//
+//  Programmer: Walter Herrera Jimenez
+//  Creation:   September 04, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtDefaultPlotMetaData::AddAttribute(const std::string& attr)
+{
+    plotAttributes.push_back(attr);
+}
+
+Function: Print
+Declaration: void Print(ostream &, int = 0) const;
+Definition:
+// ****************************************************************************
+//  Method: avtDefaultPlotMetaData::Print
+//
+//  Purpose:
+//      Print statement for debugging.
+//
+//  Arguments:
+//      out      The stream to output to.
+//      indent   The number of tabs to indent each line with.
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    September 04, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+inline void
+Indent(ostream &out, int indent)
+{
+    for (int i = 0 ; i < indent ; i++)
+    {
+        out << "\t";
+    }
+}
+void
+avtDefaultPlotMetaData::Print(ostream &out, int indent) const
+{
+    Indent(out, indent);
+    out << "PluginID = " << pluginID.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Plot Variable = " << plotVar.c_str() << endl;
+
+    out << "Plot Attributes:" << endl;
+    for(int i = 0; i < plotAttributes.size(); ++i)
+      out << "\t" << plotAttributes[i].c_str() << endl;
+    out << endl;
+}

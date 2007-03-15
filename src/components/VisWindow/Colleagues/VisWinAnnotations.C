@@ -489,7 +489,7 @@ VisWinAnnotations::LowerActiveAnnotationObjects()
 void
 VisWinAnnotations::SetAnnotationObjectOptions(const AnnotationObjectList &al)
 {
-    for(int i = 0; i < al.GetNumAnnotationObjects(); ++i)
+    for(int i = 0; i < al.GetNumAnnotations(); ++i)
     {
         const AnnotationObject &annot = al[i];
         if(i < annotations.size())
@@ -535,13 +535,13 @@ VisWinAnnotations::SetAnnotationObjectOptions(const AnnotationObjectList &al)
 void
 VisWinAnnotations::UpdateAnnotationObjectList(AnnotationObjectList &al)
 {
-    al.ClearAnnotationObjects();
+    al.ClearAnnotations();
 
     for(int i = 0; i < annotations.size(); ++i)
     {
         AnnotationObject annot;
         annotations[i]->GetOptions(annot);
-        al.AddAnnotationObject(annot);
+        al.AddAnnotation(annot);
     }
 }
 
@@ -565,7 +565,7 @@ VisWinAnnotations::UpdateAnnotationObjectList(AnnotationObjectList &al)
 void
 VisWinAnnotations::CreateAnnotationObjectsFromList(const AnnotationObjectList &al)
 {
-    for(int i = 0; i < al.GetNumAnnotationObjects(); ++i)
+    for(int i = 0; i < al.GetNumAnnotations(); ++i)
     {
         const AnnotationObject &annot = al[i];
         int annotType = int(annot.GetObjectType());

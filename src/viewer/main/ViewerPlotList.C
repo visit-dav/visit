@@ -445,7 +445,7 @@ ViewerPlotList::GetTimeSliderInformation(int &activeTS,
     //
     DatabaseCorrelationList *cL = ViewerFileServer::Instance()->
         GetDatabaseCorrelationList();
-    for(index = 0; index < cL->GetNumDatabaseCorrelations(); ++index)
+    for(index = 0; index < cL->GetNumCorrelations(); ++index)
     {
         const DatabaseCorrelation &c = cL->operator[](index);
         StringIntMap::const_iterator p = uniqueTSNames.find(c.GetName());
@@ -1839,9 +1839,9 @@ ViewerPlotList::GetMostSuitableCorrelation(const std::string &source,
             debug3 << "\t" << dbs[i].c_str() << endl;
         }
 
-        for(i = 0; i < cL->GetNumDatabaseCorrelations(); ++i)
+        for(i = 0; i < cL->GetNumCorrelations(); ++i)
         {
-            const DatabaseCorrelation &c = cL->GetDatabaseCorrelation(i);
+            const DatabaseCorrelation &c = cL->GetCorrelations(i);
             for(int j = 0; j < dbs.size(); ++j)
             {
                 if(c.UsesDatabase(dbs[j]))
@@ -1899,7 +1899,7 @@ ViewerPlotList::GetMostSuitableCorrelation(const std::string &source,
                 if(correlation)
                 {
                     // Add the new correlation to the correlation list.
-                    cL->AddDatabaseCorrelation(*correlation);
+                    cL->AddCorrelations(*correlation);
                     cL->Notify();
                     delete correlation; 
                     correlation = cL->FindCorrelation(newName);
@@ -4001,9 +4001,9 @@ ViewerPlotList::ActivateSource(const std::string &source, const EngineKey &ek)
                 // of the plot databases.
                 //
                 StringIntMap scores;
-                for(int i = 0; i < cL->GetNumDatabaseCorrelations(); ++i)
+                for(int i = 0; i < cL->GetNumCorrelations(); ++i)
                 {
-                    const DatabaseCorrelation &c = cL->GetDatabaseCorrelation(i);
+                    const DatabaseCorrelation &c = cL->GetCorrelations(i);
                     if(c.UsesDatabase(source))
                     { 
                         scores[c.GetName()] = 0;
@@ -7734,7 +7734,7 @@ ViewerPlotList::SetFromNode(DataNode *parentNode,
                              debug3 << "Created correlation " << c->GetName().c_str()
                                     << " because it did not exist even though "
                                        "it should have existed." << endl;
-                             cL->AddDatabaseCorrelation(*c);
+                             cL->AddCorrelations(*c);
                              createdCorrelations = true;
                              correlation = cL->FindCorrelation(tsName);
                          }

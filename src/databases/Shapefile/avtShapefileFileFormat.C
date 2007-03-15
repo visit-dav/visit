@@ -675,11 +675,20 @@ avtShapefileFileFormat::CountCellsForShape(esriShapeType_t shapeType) const
 //    Brad Whitlock, Tue Mar 6 18:06:02 PST 2007
 //    Added tessellated mesh that the variables will use.
 //
+//    Brad Whitlock, Wed Mar 14 20:24:22 PST 2007
+//    Made sure that we're initialized in case the order of the calls is
+//    not what we expect.
+//
 // ****************************************************************************
 
 void
 avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
+    const char *mName = "avtShapefileFileFormat::PopulateDatabaseMetaData: ";
+
+    // In case FreeUpResources has been called, make sure that we're initialized.
+    Initialize();
+
     //
     // 2D, no data
     //
@@ -849,6 +858,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     if(dbfFile != 0)
     {
+        debug4 << mName << "nMeshes = " << meshes.size() << endl;
         for(int m = 0; m < meshes.size(); ++m)
         {
             dbfFieldDescriptor_t *fieldDescriptor = 
@@ -870,6 +880,8 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     lmd->centering = AVT_ZONECENT;
                     lmd->validVariable = true;
                     md->Add(lmd);
+
+                    debug4 << mName << "Added label metadata for " << varName << endl;
                 }
                 else
                 {
@@ -889,6 +901,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                         fieldDescriptor->fieldType == dbfFieldDouble;
          
                     md->Add(smd);
+                    debug4 << mName << "Added scalar metadata for " << varName << endl;
                 }
 
                 ++fieldDescriptor;
@@ -898,8 +911,11 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         // If we're on the mdserver, close the file since we won't need it
         // anymore.
         FreeUpResources();
-        initialized = true;
 #endif
+    }
+    else
+    {
+        debug4 << mName << "Could not open the dbfFile!" << endl;
     }
 
     // Add expressions to get the x,y,z coordinates of the mesh, which can

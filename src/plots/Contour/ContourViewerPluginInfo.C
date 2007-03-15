@@ -293,7 +293,7 @@ ContourViewerPluginInfo::InitializeDefaultPalette(ContourAttributes *contour)
     // Copy over the contour's defaultPalette with the default discrete
     // color table from avtColorTable.
     if(contour->GetColorType() != ContourAttributes::ColorByMultipleColors ||
-       contour->GetDefaultPalette().GetNumColorControlPoints() < 1)
+       contour->GetDefaultPalette().GetNumControlPoints() < 1)
     {
         avtColorTables *ct = avtColorTables::Instance();
         ColorTableAttributes *ctAtts = ct->GetColorTables();

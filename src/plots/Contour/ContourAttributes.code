@@ -112,7 +112,7 @@ ContourAttributes::EnlargeMultiColor(int newSize)
         // the control points. Otherwise, sample the color table.
         if(defaultPalette.GetDiscreteFlag())
         {
-            int nColors = defaultPalette.GetNumColorControlPoints();
+            int nColors = defaultPalette.GetNumControlPoints();
             for(int i = 0, index = 0; i < newSize; ++i, index += 4)
             {
                 int j = i % nColors;
@@ -133,20 +133,20 @@ ContourAttributes::EnlargeMultiColor(int newSize)
         for(int i = 0; i < newSize; ++i)
         {
             int j = i * 4;
-            if(i < multiColor.GetNumColorAttributes())
+            if(i < multiColor.GetNumColors())
             {
                 if(!ColorIsChanged(i))
                 {
-                    ColorAttribute &ca = multiColor.GetColorAttribute(i);
+                    ColorAttribute &ca = multiColor.GetColors(i);
                     ca.SetRgba(int(rgb[j]), int(rgb[j+1]), int(rgb[j+2]),int(rgb[j+3]));
                 }
             }
             else
             {
-                multiColor.AddColorAttribute(ColorAttribute(rgb[j],
-                                                            rgb[j+1],
-                                                            rgb[j+2],
-                                                            rgb[j+3]));
+                multiColor.AddColors(ColorAttribute(rgb[j],
+                                                    rgb[j+1],
+                                                    rgb[j+2],
+                                                    rgb[j+3]));
             }
             modified = true;
         }
@@ -262,10 +262,10 @@ ContourAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forc
     bool fixupPositions = false;
     DataNode *defaultPaletteNode = new DataNode("defaultPalette");
     ColorControlPointList savePalette(defaultPalette);
-    int initialNPoints = savePalette.GetNumColorControlPoints();
-    for(int i = 0; i < multiColor.GetNumColorAttributes(); ++i)
+    int initialNPoints = savePalette.GetNumControlPoints();
+    for(int i = 0; i < multiColor.GetNumColors(); ++i)
     {
-        const ColorAttribute &cpt = multiColor.GetColorAttribute(i);
+        const ColorAttribute &cpt = multiColor.GetColors(i);
 
         if(i < initialNPoints)
         {
@@ -275,13 +275,13 @@ ContourAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forc
         {
             ColorControlPoint ccpt;
             ccpt.SetColors(cpt.GetColor());
-            savePalette.AddColorControlPoint(ccpt);
+            savePalette.AddControlPoints(ccpt);
             fixupPositions = true;
         }
     }
     if(fixupPositions)
     {
-        int npts = savePalette.GetNumColorControlPoints();
+        int npts = savePalette.GetNumControlPoints();
         for(int i = 0; i < npts; ++i)
             savePalette[i].SetPosition(float(i) / float(npts-1));
     }

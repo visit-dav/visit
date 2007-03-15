@@ -684,7 +684,7 @@ avtFilledBoundaryPlot::SetColors()
         ColorAttribute ca(atts.GetSingleColor());
         ca.SetAlpha((unsigned char)(float(ca.Alpha()) * atts.GetOpacity()));
         ColorAttributeList cal;
-        cal.AddColorAttribute(ca);
+        cal.AddColors(ca);
 
         avtLUT->SetLUTColorsWithOpacity(ca.GetColor(), 1);
         levelsMapper->SetColors(cal);
@@ -704,9 +704,9 @@ avtFilledBoundaryPlot::SetColors()
         // If we are doing clean-zones-only, we will need a mixed color
         //
         allLabels.push_back("mixed");
-        cal.AddColorAttribute(atts.GetMixedColor());
+        cal.AddColors(atts.GetMixedColor());
 
-        int numColors = cal.GetNumColorAttributes();
+        int numColors = cal.GetNumColors();
 
         //
         //  Create colors from original color table. 
@@ -745,7 +745,7 @@ avtFilledBoundaryPlot::SetColors()
         // If we are doing clean-zones-only, we will need a mixed color
         //
         allLabels.push_back("mixed");
-        cal.AddColorAttribute(atts.GetMixedColor());
+        cal.AddColors(atts.GetMixedColor());
 
         //
         // It is a litte more complicated to handle c.z.o. here relative
@@ -753,7 +753,7 @@ avtFilledBoundaryPlot::SetColors()
         // color table using only the size of array *before* adding the
         // mixed color.  We use two "numColors" variables to handle this.
         //
-        int numColorsFull = cal.GetNumColorAttributes();
+        int numColorsFull = cal.GetNumColors();
         int numColors     = numColorsFull - 1;
         unsigned char *colors = new unsigned char[numColorsFull * 4];
         unsigned char *cptr = colors;

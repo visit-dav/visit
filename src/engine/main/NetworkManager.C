@@ -2696,6 +2696,9 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
 //    Mark C. Miller, Mon Jan 24 19:25:44 PST 2005
 //    Made all procs render 3D visual cues not just proc 0
 //
+//    Brad Whitlock, Tue Mar 13 11:36:55 PDT 2007
+//    Updated due to code generation changes.
+//
 // ****************************************************************************
 
 void
@@ -2719,9 +2722,9 @@ NetworkManager::UpdateVisualCues(int windowID)
 
     viswin->ClearPickPoints();
     viswin->ClearRefLines();
-    for (int i = 0; i < visualCueList.GetNumVisualCueInfos(); i++)
+    for (int i = 0; i < visualCueList.GetNumCues(); i++)
     {
-        const VisualCueInfo& cue = visualCueList.GetVisualCueInfo(i);
+        const VisualCueInfo& cue = visualCueList.GetCues(i);
         switch (cue.GetCueType())
         {
             case VisualCueInfo::PickPoint:

@@ -100,6 +100,9 @@ using std::vector;
 //    Cyrus Harrison, Wed Mar  7 09:49:20 PST 2007
 //    Allow for engine-specific code in a plugin's source files.
 //
+//    Brad Whitlock, Wed Mar 14 17:50:07 PST 2007
+//    Change the names of the attVector access functions.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1286,23 +1289,26 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
     virtual void WriteSourceAGVectorFunctions(ostream &c)
     {
         QString s = attType;
+        QString plural("");
+        if(Name[Name.length()-1] != 's')
+            plural = "s";
 
         // Write the Add method.
-        c << "    public void Add" << s << "(" << s << " obj)" << endl;
+        c << "    public void Add" << Name << "(" << s << " obj)" << endl;
         c << "    {" << endl;
         c << "        " << name << ".addElement(new " << s << "(obj));" << endl;
         c << "        Select(" << index << ");" << endl;
         c << "    }" << endl << endl;
 
         // Write the Clear method
-        c << "    public void Clear" << s << "s()" << endl;
+        c << "    public void Clear" << Name << plural << "()" << endl;
         c << "    {" << endl;
         c << "        " << name << ".clear();" << endl;
         c << "        Select(" << index << ");" << endl;
         c << "    }" << endl << endl;
 
         // Write the Remove method
-        c << "    public void Remove" << s << "(int index)" << endl;
+        c << "    public void Remove" << Name << "(int index)" << endl;
         c << "    {" << endl;
         c << "        if(index >= 0 && index < " << name << ".size())" << endl;
         c << "        {" << endl;
@@ -1312,13 +1318,13 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
         c << "    }" << endl << endl;
 
         // Write the GetNum method
-        c << "    public int GetNum" << s << "s()" << endl;
+        c << "    public int GetNum" << Name << plural << "()" << endl;
         c << "    {" << endl;
         c << "        return " << name << ".size();" << endl;
         c << "    }" << endl << endl;
 
         // Write the Get method
-        c << "    public " << s << " Get" << s << "(int i)" << endl;
+        c << "    public " << s << " Get" << Name << "(int i)" << endl;
         c << "    {" << endl;
         c << "        " << s << " tmp = (" << s << ")" << name << ".elementAt(i);" << endl;
         c << "        return tmp;" << endl;
@@ -1455,6 +1461,16 @@ class AttsFieldFactory
         else if (type == "attVector")    f = new AttsGeneratorAttVector(subtype,name,label);
         else if (type == "enum")         f = new AttsGeneratorEnum(subtype, name, label);
 
+        // Special built-in AVT enums -- but they don't really need to be treated like enums for this program.
+        else if (type == "avtCentering")      f = new AttsGeneratorInt(name, label);
+        else if (type == "avtVarType")        f = new AttsGeneratorInt(name, label);
+        else if (type == "avtSubsetType")     f = new AttsGeneratorInt(name, label);
+        else if (type == "avtExtentType")     f = new AttsGeneratorInt(name, label);
+        else if (type == "avtMeshType")       f = new AttsGeneratorInt(name, label);
+        else if (type == "avtGhostType")      f = new AttsGeneratorInt(name, label);
+        else if (type == "avtMeshCoordType")  f = new AttsGeneratorInt(name, label);
+        else if (type == "LoadBalanceScheme") f = new AttsGeneratorInt(name, label);
+
         if (!f)
             throw QString().sprintf("AttsFieldFactory: unknown type for field %s: %s",name.latin1(),type.latin1());
 
@@ -1471,7 +1487,7 @@ class AttsGeneratorAttribute
   public:
     QString name;
     QString purpose;
-    bool    persistent;
+    bool    persistent, keyframe;
     QString exportAPI;
     QString exportInclude;
     QString pluginType;
@@ -1722,6 +1738,8 @@ class AttsGeneratorAttribute
         for (i = 0; i < constants.size(); ++i)
         {
             QString def(constants[i]->def);
+            if (def.simplifyWhiteSpace().isEmpty())
+                continue;
 
             // Remove const
             int index = def.find("const");

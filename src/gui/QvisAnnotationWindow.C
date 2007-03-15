@@ -1823,7 +1823,7 @@ QvisAnnotationWindow::UpdateAnnotationObjectControls(bool doAll)
     int i, firstInterfaceIndex = -1;
     annotationListBox->blockSignals(true);
     annotationListBox->clear();
-    for(i = 0; i < annotationObjectList->GetNumAnnotationObjects(); ++i)
+    for(i = 0; i < annotationObjectList->GetNumAnnotations(); ++i)
     {
         const AnnotationObject &annot = annotationObjectList->operator[](i);
         int annotType = int(annot.GetObjectType());
@@ -4068,9 +4068,9 @@ QvisAnnotationWindow::turnOffAllAnnotations()
     //
     // Hide all of the annotation objects.
     //
-    if(annotationObjectList->GetNumAnnotationObjects() > 0)
+    if(annotationObjectList->GetNumAnnotations() > 0)
     {
-        for(int i = 0; i < annotationObjectList->GetNumAnnotationObjects(); ++i)
+        for(int i = 0; i < annotationObjectList->GetNumAnnotations(); ++i)
         {           
             AnnotationObject &annot = annotationObjectList->operator[](i);
             annot.SetVisible(false);
@@ -4176,7 +4176,7 @@ QvisAnnotationWindow::setActiveAnnotations()
 {
     // Set the active flag on the annotation objects in the annotation
     // object list.
-    for(int i = 0; i < annotationObjectList->GetNumAnnotationObjects(); ++i)
+    for(int i = 0; i < annotationObjectList->GetNumAnnotations(); ++i)
     {
         bool isSelected = (i < annotationListBox->count()) ?
                           annotationListBox->isSelected(i) : false;

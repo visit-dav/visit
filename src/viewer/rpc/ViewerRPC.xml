@@ -167,6 +167,7 @@
       SetStateLoggingRPC
       ConstructDDFRPC
       UpdatePlotInfoAttsRPC
+      RequestMetaDataRPC
       MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">

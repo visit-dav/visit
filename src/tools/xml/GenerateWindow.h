@@ -1256,6 +1256,16 @@ class WindowFieldFactory
         else if (type == "attVector")    f = new WindowGeneratorAttVector(subtype,name,label);
         else if (type == "enum")         f = new WindowGeneratorEnum(subtype, name, label);
 
+        // Special built-in AVT enums -- but they don't really need to be treated like enums for this program.
+        else if (type == "avtCentering")      f = new WindowGeneratorInt(name, label);
+        else if (type == "avtVarType")        f = new WindowGeneratorInt(name, label);
+        else if (type == "avtSubsetType")     f = new WindowGeneratorInt(name, label);
+        else if (type == "avtExtentType")     f = new WindowGeneratorInt(name, label);
+        else if (type == "avtMeshType")       f = new WindowGeneratorInt(name, label);
+        else if (type == "avtGhostType")      f = new WindowGeneratorInt(name, label);
+        else if (type == "avtMeshCoordType")  f = new WindowGeneratorInt(name, label);
+        else if (type == "LoadBalanceScheme") f = new WindowGeneratorInt(name, label);
+
         if (!f)
             throw QString().sprintf("WindowFieldFactory: unknown type for field %s: %s",name.latin1(),type.latin1());
 
@@ -1270,7 +1280,7 @@ class WindowGeneratorAttribute
   public:
     QString name;
     QString purpose;
-    bool    persistent;
+    bool    persistent, keyframe;
     QString exportAPI;
     QString exportInclude;
     QString windowname;

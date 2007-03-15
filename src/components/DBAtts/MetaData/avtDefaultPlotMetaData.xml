@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+  <Attribute name="avtDefaultPlotMetaData" purpose="Contains default plot metadata attributes" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtDefaultPlotMetaData.code">
+    <Field name="pluginID" label="Plugin ID" type="string" access="public">
+    </Field>
+    <Field name="plotVar" label="Plot variable" type="string" access="public">
+      var
+    </Field>
+    <Field name="plotAttributes" label="Plot attributes" type="stringVector" access="public">
+    </Field>
+    <Function name="avtDefaultPlotMetaData2" user="true" member="true">
+    </Function>
+    <Function name="AddAttribute" user="true" member="true">
+    </Function>
+    <Function name="Print" user="true" member="true">
+    </Function>
+  </Attribute>

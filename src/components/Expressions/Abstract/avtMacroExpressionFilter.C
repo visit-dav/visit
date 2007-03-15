@@ -148,10 +148,10 @@ avtMacroExpressionFilter::ReplaceMacroInExpressionList(void)
     int num_expr = new_list.GetNumExpressions();
     for (int i = num_expr-1 ; i >= 0 ; i--)
     {
-        Expression &expr = new_list.GetExpression(i);
+        Expression &expr = new_list.GetExpressions(i);
         if (expr.GetName() == outputVariableName)
         {
-            new_list.RemoveExpression(i);
+            new_list.RemoveExpressions(i);
         }
     }
     
@@ -162,7 +162,7 @@ avtMacroExpressionFilter::ReplaceMacroInExpressionList(void)
     exp.SetName(outputVariableName);
     exp.SetDefinition(replacement_expr);
     exp.SetType(replacement_type);
-    new_list.AddExpression(exp);
+    new_list.AddExpressions(exp);
 
     //
     // Change the global expression list to be our new expression list.

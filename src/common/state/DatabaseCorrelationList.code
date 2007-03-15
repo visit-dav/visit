@@ -26,7 +26,7 @@ ostream &
 operator << (ostream &os, const DatabaseCorrelationList &cL)
 {
    os << "{";
-   for(int i = 0; i < cL.GetNumDatabaseCorrelations(); ++i)
+   for(int i = 0; i < cL.GetNumCorrelations(); ++i)
    {
       os << cL[i] << ", " << endl;
    }
@@ -57,9 +57,9 @@ bool
 DatabaseCorrelationList::RemoveCorrelation(const std::string &name)
 {
     int delIndex = -1;
-    for(int i = 0; i < GetNumDatabaseCorrelations(); ++i)
+    for(int i = 0; i < GetNumCorrelations(); ++i)
     {
-       const DatabaseCorrelation &c = GetDatabaseCorrelation(i);
+       const DatabaseCorrelation &c = GetCorrelations(i);
        if(c.GetName() == name)
        {
            delIndex = i;
@@ -68,7 +68,7 @@ DatabaseCorrelationList::RemoveCorrelation(const std::string &name)
     }
 
     if(delIndex >= 0)
-       RemoveDatabaseCorrelation(delIndex);
+       RemoveCorrelations(delIndex);
 
     return (delIndex>=0);
 }

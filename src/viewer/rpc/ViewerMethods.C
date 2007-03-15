@@ -715,6 +715,37 @@ ViewerMethods::OverlayDatabase(const std::string &database)
 }
 
 // ****************************************************************************
+//  Method: ViewerMethods::RequestMetaData
+//
+//  Purpose:
+//    Requests metadata for the specified database. The resulting metadata
+//    comes back to the client via the metadata object.
+//
+//  Arguments:
+//    database  The name of the database for which we want metadata.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Fri Mar 9 16:23:46 PST 2007
+//
+// ****************************************************************************
+
+void
+ViewerMethods::RequestMetaData(const std::string &database, int ts)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::RequestMetaDataRPC);
+    state->GetViewerRPC()->SetDatabase(database);
+    state->GetViewerRPC()->SetStateNumber(ts);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
 // Method: ViewerMethods::ExportDatabase
 //
 // Purpose: 

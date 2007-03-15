@@ -10,7 +10,6 @@
     <Function name="AddColorTable"                user="true"></Function>
     <Function name="RemoveColorTable1"            user="true"></Function>
     <Function name="RemoveColorTable2"            user="true"></Function>
-    <Function name="GetNumColorTables"            user="true"></Function>
     <Function name="CreateNode"                   user="false"></Function>
     <Function name="SetFromNode"                  user="false"></Function>
     <Include file="source">ColorControlPoint.h</Include>

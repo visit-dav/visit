@@ -304,6 +304,9 @@ VariableMenuPopulator::ClearGroupingInfo()
 //   For now, keep enumerated scalars out of the subset variable types.
 //   When the other infrastructure is ready, we can add them back.
 //
+//   Brad Whitlock, Thu Mar 8 10:34:25 PDT 2007
+//   Use new avtDatabaseMetaData interface.
+//
 // ****************************************************************************
 
 bool
@@ -374,50 +377,50 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     int i;
     for (i = 0; i < md->GetNumMeshes(); ++i)
     {
-        const avtMeshMetaData *mmd = md->GetMesh(i);
-        meshVars.AddVariable(mmd->name, mmd->validVariable);
+        const avtMeshMetaData &mmd = md->GetMeshes(i);
+        meshVars.AddVariable(mmd.name, mmd.validVariable);
     }
     if (md->GetUseCatchAllMesh())
         meshVars.AddVariable(Init::CatchAllMeshName, true);
     for (i = 0; i < md->GetNumScalars(); ++i)
     {
-        const avtScalarMetaData *smd = md->GetScalar(i);
-        scalarVars.AddVariable(smd->name, smd->validVariable);
+        const avtScalarMetaData &smd = md->GetScalars(i);
+        scalarVars.AddVariable(smd.name, smd.validVariable);
     }
     for (i = 0; i < md->GetNumVectors(); ++i)
     {
-        const avtVectorMetaData *vmd = md->GetVector(i);
-        vectorVars.AddVariable(vmd->name, vmd->validVariable);
+        const avtVectorMetaData &vmd = md->GetVectors(i);
+        vectorVars.AddVariable(vmd.name, vmd.validVariable);
     }
     for (i = 0; i < md->GetNumSpecies(); ++i)
     {
-        const avtSpeciesMetaData *smd = md->GetSpecies(i);
-        speciesVars.AddVariable(smd->name, smd->validVariable);
+        const avtSpeciesMetaData &smd = md->GetSpecies(i);
+        speciesVars.AddVariable(smd.name, smd.validVariable);
     }
     for (i = 0; i < md->GetNumCurves(); ++i)
     {
-        const avtCurveMetaData *cmd = md->GetCurve(i);
-        curveVars.AddVariable(cmd->name, cmd->validVariable);
+        const avtCurveMetaData &cmd = md->GetCurves(i);
+        curveVars.AddVariable(cmd.name, cmd.validVariable);
     }
     for (i = 0; i < md->GetNumTensors(); ++i)
     {
-        const avtTensorMetaData *tmd = md->GetTensor(i);
-        tensorVars.AddVariable(tmd->name, tmd->validVariable);
+        const avtTensorMetaData &tmd = md->GetTensors(i);
+        tensorVars.AddVariable(tmd.name, tmd.validVariable);
     }
     for (i = 0; i < md->GetNumSymmTensors(); ++i)
     {
-        const avtSymmetricTensorMetaData *tmd = md->GetSymmTensor(i);
-        symmTensorVars.AddVariable(tmd->name, tmd->validVariable);
+        const avtSymmetricTensorMetaData &tmd = md->GetSymmTensors(i);
+        symmTensorVars.AddVariable(tmd.name, tmd.validVariable);
     }
     for (i = 0; i < md->GetNumLabels(); ++i)
     {
-        const avtLabelMetaData *tmd = md->GetLabel(i);
-        labelVars.AddVariable(tmd->name, tmd->validVariable);
+        const avtLabelMetaData &tmd = md->GetLabels(i);
+        labelVars.AddVariable(tmd.name, tmd.validVariable);
     }
     for (i = 0; i < md->GetNumArrays(); ++i)
     {
-        const avtArrayMetaData *tmd = md->GetArray(i);
-        arrayVars.AddVariable(tmd->name, tmd->validVariable);
+        const avtArrayMetaData &tmd = md->GetArrays(i);
+        arrayVars.AddVariable(tmd.name, tmd.validVariable);
     }
     visitTimer->StopTimer(id, "Adding variables from metadata");
 
@@ -621,7 +624,7 @@ VariableMenuPopulator::GetRelevantExpressions(ExpressionList &newExpressionList,
     {
         const Expression &e = exprList[i];
         if(!e.GetHidden() && !e.GetFromDB())
-            newExpressionList.AddExpression(e);
+            newExpressionList.AddExpressions(e);
     }
 
     // Get the expressions from the metadata.
@@ -629,7 +632,7 @@ VariableMenuPopulator::GetRelevantExpressions(ExpressionList &newExpressionList,
     {
         const Expression *e = md->GetExpression(i);
         if(e != 0 && !e->GetHidden())
-            newExpressionList.AddExpression(*e);
+            newExpressionList.AddExpressions(*e);
     }
 }
 

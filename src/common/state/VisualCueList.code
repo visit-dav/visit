@@ -13,8 +13,8 @@ VisualCueList::SetFrom(const std::vector<const VisualCueInfo*>& cueVec)
 {
     int i;
 
-    ClearVisualCueInfos();
+    ClearCues();
     for (i = 0; i < cueVec.size(); i++)
-        AddVisualCueInfo(*(cueVec[i]));
+        AddCues(*(cueVec[i]));
 }
 

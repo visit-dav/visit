@@ -604,7 +604,7 @@ QvisColorTableWindow::UpdateEditor()
         colorTableTypeGroup->blockSignals(false);
 
         colorNumColors->blockSignals(true);
-        colorNumColors->setValue(ccpl->GetNumColorControlPoints());
+        colorNumColors->setValue(ccpl->GetNumControlPoints());
         colorNumColors->blockSignals(false);
     }
 }
@@ -745,7 +745,7 @@ QvisColorTableWindow::UpdateColorControlPoints()
         spectrumBar->setSuppressUpdates(true);
         spectrumBar->blockSignals(true);
 
-        if(spectrumBar->numControlPoints() == cpts.GetNumColorControlPoints())
+        if(spectrumBar->numControlPoints() == cpts.GetNumControlPoints())
         {
             // Set the control points' colors and positions
             for(i = 0; i < spectrumBar->numControlPoints(); ++i)
@@ -757,7 +757,7 @@ QvisColorTableWindow::UpdateColorControlPoints()
                 spectrumBar->setControlPointPosition(i, cpts[i].GetPosition());
             }
         }
-        else if(spectrumBar->numControlPoints() < cpts.GetNumColorControlPoints())
+        else if(spectrumBar->numControlPoints() < cpts.GetNumControlPoints())
         {
             // Set the control points' colors and positions
             for(i = 0; i < spectrumBar->numControlPoints(); ++i)
@@ -770,7 +770,7 @@ QvisColorTableWindow::UpdateColorControlPoints()
             }
     
             // We need to add control points.
-            for(i = spectrumBar->numControlPoints(); i < cpts.GetNumColorControlPoints(); ++i)
+            for(i = spectrumBar->numControlPoints(); i < cpts.GetNumControlPoints(); ++i)
             {
                 QColor ctmp((int)cpts[i].GetColors()[0],
                             (int)cpts[i].GetColors()[1],
@@ -781,7 +781,7 @@ QvisColorTableWindow::UpdateColorControlPoints()
         else
         {
             // We need to remove control points.
-            for(i = spectrumBar->numControlPoints()-1; i >= cpts.GetNumColorControlPoints(); --i)
+            for(i = spectrumBar->numControlPoints()-1; i >= cpts.GetNumControlPoints(); --i)
                 spectrumBar->removeControlPoint();
 
             // Set the control points' colors and positions
@@ -843,9 +843,9 @@ QvisColorTableWindow::UpdateDiscreteSettings()
         bool doNotify = false;
 
         // Create an array of colors to set into the color grid widget.
-        QColor *c = new QColor[ccpl->GetNumColorControlPoints()];
+        QColor *c = new QColor[ccpl->GetNumControlPoints()];
         int i;
-        for(i = 0; i < ccpl->GetNumColorControlPoints(); ++i)
+        for(i = 0; i < ccpl->GetNumControlPoints(); ++i)
         {
             const ColorControlPoint &ccp = ccpl->operator[](i);
             int r = int(ccp.GetColors()[0]);
@@ -855,9 +855,9 @@ QvisColorTableWindow::UpdateDiscreteSettings()
         }
 
         // Set the color palette into the color grid widget.
-        int cols = (ccpl->GetNumColorControlPoints() > 30) ?
+        int cols = (ccpl->GetNumControlPoints() > 30) ?
             (2 * DEFAULT_DISCRETE_COLS) : DEFAULT_DISCRETE_COLS;
-        discreteColors->setPaletteColors(c, ccpl->GetNumColorControlPoints(), cols);
+        discreteColors->setPaletteColors(c, ccpl->GetNumControlPoints(), cols);
         delete [] c;
 
         // Now update the sliders and the spin buttons.
@@ -1046,9 +1046,9 @@ QvisColorTableWindow::ChangeSelectedColor(const QColor &c)
 
         // If a valid index was calculated, poke the new color value into
         // the specified color control point and update.
-        if(index >= 0 && index < ccpl->GetNumColorControlPoints())
+        if(index >= 0 && index < ccpl->GetNumControlPoints())
         {
-            ColorControlPoint &ccp = ccpl->GetColorControlPoint(index);
+            ColorControlPoint &ccp = ccpl->GetControlPoints(index);
             ccp.GetColors()[0] = (unsigned char)c.red();
             ccp.GetColors()[1] = (unsigned char)c.green();
             ccp.GetColors()[2] = (unsigned char)c.blue();
@@ -1139,7 +1139,7 @@ QvisColorTableWindow::GetCurrentValues(int which_widget)
     {
         // Store the widget's control points.
         ColorControlPointList cpts;
-        cpts.ClearColorControlPoints();
+        cpts.ClearControlPoints();
         cpts.SetSmoothingFlag(spectrumBar->smoothing());
         cpts.SetEqualSpacingFlag(spectrumBar->equalSpacing());
         for(i = 0; i < spectrumBar->numControlPoints(); ++i)
@@ -1155,7 +1155,7 @@ QvisColorTableWindow::GetCurrentValues(int which_widget)
             ptColors[3] = 255;
             pt.SetColors(ptColors);
             pt.SetPosition(pos);
-            cpts.AddColorControlPoint(pt);
+            cpts.AddControlPoints(pt);
         }
 
         // Get a pointer to the active color table's control points.
@@ -1482,11 +1482,11 @@ QvisColorTableWindow::addColorTable()
             // There is no active color table so create a default color table
             // and add it with the specified name.
             ColorControlPointList cpts;
-            cpts.AddColorControlPoint(ColorControlPoint(0., 255,0,0,255));
-            cpts.AddColorControlPoint(ColorControlPoint(0.25, 255,255,0,255));
-            cpts.AddColorControlPoint(ColorControlPoint(0.5, 0,255,0,255));
-            cpts.AddColorControlPoint(ColorControlPoint(0.75, 0,255,255,255));
-            cpts.AddColorControlPoint(ColorControlPoint(1., 0,0,255,255));
+            cpts.AddControlPoints(ColorControlPoint(0., 255,0,0,255));
+            cpts.AddControlPoints(ColorControlPoint(0.25, 255,255,0,255));
+            cpts.AddControlPoints(ColorControlPoint(0.5, 0,255,0,255));
+            cpts.AddControlPoints(ColorControlPoint(0.75, 0,255,255,255));
+            cpts.AddControlPoints(ColorControlPoint(1., 0,0,255,255));
             cpts.SetSmoothingFlag(true);
             cpts.SetEqualSpacingFlag(false);
             cpts.SetDiscreteFlag(false);
@@ -1870,39 +1870,39 @@ QvisColorTableWindow::resizeColorTable(int size)
 
         if(ccpl->GetDiscreteFlag())
         {
-            if(size < ccpl->GetNumColorControlPoints())
+            if(size < ccpl->GetNumControlPoints())
             {
                 // Remove colors from the end of the list.
-                int rmPoints = ccpl->GetNumColorControlPoints() - size;
+                int rmPoints = ccpl->GetNumControlPoints() - size;
                 for(i = 0; i < rmPoints; ++i)
-                    ccpl->RemoveColorControlPoint(ccpl->GetNumColorControlPoints()-1);
+                    ccpl->RemoveControlPoints(ccpl->GetNumControlPoints()-1);
 
                 // Reposition the points evenly.
-                for(i = 0; i < ccpl->GetNumColorControlPoints(); ++i)
+                for(i = 0; i < ccpl->GetNumControlPoints(); ++i)
                 {
-                    ColorControlPoint &c = ccpl->GetColorControlPoint(i);
-                    c.SetPosition(float(i) / float(ccpl->GetNumColorControlPoints() - 1));
+                    ColorControlPoint &c = ccpl->GetControlPoints(i);
+                    c.SetPosition(float(i) / float(ccpl->GetNumControlPoints() - 1));
                 }
 
                 colorAtts->SelectColorTables();
                 Apply();   
             }
-            else if(size > ccpl->GetNumColorControlPoints())
+            else if(size > ccpl->GetNumControlPoints())
             {
                 // Add colors to the end of the list.
-                int addPoints = size - ccpl->GetNumColorControlPoints();
+                int addPoints = size - ccpl->GetNumControlPoints();
                 for(i = 0; i < addPoints; ++i)
                 {
                     QColor c(GetNextColor());
                     ColorControlPoint newPt(1., c.red(), c.green(), c.blue(), 255);
-                    ccpl->AddColorControlPoint(newPt);
+                    ccpl->AddControlPoints(newPt);
                 }
 
                 // Reposition the points evenly.
-                for(i = 0; i < ccpl->GetNumColorControlPoints(); ++i)
+                for(i = 0; i < ccpl->GetNumControlPoints(); ++i)
                 {
-                    ColorControlPoint &c = ccpl->GetColorControlPoint(i);
-                    c.SetPosition(float(i) / float(ccpl->GetNumColorControlPoints() - 1));
+                    ColorControlPoint &c = ccpl->GetControlPoints(i);
+                    c.SetPosition(float(i) / float(ccpl->GetNumControlPoints() - 1));
                 }
 
                 colorAtts->SelectColorTables();
@@ -1916,9 +1916,9 @@ QvisColorTableWindow::resizeColorTable(int size)
             // bar so that they are added and removed in the right places. I know
             // this is a little weird but we need to do it like this.
             //
-            if(size < ccpl->GetNumColorControlPoints())
+            if(size < ccpl->GetNumControlPoints())
             {
-                int rmPoints = ccpl->GetNumColorControlPoints() - size;
+                int rmPoints = ccpl->GetNumControlPoints() - size;
                 spectrumBar->blockSignals(true);
                 spectrumBar->setSuppressUpdates(true);
                 for(int i = 0; i < rmPoints; ++i)

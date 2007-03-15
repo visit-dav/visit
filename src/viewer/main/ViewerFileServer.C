@@ -414,11 +414,24 @@ ViewerFileServer::GetMetaData(const std::string &host,
 //   Jeremy Meredith, Mon Aug 28 16:55:01 EDT 2006
 //   Added ability to force using a specific plugin when opening a file.
 //
+//   Brad Whitlock, Wed Mar 14 20:33:03 PST 2007
+//   Added forceReadAllCyclesAndTimes argument.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
 ViewerFileServer::GetMetaDataForState(const std::string &host, 
     const std::string &db, int timeState,
+    const std::string &forcedFileType)
+{
+    bool forceReadAllCyclesAndTimes = false;
+    return GetMetaDataForState(host, db, timeState, 
+                               forceReadAllCyclesAndTimes, forcedFileType);
+}
+
+const avtDatabaseMetaData *
+ViewerFileServer::GetMetaDataForState(const std::string &host, 
+    const std::string &db, int timeState, bool forceReadAllCyclesAndTimes,
     const std::string &forcedFileType)
 {
     //
@@ -463,7 +476,6 @@ ViewerFileServer::GetMetaDataForState(const std::string &host,
         }
     }
 
-    const bool forceReadAllCyclesAndTimes = false;
     return GetMetaDataHelper(host, db, timeState, forceReadAllCyclesAndTimes,
                              forcedFileType);
 }
@@ -2046,11 +2058,11 @@ ViewerFileServer::GetMostSuitableCorrelation(const stringVector &dbs) const
     // contain.
     //
     StringIntMap scores;
-    for(int i = 0; i < databaseCorrelationList->GetNumDatabaseCorrelations();
+    for(int i = 0; i < databaseCorrelationList->GetNumCorrelations();
         ++i)
     {
         const DatabaseCorrelation &c = databaseCorrelationList->
-            GetDatabaseCorrelation(i);
+            GetCorrelations(i);
         scores[c.GetName()] = 0;
         for(int j = 0; j < dbs.size(); ++j)
         {
@@ -2451,12 +2463,12 @@ ViewerFileServer::CreateNode(DataNode *parentNode,
 {
     // Create a copy of the database correlation list.
     DatabaseCorrelationList dbcl(*databaseCorrelationList);
-    dbcl.ClearDatabaseCorrelations();
+    dbcl.ClearCorrelations();
     for(int i = 0; 
-        i < databaseCorrelationList->GetNumDatabaseCorrelations(); ++i)
+        i < databaseCorrelationList->GetNumCorrelations(); ++i)
     {
         const DatabaseCorrelation &corr = 
-            databaseCorrelationList->GetDatabaseCorrelation(i);
+            databaseCorrelationList->GetCorrelations(i);
         // Let's only save out correlations that have more than 1 db.
         if(corr.GetNumDatabases() > 1)
         {
@@ -2493,7 +2505,7 @@ ViewerFileServer::CreateNode(DataNode *parentNode,
             modCorr.SetDatabaseNames(sourceIds);
 
             // Add the modified correlation to the list.
-            dbcl.AddDatabaseCorrelation(modCorr);
+            dbcl.AddCorrelations(modCorr);
         }
     }
 
@@ -2535,8 +2547,8 @@ ViewerFileServer::SetFromNode(DataNode *parentNode,
         // Since the database correlations in the temporary may
         // not have complete information, let's recreate the 
         // database correlations.
-        databaseCorrelationList->ClearDatabaseCorrelations();
-        for(int i = 0; i < dbcl.GetNumDatabaseCorrelations(); ++i)
+        databaseCorrelationList->ClearCorrelations();
+        for(int i = 0; i < dbcl.GetNumCorrelations(); ++i)
         {
             const DatabaseCorrelation &corr = dbcl[i];
             if(corr.GetMethod() != DatabaseCorrelation::UserDefinedCorrelation)
@@ -2564,7 +2576,7 @@ ViewerFileServer::SetFromNode(DataNode *parentNode,
                 // to the database correlation list.
                 if(newCorr != 0)
                 {
-                    databaseCorrelationList->AddDatabaseCorrelation(*newCorr);
+                    databaseCorrelationList->AddCorrelations(*newCorr);
                     delete newCorr;
                 }
             }
@@ -2572,7 +2584,7 @@ ViewerFileServer::SetFromNode(DataNode *parentNode,
             {
                 // We read in a user-defined database correlation. 
                 // Don't mess with it.
-                databaseCorrelationList->AddDatabaseCorrelation(corr);
+                databaseCorrelationList->AddCorrelations(corr);
             }
         }
               
@@ -2778,9 +2790,9 @@ ViewerFileServer::GetUserExpressions(ExpressionList &newList)
     //
     for(int i = 0; i < exprList->GetNumExpressions(); ++i)
     {
-        const Expression &expr = exprList->GetExpression(i);
+        const Expression &expr = exprList->GetExpressions(i);
         if(!expr.GetFromDB())
-            newList.AddExpression(expr);
+            newList.AddExpressions(expr);
     }
 }
 
@@ -2820,7 +2832,7 @@ ViewerFileServer::GetDatabaseExpressions(ExpressionList &newList,
         {
             // Add the expressions for the database.
             for (int j = 0 ; j < md->GetNumberOfExpressions(); ++j)
-                newList.AddExpression(*(md->GetExpression(j)));
+                newList.AddExpressions(*(md->GetExpression(j)));
         }
     }
 }

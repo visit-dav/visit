@@ -202,7 +202,7 @@ avtParallelAxisPlot::SetColors()
         blue  = (levelColor >>  8) & 0xff;
 
         colorAtt.SetRgba(red, green, blue, 255);
-        colorAttList.AddColorAttribute(colorAtt);
+        colorAttList.AddColors(colorAtt);
 
         plotColors[redID  ] = (unsigned char)red;
         plotColors[redID+1] = (unsigned char)green;

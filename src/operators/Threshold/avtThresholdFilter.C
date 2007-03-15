@@ -125,6 +125,9 @@ avtThresholdFilter::Create()
 //    Mark Blair, Wed Oct  4 17:45:48 PDT 2006
 //    Makes better use of the "active variable".
 //
+//    Mark Blair, Tue Mar 13 19:51:29 PDT 2007
+//    Now forces attribute consistency if attributes are inconsistent.
+//
 // ****************************************************************************
 
 void
@@ -134,7 +137,9 @@ avtThresholdFilter::SetAtts(const AttributeGroup *a)
     
     atts.SupplyMissingDefaultsIfAppropriate();
     
-    if (!atts.AttributesAreConsistent()) return;
+    // if (!atts.AttributesAreConsistent()) return;
+    
+    if (!atts.AttributesAreConsistent()) atts.ForceAttributeConsistency();
     
     activeVarName = std::string("<unused>");
     
@@ -287,6 +292,9 @@ static void UpdateNeighborCells(int pt, const int *pt_dims,
 //    Mark Blair, Thu Sep 28 12:07:05 PDT 2006
 //    Checks attributes for consistency.
 //
+//    Mark Blair, Tue Mar 13 19:51:29 PDT 2007
+//    Now forces attribute consistency if attributes are inconsistent.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -294,7 +302,8 @@ avtThresholdFilter::ProcessOneChunk(
     vtkDataSet *in_ds, int domain, std::string label, bool fromChunker)
 {
     atts.SupplyMissingDefaultsIfAppropriate();
-    
+
+/*
     if (!atts.AttributesAreConsistent())
     {
         debug1 << "Threshold operator attributes are inconsistent." << endl;
@@ -302,6 +311,9 @@ avtThresholdFilter::ProcessOneChunk(
         in_ds->Register(NULL);
         return in_ds;
     }
+*/
+    
+    if (!atts.AttributesAreConsistent()) atts.ForceAttributeConsistency();
     
     if (atts.GetShownVariable() == std::string("(no variables in list)"))
     {
@@ -788,6 +800,9 @@ avtThresholdFilter::PreExecute(void)
 //    Mark Blair, Wed Oct  4 17:45:48 PDT 2006
 //    Makes better use of the "active variable".
 //
+//    Mark Blair, Tue Mar 13 19:51:29 PDT 2007
+//    Now forces attribute consistency if attributes are inconsistent.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -795,9 +810,11 @@ avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
 {
     atts.SupplyMissingDefaultsIfAppropriate();
     
-    if (!atts.AttributesAreConsistent())
-        return in_spec;
-        
+    // if (!atts.AttributesAreConsistent())
+    //     return in_spec;
+    
+    if (!atts.AttributesAreConsistent()) atts.ForceAttributeConsistency();
+
     const char *pipelineVar = in_spec->GetDataSpecification()->GetVariable();
     const char *activeVar = activeVarName.c_str();
     

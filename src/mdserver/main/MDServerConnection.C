@@ -879,10 +879,10 @@ MDServerConnection::GetDBPluginInfo()
         hasWriter[i] = manager->PluginHasWriter(fullname);
         CommonDatabasePluginInfo *info =manager->GetCommonPluginInfo(fullname);
         DBOptionsAttributes *a = info->GetReadOptions();
-        rv->AddDBOptionsAttributes(*a);
+        rv->AddDbOptions(*a);
         delete a;
         a = info->GetWriteOptions();
-        rv->AddDBOptionsAttributes(*a);
+        rv->AddDbOptions(*a);
         delete a;
     }
     rv->SetTypes(types);

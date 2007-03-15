@@ -1,0 +1,543 @@
+Function: avtMeshMetaData2
+Declaration: avtMeshMetaData(const double *, std::string, int, int, int, int, int, int, avtMeshType);
+Definition:
+// ****************************************************************************
+//  Method: avtMeshMetaData constructor
+//
+//  Arguments:
+//      extents     Mesh extents as <min_x, max_x, min_y, max_y, min_z, max_z>.
+//      s           The name of the mesh.
+//      nb          The number of blocks.
+//      bo          The block origin.
+//      sd          The spacial dimensionality.
+//      td          The topological dimensionality.
+//      mt          The type of mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 25, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue May 28 13:57:49 PDT 2002
+//    Initialized blockPieceName and blockTitle.
+//
+//    Hank Childs, Sun Jun 16 19:31:03 PDT 2002 
+//    Added argument for cell origin.
+//
+//    Hank Childs, Mon Jun 24 12:21:15 PDT 2002
+//    Initialize numGroups.
+//
+//    Hank Childs, Sun Aug 18 10:54:26 PDT 2002
+//    Initialized disjointElements.
+//
+//    Hank Childs, Mon Sep 30 08:57:30 PDT 2002 
+//    Initialized containsGhostZones.
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+//    Kathleen Bonnell, Wed Mar 26 13:03:54 PST 2003 
+//    Initialized containsOriginalCells. 
+//
+//    Kathleen Bonnell, Fri May 28 18:16:48 PDT 2004 
+//    Initialized containsOriginalNodes. 
+//
+//    Hank Childs, Sun Jun 27 11:50:34 PDT 2004
+//    Initialized containsGlobalNodeIds.
+//
+//    Brad Whitlock, Fri Jul 23 12:25:03 PDT 2004
+//    Added xLabel, yLabel, zLabel.
+//
+//    Mark C. Miller, August 9, 2004
+//    Added containsGlobalZoneIds data member
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+//    Jeremy Meredith, Thu Aug 25 09:42:33 PDT 2005
+//    Added group origin.
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added loadBalanceScheme
+//
+//    Kathleen Bonnell, Fri Feb  3 10:23:36 PST 2006 
+//    Added meshCoordType.
+//
+//    Jeremy Meredith, Fri Aug 25 17:14:58 EDT 2006
+//    Added nodesAreCritical and unitCellVectors.
+//
+//    Jeremy Meredith, Thu Feb 15 11:42:44 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
+//    Brad Whitlock, Thu Mar 1 16:36:37 PST 2007
+//    Rewrote.
+//
+// ****************************************************************************
+
+avtMeshMetaData::avtMeshMetaData(const double *extents, std::string s, int nb,
+                                 int bo, int co, int go, int sd, int td,
+                                 avtMeshType mt)
+    : AttributeSubject(avtMeshMetaData::TypeMapFormatString)
+{
+    // Initialize all values.
+    *this = avtMeshMetaData();
+
+    // Override some initialization with the passed arguments.
+    name                 = s;
+    originalName         = name;
+    numBlocks            = nb;
+    blockOrigin          = bo;
+    cellOrigin           = co;
+    groupOrigin          = go;
+    topologicalDimension = td;
+    spatialDimension     = sd;
+    meshType             = mt;
+    numGroups            = 0;
+    SetExtents(extents);
+}
+
+Function: avtMeshMetaData3
+Declaration: avtMeshMetaData(std::string, int, int, int, int, int, int, avtMeshType);
+Definition:
+// ****************************************************************************
+//  Method: avtMeshMetaData constructor
+//
+//  Arguments:
+//      s           The name of the mesh.
+//      nb          The number of blocks.
+//      bo          The block origin.
+//      sd          The spacial dimensionality.
+//      td          The topological dimensionality.
+//      mt          The type of mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 25, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue May 28 13:57:49 PDT 2002
+//    Initialized blockPieceName and blockTitle.
+//
+//    Hank Childs, Sun Jun 16 19:31:03 PDT 2002 
+//    Added argument for cell origin.
+//
+//    Hank Childs, Mon Jun 24 12:21:15 PDT 2002
+//    Initialize numGroups.
+//
+//    Hank Childs, Sun Aug 18 10:54:26 PDT 2002
+//    Initialized disjointElements.
+//
+//    Hank Childs, Mon Sep 30 08:57:30 PDT 2002 
+//    Initialized containsGhostZones.
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+//    Kathleen Bonnell, Wed Mar 26 13:03:54 PST 2003 
+//    Initialized containsOriginalCells. 
+//
+//    Kathleen Bonnell, Fri May 28 18:16:48 PDT 2004 
+//    Initialized containsOriginalNodes. 
+//
+//    Hank Childs, Sun Jun 27 11:50:34 PDT 2004
+//    Initialized containsGlobalNodeIds.
+//
+//    Brad Whitlock, Fri Jul 23 12:25:22 PDT 2004
+//    Added xLabel, yLabel, zLabel.
+//
+//    Mark C. Miller, August 9, 2004
+//    Added containsGlobalZoneIds data member
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+//    Jeremy Meredith, Thu Aug 25 09:42:37 PDT 2005
+//    Added group origin.
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added loadBalanceScheme
+//
+//    Kathleen Bonnell, Fri Feb  3 10:23:36 PST 2006 
+//    Added meshCoordType.
+//
+//    Mark C. Miller, Tue Aug 15 21:48:46 PDT 2006
+//    Called SetExtents to initialize extents. Keeps purify happy.
+//
+//    Jeremy Meredith, Fri Aug 25 17:14:58 EDT 2006
+//    Added nodesAreCritical and unitCellVectors.
+//
+//    Jeremy Meredith, Thu Feb 15 11:42:44 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
+//    Brad Whitlock, Thu Mar 1 16:37:16 PST 2007
+//    Rewrote.
+//
+// ****************************************************************************
+
+avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int go,
+                                 int sd, int td, avtMeshType mt)
+    : AttributeSubject(avtMeshMetaData::TypeMapFormatString)
+{
+    // Initialize all values.
+    *this = avtMeshMetaData();
+
+    // Override some initialization with the passed arguments.
+    name                 = s;
+    originalName         = name;
+    numBlocks            = nb;
+    blockOrigin          = bo;
+    cellOrigin           = co;
+    groupOrigin          = go;
+    topologicalDimension = td;
+    spatialDimension     = sd;
+    meshType             = mt;
+    SetExtents(0);
+}
+
+Function: SetExtents
+Declaration: void SetExtents(const double *);
+Definition:
+// ****************************************************************************
+//  Method: avtMeshMetaData::SetExtents
+//
+//  Purpose:
+//      Sets the extents of the mesh.
+//
+//  Arguments:
+//      extents     Mesh extents as <min_x, max_x, min_y, max_y, min_z, max_z>.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 30, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue May  1 12:53:10 PDT 2001
+//    Check for NULL extents.
+//
+//    Mark C. Miller, Tue Aug 15 21:45:50 PDT 2006
+//    Added code to initialize extents to [0,1] if null was passed in. Keeps
+//    purify happy.
+// ****************************************************************************
+
+void
+avtMeshMetaData::SetExtents(const double *extents)
+{
+    if (extents == NULL)
+    {
+        hasSpatialExtents = false;
+        for (int i = 0 ; i < spatialDimension ; i++)
+        {
+            minSpatialExtents[i] = 0.0;  
+            maxSpatialExtents[i] = 1.0; 
+        }
+    }
+    else
+    {
+        hasSpatialExtents = true;
+        for (int i = 0 ; i < spatialDimension ; i++)
+        {
+            minSpatialExtents[i] = extents[2*i];
+            maxSpatialExtents[i] = extents[2*i + 1];
+        }
+    }
+}
+
+Function: UnsetExtents
+Declaration: void UnsetExtents();
+Definition:
+void
+avtMeshMetaData::UnsetExtents()
+{
+    hasSpatialExtents = false;
+}
+
+Function: Print
+Declaration: void Print(ostream &, int = 0) const;
+Definition:
+// ****************************************************************************
+//  Method: avtMeshMetaData::Print
+//
+//  Purpose:
+//      Print statement for debugging.
+//
+//  Arguments:
+//      out      The stream to output to.
+//      indent   The number of tabs to indent each line with.
+//
+//  Programmer:  Hank Childs
+//  Creation:    August 28, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Aug 28 10:16:24 PDT 2001
+//    Added block names.
+//
+//    Hank Childs, Tue May 28 13:57:49 PDT 2002
+//    Added blockPieceName and blockTitle.
+//
+//    Hank Childs, Sun Jun 16 19:31:03 PDT 2002 
+//    Added cell origin.
+//
+//    Hank Childs, Mon Jun 24 12:21:15 PDT 2002
+//    Added numGroups.
+//
+//    Hank Childs, Sun Aug 18 10:54:26 PDT 2002
+//    Added disjointElements.
+//
+//    Brad Whitlock, Tue Aug 20 15:11:14 PST 2002
+//    Changed printing a little.
+//
+//    Hank Childs, Thu Sep 26 22:01:55 PDT 2002
+//    Added units.
+//
+//    Hank Childs, Mon Sep 30 08:57:30 PDT 2002 
+//    Added containsGhostZones.
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Added validVariable.
+//
+//    Kathleen Bonnell, Wed Mar 26 13:03:54 PST 2003 
+//    Added containsOriginalCells. 
+//
+//    Kathleen Bonnell, Fri May 28 18:16:48 PDT 2004 
+//    Added containsOriginalNodes. 
+//
+//    Brad Whitlock, Fri Jul 23 12:28:21 PDT 2004
+//    Added xLabel, yLabel, and zLabel.
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+//    Jeremy Meredith, Thu Aug 25 09:42:47 PDT 2005
+//    Added group origin.
+//
+//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//    Added loadBalanceScheme
+// 
+//    Hank Childs, Wed Jan 11 09:36:13 PST 2006
+//    Added new mesh types.
+//
+//    Kathleen Bonnell, Fri Feb  3 10:23:36 PST 2006 
+//    Added meshCoordType.
+//
+//    Jeremy Meredith, Fri Aug 25 17:14:58 EDT 2006
+//    Added nodesAreCritical and unitCellVectors.
+//
+//    Jeremy Meredith, Thu Feb 15 11:42:44 EST 2007
+//    Added support for rectilinear grids with an inherent transform.
+//
+// ****************************************************************************
+inline void
+Indent(ostream &out, int indent)
+{
+    for (int i = 0 ; i < indent ; i++)
+    {
+        out << "\t";
+    }
+}
+
+void
+avtMeshMetaData::Print(ostream &out, int indent) const
+{
+    Indent(out, indent);
+    out << "Name = " << name.c_str() << endl;
+    if (name != originalName)
+    {
+        Indent(out, indent);
+        out << "Original Name = " << originalName.c_str() << endl;
+    }
+    Indent(out, indent);
+    out << "Number of blocks = " << numBlocks << endl;
+    Indent(out, indent);
+    out << "Block origin = " << blockOrigin << endl;
+    Indent(out, indent);
+    out << "Cell origin = " << cellOrigin 
+        << " (origin within one block of the cells)." << endl;
+    Indent(out, indent);
+    out << "Group origin = " << groupOrigin << endl;
+    Indent(out, indent);
+    out << "Title for domain hierarchy is " << blockTitle.c_str() << endl;
+    Indent(out, indent);
+    out << "Title for individual piece in domain hierarchy is "
+        << blockPieceName.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Number of groups = " << numGroups << endl;
+    if(numGroups > 0)
+    {
+        Indent(out, indent);
+        out << "Group ids are:";
+        for (int i = 0 ; i < groupIds.size() ; i++)
+        {
+            out << groupIds[i];
+            if(i  < groupIds.size() - 1)
+                out << ", ";
+        }
+        out << endl;
+    }
+    Indent(out, indent);
+    out << "Title for group hierarchy is " << groupTitle.c_str() << endl;
+    Indent(out, indent);
+    out << "Title for individual piece in group hierarchy is "
+        << groupPieceName.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Mesh type is ";
+    switch (meshType)
+    {
+      case AVT_RECTILINEAR_MESH:
+        out << "Rectilinear Mesh";
+        break;
+
+      case AVT_CURVILINEAR_MESH:
+        out << "Curvilinear Mesh";
+        break;
+
+      case AVT_UNSTRUCTURED_MESH:
+        out << "Unstructured Mesh";
+        break;
+
+      case AVT_POINT_MESH:
+        out << "Point Mesh";
+        break;
+
+      case AVT_SURFACE_MESH:
+        out << "Surface Mesh";
+        break;
+
+      case AVT_CSG_MESH:
+        out << "CSG Mesh";
+        break;
+
+      case AVT_AMR_MESH:
+        out << "AMR Mesh";
+        break;
+
+      case AVT_UNKNOWN_MESH:
+      default:
+        out << "Unknown";
+        break;
+    }
+    out << "." << endl;
+
+    Indent(out, indent);
+    out << "Spatial Dimension = " << spatialDimension << endl;
+    Indent(out, indent);
+    out << "Topological Dimension = " << topologicalDimension << endl;
+    if (hasSpatialExtents)
+    {
+        Indent(out, indent);
+        out << "Extents are: (";
+        for (int j = 0 ; j < spatialDimension ; j++)
+        {
+            out << "(" << minSpatialExtents[j] << ", " << maxSpatialExtents[j]
+                << ")";
+            if(j < spatialDimension-1)
+                out << ", ";
+        }
+        out << ")" << endl;
+    }
+    else
+    {
+        Indent(out, indent);
+        out << "The spatial extents are not set." << endl;
+    }
+
+    if (blockNames.size() == numBlocks)
+    {
+        Indent(out, indent);
+        out << "Block names: " << endl;
+        for (int i = 0 ; i < numBlocks ; i++)
+        {
+            Indent(out, indent);
+            out << "\t" << blockNames[i].c_str() << endl;
+        }
+    }
+    else
+    {
+        Indent(out, indent);
+        out << "There are no names set with the blocks." << endl;
+    }
+
+    Indent(out, indent);
+    out << "Disjoint elements " << (disjointElements ? "true" : "false") 
+        << endl;
+
+    Indent(out, indent);
+    out << "Contains ghost zones " << containsGhostZones << endl;
+
+    Indent(out, indent);
+    out << "Contains original cells " << containsOriginalCells << endl;
+
+    Indent(out, indent);
+    out << "Contains original nodes " << containsOriginalNodes << endl;
+
+    Indent(out, indent);
+    out << "Units =  x: \"" << xUnits.c_str()
+        << "\", y: \"" << yUnits.c_str()
+        << "\", z: \"" << zUnits.c_str() << "\"." << endl;
+
+    Indent(out, indent);
+    out << "Labels =  x: \"" << xLabel.c_str()
+        << "\", y: \"" << yLabel.c_str()
+        << "\", z: \"" << zLabel.c_str() << "\"." << endl;
+
+    if (!validVariable)
+    {
+        Indent(out, indent);
+        out << "THIS IS NOT A VALID VARIABLE." << endl;
+    }
+
+    if (loadBalanceScheme != LOAD_BALANCE_UNKNOWN)
+    {
+        Indent(out, indent);
+        out << "HAS A SPECIFIC LOAD BALANCE SCHEME = "
+            << loadBalanceScheme << endl;
+    }
+    if (meshCoordType == AVT_XY)
+    {
+        Indent(out, indent);
+        out << "Mesh coord type is XY" << endl;
+    }
+    else if (meshCoordType == AVT_RZ)
+    {
+        Indent(out, indent);
+        out << "Mesh coord type is RZ" << endl;
+    }
+    else if (meshCoordType == AVT_ZR)
+    {
+        Indent(out, indent);
+        out << "Mesh coord type is ZR" << endl;
+    }
+
+    Indent(out, indent);
+    out << "Mesh is primarily "
+        << (nodesAreCritical ? "point" : "cell") << "-based" << endl;
+
+    for (int i=0; i<3; i++)
+    {
+        Indent(out, indent);
+        out << "Unit cell vector #"<<i<<" is "
+            << unitCellVectors[i*3+0] << " "
+            << unitCellVectors[i*3+1] << " "
+            << unitCellVectors[i*3+2] << endl;
+    }
+
+    Indent(out, indent);
+    out << "Rectilinear grids "
+        << (rectilinearGridHasTransform ? "do " : "do not ")
+        << "have an implicit transform." << endl;
+    if (rectilinearGridHasTransform)
+    {
+        for (int i=0; i<4; i++)
+        {
+            Indent(out, indent);
+            out << "   [ "
+                << rectilinearGridTransform[i*4+0] << " "
+                << rectilinearGridTransform[i*4+1] << " "
+                << rectilinearGridTransform[i*4+2] << " "
+                << rectilinearGridTransform[i*4+3] << " "
+                << "]" << endl;
+        }
+    }
+}

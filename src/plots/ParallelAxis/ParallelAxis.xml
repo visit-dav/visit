@@ -1,18 +1,22 @@
 <?xml version="1.0"?>
   <Plugin name="ParallelAxis" type="plot" label="ParallelAxis" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" vartype="scalar,array" iconFile="ParallelAxis.xpm">
     <Files components="G">
-        QvisParallelAxisWidget.C QvisParallelAxisPlotWizard.C
-    </Files>
-    <Files components="W">
-        QvisParallelAxisWidget.h QvisParallelAxisPlotWizard.h
+      QvisParallelAxisWidget.C
+      QvisParallelAxisPlotWizard.C
     </Files>
     <Files components="V">
-        avtParallelAxisFilter.C PortableFont.C
+      avtParallelAxisFilter.C
+      PortableFont.C
     </Files>
     <Files components="E">
-        avtParallelAxisFilter.C PortableFont.C
+      avtParallelAxisFilter.C
+      PortableFont.C
     </Files>
-    <Attribute name="ParallelAxisAttributes" purpose="This class contains the plot attributes for the ParallelAxis plot." persistent="true" codefile="ParallelAxis.code">
+    <Files components="W">
+      QvisParallelAxisWidget.h
+      QvisParallelAxisPlotWizard.h
+    </Files>
+    <Attribute name="ParallelAxisAttributes" purpose="This class contains the plot attributes for the ParallelAxis plot." persistent="true" exportAPI="" exportInclude="" codefile="ParallelAxis.code">
       <Field name="orderedAxisNames" label="orderedAxisNames" type="stringVector">
         default
       </Field>
@@ -26,10 +30,10 @@
         1e+37
       </Field>
       <Field name="extentMinima" label="extentMinima" type="doubleVector">
-        0.0
+        0.000000
       </Field>
       <Field name="extentMaxima" label="extentMaxima" type="doubleVector">
-        1.0
+        1.000000
       </Field>
       <Field name="extMinTimeOrds" label="extMinTimeOrds" type="intVector">
         0
@@ -37,26 +41,113 @@
       <Field name="extMaxTimeOrds" label="extMaxTimeOrds" type="intVector">
         0
       </Field>
-      <Field name="plotToolModeFlags" label="plotToolModeFlags" type="int">
-        0
+      <Field name="plotToolModeFlags" label="plotToolModeFlags" type="int" init="true">
       </Field>
       <Field name="axisGroupNames" label="axisGroupNames" type="stringVector">
         (not_in_a_group)
       </Field>
-      <Field name="axisInfoFlagSets" label="axisInfoFlagSets" type="intVector">
-        51314688
+      <Field name="axisInfoFlagSets" label="axisInfoFlagSets" type="intVector" init="true">
       </Field>
       <Field name="axisXPositions" label="axisXPositions" type="doubleVector">
-        -1.0
+        -1.000000
       </Field>
       <Field name="axisAttributeVariables" label="axisAttributeVariables" type="stringVector">
         default
       </Field>
-      <Field name="attributesPerAxis" label="attributesPerAxis" type="int">
-        4
+      <Field name="attributesPerAxis" label="attributesPerAxis" type="int" init="true">
       </Field>
-      <Field name="axisAttributeData" label="axisAttributeData" type="doubleVector">
-        0.0 0.0 0.0 0.0 0.0
+      <Field name="axisAttributeData" label="axisAttributeData" type="doubleVector" init="true">
       </Field>
+      <Function name="InsertAxis" user="true" member="true">
+      </Function>
+      <Function name="DeleteAxis" user="true" member="true">
+      </Function>
+      <Function name="AttributesAreConsistent" user="true" member="true">
+      </Function>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="SwitchToLeftAxis" user="true" member="true">
+      </Function>
+      <Function name="ShowPreviousAxisVariableData" user="true" member="true">
+      </Function>
+      <Function name="ShowNextAxisVariableData" user="true" member="true">
+      </Function>
+      <Function name="GetShownVariableAxisName" user="true" member="true">
+      </Function>
+      <Function name="GetShownVariableAxisNormalHumanOrdinal" user="true" member="true">
+      </Function>
+      <Function name="DetermineShownAndSelectedAxisSequences" user="true" member="true">
+      </Function>
+      <Function name="AdjustAxisSequencesAfterInsertingNewAxis" user="true" member="true">
+      </Function>
+      <Function name="AdjustAxisSequencesAfterDeletingAxis" user="true" member="true">
+      </Function>
+      <Function name="MarkShownAndSelectedAxisSequences" user="true" member="true">
+      </Function>
+      <Function name="RecalculateAxisXPositions" user="true" member="true">
+      </Function>
+      <Function name="IdentifyReasonableAxesToLabel" user="true" member="true">
+      </Function>
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Constant name="PCP_LEFT_AXIS_X_FRACTION" member="false">
+      </Constant>
+      <Constant name="PCP_RIGHT_AXIS_X_FRACTION" member="false">
+      </Constant>
+      <Constant name="PCP_H_BOTTOM_AXIS_Y_FRACTION" member="false">
+      </Constant>
+      <Constant name="PCP_V_BOTTOM_AXIS_Y_FRACTION" member="false">
+      </Constant>
+      <Constant name="PCP_H_TOP_AXIS_Y_FRACTION" member="false">
+      </Constant>
+      <Constant name="PCP_V_TOP_AXIS_Y_FRACTION" member="false">
+      </Constant>
+      <Constant name="PCP_MAX_HORIZONTAL_TEXT_INFO_AXES" member="false">
+      </Constant>
+      <Constant name="PCP_MIN_H_INFO_AXIS_INTERVAL_FRAC" member="false">
+      </Constant>
+      <Constant name="PCP_MIN_V_INFO_AXIS_INTERVAL_FRAC" member="false">
+      </Constant>
+      <Constant name="PCP_NO_VALUE_TOKEN" member="false">
+      </Constant>
+      <Constant name="PCP_VARIABLE_NAME_TOKEN" member="false">
+      </Constant>
+      <Constant name="PCP_INTEGER_TOKEN" member="false">
+      </Constant>
+      <Constant name="PCP_FLOATING_POINT_NUMBER_TOKEN" member="false">
+      </Constant>
+      <Constant name="PCP_LEFT_PARENTHESIS_TOKEN" member="false">
+      </Constant>
+      <Constant name="PCP_RIGHT_PARENTHESIS_TOKEN" member="false">
+      </Constant>
+      <Constant name="PCP_COMMA_TOKEN" member="false">
+      </Constant>
+      <Constant name="PCP_END_OF_EXPRESSION_TOKEN" member="false">
+      </Constant>
+      <Constant name="PCP_ATTRIBUTES_PER_AXIS" member="false">
+      </Constant>
+      <Constant name="PCP_GROUP_ID_ATTRIBUTE_OFFSET" member="false">
+      </Constant>
+      <Constant name="PCP_AXIS_SPACING_ATTRIBUTE_OFFSET" member="false">
+      </Constant>
+      <Constant name="PCP_LOWER_BOUND_ATTRIBUTE_OFFSET" member="false">
+      </Constant>
+      <Constant name="PCP_UPPER_BOUND_ATTRIBUTE_OFFSET" member="false">
+      </Constant>
+      <Constant name="PCP_GROUP_ID_ATTRIBUTE_FLAG" member="false">
+      </Constant>
+      <Constant name="PCP_AXIS_SPACING_ATTRIBUTE_FLAG" member="false">
+      </Constant>
+      <Constant name="PCP_LOWER_BOUND_ATTRIBUTE_FLAG" member="false">
+      </Constant>
+      <Constant name="PCP_UPPER_BOUND_ATTRIBUTE_FLAG" member="false">
+      </Constant>
+      <Constant name="PCP_IMPLICIT_AXIS_GROUP_ID" member="false">
+      </Constant>
+      <Constant name="PCP_FIRST_DUMMY_AXIS_GROUP_ID" member="false">
+      </Constant>
+      <Include file="header" quoted="false">
+        ExtentsAttributes.h
+      </Include>
     </Attribute>
   </Plugin>

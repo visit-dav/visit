@@ -195,7 +195,10 @@ class PythonGeneratorField : public virtual Field
         return tmp;
     }
 
-    virtual bool RequiresColorHeaderFiles() { return false; }
+    virtual void WriteIncludedHeaders(ostream &c)
+    {
+        // Write the list of include files that the object needs.
+    }
 
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
@@ -210,24 +213,41 @@ class PythonGeneratorField : public virtual Field
         c << "    PyObject *retval = NULL;" << endl;
     }
 
+    // Whether a Set method should be created. Most objects will allow the set 
+    // method to be created but att and attVector do not allow it for all types.
+    virtual bool ProvidesSetMethod() const { return true; }
+
+    virtual void WriteAdditionalMethods(ostream &c, const QString &className)
+    {
+        // Do nothing.
+    }
+
+    virtual std::vector<QString> AdditionalMethodNames(const QString &className)
+    {
+        std::vector<QString> ret;
+        return ret;
+    }
+
     virtual void WritePyObjectMethods(ostream &c, const QString &className)
     {
         // Do not add any methods if the field is internal.
         if(internal)
             return;
 
-        c << "static PyObject *" << endl;
-        c << className << "_" << MethodNameSet() << "(PyObject *self, PyObject *args)" << endl;
-        c << "{" << endl;
-        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << endl;
-        c << endl;
-        WriteSetMethodBody(c, className);
-        c << endl;
-        c << "    Py_INCREF(Py_None);" << endl;
-        c << "    return Py_None;" << endl;
-        c << "}" << endl;
-
-        c << endl;
+        if(ProvidesSetMethod())
+        {
+            c << "static PyObject *" << endl;
+            c << className << "_" << MethodNameSet() << "(PyObject *self, PyObject *args)" << endl;
+            c << "{" << endl;
+            c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << endl;
+            c << endl;
+            WriteSetMethodBody(c, className);
+            c << endl;
+            c << "    Py_INCREF(Py_None);" << endl;
+            c << "    return Py_None;" << endl;
+            c << "}" << endl;
+            c << endl;
+        }
         c << "static PyObject *" << endl;
         c << className << "_" << MethodNameGet() << "(PyObject *self, PyObject *args)" << endl;
         c << "{" << endl;
@@ -236,6 +256,8 @@ class PythonGeneratorField : public virtual Field
         c << "    return retval;" << endl;
         c << "}" << endl;
         c << endl;
+
+        WriteAdditionalMethods(c, className);
     }
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
@@ -249,8 +271,15 @@ class PythonGeneratorField : public virtual Field
         if(internal)
             return;
 
-        c << "    {\"" << MethodNameSet() << "\", " << className << "_" << MethodNameSet() << ", METH_VARARGS}," << endl;
+        if(ProvidesSetMethod())
+            c << "    {\"" << MethodNameSet() << "\", " << className << "_" << MethodNameSet() << ", METH_VARARGS}," << endl;
+
         c << "    {\"" << MethodNameGet() << "\", " << className << "_" << MethodNameGet() << ", METH_VARARGS}," << endl;
+
+        // Write any additional methods that may go along with this field.
+        std::vector<QString> additionalMethods(AdditionalMethodNames(className));
+        for(int i = 0; i < additionalMethods.size(); i += 2)
+            c << "    {\"" << additionalMethods[i] << "\", " << additionalMethods[i+1] << ", METH_VARARGS}," << endl;
     }
 
     virtual void WriteGetAttr(ostream &c, const QString &className)
@@ -273,11 +302,15 @@ class PythonGeneratorField : public virtual Field
         if(internal)
             return;
 
-        if(first)
-            c << "    if(strcmp(name, \"" << name << "\") == 0)" << endl;
-        else
-            c << "    else if(strcmp(name, \"" << name << "\") == 0)" << endl;
-        c << "        retval = ("<<className<<"_"<<MethodNameSet()<<"(self, tuple) != NULL);" << endl;
+        if(ProvidesSetMethod())
+        {
+            if(first)
+                c << "    if(strcmp(name, \"" << name << "\") == 0)" << endl;
+            else
+                c << "    else if(strcmp(name, \"" << name << "\") == 0)" << endl;
+
+            c << "        retval = ("<<className<<"_"<<MethodNameSet()<<"(self, tuple) != NULL);" << endl;
+        }
     }
 };
 
@@ -296,17 +329,30 @@ class AttsGeneratorInt : public virtual Int , public virtual PythonGeneratorFiel
         c << "        return NULL;" << endl;
         c << endl;
         c << "    // Set the " << name << " in the object." << endl;
-        c << "    obj->data->" << MethodNameSet() << "(ival);" << endl;
+        if(accessType == AccessPublic)
+            c << "    obj->data->" << name << " = (" << type << ")ival;" << endl;
+        else
+            c << "    obj->data->" << MethodNameSet() << "((" << type << ")ival);" << endl;
     }
 
     virtual void WriteGetMethodBody(ostream &c, const QString &className)
     {
-        c << "    PyObject *retval = PyInt_FromLong(long(obj->data->"<<MethodNameGet()<<"()));" << endl;
+        c << "    PyObject *retval = PyInt_FromLong(long(obj->data->";
+        if(accessType == AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet()<<"()";
+        c << "));" << endl;
     }
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %d\\n\", prefix, atts->" << MethodNameGet() << "());" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %d\\n\", prefix, atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ");" << endl;
         c << "    str += tmpStr;" << endl;
     }
 };
@@ -322,7 +368,12 @@ class AttsGeneratorIntArray : public virtual IntArray , public virtual PythonGen
         : IntArray(s,n,l), PythonGeneratorField("intArray",n,l), Field("intArray",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
-        c << "    int *ivals = obj->data->"<<MethodNameGet()<<"();" << endl;
+        c << "    int *ivals = obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ";" << endl;
         c << "    if(!PyArg_ParseTuple(args, \"";
         int i;
         for(i = 0; i < length; ++i)
@@ -364,21 +415,33 @@ class AttsGeneratorIntArray : public virtual IntArray , public virtual PythonGen
         c << "    }" << endl;
         c << endl;
         c << "    // Mark the " << name << " in the object as modified." << endl;
-        c << "    obj->data->Select" << Name << "();" << endl;
+        if(accessType == Field::AccessPublic)
+            c << "    obj->data->SelectAll();" << endl;
+        else
+            c << "    obj->data->Select" << Name << "();" << endl;
     }
 
     virtual void WriteGetMethodBody(ostream &c, const QString &className)
     {
         c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << endl;
         c << "    PyObject *retval = PyTuple_New(" << length << ");" << endl;
-        c << "    const int *" << name << " = obj->data->" << MethodNameGet() << "();" << endl;
+        c << "    const int *" << name << " = obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name << ";" << endl;
+        else
+            c << MethodNameGet() << "();" << endl;
         c << "    for(int i = 0; i < " << length << "; ++i)" << endl;
         c << "        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(" << name << "[i])));" << endl;
     }
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    {   const int *" << name << " = atts->" << MethodNameGet() << "();" << endl;
+        c << "    {   const int *" << name << " = atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ";" << endl;
         c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
         c << "        str += tmpStr;" << endl;
         c << "        for(int i = 0; i < " << length << "; ++i)" << endl;
@@ -409,7 +472,12 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual PythonG
         : IntVector(n,l), PythonGeneratorField("intVector",n,l), Field("intVector",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
-        c << "    intVector  &vec = obj->data->" << MethodNameGet() << "();" << endl;
+        c << "    intVector  &vec = obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ";" << endl;
         c << "    PyObject   *tuple;" << endl;
         c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << endl;
         c << "        return NULL;" << endl;
@@ -449,13 +517,20 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual PythonG
         c << "        return NULL;" << endl;
         c << endl;
         c << "    // Mark the "<<name<<" in the object as modified." << endl;
-        c << "    obj->data->Select"<<Name<<"();" << endl;
+        if(accessType == Field::AccessPublic)
+            c << "    obj->data->SelectAll();" << endl;
+        else
+            c << "    obj->data->Select"<<Name<<"();" << endl;
     }
 
     virtual void WriteGetMethodBody(ostream &c, const QString &className)
     {
         c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << endl;
-        c << "    const intVector &" << name << " = obj->data->" << MethodNameGet() << "();" << endl;
+        c << "    const intVector &" << name << " = obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name << ";" << endl;
+        else
+            c << MethodNameGet() << "();" << endl;
         c << "    PyObject *retval = PyTuple_New(" << name << ".size());" << endl;
         c << "    for(int i = 0; i < "<<name<<".size(); ++i)" << endl;
         c << "        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(" << name << "[i])));" << endl;
@@ -463,7 +538,12 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual PythonG
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    {   const intVector &" << name << " = atts->" << MethodNameGet() << "();" << endl;
+        c << "    {   const intVector &" << name << " = atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ";" << endl;
         c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
         c << "        str += tmpStr;" << endl;
         c << "        for(int i = 0; i < " << name << ".size(); ++i)" << endl;
@@ -498,17 +578,32 @@ class AttsGeneratorBool : public virtual Bool , public virtual PythonGeneratorFi
         c << "        return NULL;" << endl;
         c << endl;
         c << "    // Set the " << name << " in the object." << endl;
-        c << "    obj->data->" << MethodNameSet() << "(ival != 0);" << endl;
+        c << "    obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name << " = ";
+        else
+            c << MethodNameSet();
+        c << "(ival != 0);" << endl;
     }
 
     virtual void WriteGetMethodBody(ostream &c, const QString &className)
     {
-        c << "    PyObject *retval = PyInt_FromLong(obj->data->"<<MethodNameGet()<<"()?1L:0L);" << endl;
+        c << "    PyObject *retval = PyInt_FromLong(obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet()<<"()";
+        c << "?1L:0L);" << endl;
     }
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    if(atts->" << MethodNameGet() << "())" << endl;
+        c << "    if(atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ")" << endl;
         c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = 1\\n\", prefix);" << endl;
         c << "    else" << endl;
         c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = 0\\n\", prefix);" << endl;
@@ -532,17 +627,31 @@ class AttsGeneratorFloat : public virtual Float , public virtual PythonGenerator
         c << "        return NULL;" << endl;
         c << endl;
         c << "    // Set the " << name << " in the object." << endl;
-        c << "    obj->data->" << MethodNameSet() << "(fval);" << endl;
+        c << "    obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name << " = fval;" << endl;
+        else
+            c << MethodNameSet() << "(fval);" << endl;
     }
 
     virtual void WriteGetMethodBody(ostream &c, const QString &className)
     {
-        c << "    PyObject *retval = PyFloat_FromDouble(double(obj->data->"<<MethodNameGet()<<"()));" << endl;
+        c << "    PyObject *retval = PyFloat_FromDouble(double(obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name << ";" << endl;
+        else
+            c <<MethodNameGet()<<"()";
+        c << "));" << endl;
     }
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %g\\n\", prefix, atts->" << MethodNameGet() << "());" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %g\\n\", prefix, atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ");" << endl;
         c << "    str += tmpStr;" << endl;
     }
 };
@@ -558,7 +667,12 @@ class AttsGeneratorFloatArray : public virtual FloatArray , public virtual Pytho
         : FloatArray(s,n,l), PythonGeneratorField("floatArray",n,l), Field("floatArray",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
-        c << "    float *fvals = obj->data->"<<MethodNameGet()<<"();" << endl;
+        c << "    float *fvals = obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ";" << endl;
         c << "    if(!PyArg_ParseTuple(args, \"";
         int i;
         for(i = 0; i < length; ++i)
@@ -600,21 +714,33 @@ class AttsGeneratorFloatArray : public virtual FloatArray , public virtual Pytho
         c << "    }" << endl;
         c << endl;
         c << "    // Mark the " << name << " in the object as modified." << endl;
-        c << "    obj->data->Select" << Name << "();" << endl;
+        if(accessType == Field::AccessPublic)
+            c << "    obj->data->SelectAll();" << endl;
+        else
+            c << "    obj->data->Select" << Name << "();" << endl;
     }
 
     virtual void WriteGetMethodBody(ostream &c, const QString &className)
     {
         c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << endl;
         c << "    PyObject *retval = PyTuple_New(" << length << ");" << endl;
-        c << "    const float *" << name << " = obj->data->" << MethodNameGet() << "();" << endl;
+        c << "    const float *" << name << " = obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name << ";" << endl;
+        else
+            c << MethodNameGet() << "();" << endl;
         c << "    for(int i = 0; i < " << length << "; ++i)" << endl;
         c << "        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(double(" << name << "[i])));" << endl;
     }
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    {   const float *" << name << " = atts->" << MethodNameGet() << "();" << endl;
+        c << "    {   const float *" << name << " = atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ";" << endl;
         c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
         c << "        str += tmpStr;" << endl;
         c << "        for(int i = 0; i < " << length << "; ++i)" << endl;
@@ -649,17 +775,31 @@ class AttsGeneratorDouble : public virtual Double , public virtual PythonGenerat
         c << "        return NULL;" << endl;
         c << endl;
         c << "    // Set the " << name << " in the object." << endl;
-        c << "    obj->data->" << MethodNameSet() << "(dval);" << endl;
+        c << "    obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name << " = dval;" << endl;
+        else
+            c << MethodNameSet() << "(dval);" << endl;
     }
 
     virtual void WriteGetMethodBody(ostream &c, const QString &className)
     {
-        c << "    PyObject *retval = PyFloat_FromDouble(obj->data->"<<MethodNameGet()<<"());" << endl;
+        c << "    PyObject *retval = PyFloat_FromDouble(obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c <<MethodNameGet()<<"()";
+        c << ");" << endl;
     }
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %g\\n\", prefix, atts->" << MethodNameGet() << "());" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %g\\n\", prefix, atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ");" << endl;
         c << "    str += tmpStr;" << endl;
     }
 };
@@ -675,7 +815,12 @@ class AttsGeneratorDoubleArray : public virtual DoubleArray , public virtual Pyt
         : DoubleArray(s,n,l), PythonGeneratorField("doubleArray",n,l), Field("doubleArray",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
-        c << "    double *dvals = obj->data->"<<MethodNameGet()<<"();" << endl;
+        c << "    double *dvals = obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ";" << endl;
         c << "    if(!PyArg_ParseTuple(args, \"";
         int i;
         for(i = 0; i < length; ++i)
@@ -717,21 +862,34 @@ class AttsGeneratorDoubleArray : public virtual DoubleArray , public virtual Pyt
         c << "    }" << endl;
         c << endl;
         c << "    // Mark the " << name << " in the object as modified." << endl;
-        c << "    obj->data->Select" << Name << "();" << endl;
+        if(accessType == Field::AccessPublic)
+            c << "    obj->data->SelectAll();" << endl;
+        else
+            c << "    obj->data->Select" << Name << "();" << endl;
     }
 
     virtual void WriteGetMethodBody(ostream &c, const QString &className)
     {
         c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << endl;
         c << "    PyObject *retval = PyTuple_New(" << length << ");" << endl;
-        c << "    const double *" << name << " = obj->data->" << MethodNameGet() << "();" << endl;
+        c << "    const double *" << name << " = obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c <<MethodNameGet()<<"()";
+        c << ";" << endl;
         c << "    for(int i = 0; i < " << length << "; ++i)" << endl;
         c << "        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(" << name << "[i]));" << endl;
     }
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    {   const double *" << name << " = atts->" << MethodNameGet() << "();" << endl;
+        c << "    {   const double *" << name << " = atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ";" << endl;
         c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
         c << "        str += tmpStr;" << endl;
         c << "        for(int i = 0; i < " << length << "; ++i)" << endl;
@@ -761,7 +919,12 @@ class AttsGeneratorDoubleVector : public virtual DoubleVector , public virtual P
         : DoubleVector(n,l), PythonGeneratorField("doubleVector",n,l), Field("doubleVector",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
-        c << "    doubleVector  &vec = obj->data->" << MethodNameGet() << "();" << endl;
+        c << "    doubleVector  &vec = obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ";" << endl;
         c << "    PyObject     *tuple;" << endl;
         c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << endl;
         c << "        return NULL;" << endl;
@@ -801,13 +964,21 @@ class AttsGeneratorDoubleVector : public virtual DoubleVector , public virtual P
         c << "        return NULL;" << endl;
         c << endl;
         c << "    // Mark the "<<name<<" in the object as modified." << endl;
-        c << "    obj->data->Select"<<Name<<"();" << endl;
+        if(accessType == Field::AccessPublic)
+            c << "    obj->data->SelectAll();" << endl;
+        else
+            c << "    obj->data->Select"<<Name<<"();" << endl;
     }
 
     virtual void WriteGetMethodBody(ostream &c, const QString &className)
     {
         c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << endl;
-        c << "    const doubleVector &" << name << " = obj->data->" << MethodNameGet() << "();" << endl;
+        c << "    const doubleVector &" << name << " = obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c <<MethodNameGet()<<"()";
+        c << ";" << endl;
         c << "    PyObject *retval = PyTuple_New(" << name << ".size());" << endl;
         c << "    for(int i = 0; i < "<<name<<".size(); ++i)" << endl;
         c << "        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(" << name << "[i]));" << endl;
@@ -815,7 +986,12 @@ class AttsGeneratorDoubleVector : public virtual DoubleVector , public virtual P
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    {   const doubleVector &" << name << " = atts->" << MethodNameGet() << "();" << endl;
+        c << "    {   const doubleVector &" << name << " = atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ";" << endl;
         c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
         c << "        str += tmpStr;" << endl;
         c << "        for(int i = 0; i < " << name << ".size(); ++i)" << endl;
@@ -850,17 +1026,31 @@ class AttsGeneratorUChar : public virtual UChar , public virtual PythonGenerator
         c << "        return NULL;" << endl;
         c << endl;
         c << "    // Set the " << name << " in the object." << endl;
-        c << "    obj->data->" << MethodNameSet() << "(uval);" << endl;
+        c << "    obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name << " = uval;" << endl;
+        else
+            c << MethodNameSet() << "(uval);" << endl;
     }
 
     virtual void WriteGetMethodBody(ostream &c, const QString &className)
     {
-        c << "    PyObject *retval = PyInt_FromLong(long(obj->data->"<<MethodNameGet()<<"()));" << endl;
+        c << "    PyObject *retval = PyInt_FromLong(long(obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c <<MethodNameGet()<<"()";
+        c <<"));" << endl;
     }
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %d\\n\", prefix, int(atts->" << MethodNameGet() << "()));" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %d\\n\", prefix, int(atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << "));" << endl;
         c << "    str += tmpStr;" << endl;
     }
 };
@@ -876,7 +1066,12 @@ class AttsGeneratorUCharArray : public virtual UCharArray , public virtual Pytho
         : UCharArray(s,n,l), PythonGeneratorField("ucharArray",n,l), Field("ucharArray",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
-        c << "    unsigned char *cvals = obj->data->"<<MethodNameGet()<<"();" << endl;
+        c << "    unsigned char *cvals = obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ";" << endl;
         c << "    if(!PyArg_ParseTuple(args, \"";
         int i;
         for(i = 0; i < length; ++i)
@@ -923,21 +1118,34 @@ class AttsGeneratorUCharArray : public virtual UCharArray , public virtual Pytho
         c << "    }" << endl;
         c << endl;
         c << "    // Mark the " << name << " in the object as modified." << endl;
-        c << "    obj->data->Select" << Name << "();" << endl;
+        if(accessType == Field::AccessPublic)
+            c << "    obj->data->SelectAll();" << endl;
+        else
+            c << "    obj->data->Select" << Name << "();" << endl;
     }
 
     virtual void WriteGetMethodBody(ostream &c, const QString &className)
     {
         c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << endl;
         c << "    PyObject *retval = PyTuple_New(" << length << ");" << endl;
-        c << "    const unsigned char *" << name << " = obj->data->" << MethodNameGet() << "();" << endl;
+        c << "    const unsigned char *" << name << " = obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c <<MethodNameGet()<<"()";
+        c << ";" << endl;
         c << "    for(int i = 0; i < " << length << "; ++i)" << endl;
         c << "        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(" << name << "[i])));" << endl;
     }
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    {   const unsigned char *" << name << " = atts->" << MethodNameGet() << "();" << endl;
+        c << "    {   const unsigned char *" << name << " = atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ";" << endl;
         c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
         c << "        str += tmpStr;" << endl;
         c << "        for(int i = 0; i < " << length << "; ++i)" << endl;
@@ -967,7 +1175,12 @@ class AttsGeneratorUCharVector : public virtual UCharVector , public virtual Pyt
         : UCharVector(n,l), PythonGeneratorField("ucharVector",n,l), Field("ucharVector",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
-        c << "    unsignedCharVector  &vec = obj->data->" << MethodNameGet() << "();" << endl;
+        c << "    unsignedCharVector  &vec = obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ";" << endl;
         c << "    PyObject     *tuple;" << endl;
         c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << endl;
         c << "        return NULL;" << endl;
@@ -1021,13 +1234,21 @@ class AttsGeneratorUCharVector : public virtual UCharVector , public virtual Pyt
         c << "        return NULL;" << endl;
         c << endl;
         c << "    // Mark the "<<name<<" in the object as modified." << endl;
-        c << "    obj->data->Select"<<Name<<"();" << endl;
+        if(accessType == Field::AccessPublic)
+            c << "    obj->data->SelectAll();" << endl;
+        else
+            c << "    obj->data->Select"<<Name<<"();" << endl;
     }
 
     virtual void WriteGetMethodBody(ostream &c, const QString &className)
     {
         c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << endl;
-        c << "    const unsignedCharVector &" << name << " = obj->data->" << MethodNameGet() << "();" << endl;
+        c << "    const unsignedCharVector &" << name << " = obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c <<MethodNameGet()<<"()";
+        c << ";" << endl;
         c << "    PyObject *retval = PyTuple_New(" << name << ".size());" << endl;
         c << "    for(int i = 0; i < "<<name<<".size(); ++i)" << endl;
         c << "        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(" << name << "[i])));" << endl;
@@ -1035,7 +1256,12 @@ class AttsGeneratorUCharVector : public virtual UCharVector , public virtual Pyt
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    {   const unsignedCharVector &" << name << " = atts->" << MethodNameGet() << "();" << endl;
+        c << "    {   const unsignedCharVector &" << name << " = atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ";" << endl;
         c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
         c << "        str += tmpStr;" << endl;
         c << "        for(int i = 0; i < " << name << ".size(); ++i)" << endl;
@@ -1069,17 +1295,31 @@ class AttsGeneratorString : public virtual String , public virtual PythonGenerat
         c << "        return NULL;" << endl;
         c << endl;
         c << "    // Set the " << name << " in the object." << endl;
-        c << "    obj->data->" << MethodNameSet() << "(std::string(str));" << endl;
+        c << "    obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name << " = std::string(str);" << endl;
+        else
+            c << MethodNameSet() << "(std::string(str));" << endl;
     }
 
     virtual void WriteGetMethodBody(ostream &c, const QString &className)
     {
-        c << "    PyObject *retval = PyString_FromString(obj->data->"<<MethodNameGet()<<"().c_str());" << endl;
+        c << "    PyObject *retval = PyString_FromString(obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c <<MethodNameGet()<<"()";
+        c << ".c_str());" << endl;
     }
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = \\\"%s\\\"\\n\", prefix, atts->" << MethodNameGet() << "().c_str());" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = \\\"%s\\\"\\n\", prefix, atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ".c_str());" << endl;
         c << "    str += tmpStr;" << endl;
     }
 };
@@ -1095,7 +1335,12 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual P
         : StringVector(n,l), PythonGeneratorField("stringVector",n,l), Field("stringVector",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
-        c << "    stringVector  &vec = obj->data->" << MethodNameGet() << "();" << endl;
+        c << "    stringVector  &vec = obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ";" << endl;
         c << "    PyObject     *tuple;" << endl;
         c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << endl;
         c << "        return NULL;" << endl;
@@ -1121,13 +1366,21 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual P
         c << "        return NULL;" << endl;
         c << endl;
         c << "    // Mark the "<<name<<" in the object as modified." << endl;
-        c << "    obj->data->Select"<<Name<<"();" << endl;
+        if(accessType == Field::AccessPublic)
+            c << "    obj->data->SelectAll();" << endl;
+        else
+            c << "    obj->data->Select"<<Name<<"();" << endl;
     }
 
     virtual void WriteGetMethodBody(ostream &c, const QString &className)
     {
         c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << endl;
-        c << "    const stringVector &" << name << " = obj->data->" << MethodNameGet() << "();" << endl;
+        c << "    const stringVector &" << name << " = obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c <<MethodNameGet()<<"()";
+        c << ";" << endl;
         c << "    PyObject *retval = PyTuple_New(" << name << ".size());" << endl;
         c << "    for(int i = 0; i < "<<name<<".size(); ++i)" << endl;
         c << "        PyTuple_SET_ITEM(retval, i, PyString_FromString(" << name << "[i].c_str()));" << endl;
@@ -1135,7 +1388,12 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual P
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    {   const stringVector &" << name << " = atts->" << MethodNameGet() << "();" << endl;
+        c << "    {   const stringVector &" << name << " = atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ";" << endl;
         c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
         c << "        str += tmpStr;" << endl;
         c << "        for(int i = 0; i < " << name << ".size(); ++i)" << endl;
@@ -1170,17 +1428,31 @@ class AttsGeneratorColorTable : public virtual ColorTable , public virtual Pytho
         c << "        return NULL;" << endl;
         c << endl;
         c << "    // Set the " << name << " in the object." << endl;
-        c << "    obj->data->" << MethodNameSet() << "(std::string(str));" << endl;
+        c << "    obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name << " = std::string(str);" << endl;
+        else
+            c << MethodNameSet() << "(std::string(str));" << endl;
     }
 
     virtual void WriteGetMethodBody(ostream &c, const QString &className)
     {
-        c << "    PyObject *retval = PyString_FromString(obj->data->"<<MethodNameGet()<<"().c_str());" << endl;
+        c << "    PyObject *retval = PyString_FromString(obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c <<MethodNameGet()<<"()";
+        c <<".c_str());" << endl;
     }
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = \\\"%s\\\"\\n\", prefix, atts->" << MethodNameGet() << "().c_str());" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = \\\"%s\\\"\\n\", prefix, atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ".c_str());" << endl;
         c << "    str += tmpStr;" << endl;
     }
 };
@@ -1248,16 +1520,29 @@ class AttsGeneratorColor : public virtual Color , public virtual PythonGenerator
         c << endl;
         c << "    // Set the " << name << " in the object." << endl;
         c << "    ColorAttribute ca(c[0], c[1], c[2], c[3]);" << endl;
-        c << "    obj->data->" << MethodNameSet() << "(ca);" << endl;
+        c << "    obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name << " = ca;" << endl;
+        else
+            c << MethodNameSet() << "(ca);" << endl;
     }
 
-    virtual bool RequiresColorHeaderFiles() { return true; }
+    virtual void WriteIncludedHeaders(ostream &c)
+    {
+        // Write the list of include files that the object needs.
+        c << "#include <ColorAttribute.h>" << endl;
+    }
 
     virtual void WriteGetMethodBody(ostream &c, const QString &className)
     {
         c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << endl;
         c << "    PyObject *retval = PyTuple_New(4);" << endl;
-        c << "    const unsigned char *" << name << " = obj->data->" << MethodNameGet() << "().GetColor();" << endl;
+        c << "    const unsigned char *" << name << " = obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c <<MethodNameGet()<<"()";
+        c << ".GetColor();" << endl;
         c << "    PyTuple_SET_ITEM(retval, 0, PyInt_FromLong(long(" << name << "[0])));" << endl;
         c << "    PyTuple_SET_ITEM(retval, 1, PyInt_FromLong(long(" << name << "[1])));" << endl;
         c << "    PyTuple_SET_ITEM(retval, 2, PyInt_FromLong(long(" << name << "[2])));" << endl;
@@ -1266,7 +1551,12 @@ class AttsGeneratorColor : public virtual Color , public virtual PythonGenerator
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    const unsigned char *" << name << " = atts->" << MethodNameGet() << "().GetColor();" << endl;
+        c << "    const unsigned char *" << name << " = atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ".GetColor();" << endl;
         c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = (%d, %d, %d, %d)\\n\", prefix, int("<<name<<"[0]), int("<<name<<"[1]), int("<<name<<"[2]), int("<<name<<"[3]));" << endl;
         c << "    str += tmpStr;" << endl;
     }
@@ -1289,7 +1579,11 @@ class AttsGeneratorLineStyle : public virtual LineStyle , public virtual PythonG
         c << endl;
         c << "    // Set the " << name << " in the object." << endl;
         c << "    if(ival >= 0 && ival <= 3)" << endl;
-        c << "        obj->data->" << MethodNameSet() << "(ival);" << endl;
+        c << "        obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name << " = ival;" << endl;
+        else
+            c << MethodNameSet() << "(ival);" << endl;
         c << "    else" << endl;
         c << "    {" << endl;
         c << "        fprintf(stderr, \"An invalid  value was given. \"" << endl;
@@ -1302,13 +1596,23 @@ class AttsGeneratorLineStyle : public virtual LineStyle , public virtual PythonG
 
     virtual void WriteGetMethodBody(ostream &c, const QString &className)
     {
-        c << "    PyObject *retval = PyInt_FromLong(long(obj->data->"<<MethodNameGet()<<"()));" << endl;
+        c << "    PyObject *retval = PyInt_FromLong(long(obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c <<MethodNameGet()<<"()";
+        c <<"));" << endl;
     }
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
         c << "    const char *" << name << "_values[] = {\"SOLID\", \"DASH\", \"DOT\", \"DOTDASH\"};" << endl;
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s  # SOLID, DASH, DOT, DOTDASH\\n\", prefix, " << name << "_values[atts->" << MethodNameGet() << "()]);" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s  # SOLID, DASH, DOT, DOTDASH\\n\", prefix, " << name << "_values[atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << "]);" << endl;
         c << "    str += tmpStr;" << endl;
     }
 
@@ -1347,17 +1651,31 @@ class AttsGeneratorLineWidth : public virtual LineWidth , public virtual PythonG
         c << "        return NULL;" << endl;
         c << endl;
         c << "    // Set the " << name << " in the object." << endl;
-        c << "    obj->data->" << MethodNameSet() << "(ival);" << endl;
+        c << "    obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name << " = ival;" << endl;
+        else
+            c << MethodNameSet() << "(ival);" << endl;
     }
 
     virtual void WriteGetMethodBody(ostream &c, const QString &className)
     {
-        c << "    PyObject *retval = PyInt_FromLong(long(obj->data->"<<MethodNameGet()<<"()));" << endl;
+        c << "    PyObject *retval = PyInt_FromLong(long(obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c <<MethodNameGet()<<"()";
+        c <<"));" << endl;
     }
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %d\\n\", prefix, atts->" << MethodNameGet() << "());" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %d\\n\", prefix, atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ");" << endl;
         c << "    str += tmpStr;" << endl;
     }
 };
@@ -1378,17 +1696,31 @@ class AttsGeneratorOpacity : public virtual Opacity , public virtual PythonGener
         c << "        return NULL;" << endl;
         c << endl;
         c << "    // Set the " << name << " in the object." << endl;
-        c << "    obj->data->" << MethodNameSet() << "(dval);" << endl;
+        c << "    obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name << " = dval;" << endl;
+        else
+            c << MethodNameSet() << "(dval);" << endl;
     }
 
     virtual void WriteGetMethodBody(ostream &c, const QString &className)
     {
-        c << "    PyObject *retval = PyFloat_FromDouble(obj->data->"<<MethodNameGet()<<"());" << endl;
+        c << "    PyObject *retval = PyFloat_FromDouble(obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c <<MethodNameGet()<<"()";
+        c <<");" << endl;
     }
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %g\\n\", prefix, atts->" << MethodNameGet() << "());" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %g\\n\", prefix, atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ");" << endl;
         c << "    str += tmpStr;" << endl;
     }
 };
@@ -1409,17 +1741,31 @@ class AttsGeneratorVariableName : public virtual VariableName , public virtual P
         c << "        return NULL;" << endl;
         c << endl;
         c << "    // Set the " << name << " in the object." << endl;
-        c << "    obj->data->" << MethodNameSet() << "(std::string(str));" << endl;
+        c << "    obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name << " = std::string(str);" << endl;
+        else
+            c << MethodNameSet() << "(std::string(str));" << endl;
     }
 
     virtual void WriteGetMethodBody(ostream &c, const QString &className)
     {
-        c << "    PyObject *retval = PyString_FromString(obj->data->"<<MethodNameGet()<<"().c_str());" << endl;
+        c << "    PyObject *retval = PyString_FromString(obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c <<MethodNameGet()<<"()";
+        c<<".c_str());" << endl;
     }
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = \\\"%s\\\"\\n\", prefix, atts->" << MethodNameGet() << "().c_str());" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = \\\"%s\\\"\\n\", prefix, atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ".c_str());" << endl;
         c << "    str += tmpStr;" << endl;
     }
 };
@@ -1441,20 +1787,6 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
     AttsGeneratorAtt(const QString &t, const QString &n, const QString &l)
         : Att(t,n,l), PythonGeneratorField("att",n,l), Field("att",n,l) { cerr << "**** AttType=" << AttType << endl;}
 
-    virtual void WriteGetAttr(ostream &c, const QString &className)
-    {
-        if(internal)
-            return;
-
-        // Not implemented yet!
-        c << "    if (strcmp(name, \"" << name << "\") == 0)" << endl;
-        c << "    {" << endl;
-        c << "        cerr << \"You cannot access this data member directly.\";"
-          << endl;
-        c << "        cerr << \"\\nUse " << MethodNameGet() << "()\\n\\n\";" << endl;
-        c << "    }" << endl;
-    }
-
     virtual void WriteSetAttr(ostream &c, const QString &className, bool first)
     {
         if(internal)
@@ -1465,7 +1797,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
         c << "    {" << endl;
         c << "        cerr << \"You cannot access this data member directly.\";"
           << endl;
-        c << "        cerr << \"\\nUse " << MethodNameSet() << "()\\n\\n\";" << endl;
+        c << "        cerr << \"\\nUse " << MethodNameGet() << "().field = value\\n\\n\";" << endl;
         c << "    }" << endl;
     }
 
@@ -1474,12 +1806,26 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
         return false;
     }
 
+    virtual void WriteIncludedHeaders(ostream &c)
+    {
+        // Write the list of include files that the object needs.
+        c << "#include <Py" << attType << ".h>" << endl;
+    }
+
+    // So far, only allow a Set method for ColorAttributeList objects.
+    virtual bool ProvidesSetMethod() const { return AttType == "ColorAttributeList"; }
+
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         if(AttType == "ColorAttributeList")
         {
             c << "    PyObject *pyobj = NULL;" << endl;
-            c << "    ColorAttributeList &cL = obj->data->Get" << Name << "();" << endl;
+            c << "    ColorAttributeList &cL = obj->data->";
+            if(accessType == Field::AccessPublic)
+                c << name;
+            else
+                c << MethodNameGet() << "()";
+            c << ";" << endl;
             c << "    int index = 0;" << endl;
             c << "    int c[4] = {0,0,0,255};" << endl;
             c << "    bool setTheColor = true;" << endl;
@@ -1513,12 +1859,12 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "                        if(PyTuple_Check(pyobj))" << endl;
             c << "                        {" << endl;
             c << "                            // Make sure that the tuple is the right size." << endl;
-            c << "                            if(PyTuple_Size(pyobj) < cL.GetNumColorAttributes())" << endl;
+            c << "                            if(PyTuple_Size(pyobj) < cL.GetNumColors())" << endl;
             c << "                                return NULL;" << endl;
             c << endl;
             c << "                            // Make sure that the tuple is the right size." << endl;
             c << "                            bool badInput = false;" << endl;
-            c << "                            int i, *C = new int[4 * cL.GetNumColorAttributes()];" << endl;
+            c << "                            int i, *C = new int[4 * cL.GetNumColors()];" << endl;
             c << "                            for(i = 0; i < PyTuple_Size(pyobj) && !badInput; ++i)" << endl;
             c << "                            {" << endl;
             c << "                                PyObject *item = PyTuple_GET_ITEM(pyobj, i);" << endl;
@@ -1550,19 +1896,19 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "                                return NULL;" << endl;
             c << "                            }" << endl;
             c << endl;
-            c << "                            for(i = 0; i < cL.GetNumColorAttributes(); ++i)" << endl;
+            c << "                            for(i = 0; i < cL.GetNumColors(); ++i)" << endl;
             c << "                                cL[i].SetRgba(C[i*4], C[i*4+1], C[i*4+2], C[i*4+3]);" << endl;
             c << "                            delete [] C;" << endl;
             c << "                        }" << endl;
             c << "                        else if(PyList_Check(pyobj))" << endl;
             c << "                        {" << endl;
             c << "                            // Make sure that the list is the right size." << endl;
-            c << "                            if(PyList_Size(pyobj) < cL.GetNumColorAttributes())" << endl;
+            c << "                            if(PyList_Size(pyobj) < cL.GetNumColors())" << endl;
             c << "                                return NULL;" << endl;
             c << endl;
             c << "                            // Make sure that the tuple is the right size." << endl;
             c << "                            bool badInput = false;" << endl;
-            c << "                            int i, *C = new int[4 * cL.GetNumColorAttributes()];" << endl;
+            c << "                            int i, *C = new int[4 * cL.GetNumColors()];" << endl;
             c << "                            for(i = 0; i < PyList_Size(pyobj) && !badInput; ++i)" << endl;
             c << "                            {" << endl;
             c << "                                PyObject *item = PyList_GET_ITEM(pyobj, i);" << endl;
@@ -1594,7 +1940,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "                                return NULL;" << endl;
             c << "                            }" << endl;
             c << endl;
-            c << "                            for(i = 0; i < cL.GetNumColorAttributes(); ++i)" << endl;
+            c << "                            for(i = 0; i < cL.GetNumColors(); ++i)" << endl;
             c << "                                cL[i].SetRgba(C[i*4], C[i*4+1], C[i*4+2], C[i*4+3]);" << endl;
             c << endl;
             c << "                            delete [] C;" << endl;
@@ -1629,7 +1975,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "        PyErr_Clear();" << endl;
             c << "    }" << endl;
             c << endl;
-            c << "    if(index < 0 || index >= cL.GetNumColorAttributes())" << endl;
+            c << "    if(index < 0 || index >= cL.GetNumColors())" << endl;
             c << "        return NULL;" << endl;
             c << endl;
             c << "    // Set the color in the object." << endl;
@@ -1655,12 +2001,12 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "    int index = 0;" << endl;
             c << "    if(PyArg_ParseTuple(args, \"i\", &index))" << endl;
             c << "    {" << endl;
-            c << "        if(index < 0 || index >= cL.GetNumColorAttributes())" << endl;
+            c << "        if(index < 0 || index >= cL.GetNumColors())" << endl;
             c << "            return NULL;" << endl;
             c << endl;
             c << "        // Allocate a tuple the with enough entries to hold the singleColor." << endl;
             c << "        retval = PyTuple_New(4);" << endl;
-            c << "        const unsigned char *c = cL.GetColorAttribute(index).GetColor();" << endl;
+            c << "        const unsigned char *c = cL.GetColors(index).GetColor();" << endl;
             c << "        PyTuple_SET_ITEM(retval, 0, PyInt_FromLong(long(c[0])));" << endl;
             c << "        PyTuple_SET_ITEM(retval, 1, PyInt_FromLong(long(c[1])));" << endl;
             c << "        PyTuple_SET_ITEM(retval, 2, PyInt_FromLong(long(c[2])));" << endl;
@@ -1671,10 +2017,10 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "        PyErr_Clear();" << endl;
             c << endl;
             c << "        // Return the whole thing." << endl;
-            c << "        retval = PyList_New(cL.GetNumColorAttributes());" << endl;
-            c << "        for(int i = 0; i < cL.GetNumColorAttributes(); ++i)" << endl;
+            c << "        retval = PyList_New(cL.GetNumColors());" << endl;
+            c << "        for(int i = 0; i < cL.GetNumColors(); ++i)" << endl;
             c << "        {" << endl;
-            c << "            const unsigned char *c = cL.GetColorAttribute(i).GetColor();" << endl;
+            c << "            const unsigned char *c = cL.GetColors(i).GetColor();" << endl;
             c << endl;
             c << "            PyObject *t = PyTuple_New(4);" << endl;
             c << "            PyTuple_SET_ITEM(t, 0, PyInt_FromLong(long(c[0])));" << endl;
@@ -1688,9 +2034,19 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
         }
         else
         {
-            c << "    // NOT IMPLEMENTED!!!" << endl;
-            c << "    // name=" << name << ", type=" << type << endl;
-            c << "    PyObject *retval = NULL;" << endl;
+            c << "    // Since the new object will point to data owned by this object," << endl;
+            c << "    // we need to increment the reference count." << endl;
+            c << "    Py_INCREF(self);" << endl;
+            c << endl;
+            c << "    PyObject *retval = Py" << attType << "_Wrap(";
+            if(accessType == Field::AccessPublic)
+                c << "&obj->data->" << name << ");" << endl;
+            else
+                c << "&obj->data->Get" << Name << "());" << endl;
+            c << "    // Set the object's parent so the reference to the parent can be decref'd" << endl;
+            c << "    // when the child goes out of scope." << endl;
+            c << "    Py" << attType << "_SetParent(retval, self);" << endl;
+            c << endl;
         }
     }
 
@@ -1698,9 +2054,14 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
     {
         if(AttType == "ColorAttributeList")
         {
-            c << "    { const ColorAttributeList &cL = atts->Get" << Name << "();" << endl;
+            c << "    { const ColorAttributeList &cL = atts->";
+            if(accessType == Field::AccessPublic)
+                c << name;
+            else
+                c << MethodNameGet() << "()";
+            c << ";" << endl;
             c << "        const char *comment = (prefix==0 || strcmp(prefix,\"\")==0) ? \"# \" : \"\";" << endl;
-            c << "        for(int i = 0; i < cL.GetNumColorAttributes(); ++i)" << endl;
+            c << "        for(int i = 0; i < cL.GetNumColors(); ++i)" << endl;
             c << "        {" << endl;
             c << "            const unsigned char *c = cL[i].GetColor();" << endl;
             c << "            SNPRINTF(tmpStr, 1000, \"%s%sSet" << Name << "(%d, (%d, %d, %d, %d))\\n\"," << endl;
@@ -1711,15 +2072,17 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
         }
         else
         {
-            c << "#if 0" << endl;
-            c << "// Ifdef this code out until all attributes have Python StringRepresentation methods" << endl;
             c << "    { // new scope" << endl;
-            c << "         PyObject *obj = Py" << attType << "_StringRepresentation(atts->" << MethodNameGet() << "());" << endl;
-            c << "         str += \"" << name << " = {\";" << endl;
-            c << "         if(obj != 0) str += PyString_AS_STRING(obj);" << endl;
-            c << "         str += \"}\\n\";" << endl;
+            c << "        char tmp[200];" << endl;
+            c << "        std::string objPrefix(prefix);" << endl;
+            c << "        objPrefix += \"Get" << Name << "().\";" << endl;
+            c << "         str += Py" << attType << "_ToString(";
+            if(accessType == Field::AccessPublic)
+                c << "atts->" << name;
+            else
+                c << "&atts->" << MethodNameGet() << "()";
+            c << ", objPrefix.c_str());" << endl;
             c << "    }" << endl;
-            c << "#endif" << endl;
         }
     }
 };
@@ -1733,10 +2096,6 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
   public:
     AttsGeneratorAttVector(const QString &t, const QString &n, const QString &l)
         : AttVector(t,n,l), PythonGeneratorField("attVector",n,l), Field("attVector",n,l) { }
-    virtual void WriteGetAttr(ostream &c, const QString &className)
-    {
-        // Not implemented yet!
-    }
 
     virtual void WriteSetAttr(ostream &c, const QString &className, bool first)
     {
@@ -1748,20 +2107,190 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         return false;
     }
 
+    virtual void WriteIncludedHeaders(ostream &c)
+    {
+        // Write the list of include files that the object needs.
+        c << "#include <Py" << attType << ".h>" << endl;
+    }
+
+    // Do not allow set methods. Make the user use the Get### method to return a reference
+    // to the object.
+    virtual bool ProvidesSetMethod() const { return false; }
+
+    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    {
+        c << "    int index;" << endl;
+        c << "    if(!PyArg_ParseTuple(args, \"i\", &index))" << endl;
+        c << "        return NULL;" << endl;
+        c << "    if(index < 0 || index >= obj->data->Get" << Name << "().size())" << endl;
+        c << "    {" << endl;
+        c << "        char msg[200];" << endl;
+        c << "        if(obj->data->Get" << Name << "().size() == 0)" << endl;
+        c << "            SNPRINTF(msg, 200, \"The index is invalid because " << name << " is empty.\");" << endl;
+        c << "        else" << endl;
+        c << "            SNPRINTF(msg, 200, \"The index is invalid. Use index values in: [0, %d).\", obj->data->Get" << Name << "().size());" << endl;
+        c << "        PyErr_SetString(PyExc_IndexError, msg);" << endl;
+        c << "        return NULL;" << endl;
+        c << "    }" << endl;
+        c << endl;
+        c << "    // Since the new object will point to data owned by the this object," << endl;
+        c << "    // we need to increment the reference count." << endl;
+        c << "    Py_INCREF(self);" << endl;
+        c << endl;
+        c << "    PyObject *retval = Py" << attType << "_Wrap(&obj->data->Get" << Name << "(index));" << endl;
+        c << "    // Set the object's parent so the reference to the parent can be decref'd" << endl;
+        c << "    // when the child goes out of scope." << endl;
+        c << "    Py" << attType << "_SetParent(retval, self);" << endl;
+        c << endl;
+    }
+
+    virtual void WriteAdditionalMethods(ostream &c, const QString &className)
+    {
+        c << "PyObject *" << endl;
+        c << className << "_GetNum" << Name << "(PyObject *self, PyObject *args)" << endl;
+        c << "{" << endl;
+        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << endl;
+        c << "    return PyInt_FromLong((long)obj->data->Get" << Name << "().size());" << endl;
+        c << "}" << endl;
+        c << endl;
+
+        c << "PyObject *" << endl;
+        c << className << "_Add" << Name << "(PyObject *self, PyObject *args)" << endl;
+        c << "{" << endl;
+        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << endl;
+        c << "    PyObject *element = NULL;" << endl;
+        c << "    if(!PyArg_ParseTuple(args, \"O\", &element))" << endl;
+        c << "        return NULL;" << endl;
+        c << "    if(!Py" << attType << "_Check(element))" << endl; 
+        c << "    {" << endl;
+        c << "        char msg[400];" << endl;
+        c << "        SNPRINTF(msg, 400, \"The Add" << Name << " method only accepts " << attType << " objects.\");" << endl;
+        c << "        PyErr_SetString(PyExc_TypeError, msg);" << endl;
+        c << "        return NULL;" << endl;
+        c << "    }" << endl;
+        c << "    " << attType << " *newData = Py" << attType << "_FromPyObject(element);" << endl;
+        if(accessType != Field::AccessPublic)
+        {
+            c << "    obj->data->Add" << Name << "(*newData);" << endl;
+            c << "    obj->data->Select" << Name << "();" << endl;
+        }
+        else
+        {
+            c << "    obj->data->" << name << ".push_back(new " << attType << "(*newData));" << endl;
+        }
+        c << "    Py_INCREF(Py_None);" << endl;
+        c << "    return Py_None;" << endl;
+        c << "}" << endl;
+        c << endl;
+
+        c << "static PyObject *" << endl;
+        c << className << "_Remove_One_" << Name << "(PyObject *self, int index)" << endl;
+        c << "{" << endl;
+        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << endl;
+        c << "    // Remove in the AttributeGroupVector instead of calling Remove" << Name
+          << "() because we don't want to delete the object; just remove it." << endl;
+        if(accessType == Field::AccessPublic)
+            c << "    AttributeGroupVector &atts = obj->data->" << name << ";" << endl;
+        else
+            c << "    AttributeGroupVector &atts = obj->data->Get" << Name << "();" << endl;
+        c << "    AttributeGroupVector::iterator pos = atts.begin();" << endl;
+        c << "    // Iterate through the vector \"index\" times. " << endl;
+        c << "    for(int i = 0; i < index; ++i)" << endl;
+        c << "        ++pos;" << endl;
+        c << endl;
+        c << "    // If pos is still a valid iterator, remove that element." << endl;
+        c << "    if(pos != atts.end())" << endl;
+        c << "    {" << endl;
+        c << "        // NOTE: Leak the object since other Python objects may reference it. Ideally," << endl;
+        c << "        // we would put the object into some type of pool to be cleaned up later but" << endl;
+        c << "        // this will do for now." << endl;
+        c << "        //" << endl;
+        c << "        // delete *pos;" << endl;
+        c << "        atts.erase(pos);" << endl;
+        c << "    }" << endl;
+        c << endl;
+        if(accessType != Field::AccessPublic)
+            c << "    obj->data->Select" << Name << "();" << endl;
+        c << "    Py_INCREF(Py_None);" << endl;
+        c << "    return Py_None;" << endl;
+        c << "}" << endl;
+        c << endl;
+
+        c << "PyObject *" << endl;
+        c << className << "_Remove" << Name << "(PyObject *self, PyObject *args)" << endl;
+        c << "{" << endl;
+        c << "    int index;" << endl;
+        c << "    if(!PyArg_ParseTuple(args, \"i\", &index))" << endl;
+        c << "        return NULL;" << endl;
+        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << endl;
+        if(accessType == Field::AccessPublic)
+            c << "    if(index < 0 || index >= obj->data->" << name << ".size())" << endl;
+        else
+            c << "    if(index < 0 || index >= obj->data->GetNum" << Name << "())" << endl;
+        c << "    {" << endl;
+        c << "        PyErr_SetString(PyExc_IndexError, \"Index out of range\");" << endl;
+        c << "        return NULL;" << endl;
+        c << "    }" << endl;
+        c << endl;
+        c << "    return " << className << "_Remove_One_" << Name << "(self, index);" << endl;
+        c << "}" << endl;
+        c << endl;
+
+        c << "PyObject *" << endl;
+        c << className << "_Clear" << Name << "(PyObject *self, PyObject *args)" << endl;
+        c << "{" << endl;
+        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << endl;
+        if(accessType == Field::AccessPublic)
+            c << "    int n = obj->data->" << name << ".size();" << endl;
+        else
+            c << "    int n = obj->data->GetNum" << Name << "();" << endl; 
+        c << "    for(int i = 0; i < n; ++i)" << endl;
+        c << "    {" << endl;
+        c << "        " << className << "_Remove_One_" << Name << "(self, 0);" << endl;
+        c << "        Py_DECREF(Py_None);" << endl;
+        c << "    }" << endl;
+        c << "    Py_INCREF(Py_None);" << endl;
+        c << "    return Py_None;" << endl;
+        c << "}" << endl;
+        c << endl;
+    }
+
+    virtual std::vector<QString> AdditionalMethodNames(const QString &className)
+    {
+        std::vector<QString> nameFunc;
+
+        nameFunc.push_back(QString("GetNum") + Name);
+        nameFunc.push_back(className + QString("_GetNum") + Name);
+
+        nameFunc.push_back(QString("Add") + Name);
+        nameFunc.push_back(className + QString("_Add") + Name);
+
+        nameFunc.push_back(QString("Remove") + Name);
+        nameFunc.push_back(className + QString("_Remove") + Name);
+
+        nameFunc.push_back(QString("Clear") + Name);
+        nameFunc.push_back(className + QString("_Clear") + Name);
+
+        return nameFunc;
+    }
+
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
         c << "    { // new scope" << endl;
+        c << "        int index = 0;" << endl;
         c << "        // Create string representation of " << name << " from atts." << endl;
-        c << "        for(pos = atts->" << MethodNameGet() << ".begin(); pos != atts->" << MethodNameGet() << ".end(); ++pos)" << endl;
+        if(accessType == Field::AccessPublic)
+            c << "        for(AttributeGroupVector::const_iterator pos = atts->" << name << ".begin(); pos != atts->" << name << ".end(); ++pos, ++index)" << endl;
+        else
+            c << "        for(AttributeGroupVector::const_iterator pos = atts->" << MethodNameGet() << "().begin(); pos != atts->" << MethodNameGet() << "().end(); ++pos, ++index)" << endl;
         c << "        {" << endl;
-        c << "            " << attType << " *current" << attType << " = (" << attType << " *)(*pos);" << endl;
-        c << "            PyObject *s = Py" << attType << "_StringRepresentation(current);" << endl;
-        c << "            if(s)" << endl;
-        c << "            {" << endl;
-        c << "                str += PyString_AS_STRING(s);" << endl;
-        c << "                PyDECREF(s);" << endl;
-        c << "            }" << endl;
-        c << "        }" << endl << endl;
+        c << "            const " << attType << " *current" << " = (const " << attType << " *)(*pos);" << endl;
+        c << "            SNPRINTF(tmpStr, 1000, \"Get" << Name << "(%d).\", index);" << endl;
+        c << "            std::string objPrefix(prefix + std::string(tmpStr));" << endl;
+        c << "            str += Py" << attType << "_ToString(current, objPrefix.c_str());" << endl;
+        c << "        }" << endl;
+        c << "        if(index == 0)" << endl;
+        c << "            str += \"#" << name << " does not contain any " << attType << " objects.\\n\";" << endl;
         c << "    }" << endl;
     }
 };
@@ -1783,7 +2312,11 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
         c << endl;
         c << "    // Set the " << name << " in the object." << endl;
         c << "    if(ival >= 0 && ival < " << enumType->values.size() << ")" << endl;
-        c << "        obj->data->" << MethodNameSet() << "(" << GetCPPName(true,className) << "(ival));" << endl;
+        c << "        obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name << " = " << GetCPPName(true,className) << "(ival);" << endl;
+        else
+            c << MethodNameSet() << "(" << GetCPPName(true,className) << "(ival));" << endl;
         c << "    else" << endl;
         c << "    {" << endl;
         c << "        fprintf(stderr, \"An invalid " << name << " value was given. \"" << endl;
@@ -1823,15 +2356,22 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
             c << "    ";
             if(i == 0)
             {
-                c << "if";
-                c << "(atts->" << MethodNameGet() << "() == "
-                  << classname << "::" << enumType->values[i] << ")" << endl;
+                c << "if(atts->";
+                if(accessType == Field::AccessPublic)
+                    c << name;
+                else
+                    c << MethodNameGet() << "()";
+                c << " == " << classname << "::" << enumType->values[i] << ")" << endl;
             }
             else if(i < enumType->values.size() - 1)
             {
                 c << "else if";
-                c << "(atts->" << MethodNameGet() << "() == "
-                  << classname << "::" << enumType->values[i] << ")" << endl;
+                c << "(atts->";
+                if(accessType == Field::AccessPublic)
+                    c << name;
+                else
+                    c << MethodNameGet() << "()";
+                c << " == " << classname << "::" << enumType->values[i] << ")" << endl;
             }
             else
                 c << "else" << endl;
@@ -1870,6 +2410,195 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
     }
 };
 
+#define AVT_GENERATOR_METHODS \
+    virtual void WriteIncludedHeaders(ostream &c) \
+    { \
+        c << "#include <avtTypes.h>" << endl; \
+    } \
+    virtual void WriteSetMethodBody(ostream &c, const QString &className) \
+    { \
+        c << "    int ival;" << endl; \
+        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << endl; \
+        c << "        return NULL;" << endl; \
+        c << endl; \
+        QString T(type); T.replace("Field", "");\
+        if(accessType == AccessPublic) \
+            c << "    obj->data->" << name << " = (" << T << ")ival;" << endl; \
+        else \
+            c << "    obj->data->" << MethodNameSet() << "((" << T << ")ival);" << endl; \
+    } \
+    virtual void WriteGetMethodBody(ostream &c, const QString &className) \
+    { \
+        c << "    PyObject *retval = PyInt_FromLong(long(obj->data->"; \
+        if(accessType == AccessPublic) \
+            c << name; \
+        else \
+            c << MethodNameGet()<<"()"; \
+        c << "));" << endl; \
+    } \
+    virtual void StringRepresentation(ostream &c, const QString &classname) \
+    { \
+        c << "    const char *" << name << "_names = \""; \
+        int values_size = 0; \
+        const char **values = GetSymbols(values_size); \
+        for(int j = 0; j < values_size; ++j) \
+        { \
+            c << values[j]; \
+            if(j < values_size - 1) \
+                c << ", "; \
+        } \
+        c << "\";" << endl; \
+        for(int i = 0; i < values_size; ++i) \
+        { \
+            c << "    "; \
+            if(i == 0) \
+            { \
+                c << "if(atts->"; \
+                if(accessType == Field::AccessPublic) \
+                    c << name; \
+                else \
+                    c << MethodNameGet() << "()"; \
+                c << " == " << values[i] << ")" << endl; \
+            } \
+            else if(i < values_size - 1) \
+            { \
+                c << "else if"; \
+                c << "(atts->"; \
+                if(accessType == Field::AccessPublic) \
+                    c << name; \
+                else \
+                    c << MethodNameGet() << "()"; \
+                c << " == " << values[i] << ")" << endl; \
+            } \
+            else \
+                c << "else" << endl; \
+            c << "    {" << endl; \
+            c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s" << values[i] << "  # %s\\n\", prefix, prefix, " << name << "_names);" << endl; \
+            c << "        str += tmpStr;" << endl; \
+            c << "    }" << endl; \
+        } \
+        c << endl; \
+    }\
+    virtual void WriteGetAttr(ostream &c, const QString &classname)\
+    {\
+        if (internal)\
+            return;\
+        c << "    if(strcmp(name, \"" << name << "\") == 0)" << endl;\
+        c << "        return " << classname << "_" << MethodNameGet() << "(self, NULL);" << endl;\
+        int values_size = 0;\
+        const char **values = GetSymbols(values_size);\
+        for(int i = 0; i < values_size; ++i)\
+        {\
+            c << "    ";\
+            if(i == 0)\
+                c << "if";\
+            else\
+                c << "else if";\
+            c << "(strcmp(name, \"";\
+            c << values[i];\
+            c << "\") == 0)" << endl;\
+            c << "        return PyInt_FromLong(long(";\
+            c << values[i];\
+            c << "));" << endl;\
+        }\
+        c << endl;\
+    }
+
+//
+// ----------------------------------- avtCentering -----------------------------------
+//
+class AttsGeneratoravtCentering : public virtual PythonGeneratorField, public virtual avtCenteringField
+{
+  public:
+    AttsGeneratoravtCentering(const QString &n, const QString &l)
+        : avtCenteringField(n,l), PythonGeneratorField("avtCentering",n,l), Field("avtCentering",n,l)
+    { }
+    AVT_GENERATOR_METHODS
+};
+
+//
+// ----------------------------------- avtGhostType -----------------------------------
+//
+class AttsGeneratoravtGhostType : public virtual PythonGeneratorField, public virtual avtGhostTypeField
+{
+  public:
+    AttsGeneratoravtGhostType(const QString &n, const QString &l)
+        : avtGhostTypeField(n,l), PythonGeneratorField("avtGhostType",n,l), Field("avtGhostType",n,l)
+    { }
+    AVT_GENERATOR_METHODS
+};
+
+//
+// ----------------------------------- avtSubsetType -----------------------------------
+//
+class AttsGeneratoravtSubsetType : public virtual PythonGeneratorField, public virtual avtSubsetTypeField
+{
+  public:
+    AttsGeneratoravtSubsetType(const QString &n, const QString &l)
+        : avtSubsetTypeField(n,l), PythonGeneratorField("int",n,l), Field("int",n,l)
+    { }
+    AVT_GENERATOR_METHODS
+};
+
+//
+// ----------------------------------- avtVarType -----------------------------------
+//
+class AttsGeneratoravtVarType : public virtual PythonGeneratorField, public virtual avtVarTypeField
+{
+  public:
+    AttsGeneratoravtVarType(const QString &n, const QString &l)
+        : avtVarTypeField(n,l), PythonGeneratorField("avtVarType",n,l), Field("avtVarTypeField",n,l)
+    { }
+    AVT_GENERATOR_METHODS
+};
+
+//
+// ----------------------------------- avtMeshType -----------------------------------
+//
+class AttsGeneratoravtMeshType : public virtual PythonGeneratorField, public virtual avtMeshTypeField
+{
+  public:
+    AttsGeneratoravtMeshType(const QString &n, const QString &l)
+        : avtMeshTypeField(n,l), PythonGeneratorField("avtMeshType",n,l), Field("avtMeshTypeField",n,l)
+    { }
+    AVT_GENERATOR_METHODS
+};
+
+//
+// ----------------------------------- avtExtentType -----------------------------------
+//
+class AttsGeneratoravtExtentType : public virtual PythonGeneratorField, public virtual avtExtentTypeField
+{
+  public:
+    AttsGeneratoravtExtentType(const QString &n, const QString &l)
+        : avtExtentTypeField(n,l), PythonGeneratorField("avtExentType",n,l), Field("avtExtentType",n,l)
+    { }
+    AVT_GENERATOR_METHODS
+};
+
+//
+// ----------------------------------- avtMeshCoordType -----------------------------------
+//
+class AttsGeneratoravtMeshCoordType : public virtual PythonGeneratorField, public virtual avtMeshCoordTypeField
+{
+  public:
+    AttsGeneratoravtMeshCoordType(const QString &n, const QString &l)
+        : avtMeshCoordTypeField(n,l), PythonGeneratorField("avtMeshCoordType",n,l), Field("avtMeshCoordType",n,l)
+    { }
+    AVT_GENERATOR_METHODS
+};
+
+//
+// ----------------------------------- LoadBalanceScheme -----------------------------------
+//
+class AttsGeneratorLoadBalanceScheme : public virtual PythonGeneratorField, public virtual LoadBalanceSchemeField
+{
+  public:
+    AttsGeneratorLoadBalanceScheme(const QString &n, const QString &l)
+        : LoadBalanceSchemeField(n,l), PythonGeneratorField("LoadBalanceScheme",n,l), Field("LoadBalanceScheme",n,l)
+    { }
+    AVT_GENERATOR_METHODS
+};
 
 // ----------------------------------------------------------------------------
 // Modifications:
@@ -1912,6 +2641,16 @@ class PythonFieldFactory
         else if (type == "attVector")    f = new AttsGeneratorAttVector(subtype,name,label);
         else if (type == "enum")         f = new PythonGeneratorEnum(subtype, name, label);
 
+        // Special built-in AVT enums
+        else if (type == "avtCentering")      f = new AttsGeneratoravtCentering(name, label);
+        else if (type == "avtVarType")        f = new AttsGeneratoravtVarType(name, label);
+        else if (type == "avtSubsetType")     f = new AttsGeneratoravtSubsetType(name, label);
+        else if (type == "avtExtentType")     f = new AttsGeneratoravtExtentType(name, label);
+        else if (type == "avtMeshType")       f = new AttsGeneratoravtMeshType(name, label);
+        else if (type == "avtGhostType")      f = new AttsGeneratoravtGhostType(name, label);
+        else if (type == "avtMeshCoordType")  f = new AttsGeneratoravtMeshCoordType(name, label);
+        else if (type == "LoadBalanceScheme") f = new AttsGeneratorLoadBalanceScheme(name, label);
+
         if (!f)
             throw QString().sprintf("PythonFieldFactory: unknown type for field %s: %s",name.latin1(),type.latin1());
 
@@ -1926,7 +2665,7 @@ class PythonGeneratorAttribute
   public:
     QString name;
     QString purpose;
-    bool    persistent;
+    bool    persistent, keyframe, visitpy_api;
     QString exportAPI;
     QString exportInclude;
     vector<PythonGeneratorField*> fields;
@@ -1947,7 +2686,11 @@ class PythonGeneratorAttribute
         if (codeFile)
             codeFile->Parse();
         persistent = false;
+        keyframe = true;
+        visitpy_api = true;
     }
+
+    void DisableVISITPY() { visitpy_api = false; }
 
     void PrintFunction(ostream &out, const QString &f)
     {
@@ -1992,20 +2735,27 @@ class PythonGeneratorAttribute
         h << "#define PY_" << name.upper() << "_H" << endl;
         h << "#include <Python.h>" << endl;
         h << "#include <"<<name<<".h>" << endl;
+        QString api("");
+        if(visitpy_api)
+        {
+             h << "#include <visitpy_exports.h>" << endl;
+             api = "VISITPY_API";
+        }
         h << endl;
         h << "//" << endl;
         h << "// Functions exposed to the VisIt module." << endl;
         h << "//" << endl;
-        h << "void            Py"<<name<<"_StartUp("<<name<<" *subj, void *data);" << endl;
-        h << "void            Py"<<name<<"_CloseDown();" << endl;
-        h << "PyMethodDef    *Py"<<name<<"_GetMethodTable(int *nMethods);" << endl;
-        h << "bool            Py"<<name<<"_Check(PyObject *obj);" << endl;
-        h << name << " *Py"<<name<<"_FromPyObject(PyObject *obj);" << endl;
-        h << "PyObject       *Py"<<name<<"_NewPyObject();" << endl;
-        h << "PyObject       *Py"<<name<<"_WrapPyObject(const " << name << " *attr);" << endl;
-        h << "void            Py"<<name<<"_SetDefaults(const "<<name<<" *atts);" << endl;
-        h << "std::string     Py"<<name<<"_GetLogString();" << endl;
-        h << "std::string     Py"<<name<<"_ToString(const " << name << " *, const char *);" << endl;
+        h << "void "<<api<<"           Py"<<name<<"_StartUp("<<name<<" *subj, void *data);" << endl;
+        h << "void "<<api<<"           Py"<<name<<"_CloseDown();" << endl;
+        h << "PyMethodDef * "<<api<<"  Py"<<name<<"_GetMethodTable(int *nMethods);" << endl;
+        h << "bool "<<api<<"           Py"<<name<<"_Check(PyObject *obj);" << endl;
+        h << name << " * "<<api<<" Py"<<name<<"_FromPyObject(PyObject *obj);" << endl;
+        h << "PyObject * "<<api<<"     Py"<<name<<"_New();" << endl;
+        h << "PyObject * "<<api<<"     Py"<<name<<"_Wrap(const " << name << " *attr);" << endl;
+        h << "void "<<api<<"           Py"<<name<<"_SetParent(PyObject *obj, PyObject *parent);" << endl;
+        h << "void "<<api<<"           Py"<<name<<"_SetDefaults(const "<<name<<" *atts);" << endl;
+        h << "std::string "<<api<<"    Py"<<name<<"_GetLogString();" << endl;
+        h << "std::string "<<api<<"    Py"<<name<<"_ToString(const " << name << " *, const char *);" << endl;
         h << endl;
         h << "#endif" << endl;
         h << endl;
@@ -2013,11 +2763,11 @@ class PythonGeneratorAttribute
 
     void WriteIncludedHeaders(ostream &c)
     {
-        bool val = false;
-        for(int i = 0; i < fields.size(); ++i)
-            val |= fields[i]->RequiresColorHeaderFiles();
-        c << "#include <ColorAttribute.h>" << endl;
         c << "#include <snprintf.h>" << endl;
+
+        // Write the headers that are needed.
+        for(int i = 0; i < fields.size(); ++i)
+            fields[i]->WriteIncludedHeaders(c);
     }
 
     void WriteHeaderComment(ostream &c)
@@ -2046,7 +2796,8 @@ class PythonGeneratorAttribute
         c << "{" << endl;
         c << "    PyObject_HEAD" << endl;
         c << "    "<<name<<" *data;" << endl;
-        c << "    bool owns;" << endl;
+        c << "    bool        owns;" << endl;
+        c << "    PyObject   *parent;" << endl;
         c << "};" << endl;
         c << endl;
     }
@@ -2193,6 +2944,8 @@ class PythonGeneratorAttribute
         c << name << "_dealloc(PyObject *v)" << endl;
         c << "{" << endl;
         c << "   " << name << "Object *obj = (" << name << "Object *)v;" << endl;
+        c << "   if(obj->parent != 0)" << endl;
+        c << "       Py_DECREF(obj->parent);" << endl;
         c << "   if(obj->owns)" << endl;
         c << "       delete obj->data;" << endl;
         c << "}" << endl;
@@ -2291,6 +3044,7 @@ class PythonGeneratorAttribute
         c << "    else" << endl;
         c << "        newObject->data = new "<<name<<";" << endl;
         c << "    newObject->owns = true;" << endl;
+        c << "    newObject->parent = 0;" << endl;
         c << "    return (PyObject *)newObject;" << endl;
         c << "}" << endl;
         c << endl;
@@ -2303,6 +3057,7 @@ class PythonGeneratorAttribute
         c << "        return NULL;" << endl;
         c << "    newObject->data = ("<<name<< " *)attr;" << endl;
         c << "    newObject->owns = false;" << endl;
+        c << "    newObject->parent = 0;" << endl;
         c << "    return (PyObject *)newObject;" << endl;
         c << "}" << endl;
         c << endl;
@@ -2424,15 +3179,22 @@ class PythonGeneratorAttribute
         c << "}" << endl;
         c << endl;
         c << "PyObject *" << endl;
-        c << "Py"<<name<<"_NewPyObject()" << endl;
+        c << "Py"<<name<<"_New()" << endl;
         c << "{" << endl;
         c << "    return New"<<name<<"(0);" << endl;
         c << "}" << endl;
         c << endl;
         c << "PyObject *" << endl;
-        c << "Py"<<name<<"_WrapPyObject(const " << name << " *attr)" << endl;
+        c << "Py"<<name<<"_Wrap(const " << name << " *attr)" << endl;
         c << "{" << endl;
         c << "    return Wrap"<<name<<"(attr);" << endl;
+        c << "}" << endl;
+        c << endl;
+        c << "void" << endl;
+        c << "Py"<<name<<"_SetParent(PyObject *obj, PyObject *parent)" << endl;
+        c << "{" << endl;
+        c << "    "<<name<<"Object *obj2 = ("<<name<<"Object *)obj;" << endl;
+        c << "    obj2->parent = parent;" << endl;
         c << "}" << endl;
         c << endl;
         c << "void" << endl;
@@ -2514,7 +3276,10 @@ class PythonGeneratorPlugin
     {
         out << "Plugin: "<<name<<" (\""<<label<<"\", type="<<type<<") -- version "<<version<< endl;
         if (atts)
+        {
+            atts->DisableVISITPY();
             atts->Print(cout);
+        }
     }
 };
 

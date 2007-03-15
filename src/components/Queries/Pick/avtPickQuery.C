@@ -243,11 +243,11 @@ avtPickQuery::PostExecute(void)
         //
         // Remove any "mesh" PickVarInfo's, as they are unnecessary
         //
-        for (int i = pickAtts.GetNumPickVarInfos()-1; i >= 0; i--)
+        for (int i = pickAtts.GetNumVarInfos()-1; i >= 0; i--)
         {
-            if (pickAtts.GetPickVarInfo(i).GetVariableType() == "mesh")
+            if (pickAtts.GetVarInfo(i).GetVariableType() == "mesh")
             {
-                pickAtts.RemovePickVarInfo(i);
+                pickAtts.RemoveVarInfo(i);
             }
         }
 
@@ -814,7 +814,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
 
     int numVars;
     if (pickAtts.GetFulfilled())
-        numVars = pickAtts.GetNumPickVarInfos();
+        numVars = pickAtts.GetNumVarInfos();
     else 
         numVars = userVars.size();
     for (int varNum = 0; varNum < numVars; varNum++)
@@ -824,12 +824,12 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
         PickVarInfo::Centering centering(PickVarInfo::None);
         if (pickAtts.GetFulfilled())
         {
-            if (pickAtts.GetPickVarInfo(varNum).HasInfo() 
-             && pickAtts.GetPickVarInfo(varNum).GetVariableType() != "species" 
-             && pickAtts.GetPickVarInfo(varNum).GetVariableType() != "scalar") 
+            if (pickAtts.GetVarInfo(varNum).HasInfo() 
+             && pickAtts.GetVarInfo(varNum).GetVariableType() != "species" 
+             && pickAtts.GetVarInfo(varNum).GetVariableType() != "scalar") 
                 continue;
 
-            vName = pickAtts.GetPickVarInfo(varNum).GetVariableName();
+            vName = pickAtts.GetVarInfo(varNum).GetVariableName();
         }
         else
         {
@@ -938,22 +938,22 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
         {
             if (!names.empty())
             {
-                pickAtts.GetPickVarInfo(varNum).SetNames(names);
-                pickAtts.GetPickVarInfo(varNum).SetValues(vals);
-                pickAtts.GetPickVarInfo(varNum).SetCentering(centering);
-                pickAtts.GetPickVarInfo(varNum).SetTreatAsASCII(treatAsASCII);
-                if (pickAtts.GetPickVarInfo(varNum).GetVariableType() != "species")
+                pickAtts.GetVarInfo(varNum).SetNames(names);
+                pickAtts.GetVarInfo(varNum).SetValues(vals);
+                pickAtts.GetVarInfo(varNum).SetCentering(centering);
+                pickAtts.GetVarInfo(varNum).SetTreatAsASCII(treatAsASCII);
+                if (pickAtts.GetVarInfo(varNum).GetVariableType() != "species")
                 { 
                     if (labelData)
-                        pickAtts.GetPickVarInfo(varNum).SetVariableType("label");
+                        pickAtts.GetVarInfo(varNum).SetVariableType("label");
                     else if (nComponents == 1)
-                        pickAtts.GetPickVarInfo(varNum).SetVariableType("scalar");
+                        pickAtts.GetVarInfo(varNum).SetVariableType("scalar");
                     else if (nComponents == 3)
-                        pickAtts.GetPickVarInfo(varNum).SetVariableType("vector");
+                        pickAtts.GetVarInfo(varNum).SetVariableType("vector");
                     else if (nComponents == 9)
-                        pickAtts.GetPickVarInfo(varNum).SetVariableType("tensor");
+                        pickAtts.GetVarInfo(varNum).SetVariableType("tensor");
                     else
-                        pickAtts.GetPickVarInfo(varNum).SetVariableType("array");
+                        pickAtts.GetVarInfo(varNum).SetVariableType("array");
                 } 
                 delete [] temp; 
             }
@@ -980,7 +980,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
                 else
                     varInfo.SetVariableType("array");
             }
-            pickAtts.AddPickVarInfo(varInfo);
+            pickAtts.AddVarInfo(varInfo);
         }
     } // for all vars  
 }
@@ -1588,23 +1588,23 @@ avtPickQuery::ConvertElNamesToGlobal(void)
     bool zonePick = pickAtts.GetPickType() == PickAttributes::Zone ||
                     pickAtts.GetPickType() == PickAttributes::DomainZone;
 
-    for (i = 0; i < pickAtts.GetNumPickVarInfos(); i++)
+    for (i = 0; i < pickAtts.GetNumVarInfos(); i++)
     { 
         if (zonePick)
         {
-            if (pickAtts.GetPickVarInfo(i).GetCentering() == 
+            if (pickAtts.GetVarInfo(i).GetCentering() == 
                 PickVarInfo::Zonal)
-                pickAtts.GetPickVarInfo(i).SetNames(globalElName);
+                pickAtts.GetVarInfo(i).SetNames(globalElName);
             else
-                pickAtts.GetPickVarInfo(i).SetNames(names);
+                pickAtts.GetVarInfo(i).SetNames(names);
         }
         else 
         {
-            if (pickAtts.GetPickVarInfo(i).GetCentering() == 
+            if (pickAtts.GetVarInfo(i).GetCentering() == 
                 PickVarInfo::Zonal)
-                pickAtts.GetPickVarInfo(i).SetNames(names);
+                pickAtts.GetVarInfo(i).SetNames(names);
             else
-                pickAtts.GetPickVarInfo(i).SetNames(globalElName);
+                pickAtts.GetVarInfo(i).SetNames(globalElName);
         }
     }
 }
@@ -1649,13 +1649,13 @@ avtPickQuery::SetRealIds(vtkDataSet *ds)
     }
 
     // need to change the zone/node names stored in all PickVarInfo
-    int numVars = pickAtts.GetNumPickVarInfos();
+    int numVars = pickAtts.GetNumVarInfos();
     for (i = 0; i < numVars; i++)
     {
-        if (pickAtts.GetPickVarInfo(i).GetVariableType() == "material")
+        if (pickAtts.GetVarInfo(i).GetVariableType() == "material")
             continue;
 
-        stringVector &names = pickAtts.GetPickVarInfo(i).GetNames();
+        stringVector &names = pickAtts.GetVarInfo(i).GetNames();
         if (names.size() == 0) 
             continue;
         if (names.size() == incEls.size())

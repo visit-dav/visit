@@ -1,7 +1,7 @@
 Code: SetFromNode
 Prefix:
 Postfix:
-    if(colorControlPoints.GetNumColorControlPoints() < 2)
+    if(colorControlPoints.GetNumControlPoints() < 2)
          SetDefaultColorControlPoints();
 
 Initialization: colorControlPoints
@@ -192,7 +192,7 @@ VolumeAttributes::SetDefaultColorControlPoints()
         {255, 0,   0,   255}};
 
     // Clear the color control point list.
-    colorControlPoints.ClearColorControlPoints();
+    colorControlPoints.ClearControlPoints();
 
     // Set the default control points in the color control point list.
     for(int i = 0; i < 5; ++i)
@@ -200,7 +200,7 @@ VolumeAttributes::SetDefaultColorControlPoints()
         ColorControlPoint cpt;
         cpt.SetPosition(positions[i]);
         cpt.SetColors(colors[i]);
-        colorControlPoints.AddColorControlPoint(cpt);
+        colorControlPoints.AddControlPoints(cpt);
     }
     SelectColorControlPoints();
 }
@@ -235,10 +235,10 @@ VolumeAttributes::GetGaussianOpacities(unsigned char *alphas) const
     for (i=0; i<256; i++)
         values[i] = 0.;
 
-    for (int p=0; p<opacityControlPoints.GetNumGaussianControlPoints(); p++)
+    for (int p=0; p<opacityControlPoints.GetNumControlPoints(); p++)
     {
         const GaussianControlPoint &pt =
-                               opacityControlPoints.GetGaussianControlPoint(p);
+                               opacityControlPoints.GetControlPoints(p);
         float pos    = pt.GetX();
         float width  = pt.GetWidth();
         float height = pt.GetHeight();

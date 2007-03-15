@@ -239,7 +239,7 @@ QvisInterpreter::NoInterpretingClient() const
     // supports the Interpret method with a string argument.
     //
     const ClientInformationList *cL = GetViewerState()->GetClientInformationList();
-    for(int i = 0; i < cL->GetNumClientInformations(); ++i)
+    for(int i = 0; i < cL->GetNumClients(); ++i)
     {
         const ClientInformation &client = cL->operator[](i);
         int interpretIndex = client.GetMethodIndex("Interpret");

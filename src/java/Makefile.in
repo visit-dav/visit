@@ -120,6 +120,10 @@
 #
 #   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 #   Added mesh management attributes 
+#
+#   Brad Whitlock, Wed Mar 14 17:57:11 PST 2007
+#   Added support for a dynamically generated metadata object.
+#
 ##############################################################################
 
 ##
@@ -135,6 +139,24 @@ INSTDIR=llnl/visit
 ##
 ## Files...
 ##
+METADATA_SRC= \
+    avtArrayMetaData.java \
+    avtCurveMetaData.java \
+    avtDatabaseMetaData.java \
+    avtDefaultPlotMetaData.java \
+    avtLabelMetaData.java \
+    avtMatSpeciesMetaData.java \
+    avtMaterialMetaData.java \
+    avtMeshMetaData.java \
+    avtSILCollectionMetaData.java \
+    avtSILMetaData.java \
+    avtScalarMetaData.java \
+    avtSimulationCommandSpecification.java \
+    avtSimulationInformation.java \
+    avtSpeciesMetaData.java \
+    avtSymmetricTensorMetaData.java \
+    avtTensorMetaData.java \
+    avtVectorMetaData.java
 
 PACKAGE_STATE_SRC= AnimationAttributes.java \
 AnnotationAttributes.java \
@@ -250,7 +272,7 @@ version: $(VERSIONWRITER)
 	$(VERSIONWRITER)
 
 package:
-	$(JAVAC) -d . $(JAVAFLAGS) $(PACKAGE_SRC) $(PACKAGE_STATE_SRC)
+	$(JAVAC) -d . $(JAVAFLAGS) $(PACKAGE_SRC) $(PACKAGE_STATE_SRC) $(METADATA_SRC)
 
 main:
 	$(JAVAC) $(JAVAFLAGS) $(MAIN_SRC)

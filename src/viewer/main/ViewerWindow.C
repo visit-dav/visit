@@ -7863,10 +7863,10 @@ ViewerWindow::ClearExternalRenderRequestInfo(ExternalRenderRequestInfo& info) co
     info.engineKeysList.clear();
     info.plotIdsList.clear();
     info.attsList.clear();
-    info.annotObjs.ClearAnnotationObjects();
+    info.annotObjs.ClearAnnotations();
     info.extStr =
         avtExtentType_ToString(AVT_UNKNOWN_EXTENT_TYPE);
-    info.visCues.ClearVisualCueInfos();
+    info.visCues.ClearCues();
     int i;
     for (i = 0; i < 7; i++)
         info.frameAndState[i] = 0;

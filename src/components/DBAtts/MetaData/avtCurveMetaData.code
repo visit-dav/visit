@@ -1,0 +1,199 @@
+Function: avtCurveMetaData2
+Declaration: avtCurveMetaData(const std::string &n);
+Definition:
+// ****************************************************************************
+//  Method: avtCurveMetaData constructor
+//
+//  Arguments:
+//      n            The name of the curve
+//
+//  Programmer: Hank Childs
+//  Creation:   August 1, 2003
+//
+//  Modifications:
+//    Brad Whitlock, Fri Jul 23 12:50:27 PDT 2004
+//    Added labels and units.
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
+//    Added centering and DataExtents. 
+//
+// ****************************************************************************
+
+avtCurveMetaData::avtCurveMetaData(const std::string &n)
+    : AttributeSubject(avtCurveMetaData::TypeMapFormatString)
+{
+    // Initialize all members
+    *this = avtCurveMetaData();
+
+    // Override some values.
+    name          = n;
+    originalName  = name;
+}
+
+Function: avtCurveMetaData3
+Declaration: avtCurveMetaData(const std::string &n, double minE, double maxE);
+Definition:
+// ****************************************************************************
+//  Method: avtCurveMetaData constructor
+//
+//  Arguments:
+//      n       The name of the curve
+//      minE    The minimum data extents
+//      maxE    The maximum data extents
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 1, 2006
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtCurveMetaData::avtCurveMetaData(const std::string &n, double minE, double maxE)
+    : AttributeSubject(avtCurveMetaData::TypeMapFormatString)
+{
+    // Initialize all members
+    *this = avtCurveMetaData();
+
+    // Override some values.
+    name          = n;
+    originalName  = name;
+    hasDataExtents = true;
+    minDataExtents = minE;
+    maxDataExtents = maxE;
+}
+
+Function: SetExtents
+Declaration: void SetExtents(const double *);
+Definition:
+// ****************************************************************************
+//  Method: avtCurveMetaData::SetExtents
+//
+//  Purpose:
+//      Sets the extents of the curve variable.
+//
+//  Arguments:
+//      extents     Extents as <min value, max value>.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 1, 2006
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtCurveMetaData::SetExtents(const double *extents)
+{
+    if (extents == NULL)
+    {
+        hasDataExtents = false;
+    }
+    else
+    {
+        hasDataExtents = true;
+        minDataExtents = extents[0];
+        maxDataExtents = extents[1];
+    }
+}
+
+Function: UnsetExtents
+Declaration: void UnsetExtents();
+Definition:
+void
+avtCurveMetaData::UnsetExtents()
+{
+    hasDataExtents = false;
+}
+
+Function: Print
+Declaration: void Print(ostream &, int = 0) const;
+Definition:
+// ****************************************************************************
+//  Method: avtCurveMetaData::Print
+//
+//  Purpose:
+//      Print statement for debugging.
+//
+//  Arguments:
+//      out      The stream to output to.
+//      indent   The number of tabs to indent each line with.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 1, 2003
+//
+//  Modifications:
+//    Brad Whitlock, Fri Jul 23 12:54:53 PDT 2004
+//    Added labels and units.
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
+//    Added centering and DataExtents. 
+//
+// ****************************************************************************
+inline void
+Indent(ostream &out, int indent)
+{
+    for (int i = 0 ; i < indent ; i++)
+    {
+        out << "\t";
+    }
+}
+void
+avtCurveMetaData::Print(ostream &out, int indent) const
+{
+    Indent(out, indent);
+    out << "Name = " << name.c_str() << endl;
+    if (name != originalName)
+    {
+        Indent(out, indent);
+        out << "Original Name = " << originalName.c_str() << endl;
+    }
+
+    Indent(out, indent);
+    out << "Units = x:" << xUnits.c_str() << ", y:" << yUnits.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Labels = x:" << xLabel.c_str() << ", y:" << yLabel.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Centering = ";
+    switch (centering)
+    {
+      case AVT_NODECENT:
+        out << "node centered.";
+        break;
+
+      case AVT_ZONECENT:
+        out << "zone centered.";
+        break;
+
+      case AVT_UNKNOWN_CENT:
+      default:
+        out << "unknowing centering.";
+        break;
+    }
+    out << endl;
+    
+    if (!validVariable)
+    {
+        Indent(out, indent);
+        out << "THIS IS NOT A VALID VARIABLE." << endl;
+    }
+    if (hasDataExtents)
+    {
+        Indent(out, indent);
+        out << "Extents are: (" << minDataExtents << ", "
+            << maxDataExtents << ")" << endl;
+    }
+    else
+    {
+        Indent(out, indent);
+        out << "The extents are not set." << endl;
+    }
+}
+

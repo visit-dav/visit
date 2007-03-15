@@ -39,6 +39,8 @@
 #include <ExtentsAttributes.h>
 #include <DataNode.h>
 
+#include <DebugStream.h>
+
 
 static std::string NoVariablesInList = std::string("(no variables in list)");
 
@@ -910,6 +912,75 @@ ThresholdAttributes::AttributesAreConsistent() const
 
 
 // ****************************************************************************
+// Method: ThresholdAttributes::ForceAttributeConsistency
+//
+// Purpose: Forces Threshold attributes to be consistent.  Attributes can be
+//          inconsistent, for instance, if the user has specified an invalid
+//          combination of them in the CLI.  If current attributes are in fact
+//          inconsistent, this is recorded in the debug log.
+//
+// Programmer: Mark Blair
+// Creation:   Tue Mar 13 19:51:29 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ThresholdAttributes::ForceAttributeConsistency()
+{
+    int varListSize = listedVarNames.size();
+    int varNum;
+    double boundValue;
+    bool consistent = ((zonePortions.size() == varListSize) &&
+                       ( lowerBounds.size() == varListSize) &&
+                       ( upperBounds.size() == varListSize));
+                       
+    if (!consistent)
+    {
+        if (zonePortions.size() > varListSize) zonePortions.resize(varListSize);
+        if ( lowerBounds.size() > varListSize)  lowerBounds.resize(varListSize);
+        if ( upperBounds.size() > varListSize)  upperBounds.resize(varListSize);
+
+        for (varNum = 0; varNum < varListSize; varNum++ )
+        {
+            if (zonePortions.size() < varListSize)
+                zonePortions.push_back((int)ThresholdAttributes::PartOfZone);
+            if (lowerBounds.size() < varListSize)
+                lowerBounds.push_back(-1e+37);
+            if (upperBounds.size() < varListSize)
+                upperBounds.push_back(+1e+37);
+        }
+    }
+
+    for (varNum = 0; varNum < varListSize; varNum++ )
+    {
+        if (lowerBounds[varNum] > upperBounds[varNum])
+        {
+            consistent = false;
+                
+            boundValue          = lowerBounds[varNum];
+            lowerBounds[varNum] = upperBounds[varNum];
+            upperBounds[varNum] = boundValue;
+        }
+    }
+    
+    if (!consistent && (varListSize > 0))
+    {
+        if (defaultVarName == std::string("default"))
+            defaultVarName = listedVarNames[0];
+    }
+
+    if (!consistent)
+    {
+        debug3 << "Threshold operator attributes are inconsistent; "
+               << "corrections will be applied." << endl;
+        SelectAll();
+    }
+}
+
+
+// ****************************************************************************
 // Method: ThresholdAttributes::SwitchDefaultToTrueVariableNameIfScalar
 //
 // Purpose: Replaces the anonymous "default" variable name with its true name
@@ -1245,7 +1316,7 @@ ThresholdAttributes::ShowNextVariable()
     Select(2, (void *)&shownVarPosition);
 }
 
-
+    
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1281,7 +1352,7 @@ ThresholdAttributes::GetShownVariable()
 ThresholdAttributes::ZonePortion
 ThresholdAttributes::GetZonePortion() const
 {
-    if (listedVarNames.size() == 0)
+    if (zonePortions.size() == 0)
         return ThresholdAttributes::PartOfZone;
 
     return (ZonePortion)zonePortions[shownVarPosition];
@@ -1291,7 +1362,7 @@ ThresholdAttributes::GetZonePortion() const
 double
 ThresholdAttributes::GetLowerBound() const
 {
-    if (listedVarNames.size() == 0)
+    if (lowerBounds.size() == 0)
         return -1e+37;
 
     return lowerBounds[shownVarPosition];
@@ -1301,7 +1372,7 @@ ThresholdAttributes::GetLowerBound() const
 double
 ThresholdAttributes::GetUpperBound() const
 {
-    if (listedVarNames.size() == 0)
+    if (upperBounds.size() == 0)
         return +1e+37;
 
     return upperBounds[shownVarPosition];

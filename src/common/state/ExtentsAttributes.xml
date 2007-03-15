@@ -1,19 +1,97 @@
 <?xml version="1.0"?>
-  <Attribute name="ExtentsAttributes" purpose="Attributes for extents tool" exportAPI="STATE_API" exportInclude="state_exports.h">
-    <Field name="scalarNames" label="scalarNames" type="stringVector"> default </Field>
-    <Field name="scalarMinima" label="scalarMinima" type="doubleVector"> -1e+37 </Field>
-    <Field name="scalarMaxima" label="scalarMaxima" type="doubleVector"> 1e+37 </Field>
-    <Field name="minima" label="minima" type="doubleVector"> 0.0 </Field>
-    <Field name="maxima" label="maxima" type="doubleVector"> 1.0 </Field>
-    <Field name="minTimeOrdinals" label="minTimeOrdinals" type="intVector"> 0 </Field>
-    <Field name="maxTimeOrdinals" label="maxTimeOrdinals" type="intVector"> 0 </Field>
-    <Field name="plotToolModeFlags" label="plotToolModeFlags" type="int"> 0 </Field>
-    <Field name="axisGroupNames" label="axisGroupNames" type="stringVector"> (not_in_a_group) </Field>
-    <Field name="axisInfoFlagSets" label="axisInfoFlagSets" type="intVector"> 51314688 </Field>
-    <Field name="axisXPositions" label="axisXPositions" type="doubleVector"> -1.0 </Field>
-    <Field name="leftSliderX" label="leftSliderX" type="double"> 0.04 </Field>
-    <Field name="rightSliderX" label="rightSliderX" type="double"> 0.96 </Field>
-    <Field name="slidersBottomY" label="slidersBottomY" type="double"> 0.12 </Field>
-    <Field name="slidersTopY" label="slidersTopY" type="double"> 0.88 </Field>
+  <Attribute name="ExtentsAttributes" purpose="Attributes for extents tool" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="ExtentsAttributes.code">
+    <Field name="scalarNames" label="scalarNames" type="stringVector" init="true">
+    </Field>
+    <Field name="scalarMinima" label="scalarMinima" type="doubleVector">
+    </Field>
+    <Field name="scalarMaxima" label="scalarMaxima" type="doubleVector">
+    </Field>
+    <Field name="minima" label="minima" type="doubleVector">
+    </Field>
+    <Field name="maxima" label="maxima" type="doubleVector">
+    </Field>
+    <Field name="minTimeOrdinals" label="minTimeOrdinals" type="intVector">
+    </Field>
+    <Field name="maxTimeOrdinals" label="maxTimeOrdinals" type="intVector">
+    </Field>
+    <Field name="plotToolModeFlags" label="plotToolModeFlags" type="int" init="true">
+    </Field>
+    <Field name="axisGroupNames" label="axisGroupNames" type="stringVector">
+    </Field>
+    <Field name="axisInfoFlagSets" label="axisInfoFlagSets" type="intVector">
+    </Field>
+    <Field name="axisXPositions" label="axisXPositions" type="doubleVector">
+    </Field>
+    <Field name="leftSliderX" label="leftSliderX" type="double" init="true">
+    </Field>
+    <Field name="rightSliderX" label="rightSliderX" type="double" init="true">
+    </Field>
+    <Field name="slidersBottomY" label="slidersBottomY" type="double" init="true">
+    </Field>
+    <Field name="slidersTopY" label="slidersTopY" type="double" init="true">
+    </Field>
+    <Constant name="EA_DEFAULT_NUMBER_OF_EXTENTS" member="false">
+    </Constant>
+    <Constant name="EA_DEFAULT_LEFT_SLIDER_X" member="false">
+    </Constant>
+    <Constant name="EA_DEFAULT_RIGHT_SLIDER_X" member="false">
+    </Constant>
+    <Constant name="EA_DEFAULT_SLIDERS_BOTTOM_Y" member="false">
+    </Constant>
+    <Constant name="EA_DEFAULT_SLIDERS_TOP_Y" member="false">
+    </Constant>
+    <Constant name="EA_TOOL_BUTTON_MARGIN_FRACTION" member="false">
+    </Constant>
+    <Constant name="EA_TOOL_MARK_MARGIN_FRACTION" member="false">
+    </Constant>
+    <Constant name="EA_TOOL_DRAWS_AXIS_INFO_FLAG" member="false">
+    </Constant>
+    <Constant name="EA_SHOW_MARKED_AXES_ONLY_FLAG" member="false">
+    </Constant>
+    <Constant name="EA_SHOW_LIMITED_AXIS_INFO_FLAG" member="false">
+    </Constant>
+    <Constant name="EA_THRESHOLD_SELECTED_ONLY_FLAG" member="false">
+    </Constant>
+    <Constant name="EA_AXIS_INFO_AUTO_LAYOUT_FLAG" member="false">
+    </Constant>
+    <Constant name="EA_VERTICAL_TEXT_AXIS_INFO_FLAG" member="false">
+    </Constant>
+    <Constant name="EA_PLOT_AXES_WERE_MODIFIED_FLAG" member="false">
+    </Constant>
+    <Constant name="EA_LEFT_SHOWN_AXIS_FLAG" member="false">
+    </Constant>
+    <Constant name="EA_LEFT_SELECTED_AXIS_FLAG" member="false">
+    </Constant>
+    <Constant name="EA_RIGHT_SHOWN_AXIS_FLAG" member="false">
+    </Constant>
+    <Constant name="EA_RIGHT_SELECTED_AXIS_FLAG" member="false">
+    </Constant>
+    <Constant name="EA_SHOWN_AXIS_FLAGS" member="false">
+    </Constant>
+    <Constant name="EA_SELECTED_AXIS_FLAGS" member="false">
+    </Constant>
+    <Constant name="EA_AXIS_SEQUENCE_FLAGS" member="false">
+    </Constant>
+    <Constant name="EA_SHOW_AXIS_TITLE_ONLY_FLAG" member="false">
+    </Constant>
+    <Constant name="EA_SHOW_AXIS_LIMITS_ONLY_FLAG" member="false">
+    </Constant>
+    <Constant name="EA_SHOW_SLIDER_LIMITS_ONLY_FLAG" member="false">
+    </Constant>
+    <Constant name="EA_SHOW_AXIS_SLIDERS_ONLY_FLAG" member="false">
+    </Constant>
+    <Constant name="EA_SHOW_ALL_AXIS_INFO_FLAGS" member="false">
+    </Constant>
+    <Constant name="EA_AXIS_INFO_SHOWN_FLAG" member="false">
+    </Constant>
+    <Constant name="EA_THRESHOLD_BY_EXTENT_FLAG" member="false">
+    </Constant>
+    <Constant name="EA_PREFERRED_VIEWPORT_LEFT_X" member="false">
+    </Constant>
+    <Constant name="EA_PREFERRED_VIEWPORT_RIGHT_X" member="false">
+    </Constant>
+    <Constant name="EA_PREFERRED_VIEWPORT_BOTTOM_Y" member="false">
+    </Constant>
+    <Constant name="EA_PREFERRED_VIEWPORT_TOP_Y" member="false">
+    </Constant>
   </Attribute>
-

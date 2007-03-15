@@ -173,9 +173,9 @@ ParallelAxisGUIPluginInfo::CreatePluginWizard(AttributeSubject *attr,
         
         for (expNum = 0; expNum < expressionCount; expNum++)
         {
-            if (expList->GetExpression(expNum).GetName() == varName)
+            if (expList->GetExpressions(expNum).GetName() == varName)
             {
-                if (expList->GetExpression(expNum).GetType() == Expression::ScalarMeshVar)
+                if (expList->GetExpressions(expNum).GetType() == Expression::ScalarMeshVar)
                     break;
             }
         }

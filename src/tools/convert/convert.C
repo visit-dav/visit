@@ -316,7 +316,7 @@ int main(int argc, char *argv[])
     for (i = 0 ; i < md->GetNumberOfExpressions() ; i++)
     {
         const Expression *e = md->GetExpression(i);
-        list->AddExpression(*e);
+        list->AddExpressions(*e);
     }
 
     cerr << "Operating on " << md->GetNumStates() << " timestep(s)." << endl;

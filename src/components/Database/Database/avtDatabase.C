@@ -1875,6 +1875,9 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Kathleen Bonnell, Fri Jun  9 11:28:49 PDT 2006 
 //    Fix MLK.
 //
+//    Brad Whitlock, Tue Mar 13 11:14:03 PDT 2007
+//    Updated due to code generation changes.
+//
 // ****************************************************************************
 
 void               
@@ -1985,7 +1988,7 @@ avtDatabase::Query(PickAttributes *pa)
         {
             PickVarInfo varInfo;
             varInfo.SetVariableName(userVars[j]);
-            pa->AddPickVarInfo(varInfo); 
+            pa->AddVarInfo(varInfo); 
         }
     }
 
@@ -2005,9 +2008,9 @@ avtDatabase::Query(PickAttributes *pa)
         // Skip any variables that already have info, unless they are scalar,
         // because then MatFracs might be necessary.
         // 
-        if (pa->GetPickVarInfo(varNum).HasInfo() )
+        if (pa->GetVarInfo(varNum).HasInfo() )
         {
-            if (pa->GetPickVarInfo(varNum).GetVariableType() == "scalar") 
+            if (pa->GetVarInfo(varNum).GetVariableType() == "scalar") 
             {
                 ExprNode *tree = ParsingExprList::GetExpressionTree(vName);
                 //
@@ -2050,47 +2053,47 @@ avtDatabase::Query(PickAttributes *pa)
             {
                 case AVT_SCALAR_VAR : success = 
                    QueryScalars(vName, foundDomain, foundEl, ts, incEls, 
-                                pa->GetPickVarInfo(varNum), zonePick);
-                   pa->GetPickVarInfo(varNum).SetVariableType("scalar");
+                                pa->GetVarInfo(varNum), zonePick);
+                   pa->GetVarInfo(varNum).SetVariableType("scalar");
                    break; 
                 case AVT_VECTOR_VAR : success = 
                    QueryVectors(vName, foundDomain, foundEl, ts, incEls, 
-                                pa->GetPickVarInfo(varNum), zonePick);
-                   pa->GetPickVarInfo(varNum).SetVariableType("vector");
+                                pa->GetVarInfo(varNum), zonePick);
+                   pa->GetVarInfo(varNum).SetVariableType("vector");
                    break; 
                 case AVT_TENSOR_VAR : success = 
                    QueryTensors(vName, foundDomain, foundEl, ts, incEls, 
-                                pa->GetPickVarInfo(varNum), zonePick);
-                   pa->GetPickVarInfo(varNum).SetVariableType("tensor");
+                                pa->GetVarInfo(varNum), zonePick);
+                   pa->GetVarInfo(varNum).SetVariableType("tensor");
                    break; 
                 case AVT_SYMMETRIC_TENSOR_VAR : success = 
                    QuerySymmetricTensors(vName, foundDomain, foundEl, ts,
-                                 incEls, pa->GetPickVarInfo(varNum), zonePick);
-                   pa->GetPickVarInfo(varNum).SetVariableType("symm_tensor");
+                                 incEls, pa->GetVarInfo(varNum), zonePick);
+                   pa->GetVarInfo(varNum).SetVariableType("symm_tensor");
                    break; 
                 case AVT_ARRAY_VAR : success = 
                    QueryArrays(vName, foundDomain, foundEl, ts,
-                               incEls, pa->GetPickVarInfo(varNum), zonePick);
-                   pa->GetPickVarInfo(varNum).SetVariableType("array");
+                               incEls, pa->GetVarInfo(varNum), zonePick);
+                   pa->GetVarInfo(varNum).SetVariableType("array");
                    break; 
                 case AVT_MATERIAL : success = 
                    QueryMaterial(vName, foundDomain, matEl, ts, matIncEls, 
-                                 pa->GetPickVarInfo(varNum), zonePick);
-                   pa->GetPickVarInfo(varNum).SetVariableType("material");
+                                 pa->GetVarInfo(varNum), zonePick);
+                   pa->GetVarInfo(varNum).SetVariableType("material");
                    break; 
                 case AVT_MATSPECIES : success = 
                    QuerySpecies(vName, foundDomain, matEl, ts, matIncEls, 
-                                pa->GetPickVarInfo(varNum), zonePick);
-                   pa->GetPickVarInfo(varNum).SetVariableType("species");
+                                pa->GetVarInfo(varNum), zonePick);
+                   pa->GetVarInfo(varNum).SetVariableType("species");
                    break; 
                 case AVT_MESH : 
-                   if (!pa->GetPickVarInfo(varNum).HasInfo())
-                       pa->GetPickVarInfo(varNum).SetVariableType("mesh");
+                   if (!pa->GetVarInfo(varNum).HasInfo())
+                       pa->GetVarInfo(varNum).SetVariableType("mesh");
                    break; 
                 case AVT_LABEL_VAR : success = 
                    QueryLabels(vName, foundDomain, foundEl, ts, incEls, 
-                                pa->GetPickVarInfo(varNum), zonePick);
-                   pa->GetPickVarInfo(varNum).SetVariableType("label");
+                                pa->GetVarInfo(varNum), zonePick);
+                   pa->GetVarInfo(varNum).SetVariableType("label");
                    break; 
                 default : 
                    break; 

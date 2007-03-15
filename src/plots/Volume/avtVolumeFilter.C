@@ -630,7 +630,7 @@ avtVolumeFilter::PerformRestriction(avtPipelineSpecification_p spec)
         e->SetName(exprName.c_str());
         e->SetDefinition(exprDef); 
         e->SetType(Expression::ScalarMeshVar);
-        elist->AddExpression(*e);
+        elist->AddExpressions(*e);
         delete e;
         avtDataSpecification_p nds = new 
           avtDataSpecification(exprName.c_str(),
@@ -654,7 +654,7 @@ avtVolumeFilter::PerformRestriction(avtPipelineSpecification_p spec)
         e->SetName(exprName);
         e->SetDefinition(exprDef); 
         e->SetType(Expression::ScalarMeshVar);
-        elist->AddExpression(*e);
+        elist->AddExpressions(*e);
         delete e;
         avtDataSpecification_p nds = 
             new avtDataSpecification(exprName,

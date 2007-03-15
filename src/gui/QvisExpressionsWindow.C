@@ -557,9 +557,9 @@ QvisExpressionsWindow::UpdateWindow(bool)
     for (int i=0; i<exprList->GetNumExpressions(); i++)
     {
         if (displayAllVars->isChecked() ||
-            !exprList->GetExpression(i).GetFromDB())
+            !exprList->GetExpressions(i).GetFromDB())
         {
-            exprListBox->insertItem(exprList->GetExpression(i).GetName().c_str());
+            exprListBox->insertItem(exprList->GetExpressions(i).GetName().c_str());
             indexMap[pos++] = i;
         }
     }
@@ -763,7 +763,7 @@ QvisExpressionsWindow::addExpression()
     Expression e;
     e.SetName(newName.latin1());
     e.SetDefinition("");
-    exprList->AddExpression(e);
+    exprList->AddExpressions(e);
 
     exprList->Notify();
 
@@ -798,7 +798,7 @@ QvisExpressionsWindow::delExpression()
     if (index <  0)
         return;
 
-    exprList->RemoveExpression(indexMap[index]);
+    exprList->RemoveExpressions(indexMap[index]);
 
     exprList->Notify();
 }

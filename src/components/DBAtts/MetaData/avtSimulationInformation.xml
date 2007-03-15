@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="avtSimulationInformation" purpose="Contains information about simulation connections" persistent="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h">
+  <Attribute name="avtSimulationInformation" purpose="Contains information about simulation connections" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h">
     <Enum name="RunMode">
       Unknown
       Running

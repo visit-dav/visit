@@ -406,7 +406,7 @@ avtCracksClipperFilter::PerformRestriction(avtPipelineSpecification_p pspec)
     e->SetName("cracks_vol");
     e->SetDefinition(edef.c_str());
     e->SetType(Expression::ScalarMeshVar);
-    elist->AddExpression(*e);
+    elist->AddExpressions(*e);
     delete e;
 
     nds->AddSecondaryVariable("cracks_vol");

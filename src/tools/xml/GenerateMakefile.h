@@ -190,6 +190,9 @@
 //    Cyrus Harrison, Wed Mar  7 08:55:37 PST 2007
 //    Allow for engine-specific code in a plugin's source files.
 //
+//    Brad Whitlock, Tue Mar 13 18:19:46 PST 2007
+//    Added -lvisitpy for scripting plugins.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -447,7 +450,7 @@ class MakefileGeneratorPlugin
                    "-lmdserverrpc -lviewerrpc -lwinutil -ldbatts -lavtexceptions "
                    "-lstate -lcomm -lmisc -lplugin -lexpr -lparser -lutility "
                    "-lI$(PLUGINNAME) $(QT_LDFLAGS) $(QT_LIBS) $(QUI_LIBS) $(X_LIBS)" << endl;
-            out << "SLIBS=-lstate -lmisc -lcomm -lutility $(PY_LIB) -lI$(PLUGINNAME)" << endl;
+            out << "SLIBS=-lstate -lmisc -lcomm -lutility -lvisitpy $(PY_LIB) -lI$(PLUGINNAME)" << endl;
             out << "VLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser "
                    "-lavtmath_ser -lavtview -ldbatts -lavtexceptions -lstate "
                    "-lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk "
@@ -609,7 +612,7 @@ class MakefileGeneratorPlugin
             out << "VLIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS)" << endl;
             out << "ILIBS=" << endl;
             out << "GLIBS=-lgui -lmdserverproxy -lviewerproxy -lproxybase -lmdserverrpc -lviewerrpc -lwinutil -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lplugin -lexpr -lparser -lutility -lI$(PLUGINNAME) $(QT_LDFLAGS) $(QT_LIBS) $(QUI_LIBS) $(X_LIBS)" << endl;
-            out << "SLIBS=-lstate -lmisc -lcomm -lutility $(PY_LIB) -lI$(PLUGINNAME)" << endl;
+            out << "SLIBS=-lstate -lmisc -lcomm -lutility -lvisitpy $(PY_LIB) -lI$(PLUGINNAME)" << endl;
             out << "VLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser -lavtmath_ser -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lI$(PLUGINNAME) $(VLIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;
             out << "ESERLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser -lavtmath_ser -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lexpressions_ser -lI$(PLUGINNAME) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;
             out << "EPARLIBS=-lpipeline_par -lplotter_par -lavtfilters_par -lavtmath_par -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par -lexpressions_par -lI$(PLUGINNAME) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
