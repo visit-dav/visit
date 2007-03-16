@@ -207,6 +207,9 @@ avtHistogramFilter::PreExecute(void)
 //    Cyrus Harrison, Wed Mar  7 15:46:29 PST 2007
 //    Added support for point histograms and true "Frequency" histograms
 //
+//    Jeremy Meredith, Wed Mar 14 11:14:56 EDT 2007
+//    Call avtStreamer::PostExecute instead of PreExecute.
+//
 // ****************************************************************************
 
 void
@@ -214,7 +217,7 @@ avtHistogramFilter::PostExecute(void)
 {
     int  i;
 
-    avtStreamer::PreExecute();
+    avtStreamer::PostExecute();
 
     if (atts.GetBasedOn() == HistogramAttributes::ManyVarsForSingleZone)
     {

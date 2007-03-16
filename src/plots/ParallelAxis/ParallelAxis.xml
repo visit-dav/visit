@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="ParallelAxis" type="plot" label="ParallelAxis" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" vartype="scalar,array" iconFile="ParallelAxis.xpm">
+  <Plugin name="ParallelAxis" type="plot" label="ParallelAxis" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="scalar,array" iconFile="ParallelAxis.xpm">
     <Files components="G">
       QvisParallelAxisWidget.C
       QvisParallelAxisPlotWizard.C
@@ -20,30 +20,30 @@
       <Field name="orderedAxisNames" label="orderedAxisNames" type="stringVector">
         default
       </Field>
-      <Field name="shownVarAxisOrdinal" label="shownVarAxisOrdinal" type="int">
+      <Field name="shownVarAxisOrdinal" label="shownVarAxisOrdinal" type="int" internal="true">
         0
       </Field>
-      <Field name="axisMinima" label="axisMinima" type="doubleVector">
+      <Field name="axisMinima" label="axisMinima" type="doubleVector" internal="true">
         -1e+37
       </Field>
-      <Field name="axisMaxima" label="axisMaxima" type="doubleVector">
+      <Field name="axisMaxima" label="axisMaxima" type="doubleVector" internal="true">
         1e+37
       </Field>
-      <Field name="extentMinima" label="extentMinima" type="doubleVector">
+      <Field name="extentMinima" label="extentMinima" type="doubleVector" internal="true">
         0.000000
       </Field>
-      <Field name="extentMaxima" label="extentMaxima" type="doubleVector">
+      <Field name="extentMaxima" label="extentMaxima" type="doubleVector" internal="true">
         1.000000
       </Field>
-      <Field name="extMinTimeOrds" label="extMinTimeOrds" type="intVector">
+      <Field name="extMinTimeOrds" label="extMinTimeOrds" type="intVector" internal="true">
         0
       </Field>
-      <Field name="extMaxTimeOrds" label="extMaxTimeOrds" type="intVector">
+      <Field name="extMaxTimeOrds" label="extMaxTimeOrds" type="intVector" internal="true">
         0
       </Field>
-      <Field name="plotToolModeFlags" label="plotToolModeFlags" type="int" init="true">
+      <Field name="plotToolModeFlags" label="plotToolModeFlags" type="int" init="true" internal="true">
       </Field>
-      <Field name="axisGroupNames" label="axisGroupNames" type="stringVector">
+      <Field name="axisGroupNames" label="axisGroupNames" type="stringVector" internal="true">
         (not_in_a_group)
       </Field>
       <Field name="axisInfoFlagSets" label="axisInfoFlagSets" type="intVector" init="true">
@@ -54,9 +54,33 @@
       <Field name="axisAttributeVariables" label="axisAttributeVariables" type="stringVector">
         default
       </Field>
-      <Field name="attributesPerAxis" label="attributesPerAxis" type="int" init="true">
+      <Field name="attributesPerAxis" label="attributesPerAxis" type="int" init="true" internal="true">
       </Field>
-      <Field name="axisAttributeData" label="axisAttributeData" type="doubleVector" init="true">
+      <Field name="axisAttributeData" label="axisAttributeData" type="doubleVector" init="true" internal="true">
+      </Field>
+      <Field name="drawLines" label="Draw individual lines" type="bool">
+        true
+      </Field>
+      <Field name="linesColor" label="Line color" type="color" length="4">
+        128
+        0
+        0
+        255
+      </Field>
+      <Field name="drawContext" label="Draw context" type="bool">
+        true
+      </Field>
+      <Field name="contextGamma" label="Gamma brightness adjustment" type="float">
+        2.000000
+      </Field>
+      <Field name="contextNumPartitions" label="Number of partitions" type="int">
+        32
+      </Field>
+      <Field name="contextColor" label="Context color" type="color" length="4">
+        0
+        255
+        0
+        255
       </Field>
       <Function name="InsertAxis" user="true" member="true">
       </Function>

@@ -60,6 +60,9 @@ class     avtIntervalTree;
 //  Programmer: Cyrus Harrison
 //  Creation:   January 22, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Fri Mar 16 15:52:47 PDT 2007
+//    Added variables to track progress. 
 //
 // ****************************************************************************
 
@@ -196,6 +199,8 @@ class EXPRESSION_API avtConnComponentsExpression : public avtExpressionFilter
 
   protected:
     int                       nFinalComps;
+    int                       currentProgress;
+    int                       totalSteps;
 
     virtual void              Execute(void);
 

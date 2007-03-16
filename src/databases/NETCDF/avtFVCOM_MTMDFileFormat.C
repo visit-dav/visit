@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2007, The Regents of the University of California
+* Copyright (c) 2000 - 2006, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -148,6 +148,7 @@ avtFVCOM_MTMDFileFormat::avtFVCOM_MTMDFileFormat(const char *filename)
 {
     fileObject = new NETCDFFileObject(filename); 
     init = false;
+    keysuffix=filename;
 }
 
 avtFVCOM_MTMDFileFormat::avtFVCOM_MTMDFileFormat(const char *filename, 
@@ -156,6 +157,7 @@ avtFVCOM_MTMDFileFormat::avtFVCOM_MTMDFileFormat(const char *filename,
 {
     init = false;
     fileObject = f; 
+    keysuffix=filename;
 }
 
 // ****************************************************************************
@@ -175,6 +177,7 @@ avtFVCOM_MTMDFileFormat::~avtFVCOM_MTMDFileFormat()
       {
         debug4 << "dom: " << dom << endl;
           domainFiles[dom]->FreeUpResources();
+          delete domainFiles[dom];
       }
   
       delete fileObject;
@@ -358,6 +361,20 @@ avtFVCOM_MTMDFileFormat::Init()
         EXCEPTION1(InvalidFilesException, msg);
     }
 
+
+    for(dom=0; dom<ndoms; ++dom)
+    {
+      domainFiles[dom]->SetKeySuffixForCaching(keysuffix);
+    }
+
+
+    // Geo reference Coordinate system stuff
+    IsGeoRef=false;
+    std::string CoordSys;
+    if(fileObject->ReadStringAttribute("CoordinateSystem", CoordSys))
+      if (strcmp(CoordSys.c_str(),"GeoReferenced")==0) IsGeoRef=true;
+
+
     // Set init equal to true so we don't do this again!
     init = true;
     debug4 << mName << " end" << endl;
@@ -512,240 +529,628 @@ avtFVCOM_MTMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
     int ndoms = domainFiles.size();
 
 
-    // 
-    // Let's iterate through all the Meshs and try to cache the spatial extents
-    // for each time steps domains.
+    // Do not try to load extents for IsGeoRef case. It is too complicated for too little benafit. The user must get more info for this to be useful! 
 
-    //    debug4 << "GOT HERE1" << endl;
-    int status=1;
-    TypeEnum x_t = NO_TYPE;
-    int x_ndims = 0, *x_dims = 0;
-    void *x_values = 0;
-    
-    TypeEnum y_t = NO_TYPE;
-    int y_ndims = 0, *y_dims = 0;
-    void *y_values = 0;
-    
-    TypeEnum h_t = NO_TYPE;
-    int h_ndims = 0, *h_dims = 0;
-    void *h_values = 0;
-    
-    TypeEnum zeta_t = NO_TYPE;
-    int zeta_ndims = 0, *zeta_dims = 0;
-    void *zeta_values = 0;
-    
-    status *= fileObject->ReadVariable("x_ext", &x_t, &x_ndims, &x_dims, &x_values);
-    if (x_t != FLOATARRAY_TYPE) status=0;
-    
-    status *= fileObject->ReadVariable("y_ext", &y_t, &y_ndims, &y_dims, &y_values);
-    if (y_t != FLOATARRAY_TYPE) status=0;
-    
-    status *= fileObject->ReadVariable("h_ext", &h_t, &h_ndims, &h_dims, &h_values);
-    if (h_t != FLOATARRAY_TYPE) status=0;
-    
-    status *= fileObject->ReadVariable("zeta_ext", &zeta_t, &zeta_ndims, &zeta_dims,
-                                      &zeta_values);
-    if (zeta_t != FLOATARRAY_TYPE) status=0;
+//     float Xi[3];
+//     Xi[0]=90.0;
+//     Xi[1]=45.0;
+//     Xi[2]=300.0;
+//     debug4<<"sperical"<< endl;
+//     debug4<< "Xi="<<Xi[0]<<","<<Xi[1]<<","<<Xi[2]<<endl;
+//     domainFiles[0]->Sphere2Cart(Xi);
+//     debug4<<"cartesian"<< endl;
+//     debug4<< "Xi="<<Xi[0]<<","<<Xi[1]<<","<<Xi[2]<<endl;
+//     if(IsGeoRef)
+//       {
+//         // 
+//         // Let's iterate through all the Meshs and try to cache the spatial extents
+//         // for each time steps domains.
+        
+//         //    debug4 << "GOT HERE1" << endl;
+//         int status=1;
+//         TypeEnum lon_t = NO_TYPE;
+//         int lon_ndims = 0, *lon_dims = 0;
+//         void *lon_values = 0;
+        
+//         TypeEnum lat_t = NO_TYPE;
+//         int lat_ndims = 0, *lat_dims = 0;
+//         void *lat_values = 0;
+        
+//         TypeEnum h_t = NO_TYPE;
+//         int h_ndims = 0, *h_dims = 0;
+//         void *h_values = 0;
+        
+//         TypeEnum zeta_t = NO_TYPE;
+//         int zeta_ndims = 0, *zeta_dims = 0;
+//         void *zeta_values = 0;
+        
+//         status *= fileObject->ReadVariable("lon_ext", &lon_t, &lon_ndims, 
+//                                            &lon_dims, &lon_values);
+//         if (lon_t != FLOATARRAY_TYPE) status=0;
+        
+//         status *= fileObject->ReadVariable("lat_ext", &lat_t, &lat_ndims, 
+//                                            &lat_dims, &lat_values);
+//         if (lat_t != FLOATARRAY_TYPE) status=0;
+        
+//         status *= fileObject->ReadVariable("h_ext", &h_t, &h_ndims, 
+//                                            &h_dims, &h_values);
+//         if (h_t != FLOATARRAY_TYPE) status=0;
+        
+//         status *= fileObject->ReadVariable("zeta_ext", &zeta_t, 
+//                                            &zeta_ndims, &zeta_dims, &zeta_values);
+//         if (zeta_t != FLOATARRAY_TYPE) status=0;
+        
+//         //    debug4 << "GOT HERE2" << endl;
+        
+        
+        
+//         if (status == 1)
+//           {
+//             debug4 << mName << "Makeing pointers to spatial extents variables" << endl;
+//             float *lon_fptr = (float *)lon_values;
+//             float *lat_fptr = (float *)lat_values;
+//             float *h_fptr = (float *)h_values;
+//             //float *zeta_fptr = (float *)zeta_values;
+//             //        debug4 << "GOT HERE3" << endl;
+            
+//             float x_min[ndoms];
+//             float x_max=[ndoms];
 
-    //    debug4 << "GOT HERE2" << endl;
+//             float y_min[ndoms];
+//             float y_max=[ndoms];
+            
+
+//             // do some work to re arrange the min and max values for 
+//             // sphereical coordinates
+//             float a,b;
+              
+//             for (int j = 0; j < ndoms; j++)
+//               {
+//                 //if 180 should be the min, find the max
+//                 if (lon_fptr[j*2+1]<180 && lon_fptr[j+2]>180)
+//                   {
+//                     a=cos(lon_fptr[j*2]);
+//                     b=cos(lon_fptr[j*2+1]);
+//                     // take the value with the max cosine
+//                     lon_fptr[j*2]= (a>b) ? lon_fptr[j*2] : lon_fptr[j*2+1];
+
+//                     lon_fptr[j*2+1]=180; // min becomes 180
+//                   }
+//                 // if the max is less than 180 just switch the values
+//                 else if (lon_fptr[j+2]<180)
+//                   {
+//                     a= lon_fptr[j+2];
+//                     b=lon_fptr[j+2+1];
+//                     lon_fptr[j+2]=b;
+//                     lon_fptr[j+2+1]=a;
+//                   }
+//                 else if (lon_fptr[j+2+1]>180)
+//                   {
+//                     // do nothing
+//                   }  
+//                 else
+//                   {
+//                     debug4<< "Very bad! lon_min= "<< lon_fptr[j+2+1] <<
+//                       "lon_max= "<< lon_fptr[j+2] << endl;
+//                   }
+
+//                 //if the min <90 and max >90
+//                 if (lat_fptr[j*2+1]<90 && lat_fptr[j+2]>90)
+//                   {
+//                     // if max >270
+//                     if(lat_fptr[j+2]>270)
+//                       {
+//                         lat_fptr[j*2+1]=270;
+//                         lat_fptr[j+2]=90;
+//                       }
+
+//                     a=sin(lat_fptr[j*2]); // sin of max
+//                     b=sin(lat_fptr[j*2+1]); // sin of min
+//                     // take the value with the min sine
+//                     lat_fptr[j*2+1]= (a<b) ? lat_fptr[j*2] : lat_fptr[j*2+1];
+
+//                     lon_fptr[j*2]=90; // max becomes 90
+//                   }
+//                 // if the max <90 do nothing
+//                 else if (lat_fptr[j+2]<90)
+//                   {
+
+//                   }
+//                 // if the min >90 switch the values
+//                 else if (lat_fptr[j+2+1]>90)
+//                   {
+//                     // do nothing
+//                   }  
+//                 else
+//                   {
+//                     debug4<< "Very bad! lon_min= "<< lon_fptr[j+2+1] <<
+//                       "lon_max= "<< lon_fptr[j+2] << endl;
+//                   }
 
 
-    
-    if (status == 1)
-    {
-        debug4 << mName << "Makeing pointers to spatial extents variables" << endl;
-        float *x_fptr = (float *)x_values;
-        float *y_fptr = (float *)y_values;
-        float *h_fptr = (float *)h_values;
-        //float *zeta_fptr = (float *)zeta_values;
-        //        debug4 << "GOT HERE3" << endl;
-
-        for(int i = 0; i < md->GetNumMeshes(); ++i)
-        { 
-            avtMeshMetaData *mmd = const_cast<avtMeshMetaData*>(md->GetMesh(i));
-            std::string MeshName(mmd->name);
-            //mmd->numBlocks = domainFiles.size();
 
 
-            double  extents[6];
-            if(MeshName == "Bathymetry_Mesh")
-            {
-                debug4 << mName << "Adding Bathymetry_Mesh spatial extents" << endl;
-                avtIntervalTree *itree = new avtIntervalTree(ndoms, 3);
+
+//             for(int i = 0; i < md->GetNumMeshes(); ++i)
+//               { 
+//                 avtMeshMetaData *mmd = const_cast<avtMeshMetaData*>(md->GetMesh(i));
+//                 std::string MeshName(mmd->name);
+//                 //mmd->numBlocks = domainFiles.size();
                 
-                for (int j = 0; j < ndoms; j++)
-                {
-                    extents[0] = x_fptr[j*2+1];
-                    extents[1] = x_fptr[j*2];
-
-                    extents[2] = y_fptr[j*2+1];
-                    extents[3] = y_fptr[j*2];
-
-                    // Watch the negative sign on h!!!
-                    extents[4] = -h_fptr[j*2];
-                    extents[5] = -h_fptr[j*2+1];
-                           itree->AddElement(j, extents);
-//1.5.3                    itree->AddDomain(j, extents);
+                
+//                 double  extents[6];
+//                 if(MeshName == "Bathymetry_Mesh")
+//                   {
+//                     debug4 << mName << "Adding Bathymetry_Mesh spatial extents" << endl;
+//                     avtIntervalTree *itree = new avtIntervalTree(ndoms, 3);
                     
-                    debug5 << "\tdomain[" << j << "] = X{"
-                           << extents[0] << ", " << extents[1] << "}" << endl;
-                    debug5 << "\tdomain[" << j << "] = Y{"
-                           << extents[2] << ", " << extents[3] << "}" << endl;
-                    debug5 << "\tdomain[" << j << "] = Z{"
-                           << extents[4] << ", " << extents[5] << "}" << endl;
-                }
-                itree->Calculate(true);
-                // Cache the extents for all doms and all ts.
-                void_ref_ptr vr = void_ref_ptr(itree, avtIntervalTree::Destruct);
-                cache->CacheVoidRef(MeshName.c_str(), AUXILIARY_DATA_SPATIAL_EXTENTS, 
-                                    -1, -1, vr);
-                debug4 << mName << "Cached spatial extents for " << MeshName << endl;
-            } // END Bathymetry Mesh spatial extents
-            else if(MeshName == "TWOD_Mesh")
-            {
-                debug4 << mName << "Adding TWOD_Mesh spatial extents" << endl;
-                avtIntervalTree *itree = new avtIntervalTree(ndoms, 3);
+//                     for (int j = 0; j < ndoms; j++)
+//                       {
+
+                        
+
+
+//                         extents[0] = x_fptr[j*2+1]; // min
+//                         extents[1] = x_fptr[j*2]; // max
+                        
+//                         extents[2] = y_fptr[j*2+1];
+//                         extents[3] = y_fptr[j*2];
+                        
+//                         // Watch the negative sign on h!!!
+//                         extents[4] = -h_fptr[j*2];
+//                         extents[5] = -h_fptr[j*2+1];
+//                         itree->AddElement(j, extents);
+//                         //1.5.3                    itree->AddDomain(j, extents);
+                        
+//                         debug5 << "\tdomain[" << j << "] = X{"
+//                                << extents[0] << ", " << extents[1] << "}" << endl;
+//                         debug5 << "\tdomain[" << j << "] = Y{"
+//                                << extents[2] << ", " << extents[3] << "}" << endl;
+//                         debug5 << "\tdomain[" << j << "] = Z{"
+//                                << extents[4] << ", " << extents[5] << "}" << endl;
+//                       }
+//                     itree->Calculate(true);
+//                     // Cache the extents for all doms and all ts.
+//                     void_ref_ptr vr = void_ref_ptr(itree, avtIntervalTree::Destruct);
+//                     cache->CacheVoidRef(MeshName.c_str(), AUXILIARY_DATA_SPATIAL_EXTENTS, 
+//                                         -1, -1, vr);
+//                     debug4 << mName << "Cached spatial extents for " << MeshName << endl;
+//                   } // END Bathymetry Mesh spatial extents
+//                 else if(MeshName == "TWOD_Mesh")
+//                   {
+//                     debug4 << mName << "Adding TWOD_Mesh spatial extents" << endl;
+//                 avtIntervalTree *itree = new avtIntervalTree(ndoms, 3);
                 
-                for (int j = 0; j < ndoms; j++)
-                {
-                    extents[0] = x_fptr[j*2+1];
-                    extents[1] = x_fptr[j*2];
-
-                    extents[2] = y_fptr[j*2+1];
-                    extents[3] = y_fptr[j*2];
-
-                    // USE DUMMY VALUES FOR TWOD MESH
-                    extents[4] = -1;
-                    extents[5] = 1;
-                           itree->AddElement(j, extents);
-//1.5.3                    itree->AddDomain(j, extents);
+//                 for (int j = 0; j < ndoms; j++)
+//                   {
+//                     extents[0] = x_fptr[j*2+1];
+//                     extents[1] = x_fptr[j*2];
                     
-                    debug5 << "\tdomain[" << j << "] = X{"
-                           << extents[0] << ", " << extents[1] << "}" << endl;
-                    debug5 << "\tdomain[" << j << "] = Y{"
-                           << extents[2] << ", " << extents[3] << "}" << endl;
-                    debug5 << "\tdomain[" << j << "] = Z{"
-                           << extents[4] << ", " << extents[5] << "}" << endl;
-                }
-                itree->Calculate(true);
-                // Cache the extents for all doms and all ts.
-                void_ref_ptr vr = void_ref_ptr(itree, avtIntervalTree::Destruct);
-                cache->CacheVoidRef(MeshName.c_str(), AUXILIARY_DATA_SPATIAL_EXTENTS, 
-                                    -1, -1, vr);
-                debug4 << mName << "Cached spatial extents for " << MeshName << endl;
-            } // END TWOD Mesh spatial extents
-
-            else if(MeshName == "SSH_Mesh")
-            {
-                debug4 << mName << "Adding SSH_Mesh spatial extents" << endl;
+//                     extents[2] = y_fptr[j*2+1];
+//                     extents[3] = y_fptr[j*2];
+                    
+//                     // USE DUMMY VALUES FOR TWOD MESH
+//                     extents[4] = -1;
+//                     extents[5] = 1;
+//                     itree->AddElement(j, extents);
+//                     //1.5.3                    itree->AddDomain(j, extents);
+                    
+//                     debug5 << "\tdomain[" << j << "] = X{"
+//                            << extents[0] << ", " << extents[1] << "}" << endl;
+//                     debug5 << "\tdomain[" << j << "] = Y{"
+//                            << extents[2] << ", " << extents[3] << "}" << endl;
+//                     debug5 << "\tdomain[" << j << "] = Z{"
+//                            << extents[4] << ", " << extents[5] << "}" << endl;
+//                   }
+//                 itree->Calculate(true);
+//                 // Cache the extents for all doms and all ts.
+//                 void_ref_ptr vr = void_ref_ptr(itree, avtIntervalTree::Destruct);
+//                 cache->CacheVoidRef(MeshName.c_str(), AUXILIARY_DATA_SPATIAL_EXTENTS, 
+//                                     -1, -1, vr);
+//                 debug4 << mName << "Cached spatial extents for " << MeshName << endl;
+//                   } // END TWOD Mesh spatial extents
                 
-                float *zeta_fptr = (float *)zeta_values;
-                for (int t = 0; t < nts; t++)
-                {
-                    debug4 << "Spatial Extents for: " << MeshName <<
-                      ": ts = " << t << endl;
+//                 else if(MeshName == "SSH_Mesh")
+//                   {
+//                     debug4 << mName << "Adding SSH_Mesh spatial extents" << endl;
+                    
+//                     float *zeta_fptr = (float *)zeta_values;
+//                     for (int t = 0; t < nts; t++)
+//                       {
+//                         debug4 << "Spatial Extents for: " << MeshName <<
+//                           ": ts = " << t << endl;
+                        
+//                         avtIntervalTree *itree = new avtIntervalTree(ndoms, 3);
+                        
+//                         for (int j = 0; j < ndoms; j++)
+//                     {
+//                       extents[0] = x_fptr[j*2+1];
+//                       extents[1] = x_fptr[j*2];
+                      
+//                       extents[2] = y_fptr[j*2+1];
+//                       extents[3] = y_fptr[j*2];
+                        
+//                       extents[4] = zeta_fptr[j*2+1];
+//                       extents[5] = zeta_fptr[j*2];
+                      
+//                       itree->AddElement(j, extents);
+//                       //1.5.3                        itree->AddDomain(j, extents);
+                      
+//                       debug5 << "\tdomain[" << j << "] = X{"
+//                              << extents[0] << ", " << extents[1] << "}" << endl;
+//                       debug5 << "\tdomain[" << j << "] = Y{"
+//                              << extents[2] << ", " << extents[3] << "}" << endl;
+//                       debug5 << "\tdomain[" << j << "] = Z{"
+//                              << extents[4] << ", " << extents[5] << "}" << endl;
+//                     }
+//                         itree->Calculate(true);
+//                         // Cache the extents for all doms and all ts.
+//                         void_ref_ptr vr = void_ref_ptr(itree, avtIntervalTree::Destruct);
+//                         cache->CacheVoidRef(MeshName.c_str(), AUXILIARY_DATA_SPATIAL_EXTENTS,
+//                                             t, -1, vr);
+//                         debug4 << mName << "Cached spatial extents for " << MeshName << endl;
+                        
+//                         // Advance zeta_fptr to the next time step!
+//                         zeta_fptr += (ndoms * 2);
+                        
+//                       }
+//                     //delete [] zeta_fptr;                
+//                   }  // end SSH MESH   spatial extents
+                
 
+//                 else if(MeshName == "SigmaLayer_Mesh")
+//                   {
+//                     debug4 << mName << "Adding SigmaLayer_Mesh spatial extents" << endl;
+                    
+//                     float *zeta_fptr = (float *)zeta_values;
+//                     for (int t = 0; t < nts; t++)
+//                       {
+//                         debug4 << "Spatial Extents for: " << MeshName <<
+//                           ": ts = " << t << endl;
+                        
+//                         avtIntervalTree *itree = new avtIntervalTree(ndoms, 3);
+                        
+//                         for (int j = 0; j < ndoms; j++)
+//                           {
+//                             extents[0] = x_fptr[j*2+1];
+//                             extents[1] = x_fptr[j*2];
+                            
+//                             extents[2] = y_fptr[j*2+1];
+//                             extents[3] = y_fptr[j*2];
+                            
+//                             // for sigma layer mesh: use zeta to get ssh
+//                             //                       use -h to get bathymetry
+//                             // Watch the sign of H!!!
+//                             extents[4] = -h_fptr[j*2];
+//                             extents[5] = zeta_fptr[j*2];
+
+//                             itree->AddElement(j, extents);
+//                             //1.5.3                        itree->AddDomain(j, extents);
+                            
+//                             debug5 << "\tdomain[" << j << "] = X{"
+//                                    << extents[0] << ", " << extents[1] << "}" << endl;
+//                             debug5 << "\tdomain[" << j << "] = Y{"
+//                                    << extents[2] << ", " << extents[3] << "}" << endl;
+//                             debug5 << "\tdomain[" << j << "] = Z{"
+//                                    << extents[4] << ", " << extents[5] << "}" << endl;
+//                           }
+//                         itree->Calculate(true);
+//                         // Cache the extents for all doms and all ts.
+//                         void_ref_ptr vr = void_ref_ptr(itree, avtIntervalTree::Destruct);
+//                         cache->CacheVoidRef(MeshName.c_str(), AUXILIARY_DATA_SPATIAL_EXTENTS, 
+//                                             t, -1, vr);
+//                         debug4 << mName << "Cached spatial extents for " << MeshName << endl;
+                        
+//                         // Advance zeta_fptr to the next time step!
+//                         zeta_fptr += (ndoms * 2);
+                        
+//                       }
+//                     //delete [] zeta_fptr;                
+//                   }  // end SigmaLayer MESH   spatial extents
+//                 else if(MeshName == "SigmaLevel_Mesh")
+//                   {
+//                 debug4 << mName << "Adding SigmaLevel_Mesh spatial extents" << endl;
+                
+//                 float *zeta_fptr = (float *)zeta_values;
+//                 for (int t = 0; t < nts; t++)
+//                   {
+//                     debug4 << "Spatial Extents for: " << MeshName <<
+//                       ": ts = " << t << endl;
+                    
+//                     avtIntervalTree *itree = new avtIntervalTree(ndoms, 3);
+                    
+//                     for (int j = 0; j < ndoms; j++)
+//                       {
+//                         extents[0] = x_fptr[j*2+1];
+//                         extents[1] = x_fptr[j*2];
+                        
+//                         extents[2] = y_fptr[j*2+1];
+//                         extents[3] = y_fptr[j*2];
+                        
+//                         // for sigma layer mesh: use zeta to get ssh
+//                         //                       use h to get bathymetry
+//                         extents[4] = -h_fptr[j*2];
+//                         extents[5] = zeta_fptr[j*2];
+//                         itree->AddElement(j, extents);
+//                         //1.5.3                        itree->AddDomain(j, extents);
+                        
+//                         debug5 << "\tdomain[" << j << "] = X{"
+//                                << extents[0] << ", " << extents[1] << "}" << endl;
+//                         debug5 << "\tdomain[" << j << "] = Y{"
+//                                << extents[2] << ", " << extents[3] << "}" << endl;
+//                         debug5 << "\tdomain[" << j << "] = Z{"
+//                                << extents[4] << ", " << extents[5] << "}" << endl;
+//                       }
+//                     itree->Calculate(true);
+//                     // Cache the extents for all doms and all ts.
+//                     void_ref_ptr vr = void_ref_ptr(itree, avtIntervalTree::Destruct);
+//                     cache->CacheVoidRef(MeshName.c_str(), AUXILIARY_DATA_SPATIAL_EXTENTS, 
+//                                         t, -1, vr);
+//                     debug4 << mName << "Cached spatial extents for " << MeshName << endl;
+                    
+//                     // Advance zeta_fptr to the next time step!
+//                     zeta_fptr += (ndoms * 2);
+                    
+//                   } // end time for loop
+                
+//                   }  // end SigmaLevel MESH   spatial extents
+                
+//               } // end for # of meshs 
+            
+//           } // end if got spatial extent data!
+        
+//         delete [] x_dims;
+//         delete [] y_dims;
+//         delete [] h_dims;
+//         delete [] zeta_dims;
+        
+//         // free mem: ( varname, type)
+//         free_void_mem(x_values, x_t);
+        
+//         free_void_mem(y_values, y_t);
+        
+//         free_void_mem(h_values, h_t);
+        
+//         free_void_mem(zeta_values, zeta_t);
+        
+        
+//       } // End If (IsGeoRef)    
+    if(!IsGeoRef)
+      {
+        // 
+        // Let's iterate through all the Meshs and try to cache the spatial extents
+        // for each time steps domains.
+        
+        //    debug4 << "GOT HERE1" << endl;
+        int status=1;
+        TypeEnum x_t = NO_TYPE;
+        int x_ndims = 0, *x_dims = 0;
+        void *x_values = 0;
+        
+        TypeEnum y_t = NO_TYPE;
+        int y_ndims = 0, *y_dims = 0;
+        void *y_values = 0;
+        
+        TypeEnum h_t = NO_TYPE;
+        int h_ndims = 0, *h_dims = 0;
+        void *h_values = 0;
+        
+        TypeEnum zeta_t = NO_TYPE;
+        int zeta_ndims = 0, *zeta_dims = 0;
+        void *zeta_values = 0;
+        
+        status *= fileObject->ReadVariable("x_ext", &x_t, &x_ndims, &x_dims, &x_values);
+        if (x_t != FLOATARRAY_TYPE) status=0;
+        
+        status *= fileObject->ReadVariable("y_ext", &y_t, &y_ndims, &y_dims, &y_values);
+        if (y_t != FLOATARRAY_TYPE) status=0;
+        
+        status *= fileObject->ReadVariable("h_ext", &h_t, &h_ndims, &h_dims, &h_values);
+        if (h_t != FLOATARRAY_TYPE) status=0;
+        
+        status *= fileObject->ReadVariable("zeta_ext", &zeta_t, &zeta_ndims, &zeta_dims,
+                                           &zeta_values);
+        if (zeta_t != FLOATARRAY_TYPE) status=0;
+        
+        //    debug4 << "GOT HERE2" << endl;
+        
+        
+        
+        if (status == 1)
+          {
+            debug4 << mName << "Makeing pointers to spatial extents variables" << endl;
+            float *x_fptr = (float *)x_values;
+            float *y_fptr = (float *)y_values;
+            float *h_fptr = (float *)h_values;
+            //float *zeta_fptr = (float *)zeta_values;
+            //        debug4 << "GOT HERE3" << endl;
+            
+            for(int i = 0; i < md->GetNumMeshes(); ++i)
+              { 
+                avtMeshMetaData *mmd = const_cast<avtMeshMetaData*>(md->GetMesh(i));
+                std::string MeshName(mmd->name);
+                //mmd->numBlocks = domainFiles.size();
+                
+                
+                double  extents[6];
+                if(MeshName == "Bathymetry_Mesh")
+                  {
+                    debug4 << mName << "Adding Bathymetry_Mesh spatial extents" << endl;
                     avtIntervalTree *itree = new avtIntervalTree(ndoms, 3);
-                
+                    
                     for (int j = 0; j < ndoms; j++)
-                    {
+                      {
                         extents[0] = x_fptr[j*2+1];
                         extents[1] = x_fptr[j*2];
                         
                         extents[2] = y_fptr[j*2+1];
                         extents[3] = y_fptr[j*2];
                         
-                        extents[4] = zeta_fptr[j*2+1];
-                        extents[5] = zeta_fptr[j*2];
-
-                            itree->AddElement(j, extents);
-//1.5.3                        itree->AddDomain(j, extents);
-                        
-                        debug5 << "\tdomain[" << j << "] = X{"
-                               << extents[0] << ", " << extents[1] << "}" << endl;
-                        debug5 << "\tdomain[" << j << "] = Y{"
-                               << extents[2] << ", " << extents[3] << "}" << endl;
-                        debug5 << "\tdomain[" << j << "] = Z{"
-                           << extents[4] << ", " << extents[5] << "}" << endl;
-                    }
-                    itree->Calculate(true);
-                    // Cache the extents for all doms and all ts.
-                    void_ref_ptr vr = void_ref_ptr(itree, avtIntervalTree::Destruct);
-                    cache->CacheVoidRef(MeshName.c_str(), AUXILIARY_DATA_SPATIAL_EXTENTS,
-                                        t, -1, vr);
-                    debug4 << mName << "Cached spatial extents for " << MeshName << endl;
-
-                    // Advance zeta_fptr to the next time step!
-                    zeta_fptr += (ndoms * 2);
-
-                }
-                //delete [] zeta_fptr;                
-            }  // end SSH MESH   spatial extents
-
-
-            else if(MeshName == "SigmaLayer_Mesh")
-            {
-                debug4 << mName << "Adding SigmaLayer_Mesh spatial extents" << endl;
-                
-                float *zeta_fptr = (float *)zeta_values;
-                for (int t = 0; t < nts; t++)
-                {
-                    debug4 << "Spatial Extents for: " << MeshName <<
-                      ": ts = " << t << endl;
-
-                    avtIntervalTree *itree = new avtIntervalTree(ndoms, 3);
-
-                    for (int j = 0; j < ndoms; j++)
-                    {
-                        extents[0] = x_fptr[j*2+1];
-                        extents[1] = x_fptr[j*2];
-                        
-                        extents[2] = y_fptr[j*2+1];
-                        extents[3] = y_fptr[j*2];
-                        
-                        // for sigma layer mesh: use zeta to get ssh
-                        //                       use -h to get bathymetry
-                        // Watch the sign of H!!!
+                        // Watch the negative sign on h!!!
                         extents[4] = -h_fptr[j*2];
-                        extents[5] = zeta_fptr[j*2];
-
-                            itree->AddElement(j, extents);
-//1.5.3                        itree->AddDomain(j, extents);
+                        extents[5] = -h_fptr[j*2+1];
+                        itree->AddElement(j, extents);
+                        //1.5.3                    itree->AddDomain(j, extents);
                         
                         debug5 << "\tdomain[" << j << "] = X{"
                                << extents[0] << ", " << extents[1] << "}" << endl;
                         debug5 << "\tdomain[" << j << "] = Y{"
                                << extents[2] << ", " << extents[3] << "}" << endl;
                         debug5 << "\tdomain[" << j << "] = Z{"
-                           << extents[4] << ", " << extents[5] << "}" << endl;
-                    }
+                               << extents[4] << ", " << extents[5] << "}" << endl;
+                      }
                     itree->Calculate(true);
                     // Cache the extents for all doms and all ts.
                     void_ref_ptr vr = void_ref_ptr(itree, avtIntervalTree::Destruct);
                     cache->CacheVoidRef(MeshName.c_str(), AUXILIARY_DATA_SPATIAL_EXTENTS, 
-                                        t, -1, vr);
+                                        -1, -1, vr);
                     debug4 << mName << "Cached spatial extents for " << MeshName << endl;
+                  } // END Bathymetry Mesh spatial extents
+                else if(MeshName == "TWOD_Mesh")
+                  {
+                    debug4 << mName << "Adding TWOD_Mesh spatial extents" << endl;
+                avtIntervalTree *itree = new avtIntervalTree(ndoms, 3);
+                
+                for (int j = 0; j < ndoms; j++)
+                  {
+                    extents[0] = x_fptr[j*2+1];
+                    extents[1] = x_fptr[j*2];
+                    
+                    extents[2] = y_fptr[j*2+1];
+                    extents[3] = y_fptr[j*2];
+                    
+                    // USE DUMMY VALUES FOR TWOD MESH
+                    extents[4] = -1;
+                    extents[5] = 1;
+                    itree->AddElement(j, extents);
+                    //1.5.3                    itree->AddDomain(j, extents);
+                    
+                    debug5 << "\tdomain[" << j << "] = X{"
+                           << extents[0] << ", " << extents[1] << "}" << endl;
+                    debug5 << "\tdomain[" << j << "] = Y{"
+                           << extents[2] << ", " << extents[3] << "}" << endl;
+                    debug5 << "\tdomain[" << j << "] = Z{"
+                           << extents[4] << ", " << extents[5] << "}" << endl;
+                  }
+                itree->Calculate(true);
+                // Cache the extents for all doms and all ts.
+                void_ref_ptr vr = void_ref_ptr(itree, avtIntervalTree::Destruct);
+                cache->CacheVoidRef(MeshName.c_str(), AUXILIARY_DATA_SPATIAL_EXTENTS, 
+                                    -1, -1, vr);
+                debug4 << mName << "Cached spatial extents for " << MeshName << endl;
+                  } // END TWOD Mesh spatial extents
+                
+                else if(MeshName == "SSH_Mesh")
+                  {
+                    debug4 << mName << "Adding SSH_Mesh spatial extents" << endl;
+                    
+                    float *zeta_fptr = (float *)zeta_values;
+                    for (int t = 0; t < nts; t++)
+                      {
+                        debug4 << "Spatial Extents for: " << MeshName <<
+                          ": ts = " << t << endl;
+                        
+                        avtIntervalTree *itree = new avtIntervalTree(ndoms, 3);
+                        
+                        for (int j = 0; j < ndoms; j++)
+                    {
+                      extents[0] = x_fptr[j*2+1];
+                      extents[1] = x_fptr[j*2];
+                      
+                      extents[2] = y_fptr[j*2+1];
+                      extents[3] = y_fptr[j*2];
+                        
+                      extents[4] = zeta_fptr[j*2+1];
+                      extents[5] = zeta_fptr[j*2];
+                      
+                      itree->AddElement(j, extents);
+                      //1.5.3                        itree->AddDomain(j, extents);
+                      
+                      debug5 << "\tdomain[" << j << "] = X{"
+                             << extents[0] << ", " << extents[1] << "}" << endl;
+                      debug5 << "\tdomain[" << j << "] = Y{"
+                             << extents[2] << ", " << extents[3] << "}" << endl;
+                      debug5 << "\tdomain[" << j << "] = Z{"
+                             << extents[4] << ", " << extents[5] << "}" << endl;
+                    }
+                        itree->Calculate(true);
+                        // Cache the extents for all doms and all ts.
+                        void_ref_ptr vr = void_ref_ptr(itree, avtIntervalTree::Destruct);
+                        cache->CacheVoidRef(MeshName.c_str(), AUXILIARY_DATA_SPATIAL_EXTENTS,
+                                            t, -1, vr);
+                        debug4 << mName << "Cached spatial extents for " << MeshName << endl;
+                        
+                        // Advance zeta_fptr to the next time step!
+                        zeta_fptr += (ndoms * 2);
+                        
+                      }
+                    //delete [] zeta_fptr;                
+                  }  // end SSH MESH   spatial extents
+                
 
-                    // Advance zeta_fptr to the next time step!
-                    zeta_fptr += (ndoms * 2);
+                else if(MeshName == "SigmaLayer_Mesh")
+                  {
+                    debug4 << mName << "Adding SigmaLayer_Mesh spatial extents" << endl;
+                    
+                    float *zeta_fptr = (float *)zeta_values;
+                    for (int t = 0; t < nts; t++)
+                      {
+                        debug4 << "Spatial Extents for: " << MeshName <<
+                          ": ts = " << t << endl;
+                        
+                        avtIntervalTree *itree = new avtIntervalTree(ndoms, 3);
+                        
+                        for (int j = 0; j < ndoms; j++)
+                          {
+                            extents[0] = x_fptr[j*2+1];
+                            extents[1] = x_fptr[j*2];
+                            
+                            extents[2] = y_fptr[j*2+1];
+                            extents[3] = y_fptr[j*2];
+                            
+                            // for sigma layer mesh: use zeta to get ssh
+                            //                       use -h to get bathymetry
+                            // Watch the sign of H!!!
+                            extents[4] = -h_fptr[j*2];
+                            extents[5] = zeta_fptr[j*2];
 
-                }
-                //delete [] zeta_fptr;                
-            }  // end SigmaLayer MESH   spatial extents
-            else if(MeshName == "SigmaLevel_Mesh")
-            {
+                            itree->AddElement(j, extents);
+                            //1.5.3                        itree->AddDomain(j, extents);
+                            
+                            debug5 << "\tdomain[" << j << "] = X{"
+                                   << extents[0] << ", " << extents[1] << "}" << endl;
+                            debug5 << "\tdomain[" << j << "] = Y{"
+                                   << extents[2] << ", " << extents[3] << "}" << endl;
+                            debug5 << "\tdomain[" << j << "] = Z{"
+                                   << extents[4] << ", " << extents[5] << "}" << endl;
+                          }
+                        itree->Calculate(true);
+                        // Cache the extents for all doms and all ts.
+                        void_ref_ptr vr = void_ref_ptr(itree, avtIntervalTree::Destruct);
+                        cache->CacheVoidRef(MeshName.c_str(), AUXILIARY_DATA_SPATIAL_EXTENTS, 
+                                            t, -1, vr);
+                        debug4 << mName << "Cached spatial extents for " << MeshName << endl;
+                        
+                        // Advance zeta_fptr to the next time step!
+                        zeta_fptr += (ndoms * 2);
+                        
+                      }
+                    //delete [] zeta_fptr;                
+                  }  // end SigmaLayer MESH   spatial extents
+                else if(MeshName == "SigmaLevel_Mesh")
+                  {
                 debug4 << mName << "Adding SigmaLevel_Mesh spatial extents" << endl;
                 
                 float *zeta_fptr = (float *)zeta_values;
                 for (int t = 0; t < nts; t++)
-                {
+                  {
                     debug4 << "Spatial Extents for: " << MeshName <<
                       ": ts = " << t << endl;
-
+                    
                     avtIntervalTree *itree = new avtIntervalTree(ndoms, 3);
-
+                    
                     for (int j = 0; j < ndoms; j++)
-                    {
+                      {
                         extents[0] = x_fptr[j*2+1];
                         extents[1] = x_fptr[j*2];
                         
@@ -756,50 +1161,51 @@ avtFVCOM_MTMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
                         //                       use h to get bathymetry
                         extents[4] = -h_fptr[j*2];
                         extents[5] = zeta_fptr[j*2];
-                            itree->AddElement(j, extents);
-//1.5.3                        itree->AddDomain(j, extents);
+                        itree->AddElement(j, extents);
+                        //1.5.3                        itree->AddDomain(j, extents);
                         
                         debug5 << "\tdomain[" << j << "] = X{"
                                << extents[0] << ", " << extents[1] << "}" << endl;
                         debug5 << "\tdomain[" << j << "] = Y{"
                                << extents[2] << ", " << extents[3] << "}" << endl;
                         debug5 << "\tdomain[" << j << "] = Z{"
-                           << extents[4] << ", " << extents[5] << "}" << endl;
-                    }
+                               << extents[4] << ", " << extents[5] << "}" << endl;
+                      }
                     itree->Calculate(true);
                     // Cache the extents for all doms and all ts.
                     void_ref_ptr vr = void_ref_ptr(itree, avtIntervalTree::Destruct);
                     cache->CacheVoidRef(MeshName.c_str(), AUXILIARY_DATA_SPATIAL_EXTENTS, 
                                         t, -1, vr);
                     debug4 << mName << "Cached spatial extents for " << MeshName << endl;
-
+                    
                     // Advance zeta_fptr to the next time step!
                     zeta_fptr += (ndoms * 2);
-
-                } // end time for loop
-
-            }  // end SigmaLevel MESH   spatial extents
+                    
+                  } // end time for loop
+                
+                  }  // end SigmaLevel MESH   spatial extents
+                
+              } // end for # of meshs 
             
-        } // end for # of meshs 
-
-    } // end if got spatial extent data!
-
-    delete [] x_dims;
-    delete [] y_dims;
-    delete [] h_dims;
-    delete [] zeta_dims;
-
-    // free mem: ( varname, type)
-    free_void_mem(x_values, x_t);
+          } // end if got spatial extent data!
+        
+        delete [] x_dims;
+        delete [] y_dims;
+        delete [] h_dims;
+        delete [] zeta_dims;
+        
+        // free mem: ( varname, type)
+        free_void_mem(x_values, x_t);
+        
+        free_void_mem(y_values, y_t);
+        
+        free_void_mem(h_values, h_t);
+        
+        free_void_mem(zeta_values, zeta_t);
+        
+        
+      } // End If (!IsGeoRef)
     
-    free_void_mem(y_values, y_t);
-    
-    free_void_mem(h_values, h_t);
-    
-    free_void_mem(zeta_values, zeta_t);
-    
-    
-
     //
     // Let's iterate through all of the scalars and try to cache data extents
     // for each time step's domains. We do this here as opposed to doing it

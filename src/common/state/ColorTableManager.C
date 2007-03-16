@@ -40,6 +40,7 @@
 #include <DebugStream.h>
 #include <Utility.h>
 #include <visit-config.h>
+#include <ColorControlPoint.h>
 
 // ****************************************************************************
 // Method: ColorTableManager::ColorTableManager
@@ -319,7 +320,36 @@ ColorTableManager::ImportColorTable(const std::string &ctFileName)
             ColorControlPointList ccpl2;
             ccpl2.SetFromNode(node);
             ccpl2.SetExternalFlag(true);
-            ctAtts->AddColorTable(ctName, ccpl2);
+            
+            // Check for errors that would break code down the line
+            int ii;
+            bool broken = false;
+            for (ii = 0 ; ii < ccpl2.GetNumControlPoints() ; ii++)
+            {
+                float pos = ccpl2[ii].GetPosition();
+                if (pos < 0.0f || pos > 1.0)
+                {
+                    broken = true;
+                    break;
+                }
+                if (ii >= 1)
+                {
+                    float prevPos = ccpl2[ii-1].GetPosition();
+                    if (prevPos > pos)
+                    {
+                        broken = true;
+                        break;
+                    }
+                }
+            }
+            if (broken)
+            {
+                debug4 << "Could not read " << ctFileName.c_str() << "!" << endl;
+            }
+            else
+            {
+                ctAtts->AddColorTable(ctName, ccpl2);
+            }
             delete node;
         }
         else

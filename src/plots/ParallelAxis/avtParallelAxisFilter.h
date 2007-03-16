@@ -94,6 +94,8 @@
 
 #define PCP_MAX_HORIZONTAL_TITLE_AXES     7
 
+#define PCP_CTX_BRIGHTNESS_LEVELS         100
+
 
 class vtkDataSet;
 class vtkPolyData;
@@ -171,7 +173,12 @@ private:
                                     bool selectedVarsOnly);
     void                        InitializeOutputDataSets();
     void                        InputDataTuple(const floatVector &inputTuple);
+    void                        CountDataTuple(const floatVector &inputTuple);
 
+    void                        InitializePairwiseBins();
+    void                        CleanUpPairwiseBins();
+
+    void                        DrawContext();
     void                        DrawDataCurves();
     void                        DrawCoordinateAxes();
     void                        DrawCoordinateAxisLabels();
@@ -185,7 +192,8 @@ private:
     int                         parallelRank;
     bool                        drewAnnotations;
 
-    stringVector                layerLabels;
+    stringVector                curveAndAxisLabels;
+    stringVector                contextLabels;
 
     int                         domainCount;
 
@@ -273,6 +281,8 @@ private:
     vtkCellArray               *subrangeVerts;
 
     PortableFont               *textPlotter;
+
+    int                       **binnedAxisCounts;
 };
 
 

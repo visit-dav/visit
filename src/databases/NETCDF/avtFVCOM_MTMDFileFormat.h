@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2007, The Regents of the University of California
+* Copyright (c) 2000 - 2006, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -97,14 +97,14 @@ class avtFVCOM_MTMDFileFormat : public avtMTMDFileFormat
                                             const char *type, void *args,
                                             DestructorFunction &);
 
-  protected:
+   protected:
     // DATA MEMBERS
    NETCDFFileObject      *fileObject;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
     bool  init;
-    
+    bool IsGeoRef;
     
     //    int status;
 
@@ -114,7 +114,10 @@ class avtFVCOM_MTMDFileFormat : public avtMTMDFileFormat
     size_t ntwo;
     
     std::vector<avtFVCOMReader *> domainFiles;
-    
+
+    private:
+   
+    const char *keysuffix;
 };
 
 

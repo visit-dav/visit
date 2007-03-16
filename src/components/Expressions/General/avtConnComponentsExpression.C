@@ -139,6 +139,10 @@ avtConnComponentsExpression::GetNumberOfComponents()
 //  Programmer: Hank Childs & Cyrus Harrison
 //  Creation:   January 22, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Fri Mar 16 10:46:28 PDT 2007
+//    Added progress update. 
+//
 // ****************************************************************************
 void
 avtConnComponentsExpression::Execute()
@@ -161,11 +165,6 @@ avtConnComponentsExpression::Execute()
     // get dataset domain ids
     vector<int> domain_ids;
     tree->GetAllDomainIds(domain_ids);
- 
-
-    // get dataset labels
-    vector<string> tree_labels;
-    tree->GetAllLabels(tree_labels);
 
     // filter out any ghost cells
     vtkDataSetRemoveGhostCells **ghost_filters = 
@@ -196,6 +195,14 @@ avtConnComponentsExpression::Execute()
 
     int num_local_comps=0;
     int num_comps = 0;
+
+    // set progress related vars
+#ifdef PARALLEL
+    totalSteps = nsets *4;
+#else
+    totalSteps = nsets *2;
+#endif
+    currentProgress = 0;
 
     // process all local sets
     for(i = 0; i < nsets ; i++)
@@ -236,7 +243,9 @@ avtConnComponentsExpression::Execute()
 
         // add result as new leaf
         leaves[i] = new avtDataTree(res_set,domain_ids[i]);
-        // leaves[i] = new avtDataTree(res_set,domain_ids[i],tree_labels[i]);
+
+        // update progress
+        UpdateProgress(currentProgress++,totalSteps);
     }
 
     // create a boundary set 
@@ -312,6 +321,9 @@ avtConnComponentsExpression::Execute()
     }
     // cleanup ghost filters array
     delete [] ghost_filters;
+
+    // Set progress to complete
+    UpdateProgress(totalSteps,totalSteps);
 
     // set the final number of components
     nFinalComps  = num_comps;
@@ -448,6 +460,10 @@ avtConnComponentsExpression::SingleSetLabel(vtkDataSet *data_set,
 //  Programmer: Cyrus Harrison
 //  Creation:   January 25, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Fri Mar 16 15:49:42 PDT 2007
+//    Added progress update. 
+//
 // ****************************************************************************
 int
 avtConnComponentsExpression::MultiSetResolve(int num_comps,
@@ -503,6 +519,9 @@ avtConnComponentsExpression::MultiSetResolve(int num_comps,
                 }
             }
         }
+
+        // update progress
+        UpdateProgress(currentProgress++,totalSteps);
     }
 
     // flatten the union find object to obtain final labels
@@ -645,6 +664,10 @@ avtConnComponentsExpression::MultiSetList(int num_comps,
 //  Programmer: Cyrus Harrison
 //  Creation:   January 30, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Fri Mar 16 15:50:10 PDT 2007
+//    Added progress update. 
+//
 // ****************************************************************************
 int
 avtConnComponentsExpression::GlobalLabelShift
@@ -695,6 +718,8 @@ avtConnComponentsExpression::GlobalLabelShift
     for(i = 0; i < nsets ;i++)
     {
         ShiftLabels(labels[i],shift);
+        // update progress
+        UpdateProgress(currentProgress++,totalSteps);
     }
 
     visitTimer->StopTimer(t0,"Global Label Shift");
@@ -812,6 +837,10 @@ avtConnComponentsExpression::GlobalResolve(int num_comps,
 //  Programmer: Cyrus Harrison
 //  Creation:   January 25, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Fri Mar 16 15:51:20 PDT 2007
+//    Added progress update. 
+//
 // ****************************************************************************
 int
 avtConnComponentsExpression::GlobalUnion(int num_comps,
@@ -925,6 +954,9 @@ avtConnComponentsExpression::GlobalUnion(int num_comps,
             // set the final label value
             curr_array->SetValue(j,lbl);
         }
+
+        // update progress
+        UpdateProgress(currentProgress++,totalSteps);
     }
     
     visitTimer->StopTimer(t0,"Global Label Union");
@@ -1297,6 +1329,10 @@ avtConnComponentsExpression::BoundarySet::AddMesh(vtkDataSet *mesh)
 //  Programmer: Cyrus Harrison
 //  Creation:   January  25, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Thu Mar  1 07:47:58 PST 2007
+//    Added guard for empty input datasets. 
+//
 // ****************************************************************************
 void
 avtConnComponentsExpression::BoundarySet::Finalize()
@@ -1314,6 +1350,14 @@ avtConnComponentsExpression::BoundarySet::Finalize()
 
     // get the number of sets
     int nsets = meshes.size();
+
+    // cleanup old itrees if they exist 
+    if(itrees.size() > 0)
+    {
+        if(itrees[i] != NULL)
+            delete itrees[i];
+    }
+    itrees.clear();
 
     // if empty do not try to create the itrees
     if(nsets == 0)
@@ -1350,19 +1394,25 @@ avtConnComponentsExpression::BoundarySet::Finalize()
 
         // add cells to the current mesh's interval tree
         int curr_ncells = curr_set->GetNumberOfCells();
-        avtIntervalTree *curr_itree = new avtIntervalTree(curr_ncells,3);
-
-        for(j = 0; j< curr_ncells; j++)
+        // make sure we dont create an empty itree
+        if(curr_ncells > 0 )
         {
-            // add each cell's bounds to the interval tree
-            vtkCell *cell = curr_set->GetCell(j);
-            double bounds[6];
-            cell->GetBounds(bounds);
-            curr_itree->AddElement(j,bounds);
+            avtIntervalTree *curr_itree = new avtIntervalTree(curr_ncells,3);
+
+            for(j = 0; j< curr_ncells; j++)
+            {
+                // add each cell's bounds to the interval tree
+                vtkCell *cell = curr_set->GetCell(j);
+                double bounds[6];
+                cell->GetBounds(bounds);
+                curr_itree->AddElement(j,bounds);
+            }
+            // build the interval tree for the current mesh
+            curr_itree->Calculate(true);
+            itrees[i] = curr_itree;
         }
-        // build the interval tree for the current mesh
-        curr_itree->Calculate(true);
-        itrees[i] = curr_itree;
+        else
+        {itrees[i] = NULL;}
     }
 
 }
@@ -1378,6 +1428,10 @@ avtConnComponentsExpression::BoundarySet::Finalize()
 //  Programmer: Cyrus Harrison
 //  Creation:   January  25, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Thu Mar  1 07:46:46 PST 2007
+//    Added check for null itrees
+//
 // ****************************************************************************
 void
 avtConnComponentsExpression::BoundarySet::Clear()
@@ -1387,7 +1441,8 @@ avtConnComponentsExpression::BoundarySet::Clear()
     for(int i=0;i<nsets;i++)
     {
         meshes[i]->Delete();
-        delete itrees[i];
+        if(itrees[i])
+            delete itrees[i];
     }
     meshes.clear();
     itrees.clear();
@@ -1457,6 +1512,11 @@ avtConnComponentsExpression::BoundarySet::GetBounds(double *bounds) const
 //  Programmer: Cyrus Harrison
 //  Creation:   February  16, 2007
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Thu Mar  1 07:49:44 PST 2007
+//    Added case for empty input datasets.
+//
 // ****************************************************************************
 void
 avtConnComponentsExpression::BoundarySet::GetIntersectionSet(
@@ -1486,6 +1546,11 @@ avtConnComponentsExpression::BoundarySet::GetIntersectionSet(
 
     avtIntervalTree *src_itree = itrees[src_mesh_index];
     avtIntervalTree *can_itree = itrees[can_mesh_index];
+
+    // if an input dataset is empty, its itree will be null
+    // check for this case
+    if(src_itree == NULL || can_itree == NULL)
+        return;
 
     // get source and candidate bounds
     src_mesh->GetBounds(src_bounds);

@@ -17,6 +17,7 @@
       ActualDataVars
       LineDistribution
       HohlraumFlux
+      ConnCompSummary
     </Enum>
     <Enum name="Groups">
       CurveRelated

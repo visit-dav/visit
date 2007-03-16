@@ -79,6 +79,9 @@
 //    Mark Blair, Fri Feb 23 12:19:33 PST 2007
 //    Now supports all variable axis spacing and axis group conventions.
 //
+//    Mark Blair, Wed Mar 14 18:04:12 PDT 2007
+//    Added support for ganged axis sliders.
+//
 // ****************************************************************************
 
 VisitExtentsTool::VisitExtentsTool(VisWindowToolProxy &p) : VisitInteractiveTool(p),
@@ -101,6 +104,7 @@ VisitExtentsTool::VisitExtentsTool(VisWindowToolProxy &p) : VisitInteractiveTool
     
     curTimeOrdinal = 1;
     activeAxisIndex = 0;
+    gangedHPDeltaY = -1.0;
 
     for (extentNum = 0; extentNum < EA_DEFAULT_NUMBER_OF_EXTENTS; extentNum++)
     {
@@ -2919,7 +2923,7 @@ void VisitExtentsTool::LeftAxisSelectionMark(
     {
         activeAxisIndex = AxisClosestToTipOfArrow(cursorPos.x + msHotpointRadius);
         activeHotPointID = msHotpointStartID;
-        activeHPMaxX = hotPoints[msHotpointStartID+1].pt.x - msHotpointRadius*2.0;
+        rightMarkHPX = hotPoints[msHotpointStartID+1].pt.x - msHotpointRadius*2.0;
 
 /* Makes plot disappear while hotpoint is in motion; ridiculous for parallel axis plot.
         proxy.StartBoundingBox();
@@ -2929,8 +2933,8 @@ void VisitExtentsTool::LeftAxisSelectionMark(
     {
         if (cursorPos.x < minSlidableX)
             cursorPos.x = minSlidableX;
-        else if (cursorPos.x > activeHPMaxX)
-            cursorPos.x = activeHPMaxX;
+        else if (cursorPos.x > rightMarkHPX)
+            cursorPos.x = rightMarkHPX;
 
         activeAxisIndex = AxisClosestToTipOfArrow(cursorPos.x + msHotpointRadius);
 
@@ -2948,8 +2952,8 @@ void VisitExtentsTool::LeftAxisSelectionMark(
 
         if (cursorPos.x < minSlidableX)
             cursorPos.x = minSlidableX;
-        else if (cursorPos.x > activeHPMaxX)
-            cursorPos.x = activeHPMaxX;
+        else if (cursorPos.x > rightMarkHPX)
+            cursorPos.x = rightMarkHPX;
 
         activeAxisIndex = AxisClosestToTipOfArrow(cursorPos.x + msHotpointRadius);
         
@@ -3002,7 +3006,7 @@ void VisitExtentsTool::RightAxisSelectionMark(
     {
         activeAxisIndex = AxisClosestToTipOfArrow(cursorPos.x - msHotpointRadius);
         activeHotPointID = msHotpointStartID + 1;
-        activeHPMinX = hotPoints[msHotpointStartID].pt.x + msHotpointRadius*2.0;
+        leftMarkHPX = hotPoints[msHotpointStartID].pt.x + msHotpointRadius*2.0;
 
 /* Makes plot disappear while hotpoint is in motion; ridiculous for parallel axis plot.
         proxy.StartBoundingBox();
@@ -3012,8 +3016,8 @@ void VisitExtentsTool::RightAxisSelectionMark(
     {
         if (cursorPos.x > maxSlidableX)
             cursorPos.x = maxSlidableX;
-        else if (cursorPos.x < activeHPMinX)
-            cursorPos.x = activeHPMinX;
+        else if (cursorPos.x < leftMarkHPX)
+            cursorPos.x = leftMarkHPX;
 
         activeAxisIndex = AxisClosestToTipOfArrow(cursorPos.x - msHotpointRadius);
 
@@ -3031,8 +3035,8 @@ void VisitExtentsTool::RightAxisSelectionMark(
 
         if (cursorPos.x > maxSlidableX)
             cursorPos.x = maxSlidableX;
-        else if (cursorPos.x < activeHPMinX)
-            cursorPos.x = activeHPMinX;
+        else if (cursorPos.x < leftMarkHPX)
+            cursorPos.x = leftMarkHPX;
 
         activeAxisIndex = AxisClosestToTipOfArrow(cursorPos.x - msHotpointRadius);
         
@@ -3079,10 +3083,26 @@ void VisitExtentsTool::RightAxisSelectionMark(
 //    Mark Blair, Thu Dec 21 18:54:43 PST 2006
 //    Upgraded to support non-uniform axis spacing.
 //
+//    Mark Blair, Wed Mar 14 18:04:12 PDT 2007
+//    Upgraded to support ganged axis sliders.
+//
 // ****************************************************************************
 
 void VisitExtentsTool::AxisSliderMinimum(CB_ENUM e, int ctrl, int shift, int x, int y)
 {
+    bool gangedSlidersMotion = false;
+    
+    if (gangedHPDeltaY > -1.0)
+        gangedSlidersMotion = true;
+    else if ((shift != 0) && (e == CB_START))
+        gangedSlidersMotion = true;
+
+    if (gangedSlidersMotion)
+    {
+        GangAxisSliders(true, e, x, y);
+        return;
+    }
+
     avtVector cursorPos = ComputeDisplayToWorld(avtVector(x,y,0.0));
 
     if (e == CB_START)
@@ -3100,8 +3120,10 @@ void VisitExtentsTool::AxisSliderMinimum(CB_ENUM e, int ctrl, int shift, int x, 
             activeAxisIndex = leftSelectedAxisID;
         }
 
-        activeHotPointID = asAxisHotpointIDs[activeAxisIndex]*2 + asHotpointStartID;
-        activeHPMaxY = hotPoints[activeHotPointID+1].pt.y - asHotpointRadius*2.0;
+        activeMinHPID = asAxisHotpointIDs[activeAxisIndex]*2 + asHotpointStartID;
+        activeMaxHPID = activeMinHPID + 1;
+
+        activeMaxHPY = hotPoints[activeMaxHPID].pt.y - asHotpointRadius*2.0;
 
 /* Makes plot disappear while hotpoint is in motion; ridiculous for parallel axis plot.
         proxy.StartBoundingBox();
@@ -3111,11 +3133,11 @@ void VisitExtentsTool::AxisSliderMinimum(CB_ENUM e, int ctrl, int shift, int x, 
     {
         if (cursorPos.y < minSlidableY)
             cursorPos.y = minSlidableY;
-        else if (cursorPos.y > activeHPMaxY)
-            cursorPos.y = activeHPMaxY;
+        else if (cursorPos.y > activeMaxHPY)
+            cursorPos.y = activeMaxHPY;
 
-        hotPoints[activeHotPointID].pt.x = hotPoints[activeHotPointID+1].pt.x;
-        hotPoints[activeHotPointID].pt.y = cursorPos.y;
+        hotPoints[activeMinHPID].pt.x = hotPoints[activeMaxHPID].pt.x;
+        hotPoints[activeMinHPID].pt.y = cursorPos.y;
 
         MoveAxisSliderMinimumArrow(activeAxisIndex);
 
@@ -3126,19 +3148,19 @@ void VisitExtentsTool::AxisSliderMinimum(CB_ENUM e, int ctrl, int shift, int x, 
     {
         if (cursorPos.y < minSlidableY)
             cursorPos.y = minSlidableY;
-        else if (cursorPos.y > activeHPMaxY)
-            cursorPos.y = activeHPMaxY;
+        else if (cursorPos.y > activeMaxHPY)
+            cursorPos.y = activeMaxHPY;
 
-        hotPoints[activeHotPointID].pt.x = hotPoints[activeHotPointID+1].pt.x;
-        hotPoints[activeHotPointID].pt.y = cursorPos.y;
+        hotPoints[activeMinHPID].pt.x = hotPoints[activeMaxHPID].pt.x;
+        hotPoints[activeMinHPID].pt.y = cursorPos.y;
 
         MoveAxisSliderMinimumArrow(activeAxisIndex);
 
         // Render the vis window.
         proxy.Render();
 
-        // Call the tool's callback for a changed minimum.
-        CallExtentMinimumCallback();
+        // Broadcast changed extent to the rest of the world.
+        CallExtentsCallback(true, false);
 
 /* Makes plot reappear after hotpoint has moved; see comment above.
         proxy.EndBoundingBox();
@@ -3168,10 +3190,26 @@ void VisitExtentsTool::AxisSliderMinimum(CB_ENUM e, int ctrl, int shift, int x, 
 //    Mark Blair, Thu Dec 21 18:54:43 PST 2006
 //    Upgraded to support non-uniform axis spacing.
 //
+//    Mark Blair, Wed Mar 14 18:04:12 PDT 2007
+//    Upgraded to support ganged axis sliders.
+//
 // ****************************************************************************
 
 void VisitExtentsTool::AxisSliderMaximum(CB_ENUM e, int ctrl, int shift, int x, int y)
 {
+    bool gangedSlidersMotion = false;
+    
+    if (gangedHPDeltaY > -1.0)
+        gangedSlidersMotion = true;
+    else if ((shift != 0) && (e == CB_START))
+        gangedSlidersMotion = true;
+
+    if (gangedSlidersMotion)
+    {
+        GangAxisSliders(false, e, x, y);
+        return;
+    }
+
     avtVector cursorPos = ComputeDisplayToWorld(avtVector(x,y,0.0));
 
     if (e == CB_START)
@@ -3189,10 +3227,11 @@ void VisitExtentsTool::AxisSliderMaximum(CB_ENUM e, int ctrl, int shift, int x, 
             activeAxisIndex = leftSelectedAxisID;
         }
 
-        activeHotPointID =
-            asAxisHotpointIDs[activeAxisIndex]*2 + asHotpointStartID + 1;
-        activeHPMinY = hotPoints[activeHotPointID-1].pt.y + asHotpointRadius*2.0;
+        activeMinHPID = asAxisHotpointIDs[activeAxisIndex]*2 + asHotpointStartID;
+        activeMaxHPID = activeMinHPID + 1;
 
+        activeMinHPY = hotPoints[activeMinHPID].pt.y + asHotpointRadius*2.0;
+        
 /* Makes plot disappear while hotpoint is in motion; ridiculous for parallel axis plot.
         proxy.StartBoundingBox();
 */
@@ -3201,11 +3240,11 @@ void VisitExtentsTool::AxisSliderMaximum(CB_ENUM e, int ctrl, int shift, int x, 
     {
         if (cursorPos.y > maxSlidableY)
             cursorPos.y = maxSlidableY;
-        else if (cursorPos.y < activeHPMinY)
-            cursorPos.y = activeHPMinY;
+        else if (cursorPos.y < activeMinHPY)
+            cursorPos.y = activeMinHPY;
 
-        hotPoints[activeHotPointID].pt.x = hotPoints[activeHotPointID-1].pt.x;
-        hotPoints[activeHotPointID].pt.y = cursorPos.y;
+        hotPoints[activeMaxHPID].pt.x = hotPoints[activeMinHPID].pt.x;
+        hotPoints[activeMaxHPID].pt.y = cursorPos.y;
 
         MoveAxisSliderMaximumArrow(activeAxisIndex);
 
@@ -3216,23 +3255,149 @@ void VisitExtentsTool::AxisSliderMaximum(CB_ENUM e, int ctrl, int shift, int x, 
     {
         if (cursorPos.y > maxSlidableY)
             cursorPos.y = maxSlidableY;
-        else if (cursorPos.y < activeHPMinY)
-            cursorPos.y = activeHPMinY;
+        else if (cursorPos.y < activeMinHPY)
+            cursorPos.y = activeMinHPY;
 
-        hotPoints[activeHotPointID].pt.x = hotPoints[activeHotPointID-1].pt.x;
-        hotPoints[activeHotPointID].pt.y = cursorPos.y;
+        hotPoints[activeMaxHPID].pt.x = hotPoints[activeMinHPID].pt.x;
+        hotPoints[activeMaxHPID].pt.y = cursorPos.y;
 
         MoveAxisSliderMaximumArrow(activeAxisIndex);
         
         // Render the vis window.
         proxy.Render();
 
-        // Call the tool's callback for a changed maximum.
-        CallExtentMaximumCallback();
+        // Broadcast changed extent to the rest of the world.
+        CallExtentsCallback(false, true);
 
 /* Makes plot reappear after hotpoint has moved; see comment above.
         proxy.EndBoundingBox();
 */
+    }
+}
+
+
+// ****************************************************************************
+// Method:  VisitExtentsTool::GangAxisSliders
+//
+// Purpose: This is the handler method that is called when a hotpoint for one
+//          of the axis sliders is in motion and that slider is ganged with its
+//          opposite slider on the same axis.
+//
+// Arguments:
+//    dragedSliderIsMin: True if slider being dragged is an axis minimum slider
+//                   e : The state of the hotpoint activity. (START, MIDDLE, END)
+//                   x : The x location of the mouse in pixels.
+//                   y : The y location of the mouse in pixels.
+//
+// Programmer: Mark Blair
+// Creation:   Wed Mar 14 18:04:12 PDT 2007
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void VisitExtentsTool::GangAxisSliders(
+    bool draggedSliderIsMin, CB_ENUM e, int x, int y)
+{
+    avtVector cursorPos = ComputeDisplayToWorld(avtVector(x,y,0.0));
+
+    if (e == CB_START)
+    {
+        if (cursorPos.x < leftAxisX)
+            cursorPos.x = leftAxisX;
+        else if (cursorPos.x > rightAxisX)
+            cursorPos.x = rightAxisX;
+
+        activeAxisIndex = AxisClosestToTipOfArrow(cursorPos.x);
+
+        if (asAxisHotpointIDs[activeAxisIndex] < 0)
+        {
+            debug3 << "VET/GAS/1: Invalid hotpoint index." << endl;
+            activeAxisIndex = leftSelectedAxisID;
+        }
+
+        activeMinHPID = asAxisHotpointIDs[activeAxisIndex]*2 + asHotpointStartID;
+        activeMaxHPID = activeMinHPID + 1;
+
+        gangedHPDeltaY = hotPoints[activeMaxHPID].pt.y - hotPoints[activeMinHPID].pt.y;
+
+/* Makes plot disappear while hotpoint is in motion; ridiculous for parallel axis plot.
+        proxy.StartBoundingBox();
+*/
+    }
+    else if (e == CB_MIDDLE)
+    {
+        UpdateGangedAxisSliderPositions(draggedSliderIsMin, cursorPos.y);
+
+        MoveAxisSliderMinimumArrow(activeAxisIndex);
+        MoveAxisSliderMaximumArrow(activeAxisIndex);
+
+        // Render the vis window.
+        proxy.Render();
+    }
+    else
+    {
+        UpdateGangedAxisSliderPositions(draggedSliderIsMin, cursorPos.y);
+
+        MoveAxisSliderMinimumArrow(activeAxisIndex);
+        MoveAxisSliderMaximumArrow(activeAxisIndex);
+        
+        // Render the vis window.
+        proxy.Render();
+
+        // Broadcast changed extent to the rest of the world.
+        CallExtentsCallback(true, true);
+        
+        gangedHPDeltaY = -1.0;
+
+/* Makes plot reappear after hotpoint has moved; see comment above.
+        proxy.EndBoundingBox();
+*/
+    }
+}
+
+
+// ****************************************************************************
+// Method: VisitExtentsTool::UpdateGangedAxisSliderPositions
+//
+// Purpose: Updates hotpoint positions of a pair of ganged axis sliders that
+//          are currently in motion.
+//
+// Programmer: Mark Blair
+// Creation:   Wed Mar 14 18:04:12 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void VisitExtentsTool::UpdateGangedAxisSliderPositions(
+    bool draggedSliderIsMin, double cursorY)
+{
+    double cursorYPos = cursorY;
+    
+    if (draggedSliderIsMin)
+    {
+        if (cursorYPos < minSlidableY)
+            cursorYPos = minSlidableY;
+        else if (cursorYPos + gangedHPDeltaY > maxSlidableY)
+            cursorYPos = maxSlidableY - gangedHPDeltaY;
+            
+        hotPoints[activeMinHPID].pt.y = cursorYPos;
+        hotPoints[activeMaxHPID].pt.y = cursorYPos + gangedHPDeltaY;
+            
+        hotPoints[activeMinHPID].pt.x = hotPoints[activeMaxHPID].pt.x;
+    }
+    else
+    {
+        if (cursorYPos > maxSlidableY)
+            cursorYPos = maxSlidableY;
+        else if (cursorYPos - gangedHPDeltaY < minSlidableY)
+            cursorYPos = minSlidableY + gangedHPDeltaY;
+            
+        hotPoints[activeMaxHPID].pt.y = cursorYPos;
+        hotPoints[activeMinHPID].pt.y = cursorYPos - gangedHPDeltaY;
+            
+        hotPoints[activeMaxHPID].pt.x = hotPoints[activeMinHPID].pt.x;
     }
 }
 
@@ -3451,75 +3616,59 @@ void VisitExtentsTool::CallRightMarkMoveCallback()
 
 
 // ****************************************************************************
-// Method: VisitExtentsTool::CallExtentMinimumCallback
+// Method: VisitExtentsTool::CallExtentsCallback
 //
-// Purpose: Lets the outside world know that the tool has a new extent minimum.
+// Purpose: Lets the outside world know that the tool has new extents.
 //
 // Programmer: Mark Blair
-// Creation:   Mon Oct 31 18:35:00 PST 2005
+// Creation:   Wed Mar 14 18:04:12 PDT 2007
 //
 // Modifications:
 //   
-//    Mark Blair, Thu Aug 31 17:56:00 PDT 2006
-//    Changed to new interface for GetBounds in VTK.
-//
-//    Mark Blair, Fri Sep 15 16:41:45 PDT 2006
-//    Changed interface to update minima on an individual basis.  Also updates
-//    associated time ordinal.
-//
 // ****************************************************************************
 
-void VisitExtentsTool::CallExtentMinimumCallback()
+void VisitExtentsTool::CallExtentsCallback(bool sendMinima, bool sendMaxima)
 {
-    doubleVector newMinima          = Interface.GetMinima();
-    intVector    newMinTimeOrdinals = Interface.GetMinTimeOrdinals();
+    if (sendMinima)
+    {
+        doubleVector newMinima          = Interface.GetMinima();
+        intVector    newMinTimeOrdinals = Interface.GetMinTimeOrdinals();
     
-    if ((activeAxisIndex < 0) || (activeAxisIndex >= newMinima.size())) return;
+        if ((activeAxisIndex < 0) || (activeAxisIndex >= newMinima.size()))
+        {
+            debug3 << "VET/CEC/1: Invalid axis index." << endl;
+            return;
+        }
     
-    newMinima[activeAxisIndex] =
-        (hotPoints[activeHotPointID].pt.y - minSlidableY) / normToWorldYScale;
-    newMinTimeOrdinals[activeAxisIndex] = curTimeOrdinal++;
+        newMinima[activeAxisIndex] =
+            (hotPoints[activeMinHPID].pt.y - minSlidableY) / normToWorldYScale;
+        newMinTimeOrdinals[activeAxisIndex] = curTimeOrdinal;
+        
+        if (!sendMaxima) curTimeOrdinal++;
     
-    Interface.SetMinima(newMinima);
-    Interface.SetMinTimeOrdinals(newMinTimeOrdinals);
+        Interface.SetMinima(newMinima);
+        Interface.SetMinTimeOrdinals(newMinTimeOrdinals);
+    }
     
-    Interface.ExecuteCallback();
-}
+    if (sendMaxima)
+    {
+        doubleVector newMaxima          = Interface.GetMaxima();
+        intVector    newMaxTimeOrdinals = Interface.GetMaxTimeOrdinals();
+    
+        if ((activeAxisIndex < 0) || (activeAxisIndex >= newMaxima.size()))
+        {
+            debug3 << "VET/CEC/2: Invalid axis index." << endl;
+            return;
+        }
+    
+        newMaxima[activeAxisIndex] = 1.0 -
+            (maxSlidableY - hotPoints[activeMaxHPID].pt.y) / normToWorldYScale;
+        newMaxTimeOrdinals[activeAxisIndex] = curTimeOrdinal++;
 
-
-// ****************************************************************************
-// Method: VisitExtentsTool::CallExtentMaximumCallback
-//
-// Purpose: Lets the outside world know that the tool has a new extent maximum.
-//
-// Programmer: Mark Blair
-// Creation:   Mon Oct 31 18:35:00 PST 2005
-//
-// Modifications:
-//   
-//    Mark Blair, Thu Aug 31 17:56:00 PDT 2006
-//    Changed to new interface for GetBounds in VTK.
-//
-//    Mark Blair, Fri Sep 15 16:41:45 PDT 2006
-//    Changed interface to update maxima on an individual basis.  Also updates
-//    associated time ordinal.
-//
-// ****************************************************************************
-
-void VisitExtentsTool::CallExtentMaximumCallback()
-{
-    doubleVector newMaxima          = Interface.GetMaxima();
-    intVector    newMaxTimeOrdinals = Interface.GetMaxTimeOrdinals();
+        Interface.SetMaxima(newMaxima);
+        Interface.SetMaxTimeOrdinals(newMaxTimeOrdinals);
+    }
     
-    if ((activeAxisIndex < 0) || (activeAxisIndex >= newMaxima.size())) return;
-    
-    newMaxima[activeAxisIndex] = 1.0 -
-        (maxSlidableY - hotPoints[activeHotPointID].pt.y) / normToWorldYScale;
-    newMaxTimeOrdinals[activeAxisIndex] = curTimeOrdinal++;
-
-    Interface.SetMaxima(newMaxima);
-    Interface.SetMaxTimeOrdinals(newMaxTimeOrdinals);
-
     Interface.ExecuteCallback();
 }
 

@@ -170,36 +170,62 @@ avtParallelAxisPlot::SetAtts(const AttributeGroup *a)
 //
 //  Modifications:
 //   
+//    Jeremy Meredith, Fri Mar 16 17:47:02 EDT 2007
+//    Added colors for the "Context" portion of the plot.  Alas, these
+//    must come first so the Context is drawn behind the other data curve
+//    lines and annotations.
+//
 // ****************************************************************************
 
 void
 avtParallelAxisPlot::SetColors()
 {
-    int levelColor, redID, red, green, blue;
-    unsigned char *plotColors = new unsigned char[16];
+    int redID, red, green, blue;
+    int numColorEntries = 4 * (4+PCP_CTX_BRIGHTNESS_LEVELS);
+    unsigned char *plotColors = new unsigned char[numColorEntries];
 
     ColorAttribute colorAtt;
     ColorAttributeList colorAttList;
 
-    for (redID = 0; redID < 16; redID += 4)
+    for (redID = 0; redID < numColorEntries; redID += 4)
     {
+        float scale = 1;
         switch (redID)
         {
-            case  0: levelColor = PCP_ALTERNATE_DATA_CURVE_COLOR;
-                     break;
-            case  4: levelColor = PCP_DEFAULT_AXIS_COLOR;
-                     break;
-            case  8: levelColor = PCP_DEFAULT_AXIS_TITLE_COLOR;
-                     break;
-            case 12: levelColor = PCP_DEFAULT_RANGE_BOUND_COLOR;
-                     break;
-            default:
-                     break;
+          case PCP_CTX_BRIGHTNESS_LEVELS*4 + 0:
+            red   = atts.GetLinesColor().Red();
+            green = atts.GetLinesColor().Green();
+            blue  = atts.GetLinesColor().Blue();
+            break;
+          case PCP_CTX_BRIGHTNESS_LEVELS*4 + 4:
+            red   = (PCP_DEFAULT_AXIS_COLOR >> 24) & 0xff;
+            green = (PCP_DEFAULT_AXIS_COLOR >> 16) & 0xff;
+            blue  = (PCP_DEFAULT_AXIS_COLOR >>  8) & 0xff;
+            break;
+          case PCP_CTX_BRIGHTNESS_LEVELS*4 + 8:
+            red   = (PCP_DEFAULT_AXIS_TITLE_COLOR >> 24) & 0xff;
+            green = (PCP_DEFAULT_AXIS_TITLE_COLOR >> 16) & 0xff;
+            blue  = (PCP_DEFAULT_AXIS_TITLE_COLOR >>  8) & 0xff;
+            break;
+          case PCP_CTX_BRIGHTNESS_LEVELS*4 +12:
+            red   = (PCP_DEFAULT_RANGE_BOUND_COLOR >> 24) & 0xff;
+            green = (PCP_DEFAULT_RANGE_BOUND_COLOR >> 16) & 0xff;
+            blue  = (PCP_DEFAULT_RANGE_BOUND_COLOR >>  8) & 0xff;
+            break;
+          default:
+            red   = atts.GetContextColor().Red();
+            green = atts.GetContextColor().Green();
+            blue  = atts.GetContextColor().Blue();
+            scale = ((redID)/4.)/float(PCP_CTX_BRIGHTNESS_LEVELS);
+            break;
         }
 
-        red   = (levelColor >> 24) & 0xff;
-        green = (levelColor >> 16) & 0xff;
-        blue  = (levelColor >>  8) & 0xff;
+        if (scale != 1)
+        {
+            red   = int(red*scale);
+            green = int(green*scale);
+            blue  = int(blue*scale);
+        }
 
         colorAtt.SetRgba(red, green, blue, 255);
         colorAttList.AddColors(colorAtt);
@@ -210,7 +236,7 @@ avtParallelAxisPlot::SetColors()
         plotColors[redID+3] = 255;
     }
 
-    avtLUT->SetLUTColorsWithOpacity(plotColors, 4);
+    avtLUT->SetLUTColorsWithOpacity(plotColors, 4+PCP_CTX_BRIGHTNESS_LEVELS);
     levelsMapper->SetColors(colorAttList);
 
     delete [] plotColors;

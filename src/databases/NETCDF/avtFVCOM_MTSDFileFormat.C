@@ -136,12 +136,15 @@ avtFVCOM_MTSDFileFormat::avtFVCOM_MTSDFileFormat(const char *filename)
     : avtMTSDFileFormat(&filename, 1)
 {
     reader = new avtFVCOMReader(filename);
+    reader->SetKeySuffixForCaching(filename);
+
 }
 
 avtFVCOM_MTSDFileFormat::avtFVCOM_MTSDFileFormat(const char *filename,
     NETCDFFileObject *f) : avtMTSDFileFormat(&filename, 1)
 {
     reader = new avtFVCOMReader(filename,f);
+    reader->SetKeySuffixForCaching(filename);
 }
 
 // ****************************************************************************

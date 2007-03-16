@@ -626,6 +626,9 @@ QvisQueryWindow::UpdateResults(bool)
 //   Dave Bremer, Fri Dec  8 17:52:22 PST 2006
 //   Added a GUI for the hohlraum flux query.
 //
+//   Cyrus Harrison, Fri Mar 16 14:03:41 PDT 200
+//   Added output file gui for the connected components summary query.
+//
 // ****************************************************************************
 
 void
@@ -776,6 +779,12 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             labels[3]->setText("Radius, Theta, Phi");
             textFields[3]->setText("1 0 0");
             showWidgets[3] = true;
+        }
+        else if (winT == QueryList::ConnCompSummary)
+        {
+            labels[0]->setText("Output File");
+            textFields[0]->setText("cc_summary.okc");
+            showWidgets[0] = true;
         }
 
         // hide and show the right text widgets.
@@ -943,6 +952,9 @@ QvisQueryWindow::ConnectPlotList(PlotList *pl)
 //
 //   Dave Bremer, Fri Dec  8 17:52:22 PST 2006
 //   Added argument parsing for the hohlraum flux query.
+//
+//   Cyrus Harrison, Fri Mar 16 14:05:34 PDT 2007
+//   Added argument parsing for connected components summary.
 //
 // ****************************************************************************
 
@@ -1172,6 +1184,19 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                 if (noErrors)
                     GetViewerMethods()->DatabaseQuery(names[index], vars, 
                         doTime, nLines, 0, true, pos, radiusThetaPhi);
+            }
+            else if (winT == QueryList::ConnCompSummary)
+            {
+                stringVector v;
+                if (!GetVars(0, vars))
+                    noErrors = false;
+
+                if (vars.size() != 1)
+                    noErrors = false;
+
+                if (noErrors)
+                    GetViewerMethods()->DatabaseQuery(names[index], vars, 
+                                                      false,true);
             }
 
             // Display a status message.

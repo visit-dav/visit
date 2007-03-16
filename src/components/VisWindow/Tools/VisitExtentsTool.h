@@ -265,6 +265,9 @@ class vtkUnsignedCharArray;
 //    Mark Blair, Fri Feb 23 12:19:33 PST 2007
 //    Now supports all variable axis spacing and axis group conventions.
 //
+//    Mark Blair, Wed Mar 14 18:04:12 PDT 2007
+//    Added support for ganged axis sliders.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitExtentsTool : public VisitInteractiveTool
@@ -376,9 +379,11 @@ class VISWINDOW_API VisitExtentsTool : public VisitInteractiveTool
 
     void AxisSliderMinimum(CB_ENUM e, int crtl, int shift, int x, int y);
     void AxisSliderMaximum(CB_ENUM e, int crtl, int shift, int x, int y);
+    void GangAxisSliders(bool draggedSliderIsMin, CB_ENUM e, int x, int y);
+    void UpdateGangedAxisSliderPositions(bool draggedSliderIsMin, double cursorY);
     void MoveAxisSliderMinimumArrow(int axisIndex);
     void MoveAxisSliderMaximumArrow(int axisIndex);
-    void CallExtentMinimumCallback();
+    void CallExtentsCallback(bool sendMinima, bool sendMaxima);
     void CallExtentMaximumCallback();
 
     void ExpandAxisSequenceBetweenSelectionMarks();
@@ -501,10 +506,13 @@ class VISWINDOW_API VisitExtentsTool : public VisitInteractiveTool
 
     int                  activeAxisIndex;
     int                  activeHotPointID;
-    double               activeHPMinX;
-    double               activeHPMaxX;
-    double               activeHPMinY;
-    double               activeHPMaxY;
+    int                  activeMinHPID;
+    int                  activeMaxHPID;
+    double               leftMarkHPX;
+    double               rightMarkHPX;
+    double               activeMinHPY;
+    double               activeMaxHPY;
+    double               gangedHPDeltaY;
     intVector            asHotpointAxisIDs;
     intVector            asAxisHotpointIDs;
     

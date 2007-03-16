@@ -90,6 +90,9 @@
 //    Jeremy Meredith, Tue Mar 13 15:16:08 EDT 2007
 //    Qt's ToDouble doesn't correctly understant +/-1e37, so use atof instead.
 //
+//    Jeremy Meredith, Fri Mar 16 14:15:24 EDT 2007
+//    Set Color's length to 4 so the XML editor will set its values properly.
+//
 // ****************************************************************************
 
 
@@ -857,7 +860,7 @@ class Color : public virtual Field
   public:
     unsigned char val[4];
   public:
-    Color(const QString &n, const QString &l) : Field("color",n,l) { };
+    Color(const QString &n, const QString &l) : Field("color",n,l) { length=4; };
     virtual QString GetCPPName(bool, const QString &) 
     {
         return "ColorAttribute";
