@@ -1021,6 +1021,9 @@ QvisExpressionsWindow::displayAllVarsChanged()
 //    Hank Childs, Fri Jan 12 13:20:33 PST 2007
 //    Added array_compose and array_compose_with_bins.
 //
+//    Hank Childs, Sat Mar 17 15:33:54 PDT 2007
+//    Fix problem with specmf.
+//
 // ****************************************************************************
 
 void
@@ -1061,12 +1064,12 @@ QvisExpressionsWindow::insertFunction(int id)
     }
     else if (str == "matvf")
     {
-        definitionEdit->insert("(<material-name>, [#, #, ... #])");
+        definitionEdit->insert("(<material-object-name>, [#, #, ... #])");
         doParens = false;
     }
     else if (str == "specmf")
     {
-        definitionEdit->insert("(<material-name>, [#, #, ... #])");
+        definitionEdit->insert("(<species-variable-name>, <material-name-or-number>, [#, #, ... #])");
         doParens = false;
     }
     else if (str == "if")

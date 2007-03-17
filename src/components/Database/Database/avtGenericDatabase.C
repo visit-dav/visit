@@ -4810,6 +4810,9 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 //    Hank Childs, Sat Mar  3 08:34:29 PST 2007
 //    Issue a warning if we must "MaintainOriginalConnectivity".
 //
+//    Hank Childs, Sat Mar 17 17:01:51 PDT 2007
+//    Change warning to also include specmf.
+//
 // ****************************************************************************
 
 bool
@@ -4919,11 +4922,17 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
         const char *warning = "Because of the way VisIt organizes data, "
               "it is not possible to create ghost zones for this plot.  "
               "This problem is likely coming about because you are " 
-              "using the matvf expression.  Contact a VisIt developer "
-              "for more information.  This message will only be issued "
-              "once per session.";
-        avtCallback::IssueWarning(warning);
-        issuedWarning = true;
+              "using the matvf or specmf expressions.  Contact a VisIt "
+              "developer for more information.  This message will only "
+              "be issued once per session.";
+        // We only need to issue the warning if we actuall would have done 
+        // something.
+        if ((hasDomainBoundaryInfo || canUseGlobalNodeIds) && 
+            allDomains.size() > 1)
+        {
+            avtCallback::IssueWarning(warning);
+            issuedWarning = true;
+        }
         return false;
     }
 

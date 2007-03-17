@@ -66,6 +66,9 @@ class     vtkUnstructuredGrid;
 //   Brad Whitlock, Mon Jun 5 10:43:55 PDT 2006
 //   Added config file support.
 //
+//   Hank Childs, Sat Mar 17 16:29:45 PDT 2007
+//   Added FreeUpResources.
+//
 // ****************************************************************************
 
 class avtPoint3DFileFormat : public avtSTSDFileFormat
@@ -75,6 +78,7 @@ class avtPoint3DFileFormat : public avtSTSDFileFormat
     virtual                   ~avtPoint3DFileFormat();
     
     virtual const char        *GetType(void) { return "3D points"; };
+    virtual void               FreeUpResources(void);
     
     virtual vtkDataSet        *GetMesh(const char *);
     virtual vtkDataArray      *GetVar(const char *);
