@@ -53,6 +53,7 @@ class QvisOpacitySlider;
 class QvisColorButton;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
+class QvisVariableButton;
 
 // ****************************************************************************
 // Class: QvisRevolveWindow
@@ -63,7 +64,7 @@ class QvisLineWidthWidget;
 // Notes:      This class was automatically generated!
 
 // Programmer: xml2window
-// Creation:   Wed Dec 11 14:17:27 PST 2002
+// Creation:   Sun Mar 18 10:37:59 PDT 2007
 //
 // Modifications:
 //   
@@ -84,15 +85,25 @@ class QvisRevolveWindow : public QvisOperatorWindow
     void UpdateWindow(bool doAll);
     virtual void GetCurrentValues(int which_widget);
   private slots:
+    void meshTypeChanged(int val);
+    void autoAxisChanged(bool val);
     void axisProcessText();
     void startAngleProcessText();
     void stopAngleProcessText();
     void stepsProcessText();
   private:
+    QButtonGroup *meshType;
+    QCheckBox *autoAxis;
     QLineEdit *axis;
     QLineEdit *startAngle;
     QLineEdit *stopAngle;
     QLineEdit *steps;
+    QLabel *meshTypeLabel;
+    QLabel *autoAxisLabel;
+    QLabel *axisLabel;
+    QLabel *startAngleLabel;
+    QLabel *stopAngleLabel;
+    QLabel *stepsLabel;
 
     RevolveAttributes *atts;
 };
