@@ -12,4 +12,5 @@
     <Function name="SetAsActiveProfile"            user="true"></Function>
     <Function name="RemoveActiveProfile"           user="true"></Function>
     <Function name="ChangeHostForActiveProfile"    user="true"></Function>
+    <Function name="ProcessOldVersions" user="true" member="true"></Function>
   </Attribute>
