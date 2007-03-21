@@ -1713,6 +1713,9 @@ ViewerSubject::LaunchEngineOnStartup()
 //   Brad Whitlock, Fri Nov 10 10:56:00 PDT 2006
 //   Added arguments to some SetFromNode methods.
 //
+//   Cyrus Harrison, Fri Mar 16 09:21:24 PDT 2007
+//   Added call to SetFromNode from the ViewerEngineManager
+//
 // ****************************************************************************
 
 void
@@ -1750,6 +1753,7 @@ ViewerSubject::DelayedProcessSettings()
         ViewerFileServer::Instance()->SetFromNode(searchNode, empty);
         ViewerWindowManager::Instance()->SetFromNode(searchNode, empty);
         ViewerQueryManager::Instance()->SetFromNode(searchNode);
+        ViewerEngineManager::Instance()->SetFromNode(searchNode);
 
         delete localSettings;  localSettings = 0;
     }
@@ -2633,6 +2637,10 @@ ViewerSubject::CreateNode(DataNode *parentNode, bool detailed)
 //   I added support for SourceMap, which other objects use to get the
 //   names of the databases that are used in the visualization.
 //
+//   Cyrus Harrison, Fri Mar 16 09:02:17 PDT 2007
+//   Added support for ViewerEngineManager to restore its settings
+//   from a node. 
+//
 // ****************************************************************************
 
 bool
@@ -2655,6 +2663,7 @@ ViewerSubject::SetFromNode(DataNode *parentNode,
         ViewerFileServer::Instance()->SetFromNode(vsNode, sourceToDB);
         ViewerWindowManager::Instance()->SetFromNode(vsNode, sourceToDB);
         ViewerQueryManager::Instance()->SetFromNode(vsNode);
+        ViewerEngineManager::Instance()->SetFromNode(vsNode);
     }
 
     return fatalError;

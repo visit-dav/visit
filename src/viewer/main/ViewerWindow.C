@@ -1698,6 +1698,10 @@ ViewerWindow::GetMaintainDataMode() const
 //    Eric Brugger, Thu Oct 16 11:21:53 PDT 2003
 //    I moved the handling of full frame mode to VisWindow.
 //
+//    Dave Bremer, Wed Mar 21 17:39:55 PDT 2007
+//    If full frame mode is set here in the viewer, also change the full frame
+//    activation mode to be explicitly on or off, instead of auto which can
+//    cause the mode to later change unexpectedly.
 // ****************************************************************************
 
 void
@@ -1709,6 +1713,8 @@ ViewerWindow::SetFullFrameMode(const bool mode)
     avtView2D view2D=visWindow->GetView2D();
 
     view2D.fullFrame = mode;
+    view2D.fullFrameActivationMode = mode ? View2DAttributes::On : View2DAttributes::Off;
+    
     visWindow->SetView2D(view2D);
 }
 

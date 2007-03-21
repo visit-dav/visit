@@ -69,6 +69,7 @@ using std::string;
 //
 bool          avtDataRepresentation::initializedNullDataset = false;
 vtkDataSet   *avtDataRepresentation::nullDataset = NULL;
+bool          avtDataRepresentation::datasetDump = true;
 
 
 // ****************************************************************************
@@ -891,6 +892,9 @@ avtDataRepresentation::GetTimeToDecompress() const
 //  Programmer: Hank Childs
 //  Creation:   December 21, 2006
 //
+//  Cyrus Harrison, Tue Mar 13 11:41:22 PDT 2007
+//  Added case for debug dumps without dumping vtk datasets (-info-dump)
+//
 // ****************************************************************************
 
 const char *
@@ -901,22 +905,28 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
         return "EMPTY DATA SET";
     }
 
-    static int times = 0;
     char name[1024];
 
-    if (PAR_Size() > 1)
+    if(datasetDump)
     {
-        int rank = PAR_Rank();
-        sprintf(name, "%s%d.%d.vtk", prefix, times, rank);
+
+        static int times = 0;
+
+        
+        if (PAR_Size() > 1)
+        {
+            int rank = PAR_Rank();
+            sprintf(name, "%s%d.%d.vtk", prefix, times, rank);
+        }
+        else
+            sprintf(name, "%s%d.vtk", prefix, times);
+        times++;
+        vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
+        wrtr->SetInput(asVTK);
+        wrtr->SetFileName(name);
+        wrtr->Write();
+        wrtr->Delete();
     }
-    else
-        sprintf(name, "%s%d.vtk", prefix, times);
-    times++;
-    vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
-    wrtr->SetInput(asVTK);
-    wrtr->SetFileName(name);
-    wrtr->Write();
-    wrtr->Delete();
 
     const char *type = "<unknown mesh type>";
     int nzones = asVTK->GetNumberOfCells();
@@ -945,14 +955,27 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
     }
 
     static char str[1024];
-    if (dims[0] > 0)
-        sprintf(str, "%s, %s, ncells = %d, npts = %d, dims = %d, %d, %d",
-                name, type, nzones, nnodes, dims[0], dims[1], dims[2]);
+
+    if(datasetDump)
+    {
+        if (dims[0] > 0)
+            sprintf(str, "%s, %s, ncells = %d, npts = %d, dims = %d, %d, %d",
+                    name, type, nzones, nnodes, dims[0], dims[1], dims[2]);
+        else
+            sprintf(str, "%s, %s, ncells = %d, npts = %d",
+                    name, type, nzones, nnodes);
+    }
     else
-        sprintf(str, "%s, %s, ncells = %d, npts = %d",
-                name, type, nzones, nnodes);
+    {
+        if (dims[0] > 0)
+            sprintf(str, "%s, ncells = %d, npts = %d, dims = %d, %d, %d",
+                    type, nzones, nnodes, dims[0], dims[1], dims[2]);
+        else
+            sprintf(str, "%s, ncells = %d, npts = %d",
+                    type, nzones, nnodes);
+    }
+    
 
     return str;
 }
-
 

@@ -1033,6 +1033,9 @@ Engine::ProcessInput()
 //    Mark C. Miller, Wed Feb 14 15:22:33 PST 2007
 //    Added -ui-bcast-thresholds CL option
 //
+//    Cyrus Harrison, Fri Mar 16 09:38:10 PDT 2007
+//    Added -info-dump option
+//
 // ****************************************************************************
 
 void
@@ -1149,6 +1152,13 @@ Engine::ProcessCommandLine(int argc, char **argv)
         {
             avtFilter::DebugDump(true);
             avtOriginatingSink::DebugDump(true);
+            shouldDoDashDump = true;
+        }
+        else if (strcmp(argv[i], "-info-dump") == 0)
+        {
+            avtFilter::DebugDump(true);
+            avtOriginatingSink::DebugDump(true);
+            avtDataRepresentation::DatasetDump(false);
             shouldDoDashDump = true;
         }
         else if (strcmp(argv[i], "-lb-block") == 0)
