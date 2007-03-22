@@ -498,6 +498,11 @@ avtParallelAxisFilter::PostExecute(void)
 //     Avoid drawing data curves (lines) if we didn't ask for them.
 //     Renamed data set labels specific to data curves and axis annotations.
 //
+//     Jeremy Meredith, Wed Mar 21 18:22:08 EDT 2007
+//     Added a new setting which will hide the lines until the extents
+//     tool has actually been enabled and thresholded the range of one or
+//     more axes.  This allows the "lines" to be used strictly as a "focus".
+//
 // ****************************************************************************
 
 avtDataTree_p 
@@ -691,7 +696,15 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
         pointIdList->Delete();
     }
 
-    if (parAxisAtts.GetDrawLines())
+    bool extentsApplied = false;
+    for (int axisID = 0; axisID < axisCount; axisID++)
+    {
+        if (applySubranges[axisID])
+            extentsApplied = true;
+    }
+
+    if (parAxisAtts.GetDrawLines() &&
+        (!parAxisAtts.GetDrawLinesOnlyIfExtentsOn() || extentsApplied))
     {
         DrawDataCurves();
     }
@@ -2189,7 +2202,7 @@ avtParallelAxisFilter::DrawContext()
                 float alpha = float(binnedAxisCounts[axis][a*nparts+b]) /
                               float(maxcount);
 
-                alpha = pow(alpha,1./gamma);
+                alpha = powf(alpha,1.f/gamma);
 
                 int c = int(float(PCP_CTX_BRIGHTNESS_LEVELS-1) * alpha);
 

@@ -40,6 +40,8 @@
 #include <visit-config.h> // for VERSION
 #if !defined(_WIN32)
 #include <strings.h>
+#else
+#include <process.h> // for _getpid
 #endif
 #include <snprintf.h>
 #include <map>
@@ -370,8 +372,15 @@ static PyThreadState        *mainThreadState = NULL;
 static bool                  clientMethodsAllowed = false;
 static std::vector<ClientMethod *> cachedClientMethods;
 
-static std::vector<AnnotationObject *>   localObjectList;
-static std::map<AnnotationObject *, int> localObjectReferenceCount;
+
+typedef struct
+{
+    AnnotationObject *object;
+    int               index;
+    int               refCount;
+} AnnotationObjectRef;
+
+static std::map<std::string, AnnotationObjectRef> localObjectMap;
 
 #ifdef THREADS
 #if defined(_WIN32)
@@ -9936,6 +9945,191 @@ visit_Lineout(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: UpdateAnnotationsHelper
+//
+// Purpose: 
+//   This is a helper function that is called when setting the attributes
+//   of an annotation object. The purpose is to send the annotation
+//   object list to the viewer.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 3 17:21:21 PST 2003
+//
+// Modifications:
+//   Brad Whitlock, Tue Mar 13 11:01:38 PDT 2007
+//   Updated due to code generation changes.
+//
+//   Brad Whitlock, Thu Mar 22 03:27:21 PDT 2007
+//   Changed bookkeeping.
+//
+// ****************************************************************************
+
+void
+UpdateAnnotationHelper(AnnotationObject *annot)
+{
+    const char *mName = "UpdateAnnotationHelper: ";
+
+    // Make sure that the annotation object annot is in the localObjectMap.
+    debug1 << "Searching for " << annot->GetObjectName()
+           << " in the local object map... ";
+    std::map<std::string, AnnotationObjectRef>::iterator pos = 
+        localObjectMap.find(annot->GetObjectName());
+
+    if(pos == localObjectMap.end())
+    {
+        debug1 << "not found!" << endl;
+
+        // The annotation was not in the local object list so it must have
+        // been deleted.
+        VisItErrorFunc("Setting the annotation object attributes for this "
+                       "object has no effect because the annotation to which "
+                       "it corresponds has been deleted.");
+    }
+    else
+    {
+        debug1 << "found!" << endl;
+
+        // Synchronize so we don't send more operations than we can handle.
+        debug1 << mName << "Synchonizing..." << endl;
+        Synchronize();
+
+        MUTEX_LOCK();
+
+        // The annotation was in the local object list.
+        AnnotationObjectList *aol = GetViewerState()->GetAnnotationObjectList();
+        bool found = false;
+        for(int i = 0; aol->GetNumAnnotations(); ++i)
+        {
+            AnnotationObject &viewerAnnot = aol->operator[](i);
+            if(viewerAnnot.GetObjectName() == annot->GetObjectName())
+            {
+                found = true;                
+
+                debug1 << mName << "Sending annotation object "
+                       << annot->GetObjectName() << "'s attributes to the viewer."
+                       << endl;
+
+                // Copy the annotation object into the annotation object list.
+                viewerAnnot = *annot;
+
+                // Send the options to the viewer.
+                aol->SelectAll();
+                aol->Notify();
+
+                // Make the viewer use the options.
+                GetViewerMethods()->SetAnnotationObjectOptions();
+                break;
+            }
+        }
+
+        if(!found)
+        {
+            debug1 << mName << "Annotation object " << annot->GetObjectName()
+                   << "was not found in the viewer's annotation object list."
+                   << endl;
+        }
+
+        MUTEX_UNLOCK();
+        Synchronize();
+    }
+}
+
+// ****************************************************************************
+// Function: DeleteAnnotationObjectHelper
+//
+// Purpose: 
+//   This method is called by AnnotationObject wrapper classes so they can
+//   delete themselces from the annotation object list.
+//
+// Arguments:
+//   annot : Pointer to the object that we want to delete.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 3 17:20:23 PST 2003
+//
+// Modifications:
+//   Brad Whitlock, Tue Mar 13 11:01:38 PDT 2007
+//   Updated due to code generation changes.
+//   
+// ****************************************************************************
+
+bool
+DeleteAnnotationObjectHelper(AnnotationObject *annot)
+{
+    const char *mName = "DeleteAnnotationObjectHelper: ";
+    bool transferOwnership = false;
+
+    debug1 << mName << "Synchronizing..." << endl;
+    Synchronize();
+
+    MUTEX_LOCK();
+
+    // Reduce the reference count.
+    debug1 << mName << "Looking for annotation object "
+           << annot->GetObjectName() << " in the local object map...";
+    std::map<std::string, AnnotationObjectRef>::iterator pos = 
+        localObjectMap.find(annot->GetObjectName());
+    if(pos != localObjectMap.end())
+    {
+         debug1 << "found; decremented refCount" << endl;
+
+         --pos->second.refCount;
+         if(pos->second.refCount < 2)  // Why 2?
+         {
+             debug1 << mName << "Remove " << annot->GetObjectName()
+                    << " from the local object map." << endl;
+             int deletedIndex = pos->second.index;
+             localObjectMap.erase(pos);
+             transferOwnership = true;
+
+             // Decrement the indices that are larger than deletedIndex.
+             for(pos = localObjectMap.begin(); pos != localObjectMap.end(); ++pos)
+                 if(pos->second.index > deletedIndex)
+                     --pos->second.index;
+
+             // Erase it from the viewer too.
+             AnnotationObjectList *aol = GetViewerState()->GetAnnotationObjectList();
+             int needToDelete = false;
+             debug1 << "Setting annotation objects' active flag:" << endl;
+             for(int i = 0; i < aol->GetNumAnnotations(); ++i)
+             {
+                 bool namesEqual = aol->GetAnnotation(i).GetObjectName() == annot->GetObjectName();
+                 needToDelete |= namesEqual;
+                 aol->GetAnnotation(i).SetActive(namesEqual);
+                 debug1 << "\t" << aol->GetAnnotation(i).GetObjectName()
+                        << " = " << (aol->GetAnnotation(i).GetActive()?"true":"false")
+                        << endl;
+             }
+
+             if(needToDelete)
+             {
+                 debug1 << mName << "Deletion required." << endl;
+
+                 // Now that we've modified the annotation object list, we have to send
+                 // it to the viewer.
+                 aol->SelectAll();
+                 aol->Notify();
+                 GetViewerMethods()->SetAnnotationObjectOptions();
+
+                 // Now that the viewer has the new selected list of annotation objects,
+                 // delete the active ones.
+                 GetViewerMethods()->DeleteActiveAnnotationObjects();
+             }
+         }
+    }
+    else
+    {
+        debug1 << "not found! The Python object must refer to an object "
+               << "that no longer exists." << endl;
+    }
+
+    MUTEX_UNLOCK();
+    Synchronize();
+
+    return transferOwnership;
+}
+
+// ****************************************************************************
 // Function: CreateAnnotationWrapper
 //
 // Purpose: 
@@ -10000,16 +10194,26 @@ CreateAnnotationWrapper(AnnotationObject *annot)
 //   Brad Whitlock, Tue Mar 13 11:01:38 PDT 2007
 //   Updated due to code generation changes.
 //
+//   Brad Whitlock, Tue Mar 20 09:36:05 PDT 2007
+//   Added ability to name an object when it is created.
+//
 // ****************************************************************************
 
 STATIC PyObject *
 visit_CreateAnnotationObject(PyObject *self, PyObject *args)
 {
+    const char *mName = "visit_CreateAnnotationObject: ";
     ENSURE_VIEWER_EXISTS();
 
-    char *annotType;
-    if (!PyArg_ParseTuple(args, "s", &annotType))
-       return NULL;
+    char *annotType = 0, *annotName = 0;
+    if (!PyArg_ParseTuple(args, "ss", &annotType, &annotName))
+    {
+        if (!PyArg_ParseTuple(args, "s", &annotType))
+            return NULL;
+
+        annotName = "";
+        PyErr_Clear();
+    }
 
     // See if it is an annotation type that we know about
     int annotTypeIndex;
@@ -10032,7 +10236,9 @@ visit_CreateAnnotationObject(PyObject *self, PyObject *args)
 
     // Create the annotation.
     MUTEX_LOCK();
-        GetViewerMethods()->AddAnnotationObject(annotTypeIndex);
+        debug1 << mName << "Telling the viewer to create a new " << annotType
+               << " annotation object called \"" << annotName << "\"\n";
+        GetViewerMethods()->AddAnnotationObject(annotTypeIndex, annotName);
     MUTEX_UNLOCK();
     int errorFlag = Synchronize();
 
@@ -10045,13 +10251,25 @@ visit_CreateAnnotationObject(PyObject *self, PyObject *args)
             AnnotationObjectList *aol = GetViewerState()->GetAnnotationObjectList();
             const AnnotationObject &newObject = aol->operator[](aol->GetNumAnnotations() - 1);
 
+            debug1 << mName << "The viewer created a new " << annotType
+                   << " annotation object called \""
+                   << newObject.GetObjectName()
+                   << "\". Wrapping that object for Python\n";
+
             //
             // Create a copy of the new annotation object that we'll keep in the
             // module's own annotation object list.
             //
             AnnotationObject *localCopy = new AnnotationObject(newObject);
-            localObjectList.push_back(localCopy);
-            localObjectReferenceCount[localCopy] = 1;
+
+            // Cache references based on the object name.
+            AnnotationObjectRef ref;
+            ref.object = localCopy;
+            ref.refCount = 1;
+            ref.index = localObjectMap.size();
+          
+            localObjectMap[newObject.GetObjectName()] = ref;
+
             retval = CreateAnnotationWrapper(localCopy);
         MUTEX_UNLOCK();
     }
@@ -10078,32 +10296,119 @@ visit_CreateAnnotationObject(PyObject *self, PyObject *args)
 // Creation:   Wed Dec 3 17:22:10 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Mar 22 03:24:48 PDT 2007
+//   Rewrote for new annotation object scheme.
+//  
 // ****************************************************************************
 
 STATIC PyObject *
 visit_GetAnnotationObject(PyObject *self, PyObject *args)
 {
+    const char *mName = "visit_GetAnnotationObject: ";
     ENSURE_VIEWER_EXISTS();
 
+    bool useIndex = true;
     int annotIndex;
+    char *annotName = NULL;
     if (!PyArg_ParseTuple(args, "i", &annotIndex))
-        return NULL;
+    {
+        if(!PyArg_ParseTuple(args, "s", &annotName))
+            return NULL;
+        PyErr_Clear();
+        useIndex = false;
+    }
+
+    // Make sure the annotation object list is up to date.
+    Synchronize();
+
+    MUTEX_LOCK();
 
     PyObject *retval = NULL;
-    if(annotIndex >= 0 && annotIndex < localObjectList.size())
-    {
-        AnnotationObject *annot = localObjectList[annotIndex];
-        retval = CreateAnnotationWrapper(annot);
 
-        // Increase the object's reference count.
-        if(retval != 0)
-            ++(localObjectReferenceCount[annot]);
+    if(useIndex)
+    {
+        if(annotIndex >= 0 && 
+           annotIndex < GetViewerState()->GetAnnotationObjectList()->GetNumAnnotations())
+        {
+            debug1 << mName << "Look in the map for an object that has index equal to "
+                   << annotIndex << endl;
+            for(std::map<std::string, AnnotationObjectRef>::iterator pos = localObjectMap.begin();
+                pos != localObjectMap.end(); ++pos)
+            {
+                if(pos->second.index == annotIndex)
+                {
+                    debug1 << mName << "Found object called "
+                           << pos->second.object->GetObjectName()
+                           << " with an index of" << annotIndex
+                           << endl;
+
+                    AnnotationObject *annot = pos->second.object;
+                    retval = CreateAnnotationWrapper(annot);
+    
+                    // Increase the object's reference count.
+                    if(retval != 0)
+                        ++pos->second.refCount;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            const char *errMsg = "An invalid annotation object index was given!";
+            debug1 << mName << errMsg << endl;
+            VisItErrorFunc(errMsg);
+        }
     }
     else
     {
-        VisItErrorFunc("An invalid annotation object index was given!");
+        debug1 << mName << "Look in the map for an object called "
+               << annotName << endl;
+        std::map<std::string, AnnotationObjectRef>::iterator pos = 
+            localObjectMap.find(annotName);
+        if(pos != localObjectMap.end())
+        {
+            AnnotationObject *annot = pos->second.object;
+            retval = CreateAnnotationWrapper(annot);
+    
+            // Increase the object's reference count.
+            if(retval != 0)
+                ++pos->second.refCount;
+        }
+        else
+        {
+            // The object was not in the map but see if we can add it.
+            int index = GetViewerState()->GetAnnotationObjectList()->
+                IndexForName(annotName);
+            if(index != -1)
+            {
+                AnnotationObject &newObject = GetViewerState()->
+                    GetAnnotationObjectList()->GetAnnotation(index);
+
+                //
+                // Create a copy of the new annotation object that we'll keep in the
+                // module's own annotation object list.
+                //
+                AnnotationObject *localCopy = new AnnotationObject(newObject);
+
+                // Cache references based on the object name.
+                AnnotationObjectRef ref;
+                ref.object = localCopy;
+                ref.refCount = 1;
+                ref.index = localObjectMap.size();
+          
+                localObjectMap[newObject.GetObjectName()] = ref;
+                retval = CreateAnnotationWrapper(localCopy);
+            }
+            else
+            {
+                char msg[400];
+                SNPRINTF(msg, 400, "An unrecognized object name \"%s\" was requested.", annotName);
+                VisItErrorFunc(msg);
+            }
+        }
     }
+
+    MUTEX_UNLOCK();
 
     return retval;
 }
@@ -10288,176 +10593,6 @@ visit_SetDefaultMeshManagementAttributes(PyObject *self, PyObject *args)
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
-}
-
-// ****************************************************************************
-// Function: UpdateAnnotationsHelper
-//
-// Purpose: 
-//   This is a helper function that is called when setting the attributes
-//   of an annotation object. The purpose is to send the annotation
-//   object list to the viewer.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Dec 3 17:21:21 PST 2003
-//
-// Modifications:
-//   Brad Whitlock, Tue Mar 13 11:01:38 PDT 2007
-//   Updated due to code generation changes.
-//
-// ****************************************************************************
-
-void
-UpdateAnnotationHelper(AnnotationObject *annot)
-{
-    // Make sure that the annotation object annot is in the localObjectList.
-    int i, index = -1;
-    for(i = 0; i < localObjectList.size(); ++i)
-    {
-        if(localObjectList[i] == annot)
-        {
-            index = i;
-            break;
-        }
-    }
-
-    if(index == -1)
-    {
-        // The annotation was not in the local object list so it must have
-        // been deleted.
-        VisItErrorFunc("Setting the annotation object attributes for this "
-                       "object has no effect because the annotation to which "
-                       "it corresponds has been deleted.");
-    }
-    else
-    {
-        // The annotation was in the local object list.
-        AnnotationObjectList *aol = GetViewerState()->GetAnnotationObjectList();
-        if(aol->GetNumAnnotations() == localObjectList.size())
-        {
-            MUTEX_LOCK();
-
-            // Copy the local annotation object's list into the viewer proxy's
-            // annotation object list.
-            for(i = 0; i < aol->GetNumAnnotations(); ++i)
-            {
-                AnnotationObject &viewerAnnot = aol->operator[](i);
-                viewerAnnot = *(localObjectList[i]);
-            }
-
-            // Send the options to the viewer.
-            aol->Notify();
-
-            // Make the viewer use the options.
-            GetViewerMethods()->SetAnnotationObjectOptions();
-
-            MUTEX_UNLOCK();
-
-            // Synchronize so we don't send more operations than we can handle.
-            Synchronize();
-        }
-        else
-        {
-            debug1 << "The local annotation object list does not match the viewer's "
-                   << "annotation object list!" << endl;
-        }
-    }
-}
-
-// ****************************************************************************
-// Function: DeleteAnnotationObjectHelper
-//
-// Purpose: 
-//   This method is called by AnnotationObject wrapper classes so they can
-//   delete themselces from the annotation object list.
-//
-// Arguments:
-//   annot : Pointer to the object that we want to delete.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Dec 3 17:20:23 PST 2003
-//
-// Modifications:
-//   Brad Whitlock, Tue Mar 13 11:01:38 PDT 2007
-//   Updated due to code generation changes.
-//   
-// ****************************************************************************
-
-bool
-DeleteAnnotationObjectHelper(AnnotationObject *annot)
-{
-    bool transferOwnership = false;
-
-    MUTEX_LOCK();
-
-    bool needToDelete = false;
-    AnnotationObjectList *aol = GetViewerState()->GetAnnotationObjectList();
-    if(aol->GetNumAnnotations() == localObjectList.size())
-    {
-        std::vector<AnnotationObject *> compactedObjectList;
-
-        // Delete the specified annotation object and make it active so the viewer
-        // can delete it in the vis window.
-        for(int i = 0; i < localObjectList.size(); ++i)
-        { 
-            AnnotationObject &viewerAnnot = aol->operator[](i);
-            if(localObjectList[i] == annot)
-            {
-                //
-                // Decrement the AnnotationObject's reference count. If the reference
-                // count reaches zero, remove it from the localObjectReferenceCount
-                // map and set transferOwnership to true so that when the object that's
-                // deleting the annotation is the last one to reference the annotation
-                // object, it gets the annotation object to keep. That way, when the
-                // wrapper object gets deleted, so does the annotation object.
-                //
-                --(localObjectReferenceCount[annot]);
-                if(localObjectReferenceCount[annot] < 2)
-                {
-                    localObjectReferenceCount.erase(localObjectReferenceCount.find(annot));
-                    transferOwnership = true;
-                }
-
-                viewerAnnot.SetActive(true);
-                needToDelete = true;
-            }
-            else
-            {
-                compactedObjectList.push_back(localObjectList[i]);
-                viewerAnnot.SetActive(false);
-                localObjectList[i]->SetActive(false);
-            }
-        }
-
-        //
-        // Replace the old local object list with the new one without the object
-        // that was removed. After that, make sure that the first object in the
-        // local object list is made active.
-        //
-        localObjectList = compactedObjectList;
-        if(localObjectList.size() > 0)
-            localObjectList[0]->SetActive(true);
-
-        // Now that we've modified the annotation object list, we have to send
-        // it to the viewer.
-        aol->SelectAll();
-        aol->Notify();
-        GetViewerMethods()->SetAnnotationObjectOptions();
-    }
-    MUTEX_UNLOCK();
-    Synchronize();
-
-    // Tell the viewer to delete the active annotations.
-    if(needToDelete)
-    {
-        MUTEX_LOCK();
-        GetViewerMethods()->DeleteActiveAnnotationObjects();
-        MUTEX_UNLOCK();
-
-        Synchronize();
-    }
-
-    return transferOwnership;
 }
 
 // ****************************************************************************

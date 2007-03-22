@@ -76,6 +76,9 @@ class     vtkTextActor;
 //    Kathleen Bonnell, Thu Nov 13 12:21:25 PST 2003 
 //    Added bool return type to CreateDatabaseInfo. 
 //
+//    Brad Whitlock, Thu Mar 22 02:17:55 PDT 2007
+//    Renamed PositionLegends to UpdateLegendInfo.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinLegends : public VisWinColleague
@@ -101,7 +104,7 @@ class VISWINDOW_API VisWinLegends : public VisWinColleague
     static const double            dbInfoHeight;
     static const double            dbInfoWidth;
 
-    void                          PositionLegends(std::vector<avtActor_p> &);
+    void                          UpdateLegendInfo(std::vector<avtActor_p> &);
     void                          UpdateDBInfo(std::vector<avtActor_p> &);
 
   private:

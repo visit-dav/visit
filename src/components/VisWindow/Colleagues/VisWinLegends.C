@@ -142,7 +142,7 @@ void
 VisWinLegends::UpdatePlotList(vector<avtActor_p> &lst)
 {
     UpdateDBInfo(lst);
-    PositionLegends(lst);
+    UpdateLegendInfo(lst);
 }
 
 
@@ -178,7 +178,7 @@ VisWinLegends::SetForegroundColor(double fr, double fg, double fb)
 
 
 // ****************************************************************************
-//  Method: VisWinLegends::PositionLegends
+//  Method: VisWinLegends::UpdateLegendInfo
 //
 //  Purpose:
 //      Positions the legends of all the plots.
@@ -213,14 +213,17 @@ VisWinLegends::SetForegroundColor(double fr, double fg, double fb)
 //    Kathleen Bonnell, Thu Aug 12 13:07:29 PDT 2004 
 //    Added call to set legend's global visibility state. 
 //
+//    Brad Whitlock, Thu Mar 22 02:16:37 PDT 2007
+//    Renamed to UpdateLegendInfo and removed all positioning code.
+//
 // ****************************************************************************
 
 void
-VisWinLegends::PositionLegends(vector<avtActor_p> &lst)
+VisWinLegends::UpdateLegendInfo(vector<avtActor_p> &lst)
 {
     std::vector<avtActor_p>::iterator it;
     vtkRenderer *foreground = mediator.GetForeground();
-    double yTop = 0.90;
+
     for (it = lst.begin() ; it != lst.end() ; it++)
     {
         avtLegend_p legend = (*it)->GetLegend();
@@ -242,23 +245,7 @@ VisWinLegends::PositionLegends(vector<avtActor_p> &lst)
                     legend->SetDatabaseInfo(info);
                 }
 
-                double width, height;
-                legend->GetLegendSize(yTop, width, height);
-
-                if (yTop - height >= 0.)
-                {
-                    yTop -= height;
-
-                    legend->Add(foreground);
-                    legend->SetLegendPosition(0.05, yTop);
-                    legend->Update();
-
-                    yTop -= 0.02;
-                }
-                else
-                {
-                    legend->Remove();
-                }
+                legend->Add(foreground);
             }
             else
             {

@@ -639,6 +639,9 @@ VisWinFrame::SetLineWidth(int width)
 //    Kathleen Bonnell, Thu Apr 29 16:54:44 PDT 2004
 //    Initialize min_x, etc, to avoid UMR's. 
 //
+//    Kathleen Bonnell, Thu Mar 22 19:24:21 PDT 2007 
+//    Send the log-scaling mode to the borders if Curve mode.
+//
 // ****************************************************************************
 
 void
@@ -667,6 +670,17 @@ VisWinFrame::UpdateView(void)
     topBorder->SetRange(max_x, min_x);
     topBorder->SetUseOrientationAngle(1);
     topBorder->SetOrientationAngle(3.1415926);
+
+    VisWindow *vw = mediator;
+    if (vw->GetWindowMode() == WINMODE_CURVE)
+    {
+        const avtViewCurve viewCurve = vw->GetViewCurve();
+        topBorder->SetLogScale((int)(viewCurve.domainScale == LOG));
+        bottomBorder->SetLogScale((int)(viewCurve.rangeScale == LOG));
+        rightBorder->SetLogScale((int)(viewCurve.rangeScale == LOG));
+        leftBorder->SetLogScale((int)(viewCurve.rangeScale == LOG));
+    }
+
 }
 
 
@@ -715,11 +729,11 @@ VisWinFrame::GetRange(double &min_x, double &max_x, double &min_y, double &max_y
         break;
       case WINMODE_CURVE:
         {
-        const avtViewCurve viewCurve = vw->GetViewCurve();
-        min_x = viewCurve.domain[0];
-        max_x = viewCurve.domain[1];
-        min_y = viewCurve.range[0];
-        max_y = viewCurve.range[1];
+            const avtViewCurve viewCurve = vw->GetViewCurve();
+            min_x = viewCurve.domain[0];
+            max_x = viewCurve.domain[1];
+            min_y = viewCurve.range[0];
+            max_y = viewCurve.range[1];
         }
         break;
       default:

@@ -741,13 +741,6 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
         //
         // Now, deal with cell data
         //
-        vtkDataArray *da1 = ds->GetCellData()->GetScalars();
-        vtkDataArray *da2 = ds->GetCellData()->GetScalars();
-        if (da1 != da2)
-        {
-            cerr << "Problem" << endl;
-            abort();
-        }
         vtkCellData *cd = ds->GetCellData();
         for (i = 0; i < cd->GetNumberOfArrays(); i++)
         {

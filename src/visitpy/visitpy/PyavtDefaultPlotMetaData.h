@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyavtDefaultPlotMetaData_StartUp(avtDefaultPlotMetaData *subj, void *data);
 void VISITPY_API           PyavtDefaultPlotMetaData_CloseDown();
-PyMethodDef * VISITPY_API  PyavtDefaultPlotMetaData_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyavtDefaultPlotMetaData_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyavtDefaultPlotMetaData_Check(PyObject *obj);
-avtDefaultPlotMetaData * VISITPY_API PyavtDefaultPlotMetaData_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyavtDefaultPlotMetaData_New();
-PyObject * VISITPY_API     PyavtDefaultPlotMetaData_Wrap(const avtDefaultPlotMetaData *attr);
+VISITPY_API avtDefaultPlotMetaData *  PyavtDefaultPlotMetaData_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyavtDefaultPlotMetaData_New();
+VISITPY_API PyObject *      PyavtDefaultPlotMetaData_Wrap(const avtDefaultPlotMetaData *attr);
 void VISITPY_API           PyavtDefaultPlotMetaData_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyavtDefaultPlotMetaData_SetDefaults(const avtDefaultPlotMetaData *atts);
 std::string VISITPY_API    PyavtDefaultPlotMetaData_GetLogString();

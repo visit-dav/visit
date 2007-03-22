@@ -257,18 +257,21 @@ Update_UI_Commands()
       VisItSetCMDValue(*md,  "ShellyDial_1",timeStep % 360);
       sprintf (modValue, "%5d", timeStep % 360);
       VisItSetCMDText(*md, "ShellyLineEdit1",modValue);
-      VisItSetStatusMessage( *md,"My Sim Message","black");
-      VisItSetCMDText(*md, "ShellyText_2",modValue);
+      /* issues some example simulation messages */
+      if ( !(timeStep % 11)) VisItSetStatusMessage( *md,"My Error Message","red");
+      if ( !(timeStep % 5)) VisItSetStatusMessage( *md,"My Warning Message","yellow");
+      if ( !(timeStep % 6)) VisItSetStatusMessage( *md,"My Sim Message","black");
+       VisItSetCMDText(*md, "ShellyText_2",modValue);
       
       // send a data point to the strip chart
       if (timeStep > 0 )
-          VisItAddStripChartDataPoint( *md, timeStep, (int)(dataValue) % 75 -20, enable);
+          VisItAddStripChartDataPoint( *md, timeStep, dataValue+355.3, enable);
  
       md->currentCycle = cycle;
       md->currentTime  = timeStep;
       md->currentMode  = runflag ? VISIT_SIMMODE_RUNNING : VISIT_SIMMODE_STOPPED;
       timeStep++;
-      dataValue = dataValue + 5.3;
+      dataValue = dataValue + 0.003;
 }
 
 /*****************************************************************************

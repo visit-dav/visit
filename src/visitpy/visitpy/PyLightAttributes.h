@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyLightAttributes_StartUp(LightAttributes *subj, void *data);
 void VISITPY_API           PyLightAttributes_CloseDown();
-PyMethodDef * VISITPY_API  PyLightAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyLightAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyLightAttributes_Check(PyObject *obj);
-LightAttributes * VISITPY_API PyLightAttributes_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyLightAttributes_New();
-PyObject * VISITPY_API     PyLightAttributes_Wrap(const LightAttributes *attr);
+VISITPY_API LightAttributes *  PyLightAttributes_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyLightAttributes_New();
+VISITPY_API PyObject *      PyLightAttributes_Wrap(const LightAttributes *attr);
 void VISITPY_API           PyLightAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyLightAttributes_SetDefaults(const LightAttributes *atts);
 std::string VISITPY_API    PyLightAttributes_GetLogString();

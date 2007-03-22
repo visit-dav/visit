@@ -343,7 +343,7 @@ avtThresholdFilter::ProcessOneChunk(
     const intVector    curZonePortions = atts.GetZonePortions();
     const doubleVector curLowerBounds  = atts.GetLowerBounds();
     const doubleVector curUpperBounds  = atts.GetUpperBounds();
-
+    
     const char *curVarName;
     char errMsg[1024];
     

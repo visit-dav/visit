@@ -440,6 +440,9 @@ RPCExecutor<PreparePlotRPC>::Execute(PreparePlotRPC *rpc)
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added code to pass window id
 //
+//    Brad Whitlock, Wed Mar 21 22:56:37 PST 2007
+//    Added code to pass plotName.
+//
 // ****************************************************************************
 template<>
 void
@@ -451,8 +454,8 @@ RPCExecutor<MakePlotRPC>::Execute(MakePlotRPC *rpc)
     debug2 << "Executing MakePlotRPC: " << rpc->GetID().c_str() << endl;
     TRY 
     {
-        netmgr->MakePlot(rpc->GetID().c_str(), rpc->GetAtts(),
-                         rpc->GetDataExtents());
+        netmgr->MakePlot(rpc->GetName().c_str(), rpc->GetID().c_str(), 
+                         rpc->GetAtts(), rpc->GetDataExtents());
         MakePlotRPC::NetworkID id(netmgr->EndNetwork(rpc->GetWindowID()));
         rpc->SendReply(&id);
     }

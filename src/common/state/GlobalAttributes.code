@@ -54,6 +54,9 @@ Definition:
 //   Brad Whitlock, Thu Aug 5 16:48:46 PST 2004
 //   I added automaticallyAddOperator.
 //
+//   Mark C. Miller, Thu Mar 22 13:32:05 PDT 2007
+//   Added tryHarderCyclesTimes
+//
 // ****************************************************************************
 
 bool
@@ -124,6 +127,13 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
             automaticallyAddOperator));
     }
 
+    if(completeSave || !FieldsEqual(14, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("tryHarderCyclesTimes",
+            tryHarderCyclesTimes));
+    }
+
     // Add the node to the parent node.
     if(addToParent || forceAdd)
         parentNode->AddNode(node);
@@ -178,6 +188,9 @@ Definition:
 //   Brad Whitlock, Thu Aug 5 16:51:14 PST 2004
 //   I added automaticallyAddOperator.
 //
+//   Mark C. Miller, Thu Mar 22 13:32:05 PDT 2007
+//   Added tryHarderCyclesTimes
+//
 // ****************************************************************************
 
 void
@@ -209,5 +222,7 @@ GlobalAttributes::SetFromNode(DataNode *parentNode)
         SetMaintainData(node->AsBool());
     if((node = searchNode->GetNode("automaticallyAddOperator")) != 0)
         SetAutomaticallyAddOperator(node->AsBool());
+    if((node = searchNode->GetNode("tryHarderCyclesTimes")) != 0)
+        SetTryHarderCyclesTimes(node->AsBool());
 }
 

@@ -9,12 +9,16 @@
       Arrow3D
       Box
       Image
+      LegendAttributes
+      MaxAnnotationType
     </Enum>
     <Enum name="FontFamily">
       Arial
       Courier
       Times
     </Enum>
+    <Field name="objectName" label="Object name" type="string">
+    </Field>
     <Field name="objectType" label="ObjectType" type="enum" subtype="AnnotationType">
       Text2D
     </Field>

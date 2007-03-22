@@ -56,6 +56,7 @@
 #endif
 
 #include <qtimer.h>
+#include <qwidgetlist.h>
 
 #include <AnimationAttributes.h>
 #include <AnnotationAttributes.h>
@@ -170,7 +171,40 @@ ViewerSubject  *viewerSubject=0;
 
 using std::string;
 
-// Static method to split a string using a given delimiter
+// ****************************************************************************
+// Method: Viewer_LogQtMessages
+//
+// Purpose: 
+//   Message handler that routes Qt messages to the debug logs.
+//
+// Arguments:
+//   type : The message type.
+//   msg  : The message.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 15 18:17:47 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static void
+Viewer_LogQtMessages(QtMsgType type, const char *msg)
+{
+    switch(type)
+    {
+    case QtDebugMsg:
+        debug1 << "Qt: Debug: " << msg << endl;
+        break;
+    case QtWarningMsg:
+        debug1 << "Qt: Warning: " << msg << endl;
+        break;
+    case QtFatalMsg:
+        debug1 << "Qt: Fatal: " << msg << endl;
+        abort();
+        break;
+    }
+}
 
 // ****************************************************************************
 //  Method: ViewerSubject constructor
@@ -426,6 +460,9 @@ ViewerSubject::~ViewerSubject()
 //    does *not* make a copy of the argv that is passed into it.  So if we
 //    free that buffer right away, Qt may have a dangling pointer.
 //
+//    Brad Whitlock, Thu Mar 15 18:23:51 PST 2007
+//    Addede a message handler for Qt.
+//
 // ****************************************************************************
 
 void
@@ -464,8 +501,10 @@ ViewerSubject::Connect(int *argc, char ***argv)
     for(int i = 0; i < *argc; ++i)
         argv2[i] = (*argv)[i];
     argv2[*argc] = "-font";
-    argv2[*argc+1] = (char*)GetViewerState()->GetAppearanceAttributes()->GetFontDescription().c_str();
+    argv2[*argc+1] = (char*)GetViewerState()->GetAppearanceAttributes()->GetFontName().c_str();
     argv2[*argc+2] = NULL;
+    debug1 << "Viewer using font: " << argv2[*argc+1] << endl;
+    qInstallMsgHandler(Viewer_LogQtMessages);
     mainApp = new QApplication(argc2, argv2, !nowin);
     CustomizeAppearance();
    
@@ -1967,11 +2006,16 @@ ViewerSubject::InitializeWorkArea()
 //   Brad Whitlock, Fri Aug 15 13:18:41 PST 2003
 //   Added support for more styles in Qt 3.0 and beyond.
 //
+//   Brad Whitlock, Mon Mar 19 16:30:42 PST 2007
+//   Added font changing.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::CustomizeAppearance()
 {
+    const char *mName = "ViewerSubject::CustomizeAppearance: ";
+
     //
     // Set the style and inform the widgets.
     //
@@ -1989,9 +2033,46 @@ ViewerSubject::CustomizeAppearance()
     else
         mainApp->setStyle(new QMotifStyle);
 #else
+    debug1 << mName << "Setting the application style to: "
+           << GetViewerState()->GetAppearanceAttributes()->GetStyle().c_str()
+           << endl;
     // Set the style via the style name.
     mainApp->setStyle(GetViewerState()->GetAppearanceAttributes()->GetStyle().c_str());
 #endif
+
+    QFont font;
+    bool okay = true;
+    if(GetViewerState()->GetAppearanceAttributes()->GetFontName().size() > 0 &&
+       GetViewerState()->GetAppearanceAttributes()->GetFontName()[0] == '-')
+    {
+        // It's probably an XLFD
+        font = QFont(GetViewerState()->GetAppearanceAttributes()->GetFontName().c_str());
+        debug1 << mName << "The font looks like XLFD: "
+               << GetViewerState()->GetAppearanceAttributes()->GetFontName().c_str() << endl;
+    }
+    else
+        okay = font.fromString(GetViewerState()->GetAppearanceAttributes()->GetFontName().c_str());
+        
+    if(okay)
+    {
+        debug1 << mName << "Font okay. name=" << font.toString().latin1() << endl;
+        mainApp->setFont(font, true);
+
+        // Force the font change on all top level widgets.
+        QWidgetList *list = QApplication::topLevelWidgets();
+        QWidgetListIt it(*list);
+        QWidget * w;
+        while ( (w=it.current()) != 0 )
+        {   // for each top level widget...
+            ++it;
+            w->setFont(font);
+        }
+        delete list;
+    }
+    else
+    {
+        debug1 << mName << "Font NOT okay. name=" << font.toString().latin1() << endl;
+    }
 
     //
     // Set the colors and inform the widgets.
@@ -1999,6 +2080,7 @@ ViewerSubject::CustomizeAppearance()
     if(GetViewerState()->GetAppearanceAttributes()->GetStyle() != "aqua" &&
        GetViewerState()->GetAppearanceAttributes()->GetStyle() != "macintosh")
     {
+        debug1 << mName << "Setting foreground and background color" << endl;
         QColor bg(GetViewerState()->GetAppearanceAttributes()->GetBackground().c_str());
         QColor fg(GetViewerState()->GetAppearanceAttributes()->GetForeground().c_str());
         QColor btn(bg);
@@ -2392,7 +2474,7 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
             clientArguments.push_back(argv2[i]);
             clientArguments.push_back(argv2[i+1]);
 
-            GetViewerState()->GetAppearanceAttributes()->SetFontDescription(argv2[i + 1]);
+            GetViewerState()->GetAppearanceAttributes()->SetFontName(argv2[i + 1]);
             ++i;
         }
         else if (strcmp(argv2[i], "-timing") == 0 ||
@@ -5538,14 +5620,17 @@ ViewerSubject::ResetAnnotationAttributes()
 // Creation:   Wed Oct 29 11:10:40 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Mar 20 13:47:49 PST 2007
+//   Added name argument.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::AddAnnotationObject()
 {
     ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    wM->AddAnnotationObject(GetViewerState()->GetViewerRPC()->GetIntArg1());
+    wM->AddAnnotationObject(GetViewerState()->GetViewerRPC()->GetIntArg1(),
+                            GetViewerState()->GetViewerRPC()->GetStringArg1());
 }
 
 // ****************************************************************************
@@ -6662,6 +6747,9 @@ ViewerSubject::EnableSocketSignals()
 //    Mark C. Miller, Sat Nov 13 09:35:51 PST 2004
 //    Removed code to test if VEM is InRender and defer SR mode change
 //
+//    Brad Whitlock, Tue Mar 20 11:59:36 PDT 2007
+//    Added updateAOL to update the annotation object list.
+//
 // ****************************************************************************
 
 void
@@ -6798,6 +6886,10 @@ ViewerSubject::ProcessRendererMessage()
             // Send the sync to all clients.
             GetViewerState()->GetSyncAttributes()->SetSyncTag(tag);
             GetViewerState()->GetSyncAttributes()->Notify();
+        }
+        else if (strncmp(msg, "updateAOL", 9) == 0)
+        {
+            ViewerWindowManager::Instance()->UpdateAnnotationObjectList();
         }
     }
 }

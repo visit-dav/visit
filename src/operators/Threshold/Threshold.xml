@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
   <Plugin name="Threshold" type="operator" label="Threshold" version="1.0" iconFile="Threshold.xpm">
-    <Attribute name="ThresholdAttributes" purpose="This class contains attributes for the threshold operator." persistent="true">
+    <Attribute name="ThresholdAttributes" purpose="This class contains attributes for the threshold operator." persistent="true" exportAPI="" exportInclude="" codefile="Threshold.code">
       <Enum name="OutputMeshType">
         InputZones
         PointMesh
@@ -33,5 +33,51 @@
       <Field name="defaultVarIsScalar" label="defaultVarIsScalar" type="bool">
 	false
       </Field>
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Function name="SetListedVariables" user="true" member="true">
+      </Function>
+      <Function name="SetShownVariablePosition" user="true" member="true">
+      </Function>
+      <Function name="SupplyMissingDefaultsIfAppropriate" user="true" member="true">
+      </Function>
+      <Function name="AttributesAreConsistent" user="true" member="true">
+      </Function>
+      <Function name="ForceAttributeConsistency" user="true" member="true">
+      </Function>
+      <Function name="SwitchDefaultToTrueVariableNameIfScalar" user="true" member="true">
+      </Function>
+      <Function name="ChangeZonePortion" user="true" member="true">
+      </Function>
+      <Function name="ChangeLowerBound" user="true" member="true">
+      </Function>
+      <Function name="ChangeUpperBound" user="true" member="true">
+      </Function>
+      <Function name="InsertVariable" user="true" member="true">
+      </Function>
+      <Function name="DeleteVariable" user="true" member="true">
+      </Function>
+      <Function name="SwapVariable" user="true" member="true">
+      </Function>
+      <Function name="ShowPreviousVariable" user="true" member="true">
+      </Function>
+      <Function name="ShowNextVariable" user="true" member="true">
+      </Function>
+      <Function name="GetShownVariable" user="true" member="true">
+      </Function>
+      <Function name="GetZonePortion" user="true" member="true">
+      </Function>
+      <Function name="GetLowerBound" user="true" member="true">
+      </Function>
+      <Function name="GetUpperBound" user="true" member="true">
+      </Function>
+      <Function name="GetListedVariables" user="true" member="true">
+      </Function>
+      <Include file="header" quoted="false">
+        ExtentsAttributes.h
+      </Include>
+      <Include file="header" quoted="false">
+        DebugStream.h
+      </Include>
     </Attribute>
   </Plugin>

@@ -37,6 +37,7 @@
 
 #include <QvisAnnotationObjectInterfaceFactory.h>
 #include <QvisImageAnnotationInterface.h>
+#include <QvisLegendAttributesInterface.h>
 #include <QvisLine2DInterface.h>
 #include <QvisText2DInterface.h>
 #include <QvisTimeSliderInterface.h>
@@ -90,12 +91,15 @@ QvisAnnotationObjectInterfaceFactory::~QvisAnnotationObjectInterfaceFactory()
 //   Brad Whitlock, Tue Jun 28 13:32:58 PST 2005
 //   Made it return 8.
 //
+//   Brad Whitlock, Tue Mar 20 14:38:57 PST 2007
+//   Made it return MaxAnnotationType.
+//
 // ****************************************************************************
 
 int
 QvisAnnotationObjectInterfaceFactory::GetMaxInterfaces() const
 {
-    return 8;
+    return (int)AnnotationObject::MaxAnnotationType;
 }
 
 // ****************************************************************************
@@ -119,33 +123,46 @@ QvisAnnotationObjectInterfaceFactory::GetMaxInterfaces() const
 //   Brad Whitlock, Tue Jun 28 12:09:55 PDT 2005
 //   Added John Anderson's image and line2d annotation interfaces.
 //
+//   Brad Whitlock, Tue Mar 20 14:13:00 PST 2007
+//   Added legend attributes interface.
+//
 // ****************************************************************************
 
 QvisAnnotationObjectInterface *
-QvisAnnotationObjectInterfaceFactory::CreateInterface(int i, QWidget *parent) const
+QvisAnnotationObjectInterfaceFactory::CreateInterface(
+    AnnotationObject::AnnotationType i, QWidget *parent) const
 {
     QvisAnnotationObjectInterface *retval = 0;
 
     switch(i)
     {
-    case 0: // Text2D
+    case AnnotationObject::Text2D:
         retval = new QvisText2DInterface(parent, "text2DInterface");
         break;
-    case 2: // TimeSlider;
+    case AnnotationObject::TimeSlider:
         retval = new QvisTimeSliderInterface(parent, "timeSliderInterface");
         break;
-    case 3: // Line2D
+    case AnnotationObject::Line2D:
         retval = new QvisLine2DInterface(parent, "line2DInterface");
         break;
-    // Arrow2D
-    // Arrow3D
-    // Box
-    case 7: // Image
+    case AnnotationObject::Arrow2D:
+        // Nothing yet
+        break;
+    case AnnotationObject::Arrow3D:
+        // Nothing yet
+        break;
+    case AnnotationObject::Box:
+        // Nothing yet
+        break;
+    case AnnotationObject::Image:
         retval = new QvisImageAnnotationInterface(parent, "imageAnnotationInterface");
+        break;
+    case AnnotationObject::LegendAttributes:
+        retval = new QvisLegendAttributesInterface(parent, "legendAttributesInterface");
         break;
     default:
         debug1 << "QvisAnnotationObjectInterfaceFactory::CreateInterface:"
-               << " invalid index=" << i << endl;
+               << " invalid index=" << (int)i << endl;
         break;
     }
 

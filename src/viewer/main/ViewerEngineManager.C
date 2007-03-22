@@ -1431,6 +1431,7 @@ ViewerEngineManager::LaunchMessage(const EngineKey &ek)  const
 //    
 //    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
 //    Added leftEye to Render rpc to support stereo SR
+//
 // ****************************************************************************
 
 bool
@@ -1441,6 +1442,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
                                     int windowID)
 {
     // break-out individual members of the request info
+    const vector<string> &plotNames                  = reqInfo.plotNames;
     const vector<const char*>& pluginIDsList         = reqInfo.pluginIDsList;
     const vector<EngineKey>& engineKeysList          = reqInfo.engineKeysList;
     const vector<int>& plotIdsList                   = reqInfo.plotIdsList;
@@ -2150,15 +2152,18 @@ ViewerEngineManager::ApplyOperator(const EngineKey &ek,
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added winID
 //
+//    Brad Whitlock, Wed Mar 21 22:41:09 PST 2007
+//    Added plotName.
+//
 // ****************************************************************************
 
 bool
-ViewerEngineManager::MakePlot(const EngineKey &ek, const char *name, 
-    const AttributeSubject *atts, const vector<double> &extents,
-    int winID, int *networkId)
+ViewerEngineManager::MakePlot(const EngineKey &ek, const std::string &plotName,
+    const std::string &pluginID, const AttributeSubject *atts, 
+    const vector<double> &extents, int winID, int *networkId)
 {
     ENGINE_PROXY_RPC_BEGIN("MakePlot");
-    *networkId = engine->MakePlot(name, atts, extents, winID);
+    *networkId = engine->MakePlot(plotName, pluginID, atts, extents, winID);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW;
 }
 

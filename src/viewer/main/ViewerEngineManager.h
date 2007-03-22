@@ -360,7 +360,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
                                const stringVector &files, int time=0);
     bool ApplyOperator(const EngineKey &ek, const char *name,
                        const AttributeSubject *atts);
-    bool MakePlot(const EngineKey &ek, const char *name,
+    bool MakePlot(const EngineKey &ek, const std::string &plotName,
+                  const std::string &pluginID,
                   const AttributeSubject *atts, const vector<double> &,
                   int winID, int *networkId);
     bool UpdatePlotAttributes(const EngineKey &ek, const char *name,

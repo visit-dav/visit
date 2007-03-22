@@ -1,0 +1,87 @@
+Function: RemoveAnnotation2
+Declaration: bool RemoveAnnotation(const std::string &);
+Definition:
+// ****************************************************************************
+//  Method: AnnotationObjectList::RemoveAnnotation
+//
+//  Purpose: Removes the named annotation.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Mar 20 09:24:05 PDT 2007
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+AnnotationObjectList::RemoveAnnotation(const std::string &name)
+{
+    int index = IndexForName(name);
+    if(index != -1)
+    {
+        RemoveAnnotation(index);
+        return true;
+    }
+
+    return false;
+}
+
+Function: GetNewObjectName
+Declaration: std::string GetNewObjectName() const;
+Definition:
+// ****************************************************************************
+//  Method: AnnotationObjectList::GetNewObjectName
+//
+//  Purpose: Returns a new name for the annotation.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Mar 20 09:24:05 PDT 2007
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+std::string
+AnnotationObjectList::GetNewObjectName() const
+{
+    int index = 0;
+    std::string name;
+    bool found;
+    char tmp[200];
+    do
+    {
+        SNPRINTF(tmp, 200, "NewObject%d", index++);
+        name = tmp;
+        found = IndexForName(name) != -1;
+    } while(found);
+
+    return name;
+}
+
+Function: IndexForName
+Declaration: int IndexForName(const std::string &name) const;
+Definition:
+// ****************************************************************************
+//  Method: AnnotationObjectList::IndexForName
+//
+//  Purpose: Returns the index for the named annotation.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Mar 20 09:24:05 PDT 2007
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+AnnotationObjectList::IndexForName(const std::string &name) const
+{
+    int index = -1;
+    for(int i = 0; i < GetNumAnnotations(); ++i)
+    {
+        if(GetAnnotation(i).GetObjectName() == name)
+            return i;
+    }
+
+    return -1;
+}

@@ -46,9 +46,16 @@
 
 #include <TSTTM.hh>
 
-#include <vector>
-#include <string>
+// these should really be defined by TSTT but they aren't
+typedef void* EntityHandle;
+typedef void* EntitySetHandle;
+typedef void* TagHandle;
 
+#include <map>
+#include <string>
+#include <vector>
+
+using std::map;
 using std::string;
 using std::vector;
 
@@ -61,6 +68,14 @@ using std::vector;
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   Wed Mar 7 17:15:33 PST 2007
+//
+//  Modifications:
+//
+//    Mark C. Miller, Thu Mar 22 09:37:55 PDT 2007
+//    Added handles for primitiveEntities so we don't attempt to get them
+//    more than once.
+//    Added stuff to start processing the entity set hierarchy. It is not
+//    yet in use though.
 //
 // ****************************************************************************
 
@@ -82,21 +97,30 @@ class avtTSTTFileFormat : public avtSTMDFileFormat
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
   private:
+      typedef struct _VisItEntitySetInfo {
+          int domainId;
+          unsigned int groupId;
+          int matId;
+          vector<string> varNames;
+      } VisItEntitySetInfo_t;
+
       string               vmeshFileName;
       TSTTM::Mesh          tsttMesh;
       void                *rootSet;
-      void                *vertEnts;
-      void                *edgeEnts;
-      void                *faceEnts;
-      void                *regEnts;
+      sidl::array<EntityHandle>  *vertEnts;
+      sidl::array<EntityHandle>  *edgeEnts;
+      sidl::array<EntityHandle>  *faceEnts;
+      sidl::array<EntityHandle>  *regnEnts;
       int                  geomDim;
       int                  topoDim;
       int                  numVerts;
       int                  numEdges;
       int                  numFaces;
-      int                  numRegs;
+      int                  numRegns;
       TSTTM::EntityType    domToEntType[4];
       bool                 haveMixedElementMesh;
+      vector<TagHandle>    primitiveTagHandles[4];
+      map<EntitySetHandle,VisItEntitySetInfo_t> esMap;
 
 };
 

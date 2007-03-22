@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyDatabaseCorrelation_StartUp(DatabaseCorrelation *subj, void *data);
 void VISITPY_API           PyDatabaseCorrelation_CloseDown();
-PyMethodDef * VISITPY_API  PyDatabaseCorrelation_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyDatabaseCorrelation_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyDatabaseCorrelation_Check(PyObject *obj);
-DatabaseCorrelation * VISITPY_API PyDatabaseCorrelation_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyDatabaseCorrelation_New();
-PyObject * VISITPY_API     PyDatabaseCorrelation_Wrap(const DatabaseCorrelation *attr);
+VISITPY_API DatabaseCorrelation *  PyDatabaseCorrelation_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyDatabaseCorrelation_New();
+VISITPY_API PyObject *      PyDatabaseCorrelation_Wrap(const DatabaseCorrelation *attr);
 void VISITPY_API           PyDatabaseCorrelation_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyDatabaseCorrelation_SetDefaults(const DatabaseCorrelation *atts);
 std::string VISITPY_API    PyDatabaseCorrelation_GetLogString();

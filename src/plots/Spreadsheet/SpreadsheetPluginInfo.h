@@ -118,6 +118,8 @@ class SpreadsheetViewerPluginInfo: public virtual ViewerPlotPluginInfo, public v
     virtual void AlternateDisplayIconify(void *dpy);
     virtual void AlternateDisplayDeIconify(void *dpy);
 
+    virtual bool ProvidesLegend() const { return false; }
+
     static void InitializeGlobalObjects();
   private:
     static SpreadsheetAttributes *defaultAtts;

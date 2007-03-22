@@ -289,6 +289,9 @@ avtTimeSliderColleague::ShouldBeAddedToRenderer() const
 //    Changed code so time format is 2nd entry in the text vector to avoid
 //    name conflicts with windows.h.
 //
+//    Brad Whitlock, Thu Mar 22 15:02:23 PST 2007
+//    Changed FieldsEqual due to state object changes.
+//
 // ****************************************************************************
 
 void
@@ -367,8 +370,8 @@ avtTimeSliderColleague::SetOptions(const AnnotationObject &annot)
     //
     // Set the position coordinates if they are different
     //
-    if(!currentOptions.FieldsEqual(3, &annot) ||
-       !currentOptions.FieldsEqual(4, &annot))
+    if(!currentOptions.FieldsEqual(4, &annot) ||
+       !currentOptions.FieldsEqual(5, &annot))
     {
         const double *p1 = annot.GetPosition();
         const double *p2 = annot.GetPosition2();

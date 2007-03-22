@@ -101,6 +101,9 @@ class  vtkLookupTable;
 //    Kathleen Bonnell, Tue Oct 25 11:13:14 PDT 2005 
 //    Added virtual methods ChangeTitle, ChangeFontHeight.
 // 
+//    Brad Whitlock, Wed Mar 21 10:00:31 PDT 2007
+//    Added virtual methods SetDrawLabels/GetDrawLabels,SetFormatString.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtVariableLegend : public avtLegend
@@ -111,6 +114,16 @@ class PLOTTER_API avtVariableLegend : public avtLegend
     virtual                   ~avtVariableLegend();
 
     virtual void               GetLegendSize(double, double &, double &);
+
+    virtual void               SetLabelVisibility(bool);
+    virtual bool               GetLabelVisibility() const;
+    virtual void               SetNumberFormat(const char *);
+
+    virtual void               SetLegendScale(double xScale, double yScale);
+    virtual void               SetBoundingBoxVisibility(bool);
+    virtual void               SetBoundingBoxColor(const double *);
+    virtual void               SetOrientation(LegendOrientation);
+    virtual void               SetFont(int family, bool bold, bool italic, bool shadow);
 
     void                       SetColorBarVisibility(const int);
     void                       SetRange(double min, double max);
@@ -126,8 +139,10 @@ class PLOTTER_API avtVariableLegend : public avtLegend
     vtkVerticalScalarBarActor *sBar;
     vtkLookupTable            *lut;
 
+    double                     scale[2];
     int                        barVisibility;
     int                        rangeVisibility;
+    bool                       labelVisibility;
 
     virtual void               ChangePosition(double, double);
     virtual void               ChangeTitle(const char *);

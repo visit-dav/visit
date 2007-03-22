@@ -1272,4 +1272,15 @@ extern PFNGLTEXIMAGE3DEXTPROC glTexImage3D;
 
 to the file after the standard includes.
 
+Note about fonts used in VisIt
+===============================
+It has been reported that the font that VisIt uses by default is larger than
+some users prefer. If you want to use a smaller font size, you can now pass 
+the -font argument to VisIt with an XLFD font name or a Qt font name as 
+returned by QFont::toString (see http://doc.trolltech.com/3.0/qfont.html#toString).
+You can also set the font in the VisIt GUI's Appearance window. If you would
+rather change the name of the default font that is compiled into VisIt then you
+can replace the font name in the AppearanceAttributes state object located in
+./common/state/AppearanceAttributes.C.
+
 If you have any problems send e-mail to visit-help@llnl.gov.

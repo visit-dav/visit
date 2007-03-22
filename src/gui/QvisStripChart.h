@@ -43,7 +43,36 @@
 #include <stdlib.h>
 
 
-typedef QValueVector<QPoint> Points;
+// ****************************************************************************
+// Class: VisItPointD
+//
+// Purpose:
+//    Implements a simple point with a double as the base data type.
+//    QT will have a QPointF in it's next release but for now I use this.
+//
+// Notes:
+//
+// Programmer: Shelly Prevost,
+// Creation:   Wed Mar 21 16:35:30 PDT 2007.
+//
+// Modifications:
+//
+// ***************************************************************************
+class VisItPointD
+{
+public:
+           VisItPointD () { p_x = 0; p_y = 0; };
+           VisItPointD ( double x, double y ) { p_x = x; p_y = y; };
+    double x() { return p_x; };
+    double y() { return p_y; };
+    void   setX(double x) { p_x = x; };
+    void   setY(double y) { p_y= y; };
+private:
+    double p_x;
+    double p_y;  
+};
+
+typedef QValueVector<VisItPointD> Points;
 
 
 // ****************************************************************************
@@ -62,9 +91,12 @@ typedef QValueVector<QPoint> Points;
 // Creation:   Friday Oct. 27, 2006
 //
 // Modifications:
+//    Shelly Prevost, Wed Mar 21 16:35:30 PDT 2007.
+//    Added Zoom In and out and focue ( center ) to controls
 //
 // ****************************************************************************
 class QTimerEvent;
+class QScrollView;
 class VisItSimStripChart : public QWidget
 {
     Q_OBJECT
@@ -74,9 +106,13 @@ public:
             ~VisItSimStripChart();
     void    setOutOfBandLimits( double maxY, double minY );
     void    enableOutOfBandLimits( bool enable);
-    void    addDataPoint( double x, double y );
+    bool    addDataPoint( double x, double y );
     void    setEnable( bool enable );
     bool    getEnable();
+    void    getMinMaxData( double &maxY, double &minY);
+    void    zoomOut();
+    void    zoomIn();
+    void    focus(QScrollView *sc);
        
 protected:
     void    paintEvent( QPaintEvent * );
@@ -96,10 +132,14 @@ private:
     float   minPoint;
     double  minYLimit;
     double  maxYLimit;
+    double  minData;
+    double  maxData;
     int     winXSize;
 
     int     winYSize;
     bool    enabled;
     bool    outOfBandLimitsEnabled;
+    float   zoom;
+    bool    center;
 };
 

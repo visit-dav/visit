@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyQueryAttributes_StartUp(QueryAttributes *subj, void *data);
 void VISITPY_API           PyQueryAttributes_CloseDown();
-PyMethodDef * VISITPY_API  PyQueryAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyQueryAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyQueryAttributes_Check(PyObject *obj);
-QueryAttributes * VISITPY_API PyQueryAttributes_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyQueryAttributes_New();
-PyObject * VISITPY_API     PyQueryAttributes_Wrap(const QueryAttributes *attr);
+VISITPY_API QueryAttributes *  PyQueryAttributes_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyQueryAttributes_New();
+VISITPY_API PyObject *      PyQueryAttributes_Wrap(const QueryAttributes *attr);
 void VISITPY_API           PyQueryAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyQueryAttributes_SetDefaults(const QueryAttributes *atts);
 std::string VISITPY_API    PyQueryAttributes_GetLogString();

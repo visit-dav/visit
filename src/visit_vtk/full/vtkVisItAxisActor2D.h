@@ -273,6 +273,13 @@ public:
   vtkGetMacro(TitleFontHeight, double);
 
   // Description:
+  // Set/Get visibility of the axis line.
+  vtkSetMacro(LogScale, int);
+  vtkGetMacro(LogScale, int);
+  vtkBooleanMacro(LogScale, int);
+
+
+  // Description:
   // Draw the axis. 
   int RenderOverlay(vtkViewport* viewport);
   int RenderOpaqueGeometry(vtkViewport* viewport);
@@ -291,7 +298,8 @@ public:
   static void AdjustLabelsComputeRange(double inRange[2], double outRange[2],
                                        int inNumTicks, int &outNumTicks,
                                        double *proportion, double *ticksize, 
-                                       int minorVisibile, int drawGrids);
+                                       int minorVisible, int drawGrids, 
+                                       int logScale);
 
   // Description:
   // Computes the range based on the major tick mark location, the major tick
@@ -302,7 +310,12 @@ public:
                                     double majorTickSpacing,
                                     double minorTickSpacing, int &numTicks,
                                     double *proportion, double *ticksize,
-                                    int minorVisibile, int drawGrids);
+                                    int minorVisible, int drawGrids,
+                                    int logScale);
+
+  static void ComputeLogTicks(double inRange[2], double sortedRange[2],
+                             int &outNumTicks, double *proportion, 
+                             double *ticksize, int minorVisible, int drawGrids);
 
   // Description:
   // Shallow copy of an axis actor. Overloads the virtual vtkProp method.
@@ -355,6 +368,8 @@ protected:
   
   int    LastPoint1[2];
   int    LastPoint2[2];
+
+  int    LogScale;
   
 private:
   vtkVisItAxisActor2D(const vtkVisItAxisActor2D&);

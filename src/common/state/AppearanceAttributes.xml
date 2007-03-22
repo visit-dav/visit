@@ -2,7 +2,7 @@
   <Attribute name="AppearanceAttributes" purpose="This class contains the GUI/viewer appearance attributes." exportAPI="STATE_API" exportInclude="state_exports.h" codefile="AppearanceAttributes.code">
     <Field name="background" type="string">#c0c0c0</Field>
     <Field name="foreground" type="string">#000000</Field>
-    <Field name="fontDescription" type="string">-adobe-helvetica-bold-r-normal--14-140-75-75-p-82-iso8859-1</Field>
+    <Field name="fontName" type="string">Helvetica,12,-1,5,50,0,0,0,0,0</Field>
     <Field name="style" type="string" init="true">motif</Field>
     <Field name="orientation" type="int">0</Field>
     <Function name="InitializeStyle" user="true" member="true">

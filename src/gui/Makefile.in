@@ -369,6 +369,15 @@
 #    Moved QvisColorTableButton, QvisVariableButton QvisVariableButtonHelper
 #    to winutil.
 #
+#    Brad Whitlock, Fri Mar 16 16:03:06 PST 2007
+#    Renamed QvisFileLineEdit to QvisDialogLineEdit. Added the
+#    QvisLegendAttributesInterface class.
+#
+#    Shelly Prevost Fri Mar 16 12:34:50 PDT 2007
+#    I added SimWidgetNames.h to define the string names for the
+#    Simulation widgets that are sometime reference by their names
+#    simulation code.
+#
 ##############################################################################
 
 ##
@@ -417,13 +426,13 @@ HDRMOC = \
     QvisDelayedWindow.h \
     QvisDelayedWindowObserver.h \
     QvisDelayedWindowSimpleObserver.h \
+    QvisDialogLineEdit.h \
     QvisMeshManagementWindow.h \
     QvisElementButton.h \
     QvisEngineWindow.h \
     QvisExportDBWindow.h \
     QvisExpressionsWindow.h \
     QvisFileInformationWindow.h \
-    QvisFileLineEdit.h \
     QvisFilePanel.h \
     QvisFileSelectionWindow.h \
     QvisFileOpenDialog.h \
@@ -439,6 +448,7 @@ HDRMOC = \
     QvisInteractorWindow.h \
     QvisInterpreter.h \
     QvisKeyframeWindow.h \
+    QvisLegendAttributesInterface.h \
     QvisLightingWidget.h \
     QvisLightingWindow.h \
     QvisLine2DInterface.h \
@@ -480,7 +490,7 @@ HDRMOC = \
     QvisSessionSourceChangerDialog.h \
     QvisSimulationWindow.h \
     QvisSpectrumBar.h \
-      QvisStripChart.h \
+    QvisStripChart.h \
     QvisSubsetListView.h \
     QvisSubsetWindow.h \
     QvisText2DInterface.h \
@@ -494,7 +504,6 @@ HDRMOC = \
     QvisWizard.h \
     SimCommandSlots.h \
     SplashScreen.h
-  
 
 # Then, all of the rest of the header files
 HDR = ${HDRMOC} \
@@ -510,7 +519,8 @@ HDR = ${HDRMOC} \
     QvisAnnotationObjectInterfaceFactory.h \
     QvisPlotListBoxItem.h \
     QvisSubsetListViewItem.h \
-    StatusSubject.h
+    StatusSubject.h\
+    SimWidgetNames.h 
 
 # All of the sources that are not Qt objects.
 SRC = \

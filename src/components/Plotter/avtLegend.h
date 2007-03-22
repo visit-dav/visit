@@ -85,12 +85,22 @@ class  vtkRenderer;
 //    Changed 'legend' from vtkVerticalScalarBarActor to Actor2D to allow
 //    different derived types.  Added pure virtual methods ChangeTitle,
 //    ChangeFontHeight.
-//    
+//
+//    Brad Whitlock, Tue Mar 20 16:49:18 PST 2007
+//    Added method to set/get some legend properties.
+//
 // ****************************************************************************
 
 class PLOTTER_API  avtLegend
 {
   public:
+    typedef enum {
+        VerticalTextOnRight,
+        VerticalTextOnLeft,
+        HorizontalTextOnTop,
+        HorizontalTextOnBottom,
+    } LegendOrientation;
+
                                   avtLegend();
     virtual                      ~avtLegend();
 
@@ -103,6 +113,17 @@ class PLOTTER_API  avtLegend
     virtual void                  LegendOn(void);
     virtual void                  LegendOff(void);
     bool                          GetLegendOn(void) const;
+    bool                          GetCurrentlyDrawn() const;
+
+    virtual void                  SetLabelVisibility(bool);
+    virtual bool                  GetLabelVisibility() const;
+    virtual void                  SetNumberFormat(const char *);
+
+    virtual void                  SetLegendScale(double xScale, double yScale);
+    virtual void                  SetBoundingBoxVisibility(bool);
+    virtual void                  SetBoundingBoxColor(const double *);
+    virtual void                  SetOrientation(LegendOrientation);
+    virtual void                  SetFont(int family, bool bold, bool italic, bool shadow);
 
     virtual void                  SetForegroundColor(const double [3]);
     virtual void                  SetFontHeight(double);

@@ -2454,6 +2454,8 @@ ViewerMethods::ResetAnnotationAttributes()
 // Arguments:
 //   annotType : The type of annotation object to add. This argument corresponds
 //               to the AnnotationType enum in AnnotationObject.h
+//   annotName : The name of the new annotation object instance so we can
+//               refer to it by name if we want.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 29 10:53:01 PDT 2003
@@ -2463,10 +2465,11 @@ ViewerMethods::ResetAnnotationAttributes()
 // ****************************************************************************
 
 void
-ViewerMethods::AddAnnotationObject(int annotType)
+ViewerMethods::AddAnnotationObject(int annotType, const std::string &annotName)
 {
     state->GetViewerRPC()->SetRPCType(ViewerRPC::AddAnnotationObjectRPC);
     state->GetViewerRPC()->SetIntArg1(annotType);
+    state->GetViewerRPC()->SetStringArg1(annotName);
     state->GetViewerRPC()->Notify();
 }
 

@@ -1215,10 +1215,71 @@ class WindowGeneratorEnum : public virtual Enum , public virtual WindowGenerator
 };
 
 
+//
+// -------------------------------- ScaleMode ---------------------------------
+//
+class WindowGeneratorScaleMode : public virtual ScaleMode , public virtual WindowGeneratorField
+{
+  public:
+    WindowGeneratorScaleMode(const QString &n, const QString &l)
+        : ScaleMode(n,l), WindowGeneratorField("scalemode",n,l), Field("scalemode",n,l) { }
+    virtual void            writeHeaderCallback(ostream &h)
+    {
+        h << "    void "<<name<<"Changed(int val);" << endl;
+    }
+    virtual void            writeHeaderData(ostream &h)
+    {
+        h << "    QButtonGroup *"<<name<<";" << endl;
+    }
+    virtual void            writeSourceCreate(ostream &c)
+    {
+        writeSourceCreateLabel(c);
+        c << "    "<<name<<" = new QButtonGroup(central, \""<<name<<"\");" << endl;
+        c << "    "<<name<<"->setFrameStyle(QFrame::NoFrame);" << endl;
+        c << "    QHBoxLayout *"<<name<<"Layout = new QHBoxLayout("<<name<<");" << endl;
+        c << "    "<<name<<"Layout->setSpacing(10);" << endl;
+
+        c << "    QRadioButton *"<<name<<"ScaleModeLinear"
+          << " = new QRadioButton(\""<<"Linear"<<"\", "<<name<<");" << endl;
+        c << "    "<<name<<"Layout->addWidget("<<name<<"ScaleModeLinear"<<");" << endl;
+        c << "    QRadioButton *"<<name<<"ScaleModeLog"
+          << " = new QRadioButton(\""<<"Log"<<"\", "<<name<<");" << endl;
+        c << "    "<<name<<"Layout->addWidget("<<name<<"ScaleModeLog"<<");" << endl;
+
+        c << "    connect("<<name<<", SIGNAL(clicked(int))," << endl
+          << "            this, SLOT("<<name<<"Changed(int)));" << endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+    }
+    virtual void            writeSourceGetCurrent(ostream &c)
+    {
+        c << "        // Nothing for " << name << endl;
+    }
+    virtual void            writeSourceUpdateWindow(ostream &c)
+    {
+        c << "            "<<name<<"->setButton(atts->Get"<<Name<<"());" << endl;
+    }
+    virtual void            writeSourceCallback(QString &classname, QString &windowname, ostream &c)
+    {
+        c << "void" << endl;
+        c << windowname<<"::"<<name<<"Changed(int val)" << endl;
+        c << "{" << endl;
+        c << "    if(val != atts->Get"<<Name<<"())" << endl;
+        c << "    {" << endl;
+        c << "        atts->Set"<<Name<<"("<<GetCPPName(true,classname)<<"(val));" << endl;
+        c << "        Apply();" << endl;
+        c << "    }" << endl;
+        c << "}" << endl;
+    }
+};
+
+
 // ----------------------------------------------------------------------------
 // Modifications:
 //    Brad Whitlock, Wed Dec 8 16:12:01 PST 2004
 //    Added support for variable names.
+//
+//    Kathleen Bonnell, Thu Mar 22 16:58:23 PDT 2007 
+//    Added scalemode.
 //
 // ----------------------------------------------------------------------------
 class WindowFieldFactory
@@ -1255,6 +1316,7 @@ class WindowFieldFactory
         else if (type == "att")          f = new WindowGeneratorAtt(subtype,name,label);
         else if (type == "attVector")    f = new WindowGeneratorAttVector(subtype,name,label);
         else if (type == "enum")         f = new WindowGeneratorEnum(subtype, name, label);
+        else if (type == "scalemode")    f = new WindowGeneratorScaleMode(name, label);
 
         // Special built-in AVT enums -- but they don't really need to be treated like enums for this program.
         else if (type == "avtCentering")      f = new WindowGeneratorInt(name, label);

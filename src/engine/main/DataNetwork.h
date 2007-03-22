@@ -97,6 +97,9 @@
 //    Kathleen Bonnell, Tue Mar 15 17:41:26 PST 2005 
 //    Added clone.
 //
+//    Brad Whitlock, Wed Mar 21 23:02:05 PST 2007
+//    Added plotName.
+//
 // ****************************************************************************
 class DataNetwork
 {
@@ -107,6 +110,7 @@ public:
     void SetNetID(int _id) { nid = _id; };
     void SetWinID(int _id) { wid = _id; };
     void SetPlottype(const std::string &type) { plottype = type; };
+    void SetPlotName(const std::string &n) { plotName = n; };
     virtual void SetPlot(avtPlot *_plot) { plot = _plot; };
     void SetTerminalNode(Netnode* t) {terminalNode = t;};
     void AddNode(Netnode *n) { nodeList.push_back(n); };
@@ -132,6 +136,7 @@ public:
     NetnodeDB* GetNetDB(void) { return netdb; };
     virtual int GetTime() {return time;};
     std::string &GetPlottype(void) { return plottype; };
+    std::string &GetPlotName(void) { return plotName; };
     std::vector<Netnode*>       &GetNodeList(void) { return nodeList; }; 
 
 protected:
@@ -148,6 +153,7 @@ protected:
     NetnodeDB*                  netdb;
     avtPlot_p                   plot;
     std::string                 plottype;
+    std::string                 plotName;
     int                         time;
     bool                        clone;
 };

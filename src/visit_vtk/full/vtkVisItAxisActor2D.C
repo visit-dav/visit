@@ -49,6 +49,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vtkProperty2D.h>
 #include <vtkViewport.h>
 #include <snprintf.h>
+#include <DebugStream.h>
+#include <vectortypes.h>
+
+#define TOLERANCE 1e-10
+#define EPSILON 1e-4
+#define VHUGE 1e100
+#define VSMALL 1e-100
+
+#define CLOSETO_REL(x1, x2) \
+      ((2.0*fabs((x1)-(x2))/(fabs(x1)+fabs(x2)+VSMALL) < TOLERANCE))
+
 
 //------------------------------------------------------------------------------
 // Modifications:
@@ -112,7 +123,7 @@ vtkVisItAxisActor2D::vtkVisItAxisActor2D()
   this->Shadow = 1;
   this->FontFamily = VTK_ARIAL;
   this->LabelFormat = new char[8]; 
-  SNPRINTF(this->LabelFormat,8, "%s","%-#6.3f");
+  SNPRINTF(this->LabelFormat,8, "%s","%-#6.4f");
 
   this->TitleMapper = vtkTextMapper::New();
   this->TitleActor = vtkActor2D::New();
@@ -140,6 +151,8 @@ vtkVisItAxisActor2D::vtkVisItAxisActor2D()
   this->DrawGridlines = 0;
   this->GridlineXLength = 1.;  
   this->GridlineYLength = 1.;  
+
+  this->LogScale = 0;  
 }
 
 vtkVisItAxisActor2D::~vtkVisItAxisActor2D()
@@ -361,6 +374,8 @@ void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
      << (this->UseOrientationAngle ? "On\n" : "Off\n");
 
   os << indent << "Orientation Angle: " << this->OrientationAngle << "\n";
+
+  os << indent << "LogScale: " << (this->LogScale ? "On\n" : "Off\n");
 }
 
 
@@ -450,7 +465,8 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
     this->AdjustLabelsComputeRange(this->Range, outRange, this->NumberOfLabels,
                                    numLabels, proportion, ticksize,
                                    this->MinorTicksVisible,
-                                   this->DrawGridlines);
+                                   this->DrawGridlines,
+                                   this->LogScale);
     }
   else
     {
@@ -458,7 +474,8 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
                                 this->MajorTickMinimum, this->MajorTickMaximum,
                                 this->MajorTickSpacing, this->MinorTickSpacing,
                                 numLabels, proportion, ticksize,
-                                this->MinorTicksVisible, this->DrawGridlines);
+                                this->MinorTicksVisible, this->DrawGridlines,
+                                this->LogScale);
     }
 
   // Generate the axis and tick marks.
@@ -591,8 +608,11 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
         {
         continue;  // minor tick or gridline, should not be labeled.
         }
-
       val = proportion[i]*(outRange[1]-outRange[0]) + outRange[0];
+      if (this->LogScale)
+        {
+        val = pow(10., val);
+        }
       if ((fabs(val) < 0.01) &&
           (fabs(outRange[1]-outRange[0]) > 1))
         {
@@ -720,7 +740,8 @@ void vtkVisItAxisActor2D::SpecifiedComputeRange(double inRange[2],
                                                double minorSpacing,
                                              int &numTicks, double *proportion,
                                              double *ticksize, int minorVisible,
-                                             int drawGrids)
+                                             int drawGrids,
+                                             int logScale)
 {
   double minor_tick = 0.5;
   double major_tick = 1.;
@@ -808,6 +829,28 @@ inline double ffix(double value)
   return (double) ivalue;
 }
 
+inline double trunc(double v)
+{
+  long iv;
+  double rv;
+  static double maxlv = (double) LONG_MAX;
+
+  if (v < 0.0)
+    {
+    v  = v > -maxlv ? v : -maxlv;
+    iv = (long) fabs(v);
+    rv = -((double) iv);
+    }
+  else
+    {
+    v  = v < maxlv ? v : maxlv;
+    iv = (long) v;
+    rv = (double) iv;
+    }
+
+  return(rv);
+}
+
 inline double fsign(double value, double sign)
 {
   value = fabs(value);
@@ -858,7 +901,7 @@ void vtkVisItAxisActor2D::AdjustLabelsComputeRange(double inRange[2],
                                              int vtkNotUsed(inNumTicks),
                                              int &numTicks, double *proportion, 
                                              double *ticksize, int minorVisible,
-                                             int drawGrids)
+                                             int drawGrids, int logScale)
 {
   double minor_tick = 0.5;
   double major_tick = 1.;
@@ -870,11 +913,17 @@ void vtkVisItAxisActor2D::AdjustLabelsComputeRange(double inRange[2],
 
   outRange[0] = inRange[0];
   outRange[1] = inRange[1];
-
   sortedRange[0] = (double)(inRange[0] < inRange[1] ? inRange[0] : inRange[1]);
   sortedRange[1] = (double)(inRange[0] > inRange[1] ? inRange[0] : inRange[1]);
 
   range = sortedRange[1] - sortedRange[0];
+  if (logScale)
+    {  
+    ComputeLogTicks(inRange, sortedRange, numTicks, proportion, 
+                    ticksize, minorVisible, drawGrids);
+    return;
+    } // end if logScale
+
 
   // Find the integral points.
   double pow10 = log10(range);
@@ -899,7 +948,6 @@ void vtkVisItAxisActor2D::AdjustLabelsComputeRange(double inRange[2],
   fnt  = ffix(fnt);
   frac = fnt;
   numTicks = (frac <= 0.5 ? (int)ffix(fnt) : ((int)ffix(fnt) + 1));
-
   div = 1.;
   if (numTicks < 5)
     {
@@ -909,7 +957,6 @@ void vtkVisItAxisActor2D::AdjustLabelsComputeRange(double inRange[2],
     {
     div = 5.;
     }
-
   // If there aren't enough major tick points in this decade, use the next
   // decade.
   major = fxt;
@@ -918,7 +965,6 @@ void vtkVisItAxisActor2D::AdjustLabelsComputeRange(double inRange[2],
     major /= div;
     }
   minor = (fxt/div) / 10.;
-
   // When we get too close, we lose the tickmarks. Run some special case code.
   if (minor == 0)
     {
@@ -1118,5 +1164,258 @@ vtkVisItAxisActor2D::GetMTime()
   mTime = (time > mTime ? time : mTime);
 
   return mTime;
+}
+
+void 
+vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
+                                     double sortedRange[2], 
+                                     int &numTicks, double *proportion, 
+                                     double *ticksize, int minorVisible,
+                                     int drawGrids)
+{
+  double minor_tick = 0.5;
+  double major_tick = 1.;
+  double grid_tick = 2.;
+
+  static double log_value[] = {0.00000000000000,
+                               0.30102999566398, 
+                               0.47712125471966, 
+                               0.60205999132796, 
+                               0.69897000433601, 
+                               0.77815125038364, 
+                               0.84509804001424, 
+                               0.90308998699193, 
+                               0.95424250943931,
+                               1.00000000000000};
+
+  double lv1 = sortedRange[0];  /*log-scaled axis range */
+  double lv2 = sortedRange[1];
+  double v1 = pow(10., lv1);    /* original axis range */
+  double v2 = pow(10., lv2);
+  double dr = v2 - v1;
+  double a = v1;
+  double b = 1.;
+  int axis_n_decades = 8;
+  double dlv = fabs(lv1-lv2);
+  if (dlv > 1)
+    {
+    lv1 = floor(lv1);
+    lv2 = floor(lv2 + 0.01); 
+    }
+  double sp = log10(dlv);
+  double sp2 = trunc(log10(dlv));
+  if (sp2 < 0.1)
+      sp2 = 0.1; 
+  double va = sp2*trunc(lv1/sp2);
+  double vb = sp2*trunc(lv2/sp2);
+  if (v1 < v2)
+    {
+    if (va < lv1 - TOLERANCE)
+      {
+      va += sp2;
+      }
+    if (vb > lv2 + TOLERANCE)
+      {
+      vb -= sp2;
+      }
+    }
+  else 
+    {
+    if (va > lv1 + TOLERANCE)
+      {
+      va -= sp2;
+      }
+    if (vb < lv2 - TOLERANCE)
+      {
+      vb += sp2;
+      }
+    }
+  dlv = fabs(va-vb);
+  int n = (int)( 1.0 + dlv/sp2 + EPSILON);
+  va = pow(10., va);
+  vb = pow(10., vb);
+  double *dx = new double[n];
+  if (v1 == 0.0)
+    {
+    if (v2 > 100.0)
+      v1 = 1.0;
+    else
+      v1 = pow(10., -axis_n_decades)*v2;
+    }
+
+  int ilv1 = (int) log10(v1);
+  int ilv2 = (int) log10(v2);
+  ilv1 = ilv1 > (ilv2 - axis_n_decades - 1) ? ilv1 : ilv2 - axis_n_decades -1;
+  int na = ilv2 - ilv1 + 1;
+  na = na > 2 ? na : 2;
+  int dexp;
+  if (na > 10) // axis_max_major_ticks
+    dexp = na/10;
+  else 
+    dexp = 1;
+  int rmnd = n - na;
+  int step = rmnd / na;
+  step = step < 8 ? step : 8;
+  double sub[10]; 
+  int i, j, k, jin, jout;
+  if (step > 0)
+    {
+    for (j = 0; j <= step; j++)
+      sub[j] = log_value[j];
+    if (step < 4)
+      sub[step] = log_value[4];
+    }
+  na = (na/dexp) + step*(na - 1);
+  step++;
+  int decade;
+  for (j = 0, decade = ilv1; j < na; decade += dexp)
+    {
+    double *pdx    = dx + j;
+    pdx[0] = (double) decade;
+    j++;
+    if (step > 1)
+      {
+      for (k = 1; (k < step) && (j < na); k++, j++)
+        {
+        pdx[k] = (double) decade + sub[k];
+        }
+      }
+    }
+/* exponentiate the spacings and remove anybody outside the range
+ * also MAJOR and LABEL ticks go on only on the decades
+ */
+  if (na > 2)
+    {
+    double v1d = 0.9999*v1;
+    double v2d = 1.0001*v2;
+    for (jin = 0, jout = 0; jin < na; jin++)
+      {
+      double t = pow(10., dx[jin]);
+      if ((v1d <= t) && (t <= v2d))
+        {
+          {
+          double s = floor(log10(1.0000000001*t));
+          if (((s != 0.0) || (dx[jin] != 0.0)) &&
+               !CLOSETO_REL(s, dx[jin]))
+            continue;
+          }
+        dx[jout++] = t;
+        }
+      }
+      na = jout;
+    }
+  else
+    {
+    for (j = 0; j < na; j++)
+      {
+      double t = pow(10., dx[j]);
+      dx[j] = t;
+      }
+    }
+
+  if (va > vb)
+    vb = dx[0];
+  else
+    va = dx[0];
+
+  delete dx;
+
+  n = (int)(n < (2.0 + EPSILON) ? n : 2.0 + EPSILON);
+
+
+  lv1 = sortedRange[0];
+  lv2 = sortedRange[1];
+  doubleVector labelValue; 
+  doubleVector majorValue; 
+  doubleVector minorValue;
+  double v, decadeStart, decadeEnd, decadeRange;
+
+
+  // major tick values
+  labelValue.push_back(va);
+  majorValue.push_back(log10(va));
+  for (i = 1; i < n; i++)
+    {
+    labelValue.push_back(labelValue[i-1]*10.);
+    majorValue.push_back(log10(labelValue[i]));
+    }
+
+  // minor tick values
+  if (majorValue[0] > lv1) // may need some minor ticks before the first Major
+    {
+    decadeStart = log10(labelValue[0]/10.);
+    decadeRange = majorValue[0] - decadeStart;
+    for (j = 1; j < 7; j++)
+      {
+      v = decadeStart + log_value[j] * decadeRange;
+      if (v >= lv1 && v < majorValue[0])
+        minorValue.push_back(v);
+      }
+    }
+  for (i = 1; i < n; i++)
+    {
+    decadeStart = majorValue[i-1];
+    decadeRange = majorValue[i] - decadeStart;
+    for (j = 1; j < 7; j++)
+      {
+      v = decadeStart + log_value[j] * decadeRange;
+      if (v < lv2) // don't want to go past the end
+        minorValue.push_back(v);
+      else 
+        break;
+      }
+    }
+  if (majorValue[n -1] < lv2)
+    {
+    decadeStart = majorValue[n -1];
+    decadeEnd = log10(labelValue[n -1]*10.);
+    decadeRange = decadeEnd - decadeStart;
+    for (j = 1; j < 7; j++)
+      {
+      v = decadeStart + log_value[j] * decadeRange;
+      minorValue.push_back(v);
+      }
+    }
+  double lvr = lv2 - lv1;
+  numTicks = 0;
+  double p;
+  // now compute the proportions for when the ticks are actually created
+  if (minorVisible)
+    {
+    for (i = 0; i < minorValue.size(); i++)
+      {
+          p = (minorValue[i] - lv1)/ lvr;
+          if (p >= 0. && p <= 1.)
+            {
+            ticksize[numTicks] = (double)minor_tick;
+            proportion[numTicks] = p; 
+            numTicks++;
+            }
+      }
+    }
+  for (i = 0; i < majorValue.size(); i++)
+    {
+    p = (majorValue[i] - lv1)/ lvr;
+    if (p >= 0. && p <= 1.)
+      {
+      ticksize[numTicks] = (double)major_tick;
+      proportion[numTicks] = p;
+      numTicks++;
+      if (drawGrids)
+        {
+        ticksize[numTicks] = (double)grid_tick;
+        proportion[numTicks] = p;
+        numTicks++;
+        }
+      }
+    }
+  if (sortedRange[0] != (double)inRange[0])
+    {
+    // We must reverse all of the proportions.
+    for (j = 0 ; j < numTicks ; j++)
+      {
+      proportion[j] = 1. - proportion[j];
+      }
+    }
 }
 

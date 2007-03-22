@@ -45,6 +45,7 @@
 #include <avtCompactTreeFilter.h>
 #include <avtCondenseDatasetFilter.h>
 #include <avtCurrentExtentFilter.h>
+#include <avtMeshLogFilter.h>
 #include <avtDatasetToDatasetFilter.h>
 #include <avtDataObjectString.h>
 #include <avtDataSetWriter.h>
@@ -67,6 +68,7 @@
 #include <NoInputException.h>
 
 #define SIZECUTOFF 1000000
+
 
 // ****************************************************************************
 //  Method: avtPlot constructor
@@ -121,6 +123,10 @@
 //    Kathleen Bonnell, Wed Nov  3 16:51:24 PST 2004 
 //    Removed meshType, added topologicalDim and spatialDim.
 //
+//    Kathleen Bonnell, Thu Mar 22 15:45:21 PDT 2007 
+//    Added logMeshFilter, xScaleMode, yScaleMode, havePerformedLogX, 
+//    havePerformedLogY.
+//
 // ****************************************************************************
 
 avtPlot::avtPlot()
@@ -135,6 +141,7 @@ avtPlot::avtPlot()
     ghostZoneAndFacelistFilter = new avtGhostZoneAndFacelistFilter;
     compactTreeFilter          = new avtCompactTreeFilter;
     currentExtentFilter        = new avtCurrentExtentFilter;
+    logMeshFilter              = new avtMeshLogFilter;
     vertexNormalsFilter        = new avtVertexNormalsFilter;
     smooth                     = new avtSmoothPolyDataFilter();
     varname                = NULL;
@@ -145,6 +152,10 @@ avtPlot::avtPlot()
     cellCountMultiplierForSRThreshold = 0.0; // an invalid value
     topologicalDim = -1;
     spatialDim = -1;
+    xScaleMode = LINEAR;
+    yScaleMode = LINEAR;
+    havePerformedLogX = false;
+    havePerformedLogY = false;
 }
 
 
@@ -180,6 +191,9 @@ avtPlot::avtPlot()
 //    Brad Whitlock, Tue Jul 20 16:11:26 PST 2004
 //    Added variable units.
 //
+//    Kathleen Bonnell, Thu Mar 22 15:45:21 PDT 2007 
+//    Added logMeshFilter.
+//
 // ****************************************************************************
 
 avtPlot::~avtPlot()
@@ -208,6 +222,11 @@ avtPlot::~avtPlot()
     {
         delete currentExtentFilter;
         currentExtentFilter = NULL;
+    }
+    if (logMeshFilter != NULL)
+    {
+        delete logMeshFilter;
+        logMeshFilter = NULL;
     }
     if (vertexNormalsFilter != NULL)
     {
@@ -476,7 +495,7 @@ avtPlot::Execute(avtDataObject_p input, avtPipelineSpecification_p spec,
     CopyTo(intermediateDataObject, dob);
     intermediateDataObject->SetTransientStatus(false);
     dob = ApplyRenderingTransformation(dob);
-        
+
     if (strcmp(dob->GetType(), "avtDataset") == 0)
     {
         dob = ReduceGeometry(dob);
@@ -595,7 +614,10 @@ avtPlot::Execute(avtDataObjectReader_p reader)
 //    Fix memory leak.
 //
 //    Brad Whitlock, Wed Feb 7 12:19:17 PDT 2007
-//    Removed avtThreater.
+//    Removed avtTheater.
+//
+//    Kathleen Bonnell, Thu Mar 22 15:45:21 PDT 2007 
+//    Added Call to SetScaleMode(performs log scale on mesh when requested).
 //
 // ****************************************************************************
 
@@ -635,7 +657,6 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
         avtMapper *mapper = GetMapper();
         avtDataObject_p geo;
         CopyTo(geo, geometry);
-        mapper->SetInput(geo);
 
         // Before we get the drawable, we must do an update.
         avtTerminatingSource *src = NULL;
@@ -645,6 +666,12 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
            src = geo->GetTerminatingSource();
         avtPipelineSpecification_p ds = 
               new avtPipelineSpecification(src->GetFullDataSpecification(), 0);
+
+        avtDataObject_p sd = SetScaleMode(geo); 
+        sd->Update(ds);
+
+        mapper->SetInput(sd);
+
         GuideFunction foo;
         void *args;
         // Turn off the load balancer.
@@ -664,14 +691,15 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
         avtDecorationsMapper *decoMapper = GetDecorationsMapper();
         if (decoMapper != NULL)
         {
-            decoMapper->SetInput(geo);
+            decoMapper->SetInput(sd);
             decoMapper->Execute(ds);
             decorations = decoMapper->GetDrawable();
         }
     }
     else if (((*reader != NULL) && reader->InputIsImage()) ||
              ((*dob != NULL) && !strcmp(dob->GetType(),"avtImage")))
-    {   avtImage_p  image;
+    {   
+        avtImage_p  image;
     
         debug2 << "avtPlot::Execute Receiving Image Data" << endl;
 
@@ -1170,6 +1198,97 @@ avtPlot::SetCurrentExtents(avtDataObject_p curDS)
 
 
 // ****************************************************************************
+//  Method: avtPlot::SetScaleMode
+//
+//  Purpose: 
+//    This method sets the mesh scaleing using the MeshLog filter. 
+//
+//  Arguments:
+//    curDS     The data object. 
+//
+//  Returns:    The data object with (possibly) log scaling applied.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   March 6, 2007 
+//
+// ****************************************************************************
+
+avtDataObject_p
+avtPlot::SetScaleMode(avtDataObject_p curDS)
+{
+    if (!havePerformedLogX && !havePerformedLogY && 
+        xScaleMode == LINEAR && yScaleMode == LINEAR)
+    {
+        return curDS;
+    }
+
+    avtDataObject_p rv = curDS;
+    if (logMeshFilter != NULL)
+    {
+       // create a fresh filter
+       delete logMeshFilter;
+       logMeshFilter = new avtMeshLogFilter();
+    }
+
+    ScaleMode useXScaleMode, useYScaleMode;
+    bool useInvLogX = false;
+    bool useInvLogY = false;
+    if (!havePerformedLogX)
+    {
+        useXScaleMode = xScaleMode;
+    }
+    else 
+    {
+        // we've already performed a log scale on the data, 
+        // if we want linear now, then we must do an inverse log, 
+        // if we want log now, then we don't transform by specifying linear
+        //useXScaleMode = (xScaleMode == LINEAR ? INVLOG : LINEAR);
+        if (xScaleMode == LINEAR)
+        {
+            useXScaleMode = LOG;
+            useInvLogX = true;
+        }
+        else
+        {
+            useXScaleMode = LINEAR; 
+        }
+    }
+    if (!havePerformedLogY)
+    {
+        useYScaleMode = yScaleMode;
+    }
+    else 
+    {
+        // we've already performed a log scale on the data, 
+        // if we want linear now, then we must do an inverse log, 
+        // if we want log now, then we don't transform by specifying linear
+        //useYScaleMode = (yScaleMode == LINEAR ? INVLOG : LINEAR);
+        if (yScaleMode == LINEAR)
+        {
+            useYScaleMode = LOG;
+            useInvLogY = true;
+        }
+        else 
+        {
+            useYScaleMode = LINEAR;
+        }
+    }
+
+    logMeshFilter->SetInput(rv);
+    logMeshFilter->SetXScaleMode(useXScaleMode);
+    logMeshFilter->SetYScaleMode(useYScaleMode);
+    logMeshFilter->SetUseInvLogX(useInvLogX);
+    logMeshFilter->SetUseInvLogY(useInvLogY);
+    logMeshFilter->SetYScaleMode(useYScaleMode);
+    rv = logMeshFilter->GetOutput();
+    havePerformedLogX = (xScaleMode == LOG);
+    havePerformedLogY = (yScaleMode == LOG);
+    
+    return rv;
+}
+
+
+// ****************************************************************************
 //  Method: avtPlot::EnhanceSpecification
 //
 //  Purpose:
@@ -1254,6 +1373,7 @@ avtPlot::ReleaseData(void)
     ghostZoneAndFacelistFilter->ReleaseData();
     compactTreeFilter->ReleaseData();
     currentExtentFilter->ReleaseData();
+    logMeshFilter->ReleaseData();
     vertexNormalsFilter->ReleaseData();
     if (GetMapper() != NULL)
     {
@@ -1334,3 +1454,24 @@ avtPlot::GetPlotInfoAtts()
 {
     return behavior->GetPlotInfoAtts();
 }
+
+// ****************************************************************************
+//  Method: avtPlot::SetScaleMode
+//
+//  Purpose: 
+//    Sets the scale modes. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   March 6, 2007 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtPlot::SetScaleMode(ScaleMode ds, ScaleMode rs)
+{
+    xScaleMode = ds;
+    yScaleMode = rs;
+}
+

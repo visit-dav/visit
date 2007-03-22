@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyDBOptionsAttributes_StartUp(DBOptionsAttributes *subj, void *data);
 void VISITPY_API           PyDBOptionsAttributes_CloseDown();
-PyMethodDef * VISITPY_API  PyDBOptionsAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyDBOptionsAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyDBOptionsAttributes_Check(PyObject *obj);
-DBOptionsAttributes * VISITPY_API PyDBOptionsAttributes_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyDBOptionsAttributes_New();
-PyObject * VISITPY_API     PyDBOptionsAttributes_Wrap(const DBOptionsAttributes *attr);
+VISITPY_API DBOptionsAttributes *  PyDBOptionsAttributes_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyDBOptionsAttributes_New();
+VISITPY_API PyObject *      PyDBOptionsAttributes_Wrap(const DBOptionsAttributes *attr);
 void VISITPY_API           PyDBOptionsAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyDBOptionsAttributes_SetDefaults(const DBOptionsAttributes *atts);
 std::string VISITPY_API    PyDBOptionsAttributes_GetLogString();

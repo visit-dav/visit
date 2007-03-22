@@ -109,6 +109,10 @@ class QPushButton;
 //
 //   Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
 //   Added stuff for auto full frame mode
+//
+//   Kathleen Bonnell, Thu Mar 22 16:07:56 PDT 2007 
+//   Added radio buttons for log scaling.
+//
 // ****************************************************************************
 
 class GUI_API QvisViewWindow : public QvisPostableWindowSimpleObserver
@@ -149,6 +153,8 @@ private slots:
     void processViewportCurveText();
     void processDomainText();
     void processRangeText();
+    void domainScaleModeChanged(int);
+    void rangeScaleModeChanged(int);
 
     void processViewportText();
     void processWindowText();
@@ -196,11 +202,19 @@ private:
     bool                activeTabSetBySlot;
 
     // Curve widgets
-    QVBox       *pageCurve;
-    QGroupBox   *viewCurveGroup;
-    QLineEdit   *viewportCurveLineEdit;
-    QLineEdit   *domainLineEdit;
-    QLineEdit   *rangeLineEdit;
+    QVBox        *pageCurve;
+    QGroupBox    *viewCurveGroup;
+    QLineEdit    *viewportCurveLineEdit;
+    QLineEdit    *domainLineEdit;
+    QLineEdit    *rangeLineEdit;
+    QLabel       *domainScaleLabel;
+    QButtonGroup *domainScaleMode;
+    QRadioButton *domainLinear;
+    QRadioButton *domainLog;
+    QLabel       *rangeScaleLabel;
+    QButtonGroup *rangeScaleMode;
+    QRadioButton *rangeLinear;
+    QRadioButton *rangeLog;
 
     // 2d widgets
     QVBox        *page2D;

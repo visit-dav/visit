@@ -1419,10 +1419,40 @@ class AttsGeneratorEnum : public virtual Enum , public virtual AttsGeneratorFiel
 };
 
 
+//
+// --------------------------------- ScaleMode --------------------------------
+//
+class AttsGeneratorScaleMode : public virtual ScaleMode , public virtual AttsGeneratorField
+{
+  public:
+    AttsGeneratorScaleMode(const QString &n, const QString &l)
+        : ScaleMode(n,l), AttsGeneratorField("scalemode",n,l), Field("scalemode",n,l) { }
+
+    virtual void WriteSourceSetDefault(ostream &c)
+    {
+        c << "    " << name << " = " << val << ";" << endl;
+    }
+
+    virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
+    {
+        c << indent << "    buf.WriteInt(" << name << ");" << endl;
+    }
+
+    virtual bool WriteSourceReadAtts(ostream &c, const QString &indent)
+    {
+        c << indent << "Set" << Name << "(buf.ReadInt());" << endl;
+        return true;
+    }
+};
+
+
 // ----------------------------------------------------------------------------
 // Modifications:
 //   Brad Whitlock, Wed Dec 8 15:52:11 PST 2004
 //   Added support for variable names.
+//
+//   Kathleen Bonnell, Thu Mar 22 16:58:23 PDT 2007 
+//   Added scalemode.
 //
 // ----------------------------------------------------------------------------
 
@@ -1460,6 +1490,7 @@ class AttsFieldFactory
         else if (type == "att")          f = new AttsGeneratorAtt(subtype,name,label);
         else if (type == "attVector")    f = new AttsGeneratorAttVector(subtype,name,label);
         else if (type == "enum")         f = new AttsGeneratorEnum(subtype, name, label);
+        else if (type == "scalemode")    f = new AttsGeneratorScaleMode(name,label);
 
         // Special built-in AVT enums -- but they don't really need to be treated like enums for this program.
         else if (type == "avtCentering")      f = new AttsGeneratorInt(name, label);

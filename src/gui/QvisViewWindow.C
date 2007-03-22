@@ -59,6 +59,7 @@
 #include <View3DAttributes.h>
 #include <WindowInformation.h>
 #include <ViewerProxy.h>
+#include <enumtypes.h>
 
 #define MIN_LINEEDIT_WIDTH 200
 #define VIEW_WINDOW_HEIGHT_KLUDGE
@@ -183,6 +184,10 @@ QvisViewWindow::~QvisViewWindow()
 //
 //   Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
 //   Added stuff for auto full frame mode
+//
+//   Kathleen Bonnell, Thu Mar 22 16:07:56 PDT 2007
+//   I added radio buttons for log scaling.
+//
 // ****************************************************************************
 
 void
@@ -208,13 +213,13 @@ QvisViewWindow::CreateWindowContents()
 
     QVBoxLayout *internalLayoutCurve = new QVBoxLayout(viewCurveGroup);
     internalLayoutCurve->addSpacing(10);
-    QGridLayout *LayoutCurve = new QGridLayout(internalLayoutCurve, 3, 2);
+    QGridLayout *LayoutCurve = new QGridLayout(internalLayoutCurve, 5, 4);
     LayoutCurve->setSpacing(5);
 
     viewportCurveLineEdit = new QLineEdit(viewCurveGroup, "viewportCurveLineEdit");
     connect(viewportCurveLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processViewportCurveText()));
-    LayoutCurve->addWidget(viewportCurveLineEdit, 0, 1);
+    LayoutCurve->addMultiCellWidget(viewportCurveLineEdit, 0,0, 1,3);
     QLabel *viewportCurveLabel = new QLabel(viewportCurveLineEdit, "Viewport",
                                        viewCurveGroup, "viewportCurveLabel");
     LayoutCurve->addWidget(viewportCurveLabel, 0, 0);
@@ -222,7 +227,7 @@ QvisViewWindow::CreateWindowContents()
     domainLineEdit = new QLineEdit(viewCurveGroup, "domainLineEdit");
     connect(domainLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processDomainText()));
-    LayoutCurve->addWidget(domainLineEdit, 1, 1);
+    LayoutCurve->addMultiCellWidget(domainLineEdit, 1,1, 1,3);
     QLabel *domainLabel = new QLabel(domainLineEdit, "Domain",
                                      viewCurveGroup, "domainLabel");
     LayoutCurve->addWidget(domainLabel, 1, 0);
@@ -231,10 +236,37 @@ QvisViewWindow::CreateWindowContents()
     rangeLineEdit = new QLineEdit(viewCurveGroup, "rangeLineEdit");
     connect(rangeLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processRangeText()));
-    LayoutCurve->addWidget(rangeLineEdit, 2, 1);
+    LayoutCurve->addMultiCellWidget(rangeLineEdit, 2,2, 1,3);
     QLabel *rangeLabel = new QLabel(rangeLineEdit, "Range",
                                     viewCurveGroup, "rangeLabel");
     LayoutCurve->addWidget(rangeLabel, 2, 0);
+
+    QLabel *domainScaleLabel = new QLabel("Domain Scale", viewCurveGroup, 
+                                          "domainScaleLabel");
+    LayoutCurve->addWidget(domainScaleLabel, 3, 0);
+    domainScaleMode = new QButtonGroup(0, "domainScaleMode");
+    connect(domainScaleMode, SIGNAL(clicked(int)),
+            this, SLOT(domainScaleModeChanged(int)));
+    domainLinear = new QRadioButton("Linear", viewCurveGroup, "domainLinear");
+    domainScaleMode->insert(domainLinear);
+    LayoutCurve->addWidget(domainLinear, 3, 1);
+    domainLog = new QRadioButton("Log", viewCurveGroup, "domainLog");
+    domainScaleMode->insert(domainLog);
+    LayoutCurve->addWidget(domainLog, 3, 2);
+
+    QLabel *rangeScaleLabel = new QLabel("Range Scale", viewCurveGroup, 
+                                          "rangeScaleLabel");
+    LayoutCurve->addWidget(rangeScaleLabel, 4, 0);
+    rangeScaleMode = new QButtonGroup(0, "rangeScaleMode");
+    connect(rangeScaleMode, SIGNAL(clicked(int)),
+            this, SLOT(rangeScaleModeChanged(int)));
+    rangeLinear = new QRadioButton("Linear", viewCurveGroup, "rangeLinear");
+    rangeScaleMode->insert(rangeLinear);
+    LayoutCurve->addWidget(rangeLinear, 4, 1);
+    rangeLog = new QRadioButton("Log", viewCurveGroup, "rangeLog");
+    rangeScaleMode->insert(rangeLog);
+    LayoutCurve->addWidget(rangeLog, 4, 2);
+
     internalLayoutCurve->addStretch(10);
 
     //
@@ -605,6 +637,8 @@ QvisViewWindow::UpdateWindow(bool doAll)
 // Creation:   Wed Aug 20 14:04:21 PDT 2003
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Mar 22 16:07:56 PDT 2007
+//   I added domainScale, RangeScale.
 //
 // ****************************************************************************
 
@@ -641,6 +675,20 @@ QvisViewWindow::UpdateCurve(bool doAll)
             viewportCurveLineEdit->setText(temp);
             break;
           }
+        case 3: // domainScale
+          {
+            domainScaleMode->blockSignals(true);
+            domainScaleMode->setButton(viewCurve->GetDomainScale());
+            domainScaleMode->blockSignals(false);
+          }
+          break;
+        case 4: // rangeScale
+          {
+            rangeScaleMode->blockSignals(true);
+            rangeScaleMode->setButton(viewCurve->GetRangeScale());
+            rangeScaleMode->blockSignals(false);
+          }
+          break;
         }
     }
 }
@@ -1200,6 +1248,10 @@ QvisViewWindow::GetCurrentValuesCurve(int which_widget)
             Error(msg);
             viewCurve->SetRangeCoords(viewCurve->GetRangeCoords());
         }
+    }
+    // Do the domainScale value.
+    if(which_widget == 3 || doAll)
+    {
     }
 }
 
@@ -2909,4 +2961,42 @@ QvisViewWindow::fullFrameActivationModeChanged(int val)
         view2d->SetFullFrameActivationMode(View2DAttributes::Off);
     SetUpdate(false);
     Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisViewWindow::domainScaleModeChanged
+//
+// Purpose: Qt slot function to handle changes in domain scale
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 29, 2006 
+//
+// ****************************************************************************
+void
+QvisViewWindow::domainScaleModeChanged(int val)
+{
+    if (val != viewCurve->GetDomainScale())
+    {
+        viewCurve->SetDomainScale(val);
+    }
+}
+
+
+// ****************************************************************************
+// Method: QvisViewWindow::rangeScaleModeChanged
+//
+// Purpose: Qt slot function to handle changes in range scale
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 29, 2006 
+//
+// ****************************************************************************
+void
+QvisViewWindow::rangeScaleModeChanged(int val)
+{
+    if (val != viewCurve->GetRangeScale())
+    {
+        viewCurve->SetRangeScale(val);
+    }
 }

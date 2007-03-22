@@ -72,6 +72,8 @@ public:
     virtual void RemoveFromRenderer();
     virtual void Hide();
 
+    virtual std::string TypeName() const { return "Text2D"; }
+
     // Methods to set and get the annotation's properties.
     virtual void SetOptions(const AnnotationObject &annot);
     virtual void GetOptions(AnnotationObject &annot);

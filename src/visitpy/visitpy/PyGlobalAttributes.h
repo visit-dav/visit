@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyGlobalAttributes_StartUp(GlobalAttributes *subj, void *data);
 void VISITPY_API           PyGlobalAttributes_CloseDown();
-PyMethodDef * VISITPY_API  PyGlobalAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyGlobalAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyGlobalAttributes_Check(PyObject *obj);
-GlobalAttributes * VISITPY_API PyGlobalAttributes_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyGlobalAttributes_New();
-PyObject * VISITPY_API     PyGlobalAttributes_Wrap(const GlobalAttributes *attr);
+VISITPY_API GlobalAttributes *  PyGlobalAttributes_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyGlobalAttributes_New();
+VISITPY_API PyObject *      PyGlobalAttributes_Wrap(const GlobalAttributes *attr);
 void VISITPY_API           PyGlobalAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyGlobalAttributes_SetDefaults(const GlobalAttributes *atts);
 std::string VISITPY_API    PyGlobalAttributes_GetLogString();

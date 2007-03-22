@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyPlot_StartUp(Plot *subj, void *data);
 void VISITPY_API           PyPlot_CloseDown();
-PyMethodDef * VISITPY_API  PyPlot_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyPlot_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyPlot_Check(PyObject *obj);
-Plot * VISITPY_API PyPlot_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyPlot_New();
-PyObject * VISITPY_API     PyPlot_Wrap(const Plot *attr);
+VISITPY_API Plot *  PyPlot_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyPlot_New();
+VISITPY_API PyObject *      PyPlot_Wrap(const Plot *attr);
 void VISITPY_API           PyPlot_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyPlot_SetDefaults(const Plot *atts);
 std::string VISITPY_API    PyPlot_GetLogString();

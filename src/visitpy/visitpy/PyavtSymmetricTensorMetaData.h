@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyavtSymmetricTensorMetaData_StartUp(avtSymmetricTensorMetaData *subj, void *data);
 void VISITPY_API           PyavtSymmetricTensorMetaData_CloseDown();
-PyMethodDef * VISITPY_API  PyavtSymmetricTensorMetaData_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyavtSymmetricTensorMetaData_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyavtSymmetricTensorMetaData_Check(PyObject *obj);
-avtSymmetricTensorMetaData * VISITPY_API PyavtSymmetricTensorMetaData_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyavtSymmetricTensorMetaData_New();
-PyObject * VISITPY_API     PyavtSymmetricTensorMetaData_Wrap(const avtSymmetricTensorMetaData *attr);
+VISITPY_API avtSymmetricTensorMetaData *  PyavtSymmetricTensorMetaData_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyavtSymmetricTensorMetaData_New();
+VISITPY_API PyObject *      PyavtSymmetricTensorMetaData_Wrap(const avtSymmetricTensorMetaData *attr);
 void VISITPY_API           PyavtSymmetricTensorMetaData_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyavtSymmetricTensorMetaData_SetDefaults(const avtSymmetricTensorMetaData *atts);
 std::string VISITPY_API    PyavtSymmetricTensorMetaData_GetLogString();

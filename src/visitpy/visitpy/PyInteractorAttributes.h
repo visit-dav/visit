@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyInteractorAttributes_StartUp(InteractorAttributes *subj, void *data);
 void VISITPY_API           PyInteractorAttributes_CloseDown();
-PyMethodDef * VISITPY_API  PyInteractorAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyInteractorAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyInteractorAttributes_Check(PyObject *obj);
-InteractorAttributes * VISITPY_API PyInteractorAttributes_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyInteractorAttributes_New();
-PyObject * VISITPY_API     PyInteractorAttributes_Wrap(const InteractorAttributes *attr);
+VISITPY_API InteractorAttributes *  PyInteractorAttributes_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyInteractorAttributes_New();
+VISITPY_API PyObject *      PyInteractorAttributes_Wrap(const InteractorAttributes *attr);
 void VISITPY_API           PyInteractorAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyInteractorAttributes_SetDefaults(const InteractorAttributes *atts);
 std::string VISITPY_API    PyInteractorAttributes_GetLogString();

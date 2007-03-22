@@ -38,7 +38,7 @@
 #include <QvisColorGridWidget.h>
 #include <QvisColorTableButton.h>
 #include <QvisElementButton.h>
-#include <QvisFileLineEdit.h>
+#include <QvisDialogLineEdit.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisOpacitySlider.h>
@@ -117,8 +117,8 @@ QvisWidgetFactory::createWidget(const QString &className, QWidget *parent,
         w = new QvisColorTableButton(parent, name);
     else if(className == "QvisElementButton")
         w = new QvisElementButton(parent, name);
-    else if(className == "QvisFileLineEdit")
-        w = new QvisFileLineEdit(parent, name);
+    else if(className == "QvisDialogLineEdit")
+        w = new QvisDialogLineEdit(parent, name);
     else if(className == "QvisLineStyleWidget")
         w = new QvisLineStyleWidget(0, parent, name);
     else if(className == "QvisLineWidthWidget")

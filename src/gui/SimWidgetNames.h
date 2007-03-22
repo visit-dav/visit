@@ -1,5 +1,3 @@
-#ifndef QVIS_DIRECTORY_LINE_EDIT_H
-#define QVIS_DIRECTORY_LINE_EDIT_H
 /*****************************************************************************
 *
 * Copyright (c) 2000 - 2007, The Regents of the University of California
@@ -36,53 +34,26 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#include <qhbox.h>
-#include <gui_exports.h>
-
-class QLineEdit;
 
 // ****************************************************************************
-// Class: QvisFileLineEdit
+// Class: QvisSimulationWindow
 //
 // Purpose:
-//   Incorporates a line edit with a file dialog.
+//   This file contain the public names of the widgets found in the
+//   VisIt simulation window.
 //
-// Notes:      
+// Notes:      .
 //
-// Programmer: Brad Whitlock
-// Creation:   Tue Oct 10 15:13:00 PST 2006
+// Programmer: Shelly Prevost
+// Creation:   Fri Mar 16 12:05:22 PDT 2007
 //
-// Modifications:
-//   
+// Modifications:.
+//
 // ****************************************************************************
 
-class GUI_API QvisFileLineEdit : public QHBox
-{
-    Q_OBJECT
-public:
-    typedef enum {ChooseFile, ChooseLocalFile, ChooseDirectory} DialogMode;
-
-    QvisFileLineEdit(QWidget *parent, const char *name);
-    virtual ~QvisFileLineEdit();
-
-    void setText(const QString &);
-    QString text();
-    QString displayText();
-
-    void setDialogFilter(const QString &);
-    void setDialogMode(DialogMode m);
-    void setDialogCaption(const QString &);
-
-signals:
-    void returnPressed();
-    void textChanged(const QString &);
-private slots:
-    void pushButtonClicked();
-private:
-    DialogMode dialogMode;
-    QString    dialogFilter;
-    QString    dialogCaption;
-    QLineEdit *lineEdit;
-};
-
-#endif
+#define MESSAGE_WIDGET_NAME "MessageViewerTextEdit"
+#define STRIP_CHART_WIDGET_NAME "StripChart"
+#define STRIP_MAX_WIDGET_NAME "MaxEdit"
+#define STRIP_MIN_WIDGET_NAME "MinEdit"
+#define STRIP_MAX_LIMIT_WIDGET_NAME "MaxLimitEdit"
+#define STRIP_MIN_LIMIT_WIDGET_NAME "MinLimitEdit"

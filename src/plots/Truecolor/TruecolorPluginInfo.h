@@ -36,7 +36,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                               TruecolorPluginInfo.h                            //
+//                               TruecolorPluginInfo.h                       //
 // ************************************************************************* //
 
 #ifndef TRUECOLOR_PLUGIN_INFO_H
@@ -102,6 +102,8 @@ class TruecolorViewerPluginInfo: public virtual ViewerPlotPluginInfo, public vir
 
     virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
     virtual int GetVariableTypes() const;
+
+    virtual bool ProvidesLegend() const { return false; }
 
     static void InitializeGlobalObjects();
   private:

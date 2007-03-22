@@ -545,6 +545,7 @@ private:
     QString                      foregroundColor;
     QString                      backgroundColor;
     QString                      applicationStyle;
+    QString                      applicationFont;
 
     // File to load on startup.
     QualifiedFilename            loadFile;

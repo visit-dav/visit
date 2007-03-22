@@ -52,6 +52,8 @@
 //  Creation:    October 25, 2005
 //
 //  Modifications:
+//    Brad Whitlock, Thu Mar 22 00:12:00 PDT 2007
+//    Initialize scale and labelVisibility.
 //
 // ****************************************************************************
 
@@ -60,8 +62,12 @@ avtCurveLegend::avtCurveLegend()
     lineLegend = vtkLineLegend::New();
     lineLegend->SetShadow(0);
 
-    size[0] = 0.26;
+    scale[0] = 1.;
+    scale[1] = 1.;
+    size[0] = 0.08;
     size[1] = 0.26;
+    labelVisibility = true;
+
     lineLegend->SetPosition2(size[0], size[1]);
 
     SetLegendPosition(0.05, 0.72);
@@ -90,6 +96,186 @@ avtCurveLegend::~avtCurveLegend()
     }
 }
 
+// ****************************************************************************
+//  Method: avtCurveLegend::GetLegendSize
+//
+//  Purpose:
+//      Gets the legend's size.
+//
+//  Arguments:
+//      w        The legend's width.
+//      h        The legend's height.
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Thu Mar 22 00:12:50 PDT 2007
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtCurveLegend::GetLegendSize(double, double &w, double &h)
+{
+    w = 0.08 * scale[0];
+
+    double nLines = 0.51;
+
+    if (title != NULL)        nLines += 0.8;
+    if (databaseInfo != NULL) nLines += 1.6;
+    if (varName != NULL)      nLines += 0.8;
+    if (varUnits != NULL)     nLines += 0.8;
+
+    h = nLines * fontHeight * scale[1];
+
+    size[0] = w;
+    size[1] = h;
+}
+
+// ****************************************************************************
+// Method: avtCurveLegend::SetLabelVisibility
+//
+// Purpose: 
+//   Sets whether labels are visible.
+//
+// Arguments:
+//   val : True if labels are to be visible.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:31:17 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtCurveLegend::SetLabelVisibility(bool val)
+{
+    labelVisibility = val;
+    lineLegend->SetTitleVisibility(val?1:0);
+}
+
+// ****************************************************************************
+// Method: avtCurveLegend::GetLabelVisibility
+//
+// Purpose: 
+//   Returns whether labels are visible.
+//
+// Returns:    Whether labels are visible.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:31:48 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtCurveLegend::GetLabelVisibility() const
+{
+    return labelVisibility;
+}
+
+// ****************************************************************************
+// Method: avtCurveLegend::SetLegendScale
+//
+// Purpose: 
+//   Set the legend scale.
+//
+// Arguments:
+//   xScale : The scale factor in X.
+//   yScale : The scale factor in Y.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:33:20 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtCurveLegend::SetLegendScale(double xScale, double yScale)
+{
+    // Scale the color bar
+    double colorBarScale = lineLegend->GetBarWidth() / scale[0];
+    colorBarScale *= xScale;
+    lineLegend->SetBarWidth(colorBarScale);
+
+    // Save the scales.
+    scale[0] = xScale;
+    scale[1] = yScale;
+}
+
+// ****************************************************************************
+// Method: avtCurveLegend::SetBoundingBoxVisibility
+//
+// Purpose: 
+//   Sets whether the bounding box around the legend will be visible.
+//
+// Arguments:
+//   val : True to make the box visible.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:34:03 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtCurveLegend::SetBoundingBoxVisibility(bool val)
+{
+    lineLegend->SetBoundingBoxVisibility(val?1:0);
+}
+
+// ****************************************************************************
+// Method: avtCurveLegend::SetBoundingBoxColor
+//
+// Purpose: 
+//   Set the bounding box color.
+//
+// Arguments:
+//   color : An rgba tuple of colors.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:34:36 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtCurveLegend::SetBoundingBoxColor(const double *color)
+{
+    lineLegend->SetBoundingBoxColor((double*)color);
+}
+
+// ****************************************************************************
+// Method: avtCurveLegend::SetFont
+//
+// Purpose: 
+//   Set the font properties for the legend.
+//
+// Arguments:
+//   family : VTK_ARIAL, VTK_COURIER, VTK_TIMES
+//   bold   : True to make the text bold.
+//   italic : True to make the text italic.
+//   shadow : True to make the text shadowed.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:35:31 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtCurveLegend::SetFont(int family, bool bold, bool italic, bool shadow)
+{
+    lineLegend->SetFontFamily(family);
+    lineLegend->SetBold(bold?1:0);
+    lineLegend->SetItalic(italic?1:0);
+    lineLegend->SetShadow(shadow?1:0);
+}
 
 // ****************************************************************************
 //  Method: avtCurveLegend::ChangePosition
@@ -106,6 +292,10 @@ avtCurveLegend::~avtCurveLegend()
 //  Programmer: Kathleen Bonnell
 //  Creation:   October 25, 2005
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 22 00:15:01 PDT 2007
+//    Set the position2.
+//
 // ****************************************************************************
 
 void
@@ -113,6 +303,11 @@ avtCurveLegend::ChangePosition(double x, double y)
 {
     lineLegend->GetPositionCoordinate()->SetCoordinateSystemToNormalizedViewport();
     lineLegend->GetPositionCoordinate()->SetValue(x, y, 0.);
+
+    // Set the position 2, incorporating the scale.
+    double tmp, w, h;
+    GetLegendSize(tmp, w, h);
+    lineLegend->SetPosition2(w, h);  
 }
 
 
@@ -156,13 +351,16 @@ avtCurveLegend::ChangeTitle(const char *t)
 //  Creation:   October 25, 2005 
 // 
 //  Modifications:
+//    Brad Whitlock, Thu Mar 22 00:42:12 PDT 2007
+//    Take the scale into account.
 //
 // ****************************************************************************
 
 void
 avtCurveLegend::ChangeFontHeight(double fh)
 {
-    lineLegend->SetFontHeight(fh);
+    double minScale = (scale[0] < scale[1]) ? scale[0] : scale[1];
+    lineLegend->SetFontHeight(fh * minScale);
 }
 
 

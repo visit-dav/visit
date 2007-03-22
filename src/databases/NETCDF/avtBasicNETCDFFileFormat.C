@@ -742,6 +742,11 @@ avtBasicNETCDFFileFormat::GetMesh(const char *var)
 //   Mark C. Miller, Wed Aug 16 14:45:22 PDT 2006
 //   Fixed reversal of coords between VisIt and netcdf
 //   
+//   Jeremy Meredith, Thu Mar 22 15:05:02 EDT 2007
+//   Since we're calling InqVariable here, we need to take the same steps
+//   as we do when reading the mesh dims to remove trailing 1's.  Also,
+//   print to debug4 the valid dimensions array instead of the raw one.
+//
 // ****************************************************************************
 
 #ifdef PARALLEL
@@ -800,12 +805,21 @@ avtBasicNETCDFFileFormat::GetVar(const char *var)
         int i, validDims[3], dimStarts[3], dimCounts[3], nValidDims;
         intVector vdims;
         for (i = ndims-1; i >= 0; i--) vdims.push_back(dims[i]);
+
+        // Remove all of the trailing 1's in the variable dims array.
+        while(vdims.size() > 0 &&
+              vdims[vdims.size()-1] == 1)
+        {
+            vdims.pop_back();
+        }
+
         ReturnValidDimensions(vdims, validDims, nValidDims,
             dimStarts, dimCounts);
 
-        debug4 << "avtBasicNETCDFFileFormat::GetVar: var=" << var << ", dims={";
+        debug4 << "avtBasicNETCDFFileFormat::GetVar: var=" << var
+               << ", nValidDims=" << nValidDims << ", dimCounts={";
         int nElems = 1;
-        for(i = 0; i < ndims; ++i)
+        for(i = 0; i < nValidDims; ++i)
         {
             debug4 << ", " << dimCounts[i];
             nElems *= dimCounts[i];

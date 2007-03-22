@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyGaussianControlPoint_StartUp(GaussianControlPoint *subj, void *data);
 void VISITPY_API           PyGaussianControlPoint_CloseDown();
-PyMethodDef * VISITPY_API  PyGaussianControlPoint_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyGaussianControlPoint_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyGaussianControlPoint_Check(PyObject *obj);
-GaussianControlPoint * VISITPY_API PyGaussianControlPoint_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyGaussianControlPoint_New();
-PyObject * VISITPY_API     PyGaussianControlPoint_Wrap(const GaussianControlPoint *attr);
+VISITPY_API GaussianControlPoint *  PyGaussianControlPoint_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyGaussianControlPoint_New();
+VISITPY_API PyObject *      PyGaussianControlPoint_Wrap(const GaussianControlPoint *attr);
 void VISITPY_API           PyGaussianControlPoint_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyGaussianControlPoint_SetDefaults(const GaussianControlPoint *atts);
 std::string VISITPY_API    PyGaussianControlPoint_GetLogString();

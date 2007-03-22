@@ -51,6 +51,7 @@
 class vtkDataArray;
 class vtkDataSet;
 class vtkPointSet;
+class vtkPolyData;
 class vtkRectilinearGrid;
 
 
@@ -66,6 +67,10 @@ class vtkRectilinearGrid;
 //  Modifications:
 //    Jeremy Meredith, Fri Feb 23 12:27:29 EST 2007
 //    Added support for transformed rectilinear grids.  Also fixed a typo.
+//
+//    Jeremy Meredith, Thu Mar 22 15:22:28 EDT 2007
+//    Added support for replicating individual atoms in molecular data
+//    that lie exactly on a unit cell boundary.
 //
 // ****************************************************************************
 
@@ -98,6 +103,7 @@ class avtReplicateFilter : public virtual avtDataTreeStreamer,
     vtkDataSet           *ReplicateRectilinear(vtkRectilinearGrid *, double[3]);
     vtkDataSet           *ReplicatePointSet(vtkPointSet *, double[3]);
     vtkDataArray         *OffsetDataArray(vtkDataArray *, double);
+    vtkPolyData          *ReplicateUnitCellAtoms(vtkPolyData *in);
 
     virtual bool          FilterUnderstandsTransformedRectMesh();
 };

@@ -79,6 +79,9 @@ vtkStandardNewMacro(vtkVerticalScalarBarActor);
 //    I deleted TitleFraction, LabelFraction and FontSize.  I added BarWidth
 //    and FontHeight.  I changed the default range format.
 //
+//    Brad Whitlock, Wed Mar 21 16:02:00 PST 2007
+//    Added BoundingBox.
+//
 //------------------------------------------------------------------------------
 vtkVerticalScalarBarActor::vtkVerticalScalarBarActor() : definedLabels(), labelColorMap()
 {
@@ -159,6 +162,18 @@ vtkVerticalScalarBarActor::vtkVerticalScalarBarActor() : definedLabels(), labelC
   this->TicsActor->GetPositionCoordinate()->
     SetReferenceCoordinate(this->PositionCoordinate);
 
+  this->BoundingBox = vtkPolyData::New();
+  this->BoundingBoxMapper = vtkPolyDataMapper2D::New();
+  this->BoundingBoxMapper->SetInput(this->BoundingBox);
+  this->BoundingBoxActor = vtkActor2D::New();
+  this->BoundingBoxActor->SetMapper(this->BoundingBoxMapper);
+  this->BoundingBoxActor->GetPositionCoordinate()->
+    SetReferenceCoordinate(this->PositionCoordinate);
+  this->BoundingBoxColor[0] = 0.8;
+  this->BoundingBoxColor[1] = 0.8;
+  this->BoundingBoxColor[2] = 0.8;
+  this->BoundingBoxColor[3] = 1.;
+
   this->LastOrigin[0] = 0;
   this->LastOrigin[1] = 0;
   this->LastSize[0] = 0;
@@ -167,6 +182,7 @@ vtkVerticalScalarBarActor::vtkVerticalScalarBarActor() : definedLabels(), labelC
   this->LabelVisibility = 1;
   this->RangeVisibility = 1;
   this->ColorBarVisibility = 1;
+  this->BoundingBoxVisibility = 0;
   this->TitleOkayToDraw = 1;
   this->LabelOkayToDraw = 1;
   this->UseDefinedLabels = 0;
@@ -193,14 +209,17 @@ void vtkVerticalScalarBarActor::ReleaseGraphicsResources(vtkWindow *win)
   this->ColorBarActor->ReleaseGraphicsResources(win);
   this->RangeActor->ReleaseGraphicsResources(win);
   this->TicsActor->ReleaseGraphicsResources(win);
+  this->BoundingBoxActor->ReleaseGraphicsResources(win);
 }
 
 
 // ****************************************************************************
 //  Modifications:
-//
 //    Hank Childs, Fri Jan 25 10:50:27 PST 2002
 //    Fixed memory leak.
+//
+//    Brad Whitlock, Wed Mar 21 16:01:44 PST 2007
+//    Added BoundingBox.
 //
 // ****************************************************************************
 
@@ -261,6 +280,10 @@ vtkVerticalScalarBarActor::~vtkVerticalScalarBarActor()
   this->TicsMapper->Delete();
   this->TicsActor->Delete();
 
+  this->BoundingBox->Delete();
+  this->BoundingBoxMapper->Delete();
+  this->BoundingBoxActor->Delete();
+
   this->SetLookupTable(NULL);
 }
 
@@ -292,6 +315,10 @@ void vtkVerticalScalarBarActor::SetRange(double min, double max)
 //  Modifications:
 //    Kathleen Bonnell, Tue Nov  6 08:37:40 PST 2001
 //    Don't render tic marks if labels won't be rendered.
+//
+//    Brad Whitlock, Wed Mar 21 16:03:32 PST 2007
+//    Render bounding box.
+//
 // *********************************************************************
 int vtkVerticalScalarBarActor::RenderOverlay(vtkViewport *viewport)
 {
@@ -299,6 +326,11 @@ int vtkVerticalScalarBarActor::RenderOverlay(vtkViewport *viewport)
   int i;
   
   // Everything is built, just have to render
+  if (this->BoundingBoxVisibility)
+    {
+    this->BoundingBoxActor->RenderOverlay(viewport);
+    }
+
   if (this->Title != NULL && this->TitleOkayToDraw && this->TitleVisibility)
     {
     renderedSomething += this->TitleActor->RenderOverlay(viewport);
@@ -905,6 +937,121 @@ vtkVerticalScalarBarActor::ShouldCollapseDiscrete(void)
   return true;
 }
 
+// ****************************************************************************
+// Method: vtkVerticalScalarBarActor::BuildBoundingBox
+//
+// Purpose: 
+//   Builds the bounding box.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 16:24:05 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void vtkVerticalScalarBarActor::BuildBoundingBox(vtkViewport *viewport)
+{
+  int *viewSize = viewport->GetSize();
+
+  //
+  // Build bounding box object
+  //
+  vtkPoints *pts = vtkPoints::New();
+  pts->SetNumberOfPoints(4);
+  vtkCellArray *polys = vtkCellArray::New();
+  polys->Allocate(4); 
+  vtkUnsignedCharArray *colors = vtkUnsignedCharArray::New();
+  colors->SetNumberOfComponents(4);
+  colors->SetNumberOfTuples(1);
+
+  this->BoundingBoxActor->SetProperty(this->GetProperty());
+  this->BoundingBox->Initialize();
+  this->BoundingBox->SetPoints(pts);
+  this->BoundingBox->SetPolys(polys);
+  this->BoundingBox->GetCellData()->SetScalars(colors);
+  pts->Delete(); polys->Delete(); colors->Delete(); 
+
+  //
+  // generate points for bounding box
+  //
+  int *LL = this->GetPositionCoordinate()->
+                GetComputedViewportValue(viewport);
+  int *UR = this->GetPosition2Coordinate()->
+                GetComputedViewportValue(viewport);
+  double width = UR[0] - LL[0];
+  double height = UR[1] - LL[1];
+  double maxX = UR[0];
+
+  // Need to account for the widest text to accurately calculate the width.
+  if(this->TitleVisibility)
+    {
+        int *titleLL = this->TitleActor->GetPositionCoordinate()->
+            GetComputedViewportValue(viewport);
+        int rightX = titleLL[0] + 
+            this->TitleMapper->GetWidth(viewport);
+        if(rightX > maxX)
+            maxX = rightX;
+    }
+
+  if(this->RangeVisibility)
+    {
+        int *rangeLL = this->RangeActor->GetPositionCoordinate()->
+            GetComputedViewportValue(viewport);
+        int rightX = rangeLL[0] + 
+            this->RangeMapper->GetWidth(viewport);
+        if(rightX > maxX)
+            maxX = rightX;
+    }
+
+  if (this->LabelOkayToDraw && this->LabelVisibility)
+    {
+    for (int i=0; i<this->NumberOfLabelsBuilt; i++)
+      {
+        int *labelLL = this->LabelActors[i]->GetPositionCoordinate()->
+            GetComputedViewportValue(viewport);
+        int rightX = labelLL[0] + 
+            this->LabelMappers[i]->GetWidth(viewport);
+        if(rightX > maxX)
+            maxX = rightX;
+      }
+    }
+  width = maxX - LL[0];
+
+  const double border = 4;
+  double pt[3];
+  pt[0] = 0. - border;
+  pt[1] = 0. - border;
+  pt[2] = 0.;
+  pts->SetPoint(0, pt);
+
+  pt[0] = width;
+  pt[1] = 0. - border;
+  pts->SetPoint(1, pt);
+
+  pt[0] = width;
+  pt[1] = height;
+  pts->SetPoint(2, pt);
+
+  pt[0] = 0. - border;
+  pt[1] = height;
+  pts->SetPoint(3, pt);
+
+  //
+  // Polygon
+  //
+  vtkIdType ptIds[4] = {0,1,2,3};
+  polys->InsertNextCell(4,ptIds);
+
+  //
+  // Color
+  //
+  unsigned char *rgba = colors->GetPointer(0);
+  rgba[0] = (unsigned char)(int(this->BoundingBoxColor[0] * 255.));
+  rgba[1] = (unsigned char)(int(this->BoundingBoxColor[1] * 255.));
+  rgba[2] = (unsigned char)(int(this->BoundingBoxColor[2] * 255.));
+  rgba[3] = (unsigned char)(int(this->BoundingBoxColor[3] * 255.));
+} // BuildBoundingBox
 
 // *********************************************************************
 //  Modifications:
@@ -913,6 +1060,9 @@ vtkVerticalScalarBarActor::ShouldCollapseDiscrete(void)
 //
 //    Eric Brugger, Mon Jul 14 11:59:40 PDT 2003
 //    I changed the way the color bar is built.
+//
+//    Brad Whitlock, Wed Mar 21 16:05:31 PST 2007
+//    Added bounding box.
 //
 // *********************************************************************
 
@@ -962,7 +1112,7 @@ int vtkVerticalScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
     this->LastOrigin[1] = legOrigin[1];
     this->LastSize[0] = legUR[0] - legOrigin[0];
     this->LastSize[1] = legUR[1] - legOrigin[1];
-   
+
     if ( this->TitleVisibility )
       {
       if ( this->Title != NULL )
@@ -981,11 +1131,20 @@ int vtkVerticalScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
       this->BuildColorBar(viewport);
       }
 
+    if( this->BoundingBoxVisibility )
+      {
+        this->BuildBoundingBox(viewport);
+      }
+
     this->BuildTime.Modified();
     }
     
 
   // Everything is built, just have to render
+  if ( this->BoundingBoxVisibility )
+    {
+    renderedSomething += this->BoundingBoxActor->RenderOpaqueGeometry(viewport);
+    }
 
   if (this->Title != NULL && this->TitleOkayToDraw && this->TitleVisibility)
     {
@@ -1067,6 +1226,8 @@ void vtkVerticalScalarBarActor::PrintSelf(ostream& os, vtkIndent indent)
      << (this->LabelVisibility ? "On\n" : "Off\n");
   os << indent << "Range Visibility: " 
      << (this->RangeVisibility ? "On\n" : "Off\n");
+  os << indent << "BoundingBox Visibility: " 
+     << (this->BoundingBoxVisibility ? "On\n" : "Off\n");
   os << indent << "Use Defined Labels: " 
      << (this->UseDefinedLabels ? "On\n" : "Off\n");
   if ( !definedLabels.empty() )
@@ -1080,6 +1241,12 @@ void vtkVerticalScalarBarActor::PrintSelf(ostream& os, vtkIndent indent)
   this->PositionCoordinate->PrintSelf(os, indent.GetNextIndent());
   os << indent << "Width: " << this->GetWidth() << "\n";
   os << indent << "Height: " << this->GetHeight() << "\n";
+
+  os << indent << "BoundingBoxColor: "
+     << this->BoundingBoxColor[0] << ", "
+     << this->BoundingBoxColor[1] << ", "
+     << this->BoundingBoxColor[2] << ", "
+     << this->BoundingBoxColor[3] << "\n";
 }
 
 void vtkVerticalScalarBarActor::SetDefinedLabels(const stringVector &labels)
@@ -1162,6 +1329,7 @@ void vtkVerticalScalarBarActor::ShallowCopy(vtkProp *prop)
     this->SetTitleVisibility(a->GetTitleVisibility());
     this->SetRangeVisibility(a->GetRangeVisibility());
     this->SetLabelVisibility(a->GetLabelVisibility());
+    this->SetBoundingBoxVisibility(a->GetBoundingBoxVisibility());
 
     this->GetPositionCoordinate()->SetCoordinateSystem(
       a->GetPositionCoordinate()->GetCoordinateSystem());    

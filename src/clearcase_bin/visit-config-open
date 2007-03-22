@@ -816,5 +816,14 @@
             </Object>
             <Field name="activeProfile" type="int">1</Field>
         </Object>
+        <Object name="ParallelAxisAttributes">
+            <Object name="linesColor">
+                <Object name="ColorAttribute">
+                    <Field name="color" type="unsignedCharArray" length="4">192 192 192 255 </Field>
+                </Object>
+            </Object>
+            <Field name="drawContext" type="bool">false</Field>
+            <Field name="drawLinesOnlyIfExtentsOn" type="bool">false</Field>
+        </Object>
     </Object>
 </Object>

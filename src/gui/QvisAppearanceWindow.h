@@ -44,7 +44,10 @@
 // Forward declarations.
 class AppearanceAttributes;
 class QComboBox;
+class QLineEdit;
+class QPushButton;
 class QvisColorButton;
+class QvisDialogLineEdit;
 
 // ****************************************************************************
 // Class: QvisAppearancePlotWindow
@@ -62,6 +65,9 @@ class QvisColorButton;
 //
 //   Brad Whitlock, Fri Oct 3 10:06:22 PDT 2003
 //   Added an internal method.
+//
+//   Brad Whitlock, Thu Mar 15 15:24:58 PST 2007
+//   Added font controls.
 //
 // ****************************************************************************
 
@@ -83,17 +89,20 @@ protected:
     void UpdateWindow(bool doAll);
     void Apply(bool ignore = false);
     bool ColorsNotTooClose(const QColor &c0, const char *c1str);
+    void GetCurrentValues(int);
+
 private slots:
     void backgroundChanged(const QColor &bg);
     void foregroundChanged(const QColor &fg);
     void styleChanged(int index);
-    void handleFontClicked();
+    void fontNameChanged(const QString &);
     void orientationChanged(int index);
 private:
-    QvisColorButton *backgroundColorButton;
-    QvisColorButton *foregroundColorButton;
-    QComboBox       *styleComboBox;
-    QComboBox       *orientationComboBox;
+    QvisColorButton    *backgroundColorButton;
+    QvisColorButton    *foregroundColorButton;
+    QComboBox          *styleComboBox;
+    QComboBox          *orientationComboBox;
+    QvisDialogLineEdit *fontName;
 };
 
 #endif

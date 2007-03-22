@@ -38,6 +38,7 @@
 #ifndef AVT_ANNOTATION_COLLEAGUE_H
 #define AVT_ANNOTATION_COLLEAGUE_H
 #include <VisWinColleague.h>
+#include <avtLegend.h>
 
 class AnnotationObject;
 
@@ -53,7 +54,9 @@ class AnnotationObject;
 // Creation:   Wed Oct 29 16:06:04 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Mar 20 10:18:04 PDT 2007
+//   Added support for setting legend properties.
+//
 // ****************************************************************************
 
 class VISWINDOW_API avtAnnotationColleague : protected VisWinColleague
@@ -66,7 +69,11 @@ public:
     virtual void RemoveFromRenderer() = 0;
     virtual void Hide() = 0;
 
+    virtual std::string TypeName() const = 0;
+
     // Methods that return a little info about the annotation.
+    void SetName(const std::string &n) { name = n; }
+    const std::string &GetName() const { return name; }
     void SetActive(bool val) { active = val; }
     bool GetActive() const   { return active; }
     void SetVisible(bool val) { visible = val; }
@@ -75,6 +82,10 @@ public:
     // Methods to set and get the annotation's properties.
     virtual void SetOptions(const AnnotationObject &annot) = 0;
     virtual void GetOptions(AnnotationObject &annot) = 0;
+
+    // Legend methods.
+    virtual bool ManageLayout(avtLegend_p legend) const { return false; }
+    virtual void CustomizeLegend(avtLegend_p legend) { };
 
     // Methods that are called in response to vis window events. These
     // method can be overridden to let the annotation decide what to do when
@@ -96,8 +107,9 @@ public:
     virtual void SetFrameAndState(int, int, int, int, int, int, int) { };
 
 private:
-    bool active;
-    bool visible;
+    std::string name;
+    bool        active;
+    bool        visible;
 };
 
 #endif

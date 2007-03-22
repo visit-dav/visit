@@ -65,9 +65,9 @@ class QvisVariableButton;
 //   Defines QvisParallelAxisPlotWindow class.
 //
 // Notes:      This class was automatically generated!
-
-// Programmer: xml2window
-// Creation:   Thu Mar 15 13:59:40 PST 2007
+//
+// Programmer: Jeremy Meredith
+// Creation:   March 21, 2007
 //
 // Modifications:
 //   
@@ -108,6 +108,7 @@ class QvisParallelAxisPlotWindow : public QvisPostableWindowObserver
     void delAxis();
     void moveAxisUp();
     void moveAxisDown();
+    void linesOnlyIfExtentsToggled(bool);
   private:
     int plotType;
 
@@ -119,20 +120,16 @@ class QvisParallelAxisPlotWindow : public QvisPostableWindowObserver
     QPushButton *axisDownButton;
 
     QGroupBox *drawLines;
-    QGroupBox *drawContext;
-
+    QCheckBox *linesOnlyIfExtents;
     QvisColorButton *linesColor;
+
+    QGroupBox *drawContext;
     QLineEdit *contextGamma;
     QSlider   *contextGammaSlider;
     QLineEdit *contextNumPartitions;
     QSlider   *contextNumPartitionsSlider;
     QvisColorButton *contextColor;
 
-
-    QLabel *orderedAxisNamesLabel;
-    QLabel *axisInfoFlagSetsLabel;
-    QLabel *axisXPositionsLabel;
-    QLabel *axisAttributeVariablesLabel;
     QLabel *linesColorLabel;
     QLabel *contextGammaLabel;
     QLabel *contextNumPartitionsLabel;

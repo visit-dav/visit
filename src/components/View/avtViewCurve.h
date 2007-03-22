@@ -42,6 +42,7 @@
 #ifndef AVT_VIEW_CURVE_H
 #define AVT_VIEW_CURVE_H
 #include <view_exports.h>
+#include <enumtypes.h>
 
 struct avtViewInfo;
 class ViewCurveAttributes;
@@ -73,6 +74,9 @@ class ViewCurveAttributes;
 //    I deleted SetViewFromViewInfo.  I replaced GetValidDomainRange
 //    with CheckAndCorrectDomainRange.
 //
+//    Kathleen Bonnell, Thu Mar 22 20:12:04 PDT 2007 
+//    Added domainScale, rangeScale. 
+//
 // ****************************************************************************
 
 struct AVTVIEW_API avtViewCurve
@@ -80,6 +84,8 @@ struct AVTVIEW_API avtViewCurve
     double   viewport[4];
     double   domain[2];
     double   range[2];
+    ScaleMode domainScale;
+    ScaleMode rangeScale;
 
   public:
                     avtViewCurve();

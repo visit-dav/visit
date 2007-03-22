@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyKeyframeAttributes_StartUp(KeyframeAttributes *subj, void *data);
 void VISITPY_API           PyKeyframeAttributes_CloseDown();
-PyMethodDef * VISITPY_API  PyKeyframeAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyKeyframeAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyKeyframeAttributes_Check(PyObject *obj);
-KeyframeAttributes * VISITPY_API PyKeyframeAttributes_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyKeyframeAttributes_New();
-PyObject * VISITPY_API     PyKeyframeAttributes_Wrap(const KeyframeAttributes *attr);
+VISITPY_API KeyframeAttributes *  PyKeyframeAttributes_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyKeyframeAttributes_New();
+VISITPY_API PyObject *      PyKeyframeAttributes_Wrap(const KeyframeAttributes *attr);
 void VISITPY_API           PyKeyframeAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyKeyframeAttributes_SetDefaults(const KeyframeAttributes *atts);
 std::string VISITPY_API    PyKeyframeAttributes_GetLogString();

@@ -367,6 +367,9 @@ typedef struct {
 //    Brad Whitlock, Mon Feb 12 17:37:57 PST 2007
 //    Changed base class.
 //
+//    Brad Whitlock, Tue Mar 20 09:59:08 PDT 2007
+//    Name annotation objects.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public ViewerBase
@@ -413,13 +416,13 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
 
     void SetAnnotationAttsFromClient();
     void SetAnnotationAttsFromDefault();
-    void AddAnnotationObject(int annotType);
+    void AddAnnotationObject(int annotType, const std::string &annotName);
     void HideActiveAnnotationObjects();
     void DeleteActiveAnnotationObjects();
     void RaiseActiveAnnotationObjects();
     void LowerActiveAnnotationObjects();
     void SetAnnotationObjectOptions();
-    void UpdateAnnotationObjectList();
+    void UpdateAnnotationObjectList(bool delay = false);
 
     void SetFrameIndex(int frame, int windowIndex = -1);
     void NextFrame(int windowIndex = -1);

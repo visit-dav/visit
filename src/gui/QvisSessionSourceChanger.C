@@ -41,7 +41,7 @@
 #include <qlayout.h>
 #include <qlistbox.h>
 
-#include <QvisFileLineEdit.h>
+#include <QvisDialogLineEdit.h>
 
 // ****************************************************************************
 // Method: QvisSessionSourceChanger::QvisSessionSourceChanger
@@ -91,8 +91,8 @@ QvisSessionSourceChanger::QvisSessionSourceChanger(QWidget *parent,
     srcPropLayout->addSpacing(10);
 
     // Create the source property controls.
-    fileLineEdit = new QvisFileLineEdit(sourceProperties, "fileLineEdit");
-    fileLineEdit->setDialogMode(QvisFileLineEdit::ChooseFile);
+    fileLineEdit = new QvisDialogLineEdit(sourceProperties, "fileLineEdit");
+    fileLineEdit->setDialogMode(QvisDialogLineEdit::ChooseFile);
     connect(fileLineEdit, SIGNAL(returnPressed()),
             this, SLOT(sourceChanged()));
     connect(fileLineEdit, SIGNAL(textChanged(const QString &)),

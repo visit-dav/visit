@@ -50,11 +50,13 @@
 // Creation:   Wed Oct 29 16:30:43 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Mar 20 10:24:44 PDT 2007
+//   Added name.
+//
 // ****************************************************************************
 
 avtAnnotationColleague::avtAnnotationColleague(VisWindowColleagueProxy &m) :
-    VisWinColleague(m)
+    VisWinColleague(m), name("")
 {
     active = false;
     visible = true;

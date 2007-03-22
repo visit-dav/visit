@@ -2303,6 +2303,10 @@ ViewerWindowManager::SetInteractionMode(INTERACTION_MODE m,
 //  Programmer: Eric Brugger
 //  Creation:   August 20, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Mar 22 19:24:21 PDT 2007
+//    Added support for log scaling.
+//
 // ****************************************************************************
 
 void
@@ -2314,14 +2318,48 @@ ViewerWindowManager::SetViewCurveFromClient()
     const double *domain=viewCurveClientAtts->GetDomainCoords();
     const double *range=viewCurveClientAtts->GetRangeCoords();
 
+    ScaleMode newDomainScale = (ScaleMode)viewCurveClientAtts->GetDomainScale();
+    ScaleMode newRangeScale = (ScaleMode)viewCurveClientAtts->GetRangeScale();
+    bool updateScaleMode = ((viewCurve.domainScale != newDomainScale) ||
+                            (viewCurve.rangeScale != newRangeScale));
+
     for (int i = 0; i < 4; i++)
     {
         viewCurve.viewport[i] = viewport[i];
     }
+
     viewCurve.domain[0] = domain[0];
     viewCurve.domain[1] = domain[1];
     viewCurve.range[0]  = range[0];
     viewCurve.range[1]  = range[1];
+#define SMALL 1e-100
+    if (viewCurve.domainScale == LINEAR && newDomainScale == LOG)
+    {
+        viewCurve.domain[0] = log10(fabs(viewCurve.domain[0]) + SMALL);
+        viewCurve.domain[1] = log10(fabs(viewCurve.domain[1]) + SMALL);
+    }
+    else if (viewCurve.domainScale == LOG && newDomainScale == LINEAR)
+    {
+        viewCurve.domain[0] = pow(10., viewCurve.domain[0]);
+        viewCurve.domain[1] = pow(10., viewCurve.domain[1]);
+    }
+    if (viewCurve.rangeScale == LINEAR && newRangeScale == LOG)
+    {
+        viewCurve.range[0] = log10(fabs(viewCurve.range[0]) + SMALL);
+        viewCurve.range[1] = log10(fabs(viewCurve.range[1]) + SMALL);
+    }
+    else if (viewCurve.rangeScale == LOG && newRangeScale == LINEAR)
+    {
+        viewCurve.range[0] = pow(10., viewCurve.range[0]);
+        viewCurve.range[1] = pow(10., viewCurve.range[1]);
+    }
+
+    viewCurve.domainScale = newDomainScale;
+    viewCurve.rangeScale  = newRangeScale;
+    if (updateScaleMode)
+    {
+        windows[activeWindow]->SetScaleMode(viewCurve.domainScale, viewCurve.rangeScale);
+    }
 
     //
     // Set the 2D view for the active viewer window.
@@ -4825,6 +4863,7 @@ ViewerWindowManager::SetAnnotationAttsFromDefault()
 //
 // Arguments:
 //   annotType : The type of annotation object to add.
+//   annotName : The name for the new annotation object.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 29 11:33:04 PDT 2003
@@ -4834,12 +4873,12 @@ ViewerWindowManager::SetAnnotationAttsFromDefault()
 // ****************************************************************************
 
 void
-ViewerWindowManager::AddAnnotationObject(int annotType)
+ViewerWindowManager::AddAnnotationObject(int annotType, const std::string &annotName)
 {
     if(windows[activeWindow] != 0)
     {
-        windows[activeWindow]->AddAnnotationObject(annotType);
-        UpdateAnnotationObjectList();
+        if(windows[activeWindow]->AddAnnotationObject(annotType, annotName))
+            UpdateAnnotationObjectList();
     }
 }
 
@@ -4965,16 +5004,27 @@ ViewerWindowManager::SetAnnotationObjectOptions()
 // Creation:   Wed Oct 29 11:26:42 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Mar 20 12:08:50 PDT 2007
+//   Added delay option that will get us back here later from the event loop.
+//
 // ****************************************************************************
 
 void
-ViewerWindowManager::UpdateAnnotationObjectList()
+ViewerWindowManager::UpdateAnnotationObjectList(bool delay)
 {
-    if(windows[activeWindow] != 0)
+    if(delay)
     {
-        windows[activeWindow]->UpdateAnnotationObjectList(*annotationObjectList);
-        annotationObjectList->Notify();
+        debug2 << "ViewerWindowManager::UpdateAnnotationObjectList: delay=true" << endl;
+        viewerSubject->MessageRendererThread("updateAOL;");
+    }
+    else
+    {
+        if(windows[activeWindow] != 0)
+        {
+            debug2 << "ViewerWindowManager::UpdateAnnotationObjectList: delay=false" << endl;
+            windows[activeWindow]->UpdateAnnotationObjectList(*annotationObjectList);
+            annotationObjectList->Notify();
+        }
     }
 }
 

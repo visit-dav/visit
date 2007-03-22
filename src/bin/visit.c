@@ -147,6 +147,9 @@ int ReadKey(const char *key, char **keyval);
  *   Brad Whitlock, Thu Dec 21 14:52:11 PST 2006
  *   Added support for transition and composite programs.
  *
+ *   Kathleen Bonnell, Thu Mar 22 09:29:45 PDT 2007
+ *   Enclose argv[i] in quotes before calling PUSHARG, if there are spaces. 
+ *
  *****************************************************************************/
 
 int
@@ -259,6 +262,13 @@ main(int argc, char *argv[])
         }
         else
         {
+            char *newArg = argv[i];
+            if (strstr(argv[i], " ") != NULL)
+            {
+                newArg = (char*)malloc(strlen(argv[i]+1+2)); /* just leak it */
+                sprintf(newArg, "\"%%s\"", argv[i]);
+            }
+
             PUSHARG(argv[i]);
         }
     }

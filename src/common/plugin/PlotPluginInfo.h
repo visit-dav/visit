@@ -130,6 +130,9 @@ class ViewerPlot;
 //    Brad Whitlock, Wed Feb 7 15:53:14 PST 2007
 //    Added methods for alternate display in the viewer plugin info.
 //
+//    Brad Whitlock, Tue Mar 20 11:44:35 PDT 2007
+//    Added ProvidesLegend method on the viewer plugin info.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralPlotPluginInfo
@@ -175,6 +178,8 @@ class PLUGIN_API ViewerPlotPluginInfo : public virtual CommonPlotPluginInfo
     virtual void GetClientAtts(AttributeSubject *atts) = 0;
 
     virtual avtPlot *AllocAvtPlot() = 0;
+
+    virtual bool ProvidesLegend() const { return true; }
 
     virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *) = 0;
     virtual void ReInitializePlotAtts(AttributeSubject *atts, 

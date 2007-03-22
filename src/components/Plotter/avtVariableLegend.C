@@ -46,7 +46,7 @@
 
 #include <DebugStream.h>
 #include <float.h>
-
+#include <snprintf.h>
 
 // ****************************************************************************
 //  Method: avtVariableLegend constructor
@@ -81,6 +81,9 @@
 //    I added barVisibility and rangeVisibility.  I changed the default
 //    size and position of the legend.
 //
+//    Brad Whitlock, Wed Mar 21 11:26:58 PDT 2007
+//    Added labelVisibility and scale.
+//
 // ****************************************************************************
 
 avtVariableLegend::avtVariableLegend()
@@ -93,6 +96,8 @@ avtVariableLegend::avtVariableLegend()
     sBar = vtkVerticalScalarBarActor::New();
     sBar->SetShadow(0);
 
+    scale[0] = 1.;
+    scale[1] = 1.;
     size[0] = 0.08;
     size[1] = 0.26;
     sBar->SetPosition2(size[0], size[1]);
@@ -101,6 +106,7 @@ avtVariableLegend::avtVariableLegend()
 
     barVisibility = 1;
     rangeVisibility = 1;
+    labelVisibility = true;
 
     //
     // Set the legend to also point to sBar, so the base methods will work
@@ -142,6 +148,9 @@ avtVariableLegend::avtVariableLegend()
 //    Eric Brugger, Mon Jul 14 15:54:19 PDT 2003
 //    Remove member title.
 //
+//    Brad Whitlock, Wed Mar 21 23:55:51 PST 2007
+//    Initialize scale and other members.
+//
 // ****************************************************************************
 
 avtVariableLegend::avtVariableLegend(int)
@@ -150,6 +159,13 @@ avtVariableLegend::avtVariableLegend(int)
     max = 1.;
     lut = NULL;
     sBar = NULL;
+    scale[0] = 1.;
+    scale[1] = 1.;
+    size[0] = 0.08;
+    size[1] = 0.26;
+    barVisibility = 1;
+    rangeVisibility = 1;
+    labelVisibility = true;
 }
 
 
@@ -202,16 +218,19 @@ avtVariableLegend::~avtVariableLegend()
 //    Brad Whitlock, Tue Jul 20 17:16:12 PST 2004
 //    Added varUnits.
 //
+//    Brad Whitlock, Wed Mar 21 11:49:05 PDT 2007
+//    Added scaling and prevented position2 from being set.
+//
 // ****************************************************************************
 
 void
 avtVariableLegend::GetLegendSize(double, double &w, double &h)
 {
-    w = 0.08;
+    w = 0.08 * scale[0];
 
     if (barVisibility)
     {
-        h = 0.26;
+        h = 0.26 * scale[1];
     }
     else
     {
@@ -224,12 +243,209 @@ avtVariableLegend::GetLegendSize(double, double &w, double &h)
         if (message != NULL)      nLines += 1.0;
         if (rangeVisibility)      nLines += 2.5;
 
-        h = nLines * fontHeight;
-
-        sBar->SetPosition2(w, h);
+        h = nLines * fontHeight * scale[1];
     }
+
+    size[0] = w;
+    size[1] = h;
 }
 
+// ****************************************************************************
+// Method: avtVariableLegend::SetLabelVisibility
+//
+// Purpose: 
+//   Sets whether labels are visible.
+//
+// Arguments:
+//   val : True if labels are to be visible.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:31:17 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVariableLegend::SetLabelVisibility(bool val)
+{
+    labelVisibility = val;
+    sBar->SetLabelVisibility(val?1:0);
+}
+
+// ****************************************************************************
+// Method: avtVariableLegend::GetLabelVisibility
+//
+// Purpose: 
+//   Returns whether labels are visible.
+//
+// Returns:    Whether labels are visible.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:31:48 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtVariableLegend::GetLabelVisibility() const
+{
+    return labelVisibility;
+}
+
+// ****************************************************************************
+// Method: avtVariableLegend::SetNumberFormat
+//
+// Purpose: 
+//   Sets the number format string.
+//
+// Arguments:
+//   fmt : The new format string.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:32:10 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVariableLegend::SetNumberFormat(const char *fmt)
+{
+    // Set the label format.
+    sBar->SetLabelFormat(fmt);
+
+//
+// Note: Code in the vertical scalar bar actor prevents this format string
+//       from being used at present.
+//
+    // Use the format in the min/max range label.
+    char rangeFormat[200];
+    SNPRINTF(rangeFormat, 200, "Max: %s\nMin: %s", fmt, fmt);
+    //sBar->SetRangeFormat(rangeFormat);
+}
+
+// ****************************************************************************
+// Method: avtVariableLegend::SetLegendScale
+//
+// Purpose: 
+//   Set the legend scale.
+//
+// Arguments:
+//   xScale : The scale factor in X.
+//   yScale : The scale factor in Y.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:33:20 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVariableLegend::SetLegendScale(double xScale, double yScale)
+{
+    // Scale the color bar
+    double colorBarScale = sBar->GetBarWidth() / scale[0];
+    colorBarScale *= xScale;
+    sBar->SetBarWidth(colorBarScale);
+
+    // Save the scales.
+    scale[0] = xScale;
+    scale[1] = yScale;
+}
+
+// ****************************************************************************
+// Method: avtVariableLegend::SetBoundingBoxVisibility
+//
+// Purpose: 
+//   Sets whether the bounding box around the legend will be visible.
+//
+// Arguments:
+//   val : True to make the box visible.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:34:03 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVariableLegend::SetBoundingBoxVisibility(bool val)
+{
+    sBar->SetBoundingBoxVisibility(val?1:0);
+}
+
+// ****************************************************************************
+// Method: avtVariableLegend::SetBoundingBoxColor
+//
+// Purpose: 
+//   Set the bounding box color.
+//
+// Arguments:
+//   color : An rgba tuple of colors.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:34:36 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVariableLegend::SetBoundingBoxColor(const double *color)
+{
+    sBar->SetBoundingBoxColor((double*)color);
+}
+
+// ****************************************************************************
+// Method: avtVariableLegend::SetOrientation
+//
+// Purpose: 
+//   Set the orientation of the legend -- allowing for horizontal, vertical, ...
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:34:59 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVariableLegend::SetOrientation(LegendOrientation)
+{
+    debug1 << "avtVariableLegend::SetOrientation: NOT IMPLEMENTED" << endl;
+}
+
+// ****************************************************************************
+// Method: avtVariableLegend::SetFont
+//
+// Purpose: 
+//   Set the font properties for the legend.
+//
+// Arguments:
+//   family : VTK_ARIAL, VTK_COURIER, VTK_TIMES
+//   bold   : True to make the text bold.
+//   italic : True to make the text italic.
+//   shadow : True to make the text shadowed.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:35:31 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVariableLegend::SetFont(int family, bool bold, bool italic, bool shadow)
+{
+    sBar->SetFontFamily(family);
+    sBar->SetBold(bold?1:0);
+    sBar->SetItalic(italic?1:0);
+    sBar->SetShadow(shadow?1:0);
+}
 
 // ****************************************************************************
 //  Method: avtVariableLegend::SetColorBarVisibility
@@ -473,6 +689,10 @@ avtVariableLegend::SetVarRange(double nmin, double nmax)
 //  Programmer: Hank Childs
 //  Creation:   October 4, 2000
 //
+//  Modifications:
+//    Brad Whitlock, Wed Mar 21 20:20:40 PST 2007
+//    I made it set position2.
+//
 // ****************************************************************************
 
 void
@@ -480,6 +700,11 @@ avtVariableLegend::ChangePosition(double x, double y)
 {
     sBar->GetPositionCoordinate()->SetCoordinateSystemToNormalizedViewport();
     sBar->GetPositionCoordinate()->SetValue(x, y, 0.);
+
+    // Set the position 2, incorporating the scale.
+    double tmp, w, h;
+    GetLegendSize(tmp, w, h);
+    sBar->SetPosition2(w, h);    
 }
 
 
@@ -523,13 +748,16 @@ avtVariableLegend::ChangeTitle(const char *t)
 //  Creation:   October 25, 2005 
 // 
 //  Modifications:
+//    Brad Whitlock, Wed Mar 21 20:19:59 PST 2007
+//    Scale the text taking scale into account.
 //
 // ****************************************************************************
 
 void
 avtVariableLegend::ChangeFontHeight(double fh)
 {
-    sBar->SetFontHeight(fh);
+    double minScale = (scale[0] < scale[1]) ? scale[0] : scale[1];
+    sBar->SetFontHeight(fh * minScale);
 }
 
 

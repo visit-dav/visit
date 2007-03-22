@@ -331,6 +331,152 @@ avtLegend::GetLegendOn(void) const
     return legendOn;
 }
 
+// ****************************************************************************
+//  Method: avtLegend::GetCurrentlyDrawn
+//
+//  Purpose:
+//      Return the currentlyDrawn flag.
+//
+//  Returns:    The currentlyDrawn flag.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Mar 20 16:50:27 PST 2007
+//
+// ****************************************************************************
+
+bool
+avtLegend::GetCurrentlyDrawn() const
+{
+    return currentlyDrawn;
+}
+
+// ****************************************************************************
+// Method: avtLegend::SetLabelVisibility
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 02:09:25 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLegend::SetLabelVisibility(bool)
+{
+    // Do nothing
+}
+
+// ****************************************************************************
+// Method: avtLegend::GetLabelVisibility
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 02:09:25 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtLegend::GetLabelVisibility() const
+{
+    return true;
+}
+
+// ****************************************************************************
+// Method: avtLegend::SetNumberFormat
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 02:09:25 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLegend::SetNumberFormat(const char *)
+{
+    // Do nothing
+}
+
+// ****************************************************************************
+// Method: avtLegend::SetLegendScale
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 02:09:25 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLegend::SetLegendScale(double xScale, double yScale)
+{
+    // Do nothing
+}
+
+// ****************************************************************************
+// Method: avtLegend::SetBoundingBoxVisibility
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 02:09:25 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLegend::SetBoundingBoxVisibility(bool)
+{
+    // Do nothing
+}
+
+// ****************************************************************************
+// Method: avtLegend::SetBoundingBoxColor
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 02:09:25 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLegend::SetBoundingBoxColor(const double *)
+{
+    // Do nothing
+}
+
+// ****************************************************************************
+// Method: avtLegend::SetOrientation
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 02:09:25 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLegend::SetOrientation(LegendOrientation)
+{
+    // Do nothing
+}
+
+// ****************************************************************************
+// Method: avtLegend::SetFont
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 02:09:25 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLegend::SetFont(int family, bool bold, bool italic, bool shadow)
+{
+    // Do nothing
+}
 
 // ****************************************************************************
 //  Method: avtLegend::SetForegroundColor

@@ -42,12 +42,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <SimWidgetNames.h>
 
-/* set to maximum length of command name string  */
-#define MAX_CMD_STR_LEN 64
-
-#define MESSAGE_WIDGET_NAME "MessageViewerTextEdit"
-#define STRIP_CHART_WIDGET_NAME "StripChart"
 
 /* current number of active channels to the custom
    UI update information in the meta data. */
@@ -430,7 +426,6 @@ void VisItSetStatusMessage (VisIt_SimulationMetaData mdd, char *text, char *colo
       strncpy(mdd.genericCommands[index].text, text,  MAX_CMD_STR_LEN-1);
       strncpy(mdd.genericCommands[index].value, color,  MAX_CMD_STR_LEN-1);
       mdd.genericCommands[index].argType = VISIT_CMDARG_NONE;
-      mdd.genericCommands[index].enabled = false;
     }
 }
 
@@ -535,23 +530,29 @@ void VisItInitAllCMD(VisIt_SimulationMetaData *mdd, int MaxNumCustCMD  )
    mdd->numGenericCommands =MaxNumGenericCommands;
    mdd->genericCommands = malloc(sizeof(VisIt_SimulationControlCommand) *mdd->numGenericCommands);
    for ( i =0; i <mdd->numGenericCommands; i++) VisItInitCMD(&mdd->genericCommands[i]);
-
+   /* These names can be overiden by the simulation */
    VisItInitGenericCMD (*mdd, index++,"halt", "halt","NONE", 1 ); 
    VisItInitGenericCMD (*mdd, index++,"step", "step","NONE", 1 );
    VisItInitGenericCMD (*mdd, index++,"run", "run","NONE", 1 );
    VisItInitGenericCMD (*mdd, index++,"restart", "restart","NONE", 1 );
    VisItInitGenericCMD (*mdd, index++,"sync", "sync","NONE", 1 );
+   /* these names are constant */
    VisItInitGenericCMD (*mdd, index++,"custom", "custom","NONE", 1 );
    VisItInitGenericCMD (*mdd, index++,"StartLabel", "Start","NONE", 1 );
    VisItInitGenericCMD (*mdd, index++,"StepLabel", "Step","NONE", 1 );
    VisItInitGenericCMD (*mdd, index++,"StopLabel", "Stop","NONE", 1 );
-   VisItInitGenericCMD (*mdd, index++,MESSAGE_WIDGET_NAME, "-","black", 1 );
+   VisItInitGenericCMD (*mdd, index++,MESSAGE_WIDGET_NAME, "","black", 1 );
    VisItInitGenericCMD (*mdd, index++,"MessageViewerLabel", "Message Viewer","NONE", 1 );
    VisItInitGenericCMD (*mdd, index++,STRIP_CHART_WIDGET_NAME, "0.0","0.0", 0 );
+   /*
+   VisItInitGenericCMD (*mdd, index++,STRIP_MAX_WIDGET_NAME, "0.0","0.0", 0 );
+   VisItInitGenericCMD (*mdd, index++,STRIP_MIN_WIDGET_NAME, "0.0","0.0", 0 );
+   VisItInitGenericCMD (*mdd, index++,STRIP_MAX_LIMIT_WIDGET_NAME, "0.0","0.0", 0 );
+   VisItInitGenericCMD (*mdd, index++,STRIP_MIN_LIMIT_WIDGET_NAME, "0.0","0.0", 0 );
    
-   /* VisItInitGenericCMD (*mdd, index++,"StartLineEdit", "0.0000","10", 1 );
-      VisItInitGenericCMD (*mdd, index++,"StepLineEdit", "1.0000","NONE", 1 );
-      VisItInitGenericCMD (*mdd, index++,"StopLineEdit", "10.0000","NONE", 1 );  */
+   VisItInitGenericCMD (*mdd, index++,"StartLineEdit", "0.0000","10", 1 );
+   VisItInitGenericCMD (*mdd, index++,"StepLineEdit", "1.0000","NONE", 1 );
+   VisItInitGenericCMD (*mdd, index++,"StopLineEdit", "10.0000","NONE", 1 );  */
   
    mdd->numGenericCommands =index;
    mdd->numCustomCommands = MaxNumCustCMD;

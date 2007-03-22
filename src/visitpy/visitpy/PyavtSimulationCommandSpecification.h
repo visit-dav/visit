@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyavtSimulationCommandSpecification_StartUp(avtSimulationCommandSpecification *subj, void *data);
 void VISITPY_API           PyavtSimulationCommandSpecification_CloseDown();
-PyMethodDef * VISITPY_API  PyavtSimulationCommandSpecification_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyavtSimulationCommandSpecification_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyavtSimulationCommandSpecification_Check(PyObject *obj);
-avtSimulationCommandSpecification * VISITPY_API PyavtSimulationCommandSpecification_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyavtSimulationCommandSpecification_New();
-PyObject * VISITPY_API     PyavtSimulationCommandSpecification_Wrap(const avtSimulationCommandSpecification *attr);
+VISITPY_API avtSimulationCommandSpecification *  PyavtSimulationCommandSpecification_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyavtSimulationCommandSpecification_New();
+VISITPY_API PyObject *      PyavtSimulationCommandSpecification_Wrap(const avtSimulationCommandSpecification *attr);
 void VISITPY_API           PyavtSimulationCommandSpecification_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyavtSimulationCommandSpecification_SetDefaults(const avtSimulationCommandSpecification *atts);
 std::string VISITPY_API    PyavtSimulationCommandSpecification_GetLogString();

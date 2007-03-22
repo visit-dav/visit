@@ -150,6 +150,9 @@
 #    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
 #    Added $(GLEW_LIBS)  
 #
+#    Brad Whitlock, Tue Mar 20 13:49:18 PST 2007
+#    Added avtLegendAttributesColleague.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -178,6 +181,7 @@ Colleagues_src= \
   Colleagues/VisWinView.C \
   Colleagues/avtAnnotationColleague.C \
   Colleagues/avtImageColleague.C \
+  Colleagues/avtLegendAttributesColleague.C \
   Colleagues/avtLine2DColleague.C \
   Colleagues/avtText2DColleague.C \
   Colleagues/avtTimeSliderColleague.C

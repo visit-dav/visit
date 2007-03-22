@@ -58,8 +58,14 @@
 typedef void (*slotFunc) (char * cmd);
 typedef struct signalInfo { char *name; char* sig; slotFunc slot; } sigInfoConnect;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 void VisItProcessCustomCommand( char *cmd);
 void VisItAddConnection(char * name, char* sig, slotFunc theSlot );
 char *VisItParseCommand( char *cmd, char *signalName, char *buttonName );
+#ifdef __cplusplus
+}
+#endif
 
 #endif

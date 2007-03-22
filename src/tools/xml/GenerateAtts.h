@@ -1370,6 +1370,29 @@ class AttsGeneratorEnum : public virtual Enum , public virtual AttsGeneratorFiel
 };
 
 
+//
+// --------------------------------- ScaleMode --------------------------------
+//
+class AttsGeneratorScaleMode : public virtual ScaleMode , public virtual AttsGeneratorField
+{
+  public:
+    AttsGeneratorScaleMode(const QString &n, const QString &l)
+        : ScaleMode(n,l), AttsGeneratorField("scalemode",n,l), Field("scalemode",n,l) { }
+    virtual QString GetAttributeGroupID()
+    {
+        return "i";
+    }
+    virtual QString DataNodeConversion()
+    {
+        return "AsInt";
+    }
+    virtual void WriteSourceSetDefault(ostream &c)
+    {
+        c << "    " << name << " = " << val << ";" << endl;
+    }
+};
+
+
 #define AVT_GENERATOR_METHODS \
     virtual void AddSystemIncludes(UniqueStringList &sl) \
     { \
@@ -1500,6 +1523,9 @@ class AttsGeneratorLoadBalanceScheme : public virtual AttsGeneratorField, public
 //    Brad Whitlock, Thu Mar 1 14:17:10 PST 2007
 //    Added support for various avt enums.
 //
+//    Kathleen Bonnell, Thu Mar 22 16:58:23 PDT 2007 
+//    Added scalemode.
+//
 // ----------------------------------------------------------------------------
 class AttsFieldFactory
 {
@@ -1535,6 +1561,7 @@ class AttsFieldFactory
         else if (type == "att")          f = new AttsGeneratorAtt(subtype,name,label);
         else if (type == "attVector")    f = new AttsGeneratorAttVector(subtype,name,label);
         else if (type == "enum")         f = new AttsGeneratorEnum(subtype, name, label);
+        else if (type == "scalemode")    f = new AttsGeneratorScaleMode(name,label);
 
         // Special built-in AVT enums
         else if (type == "avtCentering")      f = new AttsGeneratoravtCentering(name, label);
@@ -1677,8 +1704,8 @@ class AttsGeneratorAttribute
         for (int i=0; i<fields.size(); i++)
         {
             if(fields[i]->accessType == Field::AccessPrivate)
-                fields[i]->WriteHeaderSelectFunction(h);
-        }
+            fields[i]->WriteHeaderSelectFunction(h);
+    }
     }
 
     void WriteHeaderEnumConversions(ostream &h)
@@ -1840,7 +1867,7 @@ class AttsGeneratorAttribute
         for (i=0; i<constants.size(); i++)
         {
             if (constants[i]->member)
-                h << "    " << constants[i]->decl << endl;
+            h << "    " << constants[i]->decl << endl;
         }
         if (EnumType::enums.size() || constants.size())
             h << endl;
@@ -1877,8 +1904,8 @@ class AttsGeneratorAttribute
 
         if(hasPrivateFields)
         {
-            h << endl;
-            h << "    // Property setting methods" << endl;
+        h << endl;
+        h << "    // Property setting methods" << endl;
         }
         // Write out all the set prototypes
         for (i=0; i<fields.size(); i++)
@@ -1891,8 +1918,8 @@ class AttsGeneratorAttribute
         int totalWidth = CalculateTotalWidth(true);
         if(hasPrivateFields)
         {
-            h << endl;
-            h << "    // Property getting methods" << endl;
+        h << endl;
+        h << "    // Property getting methods" << endl;
         }
         // Write out all the get prototypes
         for (i=0; i<fields.size(); i++)
@@ -1940,13 +1967,13 @@ class AttsGeneratorAttribute
         // Methods for keyframing
         if(keyframe)
         {
-            h << endl;
-            h << "    // Keyframing methods" << endl;
-            h << "    virtual std::string               GetFieldName(int index) const;" << endl;
-            h << "    virtual AttributeGroup::FieldType GetFieldType(int index) const;" << endl;
-            h << "    virtual std::string               GetFieldTypeName(int index) const;" << endl;
-            h << "    virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;" << endl;
-            h << endl;
+        h << endl;
+        h << "    // Keyframing methods" << endl;
+        h << "    virtual std::string               GetFieldName(int index) const;" << endl;
+        h << "    virtual AttributeGroup::FieldType GetFieldType(int index) const;" << endl;
+        h << "    virtual std::string               GetFieldTypeName(int index) const;" << endl;
+        h << "    virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;" << endl;
+        h << endl;
         }
 
         // Write user-defined methods
@@ -1998,9 +2025,9 @@ class AttsGeneratorAttribute
         // Write out all the private attributes
         if(hasPrivateFields)
         {
-            h << "private:" << endl;
-            for (i=0; i<fields.size(); i++)
-            {
+        h << "private:" << endl;
+        for (i=0; i<fields.size(); i++)
+        {
                 if(fields[i]->accessType != Field::AccessPrivate)
                     continue;
                 fields[i]->WriteHeaderAttribute(h, totalWidth);
@@ -2718,10 +2745,10 @@ class AttsGeneratorAttribute
             {
                 if (!constants[i]->def.simplifyWhiteSpace().isEmpty())
                 {
-                    c << constants[i]->def;
-                    c << endl;
-                }
+                c << constants[i]->def;
+                c << endl;
             }
+        }
         }
 
         // Write out enum conversions.
@@ -2794,7 +2821,7 @@ class AttsGeneratorAttribute
                 if(fields[i]->accessType != Field::AccessPrivate)
                     continue;
                 fields[i]->WriteSourceSelectFunction(c, name);
-            }
+        }
         }
 
         if (HaveAGVectors())
@@ -2807,7 +2834,7 @@ class AttsGeneratorAttribute
                 if(fields[i]->accessType != Field::AccessPrivate)
                     continue;
                 fields[i]->WriteSourceAGVectorFunctions(c, name, purpose);
-            }
+        }
         }
 
         if (HaveSoloAGVector())
@@ -2819,10 +2846,10 @@ class AttsGeneratorAttribute
         // Write out all the keyframe methods
         if(keyframe)
         {
-            c << "///////////////////////////////////////////////////////////////////////////////" << endl;
-            c << "// Keyframing methods" << endl;
-            c << "///////////////////////////////////////////////////////////////////////////////" << endl << endl;
-            WriteSourceKeyframeFunctions(c);
+        c << "///////////////////////////////////////////////////////////////////////////////" << endl;
+        c << "// Keyframing methods" << endl;
+        c << "///////////////////////////////////////////////////////////////////////////////" << endl << endl;
+        WriteSourceKeyframeFunctions(c);
         }
 
         c << "///////////////////////////////////////////////////////////////////////////////" << endl;

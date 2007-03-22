@@ -525,6 +525,9 @@ VisWinAxes::NoPlots(void)
 //    Kathleen Bonnell, Thu Apr 29 16:54:44 PDT 2004
 //    Initialize min_x, etc, to avoid UMR's. 
 //
+//    Kathleen Bonnell, Thu Mar 22 19:24:21 PDT 2007 
+//    Send the log-scaling mode to the axis if Curve mode.
+//
 // ****************************************************************************
 
 void
@@ -570,6 +573,14 @@ VisWinAxes::UpdateView(void)
     xAxis->SetGridlineYLength(abs(x[1] - y[1]));
     yAxis->SetGridlineXLength(abs(x[0] - y[0]));
     yAxis->SetGridlineYLength(0.);
+
+    VisWindow *vw = mediator;
+    if (vw->GetWindowMode() == WINMODE_CURVE)
+    {
+        const avtViewCurve viewCurve = vw->GetViewCurve();
+        xAxis->SetLogScale((int)(viewCurve.domainScale == LOG));
+        yAxis->SetLogScale((int)(viewCurve.rangeScale == LOG));
+    }
 }
 
 

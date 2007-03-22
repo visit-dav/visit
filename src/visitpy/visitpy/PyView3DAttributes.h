@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyView3DAttributes_StartUp(View3DAttributes *subj, void *data);
 void VISITPY_API           PyView3DAttributes_CloseDown();
-PyMethodDef * VISITPY_API  PyView3DAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyView3DAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyView3DAttributes_Check(PyObject *obj);
-View3DAttributes * VISITPY_API PyView3DAttributes_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyView3DAttributes_New();
-PyObject * VISITPY_API     PyView3DAttributes_Wrap(const View3DAttributes *attr);
+VISITPY_API View3DAttributes *  PyView3DAttributes_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyView3DAttributes_New();
+VISITPY_API PyObject *      PyView3DAttributes_Wrap(const View3DAttributes *attr);
 void VISITPY_API           PyView3DAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyView3DAttributes_SetDefaults(const View3DAttributes *atts);
 std::string VISITPY_API    PyView3DAttributes_GetLogString();

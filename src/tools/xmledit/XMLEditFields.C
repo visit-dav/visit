@@ -493,6 +493,9 @@ XMLEditFields::UpdateWindowSingleItem()
 //    Brad Whitlock, Thu Mar 1 17:15:02 PST 2007
 //    Added built-in AVT enums.
 //
+//    Kathleen Bonnell, Thu Mar 22 17:12:44 PDT 2007
+//    Added scalemode.
+//
 // ****************************************************************************
 void
 XMLEditFields::UpdateTypeList()
@@ -517,6 +520,7 @@ XMLEditFields::UpdateTypeList()
     type->insertItem("opacity");
     type->insertItem("linestyle");
     type->insertItem("linewidth");
+    type->insertItem("scalemode");
     type->insertItem("variablename");
     type->insertItem("att");
     type->insertItem("attVector");

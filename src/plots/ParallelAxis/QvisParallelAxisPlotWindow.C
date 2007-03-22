@@ -118,6 +118,9 @@ QvisParallelAxisPlotWindow::~QvisParallelAxisPlotWindow()
 // Creation:   March 16, 2007
 //
 // Modifications:
+//    Jeremy Meredith, Wed Mar 21 18:20:47 EDT 2007
+//    Added a checkbox to allow the lines to be hidden when the extents
+//    tool has not limited the viewing range to a focus.
 //   
 // ****************************************************************************
 
@@ -181,15 +184,23 @@ QvisParallelAxisPlotWindow::CreateWindowContents()
     linesSpacingLayout->setMargin(10);
     linesSpacingLayout->addSpacing(20);
 
-    QGridLayout *linesLayout = new QGridLayout(linesSpacingLayout, 1, 2, 5);
+    QGridLayout *linesLayout = new QGridLayout(linesSpacingLayout, 2, 2, 5);
+
+    // Lines color
+    linesOnlyIfExtents = new QCheckBox(
+                                 "... but only when extents have been limited",
+                                       drawLines, "linesOnlyIfExtents");
+    connect(linesOnlyIfExtents, SIGNAL(toggled(bool)),
+            this, SLOT(linesOnlyIfExtentsToggled(bool)));
+    linesLayout->addMultiCellWidget(linesOnlyIfExtents, 0,0, 0,1);
 
     // Lines color
     linesColorLabel = new QLabel("Line color", drawLines, "linesColorLabel");
-    linesLayout->addWidget(linesColorLabel,0,0);
+    linesLayout->addWidget(linesColorLabel,1,0);
     linesColor = new QvisColorButton(drawLines, "linesColor");
     connect(linesColor, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(linesColorChanged(const QColor&)));
-    linesLayout->addWidget(linesColor, 0,1);
+    linesLayout->addWidget(linesColor, 1,1);
 
     //
     // Draw context, and the needed settings
@@ -262,6 +273,9 @@ QvisParallelAxisPlotWindow::CreateWindowContents()
 // Creation:   March 16, 2007
 //
 // Modifications:
+//    Jeremy Meredith, Wed Mar 21 18:20:47 EDT 2007
+//    Added a checkbox to allow the lines to be hidden when the extents
+//    tool has not limited the viewing range to a focus.
 //   
 // ****************************************************************************
 
@@ -298,7 +312,7 @@ QvisParallelAxisPlotWindow::UpdateWindow(bool doAll)
             axisList->clear();
             for (int ax=0; ax<atts->GetOrderedAxisNames().size(); ax++)
             {
-                axisList->insertItem(atts->GetOrderedAxisNames()[ax]);
+                axisList->insertItem(atts->GetOrderedAxisNames()[ax].c_str());
             }
             axisList->blockSignals(false);
             break;
@@ -341,7 +355,7 @@ QvisParallelAxisPlotWindow::UpdateWindow(bool doAll)
             contextNumPartitions->blockSignals(true);
             contextNumPartitionsSlider->blockSignals(true);
             temp.sprintf("%d", atts->GetContextNumPartitions());
-            sliderpos = int(log(atts->GetContextNumPartitions())/log(2)+.5);
+            sliderpos = int(log((float)atts->GetContextNumPartitions())/log(2.f)+.5);
             sliderpos = QMIN(QMAX(1, sliderpos), 10);
             contextNumPartitionsSlider->setValue(sliderpos);
             contextNumPartitions->setText(temp);
@@ -355,6 +369,11 @@ QvisParallelAxisPlotWindow::UpdateWindow(bool doAll)
             contextColor->blockSignals(true);
             contextColor->setButtonColor(tempcolor);
             contextColor->blockSignals(false);
+            break;
+          case 21: //drawLinesOnlyIfExtentsOn
+            linesOnlyIfExtents->blockSignals(true);
+            linesOnlyIfExtents->setChecked(atts->GetDrawLinesOnlyIfExtentsOn());
+            linesOnlyIfExtents->blockSignals(false);
             break;
         }
     }
@@ -766,7 +785,7 @@ QvisParallelAxisPlotWindow::moveAxisDown()
 void
 QvisParallelAxisPlotWindow::contextGammaSliderChanged(int val)
 {
-    float gamma = pow(10,float(val/50.)-1);
+    float gamma = powf(10.f,float(val/50.)-1);
     //old: gamma = 0.1 * float(val);
 
     // round:
@@ -845,5 +864,28 @@ QvisParallelAxisPlotWindow::contextNumPartitionsSliderChanged(int val)
 void
 QvisParallelAxisPlotWindow::contextNumPartitionsSliderReleased()
 {
+    Apply();
+}
+
+
+// ****************************************************************************
+//  Method:  QvisParallelAxisPlotWindow::linesOnlyIfExtentsToggled
+//
+//  Purpose:
+//    Executed when the toggle button for restricting line drawing
+//    to the case when extents have limited the focus is toggled.
+//
+//  Arguments:
+//    val        the new state
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 21, 2007
+//
+// ****************************************************************************
+
+void
+QvisParallelAxisPlotWindow::linesOnlyIfExtentsToggled(bool val)
+{
+    atts->SetDrawLinesOnlyIfExtentsOn(val);
     Apply();
 }

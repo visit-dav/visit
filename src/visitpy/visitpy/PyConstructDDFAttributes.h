@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyConstructDDFAttributes_StartUp(ConstructDDFAttributes *subj, void *data);
 void VISITPY_API           PyConstructDDFAttributes_CloseDown();
-PyMethodDef * VISITPY_API  PyConstructDDFAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyConstructDDFAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyConstructDDFAttributes_Check(PyObject *obj);
-ConstructDDFAttributes * VISITPY_API PyConstructDDFAttributes_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyConstructDDFAttributes_New();
-PyObject * VISITPY_API     PyConstructDDFAttributes_Wrap(const ConstructDDFAttributes *attr);
+VISITPY_API ConstructDDFAttributes *  PyConstructDDFAttributes_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyConstructDDFAttributes_New();
+VISITPY_API PyObject *      PyConstructDDFAttributes_Wrap(const ConstructDDFAttributes *attr);
 void VISITPY_API           PyConstructDDFAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyConstructDDFAttributes_SetDefaults(const ConstructDDFAttributes *atts);
 std::string VISITPY_API    PyConstructDDFAttributes_GetLogString();

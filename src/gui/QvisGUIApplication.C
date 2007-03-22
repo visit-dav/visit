@@ -51,6 +51,7 @@
 #include <qprocess.h>
 #include <qsocketnotifier.h>
 #include <qstatusbar.h>
+#include <qwidgetlist.h>
 
 #if QT_VERSION < 300
 // If we're not using Qt 3.0, then include style headers.
@@ -305,6 +306,41 @@ LongFileName(const char *shortName)
 #endif
 
 // ****************************************************************************
+// Method: GUI_LogQtMessages
+//
+// Purpose: 
+//   Message handler that routes Qt messages to the debug logs.
+//
+// Arguments:
+//   type : The message type.
+//   msg  : The message.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 15 18:17:47 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static void
+GUI_LogQtMessages(QtMsgType type, const char *msg)
+{
+    switch(type)
+    {
+    case QtDebugMsg:
+        debug1 << "Qt: Debug: " << msg << endl;
+        break;
+    case QtWarningMsg:
+        debug1 << "Qt: Warning: " << msg << endl;
+        break;
+    case QtFatalMsg:
+        debug1 << "Qt: Fatal: " << msg << endl;
+        abort();
+        break;
+    }
+}
+
+// ****************************************************************************
 // Method: QvisGUIApplication::QvisGUIApplication
 //
 // Purpose: 
@@ -464,6 +500,9 @@ LongFileName(const char *shortName)
 //   Brad Whitlock, Tue Sep 26 14:40:10 PST 2006
 //   Added a widget factory.
 //
+//   Brad Whitlock, Thu Mar 22 02:25:20 PDT 2007
+//   Added output handler.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
@@ -476,6 +515,16 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
 
     // Tell Qt that we want lots of colors.
     QApplication::setColorSpec(QApplication::ManyColor);
+
+    // NULL out some window pointers.
+    mainWin = 0;
+    messageWin = 0;
+    outputWin = 0;
+    pluginWin = 0;
+    appearanceWin = 0;
+    pickWin = 0;
+    preferencesWin = 0;
+    colorTableWin = 0;
 
     // The viewer is initially not alive.
     viewerIsAlive = false;
@@ -558,6 +607,8 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
         aa->SetBackground(backgroundColor.latin1());
     if(applicationStyle.length() > 0)
         aa->SetStyle(applicationStyle.latin1());
+    if(applicationFont.length() > 0)
+        aa->SetFontName(applicationFont.latin1());
 
     //
     // Create the application and customize its appearance. Note that we
@@ -571,10 +622,13 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     {
         qt_argv[i] = strdup(argv[i]);
     }
+
     qt_argv[argc] = strdup("-font");
     qt_argv[argc+1] = strdup((char*)GetViewerState()->GetAppearanceAttributes()->
-        GetFontDescription().c_str());
+        GetFontName().c_str());
     qt_argv[argc+2] = NULL;
+    debug1 << "QvisApplication::QvisApplication: -font " << qt_argv[argc+1] << endl;
+    qInstallMsgHandler(GUI_LogQtMessages);
     mainApp = new QvisApplication(qt_argc, qt_argv);
     SetWaitCursor();
     GetViewerState()->GetAppearanceAttributes()->SelectAll();
@@ -1521,6 +1575,9 @@ QvisGUIApplication::Quit()
 //    Brad Whitlock, Wed Nov 22 10:08:49 PDT 2006
 //    Added -window_anchor.
 //
+//    Brad Whitlock, Thu Mar 15 17:32:57 PST 2007
+//    Changed how -font is handled.
+//
 // ****************************************************************************
 
 void
@@ -1788,7 +1845,7 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
                         "font description." << endl;
                 continue;
             }
-            aa->SetFontDescription(argv[i + 1]);
+            applicationFont = argv[i + 1];
             ++i;
         }
         else if(current == "-dv")
@@ -1832,23 +1889,30 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
 //    Brad Whitlock, Fri Aug 15 13:14:59 PST 2003
 //    I added support for MacOS X styles.
 //
+//    Brad Whitlock, Thu Mar 15 15:55:14 PST 2007
+//    Change the font.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::CustomizeAppearance(bool notify)
 {
+    const char *mName = "QvisGUIApplication::CustomizeAppearance: ";
     AppearanceAttributes *aa = GetViewerState()->GetAppearanceAttributes();
     bool backgroundSelected = aa->IsSelected(0);
     bool foregroundSelected = aa->IsSelected(1);
-//    bool fontSelected = aa->IsSelected(2);
+    bool fontSelected = aa->IsSelected(2);
     bool styleSelected = aa->IsSelected(3);
     bool orientationSelected = aa->IsSelected(4);
+
+    debug1 << mName << "Called with notify=" << (notify?"true":"false") << endl;
 
     //
     // Set the style
     //
     if(styleSelected)
     {
+        debug1 << mName << "Setting style to: " << aa->GetStyle().c_str() << endl;
 #if QT_VERSION < 300
         if(aa->GetStyle() == "cde")
             mainApp->setStyle(new QCDEStyle);
@@ -1866,6 +1930,46 @@ QvisGUIApplication::CustomizeAppearance(bool notify)
         // Set the style via the style name.
         mainApp->setStyle(aa->GetStyle().c_str());
 #endif
+    }
+
+    //
+    // Set the font.
+    //
+    if(fontSelected || styleSelected)
+    {
+        QFont font;
+        bool okay = true;
+        if(aa->GetFontName().size() > 0 &&
+           aa->GetFontName()[0] == '-')
+        {
+            // It's probably an XLFD
+            font = QFont(aa->GetFontName().c_str());
+            debug1 << mName << "The font looks like XLFD: "
+                   << aa->GetFontName().c_str() << endl;
+        }
+        else
+            okay = font.fromString(aa->GetFontName().c_str());
+        
+        if(okay)
+        {
+            debug1 << mName << "Font okay. name=" << font.toString().latin1() << endl;
+            mainApp->setFont(font);
+
+            // Force the font change on all top level widgets.
+            QWidgetList *list = QApplication::topLevelWidgets();
+            QWidgetListIt it(*list);
+            QWidget * w;
+            while ( (w=it.current()) != 0 )
+            {   // for each top level widget...
+                ++it;
+                w->setFont(font);
+            }
+            delete list;
+        }
+        else
+        {
+            debug1 << mName << "Font NOT okay. name=" << font.toString().latin1() << endl;
+        }
     }
 
     //
@@ -2649,6 +2753,9 @@ QvisGUIApplication::SetupWindows()
 //   Jeremy Meredith, Mon Aug 28 17:28:42 EDT 2006
 //   Added File Open window.
 //
+//   Brad Whitlock, Wed Mar 21 21:24:21 PST 2007
+//   Connect plot list to Annotation window.
+//
 // ****************************************************************************
 
 QvisWindowBase *
@@ -2708,6 +2815,7 @@ QvisGUIApplication::WindowFactory(int i)
              "Annotation", mainWin->GetNotepad());
           aWin->ConnectAnnotationAttributes(GetViewerState()->GetAnnotationAttributes());
           aWin->ConnectAnnotationObjectList(GetViewerState()->GetAnnotationObjectList());
+          aWin->ConnectPlotList(GetViewerState()->GetPlotList());
           win = aWin;
         }
         break;

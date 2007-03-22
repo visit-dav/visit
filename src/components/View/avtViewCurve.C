@@ -45,6 +45,7 @@
 #include <DebugStream.h>
 #include <ViewCurveAttributes.h>
 
+
 // ****************************************************************************
 //  Method: avtViewCurve constructor
 //
@@ -71,6 +72,9 @@ avtViewCurve::avtViewCurve()
 //    Eric Brugger, Wed Aug 20 09:42:38 PDT 2003
 //    I removed yScale and replaced window with domain and range.
 //
+//    Kathleen Bonnell, Thu Mar 22 20:12:04 PDT 2007 
+//    Added domainScale, rangeScale. 
+//
 // ****************************************************************************
 
 avtViewCurve &
@@ -84,6 +88,9 @@ avtViewCurve::operator=(const avtViewCurve &vi)
     domain[1]    = vi.domain[1];
     range[0]     = vi.range[0];
     range[1]     = vi.range[1];
+
+    domainScale  = vi.domainScale;
+    rangeScale   = vi.rangeScale;
 
     return *this;
 }
@@ -101,6 +108,9 @@ avtViewCurve::operator=(const avtViewCurve &vi)
 //  Modifications:
 //    Eric Brugger, Wed Aug 20 09:42:38 PDT 2003
 //    I removed yScale and replaced window with domain and range.
+//
+//    Kathleen Bonnell, Thu Mar 22 20:12:04 PDT 2007 
+//    Added domainScale, rangeScale. 
 //
 // ****************************************************************************
 
@@ -123,6 +133,15 @@ avtViewCurve::operator==(const avtViewCurve &vi)
         return false;
     }
 
+    if (domainScale != vi.domainScale)
+    {
+        return false;
+    }
+    if (rangeScale != vi.rangeScale)
+    {
+        return false;
+    }
+
     return true;
 }
 
@@ -140,6 +159,9 @@ avtViewCurve::operator==(const avtViewCurve &vi)
 //    Eric Brugger, Wed Aug 20 09:42:38 PDT 2003
 //    I removed yScale and replaced window with domain and range.
 //
+//    Kathleen Bonnell, Thu Mar 22 20:12:04 PDT 2007 
+//    Added domainScale, rangeScale. 
+//
 // ****************************************************************************
 
 void
@@ -153,6 +175,8 @@ avtViewCurve::SetToDefault()
     domain[1]   = 1.;
     range[0]    = 0.;
     range[1]    = 1.;
+    domainScale = LINEAR;
+    rangeScale = LINEAR;
 }
 
 // ****************************************************************************
@@ -186,6 +210,9 @@ avtViewCurve::SetToDefault()
 //
 //    Eric Brugger, Tue Nov 18 09:23:44 PST 2003
 //    I replaced GetValidDomainRange with CheckAndCorrectDomainRange.
+//
+//    Kathleen Bonnell, Thu Mar 22 20:12:04 PDT 2007 
+//    Added domainScale, rangeScale. 
 //
 // ****************************************************************************
 
@@ -345,6 +372,9 @@ avtViewCurve::SetFromViewCurveAttributes(const ViewCurveAttributes *viewAtts)
 //    Eric Brugger, Wed Aug 20 09:42:38 PDT 2003
 //    I renamed this method.  I replaced window with domain and range.
 //   
+//    Kathleen Bonnell, Thu Mar 22 20:12:04 PDT 2007 
+//    Added domainScale, rangeScale. 
+//
 // ****************************************************************************
 
 void
@@ -353,6 +383,8 @@ avtViewCurve::SetToViewCurveAttributes(ViewCurveAttributes *viewAtts) const
     viewAtts->SetViewportCoords(viewport);
     viewAtts->SetDomainCoords(domain);
     viewAtts->SetRangeCoords(range);
+    viewAtts->SetDomainScale(domainScale);
+    viewAtts->SetRangeScale(rangeScale);
 }
 
 // ****************************************************************************

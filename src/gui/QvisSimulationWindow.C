@@ -48,6 +48,7 @@
 #include <qpushbutton.h>
 #include <qcombobox.h>
 #include <qgroupbox.h>
+#include <qvgroupbox.h>
 #include <qmessagebox.h>
 #include <qtextedit.h>
 #include <qlineedit.h>
@@ -63,6 +64,8 @@
 #include <qdatetimeedit.h>
 #include <qfile.h>
 #include <qscrollview.h>
+#include <qsplitter.h>
+#include <qcolor.h>
 
 #include <DebugStream.h>
 #include <EngineList.h>
@@ -74,14 +77,13 @@
 #include <QualifiedFilename.h>
 #include <time.h>
 #include <string>
+#include <SimWidgetNames.h>
 
 using std::string;
 using std::vector;
 
 #define CUSTOM_BUTTON 5
 #define NUM_GENRIC_BUTTONS 6
-#define MESSAGE_WIDGET_NAME "MessageViewerTextEdit"
-#define STRIP_CHART_WIDGET_NAME "StripChart"
 
 // ****************************************************************************
 // Method: QvisSimulationWindow::QvisSimulationWindow
@@ -280,43 +282,89 @@ QvisSimulationWindow::CreateWindowContents()
     messageViewer->setReadOnly( true );
     messageViewer->setMaximumHeight( 100 );
     topLayout->addWidget(messageViewer);
-        
     // create the strip chart widgets
-    QLabel *stripChartTitleLabel = new QLabel(central,"StripChartTitleLabel");
-    stripChartTitleLabel->setText("Strip Chart View");
-    topLayout->addWidget(stripChartTitleLabel);
+//    QSplitter *s = new QSplitter ( QSplitter::Horizontal, central, "StipChart");
+     
+    //topLayout->addWidget(stripChartTitleLabel);
 
-    stripChart = new VisItSimStripChart(central,STRIP_CHART_WIDGET_NAME,2000,500);
-    QScrollView *sc = new QScrollView(central,"StipChartScrollWindow");
+    stripChart = new VisItSimStripChart(central,STRIP_CHART_WIDGET_NAME,3000,1000);
+    sc = new QScrollView(central,"StipChartScrollWindow");
     sc->setCaption( "VisIt Strip Chart");
     sc->addChild(stripChart);
     topLayout->addWidget(sc);
     sc->show();
-    
-    chartLayout =  new QGridLayout(topLayout);
-        
-    minLimitEdit = new QLineEdit(central,"MinLimitEdit");
-    minLimitEdit->setEnabled(false); 
-    minLimitLabel = new QLabel(central,"MinLimitLabel");
+
+    topLayout->addSpacing(10);
+    // create the strip chart widgets
+     // Create the group box and generic buttons.
+    QGroupBox *stripChartGroup = new QGroupBox(central, "StripChartGroup");
+    stripChartGroup->setTitle("Strip Chart");
+//    QSplitter *s2 = new QSplitter ( QSplitter::Horizontal, stripChartGroup, "StipChart");
+//    s2->setMinimumHeight( 250  );
+
+    chartLayout =  new QGridLayout(stripChartGroup);
+    chartLayout->setMargin(20);
+    chartLayout->setSpacing(10);
+ 
+    minLimitEdit = new QLineEdit(stripChartGroup,STRIP_MIN_LIMIT_WIDGET_NAME);
+    minLimitEdit->setEnabled(false);
+    minLimitLabel = new QLabel(stripChartGroup,"MinLimitLabel");
     minLimitLabel->setText("Min Limit");
-    chartLayout->addWidget(minLimitLabel,0,0);
-    chartLayout->addWidget(minLimitEdit,0,1);
+    chartLayout->addWidget(minLimitLabel,1,0);
+    chartLayout->addWidget(minLimitEdit,1,1);
     connect(minLimitEdit,SIGNAL(textChanged(const QString&)),this,SLOT(executeMinLimitStripChart()));
     
-    maxLimitEdit = new QLineEdit(central,"MaxLimitEdit");
+    maxLimitEdit = new QLineEdit(stripChartGroup,STRIP_MAX_LIMIT_WIDGET_NAME);
     maxLimitEdit->setEnabled(false); 
-    maxLimitLabel = new QLabel(central,"MaxLimitLabel");
+    maxLimitLabel = new QLabel(stripChartGroup,"MaxLimitLabel");
     maxLimitLabel->setText("Max Limit");
-    chartLayout->addWidget(maxLimitLabel,0,2);
-    chartLayout->addWidget(maxLimitEdit,0,3);
+    chartLayout->addWidget(maxLimitLabel,1,2);
+    chartLayout->addWidget(maxLimitEdit,1,3);
     connect(maxLimitEdit,SIGNAL(textChanged(const QString&)),this,SLOT(executeMaxLimitStripChart()));
 
-    enableStripChartLimits = new QCheckBox(central,"EnableStripChartLimits");
-    enableStripChartLimits->setText("Enable Out of Bounds limit");
+    minEdit = new QLineEdit(stripChartGroup,STRIP_MIN_WIDGET_NAME );
+    minEdit->setEnabled(false);
+    minEdit->setText("0.0");
+    minLabel = new QLabel(stripChartGroup,"MinLabel");
+    minLabel->setText("Min value");
+    chartLayout->addWidget(minLabel,0,0);
+    chartLayout->addWidget(minEdit,0,1);
+
+    maxEdit = new QLineEdit(stripChartGroup,STRIP_MIN_WIDGET_NAME);
+    maxEdit->setEnabled(false);
+    maxEdit->setText("0.0");
+    maxLabel = new QLabel(stripChartGroup,"MaxLabel");
+    maxLabel->setText("Max value");
+    chartLayout->addWidget(maxLabel,0,2);
+    chartLayout->addWidget(maxEdit,0,3);
+    
+    enableStripChartLimits = new QCheckBox(stripChartGroup,"EnableStripChartLimits");
+    enableStripChartLimits->setText("Enable limits");
     connect(enableStripChartLimits,SIGNAL(stateChanged(int)),this,SLOT(executeEnableStripChartLimits()));
-    chartLayout->addMultiCellWidget(enableStripChartLimits,1,1,0,2);
+    chartLayout->addMultiCellWidget(enableStripChartLimits,2,2,0,1);
+
+    // zoom and focus buttons
+        // Create the group box and generic buttons.
+    QGridLayout *zoomLayout = new QGridLayout(stripChartGroup, 1, 3);
+    plusButton = new QPushButton("Zoom In",stripChartGroup);
+    plusButton->setEnabled(true);
+    connect(plusButton,SIGNAL(clicked()),this,SLOT(zoomIn()));
+    zoomLayout->addWidget(plusButton,0,0);
+    minusButton = new QPushButton("Zoom Out",stripChartGroup);
+    minusButton->setEnabled(true);
+    connect(minusButton,SIGNAL(clicked()),this,SLOT(zoomOut()));
+    zoomLayout->addWidget(minusButton,0,2);
+    focusButton = new QPushButton("Focus",stripChartGroup);
+    focusButton->setEnabled(true);
+    connect(focusButton,SIGNAL(clicked()),this,SLOT(focus()));
+    zoomLayout->addWidget(focusButton,0,1);
+    chartLayout->addLayout(zoomLayout,2,3);
 
 
+    stripChartGroup->adjustSize();
+    topLayout->addWidget(stripChartGroup);
+    sc->horizontalScrollBar()->setValue(sc->horizontalScrollBar()->maxValue());
+    sc->updateContents();
 }
 
 // ****************************************************************************
@@ -1042,6 +1090,30 @@ QvisSimulationWindow::UpdateSimulationUI (avtDatabaseMetaData *md)
 }
 
 // ****************************************************************************
+// Method: QvisSimulationWindow::setMinMaxStripChartDataDisplaye
+//
+// Purpose:
+//   sing.
+//
+// Arguments:
+//   cmd:  ui data information
+//
+// Programmer: Shelly Prevost
+// Creation:   Tue Nov 28 17:12:04 PST 2006
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisSimulationWindow::setMinMaxStripChartDataDisplay (double minY, double maxY)
+{
+  minEdit->setText(QString::number(minY));
+  maxEdit->setText(QString::number(maxY));
+
+}
+
+// ****************************************************************************
 // Method: QvisSimulationWindow::SpecialWidgetUpdate
 //
 // Purpose:
@@ -1065,13 +1137,32 @@ QvisSimulationWindow::SpecialWidgetUpdate (avtSimulationCommandSpecification *cm
     QObject *ui = NULL;
     ui  = this->child(cmd->GetName().c_str());
     if ( !strcmp (STRIP_CHART_WIDGET_NAME,cmd->GetName().c_str()))
+    {    double maxY;
+         double minY;
+         const QString dataX(cmd->GetText().c_str());
+         const QString dataY(cmd->GetValue().c_str());
+         stripChart->setEnable(cmd->GetEnabled());
+         bool outOfBounds = stripChart->addDataPoint(dataX.toDouble(),dataY.toDouble());   
+         stripChart->update();
+         stripChart->getMinMaxData( minY, maxY);
+         setMinMaxStripChartDataDisplay( minY,maxY);
+ 
+         if ( outOfBounds )
+         {
+            QString cmd("ALERT;StripChart;Data;OutOfBounds;");
+            int simIndex = simCombo->currentItem();
+            ViewerSendCMD ( simIndex, cmd);
+         }
+    }
+       if ( !strcmp (MESSAGE_WIDGET_NAME,cmd->GetName().c_str()))
     {
          const QString dataX(cmd->GetText().c_str());
          const QString dataY(cmd->GetValue().c_str());
-         stripChart->setEnable(cmd->GetEnabled()); 
-         stripChart->addDataPoint(dataX.toDouble(),dataY.toDouble());   
-         stripChart->update();
+         QColor *msgColor =  getColor(dataY);
+         if ( ui != NULL && dataX != "")
+             ((QTextEdit*)ui)->setColor(*msgColor);
     }
+
 }
 // ****************************************************************************
 // Method: QvisSimulationWindow::UpdateStatusArea
@@ -2127,16 +2218,11 @@ void
 QvisSimulationWindow::executeMinLimitStripChart()
 {
     int simindex = simCombo->currentItem();
-    if (simindex < 0)
-        return;
-    int index = simulationToEngineListMap[simindex];
-    string host = engines->GetEngines()[index];
-    string sim  = engines->GetSimulationName()[index];
     QString cmd2 = minLimitEdit->text();
     QString cmd3 = maxLimitEdit->text();
     stripChart->setOutOfBandLimits( cmd3.toDouble(), cmd2.toDouble());
     cmd2 = "returnedPressed();MinLimitEdit;QLineEdit;Simulations;" + cmd2;
-    GetViewerMethods()->SendSimulationCommand(host, sim, cmd2.latin1()); 
+    ViewerSendCMD(simindex, cmd2);
 }
 
 // ****************************************************************************
@@ -2158,14 +2244,119 @@ void
 QvisSimulationWindow::executeMaxLimitStripChart()
 {
     int simindex = simCombo->currentItem();
-    if (simindex < 0)
-        return;
-    int index = simulationToEngineListMap[simindex];
-    string host = engines->GetEngines()[index];
-    string sim  = engines->GetSimulationName()[index];
     QString cmd2 = minLimitEdit->text();
     QString cmd3 = maxLimitEdit->text();
     stripChart->setOutOfBandLimits( cmd3.toDouble(), cmd2.toDouble());
     cmd2 = "returnedPressed();MaxLimitEdit;QLineEdit;Simulations;" + cmd3;
-    GetViewerMethods()->SendSimulationCommand(host, sim, cmd2.latin1()); 
+    ViewerSendCMD(simindex, cmd2);
+}
+
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::ViewerSendCMD
+//
+// Purpose:
+//   This method is called to send a command to the simulation
+//
+// Arguments:
+//   simIndex : The index from the combo box for the simulation
+//              that you want to send your command too.
+//   cmd      : the properly form command string.
+//
+// Programmer: Shelly Prevost
+// Creation:   Thu Mar 15 15:22:25 PDT 2007
+//
+// Modifications:
+//
+//
+// ****************************************************************************
+
+void
+QvisSimulationWindow::ViewerSendCMD ( int simIndex, QString cmd)
+{
+    if (simIndex < 0)
+        return;
+    int index = simulationToEngineListMap[simIndex];
+    string host = engines->GetEngines()[index];
+    string sim  = engines->GetSimulationName()[index];
+    GetViewerMethods()->SendSimulationCommand(host, sim, cmd);
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::zoomIn()
+//
+// Purpose:
+//   This method is called to increase the scale of the strip chart.
+//
+// Programmer: Shelly Prevost
+// Creation:   Wed Mar 21 16:38:47 PDT 2007
+//
+// Modifications:
+//
+//
+// ****************************************************************************
+void
+QvisSimulationWindow::zoomIn()
+{
+    stripChart->zoomIn();
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::zoomOu()
+//
+// Purpose:
+//   This method is called to decrease the scale of the strip chart.
+//
+// Programmer: Shelly Prevost
+// Creation:   Wed Mar 21 16:38:47 PDT 2007
+//
+// Modifications:
+//
+//
+// ****************************************************************************
+void
+QvisSimulationWindow::zoomOut()
+{
+    stripChart->zoomOut();
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::focus()
+//
+// Purpose:
+//   This method is called to center on the last data point in the strip chart.
+//
+// Programmer: Shelly Prevost
+// Creation:   Wed Mar 21 16:38:47 PDT 2007
+//
+// Modifications:
+//
+//
+// ****************************************************************************
+void
+QvisSimulationWindow::focus()
+{
+    stripChart->focus(sc);
+}
+
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::getColor
+//
+// Purpose:
+//   This method is called to translate a string color into a Qt color.
+//
+// Programmer: Shelly Prevost
+// Creation:   Wed Mar 21 16:38:47 PDT 2007
+//
+// Modifications:
+//
+//
+// ****************************************************************************
+QColor *
+QvisSimulationWindow::getColor(const QString color)
+{
+  QColor *newColor = new QColor( color );
+  if ( newColor->isValid()) return newColor;
+  else return new QColor(Qt::black);
 }

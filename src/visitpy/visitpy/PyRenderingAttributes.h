@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyRenderingAttributes_StartUp(RenderingAttributes *subj, void *data);
 void VISITPY_API           PyRenderingAttributes_CloseDown();
-PyMethodDef * VISITPY_API  PyRenderingAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyRenderingAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyRenderingAttributes_Check(PyObject *obj);
-RenderingAttributes * VISITPY_API PyRenderingAttributes_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyRenderingAttributes_New();
-PyObject * VISITPY_API     PyRenderingAttributes_Wrap(const RenderingAttributes *attr);
+VISITPY_API RenderingAttributes *  PyRenderingAttributes_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyRenderingAttributes_New();
+VISITPY_API PyObject *      PyRenderingAttributes_Wrap(const RenderingAttributes *attr);
 void VISITPY_API           PyRenderingAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyRenderingAttributes_SetDefaults(const RenderingAttributes *atts);
 std::string VISITPY_API    PyRenderingAttributes_GetLogString();

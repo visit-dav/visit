@@ -57,7 +57,7 @@ class QSpinBox;
 class QTextEdit;
 
 class QvisColorButton;
-class QvisFileLineEdit;
+class QvisDialogLineEdit;
 class QvisOpacitySlider;
 class QvisScreenPositionEdit;
 class QvisSequenceView;
@@ -298,7 +298,7 @@ private:
     QPushButton            *page5_deleteSequence;
     QLineEdit              *page5_sequenceName;
     QLabel                 *page5_sequenceUILabel;
-    QvisFileLineEdit       *page5_sequenceUIFile;
+    QvisDialogLineEdit     *page5_sequenceUIFile;
     QPushButton            *page5_sequenceChooseUIFile;
     QLabel                 *page5_sequenceNameLabel;
     QComboBox              *page5_sequenceDestinationViewport;
@@ -312,8 +312,8 @@ private:
     QWidget                *page7;
     QLineEdit              *page7_templateName;
     QTextEdit              *page7_templateDescription;
-    QvisFileLineEdit       *page7_templateFile;
-    QvisFileLineEdit       *page7_previewImageFile;
+    QvisDialogLineEdit     *page7_templateFile;
+    QvisDialogLineEdit     *page7_previewImageFile;
 
     // Last settings look okay?
     QWidget                *page8;

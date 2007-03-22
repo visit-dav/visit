@@ -98,6 +98,9 @@
 #    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
 #    Added $(GLEW_LIBS)  
 #
+#    Kathleen Bonnell, Thu Mar 22 15:18:02 PDT 2007 
+#    Added avtMeshLogFilter.
+#
 ##############################################################################
 
 ##
@@ -126,6 +129,7 @@ SRC=\
  avtImageCompositer.C \
  avtLineScanFilter.C \
  avtMassVoxelExtractor.C \
+ avtMeshLogFilter.C \
  avtPointToGlyphFilter.C \
  avtRayCompositer.C \
  avtRayTracer.C \

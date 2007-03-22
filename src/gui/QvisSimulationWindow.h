@@ -42,6 +42,7 @@
 #include <qmap.h>
 #include <avtDatabaseMetaData.h>
 
+
 // Forward declarations.
 class EngineList;
 class QComboBox;
@@ -56,44 +57,14 @@ class QString;
 class QSpinBox;
 class QCheckBox;
 class QGridLayout;
+class QScrollView;
+class QColor;
         
 class QHBoxLayout;
 class VisItSimStripChart;
 
 class avtSimulationCommandSpecification;
 
-// ****************************************************************************
-// Class: QvisSimulationWindow
-//
-// Purpose:
-//   This class implements a window that presents the list of engines to the
-//   user so the engines' statuses can be watched and engines can be killed.
-//
-// Notes:      This window obseves multiple subjects.
-//
-// Programmer: Jeremy Meredith
-// Creation:   March 21, 2005
-//
-// Modifications:
-//    Jeremy Meredith, Thu Apr 28 18:03:57 PDT 2005
-//    SetNewMetaData needed more info to construct the key correctly.
-//    Added simulation mode.
-//
-//    Shelly Prevost, Tue Jan 24 12:29:29 PST 2006
-//    Added methods to allow the addition of a custom simulation control
-//    window.
-//
-//    Brad Whitlock, Tue Jan 31 16:42:59 PST 2006
-//    I added some new methods to contain some refactored code.
-//
-//    Shelly Prevost, Friday Sept. 1, 2006 PST
-//    Added time limits and step UI, added a message window
-//    added slot function to pass time setting to the simulation
-//
-//    Shelly Prevost Tue Nov 28 17:12:04 PST 2006
-//    Added strip chart widget and support methods.
-//
-// ****************************************************************************
 
 class GUI_API QvisSimulationWindow : public QvisPostableWindowObserver
 {
@@ -116,6 +87,7 @@ public:
     void SetNewMetaData(const QualifiedFilename &qf,
                         const avtDatabaseMetaData *md);
     void SpecialWidgetUpdate(avtSimulationCommandSpecification *cmd);
+    void setMinMaxStripChartDataDisplay (double minY, double maxY);
 private:
     void UpdateWindow(bool doAll);
     void UpdateCustomUI(avtDatabaseMetaData *md);
@@ -132,6 +104,8 @@ private:
     void CreateCommandUI();
     QString GetUIFileDirectory() const;
     QString GetUIFile() const;
+    void ViewerSendCMD ( int simIndex, QString cmd);
+    QColor *getColor(const QString color);
 private slots:
     void closeEngine();
     void interruptEngine();
@@ -156,6 +130,9 @@ private slots:
     void executeEnableStripChartLimits();
     void executeMinLimitStripChart();
     void executeMaxLimitStripChart();
+    void zoomOut();
+    void zoomIn();
+    void focus();
 
 private:
     EngineList           *engines;
@@ -194,7 +171,16 @@ private:
     QLabel             *maxLimitLabel;
     QLineEdit          *minLimitEdit;
     QLabel             *minLimitLabel;
+    QLineEdit          *maxEdit;
+    QLabel             *maxLabel;
+    QLineEdit          *minEdit;
+    QLabel             *minLabel;
     QGridLayout        *chartLayout;
+    QPushButton        *plusButton;
+    QPushButton        *minusButton;
+    QPushButton        *focusButton;
+    QScrollView        *sc;
+ 
 };
 
 #endif

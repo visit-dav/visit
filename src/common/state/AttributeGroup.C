@@ -258,6 +258,9 @@ AttributeGroup::CopyAttributes(const AttributeGroup *atts)
 //    Brad Whitlock, Thu Dec 9 15:07:10 PST 2004
 //    Added variablename type.
 //
+//    Kathleen Bonnell, Thu Mar 22 16:43:38 PDT 2007 
+//    Added scalemode type. 
+//
 // ****************************************************************************
  
 void
@@ -368,6 +371,9 @@ AttributeGroup::InterpolateConst(const AttributeGroup *atts1,
           case FieldType_enum:
             ConstInterp<int>::InterpScalar(addrOut,addr1,addr2,f);
             break;
+          case FieldType_scalemode:
+            ConstInterp<int>::InterpScalar(addrOut,addr1,addr2,f);
+            break;
           default:
             cerr << "UNKNOWN TYPE IN AttributeGroup::InterpolateConst\n";
             break;
@@ -405,6 +411,9 @@ AttributeGroup::InterpolateConst(const AttributeGroup *atts1,
 //    Hank Childs, Fri May 19 16:33:41 PDT 2006
 //    Fix crash that can come when this method is called and attributes have
 //    not been fully initialized.
+//
+//    Kathleen Bonnell, Thu Mar 22 16:43:38 PDT 2007 
+//    Added scalemode type. 
 //
 // ****************************************************************************
  
@@ -519,6 +528,9 @@ AttributeGroup::InterpolateLinear(const AttributeGroup *atts1,
           case FieldType_enum:
             ConstInterp<int>::InterpScalar(addrOut,addr1,addr2,f);
             break;
+          case FieldType_scalemode:
+            ConstInterp<int>::InterpScalar(addrOut,addr1,addr2,f);
+            break;
           default:
             cerr << "UNKNOWN TYPE IN AttributeGroup::InterpolateLinear\n";
             break;
@@ -543,6 +555,9 @@ AttributeGroup::InterpolateLinear(const AttributeGroup *atts1,
 //
 //    Brad Whitlock, Thu Dec 9 15:08:23 PST 2004
 //    Added variablename type.
+//
+//    Kathleen Bonnell, Thu Mar 22 16:43:38 PDT 2007 
+//    Added scalemode type. 
 //
 // ****************************************************************************
 
@@ -661,6 +676,10 @@ AttributeGroup::EqualTo(const AttributeGroup *atts) const
             }
             break;
           case FieldType_enum:
+            if (!(EqualVal<int>::EqualScalar(addr1,addr2)))
+               return false;
+            break;
+          case FieldType_scalemode:
             if (!(EqualVal<int>::EqualScalar(addr1,addr2)))
                return false;
             break;

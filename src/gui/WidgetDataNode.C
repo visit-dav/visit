@@ -65,7 +65,7 @@
 #include <qspinbox.h>
 #include <qtextedit.h>
 #include <QvisColorButton.h>
-#include <QvisFileLineEdit.h>
+#include <QvisDialogLineEdit.h>
 #include <QvisVariableButton.h>
 
 #include <DebugStream.h>
@@ -833,9 +833,9 @@ InitializeWidgetFromDataNode(QWidget *ui, DataNode *node)
                            << ".\n";
                 }
             }
-            else if(obj->inherits("QvisFileLineEdit"))
+            else if(obj->inherits("QvisDialogLineEdit"))
             {
-                QvisFileLineEdit *co = (QvisFileLineEdit *)obj;
+                QvisDialogLineEdit *co = (QvisDialogLineEdit *)obj;
                 co->setText(DataNodeToQString(objValues));
             }
             else if(obj->inherits("QvisVariableButton"))
@@ -949,9 +949,9 @@ InitializeDataNodeFromWidget(QWidget *ui, DataNode *node)
                 rgb[2] = co->buttonColor().blue();
                 node->AddNode(new DataNode(obj->name(), rgb, 3));
             }
-            else if(obj->inherits("QvisFileLineEdit"))
+            else if(obj->inherits("QvisDialogLineEdit"))
             {
-                QvisFileLineEdit *co = (QvisFileLineEdit *)obj;
+                QvisDialogLineEdit *co = (QvisDialogLineEdit *)obj;
                 QString text(co->text());
 
                 // Change values by deleting and inserting a node.

@@ -62,6 +62,9 @@ class QvisScreenPositionEdit;
 //   Brad Whitlock, Mon Mar 6 11:14:15 PDT 2006
 //   Added a new helper method.
 //
+//   Brad Whitlock, Tue Mar 20 15:16:06 PST 2007
+//   Added AllowInstantiation.
+//
 // ****************************************************************************
 
 class GUI_API QvisAnnotationObjectInterface : public QGroupBox, public GUIBase
@@ -76,6 +79,8 @@ public:
     virtual void Update(AnnotationObject *);
 
     virtual void GetCurrentValues(int which);
+
+    virtual bool AllowInstantiation() const { return true; }
 signals:
     void applyChanges();
     void setUpdateForWindow(bool);

@@ -75,7 +75,7 @@ class ViewerOperatorFactory;
 class ViewerPlotFactory;
 class ViewerWindow;
 class DataNode;
-struct avtDefaultPlotMetaData;
+class avtDefaultPlotMetaData;
 
 // ****************************************************************************
 //  Class: ViewerSubject

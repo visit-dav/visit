@@ -286,6 +286,7 @@ vtkCSGGrid::Box::IsFlatEnough2(const double *const gridBoundaries,
     if (2*sin(theta/2) < tol)
         return true;
     return false;
+
 #if 0
     // compute estimate of radius of curvature of this surface
     double r = (db / 2.0) / sin(theta / 2.0);
@@ -956,7 +957,7 @@ void vtkCSGGrid::PrintSelf(ostream& os, vtkIndent indent)
 //
 // Quadric equation coefficient indices...
 //
-// x^2   y^2   z^2    xy    xz    yz    x    y    z    1
+// x^2   y^2   z^2    xy    yz    xz    x    y    z    1
 //  0     1     2     3     4     5     6    7    8    9
 //
 static void SpherePRToQuadric(const double *const sphere, double *quadric)
@@ -1979,11 +1980,12 @@ vtkUnstructuredGrid *vtkCSGGrid::DiscretizeSpace(
 #endif
 
 
-void
+bool
 vtkCSGGrid::AddCutZones(vtkUnstructuredGrid *cutBox,
     vtkPoints *points, vtkUnstructuredGrid *ugrid,
     map<float, map<float, map<float, int> > >& nodemap)
 {
+    bool addedAPiece = false;
     for (int i = 0; i < cutBox->GetNumberOfCells(); i++)
     {
         vtkCell *newCell = cutBox->GetCell(i);
@@ -2023,9 +2025,11 @@ vtkCSGGrid::AddCutZones(vtkUnstructuredGrid *cutBox,
         //
         ugrid->InsertNextCell(newCell->GetCellType(),
                cellPoints->GetNumberOfPoints(), pointIds);
+        addedAPiece = true;
 
         delete [] pointIds;
     }
+    return addedAPiece;
 }
 
 void
@@ -2185,8 +2189,8 @@ vtkCSGGrid::MakeMeshZonesByCuttingBox4(const Box *theBox,
             for (i = 0; i < piecesCurrent->size(); i++)
                 (*piecesCurrent)[i]->Delete();
 
-            debug1 << "Predicting MakeMeshZonesByCuttingBox4 will use too much memory." << endl;
-            debug1 << "Falling back to MakeMeshZonesByCuttingBox2." << endl;
+            debug1 << "vtkCSGGrid: Predicting too much memory for cutter4; "
+                      "Falling back to cutter2" << endl;
 
             // call the approximate method
             return MakeMeshZonesByCuttingBox2(theBox, boundaryToStateMap,
@@ -2290,14 +2294,20 @@ vtkCSGGrid::MakeMeshZonesByCuttingBox4(const Box *theBox,
     // all these pieces and decide if each is really "in" or "out" and
     // add them as necessary. Delete the pieces too.
     //
+    bool addedAPiece = false;
     for (i = 0; i < piecesCurrent->size(); i++)
     {
         Box::FuncState pieceState = (Box::FuncState) EvalBoxStateOfRegion(0, zoneId,
             (*pieceBoundaryToStateMapsCurrent)[i], 0);
         if (pieceState == Box::LT_ZERO)
+        {
+            addedAPiece = true;
             AddCutZones((*piecesCurrent)[i], points, ugrid, nodemap);
+        }
         (*piecesCurrent)[i]->Delete();
     }
+
+    return addedAPiece;
 }
 
 bool
@@ -2361,11 +2371,24 @@ vtkCSGGrid::MakeMeshZonesByCuttingBox2(const Box *theBox,
         }
     }
 
-    AddCutZones(boxUgrid, points, ugrid, nodemap);
+    bool result = AddCutZones(boxUgrid, points, ugrid, nodemap);
     boxUgrid->Delete();
-    return true;
+    return result;
 }
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Mark C. Miller, Thu Mar 22 19:09:43 PST 2007 
+//    Changed logic for flatness test. Flatness test is approximate. So, when
+//    a surface is deemed flat, the cutter can still wind up NOT producing
+//    any pieces for it. Before, we assumed cutter would produce pieces. When
+//    it doesn't we loose pieces of the mesh. Now, if flatness test passes but
+//    cutter yields nothing, we subdivide. This is expected to result in at
+//    most 1-2 levels more of subdivision for the cases where cutter did not
+//    agree with flatness test. 
+//
+// ****************************************************************************
 vtkUnstructuredGrid *vtkCSGGrid::DiscretizeSpace3(
     int specificZone, int rank, int nprocs,
     double discTol, double flatTol,
@@ -2454,13 +2477,19 @@ vtkUnstructuredGrid *vtkCSGGrid::DiscretizeSpace3(
         }
         else if (curBox->Resolution() > discTol)
         {
+            bool flatNessHandledIt = false;
             if (curBox->CanBeCut2(gridBoundaries, boundaryToStateMap, flatTol))
             {
-                MakeMeshZonesByCuttingBox4(curBox, boundaryToStateMap,
+                flatNessHandledIt =
+                    MakeMeshZonesByCuttingBox4(curBox, boundaryToStateMap,
                          boundaryToSenseMap, gridZones[specificZone],
                          points, ugrid, nodemap);
-                delete curBox;
+                if (!flatNessHandledIt)
+                    debug1 << "vtkCSGGrid: Flatness passed; Cutter4 failed. Subdividing..." << endl; 
             }
+
+            if (flatNessHandledIt)
+                delete curBox;
             else
             {
                 //
