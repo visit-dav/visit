@@ -8338,20 +8338,17 @@ ViewerWindow::GetExternalRenderRequestInfo(
 //
 //    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
 //    Added code to set whether window is being compressed or not 
+//
+//    Eric Brugger, Fri Mar 23 11:01:10 PDT 2007
+//    Modified the routine to no longer return a NULL image if there were
+//    no plots.
+//
 // ****************************************************************************
 bool
 ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
     bool& shouldTurnOffScalableRendering, bool doAllAnnotations,
     avtDataObject_p& dob)
 {
-
-    // return immediately without error if we have nothing to do
-    if (thisRequest.plotIdsList.size() == 0)
-    {
-        dob = NULL;
-        return true;
-    }
-
     ViewerEngineManager *eMgr = ViewerEngineManager::Instance();
     bool success = false;
     std::vector<avtImage_p> imgList;

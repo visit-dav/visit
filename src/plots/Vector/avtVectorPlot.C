@@ -408,6 +408,12 @@ avtVectorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 //    Kathleen Bonnell, Wed Dec 22 17:01:09 PST 2004 
 //    Added call to SetLimitsMode. 
 //
+//    Jeremy Meredith, Mon Mar 19 17:15:54 EDT 2007
+//    Added more options to the vector glyph: settings now exist for
+//    higher number of facets, drawing the stem as a cylinder/rectangle
+//    instead of a line, capping the ends of the head and stem, and
+//    setting the width of the stem if it's not drawn as a line.
+//
 // ****************************************************************************
 
 void
@@ -437,6 +443,18 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
 
     glyph->SetMakeHead(atts.GetHeadOn());
     glyph->SetHeadSize(atts.GetHeadSize());
+    glyph->SetLineStem(atts.GetLineStem());
+    glyph->SetStemWidth(atts.GetStemWidth());
+    if (atts.GetHighQuality())
+    {
+        glyph->HighQualityOn();
+        glyph->CapEndsOn();
+    }
+    else
+    {
+        glyph->HighQualityOff();
+        glyph->CapEndsOff();
+    }
 
     float offset;
     switch (atts.GetVectorOrigin())

@@ -81,6 +81,10 @@ class VectorAttributes;
 //   Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004 
 //   Added widgets for min/max and limitsSelection.
 //
+//   Jeremy Meredith, Mon Mar 19 16:24:08 EDT 2007
+//   Added controls for lineStem, stemWidth, and highQuality.
+//   Reorganized the window a bit.
+//
 // ****************************************************************************
 
 class QvisVectorPlotWindow : public QvisPostableWindowObserver
@@ -124,13 +128,24 @@ private slots:
     void processMinLimitText();
     void limitsSelectChanged(int);
 
+    void lineStemMethodChanged(int);
+    void highQualityToggled(bool);
+    void processStemWidthText();
 
 private:
     int                  plotType;
     VectorAttributes     *vectorAtts;
 
+    QButtonGroup         *lineStemButtonGroup; 
+    QGroupBox            *styleGroupBox;
+    QCheckBox            *highQualityToggle;
+
     QvisLineStyleWidget  *lineStyle;
     QvisLineWidthWidget  *lineWidth;
+    QLabel               *lineStyleLabel;
+    QLabel               *lineWidthLabel;
+    QLineEdit            *stemWidthEdit;
+    QLabel               *stemWidthLabel;
     QGroupBox            *colorGroupBox;
     QvisColorButton      *vectorColor;
     QButtonGroup         *colorButtonGroup; 

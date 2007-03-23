@@ -1432,6 +1432,9 @@ ViewerEngineManager::LaunchMessage(const EngineKey &ek)  const
 //    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
 //    Added leftEye to Render rpc to support stereo SR
 //
+//    Eric Brugger, Fri Mar 23 12:24:30 PDT 2007
+//    Modified the routine to render an image even if there are no plots.
+//
 // ****************************************************************************
 
 bool
@@ -1459,6 +1462,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
 
     bool retval = true;
     EngineKey ek;
+    vector<int> NullPlotIds;
     map<EngineKey,vector<int> > perEnginePlotIds;
 
     // make a pass over list of plots to make sure all associated engines exist
@@ -1481,6 +1485,12 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
         {
             ek = engineKeysList[i];
             perEnginePlotIds[ek].push_back(plotIdsList[i]);
+        }
+
+        // use the first engine if there are no plots
+        if (perEnginePlotIds.size() == 0 && engines.size() > 0)
+        {
+            perEnginePlotIds[engines.begin()->first] = NullPlotIds;
         }
 
         int numEnginesToRender = perEnginePlotIds.size();

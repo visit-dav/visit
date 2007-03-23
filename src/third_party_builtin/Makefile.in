@@ -59,13 +59,16 @@
 #   Brad Whitlock, Fri Apr 7 15:08:10 PST 2006
 #   Added GLEW library.
 #
+#   Eric Brugger, Tue Mar 20 09:46:13 PDT 2007
+#   Added mesa stub library.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 @DIRTARGETS@
 
-SUBDIRS=@BUILD_BZIP2@ @BUILD_GLEW@ @BUILD_BILIB@
+SUBDIRS=mesa_stub @BUILD_BZIP2@ @BUILD_GLEW@ @BUILD_BILIB@
 
 message:
 	@echo

@@ -69,6 +69,9 @@
 #   Kathleen Bonnell, Wed Nov 16 08:51:43 PST 2005 
 #   Added PTHREAD_LIB and X_LIBS.
 #
+#   Eric Brugger, Thu Mar 22 10:26:19 PDT 2007
+#   Added MESA_LIBS and GL_LIBS since they are no longer included in VTK_LIBS.
+#
 ##############################################################################
 
 
@@ -76,7 +79,7 @@
 # --------------------
 @SET_MAKE@
 @VARIABLES@
-LIBS=@VTK_LIBS@ @PTHREAD_LIB@ @X_LIBS@
+LIBS=@VTK_LIBS@ $(MESA_LIBS) $(GL_LIBS) @PTHREAD_LIB@ @X_LIBS@
 CPPFLAGS=@CPPFLAGS@ @VTK_INCLUDES@ -I$(TOPDIR)/include/visit -I.
 
 T2P_SRC    = text2polys.C arial_font.C

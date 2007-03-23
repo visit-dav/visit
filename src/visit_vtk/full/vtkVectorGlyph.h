@@ -59,6 +59,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //    Jeremy Meredith, Fri Nov 21 11:25:27 PST 2003
 //    Added offset to allow glyphs to originate/terminate at the point.
 //
+//    Jeremy Meredith, Mon Mar 19 14:33:15 EDT 2007
+//    Added "HighQuality", which ups the number of facets, "LineStem"
+//    which determines if the stem is a line or a cylinder(3d)/rectangle(2d),
+//    "CapEnds" which caps the cone's base (and the cylinder's if
+//    we're in 3D, i.e. if ConeHead is true), and the "StemWidth" which
+//    defines the width of the stem if we're drawing is as a cyl/rect.
+//
 
 
 class VISIT_VTK_API vtkVectorGlyph : public vtkPolyDataSource
@@ -66,6 +73,21 @@ class VISIT_VTK_API vtkVectorGlyph : public vtkPolyDataSource
 public:
   vtkTypeMacro(vtkVectorGlyph, vtkPolyDataSource);
   void PrintSelf(ostream& os, vtkIndent indent);
+
+  vtkSetMacro(HighQuality,int);
+  vtkBooleanMacro(HighQuality,int);
+  vtkGetMacro(HighQuality,int);
+
+  vtkSetMacro(CapEnds,int);
+  vtkBooleanMacro(CapEnds,int);
+  vtkGetMacro(CapEnds,int);
+
+  vtkSetMacro(LineStem,int);
+  vtkBooleanMacro(LineStem,int);
+  vtkGetMacro(LineStem,int);
+
+  vtkSetClampMacro(StemWidth,float,0.0,0.5);
+  vtkGetMacro(StemWidth,float);
 
   vtkSetMacro(MakeHead,int);
   vtkBooleanMacro(MakeHead,int);
@@ -90,6 +112,10 @@ protected:
 
   void Execute();
 
+  int HighQuality;
+  int CapEnds;
+  int LineStem;
+  float StemWidth;
   int ConeHead;
   int MakeHead;
   float HeadSize;

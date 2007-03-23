@@ -267,6 +267,10 @@
 #    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 #    Added VISIT_VTK_LDFLAGS to COMMONLIBS and FILIB_LIBS to SERLIBS & PARLIBS
 #
+#    Eric Brugger, Tue Mar 20 11:36:46 PDT 2007
+#    Added MESA_LIBS and GL_LIBS to the list of libraries since they are
+#    no longer included in VTK_LIBS.
+#
 ##############################################################################
 
 ##
@@ -292,14 +296,14 @@ SERLIBS=$(COMMONLIBS) -lviswindow_ser -lplotter_ser -lmir_ser -lavtwriter_ser \
         -lavtddf_ser -lavtmath_ser -ldatabase_ser -lquery_ser \
         -lexpressions_ser -lavtfilters_ser -lpipeline_ser  \
         -lengineparstate_ser -lparallel_visit_vtk_ser \
-        $(GLEW_LIBS) @VTKQT_LIBS@ $(VTK_LIBS) $(X_LIBS) $(BZIP2_LIBS) \
+        $(GLEW_LIBS) @VTKQT_LIBS@ $(VTK_LIBS) $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) $(BZIP2_LIBS) \
 	$(FILIB_LIBS) @LIBS@ @PTHREAD_LIB@
 
 PARLIBS=$(COMMONLIBS) -lviswindow_par -lplotter_par -lmir_par -lavtwriter_par \
         -lavtddf_par -lavtmath_par -ldatabase_par -lquery_par \
         -lexpressions_par -lavtfilters_par -lpipeline_par \
         -lengineparstate_par -lparallel_visit_vtk_par \
-        $(GLEW_LIBS) @VTKQT_LIBS@ $(VTK_LIBS) $(X_LIBS) \
+        $(GLEW_LIBS) @VTKQT_LIBS@ $(VTK_LIBS) $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) \
 	$(BZIP2_LIBS) $(FILIB_LIBS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
 
 SERLIBDEP=../../lib/libplugin.@SHLIB_LIBEXT@ ../../lib/libplotter_ser.@SHLIB_LIBEXT@ \

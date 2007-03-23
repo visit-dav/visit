@@ -1949,6 +1949,9 @@ ViewerWindowManager::SaveWindow(int windowIndex)
 //    Added code to refuse to save and warn user if non-screen-capture saves
 //    are attempted with animation caching turned on.
 //
+//    Eric Brugger, Thu Mar 22 12:53:34 PDT 2007
+//    Modified so that it doesn't use screen capture when in nowin mode.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -1966,7 +1969,28 @@ ViewerWindowManager::CreateSingleImage(int windowIndex,
         }
 
         if(screenCapture)
-            retval = windows[index]->ScreenCapture();
+        {
+            if(windows[index]->GetNoWinMode() == false)
+            {
+                retval = windows[index]->ScreenCapture();
+            }
+            else
+            {
+                if (windows[index]->GetAnimationAttributes()->GetPipelineCachingMode())
+                {
+                    Warning("Currently, you cannot save images when in nowin"
+                            " mode and have animation caching turned on. Turn"
+                            " off animation caching to save your windows.");
+                }
+                else
+                {
+                    avtDataObject_p extImage;
+                    windows[index]->ExternalRenderManual(extImage,
+                        windowLimits[0][0].width, windowLimits[0][0].height);
+                    CopyTo(retval, extImage);
+                }
+            }
+        }
         else
         {
             if (windows[index]->GetAnimationAttributes()->GetPipelineCachingMode())

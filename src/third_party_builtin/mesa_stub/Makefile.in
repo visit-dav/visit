@@ -55,12 +55,7 @@
 #    of  California,  and  shall  not  be  used  for  advertising  or  product
 #    endorsement purposes.
 #
-# Modifications:
-#   Kathleen Bonnell, Wed Nov 16 08:51:43 PST 2005 
-#   Added PTHREAD_LIB and X_LIBS.
-#
-#   Eric Brugger, Thu Mar 22 10:31:46 PDT 2007
-#   Added MESA_LIBS and GL_LIBS since they are no longer included in VTK_LIBS.
+#  Modifications:
 #
 ##############################################################################
 
@@ -70,37 +65,38 @@
 @SET_MAKE@
 @VARIABLES@
 
-CXXFLAGS=-I. @VTK_INCLUDES@ @CXXFLAGS@
-
-LIBS=@VTK_LIBS@ $(MESA_LIBS) $(GL_LIBS) @PTHREAD_LIB@ @X_LIBS@
-
 ##
 ## Files...
 ##
-SRC=surfcomp.C
-OBJ=$(SRC:.C=.o)
+SRC=gl.c glu.c glx.c glxext.c osmesa.c
+
+
+CPPFLAGS=-I. @MESA_INCLUDE@
+
+OBJ=$(SRC:.c=.o)
+LIB=libMesaStub
+LIBS=
 
 
 ##
 ## Standard targets...
 ##
-all: $(tmpbin)/surfcomp
-
-install: install_bin
+all: message $(LIBSHARED)
 
 clean:
-	$(RM) $(OBJ) $(tmpbin)/surfcomp
+	$(RM) $(OBJ) $(LIBSHARED)
 
 ##
 ## Other targets...
 ##
-$(tmpbin)/surfcomp: $(OBJ)
-	$(CXX) -o $@ $(OBJ) $(LDFLAGS) $(LIBS)
-
-install_bin: $(tmpbin)/surfcomp
-	$(INSTALL) $(tmpbin)/surfcomp $(bindir)
+message:
+	@echo
+	@echo "****************************************************************************"
+	@echo "*** Building MesaStub Library ($(LIB))"
+	@echo "****************************************************************************"
 
 ##
 ## Automatic dependency stuff
 ##
 @TARGETS@
+@LIBTARGETS@
