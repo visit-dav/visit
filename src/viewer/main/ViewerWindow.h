@@ -592,6 +592,8 @@ public:
 
     void SetFullFrameMode(const bool mode);
     bool GetFullFrameMode() const;
+    void SetFullFrameActivationMode(const int mode);
+    int  GetFullFrameActivationMode() const;
     void GetScaleFactorAndType(double &s, int &t);
     bool DoAllPlotsAxesHaveSameUnits();
 

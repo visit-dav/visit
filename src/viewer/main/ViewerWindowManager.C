@@ -3487,6 +3487,9 @@ ViewerWindowManager::TogglePerspective(int windowIndex)
 //    Brad Whitlock, Tue Feb 3 16:06:34 PST 2004
 //    I changed the call to UpdateWindowInformation.
 //
+//    Dave Bremer, Mon Mar 26 18:36:04 PDT 2007
+//    When this gets full frame mode gets toggled on or off, disable auto full 
+//    frame mode in both the viewer and the gui.
 // ****************************************************************************
 
 void
@@ -3498,9 +3501,10 @@ ViewerWindowManager::ToggleFullFrameMode(int windowIndex)
     int index = (windowIndex == -1) ? activeWindow : windowIndex;
     if(windows[index] != 0)
     {
-        bool fullframe = windows[index]->GetFullFrameMode();
-        windows[index]->SetFullFrameMode(!fullframe);
-
+        bool mode = !(windows[index]->GetFullFrameMode());
+        windows[index]->SetFullFrameMode(mode);
+        windows[index]->SetFullFrameActivationMode(mode?View2DAttributes::On 
+                                                       :View2DAttributes::Off);
         //
         // Send the new view info to the client.
         //

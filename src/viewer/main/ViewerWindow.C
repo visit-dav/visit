@@ -1702,6 +1702,10 @@ ViewerWindow::GetMaintainDataMode() const
 //    If full frame mode is set here in the viewer, also change the full frame
 //    activation mode to be explicitly on or off, instead of auto which can
 //    cause the mode to later change unexpectedly.
+//
+//    Dave Bremer, March 26, 2007
+//    Undid last change.  It led to full frame activation being turned off
+//    at start time.
 // ****************************************************************************
 
 void
@@ -1711,10 +1715,7 @@ ViewerWindow::SetFullFrameMode(const bool mode)
     // Set the full frame mode and update the view.
     //
     avtView2D view2D=visWindow->GetView2D();
-
     view2D.fullFrame = mode;
-    view2D.fullFrameActivationMode = mode ? View2DAttributes::On : View2DAttributes::Off;
-    
     visWindow->SetView2D(view2D);
 }
 
@@ -1735,12 +1736,51 @@ ViewerWindow::SetFullFrameMode(const bool mode)
 //    I moved the handling of full frame mode to VisWindow.
 //
 // ****************************************************************************
-
 bool
 ViewerWindow::GetFullFrameMode() const
 {
     return visWindow->GetView2D().fullFrame;
 }
+
+
+// ****************************************************************************
+//  Method: ViewerWindow::SetFullFrameActivationMode
+//
+//  Purpose: 
+//    Set the window's full frame activation mode.
+//
+//  Programmer: Dave Bremer
+//  Creation:   March, 26 2007
+//
+// ****************************************************************************
+void
+ViewerWindow::SetFullFrameActivationMode(const int mode)
+{
+    avtView2D view2D=visWindow->GetView2D();
+    view2D.fullFrameActivationMode = mode;
+    visWindow->SetView2D(view2D);
+}
+
+
+// ****************************************************************************
+//  Method: ViewerWindow::GetFullFrameActivationMode
+//
+//  Purpose: 
+//    Return the window's full frame activation mode.
+//
+//  Returns:    The full frame activation mode.
+//
+//  Programmer: Dave Bremer
+//  Creation:   March, 26 2007
+//
+// ****************************************************************************
+int
+ViewerWindow::GetFullFrameActivationMode() const
+{
+    return visWindow->GetView2D().fullFrameActivationMode;
+}
+
+
 
 // ****************************************************************************
 //  Method: ViewerWindow::DoAllPlotsAxesHaveSameUnits
