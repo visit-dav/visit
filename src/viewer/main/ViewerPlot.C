@@ -1253,10 +1253,32 @@ ViewerPlot::ProvidesLegend() const
 //
 // ****************************************************************************
 
-std::string
+const std::string &
 ViewerPlot::GetPlotName() const
 {
     return plotName;
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::SetPlotName
+//
+// Purpose: 
+//   Sets the plot name.
+//
+// Note: This method should not be called by anyone but the plot list when 
+//       creating a new plot or restoring a session.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 15:53:39 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::SetPlotName(const std::string &name)
+{
+    plotName = name;
 }
 
 // ****************************************************************************

@@ -146,6 +146,8 @@ using     std::sort;
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added node origin
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes()
@@ -160,6 +162,7 @@ avtDataAttributes::avtDataAttributes()
 
     activeVariable         = -1;
     cellOrigin             = 0;
+    nodeOrigin             = 0;
     blockOrigin            = 0;
     groupOrigin            = 0;
     topologicalDimension   = -1;
@@ -413,6 +416,8 @@ avtDataAttributes::DestructSelf(void)
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added node origin
 // ****************************************************************************
 
 void
@@ -421,6 +426,7 @@ avtDataAttributes::Print(ostream &out)
     out << "Spatial dimension = " << spatialDimension << endl;
     out << "Topological dimension = " << topologicalDimension << endl;
     out << "Cell origin = " << cellOrigin << endl;
+    out << "Node origin = " << nodeOrigin << endl;
     out << "Block origin = " << blockOrigin << endl;
     out << "Group origin = " << groupOrigin << endl;
     if (!timeIsAccurate)
@@ -833,6 +839,8 @@ avtDataAttributes::Print(ostream &out)
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added node origin
 // ****************************************************************************
 
 void
@@ -844,6 +852,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     SetSpatialDimension(di.spatialDimension);
 
     SetCellOrigin(di.cellOrigin);
+    SetNodeOrigin(di.nodeOrigin);
     SetBlockOrigin(di.blockOrigin);
     SetGroupOrigin(di.groupOrigin);
     if (di.cycleIsAccurate)
@@ -1038,6 +1047,8 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added node origin
 // ****************************************************************************
 
 void
@@ -1131,6 +1142,10 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     if (cellOrigin != da.cellOrigin)
     {
         EXCEPTION2(InvalidMergeException, cellOrigin, da.cellOrigin);
+    }
+    if (nodeOrigin != da.nodeOrigin)
+    {
+        EXCEPTION2(InvalidMergeException, nodeOrigin, da.nodeOrigin);
     }
     if (blockOrigin != da.blockOrigin)
     {
@@ -2160,6 +2175,11 @@ avtDataAttributes::SetCellOrigin(int origin)
     cellOrigin = origin;
 }
 
+void
+avtDataAttributes::SetNodeOrigin(int origin)
+{
+    nodeOrigin = origin;
+}
 
 // ****************************************************************************
 //  Method: avtDataAttributes::SetBlockOrigin
@@ -2357,6 +2377,10 @@ avtDataAttributes::SetTime(double d)
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added node origin. Re-wrote code to be a little easier to manage
+//    by using i++ indexing rather than literal ints and basei in the for
+//    loop for variables.
 // ****************************************************************************
 
 void
@@ -2366,43 +2390,46 @@ avtDataAttributes::Write(avtDataObjectString &str,
     int   i, j;
 
     int varSize = 6;
-    int numVals = 27 + varSize*variables.size();
+    int numVals = 28 + varSize*variables.size();
     int *vals = new int[numVals];
-    vals[0] = topologicalDimension;
-    vals[1] = spatialDimension;
-    vals[2] = cellOrigin;
-    vals[3] = blockOrigin;
-    vals[4] = groupOrigin;
-    vals[5] = cycle;
-    vals[6] = (cycleIsAccurate ? 1 : 0);
-    vals[7] = (timeIsAccurate ? 1 : 0);
-    vals[8] = (int) containsGhostZones;
-    vals[9] = (containsOriginalCells ? 1 : 0);
-    vals[10] = (containsOriginalNodes ? 1 : 0);
-    vals[11] = (keepNodeZoneArrays ? 1 : 0);
-    vals[12] = (containsGlobalZoneIds ? 1 : 0);
-    vals[13] = (containsGlobalNodeIds ? 1 : 0);
-    vals[14] = (canUseInvTransform ? 1 : 0);
-    vals[15] = (canUseTransform ? 1 : 0);
-    vals[16] = (canUseCumulativeAsTrueOrCurrent ? 1 : 0);
-    vals[17] = windowMode;
-    vals[18] = numStates;
-    vals[19] = mirOccurred;
-    vals[20] = canUseOrigZones;
-    vals[21] = origElementsRequiredForPick;
-    vals[22] = meshCoordType;
-    vals[23] = (nodesAreCritical ? 1 : 0);
-    vals[24] = (rectilinearGridHasTransform ? 1 : 0);
-    vals[25] = activeVariable;
-    vals[26] = variables.size();
+    i = 0;
+    vals[i++] = topologicalDimension;
+    vals[i++] = spatialDimension;
+    vals[i++] = cellOrigin;
+    vals[i++] = nodeOrigin;
+    vals[i++] = blockOrigin;
+    vals[i++] = groupOrigin;
+    vals[i++] = cycle;
+    vals[i++] = (cycleIsAccurate ? 1 : 0);
+    vals[i++] = (timeIsAccurate ? 1 : 0);
+    vals[i++] = (int) containsGhostZones;
+    vals[i++] = (containsOriginalCells ? 1 : 0);
+    vals[i++] = (containsOriginalNodes ? 1 : 0);
+    vals[i++] = (keepNodeZoneArrays ? 1 : 0);
+    vals[i++] = (containsGlobalZoneIds ? 1 : 0);
+    vals[i++] = (containsGlobalNodeIds ? 1 : 0);
+    vals[i++] = (canUseInvTransform ? 1 : 0);
+    vals[i++] = (canUseTransform ? 1 : 0);
+    vals[i++] = (canUseCumulativeAsTrueOrCurrent ? 1 : 0);
+    vals[i++] = windowMode;
+    vals[i++] = numStates;
+    vals[i++] = mirOccurred;
+    vals[i++] = canUseOrigZones;
+    vals[i++] = origElementsRequiredForPick;
+    vals[i++] = meshCoordType;
+    vals[i++] = (nodesAreCritical ? 1 : 0);
+    vals[i++] = (rectilinearGridHasTransform ? 1 : 0);
+    vals[i++] = activeVariable;
+    vals[i++] = variables.size();
+    int basei = i;
     for (i = 0 ; i < variables.size() ; i++)
     {
-        vals[27+varSize*i]   = variables[i].dimension;
-        vals[27+varSize*i+1] = variables[i].centering;
-        vals[27+varSize*i+2] = (variables[i].treatAsASCII ? 1 : 0);
-        vals[27+varSize*i+3] = variables[i].vartype;
-        vals[27+varSize*i+4] = variables[i].subnames.size();
-        vals[27+varSize*i+5] = variables[i].binRange.size();
+        vals[basei+varSize*i]   = variables[i].dimension;
+        vals[basei+varSize*i+1] = variables[i].centering;
+        vals[basei+varSize*i+2] = (variables[i].treatAsASCII ? 1 : 0);
+        vals[basei+varSize*i+3] = variables[i].vartype;
+        vals[basei+varSize*i+4] = variables[i].subnames.size();
+        vals[basei+varSize*i+5] = variables[i].binRange.size();
     }
     wrtr->WriteInt(str, vals, numVals);
     wrtr->WriteDouble(str, dtime);
@@ -2614,6 +2641,8 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin
 // ****************************************************************************
 
 int
@@ -2635,6 +2664,10 @@ avtDataAttributes::Read(char *input)
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
     SetCellOrigin(tmp);
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    SetNodeOrigin(tmp);
   
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
@@ -4295,6 +4328,9 @@ avtDataAttributes::SetPlotInfoAtts(const PlotInfoAttributes *pia)
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added node origin. Fixed apparent problem in outputting cellOrigin
+//    in outputting cellOrigin (it didn't before). 
 // ****************************************************************************
 
 static const char *
@@ -4338,6 +4374,9 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
     sprintf(str, "%d", topologicalDimension);
     webpage->AddTableEntry2("Topological Dimension", str);
     sprintf(str, "%d", cellOrigin);
+    webpage->AddTableEntry2("Cell Origin", str);
+    sprintf(str, "%d", nodeOrigin);
+    webpage->AddTableEntry2("Node Origin", str);
     switch (containsGhostZones)
     {
       case AVT_NO_GHOSTS:

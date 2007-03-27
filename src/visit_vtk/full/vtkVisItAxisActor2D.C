@@ -123,7 +123,7 @@ vtkVisItAxisActor2D::vtkVisItAxisActor2D()
   this->Shadow = 1;
   this->FontFamily = VTK_ARIAL;
   this->LabelFormat = new char[8]; 
-  SNPRINTF(this->LabelFormat,8, "%s","%-#6.4f");
+  SNPRINTF(this->LabelFormat,8, "%s","%-#6.3f");
 
   this->TitleMapper = vtkTextMapper::New();
   this->TitleActor = vtkActor2D::New();

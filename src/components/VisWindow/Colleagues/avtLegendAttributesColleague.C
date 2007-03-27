@@ -53,6 +53,7 @@
 #define LEGEND_DRAW_LABELS     2
 #define LEGEND_ORIENTATION0    3
 #define LEGEND_ORIENTATION1    4
+#define LEGEND_DRAW_TITLE      5
 
 //
 // Helper functions to get bits out of the annotation attributes.
@@ -98,6 +99,7 @@ avtLegendAttributesColleague::avtLegendAttributesColleague(VisWindowColleaguePro
     SetBool(atts, LEGEND_DRAW_LABELS,     true);
     SetBool(atts, LEGEND_ORIENTATION0,    false);
     SetBool(atts, LEGEND_ORIENTATION1,    false);
+    SetBool(atts, LEGEND_DRAW_TITLE,      true);
 
     // Set the format string for the legend into the text.
     stringVector text;
@@ -325,7 +327,9 @@ avtLegendAttributesColleague::ManageLayout(avtLegend_p legend) const
 // Creation:   Thu Mar 22 02:13:46 PDT 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Mar 26 13:47:55 PST 2007
+//   Added title visibility.
+//
 // ****************************************************************************
 
 void
@@ -360,6 +364,9 @@ avtLegendAttributesColleague::CustomizeLegend(avtLegend_p legend)
 
     // Set the legend font height.
     legend->SetFontHeight(atts.GetDoubleAttribute1());
+
+    // Set whether the title is drawn.
+    legend->SetTitleVisibility(GetBool(atts, LEGEND_DRAW_TITLE));
 
     // Set whether the labels are drawn.
     legend->SetLabelVisibility(GetBool(atts, LEGEND_DRAW_LABELS));

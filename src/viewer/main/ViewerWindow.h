@@ -413,6 +413,9 @@ class ViewerToolbar;
 //    Kathleen Bonnell, Thu Mar 22 19:36:05 PDT 2007 
 //    Added SetScaleMode method.
 //
+//    Brad Whitlock, Mon Mar 26 14:49:15 PST 2007
+//    Added argument to CopyAnnotationObjectList.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow : public ViewerBase
@@ -529,7 +532,7 @@ public:
     void SetAnnotationAttributes(const AnnotationAttributes *);
     const AnnotationAttributes *GetAnnotationAttributes() const;
     void CopyAnnotationAttributes(const ViewerWindow *);
-    void CopyAnnotationObjectList(const ViewerWindow *);
+    void CopyAnnotationObjectList(const ViewerWindow *, bool copyLegends);
     bool AddAnnotationObject(int annotType, const std::string &annotName);
     void HideActiveAnnotationObjects();
     void DeleteActiveAnnotationObjects();

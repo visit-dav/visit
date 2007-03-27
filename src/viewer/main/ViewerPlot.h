@@ -304,7 +304,8 @@ class VIEWER_API ViewerPlot : public ViewerBase
     // Methods to set/get the name of the plot, which is an identifier that
     // can be used to lookup the plot.
     //
-    std::string GetPlotName() const;
+    const std::string &GetPlotName() const;
+    void SetPlotName(const std::string &);
 
     // Returns whether the plot provides a legend.
     bool        ProvidesLegend() const;

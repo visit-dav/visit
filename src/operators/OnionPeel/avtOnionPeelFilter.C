@@ -263,6 +263,9 @@ avtOnionPeelFilter::Equivalent(const AttributeGroup *a)
 //    Remove call to SetSource(NULL), as it now removes information necessary 
 //    for the dataset. 
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin. Changed cellOrigin to seedOrigin to work
+//    for either nodes or zones
 // ****************************************************************************
 
 vtkDataSet *
@@ -376,19 +379,18 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
         else
         {
             seed = id[0];
-            if (atts.GetSeedType() == OnionPeelAttributes::SeedCell)
+            int seedOrigin = atts.GetSeedType() == OnionPeelAttributes::SeedCell ?
+                             da.GetCellOrigin() : da.GetNodeOrigin();
+            if (seedOrigin != 0)
             {
-                if (da.GetCellOrigin() != 0)
+                debug5 << "Offsetting seed cell by origin = " 
+                       << seedOrigin << endl;
+                if (seedOrigin > 1)
                 {
-                    debug5 << "Offsetting seed cell by origin = " 
-                           << da.GetCellOrigin() << endl;
-                    if (da.GetCellOrigin() > 1)
-                    {
-                        debug1 << "WARNING: mesh origin to offset seed cell by is "
-                                << da.GetCellOrigin() << endl;
-                    }
+                    debug1 << "WARNING: mesh origin to offset seed cell by is "
+                           << seedOrigin << endl;
                 }
-                seed -= da.GetCellOrigin();
+                seed -= seedOrigin;
             }
         }
 

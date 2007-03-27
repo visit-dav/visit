@@ -56,6 +56,7 @@ using std::string;
 
 #include <AnimationAttributes.h>
 #include <AnnotationAttributes.h>
+#include <AnnotationObject.h>
 #include <AnnotationObjectList.h>
 #include <AttributeSubjectMap.h>
 #include <DataNode.h>
@@ -3145,7 +3146,8 @@ ViewerWindow::CopyAnnotationAttributes(const ViewerWindow *source)
 //   Copies the annotation objects from the source window to this window.
 //
 // Arguments:
-//   source : The window from which we're copying annotation objects.
+//   source      : The window from which we're copying annotation objects.
+//   copyLegends : Whether the legend annotation objects should be copied.
 //
 // Returns:    
 //
@@ -3156,21 +3158,52 @@ ViewerWindow::CopyAnnotationAttributes(const ViewerWindow *source)
 // Creation:   Thu Nov 6 17:50:42 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Mar 26 14:49:53 PST 2007
+//   Added copyLegends.
+//
 // ****************************************************************************
 
 void
-ViewerWindow::CopyAnnotationObjectList(const ViewerWindow *source)
+ViewerWindow::CopyAnnotationObjectList(const ViewerWindow *source, 
+    bool copyLegends)
 {
-    // First delete all of the annotation objects.
-    visWindow->DeleteAllAnnotationObjects();
-
     // Get the properties of all of the source window's annotations.
     AnnotationObjectList annots;
     source->UpdateAnnotationObjectList(annots);
 
     // Add the annotations to this window.
-    visWindow->CreateAnnotationObjectsFromList(annots);
+    if(copyLegends)
+    {
+        // First delete all of the annotation objects.
+        visWindow->DeleteAllAnnotationObjects();
+
+        visWindow->CreateAnnotationObjectsFromList(annots);
+    }
+    else
+    {
+        // Get the legends for this window so they can be preserved. Do this
+        // before we clear the annotations.
+        AnnotationObjectList withLegends, allAnnots;
+        UpdateAnnotationObjectList(withLegends);
+        for(int i = 0; i < withLegends.GetNumAnnotations(); ++i)
+        {
+            if(withLegends[i].GetObjectType() == AnnotationObject::LegendAttributes)
+                allAnnots.AddAnnotation(withLegends[i]);
+        }
+
+        // Grab all of the non-legend annotations from the other window and 
+        // add them to this window.
+        for(int i = 0; i < annots.GetNumAnnotations(); ++i)
+        {
+            if(annots[i].GetObjectType() != AnnotationObject::LegendAttributes)
+                allAnnots.AddAnnotation(annots[i]);
+        }
+
+        // First delete all of the annotation objects.
+        visWindow->DeleteAllAnnotationObjects();
+
+        visWindow->CreateAnnotationObjectsFromList(allAnnots);
+    }
 }
 
 // ****************************************************************************

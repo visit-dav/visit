@@ -130,6 +130,8 @@ class avtExpressionEvaluatorFilter;
 //    Kathleen Bonnell, Tue Jan 30 13:45:43 PST 2007 
 //    Added RetrieveVarInfo with ds and int args.
 //    
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin
 // ****************************************************************************
 
 class QUERY_API avtPickQuery : public avtDatasetQuery
@@ -158,6 +160,7 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
 
   protected:
     int                             cellOrigin;
+    int                             nodeOrigin;
     int                             blockOrigin;
     avtGhostType                    ghostType;
     const avtMatrix                *transform;

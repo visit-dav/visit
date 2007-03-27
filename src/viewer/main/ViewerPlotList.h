@@ -445,7 +445,8 @@ public:
     DatabaseCorrelation *GetMostSuitableCorrelation(const std::string &, bool);
     ViewerPlot *NewPlot(int type, const EngineKey &ek,
                         const std::string &host, const std::string &db,
-                        const std::string &var, bool applyOperators);
+                        const std::string &var, bool applyOperators,
+                        const char *optionalPlotName = 0);
     int         SimpleAddPlot(ViewerPlot *plot, bool replacePlots);
     void        SetNextState(int nextState, int boundary);
     bool        UpdatePlotStates();

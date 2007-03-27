@@ -88,6 +88,8 @@ using std::string;
 //    Kathleen Bonnell, Tue Jul  6 17:05:42 PDT 2004 
 //    Init minInfo1/2, maxInfo1/2, nodeMsg1/2 and zoneMsg1/2.
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin
 // ****************************************************************************
 
 avtMinMaxQuery::avtMinMaxQuery(bool domin, bool domax)
@@ -96,6 +98,7 @@ avtMinMaxQuery::avtMinMaxQuery(bool domin, bool domax)
     topoDim = 2;
     blockOrigin = 0;
     cellOrigin = 0;
+    nodeOrigin = 0;
     invTransform = NULL;
     singleDomain = true;
     doMin = domin;
@@ -175,6 +178,8 @@ avtMinMaxQuery::VerifyInput()
 //    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
 //    Call inherited PreExecute before everything else.
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin
 // ****************************************************************************
 
 void
@@ -187,6 +192,7 @@ avtMinMaxQuery::PreExecute()
     topoDim = data.GetTopologicalDimension();
     blockOrigin = data.GetBlockOrigin();
     cellOrigin = data.GetCellOrigin();
+    nodeOrigin = data.GetNodeOrigin();
 
     minMsg = "No Information Found";
     maxMsg = "No Information Found";
@@ -790,6 +796,8 @@ avtMinMaxQuery::CreateResultMessage(const int n)
 //    Kathleen Bonnell, Fri May 13 13:45:58 PDT 2005
 //    Fix memory leak.
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin
 // ****************************************************************************
 
 string 
@@ -798,7 +806,9 @@ avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
     ostrstream os;
     int elNum = info.GetElementNum();
 
-    if (!nodeCentered)
+    if (nodeCentered)
+        elNum += nodeOrigin;
+    else
         elNum += cellOrigin;
   
     os.setf(ios::fixed);

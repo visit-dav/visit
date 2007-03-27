@@ -309,6 +309,10 @@
 #    no longer includes MESA_LIBS and GL_LIBS and I am replacing the mesa
 #    libraries with MesaStub in the viewer.
 #
+#    Eric Brugger, Tue Mar 27 16:32:31 PDT 2007
+#    Modified to use VIEWER_MESA_LIBS and VIEWER_MESA_STUB_CPPFLAGS, which
+#    control if the mesa stub library is used or not.
+#
 ##############################################################################
 
 ##
@@ -322,7 +326,7 @@
 ##
 LIB=libviewer
 
-VTK_LIBS=@VTK_LIBS@ -lMesaStub $(GL_LIBS)
+VTK_LIBS=@VTK_LIBS@ @VIEWER_MESA_LIBS@ $(GL_LIBS)
 VTK_INCLUDE=@VTK_INCLUDES@
 LIBS=-L../../lib -L../../vtkqt -lengineproxy -lenginerpc -lviewerrpc \
      -lmdserverproxy -lmdserverrpc -lvclproxy -lvclrpc -ldbatts -lexpr \
@@ -336,7 +340,7 @@ LDFLAGS=@LDFLAGS@ @QT_LDFLAGS@
 LIBDEP=
 MOC=@QT_MOC@
 CXXFLAGS=@CXXFLAGS@ @QT_CXXFLAGS@ 
-CPPFLAGS=@PLATFORM_CPPFLAGS@ @CPPFLAGS@ $(VTK_INCLUDE) -I../../vtkqt \
+CPPFLAGS=@PLATFORM_CPPFLAGS@ @CPPFLAGS@ @VIEWER_MESA_STUB_CPPFLAGS@ $(VTK_INCLUDE) -I../../vtkqt \
          -I./icons -I../../include -I../../include/visit -I.
 
 

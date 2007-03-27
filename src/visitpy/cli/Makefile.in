@@ -56,6 +56,8 @@
 #    endorsement purposes.
 #
 # Modifications:
+#   Brad Whitlock, Fri Mar 23 18:15:16 PST 2007
+#   Added PyLegendAttributesObject.C
 #
 ##############################################################################
 
@@ -70,6 +72,7 @@
 ##
 COMMON_SRC=\
     ../common/PyImageObject.C \
+    ../common/PyLegendAttributesObject.C \
     ../common/PyLineObject.C \
     ../common/PySILRestriction.C \
     ../common/PyText2DObject.C \

@@ -53,7 +53,7 @@
 //
 //  Modifications:
 //    Brad Whitlock, Thu Mar 22 00:12:00 PDT 2007
-//    Initialize scale and labelVisibility.
+//    Initialize scale and titleVisibility.
 //
 // ****************************************************************************
 
@@ -66,7 +66,7 @@ avtCurveLegend::avtCurveLegend()
     scale[1] = 1.;
     size[0] = 0.08;
     size[1] = 0.26;
-    labelVisibility = true;
+    titleVisibility = true;
 
     lineLegend->SetPosition2(size[0], size[1]);
 
@@ -132,13 +132,13 @@ avtCurveLegend::GetLegendSize(double, double &w, double &h)
 }
 
 // ****************************************************************************
-// Method: avtCurveLegend::SetLabelVisibility
+// Method: avtCurveLegend::SetTitleVisibility
 //
 // Purpose: 
-//   Sets whether labels are visible.
+//   Sets whether Titles are visible.
 //
 // Arguments:
-//   val : True if labels are to be visible.
+//   val : True if Titles are to be visible.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Mar 21 21:31:17 PST 2007
@@ -148,19 +148,19 @@ avtCurveLegend::GetLegendSize(double, double &w, double &h)
 // ****************************************************************************
 
 void
-avtCurveLegend::SetLabelVisibility(bool val)
+avtCurveLegend::SetTitleVisibility(bool val)
 {
-    labelVisibility = val;
+    titleVisibility = val;
     lineLegend->SetTitleVisibility(val?1:0);
 }
 
 // ****************************************************************************
-// Method: avtCurveLegend::GetLabelVisibility
+// Method: avtCurveLegend::GetTitleVisibility
 //
 // Purpose: 
-//   Returns whether labels are visible.
+//   Returns whether Titles are visible.
 //
-// Returns:    Whether labels are visible.
+// Returns:    Whether Titles are visible.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Mar 21 21:31:48 PST 2007
@@ -170,9 +170,9 @@ avtCurveLegend::SetLabelVisibility(bool val)
 // ****************************************************************************
 
 bool
-avtCurveLegend::GetLabelVisibility() const
+avtCurveLegend::GetTitleVisibility() const
 {
-    return labelVisibility;
+    return titleVisibility;
 }
 
 // ****************************************************************************
