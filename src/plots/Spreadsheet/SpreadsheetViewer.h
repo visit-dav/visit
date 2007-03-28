@@ -79,7 +79,9 @@ class vtkDataSet;
 // Creation:   Thu Feb 8 09:53:46 PDT 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 28 18:48:43 PST 2007
+//   Override closeEvent.
+//
 // ****************************************************************************
 
 class SpreadsheetViewer : public QMainWindow, public Observer
@@ -97,6 +99,7 @@ public:
     virtual void Update(Subject *);
 protected:
     virtual void enterEvent(QEvent *);
+    virtual void closeEvent(QCloseEvent *e);
 private slots:
     void formatChanged();
     void sliderChanged(int);

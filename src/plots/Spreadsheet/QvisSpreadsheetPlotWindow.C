@@ -213,7 +213,9 @@ QvisSpreadsheetPlotWindow::CreateWindowContents()
 // Creation:   Thu Feb 15 11:37:49 PDT 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 28 18:16:03 PST 2007
+//   Made UpdateSubsetNames take place more often.
+//
 // ****************************************************************************
 
 void
@@ -225,10 +227,12 @@ QvisSpreadsheetPlotWindow::UpdateWindow(bool doAll)
     if (selectedSubject == GetViewerState()->GetSILRestrictionAttributes())
     {
         UpdateSubsetNames();
+        subsetName->blockSignals(true);
+        subsetName->setCurrentText(atts->GetSubsetName().c_str());
+        subsetName->blockSignals(false);
+        subsetName->setEnabled(atts->GetSubsetName() != defaultItem);
         return;
     }
-    if (doAll)
-        UpdateSubsetNames();
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -241,9 +245,9 @@ QvisSpreadsheetPlotWindow::UpdateWindow(bool doAll)
         switch(i)
         {
         case 0: //subsetName
-            temp = atts->GetSubsetName().c_str();
+            UpdateSubsetNames();
             subsetName->blockSignals(true);
-            subsetName->setCurrentText(temp);
+            subsetName->setCurrentText(atts->GetSubsetName().c_str());
             subsetName->blockSignals(false);
             subsetName->setEnabled(atts->GetSubsetName() != defaultItem);
             break;
@@ -323,7 +327,12 @@ QvisSpreadsheetPlotWindow::UpdateWindow(bool doAll)
 // Creation:   Wed Feb 21 12:47:36 PDT 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 28 18:20:12 PST 2007
+//   Made the subset names update more often. If the subset happens to have the
+//   same name as the subset name in the Spreadsheet attributes, add it 
+//   temporarily regardless of whether the subset is selected in the SIL
+//   restriction.
+//
 // ****************************************************************************
 
 void
@@ -333,9 +342,6 @@ QvisSpreadsheetPlotWindow::UpdateSubsetNames()
 
     // If the SIL looks different from what we've displayed already, redo
     // the menu.
-    if (restriction->GetTopSet() != silTopSet ||
-        restriction->GetNumCollections() != silNumCollections ||
-        restriction->GetNumSets() != silNumSets)
     {
         silTopSet = restriction->GetTopSet();
         silNumCollections = restriction->GetNumCollections();
@@ -361,7 +367,8 @@ QvisSpreadsheetPlotWindow::UpdateSubsetNames()
                     const std::vector<int> &setIds = collection->GetSubsetList();
                     for(int si = 0; si < setIds.size(); ++si)
                     {
-                        if(trav.UsesData(setIds[si]))
+                        if(trav.UsesData(setIds[si]) ||
+                           restriction->GetSILSet(setIds[si])->GetName() == atts->GetSubsetName())
                         {
                             subsetName->insertItem(restriction->
                                 GetSILSet(setIds[si])->GetName().c_str()); 

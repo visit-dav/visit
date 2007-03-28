@@ -3121,6 +3121,10 @@ ViewerWindowManager::CreateMultiWindowCorrelationHelper(const stringVector &dbs)
 //   Brad Whitlock, Wed Mar 16 17:40:02 PST 2005
 //   I made it return the database correlation to use for multiple windows.
 //
+//   Brad Whitlock, Tue Mar 27 11:15:54 PDT 2007
+//   Pass false for new argument in GetDatabasesForWindows so only the MT
+//   databases are considered -- this was the previous behavior.
+//
 // ****************************************************************************
 
 DatabaseCorrelation *
@@ -3130,7 +3134,7 @@ ViewerWindowManager::CreateMultiWindowCorrelation(const intVector &windowIds)
     // Get the list of databases for all of the time-locked windows.
     //
     stringVector dbs;
-    GetDatabasesForWindows(windowIds, dbs);
+    GetDatabasesForWindows(windowIds, dbs, false);
     DatabaseCorrelation *correlation = 0;
 
     if(dbs.size() == 1)
@@ -5585,6 +5589,10 @@ ViewerWindowManager::ReversePlay(int windowIndex)
 //   keyframe animation time slider. There was some difficulty because it
 //   is a special time slider in that it does not have a database correlation.
 //
+//   Brad Whitlock, Tue Mar 27 11:16:50 PDT 2007
+//   Pass false for new argument of GetDatabasesForWindows to preserve old
+//   behavior.
+//
 // ****************************************************************************
 
 void
@@ -5649,7 +5657,7 @@ ViewerWindowManager::SetActiveTimeSlider(const std::string &ts, int windowIndex)
                         // Get the databases used in window i.
                         intVector winId; winId.push_back(i);
                         stringVector dbs;
-                        GetDatabasesForWindows(winId, dbs);
+                        GetDatabasesForWindows(winId, dbs, false);
 
                         //
                         // The window has some MT databases so let's make
@@ -6029,8 +6037,9 @@ ViewerWindowManager::DeleteDatabaseCorrelation(const std::string &name)
 //   Returns a list of databases for the specified windows.
 //
 // Arguments:
-//   windowIds : The list of windows for which we want databases.
-//   dbs       : The return list of databases.
+//   windowIds       : The list of windows for which we want databases.
+//   dbs             : The return list of databases.
+//   addAllDatabases : Adds even the ST databases.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar 16 09:01:45 PDT 2004
@@ -6041,7 +6050,7 @@ ViewerWindowManager::DeleteDatabaseCorrelation(const std::string &name)
 
 void
 ViewerWindowManager::GetDatabasesForWindows(const intVector &windowIds,
-    stringVector &dbs) const
+    stringVector &dbs, bool addAllDatabases) const
 {
     ViewerFileServer *fs = ViewerFileServer::Instance();
     DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
@@ -6055,7 +6064,7 @@ ViewerWindowManager::GetDatabasesForWindows(const intVector &windowIds,
 
             // Try and add the active source for the window.
             std::string source(pl->GetHostDatabaseName());
-            if(cL->FindCorrelation(source) != 0)
+            if(addAllDatabases || cL->FindCorrelation(source) != 0)
             {
                 if(std::find(dbs.begin(), dbs.end(), source) == dbs.end())
                     dbs.push_back(source);
@@ -6065,7 +6074,7 @@ ViewerWindowManager::GetDatabasesForWindows(const intVector &windowIds,
             for(int j = 0; j < pl->GetNumPlots(); ++j)
             {
                 std::string pSource(pl->GetPlot(j)->GetSource());
-                if(cL->FindCorrelation(pSource) != 0)
+                if(addAllDatabases || cL->FindCorrelation(pSource) != 0)
                 {
                     if(std::find(dbs.begin(), dbs.end(), pSource) == dbs.end())
                         dbs.push_back(pSource);
