@@ -783,7 +783,7 @@ avtMirandaFileFormat::GetVar(int timestate, int domain, const char *varname)
             nPrevComp += 1;
         }
     }
-    if (iVar == -1 || aVarNumComps[ii] != 1)
+    if (iVar == -1)
     {
         EXCEPTION1(InvalidVariableException, varname);
     }

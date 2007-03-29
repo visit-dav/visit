@@ -513,6 +513,8 @@ void VisItSimStripChart::setEnable( bool enable )
 // Creation:   Wed Mar 21 16:35:30 PDT 2007
 //
 // Modifications:
+//    Shelly Prevost  Tue Mar 27 16:15:47 PDT 2007
+//    Limited zoom level to greater than zero.
 //
 //
 // ****************************************************************************
@@ -520,6 +522,7 @@ void VisItSimStripChart::setEnable( bool enable )
 void VisItSimStripChart::zoomIn()
 {
     zoom += 0.25;
+    if (zoom <= 0 ) zoom = 0.1;
 }
 
 // ****************************************************************************
@@ -534,14 +537,15 @@ void VisItSimStripChart::zoomIn()
 // Creation:   Wed Mar 21 16:35:30 PDT 2007
 //
 // Modifications:
-//
+//    Shelly Prevost  Tue Mar 27 16:15:47 PDT 2007
+//    Limited zoom level to greater than zero
 //
 // ****************************************************************************
 
 void VisItSimStripChart::zoomOut()
 {
     zoom -= 0.25;
-    if (zoom == 0 ) zoom = 0.1;
+    if (zoom <= 0 ) zoom = 0.1;
 }
 
 // ****************************************************************************
@@ -556,15 +560,19 @@ void VisItSimStripChart::zoomOut()
 // Creation:   Wed Mar 21 16:35:30 PDT 2007.
 //
 // Modifications:
-//
+//    Shelly Prevost  Tue Mar 27 16:15:47 PDT 2007
+//    Fixed the focus function to work properly under different
+//    zoom levels.
 //
 // ****************************************************************************
 
 void VisItSimStripChart::focus(QScrollView *sc)
 {
+    float range = maxPoint -minPoint;
     sc->horizontalScrollBar()->setValue(sc->horizontalScrollBar()->maxValue());
     float scVMax = sc->verticalScrollBar()->maxValue();
-    float dataPoint =  fabs(( points.back().y()*vdelta)/(float(height())*zoom));
+    float dataPoint =  fabs((((points.back().y())-minPoint))/(range));
+    scVMax *= zoom;
     scVMax *= (1.0 - dataPoint);
     sc->verticalScrollBar()->setValue(scVMax);
     sc->updateContents();

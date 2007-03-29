@@ -66,73 +66,52 @@ class avtFVCOMReader
                                             void *args,
                                             DestructorFunction &);
 
-
-
   protected:
     // DATA MEMBERS
     NETCDFFileObject      *fileObject;
-    bool alloc_fileObject;
-
     int  CacheDomainIndex;
-          
     std::string keysuffix;
 
   private:
 
      // Pass timestate to these methods!
-    vtkDataArray  *DENS3(int, avtVariableCache *);
+    vtkDataArray          *DENS3(int, avtVariableCache *);
     //    vtkDataArray  *DENS2(int, avtVariableCache *);
-    vtkDataArray  *DENS(int, avtVariableCache *);
-    vtkDataArray  *THETA(int, avtVariableCache *);
+    vtkDataArray          *DENS(int, avtVariableCache *);
+    vtkDataArray          *THETA(int, avtVariableCache *);
     // Pass (S,T,P) to these methods!
-    double        ATG(double, double, double);
-    double        SVAN(double, double, double);
-    double        Dens3helper(double,double,double);
-    double        Thetahelper(double,double,double);
+    double                ATG(double, double, double);
+    double                SVAN(double, double, double);
+    double                Dens3helper(double,double,double);
+    double                Thetahelper(double,double,double);
+
+    virtual void          InitializeReader(void);
 
     virtual void          GetDimensions(void);
     bool NeedDimensions;
+    virtual void          GetStaticGridVariables(void);
+    bool NeedGridVariables;  
+    void                  SphereVel2Cart(float *,int);
+    void                  Sphere2Cart(float *);
+    bool IsGeoRef;
 
     int status, ncid, nDims, nVars, nGlobalAtts, unlimitedDimension;
     int nScalarID, nNodeID, nElemID, nSiglayID, nSiglevID, 
       nThreeID, nFourID, nMaxnodeID, nMaxelemID, nTimeID, dimID;
-    
-    bool xstate,ystate, hstate, zstate, latstate, lonstate;
-    bool nodestate, elemstate, siglaystate, siglevstate; 
-
-    bool mesh1, mesh2, mesh3, mesh4, mesh5;
-/*     size_t  nScalar, nNode, nElem, nSiglay, nSiglev,  */
-/*       nThree, nFour, nMaxnode, nMaxelem, nTime; */
-/*     size_t *dimSizes; */
-
-    
     int  nScalar, nNode, nElem, nSiglay, nSiglev, 
       nThree, nFour, nMaxnode, nMaxelem, nTime;
-    int *dimSizes;
-
-    char   DimName[NC_MAX_NAME+1],VarName[NC_MAX_NAME+1];
-            
     int VarnDims, VarnAtts, VarDimIDs[NC_MAX_VAR_DIMS], VarID;
 
 
+    bool xstate,ystate, hstate, zstate, latstate, lonstate;
+    bool nodestate, elemstate, siglaystate, siglevstate; 
+    bool mesh1, mesh2, mesh3, mesh4, mesh5;
 
-    virtual void   GetStaticGridVariables(void);
-    bool NeedGridVariables;  
-
+    char   DimName[NC_MAX_NAME+1],VarName[NC_MAX_NAME+1];            
     std::string SigLayCoordType,SigLevCoordType;
 
     float *xvals, *yvals, *zvals, *SigLayers, *SigLevels, *latvals, *lonvals;
-
-    int *nvvals, *egid, *ngid;
-    // int *nvvals; 
-
-
-    bool IsGeoRef;
-
-    void SphereVel2Cart(float *,int);
-
-    void Sphere2Cart(float *);
-
+    int *nvvals, *egid, *ngid, *dimSizes;
 
 };
 

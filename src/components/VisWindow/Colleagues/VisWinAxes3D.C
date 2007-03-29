@@ -50,6 +50,7 @@
 #include <VisWindow.h>
 #include <VisWindowColleagueProxy.h>
 #include <VisWinAxes3D.h>
+#include <float.h>
 
 
 // ****************************************************************************
@@ -366,6 +367,10 @@ VisWinAxes3D::RemoveAxes3DFromWindow(void)
 //    Removed calls to AdjustValues, AdjustRange. Functionality moved to
 //    more appropriate location of vtkVisItCubeAxesActor.
 //
+//    Shelly Prevost, Fri Mar 23 15:03:31 PDT 2007
+//    Added code to check for DBL_MAX to avoid doing math that
+//    exceeded maximums and cause a crash.
+//
 // ****************************************************************************
 
 void
@@ -386,13 +391,36 @@ VisWinAxes3D::SetBounds(double bounds[6])
 
     if (boundsChanged)
     {
+        double fudgeX;
+        double fudgeY;
+        double fudgeZ;
+
+        if (boundsChanged)
+       {
+            //
+            // Add a fudge-factor to prevent axes from being obscured by plots
+            // that fill their full extents.
+            //
+            // if the limits are not initialized then doing math
+            // with them will cause an error so check them first.
+            if ( bounds[0] == DBL_MAX  || bounds[2] ==  DBL_MAX || bounds[4] == DBL_MAX ||
+                 bounds[1] == -DBL_MAX || bounds[3] == -DBL_MAX || bounds[5] == -DBL_MAX   )
+            {
+              fudgeX = 0.001;
+              fudgeY = 0.001;
+              fudgeZ = 0.001;
+            }
+        }
+        else
+        {
+           fudgeX = (bounds[1] - bounds[0]) * 0.001;
+           fudgeY = (bounds[3] - bounds[2]) * 0.001;
+           fudgeZ = (bounds[5] - bounds[4]) * 0.001;
+        }
         //
         // Add a fudge-factor to prevent axes from being obscured by plots
         // that fill their full extents. 
         //
-        double fudgeX = (bounds[1] - bounds[0]) * 0.001;
-        double fudgeY = (bounds[3] - bounds[2]) * 0.001;
-        double fudgeZ = (bounds[5] - bounds[4]) * 0.001;
         currentBounds[0] = bounds[0] - fudgeX;
         currentBounds[1] = bounds[1] + fudgeX;
         currentBounds[2] = bounds[2] - fudgeY;

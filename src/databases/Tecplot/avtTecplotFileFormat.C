@@ -374,6 +374,12 @@ avtTecplotFileFormat::ParseNodesBlock(int numNodes)
 //  Programmer:  Jeremy Meredith
 //  Creation:    December 10, 2004
 //
+//  Modifications:
+//
+//    Mark C. Miller, Thu Mar 29 11:28:34 PDT 2007
+//    Added support for 'POINT' element. This is not a keyword tecplot
+//    understands but was necessary to enable support for point meshes.
+//
 // ****************************************************************************
 vtkUnstructuredGrid *
 avtTecplotFileFormat::ParseElements(int numElements, const string &elemType)
@@ -407,6 +413,12 @@ avtTecplotFileFormat::ParseElements(int numElements, const string &elemType)
         idtype = VTK_TETRA;
         topologicalDimension = MAX(topologicalDimension, 3);
     }
+    else if (elemType == "POINT")
+    {
+        nelempts = 1;
+        idtype = VTK_VERTEX;
+        topologicalDimension = MAX(topologicalDimension, 0);
+    }
     else
     {
         EXCEPTION2(InvalidFilesException, filename,
@@ -433,7 +445,7 @@ avtTecplotFileFormat::ParseElements(int numElements, const string &elemType)
         *nl++ = nelempts;
         // 1-origin connectivity array
         for (int j=0; j<nelempts; j++)
-            *nl++ = atoi(GetNextToken().c_str())-1;
+            *nl++ = idtype == VTK_VERTEX ?  c : atoi(GetNextToken().c_str())-1;
         
         *cl++ = offset;
         offset += nelempts+1;
@@ -470,6 +482,9 @@ avtTecplotFileFormat::ParseElements(int numElements, const string &elemType)
 //    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
 //    Fixed leak for 1D case
 //
+//    Mark C. Miller, Thu Mar 29 11:28:34 PDT 2007
+//    Added support for point meshes where topo dim is zero but spatial dim>1
+//
 // ****************************************************************************
 void
 avtTecplotFileFormat::ParseFEBLOCK(int numNodes, int numElements,
@@ -480,7 +495,8 @@ avtTecplotFileFormat::ParseFEBLOCK(int numNodes, int numElements,
     ugrid->SetPoints(points);
     points->Delete();
 
-    if (topologicalDimension == 2 || topologicalDimension == 3)
+    if ((topologicalDimension == 2 || topologicalDimension == 3) ||
+        (topologicalDimension == 0 && spatialDimension > 1))
     {
         meshes.push_back(ugrid);
     }
@@ -509,6 +525,9 @@ avtTecplotFileFormat::ParseFEBLOCK(int numNodes, int numElements,
 //    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
 //    Fixed leak for 1D case
 //
+//    Mark C. Miller, Thu Mar 29 11:28:34 PDT 2007
+//    Added support for point meshes where topo dim is zero but spatial dim>1
+//
 // ****************************************************************************
 void
 avtTecplotFileFormat::ParseFEPOINT(int numNodes, int numElements,
@@ -519,7 +538,8 @@ avtTecplotFileFormat::ParseFEPOINT(int numNodes, int numElements,
     ugrid->SetPoints(points);
     points->Delete();
 
-    if (topologicalDimension == 2 || topologicalDimension == 3)
+    if ((topologicalDimension == 2 || topologicalDimension == 3) ||
+        (topologicalDimension == 0 && spatialDimension > 1))
     {
         meshes.push_back(ugrid);
     }
@@ -546,6 +566,9 @@ avtTecplotFileFormat::ParseFEPOINT(int numNodes, int numElements,
 //    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
 //    Fixed leak for 1D case
 //
+//    Mark C. Miller, Thu Mar 29 11:28:34 PDT 2007
+//    Added support for point meshes where topo dim is zero but spatial dim>1
+//
 // ****************************************************************************
 void
 avtTecplotFileFormat::ParseBLOCK(int numI, int numJ, int numK)
@@ -568,7 +591,8 @@ avtTecplotFileFormat::ParseBLOCK(int numI, int numJ, int numK)
     int dims[3] = {numI, numJ, numK};
     sgrid->SetDimensions(dims);
 
-    if (topologicalDimension == 2 || topologicalDimension == 3)
+    if ((topologicalDimension == 2 || topologicalDimension == 3) ||
+        (topologicalDimension == 0 && spatialDimension > 1))
     {
         meshes.push_back(sgrid);
     }
@@ -595,6 +619,9 @@ avtTecplotFileFormat::ParseBLOCK(int numI, int numJ, int numK)
 //    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
 //    Fixed leak for 1D case
 //
+//    Mark C. Miller, Thu Mar 29 11:28:34 PDT 2007
+//    Added support for point meshes where topo dim is zero but spatial dim>1
+//
 // ****************************************************************************
 void
 avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
@@ -617,7 +644,8 @@ avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
     int dims[3] = {numI, numJ, numK};
     sgrid->SetDimensions(dims);
 
-    if (topologicalDimension == 2 || topologicalDimension == 3)
+    if ((topologicalDimension == 2 || topologicalDimension == 3) ||
+        (topologicalDimension == 0 && spatialDimension > 1))
     {
         meshes.push_back(sgrid);
     }
@@ -996,6 +1024,9 @@ avtTecplotFileFormat::ReadFile()
 //    Brad Whitlock, Tue Jul 26 14:59:48 PST 2005
 //    Initialized expressions.
 //
+//    Mark C. Miller, Thu Mar 29 11:28:34 PDT 2007
+//    Initialized topo dim to zero to allow for point meshes 
+//
 // ****************************************************************************
 
 avtTecplotFileFormat::avtTecplotFileFormat(const char *fname)
@@ -1011,7 +1042,7 @@ avtTecplotFileFormat::avtTecplotFileFormat(const char *fname)
     Xindex = -1;
     Yindex = -1;
     Zindex = -1;
-    topologicalDimension = 1;
+    topologicalDimension = 0;
     spatialDimension = 1;
     numTotalVars = 0;
 }
@@ -1109,6 +1140,9 @@ avtTecplotFileFormat::FreeUpResources(void)
 //    Brad Whitlock, Tue Jul 26 15:00:41 PST 2005
 //    I made it add expressions if there are any.
 //
+//    Mark C. Miller, Thu Mar 29 11:28:34 PDT 2007
+//    Added support for point meshes where topo dim is zero but spatial dim>1
+//
 // ****************************************************************************
 
 void
@@ -1117,7 +1151,8 @@ avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if (!file_read)
         ReadFile();
 
-    if (topologicalDimension==2 || topologicalDimension==3)
+    if ((topologicalDimension==2 || topologicalDimension==3) ||
+        (topologicalDimension==0 && spatialDimension > 1))
     {
         avtMeshMetaData *mesh = new avtMeshMetaData;
         mesh->name = "mesh";
@@ -1127,14 +1162,16 @@ avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         if (meshes.size() > 0 && 
             meshes[0]->GetDataObjectType()==VTK_STRUCTURED_GRID)
         {
-            mesh->meshType = AVT_CURVILINEAR_MESH;
+            mesh->meshType = topologicalDimension == 0 ? 
+                                 AVT_POINT_MESH : AVT_CURVILINEAR_MESH;
             // See '5756 for the reason for this next line
             if (spatialDimension > 2)
                 mesh->topologicalDimension = 3;
         }
         else
         {
-            mesh->meshType = AVT_UNSTRUCTURED_MESH;
+            mesh->meshType = topologicalDimension == 0 ?
+                                 AVT_POINT_MESH : AVT_UNSTRUCTURED_MESH;
         }
 
         mesh->numBlocks = meshes.size();
@@ -1254,6 +1291,9 @@ avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    With dynamic load balancing, we may get here after calling FreeResources.
 //    Make sure we read the file again if necessary.
 //
+//    Mark C. Miller, Thu Mar 29 11:28:34 PDT 2007
+//    Added support for point meshes where topo dim is zero but spatial dim>1
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1262,7 +1302,8 @@ avtTecplotFileFormat::GetMesh(int domain, const char *meshname)
     if (!file_read)
         ReadFile();
 
-    if (topologicalDimension == 2 || topologicalDimension == 3)
+    if ((topologicalDimension == 2 || topologicalDimension == 3) ||
+        (topologicalDimension == 0 && spatialDimension > 1))
     {
         meshes[domain]->Register(NULL);
         return meshes[domain];

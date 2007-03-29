@@ -89,6 +89,11 @@ class     avtDatabaseMetaData;
 //    Hank Childs, Tue Sep 27 10:21:36 PDT 2005
 //    Use virtual inheritance.
 //
+//    Jeremy Meredith, Tue Mar 27 17:17:16 EDT 2007
+//    Pass the number of blocks into the OpenFile virtual function,
+//    because we can't trust the meta data.  Also, allow for a saved
+//    pipeline specification in case we need to re-execute the pipeline.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatabaseWriter : public virtual avtOriginatingDatasetSink
@@ -113,6 +118,7 @@ class PIPELINE_API avtDatabaseWriter : public virtual avtOriginatingDatasetSink
     bool               SetTargetChunks(int nChunks);
     bool               SetTargetZones(VISIT_LONG_LONG nTotalZones);
     void               SetVariableList(std::vector<std::string> &);
+    void               SetPipelineSpecToUse(avtPipelineSpecification_p ps);
 
   protected:
     bool               shouldAlwaysDoMIR;
@@ -126,9 +132,11 @@ class PIPELINE_API avtDatabaseWriter : public virtual avtOriginatingDatasetSink
     int                nTargetChunks;
     VISIT_LONG_LONG    targetTotalZones;
 
+    avtPipelineSpecification_p savedPipelineSpec;
+
     virtual bool       CanHandleMaterials(void) { return false; };
 
-    virtual void       OpenFile(const std::string &) = 0;
+    virtual void       OpenFile(const std::string &, int) = 0;
     virtual void       WriteHeaders(const avtDatabaseMetaData *, 
                            std::vector<std::string>&,std::vector<std::string>&,
                            std::vector<std::string> &) = 0;

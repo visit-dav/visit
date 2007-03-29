@@ -1782,7 +1782,6 @@ ViewerWindow::GetFullFrameActivationMode() const
 }
 
 
-
 // ****************************************************************************
 //  Method: ViewerWindow::DoAllPlotsAxesHaveSameUnits
 //

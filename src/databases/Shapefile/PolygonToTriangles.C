@@ -1,3 +1,6 @@
+#ifdef _WIN32
+#include <windows.h>
+#endif
 #include <GL/glu.h>
 #include <snprintf.h>
 #include <map>
@@ -75,6 +78,9 @@ private:
 //   Eric Brugger, Tue Mar 13 15:50:51 PDT 2007
 //   Added coding specific to gcc 3.2 to get around a compiler bug.
 //   
+//   Kathleen Bonnell, Thu Mar 29 09:01:59 PDT 2007 
+//   Added WIN32 specific code.
+//   
 // ****************************************************************************
 
 class PolygonToTriangles
@@ -93,6 +99,11 @@ public:
         gluTessCallback(tess, GLU_TESS_BEGIN_DATA, (GLvoid (*)(...))beginCallback);
         gluTessCallback(tess, GLU_TESS_END_DATA, (GLvoid (*)(...))endCallback);
         gluTessCallback(tess, GLU_TESS_COMBINE_DATA, (GLvoid (*)(...))combineCallback);
+#elif defined(_WIN32)
+        gluTessCallback(tess, GLU_TESS_VERTEX_DATA, (VOID (CALLBACK *)())vertexCallback);
+        gluTessCallback(tess, GLU_TESS_BEGIN_DATA, (VOID (CALLBACK *)())beginCallback);
+        gluTessCallback(tess, GLU_TESS_END_DATA, (VOID (CALLBACK *)())endCallback);
+        gluTessCallback(tess, GLU_TESS_COMBINE_DATA, (VOID (CALLBACK *)())combineCallback);
 #else
         gluTessCallback(tess, GLU_TESS_VERTEX_DATA, (GLvoid (*)())vertexCallback);
         gluTessCallback(tess, GLU_TESS_BEGIN_DATA, (GLvoid (*)())beginCallback);

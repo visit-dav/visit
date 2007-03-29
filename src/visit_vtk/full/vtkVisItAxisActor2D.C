@@ -54,7 +54,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define TOLERANCE 1e-10
 #define EPSILON 1e-4
-#define VHUGE 1e100
 #define VSMALL 1e-100
 
 #define CLOSETO_REL(x1, x2) \
@@ -84,6 +83,9 @@ vtkStandardNewMacro(vtkVisItAxisActor2D);
 //
 //    Eric Brugger, Tue Nov 25 11:44:40 PST 2003
 //    Added the ability to specify the axis orientation angle.
+//
+//    Kathleen Bonnell, March 22, 2007 
+//    Added LogScale.
 //
 // **********************************************************************
 vtkVisItAxisActor2D::vtkVisItAxisActor2D()
@@ -314,6 +316,9 @@ void vtkVisItAxisActor2D::ReleaseGraphicsResources(vtkWindow *win)
 //   Eric Brugger, Tue Nov 25 11:44:40 PST 2003
 //   Added the ability to specify the axis orientation angle.
 //
+//   Kathleen Bonnell, March 22, 2007 
+//   Added LogScale.
+//
 // ********************************************************************
 void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 {
@@ -412,6 +417,13 @@ void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 //
 //   Hank Childs, Thu Jun  8 11:10:12 PDT 2006
 //   Add formal cast to remove compiler warning.
+//
+//   Kathleen Bonnell, March 22, 2007 
+//   Add support for log scaling.
+//
+//   Kathleen Bonnell, Thu Mar 29 09:54:04 PDT 2007
+//   More support for log scaling, use minor ticks for labels if there will
+//   be no major ticks.
 //
 // ****************************************************************************
 
@@ -581,6 +593,7 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
   // Build the labels
   maxLabelStringSize[0] = 0;
   maxLabelStringSize[1] = 0;
+  bool useMinorForLabels = false;
   if ( this->LabelVisibility )
     {
     // determine actual number of labels we need to build
@@ -591,6 +604,17 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
         labelCount++;
         }
      }
+    if (labelCount == 0 && this->LogScale)
+      {
+      for ( i = 0; i < numLabels; i++)
+        {
+        if (ticksize[i] == 0.5)
+          {
+          labelCount++;
+          }
+        }
+        useMinorForLabels = (labelCount > 0);
+      }
     if (labelCount <= 200)
       {
       this->SetNumberOfLabelsBuilt(labelCount);
@@ -604,15 +628,22 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
     labelCount = 0;
     for ( i=0; i < numLabels && labelCount < 200; i++)
       {
-      if (ticksize[i] != 1.0)
+      if (!useMinorForLabels && ticksize[i] != 1.0)
         {
         continue;  // minor tick or gridline, should not be labeled.
         }
+      if (useMinorForLabels && ticksize[i] != 0.5)
+        {
+        continue;  // minor tick or gridline, should not be labeled.
+        }
+
       val = proportion[i]*(outRange[1]-outRange[0]) + outRange[0];
+
       if (this->LogScale)
         {
         val = pow(10., val);
         }
+
       if ((fabs(val) < 0.01) &&
           (fabs(outRange[1]-outRange[0]) > 1))
         {
@@ -656,7 +687,11 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
      
     for (i = 0, labelCount = 0; i < numLabels; i++)
       {
-      if (ticksize[i] != 1.0)
+      if (!useMinorForLabels && ticksize[i] != 1.0)
+        {
+        continue;
+        }
+      if (useMinorForLabels && ticksize[i] != 0.5)
         {
         continue;
         }
@@ -894,6 +929,9 @@ inline double fsign(double value, double sign)
 //   Akira Haddox, Wed Jul 16 16:45:48 PDT 2003
 //   Added special case for when range is too small.
 //
+//   Kathleen Bonnell, March 22, 2007 
+//   Added support for log scaling.
+//
 // *******************************************************************
 
 void vtkVisItAxisActor2D::AdjustLabelsComputeRange(double inRange[2], 
@@ -913,10 +951,10 @@ void vtkVisItAxisActor2D::AdjustLabelsComputeRange(double inRange[2],
 
   outRange[0] = inRange[0];
   outRange[1] = inRange[1];
+
   sortedRange[0] = (double)(inRange[0] < inRange[1] ? inRange[0] : inRange[1]);
   sortedRange[1] = (double)(inRange[0] > inRange[1] ? inRange[0] : inRange[1]);
 
-  range = sortedRange[1] - sortedRange[0];
   if (logScale)
     {  
     ComputeLogTicks(inRange, sortedRange, numTicks, proportion, 
@@ -924,6 +962,7 @@ void vtkVisItAxisActor2D::AdjustLabelsComputeRange(double inRange[2],
     return;
     } // end if logScale
 
+  range = sortedRange[1] - sortedRange[0];
 
   // Find the integral points.
   double pow10 = log10(range);
@@ -948,6 +987,7 @@ void vtkVisItAxisActor2D::AdjustLabelsComputeRange(double inRange[2],
   fnt  = ffix(fnt);
   frac = fnt;
   numTicks = (frac <= 0.5 ? (int)ffix(fnt) : ((int)ffix(fnt) + 1));
+
   div = 1.;
   if (numTicks < 5)
     {
@@ -957,6 +997,7 @@ void vtkVisItAxisActor2D::AdjustLabelsComputeRange(double inRange[2],
     {
     div = 5.;
     }
+
   // If there aren't enough major tick points in this decade, use the next
   // decade.
   major = fxt;
@@ -965,6 +1006,7 @@ void vtkVisItAxisActor2D::AdjustLabelsComputeRange(double inRange[2],
     major /= div;
     }
   minor = (fxt/div) / 10.;
+
   // When we get too close, we lose the tickmarks. Run some special case code.
   if (minor == 0)
     {
@@ -1165,6 +1207,28 @@ vtkVisItAxisActor2D::GetMTime()
 
   return mTime;
 }
+
+
+//------------------------------------------------------------------------------
+// Mehod:    vtkVisItAxisActor2D::ComputeLogTicks 
+//
+// Purpose:  Compute tick spacings for log scaling. 
+//
+// Arguments:
+//   inRange       The input range (log-scaled).
+//   sortedRange   The sorted input range.
+//   numTicks      A place to store the number of ticks that will be drawn.
+//   proportion    The tick spacings as a proportional distance along the axis.
+//   ticksize      Tick-type designation (major, minor, gridline).
+//   minorVisible  Whether or not minor ticks will be drawn.
+//   drawGrids     Whether or not gridlines will be drawn.
+// 
+// Programmer:  Kathleen Bonnell
+// Creation:    March 22, 2007 
+// 
+// Modifications:
+//
+// -----------------------------------------------------------------------------
 
 void 
 vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],

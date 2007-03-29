@@ -56,7 +56,8 @@
 #include <vtkImageMapper.h>
 #include <vtkMatrix4x4.h>
 #include <vtkRenderer.h>
-#include <vtkTIFFReader.h>
+#include <vtkTextMapper.h>
+#include <vtkTextProperty.h>
 
 #include <ImproperUseException.h>
 #include <DebugStream.h>
@@ -96,12 +97,29 @@ static bool GetCameraLeftEye(const vtkCamera *const vtkCam)
 //  Programmer: Mark C. Miller 
 //  Creation:   December 7, 2002
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Mar 28 15:56:15 PDT 2007
+//    Added stuff to support the 'in-progress' visual queue
+//
 // ****************************************************************************
 
 avtExternallyRenderedImagesActor::avtExternallyRenderedImagesActor()
 {
     myMapper              = vtkImageMapper::New();
+    visualQueueMapper     = vtkTextMapper::New();
+    visualQueueProps      = vtkTextProperty::New();
     dummyImage            = vtkImageData::New();
+
+    visualQueueProps->SetJustificationToCentered();
+    visualQueueProps->SetVerticalJustificationToCentered();
+    visualQueueProps->BoldOn();
+    visualQueueProps->SetFontSize(24);
+    visualQueueProps->SetColor(1.0, 0.0, 0.0);
+
+    visualQueueMapper->SetInput("Waiting for parallel rendering...");
+    visualQueueMapper->SetTextProperty(visualQueueProps);
+
     lastNonDummyImage     = NULL;
     myMapper->SetInput(dummyImage);
     myMapper->SetColorWindow(255);
@@ -111,6 +129,9 @@ avtExternallyRenderedImagesActor::avtExternallyRenderedImagesActor()
     extRenderCallback     = NULL;
     extRenderCallbackArgs = NULL;
     makeExternalRenderRequests = false;
+    for (int i = 0; i < sizeof(renderTimeHistory)/sizeof(renderTimeHistory[0]); i++)
+        renderTimeHistory[i] = 0.0;
+    rtIdx = 0;
 }
 
 
@@ -120,9 +141,13 @@ avtExternallyRenderedImagesActor::avtExternallyRenderedImagesActor()
 //  Programmer: Mark C. Miller 
 //  Creation:   December 7, 2002
 //
-//  Kathleen Bonnell, Fri Jan  7 15:11:25 PST 2005
-//  Fix memory leak -- delete dummyImage.
+//  Modifications:
 //
+//    Kathleen Bonnell, Fri Jan  7 15:11:25 PST 2005
+//    Fix memory leak -- delete dummyImage.
+//
+//    Mark C. Miller, Wed Mar 28 15:56:15 PDT 2007
+//    Added stuff to support the 'in-progress' visual queue
 // ****************************************************************************
 
 avtExternallyRenderedImagesActor::~avtExternallyRenderedImagesActor()
@@ -146,6 +171,16 @@ avtExternallyRenderedImagesActor::~avtExternallyRenderedImagesActor()
     {
         dummyImage->Delete();
         dummyImage = NULL;
+    }
+    if (visualQueueMapper != NULL)
+    {
+        visualQueueMapper->Delete();
+        visualQueueMapper = NULL;
+    }
+    if (visualQueueProps != NULL)
+    {
+        visualQueueProps->Delete();
+        visualQueueProps = NULL;
     }
 }
 
@@ -188,8 +223,9 @@ avtExternallyRenderedImagesActor::RegisterExternalRenderCallback(
 //    Mark C. Miller, Fri Jul 21 08:05:15 PDT 2006
 //    Build a buffer of args to pass multiple args to call back
 //
+//    Mark C. Miller, Wed Mar 28 15:56:15 PDT 2007
+//    Added timing stuff to support the 'in-progress' visual queue
 // ****************************************************************************
- 
 void
 avtExternallyRenderedImagesActor::DoExternalRender(avtDataObject_p &dob,
     bool leftEye)
@@ -204,7 +240,10 @@ avtExternallyRenderedImagesActor::DoExternalRender(avtDataObject_p &dob,
 
     if (extRenderCallback != NULL)
     {
+        double startedExternalRenderAt = TOA_THIS_LINE;
         extRenderCallback(argsBuf, dob);
+        double externalRenderTime = TOA_THIS_LINE - startedExternalRenderAt;
+        renderTimeHistory[rtIdx++ % 5] = externalRenderTime;
     }
     else
     {
@@ -236,6 +275,9 @@ avtExternallyRenderedImagesActor::DoExternalRender(avtDataObject_p &dob,
 //    Mark C. Miller, Fri Jul 21 08:05:15 PDT 2006
 //    Added vtkCamera argument to support stereo SR mode
 //
+//    Mark C. Miller, Wed Mar 28 15:56:15 PDT 2007
+//    Added logic to set the actor to the 'in-progress' visual queue for
+//    a single render
 // ****************************************************************************
  
 void
@@ -248,6 +290,26 @@ avtExternallyRenderedImagesActor::PrepareForRender(const vtkCamera *const cam)
    // return early if we're NOT actually visible
    if (!GetVisibility())
       return;
+
+   //
+   // Handle rendering of the 'in-progress' visual queue
+   //
+   if (doNextExternalRenderAsVisualQueue)
+   {
+       doNextExternalRenderAsVisualQueue = false;
+       visualQueueProps->SetColor(nextForegroundColor);
+       myActor->SetMapper(visualQueueMapper);
+       myActor->SetPosition((float) nextWidth / 2.0, (float) nextHeight / 2.0);
+       return;
+   }
+   else
+   {
+       if (myActor->GetMapper() != myMapper)
+       {
+           myActor->SetMapper(myMapper);
+           myActor->SetPosition(0.0, 0.0);
+       }
+   }
 
    // issue the external rendering callback
    // we use the dummyData 'value' to detect if dob was updated by the
@@ -388,10 +450,12 @@ avtExternallyRenderedImagesActor::SetVisibility(const bool mode)
 //  Programmer: Mark C. Miller
 //  Creation:   January 9, 2003
 //
+//    Mark C. Miller, Wed Mar 28 15:56:15 PDT 2007
+//    Added a missing const qualification for the method itself 
 // ****************************************************************************
 
 bool
-avtExternallyRenderedImagesActor::GetVisibility(void)
+avtExternallyRenderedImagesActor::GetVisibility(void) const
 {
    return myActor->GetVisibility()==0 ? false : true;
 }
@@ -459,6 +523,66 @@ avtExternallyRenderedImagesActor::EnableExternalRenderRequests(void)
    bool oldMode = makeExternalRenderRequests;
    makeExternalRenderRequests = true;
    return oldMode;
+}
+
+// ****************************************************************************
+//  Method: avtExternallyRenderedImagesActor::IsMakingExternalRenderRequsts
+//
+//  Purpose: Query if external render requests are being made
+//
+//  Programmer: Mark C. Miller
+//  Creation:   March 27, 2007
+// ****************************************************************************
+
+bool
+avtExternallyRenderedImagesActor::IsMakingExternalRenderRequests(void) const
+{
+   if (!makeExternalRenderRequests)
+      return false;
+
+   if (!GetVisibility())
+      return false;
+
+   return true;
+}
+
+// ****************************************************************************
+//  Method: avtExternallyRenderedImagesActor::GetAverageRenderingTime
+//
+//  Purpose: Return the average rendering time for last 5 most recent renders 
+//
+//  Programmer: Mark C. Miller
+//  Creation:   March 27, 2007
+// ****************************************************************************
+
+double
+avtExternallyRenderedImagesActor::GetAverageRenderingTime(void) const
+{
+    double sum = 0.0;
+    int nvals = rtIdx < 5 ? rtIdx : 5;
+    for (int i = 0; i < nvals; i++)
+        sum += renderTimeHistory[i];
+    return sum / nvals;
+}
+
+// ****************************************************************************
+//  Method: avtExternallyRenderedImagesActor::DoNextExternalRenderAsVisualQueue
+//
+//  Purpose: Set info to do only the next render using the visual queue 
+//
+//  Programmer: Mark C. Miller
+//  Creation:   March 27, 2007
+// ****************************************************************************
+
+void
+avtExternallyRenderedImagesActor::DoNextExternalRenderAsVisualQueue(
+    int w, int h, const double *color)
+{
+    nextWidth = w;
+    nextHeight = h;
+    for (int i = 0; i < 3; i++)
+        nextForegroundColor[i] = color[i];
+    doNextExternalRenderAsVisualQueue = true;
 }
 
 // ****************************************************************************

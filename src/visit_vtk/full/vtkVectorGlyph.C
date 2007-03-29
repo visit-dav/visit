@@ -42,6 +42,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "vtkVectorGlyph.h"
 
+#include <math.h>
+
 #include <vtkCellArray.h>
 #include <vtkObjectFactory.h>
 #include <vtkPolyData.h>

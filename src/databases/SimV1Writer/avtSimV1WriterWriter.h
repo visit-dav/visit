@@ -61,6 +61,9 @@ class vtkPolyData;
 // Creation:   Mon Oct 30 14:22:32 PST 2006
 //
 // Modifications:
+//    Jeremy Meredith, Tue Mar 27 11:39:24 EDT 2007
+//    Added numblocks to the OpenFile method, and save off the actual
+//    encountered mesh types, because we cannot trust the metadata.
 //   
 // ****************************************************************************
 
@@ -71,7 +74,7 @@ public:
     virtual       ~avtSimV1WriterWriter();
 
 protected:
-    virtual void   OpenFile(const std::string &);
+    virtual void   OpenFile(const std::string &, int);
     virtual void   WriteHeaders(const avtDatabaseMetaData *,
                                 std::vector<std::string> &,
                                 std::vector<std::string> &,
@@ -83,6 +86,7 @@ private:
     const avtDatabaseMetaData     *metadata;
     std::string                    objectName;
     stringVector                   varList;
+    int                            numblocks;
     VisIt_SimulationWriterCallback cb;
 
     void           WriteCurvilinearMesh(vtkStructuredGrid *,

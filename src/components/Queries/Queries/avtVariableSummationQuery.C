@@ -47,6 +47,12 @@
 
 using     std::string;
 
+#include <avtParallel.h>
+
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
 
 // ****************************************************************************
 //  Method: avtVariableSummationQuery constructor
@@ -170,9 +176,17 @@ avtVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
         cellData = true;
     }
 
-    if ((dval.SubdivisionOccurred() || 
-       (!dval.GetOriginalZonesIntact() && cellData)) ||
-       (!cellData && !dval.GetZonesPreserved()))
+    int bDoCustomFiltering = dval.SubdivisionOccurred() || 
+                             ( cellData && !dval.GetOriginalZonesIntact()) ||
+                             (!cellData && !dval.GetZonesPreserved());
+#ifdef PARALLEL    
+    int bAnyDoCustomFiltering;
+    
+    MPI_Allreduce(&bDoCustomFiltering, &bAnyDoCustomFiltering, 1, 
+                  MPI_INT, MPI_LOR, VISIT_MPI_COMM);
+    bDoCustomFiltering = bAnyDoCustomFiltering;
+#endif
+    if (bDoCustomFiltering)
     {
         // This will work for time-varying data, too.
 

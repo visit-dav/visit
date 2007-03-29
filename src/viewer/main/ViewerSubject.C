@@ -4920,6 +4920,11 @@ ViewerSubject::ConstructDDF()
 // Programmer: Hank Childs
 // Creation:   May 25, 2005
 //
+// Modifications:
+//
+//    Jeremy Meredith, Tue Mar 27 16:55:05 EDT 2007
+//    Added error text to message when we have something more useful to say.
+//
 // ****************************************************************************
 
 void
@@ -4957,7 +4962,9 @@ ViewerSubject::ExportDatabase()
     }
     CATCH2(VisItException, e)
     {
-        Error("Unable to export database");
+        char msg[2048];
+        sprintf(msg, "Unable to export database: %s", e.Message().c_str());
+        Error(msg);
     }
     ENDTRY
 }

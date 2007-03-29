@@ -1080,7 +1080,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
     virtual void WriteHeaderAGVectorProto(ostream &h)
     {
         QString plural("");
-        if(Name[Name.length()-1] != 's')
+        if(Name.right(1) != 's')
             plural = "s";
 
         h << "    void Add" << Name << "(const " << attType << " &);" << endl;
@@ -1151,7 +1151,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
     virtual void WriteSourceSetFromNode(ostream &c)
     {
         QString plural("");
-        if(Name[Name.length()-1] != 's')
+        if(Name.right(1) != 's')
             plural = "s";
 
         c << "    // Clear all the " << attType << "s." << endl;
@@ -1176,7 +1176,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
         QString methodName;
         QString s = attType;
         QString plural("");
-        if(Name[Name.length()-1] != 's')
+        if(Name.right(1) != 's')
             plural = "s";
 
         // Write the Add method.

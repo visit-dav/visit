@@ -528,6 +528,9 @@ VisWinAxes::NoPlots(void)
 //    Kathleen Bonnell, Thu Mar 22 19:24:21 PDT 2007 
 //    Send the log-scaling mode to the axis if Curve mode.
 //
+//    Kathleen Bonnell, Thu Mar 29 10:30:41 PDT 2007
+//    Call AdjustLabelFormatForLogScale.
+//
 // ****************************************************************************
 
 void
@@ -542,7 +545,7 @@ VisWinAxes::UpdateView(void)
     //
     AdjustValues(min_x, max_x, min_y, max_y);
     AdjustRange(min_x, max_x, min_y, max_y);
-    
+
     //
     // We put the y-axis in reverse so that its labels would appear on the
     // correct side of the viewport.  Must propogate kludge by sending
@@ -580,6 +583,10 @@ VisWinAxes::UpdateView(void)
         const avtViewCurve viewCurve = vw->GetViewCurve();
         xAxis->SetLogScale((int)(viewCurve.domainScale == LOG));
         yAxis->SetLogScale((int)(viewCurve.rangeScale == LOG));
+        if (viewCurve.domainScale == LOG || viewCurve.rangeScale == LOG)
+        {
+            AdjustLabelFormatForLogScale(min_x, max_x, min_y, max_y);
+        }
     }
 }
 
@@ -1522,4 +1529,70 @@ VisWinAxes::SetYUnits(const string &units, bool userSet)
     if(userSet)
         SNPRINTF(unitsY, 256, "%s", units.c_str());
     userYUnits = userSet;
+}
+
+// ****************************************************************************
+// Method: VisWinAxes::AdjustLabelFormatForLogScale
+//
+// Purpose: 
+//   Performs some of the same adjustments as AdjustLabels and AdjustRange,
+//   without the side-effect of setting ivars.  Does, however change
+//   the axis label formats.
+//
+// Arguments:
+//   min_x     The minimum x value. (already log-scaled)
+//   max_x     The maximum x value. (already log-scaled)
+//   min_y     The minimum y value. (already log-scaled)
+//   max_y     The maximum y value. (already log-scaled)
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   March 29, 2007 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinAxes::AdjustLabelFormatForLogScale(
+    double min_x, double max_x, double min_y, double max_y)
+{
+    VisWindow *vw = mediator;
+    if (vw->GetWindowMode() != WINMODE_CURVE)
+        return;
+
+    const avtViewCurve viewCurve = vw->GetViewCurve();
+    //
+    // The labels will be non-log-scaled, so must convert min & max here
+    // to get the correct range that will be used.
+    //
+    if (viewCurve.domainScale == LOG)
+    {    
+        double minx = pow(10., min_x);
+        double maxx = pow(10., max_x);
+        int curPowX = LabelExponent(minx, maxx);
+        if (curPowX != 0)
+        {
+            minx /= pow(10., curPowX);
+            maxx /= pow(10., curPowX);
+        }
+        int xAxisDigits = Digits(minx, maxx);
+        char  format[16];
+        SNPRINTF(format, 16, "%%.%df", xAxisDigits);
+        xAxis->SetLabelFormat(format);
+    }
+    if (viewCurve.rangeScale == LOG)
+    {    
+        double miny = pow(10., min_y);
+        double maxy = pow(10., max_y);
+        int curPowY = LabelExponent(miny, maxy);
+        if (curPowY != 0)
+        {
+            miny /= pow(10., curPowY);
+            maxy /= pow(10., curPowY);
+        }
+        int yAxisDigits = Digits(miny, maxy);
+        char  format[16];
+        SNPRINTF(format, 16, "%%.%df", yAxisDigits);
+        yAxis->SetLabelFormat(format);
+    }
 }

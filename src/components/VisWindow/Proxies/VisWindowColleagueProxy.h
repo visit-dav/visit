@@ -125,6 +125,10 @@
 //    Mark Blair, Mon Sep 25 11:41:09 PDT 2006
 //    Added AxisAnnotationsEnabled.
 //
+//    Mark C. Miller, Wed Mar 28 15:56:15 PDT 2007
+//    Added IsMakingExternalRenderRequests, GetAverageExternalRenderingTime
+//    and DoNextExternalRenderAsVisualQueue to support the 'in-progress'
+//    visual queue for SR mode.
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
@@ -246,6 +250,14 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
                                   { ProxiedRecalculateRenderOrder(); };
     double               GetMaxPlotZShift()
                                   { return ProxiedGetMaxPlotZShift(); };
+
+    bool                 IsMakingExternalRenderRequests(void) const
+                             { return ProxiedIsMakingExternalRenderRequests(); };
+    double               GetAverageExternalRenderingTime(void) const
+                             { return ProxiedGetAverageExternalRenderingTime(); };
+    void                 DoNextExternalRenderAsVisualQueue(int w, int h, const double *c)
+                             { ProxiedDoNextExternalRenderAsVisualQueue(w,h,c); };
+
 };
 
 

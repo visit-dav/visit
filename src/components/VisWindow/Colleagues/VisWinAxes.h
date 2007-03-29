@@ -101,6 +101,9 @@ class VisWindowColleagueProxy;
 //    Brad Whitlock, Thu Jul 28 08:52:38 PDT 2005
 //    Added the ability to specify the axis titles and units.
 //
+//    Kathleen Bonnell, Thu Mar 29 10:30:41 PDT 2007
+//    Added AdjustLabelFormatForLogScale.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinAxes : public VisWinColleague
@@ -175,6 +178,8 @@ class VISWINDOW_API VisWinAxes : public VisWinColleague
     void                      RemoveAxesFromWindow(void);
     bool                      ShouldAddAxes(void);
     void                      SetTitle(void);
+
+    void  AdjustLabelFormatForLogScale(double, double, double, double);
 };
 
 

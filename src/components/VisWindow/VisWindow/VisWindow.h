@@ -364,6 +364,11 @@ class VisitInteractor;
 //    Brad Whitlock, Tue Mar 20 10:08:50 PDT 2007
 //    Name annotation objects.
 //
+//    Mark C. Miller, Wed Mar 28 15:56:15 PDT 2007
+//    Added IsMakingExternalRenderRequests, GetAverageExternalRenderingTime
+//    and DoNextExternalRenderAsVisualQueue to support the 'in-progress'
+//    visual queue for SR mode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -695,6 +700,11 @@ protected:
     void                 ReAddColleaguesToRenderWindow(void);
     void                 ReAddToolsToRenderWindow(void);
     double               GetMaxPlotZShift(void);
+
+    bool                 IsMakingExternalRenderRequests(void) const;
+    double               GetAverageExternalRenderingTime(void) const;
+    void                 DoNextExternalRenderAsVisualQueue(
+                             int w, int h, const double *color);
 };
 
 

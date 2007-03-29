@@ -76,10 +76,14 @@ avtTecplotWriter::~avtTecplotWriter()
 //  Programmer: Jeremy Meredith
 //  Creation:   Wed Feb 9 13:44:32 PST 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Mar 27 17:03:47 EDT 2007
+//    Added numblocks (currently ignored) to the OpenFile interface.
+//
 // ****************************************************************************
 
 void
-avtTecplotWriter::OpenFile(const string &stemname)
+avtTecplotWriter::OpenFile(const string &stemname, int)
 {
     stem = stemname;
     string filename = stemname+".tec";

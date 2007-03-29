@@ -65,12 +65,16 @@ using     std::vector;
 //    Hank Childs, Thu Mar 30 12:20:24 PST 2006
 //    Initialize doMultiBlock.
 //
+//    Jeremy Meredith, Tue Mar 27 15:10:21 EDT 2007
+//    Added nblocks so we don't have to trust the meta data.
+//
 // ****************************************************************************
 
 avtVTKWriter::avtVTKWriter(DBOptionsAttributes *atts)
 {
     doBinary = atts->GetBool("Binary format");
     doMultiBlock = true;
+    nblocks = 0;
 }
 
 
@@ -83,12 +87,17 @@ avtVTKWriter::avtVTKWriter(DBOptionsAttributes *atts)
 //  Programmer: Hank Childs
 //  Creation:   September 12, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Mar 27 15:10:21 EDT 2007
+//    Added nblocks to this function and save it so we don't have to 
+//    trust the meta data.
 // ****************************************************************************
 
 void
-avtVTKWriter::OpenFile(const string &stemname)
+avtVTKWriter::OpenFile(const string &stemname, int nb)
 {
     stem = stemname;
+    nblocks = nb;
 }
 
 
@@ -109,6 +118,9 @@ avtVTKWriter::OpenFile(const string &stemname)
 //    Hank Childs, Thu Mar 30 12:20:24 PST 2006
 //    Initialize doMultiBlock.
 //
+//    Jeremy Meredith, Tue Mar 27 11:36:57 EDT 2007
+//    Use the saved nblocks because we can't trust the meta data.
+//
 // ****************************************************************************
 
 void
@@ -116,10 +128,6 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
                            vector<string> &scalars, vector<string> &vectors,
                            vector<string> &materials)
 {
-    int nblocks = 1;
-    if (md->GetNumMeshes() > 0)
-        nblocks = md->GetMesh(0)->numBlocks;
-    // else probably a curve.
     doMultiBlock = (nblocks > 1);
     if (nblocks > 1)
     {

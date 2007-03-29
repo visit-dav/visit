@@ -61,6 +61,9 @@
 //    Hank Childs, Tue Sep 27 10:21:36 PDT 2005
 //    Use virtual inheritance.
 //
+//    Jeremy Meredith/Hank Childs, Tue Mar 27 17:03:47 EDT 2007
+//    Added numblocks to the OpenFile interface.
+//
 // ****************************************************************************
 
 class
@@ -72,8 +75,9 @@ avtBOVWriter : public virtual avtDatabaseWriter
 
   protected:
     std::string    stem;
+    int            nblocks;
 
-    virtual void   OpenFile(const std::string &);
+    virtual void   OpenFile(const std::string &, int);
     virtual void   WriteHeaders(const avtDatabaseMetaData *,
                                 std::vector<std::string> &, 
                                 std::vector<std::string> &,

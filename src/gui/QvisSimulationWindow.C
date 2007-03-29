@@ -2279,7 +2279,7 @@ QvisSimulationWindow::ViewerSendCMD ( int simIndex, QString cmd)
     int index = simulationToEngineListMap[simIndex];
     string host = engines->GetEngines()[index];
     string sim  = engines->GetSimulationName()[index];
-    GetViewerMethods()->SendSimulationCommand(host, sim, cmd);
+    GetViewerMethods()->SendSimulationCommand(host, sim, cmd.ascii());
 }
 
 // ****************************************************************************

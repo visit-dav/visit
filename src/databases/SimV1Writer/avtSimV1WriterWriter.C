@@ -153,13 +153,17 @@ avtSimV1WriterWriter::~avtSimV1WriterWriter()
 // Creation:   Thu Nov 2 17:36:09 PST 2006
 //
 // Modifications:
+//    Jeremy Meredith, Tue Mar 27 15:10:21 EDT 2007
+//    Added nblocks to this functin and save it so we don't have to 
+//    trust the meta data.
 //   
 // ****************************************************************************
 
 void
-avtSimV1WriterWriter::OpenFile(const std::string &objName)
+avtSimV1WriterWriter::OpenFile(const std::string &objName, int nb)
 {
     objectName = objName;
+    numblocks = nb;
 
     // Remove leading "./" and "/". We'll allow all other slashes because
     // it will allow us to produce directory structures.
@@ -226,6 +230,8 @@ avtSimV1WriterWriter::WriteHeaders(const avtDatabaseMetaData *md,
 // Creation:   Thu Nov 2 17:39:35 PST 2006
 //
 // Modifications:
+//    Jeremy Meredith, Tue Mar 27 11:36:57 EDT 2007
+//    Use the saved number of blocks instead of assuming the mmd was correct.
 //   
 // ****************************************************************************
 
@@ -245,7 +251,7 @@ avtSimV1WriterWriter::WriteChunk(vtkDataSet *ds, int chunk)
 
     if(mmd != 0)
     {
-        vmmd->numBlocks = mmd->numBlocks;
+        vmmd->numBlocks = numblocks;
         vmmd->blockTitle = strdup(mmd->blockTitle.c_str());
         vmmd->blockPieceName = strdup(mmd->blockPieceName.c_str());
 

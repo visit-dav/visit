@@ -4439,6 +4439,57 @@ VisWindow::DisableExternalRenderRequests(void)
 }
 
 // ****************************************************************************
+// Method: VisWindow::IsMakingExternalRenderRequests
+//
+// Purpose: Query externally rendered images actor to see if it is making
+// requests
+//
+// Programmer: Mark C. Miller
+// Creation:   March 27, 2007 
+//
+// ****************************************************************************
+
+bool
+VisWindow::IsMakingExternalRenderRequests(void) const
+{
+   return plots->IsMakingExternalRenderRequests();
+}
+
+// ****************************************************************************
+// Method: VisWindow::GetAverageExternalRenderingTime
+//
+// Purpose: Return the average external rendering time for last 5 most recent
+// renders
+//
+// Programmer: Mark C. Miller
+// Creation:   March 27, 2007 
+//
+// ****************************************************************************
+
+double
+VisWindow::GetAverageExternalRenderingTime(void) const
+{
+   return plots->GetAverageExternalRenderingTime();
+}
+
+// ****************************************************************************
+// Method: VisWindow::DoNextExternalRenderAsVisualQueue
+//
+// Purpose: For the next external render only, render the 'in-progress'
+// visual queue
+//
+// Programmer: Mark C. Miller
+// Creation:   March 27, 2007 
+//
+// ****************************************************************************
+
+void
+VisWindow::DoNextExternalRenderAsVisualQueue(int w, int h, const double *color)
+{
+    plots->DoNextExternalRenderAsVisualQueue(w, h, color);
+}
+
+// ****************************************************************************
 // Method: VisWindow::ComputeVectorTextScaleFactor
 //
 // Purpose: 
@@ -4454,9 +4505,6 @@ VisWindow::ComputeVectorTextScaleFactor(const double *pos, const double *vp)
 {
     return rendering->ComputeVectorTextScaleFactor(pos, vp);
 }
-
-
-
 
 // ****************************************************************************
 // Method: VisWindow::ClearRefLines

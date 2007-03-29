@@ -71,12 +71,17 @@ using     std::vector;
 //  Programmer: Hank Childs
 //  Creation:   September 11, 2004
 //
+//  Modifications:
+//    Jeremy Meredith/Hank Childs, Tue Mar 27 17:03:47 EDT 2007
+//    Added numblocks to the OpenFile interface.
+//
 // ****************************************************************************
 
 void
-avtBOVWriter::OpenFile(const string &stemname)
+avtBOVWriter::OpenFile(const string &stemname, int nb)
 {
     stem = stemname;
+    nblocks = nb;
 }
 
 
@@ -94,6 +99,10 @@ avtBOVWriter::OpenFile(const string &stemname)
 //    Hank Childs, Wed Dec 22 09:16:53 PST 2004
 //    Throw a more informative exception.
 //
+//    Hank Childs, Wed Mar 28 10:04:53 PDT 2007
+//    Use the real number of blocks, not what is in the meta-data.  (There
+//    may be SIL selection or there may be a resample operator.
+//
 // ****************************************************************************
 
 void
@@ -104,7 +113,7 @@ avtBOVWriter::WriteHeaders(const avtDatabaseMetaData *md,
     //
     // We can only handle single block files.
     //
-    if (md->GetMesh(0)->numBlocks != 1)
+    if (nblocks != 1)
     {
         EXCEPTION1(InvalidDBTypeException, 
                          "The BOV writer can only handle single block files.");

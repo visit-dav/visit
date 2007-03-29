@@ -143,6 +143,10 @@ class     PlotInfoAttributes;
 //    Mark Blair, Wed Oct 25 15:12:55 PDT 2006
 //    Added ProxiedGetPlotInfoAtts.
 //
+//    Mark C. Miller, Wed Mar 28 15:56:15 PDT 2007
+//    Added IsMakingExternalRenderRequests, GetAverageExternalRenderingTime
+//    and DoNextExternalRenderAsVisualQueue to support the 'in-progress'
+//    visual queue for SR mode.
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowProtectionProxy
@@ -220,7 +224,12 @@ class VISWINDOW_API VisWindowProtectionProxy
     void                ProxiedResumeOpaqueGeometry();
     void                ProxiedResumeTranslucentGeometry();
     double               ProxiedGetMaxPlotZShift();
-                                  
+
+    bool                ProxiedIsMakingExternalRenderRequests(void) const;
+    double              ProxiedGetAverageExternalRenderingTime(void) const;
+    void                ProxiedDoNextExternalRenderAsVisualQueue(
+                            int w, int h, const double *c);
+
 };
 
 
