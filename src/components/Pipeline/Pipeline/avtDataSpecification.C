@@ -56,6 +56,9 @@ using     std::vector;
 //    Jeremy Meredith, Tue Jun 10 13:21:15 PDT 2003
 //    Added needBoundarySurfaces.
 //
+//    Hank Childs, Wed Jun 18 09:20:16 PDT 2003
+//    Added needNodes.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts,
@@ -63,6 +66,7 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
 {
     mayRequireZones = false;
     needZones = false;
+    needNodes = false;
     useGhostZones = true;
     needInternalSurfaces = false;
     needBoundarySurfaces = false;
@@ -122,12 +126,16 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
 //    Jeremy Meredith, Tue Jun 10 13:21:24 PDT 2003
 //    Added needBoundarySurfaces.
 //
+//    Hank Childs, Wed Jun 18 09:20:16 PDT 2003
+//    Added needNodes.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
 {
     mayRequireZones = false;
     needZones = false;
+    needNodes = false;
     useGhostZones = true;
     needInternalSurfaces = false;
     needBoundarySurfaces = false;
@@ -317,6 +325,7 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
     mayRequireZones                 = spec.mayRequireZones;
     useGhostZones                   = spec.useGhostZones;
     needZones                       = spec.needZones;
+    needNodes                       = spec.needNodes;
     needInternalSurfaces            = spec.needInternalSurfaces;
     needBoundarySurfaces            = spec.needBoundarySurfaces;
     needValidFaceConnectivity       = spec.needValidFaceConnectivity;
@@ -379,6 +388,9 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
 //    Jeremy Meredith, Tue Jun 10 13:21:40 PDT 2003
 //    Compare needBoundarySurfaces.
 //
+//    Hank Childs, Wed Jun 18 09:20:16 PDT 2003
+//    Compare needNodes.
+//
 // ****************************************************************************
 
 bool
@@ -403,6 +415,11 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
     }
 
     if (needZones != ds.needZones)
+    {
+        return false;
+    }
+
+    if (needNodes != ds.needNodes)
     {
         return false;
     }

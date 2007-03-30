@@ -135,6 +135,9 @@ class     PickVarInfo;
 //    Jeremy Meredith, Thu Jun 12 09:05:38 PDT 2003
 //    Added another flag to MaterialSelect.
 //
+//    Hank Childs, Wed Jun 18 09:20:16 PDT 2003
+//    Added CreateOriginalNodes.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -190,6 +193,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     vtkDataSet                *GetMesh(const char *, int, int, const char *);
 
     void                       AddOriginalCellsArray(vtkDataSet *, const int);
+    void                       AddOriginalNodesArray(vtkDataSet *, const int);
 
     bool                       PrepareMaterialSelect(const char *, int,
                                                   avtSILRestrictionTraverser &, 
@@ -224,6 +228,9 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                  avtDataSpecification_p &,
                                  avtSourceFromDatabase *);
     void                       CreateOriginalZones(avtDatasetCollection &,
+                                                   std::vector<int> &, 
+                                                   avtSourceFromDatabase *);
+    void                       CreateOriginalNodes(avtDatasetCollection &,
                                                    std::vector<int> &, 
                                                    avtSourceFromDatabase *);
     void                       CreateStructuredIndices(avtDatasetCollection &,

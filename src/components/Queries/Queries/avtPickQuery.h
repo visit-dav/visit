@@ -10,6 +10,7 @@
 
 #include <string>
 #include <PickAttributes.h>
+#include <avtTypes.h>
 
 class avtMatrix;
 class vtkDataSet;
@@ -32,6 +33,9 @@ class vtkRectilinearGrid;
 //    Kathleen Bonnell, Wed May  7 13:24:37 PDT 2003 
 //    Renamed 'LocateCell' as 'LocatorFindCell'. Added 'RGridFindCell'. 
 //
+//    Kathleen Bonnell, Wed Jun 18 18:07:55 PDT 2003   
+//    Add member ghostType.
+//
 // ****************************************************************************
 
 class QUERY_API avtPickQuery : public avtDatasetQuery
@@ -53,6 +57,7 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
     PickAttributes                  pickAtts;
     int                             cellOrigin;
     int                             blockOrigin;
+    avtGhostType                    ghostType;
     const avtMatrix                *invTransform;
 
     virtual void                    Execute(vtkDataSet *, const int);

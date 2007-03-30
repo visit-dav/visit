@@ -37,9 +37,6 @@
 
 // .SECTION Additions 
 // KSB, LLNL, Added flag that allows ghost cells to be ignored. 
-// KBB, LLNL, Tue Jun  3 15:26:52 PDT 2003, Added MinCellLength member
-//            and correspondign GetMacro.  MinCellLength may be useful
-//            for determining a tolerance to use with certain methods.
 
 
 #ifndef __vtkVisItCellLocator_h
@@ -48,11 +45,26 @@
 #include <visit_vtk_exports.h>
 #include "vtkLocator.h"
 
+class vtkCell;
 class vtkCellArray;
 class vtkGenericCell;
 class vtkIdList;
 class vtkNeighborCells;
 class vtkPoints;
+class vtkVertex;
+class vtkPolyVertex;
+class vtkLine;
+class vtkPolyLine;
+class vtkTriangle;
+class vtkTriangleStrip;
+class vtkPolygon;
+class vtkPixel;
+class vtkQuad;
+class vtkTetra;
+class vtkVoxel;
+class vtkHexahedron;
+class vtkWedge;
+class vtkPyramid;
 
 class VISIT_VTK_API vtkVisItCellLocator : public vtkLocator
 {
@@ -108,6 +120,15 @@ public:
                                 float& t, float x[3], float pcoords[3],
                                 int &subId, vtkIdType &cellId,
                                 vtkGenericCell *cell);
+
+  // Description:
+  // Return intersection point (if any) AND the cell which was intersected by
+  // the finite line.
+  virtual int IntersectWithLine(float a0[3], float a1[3], 
+                                float& t, float x[3], float pcoords[3],
+                                int &subId, vtkIdType &cellId);
+
+
 
   // Description:
   // Return the closest point and the cell which is closest to the point x.
@@ -193,12 +214,8 @@ public:
   void FreeSearchStructure();
   void BuildLocator();
   void GenerateRepresentation(int level, vtkPolyData *pd);
+  vtkGetMacro(MinCellLength, float); 
 
-  //
-  // Retrieve MinCellLength.  Value not valid until the locator has  
-  // been built.
-  //
-  vtkGetMacro(MinCellLength,float);
   
 protected:
   vtkVisItCellLocator();
@@ -260,6 +277,55 @@ protected:
 private:
   vtkVisItCellLocator(const vtkVisItCellLocator&);  // Not implemented.
   void operator=(const vtkVisItCellLocator&);  // Not implemented.
+
+  int CellIntersectWithLine(vtkCell *, float [3], float [3], 
+                                float&, float [3], float [3], int &);
+
+  int VertexIntersectWithLine(vtkVertex *, float [3], float [3], 
+                                float&, float [3], float [3], int &);
+
+  int PolyVertexIntersectWithLine(vtkPolyVertex *, float [3], float [3], 
+                                float&, float [3], float [3], int &);
+
+  int LineIntersectWithLine(vtkLine *, float [3], float [3], 
+                                float&, float [3], float [3], int &);
+
+  int PolyLineIntersectWithLine(vtkPolyLine *, float [3], float [3], 
+                                float&, float [3], float [3], int &);
+
+  int TriangleIntersectWithLine(vtkTriangle *, float [3], float [3], 
+                                float&, float [3], float [3], int &);
+
+  int TriStripIntersectWithLine(vtkTriangleStrip *, float [3], float [3], 
+                                float&, float [3], float [3], int &);
+
+  int PolygonIntersectWithLine(vtkPolygon *, float [3], float [3], 
+                                float&, float [3], float [3], int &);
+
+  int PixelIntersectWithLine(vtkPixel *, float [3], float [3], 
+                                float&, float [3], float [3], int &);
+
+  int QuadIntersectWithLine(vtkQuad *, float [3], float [3], 
+                                float&, float [3], float [3], int &);
+
+  int TetraIntersectWithLine(vtkTetra *, float [3], float [3], 
+                                float&, float [3], float [3], int &);
+
+  int VoxelIntersectWithLine(vtkVoxel *, float [3], float [3], 
+                                float&, float [3], float [3], int &);
+
+  int HexIntersectWithLine(vtkHexahedron *, float [3], float [3], 
+                                float&, float [3], float [3], int &);
+
+  int WedgeIntersectWithLine(vtkWedge *, float [3], float [3], 
+                                float&, float [3], float [3], int &);
+
+  int PyramidIntersectWithLine(vtkPyramid *, float [3], float [3], 
+                                float&, float [3], float [3], int &);
+
+  void PrintTriangle(void);
+  vtkTriangle *triangle;
+  vtkQuad *quad;
   float MinCellLength;
 };
 

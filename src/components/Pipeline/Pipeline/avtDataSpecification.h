@@ -138,6 +138,13 @@ class PIPELINE_API avtDataSpecification
     void                         TurnZoneNumbersOff(void) 
                                      { needZones = false; };
 
+    bool                         NeedNodeNumbers(void) 
+                                     { return needNodes; };
+    void                         TurnNodeNumbersOn(void) 
+                                     { needNodes = true; };
+    void                         TurnNodeNumbersOff(void) 
+                                     { needNodes = false; };
+
     bool                         MayRequireZones(void) 
                                      { return mayRequireZones; };
     void                         SetMayRequireZones(bool val) 
@@ -179,6 +186,7 @@ class PIPELINE_API avtDataSpecification
     std::vector<CharStrRef>      secondaryVariables;
 
     bool                         needZones;
+    bool                         needNodes;
     bool                         mayRequireZones;
     bool                         useGhostZones;
     bool                         needInternalSurfaces;

@@ -35,12 +35,16 @@ using     std::string;
 //    Kathleen Bonnell, Thu Apr 17 09:39:19 PDT 2003  
 //    Initialize invTransform.
 //
+//    Kathleen Bonnell, Wed Jun 18 17:55:49 PDT 2003 
+//    Initialize ghostType. 
+//
 // ****************************************************************************
 
 avtPickQuery::avtPickQuery()
 {
     blockOrigin = cellOrigin = 0;
     invTransform = NULL;
+    ghostType = AVT_NO_GHOSTS;
 }
 
 
@@ -88,13 +92,19 @@ avtPickQuery::GetPickAtts()
 //  Programmer: Kathleen Bonnell
 //  Creation:   November 15, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jun 18 17:55:49 PDT 2003 
+//    Retreive value of ContainsGhostZones.
+//
 // ****************************************************************************
 
 void
 avtPickQuery::PreExecute(void)
 {
-    blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
-    cellOrigin = GetInput()->GetInfo().GetAttributes().GetCellOrigin();
+    avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+    blockOrigin = atts.GetBlockOrigin();
+    cellOrigin = atts.GetCellOrigin();
+    ghostType = atts.GetContainsGhostZones();
 }
 
 
@@ -199,6 +209,12 @@ avtPickQuery::PostExecute(void)
 //    For efficiency, use rectilinear-specific code to find the cellId
 //    when applicable. 
 //    
+//    Kathleen Bonnell, Wed Jun 18 17:55:49 PDT 2003 
+//    Restrict calculation of 'RealCellId' (Reason:  if VisIt calculates
+//    ghost zones, they are created AFTER the OriginalCellsArray, so the
+//    cell Id retrieved from the array is valid.  This is designated by
+//    avtGhostType AVT_CREATED_GHOSTS.  GhostZones determined by the file
+//    format are designated by AVT_HAS_GHOSTS).
 // ****************************************************************************
 
 void
@@ -218,6 +234,8 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
 
     int foundZone = pickAtts.GetZoneNumber();
     int type = ds->GetDataObjectType();
+
+    bool shouldCalcRealId = (ghostType == AVT_HAS_GHOSTS || foundZone == -1);
 
     if (foundZone == -1)
     {
@@ -246,6 +264,7 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
                    << "Could not find zone corresponding to pick point" << endl;
             return;
         }
+        
         //
         // Retrieve nodes for foundZone.
         // 
@@ -418,8 +437,8 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
     {
         pickAtts.SetDomain(dom+blockOrigin);
     }
-
-    if (type == VTK_RECTILINEAR_GRID || type == VTK_STRUCTURED_GRID) 
+    if (shouldCalcRealId && 
+       (type == VTK_RECTILINEAR_GRID || type == VTK_STRUCTURED_GRID))
     {
         foundZone = vtkVisItUtility::CalculateRealCellID(foundZone, ds);
     }
@@ -481,6 +500,10 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
 //    Kathleen Bonnell, Wed May  7 13:24:37 PDT 2003
 //    Renamed from LocateCell.
 //    
+//    Kathleen Bonnell, Wed Jun 18 18:03:41 PDT 2003 
+//    Moved transformation of cellPoint to ApplyFilters method, so that
+//    the transformed point is available to RGridFindCell if necessary. 
+//    
 // ****************************************************************************
 
 int
@@ -490,23 +513,6 @@ avtPickQuery::LocatorFindCell(vtkDataSet *ds)
     // Use the picked point that has been moved towards the cell center.
     //
     float *cellPoint  = pickAtts.GetCellPoint();
-
-    if (invTransform != NULL)  
-    {
-        //
-        // Transform the intersection point back to original space.
-        //
-        avtVector v1(cellPoint);
-        v1 = (*invTransform) * v1;
-        cellPoint[0] = v1.x;
-        cellPoint[1] = v1.y;
-        cellPoint[2] = v1.z;
-        //
-        // Reset the cell point, so that the DB uses the same point. 
-        //
-        pickAtts.SetCellPoint(cellPoint);
-    }
-
 
     float tol, dist, ptLine[3], diagLen;
     int subId, found = -1;
@@ -584,6 +590,9 @@ avtPickQuery::RGridFindCell(vtkRectilinearGrid *rgrid)
 //    pickAtts' NeedTransformMessage wasn't always getting set to false
 //    when needed.
 //    
+//    Kathleen Bonnell, Wed Jun 18 18:03:41 PDT 2003 
+//    Transform pickAtts.cellPoint.
+//    
 // ****************************************************************************
 
 avtDataObject_p
@@ -593,6 +602,25 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
     if (inAtts.HasTransform() && inAtts.GetCanUseTransform())
     {
         invTransform = inAtts.GetTransform();
+        //
+        // Transform the point that will be used in locating the cell. 
+        //
+        float *cellPoint  = pickAtts.GetCellPoint();
+        if (invTransform != NULL)  
+        {
+            //
+            // Transform the intersection point back to original space.
+            //
+            avtVector v1(cellPoint);
+            v1 = (*invTransform) * v1;
+            cellPoint[0] = v1.x;
+            cellPoint[1] = v1.y;
+            cellPoint[2] = v1.z;
+            //
+            // Reset the cell point to the transformed point.
+            //
+            pickAtts.SetCellPoint(cellPoint);
+        }
     }
     else
     {
