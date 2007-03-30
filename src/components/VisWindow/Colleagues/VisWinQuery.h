@@ -49,6 +49,9 @@
 //    Replaced char * argument of QueryIsValid and Pick methods with 
 //    PickAttributes.
 //    
+//    Kathleen Bonnell, Fri Jun  6 15:17:45 PDT 2003  
+//    Added FullFrameOn/Off methods. 
+//    
 // ****************************************************************************
 
 class VISWINDOW_API VisWinQuery : public VisWinColleague
@@ -82,6 +85,9 @@ class VISWINDOW_API VisWinQuery : public VisWinColleague
 
     void                          Pick(const PickAttributes *);
     void                          ClearPickPoints(void);
+
+    virtual void                  FullFrameOn(const double, const int);
+    virtual void                  FullFrameOff(void);
 
   protected:
     std::vector< avtPickActor_p >      pickPoints;

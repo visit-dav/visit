@@ -1075,6 +1075,9 @@ ViewerQueryManager::ClearPickPoints()
 //    Kathleen Bonnell, Thu Apr 17 08:54:59 PDT 2003 
 //    This is the wrong place to set pick's dimension var. 
 //    
+//    Kathleen Bonnell, Fri Jun  6 16:06:25 PDT 2003 
+//    Added support for full-frame mode. 
+//    
 // ****************************************************************************
 
 void
@@ -1152,8 +1155,34 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi)
         pickAtts->SetTimeStep(t);
         pickAtts->SetFulfilled(false);
         pickAtts->SetDatabaseName(db);
-        pickAtts->SetRayPoint1(pd.rayPt1);
-        pickAtts->SetRayPoint2(pd.rayPt2);
+
+        float *rp1 = pd.rayPt1;
+        float *rp2 = pd.rayPt2;
+        //
+        // If in full-frame mode on a 2d plot, the ray points were computed
+        // in the scaled full-frame space.  Reverse the scaling to get the 
+        // correct ray points. 
+        //
+        if (win->GetFullFrameMode() && win->GetViewDimension() == 2)
+        {
+            double scale;
+            int type;
+            win->GetScaleFactorAndType(scale, type);
+            if (type == 0 && scale != 0.) // x_axis
+            {
+                rp1[0] /= scale;
+                rp2[0] /= scale;
+            }
+            else if (type == 1 && scale != 0.) // y_axis 
+            {
+                rp1[1] /= scale;
+                rp2[1] /= scale;
+            }
+        }
+
+        pickAtts->SetRayPoint1(rp1);
+        pickAtts->SetRayPoint2(rp2);
+
 
         bool retry;
         int numAttempts = 0; 
@@ -1697,3 +1726,50 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
     }
 }
 
+
+// ****************************************************************************
+// Method: ViewerQueryManager::Lineout
+//
+// Purpose: 
+//   Performs a lineout on the currently active plot using the
+//   passed line attributes.
+//
+// Arguments:
+//   win       The window that originated the lineout.
+//   lineAtts  The attributes necessary for performing lineout. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   June 6, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerQueryManager::Lineout(ViewerWindow *origWin, Line *lineAtts)
+{
+    //
+    // If in full-frame mode on a 2d plot, the end points were computed
+    // in the scaled full-frame space.  Reverse the scaling to get the 
+    // correct end points. 
+    //
+    if (origWin->GetFullFrameMode() && origWin->GetViewDimension() == 2)
+    {
+        double *pt1 = lineAtts->GetPoint1();
+        double *pt2 = lineAtts->GetPoint2();
+        double scale;
+        int type;
+        origWin->GetScaleFactorAndType(scale, type);
+        if (type == 0 && scale != 0.) // x_axis
+        {
+            pt1[0] /= scale;
+            pt2[0] /= scale;
+        }
+        else if (type == 1 && scale != 0.) // y_axis 
+        {
+            pt1[1] /= scale;
+            pt2[1] /= scale;
+        }
+    }
+    AddQuery(origWin, lineAtts);
+}

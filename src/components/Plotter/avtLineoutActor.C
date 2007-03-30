@@ -605,3 +605,69 @@ avtLineoutActor::SetShowLabels(const bool mode)
     }
 }
 
+
+// ****************************************************************************
+//  Method:  avtLineoutActor::Translate
+//
+//  Purpose:   Translates the actor by the given vector. 
+//
+//  Arguments:
+//    vec      The vector to use in translating the actor.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    June 6, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void 
+avtLineoutActor::Translate(const float vec[3])
+{
+    float *newPos = labelActor1->GetPosition();
+    newPos[0] *= vec[0];
+    newPos[1] *= vec[1]; 
+    newPos[2] *= vec[2];
+
+    newPos = labelActor2->GetPosition();
+    newPos[0] *= vec[0];
+    newPos[1] *= vec[1]; 
+    newPos[2] *= vec[2];
+
+    newPos = lineSource->GetPoint1();
+    newPos[0] *= vec[0];
+    newPos[1] *= vec[1]; 
+    newPos[2] *= vec[2];
+
+    newPos = lineSource->GetPoint2();
+    newPos[0] *= vec[0];
+    newPos[1] *= vec[1]; 
+    newPos[2] *= vec[2];
+
+    lineSource->Modified();
+}
+
+
+// ****************************************************************************
+//  Method:  avtLineoutActor::ResetPosition
+//
+//  Purpose:   Resets the actor's position to the original location. 
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    June 6, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void 
+avtLineoutActor::ResetPosition()
+{
+    labelActor1->SetPosition(attach[0], attach[1], attach[2]);
+    labelActor2->SetPosition(pt2[0], pt2[1], pt2[2]);
+
+    lineSource->SetPoint1(attach[0], attach[1], attach[2]);
+    lineSource->SetPoint2(pt2[0], pt2[1], pt2[2]);
+    lineSource->Modified();
+}
+

@@ -79,53 +79,57 @@ class avtToolInterface;
 //    Kathleen Bonnell, Wed May 14 17:09:14 PDT 2003 
 //    Added PointQuery method.
 //
+//    Kathleen Bonnell, Fri Jun  6 15:53:58 PDT 2003 
+//    Added another overloaded Lineout method.  This one is called from
+//    ViewerWindow where it used to call AddQuery directly.  Made AddQuery
+//    a private method.
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
 {
   public:
-                    ~ViewerQueryManager();
-     static         ViewerQueryManager *Instance();      
-     void           SetOperatorFactory(ViewerOperatorFactory *);
+                   ~ViewerQueryManager();
+    static          ViewerQueryManager *Instance();      
+    void            SetOperatorFactory(ViewerOperatorFactory *);
 
-     void           AddQuery(ViewerWindow *origwin, Line *lineAtts);
-
-     void           DatabaseQuery(ViewerWindow *owin, const std::string &qName,
+    void            DatabaseQuery(ViewerWindow *owin, const std::string &qName,
                             const std::vector<std::string> &vars);
 
-     void           LineQuery(const char *qName, const double *pt1, 
+    void            LineQuery(const char *qName, const double *pt1, 
                       const double *pt2, const std::vector<std::string> &vars);
 
-     void           PointQuery(const std::string &qName, const double *pt, 
+    void            PointQuery(const std::string &qName, const double *pt, 
                             const std::vector<std::string> &vars);
 
-     void           Pick(PICK_POINT_INFO *pd);
+    void            Pick(PICK_POINT_INFO *pd);
 
-     void           Delete(ViewerPlot *vp);
-     void           Delete(ViewerWindow *vw);
-
-
-     void           HandleTool(ViewerWindow *, const avtToolInterface &ti);
-     bool           InitializeTool(ViewerWindow *, avtToolInterface &ti);
-     void           DisableTool(ViewerWindow *, avtToolInterface &ti);
-
-     void           UpdateScaleFactor(ViewerWindow *);
-
-     QueryList     *GetQueryTypes() { return queryTypes; };
-
-     void           UpdatePickAtts();
-     void           ClearPickPoints(void);
+    void            Delete(ViewerPlot *vp);
+    void            Delete(ViewerWindow *vw);
 
 
-     static QueryAttributes  *GetQueryClientAtts();
-     static PickAttributes   *GetPickAtts();
-     static GlobalLineoutAttributes   *GetGlobalLineoutAtts();
-     static GlobalLineoutAttributes   *GetGlobalLineoutClientAtts();
+    void            HandleTool(ViewerWindow *, const avtToolInterface &ti);
+    bool            InitializeTool(ViewerWindow *, avtToolInterface &ti);
+    void            DisableTool(ViewerWindow *, avtToolInterface &ti);
+
+    void            UpdateScaleFactor(ViewerWindow *);
+
+    QueryList      *GetQueryTypes() { return queryTypes; };
+
+    void            UpdatePickAtts();
+    void            ClearPickPoints(void);
 
 
-     void           Lineout(ViewerWindow *win, const double pt1[3], 
+    static QueryAttributes  *GetQueryClientAtts();
+    static PickAttributes   *GetPickAtts();
+    static GlobalLineoutAttributes   *GetGlobalLineoutAtts();
+    static GlobalLineoutAttributes   *GetGlobalLineoutClientAtts();
+
+
+    void            Lineout(ViewerWindow *win, const double pt1[3], 
                             const double pt2[3], const std::string &);
-     void           Lineout(ViewerWindow *);
+    void            Lineout(ViewerWindow *);
+    void            Lineout(ViewerWindow *, Line *);
 
     void            SetGlobalLineoutAttsFromClient();
     void            SetDynamicLineout(bool);
@@ -138,6 +142,8 @@ class VIEWER_API ViewerQueryManager
     ColorAttribute  GetColor();
 
   private:
+    void            AddQuery(ViewerWindow *origwin, Line *lineAtts);
+
     void            SimpleAddQuery(ViewerQuery_p query, ViewerPlot *, 
                                    ViewerWindow *, ViewerWindow *);
 

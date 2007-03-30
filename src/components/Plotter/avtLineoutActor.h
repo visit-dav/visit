@@ -31,6 +31,9 @@ class vtkFollower;
 //    SetShowLabels.  Added two actors for labels to be positioned at the 
 //    endpoints.
 //
+//    Kathleen Bonnell, Fri Jun  6 15:08:45 PDT 2003 
+//    Added Translate and ResetPosition methods. 
+//    
 // ****************************************************************************
 
 class PLOTTER_API avtLineoutActor
@@ -58,6 +61,8 @@ class PLOTTER_API avtLineoutActor
     void               SetForegroundColor(float fg[3]);
     void               UpdateView();
     void               Shift(const float vec[3]);
+    void               Translate(const float vec[3]);
+    void               ResetPosition(void);
 
     void               SetLineStyle(const int);
     void               SetLineWidth(const int);

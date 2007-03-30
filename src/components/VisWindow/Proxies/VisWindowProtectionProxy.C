@@ -821,3 +821,22 @@ VisWindowProtectionProxy::ProxiedGetAntialiasing()
 {
     return viswin->GetAntialiasing();
 }
+
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetFullFrameMode
+//
+// Purpose:     Returns the fullframe mode.
+//
+// Returns:     The fullframe mode.
+//
+// Programmer:  Kathleen Bonnell
+// Creation:    June 6, 2003. 
+//
+// ****************************************************************************
+
+bool
+VisWindowProtectionProxy::ProxiedGetFullFrameMode()
+{
+    return viswin->GetFullFrameMode();
+}

@@ -193,6 +193,9 @@ VisWinPlots::~VisWinPlots()
 //    When in antialiasing mode, allow colleagues to re-add themselves to the
 //    window, so that they can be drawn after plots, and reduce artefacts. 
 //
+//    Kathleen Bonnell, Fri Jun  6 15:23:05 PDT 2003 
+//    GetFullFrameMode from mediator before retrieving scale factor and type. 
+//    
 // ****************************************************************************
 
 void
@@ -219,11 +222,11 @@ VisWinPlots::AddPlot(avtActor_p &p)
     p->SetTransparencyActor(transparencyActor);
     p->SetExternallyRenderedImagesActor(extRenderedImagesActor);
 
-    double scale; 
-    int type;
-    mediator.GetScaleFactorAndType(scale, type);
-    if (scale > 0.) // Full-frame mode
+    if (mediator.GetFullFrameMode())
     {
+        double scale; 
+        int type;
+        mediator.GetScaleFactorAndType(scale, type);
         float vec[3] = { 1. , 1., 1.};
         if (type == 0) // x-axis
             vec[0] = scale;
@@ -1591,4 +1594,47 @@ bool
 VisWinPlots::DisableExternalRenderRequests(void)
 {
     return extRenderedImagesActor->DisableExternalRenderRequests();
+}
+
+
+// ****************************************************************************
+//  Method: VisWinPlots::FullFrameOn
+//
+//  Purpose:
+//    Scales the plots to fit into the full-frame.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   June 6, 2003
+//
+// ****************************************************************************
+
+void
+VisWinPlots::FullFrameOn(const double scale, const int type)
+{
+    float vec[3] = {1., 1., 1.};
+    if (type == 0) // x-axis is being scaled
+        vec[0] = scale; 
+    else // if (type == 1) // y-axis is being scaled
+        vec[1] = scale; 
+
+    ScalePlots(vec);
+}
+
+
+// ****************************************************************************
+//  Method: VisWinPlots::FullFrameOff
+//
+//  Purpose:
+//    Undoes the scale that made plots fit into the full-frame.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   June 6, 2003
+//
+// ****************************************************************************
+
+void
+VisWinPlots::FullFrameOff()
+{
+    float vec[3] = {1., 1., 1.};
+    ScalePlots(vec);
 }

@@ -1011,3 +1011,49 @@ vtkHighlightActor2D::RegenerateHighlight()
     highlightActor->SetMapper(highlightMapper);
     highlightActor->PickableOff();
 }
+
+
+// ****************************************************************************
+// Method: VisWinTools::FullFrameOn
+//
+// Purpose: 
+//   Tells tools that FullFrame mode has been turned on. 
+//
+// Arguments:
+//   scale : The axis scale factor. 
+//   type  : The axis scale type.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   June 6, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinTools::FullFrameOn(const double scale, const int type)
+{
+    for(int i = 0; i < numTools; ++i)
+        tools[i]->FullFrameOn(scale, type);
+}
+
+
+// ****************************************************************************
+// Method: VisWinTools::FullFrameOff
+//
+// Purpose: 
+//   Tells tools that FullFrame mode has been turned off. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   June 6, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinTools::FullFrameOff()
+{
+    for(int i = 0; i < numTools; ++i)
+        tools[i]->FullFrameOff();
+}

@@ -213,6 +213,9 @@ class VisitInteractor;
 //    Kathleen Bonnell, Wed May 28 16:25:37 PDT 2003 
 //    Added method ReAddColleaguesToRenderWindow.
 //
+//    Kathleen Bonnell,  Fri Jun  6 15:51:07 PDT 2003 
+//    Added FullFrameOn/Off and GetFullFrameMode methods. 
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -294,7 +297,11 @@ public:
     const avtView3D     &GetView3D(void);
     void                 SetViewCurve(const avtViewCurve &);
     const avtViewCurve  &GetViewCurve();
+
     void                 GetScaleFactorAndType(double &s, int &t);
+    bool                 GetFullFrameMode(void);
+    void                 FullFrameOn(const double, const int);
+    void                 FullFrameOff(void);
 
     void                 ShowMenu(void);
     void                 HideMenu(void);

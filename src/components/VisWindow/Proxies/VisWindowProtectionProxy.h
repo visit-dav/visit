@@ -71,6 +71,9 @@ class     VisitInteractor;
 //    Kathleen Bonnell, Wed May 28 16:04:50 PDT 2003  
 //    Added methods ReAddColleaguesToRenderWindow, GetAntialiasing.
 //
+//    Kathleen Bonnell, Wed May 28 16:04:50 PDT 2003  
+//    Added GetFullFrameMode. 
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowProtectionProxy
@@ -131,6 +134,7 @@ class VISWINDOW_API VisWindowProtectionProxy
     void                ProxiedGetScaleFactorAndType(double &s, int &t);
     void                ProxiedReAddColleaguesToRenderWindow();
     bool                ProxiedGetAntialiasing();
+    bool                ProxiedGetFullFrameMode();
 };
 
 

@@ -60,6 +60,9 @@
 #    Eric Brugger, Mon Nov 18 16:20:47 PST 2002
 #    I added keyframe options.
 #
+#    Kathleen Bonnell, Fri Jun  6 12:22:12 PDT 2003 
+#    Added pick options.
+#
 ##############################################################################
 
 ##
@@ -75,6 +78,7 @@ SRC=PyAnnotationAttributes.C \
 PyHostProfile.C \
 PyKeyframeAttributes.C \
 PyMaterialAttributes.C \
+PyPickAttributes.C \
 PyPrinterAttributes.C \
 PyRenderingAttributes.C \
 PySaveWindowAttributes.C \
@@ -87,6 +91,7 @@ HDR=PyAnnotationAttributes.h \
 PyHostProfile.h \
 PyKeyframeAttributes.h \
 PyMaterialAttributes.h \
+PyPickAttributes.h \
 PyPrinterAttributes.h \
 PyRenderingAttributes.h \
 PySaveWindowAttributes.h \

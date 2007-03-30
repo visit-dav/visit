@@ -580,6 +580,10 @@ avtPickQuery::RGridFindCell(vtkRectilinearGrid *rgrid)
 //    This is done here, rather than PreExecute, because the input used
 //    for this Query will not have that information.
 // 
+//    Kathleen Bonnell, Thu Jun  5 13:37:11 PDT 2003 
+//    pickAtts' NeedTransformMessage wasn't always getting set to false
+//    when needed.
+//    
 // ****************************************************************************
 
 avtDataObject_p
@@ -589,7 +593,6 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
     if (inAtts.HasTransform() && inAtts.GetCanUseTransform())
     {
         invTransform = inAtts.GetTransform();
-        pickAtts.SetNeedTransformMessage(false);
     }
     else
     {
@@ -599,6 +602,10 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
         invTransform == NULL)
     {
         pickAtts.SetNeedTransformMessage(true);
+    }
+    else
+    {
+        pickAtts.SetNeedTransformMessage(false);
     }
 
     return inData->GetTerminatingSource()->GetOutput();

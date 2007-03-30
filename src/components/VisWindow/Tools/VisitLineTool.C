@@ -380,6 +380,8 @@ VisitLineTool::UpdateView()
 // Creation:   Tue Jun 18 15:55:44 PST 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Fri Jun  6 15:36:24 PDT 2003 
+//   Added support for full-frame mode.
 //   
 // ****************************************************************************
 
@@ -390,6 +392,29 @@ VisitLineTool::UpdateTool()
     hotPoints[1].pt = avtVector((double*)Interface.GetPoint2());
     hotPoints[2].pt = (avtVector((double*)Interface.GetPoint1()) +
                        avtVector((double*)Interface.GetPoint2())) * 0.5;
+
+    if (proxy.GetFullFrameMode())
+    {
+        // 
+        // Translate the hotPoints so they appear in the correct position
+        // in full-frame mode. 
+        // 
+        double scale;
+        int type;
+        proxy.GetScaleFactorAndType(scale, type);
+        if (type == 0 ) // x_axis
+        {
+            hotPoints[0].pt.x *= scale;
+            hotPoints[1].pt.x *= scale;
+            hotPoints[2].pt.x *= scale;
+        }
+        else            // x_axis
+        {
+            hotPoints[0].pt.y *= scale;
+            hotPoints[1].pt.y *= scale;
+            hotPoints[2].pt.y *= scale;
+        }
+    }
 
     UpdateLine();
     UpdateText();
@@ -1102,6 +1127,54 @@ VisitLineTool::ReAddToWindow()
     {
         proxy.GetCanvas()->RemoveActor(lineActor);
         proxy.GetCanvas()->AddActor(lineActor);
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  VisitLineTool::FullFrameOn
+//
+//  Purpose: Updates the tool.
+//
+//  Arguments:
+//    <unused>   The axis scale factor.
+//    <unused>   The axis scale type.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    June 6, 2003 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisitLineTool::FullFrameOn(const double, const int)
+{
+    if(IsEnabled())
+    {
+        UpdateTool();
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  VisitLineTool::FullFrameOn
+//
+//  Purpose: Updates the tool.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    June 6, 2003 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisitLineTool::FullFrameOff()
+{
+    if(IsEnabled())
+    {
+        UpdateTool();
     }
 }
 

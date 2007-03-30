@@ -38,6 +38,9 @@ class vtkTextActor;
 //   Kathleen Bonnell, Wed May 28 16:14:22 PDT 2003 
 //   Add method ReAddToWindow.
 //
+//   Kathleen Bonnell, Fri Jun  6 15:36:24 PDT 2003 
+//   Add FullFrameOn/Off methods. 
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitLineTool : public VisitInteractiveTool
@@ -62,6 +65,9 @@ class VISWINDOW_API VisitLineTool : public VisitInteractiveTool
     virtual void UpdateView();
     virtual void UpdateTool();
     virtual void ReAddToWindow();
+
+    virtual void FullFrameOn(const double, const int);
+    virtual void FullFrameOff(void);
 
   protected:
     // Callback functions for the tool's hot points.

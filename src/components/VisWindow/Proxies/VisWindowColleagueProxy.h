@@ -56,6 +56,9 @@
 //    Kathleen Bonnell, Wed May 28 15:58:15 PDT 2003 
 //    Added methods ReAddColleaguesToRenderWindow, GetAntialiasing.
 //
+//    Kathleen Bonnell, Fri Jun  6 15:31:37 PDT 2003  
+//    Added GetFullFrameMode method. 
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
@@ -145,6 +148,9 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
 
     bool                GetAntialiasing()
                                   { return ProxiedGetAntialiasing(); };
+
+    bool                GetFullFrameMode()
+                                  { return ProxiedGetFullFrameMode(); };
 };
 
 
