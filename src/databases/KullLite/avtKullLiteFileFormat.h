@@ -67,7 +67,7 @@ class DATABASE_API avtKullLiteFileFormat : public avtSTMDFileFormat
 
     // Returns true if the string holds to the material string standard:
     // Must start with mat_, and must have one other underscore. 
-    inline bool IsMaterialName(const string &str)
+    inline bool IsMaterialName(const std::string &str)
     {
         return (str[0] == 'm') && (str[1] == 'a') && (str[2] == 't')
                && (str[3] == '_') && (str.find_last_of('_') != 4);
@@ -76,7 +76,7 @@ class DATABASE_API avtKullLiteFileFormat : public avtSTMDFileFormat
     // Precondition: IsMaterialName(str) is true
     // Returns the string contained between mat_ and the last underscore.
     // Eg: "pure_gold" in "mat_pure_gold_zones"
-    inline string GetMaterialName(const string &str)
+    inline std::string GetMaterialName(const std::string &str)
     {   return str.substr(4, str.find_last_of('_') - 4);    }
 
     PDBfile *m_pdbFile;

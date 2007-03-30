@@ -415,6 +415,9 @@ dnl
 dnl    Akira Haddox, Thu Jun 12 08:56:16 PDT 2003
 dnl    Added support for HDF4.
 dnl
+dnl    Eric Brugger, Mon Jun 16 13:22:38 PDT 2003
+dnl    Only build the BOV database reader if zlib is present.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1119,6 +1122,7 @@ saved_CFLAGS="$CFLAGS"
 saved_LDFLAGS="$LDFLAGS"
 saved_LIBS="$LIBS"
 
+HAVE_ZLIB="no"
 AC_ARG_WITH(zlib,[  --with-zlib=INC,LIB     Use the GNU zlib compression],
             ,withval=yes)
 case $withval in
@@ -1131,6 +1135,7 @@ case $withval in
         AC_CHECK_LIB(z, compress2,
 				   ZLIB_LIB="-lz $ZLIB_LIB"
 				   AC_DEFINE(HAVE_LIBZ)
+                                   HAVE_ZLIB="yes"
 		    )
         ;;
     no)
@@ -1152,12 +1157,13 @@ case $withval in
         fi
 
         zlib_lib="`echo $withval |cut -f2 -d, -s`"
-        if test "X" != "$zlb_lib"; then
+        if test "X" != "$zlib_lib"; then
 	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE"
             LDFLAGS="$LDFLAGS -L$zlib_lib"
 	    AC_CHECK_LIB(z, compress2,
 				       ZLIB_LIB="-L$zlib_lib -lz $ZLIB_LIB"
 				       AC_DEFINE(HAVE_LIBZ)
+                                       HAVE_ZLIB="yes"
 			)
 	    LIBS="$saved_LIBS"
 	    LDFLAGS="$saved_LDFLAGS"
@@ -1167,6 +1173,7 @@ case $withval in
             AC_CHECK_LIB(z, compress2,
 				       ZLIB_LIB="-lz $ZLIB_LIB"
 				       AC_DEFINE(HAVE_LIBZ)
+                                       HAVE_ZLIB="yes"
 		        )
 	    LIBS="$saved_LIBS"
 	    CPPFLAGS="$saved_CPPFLAGS"
@@ -1566,6 +1573,15 @@ else
     fi
 fi
 AC_SUBST(SILO_LIB)
+
+dnl
+dnl Only build the BOV database reader if zlib is present.
+dnl
+BOV=""
+if test "$HAVE_ZLIB" = "yes"; then
+    BOV="$""(BOV)"
+fi
+AC_SUBST(BOV)
 
 dnl
 dnl Check for exodus libraries

@@ -364,8 +364,7 @@ vtkSurfaceFromVolume::ConstructPolyData(vtkPointData *inPD, vtkCellData *inCD,
             pt[2] = pts_ptr[idx1]*p + pts_ptr[idx2]*bp;
             idx1++; idx2++;
             outPts->SetPoint(ptIdx, pt);
-            outPD->InterpolateEdge(inPD, ptIdx, pe.ptIds[0], pe.ptIds[1],
-                                   pe.percent);
+            outPD->InterpolateEdge(inPD, ptIdx, pe.ptIds[0], pe.ptIds[1], bp);
             ptIdx++;
         }
     }
@@ -444,8 +443,7 @@ vtkSurfaceFromVolume::ConstructPolyData(vtkPointData *inPD, vtkCellData *inCD,
             pt[1] = pt1[1]*p + pt2[1]*bp;
             pt[2] = pt1[2]*p + pt2[2]*bp;
             outPts->SetPoint(ptIdx, pt);
-            outPD->InterpolateEdge(inPD, ptIdx, pe.ptIds[0], pe.ptIds[1],
-                                   pe.percent);
+            outPD->InterpolateEdge(inPD, ptIdx, pe.ptIds[0], pe.ptIds[1], bp);
             ptIdx++;
         }
     }

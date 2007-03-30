@@ -21,17 +21,6 @@ const char      *avtPoint3DFileFormat::MESHNAME = "points";
 using std::string;
 using std::vector;
 
-#if defined(_WIN32)
-// Define >> for strings since Windows does not seem to have it.
-ifstream &operator >> (ifstream &s, string &str)
-{
-    char tmp[1000];
-    s >> tmp;
-    str = string(tmp);
-    return s;
-}
-#endif
-
 // ****************************************************************************
 //  Method: avtPoint3DFileFormat constructor
 //
@@ -240,9 +229,9 @@ avtPoint3DFileFormat::ReadData(void)
 
     for (i = 0 ; i < 4 ; i++)
     {
-        string s;
-        ifile >> s;
-        varnames.push_back(s);
+        char buf[1024];
+        ifile >> buf;
+        varnames.push_back(buf);
     }
 
     char     line[1024];
