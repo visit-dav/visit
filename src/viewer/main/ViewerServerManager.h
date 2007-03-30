@@ -58,6 +58,7 @@ protected:
     static HostProfileList         *clientAtts;
 private:
     static void StartLauncher(const std::string &host,
+                              const std::string &visitPath,
                               ViewerConnectionProgressDialog *dialog);
 
     static int                      debugLevel;

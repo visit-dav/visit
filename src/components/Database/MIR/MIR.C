@@ -567,6 +567,9 @@ MIR::Destruct(void *p)
 //    Hank Childs, Mon Oct  7 15:30:53 PDT 2002
 //    Took the dataset out of its VTK constructs to improve performance.
 //
+//    Jeremy Meredith, Fri Jun 13 16:56:43 PDT 2003
+//    Added clean zones only.
+//
 // ****************************************************************************
 bool
 MIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
@@ -702,7 +705,8 @@ MIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
         bool clean       = (*real_clean_zones)[c];
         int  clean_matno = mat->GetMatlist()[c];
 
-        if (options.leaveCleanZonesWhole && clean)
+        if (options.cleanZonesOnly ||
+            (options.leaveCleanZonesWhole && clean))
         {
             someClean = true;
             ReconstructCleanCell(clean_matno, c, *c_ptr, c_ptr+1,
@@ -831,6 +835,9 @@ MIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
 //    Hank Childs, Mon Oct  7 14:40:50 PDT 2002
 //    Use a routine optimized for performance to create the coordinates list.
 //
+//    Jeremy Meredith, Fri Jun 13 16:56:43 PDT 2003
+//    Added clean zones only.
+//
 // ****************************************************************************
 bool
 MIR::Reconstruct2DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
@@ -953,7 +960,8 @@ MIR::Reconstruct2DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
         bool clean       = (*real_clean_zones)[c];
         int  clean_matno = mat->GetMatlist()[c];
 
-        if (options.leaveCleanZonesWhole && clean)
+        if (options.cleanZonesOnly ||
+            (options.leaveCleanZonesWhole && clean))
         {
             someClean = true;
             ReconstructCleanCell(clean_matno, c, *c_ptr, c_ptr+1,
@@ -1118,6 +1126,9 @@ MIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat,
 //    Store off the points structure because it remains the same across
 //    repeated calls.
 //
+//    Jeremy Meredith, Fri Jun 13 16:56:43 PDT 2003
+//    Added clean-zone-only support.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1157,7 +1168,8 @@ MIR::GetDataset(vector<int> mats, vtkDataSet *ds,
     int *cellList = new int[ntotalcells];
     for (int c = 0; c < ntotalcells; c++)
     {
-        if (matFlag[zonesList[c].mat])
+        if (zonesList[c].mat >= 0 &&
+            matFlag[zonesList[c].mat])
         {
             cellList[ncells] = c;
             ncells++;

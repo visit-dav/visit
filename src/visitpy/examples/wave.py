@@ -28,7 +28,7 @@ def wave():
     
     # Set the view.
     v = ViewAttributes()
-    v.camera = (-0.630384, 0.624746, 0.46077)
+    v.viewNormal = (-0.630384, 0.624746, 0.46077)
     v.focus = (4.64837, 0.0923395, 2.03837)
     v.viewUp = (0.531596, 0.779962, -0.330249)
     v.viewAngle = 30
@@ -41,7 +41,7 @@ def wave():
     
     # Create the final view
     v2 = ViewAttributes()
-    v2.camera = (0.585721, 0.364706, 0.723824)
+    v2.viewNormal = (0.585721, 0.364706, 0.723824)
     v2.focus = (6.67418, -0.256771, 0.561709)
     v2.viewUp = (-0.161539, 0.927655, -0.336691)
     v2.viewAngle = 30

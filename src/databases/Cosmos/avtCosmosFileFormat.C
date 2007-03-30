@@ -51,6 +51,10 @@ const int THROWOUT_DIM = (2 * GHOST_PADDING);
 //  Programmer:  Akira Haddox
 //  Creation:    June 4, 2003
 //
+//  Modifications:
+//    Akira Haddox, Fri Jun 13 11:16:41 PDT 2003
+//    Added in meshInfo structures.
+//
 // ****************************************************************************
 
 avtCosmosFileFormat::avtCosmosFileFormat(const char *fname)
@@ -217,6 +221,8 @@ avtCosmosFileFormat::avtCosmosFileFormat(const char *fname)
     meshes = new vtkDataSet *[ndomains];
     for (i = 0; i < ndomains; ++i)
         meshes[i] = NULL;
+    meshInfo.resize(ndomains);
+    meshInfoLoaded.resize(ndomains, false);
 }
 
 
@@ -435,6 +441,10 @@ avtCosmosFileFormat::GetVar(int ts, int dom, const char *name)
 //  Programmer:  Akira Haddox
 //  Creation:    June 4, 2003
 //
+//  Modifications:
+//    Akira Haddox, Fri Jun 13 11:14:47 PDT 2003
+//    Fixed dealing with spherical coordinate vectors.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -571,16 +581,107 @@ avtCosmosFileFormat::GetVectorVar(int ts, int dom, const char *name)
     float *ptr = fa->GetPointer(0);
 
     int j;
-    for (i = 0; i < nCells; ++i)
+
+    if (sphericalCoordinates)
     {
-        for (j = 0; j < 2; ++j)
-        {
-            *(ptr++) = values[j][i];
-        }
+        //
+        // For this, we need information about the mesh.
+        //
+        if (!meshInfoLoaded[dom])
+            ReadMeshInfo(dom);
+        double start[3];
+        double delta[3];
+    
+        start[0] = meshInfo[dom][0];
+        start[1] = meshInfo[dom][1];
+        start[2] = meshInfo[dom][2];
+        delta[0] = meshInfo[dom][3];
+        delta[1] = meshInfo[dom][4];
+        delta[2] = meshInfo[dom][5];
+
+        //
+        // Convert from node positions to cell positions.
+        //
+        start[0] += delta[0] / 2.0;
+        start[1] += delta[1] / 2.0;
+        start[2] += delta[2] / 2.0;
+
+        //
+        // Calculating vectors for spherical coordinates is calculated for
+        // arbitrary coordinate: m (one of: x,y,z) as:
+        //
+        // component m = dm/dr * vr + dm/dt * vt + dm/dp * vp
+        //
+       
         if (rank == 3)
-            *(ptr++) = values[2][i];
+        { 
+            int r,t,p;
+            i = 0;
+            for (p = 0; p < dimensions[2]; ++p)
+            {
+                double phi = start[2] + p * delta[2];
+                for (t = 0; t < dimensions[1]; ++t)
+                {
+                    double theta = start[1] + t * delta[1];
+                    for (r = 0; r < dimensions[0]; ++r)
+                    {
+                        double rho = start[0] + r * delta[0];
+                        
+                        double vr = values[0][i];
+                        double vt = values[1][i];
+                        double vp = values[2][i];
+                        ++i;
+                        
+                        *(ptr++) =   sin(theta) * cos(phi) * vr
+                                   + rho * cos(theta) * cos(phi) * vt
+                                   - rho * sin(theta) * sin(phi) * vp;
+                        *(ptr++) =   sin(theta) * sin(phi) * vr
+                                   + rho * cos(theta) * sin(phi) * vt
+                                   + rho * sin(theta) * cos(phi) * vp;
+                        *(ptr++) =   cos(theta) * vr
+                                   - rho * sin(theta) * vt;
+                    }
+                }
+            }
+        }
         else
-            *(ptr++) = 0.;
+        {
+            int r,t;
+            i = 0;
+            for (t = 0; t < dimensions[1]; ++t)
+            {
+                double theta = start[1] + t * delta[1];
+                for (r = 0; r < dimensions[0]; ++r)
+                {
+                    double rho = start[0] + r * delta[0];
+
+                    double vr = values[0][i];
+                    double vt = values[1][i];
+                    ++i;
+
+                    *(ptr++) = cos(theta) * vr - rho * sin(theta) * vt;
+                    *(ptr++) = sin(theta) * vr + rho * cos(theta) * vt;
+                    *(ptr++) = 0;
+                }
+            }
+        }
+    }
+    else
+    {
+        for (i = 0; i < nCells; ++i)
+        {
+            //
+            // Cartesian coordinates
+            // 
+            for (j = 0; j < 2; ++j)
+            {
+                *(ptr++) = values[j][i];
+            }
+            if (rank == 3)
+                *(ptr++) = values[2][i];
+            else
+                *(ptr++) = 0.;
+        }
     }
 
     delete[] values[0];
@@ -724,16 +825,18 @@ avtCosmosFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Programmer:  Akira Haddox
 //  Creation:    June  4, 2003
 //
+//  Modifications:
+//      Akira Haddox, Fri Jun 13 10:09:26 PDT 2003
+//      Moved reading mesh info into ReadMeshInfo call.
+//
 // ****************************************************************************
 
 void
 avtCosmosFileFormat::ReadMesh(int domain)
 {
     debug5 << "Reading in mesh for domain: " << domain << endl;
-    std::ifstream file;
-    file.open(gridFileNames[domain].c_str());
-    if (file.fail())
-        EXCEPTION1(InvalidFilesException, gridFileNames[domain].c_str());
+    if (!meshInfoLoaded[domain])
+        ReadMeshInfo(domain);
 
     vtkDataSet *rv;
 
@@ -745,20 +848,17 @@ avtCosmosFileFormat::ReadMesh(int domain)
     else
         ptDim[2] = 1;
 
-    
     double start[3];
-    double end[3];
     double delta[3];
+    
+    start[0] = meshInfo[domain][0];
+    start[1] = meshInfo[domain][1];
+    start[2] = meshInfo[domain][2];
+    delta[0] = meshInfo[domain][3];
+    delta[1] = meshInfo[domain][4];
+    delta[2] = meshInfo[domain][5];
 
     int i;
-    for (i = 0; i < 3; ++i)
-    {
-        file >> start[i] >> end[i] >> delta[i];
-        start[i] -= delta[i] / 2.0;
-        start[i] += delta[i] * 2;
-    }
-    
-    file.close();
     
     if (sphericalCoordinates)
     {
@@ -871,6 +971,53 @@ avtCosmosFileFormat::ReadMesh(int domain)
     }
 
     meshes[domain] = rv;
+}
+
+// ****************************************************************************
+//  Method:  avtCosmosFileFormat::ReadMeshInfo
+//
+//  Purpose:
+//      Read in information to create a mesh for a particular domain.
+//
+//  Arguments:
+//    domain    The domain to read. (Not bounds checked).
+//
+//  Programmer:  Akira Haddox
+//  Creation:    June 13, 2003
+//
+// ****************************************************************************
+
+void
+avtCosmosFileFormat::ReadMeshInfo(int domain)
+{
+    meshInfoLoaded[domain] = true;
+    std::ifstream file;
+    file.open(gridFileNames[domain].c_str());
+    if (file.fail())
+        EXCEPTION1(InvalidFilesException, gridFileNames[domain].c_str());
+
+    meshInfo[domain].resize(6);
+    
+    double start[3];
+    double end[3];
+    double delta[3];
+
+    int i;
+    for (i = 0; i < 3; ++i)
+    {
+        file >> start[i] >> end[i] >> delta[i];
+        start[i] -= delta[i] / 2.0;
+        start[i] += delta[i] * 2;
+    }
+
+    meshInfo[domain][0] = start[0];
+    meshInfo[domain][1] = start[1];
+    meshInfo[domain][2] = start[2];
+    meshInfo[domain][3] = delta[0];
+    meshInfo[domain][4] = delta[1];
+    meshInfo[domain][5] = delta[2];
+    
+    file.close();
 }
 
 

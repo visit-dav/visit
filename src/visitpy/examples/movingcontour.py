@@ -28,7 +28,7 @@ def movingcontour():
     
     # Set the view
     v = GetView3D()
-    v.SetCamera(-0.528889, 0.367702, 0.7649)
+    v.SetViewNormal(-0.528889, 0.367702, 0.7649)
     v.SetViewUp(0.176641, 0.929226, -0.324558)
     v.SetParallelScale(17.3205)
     v.SetPerspective(1)

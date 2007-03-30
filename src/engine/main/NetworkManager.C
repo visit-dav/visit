@@ -38,6 +38,7 @@
 #include <avtSquareRootFilter.h>
 #include <avtSquareFilter.h>
 #include <avtPolarCoordinatesFilter.h>
+#include <avtVectorCrossProductFilter.h>
 #include <avtVectorComponent1Filter.h>
 #include <avtVectorComponent2Filter.h>
 #include <avtVectorComponent3Filter.h>
@@ -382,7 +383,6 @@ NetworkManager::AddDB(const string &filename, const string &var, int time,
 //   that we're intersted in.
 //   
 // ****************************************************************************
-
 void
 NetworkManager::AddDB(const string &filename, int time)
 {
@@ -471,7 +471,6 @@ NetworkManager::AddDB(const string &filename, int time)
 //   that we're intersted in.
 //
 // ****************************************************************************
-
 void
 NetworkManager::DefineDB(const string &dbName, const string &dbPath,
     const stringVector &files, int time)
@@ -714,7 +713,6 @@ NetworkManager::AddFilter(const string &filtertype,
 //    Added revolved surface area.
 //
 // ****************************************************************************
-
 void
 NetworkManager::AddNamedFunction(const std::string &functionName, const int nargs)
 {
@@ -869,6 +867,8 @@ NetworkManager::AddNamedFunction(const std::string &functionName, const int narg
             multiple = new avtBinaryDivideFilter();
         else if (functionName == "^")
             multiple = new avtBinaryPowerFilter();
+        else if (functionName == "cross")
+            multiple = new avtVectorCrossProductFilter();
         else
         {
             std::string error;
@@ -1085,7 +1085,6 @@ NetworkManager::UseNetwork(int id)
 //  Creation:   November 19, 2002
 //
 // ****************************************************************************
-
 avtPlot_p
 NetworkManager::GetPlot(void)
 {
@@ -1107,7 +1106,6 @@ NetworkManager::GetPlot(void)
 //  Creation:   September 9, 2002
 //
 // ****************************************************************************
-
 int
 NetworkManager::GetCurrentNetworkId(void)
 {
@@ -1130,7 +1128,6 @@ NetworkManager::GetCurrentNetworkId(void)
 //  Creation:   September 9, 2002
 //
 // ****************************************************************************
-
 void
 NetworkManager::DoneWithNetwork(int id)
 {
@@ -1240,7 +1237,6 @@ NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
 //    fake exceptions work again.
 //
 // ****************************************************************************
-
 avtDataObjectWriter_p
 NetworkManager::GetOutput(bool respondWithNullData)
 {
@@ -1385,14 +1381,16 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer)
 //
 //  Modifications:
 //
-//  Mark C. Miller, Mon Dec  9 17:19:02 PST 2002
-//  added calls to set various parameters on the VisWindow object
+//    Mark C. Miller, Mon Dec  9 17:19:02 PST 2002
+//    added calls to set various parameters on the VisWindow object
+//
+//    Eric Brugger, Tue Jun 10 15:35:20 PDT 2003
+//    I renamed camera to view normal in the view attributes.
 //
 // ****************************************************************************
 void
 NetworkManager::SetWindowAttributes(const WindowAttributes &atts)
 {
-
     viswin->SetSize(atts.GetSize()[0], atts.GetSize()[1]);
 
 #if 0
@@ -1432,9 +1430,9 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts)
         const ViewAttributes& viewAtts = atts.GetView();
         avtView3D view3d;
 
-        view3d.normal[0] = viewAtts.GetCamera()[0];
-        view3d.normal[1] = viewAtts.GetCamera()[1];
-        view3d.normal[2] = viewAtts.GetCamera()[2];
+        view3d.normal[0] = viewAtts.GetViewNormal()[0];
+        view3d.normal[1] = viewAtts.GetViewNormal()[1];
+        view3d.normal[2] = viewAtts.GetViewNormal()[2];
         view3d.focus[0] = viewAtts.GetFocus()[0];
         view3d.focus[1] = viewAtts.GetFocus()[1];
         view3d.focus[2] = viewAtts.GetFocus()[2];

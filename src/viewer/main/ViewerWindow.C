@@ -1002,6 +1002,9 @@ ViewerWindow::MoveViewKeyframe(int oldFrame, int newFrame)
 //  Creation:   January 6, 2003
 //
 //  Modifications:
+//    Eric Brugger, Tue Jun 10 13:08:55 PDT 2003
+//    I renamed camera to view normal in the view attributes.  I added
+//    image pan and image zoom to the 3d view attributes.
 //
 // ****************************************************************************
 
@@ -1023,7 +1026,7 @@ ViewerWindow::SetViewKeyframe()
     //
     const avtView3D &view3d = visWindow->GetView3D();
 
-    curView->SetCamera(view3d.normal);
+    curView->SetViewNormal(view3d.normal);
     curView->SetFocus(view3d.focus);
     curView->SetViewUp(view3d.viewUp);
     curView->SetViewAngle(view3d.viewAngle);
@@ -1031,6 +1034,8 @@ ViewerWindow::SetViewKeyframe()
     curView->SetSetScale(true);
     curView->SetNearPlane(view3d.nearPlane);
     curView->SetFarPlane(view3d.farPlane);
+    curView->SetImagePan(view3d.imagePan);
+    curView->SetImageZoom(view3d.imageZoom);
     curView->SetPerspective(view3d.perspective);
 
     view3DAtts->SetAtts(animation->GetFrameIndex(), curView);
@@ -2241,6 +2246,9 @@ ViewerWindow::CopyViewAttributes(const ViewerWindow *source)
 // Creation:   January 7, 2003
 //
 // Modifications:
+//   Eric Brugger, Tue Jun 10 13:08:55 PDT 2003
+//   I renamed camera to view normal in the view attributes.  I added
+//   image pan and image zoom to the 3d view attributes.
 //
 // ****************************************************************************
 
@@ -2276,9 +2284,9 @@ ViewerWindow::UpdateCameraView()
 
             avtView3D view3d;
 
-            view3d.normal[0] = curView->GetCamera()[0];
-            view3d.normal[1] = curView->GetCamera()[1];
-            view3d.normal[2] = curView->GetCamera()[2];
+            view3d.normal[0] = curView->GetViewNormal()[0];
+            view3d.normal[1] = curView->GetViewNormal()[1];
+            view3d.normal[2] = curView->GetViewNormal()[2];
             view3d.focus[0] = curView->GetFocus()[0];
             view3d.focus[1] = curView->GetFocus()[1];
             view3d.focus[2] = curView->GetFocus()[2];
@@ -2289,6 +2297,9 @@ ViewerWindow::UpdateCameraView()
             view3d.parallelScale = curView->GetParallelScale();
             view3d.nearPlane = curView->GetNearPlane();
             view3d.farPlane = curView->GetFarPlane();
+            view3d.imagePan[0] = curView->GetImagePan()[0];
+            view3d.imagePan[1] = curView->GetImagePan()[1];
+            view3d.imageZoom = curView->GetImageZoom();
             view3d.perspective = curView->GetPerspective();
 
             visWindow->SetView3D(view3d);
@@ -3150,6 +3161,9 @@ ViewerWindow::ResetView2d()
 //    Eric Brugger, Tue Jan 14 07:59:31 PST 2003
 //    I added the number of dimensions to the GetExtents call.
 //
+//    Eric Brugger, Tue Jun 10 13:08:55 PDT 2003
+//    I added image pan and image zoom to the 3d view attributes.
+//
 // ****************************************************************************
 
 void
@@ -3217,6 +3231,13 @@ ViewerWindow::ResetView3d()
     //
     view3D.nearPlane = - 2.0 * width;
     view3D.farPlane  =   2.0 * width;
+
+    //
+    // Reset the image pan and image zoom.
+    //
+    view3D.imagePan[0] = 0.;
+    view3D.imagePan[1] = 0.;
+    view3D.imageZoom = 1.;
 
     //
     // Update the view.
@@ -3861,13 +3882,16 @@ ViewerWindow::CreateToolbar(const std::string &name)
 // Creation:   Wed Dec 5 11:37:19 PDT 2001
 //
 // Modifications:
+//   Kathleen Bonnell, Fri May 10 16:27:40 PDT 2002  
+//   Support avtViewCurve. 
 //
-//    Kathleen Bonnell, Fri May 10 16:27:40 PDT 2002  
-//    Support avtViewCurve. 
+//   Mark C. Miller, Mon Dec  9 19:18:40 PST 2002
+//   Added calls to fill in rendering attributes 
 //
-//    Mark C. Miller, Mon Dec  9 19:18:40 PST 2002
-//    Added calls to fill in rendering attributes 
-//   
+//   Eric Brugger, Tue Jun 10 13:08:55 PDT 2003
+//   I renamed camera to view normal in the view attributes.  I added
+//   image pan and image zoom to the 3d view attributes.
+//
 // ****************************************************************************
 
 WindowAttributes
@@ -3897,7 +3921,7 @@ ViewerWindow::GetWindowAttributes() const
     else
     {
         const avtView3D &view3d = GetView3D();
-        viewAtts.SetCamera(view3d.normal);
+        viewAtts.SetViewNormal(view3d.normal);
         viewAtts.SetFocus(view3d.focus);
         viewAtts.SetViewUp(view3d.viewUp);
         viewAtts.SetViewAngle(view3d.viewAngle);
@@ -3905,6 +3929,8 @@ ViewerWindow::GetWindowAttributes() const
         viewAtts.SetSetScale(true);
         viewAtts.SetNearPlane(view3d.nearPlane);
         viewAtts.SetFarPlane(view3d.farPlane);
+        viewAtts.SetImagePan(view3d.imagePan);
+        viewAtts.SetImageZoom(view3d.imageZoom);
         viewAtts.SetPerspective(view3d.perspective);
     }
     winAtts.SetView(viewAtts);

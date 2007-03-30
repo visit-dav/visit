@@ -36,6 +36,10 @@ avtView3D::avtView3D()
 //  Programmer: Eric Brugger
 //  Creation:   August 17, 2001
 //
+//  Modifications:
+//    Eric Brugger, Fri Jun  6 15:24:17 PDT 2003
+//    I added image pan and image zoom.
+//
 // ****************************************************************************
 
 avtView3D &
@@ -54,6 +58,9 @@ avtView3D::operator=(const avtView3D &vi)
     parallelScale = vi.parallelScale;
     nearPlane     = vi.nearPlane;
     farPlane      = vi.farPlane;
+    imagePan[0]   = vi.imagePan[0];
+    imagePan[1]   = vi.imagePan[1];
+    imageZoom     = vi.imageZoom;
     perspective   = vi.perspective;
 
     return *this;
@@ -68,6 +75,10 @@ avtView3D::operator=(const avtView3D &vi)
 //
 //  Programmer: Eric Brugger
 //  Creation:   August 17, 2001
+//
+//  Modifications:
+//    Eric Brugger, Fri Jun  6 15:24:17 PDT 2003
+//    I added image pan and image zoom.
 //
 // ****************************************************************************
 
@@ -94,7 +105,8 @@ avtView3D::operator==(const avtView3D &vi)
 
     if (viewAngle != vi.viewAngle || parallelScale != vi.parallelScale ||
         nearPlane != vi.nearPlane || farPlane != vi.farPlane ||
-        perspective != vi.perspective)
+        imagePan[0] != vi.imagePan[0] | imagePan[1] != vi.imagePan[1] ||
+        imageZoom != vi.imageZoom || perspective != vi.perspective)
     {
         return false;
     }
@@ -118,6 +130,9 @@ avtView3D::operator==(const avtView3D &vi)
 //    since I changed their definition to be the distance from the focus
 //    instead of the camera.
 //
+//    Eric Brugger, Fri Jun  6 15:24:17 PDT 2003
+//    I added image pan and image zoom.
+//
 // ****************************************************************************
 
 void
@@ -136,6 +151,9 @@ avtView3D::SetToDefault()
     parallelScale = 0.5;
     nearPlane     = -0.5;
     farPlane      =  0.5;
+    imagePan[0]   = 0.;
+    imagePan[1]   = 0.;
+    imageZoom     = 1.;
     perspective   = false;
 }
 
@@ -170,6 +188,9 @@ avtView3D::SetToDefault()
 //
 //    Eric Brugger, Wed Jan  8 13:34:01 PST 2003
 //    I modified the routine to normalize the normal before using it.
+//
+//    Eric Brugger, Fri Jun  6 15:24:17 PDT 2003
+//    I added image pan and image zoom.
 //
 // ****************************************************************************
 
@@ -227,4 +248,11 @@ avtView3D::SetViewInfoFromView(avtViewInfo &viewInfo) const
     //
     viewInfo.nearPlane = max (nearPlane + distance, (farPlane - nearPlane) / 5000.);
     viewInfo.farPlane = farPlane + distance;
+
+    //
+    // Set the image pan and image zoom.
+    //
+    viewInfo.imagePan[0] = imagePan[0];
+    viewInfo.imagePan[1] = imagePan[1];
+    viewInfo.imageZoom   = imageZoom;
 }

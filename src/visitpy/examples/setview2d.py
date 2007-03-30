@@ -46,7 +46,7 @@ def setview2d():
     
     # Set the view.
     v0 = ViewAttributes()
-    v0.camera = (-0.933551, 2.48087, 5)
+    v0.viewNormal = (-0.933551, 2.48087, 5)
     v0.focus = (-0.933551, 2.48087, 0)
     v0.viewUp = (0, 1, 0)
     v0.viewAngle = 30
@@ -62,7 +62,7 @@ def setview2d():
     
     # Create a new view.
     v1 = ViewAttributes()
-    v1.camera = (-0.933551, 2.48087, 5)
+    v1.viewNormal = (-0.933551, 2.48087, 5)
     v1.focus = (-0.933551, 2.48087, 0)
     v1.viewUp = (0, 1, 0)
     v1.viewAngle = 30
@@ -82,7 +82,7 @@ def setview2d():
     
     # Create a new view.
     v2 = ViewAttributes()
-    v2.camera = (-0.933551, 2.48087, 5)
+    v2.viewNormal = (-0.933551, 2.48087, 5)
     v2.focus = (-0.933551, 2.48087, 0)
     v2.viewUp = (0, 1, 0)
     v2.viewAngle = 30

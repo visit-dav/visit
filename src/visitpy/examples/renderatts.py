@@ -42,7 +42,7 @@ def renderatts():
 
     # Set the view
     v = ViewAttributes()
-    v.camera = (0.493964, 0.388211, 0.778005)
+    v.viewNormal = (0.493964, 0.388211, 0.778005)
     v.focus = (0, 0, 0)
     v.viewUp = (-0.208148, 0.921571, -0.327692)
     v.viewAngle = 30

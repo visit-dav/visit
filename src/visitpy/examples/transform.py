@@ -47,7 +47,7 @@ def transform():
     
     # Set the initial view
     v0 = ViewAttributes()
-    v0.camera = (0.49658, 0.271031, 0.824591)
+    v0.viewNormal = (0.49658, 0.271031, 0.824591)
     v0.focus = (0, 0, 0)
     v0.viewUp = (0.0462416, 0.94039, -0.336939)
     v0.viewAngle = 30
@@ -60,7 +60,7 @@ def transform():
     
     # Set the final view
     v1 = ViewAttributes()
-    v1.camera = (0.383878, 0.582957, 0.7161)
+    v1.viewNormal = (0.383878, 0.582957, 0.7161)
     v1.focus = (2.5, 2.5, 0)
     v1.viewUp = (-0.247477, 0.812098, -0.528442)
     v1.viewAngle = 30

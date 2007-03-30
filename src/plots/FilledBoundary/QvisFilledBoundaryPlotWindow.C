@@ -160,6 +160,8 @@ QvisFilledBoundaryPlotWindow::~QvisFilledBoundaryPlotWindow()
 //  Note:  taken almost verbatim from the Subset plot
 //
 // Modifications:
+//    Jeremy Meredith, Fri Jun 13 16:56:43 PDT 2003
+//    Added clean zones only.
 //
 // ****************************************************************************
 
@@ -264,7 +266,7 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
     colorLayout->addMultiCellWidget(colorTableButton, 1, 1, 1, 2, AlignLeft | AlignVCenter);
 
     // Create the overall opacity.
-    QGridLayout *opLayout = new QGridLayout(topLayout, 5, 2);
+    QGridLayout *opLayout = new QGridLayout(topLayout, 6, 2);
     opLayout->setSpacing(5);
     overallOpacity = new QvisOpacitySlider(0, 255, 25, 255, central, 
                     "overallOpacity", NULL);
@@ -297,6 +299,12 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
             this, SLOT(drawInternalToggled(bool)));
     opLayout->addMultiCellWidget(drawInternalCheckBox, 3,3, 0,1);
 
+    // Create the internal surfaces toggle
+    cleanZonesOnlyCheckBox = new QCheckBox("Clean zones only", central, "cleanZonesOnlyCheckBox");
+    connect(cleanZonesOnlyCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(cleanZonesOnlyToggled(bool)));
+    opLayout->addMultiCellWidget(cleanZonesOnlyCheckBox, 4,4, 0,1);
+
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(0, "smoothingButtons");
     connect(smoothingLevelButtons, SIGNAL(clicked(int)),
@@ -314,7 +322,7 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
     rb = new QRadioButton("High", central, "HighSmoothing");
     smoothingLevelButtons->insert(rb);
     smoothingLayout->addWidget(rb, 0, 3);
-    opLayout->addMultiCellLayout(smoothingLayout, 4,4 , 0,1);
+    opLayout->addMultiCellLayout(smoothingLayout, 5,5 , 0,1);
 }
 
 // ****************************************************************************
@@ -339,6 +347,8 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
 //  Note:  taken almost verbatim from the Subset plot
 //
 // Modifications:
+//    Jeremy Meredith, Fri Jun 13 16:56:43 PDT 2003
+//    Added clean zones only.
 //
 // ****************************************************************************
 
@@ -432,6 +442,11 @@ QvisFilledBoundaryPlotWindow::UpdateWindow(bool doAll)
             smoothingLevelButtons->blockSignals(true);
             smoothingLevelButtons->setButton(boundaryAtts->GetSmoothingLevel());
             smoothingLevelButtons->blockSignals(false);
+            break;
+        case 14: // cleanZonesOnlyToggled
+            cleanZonesOnlyCheckBox->blockSignals(true);
+            cleanZonesOnlyCheckBox->setChecked(boundaryAtts->GetCleanZonesOnly());
+            cleanZonesOnlyCheckBox->blockSignals(false);
             break;
         }
     } // end for
@@ -908,6 +923,30 @@ void
 QvisFilledBoundaryPlotWindow::wireframeToggled(bool val)
 {
     boundaryAtts->SetWireframe(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisFilledBoundaryPlotWindow::cleanZonesOnlyToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the window's
+//   cleanZonesOnly toggle button is clicked.
+//
+// Arguments:
+//   val : The new toggle value.
+//
+// Programmer: Jeremy Meredith
+// Creation:   June 13, 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::cleanZonesOnlyToggled(bool val)
+{
+    boundaryAtts->SetCleanZonesOnly(val);
     Apply();
 }
 

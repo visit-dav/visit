@@ -88,7 +88,8 @@ Math_src= \
   Math/avtSquareFilter.C \
   Math/avtSquareRootFilter.C \
   Math/avtTanFilter.C \
-  Math/avtUnaryMinusFilter.C 
+  Math/avtUnaryMinusFilter.C \
+  Math/avtVectorCrossProductFilter.C
 
 MeshQuality_src= \
   MeshQuality/avtNeighborFilter.C \

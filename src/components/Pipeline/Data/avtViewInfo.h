@@ -30,6 +30,9 @@ class vtkCamera;
 //   Hank Childs, Mon Jun 18 09:03:19 PDT 2001
 //   Added constructor.
 //
+//   Eric Brugger, Fri Jun  6 15:29:28 PDT 2003
+//   I added image pan and image zoom.
+//
 // ****************************************************************************
 
 struct PIPELINE_API avtViewInfo
@@ -42,6 +45,8 @@ struct PIPELINE_API avtViewInfo
     bool     setScale;
     double   nearPlane;
     double   farPlane;
+    double   imagePan[2];
+    double   imageZoom;
     bool     orthographic;
 
   public:

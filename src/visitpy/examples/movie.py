@@ -100,7 +100,7 @@ SetAnnotationAttributes(annot_atts)
 # each time to do this (ie "v0 = ViewAttributes()").
 #
 v0 = ViewAttributes()
-v0.camera = (-0.418219, 0.345837, 0.839934)
+v0.viewNormal = (-0.418219, 0.345837, 0.839934)
 v0.focus = (5, 0.353448, 2.5)
 v0.viewUp = (0.229871, 0.934881, -0.270473)
 v0.viewAngle = 30
@@ -113,7 +113,7 @@ v0.windowCoords = (0, 1, 0, 1)
 v0.viewportCoords = (0.2, 0.95, 0.15, 0.95)
 
 v1 = ViewAttributes()
-v1.camera = (-0.00916236, 0.453467, 0.891226)
+v1.viewNormal = (-0.00916236, 0.453467, 0.891226)
 v1.focus = (5, 0.353448, 2.5)
 v1.viewUp = (-0.1004, 0.886343, -0.452014)
 v1.viewAngle = 30
@@ -126,7 +126,7 @@ v1.windowCoords = (0, 1, 0, 1)
 v1.viewportCoords = (0.2, 0.95, 0.15, 0.95)
 
 v2 = ViewAttributes()
-v2.camera = (0.443099, 0.463564, 0.767315)
+v2.viewNormal = (0.443099, 0.463564, 0.767315)
 v2.focus = (5, 0.353448, 2.5)
 v2.viewUp = (-0.296768, 0.883516, -0.362393)
 v2.viewAngle = 30
@@ -139,7 +139,7 @@ v2.windowCoords = (0, 1, 0, 1)
 v2.viewportCoords = (0.2, 0.95, 0.15, 0.95)
 
 v3 = ViewAttributes()
-v3.camera = (0.810397, 0.504527, 0.29784)
+v3.viewNormal = (0.810397, 0.504527, 0.29784)
 v3.focus = (5, 0.353448, 2.5)
 v3.viewUp = (-0.482793, 0.863074, -0.14837)
 v3.viewAngle = 30

@@ -40,7 +40,7 @@ def fadeout():
     
     # Create camera 1 and set its attributes.
     a = ViewAttributes()
-    a.SetCamera(-0.383063, 0.307038, 0.871201)
+    a.SetViewNormal(-0.383063, 0.307038, 0.871201)
     a.SetFocus(-0.863862, -0.03381, -0.36792)
     a.SetViewUp(0.0888824, 0.951017, -0.296086)
     a.SetViewAngle(30)
@@ -57,7 +57,7 @@ def fadeout():
     
     # Create camera 2 and set its attributes.
     b = ViewAttributes()
-    b.SetCamera(-0.67373, 0.661551, -0.329301)
+    b.SetViewNormal(-0.67373, 0.661551, -0.329301)
     b.SetFocus(-0.867492, -0.0726593, -0.355825)
     b.SetViewUp(0.653625, 0.741375, 0.152113)
     b.SetViewAngle(30)
@@ -71,7 +71,7 @@ def fadeout():
     
     # Create camera 3 and set its attributes.
     c = ViewAttributes()
-    c.SetCamera(-0.586145, 0.500894, -0.636819)
+    c.SetViewNormal(-0.586145, 0.500894, -0.636819)
     c.SetFocus(-0.867492, -0.0726593, -0.355825)
     c.SetViewUp(0.468759, 0.850743, 0.2377)
     c.SetViewAngle(30)
@@ -85,7 +85,7 @@ def fadeout():
     
     # Create camera 4 and set its attributes.
     d = ViewAttributes()
-    d.SetCamera(0.298261, -0.196029, -0.934138)
+    d.SetViewNormal(0.298261, -0.196029, -0.934138)
     d.SetFocus(-0.867492, -0.0726593, -0.355825)
     d.SetViewUp(0.247141, 0.961168, -0.122791)
     d.SetViewAngle(30)

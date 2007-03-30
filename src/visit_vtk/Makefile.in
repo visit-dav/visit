@@ -156,6 +156,9 @@
 #    Hank Childs, Mon Jun  9 10:52:30 PDT 2003
 #    Added vtkSurfaceFromVolume, vtkSlicer.
 #
+#    Eric Brugger, Tue Jun 10 15:39:17 PDT 2003
+#    Add vtkCamera.
+#
 #    Jeremy Meredith, Thu Jun 12 09:00:25 PDT 2003
 #    Added vtkUnstructuredGridBoundaryFilter.
 #
@@ -173,6 +176,7 @@
 SRC=InitVTK.C \
     vtkAxisDepthSort.C \
     vtkBackgroundActor.C \
+    vtkCamera.C \
     vtkConnectedTubeFilter.C \
     vtkDataSetRemoveGhostCells.C \
     vtkDebugStream.C \
@@ -215,6 +219,7 @@ SRC=InitVTK.C \
 HDR=InitVTK.h \
     vtkAxisDepthSort.h \
     vtkBackgroundActor.h \
+    vtkCamera.h \
     vtkConnectedTubeFilter.h \
     vtkDataSetRemoveGhostCells.h \
     vtkDebugStream.h \

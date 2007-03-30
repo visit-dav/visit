@@ -467,6 +467,10 @@ avtVolumeFilter::Execute(void)
 //  Programmer: Hank Childs
 //  Creation:   November 21, 2001
 //
+//  Modifications:
+//    Eric Brugger, Tue Jun 10 15:59:11 PDT 2003
+//    I renamed camera to view normal in the view attributes.
+//
 // ****************************************************************************
 
 void
@@ -476,9 +480,9 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const ViewAttributes &view)
     // Conversion routines are already established for converting to 3D.
     //
     avtView3D view3d;
-    view3d.normal[0] = view.GetCamera()[0];
-    view3d.normal[1] = view.GetCamera()[1];
-    view3d.normal[2] = view.GetCamera()[2];
+    view3d.normal[0] = view.GetViewNormal()[0];
+    view3d.normal[1] = view.GetViewNormal()[1];
+    view3d.normal[2] = view.GetViewNormal()[2];
     view3d.focus[0] = view.GetFocus()[0];
     view3d.focus[1] = view.GetFocus()[1];
     view3d.focus[2] = view.GetFocus()[2];
