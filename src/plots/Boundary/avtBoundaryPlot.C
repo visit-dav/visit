@@ -25,9 +25,7 @@
 //  Method: avtBoundaryPlot constructor
 //
 //  Programmer: Jeremy Meredith
-//  Creation:   May  7, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
+//  Creation:   June 12, 2003
 //
 //  Modifications:
 //
@@ -52,9 +50,7 @@ avtBoundaryPlot::avtBoundaryPlot()
     levLegendRefPtr = levelsLegend;
 
     wf    = new avtFeatureEdgesFilter();
-    gzfl  = new avtGhostZoneAndFacelistFilter();
     gz    = new avtGhostZoneFilter();
-    fl    = new avtFacelistFilter();
     sub   = new avtBoundaryFilter();
     smooth= new avtSmoothPolyDataFilter();
 }
@@ -64,9 +60,7 @@ avtBoundaryPlot::avtBoundaryPlot()
 //  Method: avtLevelsMapper destructor
 //
 //  Programmer: Jeremy Meredith
-//  Creation:   May  7, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
+//  Creation:   June 12, 2003
 //
 //  Modifications:
 //
@@ -90,20 +84,10 @@ avtBoundaryPlot::~avtBoundaryPlot()
         delete wf;
         wf = NULL;
     }
-    if (gzfl != NULL)
-    {
-        delete gzfl;
-        gzfl = NULL;
-    }
     if (gz != NULL)
     {
         delete gz;
         gz = NULL;
-    }
-    if (fl != NULL)
-    {
-        delete fl;
-        fl = NULL;
     }
     if (sub != NULL)
     {
@@ -320,9 +304,7 @@ avtBoundaryPlot::GetMapper(void)
 //  Returns:    The data object after the boundary plot.
 //
 //  Programmer: Jeremy Meredith
-//  Creation:   May  7, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
+//  Creation:   June 12, 2003
 //
 //  Modifications:
 //
@@ -331,63 +313,6 @@ avtBoundaryPlot::GetMapper(void)
 avtDataObject_p
 avtBoundaryPlot::ApplyOperators(avtDataObject_p input)
 {
-    //
-    // We should only apply operators if we are doing wireframe mode.  This is
-    // because that is our current approximation of an unfilled boundary.
-    //
-
-    if (atts.GetWireframe())
-    {
-        int type = atts.GetBoundaryType();
-
-        gzfl->SetUseFaceFilter(false);
-
-        // Set the amount of smoothing required
-        smooth->SetSmoothingLevel(atts.GetSmoothingLevel());
-    
-        if (type==BoundaryAttributes::Domain || type==BoundaryAttributes::Group)
-        {
-            // We're doing a wireframe domain boundary plot:
-            //   - strip ghost zones first to keep domain boundaries
-            //   - find the external faces of every domain
-            //   - do the boundary (smoothing if needed)
-            //   - find feature edges
-            gz->SetInput(input);
-            fl->SetInput(gz->GetOutput());
-            if (atts.GetSmoothingLevel() > 0)
-            {
-                smooth->SetInput(fl->GetOutput());
-                sub->SetInput(smooth->GetOutput());
-            }
-            else
-            {
-                sub->SetInput(fl->GetOutput());
-            }
-            wf->SetInput(sub->GetOutput());
-            return wf->GetOutput();
-        }
-        else
-        {
-            // We're doing any other wireframe boundary plot:
-            //   - find the external faces first
-            //   - do the boundary (smoothing if needed)
-            //   - find feature edges
-            //   - strip ghost zones last to remove domain boundaries
-            fl->SetInput(input);
-            if (atts.GetSmoothingLevel() > 0)
-            {
-                smooth->SetInput(fl->GetOutput());
-                sub->SetInput(smooth->GetOutput());
-            }
-            else
-            {
-                sub->SetInput(fl->GetOutput());
-            }
-            wf->SetInput(sub->GetOutput());
-            gz->SetInput(wf->GetOutput());
-            return gz->GetOutput();
-        }
-    }
     return input;
 }
 
@@ -404,9 +329,7 @@ avtBoundaryPlot::ApplyOperators(avtDataObject_p input)
 //  Returns:    The data object after the boundary plot.
 //
 //  Programmer: Jeremy Meredith
-//  Creation:   May  7, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
+//  Creation:   June 12, 2003
 //
 //  Modifications:
 //
@@ -415,68 +338,30 @@ avtBoundaryPlot::ApplyOperators(avtDataObject_p input)
 avtDataObject_p
 avtBoundaryPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
-    int type = atts.GetBoundaryType();
-
-    if (!atts.GetWireframe())
-    {
-        if ((type == BoundaryAttributes::Domain ||
-              type == BoundaryAttributes::Group)
-            && atts.GetDrawInternal())
-        {
-            gzfl->SetUseFaceFilter(false);
-        }
-        else
-        {
-            gzfl->SetUseFaceFilter(true);
-        }
-
-        // Set the amount of smoothing required
-        smooth->SetSmoothingLevel(atts.GetSmoothingLevel());
+    // Set the amount of smoothing required
+    smooth->SetSmoothingLevel(atts.GetSmoothingLevel());
     
-        //
-        // Apply the needed filters
-        //
-        if ((type==BoundaryAttributes::Domain || type==BoundaryAttributes::Group)
-             && atts.GetDrawInternal())
-        {
-            // We're doing a non-wireframe domain boundary plot
-            // where we require internal faces:
-            //   - strip ghost zones first to keep domain boundaries
-            //   - find the external faces of every domain
-            //   - do the boundary (smoothing if needed)
-            gz->SetInput(input);
-            fl->SetInput(gz->GetOutput());
-            if (atts.GetSmoothingLevel() > 0)
-            {
-                smooth->SetInput(fl->GetOutput());
-                sub->SetInput(smooth->GetOutput());
-            }
-            else
-            {
-                sub->SetInput(fl->GetOutput());
-            }
-            return sub->GetOutput();
-        }
-        else
-        {
-            // We're doing any other non-wireframe boundary plot:
-            //   - do the facelist and ghost zones in the needed order
-            //   - do the boundary (smoothing if needed)
-            gzfl->SetInput(input);
-            if (atts.GetSmoothingLevel() > 0)
-            {
-                smooth->SetInput(gzfl->GetOutput());
-                sub->SetInput(smooth->GetOutput());
-            }
-            else
-            {
-                sub->SetInput(gzfl->GetOutput());
-            }
-            return sub->GetOutput();
-        }
+    if (atts.GetSmoothingLevel() > 0)
+    {
+        smooth->SetInput(input);
+        sub->SetInput(smooth->GetOutput());
+    }
+    else
+    {
+        sub->SetInput(input);
     }
 
-    return input;
+    if (atts.GetWireframe())
+    {
+        wf->SetInput(sub->GetOutput());
+        gz->SetInput(wf->GetOutput());
+    }
+    else
+    {
+        gz->SetInput(sub->GetOutput());
+    }
+
+    return gz->GetOutput();
 }
 
 
@@ -489,9 +374,7 @@ avtBoundaryPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //      must be defined so the type can be concrete.
 //
 //  Programmer: Jeremy Meredith
-//  Creation:   May  7, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
+//  Creation:   June 12, 2003
 //
 //  Modifications:
 //
@@ -505,7 +388,8 @@ avtBoundaryPlot::CustomizeBehavior(void)
     levelsLegend->SetLookupTable(avtLUT->GetLookupTable());
 
     behavior->SetLegend(levLegendRefPtr);
-    if (atts.GetWireframe())
+    if (atts.GetWireframe() ||
+        behavior->GetInfo().GetAttributes().GetTopologicalDimension()==1)
     {
         behavior->SetShiftFactor(0.7);
     }
@@ -699,9 +583,7 @@ avtBoundaryPlot::SetColors()
 //      Release the problem sized data associated with this plot.
 //
 //  Programmer: Jeremy Meredith
-//  Creation:   May  7, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
+//  Creation:   June 12, 2003
 //
 // ****************************************************************************
  
@@ -714,17 +596,9 @@ avtBoundaryPlot::ReleaseData(void)
     {
         wf->ReleaseData();
     }
-    if (gzfl != NULL)
-    {
-        gzfl->ReleaseData();
-    }
     if (gz != NULL)
     {
         gz->ReleaseData();
-    }
-    if (fl != NULL)
-    {
-        fl->ReleaseData();
     }
     if (sub != NULL)
     {

@@ -43,9 +43,6 @@
         1.000000
       </Field>
       <Field name="wireframe" label="wireframe" type="bool">
-        true
-      </Field>
-      <Field name="drawInternal" label="drawInternal" type="bool">
         false
       </Field>
       <Field name="smoothingLevel" label="Smoothing level" type="int">

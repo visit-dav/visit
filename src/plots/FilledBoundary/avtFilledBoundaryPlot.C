@@ -320,7 +320,7 @@ avtFilledBoundaryPlot::GetMapper(void)
 //  Returns:    The data object after the boundary plot.
 //
 //  Programmer: Jeremy Meredith
-//  Creation:   May  9, 2003
+//  Creation:   June 12, 2003
 //
 //  Note:  taken almost verbatim from the Subset plot
 //
@@ -331,63 +331,6 @@ avtFilledBoundaryPlot::GetMapper(void)
 avtDataObject_p
 avtFilledBoundaryPlot::ApplyOperators(avtDataObject_p input)
 {
-    //
-    // We should only apply operators if we are doing wireframe mode.  This is
-    // because that is our current approximation of an unfilled boundary.
-    //
-
-    if (atts.GetWireframe())
-    {
-        int type = atts.GetBoundaryType();
-
-        gzfl->SetUseFaceFilter(false);
-
-        // Set the amount of smoothing required
-        smooth->SetSmoothingLevel(atts.GetSmoothingLevel());
-    
-        if (type==FilledBoundaryAttributes::Domain || type==FilledBoundaryAttributes::Group)
-        {
-            // We're doing a wireframe domain boundary plot:
-            //   - strip ghost zones first to keep domain boundaries
-            //   - find the external faces of every domain
-            //   - do the boundary (smoothing if needed)
-            //   - find feature edges
-            gz->SetInput(input);
-            fl->SetInput(gz->GetOutput());
-            if (atts.GetSmoothingLevel() > 0)
-            {
-                smooth->SetInput(fl->GetOutput());
-                sub->SetInput(smooth->GetOutput());
-            }
-            else
-            {
-                sub->SetInput(fl->GetOutput());
-            }
-            wf->SetInput(sub->GetOutput());
-            return wf->GetOutput();
-        }
-        else
-        {
-            // We're doing any other wireframe boundary plot:
-            //   - find the external faces first
-            //   - do the boundary (smoothing if needed)
-            //   - find feature edges
-            //   - strip ghost zones last to remove domain boundaries
-            fl->SetInput(input);
-            if (atts.GetSmoothingLevel() > 0)
-            {
-                smooth->SetInput(fl->GetOutput());
-                sub->SetInput(smooth->GetOutput());
-            }
-            else
-            {
-                sub->SetInput(fl->GetOutput());
-            }
-            wf->SetInput(sub->GetOutput());
-            gz->SetInput(wf->GetOutput());
-            return gz->GetOutput();
-        }
-    }
     return input;
 }
 
@@ -404,12 +347,11 @@ avtFilledBoundaryPlot::ApplyOperators(avtDataObject_p input)
 //  Returns:    The data object after the boundary plot.
 //
 //  Programmer: Jeremy Meredith
-//  Creation:   May  9, 2003
+//  Creation:   June 12, 2003
 //
 //  Note:  taken almost verbatim from the Subset plot
 //
 //  Modifications:
-//
 // ****************************************************************************
 
 avtDataObject_p
@@ -473,6 +415,51 @@ avtFilledBoundaryPlot::ApplyRenderingTransformation(avtDataObject_p input)
                 sub->SetInput(gzfl->GetOutput());
             }
             return sub->GetOutput();
+        }
+    }
+    else
+    {
+        if (type==FilledBoundaryAttributes::Domain || type==FilledBoundaryAttributes::Group)
+        {
+            // We're doing a wireframe domain boundary plot:
+            //   - strip ghost zones first to keep domain boundaries
+            //   - find the external faces of every domain
+            //   - do the boundary (smoothing if needed)
+            //   - find feature edges
+            gz->SetInput(input);
+            fl->SetInput(gz->GetOutput());
+            if (atts.GetSmoothingLevel() > 0)
+            {
+                smooth->SetInput(fl->GetOutput());
+                sub->SetInput(smooth->GetOutput());
+            }
+            else
+            {
+                sub->SetInput(fl->GetOutput());
+            }
+            wf->SetInput(sub->GetOutput());
+            return wf->GetOutput();
+        }
+        else
+        {
+            // We're doing any other wireframe boundary plot:
+            //   - find the external faces first
+            //   - do the boundary (smoothing if needed)
+            //   - find feature edges
+            //   - strip ghost zones last to remove domain boundaries
+            fl->SetInput(input);
+            if (atts.GetSmoothingLevel() > 0)
+            {
+                smooth->SetInput(fl->GetOutput());
+                sub->SetInput(smooth->GetOutput());
+            }
+            else
+            {
+                sub->SetInput(fl->GetOutput());
+            }
+            wf->SetInput(sub->GetOutput());
+            gz->SetInput(wf->GetOutput());
+            return gz->GetOutput();
         }
     }
 

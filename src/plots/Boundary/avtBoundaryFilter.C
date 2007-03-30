@@ -41,9 +41,7 @@ avtBoundaryFilter::SetPlotAtts(const BoundaryAttributes *atts)
 //              per boundary.
 //
 //  Programmer: Jeremy Meredith
-//  Creation:   May  7, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
+//  Creation:   June 12, 2003
 //
 //  Modifications:
 // ****************************************************************************
@@ -62,7 +60,9 @@ avtBoundaryFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
 
     vtkDataArray *boundaryArray = in_ds->GetCellData()->GetArray("avtSubsets");
 
-    bool splitMats = plotAtts.GetDrawInternal();
+    // the materials will never start split for this case
+    bool splitMats = false;
+
     if (boundaryArray && !splitMats)
     {
         if (label.find(";") == string::npos)
@@ -145,8 +145,6 @@ avtBoundaryFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
         //
         out_ds = new vtkDataSet *[nSelectedBoundaries];
 
-        vtkCellArray *cells = in_pd->GetPolys();
-
         //
         // The following call is a workaround for a VTK bug.  It turns
         // out that when GetCellType if called for the first time for a
@@ -177,11 +175,10 @@ avtBoundaryFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
                 out_pd->Allocate(boundaryCounts[s]);
 
                 vtkIdType npts, *pts;
-                cells->InitTraversal();
                 int numNewCells = 0;
                 for (int j = 0; j < ntotalcells; j++)
                 {
-                    cells->GetNextCell(npts, pts);
+                    in_pd->GetCellPoints(j, npts, pts);
                     if (boundaryList[j] == s)
                     {
                         out_pd->InsertNextCell(in_pd->GetCellType(j),
@@ -246,9 +243,7 @@ avtBoundaryFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
 //            sets them as labels in the data attributes. 
 //
 //  Programmer: Jeremy Meredith
-//  Creation:   May  7, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
+//  Creation:   June 10, 2003
 //
 // ****************************************************************************
 
@@ -256,6 +251,8 @@ void
 avtBoundaryFilter::RefashionDataObjectInfo(void)
 {
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+    avtDataAttributes &inAtts  = GetInput()->GetInfo().GetAttributes();
+
     outAtts.SetLabels(plotAtts.GetBoundaryNames());
 }
 
@@ -266,9 +263,7 @@ avtBoundaryFilter::RefashionDataObjectInfo(void)
 //  Purpose:  Turn on domain labels in the data spec if needed.
 //
 //  Programmer: Jeremy Meredith
-//  Creation:   May  7, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
+//  Creation:   June 10, 2003
 //
 //  Modifications:
 //    
@@ -277,10 +272,7 @@ avtBoundaryFilter::RefashionDataObjectInfo(void)
 avtPipelineSpecification_p
 avtBoundaryFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
-    if (plotAtts.GetDrawInternal())
-    {
-        spec->GetDataSpecification()->TurnInternalSurfacesOn();
-    }
+    spec->GetDataSpecification()->TurnBoundarySurfacesOn();
     return spec;
 }
 

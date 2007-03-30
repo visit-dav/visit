@@ -9,6 +9,8 @@
 #include <SocketConnection.h>
 #include <StatusAttributes.h>
 #include <DebugStream.h>
+#include <TimingsManager.h>
+#include <snprintf.h>
 
 #include <stdio.h>
 
@@ -516,6 +518,9 @@ EngineProxy::SetWindowAtts(const WindowAttributes *atts)
 //    Brad Whitlock, Mon Mar 25 10:44:19 PDT 2002
 //    Modified communication a little.
 //
+//    Kathleen Bonnell, Thu Jun 12 10:53:29 PDT 2003 
+//    Added timing code for delay before read, and read. 
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -569,12 +574,22 @@ EngineProxy::Execute(bool respondWithNull, void (*waitCB)(void *), void *cbData)
     // being transferred across the network.
     Status("Reading engine output.");
 
+    int readDelay = visitTimer->StartTimer();
     // Read the VTK data
     long size = executeRPC.GetReplyLen();
     char *buf = new char[size];
 
+    component->GetWriteConnection(1)->NeedsRead(true);
+    visitTimer->StopTimer(readDelay, "Delay between read notification and actual read");
+
+    int readData = visitTimer->StartTimer();
     if (component->GetWriteConnection(1)->DirectRead((unsigned char *)buf, size) < 0)
         debug1 << "Error reading VTK data!!!!\n";
+
+    char msg[128];
+    SNPRINTF(msg, 128, "Reading %ld bytes from socket", size);
+    visitTimer->StopTimer(readData, msg);
+    visitTimer->DumpTimings();
 
     // The data object reader will clean up the memory with buf.
     avtDataObjectReader_p avtreader  = new avtDataObjectReader;

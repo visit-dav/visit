@@ -155,9 +155,7 @@ QvisBoundaryPlotWindow::~QvisBoundaryPlotWindow()
 //   up their signals/slots.
 //
 // Programmer: Jeremy Meredith
-// Creation:   May  7, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
+// Creation:   June 12, 2003
 //
 // Modifications:
 //
@@ -285,19 +283,11 @@ QvisBoundaryPlotWindow::CreateWindowContents()
             this, SLOT(legendToggled(bool)));
     opLayout->addWidget(legendCheckBox, 1, 0);
 
-#if 0
     // Create the wireframe toggle
     wireframeCheckBox = new QCheckBox("Wireframe", central, "wireframeCheckBox");
     connect(wireframeCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(wireframeToggled(bool)));
     opLayout->addWidget(wireframeCheckBox, 2, 0);
-#endif
-
-    // Create the internal surfaces toggle
-    drawInternalCheckBox = new QCheckBox("Draw internal surfaces", central, "drawInternalCheckBox");
-    connect(drawInternalCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(drawInternalToggled(bool)));
-    opLayout->addMultiCellWidget(drawInternalCheckBox, 3,3, 0,1);
 
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(0, "smoothingButtons");
@@ -336,9 +326,7 @@ QvisBoundaryPlotWindow::CreateWindowContents()
 // Note:       
 //
 // Programmer: Jeremy Meredith
-// Creation:   May  7, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
+// Creation:   June 12, 2003
 //
 // Modifications:
 //
@@ -421,18 +409,11 @@ QvisBoundaryPlotWindow::UpdateWindow(bool doAll)
             overallOpacity->blockSignals(false);
             break;
         case 11: // wireframe
-#if 0
             wireframeCheckBox->blockSignals(true);
             wireframeCheckBox->setChecked(boundaryAtts->GetWireframe());
             wireframeCheckBox->blockSignals(false);
-#endif
             break;
-        case 12: // drawInternal
-            drawInternalCheckBox->blockSignals(true);
-            drawInternalCheckBox->setChecked(boundaryAtts->GetDrawInternal());
-            drawInternalCheckBox->blockSignals(false);
-            break;
-        case 13: // smoothingLevel
+        case 12: // smoothingLevel
             smoothingLevelButtons->blockSignals(true);
             smoothingLevelButtons->setButton(boundaryAtts->GetSmoothingLevel());
             smoothingLevelButtons->blockSignals(false);
@@ -912,32 +893,6 @@ void
 QvisBoundaryPlotWindow::wireframeToggled(bool val)
 {
     boundaryAtts->SetWireframe(val);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisBoundaryPlotWindow::drawInternalToggled
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the window's
-//   draw internal surfaces toggle button is clicked.
-//
-// Arguments:
-//   val : The new toggle value.
-//
-// Programmer: Jeremy Meredith
-// Creation:   May  7, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisBoundaryPlotWindow::drawInternalToggled(bool val)
-{
-    boundaryAtts->SetDrawInternal(val);
     Apply();
 }
 

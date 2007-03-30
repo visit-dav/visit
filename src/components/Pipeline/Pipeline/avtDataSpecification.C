@@ -53,6 +53,9 @@ using     std::vector;
 //    Jeremy Meredith, Thu Oct 24 16:15:11 PDT 2002
 //    Added material options.
 //
+//    Jeremy Meredith, Tue Jun 10 13:21:15 PDT 2003
+//    Added needBoundarySurfaces.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts,
@@ -62,6 +65,7 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
     needZones = false;
     useGhostZones = true;
     needInternalSurfaces = false;
+    needBoundarySurfaces = false;
     needValidFaceConnectivity = false;
     needStructuredIndices = false;
     usesAllDomains = true;
@@ -115,6 +119,9 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
 //    Jeremy Meredith, Thu Oct 24 16:15:11 PDT 2002
 //    Added material options.
 //
+//    Jeremy Meredith, Tue Jun 10 13:21:24 PDT 2003
+//    Added needBoundarySurfaces.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
@@ -123,6 +130,7 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
     needZones = false;
     useGhostZones = true;
     needInternalSurfaces = false;
+    needBoundarySurfaces = false;
     needValidFaceConnectivity = false;
     needStructuredIndices = false;
     usesAllDomains = true;
@@ -279,6 +287,9 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec)
 //    Jeremy Meredith, Thu Oct 24 16:15:11 PDT 2002
 //    Added material options.
 //
+//    Jeremy Meredith, Tue Jun 10 13:21:32 PDT 2003
+//    Added needBoundarySurfaces.
+//
 // ****************************************************************************
 
 avtDataSpecification &
@@ -307,6 +318,7 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
     useGhostZones                   = spec.useGhostZones;
     needZones                       = spec.needZones;
     needInternalSurfaces            = spec.needInternalSurfaces;
+    needBoundarySurfaces            = spec.needBoundarySurfaces;
     needValidFaceConnectivity       = spec.needValidFaceConnectivity;
     needStructuredIndices           = spec.needStructuredIndices;
     usesAllDomains                  = spec.usesAllDomains;
@@ -364,6 +376,9 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
 //    Jeremy Meredith, Thu Oct 24 16:15:11 PDT 2002
 //    Compare material options.
 //
+//    Jeremy Meredith, Tue Jun 10 13:21:40 PDT 2003
+//    Compare needBoundarySurfaces.
+//
 // ****************************************************************************
 
 bool
@@ -398,6 +413,11 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
     }
 
     if (needInternalSurfaces != ds.needInternalSurfaces)
+    {
+        return false;
+    }
+
+    if (needBoundarySurfaces != ds.needBoundarySurfaces)
     {
         return false;
     }

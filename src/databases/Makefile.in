@@ -70,6 +70,9 @@
 #   Hank Childs, Mon May 12 22:36:20 PDT 2003
 #   Added BOV reader.
 #
+#   Akira Haddox, Thu Jun 12 10:12:47 PDT 2003
+#   Added Cosmos reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -83,7 +86,7 @@ MILI=Mili
 PDB=KullLite
 SAF=SAF
 SAMPLES=Rect Hex
-REQUIRED=BOV Curve2D EnSight Lines PLOT3D Point3D STL Silo Spheral VTK WavefrontOBJ
+REQUIRED=BOV Cosmos Curve2D EnSight Lines PLOT3D Point3D STL Silo Spheral VTK WavefrontOBJ
 
 OPTIONAL=
 

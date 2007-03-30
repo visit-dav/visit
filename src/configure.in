@@ -412,6 +412,9 @@ dnl
 dnl    Sean Ahern, Wed Jun 11 16:36:52 PDT 2003
 dnl    Fixed pthreads test.
 dnl
+dnl    Akira Haddox, Thu Jun 12 08:56:16 PDT 2003
+dnl    Added support for HDF4.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1718,6 +1721,46 @@ fi
 AC_SUBST(MILI)
 AC_SUBST(MILI_FLAGS)
 AC_SUBST(MILI_LIBS)
+
+
+#
+# Look for HDF4.
+#
+AC_MSG_CHECKING(for HDF4)
+HDF4=""
+HDF4_FLAGS=""
+HDF4_LIBS=""
+AC_ARG_WITH(hdf4,
+	    [  --with-hdf4=FLAGS,LIBS      Location of HDF4 header and library],
+           hdf4_specified="yes",
+           hdf4_specified="no"
+           )
+if test "$hdf4_specified" = "yes"; then
+   if test "$withval" != "no"; then
+      HDF4_FLAGS="`echo $withval |cut -f1 -d,`"
+      HDF4_LIBS="`echo $withval |cut -f2 -d, -s`"
+   fi
+else
+   if test "$DEFAULT_HDF4_FLAGS" != "" ; then
+      HDF4_FLAGS="-I$DEFAULT_HDF4_FLAGS $HDF4_FLAGS"
+   fi
+   if test "$DEFAULT_HDF4_LIBS" != "" ; then
+      HDF4_LIBS="-L$DEFAULT_HDF4_LIBS -lmfhdf -ldf $HDF4_LIBS"
+   fi
+fi
+if test "$HDF4_LIBS" != "" ; then
+   if test "$HDF4_FLAGS" != "" ; then
+      HDF4="$""(HDF4)"
+      AC_MSG_RESULT(yes)
+   else
+      AC_MSG_RESULT(no)
+   fi
+else
+   AC_MSG_RESULT(no)
+fi
+AC_SUBST(HDF4)
+AC_SUBST(HDF4_FLAGS)
+AC_SUBST(HDF4_LIBS)
 
 #
 # Add Some include paths to the engine's CPPFLAGS.

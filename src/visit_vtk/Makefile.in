@@ -153,6 +153,12 @@
 #    Kathleen Bonnell, Wed May  7 15:11:56 PDT 2003   
 #    Add vtkVisItQuad. 
 #
+#    Hank Childs, Mon Jun  9 10:52:30 PDT 2003
+#    Added vtkSurfaceFromVolume, vtkSlicer.
+#
+#    Jeremy Meredith, Thu Jun 12 09:00:25 PDT 2003
+#    Added vtkUnstructuredGridBoundaryFilter.
+#
 ##############################################################################
 
 ##
@@ -183,10 +189,13 @@ SRC=InitVTK.C \
     vtkRectilinearGridFacelistFilter.C \
     vtkRubberBandMapper2D.C \
     vtkSkewLookupTable.C \
+    vtkSlicer.C \
     vtkStructuredGridFacelistFilter.C \
     vtkSurfaceFilter.C \
+    vtkSurfaceFromVolume.C \
     vtkTriad2D.C \
     vtkUniqueFeatureEdges.C \
+    vtkUnstructuredGridBoundaryFilter.C \
     vtkUnstructuredGridFacelistFilter.C \
     vtkUnstructuredGridRelevantPointsFilter.C \
     vtkVectorGlyph.C \
@@ -222,10 +231,14 @@ HDR=InitVTK.h \
     vtkRectilinearGridFacelistFilter.h \
     vtkRubberBandMapper2D.h \
     vtkSkewLookupTable.h \
+    vtkSlicer.h \
     vtkStructuredGridFacelistFilter.h \
     vtkSurfaceFilter.h \
+    vtkSurfaceFromVolume.h \
     vtkTriad2D.h \
+    vtkTriangulationTables.h \
     vtkUniqueFeatureEdges.h \
+    vtkUnstructuredGridBoundaryFilter.h \
     vtkUnstructuredGridFacelistFilter.h \
     vtkUnstructuredGridRelevantPointsFilter.h \
     vtkVectorGlyph.h \

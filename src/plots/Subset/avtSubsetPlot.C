@@ -360,68 +360,15 @@ avtSubsetPlot::GetMapper(void)
 //    ApplyRenderingTransformation) because it is serving as our unfilled
 //    boundary for now.
 //
+//    Jeremy Meredith, Thu Jun 12 09:23:06 PDT 2003
+//    Removed the wireframe code now that we have a real unfilled boundary
+//    plot.  It's all back in ApplyRenderingTransformation again.
+//
 // ****************************************************************************
 
 avtDataObject_p
 avtSubsetPlot::ApplyOperators(avtDataObject_p input)
 {
-    //
-    // We should only apply operators if we are doing wireframe mode.  This is
-    // because that is our current approximation of an unfilled boundary.
-    //
-
-    if (atts.GetWireframe())
-    {
-        int type = atts.GetSubsetType();
-
-        gzfl->SetUseFaceFilter(false);
-
-        // Set the amount of smoothing required
-        smooth->SetSmoothingLevel(atts.GetSmoothingLevel());
-    
-        if (type==SubsetAttributes::Domain || type==SubsetAttributes::Group)
-        {
-            // We're doing a wireframe domain subset plot:
-            //   - strip ghost zones first to keep domain boundaries
-            //   - find the external faces of every domain
-            //   - do the subset (smoothing if needed)
-            //   - find feature edges
-            gz->SetInput(input);
-            fl->SetInput(gz->GetOutput());
-            if (atts.GetSmoothingLevel() > 0)
-            {
-                smooth->SetInput(fl->GetOutput());
-                sub->SetInput(smooth->GetOutput());
-            }
-            else
-            {
-                sub->SetInput(fl->GetOutput());
-            }
-            wf->SetInput(sub->GetOutput());
-            return wf->GetOutput();
-        }
-        else
-        {
-            // We're doing any other wireframe subset plot:
-            //   - find the external faces first
-            //   - do the subset (smoothing if needed)
-            //   - find feature edges
-            //   - strip ghost zones last to remove domain boundaries
-            fl->SetInput(input);
-            if (atts.GetSmoothingLevel() > 0)
-            {
-                smooth->SetInput(fl->GetOutput());
-                sub->SetInput(smooth->GetOutput());
-            }
-            else
-            {
-                sub->SetInput(fl->GetOutput());
-            }
-            wf->SetInput(sub->GetOutput());
-            gz->SetInput(wf->GetOutput());
-            return gz->GetOutput();
-        }
-    }
     return input;
 }
 
@@ -450,6 +397,9 @@ avtSubsetPlot::ApplyOperators(avtDataObject_p input)
 //    Hank Childs, Wed Mar 19 10:03:28 PST 2003
 //    Removed code related to wireframes, since that is our current
 //    approximation of an unfilled boundary.
+//
+//    Jeremy Meredith, Thu Jun 12 10:03:53 PDT 2003
+//    Reverted back to old version now that we have an unfilled boundary.
 //
 // ****************************************************************************
 
@@ -514,6 +464,51 @@ avtSubsetPlot::ApplyRenderingTransformation(avtDataObject_p input)
                 sub->SetInput(gzfl->GetOutput());
             }
             return sub->GetOutput();
+        }
+    }
+    else
+    {
+        if (type==SubsetAttributes::Domain || type==SubsetAttributes::Group)
+        {
+            // We're doing a wireframe domain subset plot:
+            //   - strip ghost zones first to keep domain boundaries
+            //   - find the external faces of every domain
+            //   - do the subset (smoothing if needed)
+            //   - find feature edges
+            gz->SetInput(input);
+            fl->SetInput(gz->GetOutput());
+            if (atts.GetSmoothingLevel() > 0)
+            {
+                smooth->SetInput(fl->GetOutput());
+                sub->SetInput(smooth->GetOutput());
+            }
+            else
+            {
+                sub->SetInput(fl->GetOutput());
+            }
+            wf->SetInput(sub->GetOutput());
+            return wf->GetOutput();
+        }
+        else
+        {
+            // We're doing any other wireframe subset plot:
+            //   - find the external faces first
+            //   - do the subset (smoothing if needed)
+            //   - find feature edges
+            //   - strip ghost zones last to remove domain boundaries
+            fl->SetInput(input);
+            if (atts.GetSmoothingLevel() > 0)
+            {
+                smooth->SetInput(fl->GetOutput());
+                sub->SetInput(smooth->GetOutput());
+            }
+            else
+            {
+                sub->SetInput(fl->GetOutput());
+            }
+            wf->SetInput(sub->GetOutput());
+            gz->SetInput(wf->GetOutput());
+            return gz->GetOutput();
         }
     }
 

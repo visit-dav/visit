@@ -6,14 +6,13 @@
 
 #include <float.h>
 
-#include <vtkVisItCutter.h>
 #include <vtkFloatArray.h>
 #include <vtkMath.h>
 #include <vtkMatrix4x4.h>
 #include <vtkMatrixToLinearTransform.h>
-#include <vtkPlane.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkSlicer.h>
 #include <vtkTransformPolyDataFilter.h>
 
 #include <avtDataset.h>
@@ -70,12 +69,14 @@ static void      GetOrigin(SliceAttributes&, double&, double&, double&);
 //    Removed "point" for now.  The slice window has changed, and dynamically
 //    resolved attributes will work differently soon.
 //
+//    Hank Childs, Mon Jun  9 09:20:43 PDT 2003
+//    Use the new vtkSlicer class.
+//
 // ****************************************************************************
 
 avtSliceFilter::avtSliceFilter()
 {
-    plane  = vtkPlane::New();
-    cutter = vtkVisItCutter::New();
+    slicer = vtkSlicer::New();
     transform = vtkTransformPolyDataFilter::New();
     celllist = NULL;
     invTrans = vtkMatrix4x4::New();
@@ -106,19 +107,17 @@ avtSliceFilter::avtSliceFilter()
 //    Removed "point" for now.  The slice window has changed, and dynamically
 //    resolved attributes will work differently soon.
 //
+//    Hank Childs, Mon Jun  9 09:20:43 PDT 2003
+//    Use the new vtkSlicer class.
+//
 // ****************************************************************************
 
 avtSliceFilter::~avtSliceFilter()
 {
-    if (cutter != NULL)
+    if (slicer != NULL)
     {
-        cutter->Delete();
-        cutter = NULL;
-    }
-    if (plane != NULL)
-    {
-        plane->Delete();
-        plane = NULL;
+        slicer->Delete();
+        slicer = NULL;
     }
     if (celllist != NULL)
     {
@@ -193,6 +192,9 @@ avtSliceFilter::Create()
 //    Kathleen Bonnell, Tue May 20 16:02:52 PDT 2003  
 //    Added tests for valid Normal, upAxis.
 //
+//    Hank Childs, Mon Jun  9 09:20:43 PDT 2003
+//    Use the new vtkSlicer class.
+//
 // ****************************************************************************
 
 void
@@ -225,10 +227,8 @@ avtSliceFilter::SetAtts(const AttributeGroup *a)
     // figure out D in the plane equation
     D = nx*ox + ny*oy + nz*oz;
 
-    plane->SetOrigin(ox, oy, oz);
-    plane->SetNormal(nx, ny, nz);
-
-    cutter->SetCutFunction(plane);
+    slicer->SetOrigin(ox, oy, oz);
+    slicer->SetNormal(nx, ny, nz);
 
     if (atts.GetProject2d())
     {
@@ -450,7 +450,7 @@ avtSliceFilter::PreExecute(void)
     double oz = 0;
     GetOrigin(atts, ox, oy, oz);
 
-    plane->SetOrigin(ox, oy, oz);
+    slicer->SetOrigin(ox, oy, oz);
     D = nx*ox + ny*oy + nz*oz;
 }
 
@@ -501,6 +501,9 @@ avtSliceFilter::PreExecute(void)
 //    under some circumstances.  Reverse the direction of the normal in this
 //    case.
 //
+//    Hank Childs, Mon Jun  9 09:20:43 PDT 2003
+//    Use the new vtkSlicer class.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -544,12 +547,12 @@ avtSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
     }
     else
     {
-        cutter->SetCellList(NULL, 0);
+        slicer->SetCellList(NULL, 0);
     }
-    cutter->SetInput(in_ds);
+    slicer->SetInput(in_ds);
     if (atts.GetProject2d())
     {
-        transform->SetInput(cutter->GetOutput());
+        transform->SetInput(slicer->GetOutput());
         transform->SetOutput(out_ds);
 
         //
@@ -560,13 +563,13 @@ avtSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
     }
     else
     {
-        cutter->SetOutput(out_ds);
+        slicer->SetOutput(out_ds);
 
         //
         // Update will check the modifed time and call Execute.  We have no
         // direct hooks into the Execute method.
         //
-        cutter->Update();
+        slicer->Update();
     }
 
     vtkDataSet *rv = out_ds;
@@ -596,6 +599,9 @@ avtSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 //    Hank Childs, Mon Sep 16 17:39:49 PDT 2002
 //    Clean up more bloat.
 //
+//    Hank Childs, Mon Jun  9 09:20:43 PDT 2003
+//    Use the new vtkSlicer class.
+//
 // ****************************************************************************
 
 void
@@ -603,9 +609,8 @@ avtSliceFilter::ReleaseData(void)
 {
     avtPluginStreamer::ReleaseData();
 
-    cutter->SetInput(NULL);
-    cutter->SetOutput(NULL);
-    cutter->SetLocator(NULL);
+    slicer->SetInput(NULL);
+    slicer->SetOutput(NULL);
     transform->SetInput(NULL);
     transform->SetOutput(NULL);
     if (celllist != NULL)
@@ -709,8 +714,6 @@ avtSliceFilter::RefashionDataObjectInfo(void)
 //
 //  Arguments:
 //      b       A buffer of extents.
-//      trans   The transformation.
-//      cutter  The slice to use.
 //
 //  Programmer: Hank Childs
 //  Creation:   May 16, 2002
@@ -720,6 +723,9 @@ avtSliceFilter::RefashionDataObjectInfo(void)
 //    Hank Childs, Fri Feb 28 07:13:28 PST 2003
 //    Made a member function to avtSliceFilter.  Put in special logic for
 //    slicing along faces of the extents.
+//
+//    Hank Childs, Mon Jun  9 09:20:43 PDT 2003
+//    Use the new vtkSlicer class.
 //
 // ****************************************************************************
 
@@ -756,8 +762,8 @@ avtSliceFilter::ProjectExtents(double *b)
     // Slice and project our bounding box to mimic what would happen to our
     // original dataset.
     //
-    cutter->SetInput(rgrid);
-    transform->SetInput(cutter->GetOutput());
+    slicer->SetInput(rgrid);
+    transform->SetInput(slicer->GetOutput());
     transform->Update();
 
     //
@@ -836,27 +842,27 @@ avtSliceFilter::SetPlaneOrientation(double *b)
     {
         if (ox == b[0])
         {
-            plane->SetNormal(-normal[0], -normal[1], -normal[2]);
+            slicer->SetNormal(-normal[0], -normal[1], -normal[2]);
         }
     }
     else if (normal[0] == 0. && normal[1] > 0. && normal[2] == 0.)
     {
         if (oy == b[2])
         {
-            plane->SetNormal(-normal[0], -normal[1], -normal[2]);
+            slicer->SetNormal(-normal[0], -normal[1], -normal[2]);
         }
     }
     else if (normal[0] == 0. && normal[1] == 0. && normal[2] > 0.)
     {
         if (oz == b[4])
         {
-            plane->SetNormal(-normal[0], -normal[1], -normal[2]);
+            slicer->SetNormal(-normal[0], -normal[1], -normal[2]);
         }
     }
     else
     {
         // Just in case it got set backwards earlier.
-        plane->SetNormal(normal[0], normal[1], normal[2]);
+        slicer->SetNormal(normal[0], normal[1], normal[2]);
     }
 }
 
@@ -869,6 +875,11 @@ avtSliceFilter::SetPlaneOrientation(double *b)
 //
 //  Programmer: Hank Childs
 //  Creation:   August 5, 2002
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Jun  9 09:20:43 PDT 2003
+//    Use the new vtkSlicer class.
 //
 // ****************************************************************************
 
@@ -921,7 +932,7 @@ avtSliceFilter::CalculateRectilinearCells(vtkRectilinearGrid *rgrid)
               nx-1,ny-1,nz-1);
     debug5 << "The slice intersected " << numcells << " cells." << endl;
 
-    cutter->SetCellList(celllist, numcells);
+    slicer->SetCellList(celllist, numcells);
 
     delete [] x;
     delete [] y;

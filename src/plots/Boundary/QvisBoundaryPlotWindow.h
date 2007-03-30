@@ -25,9 +25,7 @@ class QvisOpacitySlider;
 // Notes:  Copied from QvisMaterialPlotWindow with minor changes.
 //
 // Programmer: Jeremy Meredith
-// Creation:   May  7, 2003
-//
-// Note:  taken almost verbatim from the Subset plot
+// Creation:   June 12, 2003
 //
 // Modifications:
 //
@@ -58,7 +56,6 @@ private slots:
     void lineWidthChanged(int newWidth);
     void legendToggled(bool val);
     void wireframeToggled(bool val);
-    void drawInternalToggled(bool val);
     void singleColorChanged(const QColor &color);
     void singleColorOpacityChanged(int opacity);
     void multipleColorChanged(const QColor &color);
@@ -87,7 +84,6 @@ private:
     QvisColorTableButton   *colorTableButton;
     QvisOpacitySlider      *overallOpacity;
     QCheckBox              *wireframeCheckBox;
-    QCheckBox              *drawInternalCheckBox;
     QButtonGroup           *smoothingLevelButtons;
 };
 

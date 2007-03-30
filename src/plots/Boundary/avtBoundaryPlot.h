@@ -57,13 +57,11 @@ avtBoundaryPlot : public avtVolumeDataPlot
 
   protected:
     avtFeatureEdgesFilter           *wf;
-    avtGhostZoneAndFacelistFilter   *gzfl;
     avtGhostZoneFilter              *gz;
-    avtFacelistFilter               *fl;
     avtBoundaryFilter               *sub;
     avtSmoothPolyDataFilter         *smooth;
 
-    BoundaryAttributes          atts;
+    BoundaryAttributes        atts;
     avtLevelsMapper          *levelsMapper;
     avtLevelsLegend          *levelsLegend;
     avtLegend_p               levLegendRefPtr;

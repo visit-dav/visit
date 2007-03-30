@@ -214,11 +214,16 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Kathleen Bonnell, Wed Mar 26 13:03:54 PST 2003 
 //    Pass on containsOriginalCells.
 //
+//    Jeremy Meredith, Thu Jun 12 08:48:20 PDT 2003
+//    Added logic to decrement the topo. dimension if we have requested
+//    material boundaries.
+//
 // ****************************************************************************
 
 void
 avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
-                                           const char *var)
+                                           const char *var,
+                                           avtDataSpecification *spec)
 {
     int timerHandle = visitTimer->StartTimer();
 
@@ -323,6 +328,16 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     {
         validity.InvalidateZones();
     }
+
+    //
+    // SPECIAL CASE:
+    //
+    // We need to decrement the topological dimension if we asked for
+    // an unfilled boundary.  The way this is handles (by directly
+    // checking a data specification) needs to change.
+    //
+    if (spec && spec->NeedBoundarySurfaces())
+        atts.SetTopologicalDimension(atts.GetTopologicalDimension() - 1);
 
     char str[1024];
     sprintf(str, "Populating Information for %s", var);
