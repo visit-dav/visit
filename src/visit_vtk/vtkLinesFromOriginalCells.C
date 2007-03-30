@@ -4,6 +4,7 @@
 #include "vtkObjectFactory.h"
 #include "vtkExtractEdges.h"
 #include "vtkUnsignedIntArray.h"
+#include <vtkVisItUtility.h>
 #include <vtkPolyData.h>
 
 
@@ -13,17 +14,20 @@
 //   Replace 'New' method with Macro to match VTK 4.0 API.
 //------------------------------------------------------------------------------
 vtkStandardNewMacro(vtkLinesFromOriginalCells);
-vtkCxxSetObjectMacro(vtkLinesFromOriginalCells, Locator,vtkPointLocator); 
 
 // Construct object.
+
+//------------------------------------------------------------------------------
+// Modifications:
+//   Akira Haddox, Wed May 21 13:43:55 PDT 2003
+//   Removed Locator code.
+//------------------------------------------------------------------------------
 vtkLinesFromOriginalCells::vtkLinesFromOriginalCells()
 {
-  this->Locator = NULL;
 }
 
 vtkLinesFromOriginalCells::~vtkLinesFromOriginalCells()
 {
-  this->SetLocator(NULL);
 }
 
 // ***************************************************************************
@@ -51,29 +55,31 @@ vtkLinesFromOriginalCells::~vtkLinesFromOriginalCells()
 //    Made the extractor be an automatic variable, since keeping it around
 //    just bloats memory.
 //
+//    Akira Haddox, Wed May 21 13:44:23 PDT 2003
+//    Removed the Locator calls (time consuming relic from vtkExtractLines).
+//    Replaced some vtk calls with direct access calls for speed.
+//
 // ****************************************************************************
 
 void vtkLinesFromOriginalCells::Execute()
 {
   vtkPolyData  *input  = this->GetInput();
-  vtkPointData *inPD   = input->GetPointData();
   vtkCellData  *inCD   = input->GetCellData();
   vtkPolyData  *output = this->GetOutput();
-  vtkPointData *outPD  = output->GetPointData();
   vtkCellData  *outCD  = output->GetCellData();
 
-  vtkPoints *newPts;
+  output->SetPoints(vtkVisItUtility::GetPoints(input));
+  output->GetPointData()->ShallowCopy(input->GetPointData());
+
   vtkCellArray *newLines;
   vtkIdList *edgeNeighbors;
   int numCells, cellNum, edgeNum, numEdgePts, numCellEdges;
   int numPts, i, k, pt2, newId;
   vtkIdType pts[2];
   int pt1 = 0, neighbor;
-  float *x;
   vtkEdgeTable *edgeTable;
   vtkCell *cell, *edge;
   bool insert;
-
 
   vtkDataArray* origCellsArr = inCD->GetArray("avtOriginalCellNumbers");
   if ( (!origCellsArr) || (origCellsArr->GetDataType() != VTK_UNSIGNED_INT)
@@ -113,25 +119,15 @@ void vtkLinesFromOriginalCells::Execute()
   //
   edgeTable = vtkEdgeTable::New();
   edgeTable->InitEdgeInsertion(numPts);
-  newPts = vtkPoints::New();
-  newPts->Allocate(numPts);
   newLines = vtkCellArray::New();
   newLines->EstimateSize(numPts*4,2);
 
-  outPD->CopyAllocate(inPD,numPts);
   outCD->CopyAllocate(outCD,numCells);
-  
-  // Get our locator for merging points
-  //
-  if ( this->Locator == NULL )
-    {
-    this->CreateDefaultLocator();
-    }
-  this->Locator->InitPointInsertion(newPts, input->GetBounds());
 
   edgeNeighbors = vtkIdList::New();
   // Loop over all cells, extracting non-visited edges. 
   //
+
   for (cellNum=0; cellNum < numCells; cellNum++ )
   {
       if ( ! (cellNum % 10000) ) //manage progress reports / early abort
@@ -153,19 +149,17 @@ void vtkLinesFromOriginalCells::Execute()
           for ( i=0; i < numEdgePts; i++, pt1=pt2, pts[0]=pts[1] )
           {
               pt2 = edge->PointIds->GetId(i);
-              x = input->GetPoint(pt2);
-              if ( this->Locator->InsertUniquePoint(x, pts[1]) )
-              {
-                  outPD->CopyData(inPD,pt2,pts[1]);
-              }
+              pts[1] = pt2;
+              
               if ( i > 0 && edgeTable->IsEdge(pt1,pt2) == -1 )
               {
                   insert = true;
                   input->GetCellEdgeNeighbors(cellNum, pt1, pt2,edgeNeighbors);
 
+                  vtkIdType *neighborIdList = edgeNeighbors->GetPointer(0);
                   for (k = 0; k < edgeNeighbors->GetNumberOfIds(); k++)
                   {
-                      neighbor = edgeNeighbors->GetId(k);
+                      neighbor = neighborIdList[k];
                       if (origCellNums[2*cellNum+1] == origCellNums[2*neighbor+1]
                           && (!cellNums3D || cellNums3D[cellNum] != cellNums3D[neighbor]))
                       {
@@ -203,50 +197,9 @@ void vtkLinesFromOriginalCells::Execute()
   edgeTable->Delete();
   edgeNeighbors->Delete();
 
-  output->SetPoints(newPts);
-  newPts->Delete();
-
   output->SetLines(newLines);
   newLines->Delete();
 
   output->Squeeze();
-}
-
-void vtkLinesFromOriginalCells::CreateDefaultLocator()
-{
-  if ( this->Locator == NULL )
-    {
-    this->Locator = vtkMergePoints::New();
-    this->Locator->Register(this);
-    this->Locator->Delete(); 
-    }
-}
-
-void vtkLinesFromOriginalCells::PrintSelf(ostream& os, vtkIndent indent)
-{
-  this->Superclass::PrintSelf(os,indent);
-
-  if ( this->Locator )
-    {
-    this->Locator->PrintSelf(os, indent);
-    }
-  else
-    {
-    os << indent << "Locator: (none)\n";
-    }
-}
-
-
-unsigned long int vtkLinesFromOriginalCells::GetMTime()
-{
-  unsigned long mTime = this->Superclass::GetMTime();
-  unsigned long time;
-
-  if ( this->Locator != NULL )
-    {
-    time = this->Locator->GetMTime();
-    mTime = ( time > mTime ? time : mTime );
-    }
-  return mTime;
 }
 

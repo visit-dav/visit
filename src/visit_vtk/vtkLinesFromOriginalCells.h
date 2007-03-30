@@ -14,28 +14,12 @@
 #include <visit_vtk_exports.h>
 
 #include "vtkPolyDataToPolyDataFilter.h"
-#include <vtkPointLocator.h>
 
 class VISIT_VTK_API vtkLinesFromOriginalCells : public vtkPolyDataToPolyDataFilter
 {
 public:
   static vtkLinesFromOriginalCells *New();
   vtkTypeMacro(vtkLinesFromOriginalCells,vtkPolyDataToPolyDataFilter);
-  void PrintSelf(ostream& os, vtkIndent indent);
-
-  // Description:
-  // Set / get a spatial locator for merging points. By
-  // default an instance of vtkMergePoints is used.
-  virtual void SetLocator(vtkPointLocator*);
-  vtkGetObjectMacro(Locator,vtkPointLocator);
-
-  // Description:
-  // Create default locator. Used to create one when none is specified.
-  void CreateDefaultLocator();
-
-  // Description:
-  // Return MTime also considering the locator.
-  unsigned long GetMTime();
 
 protected:
   vtkLinesFromOriginalCells();
@@ -43,8 +27,6 @@ protected:
 
   // Usual data generation method
   void Execute();
-
-  vtkPointLocator *Locator;
 
 private:
   vtkLinesFromOriginalCells(const vtkLinesFromOriginalCells&);

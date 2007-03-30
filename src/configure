@@ -8412,7 +8412,7 @@ fi
 #
 echo "$as_me:$LINENO: checking for pthread library" >&5
 echo $ECHO_N "checking for pthread library... $ECHO_C" >&6
-if -z "$PTHREAD_LIB"; then
+if test -z "$PTHREAD_LIB"; then
    cat >conftest.$ac_ext <<_ACEOF
 #line $LINENO "configure"
 #include "confdefs.h"
@@ -8463,12 +8463,18 @@ rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
 #define HAVE_THREADS 1
 _ACEOF
 
+       echo "$as_me:$LINENO: result: found" >&5
+echo "${ECHO_T}found" >&6
    else
        PTHREAD_LIB=""
        PTHREAD_CXXFLAGS=""
+       echo "$as_me:$LINENO: result: not found" >&5
+echo "${ECHO_T}not found" >&6
    fi
 else
-   if test -z "$PTHREAD_CXXFLAGS"; then
+   echo "$as_me:$LINENO: result: found" >&5
+echo "${ECHO_T}found" >&6
+                  if test -z "$PTHREAD_CXXFLAGS"; then
       PTHREAD_CXXFLAGS=""
    fi
 fi

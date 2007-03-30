@@ -409,6 +409,9 @@ dnl
 dnl    Brad Whitlock, Fri May 2 15:06:12 PST 2003
 dnl    I added libproxybase and the new launcher component.
 dnl
+dnl    Sean Ahern, Wed Jun 11 16:36:52 PDT 2003
+dnl    Fixed pthreads test.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1898,7 +1901,7 @@ AC_SUBST(X_LIBS)
 # a macro in visit-config.h
 #
 AC_MSG_CHECKING(for pthread library)
-if -z "$PTHREAD_LIB"; then
+if test -z "$PTHREAD_LIB"; then
    AC_TRY_LINK([#include <pthread.h>],[pthread_attr_t attr;
                 pthread_attr_init(&attr)],
                AC_MSG_RESULT(yes)
@@ -1910,11 +1913,19 @@ if -z "$PTHREAD_LIB"; then
        AC_SUBST(ENGINE_CPPFLAGS)
        PTHREAD_LIB="-lpthread"
        AC_DEFINE(HAVE_THREADS)
+       AC_MSG_RESULT(found)
    else
        PTHREAD_LIB=""
        PTHREAD_CXXFLAGS=""
+       AC_MSG_RESULT(not found)
    fi
 else
+   AC_MSG_RESULT(found)
+   dnl
+   dnl What the heck does this "if" test do?  If PTHREAD_CXXFLAGS is the
+   dnl null string, set it to the null string.  ???   Someone fill in a
+   dnl descriptive comment here.
+   dnl
    if test -z "$PTHREAD_CXXFLAGS"; then
       PTHREAD_CXXFLAGS=""
    fi
