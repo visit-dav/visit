@@ -66,6 +66,9 @@ vtkStandardNewMacro(vtkHankAxisActor2D);
 //    Eric Brugger, Fri Nov  1 15:59:20 PST 2002
 //    Added support for specifying the tick locations precisely.
 //
+//    Eric Brugger, Tue Jun  3 11:45:37 PDT 2003 
+//    Change the default tick offset to 4.
+//
 // **********************************************************************
 vtkHankAxisActor2D::vtkHankAxisActor2D()
 {
@@ -91,7 +94,7 @@ vtkHankAxisActor2D::vtkHankAxisActor2D()
   this->LabelFontHeight = 0.02;
   this->TitleFontHeight = 0.02;
   this->TickLength = 5;
-  this->TickOffset = 2;
+  this->TickOffset = 4;
   this->TickLocation = 1; // outside
   this->Range[0] = 0.0;
   this->Range[1] = 1.0;
@@ -365,6 +368,10 @@ void vtkHankAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 //   Eric Brugger, Fri Nov  1 15:59:20 PST 2002
 //   Added support for specifying the tick locations precisely.
 //
+//   Eric Brugger, Tue Jun  3 11:45:37 PDT 2003 
+//   Multiply the text height by a fudge factor to account for the fact that
+//   the height of a digit is considerably less than the height returned.
+//
 // ****************************************************************************
 
 void vtkHankAxisActor2D::BuildAxis(vtkViewport *viewport)
@@ -580,6 +587,10 @@ void vtkHankAxisActor2D::BuildAxis(vtkViewport *viewport)
         }
       pts->GetPoint(2*i+1, xTick);
       this->LabelMappers[labelCount]->GetSize(viewport, stringSize);
+      // Fudge factor, the height of the digits varies roughly from
+      // 0.61 to 0.68 of the font height.  Use 0.68 to be conservative.
+      // This centers the labels properly on the tick marks.
+      stringSize[1] = 0.68 * stringSize[1];
       this->SetOffsetPosition(xTick, theta, stringSize[0], stringSize[1],
                               this->TickOffset, 
                               this->LabelActors[labelCount++], 0);
