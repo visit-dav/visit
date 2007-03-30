@@ -1,0 +1,116 @@
+#                            Copyright 2000 - 2001
+#                 The Regents of the University of California.
+#                             All rights reserved.
+# 
+# This work  was produced at the  University of California, Lawrence Livermore
+# National Laboratory  (UC LLNL)  under contract no.   W-7405-ENG-48 (Contract
+# 48) between  the U.S.  Department  of Energy (DOE)  and  The Regents  of the
+# University  of   California (University)   for   the operation  of UC  LLNL.
+# Copyright  is reserved  to     the University for   purposes  of  controlled
+# dissemination,   commercialization   through   formal licensing,   or  other
+# disposition  under  terms  of Contract   48; DOE  policies, regulations  and
+# orders;  and U.S.   statutes.  The  rights of   the  Federal Government  are
+# reserved under  Contract 48 subject to the  restrictions agreed  upon by DOE
+# and University.
+# 
+#                                 DISCLAIMER
+# 
+# This software was prepared as an  account of work sponsored  by an agency of
+# the United  States Government. Neither the United  States Government nor the
+# University of California  nor any  of their  employees, makes any  warranty,
+# express or  implied,  or assumes  any  liability  or responsiblity for   the
+# accuracy, completeness,  or   usefullness of   any  information,  apparatus,
+# product, or process disclosed, or represents that its use would not infringe
+# privately   owned  rights. Reference    herein to   any specific  commercial
+# products, process, or service   by trade name, trademark,   manufacturer, or
+# otherwise,  does not    necessarily  constitute or    imply its endorsement,
+# recommendation,  or  favoring by    the  United  States Government  or   the
+# University of California. The views and opinions of authors expressed herein
+# do not necessarily state or reflect those of the United States Government or
+# the University of  California,  and shall not  be  used for  advertising  or
+# product endorsement purposes.
+#
+#  Programmer: Jeremy Meredith
+#  Date:       August 28, 2001
+#
+#  Modifications:
+#    Jeremy Meredith, Tue Nov 13 11:47:16 PST 2001
+#    Made it use a static Qt library if available.
+#
+#    Jeremy Meredith, Fri Jul 12 16:29:01 PDT 2002
+#    Added the root include directory so we can include visit-config.h.
+#
+#    Jeremy Meredith, Thu Jul 18 11:53:59 PDT 2002
+#    Quick hack to allow parallel builds in this directory.
+#
+#    Brad Whitlock, Thu Aug 8 17:50:43 PST 2002
+#    I added xml2java.
+#
+#    Sean Ahern, Tue Sep  3 15:57:14 PDT 2002
+#    We were missing some of the default rules.
+#
+##############################################################################
+
+@SET_MAKE@
+@VARIABLES@
+
+PROGRAM1 = $(tmpbin)/xmltest
+DEFINES1 = -DTEST_ONLY
+
+PROGRAM2 = $(tmpbin)/xml2atts
+DEFINES2 = -DGENERATE_ATTS
+
+PROGRAM3 = $(tmpbin)/xml2window
+DEFINES3 = -DGENERATE_WINDOW
+
+PROGRAM4 = $(tmpbin)/xml2info
+DEFINES4 = -DGENERATE_INFO
+
+PROGRAM5 = $(tmpbin)/xml2makefile
+DEFINES5 = -DGENERATE_MAKEFILE
+
+PROGRAM6 = $(tmpbin)/xml2avt
+DEFINES6 = -DGENERATE_AVT
+
+PROGRAM7 = $(tmpbin)/xml2python
+DEFINES7 = -DGENERATE_PYTHON
+
+PROGRAM8 = $(tmpbin)/xml2java
+DEFINES8 = -DGENERATE_JAVA
+
+SRC=main.C
+OBJ=$(SRC:.C=.o)
+
+CXXFLAGS=@CXXFLAGS@ @QT_CXXFLAGS@ -I. -I../../include
+LDFLAGS=@QT_LDFLAGS@ @LDFLAGS@ @QT_LIBS@ @LIBS@
+
+all: $(PROGRAM1) $(PROGRAM2) $(PROGRAM3) $(PROGRAM4) $(PROGRAM5) $(PROGRAM6) $(PROGRAM7) $(PROGRAM8)
+
+clean:
+	$(RM) $(OBJ) $(PROGRAM1) $(PROGRAM2) $(PROGRAM3) $(PROGRAM4) $(PROGRAM5) $(PROGRAM6) $(PROGRAM7) $(PROGRAM8)
+
+$(PROGRAM1): $(SRC)
+	$(CXX) main1.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES1)
+
+$(PROGRAM2): $(SRC)
+	$(CXX) main2.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES2)
+
+$(PROGRAM3): $(SRC)
+	$(CXX) main3.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES3)
+
+$(PROGRAM4): $(SRC)
+	$(CXX) main4.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES4)
+
+$(PROGRAM5): $(SRC)
+	$(CXX) main5.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES5)
+
+$(PROGRAM6): $(SRC)
+	$(CXX) main6.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES6)
+
+$(PROGRAM7): $(SRC)
+	$(CXX) main7.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES7)
+
+$(PROGRAM8): $(SRC)
+	$(CXX) main8.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES8)
+
+@TARGETS@

@@ -1,0 +1,831 @@
+// ************************************************************************* //
+//                          avtSamplePointExtractor.C                        //
+// ************************************************************************* //
+
+#include <avtSamplePointExtractor.h>
+
+#include <float.h>
+
+#include <vtkDataSet.h>
+#include <vtkHexahedron.h>
+#include <vtkPyramid.h>
+#include <vtkTetra.h>
+#include <vtkVoxel.h>
+#include <vtkWedge.h>
+
+#include <avtCellList.h>
+#include <avtHexahedronExtractor.h>
+#include <avtPyramidExtractor.h>
+#include <avtRayFunction.h>
+#include <avtSamplePoints.h>
+#include <avtTetrahedronExtractor.h>
+#include <avtVolume.h>
+#include <avtWedgeExtractor.h>
+
+#include <DebugStream.h>
+#include <InvalidCellTypeException.h>
+#include <TimingsManager.h>
+
+
+// ****************************************************************************
+//  Method: avtSamplePointExtractor constructor
+//
+//  Arguments:
+//      w       The width.
+//      h       The height.
+//      d       The depth.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 5, 2000
+//     
+//  Modifications:
+//
+//    Hank Childs, Thu Nov 15 15:39:48 PST 2001
+//    Moved construction of cell list to Execute to account new limitations of
+//    sample points involving multiple variables.
+//
+//    Hank Childs, Tue Jan  1 10:01:20 PST 2002
+//    Initialized sendCells.
+//
+// ****************************************************************************
+
+avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
+{
+    width  = w;
+    height = h;
+    depth  = d;
+
+    currentNode = 0;
+    totalNodes  = 0;
+
+    hexExtractor     = NULL;
+    pyramidExtractor = NULL;
+    tetExtractor     = NULL;
+    wedgeExtractor   = NULL;
+
+    sendCells        = false;
+
+    rayfoo           = NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePointExtractor destructor
+//
+//  Programmer: Hank Childs
+//  Creation:   December 8, 2000
+//      
+// ****************************************************************************
+
+avtSamplePointExtractor::~avtSamplePointExtractor()
+{
+    if (hexExtractor != NULL)
+    {
+        delete hexExtractor;
+        hexExtractor = NULL;
+    }
+    if (tetExtractor != NULL)
+    {
+        delete tetExtractor;
+        tetExtractor = NULL;
+    }
+    if (wedgeExtractor != NULL)
+    {
+        delete wedgeExtractor;
+        wedgeExtractor = NULL;
+    }
+    if (pyramidExtractor != NULL)
+    {
+        delete pyramidExtractor;
+        pyramidExtractor = NULL;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePointExtractor::Execute
+//
+//  Purpose:
+//      This is the real execute method that gets the sample points out of a
+//      dataset.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 5, 2000
+//
+//  Modifications:
+//
+//    Kathleen Bonnell, Sat Apr 21 13:06:27 PDT 2001 
+//    Moved major portion of code to recursive Execute method that walks 
+//    down the data tree.
+//
+//    Hank Childs, Wed Jun  6 10:31:04 PDT 2001
+//    Removed domain list argument.  Blew away outdated comments.
+//
+//    Eric Brugger, Mon Nov  5 13:46:04 PST 2001
+//    Modified to always compile the timing code.
+//
+//    Hank Childs, Thu Nov 15 15:39:48 PST 2001
+//    Set up the extractors here (instead of constructor), since they must
+//    know how many variables they are working on.
+//
+//    Hank Childs, Mon Nov 19 14:56:40 PST 2001
+//    Gave progress while resampling.
+//
+// ****************************************************************************
+
+void
+avtSamplePointExtractor::Execute(void)
+{
+    int timingsIndex = visitTimer->StartTimer();
+
+    SetUpExtractors();
+
+    avtDataTree_p tree = GetInputDataTree();
+    totalNodes = tree->GetNumberOfLeaves();
+    currentNode = 0;
+    ExecuteTree(tree);
+
+    visitTimer->StopTimer(timingsIndex, "Sample point extraction");
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePointExtractor::SetUpExtractors
+//
+//  Purpose:
+//      Sets up the extractors and tell them which volume to extract into.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 15, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Jan  1 10:01:20 PST 2002
+//    Tell the extractors whether they should extract from large cells.
+//
+// ****************************************************************************
+
+void
+avtSamplePointExtractor::SetUpExtractors(void)
+{
+    avtSamplePoints_p output = GetTypedOutput();
+
+    output->SetVolume(width, height, depth);
+    avtVolume *volume = output->GetVolume();
+
+    if (hexExtractor != NULL)
+    {
+        delete hexExtractor;
+    }
+    if (tetExtractor != NULL)
+    {
+        delete tetExtractor;
+    }
+    if (wedgeExtractor != NULL)
+    {
+        delete wedgeExtractor;
+    }
+    if (pyramidExtractor != NULL)
+    {
+        delete pyramidExtractor;
+    }
+
+    //
+    // Set up the extractors and tell them which cell list to use.
+    //
+    avtCellList *cl = output->GetCellList();
+    hexExtractor = new avtHexahedronExtractor(width, height, depth, volume,cl);
+    tetExtractor = new avtTetrahedronExtractor(width, height, depth,volume,cl);
+    wedgeExtractor = new avtWedgeExtractor(width, height, depth, volume, cl);
+    pyramidExtractor = new avtPyramidExtractor(width, height, depth,volume,cl);
+
+    hexExtractor->SendCellsMode(sendCells);
+    tetExtractor->SendCellsMode(sendCells);
+    wedgeExtractor->SendCellsMode(sendCells);
+    pyramidExtractor->SendCellsMode(sendCells);
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePointExtractor::ExecuteTree
+//
+//  Purpose:
+//      This is the recursive execute method that gets the sample points 
+//      out of a dataset.  
+//
+//  Arguments:
+//      dt      The data tree that should be processed.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   April 21, 2001. 
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Jun  6 10:22:48 PDT 2001
+//    Renamed ExecuteTree.
+//
+//    Hank Childs, Tue Jun 19 19:24:39 PDT 2001
+//    Put in logic to handle bad data trees.
+//
+//    Hank Childs, Tue Nov 13 15:22:07 PST 2001
+//    Add support for multiple variables.
+//
+//    Hank Childs, Mon Nov 19 14:56:40 PST 2001
+//    Gave progress while resampling.
+//
+//    Hank Childs, Mon Apr 15 15:34:43 PDT 2002
+//    Give clearer error messages.
+//
+// ****************************************************************************
+
+void
+avtSamplePointExtractor::ExecuteTree(avtDataTree_p dt)
+{
+    if (*dt == NULL)
+    {
+        return;
+    }
+    if (dt->GetNChildren() <= 0 && (!(dt->HasData())))
+    {
+        return;
+    }
+
+    if (dt->GetNChildren() != 0)
+    {
+        for (int i = 0; i < dt->GetNChildren(); i++)
+        {
+            if (dt->ChildIsPresent(i))
+                ExecuteTree(dt->GetChild(i));
+        }
+
+        return;
+    }
+
+    //
+    // Get the dataset for this leaf in the tree.
+    //
+    vtkDataSet *ds = dt->GetDataRepresentation().GetDataVTK();
+
+    //
+    // Iterate over all cells in the mesh and call the appropriate 
+    // extractor for each cell to get the sample points.
+    //
+    int numCells = ds->GetNumberOfCells();
+    int lastMilestone = 0;
+    for (int j = 0 ; j < numCells ; j++)
+    {
+        vtkCell *cell = ds->GetCell(j);
+
+        switch (cell->GetCellType())
+        {
+          case VTK_HEXAHEDRON:
+            ExtractHex((vtkHexahedron *) cell, ds, j);
+            break;
+
+          case VTK_VOXEL:
+            ExtractVoxel((vtkVoxel *) cell, ds, j);
+            break;
+                    
+          case VTK_TETRA:
+            ExtractTet((vtkTetra *) cell, ds, j);
+            break;
+
+          case VTK_WEDGE:
+            ExtractWedge((vtkWedge *) cell, ds, j);
+            break;
+
+          case VTK_PYRAMID:
+            ExtractPyramid((vtkPyramid *) cell, ds, j);
+            break;
+
+          default:
+            EXCEPTION1(InvalidCellTypeException, "surfaces or anything outside"
+                                                 " the finite element zoo.");
+        }
+        int currentMilestone = (int)(((float) j) / numCells * 10);
+        if (currentMilestone > lastMilestone)
+        {
+            UpdateProgress(10*currentNode+currentMilestone, 10*totalNodes);
+            lastMilestone = currentMilestone;
+        }
+    }
+    UpdateProgress(10*currentNode+9, 10*totalNodes);
+    currentNode++;
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePointExtractor::ExtractHex
+//
+//  Purpose:
+//      Sets up the data and call the extract method for a hexahedron.
+//
+//  Arguments:
+//      hex      The hexahedron cell.
+//      ds       The dataset the hex came from (needed to find the var).
+//      hexind   The index of hex in ds.
+//
+//  Programmer:  Hank Childs
+//  Creation:    December 5, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Nov 13 15:22:07 PST 2001
+//    Add support for multiple variables.
+//
+//    Hank Childs, Fri Dec  7 10:15:45 PST 2001
+//    Added early termination for zero-opacity cells.
+//
+// ****************************************************************************
+
+void
+avtSamplePointExtractor::ExtractHex(vtkHexahedron *hex, vtkDataSet *ds,
+                                    int hexind)
+{
+    int  v, i;
+
+    avtHexahedron   h;
+    h.nVars = 0;
+
+    //
+    // Retrieve all of the zonal variables.
+    //
+    vtkFieldData *cd = ds->GetCellData();
+    int ncd = cd->GetNumberOfArrays();
+    for (v = 0 ; v < ncd ; v++)
+    {
+        vtkDataArray *arr = cd->GetArray(v);
+        float val = arr->GetComponent(hexind, 0);
+        for (i = 0 ; i < 8 ; i++)
+        {
+            h.val[i][h.nVars] = val;
+        }
+        h.nVars++;
+    }
+
+    //
+    // Retrieve all of the nodal variables.
+    //
+    vtkFieldData *pd = ds->GetPointData();
+    int npd = pd->GetNumberOfArrays();
+    for (v = 0 ; v < npd ; v++)
+    {
+        vtkDataArray *arr = pd->GetArray(v);
+        vtkIdList *ids = hex->GetPointIds();
+        for (i = 0 ; i < 8 ; i++)
+        {
+            float val = arr->GetComponent(ids->GetId(i), 0);
+            h.val[i][h.nVars] = val;
+        }
+        h.nVars++;
+    }
+
+    if (rayfoo != NULL)
+    {
+        if (!rayfoo->CanContributeToPicture(8, h.val))
+        {
+            return;
+        }
+    }
+
+    //
+    // Get the points for the hexahedron in our own data structure.
+    //
+    vtkPoints *pts = hex->GetPoints();
+    for (i = 0 ; i < 8 ; i++)
+    {
+        float *pt = pts->GetPoint(i);
+        h.pts[i][0] = pt[0];
+        h.pts[i][1] = pt[1];
+        h.pts[i][2] = pt[2];
+    }
+
+    //
+    // Have the extractor extract the sample points from this hexahedron.
+    //
+    hexExtractor->Extract(h);
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePointExtractor::ExtractWedge
+//
+//  Purpose:
+//      Sets up the data and call the extract method for a wedge.
+//
+//  Arguments:
+//      wedge     The wedge.
+//      ds        The dataset the wedge came from (needed to find the var).
+//      wedgeind  The index of wedge in ds.
+//
+//  Programmer:   Hank Childs
+//  Creation:     December 8, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Nov 13 15:22:07 PST 2001
+//    Add support for multiple variables.
+//
+//    Hank Childs, Fri Dec  7 10:15:45 PST 2001
+//    Added early termination for zero-opacity cells.
+//
+// ****************************************************************************
+
+void
+avtSamplePointExtractor::ExtractWedge(vtkWedge *wedge, vtkDataSet *ds,
+                                      int wedgeind)
+{
+    int   i, v;
+
+    avtWedge   w;
+    w.nVars = 0;
+
+    //
+    // Retrieve all of the zonal variables.
+    //
+    vtkFieldData *cd = ds->GetCellData();
+    int ncd = cd->GetNumberOfArrays();
+    for (v = 0 ; v < ncd ; v++)
+    {
+        vtkDataArray *arr = cd->GetArray(v);
+        float val = arr->GetComponent(wedgeind, 0);
+        for (i = 0 ; i < 6 ; i++)
+        {
+            w.val[i][w.nVars] = val;
+        }
+        w.nVars++;
+    }
+
+    //
+    // Retrieve all of the nodal variables.
+    //
+    vtkFieldData *pd = ds->GetPointData();
+    int npd = pd->GetNumberOfArrays();
+    for (v = 0 ; v < npd ; v++)
+    {
+        vtkDataArray *arr = pd->GetArray(v);
+        vtkIdList *ids = wedge->GetPointIds();
+        for (i = 0 ; i < 6 ; i++)
+        {
+            float val = arr->GetComponent(ids->GetId(i), 0);
+            w.val[i][w.nVars] = val;
+        }
+        w.nVars++;
+    }
+
+    if (rayfoo != NULL)
+    {
+        if (!rayfoo->CanContributeToPicture(6, w.val))
+        {
+            return;
+        }
+    }
+
+    //
+    // Get the points for the wedge in our own data structure.
+    //
+    vtkPoints *pts = wedge->GetPoints();
+    for (i = 0 ; i < 6 ; i++)
+    {
+        float *pt = pts->GetPoint(i);
+        w.pts[i][0] = pt[0];
+        w.pts[i][1] = pt[1];
+        w.pts[i][2] = pt[2];
+    }
+
+    //
+    // Have the extractor extract the sample points from this wedge.
+    //
+    wedgeExtractor->Extract(w);
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePointExtractor::ExtractTet
+//
+//  Purpose:
+//      Sets up the data and call the extract method for a tetrahedron.
+//
+//  Arguments:
+//      tet       The tetrahedron.
+//      ds        The dataset the tet came from (needed to find the var).
+//      tetind    The index of tet in ds.
+//
+//  Programmer:   Hank Childs
+//  Creation:     December 8, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Nov 13 15:22:07 PST 2001
+//    Add support for multiple variables.
+//
+//    Hank Childs, Fri Dec  7 10:15:45 PST 2001
+//    Added early termination for zero-opacity cells.
+//
+// ****************************************************************************
+
+void
+avtSamplePointExtractor::ExtractTet(vtkTetra *tet, vtkDataSet *ds,
+                                    int tetind)
+{
+    int   i, v;
+
+    avtTetrahedron   t;
+    t.nVars = 0;
+
+    //
+    // Retrieve all of the zonal variables.
+    //
+    vtkFieldData *cd = ds->GetCellData();
+    int ncd = cd->GetNumberOfArrays();
+    for (v = 0 ; v < ncd ; v++)
+    {
+        vtkDataArray *arr = cd->GetArray(v);
+        float val = arr->GetComponent(tetind, 0);
+        for (i = 0 ; i < 4 ; i++)
+        {
+            t.val[i][t.nVars] = val;
+        }
+        t.nVars++;
+    }
+
+    //
+    // Retrieve all of the nodal variables.
+    //
+    vtkFieldData *pd = ds->GetPointData();
+    int npd = pd->GetNumberOfArrays();
+    for (v = 0 ; v < npd ; v++)
+    {
+        vtkDataArray *arr = pd->GetArray(v);
+        vtkIdList *ids = tet->GetPointIds();
+        for (i = 0 ; i < 4 ; i++)
+        {
+            float val = arr->GetComponent(ids->GetId(i), 0);
+            t.val[i][t.nVars] = val;
+        }
+        t.nVars++;
+    }
+
+    if (rayfoo != NULL)
+    {
+        if (!rayfoo->CanContributeToPicture(4, t.val))
+        {
+            return;
+        }
+    }
+
+    //
+    // Get the points for the tet in our own data structure.
+    //
+    vtkPoints *pts = tet->GetPoints();
+    for (i = 0 ; i < 4 ; i++)
+    {
+        float *pt = pts->GetPoint(i);
+        t.pts[i][0] = pt[0];
+        t.pts[i][1] = pt[1];
+        t.pts[i][2] = pt[2];
+    }
+
+    //
+    // Have the extractor extract the sample points from this tetrahedron.
+    //
+    tetExtractor->Extract(t);
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePointExtractor::ExtractPyramid
+//
+//  Purpose:
+//      Sets up the data and call the extract method for a pyramid.
+//
+//  Arguments:
+//      pyr       The pyramid.
+//      ds        The dataset the pyramid came from (needed to find the var).
+//      pyrind    The index of pyramid in ds.
+//
+//  Programmer:   Hank Childs
+//  Creation:     December 8, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Nov 13 15:22:07 PST 2001
+//    Add support for multiple variables.
+//
+//    Hank Childs, Fri Dec  7 10:15:45 PST 2001
+//    Added early termination for zero-opacity cells.
+//
+// ****************************************************************************
+
+void
+avtSamplePointExtractor::ExtractPyramid(vtkPyramid *pyr, vtkDataSet *ds,
+                                       int pyrind)
+{
+    int   i, v;
+
+    avtPyramid   p;
+    p.nVars = 0;
+
+    //
+    // Retrieve all of the zonal variables.
+    //
+    vtkFieldData *cd = ds->GetCellData();
+    int ncd = cd->GetNumberOfArrays();
+    for (v = 0 ; v < ncd ; v++)
+    {
+        vtkDataArray *arr = cd->GetArray(v);
+        float val = arr->GetComponent(pyrind, 0);
+        for (i = 0 ; i < 5 ; i++)
+        {
+            p.val[i][p.nVars] = val;
+        }
+        p.nVars++;
+    }
+
+    //
+    // Retrieve all of the nodal variables.
+    //
+    vtkFieldData *pd = ds->GetPointData();
+    int npd = pd->GetNumberOfArrays();
+    for (v = 0 ; v < npd ; v++)
+    {
+        vtkDataArray *arr = pd->GetArray(v);
+        vtkIdList *ids = pyr->GetPointIds();
+        for (i = 0 ; i < 5 ; i++)
+        {
+            float val = arr->GetComponent(ids->GetId(i), 0);
+            p.val[i][p.nVars] = val;
+        }
+        p.nVars++;
+    }
+
+    if (rayfoo != NULL)
+    {
+        if (!rayfoo->CanContributeToPicture(5, p.val))
+        {
+            return;
+        }
+    }
+
+    //
+    // Get the points for the pyramid in our own data structure.
+    //
+    vtkPoints *pts = pyr->GetPoints();
+    for (i = 0 ; i < 5 ; i++)
+    {
+        float *pt = pts->GetPoint(i);
+        p.pts[i][0] = pt[0];
+        p.pts[i][1] = pt[1];
+        p.pts[i][2] = pt[2];
+    }
+
+    //
+    // Have the extractor extract the sample points from this pyramid.
+    //
+    pyramidExtractor->Extract(p);
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePointExtractor::ExtractVoxel
+//
+//  Purpose:
+//      Sets up the data and call the extract method for a voxel
+//
+//  Arguments:
+//      voxel    The voxel cell.
+//      ds       The dataset the voxrl came from (needed to find the var).
+//      voxind   The index of voxel in ds.
+//
+//  Programmer:  Hank Childs
+//  Creation:    December 7, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Nov 13 15:22:07 PST 2001
+//    Add support for multiple variables.
+//
+//    Hank Childs, Fri Dec  7 10:15:45 PST 2001
+//    Added early termination for zero-opacity cells.
+//
+// ****************************************************************************
+
+void
+avtSamplePointExtractor::ExtractVoxel(vtkVoxel *voxel, vtkDataSet *ds,
+                                      int voxind)
+{
+    int   i, v;
+
+    avtHexahedron   h;
+    h.nVars = 0;
+
+    //
+    // Retrieve all of the zonal variables.
+    //
+    vtkFieldData *cd = ds->GetCellData();
+    int ncd = cd->GetNumberOfArrays();
+    for (v = 0 ; v < ncd ; v++)
+    {
+        vtkDataArray *arr = cd->GetArray(v);
+        float val = arr->GetComponent(voxind, 0);
+        for (i = 0 ; i < 8 ; i++)
+        {
+            h.val[i][h.nVars] = val;
+        }
+        h.nVars++;
+    }
+
+    //
+    // vth takes voxels to hexahedrons.
+    //
+    int  vth[8] = { 0, 1, 3, 2, 4, 5, 7, 6 };
+
+    //
+    // Retrieve all of the nodal variables.
+    //
+    vtkFieldData *pd = ds->GetPointData();
+    int npd = pd->GetNumberOfArrays();
+    for (v = 0 ; v < npd ; v++)
+    {
+        vtkDataArray *arr = pd->GetArray(v);
+        vtkIdList *ids = voxel->GetPointIds();
+        for (i = 0 ; i < 8 ; i++)
+        {
+            float val = arr->GetComponent(ids->GetId(i), 0);
+            h.val[vth[i]][h.nVars] = val;
+        }
+        h.nVars++;
+    }
+
+    if (rayfoo != NULL)
+    {
+        if (!rayfoo->CanContributeToPicture(8, h.val))
+        {
+            return;
+        }
+    }
+
+    //
+    // Get the points for the hexahedron in our own data structure.
+    //
+    vtkPoints *pts = voxel->GetPoints();
+    for (i = 0 ; i < 8 ; i++)
+    {
+        float *pt = pts->GetPoint(i);
+        h.pts[vth[i]][0] = pt[0];
+        h.pts[vth[i]][1] = pt[1];
+        h.pts[vth[i]][2] = pt[2];
+    }
+
+    //
+    // Have the extractor extract the sample points from this hexahedron.
+    //
+    hexExtractor->Extract(h);
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePointExtractor::SendCellsMode
+//
+//  Purpose:
+//      Tell the individual cell extractors that it is okay to send the cells
+//      instead of sample points when doing parallel volume rendering.
+//
+//  Arguments:
+//      mode    true if the cell extractors should serialize the cells and send
+//              those.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 27, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Jan  1 10:01:20 PST 2002
+//    Reflect that extractors may not be initialized at this point.
+//
+// ****************************************************************************
+
+void
+avtSamplePointExtractor::SendCellsMode(bool mode)
+{
+    sendCells = mode;
+
+    if (hexExtractor != NULL)
+    {
+        hexExtractor->SendCellsMode(sendCells);
+    }
+    if (pyramidExtractor != NULL)
+    {
+        pyramidExtractor->SendCellsMode(sendCells);
+    }
+    if (tetExtractor != NULL)
+    {
+        tetExtractor->SendCellsMode(sendCells);
+    }
+    if (wedgeExtractor != NULL)
+    {
+        wedgeExtractor->SendCellsMode(sendCells);
+    }
+}
+
+

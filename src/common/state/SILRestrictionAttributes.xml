@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+  <Attribute name="SILRestrictionAttributes" purpose="The class contains attributes for SIL restrictions." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="useSet" label="useSet" type="ucharVector">
+    </Field>
+    <Field name="topSet" label="topSet" type="int">
+      -1
+    </Field>
+    <Field name="silAtts" label="silAtts" type="att" subtype="SILAttributes">
+    </Field>
+  </Attribute>

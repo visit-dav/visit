@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+  <Plugin name="Revolve" label="Revolve" type="operator" version="1.0">
+    <Attribute name="RevolveAttributes" purpose="This class contains attributes for the revolve operator.">
+      <Field name="axis" label="Axis of revolution" type="doubleArray" length="3">1 0 0</Field>
+
+      <Field name="startAngle" label="Start angle" type="double">0.</Field>
+      <Field name="stopAngle" label="Stop angle" type="double">360.</Field>
+      <Field name="steps" label="Number of steps" type="int">30</Field>
+    </Attribute>
+  </Plugin>

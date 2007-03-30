@@ -1,0 +1,304 @@
+// ************************************************************************* //
+//                  avtGhostZoneAndFacelistFilter.h                          //
+// ************************************************************************* //
+
+#include <avtGhostZoneAndFacelistFilter.h>
+
+#include <avtFacelistFilter.h>
+#include <avtGhostZoneFilter.h>
+#include <avtSourceFromAVTDataset.h>
+
+#include <DebugStream.h>
+#include <TimingsManager.h>
+
+
+// ****************************************************************************
+//  Method: avtGhostZoneAndFacelistFilter constructor
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 20, 2001
+//
+// ****************************************************************************
+
+avtGhostZoneAndFacelistFilter::avtGhostZoneAndFacelistFilter()
+{
+    ghostFilter = new avtGhostZoneFilter;
+    faceFilter  = new avtFacelistFilter;
+    useFaceFilter = false;
+    useGhostFilter = true;
+}
+
+
+// ****************************************************************************
+//  Method: avtGhostZoneAndFacelistFilter destructor
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 20, 2001
+//
+// ****************************************************************************
+
+avtGhostZoneAndFacelistFilter::~avtGhostZoneAndFacelistFilter()
+{
+    if (ghostFilter != NULL)
+    {
+        delete ghostFilter;
+        ghostFilter = NULL;
+    }
+    if (faceFilter != NULL)
+    {
+        delete faceFilter;
+        faceFilter = NULL;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtGhostZoneAndFacelistFilter::AdditionalPipelineFilters
+//
+//  Purpose:
+//      Returns how many pipeline filters will be executing.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 30, 2002
+//
+// ****************************************************************************
+
+int
+avtGhostZoneAndFacelistFilter::AdditionalPipelineFilters(void)
+{
+    int vals = 0;
+
+    if (useFaceFilter)
+        vals++;
+    if (useGhostFilter)
+        vals++;
+
+    return vals;
+}
+
+
+// ****************************************************************************
+//  Method: avtGhostZoneAndFacelistFilter::SetCreate3DCellNumbers
+//
+//  Purpose:
+//      This is a Boolean that is passed directly to the facelist filter.  It
+//      is used when trying to reconstruct mesh edges after the fact.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 19, 2002
+//
+// ****************************************************************************
+
+void
+avtGhostZoneAndFacelistFilter::SetCreate3DCellNumbers(bool val)
+{
+    faceFilter->SetCreate3DCellNumbers(val);
+}
+
+
+// ****************************************************************************
+//  Method: avtGhostZoneAndFacelistFilter::Execute
+//
+//  Purpose:
+//    Applies ghostZone and facelist filters to the input.  Which
+//    comes first is determined by whether or not the input is using all data.
+//    Facelist filter only applied if user specified that it needed to be used.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 20, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Sep 14 09:58:14 PDT 2001
+//    Made use of more specialized routine that focuses on whether all of the
+//    domains are being used, rather than all of the data is being used.  This
+//    allows internal faces to be removed when are using all of the domains,
+//    but have employed material selection.
+//
+//    Eric Brugger, Mon Nov  5 13:40:36 PST 2001
+//    Modified to always compile the timing code.
+//
+//    Brad Whitlock, Thu Apr 4 14:46:27 PST 2002
+//    Changed CopyTo so it is an inline template function.
+//
+//    Hank Childs, Mon Sep 30 09:58:10 PDT 2002
+//    Do not apply ghost filter if we have no ghost zones.
+//
+//    Sean Ahern, Thu Jan 23 11:55:37 PST 2003
+//    Fixed a problem with hooking up the input and output if we have
+//    nothing to do.
+//
+//    Hank Childs, Thu May 15 16:31:41 PDT 2003
+//    Fixed a problem where under bizarre circumstances, the ghost zone filter
+//    is applied when it should not be ['3352].
+//
+// ****************************************************************************
+
+void
+avtGhostZoneAndFacelistFilter::Execute(void)
+{
+    int  timingIndex = visitTimer->StartTimer();
+
+    avtDataObject_p dObj = GetInput();
+    avtDataValidity   &v = dObj->GetInfo().GetValidity();
+
+    // Make sure this is the latest info.  This changes under very bizarre
+    // circumstances.  ['3352].
+    avtDataAttributes &a = dObj->GetInfo().GetAttributes();
+    useGhostFilter = (a.GetContainsGhostZones()!=AVT_NO_GHOSTS ? true : false);
+
+    avtDataset_p ds; 
+    CopyTo(ds, dObj);
+    avtSourceFromAVTDataset termsrc(ds);
+    avtDataObject_p data = termsrc.GetOutput(); 
+
+    if (useFaceFilter && !useGhostFilter)
+    {
+        debug5 << "Using facelist filter only." << endl;
+        faceFilter->SetInput(data);
+        faceFilter->Update(GetGeneralPipelineSpecification());
+        GetOutput()->Copy(*(faceFilter->GetOutput()));
+    }
+    else if (useGhostFilter && !useFaceFilter)
+    {
+        debug5 << "Using ghostzone filter only." << endl;
+        ghostFilter->SetInput(data);
+        ghostFilter->Update(GetGeneralPipelineSpecification());
+        GetOutput()->Copy(*(ghostFilter->GetOutput()));
+    }
+    else if (!useGhostFilter && !useFaceFilter)
+    {
+        debug5 << "Not applying ghost zone or facelist filter." << endl;
+        GetOutput()->Copy(*dObj);
+    }
+    else
+    {
+        // if we are using all the data, apply the facelist filter first.
+        bool faceFirst = v.GetUsingAllDomains();
+
+        if (faceFirst)
+        {
+            debug5 << "Using facelist filter before ghostzone filter." << endl;
+            faceFilter->SetInput(data);
+            ghostFilter->SetInput(faceFilter->GetOutput());
+            ghostFilter->Update(GetGeneralPipelineSpecification());
+            GetOutput()->Copy(*(ghostFilter->GetOutput()));
+        }
+        else
+        {
+            debug5 << "Using ghostzone filter before facelist filter." << endl;
+            ghostFilter->SetInput(data);
+            faceFilter->SetInput(ghostFilter->GetOutput());
+            faceFilter->Update(GetGeneralPipelineSpecification());
+            GetOutput()->Copy(*(faceFilter->GetOutput()));
+        }
+    }
+
+    visitTimer->StopTimer(timingIndex, "GhostZone And Facelist Filter");
+    visitTimer->DumpTimings();
+}
+
+
+// ****************************************************************************
+//  Method: avtGhostZoneAndFacelistFilter::RefashionDataObjectInfo
+//
+//  Purpose:
+//      Copies the mutable metadata that is associated with individual 
+//      datasets.  This is done by avtDatasetToDatasetFilter, but is redefined
+//      here to indicate that the zones are invalidated after this operation.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 27, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Jul 30 15:05:07 PDT 2001
+//    Fixed up sloppiness from Friday - output dimension is 2 only if we are
+//    using facelists.
+//
+//    Hank Childs, Tue Sep  4 15:12:40 PDT 2001
+//    Reflect new data attributes interface.
+//
+//    Hank Childs, Sun Jun 23 13:06:44 PDT 2002
+//    If we have something with topological dimension less than 2, then don't
+//    say our output has dimension 2.
+//
+//    Hank Childs, Mon Sep 30 09:58:10 PDT 2002
+//    Tell the output that it does not have ghost zones.
+//
+// ****************************************************************************
+
+void
+avtGhostZoneAndFacelistFilter::RefashionDataObjectInfo(void)
+{
+    avtDataObject_p output = GetOutput();
+    output->GetInfo().GetValidity().InvalidateZones();
+    if (useFaceFilter)
+    {
+        if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() >2)
+        {
+            output->GetInfo().GetAttributes().SetTopologicalDimension(2);
+        }
+    }
+    output->GetInfo().GetAttributes().SetContainsGhostZones(AVT_NO_GHOSTS);
+}
+
+
+// ****************************************************************************
+//  Method: avtGhostZoneAndFacelistFilter::ReleaseData
+//
+//  Purpose:
+//      Releases all the data -- it is not sufficient to rely on the definition
+//      in the base class, since we must free up our derived types as well.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 10, 2002
+//
+// ****************************************************************************
+
+void
+avtGhostZoneAndFacelistFilter::ReleaseData(void)
+{
+    avtDatasetToDatasetFilter::ReleaseData();
+    if (ghostFilter != NULL)
+    {
+        ghostFilter->ReleaseData();
+        avtDataObject_p dob = ghostFilter->GetInput();
+        if (*dob != NULL)
+        {
+            dob->ReleaseData();
+        }
+    }
+    if (faceFilter != NULL)
+    {
+        faceFilter->ReleaseData();
+        avtDataObject_p dob = faceFilter->GetInput();
+        if (*dob != NULL)
+        {
+            dob->ReleaseData();
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtGhostZoneAndFacelistFilter::ChangedInput
+//
+//  Purpose:
+//      Called when the input to this filter is changed.  It will determine if
+//      we should apply the ghost zone filter.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 30, 2002
+//
+// ****************************************************************************
+
+void
+avtGhostZoneAndFacelistFilter::ChangedInput(void)
+{
+    avtDatasetToDatasetFilter::ChangedInput();
+    avtDataAttributes &a = GetInput()->GetInfo().GetAttributes();
+    useGhostFilter = (a.GetContainsGhostZones()!=AVT_NO_GHOSTS ? true : false);
+}
+
+

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+  <Plugin name="TimeVaryingExodus" label="TimeVaryingExodus" type="database" dbtype="STSD" version="1.0">
+    <Extensions> exII </Extensions>
+    <Files components="M,E">
+      vtkExodusReader.C
+    </Files>
+    <CXXFLAGS> $(EXODUS_FLAGS) </CXXFLAGS>
+    <LIBS>     $(EXODUS_LIBS)  </LIBS>
+  </Plugin>

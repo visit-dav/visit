@@ -1,0 +1,156 @@
+#                            Copyright 2000 - 2003
+#                 The Regents of the University of California.
+#                             All rights reserved.
+# 
+# This work  was produced at the  University of California, Lawrence Livermore
+# National Laboratory  (UC LLNL)  under contract no.   W-7405-ENG-48 (Contract
+# 48) between  the U.S.  Department  of Energy (DOE)  and  The Regents  of the
+# University  of   California (University)   for   the operation  of UC  LLNL.
+# Copyright  is reserved  to     the University for   purposes  of  controlled
+# dissemination,   commercialization   through   formal licensing,   or  other
+# disposition  under  terms  of Contract   48; DOE  policies, regulations  and
+# orders;  and U.S.   statutes.  The  rights of   the  Federal Government  are
+# reserved under  Contract 48 subject to the  restrictions agreed  upon by DOE
+# and University.
+# 
+#                                 DISCLAIMER
+# 
+# This software was prepared as an  account of work sponsored  by an agency of
+# the United  States Government. Neither the United  States Government nor the
+# University of California  nor any  of their  employees, makes any  warranty,
+# express or  implied,  or assumes  any  liability  or responsiblity for   the
+# accuracy, completeness,  or   usefullness of   any  information,  apparatus,
+# product, or process disclosed, or represents that its use would not infringe
+# privately   owned  rights. Reference    herein to   any specific  commercial
+# products, process, or service   by trade name, trademark,   manufacturer, or
+# otherwise,  does not    necessarily  constitute or    imply its endorsement,
+# recommendation,  or  favoring by    the  United  States Government  or   the
+# University of California. The views and opinions of authors expressed herein
+# do not necessarily state or reflect those of the United States Government or
+# the University of  California,  and shall not  be  used for  advertising  or
+# product endorsement purposes.
+#
+# Modifications:
+#    Eric Brugger, Fri Aug  4 14:31:06 PDT 2000
+#    I changed the order the that subdirectories are listed in SUBDIRS.
+#
+#    Brad Whitlock, Thu Sep 7 16:52:17 PST 2000
+#    I made the engine build before the viewer.
+#
+#    Kathleen Bonnell, Thu Oct 12 11:07:22 PDT 2000
+#    Add visit_vtk to list of subdirectories.
+#
+#    Kathleen Bonnell, Tue Oct 17 14:55:20 PDT 2000 
+#    Moved visit_vtk before engine in list of subdirs.
+#
+#    Brad Whitlock, Tue Oct 31 15:36:54 PST 2000
+#    Added vtkqt.
+#
+#    Hank Childs, Fri Jan  5 13:02:23 PST 2001
+#    Removed directory tools from list of subdirectories to build.
+#
+#    Eric Brugger, Fri Feb 16 13:08:59 PST 2001
+#    I moved the line continuation character for the SUBDIRS variable so
+#    that we don't have the situation where we have a line continuation
+#    with no contuation line.
+#
+#    Eric Brugger, Mon Feb 26 15:44:11 PST 2001
+#    I modified the makefile to compile the files in the plot directory tree.
+#
+#    Jeremy Meredith, Fri May 11 14:39:48 PDT 2001
+#    Added lib directory.
+#    Added "source" target to plots directory.
+#
+#    Jeremy Meredith, Thu Jul 26 02:44:25 PDT 2001
+#    Added operator plugins.
+#    Removed the "make source" needed to resolve old circular dependencies.
+#
+#    Jeremy Meredith, Fri Jul 27 13:48:59 PDT 2001
+#    Added "parclean" make target.
+#
+#    Jeremy Meredith, Fri Aug 24 13:01:54 PDT 2001
+#    Fixed engine directory's parclean.
+#
+#    Sean Ahern, Fri Aug 31 14:37:28 PDT 2001
+#    Added the splash screen.
+#
+#    Brad Whitlock, Sun Jul 8 15:05:34 PST 2001
+#    Added visitpy directory.
+#
+#    Jeremy Meredith, Wed Jan 16 13:05:30 PST 2002
+#    Removed parclean target since serial and parallel now build concurrently.
+#
+#    Sean Ahern, Mon Jun 10 16:40:29 PDT 2002
+#    Got rid of RSUBDIRS.  Gutted portions so as to move to a central location.
+#
+#    Jeremy Meredith, Fri Jul 12 14:38:14 PDT 2002
+#    Added bin and include to the subdirectories.
+#
+#    Jeremy Meredith, Mon Jul 15 00:56:14 PDT 2002
+#    Added tools/xml to the subdirectories.
+#
+#    Brad Whitlock, Fri Jul 12 18:02:31 PST 2002
+#    Added help directory.
+#
+#    Jeremy Meredith, Mon Jul 22 12:13:05 PDT 2002
+#    Made it build the whole tools directory.
+#
+#    Brad Whitlock, Wed Aug 14 16:43:09 PST 2002
+#    I made it build the java directory.
+#
+#    Jeremy Meredith, Tue Aug 27 16:02:22 PDT 2002
+#    Added database plugins.
+#
+#    Brad Whitlock, Mon May 5 09:38:47 PDT 2003
+#    I added the launcher directory.
+#
+##############################################################################
+
+@SET_MAKE@
+@VARIABLES@
+@DIRTARGETS@
+
+DISTRIB=configure configure.in VERSION
+
+SUBDIRS=include lib bin common @VTKQT@ visit_vtk components engine \
+        launcher @METADATA_SERVER@ @VIEWER@ @SPLASHSCREEN@ @GUI@ @VISITPY@ \
+        @JAVA_TARGET@ plots operators databases help tools
+
+#
+# Make sure that the installation directories exist
+#
+install_dirs:
+	if test ! -d $(exec_prefix); then \
+		mkdir $(exec_prefix); \
+		chmod 755 $(exec_prefix); \
+	fi
+	if test ! -d $(bindir); then \
+		mkdir $(bindir); \
+		chmod 755 $(bindir); \
+	fi
+	if test ! -d $(libdir); then \
+		mkdir $(libdir); \
+		chmod 755 $(libdir); \
+	fi
+	if test ! -d $(includedir); then \
+		mkdir $(includedir); \
+		chmod 755 $(includedir); \
+	fi
+
+CLEAN_FILES=archives/lib* \
+	plugins/plots/lib* plugins/operators/lib* plugins/databases/lib*
+
+DISTCLEAN_FILES= Makefile config.cache config.log config.status \
+	archives/lib* plugins/plots/lib* plugins/operators/lib* \
+	plugins/databases/lib* \
+	*~ include/*~ include/config.h \
+	include/make-targets include/make-variables \
+	include/make-gnu include/make-std \
+	include/make-depend-gnu include/make-depend-std \
+	include/make-targets-gnu include/make-targets-std
+
+message:
+
+maintainer-clean: distclean
+	-$(RM) ${DISTCLEAN_FILES}
+	-$(RM) configure include/config.h.in

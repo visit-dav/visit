@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+  <Plugin name="Volume" type="plot" label="Volume" version="1.1" vartype="scalar,species" iconFile="Volume.xpm">
+    <Files components="V">
+      avtVolumeRenderer.C
+      avtVolumeFilter.C
+      avtOpenGLVolumeRenderer.C
+      avtMesaVolumeRenderer.C
+    </Files>
+    <Files components="E">
+      avtVolumeRenderer.C
+      avtVolumeFilter.C
+      avtOpenGLVolumeRenderer.C
+      avtMesaVolumeRenderer.C
+    </Files>
+    <Attribute name="VolumeAttributes" purpose="This class contains the plot attributes for the volume plot." persistent="true" codefile="VolumeAttributes.code">
+      <Field name="legendFlag" label="legendFlag" type="bool">
+        true
+      </Field>
+      <Field name="lightingFlag" label="lightingFlag" type="bool">
+        true
+      </Field>
+      <Field name="colorControlPoints" label="colorControlPoints" type="att" subtype="ColorControlPointList" init="true">
+      </Field>
+      <Field name="opacityAttenuation" label="opacityAttenuation" type="float">
+        1.000000
+      </Field>
+      <Field name="freeformFlag" label="freeformFlag" type="bool">
+        true
+      </Field>
+      <Field name="opacityControlPoints" label="opacityControlPoints" type="att" subtype="GaussianControlPointList">
+      </Field>
+      <Field name="resampleTarget" label="resampleTarget" type="int">
+        50000
+      </Field>
+      <Field name="opacityVariable" label="opacityVariable" type="string">
+        default
+      </Field>
+      <Field name="freeformOpacity" label="freeformOpacity" type="ucharArray" length="256" init="true">
+      </Field>
+      <Field name="doSoftware" label="doSoftware" type="bool" ignoreeq="true">
+        false
+      </Field>
+      <Field name="useColorVarMin" label="useColorVarMin" type="bool">
+        false
+      </Field>
+      <Field name="colorVarMin" label="colorVarMin" type="float">
+        0.000000
+      </Field>
+      <Field name="useColorVarMax" label="useColorVarMax" type="bool">
+        false
+      </Field>
+      <Field name="colorVarMax" label="colorVarMax" type="float">
+        0.000000
+      </Field>
+      <Field name="useOpacityVarMin" label="useOpacityVarMin" type="bool">
+        false
+      </Field>
+      <Field name="opacityVarMin" label="opacityVarMin" type="float">
+        0.000000
+      </Field>
+      <Field name="useOpacityVarMax" label="useOpacityVarMax" type="bool">
+        false
+      </Field>
+      <Field name="opacityVarMax" label="opacityVarMax" type="float">
+        0.000000
+      </Field>
+      <Field name="smoothData" label="smoothData" type="bool">
+        false
+      </Field>
+      <Field name="samplesPerRay" label="samplesPerRay" type="int">
+        500
+      </Field>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="GetTransferFunction" user="true" member="true">
+      </Function>
+      <Function name="SetDefaultColorControlPoints" user="true" member="true">
+      </Function>
+      <Function name="GetGaussianOpacities" user="true" member="true">
+      </Function>
+      <Function name="GetOpacities" user="true" member="true">
+      </Function>
+      <Function name="SetSmoothingFlag" user="true" member="true">
+      </Function>
+      <Function name="GetSmoothingFlag" user="true" member="true">
+      </Function>
+      <Function name="SetEqualSpacingFlag" user="true" member="true">
+      </Function>
+      <Function name="GetEqualSpacingFlag" user="true" member="true">
+      </Function>
+      <Include file="source" quoted="false">
+        ColorControlPoint.h
+      </Include>
+      <Include file="source" quoted="false">
+        GaussianControlPoint.h
+      </Include>
+    </Attribute>
+  </Plugin>

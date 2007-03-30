@@ -1,0 +1,3839 @@
+// ************************************************************************* //
+//                            avtDatabaseMetaData.C                          //
+// ************************************************************************* //
+
+#include <iostream.h>
+
+#include <avtDatabaseMetaData.h>
+
+#include <BadIndexException.h>
+#include <DebugStream.h>
+#include <InvalidVariableException.h>
+
+
+inline void   Indent(ostream &, int);
+
+
+// ****************************************************************************
+//  Method: avtMeshMetaData default constructor
+//
+//  Arguments:
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 31, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Jun 24 12:30:18 PDT 2002
+//    Initialized the data members to some reasonable value.
+//
+//    Hank Childs, Sun Aug 18 10:54:26 PDT 2002
+//    Initialized disjointElements.
+//
+//    Hank Childs, Mon Sep 30 08:57:30 PDT 2002 
+//    Initialized containsGhostZones.
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+//    Kathleen Bonnell, Wed Mar 26 13:03:54 PST 2003 
+//    Initialized containsOriginalCells. 
+//
+// ****************************************************************************
+
+avtMeshMetaData::avtMeshMetaData()
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbsssibb")
+{
+    blockTitle = "domains";
+    blockPieceName = "domain";
+    numBlocks = 1;
+    blockOrigin = 0;
+    cellOrigin = 0;
+    numGroups = 0;
+    spatialDimension = 3;
+    topologicalDimension = 3;
+    meshType = AVT_UNKNOWN_MESH;
+    hasSpatialExtents = false;
+    groupTitle = "groups";
+    groupPieceName = "group";
+    disjointElements = false;
+    containsGhostZones = AVT_MAYBE_GHOSTS;
+    containsOriginalCells = false;
+    validVariable = true;
+}
+
+// ****************************************************************************
+//  Method: avtMeshMetaData constructor
+//
+//  Arguments:
+//      extents     Mesh extents as <min_x, max_x, min_y, max_y, min_z, max_z>.
+//      s           The name of the mesh.
+//      nb          The number of blocks.
+//      bo          The block origin.
+//      sd          The spacial dimensionality.
+//      td          The topological dimensionality.
+//      mt          The type of mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 25, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue May 28 13:57:49 PDT 2002
+//    Initialized blockPieceName and blockTitle.
+//
+//    Hank Childs, Sun Jun 16 19:31:03 PDT 2002 
+//    Added argument for cell origin.
+//
+//    Hank Childs, Mon Jun 24 12:21:15 PDT 2002
+//    Initialize numGroups.
+//
+//    Hank Childs, Sun Aug 18 10:54:26 PDT 2002
+//    Initialized disjointElements.
+//
+//    Hank Childs, Mon Sep 30 08:57:30 PDT 2002 
+//    Initialized containsGhostZones.
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+//    Kathleen Bonnell, Wed Mar 26 13:03:54 PST 2003 
+//    Initialized containsOriginalCells. 
+//
+// ****************************************************************************
+
+avtMeshMetaData::avtMeshMetaData(const float *extents, std::string s, int nb,
+                                 int bo, int co,int sd, int td, avtMeshType mt)
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbsssibb")
+{
+    name                 = s;
+    numBlocks            = nb;
+    blockOrigin          = bo;
+    cellOrigin           = co;
+    topologicalDimension = td;
+    spatialDimension     = sd;
+    meshType             = mt;
+    numGroups            = 0;
+    SetExtents(extents);
+    blockTitle           = "domains";
+    blockPieceName       = "domain";
+    groupTitle           = "groups";
+    groupPieceName       = "group";
+    disjointElements     = false;
+    containsGhostZones   = AVT_MAYBE_GHOSTS;
+    containsOriginalCells   = false; 
+    validVariable        = true;
+}
+
+
+// ****************************************************************************
+//  Method: avtMeshMetaData constructor
+//
+//  Arguments:
+//      s           The name of the mesh.
+//      nb          The number of blocks.
+//      bo          The block origin.
+//      sd          The spacial dimensionality.
+//      td          The topological dimensionality.
+//      mt          The type of mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 25, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue May 28 13:57:49 PDT 2002
+//    Initialized blockPieceName and blockTitle.
+//
+//    Hank Childs, Sun Jun 16 19:31:03 PDT 2002 
+//    Added argument for cell origin.
+//
+//    Hank Childs, Mon Jun 24 12:21:15 PDT 2002
+//    Initialize numGroups.
+//
+//    Hank Childs, Sun Aug 18 10:54:26 PDT 2002
+//    Initialized disjointElements.
+//
+//    Hank Childs, Mon Sep 30 08:57:30 PDT 2002 
+//    Initialized containsGhostZones.
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+//    Kathleen Bonnell, Wed Mar 26 13:03:54 PST 2003 
+//    Initialized containsOriginalCells. 
+//
+// ****************************************************************************
+
+avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int sd,
+                                 int td, avtMeshType mt)
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbsssibb")
+{
+    name                 = s;
+    numBlocks            = nb;
+    blockOrigin          = bo;
+    cellOrigin           = co;
+    topologicalDimension = td;
+    spatialDimension     = sd;
+    meshType             = mt;
+
+    hasSpatialExtents    = false;
+    blockTitle           = "domains";
+    blockPieceName       = "domain";
+    numGroups            = 0;
+    groupTitle           = "groups";
+    groupPieceName       = "group";
+    disjointElements     = false;
+    containsGhostZones   = AVT_MAYBE_GHOSTS;
+    containsOriginalCells = false;
+    validVariable        = true;
+}
+
+
+// ****************************************************************************
+//  Method: avtMeshMetaData copy constructor
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 31, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Aug 28 10:16:24 PDT 2001
+//    Copied over blockNames.
+//
+//    Hank Childs, Tue May 28 13:57:49 PDT 2002
+//    Copied over blockPieceName and blockTitle.
+//
+//    Hank Childs, Sun Jun 16 19:31:03 PDT 2002 
+//    Copied over cellOrigin.
+//
+//    Hank Childs, Mon Jun 24 12:21:15 PDT 2002
+//    Copied over numGroups, groupIds.
+//
+//    Hank Childs, Sun Aug 18 10:54:26 PDT 2002
+//    Copied over disjointElements.
+//
+//    Hank Childs, Thu Sep 26 22:01:55 PDT 2002
+//    Copied over units.
+//
+//    Hank Childs, Mon Sep 30 08:57:30 PDT 2002 
+//    Copied over containsGhostZones.
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+//    Kathleen Bonnell, Wed Mar 26 13:03:54 PST 2003 
+//    Copied over containsOriginalCells. 
+//
+// ****************************************************************************
+
+avtMeshMetaData::avtMeshMetaData(const avtMeshMetaData &rhs)
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbsssibb")
+{
+    name                     = rhs.name;
+    numBlocks                = rhs.numBlocks;
+    blockOrigin              = rhs.blockOrigin;
+    cellOrigin               = rhs.cellOrigin;
+    spatialDimension         = rhs.spatialDimension;
+    topologicalDimension     = rhs.topologicalDimension;
+    meshType                 = rhs.meshType;
+    blockNames               = rhs.blockNames;
+    blockTitle               = rhs.blockTitle;
+    blockPieceName           = rhs.blockPieceName;
+    hasSpatialExtents        = rhs.hasSpatialExtents;
+    for (int i=0;i<3;i++)
+    {
+        minSpatialExtents[i] = rhs.minSpatialExtents[i];
+        maxSpatialExtents[i] = rhs.maxSpatialExtents[i];
+    }
+    numGroups                = rhs.numGroups;
+    groupIds                 = rhs.groupIds;
+    groupTitle               = rhs.groupTitle;
+    groupPieceName           = rhs.groupPieceName;
+    disjointElements         = rhs.disjointElements;
+    containsGhostZones       = rhs.containsGhostZones;
+    containsOriginalCells    = rhs.containsOriginalCells;
+    xUnits                   = rhs.xUnits;
+    yUnits                   = rhs.yUnits;
+    zUnits                   = rhs.zUnits;
+    validVariable            = rhs.validVariable;
+}
+
+
+// ****************************************************************************
+// Method: avtMeshMetaData destructor
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 8 10:11:43 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+avtMeshMetaData::~avtMeshMetaData()
+{
+}
+
+// ****************************************************************************
+//  Method: avtMeshMetaData::operator=
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 31, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Aug 28 10:16:24 PDT 2001
+//    Copied over blockNames.
+//
+//    Hank Childs, Tue May 28 13:57:49 PDT 2002
+//    Copied over blockPieceName and blockTitle.
+//
+//    Hank Childs, Sun Jun 16 19:31:03 PDT 2002 
+//    Copied over cellOrigin.
+//
+//    Hank Childs, Mon Jun 24 12:21:15 PDT 2002
+//    Copied over numGroups.
+//
+//    Hank Childs, Sun Aug 18 10:54:26 PDT 2002
+//    Copied over disjointElements.
+//
+//    Hank Childs, Thu Sep 26 22:01:55 PDT 2002
+//    Copied over units.
+//
+//    Hank Childs, Mon Sep 30 08:57:30 PDT 2002 
+//    Copied over containsGhostZones.
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Copied validVariable.
+//
+//    Kathleen Bonnell, Wed Mar 26 13:03:54 PST 2003 
+//    Copied containsOriginalCells. 
+//
+// ****************************************************************************
+
+const avtMeshMetaData &
+avtMeshMetaData::operator=(const avtMeshMetaData &rhs)
+{
+    name                     = rhs.name;
+    numBlocks                = rhs.numBlocks;
+    blockOrigin              = rhs.blockOrigin;
+    cellOrigin               = rhs.cellOrigin;
+    spatialDimension         = rhs.spatialDimension;
+    topologicalDimension     = rhs.topologicalDimension;
+    meshType                 = rhs.meshType;
+    blockNames               = rhs.blockNames;
+    blockTitle               = rhs.blockTitle;
+    blockPieceName           = rhs.blockPieceName;
+    hasSpatialExtents        = rhs.hasSpatialExtents;
+    for (int i=0;i<3;i++)
+    {
+        minSpatialExtents[i] = rhs.minSpatialExtents[i];    
+        maxSpatialExtents[i] = rhs.maxSpatialExtents[i];
+    }
+    numGroups                = rhs.numGroups;
+    groupIds                 = rhs.groupIds;
+    groupTitle               = rhs.groupTitle;
+    groupPieceName           = rhs.groupPieceName;
+    disjointElements         = rhs.disjointElements;
+    containsGhostZones       = rhs.containsGhostZones;
+    containsOriginalCells    = rhs.containsOriginalCells;
+    xUnits                   = rhs.xUnits;
+    yUnits                   = rhs.yUnits;
+    zUnits                   = rhs.zUnits;
+    validVariable            = rhs.validVariable;
+
+    return *this;
+}
+
+
+// ****************************************************************************
+//  Method: avtMeshMetaData::SelectAll
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 31, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Aug 28 10:16:24 PDT 2001
+//    Added block names.
+//
+//    Hank Childs, Tue May 28 13:57:49 PDT 2002
+//    Added blockPieceName and blockTitle.
+//
+//    Hank Childs, Mon Jun 24 12:21:15 PDT 2002
+//    Added numGroups, groupIds.
+//
+//    Hank Childs, Sun Aug 18 10:54:26 PDT 2002
+//    Added disjointElements.
+//
+//    Hank Childs, Thu Sep 26 22:01:55 PDT 2002
+//    Add units.
+//
+//    Hank Childs, Mon Sep 30 08:57:30 PDT 2002 
+//    Add containsGhostZones.
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Add validVariable.
+//
+//    Kathleen Bonnell, Wed Mar 26 13:03:54 PST 2003 
+//    Add containsOriginalCells. 
+//
+// ****************************************************************************
+
+void
+avtMeshMetaData::SelectAll()
+{
+    Select(0, (void*)&name);
+    Select(1, (void*)&blockPieceName);
+    Select(2, (void*)&blockTitle);
+    Select(3, (void*)&numBlocks);
+    Select(4, (void*)&blockOrigin);
+    Select(5, (void*)&cellOrigin);
+    Select(6, (void*)&spatialDimension);
+    Select(7, (void*)&topologicalDimension);
+    Select(8, (void*)&meshType);
+    Select(9, (void*)&hasSpatialExtents);
+    Select(10, (void*)minSpatialExtents, 3);
+    Select(11, (void*)maxSpatialExtents, 3);
+    Select(12, (void*)&blockNames);
+    Select(13, (void*)&numGroups);
+    Select(14, (void*)&groupIds);
+    Select(15, (void*)&groupTitle);
+    Select(16, (void*)&groupPieceName);
+    Select(17, (void*)&disjointElements);
+    Select(18, (void*)&xUnits);
+    Select(19, (void*)&yUnits);
+    Select(20, (void*)&zUnits);
+    Select(21, (void*)&containsGhostZones);
+    Select(22, (void*)&containsOriginalCells);
+    Select(23, (void*)&validVariable);
+}
+
+
+// ****************************************************************************
+//  Method: avtMeshMetaData::SetExtents
+//
+//  Purpose:
+//      Sets the extents of the mesh.
+//
+//  Arguments:
+//      extents     Mesh extents as <min_x, max_x, min_y, max_y, min_z, max_z>.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 30, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue May  1 12:53:10 PDT 2001
+//    Check for NULL extents.
+//
+// ****************************************************************************
+
+void
+avtMeshMetaData::SetExtents(const float *extents)
+{
+    if (extents == NULL)
+    {
+        hasSpatialExtents = false;
+    }
+    else
+    {
+        hasSpatialExtents = true;
+        for (int i = 0 ; i < spatialDimension ; i++)
+        {
+            minSpatialExtents[i] = extents[2*i];
+            maxSpatialExtents[i] = extents[2*i + 1];
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtMeshMetaData::Print
+//
+//  Purpose:
+//      Print statement for debugging.
+//
+//  Arguments:
+//      out      The stream to output to.
+//      indent   The number of tabs to indent each line with.
+//
+//  Programmer:  Hank Childs
+//  Creation:    August 28, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Aug 28 10:16:24 PDT 2001
+//    Added block names.
+//
+//    Hank Childs, Tue May 28 13:57:49 PDT 2002
+//    Added blockPieceName and blockTitle.
+//
+//    Hank Childs, Sun Jun 16 19:31:03 PDT 2002 
+//    Added cell origin.
+//
+//    Hank Childs, Mon Jun 24 12:21:15 PDT 2002
+//    Added numGroups.
+//
+//    Hank Childs, Sun Aug 18 10:54:26 PDT 2002
+//    Added disjointElements.
+//
+//    Brad Whitlock, Tue Aug 20 15:11:14 PST 2002
+//    Changed printing a little.
+//
+//    Hank Childs, Thu Sep 26 22:01:55 PDT 2002
+//    Added units.
+//
+//    Hank Childs, Mon Sep 30 08:57:30 PDT 2002 
+//    Added containsGhostZones.
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Added validVariable.
+//
+//    Kathleen Bonnell, Wed Mar 26 13:03:54 PST 2003 
+//    Added containsOriginalCells. 
+//
+// ****************************************************************************
+
+void
+avtMeshMetaData::Print(ostream &out, int indent) const
+{
+    Indent(out, indent);
+    out << "Name = " << name.c_str() << endl;
+    Indent(out, indent);
+    out << "Number of blocks = " << numBlocks << endl;
+    Indent(out, indent);
+    out << "Block origin = " << blockOrigin << endl;
+    Indent(out, indent);
+    out << "Cell origin = " << cellOrigin 
+        << " (origin within one block of the cells)." << endl;
+    Indent(out, indent);
+    out << "Title for domain hierarchy is " << blockTitle.c_str() << endl;
+    Indent(out, indent);
+    out << "Title for individual piece in domain hierarchy is "
+        << blockPieceName.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Number of groups = " << numGroups << endl;
+    if(numGroups > 0)
+    {
+        Indent(out, indent);
+        out << "Group ids are:";
+        for (int i = 0 ; i < groupIds.size() ; i++)
+        {
+            out << groupIds[i];
+            if(i  < groupIds.size() - 1)
+                out << ", ";
+        }
+        out << endl;
+    }
+    Indent(out, indent);
+    out << "Title for group hierarchy is " << groupTitle.c_str() << endl;
+    Indent(out, indent);
+    out << "Title for individual piece in group hierarchy is "
+        << groupPieceName.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Mesh type is ";
+    switch (meshType)
+    {
+      case AVT_UNSTRUCTURED_MESH:
+        out << "Unstructured Mesh";
+        break;
+
+      case AVT_RECTILINEAR_MESH:
+        out << "Rectilinear Mesh";
+        break;
+
+      case AVT_CURVILINEAR_MESH:
+        out << "Curvilinear Mesh";
+        break;
+
+      case AVT_POINT_MESH:
+        out << "Point Mesh";
+        break;
+
+      case AVT_UNKNOWN_MESH:
+      default:
+        out << "Unknown";
+        break;
+    }
+    out << "." << endl;
+
+    Indent(out, indent);
+    out << "Spatial Dimension = " << spatialDimension << endl;
+    Indent(out, indent);
+    out << "Topological Dimension = " << topologicalDimension << endl;
+    if (hasSpatialExtents)
+    {
+        Indent(out, indent);
+        out << "Extents are: (";
+        for (int j = 0 ; j < spatialDimension ; j++)
+        {
+            out << "(" << minSpatialExtents[j] << ", " << maxSpatialExtents[j]
+                << ")";
+            if(j < spatialDimension-1)
+                out << ", ";
+        }
+        out << ")" << endl;
+    }
+    else
+    {
+        Indent(out, indent);
+        out << "The spatial extents are not set." << endl;
+    }
+
+    if (blockNames.size() == numBlocks)
+    {
+        Indent(out, indent);
+        out << "Block names: " << endl;
+        for (int i = 0 ; i < numBlocks ; i++)
+        {
+            Indent(out, indent);
+            out << "\t" << blockNames[i].c_str() << endl;
+        }
+    }
+    else
+    {
+        Indent(out, indent);
+        out << "There are no names set with the blocks." << endl;
+    }
+
+    Indent(out, indent);
+    out << "Disjoint elements " << (disjointElements ? "true" : "false") 
+        << endl;
+
+    Indent(out, indent);
+    out << "Contains ghost zones " << containsGhostZones << endl;
+
+    Indent(out, indent);
+    out << "Contains original cells " << containsOriginalCells << endl;
+
+    Indent(out, indent);
+    out << "Units =  x: \"" << xUnits.c_str()
+        << "\", y: \"" << yUnits.c_str()
+        << "\", z: \"" << zUnits.c_str() << "\"." << endl;
+
+    if (!validVariable)
+    {
+        Indent(out, indent);
+        out << "THIS IS NOT A VALID VARIABLE." << endl;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtScalarMetaData default constructor
+//
+//  Arguments:
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 31, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+// ****************************************************************************
+
+avtScalarMetaData::avtScalarMetaData()
+    : AttributeSubject("ssibffb")
+{
+    validVariable = true;
+}
+   
+
+// ****************************************************************************
+//  Method: avtScalarMetaData constructor
+//
+//  Arguments:
+//      n           The name of the scalar variable.
+//      mn          The name of the mesh the scalar var is defined on.
+//      c           The centering of the variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 25, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+// ****************************************************************************
+
+avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn, 
+                                     avtCentering c)
+    : AttributeSubject("ssibffb")
+{
+    name           = n;
+    meshName       = mn;
+    centering      = c;
+    hasDataExtents = false;
+    validVariable  = true;
+}
+   
+
+// ****************************************************************************
+//  Method: avtScalarMetaData constructor
+//
+//  Arguments:
+//      n           The name of the scalar variable.
+//      mn          The name of the mesh the scalar var is defined on.
+//      c           The centering of the variable.
+//      min         The minimum value of the scalar variable.
+//      max         The maximum value of the scalar variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 25, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+// ****************************************************************************
+
+avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
+                                     avtCentering c, float min, float max)
+    : AttributeSubject("ssibffb")
+{
+    name           = n;
+    meshName       = mn;
+    centering      = c;
+    validVariable  = true;
+
+    float  extents[2] = { min, max };
+    SetExtents(extents);
+}
+
+
+// ****************************************************************************
+//  Method: avtScalarMetaData copy constructor
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 31, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+// ****************************************************************************
+
+avtScalarMetaData::avtScalarMetaData(const avtScalarMetaData &rhs)
+    : AttributeSubject("ssibffb")
+{
+    name           = rhs.name;
+    meshName       = rhs.meshName;
+    centering      = rhs.centering;
+    hasDataExtents = rhs.hasDataExtents;
+    minDataExtents = rhs.minDataExtents;
+    maxDataExtents = rhs.maxDataExtents;
+    validVariable  = rhs.validVariable;
+}
+
+
+// ****************************************************************************
+// Method: avtScalarMetaData destructor
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 8 10:11:43 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+avtScalarMetaData::~avtScalarMetaData()
+{
+}
+
+
+// ****************************************************************************
+//  Method: avtScalarMetaData::operator=
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 31, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Copied validVariable.
+//
+// ****************************************************************************
+
+const avtScalarMetaData &
+avtScalarMetaData::operator=(const avtScalarMetaData &rhs)
+{
+    name           = rhs.name;
+    meshName       = rhs.meshName;
+    centering      = rhs.centering;
+    hasDataExtents = rhs.hasDataExtents;
+    minDataExtents = rhs.minDataExtents;
+    maxDataExtents = rhs.maxDataExtents;
+    validVariable  = rhs.validVariable;
+    return *this;
+}
+
+
+// ****************************************************************************
+//  Method: avtScalarMetaData::SelectAll
+//
+//  Arguments:
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 31, 2000
+//
+// ****************************************************************************
+
+void
+avtScalarMetaData::SelectAll()
+{
+    Select(0, (void*)&name);
+    Select(1, (void*)&meshName);
+    Select(2, (void*)&centering);
+    Select(3, (void*)&hasDataExtents);
+    Select(4, (void*)&minDataExtents);
+    Select(5, (void*)&maxDataExtents);
+    Select(6, (void*)&validVariable);
+}
+
+
+// ****************************************************************************
+//  Method: avtScalarMetaData::SetExtents
+//
+//  Purpose:
+//      Sets the extents of the scalar variable.
+//
+//  Arguments:
+//      extents     Extents as <min value, max value>.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 30, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue May  1 12:53:10 PDT 2001
+//    Check for NULL extents.
+//
+// ****************************************************************************
+
+void
+avtScalarMetaData::SetExtents(const float *extents)
+{
+    if (extents == NULL)
+    {
+        hasDataExtents = false;
+    }
+    else
+    {
+        hasDataExtents = true;
+        minDataExtents = extents[0];
+        maxDataExtents = extents[1];
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtScalarMetaData::Print
+//
+//  Purpose:
+//      Print statement for debugging.
+//
+//  Arguments:
+//      out      The stream to output to.
+//      indent   The number of tabs to indent each line with.
+//
+//  Programmer:  Hank Childs
+//  Creation:    August 28, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Print out validVariable.
+//
+// ****************************************************************************
+
+void
+avtScalarMetaData::Print(ostream &out, int indent) const
+{
+    Indent(out, indent);
+    out << "Name = " << name.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Mesh is = " << meshName.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Centering = ";
+    switch (centering)
+    {
+      case AVT_NODECENT:
+        out << "node centered.";
+        break;
+
+      case AVT_ZONECENT:
+        out << "zone centered.";
+        break;
+
+      case AVT_UNKNOWN_CENT:
+      default:
+        out << "unknowing centering.";
+        break;
+    }
+    out << endl;
+
+    if (hasDataExtents)
+    {
+        Indent(out, indent);
+        out << "Extents are: (" << minDataExtents << ", " 
+            << maxDataExtents << ")" << endl;
+    }
+    else
+    {
+        Indent(out, indent);
+        out << "The extents are not set." << endl;
+    }
+
+    if (!validVariable)
+    {
+        Indent(out, indent);
+        out << "THIS IS NOT A VALID VARIABLE." << endl;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtVectorMetaData default constructor
+//
+//  Arguments:
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 31, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+// ****************************************************************************
+
+avtVectorMetaData::avtVectorMetaData()
+    : AttributeSubject("ssiibf*f*b")
+{
+    varDim = 0;
+    validVariable = true;
+}
+
+
+// ****************************************************************************
+//  Method: avtVectorMetaData constructor
+//
+//  Arguments:
+//      n           The name of the std::vector variable.
+//      mn          The name of the mesh the std::vector var is defined on.
+//      c           The centering of the variable.
+//      vd          The dimension of the variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 25, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+// ****************************************************************************
+
+avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn, 
+                                     avtCentering c, int vd)
+    : AttributeSubject("ssiibf*f*b")
+{
+    name           = n;
+    meshName       = mn;
+    centering      = c;
+    varDim         = vd;
+    hasDataExtents = false;
+    validVariable  = true;
+}
+
+
+// ****************************************************************************
+//  Method: avtVectorMetaData constructor
+//
+//  Arguments:
+//      n           The name of the std::vector variable.
+//      mn          The name of the mesh the std::vector var is defined on.
+//      c           The centering of the variable.
+//      vd          The dimension of the variable.
+//      extents     The extents of the variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 25, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+// ****************************************************************************
+
+avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn,
+                                     avtCentering c, int vd,
+                                     const float *extents)
+    : AttributeSubject("ssiibf*f*b")
+{
+    name           = n;
+    meshName       = mn;
+    centering      = c;
+    varDim         = vd;
+    validVariable  = true;
+    SetExtents(extents);
+}
+
+
+// ****************************************************************************
+//  Method: avtVectorMetaData copy constructor
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 31, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Copied validVariable.
+//
+// ****************************************************************************
+
+avtVectorMetaData::avtVectorMetaData(const avtVectorMetaData &rhs)
+    : AttributeSubject("ssiibf*f*b")
+{
+    name           = rhs.name;
+    meshName       = rhs.meshName;
+    centering      = rhs.centering;
+    hasDataExtents = rhs.hasDataExtents;
+    minDataExtents = rhs.minDataExtents; // safe on a std::vector<float>
+    maxDataExtents = rhs.maxDataExtents; // safe on a std::vector<float>
+    validVariable  = rhs.validVariable;
+}
+
+
+// ****************************************************************************
+// Method: avtVectorMetaData destructor
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 8 10:11:43 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+avtVectorMetaData::~avtVectorMetaData()
+{
+}
+
+// ****************************************************************************
+//  Method: avtVectorMetaData::operator=
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 31, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Copied validVariable.
+//
+// ****************************************************************************
+
+const avtVectorMetaData &
+avtVectorMetaData::operator=(const avtVectorMetaData &rhs)
+{
+    name           = rhs.name;
+    meshName       = rhs.meshName;
+    centering      = rhs.centering;
+    hasDataExtents = rhs.hasDataExtents;
+    minDataExtents = rhs.minDataExtents; // safe on a std::vector<float>
+    maxDataExtents = rhs.maxDataExtents; // safe on a std::vector<float>
+    validVariable  = rhs.validVariable;
+    return *this;
+}
+
+
+// ****************************************************************************
+//  Method: avtVectorMetaData::SelectAll
+//
+//  Arguments:
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 31, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Added validVariable.
+//
+// ****************************************************************************
+
+void
+avtVectorMetaData::SelectAll()
+{
+    Select(0, (void*)&name);
+    Select(1, (void*)&meshName);
+    Select(2, (void*)&centering);
+    Select(3, (void*)&varDim);
+    Select(4, (void*)&hasDataExtents);
+    Select(5, (void*)&minDataExtents);
+    Select(6, (void*)&maxDataExtents);
+    Select(7, (void*)&validVariable);
+}
+
+
+// ****************************************************************************
+//  Method: avtVectorMetaData::SetExtents
+//
+//  Purpose:
+//      Sets the extents of the std::vector
+//
+//  Arguments:
+//      extents     std::vector extents as <min_v1, max_v1, min_v2, max_v2, ...>.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 30, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue May  1 12:53:10 PDT 2001
+//    Check for NULL extents.
+//
+// ****************************************************************************
+
+void
+avtVectorMetaData::SetExtents(const float *extents)
+{
+    if (extents == NULL)
+    {
+        hasDataExtents = false;
+    }
+    else
+    {
+        hasDataExtents = true;
+        minDataExtents.reserve(varDim);
+        maxDataExtents.reserve(varDim);
+
+        for (int i = 0 ; i < varDim ; i++)
+        {
+            minDataExtents[i] = extents[2*i];
+            maxDataExtents[i] = extents[2*i+1];
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtVectorMetaData::Print
+//
+//  Purpose:
+//      Print statement for debugging.
+//
+//  Arguments:
+//      out      The stream to output to.
+//      indent   The number of tabs to indent each line with.
+//
+//  Programmer:  Hank Childs
+//  Creation:    August 28, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Added validVariable.
+//
+// ****************************************************************************
+
+void
+avtVectorMetaData::Print(ostream &out, int indent) const
+{
+    Indent(out, indent);
+    out << "Name = " << name.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Mesh is = " << meshName.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Centering = ";
+    switch (centering)
+    {
+      case AVT_NODECENT:
+        out << "node centered.";
+        break;
+
+      case AVT_ZONECENT:
+        out << "zone centered.";
+        break;
+
+      case AVT_UNKNOWN_CENT:
+      default:
+        out << "unknowing centering.";
+        break;
+    }
+    out << endl;
+
+    Indent(out, indent);
+    out << "Variable Dimension = " << varDim << endl;
+    if (hasDataExtents)
+    {
+        Indent(out, indent);
+        out << "Extents are: ( ";
+        for (int j = 0 ; j < varDim ; j++)
+        {
+            out << "(" << minDataExtents[j] << ", " << maxDataExtents[j]
+                << "), ";
+        }
+        out << ")" << endl;
+    }
+    else
+    {
+        Indent(out, indent);
+        out << "The extents are not set." << endl;
+    }
+
+    if (!validVariable)
+    {
+        Indent(out, indent);
+        out << "THIS IS NOT A VALID VARIABLE." << endl;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtMaterialMetaData default constructor
+//
+//  Arguments:
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 31, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+// ****************************************************************************
+
+avtMaterialMetaData::avtMaterialMetaData()
+    : AttributeSubject("ssis*b")
+{
+    validVariable = false;
+}
+
+
+// ****************************************************************************
+//  Method: avtMaterialMetaData constructor
+//
+//  Arguments:
+//      n            The name of the material.
+//      mesh         The name of the mesh the material is defined on.
+//      nm           The number of materials.
+//      names        The name of each material.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 28, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+// ****************************************************************************
+
+avtMaterialMetaData::avtMaterialMetaData(std::string n,std::string mesh,int nm, 
+                                         std::vector<std::string> names)
+    : AttributeSubject("ssis*b")
+{
+    name          = n;
+    meshName      = mesh;
+    numMaterials  = nm;
+    materialNames = names;
+    validVariable = true;
+}
+
+
+// ****************************************************************************
+//  Method: avtMaterialMetaData copy constructor
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 31, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+// ****************************************************************************
+
+avtMaterialMetaData::avtMaterialMetaData(const avtMaterialMetaData &rhs)
+    : AttributeSubject("ssis*b")
+{
+    name          = rhs.name;
+    meshName      = rhs.meshName;
+    numMaterials  = rhs.numMaterials;
+    materialNames = rhs.materialNames; // safe on a std::vector<std::string>
+    validVariable = rhs.validVariable;
+}
+
+
+// ****************************************************************************
+// Method: avtMaterialMetaData destructor
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 8 10:11:43 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+avtMaterialMetaData::~avtMaterialMetaData()
+{
+}
+
+
+// ****************************************************************************
+//  Method: avtMaterialMetaData::operator=
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 31, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Added validVariable.
+//
+// ****************************************************************************
+
+const avtMaterialMetaData &
+avtMaterialMetaData::operator=(const avtMaterialMetaData &rhs)
+{
+    name          = rhs.name;
+    meshName      = rhs.meshName;
+    numMaterials  = rhs.numMaterials;
+    materialNames = rhs.materialNames; // safe on a std::vector<std::string>
+    validVariable = rhs.validVariable;
+    return *this;
+}
+
+
+// ****************************************************************************
+//  Method: avtMaterialMetaData::SelectAll
+//
+//  Arguments:
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 31, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Added validVariable.
+//
+// ****************************************************************************
+
+void
+avtMaterialMetaData::SelectAll()
+{
+    Select(0, (void*)&name);
+    Select(1, (void*)&meshName);
+    Select(2, (void*)&numMaterials);
+    Select(3, (void*)&materialNames);
+    Select(4, (void*)&validVariable);
+}
+
+
+// ****************************************************************************
+//  Method: avtMaterialMetaData::Print
+//
+//  Purpose:
+//      Print statement for debugging.
+//
+//  Arguments:
+//      out      The stream to output to.
+//      indent   The number of tabs to indent each line with.
+//
+//  Programmer:  Hank Childs
+//  Creation:    August 28, 2000
+//
+//  Modifications:
+//    Brad Whitlock, Tue Aug 20 15:18:26 PST 2002
+//    Changed to remove a trailing comma.
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Added validVariable.
+//
+// ****************************************************************************
+
+void
+avtMaterialMetaData::Print(ostream &out, int indent) const
+{
+    Indent(out, indent);
+    out << "Name = " << name.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Mesh Name = " << meshName.c_str() << endl;
+    Indent(out, indent);
+    out << "Number of Materials = " << numMaterials << endl;
+
+    Indent(out, indent);
+    out << "The materials names are = ";
+    for (int i = 0; i < materialNames.size() ; ++i)
+    {
+        out << "\"" << materialNames[i].c_str() << "\"";
+        if(i < materialNames.size() - 1)
+            out << ", ";
+    }
+    out << endl;
+
+    if (!validVariable)
+    {
+        Indent(out, indent);
+        out << "THIS IS NOT A VALID VARIABLE." << endl;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtMatSpeciesMetaData default constructor
+//
+//  Arguments:
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   December 13, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+// ****************************************************************************
+
+avtMatSpeciesMetaData::avtMatSpeciesMetaData()
+    : AttributeSubject("is*b")
+{
+    validVariable = true;
+}
+
+
+// ****************************************************************************
+//  Method: avtMatSpeciesMetaData constructor
+//
+//  Arguments:
+//      ns           The number of species for this material.
+//      sn           The name of each species for this material.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   December 13, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+// ****************************************************************************
+
+avtMatSpeciesMetaData::avtMatSpeciesMetaData(int ns,
+                                                   std::vector<std::string> sn)
+    : AttributeSubject("is*b")
+{
+    numSpecies    = ns;
+    speciesNames  = sn;
+    validVariable = true;
+}
+
+
+// ****************************************************************************
+//  Method: avtMatSpeciesMetaData copy constructor
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   December 13, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+// ****************************************************************************
+
+avtMatSpeciesMetaData::avtMatSpeciesMetaData(const avtMatSpeciesMetaData &rhs)
+    : AttributeSubject("is*b")
+{
+    numSpecies    = rhs.numSpecies;
+    speciesNames  = rhs.speciesNames;
+    validVariable = rhs.validVariable;
+}
+
+
+// ****************************************************************************
+// Method: avtMatSpeciesMetaData destructor
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 8 10:11:43 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+avtMatSpeciesMetaData::~avtMatSpeciesMetaData()
+{
+}
+
+
+// ****************************************************************************
+//  Method: avtMatSpeciesMetaData::operator=
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   December 13, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Added validVariable.
+//
+// ****************************************************************************
+
+const avtMatSpeciesMetaData &
+avtMatSpeciesMetaData::operator=(const avtMatSpeciesMetaData &rhs)
+{
+    numSpecies    = rhs.numSpecies;
+    speciesNames  = rhs.speciesNames;
+    validVariable = rhs.validVariable;
+
+    return *this;
+}
+
+
+// ****************************************************************************
+//  Method: avtMatSpeciesMetaData::SelectAll
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   December 13, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Added validVariable.
+//
+// ****************************************************************************
+
+void
+avtMatSpeciesMetaData::SelectAll()
+{
+    Select(0, (void*)&numSpecies);
+    Select(1, (void*)&speciesNames);
+    Select(2, (void*)&validVariable);
+}
+
+
+// ****************************************************************************
+//  Method: avtSpeciesMetaData default constructor
+//
+//  Arguments:
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   December 13, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+// ****************************************************************************
+
+avtSpeciesMetaData::avtSpeciesMetaData()
+    : AttributeSubject("sssia*b")
+{
+    validVariable = true;
+}
+
+
+// ****************************************************************************
+//  Method: avtSpeciesMetaData constructor
+//
+//  Arguments:
+//      n            The name of the species
+//      meshn        The name of the mesh the species is defined on.
+//      matn         The name of the material the species is defined on.
+//      nummat       The number of materials in matn.
+//      ns           The number of species for each material.
+//      sn           The name of each species for each material.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 28, 2000
+//
+//  Modifications:
+//    Hank Childs, Fri Feb 23 13:30:13 PST 2001
+//    Added nummat argument.
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+// ****************************************************************************
+
+avtSpeciesMetaData::avtSpeciesMetaData(std::string n,
+                                    std::string meshn, std::string matn,
+                                    int nummat, std::vector<int> ns, 
+                                    std::vector< std::vector<std::string> > sn)
+    : AttributeSubject("sssia*b")
+{
+    name         = n;
+    meshName     = meshn;
+    materialName = matn;
+    numMaterials = nummat;
+    species.clear();
+    for (int i=0; i<ns.size(); i++)
+        species.push_back(new avtMatSpeciesMetaData(ns[i], sn[i]));
+    validVariable = true;
+}
+
+
+// ****************************************************************************
+//  Method: avtSpeciesMetaData copy constructor
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 31, 2000
+//
+//  Modifications:
+//    Hank Childs, Fri Feb 23 13:30:13 PST 2001
+//    Added copy of numMaterials.
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+// ****************************************************************************
+
+avtSpeciesMetaData::avtSpeciesMetaData(const avtSpeciesMetaData &rhs)
+    : AttributeSubject("sssia*b")
+{
+    name          = rhs.name;
+    meshName      = rhs.meshName;
+    materialName  = rhs.materialName;
+    numMaterials  = rhs.numMaterials;
+    validVariable = rhs.validVariable;
+    species.clear();
+    for (int i=0; i<rhs.species.size(); i++)
+    {
+        species.push_back(new avtMatSpeciesMetaData(rhs.species[i]->numSpecies,
+                                                rhs.species[i]->speciesNames));
+    }
+}
+
+
+// ****************************************************************************
+// Method: avtSpeciesMetaData destructor
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 8 10:11:43 PDT 2002
+//
+// Modifications:
+//   Brad Whitlock, Tue Feb 18 09:56:30 PDT 2003
+//   I added code to delete the species metadata objects so we don't leak
+//   memory.
+//
+// ****************************************************************************
+
+avtSpeciesMetaData::~avtSpeciesMetaData()
+{
+    for(int i = 0; i < species.size(); ++i)
+        delete species[i];
+}
+
+
+// ****************************************************************************
+//  Method: avtSpeciesMetaData::operator=
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 31, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Feb 23 13:30:13 PST 2001
+//    Added copy of numMaterials.
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Copied validVariable.
+//
+// ****************************************************************************
+
+const avtSpeciesMetaData &
+avtSpeciesMetaData::operator=(const avtSpeciesMetaData &rhs)
+{
+    name          = rhs.name;
+    meshName      = rhs.meshName;
+    materialName  = rhs.materialName;
+    numMaterials  = rhs.numMaterials;
+    validVariable = rhs.validVariable;
+    species.clear();
+    for (int i=0; i<rhs.species.size(); i++)
+    {
+        species.push_back(new avtMatSpeciesMetaData(rhs.species[i]->numSpecies,
+                                                rhs.species[i]->speciesNames));
+    }
+    return *this;
+}
+
+
+// ****************************************************************************
+//  Method: avtSpeciesMetaData::SelectAll
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   December 13, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Added validVariable.
+//
+// ****************************************************************************
+
+void
+avtSpeciesMetaData::SelectAll()
+{
+    Select(0, (void*)&name);
+    Select(1, (void*)&meshName);
+    Select(2, (void*)&materialName);
+    Select(3, (void*)&numMaterials);
+    Select(4, (void*)&species);
+    Select(5, (void*)&validVariable);
+}
+
+// ****************************************************************************
+//  Method: avtSpeciesMetaData::SelectAll
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   December 13, 2001
+//
+// ****************************************************************************
+
+AttributeGroup*
+avtSpeciesMetaData::CreateSubAttributeGroup(int)
+{
+    return new avtMatSpeciesMetaData;
+}
+
+
+// ****************************************************************************
+//  Method: avtSpeciesMetaData::Print
+//
+//  Purpose:
+//      Print statement for debugging.
+//
+//  Arguments:
+//      out      The stream to output to.
+//      indent   The number of tabs to indent each line with.
+//
+//  Programmer:  Hank Childs
+//  Creation:    August 28, 2000
+//
+//  Modifications:
+//    Brad Whitlock, Tue Aug 20 16:10:53 PST 2002
+//    I changed the printing a little bit.
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Added validVariable.
+//
+// ****************************************************************************
+
+void
+avtSpeciesMetaData::Print(ostream &out, int indent) const
+{
+    Indent(out, indent);
+    out << "Name = " << name.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Mesh Name = " << meshName.c_str() << endl;
+    Indent(out, indent);
+    out << "Material Name = " << materialName.c_str() << endl;
+    Indent(out, indent);
+    out << "Number of materials = " << numMaterials << endl;
+    for (int i = 0 ; i < species.size() ; i++)
+    {
+        Indent(out, indent);
+        out << "Material " << i << ", number of species = " 
+            << species[i]->numSpecies << endl;
+        Indent(out, indent);
+        out << "Species names are: ";
+        for (int j = 0 ; j < species[i]->numSpecies ; j++)
+        {
+            out << "\"" << species[i]->speciesNames[j].c_str() << "\"";
+            if(j < species[i]->numSpecies - 1)
+                out << ", ";
+        }
+        out << endl;
+    }
+
+    if (!validVariable)
+    {
+        Indent(out, indent);
+        out << "THIS IS NOT A VALID VARIABLE." << endl;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData default constructor
+//
+//  Programmer:  Hank Childs
+//  Creation:    September 1, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Aug  2 09:58:05 PDT 2001
+//    Initialize numStates.
+//
+//    Hank Childs, Mon Mar 11 09:22:45 PST 2002
+//    Changed temporal extents to doubles.  Added and initialized new data
+//    members.
+//
+//    Brad Whitlock, Tue Mar 25 14:29:26 PST 2003
+//    I added the isVirtualDatabase and timeStepNames fields.
+//
+// ****************************************************************************
+
+avtDatabaseMetaData::avtDatabaseMetaData()
+    : AttributeSubject("bddibss*i*i*i*d*a*a*a*a*a*s*s*i*")
+{
+    hasTemporalExtents = false;
+    minTemporalExtents = 0.;
+    maxTemporalExtents = 0.;
+    numStates          = 0;
+    isVirtualDatabase  = false;
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData copy constructor
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    September  6, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Sep 19 10:57:04 PDT 2000
+//    Copy over cycles.
+//
+//    Hank Childs, Mon Mar 11 09:22:45 PST 2002
+//    Copy over new data members.
+//
+//    Hank Childs, Wed Sep  4 11:32:48 PDT 2002
+//    Copy over expressions.
+//
+//    Brad Whitlock, Tue Mar 25 14:29:26 PST 2003
+//    I added the isVirtualDatabase, timeStepPath, timeStepNames fields.
+//
+// ****************************************************************************
+
+avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
+    : AttributeSubject("bddibss*i*i*i*d*a*a*a*a*a*s*s*i*")
+{
+    hasTemporalExtents = rhs.hasTemporalExtents;
+    minTemporalExtents = rhs.minTemporalExtents;
+    maxTemporalExtents = rhs.maxTemporalExtents;
+    numStates          = rhs.numStates;
+    isVirtualDatabase  = rhs.isVirtualDatabase;
+    timeStepPath       = rhs.timeStepPath;
+    timeStepNames      = rhs.timeStepNames;
+    cyclesAreAccurate  = rhs.cyclesAreAccurate;
+    cycles             = rhs.cycles;
+    timesAreAccurate   = rhs.timesAreAccurate;
+    times              = rhs.times;
+    expressionNames    = rhs.expressionNames;
+    expressionDefns    = rhs.expressionDefns;
+    expressionTypes    = rhs.expressionTypes;
+
+    int i;
+    for (i=0; i<rhs.meshes.size(); i++)
+        meshes.push_back(new avtMeshMetaData(*rhs.meshes[i]));
+    for (i=0; i<rhs.scalars.size(); i++)
+        scalars.push_back(new avtScalarMetaData(*rhs.scalars[i]));
+    for (i=0; i<rhs.vectors.size(); i++)
+        vectors.push_back(new avtVectorMetaData(*rhs.vectors[i]));
+    for (i=0; i<rhs.materials.size(); i++)
+        materials.push_back(new avtMaterialMetaData(*rhs.materials[i]));
+    for (i=0; i<rhs.species.size(); i++)
+        species.push_back(new avtSpeciesMetaData(*rhs.species[i]));
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::operator=
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    September  6, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Sep 19 10:57:04 PDT 2000
+//    Copy over cycles.
+//
+//    Hank Childs, Mon Mar 11 09:22:45 PST 2002
+//    Copy over new data members.
+//
+//    Hank Childs, Wed Sep  4 11:32:48 PDT 2002
+//    Copy over expressions.
+//
+//    Brad Whitlock, Tue Mar 25 14:31:31 PST 2003
+//    I added the isVirtualDatabase, timeStepPath, timeStepNames fields.
+//
+// ****************************************************************************
+const avtDatabaseMetaData &
+avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
+{
+    hasTemporalExtents = rhs.hasTemporalExtents;
+    minTemporalExtents = rhs.minTemporalExtents;
+    maxTemporalExtents = rhs.maxTemporalExtents;
+    numStates          = rhs.numStates;
+    isVirtualDatabase  = rhs.isVirtualDatabase;
+    timeStepPath       = rhs.timeStepPath;
+    timeStepNames      = rhs.timeStepNames;
+    cyclesAreAccurate  = rhs.cyclesAreAccurate;
+    cycles             = rhs.cycles;
+    timesAreAccurate   = rhs.timesAreAccurate;
+    times              = rhs.times;
+    expressionNames    = rhs.expressionNames;
+    expressionDefns    = rhs.expressionDefns;
+    expressionTypes    = rhs.expressionTypes;
+
+    int i;
+    for (i=0; i<meshes.size(); i++)
+        delete meshes[i];
+    meshes.clear();
+    for (i=0; i<scalars.size(); i++)
+        delete scalars[i];
+    scalars.clear();
+    for (i=0; i<vectors.size(); i++)
+        delete vectors[i];
+    vectors.clear();
+    for (i=0; i<materials.size(); i++)
+        delete materials[i];
+    materials.clear();
+    for (i=0; i<species.size(); i++)
+        delete species[i];
+    species.clear();
+
+    for (i=0; i<rhs.meshes.size(); i++)
+        meshes.push_back(new avtMeshMetaData(*rhs.meshes[i]));
+    for (i=0; i<rhs.scalars.size(); i++)
+        scalars.push_back(new avtScalarMetaData(*rhs.scalars[i]));
+    for (i=0; i<rhs.vectors.size(); i++)
+        vectors.push_back(new avtVectorMetaData(*rhs.vectors[i]));
+    for (i=0; i<rhs.materials.size(); i++)
+        materials.push_back(new avtMaterialMetaData(*rhs.materials[i]));
+    for (i=0; i<rhs.species.size(); i++)
+        species.push_back(new avtSpeciesMetaData(*rhs.species[i]));
+
+    return *this;
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData destructor
+//
+//  Programmer:  Hank Childs
+//  Creation:    September 1, 2000
+//
+// ****************************************************************************
+
+avtDatabaseMetaData::~avtDatabaseMetaData()
+{
+    std::vector<avtMeshMetaData *>::iterator mit;
+    for (mit = meshes.begin() ; mit != meshes.end() ; mit++)
+    {
+        delete (*mit);
+    }
+
+    std::vector<avtVectorMetaData *>::iterator vit;
+    for (vit = vectors.begin() ; vit != vectors.end() ; vit++)
+    {
+        delete (*vit);
+    }
+
+    std::vector<avtScalarMetaData *>::iterator sit;
+    for (sit = scalars.begin() ; sit != scalars.end() ; sit++)
+    {
+        delete (*sit);
+    }
+
+    std::vector<avtMaterialMetaData *>::iterator mait;
+    for (mait = materials.begin() ; mait != materials.end() ; mait++)
+    {
+        delete (*mait);
+    }
+
+    std::vector<avtSpeciesMetaData *>::iterator spit;
+    for (spit = species.begin() ; spit != species.end() ; spit++)
+    {
+        delete (*spit);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::SetNumStates
+//
+//  Arguments:
+//      int   the number of states
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   September 12, 2000
+//
+//  Modifications:
+//    Hank Childs, Mon Mar 11 10:00:14 PST 2002 
+//    Set up boolean vectors dependent on number of states.
+//
+//    Brad Whitlock, Tue Mar 25 14:32:13 PST 2003
+//    I added the time step names.
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::SetNumStates(int n)
+{
+    numStates = n;
+    cyclesAreAccurate.clear();
+    timesAreAccurate.clear();
+    cycles.clear();
+    times.clear();
+    timeStepNames.clear();
+    for (int i = 0 ; i < numStates ; i++)
+    {
+        timeStepNames.push_back("");
+        cyclesAreAccurate.push_back(0);
+        timesAreAccurate.push_back(0);
+        cycles.push_back(0);
+        times.push_back(0.);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::SetTemporalExtents
+//
+//  Purpose:
+//      Sets the minimum and maximum temporal extents.
+//
+//  Arguments:
+//      min    The minimum temporal extents.
+//      max    The maximum temporal extents.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 15, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Mar 11 09:57:20 PST 2002
+//    Changed type to double.
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::SetTemporalExtents(double min, double max)
+{
+    hasTemporalExtents = true;
+    minTemporalExtents = min;
+    maxTemporalExtents = max;
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::SetCycles
+//
+//  Arguments:
+//      c       The cycles in a std::vector.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 15, 2000
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::SetCycles(std::vector<int> &c)
+{
+    cycles = c;
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::SetTimes
+//
+//  Arguments:
+//      t       The times in a std::vector.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 11, 2002
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::SetTimes(std::vector<double> &t)
+{
+    times = t;
+}
+
+// ****************************************************************************
+// Method: avtDatabaseMetaData::SetTimeStepPath
+//
+// Purpose: 
+//   Sets the timestep path.
+//
+// Arguments:
+//   tsp : The new timestep path.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Apr 2 13:28:52 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::SetTimeStepPath(const std::string &tsp)
+{
+    timeStepPath = tsp;
+}
+
+// ****************************************************************************
+// Method: avtDatabaseMetaData::SetTimeStepNames
+//
+// Purpose: 
+//   Sets the timestep names in the metadata.
+//
+// Arguments:
+//   tsn : The time step names.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 25 14:33:58 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::SetTimeStepNames(const std::vector<std::string> &tsn)
+{
+    timeStepNames = tsn;
+}
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::SetCycleIsAccurate
+//
+//  Purpose:
+//      Sets a boolean indicating whether a cycle number is accurate.
+//
+//  Arguments:
+//      b       A boolean indicating whether a cycle is accurate.
+//      ts      The timestep b corresponds to.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 11, 2002
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::SetCycleIsAccurate(bool b, int ts)
+{
+    cyclesAreAccurate[ts] = (b ? 1 : 0);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::SetCyclesAreAccurate
+//
+//  Purpose:
+//      Sets a boolean indicating whether the cycle numbers are accurate.
+//
+//  Arguments:
+//      b       A boolean indicating whether the cycle std::vector is accurate.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 11, 2002
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::SetCyclesAreAccurate(bool b)
+{
+    for (int i = 0 ; i < cyclesAreAccurate.size() ; i++)
+    {
+        cyclesAreAccurate[i] = (b ? 1 : 0);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::IsCycleAccurate
+//
+//  Purpose:
+//      Gets whether a single cycle is accurate.
+//
+//  Arguments:
+//      ts       A timestep index.
+//
+//  Returns:     true if the cycle is accurate, false otherwise.
+//
+//  Programmer:  Hank Childs
+//  Creation:    March 11, 2002
+//
+// ****************************************************************************
+
+bool
+avtDatabaseMetaData::IsCycleAccurate(int ts) const
+{
+    return (cyclesAreAccurate[ts] != 0 ? true : false);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::SetTimeIsAccurate
+//
+//  Purpose:
+//      Sets a boolean indicating whether a specific timestep is accurate.
+//
+//  Arguments:
+//      b       A boolean indicating whether a time is accurate.
+//      ts      The timestep b corresponds to.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 11, 2002
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::SetTimeIsAccurate(bool b, int ts)
+{
+    timesAreAccurate[ts] = (b ? 1 : 0);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::SetTimesAreAccurate
+//
+//  Purpose:
+//      Sets a boolean indicating whether the times are accurate.
+//
+//  Arguments:
+//      b       A boolean indicating whether the times std::vector is accurate.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 11, 2002
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::SetTimesAreAccurate(bool b)
+{
+    for (int i = 0 ; i < timesAreAccurate.size() ; i++)
+    {
+        timesAreAccurate[i] = (b ? 1 : 0);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::IsTimeAccurate
+//
+//  Purpose:
+//      Gets whether a single time is accurate.
+//
+//  Arguments:
+//      ts       A timestep index.
+//
+//  Returns:     true if the time is accurate, false otherwise.
+//
+//  Programmer:  Hank Childs
+//  Creation:    March 11, 2002
+//
+// ****************************************************************************
+
+bool
+avtDatabaseMetaData::IsTimeAccurate(int ts) const
+{
+    return (timesAreAccurate[ts] != 0 ? true : false);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::SetCycle
+//
+//  Purpose:
+//      Sets a cycle for a specific timestep.
+//
+//  Arguments:
+//      ts       The timestep.
+//      c        The cycle number.
+//
+//  Programmer:  Hank Childs
+//  Creation:    March 11, 2002
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::SetCycle(int ts, int c)
+{
+    cycles[ts] = c;
+    cyclesAreAccurate[ts] = true;
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::SetTime
+//
+//  Purpose:
+//      Sets a time for a specific timestep.
+//
+//  Arguments:
+//      ts       The timestep.
+//      t        The time.
+//
+//  Programmer:  Hank Childs
+//  Creation:    March 11, 2002
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::SetTime(int ts, double t)
+{
+    times[ts] = t;
+    timesAreAccurate[ts] = true;
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::Add
+//
+//  Arguments:
+//      mmd    A mesh meta data object.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 28, 2000
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::Add(avtMeshMetaData *mmd)
+{
+    meshes.push_back(mmd);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::Add
+//
+//  Arguments:
+//      smd    A scalar meta data object.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 28, 2000
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::Add(avtScalarMetaData *smd)
+{
+    scalars.push_back(smd);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::Add
+//
+//  Arguments:
+//      mmd    A std::vector meta data object.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 28, 2000
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::Add(avtVectorMetaData *vmd)
+{
+    vectors.push_back(vmd);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::Add
+//
+//  Arguments:
+//      mmd    A material meta data object.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 28, 2000
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::Add(avtMaterialMetaData *mmd)
+{
+    materials.push_back(mmd);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::Add
+//
+//  Arguments:
+//      smd    A species meta data object.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 28, 2000
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::Add(avtSpeciesMetaData *smd)
+{
+    species.push_back(smd);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::SetExtents
+//
+//  Purpose:
+//      Sets the extents of a variable.
+//
+//  Arguments:
+//      name      The name of the variable to set extents for.
+//      extents   The extents for the variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 30, 2000
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::SetExtents(std::string name, const float *extents)
+{
+    bool   foundVar = false;
+
+    std::vector<avtMeshMetaData *>::iterator mit;
+    for (mit = meshes.begin() ; mit != meshes.end() ; mit++)
+    {
+        if ((*mit)->name == name)
+        {
+            (*mit)->SetExtents(extents);
+            foundVar = true;
+        }
+    }
+
+    std::vector<avtScalarMetaData *>::iterator sit;
+    for (sit = scalars.begin() ; sit != scalars.end() ; sit++)
+    {
+        if ((*sit)->name == name)
+        {
+            (*sit)->SetExtents(extents);
+            foundVar = true;
+        }
+    }
+
+    std::vector<avtVectorMetaData *>::iterator vit;
+    for (vit = vectors.begin() ; vit != vectors.end() ; vit++)
+    {
+        if ((*vit)->name == name)
+        {
+            (*vit)->SetExtents(extents);
+            foundVar = true;
+        }
+    }
+
+    if (! foundVar)
+    {
+        EXCEPTION1(InvalidVariableException, name);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::GetNDomains
+//
+//  Purpose:
+//      Gets the number of domains for this variable.
+//
+//  Arguments:
+//      var     A variable name.
+//
+//  Returns:    The number of domains for var.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 31, 2000
+//
+// ****************************************************************************
+
+int
+avtDatabaseMetaData::GetNDomains(std::string var)
+{
+    std::string  meshname = MeshForVar(var);
+
+    std::vector<avtMeshMetaData *>::iterator mit;
+    for (mit = meshes.begin() ; mit != meshes.end() ; mit++)
+    {
+        if ((*mit)->name == meshname)
+        {
+            return (*mit)->numBlocks;
+        }
+    }
+
+    EXCEPTION1(InvalidVariableException, var);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::DetermineVarType
+//
+//  Purpose:
+//      Determines the type of the variable argument.
+//
+//  Arguments:
+//      var_in  A variable name.
+//
+//  Returns:    The type of var.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 31, 2000
+//
+//  Modifications:
+//    Kathleen Bonnell, Thu Sep  5 13:53:15 PDT 2002 
+//    If var is compound, parse it. 
+// ****************************************************************************
+
+avtVarType
+avtDatabaseMetaData::DetermineVarType(std::string var_in)
+{
+    std::string var; 
+    if (!VarIsCompound(var_in))
+    {
+        var = var_in;
+    }
+    else 
+    {
+        ParseCompoundForVar(var_in, var);
+    }
+
+    std::vector<avtMeshMetaData *>::iterator mit;
+    for (mit = meshes.begin() ; mit != meshes.end() ; mit++)
+    {
+        if ((*mit)->name == var)
+        {
+            return AVT_MESH;
+        }
+    }
+
+    std::vector<avtVectorMetaData *>::iterator vit;
+    for (vit = vectors.begin() ; vit != vectors.end() ; vit++)
+    {
+        if ((*vit)->name == var)
+        {
+            return AVT_VECTOR_VAR;
+        }
+    }
+
+    std::vector<avtScalarMetaData *>::iterator sit;
+    for (sit = scalars.begin() ; sit != scalars.end() ; sit++)
+    {
+        if ((*sit)->name == var)
+        {
+            return AVT_SCALAR_VAR;
+        }
+    }
+
+    std::vector<avtMaterialMetaData *>::iterator mait;
+    for (mait = materials.begin() ; mait != materials.end() ; mait++)
+    {
+        if ((*mait)->name == var)
+        {
+            return AVT_MATERIAL;
+        }
+    }
+
+    std::vector<avtSpeciesMetaData *>::iterator spit;
+    for (spit = species.begin() ; spit != species.end() ; spit++)
+    {
+        if ((*spit)->name == var)
+        {
+            return AVT_MATSPECIES;
+        }
+    }
+
+    EXCEPTION1(InvalidVariableException, var);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::MeshForVar
+//
+//  Purpose:
+//      Determines the mesh that the variable argument is defined on.
+//
+//  Arguments:
+//      var     A variable name.
+//
+//  Returns:    The mesh that var is defined on.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 31, 2000
+//
+//  Modifications:
+//    Kathleen Bonnell, Thu Sep  5 13:53:15 PDT 2002 
+//    If var is compound, parse it.
+// ****************************************************************************
+
+std::string
+avtDatabaseMetaData::MeshForVar(std::string var)
+{
+    if (VarIsCompound(var))
+    {
+        std::string meshName;
+        ParseCompoundForMesh(var, meshName);
+        return meshName;
+    }
+    std::vector<avtMeshMetaData *>::iterator mit;
+    for (mit = meshes.begin() ; mit != meshes.end() ; mit++)
+    {
+        if ((*mit)->name == var)
+        {
+            //
+            // The mesh is defined on itself??  A little weird, but this is
+            // convenient for some routines.
+            //
+            return var;
+        }
+    }
+
+    std::vector<avtVectorMetaData *>::iterator vit;
+    for (vit = vectors.begin() ; vit != vectors.end() ; vit++)
+    {
+        if ((*vit)->name == var)
+        {
+            return (*vit)->meshName;
+        }
+    }
+
+    std::vector<avtScalarMetaData *>::iterator sit;
+    for (sit = scalars.begin() ; sit != scalars.end() ; sit++)
+    {
+        if ((*sit)->name == var)
+        {
+            return (*sit)->meshName;
+        }
+    }
+
+    std::vector<avtMaterialMetaData *>::iterator mait;
+    for (mait = materials.begin() ; mait != materials.end() ; mait++)
+    {
+        if ((*mait)->name == var)
+        {
+            return (*mait)->meshName;
+        }
+    }
+
+    std::vector<avtSpeciesMetaData *>::iterator spit;
+    for (spit = species.begin() ; spit != species.end() ; spit++)
+    {
+        if ((*spit)->name == var)
+        {
+            return (*spit)->meshName;
+        }
+    }
+
+    EXCEPTION1(InvalidVariableException, var);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::MaterialOnMesh
+//
+//  Purpose:
+//      Finds a material for a mesh.
+//
+//  Arguments:
+//      mesh    A mesh name.
+//
+//  Returns:    The name of a material defined on that mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 13, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Mar  6 14:52:23 PST 2003
+//    Issue a warning to the debug files if there are multiple materials on a
+//    mesh.
+//
+// ****************************************************************************
+
+std::string
+avtDatabaseMetaData::MaterialOnMesh(std::string mesh)
+{
+    std::string rv = "";
+    bool foundValue = false;
+
+    std::vector<avtMaterialMetaData *>::iterator mait;
+    for (mait = materials.begin() ; mait != materials.end() ; mait++)
+    {
+        if ((*mait)->meshName == mesh)
+        {
+            if (foundValue)
+            {
+                debug1 << "WARNING: screwy file.  There are multiple materials"
+                       << " (" << rv.c_str() << " and " 
+                       << (*mait)->name.c_str() << ") defined"
+                       << " on the same mesh." << endl;
+                debug1 << "There are assumption in the VisIt code that this "
+                       << "will never happen." << endl; 
+            }
+
+            rv = (*mait)->name;
+            foundValue = true;
+        }
+    }
+
+    if (foundValue)
+    {
+        return rv;
+    }
+
+    EXCEPTION1(InvalidVariableException, mesh);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::SpeciesOnMesh
+//
+//  Purpose:
+//      Finds a species for a mesh.
+//
+//  Arguments:
+//      mesh    A mesh name.
+//
+//  Returns:    The name of a species defined on that mesh.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   December 17, 2001
+//
+// ****************************************************************************
+
+std::string
+avtDatabaseMetaData::SpeciesOnMesh(std::string mesh)
+{
+    std::vector<avtSpeciesMetaData *>::iterator spit;
+    for (spit = species.begin() ; spit != species.end() ; spit++)
+    {
+        if ((*spit)->meshName == mesh)
+        {
+            return (*spit)->name;
+        }
+    }
+
+    EXCEPTION1(InvalidVariableException, mesh);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::GetMaterialOnMesh
+//
+//  Purpose:
+//      Gets a material for a mesh and returns it.
+//
+//  Arguments:
+//      mesh    A mesh name.
+//
+//  Returns:    The material defined on that mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 12, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Mar  6 14:52:23 PST 2003
+//    Issue a warning to the debug files if there are multiple materials on a
+//    mesh.
+//
+// ****************************************************************************
+
+const avtMaterialMetaData *
+avtDatabaseMetaData::GetMaterialOnMesh(std::string mesh)
+{
+    const avtMaterialMetaData *rv = NULL;
+
+    std::vector<avtMaterialMetaData *>::iterator mait;
+    for (mait = materials.begin() ; mait != materials.end() ; mait++)
+    {
+        if ((*mait)->meshName == mesh)
+        {
+            if (rv != NULL)
+            {
+                debug1 << "WARNING: screwy file.  There are multiple materials"
+                       << " (" << rv << " and " << (*mait)->name.c_str() << ") defined"
+                       << " on the same mesh." << endl;
+                debug1 << "There are assumptions in the VisIt code that this "
+                       << "will never happen." << endl; 
+            }
+            rv = *mait;
+        }
+    }
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::GetSpeciesOnMesh
+//
+//  Purpose:
+//      Gets a species for a mesh and returns it.
+//
+//  Arguments:
+//      mesh    A mesh name.
+//
+//  Returns:    The species defined on that mesh.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   December 14, 2001
+//
+// ****************************************************************************
+
+const avtSpeciesMetaData *
+avtDatabaseMetaData::GetSpeciesOnMesh(std::string mesh)
+{
+    std::vector<avtSpeciesMetaData *>::iterator spit;
+    for (spit = species.begin() ; spit != species.end() ; spit++)
+    {
+        if ((*spit)->meshName == mesh)
+        {
+            return (*spit);
+        }
+    }
+
+    return NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::Print
+//
+//  Purpose:
+//      Prints out all of the meta-data objects in the database meta-data
+//      object.  Meant for debugging only.
+//
+//  Arguments:
+//      out     The stream to print out to.
+//      indent  The indentation level for each line.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 28, 2000
+//
+//  Modifications:
+//
+//    Jeremy Meredith, Tue Sep 12 14:58:42 PDT 2000
+//    Added code to print the number of time states.
+//
+//    Hank Childs, Fri Sep 15 19:07:21 PDT 2000
+//    Print out Temporal extents and cycles.
+//
+//    Brad Whitlock, Tue Aug 20 15:23:59 PST 2002
+//    I made it so categories that contain no entries are not printed.
+//
+//    Hank Childs, Wed Sep  4 11:32:48 PDT 2002
+//    Print out information related to expressions.
+//
+//    Brad Whitlock, Wed Apr 2 12:01:10 PDT 2003
+//    I made it print out the timestep names if it is a virtual database.
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::Print(ostream &out, int indent) const
+{
+    Indent(out, indent);
+    out << "Num Time States: " << numStates << endl;
+
+    Indent(out, indent);
+    if (hasTemporalExtents)
+    {
+        out << "Temporal extents are from " << minTemporalExtents << " to "
+            << maxTemporalExtents << "." << endl;
+    }
+    else
+    {
+        out << "The temporal extents are not set." << endl;
+    }
+
+    Indent(out, indent);
+    if (cycles.size() == 0)
+    {
+        out << "The cycles are not set." << endl;
+    }
+    else
+    {
+        out << "Cycles: ";
+        for (int i = 0; i < cycles.size(); ++i)
+        {
+            out << cycles[i];
+            if(i < cycles.size() - 1)
+                out << ", ";
+        }
+        out << endl;
+    }
+
+    if(isVirtualDatabase)
+    {
+        out << endl;
+        out << "Database is virtual" << endl;
+        out << "Timesteps are located in " << timeStepPath.c_str() << endl;
+        out << "Timesteps:" << endl;
+        for(int i = 0; i < timeStepNames.size(); ++i)
+            out << "\t" << timeStepNames[i].c_str() << endl;
+        out << endl;
+    }
+
+    if(meshes.begin() != meshes.end())
+    {
+        Indent(out, indent);
+        out << "Meshes: " << endl;
+    }
+    std::vector< avtMeshMetaData * >::const_iterator mesh_it;
+    for (mesh_it = meshes.begin() ; mesh_it != meshes.end() ; mesh_it++)
+    {
+        (*mesh_it)->Print(out, indent+1);
+        out << endl;
+    }
+    
+    if(scalars.begin() != scalars.end())
+    {
+        Indent(out, indent);
+        out << "Scalars: " << endl;
+    }
+    std::vector< avtScalarMetaData * >::const_iterator scalar_it;
+    for (scalar_it= scalars.begin() ; scalar_it != scalars.end() ; scalar_it++)
+    {
+        (*scalar_it)->Print(out, indent+1);
+        out << endl;
+    }
+    
+    if(vectors.begin() != vectors.end())
+    {
+        Indent(out, indent);
+        out << "Vectors: " << endl;
+    }
+    std::vector< avtVectorMetaData * >::const_iterator vector_it;
+    for (vector_it= vectors.begin() ; vector_it != vectors.end() ; vector_it++)
+    {
+        (*vector_it)->Print(out, indent+1);
+        out << endl;
+    }
+    
+    if(materials.begin() != materials.end())
+    {
+        Indent(out, indent);
+        out << "Materials: " << endl;
+    }
+    std::vector< avtMaterialMetaData * >::const_iterator mat_it;
+    for (mat_it = materials.begin() ; mat_it != materials.end() ; mat_it++)
+    {
+        (*mat_it)->Print(out, indent+1);
+        out << endl;
+    }
+    
+    if(species.begin() != species.end())
+    {
+        Indent(out, indent);
+        out << "Material Species: " << endl;
+    }
+    std::vector< avtSpeciesMetaData * >::const_iterator spec_it;
+    for (spec_it = species.begin() ; spec_it != species.end() ; spec_it++)
+    {
+        (*spec_it)->Print(out, indent+1);
+        out << endl;
+    }
+
+    if (expressionNames.size() > 0)
+    {
+        Indent(out, indent);
+        out << "Expressions:" << endl;
+        for (int i = 0 ; i < expressionNames.size() ; i++)
+        {
+            Indent(out, indent+1);
+            std::string vartype("unknown var type");
+            switch (expressionTypes[i])
+            {
+              case AVT_MESH:
+                vartype = "mesh";
+                break;
+              case AVT_SCALAR_VAR:
+                vartype = "scalar";
+                break;
+              case AVT_VECTOR_VAR:
+                vartype = "vector";
+                break;
+              case AVT_MATERIAL:
+                vartype = "material";
+                break;
+              case AVT_MATSPECIES:
+                vartype = "species";
+                break;
+            }
+            out << expressionNames[i].c_str() << " (" << vartype.c_str() << "): \t"
+                << expressionDefns[i].c_str() << endl;
+        }
+    }
+}
+
+
+// *******************************************************************
+// Method: avtDatabaseMetaData::SelectAll
+//
+// Purpose: 
+//   This method selects all of the components in the database 
+//   metadata object so that they will be communicated.
+//
+// Programmer: Jeremy Meredith
+// Creation:   September  1, 2000
+//
+// Modifications:
+//   
+//   Hank Childs, Mon Sep 18 12:09:37 PDT 2000
+//   Add cycles.
+//
+//   Hank Childs, Mon Mar 11 09:22:45 PST 2002
+//   Add new data members.
+//
+//   Hank Childs, Wed Sep  4 11:32:48 PDT 2002
+//   Add expressions.
+//
+//   Brad Whitlock, Tue Mar 25 14:43:31 PST 2003
+//   I added timestep names and timestep path.
+//
+// *******************************************************************
+
+void
+avtDatabaseMetaData::SelectAll()
+{
+    Select(0, (void*)&hasTemporalExtents);
+    Select(1, (void*)&minTemporalExtents);
+    Select(2, (void*)&maxTemporalExtents);
+    Select(3, (void*)&numStates);
+    Select(4, (void*)&isVirtualDatabase);
+
+    Select(5, (void*)&timeStepPath);
+    Select(6, (void*)&timeStepNames);
+    Select(7, (void*)&cyclesAreAccurate);
+    Select(8, (void*)&cycles);
+    Select(9, (void*)&timesAreAccurate);
+    Select(10, (void*)&times);
+
+    Select(11, (void*)&meshes);
+    Select(12, (void*)&scalars);
+    Select(13, (void*)&vectors);
+    Select(14, (void*)&materials);
+    Select(15, (void*)&species);
+
+    Select(16, (void*)&expressionNames);
+    Select(17, (void*)&expressionDefns);
+    Select(18, (void*)&expressionTypes);
+}
+
+// *******************************************************************
+// Method: avtDatabaseMetaData::CreateSubAttributeGroup
+//
+// Purpose: 
+//     This factory method creates one instance of one of the 
+//     AttributeGroups contained in the vectors.
+//
+// Arguments:
+//     n  :  the index used by SelectAll
+//
+// Programmer: Jeremy Meredith
+// Creation:   September  1, 2000
+//
+// Modifications:
+//   
+//   Hank Childs, Mon Sep 18 12:09:37 PDT 2000
+//   Bumped all of the numbers up one to account for cycles.
+//
+//   Hank Childs, Mon Mar 11 09:22:45 PST 2002
+//   Bumped numbers again to account for new data members.
+//
+//   Brad Whitlock, Tue Mar 25 14:43:47 PST 2003
+//   Bumped up the numbers.
+//
+// *******************************************************************
+
+AttributeGroup *
+avtDatabaseMetaData::CreateSubAttributeGroup(int n)
+{
+    switch (n)
+    {
+      case 11:
+        return new avtMeshMetaData;
+      case 12:
+        return new avtScalarMetaData;
+      case 13:
+        return new avtVectorMetaData;
+      case 14:
+        return new avtMaterialMetaData;
+      case 15:
+        return new avtSpeciesMetaData;
+      default:
+        return NULL;
+    }
+}
+
+// *******************************************************************
+// Method: avtDatabaseMetaData::GetMesh
+//
+// Purpose: 
+//     This returns the metadata for the nth mesh in the file.
+//
+// Arguments:
+//     n  :  the index into the array
+//
+// Programmer: Jeremy Meredith
+// Creation:   September  1, 2000
+//
+// Modifications:
+//   
+// *******************************************************************
+
+const avtMeshMetaData *
+avtDatabaseMetaData::GetMesh(int n) const
+{
+    return meshes[n];
+}
+
+// *******************************************************************
+// Method: avtDatabaseMetaData::GetMesh
+//
+// Purpose: 
+//     This returns the metadata for the mesh in the file whose name is n.
+//
+// Arguments:
+//     n  :  the name of the mesh object
+//
+// Programmer: Jeremy Meredith
+// Creation:   September  1, 2000
+//
+// Modifications:
+//   
+// *******************************************************************
+
+const avtMeshMetaData *
+avtDatabaseMetaData::GetMesh(const std::string &n) const
+{
+    for (int i=0; i<meshes.size(); i++)
+        if (meshes[i]->name == n)
+            return meshes[i];
+    return NULL;
+}
+
+// *******************************************************************
+// Method: avtDatabaseMetaData::GetScalar
+//
+// Purpose: 
+//     This returns the metadata for the nth scalar in the file.
+//
+// Arguments:
+//     n  :  the index into the array
+//
+// Programmer: Jeremy Meredith
+// Creation:   September  1, 2000
+//
+// Modifications:
+//   
+// *******************************************************************
+
+const avtScalarMetaData *
+avtDatabaseMetaData::GetScalar(int n) const
+{
+    return scalars[n];
+}
+
+// *******************************************************************
+// Method: avtDatabaseMetaData::GetScalar
+//
+// Purpose: 
+//     This returns the metadata for the scalar in the file whose name is n.
+//
+// Arguments:
+//     n  :  the name of the scalar object
+//
+// Programmer: Jeremy Meredith
+// Creation:   September  1, 2000
+//
+// Modifications:
+//   
+// *******************************************************************
+
+const avtScalarMetaData *
+avtDatabaseMetaData::GetScalar(const std::string &n) const
+{
+    for (int i=0; i<scalars.size(); i++)
+        if (scalars[i]->name == n)
+            return scalars[i];
+    return NULL;
+}
+
+// *******************************************************************
+// Method: avtDatabaseMetaData::GetVector
+//
+// Purpose: 
+//     This returns the metadata for the nth vector in the file.
+//
+// Arguments:
+//     n  :  the index into the array
+//
+// Programmer: Jeremy Meredith
+// Creation:   September  1, 2000
+//
+// Modifications:
+//   
+// *******************************************************************
+
+const avtVectorMetaData *
+avtDatabaseMetaData::GetVector(int n) const
+{
+    return vectors[n];
+}
+
+// *******************************************************************
+// Method: avtDatabaseMetaData::GetVector
+//
+// Purpose: 
+//     This returns the metadata for the vector in the file whose name is n.
+//
+// Arguments:
+//     n  :  the name of the std::vector object
+//
+// Programmer: Jeremy Meredith
+// Creation:   September  1, 2000
+//
+// Modifications:
+//   
+// *******************************************************************
+
+const avtVectorMetaData *
+avtDatabaseMetaData::GetVector(const std::string &n) const
+{
+    for (int i=0; i<vectors.size(); i++)
+        if (vectors[i]->name == n)
+            return vectors[i];
+    return NULL;
+}
+
+// *******************************************************************
+// Method: avtDatabaseMetaData::GetMaterial
+//
+// Purpose: 
+//     This returns the metadata for the nth material in the file.
+//
+// Arguments:
+//     n  :  the index into the array
+//
+// Programmer: Jeremy Meredith
+// Creation:   September  1, 2000
+//
+// Modifications:
+//   
+// *******************************************************************
+
+const avtMaterialMetaData *
+avtDatabaseMetaData::GetMaterial(int n) const
+{
+    return materials[n];
+}
+
+// *******************************************************************
+// Method: avtDatabaseMetaData::GetMaterial
+//
+// Purpose: 
+//     This returns the metadata for the material in the file whose name is n.
+//
+// Arguments:
+//     n  :  the name of the material object
+//
+// Programmer: Jeremy Meredith
+// Creation:   September  1, 2000
+//
+// Modifications:
+//   Kathleen Bonnell, Thu Sep  5 13:53:15 PDT 2002 
+//   Call ParseCompoundForVar, in case the variable is compound. 
+// *******************************************************************
+
+const avtMaterialMetaData *
+avtDatabaseMetaData::GetMaterial(const std::string &n) const
+{
+    std::string n2;
+    const_cast<avtDatabaseMetaData*>(this)->ParseCompoundForVar(n, n2);
+    for (int i=0; i<materials.size(); i++)
+        if (materials[i]->name == n2)
+            return materials[i];
+    return NULL;
+}
+
+// *******************************************************************
+// Method: avtDatabaseMetaData::GetSpecies
+//
+// Purpose: 
+//     This returns the metadata for the nth species in the file.
+//
+// Arguments:
+//     n  :  the index into the array
+//
+// Programmer: Jeremy Meredith
+// Creation:   September  1, 2000
+//
+// Modifications:
+//   
+// *******************************************************************
+
+const avtSpeciesMetaData *
+avtDatabaseMetaData::GetSpecies(int n) const
+{
+    return species[n];
+}
+
+// *******************************************************************
+// Method: avtDatabaseMetaData::GetSpecies
+//
+// Purpose: 
+//     This returns the metadata for the species in the file whose name is n.
+//
+// Arguments:
+//     n  :  the name of the species object
+//
+// Programmer: Jeremy Meredith
+// Creation:   September  1, 2000
+//
+// Modifications:
+//   
+// *******************************************************************
+
+const avtSpeciesMetaData *
+avtDatabaseMetaData::GetSpecies(const std::string &n) const
+{
+    for (int i=0; i<species.size(); i++)
+        if (species[i]->name == n)
+            return species[i];
+    return NULL;
+}
+    
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::SetBlocksForMesh
+//
+//  Purpose:
+//      Resets the number of blocks a mesh can have without violating
+//      encapsulation.
+//
+//  Arguments:
+//      index    The index of the mesh in the std::vector "meshes".
+//      nBlocks  The number of blocks the mesh actually has.
+//
+//  Programmer:  Hank Childs
+//  Creation:    October 11, 2001
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::SetBlocksForMesh(int index, int nBlocks)
+{
+    if (index < 0 || index >= meshes.size())
+    {
+        EXCEPTION2(BadIndexException, index, meshes.size());
+    }
+
+    meshes[index]->numBlocks = nBlocks;
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::SetContainsGhostZones
+//
+//  Purpose:
+//      Sets whether a particular mesh has ghost zones.
+//
+//  Arguments:
+//      name     The name of a mesh.
+//      val      True if it has ghost zones, false otherwise.
+//
+//  Programmer:  Hank Childs
+//  Creation:    September 30, 2002
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::SetContainsGhostZones(std::string name, avtGhostType val)
+{
+    for (int i = 0 ; i < GetNumMeshes() ; i++)
+    {
+        if (meshes[i]->name == name)
+        {
+            meshes[i]->containsGhostZones = val;
+            return;
+        }
+    }
+
+    EXCEPTION1(InvalidVariableException, name);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::SetContainsOriginalCells
+//
+//  Purpose:
+//      Sets whether a particular mesh has original cells array. 
+//
+//  Arguments:
+//      name     The name of a mesh.
+//      val      True if it has ghost zones, false otherwise.
+//
+//  Programmer:  Kathleen Bonnell
+//  Creation:    March 25, 2003 
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::SetContainsOriginalCells(std::string name, bool val)
+{
+    for (int i = 0 ; i < GetNumMeshes() ; i++)
+    {
+        if (meshes[i]->name == name)
+        {
+            meshes[i]->containsOriginalCells = val;
+            return;
+        }
+    }
+
+    EXCEPTION1(InvalidVariableException, name);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::AddGroupInformation
+//
+//  Purpose:
+//      Sets the group information for all applicable meshes in this object.
+//      They are applicable if they have the correct number of blocks.
+//
+//  Arguments:
+//      nGroups   The total number of groups.
+//      nBlocks   The number of blocks in the mesh.
+//      groupIds  The group index for each block.
+//
+//  Programmer:  Hank Childs
+//  Creation:    October 11, 2001
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::AddGroupInformation(int nGroups, int nBlocks,
+                                         std::vector<int> &groupIds)
+{
+    for (int i = 0 ; i < meshes.size() ; i++)
+    {
+        if (meshes[i]->numBlocks == nBlocks)
+        {
+            meshes[i]->numGroups = nGroups;
+            meshes[i]->groupIds  = groupIds;
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::UnsetExtents
+//
+//  Purpose:
+//      Allows all of the extents for all of the meshes, scalar vars, and
+//      std::vector vars to be unset at one time.
+//
+//  Programmer:  Hank Childs
+//  Creation:    March 6, 2002
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::UnsetExtents(void)
+{
+    int  i;
+
+    for (i = 0 ; i < meshes.size() ; i++)
+    {
+        meshes[i]->UnsetExtents();
+    }
+    for (i = 0 ; i < scalars.size() ; i++)
+    {
+        scalars[i]->UnsetExtents();
+    }
+    for (i = 0 ; i < vectors.size() ; i++)
+    {
+        vectors[i]->UnsetExtents();
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::AddExpression
+//
+//  Purpose:
+//      Adds a new expression to the database.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 4, 2002
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::AddExpression(const std::string &name,
+    const std::string &defn, avtVarType v)
+{
+    expressionNames.push_back(name);
+    expressionDefns.push_back(defn);
+    expressionTypes.push_back((int) v);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::GetExpression
+//
+//  Purpose:
+//      Get a particular expression.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 4, 2002
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::GetExpression(int expr, std::string &name,
+    std::string &defn, avtVarType &vartype)
+{
+    if (expr < 0 || expr >= expressionNames.size())
+    {
+        EXCEPTION2(BadIndexException, expr, expressionNames.size());
+    }
+    name = expressionNames[expr];
+    defn = expressionDefns[expr];
+    vartype = (avtVarType) expressionTypes[expr];
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::GetNumberOfExpressions
+//
+//  Purpose:
+//      Get the number of expressions defined for this database.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 4, 2002
+//
+// ****************************************************************************
+
+int
+avtDatabaseMetaData::GetNumberOfExpressions(void)
+{
+    return expressionNames.size();
+}
+
+
+// ****************************************************************************
+//  Function: avtDatabaseMetaData::VarIsCompound
+//
+//  Purpose:
+//    Determines if a variable is in compound form: 'CategoryName(MeshName)'. 
+//
+//  Arguments:
+//    v       The (possibly) compound variable. 
+//
+//  Returns:
+//    true if the variable is in compound form, false otherwise. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 5, 2002 
+//
+// ****************************************************************************
+
+bool
+avtDatabaseMetaData::VarIsCompound(const std::string &v) 
+{
+    int beg = -1, end = -1;
+
+    // find the mesh name enclosed in parentheses
+    beg = v.find('(');
+    end = v.find(')');
+
+    if (beg == -1 || end == -1)
+    {
+        return false;
+    }
+    return true;
+}
+
+
+// ****************************************************************************
+//  Function: avtDatabaseMetaData::ParseCompoundForMesh
+//
+//  Purpose:
+//    Parses a compound variable of the form 'CategoryName(MeshName)' for
+//    the mesh portion. 
+//
+//  Arguments:
+//    inVar   The (possibly) compound variable to parse. 
+//    outVar  A place to store the parsed mesh name. 
+//
+//  Notes:
+//    If inVar is not in the correct compound form, then outVar set to inVar.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 5, 2002 
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::ParseCompoundForMesh(const std::string &inVar, 
+      std::string &outVar) 
+{
+    int beg = -1, end = -1;
+ 
+    // find the mesh name enclosed in parentheses
+    beg = inVar.find('(');
+    end = inVar.find(')');
+ 
+    if (beg == -1 || end == -1)
+    {
+        // this is not a parseable variable.
+        outVar = inVar;
+        return;
+    }
+ 
+    //move past the first paren
+    beg += 1;
+    outVar = inVar.substr(beg, end - beg);
+}
+
+
+// ****************************************************************************
+//  Function: avtDatabaseMetaData::ParseCompoundForCategory
+//
+//  Purpose:
+//    Parses a compound variable of the form 'CategoryName(MeshName)' for
+//    the category portion. 
+//
+//  Arguments:
+//    inVar   The (possibly) compound variable to parse. 
+//    outVar  A place to store the parsed category name. 
+//
+//  Notes:
+//    If inVar is not in the correct compound form, then outVar set to inVar.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 5, 2002 
+//
+// ****************************************************************************
+
+
+void
+avtDatabaseMetaData::ParseCompoundForCategory(const std::string &inVar, 
+      std::string &outVar) 
+{
+    int end = -1, beg = -1;
+ 
+    // find the mesh name enclosed in parentheses
+    beg = inVar.find('(');
+    end = inVar.find(')');
+
+    if (beg == -1 || end == -1)
+    {
+        // this is not a compound variable.
+        outVar = inVar;
+        return;
+    }
+    outVar = inVar.substr(0, beg);
+}
+
+
+// ****************************************************************************
+//  Function: avtDatabaseMetaData::DetermineSubsetType
+//
+//  Purpose:
+//    Determines the subset type of the passed  compound variable of the form 
+//    'CategoryName(MeshName)'. 
+//
+//  Arguments:
+//    inVar   The (possibly) compound variable. 
+//
+//  Returns:
+//    The subset type (AVT_UNKNOWN_SUBSET) if inVar is not compound.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 5, 2002 
+//
+// ****************************************************************************
+
+avtSubsetType
+avtDatabaseMetaData::DetermineSubsetType(const std::string &inVar) 
+{
+    std::string category, mesh;
+    ParseCompoundForMesh(inVar, mesh);
+    ParseCompoundForCategory(inVar, category);
+
+    //
+    // determine which part of the var we want to return
+    // HACKISH ... only checking domains, and probably incorrectly at that!
+    //
+    const avtMeshMetaData *mmd = GetMesh(mesh);
+    std::string blockTitle;
+    std::string groupTitle;
+    if (mmd == NULL)
+    {
+        blockTitle = "domains";   // Not a lot we can do.
+        groupTitle = "blocks";
+    }
+    else
+    {
+        blockTitle = mmd->blockTitle;
+        groupTitle = mmd->groupTitle;
+    }
+ 
+    if (category == blockTitle)
+    {
+        return AVT_DOMAIN_SUBSET;
+    }
+    else if (category == groupTitle)
+    {
+        return AVT_GROUP_SUBSET; 
+    }
+    else
+    {
+        const avtMaterialMetaData *matmd = GetMaterialOnMesh(mesh); 
+
+        if (matmd != NULL && matmd->name == category)
+            return AVT_MATERIAL_SUBSET;
+        else
+            return AVT_UNKNOWN_SUBSET;
+    }
+}
+
+// ****************************************************************************
+//  Function: avtDatabaseMetaData::ParseCompoundForVar
+//
+//  Purpose:
+//    Parses a compound variable of the form 'CategoryName(MeshName)' for
+//    the variable portion. 
+//
+// Notes:
+//    The desired variable is one that can be 'typed', which may be either 
+//    CategoryName or MeshName, depending depending upon the subset. 
+//    e.g. if the CategoryName matches with blockTile or groupTitle of the 
+//    corresponding MeshMetaData, then the MeshName is returned, so that the 
+//    variable can be typed as 'AVT_MESH_VAR'. 
+//
+//    This code pulled from gui. (QvisPlotManagerWidget).
+//    If inVar is not in the correct compound form, then outVar set to inVar.
+//
+//  Arguments:
+//    inVar   The (possibly) compound variable to parse. 
+//    outVar  A place to store the parsed variable name. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 5, 2002 
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::ParseCompoundForVar(const std::string &inVar, 
+    std::string &outVar) 
+{
+    if (!VarIsCompound(inVar))
+    {
+        outVar = inVar;
+        return; 
+    }
+
+    avtSubsetType sT = DetermineSubsetType(inVar);
+
+    switch (sT)
+    {
+        case AVT_DOMAIN_SUBSET : // fall-through
+        case AVT_GROUP_SUBSET  :
+            ParseCompoundForMesh(inVar, outVar);
+            break; 
+        case AVT_MATERIAL_SUBSET :
+            ParseCompoundForCategory(inVar, outVar);
+            break; 
+        default:
+            outVar = inVar;
+            break; 
+    }  
+}
+
+
+// ****************************************************************************
+//  Function: Indent
+//
+//  Purpose:
+//      Indents the proper amount as a convenience to routines that frequently
+//      need to indent.
+//
+//  Arguments:
+//      out     The stream to output to.
+//      indent  The level to indent to.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 28, 2000
+//
+// ****************************************************************************
+
+inline void
+Indent(ostream &out, int indent)
+{
+    for (int i = 0 ; i < indent ; i++)
+    {
+        out << "\t";
+    }
+}

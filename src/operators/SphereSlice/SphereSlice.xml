@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+  <Plugin name="SphereSlice" type="operator" label="Spherical Slice" version="1.0" iconFile="SphereSlice.xpm">
+    <Attribute name="SphereSliceAttributes" purpose="This class contains attributes for the spherical slice." persistent="true" codefile="SphereSliceAttributes.code">
+      <Field name="origin" label="origin" type="doubleArray" length="3">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="radius" label="radius" type="double">
+        1.000000
+      </Field>
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Function name="CreateCompatible" user="false" member="true">
+      </Function>
+      <Include file="source" quoted="false">
+        SphereAttributes.h
+      </Include>
+    </Attribute>
+  </Plugin>

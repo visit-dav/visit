@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+  <Attribute name="AnnotationAttributes" purpose="This class contains the attributes controlling annotations." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Enum name="Ticks">
+      Off
+      Bottom
+      Left
+      BottomLeft
+      All
+    </Enum>
+    <Enum name="Location">
+      Inside
+      Outside
+      Both
+    </Enum>
+    <Enum name="Axes">
+      ClosestTriad
+      FurthestTriad
+      OutsideEdges
+      StaticTriad
+      StaticEdges
+    </Enum>
+    <Enum name="GradientStyle">
+      TopToBottom
+      BottomToTop
+      LeftToRight
+      RightToLeft
+      Radial
+    </Enum>
+    <Enum name="BackgroundMode">
+      Solid
+      Gradient
+    </Enum>
+    <Field name="axesFlag2D" type="bool">true</Field>
+    <Field name="axesAutoSetTicks2D" type="bool">true</Field>
+    <Field name="xAxisLabels2D" type="bool">true</Field>
+    <Field name="yAxisLabels2D" type="bool">true</Field>
+    <Field name="xAxisTitle2D" type="bool">true</Field>
+    <Field name="yAxisTitle2D" type="bool">true</Field>
+    <Field name="xGridLines2D" type="bool">false</Field>
+    <Field name="yGridLines2D" type="bool">false</Field>
+    <Field name="xMajorTickMinimum2D" type="double">0.</Field>
+    <Field name="yMajorTickMinimum2D" type="double">0.</Field>
+    <Field name="xMajorTickMaximum2D" type="double">1.</Field>
+    <Field name="yMajorTickMaximum2D" type="double">1.</Field>
+    <Field name="xMajorTickSpacing2D" type="double">0.2</Field>
+    <Field name="yMajorTickSpacing2D" type="double">0.2</Field>
+    <Field name="xMinorTickSpacing2D" type="double">0.02</Field>
+    <Field name="yMinorTickSpacing2D" type="double">0.02</Field>
+    <Field name="xLabelFontHeight2D" type="double">0.02</Field>
+    <Field name="yLabelFontHeight2D" type="double">0.02</Field>
+    <Field name="xTitleFontHeight2D" type="double">0.02</Field>
+    <Field name="yTitleFontHeight2D" type="double">0.02</Field>
+    <Field name="axesTickLocation2D" type="enum" subtype="Location">Outside</Field>
+    <Field name="axesTicks2D" type="enum" subtype="Ticks">BottomLeft</Field>
+    <Field name="axesFlag" type="bool">true</Field>
+    <Field name="axesAutoSetTicks" type="bool">true</Field>
+    <Field name="xAxisLabels" type="bool">true</Field>
+    <Field name="yAxisLabels" type="bool">true</Field>
+    <Field name="zAxisLabels" type="bool">true</Field>
+    <Field name="xAxisTitle" type="bool">true</Field>
+    <Field name="yAxisTitle" type="bool">true</Field>
+    <Field name="zAxisTitle" type="bool">true</Field>
+    <Field name="xGridLines" type="bool">false</Field>
+    <Field name="yGridLines" type="bool">false</Field>
+    <Field name="zGridLines" type="bool">false</Field>
+    <Field name="xAxisTicks" type="bool">true</Field>
+    <Field name="yAxisTicks" type="bool">true</Field>
+    <Field name="zAxisTicks" type="bool">true</Field>
+    <Field name="xMajorTickMinimum" type="double">0.</Field>
+    <Field name="yMajorTickMinimum" type="double">0.</Field>
+    <Field name="zMajorTickMinimum" type="double">0.</Field>
+    <Field name="xMajorTickMaximum" type="double">1.</Field>
+    <Field name="yMajorTickMaximum" type="double">1.</Field>
+    <Field name="zMajorTickMaximum" type="double">1.</Field>
+    <Field name="xMajorTickSpacing" type="double">0.2</Field>
+    <Field name="yMajorTickSpacing" type="double">0.2</Field>
+    <Field name="zMajorTickSpacing" type="double">0.2</Field>
+    <Field name="xMinorTickSpacing" type="double">0.02</Field>
+    <Field name="yMinorTickSpacing" type="double">0.02</Field>
+    <Field name="zMinorTickSpacing" type="double">0.02</Field>
+    <Field name="xLabelFontHeight" type="double">0.02</Field>
+    <Field name="yLabelFontHeight" type="double">0.02</Field>
+    <Field name="zLabelFontHeight" type="double">0.02</Field>
+    <Field name="xTitleFontHeight" type="double">0.02</Field>
+    <Field name="yTitleFontHeight" type="double">0.02</Field>
+    <Field name="zTitleFontHeight" type="double">0.02</Field>
+    <Field name="axesTickLocation" type="enum" subtype="Location">Inside</Field>
+    <Field name="axesType" type="enum" subtype="Axes">ClosestTriad</Field>
+    <Field name="triadFlag" type="bool">true</Field>
+    <Field name="bboxFlag" type="bool">true</Field>
+    <Field name="backgroundColor" type="color">255 255 255 255</Field>
+    <Field name="foregroundColor" type="color">0 0 0 255</Field>
+    <Field name="gradientBackgroundStyle" type="enum" subtype="GradientStyle">Radial</Field>
+    <Field name="gradientColor1" type="color">0 0 255 255</Field>
+    <Field name="gradientColor2" type="color">0 0 0 255</Field>
+    <Field name="backgroundMode" type="enum" subtype="BackgroundMode">Solid</Field>
+    <Field name="userInfoFlag" type="bool">true</Field>
+    <Field name="databaseInfoFlag" type="bool">true</Field>
+    <Field name="legendInfoFlag" type="bool">true</Field>
+  </Attribute>

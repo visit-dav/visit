@@ -1,0 +1,82 @@
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const PseudocolorAttributes &) const;
+Definition:
+// ****************************************************************************
+// Modifications:
+//
+//   Kathleen Bonnell, Fri Aug 31 08:50:30 PDT 2001 
+//   Only centering changes require the plot to be recalculated.
+//   Removed scaling, pointsize and skewFactor from test. 
+//
+//   Hank Childs, Sun Jun 23 23:54:56 PDT 2002
+//   Also recalculate if the point size changes.
+//
+//   Jeremy Meredith, Mon Dec  9 16:30:54 PST 2002
+//   Added smoothing level.
+//
+//   Jeremy Meredith, Fri Dec 20 11:33:43 PST 2002
+//   Added point size variable and its enabled flag.
+//
+// ****************************************************************************
+bool
+PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &obj) const
+{
+    return (centering != obj.centering ||
+            pointSize != obj.pointSize ||
+            pointSizeVar != obj.pointSizeVar ||
+            pointSizeVarEnabled != obj.pointSizeVarEnabled ||
+            smoothingLevel != obj.smoothingLevel); 
+}
+
+Function: Print
+Declaration: void Print(ostream &, bool) const;
+Definition:
+// ****************************************************************************
+// Method: PseudocolorAttributes::Print
+//
+// Purpose: Print the contents
+//   
+// Programmer: Jeremy Meredith
+// Creation:   September 22, 2000
+//
+// Modifications:
+//   Kathleen Bonnell, Wed Dec 13 13:17:26 PST 2000
+//   Added opacity.
+//
+//   Brad Whitlock, Tue Apr 23 12:03:27 PDT 2002
+//   Ported to windows.
+//
+// ****************************************************************************
+
+void
+PseudocolorAttributes::Print(ostream &out, bool selected_only) const
+{
+    out << "{";
+
+    for(int i = 0; i < NumAttributes(); ++i)
+    {
+        if(selected_only && !IsSelected(i))
+            continue;
+
+        switch(i)
+        {
+          case  0: out << "legendFlag=" << GetLegendFlag();    break;
+          case  1: out << "lightingFlag=" << GetLightingFlag();break;
+          case  2: out << "minFlag=" << GetMinFlag();          break;
+          case  3: out << "maxFlag=" << GetMaxFlag();          break;
+          case  4: out << "centering=" << GetCentering();      break;
+          case  5: out << "scaling=" << GetScaling();          break;
+          case  6: out << "limitsMode=" << GetLimitsMode();    break;
+          case  7: out << "min=" << GetMin();                  break;
+          case  8: out << "max=" << GetMax();                  break;
+          case  9: out << "pointSize=" << GetPointSize();      break;
+          case 10: out << "skewFactor=" << GetSkewFactor();    break;
+          case 11: out << "opacity=" << GetOpacity();          break;
+          case 12: out << "colorTableName=" << GetColorTableName().c_str(); break;
+        }
+        out << ",";
+    }
+
+    out << "}";
+}
+

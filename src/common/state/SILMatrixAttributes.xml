@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+  <Attribute name="SILMatrixAttributes" purpose="This class contain the information needed to represent a SIL Matrix." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="set1" type="intVector"></Field>
+    <Field name="category1" type="string"></Field>
+    <Field name="role1" type="int">0</Field>
+    <Field name="set2" type="intVector"></Field>
+    <Field name="category2" type="string"></Field>
+    <Field name="role2" type="int">0</Field>
+  </Attribute>

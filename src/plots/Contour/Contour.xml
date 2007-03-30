@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+  <Plugin name="Contour" type="plot" label="Contour" version="1.0" vartype="scalar,species" iconFile="Contour.xpm">
+    <Files components="V">
+    </Files>
+    <Files components="E">
+    </Files>
+    <Attribute name="ContourAttributes" purpose="This class contains the plot attributes for the contour plot." persistent="true" codefile="ContourAttributes.code">
+      <Enum name="Select_by">
+        Level
+        Value
+        Percent
+      </Enum>
+      <Enum name="Scaling">
+        Linear
+        Log
+      </Enum>
+      <Enum name="ColoringMethod">
+        ColorBySingleColor
+        ColorByMultipleColors
+        ColorByColorTable
+      </Enum>
+      <Field name="defaultPalette" label="Default palette" type="att" subtype="ColorControlPointList" ignoreeq="true">
+      </Field>
+      <Field name="changedColors" label="Changed colors" type="ucharVector" ignoreeq="true">
+      </Field>
+      <Field name="colorType" label="Color type" type="enum" subtype="ColoringMethod">
+        ColorByMultipleColors
+      </Field>
+      <Field name="colorTableName" label="Color table" type="colortable">
+        Default
+      </Field>
+      <Field name="legendFlag" label="legendFlag" type="bool">
+        true
+      </Field>
+      <Field name="lineStyle" label="lineStyle" type="linestyle">
+        0
+      </Field>
+      <Field name="lineWidth" label="lineWidth" type="linewidth">
+        0
+      </Field>
+      <Field name="singleColor" label="singleColor" type="color">
+        255
+        0
+        0
+        255
+      </Field>
+      <Field name="multiColor" label="multiColor" type="att" subtype="ColorAttributeList">
+      </Field>
+      <Field name="contourNLevels" label="contourNLevels" type="int">
+        10
+      </Field>
+      <Field name="contourValue" label="contourValue" type="doubleVector">
+      </Field>
+      <Field name="contourPercent" label="contourPercent" type="doubleVector">
+      </Field>
+      <Field name="contourMethod" label="contourMethod" type="enum" subtype="Select_by">
+        Level
+      </Field>
+      <Field name="minFlag" label="minFlag" type="bool">
+        false
+      </Field>
+      <Field name="maxFlag" label="maxFlag" type="bool">
+        false
+      </Field>
+      <Field name="min" label="min" type="double">
+        0.000000
+      </Field>
+      <Field name="max" label="max" type="double">
+        1.000000
+      </Field>
+      <Field name="scaling" label="scaling" type="enum" subtype="Scaling">
+        Linear
+      </Field>
+      <Field name="wireframe" label="wireframe" type="bool">
+        false
+      </Field>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="SetContourValue" user="true" member="true">
+      </Function>
+      <Function name="SetContourPercent" user="true" member="true">
+      </Function>
+      <Function name="EnlargeMultiColor" user="true" member="true">
+      </Function>
+      <Function name="ColorIsChanged" user="true" member="true">
+      </Function>
+      <Function name="MarkColorAsChanged" user="true" member="true">
+      </Function>
+      <Function name="CreateNode" user="false" member="true">
+      </Function>
+      <Function name="SetFromNode" user="false" member="true">
+      </Function>
+      <Constant name="MAX_CONTOURS" member="true">
+      </Constant>
+      <Include file="source" quoted="false">
+        ColorControlPoint.h
+      </Include>
+    </Attribute>
+  </Plugin>

@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+  <Attribute name="Point" purpose="This class contains attributes for a point." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="Point.code">
+    <Enum name="ValueType">
+      VT_Tuple
+      VT_Min
+      VT_Max
+      VT_DomainZone
+      VT_Zone
+      VT_DomainNode
+      VT_Node
+      VT_Unknown
+    </Enum>
+    <Field name="value" label="value" type="string">
+    </Field>
+    <Function name="Point" user="true" member="true">
+    </Function>
+    <Function name="GetValueType" user="true" member="true">
+    </Function>
+    <Function name="GetTupleArgs" user="true" member="true">
+    </Function>
+    <Function name="GetMinArgs" user="true" member="true">
+    </Function>
+    <Function name="GetMaxArgs" user="true" member="true">
+    </Function>
+    <Function name="GetDomainZoneArgs" user="true" member="true">
+    </Function>
+    <Function name="GetZoneArgs" user="true" member="true">
+    </Function>
+    <Function name="GetDomainNodeArgs" user="true" member="true">
+    </Function>
+    <Function name="GetNodeArgs" user="true" member="true">
+    </Function>
+    <Include file="source" quoted="false">
+      stdio.h
+    </Include>
+  </Attribute>

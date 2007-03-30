@@ -1,0 +1,203 @@
+#                            Copyright 2000 - 2000
+#                 The Regents of the University of California.
+#                             All rights reserved.
+# 
+# This work  was produced at the  University of California, Lawrence Livermore
+# National Laboratory  (UC LLNL)  under contract no.   W-7405-ENG-48 (Contract
+# 48) between  the U.S.  Department  of Energy (DOE)  and  The Regents  of the
+# University  of   California (University)   for   the operation  of UC  LLNL.
+# Copyright  is reserved  to     the University for   purposes  of  controlled
+# dissemination,   commercialization   through   formal licensing,   or  other
+# disposition  under  terms  of Contract   48; DOE  policies, regulations  and
+# orders;  and U.S.   statutes.  The  rights of   the  Federal Government  are
+# reserved under  Contract 48 subject to the  restrictions agreed  upon by DOE
+# and University.
+# 
+#                                 DISCLAIMER
+# 
+# This software was prepared as an  account of work sponsored  by an agency of
+# the United  States Government. Neither the United  States Government nor the
+# University of California  nor any  of their  employees, makes any  warranty,
+# express or  implied,  or assumes  any  liability  or responsiblity for   the
+# accuracy, completeness,  or   usefullness of   any  information,  apparatus,
+# product, or process disclosed, or represents that its use would not infringe
+# privately   owned  rights. Reference    herein to   any specific  commercial
+# products, process, or service   by trade name, trademark,   manufacturer, or
+# otherwise,  does not    necessarily  constitute or    imply its endorsement,
+# recommendation,  or  favoring by    the  United  States Government  or   the
+# University of California. The views and opinions of authors expressed herein
+# do not necessarily state or reflect those of the United States Government or
+# the University of  California,  and shall not  be  used for  advertising  or
+# product endorsement purposes.
+#
+# Modifications:
+#    Jeremy Meredith, Thu May 10 14:01:14 PDT 2001
+#    First incarnation.
+#
+#    Jeremy Meredith, Wed Jun  6 23:01:59 PDT 2001
+#    Force it to always regenerate symlinks.
+#
+#    Jeremy Meredith, Fri Jul 27 13:49:19 PDT 2001
+#    It now only touches the libqt symlinks if @QTDIR@ was set by configure.
+#
+#    Brad Whitlock, Mon Dec 10 16:03:06 PST 2001
+#    I added a link for python.
+#
+#    Kathleen Bonnell, Thu Nov 15 12:48:49 PST 2001 
+#    Change vtk lib info to match VTK 4.0 directory tree structure. 
+#
+#    Eric Brugger, Tue Apr 16 09:09:04 PDT 2002
+#    Add links to the mesa libraries.
+#
+#    Jeremy Meredith, Mon Jun 17 15:20:09 PDT 2002
+#    Made a link to the python directory instead of just the python library.
+#
+#    Jeremy Meredith, Wed Jul  3 13:35:22 PDT 2002
+#    Check to make sure scripting is enabled before making the link to python.
+#
+#    Jeremy Meredith, Thu Jul 18 13:20:39 PDT 2002
+#    Added link to the python library again.   This allows a libpython.so
+#    and prevents having to add another path to LD_LIBRARY_PATH et al.
+#
+#    Kathleen Bonnell, Thu Jan  2 09:06:57 PST 2003 
+#    Added two new vtk libs: vtkfreetype and vtkftgl.   
+#
+##############################################################################
+
+@SET_MAKE@
+@VARIABLES@
+
+DISTRIB=README
+LIBVTKCOMMON=libvtkCommon.@SHLIB_LIBEXT@
+LIBVTKFILTERING=libvtkFiltering.@SHLIB_LIBEXT@
+LIBVTKGRAPHICS=libvtkGraphics.@SHLIB_LIBEXT@
+LIBVTKHYBRID=libvtkHybrid.@SHLIB_LIBEXT@
+LIBVTKIO=libvtkIO.@SHLIB_LIBEXT@
+LIBVTKIMAGING=libvtkImaging.@SHLIB_LIBEXT@
+LIBVTKRENDERING=libvtkRendering.@SHLIB_LIBEXT@
+LIBVTKZLIB=libvtkzlib.@SHLIB_LIBEXT@
+LIBVTKPNG=libvtkpng.@SHLIB_LIBEXT@
+LIBVTKJPEG=libvtkjpeg.@SHLIB_LIBEXT@
+LIBVTKEXPAT=libvtkexpat.@SHLIB_LIBEXT@
+LIBVTKTIFF=libvtktiff.@SHLIB_LIBEXT@
+LIBVTKFREETYPE=libvtkfreetype.@SHLIB_LIBEXT@
+LIBVTKFTGL=libvtkftgl.@SHLIB_LIBEXT@
+LIBMESAGL=libMesaGL.@SHLIB_LIBEXT@
+LIBOSMESA=libOSMesa.@SHLIB_LIBEXT@
+LIBQT=libqt.@SHLIB_LIBEXT@
+
+# The following targets were split up so that they would work properly
+# with the make on AIX systems.
+all: libvtkcommon libvtkfiltering libvtkgraphics libvtkhybrid libvtkio libvtkimaging \
+     libvtkrendering libvtkzlib libvtkpng libvtkjpeg libvtkexpat libvtktiff \
+     libvtkfreetype libvtkftgl libosmesa libmesagl libqt pythondir
+
+libvtkcommon:
+	$(RM) $(LIBVTKCOMMON)
+	ln -s @VTK_DIR@/lib/$(LIBVTKCOMMON)   .
+
+libvtkfiltering:
+	$(RM) $(LIBVTKFILTERING)
+	ln -s @VTK_DIR@/lib/$(LIBVTKFILTERING)   .
+
+libvtkgraphics:
+	$(RM) $(LIBVTKGRAPHICS)
+	ln -s @VTK_DIR@/lib/$(LIBVTKGRAPHICS) .
+
+libvtkhybrid:
+	$(RM) $(LIBVTKHYBRID)
+	ln -s @VTK_DIR@/lib/$(LIBVTKHYBRID) .
+
+libvtkio:
+	$(RM) $(LIBVTKIO)
+	ln -s @VTK_DIR@/lib/$(LIBVTKIO) .
+
+libvtkimaging:
+	$(RM) $(LIBVTKIMAGING)
+	ln -s @VTK_DIR@/lib/$(LIBVTKIMAGING)  .
+
+libvtkrendering:
+	$(RM) $(LIBVTKRENDERING)
+	ln -s @VTK_DIR@/lib/$(LIBVTKRENDERING)  .
+
+libvtkzlib:
+	$(RM) $(LIBVTKZLIB)
+	ln -s @VTK_DIR@/lib/$(LIBVTKZLIB)  .
+
+libvtkjpeg:
+	$(RM) $(LIBVTKJPEG)
+	ln -s @VTK_DIR@/lib/$(LIBVTKJPEG)  .
+
+libvtkpng:
+	$(RM) $(LIBVTKPNG)
+	ln -s @VTK_DIR@/lib/$(LIBVTKPNG)  .
+
+libvtkexpat:
+	$(RM) $(LIBVTKEXPAT)
+	ln -s @VTK_DIR@/lib/$(LIBVTKEXPAT)  .
+
+libvtktiff:
+	$(RM) $(LIBVTKTIFF)
+	ln -s @VTK_DIR@/lib/$(LIBVTKTIFF)  .
+
+libvtkfreetype:
+	$(RM) $(LIBVTKFREETYPE)
+	ln -s @VTK_DIR@/lib/$(LIBVTKFREETYPE)  .
+
+libvtkftgl:
+	$(RM) $(LIBVTKFTGL)
+	ln -s @VTK_DIR@/lib/$(LIBVTKFTGL)  .
+
+libmesagl:
+	$(RM) $(LIBMESAGL)
+	ln -s @MESA_DIR@/lib/$(LIBMESAGL)  .
+
+libosmesa:
+	$(RM) $(LIBOSMESA)
+	ln -s @MESA_DIR@/lib/$(LIBOSMESA)  .
+
+libqt:
+	if test -n "@QTDIR@"; then              \
+	    $(RM) $(LIBQT)*                 ;   \
+	    ln -s @QTDIR@/lib/$(LIBQT)* .   ;   \
+	fi
+
+pythondir:
+	if test -n "@PYDIR@"; then                                     \
+	    $(RM) python lib@PYVERSION@.so                          ;  \
+	    ln -s @PYDIR@ python                                    ;  \
+	    ln -s python/lib/@PYVERSION@/config/lib@PYVERSION@.so . ;  \
+	fi
+
+clean distclean:
+	$(RM) \
+	$(LIBMESAGL) \
+	$(LIBOSMESA) \
+	$(LIBQT)* \
+	$(LIBVTKCOMMON) \
+	$(LIBVTKFILTERING) \
+	$(LIBVTKHYBRID) \
+	$(LIBVTKIMAGING) \
+	$(LIBVTKIO) \
+	$(LIBVTKJPEG) \
+	$(LIBVTKPNG) \
+	$(LIBVTKTIFF) \
+	$(LIBVTKFREETYPE) \
+	$(LIBVTKFTGL) \
+	$(LIBVTKZLIB) \
+	$(LIBPYTHON) \
+	$(LIBVTKEXPAT) \
+	$(LIBVTKGRAPHICS) \
+	$(LIBVTKRENDERING)
+
+install:
+install_bin:
+install_lib:
+install_dirs:
+
+# for clearcase:
+.NO_WINK_IN: $(LIBVTKCOMMON) $(LIBVTKFILTERING) $(LIBVTKGRAPHICS) \
+   $(LIBVTKHYBRID) $(LIBVTKIO) $(LIBVTKIMAGING) $(LIBVTKRENDERING) \
+   $(LIBVTKZLIB) $(LIBVTKPNG) $(LIBVTKJPEG) $(LIBVTKEXPAT) $(LIBVTKTIFF) \
+   $(LIBVTKFREETYPE) $(LIBVTKFTGL)  $(LIBOSMESA) $(LIBMESAGL) $(LIBQT) $(LIBPYTHON)
+

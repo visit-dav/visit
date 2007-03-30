@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+  <Attribute name="Plot" codefile="Plot.code" persistent="false" purpose="This class is a plot element in a plot list." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Enum name="StateType">
+      NewlyCreated
+      Pending
+      Completed
+      Error
+    </Enum>
+    <Field name="stateType" type="enum" subtype="StateType">NewlyCreated</Field>
+    <Field name="plotType" type="int">0</Field>
+    <Field name="activeFlag" type="bool">false</Field>
+    <Field name="hiddenFlag" type="bool">false</Field>
+    <Field name="expandedFlag" type="bool">false</Field>
+    <Field name="plotVar" type="string">"notset"</Field>
+    <Field name="databaseName" type="string">"notset"</Field>
+    <Field name="operators" type="intVector"></Field>
+    <Field name="activeOperator" type="int">-1</Field>
+    <Field name="id" type="int">-1</Field>
+    <Field name="beginFrame" type="int">-999</Field>
+    <Field name="endFrame" type="int">999</Field>
+    <Field name="keyframes" type="intVector"></Field>
+    <Field name="databaseKeyframes" type="intVector"></Field>
+    <Function name="AddOperator"        user="true" member="true"></Function>
+    <Function name="ClearAllOperators"  user="true" member="true"></Function>
+    <Function name="GetNumOperators"    user="true" member="true"></Function>
+    <Function name="GetOperator"        user="true" member="true"></Function>
+    <Function name="RemoveLastOperator" user="true" member="true"></Function>
+  </Attribute>

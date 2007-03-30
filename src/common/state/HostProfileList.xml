@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+  <Attribute name="HostProfileList" codefile="HostProfileList.code" purpose="This class contains a list of host profiles." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="profiles" type="attVector" subtype="HostProfile"></Field>
+    <Field name="activeProfile" type="int">-1</Field>
+    <Function name="SetFromNode"                   user="false"></Function>
+    <Function name="MarkHostProfiles"              user="true"></Function>
+    <Function name="MarkActiveProfile"             user="true"></Function>
+    <Function name="GetProfileForHost"             user="true"></Function>
+    <Function name="FindMatchingProfileForHost"    user="true"></Function>
+    <Function name="FindAllMatchingProfileForHost" user="true"></Function>
+    <Function name="GetNumProfilesForHost"         user="true"></Function>
+    <Function name="SetAsActiveProfile"            user="true"></Function>
+    <Function name="RemoveActiveProfile"           user="true"></Function>
+    <Function name="ChangeHostForActiveProfile"    user="true"></Function>
+  </Attribute>

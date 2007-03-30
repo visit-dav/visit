@@ -1,0 +1,1162 @@
+// ************************************************************************* //
+//                             avtSliceFilter.C                              //
+// ************************************************************************* //
+
+#include <avtSliceFilter.h>
+
+#include <float.h>
+
+#include <vtkVisItCutter.h>
+#include <vtkFloatArray.h>
+#include <vtkMath.h>
+#include <vtkMatrix4x4.h>
+#include <vtkMatrixToLinearTransform.h>
+#include <vtkPlane.h>
+#include <vtkPolyData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkTransformPolyDataFilter.h>
+
+#include <avtDataset.h>
+#include <avtExtents.h>
+#include <avtIntervalTree.h>
+#include <avtMetaData.h>
+#include <avtPointAttribute.h>
+
+#include <BadVectorException.h>
+#include <DebugStream.h>
+#include <TimingsManager.h>
+
+using     std::vector;
+
+
+static bool      PlaneIntersectsCube(float plane[4], float bounds[6]);
+static void      FindCells(float *x, float *y, float *z, int nx, int ny, 
+                           int nz, int *clist, int &ncells, float *plane, 
+                           int dim, int ax, int ay, int az, int onx, int ony,
+                           int onz);
+static void      GetOrigin(SliceAttributes&, double&, double&, double&);
+
+
+// ****************************************************************************
+//  Method: avtSliceFilter constructor
+//
+//  Programmer: Hank Childs
+//  Creation:   July 25, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Aug  8 16:56:24 PDT 2000
+//    Changed argument to be a plane from a cutter to ensure that our cutter
+//    stems from a plane.
+//
+//    Jeremy Meredith, Tue Sep 19 22:27:16 PDT 2000
+//    Made the avtSliceFilter initialize from the raw origin and normal
+//    and create the plane itself.
+//
+//    Jeremy Meredith, Thu Mar  1 13:29:27 PST 2001
+//    Folded functionality of avtProjectFilter into this class.
+//    Made attributes be stored as an SliceAttributes class.
+//
+//    Hank Childs, Fri Mar 15 19:33:24 PST 2002
+//    Initialize point.
+//
+//    Hank Childs, Mon Sep 16 17:34:06 PDT 2002
+//    Initialize transform.
+//
+//    Kathleen Bonnell, Thu Apr 10 11:25:01 PDT 2003  
+//    Initialize inverse transformation matrix. 
+//
+//    Jeremy Meredith, Mon May  5 14:31:45 PDT 2003
+//    Removed "point" for now.  The slice window has changed, and dynamically
+//    resolved attributes will work differently soon.
+//
+// ****************************************************************************
+
+avtSliceFilter::avtSliceFilter()
+{
+    plane  = vtkPlane::New();
+    cutter = vtkVisItCutter::New();
+    transform = vtkTransformPolyDataFilter::New();
+    celllist = NULL;
+    invTrans = vtkMatrix4x4::New();
+}
+
+
+// ****************************************************************************
+//  Method: avtSliceFilter destructor
+//
+//  Programmer: Hank Childs
+//  Creation:   July 25, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Aug  8 16:56:24 PDT 2000
+//    Added Delete for plane.
+//
+//    Hank Childs, Fri Mar 15 19:33:24 PST 2002
+//    Destruct point.
+//
+//    Hank Childs, Mon Sep 16 17:34:06 PDT 2002
+//    Destruct transform.
+//
+//    Kathleen Bonnell, Thu Apr 10 11:25:01 PDT 2003  
+//    Delete inverse transformation matrix. 
+//
+//    Jeremy Meredith, Mon May  5 14:31:45 PDT 2003
+//    Removed "point" for now.  The slice window has changed, and dynamically
+//    resolved attributes will work differently soon.
+//
+// ****************************************************************************
+
+avtSliceFilter::~avtSliceFilter()
+{
+    if (cutter != NULL)
+    {
+        cutter->Delete();
+        cutter = NULL;
+    }
+    if (plane != NULL)
+    {
+        plane->Delete();
+        plane = NULL;
+    }
+    if (celllist != NULL)
+    {
+        delete [] celllist;
+        celllist = NULL;
+    }
+    if (transform != NULL)
+    {
+        transform->Delete();
+        transform = NULL;
+    }
+    if (invTrans!= NULL)
+    {
+        invTrans->Delete();
+        invTrans= NULL;
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  avtSliceFilter::Create
+//
+//  Purpose:
+//    Call the constructor.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March  4, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Jun 13 10:38:03 PDT 2001
+//    Change type of return value.
+//
+// ****************************************************************************
+
+avtFilter *
+avtSliceFilter::Create()
+{
+    return new avtSliceFilter();
+}
+
+
+// ****************************************************************************
+//  Method:  avtSliceFilter::SetAtts
+//
+//  Purpose:
+//    Set the attributes of the filter
+//
+//  Arguments:
+//    a          the atts
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July 25, 2001
+//
+//  Modifications:
+//
+//    Jeremy Meredith, Fri Mar 15 17:15:07 PST 2002
+//    Made it use the origin as a Point.
+//
+//    Hank Childs, Fri Mar 15 19:33:24 PST 2002
+//    Initialize point attribute.
+//
+//    Hank Childs, Mon Sep 16 17:39:49 PDT 2002
+//    Clean up memory leak.
+//
+//    Kathleen Bonnell, Thu Apr 10 11:25:01 PDT 2003  
+//    Save inverse transformation matrix for project-2d. 
+//
+//    Jeremy Meredith, Mon May  5 14:31:45 PDT 2003
+//    Changed the way "origin" works.
+//
+//    Kathleen Bonnell, Tue May 20 16:02:52 PDT 2003  
+//    Added tests for valid Normal, upAxis.
+//
+// ****************************************************************************
+
+void
+avtSliceFilter::SetAtts(const AttributeGroup *a)
+{
+    atts = *(const SliceAttributes*)a;
+
+    double nx = atts.GetNormal()[0];
+    double ny = atts.GetNormal()[1];
+    double nz = atts.GetNormal()[2];
+    //
+    // Make sure the Normal is valid. 
+    //
+    if (nx == 0. && ny == 0. && nz == 0.)
+    {
+        EXCEPTION1(BadVectorException, "Normal");
+        return;
+    }
+
+    double ox = 0;
+    double oy = 0;
+    double oz = 0;
+    GetOrigin(atts, ox, oy, oz);
+
+    double ux = atts.GetUpAxis()[0];
+    double uy = atts.GetUpAxis()[1];
+    double uz = atts.GetUpAxis()[2];
+
+
+    // figure out D in the plane equation
+    D = nx*ox + ny*oy + nz*oz;
+
+    plane->SetOrigin(ox, oy, oz);
+    plane->SetNormal(nx, ny, nz);
+
+    cutter->SetCutFunction(plane);
+
+    if (atts.GetProject2d())
+    {
+        //
+        // Make sure the up axis is valid. 
+        //
+        if (ux == 0. && uy == 0. && uz == 0.)
+        {
+            EXCEPTION1(BadVectorException, "Up Axis");
+            return;
+        }
+        //
+        // Make sure the up axis and normal are not equal
+        //
+        if (nx==ux && ny==uy && nz==uz)
+        {
+            // We could throw an exception here....
+            // ...but for now I'll just correct the error instead.
+            if (ux==0 && uy==0 && uz==1)
+            {
+                ux=1;  uy=0;  uz=0;
+            }
+            else
+            {
+                ux=0;  uy=0;  uz=1;
+            }
+        }
+
+        float origin[3] = {ox,oy,oz};
+        float normal[3] = {nx,ny,nz};
+        float upaxis[3] = {ux,uy,uz};
+
+        vtkMath::Normalize(normal);
+        vtkMath::Normalize(upaxis);
+
+        //
+        // The normal and up vectors for two thirds of a basis, take their
+        // cross product to find the third element of the basis.
+        //
+        float  third[3];
+        vtkMath::Cross(normal, upaxis, third);
+
+        // Make sure the up axis is orthogonal to third and normal
+        vtkMath::Cross(third, normal, upaxis);
+
+        //
+        // Because it is easier to find the Frame-to-Cartesian-Frame conversion
+        // matrix and invert it than to calculate the Cartesian-Frame-To-Frame
+        // conversion matrix, we will calculate the former matrix.
+        //
+        vtkMatrix4x4 *ftcf = vtkMatrix4x4::New();
+        ftcf->SetElement(0, 0, third[0]);
+        ftcf->SetElement(0, 1, third[1]);
+        ftcf->SetElement(0, 2, third[2]);
+        ftcf->SetElement(0, 3, 0.);
+        ftcf->SetElement(1, 0, upaxis[0]);
+        ftcf->SetElement(1, 1, upaxis[1]);
+        ftcf->SetElement(1, 2, upaxis[2]);
+        ftcf->SetElement(1, 3, 0.);
+        ftcf->SetElement(2, 0, normal[0]);
+        ftcf->SetElement(2, 1, normal[1]);
+        ftcf->SetElement(2, 2, normal[2]);
+        ftcf->SetElement(2, 3, 0.);
+        ftcf->SetElement(3, 0, origin[0]);
+        ftcf->SetElement(3, 1, origin[1]);
+        ftcf->SetElement(3, 2, origin[2]);
+        ftcf->SetElement(3, 3, 1.);
+
+        //
+        //  ftcf Transpose can be used as the inverse transform to take 
+        //  a point back to its original location, so save it. 
+        //
+        vtkMatrix4x4::Transpose(ftcf, invTrans);
+
+        vtkMatrix4x4 *cftf = vtkMatrix4x4::New();
+        vtkMatrix4x4::Invert(ftcf, cftf);
+        ftcf->Delete();
+   
+        vtkMatrix4x4 *projTo2D = vtkMatrix4x4::New();
+        projTo2D->Identity();
+        projTo2D->SetElement(2, 2, 0.);
+
+        vtkMatrix4x4 *result = vtkMatrix4x4::New();
+        vtkMatrix4x4::Multiply4x4(cftf, projTo2D, result);
+        cftf->Delete();
+        projTo2D->Delete();
+
+        //
+        // VTK right-multiplies the points, so we need transpose the matrix.
+        //
+        vtkMatrix4x4 *result_transposed = vtkMatrix4x4::New();
+        vtkMatrix4x4::Transpose(result, result_transposed);
+        result->Delete();
+
+        vtkMatrixToLinearTransform *mtlt = vtkMatrixToLinearTransform::New();
+        mtlt->SetInput(result_transposed);
+        result_transposed->Delete();
+
+        transform->SetTransform(mtlt);
+        mtlt->Delete();
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSliceFilter::Equivalent
+//
+//  Purpose:
+//      Returns true if creating a new avtSliceFilter with the given
+//      parameters would result in an equivalent avtSliceFilter.
+//
+//  Arguments:
+//      ox,oy,oz   The origin of the slice plane
+//      nx,ny,nz   The normal of the slice plane
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   September 19, 2000
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Mar  1 13:29:27 PST 2001
+//    Made attributes be stored as an SliceAttributes class.
+//
+// ****************************************************************************
+
+bool
+avtSliceFilter::Equivalent(const AttributeGroup *a)
+{
+    return (atts == *(SliceAttributes*)a);
+}
+
+
+// ****************************************************************************
+//  Method: avtSliceFilter::PerformRestriction
+//
+//  Purpose:
+//      Calculates the restriction on the meta-data and the plane 
+//      equation of the cutter.
+//
+//  Arguments:
+//      spec    The current pipeline specification.
+//
+//  Returns:    The new specification.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 6, 2001
+//
+//  Modifications:
+//    Kathleen Bonnell, Tue Mar 26 10:43:23 PST 2002 
+//    Added code to turn on zone-numbers as needed (2d only).
+//
+//    Kathleen Bonnell, Wed Jun 19 12:10:34 PDT 2002 
+//    Don't turn off zone numbers if they have been turned on elsewhere in
+//    the pipeline. 
+//
+//    Kathleen Bonnell, Wed Jun 19 13:42:37 PDT 2002  
+//    Completely removed the code turning off zone numbers.  Why set a flag
+//    to false if it is already false?  False is the default setting.
+//    
+// ****************************************************************************
+
+avtPipelineSpecification_p
+avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
+{
+    avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
+
+    if (atts.GetProject2d() && rv->GetDataSpecification()->MayRequireZones())
+    {
+        rv->GetDataSpecification()->TurnZoneNumbersOn();
+    }
+
+    //
+    // Get the interval tree.
+    //
+    avtIntervalTree *it = GetMetaData()->GetSpatialExtents();
+    if (it == NULL)
+    {
+        return rv;
+    }
+
+    //
+    // Give the interval tree the linear equation of the plane and have it
+    // return a domain list.
+    //
+    float normal[3]
+             = {atts.GetNormal()[0], atts.GetNormal()[1], atts.GetNormal()[2]};
+    vector<int> domains;
+    it->GetDomainsList(normal, D, domains);
+    rv->GetDataSpecification()->GetRestriction()->RestrictDomains(domains);
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtSliceFilter::PreExecute
+//
+//  Purpose:
+//      Gets the point from the dynamically resolved point attribute and sets
+//      it with the plane.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 15, 2002
+//
+//  Modifications:
+//    Jeremy Meredith, Mon May  5 14:37:08 PDT 2003
+//    Changed the way "origin" works.
+//
+// ****************************************************************************
+
+void
+avtSliceFilter::PreExecute(void)
+{
+    double nx = atts.GetNormal()[0];
+    double ny = atts.GetNormal()[1];
+    double nz = atts.GetNormal()[2];
+
+    double ox = 0;
+    double oy = 0;
+    double oz = 0;
+    GetOrigin(atts, ox, oy, oz);
+
+    plane->SetOrigin(ox, oy, oz);
+    D = nx*ox + ny*oy + nz*oz;
+}
+
+
+// ****************************************************************************
+//  Method: avtSliceFilter::ExecuteData
+//
+//  Purpose:
+//      Sends the specified input and output through the slicer.
+//
+//  Arguments:
+//      in_ds      The input dataset.
+//      domain     The domain number.
+//      <unused>   The label.
+//
+//  Returns:       The output dataset.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 24, 2000
+//
+//    Jeremy Meredith, Thu Sep 28 12:45:16 PDT 2000
+//    Made this create a new vtk dataset.
+//
+//    Hank Childs, Fri Oct 27 10:23:52 PDT 2000
+//    Added argument for domain number to match inherited interface.
+//
+//    Jeremy Meredith, Thu Mar  1 13:29:27 PST 2001
+//    Folded functionality of avtProjectFilter into this class.
+//    Made attributes be stored as an SliceAttributes class.
+//
+//    Kathleen Bonnell, Tue Apr 10 10:49:10 PDT 2001
+//    Renamed method from ExecuteDomain to ExecuteData 
+//
+//    Hank Childs, Tue Oct 16 08:00:36 PDT 2001
+//    Do not slice if it cannot intersect the dataset.
+//
+//    Hank Childs, Fri Oct 19 10:53:00 PDT 2001
+//    Return NULL if there is no intersection.
+//
+//    Hank Childs, Wed Dec  5 17:21:53 PST 2001 
+//    Do not let our interval tree do parallel communication.
+//
+//    Hank Childs, Mon Sep 16 17:34:06 PDT 2002
+//    Clean up memory leak.
+//
+//    Hank Childs, Mon Dec  9 14:52:50 PST 2002
+//    If a slice intersects the domain on the boundary, we may get no data
+//    under some circumstances.  Reverse the direction of the normal in this
+//    case.
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
+{
+    //
+    // First check to see if we have to slice this domain at all.
+    //
+    float bounds[6];
+    in_ds->GetBounds(bounds);
+    float normal[3];
+    normal[0] = atts.GetNormal()[0];
+    normal[1] = atts.GetNormal()[1];
+    normal[2] = atts.GetNormal()[2];
+    avtIntervalTree tree(1, 3);
+    tree.AddDomain(0, bounds);
+    tree.Calculate(true);
+    vector<int> domains;
+    tree.GetDomainsList(normal, D, domains);
+    if (domains.size() <= 0)
+    {
+        debug5 << "Not slicing domain " << domain
+               << ", it does not intersect the plane." << endl;
+        return NULL;
+    }
+
+    double dbounds[6];
+    dbounds[0] = bounds[0];
+    dbounds[1] = bounds[1];
+    dbounds[2] = bounds[2];
+    dbounds[3] = bounds[3];
+    dbounds[4] = bounds[4];
+    dbounds[5] = bounds[5];
+    SetPlaneOrientation(dbounds);
+
+    vtkPolyData *out_ds = vtkPolyData::New();
+
+    if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        CalculateRectilinearCells((vtkRectilinearGrid *) in_ds);
+    }
+    else
+    {
+        cutter->SetCellList(NULL, 0);
+    }
+    cutter->SetInput(in_ds);
+    if (atts.GetProject2d())
+    {
+        transform->SetInput(cutter->GetOutput());
+        transform->SetOutput(out_ds);
+
+        //
+        // Update will check the modifed time and call Execute.  We have no
+        // direct hooks into the Execute method.
+        //
+        transform->Update();
+    }
+    else
+    {
+        cutter->SetOutput(out_ds);
+
+        //
+        // Update will check the modifed time and call Execute.  We have no
+        // direct hooks into the Execute method.
+        //
+        cutter->Update();
+    }
+
+    vtkDataSet *rv = out_ds;
+    if (out_ds->GetNumberOfCells() == 0)
+    {
+        rv = NULL;
+    }
+
+    ManageMemory(rv);
+    out_ds->Delete();
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtSliceFilter::ReleaseData
+//
+//  Purpose:
+//      Releases the problem size data associated with this filter.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 10, 2002
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Sep 16 17:39:49 PDT 2002
+//    Clean up more bloat.
+//
+// ****************************************************************************
+
+void
+avtSliceFilter::ReleaseData(void)
+{
+    avtPluginStreamer::ReleaseData();
+
+    cutter->SetInput(NULL);
+    cutter->SetOutput(NULL);
+    cutter->SetLocator(NULL);
+    transform->SetInput(NULL);
+    transform->SetOutput(NULL);
+    if (celllist != NULL)
+    {
+        delete [] celllist;
+        celllist = NULL;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSliceFilter::RefashionDataObjectInfo
+//
+//  Purpose:
+//      Changes to topological dimension of the output to be one less that the
+//      input.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 6, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Sep  4 16:14:49 PDT 2001
+//    Reflect new interface for avtDataAttributes.
+//
+//    Kathleen Bonnell, Tue Mar 26 10:43:23 PST 2002 
+//    Add call to validity.SetPointsWereTransformed. 
+//
+//    Hank Childs, Thu May 16 16:53:41 PDT 2002
+//    Transform extents as well.
+//
+//    Sean Ahern, Fri May 17 16:43:35 PDT 2002
+//    Corrected spelling of "cumulative".
+//
+//    Hank Childs, Tue Aug  6 11:07:14 PDT 2002
+//    Tell the output that normals are not needed.
+//
+// ****************************************************************************
+
+void
+avtSliceFilter::RefashionDataObjectInfo(void)
+{
+    avtDataAttributes &inAtts      = GetInput()->GetInfo().GetAttributes();
+    avtDataAttributes &outAtts     = GetOutput()->GetInfo().GetAttributes();
+    avtDataValidity   &outValidity = GetOutput()->GetInfo().GetValidity();
+   
+    outAtts.SetTopologicalDimension(inAtts.GetTopologicalDimension()-1);
+    outValidity.InvalidateZones();
+    outValidity.SetNormalsAreInappropriate(true);
+    if (atts.GetProject2d())
+    {
+        outAtts.SetSpatialDimension(2);
+        outValidity.InvalidateSpatialMetaData();
+        outValidity.SetPointsWereTransformed(true);
+
+        double b[6];
+ 
+        if (inAtts.GetTrueSpatialExtents()->HasExtents())
+        {
+            inAtts.GetTrueSpatialExtents()->CopyTo(b);
+            ProjectExtents(b);
+            outAtts.GetTrueSpatialExtents()->Set(b);
+        }
+
+        if (inAtts.GetCumulativeTrueSpatialExtents()->HasExtents())
+        {
+            inAtts.GetCumulativeTrueSpatialExtents()->CopyTo(b);
+            ProjectExtents(b);
+            outAtts.GetCumulativeTrueSpatialExtents()->Set(b);
+        }
+
+        if (inAtts.GetEffectiveSpatialExtents()->HasExtents())
+        {
+            inAtts.GetEffectiveSpatialExtents()->CopyTo(b);
+            ProjectExtents(b);
+            outAtts.GetEffectiveSpatialExtents()->Set(b);
+        }
+
+        if (inAtts.GetCurrentSpatialExtents()->HasExtents())
+        {
+            inAtts.GetCurrentSpatialExtents()->CopyTo(b);
+            ProjectExtents(b);
+            outAtts.GetCurrentSpatialExtents()->Set(b);
+        }
+
+        if (inAtts.GetCumulativeCurrentSpatialExtents()->HasExtents())
+        {
+            inAtts.GetCumulativeCurrentSpatialExtents()->CopyTo(b);
+            ProjectExtents(b);
+            outAtts.GetCumulativeCurrentSpatialExtents()->Set(b);
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSliceFilter::ProjectExtents
+//
+//  Purpose:
+//      Projects extents for 3D to 2D based on a slice and projection matrix.
+//
+//  Arguments:
+//      b       A buffer of extents.
+//      trans   The transformation.
+//      cutter  The slice to use.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 16, 2002
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Feb 28 07:13:28 PST 2003
+//    Made a member function to avtSliceFilter.  Put in special logic for
+//    slicing along faces of the extents.
+//
+// ****************************************************************************
+
+void
+avtSliceFilter::ProjectExtents(double *b)
+{
+    SetPlaneOrientation(b);
+
+    //
+    // Set up a one cell-ed rectilinear grid based on the bounding box.
+    //
+    vtkFloatArray *x = vtkFloatArray::New();
+    x->SetNumberOfTuples(2);
+    x->SetComponent(0, 0, b[0]);
+    x->SetComponent(1, 0, b[1]);
+
+    vtkFloatArray *y = vtkFloatArray::New();
+    y->SetNumberOfTuples(2);
+    y->SetComponent(0, 0, b[2]);
+    y->SetComponent(1, 0, b[3]);
+
+    vtkFloatArray *z = vtkFloatArray::New();
+    z->SetNumberOfTuples(2);
+    z->SetComponent(0, 0, b[4]);
+    z->SetComponent(1, 0, b[5]);
+
+    vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
+    rgrid->SetDimensions(2, 2, 2);
+    rgrid->SetXCoordinates(x);
+    rgrid->SetYCoordinates(y);
+    rgrid->SetZCoordinates(z);
+
+    //
+    // Slice and project our bounding box to mimic what would happen to our
+    // original dataset.
+    //
+    cutter->SetInput(rgrid);
+    transform->SetInput(cutter->GetOutput());
+    transform->Update();
+
+    //
+    // Now iterate through the resulting triangles and determine what the 
+    // extents are.
+    //
+    vtkPolyData *pd = transform->GetOutput();
+    float minmax[4] = { +FLT_MAX, -FLT_MAX, +FLT_MAX, -FLT_MAX };
+    for (int i = 0 ; i < pd->GetNumberOfCells() ; i++)
+    {
+        vtkCell *cell = pd->GetCell(i);
+        float bounds[6];
+        cell->GetBounds(bounds);
+        minmax[0] = (minmax[0] < bounds[0] ? minmax[0] : bounds[0]);
+        minmax[1] = (minmax[1] > bounds[1] ? minmax[1] : bounds[1]);
+        minmax[2] = (minmax[2] < bounds[2] ? minmax[2] : bounds[2]);
+        minmax[3] = (minmax[3] > bounds[3] ? minmax[3] : bounds[3]);
+    }
+
+    if (pd->GetNumberOfCells() > 0)
+    {
+        b[0] = minmax[0];
+        b[1] = minmax[1];
+        b[2] = minmax[2];
+        b[3] = minmax[3];
+    }
+    else
+    {
+        b[0] = 0.;
+        b[1] = 0.;
+        b[2] = 0.;
+        b[3] = 0.;
+    }
+    b[4] = 0.;
+    b[5] = 0.;
+
+    x->Delete();
+    y->Delete();
+    z->Delete();
+    rgrid->Delete();
+}
+
+
+// ****************************************************************************
+//  Method: avtSliceFilter::SetPlaneOrientation
+//
+//  Purpose:
+//      The VTK slicing routines will sometimes not slice correctly when the
+//      slice coincides with a face of a cell.  If this face is on the
+//      boundary, we sometimes get no intersecting triangles.  To counteract
+//      this, we can set the plane to be the plane with the direct opposite
+//      normal.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 28, 2003
+//
+// ****************************************************************************
+
+void
+avtSliceFilter::SetPlaneOrientation(double *b)
+{
+    double normal[3];
+    normal[0] = atts.GetNormal()[0];
+    normal[1] = atts.GetNormal()[1];
+    normal[2] = atts.GetNormal()[2];
+
+    //
+    // Because of the underlying implementation, we will run into cases where
+    // there is no slice if it intersects the cell on the face.  Try to 
+    // counter-act this.
+    //
+    double ox = atts.GetOriginPoint()[0];
+    double oy = atts.GetOriginPoint()[1];
+    double oz = atts.GetOriginPoint()[2];
+    if (normal[0] > 0. && normal[1] == 0. && normal[2] == 0.)
+    {
+        if (ox == b[0])
+        {
+            plane->SetNormal(-normal[0], -normal[1], -normal[2]);
+        }
+    }
+    else if (normal[0] == 0. && normal[1] > 0. && normal[2] == 0.)
+    {
+        if (oy == b[2])
+        {
+            plane->SetNormal(-normal[0], -normal[1], -normal[2]);
+        }
+    }
+    else if (normal[0] == 0. && normal[1] == 0. && normal[2] > 0.)
+    {
+        if (oz == b[4])
+        {
+            plane->SetNormal(-normal[0], -normal[1], -normal[2]);
+        }
+    }
+    else
+    {
+        // Just in case it got set backwards earlier.
+        plane->SetNormal(normal[0], normal[1], normal[2]);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSliceFilter::CalculateRectilinearCells
+//
+//  Purpose:
+//      Calculates the cell list that intersects the slice.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 5, 2002
+//
+// ****************************************************************************
+
+void
+avtSliceFilter::CalculateRectilinearCells(vtkRectilinearGrid *rgrid)
+{
+    int   handle = visitTimer->StartTimer();
+    int   i;
+
+    vtkDataArray *xc = rgrid->GetXCoordinates();
+    int nx = xc->GetNumberOfTuples();
+    float *x = new float[nx];
+    for (i = 0 ; i < nx ; i++)
+    {
+        x[i] = xc->GetTuple1(i);
+    }
+
+    vtkDataArray *yc = rgrid->GetYCoordinates();
+    int ny = yc->GetNumberOfTuples();
+    float *y = new float[ny];
+    for (i = 0 ; i < ny ; i++)
+    {
+        y[i] = yc->GetTuple1(i);
+    }
+
+    vtkDataArray *zc = rgrid->GetZCoordinates();
+    int nz = zc->GetNumberOfTuples();
+    float *z = new float[nz];
+    for (i = 0 ; i < nz ; i++)
+    {
+        z[i] = zc->GetTuple1(i);
+    }
+
+    //
+    // Come up with an appropriate upper bound for the number of cells.
+    //
+    if (celllist != NULL)
+        delete [] celllist;
+    int totalcells = nx*nx + ny*ny + nz*nz;
+    celllist   = new int[totalcells];
+
+    float plane[4];
+    plane[0] = atts.GetNormal()[0];
+    plane[1] = atts.GetNormal()[1];
+    plane[2] = atts.GetNormal()[2];
+    plane[3] = D;
+
+    int numcells = 0;
+    FindCells(x, y, z, nx-1, ny-1, nz-1,celllist, numcells, plane, 0, 0, 0, 0,
+              nx-1,ny-1,nz-1);
+    debug5 << "The slice intersected " << numcells << " cells." << endl;
+
+    cutter->SetCellList(celllist, numcells);
+
+    delete [] x;
+    delete [] y;
+    delete [] z;
+
+    visitTimer->StopTimer(handle, "Locating cells that intersect mesh");
+}
+
+
+// ****************************************************************************
+//  Function: FindCells
+//
+//  Purpose:
+//      Finds the cells from a rectilinear grid that intersect a cube.
+//
+//  Arguments:
+//      x       A list of the x values.
+//      y       A list of the y values.
+//      z       A list of the z values.
+//      nx      The number of x values.
+//      ny      The number of y values.
+//      nz      The number of z values.
+//      clist   A place to store the cell list.
+//      ncells  The number of cells in clist.
+//      plane   The equation of a plane in (A,B,C,D).
+//      dim     A hint as to what dimension to split the cube in.
+//      ax      The actual x-coordinate (needed to calculate cell numbers).
+//      ay      The actual y-coordinate (needed to calculate cell numbers).
+//      az      The actual z-coordinate (needed to calculate cell numbers).
+//      onx     The original number of values in x.
+//      ony     The original number of values in y.
+//      onz     The original number of values in z.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 5, 2002
+//
+// ****************************************************************************
+
+void
+FindCells(float *x, float *y, float *z, int nx, int ny, int nz, int *clist, 
+          int &ncells, float *plane, int dim, int ax, int ay, int az, int onx,
+          int ony, int onz)
+{
+    if (nx <= 0 || ny <= 0 || nz <= 0)
+    {
+        return;
+    }
+
+    float bounds[6];
+    bounds[0] = x[0];
+    bounds[1] = x[nx];
+    bounds[2] = y[0];
+    bounds[3] = y[ny];
+    bounds[4] = z[0];
+    bounds[5] = z[nz];
+    if (!PlaneIntersectsCube(plane, bounds))
+    {
+        return;
+    }
+
+    if (nx == 1 && ny == 1 && nz == 1)
+    {
+        //
+        // Here is the base case -- see if this one cell intersects the plane.
+        //
+        int cell = az*onx*ony + ay*onx + ax;
+        clist[ncells] = cell;
+        ncells++;  
+    }
+    else
+    {
+        //
+        // Split the problem into smaller pieces (ie recurse).
+        //
+        if (dim == 0)
+        {
+            //
+            // Split along x.
+            //
+            int split = nx/2;
+            FindCells(x,y,z,split,ny,nz,clist,ncells,plane,1,ax,ay,az,onx,ony,
+                      onz);
+            FindCells(x+split,y,z,nx-split,ny,nz,clist,ncells,plane,1,
+                      ax+split,ay,az, onx, ony, onz);
+        }
+        else if (dim == 1)
+        {
+            //
+            // Split along y.
+            //
+            int split = ny/2;
+            FindCells(x,y,z,nx,split,nz,clist,ncells,plane,1,ax,ay,az,
+                      onx,ony,onz);
+            FindCells(x,y+split,z,nx,ny-split,nz,clist,ncells,plane,2,
+                      ax,ay+split,az, onx, ony, onz);
+        }
+        else if (dim == 2)
+        {
+            //
+            // Split along z.
+            //
+            int split = nz/2;
+            FindCells(x,y,z,nx,ny,split,clist,ncells,plane,1,ax,ay,az,
+                      onx,ony,onz);
+            FindCells(x,y,z+split,nx,ny,nz-split,clist,ncells,plane,0,
+                      ax,ay,az+split, onx, ony, onz);
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Function: PlaneIntersectsCube
+//
+//  Purpose:
+//      Determines if a plane intersects a cube.
+//
+//  Arguments:
+//      plane   The equation of a plane as (A,B,C,D).
+//      bounds  The bounds of a cube as (minx,maxx,miny,maxy,minz,maxz).
+//
+//  Returns:    True if the plane intersects the cube, false otherwise.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 5, 2002
+//
+// ****************************************************************************
+
+bool
+PlaneIntersectsCube(float plane[4], float bounds[6])
+{
+    bool has_low_point  = false;
+    bool has_high_point = false;
+    for (int i = 0 ; i < 8 ; i++)
+    {
+        float x = (i&1 ? bounds[1] : bounds[0]);
+        float y = (i&2 ? bounds[3] : bounds[2]);
+        float z = (i&4 ? bounds[5] : bounds[4]);
+        float val = plane[3] - plane[0]*x - plane[1]*y - plane[2]*z;
+
+        if (val == 0.)  // If we are on the plane, intersect
+            return true;
+
+        if (val < 0)
+            has_low_point = true;
+        else
+            has_high_point = true;
+
+        //
+        // Do the 'test' now to avoid further FLOPs.
+        //
+        if (has_low_point && has_high_point)
+            return true;
+    }
+
+    return false;
+}
+
+
+// ****************************************************************************
+//  Method: avtSliceFilter::PostExecute
+//
+//  Purpose:
+//      This is called to set the inverse transformation matrix in the output.  
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   April 10, 2003 
+//
+// ****************************************************************************
+
+void
+avtSliceFilter::PostExecute()
+{
+    if (atts.GetProject2d())
+    {
+        GetOutput()->GetInfo().GetAttributes().SetTransform((*invTrans)[0]);
+    }
+}
+
+
+// ****************************************************************************
+//  Function:  GetOrigin
+//
+//  Purpose:
+//    Extract the origin from the attributes as a 3-tuple.
+//
+//  Arguments:
+//    atts       the attributes    (i)
+//    ox,oy,oz   the origin        (o)
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    May  5, 2003
+//
+// ****************************************************************************
+void
+GetOrigin(SliceAttributes &atts, double &ox, double &oy, double &oz)
+{
+    double nx = atts.GetNormal()[0];
+    double ny = atts.GetNormal()[1];
+    double nz = atts.GetNormal()[2];
+    double nl = sqrt(nx*nx + ny*ny + nz*nz);
+
+    // We want to make sure for orthogonal slices that "intercept" is still
+    // meaningful even when the normal is pointing in the negative direction
+    if (nx+ny+nz < 0 && atts.GetAxisType() != SliceAttributes::Arbitrary)
+    {
+        nl *= -1;
+    }
+
+
+    ox = 0;
+    oy = 0;
+    oz = 0;
+
+    switch (atts.GetOriginType())
+    {
+      case SliceAttributes::Point:
+      {
+          double *p = atts.GetOriginPoint();
+          ox = p[0];
+          oy = p[1];
+          oz = p[2];
+          break;
+      }
+      case SliceAttributes::Intercept:
+      {
+          if (nl != 0)
+          {
+              double d = atts.GetOriginIntercept();
+              ox = nx * d / nl;
+              oy = ny * d / nl;
+              oz = nz * d / nl;
+          }
+          break;
+      }
+    }        
+}
+

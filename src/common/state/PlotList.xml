@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+  <Attribute name="PlotList" purpose="This class contains a list of plots." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="PlotList.code">
+    <Field name="plots" label="plots" type="attVector" subtype="Plot">
+    </Field>
+    <Function name="PlotList2" user="true" member="true">
+    </Function>
+  </Attribute>

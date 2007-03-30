@@ -1,0 +1,130 @@
+Function: CopyAttributes
+Declaration: virtual bool CopyAttributes(const AttributeGroup *);
+Definition:
+// ****************************************************************************
+// Method: ClipAttributes::CopyAttributes
+//
+// Purpose: 
+//   CopyAttributes method for the ClipAttributes class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 29 08:57:18 PDT 2002
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+ClipAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    bool retval = false;
+
+    if(TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const ClipAttributes *tmp = (const ClipAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    else if(atts->TypeName() == "BoxExtents")
+    {
+        if(GetFuncType() == Plane)
+        {
+            const BoxExtents *tmp = (const BoxExtents *)atts;
+            const double *extents = tmp->GetExtents();
+            double origin[] = {extents[0], extents[2], extents[4]};
+            double xnorm[] = {1., 0., 0.};
+            double ynorm[] = {0., 1., 0.};
+            double znorm[] = {0., 0., 1.};
+            if(GetPlane1Status())
+            {
+                SetPlane1Origin(origin);
+                SetPlane1Normal(xnorm);
+            }
+            if(GetPlane2Status())
+            {
+                SetPlane2Origin(origin);
+                SetPlane2Normal(ynorm);
+            }
+            if(GetPlane3Status())
+            {
+                SetPlane3Origin(origin);
+                SetPlane3Normal(znorm);
+            }
+
+            retval = true;
+        }
+    }
+    else if(atts->TypeName() == "SphereAttributes")
+    {
+        if(GetFuncType() == Sphere)
+        {
+            const SphereAttributes *sphere = (const SphereAttributes *)atts;
+            SetCenter(sphere->GetOrigin());
+            SetRadius(sphere->GetRadius());
+
+            retval = true;
+        }
+    }
+
+    return retval;
+}
+
+Function: CreateCompatible
+Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
+Definition:
+// ****************************************************************************
+// Method: ClipAttributes::CreateCompatible
+//
+// Purpose: 
+//   Creates an object of the specified type initialized with the attributes
+//   from this object.
+//
+// Arguments:
+//   tname : The typename of the object that we want to create.
+//
+// Returns:    A new object of the type specified by tname or 0.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 29 08:57:46 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AttributeSubject *
+ClipAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+
+    if(TypeName() == tname)
+    {
+        retval = new ClipAttributes(*this);
+    }
+    else if(tname == "BoxExtents")
+    {
+        BoxExtents *b = new BoxExtents;
+        double extents[6];
+        extents[0] = plane1Origin[0];
+        extents[1] = plane1Origin[0]+2.;
+        extents[2] = plane1Origin[1];
+        extents[3] = plane1Origin[1]+2.;
+        extents[4] = plane1Origin[2];
+        extents[5] = plane1Origin[2]+2.;
+        b->SetExtents(extents);
+
+        retval = b;
+    }
+    else if(tname == "SphereAttributes")
+    {
+        SphereAttributes *s = new SphereAttributes;
+        s->SetOrigin(center);
+        s->SetRadius(radius);
+
+        retval = s;
+    }
+
+    return retval;
+}

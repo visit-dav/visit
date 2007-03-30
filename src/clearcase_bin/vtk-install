@@ -1,0 +1,74 @@
+#!/bin/csh -f
+#-----------------------------------------------------------------------
+#
+# VTK-INSTALL - Install a pre-built VTK directory in a specified directory.
+#
+# Author: Brad Whitlock
+# Date:   Wed Nov 8 11:57:34 PDT 2000
+#
+# Usage:
+#    vtk-install source-dir install-dir
+#
+# Modifications:
+#   Hank Childs, Tue Nov 21 10:55:35 PST 2000
+#   Modified permissions to be visit group with write permission.
+#
+#-----------------------------------------------------------------------
+
+if($#argv < 2) then
+    echo "Usage: vtk-install source-dir install-dir"
+    exit(1)
+endif
+
+set SDIR=$argv[1]
+set IDIR=$argv[2]
+
+## Create the vtk dir
+cd $IDIR
+mkdir vtk
+cd vtk
+
+## Copy the common directory
+mkdir common
+cd common
+cp $SDIR/common/*.h .
+cp $SDIR/common/libVTKCommon.a .
+cd ..
+
+## Copy the contrib directory
+mkdir contrib
+cd contrib
+cp $SDIR/contrib/*.h .
+if(-e $SDIR/contrib/libVTKContrib.a) then
+    cp $SDIR/contrib/libVTKContrib.a .
+endif
+cd ..
+
+## Copy the graphics directory
+mkdir graphics
+cd graphics
+cp $SDIR/graphics/*.h .
+cp $SDIR/graphics/libVTKGraphics.a .
+cd ..
+
+## Copy the imaging directory
+mkdir imaging
+cd imaging
+cp $SDIR/imaging/*.h .
+cp $SDIR/imaging/libVTKImaging.a .
+cd ..
+
+## Change permissions
+cd $IDIR
+chgrp -R visit vtk
+
+## Change all the permissions to 664, and 775 for all directories.
+chmod 775 vtk
+chmod 775 vtk/common
+chmod 664 vtk/common/*
+chmod 775 vtk/contrib
+chmod 664 vtk/contrib/*
+chmod 775 vtk/graphics
+chmod 664 vtk/graphics/*
+chmod 775 vtk/imaging
+chmod 664 vtk/imaging/*

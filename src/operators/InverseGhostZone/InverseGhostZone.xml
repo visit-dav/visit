@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+  <Plugin name="InverseGhostZone" label="Inverse Ghost Zone" type="operator" version="1.0">
+    <Attribute name="InverseGhostZoneAttributes" purpose="This class contains attributes for the inverse ghost zone operator.">
+        <Field name="constantData" type="bool">false</Field>
+    </Attribute>
+  </Plugin>

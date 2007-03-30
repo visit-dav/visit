@@ -1,0 +1,575 @@
+#include <ViewActions.h>
+#include <ViewerAnimation.h>
+#include <ViewerMessaging.h>
+#include <ViewerPlotList.h>
+#include <ViewerPopupMenu.h>
+#include <ViewerToolbar.h>
+#include <ViewerWindow.h>
+#include <ViewerWindowManager.h>
+#include <snprintf.h>
+
+#include <avtView2D.h>
+#include <avtView3D.h>
+
+#include <qaction.h>
+#include <qapplication.h>
+#include <qiconset.h>
+#include <qpainter.h>
+#include <qpopupmenu.h>
+#include <qpixmap.h>
+
+// Include icons
+#include <perspectiveon.xpm>
+#include <perspectiveoff.xpm>
+#include <resetview.xpm>
+#include <recenterview.xpm>
+#include <undoview.xpm>
+#include <viewlockon.xpm>
+#include <viewlockoff.xpm>
+#include <saveview.xpm>
+#include <blankcamera.xpm>
+
+///////////////////////////////////////////////////////////////////////////////
+
+TogglePerspectiveViewAction::TogglePerspectiveViewAction(ViewerWindow *win) : ViewerToggleAction(win, "Perspective")
+{
+    SetAllText("Perspective");
+    SetToolTip("Toggle perspective view");
+    if (!win->GetNoWinMode())
+        SetIcons(QPixmap(perspectiveon_xpm), QPixmap(perspectiveoff_xpm));
+}
+
+void
+TogglePerspectiveViewAction::Execute()
+{
+    windowMgr->TogglePerspective(window->GetWindowId());
+}
+
+bool
+TogglePerspectiveViewAction::Enabled() const
+{
+    // This action should only be enabled if the window to which the action belongs
+    // has plots in it.
+    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+}
+
+bool
+TogglePerspectiveViewAction::Toggled() const
+{
+    return window->GetPerspectiveProjection();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+ResetViewAction::ResetViewAction(ViewerWindow *win) : ViewerAction(win, "ResetViewAction")
+{
+    SetAllText("Reset view");
+    if (!win->GetNoWinMode())
+        SetIconSet(QIconSet(QPixmap(resetview_xpm)));
+}
+
+void
+ResetViewAction::Execute()
+{
+    windowMgr->ResetView(windowId);
+}
+
+bool
+ResetViewAction::Enabled() const
+{
+    // This action should only be enabled if the window to which the action belongs
+    // has plots in it.
+    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+RecenterViewAction::RecenterViewAction(ViewerWindow *win) :
+    ViewerAction(win, "RecenterViewAction")
+{
+    SetAllText("Recenter view");
+    if (!win->GetNoWinMode())
+        SetIconSet(QIconSet(QPixmap(recenterview_xpm)));
+}
+
+void
+RecenterViewAction::Execute()
+{
+    windowMgr->RecenterView(windowId);
+}
+
+bool
+RecenterViewAction::Enabled() const
+{
+    // This action should only be enabled if the window to which the action belongs
+    // has plots in it.
+    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+UndoViewAction::UndoViewAction(ViewerWindow *win) :
+    ViewerAction(win, "UndoViewAction")
+{
+    SetAllText("Undo view");
+    if (!win->GetNoWinMode())
+        SetIconSet(QIconSet(QPixmap(undoview_xpm)));
+}
+
+void
+UndoViewAction::Execute()
+{
+    windowMgr->UndoView(windowId);
+    windowMgr->UndoView(windowId);
+}
+
+bool
+UndoViewAction::Enabled() const
+{
+    // This action should only be enabled if the window to which the action belongs
+    // has plots in it.
+    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+ToggleLockViewAction::ToggleLockViewAction(ViewerWindow *win) :
+    ViewerToggleAction(win, "ToggleLockViewAction")
+{
+    SetAllText("Lock view");
+    if (!win->GetNoWinMode())
+        SetIcons(QPixmap(viewlockon_xpm), QPixmap(viewlockoff_xpm));
+}
+
+void
+ToggleLockViewAction::Execute()
+{
+    windowMgr->ToggleLockViewMode(windowId);
+}
+
+bool
+ToggleLockViewAction::Enabled() const
+{
+    // This action should only be enabled if the window to which the action belongs
+    // has plots in it.
+    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+}
+
+bool
+ToggleLockViewAction::Toggled() const
+{
+    return window->GetViewIsLocked();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+ToggleFullFrameAction::ToggleFullFrameAction(ViewerWindow *win) : 
+    ViewerToggleAction(win, "Full frame")
+{
+    SetAllText("Full frame");
+    SetToolTip("Toggle full frame");
+}
+
+void
+ToggleFullFrameAction::Execute()
+{
+    windowMgr->ToggleFullFrameMode(window->GetWindowId());
+}
+
+bool
+ToggleFullFrameAction::Enabled() const
+{
+    // This action should only be enabled if the window to which the action 
+    // belongs has plots in it, is 2D and not a Curve window.
+    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0) &&
+           (window->GetViewDimension() == 2 && !window->GetTypeIsCurve());
+}
+
+bool
+ToggleFullFrameAction::Toggled() const
+{
+    return window->GetFullFrameMode();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+const int SaveViewAction::VIEWCurve = 1;
+const int SaveViewAction::VIEW2D = 2;
+const int SaveViewAction::VIEW3D = 3;
+
+// ****************************************************************************
+// Method: SaveViewAction::SaveViewAction
+//
+// Purpose: 
+//   Constructor for the SaveViewAction class.
+//
+// Arguments:
+//   win : The viewer window that owns this action.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 26 08:53:26 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+SaveViewAction::SaveViewAction(ViewerWindow *win) : ViewerMultipleAction(win,
+    "SaveView"), views()
+{
+    const char *s1 = "Clear saved views";
+    const char *s2 = "Save view";
+    const char *s3 = "Save current view";
+
+    SetAllText(s2);
+    SetToolTip(s3);
+    SetExclusive(false);
+
+    if (!win->GetNoWinMode())
+    {
+        // Add the clear saved views choice.
+        QPixmap clearIcon(saveview_xpm);
+        QPainter paint(&clearIcon);
+        QPen pen(QColor(255,0,0));
+        pen.setWidth(2);
+        paint.setPen(pen);
+        paint.drawLine(clearIcon.width()-1, 0, 0, clearIcon.height()-1);
+        AddChoice(s1, s1, clearIcon);
+        
+        // Add the save view choice
+        QPixmap icon(saveview_xpm);
+        SetIconSet(QIconSet(icon));
+        AddChoice(s2, s3, icon);
+    }
+    else
+    {
+        AddChoice(s1);
+        AddChoice(s2);
+    }
+}
+
+// ****************************************************************************
+// Method: SaveViewAction::~SaveViewAction
+//
+// Purpose: 
+//   Destructor for the SaveViewAction class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 26 08:53:31 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+SaveViewAction::~SaveViewAction()
+{
+    DeleteViews();
+}
+
+// ****************************************************************************
+// Method: SaveViewAction::DeleteViews
+//
+// Purpose: 
+//   Deletes the views in the view vector.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 26 08:53:37 PDT 2003
+//
+// Modifications:
+//   Brad Whitlock, Thu Feb 27 14:37:03 PST 2003
+//   Added VIEWCurve.
+//
+// ****************************************************************************
+
+void
+SaveViewAction::DeleteViews()
+{
+    // Delete the views
+    for(int i = 0; i < views.size(); ++i)
+    {
+        if(views[i].viewType == VIEWCurve)
+        {
+            avtViewCurve *v = (avtViewCurve *)views[i].view;
+            delete v;
+        }
+        else if(views[i].viewType == VIEW3D)
+        {
+            avtView3D *v = (avtView3D *)views[i].view;
+            delete v;
+        }
+        else
+        {
+            avtView2D *v = (avtView2D *)views[i].view;
+            delete v;
+        }
+    }
+
+    views.clear();
+}
+
+// ****************************************************************************
+// Method: SaveViewAction::Execute
+//
+// Purpose: 
+//   Executes the save view action.
+//
+// Arguments:
+//   val : The choice to execute.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 26 08:53:39 PDT 2003
+//
+// Modifications:
+//   Brad Whitlock, Thu Feb 27 14:41:35 PST 2003
+//   I added support for curve views.
+//
+// ****************************************************************************
+
+void
+SaveViewAction::Execute(int val)
+{
+    if(val == 0)
+    {
+        // Delete the views.
+        DeleteViews();
+
+        // Remove the action from the popup menu and the toolbar.
+        window->GetPopupMenu()->RemoveAction(this);
+        window->GetToolbar()->RemoveAction(this);
+
+        // Remove all of the choices after the second choice.
+        int s = children.size();
+        for(int i = 2; i < s; ++i)
+        {
+            delete children[s - i + 1];
+            children.pop_back();
+        }
+
+        // Update the construction.
+        UpdateConstruction();
+    }
+    else if(val == 1)
+    {
+        // Save the current view.
+        SaveCurrentView();
+    }
+    else
+    {
+        // Use a saved view.
+        UseSavedView(val - 2);
+    }
+}
+
+// ****************************************************************************
+// Method: SaveViewAction::SaveCurrentView
+//
+// Purpose: 
+//   Saves the current view so we can use it later.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 27 15:13:47 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SaveViewAction::SaveCurrentView()
+{
+    if(views.size() < 15)
+    {
+        //
+        // Save the view.
+        //
+        if(window->GetTypeIsCurve())
+        {
+            avtViewCurve *v = new avtViewCurve;
+            *v = window->GetViewCurve();
+    
+            ViewInfo tmp;
+            tmp.viewType = VIEWCurve;
+            tmp.view = (void *)v;
+            views.push_back(tmp);
+        }
+        else if(window->GetViewDimension() == 3)
+        {
+            avtView3D *v = new avtView3D;
+            *v = window->GetView3D();
+    
+            ViewInfo tmp;
+            tmp.viewType = VIEW3D;
+            tmp.view = (void *)v;
+            views.push_back(tmp);
+        }
+        else
+        {
+            avtView2D *v = new avtView2D;
+            *v = window->GetView2D();
+    
+            ViewInfo tmp;
+            tmp.viewType = VIEW2D;
+            tmp.view = (void *)v;
+            views.push_back(tmp);
+        }
+ 
+        //
+        // Add the view to the action so that it is available in the toolbar.
+        //
+        char tmp[20];
+        SNPRINTF(tmp, 20, "Use saved view %d", views.size());
+
+        if (!window->GetNoWinMode())
+        {
+            //
+            // Create a pixmap from the blank camera pixmap that we can
+            // draw on.
+            //
+            QPixmap icon(blankcamera_xpm);
+            QPainter paint(&icon);
+            QString str;
+            str.sprintf("%d", views.size());
+            paint.setPen(QColor(0,255,0));
+            QFont f(QApplication::font());
+            f.setBold(true);
+            f.setPixelSize(28);
+            paint.setFont(f);
+            int x = icon.width();
+            int y = icon.height();
+            paint.drawText(icon.width() - x, 0, x, y, Qt::AlignCenter, str);
+
+            AddChoice(tmp, tmp, icon);
+        }
+        else
+        {
+            AddChoice(tmp);
+        }
+
+        UpdateConstruction();
+    }
+    else
+    {
+        // We only have this limit because I made ViewerMultipleActions
+        // capable of containing a finite number of actions.
+        Warning("You cannot save more than 15 views.");
+    }
+}
+
+// ****************************************************************************
+// Method: SaveViewAction::UseSavedView
+//
+// Purpose: 
+//   Uses the numbered saved view.
+//
+// Arguments:
+//   index : The index of the saved view that we want to use.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 27 15:10:00 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SaveViewAction::UseSavedView(int index)
+{
+    if(index >= 0 && index < views.size())
+    {
+        if(views[index].viewType == VIEWCurve)
+        {
+            if(window->GetTypeIsCurve())
+            {
+                window->SetViewCurve(*((avtViewCurve *)views[index].view));
+            }
+            else
+            {
+                char msg[200];
+                SNPRINTF(msg, 200, "VisIt cannot use saved view %d because "
+                         "it is a curve view and the window does not "
+                         "contain curves.", index + 1);
+                Error(msg);
+            }
+        }
+        else if(views[index].viewType == VIEW3D)
+        {
+            if(window->GetViewDimension() == 3)
+            {
+                window->SetView3D(*((avtView3D *)views[index].view));
+                windowMgr->UpdateViewAtts(window->GetWindowId(), false, true);
+            }
+            else
+            {
+                char msg[200];
+                SNPRINTF(msg, 200, "VisIt cannot use saved view %d because "
+                         "it is a 3D view and the window does not "
+                         "contain 3D plots.", index + 1);
+                Error(msg);
+            }
+        }
+        else
+        {
+            if(window->GetViewDimension() == 2)
+            {
+                window->SetView2D(*((avtView2D *)views[index].view));
+                windowMgr->UpdateViewAtts(window->GetWindowId(), true, false);
+            }
+            else
+            {
+                char msg[200];
+                SNPRINTF(msg, 200, "VisIt cannot use saved view %d because "
+                         "it is a 2D view and the window does not "
+                         "contain 2D plots.", index + 1);
+                Error(msg);
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: SaveViewAction::Enabled
+//
+// Purpose: 
+//   Tells when this action is enabled.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 26 08:53:46 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+SaveViewAction::Enabled() const
+{
+    return ViewerMultipleAction::Enabled() &&
+           window->GetAnimation()->GetPlotList()->GetNumPlots() > 0;
+}
+
+// ****************************************************************************
+// Method: SaveViewAction::ChoiceEnabled
+//
+// Purpose: 
+//   Tells when the individual choices in this action are enabled.
+//
+// Arguments:
+//   i : The action that to consider when returning the enabled flag.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 26 08:53:14 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+SaveViewAction::ChoiceEnabled(int i) const
+{
+    bool retval = true;
+
+    if(i == 0)
+        retval = (views.size() > 0);
+    else if(i == 1)
+        retval = (views.size() < 15);
+
+    return retval;
+}

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+  <Plugin name="OnionPeel" type="operator" label="Onion Peel" version="1.0" iconFile="OnionPeel.xpm">
+    <Attribute name="OnionPeelAttributes" purpose="Attributes for the onion peel operator" persistent="true">
+      <Enum name="NodeFace">
+        Node
+        Face
+      </Enum>
+      <Field name="adjacencyType" label="Adjacency" type="enum" subtype="NodeFace">
+        Node
+      </Field>
+      <Field name="categoryName" label="Category" type="string">
+        Whole
+      </Field>
+      <Field name="subsetName" label="Set" type="string">
+        Whole
+      </Field>
+      <Field name="index" label="Location" type="intVector">
+        1
+      </Field>
+      <Field name="logical" label="Logical" type="bool">
+        false
+      </Field>
+      <Field name="requestedLayer" label="Layers" type="int">
+        0
+      </Field>
+    </Attribute>
+  </Plugin>

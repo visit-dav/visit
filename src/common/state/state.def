@@ -1,0 +1,213 @@
+# This file contains definitions for some state objects so that the
+# classwriter utility, also in this directory, can write the source
+# code. Classwriter is located in /tools/classwriter.
+# The classwriter utility is used as follows:
+#
+# %classwriter [-file definitionFile] [-stdout] [className ...]
+#
+#    definitionFile : The file containing the state object definition.
+#    -stdout        : Writes all output to stdout instead of files.
+#    className      : Regenerate only the specified class name(s).
+#
+
+class: AnnotationAttributes
+purpose: This class contains the attributes controlling annotations.
+	axes2DFlag		b	true
+	axes2DLabels		i	3
+	axes2DGridLines		i	0
+	axes2DTicks		i	3
+	axes2DTickLocation	i	1
+	axes3DFlag		b	true
+	xAxisLabels		b	true
+	yAxisLabels		b	true
+	zAxisLabels		b	true
+	xAxisGridLines		b	false
+	yAxisGridLines		b	false
+	zAxisGridLines		b	false
+	xAxisTicks		b	true
+	yAxisTicks		b	true
+	zAxisTicks		b	true
+	axes3DTickLocation	i	0
+	axes3DType		i	0
+	triadFlag		b	true
+	bboxFlag		b	true
+	backgroundColor		F 3	1. 1. 1.
+	foregroundColor		F 3	0. 0. 0.
+
+class: ResampleAttributes
+purpose: This class contains attributes for the resample operator.
+	useTargetVal	b	false
+	targetVal	i	100000
+	width		i	30
+	height		i	30
+	depth		i	30
+	defaultVal	f	-1e38
+
+class: MessageAttributes
+purpose: This class contains attributes for sending messages.
+	messageText	s	""
+	messageSeverity	i	2
+
+class: Plot
+purpose: This class is a plot element in a plot list.
+	stateType	c	0
+	plotType	c	0
+	activeFlag	b	false
+	hiddenFlag	b	false
+	plotVar		s	"notset"
+	databaseName	s	"notset"
+	operators	i*
+
+class: PlotList
+purpose: This class contains a list of plots.
+	plots		a*	Plot
+
+class: GlobalAttributes
+purpose: This class contains attributes associated with the main window.
+	windows		i*
+	activeWindow	i	1
+	iconifiedFlag	b	false
+	autoUpdateFlag	b	false
+	replacePlots	b	false
+	maintainView 	b	false
+	maintainData	b	false
+	applyOperator	b	true
+	currentFile	s 	"notset"
+	currentState	i	0
+	numStates	i	0
+	animationMode	i	2
+	
+class: HostProfile
+purpose: This class contains information needed to launch a remote,VisIt engine.
+	profileName	s	"notset"
+	host		s	"localhost"
+	userName	s	"notset"
+	numProcessors	i	1
+        numNodesSet	b       false
+	numNodes	i	1
+        partitionSet	b       false
+        partition	s       ""
+        launchMethodSet	b       false
+        launchMethod	s       ""
+	active		b	false
+	arguments	s*	
+
+class: HostProfileList
+purpose: This class contains a list of host profiles.
+	profiles	a*	HostProfile
+	activeProfile	i	-1
+
+class: NamespaceAttributes
+purpose: This class contain the information needed to represent a namespace.
+	type		i	-1
+	subsets		i*
+	min		i	-1
+	max		i	-1
+
+class: SILAttributes
+purpose: This class contains the information needed to represent a SIL.
+	nSets		i	0
+	setNames	s*
+	setIds		i*
+	isWhole		i*
+	nCollections	i	0
+	category	s*
+	role		i*
+	superset	i*
+	nspace		a*	NamespaceAttributes
+
+class: SILRestrictionAttributes
+	useSet		i*
+	topSet		i	-1
+	silAtts		a	SILAttributes
+
+class: ColorAttribute
+purpose: This class contains RGBA color information
+	color		U 4	0 0 0 255
+
+class: ColorAttributeList
+purpose: This class contains a list of ColorAttributes.
+	colors		a*	ColorAttribute
+
+class: VolumeAttributes
+purpose: This class contains the attributes for a volume plot.
+	samplesPerRay	i	100
+	color	C 3	0 0 0
+
+class: RangeVolumeAttributes
+purpose: This class contains the attributes for a range volume plot.
+	plotAtts	a	VolumeAttributes
+	min		d	0.
+	max		d	1.
+   
+class: SaveImageAttributes
+purpose: This class contains the attributes used for saving images.
+	hostName	s	"localhost"
+	fileName	s	"visit"
+	family		b	true
+	format		i	4
+	maintainAspect	b	true
+	width		i	1024
+	height		i	1024
+	screenCapture	b	true
+	saveTiled	b	false
+
+class: ColorControlPoint
+purpose: This class contains an RGBA color with a position value.
+	colors		U	4	0 0 0 255
+	position	f	0.0
+
+class: ColorControlPointList
+purpose: This class contains a list of ColorControlPoint objects.
+	controlPoints		a*	ColorControlPoint
+        smoothingFlag		b	true
+	equalSpacingFlag	b	false
+
+class: GaussianControlPoint
+purpose: This class contains the information for a gaussian in the opacity bar.
+	x		f	0.0
+	height		f	0.0
+	width		f	0.001
+	xBias		f	0.0
+	yBias		f	0.0
+
+class: GaussianControlPointList
+purpose: This class contains a list of GaussianControlPoint objects.
+	controlPoints	a*	GaussianControlPoint
+
+class: StatusAttributes
+purpose: This class contains the status that is displayed in the GUI's status bar.
+	sender			s	"viewer"
+	clearStatus		b	false
+        message			s	""
+	percent			i	0
+	currentStage		i	1
+	currentStageName	s	"stage1"
+	maxStage		i	1
+	messageType             i       0
+
+class: EngineList
+purpose: This class contains a list of host names on which engines are running.
+	engines			s*
+
+class: ColorTableAttributes
+purpose: This class contains the list of colortables.
+	names			s*
+	colorTables		a*	ColorControlPointList
+	activeColorTable	s	"xray"
+
+class: ViewAttributes
+purpose: This class contains the view attributes.
+	camera			D 3 	0. 0. -1.
+	focus			D 3 	0. 0. 0.
+	viewUp			D 3 	0. 0. 0.
+	viewAngle		d	30.
+	setScale		b	false
+	parallelScale		d	1.
+	near			d	0.001
+	far			d	100
+	orthographic		b	true
+	windowCoords		D 4	0. 0. 1. 1.
+	viewportCoords		D 4	0.1 0.1 0.9 0.9
+
+

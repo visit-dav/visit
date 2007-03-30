@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+  <Attribute name="PrinterAttributes" purpose="This class contains the attributes used for controlling printers." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="printerName" type="string"></Field>
+    <Field name="printProgram" type="string">"lpr"</Field>
+    <Field name="documentName" type="string">"untitled"</Field>
+    <Field name="creator" type="string"></Field>
+    <Field name="numCopies" type="int">1</Field>
+    <Field name="portrait" type="bool">true</Field>
+    <Field name="printColor" type="bool">true</Field>
+    <Field name="outputToFile" type="bool">false</Field>
+    <Field name="outputToFileName" type="string">"untitled"</Field>
+    <Field name="pageSize" type="int">2</Field>
+  </Attribute>

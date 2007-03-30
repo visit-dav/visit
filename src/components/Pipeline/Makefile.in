@@ -1,0 +1,314 @@
+#                            Copyright 2000 - 2002
+#                 The Regents of the University of California.
+#                             All rights reserved.
+# 
+# This work  was produced at the  University of California, Lawrence Livermore
+# National Laboratory  (UC LLNL)  under contract no.   W-7405-ENG-48 (Contract
+# 48) between  the U.S.  Department  of Energy (DOE)  and  The Regents  of the
+# University  of   California (University)   for   the operation  of UC  LLNL.
+# Copyright  is reserved  to     the University for   purposes  of  controlled
+# dissemination,   commercialization   through   formal licensing,   or  other
+# disposition  under  terms  of Contract   48; DOE  policies, regulations  and
+# orders;  and U.S.   statutes.  The  rights of   the  Federal Government  are
+# reserved under  Contract 48 subject to the  restrictions agreed  upon by DOE
+# and University.
+# 
+#                                 DISCLAIMER
+# 
+# This software was prepared as an  account of work sponsored  by an agency of
+# the United  States Government. Neither the United  States Government nor the
+# University of California  nor any  of their  employees, makes any  warranty,
+# express or  implied,  or assumes  any  liability  or responsiblity for   the
+# accuracy, completeness,  or   usefullness of   any  information,  apparatus,
+# product, or process disclosed, or represents that its use would not infringe
+# privately   owned  rights. Reference    herein to   any specific  commercial
+# products, process, or service   by trade name, trademark,   manufacturer, or
+# otherwise,  does not    necessarily  constitute or    imply its endorsement,
+# recommendation,  or  favoring by    the  United  States Government  or   the
+# University of California. The views and opinions of authors expressed herein
+# do not necessarily state or reflect those of the United States Government or
+# the University of  California,  and shall not  be  used for  advertising  or
+# product endorsement purposes.
+#
+# Modifications:
+#
+#    Jeremy Meredith, Thu May 10 14:17:51 PDT 2001
+#    Made it create libdatabase.a instead of add to libpipeline.a.
+#    Made it create a shared library, and do the subdirs before the library.
+#
+#    Jeremy Meredith, Mon May 14 12:06:29 PDT 2001
+#    Fixed a tiny bug.
+#
+#    Hank Childs, Wed Jun 13 15:35:32 PDT 2001
+#    Remove Exceptions directory.
+#
+#    Jeremy Meredith, Mon Jun 25 21:31:15 PDT 2001
+#    Added _ser or _par extension to library names.
+#
+#    Jeremy Meredith, Mon Jul 23 00:41:31 PDT 2001
+#    Added some required libraries for AIX.
+#
+#    Jeremy Meredith, Tue Sep  4 10:36:05 PDT 2001
+#    Changed library building: the LIB targets has no extension, and
+#    either LIBSINGLETARGETS or LIBMULTITARGETS must be included
+#    in addition to TARGETS depending on whether the library is build
+#    from object files in one directory or multiple subdirectories.
+#
+#    Jeremy Meredith, Thu Oct 25 13:04:27 PDT 2001
+#    Moved MIR out of this directory.
+#
+#    Jeremy Meredith, Wed Jan 16 09:54:48 PST 2002
+#    Make this library build serial and parallel versions concurrently.
+#
+#    Jeremy Meredith, Mon Mar 11 16:44:39 PST 2002
+#    Made this library build in one pass from this directory.
+#
+#    Jeremy Meredith, Wed Mar 13 10:16:53 PST 2002
+#    Added avtFeatureEdgesFilter.
+#
+#    Hank Childs, Fri Mar 15 15:13:52 PST 2002
+#    Add avtDynamicAttribute, avtPointAttribute, and avtDatasetExaminer.
+#
+#    Hank Childs, Tue Apr 16 10:44:14 PDT 2002
+#    Added avtContourFilter, avtFacadeFilter, and avtSingleFilterFacade.
+#
+#    Brad Whitlock, Wed Apr 24 17:18:20 PST 2002
+#    Added C file for avtPluginStreamer.
+#
+#    Brad Whitlock, Wed Apr 24 10:21:06 PDT 2002
+#    Added avtLightingModel, avtFlatLighting C files.
+#
+#    Hank Childs, Fri May 24 09:51:08 PDT 2002
+#    Added avtFileWriter, avtDatasetFileWriter.
+#
+#    Sean Ahern, Fri May 24 17:17:01 PDT 2002
+#    Added avtBinaryMathFilter.
+#
+#    Hank Childs, Fri Jun  7 14:12:10 PDT 2002
+#    Added avtDegreeFilter, avtExpressionFilter.
+#
+#    Sean Ahern, Wed Jun 12 16:55:59 PDT 2002
+#    Added avtSimpleMathFilter, avtSinFilter, avtCosFilter,
+#    avtUnaryMinusFilter, avtAbsValFilter, avtNaturalLogFilter,
+#    avtBase10LogFilter, avtSingleInputExpressionFilter,
+#    avtMultipleInputExpressionFilter.  Write avtBinaryMathFilter over
+#    again.
+#
+#    Hank Childs, Sat Jun 22 22:02:09 PDT 2002
+#    Added avtPointToGlyphFilter.
+#
+#    Sean Ahern, Thu Jun 27 11:28:26 PDT 2002
+#    Added avtBinaryAddFilter, avtBinarySubtractFilter,
+#    avtBinaryMultiplyFilter, avtBinaryDivideFilter, avtArctanFilter,
+#    avtArcsinFilter, avtArccosFilter.
+#
+#    Jeremy Meredith, Wed Jul  3 13:22:26 PDT 2002
+#    Added SUBDIRS back in.  It was still needed.
+#
+#    Akira Haddox, Thu Aug 15 16:22:51 PDT 2002
+#    Added avtGradientFilter, avtMagnitudeFilter.
+#
+#    Akira Haddox, Wed Aug 21 14:52:12 PDT 2002
+#    Added MeshQuality directory.
+#
+#    Akira Haddox, Thu Aug 22 08:30:36 PDT 2002 
+#    Added Meshquality expressions: avtEulerianFilter, avtNeighborFilter,
+#    avtNodeDegreeFilter.
+#
+#    Hank Childs, Fri Aug 30 14:00:29 PDT 2002
+#    Added avtSummationFilter.
+#
+#    Hank Childs, Sun Sep  8 21:40:56 PDT 2002
+#    Added avtRevolvedVolume.
+#
+#    Kathleen Bonnell, Fri Sep 13 16:56:15 PDT 2002 
+#    Added subdir Queries.
+#
+#    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
+#    Added avtPickQuery and avtLocateCellQuery.
+#
+#    Kathleen Bonnell, Fri Nov 15 12:37:11 PST 2002 
+#    Added avtEulerianQuery, removed avtEulerianFilter.
+#
+#    Hank Childs, Fri Nov 15 15:25:26 PST 2002
+#    Renamed simple math filter to unary math filter.  Add degree/radian expr.
+#    Also add polar coordinates, and components filter.
+#
+#    Hank Childs, Tue Nov 19 06:44:03 PST 2002
+#    Moved expressions and queries to their own directories.
+#
+#    Jeremy Meredith, Fri Dec  6 10:15:34 PST 2002
+#    Added avtSmoothPolyDataFilter.
+#
+#    Eric Brugger, Fri Jan 17 09:10:30 PST 2003
+#    Renamed avtVolumeRenderer to avtRayTracer.
+#
+#    Brad Whitlock, Mon Feb 10 11:51:34 PDT 2003
+#    I added a C file for avtDatasetToImageFilter.
+#
+##############################################################################
+
+@SET_MAKE@
+@VARIABLES@
+
+SUBDIRS=Data Pipeline PrivateFilters PublicFilters Sinks Sources
+SRC=$(Data_src) $(MeshQuality_src) $(Pipeline_src) $(PrivateFilters_src) \
+    $(PublicFilters_src) $(Sinks_src) $(Sources_src)
+
+Data_src= \
+  Data/avtAverageValueRF.C \
+  Data/avtCallback.C \
+  Data/avtCellList.C \
+  Data/avtCommonDataFunctions.C \
+  Data/avtCompositeRF.C \
+  Data/avtDataAttributes.C \
+  Data/avtDataObject.C \
+  Data/avtDataObjectInformation.C \
+  Data/avtDataRepresentation.C \
+  Data/avtDataTree.C \
+  Data/avtDataValidity.C \
+  Data/avtDataset.C \
+  Data/avtDatasetExaminer.C \
+  Data/avtDatasetVerifier.C \
+  Data/avtDistancePixelizer.C \
+  Data/avtDistanceToValueRF.C \
+  Data/avtDynamicAttribute.C \
+  Data/avtExtents.C \
+  Data/avtExtractor.C \
+  Data/avtFacelist.C \
+  Data/avtFlatLighting.C \
+  Data/avtGradients.C \
+  Data/avtHexahedronExtractor.C \
+  Data/avtImage.C \
+  Data/avtImagePartition.C \
+  Data/avtImageRepresentation.C \
+  Data/avtIntervalTree.C \
+  Data/avtLightingModel.C \
+  Data/avtMIPRangeRF.C \
+  Data/avtMaterial.C \
+  Data/avtMaximumIntensityProjectionRF.C \
+  Data/avtMetaData.C \
+  Data/avtMixedVariable.C \
+  Data/avtNullData.C \
+  Data/avtOpacityMap.C \
+  Data/avtPhong.C \
+  Data/avtPointAttribute.C \
+  Data/avtPyramidExtractor.C \
+  Data/avtRangeMaxTable.C \
+  Data/avtRay.C \
+  Data/avtRayFunction.C \
+  Data/avtSamplePointArbitrator.C \
+  Data/avtSamplePoints.C \
+  Data/avtSpecies.C \
+  Data/avtTetrahedronExtractor.C \
+  Data/avtVariablePixelizer.C \
+  Data/avtView2D.C \
+  Data/avtView3D.C \
+  Data/avtViewCurve.C \
+  Data/avtViewInfo.C \
+  Data/avtVolume.C \
+  Data/avtWedgeExtractor.C
+
+Pipeline_src= \
+  Pipeline/avtDataObjectReader.C \
+  Pipeline/avtDataObjectString.C \
+  Pipeline/avtDataObjectWriter.C \
+  Pipeline/avtDataSetReader.C \
+  Pipeline/avtDataSetWriter.C \
+  Pipeline/avtDataSpecification.C \
+  Pipeline/avtImageReader.C \
+  Pipeline/avtImageWriter.C \
+  Pipeline/avtNullDataReader.C \
+  Pipeline/avtNullDataWriter.C \
+  Pipeline/avtParallel.C \
+  Pipeline/avtPipelineSpecification.C
+
+PrivateFilters_src= \
+  PrivateFilters/avtDataObjectToDatasetFilter.C \
+  PrivateFilters/avtDataTreeStreamer.C \
+  PrivateFilters/avtDatasetToDataObjectFilter.C \
+  PrivateFilters/avtDatasetToDatasetFilter.C \
+  PrivateFilters/avtDatasetToImageFilter.C \
+  PrivateFilters/avtDatasetToSamplePointsFilter.C \
+  PrivateFilters/avtFacadeFilter.C \
+  PrivateFilters/avtFilter.C \
+  PrivateFilters/avtPluginStreamer.C \
+  PrivateFilters/avtSamplePointsToSamplePointsFilter.C \
+  PrivateFilters/avtSingleFilterFacade.C \
+  PrivateFilters/avtStreamer.C 
+
+PublicFilters_src= \
+  PublicFilters/avtCompactTreeFilter.C \
+  PublicFilters/avtContourFilter.C \
+  PublicFilters/avtCurrentExtentFilter.C \
+  PublicFilters/avtFacelistFilter.C \
+  PublicFilters/avtFeatureEdgesFilter.C \
+  PublicFilters/avtGhostZoneAndFacelistFilter.C \
+  PublicFilters/avtGhostZoneFilter.C \
+  PublicFilters/avtImageCommunicator.C \
+  PublicFilters/avtImageCompositer.C \
+  PublicFilters/avtPointToGlyphFilter.C \
+  PublicFilters/avtRayCompositer.C \
+  PublicFilters/avtRayTracer.C \
+  PublicFilters/avtRelevantPointsFilter.C \
+  PublicFilters/avtResampleFilter.C \
+  PublicFilters/avtSamplePointCommunicator.C \
+  PublicFilters/avtSamplePointExtractor.C \
+  PublicFilters/avtShiftCenteringFilter.C \
+  PublicFilters/avtSmoothPolyDataFilter.C \
+  PublicFilters/avtSummationFilter.C \
+  PublicFilters/avtTransform.C \
+  PublicFilters/avtVertexNormalsFilter.C \
+  PublicFilters/avtWholeImageCompositer.C \
+  PublicFilters/avtWorldSpaceToImageSpaceTransform.C
+
+Sinks_src= \
+  Sinks/avtDataObjectSink.C \
+  Sinks/avtDatasetSink.C \
+  Sinks/avtDatasetFileWriter.C \
+  Sinks/avtFileWriter.C \
+  Sinks/avtImageFileWriter.C \
+  Sinks/avtImageSink.C \
+  Sinks/avtMultipleInputSink.C \
+  Sinks/avtNullDataSink.C \
+  Sinks/avtOriginatingDatasetSink.C \
+  Sinks/avtOriginatingSink.C \
+  Sinks/avtSamplePointsSink.C
+
+Sources_src= \
+  Sources/avtDataObjectSource.C \
+  Sources/avtDatasetSource.C \
+  Sources/avtImageSource.C \
+  Sources/avtInlinePipelineSource.C \
+  Sources/avtNullDataSource.C \
+  Sources/avtSamplePointsSource.C \
+  Sources/avtSourceFromAVTDataset.C \
+  Sources/avtSourceFromDataset.C \
+  Sources/avtSourceFromImage.C \
+  Sources/avtTerminatingDatasetSource.C \
+  Sources/avtTerminatingImageSource.C \
+  Sources/avtTerminatingSource.C
+
+
+CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
+
+SEROBJ=$(SRC:.C=_ser.o)
+PAROBJ=$(SRC:.C=_par.o)
+LIB=libpipeline
+SERLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lvisit_vtk @VTK_LIBS@ $(X_LIBS) @LIBS@
+PARLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lvisit_vtk @VTK_LIBS@ $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
+
+##
+## Standard targets...
+##
+all: $(LIBSHAREDSER) @LIBSHAREDPAR@
+
+clean:
+	$(RM) $(LIBSHAREDSER) @LIBSHAREDPAR@
+	$(RM) $(SEROBJ) $(PAROBJ)
+
+##
+## Automatic dependency stuff
+##
+@TARGETS@
+@PARLIBTARGETS@

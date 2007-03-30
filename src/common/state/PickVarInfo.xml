@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+  <Attribute name="PickVarInfo" purpose="This class contains PickVarInfo." persistent="false" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="PickVarInfo.code">
+    <Enum name="Centering">
+      Nodal
+      Zonal
+      None
+    </Enum>
+    <Field name="variableName" label="variableName" type="string">
+       
+    </Field>
+    <Field name="names" label="names" type="stringVector">
+    </Field>
+    <Field name="values" label="values" type="doubleVector">
+    </Field>
+    <Field name="mixNames" label="mixNames" type="stringVector">
+    </Field>
+    <Field name="mixValues" label="mixValues" type="doubleVector">
+    </Field>
+    <Field name="mixVar" label="mixVar" type="bool">
+      false
+    </Field>
+    <Field name="centering" label="centering" type="enum" subtype="Centering">
+      None
+    </Field>
+    <Field name="miscMessage" label="miscMessage" type="string">
+      
+    </Field>
+    <Function name="Reset" user="true" member="true">
+    </Function>
+    <Function name="PrintSelf" user="true" member="true">
+    </Function>
+    <Function name="CreateOutputString" user="true" member="true">
+    </Function>
+    <Function name="CreateOutputStrings" user="true" member="true">
+    </Function>
+    <Include file="source" quoted="false">
+      stdio.h
+    </Include>
+    <Include file="header" quoted="true">
+      snprintf.h
+    </Include>
+  </Attribute>

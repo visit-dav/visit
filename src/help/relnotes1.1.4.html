@@ -1,0 +1,59 @@
+<html>
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>VisIt 1.1.4 Release Notes</title>
+</head>
+<body>
+<p align="center"><b><font size="6">VisIt 1.1.4 Release Notes</font></b></p>
+<p>Welcome to VisIt's release notes page. This page describes the important 
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.1.4</font></b></p>
+<ul>
+  <li>VisIt's plot list has been enhanced so that you can expand plots by clicking on the turndown at the start of the plot name. Once a plot is expanded, you can move operators up or down in the pipeline as well as remove them from the middle of the pipeline. You can also open the plot attribute or operator attribute windows by double clicking on a plot or operator name once the plot list entry is expanded. You can also activate the Subset window by double clicking on the plot's subset icon.</li>
+  <li>VisIt has been modified so that you only need to enter your password for remote computers one time. VisIt launches a new component launcher on the remote computer and the launcher takes care of launching the metadata server and the compute engine.</li>
+  <li>VisIt has a new Boundary plot that is based on the Subset plot.</li>
+  <li>The Silo database reader plugin has been improved so that it can open large files much faster.</li>
+  <li>VisIt now always passes the desired version when launching components. This gets around problems where a network may have different versions of VisIt.</li>
+  <li>Multiple coordinates are no longer required for orthogonal slices.</li>
+  <li>Closing a compute engine is faster now.</li>
+  <li>The GUI's -o option to open files on the command line now opens a virtual database if the file being opened has related timesteps and automatic file grouping is on. This lets you double click on any file in a family of files and have VisIt automatically open the file family, which makes it easier to change timesteps later.</li>
+  <li>Picking no longer requires recalculation when slices are projected to 2D.</li>
+  <li>The reflect operator now has a new default reflect octant.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.1.4</font></b></p>
+<ul>
+  <li>Accidentally clicking the "All" buttons in the Subset window causes the GUI to crash when the window has no subsets.</li>
+  <li>Makefiles for generated plugins are incorrect.</li>
+  <li>View autocentering has been replaced with "Maintain view" and it is off by default. This ensures that the view recalculates when it needs to unless you are maintaining the view.</li>
+  <li>The 2D axes sometimes have an extra line.</li>
+  <li>Pick reports 2D pick points when picking on 3D meshes.</li>
+  <li>Invalid host profiles are kept in the config file.</li>
+  <li>Lineout does not work with material species.</li>
+  <li>VisIt does not run on Windows NT 4.0.</li>
+  <li>The keyframe regression test crashes the viewer.</li>
+  <li>The placement of the Ok and Cancel buttons has been changed in the File selection window.</li>
+  <li>Deleting curves causes plots in other windows to be deleted.</li>
+  <li>VisIt's viewer sometimes crashes when it loses its connection to a metadata server.</li>
+  <li>VisIt can now start up even if it cannot launch a metadata server.</li>
+  <li>2D slice view is not set correctly with emptry datasets.</li>
+  <li>VisIt now complains if you try to use an invalid color table.</li>
+  <li>The Connection progress dialog is not brought to the front on Windows.</li>
+  <li>Confusion regarding pick of Subset plot of domains.</li>
+  <li>Pick reports incorrect node coordinates for projected slices.</li>
+  <li>The Point3D database reader gets an extra point.</li>
+  <li>Window limits don't adjust as we step through an animation.</li>
+  <li>Curve view settings are wrong for a lineout of a constant plot.</li>
+  <li>The Slice operator's flip option should not be available when projecting the slice to 2D.</li>
+  <li>The mdserver assumes the wrong path when a file is given using the -o option on startup.</li>
+  <li>The viewer reports invalid information for parallel compute engines launched via the command line.</li>
+  <li>The Host profiles window has been moved to the Options menu.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version 
+of VisIt: <a href="relnotes1.1.3.html">VisIt 1.1.3 Release Notes</a>.</p>
+
+</body>
+
+</html>

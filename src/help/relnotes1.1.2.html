@@ -1,0 +1,36 @@
+<html>
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>VisIt 1.1.2 Release Notes</title>
+</head>
+<body>
+<p align="center"><b><font size="6">VisIt 1.1.2 Release Notes</font></b></p>
+<p>Welcome to VisIt's release notes page. This page describes the important 
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.1.2</font></b></p>
+<ul>
+  <li>VisIt's viewer now has plot and operator toolbars that allow you to easily create plots and add operators.</li>
+  <li>VisIt now has a database reader plugin that reads point mesh and data stored in ascii text files.</li>
+  <li>Reference lines can now update curve plots when the active database timestep changes.</li>
+  <li>VisIt's Reflect operator window has been redesigned so that you can choose the reflection octants using a 3D widget.</li>
+  <li>Reference lines can now extract data and generate curve plots for multiple variables.</li>
+  <li>VisIt's GUI has a new preferences window that allows you to set a flag that governs whether window attributes are copied to new vis windows when they are referenced for the first time.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.1.2</font></b></p>
+<ul>
+  <li>VisIt's parallel compute engine crashes if it is started by reopening a file.</li>
+  <li>The viewer doesn't ignore interactive tools if the compute engine is busy.</li>
+  <li>Pick does not report mixed variable values for cells that have mixed materials.</li>
+  <li>The variable legend sometimes uses the wrong colors when the plot contains only constant values.</li>
+  <li>VisIt's KullLite database reader plugin does not handle wedges correctly.</li>
+  <li>The GUI cores on exit when it is built with g++ 3.x.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version 
+of VisIt: <a href="relnotes1.1.1.html">VisIt 1.1.1 Release Notes</a>.</p>
+
+</body>
+
+</html>

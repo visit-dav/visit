@@ -1,0 +1,93 @@
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const CurveAttributes &) const;
+Definition:
+bool
+CurveAttributes::ChangesRequireRecalculation(const CurveAttributes &obj) const
+{
+    return false;
+}
+
+
+Function: CopyAttributes
+Declaration: virtual bool CopyAttributes(const AttributeGroup *);
+Definition:
+bool
+CurveAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    bool retval = false;
+
+    if(TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const CurveAttributes *tmp = (const CurveAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    else if(atts->TypeName() == "Line")
+    {
+        const Line *tmp = (const Line*)atts;
+        SetDesignator(tmp->GetDesignator());
+        SetColor(tmp->GetColor());
+        retval = true;
+    }
+
+    return retval;
+}
+
+Function: CreateCompatible
+Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
+Definition:
+AttributeSubject *
+CurveAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+
+    if(TypeName() == tname)
+    {
+        retval = new CurveAttributes(*this);
+    }
+    else if(tname == "Line")
+    {
+        Line *line = new Line;
+        line->SetDesignator(GetDesignator());
+        line->SetColor(GetColor());
+        line->SetLineStyle(GetLineStyle());
+        line->SetLineWidth(GetLineWidth());
+        retval = line;
+    }
+
+    return retval;
+}
+
+Function: Print
+Declaration: void Print(ostream &, bool) const;
+Definition:
+void
+CurveAttributes::Print(ostream &out, bool selected_only) const
+{
+    out << "CurveAttributes" << "\n";
+    out << "{";
+    for(int i = 0; i < NumAttributes(); ++i)
+    {
+        if(selected_only && !IsSelected(i))
+            continue;
+
+        switch(i)
+        {
+          case  0: out << "lineStyle=  " << GetLineStyle();      break;
+          case  1: out << "lineWidth=  " << GetLineWidth();      break;
+          case  2: double color[4];
+                   GetColor().GetRgba(color);
+                   out << "color=      " 
+                       << color[0] << " " << color[1] << " " 
+                       << color[2] << " " << color[3];
+                   GetDesignator();    break;
+          case  3: out << "showLabels= " << GetShowLabels();    break;
+          case  4: out << "designator= " << GetDesignator().c_str();    break;
+        }
+        out << ",";
+    }
+
+    out << "}";
+}
+

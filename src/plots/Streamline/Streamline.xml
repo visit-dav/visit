@@ -1,0 +1,127 @@
+<?xml version="1.0"?>
+  <Plugin name="Streamline" type="plot" label="Streamline" version="1.0" vartype="vector" iconFile="Streamline.xpm">
+    <Files components="V">
+      avtStreamlineFilter.C
+    </Files>
+    <Files components="E">
+      avtStreamlineFilter.C
+    </Files>
+    <Attribute name="StreamlineAttributes" purpose="Attributes for the Streamline plot" persistent="true" codefile="Streamline.code">
+      <Enum name="SourceType">
+        SpecifiedPoint
+        SpecifiedLine
+        SpecifiedPlane
+        SpecifiedSphere
+        SpecifiedBox
+      </Enum>
+      <Field name="sourceType" label="Source" type="enum" subtype="SourceType">
+        SpecifiedPoint
+      </Field>
+      <Field name="stepLength" label="Step length" type="double">
+        1.000000
+      </Field>
+      <Field name="maxTime" label="Maximum time" type="double">
+        10.000000
+      </Field>
+      <Field name="pointSource" label="Starting point" type="doubleArray" length="3" enabler="sourceType:SpecifiedPoint">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="lineStart" label="Line start" type="doubleArray" length="3" enabler="sourceType:SpecifiedLine">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="lineEnd" label="Line end" type="doubleArray" length="3" enabler="sourceType:SpecifiedLine">
+        1.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="planeOrigin" label="Plane origin" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="planeNormal" label="Plane normal" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
+        0.000000
+        0.000000
+        1.000000
+      </Field>
+      <Field name="planeUpAxis" label="Plane up axis" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
+        0.000000
+        1.000000
+        0.000000
+      </Field>
+      <Field name="planeRadius" label="Plane radius" type="double" enabler="sourceType:SpecifiedPlane">
+        1.000000
+      </Field>
+      <Field name="sphereOrigin" label="Sphere origin" type="doubleArray" length="3" enabler="sourceType:SpecifiedSphere">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="sphereRadius" label="Sphere radius" type="double" enabler="sourceType:SpecifiedSphere">
+        1.000000
+      </Field>
+      <Field name="boxExtents" label="Box extents" type="doubleArray" length="6" enabler="sourceType:SpecifiedBox">
+        0.000000
+        1.000000
+        0.000000
+        1.000000
+        0.000000
+        1.000000
+      </Field>
+      <Field name="pointDensity" label="Point density" type="int">
+        2
+      </Field>
+      <Field name="showTube" label="Show tubes" type="bool">
+        false
+      </Field>
+      <Field name="showStart" label="Show tube start" type="bool" enabler="showTube:true">
+        true
+      </Field>
+      <Field name="tubeRadius" label="Tube radius" type="double" enabler="showTube:true">
+        0.125000
+      </Field>
+      <Field name="lineWidth" label="Line width" type="linewidth">
+        2
+      </Field>
+      <Field name="colorBySpeed" label="Color by speed" type="bool">
+        true
+      </Field>
+      <Field name="colorTableName" label="Color table" type="colortable" enabler="colorBySpeed:true">
+        Default
+      </Field>
+      <Field name="singleColor" label="Single color" type="color" enabler="colorBySpeed:false">
+        0
+        0
+        0
+        255
+      </Field>
+      <Field name="legendFlag" label="Legend" type="bool">
+        true
+      </Field>
+      <Field name="lightingFlag" label="Lighting" type="bool">
+        true
+      </Field>
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Function name="CreateCompatible" user="false" member="true">
+      </Function>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Include file="source" quoted="false">
+        Line.h
+      </Include>
+      <Include file="source" quoted="false">
+        PlaneAttributes.h
+      </Include>
+      <Include file="source" quoted="false">
+        SphereAttributes.h
+      </Include>
+      <Include file="source" quoted="false">
+        BoxExtents.h
+      </Include>
+    </Attribute>
+  </Plugin>

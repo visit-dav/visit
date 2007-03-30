@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+  <Plugin name="SiloDump" type="operator" label="Silo Dump" version="1.0">
+    <CXXFLAGS>
+      $(SILO_INCLUDE)
+    </CXXFLAGS>
+    <LIBS>
+      $(SILO_LIB)
+    </LIBS>
+    <Attribute name="SiloDumpAttributes" purpose="This class contains attributes for the silo dump operator." persistent="true">
+      <Field name="filename" label="Filename" type="string">
+        dump
+      </Field>
+      <Field name="display" label="Display output" type="bool">
+        false
+      </Field>
+    </Attribute>
+  </Plugin>

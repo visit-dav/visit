@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+  <Attribute name="PluginManagerAttributes" codefile="PluginManagerAttributes.code" purpose="This class contains attributes for managing plugins." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="name"    type="stringVector"></Field>
+    <Field name="type"    type="stringVector"></Field>
+    <Field name="version" type="stringVector"></Field>
+    <Field name="id"      type="stringVector"></Field>
+    <Field name="enabled" type="intVector"></Field>
+    <Function name="GetIndexByID"  user="true"></Function>
+    <Function name="AddPlugin"     user="true"></Function>
+    <Function name="RemovePlugin"  user="true"></Function>
+  </Attribute>

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+  <Plugin name="Tube" type="operator" label="Tube" version="1.0" iconFile="Tube.xpm">
+    <Attribute name="TubeAttributes" purpose="This class contains attributes for the tube operator." persistent="true">
+      <Field name="width" label="width" type="float">
+        0.500000
+      </Field>
+      <Field name="fineness" label="Fineness of tube" type="int">
+        3
+      </Field>
+      <Field name="capping" label="Cap Tubes?" type="bool">
+        false
+      </Field>
+    </Attribute>
+  </Plugin>

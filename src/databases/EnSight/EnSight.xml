@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+  <Plugin name="EnSight" type="database" label="EnSight" version="1.0" dbtype="MTSD">
+    <Extensions>
+      case
+    </Extensions>
+    <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

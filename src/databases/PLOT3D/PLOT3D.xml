@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+  <Plugin name="PLOT3D" label="PLOT3D" type="database" dbtype="STMD" version="1.0">
+    <Extensions> q x </Extensions>
+  </Plugin>

@@ -1,0 +1,176 @@
+Function:  CreateNode
+Declaration: virtual bool CreateNode(DataNode *node, bool);
+Definition:
+// ****************************************************************************
+// Method: GlobalAttributes::CreateNode
+//
+// Purpose: 
+//   Creates a node called "GlobalAttributes" that has all of the 
+//   GlobalAttributes in it.
+//
+// Arguments:
+//   parentNode : The node under which the globalAtts node is created.
+//
+// Notes:
+//   Only a handful of the attributes that this object contains are
+//   made persistent. Other values are not good to save out since they
+//   would have to update the state in other state objects in order to
+//   work properly. Eventually, we might do that.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 28 13:02:04 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Mon Sep 16 14:50:20 PST 2002
+//   I added the window layout.
+//
+//   Brad Whitlock, Mon Nov 4 13:51:39 PST 2002
+//   I added makeDefaultConfirmation.
+//
+//   Eric Brugger, Thu Mar 13 14:05:40 PST 2003
+//   I added cloneWindowOnFirstRef.
+//
+//   Brad Whitlock, Thu Mar 20 10:19:35 PDT 2003
+//   I removed maintainView and maintainData.
+//
+//   Eric Brugger, Fri Apr 18 10:27:53 PDT 2003
+//   I added maintainView.
+//
+//   Brad Whitlock, Tue May 20 10:43:27 PDT 2003
+//   I made it made it save only what differs from the defaults.
+//
+// ****************************************************************************
+
+bool
+GlobalAttributes::CreateNode(DataNode *parentNode, bool forceAdd)
+{
+    if(parentNode == 0)
+        return false;
+
+    bool addToParent = false;
+    GlobalAttributes defaultObject;
+
+    // Create a node for GlobalAttributes.
+    DataNode *node = new DataNode("GlobalAttributes");
+
+    if(!FieldsEqual(3, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("autoUpdateFlag", autoUpdateFlag));
+    }
+
+    if(!FieldsEqual(4, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("replacePlots", replacePlots));
+    }
+
+    if(!FieldsEqual(5, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("applyOperator", applyOperator));
+    }
+
+    if(!FieldsEqual(13, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("windowLayout", windowLayout));
+    }
+
+    if(!FieldsEqual(14, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("makeDefaultConfirm", makeDefaultConfirm));
+    }
+
+    if(!FieldsEqual(16, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("cloneWindowOnFirstRef",
+                                    cloneWindowOnFirstRef));
+    }
+
+    if(!FieldsEqual(17, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("maintainView", maintainView));
+    }
+
+    // Add the node to the parent node.
+    if(addToParent || forceAdd)
+        parentNode->AddNode(node);
+    else
+        delete node;
+
+    return (addToParent || forceAdd);
+}
+
+
+
+Function:  SetFromNode
+Declaration: virtual void SetFromNode(DataNode *node);
+Definition:
+// ****************************************************************************
+// Method: GlobalAttributes::SetFromNode
+//
+// Purpose: 
+//   Looks for a node called "GlobalAttributes" under the parentNode. If
+//   it is found, then it looks for various properties and sets the
+//   object's attributes accordingly.
+//
+// Arguments:
+//   parentNode : The node to start looking for "GlobalAttributes".
+//
+// Notes:
+//   Only a handful of the attributes that this object contains are
+//   made persistent. Other values are not good to save out since they
+//   would have to update the state in other state objects in order to
+//   work properly. Eventually, we might do that.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 28 13:02:57 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Mon Sep 16 14:51:35 PST 2002
+//   I added the window layout.
+//
+//   Brad Whitlock, Mon Nov 4 13:52:32 PST 2002
+//   I added makeDefaultConfirm.
+//
+//   Eric Brugger, Thu Mar 13 14:05:40 PST 2003
+//   I added cloneWindowOnFirstRef.
+//
+//   Brad Whitlock, Thu Mar 20 10:19:35 PDT 2003
+//   I removed maintainView and maintainData.
+//
+//   Eric Brugger, Fri Apr 18 10:27:53 PDT 2003
+//   I added maintainView.
+//
+// ****************************************************************************
+
+void
+GlobalAttributes::SetFromNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("GlobalAttributes");
+    if(searchNode == 0)
+        return;
+
+    DataNode *node;
+    if((node = searchNode->GetNode("autoUpdateFlag")) != 0)
+        SetAutoUpdateFlag(node->AsBool());
+    if((node = searchNode->GetNode("replacePlots")) != 0)
+        SetReplacePlots(node->AsBool());
+    if((node = searchNode->GetNode("applyOperator")) != 0)
+        SetApplyOperator(node->AsBool());
+    if((node = searchNode->GetNode("windowLayout")) != 0)
+        SetWindowLayout(node->AsInt());
+    if((node = searchNode->GetNode("makeDefaultConfirm")) != 0)
+        SetMakeDefaultConfirm(node->AsBool());
+    if((node = searchNode->GetNode("cloneWindowOnFirstRef")) != 0)
+        SetCloneWindowOnFirstRef(node->AsBool());
+    if((node = searchNode->GetNode("maintainView")) != 0)
+        SetMaintainView(node->AsBool());
+}

@@ -1,0 +1,1101 @@
+#include <WindowActions.h>
+#include <ViewerAnimation.h>
+#include <ViewerPlotList.h>
+#include <ViewerWindow.h>
+#include <ViewerWindowManager.h>
+#include <PlotPluginManager.h>
+#include <OperatorPluginManager.h>
+
+#include <qiconset.h>
+#include <qpixmap.h>
+
+// Include the icons
+#include <newwindow.xpm>
+#include <clearwindow.xpm>
+#include <copymenu.xpm>
+#include <deletewindow.xpm>
+#include <checkwindow.xpm>
+#include <blankwindow.xpm>
+#include <spinon.xpm>
+#include <spinoff.xpm>
+#include <navigatebboxon.xpm>
+#include <navigatebboxoff.xpm>
+#include <layout1x1.xpm>
+#include <layout1x2.xpm>
+#include <layout2x2.xpm>
+#include <layout2x4.xpm>
+#include <layout3x3.xpm>
+#include <layout4x4.xpm>
+#include <navigatemode.xpm>
+#include <pickmode.xpm>
+#include <zoommode.xpm>
+#include <lineoutmode.xpm>
+#include <VisWindowTypes.h>
+#include <boxtool.xpm>
+#include <linetool.xpm>
+#include <planetool.xpm>
+#include <spheretool.xpm>
+#include <invertbackground.xpm>
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: AddWindowAction::AddWindowAction
+//
+// Purpose: 
+//   Constructor for the AddWindowAction class.
+//
+// Arguments:
+//   win : The window to which the action belongs.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:31:37 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AddWindowAction::AddWindowAction(ViewerWindow *win) :
+    ViewerAction(win, "AddWindowAction")
+{
+    SetAllText("Add new window");
+    SetMenuText("Add");
+    if (!win->GetNoWinMode())
+        SetIconSet(QIconSet(QPixmap(newwindow_xpm)));
+}
+
+// ****************************************************************************
+// Method: AddWindowAction::Execute
+//
+// Purpose: 
+//   Executes the work for AddWindowAction.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:31:37 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+AddWindowAction::Execute()
+{
+    windowMgr->AddWindow();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: CloneWindowAction::CloneWindowAction
+//
+// Purpose: 
+//   Constructor for the CloneWindowAction class.
+//
+// Arguments:
+//   win : The window to which the action belongs.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:31:37 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+CloneWindowAction::CloneWindowAction(ViewerWindow *win) :
+    ViewerAction(win, "CloneWindowAction")
+{
+    SetAllText("Clone window");
+    SetMenuText("Clone");
+    if (!win->GetNoWinMode())
+        SetIconSet(QIconSet(QPixmap(copymenu_xpm)));
+}
+
+// ****************************************************************************
+// Method: CloneWindowAction::AddWindowAction
+//
+// Purpose: 
+//   Does the work for CloneWindowAction.
+//
+// Arguments:
+//   win : The window to which the action belongs.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:31:37 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+CloneWindowAction::Execute()
+{
+    windowMgr->SetActiveWindow(window->GetWindowId() + 1);
+    windowMgr->CloneWindow();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: DeleteWindowAction::DeleteWindowAction
+//
+// Purpose: 
+//   Constructor for the DeleteWindowAction class.
+//
+// Arguments:
+//   win : The window to which the action belongs.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:31:37 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+DeleteWindowAction::DeleteWindowAction(ViewerWindow *win) :
+    ViewerAction(win, "DeleteWindowAction")
+{
+    SetAllText("Delete window");
+    SetMenuText("Delete");
+    if (!win->GetNoWinMode())
+        SetIconSet(QIconSet(QPixmap(deletewindow_xpm)));
+}
+
+// ****************************************************************************
+// Method: DeleteWindowAction::Execute
+//
+// Purpose: 
+//   Does the work for DeleteWindowAction.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:33:41 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+DeleteWindowAction::Execute()
+{
+    window->SendDeleteMessage();
+}
+
+// ****************************************************************************
+// Method: DeleteWindowAction::Enabled
+//
+// Purpose: 
+//   Returns when the action is enabled.
+//
+// Returns:    True if the action is enabled; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:34:02 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+DeleteWindowAction::Enabled() const
+{
+    return (windowMgr->GetNumWindows() > 1);
+}
+
+void
+DeleteWindowAction::Update()
+{
+    // Override the Update method because we get memory errors because the
+    // window is only partially deleted at this point.
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: ClearWindowAction::ClearWindowAction
+//
+// Purpose: 
+//   Constructor for the ClearWindowAction class.
+//
+// Arguments:
+//   win : The window to which the action belongs.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:31:37 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ClearWindowAction::ClearWindowAction(ViewerWindow *win) :
+    ViewerAction(win, "ClearWindowAction")
+{
+    SetAllText("Clear plots");
+    if (!win->GetNoWinMode())
+        SetIconSet(QIconSet(QPixmap(clearwindow_xpm)));
+}
+
+// ****************************************************************************
+// Method: ClearWindowAction::Execute
+//
+// Purpose: 
+//   Does the work for ClearWindowAction.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:34:54 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ClearWindowAction::Execute()
+{
+    window->ClearWindow();
+}
+
+// ****************************************************************************
+// Method: ClearWindowAction::Enabled
+//
+// Purpose: 
+//   Returns when the action is enabled.
+//
+// Returns:    True if the action is enabled; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:35:11 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ClearWindowAction::Enabled() const
+{
+    // This action should only be enabled if the window to which the action belongs
+    // has plots in it.
+    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: ClearAllWindowsAction::ClearAllWindowsAction
+//
+// Purpose: 
+//   Constructor for the ClearAllWindowsAction class.
+//
+// Arguments:
+//   win : The window to which the action belongs.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:35:39 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ClearAllWindowsAction::ClearAllWindowsAction(ViewerWindow *win) :
+    ViewerAction(win, "ClearAllWindowsAction")
+{
+    SetAllText("Clear all windows");
+}
+
+// ****************************************************************************
+// Method: ClearAllWindowsAction::Execute
+//
+// Purpose: 
+//   Does the work for ClearAllWindowsAction.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:36:07 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ClearAllWindowsAction::Execute()
+{
+    windowMgr->ClearAllWindows();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: SetActiveWindowAction::SetActiveWindowAction
+//
+// Purpose: 
+//   Constructor for the SetActiveWindowAction class.
+//
+// Arguments:
+//   win : The window to which the action belongs.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:31:37 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+SetActiveWindowAction::SetActiveWindowAction(ViewerWindow *win) :
+    ViewerToggleAction(win, "Active window")
+{
+    SetAllText("Make active");
+    SetToolTip("Make window active");
+    if (!win->GetNoWinMode())
+        SetIcons(QPixmap(checkwindow_xpm), QPixmap(blankwindow_xpm));
+}
+
+// ****************************************************************************
+// Method: SetActiveWindowAction::Setup
+//
+// Purpose: 
+//   This method is called when the toolbar or popup menu is selected. It
+//   stores relevant information into the args object so it is ready to go
+//   when the Execute method needs it.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:36:42 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SetActiveWindowAction::Setup()
+{
+    args.SetWindowId(window->GetWindowId() + 1);
+}
+
+// ****************************************************************************
+// Method: SetActiveWindowAction::Execute
+//
+// Purpose: 
+//   Does the work for SetActiveWindowAction.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:37:40 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void 
+SetActiveWindowAction::Execute()
+{
+    int id = args.GetWindowId();
+    windowMgr->SetActiveWindow(id);
+}
+
+// ****************************************************************************
+// Method: SetActiveWindowAction::Toggled
+//
+// Purpose: 
+//   Returns whether or not the action is toggled.
+//
+// Returns:    True if the action's window is the active window; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:38:02 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+SetActiveWindowAction::Toggled() const
+{
+    // This action should be toggled if it belongs to the active window.
+    return (window == windowMgr->GetActiveWindow()); 
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: ToggleSpinModeAction::ToggleSpinModeAction
+//
+// Purpose: 
+//   Constructor for the ToggleSpinModeAction class.
+//
+// Arguments:
+//   win : The window to which the action belongs.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:38:46 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ToggleSpinModeAction::ToggleSpinModeAction(ViewerWindow *win) :
+    ViewerToggleAction(win, "Spin mode")
+{
+    SetAllText("Spin");
+    SetToolTip("Toggle spin mode");
+    if (!win->GetNoWinMode())
+        SetIcons(QPixmap(spinon_xpm), QPixmap(spinoff_xpm));
+}
+
+// ****************************************************************************
+// Method: ToggleSpinModeAction::Execute
+//
+// Purpose: 
+//   Does the work for ToggleSpinModeAction.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:39:13 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ToggleSpinModeAction::Execute()
+{
+    windowMgr->ToggleSpinMode(window->GetWindowId());
+}
+
+// ****************************************************************************
+// Method: ToggleSpinModeAction::Enabled
+//
+// Purpose: 
+//   Returns when the action is enabled.
+//
+// Returns:    True if the action is enabled; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:39:36 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool 
+ToggleSpinModeAction::Enabled() const
+{
+    // This action should only be enabled if the window to which the action belongs
+    // has plots in it.
+    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+}
+
+// ****************************************************************************
+// Method: ToggleSpinModeAction::Toggled
+//
+// Purpose: 
+//   Returns if the window is in spin mode and the action should be toggled.
+//
+// Returns:    Whether the window is in spin mode and the action should be toggled.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:40:03 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ToggleSpinModeAction::Toggled() const
+{
+    return window->GetSpinMode();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: ToggleBoundingBoxModeAction::ToggleBoundingBoxModeAction
+//
+// Purpose: 
+//   Constructor for the ToggleBoundingBoxModeAction class.
+//
+// Arguments:
+//   win : The window to which the action belongs.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:40:56 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ToggleBoundingBoxModeAction::ToggleBoundingBoxModeAction(ViewerWindow *win) :
+    ViewerToggleAction(win, "ToggleBoundingBoxModeAction")
+{
+    SetAllText("Navigate bbox");
+    SetToolTip("Toggle bounding box navigation");
+    if (!win->GetNoWinMode())
+        SetIcons(QPixmap(navigatebboxon_xpm), QPixmap(navigatebboxoff_xpm));
+}
+
+// ****************************************************************************
+// Method: ToggleBoundingBoxModeAction::Execute
+//
+// Purpose: 
+//   Does the work for ToggleBoundingBoxModeAction.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:41:30 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ToggleBoundingBoxModeAction::Execute()
+{
+    windowMgr->ToggleBoundingBoxMode(window->GetWindowId());
+}
+
+// ****************************************************************************
+// Method: ToggleBoundingBoxModeAction::Enabled
+//
+// Purpose: 
+//   Returns when the action is enabled.
+//
+// Returns:    True if the action is enabled; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:41:45 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ToggleBoundingBoxModeAction::Enabled() const
+{
+    // This action should only be enabled if the window to which the action belongs
+    // has plots in it.
+    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+}
+
+// ****************************************************************************
+// Method: ToggleBoundingBoxModeAction::Toggled
+//
+// Purpose: 
+//   Returns whether the action should be toggled.
+//
+// Returns:    Whether the action should be toggled.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:42:12 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ToggleBoundingBoxModeAction::Toggled() const
+{
+    return window->GetBoundingBoxMode();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: SetWindowLayoutAction::SetWindowLayoutAction
+//
+// Purpose: 
+//   Constructor for the SetWindowLayoutAction class.
+//
+// Arguments:
+//   win : The window to which the action belongs.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:42:42 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+SetWindowLayoutAction::SetWindowLayoutAction(ViewerWindow *win) :
+    ViewerMultipleAction(win, "Window layout")
+{
+    SetAllText("Layout");
+    SetToolTip("Set window layout");
+    if (!win->GetNoWinMode())
+        SetIconSet(QIconSet(QPixmap(layout2x2_xpm)));
+    SetExclusive(true);
+
+    if (!win->GetNoWinMode())
+    {
+        AddChoice("1x1", "1 x 1 window layout", QPixmap(layout1x1_xpm), QPixmap(layout1x1_xpm));
+        AddChoice("1x2", "1 x 2 window layout", QPixmap(layout1x2_xpm), QPixmap(layout1x2_xpm));
+        AddChoice("2x2", "2 x 2 window layout", QPixmap(layout2x2_xpm), QPixmap(layout2x2_xpm));
+        AddChoice("2x4", "2 x 4 window layout", QPixmap(layout2x4_xpm), QPixmap(layout2x4_xpm));
+        AddChoice("3x3", "3 x 3 window layout", QPixmap(layout3x3_xpm), QPixmap(layout3x3_xpm));
+        AddChoice("4x4", "4 x 4 window layout", QPixmap(layout4x4_xpm), QPixmap(layout4x4_xpm));
+    }
+    else
+    {
+        AddChoice("1x1");
+        AddChoice("1x2");
+        AddChoice("2x2");
+        AddChoice("2x4");
+        AddChoice("3x3");
+        AddChoice("4x4");
+    }
+}
+
+// ****************************************************************************
+// Method: SetWindowLayoutAction::Setup
+//
+// Purpose: 
+//   This method is called when the toolbar or popup menu are selected. It stores
+//   values into the args object so that it is ready for the Execute method.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:43:15 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SetWindowLayoutAction::Setup()
+{
+    if(activeAction == 1)
+        args.SetWindowLayout(2);
+    else if(activeAction == 2)
+        args.SetWindowLayout(4);
+    else if(activeAction == 3)
+        args.SetWindowLayout(8);
+    else if(activeAction == 4)
+        args.SetWindowLayout(9);
+    else if(activeAction == 5)
+        args.SetWindowLayout(16);
+    else
+        args.SetWindowLayout(1);
+}
+
+// ****************************************************************************
+// Method: SetWindowLayoutAction::Execute
+//
+// Purpose: 
+//   Does the work for SetWindowLayoutAction.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:43:56 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SetWindowLayoutAction::Execute(int)
+{
+    windowMgr->SetWindowLayout(args.GetWindowLayout());
+}
+
+// ****************************************************************************
+// Method: SetWindowLayoutAction::ChoiceToggled
+//
+// Purpose: 
+//   Returns if the i'th choice should be toggled.
+//
+// Arguments:
+//   i : The choice being considered.
+//
+// Returns:    True if the i'th choice should be toggled.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:44:31 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+SetWindowLayoutAction::ChoiceToggled(int i) const
+{
+    bool retval;
+
+    switch(i)
+    {
+    case 1:
+        retval = windowMgr->GetWindowLayout() == 2;
+        break;
+    case 2:
+        retval = windowMgr->GetWindowLayout() == 4;
+        break;
+    case 3:
+        retval = windowMgr->GetWindowLayout() == 8;
+        break;
+    case 4:
+        retval = windowMgr->GetWindowLayout() == 9;
+        break;
+    case 5:
+        retval = windowMgr->GetWindowLayout() == 16;
+        break;
+    default:
+        retval = windowMgr->GetWindowLayout() == 1;
+        break;
+    }
+
+    return retval;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: InvertBackgroundAction::InvertBackgroundAction
+//
+// Purpose: 
+//   Constructor for the InvertBackgroundAction class.
+//
+// Arguments:
+//   win : The window to which the action belongs.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:45:34 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+InvertBackgroundAction::InvertBackgroundAction(ViewerWindow *win) :
+    ViewerAction(win, "Invert background")
+{
+    SetAllText("Invert background");
+    SetToolTip("Swap background and foreground colors");
+    if (!win->GetNoWinMode())
+        SetIconSet(QIconSet(QPixmap(invertbackground_xpm)));
+}
+
+// ****************************************************************************
+// Method: InvertBackgroundAction::Execute
+//
+// Purpose: 
+//   Does the work for InvertBackgroundAction.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:45:58 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+InvertBackgroundAction::Execute()
+{
+    windowMgr->InvertBackgroundColor(window->GetWindowId());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: SetWindowModeAction::SetWindowModeAction
+//
+// Purpose: 
+//   Constructor for the SetWindowModeAction class.
+//
+// Arguments:
+//   win : The window to which the action belongs.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:46:18 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
+    ViewerMultipleAction(win, "Mode")
+{
+    SetAllText("Mode");
+    SetToolTip("Set window mode");
+    SetExclusive(true);
+
+    if (!win->GetNoWinMode())
+    {
+        AddChoice("Navigate", "Navigate mode", QPixmap(navigatemode_xpm));
+        AddChoice("Pick", "Pick mode", QPixmap(pickmode_xpm));
+        AddChoice("Zoom", "Zoom mode", QPixmap(zoommode_xpm));
+        AddChoice("Lineout", "Lineout mode", QPixmap(lineoutmode_xpm));
+    }
+    else 
+    {
+        AddChoice("Navigate");
+        AddChoice("Pick");
+        AddChoice("Zoom");
+        AddChoice("Lineout");
+    }
+}
+
+// ****************************************************************************
+// Method: SetWindowModeAction::Execute
+//
+// Purpose: 
+//   Does the work for SetWindowModeAction.
+//
+// Arguments:
+//   val : The choice that the user made.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:48:08 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SetWindowModeAction::Execute(int val)
+{
+    INTERACTION_MODE mode = (INTERACTION_MODE)val;
+    windowMgr->SetInteractionMode(mode, window->GetWindowId());
+}
+
+// ****************************************************************************
+// Method: SetWindowModeAction::Enabled
+//
+// Purpose: 
+//   Returns when the action is enabled.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:49:04 PST 2003
+//
+// Modifications:
+//   Brad Whitlock, Fri Apr 4 15:49:24 PST 2003
+//   Made it also use ViewerMultipleAction::Enabled.
+//
+// ****************************************************************************
+
+bool
+SetWindowModeAction::Enabled() const
+{
+    return ViewerMultipleAction::Enabled() &&
+           (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+}
+
+// ****************************************************************************
+// Method: SetWindowModeAction::ChoiceEnabled
+//
+// Purpose: 
+//   Returns when the i'th choice is enabled.
+//
+// Arguments:
+//   i : The choice to consider.
+//
+// Returns:    true if the choice is enabled; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:49:49 PST 2003
+//
+// Modifications:
+//   Kathleen Bonnell, Tue Feb 25 17:11:18 PST 2003
+//   Made enabling of lineout mode dependent upon loaded Curve and Lineout 
+//   plugins.
+//
+//   Jeremy Meredith, Fri Feb 28 12:36:21 PST 2003
+//   Made it use PluginAvailable instead of PluginLoaded so that it could
+//   attempt to load the plugins on demand.
+//
+//   Brad Whitlock, Fri Apr 4 15:50:50 PST 2003
+//   I swapped the cases for pick and zoom so they work in curve windows.
+//
+// ****************************************************************************
+
+bool
+SetWindowModeAction::ChoiceEnabled(int i) const
+{
+    bool retval = false;
+
+    if(i == 0)
+        retval = true;
+    else if(i == 1)
+        retval = !window->GetTypeIsCurve();
+    else if(i == 2)
+        retval = true;
+    else if(i == 3)
+    {
+        retval = (window->GetViewDimension() == 2 ) &&
+                 !window->GetTypeIsCurve() && 
+                 PlotPluginManager::Instance()->PluginAvailable("Curve_1.0") &&
+                 OperatorPluginManager::Instance()->PluginAvailable("Lineout_1.0");
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: SetWindowModeAction::ChoiceToggled
+//
+// Purpose: 
+//   Returns when the i'th choice is toggled.
+//
+// Arguments:
+//   i : The choice to consider.
+//
+// Returns:    true if the choice is toggled; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:51:13 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+SetWindowModeAction::ChoiceToggled(int i) const
+{
+    bool val = (window->GetInteractionMode() == (INTERACTION_MODE)i);
+    return val;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: EnableToolAction::EnableToolAction
+//
+// Purpose: 
+//   Constructor for the EnableToolAction class.
+//
+// Arguments:
+//   win : The window to which the action belongs.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:51:56 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+EnableToolAction::EnableToolAction(ViewerWindow *win) :
+    ViewerMultipleAction(win, "Tools")
+{
+    SetAllText("Tools");
+    SetExclusive(false);
+
+    for(int i = 0; i < window->GetNumTools(); ++i)
+    {
+        std::string tool(window->GetToolName(i));
+        if (!win->GetNoWinMode())
+        {
+            if(tool == "Box")
+                AddChoice(tool.c_str(), "Box tool", QPixmap(boxtool_xpm));
+            else if(tool == "Line")
+                AddChoice(tool.c_str(), "Line tool", QPixmap(linetool_xpm));
+            else if(tool == "Plane")
+                AddChoice(tool.c_str(), "Plane tool", QPixmap(planetool_xpm));
+            else if(tool == "Sphere")
+                AddChoice(tool.c_str(), "Sphere tool", QPixmap(spheretool_xpm));
+            else
+                AddChoice(tool.c_str());
+        }
+        else
+        {
+            AddChoice(tool.c_str());
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: EnableToolAction::Setup
+//
+// Purpose: 
+//   This method is called when the toolbar or popup menu are used. It stores
+//   values into the args object so it is ready for the Execute method.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:52:32 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+EnableToolAction::Setup()
+{
+    args.SetToolId(activeAction);
+    args.SetBoolFlag(toggled);
+}
+
+// ****************************************************************************
+// Method: EnableToolAction::Execute
+//
+// Purpose: 
+//   Does the work for EnableToolAction.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:53:18 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+EnableToolAction::Execute(int)
+{
+    windowMgr->SetToolEnabled(args.GetToolId(), args.GetBoolFlag(),
+                              window->GetWindowId());
+}
+
+// ****************************************************************************
+// Method: EnableToolAction::Enabled
+//
+// Purpose: 
+//   Returns when the action is enabled.
+//
+// Returns:    true if the action is enabled; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:53:57 PST 2003
+//
+// Modifications:
+//   Brad Whitlock, Fri Apr 4 15:54:34 PST 2003
+//   I made it use ViewerMultipleAction::Enabled too.
+//
+// ****************************************************************************
+
+bool
+EnableToolAction::Enabled() const
+{
+    return ViewerMultipleAction::Enabled() &&
+           (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+}
+
+// ****************************************************************************
+// Method: EnableToolAction::ChoiceEnabled
+//
+// Purpose: 
+//   Returns when the i'th choice is enabled.
+//
+// Arguments:
+//   i : The choice to consider.
+//
+// Returns:    true if the choice is enabled; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:54:47 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+EnableToolAction::ChoiceEnabled(int i) const
+{
+    return window->GetToolAvailable(i);
+}
+
+// ****************************************************************************
+// Method: EnableToolAction::ChoiceToggled
+//
+// Purpose: 
+//   Returns when the i'th choice should be toggled.
+//
+// Arguments:
+//   i : The choice to consider.
+//
+// Returns:    true if the choice should be toggled; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:55:33 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+EnableToolAction::ChoiceToggled(int i) const
+{
+    return window->GetToolEnabled(i);
+}

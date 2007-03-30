@@ -1,0 +1,416 @@
+#!/bin/sh
+#-----------------------------------------------------------------------
+#
+# VISIT-BUILD-OPEN - Build the visit distributions on the open network.
+#
+# Author: Eric Brugger
+# Date:   October 27, 2000
+#
+# Usage:
+#    visit-build-open -v <version> -d <distribution>
+#
+#-----------------------------------------------------------------------
+
+test=no
+
+user=`whoami`
+
+#
+# Set the user e-mail address.
+#
+emailName=brugger1@llnl.gov
+case $user in
+   ahern)
+      emailName=ahern1@llnl.gov
+      ;;
+   kbonnell)
+      emailName=bonnell2@llnl.gov
+      ;; 
+   brugger)
+      emailName=brugger1@llnl.gov
+      ;;
+   childs)
+      emailName=childs3@llnl.gov
+      ;;
+   jennings)
+      emailName=jennings4@llnl.gov
+      ;;
+   meredith)
+      emailName=meredith6@llnl.gov
+      ;;
+   murguia)
+      emailName=murguia1@llnl.gov
+      ;;
+   whitlocb)
+      emailName=whitlock2@llnl.gov
+      ;;
+esac
+
+#
+# Parse the execute line, providing default values for error checking.
+#
+kickit=true
+sunspot=true
+hyper=true
+gps=true
+riptide=true
+frost=true
+
+ver=undefined
+dist=undefined
+
+#
+# The loop is executed once for each symbol on the execute line.  This means
+# that $1 may be blank for later executions of the loop if any "shift 2"
+# commands are executed.  The variable abc is not used in the loop.  
+#
+for abc
+do
+   case $1 in
+      -none)
+         kickit=false
+         sunspot=false
+         hyper=false
+         gps=false
+         riptide=false
+         frost=false
+         shift
+         ;;
+      -kickit)
+         kickit=false
+         shift
+         ;;
+      +kickit)
+         kickit=true
+         shift
+         ;;
+      -sunspot)
+         sunspot=false
+         shift
+         ;;
+      +sunspot)
+         sunspot=true
+         shift
+         ;;
+      -hyper)
+         hyper=false
+         shift
+         ;;
+      +hyper)
+         hyper=true
+         shift
+         ;;
+      -gps)
+         gps=false
+         shift
+         ;;
+      +gps)
+         gps=true
+         shift
+         ;;
+      -riptide)
+         riptide=false
+         shift
+         ;;
+      +riptide)
+         riptide=true
+         shift
+         ;;
+      -frost)
+         frost=false
+         shift
+         ;;
+      +frost)
+         frost=true
+         shift
+         ;;
+      -v)
+         ver=$2
+         shift 2
+         ;;
+      -d)
+         dist=$2
+         shift 2
+         ;;
+   esac
+done
+
+#
+# Check that both the version and distribution name were provided.
+#
+if [ $ver = undefined ]
+then
+   echo "Usage: [-none] [-<machine name>] -v <version> -d <distribution>"
+   exit
+fi
+if [ $dist = undefined ]
+then
+   echo "Usage: [-none] [-<machine name>] -v <version> -d <distribution>"
+   exit
+fi
+
+#
+# Check that the distribution exists.
+#
+distfile=$dist.tar.gz
+if [ ! -f $distfile ]
+then
+   echo "Distribution file doesn't exist."
+   exit
+fi
+
+ver2=`echo $ver | tr "." "_"`
+
+#
+# Build on kickit.
+#
+rm -f kickit
+cat <<EOF > kickit
+#!/bin/sh
+if test ! -e /var/tmp/$user ; then
+   mkdir /var/tmp/$user
+fi
+if test ! -e /var/tmp/$user/kickit ; then
+   mkdir /var/tmp/$user/kickit
+fi
+rm -rf /var/tmp/$user/kickit/visitbuild
+mkdir /var/tmp/$user/kickit/visitbuild
+mv kickit_$dist.tar.gz /var/tmp/$user/kickit/visitbuild/$dist.tar.gz
+cd /var/tmp/$user/kickit/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist
+./configure >> ../buildlog 2>&1
+make -j 2 >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist -v $ver >> ../buildlog 2>&1
+mv visit$ver2.linux.tar.gz ..
+cp clearcase_bin/visit-install ..
+cd ..
+./visit-install $ver linux visit >> buildlog 2>&1
+scp visit$ver2.linux.tar.gz kickit:/scratch/$user/visit$ver
+rm -f resultlog
+ls -l > resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $kickit = true ]
+then
+   if [ $test = no ]
+   then
+      scp kickit kickit:kickit_buildit
+      scp $dist.tar.gz kickit:kickit_$dist.tar.gz
+      ssh kickit "chmod 750 kickit_buildit;./kickit_buildit" &
+   fi
+fi
+
+#
+# Build on sunspot.
+#
+rm -f sunspot
+cat <<EOF > sunspot
+#!/bin/sh
+if test ! -d /export/scratch/$user ; then
+   mkdir /export/scratch/$user
+fi
+if test ! -d /export/scratch/$user/sunspot ; then
+   mkdir /export/scratch/$user/sunspot
+fi
+rm -rf /export/scratch/$user/sunspot/visitbuild
+mkdir /export/scratch/$user/sunspot/visitbuild
+mv sunspot_$dist.tar.gz /export/scratch/$user/sunspot/visitbuild/$dist.tar.gz
+cd /export/scratch/$user/sunspot/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist
+env CXXFLAGS=-O2 ./configure >> ../buildlog 2>&1
+make -j 4 >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist -v $ver >> ../buildlog 2>&1
+mv visit$ver2.sunos5.tar.gz ..
+cp clearcase_bin/visit-install ..
+cd ..
+./visit-install $ver sunos5 visit >> buildlog 2>&1
+scp visit$ver2.sunos5.tar.gz kickit:/scratch/$user/visit$ver
+rm -f resultlog
+ls -l > resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $sunspot = true ]
+then
+   if [ $test = no ]
+   then
+      scp sunspot sunspot:sunspot_buildit
+      scp $dist.tar.gz sunspot:sunspot_$dist.tar.gz
+      ssh sunspot "chmod 750 sunspot_buildit;./sunspot_buildit" &
+   fi
+fi
+
+#
+# Build on hyper.
+#
+rm -f hyper
+cat <<EOF > hyper
+#!/bin/sh
+if test ! -d /scratch1/$user ; then
+   mkdir /scratch1/$user
+fi
+if test ! -d /scratch1/$user/hyper ; then
+   mkdir /scratch1/$user/hyper
+fi
+rm -rf /scratch1/$user/hyper/visitbuild
+mkdir /scratch1/$user/hyper/visitbuild
+mv hyper_$dist.tar.gz /scratch1/$user/hyper/visitbuild/$dist.tar.gz
+cd /scratch1/$user/hyper/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist
+env CXXFLAGS=-O2 ./configure >> ../buildlog 2>&1
+env PARALLEL=4 make -P >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist -v $ver >> ../buildlog 2>&1
+mv visit$ver2.irix6.tar.gz ..
+cp clearcase_bin/visit-install ..
+cd ..
+./visit-install $ver irix6 visit >> buildlog 2>&1
+scp $dist/clearcase_bin/visit-install kickit:/scratch/$user/visit$ver
+scp visit$ver2.irix6.tar.gz kickit:/scratch/$user/visit$ver
+rm -f resultlog
+ls -l > resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $hyper = true ]
+then
+   if [ $test = no ]
+   then
+      scp hyper hyper:hyper_buildit
+      scp $dist.tar.gz hyper:hyper_$dist.tar.gz
+      ssh hyper "chmod 750 hyper_buildit;./hyper_buildit" &
+   fi
+fi
+
+#
+# Build on gps.
+#
+rm -f gps
+cat <<EOF > gps
+#!/bin/sh
+if test ! -e /nfs/tmp1/$user ; then
+   mkdir /nfs/tmp1/$user
+fi
+if test ! -e /nfs/tmp1/$user/gps; then
+   mkdir /nfs/tmp1/$user/gps
+fi
+rm -rf /nfs/tmp1/$user/gps/visitbuild
+mkdir /nfs/tmp1/$user/gps/visitbuild
+mv gps_$dist.tar.gz /nfs/tmp1/$user/gps/visitbuild/$dist.tar.gz
+cd /nfs/tmp1/$user/gps/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist
+env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
+make >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist -v $ver >> ../buildlog 2>&1
+mv visit$ver2.osf1.tar.gz ..
+cp clearcase_bin/visit-install ..
+cd ..
+./visit-install $ver osf1 visit >> buildlog 2>&1
+scp visit$ver2.osf1.tar.gz kickit:/scratch/$user/visit$ver
+rm -f resultlog
+ls -l > resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $gps = true ]
+then
+   if [ $test = no ]
+   then
+      scp gps gps15:gps_buildit
+      scp $dist.tar.gz gps15:gps_$dist.tar.gz
+      ssh gps15 "chmod 750 gps_buildit;./gps_buildit" &
+   fi
+fi
+
+#
+# Build on riptide, both serial and parallel versions.
+#
+rm -f riptide
+cat <<EOF > riptide
+#!/bin/sh
+if test ! -e /nfs/tmp1/$user ; then
+   mkdir /nfs/tmp1/$user
+fi
+if test ! -e /nfs/tmp1/$user/riptide ; then
+   mkdir /nfs/tmp1/$user/riptide
+fi
+rm -rf /nfs/tmp1/$user/riptide/visitbuild
+mkdir /nfs/tmp1/$user/riptide/visitbuild
+mv riptide_$dist.tar.gz /nfs/tmp1/$user/riptide/visitbuild/$dist.tar.gz
+cd /nfs/tmp1/$user/riptide/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist
+env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
+env PARALLEL=8 make -P >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist -v $ver >> ../buildlog 2>&1
+mv visit$ver2.irix6.tar.gz ..
+cp clearcase_bin/visit-install ..
+cd ..
+./visit-install $ver irix6 visit >> buildlog 2>&1
+rm -f resultlog
+ls -l > resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $riptide = true ]
+then
+   if [ $test = no ]
+   then
+      scp riptide riptide:riptide_buildit
+      scp $dist.tar.gz riptide:riptide_$dist.tar.gz
+      ssh riptide "chmod 750 riptide_buildit;./riptide_buildit" &
+   fi
+fi
+
+#
+# Build on frost, both serial and parallel versions.
+#
+rm -f frost
+cat <<EOF > frost
+#!/bin/sh
+if test ! -e /nfs/tmp1/$user ; then
+   mkdir /nfs/tmp1/$user
+fi
+if test ! -e /nfs/tmp1/$user/frost ; then
+   mkdir /nfs/tmp1/$user/frost
+fi
+rm -rf /nfs/tmp1/$user/frost/visitbuild
+mkdir /nfs/tmp1/$user/frost/visitbuild
+mv frost_$dist.tar.gz /nfs/tmp1/$user/frost/visitbuild/$dist.tar.gz
+cd /nfs/tmp1/$user/frost/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist
+env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
+gmake -j 6 >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist -v $ver >> ../buildlog 2>&1
+mv visit$ver2.aix.tar.gz ..
+cp clearcase_bin/visit-install ..
+cd ..
+./visit-install $ver aix visit >> buildlog 2>&1
+scp visit$ver2.aix.tar.gz kickit:/scratch/$user/visit$ver
+rm -f resultlog
+ls -l > resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $frost = true ]
+then
+   if [ $test = no ]
+   then
+      scp frost frost:frost_buildit
+      scp $dist.tar.gz frost:frost_$dist.tar.gz
+      ssh frost "chmod 750 frost_buildit;./frost_buildit" &
+   fi
+fi
+
+#
+# Clean up.
+#
+if [ $test = no ]
+then
+   rm -f kickit sunspot hyper gps riptide frost
+fi

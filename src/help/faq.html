@@ -1,0 +1,178 @@
+<html>
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Frequently Asked Questions</title>
+</head>
+<body>
+<p align="center"><b><font size="6">Frequently Asked Questions</font></b></p>
+<p align="left">This page contains a list of Frequently asked questions along 
+with the answers to those questions. The questions are listed in no particular 
+order.</p>
+<p align="left"><b><font size="4">Questions:</font></b></p>
+<ol>
+  <li>
+<p align="left"><a href="#a1">How do I download the newest version of VisIt?</a></p>
+  </li>
+  <li>
+<p align="left"><a href="#a2">What do I need in order to run VisIt?</a></p>
+  </li>
+  <li>
+<p align="left"><a href="#a3">I have a Windows machine. Can I run VisIt?</a></p>
+  </li>
+  <li>
+<p align="left"><a href="#a4">Where can I find sample data files to plot in VisIt?</a></p>
+  </li>
+  <li>
+<p align="left"><a href="#a5">How can I access files on a remote computer?</a></p>
+  </li>
+  <li>
+<p align="left"><a href="#a6">How do I create a plot?</a></p>
+  </li>
+  <li>
+<p align="left"><a href="#a7">What kinds of data can VisIt read?</a></p>
+  </li>
+  <li>
+<p align="left"><a href="#a8">I can't get VisIt to recognize that I have a time-varying 
+database. The VCR controls never activate. Why?</a></p>
+  </li>
+  <li>
+<p align="left"><a href="#a9">How do I report a bug or request a new feature?</a></p>
+  </li>
+  <li>
+<p align="left"><a href="#a10">How do I know what changed from version to version?</a></p>
+  </li>
+  <li>
+<p align="left"><a href="#a11">How do I use VisIt with Python?</a></p>
+  </li>
+  <li>
+<p align="left"><a href="#a12">Is VisIt parallel?</a></p>
+  </li>
+</ol>
+<p align="left"><b><font size="4">Answers:</font></b></p>
+<ol>
+  <li>
+<p align="left"><a name="a1">How do I download the newest version of VisIt?</a>
+<i><font color="#0000FF">The newest version of VisIt can be downloaded by 
+anonymous ftp from </font><a href="ftp://ftp.llnl.gov/pub/visit/visit0.9.10">
+ftp://ftp.llnl.gov/pub/visit</a><font color="#0000FF">. Just type 
+that URL into your web browser and a list of directories, containing the 
+available versions of VisIt, will appear in your browser. 
+Choose the version of VisIt that runs on your system and download it. You can 
+then follow the installation instructions in the INSTALL_NOTES file.</font></i></p>
+  </li>
+  <li>
+<p align="left"><a name="a2">What do I need in order to run VisIt?</a> <i>
+<font color="#0000FF">VisIt runs on many platforms, including PCs running 
+Windows and Linux. If you plan to run VisIt on a PC, we recommend at least a 
+Pentium III with 128MB RAM and hardware accelerated graphics. VisIt also runs on 
+many flavors of UNIX, including: Linux, IRIX, AIX, and Tru64. Our installations 
+for IRIX and AIX include parallel versions of our compute engine so that VisIt 
+can make use of several processors.</font></i></p>
+  </li>
+  <li>
+<p align="left"><a name="a3">I have a Windows machine. Can I run VisIt?</a> <i>
+<font color="#0000FF">Yes you can. As of version 0.9.10, you can download 
+Windows 2000 version which is complete with an installation program. The 
+executable program that you download extracts its contents to a temporary 
+folder, which is usually <a href="file:///C:/VISITTEMP">C:\VISITTEMP</a>. From 
+there, you can double click on the setup.exe installation program to install 
+VisIt.</font></i></p>
+  </li>
+  <li>
+<p align="left"><a name="a4">Where can I find sample data files to plot in VisIt?</a><font color="#0000FF"><i> 
+VisIt reads a number of common file formats for storing scientific data. This 
+includes but is not limited to Silo, Exodus, VTK, Plot3D, Ensight, and Alias 
+Wavefront OBJ formats. When you download a VisIt distribution, you actually get 
+sample Silo data files to use when trying VisIt out. If you installed a UNIX 
+version and put it in /usr/local, then the data files would be located in /usr/local/visit/data. 
+If you installed a Windows version, let's say version 1.1.4, and it installed in
+<a href="file:///C:/Program">C:\Program</a> Files\LLNL\VisIt 1.1.4\, then the 
+sample data files would be located in <a href="file:///C:/Program">C:\Program</a> 
+Files\LLNL\VisIt 1.1.4\data\.You can also create your own data files by writing 
+programs to write data in any of the formats that VisIt can read. You can also 
+write new VisIt database reader plugins if you are interested in having VisIt 
+read your own data file format. For more information on this, send e-mail to 
+visit-help@llnl.gov.</i></font></p>
+  </li>
+  <li>
+<p align="left"><a name="a5">How can I access files on a remote computer?</a><i><font color="#0000FF"> Open 
+  the file selection window and type the name of the computer that you want to 
+  access into the &quot;host&quot; text field. Doing this will launch part of VisIt on the 
+  remote computer and allow you to access your files. Note that doing this 
+  sometimes requires you to type in a&nbsp; password.</font></i></p>
+  </li>
+  <li>
+<p align="left"><a name="a6">How do I create a plot?</a><font color="#0000FF"><i>In order to create a 
+  plot, first you must open a file. This is done by selecting a file from the 
+  file panel area of the main window and clicking the open button. Next, click 
+  on the plots menu in the middle of the main window and choose a plot type and 
+  a variable for that plot type. Once you've made your selection, release the 
+  mouse button and the plot will be added to the plot list. Finally, click the 
+  Draw button to get the plot to draw.</i></font></p>
+  </li>
+  <li>
+<p align="left"><a name="a7">What kinds of data can VisIt read?</a><font color="#0000FF"><i> 
+VisIt can read and operate on scalar, vector, and material data that is stored 
+in a variety of files formats. The file formats that VisIt currently understands 
+are: Silo, Exodus, Ensight Gold, VTK, Plot3D, Alias Wavefront. VisIt also reads 
+certain formats of ascii text files. If you want to have VisIt read your data, 
+you can write a database reader plugin.</i></font></p>
+  </li>
+  <li>
+<p align="left"><a name="a8">I can't get VisIt to recognize that I have a time-varying 
+database. The VCR controls never activate. Why? </a><i><font color="#0000FF">You know that those files are 
+part of a time-varying database by the file naming convention that you used. 
+VisIt can guess using the automatic file grouping feature, which is new in 
+version 1.1.3, but it may guess incorrectly. You can either use automatic file 
+grouping and provide a suitable file filter to remove any files that don't fit 
+your naming convention, or you can create a .visit file. A .visit file is a text 
+file that contains a list of file names (one per line) where each filename 
+corresponds to one time state in your time-varying database. When you open a 
+.visit file, VisIt knows that you are trying to open a set of related files and 
+it works without any guessing.</font></i></p>
+  </li>
+  <li>
+<p align="left"><a name="a9">How do I report a bug or request a new feature? </a>
+<i><font color="#0000FF">You can let us 
+know about bugs or ask for feature enhancements by sending e-mail to </font>
+<a href="mailto:visit@llnl.gov">visit-help@llnl.gov</a><font color="#0000FF">.</font></i></p>
+  </li>
+  <li>
+<p align="left"><a name="a10">How do I know what changed from version to version? </a>
+<font color="#0000FF"><i>We provide 
+release notes with VisIt which give details on what we fixed or added for a 
+release. You can read the release notes by selecting the Release notes option 
+from the Main Window's Help menu.</i></font></p>
+  </li>
+  <li>
+<p align="left"><a name="a11">How do I use VisIt with Python? </a>
+<font color="#0000FF"><i>There are two ways of using 
+VisIt with Python. The first way is to use VisIt's cli program, which is 
+actually a Python interpreter with VisIt extensions. To invoke the cli, type 
+&quot;visit -cli&quot; at the command line prompt. The cli launches VisIt's viewer and 
+then drops back into a regular Python command line session in which you can do 
+any sort of Python processing. If you have a Python script that you want to run, 
+you can also type: visit -cli -s filename, where filename is the name of the 
+Python script that you want to execute. Another way to run VisIt in Python is to 
+import the visit module by inserting &quot;import visit&quot; in your Python script. This 
+method is not widely supported because we cannot be sure which version of Python 
+is used on your system. There are also issues with VisIt being able to find its 
+support libraries when running in it in this manner.</i></font></p>
+  </li>
+  <li>
+<p align="left"><a name="a12">Is VisIt parallel? </a><font color="#0000FF"><i>The short answer is yes. In fact, most VisIt 
+components are serial applications, with the exception of the parallel version 
+of the compute engine. The compute engine is the VisIt component that does all 
+of the hard data processing work and it can be run on as many processors as are 
+available. This comes in handy when you want to run VisIt on your desktop but 
+connect to a remote machine where you want to run the compute engine in parallel 
+to process a large database quickly. We designed VisIt to leverage remote 
+compute power of large parallel computers with the interactivity of local 
+desktop machines with fast graphics hardware.</i></font></p>
+  </li>
+</ol>
+</body>
+</html>

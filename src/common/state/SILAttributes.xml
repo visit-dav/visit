@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+  <Attribute name="SILAttributes" purpose="This class contains the information needed to represent a SIL." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="nSets" type="int">0</Field>
+    <Field name="setNames" type="stringVector"></Field>
+    <Field name="setIds" type="intVector"></Field>
+    <Field name="isWhole" type="intVector"></Field>
+    <Field name="nCollections" type="int">0</Field>
+    <Field name="category" type="stringVector"></Field>
+    <Field name="role" type="intVector"></Field>
+    <Field name="superset" type="intVector"></Field>
+    <Field name="nspace" type="attVector" subtype="NamespaceAttributes"></Field>
+    <Field name="matrices" type="attVector" subtype="SILMatrixAttributes"></Field>
+  </Attribute>

@@ -1,0 +1,43 @@
+Function: ProcessOldVersions
+Declaration: virtual void ProcessOldVersions(DataNode *node, const char *configVersion);
+Definition:
+// ****************************************************************************
+// Method: ReflectAttributes::ProcessOldVersions
+//
+// Purpose:
+//   Updates the config settings in the data node to the current Reflect
+//   opertor version.
+//
+// Arguments:
+//   parentNode    : The data node that stores the Reflect attributes.
+//   configVersion : The version of the config file from which the node
+//                   was read.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 24 08:22:22 PDT 2003
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ReflectAttributes::ProcessOldVersions(DataNode *parentNode,
+    const char *configVersion)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *reflectNode = parentNode->GetNode("ReflectAttributes");
+    if(reflectNode == 0)
+        return;
+
+    //
+    // If the config file is less than version 1.1.4, update the default
+    // reflections to the ones recommended by version 1.1.4.
+    //
+    if(VersionLessThan(configVersion, "1.1.4"))
+    {
+         DataNode *reflectionsNode = reflectNode->GetNode("reflections");
+         reflectionsNode->SetIntArray(reflections, 8);
+    }
+}

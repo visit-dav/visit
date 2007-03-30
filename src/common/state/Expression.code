@@ -1,0 +1,51 @@
+Function: GetNumTypes
+Declaration: static const int GetNumTypes();
+Definition:
+const int
+Expression::GetNumTypes()
+{
+    return 6;
+}
+
+Function: GetTypeString
+Declaration: static const char * GetTypeString(const Expression::ExprType t);
+Definition:
+const char *
+Expression::GetTypeString(const Expression::ExprType t)
+{
+    switch(t)
+    {
+    case ScalarMeshVar:
+        return "Scalar Mesh Variable";
+    case VectorMeshVar:
+        return "Vector Mesh Variable";
+    case Mesh:
+        return "Mesh";
+    case Material:
+        return "Material";
+    case Species:
+        return "Species";
+    default:
+        return "Unknown Type";
+    }
+}
+
+Function: GetTypeId
+Declaration: static const Expression::ExprType GetTypeId(const std::string s);
+Definition:
+const Expression::ExprType
+Expression::GetTypeId(const std::string s)
+{
+    if (s == "Scalar Mesh Variable")
+        return ScalarMeshVar;
+    else if (s == "Vector Mesh Variable")
+        return VectorMeshVar;
+    else if (s == "Mesh")
+        return Mesh;
+    else if (s == "Material")
+        return Material;
+    else if (s == "Species")
+        return Species;
+    else
+        return Unknown;
+}

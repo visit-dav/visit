@@ -1,0 +1,203 @@
+/*=========================================================================
+  vtkQtRenderWindowInteractor.cpp - copyright 2000 Matthias Koenig 
+  koenig@isg.cs.uni-magdeburg.de
+  http://wwwisg.cs.uni-magdeburg.de/~makoenig
+  =========================================================================*/
+/* Portions of this code marked with "LLNL" have been modified from the
+ * original sources by Matthias Koenig.  Contact VisIt@llnl.gov.  */
+/*=========================================================================
+  This module is an extension of the "Visualization Toolkit 
+  ( copyright (c) 1993-2000 Ken Martin, Will Schroeder, Bill Lorensen )".
+  and combines it with "Qt (copyright (C) 1992-2000 Troll Tech AS)".
+  =========================================================================*/
+/*=========================================================================
+
+  Module:    $RCSfile: vtkQtRenderWindowInteractor.cpp,v $
+  Date:    $Date: 2000/04/15 18:58:01 $
+  Version:   $Revision: 1.5 $
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
+  
+  * Redistributions of source code must retain the above copyright notice,
+  this list of conditions and the following disclaimer.
+   
+  * Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+   
+  * Modified source versions must be plainly marked as such, and must not be
+  misrepresented as being the original software.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE FOR
+  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  
+  =========================================================================*/
+
+#include "vtkQtRenderWindowInteractor.h"
+#include <ctype.h>
+#include <iostream.h>
+
+#include <qcursor.h>
+
+#include <vtkCommand.h>
+
+vtkQtRenderWindowInteractor::vtkQtRenderWindowInteractor() {
+    qtRenWin = NULL;
+}
+
+vtkQtRenderWindowInteractor::~vtkQtRenderWindowInteractor() {
+}
+
+void vtkQtRenderWindowInteractor::Start() {
+    if (! this->qtRenWin) {
+      vtkErrorMacro(<<"No vtkQtRenderWindow defined!");
+      return;
+    }
+    if (! qApp) {
+      vtkErrorMacro(<<"No QApplication defined!");
+      return;
+    }
+    if (!qApp->mainWidget()) {
+      qApp->setMainWidget(qtRenWin);
+      qApp->exec();
+    }
+}
+
+// GetSize calling sequence changed by LLNL to fit VTK interface change.
+void vtkQtRenderWindowInteractor::SetRenderWindow(vtkQtRenderWindow* aren) {
+    qtRenWin = aren;
+    aren->SetInteractor(this);
+    vtkRenderWindowInteractor::SetRenderWindow(aren);
+    int *size = qtRenWin->GetSize();
+    Size[0] = size[0];
+    Size[1] = size[1];
+}
+
+void vtkQtRenderWindowInteractor::PrintSelf(ostream&os, vtkIndent indent) {
+    vtkRenderWindowInteractor::PrintSelf(os, indent);
+}
+
+// GetSize calling sequence changed by LLNL to fit VTK interface change.
+void vtkQtRenderWindowInteractor::mousePressEvent(QMouseEvent *me) {
+    if (!Enabled)
+      return;
+
+    int *size = qtRenWin->GetSize();
+    Size[0] = size[0];
+    Size[1] = size[1];
+
+    int ctrl = 0, shift = 0;
+    if (me->state() & Qt::ControlButton)
+      ctrl = 1;
+    if (me->state() & Qt::ShiftButton)
+      shift = 1;
+    int xp = me->x();
+    int yp = Size[1]- me->y() -1;
+
+    SetEventInformation(xp, yp, ctrl, shift);
+    switch (me->button()) {
+    case QEvent::LeftButton:
+      InvokeEvent(vtkCommand::LeftButtonPressEvent, NULL); 
+      break;
+    case QEvent::MidButton:
+      InvokeEvent(vtkCommand::MiddleButtonPressEvent, NULL); 
+      break;
+    case QEvent::RightButton:
+      InvokeEvent(vtkCommand::RightButtonPressEvent, NULL); 
+      break;
+    default:
+      return;
+    }
+}
+
+// GetSize calling sequence changed by LLNL to fit VTK interface change.
+void vtkQtRenderWindowInteractor::mouseReleaseEvent(QMouseEvent *me) {
+    if (!Enabled)
+      return;
+
+    int *size = qtRenWin->GetSize();
+    Size[0] = size[0];
+    Size[1] = size[1];
+
+    int ctrl = 0, shift = 0;
+    if (me->state() & Qt::ControlButton)
+      ctrl = 1;
+    if (me->state() & Qt::ShiftButton)
+      shift = 1;
+    int xp = me->x();
+    int yp = Size[1]- me->y() -1;
+
+    SetEventInformation(xp, yp, ctrl, shift);
+    switch (me->button()) {
+    case QEvent::LeftButton:
+      InvokeEvent(vtkCommand::LeftButtonReleaseEvent);
+      break;
+    case QEvent::MidButton:
+      InvokeEvent(vtkCommand::MiddleButtonReleaseEvent);
+      break;
+    case QEvent::RightButton:
+      InvokeEvent(vtkCommand::RightButtonReleaseEvent);
+      break;
+    default:
+      return;
+    }
+}
+
+void vtkQtRenderWindowInteractor::timer() {
+    if (!Enabled)
+      return;
+    QPoint cp = qtRenWin->mapFromGlobal(QCursor::pos());
+    
+    SetEventInformation(cp.x(), Size[1] - cp.y(), 0, 0);
+    InvokeEvent(vtkCommand::MouseMoveEvent, NULL);
+    InvokeEvent(vtkCommand::TimerEvent, NULL);
+}
+
+int vtkQtRenderWindowInteractor::CreateTimer(int timertype) {
+    if (timertype == VTKI_TIMER_FIRST) {
+        QObject::connect(&qTimer, SIGNAL(timeout()), SLOT(timer()));
+        qTimer.start(10);
+    }
+    return 1;
+}
+
+int vtkQtRenderWindowInteractor::DestroyTimer() {
+    qTimer.stop();
+    QObject::disconnect(&qTimer, SIGNAL(timeout()), this, 0);
+    return 1;
+}
+
+// GetSize calling sequence changed by LLNL to fit VTK interface change.
+void vtkQtRenderWindowInteractor::keyPressEvent(QKeyEvent *ke) {
+    if (!Enabled)
+      return;
+    
+    int *size = qtRenWin->GetSize();
+    Size[0] = size[0];
+    Size[1] = size[1];
+    int ctrl = 0, shift = 0;
+    if (ke->state() & Qt::ControlButton)
+      ctrl = 1;
+    if (ke->state() & Qt::ShiftButton)
+      shift = 1;
+    QPoint cp = qtRenWin->mapFromGlobal(QCursor::pos());
+    int xp = cp.x();
+    int yp = Size[1]- cp.y() -1;
+    
+    SetEventInformation(xp, yp, 0, 0);
+    InvokeEvent(vtkCommand::MouseMoveEvent, NULL);
+   
+    SetEventInformation(xp, yp, ctrl, shift, tolower(ke->ascii()), 1);
+    InvokeEvent(vtkCommand::KeyPressEvent, NULL);
+    InvokeEvent(vtkCommand::CharEvent, NULL);
+}
+

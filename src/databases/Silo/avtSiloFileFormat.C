@@ -1,0 +1,6012 @@
+// ************************************************************************* //
+//                           avtSiloFileFormat.C                             //
+// ************************************************************************* //
+
+#include <avtSiloFileFormat.h>
+
+#include <vtkCellType.h>
+#include <vtkFloatArray.h>
+#include <vtkIntArray.h>
+#include <vtkPolyData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkStructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkUnstructuredGrid.h>
+
+#include <avtCallback.h>
+#include <avtDatabase.h>
+#include <avtDatabaseMetaData.h>
+#include <avtFacelist.h>
+#include <avtIOInformation.h>
+#include <avtMaterial.h>
+#include <avtSpecies.h>
+#include <avtMixedVariable.h>
+#include <avtTypes.h>
+#include <avtVariableCache.h>
+
+#include <Utility.h>
+
+#include <BadDomainException.h>
+#include <BadIndexException.h>
+#include <DebugStream.h>
+#include <ImproperUseException.h>
+#include <InvalidFilesException.h>
+#include <InvalidVariableException.h>
+#include <InvalidZoneTypeException.h>
+#include <SiloException.h>
+
+#include <avtStructuredDomainBoundaries.h>
+
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
+using std::string;
+using std::vector;
+using std::map;
+
+
+static void      ExceptionGenerator(char *);
+static char     *GenerateName(const char *, const char *);
+static string    PrepareDirName(const char *, const char *);
+static void      SplitDirVarName(const char *dirvar, const char *curdir,
+                                 string &dir, string &var);
+
+static void      AddDefvars(const char *, avtDatabaseMetaData *);
+
+static int  SiloZoneTypeToVTKZoneType(int);
+static void TranslateSiloWedgeToVTKWedge(const int *, vtkIdType [6]);
+static void TranslateSiloPyramidToVTKPyramid(const int *, vtkIdType [5]);
+
+
+bool avtSiloFileFormat::madeGlobalSiloCalls = false;
+
+
+// ****************************************************************************
+//  Class: avtSiloFileFormat
+//
+//  Purpose:
+//      A Silo file format reader.
+//
+//  Arguments:
+//      fnames  The filenames
+//      nf      The number of files.
+//
+//  Notes:      It is assumed that the files are sorted so that the one with
+//              the multimesh/multivars/multimaterials comes first.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 23, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Apr  9 12:54:31 PDT 2001
+//    Have Silo throw an exception whenever a problem occurs.
+//
+//    Hank Childs, Mon Apr  7 18:04:30 PDT 2003
+//    Do not make the global Silo calls repeatedly.
+//
+// ****************************************************************************
+
+avtSiloFileFormat::avtSiloFileFormat(const char *toc_name)
+    : avtSTMDFileFormat(&toc_name, 1)
+{
+    if (!madeGlobalSiloCalls)
+    {
+        //
+        // Take no chances with precision errors.
+        //
+        DBForceSingle(1);
+    
+        //
+        // If there is ever a problem with Silo, we want it to throw an
+        // exception.
+        //
+        DBShowErrors(DB_ALL, ExceptionGenerator);
+        madeGlobalSiloCalls = true;
+    }
+
+    dbfiles = new DBfile*[MAX_FILES];
+    for (int i = 0 ; i < MAX_FILES ; i++)
+    {
+        dbfiles[i] = NULL;
+    }
+
+    //
+    // We sent the toc name in as the only file, so it will end up as index 0.
+    //
+    tocIndex = 0;
+
+    readGlobalInfo = false;
+    groupInfo.haveGroups = false;
+    hasDisjointElements = false;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat destructor
+//
+//  Programmer: Hank Childs
+//  Creation:   February 23, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Jan  7 18:51:24 PST 2002
+//    Fixed memory leak.
+//
+// ****************************************************************************
+
+avtSiloFileFormat::~avtSiloFileFormat()
+{
+    if (dbfiles != NULL)
+    {
+        for (int i = 0 ; i < MAX_FILES ; i++)
+        {
+            if (dbfiles[i] != NULL)
+            {
+                DBClose(dbfiles[i]);
+                dbfiles[i] = NULL;
+            }
+        }
+        delete [] dbfiles;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::OpenFile
+//
+//  Purpose:
+//      Opens a Silo file.
+//
+//  Arguments:
+//      f       The index of the file in our array.
+//
+//  Returns:    A handle to the open file.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 23, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Mar 11 17:29:06 PST 2002
+//    Made call to GetTimeVaryingInformation.
+//    
+//    Hank Childs, Fri Mar 22 10:32:33 PST 2002
+//    Added calls to support file descriptor management.
+//
+//    Hank Childs, Thu Apr 10 08:45:44 PDT 2003
+//    Initialize global information.
+//
+// ****************************************************************************
+
+DBfile *
+avtSiloFileFormat::OpenFile(int f)
+{
+    //
+    // Make sure this is in range.
+    //
+    if (f < 0 || f >= nFiles)
+    {
+        EXCEPTION2(BadIndexException, f, nFiles);
+    }
+
+    //
+    // Check to see if the file is already open.
+    //
+    if (dbfiles[f] != NULL)
+    {
+        UsedFile(f);
+        return dbfiles[f];
+    }
+
+    debug4 << "Opening silo file " << filenames[f] << endl;
+
+    //
+    // Open the Silo file.
+    //
+    dbfiles[f] = DBOpen(filenames[f], DB_UNKNOWN, DB_READ);
+
+    //
+    // Check to see if we got a valid handle.
+    //
+    if (dbfiles[f] == NULL)
+    {
+        EXCEPTION1(InvalidFilesException, filenames[f]);
+    }
+
+    RegisterFile(f);
+
+    if (f == 0 && !readGlobalInfo)
+    {
+        ReadGlobalInformation(dbfiles[f]);
+    }
+
+    return dbfiles[f];
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::ReadGlobalInformation
+//
+//  Purpose:
+//      This is a method that is guaranteed to get called before 'ReadVar'
+//      calls are made.  Formerly, much of this work was done in 'ReadDir',
+//      but ReadDir is not always called, leading to serious problems.
+//
+//  Programmer: Hank Childs
+//  Creation:   April 10, 2003
+//
+// ****************************************************************************
+
+void
+avtSiloFileFormat::ReadGlobalInformation(DBfile *dbfile)
+{
+    //
+    // Get the cycle, dtime, etc.
+    //
+    GetTimeVaryingInformation(dbfile);
+
+    //
+    // Make sure we are aware of any 'defvars' -- defined variables.
+    //
+    if (DBInqVarExists(dbfile, "_meshtv_defvars"))
+    {
+        int    ldefvars = DBGetVarLength(dbfile, "_meshtv_defvars");
+        if (ldefvars > 0)
+        {
+            char *defvar_str = new char[ldefvars+1];
+            for (int i = 0 ; i < ldefvars+1 ; i++)
+            {
+                defvar_str[i] = '\0';
+            }
+            DBReadVar(dbfile, "_meshtv_defvars", defvar_str);
+            GetVectorDefvars(defvar_str);
+            delete [] defvar_str;
+        }
+    }
+
+    //
+    // We can fake ghost zones for block-structured grids.  Read in
+    // information related to that.
+    //
+    GetConnectivityAndGroupInformation(dbfile);
+
+    readGlobalInfo = true;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetTimeVaryingInformation
+//
+//  Purpose:
+//      Gets the time varying information out of a Silo file.  This is only
+//      called once and is for getting things like time and cycle out of the
+//      file.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 11, 2002
+//
+// ****************************************************************************
+
+void
+avtSiloFileFormat::GetTimeVaryingInformation(DBfile *dbfile)
+{
+    //
+    // Read out the cycle number and time.
+    //
+    if (DBInqVarExists(dbfile, "cycle"))
+    {
+        int cycle;
+        DBReadVar(dbfile, "cycle", &cycle);
+        metadata->SetCycle(timestep, cycle);
+    }
+    if (DBInqVarExists(dbfile, "dtime"))
+    {
+        double dtime;
+        DBReadVar(dbfile, "dtime", &dtime);
+        metadata->SetTime(timestep, dtime);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::OpenFile
+//
+//  Purpose:
+//      Opens a file by asking for a file name; adds the file name to a list
+//      if we haven't heard of it before.
+//
+//  Arguments:
+//      n       The file name.
+//
+//  Returns:    A handle to the open file.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 26, 2001
+//
+// *****************************************************************************
+
+DBfile *
+avtSiloFileFormat::OpenFile(const char *n)
+{
+    //
+    // The directory of this file is all relative to the directory of the 
+    // table of contents.  Reflect that here.
+    //
+    char name[1024];
+    char *tocFile = filenames[tocIndex];
+    char *thisSlash = tocFile, *lastSlash = tocFile;
+    while (thisSlash != NULL)
+    {
+        lastSlash = thisSlash;
+        thisSlash = strstr(lastSlash+1, "/");
+    }
+    if (lastSlash == tocFile)
+    {
+        strcpy(name, n);
+    }
+    else
+    {
+        int amount = lastSlash-tocFile+1;
+        strncpy(name, tocFile, amount);
+        strcpy(name+amount, n);
+    }
+
+    int fileIndex = -1;
+    for (int i = 0 ; i < nFiles ; i++)
+    {
+        if (strcmp(filenames[i], name) == 0)
+        {
+            fileIndex = i;
+            break;
+        }
+    }
+
+    if (fileIndex == -1)
+    {
+        //
+        // We have asked for a previously unseen file.  Add it to the list and
+        // continue.  AddFile will automatically take care of overflow issues.
+        //
+        fileIndex = AddFile(name);
+    }
+
+    DBfile *dbfile = OpenFile(fileIndex);
+    return dbfile;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::CloseFile
+//
+//  Purpose:
+//      Closes a Silo file.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 23, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Mar 22 11:10:18 PST 2002 
+//    Added a method call to make sure that we are playing well with the file
+//    descriptor manager.
+//
+// ****************************************************************************
+
+void
+avtSiloFileFormat::CloseFile(int f)
+{
+    if (dbfiles[f] != NULL)
+    {
+        debug4 << "Closing Silo file " << filenames[f] << endl;
+        DBClose(dbfiles[f]);
+        UnregisterFile(f);
+        dbfiles[f] = NULL;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::FreeUpResources
+//
+//  Purpose:
+//      Frees up the resources.  This closes down file descriptors.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 23, 2001
+//
+// ****************************************************************************
+
+void
+avtSiloFileFormat::FreeUpResources(void)
+{
+    debug4 << "Silo File Format instructed to free up resources." << endl;
+    for (int i = 0 ; i < nFiles ; i++)
+    {
+        CloseFile(i);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::PopulateDatabaseMetaData
+//
+//  Purpose:
+//      Sets the database meta data.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 26, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Mar 15 19:34:19 PST 2001
+//    Fixed multi-variables to be more careful in determining what mesh they
+//    are defined on.
+//
+//    Hank Childs, Mon Mar 19 17:22:35 PST 2001
+//    Added vectors through defvars.
+//
+//    Hank Childs, Mon Apr  9 13:18:34 PDT 2001
+//    Added support for multi???s where the first domain is invalid.
+//
+//    Hank Childs, Thu Oct 18 14:21:20 PDT 2001
+//    Don't assume that the bounds for the first timestep are the bounds for
+//    all timesteps.
+//
+//    Brad Whitlock, Mon Oct 22 18:33:37 PST 2001
+//    Changed the exception keywords to macros.
+// 
+//    Jeremy Meredith, Thu Oct 25 13:02:18 PDT 2001
+//    Added code to read domain decomposition information.
+//
+//    Hank Childs, Thu Oct 25 17:02:39 PDT 2001
+//    More changes for domain decomposition information.
+//
+//    Hank Childs, Tue Oct 30 16:27:29 PST 2001
+//    Pushed code into a ReadDir routine.
+//
+//    Hank Childs, Mon Mar 11 08:52:59 PST 2002
+//    Renamed to PopulateDatabaseMetaData.
+//
+// ****************************************************************************
+
+void
+avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+{
+    DBfile *dbfile = OpenFile(tocIndex);
+
+    //
+    // Sub-vars from a multi-var are defined on the sub-meshes of a multi-mesh.
+    // To figure out which multi-mesh a multi-var is defined on, we need to
+    // determine it from the sub-vars.  This array stores the names of the
+    // first sub-meshes so the sub-vars can check against them later.
+    //
+    firstSubMesh.clear();
+    actualMeshName.clear();
+    blocksForMesh.clear();
+
+    //
+    // Do a recursive search through the subdirectories.
+    //
+    ReadDir(dbfile, "/", md);
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::ReadDir
+//
+//  Purpose:
+//      Get all of the variables from a directory.
+//
+//  Arguments:
+//      dbfile   The handle to the Silo file.
+//      dirname  The name of the current directory.
+//      md       The meta-data object to put information into.
+//
+//  Programmer:  Hank Childs
+//  Creation:    October 30, 2001
+//
+//  Modifications:
+//    Jeremy Meredith, Wed Nov 21 14:11:35 PST 2001
+//    Fixed the logic so the structured domain boundary info works with 
+//    more file types.
+//
+//    Eric Brugger, Tue Nov 27 16:21:17 PST 2001
+//    I modified the routine to only search directories in _meshtv_searchpath
+//    if present.
+//
+//    Hank Childs, Mon Dec  3 09:55:54 PST 2001
+//    Do not read in boundary information if we are only going to serve up
+//    meta-data.
+//
+//    Eric Brugger, Tue Dec  4 15:05:56 PST 2001
+//    I modified the routine to read an alternate representation of the
+//    domain connectivity for a 3d structured mesh.  If the alternate
+//    representation is present it uses it instead of the normal one.  I
+//    also corrected a bug setting the extents for ucd meshes.
+//
+//    Jeremy Meredith, Thu Dec 13 11:46:06 PST 2001
+//    Fixed a bug with the reading of 3d structured connectivity.
+//
+//    Jeremy Meredith, Tue Dec 18 15:40:05 PST 2001
+//    Added multi-species support.  Renamed individual species so they are
+//    one-origin.
+//
+//    Hank Childs, Fri Jan  4 10:44:44 PST 2002
+//    Fix UMR.
+//
+//    Jeremy Meredith, Thu Jan 17 10:44:33 PST 2002
+//    Reworked the interdomain connectivity reading.  Now in parallel only
+//    the first processor reads it and then broadcasts it to the other
+//    processors.  This can be a big speedup.
+//
+//    Sean Ahern, Fri Feb  8 11:44:55 PST 2002
+//    Added support for material names.  Also got rid of all but one
+//    GetComponent calls.
+//
+//    Jeremy Meredith, Mon Feb 25 14:26:35 PST 2002
+//    Added code to make sure the assumed directories exist when reading
+//    interdomain connectivity.  Some files use a different naming scheme.
+//
+//    Hank Childs, Mon Apr 15 09:13:51 PDT 2002
+//    Add support for distributed Silo files.  This used to happen
+//    automatically, but there have been some changes to DBGetComponent.
+//
+//    Hank Childs, Mon Apr 15 14:45:53 PDT 2002
+//    Explicitly check if a directory exists rather than issuing a DBSetDir.
+//    This will clean up our log files.
+//
+//    Hank Childs, Wed Apr 17 12:11:04 PDT 2002
+//    Add ENDTRY (this only breaks when we are using fake exceptions).
+//
+//    Hank Childs, Sun Jun 16 19:55:52 PDT 2002
+//    Initialize the cell origin.
+//
+//    Hank Childs, Mon Jun 24 12:45:09 PDT 2002
+//    Add support for groups.
+//
+//    Hank Childs, Fri Jul 12 16:33:56 PDT 2002
+//    Added current directory name to directory tracking routines to better
+//    support multi-vars that have relative pathnames.
+//
+//    Hank Childs, Sun Aug 18 11:53:02 PDT 2002
+//    Added support for meshes that are made up of all disjoint elements.
+//
+//    Hank Childs, Wed Sep  4 16:43:34 PDT 2002
+//    Added a call to parse the defvars and put them in the meta-data object.
+//
+//    Hank Childs, Fri Sep 27 14:58:14 PDT 2002
+//    Added support for mesh units.
+//
+//    Kathleen Bonnell, Wed Oct 23 13:55:55 PDT 2002  
+//    Added tdims, so that topological dimension for multi-point-meshes will 
+//    be set correctly. 
+//
+//    Hank Childs, Fri Oct 25 15:44:28 PDT 2002
+//    Fix a bug where the topological dimension was not being set correctly,
+//    causing the facelist filter to not execute.
+//
+//    Hank Childs, Tue Nov 12 09:50:12 PST 2002
+//    If a multi-mesh is located in a sub-directory, name the multi-mesh with
+//    the subdirectory name.
+//
+//    Hank Childs, Tue Dec 10 12:43:46 PST 2002
+//    Do not give up on invalid variables.  Just mark them as invalid.
+//
+//    Jeremy Meredith, Wed Mar 19 12:26:35 PST 2003
+//    Added extra information needed to allow multivars defined on only
+//    some domains of its associated multimesh.
+//
+//    Hank Childs, Thu Apr 10 08:45:44 PDT 2003
+//    Do not parse the defvars or read in the connectivity information, since
+//    that is now done when the file is opened (because ReadDir is not always
+//    called).
+//
+//    Hank Childs, Tue May  6 18:16:40 PDT 2003
+//    Some calls were being made in every pass of ReadDir, although they were
+//    only necessary in the first pass.  Also only register the domain
+//    directories for multi-meshes (the MeshTV method).
+//
+//    Hank Childs, Fri May 16 18:21:20 PDT 2003
+//    Make sure that all return values are valid.
+//
+// ****************************************************************************
+
+void
+avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
+                           avtDatabaseMetaData *md)
+{
+    int    i, j, k;
+    DBtoc *toc = DBGetToc(dbfile);
+    if (toc == NULL)
+        EXCEPTION1(InvalidFilesException, filenames[0]);
+
+    //
+    // Copy the toc to account for Silo shortcomings.
+    //
+    int      nmultimesh      = toc->nmultimesh;
+    char   **multimesh_names = new char*[nmultimesh];
+    for (i = 0 ; i < nmultimesh ; i++)
+    {
+        multimesh_names[i] = new char[strlen(toc->multimesh_names[i])+1];
+        strcpy(multimesh_names[i], toc->multimesh_names[i]);
+    }
+    int      nqmesh      = toc->nqmesh;
+    char   **qmesh_names = new char*[nqmesh];
+    for (i = 0 ; i < nqmesh ; i++)
+    {
+        qmesh_names[i] = new char[strlen(toc->qmesh_names[i])+1];
+        strcpy(qmesh_names[i], toc->qmesh_names[i]);
+    }
+    int      nucdmesh      = toc->nucdmesh;
+    char   **ucdmesh_names = new char*[nucdmesh];
+    for (i = 0 ; i < nucdmesh ; i++)
+    {
+        ucdmesh_names[i] = new char[strlen(toc->ucdmesh_names[i])+1];
+        strcpy(ucdmesh_names[i], toc->ucdmesh_names[i]);
+    }
+    int      nptmesh      = toc->nptmesh;
+    char   **ptmesh_names = new char*[nptmesh];
+    for (i = 0 ; i < nptmesh ; i++)
+    {
+        ptmesh_names[i] = new char[strlen(toc->ptmesh_names[i])+1];
+        strcpy(ptmesh_names[i], toc->ptmesh_names[i]);
+    }
+    int      nmultivar      = toc->nmultivar;
+    char   **multivar_names = new char*[nmultivar];
+    for (i = 0 ; i < nmultivar ; i++)
+    {
+        multivar_names[i] = new char[strlen(toc->multivar_names[i])+1];
+        strcpy(multivar_names[i], toc->multivar_names[i]);
+    }
+    int      nqvar      = toc->nqvar;
+    char   **qvar_names = new char*[nqvar];
+    for (i = 0 ; i < nqvar ; i++)
+    {
+        qvar_names[i] = new char[strlen(toc->qvar_names[i])+1];
+        strcpy(qvar_names[i], toc->qvar_names[i]);
+    }
+    int      nucdvar      = toc->nucdvar;
+    char   **ucdvar_names = new char*[nucdvar];
+    for (i = 0 ; i < nucdvar ; i++)
+    {
+        ucdvar_names[i] = new char[strlen(toc->ucdvar_names[i])+1];
+        strcpy(ucdvar_names[i], toc->ucdvar_names[i]);
+    }
+    int      nptvar      = toc->nptvar;
+    char   **ptvar_names = new char*[nptvar];
+    for (i = 0 ; i < nptvar ; i++)
+    {
+        ptvar_names[i] = new char[strlen(toc->ptvar_names[i])+1];
+        strcpy(ptvar_names[i], toc->ptvar_names[i]);
+    }
+    int      nmat      = toc->nmat;
+    char   **mat_names = new char*[nmat];
+    for (i = 0 ; i < nmat ; i++)
+    {
+        mat_names[i] = new char[strlen(toc->mat_names[i])+1];
+        strcpy(mat_names[i], toc->mat_names[i]);
+    }
+    int      nmultimat      = toc->nmultimat;
+    char   **multimat_names = new char*[nmultimat];
+    for (i = 0 ; i < nmultimat ; i++)
+    {
+        multimat_names[i] = new char[strlen(toc->multimat_names[i])+1];
+        strcpy(multimat_names[i], toc->multimat_names[i]);
+    }
+    int      nmatspecies      = toc->nmatspecies;
+    char   **matspecies_names = new char*[nmatspecies];
+    for (i = 0 ; i < nmatspecies ; i++)
+    {
+        matspecies_names[i] = new char[strlen(toc->matspecies_names[i])+1];
+        strcpy(matspecies_names[i], toc->matspecies_names[i]);
+    }
+    int      nmultimatspecies      = toc->nmultimatspecies;
+    char   **multimatspecies_names = new char*[nmultimatspecies];
+    for (i = 0 ; i < nmultimatspecies ; i++)
+    {
+        multimatspecies_names[i]
+                   = new char[strlen(toc->multimatspecies_names[i])+1];
+        strcpy(multimatspecies_names[i], toc->multimatspecies_names[i]);
+    }
+    int      ndir      = toc->ndir;
+    char   **dir_names = new char*[ndir];
+    for (i = 0 ; i < ndir ; i++)
+    {
+        dir_names[i] = new char[strlen(toc->dir_names[i])+1];
+        strcpy(dir_names[i], toc->dir_names[i]);
+    }
+    int      norigdir      = toc->ndir;
+    char   **origdir_names = new char*[norigdir];
+    for (i = 0 ; i < norigdir ; i++)
+    {
+        origdir_names[i] = new char[strlen(toc->dir_names[i])+1];
+        strcpy(origdir_names[i], toc->dir_names[i]);
+    }
+
+    //
+    // The dbfile will probably change, so read in the meshtv_defvars and
+    // meshtv_searchpath while we can.
+    //
+    char  *searchpath_str = NULL;
+    if (strcmp(dirname, "/") == 0)
+    {
+        //
+        // We're just interested in metadata in this function, so tell Silo not
+        // to read the extra data arrays, except for material names and 
+        // numbers.
+        //
+        DBSetDataReadMask(DBMatMatnames|DBMatMatnos);
+
+        if (DBInqVarExists(dbfile, "_disjoint_elements"))
+        {
+            hasDisjointElements = true;
+        }
+
+        if (DBInqVarExists(dbfile, "_meshtv_defvars"))
+        {
+            int    ldefvars = DBGetVarLength(dbfile, "_meshtv_defvars");
+            if (ldefvars > 0)
+            {
+                char  *defvar_str = new char[ldefvars+1];
+                for (int i = 0 ; i < ldefvars+1 ; i++)
+                {
+                    defvar_str[i] = '\0';
+                }
+                DBReadVar(dbfile, "_meshtv_defvars", defvar_str);
+                AddDefvars(defvar_str, md);
+                delete [] defvar_str;
+            }
+        }
+
+        if (DBInqVarExists(dbfile, "_meshtv_searchpath"))
+        {
+            int    lsearchpath = DBGetVarLength(dbfile, "_meshtv_searchpath");
+            if (lsearchpath > 0)
+            {
+                searchpath_str = new char[lsearchpath+1];
+                DBReadVar(dbfile, "_meshtv_searchpath", searchpath_str);
+            }
+        }
+    }
+
+    //
+    // Multi-meshes
+    //
+    for (i = 0 ; i < nmultimesh ; i++)
+    {
+        DBmultimesh *mm = DBGetMultimesh(dbfile, multimesh_names[i]);
+        if (mm == NULL)
+            EXCEPTION1(InvalidVariableException, multimesh_names[i]);
+        RegisterDomainDirs(mm->meshnames, mm->nblocks, dirname);
+
+        int silo_mt;
+        bool valid_var = true;
+        TRY
+        {
+            silo_mt = GetMeshtype(dbfile, mm->meshnames[0]);
+        }
+        CATCH(SiloException)
+        {
+            debug1 << "Giving up on mesh \"" << multimesh_names[i] 
+                   << "\" since its first block (" << mm->meshnames[0]
+                   << ") is invalid." << endl;
+            valid_var = false;
+        }
+        ENDTRY
+
+        avtMeshType   mt;
+        int ndims;
+        int tdims;
+        int cellOrigin;
+        string xUnits, yUnits, zUnits;
+        switch (silo_mt)
+        {
+          case DB_UCDMESH:
+            {
+                mt = AVT_UNSTRUCTURED_MESH;
+                char   *realvar;
+                DBfile *correctFile = dbfile;
+                DetermineFileAndDirectory(mm->meshnames[0], correctFile,
+                                          realvar);
+                DBucdmesh *um = DBGetUcdmesh(correctFile, realvar);
+                if (um == NULL)
+                    EXCEPTION1(InvalidVariableException, mm->meshnames[0]);
+                ndims = um->ndims;
+                tdims = ndims; 
+                cellOrigin = um->origin;
+                if (um->units[0] != NULL)
+                    xUnits = um->units[0];
+                if (um->units[1] != NULL)
+                    yUnits = um->units[1];
+                if (um->units[2] != NULL)
+                    zUnits = um->units[2];
+                DBFreeUcdmesh(um);
+            }
+            break;
+          case DB_POINTMESH:
+            {
+                mt = AVT_POINT_MESH;
+                char   *realvar;
+                DBfile *correctFile = dbfile;
+                DetermineFileAndDirectory(mm->meshnames[0], correctFile,
+                                          realvar);
+                DBpointmesh *pm = DBGetPointmesh(correctFile, realvar);
+                if (pm == NULL)
+                    EXCEPTION1(InvalidVariableException, mm->meshnames[0]);
+                ndims = pm->ndims;
+                tdims = 0;
+                cellOrigin = pm->origin;
+                if (pm->units[0] != NULL)
+                    xUnits = pm->units[0];
+                if (pm->units[1] != NULL)
+                    yUnits = pm->units[1];
+                if (pm->units[2] != NULL)
+                    zUnits = pm->units[2];
+                DBFreePointmesh(pm);
+            }
+            break;
+          case DB_QUAD_RECT:
+            {
+                mt = AVT_RECTILINEAR_MESH;
+                char   *realvar;
+                DBfile *correctFile = dbfile;
+                DetermineFileAndDirectory(mm->meshnames[0], correctFile,
+                                          realvar);
+                DBquadmesh *qm = DBGetQuadmesh(correctFile, realvar);
+                if (qm == NULL)
+                    EXCEPTION1(InvalidVariableException, mm->meshnames[0]);
+                ndims = qm->ndims;
+                tdims = ndims;
+                cellOrigin = qm->origin;
+                if (qm->units[0] != NULL)
+                    xUnits = qm->units[0];
+                if (qm->units[1] != NULL)
+                    yUnits = qm->units[1];
+                if (qm->units[2] != NULL)
+                    zUnits = qm->units[2];
+                DBFreeQuadmesh(qm);
+            }
+            break;
+          case DB_QUAD_CURV:
+            {
+                mt = AVT_CURVILINEAR_MESH;
+                char   *realvar;
+                DBfile *correctFile = dbfile;
+                DetermineFileAndDirectory(mm->meshnames[0], correctFile,
+                                          realvar);
+                DBquadmesh *qm = DBGetQuadmesh(correctFile, realvar);
+                if (qm == NULL)
+                    EXCEPTION1(InvalidVariableException, mm->meshnames[0]);
+                ndims = qm->ndims;
+                tdims = ndims; 
+                cellOrigin = qm->origin;
+                if (qm->units[0] != NULL)
+                    xUnits = qm->units[0];
+                if (qm->units[1] != NULL)
+                    yUnits = qm->units[1];
+                if (qm->units[2] != NULL)
+                    zUnits = qm->units[2];
+                DBFreeQuadmesh(qm);
+            }
+            break;
+          default:
+            {
+                mt = AVT_UNKNOWN_MESH;
+                ndims = 0;
+                tdims = 0;
+                cellOrigin = 0;
+            }
+            break;
+        }
+
+        char *name_w_dir = GenerateName(dirname, multimesh_names[i]);
+        avtMeshMetaData *mmd = new avtMeshMetaData(name_w_dir,
+                                   mm->nblocks, mm->blockorigin, cellOrigin,
+                                   ndims, tdims, mt);
+        mmd->validVariable = valid_var;
+        mmd->groupTitle = "blocks";
+        mmd->groupPieceName = "block";
+        if (mt == AVT_UNSTRUCTURED_MESH)
+            mmd->disjointElements = hasDisjointElements;
+        mmd->xUnits = xUnits;
+        mmd->yUnits = yUnits;
+        mmd->zUnits = zUnits;
+        md->Add(mmd);
+
+        // Store off the important info about this multimesh
+        // so we can match other multi-objects to it later
+        actualMeshName.push_back(name_w_dir);
+        firstSubMesh.push_back(mm->meshnames[0]);
+        blocksForMesh.push_back(mm->nblocks);
+        allSubMeshDirs.push_back(vector<string>());
+        for (int j=0; j<mm->nblocks; j++)
+        {
+            string dir,var;
+            SplitDirVarName(mm->meshnames[j], dirname, dir,var);
+            if (j==0)
+                firstSubMeshVarName.push_back(var);
+            allSubMeshDirs[i].push_back(dir);
+        }
+
+        DBFreeMultimesh(mm);
+        delete [] name_w_dir;
+    }
+
+    //
+    // Quad-meshes
+    //
+    for (i = 0 ; i < nqmesh ; i++)
+    {
+        char   *realvar;
+        DBfile *correctFile = dbfile;
+
+        DetermineFileAndDirectory(qmesh_names[i], correctFile, realvar);
+        DBquadmesh *qm = DBGetQuadmesh(correctFile, realvar);
+        if (qm == NULL)
+            EXCEPTION1(InvalidVariableException, qmesh_names[i]);
+
+        avtMeshType   mt;
+        switch (qm->coordtype)
+        {
+          case DB_QUAD_RECT:
+            mt = AVT_RECTILINEAR_MESH;
+            break;
+          case DB_QUAD_CURV:
+            mt = AVT_CURVILINEAR_MESH;
+            break;
+          default:
+            mt = AVT_UNKNOWN_MESH;
+            break;
+        }
+
+        float extents[6];
+        float *extents_to_use = NULL;
+        if (nTimesteps == 1)
+        {
+            if (qm->datatype == DB_DOUBLE)
+            {
+                double *min_extents_double = (double *) qm->min_extents;
+                double *max_extents_double = (double *) qm->max_extents;
+                for (j = 0 ; j < qm->ndims ; j++)
+                {
+                    extents[2*j    ] = (float) min_extents_double[j];
+                    extents[2*j + 1] = (float) max_extents_double[j];
+                }
+            }
+            else
+            {
+                for (j = 0 ; j < qm->ndims ; j++)
+                {
+                    extents[2*j    ] = qm->min_extents[j];
+                    extents[2*j + 1] = qm->max_extents[j];
+                }
+            }
+            extents_to_use = extents;
+        }
+
+        char *name_w_dir = GenerateName(dirname, qmesh_names[i]);
+        avtMeshMetaData *mmd = new avtMeshMetaData(extents_to_use,
+                                                   name_w_dir, 1, 0,qm->origin,
+                                                   qm->ndims, qm->ndims,
+                                                   mt);
+        if (qm->units[0] != NULL)
+            mmd->xUnits = qm->units[0];
+        if (qm->units[1] != NULL)
+            mmd->yUnits = qm->units[1];
+        if (qm->units[2] != NULL)
+            mmd->zUnits = qm->units[2];
+        mmd->groupTitle = "blocks";
+        mmd->groupPieceName = "block";
+        md->Add(mmd);
+
+        delete [] name_w_dir;
+        DBFreeQuadmesh(qm);
+    }
+
+    //
+    // Ucd-meshes
+    //
+    for (i = 0 ; i < nucdmesh ; i++)
+    {
+        char   *realvar;
+        DBfile *correctFile = dbfile;
+
+        DetermineFileAndDirectory(ucdmesh_names[i], correctFile, realvar);
+        DBucdmesh *um = DBGetUcdmesh(correctFile, realvar);
+        if (um == NULL)
+            EXCEPTION1(InvalidVariableException, ucdmesh_names[i]);
+
+        float   extents[6];
+        float  *extents_to_use = NULL;
+        if (nTimesteps == 1)
+        {
+            if (um->datatype == DB_DOUBLE)
+            {
+                double *min_extents_double = (double *) um->min_extents;
+                double *max_extents_double = (double *) um->max_extents;
+                for (j = 0 ; j < um->ndims ; j++)
+                {
+                    extents[2*j    ] = (float) min_extents_double[j];
+                    extents[2*j + 1] = (float) max_extents_double[j];
+                }
+            }
+            else
+            {
+                for (j = 0 ; j < um->ndims ; j++)
+                {
+                    extents[2*j    ] = um->min_extents[j];
+                    extents[2*j + 1] = um->max_extents[j];
+                }
+            }
+            extents_to_use = extents;
+        }
+
+        char *name_w_dir = GenerateName(dirname, ucdmesh_names[i]);
+        avtMeshMetaData *mmd = new avtMeshMetaData(extents_to_use, name_w_dir,
+                            1, 0, um->origin, um->ndims, um->ndims,
+                            AVT_UNSTRUCTURED_MESH);
+        if (um->units[0] != NULL)
+           mmd->xUnits = um->units[0];
+        if (um->units[1] != NULL)
+           mmd->yUnits = um->units[1];
+        if (um->units[2] != NULL)
+           mmd->zUnits = um->units[2];
+        mmd->groupTitle = "blocks";
+        mmd->groupPieceName = "block";
+        mmd->disjointElements = hasDisjointElements;
+        md->Add(mmd);
+
+        delete [] name_w_dir;
+        DBFreeUcdmesh(um);
+    }
+
+    //
+    // Point meshes
+    //
+    for (i = 0 ; i < nptmesh ; i++)
+    {
+        char   *realvar;
+        DBfile *correctFile = dbfile;
+
+        DetermineFileAndDirectory(ptmesh_names[i], correctFile, realvar);
+        DBpointmesh *pm = DBGetPointmesh(correctFile, realvar);
+        if (pm == NULL)
+            EXCEPTION1(InvalidFilesException, ptmesh_names[i]);
+
+        char *name_w_dir = GenerateName(dirname, ptmesh_names[i]);
+        avtMeshMetaData *mmd = new avtMeshMetaData(name_w_dir, 1, 0,pm->origin,
+                                         pm->ndims, 0, AVT_POINT_MESH);
+        mmd->groupTitle = "blocks";
+        mmd->groupPieceName = "block";
+        if (pm->units[0] != NULL)
+            mmd->xUnits = pm->units[0];
+        if (pm->units[1] != NULL)
+            mmd->yUnits = pm->units[1];
+        if (pm->units[2] != NULL)
+            mmd->zUnits = pm->units[2];
+        md->Add(mmd);
+
+        delete [] name_w_dir;
+        DBFreePointmesh(pm);
+    }
+
+    //
+    // Multi-vars
+    //
+    for (i = 0 ; i < nmultivar ; i++)
+    {
+        DBmultivar *mv = DBGetMultivar(dbfile, multivar_names[i]);
+        if (mv == NULL)
+            EXCEPTION1(InvalidVariableException, multivar_names[i]);
+        string meshname;
+        bool valid_var = true;
+        TRY
+        {
+            // NOTE: There is an explicit assumption that the corresponding
+            //       multimesh has already been read.  Thus it must reside
+            //       in the same directory (or a previously read one) as
+            //       this variable.
+            meshname = DetermineMultiMeshForSubVariable(dbfile,
+                                                        multivar_names[i],
+                                                        mv->varnames,
+                                                        mv->nvars, dirname);
+            debug5 << "Variable " << multivar_names[i] 
+                   << " is defined on mesh " << meshname.c_str() << endl;
+        }
+        CATCH(SiloException)
+        {
+            debug1 << "Giving up on var \"" << multivar_names[i] 
+                   << "\" since its first block (" << mv->varnames[0]
+                   << ") is invalid." << endl;
+            valid_var = false;
+        }
+        ENDTRY
+
+        avtCentering   centering;
+
+        //
+        // Get the centering and dimension information.
+        //
+        char   *realvar = NULL;
+        DBfile *correctFile = dbfile;
+
+        DetermineFileAndDirectory(mv->varnames[0], correctFile, realvar);
+        int nvals = 1;
+        if (valid_var)
+        {
+            switch (mv->vartypes[0])
+            {
+              case DB_UCDVAR:
+                {
+                    DBucdvar *uv = NULL;
+                    uv = DBGetUcdvar(correctFile, realvar);
+                    if (uv == NULL)
+                        EXCEPTION1(InvalidVariableException, mv->varnames[0]);
+                    centering = (uv->centering == DB_ZONECENT ? AVT_ZONECENT 
+                                                              : AVT_NODECENT);
+                    nvals = uv->nvals;
+                    DBFreeUcdvar(uv);
+                }
+                break;
+    
+              case DB_QUADVAR:
+                {
+                    DBquadvar *qv = DBGetQuadvar(correctFile, realvar);
+                    if (qv == NULL)
+                        EXCEPTION1(InvalidVariableException, mv->varnames[0]);
+                    centering = (qv->align[0] == 0. ? AVT_NODECENT 
+                                                    : AVT_ZONECENT);
+                    nvals = qv->nvals;
+                    DBFreeQuadvar(qv);
+                }
+                break;
+    
+              case DB_POINTVAR:
+                {
+                    centering = AVT_NODECENT;   // Only one possible
+                    DBmeshvar *pv = DBGetPointvar(correctFile, realvar);
+                    if (pv == NULL)
+                        EXCEPTION1(InvalidVariableException, mv->varnames[0]);
+                    nvals = pv->nvals;
+                    DBFreeMeshvar(pv);
+                }
+                break;
+
+              default:
+                EXCEPTION1(InvalidVariableException, multivar_names[i]);
+                // Compiler complains about a break here.
+            };
+        }
+
+        char *name_w_dir = GenerateName(dirname, multivar_names[i]);
+        if (nvals == 1)
+        {
+            avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
+                                                       meshname, centering);
+            smd->validVariable = valid_var;
+            md->Add(smd);
+        }
+        else
+        {
+            avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
+                                             meshname, centering, nvals);
+            vmd->validVariable = valid_var;
+            md->Add(vmd);
+        }
+        delete [] name_w_dir;
+
+        DBFreeMultivar(mv);
+    }
+
+    //
+    // Quadvars
+    //
+    for (i = 0 ; i < nqvar ; i++)
+    {
+        char   *realvar = NULL;
+        DBfile *correctFile = dbfile;
+        DetermineFileAndDirectory(qvar_names[i], correctFile, realvar);
+        DBquadvar *qv = DBGetQuadvar(correctFile, realvar);
+        if (qv == NULL)
+            EXCEPTION1(InvalidVariableException, qvar_names[i]);
+
+        char meshname[256];
+        DBInqMeshname(correctFile, realvar, meshname);
+
+        //
+        // Get the centering information.
+        //
+        avtCentering   centering = (qv->align[0] == 0. ? AVT_NODECENT :
+                                                         AVT_ZONECENT);
+
+        //
+        // Get the dimension of the variable.
+        //
+        char *name_w_dir = GenerateName(dirname, qvar_names[i]);
+        char *meshname_w_dir = GenerateName(dirname, meshname);
+        if (qv->nvals == 1)
+        {
+            avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
+                                                    meshname_w_dir, centering);
+            md->Add(smd);
+        }
+        else
+        {
+            avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
+                                         meshname_w_dir, centering, qv->nvals);
+            md->Add(vmd);
+        }
+        delete [] name_w_dir;
+        delete [] meshname_w_dir;
+        DBFreeQuadvar(qv);
+    }
+
+    //
+    // Ucdvars
+    //
+    for (i = 0 ; i < nucdvar ; i++)
+    {
+        char   *realvar = NULL;
+        DBfile *correctFile = dbfile;
+        DetermineFileAndDirectory(ucdvar_names[i], correctFile, realvar);
+        DBucdvar *uv = DBGetUcdvar(correctFile, realvar);
+        if (uv == NULL)
+            EXCEPTION1(InvalidVariableException, ucdvar_names[i]);
+
+        char meshname[256];
+        DBInqMeshname(correctFile, realvar, meshname);
+
+        //
+        // Get the centering information.
+        //
+        avtCentering centering = (uv->centering == DB_ZONECENT ? AVT_ZONECENT
+                                                               : AVT_NODECENT);
+
+        //
+        // Get the dimension of the variable.
+        //
+        char *name_w_dir = GenerateName(dirname, ucdvar_names[i]);
+        char *meshname_w_dir = GenerateName(dirname, meshname);
+        if (uv->nvals == 1)
+        {
+            avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
+                                                    meshname_w_dir, centering);
+            md->Add(smd);
+        }
+        else
+        {
+            avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
+                                         meshname_w_dir, centering, uv->nvals);
+            md->Add(vmd);
+        }
+        delete [] name_w_dir;
+        delete [] meshname_w_dir;
+        DBFreeUcdvar(uv);
+    }
+
+    //
+    // Point vars
+    //
+    for (i = 0 ; i < nptvar ; i++)
+    {
+        char   *realvar = NULL;
+        DBfile *correctFile = dbfile;
+        DetermineFileAndDirectory(ptvar_names[i], correctFile, realvar);
+        DBmeshvar *pv = DBGetPointvar(correctFile, realvar);
+        if (pv == NULL)
+            EXCEPTION1(InvalidVariableException, ptvar_names[i]);
+
+        char meshname[256];
+        DBInqMeshname(correctFile, realvar, meshname);
+
+        //
+        // Get the dimension of the variable.
+        //
+        char *name_w_dir = GenerateName(dirname, ptvar_names[i]);
+        char *meshname_w_dir = GenerateName(dirname, meshname);
+        if (pv->nvals == 1)
+        {
+            avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
+                                                meshname_w_dir, AVT_NODECENT);
+            md->Add(smd);
+        }
+        else
+        {
+            avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
+                                      meshname_w_dir, AVT_NODECENT, pv->nvals);
+            md->Add(vmd);
+        }
+        delete [] name_w_dir;
+        delete [] meshname_w_dir;
+        DBFreeMeshvar(pv);
+    }
+
+    //
+    // Materials
+    //
+    for (i = 0 ; i < nmat ; i++)
+    {
+        char   *realvar = NULL;
+        DBfile *correctFile = dbfile;
+        DetermineFileAndDirectory(mat_names[i], correctFile, realvar);
+        DBmaterial *mat = DBGetMaterial(correctFile, realvar);
+        if (mat == NULL)
+            EXCEPTION1(InvalidVariableException, mat_names[i]);
+
+        char meshname[256];
+        DBInqMeshname(correctFile, realvar, meshname);
+
+        //
+        // Give the materials names based on their material number.  If
+        // they have names in the Silo file, use those as well.
+        //
+        vector<string>  matnames;
+        for (j = 0 ; j < mat->nmat ; j++)
+        {
+            char *num = NULL;
+            int dlen = int(log10(float(mat->matnos[j]))) + 1;
+            if (mat->matnames == NULL)
+            {
+                num = new char[dlen + 2];
+                sprintf(num, "%d", mat->matnos[j]);
+            }
+            else
+            {
+                int len = strlen(mat->matnames[j]);
+                num = new char[len + 1 + dlen + 1];
+                sprintf(num, "%d %s", mat->matnos[j], mat->matnames[j]);
+            }
+            matnames.push_back(num);
+            delete[] num;
+        }
+
+        char *name_w_dir = GenerateName(dirname, mat_names[i]);
+        char *meshname_w_dir = GenerateName(dirname, meshname);
+        avtMaterialMetaData *mmd = new avtMaterialMetaData(name_w_dir,
+                                          meshname_w_dir, mat->nmat, matnames);
+        md->Add(mmd);
+
+        delete [] name_w_dir;
+        delete [] meshname_w_dir;
+        DBFreeMaterial(mat);
+    }
+
+    //
+    // Multi-mats
+    //
+    for (i = 0 ; i < nmultimat ; i++)
+    {
+        DBmultimat *mm = DBGetMultimat(dbfile, multimat_names[i]);
+        if (mm == NULL)
+            EXCEPTION1(InvalidVariableException, multimat_names[i]);
+        char *material = mm->matnames[0];
+
+        char   *realvar = NULL;
+        DBfile *correctFile = dbfile;
+        DetermineFileAndDirectory(material, correctFile, realvar);
+
+        DBmaterial *mat = DBGetMaterial(correctFile, realvar);
+        if (mat == NULL)
+            EXCEPTION1(InvalidVariableException, mm->matnames[0]);
+
+        bool valid_var = true;
+        if (mat == NULL)
+        {
+            debug1 << "Giving up on material \"" << multimat_names[i] 
+                   << "\" since its first block (" << material
+                   << ") is invalid." << endl;
+            DBFreeMaterial(mat);
+            valid_var = false;
+        }
+
+        //
+        // Give the materials names based on their material number.  If
+        // there are names in the Silo file, use those as well.
+        //
+        vector<string>  matnames;
+        if (valid_var)
+        {
+            for (j = 0 ; j < mat->nmat ; j++)
+            {
+                char *num = NULL;
+                int dlen = int(log10(float(mat->matnos[j]))) + 1;
+                if (mat->matnames == NULL)
+                {
+                    num = new char[dlen + 2];
+                    sprintf(num, "%d", mat->matnos[j]);
+                }
+                else
+                {
+                    int len = strlen(mat->matnames[j]);
+                    num = new char[len + 1 + dlen + 1];
+                    sprintf(num, "%d %s", mat->matnos[j], mat->matnames[j]);
+                }
+                matnames.push_back(num);
+                delete[] num;
+            }
+        }
+
+        string meshname;
+        TRY
+        {
+            meshname = DetermineMultiMeshForSubVariable(dbfile,
+                                                        multimat_names[i],
+                                                        mm->matnames,
+                                                        mm->nmats, dirname);
+            debug5 << "Material " << multimat_names[i]<< " is defined on mesh "
+                   << meshname.c_str() << endl;
+        }
+        CATCH(SiloException)
+        {
+            debug1 << "Giving up on var \"" << multimat_names[i] 
+                   << "\" since its first block (" << material
+                   << ") is invalid." << endl;
+            valid_var = false;
+        }
+        ENDTRY
+
+        char *name_w_dir = GenerateName(dirname, multimat_names[i]);
+        avtMaterialMetaData *mmd = new avtMaterialMetaData(name_w_dir,
+                                                meshname, mat->nmat, matnames);
+        mmd->validVariable = valid_var;
+        md->Add(mmd);
+
+        delete [] name_w_dir;
+        DBFreeMultimat(mm);
+        DBFreeMaterial(mat);
+    }
+
+    //
+    // Species
+    //
+    for (i = 0 ; i < nmatspecies ; i++)
+    {
+        char   *realvar = NULL;
+        DBfile *correctFile = dbfile;
+        DetermineFileAndDirectory(matspecies_names[i], correctFile, realvar);
+
+        DBmatspecies *spec = DBGetMatspecies(correctFile, realvar);
+        if (spec == NULL)
+            EXCEPTION1(InvalidVariableException, matspecies_names[i]);
+
+        char meshname[256];
+        GetMeshname(dbfile, spec->matname, meshname);
+
+        vector<int>   numSpecies;
+        vector<vector<string> > speciesNames;
+        for (j = 0 ; j < spec->nmat ; j++)
+        {
+            numSpecies.push_back(spec->nmatspec[j]);
+            vector<string>  tmp_string_vector;
+
+            //
+            // Species do not currently have names, so just use their index.
+            //
+            for (k = 0 ; k < spec->nmatspec[j] ; k++)
+            {
+                char num[16];
+                sprintf(num, "%d", k+1);
+                tmp_string_vector.push_back(num);
+            }
+            speciesNames.push_back(tmp_string_vector);
+        }
+        char *name_w_dir = GenerateName(dirname, matspecies_names[i]);
+        char *meshname_w_dir = GenerateName(dirname, meshname);
+        avtSpeciesMetaData *smd = new avtSpeciesMetaData(name_w_dir,
+                                  meshname_w_dir, spec->matname, spec->nmat,
+                                  numSpecies, speciesNames);
+        md->Add(smd);
+
+        delete [] name_w_dir;
+        delete [] meshname_w_dir;
+        DBFreeMatspecies(spec);
+    }
+
+    //
+    // Multi-species
+    //
+    for (i = 0 ; i < nmultimatspecies ; i++)
+    {
+        DBmultimatspecies *ms = DBGetMultimatspecies(dbfile,
+                                                     multimatspecies_names[i]);
+        if (ms == NULL)
+            EXCEPTION1(InvalidVariableException, multimatspecies_names[i]);
+
+        // get the associated multimat
+
+        // We can only get this "matname" using GetComponent.  It it not
+        // yet a part of the DBmultimatspec structure, so this is the only
+        // way we can get this info.
+        char *multimatName = (char *) GetComponent(dbfile,
+                                          multimatspecies_names[i], "matname");
+
+        // get the multimesh for the multimat
+        DBmultimat *mm = DBGetMultimat(dbfile, multimatName);
+        if (mm == NULL)
+            EXCEPTION1(InvalidVariableException, multimatspecies_names[i]);
+        char *material = mm->matnames[0];
+
+        string meshname;
+        bool valid_var = true;
+        TRY
+        {
+            meshname = DetermineMultiMeshForSubVariable(dbfile,
+                                                      multimatspecies_names[i],
+                                                      mm->matnames,
+                                                      ms->nspec, dirname);
+        }
+        CATCH(SiloException)
+        {
+            debug1 << "Giving up on var \"" << multimatspecies_names[i]
+                   << "\" since its first block (" << material
+                   << ") is invalid." << endl;
+            valid_var = false;
+        }
+        ENDTRY
+
+        // get the species info
+        char *species = ms->specnames[0];
+
+        char   *realvar = NULL;
+        DBfile *correctFile = dbfile;
+        DetermineFileAndDirectory(species, correctFile, realvar);
+
+        DBmatspecies *spec = DBGetMatspecies(correctFile, realvar);
+        if (spec == NULL)
+            EXCEPTION1(InvalidVariableException, species);
+        if (spec == NULL)
+        {
+            debug1 << "Giving up on species \"" << multimatspecies_names[i]
+                   << "\" since its first block (" << species
+                   << ") is invalid." << endl;
+            valid_var = false;
+        }
+
+        vector<int>              numSpecies;
+        vector< vector<string> > speciesNames;
+        if (valid_var)
+        {
+            for (j = 0 ; j < spec->nmat ; j++)
+            {
+                numSpecies.push_back(spec->nmatspec[j]);
+                vector<string>  tmp_string_vector;
+                for (k = 0 ; k < spec->nmatspec[j] ; k++)
+                {
+                    char num[16];
+                    sprintf(num, "%d", k+1);
+                    tmp_string_vector.push_back(num);
+                }
+                speciesNames.push_back(tmp_string_vector);
+            }
+        }
+        char *name_w_dir = GenerateName(dirname, multimatspecies_names[i]);
+        avtSpeciesMetaData *smd = new avtSpeciesMetaData(name_w_dir,
+                                  meshname, spec->matname, spec->nmat,
+                                  numSpecies, speciesNames);
+        smd->validVariable = valid_var;
+        md->Add(smd);
+
+        delete [] name_w_dir;
+        DBFreeMultimat(mm);
+        DBFreeMatspecies(spec);
+        DBFreeMultimatspecies(ms);
+    }
+
+    //
+    // If the meshtv searchpath is defined then replace the list of
+    // directories with the directories in the search path.
+    //
+    if (searchpath_str != NULL)
+    {
+        //
+        // Free up the old list of directories.
+        //
+        for (i = 0 ; i < ndir ; i++)
+        {
+            delete [] dir_names[i];
+        }
+        delete [] dir_names;
+
+        //
+        // Determine the number of directories in the string.
+        //
+        ndir = 0;
+        for (i = 0; searchpath_str[i] != '\0'; i++)
+        {
+            if (searchpath_str[i] == ';')
+            {
+                ndir++;
+            }
+        }
+
+        //
+        // Create the new list of directories.
+        //
+        dir_names = new char*[ndir];
+        ndir = 0;
+        for (i = 0; searchpath_str[i] != '\0'; i++)
+        {
+            char *dirname = &searchpath_str[i];
+
+            while (searchpath_str[i] != ';' && searchpath_str[i] != '\0')
+            {
+                i++;
+            }
+            searchpath_str[i] = '\0';
+
+            if (strlen(dirname) > 0)
+            {
+                dir_names[ndir] = new char[strlen(dirname)+1];
+                strcpy(dir_names[ndir], dirname);
+                ndir++;
+            }
+        }
+          
+        delete [] searchpath_str;
+    }
+
+    //
+    // Call recursively on the sub-directories.
+    //
+    for (i = 0 ; i < ndir ; i++)
+    {
+        char path[1024];
+        int length = strlen(dirname);
+        if (length > 0 && dirname[length-1] != '/')
+        {
+            sprintf(path, "%s/%s", dirname, dir_names[i]);
+        }
+        else
+        {
+            sprintf(path, "%s%s", dirname, dir_names[i]);
+        }
+        if (!ShouldGoToDir(path))
+        {
+            continue;
+        }
+        DBSetDir(dbfile, dir_names[i]);
+        ReadDir(dbfile, path, md);
+        DBSetDir(dbfile, "..");
+    }
+
+    //
+    // We should only add the defvars if we are at the 'root' level.
+    // Ditto adding group information.
+    //
+    if (strcmp(dirname, "/") == 0)
+    {
+        if (groupInfo.haveGroups)
+        {
+            md->AddGroupInformation(groupInfo.numgroups, groupInfo.ndomains,
+                                    groupInfo.ids);
+        }
+
+        //
+        // We already read in and parsed the defvars with the rest of the 
+        // global information.  Now add that information to the meta-data.
+        //
+        std::vector<VectorDefvar>::iterator it;
+        for (it = defvars.begin() ; it != defvars.end() ; it++)
+        {
+            const avtScalarMetaData *c1 = md->GetScalar((*it).component1);
+            const avtScalarMetaData *c2 = md->GetScalar((*it).component2);
+            const avtScalarMetaData *c3 = md->GetScalar((*it).component3);
+            bool valid_var = true;
+            int  dim = 3;
+            string       meshname;
+            avtCentering cent;
+            if (c1 == NULL || c2 == NULL
+                || (c3 == NULL && (*it).component3 != string("<no var>")) )
+            {
+                cent = AVT_NODECENT;
+                meshname = "<no_mesh>";
+                debug1 << "One of " << (*it).component1.c_str() << ", "
+                       << (*it).component2.c_str() << ", " 
+                       << (*it).component3.c_str()
+                       << " is not a valid component of a vector." << endl;
+                valid_var = false;
+            }
+            else
+            {
+                cent = c1->centering;
+                meshname = c1->meshName;
+                dim = (c3 == NULL ? 2 : 3);
+                if (c3 == NULL)
+                {
+                    // For our comparisons, make it be the same as c1.
+                    c3 = c1;
+                }
+
+                if (c1->centering != c2->centering ||
+                    c2->centering != c3->centering)
+                {
+                    debug1 << "Centering does not agree for components of "
+                           << "a vector.  Invalidating..." << endl;
+                    valid_var = false;
+                }
+
+                if (c1->meshName != c2->meshName ||
+                    c2->meshName != c3->meshName)
+                {
+                    debug1 << " Components of a vector are defined on "
+                           << "different meshes." << endl;
+                    valid_var = false;
+                }
+            }
+
+            avtVectorMetaData *vmd 
+                       = new avtVectorMetaData((*it).vector_name, meshname,
+                                               cent, dim);
+            vmd->validVariable = valid_var;
+    
+            md->Add(vmd);
+        }
+
+        // To be nice to other functions, tell Silo to turn back on reading all
+        // of the data.
+        DBSetDataReadMask(DBAll);
+    }
+
+    for (i = 0 ; i < nmultimesh ; i++)
+    {
+        delete [] multimesh_names[i];
+    }
+    delete [] multimesh_names;
+    for (i = 0 ; i < nqmesh ; i++)
+    {
+        delete [] qmesh_names[i];
+    }
+    delete [] qmesh_names;
+    for (i = 0 ; i < nucdmesh ; i++)
+    {
+        delete [] ucdmesh_names[i];
+    }
+    delete [] ucdmesh_names;
+    for (i = 0 ; i < nptmesh ; i++)
+    {
+        delete [] ptmesh_names[i];
+    }
+    delete [] ptmesh_names;
+    for (i = 0 ; i < nmultivar ; i++)
+    {
+        delete [] multivar_names[i];
+    }
+    delete [] multivar_names;
+    for (i = 0 ; i < nqvar ; i++)
+    {
+        delete [] qvar_names[i];
+    }
+    delete [] qvar_names;
+    for (i = 0 ; i < nucdvar ; i++)
+    {
+        delete [] ucdvar_names[i];
+    }
+    delete [] ucdvar_names;
+    for (i = 0 ; i < nptvar ; i++)
+    {
+        delete [] ptvar_names[i];
+    }
+    delete [] ptvar_names;
+    for (i = 0 ; i < nmat ; i++)
+    {
+        delete [] mat_names[i];
+    }
+    delete [] mat_names;
+    for (i = 0 ; i < nmultimat ; i++)
+    {
+        delete [] multimat_names[i];
+    }
+    delete [] multimat_names;
+    for (i = 0 ; i < nmatspecies ; i++)
+    {
+        delete [] matspecies_names[i];
+    }
+    delete [] matspecies_names;
+    for (i = 0 ; i < nmultimatspecies ; i++)
+    {
+        delete [] multimatspecies_names[i];
+    }
+    delete [] multimatspecies_names;
+    for (i = 0 ; i < ndir ; i++)
+    {
+        delete [] dir_names[i];
+    }
+    delete [] dir_names;
+    for (i = 0 ; i < norigdir ; i++)
+    {
+        delete [] origdir_names[i];
+    }
+    delete [] origdir_names;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetConnectivityAndGroupInformation
+//
+//  Purpose:
+//      Traverses directory structures to find information about how blocks
+//      connect up and how what groups each block lies in.
+//
+//  Notes:      The original code comes from PopulateDatabaseMetaData and was
+//              written by Jeremy Meredith.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 24, 2002
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Apr 10 08:51:23 PDT 2003
+//    Removed meta-data argument, since the acquired data will now be stored
+//    off and used later when the meta-data is asked for.
+//
+// ****************************************************************************
+
+void
+avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile)
+{
+    //
+    // Connectivity information.
+    //
+    int  ndomains    = -1;
+    int *extents     = NULL;
+    int *nneighbors  = NULL;
+    int  lneighbors  = -1;
+    int *neighbors   = NULL;
+
+    //
+    // Group information.
+    //
+    int  numGroups   = -1;
+    int *groupIds    = NULL;
+
+#ifdef PARALLEL
+    int rank = 0;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if (rank == 0)
+    {
+#endif
+       GetConnectivityAndGroupInformationFromFile(dbfile, ndomains, nneighbors,
+                          extents, lneighbors, neighbors, numGroups, groupIds);
+#ifdef PARALLEL
+    }
+
+    //
+    // Communicate processor 0's information to the rest of the processors.
+    //
+    MPI_Bcast(&ndomains, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    if (ndomains != -1)
+    {
+        if (rank != 0)
+        {
+            extents = new int[ndomains*6];
+            nneighbors = new int[ndomains];
+        }
+        MPI_Bcast(extents,     ndomains*6, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(nneighbors,  ndomains,   MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&lneighbors, 1,          MPI_INT, 0, MPI_COMM_WORLD);
+        if (rank != 0)
+        {
+            neighbors = new int[lneighbors];
+        }
+        MPI_Bcast(neighbors,   lneighbors, MPI_INT, 0, MPI_COMM_WORLD);
+    }
+
+    MPI_Bcast(&numGroups, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    if (numGroups > 0)
+    {
+        if (rank != 0)
+        {
+            groupIds = new int[ndomains];
+        }
+        MPI_Bcast(groupIds, ndomains, MPI_INT, 0, MPI_COMM_WORLD);
+    }
+#endif
+
+    //
+    // If we found connectivity information, go ahead and create the 
+    // appropriate data structure and register it.
+    //
+    if (ndomains > 0 && !avtDatabase::OnlyServeUpMetaData())
+    {
+        avtStructuredDomainBoundaries *dbi=new avtStructuredDomainBoundaries();
+        dbi->SetNumDomains(ndomains);
+
+        int l = 0;
+        for (int j = 0; j < ndomains; j++)
+        {
+            dbi->SetExtents(j, &extents[j*6]);
+            for (int k = 0; k < nneighbors[j]; k++)
+            {
+                dbi->AddNeighbor(j, neighbors[l+0], neighbors[l+1],
+                                 &neighbors[l+2], &neighbors[l+5]);
+                l += 11;
+            }
+            dbi->Finish(j);
+        }
+
+        void_ref_ptr vr = void_ref_ptr(dbi,
+                                      avtStructuredDomainBoundaries::Destruct);
+        cache->CacheVoidRef("any_mesh",
+                       AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1, vr);
+
+        //
+        // Hard to characterize when we would or would not be
+        // able to do dynamic load balancing, so just turn it off.
+        //
+        canDoDynamicLoadBalancing = false;
+    }
+
+    if (numGroups > 0)
+    {
+        vector<int> ids;
+        for (int i = 0 ; i < ndomains ; i++)
+        {
+            ids.push_back(groupIds[i]);
+        }
+        groupInfo.haveGroups = true;
+        groupInfo.ndomains = ndomains;
+        groupInfo.numgroups = numGroups;
+        groupInfo.ids = ids;
+    }
+
+    //
+    // Clean up memory.
+    //
+    if (neighbors != NULL)
+    {
+        delete [] neighbors;
+    }
+    if (nneighbors != NULL)
+    {
+        delete [] nneighbors;
+    }
+    if (extents != NULL)
+    {
+        delete [] extents;
+    }
+    if (groupIds != NULL)
+    {
+        delete [] groupIds;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetConnectivityAndGroupInformationFromFile
+//
+//  Purpose:
+//      Traverse the file and gets the connectivity information as well as the
+//      group information.  This is done together because these pieces of
+//      information are located in the same subdirectory.
+//
+//  Notes:      The original code comes from PopulateDatabaseMetaData and was
+//              written by Jeremy Meredith.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 24, 2002
+//
+//  Modifications:
+//
+//    Hank Childs, Sat Aug 10 09:10:08 PDT 2002
+//    Fix bug where codes that did not fully meet the interface for groups
+//    ended up with a partially completed structure that eventually caused a
+//    crash.
+//
+// ****************************************************************************
+
+void
+avtSiloFileFormat::GetConnectivityAndGroupInformationFromFile(DBfile *dbfile,
+               int &ndomains, int *&nneighbors, int *&extents, int &lneighbors, 
+               int *&neighbors, int &numGroups, int *&groupIds)
+{
+    bool needGroupInfo = true;
+    bool needConnectivityInfo = !avtDatabase::OnlyServeUpMetaData();
+   
+    //
+    // We can read in the connectivity info through this variable.  We cannot
+    // assume its existence, though.
+    //
+    if (DBInqVarExists(dbfile, "ConnectivityNumDomains") != 0)
+    {
+        DBReadVar(dbfile, "ConnectivityNumDomains", &ndomains);
+
+        extents = new int[ndomains*6];
+        nneighbors = new int[ndomains];
+
+        DBReadVar(dbfile, "ConnectivityExtents", extents);
+        DBReadVar(dbfile, "ConnectivityNumNeighbors", nneighbors);
+        DBReadVar(dbfile, "ConnectivityLenNeighbors", &lneighbors);
+
+        neighbors = new int[lneighbors];
+
+        DBReadVar(dbfile, "ConnectivityNeighbors", neighbors);
+        needConnectivityInfo = false;
+    }
+
+    //
+    // Note that this 'if' test will always be true right now -- we will always
+    // need the group info.
+    //
+    if (needGroupInfo || needConnectivityInfo)
+    {
+        //
+        // We need to start looking through the subdirectories.
+        //
+        bool found = false;
+        bool hasGlobal = false;
+        if (DBInqVarType(dbfile, "Global") == DB_DIR)
+        {
+            hasGlobal = true;
+        }
+        bool hasDecomposition = false;
+        if (DBInqVarType(dbfile, "Decomposition") == DB_DIR)
+        {
+            hasDecomposition = true;
+        }
+
+        if (hasGlobal)
+        {
+            DBSetDir(dbfile, "Global");
+            if (DBSetDir(dbfile, "Decomposition") == 0)
+            {
+                found = true;
+            }
+            else
+            {
+                debug5 << "Has Global directory, but not "
+                       << " Decomposition underneath it." << endl;
+                DBSetDir(dbfile, "..");
+            }
+        }
+        if (!found && hasDecomposition)
+        {
+            DBSetDir(dbfile, "Decomposition");
+            found = true;
+        }
+
+        if (found)
+        {
+            if (DBInqVarType(dbfile, "gmap0") == DB_DIR)
+            {
+                FindGmapConnectivity(dbfile, ndomains, nneighbors, extents,
+                                     lneighbors, neighbors, numGroups,groupIds,
+                                     needConnectivityInfo, needGroupInfo);
+            }
+            else
+            {
+                FindStandardConnectivity(dbfile, ndomains, nneighbors, extents,
+                                     lneighbors, neighbors, numGroups,groupIds,
+                                     needConnectivityInfo, needGroupInfo);
+            }
+
+            DBSetDir(dbfile, "/");
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::FindStandardConnectivity
+//
+//  Purpose:
+//      Finds the connectivity assuming the standard conventions --
+//      Domain_0, Domain_1, etc.  We assume that we are already in the
+//      appropriate 'Decomposition' when this routine is called.
+//
+//  Notes:      The original code comes from PopulateDatabaseMetaData and was
+//              written by Jeremy Meredith.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 15, 2002
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Oct 15 11:18:42 PDT 2002
+//    Moved routine out of GetConnectivityAndGroupInformationFromFile.  Also
+//    added some logic to not read group information if there is only one
+//    group.
+//
+// ****************************************************************************
+
+void
+avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
+            int *&nneighbors, int *&extents, int &lneighbors, int *&neighbors,
+            int &numGroups, int *&groupIds, bool needConnectivityInfo,
+            bool needGroupInfo)
+{
+    DBReadVar(dbfile, "NumDomains", &ndomains);
+    if (needConnectivityInfo)
+    {
+        extents = new int[ndomains*6];
+        nneighbors = new int[ndomains];
+        lneighbors = 0;
+    }
+
+    if (needGroupInfo)
+    {
+         DBReadVar(dbfile, "NumBlocks", &numGroups);
+         if (numGroups > 1)
+         {
+             groupIds = new int[ndomains];
+         }
+         else if (numGroups == 1)
+         {
+             groupIds = new int[ndomains];
+             for (int i = 0 ; i < ndomains ; i++)
+             {
+                 groupIds[i] = 0;
+             }
+             needGroupInfo = false;
+         }   
+         else
+         {
+             needGroupInfo = false;  // What else to do?!?
+         }
+    }
+
+    for (int j = 0 ; j < ndomains ; j++)
+    {
+        char dirname[256];
+        if (j > 0)
+            sprintf(dirname, "../Domain_%d", j);
+        else
+            sprintf(dirname, "Domain_%d", j);
+        if (DBSetDir(dbfile, dirname))
+        {
+            ndomains = -1;
+            numGroups = -1;
+            break;
+        }
+
+        if (needConnectivityInfo)
+        {
+            DBReadVar(dbfile, "Extents", &extents[j*6]);
+            DBReadVar(dbfile, "NumNeighbors", &nneighbors[j]);
+            lneighbors += nneighbors[j] * 11;
+        }
+
+        if (needGroupInfo)
+        {
+            DBReadVar(dbfile, "BlockNum", &(groupIds[j]));
+        }
+
+    }
+    DBSetDir(dbfile, "..");
+
+    if (needConnectivityInfo)
+    {
+        if (lneighbors > 0)
+        {
+            neighbors = new int[lneighbors];
+            int index = 0;
+            for (int j = 0 ; j < ndomains ; j++)
+            {
+                for (int k = 0 ; k < nneighbors[j] ; k++)
+                {
+                    char neighborname[256];
+                    sprintf(neighborname, "Domain_%d/Neighbor_%d",j,k);
+                    DBReadVar(dbfile, neighborname, &neighbors[index]);
+                    index += 11;
+                }
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::FindGmapConnectivity
+//
+//  Purpose:
+//      Finds the connectivity assuming the gmap conventions -- gmap0, gmap1,
+//      etc.  We assume that we are already in the appropriate 'Decomposition'
+//      when this routine is called.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 15, 2002
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Apr 10 11:42:56 PDT 2003
+//    The gmap information is slightly larger than what we were allocating
+//    for, leading to an ABW (array bounds write) of 1.  This was enough to
+//    crash VisIt in some circumstances.
+//
+// ****************************************************************************
+
+void
+avtSiloFileFormat::FindGmapConnectivity(DBfile *dbfile, int &ndomains,
+            int *&nneighbors, int *&extents, int &lneighbors, int *&neighbors,
+            int &numGroups, int *&groupIds, bool needConnectivityInfo,
+            bool needGroupInfo)
+{
+    DBReadVar(dbfile, "NumDomains", &ndomains);
+    if (needConnectivityInfo)
+    {
+        extents = new int[ndomains*6];
+        nneighbors = new int[ndomains];
+        lneighbors = 0;
+    }
+
+    if (needGroupInfo)
+    {
+         DBReadVar(dbfile, "NumBlocks", &numGroups);
+         if (numGroups > 1)
+         {
+             groupIds = new int[ndomains];
+         }
+         else if (numGroups == 1)
+         {
+             groupIds = new int[ndomains];
+             for (int i = 0 ; i < ndomains ; i++)
+             {
+                 groupIds[i] = 0;
+             }
+             needGroupInfo = false;
+         }   
+         else
+         {
+             needGroupInfo = false;  // What else to do?!?
+         }
+    }
+
+    for (int j = 0 ; j < ndomains ; j++)
+    {
+        char dirname[256];
+        if (j > 0)
+            sprintf(dirname, "../gmap%d", j);
+        else
+            sprintf(dirname, "gmap%d", j);
+        if (DBSetDir(dbfile, dirname))
+        {
+            ndomains = -1;
+            numGroups = -1;
+            break;
+        }
+
+        int gmap_buff[1024];
+        DBReadVar(dbfile, "gmap", gmap_buff);
+
+        if (needConnectivityInfo)
+        {
+            extents[j*6+0] = gmap_buff[3];
+            extents[j*6+1] = gmap_buff[6];
+            extents[j*6+2] = gmap_buff[4];
+            extents[j*6+3] = gmap_buff[7];
+            extents[j*6+4] = gmap_buff[5];
+            extents[j*6+5] = gmap_buff[8];
+            DBReadVar(dbfile, "NumNeighbors", &nneighbors[j]);
+            lneighbors += nneighbors[j] * 11;
+        }
+
+        if (needGroupInfo)
+        {
+            groupIds[j] = gmap_buff[1];
+        }
+
+    }
+    DBSetDir(dbfile, "..");
+
+    if (needConnectivityInfo)
+    {
+        if (lneighbors > 0)
+        {
+            neighbors = new int[lneighbors];
+            int index = 0;
+            for (int j = 0 ; j < ndomains ; j++)
+            {
+                for (int k = 0 ; k < nneighbors[j] ; k++)
+                {
+                    char neighborname[256];
+                    sprintf(neighborname, "gmap%d/neighbor%d",j,k);
+                    int neighbor_info[512];  // We only want 11, but it can
+                                             // be as big as 400. 
+                    DBReadVar(dbfile, neighborname, neighbor_info);
+                    for (int l = 0 ; l < 11 ; l++)
+                    {
+                        neighbors[index+l] = neighbor_info[l];
+                    }
+                    index += 11;
+                }
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetVectorDefvars
+//
+//  Purpose:
+//      Goes through the _meshtv_defvars command and reads out the vectors.
+//      Puts those vectors into the defvars data member.
+//
+//  Notes:       This is all a hack until we get better defvar support in.
+//
+//  Arguments:
+//      d_str    The string that contains the defvars.
+//
+//  Programmer:  Hank Childs
+//  Creation:    March 19, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Nov 20 07:58:16 PST 2002
+//    Allow for '_', which is legal for Silo names.
+//
+// ****************************************************************************
+
+inline void GetWord(char *&s, char *word)
+{
+    while (isspace(*s) && *s != '\0')
+    {
+        s++;
+    }
+
+    int  len = 0;
+    while ((isalnum(*s) || *s == '_') && *s != '\0')
+    {
+        word[len] = *s;
+        len++;
+        s++;
+    }
+    word[len] = '\0';
+
+    while (isspace(*s) && *s != '\0')
+    {
+        s++;
+    }
+}
+
+
+void
+avtSiloFileFormat::GetVectorDefvars(const char *d_str)
+{
+    char *dv_tmp = new char[strlen(d_str)+1];
+    strcpy(dv_tmp, d_str);
+
+    //
+    // First determine the vector statements by separating them based on
+    // semi-colons.
+    //
+    vector<char *> stmts;
+    char *start = dv_tmp;
+    char *end   = NULL;
+    do
+    {
+        //
+        // Find the end of the substatement -- denoted by a semi-colon.
+        //
+        end = strstr(start, ";");
+
+        //
+        // Put a null character where the semi-colon used to be.  If we hit
+        // the end of the string, then end will be NULL, so we don't need to
+        // do anything.
+        //
+        if (end != NULL)
+        {
+            *end = '\0';
+        }
+
+        //
+        // Push back the start of the string so we can work on it later.
+        //
+        stmts.push_back(start);
+        start = end+1;
+    }
+    while (end != NULL);
+
+    //
+    // Now go through each of the statements and determine whether they are
+    // vector statements and get the statement if it is.
+    //
+    int size = stmts.size();
+    for (int i = 0 ; i < size ; i++)
+    {
+        char *s = stmts[i];
+
+        //
+        // Get the name out.
+        //
+        char name[1024];
+        GetWord(s, name);
+
+        //
+        // Make sure what we are looking at really is a vector.
+        //
+        char v[1024];
+        GetWord(s, v);
+        if (strcmp(v, "vector") != 0)
+        {
+            continue;
+        }
+
+        if (*s != '{')
+        {
+            continue;
+        }
+        s++;
+
+        char comp1[1024], comp2[1024], comp3[1024];
+        GetWord(s, comp1);
+
+        if (*s != ',')
+        {
+            continue;
+        }
+        s++;
+
+        GetWord(s, comp2);
+
+        if (*s != '}')
+        {
+            if (*s != ',')
+            {
+                continue;
+            }
+            s++;
+
+            GetWord(s, comp3);
+
+            if (*s != '}')
+            {
+                continue;
+            }
+            s++;
+        }
+        else
+        {
+            strcpy(comp3, "<no var>");
+            s++;
+        }
+
+        VectorDefvar d;
+        d.vector_name = name;
+        d.component1  = comp1;
+        d.component2  = comp2;
+        d.component3  = comp3;
+ 
+        defvars.push_back(d);
+    }
+
+    delete [] dv_tmp;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::AddDefvars
+//
+//  Purpose:
+//      Parses the defvars out of the _meshtv_defvar string and adds them to
+//      the meta-data as expressions.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 4, 2002
+//
+// ****************************************************************************
+
+void
+AddDefvars(const char *defvars, avtDatabaseMetaData *md)
+{
+    char *dv_tmp = new char[strlen(defvars)+1];
+    strcpy(dv_tmp, defvars);
+
+    //
+    // First determine the individual statements by separating them based on
+    // semi-colons.
+    //
+    vector<char *> stmts;
+    char *start = dv_tmp;
+    char *end   = NULL;
+    do
+    {
+        //
+        // Find the end of the substatement -- denoted by a semi-colon.
+        //
+        end = strstr(start, ";");
+
+        //
+        // Put a null character where the semi-colon used to be.  If we hit
+        // the end of the string, then end will be NULL, so we don't need to
+        // do anything.
+        //
+        if (end != NULL)
+        {
+            *end = '\0';
+        }
+
+        //
+        // Push back the start of the string so we can work on it later.
+        //
+        stmts.push_back(start);
+        start = end+1;
+    }
+    while (end != NULL);
+
+    //
+    // Now go through each of the statements and determine whether they are
+    // vector statements and get the statement if it is.
+    //
+    int size = stmts.size();
+    for (int i = 0 ; i < size ; i++)
+    {
+        char *s = stmts[i];
+
+        //
+        // Get the name out.
+        //
+        char name[1024];
+        GetWord(s, name);
+
+        //
+        // Make sure what we are looking at really is a vector.
+        //
+        char vartype_str[1024];
+        GetWord(s, vartype_str);
+        avtVarType vartype = AVT_UNKNOWN_TYPE;
+        if (strcmp(vartype_str, "mesh") == 0)
+        {
+            vartype = AVT_MESH;
+        }
+        else if (strcmp(vartype_str, "scalar") == 0)
+        {
+            vartype = AVT_SCALAR_VAR;
+        }
+        else if (strcmp(vartype_str, "vector") == 0)
+        {
+            vartype = AVT_VECTOR_VAR;
+        }
+        else if (strcmp(vartype_str, "material") == 0)
+        {
+            vartype = AVT_MATERIAL;
+        }
+        else if (strcmp(vartype_str, "species") == 0)
+        {
+            vartype = AVT_MATSPECIES;
+        }
+
+        if (vartype == AVT_UNKNOWN_TYPE)
+        {
+            debug5 << "Warning: unknown defvar type \"" << vartype << "\"."
+                   << endl;
+            continue;
+        }
+
+        string name_str = name;
+        string defn_str = s;
+        md->AddExpression(name_str, defn_str, vartype);
+    }
+
+    delete [] dv_tmp;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetVar
+//
+//  Purpose:
+//      Gets the variable and converts it to a vtkScalars object.
+//
+//  Arguments:
+//      domain   The domain to fetch.
+//      v        The name of the variable to fetch.
+//
+//  Returns:     The variable as a vtkScalars.
+//
+//  Programmer:  Hank Childs
+//  Creation:    November 1, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Feb 28 10:49:17 PST 2001
+//    Moved code from avtSiloTimeStep, made it work with Silo objects
+//    distributed across multiple files.
+//
+//    Hank Childs, Thu Sep 27 10:29:46 PDT 2001
+//    Sent down the domain and variable name to some function calls for caching
+//    purposes.
+//
+//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
+//    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray instead.
+//
+//    Jeremy Meredith, Wed Mar 19 12:23:25 PST 2003
+//    Allow for the case where a multi-var is only defined on a subset
+//    of its associated multimesh.
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtSiloFileFormat::GetVar(int domain, const char *v)
+{
+    int localdomain = domain;
+    if (blocksForMultivar.count(v))
+    {
+        localdomain = blocksForMultivar[v][domain];
+        if (localdomain == -1)
+            return NULL;
+    }
+
+    debug5 << "Reading in domain " << domain << ", variable " << v << endl;
+    debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
+
+    //
+    // Open file may be a misnomer -- GetFile is more like it.
+    //
+    DBfile *dbfile = OpenFile(tocIndex);
+
+    //
+    // It's ridiculous, but Silo does not have all of the `const's in their
+    // library, so let's cast it away.
+    //
+    char *var = const_cast<char *>(v);
+
+    //
+    // Start off by finding out what kind of var it is.
+    //
+    int type = DBInqVarType(dbfile, var);
+
+    //
+    // Sort out the bad cases.
+    //
+    if (type != DB_UCDVAR && type != DB_QUADVAR && type != DB_POINTVAR
+        && type != DB_MULTIVAR)
+    {
+        EXCEPTION1(InvalidVariableException, var);
+    }
+
+    char  *varLocation = NULL;
+    if (type == DB_MULTIVAR)
+    {
+        DBmultivar *mv = DBGetMultivar(dbfile, var);
+        if (mv == NULL)
+            EXCEPTION1(InvalidVariableException, var);
+        if (localdomain < 0 || localdomain >= mv->nvars)
+        {
+            DBFreeMultivar(mv);
+            EXCEPTION2(BadDomainException, localdomain, mv->nvars);
+        }
+        type = mv->vartypes[localdomain];
+        varLocation = new char[strlen(mv->varnames[localdomain])+1];
+        strcpy(varLocation, mv->varnames[localdomain]);
+        DBFreeMultivar(mv);
+    }
+    else
+    {
+        if (domain != 0)
+        {
+            EXCEPTION2(BadDomainException, domain, 1);
+        }
+        varLocation = new char[strlen(var)+1];
+        strcpy(varLocation, var);
+    }
+
+    //
+    // Some Silo objects are distributed across several files,
+    // so handle that here.  
+    //
+    DBfile *domain_file = dbfile;
+    char   *directory_var = NULL;
+    DetermineFileAndDirectory(varLocation, domain_file, directory_var);
+
+    //
+    // We only need to worry about quadvars, ucdvars, and pointvars, since we
+    // have reduced the multivar case to one of those.
+    //
+    vtkDataArray *rv = NULL;
+    if (type == DB_UCDVAR)
+    {
+        rv = GetUcdVar(domain_file, directory_var, v, domain);
+    }
+    else if (type == DB_QUADVAR)
+    {
+        rv = GetQuadVar(domain_file, directory_var, v, domain);
+    }
+    else if (type == DB_POINTVAR)
+    {
+        rv = GetPointVar(domain_file, directory_var);
+    }
+
+    //
+    // This may be leaked if an exception is thrown after it is allocated.
+    // I'll live.
+    //
+    delete [] varLocation;
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetVectorVar
+//
+//  Purpose:
+//      Gets the variable and converts it to a vtkVectors object.
+//
+//  Arguments:
+//      domain   The domain to fetch.
+//      v        The name of the variable to fetch.
+//
+//  Returns:     The variable as a vtkVectors.
+//
+//  Programmer:  Hank Childs
+//  Creation:    March 20, 2001
+//
+//  Modifications:
+//
+//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
+//    vtkVectors has been deprecated in VTK 4.0, use vtkDataArray 
+//    and vtkFloatArray instead.
+//
+//    Hank Childs, Fri May 17 14:59:39 PDT 2002
+//    Made the routine a front-end to ones that retrieve standard vector
+//    vars and defvars.
+//
+//    Hank Childs, Thu Apr 10 09:11:08 PDT 2003
+//    Force the defvars to get read in if they haven't been already.
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtSiloFileFormat::GetVectorVar(int domain, const char *v)
+{
+    int  i;
+
+    debug5 << "Reading in vector variable " << v << ", domain " << domain
+           << endl;
+    
+    //
+    // If the root file is already opened, this call is essentially free.
+    // If it is not opened yet, we do not know what the defvar's are, so we
+    // can't figure out if this vector is a defvar.
+    //
+    OpenFile(tocIndex);
+
+    //
+    // Find this vector in our defvars.
+    //
+    int  size = defvars.size();
+    int  ind  = -1;
+    for (i = 0 ; i < size ; i++)
+    {
+        if (defvars[i].vector_name == v)
+        {
+            ind = i;
+            break;
+        }
+    }
+
+    if (ind != -1)
+    {
+        return GetDefvarVectorVar(domain, i);
+    }
+
+    return GetStandardVectorVar(domain, v);
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetDefvarVectorVar
+//
+//  Purpose:
+//      Gets a vector that is a defvar.
+//
+//  Arguments:
+//      dom     The domain number.
+//      d       The index into the defvars quantity.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 17, 2002
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtSiloFileFormat::GetDefvarVectorVar(int dom, int d)
+{
+    //
+    // We can get this vector by getting each of the three components as
+    // scalars and combining them.  We do not need to check the return value
+    // since NULL is not an option -- an exception would be thrown.
+    //
+    vtkDataArray *comp1 = GetVar(dom, defvars[d].component1.c_str());
+    vtkDataArray *comp2 = GetVar(dom, defvars[d].component2.c_str());
+    vtkDataArray *comp3 = NULL;
+    if (defvars[d].component3 != string("<no var>"))
+    {
+        comp3 = GetVar(dom, defvars[d].component3.c_str());
+    }
+
+    int numEntries = comp1->GetNumberOfTuples();
+
+    //
+    // Create the vector by getting each scalar component one at a time.
+    //
+    vtkFloatArray *rv = vtkFloatArray::New();
+    rv->SetNumberOfComponents(3);
+    rv->SetNumberOfTuples(numEntries);
+    for (int i = 0 ; i < numEntries ; i++)
+    {
+        float c1 = comp1->GetTuple1(i);
+        float c2 = comp2->GetTuple1(i);
+        float c3 = 0.;
+        if (comp3 != NULL)
+        {
+            c3 = comp3->GetTuple1(i);
+        }
+        rv->SetTuple3(i, c1, c2, c3);
+    }
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetStandardVectorVar
+//
+//  Purpose:
+//      Reads in a vector variable that is stored as a true vector variable
+//      in Silo (as opposed to a defvar'd one).
+//
+//  Arguments:
+//      dom     The domain number.
+//      v       The vector name.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 17, 2002
+//
+//  Modifications:
+//    Jeremy Meredith, Wed Mar 19 12:23:25 PST 2003
+//    Allow for the case where a multi-var is only defined on a subset
+//    of its associated multimesh.
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtSiloFileFormat::GetStandardVectorVar(int domain, const char *v)
+{
+    int localdomain = domain;
+    if (blocksForMultivar.count(v))
+    {
+        localdomain = blocksForMultivar[v][domain];
+        if (localdomain == -1)
+            return NULL;
+    }
+
+    debug5 << "Reading in domain " << domain << ", variable " << v << endl;
+    debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
+
+    //
+    // Open file may be a misnomer -- GetFile is more like it.
+    //
+    DBfile *dbfile = OpenFile(tocIndex);
+
+    //
+    // It's ridiculous, but Silo does not have all of the `const's in their
+    // library, so let's cast it away.
+    //
+    char *var = const_cast<char *>(v);
+
+    //
+    // Start off by finding out what kind of var it is.
+    //
+    int type = DBInqVarType(dbfile, var);
+
+    //
+    // Sort out the bad cases.
+    //
+    if (type != DB_UCDVAR && type != DB_QUADVAR && type != DB_POINTVAR
+        && type != DB_MULTIVAR)
+    {
+        EXCEPTION1(InvalidVariableException, var);
+    }
+
+    char  *varLocation = NULL;
+    if (type == DB_MULTIVAR)
+    {
+        DBmultivar *mv = DBGetMultivar(dbfile, var);
+        if (mv == NULL)
+            EXCEPTION1(InvalidVariableException, var);
+        if (localdomain < 0 || localdomain >= mv->nvars)
+        {
+            DBFreeMultivar(mv);
+            EXCEPTION2(BadDomainException, localdomain, mv->nvars);
+        }
+        type = mv->vartypes[localdomain];
+        varLocation = new char[strlen(mv->varnames[localdomain])+1];
+        strcpy(varLocation, mv->varnames[localdomain]);
+        DBFreeMultivar(mv);
+    }
+    else
+    {
+        if (domain != 0)
+        {
+            EXCEPTION2(BadDomainException, domain, 1);
+        }
+        varLocation = new char[strlen(var)+1];
+        strcpy(varLocation, var);
+    }
+
+    //
+    // Some Silo objects are distributed across several files,
+    // so handle that here.  
+    //
+    DBfile *domain_file = dbfile;
+    char   *directory_var = NULL;
+    DetermineFileAndDirectory(varLocation, domain_file, directory_var);
+
+    //
+    // We only need to worry about quadvars, ucdvars, and pointvars, since we
+    // have reduced the multivar case to one of those.
+    //
+    vtkDataArray *rv = NULL;
+    if (type == DB_UCDVAR)
+    {
+        rv = GetUcdVectorVar(domain_file, directory_var, v, domain);
+    }
+    else if (type == DB_QUADVAR)
+    {
+        rv = GetQuadVectorVar(domain_file, directory_var, v, domain);
+    }
+    else if (type == DB_POINTVAR)
+    {
+        rv = GetPointVectorVar(domain_file, directory_var);
+    }
+
+    //
+    // This may be leaked if an exception is thrown after it is allocated.
+    // I'll live.
+    //
+    delete [] varLocation;
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetUcdVectorVar
+//
+//  Purpose:
+//      Gets a single block of a vector ucdvar.
+//
+//  Arguments:
+//      dbfile     A handle to the file this variable lives in.
+//      vname      The variable name.  This may also have a prepended path.
+//      tvn        The True Variable Name.
+//      domain     The domain that this variable belongs to.
+//
+//  Returns:       A vtkDataArray of the vector ucdvar.
+//
+//  Programmer:    Hank Childs
+//  Creation:      May 17, 2002
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtSiloFileFormat::GetUcdVectorVar(DBfile *dbfile, const char *vname,
+                                   const char *tvn, int domain)
+{
+    //
+    // It's ridiculous, but Silo does not have all of the `const's in their
+    // library, so let's cast it away.
+    //
+    char *varname  = const_cast<char *>(vname);
+
+    //
+    // Get the Silo construct.
+    //
+    DBucdvar  *uv = DBGetUcdvar(dbfile, varname);
+    if (uv == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
+    vtkFloatArray   *vectors = vtkFloatArray::New();
+    vectors->SetNumberOfComponents(3);
+    vectors->SetNumberOfTuples(uv->nels);
+    for (int i = 0 ; i < uv->nels ; i++)
+    {
+        float v3 = (uv->ndims == 3 ? uv->vals[2][i] : 0.);
+        vectors->SetTuple3(i, uv->vals[0][i], uv->vals[1][i], v3);
+    }
+
+    DBFreeUcdvar(uv);
+
+    return vectors;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetQuadVectorVar
+//
+//  Purpose:
+//      Gets a single block of a vector quadvar.
+//
+//  Arguments:
+//      dbfile     A handle to the file this variable lives in.
+//      vname      The variable name.  This may also have a prepended path.
+//      tvn        The True Variable Name.
+//      domain     The domain that this variable belongs to.
+//
+//  Returns:       A vtkDataArray of the vector quadvar.
+//
+//  Programmer:    Hank Childs
+//  Creation:      May 17, 2002
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtSiloFileFormat::GetQuadVectorVar(DBfile *dbfile, const char *vname,
+                                    const char *tvn, int domain)
+{
+    //
+    // It's ridiculous, but Silo does not have all of the `const's in their
+    // library, so let's cast it away.
+    //
+    char *varname  = const_cast<char *>(vname);
+
+    //
+    // Get the Silo construct.
+    //
+    DBquadvar  *qv = DBGetQuadvar(dbfile, varname);
+    if (qv == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
+    //
+    // Populate the variable.  This assumes it is a scalar variable.
+    //
+    vtkFloatArray   *vectors = vtkFloatArray::New();
+    vectors->SetNumberOfComponents(3);
+    vectors->SetNumberOfTuples(qv->nels);
+    for (int i = 0 ; i < qv->nels ; i++)
+    {
+        float v3 = (qv->ndims == 3 ? qv->vals[2][i] : 0.);
+        vectors->SetTuple3(i, qv->vals[0][i], qv->vals[1][i], v3);
+    }
+
+    DBFreeQuadvar(qv);
+
+    return vectors;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetPointVectorVar
+//
+//  Purpose:
+//      Gets a single block of a vector pointvar.
+//
+//  Arguments:
+//      dbfile     A handle to the file this variable lives in.
+//      vname      The variable name.  This may also have a prepended path.
+//
+//  Returns:       A vtkDataArray of the vector pointvar.
+//
+//  Programmer:    Hank Childs
+//  Creation:      Novemeber 1, 2000
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtSiloFileFormat::GetPointVectorVar(DBfile *dbfile, const char *vname)
+{
+    //
+    // It's ridiculous, but Silo does not have all of the `const's in their
+    // library, so let's cast it away.
+    //
+    char *varname  = const_cast<char *>(vname);
+
+    //
+    // Get the Silo construct.
+    //
+    DBmeshvar  *mv = DBGetPointvar(dbfile, varname);
+    if (mv == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
+    vtkFloatArray   *vectors = vtkFloatArray::New();
+    vectors->SetNumberOfComponents(3);
+    vectors->SetNumberOfTuples(mv->nels);
+    for (int i = 0 ; i < mv->nels ; i++)
+    {
+        float v3 = (mv->ndims == 3 ? mv->vals[2][i] : 0.);
+        vectors->SetTuple3(i, mv->vals[0][i], mv->vals[1][i], v3);
+    }
+
+    DBFreeMeshvar(mv);
+
+    return vectors;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetMesh
+//
+//  Purpose:
+//      Gets the mesh and converts it to a vtkDataSet object.
+//
+//  Arguments:
+//      domain   The domain to fetch.
+//      m        The name of the mesh to fetch.
+//
+//  Returns:     The mesh as a vtkDataSet.
+//
+//  Programmer:  Hank Childs
+//  Creation:    November 1, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Feb 28 10:49:17 PST 2001
+//    Moved code from avtSiloTimeStep, made it work with Silo objects
+//    distributed across multiple files.
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtSiloFileFormat::GetMesh(int domain, const char *m)
+{
+    debug5 << "Reading in domain " << domain << ", mesh " << m << endl;
+    debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
+
+    //
+    // Open file may be a misnomer -- GetFile is more like it.
+    //
+    DBfile *dbfile = OpenFile(tocIndex);
+
+    //
+    // It's ridiculous, but Silo does not have all of the `const's in their
+    // library, so let's cast it away.
+    //
+    char *mesh = const_cast<char *>(m);
+
+    //
+    // Start off by finding out what kind of mesh it is.
+    //
+    int type = DBInqVarType(dbfile, mesh);
+
+    //
+    // Sort out the bad cases.
+    //
+    if (type != DB_UCDMESH && type != DB_QUADMESH && type != DB_POINTMESH
+        && type != DB_MULTIMESH)
+    {
+        EXCEPTION1(InvalidVariableException, mesh);
+    }
+
+    char  *meshLocation = NULL;
+    if (type == DB_MULTIMESH)
+    {
+        DBmultimesh *mm = DBGetMultimesh(dbfile, mesh);
+        if (mm == NULL)
+            EXCEPTION1(InvalidVariableException, mesh);
+        if (domain < 0 || domain >= mm->nblocks)
+        {
+            DBFreeMultimesh(mm);
+            EXCEPTION2(BadDomainException, domain, mm->nblocks);
+        }
+        type = mm->meshtypes[domain];
+        meshLocation = new char[strlen(mm->meshnames[domain])+1];
+        strcpy(meshLocation, mm->meshnames[domain]);
+        DBFreeMultimesh(mm);
+    }
+    else
+    {
+        if (domain != 0)
+        {
+            EXCEPTION2(BadDomainException, domain, 1);
+        }
+        meshLocation = new char[strlen(mesh)+1];
+        strcpy(meshLocation, mesh);
+    }
+
+    //
+    // Some Silo objects are distributed across several files,
+    // so handle that here.  
+    //
+    DBfile *domain_file = dbfile;
+    char   *directory_mesh = NULL;
+    DetermineFileAndDirectory(meshLocation, domain_file, directory_mesh);
+
+    //
+    // We only need to worry about quadmeshes, ucdmeshes, and pointmeshes,
+    // since we have reduced the multimesh case to one of those.
+    //
+    vtkDataSet *rv = NULL;
+    if (type == DB_UCDMESH)
+    {
+        rv = GetUnstructuredMesh(domain_file, directory_mesh, domain, m);
+    }
+    else if (type == DB_QUADMESH || type == DB_QUAD_RECT || type==DB_QUAD_CURV)
+    {
+        rv = GetQuadMesh(domain_file, directory_mesh);
+    }
+    else if (type == DB_POINTMESH)
+    {
+        rv = GetPointMesh(domain_file, directory_mesh);
+    }
+    else
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    //
+    // This may be leaked if an exception is thrown after it is allocated.
+    // I'll live.
+    //
+    delete [] meshLocation;
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetUcdVar
+//
+//  Purpose:
+//      Gets a single block of a ucdvar.
+//
+//  Arguments:
+//      dbfile     A handle to the file this variable lives in.
+//      vname      The variable name.  This may also have a prepended path.
+//      tvn        The True Variable Name.
+//      domain     The domain that this variable belongs to.
+//
+//  Returns:       A vtkScalars of the ucdvar.
+//
+//  Programmer:    Hank Childs
+//  Creation:      Novmeber 1, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Feb 28 10:49:17 PST 2001
+//    Moved code from avtSiloTimeStep, added file argument to account for
+//    Silo objects distributed across multiple files.
+//
+//    Hank Childs, Thu Apr 26 16:09:39 PDT 2001
+//    Sped up routine.
+//
+//    Hank Childs, Thu Sep 27 10:21:30 PDT 2001
+//    Add support for mixed variables.
+//
+//    Hank Childs, Tue Oct 16 07:53:35 PDT 2001
+//    Account for funny data files that write out all NULL mixval arrays.
+//
+//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
+//    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray 
+//    and vtkFloatArray instead.
+//
+//    Hank Childs, Fri Jul  5 15:03:23 PDT 2002
+//    Add the name of the mixed variable to its constructor.
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
+                             const char *tvn, int domain)
+{
+    //
+    // It's ridiculous, but Silo does not have all of the `const's in their
+    // library, so let's cast it away.
+    //
+    char *varname  = const_cast<char *>(vname);
+
+    //
+    // Get the Silo construct.
+    //
+    DBucdvar  *uv = DBGetUcdvar(dbfile, varname);
+    if (uv == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
+    //
+    // Populate the variable.  This assumes it is a scalar variable.
+    //
+    vtkFloatArray   *scalars = vtkFloatArray::New();
+    scalars->SetNumberOfTuples(uv->nels);
+    float        *ptr     = (float *) scalars->GetVoidPointer(0);
+    memcpy(ptr, uv->vals[0], sizeof(float)*uv->nels);
+
+    if (uv->mixvals != NULL && uv->mixvals[0] != NULL)
+    {
+        avtMixedVariable *mv = new avtMixedVariable(uv->mixvals[0], uv->mixlen,
+                                                    tvn);
+        void_ref_ptr vr = void_ref_ptr(mv, avtMixedVariable::Destruct);
+        cache->CacheVoidRef(tvn, AUXILIARY_DATA_MIXED_VARIABLE, timestep, 
+                            domain, vr);
+    }
+
+    DBFreeUcdvar(uv);
+
+    return scalars;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetQuadVar
+//
+//  Purpose:
+//      Gets a single block of a quadvar.
+//
+//  Arguments:
+//      dbfile     A handle to the file this variable lives in.
+//      vname      The variable name.  This may also have a prepended path.
+//      tvn        The True Variable Name.
+//      domain     The domain that this variable belongs to.
+//
+//  Returns:       A vtkScalars of the quadvar.
+//
+//  Programmer:    Hank Childs
+//  Creation:      Novemeber 1, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Feb 28 10:49:17 PST 2001
+//    Moved code from avtSiloTimeStep, added file argument to account for
+//    Silo objects distributed across multiple files.
+//
+//    Hank Childs, Thu Apr 26 16:09:39 PDT 2001
+//    Sped up routine.
+//
+//    Hank Childs, Thu Sep 27 10:21:30 PDT 2001
+//    Add support for mixed variables.
+//
+//    Hank Childs, Tue Oct 16 07:53:35 PDT 2001
+//    Account for funny data files that write out all NULL mixval arrays.
+//
+//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
+//    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray 
+//    and vtkFloatArray instead.
+//
+//    Eric Brugger, Thu May 23 14:23:23 PDT 2002
+//    I modified the routine to take into account the major order of
+//    the variable being read.
+//
+//    Hank Childs, Fri Jul  5 15:03:23 PDT 2002
+//    Add the name of the mixed variable to its constructor.
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtSiloFileFormat::GetQuadVar(DBfile *dbfile, const char *vname,
+                              const char *tvn, int domain)
+{
+    //
+    // It's ridiculous, but Silo does not have all of the `const's in their
+    // library, so let's cast it away.
+    //
+    char *varname  = const_cast<char *>(vname);
+
+    //
+    // Get the Silo construct.
+    //
+    DBquadvar  *qv = DBGetQuadvar(dbfile, varname);
+    if (qv == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
+    //
+    // Populate the variable.  This assumes it is a scalar variable.
+    //
+    vtkFloatArray   *scalars = vtkFloatArray::New();
+    scalars->SetNumberOfTuples(qv->nels);
+    if (qv->major_order == DB_ROWMAJOR || qv->ndims <= 1)
+    {
+        float        *ptr     = (float *) scalars->GetVoidPointer(0);
+        memcpy(ptr, qv->vals[0], sizeof(float)*qv->nels);
+    }
+    else
+    {
+        float    *var2 = (float *) scalars->GetVoidPointer(0);
+        float    *var  = qv->vals[0];
+
+        int       i, j, k;
+        int       nx, ny, nz, nxy, nyz;
+
+        switch (qv->ndims)
+        {
+          case 2:
+            nx = qv->dims[0];
+            ny = qv->dims[1];
+
+            for (j = 0; j < ny; j++)
+            {
+                for (i = 0; i < nx; i++)
+                {
+                    var2[j*nx + i] = var[j + i*ny];
+                }
+            }
+
+            break;
+
+          case 3:
+            nx = qv->dims[0];
+            ny = qv->dims[1];
+            nz = qv->dims[2];
+            nxy = qv->dims[0] * qv->dims[1];
+            nyz = qv->dims[1] * qv->dims[2];
+
+            for (k = 0; k < nz; k++)
+            {
+                for (j = 0; j < ny; j++)
+                {
+                    for (i = 0; i < nx; i++)
+                    {
+                        var2[k*nxy + j*nx + i] = var[k + j*nz + i*nyz];
+                    }
+                }
+            }
+
+            break;
+        }
+    }
+
+    if (qv->mixvals != NULL && qv->mixvals[0] != NULL)
+    {
+        avtMixedVariable *mv = new avtMixedVariable(qv->mixvals[0], qv->mixlen,
+                                                    tvn);
+        void_ref_ptr vr = void_ref_ptr(mv, avtMixedVariable::Destruct);
+        cache->CacheVoidRef(tvn, AUXILIARY_DATA_MIXED_VARIABLE, timestep, 
+                            domain, vr);
+    }
+
+    DBFreeQuadvar(qv);
+
+    return scalars;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetPointVar
+//
+//  Purpose:
+//      Gets a single block of a pointvar.
+//
+//  Arguments:
+//      dbfile     A handle to the file this variable lives in.
+//      vname      The variable name.  This may also have a prepended path.
+//
+//  Returns:       A vtkScalars of the pointvar.
+//
+//  Programmer:    Hank Childs
+//  Creation:      Novemeber 1, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Feb 28 10:49:17 PST 2001
+//    Moved code from avtSiloTimeStep, added file argument to account for
+//    Silo objects distributed across multiple files.
+//
+//    Hank Childs, Thu Apr 26 16:09:39 PDT 2001
+//    Sped up routine.
+//
+//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
+//    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray 
+//    and vtkFloatArray instead.
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtSiloFileFormat::GetPointVar(DBfile *dbfile, const char *vname)
+{
+    //
+    // It's ridiculous, but Silo does not have all of the `const's in their
+    // library, so let's cast it away.
+    //
+    char *varname  = const_cast<char *>(vname);
+
+    //
+    // Get the Silo construct.
+    //
+    DBmeshvar  *mv = DBGetPointvar(dbfile, varname);
+    if (mv == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
+    //
+    // Populate the variable.  This assumes it is a scalar variable.
+    //
+    vtkFloatArray   *scalars = vtkFloatArray::New();
+    scalars->SetNumberOfTuples(mv->nels);
+    float        *ptr     = (float *) scalars->GetVoidPointer(0);
+    memcpy(ptr, mv->vals[0], sizeof(float)*mv->nels);
+
+    DBFreeMeshvar(mv);
+
+    return scalars;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetUnstructuredMesh
+//
+//  Purpose:
+//      Creates a VTK unstructured grid from a Silo unstructured mesh.
+//
+//  Arguments:
+//      dbfile     A handle to the file this variable lives in.
+//      mn         The name of the mesh.
+//      domain     The domain we are operating on.
+//      mesh       The unqualified name of the mesh (for caching purposes).
+//
+//  Returns:      A VTK unstructured grid created from mn.
+//
+//  Programmer:   Hank Childs
+//  Creation:     November 1, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Feb 28 10:49:17 PST 2001
+//    Moved code from avtSiloTimeStep, added file argument to account for
+//    Silo objects distributed across multiple files.
+//
+//    Hank Childs, Thu Apr 26 16:09:39 PDT 2001
+//    Sped up routine.
+//
+//    Kathleen Bonnell, Wed May 23 15:41:14 PDT 2001 
+//    Added call to TranslateSiloPyramidToVTKPyramid. 
+//
+//    Kathleen Bonnell, Tue Jun 12 14:34:02 PDT 2001 
+//    Added code to determine and set a ghost-levels array.
+//
+//    Hank Childs, Thu Sep 20 16:08:21 PDT 2001
+//    Added argument domain.  Captured facelist and added that to the variable
+//    cache.
+//
+//    Kathleen Bonnell, Thu Nov  8 09:20:50 PST 2001
+//    VTK 4.0 API requires use of vtkIdType or vtkIdList for InsertNextCell
+//    methods, so created the arrays where necessary.
+//
+//    Hank Childs, Mon Apr 15 14:38:31 PDT 2002
+//    Fix memory leak.
+//
+//    Hank Childs, Fri May 17 14:27:18 PDT 2002
+//    Some Silo 2D-UCD meshes have facelists.  They are worthless to us and
+//    they break the code since they don't have shapesizes and shapetypes, so
+//    don't read them in.
+//
+//    Hank Childs, Sun Jun 16 19:55:52 PDT 2002
+//    Account for non 0-origin meshes.
+//
+//    Hank Childs, Thu Jun 20 14:39:09 PDT 2002
+//    Separate reading the connectivity into its own routine.  Also account
+//    for meshes that do not have connectivity, but have facelists to serve
+//    that role in its place.
+//
+//    Hank Childs, Mon Dec  9 13:21:13 PST 2002
+//    Use the facelist's origin rather than the unstructured meshes.
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
+                                       int domain, const char *mesh)
+{
+    //
+    // It's ridiculous, but Silo does not have all of the `const's in their
+    // library, so let's cast it away.
+    //
+    char *meshname  = const_cast<char *>(mn);
+
+    //
+    // Get the Silo construct.
+    //
+    DBucdmesh  *um = DBGetUcdmesh(dbfile, meshname);
+    if (um == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, meshname);
+    }
+
+    //
+    // Populate the coordinates.  Put in 3D points with z=0 if the mesh is 2D.
+    //
+    vtkPoints            *points  = vtkPoints::New();
+    points->SetNumberOfPoints(um->nnodes);
+    float *pts = (float *) points->GetVoidPointer(0);
+    for (int i = 0 ; i < 3 ; i++)
+    {
+        float *tmp = pts + i;
+        if (um->coords[i] != NULL)
+        {
+            for (int j = 0 ; j < um->nnodes ; j++)
+            {
+                *tmp = um->coords[i][j];
+                tmp += 3;
+            }
+        }
+        else
+        {
+            for (int j = 0 ; j < um->nnodes ; j++)
+            {
+                *tmp = 0.;
+                tmp += 3;
+            }
+        }
+    }
+ 
+    //
+    // We already got the facelist read in free of charge.  Let's use it.
+    // This is done before constructing the connectivity because this is used
+    // in place of the connectivity in some places.
+    //
+    avtFacelist *fl = NULL;
+    if (um->faces != NULL && um->ndims == 3)
+    {
+        DBfacelist *sfl = um->faces;
+        fl = new avtFacelist(sfl->nodelist, sfl->lnodelist,
+                                 sfl->nshapes, sfl->shapecnt, sfl->shapesize,
+                                 sfl->zoneno, sfl->origin);
+        void_ref_ptr vr = void_ref_ptr(fl, avtFacelist::Destruct);
+        cache->CacheVoidRef(mesh, AUXILIARY_DATA_EXTERNAL_FACELIST, timestep, 
+                            domain, vr);
+    }
+
+    //
+    // Some ucdmeshes uses facelists instead of zonelists.  I think this is
+    // freakish behavior and should not be supported, but if there are files
+    // this way then we have to honor that.
+    //
+    vtkDataSet *rv = NULL;
+    if (um->zones != NULL)
+    {
+        vtkUnstructuredGrid  *ugrid = vtkUnstructuredGrid::New(); 
+        ugrid->SetPoints(points);
+        ReadInConnectivity(ugrid, um->zones, um->origin);
+        rv = ugrid;
+    }
+    else if (fl != NULL)
+    {
+        vtkPolyData *pd = vtkPolyData::New();
+        fl->CalcFacelistFromPoints(points, pd);
+        rv = pd;
+    }
+
+    points->Delete();
+    DBFreeUcdmesh(um);
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::ReadInConnectivity
+//
+//  Purpose:
+//      Reads in the connectivity array.  Also creates ghost zone information.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 20, 2002
+//
+// ****************************************************************************
+
+void
+avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
+                                      DBzonelist *zl, int origin)
+{
+    int   i, j, k;
+
+    //
+    // Tell the ugrid how many cells it will have.
+    //
+    int  numCells = 0;
+    for (i = 0 ; i < zl->nshapes ; i++)
+    {
+        numCells += zl->shapecnt[i];
+    }
+    ugrid->Allocate(numCells);
+
+    //
+    // Tell the ugrid what its zones are.
+    //
+    int *nodelist = zl->nodelist;
+    vtkIdList *nodes = vtkIdList::New();
+
+    for (i = 0 ; i < zl->nshapes ; i++)
+    {
+        int vtk_zonetype = SiloZoneTypeToVTKZoneType(zl->shapetype[i]);
+
+        if (vtk_zonetype < 0)
+        {
+            EXCEPTION1(InvalidZoneTypeException, zl->shapetype[i]);
+        }
+
+        for (j = 0 ; j < zl->shapecnt[i] ; j++)
+        {
+            if (vtk_zonetype != VTK_WEDGE &&
+                vtk_zonetype != VTK_PYRAMID)
+            {
+                nodes->Reset();
+                for (int z = 0 ; z < zl->shapesize[i] ; z++)
+                {
+                    nodes->InsertNextId(*(nodelist+z) - origin);
+                }
+                ugrid->InsertNextCell(vtk_zonetype, nodes);
+            }
+            else if (vtk_zonetype == VTK_WEDGE)
+            {
+                vtkIdType vtk_wedge[6];
+                TranslateSiloWedgeToVTKWedge(nodelist, vtk_wedge);
+                for (k = 0 ; k < 6; k++)
+                {
+                    vtk_wedge[k] -= origin;
+                }
+                ugrid->InsertNextCell(vtk_zonetype,zl->shapesize[i],vtk_wedge);
+            }
+            else if (vtk_zonetype == VTK_PYRAMID)
+            {
+                vtkIdType vtk_pyramid[5];
+                TranslateSiloPyramidToVTKPyramid(nodelist, vtk_pyramid);
+                for (k = 0 ; k < 5; k++)
+                {
+                    vtk_pyramid[k] -= origin;
+                }
+                ugrid->InsertNextCell(vtk_zonetype, zl->shapesize[i], 
+                                      vtk_pyramid);
+            }
+            nodelist += zl->shapesize[i];
+        }
+    }
+    nodes->Delete();
+
+    //
+    //  Tell the ugrid which of its zones are real (vtkGhostLevel = 0),
+    //  which are ghost (vtkGhostLevel = 1), but only create the ghost
+    //  zones array if ghost zones are actually present.
+    //
+    int first = zl->min_index;  // where the real zones start
+    int last = zl->max_index;   // where the real zones end
+
+    if (first == 0 && last == 0 )
+    {
+       debug5 << "Cannot tell if ghost zones are present"
+              << " because min_index & max_index are both zero!" << endl;
+    }
+    else if (first < 0 || first >= numCells ||
+             last  < 0 || last  >= numCells)  
+    {
+       // bad min or max index
+       debug5 << "Invalid min/max index for determining ghost zones:  "
+              << "\n\tnumCells: " << numCells
+              << "\n\tmin_index: " << zl->min_index
+              << "\n\tmax_index: " << zl->max_index << endl;
+    }
+    else if (first != 0 || last != numCells -1)
+    {
+        debug5 << "Creating ghost zones, real zones are indexed"
+               << " from " << first << " to " << last 
+               << " of " << numCells << " Cells." << endl;
+        //
+        // Don't carry the baggage of this array unless ghost zones are present
+        //
+
+        vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
+        //
+        //  Give the array the proper name so that other vtk classes will
+        //  recognize these as ghost levels.
+        //
+        ghostZones->SetName("vtkGhostLevels");
+        ghostZones->Allocate(numCells);
+        int i;
+        for (i = 0; i < first; i++)
+        {
+            //
+            //  ghostZones at the begining of the zone list
+            //
+            ghostZones->InsertNextValue(1);
+        }
+        for (i = first; i <= last; i++)
+        {
+            //
+            // real zones
+            //
+            ghostZones->InsertNextValue(0);
+        }
+        for (i = last+1; i < numCells; i++)
+        {
+            //
+            //  ghostZones at the end of the zone list
+            //
+            ghostZones->InsertNextValue(1);
+        }
+        ugrid->GetCellData()->AddArray(ghostZones);
+        ghostZones->Delete();
+        ghostZones = NULL;
+        ugrid->SetUpdateGhostLevel(0);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetQuadMesh
+//
+//  Purpose:
+//      Determines if the quadmesh is a rectilinear or curvilinear mesh and
+//      calls the right routine to fetch it.
+//
+//  Arguments:
+//      dbfile   A handle to the file this variable lives in.
+//      mn       The mesh name.
+//
+//  Returns:     The vtkDataSet corresponding to mn.
+//
+//  Programmer:  Hank Childs
+//  Creation:    November 1, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Feb 28 10:49:17 PST 2001
+//    Moved code from avtSiloTimeStep, added file argument to account for
+//    Silo objects distributed across multiple files.
+//
+//    Kathleen Bonnell, Tue Jun 12 14:34:02 PDT 2001 
+//    Added call to method GetQuadGhostZones.
+//
+//    Hank Childs, Tue Mar  5 16:53:16 PST 2002
+//    Verify that the dimensions of a quadmesh are correct.
+//
+//    Hank Childs, Tue Jun 25 16:29:12 PDT 2002
+//    Add the base indices as field data to the VTK dataset.
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtSiloFileFormat::GetQuadMesh(DBfile *dbfile, const char *mn)
+{
+    //
+    // It's ridiculous, but Silo does not have all of the `const's in their
+    // library, so let's cast it away.
+    //
+    char *meshname  = const_cast<char *>(mn);
+
+    //
+    // Get the Silo construct.
+    //
+    DBquadmesh  *qm = DBGetQuadmesh(dbfile, meshname);
+    if (qm == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, meshname);
+    }
+
+    VerifyQuadmesh(qm, meshname);
+
+    vtkDataSet *ds = NULL;
+    if (qm->coordtype == DB_COLLINEAR)
+    {
+        ds = CreateRectilinearMesh(qm);
+    }
+    else
+    {
+        ds = CreateCurvilinearMesh(qm);
+    }
+
+    GetQuadGhostZones(qm, ds);
+ 
+    //
+    // Determine the indices of the mesh within its group.  Add that to the
+    // VTK dataset as field data.
+    //
+    vtkIntArray *arr = vtkIntArray::New();
+    arr->SetNumberOfTuples(3);
+    arr->SetValue(0, qm->base_index[0]);
+    arr->SetValue(1, qm->base_index[1]);
+    arr->SetValue(2, qm->base_index[2]);
+    arr->SetName("base_index");
+    ds->GetFieldData()->AddArray(arr);
+    arr->Delete();
+
+    DBFreeQuadmesh(qm);
+
+    return ds;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::VerifyQuadmesh
+//
+//  Purpose:
+//      Determines if a quadmesh has invalid dimensions and tries to
+//      compensate if it does.
+//
+//  Arguments:
+//      qm         A quad mesh.
+//      meshname   The name of the mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 5, 2002
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Mar  6 15:00:21 PST 2002  
+//    Added better support for 2D, since sloppy coding had caused perfectly
+//    fine 2D meshes to be tagged as bad.
+//
+// ****************************************************************************
+
+void
+avtSiloFileFormat::VerifyQuadmesh(DBquadmesh *qm, const char *meshname)
+{
+    if (qm->ndims == 3)
+    {
+        //
+        // Make sure the dimensions are correct.
+        //
+        if (qm->nnodes != qm->dims[0]*qm->dims[1]*qm->dims[2])
+        {
+            if (qm->dims[0] > 100000 || qm->dims[1] > 100000 
+                || qm->dims[2] > 100000)
+            {
+                int orig[3];
+                orig[0] = qm->dims[0];
+                orig[1] = qm->dims[1];
+                orig[2] = qm->dims[2];
+
+                //
+                // See if the max_index has any clues, first without ghost
+                // zones, then with.
+                //
+                if (qm->nnodes == qm->max_index[0] * qm->max_index[1]
+                                  * qm->max_index[2])
+                {
+                    qm->dims[0] = qm->max_index[0];
+                    qm->dims[1] = qm->max_index[1];
+                    qm->dims[2] = qm->max_index[2];
+                }
+                else if (qm->nnodes == (qm->max_index[0]+1) * 
+                                   (qm->max_index[1]+1) * (qm->max_index[2]+1))
+                {
+                    qm->dims[0] = qm->max_index[0]+1;
+                    qm->dims[1] = qm->max_index[1]+1;
+                    qm->dims[2] = qm->max_index[2]+1;
+                }
+                else if (qm->nnodes == (qm->max_index[0]) *(qm->max_index[1]+1)
+                                        * (qm->max_index[2]+1))
+                {
+                    qm->dims[0] = qm->max_index[0];
+                    qm->dims[1] = qm->max_index[1]+1;
+                    qm->dims[2] = qm->max_index[2]+1;
+                }
+                else if (qm->nnodes == (qm->max_index[0]+1) *(qm->max_index[1])
+                                        * (qm->max_index[2]+1))
+                {
+                    qm->dims[0] = qm->max_index[0]+1;
+                    qm->dims[1] = qm->max_index[1];
+                    qm->dims[2] = qm->max_index[2]+1;
+                }
+                else if (qm->nnodes == (qm->max_index[0]+1) *
+                                     (qm->max_index[1]+1) * (qm->max_index[2]))
+                {
+                    qm->dims[0] = qm->max_index[0]+1;
+                    qm->dims[1] = qm->max_index[1]+1;
+                    qm->dims[2] = qm->max_index[2];
+                }
+                else if (qm->nnodes == (qm->max_index[0]) * (qm->max_index[1])
+                                        * (qm->max_index[2]+1))
+                {
+                    qm->dims[0] = qm->max_index[0];
+                    qm->dims[1] = qm->max_index[1];
+                    qm->dims[2] = qm->max_index[2]+1;
+                }
+                else if (qm->nnodes == (qm->max_index[0]) *(qm->max_index[1]+1)
+                                        * (qm->max_index[2]))
+                {
+                    qm->dims[0] = qm->max_index[0];
+                    qm->dims[1] = qm->max_index[1]+1;
+                    qm->dims[2] = qm->max_index[2];
+                }
+                else if (qm->nnodes == (qm->max_index[0]+1) *(qm->max_index[1])
+                                        * (qm->max_index[2]))
+                {
+                    qm->dims[0] = qm->max_index[0]+1;
+                    qm->dims[1] = qm->max_index[1];
+                    qm->dims[2] = qm->max_index[2];
+                }
+                else
+                {
+                    debug1 << "The dimensions of the mesh did not match the "
+                           << "number of nodes, cannot continue" << endl;
+                    EXCEPTION1(InvalidVariableException, meshname);
+                }
+                char msg[1024];
+                sprintf(msg, "A quadmesh had dimensions %d, %d, %d, which did "
+                         "not result in the specified number of nodes (%d).   "
+                         "The dimensions are being adjusted to %d, %d, %d",
+                          orig[0], orig[1], orig[2], qm->nnodes, qm->dims[0],
+                          qm->dims[1], qm->dims[2]);
+                avtCallback::IssueWarning(msg);
+            }
+            else if (qm->nnodes > 10000000)
+            {
+                int orig = qm->nnodes;
+                qm->nnodes = qm->dims[0]*qm->dims[1]*qm->dims[2];
+                if (orig < 10000000)
+                {
+                    char msg[1024];
+                    sprintf(msg, "The number of nodes is stored as %d, but "
+                                 "that not agree with the dimensions "
+                                 "(= %d %d %d).  Correcting to: %d",
+                                  orig, qm->dims[0], qm->dims[1], qm->dims[2],
+                                  qm->nnodes);
+                    avtCallback::IssueWarning(msg);
+                }
+                else
+                {
+                    debug1 << "The dimensions of the mesh did not match the "
+                           << "number of nodes, cannot continue" << endl;
+                    EXCEPTION1(InvalidVariableException, meshname);
+                }
+            }
+            else
+            {
+                debug1 << "The dimensions of the mesh did not match the "
+                       << "number of nodes, cannot continue" << endl;
+                EXCEPTION1(InvalidVariableException, meshname);
+            }
+        }
+    }
+    else if (qm->ndims == 2)
+    {
+        //
+        // Make sure the dimensions are correct.
+        //
+        if (qm->nnodes != qm->dims[0]*qm->dims[1])
+        {
+            if (qm->dims[0] > 100000 || qm->dims[1] > 100000)
+            {
+                int orig[2];
+                orig[0] = qm->dims[0];
+                orig[1] = qm->dims[1];
+
+                //
+                // See if the max_index has any clues, first without ghost
+                // zones, then with.
+                //
+                if (qm->nnodes == qm->max_index[0] * qm->max_index[1])
+                {
+                    qm->dims[0] = qm->max_index[0];
+                    qm->dims[1] = qm->max_index[1];
+                }
+                else if (qm->nnodes == (qm->max_index[0]+1) * 
+                                       (qm->max_index[1]+1))
+                {
+                    qm->dims[0] = qm->max_index[0]+1;
+                    qm->dims[1] = qm->max_index[1]+1;
+                }
+                else if (qm->nnodes == (qm->max_index[0])*(qm->max_index[1]+1))
+                {
+                    qm->dims[0] = qm->max_index[0];
+                    qm->dims[1] = qm->max_index[1]+1;
+                }
+                else if (qm->nnodes == (qm->max_index[0]+1)*(qm->max_index[1]))
+                {
+                    qm->dims[0] = qm->max_index[0]+1;
+                    qm->dims[1] = qm->max_index[1];
+                }
+                else
+                {
+                    debug1 << "The dimensions of the mesh did not match the "
+                           << "number of nodes, cannot continue" << endl;
+                    EXCEPTION1(InvalidVariableException, meshname);
+                }
+                char msg[1024];
+                sprintf(msg, "A quadmesh had dimensions %d, %d, which did "
+                         "not result in the specified number of nodes (%d).   "
+                         "The dimensions are being adjusted to %d, %d",
+                          orig[0], orig[1],qm->nnodes,qm->dims[0],qm->dims[1]);
+                avtCallback::IssueWarning(msg);
+            }
+            else if (qm->nnodes > 10000000)
+            {
+                int orig = qm->nnodes;
+                qm->nnodes = qm->dims[0]*qm->dims[1];
+                if (orig < 10000000)
+                {
+                    char msg[1024];
+                    sprintf(msg, "The number of nodes is stored as %d, but "
+                                 "that not agree with the dimensions "
+                                 "(= %d %d).  Correcting to: %d",
+                                  orig, qm->dims[0], qm->dims[1], qm->nnodes);
+                    avtCallback::IssueWarning(msg);
+                }
+                else
+                {
+                    debug1 << "The dimensions of the mesh did not match the "
+                           << "number of nodes, cannot continue" << endl;
+                    EXCEPTION1(InvalidVariableException, meshname);
+                }
+            }
+            else
+            {
+                debug1 << "The dimensions of the mesh did not match the "
+                       << "number of nodes, cannot continue" << endl;
+                EXCEPTION1(InvalidVariableException, meshname);
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::CreateRectilinearMesh
+//
+//  Purpose:
+//      Creates a rectilinear mesh from a DBquadmesh.
+//
+//  Arguments:
+//      qm      A quadmesh.
+//
+//  Returns:    A vtkRectilinearMesh from qm.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 1, 2000
+//
+//  Modifications:
+//
+//    Kathleen Bonnell, Thu Nov  8 09:20:50 PST 2001 
+//    Use vtkFloatArray instead of vtkScalars for rgrid coordinates in
+//    order to match VTK 4.0 API.
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtSiloFileFormat::CreateRectilinearMesh(DBquadmesh *qm)
+{
+    int   i, j;
+
+    vtkRectilinearGrid   *rgrid   = vtkRectilinearGrid::New(); 
+
+    //
+    // Populate the coordinates.  Put in 3D points with z=0 if the mesh is 2D.
+    //
+    int           dims[3];
+    vtkFloatArray   *coords[3];
+    for (i = 0 ; i < 3 ; i++)
+    {
+        // Default number of components for an array is 1.
+        coords[i] = vtkFloatArray::New();
+
+        if (i < qm->ndims)
+        {
+            dims[i] = qm->dims[i];
+            coords[i]->SetNumberOfTuples(dims[i]);
+            for (j = 0 ; j < dims[i] ; j++)
+            {
+                coords[i]->SetComponent(j, 0, qm->coords[i][j]);
+            }
+        }
+        else
+        {
+            dims[i] = 1;
+            coords[i]->SetNumberOfTuples(1);
+            coords[i]->SetComponent(0, 0, 0.);
+        }
+    }
+    rgrid->SetDimensions(dims);
+    rgrid->SetXCoordinates(coords[0]);
+    coords[0]->Delete();
+    rgrid->SetYCoordinates(coords[1]);
+    coords[1]->Delete();
+    rgrid->SetZCoordinates(coords[2]);
+    coords[2]->Delete();
+
+    return rgrid;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::CreateCurvilinearMesh
+//
+//  Purpose:
+//      Takes Silo representation of a curvilinear mesh and makes a VTK
+//      curvilinear mesh (ie structured grid).
+//
+//  Arguments:
+//      qm       A Silo quad mesh -- known to be a curvilinear mesh.
+//
+//  Returns:     The VTK curvilinear grid representation of qm.
+//
+//  Programmer:  Hank Childs
+//  Creation:    November 1, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Apr 26 16:09:39 PDT 2001
+//    Sped up routine.
+//
+//    Eric Brugger, Thu May 23 14:23:23 PDT 2002
+//    I modified the routine to take into account the major order of
+//    the variable being read.
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtSiloFileFormat::CreateCurvilinearMesh(DBquadmesh *qm)
+{
+    //
+    // Create the VTK objects and connect them up.
+    //
+    vtkStructuredGrid    *sgrid   = vtkStructuredGrid::New(); 
+    vtkPoints            *points  = vtkPoints::New();
+    sgrid->SetPoints(points);
+    points->Delete();
+
+    //
+    // Tell the grid what its dimensions are and populate the points array.
+    //
+    int dims[3];
+    dims[0] = (qm->dims[0] > 0 ? qm->dims[0] : 1);
+    dims[1] = (qm->dims[1] > 0 ? qm->dims[1] : 1);
+    dims[2] = (qm->dims[2] > 0 ? qm->dims[2] : 1);
+    sgrid->SetDimensions(dims);
+
+    //
+    // Populate the coordinates.  Put in 3D points with z=0 if the mesh is 2D.
+    //
+    points->SetNumberOfPoints(qm->nnodes);
+    float *pts = (float *) points->GetVoidPointer(0);
+    if (qm->major_order == DB_ROWMAJOR)
+    {
+        int       i, j, k;
+        int       nx, ny, nz, nxy;
+        float    *coord0, *coord1, *coord2;
+        float    *tmp = pts;
+
+        switch (qm->ndims)
+        {
+          case 2:
+            nx = qm->dims[0];
+            ny = qm->dims[1];
+            coord0 = qm->coords[0];
+            coord1 = qm->coords[1];
+
+            for (j = 0; j < ny; j++)
+            {
+                for (i = 0; i < nx; i++)
+                {
+                   *tmp++ = coord0[j*nx + i];
+                   *tmp++ = coord1[j*nx + i];
+                   *tmp++ = 0.;
+                }
+            }
+
+            break;
+
+          case 3:
+            nx = qm->dims[0];
+            ny = qm->dims[1];
+            nz = qm->dims[2];
+            nxy = qm->dims[0] * qm->dims[1];
+            coord0 = qm->coords[0];
+            coord1 = qm->coords[1];
+            coord2 = qm->coords[2];
+
+            for (k = 0; k < nz; k++)
+            {
+                for (j = 0; j < ny; j++)
+                {
+                    for (i = 0; i < nx; i++)
+                    {
+                        *tmp++ = coord0[k*nxy + j*nx + i];
+                        *tmp++ = coord1[k*nxy + j*nx + i];
+                        *tmp++ = coord2[k*nxy + j*nx + i];
+                    }
+                }
+            }
+
+            break;
+        }
+    }
+    else
+    {
+        int       i, j, k;
+        int       nx, ny, nz, nyz;
+        float    *coord0, *coord1, *coord2;
+        float    *tmp = pts;
+
+        switch (qm->ndims)
+        {
+          case 2:
+            nx = qm->dims[0];
+            ny = qm->dims[1];
+            coord0 = qm->coords[0];
+            coord1 = qm->coords[1];
+
+            for (j = 0; j < ny; j++)
+            {
+                for (i = 0; i < nx; i++)
+                {
+                   *tmp++ = coord0[j + i*ny];
+                   *tmp++ = coord1[j + i*ny];
+                   *tmp++ = 0.;
+                }
+            }
+
+            break;
+
+          case 3:
+            nx = qm->dims[0];
+            ny = qm->dims[1];
+            nz = qm->dims[2];
+            nyz = qm->dims[1] * qm->dims[2];
+            coord0 = qm->coords[0];
+            coord1 = qm->coords[1];
+            coord2 = qm->coords[2];
+
+            for (k = 0; k < nz; k++)
+            {
+                for (j = 0; j < ny; j++)
+                {
+                    for (i = 0; i < nx; i++)
+                    {
+                        *tmp++ = coord0[k + j*nz + i*nyz];
+                        *tmp++ = coord1[k + j*nz + i*nyz];
+                        *tmp++ = coord2[k + j*nz + i*nyz];
+                    }
+                }
+            }
+
+            break;
+        }
+    }
+
+    return sgrid;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetQuadGhostZones
+//
+//  Purpose:
+//    Retrieves ghost zone information from the quad mesh and adds it
+//    to the dataset.
+//
+//  Arguments:
+//      qm       A Silo quad mesh. 
+//      ds       The vtkDataSet in which to store the ghost level information. 
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    June 12, 2001
+//
+//  Modifications:
+//    Eric Brugger, Thu May 23 14:23:23 PDT 2002
+//    I modified the routine to always store the ghost zone array in row
+//    major order.
+//
+//    Kathleen Bonnell, Wed Jul 10 16:02:56 PDT 2002 
+//    I added a field-data array that indicates the extents of the real
+//    data.  Used during ghostzone removal.  
+//    
+// ****************************************************************************
+
+void 
+avtSiloFileFormat::GetQuadGhostZones(DBquadmesh *qm, vtkDataSet *ds)
+{
+    //
+    // Find the dimensions of the quad mesh. 
+    //
+    int dims[3];
+    dims[0] = (qm->dims[0] > 0 ? qm->dims[0] : 1);
+    dims[1] = (qm->dims[1] > 0 ? qm->dims[1] : 1);
+    dims[2] = (qm->dims[2] > 0 ? qm->dims[2] : 1);
+
+    //
+    //  Determine if we have ghost points
+    //
+    int first[3];
+    int last[3];
+    bool ghostPresent = false;
+    bool badIndex = false;
+    for (int i = 0; i < 3; i++)
+    {
+        first[i] = (i < qm->ndims ? qm->min_index[i] : 0);
+        last[i]  = (i < qm->ndims ? qm->max_index[i] : 0);
+
+        if (first[i] < 0 || first[i] >= dims[i])
+        {
+            debug1 << "bad Index on first[" << i << "] dims is: " 
+                   << dims[i] << endl;
+            badIndex = true;
+        }
+
+        if (last[i] < 0 || last[i] >= dims[i])
+        {
+            debug1 << "bad Index on last[" << i << "] dims is: " 
+                   << dims[i] << endl;
+            badIndex = true;
+        }
+
+        if (first[i] != 0 || last[i] != dims[i] -1)
+        {
+            ghostPresent = true;
+        }
+    }
+
+    //
+    //  Create the ghost zones array if necessary
+    //
+    if (ghostPresent && !badIndex)
+    {
+        bool *ghostPoints = new bool[qm->nnodes];
+        //
+        // Initialize as all ghost levels
+        //
+        for (int ii = 0; ii < qm->nnodes; ii++)
+            ghostPoints[ii] = true; 
+
+        //
+        // Set real values
+        //
+        for (int k = first[2]; k <= last[2]; k++)
+            for (int j = first[1]; j <= last[1]; j++)
+                for (int i = first[0]; i <= last[0]; i++)
+                {
+                    int index = k*dims[1]*dims[0] + j*dims[0] + i;
+                    ghostPoints[index] = false; 
+                }
+
+        //
+        //  okay, now we have ghost points, but what we really want
+        //  are ghost cells ... convert:  if all points associated with
+        //  cell are 'real' then so is the cell.
+        //
+        unsigned char realVal = 0, ghostVal = 1;
+        int ncells = ds->GetNumberOfCells();
+        vtkIdList *ptIds = vtkIdList::New();
+        vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
+        ghostCells->SetName("vtkGhostLevels");
+        ghostCells->Allocate(ncells);
+ 
+        for (int i = 0; i < ncells; i++)
+        {
+            ds->GetCellPoints(i, ptIds);
+            bool ghost = false;
+            for (int idx = 0; idx < ptIds->GetNumberOfIds(); idx++)
+                ghost |= ghostPoints[ptIds->GetId(idx)];
+
+            if (ghost)
+                ghostCells->InsertNextValue(ghostVal);
+            else
+                ghostCells->InsertNextValue(realVal);
+ 
+        } 
+        ds->GetCellData()->AddArray(ghostCells);
+        delete [] ghostPoints;
+        ghostCells->Delete();
+        ptIds->Delete();
+
+        vtkIntArray *realDims = vtkIntArray::New();
+        realDims->SetName("avtRealDims");
+        realDims->Allocate(6);
+        realDims->SetValue(0, first[0]);
+        realDims->SetValue(1, last[0]);
+        realDims->SetValue(2, first[1]);
+        realDims->SetValue(3, last[1]);
+        realDims->SetValue(4, first[2]);
+        realDims->SetValue(5, last[2]);
+        ds->GetFieldData()->AddArray(realDims);
+        ds->GetFieldData()->CopyFieldOn("avtRealDims");
+        realDims->Delete();
+
+        ds->SetUpdateGhostLevel(0);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetPointMesh
+//
+//  Purpose:
+//      Gets the Silo construct for mn and creates a vtkDataSet for it.
+//
+//  Arguments:
+//      dbfile    A handle to the file this variable lives in.
+//      mn        The name of the point mesh.
+//
+//  Returns:      The vtkDataSet for mn.
+//
+//  Programmer:   Hank Childs
+//  Creation:     June 22, 2002
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Feb 28 10:49:17 PST 2001
+//    Moved code from avtSiloTimeStep, added file argument to account for
+//    Silo objects distributed across multiple files.
+//
+//    Hank Childs, Sat Jun 22 19:53:24 PDT 2002
+//    Finally populated routine.
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtSiloFileFormat::GetPointMesh(DBfile *dbfile, const char *mn)
+{
+    int   i, j;
+
+    //
+    // It's ridiculous, but Silo does not have all of the `const's in their
+    // library, so let's cast it away.
+    //
+    char *meshname  = const_cast<char *>(mn);
+
+    //
+    // Get the Silo construct.
+    //
+    DBpointmesh  *pm = DBGetPointmesh(dbfile, meshname);
+    if (pm == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, meshname);
+    }
+
+    //
+    // Populate the coordinates.  Put in 3D points with z=0 if the mesh is 2D.
+    //
+    vtkPoints *points  = vtkPoints::New();
+    points->SetNumberOfPoints(pm->nels);
+    float *pts = (float *) points->GetVoidPointer(0);
+    for (i = 0 ; i < 3 ; i++)
+    {
+        float *tmp = pts + i;
+        if (pm->coords[i] != NULL)
+        {
+            for (j = 0 ; j < pm->nels ; j++)
+            {
+                *tmp = pm->coords[i][j];
+                tmp += 3;
+            }
+        }
+        else
+        {
+            for (j = 0 ; j < pm->nels ; j++)
+            {
+                *tmp = 0.;
+                tmp += 3;
+            }
+        }
+    }
+
+    //
+    // Create the VTK objects and connect them up.
+    //
+    vtkUnstructuredGrid    *ugrid   = vtkUnstructuredGrid::New(); 
+    ugrid->SetPoints(points);
+    ugrid->Allocate(pm->nels);
+    vtkIdType onevertex[1];
+    for (i = 0 ; i < pm->nels ; i++)
+    {
+        onevertex[0] = i;
+        ugrid->InsertNextCell(VTK_VERTEX, 1, onevertex);
+    }
+
+    points->Delete();
+    DBFreePointmesh(pm);
+    return ugrid;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::DetermineFilenameAndDirectory
+//
+//  Purpose:
+//      Parses a string from a Sile file that has form "filename:directory/var"
+//      and determines which part is "filename" and which is "directory/var".
+//
+//      input       The input string ("filename:directory/var")
+//      filename    The "filename" part of the string.  This will copy a string
+//                  into a buffer, so a buffer must be provided as input.
+//      location    The "directory/var" part of the string.  This will just
+//                  point into "input" so there is no memory management to
+//                  worry about.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 11, 2001
+//
+// ****************************************************************************
+
+void
+avtSiloFileFormat::DetermineFilenameAndDirectory(char *input, char *filename,
+                                                 char *&location)
+{
+    //
+    // Figure out if there is a ':' in the string.
+    //
+    char *p = strstr(input, ":");
+
+    if (p == NULL)
+    {
+        //
+        // There is no colon, so the variable must be in the current file.
+        // Leave the file handle alone.
+        //
+        strcpy(filename, ".");
+        location = input;
+    }
+    else
+    {
+        //
+        // Make a copy of the string all the way up to the colon.
+        //
+        strncpy(filename, input, p-input);
+        filename[p-input] = '\0';
+
+        //
+        // The location of the variable is *one after* the colon.
+        //
+        location = p+1;
+    }
+}
+
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::DetermineFileAndDirectory
+//
+//  Purpose:
+//      Takes a string from a Silo file that as "filename:directory/var" and
+//      returns the correct file as well as the substring that is only
+//      directory and var.
+//
+//  Arguments:
+//      input       The input string ("filename:directory/var")
+//      cFile       The correct file corresponding to filename.
+//      location    The "directory/var" part of the string.  This will just
+//                  point into the input so there is no memory management to
+//                  worry about.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 28, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Fri May 11 14:40:36 PDT 2001
+//    Call DetermineFilenameAndDirectory instead of calculating it ourselves.
+//
+// ****************************************************************************
+
+void
+avtSiloFileFormat::DetermineFileAndDirectory(char *input, DBfile *&cFile,
+                                             char *&location)
+{
+    char filename[1024];
+    DetermineFilenameAndDirectory(input, filename, location);
+    if (strcmp(filename, ".") != 0)
+    {
+        //
+        // The variable is in a different file, so open that file.  This will
+        // create the filename and add it to our registry if necessary.
+        //
+        cFile = OpenFile(filename);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetRelativeVarName
+//
+//  Purpose:
+//      If a variable (like "/block1/mesh") has pointers to other variables
+//      (like "fl") then they come unqualified with a path (should be
+//      "/block1/fl").  This routine qualifies the variable.
+//
+//  Arguments:
+//      initVar     The original variable ("/block1/mesh").
+//      newVar      The variable initVar points to ("fl").
+//      outVar      The relative variable name for newVar ("/block1/fl").
+//
+//  Programmer: Hank Childs
+//  Creation:   March 14, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Nov  2 10:54:06 PST 2001
+//    Handle newVars that have a prepended path already gracefully.
+//
+//    Hank Childs, Sat Jun 15 13:12:18 PDT 2002
+//    Respect built in filenames (identified with colons).
+//
+// ****************************************************************************
+
+void
+avtSiloFileFormat::GetRelativeVarName(const char *initVar, const char *newVar,
+                                      char *outVar)
+{
+    //
+    // If the new variable starts with a slash, it is already qualified, so
+    // just return that.
+    //
+    if (newVar[0] == '/')
+    {
+        strcpy(outVar, newVar);
+        return;
+    }
+
+    int lastToken = -1;
+    int len = strlen(initVar);
+    for (int i = len-1 ; i >= 0 ; i--)
+    {
+        if (initVar[i] == '/' || initVar[i] == ':')
+        {
+            lastToken = i;
+            break;
+        }
+    }
+
+    int numToCopy = (lastToken < 0 ? 0 : lastToken+1);
+    strncpy(outVar, initVar, numToCopy);
+    strcpy(outVar+numToCopy, newVar);
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::DetermineMultiMeshForSubVariable
+//
+//  Purpose:
+//      Multi-vars are not defined on multi-meshes, so the only way to
+//      determine which mesh a var is defined on is to look at the first sub
+//      variable and see what mesh it is and compare that to the first
+//      sub mesh of the multi-mesh.  This is not foolproof: it will fail
+//      for multi-meshes that share submeshes.
+//
+//  Arguments:
+//      dbfile     The currently open Silo file.
+//      varname    The name of the sub-var.
+//      nblocks    The number of blocks for 'varname'.
+//
+//  Returns:       The name of the multi-mesh that the multi-var is defined on.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 15, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Nov  2 15:36:31 PST 2001
+//    Added checks to make sure the number of blocks match up.
+//
+//    Hank Childs, Mon Dec  9 16:20:15 PST 2002
+//    Throw an exception and let the levels above this routine handle it.
+//
+//    Jeremy Meredith, Wed Mar 19 12:27:41 PST 2003
+//    Added some logic to handle the case where a multi-var is only
+//    defined on some domains of its associated multi-mesh.
+//
+// ****************************************************************************
+
+string
+avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
+                                                    const char *name,
+                                                    char **varname,
+                                                    int nblocks,
+                                                    const char *curdir)
+{
+    char subMesh[256];
+    GetMeshname(dbfile, varname[0], subMesh);
+
+    //
+    // varname is very likely qualified with a file name.  We need to figure
+    // out what it's mesh's name looks like the prepended file name, so we can
+    // meaningfully compare it with our list of submeshes.
+    //
+    char subMeshWithFile[1024];
+    GetRelativeVarName(varname[0], subMesh, subMeshWithFile);
+
+    //
+    // Attempt an "exact" match, where the first mesh for the multivar is
+    // an exact match and the number of domains is the same.
+    //
+    int size = actualMeshName.size();
+    int i;
+    for (i = 0 ; i < size ; i++)
+    {
+        if (firstSubMesh[i] == subMeshWithFile && nblocks == blocksForMesh[i])
+        {
+            return actualMeshName[i];
+        }
+    }
+
+    //
+    // Couldn't find an exact match, so try something fuzzier:
+    // Look for a multimesh which has the same name as the mesh for
+    // the multivar, and match up domains by directory name.
+    //
+    string dir,varmesh;
+    SplitDirVarName(subMesh, curdir, dir, varmesh);
+    for (i = 0 ; i < size ; i++)
+    {
+        if (firstSubMeshVarName[i] == varmesh)
+        {
+            for (int j = 0; j < allSubMeshDirs[i].size(); j++)
+            {
+                int match = -1;
+                for (int k = 0; k < nblocks && match == -1; k++)
+                {
+                    SplitDirVarName(varname[k], curdir, dir, varmesh);
+                    if (dir == allSubMeshDirs[i][j])
+                    {
+                        match = k;
+                    }
+                }
+                blocksForMultivar[name].push_back(match);
+            }
+            return actualMeshName[i];
+        }
+    }
+
+    //
+    // We weren't able to find a match -- throw an exception and let the
+    // levels above us determine what the right thing to do is.
+    //
+    char str[1024];
+    sprintf(str, "Was not able to match variable \"%s\" and its \n" 
+                 "first submesh %s in file %s to a standard multi-mesh.\n"
+                 "This typically leads to failure.\n",
+            varname[0], subMesh, subMeshWithFile);
+    EXCEPTION1(SiloException, str);
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetMeshtype
+//
+//  Purpose:
+//      Gets the mesh type for a variable, even if it is in a different file.
+//
+//  Arguments:
+//      dbfile    The dbfile that mesh came from.
+//      mesh      A mesh name, possibly with a prepended directory and filename
+//
+//  Programmer: Hank Childs
+//  Creation:   March 5, 2001
+//
+//  Modifications:
+//
+//      Sean Ahern, Fri Feb  8 13:57:12 PST 2002
+//      Added error checking.
+//
+// ****************************************************************************
+
+int
+avtSiloFileFormat::GetMeshtype(DBfile *dbfile, char *mesh)
+{
+    char   *dirvar;
+    DBfile *correctFile = dbfile;
+    DetermineFileAndDirectory(mesh, correctFile, dirvar);
+    int rv = DBInqMeshtype(correctFile, dirvar);
+    if (rv < 0)
+    {
+        char str[1024];
+        sprintf(str, "Unable to determine mesh type for \"%s\".", mesh);
+        EXCEPTION1(SiloException, str);
+    }
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetMeshname
+//
+//  Purpose:
+//      Gets the mesh name of a variable, even if it is in a different file.
+//
+//  Arguments:
+//      dbfile    The dbfile that mesh came from.
+//      var       A var name, possibly with a prepended directory and filename.
+//      meshname  A place to put the name of the mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 5, 2001
+//
+//  Modification:
+//
+//    Hank Childs, Thu Aug 16 11:06:27 PDT 2001
+//    Throw an exception here instead of in the handler.
+//
+// ****************************************************************************
+
+void
+avtSiloFileFormat::GetMeshname(DBfile *dbfile, char *var, char *meshname)
+{
+    char   *dirvar;
+    DBfile *correctFile = dbfile;
+    DetermineFileAndDirectory(var, correctFile, dirvar);
+    int rv = DBInqMeshname(correctFile, dirvar, meshname);
+    if (rv < 0)
+    {
+        char str[1024];
+        sprintf(str, "Unable to determine mesh for %s.", var);
+        EXCEPTION1(SiloException, str);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetComponent
+//
+//  Purpose:
+//      Gets the component for a variable, even if it is in a different file.
+//
+//  Arguments:
+//      dbfile    The dbfile that mesh came from.
+//      var       A var name, possibly with a prepended directory and filename.
+//      compname  The name of the component.
+//
+//  Returns:    The return value of the DBGetComponent call, this should be
+//              free'd by the calling function.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 5, 2001
+//
+//  Modification:
+//
+//    Hank Childs, Thu Aug 16 11:06:27 PDT 2001
+//    Throw an exception here instead of in the handler.
+//
+// ****************************************************************************
+
+void *
+avtSiloFileFormat::GetComponent(DBfile *dbfile, char *var, char *compname)
+{
+    char   *dirvar;
+    DBfile *correctFile = dbfile;
+    DetermineFileAndDirectory(var, correctFile, dirvar);
+    void *rv = DBGetComponent(correctFile, dirvar, compname);
+    if (rv == NULL && strcmp(compname, "facelist") != 0)
+    {
+        char str[1024];
+        sprintf(str, "Unable to get component %s for variable %s.", compname,
+                                                                    var);
+        EXCEPTION1(SiloException, str);
+    }
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetAuxiliaryData
+//
+//  Purpose:
+//      Gets the auxiliary data from a Silo file.
+//
+//  Arguments:
+//      var        The variable of interest.
+//      domain     The domain of interest.
+//      type       The type of auxiliary data.
+//      <unnamed>  The arguments for that -- not used for any Silo types.
+//
+//  Returns:    The auxiliary data.  Throws an exception if this is not a
+//              supported data type.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 28, 2001
+//
+//  Modifications:
+//
+//    Jeremy Meredith, Thu Dec 13 17:46:46 PST 2001
+//    Added species support.
+//
+//    Hank Childs, Wed Sep 25 08:49:34 PDT 2002
+//    Add destructor functions.
+//
+// ****************************************************************************
+
+void *
+avtSiloFileFormat::GetAuxiliaryData(const char *var, int domain,
+                              const char *type, void *, DestructorFunction &df)
+{
+    void *rv = NULL;
+    if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
+    {
+        rv = (void *) GetMaterial(domain, var);
+        df = avtMaterial::Destruct;
+    }
+    else if (strcmp(type, AUXILIARY_DATA_SPECIES) == 0)
+    {
+        rv = (void *) GetSpecies(domain, var);
+        df = avtSpecies::Destruct;
+    }
+    else if (strcmp(type, AUXILIARY_DATA_EXTERNAL_FACELIST) == 0)
+    {
+        rv = (void *) GetExternalFacelist(domain, var);
+        df = avtFacelist::Destruct;
+    }
+
+    //
+    // Note -- although the Silo file format can get mixed variables, it does
+    // not return them this way.  It instead caches them when it does a normal
+    // variable read.  It does not try to get them here for performance
+    // reasons.
+    //
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetMaterial
+//
+//  Purpose:
+//      Gets the material from the Silo file and converts it into an
+//      avtMaterial.
+//
+//  Arguments:
+//      dom     The domain of the material.
+//      mat     The material we want.
+//
+//  Returns:    The material information.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 7, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Feb 28 10:49:17 PST 2001
+//    Moved code from avtSiloTimeStep, made it work with Silo objects
+//    distributed across multiple files.
+//
+// ****************************************************************************
+
+avtMaterial *
+avtSiloFileFormat::GetMaterial(int dom, const char *mat)
+{
+    debug5 << "Reading in domain " << dom << ", material " << mat << endl;
+    debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
+
+    //
+    // Get the dbfile with the table of contents.
+    //
+    DBfile *dbfile = OpenFile(tocIndex);
+
+    //
+    // Silo can't accept consts, so cast it away.
+    //
+    char *m = const_cast< char * >(mat);
+    int type = DBInqVarType(dbfile, m);
+
+    if (type != DB_MULTIMAT && type != DB_MATERIAL)
+    {
+        //
+        // This is not a material or a multi-mat.  This is probably an error.
+        //
+        return NULL;
+    }
+
+    DBmultimat  *mm = NULL;
+    char        *matname = NULL;
+
+    if (type == DB_MULTIMAT)
+    {
+        mm = DBGetMultimat(dbfile, m);
+        if (mm == NULL)
+            EXCEPTION1(InvalidVariableException, m);
+        if (dom >= mm->nmats || dom < 0 )
+        {
+            EXCEPTION2(BadDomainException, dom, mm->nmats);
+        }
+        matname = CXX_strdup(mm->matnames[dom]);
+    }
+    else // (type == DB_MATERIAL)
+    {
+        if (dom != 0)
+        {
+            EXCEPTION2(BadDomainException, dom, 1);
+        }
+        matname = CXX_strdup(mat);
+    }
+
+    //
+    // Some Silo objects are distributed across several files,
+    // so handle that here.  
+    //
+    DBfile *domain_file = dbfile;
+    char   *directory_mat = NULL;
+    DetermineFileAndDirectory(matname, domain_file, directory_mat);
+
+    avtMaterial *rv = CalcMaterial(domain_file, directory_mat);
+
+    if (mm != NULL)
+    {
+        DBFreeMultimat(mm);
+        mm = NULL;
+    }
+    if (matname != NULL)
+    {
+        delete [] matname;
+        matname = NULL;
+    }
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetSpecies
+//
+//  Purpose:
+//      Gets the species from the Silo file and converts it into an
+//      avtSpecies.
+//
+//  Arguments:
+//      dom     The domain of the material.
+//      spec    The species we want.
+//
+//  Returns:    The species information.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   December 13, 2001
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtSpecies *
+avtSiloFileFormat::GetSpecies(int dom, const char *spec)
+{
+    debug5 << "Reading in domain " << dom << ", species " << spec << endl;
+    debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
+
+    //
+    // Get the dbfile with the table of contents.
+    //
+    DBfile *dbfile = OpenFile(tocIndex);
+
+    //
+    // Silo can't accept consts, so cast it away.
+    //
+    char *s = const_cast< char * >(spec);
+    int type = DBInqVarType(dbfile, s);
+
+    if (type != DB_MULTIMATSPECIES && type != DB_MATSPECIES)
+    {
+        //
+        // This is not a species or a multi-species. This is probably an error.
+        //
+        return NULL;
+    }
+
+    DBmultimatspecies  *ms = NULL;
+    char               *specname = NULL;
+
+    if (type == DB_MULTIMATSPECIES)
+    {
+        ms = DBGetMultimatspecies(dbfile, s);
+        if (ms == NULL)
+            EXCEPTION1(InvalidVariableException, s);
+        if (dom >= ms->nspec || dom < 0 )
+        {
+            EXCEPTION2(BadDomainException, dom, ms->nspec);
+        }
+        specname = CXX_strdup(ms->specnames[dom]);
+    }
+    else // (type == DB_MATSPECIES)
+    {
+        if (dom != 0)
+        {
+            EXCEPTION2(BadDomainException, dom, 1);
+        }
+        specname = CXX_strdup(spec);
+    }
+
+    //
+    // Some Silo objects are distributed across several files,
+    // so handle that here.  
+    //
+    DBfile *domain_file = dbfile;
+    char   *directory_spec = NULL;
+    DetermineFileAndDirectory(specname, domain_file, directory_spec);
+
+    avtSpecies *rv = CalcSpecies(domain_file, directory_spec);
+
+    if (ms != NULL)
+    {
+        DBFreeMultimatspecies(ms);
+        ms = NULL;
+    }
+    if (specname != NULL)
+    {
+        delete [] specname;
+        specname = NULL;
+    }
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetExternalFacelist
+//
+//  Purpose:
+//      Gets the facelist from the Silo file and converts it into an
+//      avtFacelist.
+//
+//  Arguments:
+//      dom     The domain of the mesh.
+//      mesh    The mesh we want a face list for.
+//
+//  Returns:    The facelist information.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 27, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Feb 28 10:49:17 PST 2001
+//    Moved code from avtSiloTimeStep, made it work with Silo objects
+//    distributed across multiple files.
+//
+// ****************************************************************************
+
+avtFacelist *
+avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
+{
+    debug5 << "Reading in domain " << dom << ", facelist " << mesh << endl;
+    debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
+
+    //
+    // Get the dbfile with the table of contents.
+    //
+    DBfile *dbfile = OpenFile(tocIndex);
+
+    //
+    // Silo can't accept consts, so cast it away.
+    //
+    char *m = const_cast< char * >(mesh);
+    int type = DBInqVarType(dbfile, m);
+
+    if (type != DB_MULTIMESH && type != DB_UCDMESH)
+    {
+        //
+        // This is not a ucd mesh or a multi-mesh, so it does not have a
+        // facelist.
+        //
+        return NULL;
+    }
+
+    DBmultimesh *mm = NULL;
+    char        *meshname = NULL;
+
+    if (type == DB_MULTIMESH)
+    {
+        mm = DBGetMultimesh(dbfile, m);
+        if (mm == NULL)
+            EXCEPTION1(InvalidFilesException, m);
+        if (dom >= mm->nblocks || dom < 0 )
+        {
+            EXCEPTION2(BadDomainException, dom, mm->nblocks);
+        }
+        if (mm->meshtypes[dom] != DB_UCDMESH)
+        {
+            DBFreeMultimesh(mm);
+            return NULL;
+        }
+        meshname = CXX_strdup(mm->meshnames[dom]);
+    }
+    else // (type == DB_UCDMESH)
+    {
+        if (dom != 0)
+        {
+            EXCEPTION2(BadDomainException, dom, 1);
+        }
+        meshname = CXX_strdup(mesh);
+    }
+
+    //
+    // Some Silo objects are distributed across several files,
+    // so handle that here.  
+    //
+    DBfile *domain_file = dbfile;
+    char   *directory_mesh = NULL;
+    DetermineFileAndDirectory(meshname, domain_file, directory_mesh);
+
+    avtFacelist *rv = CalcExternalFacelist(domain_file, directory_mesh);
+
+    if (mm != NULL)
+    {
+        DBFreeMultimesh(mm);
+        mm = NULL;
+    }
+    if (meshname != NULL)
+    {
+        delete [] meshname;
+        meshname = NULL;
+    }
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::CalcMaterial
+//
+//  Purpose:
+//      Gets the Silo material and creates an avtMaterial.
+//
+//  Arguments:
+//      dbfile    The Silo file handle to use.
+//      matname   The name of the material.
+//
+//  Returns:      The material.
+//
+//  Programmer:   Hank Childs
+//  Creation:     November 7, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Feb 28 10:49:17 PST 2001
+//    Moved code from avtSiloTimeStep, added file argument to account for
+//    Silo objects distributed across multiple files.
+//
+//    Sean Ahern, Fri Feb  8 11:12:38 PST 2002
+//    Added support for material names.
+//
+//    Eric Brugger, Thu May 23 14:23:23 PDT 2002
+//    I modified the routine to take into account the major order of
+//    the variable being read.
+//
+// ****************************************************************************
+
+avtMaterial *
+avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname)
+{
+    DBmaterial *silomat = DBGetMaterial(dbfile, matname);
+    if (silomat == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, matname);
+    }
+
+    avtMaterial *mat = new avtMaterial(silomat->nmat,
+                                       silomat->matnos,
+                                       silomat->matnames,
+                                       silomat->ndims,
+                                       silomat->dims,
+                                       silomat->major_order,
+                                       silomat->matlist,
+                                       silomat->mixlen,
+                                       silomat->mix_mat,
+                                       silomat->mix_next,
+                                       silomat->mix_zone,
+                                       silomat->mix_vf);
+
+    DBFreeMaterial(silomat);
+
+    return mat;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::CalcSpecies
+//
+//  Purpose:
+//      Gets the Silo species and creates an avtSpecies.
+//
+//  Arguments:
+//      dbfile    The Silo file handle to use.
+//      specname  The name of the species.
+//
+//  Returns:      The species.
+//
+//  Programmer:   Jeremy Meredith
+//  Creation:     December 13, 2001
+//
+//  Modifications:
+// ****************************************************************************
+
+avtSpecies *
+avtSiloFileFormat::CalcSpecies(DBfile *dbfile, char *specname)
+{
+    DBmatspecies *silospec = DBGetMatspecies(dbfile, specname);
+    if (silospec == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, specname);
+    }
+
+    avtSpecies *spec = new avtSpecies(silospec->nmat,
+                                      silospec->nmatspec,
+                                      silospec->ndims,
+                                      silospec->dims,
+                                      silospec->speclist,
+                                      silospec->mixlen,
+                                      silospec->mix_speclist,
+                                      silospec->nspecies_mf,
+                                      silospec->species_mf);
+
+    DBFreeMatspecies(silospec);
+
+    return spec;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::CalcExternalFacelist
+//
+//  Purpose:
+//      Reads the facelist in from the Silo file and creates an avtFacelist
+//      out of it.
+//
+//  Arguments:
+//      dbfile    The Silo file handle to use.
+//      mesh      The name of the mesh to get the facelist for.
+//
+//  Returns:    The facelist, NULL if one doesn't exist.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 30, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec 18 13:05:44 PST 2000
+//    Turned off error handling when getting facelists in case they weren't
+//    there.
+//
+//    Hank Childs, Wed Feb 28 10:49:17 PST 2001
+//    Moved code from avtSiloTimeStep, added file argument to account for
+//    Silo objects distributed across multiple files.
+//
+//    Sean Ahern, Fri Feb  8 14:10:59 PST 2002
+//    Retrofitted to not use GetComponent.
+//
+//    Hank Childs, Mon Jun 17 19:38:10 PDT 2002
+//    Respect non 0-origin facelists.
+//
+//    Hank Childs, Mon Dec  9 13:21:13 PST 2002
+//    Use the facelist's origin rather than the unstructured meshes.
+//
+// ****************************************************************************
+
+avtFacelist *
+avtSiloFileFormat::CalcExternalFacelist(DBfile *dbfile, char *mesh)
+{
+    char   *realvar = NULL;
+    DBfile *correctFile = dbfile;
+    DetermineFileAndDirectory(mesh, correctFile, realvar);
+
+    // We want to get just the facelist.  So we need to get the ReadMask,
+    // set it to read facelists, then set it back.
+    long mask = DBGetDataReadMask();
+    DBSetDataReadMask(DBUMFacelist);
+    DBucdmesh *um = DBGetUcdmesh(correctFile, realvar);
+    if (um == NULL)
+        EXCEPTION1(InvalidVariableException, mesh);
+    DBfacelist *fl = um->faces;
+    DBSetDataReadMask(mask);
+
+    if (fl == NULL)
+    {
+        //
+        // There is no facelist object, this may be an interior block.
+        //
+        return NULL;
+    }
+
+    avtFacelist *rv = new avtFacelist(fl->nodelist, fl->lnodelist, fl->nshapes,
+                                      fl->shapecnt, fl->shapesize, fl->zoneno,
+                                      fl->origin);
+
+    DBFreeUcdmesh(um);
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::PopulateIOInformation
+//
+//  Purpose:
+//      Makes I/O groupings based on the layouts of the files.
+//
+//  Arguments:
+//      ioInfo    The information object to populate.
+//
+//  Notes:        Other routines could fail if there are multiple top level
+//                multi-meshes within the same root directory, so that case is
+//                not handled.
+//
+//  Programmer:   Hank Childs
+//  Creation:     May 11, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Mon May 21 10:46:25 PDT 2001
+//    Added missing return statement.
+//
+//    Jeremy Meredith, Thu Sep 20 01:05:19 PDT 2001
+//    Added setting of NDomains.
+//
+//    Hank Childs, Thu Sep 20 17:43:31 PDT 2001
+//    Set nDomains with early returns.
+//
+// ****************************************************************************
+
+void
+avtSiloFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
+{
+    int   i, j;
+    int nMeshes = metadata->GetNumMeshes();
+
+    if (nMeshes < 1)
+    {
+        debug1 << "Cannot populate I/O info since there are no meshes" << endl;
+        ioInfo.SetNDomains(0);
+        return;
+    }
+    
+    //
+    // If there are different sized meshes, then we need to give up.  
+    // Check to see.
+    //
+    int blocks = metadata->GetMesh(0)->numBlocks;
+    for (i = 1 ; i < nMeshes ; i++)
+    {
+        if (metadata->GetMesh(i)->numBlocks != blocks)
+        {
+            debug1 << "Cannot populate I/O Information since the meshes have "
+                   << "a different number of blocks." << endl;
+            ioInfo.SetNDomains(0);
+            return;
+        }
+    }
+
+    if (blocks <= 1)
+    {
+        debug5 << "No need to do I/O optimization because there is only "
+               << "one block" << endl;
+        ioInfo.SetNDomains(1);
+        return;
+    }
+
+    //
+    // Looks like all of the meshes are the same size.  ASSUME they are all
+    // the same and pick the first one.  This is done for I/O optimizations, so
+    // it is okay to be wrong if our assumption is not true.
+    //
+    string meshname = metadata->GetMesh(0)->name;
+
+    DBfile *dbfile  = OpenFile(tocIndex);
+
+    DBmultimesh *mm = DBGetMultimesh(dbfile, (char *) meshname.c_str());
+    if (mm == NULL)
+        EXCEPTION1(InvalidFilesException, meshname.c_str());
+
+    vector<string> filenames;
+    vector<vector<int> > groups;
+    for (i = 0 ; i < mm->nblocks ; i++)
+    {
+        char filename[1024];
+        char *location = NULL;
+        DetermineFilenameAndDirectory(mm->meshnames[i], filename, location);
+        int index = -1;
+        for (j = 0 ; j < filenames.size() ; j++)
+        {
+            if (filename == filenames[j])
+            {
+                index = j;
+                break;
+            }
+        }
+        if (index == -1)
+        {
+            filenames.push_back(string(filename));
+            vector<int> newvector_placeholder;
+            groups.push_back(newvector_placeholder);
+            index = filenames.size()-1;
+        }
+        groups[index].push_back(i);
+    }
+
+    ioInfo.SetNDomains(mm->nblocks);
+    ioInfo.AddHints(groups);
+
+    //
+    // Free up the memory we have used.
+    //
+    DBFreeMultimesh(mm);
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::ShouldGoToDir
+//
+//  Purpose:
+//      Determines if the directory is one we should go to.  If we have already
+//      seen a multi-var that has a block in that directory, don't bother going
+//      in there.
+//
+//  Arguments:
+//      dirname   The directory of interest.
+//
+//  Returns:      true if we should go in the directory, false otherwise.
+//
+//  Programmer:   Hank Childs
+//  Creation:     October 31, 2001
+//
+// ****************************************************************************
+
+bool
+avtSiloFileFormat::ShouldGoToDir(const char *dirname)
+{
+    int size = domainDirs.size();
+    for (int i = 0 ; i < size ; i++)
+    {
+        if (dirname == domainDirs[i])
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::RegisterDomainDirs
+//
+//  Purpose:
+//      Registers directories that we know have blocks from a domain in them.
+//      This way we won't traverse that directory later.
+//
+//  Arguments:
+//      dirlist   A list of directories (with appended variable names).
+//      nList     The number of elements in dirlist.
+//      curDir    The name of the current directory.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 31, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Jul 12 16:22:02 PDT 2002
+//    Add support for variables that are specified absolutely instead of
+//    relatively.
+//
+// ****************************************************************************
+
+void
+avtSiloFileFormat::RegisterDomainDirs(const char * const *dirlist, int nList,
+                                      const char *curDir)
+{
+    for (int i = 0 ; i < nList ; i++)
+    {
+        string str = PrepareDirName(dirlist[i], curDir);
+        int size = domainDirs.size();
+        bool alreadyInList = false;
+        for (int j = 0 ; j < size ; j++)
+        {
+            if (str == domainDirs[j])
+            {
+                alreadyInList = true;
+                break;
+            }
+        }
+        if (!alreadyInList)
+        {
+            domainDirs.push_back(str);
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Function: ExceptionGenerator
+//
+//  Purpose:
+//      Generates a Silo exception so that Silo's error handling can hook into
+//      VisIt's error handling library.
+//
+//  Programmer: Hank Childs
+//  Creation:   April 9, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Aug 16 11:06:27 PDT 2001
+//    No longer throw an exception.
+//
+// ****************************************************************************
+
+void
+ExceptionGenerator(char *msg)
+{
+    debug1 << "The following Silo error occurred: " << msg << endl;
+}
+
+
+// ****************************************************************************
+//  Function: GenerateName
+//
+//  Purpose:
+//      Generates a name from a directory and a file name.
+//
+//  Arguments:
+//      dirname   A directory name.
+//      varname   The name of the variable.
+//
+//  Returns:      A string for the directory and variable.
+//
+//  Notes:        The caller must free the return value.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 30, 2001
+//
+// ****************************************************************************
+
+char *
+GenerateName(const char *dirname, const char *varname)
+{
+    int amtForSlash = 1;
+    int amtForNullChar = 1;
+    int amtForMiddleSlash = 1;
+    int len = strlen(dirname) + strlen(varname) - amtForSlash + amtForNullChar
+                                                + amtForMiddleSlash;
+
+    char *rv = new char[len];
+
+    const char *dir_without_leading_slash = dirname+1;
+
+    bool needMiddleSlash = false;
+    if (strlen(dir_without_leading_slash) > 0)
+    {
+        needMiddleSlash = true;
+    }
+
+    if (needMiddleSlash)
+    {
+        sprintf(rv, "%s/%s", dir_without_leading_slash, varname);
+    }
+    else
+    {
+        sprintf(rv, "%s%s", dir_without_leading_slash, varname);
+    }
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Function: PrepareDirName
+//
+//  Purpose:
+//      Removes the appended variable and '/' from a character string and
+//      returns a directory name.
+//
+//  Arguments:
+//      dirvar  The directory and variable name in a string.
+//      curdir  The current directory.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 31, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Jul 12 16:33:56 PDT 2002
+//    Renamed routine from RemoveVarName and added support for relative
+//    directory names.
+//
+//    Jeremy Meredith, Wed Mar 19 09:19:52 PST 2003
+//    Changed a '>=' test to a '>' test to prevent a possible ABR.  Renamed
+//    to PrepareDirName to match its intended use a little better.
+//
+// ****************************************************************************
+
+string
+PrepareDirName(const char *dirvar, const char *curdir)
+{
+    int len = strlen(dirvar);
+    const char *last = dirvar + (len-1);
+    while (*last != '/' && last > dirvar)
+    {
+        last--;
+    }
+
+    if (*last != '/')
+    {
+        debug1 << "Unexpected case -- no dirs what-so-ever." << endl;
+        return string("");
+    }
+
+    char str[1024];
+    int dirlen = 0;
+    if (dirvar[0] != '/')
+    {
+        //
+        // We have a relative path -- prepend the current directory.
+        //
+        strcpy(str, curdir);
+        dirlen = strlen(str);
+    }
+    strncpy(str+dirlen, dirvar, last-dirvar);
+    str[dirlen + (last-dirvar)] = '\0';
+
+    return string(str);
+}
+
+
+// ****************************************************************************
+//  Function: SplitDirVarName
+//
+//  Purpose:
+//      Removes the prepended directory and '/' from a character string and
+//      returns the directory and variable name.
+//
+//  Arguments:
+//      dirvar  The directory and variable name in a string.
+//      curdir  The current directory in a string.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   March 19, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+SplitDirVarName(const char *dirvar, const char *curdir,
+                string &dir, string &var)
+{
+    dir="";
+    var="";
+
+    int len = strlen(dirvar);
+    const char *last = dirvar + (len-1);
+    while (*last != '/' && last > dirvar)
+    {
+        last--;
+    }
+
+    if (*last != '/')
+    {
+        dir=curdir;
+        var=dirvar;
+        return;
+    }
+
+    char str[1024];
+    int dirlen = 0;
+    if (dirvar[0] != '/')
+    {
+        //
+        // We have a relative path -- prepend the current directory.
+        //
+        strcpy(str, curdir);
+        dirlen = strlen(str);
+    }
+    strcpy(str+dirlen, dirvar);
+
+    str[dirlen + (last-dirvar)] = '\0';
+
+    dir=str;
+    var=str + dirlen + (last-dirvar) + 1;
+}
+
+
+// ****************************************************************************
+//  Function: SiloZoneTypeToVTKZoneType
+//
+//  Purpose:
+//      Converts a zone type in Silo to a zone type in VTK.
+//
+//  Arguments:
+//      zonetype      The zone type in Silo.
+//
+//  Returns:     The zone type in VTK.
+//
+//  Programmer:  Hank Childs
+//  Creation:    August 15, 2000
+//
+// ****************************************************************************
+
+int
+SiloZoneTypeToVTKZoneType(int zonetype)
+{
+    int  vtk_zonetype = -1;
+
+    switch (zonetype)
+    {
+      case DB_ZONETYPE_POLYGON:
+        vtk_zonetype = VTK_POLYGON;
+        break;
+      case DB_ZONETYPE_TRIANGLE:
+        vtk_zonetype = VTK_TRIANGLE;
+        break;
+      case DB_ZONETYPE_QUAD:
+        vtk_zonetype = VTK_QUAD;
+        break;
+      case DB_ZONETYPE_POLYHEDRON:
+        vtk_zonetype = -2;
+        break;
+      case DB_ZONETYPE_TET:
+        vtk_zonetype = VTK_TETRA;
+        break;
+      case DB_ZONETYPE_PYRAMID:
+        vtk_zonetype = VTK_PYRAMID;
+        break;
+      case DB_ZONETYPE_PRISM:
+        vtk_zonetype = VTK_WEDGE;
+        break;
+      case DB_ZONETYPE_HEX:
+        vtk_zonetype = VTK_HEXAHEDRON;
+        break;
+      case DB_ZONETYPE_BEAM:
+        vtk_zonetype = VTK_LINE;
+        break;
+    }
+
+    return vtk_zonetype;
+}
+
+
+// ****************************************************************************
+//  Function: TranslateSiloWedgeToVTKWedge
+//
+//  Purpose:
+//      The silo and VTK wedges are stored differently; translate between them.
+//
+//  Arguments:
+//      siloWedge     A list of nodes from a Silo node list.
+//      vtkWedge      The list of nodes in VTK ordering.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 26, 2000
+//
+//  Modifications:
+//
+//    Kathleen Bonnell, Wed May 23 17:09:48 PDT 2001
+//    Changed orientation.
+//
+//    Kathleen Bonnell, Thu Aug  9 15:50:15 PDT 2001
+//    Changed parameters from int to vtkIdType to match VTK 4.0 API.
+//
+// ****************************************************************************
+
+void
+TranslateSiloWedgeToVTKWedge(const int *siloWedge, vtkIdType vtkWedge[6])
+{
+    //
+    // The Silo wedge stores the four base nodes as 0, 1, 2, 3 and the two
+    // top nodes as 4, 5.  The VTK wedge stores them as two triangles.  When
+    // getting the exact translation, it is useful to look at the face lists
+    // and edge lists in vtkWedge.cxx.
+    //
+    vtkWedge[0] = siloWedge[2];
+    vtkWedge[1] = siloWedge[5];
+    vtkWedge[2] = siloWedge[1];
+    vtkWedge[3] = siloWedge[3];
+    vtkWedge[4] = siloWedge[4];
+    vtkWedge[5] = siloWedge[0];
+}
+
+
+// ****************************************************************************
+//  Function: TranslateSiloPyramidToVTKPyramid
+//
+//  Purpose:
+//    The silo and VTK pyramids are stored differently; translate between them.
+//
+//  Arguments:
+//    siloPyramid     A list of nodes from a Silo node list.
+//    vtkPyramid      The list of nodes in VTK ordering.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   May 23, 2001
+//
+//    Kathleen Bonnell, Thu Aug  9 15:50:15 PDT 2001
+//    Changed parameters from int to vtkIdType to match VTK 4.0 API.
+//
+// ****************************************************************************
+
+void
+TranslateSiloPyramidToVTKPyramid(const int *siloPyramid, vtkIdType vtkPyramid[5])
+{
+    //
+    // The Silo pyramid stores the four base nodes as 0, 1, 2, 3 in 
+    // opposite order from the VTK wedge. When getting the exact translation, 
+    // it is useful to look at the face lists and edge lists in 
+    // vtkPyramid.cxx.
+    //
+    vtkPyramid[0] = siloPyramid[0];
+    vtkPyramid[1] = siloPyramid[3];
+    vtkPyramid[2] = siloPyramid[2];
+    vtkPyramid[3] = siloPyramid[1];
+    vtkPyramid[4] = siloPyramid[4];
+}

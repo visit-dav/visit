@@ -1,0 +1,412 @@
+#!/bin/sh
+#-----------------------------------------------------------------------
+#
+# VISIT-INSTALL-OPEN - Install the visit distributions on the open
+#                      network.
+#
+# Author: Eric Brugger
+# Date:   October 27, 2000
+#
+# Usage:
+#    visit-install-open [-beta | -private] -v <version>
+#
+#-----------------------------------------------------------------------
+
+test=no
+
+user=`whoami`
+
+#
+# Set the user e-mail address.
+#
+emailName=brugger1@llnl.gov
+case $user in
+   ahern)
+      emailName=ahern1@llnl.gov
+      ;;
+   kbonnell)
+      emailName=bonnell2@llnl.gov
+      ;;
+   brugger)
+      emailName=brugger1@llnl.gov
+      ;;
+   childs)
+      emailName=childs3@llnl.gov
+      ;;
+   jennings)
+      emailName=jennings4@llnl.gov
+      ;;
+   meredith)
+      emailName=meredith6@llnl.gov
+      ;;
+   murguia)
+      emailName=murguia1@llnl.gov
+      ;;
+   whitlocb)
+      emailName=whitlock2@llnl.gov
+      ;;
+esac
+
+#
+# Parse the execute line, providing default values for error checking.
+#
+kickit=true
+sunspot=true
+hyper=true
+gps=true
+riptide=true
+frost=true
+pengra=true
+
+ver=undefined
+verflag=
+
+#
+# The loop is executed once for each symbol on the execute line.  This means
+# that $1 may be blank for later executions of the loop if any "shift 2"
+# commands are executed.  The variable abc is not used in the loop.
+#
+for abc
+do
+   case $1 in
+      -none)
+         kickit=false
+         sunspot=false
+         hyper=false
+         gps=false
+         riptide=false
+         frost=false
+         pengra=false
+         shift
+         ;;
+      -kickit)
+         kickit=false
+         shift
+         ;;
+      +kickit)
+         kickit=true
+         shift
+         ;;
+      -sunspot)
+         sunspot=false
+         shift
+         ;;
+      +sunspot)
+         sunspot=true
+         shift
+         ;;
+      -hyper)
+         hyper=false
+         shift
+         ;;
+      +hyper)
+         hyper=true
+         shift
+         ;;
+      -gps)
+         gps=false
+         shift
+         ;;
+      +gps)
+         gps=true
+         shift
+         ;;
+      -riptide)
+         riptide=false
+         shift
+         ;;
+      +riptide)
+         riptide=true
+         shift
+         ;;
+      -frost)
+         frost=false
+         shift
+         ;;
+      +frost)
+         frost=true
+         shift
+         ;;
+      -pengra)
+         pengra=false
+         shift
+         ;;
+      +pengra)
+         pengra=true
+         shift
+         ;;
+      -v)
+         ver=$2
+         shift 2
+         ;;
+      -beta)
+         verflag=-beta;
+         shift
+         ;;
+      -private)
+         verflag=-private;
+         shift
+         ;;
+   esac
+done
+
+#
+# Check that the version was provided.
+#
+if [ $ver = undefined ]
+then
+   echo "Usage: [-beta | -private] [-none] [-<machine name>] -v <version>"
+   exit
+fi
+
+#
+# Check that the visit open configuration file is present.
+#
+if [ ! -e visit-config-open ]
+then
+   echo "visit-config-open is missing."
+   exit
+fi
+
+ver2=`echo $ver | tr "." "_"`
+ver=`echo $ver2 | tr "_" "."`
+
+#
+# Install on kickit.
+#
+rm -f kickit
+cat <<EOF > kickit
+#!/bin/sh
+cd /var/tmp/$user/kickit/visitbuild
+./visit-install -private -g visit -gw $ver linux /usr/gapps/visit > installlog 2>&1
+rm -f resultlog
+echo "        install of visit on kickit"          > resultlog 2>&1
+echo "       ----------------------------"         >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/linux-intel/bin        >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $kickit = true ]
+then
+   if [ $test = no ]
+   then
+      scp kickit kickit:kickit_install
+      ssh kickit "chmod 750 kickit_install;./kickit_install"
+   fi
+fi
+
+#
+# Install on sunspot.
+#
+rm -f sunspot
+cat <<EOF > sunspot
+#!/bin/sh
+cd /export/scratch/$user/sunspot/visitbuild
+if [ -d /usr/gapps/visit/$ver ]
+then
+   ./visit-install -private -a -g visit -gw $ver sunos5 /usr/gapps/visit > installlog 2>&1
+else
+   ./visit-install -private -g visit -gw $ver sunos5 /usr/gapps/visit > installlog 2>&1
+fi
+rm -f resultlog
+echo "        install of visit on sunspot"         > resultlog 2>&1
+echo "       -----------------------------"        >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/sun4-sunos5-sparc/bin  >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $sunspot = true ]
+then
+   if [ $test = no ]
+   then
+      scp sunspot sunspot:sunspot_install
+      ssh sunspot "chmod 750 sunspot_install;./sunspot_install"
+   fi
+fi
+
+#
+# Install on hyper.
+#
+rm -f hyper
+cat <<EOF > hyper
+#!/bin/sh
+mv visit-config-open /scratch1/$user/hyper/visitbuild
+cd /scratch1/$user/hyper/visitbuild
+if [ -d /usr/gapps/visit/$ver ]
+then
+   ./visit-install $verflag -a -g visit -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
+else
+   ./visit-install $verflag -g visit -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
+fi
+mkdir /usr/gapps/visit/$ver/.visit
+chmod 775 /usr/gapps/visit/$ver/.visit
+chgrp visit /usr/gapps/visit/$ver/.visit
+cp visit-config-open /usr/gapps/visit/$ver/.visit/config
+chmod 664 /usr/gapps/visit/$ver/.visit/config
+chgrp visit /usr/gapps/visit/$ver/.visit/config
+rm -f resultlog
+echo "        install of visit on hyper"           > resultlog 2>&1
+echo "       ---------------------------"          >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/sgi-irix6-mips2/bin    >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $hyper = true ]
+then
+   if [ $test = no ]
+   then
+      scp hyper hyper:hyper_install
+      scp visit-config-open hyper:visit-config-open
+      ssh hyper "chmod 750 hyper_install;./hyper_install"
+   fi
+fi
+
+#
+# Install on gps.
+#
+rm -f gps
+cat <<EOF > gps
+#!/bin/sh
+cd /nfs/tmp1/$user/gps/visitbuild
+./visit-install -private -g visit -gw $ver osf1 /usr/gapps/visit > installlog 2>&1
+rm -f resultlog
+echo "        install of visit on gps"             > resultlog 2>&1
+echo "       -------------------------"            >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/dec-osf1-alpha/bin     >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $gps = true ]
+then
+   if [ $test = no ]
+   then
+      scp gps gps15:gps_install
+      ssh gps15 "chmod 750 gps_install;./gps_install"
+   fi
+fi
+
+#
+# Install on riptide.
+#
+rm -f riptide
+cat <<EOF > riptide
+#!/bin/sh
+cd /nfs/tmp1/$user/riptide/visitbuild
+if [ -d /usr/gapps/visit/$ver ]
+then
+   ./visit-install -private -a -g visit -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
+else
+   ./visit-install -private -g visit -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
+fi
+rm -f resultlog
+echo "        install of visit on riptide"         > resultlog 2>&1
+echo "       -----------------------------"        >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/sgi-irix6-mips2/bin    >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $riptide = true ]
+then
+   if [ $test = no ]
+   then
+      scp riptide gps15:riptide_install
+      ssh gps15 "chmod 750 riptide_install;./riptide_install"
+   fi
+fi
+
+#
+# Install on frost.
+#
+rm -f frost
+cat <<EOF > frost
+#!/bin/sh
+cd /nfs/tmp1/$user/frost/visitbuild
+if [ -d /usr/gapps/visit/$ver ]
+then
+   ./visit-install -private -a -g visit -gw $ver aix /usr/gapps/visit > installlog 2>&1
+else
+   ./visit-install -private -g visit -gw $ver aix /usr/gapps/visit > installlog 2>&1
+fi
+rm -f resultlog
+echo "        install of visit on frost"           > resultlog 2>&1
+echo "       ---------------------------"          >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/ibm-aix-pwr/bin        >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $frost = true ]
+then
+   if [ $test = no ]
+   then
+      scp frost gps15:frost_install
+      ssh gps15 "chmod 750 frost_install;./frost_install"
+   fi
+fi
+
+#
+# Install on pengra.
+#
+rm -f pengra
+cat <<EOF > pengra
+#!/bin/sh
+mv visit-config-open /nfs/tmp1/$user/pengra
+cd /nfs/tmp1/$user/pengra
+if [ -d /usr/gapps/visit/$ver ]
+then
+   ./visit-install $verflag -a -g visit -gw $ver linux /usr/gapps/visit > installlog 2>&1
+else
+   ./visit-install $verflag -g visit -gw $ver linux /usr/gapps/visit > installlog 2>&1
+fi
+mkdir /usr/gapps/visit/$ver/.visit
+chmod 775 /usr/gapps/visit/$ver/.visit
+chgrp visit /usr/gapps/visit/$ver/.visit
+cp visit-config-open /usr/gapps/visit/$ver/.visit/config
+chmod 664 /usr/gapps/visit/$ver/.visit/config
+chgrp visit /usr/gapps/visit/$ver/.visit/config
+rm -f resultlog
+echo "        install of visit on pengra"          > resultlog 2>&1
+echo "       ----------------------------"         >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/linux-intel/bin        >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $pengra = true ]
+then
+   if [ $test = no ]
+   then
+      scp visit$ver2.linux.tar.gz gps15:/nfs/tmp1/brugger/pengra
+      scp visit-install gps15:/nfs/tmp1/brugger/pengra
+      scp pengra gps15:pengra_install
+      scp visit-config-open gps15:visit-config-open
+      ssh gps15 "chmod 750 pengra_install;./pengra_install"
+   fi
+fi
+
+#
+# Clean up.
+#
+if [ $test = no ]
+then
+   rm -f kickit sunspot hyper gps riptide frost pengra
+fi

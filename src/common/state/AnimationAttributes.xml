@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+  <Attribute name="AnimationAttributes" purpose="This class contains the animation attributes." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="pipelineCachingMode" type="bool">true</Field>
+    <Field name="timeout" type="int">1</Field>
+  </Attribute>

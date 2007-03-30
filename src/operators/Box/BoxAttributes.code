@@ -1,0 +1,94 @@
+Function: CopyAttributes
+Declaration: virtual bool CopyAttributes(const AttributeGroup *);
+Definition:
+// ****************************************************************************
+// Method: BoxAttributes::CopyAttributes
+//
+// Purpose: 
+//   CopyAttributes method for the BoxAttributes class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 29 08:57:18 PDT 2002
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+BoxAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    bool retval = false;
+
+    if(TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const BoxAttributes *tmp = (const BoxAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    else if(atts->TypeName() == "BoxExtents")
+    {
+        const BoxExtents *tmp = (const BoxExtents *)atts;
+        const double *extents = tmp->GetExtents();
+        SetMinx(extents[0]);
+        SetMaxx(extents[1]);
+        SetMiny(extents[2]);
+        SetMaxy(extents[3]);
+        SetMinz(extents[4]);
+        SetMaxz(extents[5]);
+        retval = true;
+    }
+
+    return retval;
+}
+
+Function: CreateCompatible
+Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
+Definition:
+// ****************************************************************************
+// Method: BoxAttributes::CreateCompatible
+//
+// Purpose: 
+//   Creates an object of the specified type initialized with the attributes
+//   from this object.
+//
+// Arguments:
+//   tname : The typename of the object that we want to create.
+//
+// Returns:    A new object of the type specified by tname or 0.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 29 08:57:46 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AttributeSubject *
+BoxAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+
+    if(TypeName() == tname)
+    {
+        retval = new BoxAttributes(*this);
+    }
+    else if(tname == "BoxExtents")
+    {
+        BoxExtents *b = new BoxExtents;
+        double extents[6];
+        extents[0] = minx;
+        extents[1] = maxx;
+        extents[2] = miny;
+        extents[3] = maxy;
+        extents[4] = minz;
+        extents[5] = maxz;
+        b->SetExtents(extents);
+
+        retval = b;
+    }
+
+    return retval;
+}

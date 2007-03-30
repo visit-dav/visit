@@ -1,0 +1,72 @@
+#!/bin/csh -f
+#-----------------------------------------------------------------------
+#
+# VISIT-WINDOWS-DIST - Build a compressed tar file that contains the
+#                      VisIt source code and Windows project files.
+#
+# Author: Brad Whitlock
+# Date:   Fri Jul 5 14:34:16 PST 2002
+#
+# Usage:
+#    visit-windows-dist 
+#
+#
+# Modifications:
+#   Brad Whitlock, Mon Jul 15 15:29:37 PST 2002
+#   I made it distribute help files.
+#
+#-----------------------------------------------------------------------
+
+if(`pwd` != "/data_vobs/VisIt") then
+    echo "The visit-windows-dist script must be run from the top level VOB directory."
+    exit(-1)
+endif
+
+# Set some directory variables.
+set TOPDIR = "/data_vobs/VisIt"
+set SCRIPTDIR = "/data_vobs/VisIt/clearcase_bin"
+
+# Run the visit-dist script so it creates a source distribution
+echo "Creating intermediate source package"
+$SCRIPTDIR/visit-dist -withhelp visit
+
+# Create a temp directory
+mkdir WindowsTemp
+mv visit.tar.gz WindowsTemp
+cd WindowsTemp
+
+# Unzip the windows projects and put the source into it.
+echo "Unpackaging temporary files"
+cp $SCRIPTDIR/windowsprojects.tar .
+tar xvf windowsprojects.tar > /dev/null
+gunzip visit.tar.gz
+tar xvf visit.tar > /dev/null
+rm visit.tar
+
+# Change the version in the windows visit-config.h file.
+set VER = `cat $TOPDIR/VERSION`
+chdir VisItWindows/include
+mv visit-config.h inputfile
+sed -e "s/1.0/$VER/" inputfile > visit-config.h
+rm inputfile
+cd ../..
+
+# Copy the help from the visit/help directory to the 
+# VisItWindows/bin/help directory.
+chdir VisItWindows\bin
+mkdir help
+cd ../..
+cp visit\help\*.html VisItWindows\bin\help
+
+# Create the new distribution
+echo "Creating Windows source distribution"
+tar cf $TOPDIR/visit-windows.tar BuildingOnWindows.doc VisItWindows \
+VisItPlotPlugins VisItOperatorPlugins visit
+cd ..
+
+# Compress the file
+echo "Compressing distribution"
+gzip $TOPDIR/visit-windows.tar
+
+# Cleanup
+rm -rf WindowsTemp

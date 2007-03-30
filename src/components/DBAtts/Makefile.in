@@ -1,0 +1,102 @@
+#                            Copyright 2000 - 2000
+#                 The Regents of the University of California.
+#                             All rights reserved.
+# 
+# This work  was produced at the  University of California, Lawrence Livermore
+# National Laboratory  (UC LLNL)  under contract no.   W-7405-ENG-48 (Contract
+# 48) between  the U.S.  Department  of Energy (DOE)  and  The Regents  of the
+# University  of   California (University)   for   the operation  of UC  LLNL.
+# Copyright  is reserved  to     the University for   purposes  of  controlled
+# dissemination,   commercialization   through   formal licensing,   or  other
+# disposition  under  terms  of Contract   48; DOE  policies, regulations  and
+# orders;  and U.S.   statutes.  The  rights of   the  Federal Government  are
+# reserved under  Contract 48 subject to the  restrictions agreed  upon by DOE
+# and University.
+# 
+#                                 DISCLAIMER
+# 
+# This software was prepared as an  account of work sponsored  by an agency of
+# the United  States Government. Neither the United  States Government nor the
+# University of California  nor any  of their  employees, makes any  warranty,
+# express or  implied,  or assumes  any  liability  or responsiblity for   the
+# accuracy, completeness,  or   usefullness of   any  information,  apparatus,
+# product, or process disclosed, or represents that its use would not infringe
+# privately   owned  rights. Reference    herein to   any specific  commercial
+# products, process, or service   by trade name, trademark,   manufacturer, or
+# otherwise,  does not    necessarily  constitute or    imply its endorsement,
+# recommendation,  or  favoring by    the  United  States Government  or   the
+# University of California. The views and opinions of authors expressed herein
+# do not necessarily state or reflect those of the United States Government or
+# the University of  California,  and shall not  be  used for  advertising  or
+# product endorsement purposes.
+#
+# Modifications:
+#    Jeremy Meredith, Mon Jun 25 21:31:15 PDT 2001
+#    Added _ser or _par extension to library names.
+#
+#    Jeremy Meredith, Mon Jul 23 00:41:31 PDT 2001
+#    Added some required libraries for AIX.
+#
+#    Jeremy Meredith, Tue Sep  4 10:36:31 PDT 2001
+#    Changed library building: the LIB targets has no extension, and
+#    either LIBSINGLETARGETS or LIBMULTITARGETS must be included
+#    in addition to TARGETS depending on whether the library is build
+#    from object files in one directory or multiple subdirectories.
+#
+#    Brad Whitlock, Wed Dec 19 13:24:34 PST 2001
+#    Removed VTK dependency.
+#
+#    Jeremy Meredith, Wed Jan 16 09:52:05 PST 2002
+#    Make this library have one version, not different ser/par versions.
+#
+#    Jeremy Meredith, Mon Mar 11 16:44:39 PST 2002
+#    Made this library build in one pass from this directory.
+#
+#    Jeremy Meredith, Wed Jul  3 13:23:04 PDT 2002
+#    Added SUBDIRS back in.  It was still needed.
+#
+#    Hank Childs, Thu Nov 14 17:05:58 PST 2002
+#    Added avtSILMatrix.
+#
+##############################################################################
+
+@SET_MAKE@
+@VARIABLES@
+
+SUBDIRS=MetaData SIL
+SRC=$(MetaData_src) $(SIL_src)
+
+MetaData_src= \
+  MetaData/avtDatabaseMetaData.C \
+  MetaData/avtTypes.C
+SIL_src= \
+  SIL/avtSIL.C \
+  SIL/avtSILCollection.C \
+  SIL/avtSILEnumeratedNamespace.C \
+  SIL/avtSILMatrix.C \
+  SIL/avtSILNamespace.C \
+  SIL/avtSILRangeNamespace.C \
+  SIL/avtSILRestriction.C \
+  SIL/avtSILRestrictionTraverser.C \
+  SIL/avtSILSet.C
+
+
+CPPFLAGS=@COMPONENT_CPPFLAGS@ @SILO_INCLUDE@ @CPPFLAGS@ 
+
+OBJ=$(SRC:.C=.o)
+LIB=libdbatts
+LIBS=-lavtexceptions -lstate -lutility -lmisc @SILO_LIB@
+
+##
+## Standard targets...
+##
+all: $(LIBSHARED)
+
+clean:
+	$(RM) $(OBJ) $(LIBSHARED)
+
+##
+## Automatic dependency stuff
+##
+@TARGETS@
+@LIBTARGETS@

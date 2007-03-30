@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+  <Plugin name="Cone" type="operator" label="Cone" version="1.0" iconFile="Cone.xpm">
+    <Attribute name="ConeAttributes" purpose="This class contains attributes for the cone operator." persistent="true">
+      <Enum name="Representation">
+        ThreeD
+        Flattened
+        R_Theta
+      </Enum>
+      <Field name="angle" label="Angle" type="double">
+        45.000000
+      </Field>
+      <Field name="origin" label="Origin" type="doubleArray" length="3">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="normal" label="Direction" type="doubleArray" length="3">
+        0.000000
+        0.000000
+        1.000000
+      </Field>
+      <Field name="representation" label="Representation" type="enum" subtype="Representation">
+        Flattened
+      </Field>
+      <Field name="upAxis" label="Up Axis" type="doubleArray" length="3" enabler="representation:Flattened,R_Theta">
+        0.000000
+        1.000000
+        0.000000
+      </Field>
+      <Field name="cutByLength" label="Cut cone off?" type="bool">
+        false
+      </Field>
+      <Field name="length" label="Cone Length" type="double" enabler="cutByLength:true">
+        1.000000
+      </Field>
+    </Attribute>
+  </Plugin>

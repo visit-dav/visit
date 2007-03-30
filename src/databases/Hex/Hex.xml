@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+  <Plugin name="Hex" label="Hex" type="database" dbtype="STMD" version="1.0">
+    <Extensions> hex </Extensions>
+  </Plugin>

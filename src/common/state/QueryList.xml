@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+  <Attribute name="QueryList" codefile="QueryList.code" purpose="List of supported queries" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Enum name="QueryType">
+      DatabaseQuery
+      PointQuery
+      LineQuery
+    </Enum>
+    <Enum name="CoordinateRepresentation">
+      WorldSpace
+      ScreenSpace
+    </Enum>
+    <Field name="names" type="stringVector"> </Field>
+    <Field name="types" type="intVector"> </Field>
+    <Field name="coordRep" type="intVector"> </Field>
+    <Function name="AddQuery" user="true"></Function>
+  </Attribute>
+

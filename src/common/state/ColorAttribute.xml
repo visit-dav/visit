@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+  <Attribute name="ColorAttribute" codefile="ColorAttribute.code" purpose="This class contains RGBA color information" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="color" type="ucharArray" length="4">0 0 0 255</Field>
+    <Function name="ColorAttribute"  user="true"></Function>
+    <Function name="SetRgb"          user="true"></Function>
+    <Function name="SetRgba"         user="true"></Function>
+    <Function name="GetRgba"         user="true"></Function>
+    <Function name="SetRed"          user="true"></Function>
+    <Function name="SetGreen"        user="true"></Function>
+    <Function name="SetBlue"         user="true"></Function>
+    <Function name="SetAlpha"        user="true"></Function>
+    <Function name="Red"             user="true"></Function>
+    <Function name="Green"           user="true"></Function>
+    <Function name="Blue"            user="true"></Function>
+    <Function name="Alpha"           user="true"></Function>
+  </Attribute>

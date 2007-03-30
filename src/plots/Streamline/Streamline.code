@@ -1,0 +1,215 @@
+Function: CopyAttributes
+Declaration: bool CopyAttributes(const AttributeGroup *atts);
+Definition:
+// ****************************************************************************
+// Method: StreamlineAttributes::CopyAttributes
+//
+// Purpose: 
+//   CopyAttributes method for the StreamlineAttributes class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 4 15:22:57 PST 2002
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+StreamlineAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    bool retval = false;
+
+    if(TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const StreamlineAttributes *tmp = (const StreamlineAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    else if(atts->TypeName() == "Line")
+    {
+        if(sourceType == SpecifiedLine)
+        {
+            const Line *line = (const Line *)atts;
+            SetLineStart(line->GetPoint1());
+            SetLineEnd(line->GetPoint2());
+            retval = true;
+        }
+    }
+    else if(atts->TypeName() == "PlaneAttributes")
+    {
+        if(sourceType == SpecifiedPlane)
+        {
+            const PlaneAttributes *plane = (const PlaneAttributes *)atts;
+            SetPlaneOrigin(plane->GetOrigin());
+            SetPlaneNormal(plane->GetNormal());
+            SetPlaneUpAxis(plane->GetUpAxis());
+            SetPlaneRadius(plane->GetRadius());
+            retval = true;
+        }
+    }
+    else if(atts->TypeName() == "SphereAttributes")
+    {
+        if(sourceType == SpecifiedSphere)
+        {
+            const SphereAttributes *sphere = (const SphereAttributes *)atts;
+            SetSphereOrigin(sphere->GetOrigin());
+            SetSphereRadius(sphere->GetRadius());
+            retval = true;
+        }
+    }   
+    else if(atts->TypeName() == "BoxExtents")
+    {
+        if(sourceType == SpecifiedBox)
+        {
+            const BoxExtents *box = (const BoxExtents *)atts;
+            SetBoxExtents(box->GetExtents());
+            retval = true;
+        }
+    }   
+
+    return retval;
+}
+
+
+Function: CreateCompatible
+Declaration: AttributeSubject *CreateCompatible(const std::string &tname) const
+Definition:
+// ****************************************************************************
+//  Method: StreamlineAttributes::CreateCompatible
+//
+//  Purpose:
+//     Creates a new state object of the desired type.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Fri Oct 4 15:22:57 PST 2002
+//
+//  Modifications:
+//    Brad Whitlock, Tue Jan 21 12:33:04 PDT 2003
+//    I added code to set the "have radius" flag to true so the plane tool
+//    resizes properly when resizing the plane radius.
+//
+// ****************************************************************************
+
+AttributeSubject *
+StreamlineAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+
+    if(TypeName() == tname)
+    {
+        retval = new StreamlineAttributes(*this);
+    }
+    else if(tname == "Line")
+    {
+        Line *l = new Line;
+        l->SetPoint1(GetLineStart());
+        l->SetPoint2(GetLineEnd());
+        retval = l;
+    }
+    else if(tname == "PlaneAttributes")
+    {
+        PlaneAttributes *p = new PlaneAttributes;
+        p->SetOrigin(GetPlaneOrigin());
+        p->SetNormal(GetPlaneNormal());
+        p->SetUpAxis(GetPlaneUpAxis());
+        p->SetRadius(GetPlaneRadius());
+        p->SetHaveRadius(true);
+        retval = p;
+    }
+    else if(tname == "SphereAttributes")
+    {
+        SphereAttributes *s = new SphereAttributes;
+        s->SetOrigin(GetSphereOrigin());
+        s->SetRadius(GetSphereRadius());
+        retval = s;
+    }
+    else if(tname == "BoxExtents")
+    {
+        BoxExtents *b = new BoxExtents;
+        b->SetExtents(GetBoxExtents());
+        retval = b;
+    }
+
+    return retval;
+}
+
+
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const StreamlineAttributes &) const;
+Definition:
+// ****************************************************************************
+//  Method: StreamlineAttributes::ChangesRequireRecalculation
+//
+//  Purpose:
+//     Determines whether or not the plot must be recalculated based on the
+//     new attributes.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Fri Oct 4 15:22:57 PST 2002
+//
+//  Notes:  Most attributes cause the streamline to change.
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+#define PDIF(p1,p2,i) ((p1)[i] != (p2)[i])
+#define POINT_DIFFERS(p1,p2) (PDIF(p1,p2,0) || PDIF(p1,p2,1) || PDIF(p1,p2,2))
+
+bool
+StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &obj) const
+{
+    // If we're in point source mode and the points differ, sourcePointsDiffer
+    // evaluates to true.
+    bool sourcePointsDiffer = ((sourceType == SpecifiedPoint) &&
+       POINT_DIFFERS(pointSource, obj.pointSource));
+
+    // If we're in line source mode and the line differs, sourceLineDiffers
+    // evaluates to true.
+    bool sourceLineDiffers = ((sourceType == SpecifiedLine) &&
+       (POINT_DIFFERS(lineStart, obj.lineStart) ||
+        POINT_DIFFERS(lineEnd, obj.lineEnd)));
+
+    // If we're in plane source mode and the plane differs, sourcePlaneDiffers
+    // evaluates to true.
+    bool sourcePlaneDiffers = ((sourceType == SpecifiedPlane) &&
+       (POINT_DIFFERS(planeOrigin, obj.planeOrigin) ||
+        POINT_DIFFERS(planeNormal, obj.planeNormal) ||
+        POINT_DIFFERS(planeUpAxis, obj.planeUpAxis) ||
+        planeRadius != obj.planeRadius));
+
+    // If we're in sphere source mode and the sphere differs, sourceSphereDiffers
+    // evaluates to true.
+    bool sourceSphereDiffers = ((sourceType == SpecifiedSphere) &&
+       (POINT_DIFFERS(sphereOrigin, obj.sphereOrigin) ||
+        (sphereRadius != obj.sphereRadius)));
+
+    // If we're in box source mode and the box differs, boxSourceDiffers
+    // evaluates to true.
+    bool boxSourceDiffers = (sourceType == SpecifiedBox) &&
+        (POINT_DIFFERS(boxExtents, obj.boxExtents) ||
+         POINT_DIFFERS(boxExtents+3, obj.boxExtents+3));
+
+    // Other things need to be true before we start paying attention to
+    // point density.
+    bool densityMatters = (sourceType == SpecifiedLine ||
+        sourceType == SpecifiedPlane || sourceType == SpecifiedSphere ||
+        sourceType == SpecifiedBox) &&
+        (pointDensity != obj.pointDensity);
+
+    bool tubeRadiusMatters = showTube && (tubeRadius != obj.tubeRadius);
+
+    return (sourceType != obj.sourceType) ||
+           (showTube != obj.showTube) ||
+           (showStart != obj.showStart) ||
+           (maxTime != obj.maxTime) ||
+           (stepLength != obj.stepLength) ||
+           sourcePointsDiffer ||
+           sourceLineDiffers ||
+           sourcePlaneDiffers ||
+           sourceSphereDiffers ||
+           boxSourceDiffers ||
+           densityMatters ||
+           tubeRadiusMatters;
+}

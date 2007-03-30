@@ -1,0 +1,77 @@
+// ************************************************************************* //
+//                           avtDataObjectQuery.h                            //
+// ************************************************************************* //
+
+#ifndef AVT_DATA_OBJECT_QUERY_H
+#define AVT_DATA_OBJECT_QUERY_H
+#include <query_exports.h>
+
+
+#include <avtDataObjectSink.h>
+
+
+class QueryAttributes;
+class avtDataSpecification;
+
+typedef void (*InitializeProgressCallback)(void *, int); 
+typedef void (*ProgressCallback)(void *, const char *, const char *,int,int);                      
+
+
+// ****************************************************************************
+//  Class: avtDataObjectQuery
+//
+//  Purpose:
+//      The base class for a query object. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 12, 2002 
+//
+//  Modifications:
+//    Kathleen Bonnell, Wed Oct 23 15:11:44 PDT 2002
+//    Add ChangedInput, VerifyInput.
+//  
+//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002  
+//    Removed unnecessary SetAtts.
+//
+// ****************************************************************************
+
+class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
+{
+
+  public:
+                                  avtDataObjectQuery() {;};
+    virtual                      ~avtDataObjectQuery() {;};
+
+    virtual const char           *GetType(void) = 0;
+    virtual const char           *GetDescription(void) { return NULL; };
+
+    virtual void                  PerformQuery(QueryAttributes *) = 0;
+    virtual std::string           GetMessage(void) = 0;
+
+    static void                   RegisterInitializeProgressCallback(
+                                          InitializeProgressCallback, void *);
+
+    static void                   RegisterProgressCallback(ProgressCallback,
+                                                           void *);
+
+
+  protected:
+    static InitializeProgressCallback
+                                  initializeProgressCallback;
+    static void                  *initializeProgressCallbackArgs;
+
+    static ProgressCallback       progressCallback;
+    static void                  *progressCallbackArgs;
+
+    void                          Init(void);
+    virtual int                   GetNFilters();
+
+    void                          UpdateProgress(int, int);
+    virtual void                  ChangedInput(void);
+    virtual void                  VerifyInput(void);
+};
+
+
+#endif
+
+

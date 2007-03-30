@@ -1,0 +1,119 @@
+#!/bin/csh -f
+#-----------------------------------------------------------------------
+#
+# QT-INSTALL - Install a pre-built Qt directory in a specified directory.
+#
+# Author: Brad Whitlock
+# Date:   Wed Nov 8 11:57:34 PDT 2000
+#
+# Usage:
+#    qt-install source-dir install-dir [qtversion]
+#
+# Modifications:
+#
+#-----------------------------------------------------------------------
+
+if($#argv < 2) then
+    echo "Usage: qt-install source-dir install-dir [qtversion]"
+    exit(1)
+endif
+
+set SDIR=$argv[1]
+set IDIR=$argv[2]
+
+if($#argv == 3) then
+   set QTVERSION=$argv[3]
+else
+   set QTVERSION="2.1.1"
+endif
+
+set QTDIR="qt-$QTVERSION"
+
+## Create the qt dir and a symlink.
+cd $IDIR
+mkdir $QTDIR
+
+## Create the directories under $QTDIR
+cd $QTDIR
+cp -rf $SDIR/bin .
+
+## Copy the OpenGL extensions header files.
+mkdir extensions
+cd extensions
+mkdir opengl
+cd opengl
+mkdir src
+cd src
+cp $SDIR/extensions/opengl/src/*.h .
+cd ../../../
+
+## Copy all of the Qt header files to the include directory. Note that normally
+## in Qt, these are symlinks into the src directory. We're just copying the
+## actual header files instead of making links.
+cp -rf $SDIR/include .
+chmod 755 include
+
+## Copy the Qt shared library and make symlinks to it. Note that some logic
+## needs to be written to create the correct intermediate links instead of
+## just creating links based on 2.1.1
+mkdir lib
+cd lib
+cp -f "$SDIR/lib/libqt.so.$QTVERSION" "libqt.so.$QTVERSION"
+chmod 644 "libqt.so.$QTVERSION"
+ln -s "libqt.so.$QTVERSION" libqt.so
+ln -s "libqt.so.$QTVERSION" libqt.so.2
+ln -s "libqt.so.$QTVERSION" libqt.so.2.1
+
+## Build the qgl library if it does not exist.
+if(-e $SDIR/lib/libqgl.a) then
+    echo "Copying $SDIR/lib/libqgl.a"
+else
+    echo "********************************************************************"
+    echo "    The Qt OpenGL library $SDIR/lib/libqgl.a was not found. This "
+    echo "    library is required by VisIt so this script will attempt to "
+    echo "    build it."
+    echo "********************************************************************"
+    echo
+
+    cd $SDIR/extensions/opengl/src
+    setenv QTDIR $SDIR
+    make
+    if(-e $SDIR/lib/libqgl.a) then
+        echo "$SDIR/lib/libqgl.a built successfully."
+    else
+        echo "********************************************************************"
+        echo "    The Qt OpenGL library $SDIR/lib/libqgl.a could not be built."
+        echo "    You will have to manually install $SDIR/lib/libqgl.a in order "
+        echo "    to build VisIt later."
+        echo "********************************************************************"
+        echo
+    endif
+    cd "$IDIR/$QTDIR/lib"
+endif
+cp $SDIR/lib/libqgl.a .
+chmod 644 "$SDIR/lib/libqgl.a"
+
+## Change the groups on all of the files.
+cd $IDIR
+chgrp -R bdiv $QTDIR
+
+## Change all the permissions to 644, and 755 for all directories 
+## and executables.
+chmod 755 $QTDIR
+chmod 755 $QTDIR/bin
+chmod 755 $QTDIR/bin/*
+chmod 755 $QTDIR/extensions
+chmod 755 $QTDIR/extensions/opengl
+chmod 755 $QTDIR/extensions/opengl/src
+chmod 644 $QTDIR/extensions/opengl/src/*
+chmod 755 $QTDIR/include
+chmod 644 $QTDIR/include/*
+chmod 755 $QTDIR/lib
+chmod 644 $QTDIR/lib/*
+
+## Make a qt symlink to $QTDIR
+cd $IDIR
+if(-e "$IDIR/qt") then
+    rm qt
+endif
+ln -s $QTDIR qt

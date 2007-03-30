@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+  <Plugin name="Curve2D" label="Curve2D" type="database" dbtype="STMD" version="1.0">
+    <Extensions> curve </Extensions>
+  </Plugin>

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+  <Plugin name="Threshold" type="operator" label="Threshold" version="1.0" iconFile="Threshold.xpm">
+    <Attribute name="ThresholdAttributes" purpose="This class contains attributes for the threshold operator." persistent="true">
+      <Enum name="Amount">
+        Some
+        All
+      </Enum>
+      <Field name="amount" label="Amount of cell in the range" type="enum" subtype="Amount">
+        Some
+      </Field>
+      <Field name="lbound" label="Lower bound" type="double">
+        0.000000
+      </Field>
+      <Field name="ubound" label="Upper bound" type="double">
+        0.000000
+      </Field>
+      <Field name="variable" label="variable" type="string">
+        default
+      </Field>
+    </Attribute>
+  </Plugin>

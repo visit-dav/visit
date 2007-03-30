@@ -1,0 +1,259 @@
+#!/bin/csh -f
+#-----------------------------------------------------------------------
+#
+# VISIT_INSTALL - Install a compressed tar file distribution of visit
+#                 in an existing directory.
+#
+# Author: Eric Brugger
+# Date:   October 26, 1996
+#
+# Usage
+#    visit-install [-a] [-beta | -private] [-g group] [-gw]
+#                  version platform directory
+#
+#    The default is to install this version as the current version.
+#    The -beta flag makes this version the current beta version instead.
+#    The -private flag simply adds this version to the tree without making
+#        it the current stable or current beta.
+#
+# Notes:
+#    The options must be first.
+#
+# Modifications:
+#    Jeremy Meredith, Mon Mar 19 12:06:55 PST 2001
+#    Made it create symlinks for the current or beta release.
+#    Made it support a -beta and -private flag.
+#
+#    Eric Brugger, Thu Mar 29 14:21:39 PST 2001
+#    Replace incorrect "else if" constructs with "elif".
+#
+#    Eric Brugger, Fri Mar 30 08:45:12 PST 2001
+#    I undid my previous replacement of "else if" with "elif".  I
+#    replaced tests for links (-l) with tests for existance (-e), since
+#    tests for links behaved strangely on AIX systems.
+#
+#    Eric Brugger, Fri Mar 30 10:55:49 PST 2001
+#    Reorder the some lines cleaing up old versions and backing up the
+#    current version so that it would work properly.
+#
+#    Eric Brugger, Wed Jul 18 15:51:32 PDT 2001
+#    I added the -a flag.
+#
+#    Eric Brugger, Wed Feb 20 10:52:52 PST 2002
+#    I added support for install sample data files.
+#
+#    Eric Brugger, Wed Aug 21 14:04:25 PDT 2002
+#    I modified the script so that existing distributions would be
+#    consistent as much as possible while being updated.
+#
+#-----------------------------------------------------------------------
+
+set Compress = COMPRESS
+
+if ($#argv < 3) then
+   echo "Usage: visit-install [-a] [-beta | -private] [-g group] [-gw] version platform directory"
+   exit (1)
+endif
+
+if ($#argv >= 9) then
+   echo "Usage: visit-install [-a] [-beta | -private] [-g group] [-gw] version platform directory"
+   exit (1)
+endif
+
+set append = false
+set beta = false
+set private = false
+set group_ownership = none
+set dir_permission = 755
+set file_permission = 644
+
+set option_found = true
+while ($option_found == true)
+   switch ($1)
+      case -gw:
+         set dir_permission = 775
+         set file_permission = 664
+         shift
+         breaksw
+      case -g:
+         set group_ownership = $2
+         shift
+         shift
+         breaksw
+      case -a:
+         set append = true
+         shift
+         breaksw
+      case -beta:
+         set beta = true
+         shift
+         breaksw
+      case -private:
+         set private = true
+         shift
+         breaksw
+      default:
+         set option_found = false
+         breaksw
+   endsw
+end
+
+if ($#argv != 3) then
+   echo "Usage: visit-install [-g group] [-gw] version platform directory"
+   exit (1)
+endif
+
+if ($beta == true && $private == true) then
+   echo "Only -beta or -private may be specified, not both."
+   exit (1)
+endif
+
+
+set version = $1;
+set base = `echo visit$version | tr "." "_"`
+set platform = $2
+set dir = $3
+
+set fname1 = $base.$platform.tar.Z
+if (! -e $fname1) then
+   set Compress = GZIP
+   set fname1 = $base.$platform.tar.gz
+   if (! -e $fname1) then
+      echo "Could not find file containing the distribution."
+      exit (2)
+   endif
+endif
+set fname2 = $base.$platform.tar
+
+#
+# If the directory name is not an absolute path then make it one.
+#
+if (`echo $dir | grep "^/"` == "") then
+   set dir = `pwd`/$dir
+endif
+
+#
+# Set up the distribution directory
+#
+rm -rf distribution
+mkdir distribution
+cp $fname1 distribution
+cd distribution
+if ($Compress == "COMPRESS") then
+   uncompress $fname1
+else
+   gunzip $fname1
+endif
+tar xvbf 20 $fname2
+cd ..
+
+#
+# If the installation directory doesn't exist, create it.
+#
+if (! -e $dir)                mkdir $dir
+if (! -e $dir/bin)            mkdir $dir/bin
+if (! -e $dir/data)           mkdir $dir/data
+
+#
+# If not in append mode remove any old backup files and directories
+# from the installation directory.
+#
+if ($append == false) then
+   if (-e $dir/bin/visit-)       rm $dir/bin/visit-
+   if ($beta == true) then
+      if (-e $dir/beta-)         rm $dir/beta-
+   else if ($private == false) then
+      if (-e $dir/current-)      rm $dir/current-
+   endif
+   if (-e $dir/$version-)        rm -rf $dir/$version-
+endif
+
+#
+# Copy in the new files.  We are carefull to leave the current
+# installation in a consistent state with the exception of the
+# data directory.
+#
+cp distribution/visit/bin/visit                  $dir/bin/visit+
+
+if (-e $dir/$version+)           rm -rf $dir/$version+
+if ($append == false) then
+   mkdir $dir/$version+
+else
+   if (! -e $dir/$version)       mkdir $dir/$version
+   mv $dir/$version $dir/$version+
+   ln -s $version+ $dir/$version
+endif
+cd distribution/visit/$version
+find . -print | cpio -pmud $dir/$version+
+cd ../../..
+
+cp distribution/visit/data/* $dir/data
+
+#
+# Set the permissions properly
+#
+chmod $dir_permission $dir
+chmod $dir_permission $dir/bin
+chmod $dir_permission $dir/bin/visit+
+chmod $dir_permission $dir/data
+chmod $file_permission $dir/data/*
+chmod $dir_permission $dir/$version+
+
+find $dir/$version+ -type d -exec chmod $dir_permission {} \;
+find $dir/$version+ -type f -exec chmod $file_permission {} \;
+
+chmod $dir_permission $dir/$version+/*/bin/*
+
+#
+# Set the group ownership properly
+#
+if ($group_ownership != none) then
+    chgrp $group_ownership $dir/bin
+    chgrp $group_ownership $dir/bin/visit
+    chgrp $group_ownership $dir/data
+    chgrp $group_ownership $dir/data/*
+    find $dir/$version+ -type d -exec chgrp $group_ownership {} \;
+    find $dir/$version+ -type f -exec chgrp $group_ownership {} \;
+endif
+
+#
+# Clean up the temporary directories.
+#
+rm -rf distribution
+
+#
+# If not in append mode then backup the old version.
+#
+if ($append == false) then
+   #
+   # Copy any current files to the backup filenames
+   #
+   if (-e $dir/bin/visit)        mv $dir/bin/visit $dir/bin/visit-
+   if ($beta == true) then
+      if (-e $dir/beta)          mv $dir/beta      $dir/beta-
+   else if ($private == false) then
+      if (-e $dir/current)       mv $dir/current   $dir/current-
+   endif
+   if (-e $dir/$version)         mv $dir/$version  $dir/$version-
+endif
+
+#
+# Make the symbolic links
+#
+cd $dir
+
+#
+# If $version exists at this point it is a link and must be removed
+# with the rm command.
+#
+if (-e $version)                 rm $version
+mv $version+ $version
+if (-e bin/visit)                rm bin/visit
+mv bin/visit+ bin/visit
+if ($beta == true) then
+   if (-e beta)                  rm beta
+   ln -s $version beta
+else if ($private == false) then
+   if (-e current)               rm current
+   ln -s $version current
+endif

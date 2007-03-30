@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+  <Plugin name="Surface" type="plot" label="Surface" version="1.0" vartype="scalar,species" iconFile="Surface.xpm">
+    <Attribute name="SurfaceAttributes" purpose="Attributes for the surface plot" persistent="true" codefile="Surface.code">
+      <Enum name="ColorByType">
+        Constant
+        ZValue
+      </Enum>
+      <Enum name="Scaling">
+        Linear
+        Log
+        Skew
+      </Enum>
+      <Enum name="LimitsMode">
+        OriginalData
+        CurrentPlot
+      </Enum>
+      <Field name="legendFlag" label="Legend" type="bool">
+        true
+      </Field>
+      <Field name="lightingFlag" label="Lighting" type="bool">
+        true
+      </Field>
+      <Field name="surfaceFlag" label="Surface" type="bool">
+        true
+      </Field>
+      <Field name="wireframeFlag" label="Wireframe" type="bool">
+        false
+      </Field>
+      <Field name="limitsMode" label="LimitsMode" type="enum" subtype="LimitsMode">
+        OriginalData
+      </Field>
+      <Field name="minFlag" label="Use min" type="bool">
+        false
+      </Field>
+      <Field name="maxFlag" label="Use max" type="bool">
+        false
+      </Field>
+      <Field name="colorByZFlag" label="Color by Z Value" type="bool">
+        true
+      </Field>
+      <Field name="scaling" label="Scale" type="enum" subtype="Scaling">
+        Linear
+      </Field>
+      <Field name="lineStyle" label="Line style" type="linestyle">
+        0
+      </Field>
+      <Field name="lineWidth" label="Line width" type="linewidth">
+        0
+      </Field>
+      <Field name="surfaceColor" label="Surface color" type="color">
+        0
+        0
+        0
+        255
+      </Field>
+      <Field name="wireframeColor" label="Wireframe color" type="color">
+        0
+        0
+        0
+        255
+      </Field>
+      <Field name="skewFactor" label="Skew factor" type="double" enabler="scaling:Skew">
+        1.000000
+      </Field>
+      <Field name="min" label="Min" type="double" enabler="minFlag:true">
+        0.000000
+      </Field>
+      <Field name="max" label="Max" type="double" enabler="maxFlag:true">
+        1.000000
+      </Field>
+      <Field name="colorTableName" label="Color table" type="colortable">
+        hot
+      </Field>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

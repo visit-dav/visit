@@ -1,0 +1,2369 @@
+dnl Process this file with autoconf to produce configure.
+dnl 
+dnl 
+dnl 
+dnl                            Copyright 2000 - 2003
+dnl                 The Regents of the University of California.
+dnl                             All rights reserved.
+dnl 
+dnl This work was produced at the University of California, Lawrence Livermore
+dnl National Laboratory (UC LLNL)  under contract no.  W-7405-ENG-48 (Contract
+dnl 48) between  the U.S. Department of Energy  (DOE)  and The Regents  of the
+dnl University  of  California  (University)  for  the  operation of  UC LLNL.
+dnl Copyright   is  reserved to  the   University for  purposes  of controlled
+dnl dissemination,   commercialization  through  formal licensing,   or  other
+dnl disposition under  terms of Contract   48; DOE policies,  regulations  and
+dnl orders; and  U.S. statutes.  The    rights of the  Federal Government  are
+dnl reserved under Contract 48 subject to  the restrictions agreed upon by DOE
+dnl and University.
+dnl 
+dnl                                 DISCLAIMER
+dnl 
+dnl This software was prepared as an account of work sponsored by an agency of
+dnl the United States Government. Neither the United States Government nor the
+dnl University  of California nor any of  their employees, makes any warranty,
+dnl express or implied,  or assumes  any liability  or responsiblity  for  the
+dnl accuracy, completeness, or    usefullness of any  information,  apparatus,
+dnl product, or  process   disclosed, or represents that  its   use would  not
+dnl infringe privately    owned  rights. Reference   herein  to  any  specific
+dnl commercial  products, process,  or    service by trade   name,  trademark,
+dnl manufacturer, or otherwise, does  not necessarily constitute or imply  its
+dnl endorsement, recommendation, or  favoring by the United  States Government
+dnl or the   University  of  California.  The views   and  opinions of authors
+dnl expressed herein do not  necessarily state or  reflect those of the United
+dnl States Government  or the University of  California, and shall not be used
+dnl for advertising or product endorsement purposes.
+dnl
+
+dnl
+dnl
+dnl Modifications:
+dnl    Jeremy Meredith, Mon Aug  7 12:02:49 PDT 2000
+dnl    Added the parsing of object files from the Makefile.in's.
+dnl
+dnl    Kathleen Bonnell, Thu Oct 12 12:18:02 PDT 2000
+dnl    Added visit_vtk subdirectory, VISIT_VTK_CPPFLAGS, VISIT_VTK_FILES
+dnl
+dnl    Brad Whitlock, Tue Oct 31 14:40:24 PST 2000
+dnl    Made sure libvtkqt.a gets built. I also removed the check for GLR
+dnl    remotely rendered hw accelerated graphics.
+dnl
+dnl    Eric Brugger, Tue Nov 14 08:20:47 PST 2000
+dnl    Remove unnecessary tests.
+dnl
+dnl    Eric Brugger, Fri Nov 17 11:51:58 PST 2000
+dnl    I added checks for -lXt and -lXext on AIX systems.  I removed the test
+dnl    for inline.
+dnl
+dnl    Hank Childs, Mon Nov 20 15:24:32 PST 2000
+dnl    Set up components for parallel.
+dnl
+dnl    Eric Brugger, Wed Dec  6 12:35:25 PST 2000
+dnl    I added the option --disable-mdserver.  I modified the script to not
+dnl    build components/VisWindow if --disable-gui is on.  I made a few
+dnl    other fixes for building a parallel version on AIX systems.
+dnl
+dnl    Eric Brugger, Thu Dec  7 12:03:10 PST 2000
+dnl    I added checks for -lXt on OSF systems.
+dnl
+dnl    Jeremy Meredith, Tue Dec 12 13:48:44 PST 2000
+dnl    Added "mir" common directory.
+dnl
+dnl    Eric Brugger, Fri Feb 16 17:57:34 PST 2001
+dnl    I made the checks for the X and OpenGL always occur since the engine
+dnl    now needs them and the engine is always built.
+dnl
+dnl    Eric Brugger, Mon Feb 26 15:35:22 PST 2001
+dnl    I added the outputing of Makefiles for all the directories in the
+dnl    plot directory tree.
+dnl
+dnl    Eric Brugger, Fri Mar  2 14:43:44 PST 2001
+dnl    I added the outputing of the Makefile in the plot/Contour directory.
+dnl
+dnl    Eric Brugger, Tue Mar  6 16:34:17 PST 2001
+dnl    I renamed the file config.h to visit-config.h to avoid name conflicts
+dnl    with public header files.
+dnl
+dnl    Hank Childs, Thu Mar  8 15:40:26 PST 2001
+dnl    Added directories for components/Database.
+dnl
+dnl    Eric Brugger, Thu Mar  8 08:42:05 PST 2001
+dnl    I added the outputing of the Makefile in the plot/Manager directory.
+dnl
+dnl    Hank Childs, Sat Mar 10 18:20:57 PST 2001
+dnl    Added an option for timings.
+dnl
+dnl    Eric Brugger, Thu Mar 15 17:13:09 PST 2001
+dnl    Modify the script to not generate viewer/cli/Makefile since the cli
+dnl    directory has been removed.
+dnl
+dnl    Jim Reus, Fri Mar 23 06:42:10 PST 2001
+dnl    Add tests for ZLIB, HDF5, VBT/DSL, and SAF. These are loosely based
+dnl    on previous work I had done for the SAF read-only driver for SILO.
+dnl    This added four new "with" options to configure:
+dnl
+dnl        --with-zlib=INCDIR,LIBDIR
+dnl        --with-hdf=INCDIR,LIBDIR
+dnl        --with-vbt=INCDIR,LIBDIR
+dnl        --with-saf=INCDIR,LIBDIR
+dnl
+dnl    Eric Brugger, Mon Mar 26 13:07:16 PST 2001
+dnl    Turn off the compilation of the GUI sources in the plot directories
+dnl    if the GUI is disabled.
+dnl
+dnl    Jeremy Meredith, Wed Mar 28 15:15:25 PST 2001
+dnl    Changed the way the GUI is disabled.  Added substitution parameters
+dnl    to disable the viewer and engine as well.
+dnl
+dnl    Sean Ahern, Wed Apr 25 08:52:41 PDT 2001
+dnl    Made the OS_RULE apply always so we don't wink in things across OSes.
+dnl    Changed some of the "dnl" comments to "#" so that we get them in
+dnl    "configure".
+dnl
+dnl    Jeremy Meredith, Thu Apr 26 13:53:14 PDT 2001
+dnl    Added check for SysV vs BSD style pseudo-tty.
+dnl
+dnl    Eric Brugger, Fri Apr 27 18:40:54 PDT 2001
+dnl    I added a check to see if there exists a prototype for ftime in
+dnl    "sys/timeb.h".
+dnl
+dnl    Jeremy Meredith, Thu May 10 17:26:29 PDT 2001
+dnl    Added checks for network libraries for SunOS (nsl, socket, resolv).
+dnl    Added check for qgl.  Added code for plugins.
+dnl    Added stuff to figure out how to build shared libraries.
+dnl
+dnl    Jeremy Meredith, Wed Jun  6 22:19:11 PDT 2001
+dnl    Added a check to see if socklen_t exists.
+dnl
+dnl    Hank Childs, Wed Jun 13 16:01:50 PDT 2001
+dnl    Changed around the location of a bunch of Makefiles.
+dnl
+dnl    Jeremy Meredith, Mon Jun 25 21:43:10 PDT 2001
+dnl    Added PX (Parallel eXtension) as either _ser or _par.
+dnl    Changed the definitions of SHLIB_POSTPROCESS slightly.
+dnl    Added definition of PLUGIN_EXTENSION.
+dnl
+dnl    Jeremy Meredith, Mon Jul 23 00:46:57 PDT 2001
+dnl    Made it search for qgl in the $QTDIR/lib directory.  It sometimes
+dnl    happened that QTDIR pointed to one without a separate qgl, but there
+dnl    was still a qgl elsewhere in the library search path.
+dnl
+dnl    Jeremy Meredith, Thu Jul 26 02:45:06 PDT 2001
+dnl    Added operator plugins.
+dnl
+dnl    Jeremy Meredith, Fri Jul 27 13:51:00 PDT 2001
+dnl    Made it automatically disable the gui, viewer, mdserver when building
+dnl    in parallel.  Also made engine proxy build only when viewer is built.
+dnl
+dnl    Hank Childs, Wed Aug  8 17:41:12 PDT 2001
+dnl    Add --disable-annotation.  Also add support for Qt-2.2.1.
+dnl
+dnl    Jeremy Meredith, Tue Aug 28 16:04:51 PDT 2001
+dnl    Added tools/xml.
+dnl
+dnl    Sean Ahern, Thu Aug 30 16:54:07 PDT 2001
+dnl    Added the splash screen.
+dnl
+dnl    Jeremy Meredith, Tue Sep  4 10:37:27 PDT 2001
+dnl    Added ./include/make-targets-libmulti.in as LIBMULTITARGETS
+dnl    and ./include/maketargets-lisingle.in as LIBSINGLETARGETS.
+dnl
+dnl    Hank Childs, Sun Sep  9 20:34:43 PDT 2001
+dnl    Added tools/avtprep, components/Preprocessor.
+dnl
+dnl    Hank Childs, Wed Sep 12 10:52:30 PDT 2001
+dnl    Added --enable-buildall option.
+dnl
+dnl    Jeremy Meredith, Mon Sep 24 17:41:28 PDT 2001
+dnl    Added Transform operator and removed Shift operator.
+dnl
+dnl    Jeremy Meredith, Fri Sep 28 13:24:26 PDT 2001
+dnl    Added ILIBS for engine, gui, viewer.
+dnl
+dnl    Hank Childs, Mon Oct  8 15:38:52 PDT 2001
+dnl    Added enable/disable exodus.
+dnl
+dnl    Brad Whitlock, Mon Oct 1 12:28:19 PDT 2001
+dnl    Added Tools directory to components/VisWindow.
+dnl
+dnl    Kathleen Bonnell, Fri Oct 19 15:33:35 PDT 2001 
+dnl    Added Subset directory to plots.
+dnl
+dnl    Brad Whitlock, Tue Oct 16 15:38:32 PST 2001
+dnl    Added Math directory to components.
+dnl
+dnl    Hank Childs, Tue Oct 23 11:22:33 PDT 2001
+dnl    Add ColorIso directory.
+dnl
+dnl    Hank Childs, Tue Oct 23 15:25:40 PDT 2001
+dnl    Add Threshold operator.
+dnl
+dnl    Jeremy Meredith, Thu Oct 25 13:00:54 PDT 2001
+dnl    Added Database/Ghost, and moved MIR from Pipeline to Database.
+dnl
+dnl    Hank Childs, Mon Nov  5 16:37:59 PST 2001
+dnl    Added Displace operator.
+dnl
+dnl    Eric Brugger, Wed Nov  7 13:35:23 PST 2001
+dnl    Removed --enable-timings.
+dnl
+dnl    Jeremy Meredith, Mon Nov 12 13:36:36 PST 2001
+dnl    Added tools/silex.
+dnl    Added check for static QT so we can use it if possible.
+dnl
+dnl    Hank Childs, Mon Nov 12 16:52:17 PST 2001
+dnl    Added box operator.
+dnl
+dnl    Eric Brugger, Wed Dec  5 11:04:36 PST 2001
+dnl    Added tools/curv3dprep.
+dnl
+dnl    Brad Whitlock, Sun Jul 8 2001
+dnl    Added visitpy directory and support for scripting plugins.
+dnl
+dnl    Kathleen Bonnell, Thu Nov 15 12:48:49 PST 2001
+dnl    Modified VTK_INCLUDES and VTK_LIB to match VTK 4.0 directory tree. 
+dnl
+dnl    Jeremy Meredith, Thu Jan  3 15:25:42 PST 2002
+dnl    Cleared out SHLIB_MPI_LIBS if not building in parallel.
+dnl    Split library target includes into ones for serial/parallel and ones
+dnl    for parallel only.  Changed AIX to check to make sure parallel is
+dnl    enabled before setting SHLIB_MPI_LIBS.  Explicitly substitute
+dnl    SHLIB_MPI_LIBS instead of always stuffing it into SHLIB_LIBS.
+dnl
+dnl    Jeremy Meredith, Sat Jan  5 17:53:36 PST 2002
+dnl    Added SiloDump operator.
+dnl    Created a PARALLEL_CPPFLAGS.
+dnl
+dnl    Jeremy Meredith, Wed Jan  9 13:17:05 PST 2002
+dnl    Removed the strangeness of AIX's shared library processes.
+dnl    The right combination of things has converged to make building them
+dnl    mostly "normal" finally.
+dnl
+dnl    Jeremy Meredith, Wed Jan 16 09:43:06 PST 2002
+dnl    Allow concurrent serial and parallel builds:
+dnl    --enable-parallel no longer implies --disable-mdserver and --disable-gui
+dnl    removed PX, duplicated other defines into PAR and SER versions.
+dnl
+dnl    Jeremy Meredith, Fri Feb  1 10:05:04 PST 2002
+dnl    Added LIBSHAREDPAR_UPDATEONLY.
+dnl
+dnl    Jeremy Meredith, Fri Feb 15 13:49:37 PST 2002
+dnl    Removed some AIX shared library stuff I forgot to remove earlier.
+dnl
+dnl    Eric Brugger, Tue Feb 19 14:49:34 PST 2002
+dnl    I added the creation of a makefile in the data directory.
+dnl
+dnl    Sean Ahern, Thu Mar  7 13:03:35 PST 2002
+dnl    Changed how BUILDALL for operators works.
+dnl
+dnl    Hank Childs, Thu Mar  7 10:20:47 PST 2002
+dnl    Added reflect operator.
+dnl
+dnl    Hank Childs, Thu Mar  7 12:54:44 PST 2002
+dnl    Fix a bug with specifying --without-exodus.
+dnl
+dnl    Jeremy Meredith, Mon Mar 11 16:43:35 PST 2002
+dnl    Renamed SplashScreen to splashscreen.
+dnl    Removed the multi lib targets; everything is single.
+dnl
+dnl    Brad Whitlock, Tue Mar 12 14:29:39 PST 2002
+dnl    I rewrote the check for Qt's version and made it check for version
+dnl    3.0.0 or later.
+dnl
+dnl    Eric Brugger, Thu Mar 21 15:10:34 PST 2002
+dnl    Add the sphere slice operator.
+dnl
+dnl    Kathleen Bonnell, Tue Apr  9 16:51:14 PDT 2002 
+dnl    Add new vtk libs. 
+dnl
+dnl    Jeremy Meredith, Mon Apr 15 12:20:36 PDT 2002
+dnl    Added check for streambuf::setbuf publicly accessible.
+dnl
+dnl    Brad Whitlock, Thu Mar 21 17:13:22 PST 2002
+dnl    Removed the rpc library. Added slash character check.
+dnl
+dnl    Eric Brugger, Tue Apr 16 09:23:42 PDT 2002
+dnl    Added a check for mesa.
+dnl
+dnl    Hank Childs, Tue Apr 16 10:44:14 PDT 2002
+dnl    Added Isosurface operator.
+dnl
+dnl    Jeremy Meredith, Fri Apr 19 15:23:49 PDT 2002
+dnl    Removed IsoSurfaceVolume and RangeVolume plots.
+dnl
+dnl    Kathleen Bonnell, Thu Apr 25 15:46:34 PDT 2002  
+dnl    Added subdirs: plots/Curve,  operators/Lineout. 
+dnl
+dnl    Brad Whitlock, Wed May 15 13:07:35 PST 2002
+dnl    Added help viewer.
+dnl
+dnl    Hank Childs, Wed May 22 14:02:48 PDT 2002 
+dnl    Put an extra set of '[]' around the 'tr' command so that m4 doesn't
+dnl    take them out.  The '[]' are required for 'tr' with Solaris 5.8
+dnl
+dnl    Hank Childs, Wed May 29 15:33:12 PDT 2002 
+dnl    Added cone operator.
+dnl
+dnl    Hank Chidls, Wed Jun  5 08:14:29 PDT 2002
+dnl    Added IndexSelect operator.  Removed ColorIso.
+dnl
+dnl    Sean Ahern, Mon Jun 10 16:20:48 PDT 2002
+dnl    Added make-targets-dir so that we can get rid of a lot of rules.
+dnl
+dnl    Jeremy Meredith, Fri Jul 12 14:35:08 PDT 2002
+dnl    Unified the include file locations to the root /include/* tree.
+dnl    This includes mesa, qt, vtk, and visit.  Also linked moc to our
+dnl    private bin directory and used it there.  Added makefiles for our
+dnl    root include and bin directories.  Added check for ios::noreplace.
+dnl    Removed all plot and operator plugin makefile.in's since all are
+dnl    now generated at runtime.
+dnl
+dnl    Jeremy Meredith, Thu Jul 18 13:11:36 PDT 2002
+dnl    Assume python library is in our private lib directory (probably as
+dnl    a symbolic link).
+dnl
+dnl    Jeremy Meredith, Thu Jul 18 13:11:36 PDT 2002
+dnl    Made it build the include and lib directories, and xml2atts and
+dnl    the plot and operator plugin makefiles automatically after 
+dnl    config.status is created and has been run.
+dnl
+dnl    Jeremy Meredith, Thu Jul 25 15:24:44 PDT 2002
+dnl    Added a message for parallel enabled.
+dnl
+dnl    Jeremy Meredith, Sat Aug  3 11:38:23 PDT 2002
+dnl    Renamed BUILDALL.
+dnl
+dnl    Brad Whitlock, Wed Aug 14 16:48:22 PST 2002
+dnl    I added a --enable-java test.
+dnl
+dnl    Eric Brugger, Tue Aug 20 11:44:00 PDT 2002
+dnl    Disable the exodus reader if the VTK exodus reader doesn't exist.
+dnl
+dnl    Brad Whitlock, Wed Aug 21 11:45:18 PDT 2002
+dnl    I made tools make clean before building xml2makefile in case I've
+dnl    run configure on another platform before running it again on the
+dnl    current platform. I also made configure build a small Java class
+dnl    file that contains the VisIt version.
+dnl
+dnl    Jeremy Meredith, Wed Aug 21 14:46:24 PDT 2002
+dnl    Added database plugins.  Changed the exodus and saf checks a little.
+dnl
+dnl    Brad Whitlock, Thu Sep 26 15:54:03 PST 2002
+dnl    If the test for pthreads succeeds, I made it define a macro in
+dnl    visit-config.h
+dnl
+dnl    Hank Childs, Thu Oct  3 11:32:29 PDT 2002
+dnl    Made an HDF5 symbol for database plugins.
+dnl
+dnl    Hank Childs, Sun Oct 13 21:07:20 PDT 2002
+dnl    Add PDB check based on work by Brad Whitlock.
+dnl
+dnl    Jeremy Meredith, Thu Oct 17 16:07:02 PDT 2002
+dnl    Added xml editor.
+dnl
+dnl    Brad Whitlock, Wed Nov 6 12:25:37 PDT 2002
+dnl    I added a check for Java's jar utility.
+dnl
+dnl    Sean Ahern, Mon Nov 18 13:10:38 PST 2002
+dnl    Added --with-{plots,operators,dbs} options.
+dnl
+dnl    Hank Childs, Tue Nov 19 06:44:03 PST 2002
+dnl    Added Expressions and Queries directory.
+dnl
+dnl    Sean Ahern, Tue Nov 19 13:10:27 PST 2002
+dnl    Added --with-config option.
+dnl
+dnl    Eric Brugger, Tue Dec  3 08:03:09 PST 2002
+dnl    Removed -I/usr/local/include from CPPFLAGS and -L/usr/local/lib from
+dnl    LDFLAGS.
+dnl
+dnl    Brad Whitlock, Fri Dec 13 11:49:40 PDT 2002
+dnl    I added PTHREAD_CXXFLAGS that is defined when we can find pthreads.
+dnl
+dnl    Hank Childs, Sun Dec 29 12:12:17 PST 2002
+dnl    Added tools/annotations.
+dnl
+dnl    Kathleen Bonnell, Thu Jan  2 09:06:57 PST 2003 
+dnl    Add new vtk libs vtkfreetype, vtkftgl. 
+dnl
+dnl    Brad Whitlock, Thu Jan 16 16:37:35 PST 2003
+dnl    Added tools/escan to the list of Makefiles.
+dnl
+dnl    Jeremy Meredith, Fri Jan 24 11:51:58 PST 2003
+dnl    Fixed bug with building optional plugins.
+dnl
+dnl    Eric Brugger, Thu Mar 27 14:29:09 PST 2003
+dnl    Changed the location of vtkexpat, vtkfreetype, vtkftgl, vtkjpeg,
+dnl    vtkpng, vtktiff and vtkzlib in the link line so that they are loaded
+dnl    in the proper order.  Removed some unnecessary X libraries.  Moved
+dnl    the GL library to the end of VTK_LIBS since it is only used by VTK.
+dnl
+dnl    Hank Childs, Thu Apr 10 16:45:02 PDT 2003
+dnl    Added support for Mili.
+dnl
+dnl    Jeremy Meredith, Tue Apr 15 21:12:12 PDT 2003
+dnl    Made references to TOPDIR interpolate at build time instead of
+dnl    configure-time.  This also required adding TOPDIR as a variable
+dnl    substitution and replacing some references to "pwd" to use TOPDIR.
+dnl
+dnl    Brad Whitlock, Fri May 2 15:06:12 PST 2003
+dnl    I added libproxybase and the new launcher component.
+dnl
+dnl --------------------------------------------------------------------------
+
+dnl
+dnl Configuration header stuff...
+dnl
+AC_REVISION($Id$)dnl
+AC_INIT(Makefile.in)
+AC_CONFIG_HEADER(include/visit-config.h)
+AC_CONFIG_AUX_DIR(./bin)
+
+dnl The builtin `pwd' command fails with `bad file unit number' from the
+dnl shell on some systems, so try to use `/bin/pwd' instead.
+dnl
+if test -x /bin/pwd; then
+   pwd=/bin/pwd
+else
+   pwd=pwd
+fi
+TOPDIR=`$pwd`
+AC_SUBST(TOPDIR)
+
+### Init the tflops_override variable.
+tflops_override=no
+
+###     Derive the OS type, as a check for reusing the autoconf cache
+OS_type="`(uname -s -r) 2>/dev/null`"
+if test -z "$OS_type" ; then
+    OS_type="`(hostname) 2>/dev/null`"
+fi
+AC_CACHE_VAL(vc_cv_os_type,[vc_cv_os_type="$OS_type"])
+test -z "$OS_type" && OS_type="$vc_cv_os_type"
+test -n "$vc_cv_os_type" && AC_MSG_RESULT("Configuring for $vc_cv_os_type")
+
+if test ".$OS_type" != ".$vc_cv_os_type" ; then
+    AC_MSG_RESULT("The cached Operating System does not agree with this OS type.")
+    AC_ERROR("Please run \"make distclean\" and try again.")
+fi
+
+# Grab the version number
+AC_MSG_CHECKING(what version the package is)
+VERSION=`cat VERSION`
+AC_DEFINE_UNQUOTED(VERSION,"$VERSION")
+AC_MSG_RESULT($VERSION)
+
+# Set the slash characters used in filenames.
+AC_DEFINE_UNQUOTED(SLASH_CHAR,'/')
+AC_DEFINE_UNQUOTED(SLASH_STRING,"/")
+
+# Load the OS configuration file if present.
+AC_MSG_CHECKING(for OS configuration file)
+site_conf=config-site/`uname`.conf
+if test -r $site_conf; then
+    AC_MSG_RESULT($site_conf)
+    . $site_conf
+else
+    AC_MSG_RESULT(none found)
+fi
+
+# Load the site configuration file if present.
+# Also check for hostnames where the first field is a node name.
+AC_MSG_CHECKING(for site configuration file)
+site_conf=config-site/`hostname`.conf
+if test -r $site_conf; then
+   AC_MSG_RESULT($site_conf)
+   . $site_conf
+else
+   site_conf=config-site/`hostname | cut -f2- -d.`.conf
+   if test -r $site_conf; then
+      AC_MSG_RESULT($site_conf)
+      . $site_conf
+   else
+      AC_MSG_RESULT(none found)
+   fi
+fi
+
+# If the user has a ~/.visit/default.conf file, load that
+AC_MSG_CHECKING([for user configuration file $HOME/.visit/default.conf])
+if test -r "$HOME/.visit/default.conf"; then
+   AC_MSG_RESULT(found)
+   . $HOME/.visit/default.conf
+else
+   AC_MSG_RESULT([none found])
+fi
+
+# Load any user-specified configuration file
+AC_MSG_CHECKING([for user-specified configuration file])
+AC_ARG_WITH(config,
+            [  --with-config=file      Specify a configuration file to execute],
+            user_conf=$withval,
+            user_conf="none")
+if test "$user_conf" = "yes" -o "$user_conf" = ""; then
+    AC_MSG_ERROR([You must specify a file when using --with-config=file])
+fi
+if test "$user_conf" != "none"; then
+   AC_MSG_RESULT($user_conf)
+   . $user_conf
+else
+   AC_MSG_RESULT([none specified])
+fi
+
+#
+# Check for platform specific flags.
+#
+AC_SUBST(PLATFORM_CPPFLAGS)
+
+#
+# Check to see if the parallel version is enabled.
+#
+AC_ARG_ENABLE(parallel,
+   [  --enable-parallel       make the parallel version],
+   UseParallel=$enableval, UseParallel=no)
+
+AC_MSG_CHECKING(for parallel features)
+if test "$UseParallel" = "yes"; then
+   AC_MSG_RESULT(enabled)
+   PARALLEL="parallel"
+   PARALLEL_CPPFLAGS="-DPARALLEL"
+   LIBSTATICPAR="$""(LIBSTATICPAR)"
+   LIBSHAREDPAR="$""(LIBSHAREDPAR)"
+   LIBSHAREDPAR_UPDATEONLY="libsharedpar_updateonly"
+
+   if test "`uname 2>/dev/null`" != "AIX"; then
+       if (test -z "$MPI_LIBS") then
+           MPI_LIBS="-lmpi"
+       fi
+   fi
+
+   # Check if the user has specified a C compiler for MPI
+   if test -n "$MPI_CC"; then
+       MPI_CC="CC=$MPI_CC"
+   fi
+
+   # Check if the user has specified a C++ compiler for MPI
+   if test -n "$MPI_CXX"; then
+       MPI_CXX="CXX=$MPI_CXX"
+   fi
+else
+   AC_MSG_RESULT(disabled)
+   PARALLEL=""
+   PARALLEL_CPPFLAGS=""
+   MPI_LIBS=""
+   SHLIB_MPI_LIBS=""
+   MPI_CC=""
+   MPI_CXX=""
+   LIBSTATICPAR=""
+   LIBSHAREDPAR=""
+   LIBSHAREDTEMPPAR=""
+fi
+AC_SUBST(PARALLEL)
+AC_SUBST(PARALLEL_CPPFLAGS)
+AC_SUBST(MPI_LIBS)
+AC_SUBST(MPI_CC)
+AC_SUBST(MPI_CXX)
+AC_SUBST(LIBSTATICPAR)
+AC_SUBST(LIBSHAREDPAR)
+AC_SUBST(LIBSHAREDPAR_UPDATEONLY)
+
+#
+# Set up some Mesa variables.
+#
+AC_MSG_CHECKING(for Mesa)
+if test -n "$MESA"; then
+   AC_MSG_RESULT(found)
+   MESA_DIR=$MESA
+   MESA_INCLUDE="-I$""(TOPDIR)/include/mesa"
+   MESA_LIBS="-lOSMesa -lMesaGL"
+else
+   AC_MSG_RESULT(not found)
+   MESA_DIR=""
+   MESA_INCLUDE=""
+   MESA_LIBS=""
+fi
+AC_SUBST(MESA_DIR)
+AC_SUBST(MESA_INCLUDE)
+AC_SUBST(MESA_LIBS)
+
+#
+# The check for OGL can be disabled with `--disable-ogl'.
+#
+AC_ARG_ENABLE(ogl,
+   [  --disable-ogl           do not check for the SGI ogl library],
+   UseOGL="$enable_ogl", UseOGL=yes)
+
+#
+# Try to find the OGL libraries
+#
+GL_LIBS=""
+if test "$UseOGL" = "yes"; then
+    AC_CHECK_LIB(GL, main,   GL_LIBS="-lGL")
+fi
+
+#
+# Set up some VTK variables.
+#
+AC_MSG_CHECKING(for VTK)
+if test -n "$VTK"; then
+    AC_MSG_RESULT(found)
+    VTK_DIR=$VTK
+    VTK_INCROOT="$""(TOPDIR)/include/vtk"
+    VTK_INCLUDES="-I$VTK_INCROOT -I$VTK_INCROOT/Common -I$VTK_INCROOT/Filtering -I$VTK_INCROOT/Graphics -I$VTK_INCROOT/Hybrid -I$VTK_INCROOT/IO -I$VTK_INCROOT/Imaging -I$VTK_INCROOT/Rendering"
+    VTK_LIBS="-lvtkCommon -lvtkFiltering -lvtkGraphics -lvtkHybrid -lvtkIO -lvtkImaging -lvtkRendering -lvtkzlib -lvtkexpat -lvtkjpeg -lvtkpng -lvtktiff -lvtkftgl -lvtkfreetype $GL_LIBS $MESA_LIBS"
+else
+    AC_MSG_RESULT(not found)
+    VTK_DIR=""
+    VTK_INCLUDES=""
+    VTK_LIBS=""
+fi
+AC_SUBST(VTK_DIR)
+AC_SUBST(VTK_INCLUDES)
+AC_SUBST(VTK_LIBS)
+
+#
+# Check for the common directory
+#
+AC_MSG_CHECKING(for common)
+if test -d common; then
+    AC_MSG_RESULT(found)
+    COMMON="common"
+else
+    AC_MSG_RESULT(not found)
+    COMMON=""
+fi
+
+#
+# Check for the avtprep directory
+#
+AC_MSG_CHECKING(for avtprep)
+if test -d tools/avtprep; then
+    AC_MSG_RESULT(found)
+    AVTPREP_SER="$""(tmpbin)/avtprep_ser"
+    if test -n "$PARALLEL"; then
+        AVTPREP_PAR="$""(tmpbin)/avtprep_par"
+    else
+        AVTPREP_PAR=""
+    fi
+else
+    AC_MSG_RESULT(not found)
+    AVTPREP_SER=""
+    AVTPREP_PAR=""
+fi
+AC_SUBST(AVTPREP_SER)
+AC_SUBST(AVTPREP_PAR)
+
+#
+# Check for the engine directory
+#
+AC_MSG_CHECKING(for engine)
+if test -d engine; then
+    AC_MSG_RESULT(found)
+    ENGINE="engine"
+    ENGINE_SER="$""(tmpbin)/engine_ser"
+    ENGINELIBSER="$""(ESERDSO)"
+    if test -n "$PARALLEL"; then
+        ENGINE_PAR="$""(tmpbin)/engine_par"
+        ENGINELIBPAR="$""(EPARDSO)"
+    else
+        ENGINE_PAR=""
+        ENGINELIBPAR=""
+    fi
+    if test -z "$VTK"; then
+        AC_MSG_ERROR([engine is here, but no VTK library was specified. 
+The engine cannot be built without VTK.  Make sure the VTK environment variable
+is set and rerun 'configure'.])
+    fi
+else
+    AC_MSG_RESULT(not found)
+    ENGINE_SER=""
+    ENGINE_PAR=""
+    ENGINELIBSER=""
+    ENGINELIBPAR=""
+fi
+AC_SUBST(ENGINE_SER)
+AC_SUBST(ENGINE_PAR)
+AC_SUBST(ENGINELIBSER)
+AC_SUBST(ENGINELIBPAR)
+
+#
+# Check to see if the mdserver was enabled.
+#
+AC_MSG_CHECKING(if mdserver is enabled)
+AC_ARG_ENABLE(mdserver,
+              [  --disable-mdserver      build without mdserver],
+              UseMDSERVER="$enable_mdserver", UseMDSERVER=yes)
+if test "$UseMDSERVER" = "yes"; then
+    AC_MSG_RESULT(yes)
+
+    dnl
+    dnl Check for the mdserver directory
+    dnl
+    AC_MSG_CHECKING(for mdserver)
+    if test -d mdserver; then
+        AC_MSG_RESULT(found)
+        METADATA_SERVER="mdserver"
+        MDSERVERLIB="$""(MDSO)"
+        MDSERVEROBJ="$""(MOBJ)"
+    else
+        AC_MSG_RESULT(not found)
+        METADATA_SERVER=""
+    fi
+else
+    AC_MSG_RESULT(no)
+    METADATA_SERVER=""
+fi
+AC_SUBST(METADATA_SERVER)
+AC_SUBST(MDSERVERLIB)
+AC_SUBST(MDSERVEROBJ)
+
+#
+# Check to see if scripting features are enabled.
+#
+AC_MSG_CHECKING(if scripting features are enabled)
+AC_ARG_ENABLE(scripting,
+              [  --disable-scripting     build without Python scripting capability],
+              UseScripting="$enable_scripting", UseScripting=yes)
+if test "X$UseScripting" = "Xyes"; then
+    AC_MSG_RESULT(yes)
+    enable_scripting=yes
+
+    VISITPY="visitpy"
+    SCRIPTINGLIB="$""(SDSO)"
+    SCRIPTINGOBJ="$""(SOBJ)"
+else
+    AC_MSG_RESULT(no)
+    enable_scripting=no
+
+    VISITPY=""
+    SCRIPTINGLIB=""
+    SCRIPTINGOBJ=""
+fi
+AC_SUBST(VISITPY)
+AC_SUBST(SCRIPTINGLIB)
+AC_SUBST(SCRIPTINGOBJ)
+
+# Check to see if the --disable-gui configure flag was given. If
+# if was then we will use the enable_gui variable later on to see
+# if we should test for X. We will also not build the Gui or the
+# viewer.
+#
+dnl
+AC_MSG_CHECKING(if GUI features are enabled)
+AC_ARG_ENABLE(gui,
+              [  --disable-gui           build without gui],
+              UseGUI="$enable_gui", UseGUI=yes)
+if test "$UseGUI" = "yes"; then
+    AC_MSG_RESULT(yes)
+    enable_gui=yes
+
+    dnl
+    dnl Check for the viewer directory
+    dnl
+    AC_MSG_CHECKING(for viewer)
+    if test -d viewer; then
+        AC_MSG_RESULT(found)
+        VIEWER="viewer"
+        VISWINDOW="VisWindow"
+        VIEWERLIB="$""(VDSO)"
+        VIEWEROBJ="$""(VOBJ)"
+        if test -z "$VTK"; then
+            AC_MSG_ERROR([viewer is here, but no VTK library was specified. 
+The viewer cannot be built without VTK.  Make sure the VTK environment variable
+is set and rerun 'configure'.])
+        fi
+    else
+        AC_MSG_RESULT(not found)
+        VIEWER=""
+        VISWINDOW=""
+    fi
+
+    dnl
+    dnl Gui checking is enabled, look for the gui directory.
+    dnl
+    AC_MSG_CHECKING(for gui)
+    if test -d gui; then
+        AC_MSG_RESULT(found)
+        GUI="gui"
+        GUILIB="$""(GDSO)"
+        GUIOBJ="$""(GOBJ)"
+        if test -z "$METADATA_SERVER"; then
+            AC_MSG_ERROR([gui is here, but the metadata server is not.
+The gui will not run without the metadata server. Check to see that the
+mdserver directory exists and rerun 'configure'.])
+        fi
+    else
+        AC_MSG_RESULT(not found)
+        GUI=""
+        GUIOBJ=""
+    fi
+
+    ENGINEPROXYDIR="proxy"
+else
+    AC_MSG_RESULT(no)
+    enable_gui=no
+    ENGINEPROXYDIR=""
+fi
+AC_SUBST(GUI)
+AC_SUBST(GUILIB)
+AC_SUBST(GUIOBJ)
+AC_SUBST(VIEWER)
+AC_SUBST(VISWINDOW)
+AC_SUBST(VIEWERLIB)
+AC_SUBST(VIEWEROBJ)
+AC_SUBST(ENGINEPROXYDIR)
+
+#
+# Check to see if the splash screen was enabled.
+#
+AC_MSG_CHECKING(if splash screen is enabled)
+AC_ARG_ENABLE(splashscreen,
+              [  --disable-splashscreen  build without splashscreen],
+              UseSplashScreen="$enable_splashscreen", UseSplashScreen=yes)
+if test "$UseSplashScreen" = "yes" && test "$enable_gui" = "yes"; then
+    AC_MSG_RESULT(yes)
+    enable_splashscreen=yes
+    SPLASHSCREEN="splashscreen"
+    SPLASHLIBS="-lsplashproxy -lsplashrpc"
+    AC_DEFINE(SPLASHSCREEN)
+else
+    AC_MSG_RESULT(no)
+    enable_splashscreen=no
+    SPLASHSCREEN=""
+    SPLASHLIBS=""
+fi
+AC_SUBST(SPLASHSCREEN)
+AC_SUBST(SPLASHLIBS)
+
+#
+# Check to see if we should disable annotations.
+#
+AC_ARG_ENABLE(annotations,
+              [  --disable-annotations   build without annotations],
+              UseAnnotations="$enable_annotations", UseAnnotations=yes)
+if test "$UseAnnotations" = "no"; then
+    ANNOTATION_FLAGS="$ANNOTATION_FLAGS -DNO_ANNOTATIONS"
+fi
+AC_SUBST(ANNOTATION_FLAGS)
+
+#
+# Check to see if the java client is enabled.
+#
+AC_ARG_ENABLE(java,
+   [  --enable-java           build the Java client library],
+   UseJava=$enableval, UseJava=no)
+
+AC_MSG_CHECKING(if Java client is enabled)
+if test "$UseJava" = "yes"; then
+    AC_MSG_RESULT(yes)
+ 
+    # Somehow check that Java is at least Java 2 v1.4.0
+
+    JAVAC="javac"
+    JAVA_TARGET="java"
+    JAR="jar"
+    JAVAFLAGS=""
+    JAVAPLUGINFLAGS=""
+else
+    AC_MSG_RESULT(no)
+    JAVAC=""
+    JAVA_TARGET=""
+    JAR=""
+    JAVAFLAGS=""
+    JAVAPLUGINFLAGS=""
+fi
+AC_SUBST(JAVAC)
+AC_SUBST(JAVA_TARGET)
+AC_SUBST(JAR)
+AC_SUBST(JAVAFLAGS)
+AC_SUBST(JAVAPLUGINFLAGS)
+
+#
+# Check to see if we should build all of the plugins.
+#
+AC_ARG_ENABLE(buildall,
+  [  --enable-buildall       build all plugins],
+  buildall="all", buildall=base)
+
+AC_MSG_CHECKING([which plot plugins to build])
+AC_ARG_WITH(plots,
+            [  --with-plots=all,base   What plot plugins to build (overrides --enable-buildall)],
+            ,
+            withval=$buildall)
+case $withval in
+    all)
+        PLOT_OPTIONAL_DIRS="$""(OPTIONAL)"
+        AC_MSG_RESULT([all])
+        ;;
+    base)
+        PLOT_OPTIONAL_DIRS=""
+        AC_MSG_RESULT([base only])
+        ;;
+    *)
+        AC_MSG_ERROR([Please specify one of "all" or "base" for --with-plots.])
+        PLOT_OPTIONAL_DIRS="error"
+esac
+AC_SUBST(PLOT_OPTIONAL_DIRS)
+
+AC_MSG_CHECKING([which operator plugins to build])
+AC_ARG_WITH(operators,
+            [  --with-operators=all,base What operator plugins to build (overrides --enable-buildall)],
+            ,
+            withval=$buildall)
+case $withval in
+    all)
+        OPERATOR_OPTIONAL_DIRS="$""(OPTIONAL)"
+        AC_MSG_RESULT([all])
+        ;;
+    base)
+        OPERATOR_OPTIONAL_DIRS=""
+        AC_MSG_RESULT([base only])
+        ;;
+    *)
+        AC_MSG_ERROR([Please specify one of "all" or "base" for --with-operators.])
+esac
+AC_SUBST(OPERATOR_OPTIONAL_DIRS)
+
+AC_MSG_CHECKING([which database plugins to build])
+AC_ARG_WITH(dbs,
+            [  --with-dbs=all,base     What database plugins to build (overrides --enable-buildall)],
+            ,
+            withval=$buildall)
+case $withval in
+    all)
+        DB_OPTIONAL_DIRS="$""(OPTIONAL)"
+        AC_MSG_RESULT([all])
+        ;;
+    base)
+        DB_OPTIONAL_DIRS=""
+        AC_MSG_RESULT([base only])
+        ;;
+    *)
+        AC_MSG_ERROR([Please specify one of "all" or "base" for --with-dbs.])
+esac
+AC_SUBST(DB_OPTIONAL_DIRS)
+
+# Check for programs.
+# We shouldn't depend on too many!
+AC_PROG_CXX
+AC_PROG_CXXCPP
+AC_PROG_CC
+AC_PROG_CPP
+
+# Keep checking for programs.
+AC_PROG_MAKE_SET
+AC_PROG_RANLIB
+AC_CHECK_PROG(MAKEDEPEND,makedepend,makedepend)
+AC_ISC_POSIX
+
+# Check to see if we're running clearmake.
+# If we are, set the build verbosity to 0 so that output won't mess up the rest
+# of "configure".
+AC_MSG_CHECKING(for clearmake)
+if test "`${MAKE-make} -version 2>/dev/null | cut -d' ' -f1`" = "clearmake"; then
+    AC_MSG_RESULT(yes)
+    CLEARCASE_BLD_VERBOSITY=0; export CLEARCASE_BLD_VERBOSITY
+else
+    AC_MSG_RESULT(no)
+fi
+# Set the compilation rule to include the OS, so that clearmake won't wink
+# in object files across OSes.
+#
+# Note that the first character in the OS_RULE is a tab.  Don't change this 
+# to spaces; it's used in the Makefiles.
+OS_RULE="	: $OS_type"
+AC_SUBST(OS_RULE)
+
+dnl We always use the install-sh script, so don't uncomment the following line.
+dnl AC_PROG_INSTALL
+
+#
+# Check for C++ specific features.
+#
+AC_LANG_CPLUSPLUS
+
+dnl Check for bool type.
+AC_MSG_CHECKING(C++ for bool)
+AC_TRY_COMPILE(, bool t=true;bool f=false, AC_MSG_RESULT(yes),
+  AC_MSG_RESULT(no)
+  CPPFLAGS=$CPPFLAGS" -Dbool=int -Dtrue=1 -Dfalse=0"
+  AC_SUBST(CPPFLAGS))
+
+dnl Check for exceptions
+AC_MSG_CHECKING(C++ for exceptions)
+AC_TRY_COMPILE(, try{int a = 5;}catch(...){int b=2;}, AC_MSG_RESULT(yes)
+  HAVE_EXCEPTIONS="yes",
+  AC_MSG_RESULT(no)
+  HAVE_EXCEPTIONS="false")
+
+dnl Check for the prototype for ftime in "sys/timeb.h".
+AC_MSG_CHECKING(for prototype for ftime)
+AC_TRY_COMPILE([#include <sys/time.h>
+                #include <sys/timeb.h>],
+               [struct timeb *tp; ftime(tp)],
+               AC_MSG_RESULT(yes)
+               AC_DEFINE(HAVE_FTIME_PROTOTYPE),
+               AC_MSG_RESULT(no))
+               
+dnl Check for setbuf in streambuf
+AC_MSG_CHECKING(for setbuf)
+AC_TRY_COMPILE([#include <fstream.h>],
+                [fstream out("/dev/null",ios::out); out.rdbuf()->setbuf((char*)0,0);],
+                AC_MSG_RESULT(yes),
+                AC_MSG_RESULT(no)
+                AC_DEFINE(NO_SETBUF))
+
+dnl Check for ios::noreplace
+AC_MSG_CHECKING(for ios::noreplace)
+AC_TRY_COMPILE([#include <fstream.h>],
+               [ofstream f("dummy",ios::out|ios::noreplace);],
+               AC_MSG_RESULT(yes)
+               AC_DEFINE(HAVE_IOS_NOREPLACE),
+               AC_MSG_RESULT(no))
+               
+AC_LANG_C
+
+
+#
+# Check for use of PTYs
+#
+AC_MSG_CHECKING(whether to use PTYs)
+AC_ARG_WITH(pty,
+	[  --without-pty           Disable PTY use],
+        USE_PTY=$withval,
+        USE_PTY="yes")
+AC_MSG_RESULT($USE_PTY)
+
+if test "$USE_PTY" = "yes"; then
+    AC_DEFINE(USE_PTY)
+
+    # Check for SYSV versus BSD style pseudo-ttys
+    AC_MSG_CHECKING(for SYSV vs BSD style ptys)
+    if test "`uname 2>/dev/null`" = "Linux" || test "`uname 2>/dev/null`" = "AIX"; then
+        AC_MSG_RESULT(BSD)
+    else
+        AC_TRY_LINK([#include <stdlib.h>], grantpt(0),
+            AC_MSG_RESULT(SYSV)
+            AC_DEFINE(PTY_SYSV),
+            AC_MSG_RESULT(BSD))
+    fi
+
+fi
+
+#
+# We only need to check for -ldl if we're on SunOS or linux.
+#
+AC_MSG_CHECKING(for Linux and -ldl)
+if test "`uname 2>/dev/null`" = "Linux" || test "`uname 2>/dev/null`" = "SunOS"; then
+    AC_CHECK_LIB(dl, main,   LIBS="-ldl $LIBS")
+else
+    AC_MSG_RESULT(no)
+fi
+
+#
+# We need to check for the networking libraries on SunOS
+#
+AC_MSG_CHECKING(for SunOS and -lnsl)
+if test "`uname 2>/dev/null`" = "SunOS"; then
+    AC_CHECK_LIB(nsl, main,   LIBS="-lnsl $LIBS")
+else
+    AC_MSG_RESULT(no)
+fi
+AC_MSG_CHECKING(for SunOS and -lsocket)
+if test "`uname 2>/dev/null`" = "SunOS"; then
+    AC_CHECK_LIB(socket, main,   LIBS="-lsocket $LIBS")
+else
+    AC_MSG_RESULT(no)
+fi
+AC_MSG_CHECKING(for SunOS and -lresolv)
+if test "`uname 2>/dev/null`" = "SunOS"; then
+    AC_CHECK_LIB(resolv, main,   LIBS="-lresolv $LIBS")
+else
+    AC_MSG_RESULT(no)
+fi
+
+#
+# Check if socklen_t is a type.
+#
+AC_MSG_CHECKING(for socklen_t)
+AC_TRY_COMPILE([#include <sys/types.h>
+                #include <sys/socket.h>],
+               [socklen_t dummy;],
+               AC_MSG_RESULT(yes)
+               AC_DEFINE(HAVE_SOCKLEN_T),
+               AC_MSG_RESULT(no))
+
+
+#
+# Check for non-graphics libraries in the reverse order that they
+# are needed.  The libraries are added to the beginning of `LIBS'.
+#
+AC_CHECK_LIB(m,        main,      LIBS="-lm $LIBS")
+
+dnl  Is zlib present?
+dnl
+dnl  It's required if hdf5 was compiled with deflate support. Normally check
+dnl  for zlib.h and libz.a but skip the test if `--without-zlib' is specified.
+dnl  Alternate directories can be specified for the header and library by
+dnl  giving names like this `--with-zlib=INC,LIB' (if only the LIB directory
+dnl  is supplied then it must still be preceded by a comma).
+dnl
+
+saved_CPPFLAGS="$CPPFLAGS"
+saved_CFLAGS="$CFLAGS"
+saved_LDFLAGS="$LDFLAGS"
+saved_LIBS="$LIBS"
+
+AC_ARG_WITH(zlib,[  --with-zlib=INC,LIB     Use the GNU zlib compression],
+            ,withval=yes)
+case $withval in
+    yes)
+	#
+	# Header
+	#
+
+        AC_CHECK_HEADERS(zlib.h)
+        AC_CHECK_LIB(z, compress2,
+				   ZLIB_LIB="-lz $ZLIB_LIB"
+				   AC_DEFINE(HAVE_LIBZ)
+		    )
+        ;;
+    no)
+        AC_MSG_CHECKING(for GNU zlib)
+        AC_MSG_RESULT(suppressed)
+        ;;
+    *)
+	#
+	# Header
+	#
+
+        zlib_inc="`echo $withval |cut -f1 -d,`"
+        if test "X" != "$zlib_inc"; then
+            CPPFLAGS="$CPPFLAGS -I$zlib_inc"
+	    AC_CHECK_HEADERS(zlib.h,ZLIB_INCLUDE="-I$zlib_inc $ZLIB_INCLUDE")
+	    CPPFLAGS="$saved_CPPFLAGS"
+        else
+            AC_CHECK_HEADERS(zlib.h)
+        fi
+
+        zlib_lib="`echo $withval |cut -f2 -d, -s`"
+        if test "X" != "$zlb_lib"; then
+	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE"
+            LDFLAGS="$LDFLAGS -L$zlib_lib"
+	    AC_CHECK_LIB(z, compress2,
+				       ZLIB_LIB="-L$zlib_lib -lz $ZLIB_LIB"
+				       AC_DEFINE(HAVE_LIBZ)
+			)
+	    LIBS="$saved_LIBS"
+	    LDFLAGS="$saved_LDFLAGS"
+	    CPPFLAGS="$saved_CPPFLAGS"
+        else
+	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE"
+            AC_CHECK_LIB(z, compress2,
+				       ZLIB_LIB="-lz $ZLIB_LIB"
+				       AC_DEFINE(HAVE_LIBZ)
+		        )
+	    LIBS="$saved_LIBS"
+	    CPPFLAGS="$saved_CPPFLAGS"
+        fi
+        ;;
+esac
+AC_SUBST(ZLIB_INCLUDE)
+AC_SUBST(ZLIB_LIB)
+
+dnl
+dnl  Is HDF5 present?
+dnl
+dnl  It's needed for the SAF driver. Normally check for hdf5.h and libhdf5.a but
+dnl  skip the test if `--without-hdf5' is specified. Alternate directories can
+dnl  be specified for hdf5.h and/or libhdf5.a by giving the names like this:
+dnl  `--with-hdf5=INC,LIB' (if only the LIB directory is given then it must
+dnl  still be preceded by a comma).
+dnl
+dnl  Note that testing for HDF5 may require the use of ZLIB.
+dnl
+
+saved_CPPFLAGS="$CPPFLAGS"
+saved_CFLAGS="$CFLAGS"
+saved_LDFLAGS="$LDFLAGS"
+saved_LIBS="$LIBS"
+
+AC_MSG_CHECKING(for HDF5)
+HDF5=""
+HDF5_INCLUDE=""
+HDF5_LIB=""
+AC_ARG_WITH(hdf5,
+	    [  --with-hdf5=INC,LIB     Location of HDF5 header and library],
+           hdf5_specified="yes",
+           hdf5_specified="no"
+           )
+if test "$hdf5_specified" = "yes"; then
+   if test "$withval" != "no"; then
+      HDF5_INCLUDE="`echo $withval |cut -f1 -d,`"
+      HDF5_LIB="`echo $withval |cut -f2 -d, -s`"
+   fi
+else
+   if test "$DEFAULT_HDF5_INCLUDE" != "" ; then
+      HDF5_INCLUDE="-I$DEFAULT_HDF5_INCLUDE $HDF5_INCLUDE"
+   fi
+   if test "$DEFAULT_HDF5_LIB" != "" ; then
+      HDF5_LIB="-L$DEFAULT_HDF5_LIB -lhdf5 $HDF5_LIB"
+   fi
+fi
+if test "$HDF5_LIB" != "" ; then
+   if test "$HDF5_INCLUDE" != "" ; then
+      HDF5="$""(HDF5)"
+      AC_MSG_RESULT(yes)
+   else
+      AC_MSG_RESULT(no)
+   fi
+else
+   AC_MSG_RESULT(no)
+fi
+AC_SUBST(HDF5)
+AC_SUBST(HDF5_INCLUDE)
+AC_SUBST(HDF5_LIB)
+
+dnl
+dnl  Are the VBT and DSL libraries present?
+dnl
+dnl  It's needed for the SAF driver. Normally check for dsl.h, vbt.h, libdsl.a,
+dnl  and libvbt.a but skip the test if `--without-vbt' is specified. Alternate
+dnl  directories can be specified for dsl.h, vbt.h and/or libdsl.a, libhdf5.a by
+dnl  giving the names like this: `--with-hdf5=INC,LIB' (note that if only the
+dnl  LIB directory is specified then it must still be preceded by a comma).
+dnl  Both DSL and VBT always come as a pair so it's only necessary to specify
+dnl  the vbt locations.
+dnl
+dnl  Note that testing for VBT/DSL requires the use of HDF and ZLIB.
+dnl
+
+saved_CPPFLAGS="$CPPFLAGS"
+saved_CFLAGS="$CFLAGS"
+saved_LDFLAGS="$LDFLAGS"
+saved_LIBS="$LIBS"
+
+AC_ARG_WITH(vbt,
+	    [  --with-vbt=INC,LIB      Location of VBT/DSL headers and libraries],
+	    ,withval=yes)
+case $withval in
+    yes)
+	#
+	# Header
+	#
+
+	CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE"
+	AC_CHECK_HEADERS(dsl.h)
+	AC_CHECK_HEADERS(vbt.h)
+	CPPFLAGS="$saved_CPPFLAGS"
+
+	#
+	# Library
+	#
+
+	CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE"
+	AC_CHECK_LIB(dsl, DSL_open_file,
+					 VBT_LIB="-ldsl $VBT_LIB"
+					 AC_DEFINE(HAVE_LIBDSL)
+				       ,
+		    , $HDF5_LIB $ZLIB_LIB
+		    )
+	CPPFLAGS="$saved_CPPFLAGS"
+	CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE"
+	AC_CHECK_LIB(vbt, VBT_Open,
+				    VBT_LIB="-lvbt $VBT_LIB"
+				    AC_DEFINE(HAVE_LIBVBT)
+				  ,
+		    , $VBT_LIB $HDF5_LIB $ZLIB_LIB
+		    )
+	CPPFLAGS="$saved_CPPFLAGS"
+	LIBS="$saved_LIBS"
+	;;
+    no)
+	AC_MSG_CHECKING(for vbt/dsl)
+	AC_MSG_RESULT(suppressed)
+	;;
+    *)
+	#
+	# Header
+	#
+
+	vbt_inc="`echo $withval |cut -f1 -d,`"
+	if test "X" != "$vbt_inc"; then
+	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE -I$vbt_inc"
+	    AC_CHECK_HEADERS(dsl.h,found_dsl=true,found_dsl=false)
+	    AC_CHECK_HEADERS(vbt.h,found_vbt=true,found_vbt=false)
+	    if test $found_dsl = true; then
+		if test $found_dsl = true; then
+		    VBT_INCLUDE="-I$vbt_inc $VBT_INCLUDE"
+		fi
+	    fi
+	    CPPFLAGS="$saved_CPPFLAGS"
+	else
+	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE"
+	    AC_CHECK_HEADERS(dsl.h)
+	    AC_CHECK_HEADERS(vbt.h)
+	    CPPFLAGS="$saved_CPPFLAGS"
+	fi
+
+	#
+	# Library
+	#
+
+	vbt_lib="`echo $withval |cut -f2 -d, -s`"
+	if test "X" != "$vbt_lib"; then
+	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE $VBT_INCLUDE"
+	    LDFLAGS="$LDFLAGS -L$vbt_lib"
+	    AC_CHECK_LIB(dsl,DSL_open_file,found_dsl=true,found_dsl=false,$HDF5_LIB $ZLIB_LIB)
+	    if test $found_dsl = true; then
+	       VBT_TMP_LIB="-ldsl"
+	    fi
+	    LIBS="$saved_LIBS"
+	    LDFLAGS="$saved_LDFLAGS"
+	    CPPFLAGS="$saved_CPPFLAGS"
+
+	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE $VBT_INCLUDE"
+	    LDFLAGS="$LDFLAGS -L$vbt_lib"
+	    AC_CHECK_LIB(vbt,VBT_Open,found_vbt=true,found_vbt=false,$VBT_TMP_LIB $HDF5_LIB $ZLIB_LIB)
+	    LIBS="$saved_LIBS"
+	    LDFLAGS="$saved_LDFLAGS"
+	    CPPFLAGS="$saved_CPPFLAGS"
+	    if test $found_vbt = true; then
+		AC_DEFINE(HAVE_LIBVBT)
+		if test $found_dsl = true; then
+		    VBT_LIB="-L$vbt_lib -lvbt -ldsl"
+		    AC_DEFINE(HAVE_LIBDSL)
+		else
+		    VBT_LIB="-L$vbt_lib -lvbt"
+		fi
+	    else
+		if test $found_dsl = true; then
+		    VBT_LIB="-L$vbt_lib -ldsl"
+		    AC_DEFINE(HAVE_LIBDSL)
+		else
+		    VBT_LIB=""
+		fi
+	    fi
+	else
+	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE $VBT_INCLUDE"
+	    AC_CHECK_LIB(dsl,DSL_open_file,found_dsl=true,$HDF5_LIB $ZLIB_LIB)
+	    CPPFLAGS="$saved_CPPFLAGS"
+	    LIBS="$saved_LIBS"
+	    if test $found_dsl = true; then
+		VBT_LIB="-ldsl $VBT_LIB"
+		AC_DEFINE(HAVE_LIBDSL)
+	    fi
+	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE $VBT_INCLUDE"
+	    AC_CHECK_LIB(vbt,VBT_Open,found_vbt=true,,$VBT_LIB $HDF5_LIB $ZLIB_LIB)
+	    if test $found_vbt = true; then
+		VBT_LIB="-lvbt $VBT_LIB"
+		AC_DEFINE(HAVE_LIBVBT)
+	    fi
+	    CPPFLAGS="$saved_CPPFLAGS"
+	    LIBS="$saved_LIBS"
+	fi
+	;;
+esac
+AC_SUBST(VBT_INCLUDE)
+AC_SUBST(VBT_LIB)
+
+dnl
+dnl  Is the SAF library present?
+dnl
+dnl  It's needed for the SAF driver. Normally check for saf.h and libsafapi.a
+dnl  but skip the test if `--without-saf' is specified. Alternate directories
+dnl  can be specified for saf.h and/or libsafapi.a by giving the names like
+dnl  this: `--with-saf=INC,LIB' (note that if only the LIB directory is
+dnl  specified then it must still be preceded by a comma).
+dnl
+dnl  Note that testing for SAF requires the use of VBT/DSL, HDF, and ZLIB.
+dnl
+
+saved_CPPFLAGS="$CPPFLAGS"
+saved_CFLAGS="$CFLAGS"
+saved_LDFLAGS="$LDFLAGS"
+saved_LIBS="$LIBS"
+
+SAF=""
+AC_ARG_WITH(saf,
+	    [  --with-saf=INC,LIB      Location of SAF headers and libraries],
+	    ,withval=yes)
+case $withval in
+    yes)
+	#
+	# Header
+	#
+
+	CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE $VBT_INCLUDE"
+	AC_CHECK_HEADERS(saf.h)
+	CPPFLAGS="$saved_CPPFLAGS"
+
+	#
+	# Library
+	#
+
+	CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE $VBT_INCLUDE"
+	AC_CHECK_LIB(safapi, saf_open_database,
+						SAF_LIB="-lsafapi $SAF_LIB"
+                                                SAF="$""(SAF)"
+					      ,
+		    ,$VBT_LIB $HDF5_LIB $ZLIB_LIB
+		    )
+	LIBS="$saved_LIBS"
+	CPPFLAGS="$saved_CPPFLAGS"
+	;;
+    no)
+	AC_MSG_CHECKING(for safapi)
+	AC_MSG_RESULT(suppressed)
+	;;
+    *)
+	#
+	# Header
+	#
+
+	saf_inc="`echo $withval |cut -f1 -d,`"
+	if test "X" != "$saf_inc"; then
+	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE $VBT_INCLUDE -I$saf_inc"
+	    AC_CHECK_HEADERS(saf.h,SAF_INCLUDE="-I$saf_inc $SAF_INCLUDE")
+	    CPPFLAGS="$saved_CPPFLAGS"
+	else
+	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE $VBT_INCLUDE"
+	    AC_CHECK_HEADERS(saf.h)
+	    CPPFLAGS="$saved_CPPFLAGS"
+	fi
+
+	#
+	# Library
+	#
+
+	saf_lib="`echo $withval |cut -f2 -d, -s`"
+	if test "X" != "$saf_lib"; then
+	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE $VBT_INCLUDE $SAF_INCLUDE"
+	    LDFLAGS="-L$saf_lib $LDFLAGS"
+	    AC_CHECK_LIB(safapi, saf_open_database,
+						    SAF_LIB="-L$saf_lib -lsafapi $SAF_LIB"
+                                                    SAF="$""(SAF)"
+						  ,
+			,$VBT_LIB $HDF5_LIB $ZLIB_LIB
+			)
+	    LIBS="$saved_LIBS"
+	    LDFLAGS="$saved_LDFLAGS"
+	    CPPFLAGS="$saved_CPPFLAGS"
+	else
+	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE $HDF5_INCLUDE $VBT_INCLUDE $SAF_INCLUDE"
+	    AC_CHECK_LIB(safapi, saf_open_database,
+						    SAF_LIB="-lsafapi $SAF_LIB"
+                                                    SAF="$""(SAF)"
+						  ,
+			,$VBT_LIB $HDF5_LIB $ZLIB_LIB
+			)
+	    LIBS="$saved_LIBS"
+	    LDFLAGS="$saved_LDFLAGS"
+	    CPPFLAGS="$saved_CPPFLAGS"
+	fi
+	;;
+esac
+AC_SUBST(SAF)
+AC_SUBST(SAF_INCLUDE)
+AC_SUBST(SAF_LIB)
+
+dnl
+#
+# Check for the public SILO includes since that's what we'll use.
+#
+AC_ARG_WITH(silo_include,
+	[  --with-silo_include     User-specified SILO include directory],
+	silo_include=$withval,
+	silo_include="")
+AC_MSG_CHECKING(for SILO include files)
+if test -n "$silo_include"; then
+    SILO_INCLUDE="-I`echo $silo_include|sed 's/ 	*/ -I/g'`"
+    AC_MSG_RESULT(user specified ("$SILO_INCLUDE"))
+else
+    dnl
+    dnl Look for the SILO includes. First check to see if the DEFAULT_SILO_INCLUDES
+    dnl environment variable is set. If it is then try to use those SILO includes.
+    dnl
+    silo_keep_checking="yes"
+    if test -n "$DEFAULT_SILO_INCLUDES"; then
+        if test -r "$DEFAULT_SILO_INCLUDES/silo.h"; then
+            SILO_INCLUDE="-I$DEFAULT_SILO_INCLUDES"
+            AC_MSG_RESULT(user specified ("$SILO_INCLUDE"))
+            silo_keep_checking="no"
+        fi
+    fi
+
+    dnl
+    dnl The DEFAULT_SILO_INCLUDES variable was not set or it was not valid.
+    dnl Check for SILO includes in some of the usual places.
+    dnl
+    if test "$silo_keep_checking" = "yes"; then
+        if test -r "/usr/local/apps/include/silo.h"; then
+            SILO_INCLUDE="-I/usr/local/apps/include"
+            AC_MSG_RESULT(using /usr/local/apps/include)
+        elif test -r "/usr/local/meshtv/include/silo.h"; then
+            SILO_INCLUDE="-I/usr/local/meshtv/include"
+            AC_MSG_RESULT(using /usr/local/meshtv/include)
+        elif test -r "/usr/local/apps/meshtv/include/silo.h"; then
+            SILO_INCLUDE="-I/usr/local/apps/meshtv/include"
+            AC_MSG_RESULT(using /usr/local/apps/meshtv/include)
+        else
+            AC_MSG_ERROR([The SILO include files could not be found. Please provide
+    --with-silo-include=directory and rerun 'configure'.])
+        fi
+    fi
+fi
+AC_SUBST(SILO_INCLUDE)
+
+#
+# Check for the public SILO library since that's what we'll use.
+#
+AC_ARG_WITH(silo_library,
+	[  --with-silo_library     User-specified SILO library directory],
+	silo_library=$withval,
+	silo_library="")
+AC_MSG_CHECKING(for SILO library)
+if test -n "$silo_library"; then
+    SILO_LIB="-L`echo $silo_library|sed 's/  */ -L/g'` -lsilo"
+    AC_MSG_RESULT(user specified ("$SILO_LIB"))
+else
+    dnl
+    dnl Look for the SILO library. First chech to see if the DEFAULT_SILO_LIBRARY
+    dnl environment variable is set. If it is then try to use that SILO lib.
+    dnl
+    silo_keep_checking="yes"
+    if test -n "$DEFAULT_SILO_LIBRARY"; then
+        if test -r "$DEFAULT_SILO_LIBRARY/libsilo.a"; then
+            SILO_LIB="-L$DEFAULT_SILO_LIBRARY -lsilo"
+            AC_MSG_RESULT(user specified ("$SILO_LIB"))
+            silo_keep_checking="no"
+        fi
+    fi
+
+    dnl
+    dnl The DEFAULT_SILO_LIBRARY was not set or it was not valid. Check for SILO
+    dnl in some of the usual places.
+    dnl
+    if test "$silo_keep_checking" = "yes"; then
+        if test -r "/usr/local/apps/lib/libsilo.a"; then
+            SILO_LIB="-L/usr/local/apps/lib -lsilo"
+            AC_MSG_RESULT(using /usr/local/apps/lib/libsilo.a)
+        elif test -r "/usr/local/meshtv/lib/libsilo.a"; then
+            SILO_LIB="-L/usr/local/meshtv/lib -lsilo"
+            AC_MSG_RESULT(using /usr/local/meshtv/lib/libsilo.a)
+        elif test -r "/usr/local/apps/meshtv/lib/libsilo.a"; then
+            SILO_LIB="-L/usr/local/apps/meshtv/lib -lsilo"
+            AC_MSG_RESULT(using /usr/local/apps/meshtv/lib/libsilo.a)
+        else
+            AC_MSG_ERROR([The SILO library could not be found. Please provide
+    --with-silo-library=directory and rerun 'configure'.])
+        fi
+    fi
+fi
+AC_SUBST(SILO_LIB)
+
+dnl
+dnl Check for exodus libraries
+dnl
+AC_ARG_WITH(exodus,
+            [  --with-exodus[=<DIR>]           enable Exodus driver],
+            ,
+            withval="unspecified")
+AC_MSG_CHECKING(for Exodus support)
+
+case $withval in
+  no)
+    exodus_enabled="no"
+    ;;
+  yes)
+    exodus_enabled="yes"
+    ;;
+  unspecified)
+    dnl don't do anything yet
+    ;;
+  *)
+    dnl use include and lib directories under where they specified
+    if test -d $withval/inc; then
+        exodus_inc="$withval/inc"
+    else
+        exodus_inc="$withval/include"
+    fi
+    exodus_lib="$withval/lib"
+    ;;
+esac
+
+dnl
+dnl If the VTK exodus reader is not in the distribution then disable
+dnl the exodus reader.
+dnl
+if test ! -d databases/Exodus && test ! -d databases/TimeVaryingExodus; then
+    exodus_enabled=no
+fi
+
+if test "$exodus_enabled" != "no"; then
+    dnl As long as they didn't say "--without-exodus", let them
+    dnl manually specify the include and lib directories
+    AC_ARG_WITH(exodus-include,
+                [  --with-exodus-include[=<DIR>]   specify Exodus include path],
+                exodus_inc=$withval)
+    AC_ARG_WITH(exodus-lib,
+                [  --with-exodus-lib[=<DIR>]       specify Exodus lib path],                    exodus_lib=$withval)
+
+    dnl
+    dnl Allow for it to be set by environment variables.
+    dnl
+    if test -n "$DEFAULT_EXODUS_INCLUDES" && test -z "$exodus_inc" ; then
+        exodus_inc="$DEFAULT_EXODUS_INCLUDES"
+    fi
+    if test -n "$DEFAULT_EXODUS_LIBRARY" && test -z "$exodus_lib" ; then
+        exodus_lib="$DEFAULT_EXODUS_LIBRARY"
+    fi
+    
+    if test -n "$exodus_inc" || test -n "$exodus_lib"; then
+        exodus_enabled="yes"
+    fi
+fi
+
+EXODUS=""
+EXODUS_FLAGS=""
+EXODUS_LIBS=""
+if test "$exodus_enabled" = "yes"; then
+    EXODUS="$""(EXODUS)"
+    EXODUS_FLAGS="$EXODUS_FLAGS -I$exodus_inc"
+    EXODUS_LIBS="-L$exodus_lib -lexoIIv2c -lnetcdf"
+    AC_MSG_RESULT(yes)
+else
+    AC_MSG_RESULT(no)
+fi
+
+AC_SUBST(EXODUS)
+AC_SUBST(EXODUS_LIBS)
+AC_SUBST(EXODUS_FLAGS)
+
+#
+# Look for PDB.
+#
+AC_MSG_CHECKING(for PDB)
+PDB=""
+PDB_FLAGS=""
+PDB_LIBS=""
+AC_ARG_WITH(pdb,
+	    [  --with-pdb=INC,LIB      Location of PDB header and library],
+           pdb_specified="yes",
+           pdb_specified="no"
+           )
+if test "$pdb_specified" = "yes"; then
+   if test "$withval" != "no"; then
+      PDB_FLAGS="-I`echo $withval |cut -f1 -d,`"
+      PDB_LIBS="-L`echo $withval |cut -f2 -d, -s` -lpdb -lscore -lpml"
+   fi
+else
+   if test "$PDB_INCDIR" != "" ; then
+      PDB_FLAGS="-I$PDB_INCDIR $PDB_FLAGS"
+   fi
+   if test "$PDB_LIBDIR" != "" ; then
+      PDB_LIBS="-L$PDB_LIBDIR -lpdb -lscore -lpml $PDB_LIBS"
+   fi
+fi
+if test "$PDB_LIBS" != "" ; then
+   if test "$PDB_FLAGS" != "" ; then
+      PDB="$""(PDB)"
+      AC_MSG_RESULT(yes)
+   else
+      AC_MSG_RESULT(no)
+   fi
+else
+   AC_MSG_RESULT(no)
+fi
+AC_SUBST(PDB)
+AC_SUBST(PDB_FLAGS)
+AC_SUBST(PDB_LIBS)
+
+#
+# Look for Mili.
+#
+AC_MSG_CHECKING(for Mili)
+MILI=""
+MILI_FLAGS=""
+MILI_LIBS=""
+AC_ARG_WITH(mili,
+	    [  --with-mili=DIR      Location of Mili header and library],
+           mili_specified="yes",
+           mili_specified="no"
+           )
+if test "$mili_specified" = "yes"; then
+   if test "$withval" != "no"; then
+      MILI_DIR=`echo $withval | cut -f1 -d`
+      MILI_FLAGS="-I$MILI_DIR"
+      MILI_LIBS="-L$MILI_DIR -lmili -lgahl"
+   fi
+else
+   if test "$MILI_DIR" != "" ; then
+      MILI_FLAGS="-I$MILI_DIR $MILI_FLAGS"
+      MILI_LIBS="-L$MILI_DIR -lmili -lgahl $MILI_LIBS"
+   fi
+fi
+if test "$MILI_LIBS" != "" ; then
+   if test "$MILI_FLAGS" != "" ; then
+      MILI="$""(MILI)"
+      AC_MSG_RESULT(yes)
+   else
+      AC_MSG_RESULT(no)
+   fi
+else
+   AC_MSG_RESULT(no)
+fi
+AC_SUBST(MILI)
+AC_SUBST(MILI_FLAGS)
+AC_SUBST(MILI_LIBS)
+
+#
+# Add Some include paths to the engine's CPPFLAGS.
+#
+ENGINE_CPPFLAGS="$ENGINE_CPPFLAGS $VTK_INCLUDES"
+AC_SUBST(ENGINE_CPPFLAGS)
+
+#
+# Add Some include paths to the SiloObjVtkDB's CPPFLAGS.
+#
+SILOOBJVTK_CPPFLAGS="$SILOOBJVTK_CPPFLAGS $VTK_INCLUDES"
+SILOOBJVTK_CPPFLAGS="$SILOOBJVTK_CPPFLAGS -I$""(TOPDIR)/include/visit"
+SILOOBJVTK_CPPFLAGS="$SILOOBJVTK_CPPFLAGS $SILO_INCLUDE"
+AC_SUBST(SILOOBJVTK_CPPFLAGS)
+
+#
+# Add some include paths to the preprocessor's includes CPPFLAGS.
+# Also add the parallel source files when building in parallel.
+#
+PREPROCESSOR_CPPFLAGS="$PREPROCESSOR_CPPFLAGS $SILO_INCLUDE "
+PREPROCESSOR_CPPFLAGS="$PREPROCESSOR_CPPFLAGS -I$""(TOPDIR)/include/visit"
+AC_SUBST(PREPROCESSOR_CPPFLAGS)
+if test -n "$PARALLEL"; then
+    PREPROCESSOR_PARALLEL_SRC="MPIResourceManager.C"
+else
+    PREPROCESSOR_PARALLEL_SRC=""
+fi
+AC_SUBST(PREPROCESSOR_PARALLEL_SRC)
+
+COMPONENT_CPPFLAGS="$COMPONENT_CPPFLAGS -I$""(TOPDIR)/include/visit "
+COMPONENT_CPPFLAGS="$COMPONENT_CPPFLAGS $VTK_INCLUDES "
+AC_SUBST(COMPONENT_CPPFLAGS)
+
+VISIT_VTK_CPPFLAGS="$VISIT_VTK_CPPFLAGS $VTK_INCLUDES -I$""(TOPDIR)/include/visit"
+AC_SUBST(VISIT_VTK_CPPFLAGS)
+
+#
+# Only enable VTKQT if we're building the viewer. 
+#
+if test -n "$VIEWER"; then
+   VTKQT_CPPFLAGS="-I$""(TOPDIR)/vtkqt"
+   VTKQT="vtkqt"
+else
+   VTKQT_CPPFLAGS=""
+   VTKQT=""
+fi
+AC_SUBST(VTKQT_CPPFLAGS)
+AC_SUBST(VTKQT)
+
+#
+# Check to see if we can compile with Gui support. If we can't then
+# make sure no windowing system stuff gets in.
+#
+if test "$enable_gui" = "yes"; then
+    dnl
+    dnl Add some include paths to the viewer includes.
+    dnl
+    VIEWER_CPPFLAGS="$VIEWER_CPPFLAGS $VTK_INCLUDES -I$""(TOPDIR)/common/siloobj"
+    VIEWER_CPPFLAGS="$VIEWER_CPPFLAGS $SILO_INCLUDE"
+    AC_SUBST(VIEWER_CPPFLAGS)
+
+    dnl
+    dnl Looking for a supported version of Qt.
+    dnl
+    if test -z "$QTDIR"; then
+       AC_MSG_ERROR([The QTDIR environment variable must be set in order to find Qt])
+    fi
+    AC_SUBST(QTDIR)
+    AC_MSG_CHECKING(for supported Qt version)
+    QtVersion=""
+    QtGlobalInc="$QTDIR/include/qglobal.h"
+
+    if test -f $QtGlobalInc; then
+        ## Check for appropriate versions of Qt (future, 3.0.x, 2.3.x)
+	for ver in  3.0.4  3.0.3               \
+                    3.0.2  3.0.1  3.0.0        \
+                    2.3.2  2.3.1  2.3.0 ; do
+            QtVer=`grep $ver $QtGlobalInc`
+            if test -n "$QtVer"; then
+                QtVersion=$ver
+                break
+            fi
+        done
+    fi
+
+    if test -z "$QtVersion"; then
+        AC_MSG_ERROR([  Sorry, but you need Qt version 2.3.0 or higher to compile VisIt. ])
+    else
+        AC_MSG_RESULT(Qt $QtVersion in $QTDIR)
+    fi
+    AC_SUBST(QTDIR)
+    QT_LIBS=-lqt
+    AC_SUBST(QT_LIBS)
+    QT_LDFLAGS=""
+    AC_SUBST(QT_LDFLAGS)
+    if test -d $QTDIR/staticlib; then
+        QT_STATICLDFLAGS=-L$QTDIR/staticlib
+    else
+        QT_STATICLDFLAGS=-L$QTDIR/lib
+    fi
+    AC_SUBST(QT_STATICLDFLAGS)
+    QT_CXXFLAGS="-I$""(TOPDIR)/include/qt $QT_CXXFLAGS"
+    AC_SUBST(QT_CXXFLAGS)
+    QT_MOC="$""(TOPDIR)/bin/moc"
+    AC_SUBST(QT_MOC)
+else
+    dnl We are building with ONLY off-screen graphics support. That
+    dnl means no X.
+    X_LIBS=""
+    AC_SUBST(X_LIBS)
+    QTDIR=""
+    AC_SUBST(QTDIR)
+    QT_LIBS=""
+    AC_SUBST(QT_LIBS)
+    QT_LDFLAGS=""
+    AC_SUBST(QT_LDFLAGS)
+    QT_CXXFLAGS=""
+    AC_SUBST(QT_CXXFLAGS)
+    QT_MOC=""
+    AC_SUBST(QT_MOC)
+fi
+
+#
+# Do we need to tell the compiler about the location of the X 
+# include files?  We're trying to keep the compiler command line
+# as short and readable as possible.  We must tell the compiler
+# about the include directory if the user explicitly gave one with
+# `--x-includes=DIR'.
+#
+user_specified_x_includes="$x_includes"
+user_specified_x_libraries="$x_libraries"
+AC_PATH_X
+
+if test "$no_x" != "yes" && test "$user_specified_x_includes" = NONE; then
+   AC_MSG_CHECKING(if compiler knows about X11 header files)
+   AC_TRY_CPP([#include <X11/Xlib.h>],
+   AC_MSG_RESULT(yes),
+       AC_MSG_RESULT(no)
+         if test -n "$x_includes"; then
+            CPPFLAGS="$CPPFLAGS -I`echo $x_includes|sed 's/ 	*/ -I/g'`"
+         fi)
+elif test "$x_includes" != NONE; then
+   CPPFLAGS="$CPPFLAGS -I`echo $x_includes|sed 's/  */ -I/g'`"
+fi
+
+#
+# Do we need to tell the linker about the location of the libraries?
+# Watch out, because on some systems (like Linux) where more than
+# one output file format can be created the libraries found by
+# AC_PATH_X might be wrong!  Use that directory only if the compiler
+# can't find the appropriate library for -lX11.  The search
+# directory is added to the end of LDFLAGS.  If the user specified a
+# library directory with `--x-libraries=DIR' then we must supply it to
+# the linker!
+#
+if test "$no_x" != "yes" && test "$user_specified_x_libraries" = NONE; then
+    oldlibs="$LIBS"
+    LIBS="-lX11 $LIBS"
+
+    AC_MSG_CHECKING(if linker knows about X11 libraries)
+    AC_TRY_LINK([#include <X11/Xlib.h>],[XOpenDisplay((char*)0)],
+                AC_MSG_RESULT(yes),
+                AC_MSG_RESULT(no)
+                if test -n "$x_libraries"; then
+                    LDFLAGS="$LDFLAGS -L`echo $x_libraries|sed 's/  */ -L/g'`"
+                fi)
+    LIBS="$oldlibs"
+elif test "$x_libraries" != NONE; then
+    LDFLAGS="$LDFLAGS -L`echo $x_libraries|sed 's/  */ -L/g'`"
+fi
+
+#
+# Is the X library available?
+#
+AC_CHECK_LIB(X11,  main, X_LIBS="-lX11 $X_LIBS"         ,,$X_LIBS)
+AC_SUBST(X_LIBS)
+
+#
+# Look for pthreads. If they are present then define a flag
+# that tells the engine to use pthreads in VTK. Also define
+# a macro in visit-config.h
+#
+AC_MSG_CHECKING(for pthread library)
+if -z "$PTHREAD_LIB"; then
+   AC_TRY_LINK([#include <pthread.h>],[pthread_attr_t attr;
+                pthread_attr_init(&attr)],
+               AC_MSG_RESULT(yes)
+               HAVE_PTHREADS="Yes",
+               AC_MSG_RESULT(no)
+               HAVE_PTHREADS="No")
+   if test "$HAVE_PTHREADS" = "Yes" ; then
+       ENGINE_CPPFLAGS="$ENGINE_CPPFLAGS"
+       AC_SUBST(ENGINE_CPPFLAGS)
+       PTHREAD_LIB="-lpthread"
+       AC_DEFINE(HAVE_THREADS)
+   else
+       PTHREAD_LIB=""
+       PTHREAD_CXXFLAGS=""
+   fi
+else
+   if test -z "$PTHREAD_CXXFLAGS"; then
+      PTHREAD_CXXFLAGS=""
+   fi
+fi
+AC_SUBST(PTHREAD_LIB)
+AC_SUBST(PTHREAD_CXXFLAGS)
+
+#
+# Look for the python include files if scripting is enabled.
+#
+if test "$enable_scripting" = "yes"; then
+    AC_MSG_CHECKING(for Python)
+    if test -z "$PYDIR"; then
+        AC_MSG_ERROR([PYDIR is not set])
+        AC_MSG_RESULT([$PYDIR])
+    fi
+    if test -z "$PYVERSION"; then
+        AC_MSG_ERROR([PYVERSION is not set])
+        AC_MSG_RESULT([$PYVERSION])
+    fi
+    AC_MSG_RESULT([$PYDIR, version $PYVERSION])
+    PY_INCLUDEDIR="$""(TOPDIR)/include/python"
+    PY_CXXFLAGS="-I$PY_INCLUDEDIR"
+    PY_LIB="-l$PYVERSION"
+    PY_CLI_LIB="$PY_LIB -lpthread"
+
+    os=`/bin/uname -s | tr "[[A-Z]]" "[[a-z]]" | tr -d "[[0-9]]"`
+    case $os in
+##        aix)
+##            PY_LIB="-l$PYVERSION -lpthread"
+##            PY_CLI_LIB=""
+##            ;;
+        linux)
+            PY_CLI_LIB="$PY_CLI_LIB -lutil"
+##            PY_LIB=""
+            ;;
+##        *)
+##            PY_LIB=""
+##            ;;
+    esac
+
+##    if test "$os" = "aix"; then
+##        PY_LIB="-l$PYVERSION -lpthread"
+##        PY_CLI_LIB=""
+##    else
+##        PY_LIB=""
+##    fi
+else
+    PYDIR=""
+    PYVERSION=""
+    PY_INCLUDEDIR=""
+    PY_CXXFLAGS=""
+    PY_LDFLAGS="$PY_LDFLAGS"
+    PY_LIB=""
+    PY_CLI_LIB=""
+fi
+AC_SUBST(PYDIR)
+AC_SUBST(PYVERSION)
+AC_SUBST(PY_INCLUDEDIR)
+AC_SUBST(PY_CXXFLAGS)
+AC_SUBST(PY_LDFLAGS)
+AC_SUBST(PY_LIB)
+AC_SUBST(PY_CLI_LIB)
+
+#
+# Checks for header files.
+#
+AC_HEADER_STDC
+AC_HEADER_TIME
+
+#
+# If we don't have these header files, we can't continue.
+#
+AC_CHECK_HEADERS(fcntl.h limits.h sys/time.h sys/types.h unistd.h,
+                 ,
+AC_MSG_ERROR([$0 wasn't able to find a necessary header file
+(see above).  Please rectify this and rerun configure.
+See the file INSTALL_FAQ in this directory for possible reasons
+this might have happened.]
+            )
+                )
+
+#
+# Checks for constants, typedefs, structures, and compiler characteristics.
+#
+AC_TYPE_UID_T
+
+#
+# If tflops_override is 'no' then do the following checks.
+#
+if test 'no' = $tflops_override; then
+    dnl
+    dnl Check for library functions.  If we don't have one, we can't continue.
+    dnl
+    AC_CHECK_FUNCS(select div strerror,
+                   ,
+                   AC_MSG_ERROR([$0 wasn't able to find a necessary library
+                                function (see above).])
+                  )
+fi
+
+#
+# Figure out how to create shared libraries
+#
+os=`/bin/uname -s | tr "[[A-Z]]" "[[a-z]]" | tr -d "[[0-9]]"`
+case $os in
+  irix)
+    # Both g++ and CC use this
+    if test -z "$SHLIB_CREATEPROG"; then
+        SHLIB_CREATEPROG="$""(CXX) -shared -o"
+    fi
+    ;;
+
+  sunos)
+    # Expecting g++, but -shared doesn't work right now, so we manually pass
+    # -G to Sun's linker.  (This may be because g++'s libstdc++ is not a .so.)
+    if test -z "$SHLIB_CREATEPROG"; then
+        SHLIB_CREATEPROG="$""(CXX) -Wl,-G -o"
+    fi
+    ;;
+
+  hp-ux)
+    # This is how HP's CC works, although it is not well tested.
+    if test -z "$SHLIB_CREATEPROG"; then
+        SHLIB_CREATEPROG="$""(CXX) -b -o"
+    fi
+    if test -z "$SHLIB_SOEXT" ; then SHLIB_SOEXT="so"; fi
+    if test -z "$SHLIB_LIBEXT"; then SHLIB_LIBEXT="a"; fi
+    ;;
+
+  aix)
+    # AIX used to be the weird one.  However, it is mostly normal finally.
+    # It should be noted that for AIX to find .so's as libraries, it requires
+    # "-Wl,-brtl" in the LDFLAGS.  This is handled in the AIX.conf file.
+    if test -z "$SHLIB_CREATEPROG"; then
+        SHLIB_CREATEPROG="$""(CXX) -Wl,-G -shared -o"
+    fi
+    ;;
+
+  osf)
+    # Expecting g++, but DEC's linker *still* warns about unresolved symbols
+    if test -z "$SHLIB_CREATEPROG"; then
+        SHLIB_CREATEPROG="$""(CXX) -Wl,-expect_unresolved -Wl,'*' -shared -o"
+    fi
+    ;;
+
+  linux)
+    # Expecting g++
+    if test -z "$SHLIB_CREATEPROG"; then
+        SHLIB_CREATEPROG="$""(CXX) -shared -o"
+    fi
+    ;;
+esac
+# Set up the defaults
+if test -z "$SHLIB_LIBS"           ; then SHLIB_LIBS=""; fi
+if test -z "$SHLIB_SERLIBS"        ; then SHLIB_SERLIBS=""; fi
+if test -z "$SHLIB_PARLIBS"        ; then SHLIB_PARLIBS=""; fi
+if test -z "$SHLIB_MPI_LIBS"       ; then SHLIB_MPI_LIBS=""; fi
+if test -z "$SHLIB_ILIBS"          ; then SHLIB_ILIBS=""; fi
+if test -z "$SHLIB_GLIBS"          ; then SHLIB_GLIBS=""; fi
+if test -z "$SHLIB_VLIBS"          ; then SHLIB_VLIBS=""; fi
+if test -z "$SHLIB_MLIBS"          ; then SHLIB_MLIBS=""; fi
+if test -z "$SHLIB_ESERLIBS"       ; then SHLIB_ESERLIBS=""; fi
+if test -z "$SHLIB_EPARLIBS"       ; then SHLIB_EPARLIBS=""; fi
+if test -z "$SHLIB_SLIBS"          ; then SHLIB_SLIBS=""; fi
+if test -z "$SHLIB_SOEXT"          ; then SHLIB_SOEXT="so"; fi
+if test -z "$SHLIB_LIBEXT"         ; then SHLIB_LIBEXT="so"; fi
+if test -z "$SHLIB_POSTPROCESS"    ; then SHLIB_POSTPROCESS="mv $""(LIBSHAREDTEMP) $""@"; fi
+if test -z "$SHLIB_POSTPROCESS_SER"; then SHLIB_POSTPROCESS_SER="mv $""(LIBSHAREDTEMPSER) $""@"; fi
+if test -z "$SHLIB_POSTPROCESS_PAR"; then SHLIB_POSTPROCESS_PAR="mv $""(LIBSHAREDTEMPPAR) $""@"; fi
+
+AC_SUBST(SHLIB_CREATEPROG)
+AC_SUBST(SHLIB_LIBS)
+AC_SUBST(SHLIB_SERLIBS)
+AC_SUBST(SHLIB_PARLIBS)
+AC_SUBST(SHLIB_MPI_LIBS)
+AC_SUBST(SHLIB_ILIBS)
+AC_SUBST(SHLIB_GLIBS)
+AC_SUBST(SHLIB_VLIBS)
+AC_SUBST(SHLIB_MLIBS)
+AC_SUBST(SHLIB_ESERLIBS)
+AC_SUBST(SHLIB_EPARLIBS)
+AC_SUBST(SHLIB_SLIBS)
+AC_SUBST(SHLIB_SOEXT)
+AC_SUBST(SHLIB_LIBEXT)
+AC_SUBST(SHLIB_POSTPROCESS)
+AC_SUBST(SHLIB_POSTPROCESS_SER)
+AC_SUBST(SHLIB_POSTPROCESS_PAR)
+
+AC_DEFINE_UNQUOTED(PLUGIN_EXTENSION, ".${SHLIB_SOEXT}" )
+
+
+#
+# Check for library functions that can work around, or that we have
+# replacements for.
+#
+
+AC_CHECK_FUNCS(memmove)
+
+#
+# Checks for typedefs, structures, and compiler characteristics.
+#
+AC_CHECK_SIZEOF(char,0)
+AC_CHECK_SIZEOF(short,0)
+AC_CHECK_SIZEOF(int,0)
+AC_CHECK_SIZEOF(long,0)
+AC_CHECK_SIZEOF(long long,0)
+AC_CHECK_SIZEOF(unsigned char,0)
+AC_CHECK_SIZEOF(unsigned short,0)
+AC_CHECK_SIZEOF(unsigned int,0)
+AC_CHECK_SIZEOF(unsigned long,0)
+AC_CHECK_SIZEOF(unsigned long long,0)
+AC_CHECK_SIZEOF(float,0)
+AC_CHECK_SIZEOF(long float,0)
+AC_CHECK_SIZEOF(double,0)
+AC_CHECK_SIZEOF(long double,0)
+AC_CHECK_SIZEOF(void *,0)
+
+AC_CHECK_SIZEOF(boolean,0)
+
+AC_C_BIGENDIAN
+
+dnl
+# Makefile stubs.
+dnl The `VARIABLES' file goes at the beginning of each Makefile and
+dnl defines make variables for things which are the same for every
+dnl makefile.  The `TARGETS' file will be appended to the end of
+dnl each makefile and defines targets which are the same for all
+dnl makefiles.  The targets include a file to handle updating of source
+dnl dependencies.  There are currently two flavors: a GNU-make version
+dnl that uses a `.depend' file in each directory, and a non-GNU-make
+dnl version that tacks dependencies onto the end of each Makefile.
+dnl
+AC_SUBST_FILE(VARIABLES)
+VARIABLES=include/make-variables
+AC_SUBST_FILE(TARGETS)
+TARGETS=include/make-targets
+AC_SUBST_FILE(DIRTARGETS)
+DIRTARGETS=include/make-targets-dir
+AC_SUBST_FILE(LIBTARGETS)
+LIBTARGETS=include/make-targets-lib
+AC_SUBST_FILE(PARLIBTARGETS)
+PARLIBTARGETS=include/make-targets-parlib
+AC_MSG_CHECKING(for GNU Make)
+if test "`${MAKE-make} --version -f /dev/null 2>/dev/null|sed -n 1p|cut -c1-8`" = "GNU Make"; then
+   AC_MSG_RESULT(yes)
+   if test -n "$GCC"; then
+      SOURCE_DEPENDENCIES=include/make-depend-gnu
+   elif test -n "$MAKEDEPEND"; then
+      SOURCE_DEPENDENCIES=include/make-depend-std
+   else
+      SOURCE_DEPENDENCIES=/dev/null
+   fi
+else
+   AC_MSG_RESULT(no. Auto dependencies not used. Clean make not used.)
+   if test -n "$MAKEDEPEND"; then
+      SOURCE_DEPENDENCIES=include/make-depend-std
+   else
+      SOURCE_DEPENDENCIES=/dev/null
+   fi
+fi
+AC_SUBST_FILE(SOURCE_DEPENDENCIES)
+
+
+# Temporary directories.
+dnl The makefiles build libraries, include files, and executables into
+dnl these temporary directories which should exist under the current
+dnl directory.  The TOPDIR provides the full path name of the directory
+dnl since Makefiles are invoked at various levels in the source tree.
+dnl
+
+AC_SUBST(tmpbin)
+tmpbin="$""(TOPDIR)/bin"
+AC_SUBST(tmpinc)
+tmpinc="$""(TOPDIR)/include"
+AC_SUBST(tmplib)
+tmplib="$""(TOPDIR)/archives"
+AC_SUBST(libdir)
+libdir="$""(TOPDIR)/lib"
+AC_SUBST(plotplugindir)
+plotplugindir="$""(TOPDIR)/plugins/plots"
+AC_SUBST(operatorplugindir)
+operatorplugindir="$""(TOPDIR)/plugins/operators"
+AC_SUBST(databaseplugindir)
+databaseplugindir="$""(TOPDIR)/plugins/databases"
+
+LDFLAGS="-L$libdir $LDFLAGS"
+
+
+dnl
+# Expand variables.
+dnl Each file listed here must have a corresponding `*.in' file which
+dnl may contain `@VARIABLE@' variable references.  Such variables will
+dnl be expanded when creating the new file.  Some of these have to
+dnl be in a particular order!
+dnl
+STANDARD_FILES="include/make-variables
+		include/make-depend-gnu
+                include/make-depend-std
+		include/make-targets
+		include/make-targets-dir
+                include/make-targets-lib
+		include/make-targets-parlib
+                include/Makefile
+                lib/Makefile
+                bin/Makefile
+                Makefile"
+
+if test -n "$METADATA_SERVER"; then
+    MDSERVER_FILES="mdserver/Makefile 
+                    mdserver/rpc/Makefile
+                    mdserver/proxy/Makefile
+                    mdserver/main/Makefile"
+else
+    MDSERVER_FILES=""
+fi
+
+if test -n "$GUI" && test "$enable_gui" = "yes" ; then
+    GUI_FILES="gui/Makefile"
+else
+    GUI_FILES=""
+fi
+
+HELP_FILES="help/Makefile"
+
+if test "$enable_splashscreen" = "yes" ; then
+    SPLASH_FILES="
+               splashscreen/Makefile
+               splashscreen/rpc/Makefile
+               splashscreen/proxy/Makefile
+               splashscreen/main/Makefile"
+else
+    SPLASH_FILES=""
+fi
+
+if test -n "$VIEWER"; then
+    VIEWER_FILES="viewer/Makefile
+                  viewer/rpc/Makefile
+                  viewer/parser/Makefile
+                  viewer/proxy/Makefile
+                  viewer/main/Makefile"
+else
+    VIEWER_FILES=""
+fi
+
+if test -n "$ENGINE"; then
+    ENGINE_FILES="engine/Makefile
+                  engine/rpc/Makefile
+                  engine/parstate/Makefile
+                  engine/proxy/Makefile
+                  engine/main/Makefile"
+else
+    ENGINE_FILES=""
+fi
+
+if test -n "$VTKQT"; then
+    VTKQT_FILES="vtkqt/Makefile"
+else
+    VTKQT_FILES=""
+fi
+
+COMMON_FILES="common/Makefile
+              common/comm/Makefile
+              common/misc/Makefile
+              common/plugin/Makefile
+              common/proxybase/Makefile
+              common/siloobj/Makefile
+              common/siloobj_vtk_db/Makefile
+              common/state/Makefile
+              common/utility/Makefile
+              common/winutil/Makefile"
+TOOLS_FILES="tools/Makefile
+             tools/annotations/Makefile
+             tools/doxygenate/Makefile
+             tools/escan/Makefile
+             tools/prep/Makefile
+             tools/classwriter/Makefile
+             tools/windowmaker/Makefile 
+             tools/xml/Makefile
+             tools/xmledit/Makefile
+             tools/avtprep/Makefile
+             tools/silex/Makefile
+             tools/curv3dprep/Makefile"
+VISIT_VTK_FILES="visit_vtk/Makefile"
+COMPONENT_FILES="components/Makefile
+                 components/DBAtts/Makefile
+                 components/Database/Makefile
+                 components/Exceptions/Makefile
+                 components/Expressions/Makefile
+                 components/Math/Makefile
+                 components/Pipeline/Makefile
+                 components/Plotter/Makefile
+                 components/Preprocessor/Makefile
+                 components/Queries/Makefile
+                 components/VisWindow/Makefile"
+PLOT_FILES="plots/Makefile"
+OPERATOR_FILES="operators/Makefile"
+DATABASE_FILES="databases/Makefile"
+
+DATA_FILES="data/Makefile"
+
+if test "$enable_scripting" = "yes"; then
+    VISITPY_FILES="visitpy/Makefile"
+else
+    VISITPY_FILES=""
+fi
+
+if test -n "$JAVA_TARGET"; then
+    JAVA_FILES="java/Makefile"
+else
+    JAVA_FILES=""
+fi
+
+LAUNCHER_FILES="launcher/Makefile
+                launcher/rpc/Makefile
+                launcher/proxy/Makefile
+                launcher/main/Makefile"
+
+AC_OUTPUT($STANDARD_FILES
+          $GUI_FILES
+          $HELP_FILES
+          $SPLASH_FILES
+          $VIEWER_FILES
+          $ENGINE_FILES
+          $MDSERVER_FILES
+          $LAUNCHER_FILES
+          $COMMON_FILES
+          $TOOLS_FILES
+          $VISIT_VTK_FILES
+          $VTKQT_FILES
+          $COMPONENT_FILES
+          $PLOT_FILES
+          $OPERATOR_FILES
+          $DATABASE_FILES
+          $DATA_FILES
+          $VISITPY_FILES
+          $JAVA_FILES,
+          echo timestamp > include/stamp-h)
+
+#         
+# We want to build the xml2makefile tool and the plugin makefiles
+# after config.status has been run
+#
+(cd include   && ${MAKE-make})
+(cd lib       && ${MAKE-make})
+(cd tools/xml && ${MAKE-make} $TOPDIR/bin/xml2makefile)
+(cd plots     && ${MAKE-make} dirmakefiles)
+(cd operators && ${MAKE-make} dirmakefiles)
+(cd databases && ${MAKE-make} dirmakefiles)
+if test -n "$JAVA_TARGET"; then
+(cd java      && ${MAKE-make} version)
+fi

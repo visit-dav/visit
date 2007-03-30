@@ -1,0 +1,89 @@
+Function: CopyAttributes
+Declaration: virtual bool CopyAttributes(const AttributeGroup *);
+Definition:
+bool
+LineoutAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    bool retval = false;
+
+    if(TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const LineoutAttributes *tmp = (const LineoutAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    else if(atts->TypeName() == "Line")
+    {
+        const Line *tmp = (const Line*)atts;
+        SetPoint1(tmp->GetPoint1());
+        SetPoint2(tmp->GetPoint2());
+        SetDesignator(tmp->GetDesignator());
+        retval = true;
+    }
+
+    return retval;
+}
+
+Function: CreateCompatible
+Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
+Definition:
+AttributeSubject *
+LineoutAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+
+    if(TypeName() == tname)
+    {
+        retval = new LineoutAttributes(*this);
+    }
+    else if(tname == "Line")
+    {
+        Line *line = new Line;
+
+        line->SetPoint1(GetPoint1());
+        line->SetPoint2(GetPoint2());
+        line->SetInteractive(GetInteractive());
+        line->SetReflineLabels(GetReflineLabels());
+        line->SetDesignator(GetDesignator());
+        retval = line;
+    }
+
+    return retval;
+}
+
+Function: Print
+Declaration: void Print(ostream &, bool) const;
+Definition:
+void
+LineoutAttributes::Print(ostream &out, bool selected_only) const
+{
+    out << "LineoutAttributes" << "\n";
+    out << "{";
+    const double *pt;
+    int i;
+    for(i = 0; i < NumAttributes(); ++i)
+    {
+        if(selected_only && !IsSelected(i))
+            continue;
+
+        switch(i)
+        {
+          case  0: pt = GetPoint1();
+                   out << "point1=" << pt[0] << " " 
+                                    << pt[1] << " "
+                                    << pt[2] << endl;          break;
+          case  1: pt = GetPoint2();
+                   out << "point2=" << pt[0] << " " 
+                                    << pt[1] << " "
+                                    << pt[2] << endl;          break;
+          case  2: out << "numberOfSamplePoints=" 
+                       << GetNumberOfSamplePoints();    break;
+        }
+        out << ",";
+    }
+
+    out << "}";
+
+}
+

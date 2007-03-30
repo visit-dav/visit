@@ -1,0 +1,53 @@
+Function: AddOperator
+Declaration: void AddOperator(int op);
+Definition:
+void
+Plot::AddOperator(int op)
+{
+    operators.push_back(op);
+    Select(6, (void *)&operators);
+}
+
+Function: ClearAllOperators
+Declaration: void ClearAllOperators();
+Definition:
+void
+Plot::ClearAllOperators()
+{
+    if(operators.size() > 0)
+    {
+        operators.clear();
+        Select(6, (void *)&operators);
+    }
+}
+
+Function: GetNumOperators
+Declaration: int  GetNumOperators() const;
+Definition:
+int
+Plot::GetNumOperators() const
+{
+    return operators.size();
+}
+
+Function: GetOperator
+Declaration: int  GetOperator(int i) const;
+Definition:
+int
+Plot::GetOperator(int i) const
+{
+    return operators[i];
+}
+
+Function: RemoveLastOperator
+Declaration: void RemoveLastOperator();
+Definition:
+void
+Plot::RemoveLastOperator()
+{
+    if(operators.size() > 0)
+    {
+        operators.pop_back();
+        Select(6, (void *)&operators);
+    }
+}

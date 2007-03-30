@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+  <Plugin name="Clip" type="operator" label="Clip" version="1.0" iconFile="Clip.xpm">
+    <Attribute name="ClipAttributes" purpose="This class contains attributes for the clip operator." persistent="true" codefile="ClipAttributes.code">
+      <Enum name="ClipStyle">
+        Plane
+        Sphere
+      </Enum>
+      <Field name="funcType" label="Style" type="enum" subtype="ClipStyle">
+        Plane
+      </Field>
+      <Field name="plane1Status" label="Plane 1" type="bool" enabler="funcType:Plane">
+        true
+      </Field>
+      <Field name="plane2Status" label="Plane 2" type="bool" enabler="funcType:Plane">
+        false
+      </Field>
+      <Field name="plane3Status" label="Plane 3" type="bool" enabler="funcType:Plane">
+        false
+      </Field>
+      <Field name="plane1Origin" label="Plane 1 origin" type="doubleArray" length="3" enabler="funcType:Plane">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="plane2Origin" label="Plane 2 origin" type="doubleArray" length="3" enabler="funcType:Plane">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="plane3Origin" label="Plane 3 origin" type="doubleArray" length="3" enabler="funcType:Plane">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="plane1Normal" label="Plane 1 normal" type="doubleArray" length="3" enabler="funcType:Plane">
+        1.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="plane2Normal" label="Plane 2 normal" type="doubleArray" length="3" enabler="funcType:Plane">
+        0.000000
+        1.000000
+        0.000000
+      </Field>
+      <Field name="plane3Normal" label="Plane 3 normal" type="doubleArray" length="3" enabler="funcType:Plane">
+        0.000000
+        0.000000
+        1.000000
+      </Field>
+      <Field name="planeInverse" label="Inverse" type="bool" enabler="funcType:Plane">
+        false
+      </Field>
+      <Field name="center" label="Center" type="doubleArray" length="3" enabler="funcType:Sphere">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="radius" label="Radius" type="double" enabler="funcType:Sphere">
+        1.000000
+      </Field>
+      <Field name="sphereInverse" label="Inverse" type="bool" enabler="funcType:Sphere">
+        false
+      </Field>
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Function name="CreateCompatible" user="false" member="true">
+      </Function>
+      <Include file="source" quoted="false">
+        BoxExtents.h
+      </Include>
+      <Include file="source" quoted="false">
+        SphereAttributes.h
+      </Include>
+    </Attribute>
+  </Plugin>

@@ -1,0 +1,275 @@
+// ************************************************************************* //
+//                            avtLookupTable.C                               //
+// ************************************************************************* //
+
+#include <avtLookupTable.h>
+
+#include <avtColorTables.h>
+#include <vtkLookupTable.h>
+#include <vtkLogLookupTable.h>
+#include <vtkSkewLookupTable.h>
+
+#include <InvalidColortableException.h>
+
+// ****************************************************************************
+//  Method: avtLookupTable constructor
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 27, 2001 
+//
+// ****************************************************************************
+
+avtLookupTable::avtLookupTable()
+{
+    //
+    //  Build a basic 'hot' lut, in case user does not want to set
+    //  colors separately.  VTK's default size is 256 colors.
+    //  The default range for scalars mapped through the table is (0, 1).
+    // 
+    stdLUT  = vtkLookupTable::New();    
+    stdLUT->SetHueRange(0.6667, 0);
+    stdLUT->Build();
+
+    logLUT  = vtkLogLookupTable::New();    
+    logLUT->SetHueRange(0.6667, 0);
+    logLUT->Build();
+
+    skewLUT = vtkSkewLookupTable::New();    
+    skewLUT->SetHueRange(0.6667, 0);
+    skewLUT->Build();
+}
+
+
+// ****************************************************************************
+//  Method: avtLookupTable destructor
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 27, 2001 
+//
+// ****************************************************************************
+
+avtLookupTable::~avtLookupTable()
+{
+    stdLUT->Delete();
+    stdLUT = NULL;
+
+    logLUT->Delete();
+    logLUT = NULL;
+
+    skewLUT->Delete();
+    skewLUT = NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtLookupTable::SetSkewFactor
+//
+//  Purpose:
+//      Sets the skew factor for the skew LUT. 
+//
+//  Arguments:
+//      s      The skew factor. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 27, 2001 
+//
+// ****************************************************************************
+
+void
+avtLookupTable::SetSkewFactor(const float s)
+{
+    skewLUT->SetSkewFactor(s);
+}
+
+
+// ****************************************************************************
+// Method: avtVariableMapper::SetLUTColors
+//
+// Purpose: 
+//   Sets the specified colors into each type of lookup table. 
+//
+// Arguments:
+//   colors  : An array of rgb triples stored as unsigned chars.
+//   nColors : The number of colors in the colors array.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jun 15 11:35:13 PDT 2001
+//
+// Modifications:
+//
+//   Kathleen Bonnell, Mon Aug 27 12:42:00 PDT 2001
+//   Moved from all avtXXXMapper classes.  Removed call to lut->SetHueRange 
+//   and lut->SetRange.  Use instead lut->SetNumberOfTableValues.
+//   
+// ****************************************************************************
+
+void
+avtLookupTable::SetLUTColors(const unsigned char *colors, int nColors)
+{
+    // Rebuild the lut with the new color table.
+    stdLUT->SetNumberOfTableValues(nColors);
+    logLUT->SetNumberOfTableValues(nColors);
+    skewLUT->SetNumberOfTableValues(nColors);
+
+#define INV_255 0.0039215686
+
+    const unsigned char *cptr = colors;
+    for(int i = 0; i < nColors; ++i)
+    {
+        float r = float(cptr[0]) * INV_255;
+        float g = float(cptr[1]) * INV_255;
+        float b = float(cptr[2]) * INV_255;
+        stdLUT->SetTableValue(i, r, g, b, 1.);
+        logLUT->SetTableValue(i, r, g, b, 1.);
+        skewLUT->SetTableValue(i, r, g, b, 1.);
+        cptr += 3;
+    }
+}
+
+
+// ****************************************************************************
+// Method: avtVariableMapper::SetLUTColorsWithOpacity
+//
+// Purpose: 
+//   Sets the specified colors into each type of lookup table. 
+//
+// Arguments:
+//   colors  : An array of rgb triples stored as unsigned chars.
+//   nColors : The number of colors in the colors array.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jun 15 11:35:13 PDT 2001
+//
+// Modifications:
+//
+//   Kathleen Bonnell, Mon Aug 27 12:42:00 PDT 2001
+//   Modified from Brad's original method to include opacity.  
+//   
+// ****************************************************************************
+
+void
+avtLookupTable::SetLUTColorsWithOpacity(const unsigned char *colors, 
+                                        int nColors)
+{
+    // Rebuild the lut with the new color table.
+    stdLUT->SetNumberOfTableValues(nColors);
+    logLUT->SetNumberOfTableValues(nColors);
+    skewLUT->SetNumberOfTableValues(nColors);
+
+#define INV_255 0.0039215686
+    const unsigned char *cptr = colors;
+    for(int i = 0; i < nColors; ++i)
+    {
+        float r = (float) cptr[0] * INV_255 ;
+        float g = (float) cptr[1] * INV_255 ;
+        float b = (float) cptr[2] * INV_255 ;
+        float a = (float) cptr[3] * INV_255 ;
+ 
+        stdLUT->SetTableValue(i, r, g, b, a);
+        logLUT->SetTableValue(i, r, g, b, a);
+        skewLUT->SetTableValue(i, r, g, b, a);
+        cptr += 4;
+    }
+}
+
+
+// ****************************************************************************
+// Method: avtVariableMapper::GetNumberOfColors
+//
+// Purpose: 
+//   Retrieves the number of colors currently in the luts. 
+//
+// Returns: 
+//   The number of colors. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 28, 2001 
+//
+// ****************************************************************************
+
+int
+avtLookupTable::GetNumberOfColors()
+{
+    return stdLUT->GetNumberOfColors();
+}
+
+
+// ****************************************************************************
+// Method: avtLookupTable::SetColorTable
+//
+// Purpose: 
+//   Sets the color table for the lookup table.
+//
+// Arguments:
+//   ctName : The name of the color table to use.
+//
+// Returns:    Returns true if the color table is updated.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 14 16:52:49 PST 2001
+//
+// Modifications:
+//    Jeremy Meredith, Thu Aug 23 14:11:40 PDT 2001
+//    Made it use the color table name "Default" instead of the boolean flag.
+//
+//    Kathleen Bonnell, Fri Aug 31 10:36:49 PDT 2001
+//    Moved from avtXXXPlot.C.  Added 'validName' for plots to
+//    send along.
+//
+//    Brad Whitlock, Wed Nov 20 14:23:47 PST 2002
+//    I changed it so it conforms to the new interface for avtColortTables.
+//    It gets the default continuous colortable if it is supposed to use
+//    the default. If it cannot get the default continuous colortable, it
+//    tries to get the default discrete colortable.
+//
+//    Brad Whitlock, Fri Apr 25 12:26:40 PDT 2003
+//    I made it throw InvalidColortableException.
+//
+// ****************************************************************************
+
+bool
+avtLookupTable::SetColorTable(const char *ctName, bool validName)
+{
+    bool retval = false;
+    bool useDefault = false;
+    avtColorTables *ct = avtColorTables::Instance();
+
+    // Figure out the circumstances in which we should use the default
+    // color table.
+    if(ctName == "Default")
+        useDefault = true;
+    else if(ctName == NULL)
+        useDefault = true;
+    else if(!ct->ColorTableExists(ctName))
+    {
+        EXCEPTION1(InvalidColortableException, ctName);
+    }
+
+    if(useDefault)
+    {
+        // Use the default color table.
+        const char *dct = ct->GetDefaultContinuousColorTable().c_str();
+        if(dct == 0)
+            dct = ct->GetDefaultDiscreteColorTable().c_str();
+        const unsigned char *c = ct->GetColors(dct);
+        if(c != NULL)
+        {
+            // Set the colors into the lookup table.
+            retval = true;
+            SetLUTColors(c, ct->GetNumColors());
+        }
+    }
+    else if (validName) 
+    {
+        // Use the specified color table. It was a valid color table.
+        const unsigned char *c = ct->GetColors(ctName);
+        if(c != NULL)
+        {
+            // Set the colors into the lookup table.
+            retval = true;
+            SetLUTColors(c, ct->GetNumColors());
+        }
+    }
+
+    return retval;
+}

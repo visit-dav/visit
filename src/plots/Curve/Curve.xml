@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+  <Plugin name="Curve" type="plot" label="Curve" version="1.0" vartype="scalar" iconFile="Curve.xpm">
+    <Attribute name="CurveAttributes" purpose="Attributes for the xy plot" persistent="true" codefile="CurveAttributes.code">
+      <Field name="lineStyle" label="Line Style" type="linestyle">
+        0
+      </Field>
+      <Field name="lineWidth" label="Line Width" type="linewidth">
+        0
+      </Field>
+      <Field name="color" label="Color" type="att" subtype="ColorAttribute">
+      </Field>
+      <Field name="showLabels" label="Labels" type="bool">
+        true
+      </Field>
+      <Field name="designator" label="Designator" type="string" internal="true">
+         
+      </Field>
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Function name="CreateCompatible" user="false" member="true">
+      </Function>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="Print" user="true" member="true">
+      </Function>
+      <Include file="source" quoted="false">
+        Line.h
+      </Include>
+      <Include file="header" quoted="false">
+        iostream.h
+      </Include>
+    </Attribute>
+  </Plugin>
