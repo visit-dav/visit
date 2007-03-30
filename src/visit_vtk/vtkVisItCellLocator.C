@@ -62,6 +62,11 @@ inline int vtkNeighborCells::InsertNextPoint(int *x)
 
 // Construct with automatic computation of divisions, averaging
 // 25 cells per bucket.
+// 
+// Modificatons:
+//   Kathleen Bonnell, Tue Jun  3 15:26:52 PDT 2003
+//   Initialinze MinCellLength.
+//
 vtkVisItCellLocator::vtkVisItCellLocator()
 {
   this->NumberOfCellsPerBucket = 25;
@@ -82,6 +87,8 @@ vtkVisItCellLocator::vtkVisItCellLocator()
   this->OctantBounds[3] = 0.;
   this->OctantBounds[4] = 0.;
   this->OctantBounds[5] = 0.;
+
+  this->MinCellLength = VTK_LARGE_FLOAT;
 }
 
 vtkVisItCellLocator::~vtkVisItCellLocator()
@@ -1252,6 +1259,9 @@ vtkIdList* vtkVisItCellLocator::GetCells(int octantId)
 //    Incorporate changes made to vtkCellLocator by Will Schroeder.
 //    The changes fix a bug when dataset thickness is very near zero.
 //
+//    Kathleen Bonnell, Tue Jun  3 15:26:52 PDT 2003 
+//    Calculate MinCellLength.
+//
 void vtkVisItCellLocator::BuildLocator()
   {
   float *bounds, length, cellBounds[6], *boundsPtr;
@@ -1271,7 +1281,7 @@ void vtkVisItCellLocator::BuildLocator()
     {
     return;
     }
-  
+ 
   vtkDebugMacro( << "Subdividing octree..." );
   
   if ( !this->DataSet || (numCells = this->DataSet->GetNumberOfCells()) < 1 )
@@ -1279,6 +1289,8 @@ void vtkVisItCellLocator::BuildLocator()
     vtkErrorMacro( << "No cells to subdivide");
     return;
     }
+
+  this->MinCellLength = VTK_LARGE_FLOAT; 
 
   //  Make sure the appropriate data is available
   //
@@ -1357,6 +1369,7 @@ void vtkVisItCellLocator::BuildLocator()
   parentOffset = numOctants - (ndivs * ndivs * ndivs);
   product = ndivs * ndivs;
   boundsPtr = cellBounds;
+  float len2;
   for (cellId=0; cellId<numCells; cellId++) 
     {
     if (this->CacheCellBounds)
@@ -1368,7 +1381,16 @@ void vtkVisItCellLocator::BuildLocator()
       {
       this->DataSet->GetCellBounds(cellId, cellBounds);
       }
-    
+
+    // Keep track of the minimum cell diagonal length
+    //
+    len2  = (cellBounds[1] - cellBounds[0]) * (cellBounds[1] - cellBounds[0]);
+    len2 += (cellBounds[3] - cellBounds[2]) * (cellBounds[3] - cellBounds[2]);
+    len2 += (cellBounds[5] - cellBounds[4]) * (cellBounds[5] - cellBounds[4]);
+
+    if (len2 < this->MinCellLength) 
+      this->MinCellLength = len2; 
+
     // find min/max locations of bounding box
     for (i=0; i<3; i++)
       {
@@ -1834,3 +1856,4 @@ void vtkVisItCellLocator::ComputeOctantBounds(int i, int j, int k)
   this->OctantBounds[4] = this->Bounds[4]       + k*H[2];
   this->OctantBounds[5] = this->OctantBounds[4] + H[2];
 }
+

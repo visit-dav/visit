@@ -37,6 +37,9 @@
 
 // .SECTION Additions 
 // KSB, LLNL, Added flag that allows ghost cells to be ignored. 
+// KBB, LLNL, Tue Jun  3 15:26:52 PDT 2003, Added MinCellLength member
+//            and correspondign GetMacro.  MinCellLength may be useful
+//            for determining a tolerance to use with certain methods.
 
 
 #ifndef __vtkVisItCellLocator_h
@@ -190,6 +193,12 @@ public:
   void FreeSearchStructure();
   void BuildLocator();
   void GenerateRepresentation(int level, vtkPolyData *pd);
+
+  //
+  // Retrieve MinCellLength.  Value not valid until the locator has  
+  // been built.
+  //
+  vtkGetMacro(MinCellLength,float);
   
 protected:
   vtkVisItCellLocator();
@@ -251,6 +260,7 @@ protected:
 private:
   vtkVisItCellLocator(const vtkVisItCellLocator&);  // Not implemented.
   void operator=(const vtkVisItCellLocator&);  // Not implemented.
+  float MinCellLength;
 };
 
 #endif

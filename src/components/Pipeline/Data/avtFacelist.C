@@ -14,6 +14,7 @@
 #include <avtFacelist.h>
 
 #include <BadDomainException.h>
+#include <BadIndexException.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 
@@ -205,6 +206,9 @@ avtFacelist::Destruct(void *p)
 //    Hank Chlids, Sun Aug  4 18:03:00 PDT 2002
 //    Copy over all of the cell variables.
 //
+//    Hank Childs, Tue Jun  3 15:07:11 PDT 2003
+//    Check to make sure that the zones are valid before copying over the data.
+//
 // ****************************************************************************
 
 void
@@ -234,8 +238,13 @@ avtFacelist::CalcFacelist(vtkUnstructuredGrid *ugrid, vtkPolyData *pdata)
     if (zones != NULL && shouldCopyCellData)
     {
         outCD->CopyAllocate(inCD);
+        int nInZones = ugrid->GetNumberOfCells();
         for (int i = 0 ; i < nfaces ; i++)
         {
+            if (zones[i] >= nInZones)
+            {
+                EXCEPTION2(BadIndexException, zones[i], nInZones);
+            }
             outCD->CopyData(inCD, zones[i], i);
         }
         outCD->Squeeze();

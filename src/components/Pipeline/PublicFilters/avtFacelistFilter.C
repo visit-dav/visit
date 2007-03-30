@@ -23,6 +23,7 @@
 #include <avtMetaData.h>
 #include <avtTerminatingSource.h>
 
+#include <BadIndexException.h>
 #include <DebugStream.h>
 
 
@@ -290,6 +291,9 @@ avtFacelistFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 //    Hank Childs, Mon Nov  4 12:52:24 PST 200
 //    Removed need for a two-pass mode unstructured grid facelist filter.
 //
+//    Hank Childs, Tue Jun  3 15:07:11 PDT 2003
+//    Account for avtFacelists that are "bad".
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -348,11 +352,23 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain)
             {
                 debug5 << "Ugrid using facelist from files for domain "
                        << domain << endl;
-                fl->CalcFacelist((vtkUnstructuredGrid *) in_ds, pd);
-                out_ds = pd;
-                mustDeReference = true;
+                TRY
+                {
+                    fl->CalcFacelist((vtkUnstructuredGrid *) in_ds, pd);
+                    out_ds = pd;
+                    mustDeReference = true;
+                }
+                CATCH (BadIndexException)
+                {
+                    debug1 << "The facelist was invalid.  This often happens "
+                           << "with history variables." << endl;
+                    debug1 << "The facelist will be calculated by hand."<<endl;
+                    fl = NULL;
+                }
+                ENDTRY
             }
-            else
+
+            if (fl == NULL) // Value could have changed since last test.
             {
                 debug5 << "Ugrid forced to calculate facelist for domain "
                        << domain << endl;
