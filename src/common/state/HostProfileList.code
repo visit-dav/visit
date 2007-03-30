@@ -555,6 +555,9 @@ Definition:
 // Creation:   March 16, 2007
 //
 // Modifications:
+//   Eric Brugger, Thu Mar 29 10:50:18 PDT 2007
+//   I modified the routine to remove old host profiles for several old
+//   LLNL machines that no longer exist.
 //
 // ****************************************************************************
 void
@@ -572,14 +575,19 @@ HostProfileList::ProcessOldVersions(DataNode *parentNode,
     DataNode **children = searchNode->GetChildren();
 
     //
-    // If the host name is um or uv and the partition is 0, change
-    // it to pdebug.
+    // Loop over the list in reverse order, since the list is the same
+    // as the internal data structure in searchNode.  So deleting a node
+    // from it actually reduces the size of the array we are looping over.
     //
-    for (int i = 0; i < nChildren; i++)
+    for (int i = nChildren - 1; i >= 0; --i)
     {
         DataNode *hostNode = children[i]->GetNode("host");
         if (hostNode != 0)
         {
+            //
+            // If the host name is um or uv and the partition is 0, change
+            // it to pdebug.
+            //
             if (hostNode->AsString() == "um.llnl.gov" ||
                 hostNode->AsString() == "uv.llnl.gov")
             {
@@ -591,6 +599,19 @@ HostProfileList::ProcessOldVersions(DataNode *parentNode,
                          partNode->SetString("pdebug");
                      }
                 }
+            }
+            //
+            // Remove old profiles.
+            //
+            else if (hostNode->AsString() == "gps15.llnl.gov gps16.llnl.gov" ||
+                     hostNode->AsString() == "ice.asci.llnl.gov" ||
+                     hostNode->AsString() == "mcr.llnl.gov" ||
+                     hostNode->AsString() == "pengra.llnl.gov" ||
+                     hostNode->AsString() == "pvc.llnl.gov" ||
+                     hostNode->AsString() == "tidalwave.llnl.gov" ||
+                     hostNode->AsString() == "white.llnl.gov")
+            {
+                searchNode->RemoveNode(children[i]);
             }
         }
     }
