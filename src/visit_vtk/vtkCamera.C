@@ -746,8 +746,8 @@ void vtkCamera::ComputePerspectiveTransform(double aspect,
  
     matrix[0][0] = this->FocalDisk;
     matrix[1][1] = this->FocalDisk;
-    matrix[0][3] = this->FocalDisk * this->WindowCenter[0] * 2.0;
-    matrix[1][3] = this->FocalDisk * this->WindowCenter[1] * 2.0;
+    matrix[0][3] = this->FocalDisk * this->WindowCenter[0];
+    matrix[1][3] = this->FocalDisk * this->WindowCenter[1];
  
     // concatenate with the current matrix
     this->PerspectiveTransform->Concatenate(*matrix);

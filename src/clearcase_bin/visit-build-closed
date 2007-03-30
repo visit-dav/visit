@@ -201,16 +201,16 @@ fi
 rm -f tidalwave
 cat <<EOF > tidalwave
 #!/bin/sh
-if test ! -d /fc/san3/$user ; then
-   mkdir /fc/san3/$user
+if test ! -d /fc/san1/$user ; then
+   mkdir /fc/san1/$user
 fi
-if test ! -d /fc/san3/$user/tidalwave ; then
-   mkdir /fc/san3/$user/tidalwave
+if test ! -d /fc/san1/$user/tidalwave ; then
+   mkdir /fc/san1/$user/tidalwave
 fi
-rm -rf /fc/san3/$user/tidalwave/visitbuild
-mkdir /fc/san3/$user/tidalwave/visitbuild
-mv tidalwave_$dist.tar.gz /fc/san3/$user/tidalwave/visitbuild/$dist.tar.gz
-cd /fc/san3/$user/tidalwave/visitbuild
+rm -rf /fc/san1/$user/tidalwave/visitbuild
+mkdir /fc/san1/$user/tidalwave/visitbuild
+mv tidalwave_$dist.tar.gz /fc/san1/$user/tidalwave/visitbuild/$dist.tar.gz
+cd /fc/san1/$user/tidalwave/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1

@@ -234,11 +234,18 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
 //    Use new IntersectWithLine routine from cellLocator.  It doesn't require
 //    the calculation of a tolerance. 
 //    
+//    Kathleen Bonnell, Thu Jun 19 16:50:41 PDT 2003  
+//    Test for no cells in ds.  
+//    
 // ****************************************************************************
 
 int
 avtLocateCellQuery::LocatorFindCell(vtkDataSet *ds, float &dist, float *isect)
 {
+    if (ds->GetNumberOfCells() == 0)
+    {
+        return -1;
+    }
     float *rayPt1 = queryAtts.GetRayPoint1();
     float *rayPt2 = queryAtts.GetRayPoint2();
 
