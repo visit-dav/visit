@@ -195,6 +195,9 @@
 #    Kathleen Bonnell, Wed Jan 22 14:47:40 PST 2003   
 #    Added GlobalLineoutAttributes.
 #
+#    Akira Haddox, Thu Jun 12 15:45:26 PDT 2003
+#    Added PointAttributes.
+#
 ##############################################################################
 
 ##
@@ -252,6 +255,7 @@ SRC=    AnimationAttributes.C \
         PlotQueryInfo.C \
         PluginManagerAttributes.C \
         Point.C \
+        PointAttributes.C \
         PrinterAttributes.C \
         QueryAttributes.C \
         QueryList.C \
@@ -314,6 +318,7 @@ HDR=    AnimationAttributes.h \
         PlotQueryInfo.h \
         PluginManagerAttributes.h \
         Point.h \
+        PointAttributes.h \
         PrinterAttributes.h \
         QueryAttributes.h \
         QueryList.h \

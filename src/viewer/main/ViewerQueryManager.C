@@ -1385,6 +1385,9 @@ ViewerQueryManager::Lineout(ViewerWindow *win, const double pt1[3],
 //   Brad Whitlock, Wed Mar 12 14:42:59 PST 2003
 //   I passed in the window in which to do the lineout.
 //
+//   Jeremy Meredith, Tue Jun 17 19:29:00 PDT 2003
+//   Changed GetAllIndex to GetEnabledIndex.
+//
 // ****************************************************************************
 
 void
@@ -1399,7 +1402,7 @@ ViewerQueryManager::Lineout(ViewerWindow *win)
     }
     else
     {
-        int type = OperatorPluginManager::Instance()->GetAllIndex("Lineout_1.0"); 
+        int type = OperatorPluginManager::Instance()->GetEnabledIndex("Lineout_1.0"); 
         AttributeSubject *atts = operatorFactory->GetDefaultAtts(type);
         Line *line = (Line*)atts->CreateCompatible("Line");
         double *pt1 = line->GetPoint1();

@@ -6,6 +6,7 @@
 #include <VisitBoxTool.h>
 #include <VisitLineTool.h>
 #include <VisitPlaneTool.h>
+#include <VisitPointTool.h>
 #include <VisitSphereTool.h>
 
 #include <vtkActor2D.h>
@@ -111,6 +112,7 @@ VisWinTools::VisWinTools(VisWindowColleagueProxy &v) : VisWinColleague(v),
     boxTool = new VisitBoxTool(toolProxy);
     lineTool = new VisitLineTool(toolProxy);
     planeTool = new VisitPlaneTool(toolProxy);
+    pointTool = new VisitPointTool(toolProxy);
     sphereTool = new VisitSphereTool(toolProxy);
 
     // Add the tools to the tools array.
@@ -118,6 +120,7 @@ VisWinTools::VisWinTools(VisWindowColleagueProxy &v) : VisWinColleague(v),
     tools[numTools++] = lineTool;
     tools[numTools++] = planeTool;
     tools[numTools++] = sphereTool;
+    tools[numTools++] = pointTool;
 }
 
 // ****************************************************************************

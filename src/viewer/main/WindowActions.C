@@ -34,6 +34,7 @@
 #include <boxtool.xpm>
 #include <linetool.xpm>
 #include <planetool.xpm>
+#include <pointtool.xpm>
 #include <spheretool.xpm>
 #include <invertbackground.xpm>
 
@@ -977,6 +978,8 @@ EnableToolAction::EnableToolAction(ViewerWindow *win) :
                 AddChoice(tool.c_str(), "Plane tool", QPixmap(planetool_xpm));
             else if(tool == "Sphere")
                 AddChoice(tool.c_str(), "Sphere tool", QPixmap(spheretool_xpm));
+            else if(tool == "Point")
+                AddChoice(tool.c_str(), "Point tool", QPixmap(pointtool_xpm));
             else
                 AddChoice(tool.c_str());
         }

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+  <Plugin name="ThreeSlice" type="operator" label="ThreeSlice" version="1.0" iconFile="ThreeSlice.xpm">
+    <Attribute name="ThreeSliceAttributes" purpose="This class contains attributes for the threeslice operator." persistent="true">
+      <Field name="x" label="x" type="float">
+      </Field>
+      <Field name="y" label="y" type="float">
+      </Field>
+      <Field name="z" label="z" type="float">
+      </Field>
+    </Attribute>
+  </Plugin>

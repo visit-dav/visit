@@ -12,6 +12,7 @@ class VisitInteractiveTool;
 class VisitBoxTool;
 class VisitLineTool;
 class VisitPlaneTool;
+class VisitPointTool;
 class VisitSphereTool;
 class vtkHighlightActor2D;
 
@@ -46,6 +47,9 @@ class vtkHighlightActor2D;
 //
 //   Kathleen Bonnell, Fri Jun  6 15:23:05 PDT 2003
 //   Added FullFrameOn/Off methods. 
+//
+//   Akira Haddox, Thu Jun 12 15:56:03 PDT 2003
+//   Added point tool.
 //
 // ****************************************************************************
 
@@ -98,6 +102,7 @@ class VISWINDOW_API VisWinTools : public VisWinColleague
     VisitBoxTool         *boxTool;
     VisitLineTool        *lineTool;
     VisitPlaneTool       *planeTool;
+    VisitPointTool       *pointTool;
     VisitSphereTool      *sphereTool;
 };
 

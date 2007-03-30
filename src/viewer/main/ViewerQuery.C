@@ -218,6 +218,9 @@ ViewerQuery::StopObservingPlot()
 //    Brad Whitlock, Thu Apr 3 11:19:39 PDT 2003
 //    I removed nstate stuff.
 //
+//    Jeremy Meredith, Tue Jun 17 19:29:00 PDT 2003
+//    Changed GetAllIndex to GetEnabledIndex.
+//
 // ****************************************************************************
 
 void
@@ -241,7 +244,7 @@ ViewerQuery::CreateLineout()
     hdbName += originatingPlot->GetDatabaseName();
     bool replacePlots  = ViewerWindowManager::Instance()->GetClientAtts()->GetReplacePlots();
  
-    int plotType = PlotPluginManager::Instance()->GetAllIndex("Curve_1.0");
+    int plotType = PlotPluginManager::Instance()->GetEnabledIndex("Curve_1.0");
     ViewerPlotList *plotList =  resultsWindow->GetAnimation()->GetPlotList();
     resultsWindow->GetAnimation()->SetNFrames(nFrames);
     resultsWindow->GetAnimation()->SetFrameIndex(currentFrame);
@@ -273,7 +276,7 @@ ViewerQuery::CreateLineout()
     //
     // Add the lineout operator.
     //
-    int operatorType = OperatorPluginManager::Instance()->GetAllIndex("Lineout_1.0");
+    int operatorType = OperatorPluginManager::Instance()->GetEnabledIndex("Lineout_1.0");
     resultsPlot->AddOperator(operatorType);
 
     //
