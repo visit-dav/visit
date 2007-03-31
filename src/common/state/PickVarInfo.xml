@@ -6,7 +6,6 @@
       None
     </Enum>
     <Field name="variableName" label="variableName" type="string">
-       
     </Field>
     <Field name="names" label="names" type="stringVector">
     </Field>
@@ -23,10 +22,12 @@
       None
     </Field>
     <Field name="miscMessage" label="miscMessage" type="string">
-      
     </Field>
-    <Function name="Reset" user="true" member="true">
-    </Function>
+    <Field name="varIsMaterial" label="varIsMaterial" type="bool">
+      false
+    </Field>
+    <Field name="numMatsPerZone" label="numMatsPerZone" type="intVector">
+    </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
     <Function name="CreateOutputString" user="true" member="true">

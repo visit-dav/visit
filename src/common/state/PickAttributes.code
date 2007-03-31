@@ -1,53 +1,18 @@
-Function: Reset
-Declaration: void Reset();
-Definition:
-void
-PickAttributes::Reset()
-{
-    clearWindow  = false;
-    fulfilled    = false;
-    validPick    = false;
-    needTransformMessage = false;
-    pickLetter   = " ";
-    zoneNumber   = -1;
-    timeStep     = -1;
-    domain       = -1;
-    dimension    = -1;
-    pickPoint[0] = 0;
-    pickPoint[1] = 0;
-    pickPoint[2] = 0;
-    cellPoint[0] = 0;
-    cellPoint[1] = 0;
-    cellPoint[2] = 0;
-
-    rayPoint1[0] = rayPoint1[1] = rayPoint1[2] = 0;
-    rayPoint2[0] = rayPoint2[1] = rayPoint2[2] = 0;
-
-    activeVariable = " ";
-    databaseName = " ";
-    if (!nodes.empty())
-        nodes.clear();
-
-    if (!userSelectedVars.empty())
-    {
-        userSelectedVars.clear();
-        userSelectedVars.push_back("default");
-    }
-
-    if (!nodeCoords.empty())
-        nodeCoords.clear();
-
-    useNodeCoords = false;
-    logicalCoords = false;
-
-    ClearPickVarInfos();
-
-    SelectAll();
-}
-
 Function: PrintSelf
 Declaration: void PrintSelf(ostream &os);
 Definition:
+// ****************************************************************************
+// Method: PickAttributes::PrintSelf
+//
+// Purpose: 
+//   Prints the contents of this class to the passed stream. 
+//
+// Modifications:
+//   Kathleen Bonnell, Thu Jun 26 09:31:56 PDT 2003
+//   Reflect new member names (zoneNumber is now elementNumber, nodes is
+//   now incidentElements).  Differentiate between zone pick and node pick.
+//   
+// ****************************************************************************
 void
 PickAttributes::PrintSelf(ostream &os)
 {
@@ -64,8 +29,8 @@ PickAttributes::PrintSelf(ostream &os)
     os << "domain " << domain << "\n";
     os << "active variable:   " << activeVariable.c_str() << "\n";
     os << "selected variables: ";
-    for (i = 0; i < userSelectedVars.size(); i++)
-        os << userSelectedVars[i].c_str() << "  ";
+    for (i = 0; i < variables.size(); i++)
+        os << variables[i].c_str() << "  ";
     os << "\n";
     if (!needTransformMessage)
     {
@@ -80,12 +45,31 @@ PickAttributes::PrintSelf(ostream &os)
            << cellPoint[1] << ", " 
            << cellPoint[2] << ">\n";
     }
-    os << "Zone " << zoneNumber << " ";
-    os << "Nodes " ; 
-    for (i = 0; i < nodes.size(); i++)
+    bool printCoords = useNodeCoords && !nodeCoords.empty();
+    if (pickType == Zone)
     {
-        os << nodes[i] << "  ";
-        if (useNodeCoords && !nodeCoords.empty())
+        os << "Zone " << elementNumber << " ";
+    }
+    else if (pickType == Node)
+    {
+        os << "Node " << elementNumber << " ";
+        if (printCoords)
+        {
+            os << nodeCoords[0].c_str() << "\n";
+        }
+    }
+    if (pickType == Zone)
+    {
+        os << "Nodes " ; 
+    }
+    else if (pickType == Node)
+    {
+        os << "Incident Zones " ; 
+    }
+    for (i = 0; i < incidentElements.size(); i++)
+    {
+        os << incidentElements[i] << "  ";
+        if (printCoords && pickType == Zone)
         {
             os << nodeCoords[i].c_str() << "\n";
         } 
@@ -104,9 +88,25 @@ PickAttributes::PrintSelf(ostream &os)
 Function: CreateOutputString
 Declaration: void CreateOutputString(std::string &os);
 Definition:
+// ****************************************************************************
+// Method: PickAttributes::CreateOutputString
+//
+// Purpose: 
+//   Creates a single output string containing all the information gathered
+//   from a pick. 
+//
+// Modifications:
+//   Kathleen Bonnell, Thu Jun 26 09:31:56 PDT 2003
+//   Reflect new member names (zoneNumber is now elementNumber, nodes is
+//   now incidentElements).  Differentiate between zone pick and node pick.
+//   
+// ****************************************************************************
 void
 PickAttributes::CreateOutputString(std::string &os)
 {
+    if (!fulfilled)
+        return;
+
     int i;
     char buff[256];
    
@@ -157,19 +157,42 @@ PickAttributes::CreateOutputString(std::string &os)
     }
     os += buff;
 
-    sprintf(buff, "Zone:  %d\n", zoneNumber);
-    os += buff;
-    os += "Nodes:  " ; 
     bool printCoords = useNodeCoords && !nodeCoords.empty(); 
-    if (printCoords)
+    if (pickType == Zone)
     {
-        os += "\n    "; 
+        sprintf(buff, "Zone:  %d\n", elementNumber);
     }
-    for (i = 0; i < nodes.size(); i++)
+    else if (pickType == Node)
     {
-        sprintf(buff, "%d  ", nodes[i]);
-        os += buff; 
+        if (!printCoords)
+        {
+            sprintf(buff, "Node:  %d\n", elementNumber);
+        }
+        else
+        {
+            sprintf(buff, "Node:  %d  %s\n", elementNumber, 
+                    nodeCoords[0].c_str());
+        }
+    }
+    os += buff;
+    if (pickType == Zone)
+    {
+        os += "Nodes:  " ; 
         if (printCoords)
+        {
+            os += "\n    "; 
+        }
+    }
+    else if (pickType == Node)
+    {
+        os += "Incident zones:  " ; 
+    }
+
+    for (i = 0; i < incidentElements.size(); i++)
+    {
+        sprintf(buff, "%d  ", incidentElements[i]);
+        os += buff; 
+        if (printCoords && pickType == Zone)
         {
             sprintf(buff, "%s\n    ", nodeCoords[i].c_str());
             os += buff;
@@ -187,5 +210,43 @@ PickAttributes::CreateOutputString(std::string &os)
         os += iv;
         os += "\n";
     }
+}
+
+Function: PrepareForNewPick
+Declaration: void PrepareForNewPick();
+Definition:
+// ****************************************************************************
+// Method: PickAttributes::PrepareForNewPick
+//
+// Purpose: 
+//   Clear certain fields in preparation for new pick.  These are fields that
+//   will get filled in during the pick process.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   June 26, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PickAttributes::PrepareForNewPick()
+{
+    clearWindow  = false;
+    fulfilled    = false;
+    elementNumber   = -1;
+    domain          = -1;
+    dimension       = -1;
+    pickPoint[0] = pickPoint[1] = pickPoint[2] = 0;
+    cellPoint[0] = cellPoint[1] = cellPoint[2] = 0;
+    needTransformMessage = false;
+
+    if (!incidentElements.empty())
+        incidentElements.clear();
+
+    if (!nodeCoords.empty())
+        nodeCoords.clear();
+
+    ClearPickVarInfos();
 }
 

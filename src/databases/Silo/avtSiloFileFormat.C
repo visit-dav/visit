@@ -4387,6 +4387,11 @@ avtSiloFileFormat::CreateCurvilinearMesh(DBquadmesh *qm)
 //    I added a field-data array that indicates the extents of the real
 //    data.  Used during ghostzone removal.  
 //    
+//    Kathleen Bonnell, Wed Jun 25 13:45:04 PDT 2003 
+//    Allocate space for realDims via SetNumberOfValues instead of Allocate.
+//    Allocate does not set some internal values needed for later calls to
+//    GetNumberOfTuples and the like. 
+//    
 // ****************************************************************************
 
 void 
@@ -4487,7 +4492,7 @@ avtSiloFileFormat::GetQuadGhostZones(DBquadmesh *qm, vtkDataSet *ds)
 
         vtkIntArray *realDims = vtkIntArray::New();
         realDims->SetName("avtRealDims");
-        realDims->Allocate(6);
+        realDims->SetNumberOfValues(6);
         realDims->SetValue(0, first[0]);
         realDims->SetValue(1, last[0]);
         realDims->SetValue(2, first[1]);

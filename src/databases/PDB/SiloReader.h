@@ -20,7 +20,9 @@ class vtkDataSet;
 // Creation:   Fri Oct 11 17:40:34 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 29 13:24:01 PST 2003
+//   I added a time argument to GetMesh, GetVar, and GetVectorVar.
+//
 // ****************************************************************************
 
 class SiloReader : public PDBReader
@@ -30,11 +32,11 @@ public:
     virtual ~SiloReader() { };
 
     virtual bool Identify();
-    virtual void GetTimeVaryingInformation(avtDatabaseMetaData *) { };
+    virtual void GetTimeVaryingInformation(int,avtDatabaseMetaData *) { };
     virtual void PopulateDatabaseMetaData(avtDatabaseMetaData *) { };
-    virtual vtkDataSet   *GetMesh(const char *);
-    virtual vtkDataArray *GetVar(const char *);
-    virtual vtkDataArray *GetVectorVar(const char *);
+    virtual vtkDataSet   *GetMesh(int, const char *);
+    virtual vtkDataArray *GetVar(int, const char *);
+    virtual vtkDataArray *GetVectorVar(int, const char *);
 };
 
 #endif

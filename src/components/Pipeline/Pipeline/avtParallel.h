@@ -9,6 +9,7 @@
 
 PIPELINE_API void    Barrier(void);
 PIPELINE_API bool    Collect(float *, int);
+PIPELINE_API bool    Collect(int *, int);
 PIPELINE_API int     PAR_Rank(void);
 PIPELINE_API int     PAR_Size(void);
 PIPELINE_API void    SumIntAcrossAllProcessors(int&);

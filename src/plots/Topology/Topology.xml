@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+  <Plugin name="Topology" type="plot" label="Topology" version="1.0" vartype="scalar" iconFile="Topology.xpm">
+    <Attribute name="TopologyAttributes" purpose="This class contains the plot attributes for the topology plot" persistent="true" exportAPI="" exportInclude="" codefile="Topology.code">
+      <Field name="lineWidth" label="Line width" type="linewidth">
+        2
+      </Field>
+      <Field name="lineStyle" label="Line style" type="linestyle">
+        0
+      </Field>
+      <Field name="multiColor" label="multiColor" type="att" subtype="ColorAttributeList" init="true">
+      </Field>
+      <Field name="minOpacity" label="Opacity" type="opacity">
+        1.000000
+      </Field>
+      <Field name="minPlateauOpacity" label="Opacity" type="opacity">
+        1.000000
+      </Field>
+      <Field name="maxPlateauOpacity" label="Opacity" type="opacity">
+        1.000000
+      </Field>
+      <Field name="maxOpacity" label="Opacity" type="opacity">
+        1.000000
+      </Field>
+      <Field name="tolerance" label="tolerance" type="double">
+        0.000001
+      </Field>
+      <Field name="hitpercent" label="hitpercent" type="double">
+        0.000000
+      </Field>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Include file="header" quoted="false">
+        ColorAttribute.h
+      </Include>
+    </Attribute>
+  </Plugin>

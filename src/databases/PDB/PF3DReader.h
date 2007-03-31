@@ -14,7 +14,9 @@
 // Creation:   Thu Oct 10 08:48:46 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 29 13:26:31 PST 2003
+//   I made it work with MTSD files.
+//
 // ****************************************************************************
 
 class PF3DReader : public PDBReader
@@ -24,11 +26,13 @@ public:
     virtual ~PF3DReader();
 
     virtual bool Identify();
-    virtual void GetTimeVaryingInformation(avtDatabaseMetaData *);
+    virtual void GetTimeVaryingInformation(int, avtDatabaseMetaData *);
     virtual void PopulateDatabaseMetaData(avtDatabaseMetaData *);
-    virtual vtkDataSet   *GetMesh(const char *);
-    virtual vtkDataArray *GetVar(const char *);
-    virtual vtkDataArray *GetVectorVar(const char *);
+
+    virtual void          GetCycles(std::vector<int> &cycles);
+    virtual vtkDataSet   *GetMesh(int, const char *);
+    virtual vtkDataArray *GetVar(int, const char *);
+    virtual vtkDataArray *GetVectorVar(int, const char *);
 
 protected:
     void GetMeshInfo(const char *meshName, float extents[6], int nNodes[3],

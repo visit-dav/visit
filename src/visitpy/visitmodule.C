@@ -64,6 +64,7 @@
 #include <PyHostProfile.h>
 #include <PyKeyframeAttributes.h>
 #include <PyMaterialAttributes.h>
+#include <PyPickAttributes.h>
 #include <PyPrinterAttributes.h>
 #include <PyRenderingAttributes.h>
 #include <PySaveWindowAttributes.h>
@@ -4151,7 +4152,7 @@ visit_SetOperatorOptions(PyObject *self, PyObject *args)
     //
     int activeOperator = -1;
     int applyToAllPlots = 0;
-    if(!PyArg_ParseTuple(args, "Oii", &obj, &applyToAllPlots, &applyToAllPlots))
+    if(!PyArg_ParseTuple(args, "Oii", &obj, &activeOperator, &applyToAllPlots))
     {
         if(!PyArg_ParseTuple(args, "Oi", &obj, &activeOperator))
         {
@@ -4730,8 +4731,13 @@ visit_GetPickOutput(PyObject *self, PyObject *args)
     std::string pickOut;
     PickAttributes *pa = viewer->GetPickAttributes();
     if (pa->GetFulfilled())
+    {
         pa->CreateOutputString(pickOut);
-
+    }
+    else
+    {
+        pickOut = "Either no Pick has been performed, or the last Pick was invalid."; 
+    }
     return PyString_FromString(pickOut.c_str());
 }
 
@@ -6131,6 +6137,9 @@ visit_SurfaceArea(PyObject *self, PyObject *args)
 //   Brad Whitlock, Fri Dec 27 11:18:44 PDT 2002
 //   I made it package the pick arguments in a stringVector.
 //
+//   Kathleen Bonnell, Mon Jun 30 10:48:25 PDT 2003  
+//   Allow the vars tuple argument to be optional. 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -6140,30 +6149,34 @@ visit_Pick(PyObject *self, PyObject *args)
 
     int x, y;
     PyObject *tuple = NULL;
-    if (!PyArg_ParseTuple(args, "iiO", &x, &y, &tuple))
+    if (!PyArg_ParseTuple(args, "ii|O", &x, &y, &tuple))
         return NULL;
+
     // Check the tuple argument.
     stringVector vars;
-    if(PyTuple_Check(tuple))
+    if (tuple != NULL)
     {
-        int size = PyTuple_Size(tuple);
-        if(size > 0)
+        if(PyTuple_Check(tuple))
         {
-            for(int i = 0; i < size; ++i)
+            int size = PyTuple_Size(tuple);
+            if(size > 0)
             {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyString_Check(item))
-                    vars.push_back(PyString_AS_STRING(item));
+                for(int i = 0; i < size; ++i)
+                {
+                    PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                    if(PyString_Check(item))
+                        vars.push_back(PyString_AS_STRING(item));
+                }
             }
         }
-    }
-    else if(PyString_Check(tuple))
-    {
-        vars.push_back(PyString_AS_STRING(tuple));
-    }
-    else
-    {
-        vars.push_back("default");
+        else if(PyString_Check(tuple))
+        {
+            vars.push_back(PyString_AS_STRING(tuple));
+        }
+        else
+        {
+            vars.push_back("default");
+        }
     }
 
     MUTEX_LOCK();
@@ -6185,6 +6198,163 @@ visit_Pick(PyObject *self, PyObject *args)
     // Return the success value.
     return PyLong_FromLong(long(errorFlag == 0));
 }
+
+
+// ****************************************************************************
+// Function: visit_NodePick
+//
+// Purpose:
+//   Tells the viewer to do NodePick.
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell
+// Creation:   June 25, 2003 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_NodePick(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int x, y;
+    PyObject *tuple = NULL;
+    if (!PyArg_ParseTuple(args, "ii|O", &x, &y, &tuple))
+        return NULL;
+
+    // Check the tuple argument.
+    stringVector vars;
+    if (tuple != NULL)
+    {
+        if(PyTuple_Check(tuple))
+        {
+            int size = PyTuple_Size(tuple);
+            if(size > 0)
+            {
+                for(int i = 0; i < size; ++i)
+                {
+                    PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                    if(PyString_Check(item))
+                        vars.push_back(PyString_AS_STRING(item));
+                }
+            }
+        }
+        else if(PyString_Check(tuple))
+        {
+            vars.push_back(PyString_AS_STRING(tuple));
+        }
+        else
+        {
+            vars.push_back("default");
+        }
+    }
+
+    MUTEX_LOCK();
+        viewer->NodePick(x, y, vars);
+        if(logging)
+        {
+            fprintf(logFile, "Pick(%d, %d, (", x, y);
+            for(int i = 0; i < vars.size(); ++i)
+            {
+                fprintf(logFile, "\"%s\"", vars[i].c_str());
+                if(i < vars.size()-1)
+                    fprintf(logFile, ", ");
+            }
+            fprintf(logFile, "))\n");
+        }
+    MUTEX_UNLOCK();
+    int errorFlag = Synchronize();
+
+    // Return the success value.
+    return PyLong_FromLong(long(errorFlag == 0));
+}
+
+
+// ****************************************************************************
+// Function: visit_SetPickAttributes
+//
+// Purpose:
+//   Tells the viewer to use the new pick attributes we're sending.
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell
+// Creation:   June 30, 2003 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetPickAttributes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *pick = NULL;
+    // Try and get the pick pointer.
+    if(!PyArg_ParseTuple(args,"O",&pick))
+    {
+        cerr << "visit_SetPickAttributes: Cannot parse object!" << endl;
+        return NULL;
+    }
+    if(!PyPickAttributes_Check(pick))
+    {
+        VisItErrorFunc("Argument is not a PickAttributes object");
+        return NULL;
+    }
+
+    MUTEX_LOCK();
+        PickAttributes *pa = PyPickAttributes_FromPyObject(pick);
+
+        // Copy the object into the pick attributes.
+        *(viewer->GetPickAttributes()) = *pa;
+        viewer->GetPickAttributes()->Notify();
+        viewer->SetPickAttributes();
+
+        if(logging)
+            fprintf(logFile, "SetPickAttributes()\n");
+    MUTEX_UNLOCK();
+    Synchronize();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+
+// ****************************************************************************
+// Function: visit_GetPickAttributes
+//
+// Purpose:
+//   Returns the current pick attributes.
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   June 30, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetPickAttributes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *retval = PyPickAttributes_NewPyObject();
+    PickAttributes *pa = PyPickAttributes_FromPyObject(retval);
+
+    // Copy the viewer proxy's pick atts into the return data structure.
+    *pa = *(viewer->GetPickAttributes());
+
+    return retval;
+}
+
+
+
 
 // ****************************************************************************
 // Function: visit_Lineout
@@ -6428,6 +6598,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Hank Childs, Thu May 22 18:34:24 PDT 2003
 //   Added SurfaceArea.
 //
+//   Kathleen Bonnell, Wed Jun 25 13:27:59 PDT 2003 
+//   Added NodePick, ZonePick. (ZonePick == Pick).
+//
 // ****************************************************************************
 
 static void
@@ -6499,8 +6672,9 @@ AddDefaultMethods()
     AddMethod("GetEngineList", visit_GetEngineList);
     AddMethod("GetKeyframeAttributes", visit_GetKeyframeAttributes);
     AddMethod("GetMaterialAttributes", visit_GetMaterialAttributes);
-    AddMethod("GetPipelineCachingMode", visit_GetPipelineCachingMode);
+    AddMethod("GetPickAttributes", visit_GetPickAttributes);
     AddMethod("GetPickOutput", visit_GetPickOutput);
+    AddMethod("GetPipelineCachingMode", visit_GetPipelineCachingMode);
     AddMethod("GetRenderingAttributes", visit_GetRenderingAttributes);
     AddMethod("GetWindowInformation", visit_GetWindowInformation);
     AddMethod("HideActivePlots", visit_HideActivePlots);
@@ -6510,6 +6684,7 @@ AddDefaultMethods()
     AddMethod("MovePlotDatabaseKeyframe", visit_MovePlotDatabaseKeyframe);
     AddMethod("MovePlotKeyframe", visit_MovePlotKeyframe);
     AddMethod("MoveViewKeyframe", visit_MoveViewKeyframe);
+    AddMethod("NodePick", visit_NodePick);
     AddMethod("OpenDatabase", visit_OpenDatabase);
     AddMethod("OpenComputeEngine", visit_OpenComputeEngine);
     AddMethod("OpenMDServer", visit_OpenMDServer);
@@ -6539,6 +6714,7 @@ AddDefaultMethods()
     AddMethod("SetKeyframeAttributes", visit_SetKeyframeAttributes);
     AddMethod("SetMaterialAttributes", visit_SetMaterialAttributes);
     AddMethod("SetOperatorOptions", visit_SetOperatorOptions);
+    AddMethod("SetPickAttributes", visit_SetPickAttributes);
     AddMethod("SetPipelineCachingMode", visit_SetPipelineCachingMode);
     AddMethod("SetPlotDatabaseState", visit_SetPlotDatabaseState);
     AddMethod("SetPlotFrameRange", visit_SetPlotFrameRange);
@@ -6563,6 +6739,7 @@ AddDefaultMethods()
     AddMethod("ToggleSpinMode", visit_ToggleSpinMode);
     AddMethod("UndoView",  visit_UndoView);
     AddMethod("WriteConfigFile",  visit_WriteConfigFile);
+    AddMethod("ZonePick", visit_Pick);
 
     //
     // Extra methods that are not part of the ViewerProxy but allow the

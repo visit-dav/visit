@@ -550,23 +550,41 @@ ViewerWindow::Realize()
 //  Creation:   Tue Nov 7 13:33:56 PST 2000
 //   
 //  Modifications:
-//
 //    Kathleen Bonnell, Thu Nov 22 16:03:00 PST 2001 
 //    I added calls to Start/Stop pick mode. 
+//
+//    Kathleen Bonnell, Wed Jun 25 16:50:48 PDT 2003  
+//    Modified to handle different Pick modes.  Removed calls to Start/Stop
+//    PickMode (moved the logic for those methods here.)
 //
 // ****************************************************************************
 
 void
 ViewerWindow::SetInteractionMode(const INTERACTION_MODE mode)
 {
-    if (mode == PICK && visWindow->GetInteractionMode() != PICK)
+    const INTERACTION_MODE curMode = visWindow->GetInteractionMode();
+
+    bool changingToPickMode  = (ZONE_PICK == mode || NODE_PICK == mode);
+    bool currentlyInPickMode = (ZONE_PICK == curMode || NODE_PICK == curMode);
+
+    if  (changingToPickMode)
     {
-        StartPickMode();
+        //
+        // Either starting pick mode or changing from one pick mode to another. 
+        //
+        bool firstEntry = !currentlyInPickMode;
+        bool zonePick = (ZONE_PICK == mode);
+        ViewerQueryManager::Instance()->StartPickMode(firstEntry, zonePick);
     }
-    else if (mode != PICK && visWindow->GetInteractionMode() == PICK)
+    else if (!changingToPickMode && currentlyInPickMode)
     {
-        StopPickMode();
+        //
+        // Stopping pick mode
+        //
+        animation->GetPlotList()->StopPick();
+        ViewerQueryManager::Instance()->StopPickMode();
     }
+
     visWindow->SetInteractionMode(mode);
 }
 
@@ -4004,11 +4022,14 @@ ViewerWindow::GetWindowAttributes() const
 // Creation:   Mon Sep 9 15:32:38 PST 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Jun 25 16:55:18 PDT 2003
+//   Added pickMode argument, so that correct interaction mode is set
+//   before picking. 
 //   
 // ****************************************************************************
 
 void
-ViewerWindow::Pick(int x, int y)
+ViewerWindow::Pick(int x, int y, const INTERACTION_MODE pickMode)
 {
     if(GetTypeIsCurve())
         Error("Curve windows cannot be picked for values.");
@@ -4016,7 +4037,7 @@ ViewerWindow::Pick(int x, int y)
     {
         // Set the interaction mode to pick.
         INTERACTION_MODE iMode = visWindow->GetInteractionMode();
-        SetInteractionMode(PICK);
+        SetInteractionMode(pickMode);
 
         // Perform a screen space pick operation.
         visWindow->Pick(x, y);
@@ -4063,54 +4084,6 @@ ViewerWindow::PerformPickCallback(void *data)
     // Let the Query manager handle this.
     //
     ViewerQueryManager::Instance()->Pick((PICK_POINT_INFO*)data);
-}
-
-
-// ****************************************************************************
-//  Method: ViewerWindow::StartPickMode
-//
-//  Purpose: 
-//    Start pick mode. 
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   November 20, 2001 
-//
-//  Modifications:
-//    Kathleen Bonnell, Tue Mar 26 10:15:00 PST 2002 
-//    Properly handle needed updates from the plot list. 
-//
-//    Kathleen Bonnell, Wed Mar 26 14:37:23 PST 2003  
-//    Have ViewerQueryManager handle starting pick mode.
-//
-// ****************************************************************************
-
-void
-ViewerWindow::StartPickMode()
-{
-    ViewerQueryManager::Instance()->StartPickMode();
-}
-
-
-// ****************************************************************************
-//  Method: ViewerWindow::StopPickMode
-//
-//  Purpose: 
-//    Stop pick mode. 
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   November 20, 2001 
-//
-//  Modifications:
-//    Kathleen Bonnell, Wed Mar 26 14:37:23 PST 2003  
-//    Tell ViewerQueryManager that pick mode is stopping. 
-//
-// ****************************************************************************
-
-void
-ViewerWindow::StopPickMode()
-{
-    animation->GetPlotList()->StopPick();
-    ViewerQueryManager::Instance()->StopPickMode();
 }
 
 

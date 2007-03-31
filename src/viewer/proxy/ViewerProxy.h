@@ -275,6 +275,9 @@ class Xfer;
 //    Brad Whitlock, Thu May 15 13:03:04 PST 2003
 //    I added a default timeState argument to the OpenDatabase method.
 //
+//    Kathleen Bonnell, Tue Jul  1 09:34:37 PDT 2003  
+//    Added SetPickAttributes.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -419,6 +422,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void SetWindowArea(int x, int y, int w, int h);
 
     void SetGlobalLineoutAttributes();
+    void SetPickAttributes();
 
     void WriteConfigFile();
 
@@ -437,6 +441,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void LineQuery(const std::string &queryName, const double pt1[3],
                    const double pt2[3], const stringVector &vars);
     void Pick(int x, int y, const stringVector &vars);
+    void NodePick(int x, int y, const stringVector &vars);
     void Lineout(const double p0[3], const double p1[3],
                  const stringVector &vars);
 

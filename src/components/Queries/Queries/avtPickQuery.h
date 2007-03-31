@@ -36,6 +36,11 @@ class vtkRectilinearGrid;
 //    Kathleen Bonnell, Wed Jun 18 18:07:55 PDT 2003   
 //    Add member ghostType.
 //
+//    Kathleen Bonnell, Fri Jun 27 17:06:27 PDT 2003  
+//    Add methods RetrieveNodes, RetrieveZones, DeterminePickedNode,
+//    SetRealIds, RetrieveVarInfo -- to support Node Pick and make code
+//    more legible.
+//
 // ****************************************************************************
 
 class QUERY_API avtPickQuery : public avtDatasetQuery
@@ -66,6 +71,11 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
     virtual avtDataObject_p         ApplyFilters(avtDataObject_p);   
     int                             LocatorFindCell(vtkDataSet *);
     int                             RGridFindCell(vtkRectilinearGrid *);
+    bool                            RetrieveNodes(vtkDataSet *, int);
+    bool                            RetrieveZones(vtkDataSet *, int);
+    bool                            DeterminePickedNode(vtkDataSet *, int &);
+    void                            SetRealIds(vtkDataSet *);
+    void                            RetrieveVarInfo(vtkDataSet *);
 };
 
 

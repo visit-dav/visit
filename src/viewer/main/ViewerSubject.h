@@ -256,6 +256,9 @@ class MaterialAttributes;
 //    Brad Whitlock, Fri May 16 14:52:32 PST 2003
 //    I added configFileName.
 //
+//    Kathleen Bonnell, Tue Jul  1 09:21:57 PDT 2003 
+//    Added SetPickAttributes.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -361,6 +364,7 @@ private:
     void SetDefaultMaterialAttributes();
     void ResetMaterialAttributes();
     void SetGlobalLineoutAttributes();
+    void SetPickAttributes();
 
 private slots:
     void HandleViewerRPC();

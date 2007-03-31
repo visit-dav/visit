@@ -205,13 +205,14 @@ avtLineoutActor::SetMode3D(const bool mode)
     mode3D = mode;
 }
 
+
 // ****************************************************************************
 //  Method:  avtLineoutActor::SetAttachmentPoint
 //
 //  Purpose: Set actors' postion.
 //
 //  Arguments:
-//    pos    The attachment point in 3d world coordinates.
+//    x, y, z    The attachment point in 3d world coordinates.
 //
 //  Programmer:  Kathleen Bonnell 
 //  Creation:    April 15, 2002 
@@ -220,16 +221,19 @@ avtLineoutActor::SetMode3D(const bool mode)
 //    Kathleen Bonnell, Tue Oct  1 16:07:40 PDT 2002 
 //    Set position for first label actor.
 //
+//    Kathleen Bonnell, Wed Jun 25 15:12:24 PDT 2003  
+//    Changed argument from float[3] to 3 floats.
+//
 // ****************************************************************************
 
 void 
-avtLineoutActor::SetAttachmentPoint(const float pos[3])
+avtLineoutActor::SetAttachmentPoint(float x, float y, float z)
 {
-    attach[0] = pos[0];
-    attach[1] = pos[1];
-    attach[2] = pos[2];
-    lineSource->SetPoint1(pos[0], pos[1], pos[2]);
-    labelActor1->SetPosition(pos[0], pos[1], pos[2]);
+    attach[0] = x; 
+    attach[1] = y; 
+    attach[2] = z; 
+    lineSource->SetPoint1(x, y, z);
+    labelActor1->SetPosition(x, y, z);
 }
 
 
@@ -248,16 +252,15 @@ avtLineoutActor::SetAttachmentPoint(const float pos[3])
 //    Kathleen Bonnell, Tue Oct  1 16:07:40 PDT 2002 
 //    Set position for first label actor.
 //
+//    Kathleen Bonnell, Wed Jun 25 15:12:24 PDT 2003  
+//    Changed argument from double[3] to 3 doubles. Call the float version.
+//
 // ****************************************************************************
 
 void 
-avtLineoutActor::SetAttachmentPoint(const double pos[3])
+avtLineoutActor::SetAttachmentPoint(double x, double y, double z)
 {
-    attach[0] = (float)pos[0];
-    attach[1] = (float)pos[1];
-    attach[2] = (float)pos[2];
-    lineSource->SetPoint1(attach[0], attach[1], attach[2]);
-    labelActor1->SetPosition(attach[0], attach[1], attach[2]);
+    SetAttachmentPoint((float)x, (float)y, (float)z);
 }
 
 
@@ -276,16 +279,19 @@ avtLineoutActor::SetAttachmentPoint(const double pos[3])
 //    Kathleen Bonnell, Tue Oct  1 16:07:40 PDT 2002 
 //    Set position for second label actor.
 //
+//    Kathleen Bonnell, Wed Jun 25 15:12:24 PDT 2003  
+//    Changed argument from float[3] to 3 floats. 
+//
 // ****************************************************************************
 
 void 
-avtLineoutActor::SetPoint2(const float pos[3])
+avtLineoutActor::SetPoint2(float x, float y, float z)
 {
-    pt2[0] = pos[0];
-    pt2[1] = pos[1];
-    pt2[2] = pos[2];
-    lineSource->SetPoint2(pos[0], pos[1], pos[2]);
-    labelActor2->SetPosition(pos[0], pos[1], pos[2]);
+    pt2[0] = x;
+    pt2[1] = y;
+    pt2[2] = z;
+    lineSource->SetPoint2(x, y, z);
+    labelActor2->SetPosition(x, y, z);
 }
 
 
@@ -304,16 +310,15 @@ avtLineoutActor::SetPoint2(const float pos[3])
 //    Kathleen Bonnell, Tue Oct  1 16:07:40 PDT 2002 
 //    Set position for second label actor.
 //
+//    Kathleen Bonnell, Wed Jun 25 15:12:24 PDT 2003  
+//    Changed argument from double[3] to 3 double. Call the float version.
+//
 // ****************************************************************************
 
 void 
-avtLineoutActor::SetPoint2(const double pos[3])
+avtLineoutActor::SetPoint2(double x, double y, double z)
 {
-    pt2[0] = (float)pos[0];
-    pt2[1] = (float)pos[1];
-    pt2[2] = (float)pos[2];
-    lineSource->SetPoint2((float)pos[0], (float)pos[1], (float)pos[2]);
-    labelActor2->SetPosition((float)pos[0], (float)pos[1], (float)pos[2]);
+    SetPoint2((float)x, (float)y, (float)z);
 }
 
 

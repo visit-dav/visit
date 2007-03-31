@@ -3,7 +3,10 @@
 // ************************************************************************* //
 
 #include <avtTransformFilter.h>
-#include <BadVectorException.h>
+
+#include <SimilarityTransformAttributes.h>
+
+#include <avtSimilarityTransformFilter.h>
 
 // ****************************************************************************
 //  Method: avtTransformFilter constructor
@@ -15,12 +18,14 @@
 //    Kathleen Bonnell, Thu Apr 10 11:07:48 PDT 2003
 //    Initialize invM.
 //
+//    Hank Childs, Tue Jul  1 08:59:08 PDT 2003
+//    Reflect that this filter is now a facaded filter.
+//
 // ****************************************************************************
 
 avtTransformFilter::avtTransformFilter()
 {
-    M = NULL;
-    invM = NULL;
+    stf = new avtSimilarityTransformFilter();
 }
 
 
@@ -34,16 +39,15 @@ avtTransformFilter::avtTransformFilter()
 //    Kathleen Bonnell, Thu Apr 10 11:07:48 PDT 2003
 //    Delete invM.
 //
+//    Hank Childs, Tue Jul  1 08:59:08 PDT 2003
+//    Reflect that this filter is now a facaded filter.
+//
 // ****************************************************************************
 
 avtTransformFilter::~avtTransformFilter()
 {
-    if (M)
-        M->Delete();
-    M = NULL;
-    if (invM)
-        invM->Delete();
-    invM = NULL;
+    if (stf != NULL)
+        delete stf;
 }
 
 
@@ -81,25 +85,42 @@ avtTransformFilter::Create()
 //    Kathleen Bonnell, Wed May 21 11:38:23 PDT 2003   
 //    Check for bad axis of rotation. 
 //
+//    Hank Childs, Tue Jul  1 08:59:08 PDT 2003
+//    Blew away any interpretation of atts and added code to make similarity
+//    transform atts and pass it to that filter.
+//
 // ****************************************************************************
 
 void
 avtTransformFilter::SetAtts(const AttributeGroup *a)
 {
     atts = *(const TransformAttributes*)a;
-    if (M)
-        M->Delete();
-    M = NULL;
-    if (invM)
-        invM->Delete();
-    invM = NULL;
 
-    const float *axis = atts.GetRotateAxis();
-    if (axis[0] == 0. && axis[1] == 0. && axis[2] == 0.)
+    SimilarityTransformAttributes st_atts;
+    st_atts.SetDoRotate(atts.GetDoRotate());
+    st_atts.SetRotateOrigin(atts.GetRotateOrigin());
+    st_atts.SetRotateAxis(atts.GetRotateAxis());
+    st_atts.SetRotateAmount(atts.GetRotateAmount());
+    switch (atts.GetRotateType())
     {
-        EXCEPTION1(BadVectorException, "Rotation Axis");
-        return;
+      case TransformAttributes::Deg:
+        st_atts.SetRotateType(SimilarityTransformAttributes::Deg);
+        break;
+      case TransformAttributes::Rad:
+        st_atts.SetRotateType(SimilarityTransformAttributes::Rad);
+        break;
     }
+    st_atts.SetDoScale(atts.GetDoScale());
+    st_atts.SetScaleOrigin(atts.GetScaleOrigin());
+    st_atts.SetScaleX(atts.GetScaleX());
+    st_atts.SetScaleY(atts.GetScaleY());
+    st_atts.SetScaleZ(atts.GetScaleZ());
+    st_atts.SetDoTranslate(atts.GetDoTranslate());
+    st_atts.SetTranslateX(atts.GetTranslateX());
+    st_atts.SetTranslateY(atts.GetTranslateY());
+    st_atts.SetTranslateZ(atts.GetTranslateZ());
+
+    stf->SetAtts(&st_atts);
 }
 
 
@@ -121,308 +142,22 @@ avtTransformFilter::Equivalent(const AttributeGroup *a)
     return (atts == *(TransformAttributes*)a);
 }
 
+
 // ****************************************************************************
-//  Method:  Jeremy Meredith, Mon Sep 24 14:24:14 PDT 2001
+//  Method: avtTransformFilter::GetFacadedFilter
 //
 //  Purpose:
-//    Setup the vtk matrix from the transform attributs
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    September 24, 2001
-//
-//  Modifications:
-//    Kathleen Bonnell, Thu Apr 10 11:07:48 PDT 2003
-//    Compute the inverse matrix. 
-//
-// ****************************************************************************
-
-void
-avtTransformFilter::SetupMatrix()
-{
-    if (M)
-        return;
-
-    M = vtkMatrix4x4::New();
-    M->Identity();
-    invM = vtkMatrix4x4::New();
-    invM->Identity();
-
-    //
-    //  A place to store the inverse transforms for each type.
-    //
-    vtkMatrix4x4 *IR = vtkMatrix4x4::New(); // inverse Rotate
-    IR->Identity();
-    vtkMatrix4x4 *IS = vtkMatrix4x4::New(); // inverse Scale
-    IS->Identity();
-    vtkMatrix4x4 *IT = vtkMatrix4x4::New(); // inverse Transform
-    IT->Identity();
-
-    //
-    // Do the rotation
-    //
-    if (atts.GetDoRotate())
-    {
-        float oX = atts.GetRotateOrigin()[0];
-        float oY = atts.GetRotateOrigin()[1];
-        float oZ = atts.GetRotateOrigin()[2];
-
-        float X = atts.GetRotateAxis()[0];
-        float Y = atts.GetRotateAxis()[1];
-        float Z = atts.GetRotateAxis()[2];
-        float p = atts.GetRotateAmount();
-
-        // Convert to radians
-        if (atts.GetRotateType() == atts.Deg)
-            p *= 3.1415926535898/180.;
-
-        // Normalize the axis vector
-        float len = sqrt(X*X + Y*Y + Z*Z);
-        if (len)
-        {
-            X /= len;
-            Y /= len;
-            Z /= len;
-        }
-
-        // Compose the quaternion
-        float sin_p = sin(p / 2.);
-        float cos_p = cos(p / 2.);
-
-        double q[4] = { X*sin_p, Y*sin_p, Z*sin_p, cos_p };
-
-        vtkMatrix4x4 *T1  = vtkMatrix4x4::New();
-        vtkMatrix4x4 *R   = vtkMatrix4x4::New();
-        vtkMatrix4x4 *T2  = vtkMatrix4x4::New();
-        vtkMatrix4x4 *tmp = vtkMatrix4x4::New();
-
-        // Pre-translate
-        T1->Identity();
-        (*T1)[0][3] = -oX;
-        (*T1)[1][3] = -oY;
-        (*T1)[2][3] = -oZ;
-        
-        // Rotate
-        R->Identity();
-        (*R)[0][0] = 1.0 - 2.0 * (q[1] * q[1] + q[2] * q[2]);
-        (*R)[0][1] = 2.0 * (q[0] * q[1] - q[2] * q[3]);
-        (*R)[0][2] = 2.0 * (q[2] * q[0] + q[1] * q[3]);
-
-        (*R)[1][0] = 2.0 * (q[0] * q[1] + q[2] * q[3]);
-        (*R)[1][1] = 1.0 - 2.0 * (q[2] * q[2] + q[0] * q[0]);
-        (*R)[1][2] = 2.0 * (q[1] * q[2] - q[0] * q[3]);
-
-        (*R)[2][0] = 2.0 * (q[2] * q[0] - q[1] * q[3]);
-        (*R)[2][1] = 2.0 * (q[1] * q[2] + q[0] * q[3]);
-        (*R)[2][2] = 1.0 - 2.0 * (q[1] * q[1] + q[0] * q[0]);
-
-        // Post-translate
-        T2->Identity();
-        (*T2)[0][3] = oX;
-        (*T2)[1][3] = oY;
-        (*T2)[2][3] = oZ;
-
-        // apply it
-        vtkMatrix4x4::Multiply4x4(T1,  M,  tmp);   M->DeepCopy(tmp);
-        vtkMatrix4x4::Multiply4x4(R,   M,  tmp);   M->DeepCopy(tmp);
-        vtkMatrix4x4::Multiply4x4(T2,  M,  tmp);   M->DeepCopy(tmp);
-
-        // Create the inverse rotation.
-        vtkMatrix4x4 *R_t= vtkMatrix4x4::New();
-        vtkMatrix4x4::Transpose(R, R_t);
-
-        vtkMatrix4x4::Multiply4x4(T1,  IR,  tmp);   IR->DeepCopy(tmp);
-        vtkMatrix4x4::Multiply4x4(R_t, IR,  tmp);   IR->DeepCopy(tmp);
-        vtkMatrix4x4::Multiply4x4(T2,  IR,  tmp);   IR->DeepCopy(tmp);
-
-        R_t->Delete();
-        T1 ->Delete();
-        R  ->Delete();
-        T2 ->Delete();
-        tmp->Delete();
-    }
-    //
-    // Do the scale
-    //
-    if (atts.GetDoScale())
-    {
-        float oX = atts.GetScaleOrigin()[0];
-        float oY = atts.GetScaleOrigin()[1];
-        float oZ = atts.GetScaleOrigin()[2];
-
-        double X = atts.GetScaleX();
-        double Y = atts.GetScaleY();
-        double Z = atts.GetScaleZ();
-
-        vtkMatrix4x4 *T1  = vtkMatrix4x4::New();
-        vtkMatrix4x4 *S   = vtkMatrix4x4::New();
-        vtkMatrix4x4 *T2  = vtkMatrix4x4::New();
-        vtkMatrix4x4 *tmp = vtkMatrix4x4::New();
-
-        // Pre-translate
-        T1->Identity();
-        (*T1)[0][3] = -oX;
-        (*T1)[1][3] = -oY;
-        (*T1)[2][3] = -oZ;
-
-        // Scale
-        S->Identity();
-        (*S)[0][0] = X;
-        (*S)[1][1] = Y;
-        (*S)[2][2] = Z;
-
-        // Post-translate
-        T2->Identity();
-        (*T2)[0][3] = oX;
-        (*T2)[1][3] = oY;
-        (*T2)[2][3] = oZ;
-
-        // apply it
-        vtkMatrix4x4::Multiply4x4(T1,  M,  tmp);   M->DeepCopy(tmp);
-        vtkMatrix4x4::Multiply4x4(S,   M,  tmp);   M->DeepCopy(tmp);
-        vtkMatrix4x4::Multiply4x4(T2,  M,  tmp);   M->DeepCopy(tmp);
-
-        // create the inverse scale
-        vtkMatrix4x4 *S_i= vtkMatrix4x4::New();
-        S_i->Identity();
-        (*S_i)[0][0] = (X != 0. ? 1./X : 0.);
-        (*S_i)[1][1] = (Y != 0. ? 1./Y : 0.);
-        (*S_i)[2][2] = (Z != 0. ? 1./Z : 0.);
-        vtkMatrix4x4::Multiply4x4(T1,  IS,  tmp);   IS->DeepCopy(tmp);
-        vtkMatrix4x4::Multiply4x4(S_i, IS,  tmp);   IS->DeepCopy(tmp);
-        vtkMatrix4x4::Multiply4x4(T2,  IS,  tmp);   IS->DeepCopy(tmp);
-
-        S_i->Delete(); 
-        T1 ->Delete();
-        S  ->Delete();
-        T2 ->Delete();
-        tmp->Delete();
-    }
-    //
-    // Do the translation
-    //
-    if (atts.GetDoTranslate())
-    {
-        vtkMatrix4x4 *T = vtkMatrix4x4::New();
-        vtkMatrix4x4 *tmp = vtkMatrix4x4::New();
-
-        // Translate
-        (*T)[0][3] = atts.GetTranslateX();
-        (*T)[1][3] = atts.GetTranslateY();
-        (*T)[2][3] = atts.GetTranslateZ();
-
-        // apply it
-        vtkMatrix4x4::Multiply4x4(T,  M,   tmp);   M->DeepCopy(tmp);
-
-        // Inverse translation
-        (*IT)[0][3] = -atts.GetTranslateX();
-        (*IT)[1][3] = -atts.GetTranslateY();
-        (*IT)[2][3] = -atts.GetTranslateZ();
-
-        T  ->Delete();
-        tmp->Delete();
-    }
-
-    //
-    // Compose the separate inverse matrices into one.
-    //  IT * IS * IR
-    // 
-    vtkMatrix4x4 *tmp = vtkMatrix4x4::New();
-    vtkMatrix4x4::Multiply4x4(IT, invM, tmp); invM->DeepCopy(tmp);
-    vtkMatrix4x4::Multiply4x4(IS, invM, tmp); invM->DeepCopy(tmp);
-    vtkMatrix4x4::Multiply4x4(IR, invM, tmp); invM->DeepCopy(tmp);
-
-    tmp->Delete();
-
-    IR  ->Delete();
-    IS  ->Delete();
-    IT  ->Delete();
-}
-
-
-// ****************************************************************************
-//  Method: avtTransformFilter::PerformRestriciton
-//
-//  Purpose:
-//    Turn on Zone numbers flag if needed, so that original cell array
-//    will be propagated throught the pipeline.
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   November 28, 2001
-//
-//  Modifications:
-//    Kathleen Bonnell, Wed Jun 19 12:28:10 PDT 2002
-//    Don't turn off Zone numbers if they have been turned on elsewhere in
-//    the pipeline.
-//
-//    Kathleen Bonnell, Wed Jun 19 13:42:37 PDT 2002
-//    Completely removed the code turning off zone numbers.  Why set a flag
-//    to false if it is already false?  False is the default setting.
-//
-// ****************************************************************************
-
-avtPipelineSpecification_p
-avtTransformFilter::PerformRestriction(avtPipelineSpecification_p spec)
-{
-    avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
-    if (rv->GetDataSpecification()->MayRequireZones())
-    {
-        rv->GetDataSpecification()->TurnZoneNumbersOn();
-    }
-    return rv;
-}
-
-
-// ****************************************************************************
-//  Method: avtTransformFilter::RefashionDataObjectInfo
-//
-//  Purpose:
-//      If a 2D plot is being revolved into 3D space, then indicate that it is
-//      a 3D plot.
+//      Gets the filter we are facading (the similarity transform filter).
 //
 //  Programmer: Hank Childs
-//  Creation:   March 7, 2003
+//  Creation:   July 1, 2003
 //
 // ****************************************************************************
 
-void
-avtTransformFilter::RefashionDataObjectInfo(void)
+avtFilter *
+avtTransformFilter::GetFacadedFilter(void)
 {
-    //
-    // The base class does some good work about setting extents.  Use that.
-    //
-    avtTransform::RefashionDataObjectInfo();
-
-    if (atts.GetDoRotate())
-    {
-        float X = atts.GetRotateAxis()[0];
-        float Y = atts.GetRotateAxis()[1];
-        if (X != 0. || Y != 0.)
-        {
-            avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
-            avtDataAttributes &outAtts= GetOutput()->GetInfo().GetAttributes();
-            if (inAtts.GetSpatialDimension() < 3)
-            {
-                outAtts.SetSpatialDimension(3);
-            }
-   
-        }
-    }
+    return stf;
 }
 
 
-// ****************************************************************************
-//  Method: avtTransformFilter::PostExecute
-//
-//  Purpose:
-//      This is called to set the inverse transformation matrix in the output.  
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   April 10, 2003 
-//
-// ****************************************************************************
-
-void
-avtTransformFilter::PostExecute()
-{
-    GetOutput()->GetInfo().GetAttributes().SetTransform((*invM)[0]);
-}

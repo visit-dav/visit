@@ -30,14 +30,14 @@ using std::vector;
 //    Kathleen Bonnell, Fri Dec 20 09:48:48 PST 2002 
 //    Removed designator.
 //
+//    Kathleen Bonnell, Wed Jun 25 14:30:39 PDT 2003 
+//    Removed un-needed members 'type', attachmentPoint, secondaryPoint.
+//
 // ****************************************************************************
 
 VisWinQuery::VisWinQuery(VisWindowColleagueProxy &p) : VisWinColleague(p)
 {
     hidden = false;
-    type = QUERYTYPE_NONE;
-    attachmentPoint[0] = attachmentPoint[1] = attachmentPoint[2] = 0;
-    secondaryPoint[0] = secondaryPoint[1] = secondaryPoint[2] = 1;
 }
 
 
@@ -137,45 +137,6 @@ VisWinQuery::EndBoundingBox(void)
 
  
 // ****************************************************************************
-//  Method: VisWinInteractions::SetQueryType
-//
-//  Purpose:
-//    Sets the query type for the vis window.
-//
-//  Arguments:
-//    t         The new query type.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   April 15, 2002 
-//
-// ****************************************************************************
- 
-void
-VisWinQuery::SetQueryType(QUERY_TYPE t)
-{
-    type = t;
-}
-
-
-// ****************************************************************************
-//  Method: VisWinInteractions::GetQueryType
-//
-//  Purpose:
-//    Returns the current query type.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   April 15 2002 
-//
-// ****************************************************************************
- 
-QUERY_TYPE
-VisWinQuery::GetQueryType() const
-{
-    return type;
-}
- 
- 
-// ****************************************************************************
 //  Method: VisWinQuery::SetForegroundColor
 //
 //  Purpose:
@@ -263,46 +224,6 @@ VisWinQuery::UpdateView()
 
 
 // ****************************************************************************
-//  Method: VisWinQuery::SetAttachmentPoint
-//
-//  Purpose:
-//    Sets the attachment point for the current query. 
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   April 15, 2002
-//
-// ****************************************************************************
-
-void
-VisWinQuery::SetAttachmentPoint(float x, float y, float z)
-{
-    attachmentPoint[0] = x;
-    attachmentPoint[1] = y;
-    attachmentPoint[2] = z;
-}
-
-
-// ****************************************************************************
-//  Method: VisWinQuery::SetSecondaryPoint
-//
-//  Purpose:
-//    Sets the secondary point for the current query. 
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   April 15, 2002
-//
-// ****************************************************************************
-
-void
-VisWinQuery::SetSecondaryPoint(float x, float y, float z)
-{
-    secondaryPoint[0] = x;
-    secondaryPoint[1] = y;
-    secondaryPoint[2] = z;
-}
-
-
-// ****************************************************************************
 //  Method: VisWinQuery::QueryIsValid
 //
 //  Purpose:
@@ -326,20 +247,24 @@ VisWinQuery::SetSecondaryPoint(float x, float y, float z)
 //    Kathleen Bonnell, Fri Jan 31 11:34:03 PST 2003   
 //    Replaced designator argument with PickAttributes.
 //
+//    Kathleen Bonnell, Wed Jun 25 14:30:39 PDT 2003 
+//    Removed QueryType. 
+//
 // ****************************************************************************
 
 void
 VisWinQuery::QueryIsValid(const PickAttributes *pa, const Line *lineAtts)
 {
-    switch(type)
+    if (pa != NULL)
     {
-        case QUERYTYPE_PICK    : Pick(pa); break;
-        case QUERYTYPE_LINEOUT : Lineout(lineAtts); break;
-        case QUERYTYPE_NONE    : 
-        default                : return;    /* do nothing */
+        Pick(pa);
+        mediator.Render();
     }
-
-    mediator.Render();
+    else if (lineAtts != NULL)
+    {
+        Lineout(lineAtts);
+        mediator.Render();
+    }
 }
 
 
@@ -379,15 +304,16 @@ VisWinQuery::QueryIsValid(const PickAttributes *pa, const Line *lineAtts)
 //    To resolve z-buffer issues in 2d, make sure the z-coord of the
 //    attachment point is moved towards the camera. 
 //    
+//    Kathleen Bonnell, Fri Jun 27 16:39:52 PDT 2003   
+//    Set pickActor's attachment point directly, rather than through 
+//    (now defunct) member attachmentPoint. Turn on glyph if NodePick.
+//    
 // ****************************************************************************
 
 void 
 VisWinQuery::Pick(const PickAttributes *pa)
 {
     const float *pt = pa->GetPickPoint();
-    attachmentPoint[0] = pt[0];
-    attachmentPoint[1] = pt[1];
-    attachmentPoint[2] = pt[2];
 
     avtPickActor_p pp = new avtPickActor;
     if (mediator.GetMode() == WINMODE_3D)
@@ -397,6 +323,11 @@ VisWinQuery::Pick(const PickAttributes *pa)
     else
     {
         pp->SetMode3D(false);
+    }
+
+    if (pa->GetPickType() == PickAttributes::Node)
+    {
+        pp->UseGlyph(true);
     }
     
     pp->SetDesignator(pa->GetPickLetter().c_str());
@@ -423,9 +354,12 @@ VisWinQuery::Pick(const PickAttributes *pa)
     // avoid z-buffer issues in 2D
     if (mediator.GetMode() == WINMODE_2D)
     {
-        attachmentPoint[2] = projection[2];
+        pp->SetAttachmentPoint(pt[0], pt[1], projection[2]);
     }
-    pp->SetAttachmentPoint(attachmentPoint);
+    else 
+    {
+        pp->SetAttachmentPoint(pt[0], pt[1], pt[2]);
+    }
 
     pp->Shift(projection);
 
@@ -463,58 +397,6 @@ VisWinQuery::Pick(const PickAttributes *pa)
     //  Draw the label. 
     //
     mediator.Render();
-}
-
-
-// ****************************************************************************
-//  Method: VisWinQuery::ClearAllQueries
-//
-//  Purpose:
-//    Clears the visual cues from the renderer.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   April 15, 2002 
-//
-// ****************************************************************************
-
-void 
-VisWinQuery::ClearAllQueries()
-{
-    ClearPickPoints(); 
-    ClearLineouts(); 
-}
-
-
-// ****************************************************************************
-//  Method: VisWinQuery::ClearQueries
-//
-//  Purpose:
-//    Clears the visual cues from the renderer.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   April 15, 2002 
-//
-// ****************************************************************************
-
-void 
-VisWinQuery::ClearQueries()
-{
-    switch(type)
-    {
-        case QUERYTYPE_PICK : 
-            ClearPickPoints(); 
-            break;
-
-        case QUERYTYPE_LINEOUT : 
-            ClearLineouts();  
-            break;
-        case QUERYTYPE_NONE :
-        default :
-            ClearPickPoints(); 
-            ClearLineouts(); 
-            break;
-
-    }
 }
 
 
@@ -570,6 +452,10 @@ VisWinQuery::ClearPickPoints()
 //    Kathleen Bonnell, Fri Jun  6 15:17:45 PDT 2003  
 //    Added support for FullFrame mode. 
 //    
+//    Kathleen Bonnell, Fri Jun 27 16:39:52 PDT 2003   
+//    Set lineoutActor's attachment and secondary points directly, rather
+//    than through (now defunct) members attachmentPoint and secondaryPoint. 
+//    
 // ****************************************************************************
 
 void 
@@ -609,16 +495,9 @@ VisWinQuery::Lineout(const Line *lineAtts)
 
     const double *pt1 = lineAtts->GetPoint1();
     const double *pt2 = lineAtts->GetPoint2();
-    attachmentPoint[0] = pt1[0];
-    attachmentPoint[1] = pt1[1]; 
-    attachmentPoint[2] = pt1[2] + z_proj;
 
-    secondaryPoint[0] = pt2[0];
-    secondaryPoint[1] = pt2[1]; 
-    secondaryPoint[2] = pt2[2] + z_proj;
-
-    lo->SetAttachmentPoint(attachmentPoint);
-    lo->SetPoint2(secondaryPoint);
+    lo->SetAttachmentPoint(pt1[0], pt1[1], pt1[2] + z_proj);
+    lo->SetPoint2(pt2[0], pt2[1], pt2[2] + z_proj);
 
     if (mediator.GetFullFrameMode())
     {
@@ -699,6 +578,10 @@ VisWinQuery::ClearLineouts()
 //    Kathleen Bonnell, Fri Jun  6 15:17:45 PDT 2003  
 //    Added support for FullFrame mode. 
 //    
+//    Kathleen Bonnell, Fri Jun 27 16:39:52 PDT 2003   
+//    Set lineoutActor's attachment and secondary points directly, rather
+//    than through (now defunct) members attachmentPoint and secondaryPoint. 
+//    
 // ****************************************************************************
  
 void
@@ -720,18 +603,11 @@ VisWinQuery::UpdateQuery(const Line *lineAtts)
             z_foc = mediator.GetCanvas()->GetActiveCamera()->GetFocalPoint()[2];
             z_proj = distance*(z_pos - z_foc);
 
-            attachmentPoint[0] = lineAtts->GetPoint1()[0];
-            attachmentPoint[1] = lineAtts->GetPoint1()[1];
-            attachmentPoint[2] = lineAtts->GetPoint1()[2];
+            const double *pt1 = lineAtts->GetPoint1();
+            const double *pt2 = lineAtts->GetPoint2();
 
-            secondaryPoint[0] = lineAtts->GetPoint2()[0];
-            secondaryPoint[1] = lineAtts->GetPoint2()[1];
-            secondaryPoint[2] = lineAtts->GetPoint2()[2];
-
-            attachmentPoint[2] += z_proj;
-            secondaryPoint[2]  += z_proj;
-            (*it)->SetAttachmentPoint(attachmentPoint);
-            (*it)->SetPoint2(secondaryPoint);
+            (*it)->SetAttachmentPoint(pt1[0], pt1[1], pt1[2] + z_proj);
+            (*it)->SetPoint2(pt2[0], pt2[1], pt2[2] + z_proj);
 
             (*it)->SetLineWidth(lineAtts->GetLineWidth());
             (*it)->SetLineStyle(lineAtts->GetLineStyle());

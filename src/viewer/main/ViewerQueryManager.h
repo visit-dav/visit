@@ -84,6 +84,10 @@ class avtToolInterface;
 //    ViewerWindow where it used to call AddQuery directly.  Made AddQuery
 //    a private method.
 //
+//    Kathleen Bonnell, Fri Jun 27 16:03:57 PDT 2003 
+//    Added arguments to StartPickMode. Added SetPickAttsFromClient, 
+//    GetPickClientAtts.
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -117,11 +121,13 @@ class VIEWER_API ViewerQueryManager
     QueryList      *GetQueryTypes() { return queryTypes; };
 
     void            UpdatePickAtts();
+    void            SetPickAttsFromClient();
     void            ClearPickPoints(void);
 
 
     static QueryAttributes  *GetQueryClientAtts();
     static PickAttributes   *GetPickAtts();
+    static PickAttributes   *GetPickClientAtts();
     static GlobalLineoutAttributes   *GetGlobalLineoutAtts();
     static GlobalLineoutAttributes   *GetGlobalLineoutClientAtts();
 
@@ -134,7 +140,7 @@ class VIEWER_API ViewerQueryManager
     void            SetGlobalLineoutAttsFromClient();
     void            SetDynamicLineout(bool);
 
-    void            StartPickMode();
+    void            StartPickMode(const bool, const bool);
     void            StopPickMode();
 
   protected:
@@ -170,6 +176,7 @@ class VIEWER_API ViewerQueryManager
 
     static QueryAttributes    *queryClientAtts;
     static PickAttributes     *pickAtts;
+    static PickAttributes     *pickClientAtts;
     static GlobalLineoutAttributes          *globalLineoutAtts;
     static GlobalLineoutAttributes          *globalLineoutClientAtts;
 

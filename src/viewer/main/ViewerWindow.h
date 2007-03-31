@@ -227,6 +227,9 @@ class LightList;
 //    Kathleen Bonnell, Fri Jun  6 16:06:25 PDT 2003
 //    Added GetScaleFactorAndType method. 
 //
+//    Kathleen Bonnell, Wed Jun 25 16:50:48 PDT 2003 
+//    Removed Start/StopPickMode.  Added INTERACTION_MODE argument to Pick.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -331,9 +334,7 @@ public:
     void ShowMenu();
     void HideMenu();
 
-    void Pick(int x, int y);
-    void StartPickMode();
-    void StopPickMode();
+    void Pick(int x, int y, const INTERACTION_MODE mode);
     void ClearPickPoints();
 
     void ValidateQuery(const PickAttributes *, const Line *);

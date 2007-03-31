@@ -6,12 +6,11 @@
 #define AVT_Transform_FILTER_H
 
 
-#include <avtPluginStreamer.h>
-#include <avtTransform.h>
+#include <avtPluginFilter.h>
+#include <avtSingleFilterFacade.h>
 #include <TransformAttributes.h>
-#include <vtkMatrix4x4.h>
 
-class vtkDataSet;
+class avtSimilarityTransformFilter;
 
 
 // ****************************************************************************
@@ -36,10 +35,15 @@ class vtkDataSet;
 //    Store inverse matrix for possible use later in the pipeline. 
 //    Added PostExecute method.
 //    
+//    Hank Childs, Tue Jul  1 08:59:08 PDT 2003
+//    Moved original avtTransformFilter to libpipeline with the name
+//    avtSimilarityTransformFilter.  Re-worked this filter to be a single
+//    filter facade.
+//
 // ****************************************************************************
 
-class avtTransformFilter : public virtual avtTransform,
-                           public virtual avtPluginStreamer
+class avtTransformFilter : public virtual avtPluginFilter,
+                           public virtual avtSingleFilterFacade
 {
   public:
                          avtTransformFilter();
@@ -55,16 +59,10 @@ class avtTransformFilter : public virtual avtTransform,
     virtual bool         Equivalent(const AttributeGroup*);
 
   protected:
-    TransformAttributes   atts;
-    vtkMatrix4x4         *M;
-    vtkMatrix4x4         *invM;
+    TransformAttributes            atts;
+    avtSimilarityTransformFilter  *stf;
 
-    void                  SetupMatrix();
-    virtual vtkMatrix4x4 *GetTransform() { SetupMatrix(); return M; };
-    virtual avtPipelineSpecification_p
-                          PerformRestriction(avtPipelineSpecification_p);
-    virtual void          RefashionDataObjectInfo(void);
-    virtual void          PostExecute(void);
+    virtual avtFilter             *GetFacadedFilter(void);
 };
 
 

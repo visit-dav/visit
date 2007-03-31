@@ -146,6 +146,10 @@
 #    Brad Whitlock, Mon Feb 10 11:51:34 PDT 2003
 #    I added a C file for avtDatasetToImageFilter.
 #
+#    Hank Childs, Mon Jun 30 08:46:16 PDT 2003
+#    Added avtCoordSystemConvert, avtSamplePointToSurfaceFilter, and
+#    avtSimlarityTransformFilter.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -240,6 +244,7 @@ PrivateFilters_src= \
 PublicFilters_src= \
   PublicFilters/avtCompactTreeFilter.C \
   PublicFilters/avtContourFilter.C \
+  PublicFilters/avtCoordSystemConvert.C \
   PublicFilters/avtCurrentExtentFilter.C \
   PublicFilters/avtFacelistFilter.C \
   PublicFilters/avtFeatureEdgesFilter.C \
@@ -254,7 +259,9 @@ PublicFilters_src= \
   PublicFilters/avtResampleFilter.C \
   PublicFilters/avtSamplePointCommunicator.C \
   PublicFilters/avtSamplePointExtractor.C \
+  PublicFilters/avtSamplePointToSurfaceFilter.C \
   PublicFilters/avtShiftCenteringFilter.C \
+  PublicFilters/avtSimilarityTransformFilter.C \
   PublicFilters/avtSmoothPolyDataFilter.C \
   PublicFilters/avtSummationFilter.C \
   PublicFilters/avtTransform.C \

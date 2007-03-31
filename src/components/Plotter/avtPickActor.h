@@ -9,6 +9,7 @@ class vtkFollower;
 class vtkLineSource;
 class vtkPolyDataMapper;
 class vtkRenderer;
+class vtkGlyphSource2D;
 
 
 // ****************************************************************************
@@ -26,6 +27,10 @@ class vtkRenderer;
 //    Kathleen Bonnell, Fri Jun  6 15:08:45 PDT 2003  
 //    Added Translate and ResetPosition methods. 
 //
+//    Kathleen Bonnell, Wed Jun 25 15:16:42 PDT 2003
+//    Changed arguments to SetAttachmentPoint from an array to 3 values.
+//    Added a glyph for NodePick.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPickActor
@@ -40,6 +45,7 @@ class PLOTTER_API avtPickActor
     void               UnHide();
 
     void               SetAttachmentPoint(const float newPos[3]);
+    void               SetAttachmentPoint(float x, float y, float z);
     const float *      GetAttachmentPoint() { return attach; };
     void               SetMode3D(const bool);
     void               SetScale(float);
@@ -50,15 +56,21 @@ class PLOTTER_API avtPickActor
     void               Shift(const float vec[3]);
     void               Translate(const float vec[3]);
     void               ResetPosition(const float vec[3]);
+    void               UseGlyph(const bool v) { useGlyph = v; } ;
 
   protected:
     bool               mode3D;
+    bool               useGlyph;
     float              attach[3];
     vtkFollower       *letterActor;
 
     vtkActor          *lineActor;
     vtkLineSource     *lineSource;
     vtkPolyDataMapper *lineMapper;
+
+    vtkFollower       *glyphActor;
+    vtkGlyphSource2D  *glyphSource;
+    vtkPolyDataMapper *glyphMapper;
 
     vtkRenderer       *renderer; 
 

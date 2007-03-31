@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+  <Attribute name="SimilarityTransformAttributes" purpose="This class contains attributes for the similarity transform." persistent="true" codefile="SimilarityTransformAttributes.code">
+    <Enum name="AngleType">
+      Deg
+      Rad
+    </Enum>
+    <Field name="doRotate" label="Rotate" type="bool">
+      false
+    </Field>
+    <Field name="rotateOrigin" label="Origin" type="floatArray" length="3" enabler="doRotate:true">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="rotateAxis" label="Axis" type="floatArray" length="3" enabler="doRotate:true">
+      0.000000
+      0.000000
+      1.000000
+    </Field>
+    <Field name="rotateAmount" label="Amount" type="float" enabler="doRotate:true">
+      0.000000
+    </Field>
+    <Field name="rotateType" label="Rotate" type="enum" subtype="AngleType" enabler="doRotate:true">
+      Deg
+    </Field>
+    <Field name="doScale" label="Scale" type="bool">
+      false
+    </Field>
+    <Field name="scaleOrigin" label="Origin" type="floatArray" length="3" enabler="doScale:true">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="scaleX" label="X" type="float" enabler="doScale:true">
+      1.000000
+    </Field>
+    <Field name="scaleY" label="Y" type="float" enabler="doScale:true">
+      1.000000
+    </Field>
+    <Field name="scaleZ" label="Z" type="float" enabler="doScale:true">
+      1.000000
+    </Field>
+    <Field name="doTranslate" label="Translate" type="bool">
+      false
+    </Field>
+    <Field name="translateX" label="X" type="float" enabler="doTranslate:true">
+      0.000000
+    </Field>
+    <Field name="translateY" label="Y" type="float" enabler="doTranslate:true">
+      0.000000
+    </Field>
+    <Field name="translateZ" label="Z" type="float" enabler="doTranslate:true">
+      0.000000
+    </Field>
+    <Function name="CopyAttributes" user="false" member="true">
+    </Function>
+    <Function name="CreateCompatible" user="false" member="true">
+    </Function>
+    <Include file="source" quoted="false">
+      BoxExtents.h
+    </Include>
+  </Attribute>

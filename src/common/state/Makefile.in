@@ -198,6 +198,9 @@
 #    Akira Haddox, Thu Jun 12 15:45:26 PDT 2003
 #    Added PointAttributes.
 #
+#    Hank Childs, Tue Jul  1 09:17:55 PDT 2003
+#    Added SimilarityTransformAttributes.
+#
 ##############################################################################
 
 ##
@@ -266,6 +269,7 @@ SRC=    AnimationAttributes.C \
         SILAttributes.C \
         SILMatrixAttributes.C \
         SILRestrictionAttributes.C \
+        SimilarityTransformAttributes.C \
         SimpleObserver.C \
         SphereAttributes.C \
         StatusAttributes.C \
@@ -330,6 +334,7 @@ HDR=    AnimationAttributes.h \
         SILAttributes.h \
         SILMatrixAttributes.h \
         SILRestrictionAttributes.h \
+        SimilarityTransformAttributes.h \
         SimpleObserver.h \
         SphereAttributes.h \
         StatusAttributes.h \

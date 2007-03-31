@@ -59,6 +59,9 @@ inline char toupper(char c)
 //    I fixed a bug in the code generation for setattr that caused bad code
 //    to be generated when the first field it internal.
 //
+//    Kathleen Bonnell, Fri Jun 27 14:49:20 PDT 2003 
+//    I made code generation for Enum's getattr obey the internal flag. 
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1337,6 +1340,9 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
 
     virtual void WriteGetAttr(ostream &c, const QString &classname)
     {
+        if (internal)
+            return;
+
         c << "    if(strcmp(name, \"" << name << "\") == 0)" << endl;
         c << "        return " << classname << "_" << MethodNameGet() << "(self, NULL);" << endl;
 

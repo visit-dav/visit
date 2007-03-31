@@ -1,6 +1,8 @@
 #include <PDBFactory.h>
 #include <PF3DReader.h>
+#include <PP_ZFileReader.h>
 #include <SiloReader.h>
+#include <DebugStream.h>
 #include <InvalidDBTypeException.h>
 
 // ****************************************************************************
@@ -58,13 +60,19 @@ PDBFactory::~PDBFactory()
 // Creation:   Thu Oct 10 09:01:54 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 29 11:06:16 PDT 2003
+//   I added the PP and Z file reader.
+//
 // ****************************************************************************
 
 bool
 PDBFactory::Open(const char *filename)
 {
     bool retval = false;
+
+    // Return early if the reader has already been created.
+    if(file != 0 && reader != 0)
+        return true;
 
     //
     // Open the PDB file.
@@ -76,12 +84,27 @@ PDBFactory::Open(const char *filename)
         {
             reader = new SiloReader(file);
             bool isSilo = reader->Identify();
-            delete reader;
-            reader = NULL;
             if(isSilo)
             {
+                Close();
                 EXCEPTION1(InvalidDBTypeException,
                            "The PDB reader does not read Silo files.");
+            }
+            else
+            {
+                delete reader;
+                reader = NULL;
+            }
+        }
+
+        // See if the file is a PP file or Z file.
+        if(reader == NULL)
+        {
+            reader = new PP_ZFileReader(file);
+            if(!(retval = reader->Identify()))
+            {
+                delete reader;
+                reader = NULL;
             }
         }
 
@@ -106,7 +129,11 @@ PDBFactory::Open(const char *filename)
             retval = false;
         }
     }
-    
+    else
+    {
+        debug4 << "PDBFactory::Open: PD_open failed! " << PD_err << endl;
+    }
+
     //
     // If no file reader can read the PDB file, or the file was not PDB to
     // begin with, throw an invalid DB exception so the database factory

@@ -51,6 +51,7 @@ ViewerQueryManager *ViewerQueryManager::instance = 0;
 
 QueryAttributes *ViewerQueryManager::queryClientAtts=0;
 PickAttributes *ViewerQueryManager::pickAtts=0;
+PickAttributes *ViewerQueryManager::pickClientAtts=0;
 GlobalLineoutAttributes *ViewerQueryManager::globalLineoutAtts=0;
 GlobalLineoutAttributes *ViewerQueryManager::globalLineoutClientAtts=0;
 
@@ -103,6 +104,10 @@ GlobalLineoutAttributes *ViewerQueryManager::globalLineoutClientAtts=0;
 //    Jeremy Meredith, Sat Apr 12 11:31:53 PDT 2003
 //    Added compactness queries.
 //
+//    Kathleen Bonnell, Fri Jun 27 15:54:30 PDT 2003
+//    Renamed Pick query to ZonePick, added NodePick query. 
+//    Initialize pickAtts. 
+//
 // ****************************************************************************
 
 ViewerQueryManager::ViewerQueryManager()
@@ -121,7 +126,8 @@ ViewerQueryManager::ViewerQueryManager()
     queryTypes = new QueryList;
 #if 1
     // Kathleen - populate this somewhere.
-    queryTypes->AddQuery("Pick", QueryList::PointQuery, QueryList::ScreenSpace);
+    queryTypes->AddQuery("ZonePick", QueryList::PointQuery, QueryList::ScreenSpace);
+    queryTypes->AddQuery("NodePick", QueryList::PointQuery, QueryList::ScreenSpace);
     if (PlotPluginManager::Instance()->PluginAvailable("Curve_1.0") &&
         OperatorPluginManager::Instance()->PluginAvailable("Lineout_1.0")) 
     {
@@ -144,6 +150,7 @@ ViewerQueryManager::ViewerQueryManager()
     initialPick = false;
     preparingPick = false;
     handlingCache = false;
+    pickAtts = new PickAttributes();
 }
 
 
@@ -1009,6 +1016,80 @@ ViewerQueryManager::GetPickAtts()
 
 
 // ****************************************************************************
+//  Method: ViewerQueryManager::GetPickClientAtts
+//
+//  Purpose:
+//    Returns a pointer to the pick client attributes.
+//
+//  Returns:    A pointer to the pick client attributes.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 30, 2003 
+//
+// ****************************************************************************
+
+PickAttributes *
+ViewerQueryManager::GetPickClientAtts()
+{
+    //
+    // If the attributes haven't been allocated then do so.
+    //
+    if (pickClientAtts == 0)
+    {
+        pickClientAtts = new PickAttributes;
+    }
+ 
+    return pickClientAtts;
+}
+
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::SetPickAttsFromClient
+//
+//  Purpose:
+//    Sets the pickAtts using the client pick attributes. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 30, 2003 
+//
+// ****************************************************************************
+
+void
+ViewerQueryManager::SetPickAttsFromClient()
+{
+    if (pickAtts == 0)
+    {
+        pickAtts = new PickAttributes;
+    }
+
+    *pickAtts = *pickClientAtts;
+}
+
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::UpdatePickAtts
+//
+//  Purpose:
+//    Causes the pickAtts to be sent to the client. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 30, 2003 
+//
+// ****************************************************************************
+
+void
+ViewerQueryManager::UpdatePickAtts()
+{
+    if (pickClientAtts != 0 && pickAtts != 0)
+    {
+        *pickClientAtts = *pickAtts;
+        pickClientAtts->Notify();
+    }
+}
+
+
+
+// ****************************************************************************
 //  Method: ViewerQueryManager::ClearPickPoints
 //
 //  Purpose:
@@ -1018,18 +1099,22 @@ ViewerQueryManager::GetPickAtts()
 //  Programmer: Kathleen Bonnell
 //  Creation:   November 15, 2002 
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Jul  1 09:21:57 PDT 2003
+//    Use pickClientAtts instead of pickAtts.
+//
 // ****************************************************************************
 
 void
 ViewerQueryManager::ClearPickPoints()
 {
    // tell any observers that the pick points should be cleared
-   pickAtts->SetClearWindow(true);
-   pickAtts->SetFulfilled(false);
-   pickAtts->Notify();
+   pickClientAtts->SetClearWindow(true);
+   pickClientAtts->SetFulfilled(false);
+   pickClientAtts->Notify();
    // reset the clear window flag.
-   pickAtts->SetClearWindow(false);
-   pickAtts->Notify();
+   pickClientAtts->SetClearWindow(false);
+   pickClientAtts->Notify();
 }
 
 // ****************************************************************************
@@ -1078,6 +1163,10 @@ ViewerQueryManager::ClearPickPoints()
 //    Kathleen Bonnell, Fri Jun  6 16:06:25 PDT 2003 
 //    Added support for full-frame mode. 
 //    
+//    Kathleen Bonnell, Fri Jun 27 15:54:30 PDT 2003 
+//    Moved clean-up of pickAtts ivars to PickAttributes::PrepareForNewPick. 
+//    Added call to UpdatePickAtts.
+//    
 // ****************************************************************************
 
 void
@@ -1105,8 +1194,13 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi)
     }
     if (pd.validPick)
     {
+        //
+        // Clean-up varInfos, and reset certain ivars that get set/read
+        // elsewhere in the pick process.
+        //
+        pickAtts->PrepareForNewPick();
+
         string msg;
-        pickAtts->ClearPickVarInfos();
         ViewerWindow *win = (ViewerWindow *)pd.callbackData;
 
         ViewerPlotList *plist = win->GetAnimation()->GetPlotList();
@@ -1126,13 +1220,11 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi)
         const char *db = plot->GetDatabaseName();
         const char *activeVar = plot->GetVariableName();
         pickAtts->SetActiveVariable(activeVar);
-        intVector n;
-        pickAtts->SetNodes(n);
         int t = win->GetAnimation()->GetFrameIndex();
         //
         // Remove duplicate vars, so that query doesn't report them twice.
         //
-        vector<string> userVars = pickAtts->GetUserSelectedVars();
+        vector<string> userVars = pickAtts->GetVariables();
         set<string> uniqueVarsSet;
         vector<string> uniqueVars; 
         for (int i = 0; i < userVars.size(); i++)
@@ -1148,12 +1240,9 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi)
                 uniqueVarsSet.insert(v); 
             }
         }
-        pickAtts->SetUserSelectedVars(uniqueVars);
+        pickAtts->SetVariables(uniqueVars);
         pickAtts->SetPickLetter(designator);
-        pickAtts->SetZoneNumber(-1);
-        pickAtts->SetDomain(-1);
         pickAtts->SetTimeStep(t);
-        pickAtts->SetFulfilled(false);
         pickAtts->SetDatabaseName(db);
 
         float *rp1 = pd.rayPt1;
@@ -1202,12 +1291,12 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi)
                    //
                    // Reset the vars to what the user actually typed.
                    //
-                   pickAtts->SetUserSelectedVars(userVars);
+                   pickAtts->SetVariables(userVars);
                    win->ValidateQuery(pickAtts, NULL);
                    //SEND PICKATTS TO GUI WINDOW FOR DISPLAY
                    pickAtts->CreateOutputString(msg);
                    Message(msg.c_str()); 
-                   pickAtts->Notify();
+                   UpdatePickAtts();
                    UpdateDesignator();
                 }
                 else 
@@ -1215,7 +1304,9 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi)
                    //
                    // Reset vars to what the user actually typed.
                    //
-                   pickAtts->SetUserSelectedVars(userVars);
+                   pickAtts->SetVariables(userVars);
+                   UpdatePickAtts();
+               
                    //SEND ERROR MESSAGE TO GUI WINDOW FOR DISPLAY
                    Message("Pick not valid for current plot" );
                 }
@@ -1247,7 +1338,7 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi)
                 //
                 // Reset the vars to what the user actually typed.
                 //
-                pickAtts->SetUserSelectedVars(userVars);
+                pickAtts->SetVariables(userVars);
                 char message[500];
                 //
                 // Add as much information to the message as we can,
@@ -1637,19 +1728,28 @@ ViewerQueryManager::DetermineVarType(const char *hName, const char *dbName, cons
 //  Method:  ViewerQueryManager::StartPickMode
 //
 //  Purpose:
-//    Notify this class the pick mode has begun. 
+//    Notify this class that pick mode has begun, or has changed from one
+//    pickmode type to another. 
 //  
 //  Progammer:  Kathleen S. Bonnell
 //  Creation:   March 26, 2003
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri Jun 27 15:54:30 PDT 2003
+//    Handle changes from one pick mode to another.
 // 
 // ****************************************************************************
 
 void
-ViewerQueryManager::StartPickMode()
+ViewerQueryManager::StartPickMode(const bool firstEntry, const bool zonePick)
 {
-    initialPick = true;
+    if (firstEntry)
+        initialPick = true;
+
+    if (zonePick)
+        pickAtts->SetPickType(PickAttributes::Zone);
+    else 
+        pickAtts->SetPickType(PickAttributes::Node);
 }
 
 
@@ -1714,18 +1814,31 @@ ViewerQueryManager::HandlePickCache()
 //  Programmer: Kathleen Bonnell
 //  Creation:   May 14, 2003 
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Jun 27 15:54:30 PDT 2003
+//    Only set pickAtts' variables if the passed list is not empty.
+//    Handle NodePick.
+//
 // ****************************************************************************
 
 void         
 ViewerQueryManager::PointQuery(const string &qName, const double *pt, 
                     const vector<string> &vars)
 {
-    if (strcmp(qName.c_str(), "Pick") == 0)
+    if ((strcmp(qName.c_str(), "ZonePick") == 0) ||
+        (strcmp(qName.c_str(), "Pick") == 0))
     {
-        PickAttributes *pa = GetPickAtts();
-        pa->SetUserSelectedVars(vars);
+        if (!vars.empty())
+            pickAtts->SetVariables(vars);
         ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
-        win->Pick((int)pt[0], (int)pt[1]);
+        win->Pick((int)pt[0], (int)pt[1], ZONE_PICK);
+    }
+    else if (strcmp(qName.c_str(), "NodePick") == 0)
+    {
+        if (!vars.empty())
+            pickAtts->SetVariables(vars);
+        ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
+        win->Pick((int)pt[0], (int)pt[1], NODE_PICK);
     }
 }
 
@@ -1776,3 +1889,4 @@ ViewerQueryManager::Lineout(ViewerWindow *origWin, Line *lineAtts)
     }
     AddQuery(origWin, lineAtts);
 }
+

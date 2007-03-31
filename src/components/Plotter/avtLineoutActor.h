@@ -34,6 +34,10 @@ class vtkFollower;
 //    Kathleen Bonnell, Fri Jun  6 15:08:45 PDT 2003 
 //    Added Translate and ResetPosition methods. 
 //    
+//    Kathleen Bonnell, Wed Jun 25 15:16:42 PDT 2003  
+//    Changed arguments to SetAttachmentPoint, SetPoint2 from an array to
+//    3 values.
+//    
 // ****************************************************************************
 
 class PLOTTER_API avtLineoutActor
@@ -47,11 +51,11 @@ class PLOTTER_API avtLineoutActor
     void               Hide();
     void               UnHide();
 
-    void               SetAttachmentPoint(const float newPos[3]);
-    void               SetAttachmentPoint(const double newPos[3]);
+    void               SetAttachmentPoint(float x, float y, float z);
+    void               SetAttachmentPoint(double x, double y, double z);
     const float       *GetAttachmentPoint() { return attach; };
-    void               SetPoint2(const float newPos[3]);
-    void               SetPoint2(const double newPos[3]);
+    void               SetPoint2(float x, float y, float z);
+    void               SetPoint2(double x, double y, double z);
     void               SetMode3D(const bool);
     void               SetScale(float);
     void               SetDesignator(const std::string &designator_);

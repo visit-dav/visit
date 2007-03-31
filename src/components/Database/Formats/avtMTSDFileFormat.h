@@ -23,7 +23,7 @@ class     vtkDataArray;
 //
 //  Purpose:
 //      This is an implementation of avtFileFormat for file formats that have
-//      a Single Timestep and Multiple Domains.
+//      Multiple Timesteps and a Single Domain.
 //
 //  Programmer: Hank Childs
 //  Creation:   February 23, 2001

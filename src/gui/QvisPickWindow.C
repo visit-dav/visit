@@ -186,16 +186,16 @@ QvisPickWindow::UpdateWindow(bool doAll)
     //  information in a tab-page.  If pick letter changes, we assume
     //  all other vital-to-be-displayed information has also changed.
     //
-    if (pickAtts->IsSelected(3) || pickAtts->IsSelected(0) || doAll)
+    if (pickAtts->IsSelected(2) || pickAtts->IsSelected(0) || doAll)
     {
         UpdatePage();
     }
 
     //  If userSelectedVars changes, 
     //
-    if (pickAtts->IsSelected(13) || doAll)
+    if (pickAtts->IsSelected(12) || doAll)
     {
-        stringVector userVars = pickAtts->GetUserSelectedVars();
+        stringVector userVars = pickAtts->GetVariables();
         std::string allVars2;
         for (int i = 0; i < userVars.size(); i++)
         {
@@ -204,14 +204,14 @@ QvisPickWindow::UpdateWindow(bool doAll)
         }
         varsLineEdit->setText(allVars2.c_str()); 
     }
-    if (pickAtts->IsSelected(15) || doAll)
+    if (pickAtts->IsSelected(14) || doAll)
     {
         useNodeCoords->blockSignals(true);
         useNodeCoords->setChecked(pickAtts->GetUseNodeCoords());
         logicalCoords->setEnabled(pickAtts->GetUseNodeCoords());
         useNodeCoords->blockSignals(false);
     }
-    if (pickAtts->IsSelected(16) || doAll)
+    if (pickAtts->IsSelected(15) || doAll)
     {
         logicalCoords->blockSignals(true);
         logicalCoords->setChecked(pickAtts->GetLogicalCoords());
@@ -251,6 +251,10 @@ QvisPickWindow::UpdateWindow(bool doAll)
 //   intersection point.  Specify when the intersection point is in 
 //   transformed space. 
 //   
+//   Kathleen Bonnell, Wed Jun 25 13:45:04 PDT 2003 
+//   Reflect new naming convention in PickAttributes. Rework to support
+//   nodePick.
+//
 // ****************************************************************************
 
 void
@@ -344,27 +348,51 @@ QvisPickWindow::UpdatePage()
                 nRows++;
             }
         }
+        const stringVector &nodeCoords = pickAtts->GetNodeCoords();
+        bool useCoords = pickAtts->GetUseNodeCoords() && !nodeCoords.empty();
 
-        temp2.sprintf("Zone:  %i", pickAtts->GetZoneNumber());
+        bool zonePick = (pickAtts->GetPickType() == PickAttributes::Zone);
+        if (zonePick)
+        {
+            temp2.sprintf("Zone:  %i", pickAtts->GetElementNumber());
+        }
+        else 
+        {
+            if (!useCoords)
+            {
+                temp2.sprintf("Node:  %i", pickAtts->GetElementNumber());
+            }
+            else 
+            {
+                temp2.sprintf("Node:  %i  %s", 
+                               pickAtts->GetElementNumber(),
+                               nodeCoords[0].c_str()); 
+            }
+        }
         infoLists[nextPage]->insertItem(temp2);
         nRows++;
 
-        const intVector &nodes = pickAtts->GetNodes();
-        const stringVector &nodeCoords = pickAtts->GetNodeCoords();
-        temp.sprintf("Nodes:  ");
-        bool useCoords = pickAtts->GetUseNodeCoords() && !nodeCoords.empty();
-        if (useCoords)
+        const intVector &incEls = pickAtts->GetIncidentElements();
+        if (zonePick)
+        {
+            temp.sprintf("Nodes:  ");
+        }
+        else 
+        {
+            temp.sprintf("Incident zones:  ");
+        }
+        if (useCoords && zonePick)
         {
             infoLists[nextPage]->insertItem(temp);
             nRows++;
             temp.sprintf("     ");
         }
         int i;
-        for (i = 0; i < nodes.size(); i++)
+        for (i = 0; i < incEls.size(); i++)
         {
-            temp2.sprintf("%d  ", nodes[i]);
+            temp2.sprintf("%d  ", incEls[i]);
             temp += temp2;
-            if (useCoords)
+            if (useCoords && zonePick)
             {
                 temp2.sprintf("%s", nodeCoords[i].c_str());
                 temp += temp2;
@@ -373,7 +401,7 @@ QvisPickWindow::UpdatePage()
                 temp.sprintf("     ");
             }
         }
-        if (!useCoords)
+        if (!(useCoords && zonePick))
         {
             infoLists[nextPage]->insertItem(temp);
             nRows++;
@@ -448,7 +476,7 @@ QvisPickWindow::GetCurrentValues(int which_widget)
             userVars.push_back((*it).latin1());
         }
  
-        pickAtts->SetUserSelectedVars(userVars);
+        pickAtts->SetVariables(userVars);
     }
 }
 
@@ -467,6 +495,10 @@ QvisPickWindow::GetCurrentValues(int which_widget)
 // Programmer: Kathleen Bonnell
 // Creation:   Mon Sep 25 15:22:16 PST 2000
 //
+// Modifications:
+//   Kathleen Bonnell, Tue Jul  1 09:21:57 PDT 2003 
+//   Added call to viewer->SetPickAttributes.
+//
 // ****************************************************************************
 
 void
@@ -478,6 +510,7 @@ QvisPickWindow::Apply(bool ignore)
         // observers about them.
         GetCurrentValues(-1);
         pickAtts->Notify();
+        viewer->SetPickAttributes();
     }
     else
     {
