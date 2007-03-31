@@ -4276,6 +4276,7 @@ avtGenericDatabase::QueryScalars(const std::string &varName, const int dom,
         }
         rv = true;
     }
+
     // 
     // This is where we could allow the interface to add more information.
     // 
@@ -4653,6 +4654,9 @@ avtGenericDatabase::QuerySymmetricTensors(const std::string &varName,
 //    Kathleen Bonnell, Fri Jun 20 13:57:30 PDT 2003  
 //    Add support for node-pick. 
 //    
+//    Kathleen Bonnell, Thu Nov 20 15:11:52 PST 2003
+//    Removed call to varInfo.SetVarIsMaterial.
+//    
 // ****************************************************************************
 
 bool
@@ -4731,7 +4735,6 @@ avtGenericDatabase::QueryMaterial(const std::string &varName, const int dom,
         }
     }
     varInfo.SetCentering(PickVarInfo::None);
-    varInfo.SetVarIsMaterial(true);
     varInfo.SetNames(zoneNames);
     varInfo.SetMixNames(matNames);
     varInfo.SetMixValues(volFracs);
@@ -5336,4 +5339,211 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
     }
 }
 
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::QuerySpecies
+//
+//  Purpose:
+//    Queries the db regarding species var info for a specific cell/s. 
+//
+//  Arguments:
+//    varName           The variable on which to retrieve data.
+//    dom               The domain to query.
+//    element           The element to query.
+//    ts                The timestep to query.
+//    incidentElements  The incident elements to query.
+//    varInfo           A place to store the results. 
+//    zonePick          Whether or not the pick was a zone pick.
+//
+//  Returns:
+//    True if data was successfully retrieved, false otherwise.
+//
+//  Programmer:   Kathleen Bonnell 
+//  Creation:     November 20, 2003 
+//
+//  Modifications:
+//    
+// ****************************************************************************
+
+bool
+avtGenericDatabase::QuerySpecies(const std::string &varName, const int dom, 
+                                 const int element, const int ts, 
+                                 const std::vector<int> &incidentElements, 
+                                 PickVarInfo &varInfo, const bool zonePick)
+{
+    const avtSpeciesMetaData *smd = GetMetaData(ts)->GetSpecies(varName);
+    if (!smd)
+    {
+        debug5 << "Querying species var, but could not retrieve"
+               << " meta data!" << endl;
+        return false;
+    }
+
+    std::string matName = smd->materialName;
+    avtMaterial *mat = GetMaterial(dom, matName.c_str(), ts);
+    avtSpecies *spec = GetSpecies(dom, varName.c_str(), ts);
+
+    if (mat == NULL)
+    {
+        debug5 << "Querying species var, but could not retrieve"
+               << " avtMaterial!" << endl;
+        return false;
+    }
+    if (spec == NULL)
+    {
+        debug5 << "Querying species var, but could not retrieve"
+               << " avtSpecies!" << endl;
+        return false;
+    }
+
+    // 
+    // Retrieve the species sum for the cell/s, if it has not been
+    // retrieved already.
+    // 
+    string meshname  = GetMetaData(ts)->MeshForVar(varName);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, dom, matName.c_str());
+    vtkDataArray *species = GetSpeciesVariable(varName.c_str(), ts, dom, 
+                                matName.c_str(), mesh->GetNumberOfCells());
+    std::vector<double> vals = varInfo.GetValues();
+    std::vector<std::string> names;
+    char buff[80];
+        
+    if (species == NULL)
+    {
+        debug5 << "Querying species var, but could not retrieve"
+               << " data array!" << endl;
+        return false;
+    }
+
+    int i, j, k;
+    varInfo.SetCentering(PickVarInfo::Zonal);
+    bool getVal = (vals.size() == 0);
+
+    if (!zonePick) 
+    {
+        // the info we're after is associated with incidentElements
+        for (i = 0; i < incidentElements.size(); i++)
+        {
+            sprintf(buff, "(%d)", incidentElements[i]);
+            names.push_back(buff);
+            if (getVal)
+                vals.push_back(species->GetTuple1(incidentElements[i]));
+        }
+    }
+    else 
+    {
+        // the info we're after is associated with element
+        sprintf(buff, "(%d)", element);
+        names.push_back(buff);
+        if (getVal)
+            vals.push_back(species->GetTuple1(element));
+    }
+
+    //
+    // Retrieve the mass fractions for each species within each material
+    //
+
+    std::vector<int> nMats;
+    std::vector<std::string> matNames;
+    std::vector<int> nSpecs;
+    std::vector<std::string> specNames;
+    std::vector<double> massFracs;
+
+    std::vector<CellMatInfo> matInfo;
+
+    int numMatsThisZone = 0;
+
+    if (zonePick) // zone number is stored in element
+    {
+        if (element < 0 || element >= mat->GetNZones())
+        {
+            debug5 << "CANNOT QUERY SPECIES ZONE IS OUT OF RANGE" << endl;
+            return false;
+        }
+        matInfo = mat->ExtractCellMatInfo(element);
+        for (i = 0; i < matInfo.size(); i++)
+        {
+            int numSpecsThisMat = 0;
+            vector<CellSpecInfo> specInfo;
+            specInfo = spec->ExtractCellSpecInfo(element,matInfo[i].matno,mat);
+            for (j = 0; j < specInfo.size(); j++)
+            {
+                specNames.push_back(specInfo[j].name);
+                massFracs.push_back(specInfo[j].mf);
+                numSpecsThisMat++;
+            }
+            if (specInfo.size() > 0)
+            {
+                matNames.push_back(matInfo[i].name);
+                numMatsThisZone++;
+                nSpecs.push_back(numSpecsThisMat);
+            }
+        }
+        nMats.push_back(numMatsThisZone);
+    }
+    else
+    {
+        bool zonesInRange = true;
+        int nmatzones = mat->GetNZones();
+        for (i = 0; i < incidentElements.size(); i++)
+        {
+            if (incidentElements[i] < 0 || incidentElements[i] >= nmatzones)
+            {
+                zonesInRange = false;
+                break; 
+            }
+        }
+        if (!zonesInRange)
+        {
+            debug5 << "CANNOT QUERY MATERIALS ZONE IS OUT OF RANGE" << endl;
+            return false;
+        }
+        for (j = 0; j < incidentElements.size(); j++)
+        {
+            numMatsThisZone = 0;
+            matInfo = mat->ExtractCellMatInfo(incidentElements[j]);
+            for (i = 0; i < matInfo.size(); i++)
+            {
+                int numSpecsThisMat = 0;
+                vector<CellSpecInfo> specInfo;
+                specInfo = spec->ExtractCellSpecInfo(incidentElements[j],
+                    matInfo[i].matno,mat);
+                for (k = 0; k < specInfo.size(); k++)
+                {
+                    specNames.push_back(specInfo[k].name);
+                    massFracs.push_back(specInfo[k].mf);
+                    numSpecsThisMat++;
+                }
+                if (specInfo.size() > 0)
+                {
+                    matNames.push_back(matInfo[i].name);
+                    numMatsThisZone++;
+                    nSpecs.push_back(numSpecsThisMat);
+                }
+            }
+            nMats.push_back(numMatsThisZone);
+        }
+    }
+
+    varInfo.SetNames(names);
+    varInfo.SetValues(vals);
+    varInfo.SetNumMatsPerZone(nMats);
+    varInfo.SetMatNames(matNames);
+    varInfo.SetNumSpecsPerMat(nSpecs);
+    varInfo.SetMixNames(specNames);
+    varInfo.SetMixValues(massFracs);
+
+    if (!nMats.empty())
+        nMats.clear();
+    if (!matNames.empty())
+        matNames.clear();
+    if (!nSpecs.empty())
+        nSpecs.clear();
+    if (!specNames.empty())
+        specNames.clear();
+    if (!massFracs.empty())
+        massFracs.clear();
+ 
+    return true;
+}
 

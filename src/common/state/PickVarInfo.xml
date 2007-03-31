@@ -25,10 +25,11 @@
     </Field>
     <Field name="miscMessage" label="miscMessage" type="string">
     </Field>
-    <Field name="varIsMaterial" label="varIsMaterial" type="bool">
-      false
-    </Field>
     <Field name="numMatsPerZone" label="numMatsPerZone" type="intVector">
+    </Field>
+    <Field name="matNames" label="matNames" type="stringVector">
+    </Field>
+    <Field name="numSpecsPerMat" label="numSpecsPerMat" type="intVector">
     </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>

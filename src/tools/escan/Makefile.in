@@ -34,6 +34,9 @@
 # Date:       Thu Jan 16 16:32:42 PST 2003
 #
 # Modifications:
+#   Eric Brugger, Wed Nov 19 16:23:39 PST 2003
+#   I created a NOT_DISTRIB line with lex.yy.c so that it would not be
+#   added to the distribution since it is a generated file.
 # 
 ##############################################################################
 
@@ -42,6 +45,9 @@
 # --------------------
 @SET_MAKE@
 @VARIABLES@
+
+NOT_DISTRIB=lex.yy.c
+
 CXXFLAGS=-I. @CXXFLAGS@
 LIBS=-ll
 LEX=lex

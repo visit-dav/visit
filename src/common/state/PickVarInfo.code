@@ -12,12 +12,15 @@ Definition:
 //   Logic changed in order to support node picking. Info from material var's 
 //   now handled differently. 
 //   
+//   Kathleen Bonnell, Thu Nov 20 10:18:54 PST 2003
+//   Support species variableType. 
+// 
 // ****************************************************************************
 
 void
 PickVarInfo::PrintSelf(ostream &os)
 {
-    int i, j, nMats, mixOffset;
+    int i, j, k, nMats, matOffset, mixOffset;
     os << variableName.c_str() << ":  ";
     switch (centering)
     {
@@ -27,7 +30,54 @@ PickVarInfo::PrintSelf(ostream &os)
     }
     if (!(names.empty() && mixNames.empty()))
     {  
-        if (!varIsMaterial)
+        if (variableType == "material")
+        {
+            mixOffset = 0; 
+            for (i = 0; i < numMatsPerZone.size(); i++)
+            {
+                if (names.size() > 0)
+                    os << "    " << names[i].c_str() << "\n";
+                nMats = numMatsPerZone[i];
+                for (j = 0; j < nMats; j++)
+                {
+                    if (names.size() > 0)
+                        os << "    "; 
+                    os << "    " << mixNames[j+mixOffset].c_str();
+                    if (mixValues[j+mixOffset] < 1.)
+                        os << " = " << mixValues[j+mixOffset];
+                    os << "\n";
+                }
+                mixOffset += nMats;
+            }
+        }
+        else if (variableType == "species")
+        {
+            matOffset = 0;
+            mixOffset = 0; 
+            for (i = 0; i < numMatsPerZone.size(); i++)
+            {
+                if (names.size() > 0)
+                {
+                    os << "    " << names[i].c_str();
+                    if (values.size() > 0)
+                        os << " = " << values[i] << "\n";
+                }
+                nMats = numMatsPerZone[i];
+                for (j = 0; j < nMats; j++)
+                {
+                    os << "    " << matNames[j+matOffset].c_str() << "\n";
+                    int nSpecs = numSpecsPerMat[j+matOffset];
+                    for (k = 0; k < nSpecs; k++)
+                    {
+                        os << "        " << mixNames[k+mixOffset].c_str();
+                        os << " =  " << mixValues[k+mixOffset] << "\n";
+                    }
+                    mixOffset += nSpecs;
+                }
+                matOffset += nMats;
+            }
+        }
+        else 
         {
             mixOffset = 0; 
             for (i = 0; i < names.size(); i++)
@@ -59,26 +109,6 @@ PickVarInfo::PrintSelf(ostream &os)
                 }
             }
         }
-        else
-        {
-            mixOffset = 0; 
-            for (i = 0; i < numMatsPerZone.size(); i++)
-            {
-                if (names.size() > 0)
-                    os << "    " << names[i].c_str() << "\n";
-                nMats = numMatsPerZone[i];
-                for (j = 0; j < nMats; j++)
-                {
-                    if (names.size() > 0)
-                        os << "    "; 
-                    os << "    " << mixNames[j+mixOffset].c_str();
-                    if (mixValues[j+mixOffset] < 1.)
-                        os << " = " << mixValues[j+mixOffset];
-                    os << "\n";
-                }
-                mixOffset += nMats;
-            }
-        }
     }
     else if (!miscMessage.empty())
     {
@@ -87,6 +117,388 @@ PickVarInfo::PrintSelf(ostream &os)
     else
     {
         os << "    No Information Found\n";
+    }
+}
+
+Function: CreateOutputString
+Declaration: void CreateOutputString(std::string &os);
+Definition:
+
+// ****************************************************************************
+// Method: PickVarInfo::CreateOutputString
+//
+// Purpose: 
+//   Creates a single output string containing all the information gathered 
+//   from a pick.
+//
+// Modifications:
+//   Kathleen Bonnell, Thu Jun 26 09:31:56 PDT 2003
+//   Logic changed in order to support node picking. Info from material vars 
+//   now handled differently. 
+//   
+//   Hank Childs, Mon Sep 22 11:19:22 PDT 2003
+//   Extend for tensors.
+//
+//   Kathleen Bonnell, Thu Nov 20 10:18:54 PST 2003
+//   Support species variableType. 
+// 
+// ****************************************************************************
+void
+PickVarInfo::CreateOutputString(std::string &os)
+{
+    int i, j, k;
+    int matOffset = 0, mixOffset = 0;
+    int nMats;
+    char buff[256];
+    os = variableName;
+    os +=  ":  ";
+    switch (centering)
+    {
+        case Nodal:  os += "<nodal>\n" ; break;
+        case Zonal:  os += "<zonal>\n" ; break;
+        case None :  os += "\n";         break;
+    }
+    if (!(names.empty() && mixNames.empty()))
+    {  
+        if (variableType == "material")
+        {
+            mixOffset  = 0;
+            std::string spacing;
+            for (i = 0; i < numMatsPerZone.size(); i++)
+            {
+                if (names.size() > 0)
+                {
+                    SNPRINTF(buff, 256, "    %s\n", names[i].c_str());
+                    os += buff; 
+                    spacing = "        ";
+                }
+                else
+                    spacing = "    ";
+                nMats = numMatsPerZone[i];
+                for (j = 0; j < nMats; j++)
+                {
+                    SNPRINTF(buff, 256, "%s%s ", spacing.c_str(), 
+                             mixNames[j+mixOffset].c_str());
+                    os += buff;
+                    if (mixValues[j+mixOffset] < 1.)
+                    {
+                        SNPRINTF(buff, 256, "= %g", mixValues[j+mixOffset]);
+                        os += buff;
+                    }
+                    os += "\n";
+                }
+                mixOffset += nMats;
+            }
+        }
+        else if (variableType == "species")
+        {
+            matOffset  = 0;
+            mixOffset  = 0;
+            std::string spacing1;
+            std::string spacing2;
+            for (i = 0; i < numMatsPerZone.size(); i++)
+            {
+                if (names.size() > 0)
+                {
+                    if (values.size() > 0)
+                    {
+                        SNPRINTF(buff, 256, "    %s = %g\n", names[i].c_str(),
+                                 values[i]);
+                    }
+                    else
+                    {
+                        SNPRINTF(buff, 256, "    %s\n", names[i].c_str());
+                    }
+                    os += buff; 
+                    spacing1 = "        ";
+                    spacing2 = "            ";
+                }
+                else
+                {
+                    spacing1 = "    ";
+                    spacing2 = "        ";
+                }
+                nMats = numMatsPerZone[i];
+                for (j = 0; j < nMats; j++)
+                {
+                    SNPRINTF(buff, 256, "%s%s\n", spacing1.c_str(), 
+                             matNames[j+matOffset].c_str());
+                    os += buff;
+                    int nSpecs = numSpecsPerMat[j+matOffset];
+                    for (k = 0; k < nSpecs; k++)
+                    {
+                        SNPRINTF(buff, 256, "%s%s  ", spacing2.c_str(), 
+                                 mixNames[k+mixOffset].c_str());
+                        os += buff;
+                        SNPRINTF(buff, 256, "= %g\n", mixValues[k+mixOffset]);
+                        os += buff;
+                    }
+                    os += "\n";
+                    mixOffset += nSpecs;
+                }
+                matOffset += nMats;
+            }
+        }
+        else
+        {
+            mixOffset  = 0;
+            for (i = 0; i < names.size(); i++)
+            {
+                SNPRINTF(buff, 256, "    %s ", names[i].c_str());
+                os += buff;
+                if (variableType == "vector")
+                {
+                    int stride = values.size() / names.size();
+                    SNPRINTF(buff, 256, "= (%g", values[i*stride]);
+                    os += buff;
+                    for (int j = 1; j < stride-1; j++) 
+                    {
+                        SNPRINTF(buff, 256, ",%g", values[i*stride+j]);
+                        os += buff;
+                    }
+                    SNPRINTF(buff, 256, ") mag = %g\n", values[i*stride+stride-1]);
+                    os += buff; 
+                }
+                else if (variableType == "scalar")
+                {
+                    SNPRINTF(buff, 256, "= %g\n", values[i]);
+                    os += buff;
+                }
+                else if (variableType == "tensor")
+                {
+                    int buf_len = strlen(buff);
+                    int ncomps = values.size() / names.size();
+                    PrintTensor(os, values, i, ncomps, buf_len);
+                }
+                else if (variableType == "symm_tensor")
+                {
+                    int buf_len = strlen(buff);
+                    int ncomps = values.size() / names.size();
+                    PrintSymmetricTensor(os, values, i, ncomps, buf_len);
+                }
+                else 
+                {
+                    os += "\n";
+                }
+                if (mixVar)
+                {
+                    nMats = numMatsPerZone[i];
+                    for (j = 0; j < nMats; j++)
+                    {
+                        SNPRINTF(buff, 256, "        material %s = ", 
+                                 mixNames[j+mixOffset].c_str());
+                        os += buff;
+                        SNPRINTF(buff, 256, "%g\n", mixValues[j+mixOffset]);
+                        os += buff;
+                    }
+                    mixOffset += nMats;
+                }
+            }
+        }
+    }
+    else if (!miscMessage.empty())
+    {
+        SNPRINTF(buff, 256, "    %s\n", miscMessage.c_str());
+        os += buff;
+    }
+    else
+    {
+        SNPRINTF(buff, 256, "    No Information Found\n"); 
+        os += buff;
+    }
+}
+
+Function: CreateOutputStrings
+Declaration: void CreateOutputStrings(std::vector<std::string> &os);
+Definition:
+// ****************************************************************************
+// Method: PickVarInfo::CreateOutputStrings
+//
+// Purpose: 
+//   Creates output strings containing all the info gathered from a pick.
+//   Designed for display in the gui PickWindow -- creates a single string for
+//   every line to be displayed.
+//
+// Modifications:
+//   Kathleen Bonnell, Thu Jun 26 09:31:56 PDT 2003
+//   Logic changed in order to support node picking. Info from material vars 
+//   now handled differently. 
+//   
+//   Hank Childs, Mon Sep 22 11:19:22 PDT 2003
+//   Extend for tensors.
+//
+//   Kathleen Bonnell, Thu Nov 20 10:18:54 PST 2003
+//   Support species variableType. 
+// 
+// ****************************************************************************
+
+void
+PickVarInfo::CreateOutputStrings(std::vector<std::string> &os)
+{
+    int i, j, k;
+    int matOffset, mixOffset, nMats;
+    char buff[256];
+    char buf2[256];
+    switch (centering)
+    {
+        case Nodal:  SNPRINTF(buff, 256, "%s: <nodal>", variableName.c_str()); 
+                     os.push_back(buff);
+                     break;
+        case Zonal:  SNPRINTF(buff, 256, "%s: <zonal>", variableName.c_str()); 
+                     os.push_back(buff);
+                     break;
+        case None :  SNPRINTF(buff, 256, "%s: ", variableName.c_str()); 
+                     os.push_back(buff);
+                     break;
+    }
+    if (!(names.empty() && mixNames.empty()))
+    {  
+        if (variableType == "material")
+        {
+            mixOffset = 0; 
+            char spaces[8];
+            for (i = 0; i < numMatsPerZone.size(); i++)
+            {
+                if (names.size() > 0)
+                {
+                    SNPRINTF(buff, 256, "    %s ", names[i].c_str());
+                    os.push_back(buff);
+                    SNPRINTF(spaces, 8, "        "); 
+                }
+                else
+                    SNPRINTF(spaces, 8, "    "); 
+                nMats = numMatsPerZone[i];
+                for (j = 0; j < nMats; j++)
+                {
+                    if (mixValues[j+mixOffset] < 1.)
+                    {
+                        SNPRINTF(buff, 256, "%s%s = %g", spaces, 
+                                 mixNames[j+mixOffset].c_str(), 
+                                 mixValues[j+mixOffset]);
+                    }
+                    else
+                    {
+                        SNPRINTF(buff, 256, "%s%s", spaces,
+                                 mixNames[j+mixOffset].c_str());
+                    }
+                    os.push_back(buff);
+                } 
+                mixOffset += nMats;
+            }
+        } 
+        else if (variableType == "species")
+        {
+            mixOffset  = 0;
+            matOffset  = 0;
+            char spaces1[8];
+            char spaces2[12];
+            for (i = 0; i < numMatsPerZone.size(); i++)
+            {
+                if (names.size() > 0)
+                {
+                    if (values.size() > 0)
+                    {
+                        SNPRINTF(buff, 256, "    %s = %g", names[i].c_str(),
+                                 values[i]);
+                    }
+                    else 
+                    {
+                        SNPRINTF(buff, 256, "    %s", names[i].c_str());
+                    }
+                    os.push_back(buff); 
+                    SNPRINTF(spaces1, 8, "        ");
+                    SNPRINTF(spaces2, 12, "            ");
+                }
+                else
+                {
+                    SNPRINTF(spaces1, 8, "    ");
+                    SNPRINTF(spaces2, 12, "        ");
+                }
+                nMats = numMatsPerZone[i];
+                for (j = 0; j < nMats; j++)
+                {
+                    SNPRINTF(buff, 256, "%s%s", spaces1,
+                             matNames[j+matOffset].c_str());
+                    os.push_back(buff);
+                    int nSpecs = numSpecsPerMat[j+matOffset];
+                    for (k = 0; k < nSpecs; k++)
+                    {
+                        SNPRINTF(buff, 256, "%s%s = %g", spaces2,
+                                 mixNames[k+mixOffset].c_str(),
+                                 mixValues[k+mixOffset]);
+                        os.push_back(buff);
+                    }
+                    mixOffset += nSpecs;
+                }
+                matOffset += nMats;
+            }
+        }
+        else  // all other var types
+        {
+            mixOffset = 0;
+            for (i = 0; i < names.size(); i++)
+            {
+                SNPRINTF(buff, 256, "    %s ", names[i].c_str());
+                if (variableType == "vector")
+                {
+                    int stride = values.size() / names.size();
+                    SNPRINTF(buf2, 256, "= (%g", values[i*stride]);
+                    strcat(buff, buf2);
+                    for (int j = 1; j < stride-1; j++) 
+                    {
+                        SNPRINTF(buf2, 256, ", %g", values[i*stride+j]);
+                        strcat(buff, buf2);
+                    }
+                    SNPRINTF(buf2, 256, ") mag = %g", 
+                                                    values[i*stride+stride-1]);
+                    strcat(buff,  buf2);
+                }
+                else if (variableType == "scalar")
+                {
+                    SNPRINTF(buf2, 256, "= %g", values[i]);
+                    strcat(buff, buf2);
+                }
+                else if (variableType == "tensor")
+                {
+                    std::string tmp;
+                    int buf_len = strlen(buff);
+                    int ncomps = values.size() / names.size();
+                    PrintTensor(tmp, values, i, ncomps, buf_len);
+                    strcat(buff, tmp.c_str());
+                }
+                else if (variableType == "symm_tensor")
+                {
+                    std::string tmp;
+                    int buf_len = strlen(buff);
+                    int ncomps = values.size() / names.size();
+                    PrintSymmetricTensor(tmp, values, i, ncomps, buf_len);
+                    strcat(buff, tmp.c_str());
+                }
+                os.push_back(buff);
+                if (mixVar)
+                {
+                    nMats = numMatsPerZone[i];
+                    for (j = 0; j < nMats; j++)
+                    {
+                        SNPRINTF(buff, 256, "        material %s = %g", 
+                                 mixNames[j+mixOffset].c_str(), 
+                                 mixValues[j+mixOffset]);
+                        os.push_back(buff);
+                    }
+                    mixOffset += nMats;
+                }
+            }
+        }
+    } 
+    else if (!miscMessage.empty())
+    {
+        SNPRINTF(buff, 256, "    %s", miscMessage.c_str());
+        os.push_back(buff);
+    }
+    else   
+    {
+        SNPRINTF(buff, 256, "    No Information Found");
+        os.push_back(buff);
     }
 }
 
@@ -191,287 +603,6 @@ PickVarInfo::PrintSymmetricTensor(std::string &os,
         sprintf(line, "(%g, %g, %g)\n", values[offset+6], values[offset+7],
                                         values[offset+8]);
         os += line;
-    }
-}
-
-
-Function: CreateOutputString
-Declaration: void CreateOutputString(std::string &os);
-Definition:
-
-// ****************************************************************************
-// Method: PickVarInfo::CreateOutputString
-//
-// Purpose: 
-//   Creates a single output string containing all the information gathered 
-//   from a pick.
-//
-// Modifications:
-//   Kathleen Bonnell, Thu Jun 26 09:31:56 PDT 2003
-//   Logic changed in order to support node picking. Info from material vars 
-//   now handled differently. 
-//   
-//   Hank Childs, Mon Sep 22 11:19:22 PDT 2003
-//   Extend for tensors.
-//
-// ****************************************************************************
-void
-PickVarInfo::CreateOutputString(std::string &os)
-{
-    int i, j;
-    int mixOffset = 0;
-    int nMats;
-    char buff[256];
-    os = variableName;
-    os +=  ":  ";
-    switch (centering)
-    {
-        case Nodal:  os += "<nodal>\n" ; break;
-        case Zonal:  os += "<zonal>\n" ; break;
-        case None :  os += "\n";         break;
-    }
-    if (!(names.empty() && mixNames.empty()))
-    {  
-        if (!varIsMaterial)
-        {
-            mixOffset  = 0;
-            for (i = 0; i < names.size(); i++)
-            {
-                SNPRINTF(buff, 256, "    %s ", names[i].c_str());
-                os += buff;
-                if (variableType == "vector")
-                {
-                    int stride = values.size() / names.size();
-                    SNPRINTF(buff, 256, "= (%g", values[i*stride]);
-                    os += buff;
-                    for (int j = 1; j < stride-1; j++) 
-                    {
-                        SNPRINTF(buff, 256, ",%g", values[i*stride+j]);
-                        os += buff;
-                    }
-                    SNPRINTF(buff, 256, ") mag = %g\n", values[i*stride+stride-1]);
-                    os += buff; 
-                }
-                else if (variableType == "scalar")
-                {
-                    SNPRINTF(buff, 256, "= %g\n", values[i]);
-                    os += buff;
-                }
-                else if (variableType == "tensor")
-                {
-                    int buf_len = strlen(buff);
-                    int ncomps = values.size() / names.size();
-                    PrintTensor(os, values, i, ncomps, buf_len);
-                }
-                else if (variableType == "symm_tensor")
-                {
-                    int buf_len = strlen(buff);
-                    int ncomps = values.size() / names.size();
-                    PrintSymmetricTensor(os, values, i, ncomps, buf_len);
-                }
-                else 
-                {
-                    os += "\n";
-                }
-                if (mixVar)
-                {
-                    nMats = numMatsPerZone[i];
-                    for (j = 0; j < nMats; j++)
-                    {
-                        SNPRINTF(buff, 256, "        material %s = ", 
-                                 mixNames[j+mixOffset].c_str());
-                        os += buff;
-                        SNPRINTF(buff, 256, "%g\n", mixValues[j+mixOffset]);
-                        os += buff;
-                    }
-                    mixOffset += nMats;
-                }
-            }
-        }
-        else
-        {
-            mixOffset  = 0;
-            std::string spacing;
-            for (i = 0; i < numMatsPerZone.size(); i++)
-            {
-                if (names.size() > 0)
-                {
-                    SNPRINTF(buff, 256, "    %s\n", names[i].c_str());
-                    os += buff; 
-                    spacing = "        ";
-                }
-                else
-                    spacing = "    ";
-                nMats = numMatsPerZone[i];
-                for (j = 0; j < nMats; j++)
-                {
-                    SNPRINTF(buff, 256, "%s%s ", spacing.c_str(), 
-                             mixNames[j+mixOffset].c_str());
-                    os += buff;
-                    if (mixValues[j+mixOffset] < 1.)
-                    {
-                        SNPRINTF(buff, 256, "= %g", mixValues[j+mixOffset]);
-                        os += buff;
-                    }
-                    os += "\n";
-                }
-                mixOffset += nMats;
-            }
-        }
-    }
-    else if (!miscMessage.empty())
-    {
-        SNPRINTF(buff, 256, "    %s\n", miscMessage.c_str());
-        os += buff;
-    }
-    else
-    {
-        SNPRINTF(buff, 256, "    No Information Found\n"); 
-        os += buff;
-    }
-}
-
-Function: CreateOutputStrings
-Declaration: void CreateOutputStrings(std::vector<std::string> &os);
-Definition:
-// ****************************************************************************
-// Method: PickVarInfo::CreateOutputStrings
-//
-// Purpose: 
-//   Creates output strings containing all the info gathered from a pick.
-//   Designed for display in the gui PickWindow -- creates a single string for
-//   every line to be displayed.
-//
-// Modifications:
-//   Kathleen Bonnell, Thu Jun 26 09:31:56 PDT 2003
-//   Logic changed in order to support node picking. Info from material vars 
-//   now handled differently. 
-//   
-//   Hank Childs, Mon Sep 22 11:19:22 PDT 2003
-//   Extend for tensors.
-//
-// ****************************************************************************
-
-void
-PickVarInfo::CreateOutputStrings(std::vector<std::string> &os)
-{
-    int i, j;
-    int mixOffset, nMats;
-    char buff[256];
-    char buf2[256];
-    switch (centering)
-    {
-        case Nodal:  SNPRINTF(buff, 256, "%s: <nodal>", variableName.c_str()); 
-                     os.push_back(buff);
-                     break;
-        case Zonal:  SNPRINTF(buff, 256, "%s: <zonal>", variableName.c_str()); 
-                     os.push_back(buff);
-                     break;
-        case None :  SNPRINTF(buff, 256, "%s: ", variableName.c_str()); 
-                     os.push_back(buff);
-                     break;
-    }
-    if (!(names.empty() && mixNames.empty()))
-    {  
-        if (!varIsMaterial)
-        {
-            mixOffset = 0;
-            for (i = 0; i < names.size(); i++)
-            {
-                SNPRINTF(buff, 256, "    %s ", names[i].c_str());
-                if (variableType == "vector")
-                {
-                    int stride = values.size() / names.size();
-                    SNPRINTF(buf2, 256, "= (%g", values[i*stride]);
-                    strcat(buff, buf2);
-                    for (int j = 1; j < stride-1; j++) 
-                    {
-                        SNPRINTF(buf2, 256, ", %g", values[i*stride+j]);
-                        strcat(buff, buf2);
-                    }
-                    SNPRINTF(buf2, 256, ") mag = %g", 
-                                                    values[i*stride+stride-1]);
-                    strcat(buff,  buf2);
-                }
-                else if (variableType == "scalar")
-                {
-                    SNPRINTF(buf2, 256, "= %g", values[i]);
-                    strcat(buff, buf2);
-                }
-                else if (variableType == "tensor")
-                {
-                    std::string tmp;
-                    int buf_len = strlen(buff);
-                    int ncomps = values.size() / names.size();
-                    PrintTensor(tmp, values, i, ncomps, buf_len);
-                    strcat(buff, tmp.c_str());
-                }
-                else if (variableType == "symm_tensor")
-                {
-                    std::string tmp;
-                    int buf_len = strlen(buff);
-                    int ncomps = values.size() / names.size();
-                    PrintSymmetricTensor(tmp, values, i, ncomps, buf_len);
-                    strcat(buff, tmp.c_str());
-                }
-                os.push_back(buff);
-                if (mixVar)
-                {
-                    nMats = numMatsPerZone[i];
-                    for (j = 0; j < nMats; j++)
-                    {
-                        SNPRINTF(buff, 256, "        material %s = %g", 
-                                 mixNames[j+mixOffset].c_str(), 
-                                 mixValues[j+mixOffset]);
-                        os.push_back(buff);
-                    }
-                    mixOffset += nMats;
-                }
-            }
-        }
-        else 
-        {
-            mixOffset = 0; 
-            char spaces[8];
-            for (i = 0; i < numMatsPerZone.size(); i++)
-            {
-                if (names.size() > 0)
-                {
-                    SNPRINTF(buff, 256, "    %s ", names[i].c_str());
-                    os.push_back(buff);
-                    SNPRINTF(spaces, 8, "        "); 
-                }
-                else
-                    SNPRINTF(spaces, 8, "    "); 
-                nMats = numMatsPerZone[i];
-                for (j = 0; j < nMats; j++)
-                {
-                    if (mixValues[j+mixOffset] < 1.)
-                    {
-                        SNPRINTF(buff, 256, "%s%s = %g", spaces, 
-                                 mixNames[j+mixOffset].c_str(), 
-                                 mixValues[j+mixOffset]);
-                    }
-                    else
-                    {
-                        SNPRINTF(buff, 256, "%s%s", spaces,
-                                 mixNames[j+mixOffset].c_str());
-                    }
-                    os.push_back(buff);
-                } 
-                mixOffset += nMats;
-            }
-        } 
-    } 
-    else if (!miscMessage.empty())
-    {
-        SNPRINTF(buff, 256, "    %s", miscMessage.c_str());
-        os.push_back(buff);
-    }
-    else   
-    {
-        SNPRINTF(buff, 256, "    No Information Found");
-        os.push_back(buff);
     }
 }
 

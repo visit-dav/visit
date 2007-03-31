@@ -253,6 +253,9 @@
 #    Jeremy Meredith, Wed Nov 19 12:35:43 PST 2003
 #    Moved a few non-widget files from MOC to non-MOC status.
 #
+#    Kathleen Bonnell, Thu Nov 20 07:30:51 PST 2003 
+#    Added the non-widgest files to SRC. 
+#
 ##############################################################################
 
 ##
@@ -369,6 +372,9 @@ SRC = \
     KFListViewItem.C \
     mini3D.C \
     QualifiedFilename.C \
+    QvisListViewFileItem.C \
+    QvisPlotListBoxItem.C \
+    QvisSubsetListViewItem.C \
     QvisHelpListViewItem.C
 
 # Where main() is.

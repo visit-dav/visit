@@ -136,6 +136,9 @@ typedef struct {
 //    Added bool and stringVector args to QueryNodes, QueryZones, in
 //    support of logical zone coordinates. 
 // 
+//    Kathleen Bonnell, Thu Nov 20 15:17:21 PST 2003 
+//    Added QuerySpecies. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -226,6 +229,11 @@ class DATABASE_API avtDatabase
                                               const int, const int,
                                               const std::vector<int> &,
                                               PickVarInfo &, const bool) 
+                                                  {return false; };
+    virtual bool                QuerySpecies(const std::string &, const int, 
+                                             const int, const int,
+                                             const std::vector<int> &,
+                                             PickVarInfo &, const bool) 
                                                   {return false; };
     virtual bool                QueryNodes(const std::string &, const int, 
                                            const int, const int,

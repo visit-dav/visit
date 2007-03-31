@@ -65,6 +65,9 @@ $0 = shift @ARGV;
 #     Eric Brugger, Wed May 21 13:16:22 PDT 2003
 #     Removed the -noexodus and -noverdict options.
 #
+#     Eric Brugger, Thu Nov 20 08:23:40 PST 2003
+#     Pass along -withhelp option to source_files command.
+#
 
 require "newgetopt.pl";
 
@@ -87,7 +90,14 @@ if($opt_withhelp)
 }
 
 $dist = "";
-$filelist = "./clearcase_bin/source_files";
+if ($opt_withhelp)
+{
+    $filelist = "./clearcase_bin/source_files -withhelp";
+}
+else
+{
+    $filelist = "./clearcase_bin/source_files";
+}
 $fulldist = shift;
 if (!defined($fulldist))
 {

@@ -2761,6 +2761,16 @@ fi
 
 
 #
+# Check if the help directory is present.
+#
+if test -d help; then
+    HELP="help"
+else
+    HELP=""
+fi
+
+
+#
 # Check to see if we should build all of the plugins.
 #
 # Check whether --enable-buildall or --disable-buildall was given.
@@ -15570,7 +15580,11 @@ else
     GUI_FILES=""
 fi
 
-HELP_FILES="help/Makefile"
+if test -n "$HELP"; then
+    HELP_FILES="help/Makefile"
+else
+    HELP_FILES=""
+fi
 
 if test -n "$VIEWER"; then
     VIEWER_FILES="viewer/Makefile
@@ -16292,6 +16306,7 @@ s,@JAVA_TARGET@,$JAVA_TARGET,;t t
 s,@JAR@,$JAR,;t t
 s,@JAVAFLAGS@,$JAVAFLAGS,;t t
 s,@JAVAPLUGINFLAGS@,$JAVAPLUGINFLAGS,;t t
+s,@HELP@,$HELP,;t t
 s,@PLOT_OPTIONAL_DIRS@,$PLOT_OPTIONAL_DIRS,;t t
 s,@OPERATOR_OPTIONAL_DIRS@,$OPERATOR_OPTIONAL_DIRS,;t t
 s,@DB_OPTIONAL_DIRS@,$DB_OPTIONAL_DIRS,;t t

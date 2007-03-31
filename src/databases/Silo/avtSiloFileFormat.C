@@ -1912,11 +1912,26 @@ avtSiloFileFormat::DoRootDirectoryWork(avtDatabaseMetaData *md)
 //    Use curvilinear domain boundary as structured domain boundary is now
 //    an abstract type.
 //
+//    Jeremy Meredith and Hank Childs, Thu Nov 20 15:28:24 PST 2003
+//    Do not try to re-read domain connectivity if it has already been
+//    cached.  This provides a nice speedup when changing time steps.  It also
+//    avoids a bug where changing time steps could cause problems because 
+//    the processors with no data don't get back to this function anyway.
+//
 // ****************************************************************************
 
 void
 avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile)
 {
+    void_ref_ptr vr = cache->GetVoidRef("any_mesh",
+                            AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1);
+    if (*vr != NULL)
+    {
+        // We've already got it from a previous time step;
+        // don't re-read it for later time steps.
+        return;
+    }
+
     //
     // Connectivity information.
     //

@@ -148,6 +148,10 @@
 #    When I split some copy commands, I introduced a bug where not all
 #    the help files were copied to the distribution.  I corrected this.
 #
+#    Eric Brugger, Thu Nov 20 09:05:18 PST 2003
+#    Modified the script to handle the absence of the help directory.
+#    Added libvtkDICOMParser to the distribution.
+#
 #-----------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -351,6 +355,7 @@ endif
 # Determine the names of the VTK shared libraries.
 #
 set VTKCoLibName = "libvtkCommon.$SHLIB_SOEXT"
+set VTKDiLibName = "libvtkDICOMParser.$SHLIB_SOEXT"
 set VTKFiLibName = "libvtkFiltering.$SHLIB_SOEXT"
 set VTKGrLibName = "libvtkGraphics.$SHLIB_SOEXT"
 set VTKHyLibName = "libvtkHybrid.$SHLIB_SOEXT"
@@ -370,6 +375,7 @@ set VTKZlLibName = "libvtkzlib.$SHLIB_SOEXT"
 #
 if (("$VTKLibs" == "TRUE") && \
     ((! -e $VisItDir/lib/$VTKCoLibName) || \
+     (! -e $VisItDir/lib/$VTKDiLibName) || \
      (! -e $VisItDir/lib/$VTKFiLibName) || \
      (! -e $VisItDir/lib/$VTKGrLibName) || \
      (! -e $VisItDir/lib/$VTKHyLibName) || \
@@ -626,6 +632,7 @@ ln -s "python/lib/$pyver/config/lib${pyver}.$SHLIB_SOEXT" $libdir
 # Copy the VTK libraries to the distribution.
 #
 cp $VisItDir/lib/$VTKCoLibName $libdir/$VTKCoLibName
+cp $VisItDir/lib/$VTKDiLibName $libdir/$VTKDiLibName
 cp $VisItDir/lib/$VTKFiLibName $libdir/$VTKFiLibName
 cp $VisItDir/lib/$VTKGrLibName $libdir/$VTKGrLibName
 cp $VisItDir/lib/$VTKHyLibName $libdir/$VTKHyLibName
@@ -715,16 +722,18 @@ cp $VisItDir/include/qt/q[m-zA-Z]*.h            $incdir/qt
 #
 # Copy the help files to the distribution.
 #
-echo "Copying help files to the distribution..."
-cp $VisItDir/help/[a-gi-z]*.html    $helpdir
-cp $VisItDir/help/h[a-df-z]*.html   $helpdir
-cp $VisItDir/help/he[a-km-z]*.html  $helpdir
-cp $VisItDir/help/hel[a-oq-z]*.html $helpdir
-cp $VisItDir/help/help[a-z]*.html   $helpdir
-cp $VisItDir/help/help0[01]*.html   $helpdir
-cp $VisItDir/help/help0[23]*.html   $helpdir
-if (-e $VisItDir/help/visit.helpml) then
-   cp $VisItDir/help/visit.helpml $helpdir
+if (-e $VisItDir/help) then
+   echo "Copying help files to the distribution..."
+   cp $VisItDir/help/[a-gi-z]*.html    $helpdir
+   cp $VisItDir/help/h[a-df-z]*.html   $helpdir
+   cp $VisItDir/help/he[a-km-z]*.html  $helpdir
+   cp $VisItDir/help/hel[a-oq-z]*.html $helpdir
+   cp $VisItDir/help/help[a-z]*.html   $helpdir
+   cp $VisItDir/help/help0[01]*.html   $helpdir
+   cp $VisItDir/help/help0[23]*.html   $helpdir
+   if (-e $VisItDir/help/visit.helpml) then
+      cp $VisItDir/help/visit.helpml $helpdir
+   endif
 endif
 
 #

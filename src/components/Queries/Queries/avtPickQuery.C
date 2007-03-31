@@ -936,6 +936,9 @@ avtPickQuery::DeterminePickedNode(vtkDataSet *ds, int &foundEl)
 //    Kathleen Bonnell, Thu Sep 18 07:38:32 PDT 2003
 //    Store the results in 'realElement' and 'realIncidentElements'.
 //    
+//    Kathleen Bonnell, Thu Nov 20 15:06:49 PST 2003 
+//    Swapped 'VarIsMaterial' with check of varType. 
+//    
 // ****************************************************************************
 
 void
@@ -962,7 +965,7 @@ avtPickQuery::SetRealIds(vtkDataSet *ds)
     int numVars = pickAtts.GetNumPickVarInfos();
     for (i = 0; i < numVars; i++)
     {
-        if (pickAtts.GetPickVarInfo(i).GetVarIsMaterial())
+        if (pickAtts.GetPickVarInfo(i).GetVariableType() == "material")
             continue;
 
         stringVector &names = pickAtts.GetPickVarInfo(i).GetNames();
@@ -1001,6 +1004,8 @@ avtPickQuery::SetRealIds(vtkDataSet *ds)
 //  Creation:   June 27, 2003 
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Nov 20 15:04:56 PST 2003
+//    Set foundData to 'true' when the array is found.
 //    
 // ****************************************************************************
 
@@ -1029,6 +1034,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds)
         if (varArray != NULL) // nodal data
         {
             varInfo.SetCentering(PickVarInfo::Nodal);
+            foundData = true;
             zoneCent = false;
         }
         else
@@ -1037,6 +1043,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds)
             if (varArray != NULL) // zonal data
             {
                 varInfo.SetCentering(PickVarInfo::Zonal);
+                foundData = true;
                 zoneCent = true;
             }
             else 

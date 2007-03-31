@@ -159,6 +159,9 @@ class     PickVarInfo;
 //    Add bool and string vector args to QueryNodes, QueryZones, in support
 //    of logical zone coords.
 //
+//    Kathleen Bonnell, Thu Nov 20 15:10:23 PST 2003 
+//    Added QuerySpecies. 
+//    
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -291,6 +294,10 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                             PickVarInfo &, const bool);
     virtual bool               QueryMaterial(const std::string &, const int, 
                                             const int , const int,
+                                            const std::vector<int> &, 
+                                            PickVarInfo &, const bool);
+    virtual bool               QuerySpecies(const std::string &, const int, 
+                                            const int , const int ,
                                             const std::vector<int> &, 
                                             PickVarInfo &, const bool);
     virtual bool               QueryNodes(const std::string &, const int, 

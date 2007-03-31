@@ -929,6 +929,9 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Kathleen Bonnell, Tue Nov 18 14:07:13 PST 2003 
 //    Added support for ZoneCoords. 
 //    
+//    Kathleen Bonnell, Thu Nov 20 15:17:21 PST 2003 
+//    Added support for MATSPECIES vars. 
+//    
 // ****************************************************************************
 
 void               
@@ -1047,6 +1050,15 @@ avtDatabase::Query(PickAttributes *pa)
                    QueryMaterial(vName, foundDomain, matEl, ts, matIncEls, 
                                  pa->GetPickVarInfo(varNum), zonePick);
                    pa->GetPickVarInfo(varNum).SetVariableType("material");
+                   break; 
+                case AVT_MATSPECIES : success = 
+                   QuerySpecies(vName, foundDomain, matEl, ts, matIncEls, 
+                                pa->GetPickVarInfo(varNum), zonePick);
+                   // If this isnt the active variable, remove the 'sums'
+                   // so they won't be displayed, as they may not be correct. 
+                   if (vName != pa->GetActiveVariable()) 
+                       pa->GetPickVarInfo(varNum).GetValues().clear();
+                   pa->GetPickVarInfo(varNum).SetVariableType("species");
                    break; 
                 case AVT_MESH : 
                    removeMe.push_back(varNum);
