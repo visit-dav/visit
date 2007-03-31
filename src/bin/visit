@@ -244,6 +244,10 @@ $0 = shift @ARGV;
 #    Brad Whitlock, Mon Jul 28 15:47:43 PST 2003
 #    I added movie-making options.
 #
+#    Eric Brugger, Fri Aug  1 08:19:05 PDT 2003
+#    I added back the splashscreen support so that the script would still
+#    work with previous versions.
+#
 ###############################################################################
 
 
@@ -414,10 +418,10 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-viewer" )   { $exe_name = "viewer"; }
     elsif ($arg eq "-gui" )             { $exe_name = "gui"; }
     elsif ($arg eq "-cli" )             { $exe_name = "cli"; }
+    elsif ($arg eq "-splashscreen" )    { $exe_name = "splashscreen"; }
     elsif ($arg eq "-mdserver" )        { $exe_name = "mdserver"; }
     elsif ($arg eq "-engine" )          { $exe_name = "engine"; }
     elsif ($arg eq "-vcl" )             { $exe_name = "vcl"; }
-    elsif ($arg eq "-splashscreen" )    { print STDERR "Warning: You are running an old version of VisIt.\n"; $exe_name = "splashscreen"; }
     elsif ($arg eq "-xml2atts")         { $exe_name = "xml2atts"; }
     elsif ($arg eq "-xml2avt")          { $exe_name = "xml2avt"; }
     elsif ($arg eq "-xml2info")         { $exe_name = "xml2info"; }
@@ -1183,10 +1187,12 @@ else
     }
     else
     {
-        @printcmd = ("$exe_name$ver", @visitargs);
-        chomp($printcmd[0] = `basename $printcmd[0]`);
-        print STDERR "Running: @printcmd\n";
-
+        if ($exe_name ne "splashscreen")
+        {
+            @printcmd = ("$exe_name$ver", @visitargs);
+            chomp($printcmd[0] = `basename $printcmd[0]`);
+            print STDERR "Running: @printcmd\n";
+        }
         if ($security_key_set) { push @visitcmd, "-key", $security_key; }
         exec @visitcmd or die "Can't execute visit: $!\n";
     }
@@ -1199,10 +1205,12 @@ sub RunComponent {
    my $security_key = shift;
    my @visitcmd = shift;
 
-   @printcmd = ("$exe_name$ver", @visitargs);
-   chomp($printcmd[0] = `basename $printcmd[0]`);
-   print STDERR "Running: @printcmd\n";
-
+   if ($exe_name ne "splashscreen")
+   {
+       @printcmd = ("$exe_name$ver", @visitargs);
+       chomp($printcmd[0] = `basename $printcmd[0]`);
+       print STDERR "Running: @printcmd\n";
+   }
    if ($security_key_set) { push @visitcmd, "-key", $security_key; }
    exec @visitcmd or die "Can't execute visit: $!\n";
 }
