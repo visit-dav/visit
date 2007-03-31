@@ -26,7 +26,7 @@ class QvisLineWidthWidget;
 // Notes:      This class was automatically generated!
 
 // Programmer: xml2window
-// Creation:   Mon Jun 9 13:18:31 PST 2003
+// Creation:   Wed Jul 2 15:36:50 PST 2003
 //
 // Modifications:
 //   
@@ -50,10 +50,12 @@ class QvisThreeSliceWindow : public QvisOperatorWindow
     void xProcessText();
     void yProcessText();
     void zProcessText();
+    void interactiveChanged(bool val);
   private:
     QLineEdit *x;
     QLineEdit *y;
     QLineEdit *z;
+    QCheckBox *interactive;
 
     ThreeSliceAttributes *atts;
 };

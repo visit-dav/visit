@@ -6,6 +6,7 @@
 // Forward declarations
 class AttributeSubject;
 class DataNode;
+class ViewerSubject;
 
 // ****************************************************************************
 //  Class: ViewerConfigManager
@@ -43,12 +44,15 @@ class DataNode;
 //    Brad Whitlock, Fri Mar 21 10:04:30 PDT 2003
 //    I removed the ProcessOldVersions method.
 //
+//    Brad Whitlock, Mon Jun 30 12:24:43 PDT 2003
+//    I made it require a pointer to its parent ViewerSubject.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerConfigManager : public ConfigManager
 {
 public:
-    ViewerConfigManager();
+    ViewerConfigManager(ViewerSubject *);
     virtual ~ViewerConfigManager();
 
     virtual void WriteConfigFile(const char *filename);
@@ -60,7 +64,8 @@ public:
     void Add(AttributeSubject *subject);
 
 private:
-    std::vector<AttributeSubject *> subjectList;
+    std::vector<AttributeSubject *>  subjectList;
+    ViewerSubject                   *parent;
 };
 
 #endif

@@ -18,6 +18,7 @@
 
 class AnimationAttributes;
 class AnnotationAttributes;
+class DataNode;
 class GlobalAttributes;
 class KeyframeAttributes;
 class LightList;
@@ -230,6 +231,9 @@ typedef struct {
 //    Kathleen Bonnell, Thu May 15 10:00:02 PDT 2003 
 //    Added ToggleFullFrameMode. 
 //
+//    Brad Whitlock, Mon Jun 30 12:39:19 PDT 2003
+//    Added methods to save/read state.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public QObject
@@ -331,6 +335,9 @@ class VIEWER_API ViewerWindowManager : public QObject
 
     void BeginEngineExecute();
     void EndEngineExecute();
+
+    void CreateNode(DataNode *parentNode);
+    void SetFromNode(DataNode *parentNode);
 
     static GlobalAttributes              *GetClientAtts();
     static SaveWindowAttributes          *GetSaveWindowClientAtts();

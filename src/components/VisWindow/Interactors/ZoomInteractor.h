@@ -43,6 +43,10 @@ class VisWindowInteractorProxy;
 //    Removed arguments from all OnMouseMove, in order to match
 //    vtk's new interactor api.
 //
+//    Akira Haddox, Thu Jul  3 14:15:48 PDT 2003
+//    Added two flags for when control and shift are set.
+//    Made Start/End/UpdateRubberBand virtual (overloaded in Zoom2D).
+//
 // ****************************************************************************
 
 class VISWINDOW_API ZoomInteractor : public VisitInteractor
@@ -66,11 +70,14 @@ class VISWINDOW_API ZoomInteractor : public VisitInteractor
 
     bool                   rubberBandMode;
     bool                   rubberBandDrawn;
-      
-    void                   StartRubberBand(int, int);
-    void                   EndRubberBand();
-    void                   UpdateRubberBand(int, int, int, int, int, int);
-    void                   DrawRubberBandLine(int, int, int, int);
+        
+    bool                   shiftKeyDown;
+    bool                   controlKeyDown;
+
+    virtual void           StartRubberBand(int, int);
+    virtual void           EndRubberBand();
+    virtual void           UpdateRubberBand(int, int, int, int, int, int);
+    virtual void           DrawRubberBandLine(int, int, int, int);
 
     void                   SetCanvasViewport(void);
     void                   ForceCoordsToViewport(int &, int &);

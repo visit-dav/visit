@@ -17,6 +17,7 @@
 #include <WindowAttributes.h>
 #include <vectortypes.h>
 
+class DataNode;
 class Line;
 class PickAttributes;
 class VisWindow;
@@ -230,6 +231,9 @@ class LightList;
 //    Kathleen Bonnell, Wed Jun 25 16:50:48 PDT 2003 
 //    Removed Start/StopPickMode.  Added INTERACTION_MODE argument to Pick.
 //
+//    Brad Whitlock, Mon Jun 30 13:03:48 PST 2003
+//    Added CreateNode, SetFromNode.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -244,6 +248,9 @@ public:
     ViewerAnimation     *GetAnimation() const;
     ViewerActionManager *GetActionManager() const;
     int  GetWindowId() const;
+
+    void CreateNode(DataNode *parentNode);
+    void SetFromNode(DataNode *parentNode);
 
     void SetSize(const int width, const int height);
     void GetSize(int &width, int &height);

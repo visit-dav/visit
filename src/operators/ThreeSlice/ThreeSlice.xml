@@ -1,11 +1,24 @@
 <?xml version="1.0"?>
   <Plugin name="ThreeSlice" type="operator" label="ThreeSlice" version="1.0" iconFile="ThreeSlice.xpm">
-    <Attribute name="ThreeSliceAttributes" purpose="This class contains attributes for the threeslice operator." persistent="true">
+    <Attribute name="ThreeSliceAttributes" purpose="This class contains attributes for the threeslice operator." persistent="true" codefile="ThreeSliceAttributes.code">
       <Field name="x" label="x" type="float">
+        0.000000
       </Field>
       <Field name="y" label="y" type="float">
+        0.000000
       </Field>
       <Field name="z" label="z" type="float">
+        0.000000
       </Field>
+      <Field name="interactive" label="Interactive" type="bool">
+        true
+      </Field>
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Function name="CreateCompatible" user="false" member="true">
+      </Function>
+      <Include file="header" quoted="false">
+        PointAttributes.h
+      </Include>
     </Attribute>
   </Plugin>

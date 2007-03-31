@@ -23,6 +23,10 @@ class vtkTextActor;
 // Programmer: Akira Haddox
 // Creation:   Mon Jun  9 09:20:16 PDT 2003
 //
+// Modifications:
+//   Akira Haddox, Wed Jul  2 14:53:50 PDT 2003
+//   Added translation along an axis.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitPointTool : public VisitInteractiveTool
@@ -55,6 +59,8 @@ class VISWINDOW_API VisitPointTool : public VisitInteractiveTool
     virtual void CallCallback();
     void Translate(CB_ENUM, int, int, int, int, int);
 
+    avtVector ComputeTranslationDistance(int);
+
     void CreatePointActor();
     void UpdatePoint();
 
@@ -75,8 +81,7 @@ class VISWINDOW_API VisitPointTool : public VisitInteractiveTool
     void FinalActorSetup();
 
     float                focalDepth;
-    float                translationDistance;
-    avtVector            depthTranslationDistance;
+    avtVector            translationDistance;
     vtkPointSource      *pointSource;
     vtkActor            *pointActor;
     vtkPolyDataMapper   *pointMapper;
@@ -90,7 +95,16 @@ class VISWINDOW_API VisitPointTool : public VisitInteractiveTool
     bool                 addedBbox;
     bool                 window3D;
     bool                 addedGuide;
-    bool                 depthTranslate;
+    
+    enum TranslateDirection
+    {
+        none = 0,
+        leftAndRight,
+        upAndDown,
+        inAndOut
+    };
+
+    TranslateDirection   axisTranslate;
 };
 
 #endif

@@ -24,6 +24,10 @@
 // Programmer: Akira Haddox
 // Creation:   Mon Jun  9 09:21:40 PDT 2003
 //
+// Modifications:
+//   Akira Haddox, Wed Jul  2 14:56:33 PDT 2003
+//   Added axis translate.
+//
 // ****************************************************************************
 
 VisitPointTool::VisitPointTool(VisWindowToolProxy &p) : VisitInteractiveTool(p),
@@ -32,7 +36,7 @@ VisitPointTool::VisitPointTool(VisWindowToolProxy &p) : VisitInteractiveTool(p),
     window3D = false;
     addedBbox = false;
     addedGuide = false;
-    depthTranslate = false;
+    axisTranslate = none;
 
     HotPoint h;
     h.radius = 1./60.; // See what a good value is.
@@ -787,6 +791,93 @@ VisitPointTool::FinalActorSetup()
 }
 
 // ****************************************************************************
+//  Method:  VisitPointTool::ComputeTranslationDistance
+//
+//  Purpose:
+//      Compute a vector for point motion based on a particular
+//      direction.
+//
+//  Arguments:
+//      direction       the direction to move in
+//
+// Programmer: Akira Haddox
+// Creation:   July 2, 2003
+//
+// ****************************************************************************
+
+avtVector
+VisitPointTool::ComputeTranslationDistance(int direction)
+{
+    // This shouldn't happen, but just in case
+    if (direction == none)
+        return avtVector(0,0,0);
+
+    if (direction == inAndOut)
+        return ComputeDepthTranslationDistance();
+
+    vtkCamera *camera = proxy.GetCanvas()->GetActiveCamera();
+    
+    int i;
+
+    int *size = proxy.GetCanvas()->GetSize();
+    float bounds[6];
+    proxy.GetBounds(bounds);
+
+    double dx = bounds[1] - bounds[0];
+    double dy = bounds[3] - bounds[2];
+    double dz = bounds[5] - bounds[4];
+    
+    vector<avtVector> axes;
+    axes.push_back(avtVector(1., 0., 0.) * (dx / double(size[1])));
+    axes.push_back(avtVector(-1., 0., 0.) * (dx / double(size[1])));
+    axes.push_back(avtVector(0., 1., 0.) * (dy / double(size[1])));
+    axes.push_back(avtVector(0., -1., 0.) * (dy / double(size[1])));
+    axes.push_back(avtVector(0., 0., 1.) * (dz / double(size[1])));
+    axes.push_back(avtVector(0., 0., -1.) * (dz / double(size[1])));
+    
+    avtVector camvec; // The vector to dot with
+
+    const double *up = camera->GetViewUp();
+
+    if (direction == upAndDown)
+    {
+        // Find what vector of {i,j,k,-i,-j,-k} best represents 'up'
+        // The vector we want is the camera up vector.
+        camvec.x = up[0];
+        camvec.y = up[1];
+        camvec.z = up[2];
+    }
+    else
+    {
+        // Find what vector best represents 'right'
+        // The vector we want is the cross of the focus vector
+        //  and the up vector.
+        avtVector upVec(up[0], up[1], up[2]);
+        const double *pos = camera->GetPosition();
+        const double *focus = camera->GetFocalPoint();
+        avtVector focusVec(focus[0]-pos[0],focus[1]-pos[1],focus[2]-pos[2]);
+      
+        camvec = focusVec % upVec;
+    }
+    
+    camvec.normalize();
+    
+    double dots[6];
+    for (i = 0; i < 6; ++i)
+       dots[i] = camvec * axes[i]; 
+
+    // Find the index of the largest dot product.
+    int largestDotIndex = 0;
+    for(i = 1; i < 6; ++i)
+    {
+        if(dots[i] > dots[largestDotIndex])
+            largestDotIndex = i;
+    }
+    
+    return axes[largestDotIndex];   
+}
+
+// ****************************************************************************
 //  Method:  VisitPointTool::Translate
 //
 //  Purpose:
@@ -801,13 +892,29 @@ VisitPointTool::FinalActorSetup()
 // Programmer: Akira Haddox
 // Creation:   Mon Jun  9 09:21:40 PDT 2003
 //
+// Modifications:
+//     Akira Haddox, Wed Jul  2 14:58:44 PDT 2003
+//     Added contrained translation along an axis.
+//
 // ****************************************************************************
 
 void
 VisitPointTool::Translate(CB_ENUM e, int ctrl, int shift, int x, int y, int)
 {
-    if(shift && window3D)
-        depthTranslate = true;
+    if (axisTranslate == none)
+    {
+        if (shift && !ctrl)
+            if (window3D)
+                axisTranslate = inAndOut;
+            else
+                axisTranslate = none;
+        else if (shift && ctrl)
+            axisTranslate = leftAndRight;
+        else if (ctrl)
+            axisTranslate = upAndDown;
+        else
+            axisTranslate = none;
+    }
 
     if(e == CB_START)
     {
@@ -820,9 +927,9 @@ VisitPointTool::Translate(CB_ENUM e, int ctrl, int shift, int x, int y, int)
         // Store the focal depth.
         focalDepth = ViewFocus[2];
 
-        if(depthTranslate)
+        if (axisTranslate != none)
         {
-            depthTranslationDistance = ComputeDepthTranslationDistance();
+            translationDistance = ComputeTranslationDistance(axisTranslate);
         }
 
         // Make the right actors active.
@@ -838,8 +945,15 @@ VisitPointTool::Translate(CB_ENUM e, int ctrl, int shift, int x, int y, int)
         avtVector oldPoint = ComputeDisplayToWorld(avtVector(lastX,lastY,focalDepth));
         avtVector motion(newPoint - oldPoint);
 
-        if(depthTranslate)
-            motion = depthTranslationDistance * double(y - lastY);
+        if (axisTranslate)
+        {
+            double delta;
+            if (axisTranslate == leftAndRight)
+                delta = x - lastX;
+            else
+                delta = y - lastY;
+            motion = translationDistance * delta;
+        }
 
         hotPoints[0].pt = (hotPoints[0].pt + motion);
 
@@ -863,7 +977,7 @@ VisitPointTool::Translate(CB_ENUM e, int ctrl, int shift, int x, int y, int)
         // Remove the right actors.
         FinalActorSetup();
 
-        depthTranslate = false;
+        axisTranslate = none;
     }
 }
 

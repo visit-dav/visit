@@ -293,6 +293,9 @@ ConfigManager::WriteData(DataNode *node)
 //   Brad Whitlock, Fri Mar 30 14:41:13 PST 2001
 //   Added a case for arrays of unsigned characters.
 //
+//   Brad Whitlock, Thu Jul 3 14:47:24 PST 2003
+//   I removed the childObjects kludge.
+//
 // ****************************************************************************
 
 void
@@ -301,8 +304,7 @@ ConfigManager::WriteObject(DataNode *node, int indentLevel)
     // Write the beginning tag.
     WriteIndent(indentLevel);
     if(node->GetNodeType() == INTERNAL_NODE)
-        fprintf(fp, "<Object name=\"%s\" childObjects=\"%d\">\n",
-            node->GetKey().c_str(), node->GetNumChildObjects());
+        fprintf(fp, "<Object name=\"%s\">\n", node->GetKey().c_str());
     else
     {
         // Write out the field tag based on the node type.
@@ -418,170 +420,6 @@ ConfigManager::PutBackChar(char c)
 }
 
 // ****************************************************************************
-// Method: ConfigManager::ReadTag
-//
-// Purpose: 
-//   This method reads a tag from the config file that indicates the
-//   start/end of an Object or Field.
-//
-// Arguments:
-//
-// Returns:    0 for "Object" tag
-//             1 for "Field" tag
-//             2 for "/Object" tag
-//             3 for "/Field" tag
-//             -1 otherwise
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Sep 29 17:25:00 PST 2000
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-int
-ConfigManager::ReadTag()
-{
-    char c;
-    // read until there is a '<' character.
-    while(!feof(fp) && ((c = ReadChar()) != '<'));
-
-    // Read characters until ' ', '>', or eof.
-    int i;
-    char tagName[100];
-    memset(tagName, 0, 100 * sizeof(char));
-    for(i = 0;
-        (i < 100) && !feof(fp) &&
-        ((c = ReadChar()) != ' ') && (c != '>'); ++i)
-        tagName[i] = c;
-
-    int retval = -1;
-    if(i == 0)
-        retval = -1; 
-    else if(strcmp(tagName, "Object") == 0)
-        retval = 0;
-    else if(strcmp(tagName, "Field") == 0)
-        retval = 1;
-    else if(strcmp(tagName, "/Object") == 0)
-        retval = 2;
-    else if(strcmp(tagName, "/Field") == 0)
-        retval = 3;
-
-    return retval;
-}
-
-// ****************************************************************************
-// Method: ConfigManager::ReadName
-//
-// Purpose: 
-//   Reads a name="string" sequence and returns the name string that
-//   was read.
-//
-// Arguments:
-//   name : A pointer to the buffer in which to store the name.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Sep 29 17:27:23 PST 2000
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ConfigManager::ReadName(char *name)
-{
-    int i;
-    char c = 0;
-    // Read until we get a '"'
-    for(i = 0; !feof(fp) && ((c = ReadChar()) != '"'); ++i);
-
-    char buf[100];
-    memset(buf, 0, 100 * sizeof(char));
-    // Read until we get a '"'
-    for(i = 0; (i < 100) && !feof(fp) && ((c = ReadChar()) != '"');)
-    {
-        if(c != '"')
-            buf[i++] = c;
-    }
-
-    // Read the length from the buf string
-    strncpy(name, buf, 100);
-    name[99] = 0;
-}
-
-// ****************************************************************************
-// Method: ConfigManager::ReadType
-//
-// Purpose: 
-//   Reads a type="string" sequence and converts the string to a 
-//   NodeTypeEnum which gets returned.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Sep 29 17:28:27 PST 2000
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-NodeTypeEnum
-ConfigManager::ReadType()
-{
-    int i;
-    char c = 0;
-    // Read until we get a '"'
-    for(i = 0; !feof(fp) && ((c = ReadChar()) != '"'); ++i);
-
-    char buf[100];
-    memset(buf, 0, 100 * sizeof(char));
-    // Read until we get a '"'
-    for(i = 0; (i < 100) && !feof(fp) && ((c = ReadChar()) != '"');)
-    {
-        if(c != '"')
-            buf[i++] = c;
-    }
-
-    // Return the converted type.
-    return GetNodeType(buf);
-}
-
-// ****************************************************************************
-// Method: ConfigManager::ReadLength
-//
-// Purpose: 
-//   Reads a length="number" sequence and returns the number.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Sep 29 17:29:13 PST 2000
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-int
-ConfigManager::ReadLength()
-{
-    int i;
-    char c = 0;
-    // Read until we get a '"'
-    for(i = 0; !feof(fp) && ((c = ReadChar()) != '"'); ++i);
-
-    char buf[50];
-    memset(buf, 0, 50 * sizeof(char));
-    // Read until we get a '"'
-    for(i = 0; (i < 50) && !feof(fp) && ((c = ReadChar()) != '"');)
-    {
-        if(c != '"')
-            buf[i++] = c;
-    }
-
-    // Read the length from the buf string
-    int length = 0;
-    sscanf(buf, "%d", &length);
-
-    return length;
-}
-
-// ****************************************************************************
 // Method: ConfigManager::FinishTag
 //
 // Purpose: 
@@ -605,108 +443,76 @@ ConfigManager::FinishTag()
 }
 
 // ****************************************************************************
-// Method: ConfigManager::ReadStringList
+// Method: ConfigManager::ReadStringVector
 //
 // Purpose: 
-//   Reads a list of strings from the open file until a '<' character
-//   is encountered. The string list and its length are returned.
+//   Reads a vector of strings from the open file until a termination character
+//   is encountered.
 //
 // Arguments:
-//   length : The string list's return length.
+//   termChar : That character at which to stop reading.
 //
-// Returns:    A pointer to the string list.
+// Returns:    A string vector.
 // 
-// Note:       The user must free the string list's memory.
-//
 // Programmer: Brad Whitlock
-// Creation:   Fri Sep 29 17:30:22 PST 2000
+// Creation:   Thu Jul 3 09:39:11 PDT 2003
 //
 // Modifications:
 //   
 // ****************************************************************************
 
-char **
-ConfigManager::ReadStringList(int *length)
+stringVector
+ConfigManager::ReadStringVector(char termChar)
 {
-    *length = 0;
-    char **retval = 0;
+    stringVector retval;
 
-    char c, tempString[100];
-    int  i = 0;
+    std::string tempString;
+    char c;
     bool reading = false, keepgoing = true;
+    bool quoted = false;
 
-    memset(tempString, 0, 100 * sizeof(char));
     while(keepgoing)
     {
         c = ReadChar();
-        keepgoing = (!feof(fp) && c != '<');
+        keepgoing = (!feof(fp) && c != termChar);
 
-        if(c != ' ' && c != '\t' && c != '<')
+        if(c == ' ')
+        {
+            if(quoted)
+            {
+                // Add to the current string.
+                tempString += c;
+                reading = true;
+            }
+            else if(reading)
+            {
+                retval.push_back(tempString);
+                tempString = "";
+                reading = false;
+            }
+        }
+        else if(c == '"')
+        {
+            quoted = !quoted;
+            // Add to the current string.
+            tempString += c;
+            reading = true;
+        }
+        else if(c != '\t' && c != '<' && c != '>')
         {
             // Add to the current string.
-            tempString[i++] = c;
+            tempString += c;
             reading = true;
         }
         else if(reading)
         {
-            // copy the string
-            int j, len = strlen(tempString);
-            char *newStr = new char[len + 1];
-            strcpy(newStr, tempString);
-            newStr[len] = 0;
-
-            // Resize the array
-            char **newArray = new char*[*length + 1];
-            for(j = 0; j < *length; ++j)
-                newArray[j] = retval[j];
-            newArray[j] = newStr;
-
-            if(*length > 0)
-                delete [] retval;
-            retval = newArray;
-            (*length)++;
-
-            // Indicate that we're done with the current string.
-            memset(tempString, 0, 100 * sizeof(char));
+            retval.push_back(tempString);
+            tempString = "";
             reading = false;
-            i = 0;
         }
     }
  
-    if(c == '<')
-       PutBackChar(c);
-
     return retval;
-}
-
-// ****************************************************************************
-// Method: ConfigManager::FreeStringList
-//
-// Purpose: 
-//   This routine frees the memory of a string list returned by
-//   the ReadStringList method.
-//
-// Arguments:
-//   strlist : The string list.
-//   len : The string list's length.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Sep 29 17:32:02 PST 2000
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ConfigManager::FreeStringList(char **strlist, int len)
-{
-    if(strlist == 0)
-        return;
-
-    for(int i = 0; i < len; ++i)
-        delete [] strlist[i];
-
-    delete [] strlist;
 }
 
 // ****************************************************************************
@@ -729,13 +535,18 @@ ConfigManager::FreeStringList(char **strlist, int len)
 //   Brad Whitlock, Fri Mar 30 14:41:53 PST 2001
 //   Added cases to read unsigned chars.
 //
+//   Brad Whitlock, Thu Jul 3 16:16:26 PST 2003
+//   Made it use stringVector class.
+//
 // ****************************************************************************
 
 DataNode *
-ConfigManager::ReadFieldData(const char *fieldName, NodeTypeEnum type, int)
+ConfigManager::ReadFieldData(const std::string &tagName, NodeTypeEnum type,
+    int tagLength)
 {
     DataNode *retval = 0;
 
+    int           i;
     char          cval;
     unsigned char uval;
     int           ival;
@@ -744,310 +555,312 @@ ConfigManager::ReadFieldData(const char *fieldName, NodeTypeEnum type, int)
     double        dval;
     bool          bval;
 
-    char **strList;
-    int i, len;
+    // Read strings until we get a '<' character.
+    stringVector  sv = ReadStringVector('<');
+
+    int minSize = (tagLength == 0) ? sv.size() :
+                  ((tagLength < sv.size()) ? tagLength : sv.size());
 
     // All 20, or whatever, cases.
     switch(type)
     {
     case CHAR_NODE:
         // Read a character.
-        fscanf(fp, "%c", &cval);
-        retval = new DataNode(fieldName, cval);
+        if(minSize > 0)
+        {
+            sscanf(sv[i].c_str(), "%c", &cval);
+            retval = new DataNode(tagName, cval);
+        }
         break;
     case UNSIGNED_CHAR_NODE:
         // Read an int and turn it into an unsigned character.
-        fscanf(fp, "%d", &ival);
-        uval = (unsigned char)ival;
-        retval = new DataNode(fieldName, uval);
+        if(minSize > 0)
+        {
+            sscanf(sv[0].c_str(), "%d", &ival);
+            uval = (unsigned char)ival;
+            retval = new DataNode(tagName, uval);
+        }
         break;
     case INT_NODE:
         // Read an int.
-        fscanf(fp, "%d", &ival);
-        retval = new DataNode(fieldName, ival);
+        if(minSize > 0)
+        {
+            sscanf(sv[0].c_str(), "%d", &ival);
+            retval = new DataNode(tagName, ival);
+        }
         break;
     case LONG_NODE:
         // Read a long.
-        fscanf(fp, "%ld", &lval);
-        retval = new DataNode(fieldName, lval);
+        if(minSize > 0)
+        {
+            sscanf(sv[0].c_str(), "%ld", &lval);
+            retval = new DataNode(tagName, lval);
+        }
         break;
     case FLOAT_NODE:
         // Read a float.
-        fscanf(fp, "%g", &fval);
-        retval = new DataNode(fieldName, fval);
+        if(minSize > 0)
+        {
+            sscanf(sv[0].c_str(), "%g", &fval);
+            retval = new DataNode(tagName, fval);
+        }
         break;
     case DOUBLE_NODE:
         // Read a double.
-        fscanf(fp, "%lg", &dval);
-        retval = new DataNode(fieldName, dval);
+        if(minSize > 0)
+        {
+            sscanf(sv[0].c_str(), "%lg", &dval);
+            retval = new DataNode(tagName, dval);
+        }
         break;
     case STRING_NODE:
         { // new scope
             std::string temp;
-            strList = ReadStringList(&len);
-            for(i = 0; i < len; ++i)
+            for(i = 0; i < minSize; ++i)
             {
-                temp += strList[i];
-                if(i < (len - 1))
+                temp += sv[i];
+                if(i < (minSize - 1))
                     temp += " ";
             }
-            retval = new DataNode(fieldName, temp);
-            FreeStringList(strList, len);
+            retval = new DataNode(tagName, temp);
         }
         break;
     case BOOL_NODE:
         { // new scope
-            strList = ReadStringList(&len);
             bval = false;
-            if(len > 0)
+            if(minSize > 0)
             {
-                bval = (strcmp(strList[0], "true") == 0);
+                bval = (sv[0] == "true");
             }
-            retval = new DataNode(fieldName, bval);
-            FreeStringList(strList, len);
+            retval = new DataNode(tagName, bval);
         }
         break;
     case CHAR_ARRAY_NODE:
         { // new scope
-            strList = ReadStringList(&len);
             char *cvalArray = 0;
-            if(len > 0)
+            if(minSize > 0)
             {
-                cvalArray = new char[len];
-                for(i = 0; i < len; ++i)
-                    sscanf(strList[i], "%c", &cvalArray[i]);
+                cvalArray = new char[minSize];
+                for(i = 0; i < minSize; ++i)
+                    sscanf(sv[i].c_str(), "%c", &cvalArray[i]);
+
+                retval = new DataNode(tagName, cvalArray, minSize);
             }
-            retval = new DataNode(fieldName, cvalArray, len);
-            FreeStringList(strList, len);
+            
             if(cvalArray != 0)
                 delete [] cvalArray;
         }
         break;
     case UNSIGNED_CHAR_ARRAY_NODE:
         { // new scope
-            strList = ReadStringList(&len);
             unsigned char *uvalArray = 0;
-            if(len > 0)
+            if(minSize > 0)
             {
-                uvalArray = new unsigned char[len];
-                for(i = 0; i < len; ++i)
+                uvalArray = new unsigned char[minSize];
+                for(i = 0; i < minSize; ++i)
                 {
-                    sscanf(strList[i], "%d", &ival);
+                    sscanf(sv[i].c_str(), "%d", &ival);
                     uvalArray[i] = (unsigned char)ival;
                 }
+
+                retval = new DataNode(tagName, uvalArray, minSize);
             }
-            retval = new DataNode(fieldName, uvalArray, len);
-            FreeStringList(strList, len);
+            
             if(uvalArray != 0)
                 delete [] uvalArray;
         }
         break;
     case INT_ARRAY_NODE:
         { // new scope
-            strList = ReadStringList(&len);
             int *ivalArray = 0;
-            if(len > 0)
+            if(minSize > 0)
             {
-                ivalArray = new int[len];
-                for(i = 0; i < len; ++i)
-                    sscanf(strList[i], "%d", &ivalArray[i]);
+                ivalArray = new int[minSize];
+                for(i = 0; i < minSize; ++i)
+                    sscanf(sv[i].c_str(), "%d", &ivalArray[i]);
+
+                retval = new DataNode(tagName, ivalArray, minSize);
             }
-            retval = new DataNode(fieldName, ivalArray, len);
-            FreeStringList(strList, len);
+            
             if(ivalArray != 0)
                 delete [] ivalArray;
         }
         break;
     case LONG_ARRAY_NODE:
         { // new scope
-            strList = ReadStringList(&len);
             long *lvalArray = 0;
-            if(len > 0)
+            if(minSize > 0)
             {
-                lvalArray = new long[len];
-                for(i = 0; i < len; ++i)
-                    sscanf(strList[i], "%ld", &lvalArray[i]);
+                lvalArray = new long[minSize];
+                for(i = 0; i < minSize; ++i)
+                    sscanf(sv[i].c_str(), "%ld", &lvalArray[i]);
+
+                retval = new DataNode(tagName, lvalArray, minSize);
             }
-            retval = new DataNode(fieldName, lvalArray, len);
-            FreeStringList(strList, len);
+            
             if(lvalArray != 0)
                 delete [] lvalArray;
         }
         break;
     case FLOAT_ARRAY_NODE:
         { // new scope
-            strList = ReadStringList(&len);
             float *fvalArray = 0;
-            if(len > 0)
+            if(minSize > 0)
             {
-                fvalArray = new float[len];
-                for(i = 0; i < len; ++i)
-                    sscanf(strList[i], "%g", &fvalArray[i]);
+                fvalArray = new float[minSize];
+                for(i = 0; i < minSize; ++i)
+                    sscanf(sv[i].c_str(), "%g", &fvalArray[i]);
+
+                retval = new DataNode(tagName, fvalArray, minSize);
             }
-            retval = new DataNode(fieldName, fvalArray, len);
-            FreeStringList(strList, len);
+            
             if(fvalArray != 0)
                 delete [] fvalArray;
         }
         break;
     case DOUBLE_ARRAY_NODE:
         { // new scope
-            strList = ReadStringList(&len);
             double *dvalArray = 0;
-            if(len > 0)
+            if(minSize > 0)
             {
-                dvalArray = new double[len];
-                for(i = 0; i < len; ++i)
-                    sscanf(strList[i], "%lg", &dvalArray[i]);
+                dvalArray = new double[minSize];
+                for(i = 0; i < minSize; ++i)
+                    sscanf(sv[i].c_str(), "%lg", &dvalArray[i]);
+
+                retval = new DataNode(tagName, dvalArray, minSize);
             }
-            retval = new DataNode(fieldName, dvalArray, len);
-            FreeStringList(strList, len);
+            
             if(dvalArray != 0)
                 delete [] dvalArray;
         }
         break;
     case STRING_ARRAY_NODE:
         { // new scope
-            strList = ReadStringList(&len);
             std::string *svalArray = 0;
-            if(len > 0)
+            if(minSize > 0)
             {
-                svalArray = new std::string[len];
-                for(i = 0; i < len; ++i)
-                    svalArray[i] = strList[i];
+                svalArray = new std::string[minSize];
+                for(i = 0; i < minSize; ++i)
+                    svalArray[i] = sv[i];
+
+                retval = new DataNode(tagName, svalArray, minSize);
             }
-            retval = new DataNode(fieldName, svalArray, len);
-            FreeStringList(strList, len);
+            
             if(svalArray != 0)
                 delete [] svalArray;
         }
         break;
     case BOOL_ARRAY_NODE:
         { // new scope
-            strList = ReadStringList(&len);
             bool *bvalArray = 0;
-            if(len > 0)
+            if(minSize > 0)
             {
-                bvalArray = new bool[len];
-                for(i = 0; i < len; ++i)
-                    bvalArray[i] = (strcmp(strList[i], "true") == 0);
+                bvalArray = new bool[minSize];
+                for(i = 0; i < minSize; ++i)
+                    bvalArray[i] = (sv[i] == "true");
+
+                retval = new DataNode(tagName, bvalArray, minSize);
             }
-            retval = new DataNode(fieldName, bvalArray, len);
-            FreeStringList(strList, len);
+            
             if(bvalArray != 0)
                 delete [] bvalArray;
         }
         break;
     case CHAR_VECTOR_NODE:
         { // new scope
-            strList = ReadStringList(&len);
             charVector temp;
-            if(len > 0)
+            if(minSize > 0)
             {
-                for(i = 0; i < len; ++i)
+                for(i = 0; i < minSize; ++i)
                 {
-                    sscanf(strList[i], "%c", &cval);
+                    sscanf(sv[i].c_str(), "%c", &cval);
                     temp.push_back(cval);
                 }
+
+                retval = new DataNode(tagName, temp);
             }
-            retval = new DataNode(fieldName, temp);
-            FreeStringList(strList, len);
         }
         break;
     case UNSIGNED_CHAR_VECTOR_NODE:
         { // new scope
-            strList = ReadStringList(&len);
             unsignedCharVector temp;
-            if(len > 0)
+            if(minSize > 0)
             {
-                for(i = 0; i < len; ++i)
+                for(i = 0; i < minSize; ++i)
                 {
-                    sscanf(strList[i], "%d", &ival);
+                    sscanf(sv[i].c_str(), "%d", &ival);
                     uval = (unsigned char)ival;
                     temp.push_back(uval);
                 }
+
+                retval = new DataNode(tagName, temp);
             }
-            retval = new DataNode(fieldName, temp);
-            FreeStringList(strList, len);
         }
         break;
     case INT_VECTOR_NODE:
         { // new scope
-            strList = ReadStringList(&len);
             intVector temp;
-            if(len > 0)
+            if(minSize > 0)
             {
-                for(i = 0; i < len; ++i)
+                for(i = 0; i < minSize; ++i)
                 {
-                    sscanf(strList[i], "%d", &ival);
+                    sscanf(sv[i].c_str(), "%d", &ival);
                     temp.push_back(ival);
                 }
+
+                retval = new DataNode(tagName, temp);
             }
-            retval = new DataNode(fieldName, temp);
-            FreeStringList(strList, len);
         }
         break;
     case LONG_VECTOR_NODE:
         { // new scope
-            strList = ReadStringList(&len);
             longVector temp;
-            if(len > 0)
+            if(minSize > 0)
             {
-                for(i = 0; i < len; ++i)
+                for(i = 0; i < minSize; ++i)
                 {
-                    sscanf(strList[i], "%ld", &lval);
+                    sscanf(sv[i].c_str(), "%ld", &lval);
                     temp.push_back(lval);
                 }
+
+                retval = new DataNode(tagName, temp);
             }
-            retval = new DataNode(fieldName, temp);
-            FreeStringList(strList, len);
         }
         break;
     case FLOAT_VECTOR_NODE:
         { // new scope
-            strList = ReadStringList(&len);
             floatVector temp;
-            if(len > 0)
+            if(minSize > 0)
             {
-                for(i = 0; i < len; ++i)
+                for(i = 0; i < minSize; ++i)
                 {
-                    sscanf(strList[i], "%g", &fval);
+                    sscanf(sv[i].c_str(), "%g", &fval);
                     temp.push_back(fval);
                 }
+
+                retval = new DataNode(tagName, temp);
             }
-            retval = new DataNode(fieldName, temp);
-            FreeStringList(strList, len);
         }
         break;
     case DOUBLE_VECTOR_NODE:
         { // new scope
-            strList = ReadStringList(&len);
             doubleVector temp;
-            if(len > 0)
+            if(minSize > 0)
             {
-                for(i = 0; i < len; ++i)
+                for(i = 0; i < minSize; ++i)
                 {
-                    sscanf(strList[i], "%lg", &dval);
+                    sscanf(sv[i].c_str(), "%lg", &dval);
                     temp.push_back(dval);
                 }
+
+                retval = new DataNode(tagName, temp);
             }
-            retval = new DataNode(fieldName, temp);
-            FreeStringList(strList, len);
         }
         break;
     case STRING_VECTOR_NODE:
-        { // new scope
-            strList = ReadStringList(&len);
-            stringVector temp;
-            if(len > 0)
-            {
-                for(i = 0; i < len; ++i)
-                {
-                    temp.push_back(std::string(strList[i]));
-                }
-            }
-            retval = new DataNode(fieldName, temp);
-            FreeStringList(strList, len);
+        if(minSize > 0)
+        {
+            retval = new DataNode(tagName, sv);
         }
         break;
     default:
@@ -1055,59 +868,6 @@ ConfigManager::ReadFieldData(const char *fieldName, NodeTypeEnum type, int)
     }
 
     return retval;
-}
-
-// ****************************************************************************
-// Method: ConfigManager::ReadField
-//
-// Purpose: 
-//   Reads a field and creates a DataNode for it under the specified
-//   parentNode.
-//
-// Arguments:
-//   parentNode : The parent of the DataNode to be created.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Sep 29 17:35:20 PST 2000
-//
-// Modifications:
-//   Brad Whitlock, Fri Mar 30 14:46:14 PST 2001
-//   Added a case for arrays of unsigned characters.
-//
-// ****************************************************************************
-
-void
-ConfigManager::ReadField(DataNode *parentNode)
-{
-    int  length = 0;
-    char objName[100];
-    NodeTypeEnum type;
-
-    // Read the name of the field.
-    ReadName(objName);
-
-    // Read the type. If the type requires
-    type = ReadType();
-    switch(type)
-    {
-    case CHAR_ARRAY_NODE:
-    case UNSIGNED_CHAR_ARRAY_NODE:
-    case INT_ARRAY_NODE:
-    case LONG_ARRAY_NODE:
-    case FLOAT_ARRAY_NODE:
-    case DOUBLE_ARRAY_NODE:
-    case STRING_ARRAY_NODE:
-    case BOOL_ARRAY_NODE:
-        length = ReadLength();
-    default:
-        break;
-    }
-    FinishTag();
-
-    // Read the field's data.
-    DataNode *field = ReadFieldData(objName, type, length);
-    if(field != 0)
-        parentNode->AddNode(field);
 }
 
 // ****************************************************************************
@@ -1128,41 +888,186 @@ ConfigManager::ReadField(DataNode *parentNode)
 //   
 // ****************************************************************************
 
-void
+bool
 ConfigManager::ReadObject(DataNode *parentNode)
 {
-    int prefix;
-    int nSubObjects = 0;
+    bool te = false;
+    return ReadObjectHelper(parentNode, te);
+}
 
-    while((prefix = ReadTag()) != -1)
+// ****************************************************************************
+// Method: ConfigManager::ReadObjectHelper
+//
+// Purpose: 
+//   This method recursively reads all objects and fields from the file.
+//
+// Arguments:
+//   parentNode : The node to which new objects and fields are added.
+//   te         : Whether we encountered an ending tag.
+//
+// Returns:    True if we should keep reading, false otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 3 16:09:28 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ConfigManager::ReadObjectHelper(DataNode *parentNode, bool &te)
+{
+    bool keepReading = true;
+    bool tagIsEndTag = false;
+    std::string  tagName;
+    NodeTypeEnum tagType = INTERNAL_NODE;
+    int          tagLength = 0;
+
+    // Read the opening tag.
+    keepReading = ReadTag(tagName, tagType, tagLength, tagIsEndTag);
+
+    if(tagIsEndTag && keepReading)
     {
-        if(prefix == 0) // Object
-        {
-            char objName[100];
-            ReadName(objName);
-            nSubObjects = ReadLength();
-            FinishTag();
-
-            // Create a new internal node and add it to the parent
-            DataNode *node = new DataNode(objName);
-            parentNode->AddNode(node);
-
-            // Read any child nodes that the object may have
-            ReadObject(node);
-
-            // Indicate that a sub-object has been read.
-            --nSubObjects;
-        }
-        else if(prefix == 1) // Field
-        {
-            ReadField(parentNode);
-        }
-        else if(prefix == 2)
-        {
-            if(nSubObjects == 0)
-                return;
-        }
+        te = true;
+        return keepReading;
     }
+
+    if(tagType == INTERNAL_NODE)
+    {
+        DataNode *node = new DataNode(tagName);
+        parentNode->AddNode(node);
+
+        while(keepReading && !tagIsEndTag)
+        {
+            keepReading = ReadObjectHelper(node, tagIsEndTag);
+        }
+
+        if(tagIsEndTag)
+            return keepReading;
+    }
+    else
+        keepReading = ReadField(parentNode, tagName, tagType, tagLength);
+
+    // Read the ending tag.
+    stringVector sv = ReadStringVector('>');
+    keepReading = sv.size() > 0;
+
+    te = false;
+    return keepReading;
+}
+
+// ****************************************************************************
+// Method: ConfigManager::ReadTag
+//
+// Purpose: 
+//   Reads a tag header and determines the type of object being read.
+//
+// Arguments:
+//   tagName        : The return name for the tag.
+//   tagType        : The return type for the tag.
+//   tagLength      : The return length for the tag.
+//   tafIsReturnTag : Whether or not the tag is an ending tag.
+//
+// Returns:    True if a tag was read.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 3 16:11:08 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ConfigManager::ReadTag(std::string &tagName, NodeTypeEnum &tagType,
+    int &tagLength, bool &tagIsReturnTag)
+{
+    // Read strings.
+    stringVector sv = ReadStringVector('>');
+
+    std::string tagTypeStr("");
+    tagName = "";
+    tagType = INTERNAL_NODE;
+    tagLength = 0;
+
+    for(int i = 0; i < sv.size(); ++i)
+    {
+        std::string::size_type pos = sv[i].find('=') + 1;
+        std::string token(sv[i].substr(0, pos));
+        std::string tokenValue;
+
+        if(pos != std::string::npos && token.size() > 0)
+            tokenValue = sv[i].substr(pos + 1, sv[i].size() - pos - 2);
+
+        if(sv[i][0] == '/')
+        {
+            tagIsReturnTag = true;
+            return true;
+        }
+        else if(token == "type=")
+        {
+            tagTypeStr = tokenValue;
+        }
+        else if(token == "name=")
+        {
+            tagName = tokenValue;
+        }
+        else if(token == "length=")
+        {
+            int len;
+            if(sscanf(tokenValue.c_str(), "%d", &len) == 1)
+            {
+                tagLength = (len > 0) ? len : tagLength;
+            }
+        }
+        else if(token == "childObjects=")
+        {
+            // Skip this tag, it is obsolete.
+        }
+        else
+            tagTypeStr = sv[i];
+    }
+
+    // Get the NodeTypeEnum from the tag's type name.
+    tagType = GetNodeType(tagTypeStr.c_str());
+
+    return sv.size() > 0;    
+}
+
+// ****************************************************************************
+// Method: ConfigManager::ReadField
+//
+// Purpose: 
+//   Reads a field and adds it to the parentNode.
+//
+// Arguments:
+//   parentNode : The node to which the field is added.
+//   tagName    : The name of the field.
+//   tagType    : The type of the field.
+//   tagLength  : The length of the field.
+//
+// Returns:    True if a field was added to the parentNode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 3 16:15:00 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ConfigManager::ReadField(DataNode *parentNode, const std::string &tagName,
+    NodeTypeEnum tagType, int tagLength)
+{
+    DataNode *retval = ReadFieldData(tagName, tagType, tagLength);
+
+    if(retval != 0)
+    {
+        parentNode->AddNode(retval);
+    }
+
+    return retval != 0;
 }
 
 // ****************************************************************************

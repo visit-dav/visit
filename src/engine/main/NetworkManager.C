@@ -1387,6 +1387,11 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer)
 //    Eric Brugger, Tue Jun 10 15:35:20 PDT 2003
 //    I renamed camera to view normal in the view attributes.
 //
+//    Brad Whitlock, Tue Jul 1 14:19:20 PST 2003
+//    I changed the code that converts ViewAttributes to avtView3D so it
+//    uses convenience methods so we don't have to trapse all over the code
+//    when the ViewAttributes change field names.
+//
 // ****************************************************************************
 void
 NetworkManager::SetWindowAttributes(const WindowAttributes &atts)
@@ -1429,22 +1434,7 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts)
     {
         const ViewAttributes& viewAtts = atts.GetView();
         avtView3D view3d;
-
-        view3d.normal[0] = viewAtts.GetViewNormal()[0];
-        view3d.normal[1] = viewAtts.GetViewNormal()[1];
-        view3d.normal[2] = viewAtts.GetViewNormal()[2];
-        view3d.focus[0] = viewAtts.GetFocus()[0];
-        view3d.focus[1] = viewAtts.GetFocus()[1];
-        view3d.focus[2] = viewAtts.GetFocus()[2];
-        view3d.viewUp[0] = viewAtts.GetViewUp()[0];
-        view3d.viewUp[1] = viewAtts.GetViewUp()[1];
-        view3d.viewUp[2] = viewAtts.GetViewUp()[2];
-        view3d.viewAngle = viewAtts.GetViewAngle();
-        view3d.parallelScale = viewAtts.GetParallelScale();
-        view3d.nearPlane = viewAtts.GetNearPlane();
-        view3d.farPlane = viewAtts.GetFarPlane();
-        view3d.perspective = viewAtts.GetPerspective();
-
+        view3d.SetFromViewAttributes(&viewAtts);
         viswin->SetView3D(view3d);
     }
 

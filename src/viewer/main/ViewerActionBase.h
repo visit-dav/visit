@@ -4,6 +4,7 @@
 #include <qobject.h>
 #include <ViewerRPC.h>
 
+class DataNode;
 class QPopupMenu;
 class QToolBar;
 class ViewerWindow;
@@ -23,6 +24,9 @@ class ViewerWindowManager;
 // Modifications:
 //   Brad Whitlock, Tue Feb 25 09:36:58 PDT 2003
 //   I added the UpdateConstruction, RemoveFromMenu, RemoveFromToolbar methods.
+//
+//   Brad Whitlock, Tue Jul 1 10:17:46 PDT 2003
+//   I added CreateNode and SetFromNode.
 //
 // ****************************************************************************
 
@@ -44,6 +48,9 @@ public:
     virtual bool MenuTopLevel() const      { return false; }
     virtual bool CanHaveOwnToolbar() const { return false; }
     virtual bool AllowInToolbar() const    { return true; }
+
+    virtual bool CreateNode(DataNode *)    { return false; }
+    virtual void SetFromNode(DataNode *)   { }
 
     // Methods to add the action to the menu and toolbar.
     virtual void ConstructMenu(QPopupMenu *menu) = 0;

@@ -72,6 +72,7 @@ struct ThreadCallbackDataStruct
 // Static data
 //
 void (*RemoteProcess::getAuthentication)(const char *, const char *, int) = NULL;
+bool RemoteProcess::disablePTY = false;
 
 using std::map;
 static map<int, bool> childDied;
@@ -226,6 +227,23 @@ RemoteProcess::~RemoteProcess()
     // Close the listening socket so we don't waste file descriptors.
     //
     CloseListenSocket();
+}
+
+// ****************************************************************************
+//  Method:  RemoteProcess::DisablePTY
+//
+//  Purpose:
+//    Disables usage of PTYs.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July  3, 2003
+//
+// ****************************************************************************
+
+void
+RemoteProcess::DisablePTY()
+{
+    disablePTY = true;
 }
 
 // ****************************************************************************
@@ -1524,6 +1542,9 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
 //    Brad Whitlock, Mon May 5 13:10:52 PST 2003
 //    I moved large portions of the command line creation code elsewhere.
 //
+//    Jeremy Meredith, Thu Jul  3 15:01:25 PDT 2003
+//    Allowed disabling of PTYs even when they are available.
+//
 // ****************************************************************************
 
 void
@@ -1545,13 +1566,22 @@ RemoteProcess::LaunchRemote(const stringVector &args)
     // Start the program in UNIX
 #ifdef USE_PTY
     int ptyFileDescriptor;
-    // we will tell pty_fork to set up the signal handler for us, because
-    // this call must come after the grantpt call inside pty_fork()
-    switch (remoteProgramPid = pty_fork(ptyFileDescriptor, catch_dead_child))
+    if (!disablePTY)
+    {
+        // we will tell pty_fork to set up the signal handler for us, because
+        // this call must come after the grantpt call inside pty_fork()
+        remoteProgramPid = pty_fork(ptyFileDescriptor, catch_dead_child);
+    }
+    else
+    {
+        signal(SIGCHLD, catch_dead_child);
+        remoteProgramPid = fork();
+    }
 #else
     signal(SIGCHLD, catch_dead_child);
-    switch (remoteProgramPid = fork())
+    remoteProgramPid = fork();
 #endif
+    switch (remoteProgramPid)
     {
     case -1:
         // Could not fork.
@@ -1574,7 +1604,7 @@ RemoteProcess::LaunchRemote(const stringVector &args)
     }
 
 #ifdef USE_PTY
-    if (getAuthentication)
+    if (!disablePTY && getAuthentication)
     {
         TRY
         {

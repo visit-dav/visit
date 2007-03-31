@@ -259,6 +259,9 @@ class MaterialAttributes;
 //    Kathleen Bonnell, Tue Jul  1 09:21:57 PDT 2003 
 //    Added SetPickAttributes.
 //
+//    Brad Whitlock, Mon Jun 30 12:20:37 PDT 2003
+//    I added methods that allow more information to be saved to a config file.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -295,6 +298,9 @@ public:
     void StartLaunchProgress();
     void EndLaunchProgress();
     void BlockSocketSignals(bool);
+
+    void CreateNode(DataNode *node);
+    void SetFromNode(DataNode *node);
 private:
     void ProcessEvents();
     void ProcessCommandLine1(int *argc, char ***argv);
@@ -371,6 +377,7 @@ private slots:
     void HandleSync();
     void ProcessRendererMessage();
     void ReadFromParentAndProcess(int);
+    void DelayedProcessSettings();
 
     void ConnectWindow(ViewerWindow *win);
     void DisconnectWindow(ViewerWindow *win);

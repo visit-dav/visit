@@ -7,6 +7,7 @@
 #include <pipeline_exports.h>
 
 struct avtViewInfo;
+class ViewAttributes;
 
 // ****************************************************************************
 //  Class: avtView3D
@@ -45,6 +46,9 @@ struct PIPELINE_API avtView3D
     bool            operator==(const avtView3D &);
     void            SetToDefault(void);
     void            SetViewInfoFromView(avtViewInfo &) const;
+
+    void            SetFromViewAttributes(const ViewAttributes *);
+    void            SetToViewAttributes(ViewAttributes *) const;
 };
 
 

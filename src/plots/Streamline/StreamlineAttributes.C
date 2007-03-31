@@ -3,6 +3,7 @@
 #include <Line.h>
 #include <PlaneAttributes.h>
 #include <SphereAttributes.h>
+#include <PointAttributes.h>
 #include <BoxExtents.h>
 
 //
@@ -396,6 +397,8 @@ StreamlineAttributes::TypeName() const
 // Creation:   Fri Oct 4 15:22:57 PST 2002
 //
 // Modifications:
+//   Akira Haddox, Wed Jul  2 14:47:47 PDT 2003
+//   Added PointAttributes.  
 //
 // ****************************************************************************
 
@@ -452,6 +455,15 @@ StreamlineAttributes::CopyAttributes(const AttributeGroup *atts)
             retval = true;
         }
     }   
+    else if(atts->TypeName() == "PointAttributes")
+    {
+        if(sourceType == SpecifiedPoint)
+        {
+            const PointAttributes *point = (const PointAttributes*) atts;
+            SetPointSource(point->GetPoint());
+            retval = true;
+        }
+    }
 
     return retval;
 }
@@ -469,6 +481,9 @@ StreamlineAttributes::CopyAttributes(const AttributeGroup *atts)
 //    Brad Whitlock, Tue Jan 21 12:33:04 PDT 2003
 //    I added code to set the "have radius" flag to true so the plane tool
 //    resizes properly when resizing the plane radius.
+//
+//    Akira Haddox, Thu Jul  3 08:19:41 PDT 2003
+//    Added point attributes.
 //
 // ****************************************************************************
 
@@ -510,6 +525,12 @@ StreamlineAttributes::CreateCompatible(const std::string &tname) const
         BoxExtents *b = new BoxExtents;
         b->SetExtents(GetBoxExtents());
         retval = b;
+    }
+    else if(tname == "PointAttributes")
+    {
+        PointAttributes *p = new PointAttributes;
+        p->SetPoint(GetPointSource());
+        retval = p;
     }
 
     return retval;

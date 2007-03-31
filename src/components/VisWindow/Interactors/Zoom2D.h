@@ -9,7 +9,9 @@
 
 #include <ZoomInteractor.h>
 
-
+class vtkActor2D;
+class vtkPolyData;
+class vtkDashedXorGridMapper2D;
 class VisWindowInteractorProxy;
 
 
@@ -37,12 +39,16 @@ class VisWindowInteractorProxy;
 //    Removed arguments from all ButtonAction methods, in order to match
 //    vtk's new interactor api.
 //
+//    Akira Haddox, Thu Jul  3 13:58:11 PDT 2003
+//    Added drawing of guidelines.
+//
 // ****************************************************************************
 
 class VISWINDOW_API Zoom2D : public ZoomInteractor
 {
   public:
                         Zoom2D(VisWindowInteractorProxy &);
+    virtual             ~Zoom2D();
  
     virtual void        StartLeftButtonAction();
     virtual void        EndLeftButtonAction();
@@ -51,6 +57,23 @@ class VISWINDOW_API Zoom2D : public ZoomInteractor
     virtual void        EndMiddleButtonAction();
 
   protected:
+    int                 lastGuideX;
+    int                 lastGuideY;
+
+    vtkPolyData                 *guideLines;
+    vtkDashedXorGridMapper2D    *guideLinesMapper;
+    vtkActor2D                  *guideLinesActor;
+    
+    virtual void        StartRubberBand(int, int);
+    virtual void        EndRubberBand();
+    virtual void        UpdateRubberBand(int, int, int, int, int, int);
+    void                UpdateGuideLines(int, int, int, int, int, int);
+    
+    void                DrawAllGuideLines(int, int, int, int);
+   
+    void                DrawGuideLines(int, int, int, int, const bool which[8]);
+    void                DrawGuideLine(int, int, int, int);
+
     void                ZoomCamera(void);
     void                ZoomCamera(const int x, const int y);
 };

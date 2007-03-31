@@ -182,10 +182,15 @@ public:
 //   Brad Whitlock, Thu Feb 27 14:35:57 PST 2003
 //   I added VIEWCurve.
 //
+//   Brad Whitlock, Tue Jul 1 10:24:25 PDT 2003
+//   I added SetFromNode and CreateNode.
+//
 // ****************************************************************************
 
 class VIEWER_API SaveViewAction : public ViewerMultipleAction
 {
+    static const int MAX_SAVED_VIEWS;
+
     static const int VIEWCurve;
     static const int VIEW2D;
     static const int VIEW3D;
@@ -204,10 +209,14 @@ public:
     virtual bool Enabled() const;
     virtual bool ChoiceEnabled(int i) const;
     virtual bool ChoiceToggled(int i) const { return false;}
+
+    virtual bool CreateNode(DataNode *);
+    virtual void SetFromNode(DataNode *);
 private:
     void DeleteViews();
     void SaveCurrentView();
     void UseSavedView(int index);
+    void AddNewView(void *v, int vt);
 
     ViewInfoVector views;
 };

@@ -191,6 +191,9 @@ Zoom3D::EndMiddleButtonAction()
 //    I changed the zoom behavior so that it pans and zooms the image and
 //    doesn't change the camera and focal point.
 //
+//    Akira Haddox, Thu Jul  3 13:54:59 PDT 2003
+//    Changed check for not zooming to include line rubberbands.
+//
 // ****************************************************************************
 
 void
@@ -198,10 +201,10 @@ Zoom3D::ZoomCamera(void)
 {
     vtkRenderWindowInteractor *rwi = Interactor;
 
-    if (anchorX == lastX && anchorY == lastY)
+    if (anchorX == lastX || anchorY == lastY)
     {
         //
-        // This is a point, not a rectangle.
+        // This is a line, not a rectangle.
         //
         return;
     }

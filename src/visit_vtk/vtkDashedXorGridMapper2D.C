@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkRubberBandMapper.cxx,v $
+  Module:    $RCSfile: vtkDashedXorGridMapper2D.cxx,v $
   Language:  C++
   Date:      $Date: 2000/02/04 17:09:14 $
   Version:   $Revision: 1.12 $
@@ -41,7 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =========================================================================*/
 #include <stdlib.h>
 #include <math.h>
-#include "vtkRubberBandMapper2D.h"
+#include "vtkDashedXorGridMapper2D.h"
 #include "vtkObjectFactory.h"
 #include <vtkPolyData.h>
 #include <vtkProperty2D.h>
@@ -54,37 +54,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <X11/Intrinsic.h>
 #endif
 
-// ***************************************************************************
-//  Modifications:
-//    Kathleen Bonnell, Wed Mar  6 15:14:29 PST 2002 
-//    Replace 'New' method with Macro to match VTK 4.0 API.
-// ***************************************************************************
+vtkStandardNewMacro(vtkDashedXorGridMapper2D);
 
-vtkStandardNewMacro(vtkRubberBandMapper2D);
+void
+vtkDashedXorGridMapper2D::SetDots(int drawn, int spaced)
+{
+    pixelDrawn = drawn;
+    pixelSpaced = spaced;
+}
 
 
-// ***************************************************************************
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Oct 29 13:22:36 PST 2001
-//    Make npts, pts of type vtkIdType to match VTK 4.0 API.  
-//    Replace vtkScalars with vtkUnsignedCharArray to represent colors, and
-//    use correct access methods for this type of array.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    GetColors() no longer a mapper method in VTK 4.0 API.  Use MapScalars
-//    instead. 
-//
-//    Brad Whitlock, Wed Apr 3 10:41:05 PDT 2002
-//    Added a Windows implementation.
-//
-//    Akira Haddox, Tue Mar 18 21:17:05 PST 2003
-//    Fixed bug in X11 DRAW_XOR_LINE: Macro now uses arguments instead of
-//    ignoring them.
-//    
-// ****************************************************************************
-
-void vtkRubberBandMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* actor)
+void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* actor)
 {
     vtkWindow*  window = viewport->GetVTKWindow();
 
@@ -221,7 +201,7 @@ void vtkRubberBandMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* act
     int lastX, lastY, X, Y; 
     int currSize = 1024;
  
-    vtkDebugMacro (<< "vtkRubberBandMapper2D::RenderOverlay");
+    vtkDebugMacro (<< "vtkDashedXorGridMapper2D::RenderOverlay");
 
     if ( input == NULL ) 
     {
@@ -239,7 +219,12 @@ void vtkRubberBandMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* act
         vtkDebugMacro(<< "No points!");
         return;
     }
-  
+ 
+    if (pixelDrawn <= 0 || pixelSpaced <= 0)
+    {
+        vtkDebugMacro(<< "Bad settings. Try SetDots first.");
+    }
+    
     if ( this->LookupTable == NULL )
     {
         this->CreateDefaultLookupTable();
@@ -290,33 +275,6 @@ void vtkRubberBandMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* act
         }
     }
 
-    // Draw the polygons.
-    aPrim = input->GetPolys();
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); cellNum++)
-    { 
-        if (c) 
-        {
-            if (cellScalars) 
-                rgba = c->GetPointer(4*cellNum);
-            else
-                rgba = c->GetPointer(4*pts[j]);
-
-            SET_FOREGROUND(rgba);
-        }
-
-        RESIZE_POINT_ARRAY(points, npts, currSize);
-
-        for (j = 0; j < npts; j++) 
-        {
-            ftmp = p->GetPoint(pts[j]);
-            STORE_POINT(points[j],
-                        actorPos[0] + ftmp[0],
-                        actorPos[1] - ftmp[1]);
-        }
-
-        DRAW_POLYGON(points, npts);
-    }
-
     // Draw the lines.
     aPrim = input->GetLines();
     for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); cellNum++)
@@ -342,10 +300,144 @@ void vtkRubberBandMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* act
             X = (int)(actorPos[0] + ftmp[0]);
             Y = (int)(actorPos[1] - ftmp[1]);
 
-            DRAW_XOR_LINE(lastX, lastY, X, Y);
+            int delta = pixelDrawn + pixelSpaced;
+            // Divide the two cases.
+            
+            bool horizontal;
+            
+            // If we're asked for a point
+            if (X == lastX && Y == lastY)
+                horizontal = horizontalBias;
+            else
+                horizontal = (Y == lastY);
+            
+            // Horizontal line
+            if (horizontal)
+            {
+                // Ensure we're drawing left to right
+                if (X > lastX)
+                {
+                    int tmp = X;
+                    X = lastX;
+                    lastX = tmp;
+                }
+                
+                int nextX;
+                
+                // Three cases for first dashed line
+                // If we're on a white space, we draw nothing, and advance
+                // to the next state.
+                if (!IsDash(X))
+                {
+                    X = NextDash(X);
+                }
+                // If we're in the middle of a dash
+                else if (!IsBeginningDash(X))
+                {
+                    nextX = NextDash(X);
+                    nextX -= (pixelSpaced);
+                    // Special case: if there's only part of a dash.
+                    if (nextX > lastX)
+                    {
+                        // Draw the line segment to the end of line.
+                        DRAW_XOR_LINE( X, Y, lastX, Y);
+                    }
+                    else
+                    {
+                        // Draw the segment
+                        DRAW_XOR_LINE( X, Y, nextX, Y);
+                    }
+                    // Advance X to the next dash
+                    X = nextX + pixelSpaced;
+                }
+                // If we're at the beginning of a dash, we're fine.
 
-            lastX = X;
-            lastY = Y;
+                nextX = X + pixelDrawn;
+
+                for (;;)
+                {
+                    // If X and nextX strattle lastX, draw a final segment.
+                    // End loop.
+                    if ( X <= lastX && nextX >= lastX)
+                    {
+                        DRAW_XOR_LINE(X, Y, lastX, Y);
+                        break;
+                    }
+
+                    // If X is past lastX, End Loop.
+                    if ( X > lastX)
+                        break;
+
+                    // Draw the next dash
+                    DRAW_XOR_LINE(X, Y, nextX, Y);
+                    X += delta;
+                    nextX += delta;
+                }
+            }
+
+            // Vertical line
+            else
+            {
+                // Ensure we're drawing down to up
+                if (Y > lastY)
+                {
+                    int tmp = Y;
+                    Y = lastY;
+                    lastY = tmp;
+                }
+                
+                int nextY;
+                
+                // Three cases for first dashed line
+                // If we're on a white space, we draw nothing, and advance
+                // to the next state.
+                if (!IsDash(Y))
+                {
+                    Y = NextDash(Y);
+                }
+                // If we're in the middle of a dash
+                else if (!IsBeginningDash(Y))
+                {
+                    nextY = NextDash(Y);
+                    nextY -= (pixelSpaced);
+                    // Special case: if there's only part of a dash.
+                    if (nextY > lastY)
+                    {
+                        // Draw the line segment to the end of line.
+                        DRAW_XOR_LINE( X, Y, X, lastY);
+                    }
+                    else
+                    {
+                        // Draw the segment
+                        DRAW_XOR_LINE( X, Y, X, nextY);
+                    }
+                    // Advance Y to the next dash
+                    Y = nextY + pixelSpaced;
+                }
+                // If we're at the beginning of a dash, we're fine.
+
+                nextY = Y + pixelDrawn;
+                
+                for (;;)
+                {
+                    // If Y and nextY strattle lastY, draw a final segment.
+                    // End loop.
+                    if ( Y <= lastY && nextY >= lastY)
+                    {
+                        DRAW_XOR_LINE(X, Y, X, lastY);
+                        break;
+                    }
+
+                    // If Y is past lastY, End Loop.
+                    if ( Y > lastY)
+                        break;
+
+                    // Draw the next dash
+                    DRAW_XOR_LINE(X, Y, X, nextY);
+                    Y += delta;
+                    nextY += delta;
+                }
+            }
         }
     }
 
@@ -356,8 +448,5 @@ void vtkRubberBandMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* act
     delete [] points;
     if ( this->TransformCoordinate )
         p->Delete();
-
 }
-
-
-  
+ 

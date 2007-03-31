@@ -287,7 +287,7 @@ ViewerFileServer::GetMetaData(const std::string &host,
             {
                 char msg[1000];
                 SNPRINTF(msg, 1000, "VisIt cannot read the metadata for the file "
-                         "%s on host %s.\n\nThe metadata server returned "
+                         "\"%s\" on host %s.\n\nThe metadata server returned "
                          "the following message:\n\n%s", filename.c_str(),
                         host.c_str(), gmde.GetMessage().c_str());
                 Error(msg);
@@ -418,7 +418,7 @@ ViewerFileServer::GetSIL(const std::string &host, const std::string &filename,
             {
                 char msg[1000];
                 SNPRINTF(msg, 1000, "VisIt cannot read the SIL for the file "
-                         "%s on host %s.\n\nThe metadata server returned "
+                         "\"%s\" on host %s.\n\nThe metadata server returned "
                          "the following message:\n\n%s", filename.c_str(),
                          host.c_str(), gmde.GetMessage().c_str());
                 Error(msg);

@@ -16,6 +16,7 @@
 
 #include <ActionGroupDescription.h>
 #include <ViewerWindowManagerAttributes.h>
+#include <DataNode.h>
 
 // ****************************************************************************
 // Class: EnableToolbarAction
@@ -1056,6 +1057,81 @@ ViewerActionManager::GetActionGroupNames(bool evenOnesWithNoToolbars) const
 
     return retval;
 }
+
+// ****************************************************************************
+// Method: ViewerActionManager::CreateNode
+//
+// Purpose: 
+//   Lets each action add its information to the config file node.
+//
+// Arguments:
+//   parentNode : The node to which data will be added.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 1 10:14:39 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerActionManager::CreateNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *mgrNode = new DataNode("ViewerActionManager");
+
+    // Let each action have the chance to add itself to the node.
+    bool addToNode = false;
+    for(int i = 0; i < (int)ViewerRPC::MaxRPC; ++i)
+    {
+        ViewerActionBase *action = GetAction(ActionIndex(i));
+        if(action != 0 && action->CreateNode(mgrNode))
+            addToNode = true;
+    }
+
+    if(addToNode)
+        parentNode->AddNode(mgrNode);
+    else
+        delete mgrNode;
+}
+
+// ****************************************************************************
+// Method: ViewerActionManager::SetFromNode
+//
+// Purpose: 
+//   Lets each action initialize itself from data in the node.
+//
+// Arguments:
+//   parentNode : The node from which config information is read.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 1 10:15:23 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerActionManager::SetFromNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *mgrNode = parentNode->GetNode("ViewerActionManager");
+    if(mgrNode == 0)
+        return;
+
+    // Let each action have the chance to initialize itself using the node.
+    for(int i = 0; i < (int)ViewerRPC::MaxRPC; ++i)
+    {
+        ViewerActionBase *action = GetAction(ActionIndex(i));
+        if(action != 0)
+            action->SetFromNode(mgrNode);
+    }
+}
+
 
 //
 // ActionGroup

@@ -13,6 +13,7 @@
 #endif
 
 #include <AnimationAttributes.h>
+#include <DataNode.h>
 #include <GlobalAttributes.h>
 #include <KeyframeAttributes.h>
 #include <LightList.h>
@@ -3031,6 +3032,10 @@ ViewerWindowManager::UpdateGlobalAtts() const
 //    I renamed camera to view normal in the view attributes.  I added
 //    image pan and image zoom to the 3d view attributes.
 //
+//    Brad Whitlock, Tue Jul 1 14:07:52 PST 2003
+//    I used new convenience methods for setting the viewAtts with the avt
+//    view objects.
+//
 // ****************************************************************************
 
 void
@@ -3048,8 +3053,7 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool update2d,
         //
         if(update2d)
         {
-            view2DClientAtts->SetWindowCoords(view2d.window);
-            view2DClientAtts->SetViewportCoords(view2d.viewport);
+            view2d.SetToViewAttributes(view2DClientAtts);
             view2DClientAtts->Notify();
         }
 
@@ -3058,17 +3062,7 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool update2d,
         //
         if(update3d)
         {
-            view3DClientAtts->SetViewNormal(view3d.normal);
-            view3DClientAtts->SetFocus(view3d.focus);
-            view3DClientAtts->SetViewUp(view3d.viewUp);
-            view3DClientAtts->SetViewAngle(view3d.viewAngle);
-            view3DClientAtts->SetParallelScale(view3d.parallelScale);
-            view3DClientAtts->SetSetScale(true);
-            view3DClientAtts->SetNearPlane(view3d.nearPlane);
-            view3DClientAtts->SetFarPlane(view3d.farPlane);
-            view3DClientAtts->SetImagePan(view3d.imagePan);
-            view3DClientAtts->SetImageZoom(view3d.imageZoom);
-            view3DClientAtts->SetPerspective(view3d.perspective);
+            view3d.SetToViewAttributes(view3DClientAtts);
             view3DClientAtts->Notify();
         }
     }
@@ -5509,5 +5503,115 @@ ViewerWindowManager::EndEngineExecute()
     {
         if(windows[windowIndex] != 0)
             windows[windowIndex]->SetPopupEnabled(true);
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::CreateNode
+//
+// Purpose: 
+//   Lets the ViewerWindowManager save itself to a config file.
+//
+// Arguments:
+//   parentNode : The node to which we're adding information.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 30 12:58:36 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::CreateNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *vsNode = new DataNode("ViewerWindowManager");
+    parentNode->AddNode(vsNode);
+
+    //
+    // Add information about the ViewerWindowManager.
+    //
+
+    //
+    // Let each window add its own data.
+    //
+    DataNode *windowsNode = new DataNode("Windows");
+    vsNode->AddNode(windowsNode);
+    for(int i = 0; i < maxWindows; ++i)
+    {
+        if(windows[i] != 0)
+            windows[i]->CreateNode(windowsNode);
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::SetFromNode
+//
+// Purpose: 
+//   Lets the ViewerWindowManager initialize itself from the information stored
+//   in a config file's DataNode.
+//
+// Arguments:
+//   parentNode : The node from which to get information about how to initialize
+//                the ViewerWindowManager.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 30 12:56:30 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::SetFromNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("ViewerWindowManager");
+    if(searchNode == 0)
+        return;
+
+    //
+    // Load information specific to ViewerWindowManager.
+    //
+
+    //
+    // Create the right number of windows.
+    //
+    DataNode *windowsNode = parentNode->GetNode("Windows");
+    if(windowsNode == 0)
+        return;
+
+#if 0
+    // Reactivate this later when the viewer does a full restart.
+    int newNWindows = windowsNode->GetNumChildren();
+    if(nWindows > newNWindows)
+    {
+        int d = nWindows - newNWindows;
+        for(int i = 0; i < d; ++i)
+            DeleteWindow();
+    }
+    else if(nWindows < newNWindows)
+    {
+        int d = newNWindows - nWindows;
+        for(int i = 0; i < d; ++i)
+            AddWindow();
+    }
+#endif
+
+    //
+    // Load window-specific information.
+    //
+    DataNode **wNodes = windowsNode->GetChildren();
+cerr << "ViewerWindowManager::SetFromNode: nWindows in file = " << windowsNode->GetNumChildren() << endl;
+    int childCount = 0;
+    for(int i = 0; i < maxWindows; ++i)
+    {
+        if(windows[i] != 0 && childCount < windowsNode->GetNumChildren())
+            windows[i]->SetFromNode(wNodes[childCount++]);
     }
 }

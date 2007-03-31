@@ -5,7 +5,7 @@
 #include <avtView2D.h>
 
 #include <avtViewInfo.h>
-
+#include <ViewAttributes.h>
 
 // ****************************************************************************
 //  Method: avtView2D constructor
@@ -354,4 +354,52 @@ avtView2D::GetValidWindow(double *valid_window) const
     }
 }
 
+// ****************************************************************************
+// Method: avtView2D::SetFromViewAttributes
+//
+// Purpose: 
+//   Sets the view from the ViewAttributes.
+//
+// Arguments:
+//   viewAtts : The ViewAttributes to use.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 1 14:05:11 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtView2D::SetFromViewAttributes(const ViewAttributes *viewAtts)
+{
+    for(int i = 0; i < 4; ++i)
+    {
+        viewport[i] = viewAtts->GetViewportCoords()[i];
+        window[i] = viewAtts->GetWindowCoords()[i];
+    }
+}
+
+// ****************************************************************************
+// Method: avtView2D::SetToViewAttributes
+//
+// Purpose: 
+//   Sets a ViewAttributes from the avtView2D.
+//
+// Arguments:
+//   viewAtts : The ViewAttributes object to set.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 1 14:05:48 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtView2D::SetToViewAttributes(ViewAttributes *viewAtts) const
+{
+    viewAtts->SetWindowCoords(window);
+    viewAtts->SetViewportCoords(viewport);
+}
 

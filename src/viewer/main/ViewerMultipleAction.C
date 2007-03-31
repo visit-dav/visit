@@ -181,12 +181,18 @@ ViewerMultipleAction::ChoiceToggled(int i) const
 // Creation:   Fri Jan 31 11:47:21 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jul 2 09:36:19 PDT 2003
+//   Added code to return early if the action or the action menu has not
+//   been created yet.
+//
 // ****************************************************************************
 
 void
 ViewerMultipleAction::Update()
 {
+    if(action == 0 || actionMenu == 0)
+        return;
+
     action->blockSignals(true);
 
     // See if the action as whole should be enabled.

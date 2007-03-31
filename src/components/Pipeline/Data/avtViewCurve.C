@@ -6,6 +6,7 @@
 
 #include <avtViewInfo.h>
 #include <DebugStream.h>
+#include <ViewAttributes.h>
 
 // ****************************************************************************
 //  Method: avtViewCurve constructor
@@ -243,3 +244,51 @@ avtViewCurve::SetViewportFromView(double *winViewport, const int, const int) con
     winViewport[3] = viewport[3];
 }
 
+// ****************************************************************************
+// Method: avtViewCurve::SetFromViewAttributes
+//
+// Purpose: 
+//   Sets the avtCurveView from the ViewAttributes object.
+//
+// Arguments:
+//   viewAtts : A pointer to the ViewAttributes object to use.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 1 13:00:39 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtViewCurve::SetFromViewAttributes(const ViewAttributes *viewAtts)
+{
+    for(int i = 0; i < 4; ++i)
+    {
+        window[i] = viewAtts->GetWindowCoords()[i];
+        viewport[i] = viewAtts->GetViewportCoords()[i];
+    }
+}
+
+// ****************************************************************************
+// Method: avtViewCurve::SetToViewAttributes
+//
+// Purpose: 
+//   Sets the ViewAttributes from the avtView2D object.
+//
+// Arguments:
+//   viewAtts : A pointer to the ViewAttributes object to use.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 1 13:00:39 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtViewCurve::SetToViewAttributes(ViewAttributes *viewAtts) const
+{
+    viewAtts->SetWindowCoords(window);
+    viewAtts->SetViewportCoords(viewport);
+}
