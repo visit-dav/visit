@@ -19,6 +19,8 @@
 //  Creation:   Fri Oct 4 15:22:57 PST 2002
 //
 //  Modifications:
+//    Eric Brugger, Wed Jul 16 11:14:52 PDT 2003
+//    Modified to work with the new way legends are managed.
 //
 // ****************************************************************************
 
@@ -33,7 +35,7 @@ avtStreamlinePlot::avtStreamlinePlot()
     varMapper->SetLookupTable(avtLUT->GetLookupTable());
 
     varLegend = new avtVariableLegend;
-    varLegend->SetTitle("Streamline Plot");
+    varLegend->SetTitle("Streamline");
 
     //
     // This is to allow the legend to be reference counted so the behavior can

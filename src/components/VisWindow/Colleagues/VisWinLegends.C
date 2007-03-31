@@ -32,31 +32,32 @@ const float   VisWinLegends::dbInfoWidth         = 0.21;
 //  Creation:   March 12, 2002
 //
 //  Modifications:
+//
 //    Brad Whitlock, Thu Apr 11 12:13:01 PDT 2002
 //    Initialized mainDBInfoAdded.
 //
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002    
 //    Use vtkTextActor to replace vtkTextMapper and vtkScaledTextActor. 
 //
+//    Eric Brugger, Mon Jul 14 16:43:13 PDT 2003
+//    Changed the way database information is handled.
+//
 // ****************************************************************************
 
 VisWinLegends::VisWinLegends(VisWindowColleagueProxy &p) : VisWinColleague(p)
 {
-    for (int i = 0 ; i < MAX_LEGENDS ; i++)
-    {
-        dbInfoActor[i]  = vtkTextActor::New();
-        dbInfoActor[i]->ScaledTextOn();
-        dbInfoActor[i]->SetWidth(dbInfoWidth);
-        dbInfoActor[i]->SetHeight(dbInfoHeight);
-        dbInfoActor[i]->GetTextProperty()->SetJustificationToLeft();
-        dbInfoActor[i]->GetTextProperty()->SetLineOffset(0);
-        dbInfoActor[i]->GetTextProperty()->SetLineSpacing(1);
-        dbInfoIsAdded[i] = false;
-    }
+    dbInfoActor  = vtkTextActor::New();
+    dbInfoActor->ScaledTextOn();
+    dbInfoActor->SetWidth(dbInfoWidth);
+    dbInfoActor->SetHeight(dbInfoHeight);
+    dbInfoActor->GetTextProperty()->SetJustificationToLeft();
+    dbInfoActor->GetTextProperty()->SetLineOffset(0);
+    dbInfoActor->GetTextProperty()->SetLineSpacing(1);
+    dbInfoIsAdded = false;
+
     mainDBInfoVisible = true;
     legendVisible = true;
     homogeneous = true;
-    numLegends = 0;
 }
 
 
@@ -67,20 +68,21 @@ VisWinLegends::VisWinLegends(VisWindowColleagueProxy &p) : VisWinColleague(p)
 //  Creation:   March 12, 2002
 //
 //  Modifications:
+//
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002    
 //    dbInfoMapper no longer required. 
+//
+//    Eric Brugger, Mon Jul 14 16:43:13 PDT 2003
+//    Changed the way database information is handled.
 //
 // ****************************************************************************
 
 VisWinLegends::~VisWinLegends()
 {
-    for (int i = 0 ; i < MAX_LEGENDS ; i++)
+    if (dbInfoActor != NULL)
     {
-        if (dbInfoActor[i] != NULL)
-        {
-            dbInfoActor[i]->Delete();
-            dbInfoActor[i] = NULL;
-        }
+        dbInfoActor->Delete();
+        dbInfoActor = NULL;
     }
 }
 
@@ -122,18 +124,19 @@ VisWinLegends::UpdatePlotList(vector<avtActor_p> &lst)
 //  Creation:   March 13, 2002
 //
 //  Modifications:
+//
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002 
 //    Use new vtkTextProperty. 
+//
+//    Eric Brugger, Mon Jul 14 16:43:13 PDT 2003
+//    Changed the way database information is handled.
 //
 // ****************************************************************************
  
 void
 VisWinLegends::SetForegroundColor(float fr, float fg, float fb)
 {
-    for (int i = 0 ; i < MAX_LEGENDS ; i++)
-    {
-        dbInfoActor[i]->GetTextProperty()->SetColor(fr, fg, fb);
-    }
+    dbInfoActor->GetTextProperty()->SetColor(fr, fg, fb);
 }
 
 
@@ -154,28 +157,58 @@ VisWinLegends::SetForegroundColor(float fr, float fg, float fb)
 //    Brad Whitlock, Thu Apr 11 14:13:45 PST 2002
 //    Made it so the legends can be taken away with a global flag.
 //
+//    Eric Brugger, Mon Jul 14 16:43:13 PDT 2003
+//    Changed the way database information is handled.
+//
+//    Eric Brugger, Wed Jul 16 09:53:37 PDT 2003
+//    Changed the positioning algorithm.  It now proceeds sequentially
+//    through the list of plots, adding a plot's legend if it fits in the
+//    remaining legend area.
+//
+//    Eric Brugger, Thu Jul 17 08:57:24 PDT 2003
+//    Modified the call to GetLegendSize to pass the maximum space left
+//    for legends.
+//
 // ****************************************************************************
 
 void
 VisWinLegends::PositionLegends(vector<avtActor_p> &lst)
 {
-    int positionCount = 0;
     std::vector<avtActor_p>::iterator it;
     vtkRenderer *foreground = mediator.GetForeground();
+    float yTop = 0.90;
     for (it = lst.begin() ; it != lst.end() ; it++)
     {
         avtLegend_p legend = (*it)->GetLegend();
+        avtBehavior_p b = (*it)->GetBehavior();
+        avtDataAttributes &atts = b->GetInfo().GetAttributes();
         if (*legend != NULL)
         {
-            if(legendVisible)
+            if(legendVisible && legend->GetLegendOn())
             {
-                if (positionCount < MAX_LEGENDS && legendVisible)
+                if (homogeneous)
                 {
-                    float x = (positionCount<MAX_LEGENDS/2 ? leftColumnPosition
-                                                        : rightColumnPosition);
-                    float y = GetPosition(positionCount);
+                    legend->SetDatabaseInfo(NULL);
+                }
+                else
+                {
+                    char info[1024];
+                    CreateDatabaseInfo(info, atts);
+                    legend->SetDatabaseInfo(info);
+                }
+
+                float width, height;
+                legend->GetLegendSize(yTop, width, height);
+
+                if (yTop - height >= 0.)
+                {
+                    yTop -= height;
+
                     legend->Add(foreground);
-                    legend->SetLegendPosition(x, y);
+                    legend->SetLegendPosition(0.05, yTop);
+                    legend->Update();
+
+                    yTop -= 0.02;
                 }
                 else
                 {
@@ -186,8 +219,6 @@ VisWinLegends::PositionLegends(vector<avtActor_p> &lst)
             {
                 legend->Remove();
             }
-
-            positionCount++;
         }
     }
 }
@@ -208,8 +239,12 @@ VisWinLegends::PositionLegends(vector<avtActor_p> &lst)
 //  Creation:   March 12, 2002
 //
 //  Modifications:
+//
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002 
 //    dbInfoActor (vtkTextActor) replaces dbInfoMapper (vtkTextMapper).
+//
+//    Eric Brugger, Mon Jul 14 16:43:13 PDT 2003
+//    Changed the way database information is handled.
 //
 // ****************************************************************************
 
@@ -219,23 +254,16 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
     std::vector<avtActor_p>::iterator it;
 
     //
-    // Try to gauge how many DB-infos we will need and where they will fall
-    // with respect to the legend placement.
+    // Determine if the plots have the same database information.
     //
     int    cycle;
     double dtime;
     string filename;
     bool   haveSetData = false;
-    numLegends  = 0;
     homogeneous = true;
     for (it = lst.begin() ; it != lst.end() ; it++)
     {
         avtActor_p actor = *it;
-        avtLegend_p leg = actor->GetLegend();
-        if (*leg == NULL)
-        {
-            continue;
-        }
         avtBehavior_p b = actor->GetBehavior();
         avtDataAttributes &atts = b->GetInfo().GetAttributes();
         if (!haveSetData)
@@ -251,186 +279,48 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
                 dtime != atts.GetTime() ||
                 filename != atts.GetFilename())
             {
-                cycle = atts.GetCycle();
-                dtime = atts.GetTime();
-                filename = atts.GetFilename();
                 homogeneous = false;
+                break;
             }
-        }
-
-        char info[1024];
-        sprintf(info, "DB: %s\n", filename.c_str());
-        if (atts.CycleIsAccurate())
-        {
-            sprintf(info+strlen(info), "Cycle: %-8d ", cycle);
-        }
-        if (atts.TimeIsAccurate())
-        {
-            sprintf(info+strlen(info), "Time:%-10g", dtime);
-        }
-        dbInfoActor[numLegends]->SetInput(info);
-        numLegends++;
-        if (numLegends >= MAX_LEGENDS)
-        {
-            break;
         }
     }
 
     //
-    // Now add them back in, in the appropriate positions.
-    //
-    AddDBInfos();
-}
-
-
-// ****************************************************************************
-//  Method: VisWinLegends::AddDBInfos
-//
-//  Purpose:
-//      Adds in the appropriate DB infos.  This method is called internally
-//      (once the state has been updated) and externally (when the user turns
-//      the info on or off).
-//
-//  Programmer: Hank Childs
-//  Creation:   March 13, 2002
-//
-//  Modifications:
-//
-//    Hank Childs, Tue Mar 19 09:10:53 PST 2002
-//    Removed bold type for database information text.
-//
-//    Brad Whitlock, Thu Apr 11 12:13:56 PDT 2002
-//    Added a little code that can prevent the main database info from
-//    being displayed.
-//
-//    Hank Childs, Tue May 21 08:34:41 PDT 2002
-//    Allow annotations to be configured out.
-//
-// ****************************************************************************
-
-void
-VisWinLegends::AddDBInfos(void)
-{
-    //
-    // Add the DBinfos to the screen.
+    // If the plots all have the same database information, create the
+    // overall database information.
     //
     vtkRenderer *foreground = mediator.GetForeground();
-    if (homogeneous)
+    if (!lst.empty() && homogeneous)
     {
-        dbInfoActor[0]->SetHeight(dbInfoHeight+0.04);
+        avtBehavior_p b = lst[0]->GetBehavior();
+        avtDataAttributes &atts = b->GetInfo().GetAttributes();
+
+        char info[1024];
+        CreateDatabaseInfo(info, atts);
+        dbInfoActor->SetInput(info);
+
+        dbInfoActor->SetHeight(dbInfoHeight+0.04);
         float x = leftColumnPosition;
         float y = 0.98 - dbInfoHeight;
-        vtkCoordinate *c = dbInfoActor[0]->GetPositionCoordinate();
+        vtkCoordinate *c = dbInfoActor->GetPositionCoordinate();
         c->SetCoordinateSystemToNormalizedViewport();
         c->SetValue(x, y);
-        if (!dbInfoIsAdded[0] && mainDBInfoVisible)
+        if (!dbInfoIsAdded && mainDBInfoVisible)
         {
-#ifndef NO_ANNOTATIONS
-            foreground->AddActor2D(dbInfoActor[0]);
-#endif
-            dbInfoIsAdded[0] = true;
-        }
-        for (int i = 1 ; i < MAX_LEGENDS ; i++)
-        {
-            if (dbInfoIsAdded[i])
-            {
-#ifndef NO_ANNOTATIONS
-                foreground->RemoveActor2D(dbInfoActor[i]);
-#endif
-                dbInfoIsAdded[i] = false;
-            }
+            foreground->AddActor2D(dbInfoActor);
+            dbInfoIsAdded = true;
         }
     }
     else
     {
-        dbInfoActor[0]->SetHeight(dbInfoHeight);
-        for (int i = 0 ; i < MAX_LEGENDS ; i++)
+        if (dbInfoIsAdded)
         {
-            float x = (i < MAX_LEGENDS/2 ? leftColumnPosition 
-                                         : rightColumnPosition);
-            float y = GetPosition(i) + 0.17;
-            vtkCoordinate *c = dbInfoActor[i]->GetPositionCoordinate();
-            c->SetCoordinateSystemToNormalizedViewport();
-            c->SetValue(x, y);
-            if (!dbInfoIsAdded[i] && mainDBInfoVisible)
-            {
-#ifndef NO_ANNOTATIONS
-                foreground->AddActor2D(dbInfoActor[i]);
-#endif
-                dbInfoIsAdded[i] = true;
-            }
-        }
-    }
-
-    for (int i = numLegends ; i < MAX_LEGENDS ; i++)
-    {
-        if (dbInfoIsAdded[i])
-        {
-#ifndef NO_ANNOTATIONS
-            foreground->RemoveActor2D(dbInfoActor[i]);
-#endif
-            dbInfoIsAdded[i] = false;
+            foreground->RemoveActor2D(dbInfoActor);
+            dbInfoIsAdded = false;
         }
     }
 }
 
-
-// ****************************************************************************
-//  Method: VisWinLegends::RemoveDBInfos
-//
-//  Purpose:
-//      Removes the database information from the window.
-//
-//  Programmer: Hank Childs
-//  Creation:   March 13, 2002
-//
-//  Modifications:
-//
-//    Hank Childs, Tue May 21 08:34:41 PDT 2002
-//    Allow annotations to be configured out.
-//
-// ****************************************************************************
-
-void
-VisWinLegends::RemoveDBInfos(void)
-{
-    vtkRenderer *foreground = mediator.GetForeground();
-    for (int i = 0 ; i < MAX_LEGENDS ; i++)
-    {
-        if (dbInfoIsAdded[i])
-        {
-#ifndef NO_ANNOTATIONS
-            foreground->RemoveActor2D(dbInfoActor[i]);
-#endif
-            dbInfoIsAdded[i] = false;
-        }
-    }
-}
-
-
-// ****************************************************************************
-//  Method: VisWinLegends::GetPosition
-//
-//  Purpose:
-//      Gets the position for the legend based on how many database infos
-//      we have to draw.
-//
-//  Arguments:
-//      pos     The position index.
-//
-//  Programmer: Hank Childs
-//  Creation:   March 13, 2002
-//
-// ****************************************************************************
-
-float
-VisWinLegends::GetPosition(int pos)
-{
-    float allHaveOwnDB[MAX_LEGENDS] = { 0.78, 0.50, 0.22, 0.78, 0.50, 0.22 };
-    float onlyOneDB[MAX_LEGENDS] = { 0.72, 0.48, 0.24, 0.80, 0.56, 0.32 };
-
-    return (homogeneous ? onlyOneDB[pos] : allHaveOwnDB[pos]);
-}
 
 // ****************************************************************************
 // Method: VisWinLegends::SetVisibility
@@ -444,8 +334,6 @@ VisWinLegends::GetPosition(int pos)
 // Programmer: Brad Whitlock
 // Creation:   Thu Apr 11 12:18:49 PDT 2002
 //
-// Modifications:
-//   
 // ****************************************************************************
 
 void
@@ -453,5 +341,30 @@ VisWinLegends::SetVisibility(bool db, bool legend)
 {
     mainDBInfoVisible = db;
     legendVisible = legend;
-    RemoveDBInfos();
+}
+
+
+// ****************************************************************************
+//  Method: VisWinLegends::CreateDatabaseInfo
+//
+//  Purpose:
+//      Create the database information string.
+//
+//  Programmer: Eric Brugger
+//  Creation:   July 14, 2003
+//
+// ****************************************************************************
+
+void
+VisWinLegends::CreateDatabaseInfo(char *info, avtDataAttributes &atts)
+{
+    sprintf(info, "DB: %s\n", atts.GetFilename().c_str());
+    if (atts.CycleIsAccurate())
+    {
+        sprintf(info+strlen(info), "Cycle: %-8d ", atts.GetCycle());
+    }
+    if (atts.TimeIsAccurate())
+    {
+        sprintf(info+strlen(info), "Time:%-10g", atts.GetTime());
+    }
 }

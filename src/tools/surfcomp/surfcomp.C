@@ -4,8 +4,6 @@
 #include <vtkDataSetWriter.h>
 #include <vtkFloatArray.h>
 #include <vtkPolyData.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkUnsignedCharArray.h>
 
 int main(int argc, char *argv[])
 {
@@ -51,7 +49,7 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    vtkUnstructuredGrid *diffed = vtkUnstructuredGrid::New();
+    vtkPolyData *diffed = vtkPolyData::New();
     vtkPolyData *only1  = vtkPolyData::New();
     vtkPolyData *only2  = vtkPolyData::New();
 
@@ -65,9 +63,9 @@ int main(int argc, char *argv[])
     int npts = pd1->GetNumberOfPoints();
 
     vtkPoints *newPoints = vtkPoints::New();
-    newPoints->SetNumberOfPoints(2*npts);
+    newPoints->SetNumberOfPoints(npts);
     vtkFloatArray *newVals = vtkFloatArray::New();
-    newVals->SetNumberOfTuples(2*npts);
+    newVals->SetNumberOfTuples(npts);
 
     vtkPoints *pts1 = pd1->GetPoints();
     vtkPoints *pts2 = pd2->GetPoints();
@@ -78,66 +76,65 @@ int main(int argc, char *argv[])
     int i;
     for (i = 0 ; i < npts ; i++)
     {
+        float pt1[3];
+        pts1->GetPoint(i, pt1);
+        float pt2[3];
+        pts2->GetPoint(i, pt2);
         float pt[3];
-        pts1->GetPoint(i, pt);
-        newPoints->SetPoint(2*i, pt);
-        pts2->GetPoint(i, pt);
-        newPoints->SetPoint(2*i+1, pt);
+        pt[0] = (pt1[0] + pt2[0]) / 2.;
+        pt[1] = (pt1[1] + pt2[1]) / 2.;
+        pt[2] = (pt1[2] + pt2[2]) / 2.;
+        newPoints->SetPoint(i, pt);
 
         float val1 = arr1->GetTuple1(i);
         float val2 = arr2->GetTuple1(i);
         float final_val = A*val1 - val2 + B;
-        newVals->SetTuple1(2*i, final_val);
-        newVals->SetTuple1(2*i+1, final_val);
+        newVals->SetTuple1(i, final_val);
     }
 
     diffed->SetPoints(newPoints);
     diffed->GetPointData()->SetScalars(newVals);
 
     int ncells = pd1->GetNumberOfCells();
-    diffed->Allocate(ncells*6);
+    diffed->Allocate(ncells*3);
     only1->Allocate(ncells*3);
     only2->Allocate(ncells*3);
-    vtkUnsignedCharArray *uca1 = (vtkUnsignedCharArray *)
+    vtkFloatArray *uca1 = (vtkFloatArray *)
                                   pd1->GetCellData()->GetArray("cell_valid");
-    vtkUnsignedCharArray *uca2 = (vtkUnsignedCharArray *)
+    vtkFloatArray *uca2 = (vtkFloatArray *)
                                   pd2->GetCellData()->GetArray("cell_valid");
     for (i = 0 ; i < ncells ; i++)
     {
-        unsigned char is1 = uca1->GetValue(i);
-        unsigned char is2 = uca2->GetValue(i);
+        float is1 = uca1->GetValue(i);
+        float is2 = uca2->GetValue(i);
         vtkIdList *pts1 = pd1->GetCell(i)->GetPointIds();
         vtkIdList *pts2 = pd2->GetCell(i)->GetPointIds();
-        if (is1 && is2)
+        if ((is1 > 0.) && (is2 > 0.))
         {
-            vtkIdType wedge[6];
-            wedge[0] = 2*pts1->GetId(0);
-            wedge[1] = 2*pts1->GetId(1);
-            wedge[2] = 2*pts1->GetId(2);
-            wedge[3] = 2*pts2->GetId(0) + 1;
-            wedge[4] = 2*pts2->GetId(1) + 1;
-            wedge[5] = 2*pts2->GetId(2) + 1;
-            diffed->InsertNextCell(VTK_WEDGE, 6, wedge);
+            diffed->InsertNextCell(VTK_TRIANGLE, pts1);
         }
-        else if (is1)
+        else if (is1 > 0.)
         {
             only1->InsertNextCell(VTK_TRIANGLE, pts1);
         }
-        else if (is2)
+        else if (is2 > 0.)
         {
             only2->InsertNextCell(VTK_TRIANGLE, pts2);
         }
     }
 
     vtkDataSetWriter *wrtr_all = vtkDataSetWriter::New();
+    wrtr_all->SetFileTypeToBinary();
     wrtr_all->SetInput(diffed);
     wrtr_all->SetFileName("both.vtk");
     wrtr_all->Write();
     vtkDataSetWriter *wrtr1 = vtkDataSetWriter::New();
+    wrtr1->SetFileTypeToBinary();
     wrtr1->SetInput(only1);
     wrtr1->SetFileName("only1.vtk");
     wrtr1->Write();
     vtkDataSetWriter *wrtr2 = vtkDataSetWriter::New();
+    wrtr2->SetFileTypeToBinary();
     wrtr2->SetInput(only2);
     wrtr2->SetFileName("only2.vtk");
     wrtr2->Write();

@@ -9,7 +9,6 @@
 #include <vtkFloatArray.h>
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
-#include <vtkUnsignedCharArray.h>
 
 #include <avtImagePartition.h>
 #include <avtParallel.h>
@@ -235,7 +234,7 @@ avtSamplePointToSurfaceFilter::Execute(void)
         arr->Delete();
 
         int ncells = 4*(height-1)*(width-1);
-        vtkUnsignedCharArray *cell_valid = vtkUnsignedCharArray::New();
+        vtkFloatArray *cell_valid = vtkFloatArray::New();
         cell_valid->SetName("cell_valid");
         cell_valid->SetNumberOfTuples(ncells);
         pd->Allocate(ncells*4);

@@ -48,6 +48,9 @@ static void OverrideWithSoftwareImageCallback(void *, avtDataObject_p &);
 //    Added reference pointer construct because renderers are now reference
 //    counted.
 //
+//    Eric Brugger, Wed Jul 16 11:35:47 PDT 2003
+//    Modified to work with the new way legends are managed.
+//
 // ****************************************************************************
 
 avtVolumePlot::avtVolumePlot() : avtVolumeDataPlot()
@@ -65,7 +68,7 @@ avtVolumePlot::avtVolumePlot() : avtVolumeDataPlot()
     avtLUT = new avtLookupTable();
 
     varLegend = new avtVolumeVariableLegend;
-    varLegend->SetTitle("Volume Plot");
+    varLegend->SetTitle("Volume");
 
     //
     // This is to allow the legend to reference counted so the behavior can
@@ -164,6 +167,9 @@ avtVolumePlot::Create()
 //    Hank Childs, Fri Dec 14 09:02:05 PST 2001
 //    Set the legend range correctly using artificial limits if appropriate.
 //
+//    Eric Brugger, Wed Jul 16 11:35:47 PDT 2003
+//    Modified to work with the new way legends are managed.
+//
 // ****************************************************************************
 
 void
@@ -177,7 +183,7 @@ avtVolumePlot::SetAtts(const AttributeGroup *a)
     SetLegendOpacities();
 
     float min, max;
-    varLegend->GetVarRange(min, max);
+    varLegend->GetRange(min, max);
     if (atts.GetUseColorVarMin())
     {
         min = atts.GetColorVarMin();

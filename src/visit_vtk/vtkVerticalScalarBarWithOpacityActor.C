@@ -10,8 +10,8 @@
 //=========================================================================
 #include "vtkVerticalScalarBarWithOpacityActor.h"
 #include <vtkObjectFactory.h>
+#include <vtkViewport.h>
 #include <vtkPolyData.h>
-#include <vtkLookupTable.h>
 #include <vtkPolyDataMapper2D.h>
 #include <vtkTextMapper.h>
 #include <float.h>
@@ -51,72 +51,67 @@ vtkVerticalScalarBarWithOpacityActor::~vtkVerticalScalarBarWithOpacityActor()
 //    Kathleen Bonnell, Tue Mar 19 08:27:40 PST 2002 
 //    vtkScalars has been deprecated in VTK 4.0, use vtkUnsignedCharArray
 //    directly to access colors.
+//
+//    Eric Brugger, Mon Jul 14 12:11:14 PDT 2003
+//    I changed the way the color bar is built.
+//
+//    Eric Brugger, Wed Jul 16 08:54:38 PDT 2003
+//    Add logic to reduce the number of colors and labels shown when user
+//    defined labels are specified and there are  are too many to fit in
+//    the available space.
+//
 // ****************************************************************************
 
 void vtkVerticalScalarBarWithOpacityActor::BuildColorBar(vtkViewport *viewport)
 {
-  vtkScalarsToColors *lut = this->LookupTable;
-  // we hard code how many steps to display unless user has defined labels
-  int numColors; 
-  if ( this->UseDefinedLabels && !this->definedLabels.empty() )
-    {
-    numColors = this->definedLabels.size();
-    }
+  int *viewSize = viewport->GetSize();
+
+  //
+  // Determine the size and position of the color bar
+  //
+  int halfFontSize = (int)((this->FontHeight * viewSize[1]) / 2.);
+
+  float barOrigin;
+  int rsizePixels[2];
+  this->RangeMapper->GetSize(viewport, rsizePixels);
+  if (this->RangeVisibility)
+    barOrigin = (float)(rsizePixels[1] + halfFontSize);
   else
-    {
-    numColors = this->MaximumNumberOfColors;
-    }
-
-  // 
-  // if user hasn't set the range, use the range from the lut
-  // 
-  if (range[0] == FLT_MAX || range[1] == FLT_MAX)
-    {
-    range[0] = lut->GetRange()[0];
-    range[1] = lut->GetRange()[1];
-    }
-
-  if (varRange[0] == FLT_MAX || varRange[1] == FLT_MAX)
-    {
-    varRange[0] = lut->GetRange()[0];
-    varRange[1] = lut->GetRange()[1];
-    }
-
-  //
-  // now that we have the range, we need to 
-  // create the range mapper input 
-  //
-
-  char *labelString = new char[256];
-  sprintf(labelString, this->RangeFormat, varRange[1], varRange[0]);
-  this->RangeMapper->SetInput(labelString);
-  delete [] labelString;
-  this->RangeMapper->SetBold(this->Bold);
-  this->RangeMapper->SetItalic(this->Italic);
-  this->RangeMapper->SetShadow(this->Shadow);
-  this->RangeMapper->SetFontFamily(this->FontFamily);
-  this->RangeActor->SetProperty(this->GetProperty());
-
-  //
-  // finish color bar 
-  //
+    barOrigin = 0.;
 
   int *titleOrigin;
-  int barHeight, barWidth;
+  float barHeight, barWidth;
 
   titleOrigin = this->TitleActor->GetPositionCoordinate()->
                                   GetComputedViewportValue(viewport);
 
   if (this->TitleOkayToDraw && this->TitleVisibility) 
     {
-    barHeight = titleOrigin[1] - 5 - LastOrigin[1]; 
+    barHeight = titleOrigin[1] - LastOrigin[1] - halfFontSize - barOrigin; 
     }
   else
     {
-    barHeight = LastSize[1];
+    barHeight = LastSize[1] - barOrigin;
     }
 
-  barWidth = (int) (LastSize[0] * (1.0 - this->LabelFraction));
+  barWidth = (int) (this->BarWidth * viewSize[0]);
+
+  //
+  // Determine the number of colors in the color bar.
+  //
+  int numColors, numLabels; 
+  if ( this->UseDefinedLabels && !this->definedLabels.empty() )
+    {
+    numColors = this->definedLabels.size();
+    if ((this->FontHeight * 1.1 * numColors * viewSize[1]) > barHeight)
+        numColors = (int) (barHeight / (this->FontHeight * 1.1 * viewSize[1]));
+    numLabels = numColors;
+    }
+  else
+    {
+    numColors = this->MaximumNumberOfColors;
+    numLabels = this->NumberOfLabels;
+    }
 
   //
   // Build color bar object
@@ -140,7 +135,7 @@ void vtkVerticalScalarBarWithOpacityActor::BuildColorBar(vtkViewport *viewport)
   //
   //polygons & cell colors for color bar
   //
-  float yval = 0.;
+  float yval = barOrigin;
   float delta = (float)barHeight/(float)numColors;
   float barWidthDiv2 = barWidth * 0.5;
   float coord[3];
@@ -256,10 +251,10 @@ void vtkVerticalScalarBarWithOpacityActor::BuildColorBar(vtkViewport *viewport)
 
   } // loop on numColors
 
-  this->BuildTics(barWidth, yval - delta);
+  this->BuildTics(barOrigin, barWidth, barHeight, numLabels);
   if (this->LabelVisibility)
     {
-    this->BuildLabels(viewport, barWidth, barHeight);
+    this->BuildLabels(viewport, barOrigin, barWidth, barHeight, numLabels);
     }
 
 } // BuildColorBar

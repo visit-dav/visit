@@ -10,6 +10,7 @@
 #include <vtkHexahedron.h>
 #include <vtkPyramid.h>
 #include <vtkTetra.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkVoxel.h>
 #include <vtkWedge.h>
 
@@ -236,6 +237,11 @@ avtSamplePointExtractor::SetUpExtractors(void)
 //    Hank Childs, Mon Apr 15 15:34:43 PDT 2002
 //    Give clearer error messages.
 //
+//    Hank Childs, Fri Jul 18 11:42:10 PDT 2003
+//    Do not sample ghost zones.  This gives slightly better performance.
+//    And ghost zones occasionally have the wrong value (due to problems with
+//    the code that produced it).
+//
 // ****************************************************************************
 
 void
@@ -272,8 +278,13 @@ avtSamplePointExtractor::ExecuteTree(avtDataTree_p dt)
     //
     int numCells = ds->GetNumberOfCells();
     int lastMilestone = 0;
+    vtkUnsignedCharArray *ghosts = (vtkUnsignedCharArray *)
+                                 ds->GetCellData()->GetArray("vtkGhostLevels");
     for (int j = 0 ; j < numCells ; j++)
     {
+        if (ghosts != NULL && ghosts->GetValue(j) > 0)
+            continue;
+
         vtkCell *cell = ds->GetCell(j);
 
         switch (cell->GetCellType())

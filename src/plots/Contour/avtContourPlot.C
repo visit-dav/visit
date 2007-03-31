@@ -583,6 +583,9 @@ avtContourPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Removed logic for setting legend's labels.  Now contained in 
 //    CustomizeMapper. 
 //    
+//    Eric Brugger, Wed Jul 16 10:27:29 PDT 2003
+//    Modified to work with the new way legends are managed.
+//
 // ****************************************************************************
 
 void
@@ -604,13 +607,13 @@ avtContourPlot::CustomizeBehavior(void)
 
     if (numLevels == 0 || min == max)
     {
-        levelsLegend->SetMessage("Constant\nno levels");
-        // don't draw the color bar
-        levelsLegend->SetColorBar(0);
+        levelsLegend->SetColorBarVisibility(0);
+        levelsLegend->SetMessage("Constant, no levels");
     }
     else
     { 
-        levelsLegend->SetColorBar(1);
+        levelsLegend->SetColorBarVisibility(1);
+        levelsLegend->SetMessage(NULL);
     }
 
     behavior->SetLegend(levLegendRefPtr);
@@ -627,6 +630,10 @@ avtContourPlot::CustomizeBehavior(void)
 //  Programmer: Kathleen Bonnell
 //  Creation:   September 22, 2001 
 //
+//  Modifications:
+//    Eric Brugger, Wed Jul 16 10:27:29 PDT 2003
+//    Modified to work with the new way legends are managed.
+//
 // ****************************************************************************
 
 void
@@ -638,12 +645,13 @@ avtContourPlot::CustomizeMapper(avtDataObjectInformation &info)
     if (!isoValues.empty())
     {
         levelsLegend->SetLevels(isoValues);
+        levelsLegend->SetColorBarVisibility(1);
+        levelsLegend->SetMessage(NULL);
     }
     else
     { 
+        levelsLegend->SetColorBarVisibility(0);
         levelsLegend->SetMessage("Unable to compute levels");
-        // don't draw the color bar
-        levelsLegend->SetColorBar(0);
     }
 }
 
