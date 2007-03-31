@@ -341,51 +341,31 @@ VisWinPlots::TriggerPlotListUpdate(void)
 //    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002 
 //    Add support for curve mode.
 //
+//    Eric Brugger, Wed Aug 20 09:57:48 PDT 2003
+//    Modify the routine to set the mode based on the plot type if no plots
+//    were present and to check that the modes match otherwise.
+//
 // ****************************************************************************
 
 void
 VisWinPlots::CheckPlot(avtActor_p &p)
 {
-    if (p->GetDimension() == 3)
+    if (plots.size() == 0)
     {
         //
-        // Make sure that there are not already 2D plots lying around.
+        // The mode isn't set, so set it.
         //
-        if (mediator.GetMode() != WINMODE_3D && plots.size() != 0)
+        mediator.ChangeMode(p->GetWindowMode());
+    }
+    else
+    {
+        //
+        // If the modes don't match then it is an error.
+        //
+        if (mediator.GetMode() != p->GetWindowMode())
         {
             EXCEPTION3(PlotDimensionalityException, mediator.GetMode(), 
-                       WINMODE_3D, plots.size());
-        }
-        mediator.ChangeMode(WINMODE_3D);
-    }
-    else if (p->GetDimension() == 2)
-    {
-        if (!mediator.GetTypeIsCurve())
-        {
-            //
-            // Make sure that there are not already 3D plots lying around.
-            //
-            if (mediator.GetMode() != WINMODE_2D && plots.size() != 0)
-            {
-                EXCEPTION3(PlotDimensionalityException, mediator.GetMode(), 
-                           WINMODE_2D, plots.size());
-            }
-    
-            mediator.ChangeMode(WINMODE_2D);
-        }
-        else 
-        {
-            //
-            // Make sure that there are not already 2D or 3D plots lying
-            // around.
-            //
-            if (mediator.GetMode() != WINMODE_CURVE && plots.size() != 0)
-            {
-                EXCEPTION3(PlotDimensionalityException, mediator.GetMode(), 
-                           WINMODE_CURVE, plots.size());
-            }
-    
-            mediator.ChangeMode(WINMODE_CURVE);
+                       p->GetWindowMode(), plots.size());
         }
     }
 }

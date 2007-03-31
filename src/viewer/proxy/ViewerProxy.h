@@ -36,7 +36,9 @@ class SaveWindowAttributes;
 class StatusAttributes;
 class SyncAttributes;
 class InternalSILObserver;
-class ViewAttributes;
+class ViewCurveAttributes;
+class View2DAttributes;
+class View3DAttributes;
 class ViewerRPC;
 class WindowInformation;
 class Xfer;
@@ -292,6 +294,10 @@ class Xfer;
 //    Brad Whitlock, Wed Jul 30 14:44:34 PST 2003
 //    Added an extra argument to ImportEntireState.
 //
+//    Eric Brugger, Wed Aug 20 10:44:10 PDT 2003
+//    I added GetViewCurveAttributes and SetViewCurve.  I split the view
+//    attributes into 2d and 3d parts.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -385,6 +391,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void ExportColorTable(const std::string &colorTableName);
     void InvertBackgroundColor();
 
+    void SetViewCurve();
     void SetView2D();
     void SetView3D();
     void ClearViewKeyframes();
@@ -509,9 +516,11 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
                                     {return statusAtts;};
     SyncAttributes             *GetSyncAttributes() const
                                     { return syncAtts; };
-    ViewAttributes             *GetView2DAttributes() const 
+    ViewCurveAttributes        *GetViewCurveAttributes() const 
+                                    {return viewCurveAttributes;};
+    View2DAttributes           *GetView2DAttributes() const 
                                     {return view2DAttributes;};
-    ViewAttributes             *GetView3DAttributes() const 
+    View3DAttributes           *GetView3DAttributes() const 
                                     {return view3DAttributes;};
     WindowInformation          *GetWindowInformation() const
                                     {return windowInfo; };
@@ -548,8 +557,9 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     EngineList                 *engineList;
     AnnotationAttributes       *annotationAtts;
     SILRestrictionAttributes   *silRestrictionAtts;
-    ViewAttributes             *view2DAttributes;
-    ViewAttributes             *view3DAttributes;
+    ViewCurveAttributes        *viewCurveAttributes;
+    View2DAttributes           *view2DAttributes;
+    View3DAttributes           *view3DAttributes;
     LightList                  *lightList;
     MaterialAttributes         *materialAtts;
     AnimationAttributes        *animationAtts;

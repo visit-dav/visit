@@ -274,6 +274,7 @@ avtPlot::Execute(avtDataObject_p input, avtPipelineSpecification_p spec,
 //    Added boolean argument indicating if its being called by the
 //    CombinedExecute method or not. Made it a protected method. Introduced
 //    a public wrapper for this now protected method.
+//    
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -396,6 +397,10 @@ avtPlot::Execute(avtDataObjectReader_p reader)
 //    Added avtDataObject argument indicating if its being called by the
 //    CombinedExecute method or not. Made it a protected method. Introduced
 //    a public wrapper for this now protected method.
+//
+//    Eric Brugger, Wed Aug 20 09:52:57 PDT 2003
+//    Set the window mode based on the spatial dimension.
+//
 // ****************************************************************************
 
 avtActor_p
@@ -515,11 +520,15 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
     }
 
     //
-    // Create a theater that will add behavior to our drawable.  Call
-    // CustomizeBehavior to give the derived types a chance to
-    // add legends, etc.
+    // Create a theater that will add behavior to our drawable.  Set the
+    // window mode based on the spatial dimension.  Call CustomizeBehavior
+    // to give the derived types a chance to add legends, etc.
     //
     theater.SetInput(drawable, info, decorations);
+    if (behavior->GetInfo().GetAttributes().GetSpatialDimension() == 2)
+        behavior->GetInfo().GetAttributes().SetWindowMode(WINMODE_2D);
+    else
+        behavior->GetInfo().GetAttributes().SetWindowMode(WINMODE_3D);
     CustomizeBehavior();
 
     //

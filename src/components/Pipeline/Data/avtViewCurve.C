@@ -6,7 +6,7 @@
 
 #include <avtViewInfo.h>
 #include <DebugStream.h>
-#include <ViewAttributes.h>
+#include <ViewCurveAttributes.h>
 
 // ****************************************************************************
 //  Method: avtViewCurve constructor
@@ -30,6 +30,10 @@ avtViewCurve::avtViewCurve()
 //  Programmer: Kathleen Bonnell
 //  Creation:   April 30, 2002
 //
+//  Modifications:
+//    Eric Brugger, Wed Aug 20 09:42:38 PDT 2003
+//    I removed yScale and replaced window with domain and range.
+//
 // ****************************************************************************
 
 avtViewCurve &
@@ -39,11 +43,10 @@ avtViewCurve::operator=(const avtViewCurve &vi)
     viewport[1]  = vi.viewport[1];
     viewport[2]  = vi.viewport[2];
     viewport[3]  = vi.viewport[3];
-    window[0]    = vi.window[0];
-    window[1]    = vi.window[1];
-    window[2]    = vi.window[2];
-    window[3]    = vi.window[3];
-    yScale       = vi.yScale;
+    domain[0]    = vi.domain[0];
+    domain[1]    = vi.domain[1];
+    range[0]     = vi.range[0];
+    range[1]     = vi.range[1];
 
     return *this;
 }
@@ -58,6 +61,10 @@ avtViewCurve::operator=(const avtViewCurve &vi)
 //  Programmer: Kathleen Bonnell
 //  Creation:   April 30, 2002
 //
+//  Modifications:
+//    Eric Brugger, Wed Aug 20 09:42:38 PDT 2003
+//    I removed yScale and replaced window with domain and range.
+//
 // ****************************************************************************
 
 bool
@@ -69,16 +76,15 @@ avtViewCurve::operator==(const avtViewCurve &vi)
         return false;
     }
 
-    if (window[0] != vi.window[0] || window[1] != vi.window[1] ||
-        window[2] != vi.window[2] || window[3] != vi.window[3])
-    {
-        return false;
-    }
-    if (yScale != vi.yScale)
+    if (domain[0] != vi.domain[0] || domain[1] != vi.domain[1])
     {
         return false;
     }
 
+    if (range[0] != vi.range[0] || range[1] != vi.range[1])
+    {
+        return false;
+    }
 
     return true;
 }
@@ -93,6 +99,10 @@ avtViewCurve::operator==(const avtViewCurve &vi)
 //  Programmer:  Kathleen Bonnell
 //  Creation:    April 30, 2002
 //
+//  Modifications:
+//    Eric Brugger, Wed Aug 20 09:42:38 PDT 2003
+//    I removed yScale and replaced window with domain and range.
+//
 // ****************************************************************************
 
 void
@@ -102,11 +112,10 @@ avtViewCurve::SetToDefault()
     viewport[1] = 1.;
     viewport[2] = 0.;
     viewport[3] = 1.;
-    window[0]   = 0.;
-    window[1]   = 1.;
-    window[2]   = 0.;
-    window[3]   = 1.;
-    yScale      = 1.;
+    domain[0]   = 0.;
+    domain[1]   = 1.;
+    range[0]    = 0.;
+    range[1]    = 1.;
 }
 
 // ****************************************************************************
@@ -118,6 +127,7 @@ avtViewCurve::SetToDefault()
 //
 //  Arguments:
 //    viewInfo   The viewInfo from which to set the Curve view.
+//    size       The size of the window.
 //
 //  Notes:
 //    Taken from avtView2D.
@@ -125,34 +135,46 @@ avtViewCurve::SetToDefault()
 //  Programmer:  Kathleen Bonnell
 //  Creation:    April 30, 2002
 //
+//  Modifications:
+//    Eric Brugger, Wed Aug 20 09:42:38 PDT 2003
+//    I replaced window with domain and range.  I added a window size argument
+//    so that the routine could handle non-square windows and viewports.
+//
 // ****************************************************************************
 
 void
-avtViewCurve::SetViewFromViewInfo(const avtViewInfo &viewInfo)
+avtViewCurve::SetViewFromViewInfo(const avtViewInfo &viewInfo, int *size)
 {
     //
     // Determine the new window.  We assume that the viewport stays the
     // same, since panning and zooming can not change the viewport.  We
     // assume that the window has the same aspect ratio as the previous
     // view since panning and zooming can not change the aspect ratio.
-    // The parallel scale is set from the y window dimension.
+    // The parallel scale is set from the y window dimension.  The viewScale
+    // handles non-square viewports and windows.  It is the opposite of
+    // SetViewInfoFromView.
     //
-    double    oldHalfWidth, curHalfWidth;
+    double    viewScale;
     double    xcenter, ycenter;
+    double    oldHalfWidth, curHalfWidth;
     double    aspectRatio;
     double    scale;
 
-    xcenter = viewInfo.focus[0];
-    ycenter = viewInfo.focus[1];
+    viewScale = ((range[1] - range[0]) / (domain[1] - domain[0])) *
+                ((viewport[1] - viewport[0]) / (viewport[3] - viewport[2])) *
+                ((double) size[0] / (double) size[1]) ;
 
-    oldHalfWidth = (window[3] - window[2]) / 2.;
-    curHalfWidth = viewInfo.parallelScale;
-    aspectRatio = (window[1] - window[0]) / (window[3] - window[2]);
+    xcenter = viewInfo.focus[0];
+    ycenter = viewInfo.focus[1] * viewScale;
+
+    oldHalfWidth = (range[1] - range[0]) / 2.;
+    curHalfWidth = viewInfo.parallelScale * viewScale;
+    aspectRatio = (domain[1] - domain[0]) / (range[1] - range[0]);
     scale = curHalfWidth / oldHalfWidth;
-    window[0] = xcenter - oldHalfWidth * scale * aspectRatio;
-    window[1] = xcenter + oldHalfWidth * scale * aspectRatio;
-    window[2] = ycenter - oldHalfWidth * scale;
-    window[3] = ycenter + oldHalfWidth * scale;
+    domain[0] = xcenter - oldHalfWidth * scale * aspectRatio;
+    domain[1] = xcenter + oldHalfWidth * scale * aspectRatio;
+    range[0]  = ycenter - oldHalfWidth * scale;
+    range[1]  = ycenter + oldHalfWidth * scale;
 }
 
 // ****************************************************************************
@@ -164,6 +186,7 @@ avtViewCurve::SetViewFromViewInfo(const avtViewInfo &viewInfo)
 //
 //  Arguments:
 //    viewInfo   The avtViewInfo in which to store the Curve view. 
+//    size       The size of the window.
 //
 //  Notes:
 //    Taken from avtView2D.
@@ -171,25 +194,43 @@ avtViewCurve::SetViewFromViewInfo(const avtViewInfo &viewInfo)
 //  Programmer:  Kathleen Bonnell
 //  Creation:    April 30, 2002
 //
+//  Modifications:
+//    Eric Brugger, Wed Aug 20 09:42:38 PDT 2003
+//    I replaced window with domain and range.  I added a window size argument
+//    so that the routine could handle non-square windows and viewports.
+//
 // ****************************************************************************
 
 void
-avtViewCurve::SetViewInfoFromView(avtViewInfo &viewInfo) const
+avtViewCurve::SetViewInfoFromView(avtViewInfo &viewInfo, int *size) const
 {
+    //
+    // Calculate a new range so that we get a 1 to 1 aspect ration.
+    //
+    double    viewScale;
+    double    range2[2];
+
+    viewScale = ((domain[1] - domain[0]) / (range[1] - range[0])) *
+                ((viewport[3] - viewport[2]) / (viewport[1] - viewport[0])) *
+                ((double) size[1] / (double) size[0]) ;
+
+    range2[0] = range[0] * viewScale;
+    range2[1] = range[1] * viewScale;
+
     //
     // Reset the view up vector, the focal point and the camera position.
     // The width is set based on the y window dimension.
     //
     double    width;
 
-    width = window[3] - window[2];
+    width = range2[1] - range2[0];
 
     viewInfo.viewUp[0] = 0.;
     viewInfo.viewUp[1] = 1.;
     viewInfo.viewUp[2] = 0.;
 
-    viewInfo.focus[0] = (window[1] + window[0]) / 2.;
-    viewInfo.focus[1] = (window[3] + window[2]) / 2.;
+    viewInfo.focus[0] = (domain[1] + domain[0]) / 2.;
+    viewInfo.focus[1] = (range2[1] + range2[0]) / 2.;
     viewInfo.focus[2] = 0.;
 
     viewInfo.camera[0] = viewInfo.focus[0];
@@ -245,50 +286,58 @@ avtViewCurve::SetViewportFromView(double *winViewport, const int, const int) con
 }
 
 // ****************************************************************************
-// Method: avtViewCurve::SetFromViewAttributes
+//  Method: avtViewCurve::SetFromViewCurveAttributes
 //
-// Purpose: 
-//   Sets the avtCurveView from the ViewAttributes object.
+//  Purpose: 
+//    Sets the avtCurveView from the ViewCurveAttributes object.
 //
-// Arguments:
-//   viewAtts : A pointer to the ViewAttributes object to use.
+//  Arguments:
+//    viewAtts : A pointer to the ViewCurveAttributes object to use.
 //
-// Programmer: Brad Whitlock
-// Creation:   Tue Jul 1 13:00:39 PST 2003
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Jul 1 13:00:39 PST 2003
 //
-// Modifications:
+//  Modifications:
+//    Eric Brugger, Wed Aug 20 09:42:38 PDT 2003
+//    I renamed this method.  I replaced window with domain and range.
 //   
 // ****************************************************************************
 
 void
-avtViewCurve::SetFromViewAttributes(const ViewAttributes *viewAtts)
+avtViewCurve::SetFromViewCurveAttributes(const ViewCurveAttributes *viewAtts)
 {
     for(int i = 0; i < 4; ++i)
     {
-        window[i] = viewAtts->GetWindowCoords()[i];
         viewport[i] = viewAtts->GetViewportCoords()[i];
     }
+    domain[0] = viewAtts->GetDomainCoords()[0];
+    domain[1] = viewAtts->GetDomainCoords()[1];
+    range[0]  = viewAtts->GetRangeCoords()[0];
+    range[1]  = viewAtts->GetRangeCoords()[1];
 }
 
 // ****************************************************************************
-// Method: avtViewCurve::SetToViewAttributes
+//  Method: avtViewCurve::SetToViewCurveAttributes
 //
-// Purpose: 
-//   Sets the ViewAttributes from the avtView2D object.
+//  Purpose: 
+//    Sets the ViewCurveAttributes from the avtViewCurve object.
 //
-// Arguments:
-//   viewAtts : A pointer to the ViewAttributes object to use.
+//  Arguments:
+//    viewAtts : A pointer to the ViewCurveAttributes object to use.
 //
-// Programmer: Brad Whitlock
-// Creation:   Tue Jul 1 13:00:39 PST 2003
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Jul 1 13:00:39 PST 2003
 //
-// Modifications:
+//  Modifications:
+//    Eric Brugger, Wed Aug 20 09:42:38 PDT 2003
+//    I renamed this method.  I replaced window with domain and range.
 //   
 // ****************************************************************************
 
 void
-avtViewCurve::SetToViewAttributes(ViewAttributes *viewAtts) const
+avtViewCurve::SetToViewCurveAttributes(ViewCurveAttributes *viewAtts) const
 {
-    viewAtts->SetWindowCoords(window);
     viewAtts->SetViewportCoords(viewport);
+    viewAtts->SetDomainCoords(domain);
+    viewAtts->SetRangeCoords(range);
 }

@@ -551,6 +551,9 @@ ViewerAnimation::DeleteWindow(const ViewerWindow *window)
 //    that tells it if updates should be immediate or not. I also made some
 //    code only compile when the viewer is multithreaded.
 //
+//    Eric Brugger, Wed Aug 20 11:01:26 PDT 2003
+//    I removed a call to UpdateScaleFactor since it no longer exists.
+//
 // ****************************************************************************
 
 void
@@ -569,7 +572,6 @@ ViewerAnimation::UpdateWindows(bool immediateUpdate)
         for (int i = 0; i < nWindows; i++)
         {
             plotList->UpdateWindow(windows[i], curFrame, immediateUpdate);
-            ViewerQueryManager::Instance()->UpdateScaleFactor(windows[i]);
         }
 
         //

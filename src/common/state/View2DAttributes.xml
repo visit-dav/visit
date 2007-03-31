@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+  <Attribute name="View2DAttributes" purpose="This class contains the 2d view attributes." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="windowCoords" type="doubleArray" length="4">0. 0. 1. 1.</Field>
+    <Field name="viewportCoords" type="doubleArray" length="4">0.1 0.1 0.9 0.9</Field>
+  </Attribute>

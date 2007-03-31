@@ -255,6 +255,24 @@ avtBehavior::GetDimension(void)
 
 
 // ****************************************************************************
+//  Method: avtBehavior::GetWindowMode
+//
+//  Purpose:
+//      Gets the window mode of the actor.
+//
+//  Programmer: Eric Brugger
+//  Creation:   August 20, 2003
+//
+// ****************************************************************************
+
+WINDOW_MODE
+avtBehavior::GetWindowMode(void)
+{
+    return info.GetAttributes().GetWindowMode();
+}
+
+
+// ****************************************************************************
 //  Method: avtBehavior::SetLegend
 //
 //  Purpose:

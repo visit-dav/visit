@@ -179,6 +179,10 @@ ZoomCurve::EndMiddleButtonAction()
 //  Programmer:  Eric Brugger
 //  Creation:    March 26, 2002
 //
+//  Modifications:
+//    Eric Brugger, Wed Aug 20 09:59:50 PDT 2003
+//    I changed the routine to match the new definition of avtViewCurve.
+//
 // ****************************************************************************
 
 void
@@ -232,10 +236,10 @@ ZoomCurve::ZoomCamera(void)
     newViewCurve.viewport[1] = oldViewCurve.viewport[1];
     newViewCurve.viewport[2] = oldViewCurve.viewport[2];
     newViewCurve.viewport[3] = oldViewCurve.viewport[3];
-    newViewCurve.window[0] = leftX;
-    newViewCurve.window[1] = rightX;
-    newViewCurve.window[2] = bottomY;
-    newViewCurve.window[3] = topY;
+    newViewCurve.domain[0] = leftX;
+    newViewCurve.domain[1] = rightX;
+    newViewCurve.range[0]  = bottomY;
+    newViewCurve.range[1]  = topY;
 
     vw->SetViewCurve(newViewCurve);
 
@@ -254,6 +258,10 @@ ZoomCurve::ZoomCamera(void)
 //
 //  Programmer: Eric Brugger
 //  Creation:   April 12, 2002
+//
+//  Modifications:
+//    Eric Brugger, Wed Aug 20 09:59:50 PDT 2003
+//    I changed the routine to match the new definition of avtViewCurve.
 //
 // ****************************************************************************
 
@@ -279,14 +287,14 @@ ZoomCurve::ZoomCamera(const int x, const int y)
         avtViewCurve newViewCurve = vw->GetViewCurve();
 
         double dX = ((1. / zoomFactor) - 1.) *
-                    ((newViewCurve.window[1] - newViewCurve.window[0]) / 2.);
+                    ((newViewCurve.domain[1] - newViewCurve.domain[0]) / 2.);
         double dY = ((1. / zoomFactor) - 1.) *
-                    ((newViewCurve.window[3] - newViewCurve.window[2]) / 2.);
+                    ((newViewCurve.range[1] - newViewCurve.range[0]) / 2.);
 
-        newViewCurve.window[0] -= dX;
-        newViewCurve.window[1] += dX;
-        newViewCurve.window[2] -= dY;
-        newViewCurve.window[3] += dY;
+        newViewCurve.domain[0] -= dX;
+        newViewCurve.domain[1] += dX;
+        newViewCurve.range[0]  -= dY;
+        newViewCurve.range[1]  += dY;
 
         vw->SetViewCurve(newViewCurve);
 

@@ -6,6 +6,7 @@
 #define AVT_DATA_ATTRIBUTES_H
 #include <pipeline_exports.h>
 
+#include <VisWindowTypes.h>
 
 #include <avtTypes.h>
 #include <vector>
@@ -98,6 +99,9 @@ class     avtExtents;
 //    Mark C. Miller, 15Jul03
 //    Added Set/GetCanUseCummulativeAsTrueOrCurrent
 //    
+//    Eric Brugger, Wed Aug 20 09:27:54 PDT 2003
+//    Added GetWindowMode and SetWindowMode.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -211,6 +215,8 @@ class PIPELINE_API avtDataAttributes
     bool                     GetCanUseTransform(void) { return canUseTransform;};
     void                     SetCanUseTransform(bool b) { canUseTransform = b;};
 
+    WINDOW_MODE              GetWindowMode(void) const { return windowMode;} ;
+    void                     SetWindowMode(WINDOW_MODE m) { windowMode = m;} ;
 
   protected:
     int                      spatialDimension;
@@ -241,6 +247,8 @@ class PIPELINE_API avtDataAttributes
     avtMatrix               *transform;
     bool                     canUseTransform;
   
+    WINDOW_MODE              windowMode;
+
     std::vector<std::string> labels;
     std::string              varname;
     std::string              filename;

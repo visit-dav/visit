@@ -1056,6 +1056,9 @@ SetWindowModeAction::Enabled() const
 //   Kathleen Bonnell, Wed Jun 25 13:41:23 PDT 2003 
 //   Added case for Node pick. 
 //
+//   Eric Brugger, Wed Aug 20 13:31:31 PDT 2003
+//   I modified the logic to use GetWindowMode instead of GetTypeIsCurve.
+//
 // ****************************************************************************
 
 bool
@@ -1066,15 +1069,14 @@ SetWindowModeAction::ChoiceEnabled(int i) const
     if(i == 0)
         retval = true;
     else if(i == 1) // zone pick
-        retval = !window->GetTypeIsCurve();
+        retval = window->GetWindowMode() != WINMODE_CURVE;
     else if(i == 2) // node pick
-        retval = !window->GetTypeIsCurve();
+        retval = window->GetWindowMode() != WINMODE_CURVE;
     else if(i == 3) // zoom
         retval = true;
     else if(i == 4)
     {
-        retval = (window->GetViewDimension() == 2 ) &&
-                 !window->GetTypeIsCurve() && 
+        retval = (window->GetWindowMode() == WINMODE_2D) &&
                  PlotPluginManager::Instance()->PluginAvailable("Curve_1.0") &&
                  OperatorPluginManager::Instance()->PluginAvailable("Lineout_1.0");
     }

@@ -7,7 +7,7 @@
 #include <math.h>
 
 #include <avtViewInfo.h>
-#include <ViewAttributes.h>
+#include <View3DAttributes.h>
 
 //
 // Local macros.
@@ -67,7 +67,6 @@ avtView3D::operator=(const avtView3D &vi)
     return *this;
 }
 
-
 // ****************************************************************************
 //  Method: avtView3D operator ==
 //
@@ -106,7 +105,7 @@ avtView3D::operator==(const avtView3D &vi)
 
     if (viewAngle != vi.viewAngle || parallelScale != vi.parallelScale ||
         nearPlane != vi.nearPlane || farPlane != vi.farPlane ||
-        imagePan[0] != vi.imagePan[0] | imagePan[1] != vi.imagePan[1] ||
+        imagePan[0] != vi.imagePan[0] || imagePan[1] != vi.imagePan[1] ||
         imageZoom != vi.imageZoom || perspective != vi.perspective)
     {
         return false;
@@ -114,7 +113,6 @@ avtView3D::operator==(const avtView3D &vi)
 
     return true;
 }
-
 
 // ****************************************************************************
 //  Method: avtView3D::SetToDefault
@@ -259,69 +257,72 @@ avtView3D::SetViewInfoFromView(avtViewInfo &viewInfo) const
 }
 
 // ****************************************************************************
-// Method: avtView3D::SetFromViewAttributes
+//  Method: avtView3D::SetFromView3DAttributes
 //
-// Purpose: 
-//   Sets the avtView3D from a ViewAttributes object.
+//  Purpose: 
+//    Sets the avtView3D from a View3DAttributes object.
 //
-// Arguments:
-//   viewAtts : The ViewAttributes to use.
+//  Arguments:
+//    view3DAtts : The View3DAttributes to use.
 //
-// Programmer: Brad Whitlock
-// Creation:   Tue Jul 1 14:00:50 PST 2003
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Jul 1 14:00:50 PST 2003
 //
-// Modifications:
+//  Modifications:
+//    Eric Brugger, Wed Aug 20 09:39:11 PDT 2003
+//    I renamed this routine.
 //   
 // ****************************************************************************
 
 void
-avtView3D::SetFromViewAttributes(const ViewAttributes *viewAtts)
+avtView3D::SetFromView3DAttributes(const View3DAttributes *view3DAtts)
 {
     for(int i = 0; i < 3; ++i)
     {
-        normal[i] = viewAtts->GetViewNormal()[i];
-        focus[i]  = viewAtts->GetFocus()[i];
-        viewUp[i] = viewAtts->GetViewUp()[i];
+        normal[i] = view3DAtts->GetViewNormal()[i];
+        focus[i]  = view3DAtts->GetFocus()[i];
+        viewUp[i] = view3DAtts->GetViewUp()[i];
     }
 
-    viewAngle = viewAtts->GetViewAngle();
-    parallelScale = viewAtts->GetParallelScale();
-    nearPlane = viewAtts->GetNearPlane();
-    farPlane = viewAtts->GetFarPlane();
-    imagePan[0] = viewAtts->GetImagePan()[0];
-    imagePan[1] = viewAtts->GetImagePan()[1];
-    imageZoom = viewAtts->GetImageZoom();
-    perspective = viewAtts->GetPerspective();
+    viewAngle = view3DAtts->GetViewAngle();
+    parallelScale = view3DAtts->GetParallelScale();
+    nearPlane = view3DAtts->GetNearPlane();
+    farPlane = view3DAtts->GetFarPlane();
+    imagePan[0] = view3DAtts->GetImagePan()[0];
+    imagePan[1] = view3DAtts->GetImagePan()[1];
+    imageZoom = view3DAtts->GetImageZoom();
+    perspective = view3DAtts->GetPerspective();
 }
 
 // ****************************************************************************
-// Method: avtView3D::SetToViewAttributes
+//  Method: avtView3D::SetToView3DAttributes
 //
-// Purpose: 
-//   Sets a ViewAttributes from the avtView3D.
+//  Purpose: 
+//    Sets a View3DAttributes from the avtView3D.
 //
-// Arguments:
-//   viewAtts : The ViewAttributes object to set.
+//  Arguments:
+//    view3DAtts : The View3DAttributes object to set.
 //
-// Programmer: Brad Whitlock
-// Creation:   Tue Jul 1 14:01:23 PST 2003
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Jul 1 14:01:23 PST 2003
 //
-// Modifications:
+//  Modifications:
+//    Eric Brugger, Wed Aug 20 09:39:11 PDT 2003
+//    I renamed this routine.
 //   
 // ****************************************************************************
 
 void
-avtView3D::SetToViewAttributes(ViewAttributes *viewAtts) const
+avtView3D::SetToView3DAttributes(View3DAttributes *view3DAtts) const
 {
-    viewAtts->SetViewNormal(normal);
-    viewAtts->SetFocus(focus);
-    viewAtts->SetViewUp(viewUp);
-    viewAtts->SetViewAngle(viewAngle);
-    viewAtts->SetParallelScale(parallelScale);
-    viewAtts->SetSetScale(true);
-    viewAtts->SetNearPlane(nearPlane);
-    viewAtts->SetFarPlane(farPlane);
-    viewAtts->SetImagePan(imagePan);
-    viewAtts->SetImageZoom(imageZoom);
-    viewAtts->SetPerspective(perspective);
+    view3DAtts->SetViewNormal(normal);
+    view3DAtts->SetFocus(focus);
+    view3DAtts->SetViewUp(viewUp);
+    view3DAtts->SetViewAngle(viewAngle);
+    view3DAtts->SetParallelScale(parallelScale);
+    view3DAtts->SetNearPlane(nearPlane);
+    view3DAtts->SetFarPlane(farPlane);
+    view3DAtts->SetImagePan(imagePan);
+    view3DAtts->SetImageZoom(imageZoom);
+    view3DAtts->SetPerspective(perspective);
 }

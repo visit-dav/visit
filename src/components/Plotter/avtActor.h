@@ -12,6 +12,7 @@
 #include <avtBehavior.h>
 #include <avtDataObject.h>
 #include <avtDrawable.h>
+#include <VisWindowTypes.h>
 
 class     vtkRenderer;
 
@@ -60,6 +61,9 @@ class     avtTransparencyActor;
 //    Mark C. Miller, Thu Dec 19 16:19:23 PST 2002
 //    Added support for externally rendered images
 //
+//    Eric Brugger, Wed Aug 20 09:49:33 PDT 2003
+//    Added GetWindowMode.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtActor
@@ -80,6 +84,7 @@ class PLOTTER_API avtActor
     void                          GetOriginalBounds(float [6]);
     void                          GetDataExtents(float &dmin, float &dmax);
     int                           GetDimension(void);
+    WINDOW_MODE                   GetWindowMode(void);
     int                           GetRenderOrder(void);
     avtLegend_p                   GetLegend(void);
 

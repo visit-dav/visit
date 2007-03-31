@@ -63,6 +63,7 @@
 #include <ExprPipelineState.h>
 #include <EngineExprNode.h>
 #include <DebugStream.h>
+#include <snprintf.h>
 
 using std::string;
 
@@ -92,7 +93,7 @@ EngineConstExpr::CreateFilters(ExprPipelineState *state)
     avtConstantCreatorFilter *f = new avtConstantCreatorFilter();
     f->SetValue(value);
     char strrep[30];
-    snprintf(strrep, 30, "'%e'", value);
+    SNPRINTF(strrep, 30, "'%e'", value);
     state->PushName(string(strrep));
     f->SetOutputVariableName(strrep);
 
@@ -188,7 +189,7 @@ EngineIndexExpr::CreateFilters(ExprPipelineState *state)
 
     // Set the variable the function should output.
     char value_name[200];
-    snprintf(value_name, 200, "%d", ind);
+    SNPRINTF(value_name, 200, "%d", ind);
     string outputName = inputName + "[" + value_name + "]";
     state->PushName(outputName);
     f->SetOutputVariableName(outputName.c_str());

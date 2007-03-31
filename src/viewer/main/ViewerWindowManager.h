@@ -10,6 +10,7 @@
 #include <avtTypes.h>
 #include <avtImage.h>
 #include <avtDataset.h>
+#include <avtViewCurve.h>
 #include <avtView2D.h>
 #include <avtView3D.h>
 #include <vectortypes.h>
@@ -26,12 +27,14 @@ class Line;
 class PrinterAttributes;
 class RenderingAttributes;
 class SaveWindowAttributes;
-class VisWindow;
 class ViewerWindow;
 class ViewerAnimation;
-class ViewAttributes;
+class ViewCurveAttributes;
+class View2DAttributes;
+class View3DAttributes;
 class ViewerWindowManagerAttributes;
 class WindowInformation;
+class VisWindow;
 class avtFileWriter;
 class avtToolInterface;
 class QTimer;
@@ -237,6 +240,10 @@ typedef struct {
 //    Brad Whitlock, Wed Jul 23 13:56:03 PST 2003
 //    Removed AddInitialWindows method.
 //
+//    Eric Brugger, Wed Aug 20 11:39:45 PDT 2003
+//    I implemented curve view as a first class view type.  I split the
+//    view attributes into 2d and 3d parts.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public QObject
@@ -288,6 +295,7 @@ class VIEWER_API ViewerWindowManager : public QObject
     void SetInteractionMode(INTERACTION_MODE m, int windowIndex = -1);
     void SetLightListFromClient();
     void SetLightListFromDefault();
+    void SetViewCurveFromClient();
     void SetView2DFromClient();
     void SetView3DFromClient();
     void ClearViewKeyframes();
@@ -324,8 +332,8 @@ class VIEWER_API ViewerWindowManager : public QObject
 
     void UpdateAnimationState(const ViewerAnimation *, const int mode) const;
     void UpdateGlobalAtts() const;
-    void UpdateViewAtts(int windowIndex = -1, bool update2d = true,
-                        bool update3d = true);
+    void UpdateViewAtts(int windowIndex = -1, bool updateCurve = true,
+                        bool update2d = true, bool update3d = true);
     void UpdateAnimationAtts();
     void UpdateAnnotationAtts();
     void UpdateLightListAtts();
@@ -343,8 +351,9 @@ class VIEWER_API ViewerWindowManager : public QObject
 
     static GlobalAttributes              *GetClientAtts();
     static SaveWindowAttributes          *GetSaveWindowClientAtts();
-    static ViewAttributes                *GetView2DClientAtts();
-    static ViewAttributes                *GetView3DClientAtts();
+    static ViewCurveAttributes           *GetViewCurveClientAtts();
+    static View2DAttributes              *GetView2DClientAtts();
+    static View3DAttributes              *GetView3DClientAtts();
     static AnimationAttributes           *GetAnimationClientAtts();
     static AnnotationAttributes          *GetAnnotationClientAtts();
     static AnnotationAttributes          *GetAnnotationDefaultAtts();
@@ -397,8 +406,9 @@ class VIEWER_API ViewerWindowManager : public QObject
     static const int                     validLayouts[];
     static GlobalAttributes              *clientAtts;
     static SaveWindowAttributes          *saveWindowClientAtts;
-    static ViewAttributes                *view2DClientAtts;
-    static ViewAttributes                *view3DClientAtts;
+    static ViewCurveAttributes           *viewCurveClientAtts;
+    static View2DAttributes              *view2DClientAtts;
+    static View3DAttributes              *view3DClientAtts;
     static AnimationAttributes           *animationClientAtts;
     static AnnotationAttributes          *annotationClientAtts;
     static AnnotationAttributes          *annotationDefaultAtts;
@@ -447,6 +457,8 @@ class VIEWER_API ViewerWindowManager : public QObject
     int               lastAnimation;
 
     bool              viewStacking;
+    avtViewCurve      viewCurveStack[VIEWER_WINDOW_MANAGER_VSTACK];
+    int               viewCurveStackTop;
     avtView2D         view2DStack[VIEWER_WINDOW_MANAGER_VSTACK];
     int               view2DStackTop;
     avtView3D         view3DStack[VIEWER_WINDOW_MANAGER_VSTACK];

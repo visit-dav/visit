@@ -247,6 +247,9 @@ avtPointToGlyphFilter::SetUpGlyph(void)
         pts2D->SetPoint(0, 0., 0., 0.);
         for (i = 0 ; i < 12 ; i++)
         {
+#if defined(_WIN32) && !defined(M_PI)
+#define M_PI 3.14159
+#endif
              float rad = ((float) i) / 12. * 2. * M_PI;
              pts2D->SetPoint(i+1, cos(rad)/2., sin(rad)/2., 0.);
         }

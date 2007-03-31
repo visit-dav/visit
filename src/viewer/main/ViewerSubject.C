@@ -45,7 +45,6 @@
 #include <StatusAttributes.h>
 #include <SyncAttributes.h>
 
-#include <ViewAttributes.h>
 #include <ViewerActionManager.h>
 #include <ViewerAnimation.h>
 #include <ViewerConnectionProgressDialog.h>
@@ -415,6 +414,8 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 // Creation:   Tue Jun 17 14:56:01 PST 2003
 //
 // Modifications:
+//    Eric Brugger, Wed Aug 20 11:11:00 PDT 2003
+//    I added curve view client attributes.
 //   
 // ****************************************************************************
 
@@ -445,6 +446,7 @@ ViewerSubject::ConnectXfer()
     xfer.Add(ParsingExprList::Instance()->GetList());
     xfer.Add(ViewerWindowManager::Instance()->GetAnnotationClientAtts());
     xfer.Add(ViewerPlotList::GetClientSILRestrictionAtts());
+    xfer.Add(ViewerWindowManager::Instance()->GetViewCurveClientAtts());
     xfer.Add(ViewerWindowManager::Instance()->GetView2DClientAtts());
     xfer.Add(ViewerWindowManager::Instance()->GetView3DClientAtts());
     xfer.Add(ViewerWindowManager::Instance()->GetLightListClientAtts());
@@ -569,6 +571,8 @@ ViewerSubject::ConnectObjectsAndHandlers()
 // Creation:   Tue Jun 17 14:57:28 PST 2003
 //
 // Modifications:
+//    Eric Brugger, Wed Aug 20 11:11:00 PDT 2003
+//    I added curve view client attributes.
 //   
 // ****************************************************************************
 
@@ -586,6 +590,7 @@ ViewerSubject::ConnectConfigManager()
     configMgr->Add(ParsingExprList::Instance()->GetList());
     configMgr->Add(ViewerWindowManager::GetAnimationClientAtts());
     configMgr->Add(ViewerWindowManager::GetAnnotationDefaultAtts());
+    configMgr->Add(ViewerWindowManager::GetViewCurveClientAtts());
     configMgr->Add(ViewerWindowManager::GetView2DClientAtts());
     configMgr->Add(ViewerWindowManager::GetView3DClientAtts());
     configMgr->Add(ViewerWindowManager::GetLightListDefaultAtts());
@@ -2935,6 +2940,30 @@ ViewerSubject::ResetOperatorOptions()
 }
 
 // ****************************************************************************
+// Method: ViewerSubject::SetViewCurve
+//
+// Purpose: 
+//   Tells the viewer window manager to apply the curve view attributes to the
+//   active window.
+//
+// Programmer: Eric Brugger
+// Creation:   August 20, 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::SetViewCurve()
+{
+    //
+    // Perform the rpc.
+    //
+    ViewerWindowManager *wM = ViewerWindowManager::Instance();
+    wM->SetViewCurveFromClient();
+}
+
+// ****************************************************************************
 // Method: ViewerSubject::SetView2D
 //
 // Purpose: 
@@ -4366,6 +4395,9 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
 //    Brad Whitlock, Wed Jul 9 12:35:44 PDT 2003
 //    Added ExportEntireState and ImportEntireState.
 //
+//    Eric Brugger, Wed Aug 20 11:11:00 PDT 2003
+//    I added SetViewCurve.
+//
 // ****************************************************************************
 
 void
@@ -4444,6 +4476,9 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::SetKeyframeAttributesRPC:
         SetKeyframeAttributes();
+        break;
+    case ViewerRPC::SetViewCurveRPC:
+        SetViewCurve();
         break;
     case ViewerRPC::SetView2DRPC:
         SetView2D();

@@ -41,7 +41,9 @@
 #include <StatusAttributes.h>
 #include <SILRestrictionAttributes.h>
 #include <SyncAttributes.h>
-#include <ViewAttributes.h>
+#include <ViewCurveAttributes.h>
+#include <View2DAttributes.h>
+#include <View3DAttributes.h>
 #include <WindowInformation.h>
 
 #include <snprintf.h>
@@ -137,6 +139,10 @@
 //    Brad Whitlock, Wed Mar 12 10:45:56 PDT 2003
 //    I added iconifyOpcode.
 //
+//    Eric Brugger, Wed Aug 20 10:45:18 PDT 2003
+//    I added viewCurveAttributes.  I split the view attributes into 2d
+//    and 3d parts.
+//
 // ****************************************************************************
 
 ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
@@ -156,8 +162,9 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
     exprList             = new ExpressionList;
     annotationAtts       = new AnnotationAttributes;
     silRestrictionAtts   = new SILRestrictionAttributes;
-    view2DAttributes     = new ViewAttributes;
-    view3DAttributes     = new ViewAttributes;
+    viewCurveAttributes  = new ViewCurveAttributes;
+    view2DAttributes     = new View2DAttributes;
+    view3DAttributes     = new View3DAttributes;
     lightList            = new LightList;
     animationAtts        = new AnimationAttributes;
     pluginManagerAttributes = new PluginManagerAttributes;
@@ -291,6 +298,9 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
 //    Kathleen Bonnell, Wed Feb 19 11:49:13 PST 2003  
 //    Added globalLineoutAtts. 
 //
+//    Eric Brugger, Wed Aug 20 10:45:18 PDT 2003
+//    I added viewCurveAttributes.
+//
 // ****************************************************************************
 
 ViewerProxy::~ViewerProxy()
@@ -316,6 +326,7 @@ ViewerProxy::~ViewerProxy()
     delete syncAtts;
     delete annotationAtts;
     delete silRestrictionAtts;
+    delete viewCurveAttributes;
     delete view2DAttributes;
     delete view3DAttributes;
     delete lightList;
@@ -678,6 +689,9 @@ ViewerProxy::AddArgument(const std::string &arg)
 //    Brad Whitlock, Wed Mar 12 10:46:42 PDT 2003
 //    I added iconifyOpcode.
 //
+//    Eric Brugger, Wed Aug 20 10:45:18 PDT 2003
+//    I added viewCurveAttributes.
+//
 // ****************************************************************************
 
 void
@@ -731,6 +745,7 @@ ViewerProxy::Create()
     xfer->Add(exprList);
     xfer->Add(annotationAtts);
     xfer->Add(silRestrictionAtts);
+    xfer->Add(viewCurveAttributes);
     xfer->Add(view2DAttributes);
     xfer->Add(view3DAttributes);
     xfer->Add(lightList);
@@ -3117,6 +3132,31 @@ ViewerProxy::ImportEntireState(const std::string &filename, bool inVisItDir)
     viewerRPC->SetRPCType(ViewerRPC::ImportEntireStateRPC);
     viewerRPC->SetVariable(filename);
     viewerRPC->SetBoolFlag(inVisItDir);
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::SetViewCurve
+//
+// Purpose: 
+//   Tells the viewer to use the new curve view attributes.
+//
+// Programmer: Eric Brugger
+// Creation:   August 20, 2003
+//
+// ****************************************************************************
+
+void
+ViewerProxy::SetViewCurve()
+{
+    //
+    // Set the rpc type.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::SetViewCurveRPC);
+
+    //
+    // Issue the RPC.
+    //
     viewerRPC->Notify();
 }
 

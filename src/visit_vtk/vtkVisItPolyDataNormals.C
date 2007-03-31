@@ -323,7 +323,7 @@ class NormalList
 void
 vtkVisItPolyDataNormals::ExecutePointWithSplitting()
 {
-    int i;
+    int i, j;
 
     // Get all the input and output objects we'll need to reference
     vtkPolyData  *input = GetInput();
@@ -363,7 +363,7 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
         nVerts = *connPtr++;
 
         // Extract the cell vertices
-        for (int j = 0 ; j < nVerts ; j++)
+        for (j = 0 ; j < nVerts ; j++)
         {
             cell[j] = *connPtr++;
         }
@@ -390,7 +390,7 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
             inPts->GetPoint(cell[1],v2);
             
             float ax, ay, az, bx, by, bz;
-            for (int j = 0 ; j < nVerts ; j++) 
+            for (j = 0 ; j < nVerts ; j++) 
             {
                 v0[0] = v1[0]; v0[1] = v1[1]; v0[2] = v1[2];
                 v1[0] = v2[0]; v1[1] = v2[1]; v1[2] = v2[2];
@@ -423,7 +423,7 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
         // Loop over all points of the cell, deciding if we need
         // to split it or can merge with an old one.  Use the feature
         // angle set before execution.
-        for (int j = 0 ; j < nVerts ; j++)
+        for (j = 0 ; j < nVerts ; j++)
         {
             int p = cell[j];
             bool found = false;
@@ -546,7 +546,7 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
     for (i = 0 ; i < nLists ; i++)
     {
         NormalEntry *list = normalList.GetExtraList(i);
-        for (int j = 0 ; j < NORMAL_LIST_LEN ; j++)
+        for (j = 0 ; j < NORMAL_LIST_LEN ; j++)
         {
             if (outIndex >= nOutPts)
                 break;

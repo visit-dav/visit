@@ -41,7 +41,6 @@
 #include <RenderingAttributes.h>
 #include <SILRestrictionAttributes.h>
 #include <SyncAttributes.h>
-#include <ViewAttributes.h>
 #include <WindowInformation.h>
 
 #include <FileServerList.h>
@@ -1508,6 +1507,9 @@ QvisGUIApplication::CreateMainWindow()
 //   I removed old mod comments and rewrote the routine so it can be called
 //   from within the Qt event loop.
 //
+//   Eric Brugger, Wed Aug 20 14:01:46 PDT 2003
+//   Added curve view attributes.
+//
 // ****************************************************************************
 
 bool
@@ -1650,6 +1652,7 @@ QvisGUIApplication::CreateWindows(int startPercent, int endPercent)
         // Create the view window.
         SplashScreenProgress("Creating View window...", PERCENT);
         viewWin = new QvisViewWindow("View", "View", mainWin->GetNotepad());
+        viewWin->ConnectCurveAttributes(viewer->GetViewCurveAttributes());
         viewWin->Connect2DAttributes(viewer->GetView2DAttributes());
         viewWin->Connect3DAttributes(viewer->GetView3DAttributes());
         viewWin->ConnectWindowInformation(viewer->GetWindowInformation());

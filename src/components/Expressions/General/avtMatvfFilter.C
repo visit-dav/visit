@@ -229,7 +229,7 @@ avtMatvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     string type = secondTree->GetTypeName();
     if ((type != "Const") && (type != "List"))
     {
-        debug5 << "avtMatvfFilter: Second argument is not a string or a list: " << type << endl;
+        debug5 << "avtMatvfFilter: Second argument is not a string or a list: " << type.c_str() << endl;
         EXCEPTION1(ExpressionException, "avtMatvfFilter: Second argument is not a string or a list.");
     }
 
@@ -248,7 +248,7 @@ avtMatvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
             string type = item->GetTypeName();
             if (type != "Const")
             {
-                debug5 << "avtMatvfFilter: List element is not a string or a list: " << type << endl;
+                debug5 << "avtMatvfFilter: List element is not a string or a list: " << type.c_str() << endl;
                 EXCEPTION1(ExpressionException, "avtMatvfFilter: List element is not a string or a list.");
             }
 
@@ -265,7 +265,7 @@ avtMatvfFilter::AddMaterial(ConstExpr *c)
     if (t->GetType() != TT_StringConst)
     {
         debug5 << "avtMatvfFilter: Matfv argument is not a string: "
-               << GetTokenTypeString(t->GetType()) << endl;
+               << GetTokenTypeString(t->GetType()).c_str() << endl;
         EXCEPTION1(ExpressionException, "avtMatvfFilter: Matfv argument is not a string.");
     }
 

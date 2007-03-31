@@ -267,6 +267,9 @@ class MaterialAttributes;
 //    Brad Whitlock, Wed Jul 9 12:33:40 PDT 2003
 //    Added ExportEntireState and ImportEntireState.
 //
+//    Eric Brugger, Wed Aug 20 11:09:33 PDT 2003
+//    I added SetViewCurve.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -362,6 +365,7 @@ private:
     void SetDefaultAnnotationAttributes();
     void ResetAnnotationAttributes();
     void SetKeyframeAttributes();
+    void SetViewCurve();
     void SetView2D();
     void SetView3D();
     void ClearViewKeyframes();

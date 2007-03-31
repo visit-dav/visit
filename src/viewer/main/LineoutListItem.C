@@ -664,6 +664,9 @@ LineoutListItem::DisableTool()
 //    Brad Whitlock, Thu Apr 10 10:53:43 PDT 2003
 //    I added new fall through cases for MoveOperator and RemoveOperator.
 //
+//    Eric Brugger, Wed Aug 20 10:51:31 PDT 2003
+//    I removed calls to UpdateScaleFactor since it no longer exists.
+//
 // ****************************************************************************
 
 void
@@ -691,7 +694,6 @@ LineoutListItem::Update(Subject *TheChangedSubject)
                  {
                      vpl->SetPlotOperatorAtts(origPlot->GetOperator(i)->GetType());
                  }
-                 ViewerQueryManager::Instance()->UpdateScaleFactor(resWin);
                  break;
              case PlotQueryInfo::AddOp:          // fall through
              case PlotQueryInfo::MoveOperator:   // fall through
@@ -702,7 +704,6 @@ LineoutListItem::Update(Subject *TheChangedSubject)
                  {
                      queries[i]->ReCreateLineout(); 
                  }
-                 ViewerQueryManager::Instance()->UpdateScaleFactor(resWin);
                  break;
              default:
                  // do nothing

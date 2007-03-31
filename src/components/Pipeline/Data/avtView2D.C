@@ -5,7 +5,7 @@
 #include <avtView2D.h>
 
 #include <avtViewInfo.h>
-#include <ViewAttributes.h>
+#include <View2DAttributes.h>
 
 // ****************************************************************************
 //  Method: avtView2D constructor
@@ -51,7 +51,6 @@ avtView2D::operator=(const avtView2D &vi)
     axisScaleType   = vi.axisScaleType;
     return *this;
 }
-
 
 // ****************************************************************************
 //  Method: avtView2D operator ==
@@ -139,7 +138,6 @@ avtView2D::SetToDefault()
 //  Creation:    August 17, 2001
 //
 //  Modifications:
-//
 //    Hank Childs, Mon May  5 13:29:51 PDT 2003
 //    Account for degenerate situation that is hard to prevent.
 //
@@ -212,7 +210,6 @@ avtView2D::SetViewFromViewInfo(const avtViewInfo &viewInfo)
 //  Creation:    August 17, 2001
 //
 //  Modifications:
-//
 //    Hank Childs, Wed May  7 08:14:33 PDT 2003
 //    Account for degenerate situation that is hard to prevent.
 //
@@ -299,7 +296,6 @@ avtView2D::SetViewInfoFromView(avtViewInfo &viewInfo) const
 //  Creation:    August 17, 2001
 //
 //  Modifications:
-//
 //    Hank Childs, Wed May  7 08:25:48 PDT 2003
 //    Always make sure we are dealing with a valid window.
 //
@@ -404,54 +400,57 @@ avtView2D::GetValidWindow(double *valid_window) const
 }
 
 // ****************************************************************************
-// Method: avtView2D::SetFromViewAttributes
+//  Method: avtView2D::SetFromView2DAttributes
 //
-// Purpose: 
-//   Sets the view from the ViewAttributes.
+//  Purpose: 
+//    Sets the view from the View2DAttributes.
 //
-// Arguments:
-//   viewAtts : The ViewAttributes to use.
+//  Arguments:
+//    view2DAtts : The View2DAttributes to use.
 //
-// Programmer: Brad Whitlock
-// Creation:   Tue Jul 1 14:05:11 PST 2003
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Jul 1 14:05:11 PST 2003
 //
-// Modifications:
+//  Modifications:
+//    Eric Brugger, Wed Aug 20 09:37:13 PDT 2003
+//    I renamed this routine.
 //   
 // ****************************************************************************
 
 void
-avtView2D::SetFromViewAttributes(const ViewAttributes *viewAtts)
+avtView2D::SetFromView2DAttributes(const View2DAttributes *view2DAtts)
 {
     for(int i = 0; i < 4; ++i)
     {
-        viewport[i] = viewAtts->GetViewportCoords()[i];
-        window[i] = viewAtts->GetWindowCoords()[i];
+        viewport[i] = view2DAtts->GetViewportCoords()[i];
+        window[i] = view2DAtts->GetWindowCoords()[i];
     }
 }
 
 // ****************************************************************************
-// Method: avtView2D::SetToViewAttributes
+//  Method: avtView2D::SetToView2DAttributes
 //
-// Purpose: 
-//   Sets a ViewAttributes from the avtView2D.
+//  Purpose: 
+//    Sets a View2DAttributes from the avtView2D.
 //
-// Arguments:
-//   viewAtts : The ViewAttributes object to set.
+//  Arguments:
+//    view2DAtts : The View2DAttributes object to set.
 //
-// Programmer: Brad Whitlock
-// Creation:   Tue Jul 1 14:05:48 PST 2003
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Jul 1 14:05:48 PST 2003
 //
-// Modifications:
+//  Modifications:
+//    Eric Brugger, Wed Aug 20 09:37:13 PDT 2003
+//    I renamed this routine.
 //   
 // ****************************************************************************
 
 void
-avtView2D::SetToViewAttributes(ViewAttributes *viewAtts) const
+avtView2D::SetToView2DAttributes(View2DAttributes *view2DAtts) const
 {
-    viewAtts->SetWindowCoords(window);
-    viewAtts->SetViewportCoords(viewport);
+    view2DAtts->SetWindowCoords(window);
+    view2DAtts->SetViewportCoords(viewport);
 }
-
 
 // ****************************************************************************
 //  Method: avtView2D::ScaleWindow
