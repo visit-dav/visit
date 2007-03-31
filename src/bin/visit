@@ -417,6 +417,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-mdserver" )        { $exe_name = "mdserver"; }
     elsif ($arg eq "-engine" )          { $exe_name = "engine"; }
     elsif ($arg eq "-vcl" )             { $exe_name = "vcl"; }
+    elsif ($arg eq "-splashscreen" )    { print STDERR "Warning: You are running an old version of VisIt.\n"; $exe_name = "splashscreen"; }
     elsif ($arg eq "-xml2atts")         { $exe_name = "xml2atts"; }
     elsif ($arg eq "-xml2avt")          { $exe_name = "xml2avt"; }
     elsif ($arg eq "-xml2info")         { $exe_name = "xml2info"; }

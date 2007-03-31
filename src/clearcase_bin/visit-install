@@ -49,19 +49,13 @@
 #    Eric Brugger, Mon Jul 21 17:53:22 PDT 2003
 #    I added the ability to install a configuration file.
 #
+#    Eric Brugger, Thu Jul 31 12:09:02 PDT 2003
+#    I removed some error tests that were redundant and caused a
+#    maintenance issue.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
-
-if ($#argv < 3) then
-   echo "Usage: visit-install [-a] [-beta | -private] [-c config] [-g group] [-gw] version platform directory"
-   exit (1)
-endif
-
-if ($#argv >= 9) then
-   echo "Usage: visit-install [-a] [-beta | -private] [-c config] [-g group] [-gw] version platform directory"
-   exit (1)
-endif
 
 set append = false
 set beta = false
