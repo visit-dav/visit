@@ -100,6 +100,16 @@ public:
   vtkViewportCoordinateMacro(Point2);
   
   // Description:
+  // Set/Get the use axis orientation flag.
+  vtkSetClampMacro(UseOrientationAngle, int, 0, 1);
+  vtkGetMacro(UseOrientationAngle, int);
+
+  // Description:
+  // Set/Get the axis orientation angle.
+  vtkSetMacro(OrientationAngle, double);
+  vtkGetMacro(OrientationAngle, double);
+
+  // Description:
   // Specify the (min,max) axis range. This will be used in the generation
   // of labels, if labels are visible.
   vtkSetVector2Macro(Range,float);
@@ -308,6 +318,8 @@ protected:
 
   vtkCoordinate *Point1Coordinate;
   vtkCoordinate *Point2Coordinate;
+  int    UseOrientationAngle;
+  double OrientationAngle; 
   char   *Title;
   float  Range[2];
   int    NumberOfLabels;

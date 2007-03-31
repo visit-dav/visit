@@ -640,6 +640,10 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    callback function.  This workaround should be removed if Silo gets
 //    fixed.
 //
+//    Hank Childs, Mon Dec  1 15:05:43 PST 2003
+//    Look for visit_defvars first.  Only if it does not exist, then look for
+//    meshtv_defvars.
+//
 // ****************************************************************************
 
 void
@@ -771,7 +775,25 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             hasDisjointElements = true;
         }
 
-        if (DBInqVarExists(dbfile, "_meshtv_defvars"))
+        bool hadVisitDefvars = false;
+        if (DBInqVarExists(dbfile, "_visit_defvars"))
+        {
+            int    ldefvars = DBGetVarLength(dbfile, "_visit_defvars");
+            if (ldefvars > 0)
+            {
+                char  *defvar_str = new char[ldefvars+1];
+                for (int i = 0 ; i < ldefvars+1 ; i++)
+                {
+                    defvar_str[i] = '\0';
+                }
+                DBReadVar(dbfile, "_visit_defvars", defvar_str);
+                AddDefvars(defvar_str, md);
+                delete [] defvar_str;
+            }
+            hadVisitDefvars = true;
+        }
+
+        if (!hadVisitDefvars && DBInqVarExists(dbfile, "_meshtv_defvars"))
         {
             int    ldefvars = DBGetVarLength(dbfile, "_meshtv_defvars");
             if (ldefvars > 0)
@@ -2414,8 +2436,12 @@ avtSiloFileFormat::FindGmapConnectivity(DBfile *dbfile, int &ndomains,
 //  Creation:   September 4, 2002
 //
 //  Modifications:
-//      Sean Ahern, Fri Dec 13 17:31:21 PST 2002
-//      Changed how expressions are defined.
+//
+//    Sean Ahern, Fri Dec 13 17:31:21 PST 2002
+//    Changed how expressions are defined.
+//
+//    Hank Childs, Mon Dec  1 14:43:59 PST 2003
+//    Add support for tensors.
 //
 // ****************************************************************************
 
@@ -2507,6 +2533,8 @@ AddDefvars(const char *defvars, avtDatabaseMetaData *md)
             vartype = Expression::ScalarMeshVar;
         else if (strcmp(vartype_str, "vector") == 0)
             vartype = Expression::VectorMeshVar;
+        else if (strcmp(vartype_str, "tensor") == 0)
+            vartype = Expression::TensorMeshVar;
         else if (strcmp(vartype_str, "material") == 0)
             vartype = Expression::Material;
         else if (strcmp(vartype_str, "species") == 0)
@@ -5570,11 +5598,36 @@ ExceptionGenerator(char *msg)
 //  Programmer: Hank Childs
 //  Creation:   October 30, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  1 14:13:30 PST 2003
+//    Do a better job of handling variables that have absolute paths.
+//
 // ****************************************************************************
 
 char *
 GenerateName(const char *dirname, const char *varname)
 {
+    if (varname[0] == '/')
+    {
+        int len = strlen(varname);
+        int num_slash = 0;
+        for (int i = 0 ; i < len ; i++)
+            if (varname[i] == '/')
+                num_slash++;
+
+        //
+        // If there are lots of slashes, then we have a fully qualified path,
+        // so leave them all in.  If there is only one slash (and it is the
+        // first one), then take out the slash -- since the var would be
+        // referred to as "Mesh", not "/Mesh".
+        //
+        int offset = (num_slash > 1 ? 0 : 1); 
+        char *rv = new char[strlen(varname)+1];
+        strcpy(rv, varname+offset);
+        return rv;
+    }
+
     int amtForSlash = 1;
     int amtForNullChar = 1;
     int amtForMiddleSlash = 1;
