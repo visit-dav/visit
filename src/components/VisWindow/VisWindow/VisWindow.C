@@ -1430,7 +1430,7 @@ VisWindow::SetSize(int w, int h)
 // Method: VisWindow::GetSize
 //
 // Purpose: 
-//   Returns the window size.
+//   Returns the renderable portion of the window size.
 //
 // Arguments:
 //   w : A reference to an int that is used to return the window width.
@@ -1445,6 +1445,27 @@ void
 VisWindow::GetSize(int &w, int &h) const
 {
     rendering->GetSize(w, h);
+}
+
+// ****************************************************************************
+// Method: VisWindow::GetWindowSize
+//
+// Purpose: 
+//   Returns the window size.
+//
+// Arguments:
+//   w : A reference to an int that is used to return the window width.
+//   h : A reference to an int that is used to return the window height.
+//
+// Programmer: Mark C. Miller 
+// Creation:   07Jul03 
+//
+// ****************************************************************************
+
+void
+VisWindow::GetWindowSize(int &w, int &h) const
+{
+    rendering->GetWindowSize(w, h);
 }
 
 // ****************************************************************************
@@ -2446,16 +2467,17 @@ VisWindow::GetViewport(float *vport)
 //  Modifications:
 //    Kathleen Bonnell, Wed May 28 16:25:37 PDT 2003
 //    Added ReAddColleagesToRenderWindow. 
+//
+//    Kathleen Bonnell, Tue Jul  8 20:06:37 PDT 2003 
+//    Always allow colleagues to re-add themselves (not just for antialiasing).
+// 
 // ****************************************************************************
 
 void
 VisWindow::RecalculateRenderOrder(void)
 {
     plots->OrderPlots();
-    if (GetAntialiasing())
-    {
-        ReAddColleaguesToRenderWindow();
-    }
+    ReAddColleaguesToRenderWindow();
 }
 
 

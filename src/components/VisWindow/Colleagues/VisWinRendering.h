@@ -96,6 +96,9 @@ class VisWindowColleagueProxy;
 //    Brad Whitlock, Wed May 21 12:03:46 PDT 2003
 //    I made GetSize be virtual.
 //
+//    Mark C. Miller, 07Jul03
+//    I made GetSize non-virtual and added new virtual GetWindowSize method
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -128,7 +131,8 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     avtImage_p               ScreenCapture(bool doCanvasZBufferToo = false);
 
     void                     SetSize(int, int);
-    virtual void             GetSize(int&, int&);
+    void                     GetSize(int&, int&);
+    virtual void             GetWindowSize(int&, int&);
     void                     SetLocation(int, int);
     void                     GetLocation(int&, int&);
     void                     SetTitle(const char *);

@@ -377,6 +377,13 @@ avtSliceFilter::PreExecute(void)
 //  Programmer: Hank Childs (taken from old PreExecute code)
 //  Creation:   June 17, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Jul  8 20:27:53 PDT 2003 
+//    Changed cross-products to conform to right-handed rule.
+//    Removed origin from ftcf to prevent unintentional translation of the
+//    slice.  Modified the calculation of invTransform to conform to other
+//    changes (with help from Jeremy).
+// 
 // ****************************************************************************
 
 void
@@ -428,14 +435,14 @@ avtSliceFilter::SetUpProjection(void)
     vtkMath::Normalize(upaxis);
 
     //
-    // The normal and up vectors for two thirds of a basis, take their
+    // The normal and up vectors form two thirds of a basis, take their
     // cross product to find the third element of the basis.
     //
     float  third[3];
-    vtkMath::Cross(normal, upaxis, third);
+    vtkMath::Cross(upaxis, normal, third); // right-handed
 
     // Make sure the up axis is orthogonal to third and normal
-    vtkMath::Cross(third, normal, upaxis);
+    vtkMath::Cross(normal, third, upaxis); // right-handed
 
     //
     // Because it is easier to find the Frame-to-Cartesian-Frame conversion
@@ -455,9 +462,9 @@ avtSliceFilter::SetUpProjection(void)
     ftcf->SetElement(2, 1, normal[1]);
     ftcf->SetElement(2, 2, normal[2]);
     ftcf->SetElement(2, 3, 0.);
-    ftcf->SetElement(3, 0, origin[0]);
-    ftcf->SetElement(3, 1, origin[1]);
-    ftcf->SetElement(3, 2, origin[2]);
+    ftcf->SetElement(3, 0, 0.);
+    ftcf->SetElement(3, 1, 0.);
+    ftcf->SetElement(3, 2, 0.);
     ftcf->SetElement(3, 3, 1.);
 
     //
@@ -468,7 +475,6 @@ avtSliceFilter::SetUpProjection(void)
 
     vtkMatrix4x4 *cftf = vtkMatrix4x4::New();
     vtkMatrix4x4::Invert(ftcf, cftf);
-    ftcf->Delete();
 
     vtkMatrix4x4 *projTo2D = vtkMatrix4x4::New();
     projTo2D->Identity();
@@ -476,7 +482,6 @@ avtSliceFilter::SetUpProjection(void)
 
     vtkMatrix4x4 *result = vtkMatrix4x4::New();
     vtkMatrix4x4::Multiply4x4(cftf, projTo2D, result);
-    cftf->Delete();
     projTo2D->Delete();
 
     //
@@ -488,10 +493,26 @@ avtSliceFilter::SetUpProjection(void)
 
     vtkMatrixToLinearTransform *mtlt = vtkMatrixToLinearTransform::New();
     mtlt->SetInput(result_transposed);
+
     result_transposed->Delete();
 
     transform->SetTransform(mtlt);
     mtlt->Delete();
+
+    //
+    // Finish setting up the inverse transform.
+    //
+    float zdim[3];
+    ftcf->MultiplyPoint(origin, zdim); 
+    zdim[0] = 0;
+    zdim[1] = 0;
+    cftf->MultiplyPoint(zdim, zdim);
+    invTrans->SetElement(0, 3, zdim[0]);
+    invTrans->SetElement(1, 3, zdim[1]);
+    invTrans->SetElement(2, 3, zdim[2]);
+
+    ftcf->Delete();
+    cftf->Delete();
 }
 
 

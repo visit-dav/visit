@@ -83,6 +83,7 @@ main(int argc, char *argv[])
         // Initialize the error logging.
         //
         Init::Initialize(argc, argv, 0, 1, false);
+        Init::SetComponentName("viewer");
         InitVTK::Initialize();
 
         //

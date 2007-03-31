@@ -87,7 +87,6 @@ void EngineUpdateProgressCallback(void *, const char *, const char *, int,int);
 void EngineInitializeProgressCallback(void *, int);
 void EngineWarningCallback(void *, const char *);
 static void ResetTimeout(int timeout);
-static void DisableTimeout();
 static bool ConnectViewer(ParentProcess &viewer, int *argc, char **argv[]);
 
 #if !defined(_WIN32)
@@ -1159,6 +1158,7 @@ main(int argc, char *argv[])
     // Initialize error logging
     //
     Init::Initialize(argc, argv, PAR_Rank(), PAR_Size());
+    Init::SetComponentName("engine");
     debug1 << "ENGINE started\n";
 
     //
@@ -1176,6 +1176,7 @@ main(int argc, char *argv[])
     // Initialize error logging
     //
     Init::Initialize(argc, argv);
+    Init::SetComponentName("engine");
     debug1 << "ENGINE started\n";
 
     //
@@ -2202,27 +2203,6 @@ ResetTimeout(int timeout)
 #if !defined(_WIN32)
     alarm(timeout);
 #endif    
-}
-
-// ****************************************************************************
-// Function: DisableTimeout
-//
-// Purpose: 
-//   Disables the engine timeout.
-//
-// Programmer: Sean Ahern, Brad Whitlock
-// Creation:   Tue Apr 9 13:41:29 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-DisableTimeout()
-{
-#if !defined(_WIN32)
-    alarm(0);
-#endif
 }
 
 // ****************************************************************************

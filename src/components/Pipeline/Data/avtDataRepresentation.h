@@ -58,7 +58,8 @@ class PIPELINE_API avtDataRepresentation
 {
   public:
                         avtDataRepresentation();
-                        avtDataRepresentation(vtkDataSet *, int, std::string);
+                        avtDataRepresentation(vtkDataSet *, int, std::string,
+                                              bool dontCopyData = false);
                         avtDataRepresentation(char *, int, int, std::string,
                                               CharStrRef &, DataSetType);
                         avtDataRepresentation(const avtDataRepresentation &);

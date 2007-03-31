@@ -219,6 +219,9 @@ class VisitInteractor;
 //    Kathleen Bonnell,  Fri Jun 27 16:25:01 PDT 2003 
 //    Removed 'GetQueryType'.
 //
+//    Mark C. Miller, 07Jul03
+//    Added method to get window size as opposed to renderable portion thereof
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -241,6 +244,7 @@ public:
 
     void                 SetSize(int, int);
     void                 GetSize(int &, int &) const;
+    void                 GetWindowSize(int &, int &) const;
     void                 SetLocation(int, int);
     void                 GetLocation(int &, int &) const;
 

@@ -442,7 +442,7 @@ ViewerWindow::SetSize(const int width, const int height)
 // Method: ViewerWindow::GetSize
 //
 // Purpose: 
-//   Returns the size of the window.
+//   Returns the size of the renderable portion of the window.
 //
 // Arguments:
 //   width  : A reference to an int that is used to return the width.
@@ -457,6 +457,27 @@ void
 ViewerWindow::GetSize(int &width, int &height)
 {
     visWindow->GetSize(width, height);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetWindowSize
+//
+// Purpose: 
+//   Returns the size of the window.
+//
+// Arguments:
+//   width  : A reference to an int that is used to return the width.
+//   height : A reference to an int that is used to return the height.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Nov 2 11:04:35 PDT 2001
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::GetWindowSize(int &width, int &height)
+{
+    visWindow->GetWindowSize(width, height);
 }
 
 // ****************************************************************************
@@ -4568,24 +4589,39 @@ ViewerWindow::GetNotifyForEachRender() const
 // Purpose: 
 //   Enables or disables scalable rendering mode 
 //
+// Arguments:
+//   mode   : Whether scalable rendering is on or off.
+//   update : Whether we're allowing an update of the window.
+//
 // Programmer: Mark C. Miller
 // Creation:   Tue Dec  3 19:25:11 PST 2002 
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jul 8 10:48:25 PDT 2003
+//   I added an optional update flag that can be used to prevent the window
+//   from being updated when we're just setting window attributes.
+//
 // ****************************************************************************
 
 void
-ViewerWindow::SetScalableRendering(bool mode)
+ViewerWindow::SetScalableRendering(bool mode, bool update)
 {
     bool updatesEnabled = UpdatesEnabled();
+    bool differentModes = (GetScalableRendering() != mode);
 
     visWindow->SetScalableRendering(mode);
-    DisableUpdates();
-    animation->GetPlotList()->ClearPlots();
-    animation->GetPlotList()->RealizePlots();
-    if (updatesEnabled)
-       EnableUpdates();
+
+    //
+    // Update the window
+    //
+    if(differentModes && update)
+    {
+        DisableUpdates();
+        animation->GetPlotList()->ClearPlots();
+        animation->GetPlotList()->RealizePlots();
+        if (updatesEnabled)
+            EnableUpdates();
+    }
 }
 
 // ****************************************************************************
@@ -4747,6 +4783,13 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
 // ****************************************************************************
 // Function: ExternalRenderCallback 
 //
+// Note that the external render request can respond to the caller with
+// one of three responses...
+//
+//   a. no change in the dob passed in means nothing changed
+//   b. null means nothing to be externally rendered
+//   c. an externally rendered image 
+//
 // Arguments:
 //   data : pointer to the ViewerWindow object instance that set the callback 
 //
@@ -4763,28 +4806,75 @@ ViewerWindow::ExternalRenderCallback(void *data, avtDataObject_p& dob)
 
     ViewerWindow *win = (ViewerWindow *)data;
     ViewerEngineManager *eMgr = ViewerEngineManager::Instance();
+    ExternalRenderRequestInfo &lastRequest = win->lastExternalRenderRequest;
+    ExternalRenderRequestInfo thisRequest;
 
     // get all the plot's attributes in this window
-    std::vector<const char*> pluginIDsList;
-    std::vector<std::string> hostsList;
-    std::vector<int> plotIdsList;
-    std::vector<const AttributeSubject *> attsList;
     std::map<std::string,std::vector<int> > perEnginePlotIds;
     win->GetAnimation()->GetPlotList()->
-       GetCurrentPlotAtts(pluginIDsList, hostsList, plotIdsList, attsList);
+       GetCurrentPlotAtts(thisRequest.pluginIDsList, thisRequest.hostsList,
+                          thisRequest.plotIdsList, thisRequest.attsList);
 
-    if (plotIdsList.size() > 0)
+    // get this window's attributes
+    thisRequest.winAtts = win->GetWindowAttributes();
+
+    // see if anything has really changed, release data where necessary
+    bool canSkipExternalRender = true;
+    {
+       if (thisRequest.winAtts != lastRequest.winAtts)
+          canSkipExternalRender = false;
+
+       // we don't break early so we can build a list of plots to release data on
+       for (int i = 0; i < thisRequest.plotIdsList.size(); i++)
+       {
+          // search for index of current plot in last list
+          int indexOfPlotInLastList = -1;
+          for (int j = 0; j < lastRequest.plotIdsList.size(); j++)
+          {
+             if (lastRequest.plotIdsList[j] == thisRequest.plotIdsList[i])
+             {
+                indexOfPlotInLastList = j;
+                break;
+             }
+          }
+
+          if (indexOfPlotInLastList == -1)
+             canSkipExternalRender = false;
+          else
+          {
+             bool shouldReleasePlot = false;
+
+             // compare plugin ids
+             if (thisRequest.pluginIDsList[i] != lastRequest.pluginIDsList[indexOfPlotInLastList])
+                shouldReleasePlot = true;
+
+             // compare host names
+             if (thisRequest.hostsList[i] != lastRequest.hostsList[indexOfPlotInLastList])
+                shouldReleasePlot = true;
+
+             // compare plot attributes
+             if (!thisRequest.attsList[i]->EqualTo(lastRequest.attsList[indexOfPlotInLastList]))
+                shouldReleasePlot = true;
+
+             if (shouldReleasePlot)
+             {
+                eMgr->ReleaseData(lastRequest.hostsList[indexOfPlotInLastList].c_str(),
+                                     indexOfPlotInLastList);
+                canSkipExternalRender = false;
+             }
+          }
+       }
+    }
+
+    if (!canSkipExternalRender && (thisRequest.plotIdsList.size() > 0))
     {
        // send per-plot RPCs (which engine handled by ViewerEngineManager)
-       for (int i = 0; i < plotIdsList.size(); i++)
+       for (int i = 0; i < thisRequest.plotIdsList.size(); i++)
        {
-          eMgr->UpdatePlotAttributes(hostsList[i].c_str(),pluginIDsList[i],
-                   plotIdsList[i],attsList[i]);
-          perEnginePlotIds[hostsList[i]].push_back(plotIdsList[i]);
+          eMgr->UpdatePlotAttributes(thisRequest.hostsList[i].c_str(),thisRequest.pluginIDsList[i],
+                   thisRequest.plotIdsList[i],thisRequest.attsList[i]);
+          perEnginePlotIds[thisRequest.hostsList[i]].push_back(thisRequest.plotIdsList[i]);
        }
-
-       // get this window's attributes
-       WindowAttributes winAtts = win->GetWindowAttributes();
 
        int numEnginesToRender = perEnginePlotIds.size();
        bool sendZBuffer = numEnginesToRender > 1 ? true : false;
@@ -4794,7 +4884,7 @@ ViewerWindow::ExternalRenderCallback(void *data, avtDataObject_p& dob)
        std::map<std::string,std::vector<int> >::iterator pos;
        for (pos = perEnginePlotIds.begin(); pos != perEnginePlotIds.end(); pos++)
        {
-          eMgr->SetWindowAtts(pos->first.c_str(), &winAtts);
+          eMgr->SetWindowAtts(pos->first.c_str(), &thisRequest.winAtts);
           avtDataObjectReader_p rdr = eMgr->GetDataObjectReader(sendZBuffer, pos->first.c_str(), pos->second);
 
           // do some magic to update the network so we don't need the reader anymore
@@ -4814,7 +4904,7 @@ ViewerWindow::ExternalRenderCallback(void *data, avtDataObject_p& dob)
        {
           debug2 << me << ": doing composite from " << imgList.size() << " engines" << endl;
           avtWholeImageCompositer imageCompositer;
-          imageCompositer.SetOutputImageSize(winAtts.GetSize()[1], winAtts.GetSize()[0]);
+          imageCompositer.SetOutputImageSize(thisRequest.winAtts.GetSize()[1], thisRequest.winAtts.GetSize()[0]);
           for (int i = 0; i < imgList.size(); i++)
              imageCompositer.AddImageInput(imgList[i], 0, 0);
           imageCompositer.Execute();
@@ -4824,7 +4914,17 @@ ViewerWindow::ExternalRenderCallback(void *data, avtDataObject_p& dob)
           CopyTo(dob, imgList[0]);
     }
     else
-        dob = NULL;
+    {
+       if (thisRequest.plotIdsList.size() == 0)
+          dob = NULL;
+    }
+
+    // update last request info
+    win->lastExternalRenderRequest.pluginIDsList = thisRequest.pluginIDsList;
+    win->lastExternalRenderRequest.hostsList     = thisRequest.hostsList;
+    win->lastExternalRenderRequest.plotIdsList   = thisRequest.plotIdsList;
+    win->lastExternalRenderRequest.attsList      = thisRequest.attsList;
+    win->lastExternalRenderRequest.winAtts       = thisRequest.winAtts;
 
     debug2 << "Leaving " << me << endl;
 }

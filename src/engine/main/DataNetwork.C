@@ -64,8 +64,10 @@ DataNetwork::GetWriter(avtDataObject_p dob, avtPipelineSpecification_p pspec,
    }
    else
    {
-      writer = GetPlot()->Execute(dob, pspec, atts);
-      return writer;
+      avtDataObjectWriter_p tmpWriter = GetPlot()->Execute(dob, pspec, atts);
+      if (GetPlot()->CanCacheWriterExternally())
+         writer = tmpWriter;
+      return tmpWriter;
    }
 }
 
@@ -108,5 +110,9 @@ DataNetwork::ReleaseData(void)
     if (*plot != NULL)
     {
         plot->ReleaseData();
+    }
+    if (*writer)
+    {
+       writer->GetInput()->ReleaseData();
     }
 }

@@ -720,14 +720,21 @@ VisWinAxes3D::SetTickLocation(int loc)
 //  Programmer: Kathleen Bonnell
 //  Creation:   May 28, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Jul  8 20:08:23 PDT 2003
+//    Only re-add if antialising is turned on.
+//
 // ****************************************************************************
 
 void
 VisWinAxes3D::ReAddToWindow()
 {
-    RemoveAxes3DFromWindow();
-    if (ShouldAddAxes3D())
+    if (mediator.GetAntialiasing())
     {
-        AddAxes3DToWindow();
+        RemoveAxes3DFromWindow();
+        if (ShouldAddAxes3D())
+        {
+            AddAxes3DToWindow();
+        }
     }
 }

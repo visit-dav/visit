@@ -2024,7 +2024,11 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 // Modifications:
 //   Kathleen Bonnell, Wed Dec  4 17:38:27 PST 2002
 //   Removed antialisingFrames, no lnger needed.
-//   
+//
+//   Brad Whitlock, Tue Jul 8 11:10:10 PDT 2003
+//   Added a flag that lets the window update when turning on scalable
+//   rendering.
+//
 // ****************************************************************************
 
 void
@@ -2042,7 +2046,7 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
         windows[index]->SetStereoRendering(renderAtts->GetStereoRendering(),
             (int)renderAtts->GetStereoType());
         windows[index]->SetNotifyForEachRender(renderAtts->GetNotifyForEachRender());
-        windows[index]->SetScalableRendering(renderAtts->GetScalableRendering());
+        windows[index]->SetScalableRendering(renderAtts->GetScalableRendering(), true);
         windows[index]->SetScalableThreshold(renderAtts->GetScalableThreshold());
         if (updatesEnabled)
            windows[index]->EnableUpdates();
@@ -4213,7 +4217,7 @@ ViewerWindowManager::UpdateWindowAtts()
         {
             int x, y, w, h;
             // Get the size and location.
-            windows[i]->GetSize(w, h);
+            windows[i]->GetWindowSize(w, h);
             windows[i]->GetLocation(x, y);
 
             // Add the info to the vectors.
@@ -4761,7 +4765,7 @@ ViewerWindowManager::ViewCallback(VisWindow *vw)
     WindowAttributes winAtts;
     winAtts.SetView(*GetView3DClientAtts());
     int size[2];
-    vw->GetSize(size[0], size[1]);
+    vw->GetWindowSize(size[0], size[1]);
     avtCallback::SetCurrentWindowAtts(winAtts);
 }
 

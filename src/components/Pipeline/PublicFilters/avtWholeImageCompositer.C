@@ -212,10 +212,11 @@ avtWholeImageCompositer::Execute(void)
        unsigned char *rgb0 = zeroImageRep.GetRGBBuffer();
        for (i = 0; i < nPixels; i++)
        {
-          ioz[i]       = z0[i];
-          iorgb[3*i+0] = rgb0[3*i+0];
-          iorgb[3*i+1] = rgb0[3*i+1];
-          iorgb[3*i+2] = rgb0[3*i+2];
+               int ii = 3*i;
+               ioz[i] = z0[i];
+          iorgb[ii+0] = rgb0[ii+0];
+          iorgb[ii+1] = rgb0[ii+1];
+          iorgb[ii+2] = rgb0[ii+2];
        }
     }
     else
@@ -325,9 +326,6 @@ MergeBuffers(avtWholeImageCompositer *thisObj, int npixels, bool doParallel,
    ZFPixel_t *inzf = new ZFPixel_t [chunk+1];
    ZFPixel_t *iozf = new ZFPixel_t [chunk+1];
 
-   if (chunk < npixels)
-      cerr << "avtWholeImageCompositer.MergeBuffers is using multiple chunks" << endl;
-
    io = 0;
    while (npixels)
    {
@@ -335,10 +333,11 @@ MergeBuffers(avtWholeImageCompositer *thisObj, int npixels, bool doParallel,
 
       for (int i = 0, j = io; i < len; i++, j++)
       {
+            int jj = 3*j;
          inzf[i].z = inz[j];
-         inzf[i].r = inrgb[3*j+0];
-         inzf[i].g = inrgb[3*j+1];
-         inzf[i].b = inrgb[3*j+2];
+         inzf[i].r = inrgb[jj+0];
+         inzf[i].g = inrgb[jj+1];
+         inzf[i].b = inrgb[jj+2];
       }
 
       // put the background color info in the last entry in the array
@@ -357,17 +356,20 @@ MergeBuffers(avtWholeImageCompositer *thisObj, int npixels, bool doParallel,
 #else
       if (doParallel)
          EXCEPTION0(ImproperUseException);
-      MergeZFPixelBuffers(inzf, iozf, &len, NULL);
+      {  int adjustedLen = len+1;
+         MergeZFPixelBuffers(inzf, iozf, &adjustedLen, NULL);
+      }
 #endif
 
       if (!doParallel || mpiRank == mpiRoot)
       {
          for (int i = 0; i < len; i++, io++)
          {
-                  ioz[io] = iozf[i].z;
-            iorgb[3*io+0] = iozf[i].r;
-            iorgb[3*io+1] = iozf[i].g;
-            iorgb[3*io+2] = iozf[i].b;
+                 int ii = 3*io;
+                ioz[io] = iozf[i].z;
+            iorgb[ii+0] = iozf[i].r;
+            iorgb[ii+1] = iozf[i].g;
+            iorgb[ii+2] = iozf[i].b;
          }
       }
       else

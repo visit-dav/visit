@@ -770,3 +770,28 @@ VisWinQuery::FullFrameOff()
 }
 
 
+// ****************************************************************************
+//  Method: VisWinQuery::ReAddToWindow
+//
+//  Purpose:
+//    Removes and re-adds lineouts to the RenderWindow so that they appear
+//    in front of plots. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 8, 2003 
+//
+// ****************************************************************************
+
+void
+VisWinQuery::ReAddToWindow()
+{
+    if (lineOuts.empty())
+        return;
+
+    std::vector< avtLineoutActor_p >::iterator it2;
+    for (it2 = lineOuts.begin() ; it2 != lineOuts.end() ; it2++)
+    {
+        (*it2)->Remove();
+        (*it2)->Add(mediator.GetCanvas());
+    }
+}

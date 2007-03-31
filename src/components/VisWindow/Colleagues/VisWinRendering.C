@@ -761,7 +761,7 @@ VisWinRendering::SetSize(int w, int h)
 // Method: VisWinRendering::GetSize
 //
 // Purpose: 
-//   Returns the size of the window.
+//   Returns the size of the renderable portion of thewindow.
 //
 // Arguments:
 //   w : A reference to an int that is used to return the window width.
@@ -769,7 +769,7 @@ VisWinRendering::SetSize(int w, int h)
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Nov 2 11:02:51 PDT 2001
-//   
+//
 // ****************************************************************************
 
 void
@@ -778,6 +778,27 @@ VisWinRendering::GetSize(int &w, int &h)
     int *size = GetRenderWindow()->GetSize();
     w = size[0];
     h = size[1];
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::GetWindowSize
+//
+// Purpose: 
+//   Returns the size of the window.
+//
+// Arguments:
+//   w : A reference to an int that is used to return the window width.
+//   h : A reference to an int that is used to return the window height.
+//
+// Programmer: Mark C. Miller
+// Creation:   07Jul03 
+//   
+// ****************************************************************************
+
+void
+VisWinRendering::GetWindowSize(int &w, int &h)
+{
+   GetSize(w,h);
 }
 
 // ****************************************************************************

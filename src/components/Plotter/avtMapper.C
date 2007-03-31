@@ -201,6 +201,14 @@ avtMapper::ClearSelf(void)
     //
     // Nothing should be done with the transparency actor -- we don't own it.
     //
+    mappers = NULL;
+    actors = NULL;
+}
+
+void
+avtMapper::ReleaseData(void)
+{
+   ClearSelf();
 }
 
 

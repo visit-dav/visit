@@ -7175,6 +7175,7 @@ InitializeModule()
         }
 
         Init::Initialize(argc, argv, 0, 1, false);
+        Init::SetComponentName("cli");
 
         // Read the plugins.
         PlotPluginManager::Initialize(PlotPluginManager::Scripting);

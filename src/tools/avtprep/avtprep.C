@@ -43,6 +43,7 @@ int
 main(int argc, char *argv[])
 {
     Init::Initialize(argc, argv, 0, 1, true);
+    Init::SetComponentName("avtprep");
 
     if (argc < 3)
     {

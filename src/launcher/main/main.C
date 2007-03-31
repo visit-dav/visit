@@ -25,6 +25,7 @@ main(int argc, char *argv[])
 
     // Initialize error logging
     Init::Initialize(argc, argv);
+    Init::SetComponentName("launcher");
 
     debug1 << "VisIt component launcher started." << endl;
 

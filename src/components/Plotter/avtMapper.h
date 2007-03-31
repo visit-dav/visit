@@ -66,6 +66,7 @@ class PLOTTER_API avtMapper : public avtOriginatingDatasetSink
                                avtMapper();
     virtual                   ~avtMapper();
 
+    void                       ReleaseData();
     avtDrawable_p              GetDrawable();
     virtual bool               GetRange(float &, float &);
     virtual bool               GetCurrentRange(float &, float &);

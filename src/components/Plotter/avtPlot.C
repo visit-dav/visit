@@ -979,6 +979,13 @@ avtPlot::ReleaseData(void)
     compactTreeFilter->ReleaseData();
     currentExtentFilter->ReleaseData();
     vertexNormalsFilter->ReleaseData();
+    if (GetMapper() != NULL)
+    {
+        GetMapper()->ReleaseData();
+        GetMapper()->SetInput(NULL);
+    }
+    avtDataObjectInformation doi;
+    theater.SetInput(NULL, doi, NULL);
 }
 
 

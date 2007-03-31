@@ -35,6 +35,9 @@ class     vtkQtRenderWindowInteractor;
 //    Brad Whitlock, Wed May 21 12:05:20 PDT 2003
 //    I added an override of GetSize.
 //
+//    Mark C. Miller, 07Jul03
+//    Renamed GetSize to GetWindowSize
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRenderingWithWindow : public VisWinRendering
@@ -44,7 +47,7 @@ class VISWINDOW_API VisWinRenderingWithWindow : public VisWinRendering
                                                     VisWindowColleagueProxy &);
     virtual                           ~VisWinRenderingWithWindow();
 
-    virtual void                       GetSize(int &w, int &h);
+    virtual void                       GetWindowSize(int &w, int &h);
     virtual void                       Iconify(void);
     virtual void                       DeIconify(void);
     virtual void                       Show(void);

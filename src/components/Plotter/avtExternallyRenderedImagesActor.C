@@ -181,16 +181,24 @@ avtExternallyRenderedImagesActor::PrepareForRender(vtkCamera *cam)
       return;
 
    // issue the external rendering callback
-   avtDataObject_p dob = NULL;
+   // we play a trick with initialization of dob to create a useful
+   // NULL-like pointer that we can distinguish from NULL itself
+   int n = 2;
+   avtDataObject_p dob = ref_ptr<avtDataObject>((avtDataObject*)1,&n);
    DoExternalRender(dob);
 
-   if ((*dob != NULL) && !strcmp(dob->GetType(),"avtImage"))
+   if ((*dob != NULL) && (*dob != (avtDataObject*)1) && !strcmp(dob->GetType(),"avtImage"))
    {
       // we know this is really an avtImage object, so make one from it
       avtImage_p img;
       CopyTo(img, dob);
       avtImageRepresentation& imgRep = img->GetImage();
       myMapper->SetInput(imgRep.GetImageVTK());
+   }
+   else
+   {
+      if (*dob == NULL)
+         myMapper->SetInput(dummyImage);
    }
 
 }

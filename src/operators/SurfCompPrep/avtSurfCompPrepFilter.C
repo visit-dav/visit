@@ -119,6 +119,9 @@ avtSurfCompPrepFilter::Equivalent(const AttributeGroup *a)
 //    filter, make sure that we are setting the right number of steps for
 //    the right component.
 //
+//    Hank Childs, Tue Jul  8 22:20:30 PDT 2003
+//    Fix parallel problem.
+//
 // ****************************************************************************
 
 void
@@ -294,7 +297,7 @@ avtSurfCompPrepFilter::Execute(void)
     avtSamplePointCommunicator sampCommunicator;
     sampCommunicator.SetImagePartition(&imagePartition);
     sampCommunicator.SetInput(dob);
-    dob = sampCommunicator->GetOutput();
+    dob = sampCommunicator.GetOutput();
 #else
     //
     // The sample communicator will make this gets called, so we only need

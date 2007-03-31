@@ -9,9 +9,6 @@
 #include <vtkAppendFilter.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetWriter.h>
-#include <vtkPoints.h>
-#include <vtkPolyVertex.h>
-#include <vtkUnstructuredGrid.h>
 
 #include <avtDataRepresentation.h>
 #include <avtCommonDataFunctions.h>
@@ -408,37 +405,16 @@ avtDataTree::avtDataTree(avtDataTree_p dt, bool dontCopyData)
     else
     {
         children = NULL;
-        if (!dontCopyData)
-           dataRep  = new avtDataRepresentation( dt->GetDataRepresentation() );
+        if (dontCopyData)
+        {
+            avtDataRepresentation& oldRep = dt->GetDataRepresentation();
+            dataRep  = new avtDataRepresentation(NULL, oldRep.GetDomain(),
+                                                       oldRep.GetLabel(),
+                                                       dontCopyData);
+        }
         else
         {
-           // build a dummy dataset with two points on the extreme diagonal
-           // bounds of the existing dataset
-
-           avtDataRepresentation& oldRep = dt->GetDataRepresentation();
-           vtkDataSet *origDataSet = oldRep.GetDataVTK();
-           float bounds[6];
-           origDataSet->GetBounds(bounds);
-
-           // build the points object (not a vtkDataSet object)
-           vtkPoints *dummyPoints = vtkPoints::New();
-           dummyPoints->SetNumberOfPoints(2);
-           dummyPoints->SetDataTypeToDouble();
-           dummyPoints->InsertPoint(0,bounds[0],bounds[2],bounds[4]);
-           dummyPoints->InsertPoint(1,bounds[1],bounds[3],bounds[5]);
-           vtkPolyVertex *dummyVerts = vtkPolyVertex::New();
-           dummyVerts->GetPointIds()->SetNumberOfIds(2);
-           dummyVerts->GetPointIds()->SetId(0,0);
-           dummyVerts->GetPointIds()->SetId(1,1);
-           vtkUnstructuredGrid *dummyGrid = vtkUnstructuredGrid::New();
-           dummyGrid->Allocate(1,1);
-           dummyGrid->InsertNextCell(dummyVerts->GetCellType(),
-                                     dummyVerts->GetPointIds());
-           dummyGrid->SetPoints(dummyPoints);
-
-           dataRep  = new avtDataRepresentation(dummyGrid, oldRep.GetDomain(),
-                                                   oldRep.GetLabel());
-
+            dataRep  = new avtDataRepresentation( dt->GetDataRepresentation() );
         }
     }
 }
