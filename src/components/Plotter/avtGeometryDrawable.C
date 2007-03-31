@@ -12,6 +12,8 @@
 #include <avtMapper.h>
 #include <avtTransparencyActor.h>
 
+#include <ColorAttribute.h>
+
 #include <ImproperUseException.h>
 
 
@@ -521,6 +523,49 @@ avtGeometryDrawable::SetSurfaceRepresentation(int rep)
                     prop->SetAmbient(1.);
                     prop->SetDiffuse(0.);
                 }
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method: avtGeometryDrawable::SetSpecularProperties
+//
+//  Purpose:
+//      Sets the drawable's surface representation.
+//
+//  Arguments:
+//      flag  :  true to enable specular, false otherwise
+//      coeff :  the new specular coefficient
+//      power :  the new specular power
+//      color :  the new specular color
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   November 14, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtGeometryDrawable::SetSpecularProperties(bool flag, float coeff, float power,
+                                           const ColorAttribute &color)
+{
+    for (int i = 0 ; i < nActors ; i++)
+    {
+        if (actors[i] != NULL)
+        {
+            vtkProperty *prop = actors[i]->GetProperty();
+            if(prop != NULL)
+            {
+                prop->SetSpecular(flag ? coeff : 0);
+                prop->SetSpecularPower(power);
+                int r = color.Red();
+                int g = color.Green();
+                int b = color.Blue();
+                prop->SetSpecularColor(float(r)/255.,
+                                       float(g)/255.,
+                                       float(b)/255.);
             }
         }
     }

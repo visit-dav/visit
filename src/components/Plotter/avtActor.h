@@ -67,6 +67,9 @@ class     avtTransparencyActor;
 //    Kathleen Bonnell, Mon Sep 29 13:44:01 PDT 2003 
 //    Added bool arg to GetRenderOrder. 
 //
+//    Jeremy Meredith, Fri Nov 14 11:10:53 PST 2003
+//    Added a method to set the specular properties.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtActor
@@ -107,6 +110,9 @@ class PLOTTER_API avtActor
 
     void                          SetSurfaceRepresentation(int rep);
     void                          SetImmediateModeRendering(bool val);
+
+    void                          SetSpecularProperties(bool,float,float,
+                                                        const ColorAttribute&);
 
     avtDataObject_p               GetDataObject(void);
 

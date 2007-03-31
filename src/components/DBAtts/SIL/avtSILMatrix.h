@@ -34,6 +34,12 @@ class     SILMatrixAttributes;
 //  Programmer: Hank Childs
 //  Creation:   November 14, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Nov 13 16:47:18 PST 2003
+//    Added argument forLoadBalance to TurnSet.  This was causing a serious
+//    bug with AMR.
+//
 // ****************************************************************************
 
 class DBATTS_API avtSILMatrix
@@ -64,7 +70,7 @@ class DBATTS_API avtSILMatrix
     bool                  GetMaterialList(int, MaterialList &, 
                                      const std::vector<unsigned char> &) const;
     void                  TurnSet(std::vector<unsigned char> &, int,
-                                  SetState) const;
+                                  SetState, bool forLoadBalance) const;
 
     SILMatrixAttributes  *MakeAttributes(void) const;
 

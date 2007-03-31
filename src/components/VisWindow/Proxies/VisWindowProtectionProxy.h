@@ -77,6 +77,9 @@ class     VisitInteractor;
 //    Eric Brugger, Wed Aug 20 10:04:13 PDT 2003
 //    Removed ProxiedGetTypeIsCurve and ProxiedSetTypeIsCurve.
 //
+//    Jeremy Meredith, Fri Nov 14 13:53:37 PST 2003
+//    Added specular properties.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowProtectionProxy
@@ -136,6 +139,10 @@ class VISWINDOW_API VisWindowProtectionProxy
     void                ProxiedReAddColleaguesToRenderWindow();
     bool                ProxiedGetAntialiasing();
     bool                ProxiedGetFullFrameMode();
+    bool                ProxiedGetSpecularFlag();
+    float               ProxiedGetSpecularCoeff();
+    float               ProxiedGetSpecularPower();
+    const ColorAttribute &ProxiedGetSpecularColor();
 };
 
 

@@ -117,6 +117,9 @@ class avtTransparencyActor;
 //    Kathleen Bonnell, Mon Sep 29 13:21:12 PDT 2003
 //    Added bool arg to OrderPlots. 
 //    
+//    Jeremy Meredith, Fri Nov 14 17:15:21 PST 2003
+//    Added specular properties.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinPlots : public VisWinColleague
@@ -163,6 +166,9 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
 
     virtual void                  SetSurfaceRepresentation(int rep);
     virtual void                  SetImmediateModeRendering(bool val);
+
+    virtual void                  SetSpecularProperties(bool,float,float,
+                                                        const ColorAttribute&);
 
     void                          SetExternalRenderCallback(
                                       VisCallbackWithDob *cb, void *data);

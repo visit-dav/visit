@@ -13,6 +13,7 @@
 #include <RenderingAttributes.h>
 #include <ViewerProxy.h>
 #include <WindowInformation.h>
+#include <QvisOpacitySlider.h>
 
 // ****************************************************************************
 // Method: QvisRenderingWindow::QvisRenderingWindow
@@ -86,6 +87,9 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Kathleen Bonnell, Wed Dec  4 18:42:48 PST 2002 
 //   Removed antialiasingQuality slider, no longer needed. 
 //   
+//   Jeremy Meredith, Fri Nov 14 17:47:19 PST 2003
+//   Added specular options.
+//
 // ****************************************************************************
 
 void
@@ -100,7 +104,7 @@ QvisRenderingWindow::CreateWindowContents()
 
     QVBoxLayout *spacer = new QVBoxLayout(options);
     spacer->addSpacing(10);
-    QGridLayout *oLayout = new QGridLayout(spacer, 9, 4);
+    QGridLayout *oLayout = new QGridLayout(spacer, 12, 4);
     oLayout->setSpacing(5);
     oLayout->setMargin(10);
 
@@ -172,6 +176,34 @@ QvisRenderingWindow::CreateWindowContents()
     scalrenNever = new QRadioButton("Never", options, "never");
     scalableThreshold->insert(scalrenNever);
     oLayout->addWidget(scalrenNever, 8, 3);
+
+    // Create the scalable rendering options
+    specularToggle = new QCheckBox("Specular lighting", options,
+                                   "specularToggle");
+    connect(specularToggle, SIGNAL(toggled(bool)),
+            this, SLOT(specularToggled(bool)));
+    oLayout->addMultiCellWidget(specularToggle, 9,9, 0,3);
+
+    specularStrengthSlider = new QvisOpacitySlider(0, 100, 10, 60, options,
+                                             "specularStrengthSlider", NULL);
+    specularStrengthSlider->setTickInterval(25);
+    connect(specularStrengthSlider, SIGNAL(valueChanged(int, const void*)),
+            this, SLOT(specularStrengthChanged(int, const void*)));
+    specularStrengthLabel = new QLabel(specularStrengthSlider, "Strength",
+                                       options, "specularStrengthLabel");
+    oLayout->addWidget(specularStrengthLabel, 10,1);
+    oLayout->addMultiCellWidget(specularStrengthSlider, 10,10, 2,3);
+
+    specularPowerSlider = new QvisOpacitySlider(0, 1000, 100, 100, options,
+                                                "specularPowerSlider", NULL);
+    specularPowerSlider->setTickInterval(100);
+    connect(specularPowerSlider, SIGNAL(valueChanged(int, const void*)),
+            this, SLOT(specularPowerChanged(int, const void*)));
+    specularPowerLabel = new QLabel(specularPowerSlider, "Sharpness",
+                                    options, "specularPowerLabel");
+    oLayout->addWidget(specularPowerLabel, 11,1);
+    oLayout->addMultiCellWidget(specularPowerSlider, 11,11, 2,3);
+
 
     //
     // Create the renderer information group.
@@ -284,6 +316,9 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //   Kathleen Bonnell, Wed Dec  4 18:42:48 PST 2002 
 //   Renumber switch cases, to reflect antialisingFrames removed from atts. 
 //
+//   Jeremy Meredith, Fri Nov 14 17:44:35 PST 2003
+//   Added specular options.
+//
 // ****************************************************************************
 
 void
@@ -352,6 +387,28 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             else
                scalableThreshold->setButton(0);
             scalableThreshold->blockSignals(false);
+            break;
+        case 8: //specularFlag
+            specularToggle->blockSignals(true);
+            specularToggle->setChecked(renderAtts->GetSpecularFlag());
+            specularToggle->blockSignals(false);
+            specularStrengthSlider->setEnabled(renderAtts->GetSpecularFlag());
+            specularPowerSlider->setEnabled(renderAtts->GetSpecularFlag());
+            specularStrengthLabel->setEnabled(renderAtts->GetSpecularFlag());
+            specularPowerLabel->setEnabled(renderAtts->GetSpecularFlag());
+            break;
+        case 9: //specularCoeff
+            specularStrengthSlider->blockSignals(true);
+            specularStrengthSlider->setValue(int(renderAtts->GetSpecularCoeff()*100.));
+            specularStrengthSlider->blockSignals(false);
+            break;
+        case 10: //specularPower
+            specularPowerSlider->blockSignals(true);
+            specularPowerSlider->setValue(int(renderAtts->GetSpecularPower()*10.));
+            specularPowerSlider->blockSignals(false);
+            break;
+        case 11: //specularColor
+            // Not user-modifiable at this time
             break;
         }
     }
@@ -754,6 +811,76 @@ QvisRenderingWindow::scalableThresholdChanged(int val)
        renderAtts->SetScalableThreshold(0);
     else
        renderAtts->SetScalableThreshold(INT_MAX);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisRenderingWindow::specularToggled
+//
+//  Purpose:
+//    Callback for the specular toggle button
+//
+//  Arguments:
+//    val        true to enable specular
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 14, 2003
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::specularToggled(bool val)
+{
+    renderAtts->SetSpecularFlag(val);
+    specularStrengthSlider->setEnabled(renderAtts->GetSpecularFlag());
+    specularPowerSlider->setEnabled(renderAtts->GetSpecularFlag());
+    specularStrengthLabel->setEnabled(renderAtts->GetSpecularFlag());
+    specularPowerLabel->setEnabled(renderAtts->GetSpecularFlag());
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisRenderingWindow::specularStrengthChanged
+//
+//  Purpose:
+//    Callback for the specular coefficient slider
+//
+//  Arguments:
+//    val        the new coefficient
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 14, 2003
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::specularStrengthChanged(int val, const void*)
+{
+    renderAtts->SetSpecularCoeff(float(val)/100.);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisRenderingWindow::specularPowerChanged
+//
+//  Purpose:
+//    Callback for the specular exponent slider.
+//
+//  Arguments:
+//    val        the new value
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 14, 2003
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::specularPowerChanged(int val, const void*)
+{
+    renderAtts->SetSpecularPower(float(val)/10.);
     SetUpdate(false);
     Apply();
 }

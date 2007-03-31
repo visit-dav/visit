@@ -62,6 +62,9 @@
 //    Eric Brugger, Wed Aug 20 10:03:43 PDT 2003
 //    Removed GetTypeIsCurve and SetTypeIsCurve.
 //
+//    Jeremy Meredith, Fri Nov 14 13:54:29 PST 2003
+//    Added specular coefficients.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
@@ -148,6 +151,18 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
 
     bool                GetFullFrameMode()
                                   { return ProxiedGetFullFrameMode(); };
+
+    bool                GetSpecularFlag()
+                                  { return ProxiedGetSpecularFlag(); };
+
+    float               GetSpecularCoeff()
+                                  { return ProxiedGetSpecularCoeff(); };
+
+    float               GetSpecularPower()
+                                  { return ProxiedGetSpecularPower(); };
+
+    const ColorAttribute &GetSpecularColor()
+                                  { return ProxiedGetSpecularColor(); };
 };
 
 

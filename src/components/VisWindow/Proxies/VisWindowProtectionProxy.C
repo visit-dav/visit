@@ -800,3 +800,67 @@ VisWindowProtectionProxy::ProxiedGetFullFrameMode()
 {
     return viswin->GetFullFrameMode();
 }
+
+// ****************************************************************************
+//  Method:  VisWindowProtectionProxy::ProxiedGetSpecularFlag
+//
+//  Purpose:
+//    Returns the specular flag
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 14, 2003
+//
+// ****************************************************************************
+bool
+VisWindowProtectionProxy::ProxiedGetSpecularFlag()
+{
+    return viswin->GetSpecularFlag();
+}
+
+// ****************************************************************************
+//  Method:  VisWindowProtectionProxy::ProxiedGetSpecularCoeff
+//
+//  Purpose:
+//    Returns the specular coefficient
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 14, 2003
+//
+// ****************************************************************************
+float
+VisWindowProtectionProxy::ProxiedGetSpecularCoeff()
+{
+    return viswin->GetSpecularCoeff();
+}
+
+// ****************************************************************************
+//  Method:  VisWindowProtectionProxy::ProxiedGetSpecularPower
+//
+//  Purpose:
+//    Returns the specular exponenet (power)
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 14, 2003
+//
+// ****************************************************************************
+float
+VisWindowProtectionProxy::ProxiedGetSpecularPower()
+{
+    return viswin->GetSpecularPower();
+}
+
+// ****************************************************************************
+//  Method:  VisWindowProtectionProxy::ProxiedGetSpecularColor
+//
+//  Purpose:
+//    Returns the specular color
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 14, 2003
+//
+// ****************************************************************************
+const ColorAttribute &
+VisWindowProtectionProxy::ProxiedGetSpecularColor()
+{
+    return viswin->GetSpecularColor();
+}

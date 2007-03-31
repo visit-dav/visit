@@ -15,6 +15,7 @@ class     vtkDataObjectCollection;
 
 class     avtMapper;
 
+class     ColorAttribute;
 
 // ****************************************************************************
 //  Class: avtGeometryDrawable
@@ -50,6 +51,9 @@ class     avtMapper;
 //    Added a method to set the surface representation. I added another method
 //    for setting the drawable's immediate mode rendering flag.
 //
+//    Jeremy Meredith, Fri Nov 14 11:10:53 PST 2003
+//    Added a method to set the specular properties.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtGeometryDrawable : public avtDrawable
@@ -81,6 +85,9 @@ class PLOTTER_API avtGeometryDrawable : public avtDrawable
 
     virtual void                SetSurfaceRepresentation(int rep);
     virtual void                SetImmediateModeRendering(bool val);
+
+    virtual void                SetSpecularProperties(bool,float,float,
+                                                      const ColorAttribute&);
 
     virtual avtDataObject_p     GetDataObject(void);
 

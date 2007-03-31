@@ -11,6 +11,7 @@ class QRadioButton;
 class QSlider;
 class RenderingAttributes;
 class WindowInformation;
+class QvisOpacitySlider;
 
 // ****************************************************************************
 // Class: QvisRenderingWindow
@@ -30,6 +31,9 @@ class WindowInformation;
 //
 //   Kathleen Bonnell, Wed Dec  4 18:42:48 PST 2002  
 //   Removed quality slider, no longer needed. 
+//
+//   Jeremy Meredith, Fri Nov 14 16:03:31 PST 2003
+//   Added specular lighting.
 //
 // ****************************************************************************
 
@@ -60,6 +64,9 @@ private slots:
     void stereoTypeChanged(int);
     void renderNotifyToggled(bool);
     void scalableThresholdChanged(int);
+    void specularToggled(bool);
+    void specularStrengthChanged(int, const void*);
+    void specularPowerChanged(int, const void*);
 private:
     RenderingAttributes *renderAtts;
     WindowInformation   *windowInfo;
@@ -78,6 +85,11 @@ private:
     QRadioButton *scalrenAuto;
     QRadioButton *scalrenAlways;
     QRadioButton *scalrenNever;
+    QCheckBox         *specularToggle;
+    QLabel            *specularStrengthLabel;
+    QvisOpacitySlider *specularStrengthSlider;
+    QLabel            *specularPowerLabel;
+    QvisOpacitySlider *specularPowerSlider;
 
     // Labels to display renderer information.
     QLabel       *scalrenUsingLabel;

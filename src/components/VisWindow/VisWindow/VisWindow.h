@@ -228,6 +228,9 @@ class VisitInteractor;
 //    Brad Whitlock, Wed Sep 10 16:00:51 PST 2003
 //    Added GetSpinModeSuspended and SetSpinModeSuspended.
 //
+//    Jeremy Meredith, Fri Nov 14 17:48:18 PST 2003
+//    Added specular options.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -375,6 +378,12 @@ public:
     void                 SetScalableRendering(bool mode);
     int                  GetScalableThreshold() const;
     void                 SetScalableThreshold(int threshold);
+    void                 SetSpecularProperties(bool,float,float,
+                                               const ColorAttribute&);
+    bool                 GetSpecularFlag();
+    float                GetSpecularCoeff();
+    float                GetSpecularPower();
+    const ColorAttribute &GetSpecularColor();
 
 
 protected:
