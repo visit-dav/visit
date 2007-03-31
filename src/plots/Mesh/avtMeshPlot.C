@@ -254,6 +254,9 @@ avtMeshPlot::Create()
 //    Call SetOpaqueColor and SetMeshColor instead of setting property's 
 //    color directly.
 //
+//    Kathleen Bonnell, Thu Sep  4 11:15:30 PDT 2003
+//    SetRenderOpaque no longer requires an argument. 
+//
 // ****************************************************************************
 
 void
@@ -279,7 +282,7 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
         SetMeshColor(atts.GetMeshColor().GetColor());
     }
     SetPointSize(atts.GetPointSize());
-    SetRenderOpaque(atts.GetOpaqueFlag());
+    SetRenderOpaque();
     if (atts.GetBackgroundFlag())  
     {
         SetOpaqueColor(bgColor);
@@ -569,30 +572,28 @@ avtMeshPlot::SetPointSize(float ps)
 //    Kathleen Bonnell, Wed Aug 27 15:45:45 PDT 2003 
 //    Don't use opaque mode if not appropriate. 
 //    
+//    Kathleen Bonnell, Thu Sep  4 11:15:30 PDT 2003 
+//    Modified to support tri-modal opaque mode. 
+//    
 // ****************************************************************************
 
 void
-avtMeshPlot::SetRenderOpaque(bool on)
+avtMeshPlot::SetRenderOpaque()
 {
-   //
-   // Although the polys for opaque mode are always present, don't draw
-   // them unless we are in opaque mode, and only if appropriate
-   //
-   if (atts.GetOpaqueMeshIsAppropriate() && 
-       (on || wireframeRenderingIsInappropriate))
-   {
-       renderer->SurfacePolysOn();
-       renderer->SurfaceStripsOn();
-       renderer->ResolveTopologyOn();
-       property->SetRepresentationToSurface();
-   }
-   else 
-   {
-       renderer->SurfacePolysOff();
-       renderer->SurfaceStripsOff();
-       renderer->ResolveTopologyOff();
-       property->SetRepresentationToWireframe();
-   }
+    if (ShouldRenderOpaque())
+    {
+        renderer->SurfacePolysOn();
+        renderer->SurfaceStripsOn();
+        renderer->ResolveTopologyOn();
+        property->SetRepresentationToSurface();
+    }
+    else 
+    {
+        renderer->SurfacePolysOff();
+        renderer->SurfaceStripsOff();
+        renderer->ResolveTopologyOff();
+        property->SetRepresentationToWireframe();
+    }
 }
 
 
@@ -789,6 +790,10 @@ avtMeshPlot::CustomizeBehavior(void)
 //  Modifications:
 //    Kathleen Bonnell, Mon Mar 24 17:48:27 PST 2003
 //    Set internal flag regarding appropriateness of wireframe rendering.
+//
+//    Kathleen Bonnell, Thu Sep  4 11:15:30 PDT 2003
+//    SetRenderOpaque no longer requires an argument. 
+//
 // ****************************************************************************
 
 void
@@ -797,7 +802,7 @@ avtMeshPlot::CustomizeMapper(avtDataObjectInformation &info)
     if (info.GetValidity().GetWireframeRenderingIsInappropriate())
     {
         wireframeRenderingIsInappropriate = true;
-        SetRenderOpaque(true);
+        SetRenderOpaque();
 
         //
         // This means that we want the opaque mesh to be the same color as
@@ -824,12 +829,16 @@ avtMeshPlot::CustomizeMapper(avtDataObjectInformation &info)
 //  Programmer: Hank Childs
 //  Creation:   July 24, 2001
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Sep  4 11:15:30 PDT 2003
+//    Changed logic to support tri-modal opaque mode.
+//
 // ****************************************************************************
 
 int
 avtMeshPlot::TargetTopologicalDimension(void)
 {
-    return (atts.GetOpaqueFlag() ? 2 : 1);
+    return (ShouldRenderOpaque() ? 2 : 1);
 }
 
 
@@ -848,6 +857,9 @@ avtMeshPlot::TargetTopologicalDimension(void)
 //    Kathleen Bonnell, Mon Mar 24 17:48:27 PST 2003
 //    Call SetOpaqueColor instead of setting property's color directly.
 //
+//    Kathleen Bonnell, Thu Sep  4 11:35:18 PDT 2003 
+//    Call ShouldRenderOpaque.
+//
 // ****************************************************************************
 
 bool
@@ -855,7 +867,7 @@ avtMeshPlot::SetBackgroundColor(const double *bg)
 {
     bool retVal = false;
 
-    if (atts.GetBackgroundFlag() && atts.GetOpaqueFlag())
+    if (atts.GetBackgroundFlag() && ShouldRenderOpaque())
     {
        if (bgColor[0] != bg[0] || bgColor[1] != bg[1] || bgColor[2] != bg[2])
        {
@@ -975,15 +987,58 @@ avtMeshPlot::ReleaseData(void)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   August 27, 2003 
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Sep  4 11:35:18 PDT 2003
+//    Only update the value opaqueMode is Auto.
+//
 // ****************************************************************************
 
 const AttributeSubject *
 avtMeshPlot::SetOpaqueMeshIsAppropriate(bool val)
 {
-    if (val != atts.GetOpaqueMeshIsAppropriate())
+    if ((atts.GetOpaqueMode() == MeshAttributes::Auto) &&
+       (val != atts.GetOpaqueMeshIsAppropriate()))
     {
         atts.SetOpaqueMeshIsAppropriate(val);
         return &atts;
     }
     return NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtMeshPlot::ShouldlRenderOpaque
+//
+//  Purpose:
+//    Determines whether the opaque surface should be rendered. 
+//
+//  Returns:
+//    True if opaque surface should be rendered, false otherwise. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 4, 2003 
+//
+// ****************************************************************************
+
+bool
+avtMeshPlot::ShouldRenderOpaque(void)
+{
+    bool shouldBeOn;
+
+    switch (atts.GetOpaqueMode())
+    {
+        case MeshAttributes::Auto: 
+            // Only on if appropriate
+            shouldBeOn = atts.GetOpaqueMeshIsAppropriate();
+            break;
+        case MeshAttributes::On: 
+            // Always on 
+            shouldBeOn = true;
+            break;
+        case MeshAttributes::Off: 
+            // On if wireframeRendering is Inappropriate. 
+            shouldBeOn = wireframeRenderingIsInappropriate;
+            break;
+    }
+    return shouldBeOn;
 }

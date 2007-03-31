@@ -91,6 +91,11 @@ QvisMeshPlotWindow::~QvisMeshPlotWindow()
 //   Hank Childs, Thu Aug 21 23:09:59 PDT 2003
 //   Added support for more types of point glyphs.
 //
+//   Kathleen Bonnell, Thu Sep  4 11:15:30 PDT 2003 
+//   Changed opaqueToggle checkbox to opaqueMode radio button group,
+//   to support 'Auto', 'On' and 'Off' modes.  Moved outlineOnly
+//   to same line of layout as errorTolerance. 
+//
 // ****************************************************************************
 
 void
@@ -136,12 +141,6 @@ QvisMeshPlotWindow::CreateWindowContents()
             this, SLOT(foregroundToggled(bool)));
     theLayout->addMultiCellWidget(foregroundToggle, 1, 1, 2, 3);
 
-    // Create the outline only toggle
-    outlineOnlyToggle = new QCheckBox("Outline only", central,
-                                      "OutlineOnlyToggle");
-    connect(outlineOnlyToggle, SIGNAL(toggled(bool)),
-            this, SLOT(outlineOnlyToggled(bool)));
-    theLayout->addMultiCellWidget(outlineOnlyToggle, 3, 3, 0, 1);
 
     // Create the opaque color button.
     opaqueColor = new QvisColorButton(central, "opaqueColorButton");
@@ -159,20 +158,40 @@ QvisMeshPlotWindow::CreateWindowContents()
             this, SLOT(backgroundToggled(bool)));
     theLayout->addMultiCellWidget(backgroundToggle, 2, 2, 2, 3);
 
-    // Create the opaque toggle
-    opaqueToggle = new QCheckBox("Opaque", central, "opaqueToggle");
-    connect(opaqueToggle, SIGNAL(toggled(bool)),
-            this, SLOT(opaqueToggled(bool)));
-    theLayout->addMultiCellWidget(opaqueToggle, 3, 3, 2, 3);
+    // Create the opaque mode buttons
+    opaqueMode = new QButtonGroup(0, "opaqueMode");
+    connect(opaqueMode, SIGNAL(clicked(int)), this,
+            SLOT(opaqueModeChanged(int)));
+    QGridLayout *opaqueModeLayout = new QGridLayout(1, 5);
+    opaqueModeLayout->setSpacing(10);
+    opaqueModeLayout->setColStretch(4, 1000);
+    opaqueModeLayout->addWidget(new QLabel("Opaque mode", central), 0,0);
+    QRadioButton *rb = new QRadioButton("Auto", central, "auto");
+    opaqueMode->insert(rb);
+    opaqueModeLayout->addWidget(rb, 0, 2);
+    rb = new QRadioButton("On", central, "on");
+    opaqueMode->insert(rb);
+    opaqueModeLayout->addWidget(rb, 0, 3);
+    rb = new QRadioButton("Off", central, "off");
+    opaqueMode->insert(rb);
+    opaqueModeLayout->addWidget(rb, 0, 4);
+    theLayout->addMultiCellLayout(opaqueModeLayout, 3, 3, 0, 3);
+
+    // Create the outline only toggle
+    outlineOnlyToggle = new QCheckBox("Outline only", central,
+                                      "OutlineOnlyToggle");
+    connect(outlineOnlyToggle, SIGNAL(toggled(bool)),
+            this, SLOT(outlineOnlyToggled(bool)));
+    theLayout->addWidget(outlineOnlyToggle, 4, 0);
 
     // Create the error tolerance line edit
     errorToleranceLineEdit = new QLineEdit(central, "errorToleranceLineEdit");
     connect(errorToleranceLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processErrorToleranceText()));
-    theLayout->addMultiCellWidget(errorToleranceLineEdit, 4, 4, 1, 3);
+    theLayout->addMultiCellWidget(errorToleranceLineEdit, 4, 4, 2, 3);
     errorToleranceLabel = new QLabel(errorToleranceLineEdit, "Tolerance",
                                         central, "errorToleranceLabel");
-    theLayout->addWidget(errorToleranceLabel, 4, 0);
+    theLayout->addWidget(errorToleranceLabel, 4, 1);
     //errorToleranceLineEdit->setEnabled(false); 
     //errorToleranceLabel->setEnabled(false); 
 
@@ -204,7 +223,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     pointTypeLayout->setSpacing(10);
     pointTypeLayout->setColStretch(4, 1000);
     pointTypeLayout->addWidget(new QLabel("Point Type", central), 0,0);
-    QRadioButton *rb = new QRadioButton("Box", central, "Box");
+    rb = new QRadioButton("Box", central, "Box");
     pointTypeButtons->insert(rb);
     pointTypeLayout->addWidget(rb, 0, 1);
     rb = new QRadioButton("Axis", central, "Axis");
@@ -286,6 +305,9 @@ QvisMeshPlotWindow::CreateWindowContents()
 //   Kathleen Bonnell, Wed Sep  3 08:46:25 PDT 2003 
 //   Added support for opaqueMeshIsAppropriate. 
 //
+//   Kathleen Bonnell, Thu Sep  4 11:15:30 PDT 2003 
+//   MeshAtts' 'opaqueFlag' bool is now an 'opaqueMode' enum, support it. 
+//
 // ****************************************************************************
 
 void
@@ -349,15 +371,38 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
             temp.sprintf("%g", meshAtts->GetErrorTolerance());
             errorToleranceLineEdit->setText(temp);
             break;
-        case 6: // opaqueFlag
-            opaqueToggle->blockSignals(true);
-            opaqueToggle->setChecked(meshAtts->GetOpaqueFlag());
-            opaqueColor->setEnabled(meshAtts->GetOpaqueFlag() && 
-                                    !meshAtts->GetBackgroundFlag());
-            opaqueColorLabel->setEnabled(meshAtts->GetOpaqueFlag() &&
-                                         !meshAtts->GetBackgroundFlag());
-            backgroundToggle->setEnabled(meshAtts->GetOpaqueFlag()) ;
-            opaqueToggle->blockSignals(false);
+        case 6: // opaqueMode
+            opaqueMode->blockSignals(true);
+            opaqueMode->setButton((int)meshAtts->GetOpaqueMode());
+
+            switch(meshAtts->GetOpaqueMode())   
+            {
+                 case MeshAttributes::Auto:
+                     if (meshAtts->GetOpaqueMeshIsAppropriate())
+                     {
+                         opaqueColor->setEnabled(!meshAtts->GetBackgroundFlag());
+                         opaqueColorLabel->setEnabled(!meshAtts->GetBackgroundFlag());
+                         backgroundToggle->setEnabled(true);
+                     }
+                     else 
+                     {
+                         opaqueColor->setEnabled(false);
+                         opaqueColorLabel->setEnabled(false);
+                         backgroundToggle->setEnabled(false);
+                     }
+                     break;
+                 case MeshAttributes::On:
+                     opaqueColor->setEnabled(!meshAtts->GetBackgroundFlag());
+                     opaqueColorLabel->setEnabled(!meshAtts->GetBackgroundFlag());
+                     backgroundToggle->setEnabled(true);
+                     break;
+                 case MeshAttributes::Off:
+                     opaqueColor->setEnabled(false);
+                     opaqueColorLabel->setEnabled(false);
+                     backgroundToggle->setEnabled(false);
+                     break;
+            }
+            opaqueMode->blockSignals(false);
             break;
         case 7: // pointSize
             temp.sprintf("%g", meshAtts->GetPointSize());
@@ -411,34 +456,31 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
             pointTypeButtons->blockSignals(false);
             break;
         case 15: // opaqueMeshIsAppropriate
-            // If opaque mode is appropriate, handle opaqueToggle,
+            // If in AUTO mode:  if OpaqueMesh is appropriate, handle 
             // opaqueColor and backgroundToggle according to the
-            // appropriate values in meshAtts, otherwise disable them 
-            // and un-check opaqueToggle to indicate its OFF status.
-            opaqueToggle->blockSignals(true);
-            if (meshAtts->GetOpaqueMeshIsAppropriate())
+            // appropriate values in meshAtts, otherwise disable them.
+            if (meshAtts->GetOpaqueMode() == MeshAttributes::Auto)
             {
-                opaqueToggle->setEnabled(true);
-                opaqueToggle->setChecked(meshAtts->GetOpaqueFlag());
-                opaqueColor->setEnabled(meshAtts->GetOpaqueFlag() && 
-                                    !meshAtts->GetBackgroundFlag());
-                opaqueColorLabel->setEnabled(meshAtts->GetOpaqueFlag() &&
-                                         !meshAtts->GetBackgroundFlag());
-                backgroundToggle->setEnabled(meshAtts->GetOpaqueFlag()) ;
+                opaqueMode->blockSignals(true);
+                if (meshAtts->GetOpaqueMeshIsAppropriate())
+                {
+                    opaqueColor->setEnabled(!meshAtts->GetBackgroundFlag());
+                    opaqueColorLabel->setEnabled(!meshAtts->GetBackgroundFlag());
+                    backgroundToggle->setEnabled(true);
+                }
+                else 
+                {
+                    opaqueColor->setEnabled(false);
+                    opaqueColorLabel->setEnabled(false);
+                    backgroundToggle->setEnabled(false);
+                }
+                opaqueMode->blockSignals(false);
             }
-            else 
-            {
-                opaqueToggle->setEnabled(false);
-                opaqueToggle->setChecked(false);
-                opaqueColor->setEnabled(false);
-                opaqueColorLabel->setEnabled(false);
-                backgroundToggle->setEnabled(false);
-            }
-            opaqueToggle->blockSignals(false);
             break;
         }
     } // end for
 }
+
 
 // ****************************************************************************
 // Method: QvisMeshPlotWindow::GetCurrentValues
@@ -783,26 +825,28 @@ QvisMeshPlotWindow::outlineOnlyToggled(bool val)
 
 
 // ****************************************************************************
-// Method: QvisMeshPlotWindow::opaqueToggled
+// Method: QvisMeshPlotWindow::opaqueModeChanged
 //
-// Purpose: 
-//   This is a Qt slot function that is called when the opaque toggle
-//   button is toggled.
+//  Purpose:
+//    Qt slot function that is called when one of the opaque mode buttons
+//    is clicked.
 //
-// Arguments:
-//   val : The new state of the opaque toggle.
+//  Arguments:
+//    val   :   The new mode
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 9 17:33:10 PST 2001
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Sep  4 11:15:30 PDT 2003
+//   Modified to support radio buttons instead of check box. 
 //   
 // ****************************************************************************
 
 void
-QvisMeshPlotWindow::opaqueToggled(bool val)
+QvisMeshPlotWindow::opaqueModeChanged(int val)
 {
-    meshAtts->SetOpaqueFlag(val);
+    meshAtts->SetOpaqueMode((MeshAttributes::OpaqueMode) val);
     Apply();
 }
 
