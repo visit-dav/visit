@@ -34,6 +34,9 @@ class SaveWindowAttributes;
 //   Hank Childs, Sun May 26 17:31:18 PDT 2002
 //   Added a toggle for binary vs ASCII.
 //
+//   Kathleen Bonnell, Thu Nov 13 12:14:30 PST 2003 
+//   Added combo box for compression type. 
+//
 // ****************************************************************************
 
 class GUI_API QvisSaveWindow : public QvisPostableWindowObserver
@@ -65,6 +68,7 @@ protected slots:
     void qualityChanged(int);
     void screenCaptureToggled(bool);
     void saveTiledToggled(bool);
+    void compressionTypeChanged(int);
 private:
     QLineEdit           *hostLineEdit;
     QLineEdit           *filenameLineEdit;
@@ -73,6 +77,8 @@ private:
     QComboBox           *fileFormatComboBox;
     QLabel              *qualityLabel;
     QSlider             *qualitySlider;
+    QLabel              *compressionTypeLabel;
+    QComboBox           *compressionTypeComboBox;
     QCheckBox           *progressiveCheckBox;
     QCheckBox           *binaryCheckBox;
     QGroupBox           *resolutionBox;

@@ -2,6 +2,7 @@
 #include <DataNode.h>
 #include <DebugStream.h>
 #include <Utility.h>
+#include <VisItException.h>
 #include <visit-config.h>
 
 // ****************************************************************************
@@ -55,23 +56,46 @@ ColorTableManager::~ColorTableManager()
 // Creation:   Thu Jul 3 18:23:57 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Nov 13 11:35:44 PDT 2003
+//   I fixed a bug where you could not save out color tables that were already
+//   external. I also changed how the message is returned.
+//
 // ****************************************************************************
 
-std::string
+bool
 ColorTableManager::Export(const std::string &ctName,
-    const ColorControlPointList &ccpl_)
+    const ColorControlPointList &ccpl_, std::string &message)
 {
     ccpl = ccpl_;
 
-    std::string ctFileName(GetUserVisItDirectory() + ctName + ".ct");
-    WriteConfigFile(ctFileName.c_str());
+    //
+    // Make sure that if the color table already contains the colortable 
+    // directory that we don't decorate the name.
+    //
+    std::string ctDir(GetUserVisItDirectory());
+    std::string ctFileName(ctDir + ctName + ".ct");
+    if(ctName.size() > ctDir.size() &&
+       ctName.substr(0, ctDir.size()) == ctDir)
+    {
+        ctFileName = ctName;
+    }
 
-    return std::string("VisIt exported color table \"") + ctName +
-           std::string( "\" to the file: ") + ctFileName + ". You can share "
-           "that file with colleagues who want to use your color table. Simply "
-           "put the file in their .visit directory, run VisIt and the color table "
-           "will appear in their list of color tables when VisIt starts up.";
+    bool retval = false;
+    TRY
+    {
+        // Try and write out the color table.
+        WriteConfigFile(ctFileName.c_str());
+        retval = true;
+        message = ctFileName;
+    }
+    CATCH(VisItException)
+    {
+        message = std::string("VisIt could not export ") + ctName +
+                  std::string(" to ") + ctFileName + ".";
+    }
+    ENDTRY
+
+    return retval;
 }
 
 // ****************************************************************************
@@ -111,7 +135,9 @@ ColorTableManager::ImportColorTables(ColorTableAttributes *cta)
 // Creation:   Thu Jul 3 18:27:28 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Nov 13 11:55:17 PDT 2003
+//   I made it throw a VisItException if the file can't be opened.
+//
 // ****************************************************************************
 
 void
@@ -129,7 +155,9 @@ ColorTableManager::WriteConfigFile(const char *filename)
 
     // Try to open the output file.
     if((fp = fopen(filename, "wb")) == 0)
-        return;
+    {
+        EXCEPTION0(VisItException);
+    }
 
     // Write the output file.
     fprintf(fp, "<?xml version=\"1.0\"?>\n");

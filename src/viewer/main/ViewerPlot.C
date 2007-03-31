@@ -1991,13 +1991,22 @@ ViewerPlot::GetReader(const int frame) const
 //    engine manager. Also added bool for whether switching into or out
 //    of scalable rendering.
 //
+//    Mark C. Miller, Tue Nov 11 12:27:33 PST 2003
+//    Added code to temporarily disable external render requets in all windows
+//
 // ****************************************************************************
+
+// only place in ViewerPlot where ViewerWindowManager is needed
+#include <ViewerWindowManager.h>
 
 void
 ViewerPlot::CreateActor(const int frame, bool createNew,
                                          bool turningOffScalableRendering)
 {
     avtDataObjectReader_p reader;
+
+    std::vector<bool> oldAble;
+    ViewerWindowManager::Instance()->DisableExternalRenderRequestsAllWindows(oldAble);
 
     // Get a data reader.
     TRY
@@ -2157,6 +2166,9 @@ ViewerPlot::CreateActor(const int frame, bool createNew,
         this->SetActor(frame, nullActor);
     }
     ENDTRY
+
+    // re-instate correct external render request state on all windows
+    ViewerWindowManager::Instance()->EnableExternalRenderRequestsAllWindows(oldAble);
 }
 
 // ****************************************************************************

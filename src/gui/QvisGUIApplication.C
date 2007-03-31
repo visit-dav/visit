@@ -103,6 +103,60 @@
 static void QPrinterToPrinterAttributes(QPrinter *, PrinterAttributes *);
 static void PrinterAttributesToQPrinter(PrinterAttributes *, QPrinter *);
 
+#if defined(_WIN32)
+// ****************************************************************************
+// Function: LongFileName
+//
+// Purpose: 
+//   Converts a Windows short filename into a long filename.
+//
+// Arguments:
+//   shortName : The short Windows name of the file.
+//
+// Returns:    The long windows name of the file.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov 11 18:39:36 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+LongFileName(const char *shortName)
+{
+    std::string retval(shortName);
+
+    // Get the long filename for the file. We have to access
+    // the GetLongPathName through the LoadLibrary call because
+    // it is not supported in NT 4 and we need it to not try
+    // to use the function if it does not exist.
+    HINSTANCE lib = LoadLibrary("kernel32.dll");
+    if(lib)
+    {
+        // Try and get a pointer to the GetLongPathName function.
+        void *func = (void *)GetProcAddress((HMODULE)lib, "GetLongPathNameA");
+        // Use the GetLongPathName function.
+        if(func)
+        {
+            typedef DWORD (pathFuncType)(LPCTSTR, LPTSTR, DWORD);
+            pathFuncType *lfn = (pathFuncType *)func;
+            char *buf = new char[1000];
+            if(lfn(shortName, buf, 1000) != 0)
+                retval = std::string(buf);
+            delete [] buf;
+        }
+
+        // Free the library.
+        FreeLibrary(lib);
+    }
+
+    return retval;
+}
+#endif
+
 // ****************************************************************************
 // Method: QvisGUIApplication::QvisGUIApplication
 //
@@ -893,7 +947,8 @@ QvisGUIApplication::Exec()
 //    I added support for MacOS X styles.
 //
 //    Brad Whitlock, Mon Nov 10 15:01:32 PST 2003
-//    I added support for the -sessionfile argument.
+//    I added support for the -sessionfile argument. I moved the filename
+//    expansion code to LongFileName.
 //
 // ****************************************************************************
 
@@ -922,40 +977,10 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
                 if(i + 1 < argc)
                 {
 #if defined(_WIN32)
-                    // Get the long filename for the file. We have to access
-                    // the GetLongPathName through the LoadLibrary call because
-                    // it is not supported in NT 4 and we need it to not try
-                    // to use the function if it does not exist.
-                    char *buf = new char[1000];
-                    bool copyString = true;
-                    HINSTANCE lib = LoadLibrary("kernel32.dll");
-                    if(lib)
-                    {
-                        // Try and get a pointer to the GetLongPathName function.
-                        void *func = (void *)GetProcAddress((HMODULE)lib,
-                                                            "GetLongPathNameA");
-                        // Use the GetLongPathName function.
-                        if(func)
-                        {
-                            typedef DWORD (pathFuncType)(LPCTSTR, LPTSTR, DWORD);
-                            pathFuncType *lfn = (pathFuncType *)func;
-                            copyString = (lfn(argv[i+1], buf, 1000) == 0);
-                        }
-
-                        // Free the library.
-                        FreeLibrary(lib);
-                    }
-
-                    // We could not use GetLongPathName so just use the filename
-                    // that Windows gave us.
-                    if(copyString)
-                        SNPRINTF(buf, 1000, "%s", argv[i+1]);
-
-                    std::string tmpFileName(buf);
+                    std::string tmpFileName(LongFileName(argv[i+1]));
                     if(tmpFileName.substr(1,2) == ":\\")
                         tmpFileName = std::string("localhost:") + tmpFileName;
                     loadFile = QualifiedFilename(tmpFileName);
-                    delete [] buf;
 #else
                     loadFile = QualifiedFilename(argv[i + 1]);
 #endif
@@ -972,7 +997,11 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
                 {
                     // Set the name of the session file that we're going to
                     // load once the GUI's done initializing.
-                    sessionFile = QString(argv[i + 1]);
+#if defined(_WIN32)
+                    sessionFile = QString(LongFileName(argv[i+1]).c_str());
+#else
+                    sessionFile = QString(argv[i+1]);
+#endif
                 }
                 else
                 {
@@ -2346,7 +2375,8 @@ QvisGUIApplication::RestoreSessionFile(const QString &s)
     if(!s.isEmpty())
     {
         // Make the gui read in its part of the config.
-        std::string guifilename(s.latin1()); guifilename += ".gui";
+        std::string guifilename(s.latin1());
+        guifilename += ".gui";
         DataNode *node = ReadConfigFile(guifilename.c_str());
         if(node)
         {
@@ -3435,44 +3465,14 @@ QvisGUIApplication::SplashScreenProgress(const char *msg, int prog)
 //   Hank Childs, Wed Oct 15 08:50:14 PDT 2003
 //   Turn off TIFFs where the VTK library doesn't work.
 //
+//   Kathleen Bonnell, Fri Oct 24 16:34:35 PDT 2003 
+//   Remove TIFF fix, VTK now uses TIFF library.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::SaveWindow()
 {
-//
-// ALL OF THE FOLLOWING CODE IS TO WORK AROUND A PROBLEM WITH TIFFs ON TRU64.
-//
-    bool tiffsDontWork = false;
-    bool bigEndian = false;
-#ifdef WORDS_BIGENDIAN
-        bigEndian = true;
-#endif
-    bool long8 = false;
-#if (SIZEOF_LONG == 8)
-        long8 = true;
-#endif
-    if (bigEndian && long8)
-        tiffsDontWork = tiffsDontWork;
-
-    if (tiffsDontWork)
-    {
-        const SaveWindowAttributes *atts = viewer->GetSaveWindowAttributes();
-        if (atts->GetFormat() == SaveWindowAttributes::TIFF)
-        {
-            char msg[1024];
-            sprintf(msg, "Because of problems in an underlying library, "
-                         "TIFFs are not available on this platform.  Please "
-                         "select another format and try again.  NO IMAGE HAS"
-                         " BEEN SAVED.");
-            Error(QString(msg));
-            return;
-        }
-    }
-//
-// END WORK-AROUND ON TIFFs FOR TRU64.
-//
-
     viewer->SaveWindow();
 }
 

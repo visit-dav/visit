@@ -1526,6 +1526,10 @@ ViewerPlotList::DeleteActivePlots()
 //  Programmer: Mark C. Miller
 //  Creation:   October 29, 2003 
 //
+//  Modifications:
+//    Brad Whitlock, Tue Nov 11 13:39:58 PST 2003
+//    I made i be declared outside of the for loop so it builds on Windows.
+//
 // ****************************************************************************
 
 void
@@ -1534,7 +1538,8 @@ ViewerPlotList::TransmutePlots(int frame, bool turningOffScalableRendering)
     //
     // First, clear all plot's actors
     //
-    for (int i = 0; i < nPlots; i++)
+    int i;
+    for (i = 0; i < nPlots; i++)
     {
         plots[i].plot->ClearActors();
     }
@@ -1542,13 +1547,14 @@ ViewerPlotList::TransmutePlots(int frame, bool turningOffScalableRendering)
     //
     // transmute the actors associated with the plots
     //
-    for (int i = 0; i < nPlots; i++)
+    for (i = 0; i < nPlots; i++)
     {
         if (plots[i].realized &&
             plots[i].plot->IsInFrameRange(frame) &&
            !plots[i].plot->GetErrorFlag())
-
+        {
             plots[i].plot->TransmuteActor(frame, turningOffScalableRendering);
+        }
     }
 }
 

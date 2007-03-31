@@ -3802,7 +3802,10 @@ ViewerSubject::UpdateColorTable()
 // Creation:   Tue Jul 1 17:03:13 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Nov 13 12:11:51 PDT 2003
+//   I changed the code to send back a status message and an error message
+//   if the color table could not be exported.
+//
 // ****************************************************************************
 
 void
@@ -3811,11 +3814,29 @@ ViewerSubject::ExportColorTable()
     //
     // Perform the rpc.
     //
-    std::string msg = avtColorTables::Instance()->
-        ExportColorTable(viewerRPC.GetColorTableName());
+    const std::string &ctName = viewerRPC.GetColorTableName();
+    std::string msg;
+    if(avtColorTables::Instance()->ExportColorTable(ctName, msg))
+    {
+        // If we successfully exported the color table, msg is set to the
+        // name of the color table file that was created. We want to send
+        // a status message and a message.
+        std::string msg2;
+        msg2 = std::string("Color table ") + ctName +
+               std::string(" exported to ") + msg;
+        Status(msg2.c_str());
 
-    // Tell the user what happened.
-    Message(msg.c_str());
+        // Tell the user what happened.
+        msg2 = std::string("VisIt exported color table \"") + ctName +
+           std::string( "\" to the file: ") + msg +
+           ". You can share that file with colleagues who want to use your "
+           "color table. Simply put the file in their .visit directory, run "
+           "VisIt and the color table will appear in their list of color "
+           "tables when VisIt starts up.";
+        Message(msg2.c_str());
+    }
+    else
+        Error(msg.c_str());
 }
 
 // ****************************************************************************

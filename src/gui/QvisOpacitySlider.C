@@ -171,13 +171,15 @@ QvisOpacitySlider::positionFromValue(int value) const
 // Creation:   Thu Dec 7 12:21:34 PDT 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Nov 13 09:49:31 PDT 2003
+//   I made it use pixmapWidth.
+//
 // ****************************************************************************
 
 int
 QvisOpacitySlider::available() const
 {
-    return width() - sliderLength();
+    return pixmapWidth() - sliderLength();
 }
 
 // ****************************************************************************
@@ -305,7 +307,9 @@ QvisOpacitySlider::sliderRect() const
 // Creation:   Thu Dec 7 12:28:25 PDT 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Nov 13 10:32:26 PDT 2003
+//   I made it repaint the text value.
+//
 // ****************************************************************************
 
 void 
@@ -322,8 +326,14 @@ QvisOpacitySlider::reallyMoveSlider(int newPos)
     else
         oldR.setLeft(QMAX(oldR.left(), newR.right()));
 
+    // If we're moving the slider, we have to update the text.
+    int pmw = pixmapWidth();
+    QRect newTextR(pmw, 0, width() - pmw, height());
+
     repaint(oldR);
     repaint(newR, FALSE);
+    repaint(newTextR);
+
     if(autoMask())
         updateMask();
 }
@@ -593,6 +603,85 @@ QvisOpacitySlider::drawTicks( QPainter *p, const QColorGroup& g, int dist,
 }
 
 // ****************************************************************************
+// Method: QvisOpacitySlider::textPadding
+//
+// Purpose: 
+//   Returns the distance from the slider to the text.
+//
+// Returns:    The distance from the slider to the text.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 13 10:23:56 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+QvisOpacitySlider::textPadding() const
+{
+    return fontMetrics().width("0") / 2;
+}
+
+// ****************************************************************************
+// Method: QvisOpacitySlider::pixmapWidth
+//
+// Purpose: 
+//   Returns the width of the pixmap area, which is the width of the whole
+//   widget minus the width if the text that we want to display.
+//
+// Returns:    The width of the pixmap area.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 13 09:45:41 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+QvisOpacitySlider::pixmapWidth() const
+{
+    return width() - fontMetrics().width("100%") - textPadding();
+}
+
+// ****************************************************************************
+// Method: QvisOpacitySlider::paintValueText
+//
+// Purpose: 
+//   Draws the value text at the specified location.
+//
+// Arguments:
+//   p : The painter to use to draw the text.
+//   x : The x location at which to draw the text.
+//   h : The vertical height that we have to work with.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 13 10:19:22 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisOpacitySlider::paintValueText(QPainter *p, const QColorGroup &cg, int x,
+    int h)
+{
+    // Create the text that we have to display.
+    int v = (state == Dragging) ? (valueFromPosition(sliderPos)) : value();
+    float t = float(v - minValue()) / float(maxValue() - minValue());
+    QString txt; txt.sprintf("%d%%", int(t * 100.f));
+
+    // Figure out the y offset.
+    int dy = h - fontMetrics().height();
+    int y = (h - dy / 2);
+
+    // Set the brush and draw the text.
+    p->setPen(cg.text());
+    p->drawText(x + textPadding(), y, txt);
+}
+
+// ****************************************************************************
 // Method: QvisOpacitySlider::createGradientPixmap
 //
 // Purpose: 
@@ -611,13 +700,16 @@ QvisOpacitySlider::drawTicks( QPainter *p, const QColorGroup& g, int dist,
 //   Added code to do alpha blending with a pixmap background so it looks
 //   like it's supposed to look on MacOS X.
 //
+//   Brad Whitlock, Thu Nov 13 09:47:15 PDT 2003
+//   I made it use a smaller width so we can display the percent.
+//
 // ****************************************************************************
 
 void
 QvisOpacitySlider::createGradientPixmap()
 {
     // Create the pixmap.
-    int w = width();
+    int w = pixmapWidth();
     int h = height() - tickOffset;
     gradientPixmap = new QPixmap(w, h);
 
@@ -665,7 +757,7 @@ QvisOpacitySlider::createGradientPixmap()
     else
     {
         // Now draw the color gradient into the pixmap.
-        float invWidth = 1.0 / ((float)width());
+        float invWidth = 1.0 / ((float)w);
         float deltaRed = gradientColor.red() - colorGroup().background().red();
         float deltaGreen = gradientColor.green() - colorGroup().background().green();
         float deltaBlue = gradientColor.blue() - colorGroup().background().blue();
@@ -678,7 +770,7 @@ QvisOpacitySlider::createGradientPixmap()
         float green = (float)colorGroup().background().green();
         float blue = (float)colorGroup().background().blue();
 
-        for(int i = 0; i < width(); ++i)
+        for(int i = 0; i < w; ++i)
         {
             int currentRed = (int)red;
             int currentGreen = (int)green;
@@ -818,6 +910,9 @@ QvisOpacitySlider::resizeEvent(QResizeEvent *)
 //   Brad Whitlock, Thu Aug 21 17:33:54 PST 2003
 //   I fixed it so it looks better on MacOS X.
 //
+//   Brad Whitlock, Thu Nov 13 09:48:31 PDT 2003
+//   I made the width smaller so we could display the percent.
+//
 // ****************************************************************************
 
 void
@@ -832,7 +927,7 @@ QvisOpacitySlider::paintEvent(QPaintEvent *)
     p.drawPixmap(0, tickOffset, *gradientPixmap);
 
     // Draw the groove on which the slider slides.    
-    drawSliderGroove(&p, 0, tickOffset, width(), thickness(), mid);
+    drawSliderGroove(&p, 0, tickOffset, pixmapWidth(), thickness(), mid);
 
     // Figure out the interval between the tick marks.
     int interval = tickInt;
@@ -844,9 +939,9 @@ QvisOpacitySlider::paintEvent(QPaintEvent *)
     }
 
     // Draw the tick marks.
-    p.fillRect(0, 0, width(), tickOffset,
+    p.fillRect(0, 0, pixmapWidth(), tickOffset,
                colorGroup().brush(QColorGroup::Background));
-    p.fillRect(0, tickOffset + thickness(), width(), height(),
+    p.fillRect(0, tickOffset + thickness(), pixmapWidth(), height(),
                colorGroup().brush(QColorGroup::Background));
     drawTicks(&p, colorGroup(), 0, tickOffset - 2, interval);
 
@@ -854,7 +949,7 @@ QvisOpacitySlider::paintEvent(QPaintEvent *)
     if(hasFocus())
     {
         QRect r;
-        r.setRect( 0, tickOffset-1, width(), thickness()+2 );
+        r.setRect( 0, tickOffset-1, pixmapWidth(), thickness()+2 );
         r = r.intersect(rect());
 #if QT_VERSION >= 300
         style().drawPrimitive(QStyle::PE_FocusRect, &p, r, colorGroup(),
@@ -866,6 +961,9 @@ QvisOpacitySlider::paintEvent(QPaintEvent *)
 
     // Draw the slider
     paintSlider(&p, colorGroup(), sliderRect());
+
+    // Draw the value text.
+    paintValueText(&p, colorGroup(), pixmapWidth(), height());
 }
 
 // ****************************************************************************

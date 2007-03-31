@@ -144,6 +144,10 @@
 #    I split some copy commands into multiple commands to avoid
 #    argument length problems with some implementations of csh.
 #
+#    Eric Brugger, Thu Nov 13 07:53:25 PST 2003
+#    When I split some copy commands, I introduced a bug where not all
+#    the help files were copied to the distribution.  I corrected this.
+#
 #-----------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -712,9 +716,13 @@ cp $VisItDir/include/qt/q[m-zA-Z]*.h            $incdir/qt
 # Copy the help files to the distribution.
 #
 echo "Copying help files to the distribution..."
-cp $VisItDir/help/[a-gi-z]*.html $helpdir
-cp $VisItDir/help/help0[01]*.html $helpdir
-cp $VisItDir/help/help0[23]*.html $helpdir
+cp $VisItDir/help/[a-gi-z]*.html    $helpdir
+cp $VisItDir/help/h[a-df-z]*.html   $helpdir
+cp $VisItDir/help/he[a-km-z]*.html  $helpdir
+cp $VisItDir/help/hel[a-oq-z]*.html $helpdir
+cp $VisItDir/help/help[a-z]*.html   $helpdir
+cp $VisItDir/help/help0[01]*.html   $helpdir
+cp $VisItDir/help/help0[23]*.html   $helpdir
 if (-e $VisItDir/help/visit.helpml) then
    cp $VisItDir/help/visit.helpml $helpdir
 endif

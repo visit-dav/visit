@@ -22,7 +22,9 @@ class QTimer;
 // Creation:   Thu Dec 7 12:10:01 PDT 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Nov 13 10:01:21 PDT 2003
+//   I added the internal pixmapWidth method.
+//
 // ****************************************************************************
 
 class GUI_API QvisOpacitySlider : public QWidget, public QRangeControl
@@ -99,6 +101,9 @@ protected:
     void    drawSlider(QPainter *p, int x, int y, int w, int h);
     void    createGradientPixmap();
     void    deleteGradientPixmap();
+    int     pixmapWidth() const;
+    int     textPadding() const;
+    void    paintValueText(QPainter *, const QColorGroup&, int, int);
 
 private slots:
     void    repeatTimeout();

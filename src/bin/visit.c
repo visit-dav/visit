@@ -22,6 +22,8 @@ static const char usage[] =
 "    Program arguments:\n"
 "        -gui                 Run with the Graphical User Interface (default)\n"
 "        -cli                 Run with the Command Line Interface\n"
+"        -silex               Run silex\n"
+"        -xmledit             Run xmledit\n"
 "\n"
 "    Window arguments:\n"
 "        -small               Use a smaller desktop area/window size\n"
@@ -79,6 +81,9 @@ void AddPath(char *, const char *);
  *
  *   Brad Whitlock, Tue Aug 12 09:41:07 PDT 2003
  *   I added some support for movie making.
+ *
+ *   Brad Whitlock, Tue Nov 11 17:20:05 PST 2003
+ *   I added code to launch Silex and XMLedit.
  *
  *****************************************************************************/
 
@@ -147,6 +152,14 @@ main(int argc, char *argv[])
                             "on Windows! You can only generate sequences "
                             "of still images.\n");
             return -1;
+        }
+        else if(ARG("-xmledit"))
+        {
+            strcpy(component, "xmledit");
+        }
+        else if(ARG("-silex"))
+        {
+            strcpy(component, "silex");
         }
         else if(ARG("-v"))
         {

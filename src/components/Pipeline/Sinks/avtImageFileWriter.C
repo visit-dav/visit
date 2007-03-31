@@ -67,11 +67,13 @@ avtImageFileWriter::avtImageFileWriter()
 //    Brad Whitlock, Wed Dec 4 17:05:42 PST 2002
 //    I added postscript.
 //
+//    Kathleen Bonnell, Thu Nov  6 07:44:38 PST 2003 
+//    Added compression arg, used with TIFF writer. 
 // ****************************************************************************
 
 void
 avtImageFileWriter::Write(ImageFileFormat format, const char *filename,
-                          int quality, bool progressive)
+                          int quality, bool progressive, int compression)
 {
     vtkImageWriter *writer = NULL;
 
@@ -104,6 +106,7 @@ avtImageFileWriter::Write(ImageFileFormat format, const char *filename,
     case TIFF:
     default:
         writer = vtkTIFFWriter::New();
+        ((vtkTIFFWriter*)writer)->SetCompression(compression);
         break;
     }
 

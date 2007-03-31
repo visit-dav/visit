@@ -356,7 +356,7 @@ WindowMetrics::CalculateScreen(QWidget *win,
     screenX = qApp->desktop()->x();
     screenY = qApp->desktop()->y();
     screenW = qApp->desktop()->width();
-    screenH = qApp->desktop()->height(); // - 100;
+    screenH = qApp->desktop()->height() - 25;
 #endif
 }
 

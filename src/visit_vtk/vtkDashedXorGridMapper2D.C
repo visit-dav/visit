@@ -54,6 +54,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vtkProperty2D.h>
 #include <vtkScalarsToColors.h>
 #include <vtkViewport.h>
+#include <vtkWindow.h>
 
 #if defined(_WIN32)
 #include <windows.h>

@@ -17,7 +17,7 @@ shell prompt.
     Python   2.1.2    Scripting Language     http://www.python.org
     Qt       2.3.0    GUI Toolkit            http://www.trolltech.com
     Silo     4.3.1    File I/O library       http://www.llnl.gov/bdiv/meshtv
-    VTK      021216   Visualization Toolkit  http://www.kitware.com
+    VTK      20031028 Visualization Toolkit  http://www.kitware.com
 
 
 The public version of VisIt has been built with the above listed versions
@@ -26,7 +26,7 @@ all the packages except VTK and Qt, you can probably use newer versions of the
 packages and VisIt should work properly.  For Mesa, you must build a mangled
 version of Mesa.  The distribution provided has already been set up to build
 a mangled version so no additional work is required if you use it.  For VTK,
-you must use the December 16 distribution provided. The version of Qt used to
+you must use the October 28, 2003 distribution provided. The version of Qt used to
 build VisIt must be greater than or equal to 2.3.0. VisIt is also compatible
 with Qt version 3.
 
@@ -144,21 +144,27 @@ to build VTK.  If you have any problems building or installing VTK, read the
 VTK/README.html file included in the VTK distribution for more information.
 
 #
-# Build cmake which is used by VTK to configure its distribution
+# Build CMake which is used by VTK to configure its distribution
 #
-gunzip CMake1.4.7-src-unix.tar.gz
-tar xf CMake1.4.7-src-unix.tar
-cd CMake-1.4.7
-env CXXFLAGS="" ./configure
+gunzip cmake-1.8.1.tar.gz
+tar xf cmake-1.8.1.tar
+cd cmake-1.8.1
+#
+# We have experienced problems building CMake on AIX with g++/gcc.
+# so for AIX use the native compilers to build CMake: 
+# env CXX=xlC CC=xlc CXXFLAGS="" ./bootstrap
+# otherwise:
+env CXXFLAGS="" ./bootstrap
+make
 
 #
 # Build VTK
 #
 cd ..
-gunzip vtk_cvs_16Dec02.tar.gz
-tar xf vtk_cvs_16Dec02.tar
+gunzip vtk_cvs_2003_10_28.tar.gz
+tar xf vtk_cvs_2003_10_28.tar
 cd VTK
-../CMake-1.4.7/Source/cmake
+../cmake-1.8.1/bin/cmake .
 #
 # Edit CMakeCache.txt.  Turn BUILD_SHARED_LIBS, VTK_USE_HYBRID, and
 # VTK_USE_MANGLED_MESA on, Turn BUILD_TESTING off.
@@ -167,24 +173,29 @@ cd VTK
 # and CMAKE_C_COMPILER.  If you want to change the compiler flags you should
 # modify CMAKE_CXX_FLAGS and CMAKE_C_FLAGS.  You might want to specify "-O2"
 # as a compiler flag to build an optimized version.  If you want to specify
-# the location of the OpenGL library you should modify OPENGL_LIBRARY
+# the location of the OpenGL library you should modify OPENGL_gl_LIBRARY
 # (/usr/shlib/libGL.so on tru64 systems.)
 #
-../CMake-1.4.7/Source/cmake
+# On AIX, you may experience problems with X11 headers. Check the following
+# and modify as necessary: CMAKE_X_FLAGS, X11_X11_INCLUDE_PATH, 
+# X11_Xlib_INCLUDE_PATH, X11_Xutil_INCLUDE_PATH
+#
+../cmake-1.8.1/bin/cmake .
 #
 # Edit CMakeCache.txt, setting MANGLED_MESA_INCLUDE_DIR, MANGLED_MESA_LIBRARY,
-# MANGLED_OSMESA_LIBRARY, to point to the appropriate files and directories 
-# in the mesa directory.
+# MANGLED_OSMESA_INCLUDE_DIR, MANGLED_OSMESA_LIBRARY, to point to the appropriate 
+# files and directories in the mesa directory.
 # For example:
 #
 # MANGLED_MESA_INCLUDE_DIR:PATH=/home/visit/mesa/include
 # MANGLED_MESA_LIBRARY:FILEPATH=/home/visit/mesa/lib/libMesaGL.so
+# MANGLED_OSMESA_INCLUDE_DIR:PATH=/home/visit/mesa/include
 # MANGLED_OSMESA_LIBRARY:FILEPATH=/home/visit/mesa/lib/libOSMesa.so
 #
 # Note that you need to be very careful in setting the above variables so
 # that you provide the appropriate filename or path.
 #
-../CMake-1.4.7/Source/cmake
+../cmake-1.8.1/bin/cmake .
 
 #
 # On linux systems you will want to avoid using runtime type identification
@@ -192,7 +203,7 @@ cd VTK
 # Ideally this would be done by editing CMakeCache.txt, adding "-fno-rtti"
 # to the CMAKE_CXX_FLAGS string and running cmake, but alas, this doesn't
 # work.  The work around is to do the following:
-#    env CXXFLAGS="-fno-rtti" ../CMake-1.4.7/Source/cmake
+#    env CXXFLAGS="-fno-rtti" ../cmake-1.8.1/bin/cmake
 #
 # This indirectly turns off rtti, because VTK_NO_ANSI_STRING_STREAM is set
 # to 1.  This causes vtkOStrStreamWrapper.cxx to use <strstream> instead

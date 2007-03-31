@@ -17,8 +17,6 @@
 //
 // Include any classes that will override vtk classes.
 //
-#include <vtkVisItTriangle.h>
-#include <vtkVisItQuad.h>
 
 
 //
@@ -41,8 +39,6 @@ class VISIT_VTK_API vtkVisItFactory : public vtkObjectFactory
 //
 // Necessary for each object that will override a vtkObject. 
 //
-VTK_CREATE_CREATE_FUNCTION(vtkVisItTriangle);
-VTK_CREATE_CREATE_FUNCTION(vtkVisItQuad);
 
 
 const char* 
@@ -56,14 +52,6 @@ vtkVisItFactory::GetVTKSourceVersion()
 //
 vtkVisItFactory::vtkVisItFactory()
 {
-  this->RegisterOverride("vtkTriangle", "vtkVisItTriangle",
-                         "vtkVisItTriangle override vtkTriangle",
-                         1,
-                         vtkObjectFactoryCreatevtkVisItTriangle);
-  this->RegisterOverride("vtkQuad", "vtkVisItQuad",
-                         "vtkVisItQuad override vtkQuad",
-                         1,
-                         vtkObjectFactoryCreatevtkVisItQuad);
 }
 
 
@@ -85,6 +73,9 @@ vtkVisItFactory::vtkVisItFactory()
 //    Kathleen Bonnell, Thu Apr 10 18:27:54 PDT 2003   
 //    Register the factory that will allow VisIt to override vtkObjects.
 //
+//    Kathleen Bonnell, Wed Nov 12 16:51:56 PST 2003 
+//    Comment out the VisItFactory until it is actually needed again.
+//
 // ****************************************************************************
 
 void
@@ -92,10 +83,12 @@ InitVTK::Initialize(void)
 {
     vtkDebugStream::Initialize();
 
+#if 0
     // Register the factory that allows VisIt objects to override vtk objects. 
     vtkVisItFactory *factory = vtkVisItFactory::New();
     vtkObjectFactory::RegisterFactory(factory);
     factory->Delete();
+#endif
 }
 
 
