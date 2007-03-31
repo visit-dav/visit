@@ -288,6 +288,10 @@ struct avtDefaultPlotMetaData;
 //    Kathleen Bonnell, Wed Dec 17 14:45:22 PST 2003 
 //    Added SetDefaultPickAttributes, ResetPickLetter. 
 //
+//    Brad Whitlock, Thu Dec 18 12:25:14 PDT 2003
+//    I added the processingFromParent member. I also changed some methods
+//    that deal with processing input to be public slots.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -314,8 +318,6 @@ public:
     void Status(const char *sender, int percent, int curStage,
                 const char *curStageName, int maxStage);
     void ClearStatus(const char *sender = 0);
-    bool ReadFromParentAndCheckForInterruption();
-    void ProcessFromParent();
 
     static void ProcessEventsCB(void *cbData);
     static bool LaunchProgressCB(void *data, int stage);
@@ -327,6 +329,10 @@ public:
 
     void CreateNode(DataNode *node, bool detailed);
     void SetFromNode(DataNode *node);
+
+public slots:
+    bool ReadFromParentAndCheckForInterruption();
+    void ProcessFromParent();
 private:
     void ConnectXfer();
     void ConnectObjectsAndHandlers();
@@ -460,6 +466,7 @@ private:
     bool                   interruptionEnabled;
     std::string            launchEngineAtStartup;
     bool                   blockSocketSignals;
+    bool                   processingFromParent;
     int                    animationStopOpcode;
     int                    iconifyOpcode;
     int                    numEngineRestarts;

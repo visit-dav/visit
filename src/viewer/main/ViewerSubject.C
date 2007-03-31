@@ -118,6 +118,9 @@ using std::string;
 //    Jeremy Meredith, Fri Sep 26 12:50:11 PDT 2003
 //    Added defaultStereoToOn.
 //
+//    Brad Whitlock, Thu Dec 18 12:33:17 PDT 2003
+//    I initialized processingFromParent.
+//
 // ****************************************************************************
 
 ViewerSubject::ViewerSubject() : parent(), xfer(), viewerRPC(),
@@ -156,6 +159,13 @@ ViewerSubject::ViewerSubject() : parent(), xfer(), viewerRPC(),
     // Set by BlockSocketSignals method.
     //
     blockSocketSignals = false;
+
+    //
+    // Set the processingFromParent flag to false to indicate that we are
+    // not currently processing input from the parent and it should be
+    // safe to process input from the client.
+    //
+    processingFromParent = false;
 
     //
     // Initialize some special opcodes for xfer.
@@ -4921,12 +4931,46 @@ ViewerSubject::ReadFromParentAndCheckForInterruption()
 //  Programmer: Eric Brugger
 //  Creation:   October 29, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Thu Dec 18 12:26:10 PDT 2003
+//    I changed this method so it schedules itself to be called again from
+//    the event loop if the engine is executing. I also added code to prevent
+//    it from doing anything if it is called via indirect recursion since that
+//    is bad for this function.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::ProcessFromParent()
 {
-    xfer.Process();
+    if(ViewerEngineManager::Instance()->InExecute())
+    {
+        debug1 << "The viewer engine manager is busy processing a request "
+                  "so we should not process input from the client. Let's "
+                  "reschedule this method to run again later" << endl;
+        QTimer::singleShot(200, this, SLOT(ProcessFromParent()));
+    }
+    else if(processingFromParent)
+    {
+        debug1 << "The viewer tried to recursively enter "
+                  "ViewerSubject::ProcessFromParent!" << endl;
+    }
+    else
+    {
+        TRY
+        {
+            // Process the input from the client.
+            processingFromParent = true;
+            xfer.Process();
+            processingFromParent = false;
+        }
+        CATCH(VisItException)
+        {
+            processingFromParent = false;
+            RETHROW;
+        }
+        ENDTRY
+    }
 }
 
 // ****************************************************************************
@@ -4968,6 +5012,11 @@ ViewerSubject::ProcessFromParent()
 //    Jeremy Meredith, Mon Aug 18 13:08:40 PDT 2003
 //    Changed the return to a CATCH_RETURN now that it's inside a TRY block.
 //
+//    Brad Whitlock, Thu Dec 18 13:12:15 PST 2003
+//    I changed the method so it calls ProcessFromParent instead of calling
+//    Xfer::Process directly so we can get some protection from this method
+//    getting called in the middle of an engine execute.
+//
 // ****************************************************************************
 
 void
@@ -4986,7 +5035,7 @@ ViewerSubject::ReadFromParentAndProcess(int)
         // Try and process the input.
         //
         if (amountRead > 0)
-            xfer.Process();
+            ProcessFromParent();
     }
     CATCH(LostConnectionException)
     {
