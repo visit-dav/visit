@@ -92,6 +92,9 @@
 #    Eric Brugger, Wed Oct 15 16:56:10 PDT 2003
 #    Added NavigateCurve.
 #
+#    Brad Whitlock, Wed Nov 5 14:06:07 PST 2003
+#    Added several annotation colleagues.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -101,6 +104,7 @@ SUBDIRS=Colleagues Interactors Proxies Tools VisWindow
 SRC=$(Colleagues_src) $(Interactors_src) $(Proxies_src) $(Tools_src) $(VisWindow_src)
 
 Colleagues_src= \
+  Colleagues/VisWinAnnotations.C \
   Colleagues/VisWinAxes.C \
   Colleagues/VisWinAxes3D.C \
   Colleagues/VisWinBackground.C \
@@ -117,7 +121,10 @@ Colleagues_src= \
   Colleagues/VisWinTools.C \
   Colleagues/VisWinTriad.C \
   Colleagues/VisWinUserInfo.C \
-  Colleagues/VisWinView.C
+  Colleagues/VisWinView.C \
+  Colleagues/avtAnnotationColleague.C \
+  Colleagues/avtText2DColleague.C \
+  Colleagues/avtTimeSliderColleague.C
 Interactors_src= \
   Interactors/Lineout2D.C \
   Interactors/Navigate2D.C \

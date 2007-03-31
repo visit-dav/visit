@@ -15,7 +15,7 @@
       notset
     </Field>
     <Field name="timeout" label="timeout" type="int">
-      240
+      480
     </Field>
     <Field name="numProcessors" label="numProcessors" type="int">
       1

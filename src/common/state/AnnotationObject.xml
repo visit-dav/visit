@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+  <Attribute name="AnnotationObject" purpose="This class defines a general set of attributes that are used to set the attributes for all annotation objects." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Enum name="AnnotationType">
+      Text2D
+      Text3D
+      TimeSlider
+      Arrow2D
+      Arrow3D
+      Box
+      Image
+    </Enum>
+    <Enum name="FontFamily">
+      Arial
+      Courier
+      Times
+    </Enum>
+    <Field name="objectType" label="ObjectType" type="enum" subtype="AnnotationType">
+      Text2D
+    </Field>
+    <Field name="visible" label="Visible" type="bool">
+      false
+    </Field>
+    <Field name="active" label="Active" type="bool">
+      false
+    </Field>
+    <Field name="position" label="Position" type="floatArray" length="3">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="position2" label="Position2" type="floatArray" length="3">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="textColor" label="Text color" type="color">
+    </Field>
+    <Field name="useForegroundForTextColor" label="Use foreground for text color" type="bool">
+      true
+    </Field>
+    <Field name="color1" label="Color 1" type="color">
+    </Field>
+    <Field name="color2" label="Color 2" type="color">
+    </Field>
+    <Field name="text" label="Text" type="stringVector">
+    </Field>
+    <Field name="fontFamily" label="Font family" type="enum" subtype="FontFamily">
+      Arial
+    </Field>
+    <Field name="fontBold" label="Bold" type="bool">
+      false
+    </Field>
+    <Field name="fontItalic" label="Italic" type="bool">
+      false
+    </Field>
+    <Field name="fontShadow" label="Shadow" type="bool">
+      false
+    </Field>
+    <Field name="floatAttribute1" label="Float attribute 1" type="float">
+      0.000000
+    </Field>
+    <Field name="intAttribute1" label="Integer attribute 1" type="int">
+      0
+    </Field>
+  </Attribute>

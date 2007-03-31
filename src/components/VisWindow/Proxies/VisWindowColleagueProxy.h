@@ -65,6 +65,9 @@
 //    Jeremy Meredith, Fri Nov 14 13:54:29 PST 2003
 //    Added specular coefficients.
 //
+//    Brad Whitlock, Thu Nov 6 14:17:38 PST 2003
+//    Added GetFrameAndState.
+//
 //    Kathleen Bonnell, Wed Dec  3 16:49:14 PST 2003
 //    Added 'ReAddtoolsToRenderWindow'.
 //
@@ -168,6 +171,10 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
                                   { return ProxiedGetSpecularColor(); };
     void                ReAddToolsToRenderWindow()
                                   { ProxiedReAddToolsToRenderWindow(); };
+
+    void                GetFrameAndState(int &a, int &b, int &c, int &d,
+                                         int &e, int &f, int &g) const
+                                  { ProxiedGetFrameAndState(a,b,c,d,e,f,g); };
 };
 
 

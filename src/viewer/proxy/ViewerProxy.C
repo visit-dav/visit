@@ -18,6 +18,7 @@
 
 #include <AnimationAttributes.h>
 #include <AnnotationAttributes.h>
+#include <AnnotationObjectList.h>
 #include <AppearanceAttributes.h>
 #include <ColorTableAttributes.h>
 #include <ExpressionList.h>
@@ -143,6 +144,9 @@
 //    I added viewCurveAttributes.  I split the view attributes into 2d
 //    and 3d parts.
 //
+//    Brad Whitlock, Wed Oct 29 10:57:21 PDT 2003
+//    I added annotationObjectList.
+//
 // ****************************************************************************
 
 ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
@@ -178,6 +182,7 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
     queryAtts            = new QueryAttributes;
     materialAtts         = new MaterialAttributes;
     globalLineoutAtts    = new GlobalLineoutAttributes;
+    annotationObjectList = new AnnotationObjectList;
 
     // Make the proxy observe the SIL restriction attributes.
     silRestrictionAtts->Attach(this);
@@ -301,6 +306,9 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
 //    Eric Brugger, Wed Aug 20 10:45:18 PDT 2003
 //    I added viewCurveAttributes.
 //
+//    Brad Whitlock, Wed Oct 29 10:57:21 PDT 2003
+//    I added annotationObjectList.
+//
 // ****************************************************************************
 
 ViewerProxy::~ViewerProxy()
@@ -342,6 +350,7 @@ ViewerProxy::~ViewerProxy()
     delete queryAtts;
     delete materialAtts;
     delete globalLineoutAtts;
+    delete annotationObjectList;
 
     //
     // Delete the plot attribute state objects.
@@ -697,6 +706,9 @@ ViewerProxy::AddArgument(const std::string &arg)
 //    parsed from the SSH_CLIENT (or related) environment variables.  Added
 //    ability to specify an SSH port.
 //
+//    Brad Whitlock, Wed Oct 29 10:58:39 PDT 2003
+//    Added annotationOptionsList.
+//
 // ****************************************************************************
 
 void
@@ -767,6 +779,7 @@ ViewerProxy::Create()
     xfer->Add(queryAtts);
     xfer->Add(materialAtts);
     xfer->Add(globalLineoutAtts);
+    xfer->Add(annotationObjectList);
 
     xfer->ListObjects();
 
@@ -2773,6 +2786,174 @@ ViewerProxy::ResetAnnotationAttributes()
     //
     // Issue the RPC.
     //
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::AddAnnotationObject
+//
+// Purpose: 
+//   Tells the viewer to add a new annotation object of the specifed type.
+//
+// Arguments:
+//   annotType : The type of annotation object to add. This argument corresponds
+//               to the AnnotationType enum in AnnotationObject.h
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 10:53:01 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::AddAnnotationObject(int annotType)
+{
+    viewerRPC->SetRPCType(ViewerRPC::AddAnnotationObjectRPC);
+    viewerRPC->SetIntArg1(annotType);
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::HideActiveAnnotationObjects
+//
+// Purpose: 
+//   Hides the active annotation objects.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 10:54:59 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::HideActiveAnnotationObjects()
+{
+    viewerRPC->SetRPCType(ViewerRPC::HideActiveAnnotationObjectsRPC);
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::DeleteActiveAnnotationObjects
+//
+// Purpose: 
+//   Deletes the active annotation objects.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 10:54:59 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::DeleteActiveAnnotationObjects()
+{
+    viewerRPC->SetRPCType(ViewerRPC::DeleteActiveAnnotationObjectsRPC);
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::RaiseActiveAnnotationObjects
+//
+// Purpose: 
+//   Raises the active annotation objects.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 10:54:59 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::RaiseActiveAnnotationObjects()
+{
+    viewerRPC->SetRPCType(ViewerRPC::RaiseActiveAnnotationObjectsRPC);
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::LowersActiveAnnotationObjects
+//
+// Purpose: 
+//   Lowers the active annotation objects.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 10:54:59 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::LowerActiveAnnotationObjects()
+{
+    viewerRPC->SetRPCType(ViewerRPC::LowerActiveAnnotationObjectsRPC);
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::SetAnnotationObjectOptions
+//
+// Purpose: 
+//   Tells the viewer to update the annotations using the options in the
+//   annotation options list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 10:54:59 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::SetAnnotationObjectOptions()
+{
+    viewerRPC->SetRPCType(ViewerRPC::SetAnnotationObjectOptionsRPC);
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::SetDefaultAnnotationObjectList
+//
+// Purpose: 
+//   Tells the viewer to set the default annotation object list using the
+//   client annotation object list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Nov 7 14:12:25 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::SetDefaultAnnotationObjectList()
+{
+    viewerRPC->SetRPCType(ViewerRPC::SetDefaultAnnotationObjectListRPC);
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::ResetAnnotationObjectList
+//
+// Purpose: 
+//   Tells the viewer to set the client annotation object list using the
+//   default annotation object list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Nov 7 14:12:25 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::ResetAnnotationObjectList()
+{
+    viewerRPC->SetRPCType(ViewerRPC::ResetAnnotationObjectListRPC);
     viewerRPC->Notify();
 }
 

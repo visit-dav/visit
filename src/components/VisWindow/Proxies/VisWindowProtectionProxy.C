@@ -899,3 +899,26 @@ VisWindowProtectionProxy::ProxiedReAddToolsToRenderWindow()
 {
     viswin->ReAddToolsToRenderWindow();
 }
+
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetFrameAndState
+//
+// Purpose: 
+//   Returns the vis window's frame and state information.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 6 14:16:54 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindowProtectionProxy::ProxiedGetFrameAndState(int &nFrames,
+    int &startFrame, int &curFrame, int &endFrame,
+    int &startState, int &curState, int &endState) const
+{
+    viswin->GetFrameAndState(nFrames, startFrame, curFrame, endFrame,
+                             startState, curState, endState);
+}

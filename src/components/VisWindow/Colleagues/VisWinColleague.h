@@ -57,7 +57,10 @@ class     ColorAttribute;
 //    
 //    Kathleen Bonnell, Fri Jun  6 08:57:33 PDT 2003 
 //    Added virtual methods FullFrameOn, FullFrameOff.  
-//    
+//
+//    Brad Whitlock, Thu Nov 6 12:10:43 PDT 2003
+//    Added virtual method SetFrameAndState.
+//
 //    Jeremy Meredith, Fri Nov 14 17:13:53 PST 2003
 //    Added specular properties.
 //
@@ -109,6 +112,9 @@ class VISWINDOW_API VisWinColleague
 
     virtual void              FullFrameOn(const double, const int)       {;};
     virtual void              FullFrameOff(void)       {;};
+
+    virtual void              SetFrameAndState(int, int, int, int,
+                                               int, int, int) {;};
 
   protected:
     VisWindowColleagueProxy  &mediator;

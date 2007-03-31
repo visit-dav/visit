@@ -35,7 +35,7 @@
 
 QvisRenderingWindow::QvisRenderingWindow(const char *caption,
     const char *shortName, QvisNotepadArea *n) :
-    QvisPostableWindowSimpleObserver(caption, shortName, n)
+    QvisPostableWindowSimpleObserver(caption, shortName, n, ApplyButton)
 {
     renderAtts = 0;
     windowInfo = 0;

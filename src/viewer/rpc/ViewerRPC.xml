@@ -119,6 +119,14 @@
       ExportEntireStateRPC
       ImportEntireStateRPC
       ResetPickAttributesRPC
+      AddAnnotationObjectRPC
+      HideActiveAnnotationObjectsRPC
+      DeleteActiveAnnotationObjectsRPC
+      RaiseActiveAnnotationObjectsRPC
+      LowerActiveAnnotationObjectsRPC
+      SetAnnotationObjectOptionsRPC
+      SetDefaultAnnotationObjectListRPC
+      ResetAnnotationObjectListRPC
       MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">

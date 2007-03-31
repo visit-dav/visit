@@ -1,19 +1,22 @@
 #ifndef QVIS_ANNOTATION_WINDOW_H
 #define QVIS_ANNOTATION_WINDOW_H
 #include <gui_exports.h>
-#include <QvisPostableWindowObserver.h>
+#include <QvisPostableWindowSimpleObserver.h>
 
 // Forward declarations.
 class AnnotationAttributes;
+class AnnotationObjectList;
 class QButtonGroup;
 class QCheckBox;
 class QComboBox;
 class QGroupBox;
 class QLabel;
+class QListBox;
 class QNarrowLineEdit;
 class QPushButton;
 class QTabWidget;
 class QVBox;
+class QvisAnnotationObjectInterface;
 class QvisColorButton;
 class QvisLineWidthWidget;
 
@@ -46,26 +49,40 @@ class QvisLineWidthWidget;
 //   Brad Whitlock, Mon Nov 10 16:27:45 PST 2003
 //   I added a button to turn off all annotation.
 //
+//   Brad Whitlock, Thu Oct 30 16:44:49 PST 2003
+//   I made the window observe another object so it's now a simple observer.
+//   I added controls to create and manage lists of annotations.
+//
 // ****************************************************************************
 
-class GUI_API QvisAnnotationWindow : public QvisPostableWindowObserver
+class GUI_API QvisAnnotationWindow : public QvisPostableWindowSimpleObserver
 {
     Q_OBJECT
 public:
-    QvisAnnotationWindow(AnnotationAttributes *subj,
-                         const char *caption = 0,
+    QvisAnnotationWindow(const char *caption = 0,
                          const char *shortName = 0,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisAnnotationWindow();
     virtual void CreateWindowContents();
 
+    void ConnectAnnotationAttributes(AnnotationAttributes *a);
+    void ConnectAnnotationObjectList(AnnotationObjectList *a);
+    virtual void SubjectRemoved(Subject *TheRemovedSubject);
+
     virtual void CreateNode(DataNode *);
     virtual void SetFromNode(DataNode *, const int *borders);
 protected:
     virtual void UpdateWindow(bool doAll);
+    void UpdateAnnotationControls(bool doAll);
+    void UpdateAnnotationObjectControls(bool doAll);
     void Apply(bool dontIgnore = false);
+    void ApplyObjectList(bool dontIgnore = false);
     void SetButtonGroup(QButtonGroup *bg, bool *vals);
     void GetCurrentValues(int which_widget);
+    void Create2DTab();
+    void Create3DTab();
+    void CreateColorTab();
+    void CreateObjectsTab();
 private slots:
     virtual void apply();
     virtual void makeDefault();
@@ -109,17 +126,30 @@ private slots:
     void databaseInfoChecked(bool val);
     void legendChecked(bool val);
     void turnOffAllAnnotations();
+
+    // Slots for the objects tab.
+    void applyObjectListChanges();
+    void setUpdateForWindow(bool);
+    void addNewAnnotationObject(int);
+    void setActiveAnnotations();
+    void hideActiveAnnotations();
+    void deleteActiveAnnotations();
 private:
     AnnotationAttributes *annotationAtts;
+    AnnotationObjectList *annotationObjectList;
+
+    QvisAnnotationObjectInterface **objectInterfaces;
+    int                             nObjectInterfaces;
+    QvisAnnotationObjectInterface  *displayInterface;
 
     QCheckBox       *userInfo;
     QCheckBox       *databaseInfo;
     QCheckBox       *legendInfo;
     QPushButton     *turnOffAllButton;
     QTabWidget      *tabs;
+
+    // 2D tab widgets
     QVBox           *page2D;
-    QVBox           *page3D;
-    QGroupBox       *pageColor;
     QCheckBox       *axesFlagToggle2D;
     QCheckBox       *axesAutoSetTicksToggle2D;
     QGroupBox       *axesGroup2D;
@@ -145,6 +175,8 @@ private:
     QvisLineWidthWidget *axesLineWidth2D;
     QComboBox       *axesTicksComboBox2D;
     QComboBox       *axesTickLocationComboBox2D;
+    // 3D tab widgets
+    QVBox           *page3D;
     QCheckBox       *axes3DFlagToggle;
     QGroupBox       *axes3DGroup;
     QButtonGroup    *axisLabelsButtons;
@@ -154,6 +186,8 @@ private:
     QComboBox       *axes3DTypeComboBox;
     QCheckBox       *triadFlagToggle;
     QCheckBox       *bboxFlagToggle;
+    // Color tab widgets
+    QGroupBox       *pageColor;
     QvisColorButton *backgroundColorButton;
     QvisColorButton *foregroundColorButton;
     QButtonGroup    *backgroundStyleButtons;
@@ -163,6 +197,12 @@ private:
     QvisColorButton *gradientColor1Button;
     QLabel          *gradientColor2Label;
     QvisColorButton *gradientColor2Button;
+    // Objects tab widgets
+    QGroupBox       *pageObjects;
+    QButtonGroup    *objButtonGroup;
+    QListBox        *annotationListBox;
+    QPushButton     *hideShowAnnotationButton;
+    QPushButton     *deleteAnnotationButton;
 
     int             activeTab;
 };

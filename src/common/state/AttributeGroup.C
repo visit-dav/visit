@@ -2275,8 +2275,13 @@ static int indentLevel = 0;
 //   Brad Whitlock, Mon Feb 10 11:32:50 PDT 2003
 //   Made it work on Windows.
 //
+//   Brad Whitlock, Thu Oct 30 14:21:57 PST 2003
+//   I made uchar print as ints.
+//
 // ****************************************************************************
-ostream& operator<<(ostream& os, const AttributeGroup& atts)
+
+ostream &
+operator << (ostream& os, const AttributeGroup& atts)
 {
     static const char* indentSpace[] = {"",
                                         "",
@@ -2310,8 +2315,14 @@ ostream& operator<<(ostream& os, const AttributeGroup& atts)
 
         // output beginning of line for this field
         os << indentSpace[indentLevel];
-        os << "    " << '(' << k << ')'
-           << atts.GetFieldTypeName(k).c_str() << " "
+
+        // output selection status too
+        if (pos->selected && !isRecursive)
+            os << "    +" << '(' << k << ')';
+        else
+            os << "     " << '(' << k << ')';
+
+        os << atts.GetFieldTypeName(k).c_str() << " "
            << atts.GetFieldName(k).c_str() << " = ";
 
         // output the "value" for this field
@@ -2323,7 +2334,7 @@ ostream& operator<<(ostream& os, const AttributeGroup& atts)
             os << *((char *)pos->address);
             break;
         case msgTypeUnsignedChar:
-            os << *((unsigned char *)pos->address);
+            os << int(*((unsigned char *)pos->address));
             break;
         case msgTypeInt:
             os << *((int *)pos->address);
@@ -2363,7 +2374,7 @@ ostream& operator<<(ostream& os, const AttributeGroup& atts)
         case msgTypeListUnsignedChar:
             {   unsigned char *ucptr = (unsigned char *) pos->address;
                 for(i = 0; i < pos->length; ++i)
-                    os << ", " << ucptr[i]; 
+                    os << ", " << int(ucptr[i]); 
             }
             break;
         case msgTypeListInt:
@@ -2434,7 +2445,7 @@ ostream& operator<<(ostream& os, const AttributeGroup& atts)
             {   unsignedCharVector *vc = (unsignedCharVector *)pos->address;
                 unsignedCharVector::iterator cpos;
                 for(cpos = vc->begin(); cpos != vc->end(); ++cpos)
-                    os << ", " << *cpos; 
+                    os << ", " << int(*cpos); 
             }
             break;
         case msgTypeVectorInt:
@@ -2490,11 +2501,7 @@ ostream& operator<<(ostream& os, const AttributeGroup& atts)
             ; // nothing.
         }            
 
-        // output selection status too
-        if (pos->selected && !isRecursive)
-            os << " is selected" << endl;
-        else
-            os << " is NOT selected" << endl;
+        os << endl;
 
         k++;
     }

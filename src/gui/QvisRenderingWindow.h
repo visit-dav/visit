@@ -50,13 +50,14 @@ public:
 
     void ConnectRenderingAttributes(RenderingAttributes *);
     void ConnectWindowInformation(WindowInformation *);
+protected slots:
+    virtual void apply();
 protected:
     virtual void UpdateWindow(bool doAll);
     void UpdateOptions(bool doAll);
     void UpdateInformation(bool doAll);
     void Apply(bool ignore = false);
 private slots:
-    void apply();
     void antialiasingToggled(bool);
     void objectRepresentationChanged(int);
     void displayListToggled(bool);

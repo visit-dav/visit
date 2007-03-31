@@ -282,6 +282,9 @@ struct avtDefaultPlotMetaData;
 //    Kathleen Bonnell, Wed Nov 26 14:35:29 PST 2003 
 //    Added ResetPickAttributes. 
 //    
+//    Brad Whitlock, Wed Oct 29 11:00:55 PDT 2003
+//    Added methods to handle several new annotation RPCs.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -375,9 +378,19 @@ private:
     void WriteConfigFile();
     void ExportEntireState();
     void ImportEntireState();
+
     void SetAnnotationAttributes();
     void SetDefaultAnnotationAttributes();
     void ResetAnnotationAttributes();
+    void AddAnnotationObject();
+    void HideActiveAnnotationObjects();
+    void DeleteActiveAnnotationObjects();
+    void RaiseActiveAnnotationObjects();
+    void LowerActiveAnnotationObjects();
+    void SetAnnotationObjectOptions();
+    void SetDefaultAnnotationObjectList();
+    void ResetAnnotationObjectList();
+
     void SetKeyframeAttributes();
     void SetViewCurve();
     void SetView2D();

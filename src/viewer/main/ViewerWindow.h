@@ -18,20 +18,22 @@
 #include <WindowAttributes.h>
 #include <vectortypes.h>
 
+class AnimationAttributes;
+class AnnotationObjectList;
+class AttributeSubject;
+class AttributeSubjectMap;
 class DataNode;
 class Line;
+class LightList;
 class PickAttributes;
+
+class avtToolInterface;
+
 class VisWindow;
 class ViewerActionManager;
 class ViewerAnimation;
 class ViewerPopupMenu;
 class ViewerToolbar;
-class AnimationAttributes;
-class AnnotationAttributes;
-class AttributeSubject;
-class AttributeSubjectMap;
-class avtToolInterface;
-class LightList;
 
 struct ExternalRenderRequestInfo
 {
@@ -261,6 +263,9 @@ struct ExternalRenderRequestInfo
 //    Eric Brugger, Thu Oct  9 11:06:16 PDT 2003
 //    I deleted Compute2DScaleFactor.  I deleted fullFrame.
 //
+//    Brad Whitlock, Wed Oct 29 12:06:40 PDT 2003
+//    I added several methods to set annotation properties.
+//
 //    Mark C. Miller, Tue Nov 11 18:15:41 PST 2003
 //    Introduced several new methods to refactored
 //    ExternalRenderRequestCallback
@@ -370,6 +375,17 @@ public:
     void SetAnnotationAttributes(const AnnotationAttributes *);
     const AnnotationAttributes *GetAnnotationAttributes() const;
     void CopyAnnotationAttributes(const ViewerWindow *);
+    void CopyAnnotationObjectList(const ViewerWindow *);
+    void AddAnnotationObject(int annotType);
+    void HideActiveAnnotationObjects();
+    void DeleteActiveAnnotationObjects();
+    void DeleteAllAnnotationObjects();
+    void RaiseActiveAnnotationObjects();
+    void LowerActiveAnnotationObjects();
+    void SetAnnotationObjectOptions(const AnnotationObjectList &al);
+    void CreateAnnotationObjectsFromList(const AnnotationObjectList &al);
+    void UpdateAnnotationObjectList(AnnotationObjectList &al) const;
+    void SetFrameAndState(int, int, int, int, int, int, int);
 
     void SetLightList(const LightList *);
     const LightList *GetLightList() const;

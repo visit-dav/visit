@@ -19,6 +19,7 @@
 
 class AnimationAttributes;
 class AnnotationAttributes;
+class AnnotationObjectList;
 class DataNode;
 class GlobalAttributes;
 class KeyframeAttributes;
@@ -250,6 +251,9 @@ typedef struct {
 //    Brad Whitlock, Mon Nov 3 10:13:19 PDT 2003
 //    Added more arguments to the ReplaceDatabase method.
 //
+//    Brad Whitlock, Wed Oct 29 11:13:55 PDT 2003
+//    I added method to deal with advanced annotation features.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public QObject
@@ -289,8 +293,17 @@ class VIEWER_API ViewerWindowManager : public QObject
     void SaveWindow(int windowIndex = -1);
     void SetActiveWindow(const int windowId);
     void SetAnimationAttsFromClient();
+
     void SetAnnotationAttsFromClient();
     void SetAnnotationAttsFromDefault();
+    void AddAnnotationObject(int annotType);
+    void HideActiveAnnotationObjects();
+    void DeleteActiveAnnotationObjects();
+    void RaiseActiveAnnotationObjects();
+    void LowerActiveAnnotationObjects();
+    void SetAnnotationObjectOptions();
+    void UpdateAnnotationObjectList();
+
     void SetKeyframeAttsFromClient();
     void SetFrameIndex(int frame, int windowIndex = -1);
     void NextFrame(int windowIndex = -1);
@@ -385,6 +398,9 @@ class VIEWER_API ViewerWindowManager : public QObject
     static void                          ViewCallback(VisWindow *);
     static RenderingAttributes           *GetRenderingAttributes();
     static void                          RenderInformationCallback(void *data);
+    static AnnotationObjectList          *GetAnnotationObjectList();
+    static AnnotationObjectList          *GetDefaultAnnotationObjectList();
+    static void                          SetDefaultAnnotationObjectListFromClient();
   signals:
     void createWindow(ViewerWindow *);
     void deleteWindow(ViewerWindow *);
@@ -432,6 +448,8 @@ class VIEWER_API ViewerWindowManager : public QObject
     static LightList                     *lightListDefaultAtts;
     static PrinterAttributes             *printerAtts;
     static RenderingAttributes           *renderAtts;
+    static AnnotationObjectList          *annotationObjectList;
+    static AnnotationObjectList          *defaultAnnotationObjectList;
 
     int               layout;
     int               layoutIndex;

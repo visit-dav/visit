@@ -32,8 +32,10 @@
 
 class vtkRenderer;
 
+class AnnotationObjectList;
 class Line;
 class PickAttributes;
+class VisWinAnnotations;
 class VisWinAxes;
 class VisWinAxes3D;
 class VisWinBackground;
@@ -231,6 +233,9 @@ class VisitInteractor;
 //    Jeremy Meredith, Fri Nov 14 17:48:18 PST 2003
 //    Added specular options.
 //
+//    Brad Whitlock, Wed Oct 29 12:15:19 PDT 2003
+//    Added methods to do fancy annotation operations.
+//
 //    Kathleen Bonnell, Wed Dec  3 16:58:20 PST 2003
 //    Added ReAddToolsToRenderWindow, TransparenciesExist.
 //
@@ -334,6 +339,22 @@ public:
 
     void                 SetAnnotationAtts(const AnnotationAttributes *);
     const AnnotationAttributes *GetAnnotationAtts() const;
+    void                 AddAnnotationObject(int annotType);
+    void                 HideActiveAnnotationObjects();
+    void                 DeleteActiveAnnotationObjects();
+    void                 DeleteAllAnnotationObjects();
+    void                 RaiseActiveAnnotationObjects();
+    void                 LowerActiveAnnotationObjects();
+    void                 SetAnnotationObjectOptions(const AnnotationObjectList &al);
+    void                 UpdateAnnotationObjectList(AnnotationObjectList &al);
+    void                 CreateAnnotationObjectsFromList(const AnnotationObjectList &al);
+
+    void                 SetFrameAndState(int nFrames,
+                                          int startFrame, int curFrame, int endFrame,
+                                          int startState, int curState, int endState);
+    void                 GetFrameAndState(int &nFrames,
+                                          int &startFrame, int &curFrame, int &endFrame,
+                                          int &startState, int &curState, int &endState) const;
 
     void                 SetLightList(const LightList *);
     const LightList     *GetLightList() const;
@@ -410,6 +431,7 @@ protected:
     VisWinTriad                       *triad;
     VisWinUserInfo                    *userInfo;
     VisWinView                        *view;
+    VisWinAnnotations                 *annotations;
 
     AnnotationAttributes               annotationAtts;
     LightList                          lightList;
@@ -421,6 +443,7 @@ protected:
     int                                backgroundMode;
     float                              viewportLeft, viewportRight,
                                        viewportBottom, viewportTop;
+    int                                frameAndState[7];
 
     WINDOW_MODE                        mode;
     bool                               updatesEnabled;

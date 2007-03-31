@@ -88,12 +88,17 @@ lastChild(QListView *r)
 //    Jeremy Meredith, Tue Feb  4 17:49:09 PST 2003
 //    Initialize viewItem.
 //
+//    Brad Whitlock, Fri Nov 7 17:29:56 PST 2003
+//    Added ApplyButton flag.
+//
 // ****************************************************************************
+
 QvisKeyframeWindow::QvisKeyframeWindow(KeyframeAttributes *subj,
                                        const char *caption,
                                        const char *shortName,
                                        QvisNotepadArea *notepad)
-    : QvisPostableWindowSimpleObserver(caption, shortName, notepad, false)
+    : QvisPostableWindowSimpleObserver(caption, shortName, notepad,
+                                       ApplyButton, false)
 {
     kfAtts = subj;
     kfAtts->Attach(this);

@@ -13,6 +13,7 @@
 #endif
 
 #include <AnimationAttributes.h>
+#include <AnnotationObjectList.h>
 #include <DataNode.h>
 #include <GlobalAttributes.h>
 #include <KeyframeAttributes.h>
@@ -83,6 +84,8 @@ ViewerWindowManagerAttributes *ViewerWindowManager::windowAtts=0;
 PrinterAttributes *ViewerWindowManager::printerAtts=0;
 WindowInformation *ViewerWindowManager::windowInfo=0;
 RenderingAttributes *ViewerWindowManager::renderAtts=0;
+AnnotationObjectList *ViewerWindowManager::annotationObjectList = 0;
+AnnotationObjectList *ViewerWindowManager::defaultAnnotationObjectList = 0;
 
 //
 // Global variables.  These should be removed.
@@ -458,6 +461,9 @@ ViewerWindowManager::SetGeometry(const char *windowGeometry)
 //    I moved part of the functionality to SimpleAddWindow and added a
 //    call to it.
 //
+//    Brad Whitlock, Fri Nov 7 10:03:35 PDT 2003
+//    I added code to copy the annotation object list.
+//
 // ****************************************************************************
 
 void
@@ -483,6 +489,7 @@ ViewerWindowManager::AddWindow(bool copyAtts)
     {
         windows[windowIndex]->CopyGeneralAttributes(windows[activeWindow]);
         windows[windowIndex]->CopyAnnotationAttributes(windows[activeWindow]);
+        windows[windowIndex]->CopyAnnotationObjectList(windows[activeWindow]);
         windows[windowIndex]->CopyLightList(windows[activeWindow]);
         windows[windowIndex]->CopyViewAttributes(windows[activeWindow]);
         windows[windowIndex]->CopyAnimation(windows[activeWindow]);
@@ -598,7 +605,9 @@ ViewerWindowManager::ClearWindow(int windowIndex)
 // Creation:   Thu Jun 27 16:47:26 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Nov 6 17:15:32 PST 2003
+//   I made it copy the annotation object list.
+//
 // ****************************************************************************
 
 void
@@ -613,8 +622,12 @@ ViewerWindowManager::CopyAnnotationsToWindow(int from, int to)
     if(windows[from] != 0 && windows[to] != 0)
     {
         windows[to]->CopyAnnotationAttributes(windows[from]);
+        windows[to]->CopyAnnotationObjectList(windows[from]);
         if(to == activeWindow)
+        {
             UpdateAnnotationAtts();
+            UpdateAnnotationObjectList();
+        }
     }
 }
 
@@ -3466,6 +3479,9 @@ ViewerWindowManager::RenderInformationCallback(void *data)
 //   Brad Whitlock, Fri Oct 24 17:10:07 PST 2003
 //   Added code to update the expression list.
 //
+//   Brad Whitlock, Wed Oct 29 11:39:22 PDT 2003
+//   Added code to update the annotation object list.
+//
 // ****************************************************************************
 
 void
@@ -3490,6 +3506,7 @@ ViewerWindowManager::UpdateAllAtts()
         plotList->UpdateExpressionList(true);
         keyframeClientAtts->SetEnabled(plotList->GetKeyframeMode());
         keyframeClientAtts->Notify();
+        UpdateAnnotationObjectList();
     }
 
     //
@@ -3870,6 +3887,167 @@ ViewerWindowManager::SetAnnotationAttsFromDefault()
     // Update the client's annotation attributes
     //
     UpdateAnnotationAtts();
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::AddAnnotationObject
+//
+// Purpose: 
+//   Tells the viewer window to add a new annotation object.
+//
+// Arguments:
+//   annotType : The type of annotation object to add.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 11:33:04 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::AddAnnotationObject(int annotType)
+{
+    if(windows[activeWindow] != 0)
+    {
+        windows[activeWindow]->AddAnnotationObject(annotType);
+        UpdateAnnotationObjectList();
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::HideActiveAnnotationObjects
+//
+// Purpose: 
+//   Hides the active annotation objects.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 11:34:33 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::HideActiveAnnotationObjects()
+{
+    if(windows[activeWindow] != 0)
+    {
+        windows[activeWindow]->HideActiveAnnotationObjects();
+        UpdateAnnotationObjectList();
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::DeleteActiveAnnotationObjects
+//
+// Purpose: 
+//   Deletes the active annotation objects.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 11:34:33 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::DeleteActiveAnnotationObjects()
+{
+    if(windows[activeWindow] != 0)
+    {
+        windows[activeWindow]->DeleteActiveAnnotationObjects();
+        UpdateAnnotationObjectList();
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::RaiseActiveAnnotationObjects
+//
+// Purpose: 
+//   Raises the active annotation objects.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 11:34:33 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::RaiseActiveAnnotationObjects()
+{
+    if(windows[activeWindow] != 0)
+    {
+        windows[activeWindow]->RaiseActiveAnnotationObjects();
+        UpdateAnnotationObjectList();
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::LowerActiveAnnotationObjects
+//
+// Purpose: 
+//   Lowers the active annotation objects.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 11:34:33 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::LowerActiveAnnotationObjects()
+{
+    if(windows[activeWindow] != 0)
+    {
+        windows[activeWindow]->LowerActiveAnnotationObjects();
+        UpdateAnnotationObjectList();
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::SetAnnotationObjectOptions
+//
+// Purpose: 
+//   Tells the viewer window to set the annotation object options.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 11:34:33 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::SetAnnotationObjectOptions()
+{
+    if(windows[activeWindow] != 0)
+        windows[activeWindow]->SetAnnotationObjectOptions(*annotationObjectList);
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::UpdateAnnotationList
+//
+// Purpose: 
+//   Sends the annotation object list for the active window back to the client.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 11:26:42 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::UpdateAnnotationObjectList()
+{
+    if(windows[activeWindow] != 0)
+    {
+        windows[activeWindow]->UpdateAnnotationObjectList(*annotationObjectList);
+        annotationObjectList->Notify();
+    }
 }
 
 // ****************************************************************************
@@ -4964,15 +5142,10 @@ ViewerWindowManager::ViewCallback(VisWindow *vw)
     //
     // Mark the view as having been modified.
     //
-    switch (instance->windows[index]->GetWindowMode())
-    {
-      case WINMODE_CURVE:
+    if(instance->windows[index]->GetWindowMode() == WINMODE_CURVE)
         instance->windows[index]->SetViewModifiedCurve();
-        break;
-      case WINMODE_2D:
+    else if(instance->windows[index]->GetWindowMode() == WINMODE_2D)
         instance->windows[index]->SetViewModified2d();
-        break;
-    }
 
     //
     // Update the view attributes in the client and any locked windows.
@@ -5470,6 +5643,74 @@ ViewerWindowManager::GetRenderingAttributes()
 }
 
 // ****************************************************************************
+// Method: ViewerWindowManager::GetAnnotationObjectList
+//
+// Purpose: 
+//   Returns a pointer to the annotation object list.
+//
+// Returns:    A pointer to the annotation object list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 11:20:07 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AnnotationObjectList *
+ViewerWindowManager::GetAnnotationObjectList()
+{
+    if(annotationObjectList == 0)
+        annotationObjectList = new AnnotationObjectList;
+
+    return annotationObjectList;
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::GetDefaultAnnotationObjectList
+//
+// Purpose: 
+//   Returns a pointer to the default annotation object list.
+//
+// Returns:    A pointer to the annotation object list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 11:20:07 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AnnotationObjectList *
+ViewerWindowManager::GetDefaultAnnotationObjectList()
+{
+    if(defaultAnnotationObjectList == 0)
+        defaultAnnotationObjectList = new AnnotationObjectList;
+
+    return defaultAnnotationObjectList;
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::SetDefaultAnnotationObjectListFromClient
+//
+// Purpose: 
+//   Copies the client annotation object list into the default annotation
+//   object list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Nov 7 14:04:10 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::SetDefaultAnnotationObjectListFromClient()
+{
+    *(GetDefaultAnnotationObjectList()) = *(GetAnnotationObjectList());
+}
+
+// ****************************************************************************
 // Method: ViewerWindowManager::GetLineoutWindow
 //
 // Purpose:    
@@ -5930,10 +6171,27 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode)
         return;
 
     int i, c;
-    int newNWindows = windowsNode->GetNumChildren();
     DataNode *sizeNode = 0;
     DataNode *locationNode = 0;
- 
+
+    //
+    // Get the number of viewer windows that we've found in the Windows node.
+    // Print to the debug logs if we get an object that is *not* a 
+    // ViewerWindow.
+    //
+    int newNWindows = 0;
+    DataNode **vWindowNodes = windowsNode->GetChildren();
+    for(int k = 0; k < windowsNode->GetNumChildren(); ++k)
+    {
+        if(vWindowNodes[k]->GetKey() == "ViewerWindow")
+            ++newNWindows;
+        else
+        {
+            debug1 << "ViewerWindowManager::SetFromNode: Bad Window Name!"
+                   << "name=" << vWindowNodes[k]->GetKey().c_str() << endl;
+        }
+    }
+
     if(nWindows > newNWindows)
     {
         int d = nWindows - newNWindows;

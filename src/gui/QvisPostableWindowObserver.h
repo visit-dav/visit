@@ -1,8 +1,7 @@
 #ifndef QVIS_POSTABLE_WINDOW_OBSERVER_H
 #define QVIS_POSTABLE_WINDOW_OBSERVER_H
 #include <gui_exports.h>
-#include <QvisPostableWindow.h>
-#include <Observer.h>
+#include <QvisPostableWindowSimpleObserver.h>
 
 // ****************************************************************************
 // Class: QvisPostableWindowObserver
@@ -31,18 +30,16 @@
 //   Brad Whitlock, Fri Feb 15 11:17:34 PDT 2002
 //   Changed the protection on some of the methods.
 //
+//   Brad Whitlock, Fri Nov 7 16:10:58 PST 2003
+//   I made it inherit from QvisPostableWindowSimpleObserver and I moved
+//   some of the functionality there too.
+//
 // ****************************************************************************
 
-class GUI_API QvisPostableWindowObserver : public QvisPostableWindow, public Observer
+class GUI_API QvisPostableWindowObserver : public QvisPostableWindowSimpleObserver
 {
     Q_OBJECT
 public:
-    static const int NoExtraButtons;
-    static const int ApplyButton;
-    static const int MakeDefaultButton;
-    static const int ResetButton;
-    static const int AllExtraButtons;
-
     QvisPostableWindowObserver(Subject *subj,
                                const char *caption = 0,
                                const char *shortName = 0,
@@ -50,20 +47,14 @@ public:
                                int buttonCombo = AllExtraButtons,
                                bool stretch = true);
     virtual ~QvisPostableWindowObserver();
-    virtual void Update(Subject *TheChangedSubject);
-    virtual void CreateEntireWindow();
+
+    virtual void SubjectRemoved(Subject *TheRemovedSubject);
 
 public slots:
     virtual void apply();
-    virtual void makeDefault();
-    virtual void reset();
 protected:
     virtual void CreateWindowContents() = 0;
-private slots:
-    void makeDefaultHelper();
-private:
-    int          buttonCombination;
-    bool         stretchWindow;
+    Subject *subject;
 };
 
 #endif

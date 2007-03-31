@@ -34,6 +34,7 @@
 #include <GetFileListException.h>
 #include <SaveWindowAttributes.h>
 #include <AnnotationAttributes.h>
+#include <AnnotationObjectList.h>
 #include <AppearanceAttributes.h>
 #include <HostProfile.h>
 #include <GlobalLineoutAttributes.h>
@@ -1613,6 +1614,9 @@ QvisGUIApplication::CreateMainWindow()
 //   I hooked up a new signal/slot between the main window and the preferenes
 //   window.
 //
+//   Brad Whitlock, Fri Oct 31 14:24:24 PST 2003
+//   I changed how the annotation window is initialized.
+//
 // ****************************************************************************
 
 bool
@@ -1707,8 +1711,11 @@ QvisGUIApplication::CreateWindows(int startPercent, int endPercent)
     case 9:
         // Create the annotation window.
         SplashScreenProgress("Creating Annotation window...", PERCENT);
-        annotationWin = new QvisAnnotationWindow(viewer->GetAnnotationAttributes(),
-            "Annotation", "Annotation", mainWin->GetNotepad());
+        annotationWin = new QvisAnnotationWindow("Annotation", "Annotation",
+            mainWin->GetNotepad());
+        annotationWin->ConnectAnnotationAttributes(viewer->GetAnnotationAttributes());
+        annotationWin->ConnectAnnotationObjectList(
+            viewer->GetAnnotationObjectList());
         connect(mainWin, SIGNAL(activateAnnotationWindow()),
                 annotationWin, SLOT(show()));
         otherWindows.push_back(annotationWin);

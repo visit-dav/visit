@@ -42,8 +42,6 @@ VisWinUserInfo::VisWinUserInfo(VisWindowColleagueProxy &p)
     : VisWinColleague(p)
 {
     infoString = NULL;
-
-    //
     // Create and position the actors.
     //
     infoActor = vtkTextActor::New();

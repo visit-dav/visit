@@ -728,6 +728,10 @@ ViewerFileServer::StartServer(const std::string &host)
 //    parsed from the SSH_CLIENT (or related) environment variables.  Added
 //    ability to specify an SSH port.
 //
+//    Eric Brugger, Wed Dec  3 10:49:39 PST 2003
+//    I modified the routine to add the profile arguments before the unknown
+//    arguments so that they can override the profile arguments.
+//
 // ****************************************************************************
 
 void
@@ -743,11 +747,11 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
     MDServerProxy *newServer = new MDServerProxy;
     TRY
     {
-        // Add regular arguments to the new mdserver proxy.
-        AddArguments(newServer, args);
-
         // Add arguments from a matching host profile to the mdserver proxy.
         AddProfileArguments(newServer, host);
+
+        // Add regular arguments to the new mdserver proxy.
+        AddArguments(newServer, args);
 
         // Get the client machine name options
         HostProfile::ClientHostDetermination chd;

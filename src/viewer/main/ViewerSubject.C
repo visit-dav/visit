@@ -22,6 +22,7 @@
 
 #include <AnimationAttributes.h>
 #include <AnnotationAttributes.h>
+#include <AnnotationObjectList.h>
 #include <AppearanceAttributes.h>
 #include <ColorTableAttributes.h>
 #include <EngineList.h>
@@ -426,9 +427,12 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 // Creation:   Tue Jun 17 14:56:01 PST 2003
 //
 // Modifications:
-//    Eric Brugger, Wed Aug 20 11:11:00 PDT 2003
-//    I added curve view client attributes.
-//   
+//   Eric Brugger, Wed Aug 20 11:11:00 PDT 2003
+//   I added curve view client attributes.
+//
+//   Brad Whitlock, Wed Oct 29 11:03:56 PDT 2003
+//   Added the viewer window manager's annotation object list to xfer.
+//
 // ****************************************************************************
 
 void
@@ -472,6 +476,7 @@ ViewerSubject::ConnectXfer()
     xfer.Add(ViewerQueryManager::Instance()->GetQueryClientAtts());
     xfer.Add(ViewerEngineManager::GetMaterialClientAtts());
     xfer.Add(ViewerQueryManager::Instance()->GetGlobalLineoutClientAtts());
+    xfer.Add(ViewerWindowManager::GetAnnotationObjectList());
 
     //
     // Set up special opcodes and their handler.
@@ -585,7 +590,10 @@ ViewerSubject::ConnectObjectsAndHandlers()
 // Modifications:
 //    Eric Brugger, Wed Aug 20 11:11:00 PDT 2003
 //    I added curve view client attributes.
-//   
+//
+//    Brad Whitlock, Fri Nov 7 13:57:47 PST 2003
+//    I added the default annotation object list to the config manager..
+//
 // ****************************************************************************
 
 void
@@ -611,6 +619,7 @@ ViewerSubject::ConnectConfigManager()
     configMgr->Add(ViewerWindowManager::GetPrinterClientAtts());
     configMgr->Add(ViewerWindowManager::GetRenderingAttributes());
     configMgr->Add(ViewerEngineManager::GetMaterialDefaultAtts());
+    configMgr->Add(ViewerWindowManager::GetDefaultAnnotationObjectList());
 }
 
 // ****************************************************************************
@@ -1022,7 +1031,7 @@ ViewerSubject::LoadOperatorPlugins()
 // Creation:   Tue Jun 17 15:19:27 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4010,6 +4019,175 @@ ViewerSubject::ResetAnnotationAttributes()
 }
 
 // ****************************************************************************
+// Method: ViewerSubject::AddAnnotationObject
+//
+// Purpose: 
+//   Handles the AddAnnotationObject RPC.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 11:10:40 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::AddAnnotationObject()
+{
+    ViewerWindowManager *wM = ViewerWindowManager::Instance();
+    wM->AddAnnotationObject(viewerRPC.GetIntArg1());
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::HideActiveAnnotationObjects
+//
+// Purpose: 
+//   Handles the HideActiveAnnotationObjects RPC.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 11:10:40 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::HideActiveAnnotationObjects()
+{
+    ViewerWindowManager *wM = ViewerWindowManager::Instance();
+    wM->HideActiveAnnotationObjects();
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::DeleteActiveAnnotationObjects
+//
+// Purpose: 
+//   Handles the DeleteActiveAnnotationObjects RPC.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 11:10:40 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::DeleteActiveAnnotationObjects()
+{
+    ViewerWindowManager *wM = ViewerWindowManager::Instance();
+    wM->DeleteActiveAnnotationObjects();
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::RaiseActiveAnnotationObjects
+//
+// Purpose: 
+//   Handles the RaiseActiveAnnotationObjects RPC.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 11:10:40 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::RaiseActiveAnnotationObjects()
+{
+    ViewerWindowManager *wM = ViewerWindowManager::Instance();
+    wM->RaiseActiveAnnotationObjects();
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::LowerActiveAnnotationObjects
+//
+// Purpose: 
+//   Handles the LowerActiveAnnotationObjects RPC.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 11:10:40 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::LowerActiveAnnotationObjects()
+{
+    ViewerWindowManager *wM = ViewerWindowManager::Instance();
+    wM->LowerActiveAnnotationObjects();
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::SetAnnotationObjectOptions
+//
+// Purpose: 
+//   Handles the SetAnnotationObjectOptions RPC.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 11:10:40 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::SetAnnotationObjectOptions()
+{
+    ViewerWindowManager *wM = ViewerWindowManager::Instance();
+    wM->SetAnnotationObjectOptions();
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::SetDefaultAnnotationObjectList
+//
+// Purpose: 
+//   Copies the client annotation object list into the default annotation
+//   object list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Nov 7 14:22:31 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::SetDefaultAnnotationObjectList()
+{
+    ViewerWindowManager::SetDefaultAnnotationObjectListFromClient();
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::ResetAnnotationObjectList
+//
+// Purpose: 
+//   Handles the ResetAnnotationObjectList RPC by copying deleting the
+//   annotation objects in the active window and adding new annotation objects
+//   based on the default annotation object list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Nov 7 14:21:30 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::ResetAnnotationObjectList()
+{
+    ViewerWindowManager *wMgr = ViewerWindowManager::Instance();
+    ViewerWindow *win = wMgr->GetActiveWindow();
+
+    if(win != 0)
+    {
+        win->DeleteAllAnnotationObjects();
+        win->CreateAnnotationObjectsFromList(*wMgr->GetDefaultAnnotationObjectList());
+        wMgr->UpdateAnnotationObjectList();
+    }
+}
+
+// ****************************************************************************
 // Method: ViewerSubject::ResetPickAttributes
 //
 // Purpose: 
@@ -5117,6 +5295,9 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
 //    Kathleen Bonnell, Wed Nov 26 14:33:23 PST 2003 
 //    Added ResetPickAttributesRPC.
 //
+//    Brad Whitlock, Wed Oct 29 11:06:48 PDT 2003
+//    I added several new RPCs for handling annotations.
+//
 // ****************************************************************************
 
 void
@@ -5324,6 +5505,30 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::ResetPickAttributesRPC:
         ResetPickAttributes();
+        break;
+    case ViewerRPC::AddAnnotationObjectRPC:
+        AddAnnotationObject();
+        break;
+    case ViewerRPC::HideActiveAnnotationObjectsRPC:
+        HideActiveAnnotationObjects();
+        break;
+    case ViewerRPC::DeleteActiveAnnotationObjectsRPC:
+        DeleteActiveAnnotationObjects();
+        break;
+    case ViewerRPC::RaiseActiveAnnotationObjectsRPC:
+        RaiseActiveAnnotationObjects();
+        break;
+    case ViewerRPC::LowerActiveAnnotationObjectsRPC:
+        LowerActiveAnnotationObjects();
+        break;
+    case ViewerRPC::SetAnnotationObjectOptionsRPC:
+        SetAnnotationObjectOptions();
+        break;
+    case ViewerRPC::SetDefaultAnnotationObjectListRPC:
+        SetDefaultAnnotationObjectList();
+        break;
+    case ViewerRPC::ResetAnnotationObjectListRPC:
+        ResetAnnotationObjectList();
         break;
     case ViewerRPC::MaxRPC:
         break;
