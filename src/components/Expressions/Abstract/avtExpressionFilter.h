@@ -36,10 +36,16 @@ class     ExprPipelineState;
 //    Store the domain label and index when deriving a variable.  Certain
 //    filters need this information.
 //  
+//    Hank Childs, Fri Oct 24 14:46:20 PDT 2003
+//    Made Evaluator be a friend class so that it could call perform
+//    restriction on the expressions it contains.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionFilter : public avtStreamer
 {
+    friend class             avtExpressionEvaluatorFilter;
+
   public:
                              avtExpressionFilter();
     virtual                 ~avtExpressionFilter();

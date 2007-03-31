@@ -915,10 +915,17 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Kathleen Bonnell, Tue Sep  9 16:51:10 PDT 2003 
 //    Always call QueryMesh, don't keep vars of type AVT_MESH in pickAtts'
 //    PickVarInfo.
+//   
+//    Kathleen Bonnell, Thu Sep 18 07:43:33 PDT 2003 
+//    QueryMaterial should use 'real' elements when available. 
 //    
 //    Hank Childs, Mon Sep 22 09:20:08 PDT 2003
 //    Added support for tensors and symmetric tensors.
 //
+//    Kathleen Bonnell, Fri Oct 24 15:37:41 PDT 2003 
+//    Re-add code that makes QueryMaterial use 'real' elements when available. 
+//    (was accidentally removed).
+//    
 // ****************************************************************************
 
 void               
@@ -1003,6 +1010,10 @@ avtDatabase::Query(PickAttributes *pa)
         TRY
         {
             avtVarType varType = GetMetaData(ts)->DetermineVarType(vName);
+            int matEl = (pa->GetRealElementNumber() != -1 ? 
+                         pa->GetRealElementNumber() : foundEl);
+            intVector matIncEls = (pa->GetRealIncidentElements().size() > 0 ? 
+                                   pa->GetRealIncidentElements() : incEls);
             switch(varType)
             {
                 case AVT_SCALAR_VAR : success = 
@@ -1026,7 +1037,7 @@ avtDatabase::Query(PickAttributes *pa)
                    pa->GetPickVarInfo(varNum).SetVariableType("symm_tensor");
                    break; 
                 case AVT_MATERIAL : success = 
-                   QueryMaterial(vName, foundDomain, foundEl, ts, incEls, 
+                   QueryMaterial(vName, foundDomain, matEl, ts, matIncEls, 
                                  pa->GetPickVarInfo(varNum), zonePick);
                    pa->GetPickVarInfo(varNum).SetVariableType("material");
                    break; 

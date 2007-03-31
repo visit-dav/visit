@@ -125,11 +125,18 @@ avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 //    Brad Whitlock, Wed Aug 27 14:08:36 PST 2003
 //    Made it work on Windows.
 //
+//    Hank Childs, Fri Oct 24 14:31:33 PDT 2003
+//    Allow expressions that the EEF will use to also perform a restriction.
+//    Also fixed lines longer than 79 characters.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
-avtExpressionEvaluatorFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtExpressionEvaluatorFilter::PerformRestriction(
+                                               avtPipelineSpecification_p spec)
 {
+    int   i;
+
     avtPipelineSpecification_p rv = spec;
     lastUsedSpec = spec;
     avtDataSpecification_p ds = spec->GetDataSpecification();
@@ -154,16 +161,16 @@ avtExpressionEvaluatorFilter::PerformRestriction(avtPipelineSpecification_p spec
     // Insert all of the variables onto the candidates list.
     candidates.insert(ds->GetVariable());
     const vector<CharStrRef> &sv = ds->GetSecondaryVariables();
-    for (int i = 0; i != sv.size(); i++)
+    for (i = 0; i != sv.size(); i++)
     {
         const char *str = *(sv[i]);
         candidates.insert(str);
     }
 
     // Walk through the candidates, processing the results into the real
-    // list and the expression list.  When the variables are found, turn the parsed expression into
-    // a list of filters.  These filters are hooked together, then put on a
-    // list in pipelineState for use in Execute().
+    // list and the expression list.  When the variables are found, turn the
+    // parsed expression into a list of filters.  These filters are hooked
+    // together, then put on a list in pipelineState for use in Execute().
     debug5 << "EEF::PerformRestriction: Checking candidates" << endl;
     pipelineState.SetDataObject(NULL);
     while (!candidates.empty())
@@ -171,7 +178,8 @@ avtExpressionEvaluatorFilter::PerformRestriction(avtPipelineSpecification_p spec
         std::set<string>::iterator front = candidates.begin();
         string var = *front;
         candidates.erase(front);
-        debug5 << "EEF::PerformRestriction:     candidate: " << var.c_str() << endl;
+        debug5 << "EEF::PerformRestriction:     candidate: " << var.c_str() 
+               << endl;
 
         // Have we seen this before?
         std::vector<string>::iterator search;
@@ -192,18 +200,20 @@ avtExpressionEvaluatorFilter::PerformRestriction(avtPipelineSpecification_p spec
             // Not an expression.  Put the name on the real list.
             real_list.insert(var);
         } else {
-            debug5 << "EEF::PerformRestriction:     expression.  Roots:" << endl;
+            debug5 << "EEF::PerformRestriction:     expression.  Roots:" 
+                   << endl;
             // Expression.  Put the name on the expr list.  Find the base
             // variables of the expression and put them on the candidate
             // list.
             expr_list.push_back(var);
-            EngineExprNode *tree = 
-                dynamic_cast<EngineExprNode*>(ParsingExprList::GetExpressionTree(var));
+            EngineExprNode *tree = dynamic_cast<EngineExprNode*>
+                                    (ParsingExprList::GetExpressionTree(var));
             set<string> roots = tree->GetVarLeaves();
             while (!roots.empty())
             {
                 std::set<string>::iterator front = roots.begin();
-                debug5 << "EEF::PerformRestriction:         " << front->c_str() << endl;
+                debug5 << "EEF::PerformRestriction:         " << front->c_str()
+                       << endl;
                 candidates.insert(*front);
                 roots.erase(front);
             }
@@ -220,8 +230,8 @@ avtExpressionEvaluatorFilter::PerformRestriction(avtPipelineSpecification_p spec
         // Get the expression tree again.  (We could save trees between the
         // first and second sections of the code.  It wouldn't save much
         // time, but would be cleaner.)
-        EngineExprNode *tree = 
-            dynamic_cast<EngineExprNode*>(ParsingExprList::GetExpressionTree(var));
+        EngineExprNode *tree = dynamic_cast<EngineExprNode*>
+                                     (ParsingExprList::GetExpressionTree(var));
 
         // Create the filters that the tree uses.  Put them into the
         // filters stack in pipelineState.
@@ -267,6 +277,12 @@ avtExpressionEvaluatorFilter::PerformRestriction(avtPipelineSpecification_p spec
             newds->AddSecondaryVariable((*it).c_str());
 
     rv = new avtPipelineSpecification(spec, newds);
+
+    vector<avtExpressionFilter *> &filters = pipelineState.GetFilters();
+    for (i = 0 ; i < filters.size() ; i++)
+    {
+        rv = filters[i]->PerformRestriction(rv);
+    }
 
     return rv;
 }

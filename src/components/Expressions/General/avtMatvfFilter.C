@@ -371,3 +371,32 @@ avtMatvfFilter::AddMaterial(ConstExpr *c)
         matIndices.push_back(matindex);
     }
 }
+
+
+// ****************************************************************************
+//  Method: avtMatvfFilter::PerformRestriction
+//
+//  Purpose:
+//      This routine allows the filter to change the data specification.
+//      It is only re-defined for matvf to get around a shortcoming in the
+//      generic database.  The problem is that if ghost zones are communicated,
+//      the new avtMaterial object (if it exists at all), is not stored 
+//      anywhere for this filter to get.  Instead, this filter will get the
+//      original avtMaterial object and quickly have an internal error.
+//
+//      This could be solved in the generic database, but require a fairly
+//      large re-organization.  For more information, look at '3939.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 24, 2003
+//
+// ****************************************************************************
+
+avtPipelineSpecification_p
+avtMatvfFilter::PerformRestriction(avtPipelineSpecification_p spec)
+{
+    spec->GetDataSpecification()->NoGhostZones();
+    return spec;
+}
+
+
