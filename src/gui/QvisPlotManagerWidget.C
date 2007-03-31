@@ -508,17 +508,22 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
 //   Brad Whitlock, Wed Sep 10 08:57:46 PDT 2003
 //   I changed the code so the Hide button is enabled when is should be enabled.
 //
+//   Brad Whitlock, Fri Dec 5 16:24:36 PST 2003
+//   I separated the logic to regenerate the plot list and just change its
+//   selections so it's not so hard to select multiple items
+//
 // ****************************************************************************
 
 void
 QvisPlotManagerWidget::UpdatePlotList()
 {
-    if(plotListBox->NeedsUpdated(plotList))
+    blockSignals(true);
+
+    if(plotListBox->NeedsToBeRegenerated(plotList))
     {
         // Update the plot list.
-        plotListBox->clear();
-        blockSignals(true);
         plotListBox->blockSignals(true);
+        plotListBox->clear();
         for(int i = 0; i < plotList->GetNumPlots(); ++i)
         {
             // Create a constant reference to the current plot.
@@ -548,12 +553,23 @@ QvisPlotManagerWidget::UpdatePlotList()
                    current.GetDatabaseName().c_str(),current.GetPlotVar().c_str());
 #endif
         } // end for
+        plotListBox->blockSignals(false);
+    }
+    else if(plotListBox->NeedToUpdateSelection(plotList))
+    {
+        plotListBox->blockSignals(true);
+        for(int i = 0; i < plotList->GetNumPlots(); ++i)
+        {
+            // Create a constant reference to the current plot.
+            const Plot &current = plotList->operator[](i);
+            plotListBox->setSelected(i, current.GetActiveFlag());
+        } // end for
+        plotListBox->blockSignals(false);        
     }
 
     // Set the enabled states for the hide, delete, and draw buttons.
     UpdateHideDeleteDrawButtonsEnabledState();
 
-    plotListBox->blockSignals(false);
     blockSignals(false);
 }
 

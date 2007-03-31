@@ -31,7 +31,6 @@
 QvisPlotListBox::QvisPlotListBox(QWidget *parent, const char *name, WFlags f) :
     QListBox(parent, name, f)
 {
-
 }
 
 // ****************************************************************************
@@ -276,7 +275,7 @@ QvisPlotListBox::activeOperatorIndex(int id) const
 }
 
 // ****************************************************************************
-// Method: QvisPlotListBox::NeedsUpdated
+// Method: QvisPlotListBox::NeedsToBeRegenerated
 //
 // Purpose: 
 //   Determines whether or not the plot listbox needs to be updated.
@@ -292,11 +291,14 @@ QvisPlotListBox::activeOperatorIndex(int id) const
 // Creation:   Wed Apr 16 13:18:27 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Dec 5 16:20:07 PST 2003
+//   I changed the method so having a different Active flag is not cause
+//   to regenerate the items. I also renamed the method.
+//
 // ****************************************************************************
 
 bool
-QvisPlotListBox::NeedsUpdated(const PlotList *pl) const
+QvisPlotListBox::NeedsToBeRegenerated(const PlotList *pl) const
 {
     bool retval = true;
 
@@ -310,7 +312,6 @@ QvisPlotListBox::NeedsUpdated(const PlotList *pl) const
 
             bool nu = newPlot.GetStateType() != currentPlot.GetStateType() ||
                    newPlot.GetPlotType() != currentPlot.GetPlotType() ||
-                   newPlot.GetActiveFlag() != currentPlot.GetActiveFlag() ||
                    newPlot.GetHiddenFlag() != currentPlot.GetHiddenFlag() ||
                    newPlot.GetExpandedFlag() != currentPlot.GetExpandedFlag() ||
                    newPlot.GetActiveOperator() != currentPlot.GetActiveOperator() ||
@@ -326,4 +327,45 @@ QvisPlotListBox::NeedsUpdated(const PlotList *pl) const
     return retval;
 }
 
+// ****************************************************************************
+// Method: QvisPlotListBox::NeedToUpdateSelection
+//
+// Purpose: 
+//   Determines if the selection needs to be updated.
+//
+// Arguments:
+//   pl : The new plot list to compare to the one that we have.
+//
+// Returns:    True if the selection needs to be updated; false otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec 5 16:20:58 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
 
+bool
+QvisPlotListBox::NeedToUpdateSelection(const PlotList *pl) const
+{
+    bool retval = true;
+
+    if(pl->GetNumPlots() == count())
+    {
+        for(int i = 0; i < pl->GetNumPlots(); ++i)
+        {
+            QvisPlotListBoxItem *lbi = (QvisPlotListBoxItem *)item(i);
+            const Plot &newPlot = pl->operator[](i);
+            const Plot &currentPlot = lbi->GetPlot();
+
+            bool nu = newPlot.GetActiveFlag() != currentPlot.GetActiveFlag();
+
+            if(nu) return true;
+        }
+        return false;
+    }
+
+    return retval;
+}

@@ -27,6 +27,9 @@ class PlotList;
 //   I renamed the class to QvisPlotListBox and made enhancements that
 //   enable operators to be moved within a plot.
 //
+//   Brad Whitlock, Fri Dec 5 16:22:48 PST 2003
+//   I added NeedToUpdateSelection.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotListBox : public QListBox
@@ -39,8 +42,10 @@ public:
     bool isExpanded(int) const;
     int  activeOperatorIndex(int) const;
 
-    bool NeedsUpdated(const PlotList *) const;
+    bool NeedsToBeRegenerated(const PlotList *) const;
+    bool NeedToUpdateSelection(const PlotList *) const;
 signals:
+    void selectionChanged();
     void activateSubsetWindow();
     void activatePlotWindow(int plotType);
     void activateOperatorWindow(int operatorType);

@@ -1,7 +1,9 @@
 #include <DataNetwork.h>
 
+#include <avtActor.h>
 #include <avtPlot.h>
 #include <DebugStream.h>
+#include <WindowAttributes.h>
 
 using std::string;
 using std::vector;
@@ -67,10 +69,58 @@ DataNetwork::GetWriter(avtDataObject_p dob, avtPipelineSpecification_p pspec,
       avtDataObjectWriter_p tmpWriter = GetPlot()->Execute(dob, pspec, atts);
       if (GetPlot()->CanCacheWriterExternally())
          writer = tmpWriter;
-//      tmpWriter->GetInput()->GetInfo().ParallelMerge(tmpWriter);
       return tmpWriter;
    }
 }
+
+// ****************************************************************************
+//  Method:  DataNetwork::GetActor
+//
+//  Purpose: Cache data actor for plot
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    December 5, 2003 
+//
+// ****************************************************************************
+avtActor_p
+DataNetwork::GetActor(avtDataObject_p dob, WindowAttributes *atts)
+{
+    if ((*plotActor != NULL) &&
+        (bgColor[0] == atts->GetBackground()[0]/255.0) &&
+        (bgColor[1] == atts->GetBackground()[1]/255.0) &&
+        (bgColor[2] == atts->GetBackground()[2]/255.0) &&
+        (fgColor[0] == atts->GetForeground()[0]/255.0) &&
+        (fgColor[1] == atts->GetForeground()[1]/255.0) &&
+        (fgColor[2] == atts->GetForeground()[2]/255.0))
+
+    {
+        return plotActor;
+    }
+    else
+    {
+
+        plotActor = (avtActor *) 0;
+      
+        avtPlot_p aPlot = GetPlot();
+
+        // set foreground and background colors of the plot
+        bgColor[0] = atts->GetBackground()[0]/255.0,
+        bgColor[1] = atts->GetBackground()[1]/255.0,
+        bgColor[2] = atts->GetBackground()[2]/255.0,
+        aPlot->SetBackgroundColor(bgColor);
+        fgColor[0] = atts->GetForeground()[0]/255.0,
+        fgColor[1] = atts->GetForeground()[1]/255.0,
+        fgColor[2] = atts->GetForeground()[2]/255.0,
+        aPlot->SetForegroundColor(fgColor);
+
+        // do the part of the execute we'd do in the viewer
+        plotActor = aPlot->Execute(NULL, dob);
+
+        return plotActor;
+   }
+
+}
+
 
 // ****************************************************************************
 //  Method:  DataNetwork::ReleaseData
@@ -108,6 +158,8 @@ DataNetwork::ReleaseData(void)
     {
         terminalNode->ReleaseData();
     }
+    if (*plotActor != NULL)
+       plotActor = (avtActor *) 0;
     if (*plot != NULL)
     {
         plot->ReleaseData();
