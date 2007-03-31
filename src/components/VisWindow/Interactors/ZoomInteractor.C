@@ -329,6 +329,10 @@ ZoomInteractor::EndRubberBand()
 //    Hank Childs, Tue Sep 18 12:02:29 PDT 2001
 //    Cast return value of ceil/floor to get rid of compiler warnings.
 //
+//    Kathleen Bonnell, Wed Jul  2 09:12:52 PDT 2003  
+//    Switch ceil to floor and vice-versa, so that rubber ban can extend
+//    all the way to the xmin, xmax, ymin, ymax. 
+//
 // ****************************************************************************
 
 void
@@ -336,19 +340,19 @@ ZoomInteractor::ForceCoordsToViewport(int &x, int &y)
 {
     if (x < canvasDeviceMinX)
     {
-        x = (int)ceil(canvasDeviceMinX);
+        x = (int)floor(canvasDeviceMinX);
     }
     if (x > canvasDeviceMaxX)
     {
-        x = (int)floor(canvasDeviceMaxX);
+        x = (int)ceil(canvasDeviceMaxX);
     }
     if (y < canvasDeviceMinY)
     {
-        y = (int)ceil(canvasDeviceMinY);
+        y = (int)floor(canvasDeviceMinY);
     }
     if (y > canvasDeviceMaxY)
     {
-        y = (int)floor(canvasDeviceMaxY);
+        y = (int)ceil(canvasDeviceMaxY);
     }
 }
 

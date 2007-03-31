@@ -50,6 +50,7 @@
     <Field name="yLabelFontHeight2D" type="double">0.02</Field>
     <Field name="xTitleFontHeight2D" type="double">0.02</Field>
     <Field name="yTitleFontHeight2D" type="double">0.02</Field>
+    <Field name="axesLineWidth2D" type="linewidth">0</Field>
     <Field name="axesTickLocation2D" type="enum" subtype="Location">Outside</Field>
     <Field name="axesTicks2D" type="enum" subtype="Ticks">BottomLeft</Field>
     <Field name="axesFlag" type="bool">true</Field>

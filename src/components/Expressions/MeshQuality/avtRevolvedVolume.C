@@ -232,6 +232,10 @@ avtRevolvedVolume::GetZoneVolume(vtkCell *cell)
 // 
 //  Programmer: Hank Childs
 //  Creation:   March 29, 2000
+//  
+//  Modifications:
+//      Akira Haddox, Wed Jul  2 12:27:24 PDT 2003
+//      Dealt with triangles below or on the y-axis.
 // 
 // ****************************************************************************
  
@@ -243,7 +247,101 @@ avtRevolvedVolume::GetTriangleVolume(double x[3], double y[3])
     double   slope01, slope02, slope12;
     double   volume;
     double   ls_x[2], ls_y[2];
- 
+
+    //
+    // Check to see if we straddle the line y = 0, and break it up into
+    // triangles which don't. Keep in mind the points are ordered
+    // by x-coordinate.
+    // 
+    if (y[0] * y[1] < 0 || y[1] * y[2] < 0 || y[0] * y[2] < 0)
+    {
+        double oppositeX, oppositeY;
+        double pt1X, pt2X, pt1Y, pt2Y;
+
+        // Find the one point that is opposite the other two.
+        if (y[1] * y[2] >= 0)
+        {
+            // The point is 0
+            oppositeX = x[0];
+            oppositeY = y[0];
+            pt1X = x[1];
+            pt1Y = y[1];
+            pt2X = x[2];
+            pt2Y = y[2];
+        }
+        else if(y[0] * y[2] >= 0)
+        {
+            // The point is 1
+            oppositeX = x[1];
+            oppositeY = y[1];
+            pt1X = x[0];
+            pt1Y = y[0];
+            pt2X = x[2];
+            pt2Y = y[2];
+        }
+        else
+        {
+            // The point is 2
+            oppositeX = x[2];
+            oppositeY = y[2];
+            pt1X = x[0];
+            pt1Y = y[0];
+            pt2X = x[1];
+            pt2Y = y[1];
+        }
+        
+        //
+        // Now take this information and find the two intersections.
+        //
+        double xInt1, xInt2;
+
+        // Special cases: infinite slopes
+        if (oppositeX == pt1X)
+            xInt1 = oppositeX; 
+        else
+        {
+            double nslope = (oppositeY - pt1Y) / (oppositeX - pt1X);
+            xInt1 = oppositeX + oppositeY / nslope;
+        }
+            
+        if (oppositeX == pt2X)
+            xInt2 = oppositeX;
+        else
+        {
+            double nslope = (oppositeY - pt2Y) / (oppositeX - pt2X);
+            xInt2 = oppositeX + oppositeY / nslope;
+        }   
+
+        double v1, v2, v3;     
+        
+        //
+        // Find the volume of the single triangle
+        //
+        x[0] = oppositeX;
+        x[1] = xInt1;
+        x[2] = xInt2;
+        y[0] = oppositeY;
+        y[1] = 0;
+        y[2] = 0;
+
+        v1 = GetTriangleVolume(x, y);
+        
+        //
+        // Find the volume of the quad by splitting it into triangles 
+        // (the intercepts to pt1, then {pt1, pt2, Intercept2}).
+        //
+
+        x[0] = pt1X;
+        y[0] = pt1Y;
+        v2 = GetTriangleVolume(x, y);
+        
+        x[1] = pt2X;
+        y[1] = pt2Y;
+        v3 = GetTriangleVolume(x, y);
+
+        return v1 + v2 + v3;
+    }
+    
     //
     // Sort the points so that they are ordered by x-coordinate.  This will
     // make things much easier later.
@@ -281,7 +379,13 @@ avtRevolvedVolume::GetTriangleVolume(double x[3], double y[3])
     ls_x[0] = x[1];
     ls_y[0] = y[1];
     cone12 = RevolveLineSegment(ls_x, ls_y, &slope12);
- 
+
+    bool aboveY;
+    if (y[0] < 0 || y[1] < 0 || y[2] < 0)
+        aboveY = false;
+    else
+        aboveY = true;
+    
     //
     // This is a little tricky and best shown by picture, but if slope01 is
     // greater than slope02, then P0P1 and P1P2 make up the top of the volume
@@ -291,13 +395,22 @@ avtRevolvedVolume::GetTriangleVolume(double x[3], double y[3])
     // math actually works out fine, since the volume of the cone from P0P1
     // plus P1P2 equals P0P2.
     //
-    if (slope01 < slope02)
+    // Note that if we're below the line y = 0, then this rule is reversed.
+    //
+    if (aboveY)
     {
-        volume = cone02 - cone01 - cone12;
+        if (slope01 < slope02)
+            volume = cone02 - cone01 - cone12;
+        else
+            volume = cone12 + cone01 - cone02;
     }
     else
     {
-        volume = cone12 + cone01 - cone02;
+        if (slope01 < slope02)
+            volume = cone12 + cone01 - cone02;
+        else
+            volume = cone02 - cone01 - cone12;
+
     }
  
     return volume;
@@ -320,7 +433,7 @@ avtRevolvedVolume::GetTriangleVolume(double x[3], double y[3])
 // 
 //  Programmer: Hank Childs
 //  Creation:   March 29, 2000
-// 
+//  
 // ****************************************************************************
  
 double
@@ -358,9 +471,9 @@ avtRevolvedVolume::RevolveLineSegment(double x[2], double y[2], double *slope)
         double  height = x[1] - x[0];
         double  volume = M_PI * radius * radius * height;
         *slope = 0.;
-        return volume;
+        return (volume);
     }
- 
+
     //
     // Calculate where the line segment will hit the line x = 0.
     // Note we have already taken care of degenerate cases.
@@ -415,7 +528,7 @@ avtRevolvedVolume::RevolveLineSegment(double x[2], double y[2], double *slope)
     }
  
     *slope = m;
-    return coneAll - coneCropped;
+    return (coneAll - coneCropped);
 }
 
 

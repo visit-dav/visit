@@ -12,6 +12,7 @@
 #include <vtkMatrix4x4.h>
 
 #include <ColorAttribute.h>
+#include <LineAttributes.h>
 
 #include <avtPlot.h>
 #include <avtLightList.h>
@@ -2082,16 +2083,6 @@ VisWindow::SetView3D(const avtView3D &v)
     //
     view3D = v;
 
-/*
-        cerr << "VisWindow::SetView3D setting view to..." << endl;
-        cerr << "   viewUp[0] = " << view3D.viewUp[0]
-             <<   " viewUp[1] = " << view3D.viewUp[1]
-             <<   " viewUp[2] = " << view3D.viewUp[2] << endl;
-        cerr << "   focus[0] = " << view3D.focus[0]
-             <<   " focus[1] = " << view3D.focus[1]
-             <<   " focus[2] = " << view3D.focus[2] << endl;
-*/
-
     UpdateView();
 }
 
@@ -2936,13 +2927,16 @@ VisWindow::GetLightList() const
 //   Eric Brugger, Fri Jan 24 11:22:43 PST 2003
 //   Changed the way the font size is set.
 //
+//   Eric Brugger, Wed Jun 25 15:45:22 PDT 2003
+//   Added the setting of the line width.
+//
 // ****************************************************************************
 
 void
 VisWindow::UpdateAxes2D()
 {
     //
-    // Axes visibility. 
+    // Axes visibility
     //
     axes->SetVisibility(annotationAtts.GetAxesFlag2D());
     frame->SetVisibility(annotationAtts.GetAxesFlag2D());
@@ -3026,6 +3020,14 @@ VisWindow::UpdateAxes2D()
     axes->SetYLabelFontHeight(annotationAtts.GetYLabelFontHeight2D());
     axes->SetXTitleFontHeight(annotationAtts.GetXTitleFontHeight2D());
     axes->SetYTitleFontHeight(annotationAtts.GetYTitleFontHeight2D());
+
+    //
+    // Line width
+    //
+    axes->SetLineWidth(LineWidth2Int(Int2LineWidth(
+        annotationAtts.GetAxesLineWidth2D())));
+    frame->SetLineWidth(LineWidth2Int(Int2LineWidth(
+        annotationAtts.GetAxesLineWidth2D())));
 }
 
 

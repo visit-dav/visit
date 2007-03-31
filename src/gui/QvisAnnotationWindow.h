@@ -14,6 +14,7 @@ class QNarrowLineEdit;
 class QTabWidget;
 class QVBox;
 class QvisColorButton;
+class QvisLineWidthWidget;
 
 // ****************************************************************************
 // Class: QvisAnnotationWindow
@@ -35,6 +36,11 @@ class QvisColorButton;
 //
 //   Eric Brugger, Mon Nov  4 12:09:23 PST 2002
 //   Added more user control over the axes tick marks and labels.
+//
+//   Eric Brugger, Tue Jun 24 16:31:28 PDT 2003
+//   Added the ability to control the 2d axes line width and replaced the
+//   2d font size setting with individual controls for setting the x label,
+//   y label, x title, and y title font heights.
 //
 // ****************************************************************************
 
@@ -73,9 +79,13 @@ private slots:
     void yMajorTickSpacingChanged2D();
     void xMinorTickSpacingChanged2D();
     void yMinorTickSpacingChanged2D();
+    void xLabelFontHeightChanged2D();
+    void yLabelFontHeightChanged2D();
+    void xTitleFontHeightChanged2D();
+    void yTitleFontHeightChanged2D();
+    void axesLineWidthChanged2D(int index);
     void axesTicksChanged2D(int index);
     void axesTickLocationChanged2D(int index);
-    void axesFontSizeChanged2D(int index);
     void axes3DFlagChecked(bool val);
     void axisLabelsChanged(int index);
     void gridLinesChanged(int index);
@@ -122,9 +132,13 @@ private:
     QLabel          *minorTickSpacingLabel2D;
     QNarrowLineEdit *xMinorTickSpacingLineEdit2D;
     QNarrowLineEdit *yMinorTickSpacingLineEdit2D;
+    QNarrowLineEdit *xLabelFontHeightLineEdit2D;
+    QNarrowLineEdit *yLabelFontHeightLineEdit2D;
+    QNarrowLineEdit *xTitleFontHeightLineEdit2D;
+    QNarrowLineEdit *yTitleFontHeightLineEdit2D;
+    QvisLineWidthWidget *axesLineWidth2D;
     QComboBox       *axesTicksComboBox2D;
     QComboBox       *axesTickLocationComboBox2D;
-    QComboBox       *axesFontSizeComboBox2D;
     QCheckBox       *axes3DFlagToggle;
     QGroupBox       *axes3DGroup;
     QButtonGroup    *axisLabelsButtons;

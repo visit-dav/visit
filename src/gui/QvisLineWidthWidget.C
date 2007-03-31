@@ -422,19 +422,21 @@ QvisLineWidthWidget::setEnabled(bool val)
 //   pixmap to be displayed.
 //
 // Arguments:
-//   width_ : The new line width to display. Valid values are 0,1,2,3.
+//   width_ : The new line width to display. Valid values are 0 through 9.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Nov 14 16:19:32 PST 2000
 //
 // Modifications:
+//   Eric Brugger, Wed Jun 25 16:41:52 PDT 2003
+//   Change the error test to allow line widths of 0 through 9.
 //   
 // ****************************************************************************
 
 void
 QvisLineWidthWidget::SetLineWidth(int width_)
 {
-    if(width_ < 0 || width_ > 3)
+    if(width_ < 0 || width_ > 9)
         return;
 
     lineWidthComboBox->blockSignals(true);

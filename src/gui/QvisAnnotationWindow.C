@@ -15,6 +15,7 @@
 
 #include <QNarrowLineEdit.h>
 #include <QvisColorButton.h>
+#include <QvisLineWidthWidget.h>
 #include <AnnotationAttributes.h>
 #include <DataNode.h>
 #include <ViewerProxy.h>
@@ -131,6 +132,11 @@ QvisAnnotationWindow::~QvisAnnotationWindow()
 //
 //   Eric Brugger, Mon Nov  4 12:21:02 PST 2002
 //   Added more control over the axes tick marks and labels.
+//
+//   Eric Brugger, Tue Jun 24 16:04:01 PDT 2003
+//   Added the ability to control the 2d axes line width and replaced the
+//   2d font size setting with individual controls for setting the x label,
+//   y label, x title, and y title font heights.
 //
 // ****************************************************************************
 
@@ -299,6 +305,45 @@ QvisAnnotationWindow::CreateWindowContents()
             this, SLOT(yMinorTickSpacingChanged2D()));
     lLayout->addWidget(yMinorTickSpacingLineEdit2D, 7, 2);
 
+    // Create the text fields for the 2D label text height.
+    l = new QLabel("Label font height", axesGroup2D, "labelFontHeightLabel2D");
+    lLayout->addWidget(l, 8, 0);
+
+    xLabelFontHeightLineEdit2D = new QNarrowLineEdit(axesGroup2D,
+        "xLabelFontHeightLineEdit2D");
+    connect(xLabelFontHeightLineEdit2D, SIGNAL(returnPressed()),
+            this, SLOT(xLabelFontHeightChanged2D()));
+    lLayout->addWidget(xLabelFontHeightLineEdit2D, 8, 1);
+    yLabelFontHeightLineEdit2D = new QNarrowLineEdit(axesGroup2D,
+        "yLabelFontHeightLineEdit2D");
+    connect(yLabelFontHeightLineEdit2D, SIGNAL(returnPressed()),
+            this, SLOT(yLabelFontHeightChanged2D()));
+    lLayout->addWidget(yLabelFontHeightLineEdit2D, 8, 2);
+
+    // Create the text fields for the 2D title text height.
+    l = new QLabel("Title font height", axesGroup2D, "titleFontHeightLabel2D");
+    lLayout->addWidget(l, 9, 0);
+
+    xTitleFontHeightLineEdit2D = new QNarrowLineEdit(axesGroup2D,
+        "xTitleFontHeightLineEdit2D");
+    connect(xTitleFontHeightLineEdit2D, SIGNAL(returnPressed()),
+            this, SLOT(xTitleFontHeightChanged2D()));
+    lLayout->addWidget(xTitleFontHeightLineEdit2D, 9, 1);
+    yTitleFontHeightLineEdit2D = new QNarrowLineEdit(axesGroup2D,
+        "yTitleFontHeightLineEdit2D");
+    connect(yTitleFontHeightLineEdit2D, SIGNAL(returnPressed()),
+            this, SLOT(yTitleFontHeightChanged2D()));
+    lLayout->addWidget(yTitleFontHeightLineEdit2D, 9, 2);
+
+    // Create the 2D line width widget.
+    axesLineWidth2D = new QvisLineWidthWidget(0, axesGroup2D,
+        "axesLineWidth2D");
+    lLayout->addMultiCellWidget(axesLineWidth2D, 10, 10, 1, 2);
+    connect(axesLineWidth2D, SIGNAL(lineWidthChanged(int)),
+            this, SLOT(axesLineWidthChanged2D(int)));
+    l = new QLabel("Line width", axesGroup2D, "axesLineWidthLabel2D");
+    lLayout->addWidget(l, 10, 0);
+
     // Create the 2D tick mark locations combobox.
     axesTickLocationComboBox2D = new QComboBox(axesGroup2D,
         "axesTickLocationComboBox2D");
@@ -307,23 +352,10 @@ QvisAnnotationWindow::CreateWindowContents()
     axesTickLocationComboBox2D->insertItem("Both",    2);
     connect(axesTickLocationComboBox2D, SIGNAL(activated(int)),
             this, SLOT(axesTickLocationChanged2D(int)));
-    lLayout->addMultiCellWidget(axesTickLocationComboBox2D, 8, 8, 1, 2);
+    lLayout->addMultiCellWidget(axesTickLocationComboBox2D, 11, 11, 1, 2);
     l = new QLabel(axesTickLocationComboBox2D, "Tick mark locations",
                    axesGroup2D, "axesTickLocationLabel2D");
-    lLayout->addWidget(l, 8, 0);
-
-    // Create the 2D font size combobox.
-    axesFontSizeComboBox2D = new QComboBox(axesGroup2D,
-        "axesFontSizeComboBox2D");
-    axesFontSizeComboBox2D->insertItem("Normal",  0);
-    axesFontSizeComboBox2D->insertItem("Large", 1);
-    axesFontSizeComboBox2D->insertItem("Extra large",    2);
-    connect(axesFontSizeComboBox2D, SIGNAL(activated(int)),
-            this, SLOT(axesFontSizeChanged2D(int)));
-    lLayout->addMultiCellWidget(axesFontSizeComboBox2D, 9, 9, 1, 2);
-    l = new QLabel(axesFontSizeComboBox2D, "Font size",
-                   axesGroup2D, "axesFontSizeLabel2D");
-    lLayout->addWidget(l, 9, 0);
+    lLayout->addWidget(l, 11, 0);
 
     // Create the 2D tick marks combobox.
     axesTicksComboBox2D = new QComboBox(axesGroup2D, "axesTicksComboBox2D");
@@ -334,10 +366,10 @@ QvisAnnotationWindow::CreateWindowContents()
     axesTicksComboBox2D->insertItem("All axes",    4);
     connect(axesTicksComboBox2D, SIGNAL(activated(int)),
             this, SLOT(axesTicksChanged2D(int)));
-    lLayout->addMultiCellWidget(axesTicksComboBox2D, 10, 10, 1, 2);
+    lLayout->addMultiCellWidget(axesTicksComboBox2D, 12, 12, 1, 2);
     l = new QLabel(axesTicksComboBox2D, "Tick marks",
                    axesGroup2D, "axesTicksLabel2D");
-    lLayout->addWidget(l, 10, 0);
+    lLayout->addWidget(l, 12, 0);
  
     //
     // Create the group of 3D-related widgets.
@@ -576,6 +608,11 @@ QvisAnnotationWindow::CreateWindowContents()
 //   Eric Brugger, Fri Jan 24 11:27:09 PST 2003
 //   Changed the way that the axes font sizes were set.
 //
+//   Eric Brugger, Tue Jun 24 16:04:01 PDT 2003
+//   Added the ability to control the 2d axes line width and replaced the
+//   2d font size setting with individual controls for setting the x label,
+//   y label, x title, and y title font heights.
+//
 // ****************************************************************************
 
 void
@@ -676,36 +713,44 @@ QvisAnnotationWindow::UpdateWindow(bool doAll)
             temp.sprintf("%g", annotationAtts->GetYMinorTickSpacing2D());
             yMinorTickSpacingLineEdit2D->setText(temp);
             break;
-        case 16: // axesTickLocation2D
+        case 16: // xLabelFontHeight2D
+            temp.sprintf("%g", annotationAtts->GetXLabelFontHeight2D());
+            xLabelFontHeightLineEdit2D->setText(temp);
+            break;
+        case 17: // yLabelFontHeight2D
+            temp.sprintf("%g", annotationAtts->GetYLabelFontHeight2D());
+            yLabelFontHeightLineEdit2D->setText(temp);
+            break;
+        case 18: // xTitleFontHeight2D
+            temp.sprintf("%g", annotationAtts->GetXTitleFontHeight2D());
+            xTitleFontHeightLineEdit2D->setText(temp);
+            break;
+        case 19: // yTitleFontHeight2D
+            temp.sprintf("%g", annotationAtts->GetYTitleFontHeight2D());
+            yTitleFontHeightLineEdit2D->setText(temp);
+            break;
+        case 20: // axesLineWidth2D
+            axesLineWidth2D->blockSignals(true);
+            axesLineWidth2D->SetLineWidth(annotationAtts->GetAxesLineWidth2D());
+            axesLineWidth2D->blockSignals(false);
+            break;
+        case 21: // axesTickLocation2D
             axesTickLocationComboBox2D->blockSignals(true);
             axesTickLocationComboBox2D->setCurrentItem(annotationAtts->GetAxesTickLocation2D());
             axesTickLocationComboBox2D->blockSignals(false);
             break;
-        case 17: // xLabelFontHeight2D
-        case 18: // yLabelFontHeight2D
-        case 19: // xTitleFontHeight2D
-        case 20: // yTitleFontHeight2D
-            axesFontSizeComboBox2D->blockSignals(true);
-            if (annotationAtts->GetXLabelFontHeight2D() == 0.02)
-                axesFontSizeComboBox2D->setCurrentItem(0);
-            else if (annotationAtts->GetXLabelFontHeight2D() == 0.03)
-                axesFontSizeComboBox2D->setCurrentItem(1);
-            else
-                axesFontSizeComboBox2D->setCurrentItem(2);
-            axesFontSizeComboBox2D->blockSignals(false);
-            break;
-        case 21: // axesTicks2D
+        case 22: // axesTicks2D
             axesTicksComboBox2D->blockSignals(true);
             axesTicksComboBox2D->setCurrentItem(annotationAtts->GetAxesTicks2D());
             axesTicksComboBox2D->blockSignals(false);
             break;
-        case 22: // axesFlag
+        case 23: // axesFlag
             axes3DFlagToggle->blockSignals(true);
             axes3DFlagToggle->setChecked(annotationAtts->GetAxesFlag());
             axes3DFlagToggle->blockSignals(false);
             axes3DGroup->setEnabled(annotationAtts->GetAxesFlag());
             break;
-        case 23: // axesAutoSetTicks
+        case 24: // axesAutoSetTicks
 #if 0
             axesAutoSetTicksToggle->blockSignals(true);
             axesAutoSetTicksToggle->setChecked(annotationAtts->GetAutoSetTicks());
@@ -713,100 +758,100 @@ QvisAnnotationWindow::UpdateWindow(bool doAll)
             // Make the tick locations text fields not enabled.
 #endif
             break;
-        case 24: // xAxisLabels
-        case 25: // yAxisLabels
-        case 26: // zAxisLabels
+        case 25: // xAxisLabels
+        case 26: // yAxisLabels
+        case 27: // zAxisLabels
             setAxisLabels = true;
             break;
-        case 27: // xAxisTitle
-        case 28: // yAxisTitle
-        case 29: // zAxisTitle
+        case 28: // xAxisTitle
+        case 29: // yAxisTitle
+        case 30: // zAxisTitle
             setAxisTitles = true;
             break;
-        case 30: // xGridLines
-        case 31: // yGridLines
-        case 32: // zGridLines
+        case 31: // xGridLines
+        case 32: // yGridLines
+        case 33: // zGridLines
             setGridLines = true;
             break;
-        case 33: // xAxisTicks
-        case 34: // yAxisTicks
-        case 35: // zAxisTicks
+        case 34: // xAxisTicks
+        case 35: // yAxisTicks
+        case 36: // zAxisTicks
             setAxisTicks = true;
             break;
-        case 36: // xMajorTickMinimum
-        case 37: // yMajorTickMinimum
-        case 38: // zMajorTickMinimum
-        case 39: // xMajorTickMaximum
-        case 40: // yMajorTickMaximum
-        case 41: // zMajorTickMaximum
-        case 42: // xMajorTickSpacing
-        case 43: // yMajorTickSpacing
-        case 44: // zMajorTickSpacing
-        case 45: // xMinorTickSpacing
-        case 46: // yMinorTickSpacing
-        case 47: // zMinorTickSpacing
-        case 48: // xLabelFontHeight
-        case 49: // yLabelFontHeight
-        case 50: // zLabelFontHeight
-        case 51: // xTitleFontHeight
-        case 52: // yTitleFontHeight
-        case 53: // zTitleFontHeight
+        case 37: // xMajorTickMinimum
+        case 38: // yMajorTickMinimum
+        case 39: // zMajorTickMinimum
+        case 40: // xMajorTickMaximum
+        case 41: // yMajorTickMaximum
+        case 42: // zMajorTickMaximum
+        case 43: // xMajorTickSpacing
+        case 44: // yMajorTickSpacing
+        case 45: // zMajorTickSpacing
+        case 46: // xMinorTickSpacing
+        case 47: // yMinorTickSpacing
+        case 48: // zMinorTickSpacing
+        case 49: // xLabelFontHeight
+        case 50: // yLabelFontHeight
+        case 51: // zLabelFontHeight
+        case 52: // xTitleFontHeight
+        case 53: // yTitleFontHeight
+        case 54: // zTitleFontHeight
             // IMPLEMENT
             break;
-        case 54: // axesTickLocation
+        case 55: // axesTickLocation
             axes3DTickLocationComboBox->blockSignals(true);
             axes3DTickLocationComboBox->setCurrentItem(annotationAtts->GetAxesTickLocation());
             axes3DTickLocationComboBox->blockSignals(false);
             break;
-        case 55: // axesType
+        case 56: // axesType
             axes3DTypeComboBox->blockSignals(true);
             axes3DTypeComboBox->setCurrentItem(annotationAtts->GetAxesType());
             axes3DTypeComboBox->blockSignals(false);
             break;
-        case 56: // triadFlag
+        case 57: // triadFlag
             triadFlagToggle->blockSignals(true);
             triadFlagToggle->setChecked(annotationAtts->GetTriadFlag());
             triadFlagToggle->blockSignals(false);
             break;
-        case 57: // bboxFlag
+        case 58: // bboxFlag
             bboxFlagToggle->blockSignals(true);
             bboxFlagToggle->setChecked(annotationAtts->GetBboxFlag());
             bboxFlagToggle->blockSignals(false);
             break;
-        case 58: // backgroundColor
+        case 59: // backgroundColor
             cptr = annotationAtts->GetBackgroundColor().GetColor();
             c = QColor(int(cptr[0]), int(cptr[1]), int(cptr[2]));
             backgroundColorButton->blockSignals(true);
             backgroundColorButton->setButtonColor(c);
             backgroundColorButton->blockSignals(false);
             break;
-        case 59: // foregroundColor
+        case 60: // foregroundColor
             cptr = annotationAtts->GetForegroundColor().GetColor();
             c = QColor(int(cptr[0]), int(cptr[1]), int(cptr[2]));
             foregroundColorButton->blockSignals(true);
             foregroundColorButton->setButtonColor(c);
             foregroundColorButton->blockSignals(false);
             break;
-        case 60: // gradientBackgroundStyle
+        case 61: // gradientBackgroundStyle
             gradientStyleComboBox->blockSignals(true);
             gradientStyleComboBox->setCurrentItem(annotationAtts->GetGradientBackgroundStyle());
             gradientStyleComboBox->blockSignals(false);
             break;
-        case 61: // gradientColor1
+        case 62: // gradientColor1
             cptr = annotationAtts->GetGradientColor1().GetColor();
             c = QColor(int(cptr[0]), int(cptr[1]), int(cptr[2]));
             gradientColor1Button->blockSignals(true);
             gradientColor1Button->setButtonColor(c);
             gradientColor1Button->blockSignals(false);
             break;
-        case 62: // gradientColor2
+        case 63: // gradientColor2
             cptr = annotationAtts->GetGradientColor2().GetColor();
             c = QColor(int(cptr[0]), int(cptr[1]), int(cptr[2]));
             gradientColor2Button->blockSignals(true);
             gradientColor2Button->setButtonColor(c);
             gradientColor2Button->blockSignals(false);
             break;
-        case 63: // backgroundMode
+        case 64: // backgroundMode
             vals[0] = annotationAtts->GetBackgroundMode()==AnnotationAttributes::Solid;
             vals[1] = annotationAtts->GetBackgroundMode()==AnnotationAttributes::Gradient;
             SetButtonGroup(backgroundStyleButtons, vals);
@@ -820,17 +865,17 @@ QvisAnnotationWindow::UpdateWindow(bool doAll)
             gradientColor2Label->setEnabled(isGradient);
             gradientColor2Button->setEnabled(isGradient);
             break;
-        case 64: // userInfo
+        case 65: // userInfo
             userInfo->blockSignals(true);
             userInfo->setChecked(annotationAtts->GetUserInfoFlag());
             userInfo->blockSignals(false);
             break;
-        case 65: // databaseInfo
+        case 66: // databaseInfo
             databaseInfo->blockSignals(true);
             databaseInfo->setChecked(annotationAtts->GetDatabaseInfoFlag());
             databaseInfo->blockSignals(false);
             break;
-        case 66: // legendInfo
+        case 67: // legendInfo
             legendInfo->blockSignals(true);
             legendInfo->setChecked(annotationAtts->GetLegendInfoFlag());
             legendInfo->blockSignals(false);
@@ -905,6 +950,10 @@ QvisAnnotationWindow::UpdateWindow(bool doAll)
 // Creation:   Mon Nov  4 12:21:02 PST 2002
 //
 // Modifications:
+//   Eric Brugger, Tue Jun 24 16:04:01 PDT 2003
+//   Added the ability to control the 2d axes line width and replaced the
+//   2d font size setting with individual controls for setting the x label,
+//   y label, x title, and y title font heights.
 //
 // ****************************************************************************
 
@@ -1127,6 +1176,114 @@ QvisAnnotationWindow::GetCurrentValues(int which_widget)
             Error(msg);
             annotationAtts->SetYMinorTickSpacing2D(
                 annotationAtts->GetYMinorTickSpacing2D());
+        }
+    }
+
+    // Do the 2d x label text height value
+    if (which_widget == 8 || doAll)
+    {
+        temp = xLabelFontHeightLineEdit2D->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if (okay)
+        {
+            double v;
+            if (sscanf(temp.latin1(), "%lg", &v) == 1)
+            {
+                annotationAtts->SetXLabelFontHeight2D(v);
+            }
+            else
+                okay = false;
+        }
+
+        if (!okay)
+        {
+            msg.sprintf("The 2D X label text height value was invalid. "
+                "Resetting to the last good value of %g.",
+                annotationAtts->GetXLabelFontHeight2D());
+            Error(msg);
+            annotationAtts->SetXLabelFontHeight2D(
+                annotationAtts->GetXLabelFontHeight2D());
+        }
+    }
+
+    // Do the 2d y label text height value
+    if (which_widget == 9 || doAll)
+    {
+        temp = yLabelFontHeightLineEdit2D->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if (okay)
+        {
+            double v;
+            if (sscanf(temp.latin1(), "%lg", &v) == 1)
+            {
+                annotationAtts->SetYLabelFontHeight2D(v);
+            }
+            else
+                okay = false;
+        }
+
+        if (!okay)
+        {
+            msg.sprintf("The 2D Y label text height value was invalid. "
+                "Resetting to the last good value of %g.",
+                annotationAtts->GetYLabelFontHeight2D());
+            Error(msg);
+            annotationAtts->SetYLabelFontHeight2D(
+                annotationAtts->GetYLabelFontHeight2D());
+        }
+    }
+
+    // Do the 2d x title text height value
+    if (which_widget == 10 || doAll)
+    {
+        temp = xTitleFontHeightLineEdit2D->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if (okay)
+        {
+            double v;
+            if (sscanf(temp.latin1(), "%lg", &v) == 1)
+            {
+                annotationAtts->SetXTitleFontHeight2D(v);
+            }
+            else
+                okay = false;
+        }
+
+        if (!okay)
+        {
+            msg.sprintf("The 2D X title text height value was invalid. "
+                "Resetting to the last good value of %g.",
+                annotationAtts->GetXTitleFontHeight2D());
+            Error(msg);
+            annotationAtts->SetXTitleFontHeight2D(
+                annotationAtts->GetXTitleFontHeight2D());
+        }
+    }
+
+    // Do the 2d y title text height value
+    if (which_widget == 11 || doAll)
+    {
+        temp = yTitleFontHeightLineEdit2D->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if (okay)
+        {
+            double v;
+            if (sscanf(temp.latin1(), "%lg", &v) == 1)
+            {
+                annotationAtts->SetYTitleFontHeight2D(v);
+            }
+            else
+                okay = false;
+        }
+
+        if (!okay)
+        {
+            msg.sprintf("The 2D Y title text height value was invalid. "
+                "Resetting to the last good value of %g.",
+                annotationAtts->GetYTitleFontHeight2D());
+            Error(msg);
+            annotationAtts->SetYTitleFontHeight2D(
+                annotationAtts->GetYTitleFontHeight2D());
         }
     }
 }
@@ -1647,6 +1804,119 @@ QvisAnnotationWindow::yMinorTickSpacingChanged2D()
 }
 
 // ****************************************************************************
+// Method: QvisAnnotationWindow::xLabelFontHeightChanged2D
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the 2d x label text
+//   height is changed.
+//
+// Programmer: Eric Brugger
+// Creation:   Tue Jun 24 16:04:01 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::xLabelFontHeightChanged2D()
+{
+    GetCurrentValues(8);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::yLabelFontHeightChanged2D
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the 2d y label text
+//   height is changed.
+//
+// Programmer: Eric Brugger
+// Creation:   Tue Jun 24 16:04:01 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::yLabelFontHeightChanged2D()
+{
+    GetCurrentValues(9);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::xTitleFontHeightChanged2D
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the 2d x title text
+//   height is changed.
+//
+// Programmer: Eric Brugger
+// Creation:   Tue Jun 24 16:04:01 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::xTitleFontHeightChanged2D()
+{
+    GetCurrentValues(10);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::yTitleFontHeightChanged2D
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the 2d y title text
+//   height is changed.
+//
+// Programmer: Eric Brugger
+// Creation:   Tue Jun 24 16:04:01 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::yTitleFontHeightChanged2D()
+{
+    GetCurrentValues(11);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::axesLineWidthChanged2D
+//
+// Purpose:
+//   This is a Qt slot function that is called when the 2d axes line width
+//   is changed.
+//
+// Arguments:
+//   index:    The new line width.
+//
+// Programmer: Eric Brugger
+// Creation:   Tue Jun 24 16:04:01 PDT 2003
+//
+// Modifications:
+//
+// ****************************************************************************
+ 
+void
+QvisAnnotationWindow::axesLineWidthChanged2D(int index)
+{
+    annotationAtts->SetAxesLineWidth2D(index);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
 // Method: QvisAnnotationWindow::axes2DTicksChanged
 //
 // Purpose: 
@@ -1710,53 +1980,6 @@ QvisAnnotationWindow::axesTickLocationChanged2D(int index)
         annotationAtts->SetAxesTickLocation2D(AnnotationAttributes::Outside);
     else if (index == 2)
         annotationAtts->SetAxesTickLocation2D(AnnotationAttributes::Both);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::axesFontSizeChanged2D
-//
-// Purpose: 
-//   This is a Qt slot function that tells the attributes the size of the
-//   2d axes label fonts.
-//
-// Arguments:
-//   index : The new value.
-//
-// Programmer: Eric Brugger
-// Creation:   Mon Nov  4 12:21:02 PST 2002
-//
-// Modifications:
-//   Eric Brugger, Fri Jan 24 11:27:09 PST 2003
-//   Changed the way that the axes font sizes were set.
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::axesFontSizeChanged2D(int index)
-{
-    if (index == 0)
-    {
-        annotationAtts->SetXLabelFontHeight2D(0.02);
-        annotationAtts->SetYLabelFontHeight2D(0.02);
-        annotationAtts->SetXTitleFontHeight2D(0.02);
-        annotationAtts->SetYTitleFontHeight2D(0.02);
-    }
-    else if (index == 1)
-    {
-        annotationAtts->SetXLabelFontHeight2D(0.03);
-        annotationAtts->SetYLabelFontHeight2D(0.03);
-        annotationAtts->SetXTitleFontHeight2D(0.03);
-        annotationAtts->SetYTitleFontHeight2D(0.03);
-    }
-    else if (index == 2)
-    {
-        annotationAtts->SetXLabelFontHeight2D(0.04);
-        annotationAtts->SetYLabelFontHeight2D(0.04);
-        annotationAtts->SetXTitleFontHeight2D(0.04);
-        annotationAtts->SetYTitleFontHeight2D(0.04);
-    }
     SetUpdate(false);
     Apply();
 }

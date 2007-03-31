@@ -284,6 +284,10 @@ avtMetricThresholdFilter::CreateRectilinearPoints(vtkRectilinearGrid *grid)
 //  Programmer: Akira Haddox
 //  Creation:   June 20, 2002
 //
+//  Modifications:
+//    Akira Haddox, Wed Jul  2 08:23:55 PDT 2003
+//    Added pixel cell type.
+//
 // ****************************************************************************
 
 inline bool Between(double _a, double _b, double _c)
@@ -312,6 +316,7 @@ avtMetricThresholdFilter::PassesTest(int type, float value)
         case VTK_TRIANGLE:
             return (atts.GetTriangle() &&
                     !Between(value, atts.GetTri_lower(), atts.GetTri_upper()));
+        case VTK_PIXEL:
         case VTK_QUAD:
             return (atts.GetQuad() && 
                     !Between(value, atts.GetQuad_lower(),

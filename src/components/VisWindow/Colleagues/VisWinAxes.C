@@ -843,7 +843,7 @@ LabelExponent(float min, float max)
 
 
 // ****************************************************************************
-//  Function: SetXTickVisibility
+//  Method: VisWinAxes::SetXTickVisibility
 //
 //  Purpose:
 //    Sets the visibility of x-axis ticks. 
@@ -868,7 +868,7 @@ VisWinAxes::SetXTickVisibility(int xVis, int xLabelsVis)
 
 
 // ****************************************************************************
-//  Function: SetYTickVisibility
+//  Method: VisWinAxes::SetYTickVisibility
 //
 //  Purpose:
 //      Sets the visibility of y-axis ticks. 
@@ -892,7 +892,7 @@ VisWinAxes::SetYTickVisibility(int yVis, int yLabelsVis)
 
 
 // ****************************************************************************
-//  Function: SetLabelsVisibility
+//  Method: VisWinAxes::SetLabelsVisibility
 //
 //  Purpose:
 //      Sets the visibility of x-axis and y-axis labels. 
@@ -920,7 +920,7 @@ VisWinAxes::SetLabelsVisibility(int xVis, int yVis)
 
 
 // ****************************************************************************
-//  Function: SetTitleVisibility
+//  Method: VisWinAxes::SetTitleVisibility
 //
 //  Purpose:
 //      Sets the visibility of x-axis and y-axis titles. 
@@ -943,7 +943,7 @@ VisWinAxes::SetTitleVisibility(int xVis, int yVis)
 
 
 // ****************************************************************************
-//  Function: SetVisibility
+//  Method: VisWinAxes::SetVisibility
 //
 //  Purpose:
 //      Sets the visibility of this colleague. 
@@ -965,7 +965,7 @@ VisWinAxes::SetVisibility(int vis)
        
     
 // ****************************************************************************
-//  Function: SetTickLocation
+//  Method: VisWinAxes::SetTickLocation
 //
 //  Purpose:
 //      Sets the location of the ticks. 
@@ -987,7 +987,7 @@ VisWinAxes::SetTickLocation(int loc)
 
 
 // ****************************************************************************
-//  Function: SetXGridVisibility
+//  Method: VisWinAxes::SetXGridVisibility
 //
 //  Purpose:
 //      Sets the visibility of x-axis gridlines. 
@@ -1008,7 +1008,7 @@ VisWinAxes::SetXGridVisibility(int vis)
        
        
 // ****************************************************************************
-//  Function: SetYGridVisibility
+//  Method: VisWinAxes::SetYGridVisibility
 //
 //  Purpose:
 //      Sets the visibility of y-axis gridlines. 
@@ -1029,7 +1029,7 @@ VisWinAxes::SetYGridVisibility(int vis)
        
 
 // ****************************************************************************
-//  Function: SetAutoSetTicks
+//  Method: VisWinAxes::SetAutoSetTicks
 //
 //  Purpose:
 //      Sets the flag which specifies if the ticks should be automatically
@@ -1053,7 +1053,7 @@ VisWinAxes::SetAutoSetTicks(int autoSetTicks)
 
 
 // ****************************************************************************
-//  Function: SetMajorTickMinimum
+//  Method: VisWinAxes::SetMajorTickMinimum
 //
 //  Purpose:
 //      Sets the minimum values for the major tick marks.
@@ -1076,7 +1076,7 @@ VisWinAxes::SetMajorTickMinimum(double xMajorMinimum, double yMajorMinimum)
 
 
 // ****************************************************************************
-//  Function: SetMajorTickMaximum
+//  Method: VisWinAxes::SetMajorTickMaximum
 //
 //  Purpose:
 //      Sets the maximum values for the major tick marks.
@@ -1099,7 +1099,7 @@ VisWinAxes::SetMajorTickMaximum(double xMajorMaximum, double yMajorMaximum)
 
 
 // ****************************************************************************
-//  Function: SetMajorTickSpacing
+//  Method: VisWinAxes::SetMajorTickSpacing
 //
 //  Purpose:
 //      Sets the spacing for the major tick marks.
@@ -1122,7 +1122,7 @@ VisWinAxes::SetMajorTickSpacing(double xMajorSpacing, double yMajorSpacing)
 
 
 // ****************************************************************************
-//  Function: SetMinorTickSpacing
+//  Method: VisWinAxes::SetMinorTickSpacing
 //
 //  Purpose:
 //      Sets the spacing for the minor tick marks.
@@ -1145,7 +1145,7 @@ VisWinAxes::SetMinorTickSpacing(double xMinorSpacing, double yMinorSpacing)
 
 
 // ****************************************************************************
-//  Function: SetXLabelFontHeight
+//  Method: VisWinAxes::SetXLabelFontHeight
 //
 //  Purpose:
 //      Sets the label font height for the x axis.
@@ -1166,7 +1166,7 @@ VisWinAxes::SetXLabelFontHeight(double height)
 
 
 // ****************************************************************************
-//  Function: SetYLabelFontHeight
+//  Method: VisWinAxes::SetYLabelFontHeight
 //
 //  Purpose:
 //      Sets the label font height for the y axis.
@@ -1187,7 +1187,7 @@ VisWinAxes::SetYLabelFontHeight(double height)
 
 
 // ****************************************************************************
-//  Function: SetXTitleFontHeight
+//  Method: VisWinAxes::SetXTitleFontHeight
 //
 //  Purpose:
 //      Sets the title font height for the x axis.
@@ -1208,7 +1208,7 @@ VisWinAxes::SetXTitleFontHeight(double height)
 
 
 // ****************************************************************************
-//  Function: SetYTitleFontHeight
+//  Method: VisWinAxes::SetYTitleFontHeight
 //
 //  Purpose:
 //      Sets the title font height for the y axis.
@@ -1225,6 +1225,28 @@ void
 VisWinAxes::SetYTitleFontHeight(double height)
 {
     yAxis->SetTitleFontHeight(height);
+}
+
+
+// ****************************************************************************
+//  Method: VisWinAxes::SetLineWidth
+//
+//  Purpose:
+//      Sets the line width for the axes.
+//
+//  Arguments:
+//      width   The line width.
+//
+//  Programmer: Eric Brugger
+//  Creation:   June 25, 2003
+//
+// ****************************************************************************
+
+void
+VisWinAxes::SetLineWidth(int width)
+{
+    xAxis->GetProperty()->SetLineWidth(width);
+    yAxis->GetProperty()->SetLineWidth(width);
 }
 
 

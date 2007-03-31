@@ -14,6 +14,7 @@
 #include <vtkIdList.h>
 
 #include <DebugStream.h>
+#include <ExpressionException.h>
 
 
 // ****************************************************************************
@@ -60,7 +61,7 @@ avtGradientFilter::~avtGradientFilter()
 //  Returns:      The derived variable.  The calling class must free this
 //                memory.
 //
-//  Programmer:   Matthew Haddox 
+//  Programmer:   Akira Haddox 
 //  Creation:     July 30, 2002
 //
 //  Modifications:
@@ -71,6 +72,9 @@ avtGradientFilter::~avtGradientFilter()
 //
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
 //    Use NewInstance instead of MakeObject, new vtkapi. 
+// 
+//    Akira Haddox, Wed Jun 18 13:03:23 PDT 2003
+//    Added proper error check for scalar data, and check for 2D data.
 // 
 // ****************************************************************************
 
@@ -84,7 +88,8 @@ avtGradientFilter::DeriveVariable(vtkDataSet *in_ds)
     {
         if (!(in_ds->GetCellData()->GetScalars()))
         {
-            return NULL; // No data
+            EXCEPTION1(ExpressionException, "the scalar variable could not"
+                                            " be found.");
         }
 
         myFilter->SetInput(in_ds);
@@ -108,6 +113,9 @@ avtGradientFilter::DeriveVariable(vtkDataSet *in_ds)
     
     for (int nodeId = 0 ; nodeId < nPoints; nodeId++)
     {
+        if (nodeId % 10000 == 0)
+            UpdateProgress(nodeId, nPoints);
+
         float xDELTA=1e6, yDELTA=1e6, zDELTA=1e6;
         
         float *nodeCoords = in_ds->GetPoint(nodeId);
@@ -150,8 +158,13 @@ avtGradientFilter::DeriveVariable(vtkDataSet *in_ds)
                 xDELTA, 0, 0, nodeValue, in_ds, scalarValues, neighborCellIds);
         yComponent=EvaluateComponent(nodeCoords[0],nodeCoords[1],nodeCoords[2],
                 0, yDELTA, 0, nodeValue, in_ds, scalarValues, neighborCellIds);
-        zComponent=EvaluateComponent(nodeCoords[0],nodeCoords[1],nodeCoords[2],
-                0, 0, zDELTA, nodeValue, in_ds, scalarValues, neighborCellIds);
+        if (zDELTA == 0)
+            zComponent = 0;
+        else
+            zComponent=EvaluateComponent(nodeCoords[0],nodeCoords[1],
+                                         nodeCoords[2], 0, 0, zDELTA, 
+                                         nodeValue, in_ds, scalarValues,
+                                         neighborCellIds);
 
         results->SetTuple3(nodeId, xComponent, yComponent, zComponent);
     }
@@ -181,7 +194,7 @@ avtGradientFilter::DeriveVariable(vtkDataSet *in_ds)
 //
 //  Returns:      The value at that point.
 //
-//  Programmer:   Matthew Haddox 
+//  Programmer:   Akira Haddox 
 //  Creation:     July 30, 2002
 //
 // ****************************************************************************
@@ -236,8 +249,12 @@ float avtGradientFilter::EvaluateComponent(float x, float y, float z,
 //
 //  Returns:      The value at that point.
 //
-//  Programmer:   Matthew Haddox 
+//  Programmer:   Akira Haddox 
 //  Creation:     July 30, 2002
+//
+//  Modifications:
+//      Akira Haddox, Mon Jun 23 10:43:12 PDT 2003
+//      Changed an accumulator from float to double for precision.
 //
 // ****************************************************************************
 
@@ -287,7 +304,7 @@ float avtGradientFilter::EvaluateValue(float x, float y, float z,
         return 0.;
     }
     
-    float value = 0.;
+    double value = 0.;
     if (abnormalWeights)
     {
         for (int k=0 ; k < c->GetNumberOfPoints() ; k++)
@@ -307,5 +324,3 @@ float avtGradientFilter::EvaluateValue(float x, float y, float z,
     }
     return value;    
 } 
-
-
