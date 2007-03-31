@@ -1541,6 +1541,11 @@ ViewerPlotList::DeleteActivePlots()
 //  Programmer: Mark C. Miller
 //  Creation:   November 19, 2003 
 //
+//  Modifications:
+//    Brad Whitlock, Mon Dec 8 15:28:19 PST 2003
+//    I changed the logic so it does not try and match additional features
+//    if the databases are not the same in the first place.
+//
 // ****************************************************************************
 
 int
@@ -1552,39 +1557,42 @@ ViewerPlotList::FindCompatiblePlot(ViewerPlot *givenPlot)
 
     for (i = 0; i < nPlots; ++i)
     {
-        bool basicCompatiblity = false;
-        int numFeaturesMatched = 0;
-
         // ignore the the plot in the list that is the same as the given plot
         if (plots[i].plot == givenPlot)
             continue;
 
         // check basic compatibility
-        if ((strcmp(plots[i].plot->GetHostName(),
-                    givenPlot->GetHostName()) == 0) &&
-            (strcmp(plots[i].plot->GetDatabaseName(),
-                    givenPlot->GetDatabaseName()) == 0))
-            basicCompatiblity = true;
-
-        // check for compatibility in other features
-        if (strcmp(plots[i].plot->GetPlotName(),givenPlot->GetPlotName()) == 0)
-            numFeaturesMatched++;
-        if (strcmp(plots[i].plot->GetPluginID(),givenPlot->GetPluginID()) == 0)
-            numFeaturesMatched++;
-        if (strcmp(plots[i].plot->GetVariableName(),
-                   givenPlot->GetVariableName()) == 0)
-            numFeaturesMatched++;
-        if (plots[i].plot->GetType() == givenPlot->GetType())
-            numFeaturesMatched++;
-        if (plots[i].plot->GetNetworkID() == givenPlot->GetNetworkID())
-            numFeaturesMatched++;
-        if (plots[i].plot->GetVarType() == givenPlot->GetVarType())
-            numFeaturesMatched++;
-
-        if (basicCompatiblity && (numFeaturesMatched > maxFeaturesMatched))
+        bool sameHost = strcmp(plots[i].plot->GetHostName(),
+                               givenPlot->GetHostName()) == 0;
+        bool sameDB   = strcmp(plots[i].plot->GetDatabaseName(),
+                               givenPlot->GetDatabaseName()) == 0;
+        //
+        // If the host and database are the same, check for compatibility
+        // in other features.
+        //
+        if(sameHost && sameDB)
         {
-            maxFeaturesMatched = numFeaturesMatched;
-            compatibleIndex = i;
+            int numFeaturesMatched = 0;
+
+            if (strcmp(plots[i].plot->GetPlotName(),givenPlot->GetPlotName()) == 0)
+                numFeaturesMatched++;
+            if (strcmp(plots[i].plot->GetPluginID(),givenPlot->GetPluginID()) == 0)
+                numFeaturesMatched++;
+            if (strcmp(plots[i].plot->GetVariableName(),
+                       givenPlot->GetVariableName()) == 0)
+                numFeaturesMatched++;
+            if (plots[i].plot->GetType() == givenPlot->GetType())
+                numFeaturesMatched++;
+            if (plots[i].plot->GetNetworkID() == givenPlot->GetNetworkID())
+                numFeaturesMatched++;
+            if (plots[i].plot->GetVarType() == givenPlot->GetVarType())
+                numFeaturesMatched++;
+
+            if (numFeaturesMatched > maxFeaturesMatched)
+            {
+                maxFeaturesMatched = numFeaturesMatched;
+                compatibleIndex = i;
+            }
         }
     }
 

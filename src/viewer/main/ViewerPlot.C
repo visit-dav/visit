@@ -3432,6 +3432,10 @@ ViewerPlot::GetPlotQueryInfo()
 //    Sean Ahern, Wed Feb  5 14:34:38 PST 2003
 //    Removed the ViewerExpressionList for the more general ParsingExprList.
 //
+//    Brad Whitlock, Mon Dec 8 15:23:08 PST 2003
+//    Added code to handle a possible InvalidVariableException that can be
+//    thrown out of md->DetermineVarType.
+//
 // ****************************************************************************
 
 avtVarType 
@@ -3456,8 +3460,25 @@ ViewerPlot::GetVarType()
         {
             // 
             // Get the type for the variable.
-            // 
-            retval = md->DetermineVarType(std::string(variableName));
+            //
+            TRY
+            {
+                retval = md->DetermineVarType(std::string(variableName));
+            }
+            CATCH(VisItException)
+            {
+                std::string message("VisIt was unable to determine the variable type for ");
+                message += hostName; 
+                message += ":";
+                message += databaseName;
+                message += "'s ";
+                message += variableName;
+                message += " variable.";
+                Error(message.c_str());
+                debug1 << "ViewerPlot::GetVarType: Caught an exception!" << endl;
+                retval = AVT_UNKNOWN_TYPE;
+            }
+            ENDTRY
         }
     }
 

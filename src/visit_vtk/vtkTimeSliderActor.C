@@ -178,7 +178,9 @@ vtkTimeSliderActor::AddEndCapCells(int center, vtkCellArray *polys)
 // Creation:   Tue Oct 28 11:05:13 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Dec 9 08:38:22 PDT 2003
+//   Fixed a bug that caused the end caps to become separated from the main bar.
+//
 // ****************************************************************************
 
 void
@@ -196,6 +198,7 @@ vtkTimeSliderActor::CreateSlider(vtkViewport *viewport)
     // If we're drawing endcaps, move the bar in a little to make room.
     //
     float BarHeight = TR[1] - BL[1];
+    if(BarHeight < 0.f) BarHeight = -BarHeight;
     float EndCapRadius = BarHeight / 2.;
     if(this->DrawEndCaps != 0)
     {
