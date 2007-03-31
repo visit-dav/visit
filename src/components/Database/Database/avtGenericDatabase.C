@@ -214,6 +214,10 @@ avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 //    Jeremy Meredith, Thu Jun 12 09:06:49 PDT 2003
 //    Added the data spec to the input of PopulateDataObjectInformation.
 //
+//    Jeremy Meredith, Sat Aug  2 20:40:04 PDT 2003
+//    If any processor decides to do material selection, they all should.
+//    Unified shouldDoMatSelect across all processors.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -263,6 +267,18 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     {
         shouldDoMatSelect = shouldDoMatSelect || datasetCollection.needsMatSelect[i];
     }
+
+#ifdef PARALLEL
+    //
+    // If any processor decides to do material selection, they all should
+    //
+    int shouldDoMatSelectAsInt = (shouldDoMatSelect ? 1 : 0);
+    int shouldDoMatSelectAsIntCollective;
+    MPI_Allreduce(&shouldDoMatSelectAsInt, &shouldDoMatSelectAsIntCollective,
+                  1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+    shouldDoMatSelect = bool(shouldDoMatSelectAsIntCollective);
+#endif
+
     if (shouldDoMatSelect)
     {
         spec->TurnZoneNumbersOn();
