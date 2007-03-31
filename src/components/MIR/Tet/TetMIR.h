@@ -5,6 +5,7 @@
 
 #include <MIR.h>
 
+#include <MIRConnectivity.h>
 #include <MIROptions.h>
 #include <QuadraticHash.h>
 #include <Tet.h>
@@ -108,21 +109,27 @@ class avtSpecies;
 //    Jeremy Meredith, Wed Aug 20 09:55:02 PDT 2003
 //    Refactored much of this into a new base MIR class.
 //
+//    Jeremy Meredith, Mon Sep 15 09:51:19 PDT 2003
+//    Did some more refactoring.
+//
 // ****************************************************************************
 class MIR_API TetMIR : public MIR
 {
   public:
     TetMIR();
-    ~TetMIR();
+    virtual ~TetMIR();
     
     // do the processing
-    bool Reconstruct3DMesh(vtkDataSet *, avtMaterial *);
-    bool Reconstruct2DMesh(vtkDataSet *, avtMaterial *);
+    virtual bool Reconstruct3DMesh(vtkDataSet *, avtMaterial *);
+    virtual bool Reconstruct2DMesh(vtkDataSet *, avtMaterial *);
 
     // material select everything -- all variables, the mesh, and the material
     // if requested.
-    vtkDataSet *GetDataset(std::vector<int>, vtkDataSet *, 
-                           std::vector<avtMixedVariable *>, bool);
+    virtual vtkDataSet *GetDataset(std::vector<int>, vtkDataSet *, 
+                                   std::vector<avtMixedVariable *>, bool);
+
+    virtual bool SubdivisionOccurred()   { return !allClean; }
+    virtual bool NotAllCellsSubdivided() { return someClean; }
 
     // This is the reconstructed output and supporting data structures
     struct ReconstructedCoord
@@ -136,17 +143,6 @@ class MIR_API TetMIR : public MIR
         bool operator==(const ReconstructedCoord &c);
         static unsigned int HashFunction(ReconstructedCoord&);
     };
-    struct MIRConnectivity
-    {
-        int *connectivity;
-        int  ncells;
-        int *celltype;
-       
-        MIRConnectivity();
-        ~MIRConnectivity();
-        void SetUpConnectivity(vtkDataSet *);
-    };
-    friend struct ReconstructedCoord;
 
     struct ReconstructedZone
     {
@@ -163,6 +159,9 @@ class MIR_API TetMIR : public MIR
     static float yGrid;
     static float zGrid;
 
+    bool         allClean;
+    bool         someClean;
+
     vtkDataSet                             *mesh;
     vtkPoints                              *outPts;
 
@@ -173,13 +172,9 @@ class MIR_API TetMIR : public MIR
     std::vector<ReconstructedCoord>         coordsList;
     std::vector<ReconstructedZone>          zonesList;
     std::vector<vtkIdType>                  indexList;
-    std::vector< std::vector<int> >         mix_index;
 
     int                                     dimension;
     int                                     nMaterials;
-
-    bool                                    allClean;
-    bool                                    someClean;
 
     std::vector<int>                        mapMatToUsedMat;
     std::vector<int>                        mapUsedMatToMat;

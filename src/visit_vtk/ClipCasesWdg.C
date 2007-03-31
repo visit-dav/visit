@@ -2,6 +2,10 @@
 
 // Programmer: Jeremy Meredith
 // Date      : August 11, 2003
+//
+// Modifications:
+//    Jeremy Meredith, Mon Sep 15 17:30:21 PDT 2003
+//    Added ability for Centroid-Points to have an associated color.
 
 // This file is meant to be read and created by a program other than a
 // compiler.  If you must modify it by hand, at least be nice to the 
@@ -21,14 +25,14 @@ int numClipShapesWdg[64] = {
 };
 
 int startClipShapesWdg[64] = {
-  0, 8, 29, 50, 114, 135, 199, 263, // cases 0 - 7
-  279, 300, 318, 417, 503, 602, 688, 760, // cases 8 - 15
-  824, 845, 944, 962, 1048, 1147, 1219, 1305, // cases 16 - 23
-  1369, 1433, 1519, 1605, 1623, 1695, 1729, 1763, // cases 24 - 31
-  1784, 1805, 1904, 2003, 2075, 2093, 2179, 2265, // cases 32 - 39
-  2329, 2393, 2479, 2551, 2585, 2671, 2689, 2723, // cases 40 - 47
-  2744, 2808, 2880, 2966, 3000, 3086, 3120, 3138, // cases 48 - 55
-  3159, 3175, 3239, 3303, 3324, 3388, 3409, 3430  // cases 56 - 63
+  0, 8, 29, 50, 115, 136, 201, 266, // cases 0 - 7
+  282, 303, 321, 421, 508, 608, 695, 768, // cases 8 - 15
+  833, 854, 954, 972, 1059, 1159, 1232, 1319, // cases 16 - 23
+  1384, 1449, 1536, 1623, 1641, 1714, 1748, 1782, // cases 24 - 31
+  1803, 1824, 1924, 2024, 2097, 2115, 2202, 2289, // cases 32 - 39
+  2354, 2419, 2506, 2579, 2613, 2700, 2718, 2752, // cases 40 - 47
+  2773, 2838, 2911, 2998, 3032, 3119, 3153, 3171, // cases 48 - 55
+  3192, 3208, 3273, 3338, 3359, 3424, 3445, 3466  // cases 56 - 63
 };
 
 unsigned char clipShapesWdg[] = {
@@ -43,7 +47,7 @@ unsigned char clipShapesWdg[] = {
   ST_PYR, COLOR0, P2, P0, P3, P5, P4, 
   ST_TET, COLOR1, EH, EB, EA, P1, 
  // Case #3: Unique case #3
-  ST_PNT, 0, 7, P2, P3, P4, EB, EC, EG, EH, 
+  ST_PNT, 0, COLOR0, 7, P2, P3, P4, EB, EC, EG, EH, 
   ST_TET, COLOR0, P4, P5, P3, P2, 
   ST_TET, COLOR0, P2, P3, P4, N0, 
   ST_PYR, COLOR0, EG, EH, P4, P3, N0, 
@@ -57,7 +61,7 @@ unsigned char clipShapesWdg[] = {
   ST_PYR, COLOR0, P0, P1, P4, P3, P5, 
   ST_TET, COLOR1, EI, EC, EB, P2, 
  // Case #5: (cloned #3)
-  ST_PNT, 0, 7, P1, P5, P3, EA, EB, EI, EG, 
+  ST_PNT, 0, COLOR0, 7, P1, P5, P3, EA, EB, EI, EG, 
   ST_TET, COLOR0, P3, P4, P5, P1, 
   ST_TET, COLOR0, P1, P5, P3, N0, 
   ST_PYR, COLOR0, EI, EG, P3, P5, N0, 
@@ -67,7 +71,7 @@ unsigned char clipShapesWdg[] = {
   ST_PYR, COLOR0, EG, EA, P1, P3, N0, 
   ST_WDG, COLOR1, EB, EI, P2, EA, EG, P0, 
  // Case #6: (cloned #3)
-  ST_PNT, 0, 7, P0, P4, P5, EC, EA, EH, EI, 
+  ST_PNT, 0, COLOR0, 7, P0, P4, P5, EC, EA, EH, EI, 
   ST_TET, COLOR0, P5, P3, P4, P0, 
   ST_TET, COLOR0, P0, P4, P5, N0, 
   ST_PYR, COLOR0, EH, EI, P5, P4, N0, 
@@ -87,7 +91,7 @@ unsigned char clipShapesWdg[] = {
   ST_HEX, COLOR0, P1, P2, P5, P4, EA, EC, EF, ED, 
   ST_WDG, COLOR1, P0, EA, EC, P3, ED, EF, 
  // Case #10: Unique case #6
-  ST_PNT, 0, 6, EA, EB, EH, ED, EF, EG, 
+  ST_PNT, 0, NOCOLOR, 6, EA, EB, EH, ED, EF, EG, 
   ST_PYR, COLOR0, P5, P0, EG, EF, N0, 
   ST_TET, COLOR0, P0, EA, EG, N0, 
   ST_PYR, COLOR0, P0, P2, EB, EA, N0, 
@@ -103,7 +107,7 @@ unsigned char clipShapesWdg[] = {
   ST_TET, COLOR1, P1, EB, EH, N0, 
   ST_TET, COLOR1, P1, EA, EB, N0, 
  // Case #11: Unique case #7
-  ST_PNT, 0, 5, EB, EC, EF, ED, EH, 
+  ST_PNT, 0, NOCOLOR, 5, EB, EC, EF, ED, EH, 
   ST_PYR, COLOR0, P4, P5, EF, ED, N0, 
   ST_TET, COLOR0, ED, EH, P4, N0, 
   ST_PYR, COLOR0, EC, EF, P5, P2, N0, 
@@ -117,7 +121,7 @@ unsigned char clipShapesWdg[] = {
   ST_PYR, COLOR1, P3, P1, EH, ED, N0, 
   ST_TET, COLOR1, P1, EB, EH, N0, 
  // Case #12: (cloned #10)
-  ST_PNT, 0, 6, EF, ED, EG, EC, EB, EI, 
+  ST_PNT, 0, NOCOLOR, 6, EF, ED, EG, EC, EB, EI, 
   ST_PYR, COLOR0, P1, EB, EI, P5, N0, 
   ST_TET, COLOR0, P5, EI, EF, N0, 
   ST_PYR, COLOR0, P5, EF, ED, P4, N0, 
@@ -133,7 +137,7 @@ unsigned char clipShapesWdg[] = {
   ST_TET, COLOR1, P3, EG, ED, N0, 
   ST_TET, COLOR1, P3, ED, EF, N0, 
  // Case #13: (cloned #11)
-  ST_PNT, 0, 5, EB, EA, ED, EF, EI, 
+  ST_PNT, 0, NOCOLOR, 5, EB, EA, ED, EF, EI, 
   ST_PYR, COLOR0, P5, EF, ED, P4, N0, 
   ST_TET, COLOR0, EF, P5, EI, N0, 
   ST_PYR, COLOR0, EA, P1, P4, ED, N0, 
@@ -147,7 +151,7 @@ unsigned char clipShapesWdg[] = {
   ST_PYR, COLOR1, P3, EF, EI, P2, N0, 
   ST_TET, COLOR1, P2, EI, EB, N0, 
  // Case #14: Unique case #8
-  ST_PNT, 0, 7, ED, EF, EI, EH, P3, P2, P1, 
+  ST_PNT, 0, COLOR1, 7, ED, EF, EI, EH, P3, P2, P1, 
   ST_TET, COLOR0, P0, EC, EA, EG, 
   ST_WDG, COLOR0, EF, EI, P5, ED, EH, P4, 
   ST_WDG, COLOR1, P2, P1, P3, EC, EA, EG, 
@@ -158,7 +162,7 @@ unsigned char clipShapesWdg[] = {
   ST_PYR, COLOR1, ED, P3, P1, EH, N0, 
   ST_PYR, COLOR1, EI, P2, P3, EF, N0, 
  // Case #15: Unique case #9
-  ST_PNT, 0, 7, P1, P2, P3, EF, ED, EH, EI, 
+  ST_PNT, 0, COLOR1, 7, P1, P2, P3, EF, ED, EH, EI, 
   ST_WDG, COLOR0, ED, P4, EH, EF, P5, EI, 
   ST_TET, COLOR1, P0, P2, P1, P3, 
   ST_PYR, COLOR1, EF, ED, EH, EI, N0, 
@@ -172,7 +176,7 @@ unsigned char clipShapesWdg[] = {
   ST_PYR, COLOR0, P5, P2, P0, P3, P1, 
   ST_TET, COLOR1, EH, ED, EE, P4, 
  // Case #17: (cloned #10)
-  ST_PNT, 0, 6, ED, EE, EH, EA, EC, EG, 
+  ST_PNT, 0, NOCOLOR, 6, ED, EE, EH, EA, EC, EG, 
   ST_PYR, COLOR0, P2, EC, EG, P3, N0, 
   ST_TET, COLOR0, P3, EG, ED, N0, 
   ST_PYR, COLOR0, P3, ED, EE, P5, N0, 
@@ -191,7 +195,7 @@ unsigned char clipShapesWdg[] = {
   ST_HEX, COLOR0, P2, P0, P3, P5, EB, EA, ED, EE, 
   ST_WDG, COLOR1, P1, EB, EA, P4, EE, ED, 
  // Case #19: (cloned #11)
-  ST_PNT, 0, 5, EC, EB, EE, ED, EG, 
+  ST_PNT, 0, NOCOLOR, 5, EC, EB, EE, ED, EG, 
   ST_PYR, COLOR0, P3, ED, EE, P5, N0, 
   ST_TET, COLOR0, ED, P3, EG, N0, 
   ST_PYR, COLOR0, EB, P2, P5, EE, N0, 
@@ -205,7 +209,7 @@ unsigned char clipShapesWdg[] = {
   ST_PYR, COLOR1, P4, ED, EG, P0, N0, 
   ST_TET, COLOR1, P0, EG, EC, N0, 
  // Case #20: (cloned #10)
-  ST_PNT, 0, 6, EB, EC, EI, EE, ED, EH, 
+  ST_PNT, 0, NOCOLOR, 6, EB, EC, EI, EE, ED, EH, 
   ST_PYR, COLOR0, P3, P1, EH, ED, N0, 
   ST_TET, COLOR0, P1, EB, EH, N0, 
   ST_PYR, COLOR0, P1, P0, EC, EB, N0, 
@@ -221,7 +225,7 @@ unsigned char clipShapesWdg[] = {
   ST_TET, COLOR1, P2, EC, EI, N0, 
   ST_TET, COLOR1, P2, EB, EC, N0, 
  // Case #21: (cloned #14)
-  ST_PNT, 0, 7, EE, ED, EG, EI, P4, P0, P2, 
+  ST_PNT, 0, COLOR1, 7, EE, ED, EG, EI, P4, P0, P2, 
   ST_TET, COLOR0, P1, EA, EB, EH, 
   ST_WDG, COLOR0, ED, EG, P3, EE, EI, P5, 
   ST_WDG, COLOR1, P0, P2, P4, EA, EB, EH, 
@@ -232,7 +236,7 @@ unsigned char clipShapesWdg[] = {
   ST_PYR, COLOR1, EE, P4, P2, EI, N0, 
   ST_PYR, COLOR1, EG, P0, P4, ED, N0, 
  // Case #22: (cloned #11)
-  ST_PNT, 0, 5, EC, EA, ED, EE, EI, 
+  ST_PNT, 0, NOCOLOR, 5, EC, EA, ED, EE, EI, 
   ST_PYR, COLOR0, P5, P3, ED, EE, N0, 
   ST_TET, COLOR0, EE, EI, P5, N0, 
   ST_PYR, COLOR0, EA, ED, P3, P0, N0, 
@@ -246,7 +250,7 @@ unsigned char clipShapesWdg[] = {
   ST_PYR, COLOR1, P4, P2, EI, EE, N0, 
   ST_TET, COLOR1, P2, EC, EI, N0, 
  // Case #23: (cloned #15)
-  ST_PNT, 0, 7, P2, P0, P4, ED, EE, EI, EG, 
+  ST_PNT, 0, COLOR1, 7, P2, P0, P4, ED, EE, EI, EG, 
   ST_WDG, COLOR0, EE, P5, EI, ED, P3, EG, 
   ST_TET, COLOR1, P1, P0, P2, P4, 
   ST_PYR, COLOR1, ED, EE, EI, EG, N0, 
@@ -256,7 +260,7 @@ unsigned char clipShapesWdg[] = {
   ST_PYR, COLOR1, P4, P2, EI, EE, N0, 
   ST_PYR, COLOR1, P0, P4, ED, EG, N0, 
  // Case #24: (cloned #3)
-  ST_PNT, 0, 7, P5, P0, P1, EE, EF, EG, EH, 
+  ST_PNT, 0, COLOR0, 7, P5, P0, P1, EE, EF, EG, EH, 
   ST_TET, COLOR0, P1, P0, P2, P5, 
   ST_TET, COLOR0, P5, P1, P0, N0, 
   ST_PYR, COLOR0, EG, P0, P1, EH, N0, 
@@ -266,7 +270,7 @@ unsigned char clipShapesWdg[] = {
   ST_PYR, COLOR0, EH, P1, P5, EE, N0, 
   ST_WDG, COLOR1, EE, EH, P4, EF, EG, P3, 
  // Case #25: (cloned #11)
-  ST_PNT, 0, 5, EE, EF, EC, EA, EH, 
+  ST_PNT, 0, NOCOLOR, 5, EE, EF, EC, EA, EH, 
   ST_PYR, COLOR0, P1, EA, EC, P2, N0, 
   ST_TET, COLOR0, EA, P1, EH, N0, 
   ST_PYR, COLOR0, EF, P5, P2, EC, N0, 
@@ -280,7 +284,7 @@ unsigned char clipShapesWdg[] = {
   ST_PYR, COLOR1, P0, EA, EH, P4, N0, 
   ST_TET, COLOR1, P4, EH, EE, N0, 
  // Case #26: (cloned #11)
-  ST_PNT, 0, 5, EF, EE, EB, EA, EG, 
+  ST_PNT, 0, NOCOLOR, 5, EF, EE, EB, EA, EG, 
   ST_PYR, COLOR0, P0, P2, EB, EA, N0, 
   ST_TET, COLOR0, EA, EG, P0, N0, 
   ST_PYR, COLOR0, EE, EB, P2, P5, N0, 
@@ -297,7 +301,7 @@ unsigned char clipShapesWdg[] = {
   ST_WDG, COLOR0, EF, P5, EE, EC, P2, EB, 
   ST_HEX, COLOR1, P3, P4, EE, EF, P0, P1, EB, EC, 
  // Case #28: (cloned #14)
-  ST_PNT, 0, 7, EC, EB, EH, EG, P2, P4, P3, 
+  ST_PNT, 0, COLOR1, 7, EC, EB, EH, EG, P2, P4, P3, 
   ST_TET, COLOR0, P5, EF, EE, EI, 
   ST_WDG, COLOR0, EC, EG, P0, EB, EH, P1, 
   ST_WDG, COLOR1, EE, EF, EI, P4, P3, P2, 
@@ -328,7 +332,7 @@ unsigned char clipShapesWdg[] = {
   ST_PYR, COLOR0, P3, P0, P1, P4, P2, 
   ST_TET, COLOR1, EI, EE, EF, P5, 
  // Case #33: (cloned #10)
-  ST_PNT, 0, 6, EC, EA, EG, EF, EE, EI, 
+  ST_PNT, 0, NOCOLOR, 6, EC, EA, EG, EF, EE, EI, 
   ST_PYR, COLOR0, P4, P2, EI, EE, N0, 
   ST_TET, COLOR0, P2, EC, EI, N0, 
   ST_PYR, COLOR0, P2, P1, EA, EC, N0, 
@@ -344,7 +348,7 @@ unsigned char clipShapesWdg[] = {
   ST_TET, COLOR1, P0, EA, EG, N0, 
   ST_TET, COLOR1, P0, EC, EA, N0, 
  // Case #34: (cloned #10)
-  ST_PNT, 0, 6, EE, EF, EI, EB, EA, EH, 
+  ST_PNT, 0, NOCOLOR, 6, EE, EF, EI, EB, EA, EH, 
   ST_PYR, COLOR0, P0, EA, EH, P4, N0, 
   ST_TET, COLOR0, P4, EH, EE, N0, 
   ST_PYR, COLOR0, P4, EE, EF, P3, N0, 
@@ -360,7 +364,7 @@ unsigned char clipShapesWdg[] = {
   ST_TET, COLOR1, P5, EI, EF, N0, 
   ST_TET, COLOR1, P5, EF, EE, N0, 
  // Case #35: (cloned #14)
-  ST_PNT, 0, 7, EF, EE, EH, EG, P5, P1, P0, 
+  ST_PNT, 0, COLOR1, 7, EF, EE, EH, EG, P5, P1, P0, 
   ST_TET, COLOR0, P2, EB, EC, EI, 
   ST_WDG, COLOR0, EE, EH, P4, EF, EG, P3, 
   ST_WDG, COLOR1, P1, P0, P5, EB, EC, EI, 
@@ -374,7 +378,7 @@ unsigned char clipShapesWdg[] = {
   ST_HEX, COLOR0, P0, P1, P4, P3, EC, EB, EE, EF, 
   ST_WDG, COLOR1, P2, EC, EB, P5, EF, EE, 
  // Case #37: (cloned #11)
-  ST_PNT, 0, 5, EA, EB, EE, EF, EG, 
+  ST_PNT, 0, NOCOLOR, 5, EA, EB, EE, EF, EG, 
   ST_PYR, COLOR0, P3, P4, EE, EF, N0, 
   ST_TET, COLOR0, EF, EG, P3, N0, 
   ST_PYR, COLOR0, EB, EE, P4, P1, N0, 
@@ -388,7 +392,7 @@ unsigned char clipShapesWdg[] = {
   ST_PYR, COLOR1, P5, P0, EG, EF, N0, 
   ST_TET, COLOR1, P0, EA, EG, N0, 
  // Case #38: (cloned #11)
-  ST_PNT, 0, 5, EA, EC, EF, EE, EH, 
+  ST_PNT, 0, NOCOLOR, 5, EA, EC, EF, EE, EH, 
   ST_PYR, COLOR0, P4, EE, EF, P3, N0, 
   ST_TET, COLOR0, EE, P4, EH, N0, 
   ST_PYR, COLOR0, EC, P0, P3, EF, N0, 
@@ -402,7 +406,7 @@ unsigned char clipShapesWdg[] = {
   ST_PYR, COLOR1, P5, EE, EH, P1, N0, 
   ST_TET, COLOR1, P1, EH, EA, N0, 
  // Case #39: (cloned #15)
-  ST_PNT, 0, 7, P0, P1, P5, EE, EF, EG, EH, 
+  ST_PNT, 0, COLOR1, 7, P0, P1, P5, EE, EF, EG, EH, 
   ST_WDG, COLOR0, EF, P3, EG, EE, P4, EH, 
   ST_TET, COLOR1, P2, P1, P0, P5, 
   ST_PYR, COLOR1, EE, EF, EG, EH, N0, 
@@ -412,7 +416,7 @@ unsigned char clipShapesWdg[] = {
   ST_PYR, COLOR1, P5, P0, EG, EF, N0, 
   ST_PYR, COLOR1, P1, P5, EE, EH, N0, 
  // Case #40: (cloned #3)
-  ST_PNT, 0, 7, P4, P2, P0, ED, EE, EI, EG, 
+  ST_PNT, 0, COLOR0, 7, P4, P2, P0, ED, EE, EI, EG, 
   ST_TET, COLOR0, P0, P2, P1, P4, 
   ST_TET, COLOR0, P4, P0, P2, N0, 
   ST_PYR, COLOR0, EI, P2, P0, EG, N0, 
@@ -422,7 +426,7 @@ unsigned char clipShapesWdg[] = {
   ST_PYR, COLOR0, EG, P0, P4, ED, N0, 
   ST_WDG, COLOR1, ED, EG, P3, EE, EI, P5, 
  // Case #41: (cloned #11)
-  ST_PNT, 0, 5, EE, ED, EA, EC, EI, 
+  ST_PNT, 0, NOCOLOR, 5, EE, ED, EA, EC, EI, 
   ST_PYR, COLOR0, P2, P1, EA, EC, N0, 
   ST_TET, COLOR0, EC, EI, P2, N0, 
   ST_PYR, COLOR0, ED, EA, P1, P4, N0, 
@@ -436,7 +440,7 @@ unsigned char clipShapesWdg[] = {
   ST_PYR, COLOR1, P0, P5, EI, EC, N0, 
   ST_TET, COLOR1, P5, EE, EI, N0, 
  // Case #42: (cloned #14)
-  ST_PNT, 0, 7, EB, EA, EG, EI, P1, P3, P5, 
+  ST_PNT, 0, COLOR1, 7, EB, EA, EG, EI, P1, P3, P5, 
   ST_TET, COLOR0, P4, EE, ED, EH, 
   ST_WDG, COLOR0, EB, EI, P2, EA, EG, P0, 
   ST_WDG, COLOR1, ED, EE, EH, P3, P5, P1, 
@@ -453,7 +457,7 @@ unsigned char clipShapesWdg[] = {
   ST_TET, COLOR1, P5, P1, P0, P3, 
   ST_WDG, COLOR1, EE, EH, ED, P5, P1, P3, 
  // Case #44: (cloned #11)
-  ST_PNT, 0, 5, ED, EE, EB, EC, EG, 
+  ST_PNT, 0, NOCOLOR, 5, ED, EE, EB, EC, EG, 
   ST_PYR, COLOR0, P0, EC, EB, P1, N0, 
   ST_TET, COLOR0, EC, P0, EG, N0, 
   ST_PYR, COLOR0, EE, P4, P1, EB, N0, 
@@ -480,7 +484,7 @@ unsigned char clipShapesWdg[] = {
   ST_WDG, COLOR1, EH, ED, EE, P1, P3, P5, 
   ST_PYR, COLOR1, P2, P0, P3, P5, P1, 
  // Case #48: (cloned #3)
-  ST_PNT, 0, 7, P3, P1, P2, EF, ED, EH, EI, 
+  ST_PNT, 0, COLOR0, 7, P3, P1, P2, EF, ED, EH, EI, 
   ST_TET, COLOR0, P2, P1, P0, P3, 
   ST_TET, COLOR0, P3, P2, P1, N0, 
   ST_PYR, COLOR0, EH, P1, P2, EI, N0, 
@@ -490,7 +494,7 @@ unsigned char clipShapesWdg[] = {
   ST_PYR, COLOR0, EI, P2, P3, EF, N0, 
   ST_WDG, COLOR1, EF, EI, P5, ED, EH, P4, 
  // Case #49: (cloned #14)
-  ST_PNT, 0, 7, EA, EC, EI, EH, P0, P5, P4, 
+  ST_PNT, 0, COLOR1, 7, EA, EC, EI, EH, P0, P5, P4, 
   ST_TET, COLOR0, P3, ED, EF, EG, 
   ST_WDG, COLOR0, EA, EH, P1, EC, EI, P2, 
   ST_WDG, COLOR1, EF, ED, EG, P5, P4, P0, 
@@ -501,7 +505,7 @@ unsigned char clipShapesWdg[] = {
   ST_PYR, COLOR1, EA, EH, P4, P0, N0, 
   ST_PYR, COLOR1, EI, EC, P0, P5, N0, 
  // Case #50: (cloned #11)
-  ST_PNT, 0, 5, EF, ED, EA, EB, EI, 
+  ST_PNT, 0, NOCOLOR, 5, EF, ED, EA, EB, EI, 
   ST_PYR, COLOR0, P2, EB, EA, P0, N0, 
   ST_TET, COLOR0, EB, P2, EI, N0, 
   ST_PYR, COLOR0, ED, P3, P0, EA, N0, 
@@ -521,7 +525,7 @@ unsigned char clipShapesWdg[] = {
   ST_TET, COLOR1, P0, P4, P5, P1, 
   ST_WDG, COLOR1, P0, P5, P1, EC, EI, EB, 
  // Case #52: (cloned #11)
-  ST_PNT, 0, 5, ED, EF, EC, EB, EH, 
+  ST_PNT, 0, NOCOLOR, 5, ED, EF, EC, EB, EH, 
   ST_PYR, COLOR0, P1, P0, EC, EB, N0, 
   ST_TET, COLOR0, EB, EH, P1, N0, 
   ST_PYR, COLOR0, EF, EC, P0, P3, N0, 
@@ -551,7 +555,7 @@ unsigned char clipShapesWdg[] = {
   ST_WDG, COLOR0, P0, P1, P2, EG, EH, EI, 
   ST_WDG, COLOR1, EG, EH, EI, P3, P4, P5, 
  // Case #57: (cloned #15)
-  ST_PNT, 0, 7, P4, P5, P0, EC, EA, EH, EI, 
+  ST_PNT, 0, COLOR1, 7, P4, P5, P0, EC, EA, EH, EI, 
   ST_WDG, COLOR0, EC, P2, EI, EA, P1, EH, 
   ST_TET, COLOR1, P3, P4, P5, P0, 
   ST_PYR, COLOR1, EC, EI, EH, EA, N0, 
@@ -561,7 +565,7 @@ unsigned char clipShapesWdg[] = {
   ST_PYR, COLOR1, P0, EA, EH, P4, N0, 
   ST_PYR, COLOR1, P5, EI, EC, P0, N0, 
  // Case #58: (cloned #15)
-  ST_PNT, 0, 7, P5, P3, P1, EA, EB, EI, EG, 
+  ST_PNT, 0, COLOR1, 7, P5, P3, P1, EA, EB, EI, EG, 
   ST_WDG, COLOR0, EA, P0, EG, EB, P2, EI, 
   ST_TET, COLOR1, P4, P5, P3, P1, 
   ST_PYR, COLOR1, EA, EG, EI, EB, N0, 
@@ -575,7 +579,7 @@ unsigned char clipShapesWdg[] = {
   ST_WDG, COLOR1, P5, P1, P0, EI, EB, EC, 
   ST_PYR, COLOR1, P3, P0, P1, P4, P5, 
  // Case #60: (cloned #15)
-  ST_PNT, 0, 7, P3, P4, P2, EB, EC, EG, EH, 
+  ST_PNT, 0, COLOR1, 7, P3, P4, P2, EB, EC, EG, EH, 
   ST_WDG, COLOR0, EB, P1, EH, EC, P0, EG, 
   ST_TET, COLOR1, P5, P3, P4, P2, 
   ST_PYR, COLOR1, EB, EH, EG, EC, N0, 

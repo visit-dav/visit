@@ -62,6 +62,9 @@ using     std::vector;
 //    Hank Childs, Tue Aug 12 17:27:32 PDT 2003
 //    Added mustDoMIR.
 //
+//    Jeremy Meredith, Mon Sep 15 17:12:16 PDT 2003
+//    Added a flag for the material interface algorithm to use.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts,
@@ -80,6 +83,7 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
     needMixedVariableReconstruction = false;
     needSmoothMaterialInterfaces = false;
     needCleanZonesOnly = false;
+    useNewMIRAlgorithm = false;
 
     timestep  = ts;
 
@@ -136,6 +140,9 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
 //    Hank Childs, Tue Aug 12 17:27:32 PDT 2003
 //    Added mustDoMIR.
 //
+//    Jeremy Meredith, Mon Sep 15 17:12:16 PDT 2003
+//    Added a flag for the material interface algorithm to use.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
@@ -153,6 +160,7 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
     needMixedVariableReconstruction = false;
     needSmoothMaterialInterfaces = false;
     needCleanZonesOnly = false;
+    useNewMIRAlgorithm = false;
 
     timestep  = ts;
 
@@ -309,6 +317,9 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec)
 //    Hank Childs, Tue Aug 12 17:27:32 PDT 2003
 //    Added mustDoMIR.
 //
+//    Jeremy Meredith, Mon Sep 15 17:12:16 PDT 2003
+//    Added a flag for the material interface algorithm to use.
+//
 // ****************************************************************************
 
 avtDataSpecification &
@@ -346,6 +357,7 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
     needMixedVariableReconstruction = spec.needMixedVariableReconstruction;
     needSmoothMaterialInterfaces    = spec.needSmoothMaterialInterfaces;
     needCleanZonesOnly              = spec.needCleanZonesOnly;
+    useNewMIRAlgorithm              = spec.useNewMIRAlgorithm;
 
     secondaryVariables = spec.secondaryVariables;
 
@@ -405,6 +417,9 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
 //
 //    Hank Childs, Tue Aug 12 17:27:32 PDT 2003
 //    Added mustDoMIR.
+//
+//    Jeremy Meredith, Mon Sep 15 17:12:16 PDT 2003
+//    Added a flag for the material interface algorithm to use.
 //
 // ****************************************************************************
 
@@ -490,6 +505,11 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
     }
 
     if (needCleanZonesOnly != ds.needCleanZonesOnly)
+    {
+        return false;
+    }
+
+    if (useNewMIRAlgorithm != ds.useNewMIRAlgorithm)
     {
         return false;
     }

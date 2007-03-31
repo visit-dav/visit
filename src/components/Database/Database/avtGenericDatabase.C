@@ -40,6 +40,7 @@
 #include <PickAttributes.h>
 #include <PickVarInfo.h>
 #include <TetMIR.h>
+#include <ZooMIR.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -1687,6 +1688,9 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Hank Childs, Fri Sep 12 16:27:38 PDT 2003
 //    Added a flag for whether or not reconstruction was forced.
 //
+//    Jeremy Meredith, Fri Sep  5 15:31:53 PDT 2003
+//    Added a flag for the MIR algorithm.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -1697,9 +1701,13 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
                         bool needBoundarySurfaces,
                         bool needValidConnectivity,
                         bool needSmoothMaterialInterfaces,
-                        bool needCleanZonesOnly, bool reconstructionForced,
-                        bool didGhosts, bool &subdivisionOccurred,
-                        bool &notAllCellsSubdivided, bool reUseMIR)
+                        bool needCleanZonesOnly,
+                        bool reconstructionForced,
+                        int  mirAlgorithm,
+                        bool didGhosts,
+                        bool &subdivisionOccurred,
+                        bool &notAllCellsSubdivided,
+                        bool reUseMIR)
 {
     //
     // We need to have the material indices as well.
@@ -1722,7 +1730,8 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     void_ref_ptr vr_mir = GetMIR(dom, var, ts, ds, mat, topoDim,
                                  needValidConnectivity,
                                  needSmoothMaterialInterfaces,
-                                 needCleanZonesOnly, didGhosts,
+                                 needCleanZonesOnly, mirAlgorithm,
+                                 didGhosts,
                                  subdivisionOccurred,
                                  notAllCellsSubdivided, reUseMIR);
     MIR *mir = (MIR *) (*vr_mir);
@@ -2172,23 +2181,28 @@ avtGenericDatabase::SpeciesSelect(avtDatasetCollection &dsc,
 //    Hank Childs, Tue Jul 22 21:48:09 PDT 2003
 //    Added a flag for whether or not we communicated ghosts.
 //
+//    Jeremy Meredith, Fri Sep  5 15:31:33 PDT 2003
+//    Added the new MIR algorithm.
+//
 // ****************************************************************************
-
 void_ref_ptr
 avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
                            vtkDataSet *ds, avtMaterial *mat, int topoDim,
                            bool needValidConnectivity,
                            bool needSmoothMaterialInterfaces,
-                           bool needCleanZonesOnly, bool didGhosts,
+                           bool needCleanZonesOnly, 
+                           int  mirAlgorithm,
+                           bool didGhosts,
                            bool &subdivisionOccurred,
                            bool &notAllCellsSubdivided, bool reUseMIR)
 {
     char cacheLbl[1000];
-    sprintf(cacheLbl, "MIR_%s_%s_%s_%s",
+    sprintf(cacheLbl, "MIR_%s_%s_%s_%s_%s",
             needValidConnectivity        ? "FullSubdiv" : "MinimalSubdiv",
             needSmoothMaterialInterfaces ? "Smooth"     : "NotSmooth",
             needCleanZonesOnly           ? "CleanOnly"  : "SplitMixed",
-            didGhosts                    ? "DidGhosts"  : "NoDidGhosts");
+            didGhosts                    ? "DidGhosts"  : "NoDidGhosts",
+            mirAlgorithm==0              ? "TetMIR"     : "ZooMIR");
 
     //
     // See if we already have the data lying around.
@@ -2212,7 +2226,17 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
             EXCEPTION0(NoInputException);
         }
 
-        MIR *mir = new TetMIR;
+        MIR *mir = NULL;
+
+        //
+        // Right new the new algorithm (index==1) is only
+        // available in 3D.
+        //
+        if (topoDim == 3 && mirAlgorithm == 1)
+            mir = new ZooMIR;
+        else
+            mir = new TetMIR;
+
         mir->SetLeaveCleanZonesWhole(!needValidConnectivity);
         mir->SetSmoothing(needSmoothMaterialInterfaces);
         mir->SetCleanZonesOnly(needCleanZonesOnly);
@@ -3205,6 +3229,9 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
 //    Hank Childs, Fri Sep 12 16:27:38 PDT 2003
 //    Send down info about whether the MIR was forced.
 //
+//    Jeremy Meredith, Fri Sep  5 15:32:30 PDT 2003
+//    Added a flag for the MIR algorithm.
+//
 // ****************************************************************************
 
 void
@@ -3276,6 +3303,7 @@ avtGenericDatabase::MaterialSelect(avtDatasetCollection &ds,
                                 spec->NeedSmoothMaterialInterfaces(),
                                 spec->NeedCleanZonesOnly(), 
                                 spec->MustDoMaterialInterfaceReconstruction(),
+                                spec->UseNewMIRAlgorithm() ? 1 : 0,
                                 didGhosts, so, nacs, reUseMIR);
 
             notAllCellsSubdivided = notAllCellsSubdivided || nacs ||

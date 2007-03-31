@@ -281,6 +281,9 @@ NetworkManager::GetDBFromCache(const string &filename, int time)
 //    Jeremy Meredith, Wed Jul 30 10:45:45 PDT 2003
 //    Added the check for requiring full connectivity.
 //
+//    Jeremy Meredith, Fri Sep  5 15:23:13 PDT 2003
+//    Added a flag for the new MIR algorithm.
+//
 // ****************************************************************************
 void
 NetworkManager::StartNetwork(const string &filename, const string &var,
@@ -342,23 +345,11 @@ NetworkManager::StartNetwork(const string &filename, const string &var,
     dspec->SetNeedSmoothMaterialInterfaces(matopts.GetSmoothing());
     dspec->SetNeedCleanZonesOnly(matopts.GetCleanZonesOnly());
     dspec->SetNeedValidFaceConnectivity(matopts.GetNeedValidConnectivity());
+    dspec->SetUseNewMIRAlgorithm(matopts.GetUseNewMIRAlgorithm());
     workingNet->SetDataSpec(dspec);
 
     // The plot starts out as NULL.
     workingNet->SetPlot(NULL);
-}
-
-void
-NetworkManager::SetFinalVariableName(const std::string &varname)
-{
-    //cerr << "NetworkManager::SetFinalVariableName()" << endl;
-#if 0
-    workingNet->
-        SetDataSpec(new
-                    avtDataSpecification(varname.c_str(),
-                                         workingNet->GetTime(),
-                                         workingNet->GetSIL()));
-#endif
 }
 
 // ****************************************************************************

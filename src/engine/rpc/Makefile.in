@@ -102,6 +102,9 @@
 #    Mark C. Miller 15Jul03
 #    Added SetWinAnnotAttsRPC, removed SetWindowAttsRPC
 #
+#    Jeremy Meredith, Mon Sep 15 10:00:33 PDT 2003
+#    Removed SetFinalVariableNameRPC.
+#
 ###############################################################################
 
 ##
@@ -128,7 +131,6 @@ SRC= \
     ReadRPC.C \
     ReleaseDataRPC.C \
     RenderRPC.C \
-    SetFinalVariableNameRPC.C \
     SetWinAnnotAttsRPC.C \
     StartPickRPC.C \
     UpdatePlotAttsRPC.C \

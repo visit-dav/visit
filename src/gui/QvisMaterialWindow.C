@@ -77,12 +77,15 @@ QvisMaterialWindow::~QvisMaterialWindow()
 //    Jeremy Meredith, Wed Jul 30 10:46:51 PDT 2003
 //    Added a toggle for forcing full connectivity.
 //   
+//    Jeremy Meredith, Mon Sep 15 17:16:55 PDT 2003
+//    Added a toggle for the new material algorithm.
+//
 // ****************************************************************************
 
 void
 QvisMaterialWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 4,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 5,2,  10, "mainLayout");
 
 
     smoothing = new QCheckBox("Enable interface smoothing", central, "smoothing");
@@ -100,11 +103,16 @@ QvisMaterialWindow::CreateWindowContents()
             this, SLOT(forceMIRChanged(bool)));
     mainLayout->addWidget(forceMIR, 2,0);
 
+    useNewMIR = new QCheckBox("Use new MIR algorithm", central, "useNewMIR");
+    connect(useNewMIR, SIGNAL(toggled(bool)),
+            this, SLOT(useNewMIRChanged(bool)));
+    mainLayout->addWidget(useNewMIR, 3,0);
+
     cleanZonesOnly = new QCheckBox("Clean zones only", central, "cleanZonesOnly");
     cleanZonesOnly->setEnabled(false);
     connect(cleanZonesOnly, SIGNAL(toggled(bool)),
             this, SLOT(cleanZonesOnlyChanged(bool)));
-    mainLayout->addWidget(cleanZonesOnly, 3,0);
+    mainLayout->addWidget(cleanZonesOnly, 4,0);
 }
 
 
@@ -121,6 +129,9 @@ QvisMaterialWindow::CreateWindowContents()
 //    Jeremy Meredith, Wed Jul 30 10:46:51 PDT 2003
 //    Added a toggle for forcing full connectivity.
 //   
+//    Jeremy Meredith, Mon Sep 15 17:20:57 PDT 2003
+//    Added a toggle for the new MIR algorithm.
+//
 // ****************************************************************************
 
 void
@@ -132,6 +143,7 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
     forceMIR->blockSignals(true);
     cleanZonesOnly->blockSignals(true);
     forceFullConnectivity->blockSignals(true);
+    useNewMIR->blockSignals(true);
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -157,6 +169,9 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
           case 3: //needValidConnectivity
             forceFullConnectivity->setChecked(atts->GetNeedValidConnectivity());
             break;
+          case 4: //useNewMIR
+            useNewMIR->setChecked(atts->GetUseNewMIRAlgorithm());
+            break;
         }
     }
 
@@ -164,6 +179,7 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
     forceMIR->blockSignals(false);
     cleanZonesOnly->blockSignals(false);
     forceFullConnectivity->blockSignals(false);
+    useNewMIR->blockSignals(false);
 }
 
 
@@ -180,6 +196,9 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
 //    Jeremy Meredith, Wed Jul 30 10:46:51 PDT 2003
 //    Added a toggle for forcing full connectivity.
 //   
+//    Jeremy Meredith, Mon Sep 15 17:17:12 PDT 2003
+//    Added the toggle for the new MIR algorithm.
+//
 // ****************************************************************************
 
 void
@@ -209,6 +228,12 @@ QvisMaterialWindow::GetCurrentValues(int which_widget)
     if(which_widget == 3 || doAll)
     {
         // Nothing for forceFullConnectivity
+    }
+
+    // Do useNewMIR
+    if(which_widget == 4 || doAll)
+    {
+        // Nothing for useNewMIR
     }
 
 }
@@ -341,6 +366,14 @@ void
 QvisMaterialWindow::cleanZonesOnlyChanged(bool val)
 {
     atts->SetCleanZonesOnly(val);
+    Apply();
+}
+
+
+void
+QvisMaterialWindow::useNewMIRChanged(bool val)
+{
+    atts->SetUseNewMIRAlgorithm(val);
     Apply();
 }
 

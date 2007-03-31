@@ -16,6 +16,10 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 17, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Sep 15 09:47:58 PDT 2003
+//    Updated to allow reserving memory.
+//
 // ****************************************************************************
 template<class T>
 class MIR_API Array
@@ -32,6 +36,12 @@ class MIR_API Array
         cp = 10;
         sz = 0;
     }
+    Array(int initSize)
+    {
+        d = new T[initSize];
+        cp = initSize;
+        sz = 0;
+    }
     ~Array()
     {
         delete[] d;
@@ -43,15 +53,28 @@ class MIR_API Array
     const T   &operator[](const int &i) const { return d[i];  }
           T   &operator[](const int &i)       { return d[i];  }
 
+    void resize(int n)
+    {
+        reserve(n);
+        sz = n;
+    }
+    void reserve(int n)
+    {
+        if (n > cp)
+        {
+            T *d2 = new T[n];
+            memcpy(d2, d, sizeof(T)*sz);
+            delete[] d;
+            d = d2;
+            cp = n;
+        }
+    }
+
     void push_back(const T& t)
     {
         if (sz+1 > cp)
-        { 
-            T *d2 = new T[cp*2];
-            memcpy(d2, d, sizeof(T)*cp);
-            delete[] d;
-            d = d2;
-            cp *= 2;
+        {
+            reserve(int(float(cp)*2));
         }
         d[sz++] = t;
     }

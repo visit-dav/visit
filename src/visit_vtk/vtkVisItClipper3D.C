@@ -97,6 +97,14 @@ vtkVisItClipper3D::Execute()
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 11, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Sep 15 17:33:03 PDT 2003
+//    Added ability for centroid-points to have an associated color.
+//    This was needed for material interface reconstruction when it was
+//    important to know if we should interpolate COLOR0's material or
+//    COLOR1's material to come up with a material volume fraction for
+//    the new point; it was not needed here, but we must skip over it.
+//
 // ****************************************************************************
 void
 vtkVisItClipper3D::StructuredGridExecute(void)
@@ -189,6 +197,7 @@ vtkVisItClipper3D::StructuredGridExecute(void)
                     break;
                   case ST_PNT:
                     interpID = *splitCase++;
+                    color    = *splitCase++;
                     npts     = *splitCase++;
                     break;
                   default:
@@ -301,6 +310,14 @@ vtkVisItClipper3D::StructuredGridExecute(void)
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 11, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Sep 15 17:33:03 PDT 2003
+//    Added ability for centroid-points to have an associated color.
+//    This was needed for material interface reconstruction when it was
+//    important to know if we should interpolate COLOR0's material or
+//    COLOR1's material to come up with a material volume fraction for
+//    the new point; it was not needed here, but we must skip over it.
+//
 // ****************************************************************************
 void vtkVisItClipper3D::RectilinearGridExecute(void)
 {
@@ -393,6 +410,7 @@ void vtkVisItClipper3D::RectilinearGridExecute(void)
                     break;
                   case ST_PNT:
                     interpID = *splitCase++;
+                    color    = *splitCase++;
                     npts     = *splitCase++;
                     break;
                   default:
@@ -503,6 +521,14 @@ void vtkVisItClipper3D::RectilinearGridExecute(void)
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 11, 2003
+//
+//  Modifications:
+//    Jeremy Meredith, Mon Sep 15 17:33:03 PDT 2003
+//    Added ability for centroid-points to have an associated color.
+//    This was needed for material interface reconstruction when it was
+//    important to know if we should interpolate COLOR0's material or
+//    COLOR1's material to come up with a material volume fraction for
+//    the new point; it was not needed here, but we must skip over it.
 //
 // ****************************************************************************
 void vtkVisItClipper3D::UnstructuredGridExecute(void)
@@ -641,6 +667,7 @@ void vtkVisItClipper3D::UnstructuredGridExecute(void)
                         break;
                       case ST_PNT:
                         interpID = *splitCase++;
+                        color    = *splitCase++;
                         npts     = *splitCase++;
                         break;
                       default:

@@ -3,6 +3,13 @@
 //
 // Programmer: Jeremy Meredith
 // Date:       August 11, 2003
+//
+// Modifications:
+//    Jeremy Meredith, Mon Sep 15 17:21:30 PDT 2003
+//    Allowed centroid-points to use the color associated with them, and
+//    added a NOCOLOR option (i.e. the centroid-point is on the intersection
+//    between the two materials).
+//
 // ----------------------------------------------------------------------------
 
 #include "Shape.h"
@@ -398,6 +405,25 @@ Shape::DrawPolyData(Vector &up, Vector &right)
         glDisable(GL_LIGHTING);
         glBegin(GL_LINES);
         DrawFuzzyPoint(xcent, ycent, zcent, d);
+        glEnd();
+
+        if (color==0)
+        {
+            glColor4f(0,0,1,1);
+        }
+        else if (color==1)
+        {
+            glColor4f(0,1,0,1);
+        }
+        else
+        {
+            glColor4f(1,1,0,1);
+        }
+        glBegin(GL_LINES);
+        for (int i=0; i<nverts; i++)
+        {
+            DrawFuzzyPoint(xcent+d*.2, ycent+d*.2, zcent+d*.2, d);
+        }
         glEnd();
 
     }

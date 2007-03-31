@@ -1,0 +1,675 @@
+#include "ZooMIR.h"
+
+#include <DebugStream.h>
+#include <ImproperUseException.h>
+#include <TimingsManager.h>
+#include <avtMaterial.h>
+#include <avtMixedVariable.h>
+#include <vtkDataSet.h>
+#include <vtkDataSetFromVolume.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkStructuredGrid.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkTriangulationTables.h>
+
+#include <Array.h>
+#include "BitUtils.h"
+#include "CellReconstructor.h"
+#include "ResampledMat.h"
+
+// ****************************************************************************
+//  Constructor:  ZooMIR::ZooMIR
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 20, 2003
+//
+// ****************************************************************************
+ZooMIR::ZooMIR()
+{
+    dimension = -1;
+    mesh   = NULL;
+    outPts = NULL;
+}
+
+// ****************************************************************************
+//  Destructor:  ZooMIR::~ZooMIR
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 20, 2003
+//
+// ****************************************************************************
+ZooMIR::~ZooMIR()
+{
+    if (mesh != NULL)
+    {
+        mesh->Delete();
+        mesh = NULL;
+    }
+    if (outPts != NULL)
+    {
+        outPts->Delete();
+        outPts = NULL;
+    }
+}
+
+// ****************************************************************************
+//  Method:  ZooMIR::Reconstruct3DMesh
+//
+//  Purpose:
+//    Main method for interface reconstruction in 3D.
+//
+//  Arguments:
+//    mesh_orig       the mesh
+//    mat_orig        the material
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 20, 2003
+//
+// ****************************************************************************
+bool
+ZooMIR::Reconstruct3DMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig)
+{
+    // check that Reconstruct hasn't already been called
+    if (dimension > 0)
+    {
+        EXCEPTION1(ImproperUseException,
+                   "Reconstruct has already been called!");
+    }
+
+    // Store the mesh for use later.
+    mesh = mesh_orig;
+    mesh->Register(NULL);
+
+    // see if we can perform a clean-zone-only algorithm
+    if (mat_orig->GetMixlen() <= 0 || mat_orig->GetMixMat() == NULL)
+    {
+        noMixedZones = true;
+        bool status = ReconstructCleanMesh(mesh, mat_orig);
+        return status;
+    }
+
+    // start a timer
+    int timerHandle = visitTimer->StartTimer();
+
+    // Set the dimensionality
+    dimension   = 3;
+
+    // Set the connectivity
+    MIRConnectivity conn;
+    conn.SetUpConnectivity(mesh);
+
+    // Pack the material
+    avtMaterial *mat = mat_orig->CreatePackedMaterial();
+
+    mapMatToUsedMat = mat_orig->GetMapMatToUsedMat();
+    mapUsedMatToMat = mat_orig->GetMapUsedMatToMat();
+
+    // Get some attributes
+    noMixedZones= false;
+    nMaterials  = mat->GetNMaterials();
+
+    int nCells  = mesh->GetNumberOfCells();
+    int nPoints = mesh->GetNumberOfPoints();
+
+    // extract coordinate arrays
+    SetUpCoords();
+
+    // resample the material volume fractions to the nodes
+    ResampledMat rm(nCells, nPoints, mat, &conn);
+    rm.Resample();
+
+    // loop over the cells and do the reconstruction
+    int timerHandle2 = visitTimer->StartTimer();
+
+    coordsList.reserve(nPoints/4);
+    zonesList.reserve(int(float(nCells)*1.5));
+    indexList.reserve(int(float(nCells)*10));
+
+    CellReconstructor cr(mesh, mat, rm, nPoints, nCells, conn, *this);
+
+    int *conn_ptr = conn.connectivity;
+    for (int c = 0 ; c < nCells ; c++, conn_ptr += (*conn_ptr) + 1)
+    {
+        int  celltype = conn.celltype[c];
+        int *ids      = conn_ptr+1;
+        int  nids     = *conn_ptr;
+
+        cr.ReconstructCell(c, celltype, nids, ids);
+    }
+
+    visitTimer->StopTimer(timerHandle2, "MIR: Cell clipping");
+    visitTimer->StopTimer(timerHandle, "Full MIR reconstruction");
+    visitTimer->DumpTimings();
+
+    return true;
+}
+
+
+
+// ****************************************************************************
+//  Method:  ZooMIR::Reconstruct2DMesh
+//
+//  Purpose:
+//    Main method for interface reconstruction in 2D.
+//
+//  Arguments:
+//    mesh_orig       the mesh
+//    mat_orig        the material
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 20, 2003
+//
+// ****************************************************************************
+bool
+ZooMIR::Reconstruct2DMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig)
+{
+    EXCEPTION1(ImproperUseException,
+               "ZooMIR doesn't support 2D meshes (yet)!");
+
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method:  ZooMIR::GetDataset
+//
+//  Purpose:
+//    Return the cells that correspond to the given materials.  Do the right
+//    thing with the various data arrays, etc.
+//
+//  Arguments:
+//    mats        the materials to select
+//    ds          the original dataset
+//    mixvars     the mixed variables
+//    doMats      flag to write out the material numbers as a new zonal array
+//
+//  Note: taken from TetMIR's implementation, but assumes the original
+//  nodes were NOT added to coordsList.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 20, 2003
+//
+// ****************************************************************************
+vtkDataSet *
+ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
+                   std::vector<avtMixedVariable*> mixvars, bool doMats)
+{
+    int i, j, timerHandle = visitTimer->StartTimer();
+
+    //
+    // Start off by determining which materials we should reconstruct and
+    // which we should leave out.
+    //
+    bool *matFlag = new bool[nMaterials];
+    if (!mats.empty())
+    {
+        for (i = 0; i < nMaterials; i++)
+            matFlag[i] = false;
+        for (i = 0; i < mats.size(); i++)
+        {
+            int origmatno = mats[i];
+            int usedmatno = mapMatToUsedMat[origmatno];
+            if (usedmatno != -1)
+                matFlag[usedmatno] = true;
+        }
+    }
+    else
+    {
+        for (i = 0; i < nMaterials; i++)
+            matFlag[i] = true;
+    }
+
+    //
+    // Now count up the total number of cells we will have.
+    //
+    int ntotalcells = zonesList.size();
+    int ncells = 0;
+    int *cellList = new int[ntotalcells];
+    for (int c = 0; c < ntotalcells; c++)
+    {
+        if (zonesList[c].mat >= 0 &&
+            matFlag[zonesList[c].mat])
+        {
+            cellList[ncells] = c;
+            ncells++;
+        }
+    }
+
+    //
+    // Instantiate the output dataset (-> VTK magic).
+    //
+    vtkUnstructuredGrid   *rv  = vtkUnstructuredGrid::New();
+    rv->GetFieldData()->PassData(ds->GetFieldData());
+
+    //
+    // Set up the coordinate array.
+    //
+    int newNPoints = coordsList.size();
+    int npoints = origNPoints + newNPoints;
+    if (outPts == NULL)
+    {
+        outPts = vtkPoints::New();
+        outPts->SetNumberOfPoints(npoints);
+        float *pts_buff = (float *) outPts->GetVoidPointer(0);
+        int outIndex = 0;
+        for (i=0; i<origNPoints; i++)
+        {
+            pts_buff[outIndex++] = origXCoords[i];
+            pts_buff[outIndex++] = origYCoords[i];
+            pts_buff[outIndex++] = origZCoords[i];
+        }
+        for (i=0; i<newNPoints; i++)
+        {
+            pts_buff[outIndex++] = coordsList[i].x;
+            pts_buff[outIndex++] = coordsList[i].y;
+            pts_buff[outIndex++] = coordsList[i].z;
+        }
+    }
+    rv->SetPoints(outPts);
+
+    //
+    // Now insert the connectivity array.
+    //
+    rv->Allocate(ncells);
+    for (i=0; i<ncells; i++)
+    {
+        int c = cellList[i];
+        rv->InsertNextCell(zonesList[c].celltype, zonesList[c].nnodes,
+                           &indexList[zonesList[c].startindex]);
+    }
+
+    //
+    // Copy over all node-centered data.
+    //
+    vtkPointData *outpd = rv->GetPointData();
+    vtkPointData *inpd  = ds->GetPointData();
+    if (inpd->GetNumberOfArrays() > 0)
+    {
+        outpd->CopyAllocate(inpd, npoints);
+        int outIndex = 0;
+        //
+        // For each point, copy over the original point data if the
+        // reconstructed coordinate corresponds to a point in the dataset.
+        // If the point is new, interpolate the values from the zone it
+        // comes from.
+        //
+        for (i=0; i<origNPoints; i++)
+        {
+            outpd->CopyData(inpd, i, outIndex++);
+        }
+        for (i=0; i<newNPoints; i++)
+        {
+            ReconstructedCoord &coord = coordsList[i];
+            vtkCell *cell = mesh->GetCell(coord.origzone);
+            outpd->InterpolatePoint(inpd, outIndex++, cell->GetPointIds(),
+                                    coord.weight);
+        }
+    }
+    //
+    // Copy over all the cell-centered data.  The logic gets awfully confusing
+    // when using the VTK convenience methods *and* we have mixed variables,
+    // so just do as normal and we will copy over the mixed values later.
+    //
+    vtkCellData *outcd = rv->GetCellData();
+    vtkCellData *incd  = ds->GetCellData();
+    if (incd->GetNumberOfArrays() > 0)
+    {
+        outcd->CopyAllocate(incd, ncells);
+        for (i=0; i<ncells; i++)
+        {
+            int c = cellList[i];
+            int origzone = zonesList[c].origzone;
+            outcd->CopyData(incd, origzone, i);
+        }
+    }
+
+    //
+    // Now go and write over the mixed part of the mixed variables.  The non-
+    // mixed part was already copied over in the last operation.
+    //
+    for (i=0; i<mixvars.size(); i++)
+    {
+        avtMixedVariable *mv = mixvars[i];
+        if (mv == NULL)
+        {
+            continue;
+        }
+        vtkDataArray *arr = outcd->GetArray(mv->GetVarname().c_str());
+        if (arr == NULL)
+        {
+            debug1 << "INTERNAL ERROR IN MIR.  Asked to reconstruct a variable"
+                   << " with mixed elements,\nbut could not find the original "
+                   << "variable array." << endl;
+            debug1 << "The mixed variable is " << mv->GetVarname().c_str() << endl;
+            debug1 << "Variables in the VTK dataset are: ";
+            for (j = 0 ; j < outcd->GetNumberOfArrays() ; j++)
+            {
+                debug1 << outcd->GetArray(j)->GetName() << ", ";
+            }
+            debug1 << endl;
+            continue;
+        }
+        if (arr->GetNumberOfComponents() != 1)
+        {
+            debug1 << "Can not operate on mixed vars that aren't scalars."
+                   << endl;
+            continue;
+        }
+        const float *buffer = mv->GetBuffer();
+        float *outBuff = (float *) arr->GetVoidPointer(0);
+        debug4 << "Overwriting mixed values for " << arr->GetName() << endl;
+        int nvals = 0;
+        for (j=0; j<ncells; j++)
+        {
+            int mix_index = zonesList[cellList[j]].mix_index;
+            if (mix_index >= 0)
+            {
+                outBuff[j] = buffer[mix_index];
+                nvals++;
+            }
+        }
+        debug4 << "Overwrote " << nvals << " values (by tet, not necessarily "
+               << "by original zone)" << endl;
+    }
+
+    if (doMats)
+    {
+        //
+        // Add an array that contains the material for each zone (which is now
+        // clean after reconstruction).
+        //
+        vtkIntArray *outmat = vtkIntArray::New();
+        outmat->SetName("avtSubsets");
+        outmat->SetNumberOfTuples(ncells);
+        int *buff = outmat->GetPointer(0);
+        for (i=0; i<ncells; i++)
+        {
+            buff[i] = mapUsedMatToMat[zonesList[cellList[i]].mat];
+        }
+        rv->GetCellData()->AddArray(outmat);
+        outmat->Delete();
+    }
+
+    delete [] matFlag;
+    delete [] cellList;
+
+    visitTimer->StopTimer(timerHandle, "MIR: Getting clean dataset");
+    visitTimer->DumpTimings();
+
+    return rv;
+}
+
+// ****************************************************************************
+//  Method:  ZooMIR::ReconstructCleanMesh
+//
+//  Purpose:
+//    Main loop for interface reconstruction for any clean mesh.
+//
+//  Arguments:
+//    mesh       the mesh
+//    mat        the material
+//    conn       the connectivity
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 20, 2003
+//
+//  Note:  Copied from TetMIR's implementation
+//
+//  Modifications:
+//
+// ****************************************************************************
+bool
+ZooMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat)
+{
+    int timerHandle = visitTimer->StartTimer();
+
+    // Set teh connectivity
+    MIRConnectivity conn;
+    conn.SetUpConnectivity(mesh);
+
+    // no need to pack, so fake that part
+    nMaterials = mat->GetNMaterials();
+    mapMatToUsedMat.resize(mat->GetNMaterials(), -1);
+    mapUsedMatToMat.resize(mat->GetNMaterials(), -1);
+    for (int m=0; m<mat->GetNMaterials(); m++)
+    {
+        mapMatToUsedMat[m] = m;
+        mapUsedMatToMat[m] = m;
+    }
+
+    // extract coords
+    SetUpCoords();
+
+    // extract cells
+    int        nCells  = conn.ncells;
+    const int *matlist = mat->GetMatlist();
+    int *conn_ptr = conn.connectivity;
+    zonesList.resize(nCells);
+    for (int c=0; c<nCells; c++)
+    {
+        int        nIds = *conn_ptr;
+        const int *ids  = conn_ptr+1;
+
+        ReconstructedZone &zone = zonesList[c];
+        zone.origzone   = c;
+        zone.mat        = matlist[c];
+        zone.celltype   = conn.celltype[c];
+        zone.nnodes     = nIds;
+        zone.startindex = indexList.size();
+        zone.mix_index  = -1;
+
+        for (int n=0; n<nIds; n++)
+            indexList.push_back(ids[n]);
+        conn_ptr += nIds+1;
+    }
+
+    visitTimer->StopTimer(timerHandle, "MIR: Reconstructing clean mesh");
+    visitTimer->DumpTimings();
+
+    return true;
+}
+
+
+// ****************************************************************************
+//  Function: SetUpCoords
+//
+//  Purpose:
+//      Sets up the coordinates array.  Avoid using any VTK calls in its inner
+//      loop.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 5, 2002
+//
+// ****************************************************************************
+
+void
+ZooMIR::SetUpCoords()
+{
+    int timerHandle1 = visitTimer->StartTimer();
+
+    int nPoints = mesh->GetNumberOfPoints();
+    int i, j, k;
+
+    origNPoints = nPoints;
+    origXCoords.resize(nPoints);
+    origYCoords.resize(nPoints);
+    origZCoords.resize(nPoints);
+    
+    int dstype = mesh->GetDataObjectType();
+    if (dstype == VTK_RECTILINEAR_GRID)
+    {
+        vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) mesh;
+        vtkDataArray *xc = rgrid->GetXCoordinates();
+        int nx = xc->GetNumberOfTuples();
+        float *x = new float[nx];
+        for (i = 0 ; i < nx ; i++)
+        {
+            x[i] = xc->GetTuple1(i);
+        }
+        vtkDataArray *yc = rgrid->GetYCoordinates();
+        int ny = yc->GetNumberOfTuples();
+        float *y = new float[ny];
+        for (i = 0 ; i < ny ; i++)
+        {
+            y[i] = yc->GetTuple1(i);
+        }
+        vtkDataArray *zc = rgrid->GetZCoordinates();
+        int nz = zc->GetNumberOfTuples();
+        float *z = new float[nz];
+        for (i = 0 ; i < nz ; i++)
+        {
+            z[i] = zc->GetTuple1(i);
+        }
+
+        int pt = 0;
+        for (k = 0 ; k < nz ; k++)
+        {
+            for (j = 0 ; j < ny ; j++)
+            {
+                for (i = 0 ; i < nx ; i++)
+                {
+                    origXCoords[pt] = x[i];
+                    origYCoords[pt] = y[j];
+                    origZCoords[pt] = z[k];
+                    pt++;
+                }
+            }
+        }
+        delete [] x;
+        delete [] y;
+        delete [] z;
+    }
+    else
+    {
+        vtkPointSet *ps = (vtkPointSet *) mesh;
+        float *ptr = (float *) ps->GetPoints()->GetVoidPointer(0);
+        for (int n=0; n<nPoints; n++)
+        {
+            origXCoords[n] = *ptr++;
+            origYCoords[n] = *ptr++;
+            origZCoords[n] = *ptr++;
+        }
+    }
+
+    visitTimer->StopTimer(timerHandle1, "MIR: Copying coordinate list");
+    visitTimer->DumpTimings();
+}
+
+
+
+// ****************************************************************************
+// Methods:     EdgeHash routines from vtkDataSetFromVolume
+// Programmer:  Hank Childs
+// Date:        June 9, 2003
+//
+// Note: Jeremy Meredith, September 15, 2003
+//       Taken blatantly from vtkDataSetFromVolume.  These should be
+//       refactored into a common place.
+//
+// ****************************************************************************
+
+ZooMIR::EdgeHashEntryMemoryManager::EdgeHashEntryMemoryManager()
+{
+    freeEntryindex = 0;
+}
+ 
+ 
+ZooMIR::EdgeHashEntryMemoryManager::~EdgeHashEntryMemoryManager()
+{
+    int npools = edgeHashEntrypool.size();
+    for (int i = 0 ; i < npools ; i++)
+    {
+        EdgeHashEntry *pool = edgeHashEntrypool[i];
+        delete [] pool;
+    }
+}
+ 
+ 
+void
+ZooMIR::EdgeHashEntryMemoryManager::AllocateEdgeHashEntryPool(void)
+{
+    if (freeEntryindex == 0)
+    {
+        EdgeHashEntry *newlist = new EdgeHashEntry[POOL_SIZE];
+        edgeHashEntrypool.push_back(newlist);
+        for (int i = 0 ; i < POOL_SIZE ; i++)
+        {
+            freeEntrylist[i] = &(newlist[i]);
+        }
+        freeEntryindex = POOL_SIZE;
+    }
+}
+
+
+ZooMIR::EdgeHashTable::EdgeHashTable(int nh)
+{
+    nHashes = nh;
+    hashes = new EdgeHashEntry*[nHashes];
+    for (int i = 0 ; i < nHashes ; i++)
+        hashes[i] = NULL;
+}
+ 
+ 
+ZooMIR::EdgeHashTable::~EdgeHashTable()
+{
+    delete [] hashes;
+}
+ 
+ 
+int
+ZooMIR::EdgeHashTable::GetKey(int p1, int p2)
+{
+    int rv = ((p1*18457 + p2*234749) % nHashes);
+ 
+    // In case of overflows and modulo with negative numbers.
+    if (rv < 0)
+       rv += nHashes;
+ 
+    return rv;
+}
+
+
+ZooMIR::EdgeHashEntry *
+ZooMIR::EdgeHashTable::GetEdge(int ap1, int ap2)
+{
+    int p1, p2;
+    if (ap2 < ap1)
+    {
+        p1 = ap2;
+        p2 = ap1;
+    }
+    else
+    {
+        p1 = ap1;
+        p2 = ap2;
+    }
+
+    int key = GetKey(p1, p2);
+ 
+    //
+    // See if we have any matches in the current hashes.
+    //
+    EdgeHashEntry *cur = hashes[key];
+    while (cur != NULL)
+    {
+        if (cur->IsMatch(p1, p2))
+        {
+            //
+            // We found a match.
+            //
+            return cur;
+        }
+        cur = cur->GetNext();
+    }
+ 
+    //
+    // There was no match.  We will have to add a new entry.
+    //
+    EdgeHashEntry *new_one = emm.GetFreeEdgeHashEntry();
+ 
+    new_one->SetNext(hashes[key]);
+    new_one->SetEndpoints(p1, p2);
+    hashes[key] = new_one;
+ 
+    return new_one;
+}

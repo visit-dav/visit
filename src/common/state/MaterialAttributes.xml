@@ -12,4 +12,7 @@
     <Field name="needValidConnectivity" label="Force perfect connectivity" type="bool">
       false
     </Field>
+    <Field name="useNewMIRAlgorithm" label="Use new MIR algorithm" type="bool">
+      true
+    </Field>
   </Attribute>

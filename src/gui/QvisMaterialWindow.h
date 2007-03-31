@@ -23,6 +23,9 @@ class QCheckBox;
 //    Jeremy Meredith, Wed Jul 30 10:46:04 PDT 2003
 //    Added the toggle for forcing full connectivity.
 //
+//    Jeremy Meredith, Fri Sep  5 15:17:20 PDT 2003
+//    Added a toggle for the new MIR algorithm.
+//
 // ****************************************************************************
 
 class QvisMaterialWindow : public QvisPostableWindowObserver
@@ -49,6 +52,7 @@ class QvisMaterialWindow : public QvisPostableWindowObserver
     void forceFullConnectivityChanged(bool val);
     void forceMIRChanged(bool val);
     void cleanZonesOnlyChanged(bool val);
+    void useNewMIRChanged(bool val);
   private:
     MaterialAttributes *atts;
 
@@ -56,6 +60,7 @@ class QvisMaterialWindow : public QvisPostableWindowObserver
     QCheckBox *forceFullConnectivity;
     QCheckBox *forceMIR;
     QCheckBox *cleanZonesOnly;
+    QCheckBox *useNewMIR;
 };
 
 #endif

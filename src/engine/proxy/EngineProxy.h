@@ -18,7 +18,6 @@
 #include <PickRPC.h>
 #include <QueryRPC.h>
 #include <ReleaseDataRPC.h>
-#include <SetFinalVariableNameRPC.h>
 #include <SetWinAnnotAttsRPC.h>
 #include <StartPickRPC.h>
 #include <UpdatePlotAttsRPC.h>
@@ -155,6 +154,9 @@ class StatusAttributes;
 //    Jeremy Meredith, Thu Jun 26 10:31:39 PDT 2003
 //    Made the numprocs/nodes/lb methods virtual.
 //
+//    Jeremy Meredith, Mon Sep 15 17:15:59 PDT 2003
+//    Removed SetFinalVariableName.
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -188,7 +190,6 @@ public:
     void                     ApplyOperator(const std::string&, 
                                            const AttributeSubject*);
     void                     ApplyNamedFunction(const std::string &name, int nargs);
-    void                     SetFinalVariableName(const std::string &);
     int                      MakePlot(const std::string&, 
                                       const AttributeSubject*);
 
@@ -227,7 +228,6 @@ protected:
 private:
     ReadRPC                  readRPC;
     ApplyOperatorRPC         applyOperatorRPC;
-    SetFinalVariableNameRPC  setFinalVariableNameRPC;
     MakePlotRPC              makePlotRPC;
     UseNetworkRPC            useNetworkRPC;
     UpdatePlotAttsRPC        updatePlotAttsRPC;
