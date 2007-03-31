@@ -287,6 +287,27 @@ avtExpressionEvaluatorFilter::PerformRestriction(
     return rv;
 }
 
+// ****************************************************************************
+//  Method: avtExpressionEvaluatorFilter::ReleaseData
+//
+//  Purpose:
+//      Releases the data associated sub-filters of the EEF.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 17, 2003
+//
+// ****************************************************************************
+
+void
+avtExpressionEvaluatorFilter::ReleaseData(void)
+{
+    avtDatasetToDatasetFilter::ReleaseData();
+    vector<avtExpressionFilter *> &filters = pipelineState.GetFilters();
+    for (int i = 0 ; i < filters.size() ; i++)
+    {
+        filters[i]->ReleaseData();
+    }
+}
 
 // ****************************************************************************
 //  Method: avtExpressionEvaluatorFilter::Query

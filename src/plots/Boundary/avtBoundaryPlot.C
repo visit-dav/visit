@@ -596,6 +596,11 @@ avtBoundaryPlot::SetColors()
 //  Programmer: Jeremy Meredith
 //  Creation:   June 12, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Nov 17 13:19:34 PST 2003
+//    Release data associated with smooth filter.
+//
 // ****************************************************************************
  
 void
@@ -614,6 +619,10 @@ avtBoundaryPlot::ReleaseData(void)
     if (sub != NULL)
     {
         sub->ReleaseData();
+    }
+    if (smooth != NULL)
+    {
+        smooth->ReleaseData();
     }
 }
 

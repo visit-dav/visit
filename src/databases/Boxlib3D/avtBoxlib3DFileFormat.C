@@ -142,6 +142,10 @@ avtBoxlib3DFileFormat::~avtBoxlib3DFileFormat()
 //    Hank Childs, Sat Nov 15 14:23:46 PST 2003
 //    Do a better job of parsing material numbers.
 //
+//    Hank Childs, Tue Nov 18 23:31:00 PST 2003
+//    Do not assume that this routine is called only one time (we may call
+//    free up resources and then come back to this timestep).
+//
 // ****************************************************************************
 
 void
@@ -241,6 +245,7 @@ avtBoxlib3DFileFormat::InitializeReader(void)
     // suffixes.
     // 
     nVectors = 0;
+    vectorNames.clear();
     for (i = 0; i < nVars; ++i)
     {
         int id2 = -1;
@@ -450,6 +455,10 @@ avtBoxlib3DFileFormat::GetMesh(int patch, const char *mesh_name)
 //    Stripped out knowledge of timesteps.  Removed arguments since this is
 //    now always called in InitializeReader.
 //
+//    Hank Childs, Tue Nov 18 23:31:00 PST 2003
+//    Do not assume that this routine is called only one time (we may call
+//    free up resources and then come back to this timestep).
+//
 // ****************************************************************************
 
 void
@@ -518,6 +527,7 @@ avtBoxlib3DFileFormat::ReadHeader(void)
     EatUpWhiteSpace(in);
 
     // Read in the refinement ratio
+    refinement_ratio.clear();
     for (i = 1 ; i < nLevels ; i++)
     {
         int rr;
@@ -536,6 +546,9 @@ avtBoxlib3DFileFormat::ReadHeader(void)
 
     // For each level, read in the gridSpacing
     int levI;
+    deltaX.clear();
+    deltaY.clear();
+    deltaZ.clear();
     for (levI = 0; levI < nLevels; levI++)
     {
         double dub;
@@ -559,6 +572,13 @@ avtBoxlib3DFileFormat::ReadHeader(void)
     }
     
     // For each level
+    xMin.clear();
+    xMax.clear();
+    yMin.clear();
+    yMax.clear();
+    zMin.clear();
+    zMax.clear();
+    multifabFilenames.clear();
     for (levI = 0; levI < nLevels; levI++)
     {
         // Read in which level
@@ -771,6 +791,9 @@ avtBoxlib3DFileFormat::GetDimensions(int *dims, double *lo, double *hi,
 //    Removed notion of timestep.  Also removed dependence on needing
 //    rectilinear grid to find dimensions.
 //
+//    Hank Childs, Tue Nov 18 20:44:48 PST 2003
+//    Removed problem size memory leak.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -838,6 +861,8 @@ avtBoxlib3DFileFormat::GetVar(int patch, const char *var_name)
         }
     }
     
+    fab.clear();
+    vmf->clear(local_patch, compId);
     return farr;
 }
 
@@ -863,6 +888,9 @@ avtBoxlib3DFileFormat::GetVar(int patch, const char *var_name)
 //    Hank Childs, Sat Nov  8 08:59:56 PST 2003
 //    Removed notion of timestep.  Also removed dependence on needing
 //    rectilinear grid to find dimensions.
+//
+//    Hank Childs, Tue Nov 18 20:44:48 PST 2003
+//    Removed problem size memory leak.
 //
 // ****************************************************************************
 
@@ -892,14 +920,18 @@ avtBoxlib3DFileFormat::GetVectorVar(int patch, const char *var_name)
     vector<FArrayBox *> fab(dimension);
     
     int i;
+    vector<int> compIdsList;
+    vector<VisMF *> vmfList;
     for (i = 0; i < dimension; ++i)
     {
         int varIndex = vectorComponents[vectIndex][i];
         int mfIndex = fabfileIndex[level][varIndex];
         int compId = componentIds[level][varIndex];
-        
+
         VisMF *vmf = GetVisMF(mfIndex); 
         fab[i] = new FArrayBox(vmf->GetFab(local_patch, compId));
+        compIdsList.push_back(compId);
+        vmfList.push_back(vmf);
     }
     
     int dims[3];
@@ -945,7 +977,11 @@ avtBoxlib3DFileFormat::GetVectorVar(int patch, const char *var_name)
     }
     
     for (i = 0; i < dimension; ++i)
+    {
+        fab[i]->clear();
         delete fab[i];
+        vmfList[i]->clear(local_patch, compIdsList[i]);
+    }
 
     return farr;
 }

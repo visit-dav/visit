@@ -27,6 +27,9 @@
 //   Brad Whitlock, Wed Aug 27 14:06:00 PST 2003
 //   Made it use the right API.
 //
+//   Hank Childs, Mon Nov 17 16:47:33 PST 2003
+//   Add ReleaseData.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionEvaluatorFilter 
@@ -42,6 +45,7 @@ public:
     virtual void             Query(PickAttributes *);
     virtual avtQueryableSource *
                              GetQueryableSource(void) { return this; };
+    virtual void             ReleaseData(void);
 
 protected:
     virtual void             PreExecute(void) {}
