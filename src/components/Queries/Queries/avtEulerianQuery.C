@@ -14,6 +14,8 @@
 #include <vtkGeometryFilter.h>
 #include <vtkPolyData.h>
 
+#include <avtQueryableSource.h>
+
 #include <DebugStream.h>
 
 #ifdef PARALLEL
@@ -22,6 +24,7 @@
 
 using std::set;
 using std::vector;
+using std::string;
 
 
 
@@ -214,6 +217,9 @@ avtEulerianQuery::Execute(vtkDataSet *in_ds, const int dom)
 //    Kathleen Bonnell, Fri Jul 11 16:31:45 PDT 2003
 //    Renamed 'SetMessage' to 'SetResultMessage'.
 //
+//    Kathleen Bonnell, Mon Dec 22 16:45:56 PST 2003 
+//    Use retrieved DomainName if available. 
+//
 // ****************************************************************************
 
 void
@@ -275,8 +281,19 @@ avtEulerianQuery::PostExecute(void)
     int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
     for (iter = domToEulerMap.begin(); iter != domToEulerMap.end(); iter++)
     {
-        SNPRINTF(msgBuff, 500, "Eulerian for domain %d is %d\n", 
-                 (*iter).first + blockOrigin, (*iter).second);
+        string domainName;
+        GetInput()->GetQueryableSource()->GetDomainName(queryAtts.GetVariables()[0],
+            queryAtts.GetTimeStep(), (*iter).first, domainName);
+        if (domainName.size() > 0)
+        {
+            SNPRINTF(msgBuff, 500, "Eulerian for %s is %d\n", 
+                     domainName.c_str(), (*iter).second);
+        }
+        else
+        {
+            SNPRINTF(msgBuff, 500, "Eulerian for domain %d is %d\n", 
+                     (*iter).first + blockOrigin, (*iter).second);
+        }
         msg += msgBuff;
     }
     if (msg.size() == 0)

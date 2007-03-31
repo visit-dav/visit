@@ -26,6 +26,9 @@ class PickAttributes;
 //    Kathleen Bonnell, Wed Nov 12 18:26:21 PST 2003
 //    Add virtual method 'FindElementForPoint'.
 //
+//    Kathleen Bonnell, Mon Dec 22 14:48:57 PST 2003 
+//    Add virtual method 'GetDomainName'.
+//
 // ****************************************************************************
 
 class avtQueryableSource : virtual public avtDataObjectSource
@@ -38,6 +41,8 @@ class avtQueryableSource : virtual public avtDataObjectSource
     virtual void                  Query(PickAttributes *) = 0;
     virtual bool                  FindElementForPoint(const char*, const int, 
                                     const int, const char*, float[3], int &)=0;
+    virtual void                  GetDomainName(const std::string&, const int, 
+                                    const int, std::string&)=0;
 };
 
 

@@ -169,6 +169,9 @@ class     PickVarInfo;
 //    Updated arguments lists for QueryNodes and QueryZones so that multiple
 //    types of coordinates could be retrieved. 
 //
+//    Kathleen Bonnell, Mon Dec 22 14:39:30 PST 2003 
+//    Add 'GetDomainName'. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -194,6 +197,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
 
     virtual bool               FindElementForPoint(const char *, const int, 
                                     const int, const char *, float[3], int &);
+    virtual void                GetDomainName(const std::string &, const int ts,
+                                    const int dom, std::string &);
 
   protected:
     avtFileFormatInterface    *Interface;

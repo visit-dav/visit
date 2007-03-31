@@ -15,6 +15,7 @@
 #include <vtkMath.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkVisItUtility.h>
 
 #include <avtCondenseDatasetFilter.h>
@@ -122,6 +123,9 @@ avtPlotMinMaxQuery::VerifyInput()
 //  Creation:     October 27, 2003
 //
 //  Modifications:
+//    Kathleen Bonnell, Mon Dec 22 14:48:57 PST 2003
+//    Test for ghost zones. Changed min/max val check to <= or >= so that
+//    serial and parallel versions will always return the same results.
 //
 // ****************************************************************************
 
@@ -133,11 +137,14 @@ avtPlotMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
         return;
     }
 
+    vtkUnsignedCharArray *ghosts = 
+        (vtkUnsignedCharArray*)ds->GetCellData()->GetArray("vtkGhostLevels");
     bool nodeCentered;
     vtkDataArray *data = NULL;
     string var = queryAtts.GetVariables()[0];
     int varType = queryAtts.GetVarTypes()[0];
     scalarCurve = false;
+    bool checkGhost = false;
     if ((data = ds->GetPointData()->GetArray(var.c_str())) != NULL)
     {
         nodeCentered = true;
@@ -147,6 +154,7 @@ avtPlotMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
     {
         nodeCentered = false;
         elementName = "zone";
+        checkGhost = ghosts != NULL;
     }
     else if (varType == QueryAttributes::Curve) 
     {
@@ -201,13 +209,18 @@ avtPlotMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
                 val = data->GetComponent(elNum, 0);
                 break; 
         }
-        if (val < minVal)
+        bool ghost = false;
+        if (checkGhost)
+        {
+            ghost = (ghosts->GetValue(elNum) > 0);
+        }
+        if (val <= minVal && !ghost)
         {
              minElementNum = elNum;
              minVal = val;
              haveMin = true;
         } 
-        if (val > maxVal)
+        if (val >= maxVal && !ghost)
         {
             maxElementNum = elNum;
             maxVal = val;
@@ -298,6 +311,9 @@ avtPlotMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
 //  Creation:   October 27, 2003 
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri Dec 19 13:48:53 PST 2003
+//    Change the order of the hasMin/hasMax tests so that it works correctly in
+//    parallel when one of the processors hsas no data.
 //
 // ****************************************************************************
 
@@ -309,10 +325,8 @@ avtPlotMinMaxQuery::PostExecute(void)
     int ts = queryAtts.GetTimeStep(); 
     string var = queryAtts.GetVariables()[0];
 
-    hasMin = (((minVal != FLT_MAX) && 
-                  ThisProcessorHasMinimumValue(minVal)) ? 1 : 0);
-    hasMax = (((maxVal != -FLT_MAX) && 
-                  ThisProcessorHasMaximumValue(maxVal)) ? 1 : 0);
+    hasMin = (ThisProcessorHasMinimumValue(minVal) && minVal != FLT_MAX);
+    hasMax = (ThisProcessorHasMaximumValue(maxVal) && maxVal != -FLT_MAX);
 
     if (hasMin)
     {
@@ -325,7 +339,7 @@ avtPlotMinMaxQuery::PostExecute(void)
             minCoord[2] = v1.z;
         }
         if (!scalarCurve)
-        src->FindElementForPoint(var.c_str(), ts, minDomain, 
+            src->FindElementForPoint(var.c_str(), ts, minDomain, 
                      elementName.c_str(), minCoord, minElementNum);
         CreateMinMessage();
     }
@@ -340,7 +354,7 @@ avtPlotMinMaxQuery::PostExecute(void)
             maxCoord[2] = v1.z;
         }
         if (!scalarCurve)
-        src->FindElementForPoint(var.c_str(), ts, maxDomain, 
+            src->FindElementForPoint(var.c_str(), ts, maxDomain, 
                      elementName.c_str(), maxCoord, maxElementNum);
         CreateMaxMessage();
     }
@@ -388,7 +402,7 @@ avtPlotMinMaxQuery::PostExecute(void)
         MPI_Send(&hasMin, 1, MPI_INT, 0, myRank, MPI_COMM_WORLD);
         if (hasMin)
         {
-            size = minMsg.size();
+            size = minMsg.size()+1;
             char *buf = new char[size];
             SNPRINTF(buf, size, minMsg.c_str());
             MPI_Send(&size, 1, MPI_INT, 0, myRank, MPI_COMM_WORLD);
@@ -398,7 +412,7 @@ avtPlotMinMaxQuery::PostExecute(void)
         MPI_Send(&hasMax, 1, MPI_INT, 0, myRank, MPI_COMM_WORLD);
         if (hasMax)
         {
-            size = maxMsg.size();
+            size = maxMsg.size()+1;
             char *buf = new char[size];
             SNPRINTF(buf, size, maxMsg.c_str());
             MPI_Send(&size, 1, MPI_INT, 0, myRank, MPI_COMM_WORLD);
@@ -408,7 +422,6 @@ avtPlotMinMaxQuery::PostExecute(void)
         return;
     }
 #endif
-
     CreateResultMessage();
 }
 
@@ -575,6 +588,8 @@ avtPlotMinMaxQuery::GetCellCoord(vtkDataSet *ds, const int id, float coord[3])
 //  Creation:   October 28, 2003 
 //
 //  Modifications:
+//    Kathleen Bonnell, Mon Dec 22 14:48:57 PST 2003
+//    Retrieve DomainName and use it in output, if available.
 //
 // ****************************************************************************
 
@@ -584,16 +599,26 @@ avtPlotMinMaxQuery::CreateMinMessage()
     char buff[256]; 
     if (strcmp(elementName.c_str(), "zone") == 0)
         minElementNum += cellOrigin;
- 
-    minMsg = queryAtts.GetVariables()[0] + " -- Min = ";
+
+    string var = queryAtts.GetVariables()[0]; 
+    minMsg = var + " -- Min = ";
     SNPRINTF(buff, 256, "%f (%s %d ", minVal, 
              elementName.c_str(), minElementNum);
     minMsg += buff; 
-
     if (!singleDomain)
     {
-        SNPRINTF(buff, 256, "in domain %d ", minDomain+blockOrigin);
-        minMsg += buff;
+        string domainName;
+        src->GetDomainName(var, queryAtts.GetTimeStep(), minDomain, domainName);
+     
+        if (domainName.size() > 0)
+        { 
+            minMsg += "in " + domainName + " " ;
+        }
+        else 
+        { 
+            SNPRINTF(buff, 256, "in domain %d ", minDomain+blockOrigin);
+            minMsg += buff;
+        }
     }
 
     if (queryAtts.GetVarTypes()[0] == QueryAttributes::Curve || scalarCurve)
@@ -623,6 +648,8 @@ avtPlotMinMaxQuery::CreateMinMessage()
 //  Creation:   October 28, 2003 
 //
 //  Modifications:
+//    Kathleen Bonnell, Mon Dec 22 14:48:57 PST 2003
+//    Retrieve DomainName and use it in output, if available.
 //
 // ****************************************************************************
 
@@ -633,15 +660,26 @@ avtPlotMinMaxQuery::CreateMaxMessage()
     if (strcmp(elementName.c_str(), "zone") == 0)
         maxElementNum += cellOrigin;
  
-    maxMsg = queryAtts.GetVariables()[0] + " -- Max = ";
+    string var = queryAtts.GetVariables()[0]; 
+    maxMsg = var + " -- Max = ";
     SNPRINTF(buff, 256, "%f (%s %d ", maxVal, elementName.c_str(), 
              maxElementNum);
     maxMsg += buff; 
 
     if (!singleDomain)
     {
-        SNPRINTF(buff, 256, "in domain %d ", maxDomain+blockOrigin);
-        maxMsg += buff;
+        string domainName;
+        src->GetDomainName(var, queryAtts.GetTimeStep(), maxDomain, domainName);
+     
+        if (domainName.size() > 0)
+        { 
+            maxMsg += "in " + domainName + " ";
+        }
+        else 
+        { 
+            SNPRINTF(buff, 256, "in domain %d ", maxDomain+blockOrigin);
+            maxMsg += buff;
+        }
     }
 
     if (queryAtts.GetVarTypes()[0] == QueryAttributes::Curve || scalarCurve)

@@ -39,6 +39,8 @@
 using std::vector;
 using std::string;
 
+// the version of the SAMRAI writer the current reader code matches 
+ static const float        expected_version_number = 1.0;
 static const int MAX_GHOST_LAYERS = 2;
 static const int MAX_GHOST_CODES = MAX_GHOST_LAYERS *
                                    MAX_GHOST_LAYERS *
@@ -544,6 +546,10 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
 //  Programmer:  Walter Herrera Jimenez
 //  Creation:    July 18, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Dec 22 15:06:41 PST 2003
+//    Added code to delete hdims, max_hdims.
+//
 // ****************************************************************************
 vtkDataArray *
 avtSAMRAIFileFormat::GetVar(int patch, const char *visit_var_name)
@@ -627,6 +633,8 @@ avtSAMRAIFileFormat::GetVar(int patch, const char *visit_var_name)
         EXCEPTION2(UnexpectedValueException, hsum, num_data_samples);
     }
     H5Sclose(h5d_space);
+    delete [] hdims;
+    delete [] max_hdims;
 
     vtkFloatArray *scalars = vtkFloatArray::New();
     scalars->SetNumberOfTuples(num_data_samples);
@@ -753,6 +761,8 @@ avtSAMRAIFileFormat::GetVectorVar(int patch,
             EXCEPTION2(UnexpectedValueException, hsum, num_data_samples);
         }
         H5Sclose(h5d_space);
+        delete [] hdims;
+        delete [] max_hdims;
 
         H5Dread(h5d_variable, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
                 var_data);
@@ -781,6 +791,10 @@ avtSAMRAIFileFormat::GetVectorVar(int patch,
 //
 //  Programmer:  Mark C. Miller, adapted from GetVar 
 //  Creation:    December 12, 2003 
+//
+//  Modifications:
+//    Kathleen Bonnell, Mon Dec 22 15:06:41 PST 2003
+//    Added code to delete hdims, max_hdims.
 //
 // ****************************************************************************
 float *
@@ -852,6 +866,8 @@ avtSAMRAIFileFormat::ReadMaterialVolumeFractions(int patch, string mat_name)
         EXCEPTION2(UnexpectedValueException, hsum, num_data_samples);
     }
     H5Sclose(h5d_space);
+    delete [] hdims;
+    delete [] max_hdims;
 
     float *buffer = new float[num_data_samples];
 
@@ -2777,6 +2793,11 @@ avtSAMRAIFileFormat::GetGhostCodeForVar(const char *visit_var_name)
 //  Programmer:  Mark C. Miller, adapted from Walter Herrar Jimenez
 //  Creation:    December 11, 2003 
 //
+//  Modifications:
+//  Kathleen Bonnell, Mon Dec 22 15:06:41 PST 2003
+//  Added code dynamically allocate hdims max_hdims, so that code will build
+//  on IRIX. 
+//
 // ****************************************************************************
 void 
 avtSAMRAIFileFormat::ReadDataset(hid_t &hdfFile, const char *dsPath,
@@ -2817,7 +2838,8 @@ avtSAMRAIFileFormat::ReadDataset(hid_t &hdfFile, const char *dsPath,
         H5Dclose(h5_dataset);
         EXCEPTION2(UnexpectedValueException, hndims, ndims);
     }
-    hsize_t hdims[hndims], max_hdims[hndims];
+    hsize_t *hdims = new hsize_t[hndims];
+    hsize_t *max_hdims = new hsize_t[hndims];
     H5Sget_simple_extent_dims(h5d_space, hdims, max_hdims);
     H5Sclose(h5d_space);
 
@@ -2837,6 +2859,8 @@ avtSAMRAIFileFormat::ReadDataset(hid_t &hdfFile, const char *dsPath,
 
         num_vals *= dims[i];
     }
+    delete [] hdims;
+    delete [] max_hdims;
 
     // if we don't have anything to read or we've only be called to return
     // the size, just return now

@@ -3649,6 +3649,10 @@ ViewerWindow::ResetView2d()
 //    Eric Brugger, Tue Jun 10 13:08:55 PDT 2003
 //    I added image pan and image zoom to the 3d view attributes.
 //
+//    Eric Brugger, Mon Dec 22 10:24:14 PST 2003
+//    Modify the routine to also set haveRenderedIn3d to false if the
+//    bounding box is invalid so that the view really gets reset.
+//
 // ****************************************************************************
 
 void
@@ -3669,6 +3673,7 @@ ViewerWindow::ResetView3d()
     if (boundingBox3d[0] == DBL_MAX && boundingBox3d[1] == -DBL_MAX)
     {
         boundingBoxValid3d = false;
+        haveRenderedIn3d = false;
         return;
     }
 
@@ -3820,6 +3825,72 @@ ViewerWindow::AdjustView3d(const double *limits)
                         (boundingBox3d[5] - boundingBox3d[4])));
 
     view3D.parallelScale = width / zoomFactor;
+
+    //
+    // Calculate the near and far clipping planes.
+    //
+    view3D.nearPlane = - 2.0 * width;
+    view3D.farPlane  =   2.0 * width;
+
+    //
+    // Update the view.
+    //
+    visWindow->SetView3D(view3D);
+}
+
+// ****************************************************************************
+//  Method: ViewerWindow::SetInitialView3d
+//
+//  Purpose: 
+//    Set the window's initial 3d view preserving any rotations or image
+//    pans or zooms.
+//
+//  Arguments:
+//
+//  Programmer: Eric Brugger
+//  Creation:   December 22, 2003
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetInitialView3d()
+{
+    //
+    // If the plot limits are invalid then there are no plots so mark the
+    // bounding box as invalid so that the view is set from scratch the
+    // next time it is updated.
+    //
+    if (boundingBox3d[0] == DBL_MAX && boundingBox3d[1] == -DBL_MAX)
+    {
+        centeringValid3d = false;
+        return;
+    }
+
+    //
+    // Get the current view.
+    //
+    avtView3D view3D=visWindow->GetView3D();
+
+    //
+    // Calculate the new focal point.
+    //
+    view3D.focus[0] = (boundingBox3d[1] + boundingBox3d[0]) / 2.0;
+    view3D.focus[1] = (boundingBox3d[3] + boundingBox3d[2]) / 2.0;
+    view3D.focus[2] = (boundingBox3d[5] + boundingBox3d[4]) / 2.0;
+
+    //
+    // Calculate the new parallel scale.
+    //
+    double    width;
+
+    width = 0.5 * sqrt(((boundingBox3d[1] - boundingBox3d[0]) *
+                        (boundingBox3d[1] - boundingBox3d[0])) +
+                       ((boundingBox3d[3] - boundingBox3d[2]) *
+                        (boundingBox3d[3] - boundingBox3d[2])) +
+                       ((boundingBox3d[5] - boundingBox3d[4]) *
+                        (boundingBox3d[5] - boundingBox3d[4])));
+
+    view3D.parallelScale = width;
 
     //
     // Calculate the near and far clipping planes.
@@ -4066,6 +4137,11 @@ ViewerWindow::UpdateView2d(const double *limits)
 //    modified the routine to calculate the merged limits in a scratch array
 //    instead of using a boundingBox3d which messed things up.
 //
+//    Eric Brugger, Mon Dec 22 10:24:14 PST 2003
+//    Modify the way the routine sets the view for the first time or after
+//    a reset with no plots so that coordinate extent parameters are reset
+//    but rotations and image pans and zooms are preserved.
+//
 // ****************************************************************************
 
 void
@@ -4086,6 +4162,10 @@ ViewerWindow::UpdateView3d(const double *limits)
         if (!haveRenderedIn3d)
         {
             ResetView3d();
+        }
+        else
+        {
+            SetInitialView3d();
         }
 
         ViewerWindowManager::Instance()->UpdateViewAtts();

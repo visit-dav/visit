@@ -36,6 +36,10 @@ class avtSpecies;
 //    used to disable version checking. Added var_num_ghosts array. Added
 //    prototype for RegisterVariableList
 //
+//    Kathleen Bonnell, Fri Dec 19 10:20:57 PST 2003 
+//    Moved 'expected_version_number' to source file so that code will build 
+//    on IRIX.
+// 
 // ****************************************************************************
 
 class avtSAMRAIFileFormat : public avtSTMDFileFormat
@@ -68,9 +72,6 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
                                                const vector<CharStrRef> &);
 
   protected:
-
-    // the version of the SAMRAI writer the current reader code matches 
-    static const float        expected_version_number = 1.0;
 
     typedef struct {
       int processor_number; 

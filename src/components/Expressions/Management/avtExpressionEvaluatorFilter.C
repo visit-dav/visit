@@ -573,3 +573,24 @@ avtExpressionEvaluatorFilter::FindElementForPoint(const char *var, const int ts,
     return GetInput()->GetQueryableSource()->
         FindElementForPoint(var, ts, dom, elType, pt, elNum);
 }
+
+
+// ****************************************************************************
+//  Method: avtExpressionEvaluatorFilter::GetDomainName
+//
+//  Purpose:
+//      Passes this request on to the queryable source. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 22, 2003 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtExpressionEvaluatorFilter::GetDomainName(const std::string &var, const int ts,
+    const int dom, std::string &domName)
+{
+    GetInput()->GetQueryableSource()->GetDomainName(var, ts, dom, domName);
+}

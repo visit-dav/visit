@@ -505,3 +505,28 @@ avtSourceFromDatabase::FindElementForPoint(const char *var, const int ts,
 {
     return database->FindElementForPoint(var, ts, dom, elType, pt, elNum);
 }
+
+
+// ****************************************************************************
+//  Method: avtSourceFromDatabase::GetDomainName
+//
+//  Purpose:
+//      Allows the database to return a string representing the name
+//      of the given domain. 
+//
+//  Arguments:
+//    var       The variable to use in searching the database.
+//    ts        The timestep to use in searching the database.
+//    dom       The domain to use in searching the database.
+//    domName   A place to store the domain name. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 22, 2003 
+//
+// ****************************************************************************
+void
+avtSourceFromDatabase::GetDomainName(const std::string &var, const int ts,
+    const int dom, std::string &domName)
+{
+    database->GetDomainName(var, ts, dom, domName);
+}

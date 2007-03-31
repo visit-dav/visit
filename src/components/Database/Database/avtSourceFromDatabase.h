@@ -60,6 +60,9 @@ class  PickAttributes;
 //    Kathleen Bonnell, Thu Nov 13 08:44:01 PST 2003 
 //    Add FindElementForPoint method. 
 //
+//    Kathleen Bonnell, Mon Dec 22 14:39:30 PST 2003
+//    Add GetDomainName method. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtSourceFromDatabase : public avtTerminatingDatasetSource
@@ -84,6 +87,8 @@ class DATABASE_API avtSourceFromDatabase : public avtTerminatingDatasetSource
     virtual void        Query(PickAttributes *);
     virtual bool        FindElementForPoint(const char *, const int, 
                             const int, const char *, float[3], int &);
+    virtual void        GetDomainName(const std::string &, const int, 
+                            const int, std::string &);
 
   protected:
     avtDatasetDatabase      *database;
