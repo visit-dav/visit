@@ -2256,7 +2256,12 @@ ViewerPlotList::OverlayDatabase(const std::string &host, const std::string &data
 //   Jeremy Meredith, Fri Oct 31 13:06:08 PST 2003
 //   Made the error message for no-real-variables more informative.
 //
+//   Brad Whitlock, Wed Dec 31 14:16:55 PST 2003
+//   I added code to catch InvalidVariableException if it gets thrown from
+//   avtDatabaseMetaData::MeshForVar.
+//
 // ****************************************************************************
+
 avtSILRestriction_p
 ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
     const std::string &database, const std::string &var)
@@ -2331,7 +2336,18 @@ ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
     // if the given variable is valid for the specified database. If the
     // variable is invalid, an InvalidVariableException is thrown.
     //
-    std::string meshName(md->MeshForVar(realvar));
+    std::string meshName;
+    TRY
+    {
+        meshName = md->MeshForVar(realvar);
+    }
+    CATCH(InvalidVariableException)
+    {
+        SNPRINTF(str, 400, "VisIt could not determine the mesh name for %s.", realvar.c_str());
+        Error(str);
+        CATCH_RETURN2(1, silr);
+    }
+    ENDTRY
 
     //
     // If there is more than one top set, try and find the right one.
@@ -4048,6 +4064,63 @@ ViewerPlotList::UpdateExpressionList(bool considerPlots)
 }
 
 // ****************************************************************************
+// Method: ViewerPlotList::UpdateExpressionListUsingDB
+//
+// Purpose: 
+//   Populates the expression list with the user-defined expressions and
+//   the expressions from the specified database but does not notify the
+//   client.
+//
+// Arguments:
+//   host : The host where the data is located.
+//   db   : The name of the database.
+//   t    : The time state to use for getting metadata.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 31 14:06:53 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlotList::UpdateExpressionListUsingDB(const std::string &host,
+    const std::string &db, int t) const
+{
+    ExpressionList *exprList = ParsingExprList::Instance()->GetList();
+
+    //
+    // Create a new expression list that contains all of the expressions
+    // from the main expression list that are not expressions that come
+    // from databases.
+    //
+    ExpressionList newList;
+    for(int i = 0; i < exprList->GetNumExpressions(); ++i)
+    {
+        const Expression &expr = exprList->GetExpression(i);
+        if(!expr.GetFromDB())
+            newList.AddExpression(expr);
+    }
+
+    //
+    // Try and get the metadata for the database.
+    //
+    if(host.size() > 0 && db.size() > 0)
+    {
+        ViewerFileServer *fileServer = ViewerFileServer::Instance();
+        const avtDatabaseMetaData *md = fileServer->GetMetaData(host, db, t);
+        if(md != 0)
+        {
+            // Add the expressions for the database.
+            for (int j = 0 ; j < md->GetNumberOfExpressions(); ++j)
+                newList.AddExpression(*(md->GetExpression(j)));
+        }
+    }
+
+    *exprList = newList;
+}
+
+// ****************************************************************************
 //  Method: ViewerPlotList::GetPlotLimits
 //
 //  Purpose:
@@ -4686,7 +4759,10 @@ ViewerPlotList::CreateNode(DataNode *parentNode)
 // Creation:   Wed Jul 16 13:10:51 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Dec 31 13:56:24 PST 2003
+//   I added code to update the expression list so plots of expressions can
+//   be successfully created.
+//
 // ****************************************************************************
 
 bool
@@ -4719,6 +4795,14 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
     }
     if((node = plotlistNode->GetNode("keyframeMode")) != 0)
         keyframeMode = node->AsBool();
+
+    //
+    // Now that the host and database have been set, update the expression
+    // list so we can create plots that use expression variables without
+    // having to change the open database.
+    //
+    std::string exprHost(hostName), exprDB(databaseName);
+    UpdateExpressionListUsingDB(hostName, databaseName, 0);
 
     //
     // Try and recreate the plots
@@ -4767,9 +4851,31 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
             if(type != -1)
             {
                 //
+                // Update the expression list if the plot does not use the
+                // current expression database.
+                //
+                bool failure = false;
+                if(plotHost != exprHost || plotDB != exprDB)
+                {
+                    TRY
+                    {
+                        UpdateExpressionListUsingDB(plotHost, plotDB, 0);
+                        exprHost = plotHost;
+                        exprDB = plotDB;
+                    }
+                    CATCH(VisItException)
+                    {
+                        failure = true;
+                    }
+                    ENDTRY
+                }
+
+                //
                 // Try and create the plot.
                 //
-                ViewerPlot *plot = NewPlot(type, plotHost, plotDB, plotVar, false);
+                ViewerPlot *plot = 0;
+                if(!failure)
+                    plot = NewPlot(type, plotHost, plotDB, plotVar, false);
 
                 if(plot)
                 {
@@ -4863,6 +4969,19 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
     // code to set all plots but the new one to inactive.
     for(int j = 0; j < nPlots; ++j)
         plots[j].active = (plotSelected[j] > 0);
+
+    // If the expression list does not contain the expressions from the
+    // open file, update it.
+    if(hostName != exprHost || databaseName != exprDB)
+    {
+        UpdateExpressionList(true);
+    }
+    else
+    {
+        // It has the right contents but we need to send it to the client.
+        ExpressionList *exprList = ParsingExprList::Instance()->GetList();
+        exprList->Notify();
+    }
 
     return sendUpdateFrame;
 }

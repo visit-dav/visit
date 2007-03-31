@@ -669,6 +669,13 @@ avtSAMRAIFileFormat::GetVar(int patch, const char *visit_var_name)
 //  Programmer:  Walter Herrera Jimenez
 //  Creation:    July 18, 2003
 //
+//  Modifications:
+//    Eric Brugger, Tue Dec 30 16:37:26 PST 2003
+//    I modified the routine to properly read vector (and coordinate) data.
+//    This involved file format as well as reader changes.  In this case
+//    I modified the routine to handle the variable name without the extension
+//    (.00, .01, .02) identifying the component.
+//
 // ****************************************************************************
 vtkDataArray *
 avtSAMRAIFileFormat::GetVectorVar(int patch, 
@@ -702,11 +709,8 @@ avtSAMRAIFileFormat::GetVectorVar(int patch,
                             patch_extents[patch].lower[i] + extent + 2 * num_ghosts[i];
     }
 
-    char variable[100];
-    sprintf(variable, "%s.00", var_name.c_str());
-
     for (int v = 0; v < num_vars; v++) {
-        if (var_names[v] == variable) {
+        if (var_names[v] == var_name) {
             if (!var_extents[v][patch].data_is_defined) {
                 return NULL;
             }
@@ -735,6 +739,7 @@ avtSAMRAIFileFormat::GetVectorVar(int patch,
     float *var_data = new float[num_data_samples];
 
     for (int i = 0 ; i < num_components ; i++) {
+        char variable[100];
         sprintf(variable, "/processor.%05d/level.%05d/patch.%05d/%s.%02d",
                 patch_map[patch].processor_number,
                 patch_map[patch].level_number,
@@ -1233,6 +1238,13 @@ avtSAMRAIFileFormat::DebugMixedMaterials(int ncells, int* &matfield,
 //  Programmer: Walter Herrera Jimenez
 //  Creation:   July 21, 2003
 //
+//  Modifications:
+//    Eric Brugger, Tue Dec 30 16:37:26 PST 2003
+//    I modified the routine to properly read vector (and coordinate) data.
+//    This involved file format as well as reader changes.  In this case
+//    I modified the way the routine built the interval tree from the
+//    extents associated with a vector.
+//
 // ****************************************************************************
 
 void *
@@ -1285,14 +1297,13 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
                 float range[6] = { 0, 0, 0, 0, 0, 0 };
                 int dim = num_components <= 3 ? num_components : 3;
                 for (int i=0; i<dim; i++) {
-                    char variable[100];
-                    sprintf(variable, "%s.%02d", name.c_str(), i);
+                    int ipatch = i * num_patches + patch;
 
                     for (int v = 0; v < num_vars; v++) {
-                        if (var_names[v] == variable) {
-                            if (var_extents[v][patch].data_is_defined) {
-                                range[i*2] = var_extents[v][patch].min; 
-                                range[i*2+1] = var_extents[v][patch].max;
+                        if (var_names[v] == name) {
+                            if (var_extents[v][ipatch].data_is_defined) {
+                                range[i*2] = var_extents[v][ipatch].min; 
+                                range[i*2+1] = var_extents[v][ipatch].max;
                             }
                             else {
                                 data_defined = false;
@@ -2186,6 +2197,12 @@ avtSAMRAIFileFormat::ReadVarNumGhosts(hid_t &h5_file)
 //  Programmer:  Walter Herrera Jimenez
 //  Creation:    August  20, 2003
 //
+//  Modifications:
+//    Eric Brugger, Tue Dec 30 16:37:26 PST 2003
+//    I modified the routine to properly read vector (and coordinate) data.
+//    This involved file format as well as reader changes.  In this case
+//    I modified the way the extents were read and stored for a vector.
+//
 // ****************************************************************************
 void 
 avtSAMRAIFileFormat::ReadVarExtents(hid_t &h5_file)
@@ -2203,21 +2220,53 @@ avtSAMRAIFileFormat::ReadVarExtents(hid_t &h5_file)
 
     var_extents = new var_extents_t* [num_vars];
     for (int v = 0; v < num_vars; v++) {
-      var_extents[v] = new var_extents_t[num_patches];
-      
-      char ds_name[50];
-      sprintf(ds_name,"/extents/%s-Extents",var_names[v].c_str());
-      
-      hid_t h5_dataset = H5Dopen(h5_file, ds_name);
-      if (h5_dataset < 0) {
-          char str[1024];
-          sprintf(str, "%s::%s", file_name.c_str(), ds_name);
-          EXCEPTION1(InvalidFilesException, str);
-      }
+        std::map<std::string, var_t>::const_iterator cur_var;
+        cur_var = var_names_num_components.find(var_names[v]);
+        if (cur_var == var_names_num_components.end())
+        {
+            EXCEPTION1(InvalidVariableException, var_names[v]);
+        }
+    
+        int num_components = (*cur_var).second.num_components;
 
-      H5Dread(h5_dataset, h5_mem_datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
-              var_extents[v]);
-      H5Dclose(h5_dataset);    
+        var_extents[v] = new var_extents_t[num_patches*num_components];
+      
+        if (num_components == 1)
+        {
+            char ds_name[50];
+            sprintf(ds_name, "/extents/%s-Extents", var_names[v].c_str());
+      
+            hid_t h5_dataset = H5Dopen(h5_file, ds_name);
+            if (h5_dataset < 0) {
+                char str[1024];
+                sprintf(str, "%s::%s", file_name.c_str(), ds_name);
+                EXCEPTION1(InvalidFilesException, str);
+            }
+
+            H5Dread(h5_dataset, h5_mem_datatype, H5S_ALL, H5S_ALL,
+                    H5P_DEFAULT, var_extents[v]);
+            H5Dclose(h5_dataset);    
+        }
+        else
+        {
+            for (int c = 0; c < num_components; c++)
+            {
+                char ds_name[50];
+                sprintf(ds_name, "/extents/%s.%02d-Extents",
+                        var_names[v].c_str(), c);
+      
+                hid_t h5_dataset = H5Dopen(h5_file, ds_name);
+                if (h5_dataset < 0) {
+                    char str[1024];
+                    sprintf(str, "%s::%s", file_name.c_str(), ds_name);
+                    EXCEPTION1(InvalidFilesException, str);
+                }
+
+                H5Dread(h5_dataset, h5_mem_datatype, H5S_ALL, H5S_ALL,
+                        H5P_DEFAULT, &(var_extents[v][c*num_patches]));
+                H5Dclose(h5_dataset);    
+            }
+        }
     }
 
     H5Tclose(h5_mem_datatype);

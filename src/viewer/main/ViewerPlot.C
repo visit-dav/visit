@@ -39,6 +39,7 @@
 #include <ImproperUseException.h>
 #include <AbortException.h>
 #include <InvalidColortableException.h>
+#include <InvalidVariableException.h>
 #include <Expression.h>
 
 extern ViewerSubject *viewerSubject;   // FIX_ME This is a hack.
@@ -690,6 +691,9 @@ ViewerPlot::GetPluginID() const
 //    Eric Brugger, Mon Nov 18 09:16:38 PST 2002
 //    I added keyframing support.
 //
+//    Brad Whitlock, Wed Dec 31 14:20:50 PST 2003
+//    Added TRY/CATCH block around the call to avtDatabaseMetaData::MeshForVar.
+//
 // ****************************************************************************
 
 bool
@@ -709,7 +713,7 @@ ViewerPlot::SetVariableName(const char *name)
         {
             return retval;
         }
-        delete [] variableName;
+
         ClearActors();
         notifyQuery = true;
 
@@ -728,7 +732,16 @@ ViewerPlot::SetVariableName(const char *name)
                     //
                     // Get the Mesh for the desired variable.
                     //
-                    std::string meshName(md->MeshForVar(std::string(name)));
+                    std::string meshName;
+                    TRY
+                    {
+                        meshName = md->MeshForVar(std::string(name));
+                    }
+                    CATCH(InvalidVariableException)
+                    {
+                        CATCH_RETURN2(2, false);
+                    }
+                    ENDTRY
 
                     //
                     // The new variable has a different top set from the
@@ -772,6 +785,9 @@ ViewerPlot::SetVariableName(const char *name)
             ENDTRY
         }
     }
+
+    // Save the new variable name.
+    delete [] variableName;
     variableName = new char [strlen(name)+1];
     strcpy (variableName, name);
 
@@ -785,11 +801,11 @@ ViewerPlot::SetVariableName(const char *name)
         plotAtts = new AttributeSubjectMap;
         plotAtts->SetAtts(0, curPlotAtts);
     }
+
     //
     // Set the variable name for any existing plots.
     //
     int       i;
-
     for (i = 0; i < (frame1 - frame0 + 1); i++)
     {
         if (*plotList[i] != 0)
