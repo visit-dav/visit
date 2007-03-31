@@ -29,6 +29,9 @@ class avtDatabaseMetaData;
 //   I renamed the class and made a lot of methods be helper methods so
 //   I can use them in derived classes without having name conflicts.
 //
+//   Brad Whitlock, Fri Sep 26 10:22:05 PDT 2003
+//   I added support for ray meshes.
+//
 // ****************************************************************************
 
 class PP_ZFileReader : public PDBReader
@@ -64,12 +67,15 @@ protected:
     const int *GetIreg(int state);
     int  GetUnstructuredCellCount();
     bool PopulateMaterialNames();
+    void AddRayMetaData(avtDatabaseMetaData *);
+    vtkDataSet *GetRayMesh(int state, const char *var);
+    vtkDataSet *ConstructRayMesh(int state, bool is3d);
+    vtkDataArray *GetRayVar(int state, const std::string &varStr);
 
-    static void GetRotationMatrix(double angle, const double axis[3],
-                                  vtkMatrix4x4 *mat);
     static vtkDataSet *RevolveDataSet(vtkDataSet *in_ds, const double *axis,
                                       double start_angle, double stop_angle,
-                                      int nsteps);
+                                      int nsteps, bool extrude);
+
     // Data members
     int                      kmax;
     int                      lmax;

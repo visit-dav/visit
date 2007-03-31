@@ -64,6 +64,7 @@ void verify_ssh_host_key(char *host, int port, char *keytype,
  * Input Arguments:
  *   username    : The user login name for the specified host.
  *   host        : The name of the host that we want to run the command.
+ *   port        : The port to use when connecting to the host.
  *   commands    : A list of strings where the first element specifies the name
  *                 of the remote program to run.
  *   nCommands   : The number of strings in the commands array.
@@ -74,11 +75,13 @@ void verify_ssh_host_key(char *host, int port, char *keytype,
  *          worked.
  *
  * Modifications:
+ *   Brad Whitlock, Fri Oct 10 14:21:53 PST 2003
+ *   Added the port argument so we can use whatever port we want.
  *
  *****************************************************************************/
 
 int
-RunRemoteCommand(const char *username, const char *host,
+RunRemoteCommand(const char *username, const char *host, int port,
     const char *commands[], int nCommands, passwordCallback *cb,
     int initSockets)
 {
@@ -119,7 +122,7 @@ RunRemoteCommand(const char *username, const char *host,
      * Force SSH
      */
     default_protocol = cfg.protocol = PROT_SSH;
-    default_port = cfg.port = 22;
+    default_port = cfg.port = port;
     back = backends[0].backend;
 
     /*

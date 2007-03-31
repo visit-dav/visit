@@ -592,12 +592,19 @@ MDServerConnection::GetCurrentMetaData() const
 //   Brad Whitlock, Tue May 13 15:42:59 PST 2003
 //   I added timeState.
 //
+//   Brad Whitlock, Thu Oct 9 14:35:00 PST 2003
+//   Fixed memory leak.
+//
 // ****************************************************************************
 
 int
 MDServerConnection::ReadSIL(std::string file, int timeState)
 {
-    currentSIL = NULL;
+    if(currentSIL != NULL)
+    {
+        delete currentSIL;
+        currentSIL = NULL;
+    }
 
     int ts = (timeState == -1) ? currentDatabaseTimeState : timeState;
     debug2 << "Read the SIL for " << file.c_str()

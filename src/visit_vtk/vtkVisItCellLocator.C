@@ -2276,6 +2276,9 @@ vtkVisItCellLocator::PolyLineIntersectWithLine(vtkPolyLine *cell, float p1[3], f
 //   Kathleen Bonnell, Thu Sep 18 15:48:54 PDT 2003
 //   Cast multiplication to float before setting intersection point. 
 //
+//   Kathleen Bonnell, Fri Oct 10 10:46:48 PDT 2003 
+//   Remove eps for testing DotProduct.
+//
 // ****************************************************************************
 int
 vtkVisItCellLocator::TriangleIntersectWithLine(vtkTriangle *cell, float p1[3], 
@@ -2295,7 +2298,6 @@ vtkVisItCellLocator::TriangleIntersectWithLine(vtkTriangle *cell, float p1[3],
   double e1[3], e2[3], p[3], s[3], q[3];
   double rayDir[3];
   double u, v, tmp, dt;
-  double eps = 1e-15;
 
   int i;
   SUB(rayDir, dp2, dp1);
@@ -2305,11 +2307,10 @@ vtkVisItCellLocator::TriangleIntersectWithLine(vtkTriangle *cell, float p1[3],
   vtkMath::Cross(rayDir, e2, p);
   tmp = vtkMath::Dot(p, e1);
 
-  if (tmp > -eps && tmp < eps) 
-    {
-    pcoords[0] = pcoords[1] = pcoords[2] = 0.0;
-    return 0;
-    }
+  if (tmp == 0.)
+  {
+      return 0;
+  }
 
   tmp = 1.0/tmp;
   SUB(s, dp1, pt1);

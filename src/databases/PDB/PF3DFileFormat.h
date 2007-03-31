@@ -42,8 +42,11 @@ protected:
     virtual bool IdentifyFormat();
 
 private:
+    void Initialize();
     void GetMeshInfo(const char *meshName, float extents[6], int nNodes[3],
                      bool &ghostPresent, int first[3], int last[3]);
+
+    bool initialized;
 
     // Values that are read in when the file is opened.
     int    cycle;

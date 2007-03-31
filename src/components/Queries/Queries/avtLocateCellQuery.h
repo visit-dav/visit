@@ -37,6 +37,9 @@ class vtkDataSet;
 //    Kathleen Bonnell, Tue Jun  3 15:20:35 PDT 2003 
 //    Removed 'tolerance' parameter from FindCell methods.
 //
+//    Kathleen Bonnell, Fri Oct 10 11:45:24 PDT 2003
+//    Added DeterminePickedNode. 
+//
 // ****************************************************************************
 
 class QUERY_API avtLocateCellQuery : public avtDatasetQuery
@@ -62,6 +65,9 @@ class QUERY_API avtLocateCellQuery : public avtDatasetQuery
                                                     float &, float*);
     int                             RGridFindCell(vtkDataSet *, 
                                                     float &, float*);
+
+    void                            DeterminePickedNode(vtkDataSet *, 
+                                                    int, float*);
 };
 
 

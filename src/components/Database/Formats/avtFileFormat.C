@@ -572,6 +572,10 @@ avtFileFormat::GuessCycle(const char *fname)
 //  Programmer: Hank Childs
 //  Creation:   March 22, 2002 
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Oct 10 16:00:31 PDT 2003
+//    Added a more descriptive debug statement for the Exception.
+//
 // ****************************************************************************
 
 void
@@ -590,7 +594,10 @@ avtFileFormat::CloseFileDescriptor(int manIndex)
 
     if (index == -1)
     {
-        debug1 << "Cannot match up index " << manIndex << endl;
+        debug1 << "avtFileFormat::CloseFileDescriptor cannot match up index " 
+               << manIndex 
+               << ".  This may be due to stale pointers from formats that "
+               << "have not Unregistered their deleted files." << endl;
         EXCEPTION0(ImproperUseException);
     }
 

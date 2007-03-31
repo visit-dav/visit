@@ -139,6 +139,9 @@ avtLocateCellQuery::PostExecute(void)
 //    Kathleen Bonnell, Wed Jun 18 17:52:45 PDT 2003
 //    Always use OriginalCellsArray if present.   
 //    
+//    Kathleen Bonnell, Fri Oct 10 11:45:24 PDT 2003 
+//    Determine the picked node if in 'NodePick' mode. 
+//    
 // ****************************************************************************
 
 void
@@ -168,6 +171,8 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
         minDist = dist;
 
         queryAtts.SetWorldPoint(isect);
+        if (queryAtts.GetElementType() == QueryAttributes::Node)
+            DeterminePickedNode(ds, foundCell, isect);
 
         vtkDataArray *origCells = 
                  ds->GetCellData()->GetArray("avtOriginalCellNumbers");
@@ -373,4 +378,69 @@ avtLocateCellQuery::RGridFindCell(vtkDataSet *ds, float &dist, float *isect)
     }
     return cellId;
 }
+
+
+
+// ****************************************************************************
+//  Method: avtLocateCellQuery::DeterminePickedNode
+//
+//  Purpose:
+//    Finds the closest node-point to the picked point.  
+//
+//  Arguments:
+//    ds        The dataset to retrieve information from.
+//    foundEl   the picked ZONE 
+//    ppoint    the node's coordinates.
+//
+//
+//  Programmer: Kathleen Bonnell  
+//  Creation:   June 27, 2003 
+//
+//  Modifications:
+//    
+// ****************************************************************************
+
+void
+avtLocateCellQuery::DeterminePickedNode(vtkDataSet *ds, int foundEl, float *ppoint)
+{
+   vtkIdType minId = -1; 
+   vtkPoints *points = vtkVisItUtility::GetPoints(ds);
+
+   //
+   // VTK's FindPoint method is faster than the brute force method
+   // in the else-part, but only for Rectilinear grids.
+   // 
+   if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+   {
+       minId = ds->FindPoint(ppoint);
+   }
+   else
+   {
+       vtkIdList *ptIds = vtkIdList::New();
+       vtkIdType id;
+       ds->GetCellPoints(foundEl, ptIds);
+       int numPts = ptIds->GetNumberOfIds();
+       float dist2;
+       float minDist2 = FLT_MAX;
+
+       for (int i = 0; i < numPts; i++)
+       {
+           id = ptIds->GetId(i);
+
+           dist2 = vtkMath::Distance2BetweenPoints(ppoint, 
+                   points->GetPoint(id));
+           if (dist2 < minDist2)
+           {
+               minDist2 = dist2; 
+               minId = id; 
+           }
+       }
+
+       ptIds->Delete();
+   }
+
+   if ( minId != -1)
+       queryAtts.SetNodePoint(points->GetPoint(minId));
+}
+
 

@@ -442,6 +442,9 @@ dnl
 dnl    Hank Childs, Tue Sep  9 07:36:21 PDT 2003
 dnl    Added tools/convert.
 dnl
+dnl    Jeremy Meredith, Fri Oct 10 12:32:27 PDT 2003
+dnl    Added check for 3D texturing support in OpenGL.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -658,6 +661,21 @@ GL_LIBS=""
 if test "$UseOGL" = "yes"; then
     AC_CHECK_LIB(GL, main,   GL_LIBS="-lGL")
 fi
+
+#
+# Check for 3D texturing support in OpenGL
+#
+oldlibs="$LIBS"
+LIBS="$LIBS $GL_LIBS"
+AC_MSG_CHECKING(for glTexImage3D in OpenGL)
+AC_TRY_LINK([#include <GL/gl.h>],
+	    [glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, 0,0,0,
+                          0, GL_RGBA, GL_UNSIGNED_BYTE, 0);],
+            
+            AC_DEFINE(HAVE_GL_TEX_IMAGE_3D)
+            AC_MSG_RESULT(yes),
+            AC_MSG_RESULT(no));
+LIBS="$oldlibs"
 
 #
 # Set up some VTK variables.

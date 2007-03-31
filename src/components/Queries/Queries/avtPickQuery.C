@@ -235,6 +235,10 @@ avtPickQuery::PostExecute(void)
 //    of 'needRealId to include unstructured data that has the corrrect
 //    dimensional array. (Added by mat-selected plots).
 //
+//    Kathleen Bonnell, Fri Oct 10 11:41:37 PDT 2003
+//    Added code to set the PickPoint (pickLetter's display position) 
+//    from the NodePoint when appropriate. 
+//
 // ****************************************************************************
 
 void
@@ -397,9 +401,7 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
         // if the plot was NOT transformed.
         //
         // If the plot was transformed && the inverseTransform is available,
-        // transform CellPoint according to how the whole plot was transformed: 
-        // apply the inverse of the inverseTransform and set the value in 
-        // PickPoint.
+        // use the NodePoint as determined by avtLocateCellQuery.
         //
         // If the plot was transformed && inverseTransform is NOT available,
         // there is no way to determine the location of the picked node in
@@ -408,12 +410,7 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
         //
         if (invTransform != NULL)
         {
-            avtMatrix mat = *(invTransform);
-            mat.Inverse(); 
-            avtVector v1(pickAtts.GetCellPoint());
-            v1 = mat * v1;
-            float ppt[3] = { v1.x, v1.y, v1.z };
-            pickAtts.SetPickPoint(ppt);
+            pickAtts.SetPickPoint(pickAtts.GetNodePoint());
         }
         else if (pickAtts.GetNeedTransformMessage())
         {

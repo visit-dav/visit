@@ -44,6 +44,9 @@ class vtkGeometryFilter;
 //    Added PreExecute and PerformRestriction.  Added members min, max,
 //    Ms, Bs.
 //
+//    Kathleen Bonnell, Fri Oct 10 10:48:24 PDT 2003
+//    Added PostExecute. 
+//
 // ****************************************************************************
 
 class avtSurfaceFilter : public avtStreamer
@@ -81,6 +84,7 @@ class avtSurfaceFilter : public avtStreamer
     virtual void            RefashionDataObjectInfo(void);
     virtual void            VerifyInput(void);
     virtual void            PreExecute(void);
+    virtual void            PostExecute(void);
     virtual avtPipelineSpecification_p
                             PerformRestriction(avtPipelineSpecification_p);
 };

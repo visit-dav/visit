@@ -1,6 +1,7 @@
 #include <ViewerPasswordWindow.h>
 #include <qapplication.h>
 #include <windows.h>
+#include <stdlib.h>
 
 // Include the header file for the remote command SSH library.
 #include <RemoteCommand.h>
@@ -39,7 +40,9 @@ graphicalGetPassword(const char *host, int *okay)
 // Creation:   Thu Aug 29 14:59:21 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Oct 10 14:24:27 PST 2003
+//   Added the -p argument.
+//
 // ****************************************************************************
 
 int
@@ -52,6 +55,7 @@ main(int argc, char *argv[])
     int i, command_count = 0;
     bool printArgs = false;
     bool hostSpecified = false;
+    int  port = 22;
 
     // Initialize the command line array.
     for(i = 0; i < 100; ++i)
@@ -77,6 +81,16 @@ main(int argc, char *argv[])
                 {
                     delete [] username;
                     username = argv[i+1];
+                    ++i;
+                }
+            }
+            else if(strcmp(arg, "-p") == 0)
+            {
+                if(i+1 < argc)
+                {
+                    int tempPort = atoi(argv[i+1]);
+                    if(tempPort >= 0)
+                        port = tempPort;
                     ++i;
                 }
             }
@@ -118,12 +132,14 @@ main(int argc, char *argv[])
         qDebug("");
         qDebug("options:");
         qDebug("    -l username     Sets the user login name.");
+        qDebug("    -p portnum      Sets the port number used to connect.");
         qDebug("    -D              Prints command line arguments.");
         return -1;
     }
 
     // Run the command on the remote machine.
-    RunRemoteCommand(username, host, commands, command_count, graphicalGetPassword, 1);
+    RunRemoteCommand(username, host, port, commands, command_count,
+                     graphicalGetPassword, 1);
 
     // Clean up.
     if(!userSpecified)
