@@ -30,6 +30,9 @@ class vtkDataArray;
 //    Hank Childs, Wed Apr 24 09:16:51 PDT 2002 
 //    Added derived types for graphics packages.
 //
+//    Jeremy Meredith, Tue Sep 30 11:49:42 PDT 2003
+//    Added method "ReleaseGraphicsResources".  Moved alphatex to subclass.
+//
 // ****************************************************************************
 
 class avtVolumeRenderer : public avtCustomRenderer
@@ -42,6 +45,7 @@ class avtVolumeRenderer : public avtCustomRenderer
     void                    SetAtts(const AttributeGroup*);
 
     virtual bool            OperatesOnScalars(void) { return true; };
+    virtual void            ReleaseGraphicsResources()  { };
 
   protected:
     VolumeAttributes        atts;
@@ -49,7 +53,6 @@ class avtVolumeRenderer : public avtCustomRenderer
     void                    Initialize(vtkDataSet*);
     bool                    initialized;
 
-    float                  *alphatex;
     float                   vmin,vmax,vsize;
     float                   omin,omax,osize;
     float                  *gx, *gy, *gz, *gm, *gmn;
