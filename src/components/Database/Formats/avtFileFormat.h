@@ -73,6 +73,8 @@ class DATABASE_API avtFileFormat
     virtual void          TurnMaterialSelectionOff(void);
     virtual void          TurnMaterialSelectionOn(const char *);
 
+    virtual bool          CanCacheVariable(const char *) { return true; };
+
     bool                  CanDoDynamicLoadBalancing(void)
                               { return canDoDynamicLoadBalancing; };
 

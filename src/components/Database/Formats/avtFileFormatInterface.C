@@ -246,9 +246,16 @@ avtFileFormatInterface::CanDoDynamicLoadBalancing(void)
 // ****************************************************************************
 
 bool
-avtFileFormatInterface::HasInvariantMetaData(void) const
+avtFileFormatInterface::HasInvariantMetaData(void)
 {
-    return GetFormat(0)->HasInvariantMetaData();
+    int nFormats = GetNumberOfFileFormats();
+    for (int i = 0 ; i < nFormats ; i++)
+    {
+        if (! GetFormat(i)->HasInvariantMetaData())
+            return false;
+    }
+
+    return true;
 }
 
 // ****************************************************************************
@@ -263,7 +270,38 @@ avtFileFormatInterface::HasInvariantMetaData(void) const
 // ****************************************************************************
 
 bool
-avtFileFormatInterface::HasInvariantSIL(void) const
+avtFileFormatInterface::HasInvariantSIL(void)
 {
-    return GetFormat(0)->HasInvariantSIL();
+    int nFormats = GetNumberOfFileFormats();
+    for (int i = 0 ; i < nFormats ; i++)
+    {
+        if (! GetFormat(i)->HasInvariantSIL())
+            return false;
+    }
+
+    return true;
+}
+
+// ****************************************************************************
+//  Method: avtFileFormatInterface::CanCacheVariable
+//
+//  Purpose:
+//      Indicates if the file format can cache the given named variable 
+//
+//  Programmer: Mark C. Miller
+//  Creation:   December 10, 2003
+//
+// ****************************************************************************
+
+bool
+avtFileFormatInterface::CanCacheVariable(const char *var_name)
+{
+    int nFormats = GetNumberOfFileFormats();
+    for (int i = 0 ; i < nFormats ; i++)
+    {
+        if (! GetFormat(i)->CanCacheVariable(var_name))
+            return false;
+    }
+
+    return true;
 }

@@ -13,6 +13,12 @@
 #include <fstream.h>
 #include <hdf5.h>
 
+using std::string;
+using std::vector;
+
+class avtMaterial;
+class avtSpecies;
+
 // ****************************************************************************
 //  Class: avtSAMRAIFileFormat
 //
@@ -22,30 +28,49 @@
 //  Programmer:  Walter Herrera-Jimenez
 //  Creation:    July 7, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Dec  8 13:54:21 PST 2003
+//    Added constants for expected version number, and enviornment variable
+//    used to disable version checking. Added var_num_ghosts array. Added
+//    prototype for RegisterVariableList
+//
 // ****************************************************************************
 
 class avtSAMRAIFileFormat : public avtSTMDFileFormat
 {
   public:
                           avtSAMRAIFileFormat(const char *);
-    virtual              ~avtSAMRAIFileFormat();
+                         ~avtSAMRAIFileFormat();
 
     bool                  HasInvariantMetaData(void) const { return false; };
     bool                  HasInvariantSIL(void) const { return false; };
+    bool                  CanCacheVariable(const char *);
     
     virtual const char   *GetType(void) { return "SAMRAI File Format"; };
     
-    virtual vtkDataSet   *GetMesh(int, const char *);
-    virtual vtkDataArray *GetVar(int, const char *);
-    virtual vtkDataArray *GetVectorVar(int, const char *);
-    virtual void         *GetAuxiliaryData(const char *var, int,
+    vtkDataSet           *GetMesh(int, const char *);
+    vtkDataArray         *GetVar(int, const char *);
+    vtkDataArray         *GetVectorVar(int, const char *);
+    avtMaterial          *GetMaterial(int, const char *);
+#if 0
+    avtSpecies           *GetSpecies(int, const char *);
+#endif
+
+    void                 *GetAuxiliaryData(const char *var, int,
                                            const char *type, void *args,
                                            DestructorFunction &);
-    virtual int           GetCycle(void) { return time_step_number; };
+    int                   GetCycle(void) { return time_step_number; };
 
-    virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
+    void                  PopulateDatabaseMetaData(avtDatabaseMetaData *);
+    void                  RegisterVariableList(const char *,
+                                               const vector<CharStrRef> &);
 
   protected:
+
+    // the version of the SAMRAI writer the current reader code matches 
+    static const float        expected_version_number = 1.0;
+
     typedef struct {
       int processor_number; 
       int file_cluster_number;
@@ -69,6 +94,7 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     typedef struct {
       int num_components; 
       int cell_centered;
+      int num_ghosts[3];
     } var_t; 
 
     typedef struct {
@@ -81,16 +107,23 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
       int number_parents;
     } parent_t;
 
-    vtkDataSet                  **cached_patches;
-    std::string                   file_name;
-    std::string                   dir_name;
+    typedef struct {
+      unsigned char data_is_defined;
+      int mat_comp_flag;
+      int spec_comp_flag;
+      double min;
+      double max;
+    } matinfo_t;
 
-    std::string                   grid_type;
-    std::string                   data_type;
+    vtkDataSet                 ***cached_patches;
+    string                        file_name;
+    string                        dir_name;
+
+    string                        grid_type;
 
     int                           time_step_number;
     double                        time;
-    std::string                   time_dump;
+    string                        time_dump;
 
     double                       *xlo;
     double                       *dx;
@@ -108,8 +141,20 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     int                           num_vars;
     int                          *var_cell_centered;
     int                          *var_num_components;
-    std::string                  *var_names;
-    std::map<std::string, var_t> var_names_num_components;
+    int                          *var_num_ghosts;
+    string                       *var_names;
+    map<string, var_t>            var_names_num_components;
+
+    bool                          has_mats;
+    int                           num_mats;
+    string                       *mat_names;
+    int                          *mat_num_ghosts;
+    int                           num_mat_vars;
+    int                          *mat_var_num_components;
+    string                       *mat_var_names;
+    map<string, var_t>            mat_var_names_num_components;
+    map<string, matinfo_t*>       mat_names_matinfo;
+    map<string, map<string, matinfo_t*> > mat_var_names_matinfo;
 
     var_extents_t               **var_extents; 
     patch_extents_t              *patch_extents;
@@ -122,11 +167,22 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     int                           parent_array_length;
     parent_t                     *parent_pointer_array;
 
+    bool                          has_ghost;
+    bool                          ghosting_is_consistent;
+
+    string                        active_visit_var_name;
+    string                        last_visit_var_name;
+    int                           last_patch;
+
+    static int           objcnt;
+    static void          InitializeHDF5();
+    static void          FinalizeHDF5();
 
     virtual vtkDataSet   *ReadMesh(int);
 
+    void            ReadAndCheckVDRVersion(hid_t &h5_file);
+
     void            ReadGridType(hid_t &h5_file);
-    void            ReadDataType(hid_t &h5_file);
 
     void            ReadTime(hid_t &h5_file);
     void            ReadTimeStepNumber(hid_t &h5_file);
@@ -149,6 +205,7 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     void            ReadVarCellCentered(hid_t &h5_file);
     void            ReadVarNames(hid_t &h5_file);
     void            ReadVarNumComponents(hid_t &h5_file);
+    void            ReadVarNumGhosts(hid_t &h5_file);
     
     void            ReadVarExtents(hid_t &h5_file);
     void            ReadPatchExtents(hid_t &h5_file);
@@ -161,10 +218,22 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     void            ReadParentArray(hid_t &h5_file);
     void            ReadParentPointerArray(hid_t &h5_file);
 
-    void            BuildDomainNestingInfo();
+    void            ReadMaterialInfo(hid_t &h5_file);
+    float          *ReadMaterialVolumeFractions(int, string);
+    void            ConvertVolumeFractionFields(std::vector<int> matIds, float **vfracs,
+                        int ncells, int* &matfield, int &mixlen, int* &mix_mat,
+                        int* &mix_next, int* &mix_zone, float* &mix_vf);
+    char            DebugMixedMaterials(int ncells, int* &matfield, int* &mix_next,
+                        int* &mix_mat, float* &mix_vf, int* &mix_zone);
+
+    void            BuildDomainAuxiliaryInfo();
 
     void            ReadMetaDataFile();
-    unsigned int    GetPatchOffset(const int level, const int patch);
+
+    int             GetGhostCodeForVar(const char * visit_var_name);
+
+    void            ReadDataset(hid_t &h5_file, const char *dspath, const char *typeName,
+                        int ndims, int *dims, void **data, bool isOptional=true);
 };
 
 
