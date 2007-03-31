@@ -100,6 +100,14 @@ public:
 
 
   // Description:
+  // Bounds to use when building search structure.  Useful if the
+  // dataset contains a lot of points not associated with cells,
+  // (thus the dataset bounds are much larger than just the bounds
+  // for all the cells). 
+   void SetUserBounds(float b[6]);
+   float* GetUserBounds(void) {return UserBounds;};
+
+  // Description:
   // Return intersection point (if any) of finite line with cells contained
   // in cell locator.
   virtual int IntersectWithLine(float a0[3], float a1[3], float tol,
@@ -327,6 +335,8 @@ private:
   vtkTriangle *triangle;
   vtkQuad *quad;
   float MinCellLength;
+  bool userBoundsSet;
+  float UserBounds[6]; // alternate bounding box root octant
 };
 
 #endif

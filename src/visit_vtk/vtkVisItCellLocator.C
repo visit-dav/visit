@@ -92,6 +92,9 @@ inline int vtkNeighborCells::InsertNextPoint(int *x)
 //   Kathleen Bonnell, Wed Jun 18 18:27:18 PDT 2003 
 //   Initialize triangle and quad. 
 //
+//   Kathleen Bonnell, Thu Nov  6 08:18:54 PST 2003 
+//   Initialize UserBounds. 
+//
 vtkVisItCellLocator::vtkVisItCellLocator()
 {
   this->NumberOfCellsPerBucket = 25;
@@ -112,6 +115,13 @@ vtkVisItCellLocator::vtkVisItCellLocator()
   this->OctantBounds[3] = 0.;
   this->OctantBounds[4] = 0.;
   this->OctantBounds[5] = 0.;
+  this->UserBounds[0] = 0.;
+  this->UserBounds[1] = 0.;
+  this->UserBounds[2] = 0.;
+  this->UserBounds[3] = 0.;
+  this->UserBounds[4] = 0.;
+  this->UserBounds[5] = 0.;
+  this->userBoundsSet = false;
  
   this->MinCellLength = VTK_LARGE_FLOAT;
 
@@ -1544,6 +1554,9 @@ vtkIdList* vtkVisItCellLocator::GetCells(int octantId)
 //    Kathleen Bonnell, Tue Jun  3 15:26:52 PDT 2003 
 //    Calculate MinCellLength.
 //
+//    Kathleen Bonnell, Thu Nov  6 08:29:48 PST 2003 
+//    Utilize user-specified-bounds if available. 
+//
 void vtkVisItCellLocator::BuildLocator()
   {
   float *bounds, length, cellBounds[6], *boundsPtr;
@@ -1593,8 +1606,38 @@ void vtkVisItCellLocator::BuildLocator()
   //  Size the root cell.  Initialize cell data structure, compute
   //  level and divisions.
   //
-  bounds = this->DataSet->GetBounds();
   length = this->DataSet->GetLength();
+  if (!userBoundsSet)
+    {
+    bounds = this->DataSet->GetBounds();
+    }
+  else 
+    {
+    bounds = this->GetUserBounds();
+    double diff, l = 0.0;
+    for (i=0; i<3; ++i)
+      {
+      diff = static_cast<double>(bounds[2*i+1]) -
+             static_cast<double>(bounds[2*i]);
+      l += diff * diff;
+      }
+      diff = sqrt(l);
+      if (diff > VTK_LARGE_FLOAT)
+        l = VTK_LARGE_FLOAT;
+      else 
+        l= diff;
+      //
+      // If the user-specified bounds are larger thnt this dataset's bounds,
+      // use the dataset bounds.
+      //
+      if (l > length)
+        {
+        bounds = this->DataSet->GetBounds(); 
+        length = static_cast<float>(l);
+        }
+    }
+
+
   for (i=0; i<3; i++)
     {
     this->Bounds[2*i] = bounds[2*i];
@@ -2818,3 +2861,25 @@ vtkVisItCellLocator::PyramidIntersectWithLine(vtkPyramid *cell, float p1[3], flo
 
   return intersection; 
 }
+
+
+// ****************************************************************************
+// Purpose:
+//   Allows user to set bounds that locator will use in building the search
+//   structure.  Useful if the dataset contains a lot of points not associated
+//   with cells.
+// 
+// Creation:  Kathleen Bonnell, November 4, 2003
+//
+// ****************************************************************************
+
+void 
+vtkVisItCellLocator::SetUserBounds(float b[6])
+{
+    for (int i = 0; i < 6; ++i)
+        this->UserBounds[i] = b[i];
+    
+    userBoundsSet = true;
+}
+
+ 

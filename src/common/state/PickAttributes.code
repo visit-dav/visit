@@ -301,6 +301,8 @@ PickAttributes::PrepareForNewPick()
         realIncidentElements.clear();
 
     meshInfo = "";
+    for (int i = 0; i < 6; ++i)
+        plotBounds[i] = 0.;
 
     ClearPickVarInfos();
 }

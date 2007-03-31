@@ -81,6 +81,14 @@
       0.000000
       0.000000
     </Field>
+    <Field name="plotBounds" label="plotBounds" type="floatArray" length="6" internal="true">
+      0.000000
+      0.000000
+      0.000000
+      0.000000
+      0.000000
+      0.000000
+    </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
     <Function name="CreateOutputString" user="true" member="true">

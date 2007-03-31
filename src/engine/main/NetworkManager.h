@@ -113,6 +113,9 @@ class VisWindow;
 //    Hank Childs, Thu Oct  2 16:31:08 PDT 2003
 //    Allow queries to involve multiple networks.
 //
+//    Jeremy Meredith, Thu Nov  6 13:12:15 PST 2003
+//    Added a method to cancel the current network.
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -134,6 +137,7 @@ class NetworkManager
                             const unsigned int ninputs = 1);
     void          MakePlot(const std::string&, const AttributeGroup* = NULL);
     int           EndNetwork(void);
+    void          CancelNetwork();
 
     void          UseNetwork(int);
     avtPlot_p     GetPlot(void);

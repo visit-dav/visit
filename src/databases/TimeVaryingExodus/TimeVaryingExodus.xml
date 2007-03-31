@@ -2,6 +2,7 @@
   <Plugin name="TimeVaryingExodus" label="TimeVaryingExodus" type="database" dbtype="STSD" version="1.0">
     <Extensions> exII </Extensions>
     <Files components="M,E">
+      avtTimeVaryingExodusFileFormat.C
       vtkExodusReader.C
     </Files>
     <CXXFLAGS> $(EXODUS_FLAGS) </CXXFLAGS>

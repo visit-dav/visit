@@ -275,6 +275,9 @@ $0 = shift @ARGV;
 #    Brad Whitlock, Thu Aug 21 14:34:42 PST 2003
 #    Added support for MacOS X.
 #
+#    Jeremy Meredith, Thu Nov  6 10:59:45 PST 2003
+#    Added fast pipe IP addresses for the SGI viz servers.
+#
 ###############################################################################
 
 
@@ -589,7 +592,22 @@ if ($host =~ /^q\d+$/ || $host =~ /^qfe\d$/)
 }
 
 # ----
-#  HACK to allow other talk-back interfaces, specifically designed for Q:
+#  HACK to default fast connections from white to tidalwave:
+#
+#  If we're on white trying to connect back to tidalwave, use one of the
+#  jumbo gig-E paths back to tidalwave.
+# ----
+if ($host =~ /^white\d+.asci.llnl.gov$/)
+{
+    # As above, four pipes per machine, choose one at random
+    $interface = int(rand(4)+1);
+    $remotehost = "172.16.$interface.53" if ($remotehost =~ /^tidalwave/);
+    $remotehost = "172.16.$interface.54" if ($remotehost =~ /^whitecap/);
+    $remotehost = "172.16.$interface.57" if ($remotehost =~ /^edgewater/);
+}
+
+# ----
+#  HACK to allow other talk-back interfaces
 #
 #  We stripped off the "host" argument above, so put it back here.
 #  (This allowed us to change it if needed, e.g. for Q)

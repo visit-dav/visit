@@ -106,6 +106,10 @@ RPCExecutor<QuitRPC>::Execute(QuitRPC *rpc)
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
+//    Jeremy Meredith, Thu Nov  6 13:21:05 PST 2003
+//    Added a call to cancel the current network in case of an error.
+//    That way future calls do not fail due to a failed pre-existing network.
+//
 // ****************************************************************************
 template<>
 void
@@ -124,6 +128,7 @@ RPCExecutor<ReadRPC>::Execute(ReadRPC *rpc)
     }
     CATCH2(VisItException, e)
     {
+        netmgr->CancelNetwork();
         rpc->SendError(e.GetMessage(), e.GetExceptionType());
     }
     ENDTRY
@@ -162,11 +167,18 @@ RPCExecutor<ReadRPC>::Execute(ReadRPC *rpc)
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
+//    Jeremy Meredith, Thu Nov  6 13:21:05 PST 2003
+//    Added a call to cancel the current network in case of an error.
+//    That way future calls do not fail due to a failed pre-existing network.
+//
 // ****************************************************************************
 template<>
 void
 RPCExecutor<PrepareOperatorRPC>::Execute(PrepareOperatorRPC *rpc)
 {
+    Engine         *engine = Engine::Instance();
+    NetworkManager *netmgr = engine->GetNetMgr();
+
     debug2 << "Executing PrepareOperatorRPC: " << rpc->GetID().c_str() << endl;
     TRY 
     {
@@ -174,6 +186,7 @@ RPCExecutor<PrepareOperatorRPC>::Execute(PrepareOperatorRPC *rpc)
 
         if (!OperatorPluginManager::Instance()->PluginAvailable(id))
         {
+            netmgr->CancelNetwork();
             rpc->SendError("Requested operator does not exist for the engine",
                            "VisItException");
             CATCH_RETURN(1);
@@ -185,6 +198,7 @@ RPCExecutor<PrepareOperatorRPC>::Execute(PrepareOperatorRPC *rpc)
     }
     CATCH2(VisItException, e)
     {
+        netmgr->CancelNetwork();
         rpc->SendError(e.GetMessage(), e.GetExceptionType());
     }
     ENDTRY
@@ -210,6 +224,10 @@ RPCExecutor<PrepareOperatorRPC>::Execute(PrepareOperatorRPC *rpc)
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
+//    Jeremy Meredith, Thu Nov  6 13:21:05 PST 2003
+//    Added a call to cancel the current network in case of an error.
+//    That way future calls do not fail due to a failed pre-existing network.
+//
 // ****************************************************************************
 template<>
 void
@@ -226,6 +244,7 @@ RPCExecutor<ApplyOperatorRPC>::Execute(ApplyOperatorRPC *rpc)
     }
     CATCH2(VisItException, e)
     {
+        netmgr->CancelNetwork();
         rpc->SendError(e.GetMessage(), e.GetExceptionType());
     }
     ENDTRY
@@ -262,11 +281,18 @@ RPCExecutor<ApplyOperatorRPC>::Execute(ApplyOperatorRPC *rpc)
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
+//    Jeremy Meredith, Thu Nov  6 13:21:05 PST 2003
+//    Added a call to cancel the current network in case of an error.
+//    That way future calls do not fail due to a failed pre-existing network.
+//
 // ****************************************************************************
 template<>
 void
 RPCExecutor<PreparePlotRPC>::Execute(PreparePlotRPC *rpc)
 {
+    Engine         *engine = Engine::Instance();
+    NetworkManager *netmgr = engine->GetNetMgr();
+
     debug2 << "Executing PreparePlotRPC: " << rpc->GetID().c_str() << endl;
     TRY
     {
@@ -276,6 +302,7 @@ RPCExecutor<PreparePlotRPC>::Execute(PreparePlotRPC *rpc)
         {
             rpc->SendError("Requested plot does not exist for the engine",
                            "VisItException");
+            netmgr->CancelNetwork();
             CATCH_RETURN(1);
         }
 
@@ -285,6 +312,7 @@ RPCExecutor<PreparePlotRPC>::Execute(PreparePlotRPC *rpc)
     }
     CATCH2(VisItException, e)
     {
+        netmgr->CancelNetwork();
         rpc->SendError(e.GetMessage(), e.GetExceptionType());
     }
     ENDTRY
@@ -312,6 +340,10 @@ RPCExecutor<PreparePlotRPC>::Execute(PreparePlotRPC *rpc)
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
+//    Jeremy Meredith, Thu Nov  6 13:21:05 PST 2003
+//    Added a call to cancel the current network in case of an error.
+//    That way future calls do not fail due to a failed pre-existing network.
+//
 // ****************************************************************************
 template<>
 void
@@ -329,6 +361,7 @@ RPCExecutor<MakePlotRPC>::Execute(MakePlotRPC *rpc)
     }
     CATCH2(VisItException, e)
     {
+        netmgr->CancelNetwork();
         rpc->SendError(e.GetMessage(), e.GetExceptionType());
     }
     ENDTRY

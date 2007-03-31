@@ -1249,6 +1249,9 @@ ViewerQueryManager::ClearPickPoints()
 //    Kathleen Bonnell, Thu Sep 18 16:29:43 PDT 2003 
 //    Don't scale the ray points if in world-pick mode.
 //   
+//    Kathleen Bonnell, Wed Nov  5 17:09:00 PST 2003 
+//    Retrieve plot's actual extents and store them in pickAtts. 
+//   
 // ****************************************************************************
 
 void
@@ -1306,6 +1309,23 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi)
         const char *activeVar = plot->GetVariableName();
         pickAtts->SetActiveVariable(activeVar);
         int t = win->GetAnimation()->GetFrameIndex();
+
+        //
+        // Retrieve plot's actual extents. 
+        //
+        double *dext = plot->GetSpatialExtents(t, AVT_ACTUAL_EXTENTS);
+        if (dext)
+        {
+            int dim = plot->GetSpatialDimension(t);
+            float pb[6] = { 0., 0., 0., 0., 0., 0.};
+            for (int i = 0; i < 2*dim; i++)
+            {
+                pb[i] = dext[i];
+            }
+            pickAtts->SetPlotBounds(pb);
+            delete [] dext;
+        }
+
         //
         // Remove duplicate vars, so that query doesn't report them twice.
         //
