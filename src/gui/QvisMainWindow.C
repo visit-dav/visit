@@ -21,6 +21,7 @@
 #include <MessageAttributes.h>
 #include <PlotList.h>
 #include <StatusAttributes.h>
+#include <TimeFormat.h>
 #include <WindowInformation.h>
 #include <ViewerProxy.h>
 
@@ -392,7 +393,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     // Create the file panel and make it an observer of the file server.
     //
     QVBoxLayout *middleLayout = new QVBoxLayout(topLayout);
-    QvisFilePanel *filePanel = new QvisFilePanel(central, "FilePanel");
+    filePanel = new QvisFilePanel(central, "FilePanel");
     connect(filePanel, SIGNAL(reopenOnNextFrame()),
             this, SIGNAL(reopenOnNextFrame()));
     filePanel->ConnectFileServer(fileServer);
@@ -1447,6 +1448,49 @@ QvisMainWindow::unreadOutput(bool val)
         outputButton->setPixmap(*outputRed);
     else
         outputButton->setPixmap(*outputBlue);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::SetTimeStateFormat
+//
+// Purpose: 
+//   This a Qt slot function that sets the file panel's timestate format.
+//
+// Arguments:
+//   fmt : The new timestate format.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 13 17:15:52 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::SetTimeStateFormat(const TimeFormat &fmt)
+{
+    filePanel->SetTimeStateFormat(fmt);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::GetTimeStateFormat
+//
+// Purpose: 
+//   Returns the file panel's timestate format
+//
+// Returns:    The file panel's timestate format.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 13 17:20:14 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const TimeFormat &
+QvisMainWindow::GetTimeStateFormat() const
+{
+    return filePanel->GetTimeStateFormat();
 }
 
 // ****************************************************************************

@@ -17,7 +17,10 @@ class avtFileFormatInterface;
 // Creation:   Tue Sep 16 15:27:25 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Oct 13 14:58:12 PST 2003
+//   Added methods that indicate that the cycle and time that the file format
+//   returns can be believed.
+//
 // ****************************************************************************
 
 class PP_Z_STSD_FileFormat : public avtSTSDFileFormat
@@ -36,8 +39,11 @@ public:
 
     // Methods overrides for an STSD file format.
     virtual const char   *GetType();
-    virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
+    virtual bool          ReturnsValidCycle() const { return true; }
     virtual int           GetCycle(void);
+    virtual bool          ReturnsValidTime() const { return true; }
+    virtual double        GetTime(void);
+    virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
     virtual vtkDataSet   *GetMesh(const char *var);
     virtual vtkDataArray *GetVar(const char *var);
     virtual void         *GetAuxiliaryData(const char *var, const char *type,

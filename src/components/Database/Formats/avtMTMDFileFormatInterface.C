@@ -200,6 +200,9 @@ avtMTMDFileFormatInterface::GetFilename(int)
 //    Brad Whitlock, Wed May 14 09:43:16 PDT 2003
 //    Added int argument to conform to new method prototype.
 //
+//    Brad Whitlock, Mon Oct 13 13:54:06 PST 2003
+//    Added code to set the times in the metadata.
+//
 // ****************************************************************************
 
 void
@@ -222,6 +225,14 @@ avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     format->GetCycles(cycles);
     md->SetCycles(cycles);
     md->SetCyclesAreAccurate(true);
+
+    // Set the times in the metadata.
+    vector<double> times;
+    format->GetTimes(times);
+    md->SetTimes(times);
+    md->SetTimesAreAccurate(true);
+    if(times.size() > 0)
+        md->SetTemporalExtents(times[0], times[times.size() - 1]);
 }
 
 

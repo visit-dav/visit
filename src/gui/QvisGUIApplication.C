@@ -1511,6 +1511,10 @@ QvisGUIApplication::CreateMainWindow()
 //   Eric Brugger, Wed Aug 20 14:01:46 PDT 2003
 //   Added curve view attributes.
 //
+//   Brad Whitlock, Mon Oct 13 17:22:45 PST 2003
+//   I hooked up a new signal/slot between the main window and the preferenes
+//   window.
+//
 // ****************************************************************************
 
 bool
@@ -1756,6 +1760,8 @@ QvisGUIApplication::CreateWindows(int startPercent, int endPercent)
             "Preferences", "Preferences", mainWin->GetNotepad());
         connect(mainWin, SIGNAL(activatePreferencesWindow()),
                 preferencesWin, SLOT(show()));
+        connect(preferencesWin, SIGNAL(changeTimeFormat(const TimeFormat &)),
+                mainWin, SLOT(SetTimeStateFormat(const TimeFormat &)));
         otherWindows.push_back(preferencesWin);
         break;
     case 24:
@@ -1974,6 +1980,9 @@ QvisGUIApplication::CreatePluginWindows()
 //    Added code to save the databases that are being visualized so we can
 //    attempt to load those files before restoring a session.
 //
+//    Brad Whitlock, Mon Oct 13 17:25:47 PST 2003
+//    Added code to save the timestate format.
+//
 // ****************************************************************************
 
 void
@@ -2023,7 +2032,11 @@ QvisGUIApplication::WriteConfigFile(const char *filename)
     }
     if(plotDatabases.size() > 0)
         guiNode->AddNode(new DataNode("plotDatabases", plotDatabases));
-    
+
+    // Save the timestate format.
+    TimeFormat fmt(mainWin->GetTimeStateFormat());
+    fmt.CreateNode(guiNode, false);
+
     // Try to open the output file.
     if((fp = fopen(filename, "wb")) == 0)
         return;
@@ -2338,6 +2351,10 @@ QvisGUIApplication::ProcessConfigSettings(DataNode *node, bool systemConfig)
 //   problems when we try and post them again or hide them when processing
 //   the settings.
 //
+//   Brad Whitlock, Tue Oct 14 10:18:53 PDT 2003
+//   I added code to set the timestate display mode for the main window and
+//   the preferences window.
+//
 // ****************************************************************************
 
 void
@@ -2377,6 +2394,12 @@ QvisGUIApplication::ProcessWindowConfigSettings(DataNode *node)
         otherWindows[i]->ProcessOldVersions(guiNode, configVersion);
         otherWindows[i]->SetFromNode(guiNode, borders);
     }
+
+    // Set the time format.
+    TimeFormat fmt;
+    fmt.SetFromNode(guiNode);
+    mainWin->SetTimeStateFormat(fmt);
+    preferencesWin->SetTimeStateFormat(fmt);
 
     // Read the config file stuff for the plugin windows.
     ReadPluginWindowConfigs(guiNode, configVersion);

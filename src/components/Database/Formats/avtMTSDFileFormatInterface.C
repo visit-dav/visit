@@ -249,6 +249,9 @@ avtMTSDFileFormatInterface::GetFilename(int)
 //    Brad Whitlock, Wed May 14 09:43:16 PDT 2003
 //    Added int argument to conform to new method prototype.
 //
+//    Brad Whitlock, Mon Oct 13 13:46:43 PST 2003
+//    Added code to make sure that the times are also populated.
+//
 // ****************************************************************************
 
 void
@@ -301,6 +304,40 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md, int)
         md->SetCycles(cycles);
     }
     md->SetCyclesAreAccurate(guessLooksGood);
+
+    //
+    // Get the times for the file format and make aure that they are in
+    // ascending order or assume that they are not valid.
+    //
+    vector<double> times;
+    domains[0]->GetTimes(times);
+    guessLooksGood = true;
+    for (int i = 0 ; i < times.size() ; i++)
+    {
+        if (i != 0)
+        {
+            if (times[i] <= times[i-1])
+            {
+                guessLooksGood = false;
+                break;
+            }
+        }
+    }
+    if (guessLooksGood)
+    {
+        md->SetTimes(times);
+    }
+    else
+    {
+        int nTimes = times.size();
+        times.clear();
+        for (int j = 0 ; j < nTimes ; j++)
+            times.push_back(double(j));
+        md->SetTimes(times);
+    }
+    md->SetTimesAreAccurate(guessLooksGood);
+    if(times.size() > 0)
+        md->SetTemporalExtents(times[0], times[times.size() - 1]);
 
     //
     // Each one of these domains thinks that it only has one domain.  Overwrite

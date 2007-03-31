@@ -38,6 +38,12 @@ class     vtkDataArray;
 //    vtkScalars and vtkVectors have been deprecated in VTK 4.0, 
 //    use vtkDataArray instead.
 //
+//    Brad Whitlock, Mon Oct 13 14:42:42 PST 2003
+//    Added a method to return the time. The default implementation just
+//    returns zero but it allows derived types to perform other actions
+//    to return the right time. I also added method to indicate whether the
+//    returned cycle/time can be believed.
+//
 // ****************************************************************************
 
 class DATABASE_API avtSTSDFileFormat : public avtFileFormat
@@ -51,7 +57,10 @@ class DATABASE_API avtSTSDFileFormat : public avtFileFormat
     virtual void          *GetAuxiliaryData(const char *var, const char *type,
                                             void *args, DestructorFunction &);
 
+    virtual bool           ReturnsValidCycle() const { return false; }
     virtual int            GetCycle(void);
+    virtual bool           ReturnsValidTime() const { return false; }
+    virtual double         GetTime(void);
     virtual const char    *GetFilename(void) { return filename; };
 
     virtual vtkDataSet    *GetMesh(const char *) = 0;

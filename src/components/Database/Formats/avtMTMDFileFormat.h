@@ -28,6 +28,10 @@ class     vtkDataArray;
 //  Programmer: Hank Childs
 //  Creation:   April 4, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Mon Oct 13 14:17:30 PST 2003
+//    Added a method to get the times.
+//
 // ****************************************************************************
 
 class DATABASE_API avtMTMDFileFormat : public avtFileFormat
@@ -41,6 +45,7 @@ class DATABASE_API avtMTMDFileFormat : public avtFileFormat
                                             DestructorFunction &);
 
     virtual void           GetCycles(std::vector<int> &);
+    virtual void           GetTimes(std::vector<double> &);
     virtual int            GetNTimesteps(void);
 
     virtual const char    *GetFilename(void) { return filename; };

@@ -127,6 +127,26 @@ avtMTSDFileFormat::GetCycles(vector<int> &cycles)
     cycles.push_back(0);
 }
 
+// ****************************************************************************
+//  Method: avtMTSDFileFormat::GetTimes
+//
+//  Purpose:
+//      Gets each of the times.
+//
+//  Arguments:
+//      times   A vector to store the times.
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Mon Oct 13 14:15:28 PST 2003
+//
+// ****************************************************************************
+
+void
+avtMTSDFileFormat::GetTimes(vector<double> &times)
+{
+    times.clear();
+    times.push_back(0.);
+}
 
 // ****************************************************************************
 //  Method: avtMTSDFileFormat::GetNTimesteps

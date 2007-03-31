@@ -5,6 +5,7 @@
 #include <SimpleObserver.h>
 #include <GUIBase.h>
 #include <QualifiedFilename.h>
+#include <TimeFormat.h>
 #include <map>
 
 // Forward declarations.
@@ -17,6 +18,7 @@ class QPixmap;
 class QvisListViewFileItem;
 class QvisVCRControl;
 
+class avtDatabaseMetaData;
 class FileServerList;
 class GlobalAttributes;
 class ViewerProxy;
@@ -65,6 +67,9 @@ class ViewerProxy;
 //   Brad Whitlock, Wed Jul 30 16:48:59 PST 2003
 //   Added reopenOnNextFrame signal.
 //
+//   Brad Whitlock, Mon Oct 13 15:30:20 PST 2003
+//   Changed so it supports displaying times as well as cycles.
+//
 // ****************************************************************************
 
 class GUI_API QvisFilePanel : public QWidget, public SimpleObserver, public GUIBase
@@ -75,22 +80,22 @@ class GUI_API QvisFilePanel : public QWidget, public SimpleObserver, public GUIB
     {
         FileDisplayInformation()
         {
-            expanded = true; correctCycles = false;
+            expanded = true; correctData = false;
         }
         FileDisplayInformation(const FileDisplayInformation &obj)
         {
             expanded = obj.expanded;
-            correctCycles = obj.correctCycles;
+            correctData = obj.correctData;
         }
         ~FileDisplayInformation() { }
         void operator = (const FileDisplayInformation &obj)
         {
             expanded = obj.expanded;
-            correctCycles = obj.correctCycles;
+            correctData = obj.correctData;
         }
 
         bool expanded;
-        bool correctCycles;
+        bool correctData;
     };
 
     typedef std::map<std::string, FileDisplayInformation>
@@ -106,6 +111,8 @@ public:
 
     bool HaveFileInformation(const QualifiedFilename &filename) const;
     void AddExpandedFile(const QualifiedFilename &filename);
+    void SetTimeStateFormat(const TimeFormat &fmt);
+    const TimeFormat &GetTimeStateFormat() const;
 signals:
     void reopenOnNextFrame();
 private:
@@ -122,8 +129,11 @@ private:
     void RemoveExpandedFile(const QualifiedFilename &filename);
     void SetFileExpanded(const QualifiedFilename &filename, bool);
     bool FileIsExpanded(const QualifiedFilename &filename);
-    bool FileShowsCorrectCycles(const QualifiedFilename &filename);
-    void SetFileShowsCorrectCycles(const QualifiedFilename &filename, bool);
+    bool FileShowsCorrectData(const QualifiedFilename &filename);
+    void SetFileShowsCorrectData(const QualifiedFilename &filename, bool);
+    QString CreateItemLabel(const avtDatabaseMetaData *md, int ts);
+    QString FormattedCycleString(const int cycle) const;
+    QString FormattedTimeString(const double d, bool accurate) const;
 private slots:
     void prevFrame();
     void reversePlay();
@@ -161,6 +171,7 @@ private:
     bool                      sliderDown;
     int                       sliderVal;
     FileDisplayInformationMap displayInfo;
+    TimeFormat                timeStateFormat;
 };
 
 #endif

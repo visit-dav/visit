@@ -111,6 +111,9 @@ ZooMIR::Reconstruct2DMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig)
 //    Jeremy Meredith, Thu Sep 18 10:57:37 PDT 2003
 //    Made applicable to any number of dimensions.
 //
+//    Jeremy Meredith, Tue Oct 14 15:58:57 PDT 2003
+//    Added clean-zones-only.
+//
 // ****************************************************************************
 bool
 ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
@@ -127,7 +130,9 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
     mesh->Register(NULL);
 
     // see if we can perform a clean-zone-only algorithm
-    if (mat_orig->GetMixlen() <= 0 || mat_orig->GetMixMat() == NULL)
+    if (options.cleanZonesOnly ||
+        mat_orig->GetMixlen() <= 0 ||
+        mat_orig->GetMixMat() == NULL)
     {
         noMixedZones = true;
         bool status = ReconstructCleanMesh(mesh, mat_orig);

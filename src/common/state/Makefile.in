@@ -207,6 +207,9 @@
 #    Eric Brugger, Wed Aug 20 09:17:48 PDT 2003
 #    Added View2DAttributes, View3DAttributes and ViewCurveAttributes.
 #
+#    Brad Whitlock, Tue Oct 14 13:55:06 PST 2003
+#    Added TimeFormat.
+#
 ##############################################################################
 
 ##
@@ -282,6 +285,7 @@ SRC=    AnimationAttributes.C \
         StatusAttributes.C \
         Subject.C \
         SyncAttributes.C \
+        TimeFormat.C \
         View2DAttributes.C \
         View3DAttributes.C \
         ViewAttributes.C \
@@ -349,6 +353,7 @@ HDR=    AnimationAttributes.h \
         SphereAttributes.h \
         StatusAttributes.h \
         Subject.h \
+        TimeFormat.h \
         View2DAttributes.h \
         View3DAttributes.h \
         ViewAttributes.h \

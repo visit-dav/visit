@@ -2,6 +2,31 @@
 #include <avtSTSDFileFormatInterface.h>
 #include <VisItException.h>
 
+// ****************************************************************************
+// Method: PP_Z_STSD_FileFormat::CreateInterface
+//
+// Purpose: 
+//   Creates a file format interface that works for PP_Z_STSD_FileFormat files.
+//
+// Arguments:
+//   pdb       : The PDB file object that we're using to determine the file
+//               type.
+//   filenames : The list of files that make up the database.
+//   nList     : The number of files in the database.
+//   nBlock    : The number of block files per time step.
+//
+// Returns:    A file format interface object that lets us access the files
+//             in the filename list.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 13 15:03:57 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 avtFileFormatInterface *
 PP_Z_STSD_FileFormat::CreateInterface(PDBFileObject *pdb,
     const char *const *filenames, int nList, int nBlock)
@@ -73,15 +98,60 @@ PP_Z_STSD_FileFormat::CreateInterface(PDBFileObject *pdb,
     return inter;
 }
 
+// ****************************************************************************
+// Method: PP_Z_STSD_FileFormat::PP_Z_STSD_FileFormat
+//
+// Purpose: 
+//   Constructor for the PP_Z_STSD_FileFormat class.
+//
+// Arguments:
+//   filename : The name of the file for which we'll access data.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 13 15:06:34 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 PP_Z_STSD_FileFormat::PP_Z_STSD_FileFormat(const char *filename) : 
     avtSTSDFileFormat(filename), reader(filename)
 {
 }
 
+// ****************************************************************************
+// Method: PP_Z_STSD_FileFormat::PP_Z_STSD_FileFormat
+//
+// Purpose: 
+//   Constructor for the PP_Z_STSD_FileFormat class.
+//
+// Arguments:
+//   p : The PDB file object that we'll use to access data.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 13 15:06:34 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 PP_Z_STSD_FileFormat::PP_Z_STSD_FileFormat(PDBFileObject *p) :
     avtSTSDFileFormat(p->GetName().c_str()), reader(p)
 {
 }
+
+// ****************************************************************************
+// Method: PP_Z_STSD_FileFormat::~PP_Z_STSD_FileFormat
+//
+// Purpose: 
+//   Destructor for the PP_Z_STSD_FileFormat class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 13 15:07:47 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
 
 PP_Z_STSD_FileFormat::~PP_Z_STSD_FileFormat()
 {
@@ -123,6 +193,13 @@ PP_Z_STSD_FileFormat::GetCycle(void)
 {
     const int *c = reader.GetCycles();
     return (c != 0) ? c[0] : 0;
+}
+
+double
+PP_Z_STSD_FileFormat::GetTime(void)
+{
+    const double *t = reader.GetTimes();
+    return (t != 0) ? t[0] : 0;
 }
 
 vtkDataSet *

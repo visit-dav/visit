@@ -10,6 +10,7 @@ class QPixmap;
 class QPushButton;
 class QComboBox;
 class QCheckBox;
+class QvisFilePanel;
 class QvisNotepadArea;
 class QvisPlotManagerWidget;
 class GlobalAttributes;
@@ -17,6 +18,7 @@ class MessageAttributes;
 class PlotList;
 class StatusAttributes;
 struct StatusSubject;
+class TimeFormat;
 class WindowInformation;
 
 // ****************************************************************************
@@ -99,6 +101,9 @@ class WindowInformation;
 //   Brad Whitlock, Wed Jul 30 16:49:21 PST 2003
 //   Added reopenOnNextFrame signal.
 //
+//   Brad Whitlock, Mon Oct 13 17:08:13 PST 2003
+//   Added methods to set the timestate display mode.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -118,6 +123,7 @@ public:
     void ConnectWindowInformation(WindowInformation *);
 
     void SetOrientation(int orientation);
+    const TimeFormat &GetTimeStateFormat() const;
 signals:
     void iconifyWindows();
     void deIconifyWindows();
@@ -167,6 +173,7 @@ signals:
     void reopenOnNextFrame();
 public slots:
     void unreadOutput(bool);
+    void SetTimeStateFormat(const TimeFormat &fmt);
 protected:
     virtual void closeEvent(QCloseEvent*);
     virtual void hideEvent(QHideEvent *);
@@ -216,8 +223,9 @@ private:
 private:
     QWidget                   *central;
     QBoxLayout                *topLayout;
-    QvisNotepadArea           *notepad;
+    QvisFilePanel             *filePanel;
     QvisPlotManagerWidget     *plotManager;
+    QvisNotepadArea           *notepad;
 
     bool                      unreadOutputFlag;
     QPushButton               *outputButton;

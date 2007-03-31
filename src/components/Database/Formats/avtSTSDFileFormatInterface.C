@@ -324,6 +324,10 @@ avtSTSDFileFormatInterface::GetFilename(int ts)
 //    Hank Childs, Tue Jul 29 21:39:39 PDT 2003
 //    Do not declare the cycle number accurate -- since we are still guessing.
 //
+//    Brad Whitlock, Mon Oct 13 14:55:11 PST 2003
+//    Added code that lets the format determine whether or not the cycle is
+//    accurate. I also added support for setting the times in a similar way.
+//
 // ****************************************************************************
 
 void
@@ -350,6 +354,7 @@ avtSTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     //
     vector<int> cycles;
     bool guessLooksGood = true;
+    bool formatReturnsValidCycles = false;
     int i, j;
     for (i = 0 ; i < nTimesteps ; i++)
     {
@@ -361,6 +366,13 @@ avtSTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
                 guessLooksGood = false;
                 break;
             }
+        }
+        else
+        {
+            // Some formats can return valid cycles. Most formats return
+            // guesses but for those formats that return valid cycles, we
+            // don't want to throw them away.
+            formatReturnsValidCycles = timesteps[i][0]->ReturnsValidCycle();
         }
     }
     if (guessLooksGood)
@@ -376,7 +388,45 @@ avtSTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         }
         md->SetCycles(cycles);
     }
-    md->SetCyclesAreAccurate(false);
+    md->SetCyclesAreAccurate(guessLooksGood && formatReturnsValidCycles);
+
+    //
+    // Set the times in the metadata.
+    //
+    if(nTimesteps > 0)
+    {
+        vector<double> times;
+        guessLooksGood = true;
+        bool formatReturnsValidTimes = false;
+        for (i = 0 ; i < nTimesteps ; i++)
+        {
+            times.push_back(timesteps[i][0]->GetTime());
+
+            if (i != 0)
+            {
+                if (times[i] <= times[i-1])
+                {
+                    guessLooksGood = false;
+                    break;
+                }
+            }
+            else
+            {
+                // Some formats can return valid times. Most formats return
+                // guesses but for those formats that return valid cycles, we
+                // don't want to throw them away.
+                formatReturnsValidTimes = timesteps[i][0]->ReturnsValidTime();
+            }
+        }
+
+        if (guessLooksGood && formatReturnsValidTimes)
+        {
+            md->SetTimes(times);
+            md->SetTimesAreAccurate(true);
+            if(times.size() > 0)
+                md->SetTemporalExtents(times[0], times[times.size() - 1]);
+        }
+    }
 
     //
     // Have a _single_ timestep populate what variables, meshes, materials, etc
