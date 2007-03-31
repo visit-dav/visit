@@ -2,6 +2,7 @@
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkDataSetRemoveGhostCells.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -424,11 +425,29 @@ void vtkRectilinearGridFacelistFilter::Execute()
 }
 
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Tue Nov  4 13:34:38 PST 2003
+//    Do a better job handling ghost zones.
+//
+// ****************************************************************************
+
 void vtkRectilinearGridFacelistFilter::ConsolidationExecute(void)
 {
   int  i;
+  vtkDataSetRemoveGhostCells *ghost_remover = NULL;
 
   vtkRectilinearGrid *input        = GetInput();
+
+  if (input->GetCellData()->GetArray("vtkGhostLevels") &&
+      input->GetFieldData()->GetArray("avtRealDims"))
+  {
+      ghost_remover = vtkDataSetRemoveGhostCells::New();
+      ghost_remover->SetInput(input);
+      input = (vtkRectilinearGrid *) ghost_remover->GetOutput();
+  }
+
   vtkPolyData        *output       = GetOutput();
   vtkCellData        *inCellData   = input->GetCellData();
   vtkPointData       *inPointData  = input->GetPointData();
@@ -503,6 +522,10 @@ void vtkRectilinearGridFacelistFilter::ConsolidationExecute(void)
   polys->Delete();
   output->SetPoints(pts);
   pts->Delete();
+  if (output->GetCellData()->GetArray("vtkGhostLevels") != NULL)
+      output->GetCellData()->RemoveArray("vtkGhostLevels");
+  if (ghost_remover != NULL)
+      ghost_remover->Delete();
 }
 
 void vtkRectilinearGridFacelistFilter::PrintSelf(ostream& os, vtkIndent indent)
