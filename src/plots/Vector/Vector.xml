@@ -1,6 +1,11 @@
 <?xml version="1.0"?>
-  <Plugin name="Vector" type="plot" label="Vector" version="1.0" vartype="vector" iconFile="Vector.xpm">
+  <Plugin name="Vector" type="plot" label="Vector" version="1.0" enabled="true" vartype="vector" iconFile="Vector.xpm">
     <Attribute name="VectorAttributes" purpose="Attributes for the vector plot" persistent="true" codefile="VectorAttributes.code">
+      <Enum name="OriginType">
+        Head
+        Middle
+        Tail
+      </Enum>
       <Field name="useStride" label="Use stride" type="bool">
         false
       </Field>
@@ -39,6 +44,9 @@
       </Field>
       <Field name="colorTableName" label="Color table" type="colortable">
         Default
+      </Field>
+      <Field name="vectorOrigin" label="Vector Origin" type="enum" subtype="OriginType">
+        Middle
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>

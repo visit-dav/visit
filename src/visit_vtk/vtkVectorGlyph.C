@@ -46,20 +46,27 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vtkObjectFactory.h>
 #include <vtkPolyData.h>
 
-// ***********************************************************************
+// ****************************************************************************
 //  Modifications:
 //    Kathleen Bonnell, Wed Mar  6 17:10:03 PST 2002 
 //    Replace 'New' method with Macro to match VTK 4.0 API
-// ***********************************************************************
+// ****************************************************************************
 
 vtkStandardNewMacro(vtkVectorGlyph);
 
+// ****************************************************************************
+//  Modifications:
+//    Jeremy Meredith, Fri Nov 21 12:31:16 PST 2003
+//    Added origin offset to the x position.  This lets the glyphs originate
+//    or terminate at the nodes (instead of always being centered on them).
+// ****************************************************************************
 
 vtkVectorGlyph::vtkVectorGlyph()
 {
   MakeHead = 1;
   HeadSize = 0.25;
   ConeHead = 1;
+  OriginOffset = 0.;
 }
 
 
@@ -68,6 +75,10 @@ vtkVectorGlyph::vtkVectorGlyph()
 //
 //    Kathleen Bonnell, Mon Oct 29 13:22:36 PST 2001
 //    Make pt of type vtkIdType to match VTK 4.0 API.
+//
+//    Jeremy Meredith, Fri Nov 21 12:31:16 PST 2003
+//    Added origin offset to the x position.  This lets the glyphs originate
+//    or terminate at the nodes (instead of always being centered on them).
 //
 // ****************************************************************************
 
@@ -88,14 +99,14 @@ void vtkVectorGlyph::Execute(void)
   // Pt 0 is the tip of the head.  Pt 7 is the end of the tail.  All of the
   // other points are along the rim of the head.
   pts->SetNumberOfPoints(8);
-  pts->SetPoint(0, 0.5, 0., 0.);
-  pts->SetPoint(1, endOfHead, 0.5*proportion, 0.*proportion);
-  pts->SetPoint(2, endOfHead, 0.25*proportion, 0.433013*proportion);
-  pts->SetPoint(3, endOfHead, -0.25*proportion, 0.433013*proportion);
-  pts->SetPoint(4, endOfHead, -0.5*proportion, 0.*proportion);
-  pts->SetPoint(5, endOfHead, -0.25*proportion, -0.433013*proportion);
-  pts->SetPoint(6, endOfHead, 0.25*proportion, -0.433013*proportion);
-  pts->SetPoint(7, -0.5, 0., 0.);
+  pts->SetPoint(0, OriginOffset + 0.5, 0., 0.);
+  pts->SetPoint(1, OriginOffset + endOfHead, 0.5*proportion, 0.*proportion);
+  pts->SetPoint(2, OriginOffset + endOfHead, 0.25*proportion, 0.433013*proportion);
+  pts->SetPoint(3, OriginOffset + endOfHead, -0.25*proportion, 0.433013*proportion);
+  pts->SetPoint(4, OriginOffset + endOfHead, -0.5*proportion, 0.*proportion);
+  pts->SetPoint(5, OriginOffset + endOfHead, -0.25*proportion, -0.433013*proportion);
+  pts->SetPoint(6, OriginOffset + endOfHead, 0.25*proportion, -0.433013*proportion);
+  pts->SetPoint(7, OriginOffset + -0.5, 0., 0.);
 
   output->SetPoints(pts);
   pts->Delete();

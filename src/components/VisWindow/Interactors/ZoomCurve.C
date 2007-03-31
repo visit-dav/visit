@@ -80,6 +80,9 @@ ZoomCurve::StartLeftButtonAction()
 //    Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002 
 //    Removed arguments to comply with vtk's new interactor interface.
 //
+//    Eric Brugger, Fri Nov 21 08:00:11 PST 2003
+//    Added code to call the view callback.
+//
 // ****************************************************************************
 
 void
@@ -88,6 +91,7 @@ ZoomCurve::EndLeftButtonAction()
     EndRubberBand();
     ZoomCamera();
     EndZoom();
+    IssueViewCallback();
 }
 
 
@@ -160,12 +164,16 @@ ZoomCurve::StartMiddleButtonAction()
 //    Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002 
 //    Removed arguments to comply with vtk's new interactor interface.
 //
+//    Eric Brugger, Fri Nov 21 08:00:11 PST 2003
+//    Added code to call the view callback.
+//
 // ****************************************************************************
 
 void
 ZoomCurve::EndMiddleButtonAction()
 {
     EndZoom();
+    IssueViewCallback();
 }
 
 
@@ -273,7 +281,6 @@ ZoomCurve::ZoomCamera(void)
 void
 ZoomCurve::ZoomCamera(const int x, const int y)
 {
-    cerr << "ZoomCurve::ZoomCamera(const int x, const int y)" << endl;
     vtkRenderWindowInteractor *rwi = Interactor;
 
     if (OldY != y)

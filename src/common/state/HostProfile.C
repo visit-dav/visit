@@ -1677,6 +1677,9 @@ HostProfile::GetShortHostname() const
 //    Jeremy Meredith, Mon Apr 14 14:35:07 PDT 2003
 //    Added ability to append a common suffix from patterns.
 //
+//    Jeremy Meredith, Fri Nov 14 10:37:59 PST 2003
+//    Removed the suffix for now, and stop at the first dot.
+//
 // ****************************************************************************
 std::string
 HostProfile::GetShortHostname(const std::string &host)
@@ -1706,7 +1709,7 @@ HostProfile::GetShortHostname(const std::string &host)
             if (patterns[i][p] != c)
                 c = '\0';
         }
-        if (!c)
+         if (c=='\0' || c=='.')
             break;
         if (c != '*' && c != '?')
             prefix += c;
@@ -1728,7 +1731,8 @@ HostProfile::GetShortHostname(const std::string &host)
     }
 
     // combine the short name
-    shortname = prefix + suffix;
+    //shortname = prefix + suffix;
+    shortname = prefix;
     if (prefix.empty())
         return patterns[0];
     else

@@ -107,12 +107,17 @@ Navigate2D::StartLeftButtonAction()
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to match vtk's new interactor api.
 //
+//    Eric Brugger, Thu Nov 20 15:24:17 PST 2003
+//    Added code to call the view callback.
+//
 // ****************************************************************************
 
 void
 Navigate2D::EndLeftButtonAction()
 {
     EndPan();
+
+    IssueViewCallback();
 }
 
 
@@ -161,12 +166,17 @@ Navigate2D::StartMiddleButtonAction()
 //    Removed arguments to match vtk's new interactor api.  Zoom no longer 
 //    implemented by parent class, Dolly performs same function. 
 //
+//    Eric Brugger, Thu Nov 20 15:24:17 PST 2003
+//    Added code to call the view callback.
+//
 // ****************************************************************************
 
 void
 Navigate2D::EndMiddleButtonAction()
 {
     EndDolly();
+
+    IssueViewCallback();
 }
 
 

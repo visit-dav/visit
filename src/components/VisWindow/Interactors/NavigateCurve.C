@@ -93,12 +93,18 @@ NavigateCurve::StartLeftButtonAction()
 //  Programmer: Eric Brugger
 //  Creation:   October 15, 2003
 //
+//  Modifications:
+//    Eric Brugger, Thu Nov 20 15:22:59 PST 2003
+//    Added code to call the view callback.
+//
 // ****************************************************************************
 
 void
 NavigateCurve::EndLeftButtonAction()
 {
     EndPan();
+
+    IssueViewCallback();
 }
 
 
@@ -131,12 +137,18 @@ NavigateCurve::StartMiddleButtonAction()
 //  Programmer: Eric Brugger
 //  Creation:   October 15, 2003
 //
+//  Modifications:
+//    Eric Brugger, Thu Nov 20 15:22:59 PST 2003
+//    Added code to call the view callback.
+//
 // ****************************************************************************
 
 void
 NavigateCurve::EndMiddleButtonAction()
 {
     EndDolly();
+
+    IssueViewCallback();
 }
 
 

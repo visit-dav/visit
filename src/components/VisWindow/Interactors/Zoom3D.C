@@ -78,6 +78,9 @@ Zoom3D::StartLeftButtonAction()
 //    Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002
 //    Removed arguments in order to comply with vtk's new interactor interface.
 //
+//    Eric Brugger, Fri Nov 21 08:03:45 PST 2003
+//    Added code to call the view callback.
+//
 // ****************************************************************************
 
 void
@@ -86,6 +89,7 @@ Zoom3D::EndLeftButtonAction()
     EndRubberBand();
     ZoomCamera();
     EndZoom();
+    IssueViewCallback();
 }
 
 
@@ -162,6 +166,9 @@ Zoom3D::StartMiddleButtonAction()
 //    Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002
 //    Removed arguments in order to comply with vtk's new interactor interface.
 //
+//    Eric Brugger, Fri Nov 21 08:03:45 PST 2003
+//    Added code to call the view callback.
+//
 // ****************************************************************************
 
 void
@@ -170,6 +177,8 @@ Zoom3D::EndMiddleButtonAction()
     EndZoom();
 
     EndBoundingBox();
+
+    IssueViewCallback();
 }
 
 

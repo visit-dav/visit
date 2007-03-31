@@ -8,3 +8,4 @@ VectorAttributes::ChangesRequireRecalculation(const VectorAttributes &obj)
             (stride != obj.stride) ||
             (nVectors != obj.nVectors));
 }
+

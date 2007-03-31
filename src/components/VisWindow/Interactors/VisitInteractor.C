@@ -156,13 +156,17 @@ VisitInteractor::MotionBegin(void)
 //  Programmer: Hank Childs
 //  Creation:   July 11, 2002
 //
+//  Modifications:
+//    Eric Brugger, Thu Nov 20 15:10:46 PST 2003
+//    Remove the call to the view callback and have the derived classes do
+//    it where appropriate since it was getting called too often.
+//
 // ****************************************************************************
 
 void
 VisitInteractor::MotionEnd(void)
 {
     proxy.MotionEnd();
-    IssueViewCallback();
 }
 
 
