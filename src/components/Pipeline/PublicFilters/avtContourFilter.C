@@ -159,6 +159,9 @@ avtContourFilter::~avtContourFilter()
 //    Brad Whitlock, Tue May 20 13:43:11 PST 2003
 //    Made it use the updated ContourOpAttributes.
 //
+//    Hank Childs, Wed Jul 30 09:04:28 PDT 2003
+//    Do not claim we need face connectivity if we are in 2D.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -166,7 +169,8 @@ avtContourFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
 {
     avtPipelineSpecification_p spec = new avtPipelineSpecification(in_spec);
 
-    spec->GetDataSpecification()->SetNeedValidFaceConnectivity(true);
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 3)
+        spec->GetDataSpecification()->SetNeedValidFaceConnectivity(true);
 
     int  i, j;
 

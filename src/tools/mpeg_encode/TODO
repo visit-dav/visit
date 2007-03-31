@@ -1,0 +1,150 @@
+TODO list for next release
+--------------------------
+
+Add option to do searches in Cr/Cb as well as Lum blocks
+jpeg5! (below)
+last-frame must be P/I error, and pattern interact badly
+add gnuconfigure so the Makefile is cake
+YUV correct (cf mail below)
+fix the "ifdef BUGGY_CODE" code in bframe.c
+Change sizing stuff so it works with non multiples of 16
+Does "RESIZE WxH" work?  Seems to for PPm but not JPG.  Fix it.  Document it
+mpeg_encode in parallel generates a "zero size warning"  It should 
+    exit(1) here, when not in parallel, and not warn when in parallel.
+     sometimes it generates a 0x0 MPEG!
+Give time estimates for parallel encoding
+Verify YUV file sizes with stat() call (when not STDIN)
+
+--------------------
+
+YUV mail:
+Please have a look on these few lines extracted from the ISO
+mpeg2encode/readpic.c/read_ppm() available on 
+ftp.netcom.com:/pub/cf/cfogg/mpeg2 :
+
+    .........
+
+     /* convert to YUV */
+
+     y = cr*r +cg*g +cb*b;
+     u = cu*(b-y);
+     v = cv*(r-y);
+     yp[j] = (219.0/256.0)*y + 16.5;  /* nominal range : 16..235 */
+     up[j] = (224.0/256.0)*u + 128.5; /* nominal range : 16..240 */
+     vp[j] = (224.0/256.0)*v + 128.5; /* nominal range : 16..240 */
+    ...........
+
+I think there is a slight misunderstanding in the Berkeley's mpeg1 codec about
+what the YUV format looks like, exactly about how to translate from PPM to YUV 
+and vice versa : the dynamic of YUV format has to be reduced as described
+above. Otherwise, on a full color display a Berkeley's MPEG bitstream has not 
+exactly the right colors if played by an ISO compliant player.
+
+Best regards
+
+
+                            Thierry GODIN
+
+--------------------
+And just for fun, kevin's list:
+To-do list	(in no particular order)
+----------
+	- should delete decoded frame files when done with them
+		(need to make sure no one else needs it)
+	- port to CM5
+	- try on Snake cluster, and other clusters (FDDI -- 100Mb/s)
+	- fix bug on snakes (look at header file for queue length)
+	- look at 24-bit display
+	- try having I/O server getting things in order, and asking Master
+		where to send them
+	- bug:  closing connections at end (on DEC 5000)
+	- GOP on space in input list
+	- pnm convolve
+	- telescopic search
+	- include system layer
+	- update documentation
+	- show error images
+	- graphical interface (showing motion vectors, etc.)
+	- use DCT-space when computing error terms
+	- vary the q-scale according to the error term
+	- modify the program to have a finer-grained parallelism option -- we
+	  can probably encode slices in parallel (this will only be useful if
+	  we want to do a few B-frames using exhaustive search)
+	- make search technique stop at x.5, not x.0
+	- pel aspect ratio in parameter file (2.4.3.2)
+	- skipped blocks options?
+	- recover from parallel machine errors?
+	- subsample B-search
+	- bug:  decoded with 1 machine can freeze
+	- malloc bug:  hello.param, with DECODED frames only
+	- portability:
+		times() function
+		popen/pclose
+
+Oh yes, I liked the concept of a spiral for your full search algorithm,
+however I thought this code a little difficult to read.  What about
+using a look up table (pre generated at compile time) to generate
+the coord offsets that would then spiral around the location in question?
+
+	+ change MAXPATHLEN to something else
+	+ put ./ in test in Makefile
+
+Currently, the IPPBPBB sequence is fixed for the entire sequence.  A later
+version should probably either test for scene changes or allow the user to
+specify them.
+
+	+ check all << and >> to make sure they are used properly
+		(note truncation of >>)
+	+ allow variable bit rate
+	+ allow size of video sequences to be set
+	+ make REMOTE usage more clear
+	+ fix bug:  when I-frame only, and decoded, does a lot of extra work
+	+ replace ZAG[i] with a pointer? (in quantization)
+		(and speed up by using 31 times the space (one for each
+		 q-value)
+	+ add interrupt handler to parallel encoder
+	+ should pad black instead of truncating
+	- graph histogram of motion vectors
+	- allow new PATTERN statements inside of file listing
+	- put in run-time checks for size of int32, int16, etc.
+	- replace pnm crap with ppm.dwallach
+	- add option to allow different p-search in b-search
+	- allow -frames option along with parallel option (shouldn't be
+		too difficult)
+	- incorrect compression rates given if do -frames option
+
+	- enforce:  >Hmmm...I will have to look at the standard.  I did find something earlier --
+>"forced updating" makes it illegal to have more than 132 P-frames without an
+>I-frame.  But "forced updating" does not disallow any number of consecutive
+>B-frames.  I'll have to check on limits for GOP lengths...
+
+	- rectangular search windows
+
+	- make parallel stats to 4 digits
+
+One of my friend just fixed the problem.....she 
+retype the whole parameter file and it is working
+now.  I think the problem was there were some 
+spacing problem......for example, if there
+are some space is the line, when the 
+program read in....it just mess everything up.
+
+It really become a problem if there is space after the image name...
+or even after the path name.
+
+	Subject: may not want to >> 4	in postdct.c
+
+------------------------------------------------------------------------
+P.S. In the future versions (is one already been released), you could add
+option for encoder to remove picture after encoding it & therefore saving
+space on disk + option to sleep while picture it's waiting for is not done.
+I've hacked this: (in readframe.c)
+
+        while ((tempfile = fopen(fullFileName, "r")) == NULL) {
+            fprintf(stderr, "Cannot open '%s', retrying...\n", fullFileName);
+            sleep(120);
+        }
+
+        fclose(tempfile);
+
+arijan@kette.fer.uni-lj.si

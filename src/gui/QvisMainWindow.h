@@ -96,6 +96,9 @@ class WindowInformation;
 //   Brad Whitlock, Mon Jul 14 11:46:45 PDT 2003
 //   I added restoreSession, saveSession signals.
 //
+//   Brad Whitlock, Wed Jul 30 16:49:21 PST 2003
+//   Added reopenOnNextFrame signal.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -161,6 +164,7 @@ signals:
     void refreshFileList();
     void saveSession();
     void restoreSession();
+    void reopenOnNextFrame();
 public slots:
     void unreadOutput(bool);
 protected:

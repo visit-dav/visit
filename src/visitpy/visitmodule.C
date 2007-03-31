@@ -850,6 +850,30 @@ visit_AnimationSetFrame(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_AnimationGetNFrames
+//
+// Purpose: 
+//   Returns the number of frames in the animation.
+//
+// Notes:
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jul 28 16:41:44 PST 2003
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_AnimationGetNFrames(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    // Return the success value.
+    return PyLong_FromLong(long(viewer->GetGlobalAttributes()->GetNFrames()));
+}
+
+// ****************************************************************************
 // Function: visit_AnimationSetNFrames
 //
 // Purpose: 
@@ -2656,6 +2680,78 @@ visit_ResetView(PyObject *self, PyObject *args)
 
     Py_INCREF(Py_None);
     return Py_None;
+}
+
+// ****************************************************************************
+// Function: visit_RestoreSession
+//
+// Purpose:
+//   Tells the viewer to read in a session file.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 30 14:36:49 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_RestoreSession(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *filename;    
+    int sessionStoredInVisItDir = 1;
+    if(!PyArg_ParseTuple(args, "si", &filename, &sessionStoredInVisItDir))
+        return NULL;
+
+    MUTEX_LOCK();
+        viewer->ImportEntireState(filename, sessionStoredInVisItDir!=0);
+        if(logging)
+            fprintf(logFile, "RestoreSession(%s, %d)\n", filename,
+                    sessionStoredInVisItDir);
+    MUTEX_UNLOCK();
+    int errorFlag = Synchronize();
+
+    // Return the success value.
+    return PyLong_FromLong(long(errorFlag == 0));
+}
+
+// ****************************************************************************
+// Function: visit_SaveSession
+//
+// Purpose:
+//   Tells the viewer to save the session to the named session file.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 30 14:43:02 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SaveSession(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *filename;    
+    if(!PyArg_ParseTuple(args, "s", &filename))
+        return NULL;
+
+    MUTEX_LOCK();
+        viewer->ExportEntireState(filename);
+        if(logging)
+            fprintf(logFile, "SaveSession(%s)\n", filename);
+    MUTEX_UNLOCK();
+    int errorFlag = Synchronize();
+
+    // Return the success value.
+    return PyLong_FromLong(long(errorFlag == 0));
 }
 
 // ****************************************************************************
@@ -6830,6 +6926,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Kathleen Bonnell, Wed Jul 23 13:05:01 PDT 2003 
 //   Added WorldPick and WorldNodePick. 
 //
+//   Brad Whitlock, Mon Jul 28 16:40:37 PST 2003
+//   Added AnimationGetNFrames, SaveSession, RestoreSession.
+//
 // ****************************************************************************
 
 static void
@@ -6859,6 +6958,7 @@ AddDefaultMethods()
     AddMethod("AnimationNextFrame", visit_AnimationNextFrame);
     AddMethod("AnimationPreviousFrame", visit_AnimationPreviousFrame);
     AddMethod("AnimationSetFrame", visit_AnimationSetFrame);
+    AddMethod("AnimationGetNFrames", visit_AnimationGetNFrames);
     AddMethod("AnimationSetNFrames", visit_AnimationSetNFrames);
     AddMethod("ChangeActivePlotsVar", visit_ChangeActivePlotsVar);
     AddMethod("ClearAllWindows", visit_ClearAllWindows);
@@ -6934,6 +7034,8 @@ AddDefaultMethods()
     AddMethod("ResetOperatorOptions", visit_ResetOperatorOptions);
     AddMethod("ResetPlotOptions", visit_ResetPlotOptions);
     AddMethod("ResetView", visit_ResetView);
+    AddMethod("RestoreSession", visit_RestoreSession);
+    AddMethod("SaveSession", visit_SaveSession);
     AddMethod("SaveWindow", visit_SaveWindow);
     AddMethod("SetActivePlots", visit_SetActivePlots);
     AddMethod("SetActiveWindow", visit_SetActiveWindow);

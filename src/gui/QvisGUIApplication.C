@@ -1442,7 +1442,9 @@ QvisGUIApplication::AddViewerSpaceArguments()
 // Creation:   Tue Jun 17 17:44:42 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jul 30 16:51:44 PST 2003
+//   Hooked up new reopenOnNextFrame signal for the main window.
+//
 // ****************************************************************************
 
 void
@@ -1474,6 +1476,8 @@ QvisGUIApplication::CreateMainWindow()
     connect(mainWin->GetPlotManager(), SIGNAL(activateOperatorWindow(int)),
             this, SLOT(ActivateOperatorWindow(int)));
     connect(mainWin, SIGNAL(refreshFileList()), this, SLOT(RefreshFileList()));
+    connect(mainWin, SIGNAL(reopenOnNextFrame()),
+            this, SLOT(RefreshFileListAndNextFrame()));
     connect(mainWin, SIGNAL(restoreSession()), this, SLOT(RestoreSession()));
     connect(mainWin, SIGNAL(saveSession()), this, SLOT(SaveSession()));
     mainWin->ConnectMessageAttr(&message);
@@ -2180,9 +2184,12 @@ QvisGUIApplication::RestoreSession()
     // If the user chose a file, tell the viewer to import that session file.
     if(!s.isEmpty())
     {
-        // Have the viewer read in its part of the config.
+        // Have the viewer read in its part of the config. Note that we
+        // pass the inVisItDir flag as false because we don't want to have
+        // the viewer prepend the .visit directory to the file since it's
+        // already part of the filename.
         std::string filename(s.latin1());
-        viewer->ImportEntireState(filename);
+        viewer->ImportEntireState(filename, false);
 
         // Make the gui read in its part of the config.
         filename += ".gui";
@@ -2654,6 +2661,31 @@ QvisGUIApplication::RefreshFileList()
             break;
         }
     }
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::RefreshFileListAndNextFrame
+//
+// Purpose: 
+//   This is a Qt slot function that rereads the files in the current directory
+//   and adds them to the new list of applied files, which are the files that
+//   appear in the selected files list in the file panel. After doing all that,
+//   it tells the viewer to do a nextframe.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 30 16:57:16 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::RefreshFileListAndNextFrame()
+{
+    RefreshFileList();
+    viewer->AnimationNextFrame();
 }
 
 // ****************************************************************************

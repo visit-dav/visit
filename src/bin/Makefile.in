@@ -33,12 +33,16 @@
 # Programmer: Jeremy Meredith
 # Date:       July 12, 2002
 #
+# Modifications:
+#   Brad Whitlock, Mon Jul 28 17:09:09 PST 2003
+#   I added makemovie.py to the list of files that get distributed.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 
-DISTRIB= install-sh visit
+DISTRIB= install-sh visit makemovie.py
 NOT_DISTRIB= run_doxygen
 
 all: moc

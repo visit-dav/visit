@@ -1602,6 +1602,12 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
             appearanceAtts->SetBackground(std::string(argv2[i+1]));
             ++i;
         }
+        else if(strcmp(argv2[i], "-config") == 0)
+        {
+            // Make sure the -config flag and the filename that follows it is
+            // not passed along to other components.
+            ++i;
+        }
         else if(strcmp(argv2[i], "-foreground") == 0 ||
                 strcmp(argv2[i], "-fg") == 0)
         {
@@ -3196,13 +3202,16 @@ ViewerSubject::ExportEntireState()
 // Creation:   Wed Jul 9 12:38:35 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jul 30 14:48:56 PST 2003
+//   Added another argument to ImportEntireState.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::ImportEntireState()
 {
-     configMgr->ImportEntireState(viewerRPC.GetVariable());
+     configMgr->ImportEntireState(viewerRPC.GetVariable(),
+                                  viewerRPC.GetBoolFlag());
 }
 
 // ****************************************************************************

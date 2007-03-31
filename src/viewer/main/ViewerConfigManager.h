@@ -68,7 +68,7 @@ public:
     void Add(AttributeSubject *subject);
 
     void ExportEntireState(const std::string &filename);
-    void ImportEntireState(const std::string &filename);
+    void ImportEntireState(const std::string &filename, bool);
 
 private:
     bool                             writeDetail;

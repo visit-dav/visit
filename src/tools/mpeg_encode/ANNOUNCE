@@ -1,0 +1,190 @@
+BERKELEY MPEG TOOLS (Version 1.0, Release 2; August 1995)
+
+Lawrence A. Rowe, Steve Smoot, Ketan Patel, Brian Smith, Kevin Gong, 
+Eugene Hung, Doug Banks, Sam Tze-San Fung, Darryl Brown, and Dan Wallach
+
+--------------------
+Changes since release one:
+  mpeg_encode - important bug fixes
+  mpeg_play   - simple user interface added
+  others - small bugfixes
+--------------------
+
+Computer Science Division-EECS University of California at Berkeley
+Berkeley, CA 94720-1776
+
+This distribution is a combined release of tools developed at
+Berkeley and elsewhere for manipulating MPEG-1 video.
+
+This release includes the following tools:
+
+  mpeg_play - software-only MPEG-1 video decoder
+  mpeg_encode - software-only MPEG-1 video encoder 
+  mpeg_stat - a bitstream analysis tool 
+  mpeg_blocks - an interactive tool to examine macroblock coding
+  mpeg_bits - an interactive tool to examine bit allocation to blocks
+
+The package is available at the URL
+
+  ftp://mm-ftp.cs.berkeley.edu/pub/multimedia/mpeg/bmt1r1.tar.gz
+
+For more information on MPEG standards and other MPEG software and
+hardware, see http://www-plateau.cs.berkeley.edu/mpeg/index.html.
+Other sites where you can find interesting MPEG related software
+and movies are:
+
+  ftp://sunsite.unc.edu/pub/multimedia/utilities 
+  ftp://netcom.com:/pub/cf/cfogg/
+  http://www.acm.uiuc.edu/rml/Mpeg
+
+The remainder of this file describes each tool including changes,
+if any, from previous releases and other information about the
+release.  In the descriptions below reference is made to papers
+describing various aspects of these programs.  These papers are
+also available at the Plateau WWW site (http://www-plateau.cs.berkeley.edu/)
+or in our FTP site in the directory pub/multimedia/papers.
+
+
+MPEG_PLAY (V2.2)
+
+This program decodes and displays an MPEG-1 video stream.  The
+program has been written to be portable, which means it has not
+been optimized for specific platforms.  The decoder is implemented
+as a library that will take a video stream and display it in an X
+window on an 8, 24 or 32 bit deep display.  The main routine is
+supplied to demonstrate the use of the decoder library.  Several
+dithering algorithms are supplied based on the Floyd-Steinberg,
+ordered dither, and half-toning algorithms that tradeoff quality
+and performance.  Neither the library nor the main routine handle
+real-time synchronization or audio streams.
+
+A paper published at ACM Multimedia 93 describes the decoder and
+compares the performance of the program on several platforms (see
+pub/multimedia/papers/MM93.ps.Z).  An updated version of this
+comparison is included in the file doc/mpegperf.ps in this
+distribution.  This code has also been included in our Continuous
+Media Player (cmplayer) that plays synchronized audio and video
+across a network.  This system adapts to the decoding performance
+of the destination machine.  A paper describing these algorithms
+and the performance of the system was published at IS&T SPIE 94
+(see /pub/multimedia/papers/CMMPEG-SPIE94.ps.Z).
+
+This release fixes numerous bugs in the player including the motion
+vector problem that caused problems when playing MPEGs generated
+from computer-generated animations, the error in the color space
+equations, some IDCT problems, and a number of minor problems with
+installation on platforms with new OS releases.
+
+New features have also been implemented, chief of which are the ability 
+to play system layer MPEG streams (discarding audio), gamma correction, and 
+frame rate control.
+
+
+MPEG_ENCODE (V1.5R2)
+
+This program generates an MPEG-1 video bitstream given a sequence
+of images in an acceptable format (e.g., yuv, ppm, jpeg, etc.).
+It can be run on one computer (i.e., sequential) or on several
+computers (i.e., parallel).  Our goal was to produce a portable,
+easy-to-use encoder that can be used to encode video material for
+a variety of desktop applications (e.g., video-on-demand).  The
+parallelism is done on a sequence of pictures.  In other words,
+you can spawn one or more children to encode continuous runs of
+pictures.  The goal is to allow you to encode using multiple
+processors, think spare cycles on workstations, to speed up the
+encoding time.  Although performance depends on the speed of
+individual processors, the file system and network, and the P/B
+frame search methods, we have encoded 3.75 frames/second on 8 HP
+Snakes running in parallel as compared with 0.6 frames/second on
+1 Snake when coding CIF size images.  The encoder has also been
+ported to an Intel supercomputer (Paragon) on which it has encoded CCIR
+601 images at 40 frames/second.
+
+A paper describing the parallel encoder and our experiments on a
+network of workstations was published at the 1994 Picture Coding
+Symposium (see /pub/multimedia/papers/mpeg-encode.ps.Z).  A paper
+describing the port to the Intel supercomputer and the performance
+experiments on that system was presented at IS&T SPIE95 (see
+/pub/multimedia/papers/intelsc-mpeg-encode.ps.Z).  This work was
+done jointly with Ed Delp and his student Ke Shen from Purdue.
+You can get a copy of the Intel code from /pub/dist/delp/spie95-coding
+at skynet.ecn.purdue.edu.
+
+This release fixed several bugs and added some new features.
+Specifically, the encoder has been modified to: 1) accept input
+images generated on the fly by another program, 2) generate constant
+bitrate bitstreams, 3) be much more flexible about input formats,
+and 4) allow a priori specification of motion vectors or Qscales on a
+macroblock level, to avoid repetitive motion searches when reencoding.
+
+MPEG_STAT (V2.2R2)
+
+MPEG_STAT has been modified to gather more statistics (e.g., bit
+rate, real Q-scale information, detailed motion vector/cbp information,
+constrained parameter checking, etc.) and fix some bugs. The major
+change (from 2.1) was to add some additional verification checks to help
+determine the validty of a bitstream including illegal motion
+vectors and CPB settings, and speed it up even more.
+
+
+MPEG_BLOCKS (V1.0R2)
+
+This program is a new tool that allows a user to examine how a
+movie has been encoded on a picture-by-picture basis.  It shows
+size statistics on the different frame types and how each macroblock
+was coded.  The program also shows the decoded image so you can
+see the effect of these coding parameters.
+
+The current version of this program only works on systems that
+support the X Windowing System and Tcl/Tk because it provides a
+user-friendly GUI.
+
+
+MPEG_BITS (V1.0R2)
+
+This program is also new in this release.  It is based on the
+MPEG_BLOCKS program, but instead of showing block encoding, it
+shows how many bits were allocated to each block.  It uses the same
+GUI interface.
+
+MPEG_BITS also allows you to specify a range of blocks that should
+receive more bits when recoding the sequence.  The mpeg_encoder
+has not yet been modified to take this specification, but it will
+in a future release.
+
+
+ACKNOWLEDGEMENTS
+
+We gratefully thank Hewlett-Packard, Fujitsu, Hitachi, and Philips who 
+provided financial support for this work.  We also want to thank the 
+following people and organizations for their help:
+
+    Jef Poskanzer who developed the pbmplus package.  
+
+    Eiichi Kowashi of Intel and Avideh Zakhor of U.C. Berkeley who
+    provided valuable suggestions on motion vector searching.
+
+    Chad Fogg of Chromatic Research, Inc. who has helped us understand 
+    many issues in MPEG coding and decoding.
+
+    Rainer Menes of the Technical University of Munich who 
+    ported previous versions of the Berkeley MPEG encoder and 
+    decoder to the Macintosh. He has provided us with many suggestions 
+    to improve the code.
+
+    Robert Safranek of ATT for comments, suggestions, and most of
+    the code for custom quantization tables.
+
+    Jim Boucher of Boston University for jmovie2jpeg.
+
+    The San Diego SuperComputing Center for providing facilities
+    to develop some of the code contained within.
+
+    Tom Lane of the Independent JPEG Group who provided us with the basic 
+    inverse DCT code used by our player.  (tom_lane@g.gp.cs.cmu.edu)
+
+    Reid Judd of Sun Microsystems who provided advice and assistance.
+
+    Todd Brunhoff of NVR who provided advice and assistance.
+
+    Toshihiko Kawai of Sony who provided advice and assistance.

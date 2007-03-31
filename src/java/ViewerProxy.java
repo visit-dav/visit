@@ -813,10 +813,11 @@ public class ViewerProxy implements SimpleObserver
         return synchronous ? Synchronize() : true;
     }
 
-    public boolean ImportEntireState(String filename)
+    public boolean ImportEntireState(String filename, boolean inVisItDir)
     {
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_IMPORTENTIRESTATERPC);
         rpc.SetVariable(filename);
+        rpc.SetBoolFlag(inVisItDir);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }

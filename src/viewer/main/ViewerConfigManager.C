@@ -364,19 +364,32 @@ ViewerConfigManager::ExportEntireState(const std::string &filename)
 //   Imports the entire state from the named file.
 //
 // Arguments:
-//   filename : The state file to use.
+//   filename   : The state file to use.
+//   inVisItDir : Whether or not to assume that the filename is in the .visit
+//                directory.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jul 9 13:06:37 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jul 30 15:04:52 PST 2003
+//   Added another argument.
+//
 // ****************************************************************************
 
 void
-ViewerConfigManager::ImportEntireState(const std::string &filename)
+ViewerConfigManager::ImportEntireState(const std::string &filename,
+    bool inVisItDir)
 {
-    DataNode *node = ReadConfigFile(filename.c_str());
+    std::string file2(filename);
+
+    if(inVisItDir)
+    {
+        file2 = GetUserVisItDirectory() + std::string(SLASH_STRING) +
+                filename;
+    }
+
+    DataNode *node = ReadConfigFile(file2.c_str());
     if(node)
     {
         // Make the hooked up objects get their settings.

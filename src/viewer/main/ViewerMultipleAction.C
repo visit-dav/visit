@@ -552,14 +552,17 @@ ViewerMultipleAction::RemoveFromMenu(QPopupMenu *menu)
 // Creation:   Wed Feb 5 17:08:54 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jul 28 18:04:57 PST 2003
+//   Made sure the pointer to the toolbar was not NULL.
+//
 // ****************************************************************************
 
 void
 ViewerMultipleAction::ConstructToolbar(QToolBar *toolbar)
 {
     // simplest case
-    action->addTo(toolbar);
+    if(toolbar)
+        action->addTo(toolbar);
 }
 
 // ****************************************************************************
@@ -575,13 +578,16 @@ ViewerMultipleAction::ConstructToolbar(QToolBar *toolbar)
 // Creation:   Wed Feb 26 08:58:47 PDT 2003
 //
 // Modifications:
+//   Brad Whitlock, Mon Jul 28 18:04:57 PST 2003
+//   Made sure the pointer to the toolbar was not NULL.
 //   
 // ****************************************************************************
 
 void
 ViewerMultipleAction::RemoveFromToolbar(QToolBar *toolbar)
 {
-    action->removeFrom(toolbar);
+    if(toolbar)
+        action->removeFrom(toolbar);
 }
 
 // ****************************************************************************

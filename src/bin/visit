@@ -241,6 +241,9 @@ $0 = shift @ARGV;
 #    I added the ability to translate a known remotehost into a different
 #    IP address.  This allows us to use the DISCOM pipes back to White from Q.
 #
+#    Brad Whitlock, Mon Jul 28 15:47:43 PST 2003
+#    I added movie-making options.
+#
 ###############################################################################
 
 
@@ -291,6 +294,8 @@ USAGE:  visit [arguments]
         -xml2python          Run the XML plugin Pthon generator
         -xml2window          Run the XML plugin GUI window generator
         -xml2java            Run the XML plugin Java generator
+        -movie               Run the CLI in a movie making mode.
+        -mpeg_encode         Run the MPEG encoder
 
     Version arguments:
         -beta                Run the current beta version
@@ -385,6 +390,7 @@ $launchengine = "";
 @breakpoints = ();
 $debug_gdb = 0;
 $debug_totalview = "";
+$add_movie_args = 0;
 
 # Parse the arguments 
 @visitargs = ();
@@ -426,6 +432,8 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-surfcomp" )        { $exe_name = "surfcomp"; }
     elsif ($arg eq "-text2polys" )      { $exe_name = "text2polys"; }
     elsif ($arg eq "-time_annotation" ) { $exe_name = "time_annotation"; }
+    elsif ($arg eq "-mpeg_encode" )     { $exe_name = "mpeg_encode"; }
+    elsif ($arg eq "-movie" )           { $exe_name = "cli"; $add_movie_args = 1; }
     elsif ($arg eq "-publicpluginsonly"){ $publiconly = 1; push @visitargs, $arg; }
     elsif ($arg eq "-version")   { $want_version = 1; }
     elsif ($arg eq "-help")      { print STDERR "$usage\n"; exit(0); }
@@ -806,6 +814,11 @@ EOF
     exit 1;
 }
 
+# Add the movie script to the arguments.
+if($add_movie_args)
+{
+    push @visitargs, "-s", "$visitbindir/makemovie.py", "-nowin";
+}
 
 # -----------------------------------------------------------------------------
 #                   Set up the plugin/shared library environment
