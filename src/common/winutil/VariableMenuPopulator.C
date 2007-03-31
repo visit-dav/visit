@@ -21,11 +21,13 @@ using std::map;
 // Creation:   Mon Mar 17 14:58:14 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Sep 2 09:56:54 PDT 2003
+//   I added materialVars.
+//
 // ****************************************************************************
 
 VariableMenuPopulator::VariableMenuPopulator() : meshVars(), scalarVars(),
-    vectorVars(), subsetVars(), speciesVars(), curveVars()
+    materialVars(), vectorVars(), subsetVars(), speciesVars(), curveVars()
 {
 }
 
@@ -77,6 +79,11 @@ VariableMenuPopulator::~VariableMenuPopulator()
 //   Create 'compound' subset vars (e.g. 'materials(mesh1)') only when
 //   necessary.
 //
+//   Brad Whitlock, Tue Sep 2 09:55:50 PDT 2003
+//   I added the materialVars map, which only contains materials, so the
+//   VAR_CATEGORY_MATERIALS flag works and does not populate the variable
+//   list with all of the subset variables.
+//
 // ****************************************************************************
 
 void
@@ -90,6 +97,7 @@ VariableMenuPopulator::PopulateVariableLists(const avtDatabaseMetaData *md,
     meshVars.clear();
     scalarVars.clear();
     vectorVars.clear();
+    materialVars.clear();
     subsetVars.clear();
     speciesVars.clear();
     curveVars.clear();
@@ -141,6 +149,12 @@ VariableMenuPopulator::PopulateVariableLists(const avtDatabaseMetaData *md,
                 break;
             case Expression::Mesh:
                 m = &meshVars;
+                break;
+            case Expression::Material:
+                m = &materialVars;
+                break;
+            case Expression::Species:
+                m = &speciesVars;
                 break;
             default:
                 break;
@@ -207,6 +221,14 @@ VariableMenuPopulator::PopulateVariableLists(const avtDatabaseMetaData *md,
             if (roleCount[role] > 1)
                 varName += setName;
             subsetVars[varName] = true;
+
+            //
+            // Also add the varName to the material variable map so we can
+            // have plots, etc that just use materials instead of any type
+            // of subset variable.
+            //
+            if (sil->GetSILCollection(idx)->GetRole() == SIL_MATERIAL)
+                materialVars[varName] = true;
         }
     }
 }
@@ -232,9 +254,12 @@ VariableMenuPopulator::PopulateVariableLists(const avtDatabaseMetaData *md,
 // Creation:   Mon Mar 17 14:55:17 PST 2003
 //
 // Modifications:
-//
 //   Hank Childs, Fri Aug  1 10:44:45 PDT 2003
 //   Added support for curves.
+//
+//   Brad Whitlock, Tue Sep 2 09:45:45 PDT 2003
+//   I made it possible for materials to be treated differently than subset
+//   variables. The materialVars map is a subset of subsetVars.
 //
 // ****************************************************************************
 
@@ -272,6 +297,8 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
             AddVars(vars, meshVars);
         if(varTypes & VAR_CATEGORY_SCALAR)
             AddVars(vars, scalarVars);
+        if(varTypes & VAR_CATEGORY_MATERIAL)
+            AddVars(vars, materialVars);
         if(varTypes & VAR_CATEGORY_VECTOR)
             AddVars(vars, vectorVars);
         if(varTypes & VAR_CATEGORY_SUBSET)
@@ -280,7 +307,7 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
             AddVars(vars, speciesVars);
         if(varTypes & VAR_CATEGORY_CURVE)
             AddVars(vars, curveVars);
-        
+       
         // Update the menu with the composite variable list.
         UpdateSingleMenu(menu, receiver, vars, changeVar);
         retval = vars.size();
@@ -302,6 +329,10 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
         case VAR_CATEGORY_VECTOR:
             UpdateSingleMenu(menu, receiver, vectorVars, changeVar);
             retval = vectorVars.size();
+            break;
+        case VAR_CATEGORY_MATERIAL:
+            UpdateSingleMenu(menu, receiver, materialVars, changeVar);
+            retval = materialVars.size();
             break;
         case VAR_CATEGORY_SUBSET:
             UpdateSingleMenu(menu, receiver, subsetVars, changeVar);

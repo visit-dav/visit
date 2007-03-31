@@ -9,16 +9,19 @@
 #    Brad Whitlock, Tue Apr 1 10:11:35 PDT 2003
 #    Updated for 1.1.3.
 #
+#    Eric Brugger, Fri Aug 29 16:31:47 PDT 2003
+#    I modified the script to use the new interface for setting views.
+#
 # ----------------------------------------------------------------------------
 
 import os
 
 # Check the version.
-ScriptVersion = "1.1.3"
+ScriptVersion = "1.2.1"
 if(Version() != ScriptVersion):
     print "This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version())
 
-view = ViewAttributes()
+view = View3DAttributes()
 
 def test1():
     SetWindowLayout(8)
@@ -28,13 +31,10 @@ def test1():
     view.focus = (0, 0, 0)
     view.viewUp = (0.159941, 0.9339, -0.319766)
     view.viewAngle = 30
-    view.setScale = 1
     view.parallelScale = 17.3205
     view.nearPlane = -20.
     view.farPlane = 81.9615
     view.perspective = 1
-    view.windowCoords = (0, 1, 0, 1)
-    view.viewportCoords = (0.2, 0.8, 0.2, 0.8)
     
     # The plot->db mapping.
     dbs   = {"Contour"     : "globe.silo",

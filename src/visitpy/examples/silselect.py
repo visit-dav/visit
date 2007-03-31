@@ -9,12 +9,15 @@
 #    Brad Whitlock, Tue Apr 1 10:00:22 PDT 2003
 #    Updated for 1.1.3.
 #
+#    Eric Brugger, Fri Aug 29 16:31:13 PDT 2003
+#    I modified the script to use the new interface for setting views.
+#
 # ----------------------------------------------------------------------------
 
 import os
 
 # Check the version.
-ScriptVersion = "1.1.3"
+ScriptVersion = "1.2.1"
 if(Version() != ScriptVersion):
     print "This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version())
 
@@ -31,18 +34,15 @@ def AddSubsetPlotAndTurnOff(subset, category):
     AddPlot("Subset", subset)
     DisableRedraw()
     DrawPlots()
-    v = ViewAttributes()
+    v = View3DAttributes()
     v.viewNormal = (0.325857, -0.666083, -0.670933)
     v.focus = (-0.620844, 3.45846, 8.74694)
     v.viewUp = (-0.414813, -0.73844, 0.531636)
     v.viewAngle = 30
-    v.setScale = 1
     v.parallelScale = 10.1669
     v.nearPlane = -50
     v.farPlane = 50
     v.perspective = 1
-    v.windowCoords = (0, 1, 0, 1)
-    v.viewportCoords = (0.2, 0.8, 0.2, 0.8)
     SetView3D(v)
     RedrawWindow()
     # Create a new SIL restriction and make the domains disappear one
@@ -61,16 +61,7 @@ def silselect():
     SetWindowLayout(4)
     
     # Create a good 2d view.
-    v = ViewAttributes()
-    v.viewNormal = (0, 0, -1)
-    v.focus = (0, 0, 0)
-    v.viewUp = (0, 0, 0)
-    v.viewAngle = 30
-    v.setScale = 0
-    v.parallelScale = 1
-    v.nearPlane = -50
-    v.farPlane = 50
-    v.perspective = 1
+    v = View2DAttributes()
     v.windowCoords = (-4.04508, 4.04508, 1.17557, 4.75528)
     v.viewportCoords = (0.1, 0.9, 0.2, 0.9)
     

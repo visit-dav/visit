@@ -298,6 +298,9 @@ class Xfer;
 //    I added GetViewCurveAttributes and SetViewCurve.  I split the view
 //    attributes into 2d and 3d parts.
 //
+//    Brad Whitlock, Fri Aug 29 11:20:32 PDT 2003
+//    Added HideToolbars and ShowToolbars.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -332,6 +335,8 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void PrintWindow();
     void DisableRedraw();
     void RedrawWindow();
+    void HideToolbars(bool forAllWindows = false);
+    void ShowToolbars(bool forAllWindows = false);
 
     void ConnectToMetaDataServer(const std::string &hostName, const stringVector &argv);
     void OpenMDServer(const std::string &hostName, const stringVector &argv);

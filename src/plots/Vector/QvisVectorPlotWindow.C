@@ -1,6 +1,7 @@
 #include <QvisVectorPlotWindow.h>
 #include <qlayout.h> 
 #include <qbuttongroup.h>
+#include <qgroupbox.h>
 #include <qradiobutton.h>
 #include <qpushbutton.h>
 #include <qlabel.h>
@@ -94,12 +95,15 @@ QvisVectorPlotWindow::~QvisVectorPlotWindow()
 //   Kathleen Bonnell, Thu Jun 21 16:33:54 PDT 2001
 //   Enabled lineStyleLabel, lineStyle.
 //
+//   Brad Whitlock, Fri Aug 29 11:37:35 PDT 2003
+//   Grouped like items into group boxes.
+//
 // ****************************************************************************
 
 void
 QvisVectorPlotWindow::CreateWindowContents()
 {
-    QGridLayout *gLayout = new QGridLayout(topLayout, 10, 4);
+    QGridLayout *gLayout = new QGridLayout(topLayout, 5, 4);
     gLayout->setSpacing(10);
 
     // Create the lineStyle widget.
@@ -120,79 +124,110 @@ QvisVectorPlotWindow::CreateWindowContents()
                                         central, "lineWidthLabel");
     gLayout->addWidget(lineWidthLabel, 0, 2);
 
+    //
+    // Create the color-related widgets.
+    //
+    colorGroupBox = new QGroupBox(central, "colorGroupBox");
+    colorGroupBox->setTitle("Vector color");
+    gLayout->addMultiCellWidget(colorGroupBox, 1, 1, 0, 3);
+    QVBoxLayout *cgTopLayout = new QVBoxLayout(colorGroupBox);
+    cgTopLayout->setMargin(10);
+    cgTopLayout->addSpacing(15);
+    QGridLayout *cgLayout = new QGridLayout(cgTopLayout, 2, 2);
+    cgLayout->setSpacing(10);
+    cgLayout->setColStretch(1, 10);
+
     // Add the vector color label.
-    QLabel *vectorColorLabel = new QLabel("Vector color",
-                                          central, "vectorColorLabel");
-    gLayout->addWidget(vectorColorLabel, 1, 0);
     colorButtonGroup = new QButtonGroup(0, "colorModeButtons");
     connect(colorButtonGroup, SIGNAL(clicked(int)),
             this, SLOT(colorModeChanged(int)));
-    QRadioButton *rb = new QRadioButton("Magnitude", central, "Magnitude");
+    QRadioButton *rb = new QRadioButton("Magnitude", colorGroupBox, "Magnitude");
     colorButtonGroup->insert(rb, 0);
-    gLayout->addWidget(rb, 2, 0);
-    rb = new QRadioButton("Constant", central, "constant");
+    cgLayout->addWidget(rb, 0, 0);
+    rb = new QRadioButton("Constant", colorGroupBox, "constant");
     rb->setChecked(true);
     colorButtonGroup->insert(rb, 1);
-    gLayout->addWidget(rb, 3, 0);
+    cgLayout->addWidget(rb, 1, 0);
 
     // Create the color-by-magnitude button.
-    colorTableButton = new QvisColorTableButton(central, "colorTableButton");
+    colorTableButton = new QvisColorTableButton(colorGroupBox, "colorTableButton");
     connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
             this, SLOT(colorTableClicked(bool, const QString &)));
-    gLayout->addMultiCellWidget(colorTableButton, 2, 2, 1, 3, 
-                                AlignLeft | AlignVCenter);
+    cgLayout->addWidget(colorTableButton, 0, 1, AlignLeft | AlignVCenter);
 
     // Create the vector color button.
-    vectorColor = new QvisColorButton(central, "vectorColorButton");
+    vectorColor = new QvisColorButton(colorGroupBox, "vectorColorButton");
     vectorColor->setButtonColor(QColor(255, 0, 0));
     connect(vectorColor, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(vectorColorChanged(const QColor &)));
-    gLayout->addMultiCellWidget(vectorColor, 3, 3, 1, 3, AlignLeft | AlignVCenter);
+    cgLayout->addWidget(vectorColor, 1, 1, AlignLeft | AlignVCenter);
+
+    //
+    // Create the scale-related widgets.
+    //
+    scaleGroupBox = new QGroupBox(central, "scaleGroupBox");
+    scaleGroupBox->setTitle("Vector scale");
+    gLayout->addMultiCellWidget(scaleGroupBox, 2, 2, 0, 3);
+    QVBoxLayout *sgTopLayout = new QVBoxLayout(scaleGroupBox);
+    sgTopLayout->setMargin(10);
+    sgTopLayout->addSpacing(15);
+    QGridLayout *sgLayout = new QGridLayout(sgTopLayout, 2, 2);
+    sgLayout->setSpacing(10);
+    sgLayout->setColStretch(1, 10);
 
     // Add the scale line edit.
-    scaleLineEdit = new QLineEdit(central, "scaleLineEdit");
+    scaleLineEdit = new QLineEdit(scaleGroupBox, "scaleLineEdit");
     connect(scaleLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processScaleText()));
-    gLayout->addMultiCellWidget(scaleLineEdit, 4, 4, 1, 3);
-    QLabel *scaleLabel = new QLabel(scaleLineEdit, "Scale", central, "scaleLabel");
-    gLayout->addWidget(scaleLabel, 4, 0, AlignRight | AlignVCenter);
+    sgLayout->addWidget(scaleLineEdit, 0, 1);
+    QLabel *scaleLabel = new QLabel(scaleLineEdit, "Scale", scaleGroupBox, "scaleLabel");
+    sgLayout->addWidget(scaleLabel, 0, 0, AlignRight | AlignVCenter);
 
     // Add the head size edit.
-    headSizeLineEdit = new QLineEdit(central, "headSizeLineEdit");
+    headSizeLineEdit = new QLineEdit(scaleGroupBox, "headSizeLineEdit");
     connect(headSizeLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processHeadSizeText()));
-    gLayout->addMultiCellWidget(headSizeLineEdit, 5, 5, 1, 3);
+    sgLayout->addWidget(headSizeLineEdit, 1, 1);
     QLabel *headSizeLabel = new QLabel(headSizeLineEdit, "Head size",
-                                       central, "headSizeLabel");
-    gLayout->addWidget(headSizeLabel, 5, 0, AlignRight | AlignVCenter);
-    
-    // Add the "Reduce" label.
-    QLabel *reduceLabel = new QLabel("Reduce by", central, "reduceLabel");
-    gLayout->addWidget(reduceLabel, 6, 0);
+                                       scaleGroupBox, "headSizeLabel");
+    sgLayout->addWidget(headSizeLabel, 1, 0, AlignRight | AlignVCenter);
+
+    //
+    // Create the reduce-related widgets.
+    //
+    reduceGroupBox = new QGroupBox(central, "reduceGroupBox");
+    reduceGroupBox->setTitle("Reduce by");
+    gLayout->addMultiCellWidget(reduceGroupBox, 3, 3, 0, 3);
+    QVBoxLayout *rgTopLayout = new QVBoxLayout(reduceGroupBox);
+    rgTopLayout->setMargin(10);
+    rgTopLayout->addSpacing(15);
+    QGridLayout *rgLayout = new QGridLayout(rgTopLayout, 2, 2);
+    rgLayout->setSpacing(10);
+    rgLayout->setColStretch(1, 10);
 
     // Create the reduce button group.
     reduceButtonGroup = new QButtonGroup(0, "reduceButtonGroup");
     connect(reduceButtonGroup, SIGNAL(clicked(int)),
             this, SLOT(reduceMethodChanged(int)));
-    rb= new QRadioButton("N vectors", central);
+    rb= new QRadioButton("N vectors", reduceGroupBox);
     rb->setChecked(true);
     reduceButtonGroup->insert(rb, 0);
-    gLayout->addWidget(rb, 7, 0);
-    rb = new QRadioButton("Stride", central);
+    rgLayout->addWidget(rb, 0, 0);
+    rb = new QRadioButton("Stride", reduceGroupBox);
     reduceButtonGroup->insert(rb, 1);
-    gLayout->addWidget(rb, 8, 0);
+    rgLayout->addWidget(rb, 1, 0);
 
     // Add the N vectors line edit.
-    nVectorsLineEdit = new QLineEdit(central, "nVectorsLineEdit");
+    nVectorsLineEdit = new QLineEdit(reduceGroupBox, "nVectorsLineEdit");
     connect(scaleLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processNVectorsText()));
-    gLayout->addMultiCellWidget(nVectorsLineEdit, 7, 7, 1, 3);
+    rgLayout->addWidget(nVectorsLineEdit, 0, 1);
 
     // Add the stride line edit.
-    strideLineEdit = new QLineEdit(central, "strideLineEdit");
+    strideLineEdit = new QLineEdit(reduceGroupBox, "strideLineEdit");
     connect(strideLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processStrideText()));
-    gLayout->addMultiCellWidget(strideLineEdit, 8, 8, 1, 3);
+    rgLayout->addWidget(strideLineEdit, 1, 1);
 
     //
     // Add the toggle buttons
@@ -201,12 +236,12 @@ QvisVectorPlotWindow::CreateWindowContents()
     // Add the legend toggle button.
     legendToggle = new QCheckBox("Legend", central, "legendToggle");
     connect(legendToggle, SIGNAL(clicked()), this, SLOT(legendToggled()));
-    gLayout->addMultiCellWidget(legendToggle, 9, 9, 0, 1);
+    gLayout->addMultiCellWidget(legendToggle, 4, 4, 0, 1);
 
     // Add the "draw head" toggle button.
     drawHeadToggle = new QCheckBox("Draw head", central, "drawHeadToggle");
     connect(drawHeadToggle, SIGNAL(clicked()), this, SLOT(drawHeadToggled()));
-    gLayout->addMultiCellWidget(drawHeadToggle, 9, 9, 2, 3);
+    gLayout->addMultiCellWidget(drawHeadToggle, 4, 4, 2, 3);
 }
 
 // ****************************************************************************

@@ -9,12 +9,15 @@
 #    Brad Whitlock, Tue Apr 1 10:16:33 PDT 2003
 #    I updated the script for 1.1.3.
 #
+#    Eric Brugger, Fri Aug 29 16:32:12 PDT 2003
+#    I modified the script to use the new interface for setting views.
+#
 # ----------------------------------------------------------------------------
 
 import os
 
 # Check the version.
-ScriptVersion = "1.1.3"
+ScriptVersion = "1.2.1"
 if(Version() != ScriptVersion):
     print "This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version())
 
@@ -46,12 +49,11 @@ def transform():
     DrawPlots()
     
     # Set the initial view
-    v0 = ViewAttributes()
+    v0 = View3DAttributes()
     v0.viewNormal = (0.49658, 0.271031, 0.824591)
     v0.focus = (0, 0, 0)
     v0.viewUp = (0.0462416, 0.94039, -0.336939)
     v0.viewAngle = 30
-    v0.setScale = 1
     v0.parallelScale = 17.3205
     v0.nearPlane = -40.
     v0.farPlane = 40.
@@ -59,12 +61,11 @@ def transform():
     SetView3D(v0)
     
     # Set the final view
-    v1 = ViewAttributes()
+    v1 = View3DAttributes()
     v1.viewNormal = (0.383878, 0.582957, 0.7161)
     v1.focus = (2.5, 2.5, 0)
     v1.viewUp = (-0.247477, 0.812098, -0.528442)
     v1.viewAngle = 30
-    v1.setScale = 1
     v1.parallelScale = 24.0057
     v1.nearPlane = -40.
     v1.farPlane = 40.

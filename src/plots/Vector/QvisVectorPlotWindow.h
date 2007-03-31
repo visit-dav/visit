@@ -5,6 +5,7 @@
 // Forward declarations
 class QButtonGroup;
 class QCheckBox;
+class QGroupBox;
 class QLabel;
 class QLineEdit;
 class QvisColorButton;
@@ -29,7 +30,10 @@ class QvisColorTableButton;
 // Modifications:
 //   Brad Whitlock, Sat Jun 16 18:21:34 PST 2001
 //   I added color table stuff.
-//   
+//
+//   Brad Whitlock, Fri Aug 29 11:34:52 PDT 2003
+//   I grouped related fields into group boxes.
+//
 // ****************************************************************************
 
 class QvisVectorPlotWindow : public QvisPostableWindowObserver
@@ -69,16 +73,19 @@ private:
 
     QvisLineStyleWidget  *lineStyle;
     QvisLineWidthWidget  *lineWidth;
+    QGroupBox            *colorGroupBox;
     QvisColorButton      *vectorColor;
+    QButtonGroup         *colorButtonGroup; 
+    QvisColorTableButton *colorTableButton;
+    QGroupBox            *scaleGroupBox;    
     QLineEdit            *scaleLineEdit;
     QLineEdit            *headSizeLineEdit;
+    QGroupBox            *reduceGroupBox;
     QButtonGroup         *reduceButtonGroup;
     QLineEdit            *nVectorsLineEdit;
     QLineEdit            *strideLineEdit;
     QCheckBox            *legendToggle;
     QCheckBox            *drawHeadToggle;
-    QButtonGroup         *colorButtonGroup; 
-    QvisColorTableButton *colorTableButton;
 };
 
 #endif

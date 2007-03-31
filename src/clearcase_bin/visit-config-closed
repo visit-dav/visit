@@ -371,7 +371,7 @@
                 <Field name="numNodesSet" type="bool">true</Field>
                 <Field name="numNodes" type="int">4</Field>
                 <Field name="partitionSet" type="bool">true</Field>
-                <Field name="partition" type="string">k,pbatch</Field>
+                <Field name="partition" type="string">s,pbatch</Field>
                 <Field name="bankSet" type="bool">true</Field>
                 <Field name="bank" type="string">bdivp</Field>
                 <Field name="timeLimitSet" type="bool">true</Field>
@@ -459,7 +459,7 @@
                 <Field name="numNodesSet" type="bool">true</Field>
                 <Field name="numNodes" type="int">4</Field>
                 <Field name="partitionSet" type="bool">true</Field>
-                <Field name="partition" type="string">k,pbatch</Field>
+                <Field name="partition" type="string">y,pbatch</Field>
                 <Field name="bankSet" type="bool">true</Field>
                 <Field name="bank" type="string">bdivp</Field>
                 <Field name="timeLimitSet" type="bool">true</Field>

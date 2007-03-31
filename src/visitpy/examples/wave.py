@@ -9,12 +9,15 @@
 #    Brad Whitlock, Tue Apr 1 10:22:17 PDT 2003
 #    Updated for 1.1.3.
 #
+#    Eric Brugger, Fri Aug 29 16:32:36 PDT 2003
+#    I modified the script to use the new interface for setting views.
+#
 # ----------------------------------------------------------------------------
 
 import os
 
 # Check the version.
-ScriptVersion = "1.1.3"
+ScriptVersion = "1.2.1"
 if(Version() != ScriptVersion):
     print "This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version())
 
@@ -27,12 +30,11 @@ def wave():
     DrawPlots()
     
     # Set the view.
-    v = ViewAttributes()
+    v = View3DAttributes()
     v.viewNormal = (-0.630384, 0.624746, 0.46077)
     v.focus = (4.64837, 0.0923395, 2.03837)
     v.viewUp = (0.531596, 0.779962, -0.330249)
     v.viewAngle = 30
-    v.setScale = 1
     v.parallelScale = 5.6009
     v.nearPlane = -30
     v.farPlane = 100
@@ -40,12 +42,11 @@ def wave():
     RedrawWindow()
     
     # Create the final view
-    v2 = ViewAttributes()
+    v2 = View3DAttributes()
     v2.viewNormal = (0.585721, 0.364706, 0.723824)
     v2.focus = (6.67418, -0.256771, 0.561709)
     v2.viewUp = (-0.161539, 0.927655, -0.336691)
     v2.viewAngle = 30
-    v2.setScale = 1
     v2.parallelScale = 3.47772
     v2.nearPlane = -30
     v2.farPlane = 100

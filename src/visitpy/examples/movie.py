@@ -9,10 +9,12 @@
 # Creation:   April 24, 2003
 #
 # Modifications:
-#
 #   Hank Childs, Wed Jun 25 09:30:59 PDT 2003
 #   Previously referring to different versions of wave.visit.  Now only refer
 #   to one.
+#
+#    Eric Brugger, Fri Aug 29 16:29:36 PDT 2003
+#    I modified the script to use the new interface for setting views.
 #
 # *****************************************************************************
 
@@ -103,59 +105,47 @@ SetAnnotationAttributes(annot_atts)
 # I liked and then say "v = GetView3D()".  I would then print "v" to the
 # screen (you can do this by saying "v").  I then copied and pasted the views
 # into this script as v0, v1, v2, v3.  Note that you have to create an object
-# each time to do this (ie "v0 = ViewAttributes()").
+# each time to do this (ie "v0 = View3DAttributes()").
 #
-v0 = ViewAttributes()
+v0 = View3DAttributes()
 v0.viewNormal = (-0.418219, 0.345837, 0.839934)
 v0.focus = (5, 0.353448, 2.5)
 v0.viewUp = (0.229871, 0.934881, -0.270473)
 v0.viewAngle = 30
-v0.setScale = 1
 v0.parallelScale = 5.6009
 v0.nearPlane = -11.2018
 v0.farPlane = 11.2018
 v0.perspective = 1
-v0.windowCoords = (0, 1, 0, 1)
-v0.viewportCoords = (0.2, 0.95, 0.15, 0.95)
 
-v1 = ViewAttributes()
+v1 = View3DAttributes()
 v1.viewNormal = (-0.00916236, 0.453467, 0.891226)
 v1.focus = (5, 0.353448, 2.5)
 v1.viewUp = (-0.1004, 0.886343, -0.452014)
 v1.viewAngle = 30
-v1.setScale = 1
 v1.parallelScale = 5.6009
 v1.nearPlane = -11.2018
 v1.farPlane = 11.2018
 v1.perspective = 1
-v1.windowCoords = (0, 1, 0, 1)
-v1.viewportCoords = (0.2, 0.95, 0.15, 0.95)
 
-v2 = ViewAttributes()
+v2 = View3DAttributes()
 v2.viewNormal = (0.443099, 0.463564, 0.767315)
 v2.focus = (5, 0.353448, 2.5)
 v2.viewUp = (-0.296768, 0.883516, -0.362393)
 v2.viewAngle = 30
-v2.setScale = 1
 v2.parallelScale = 5.6009
 v2.nearPlane = -11.2018
 v2.farPlane = 11.2018
 v2.perspective = 1
-v2.windowCoords = (0, 1, 0, 1)
-v2.viewportCoords = (0.2, 0.95, 0.15, 0.95)
 
-v3 = ViewAttributes()
+v3 = View3DAttributes()
 v3.viewNormal = (0.810397, 0.504527, 0.29784)
 v3.focus = (5, 0.353448, 2.5)
 v3.viewUp = (-0.482793, 0.863074, -0.14837)
 v3.viewAngle = 30
-v3.setScale = 1
 v3.parallelScale = 5.6009
 v3.nearPlane = -11.2018
 v3.farPlane = 11.2018
 v3.perspective = 1
-v3.windowCoords = (0, 1, 0, 1)
-v3.viewportCoords = (0.2, 0.95, 0.15, 0.95)
 
 # Iterate through the time sequence.
 frames_per_timestep=2
