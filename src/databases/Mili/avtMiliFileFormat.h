@@ -49,6 +49,9 @@ using std::vector;
 //    Akira Haddox, Mon Aug 18 14:31:55 PDT 2003
 //    Added dyna partition support for ghostzones.
 //
+//    Hank Childs, Mon Oct 20 10:07:00 PDT 2003
+//    Added GetTimes and times data member.
+//
 // ****************************************************************************
 
 class avtMiliFileFormat : public avtMTMDFileFormat
@@ -60,6 +63,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     virtual const char   *GetType(void) { return "Mili File Format"; };
     
     virtual void          GetCycles(vector<int> &);
+    virtual void          GetTimes(vector<double> &);
     virtual int           GetNTimesteps(void);
  
     virtual vtkDataSet   *GetMesh(int, int, const char *);
@@ -83,6 +87,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     int                   ndomains;
     int                   nmeshes;
     bool                  setTimesteps;
+    vector<double>        times;
 
     vector<bool>          validateVars;
     vector<bool>          readMesh;

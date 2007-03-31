@@ -1524,6 +1524,10 @@ QvisFileSelectionWindow::ConnectSubjects(HostProfileList *hpl)
 //   window in the middle of connecting to a remote mdserver causes the
 //   window to stay disabled, thus hanging the gui.
 //
+//   Brad Whitlock, Fri Oct 17 09:15:26 PDT 2003
+//   I disabled the call to hasPendingEvents on MacOS X since it tended to
+//   hang the gui.
+//
 // ****************************************************************************
 
 bool
@@ -1540,7 +1544,7 @@ QvisFileSelectionWindow::ProgressCallback(void *data, int stage)
     {
         if(This->isVisible())
         {
-#if QT_VERSION >= 300
+#if QT_VERSION >= 300 && !defined(Q_WS_MACX)
            if(qApp->hasPendingEvents())
 #endif
                qApp->processOneEvent();
