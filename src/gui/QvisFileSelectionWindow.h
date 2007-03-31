@@ -1,7 +1,7 @@
 #ifndef QVIS_FILE_SELECTION_WINDOW_H
 #define QVIS_FILE_SELECTION_WINDOW_H
 #include <gui_exports.h>
-#include <string>
+#include <vectortypes.h>
 #include <QvisDelayedWindowSimpleObserver.h>
 #include <QualifiedFilename.h>
 
@@ -9,12 +9,14 @@
 class FileServerList;
 class HostProfileList;
 class QCheckBox;
+class QCloseEvent;
 class QComboBox;
 class QLineEdit;
 class QListBox;
 class QListBoxItem;
 class QPixmap;
 class QPushButton;
+class QvisRecentPathRemovalWindow;
 
 // ****************************************************************************
 // Class: QvisFileSelectionWindow
@@ -67,13 +69,14 @@ class QPushButton;
 //   Brad Whitlock, Thu Mar 27 09:38:54 PDT 2003
 //   I added a toggle for automatic file grouping.
 //
+//   Brad Whitlock, Fri Oct 10 14:43:31 PST 2003
+//   I added a push button to open a window to remove recent paths.
+//
 // ****************************************************************************
 
 class GUI_API QvisFileSelectionWindow : public QvisDelayedWindowSimpleObserver
 {
     Q_OBJECT
-
-    typedef std::vector<std::string> stringVector;
 public:
     QvisFileSelectionWindow(const char *winCaption = 0);
     virtual ~QvisFileSelectionWindow();
@@ -82,8 +85,11 @@ public:
     virtual void ConnectSubjects(HostProfileList *hpl);
 public slots:
     virtual void show();
+    virtual void showMinimized();
+    virtual void showNormal();
     virtual void setEnabled(bool);
 protected:
+    virtual void closeEvent(QCloseEvent *);
     virtual void UpdateWindow(bool doAll);
     void UpdateWindowFromFiles(bool doAll);
     void UpdateWindowFromProfile(bool doAll);
@@ -143,6 +149,9 @@ private:
     QListBox        *selectedFileList;
     QCheckBox       *currentDirToggle;
     QCheckBox       *automaticFileGroupingToggle;
+    QPushButton     *recentPathRemovalButton;
+
+    QvisRecentPathRemovalWindow *recentPathsRemovalWindow;
 
     QPixmap         *computerPixmap;
     QPixmap         *folderPixmap;
