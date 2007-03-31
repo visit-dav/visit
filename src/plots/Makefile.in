@@ -90,6 +90,9 @@
 #    Jeremy Meredith, Fri May  9 11:22:47 PDT 2003
 #    Added FilledBoundary plot.
 #
+#    Hank Childs, Thu Jun 26 23:17:01 PDT 2003
+#    Added Histogram plot.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -100,7 +103,7 @@ all: message
 
 OPTIONAL=Kerbel
 
-REQUIRED=Boundary Contour Curve FilledBoundary Mesh Pseudocolor \
+REQUIRED=Boundary Contour Curve FilledBoundary Histogram Mesh Pseudocolor \
          Streamline Subset Surface Vector Volume
 
 SUBDIRS=$(REQUIRED) @PLOT_OPTIONAL_DIRS@

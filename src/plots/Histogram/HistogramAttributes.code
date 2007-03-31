@@ -1,0 +1,22 @@
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const HistogramAttributes &) const;
+Definition:
+bool
+HistogramAttributes::ChangesRequireRecalculation(const HistogramAttributes &obj) const
+{
+    if (specifyRange != obj.GetSpecifyRange())
+        return true;
+    if (specifyRange && (min != obj.GetMin()))
+        return true;
+    if (specifyRange && (max != obj.GetMax()))
+        return true;
+    if (outputType != obj.GetOutputType())
+        return true;
+    if (numBins != obj.GetNumBins())
+        return true;
+    if (twoDAmount != obj.GetTwoDAmount())
+        return true;
+ 
+    return false;
+}
+

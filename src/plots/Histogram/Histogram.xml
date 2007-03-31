@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+  <Plugin name="Histogram" type="plot" label="Histogram" version="1.0" vartype="scalar" iconFile="Histogram.xpm">
+    <Attribute name="HistogramAttributes" purpose="Attributes for Histogram Plot" persistent="false" exportAPI="" exportInclude="" codefile="HistogramAttributes.code">
+      <Enum name="OutputType">
+        Curve
+        Block
+      </Enum>
+      <Enum name="TwoDAmount">
+        Area
+        RevolvedVolume
+      </Enum>
+      <Field name="specifyRange" label="Specify Range?" type="bool">
+        false
+      </Field>
+      <Field name="min" label="Minimum" type="double" enabler="specifyRange:true">
+        0.000000
+      </Field>
+      <Field name="max" label="Maximum" type="double" enabler="specifyRange:true">
+        1.000000
+      </Field>
+      <Field name="outputType" label="Type of Output" type="enum" subtype="OutputType">
+        Block
+      </Field>
+      <Field name="numBins" label="Number of Bins" type="int">
+        32
+      </Field>
+      <Field name="twoDAmount" label="Calculate 2D based on" type="enum" subtype="TwoDAmount">
+        RevolvedVolume
+      </Field>
+      <Field name="lineStyle" label="Line Style" type="linestyle">
+        0
+      </Field>
+      <Field name="lineWidth" label="Line Width" type="linewidth">
+        0
+      </Field>
+      <Field name="color" label="Color" type="att" subtype="ColorAttribute">
+      </Field>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

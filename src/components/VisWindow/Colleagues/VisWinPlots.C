@@ -108,13 +108,21 @@ VisWinPlots::VisWinPlots(VisWindowColleagueProxy &p) : VisWinColleague(p)
 //    Mark C. Miller, Thu Dec 19 11:38:05 PST 2002
 //    Delete the externally rendered images actor
 //
+//    Jeremy Meredith, Thu Jun 26 13:57:09 PDT 2003
+//    Delete the plot actors (since they contain pointers to the
+//    transparency actors) before delete the transparency actor itself.
+//
 // ****************************************************************************
 
 VisWinPlots::~VisWinPlots()
 {
     //
-    // We don't own the plots, so we shouldn't delete them.
+    // The plots reference the transparency actor, so we need to free those up
+    // before the transparency actor is deleted.  If there are additional
+    // references to these plots elsewhere, it may cause problems -- 
+    // especially if we ever allow plots to be added to multiple windows.
     //
+    plots.clear();
 
     if (bbox != NULL)
     {
