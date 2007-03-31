@@ -1162,6 +1162,9 @@ avtBoxlib3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Modify the way indices are determined to account for floating point
 //    precision.
 //
+//    Hank Childs, Wed Dec 10 18:41:45 PST 2003
+//    Fix cut-and-paste bug.
+//
 // ****************************************************************************
 
 void
@@ -1248,13 +1251,13 @@ avtBoxlib3DFileFormat::CalculateDomainNesting(void)
                            / deltaX[my_level])) * multiplier[my_level];
         logIMax[patch] = ((int) ((xMax[patch]-probLo[0]+epsilonX) 
                            / deltaX[my_level])) * multiplier[my_level];
-        logJMin[patch] = ((int) ((yMin[patch]-probLo[0]+epsilonY) 
+        logJMin[patch] = ((int) ((yMin[patch]-probLo[1]+epsilonY) 
                            / deltaY[my_level])) * multiplier[my_level];
-        logJMax[patch] = ((int) ((yMax[patch]-probLo[0]+epsilonY) 
+        logJMax[patch] = ((int) ((yMax[patch]-probLo[1]+epsilonY) 
                            / deltaY[my_level])) * multiplier[my_level];
-        logKMin[patch] = ((int) ((zMin[patch]-probLo[0]+epsilonZ) 
+        logKMin[patch] = ((int) ((zMin[patch]-probLo[2]+epsilonZ) 
                            / deltaZ[my_level])) * multiplier[my_level];
-        logKMax[patch] = ((int) ((zMax[patch]-probLo[0]+epsilonZ) 
+        logKMax[patch] = ((int) ((zMax[patch]-probLo[2]+epsilonZ) 
                            / deltaZ[my_level])) * multiplier[my_level];
         int e[6];
         e[0] = logIMin[patch] / multiplier[my_level];

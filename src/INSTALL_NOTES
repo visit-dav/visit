@@ -7,7 +7,7 @@ This document contains instructions for installing VisIt on both Unix and
 Windows systems.  The Unix installation instructions are first followed
 by the Windows installation instructions.
 
-Unix:
+Unix and Mac OS X:
 
 1.  Run the visit-install script to install visit.  Note that it can
     create a new distribution directory or update an existing
@@ -19,9 +19,9 @@ Unix:
 
         "version" will be 1.2.5 for the current distribution.
 
-        "platform" will be one of the following:  aix, irix6, linux, osf1,
-        or sunos5 depending on the machine.  The one you use should match
-        the name of the accompanying distribution file.
+        "platform" will be one of the following:  aix, darwin, irix6, linux,
+        osf1, or sunos5 depending on the machine.  The one you use should
+        match the name of the accompanying distribution file.
 
         "directory" is the directory you wish to install visit into.
         If the directory doesn't exist the script will create it.
@@ -78,16 +78,6 @@ Windows:
 
 1.  Copy the file visit1.2.5.exe to your desktop.
 
-2.  Right click on the visit1.2.5.exe icon using your mouse and selecting
-    "Extract to folder C:\...\Desktop\visit1.2.5" from the popup menu.  A
-    window will popup as the file is extracted into the directory.  Once
-    the process is complete a "visit1.2.5" directory icon should appear on
-    your desktop.
+2.  Double click on the visit1.2.5.exe icon to run the installer.
 
-3.  Double click on the "visit1.2.5" directory icon bringing up a file
-    system browsing window.
-
-4.  Double click on the SETUP icon with the computer display icon to run
-    InstallShield.
-
-5.  Follow the directions provided by InstallShield.
+3.  Follow the directions provided by the installer.

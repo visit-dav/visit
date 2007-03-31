@@ -1581,6 +1581,10 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
 //    Jeremy Meredith, Thu Jul  3 15:01:25 PDT 2003
 //    Allowed disabling of PTYs even when they are available.
 //
+//    Jeremy Meredith, Tue Dec  9 15:24:42 PST 2003
+//    Added code to close the PTY if we could not connect.  Also attempt to 
+//    kill the child process with a TERM.
+//
 // ****************************************************************************
 
 void
@@ -1649,6 +1653,12 @@ RemoteProcess::LaunchRemote(const stringVector &args)
         }
         CATCH(CouldNotConnectException)
         {
+            // Close the file descriptor allocated for the PTY
+            close(ptyFileDescriptor);
+
+            // Kill the SSH proces
+            kill(remoteProgramPid, SIGTERM);
+
             // Clean up memory
             DestroySplitCommandLine(argv, argc);
 

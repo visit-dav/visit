@@ -135,6 +135,9 @@ avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 //    Added support for expressions of the form A=B.  This involves the 
 //    identity function and was causing a crash previously.
 //
+//    Hank Childs, Sat Dec 13 15:55:31 PST 2003
+//    Don't be so quick to declare something a recursive function.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -179,6 +182,7 @@ avtExpressionEvaluatorFilter::PerformRestriction(
     // together, then put on a list in pipelineState for use in Execute().
     debug5 << "EEF::PerformRestriction: Checking candidates" << endl;
     pipelineState.SetDataObject(NULL);
+    int num_recursive_checks = 0;
     while (!candidates.empty())
     {
         std::set<string>::iterator front = candidates.begin();
@@ -192,10 +196,21 @@ avtExpressionEvaluatorFilter::PerformRestriction(
         search = find(expr_list.begin(), expr_list.end(), var);
         if (search != expr_list.end())
         {
-            // We've seen this expression already.
-            char error[] = "Recursive expression.";
-            debug1 << error << endl;
-            EXCEPTION1(ImproperUseException, error);
+            // We were asked about an expression that we have seen before.  This
+            // can happen under normal conditions.  For example, we see an expr
+            // that is a vector.  Later on, we get a magnitude expression that
+            // references the original vector.  That would get us into this loop.
+            // And its not recursive.  That said, this loop is entered when we
+            // get a recursive expression.  So, if we come in 1000 times, we
+            // probably have a recursive expression.
+            num_recursive_checks++;
+            if (num_recursive_checks >= 1000)
+            {
+                // We've seen this expression already.
+                char error[] = "Recursive expression.";
+                debug1 << error << endl;
+                EXCEPTION1(ImproperUseException, error);
+            }
         }
 
         // Check if this is an expression or a real variable.

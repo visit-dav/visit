@@ -568,7 +568,7 @@ avtTimeSliderColleague::SetFrameAndState(int nFrames,
 // ****************************************************************************
 
 void
-avtTimeSliderColleague::UpdatePlotList(vector<avtActor_p> &lst)
+avtTimeSliderColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 {
     if(lst.size() > 0 && textFormatString != 0)
     {

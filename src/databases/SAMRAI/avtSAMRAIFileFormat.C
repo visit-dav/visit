@@ -483,14 +483,9 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
                                       const char *type, void *,
                                       DestructorFunction &df)
 {
-    unsigned level;
     string name;
     void *rv = NULL;
     avtIntervalTree *itree = NULL;
-
-    name = GetNameLevel(var, level, '_');    
-    if (level >= num_levels)
-        EXCEPTION1(InvalidVariableException, var);
 
     if (strcmp(type, AUXILIARY_DATA_DATA_EXTENTS) == 0) {
         
@@ -503,11 +498,11 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
         
         if (num_components == 1 ) {
           
-            itree = new avtIntervalTree(num_patches_level[level], 1);
+            itree = new avtIntervalTree(num_patches, 1);
             for (int v = 0; v < num_vars; v++) {
                 if (var_names[v] == name) {
 
-                    for (int patch = 0 ; patch < num_patches_level[level] ; patch++) {
+                    for (int patch = 0 ; patch < num_patches ; patch++) {
 
                         if (var_extents[v][patch].data_is_defined) {
                             float range[2] = { var_extents[v][patch].min, 
@@ -523,8 +518,8 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
             }
 
         } else {
-            itree = new avtIntervalTree(num_patches_level[level], 3);
-            for (int patch = 0 ; patch < num_patches_level[level] ; patch++) {
+            itree = new avtIntervalTree(num_patches, 3);
+            for (int patch = 0 ; patch < num_patches ; patch++) {
                 bool data_defined = true;
                 float range[6] = { 0, 0, 0, 0, 0, 0 };
                 int dim = num_components <= 3 ? num_components : 3;
@@ -562,10 +557,10 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
     }
     else if (strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0) {
 
-        itree = new avtIntervalTree(num_patches_level[level], 3);
-        for (int patch = 0 ; patch < num_patches_level[level] ; patch++) {
-            float bounds[] = {0, 0, 0, 0, 0, 0};
-            int dim = num_dim_problem < 3 ? num_dim_problem: 3;
+        int dim = num_dim_problem < 3 ? num_dim_problem: 3;
+        itree = new avtIntervalTree(num_patches, dim);
+        for (int patch = 0 ; patch < num_patches ; patch++) {
+            float bounds[] = {0., 0., 0., 0., 0., 0.};
 
             for (int j=0; j<dim; j++) {
                 bounds[j*2] = patch_extents[patch].xlo[j];

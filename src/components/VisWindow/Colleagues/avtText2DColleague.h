@@ -43,7 +43,7 @@ public:
     virtual void SetForegroundColor(float r, float g, float b);
     virtual void HasPlots(void);
     virtual void NoPlots(void);
-    virtual void UpdatePlotList(vector<avtActor_p> &lst);
+    virtual void UpdatePlotList(std::vector<avtActor_p> &lst);
 protected:
     bool ShouldBeAddedToRenderer() const;
     void SetText(const char *text);

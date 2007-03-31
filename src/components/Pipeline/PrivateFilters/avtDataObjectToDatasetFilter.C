@@ -24,6 +24,11 @@
 //  Programmer: Hank Childs
 //  Creation:   October 24, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Dec 13 16:07:44 PST 2003
+//    Set the dimension of the output variable.
+//
 // ****************************************************************************
 
 void
@@ -34,6 +39,8 @@ avtDataObjectToDatasetFilter::OutputSetActiveVariable(const char *varname)
     avtDataTree_p tree = GetDataTree();
     bool success;
     tree->Traverse(CSetActiveVariable, (void *) &args, success);
+    GetOutput()->GetInfo().GetAttributes().
+                                      SetVariableDimension(args.activeVarDim);
 }
 
 

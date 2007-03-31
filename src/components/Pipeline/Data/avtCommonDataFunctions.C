@@ -850,6 +850,9 @@ CGetChunkByLabel(avtDataRepresentation & data, void *arg, bool &success)
 //    Hank Childs, Mon Sep 22 08:18:38 PDT 2003
 //    Account for tensors.
 //
+//    Hank Childs, Sat Dec 13 16:06:07 PST 2003
+//    Set the dimension of the active variable.
+//
 // ****************************************************************************
 
 void
@@ -888,6 +891,7 @@ CSetActiveVariable(avtDataRepresentation &data, void *arg, bool &success)
             pd->SetActiveVectors(args->varname);
         else if (arr->GetNumberOfComponents() == 9)
             pd->SetActiveTensors(args->varname);
+        args->activeVarDim = arr->GetNumberOfComponents();
     }
     arr = cd->GetArray(args->varname);
     if (arr != NULL)
@@ -898,6 +902,7 @@ CSetActiveVariable(avtDataRepresentation &data, void *arg, bool &success)
             cd->SetActiveVectors(args->varname);
         else if (arr->GetNumberOfComponents() == 9)
             cd->SetActiveTensors(args->varname);
+        args->activeVarDim = arr->GetNumberOfComponents();
     }
 
     //
