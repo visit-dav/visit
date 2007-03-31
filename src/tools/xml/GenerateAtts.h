@@ -103,6 +103,9 @@ using std::vector;
 //    Jeremy Meredith, Wed Nov  5 13:28:03 PST 2003
 //    Added ability to disable plugins by default.
 //
+//    Brad Whitlock, Wed Dec 17 11:55:11 PDT 2003
+//    I changed the generated code so CreateNode has three args.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1585,7 +1588,7 @@ class AttsGeneratorAttribute
             // Persistence methods
             h << endl;
             h << "    // Persistence methods" << endl;
-            h << "    virtual bool CreateNode(DataNode *node, bool forceAdd);" << endl;
+            h << "    virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);" << endl;
             h << "    virtual void SetFromNode(DataNode *node);" << endl;
         }
         h << endl;
@@ -2067,7 +2070,7 @@ class AttsGeneratorAttribute
                            "This method creates a DataNode representation of the object so it can be saved to a config file.");
 
         c << "bool" << endl;
-        c << name << "::CreateNode(DataNode *parentNode, bool forceAdd)" << endl;
+        c << name << "::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)" << endl;
         c << "{" << endl;
         c << "    if(parentNode == 0)" << endl;
         c << "        return false;" << endl << endl;
@@ -2082,7 +2085,7 @@ class AttsGeneratorAttribute
             QString forceAdd("false"); 
             if(fields[i]->type != "color")
             {
-                c << "    if(!FieldsEqual(" << i << ", &defaultObject))" << endl;
+                c << "    if(completeSave || !FieldsEqual(" << i << ", &defaultObject))" << endl;
                 c << "    {" << endl;
             }
             else
@@ -2094,7 +2097,7 @@ class AttsGeneratorAttribute
                 c << "        DataNode *" << nodeName << " = new DataNode(\""
                   << fields[i]->name << "\");" << endl;
                 c << "        if(" << fields[i]->name << ".CreateNode("
-                  << nodeName << ", " << forceAdd << "))" << endl;
+                  << nodeName << ", completeSave, " << forceAdd << "))" << endl;
                 c << "        {" << endl;
                 c << "            addToParent = true;" << endl;
                 c << "            node->AddNode(" << nodeName << ");" << endl;
@@ -2106,13 +2109,13 @@ class AttsGeneratorAttribute
             {
                 c << "        addToParent = true;" << endl;
                 c << "        for(int i = 0; i < " << fields[i]->length << "; ++i)" << endl;
-                c << "            " << fields[i]->name << "[i]->CreateNode(node, true);" << endl;
+                c << "            " << fields[i]->name << "[i]->CreateNode(node, completeSave. true);" << endl;
             }
             else if(fields[i]->type == "attVector")
             {
                 c << "        addToParent = true;" << endl;
                 c << "        for(int i = 0; i < " << fields[i]->name << ".size(); ++i)" << endl;
-                c << "            " << fields[i]->name << "[i]->CreateNode(node, true);" << endl;
+                c << "            " << fields[i]->name << "[i]->CreateNode(node, completeSave, true);" << endl;
             }
             else if (fields[i]->isArray)
             {

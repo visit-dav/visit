@@ -288,7 +288,7 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
 }
 
 Function: CompactCreateNode
-Declaration: bool CompactCreateNode(DataNode *parentNode, bool forceAdd);
+Declaration: bool CompactCreateNode(DataNode *parentNode, bool completeSave, bool forceAdd);
 Definition:
 // ****************************************************************************
 // Method: ColorControlPointList::CompactCreateNode
@@ -303,11 +303,13 @@ Definition:
 // Creation:   Tue Oct 21 16:13:44 PST 2003
 //
 // Modifications:
+//   Brad Whitlock, Wed Dec 17 12:23:35 PDT 2003
+//   I added the completeSave argument.
 //
 // ****************************************************************************
 
 bool
-ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool forceAdd)
+ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
 {
     if(parentNode == 0)
         return false;
@@ -343,25 +345,25 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool forceAdd)
         addToParent = true;
     }
 
-    if(!FieldsEqual(1, &defaultObject))
+    if(completeSave || !FieldsEqual(1, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("smoothingFlag", smoothingFlag));
     }
 
-    if(!FieldsEqual(2, &defaultObject))
+    if(completeSave || !FieldsEqual(2, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("equalSpacingFlag", equalSpacingFlag));
     }
 
-    if(!FieldsEqual(3, &defaultObject))
+    if(completeSave || !FieldsEqual(3, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("discreteFlag", discreteFlag));
     }
 
-    if(!FieldsEqual(4, &defaultObject))
+    if(completeSave || !FieldsEqual(4, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("externalFlag", externalFlag));

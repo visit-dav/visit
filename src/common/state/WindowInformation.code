@@ -49,7 +49,7 @@ WindowInformation::SetFromNode(DataNode *parentNode)
 }
 
 Function: CreateNode
-Declaration: virtual bool CreateNode(DataNode *parentNode, bool);
+Declaration: virtual bool CreateNode(DataNode *parentNode, bool, bool);
 Definition:
 // ****************************************************************************
 // Method: WindowInformation::CreateNode
@@ -73,10 +73,13 @@ Definition:
 //   I made it save only the fields that differ from the defaults. Added
 //   fullFrame.
 //
+//   Brad Whitlock, Wed Dec 17 12:07:27 PDT 2003
+//   I added a completeSave argument.
+//
 // ****************************************************************************
 
 bool
-WindowInformation::CreateNode(DataNode *parentNode, bool forceAdd)
+WindowInformation::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
 {
     if(parentNode == 0)
         return false;
@@ -87,43 +90,43 @@ WindowInformation::CreateNode(DataNode *parentNode, bool forceAdd)
     // Create a node for WindowInformation.
     DataNode *node = new DataNode("WindowInformation");
 
-    if(!FieldsEqual(1, &defaultObject))
+    if(completeSave || !FieldsEqual(1, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("boundingBoxNavigate", boundingBoxNavigate));
     }
 
-    if(!FieldsEqual(3, &defaultObject))
+    if(completeSave || !FieldsEqual(3, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("perspective", perspective));
     }
 
-    if(!FieldsEqual(4, &defaultObject))
+    if(completeSave || !FieldsEqual(4, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("lockView", lockView));
     }
 
-    if(!FieldsEqual(5, &defaultObject))
+    if(completeSave || !FieldsEqual(5, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("viewExtentsType", viewExtentsType));
     }
 
-    if(!FieldsEqual(12, &defaultObject))
+    if(completeSave || !FieldsEqual(12, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("lockTools", lockTools));
     }
 
-    if(!FieldsEqual(13, &defaultObject))
+    if(completeSave || !FieldsEqual(13, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("lockTime", lockTime));
     }
 
-    if(!FieldsEqual(15, &defaultObject))
+    if(completeSave || !FieldsEqual(15, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("fullFrame", fullFrame));

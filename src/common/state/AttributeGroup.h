@@ -52,6 +52,9 @@ class DataNode;
 //    Brad Whitlock, Tue May 20 08:54:38 PDT 2003
 //    I added a second argument to CreateNode.
 //
+//    Brad Whitlock, Wed Dec 17 11:51:40 PDT 2003
+//    I added a third argument to CreateNode.
+//
 // ****************************************************************************
 
 class STATE_API AttributeGroup
@@ -104,7 +107,7 @@ public:
     void Select(int index, void *address, int length = 0);
     void UnSelectAll();
 
-    virtual bool CreateNode(DataNode *node, bool);
+    virtual bool CreateNode(DataNode *node, bool, bool);
     virtual void SetFromNode(DataNode *node);
     virtual void ProcessOldVersions(DataNode *node, const char *configVersion);
 

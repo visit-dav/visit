@@ -138,6 +138,9 @@ ColorTableManager::ImportColorTables(ColorTableAttributes *cta)
 //   Brad Whitlock, Thu Nov 13 11:55:17 PDT 2003
 //   I made it throw a VisItException if the file can't be opened.
 //
+//   Brad Whitlock, Thu Dec 18 11:18:06 PDT 2003
+//   I made it call CreateNode with the new completeSave flag set to false.
+//
 // ****************************************************************************
 
 void
@@ -151,7 +154,7 @@ ColorTableManager::WriteConfigFile(const char *filename)
     ctNode->AddNode(new DataNode("Version", std::string(VERSION)));
 
     // Let the color table create add its information to tbe node.
-    ccpl.CreateNode(ctNode, true);
+    ccpl.CreateNode(ctNode, false, true);
 
     // Try to open the output file.
     if((fp = fopen(filename, "wb")) == 0)

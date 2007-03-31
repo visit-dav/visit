@@ -1,5 +1,5 @@
 Function:  CreateNode
-Declaration: virtual bool CreateNode(DataNode *node, bool);
+Declaration: virtual bool CreateNode(DataNode *node, bool, bool);
 Definition:
 // ****************************************************************************
 // Method: GlobalAttributes::CreateNode
@@ -9,7 +9,10 @@ Definition:
 //   GlobalAttributes in it.
 //
 // Arguments:
-//   parentNode : The node under which the globalAtts node is created.
+//   parentNode   : The node under which the globalAtts node is created.
+//   completeSave : Tells the method to save all fields even if they are not
+//                  different.
+//   forceAdd     : Tells the method to add a node to the parent node.
 //
 // Notes:
 //   Only a handful of the attributes that this object contains are
@@ -39,10 +42,13 @@ Definition:
 //   Brad Whitlock, Tue May 20 10:43:27 PDT 2003
 //   I made it made it save only what differs from the defaults.
 //
+//   Brad Whitlock, Wed Dec 17 12:09:40 PDT 2003
+//   I added a completeSave flag.
+//
 // ****************************************************************************
 
 bool
-GlobalAttributes::CreateNode(DataNode *parentNode, bool forceAdd)
+GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
 {
     if(parentNode == 0)
         return false;
@@ -53,44 +59,44 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool forceAdd)
     // Create a node for GlobalAttributes.
     DataNode *node = new DataNode("GlobalAttributes");
 
-    if(!FieldsEqual(3, &defaultObject))
+    if(completeSave || completeSave || !FieldsEqual(3, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("autoUpdateFlag", autoUpdateFlag));
     }
 
-    if(!FieldsEqual(4, &defaultObject))
+    if(completeSave || completeSave || !FieldsEqual(4, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("replacePlots", replacePlots));
     }
 
-    if(!FieldsEqual(5, &defaultObject))
+    if(completeSave || !FieldsEqual(5, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("applyOperator", applyOperator));
     }
 
-    if(!FieldsEqual(13, &defaultObject))
+    if(completeSave || !FieldsEqual(13, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("windowLayout", windowLayout));
     }
 
-    if(!FieldsEqual(14, &defaultObject))
+    if(completeSave || !FieldsEqual(14, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("makeDefaultConfirm", makeDefaultConfirm));
     }
 
-    if(!FieldsEqual(16, &defaultObject))
+    if(completeSave || !FieldsEqual(16, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("cloneWindowOnFirstRef",
                                     cloneWindowOnFirstRef));
     }
 
-    if(!FieldsEqual(17, &defaultObject))
+    if(completeSave || !FieldsEqual(17, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("maintainView", maintainView));

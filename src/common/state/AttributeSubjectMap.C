@@ -633,7 +633,9 @@ AttributeSubjectMap::ResizeMap(const int newSize)
 // Creation:   Tue Jul 22 11:32:17 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Dec 18 11:16:03 PDT 2003
+//   I made it call CreateNode with the new completeSave flag set to true.
+//
 // ****************************************************************************
 
 bool
@@ -660,7 +662,7 @@ AttributeSubjectMap::CreateNode(DataNode *parentNode)
         DataNode *attNode = new DataNode("attributes");
         mapNode->AddNode(attNode);
         for(i = 0; i < nIndices; ++i)
-            atts[i]->CreateNode(attNode, true);
+            atts[i]->CreateNode(attNode, true, true);
 
         retval = true;
     }

@@ -3573,7 +3573,12 @@ ViewerPlot::CheckCache(const int f0, const int f1, const bool force)
 // Creation:   Wed Jul 16 13:09:04 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Dec 15 16:28:58 PST 2003
+//   I added the completeSave flag to AttributeSubject::CreateNode to
+//   force the plot attributes to write out all of their fields to avoid
+//   unwanted settings from the system configs. This makes the session file
+//   reproduce the same thing each time without having to run -noconfig.
+//
 // ****************************************************************************
 
 void
@@ -3597,7 +3602,7 @@ ViewerPlot::CreateNode(DataNode *parentNode)
     //
     // Store the current plot attributes.
     //
-    curPlotAtts->CreateNode(plotNode, false);
+    curPlotAtts->CreateNode(plotNode, true, true);
 
     //
     // Store the operators

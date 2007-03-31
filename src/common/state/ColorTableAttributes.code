@@ -286,7 +286,7 @@ ColorTableAttributes::GetNumColorTables() const
 
 
 Function:  CreateNode
-Declaration: virtual bool CreateNode(DataNode *node, bool);
+Declaration: virtual bool CreateNode(DataNode *node, bool, bool);
 Definition:
 // ****************************************************************************
 // Method: ColorTableAttributes::CreateNode
@@ -313,10 +313,13 @@ Definition:
 //   Brad Whitlock, Mon Jul 7 16:51:05 PST 2003
 //   I prevented it from saving out colortables that are external.
 //
+//   Brad Whitlock, Wed Dec 17 12:21:24 PDT 2003
+//   I added another bool argument.
+//
 // ****************************************************************************
 
 bool
-ColorTableAttributes::CreateNode(DataNode *parentNode, bool)
+ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
 {
     if(parentNode == 0)
         return true;

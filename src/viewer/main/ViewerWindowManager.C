@@ -6229,6 +6229,10 @@ ViewerWindowManager::CreateNode(DataNode *parentNode, bool detailed)
 //   Eric Brugger, Fri Dec  5 13:42:39 PST 2003
 //   Added loading of maintainView, cameraView and viewExtentsType.
 //
+//   Eric Brugger, Thu Dec 18 14:40:20 PST 2003
+//   Modified the routine to set the referenced flag for the active window
+//   to true.
+//
 // ****************************************************************************
 
 void
@@ -6428,19 +6432,25 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode)
     //
     // Set the active window.
     //
-    bool cloneWindowFlag = clientAtts->GetCloneWindowOnFirstRef();
-    clientAtts->SetCloneWindowOnFirstRef(false);
     if((node = searchNode->GetNode("activeWindow")) != 0)
     {
         int n = node->AsInt();
         if(n >= 0 && n < nWindows && windows[n] != 0)
+        {
+            referenced[n] = true;
             SetActiveWindow(n + 1);
+        }
         else
+        {
+            referenced[activeWindow] = true;
             UpdateAllAtts();
+        }
     }
     else
+    {
+        referenced[activeWindow] = true;
         UpdateAllAtts();
-    clientAtts->SetCloneWindowOnFirstRef(cloneWindowFlag);
+    }
 
     //
     // Set the lineout window.

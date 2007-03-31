@@ -117,6 +117,9 @@ class MessageAttributes;
 //   Brad Whitlock, Fri Oct 10 16:04:21 PST 2003
 //   Added a method to clear out the recent paths.
 //
+//   Brad Whitlock, Thu Dec 18 11:33:32 PDT 2003
+//   I changed the CreateNode interface.
+//
 // ****************************************************************************
 
 class GUI_API FileServerList : public AttributeSubject
@@ -139,7 +142,7 @@ public:
     void SilentNotify();
     void Initialize();
 
-    virtual bool CreateNode(DataNode *, bool);
+    virtual bool CreateNode(DataNode *, bool, bool);
     virtual void SetFromNode(DataNode *);
 
     void SetHost(const std::string &host);

@@ -101,6 +101,10 @@ ViewerConfigManager::~ViewerConfigManager()
 //    Brad Whitlock, Mon Jun 30 12:26:41 PDT 2003
 //    I let the parent ViewerSubject add its data to the data node.
 //
+//    Brad Whitlock, Thu Dec 18 11:36:42 PDT 2003
+//    I made the default values state objects be completely printed out if
+//    we're writing a session file.
+//
 // ****************************************************************************
 
 void
@@ -125,7 +129,7 @@ ViewerConfigManager::WriteConfigFile(const char *filename)
     std::vector<AttributeSubject *>::iterator pos;
     for (pos = subjectList.begin(); pos != subjectList.end(); ++pos)
     {
-        (*pos)->CreateNode(defaultsNode, false);
+        (*pos)->CreateNode(defaultsNode, writeDetail, false);
     }
 
     // Let the parent write its data to the "VIEWER" node.

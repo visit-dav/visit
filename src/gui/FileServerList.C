@@ -1784,7 +1784,7 @@ FileServerList::GetVirtualFileDefinition(const QualifiedFilename &name) const
 // ****************************************************************************
 
 bool
-FileServerList::CreateNode(DataNode *parentNode, bool)
+FileServerList::CreateNode(DataNode *parentNode, bool, bool)
 {
     DataNode *fsNode = new DataNode("FileServerList");
     parentNode->AddNode(fsNode);

@@ -2088,6 +2088,9 @@ QvisGUIApplication::CreatePluginWindows()
 //    Brad Whitlock, Mon Oct 13 17:25:47 PST 2003
 //    Added code to save the timestate format.
 //
+//    Brad Whitlock, Thu Dec 18 14:41:57 PST 2003
+//    Changed CreateNode method calls.
+//
 // ****************************************************************************
 
 void
@@ -2103,10 +2106,10 @@ QvisGUIApplication::WriteConfigFile(const char *filename)
     root.AddNode(guiNode);
 
     // Add some attributes under the "GUI" node.
-    fileServer->CreateNode(guiNode, true);
+    fileServer->CreateNode(guiNode, true, true);
 
     // Save the appearance attributes.
-    viewer->GetAppearanceAttributes()->CreateNode(guiNode, false);
+    viewer->GetAppearanceAttributes()->CreateNode(guiNode, true, false);
 
     // Make the windows save their attributes.
     for(int i = 0; i < otherWindows.size(); ++i)
@@ -2140,7 +2143,7 @@ QvisGUIApplication::WriteConfigFile(const char *filename)
 
     // Save the timestate format.
     TimeFormat fmt(mainWin->GetTimeStateFormat());
-    fmt.CreateNode(guiNode, false);
+    fmt.CreateNode(guiNode, true, false);
 
     // Try to open the output file.
     if((fp = fopen(filename, "wb")) == 0)

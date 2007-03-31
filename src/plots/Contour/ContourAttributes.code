@@ -154,7 +154,7 @@ ContourAttributes::EnlargeMultiColor(int newSize)
 }
 
 Function: CreateNode
-Declaration: virtual bool CreateNode(DataNode *, bool);
+Declaration: virtual bool CreateNode(DataNode *, bool, bool);
 Definition:
 // ****************************************************************************
 // Method: ContourAttributes::CreateNode
@@ -175,9 +175,12 @@ Definition:
 //   I made the default palette get saved out with the colors from the
 //   multicolor in it.
 //
+//   Brad Whitlock, Thu Dec 18 11:52:04 PDT 2003
+//   Added the completeSave flag.
+//
 // ****************************************************************************
 bool
-ContourAttributes::CreateNode(DataNode *parentNode, bool forceAdd)
+ContourAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
 {
     if(parentNode == 0)
         return false;
@@ -218,7 +221,7 @@ ContourAttributes::CreateNode(DataNode *parentNode, bool forceAdd)
         for(int i = 0; i < npts; ++i)
             savePalette[i].SetPosition(float(i) / float(npts-1));
     }
-    if(savePalette.CompactCreateNode(defaultPaletteNode, forceAdd))
+    if(savePalette.CompactCreateNode(defaultPaletteNode, completeSave, forceAdd))
     {
         addToParent = true;
         node->AddNode(defaultPaletteNode);
@@ -226,38 +229,38 @@ ContourAttributes::CreateNode(DataNode *parentNode, bool forceAdd)
     else
         delete defaultPaletteNode;
 
-    if(!FieldsEqual(2, &defaultObject))
+    if(completeSave || completeSave || !FieldsEqual(2, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("colorType", ColoringMethod_ToString(colorType)));
     }
 
-    if(!FieldsEqual(3, &defaultObject))
+    if(completeSave || completeSave || !FieldsEqual(3, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("colorTableName", colorTableName));
     }
 
-    if(!FieldsEqual(4, &defaultObject))
+    if(completeSave || completeSave || !FieldsEqual(4, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("legendFlag", legendFlag));
     }
 
-    if(!FieldsEqual(5, &defaultObject))
+    if(completeSave || !FieldsEqual(5, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("lineStyle", lineStyle));
     }
 
-    if(!FieldsEqual(6, &defaultObject))
+    if(completeSave || !FieldsEqual(6, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("lineWidth", lineWidth));
     }
 
         DataNode *singleColorNode = new DataNode("singleColor");
-        if(singleColor.CreateNode(singleColorNode, true))
+        if(singleColor.CreateNode(singleColorNode, true, true))
         {
             addToParent = true;
             node->AddNode(singleColorNode);
@@ -265,61 +268,61 @@ ContourAttributes::CreateNode(DataNode *parentNode, bool forceAdd)
         else
             delete singleColorNode;
 
-    if(!FieldsEqual(9, &defaultObject))
+    if(completeSave || !FieldsEqual(9, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("contourNLevels", contourNLevels));
     }
 
-    if(!FieldsEqual(10, &defaultObject))
+    if(completeSave || !FieldsEqual(10, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("contourValue", contourValue));
     }
 
-    if(!FieldsEqual(11, &defaultObject))
+    if(completeSave || !FieldsEqual(11, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("contourPercent", contourPercent));
     }
 
-    if(!FieldsEqual(12, &defaultObject))
+    if(completeSave || !FieldsEqual(12, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("contourMethod", Select_by_ToString(contourMethod)));
     }
 
-    if(!FieldsEqual(13, &defaultObject))
+    if(completeSave || !FieldsEqual(13, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("minFlag", minFlag));
     }
 
-    if(!FieldsEqual(14, &defaultObject))
+    if(completeSave || !FieldsEqual(14, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("maxFlag", maxFlag));
     }
 
-    if(!FieldsEqual(15, &defaultObject))
+    if(completeSave || !FieldsEqual(15, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("min", min));
     }
 
-    if(!FieldsEqual(16, &defaultObject))
+    if(completeSave || !FieldsEqual(16, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("max", max));
     }
 
-    if(!FieldsEqual(17, &defaultObject))
+    if(completeSave || !FieldsEqual(17, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("scaling", Scaling_ToString(scaling)));
     }
 
-    if(!FieldsEqual(18, &defaultObject))
+    if(completeSave || !FieldsEqual(18, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("wireframe", wireframe));

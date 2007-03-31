@@ -266,7 +266,6 @@ static bool                  keepGoing = true;
 static ViewerProxy          *viewer = 0;
 static FILE                 *logFile = 0;
 static bool                  logging = true;
-static bool                  g_runningScript = false;
 #ifdef THREADS
 static bool                  moduleUseThreads = true;
 #else
@@ -290,7 +289,8 @@ static std::map<AnnotationObject *, int> localObjectReferenceCount;
 
 #ifdef THREADS
 #if defined(_WIN32)
-static CRITICAL_SECTION      mutex;
+#define POLLING_SYNCHRONIZE
+static  CRITICAL_SECTION     mutex;
 #define THREAD_INIT()
 #define MUTEX_CREATE()       InitializeCriticalSection(&mutex)
 #define MUTEX_DESTROY() 
@@ -299,14 +299,47 @@ static CRITICAL_SECTION      mutex;
 #else
 // pthreads thread-related stuff.
 static pthread_attr_t        thread_atts;
-static pthread_mutex_t       mutex;
+static pthread_mutex_t       mutex, sync_mutex;
+static pthread_cond_t        received_sync_from_viewer;
+static bool waitingForViewer = false;
+static ObserverToCallback   *synchronizeCallback = 0;
 #define THREAD_INIT()        pthread_attr_init(&thread_atts)
 #define MUTEX_CREATE()       pthread_mutex_init(&mutex, NULL)
 #define MUTEX_DESTROY()      pthread_mutex_destroy(&mutex)
 #define MUTEX_LOCK()         pthread_mutex_lock(&mutex)
 #define MUTEX_UNLOCK()       pthread_mutex_unlock(&mutex)
+
+#define SYNC_MUTEX_LOCK()    pthread_mutex_lock(&sync_mutex);
+#define SYNC_MUTEX_UNLOCK()  pthread_mutex_unlock(&sync_mutex);
+
+#define SYNC_COND_WAIT()     if(keepGoing) \
+                             {\
+                                 waitingForViewer = true; \
+                                 pthread_cond_wait(&received_sync_from_viewer, \
+                                 &sync_mutex); \
+                                 waitingForViewer = false; \
+                             } \
+                             SYNC_MUTEX_UNLOCK();
+#define SYNC_WAKE_MAIN_THREAD() if(waitingForViewer) \
+                                    WakeMainThread(0, 0);
+#define SYNC_CREATE()        pthread_mutex_init(&sync_mutex, NULL); \
+                             pthread_cond_init(&received_sync_from_viewer, NULL);
+
+#define SYNC_DESTROY()       pthread_mutex_destroy(&sync_mutex); \
+                             pthread_cond_destroy(&received_sync_from_viewer);
+
+// Called by the listener thread when SyncAttributes is read from the viewer.
+static void WakeMainThread(Subject *, void *)
+{
+    SYNC_MUTEX_LOCK();
+    if(viewer->GetSyncAttributes()->GetSyncTag() == syncCount || !keepGoing)
+        pthread_cond_signal(&received_sync_from_viewer);
+    SYNC_MUTEX_UNLOCK();
+}
+
 #endif
 #else
+#define POLLING_SYNCHRONIZE
 #define MUTEX_CREATE()
 #define MUTEX_DESTROY()
 #define MUTEX_LOCK()
@@ -362,6 +395,36 @@ static const char visit_EvalCubic[] =
 "    OMT2 = OMT * OMT\n"
 "    OMT3 = OMT2 * OMT\n"
 "    return ((c0*OMT3) + (c1*(3.*OMT2*T)) + (c2*(3.*OMT*T2)) + (c3*T3))\n";
+
+// ****************************************************************************
+// Function: IntReturnValue
+//
+// Purpose: 
+//   Returns a Python long, which indicates the success value for the VisIt
+//   methods. If errorFlag < 0 then the viewer died. Return 0 so the 
+//   interpreter stops.
+//
+// Arguments:
+//   errorFlag : The error Flag. 0 means success. 1 means failure. -1 means
+//               that the viewer died.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec 19 12:31:01 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PyObject *
+IntReturnValue(int errorFlag)
+{
+    PyObject *retval = NULL;
+
+    if(errorFlag >= 0)
+        retval = PyLong_FromLong(long(errorFlag == 0));
+
+    return retval;
+}
 
 //
 // Python callbacks for VisIt
@@ -481,7 +544,7 @@ visit_Launch(PyObject *self, PyObject *args)
     // synchronize to flush out any initialization that came from the viewer
     // before we allow more commands to execute.
     CreateListenerThread();
-    Synchronize();
+    int errorFlag = Synchronize();
 
     //
     // Initialize the extensions.
@@ -495,8 +558,7 @@ visit_Launch(PyObject *self, PyObject *args)
     PlotPluginAddInterface();
     OperatorPluginAddInterface();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(errorFlag);
 }
 
 // ****************************************************************************
@@ -787,10 +849,39 @@ visit_AddWindow(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "AddWindow()\n");
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_ShowAllWindows
+//
+// Purpose:
+//   Tells the viewer to show its windows.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec 19 12:52:36 PDT 2003
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ShowAllWindows(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    MUTEX_LOCK();
+        viewer->ShowAllWindows();
+        if(logging)
+            fprintf(logFile, "ShowAllWindows()\n");
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -820,10 +911,9 @@ visit_CloneWindow(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "CloneWindow()\n");
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -864,10 +954,9 @@ visit_AnimationNextFrame(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "AnimationNextFrame()\n");
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 STATIC PyObject *
@@ -880,10 +969,9 @@ visit_AnimationPreviousFrame(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "AnimationPreviousFrame()\n");
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 STATIC PyObject *
@@ -902,10 +990,9 @@ visit_AnimationSetFrame(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "AnimationSetFrame(%d)\n", frame);
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -965,10 +1052,9 @@ visit_AnimationSetNFrames(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "AnimationSetNFrames(%d)\n", nFrames);
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -1002,10 +1088,9 @@ visit_SetWindowLayout(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "SetWindowLayout(%d)\n", winLayout);
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -1039,10 +1124,9 @@ visit_SetActiveWindow(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "SetActiveWindow(%d)\n", activewin);
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -1151,7 +1235,7 @@ visit_OpenDatabase(PyObject *self, PyObject *args)
     }
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(errorFlag);
 }
 
 // ****************************************************************************
@@ -1197,7 +1281,7 @@ visit_ReOpenDatabase(PyObject *self, PyObject *args)
     }
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(errorFlag);
 }
 
 // ****************************************************************************
@@ -1250,10 +1334,8 @@ ExpressionDefinitionHelper(PyObject *args, const char *name, Expression::ExprTyp
             fprintf(logFile, "%s(\"%s\", \"%s\")\n", name, exprName, exprDef);
 
     MUTEX_UNLOCK();
-    Synchronize();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -1325,6 +1407,7 @@ visit_DefineSpeciesExpression(PyObject *self, PyObject *args)
 // Modifications:
 //   
 // ****************************************************************************
+
 STATIC PyObject *
 visit_DeleteExpression(PyObject *self, PyObject *args)
 {
@@ -1351,10 +1434,8 @@ visit_DeleteExpression(PyObject *self, PyObject *args)
             fprintf(logFile, "DeleteExpression(\"%s\")\n", exprName);
 
     MUTEX_UNLOCK();
-    Synchronize();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -1469,10 +1550,9 @@ OpenComponentHelper(PyObject *self, PyObject *args, bool openEngine)
             }
         }
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 STATIC PyObject *
@@ -1531,7 +1611,7 @@ visit_OverlayDatabase(PyObject *self, PyObject *args)
     }
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(errorFlag);
 }
 
 // ****************************************************************************
@@ -1590,7 +1670,7 @@ visit_ReplaceDatabase(PyObject *self, PyObject *args)
     }
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(errorFlag);
 }
 
 // ****************************************************************************
@@ -1672,9 +1752,8 @@ visit_AddPlot(PyObject *self, PyObject *args)
     // If the plot type was not found, return.
     if(plotTypeIndex < 0)
     {
-        VisItErrorFunc("Invalid plot plugin name");
-        Py_INCREF(Py_None);
-        return Py_None;
+        VisItErrorFunc("Invalid plot plugin name!");
+        return NULL;
     }
    
     MUTEX_LOCK();
@@ -1682,10 +1761,9 @@ visit_AddPlot(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "AddPlot(\"%s\", \"%s\")\n", plotName, varName);
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -1746,7 +1824,7 @@ visit_AddOperator(PyObject *self, PyObject *args)
     if(operTypeIndex < 0)
     {
         VisItErrorFunc("Invalid operator plugin name");
-        return PyLong_FromLong(long(0));
+        return NULL;
     }
 
     MUTEX_LOCK();
@@ -1762,10 +1840,9 @@ visit_AddOperator(PyObject *self, PyObject *args)
                     applyToAllPlots);
         }
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -1795,10 +1872,9 @@ visit_DrawPlots(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "DrawPlots()\n");
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -1853,10 +1929,9 @@ visit_CloseComputeEngine(PyObject *self, PyObject *args)
                 fprintf(logFile, "CloseComputeEngine(\"%s\")\n", engineName);
          }
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -2078,10 +2153,9 @@ visit_ChangeActivePlotsVar(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "ChangeActivePlotsVar(\"%s\")\n", varName);
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -2117,10 +2191,9 @@ visit_CopyAnnotationsToWindow(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "CopyAnnotationsToWindow(%d, %d)\n", from, to);
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -2156,10 +2229,9 @@ visit_CopyLightingToWindow(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "CopyLightingToWindow(%d, %d)\n", from, to);
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -2195,10 +2267,9 @@ visit_CopyViewToWindow(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "CopyViewToWindow(%d, %d)\n", from, to);
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -2232,10 +2303,9 @@ visit_CopyPlotsToWindow(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "CopyPlotsToWindow(%d, %d)\n", from, to);
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -2263,10 +2333,9 @@ visit_DeleteActivePlots(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "DeleteActivePlots()\n");
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -2306,10 +2375,9 @@ visit_DeleteAllPlots(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "DeleteAllPlots()\n");
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -2351,10 +2419,9 @@ visit_RemoveLastOperator(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "RemoveLastOperator(%d)\n", applyToAllPlots);
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -2396,10 +2463,9 @@ visit_RemoveAllOperators(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "RemoveAllOperators(%d)\n", applyToAllPlots);
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -2427,10 +2493,8 @@ visit_ClearWindow(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "ClearWindow()\n");
     MUTEX_UNLOCK();
-    Synchronize();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -2458,10 +2522,8 @@ visit_ClearAllWindows(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "ClearAllWindows()\n");
     MUTEX_UNLOCK();
-    Synchronize();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -2494,10 +2556,9 @@ visit_ClearCache(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "ClearCache(\"%s\")\n", engineName);
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -2589,11 +2650,16 @@ visit_SaveWindow(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "SaveWindow()\n");
     MUTEX_UNLOCK();
-    Synchronize();
+    int errorFlag = Synchronize();
 
-    std::string realname =
+    PyObject *retval = NULL;
+    if(errorFlag == 0)
+    {
+        std::string realname =
             viewer->GetSaveWindowAttributes()->GetLastRealFilename();
-    PyObject *retval = PyString_FromString(realname.c_str());
+        retval = PyString_FromString(realname.c_str());
+    }
+
     return retval;
 }
 
@@ -2624,10 +2690,9 @@ visit_DeleteWindow(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "DeleteWindow()\n");
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -2685,10 +2750,8 @@ visit_RedrawWindow(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "RedrawWindow()\n");
     MUTEX_UNLOCK();
-    Synchronize();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -2716,10 +2779,8 @@ visit_RecenterView(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "RecenterView()\n");
     MUTEX_UNLOCK();
-    Synchronize();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -2747,10 +2808,8 @@ visit_ResetView(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "ResetView()\n");
     MUTEX_UNLOCK();
-    Synchronize();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -2784,10 +2843,9 @@ visit_RestoreSession(PyObject *self, PyObject *args)
             fprintf(logFile, "RestoreSession(%s, %d)\n", filename,
                     sessionStoredInVisItDir);
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -2819,10 +2877,9 @@ visit_SaveSession(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "SaveSession(%s)\n", filename);
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -2885,10 +2942,9 @@ visit_HideActivePlots(PyObject *self, PyObject *args)
     MUTEX_LOCK();
         viewer->HideActivePlots();
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -2919,10 +2975,9 @@ visit_HideToolbars(PyObject *self, PyObject *args)
         // If we passed an argument then hide toolbars for all windows.
         viewer->HideToolbars(hideForAllWindows != 0);
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -2953,10 +3008,9 @@ visit_ShowToolbars(PyObject *self, PyObject *args)
         // If we passed an argument then show toolbars for all windows.
         viewer->ShowToolbars(showForAllWindows != 0);
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -2983,7 +3037,7 @@ visit_SetAnnotationAttributes(PyObject *self, PyObject *args)
     // Try and get the annotation pointer.
     if(!PyArg_ParseTuple(args,"O",&annot))
     {
-        cerr << "visit_SetAnnotationAttributes: Cannot parse object!" << endl;
+        VisItErrorFunc("SetAnnotationAttributes: Cannot parse object!");
         return NULL;
     }
     if(!PyAnnotationAttributes_Check(annot))
@@ -3003,10 +3057,44 @@ visit_SetAnnotationAttributes(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "SetAnnotationAttributes()\n");
     MUTEX_UNLOCK();
-    Synchronize();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_SetCloneWindowOnFirstRef
+//
+// Purpose:
+//   Tells the viewer to use the clone window on first reference flag.
+//
+// Notes:      
+//
+// Programmer: Eric Brugger
+// Creation:   Thu Dec 18 15:29:44 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetCloneWindowOnFirstRef(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int flag;
+    if (!PyArg_ParseTuple(args, "i", &flag))
+       return NULL;
+
+    MUTEX_LOCK();
+        viewer->GetGlobalAttributes()->SetCloneWindowOnFirstRef(flag);
+        viewer->GetGlobalAttributes()->Notify();
+        if(logging)
+            fprintf(logFile, "SetCloneWindowOnFirstRef(%d)\n", flag);
+    MUTEX_UNLOCK();
+    int errorFlag = Synchronize();
+
+    // Return the success value.
+    return PyLong_FromLong(long(errorFlag == 0));
 }
 
 // ****************************************************************************
@@ -3033,7 +3121,7 @@ visit_SetDefaultAnnotationAttributes(PyObject *self, PyObject *args)
     // Try and get the annotation pointer.
     if(!PyArg_ParseTuple(args,"O",&annot))
     {
-        cerr << "visit_SetDefaultAnnotationAttributes: Cannot parse object!" << endl;
+        VisItErrorFunc("SetDefaultAnnotationAttributes: Cannot parse object!");
         return NULL;
     }
     if(!PyAnnotationAttributes_Check(annot))
@@ -3053,10 +3141,8 @@ visit_SetDefaultAnnotationAttributes(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "SetDefaultAnnotationAttributes()\n");
     MUTEX_UNLOCK();
-    Synchronize();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -3112,7 +3198,7 @@ visit_SetKeyframeAttributes(PyObject *self, PyObject *args)
     // Try and get the keyframe pointer.
     if(!PyArg_ParseTuple(args,"O",&keyframe))
     {
-        cerr << "visit_SetKeyframeAttributes: Cannot parse object!" << endl;
+        VisItErrorFunc("SetKeyframeAttributes: Cannot parse object!");
         return NULL;
     }
     if(!PyKeyframeAttributes_Check(keyframe))
@@ -3132,10 +3218,8 @@ visit_SetKeyframeAttributes(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "SetKeyframeAttributes()\n");
     MUTEX_UNLOCK();
-    Synchronize();
- 
-    Py_INCREF(Py_None);
-    return Py_None;
+
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -3191,7 +3275,7 @@ visit_SetMaterialAttributes(PyObject *self, PyObject *args)
     // Try and get the material pointer.
     if(!PyArg_ParseTuple(args,"O",&mat))
     {
-        cerr << "visit_SetMaterialAttributes: Cannot parse object!" << endl;
+        VisItErrorFunc("SetMaterialAttributes: Cannot parse object!");
         return NULL;
     }
     if(!PyMaterialAttributes_Check(mat))
@@ -3211,10 +3295,8 @@ visit_SetMaterialAttributes(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "SetMaterialAttributes()\n");
     MUTEX_UNLOCK();
-    Synchronize();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -3241,7 +3323,7 @@ visit_SetDefaultMaterialAttributes(PyObject *self, PyObject *args)
     // Try and get the material pointer.
     if(!PyArg_ParseTuple(args,"O",&mat))
     {
-        cerr << "visit_SetDefaultMaterialAttributes: Cannot parse object!" << endl;
+        VisItErrorFunc("SetDefaultMaterialAttributes: Cannot parse object!");
         return NULL;
     }
     if(!PyMaterialAttributes_Check(mat))
@@ -3261,10 +3343,8 @@ visit_SetDefaultMaterialAttributes(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "SetDefaultMaterialAttributes()\n");
     MUTEX_UNLOCK();
-    Synchronize();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -3320,7 +3400,7 @@ visit_SetPrinterAttributes(PyObject *self, PyObject *args)
     // Try and get the printer attributes pointer.
     if(!PyArg_ParseTuple(args,"O",&print))
     {
-        cerr << "visit_SetPrinterAttributes: Cannot parse object!" << endl;
+        VisItErrorFunc("SetPrinterAttributes: Cannot parse object!");
         return NULL;
     }
     if(!PyPrinterAttributes_Check(print))
@@ -3339,10 +3419,8 @@ visit_SetPrinterAttributes(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "SetPrinterAttributes()\n");
     MUTEX_UNLOCK();
-    Synchronize();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -3372,7 +3450,7 @@ visit_SetSaveWindowAttributes(PyObject *self, PyObject *args)
     // Try and get the annotation pointer.
     if(!PyArg_ParseTuple(args,"O",&annot))
     {
-        cerr << "visit_SetSaveWindowAttributes: Cannot parse object!" << endl;
+        VisItErrorFunc("SetSaveWindowAttributes: Cannot parse object!");
         return NULL;
     }
     if(!PySaveWindowAttributes_Check(annot))
@@ -3391,10 +3469,8 @@ visit_SetSaveWindowAttributes(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "SetSaveWindowAttributes()\n");
     MUTEX_UNLOCK();
-    Synchronize();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -3453,7 +3529,7 @@ visit_SetViewCurve(PyObject *self, PyObject *args)
     // Try and get the view pointer.
     if(!PyArg_ParseTuple(args,"O",&view))
     {
-        cerr << "visit_SetViewCurve: Cannot parse object!" << endl;
+        VisItErrorFunc("SetViewCurve: Cannot parse object!");
         return NULL;
     }
     if(!PyViewCurveAttributes_Check(view))
@@ -3473,10 +3549,8 @@ visit_SetViewCurve(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "SetViewCurve()\n");
     MUTEX_UNLOCK();
-    Synchronize();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -3534,7 +3608,7 @@ visit_SetView2D(PyObject *self, PyObject *args)
     // Try and get the view pointer.
     if(!PyArg_ParseTuple(args,"O",&view))
     {
-        cerr << "visit_SetView2D: Cannot parse object!" << endl;
+        VisItErrorFunc("SetView2D: Cannot parse object!");
         return NULL;
     }
     if(PyView2DAttributes_Check(view))
@@ -3581,10 +3655,7 @@ visit_SetView2D(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    Synchronize();
-
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -3644,7 +3715,7 @@ visit_SetView3D(PyObject *self, PyObject *args)
     // Try and get the view pointer.
     if(!PyArg_ParseTuple(args,"O",&view))
     {
-        cerr << "visit_SetView3D: Cannot parse object!" << endl;
+        VisItErrorFunc("SetView3D: Cannot parse object!");
         return NULL;
     }
     if(PyView3DAttributes_Check(view))
@@ -3699,10 +3770,7 @@ visit_SetView3D(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    Synchronize();
-
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -3762,8 +3830,7 @@ visit_ClearViewKeyframes(PyObject *self, PyObject *args)
             fprintf(logFile, "ClearViewKeyframes()\n");
     MUTEX_UNLOCK();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -3796,8 +3863,7 @@ visit_DeleteViewKeyframe(PyObject *self, PyObject *args)
             fprintf(logFile, "DeleteViewKeyframe(%d)\n", frame);
     MUTEX_UNLOCK();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -3830,8 +3896,7 @@ visit_MoveViewKeyframe(PyObject *self, PyObject *args)
             fprintf(logFile, "MoveViewKeyframe(%d, %d)\n", oldFrame, newFrame);
     MUTEX_UNLOCK();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -3860,8 +3925,7 @@ visit_SetViewKeyframe(PyObject *self, PyObject *args)
             fprintf(logFile, "SetViewKeyframe()\n");
     MUTEX_UNLOCK();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -3914,10 +3978,9 @@ visit_SetViewExtentsType(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "SetViewExtentsType(%d)\n", extType);
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -4004,7 +4067,7 @@ visit_SetRenderingAttributes(PyObject *self, PyObject *args)
     // Try and get the view pointer.
     if(!PyArg_ParseTuple(args,"O",&renderAtts))
     {
-        cerr << "visit_SetRenderingAttributes: Cannot parse object!" << endl;
+        VisItErrorFunc("SetRenderingAttributes: Cannot parse object!");
         return NULL;
     }
     if(!PyRenderingAttributes_Check(renderAtts))
@@ -4024,10 +4087,9 @@ visit_SetRenderingAttributes(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "SetRenderingAttributes()\n");
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -4086,8 +4148,7 @@ visit_SetWindowMode(PyObject *self, PyObject *args)
             fprintf(logFile, "SetWindowMode(%d)\n", mode);
     MUTEX_UNLOCK();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -4135,8 +4196,7 @@ visit_EnableTool(PyObject *self, PyObject *args)
             fprintf(logFile, "EnableTool(%d, %d)\n", tool, enabled);
     MUTEX_UNLOCK();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -4358,7 +4418,7 @@ visit_ResetOperatorOptions(PyObject *self, PyObject *args)
     }
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(errorFlag);
 }
 
 // ****************************************************************************
@@ -4424,7 +4484,7 @@ visit_ResetPlotOptions(PyObject *self, PyObject *args)
     }
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(errorFlag);
 }
 
 // ****************************************************************************
@@ -4486,26 +4546,28 @@ visit_SetActivePlots(PyObject *self, PyObject *args)
     //
     // Set the active plots using the indices in the vector.
     //
-    int errorFlag = 0;
+    bool okayToSet = false;
     MUTEX_LOCK();
     intVector activePlots;
     for(int j = 0; j < vec.size(); ++j)
     {
         if(vec[j] < 0 || vec[j] >= viewer->GetPlotList()->GetNumPlots())
         {
-            errorFlag = 1;
+            okayToSet = false;
             break;
         }
         else
+        {
+            okayToSet = true;
             activePlots.push_back(vec[j]);
+        }
     }
-    if(errorFlag == 0)
+    if(okayToSet)
         viewer->SetActivePlots(activePlots);
     MUTEX_UNLOCK();
-    errorFlag |= Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(okayToSet ? Synchronize() : 1);
 }
 
 // ****************************************************************************
@@ -4595,7 +4657,7 @@ visit_SetOperatorOptions(PyObject *self, PyObject *args)
     {
         VisItErrorFunc("The first argument must be an operator attributes object!");
         // Return a failure value.
-        return PyLong_FromLong(long(0));
+        return NULL;
     }
 
     //
@@ -4652,10 +4714,9 @@ visit_SetOperatorOptions(PyObject *self, PyObject *args)
         }
     }
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -4713,10 +4774,9 @@ PromoteDemoteRemoveOperatorHelper(PyObject *self, PyObject *args, int option)
             viewer->RemoveOperator(operatorIndex);
     }
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -4838,7 +4898,7 @@ visit_SetDefaultOperatorOptions(PyObject *self, PyObject *args)
     {
         VisItErrorFunc("The argument must be an operator attributes object.");
         // Return a failure value.
-        return PyLong_FromLong(0);
+        return NULL;
     }
 
     //
@@ -4857,10 +4917,9 @@ visit_SetDefaultOperatorOptions(PyObject *self, PyObject *args)
         viewer->SetDefaultOperatorOptions(objPluginIndex);
     }
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -4925,7 +4984,7 @@ visit_SetDefaultPlotOptions(PyObject *self, PyObject *args)
     {
         VisItErrorFunc("The argument must be a plot attributes object.");
         // Return a failure value.
-        return PyLong_FromLong(0);
+        return NULL;
     }
 
     //
@@ -4944,10 +5003,9 @@ visit_SetDefaultPlotOptions(PyObject *self, PyObject *args)
         viewer->SetDefaultPlotOptions(objPluginIndex);
     }
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -5009,7 +5067,7 @@ visit_SetPlotOptions(PyObject *self, PyObject *args)
     {
         VisItErrorFunc("The argument must be a plot attributes object.");
         // Return a failure value.
-        return PyLong_FromLong(0);
+        return NULL;
     }
 
     //
@@ -5026,10 +5084,9 @@ visit_SetPlotOptions(PyObject *self, PyObject *args)
         viewer->SetPlotOptions(objPluginIndex);
     }
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -5081,7 +5138,7 @@ visit_SetPlotSILRestriction(PyObject *self, PyObject *args)
     {
         VisItErrorFunc("The argument must be a SIL restriction object.");
         // Return a failure value.
-        return PyLong_FromLong(0);
+        return NULL;
     }
 
     //
@@ -5099,10 +5156,9 @@ visit_SetPlotSILRestriction(PyObject *self, PyObject *args)
         viewer->SetPlotSILRestriction(silr);
     }
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 
@@ -5536,7 +5592,11 @@ TurnCategoryHelper(PyObject *self, PyObject *args, SILCategoryRole role, bool va
             errorFlag = TurnOnOffHelper(role, val, names) ? 0 : 1;
             MUTEX_UNLOCK();
             locked = false;
-            errorFlag |= Synchronize();
+            int syncErrorFlag = Synchronize();
+            if(syncErrorFlag < 0)
+                errorFlag = syncErrorFlag;
+            else
+                errorFlag |= syncErrorFlag;
         }
     }
     if(locked)
@@ -5544,7 +5604,7 @@ TurnCategoryHelper(PyObject *self, PyObject *args, SILCategoryRole role, bool va
         MUTEX_UNLOCK();
     }
 
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(errorFlag);
 }
 
 // ****************************************************************************
@@ -5818,8 +5878,7 @@ visit_SetActiveContinuousColorTable(PyObject *self, PyObject *args)
         viewer->SetActiveContinuousColorTable(ctName);
     MUTEX_UNLOCK();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -5853,8 +5912,7 @@ visit_SetActiveDiscreteColorTable(PyObject *self, PyObject *args)
         viewer->SetActiveDiscreteColorTable(ctName);
     MUTEX_UNLOCK();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -6136,10 +6194,9 @@ visit_PrintWindow(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "PrintWindow()\n");
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -6169,10 +6226,8 @@ visit_SetWindowArea(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "SetWindowArea(%d, %d, %d, %d)\n",x,y,w,h);
     MUTEX_UNLOCK();
-    Synchronize();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -6213,10 +6268,9 @@ visit_SetAnimationTimeout(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "SetAnimationTimeout(%d)\n", milliSeconds);
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -6273,10 +6327,9 @@ visit_SetPipelineCachingMode(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "SetPipelineCachingMode(%d)\n", val);
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -6393,10 +6446,8 @@ visit_ToggleMaintainViewMode(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "ToggleMaintainViewMode()\n");
     MUTEX_UNLOCK();
-    Synchronize();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -6425,8 +6476,7 @@ visit_ToggleBoundingBoxMode(PyObject *self, PyObject *args)
             fprintf(logFile, "ToggleBoundingBoxMode()\n");
     MUTEX_UNLOCK();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -6455,8 +6505,7 @@ visit_ToggleLockViewMode(PyObject *self, PyObject *args)
             fprintf(logFile, "ToggleLockViewMode()\n");
     MUTEX_UNLOCK();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -6485,8 +6534,7 @@ visit_ToggleSpinMode(PyObject *self, PyObject *args)
             fprintf(logFile, "ToggleSpinMode()\n");
     MUTEX_UNLOCK();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());;
 }
 
 // ****************************************************************************
@@ -6515,8 +6563,7 @@ visit_ToggleCameraViewMode(PyObject *self, PyObject *args)
             fprintf(logFile, "ToggleViewMode()\n");
     MUTEX_UNLOCK();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());;
 }
 
 
@@ -6543,10 +6590,8 @@ visit_ToggleFullFrameMode(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "ToggleFullFrameMode()\n");
     MUTEX_UNLOCK();
-    Synchronize();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());;
 }
 
 // ****************************************************************************
@@ -6574,10 +6619,8 @@ visit_UndoView(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "UndoView()\n");
     MUTEX_UNLOCK();
-    Synchronize();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -6683,10 +6726,9 @@ visit_Query(PyObject *self, PyObject *args)
             fprintf(logFile, "))\n");
         }
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 
@@ -6782,10 +6824,9 @@ visit_Pick(PyObject *self, PyObject *args)
             fprintf(logFile, "))\n");
         }
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 
@@ -6874,10 +6915,9 @@ visit_NodePick(PyObject *self, PyObject *args)
             fprintf(logFile, "))\n");
         }
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -6906,10 +6946,8 @@ visit_ResetPickLetter(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "ResetPickLetter()\n");
     MUTEX_UNLOCK();
-    Synchronize();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -6938,10 +6976,8 @@ visit_ResetPickAttributes(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "ResetPickAttributes()\n");
     MUTEX_UNLOCK();
-    Synchronize();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());;
 }
 
 // ****************************************************************************
@@ -6968,7 +7004,7 @@ visit_SetPickAttributes(PyObject *self, PyObject *args)
     // Try and get the pick pointer.
     if(!PyArg_ParseTuple(args,"O",&pick))
     {
-        cerr << "visit_SetPickAttributes: Cannot parse object!" << endl;
+        VisItErrorFunc("SetPickAttributes: Cannot parse object!");
         return NULL;
     }
     if(!PyPickAttributes_Check(pick))
@@ -6988,10 +7024,8 @@ visit_SetPickAttributes(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "SetPickAttributes()\n");
     MUTEX_UNLOCK();
-    Synchronize();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());;
 }
 
 
@@ -7019,7 +7053,7 @@ visit_SetDefaultPickAttributes(PyObject *self, PyObject *args)
     // Try and get the annotation pointer.
     if(!PyArg_ParseTuple(args,"O",&pick))
     {
-        cerr << "visit_SetDefaultPickAttributes: Cannot parse object!" << endl;
+        VisItErrorFunc("SetDefaultPickAttributes: Cannot parse object!");
         return NULL;
     }
     if(!PyPickAttributes_Check(pick))
@@ -7039,10 +7073,8 @@ visit_SetDefaultPickAttributes(PyObject *self, PyObject *args)
         if(logging)
             fprintf(logFile, "SetDefaultPickAttributes()\n");
     MUTEX_UNLOCK();
-    Synchronize();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return IntReturnValue(Synchronize());;
 }
 
 // ****************************************************************************
@@ -7146,10 +7178,9 @@ visit_DomainPick(const char *type, int dom, int el, stringVector vars)
             fprintf(logFile, "))\n");
         }
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 
@@ -7348,10 +7379,9 @@ visit_Lineout(PyObject *self, PyObject *args)
             fprintf(logFile, "))\n");
         }
     MUTEX_UNLOCK();
-    int errorFlag = Synchronize();
 
     // Return the success value.
-    return PyLong_FromLong(long(errorFlag == 0));
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -7453,7 +7483,7 @@ visit_CreateAnnotationObject(PyObject *self, PyObject *args)
             retval = CreateAnnotationWrapper(localCopy);
         MUTEX_UNLOCK();
     }
-    else
+    else if(errorFlag > 0)
     {
         char message[400];
         SNPRINTF(message, 400, "VisIt could not create an annotation object "
@@ -7821,7 +7851,10 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Added CreateAnnotationObject and GetAnnotationObject.
 //
 //   Brad Whitlock, Fri Dec 5 14:15:04 PST 2003
-//   Added LongFileName.
+//   Added LongFileName and ShowAllWindows.
+//
+//   Eric Brugger, Thu Dec 18 15:29:44 PST 2003
+//   Added SetCloneWindowOnFirstRef.
 //
 // ****************************************************************************
 
@@ -7939,6 +7972,7 @@ AddDefaultMethods()
     AddMethod("SetActiveWindow", visit_SetActiveWindow);
     AddMethod("SetAnimationTimeout", visit_SetAnimationTimeout);
     AddMethod("SetAnnotationAttributes", visit_SetAnnotationAttributes);
+    AddMethod("SetCloneWindowOnFirstRef", visit_SetCloneWindowOnFirstRef);
     AddMethod("SetDefaultAnnotationAttributes", visit_SetDefaultAnnotationAttributes);
     AddMethod("SetDefaultMaterialAttributes", visit_SetDefaultMaterialAttributes);
     AddMethod("SetDefaultOperatorOptions", visit_SetDefaultOperatorOptions);
@@ -7980,6 +8014,7 @@ AddDefaultMethods()
     AddMethod("ResetPickAttributes", visit_ResetPickAttributes);
     AddMethod("ResetPickLetter", visit_ResetPickLetter);
     AddMethod("SetDefaultPickAttributes", visit_SetDefaultPickAttributes);
+    AddMethod("ShowAllWindows",  visit_ShowAllWindows);
 
     //
     // Extra methods that are not part of the ViewerProxy but allow the
@@ -8423,6 +8458,10 @@ NeedToLoadPlugins(Subject *, void *)
 //   the call to Init::Initialize because I wanted to add some debug stream
 //   code into the termination function.
 //
+//   Brad Whitlock, Thu Dec 18 16:00:04 PST 2003
+//   I added an observer that helps us do thread synchronization that does
+//   not involve polling so we don't waste the CPU.
+//
 // ****************************************************************************
 
 static int
@@ -8503,6 +8542,11 @@ InitializeModule()
     statusObserver->SetVerbose(moduleVerbose);
     pluginLoader = new ObserverToCallback(viewer->GetPluginManagerAttributes(),
                                           NeedToLoadPlugins);
+#ifndef POLLING_SYNCHRONIZE
+    synchronizeCallback = new ObserverToCallback(viewer->GetSyncAttributes(),
+                                                 WakeMainThread);
+#endif
+
     //
     // Open the log file
     //
@@ -8555,6 +8599,7 @@ InitializeModule()
 //   up the viewer, we have to tell it to show its windows.
 //
 // ****************************************************************************
+
 static void
 LaunchViewer()
 {
@@ -8694,18 +8739,13 @@ CloseModule()
 // Creation:   Mon Sep 17 11:44:43 PDT 2001
 //
 // Modifications:
-//   Brad Whitlock, Tue Jul 15 10:06:13 PDT 2003
-//   Added code to print out an error message if we're running a script.
-//
+//   
 // ****************************************************************************
 
 void
 VisItErrorFunc(const char *errString)
 {
-    if(g_runningScript)
-        fprintf(stderr, "visit.error: %s\n", errString);
-    else
-        PyErr_SetString(VisItError, errString);
+    PyErr_SetString(VisItError, errString);
 }
 
 // ****************************************************************************
@@ -8762,9 +8802,7 @@ cli_runscript(const char *fileName)
         FILE *fp = fopen(fileName, "r");
         if(fp)
         {
-            g_runningScript = true;
             PyRun_SimpleFile(fp, (char *)fileName);
-            g_runningScript = false;
             fclose(fp);
         }
         else
@@ -8834,6 +8872,11 @@ initscriptfunctions()
 //   Brad Whitlock, Mon Dec 17 17:22:06 PST 2001
 //   Added a call to initscriptfunctions.
 //
+//   Brad Whitlock, Thu Dec 18 16:10:30 PST 2003
+//   Added a call to create the mutex used for a condition variable. I also
+//   renamed the error exception to VisItException to make it more like the
+//   C++ version since we can actually trap for the exception now.
+//
 // ****************************************************************************
 
 void
@@ -8847,6 +8890,9 @@ initvisit()
     if(!moduleInitialized)
     {
         MUTEX_CREATE();
+#ifndef POLLING_SYNCHRONIZE
+        SYNC_CREATE();
+#endif
         THREAD_INIT();
         initCode = InitializeModule();
     }
@@ -8859,8 +8905,8 @@ initvisit()
 
     // Add the Python error message.
     d = PyModule_GetDict(visitModule);
-    VisItError = PyErr_NewException("visit.error", NULL, NULL);
-    PyDict_SetItemString(d, "error", VisItError);
+    VisItError = PyErr_NewException("visit.VisItException", NULL, NULL);
+    PyDict_SetItemString(d, "VisItException", VisItError);
 
     // Define builtin visit functions that are written in python.
     initscriptfunctions();
@@ -8881,7 +8927,9 @@ initvisit()
 // Creation:   Tue Sep 4 15:58:44 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Dec 18 16:11:25 PST 2003
+//   Added a call to destroy the synchronization mutex.
+//
 // ****************************************************************************
 
 static void
@@ -8895,6 +8943,9 @@ terminatevisit()
         fclose(logFile);
 
     MUTEX_DESTROY();
+#ifndef POLLING_SYNCHRONIZE
+    SYNC_DESTROY();
+#endif
 }
 
 // ****************************************************************************
@@ -8913,6 +8964,14 @@ terminatevisit()
 // Modifications:
 //   Brad Whitlock, Wed Apr 3 13:05:03 PST 2002
 //   Rewrote so it is more portable.
+//
+//   Brad Whitlock, Fri Dec 19 13:20:47 PST 2003
+//   I added code to unlock the mutex if there is a lost connection exception
+//   so control is able to go back to thread 1, which is still alive. I also
+//   set the noViewer flag to true to indicate that the viewer is dead so
+//   the appropriate error message gets set when we attempt to enter one of
+//   our visit methods without a live viewer. Finally, I added code to wake up
+//   thread 1 if we're not using a polling synchronize.
 //
 // ****************************************************************************
 
@@ -8941,16 +9000,22 @@ visit_eventloop(void *)
             }
             CATCH(LostConnectionException)
             {
-                // If we think the viewer should still be going, print
-                // an error message.
-                if(keepGoing)
-                {
-                    fprintf(stderr, "VisIt: Fatal - VisIt's viewer has "
-                                    "terminated abnormally!\n");
-                }
-
                 // We lost the viewer, terminate the event loop.
                 keepGoing = false;
+
+                // If we got to this point, it means that the mutex is
+                // still locked and we must unlock it to ensure that
+                // thread 1 can continue.
+                MUTEX_UNLOCK();
+
+                //
+                // Indicate that there is no viewer.
+                //
+                noViewer = true;
+
+#ifndef POLLING_SYNCHRONIZE
+                SYNC_WAKE_MAIN_THREAD();
+#endif
             }
             ENDTRY
         }
@@ -8972,6 +9037,10 @@ visit_eventloop(void *)
 //
 // Note:       This function must *not* be called within a critical section.
 //
+// Returns:    0 - success
+//             1 - failure
+//            -1 - failure and viewer died
+//
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 17 11:28:30 PDT 2001
 //
@@ -8980,11 +9049,18 @@ visit_eventloop(void *)
 //   I made it return a value indicating if VisIt had an error while
 //   processing the remaining commands.
 //
+//   Brad Whitlock, Thu Dec 18 16:04:02 PST 2003
+//   I added support for synchonization that does not involve polling. I also
+//   made it return a value of -1 if the viewer happened to die while we were
+//   synchronizing. In that case, I also added code to set the error string.
+//
 // ****************************************************************************
 
 static int
 Synchronize()
 {
+    const char *terminationMsg = "VisIt's viewer has terminated abnormally!";
+
     // Clear any error flag in the message observer.
     messageObserver->ClearError();
 
@@ -8992,7 +9068,21 @@ Synchronize()
     if(!moduleUseThreads)
         return 0;
 
+    //
+    // If the 2nd thread is not running, don't enter this method or we'll
+    // be in here forever.
+    //
+    if(!keepGoing)
+    {
+        VisItErrorFunc(terminationMsg);
+        return -1;
+    }
+
     SyncAttributes *syncAtts = viewer->GetSyncAttributes();
+
+#ifndef POLLING_SYNCHRONIZE
+    SYNC_MUTEX_LOCK();
+#endif
 
     // Send the syncAtts to the viewer and then set the proxy's syncAtts tag
     // to -1. This will allow us to loop until the viewer sends back the
@@ -9000,6 +9090,7 @@ Synchronize()
     ++syncCount;
     MUTEX_LOCK();
     syncAtts->SetSyncTag(syncCount);
+    synchronizeCallback->SetUpdate(false);
     syncAtts->Notify();
     syncAtts->SetSyncTag(-1);
     MUTEX_UNLOCK();
@@ -9009,15 +9100,27 @@ Synchronize()
     if(logEnabled)
         SetLogging(false);
 
+#ifndef POLLING_SYNCHRONIZE
+    SYNC_COND_WAIT();
+#else
     while((syncAtts->GetSyncTag() != syncCount) && keepGoing)
     {
         // Nothing here.
     }
+#endif
 
     // Enable logging.
     if(logEnabled)
         SetLogging(true);
 
+    // If the viewer has terminated while we were waiting for the sync tag
+    // then call the error function now that we're in thread 1.
+    if(!keepGoing)
+    {
+        VisItErrorFunc(terminationMsg);
+    }
+
     // Return whether or not there is an error in the message observer.
-    return messageObserver->ErrorFlag();
+    // Also indicate an error if the viewer is dead.
+    return keepGoing ? messageObserver->ErrorFlag() : -1;
 }

@@ -393,6 +393,11 @@ ViewerOperator::NeedsRecalculation() const
 // Creation:   Wed Jul 16 13:09:04 PST 2003
 //
 // Modifications:
+//   Brad Whitlock, Mon Dec 15 16:30:48 PST 2003
+//   I added the new completeSave argument to AttributeSubject::CreateNode to
+//   force the operator attributes to write out all of their fields to avoid
+//   unwanted settings from the system configs. This makes the session file
+//   reproduce the same thing each time without having to run -noconfig.
 //   
 // ****************************************************************************
 
@@ -405,7 +410,7 @@ ViewerOperator::CreateNode(DataNode *parentNode)
     DataNode *operatorNode = new DataNode("ViewerOperator");
 
     // Add the operator attributes.
-    if(operatorAtts->CreateNode(operatorNode, false))
+    if(operatorAtts->CreateNode(operatorNode, true, true))
         parentNode->AddNode(operatorNode);
     else
         delete operatorNode;
