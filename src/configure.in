@@ -1299,6 +1299,9 @@ dnl  be specified for hdf5.h and/or libhdf5.a by giving the names like this:
 dnl  `--with-hdf5=INC,LIB' (if only the LIB directory is given then it must
 dnl  still be preceded by a comma).
 dnl
+dnl  Note that in order to force libhdf5 to link statically, we do something
+dnl  funny and define HDF5_LIB to be the path to the .a file
+dnl
 dnl  Note that testing for HDF5 may require the use of ZLIB.
 dnl
 
@@ -1319,14 +1322,14 @@ AC_ARG_WITH(hdf5,
 if test "$hdf5_specified" = "yes"; then
    if test "$withval" != "no"; then
       HDF5_INCLUDE="-I`echo $withval |cut -f1 -d,`"
-      HDF5_LIB="-L`echo $withval |cut -f2 -d, -s`"
+      HDF5_LIB="`echo $withval |cut -f2 -d, -s`/libhdf5.a"
    fi
 else
    if test "$DEFAULT_HDF5_INCLUDE" != "" ; then
       HDF5_INCLUDE="-I$DEFAULT_HDF5_INCLUDE $HDF5_INCLUDE"
    fi
    if test "$DEFAULT_HDF5_LIB" != "" ; then
-      HDF5_LIB="-L$DEFAULT_HDF5_LIB -lhdf5 $HDF5_LIB"
+      HDF5_LIB="$DEFAULT_HDF5_LIB/libhdf5.a $HDF5_LIB"
    fi
 fi
 if test "$HDF5_LIB" != "" ; then
