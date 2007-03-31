@@ -25,6 +25,7 @@ class     avtSmoothPolyDataFilter;
 class     avtVertexNormalsFilter;
 class     AttributeGroup;
 class     WindowAttributes;
+class     AttributeSubject;
 
 // ****************************************************************************
 //  Class: avtPlot
@@ -124,6 +125,9 @@ class     WindowAttributes;
 //    Made the vertex normals filter be a pointer to the subclass so I could
 //    access methods not in avtDatasetToDatasetFilter.
 //
+//    Kathleen Bonnell, Wed Aug 27 15:45:45 PDT 2003
+//    Added SetOpaqueMeshIsAppropriate. 
+//    
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -168,6 +172,9 @@ class PLOTTER_API avtPlot
                                   { return intermediateDataObject; };
     virtual avtMapper         *GetMapper(void) = 0;
     virtual bool               CanCacheWriterExternally(void) { return true; } 
+    virtual const AttributeSubject 
+                              *SetOpaqueMeshIsAppropriate(bool)
+                                   { return NULL; };
 
   protected:
     bool                       needsRecalculation;

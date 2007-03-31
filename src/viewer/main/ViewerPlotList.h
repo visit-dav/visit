@@ -142,6 +142,9 @@ typedef std::map<std::string, avtSILRestriction_p> SILRestrictionMap;
 //    Brad Whitlock, Wed Jul 16 13:15:58 PST 2003
 //    I added CreateNode and SetFromNode.
 //
+//    Kathleen Bonnell, Thu Aug 28 10:03:42 PDT 2003
+//    Added CanMeshPlotBeOpaque.
+//
 // ****************************************************************************
 
 
@@ -285,6 +288,8 @@ class VIEWER_API ViewerPlotList
     avtExtentType spatialExtentsType;
 
     bool      keyframeMode;
+
+    void      CanMeshPlotBeOpaque();
 };
 
 #endif
