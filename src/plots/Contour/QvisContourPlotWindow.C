@@ -94,6 +94,9 @@ QvisContourPlotWindow::~QvisContourPlotWindow()
 //   Brad Whitlock, Tue Dec 3 08:54:59 PDT 2002
 //   I added a color table button.
 //
+//   Brad Whitlock, Mon Sep 8 17:02:29 PST 2003
+//   I changed some menu labels to plural.
+//
 // ****************************************************************************
 
 void
@@ -192,8 +195,8 @@ QvisContourPlotWindow::CreateWindowContents()
     // Add the select by combo box.
     selectByComboBox = new QComboBox(false, central, "selectByComboBox");
     selectByComboBox->insertItem("N levels");
-    selectByComboBox->insertItem("Value");
-    selectByComboBox->insertItem("Percent");
+    selectByComboBox->insertItem("Value(s)");
+    selectByComboBox->insertItem("Percent(s)");
     connect(selectByComboBox, SIGNAL(activated(int)),
            this, SLOT(selectByChanged(int)));
     QLabel *selectByLabel = new QLabel(selectByComboBox, "Select by",

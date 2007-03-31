@@ -33,6 +33,9 @@ class QVBoxLayout;
 //   Brad Whitlock, Fri Feb 15 11:16:41 PDT 2002
 //   Made CreateEntireWindow public.
 //
+//   Brad Whitlock, Fri Sep 5 15:50:16 PST 2003
+//   Added postWhenShown static member.
+//
 // ****************************************************************************
 
 class GUI_API QvisPostableWindow : public QvisWindowBase
@@ -68,6 +71,8 @@ protected:
     QVBoxLayout        *topLayout;
     QPushButton        *postButton;
     QvisNotepadArea    *notepad;
+
+    static bool         postWhenShown;
 };
 
 #endif

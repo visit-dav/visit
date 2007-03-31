@@ -74,7 +74,9 @@ QvisIsosurfaceWindow::~QvisIsosurfaceWindow()
 // Creation:   Tue Apr 16 17:41:29 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Sep 8 17:03:40 PST 2003
+//   I changed some menu labels to plural.
+//
 // ****************************************************************************
 
 void
@@ -87,8 +89,8 @@ QvisIsosurfaceWindow::CreateWindowContents()
     // Add the select by combo box.
     selectByComboBox = new QComboBox(false, central, "selectByComboBox");
     selectByComboBox->insertItem("N levels");
-    selectByComboBox->insertItem("Value");
-    selectByComboBox->insertItem("Percent");
+    selectByComboBox->insertItem("Value(s)");
+    selectByComboBox->insertItem("Percent(s)");
     connect(selectByComboBox, SIGNAL(activated(int)),
            this, SLOT(selectByChanged(int)));
     QLabel *selectByLabel = new QLabel(selectByComboBox, "Select by",

@@ -69,9 +69,8 @@ void
 GetFileListRPCExecutor::Update(Subject *s)
 {
     GetFileListRPC *rpc = (GetFileListRPC *)s;
-#ifdef DEBUG
+
     debug2 << "GetFileListRPCExecutor::Update\n"; debug2.flush();
-#endif
 
     // Either send a successful reply or send an error.
     if(parent->GetReadFileListReturnValue() == 0)
@@ -82,19 +81,16 @@ GetFileListRPCExecutor::Update(Subject *s)
             GetFileListRPC::FileList files;
             parent->GetFilteredFileList(files, rpc->GetFilter());
 
-#ifdef DEBUG
-            debug2 << "FILELIST=" << files << endl;
-            debug2.flush();
-#endif
+            debug4 << "FILELIST=" << files << endl;
+            debug4.flush();
             rpc->SendReply(&files);
         }
         else
         {
             GetFileListRPC::FileList *files = parent->GetCurrentFileList();
-#ifdef DEBUG
-            debug2 << "FILELIST=" << files << endl;
-            debug2.flush();
-#endif
+            debug4 << "FILELIST=" << files << endl;
+            debug4.flush();
+
             rpc->SendReply(files);
         }
     }

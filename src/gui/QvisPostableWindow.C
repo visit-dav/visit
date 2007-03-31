@@ -5,6 +5,11 @@
 #include <QvisNotepadArea.h>
 #include <DataNode.h>
 
+//
+// Static members.
+//
+bool QvisPostableWindow::postWhenShown = false;
+
 // ****************************************************************************
 // Method: QvisPostableWindow::QvisPostableWindow
 //
@@ -75,7 +80,9 @@ QvisPostableWindow::~QvisPostableWindow()
 // Creation:   Tue Oct 3 15:30:23 PST 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Sep 5 15:54:03 PST 2003
+//   Added postWhenShown.
+//
 // ****************************************************************************
 
 void
@@ -93,6 +100,15 @@ QvisPostableWindow::CreateNode(DataNode *parentNode)
         node->AddNode(new DataNode("height", height()));
         node->AddNode(new DataNode("visible", isVisible()));
         node->AddNode(new DataNode("posted", posted()));
+    }
+
+    //
+    // Add the postWhenShown flag if it's not already in the tree.
+    //
+    DataNode *pwsNode = 0;
+    if((pwsNode = parentNode->GetNode("postWhenShown")) == 0)
+    {
+        parentNode->AddNode(new DataNode("postWhenShown", postWhenShown));
     }
 }
 
@@ -116,11 +132,19 @@ QvisPostableWindow::CreateNode(DataNode *parentNode)
 //   Brad Whitlock, Wed Sep 26 10:02:34 PDT 2001
 //   I removed the kludge of showing the window before posting it.
 //
+//   Brad Whitlock, Fri Sep 5 15:56:07 PST 2003
+//   Added code to read in the postWhenShown flag.
+//
 // ****************************************************************************
 
 void
 QvisPostableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 {
+    // Set the postWhenShown flag.
+    DataNode *pwsNode = 0;
+    if((pwsNode = parentNode->GetNode("postWhenShown")) != 0)
+        postWhenShown = pwsNode->AsBool();
+
     DataNode *winNode = parentNode->GetNode(std::string(caption().latin1()));
     if(winNode == 0)
         return;
@@ -195,42 +219,49 @@ QvisPostableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 // Creation:   Tue Jul 25 15:24:58 PST 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Sep 5 15:59:42 PST 2003
+//   I made it possible to post windows when they are first shown.
+//
 // ****************************************************************************
 
 void
 QvisPostableWindow::show()
 {
-    if(!isCreated)
-    {
-        // Create the window and show it.
-        CreateEntireWindow();
-        isCreated = true;
-
-        // Update the widgets based on the state information.
-        UpdateWindow(true);
-    }
-    else if(isPosted && (notepad != NULL))
-    {
-        // Call code to unpost the window.
-        notepad->postWindow(this);
-        central->reparent(this, 0, QPoint(0,0), true);
-        setCentralWidget(central);
-        isPosted = false;
-
-        // Reset the post button so it will post the window. 
-        postButton->setText("Post");
-        disconnect(postButton, SIGNAL(clicked()), this, SLOT(unpost()));
-        connect(postButton, SIGNAL(clicked()), this, SLOT(post()));
-    }
+    if(postWhenShown)
+        post();
     else
     {
-        // Update the geometry and show the window
-        central->updateGeometry();
-    }
+        if(!isCreated)
+        {
+            // Create the window and show it.
+            CreateEntireWindow();
+            isCreated = true;
 
-    // Show the window.
-    QvisWindowBase::show();
+            // Update the widgets based on the state information.
+            UpdateWindow(true);
+        }
+        else if(isPosted && (notepad != NULL))
+        {
+            // Call code to unpost the window.
+            notepad->postWindow(this);
+            central->reparent(this, 0, QPoint(0,0), true);
+            setCentralWidget(central);
+            isPosted = false;
+
+            // Reset the post button so it will post the window. 
+            postButton->setText("Post");
+            disconnect(postButton, SIGNAL(clicked()), this, SLOT(unpost()));
+            connect(postButton, SIGNAL(clicked()), this, SLOT(post()));
+        }
+        else
+        {
+            // Update the geometry and show the window
+            central->updateGeometry();
+        }
+
+        // Show the window.
+        QvisWindowBase::show();
+    }
 }
 
 // ****************************************************************************

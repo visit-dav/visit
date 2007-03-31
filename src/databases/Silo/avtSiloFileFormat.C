@@ -42,6 +42,7 @@
 #include <visit-config.h>
 
 #ifdef PARALLEL
+#include <mpi.h>
 #include <avtParallel.h>
 #endif
 

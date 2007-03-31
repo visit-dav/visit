@@ -69,12 +69,16 @@ avtSubsetFilter::SetPlotAtts(const SubsetAttributes *atts)
 //    Fix a problem with accessing cells from poly data.  This fix also made
 //    the accessing more efficient.
 //
+//    Kathleen Bonnell, Mon Sep  8 13:43:30 PDT 2003 
+//    Add test for No cells for early termination. 
+//    
 // ****************************************************************************
 
 avtDataTree_p
 avtSubsetFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
 {
-    if (in_ds == NULL || in_ds->GetNumberOfPoints() == 0)
+    if (in_ds == NULL || in_ds->GetNumberOfPoints() == 0 ||
+        in_ds->GetNumberOfCells() == 0)
     {
         return NULL;
     }
