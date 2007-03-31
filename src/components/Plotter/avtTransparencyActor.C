@@ -1010,3 +1010,21 @@ avtTransparencyActor::ScaleByVector(const float vec[3])
 {
     myActor->SetScale(vec[0], vec[1], vec[2]);
 }
+
+
+// ****************************************************************************
+//  Method: avtTransparencyActor::TransparenciesExist
+//
+//  Purpose:
+//    Returns true if this actor is active (appender has inputs).
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 3, 2003
+//
+// ****************************************************************************
+
+bool
+avtTransparencyActor::TransparenciesExist()
+{
+    return (appender->GetNumberOfInputs() > 0);
+}

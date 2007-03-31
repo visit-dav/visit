@@ -310,6 +310,9 @@ class Xfer;
 //    Brad Whitlock, Wed Oct 22 12:21:40 PDT 2003
 //    Added optional argument to OpenDatabase.
 //
+//    Kathleen Bonnell, Wed Nov 26 14:17:55 PST 2003 
+//    Added ResetPickAttributes. Added optional int args to PointQuery.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -460,6 +463,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
 
     void SetGlobalLineoutAttributes();
     void SetPickAttributes();
+    void ResetPickAttributes();
 
     void WriteConfigFile();
     void ExportEntireState(const std::string &filename);
@@ -477,7 +481,8 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void DatabaseQuery(const std::string &queryName, const stringVector &vars,
                        const int arg1 = 0, const int arg2 = 0);
     void PointQuery(const std::string &queryName, const double pt[3],
-                    const stringVector &vars);
+                    const stringVector &vars,
+                    const int arg1 = -1, const int arg2 = -1);
     void LineQuery(const std::string &queryName, const double pt1[3],
                    const double pt2[3], const stringVector &vars,
                    const int samples);

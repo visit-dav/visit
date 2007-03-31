@@ -50,6 +50,9 @@ class     vtkRenderer;
 //    Kathleen Bonnell, Wed Jul 16 16:39:02 PDT 2003
 //    Added ScaleByVector method. 
 //
+//    Kathleen Bonnell, Wed Dec  3 16:42:38 PST 2003 
+//    Added TransparenciesExist method.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtTransparencyActor
@@ -76,6 +79,8 @@ class PLOTTER_API avtTransparencyActor
 
     void                             PrepareForRender(vtkCamera *);
     bool                             UsePerfectSort(bool);
+
+    bool                             TransparenciesExist(void);
 
     void                             AddToRenderer(vtkRenderer *);
     void                             RemoveFromRenderer(vtkRenderer *);

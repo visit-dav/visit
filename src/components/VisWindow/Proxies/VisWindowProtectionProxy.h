@@ -80,6 +80,9 @@ class     VisitInteractor;
 //    Jeremy Meredith, Fri Nov 14 13:53:37 PST 2003
 //    Added specular properties.
 //
+//    Kathleen Bonnell, Wed Dec  3 16:49:14 PST 2003 
+//    Added methods TransparenciesExist, ReAddToolsToRenderWindow.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowProtectionProxy
@@ -143,6 +146,8 @@ class VISWINDOW_API VisWindowProtectionProxy
     float               ProxiedGetSpecularCoeff();
     float               ProxiedGetSpecularPower();
     const ColorAttribute &ProxiedGetSpecularColor();
+    bool                ProxiedTransparenciesExist();
+    void                ProxiedReAddToolsToRenderWindow();
 };
 
 

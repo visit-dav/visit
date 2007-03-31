@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <QvisQueryWindow.h>
+#include <qbuttongroup.h>
 #include <qgroupbox.h>
 #include <qlabel.h>
 #include <qlineedit.h>
@@ -7,12 +8,15 @@
 #include <qlistbox.h>
 #include <qmultilineedit.h>
 #include <qpushbutton.h>
+#include <qradiobutton.h>
 #include <qstringlist.h>
 
 #include <QueryAttributes.h>
 #include <PickAttributes.h>
 #include <PlotList.h>
 #include <QueryList.h>
+
+#include <DebugStream.h>
 
 #include <ViewerProxy.h>
 
@@ -92,6 +96,10 @@ QvisQueryWindow::~QvisQueryWindow()
 //   Brad Whitlock, Mon May 12 13:02:32 PST 2003
 //   I added a button to clear out the query results.
 //
+//   Kathleen Bonnell, Thu Nov 26 08:30:49 PST 2003 
+//   I added radio buttons to select between a database query and a 
+//   'current plot' query.  (Only appear if query requests them).
+//
 // ****************************************************************************
 
 void
@@ -116,7 +124,7 @@ QvisQueryWindow::CreateWindowContents()
     hLayout->addWidget(argPanel);
     QVBoxLayout *gLayout = new QVBoxLayout(argPanel);
     gLayout->addSpacing(15);
-    QGridLayout *sLayout = new QGridLayout(gLayout, 5, 2);
+    QGridLayout *sLayout = new QGridLayout(gLayout, 6, 2);
     sLayout->setMargin(10);
     sLayout->setSpacing(5);
     coordLabel = new QLabel("** Use screen coordinates **", argPanel, "coordLabel");
@@ -137,6 +145,16 @@ QvisQueryWindow::CreateWindowContents()
         labels[i]->hide();
         sLayout->addWidget(labels[i], i+1, 0);
     }
+  
+    // Add the plot optionos radio button group to the argument panel.
+    curPlotOpts = new QButtonGroup(0, "curPlotOpts");
+    QRadioButton *database = new QRadioButton("Database", argPanel, "database");
+    curPlotOpts->insert(database);
+    sLayout->addWidget(database, 5, 0);
+    QRadioButton *curPlot = new QRadioButton("Current Plot", argPanel, "currentlot");
+    curPlotOpts->insert(curPlot);
+    curPlotOpts->setButton(0);
+    sLayout->addWidget(curPlot, 5, 1);
 
     // Add the query button to the argument panel.
     gLayout->addStretch(10);
@@ -383,71 +401,31 @@ QvisQueryWindow::UpdateResults(bool)
 //   Kathleen Bonnell, Mon Nov 17 14:01:45 PST 2003 
 //   Added 'Plot MinMax'.
 // 
+//   Kathleen Bonnell, Thu Nov 26 08:30:49 PST 2003
+//   Reworked code to create panel based on specified window type for a 
+//   particular query.  Removed all references to specific query names. 
+// 
 // ****************************************************************************
 
 void
 QvisQueryWindow::UpdateArgumentPanel(int index)
 {
-    const stringVector &names = queries->GetNames();
-    const intVector &types = queries->GetTypes();
     const intVector &rep = queries->GetCoordRep();
-    if(index < types.size())
+    const intVector &winType = queries->GetWinType();
+
+    if(index < winType.size())
     {
         bool showWidgets[4] = {false, false, false, false};
         bool showCoordLabel = false;
-        QueryList::QueryType t = (QueryList::QueryType)types[index];
+        bool showPlotOptions = false;
+        QueryList::WindowType winT = (QueryList::WindowType)winType[index];
         QueryList::CoordinateRepresentation r;
         r = (QueryList::CoordinateRepresentation)rep[index];
+      
+        labels[0]->setText("Variables");
+        textFields[0]->setText("default");
 
-        if(t == QueryList::DatabaseQuery)
-        {
-            labels[0]->setText("Variables");
-            textFields[0]->setText("default");
-            if ( (strcmp(names[index].c_str(), "Surface area") == 0) ||
-                 (strcmp(names[index].c_str(), "Volume") == 0) ||
-                 (strcmp(names[index].c_str(), "Eulerian") == 0) ||
-                 (strcmp(names[index].c_str(), "Compactness") == 0) ||
-                 (strcmp(names[index].c_str(), "Cycle") == 0) ||
-                 (strcmp(names[index].c_str(), "Time") == 0) ||
-                 (strcmp(names[index].c_str(), "L2Norm") == 0) ||
-                 (strcmp(names[index].c_str(), "Integrate") == 0) ||
-                 (strcmp(names[index].c_str(), "L2Norm Between Curves") == 0)||
-                 (strcmp(names[index].c_str(), "Area Between Curves") == 0) ||
-                 (strcmp(names[index].c_str(), "Revolved surface area") == 0)||
-                 (strcmp(names[index].c_str(), "Revolved volume") == 0) ||
-                 (strcmp(names[index].c_str(), "Plot MinMax") == 0)) 
-                // no Variables widget
-                showWidgets[0] = false;
-            else if (strcmp(names[index].c_str(), "Variable by Zone") == 0) 
-            {
-                labels[0]->setText("Domain");
-                textFields[0]->setText("0");
-                labels[1]->setText("Zone");
-                textFields[1]->setText("0");
-                labels[2]->setText("Variables");
-                textFields[2]->setText("default");
-                showWidgets[0] = true;
-                showWidgets[1] = true;
-                showWidgets[2] = true;
-                showWidgets[3] = false;
-            }
-            else if (strcmp(names[index].c_str(), "Variable by Node") == 0) 
-            {
-                labels[0]->setText("Domain");
-                textFields[0]->setText("0");
-                labels[1]->setText("Node");
-                textFields[1]->setText("0");
-                labels[2]->setText("Variables");
-                textFields[2]->setText("default");
-                showWidgets[0] = true;
-                showWidgets[1] = true;
-                showWidgets[2] = true;
-                showWidgets[3] = false;
-            }
-            else
-                showWidgets[0] = true;
-        }
-        else if(t == QueryList::PointQuery)
+        if (winT == QueryList::SinglePoint)
         {
             labels[0]->setText("Query point");
             if(r == QueryList::WorldSpace)
@@ -462,7 +440,7 @@ QvisQueryWindow::UpdateArgumentPanel(int index)
             showWidgets[0] = true;
             showWidgets[1] = true;
         }
-        else if(t == QueryList::LineQuery)
+        else if (winT == QueryList::DoublePoint)
         {
             labels[0]->setText("Start point");
             if(r == QueryList::WorldSpace)
@@ -486,8 +464,43 @@ QvisQueryWindow::UpdateArgumentPanel(int index)
             showWidgets[2] = true;
             showWidgets[3] = true;
         }
+        else if (winT == QueryList::DomainZone)
+        {
+            labels[0]->setText("Domain");
+            textFields[0]->setText("0");
+            labels[1]->setText("Zone");
+            textFields[1]->setText("0");
+            labels[2]->setText("Variables");
+            textFields[2]->setText("default");
+            showWidgets[0] = true;
+            showWidgets[1] = true;
+            showWidgets[2] = true;
+        }
+        else if (winT == QueryList::DomainNode)
+        {
+            labels[0]->setText("Domain");
+            textFields[0]->setText("0");
+            labels[1]->setText("Node");
+            textFields[1]->setText("0");
+            labels[2]->setText("Variables");
+            textFields[2]->setText("default");
+            showWidgets[0] = true;
+            showWidgets[1] = true;
+            showWidgets[2] = true;
+        }
+        else if (winT == QueryList::CurrentPlot)
+        {
+            showPlotOptions = true;
+        }
+        else if (winT == QueryList::CurrentPlotVars)
+        {
+            labels[0]->setText("Variables");
+            textFields[0]->setText("default");
+            showWidgets[0] = true;
+            showPlotOptions = true;
+        }
 
-        // hide and show the right widgets.
+        // hide and show the right text widgets.
         for(int i = 0; i < 4; ++i)
         {
             if(showWidgets[i])
@@ -501,6 +514,20 @@ QvisQueryWindow::UpdateArgumentPanel(int index)
                 textFields[i]->hide();
             }
         }
+
+        if (showPlotOptions)
+        {
+            curPlotOpts->find(0)->show();
+            curPlotOpts->find(1)->show();
+            //curPlotOpts->show();
+        }
+        else
+        {
+            curPlotOpts->find(0)->hide();
+            curPlotOpts->find(1)->hide();
+            //curPlotOpts->hide();
+        }
+
         if(showCoordLabel)
             coordLabel->show();
         else
@@ -602,6 +629,10 @@ QvisQueryWindow::ConnectPlotList(PlotList *pl)
 //   Added special checks for 'Variable by Zone' query.  
 //   Include 'sample' in call to viewer->LineQuery.
 //
+//   Kathleen Bonnell, Thu Nov 26 08:30:49 PST 2003 
+//   Removed references to specific query names.  Reworked code to
+//   utilize new WindowType ivar.
+//
 // ****************************************************************************
 
 void
@@ -610,99 +641,156 @@ QvisQueryWindow::Apply(bool ignore)
     if(AutoUpdate() || ignore)
     {
         int index = queryList->currentItem();
-        if(index >= 0)
+        const stringVector &names = queries->GetNames();
+        const intVector &types = queries->GetTypes();
+        const intVector &rep = queries->GetCoordRep();
+        const intVector &winType = queries->GetWinType();
+        if(index >= 0 && index < types.size())
         {
-            const stringVector &names = queries->GetNames();
-            const intVector &types = queries->GetTypes();
-            const intVector &rep = queries->GetCoordRep();
-            if(index < types.size())
+            QueryList::QueryType t = (QueryList::QueryType)types[index];
+            QueryList::WindowType winT = (QueryList::WindowType)winType[index];
+            bool noErrors = true;
+            double p0[3] = {0., 0., 0.}, p1[3] = {0., 0., 0.};
+            stringVector vars;
+
+            // Gather the query parameters according to the type of
+            // window we're using.
+            if(winT == QueryList::Basic)
             {
-                QueryList::QueryType t = (QueryList::QueryType)types[index];
-                bool noErrors = true;
-                double p0[3], p1[3];
-                stringVector vars;
+                if(!GetVars(0, vars))
+                    noErrors = false;
 
-                // Gather the query parameters according to the type of
-                // query we're doing.
-                if(t == QueryList::DatabaseQuery)
+                if(noErrors)
                 {
-                    if (strcmp(names[index].c_str(), "Variable by Zone") == 0) 
+                    if (t == QueryList::DatabaseQuery)
                     {
-                        int dom = 0, zone = 0;
-                        bool goodDomain = GetNumber(0, &dom);
-                        if (goodDomain)
-                            goodDomain = (dom >= 0);
-                        if (!goodDomain)
-                            Error("The domain must be an integer >= 0.");
-                        bool goodZone = GetNumber(1, &zone);
-                        if (goodZone)
-                            goodZone = (zone >= 0);
-                        if (!goodZone)
-                            Error("The zone must be an integer >= 0.");
-
-                        if(!GetVars(2, vars))
-                            noErrors = false;
-
-                        if(noErrors && goodDomain && goodZone)
-                        {
-                            viewer->DatabaseQuery(names[index], vars, dom, zone);
-                        }
+                        viewer->DatabaseQuery(names[index], vars);
                     }
                     else 
                     {
-                        if(!GetVars(0, vars))
-                            noErrors = false;
-
-                        if(noErrors)
-                        {
-                            viewer->DatabaseQuery(names[index], vars);
-                        }
+                        debug5 << "QueryWindow -- Attempted use BasicWindow "
+                               << "with non DatabaseQuery." << endl;
                     }
                 }
-                else if(t == QueryList::PointQuery)
+            }
+            else if ((winT == QueryList::DomainZone) ||
+                     (winT == QueryList::DomainNode))
+            {
+                int dom = 0, el = 0;
+                bool goodDomain = GetNumber(0, &dom);
+                if (goodDomain)
+                    goodDomain = (dom >= 0);
+                if (!goodDomain)
+                    Error("The domain must be an integer >= 0.");
+                bool goodEl = GetNumber(1, &el);
+                if (goodEl)
+                    goodEl = (el >= 0);
+                if (!goodEl)
                 {
-                    if(!GetPoint(0, "query point", rep[index], p0))
-                        noErrors = false;
-                    if(!GetVars(1, vars))
-                        noErrors = false;
+                    if (winT == QueryList::DomainZone)
+                        Error("The zone must be an integer >= 0.");
+                    else
+                        Error("The node must be an integer >= 0.");
+                }
 
-                    if(noErrors)
+                if(!GetVars(2, vars))
+                    noErrors = false;
+
+                if(noErrors && goodDomain && goodEl)
+                {
+                    if (t == QueryList::DatabaseQuery)
+                    {
+                        viewer->DatabaseQuery(names[index], vars, dom, el);
+                    }
+                    else if (t == QueryList::PointQuery)
+                    {
+                        viewer->PointQuery(names[index], p0, vars, dom, el);
+                    }
+                    else 
+                    {
+                        debug5 << "QueryWindow -- Attempted use DomainWindow "
+                               << "with non Database or non Point Query." << endl;
+                    }
+                }
+            }
+            else if(winT == QueryList::SinglePoint)
+            {
+                if(!GetPoint(0, "query point", rep[index], p0))
+                    noErrors = false;
+                if(!GetVars(1, vars))
+                    noErrors = false;
+
+                if(noErrors)
+                {
+                    if (t == QueryList::PointQuery)
                     {
                         viewer->PointQuery(names[index], p0, vars);
                     }
-                }
-                else if(t == QueryList::LineQuery)
-                {
-                    if(!GetPoint(0, "start point", rep[index], p0))
-                        noErrors = false;
-                    if(!GetPoint(1, "end point", rep[index], p1))
-                        noErrors = false;
-
-                    int sample = 50;
-                    bool goodSample = GetNumber(2, &sample);
-                    if(goodSample)
-                        goodSample = (sample > 1);
-                    if(!goodSample)
+                    else 
                     {
-                        Error("The number of samples is not valid. "
-                                "It is a single integer value greater than 1.");
+                        debug5 << "QueryWindow -- Attempted use SinglePointWindow "
+                               << "with non PointQuery." << endl;
                     }
-                    if(!GetVars(3, vars))
-                        noErrors = false;
+                }
+            }
+            else if(winT == QueryList::DoublePoint)
+            {
+                if(!GetPoint(0, "start point", rep[index], p0))
+                    noErrors = false;
+                if(!GetPoint(1, "end point", rep[index], p1))
+                    noErrors = false;
 
-                    if(noErrors && goodSample)
+                int sample = 50;
+                bool goodSample = GetNumber(2, &sample);
+                if(goodSample)
+                    goodSample = (sample > 1);
+                if(!goodSample)
+                {
+                    Error("The number of samples is not valid. "
+                          "It is a single integer value greater than 1.");
+                }
+                if(!GetVars(3, vars))
+                    noErrors = false;
+
+                if(noErrors && goodSample)
+                {
+                    if (t == QueryList::LineQuery)
                     {
                         viewer->LineQuery(names[index], p0, p1, vars, sample);
                     }
+                    else 
+                    {
+                        debug5 << "QueryWindow -- Attempted use DoublePointWindow "
+                               << "with non LineQuery." << endl;
+                    }
                 }
-
-                // Display a status message.
-                if(noErrors)
+            }
+            else if ((winT == QueryList::CurrentPlot) ||
+                     (winT == QueryList::CurrentPlotVars))
+            {
+                if(!GetVars(0, vars))
+                    noErrors = false;
+                int curPlot = curPlotOpts->id(curPlotOpts->selected());
+                if (noErrors)
                 {
-                    QString str;
-                    str.sprintf("Performing %s query.", names[index].c_str());
-                    Status(str);
+                    if (t == QueryList::DatabaseQuery)
+                    {
+                        viewer->DatabaseQuery(names[index], vars, curPlot);
+                    }
+                    else 
+                    {
+                        debug5 << "QueryWindow -- Attempted use CurrentPlotWindow "
+                               << "with non DatabaseQuery." << endl;
+                    }
                 }
+            }
+
+            // Display a status message.
+            if(noErrors)
+            {
+                QString str;
+                str.sprintf("Performing %s query.", names[index].c_str());
+                Status(str);
             }
         }
     }

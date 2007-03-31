@@ -27,6 +27,7 @@
 #include <avtTimeQuery.h>
 #include <avtLocateCellQuery.h>
 #include <avtPickQuery.h>
+#include <avtCurvePickQuery.h>
 #include <avtPlotMinMaxQuery.h>
 #include <avtSourceFromAVTImage.h>
 #include <avtSourceFromImage.h>
@@ -1469,6 +1470,12 @@ NetworkManager::StopPickMode(void)
 //    QueryAtts are created only to fulfill the api requirements of the
 //    PerformQuery method.
 //
+//    Kathleen Bonnell, Tue Dec  2 18:08:34 PST 2003 
+//    Don't use avtLocateCellQuery if domain and element are already provided. 
+//
+//    Kathleen Bonnell, Tue Dec  2 17:36:44 PST 2003 
+//    Use a special query if the pick type is Curve.
+//    
 // ****************************************************************************
 void
 NetworkManager::Pick(const int id, PickAttributes *pa)
@@ -1497,22 +1504,41 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
         EXCEPTION0(NoInputException);
     }
 
-    avtLocateCellQuery *lcQ = new avtLocateCellQuery;
-    avtPickQuery *pQ = new avtPickQuery;
+    avtLocateCellQuery *lcQ = NULL;
+    avtPickQuery *pQ = NULL;
+    avtCurvePickQuery *cpQ = NULL;
     TRY
     {
         QueryAttributes qa;
-        lcQ->SetInput(queryInput);
-        lcQ->SetPickAtts(pa);
-        lcQ->PerformQuery(&qa); 
-        *pa = *(lcQ->GetPickAtts());
-        delete lcQ;
+        if ((pa->GetPickType() == PickAttributes::Node) ||
+            (pa->GetPickType() == PickAttributes::Zone))
+        {
+            if ((pa->GetDomain() == -1) && (pa->GetElementNumber() == -1))
+            {
+                lcQ = new avtLocateCellQuery;
+                lcQ->SetInput(queryInput);
+                lcQ->SetPickAtts(pa);
+                lcQ->PerformQuery(&qa); 
+                *pa = *(lcQ->GetPickAtts());
+                delete lcQ;
+            }
 
-        pQ->SetInput(queryInput);
-        pQ->SetPickAtts(pa);
-        pQ->PerformQuery(&qa); 
-        *pa = *(pQ->GetPickAtts());
-        delete pQ;
+            pQ = new avtPickQuery;
+            pQ->SetInput(queryInput);
+            pQ->SetPickAtts(pa);
+            pQ->PerformQuery(&qa); 
+            *pa = *(pQ->GetPickAtts());
+            delete pQ;
+        }
+        else 
+        {
+            cpQ = new avtCurvePickQuery;
+            cpQ->SetInput(queryInput);
+            cpQ->SetPickAtts(pa);
+            cpQ->PerformQuery(&qa); 
+            *pa = *(cpQ->GetPickAtts());
+            delete cpQ;
+        }
     }
     CATCHALL( ... )
     {
@@ -1520,6 +1546,8 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
             delete lcQ;
         if (pQ != NULL)
             delete pQ;
+        if (cpQ != NULL)
+            delete cpQ;
         RETHROW;
     }
     ENDTRY

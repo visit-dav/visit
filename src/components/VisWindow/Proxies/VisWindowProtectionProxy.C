@@ -864,3 +864,38 @@ VisWindowProtectionProxy::ProxiedGetSpecularColor()
 {
     return viswin->GetSpecularColor();
 }
+
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::TransparenciesExist
+//
+// Purpose:     Returns whether or not there are transparent actors. 
+//
+// Programmer:  Kathleen Bonnell
+// Creation:    December 3, 2003
+//
+// ****************************************************************************
+
+bool
+VisWindowProtectionProxy::ProxiedTransparenciesExist()
+{
+    return viswin->TransparenciesExist();
+}
+
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedReAddToolsToRenderWindow
+//
+// Purpose:     Tells the VisWindow to allow tools to re-add themsevles
+//              to the render window.  
+//
+// Programmer:  Kathleen Bonnell
+// Creation:    May 28, 2003 
+//
+// ****************************************************************************
+
+void
+VisWindowProtectionProxy::ProxiedReAddToolsToRenderWindow()
+{
+    viswin->ReAddToolsToRenderWindow();
+}

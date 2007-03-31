@@ -15,6 +15,9 @@ Definition:
 //    Hank Childs, Thu Oct  2 13:40:16 PDT 2003
 //    Add number of inputs.
 //
+//    Kathleen Bonnell,  Tue Nov 18 08:20:36 PST 2003 
+//    Set default window type based on query type. 
+//
 // ****************************************************************************
  
 void
@@ -26,7 +29,32 @@ QueryList::AddQuery(const std::string &name, QueryList::QueryType t,
     coordRep.push_back((int)rep);
     numInputs.push_back(number_input);
     allowedVarTypes.push_back(allowedVars);
+
+    //
+    //  This will be set by user selecting a button, if WindowType is 
+    //  CurrentPlot or CurrentPlotVars.  Otherwise, it doesn't make sense, so 
+    //  just set it to 0.
+    //
+    currentPlot.push_back(0);
+
+    //
+    //  Default window type for each query type.  If a query needs a different
+    //  window, it can be set via SetWindowType.
+    //
+    if (t == QueryList::DatabaseQuery)
+    {
+        winType.push_back((int)QueryList::Basic);
+    }
+    else if (t == QueryList::PointQuery)
+    {
+        winType.push_back((int)QueryList::SinglePoint);
+    }
+    else if (t == QueryList::LineQuery)
+    {
+        winType.push_back((int)QueryList::DoublePoint);
+    }
 }
+
 
 Function: QueryExists
 Declaration: bool QueryExists(const std::string &name, QueryType t, CoordinateRepresentation rep = WorldSpace);
@@ -118,3 +146,57 @@ QueryList::AllowedVarsForQuery(const std::string &name)
     return -1;
 }
 
+Function: CurrentPlotOnly
+Declaration: int CurrentPlotOnly(const std::string &name);
+Definition:
+// ****************************************************************************
+//  Method:  CurrentPlotOnly
+//
+//  Purpose:
+//      Returns whether or not this query applies only to the current plot. 
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    November 25, 2003 
+//
+// ****************************************************************************
+ 
+int
+QueryList::CurrentPlotOnly(const std::string &name)
+{
+    int i;
+    for (i = 0; i < names.size(); i++)
+    {
+        if (name == names[i]) 
+        {
+            return currentPlot[i];
+        }
+    }
+    return -1;
+}
+
+Function: SetWindowType
+Declaration: void SetWindowType(const std::string &name, WindowType winT);
+Definition:
+// ****************************************************************************
+//  Method:  SetWindowType
+//
+//  Purpose:
+//      Sets the window type to use for the particular query. 
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    November 18, 2003 
+//
+// ****************************************************************************
+ 
+void
+QueryList::SetWindowType(const std::string &name, WindowType winT)
+{
+    int i;
+    for (i = 0; i < names.size(); i++)
+    {
+        if (name == names[i]) 
+        {
+            winType[i] = (int)winT;
+        }
+    }
+}

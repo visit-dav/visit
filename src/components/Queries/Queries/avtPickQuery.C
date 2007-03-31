@@ -103,6 +103,10 @@ avtPickQuery::GetPickAtts()
 //    Kathleen Bonnell, Wed Jun 18 17:55:49 PDT 2003 
 //    Retreive value of ContainsGhostZones.
 //
+//    Kathleen Bonnell, Wed Nov 26 14:08:42 PST 2003 
+//    If we are doing a PickByZone or PickByNode (indicated by 
+//    ppt[0] == FLT_MAX), get the correct domain number to use in the pipeline.
+//
 // ****************************************************************************
 
 void
@@ -113,6 +117,16 @@ avtPickQuery::PreExecute(void)
     cellOrigin = atts.GetCellOrigin();
     ghostType = atts.GetContainsGhostZones();
     pickAtts.SetDimension(atts.GetSpatialDimension());
+    if (pickAtts.GetPickPoint()[0] == FLT_MAX)
+    {
+        int dom = pickAtts.GetDomain() - blockOrigin;
+        pickAtts.SetDomain(dom < 0 ? 0 : dom);
+        if (pickAtts.GetPickType() == PickAttributes::Zone)
+        {
+            int  zone = pickAtts.GetElementNumber() - cellOrigin;
+            pickAtts.SetElementNumber(zone < 0 ? 0 : zone);
+        }
+    }
 }
 
 

@@ -120,6 +120,9 @@ class avtTransparencyActor;
 //    Jeremy Meredith, Fri Nov 14 17:15:21 PST 2003
 //    Added specular properties.
 //
+//    Kathleen Bonnell, Wed Dec  3 16:48:23 PST 2003 
+//    Added method TransparenciesExist.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinPlots : public VisWinColleague
@@ -177,6 +180,8 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
 
     virtual void                  FullFrameOn(const double, const int);
     virtual void                  FullFrameOff(void);
+
+    bool                          TransparenciesExist(void);
 
   protected:
     std::vector< avtActor_p >     plots;

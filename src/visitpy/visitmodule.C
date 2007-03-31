@@ -134,6 +134,9 @@ static void PlotPluginAddInterface();
 static void OperatorPluginAddInterface();
 static void InitializeExtensions();
 
+
+void ParseTupleForVars(PyObject *tuple, stringVector &vars);
+
 //
 // Type definitions
 //
@@ -6571,6 +6574,13 @@ visit_WriteConfigFile(PyObject *self, PyObject *args)
 //   Kathleen Bonnell, Wed Jul 23 17:37:33 PDT 2003
 //   Allow for two optional integer args.
 //
+//   Kathleen Bonnell, Tue Dec  2 07:34:48 PST 2003  
+//   Parse correctly if only 1 integer argument is given. Use new helper 
+//   method ParseTupleForVars.
+//
+//   Kathleen Bonnell, Wed Dec  3 13:11:34 PST 2003 
+//   Allow "original" and "actual" to substitute in the vars arg for arg1.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -6583,37 +6593,30 @@ visit_Query(PyObject *self, PyObject *args)
     PyObject *tuple = NULL;
     if (!PyArg_ParseTuple(args, "sii|O", &queryName, &arg1, &arg2, &tuple))
     {
-        if (!PyArg_ParseTuple(args, "s|O", &queryName, &tuple))
+        if (!PyArg_ParseTuple(args, "si|O", &queryName, &arg1, &tuple))
         {
-            return NULL;
+            if (!PyArg_ParseTuple(args, "s|O", &queryName, &tuple))
+            {
+                return NULL;
+            }
         }
         PyErr_Clear();
     }
 
     // Check the tuple argument.
     stringVector vars;
-    if (tuple != NULL)
+    ParseTupleForVars(tuple, vars);
+    if (vars.size() == 1)
     {
-        if(PyTuple_Check(tuple))
+        if (strcmp(vars[0].c_str(), "original") == 0)
         {
-            int size = PyTuple_Size(tuple);
-            if(size > 0)
-            {
-                for(int i = 0; i < size; ++i)
-                {
-                    PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                    if(PyString_Check(item))
-                        vars.push_back(PyString_AS_STRING(item));
-                }
-            }
+            arg1 = 0;
+            vars.clear();
         }
-        else if(PyString_Check(tuple))
+        else if (strcmp(vars[0].c_str(), "actual") == 0)
         {
-            vars.push_back(PyString_AS_STRING(tuple));
-        }
-        else
-        {
-            vars.push_back("default");
+            arg1 = 1;
+            vars.clear();
         }
     }
 
@@ -6658,6 +6661,9 @@ visit_Query(PyObject *self, PyObject *args)
 //
 //   Kathleen Bonnell, Wed Jul 23 13:05:01 PDT 2003 
 //   Allow pick coordinates to be expressed in a tuple (world Pick). 
+//
+//   Kathleen Bonnell, Tue Dec  2 07:34:48 PST 2003  
+//   Use new helper method ParseTupleForVars.
 //
 // ****************************************************************************
 
@@ -6708,30 +6714,7 @@ visit_Pick(PyObject *self, PyObject *args)
 
     // Check the tuple argument.
     stringVector vars;
-    if (tuple != NULL)
-    {
-        if(PyTuple_Check(tuple))
-        {
-            int size = PyTuple_Size(tuple);
-            if(size > 0)
-            {
-                for(int i = 0; i < size; ++i)
-                {
-                    PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                    if(PyString_Check(item))
-                        vars.push_back(PyString_AS_STRING(item));
-                }
-            }
-        }
-        else if(PyString_Check(tuple))
-        {
-            vars.push_back(PyString_AS_STRING(tuple));
-        }
-        else
-        {
-            vars.push_back("default");
-        }
-    }
+    ParseTupleForVars(tuple, vars);
 
     MUTEX_LOCK();
         if (!wp)
@@ -6771,6 +6754,9 @@ visit_Pick(PyObject *self, PyObject *args)
 // Modifications:
 //   Kathleen Bonnell, Wed Jul 23 13:05:01 PDT 2003 
 //   Allow pick coordinates to be expressed in a tuple (world Pick). 
+//
+//   Kathleen Bonnell, Tue Dec  2 07:34:48 PST 2003  
+//   Use new helper method ParseTupleForVars.
 //
 // ****************************************************************************
 
@@ -6820,30 +6806,7 @@ visit_NodePick(PyObject *self, PyObject *args)
 
     // Check the tuple argument.
     stringVector vars;
-    if (tuple != NULL)
-    {
-        if(PyTuple_Check(tuple))
-        {
-            int size = PyTuple_Size(tuple);
-            if(size > 0)
-            {
-                for(int i = 0; i < size; ++i)
-                {
-                    PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                    if(PyString_Check(item))
-                        vars.push_back(PyString_AS_STRING(item));
-                }
-            }
-        }
-        else if(PyString_Check(tuple))
-        {
-            vars.push_back(PyString_AS_STRING(tuple));
-        }
-        else
-        {
-            vars.push_back("default");
-        }
-    }
+    ParseTupleForVars(tuple, vars);
 
     MUTEX_LOCK();
         if (!wp)
@@ -6868,6 +6831,38 @@ visit_NodePick(PyObject *self, PyObject *args)
     return PyLong_FromLong(long(errorFlag == 0));
 }
 
+
+// ****************************************************************************
+// Function: visit_ResetPickAttributes
+//
+// Purpose:
+//   Tells the viewer to reset the new pick attributes to default. 
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell
+// Creation:   December 1, 2003
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ResetPickAttributes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    MUTEX_LOCK();
+        viewer->ResetPickAttributes();
+
+        if(logging)
+            fprintf(logFile, "ResetPickAttributes()\n");
+    MUTEX_UNLOCK();
+    Synchronize();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
 
 // ****************************************************************************
 // Function: visit_SetPickAttributes
@@ -6950,6 +6945,163 @@ visit_GetPickAttributes(PyObject *self, PyObject *args)
 }
 
 
+// ****************************************************************************
+// Function: ParseTupleForVars
+//
+// Purpose:
+//   Parses the python tuple for strings (variable names).
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 26, 2003 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void 
+ParseTupleForVars(PyObject *tuple, stringVector &vars)
+{
+    if (tuple != NULL)
+    {
+        if(PyTuple_Check(tuple))
+        {
+            for(int i = 0; i < PyTuple_Size(tuple); ++i)
+            {
+                PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                if(PyString_Check(item))
+                    vars.push_back(PyString_AS_STRING(item));
+            }
+        }
+        else if(PyString_Check(tuple))
+        {
+            vars.push_back(PyString_AS_STRING(tuple));
+        }
+    }
+}
+
+
+// ****************************************************************************
+// Function: visit_DomainPick
+//
+// Purpose:
+//   The generic method for PickByZone, PickByNode.
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 1, 2003
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_DomainPick(const char *type, int dom, int el, stringVector vars)
+{
+    double pt[3] = {0., 0., 0};
+
+    MUTEX_LOCK();
+        viewer->PointQuery(type, pt, vars, dom, el);
+        if(logging)
+        {
+            fprintf(logFile, "%s(%d, %d (", type, dom, el);
+            for(int i = 0; i < vars.size(); ++i)
+            {
+                fprintf(logFile, "\"%s\"", vars[i].c_str());
+                if(i < vars.size()-1)
+                    fprintf(logFile, ", ");
+            }
+            fprintf(logFile, "))\n");
+        }
+    MUTEX_UNLOCK();
+    int errorFlag = Synchronize();
+
+    // Return the success value.
+    return PyLong_FromLong(long(errorFlag == 0));
+}
+
+
+// ****************************************************************************
+// Function: visit_PickByZone
+//
+// Purpose:
+//   Tells the viewer to perform Pick via domain and zone. 
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 1, 2003
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_PickByZone(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *type = "PickByZone";
+    int dom = 0, zone = 0;
+    PyObject *tuple = NULL;
+    if (!PyArg_ParseTuple(args, "ii|O", &zone, &dom, &tuple))
+    {
+        if (!PyArg_ParseTuple(args, "i|O", &zone, &tuple))
+        {
+            return NULL;
+        }
+        PyErr_Clear(); 
+    }
+
+    // Check the tuple argument.
+    stringVector vars;
+    ParseTupleForVars(tuple, vars);
+
+    // Return the success value.
+    return visit_DomainPick(type, dom, zone, vars);
+}
+
+
+// ****************************************************************************
+// Function: visit_PickByNode
+//
+// Purpose:
+//   Tells the viewer to perform Pick via domain and node. 
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 1, 2003
+//
+// Modifications:
+//
+// ****************************************************************************
+STATIC PyObject *
+visit_PickByNode(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *type = "PickByNode";
+    int dom = 0, node = 0;
+    PyObject *tuple = NULL;
+    if (!PyArg_ParseTuple(args, "ii|O", &node, &dom, &tuple))
+    {
+        if (!PyArg_ParseTuple(args, "i|O", &node, &tuple))
+        {
+            return NULL;
+        }
+        PyErr_Clear(); 
+    }
+
+    // Check the tuple argument.
+    stringVector vars;
+    ParseTupleForVars(tuple, vars);
+
+    // Return the success value.
+    return visit_DomainPick(type, dom, node, vars);
+}
 
 
 // ****************************************************************************
@@ -6969,6 +7121,9 @@ visit_GetPickAttributes(PyObject *self, PyObject *args)
 //
 //    Kathleen Bonnell, Wed Jul 23 17:37:33 PDT 2003 
 //    Allow an optional integer argument for samples.
+//
+//    Kathleen Bonnell, Tue Dec  2 07:34:48 PST 2003  
+//    Use new helper method ParseTupleForVars.
 //
 // ****************************************************************************
 
@@ -7046,34 +7201,7 @@ visit_Lineout(PyObject *self, PyObject *args)
 
     // Check the tuple argument.
     stringVector vars;
-    if (tuple != NULL)
-    {
-        if(PyTuple_Check(tuple))
-        {
-            int size = PyTuple_Size(tuple);
-            if(size > 0)
-            {
-                for(int i = 0; i < size; ++i)
-                {
-                    PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                    if(PyString_Check(item))
-                        vars.push_back(PyString_AS_STRING(item));
-                }
-            }
-        }
-        else if(PyString_Check(tuple))
-        {
-            vars.push_back(PyString_AS_STRING(tuple));
-        }
-        else
-        {
-            vars.push_back("default");
-        }
-    }
-    else
-    {
-        vars.push_back("default");
-    }
+    ParseTupleForVars(tuple, vars);
 
     MUTEX_LOCK();
         viewer->Lineout(p0, p1, vars, samples);
@@ -7238,6 +7366,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Brad Whitlock, Fri Aug 29 11:11:30 PDT 2003
 //   Added HideToolbars and ShowToolbars.
 //
+//   Kathleen Bonnell, Mon Dec  1 18:04:41 PST 2003 
+//   Added PickByNode, PickByZone and ResetPickAttributes.
+//
 // ****************************************************************************
 
 static void
@@ -7387,6 +7518,9 @@ AddDefaultMethods()
     AddMethod("ZonePick", visit_Pick);
     AddMethod("WorldPick", visit_Pick);
     AddMethod("WorldNodePick", visit_NodePick);
+    AddMethod("PickByZone", visit_PickByZone);
+    AddMethod("PickByNode", visit_PickByNode);
+    AddMethod("ResetPickAttributes", visit_ResetPickAttributes);
 
     //
     // Extra methods that are not part of the ViewerProxy but allow the

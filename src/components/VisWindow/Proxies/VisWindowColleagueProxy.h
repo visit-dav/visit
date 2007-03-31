@@ -65,6 +65,9 @@
 //    Jeremy Meredith, Fri Nov 14 13:54:29 PST 2003
 //    Added specular coefficients.
 //
+//    Kathleen Bonnell, Wed Dec  3 16:49:14 PST 2003
+//    Added 'ReAddtoolsToRenderWindow'.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
@@ -163,6 +166,8 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
 
     const ColorAttribute &GetSpecularColor()
                                   { return ProxiedGetSpecularColor(); };
+    void                ReAddToolsToRenderWindow()
+                                  { ProxiedReAddToolsToRenderWindow(); };
 };
 
 

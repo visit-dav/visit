@@ -1239,9 +1239,12 @@ VisWinPlots::UnsetBounds(void)
 //    Added support for externally rendered images actor
 //
 //    Kathleen Bonnell, Mon Sep 29 13:21:12 PDT 2003 
-//    Added bool argumenti, wh ich is passed to GetRenderOrder.
+//    Added bool argument, which is passed to GetRenderOrder.
 //    Plots with RenderOrder 'ABSOLUTELY_LAST' will be rendered after
 //    the transparent actors. (Generally only in Antialiased mode).
+//
+//    Kathleen Bonnell, Wed Dec  3 16:42:38 PST 2003 
+//    Added call to ReAddToolsToRenderWindow. 
 //
 // ****************************************************************************
 
@@ -1280,6 +1283,11 @@ VisWinPlots::OrderPlots(bool aa)
         if  ((*oit)->GetRenderOrder(aa) != ABSOLUTELY_LAST)
             (*oit)->Add(mediator.GetCanvas(), mediator.GetForeground());
     }
+    //
+    // The tools don't show up if added after the transparency actor
+    // (when all other colleagues are re-added, so re-add them here.
+    //
+    mediator.ReAddToolsToRenderWindow();
     transparencyActor->AddToRenderer(mediator.GetCanvas());
     extRenderedImagesActor->AddToRenderer(mediator.GetCanvas());
     for (oit = orderPlots.begin(); oit != orderPlots.end(); oit++)
@@ -1684,5 +1692,23 @@ VisWinPlots::FullFrameOff()
 {
     float vec[3] = {1., 1., 1.};
     ScalePlots(vec);
+}
+
+
+// ****************************************************************************
+//  Method: VisWinPlots::TransparenciesExist
+//
+//  Purpose:
+//    Returns true if there are transparent actors. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 3, 2003 
+//
+// ****************************************************************************
+
+bool
+VisWinPlots::TransparenciesExist()
+{
+    return transparencyActor->TransparenciesExist();
 }
 

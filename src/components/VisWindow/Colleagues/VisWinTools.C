@@ -756,11 +756,13 @@ VisWinTools::TurnLightingOff()
 // Creation:   May 28, 2003
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Dec  3 16:49:14 PST 2003
+//   Renamed.
 //   
 // ****************************************************************************
 
 void
-VisWinTools::ReAddToWindow()
+VisWinTools::ReAddToolsToWindow()
 {
     for(int i = 0; i < numTools; ++i)
         tools[i]->ReAddToWindow();

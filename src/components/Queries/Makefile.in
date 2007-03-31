@@ -53,6 +53,9 @@
 #   Kathleen Bonnell, Mon Oct 27 12:28:07 PST 2003
 #   Added avtPlotMinMaxQuery. 
 #
+#   Kathleen Bonnell, Tue Dec  2 17:44:34 PST 2003 
+#   Added avtCurvePickQuery. 
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -72,6 +75,7 @@ Abstract_src= \
 Queries_src= \
  Queries/avtAreaBetweenCurvesQuery.C  \
  Queries/avtCompactnessQuery.C  \
+ Queries/avtCurvePickQuery.C  \
  Queries/avtCycleQuery.C  \
  Queries/avtEulerianQuery.C \
  Queries/avtIntegrateQuery.C  \

@@ -118,6 +118,7 @@
       ExportColorTableRPC
       ExportEntireStateRPC
       ImportEntireStateRPC
+      ResetPickAttributesRPC
       MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">

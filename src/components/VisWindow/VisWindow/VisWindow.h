@@ -231,6 +231,9 @@ class VisitInteractor;
 //    Jeremy Meredith, Fri Nov 14 17:48:18 PST 2003
 //    Added specular options.
 //
+//    Kathleen Bonnell, Wed Dec  3 16:58:20 PST 2003
+//    Added ReAddToolsToRenderWindow, TransparenciesExist.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -484,6 +487,8 @@ protected:
 
     static void          ProcessResizeEvent(void *);
     void                 ReAddColleaguesToRenderWindow(void);
+    void                 ReAddToolsToRenderWindow(void);
+    bool                 TransparenciesExist(void);
 };
 
 

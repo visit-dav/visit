@@ -12,6 +12,7 @@
 #include <mpi.h>
 #endif
 
+#include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkCellLocator.h>
 #include <vtkDataSet.h>
@@ -4792,6 +4793,9 @@ avtGenericDatabase::QueryMaterial(const std::string &varName, const int dom,
 //    Kathleen Bonnell, Tue Nov 18 14:07:13 PST 2003 
 //    Added support for logical zone coords. 
 //    
+//    Kathleen Bonnell, Wed Nov 26 14:35:29 PST 2003
+//    Set ppt to Cell center if doing PickByZone (ppt[0] == FLT_MAX). 
+//    
 // ****************************************************************************
 
 bool
@@ -4884,6 +4888,15 @@ avtGenericDatabase::QueryNodes(const std::string &varName, const int dom,
             //  node for point mesh.
             //
             ds->GetPoint(nodes[0], ppt);
+        }
+        else if (ppt[0] == FLT_MAX)
+        {
+            vtkCell *cell = ds->GetCell(zone);
+            float parametricCenter[3];
+            float *weights = new float[cell->GetNumberOfPoints()];
+            int subId = cell->GetParametricCenter(parametricCenter);
+            cell->EvaluateLocation(subId, parametricCenter, ppt, weights);
+            delete [] weights;
         }
         rv = true;
     }
@@ -4995,6 +5008,9 @@ avtGenericDatabase::QueryMesh(const std::string &varName, const int ts,
 //    Kathleen Bonnell, Tue Nov 18 14:07:13 PST 2003 
 //    Added support for logical zone coords. 
 //    
+//    Kathleen Bonnell, Wed Nov 26 14:35:29 PST 2003
+//    Use foundEl as minId if doing PickByNode (ppt[0] == FLT_MAX). 
+//    
 // ****************************************************************************
 
 bool
@@ -5028,27 +5044,34 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
             base[1] = bi->GetValue(1);
             base[2] = bi->GetValue(2);
         }
-        if (type == VTK_RECTILINEAR_GRID)
+        if (ppt[0] == FLT_MAX)
         {
-           // This method is faster for rectilinear grids than other types 
-           // It is also faster for RGrids than method below. 
-            minId = ds->FindPoint(ppt);
+            minId = foundEl;
         }
         else
         {
-            ds->GetCellPoints(foundEl, ids);
-            int numPts = ids->GetNumberOfIds();
-            float dist2;
-            float minDist2 = FLT_MAX;
-            idptr = ids->GetPointer(0);
-            for (int i = 0; i < numPts; i++)
+            if (type == VTK_RECTILINEAR_GRID)
             {
-                dist2 = vtkMath::Distance2BetweenPoints(ppt, 
-                    points->GetPoint(idptr[i]));
-                if (dist2 < minDist2)
+               // This method is faster for rectilinear grids than other types 
+               // It is also faster for RGrids than method below. 
+                minId = ds->FindPoint(ppt);
+            }
+            else
+            {
+                ds->GetCellPoints(foundEl, ids);
+                int numPts = ids->GetNumberOfIds();
+                float dist2;
+                float minDist2 = FLT_MAX;
+                idptr = ids->GetPointer(0);
+                for (int i = 0; i < numPts; i++)
                 {
-                    minDist2 = dist2; 
-                    minId = idptr[i]; 
+                    dist2 = vtkMath::Distance2BetweenPoints(ppt, 
+                        points->GetPoint(idptr[i]));
+                    if (dist2 < minDist2)
+                    {
+                        minDist2 = dist2; 
+                        minId = idptr[i]; 
+                    }
                 }
             }
         }
@@ -5578,7 +5601,6 @@ avtGenericDatabase::FindElementForPoint(const char *var, const int ts,
 {
     string mesh = GetMetaData(ts)->MeshForVar(var);
     vtkDataSet *ds = GetMeshDataset(mesh.c_str(), ts, dom, "_all");
-    char temp[256];
 
     if (strcmp(elementName, "node") == 0)
     {

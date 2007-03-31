@@ -74,6 +74,8 @@ GlobalLineoutAttributes *ViewerQueryManager::globalLineoutClientAtts=0;
 void
 GetUniqueVars(const stringVector &vars, const string &activeVar, 
               stringVector &uniqueVars);
+string
+CreateExtentsString(const double * extents, const int dim, const char *type);
 
 // ****************************************************************************
 //  Method: ViewerQueryManager constructor
@@ -825,6 +827,9 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Added logic to verify that all variables the named query will process
 //    are allowed by the query. 
 //
+//    Kathleen Bonnell, Wed Nov 26 16:08:29 PST 2003 
+//    Added logic to handle SpatialExtents query.
+// 
 // ****************************************************************************
 
 void         
@@ -943,6 +948,37 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
     
     bool retry; 
     int numAttempts = 0;
+
+    if (strcmp(qName.c_str(), "SpatialExtents") == 0)
+    {
+        //
+        // NO NEED TO GO TO THE ENGINE FOR THIS INFORMATION, AS
+        // IT IS AVAILABLE FROM THE PLOT
+        //
+        int plotId = plotIds[0];
+        ViewerPlot *oplot = olist->GetPlot(plotId);
+        int dim = oplot->GetSpatialDimension(t);
+        double *ext;
+        string s;
+        if (arg1 == 0) // We want original extents
+        {
+            ext = oplot->GetSpatialExtents(t, AVT_ORIGINAL_EXTENTS);
+            s = CreateExtentsString(ext, dim, "original");
+        }
+        else
+        {
+            ext = oplot->GetSpatialExtents(t, AVT_ACTUAL_EXTENTS);
+            s = CreateExtentsString(ext, dim, "actual");
+        }
+
+        queryClientAtts->SetResultsMessage(s);
+        queryClientAtts->SetResultsValues(ext, dim);
+        delete [] ext;
+        queryClientAtts->Notify();
+        Message(s.c_str());
+        return; 
+    }
+
     do
     {
         retry = false;
@@ -1166,6 +1202,26 @@ ViewerQueryManager::GetPickClientAtts()
 
 
 // ****************************************************************************
+//  Method: ViewerQueryManager::ResetPickAttributes
+//
+//  Purpose:
+//    Resets pickAtts to the default state. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   November 26 , 2003 
+//
+// ****************************************************************************
+
+void
+ViewerQueryManager::ResetPickAttributes()
+{
+    pickAtts->Reset();
+    ResetDesignator();
+    UpdatePickAtts();
+}
+
+
+// ****************************************************************************
 //  Method: ViewerQueryManager::SetPickAttsFromClient
 //
 //  Purpose:
@@ -1298,10 +1354,16 @@ ViewerQueryManager::ClearPickPoints()
 //    Kathleen Bonnell, Wed Nov  5 17:09:00 PST 2003 
 //    Retrieve plot's actual extents and store them in pickAtts. 
 //   
+//    Kathleen Bonnell, Mon Dec  1 18:04:41 PST 2003 
+//    Added 'dom' and 'el' args, to accommodate PickByNode, PickByZone. 
+//   
+//    Kathleen Bonnell, Tue Dec  2 17:31:17 PST 2003 
+//    Code changes to allow picking curve plots. 
+//   
 // ****************************************************************************
 
 void
-ViewerQueryManager::Pick(PICK_POINT_INFO *ppi)
+ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
 {
     //
     //  Keep local copy, due to caching issues.
@@ -1323,6 +1385,7 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi)
         initialPick = false;
         preparingPick = false;
     }
+
     if (pd.validPick)
     {
         //
@@ -1382,6 +1445,20 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi)
         pickAtts->SetPickLetter(designator);
         pickAtts->SetTimeStep(t);
         pickAtts->SetDatabaseName(db);
+        if (win->GetWindowMode() == WINMODE_CURVE)
+        {
+            if (dom != -1 && el != -1)
+            {
+                // doing a PickByNode or PickByZone
+                if (pickAtts->GetPickType() == PickAttributes::Zone)
+                    pickAtts->SetPickType(PickAttributes::CurveZone);
+                else 
+                    pickAtts->SetPickType(PickAttributes::CurveNode);
+            }
+            else 
+                pickAtts->SetPickType(PickAttributes::CurveNode);
+   
+        }
 
         float *rp1 = pd.rayPt1;
         float *rp2 = pd.rayPt2;
@@ -1394,8 +1471,9 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi)
         bool ptsEqual  = 
            (rp1[0] == rp2[0] && rp1[1] == rp2[1] && rp1[2] == rp2[2]);
 
-        if (win->GetFullFrameMode() && win->GetWindowMode() == WINMODE_2D &&
-            !ptsEqual)
+        if ((win->GetFullFrameMode() && win->GetWindowMode() == WINMODE_2D &&
+            !ptsEqual) || 
+            (win->GetWindowMode() == WINMODE_CURVE))
         {
             double scale;
             int type;
@@ -1414,6 +1492,19 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi)
 
         pickAtts->SetRayPoint1(rp1);
         pickAtts->SetRayPoint2(rp2);
+   
+        //
+        // Most of the time, these will be -1, Except when picking
+        // via PickByZone or PickByNode.
+        //
+        if (dom != -1 && el != -1)
+        {
+            pickAtts->SetDomain(dom);
+            pickAtts->SetElementNumber(el);
+            float dummyPt[3] = { FLT_MAX, 0., 0.};
+            pickAtts->SetPickPoint(dummyPt);
+            pickAtts->SetCellPoint(dummyPt);
+        }
 
         bool retry;
         int numAttempts = 0; 
@@ -1677,6 +1768,27 @@ ViewerQueryManager::Lineout(ViewerWindow *win, const bool fromDefault)
         }
         delete line;
     }
+}
+
+
+// ****************************************************************************
+// Method: ViewerQueryManager::ResetDesignator
+//
+// Purpose: 
+//   Resets the baseDesignator to the default starting value. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 26, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+ViewerQueryManager::ResetDesignator()
+{
+    baseDesignator = 'A'; 
+    cycleDesignator = false;
+    SNPRINTF(designator, 4, "%c", baseDesignator); 
 }
 
 
@@ -1991,11 +2103,17 @@ ViewerQueryManager::HandlePickCache()
 //    Eric Brugger, Wed Aug 20 11:05:54 PDT 2003
 //    Replaced references to GetTypeIsCurve with GetWindowMode.
 //
+//    Kathleen Bonnell, Mon Dec  1 18:04:41 PST 2003 
+//    Added optional int args, to support PickByDomain, PickByZone.
+//   
+//    Kathleen Bonnell, Wed Dec  3 13:11:34 PST 2003 
+//    Remove no-curve restrictions. 
+//   
 // ****************************************************************************
 
 void         
 ViewerQueryManager::PointQuery(const string &qName, const double *pt, 
-                    const vector<string> &vars)
+                    const vector<string> &vars, const int arg1, const int arg2)
 {
     if ((strcmp(qName.c_str(), "ZonePick") == 0) ||
         (strcmp(qName.c_str(), "Pick") == 0))
@@ -2016,11 +2134,6 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
              (strcmp(qName.c_str(), "WorldNodePick") == 0))
     {
         ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
-        if (win->GetWindowMode() == WINMODE_CURVE)   
-        {
-            Error("Curve windows cannot be picked for values.");
-            return;
-        }
         if (!vars.empty())
             pickAtts->SetVariables(vars);
 
@@ -2037,6 +2150,29 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
         ppi.rayPt1[2] = ppi.rayPt2[2] = pt[2];
         ppi.validPick = true;
         Pick(&ppi);
+
+        win->SetInteractionMode(imode);
+    }
+    else if ((strcmp(qName.c_str(), "PickByZone") == 0) ||
+             (strcmp(qName.c_str(), "PickByNode") == 0))
+    {
+        ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
+        if (!vars.empty())
+            pickAtts->SetVariables(vars);
+
+        INTERACTION_MODE imode  = win->GetInteractionMode();
+        if (strcmp(qName.c_str(), "PickByZone") == 0)
+            win->SetInteractionMode(ZONE_PICK);
+        else
+            win->SetInteractionMode(NODE_PICK);
+
+        PICK_POINT_INFO ppi;
+        ppi.callbackData = win;
+        ppi.rayPt1[0] = ppi.rayPt2[0] = pt[0];
+        ppi.rayPt1[1] = ppi.rayPt2[1] = pt[1];
+        ppi.rayPt1[2] = ppi.rayPt2[2] = pt[2];
+        ppi.validPick = true;
+        Pick(&ppi, arg1, arg2);
 
         win->SetInteractionMode(imode);
     }
@@ -2265,7 +2401,11 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Add L2Norm, Area Between Curves, more.
 //
 //    Kathleen Bonnell, Wed Oct 29 16:06:23 PST 2003 
-//    Uncomment MinMax, changed its AddQuery arguments..
+//    Uncomment MinMax, changed its AddQuery arguments.
+//
+//    Kathleen Bonnell, Mon Dec  1 18:04:41 PST 2003 
+//    Added PickByNode, PickByZone. Allow certain queries to set their
+//    window type. 
 //
 // ****************************************************************************
 
@@ -2296,11 +2436,19 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("WorldPick", QueryList::PointQuery);
     queryTypes->AddQuery("WorldNodePick", QueryList::PointQuery);
     queryTypes->AddQuery("Variable by Zone", QueryList::DatabaseQuery);
-    //queryTypes->AddQuery("Variable by Node", QueryList::DatabaseQuery);
+    queryTypes->SetWindowType("Variable by Zone", QueryList::DomainZone);
+
+    int MinMaxVars = QUERY_SCALAR_VAR | QUERY_TENSOR_VAR | QUERY_VECTOR_VAR | 
+            QUERY_SYMMETRIC_TENSOR_VAR | QUERY_MATSPECIES_VAR | QUERY_CURVE_VAR;
     queryTypes->AddQuery("Plot MinMax", QueryList::DatabaseQuery, 
-                          QueryList::WorldSpace, 1,
-    QUERY_SCALAR_VAR | QUERY_TENSOR_VAR | QUERY_VECTOR_VAR | 
-    QUERY_SYMMETRIC_TENSOR_VAR | QUERY_MATSPECIES_VAR | QUERY_CURVE_VAR);
+                          QueryList::WorldSpace, 1, MinMaxVars); 
+
+    queryTypes->AddQuery("SpatialExtents", QueryList::DatabaseQuery);
+    queryTypes->SetWindowType("SpatialExtents", QueryList::CurrentPlot);
+    queryTypes->AddQuery("PickByZone", QueryList::PointQuery);
+    queryTypes->SetWindowType("PickByZone", QueryList::DomainZone);
+    queryTypes->AddQuery("PickByNode", QueryList::PointQuery);
+    queryTypes->SetWindowType("PickByNode", QueryList::DomainNode);
 
     queryTypes->SelectAll();
 }
@@ -2344,4 +2492,49 @@ ViewerQueryManager::VerifyQueryVariables(const std::string &qName,
         }
     }
    return badIndex; 
+}
+
+
+// ****************************************************************************
+//  Method: CreateExtentsString
+//
+//  Purpose:
+//    A helper method that takes in extents and creates a string. 
+//
+//  Returns:
+//    A string listing the extents.
+//
+//  Arguments:
+//    extents   The extents array to be converted to a string.
+//    dim       The dimension of the extents.
+//    type      The type of the extents.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   November 26, 2003 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+string
+CreateExtentsString(const double * extents, const int dim, const char *type)
+{
+    char msg[1024];
+    if (dim == 1)
+    {
+        SNPRINTF(msg, 1024, "The %s extents are (%g, %g)", type,
+                extents[0], extents[1]);
+    }
+    else if (dim == 2)
+    {
+        SNPRINTF(msg, 1024, "The %s extents are (%g, %g, %g, %g)", type,
+            extents[0], extents[1], extents[2], extents[3]);
+    }
+    else if (dim == 3)
+    {
+        SNPRINTF(msg, 1024, "The %s extents are (%g, %g, %g, %g, %g, %g)", type,
+            extents[0], extents[1], extents[2], extents[3], extents[4], extents[5]);
+    }
+    string msg2 = msg;
+    return msg2;
 }

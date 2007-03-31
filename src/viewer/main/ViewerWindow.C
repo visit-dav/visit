@@ -4369,25 +4369,23 @@ ViewerWindow::GetWindowAttributes() const
 //   Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
 //   I added a curve view.
 //
+//   Kathleen Bonnell, Tue Dec  2 17:36:44 PST 2003 
+//   Allow pick to work in curve view. 
+//
 // ****************************************************************************
 
 void
 ViewerWindow::Pick(int x, int y, const INTERACTION_MODE pickMode)
 {
-    if(visWindow->GetWindowMode() == WINMODE_CURVE)
-        Error("Curve windows cannot be picked for values.");
-    else
-    {
-        // Set the interaction mode to pick.
-        INTERACTION_MODE iMode = visWindow->GetInteractionMode();
-        SetInteractionMode(pickMode);
+    // Set the interaction mode to pick.
+    INTERACTION_MODE iMode = visWindow->GetInteractionMode();
+    SetInteractionMode(pickMode);
 
-        // Perform a screen space pick operation.
-        visWindow->Pick(x, y);
+    // Perform a screen space pick operation.
+    visWindow->Pick(x, y);
 
-        // Restore the interaction mode.
-        SetInteractionMode(iMode);
-    }
+    // Restore the interaction mode.
+    SetInteractionMode(iMode);
 }
 
 // ****************************************************************************

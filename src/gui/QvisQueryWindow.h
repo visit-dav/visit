@@ -8,6 +8,7 @@
 class QueryAttributes;
 class PickAttributes;
 class PlotList;
+class QButtonGroup;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
@@ -36,6 +37,10 @@ class QueryList;
 //
 //   Brad Whitlock, Fri May 9 17:14:54 PST 2003
 //   I added a button to clear the window.
+//
+//   Kathleen Bonnell, Tue Dec  2 08:39:46 PST 2003 
+//   Added a button to specify whether the query should apply to the current
+//   plot or the database. 
 //
 // ****************************************************************************
 
@@ -72,6 +77,7 @@ private slots:
     void handleText();
     void selectQuery();
     void clearResultText();
+
 private:
     QueryList       *queries;
     QueryAttributes *queryAtts;
@@ -85,6 +91,8 @@ private:
     QGroupBox       *argPanel;
     QLabel          *labels[4];
     QLineEdit       *textFields[4];
+  
+    QButtonGroup    *curPlotOpts;
 };
 
 #endif
