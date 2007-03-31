@@ -67,6 +67,10 @@ vtkCxxSetObjectMacro(vtkKatCubeAxesActor, Camera,vtkCamera);
 //   Remove valueScaleFactor, replace mustAdjustValue and ForceLabelReset
 //   with one for each axis type.
 //
+//   Kathleen Bonnell, Tue Dec 16 11:27:30 PST 2003 
+//   Replace Last*Extent with Last*Range.  (* = X, Y, Z)
+//   Add autoLabelScaling, userXPow, userYPow, userZPow.
+//
 // *************************************************************************
 
 vtkKatCubeAxesActor::vtkKatCubeAxesActor()
@@ -153,9 +157,12 @@ vtkKatCubeAxesActor::vtkKatCubeAxesActor()
   this->lastYAxisDigits = 3;
   this->lastZAxisDigits = 3;
 
-  this->LastXExtent = FLT_MAX;
-  this->LastYExtent = FLT_MAX;
-  this->LastZExtent = FLT_MAX;
+  this->LastXRange[0] = FLT_MAX;
+  this->LastXRange[1] = FLT_MAX;
+  this->LastYRange[0] = FLT_MAX;
+  this->LastYRange[1] = FLT_MAX;
+  this->LastZRange[0] = FLT_MAX;
+  this->LastZRange[1] = FLT_MAX;
 
   this->LastFlyMode = -1;
   for (i = 0; i < 4; i++)
@@ -173,6 +180,11 @@ vtkKatCubeAxesActor::vtkKatCubeAxesActor()
   this->ForceXLabelReset = false;
   this->ForceYLabelReset = false;
   this->ForceZLabelReset = false;
+
+  this->autoLabelScaling = true;
+  this->userXPow = 0;
+  this->userYPow = 0;
+  this->userZPow = 0;
 }
 
 // ****************************************************************************
@@ -587,43 +599,57 @@ void vtkKatCubeAxesActor::TransformBounds(vtkViewport *viewport,
 //    Added return value, added calls to AdjustTicksComputeRange and
 //    BuildLabels. 
 //
+//    Kathleen Bonnell, Mon Dec 15 14:59:26 PST 2003 
+//    Use the actual range values instead of range-extents to determine
+//    if tick size needs to be recomputed. 
+//
 // ***********************************************************************
 
 bool
 vtkKatCubeAxesActor::ComputeTickSize(float bounds[6])
 {
-  int i;
-  float xExt = bounds[1] - bounds[0];
-  float yExt = bounds[3] - bounds[2];
-  float zExt = bounds[5] - bounds[4];
+  bool xRangeChanged = this->LastXRange[0] != bounds[0] ||
+                       this->LastXRange[1] != bounds[1];
 
-  if (xExt == this->LastXExtent &&
-      yExt == this->LastYExtent &&
-      zExt == this->LastZExtent)
+  bool yRangeChanged = this->LastYRange[0] != bounds[2] ||
+                       this->LastYRange[1] != bounds[3];
+
+  bool zRangeChanged = this->LastZRange[0] != bounds[4] ||
+                       this->LastZRange[1] != bounds[5];
+
+  if (!(xRangeChanged || yRangeChanged || zRangeChanged))
     {
     // no need to re-compute ticksize.
     return false;
     }
+
+  int i;
+  float xExt = bounds[1] - bounds[0];
+  float yExt = bounds[3] - bounds[2];
+  float zExt = bounds[5] - bounds[4];
   
-  if (xExt != this->LastXExtent)
+  if (xRangeChanged)
     {
     AdjustTicksComputeRange(this->XAxes);
     BuildLabels(this->XAxes);
     }
-    if (yExt != this->LastYExtent)
+  if (yRangeChanged)
     {
     AdjustTicksComputeRange(this->YAxes);
     BuildLabels(this->YAxes);
     }
-    if (zExt != this->LastZExtent)
+  if (zRangeChanged)
     {
     AdjustTicksComputeRange(this->ZAxes);
     BuildLabels(this->ZAxes);
     }
 
-  this->LastXExtent = xExt;
-  this->LastYExtent = yExt;
-  this->LastZExtent = zExt;
+  this->LastXRange[0] = bounds[0];
+  this->LastXRange[1] = bounds[1];
+  this->LastYRange[0] = bounds[2];
+  this->LastYRange[1] = bounds[3];
+  this->LastZRange[0] = bounds[4];
+  this->LastZRange[1] = bounds[5];
 
   float major = 0.02 * (xExt + yExt + zExt) / 3.;
   float minor = 0.5 * major;
@@ -685,13 +711,33 @@ vtkKatCubeAxesActor::ComputeTickSize(float bounds[6])
 //    Kathleen Bonnell, Wed Aug  6 13:59:15 PDT 2003
 //    Each axis type now has its own 'mustAdjustValue' and 'lastPow'.
 //
+//    Kathleen Bonnell, Tue Dec 16 11:23:31 PST 2003 
+//    Allow the LabelExponent to be user-settable (autLabelScaling is off).
+//    For title use '10e' instead of just 'e' to designatie that exponent 
+//    has been used.
+//
 // ****************************************************************************
 
 void
 vtkKatCubeAxesActor::AdjustValues(const float bnds[6])
 {
     char xTitle[256];
-    int xPow = LabelExponent(bnds[0], bnds[1]);
+
+    int xPow, yPow, zPow;
+
+    if (autoLabelScaling)
+    {
+        xPow = LabelExponent(bnds[0], bnds[1]);
+        yPow = LabelExponent(bnds[2], bnds[3]);
+        zPow = LabelExponent(bnds[4], bnds[5]);
+    }
+    else 
+    {
+        xPow = userXPow;
+        yPow = userYPow;
+        zPow = userZPow;
+    }
+
     if (xPow != 0)
       { 
       if (!this->mustAdjustXValue || this->lastXPow != xPow)
@@ -705,9 +751,9 @@ vtkKatCubeAxesActor::AdjustValues(const float bnds[6])
       this->mustAdjustXValue = true;
 
       if (XUnits == NULL || XUnits[0] == '\0')
-        sprintf(xTitle, "X-Axis (e%d)", xPow);
+        sprintf(xTitle, "X-Axis (10e%d)", xPow);
       else
-        sprintf(xTitle, "X-Axis (e%d %s)", xPow, XUnits);
+        sprintf(xTitle, "X-Axis (10e%d %s)", xPow, XUnits);
       }
     else 
       { 
@@ -730,7 +776,6 @@ vtkKatCubeAxesActor::AdjustValues(const float bnds[6])
 
 
     char yTitle[256];
-    int yPow = LabelExponent(bnds[2], bnds[3]);
     if (yPow != 0)
       { 
 
@@ -744,9 +789,9 @@ vtkKatCubeAxesActor::AdjustValues(const float bnds[6])
         }
       this->mustAdjustYValue = true;
       if (YUnits == NULL || YUnits[0] == '\0')
-        sprintf(yTitle, "Y-Axis (e%d)", yPow);
+        sprintf(yTitle, "Y-Axis (10e%d)", yPow);
       else
-        sprintf(yTitle, "Y-Axis (e%d %s)", yPow, YUnits);
+        sprintf(yTitle, "Y-Axis (10e%d %s)", yPow, YUnits);
       }
     else 
       { 
@@ -768,7 +813,6 @@ vtkKatCubeAxesActor::AdjustValues(const float bnds[6])
 
 
     char zTitle[256];
-    int zPow = LabelExponent(bnds[4], bnds[5]);
     if (zPow != 0)
       { 
       if (!this->mustAdjustZValue || this->lastZPow != zPow)
@@ -782,9 +826,9 @@ vtkKatCubeAxesActor::AdjustValues(const float bnds[6])
       this->mustAdjustZValue = true;
 
       if (ZUnits == NULL || ZUnits[0] == '\0')
-        sprintf(zTitle, "Z-Axis (e%d)", zPow);
+        sprintf(zTitle, "Z-Axis (10e%d)", zPow);
       else
-        sprintf(zTitle, "Z-Axis (e%d %s)", zPow, ZUnits);
+        sprintf(zTitle, "Z-Axis (10e%d %s)", zPow, ZUnits);
       }
     else 
       { 
@@ -1815,3 +1859,22 @@ vtkKatCubeAxesActor::BuildLabels(vtkKatAxisActor *axes[4])
     }
 }
 
+// ****************************************************************************
+//  Set automatic label scaling mode, set exponents for each axis type. 
+//
+// ****************************************************************************
+void
+vtkKatCubeAxesActor::SetLabelScaling(bool autoscale, int upowX, int upowY, 
+                                     int upowZ)
+{
+
+  if (autoscale != autoLabelScaling || upowX != userXPow ||
+      upowY != userYPow || upowZ != userZPow)
+    {
+    autoLabelScaling = autoscale;
+    userXPow = upowX;
+    userYPow = upowY;
+    userZPow = upowZ;
+    this->Modified();
+    } 
+} 

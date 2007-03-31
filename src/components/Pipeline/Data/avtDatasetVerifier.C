@@ -119,6 +119,11 @@ avtDatasetVerifier::VerifyDataset(vtkDataSet *ds)
 //  Programmer:  Hank Childs
 //  Creation:    October 18, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Dec 16 10:02:10 PST 2003
+//    Improve clarity of warning.
+//
 // ****************************************************************************
 
 void
@@ -129,12 +134,15 @@ avtDatasetVerifier::IssueVarMismatchWarning(int nVars, int nUnits,bool isPoint)
         return;
     }
 
-    const char *unit_string = (isPoint ? "point" : "cell");
+    const char *unit_string = (isPoint ? "nodal" : "zonal");
+    const char *action = ((nVars < nUnits)
+                          ? "Extra 0.'s were added"
+                          : "Some values were removed");
 
     char msg[1024];
     sprintf(msg, "Your %s variable has %d values, but it should have %d."
-                 "Extra 0.'s were added to ensure VisIt runs smoothly.",
-                 unit_string, nVars, nUnits);
+                 "%s to ensure VisIt runs smoothly.",
+                 unit_string, nVars, nUnits, action);
     avtCallback::IssueWarning(msg);
 
     issuedWarningForVarMismatch = true;

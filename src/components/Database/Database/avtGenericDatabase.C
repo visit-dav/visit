@@ -5201,6 +5201,11 @@ avtGenericDatabase::AssociateBounds(vtkDataSet *ds)
 //  Programmer: Hank Childs
 //  Creation:   July 29, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Dec 16 09:49:13 PST 2003
+//    Improve clarity of warning message.
+//
 // ****************************************************************************
 
 void
@@ -5296,7 +5301,8 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
     static bool haveIssuedWarning = false;
     if (!haveIssuedWarning)
     {
-        char msg[1024] = "The dataset is too large or too small for VisIt to "
+        char msg[1024] = "The spatial extents of the dataset are too large or "
+                         "too small for VisIt to "
                   "handle natively.  As a result, the dataset is being scaled."
                   "  This will affect the labels for axes, as well as "
                   "coordinate arguments, such as the origin for a slice."

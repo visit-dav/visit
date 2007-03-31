@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "putty.h"
-#include "storage.h"
+#include "puttystorage.h"
 
 static void gpps(void *handle, char *name, char *def, char *val, int len) {
     if (!read_setting_s(handle, name, val, len)) {

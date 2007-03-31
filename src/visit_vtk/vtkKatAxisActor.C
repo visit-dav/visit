@@ -459,7 +459,6 @@ void vtkKatAxisActor::BuildAxis(vtkViewport *viewport, bool force)
 void
 vtkKatAxisActor::BuildLabels(vtkViewport *viewport, bool force)
 {
-
   if (!force && !this->LabelVisibility)
       return;
  
@@ -1420,20 +1419,32 @@ void vtkKatAxisActor::GetBounds(float b[6])
 // Programmer:  Kathleen Bonnell
 // Creation:    July 18, 2003 
 //
+// Modifications:
+//   Kathleen Bonnell, Tue Dec 16 11:06:21 PST 2003
+//   Reset the actor's position and scale.
+//
 // *********************************************************************
 
 float
 vtkKatAxisActor::ComputeMaxLabelLength(const float center[3])
 {
   float length, maxLength = 0.;
+  float pos[3];
+  float scale;
   for (int i = 0; i < this->NumberOfLabelsBuilt; i++)
     {
+    this->LabelActors[i]->GetPosition(pos);
+    scale = this->LabelActors[i]->GetScale()[0];
+
     this->LabelActors[i]->SetCamera(this->Camera);
     this->LabelActors[i]->SetProperty(this->GetProperty());
     this->LabelActors[i]->SetPosition(center[0], center[1] , center[2]);
     this->LabelActors[i]->SetScale(1.);
     length = this->LabelActors[i]->GetLength();
     maxLength = (length > maxLength ? length : maxLength); 
+
+    this->LabelActors[i]->SetPosition(pos);
+    this->LabelActors[i]->SetScale(scale);
     }
   return maxLength;
 }
@@ -1454,17 +1465,28 @@ vtkKatAxisActor::ComputeMaxLabelLength(const float center[3])
 // Programmer:  Kathleen Bonnell
 // Creation:    July 25, 2003 
 //
+// Modifications:
+//   Kathleen Bonnell, Tue Dec 16 11:06:21 PST 2003
+//   Reset the actor's position and scale.
+//
 // *********************************************************************
 
 float
 vtkKatAxisActor::ComputeTitleLength(const float center[3])
 {
+  float pos[3], scale, len;
+  this->TitleActor->GetPosition(pos);
+  scale = this->TitleActor->GetScale()[0];
   this->TitleVector->SetText(this->Title);
   this->TitleActor->SetCamera(this->Camera);
   this->TitleActor->SetProperty(this->GetProperty());
   this->TitleActor->SetPosition(center[0], center[1] , center[2]);
   this->TitleActor->SetScale(1.);
-  return this->TitleActor->GetLength();
+  len = this->TitleActor->GetLength();
+
+  this->TitleActor->SetPosition(pos);
+  this->TitleActor->SetScale(scale);
+  return len;
 }
 
 
@@ -1507,7 +1529,7 @@ vtkKatAxisActor::SetLabelScale(const float s)
 void
 vtkKatAxisActor::SetTitleScale(const float s)
 {
-    this->TitleActor->SetScale(s);
+  this->TitleActor->SetScale(s);
 }
 
 

@@ -13,6 +13,7 @@
 #include <qtimer.h>
 #include <qvbox.h>
 #include <qhbox.h>
+#include <qgrid.h>
 #include <qradiobutton.h>
 
 #include <QNarrowLineEdit.h>
@@ -312,6 +313,8 @@ QvisAnnotationWindow::CreateWindowContents()
 // Creation:   Thu Oct 30 16:35:59 PST 2003
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003
+//   Added button for automatic label scaling, text fields for label exponents.
 //   
 // ****************************************************************************
 
@@ -326,7 +329,7 @@ QvisAnnotationWindow::Create2DTab()
     page2D->setMargin(10);
     tabs->addTab(page2D, "2D");
 
-    QHBox *toggleHBox = new QHBox(page2D);
+    QGrid *toggleHBox = new QGrid(2, QGrid::Horizontal, page2D);
     axesFlagToggle2D = new QCheckBox("Draw axes", toggleHBox,
                                      "axesFlagToggle2D");
     connect(axesFlagToggle2D, SIGNAL(toggled(bool)),
@@ -337,9 +340,15 @@ QvisAnnotationWindow::Create2DTab()
     connect(axesAutoSetTicksToggle2D, SIGNAL(toggled(bool)),
             this, SLOT(axesAutoSetTicksChecked2D(bool)));
 
+    labelAutoSetScalingToggle2D = new QCheckBox("Auto scale label values", toggleHBox,
+                                         "labelAutoSetScalingToggle2D");
+    connect(labelAutoSetScalingToggle2D, SIGNAL(toggled(bool)),
+            this, SLOT(labelAutoSetScalingChecked2D(bool)));
+
+
     axesGroup2D = new QGroupBox(page2D, "axesGroup2D");
     axesGroup2D->setFrameStyle(QFrame::NoFrame);
-    QGridLayout *lLayout = new QGridLayout(axesGroup2D, 11, 3);
+    QGridLayout *lLayout = new QGridLayout(axesGroup2D, 14, 3);
     lLayout->setSpacing(5);
 
     // Create the X and Y Axes column headings
@@ -484,14 +493,29 @@ QvisAnnotationWindow::Create2DTab()
             this, SLOT(yTitleFontHeightChanged2D()));
     lLayout->addWidget(yTitleFontHeightLineEdit2D, 9, 2);
 
+    // Create the text fields for the 2D label scaling.
+    labelScalingLabel2D = new QLabel("Label scale (10e?)", axesGroup2D, "labelScalingLabel2D");
+    lLayout->addWidget(labelScalingLabel2D, 10, 0);
+
+    xLabelScalingLineEdit2D = new QNarrowLineEdit(axesGroup2D,
+        "xLabelScalingLineEdit2D");
+    connect(xLabelScalingLineEdit2D, SIGNAL(returnPressed()),
+            this, SLOT(xLabelScalingChanged2D()));
+    lLayout->addWidget(xLabelScalingLineEdit2D, 10, 1);
+    yLabelScalingLineEdit2D = new QNarrowLineEdit(axesGroup2D,
+        "yLabelScalingLineEdit2D");
+    connect(yLabelScalingLineEdit2D, SIGNAL(returnPressed()),
+            this, SLOT(yLabelScalingChanged2D()));
+    lLayout->addWidget(yLabelScalingLineEdit2D, 10, 2);
+
     // Create the 2D line width widget.
     axesLineWidth2D = new QvisLineWidthWidget(0, axesGroup2D,
         "axesLineWidth2D");
-    lLayout->addMultiCellWidget(axesLineWidth2D, 10, 10, 1, 2);
+    lLayout->addMultiCellWidget(axesLineWidth2D, 11, 11, 1, 2);
     connect(axesLineWidth2D, SIGNAL(lineWidthChanged(int)),
             this, SLOT(axesLineWidthChanged2D(int)));
     l = new QLabel("Line width", axesGroup2D, "axesLineWidthLabel2D");
-    lLayout->addWidget(l, 10, 0);
+    lLayout->addWidget(l, 11, 0);
 
     // Create the 2D tick mark locations combobox.
     axesTickLocationComboBox2D = new QComboBox(axesGroup2D,
@@ -501,10 +525,10 @@ QvisAnnotationWindow::Create2DTab()
     axesTickLocationComboBox2D->insertItem("Both",    2);
     connect(axesTickLocationComboBox2D, SIGNAL(activated(int)),
             this, SLOT(axesTickLocationChanged2D(int)));
-    lLayout->addMultiCellWidget(axesTickLocationComboBox2D, 11, 11, 1, 2);
+    lLayout->addMultiCellWidget(axesTickLocationComboBox2D, 12, 12, 1, 2);
     l = new QLabel(axesTickLocationComboBox2D, "Tick mark locations",
                    axesGroup2D, "axesTickLocationLabel2D");
-    lLayout->addWidget(l, 11, 0);
+    lLayout->addWidget(l, 12, 0);
 
     // Create the 2D tick marks combobox.
     axesTicksComboBox2D = new QComboBox(axesGroup2D, "axesTicksComboBox2D");
@@ -515,10 +539,10 @@ QvisAnnotationWindow::Create2DTab()
     axesTicksComboBox2D->insertItem("All axes",    4);
     connect(axesTicksComboBox2D, SIGNAL(activated(int)),
             this, SLOT(axesTicksChanged2D(int)));
-    lLayout->addMultiCellWidget(axesTicksComboBox2D, 12, 12, 1, 2);
+    lLayout->addMultiCellWidget(axesTicksComboBox2D, 13, 13, 1, 2);
     l = new QLabel(axesTicksComboBox2D, "Tick marks",
                    axesGroup2D, "axesTicksLabel2D");
-    lLayout->addWidget(l, 12, 0);
+    lLayout->addWidget(l, 13, 0);
 }
 
 // ****************************************************************************
@@ -533,6 +557,8 @@ QvisAnnotationWindow::Create2DTab()
 // Creation:   Thu Oct 30 16:34:53 PST 2003
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003
+//   Added button for automatic label scaling, text fields for label exponents.
 //   
 // ****************************************************************************
 
@@ -551,9 +577,14 @@ QvisAnnotationWindow::Create3DTab()
     connect(axes3DFlagToggle, SIGNAL(toggled(bool)),
             this, SLOT(axes3DFlagChecked(bool)));
 
+    labelAutoSetScalingToggle = new QCheckBox("Auto scale label values", page3D,
+                                         "labelAutoSetScalingToggle");
+    connect(labelAutoSetScalingToggle, SIGNAL(toggled(bool)),
+            this, SLOT(labelAutoSetScalingChecked(bool)));
+
     axes3DGroup = new QGroupBox(page3D, "axes3DGroup");
     axes3DGroup->setFrameStyle(QFrame::NoFrame);
-    QGridLayout *rLayout = new QGridLayout(axes3DGroup, 6, 4);
+    QGridLayout *rLayout = new QGridLayout(axes3DGroup, 7, 4);
     rLayout->setSpacing(10);
 
     // Create the group of check boxes for the 3D axis labels.
@@ -607,6 +638,27 @@ QvisAnnotationWindow::Create3DTab()
                    axes3DGroup, "axisTicksLabel");
     rLayout->addWidget(l, 2, 0);
 
+    // Create the text fields for the 3D label scaling.
+    labelScalingLabel = new QLabel("Label scale (10e?)", axes3DGroup, 
+                                   "labelScalingLabel");
+    rLayout->addWidget(labelScalingLabel, 3, 0);
+
+    xLabelScalingLineEdit = new QNarrowLineEdit(axes3DGroup,
+        "xLabelScalingLineEdit");
+    connect(xLabelScalingLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(xLabelScalingChanged()));
+    rLayout->addWidget(xLabelScalingLineEdit, 3, 1);
+    yLabelScalingLineEdit = new QNarrowLineEdit(axes3DGroup,
+        "yLabelScalingLineEdit");
+    connect(yLabelScalingLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(yLabelScalingChanged()));
+    rLayout->addWidget(yLabelScalingLineEdit, 3, 2);
+    zLabelScalingLineEdit = new QNarrowLineEdit(axes3DGroup,
+        "zLabelScalingLineEdit");
+    connect(zLabelScalingLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(zLabelScalingChanged()));
+    rLayout->addWidget(zLabelScalingLineEdit, 3, 3);
+
     // Create the 3D tick mark locations combobox.
     axes3DTickLocationComboBox = new QComboBox(axes3DGroup, "axes3DTickLocationComboBox");
     axes3DTickLocationComboBox->insertItem("Inside",  0);
@@ -614,10 +666,10 @@ QvisAnnotationWindow::Create3DTab()
     axes3DTickLocationComboBox->insertItem("Both",    2);
     connect(axes3DTickLocationComboBox, SIGNAL(activated(int)),
             this, SLOT(axes3DTickLocationChanged(int)));
-    rLayout->addMultiCellWidget(axes3DTickLocationComboBox, 3, 3, 1, 3);
+    rLayout->addMultiCellWidget(axes3DTickLocationComboBox, 4, 4, 1, 3);
     l = new QLabel(axes3DTickLocationComboBox, "Tick mark locations",
                    axes3DGroup, "axes3DTickLocationLabel");
-    rLayout->addWidget(l, 3, 0);
+    rLayout->addWidget(l, 4, 0);
 
     // Create the 3D axes type combobox.
     axes3DTypeComboBox = new QComboBox(axes3DGroup, "axes3DTypeComboBox");
@@ -628,10 +680,10 @@ QvisAnnotationWindow::Create3DTab()
     axes3DTypeComboBox->insertItem("Static edges",   4);
     connect(axes3DTypeComboBox, SIGNAL(activated(int)),
             this, SLOT(axes3DTypeChanged(int)));
-    rLayout->addMultiCellWidget(axes3DTypeComboBox, 4, 4, 1, 3);
+    rLayout->addMultiCellWidget(axes3DTypeComboBox, 5, 5, 1, 3);
     l = new QLabel(axes3DTypeComboBox, "Axis type",
                    axes3DGroup, "axes3DTypeLabel");
-    rLayout->addWidget(l, 4, 0);
+    rLayout->addWidget(l, 5, 0);
 
     // Create the toggle for the triad.
     QHBox *toggleHBox = new QHBox(page3D);
@@ -939,6 +991,9 @@ QvisAnnotationWindow::UpdateWindow(bool doAll)
 //   2d font size setting with individual controls for setting the x label,
 //   y label, x title, and y title font heights.
 //
+//   Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003 
+//   Added the ability to control the 2d & 3d label scaling exponents.
+//
 // ****************************************************************************
 
 void
@@ -946,7 +1001,7 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
 {
     QColor  c;
     QString temp;
-    bool isGradient, axesAutoSetTicks;
+    bool isGradient, axesAutoSetTicks, labelAutoSetScaling;
     bool vals[3];
     bool setAxisLabels2D = false;
     bool setAxisTitles2D = false;
@@ -995,88 +1050,106 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
             xMinorTickSpacingLineEdit2D->setEnabled(!axesAutoSetTicks);
             yMinorTickSpacingLineEdit2D->setEnabled(!axesAutoSetTicks);
             break;
-        case 2: // xAxisLabels2D
-        case 3: // yAxisLabels2D
+        case 2: // labelAutoSetScaling2D
+            labelAutoSetScalingToggle2D->blockSignals(true);
+            labelAutoSetScalingToggle2D->setChecked(annotationAtts->GetLabelAutoSetScaling2D());
+            labelAutoSetScalingToggle2D->blockSignals(false);
+
+            labelAutoSetScaling = (annotationAtts->GetLabelAutoSetScaling2D() == 1);
+            labelScalingLabel2D->setEnabled(!labelAutoSetScaling);
+            xLabelScalingLineEdit2D->setEnabled(!labelAutoSetScaling);
+            yLabelScalingLineEdit2D->setEnabled(!labelAutoSetScaling);
+            break;
+        case 3: // xAxisLabels2D
+        case 4: // yAxisLabels2D
             setAxisLabels2D = true;
             break;
-        case 4: // xAxisTitle2D
-        case 5: // yAxisTitle2D
+        case 5: // xAxisTitle2D
+        case 6: // yAxisTitle2D
             setAxisTitles2D = true;
             break;
-        case 6: // xGridLines2D
-        case 7: // yGridLines2D
+        case 7: // xGridLines2D
+        case 8: // yGridLines2D
             setGridLines2D = true;
             break;
-        case 8: // xMajorTickMinimum2D
+        case 9: // xMajorTickMinimum2D
             temp.sprintf("%g", annotationAtts->GetXMajorTickMinimum2D());
             xMajorTickMinimumLineEdit2D->setText(temp);
             break;
-        case 9: // yMajorTickMinimum2D
+        case 10: // yMajorTickMinimum2D
             temp.sprintf("%g", annotationAtts->GetYMajorTickMinimum2D());
             yMajorTickMinimumLineEdit2D->setText(temp);
             break;
-        case 10: // xMajorTickMaximum2D
+        case 11: // xMajorTickMaximum2D
             temp.sprintf("%g", annotationAtts->GetXMajorTickMaximum2D());
             xMajorTickMaximumLineEdit2D->setText(temp);
             break;
-        case 11: // yMajorTickMaximum2D
+        case 12: // yMajorTickMaximum2D
             temp.sprintf("%g", annotationAtts->GetYMajorTickMaximum2D());
             yMajorTickMaximumLineEdit2D->setText(temp);
             break;
-        case 12: // xMajorTickSpacing2D
+        case 13: // xMajorTickSpacing2D
             temp.sprintf("%g", annotationAtts->GetXMajorTickSpacing2D());
             xMajorTickSpacingLineEdit2D->setText(temp);
             break;
-        case 13: // yMajorTickSpacing2D
+        case 14: // yMajorTickSpacing2D
             temp.sprintf("%g", annotationAtts->GetYMajorTickSpacing2D());
             yMajorTickSpacingLineEdit2D->setText(temp);
             break;
-        case 14: // xMinorTickSpacing2D
+        case 15: // xMinorTickSpacing2D
             temp.sprintf("%g", annotationAtts->GetXMinorTickSpacing2D());
             xMinorTickSpacingLineEdit2D->setText(temp);
             break;
-        case 15: // yMinorTickSpacing2D
+        case 16: // yMinorTickSpacing2D
             temp.sprintf("%g", annotationAtts->GetYMinorTickSpacing2D());
             yMinorTickSpacingLineEdit2D->setText(temp);
             break;
-        case 16: // xLabelFontHeight2D
+        case 17: // xLabelFontHeight2D
             temp.sprintf("%g", annotationAtts->GetXLabelFontHeight2D());
             xLabelFontHeightLineEdit2D->setText(temp);
             break;
-        case 17: // yLabelFontHeight2D
+        case 18: // yLabelFontHeight2D
             temp.sprintf("%g", annotationAtts->GetYLabelFontHeight2D());
             yLabelFontHeightLineEdit2D->setText(temp);
             break;
-        case 18: // xTitleFontHeight2D
+        case 19: // xTitleFontHeight2D
             temp.sprintf("%g", annotationAtts->GetXTitleFontHeight2D());
             xTitleFontHeightLineEdit2D->setText(temp);
             break;
-        case 19: // yTitleFontHeight2D
+        case 20: // yTitleFontHeight2D
             temp.sprintf("%g", annotationAtts->GetYTitleFontHeight2D());
             yTitleFontHeightLineEdit2D->setText(temp);
             break;
-        case 20: // axesLineWidth2D
+        case 21: // xLabelScaling2D
+            temp.sprintf("%d", annotationAtts->GetXLabelScaling2D());
+            xLabelScalingLineEdit2D->setText(temp);
+            break;
+        case 22: // yLabelScaling2D
+            temp.sprintf("%d", annotationAtts->GetYLabelScaling2D());
+            yLabelScalingLineEdit2D->setText(temp);
+            break;
+        case 23: // axesLineWidth2D
             axesLineWidth2D->blockSignals(true);
             axesLineWidth2D->SetLineWidth(annotationAtts->GetAxesLineWidth2D());
             axesLineWidth2D->blockSignals(false);
             break;
-        case 21: // axesTickLocation2D
+        case 24: // axesTickLocation2D
             axesTickLocationComboBox2D->blockSignals(true);
             axesTickLocationComboBox2D->setCurrentItem(annotationAtts->GetAxesTickLocation2D());
             axesTickLocationComboBox2D->blockSignals(false);
             break;
-        case 22: // axesTicks2D
+        case 25: // axesTicks2D
             axesTicksComboBox2D->blockSignals(true);
             axesTicksComboBox2D->setCurrentItem(annotationAtts->GetAxesTicks2D());
             axesTicksComboBox2D->blockSignals(false);
             break;
-        case 23: // axesFlag
+        case 26: // axesFlag
             axes3DFlagToggle->blockSignals(true);
             axes3DFlagToggle->setChecked(annotationAtts->GetAxesFlag());
             axes3DFlagToggle->blockSignals(false);
             axes3DGroup->setEnabled(annotationAtts->GetAxesFlag());
             break;
-        case 24: // axesAutoSetTicks
+        case 27: // axesAutoSetTicks
 #if 0
             axesAutoSetTicksToggle->blockSignals(true);
             axesAutoSetTicksToggle->setChecked(annotationAtts->GetAutoSetTicks());
@@ -1084,100 +1157,124 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
             // Make the tick locations text fields not enabled.
 #endif
             break;
-        case 25: // xAxisLabels
-        case 26: // yAxisLabels
-        case 27: // zAxisLabels
+        case 28: // labelAutoSetScaling
+            labelAutoSetScalingToggle->blockSignals(true);
+            labelAutoSetScalingToggle->setChecked(
+                annotationAtts->GetLabelAutoSetScaling());
+            labelAutoSetScalingToggle->blockSignals(false);
+
+            labelAutoSetScaling = (annotationAtts->GetLabelAutoSetScaling() == 1);
+            labelScalingLabel->setEnabled(!labelAutoSetScaling);
+            xLabelScalingLineEdit->setEnabled(!labelAutoSetScaling);
+            yLabelScalingLineEdit->setEnabled(!labelAutoSetScaling);
+            zLabelScalingLineEdit->setEnabled(!labelAutoSetScaling);
+            break;
+        case 29: // xAxisLabels
+        case 30: // yAxisLabels
+        case 31: // zAxisLabels
             setAxisLabels = true;
             break;
-        case 28: // xAxisTitle
-        case 29: // yAxisTitle
-        case 30: // zAxisTitle
+        case 32: // xAxisTitle
+        case 33: // yAxisTitle
+        case 34: // zAxisTitle
             setAxisTitles = true;
             break;
-        case 31: // xGridLines
-        case 32: // yGridLines
-        case 33: // zGridLines
+        case 35: // xGridLines
+        case 36: // yGridLines
+        case 37: // zGridLines
             setGridLines = true;
             break;
-        case 34: // xAxisTicks
-        case 35: // yAxisTicks
-        case 36: // zAxisTicks
+        case 38: // xAxisTicks
+        case 39: // yAxisTicks
+        case 40: // zAxisTicks
             setAxisTicks = true;
             break;
-        case 37: // xMajorTickMinimum
-        case 38: // yMajorTickMinimum
-        case 39: // zMajorTickMinimum
-        case 40: // xMajorTickMaximum
-        case 41: // yMajorTickMaximum
-        case 42: // zMajorTickMaximum
-        case 43: // xMajorTickSpacing
-        case 44: // yMajorTickSpacing
-        case 45: // zMajorTickSpacing
-        case 46: // xMinorTickSpacing
-        case 47: // yMinorTickSpacing
-        case 48: // zMinorTickSpacing
-        case 49: // xLabelFontHeight
-        case 50: // yLabelFontHeight
-        case 51: // zLabelFontHeight
-        case 52: // xTitleFontHeight
-        case 53: // yTitleFontHeight
-        case 54: // zTitleFontHeight
+        case 41: // xMajorTickMinimum
+        case 42: // yMajorTickMinimum
+        case 43: // zMajorTickMinimum
+        case 44: // xMajorTickMaximum
+        case 45: // yMajorTickMaximum
+        case 46: // zMajorTickMaximum
+        case 47: // xMajorTickSpacing
+        case 48: // yMajorTickSpacing
+        case 49: // zMajorTickSpacing
+        case 50: // xMinorTickSpacing
+        case 51: // yMinorTickSpacing
+        case 52: // zMinorTickSpacing
+        case 53: // xLabelFontHeight
+        case 54: // yLabelFontHeight
+        case 55: // zLabelFontHeight
+        case 56: // xTitleFontHeight
+        case 57: // yTitleFontHeight
+        case 58: // zTitleFontHeight
             // IMPLEMENT
             break;
-        case 55: // axesTickLocation
+        case 59: // xLabelScaling
+            temp.sprintf("%d", annotationAtts->GetXLabelScaling());
+            xLabelScalingLineEdit->setText(temp);
+            break;
+        case 60: // yLabelScaling
+            temp.sprintf("%d", annotationAtts->GetYLabelScaling());
+            yLabelScalingLineEdit->setText(temp);
+            break;
+        case 61: // zLabelScaling
+            temp.sprintf("%d", annotationAtts->GetZLabelScaling());
+            zLabelScalingLineEdit->setText(temp);
+            break;
+        case 62: // axesTickLocation
             axes3DTickLocationComboBox->blockSignals(true);
             axes3DTickLocationComboBox->setCurrentItem(annotationAtts->GetAxesTickLocation());
             axes3DTickLocationComboBox->blockSignals(false);
             break;
-        case 56: // axesType
+        case 63: // axesType
             axes3DTypeComboBox->blockSignals(true);
             axes3DTypeComboBox->setCurrentItem(annotationAtts->GetAxesType());
             axes3DTypeComboBox->blockSignals(false);
             break;
-        case 57: // triadFlag
+        case 64: // triadFlag
             triadFlagToggle->blockSignals(true);
             triadFlagToggle->setChecked(annotationAtts->GetTriadFlag());
             triadFlagToggle->blockSignals(false);
             break;
-        case 58: // bboxFlag
+        case 65: // bboxFlag
             bboxFlagToggle->blockSignals(true);
             bboxFlagToggle->setChecked(annotationAtts->GetBboxFlag());
             bboxFlagToggle->blockSignals(false);
             break;
-        case 59: // backgroundColor
+        case 66: // backgroundColor
             cptr = annotationAtts->GetBackgroundColor().GetColor();
             c = QColor(int(cptr[0]), int(cptr[1]), int(cptr[2]));
             backgroundColorButton->blockSignals(true);
             backgroundColorButton->setButtonColor(c);
             backgroundColorButton->blockSignals(false);
             break;
-        case 60: // foregroundColor
+        case 67: // foregroundColor
             cptr = annotationAtts->GetForegroundColor().GetColor();
             c = QColor(int(cptr[0]), int(cptr[1]), int(cptr[2]));
             foregroundColorButton->blockSignals(true);
             foregroundColorButton->setButtonColor(c);
             foregroundColorButton->blockSignals(false);
             break;
-        case 61: // gradientBackgroundStyle
+        case 68: // gradientBackgroundStyle
             gradientStyleComboBox->blockSignals(true);
             gradientStyleComboBox->setCurrentItem(annotationAtts->GetGradientBackgroundStyle());
             gradientStyleComboBox->blockSignals(false);
             break;
-        case 62: // gradientColor1
+        case 69: // gradientColor1
             cptr = annotationAtts->GetGradientColor1().GetColor();
             c = QColor(int(cptr[0]), int(cptr[1]), int(cptr[2]));
             gradientColor1Button->blockSignals(true);
             gradientColor1Button->setButtonColor(c);
             gradientColor1Button->blockSignals(false);
             break;
-        case 63: // gradientColor2
+        case 70: // gradientColor2
             cptr = annotationAtts->GetGradientColor2().GetColor();
             c = QColor(int(cptr[0]), int(cptr[1]), int(cptr[2]));
             gradientColor2Button->blockSignals(true);
             gradientColor2Button->setButtonColor(c);
             gradientColor2Button->blockSignals(false);
             break;
-        case 64: // backgroundMode
+        case 71: // backgroundMode
             vals[0] = annotationAtts->GetBackgroundMode()==AnnotationAttributes::Solid;
             vals[1] = annotationAtts->GetBackgroundMode()==AnnotationAttributes::Gradient;
             SetButtonGroup(backgroundStyleButtons, vals);
@@ -1191,17 +1288,17 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
             gradientColor2Label->setEnabled(isGradient);
             gradientColor2Button->setEnabled(isGradient);
             break;
-        case 65: // userInfo
+        case 72: // userInfo
             userInfo->blockSignals(true);
             userInfo->setChecked(annotationAtts->GetUserInfoFlag());
             userInfo->blockSignals(false);
             break;
-        case 66: // databaseInfo
+        case 73: // databaseInfo
             databaseInfo->blockSignals(true);
             databaseInfo->setChecked(annotationAtts->GetDatabaseInfoFlag());
             databaseInfo->blockSignals(false);
             break;
-        case 67: // legendInfo
+        case 74: // legendInfo
             legendInfo->blockSignals(true);
             legendInfo->setChecked(annotationAtts->GetLegendInfoFlag());
             legendInfo->blockSignals(false);
@@ -1383,6 +1480,9 @@ QvisAnnotationWindow::UpdateAnnotationObjectControls(bool doAll)
 //   Added the ability to control the 2d axes line width and replaced the
 //   2d font size setting with individual controls for setting the x label,
 //   y label, x title, and y title font heights.
+//
+//   Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003 
+//   Added the ability to control the 2d & 3d label scaling exponents.
 //
 // ****************************************************************************
 
@@ -1715,6 +1815,141 @@ QvisAnnotationWindow::GetCurrentValues(int which_widget)
                 annotationAtts->GetYTitleFontHeight2D());
         }
     }
+
+    // Do the 2d x label scaling value
+    if (which_widget == 12 || doAll)
+    {
+        temp = xLabelScalingLineEdit2D->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if (okay)
+        {
+            int v;
+            if (sscanf(temp.latin1(), "%d", &v) == 1)
+            {
+                annotationAtts->SetXLabelScaling2D(v);
+            }
+            else
+                okay = false;
+        }
+
+        if (!okay)
+        {
+            msg.sprintf("The 2D X Label scaling value was invalid. "
+                "Resetting to the last good value of %d.",
+                annotationAtts->GetXLabelScaling2D());
+            Error(msg);
+            annotationAtts->SetXLabelScaling2D(
+                annotationAtts->GetXLabelScaling2D());
+        }
+    }
+
+    // Do the 2d y label scaling value
+    if (which_widget == 13 || doAll)
+    {
+        temp = yLabelScalingLineEdit2D->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if (okay)
+        {
+            int v;
+            if (sscanf(temp.latin1(), "%d", &v) == 1)
+            {
+                annotationAtts->SetYLabelScaling2D(v);
+            }
+            else
+                okay = false;
+        }
+
+        if (!okay)
+        {
+            msg.sprintf("The 2D Y Label scaling value was invalid. "
+                "Resetting to the last good value of %d.",
+                annotationAtts->GetYLabelScaling2D());
+            Error(msg);
+            annotationAtts->SetYLabelScaling2D(
+                annotationAtts->GetYLabelScaling2D());
+        }
+    }
+
+    // Do the 3d x label scaling value
+    if (which_widget == 14 || doAll)
+    {
+        temp = xLabelScalingLineEdit->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if (okay)
+        {
+            int v;
+            if (sscanf(temp.latin1(), "%d", &v) == 1)
+            {
+                annotationAtts->SetXLabelScaling(v);
+            }
+            else
+                okay = false;
+        }
+
+        if (!okay)
+        {
+            msg.sprintf("The 3D X Label scaling value was invalid. "
+                "Resetting to the last good value of %d.",
+                annotationAtts->GetXLabelScaling());
+            Error(msg);
+            annotationAtts->SetXLabelScaling(
+                annotationAtts->GetXLabelScaling());
+        }
+    }
+
+    // Do the 3d y label scaling value
+    if (which_widget == 15 || doAll)
+    {
+        temp = yLabelScalingLineEdit->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if (okay)
+        {
+            int v;
+            if (sscanf(temp.latin1(), "%d", &v) == 1)
+            {
+                annotationAtts->SetYLabelScaling(v);
+            }
+            else
+                okay = false;
+        }
+
+        if (!okay)
+        {
+            msg.sprintf("The 3D Y Label scaling value was invalid. "
+                "Resetting to the last good value of %d.",
+                annotationAtts->GetYLabelScaling());
+            Error(msg);
+            annotationAtts->SetYLabelScaling(
+                annotationAtts->GetYLabelScaling());
+        }
+    }
+
+    // Do the 3d z label scaling value
+    if (which_widget == 16 || doAll)
+    {
+        temp = zLabelScalingLineEdit->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if (okay)
+        {
+            int v;
+            if (sscanf(temp.latin1(), "%d", &v) == 1)
+            {
+                annotationAtts->SetZLabelScaling(v);
+            }
+            else
+                okay = false;
+        }
+
+        if (!okay)
+        {
+            msg.sprintf("The 3D Z Label scaling value was invalid. "
+                "Resetting to the last good value of %d.",
+                annotationAtts->GetZLabelScaling());
+            Error(msg);
+            annotationAtts->SetZLabelScaling(
+                annotationAtts->GetZLabelScaling());
+        }
+    }
 }
 
 // ****************************************************************************
@@ -2021,6 +2256,33 @@ void
 QvisAnnotationWindow::axesAutoSetTicksChecked2D(bool val)
 {
     annotationAtts->SetAxesAutoSetTicks2D(val);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::labelAutoSetScaling2D
+//
+// Purpose: 
+//   This is a Qt slot function that sets the 2D auto set label scaling flag.
+//
+// Arguments:
+//   val : The new toggle state.
+//
+// Note:       SetUpdate(false) is not called because we want the widget
+//             sensitivity to update.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 11, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::labelAutoSetScalingChecked2D(bool val)
+{
+    annotationAtts->SetLabelAutoSetScaling2D(val);
     Apply();
 }
 
@@ -2372,6 +2634,52 @@ QvisAnnotationWindow::yTitleFontHeightChanged2D()
     Apply();
 }
 
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::xLabelScalingChanged2D
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the 2d x label scaling is
+//   changed.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 11, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::xLabelScalingChanged2D()
+{
+    GetCurrentValues(12);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::yLabelScalingChanged2D
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the 2d y label scaling is
+//   changed.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 11, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::yLabelScalingChanged2D()
+{
+    GetCurrentValues(13);
+    SetUpdate(false);
+    Apply();
+}
+
+
 // ****************************************************************************
 // Method: QvisAnnotationWindow::axesLineWidthChanged2D
 //
@@ -2493,6 +2801,34 @@ QvisAnnotationWindow::axes3DFlagChecked(bool val)
     Apply();
 }
 
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::labelAutoSetScaling
+//
+// Purpose: 
+//   This is a Qt slot function that sets the 3D auto set label scaling flag.
+//
+// Arguments:
+//   val : The new toggle state.
+//
+// Note:       SetUpdate(false) is not called because we want the widget
+//             sensitivity to update.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 11, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::labelAutoSetScalingChecked(bool val)
+{
+    annotationAtts->SetLabelAutoSetScaling(val);
+    Apply();
+}
+
+
 // ****************************************************************************
 // Method: QvisAnnotationWindow::axisLabelsChanged
 //
@@ -2581,6 +2917,73 @@ QvisAnnotationWindow::axisTicksChanged(int index)
        annotationAtts->SetYAxisTicks(!annotationAtts->GetYAxisTicks());
     else if(index == 2)
        annotationAtts->SetZAxisTicks(!annotationAtts->GetZAxisTicks());
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::xLabelScalingChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the 3d x label scaling is
+//   changed.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 11, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::xLabelScalingChanged()
+{
+    GetCurrentValues(14);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::yLabelScalingChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the 3d y label scaling is
+//   changed.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 11, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::yLabelScalingChanged()
+{
+    GetCurrentValues(15);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::zLabelScalingChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the 3d z label scaling is
+//   changed.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 11, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::zLabelScalingChanged()
+{
+    GetCurrentValues(16);
     SetUpdate(false);
     Apply();
 }

@@ -541,6 +541,13 @@ avtDatabase::GetNewMetaData(int timeState)
 //  Programmer: Hank Childs
 //  Creation:   November 25, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Dec 15 14:36:03 PST 2003
+//    If there are multiple meshes, put each mesh in its own subdirectory 
+//    ('4214).  Also, if the meshes are in subdirectories, set them up so that
+//    the expressions code will recognize them ('4195).
+//
 // ****************************************************************************
 
 void
@@ -600,10 +607,14 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
             if (nmeshes == 1)
                 sprintf(buff, "mesh_quality/%s", exprs[i].mq_expr.c_str());
             else
-                sprintf(buff, "mesh_quality/%s_%s", exprs[i].mq_expr.c_str(),
-                                                    name.c_str());
+                sprintf(buff, "mesh_quality/%s/%s", name.c_str(),
+                                                    exprs[i].mq_expr.c_str());
             new_expr.SetName(buff);
-            sprintf(buff, "%s(%s)", exprs[i].mq_expr.c_str(), name.c_str());
+            bool hasSlash = (strstr(name.c_str(), "/") != NULL);
+            if (hasSlash)
+                sprintf(buff,"%s(<%s>)",exprs[i].mq_expr.c_str(),name.c_str());
+            else
+                sprintf(buff,"%s(%s)",exprs[i].mq_expr.c_str(),name.c_str());
             new_expr.SetDefinition(buff);
             new_expr.SetType(Expression::ScalarMeshVar);
             md->AddExpression(&new_expr);

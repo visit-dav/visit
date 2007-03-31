@@ -29,8 +29,8 @@ class AVTEXCEPTION_API UnexpectedValueException : public PipelineException
   public:
                     UnexpectedValueException(int,int);
                     UnexpectedValueException(double,double);
-                    UnexpectedValueException(int,string);
-                    UnexpectedValueException(double,string);
+                    UnexpectedValueException(int,std::string);
+                    UnexpectedValueException(double,std::string);
                     UnexpectedValueException(std::string,std::string);
     virtual        ~UnexpectedValueException() VISIT_THROW_NOTHING {;};
 };

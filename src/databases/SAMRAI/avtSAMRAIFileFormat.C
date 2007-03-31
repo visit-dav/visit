@@ -1616,6 +1616,9 @@ avtSAMRAIFileFormat::ReadTime(hid_t &h5_file)
 void 
 avtSAMRAIFileFormat::ReadAndCheckVDRVersion(hid_t &h5_file)
 {
+    cerr << "WARNING! SAMRIA VDR VERSION CHECK DISABLED" << endl;
+    return;
+
     hid_t h5_dataset = H5Dopen(h5_file,"/BASIC_INFO/VDR_version_number");
     if (h5_dataset < 0) {
         char str[1024];

@@ -36,6 +36,9 @@ class vtkOutlineSource;
 //    Kathleen Bonnell, Wed May 28 15:52:32 PDT 2003   
 //    Added method 'ReAddToWindow'. 
 //    
+//    Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003 
+//    Added method 'SetLabelScaling'.
+//    
 // ****************************************************************************
 
 class VISWINDOW_API VisWinAxes3D : public VisWinColleague
@@ -69,6 +72,7 @@ class VISWINDOW_API VisWinAxes3D : public VisWinColleague
     void                      SetBBoxVisibility(int);
     void                      SetFlyMode(int);
     void                      SetTickLocation(int);
+    void                      SetLabelScaling(bool, int, int, int);
 
   protected:
     vtkKatCubeAxesActor      *axes;

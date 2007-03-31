@@ -53,6 +53,10 @@ class QvisLineWidthWidget;
 //   I made the window observe another object so it's now a simple observer.
 //   I added controls to create and manage lists of annotations.
 //
+//   Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003 
+//   Added buttons for automatic label scaling, and for filling in exponents
+//   of labels (when auto label scaling is off).  
+//   
 // ****************************************************************************
 
 class GUI_API QvisAnnotationWindow : public QvisPostableWindowSimpleObserver
@@ -89,6 +93,7 @@ private slots:
     virtual void reset();
     void axesFlagChecked2D(bool val);
     void axesAutoSetTicksChecked2D(bool val);
+    void labelAutoSetScalingChecked2D(bool val);
     void axisLabelsChanged2D(int index);
     void axisTitlesChanged2D(int index);
     void gridLinesChanged2D(int index);
@@ -104,13 +109,19 @@ private slots:
     void yLabelFontHeightChanged2D();
     void xTitleFontHeightChanged2D();
     void yTitleFontHeightChanged2D();
+    void xLabelScalingChanged2D();
+    void yLabelScalingChanged2D();
     void axesLineWidthChanged2D(int index);
     void axesTicksChanged2D(int index);
     void axesTickLocationChanged2D(int index);
     void axes3DFlagChecked(bool val);
+    void labelAutoSetScalingChecked(bool val);
     void axisLabelsChanged(int index);
     void gridLinesChanged(int index);
     void axisTicksChanged(int index);
+    void xLabelScalingChanged();
+    void yLabelScalingChanged();
+    void zLabelScalingChanged();
     void axes3DTickLocationChanged(int index);
     void axes3DTypeChanged(int index);
     void triadFlagChecked(bool val);
@@ -152,6 +163,7 @@ private:
     QVBox           *page2D;
     QCheckBox       *axesFlagToggle2D;
     QCheckBox       *axesAutoSetTicksToggle2D;
+    QCheckBox       *labelAutoSetScalingToggle2D;
     QGroupBox       *axesGroup2D;
     QButtonGroup    *axisLabelsButtons2D;
     QButtonGroup    *axisTitlesButtons2D;
@@ -172,16 +184,24 @@ private:
     QNarrowLineEdit *yLabelFontHeightLineEdit2D;
     QNarrowLineEdit *xTitleFontHeightLineEdit2D;
     QNarrowLineEdit *yTitleFontHeightLineEdit2D;
+    QLabel          *labelScalingLabel2D;
+    QNarrowLineEdit *xLabelScalingLineEdit2D;
+    QNarrowLineEdit *yLabelScalingLineEdit2D;
     QvisLineWidthWidget *axesLineWidth2D;
     QComboBox       *axesTicksComboBox2D;
     QComboBox       *axesTickLocationComboBox2D;
     // 3D tab widgets
     QVBox           *page3D;
     QCheckBox       *axes3DFlagToggle;
+    QCheckBox       *labelAutoSetScalingToggle;
     QGroupBox       *axes3DGroup;
     QButtonGroup    *axisLabelsButtons;
     QButtonGroup    *gridLinesButtons;
     QButtonGroup    *axisTicksButtons;
+    QLabel          *labelScalingLabel;
+    QNarrowLineEdit *xLabelScalingLineEdit;
+    QNarrowLineEdit *yLabelScalingLineEdit;
+    QNarrowLineEdit *zLabelScalingLineEdit;
     QComboBox       *axes3DTickLocationComboBox;
     QComboBox       *axes3DTypeComboBox;
     QCheckBox       *triadFlagToggle;

@@ -1,8 +1,8 @@
 #!/bin/csh -f
 #-----------------------------------------------------------------------
 #
-# VISIT-WINDOWS-DIST - Build a compressed tar file that contains the
-#                      VisIt source code and Windows project files.
+# VISIT-WINDOWS-DIST - Build a tar file that contains the VisIt source
+#                      code and Windows project files.
 #
 # Author: Brad Whitlock
 # Date:   Fri Jul 5 14:34:16 PST 2002
@@ -15,7 +15,12 @@
 #   Brad Whitlock, Mon Jul 15 15:29:37 PST 2002
 #   I made it distribute help files.
 #
-#-----------------------------------------------------------------------
+#   Brad Whitlock, Wed Dec 10 09:32:39 PDT 2003
+#   I rewrote it so it includes more recent project files and installtion
+#   files. It also puts the core header files into a single include directory
+#   so you don't have to add tons of include directories in MSVC.
+#
+#------------------------------------------------------------------------------
 
 if(`pwd` != "/data_vobs/VisIt") then
     echo "The visit-windows-dist script must be run from the top level VOB directory."
@@ -26,47 +31,185 @@ endif
 set TOPDIR = "/data_vobs/VisIt"
 set SCRIPTDIR = "/data_vobs/VisIt/clearcase_bin"
 
+set VERSION = `cat $TOPDIR/VERSION`
+set VisItDev = "$TOPDIR/VisItDev$VERSION"
+set VISITSRC="visit"
+
 # Run the visit-dist script so it creates a source distribution
-echo "Creating intermediate source package"
-$SCRIPTDIR/visit-dist -withhelp visit
+echo "Creating intermediate source package..."
+$SCRIPTDIR/visit-dist -withhelp $VISITSRC
 
-# Create a temp directory
-mkdir WindowsTemp
-mv visit.tar.gz WindowsTemp
-cd WindowsTemp
+# Create a directory to contain the VisIt source distribution.
+echo "Creating $VisItDev directory..."
+mkdir $VisItDev
+cp $VISITSRC.tar.gz $VisItDev
+cd $VisItDev
 
-# Unzip the windows projects and put the source into it.
-echo "Unpackaging temporary files"
-cp $SCRIPTDIR/windowsprojects.tar .
-tar xvf windowsprojects.tar > /dev/null
-gunzip visit.tar.gz
-tar xvf visit.tar > /dev/null
-rm visit.tar
+# Put the source into the development directory.
+echo "Untarring intermediate source package..."
+gunzip $VISITSRC.tar.gz
+tar xvf $VISITSRC.tar > /dev/null
+rm $VISITSRC.tar
 
-# Change the version in the windows visit-config.h file.
-set VER = `cat $TOPDIR/VERSION`
-chdir VisItWindows/include
-mv visit-config.h inputfile
-sed -e "s/1.0/$VER/" inputfile > visit-config.h
-rm inputfile
-cd ../..
+# Remove the tools/mpeg_encode directory since it does not build on Windows
+# and it creates a name conflict with the prep tool.
+rm -rf $VISITSRC/tools/mpeg_encode
 
-# Copy the help from the visit/help directory to the 
-# VisItWindows/bin/help directory.
-chdir VisItWindows\bin
-mkdir help
-cd ../..
-cp visit\help\*.html VisItWindows\bin\help
+# Remove the $VISITSRC/include/visit directory since it's full of symlinks and Windows
+# will not honor them.
+echo "Removing old visit include directory..."
+rm -rf $VISITSRC/include/visit
+
+# Copy windowsbuild/VisItBuildInstructionsOnWindows.doc to $VisItDev
+cp $TOPDIR/windowsbuild/VisItBuildInstructionsOnWindows.doc .
+
+# Move windowsbuild/include to $VisItDev/include.
+cp -R $TOPDIR/windowsbuild/include .
+
+#
+# Move a bunch of the core header files to the new visit directory
+#
+echo "Creating new visit include directory..."
+mkdir include/VisIt
+foreach srcdir (common components gui viewer engine mdserver launcher visitpy visit_vtk vtkqt)
+    foreach srcfile (`find $VISITSRC/$srcdir -name "*.h"`)
+        mv $srcfile include/VisIt
+    end
+end
+
+#
+# Remove SiloObj's Field.h since it will mess up the build for the XML tools.
+#
+rm -f include/VisIt/Field.h
+
+#
+# Copy the XPM files into include/VisIt and remove the copy directories that
+# used to be symlinks to common/icons. Also, since the GUI and viewer seem
+# to reference the icons using slightly different directory schemes, we
+# have to duplicate them for now. The source code should probably be fixed
+# at some point so it references the XPM files consistently so we can
+# remove the need to duplicate the XPM files like this.
+#
+echo "Copying icons to include/VisIt..."
+mkdir include/VisIt/icons
+foreach xpmfile (`find $VISITSRC/common/icons -name "*.xpm"`)
+    cp $xpmfile include/VisIt
+    mv $xpmfile include/VisIt/icons
+end
+rm -rf $VISITSRC/gui/icons
+rm -rf $VISITSRC/viewer/main/icons
+
+# Replace the version in visit-config.h with the current version and move
+# visit-config.h into the include/visit directory
+sed -e "s/XXX/$VERSION/" include/visit-config.h > include/VisIt/visit-config.h
+rm -f include/visit-config.h
+
+echo "Copying tool include files to include/Tools...".
+# Move a bunch of the tool header files to the new tool directory
+mkdir include/Tools
+foreach tooldir (qtssh silex xml xmledit)
+    foreach hdrfile (`find $VISITSRC/tools/$tooldir -name "*.h"`)
+        mv $hdrfile include/Tools
+    end
+end
+
+#
+# Put the VTK header files into include/VTK
+#
+echo "Copying VTK include files to include/VTK..."
+foreach hdrdir (Common Filtering Graphics Hybrid IO Imaging Rendering)
+    foreach hdrfile (`find $TOPDIR/include/vtk/$hdrdir -name "*.h"`)
+        cp $hdrfile include/VTK
+    end
+end
+mkdir include/VTK/MangleMesaInclude
+cp $TOPDIR/include/vtk/MangleMesaInclude/*.h include/VTK/MangleMesaInclude
+
+#
+# Copy the vtkCamera.h header from include/visit to include/VTK since
+# our vtkCamera was built into VTK on Windows.
+#
+rm -f include/VTK/vtkCamera.h
+mv include/VisIt/vtkCamera.h include/VTK
+
+#
+# Create an include/Python directory and copy the Python headers to it.
+#
+echo "Copying Python include files to include/Python..."
+cp -R $TOPDIR/include/Python include
+
+#
+# Create an include/Mesa directory and copy the Mesa files to it.
+#
+echo "Copying Mesa include files to include/Mesa..."
+mkdir include/Mesa
+mkdir include/Mesa/GL
+cp $TOPDIR/include/mesa/GL/*.h include/Mesa/GL
+
+cd $VisItDev
+
+#
+# Move windowsbuild/bin up to $VisItDev and add the plugin directories into
+# it so that we have some place to store them when we build.
+#
+echo "Creating bin directory..."
+cp -R $TOPDIR/windowsbuild/bin .
+foreach configdir (Debug Release)
+    # Copy the makemovie script to the right bin dir.
+    cp $VISITSRC/bin/makemovie.py bin/$configdir
+    # Copy the host config files to the right bin dir.
+    cp $VISITSRC/clearcase_bin/visit-config-open   bin/$configdir
+    cp $VISITSRC/clearcase_bin/visit-config-closed bin/$configdir
+    mkdir bin/$configdir/help
+    cp $VISITSRC/help/*.{html,helpml} bin/$configdir/help
+    mkdir bin/$configdir/databases
+    mkdir bin/$configdir/operators
+    mkdir bin/$configdir/plots
+    # Create small placeholder files or the directory will not be preserved
+    # when extracting the distribution since empty directories tend to be
+    # removed on Windows.
+    echo "Directory for database plugins." > bin/$configdir/databases/README.txt
+    echo "Directory for operator plugins." > bin/$configdir/operators/README.txt
+    echo "Directory for plot plugins." > bin/$configdir/plots/README.txt
+end
+
+# Unzip the Python tar file in bin/Release so we have Python modules available
+# when we try to distribute VisIt on Windows.
+cd bin/Release
+gunzip PythonModules.tar.gz
+tar xvf PythonModules.tar
+rm -f PythonModules.tar
+cd $VisItDev
+
+# Remove the help files since we've copied them into different directories.
+rm $VISITSRC/help/*.{html,helpml}
+
+# Move windowsbuild/lib directory up to $VisItDev.
+echo "Creating lib directory..."
+cp -R $TOPDIR/windowsbuild/lib .
+
+# Move windowsbuild/resources directory up to $VisItDev.
+echo "Creating resources directory..."
+cp -R $TOPDIR/windowsbuild/resources .
+
+# Move windowsbuild/installation directory up to $VisItDev.
+echo "Creating installation directory..."
+cp -R $TOPDIR/windowsbuild/installation .
+
+# Move the windowsbuild/projects directory up to $VisItDev.
+echo "Creating projects directory..."
+cp -R $TOPDIR/windowsbuild/projects .
+
+# Copy the windowsbuild/script directory up to $VisItDev.
+echo "Creating script directory..."
+cp -R $TOPDIR/windowsbuild/script .
 
 # Create the new distribution
-echo "Creating Windows source distribution"
-tar cf $TOPDIR/visit-windows.tar BuildingOnWindows.doc VisItWindows \
-VisItPlotPlugins VisItOperatorPlugins visit
-cd ..
-
-# Compress the file
-echo "Compressing distribution"
-gzip $TOPDIR/visit-windows.tar
+echo "Creating tar file distribution..."
+cd $TOPDIR
+set VisItDev = "VisItDev$VERSION"
+tar cf $VisItDev.tar $VisItDev
 
 # Cleanup
-rm -rf WindowsTemp
+echo "Cleaning up..."
+rm -rf $VisItDev

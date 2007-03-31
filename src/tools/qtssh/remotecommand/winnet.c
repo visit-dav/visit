@@ -8,7 +8,7 @@
 #include <stdlib.h>
 
 #include "putty.h"
-#include "network.h"
+#include "puttynetwork.h"
 #include "tree234.h"
 
 #define BUFFER_GRANULE 512

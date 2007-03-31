@@ -36,6 +36,9 @@ bool installprivate = false;
 #ifdef GENERATE_JAVA
 #include "GenerateJava.h"
 #endif
+#ifdef GENERATE_PROJECTFILE
+#include "GenerateProjectFile.h"
+#endif
 
 #include "XMLParser.h"
 
@@ -163,6 +166,9 @@ void ProcessFile(QString file);
 //
 //    Jeremy Meredith, Wed Nov  5 13:28:03 PST 2003
 //    Added avt files for databases.
+//
+//    Brad Whitlock, Tue Dec 16 11:06:47 PDT 2003
+//    Added code to generate Windows project files.
 //
 // ****************************************************************************
 
@@ -582,6 +588,17 @@ ProcessFile(QString file)
                 attribute->WriteSource(j);
                 j.close();
             }
+        }
+#endif
+#ifdef GENERATE_PROJECTFILE
+        if (docType == "Plugin")
+        {
+            // project file writer mode
+            plugin->WriteProjectFiles(Open);
+        }
+        else
+        {
+            cerr << "No project files to generate for non-plugins." << endl;
         }
 #endif
 

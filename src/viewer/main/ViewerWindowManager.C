@@ -12,6 +12,8 @@
 #include <signal.h> // for signal
 #endif
 
+#include <visit-config.h>
+
 #include <AnimationAttributes.h>
 #include <AnnotationObjectList.h>
 #include <DataNode.h>
@@ -1259,6 +1261,9 @@ ViewerWindowManager::RecenterView(int windowIndex)
 //    Hank Childs, Wed Oct 15 09:45:16 PDT 2003
 //    Added ability to save out images in stereo.
 //
+//    Hank Childs, Tue Dec 16 10:58:20 PST 2003
+//    Take more care in creating filenames for stereo images in subdirectories.
+//
 // ****************************************************************************
 
 void
@@ -1303,12 +1308,56 @@ ViewerWindowManager::SaveWindow(int windowIndex)
         }
         else
         {
+            //
+            // Find everything up until the last slash.
+            //
+            const char *fname = saveWindowClientAtts->GetFileName().c_str();
+            const char *tmp = fname, *last = NULL;
+            while (tmp != NULL)
+            {
+                tmp = strstr(tmp, SLASH_STRING);
+                if (tmp != NULL)
+                {
+                    last = tmp;
+                    tmp = tmp+1;
+                }
+            }
+
+            //
+            // Now construct the string into directory and filename portions.
+            //
+            char dir_prefix[1024];
+            char stem[1024];
+            bool has_dir_prefix = false;
+            if (last != NULL)
+            {
+                strncpy(dir_prefix, fname, last-fname);
+                dir_prefix[last-fname] = '\0';
+                strcpy(stem, last+1);
+                has_dir_prefix = true;
+            }
+            else
+            {
+                strcpy(stem, fname);
+            }
+            
+            //
+            // Construct the string depending on whether or not there is a dir.
+            //
             char left_prefix[1024];
-            sprintf(left_prefix, "left_%s", 
-                                  saveWindowClientAtts->GetFileName().c_str());
             char right_prefix[1024];
-            sprintf(right_prefix, "right_%s", 
-                                  saveWindowClientAtts->GetFileName().c_str());
+            if (has_dir_prefix)
+            {
+                sprintf(left_prefix, "%s%cleft_%s", dir_prefix, SLASH_CHAR,
+                                                    stem);
+                sprintf(right_prefix, "%s%cright_%s", dir_prefix,
+                                                      SLASH_CHAR, stem);
+            }
+            else
+            {
+                sprintf(left_prefix, "left_%s", stem);
+                sprintf(right_prefix, "right_%s", stem);
+            }
             filename = fileWriter->CreateFilename(left_prefix,
                                   saveWindowClientAtts->GetFamily());
             filename2 = fileWriter->CreateFilename(right_prefix,

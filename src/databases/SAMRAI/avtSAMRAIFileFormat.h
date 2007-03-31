@@ -15,6 +15,7 @@
 
 using std::string;
 using std::vector;
+using std::map;
 
 class avtMaterial;
 class avtSpecies;

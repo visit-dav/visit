@@ -198,6 +198,9 @@ typedef struct
 //   Jeremy Meredith, Fri Aug 15 11:19:25 PDT 2003
 //   Added RecursiveExpressionException and InvalidExpressionException.
 //
+//   Kathleen Bonnell, Tue Dec 16 14:58:46 PST 2003 
+//   Added UnexpectedValueException.
+//
 
 static const exception_info exception_tree[] =
 {
@@ -254,6 +257,7 @@ static const exception_info exception_tree[] =
     {"PlotDimensionalityException",        "VisWindowException"},
     {"RecursiveExpressionException",       "VisItException"},
     {"SiloException",                      "DatabaseException"},
+    {"UnexpectedValueException",           "PipelineException"},
     {"VisItException",                     NULL},
     {"VisWindowException",                 "VisItException"}
 };
