@@ -63,14 +63,14 @@ EngineExprNodeFactory::CreateIndexExpr(const Pos & p, ExprNode * e, int ind)
 
 inline VectorExpr*
 EngineExprNodeFactory::CreateVectorExpr(const Pos & p, ExprNode * x,
-                                      ExprNode * y, ExprNode * z = NULL)
+                                      ExprNode * y, ExprNode * z )
 {
     return new EngineVectorExpr(p, x, y, z);
 }
 
 inline FunctionExpr*
 EngineExprNodeFactory::CreateFunctionExpr(const Pos & p, Identifier * i,
-                                        ArgsExpr * e = NULL)
+                                        ArgsExpr * e )
 {
     return new EngineFunctionExpr(p, i, e);
 }

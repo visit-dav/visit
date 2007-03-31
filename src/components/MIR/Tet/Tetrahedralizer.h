@@ -1,6 +1,6 @@
 #ifndef TETRAHEDRALIZER_H
 #define TETRAHEDRALIZER_H
-#include <database_exports.h>
+#include <mir_exports.h>
 
 #include <vector>
 #include <MIROptions.h>
@@ -34,7 +34,7 @@
 //    Split 
 //
 // ****************************************************************************
-class DATABASE_API Tetrahedralizer
+class MIR_API Tetrahedralizer
 {
   public:
     Tetrahedralizer(int nmat_);

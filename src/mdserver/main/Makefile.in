@@ -127,6 +127,9 @@
 #    Brad Whitlock, Fri May 2 15:47:08 PST 2003
 #    I added -lproxybase to the list of libs for testmds.
 #
+#    Jeremy Meredith, Wed Aug 20 09:50:42 PDT 2003
+#    I added the new mir library.
+#
 ##############################################################################
 
 ##
@@ -142,6 +145,7 @@ LIBS= \
     -lavtmath_ser \
     -lpipeline_ser \
     -ldatabase_ser \
+    -lmir \
     -ldbatts \
     -lavtexceptions \
     -lstate \

@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2000
+#                            Copyright 2000 - 2003
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -32,55 +32,60 @@
 #
 # Modifications:
 #
-#   Hank Childs, Fri Aug 11 17:21:07 PDT 2000
-#   Add Database directory.
-#
-#   Hank Childs, Mon Aug 14 14:10:14 PDT 2000
-#   Change headers for visit-dist to account for Database changes.
-#
-#   Hank Childs, Thu Sep 28 10:03:23 PDT 2000
-#   Add Plotter directory.
-#
-#   Eric Brugger, Mon Dec  4 16:19:58 PST 2000
-#   Make the building of VisWindow optional.
-#
-#   Jeremy Meredith, Thu May 10 14:17:10 PDT 2001
-#   Added a MetaData directory.
-#
-#   Hank Childs, Wed Jun 13 15:16:37 PDT 2001
-#   Renamed MetaData directory DBAtts.
-#
-#   Jeremy Meredith, Mon Jul 23 00:46:33 PDT 2001
-#   Reordered subdirs to resolve dependencies correctly for AIX.
-#
-#   Brad Whitlock, Tue Oct 16 15:37:17 PST 2001
-#   Added Math directory.
-#
-#   Sean Ahern, Mon Jun 10 16:36:37 PDT 2002
-#   Gutted while moving things to a central location.
-#
-#   Hank Childs, Tue Nov 19 06:44:03 PST 2002
-#   Added Expressions and Queries directory.
-#
-#   Jeremy Meredith, Wed Aug 20 10:20:34 PDT 2003
-#   Added MIR library.
-#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
-@DIRTARGETS@
 
-SUBDIRS=Exceptions DBAtts Math Pipeline MIR \
-        Expressions Queries Database Plotter \
-        @VISWINDOW@
+SUBDIRS=Base Tet Zoo
+SRC=$(Base_src) $(Tet_src) $(Zoo_src)
 
-message:
-	@echo
-	@echo "****************************************************************************"
-	@echo "****************************************************************************"
-	@echo "***"
-	@echo "*** Building VisIt VTK Components"
-	@echo "***"
-	@echo "****************************************************************************"
-	@echo "****************************************************************************"
+Base_src= \
+  Base/MIR.C \
+  Base/MIROptions.C
+Tet_src= \
+  Tet/Edge.C \
+  Tet/Face.C \
+  Tet/MaterialTetrahedron.C \
+  Tet/MaterialTriangle.C \
+  Tet/QuadraticHash.C \
+  Tet/Tetrahedralizer.C \
+  Tet/TetMIR.C \
+  Tet/Triangulator.C \
+  Tet/mat3d_tet.C
+Zoo_src=
+
+
+CPPFLAGS=-I../../include @COMPONENT_CPPFLAGS@ @CPPFLAGS@
+
+OBJ=$(SRC:.C=.o)
+LIB=libmir
+LIBS=-ldbatts -lpipeline_ser -lavtexceptions -lstate -lutility -lmisc @VTK_LIBS@
+
+##
+## Standard targets...
+##
+all: $(LIBSHARED)
+
+clean:
+	$(RM) $(LIBSHARED)
+	$(RM) $(OBJ)
+
+##
+## Nonstandard stuff for material tables
+##
+.NO_CONFIG_REC:  mat3d_tet.h mat3d_tet.C Tet/mat3d_tet.h Tet/mat3d_tet.C
+.NO_WINK_IN:  mat3d_tet.h mat3d_tet.C Tet/mat3d_tet.h Tet/mat3d_tet.C
+.NO_DO_FOR_SIBLING: mat3d_tet.h mat3d_tet.C Tet/mat3d_tet.h Tet/mat3d_tet.C
+mat3d_tet Tet/mat3d_tet.h Tet/mat3d_tet.C:  Tet/mat3d_tables.C
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) Tet/mat3d_tables.C -o mat3d_tables
+	rm -f Tet/mat3d_tet.h Tet/mat3d_tet.C
+	./mat3d_tables
+	mv mat3d_tet.h Tet/mat3d_tet.h
+	mv mat3d_tet.C Tet/mat3d_tet.C
+
+##
+## Automatic dependency stuff
+##
+@TARGETS@
+@LIBTARGETS@

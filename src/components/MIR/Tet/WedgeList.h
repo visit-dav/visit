@@ -1,6 +1,6 @@
 #ifndef WEDGELIST_H
 #define WEDGELIST_H
-#include <database_exports.h>
+#include <mir_exports.h>
 
 #include "Wedge.h"
 #include "Array.h"
@@ -24,7 +24,7 @@
 //  Modifications:
 //
 // ****************************************************************************
-class DATABASE_API WedgeList
+class MIR_API WedgeList
 {
   private:
     Array<Wedge> list;

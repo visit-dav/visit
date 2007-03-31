@@ -1,6 +1,6 @@
 #ifndef FACE_H
 #define FACE_H
-#include <database_exports.h>
+#include <mir_exports.h>
 
 #include <limits.h>
 
@@ -16,7 +16,7 @@
 //  Creation:    December 12, 2000
 //
 // ****************************************************************************
-class DATABASE_API Face
+class MIR_API Face
 {
   public:
     Face();

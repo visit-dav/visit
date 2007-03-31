@@ -233,12 +233,15 @@ Definition:
 //    Jeremy Meredith, Tue Jul 17 18:00:10 PDT 2001
 //    Reworded "default profile" to be "active profile".
 //
+//    Kathleen Bonnell, Wed Aug 20 10:57:00 PDT 2003 
+//    Ensure index is within correct range. 
+//
 // ****************************************************************************
 
 void
 HostProfileList::SetAsActiveProfile(int index)
 {
-    if(index < 0 || index > profiles.size())
+    if(index < 0 || index >= profiles.size())
         return;
 
     // Set the specified profile as the active for its host.
@@ -443,6 +446,9 @@ Definition:
 //   I added code to prevent the host profile from being inserted into the
 //   list if the host contains wildcard characters.
 //
+//   Kathleen Bonnell, Wed Aug 20 10:51:24 PDT 2003 
+//   Ensure that activeProfile is in the correct range.
+//   
 // ****************************************************************************
 
 void
@@ -501,5 +507,17 @@ HostProfileList::SetFromNode(DataNode *parentNode)
     }
 
     if((node = searchNode->GetNode("activeProfile")) != 0)
-        SetActiveProfile(node->AsInt());
+    {
+        if (profiles.size() > 0)
+        {
+            if (node->AsInt() < profiles.size())
+                SetActiveProfile(node->AsInt());
+            else 
+                SetActiveProfile(0);
+        }
+        else
+        {
+            SetActiveProfile(-1);
+        }
+    }
 }

@@ -20,10 +20,13 @@
 //    Moved this routine from the header, to prevent problems with inline 
 //    functions and statics.
 //
+//    Kathleen Bonnell, Wed Aug 20 11:36:06 PDT 2003 
+//    Removed initialization of s from parameter list. 
+//    
 // ****************************************************************************
 
 void 
-ExprGrammarNode::Print(ostream &o, std::string s="")
+ExprGrammarNode::Print(ostream &o, std::string s)
 {
     static int indent = 0;
     for (int i=0; i<indent; i++)

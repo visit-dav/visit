@@ -46,6 +46,9 @@ using std::vector;
 //    Akira Haddox, Fri Jul 25 11:09:13 PDT 2003
 //    Added var_dimension.
 //
+//    Akira Haddox, Mon Aug 18 14:31:55 PDT 2003
+//    Added dyna partition support for ghostzones.
+//
 // ****************************************************************************
 
 class avtMiliFileFormat : public avtMTMDFileFormat
@@ -118,6 +121,11 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                                                  std::string &, int &);
 
     inline void           OpenDB(int dom);
+
+    void                  ParseDynaPart();
+
+    bool                  readPartInfo;
+    std::string           dynaPartFilename;
 };
 
 

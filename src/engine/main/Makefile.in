@@ -176,6 +176,9 @@
 #    Jeremy Meredith, Thu Jul 10 14:59:45 PDT 2003
 #    Added a few source and header files for cleaning up Engine.C.
 #
+#    Jeremy Meredith, Wed Aug 20 09:51:28 PDT 2003
+#    I added the new mir library.
+#
 ##############################################################################
 
 ##
@@ -190,13 +193,13 @@ CPPFLAGS= -I@tmpinc@ @ENGINE_CPPFLAGS@ @CPPFLAGS@ \
          -I. -I../../include/visit
 
 SERLIBS=-L../../lib -lXext -lplugin -lviswindow -lavtmath_ser -lplotter \
-        -ldatabase_ser -lquery_ser -lexpressions_ser -lpipeline_ser -lvisit_vtk \
+        -ldatabase_ser -lmir -lquery_ser -lexpressions_ser -lpipeline_ser -lvisit_vtk \
 	-lvtkqt -lwinutil @QT_LIBS@ -lenginerpc -lutility -lmisc -lcomm -lstate \
 	-lengineparstate_ser -ldbatts -lavtexceptions -lparser @VTK_LIBS@ $(X_LIBS) \
 	@LIBS@ @PTHREAD_LIB@
 
 PARLIBS=-L../../lib -lXext -lplugin -lviswindow -lavtmath_ser -lplotter \
-        -ldatabase_par -lquery_par -lexpressions_par -lpipeline_par -lvisit_vtk \
+        -ldatabase_par -lmir -lquery_par -lexpressions_par -lpipeline_par -lvisit_vtk \
 	-lvtkqt @QT_LIBS@ -lwinutil -lenginerpc -lutility -lmisc -lcomm -lstate \
 	-lengineparstate_par -ldbatts -lavtexceptions -lparser @VTK_LIBS@ $(X_LIBS) \
 	@LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
@@ -207,7 +210,7 @@ SERLIBDEP=../../lib/libplugin.so ../../lib/libplotter.so \
           ../../lib/libutility.so ../../lib/libmisc.so \
           ../../lib/libcomm.so ../../lib/libstate.so \
           ../../lib/libengineparstate_ser.so ../../lib/libdbatts.so \
-          ../../lib/libavtexceptions.so
+          ../../lib/libavtexceptions.so ../../lib/libmir.so 
 
 PARLIBDEP=../../lib/libplugin.so ../../lib/libplotter.so \
           ../../lib/libdatabase_par.so ../../lib/libpipeline_par.so \
@@ -215,7 +218,7 @@ PARLIBDEP=../../lib/libplugin.so ../../lib/libplotter.so \
           ../../lib/libutility.so ../../lib/libmisc.so \
           ../../lib/libcomm.so ../../lib/libstate.so \
           ../../lib/libengineparstate_par.so ../../lib/libdbatts.so \
-          ../../lib/libavtexceptions.so
+          ../../lib/libavtexceptions.so ../../lib/libmir.so 
 
 ##
 ## Files...

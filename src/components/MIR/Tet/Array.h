@@ -1,6 +1,6 @@
 #ifndef ARRAY_H
 #define ARRAY_H
-#include <database_exports.h>
+#include <mir_exports.h>
 
 #include <string.h>
 
@@ -18,7 +18,7 @@
 //
 // ****************************************************************************
 template<class T>
-class DATABASE_API Array
+class MIR_API Array
 {
   private:
     T     *d;

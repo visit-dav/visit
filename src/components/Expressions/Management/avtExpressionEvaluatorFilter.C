@@ -28,6 +28,7 @@
 using std::vector;
 using std::set;
 using std::string;
+using std::find;
 
 
 // ****************************************************************************

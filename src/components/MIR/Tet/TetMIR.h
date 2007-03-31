@@ -1,7 +1,9 @@
-#ifndef MIR_H
-#define MIR_H
+#ifndef TETMIR_H
+#define TETMIR_H
 
-#include <database_exports.h>
+#include <mir_exports.h>
+
+#include <MIR.h>
 
 #include <MIROptions.h>
 #include <QuadraticHash.h>
@@ -27,7 +29,7 @@ class avtMaterial;
 class avtSpecies;
 
 // ****************************************************************************
-//  Class:  MIR
+//  Class:  TetMIR
 //
 //  Purpose:
 //    Encapsulation of material interface reconstruction
@@ -103,56 +105,24 @@ class avtSpecies;
 //    tetrahedralizing the wedges if needed (i.e. to split again or if
 //    they are degenerate).
 //
+//    Jeremy Meredith, Wed Aug 20 09:55:02 PDT 2003
+//    Refactored much of this into a new base MIR class.
+//
 // ****************************************************************************
-class DATABASE_API MIR
+class MIR_API TetMIR : public MIR
 {
   public:
-    MIR();
-    ~MIR();
+    TetMIR();
+    ~TetMIR();
     
-    static void Destruct(void *);
-
-    // set the options
-    void SetSubdivisionLevel(MIROptions::SubdivisionLevel);
-    void SetNumIterations(int);
-    void SetSmoothing(bool);
-    void SetLeaveCleanZonesWhole(bool);
-    void SetCleanZonesOnly(bool);
-
     // do the processing
     bool Reconstruct3DMesh(vtkDataSet *, avtMaterial *);
     bool Reconstruct2DMesh(vtkDataSet *, avtMaterial *);
-
-    // get some result flags
-    bool SubdivisionOccurred()   { return !allClean; }
-    bool NotAllCellsSubdivided() { return someClean; }
 
     // material select everything -- all variables, the mesh, and the material
     // if requested.
     vtkDataSet *GetDataset(std::vector<int>, vtkDataSet *, 
                            std::vector<avtMixedVariable *>, bool);
-
-    // get the exterior mesh surface with triangles grouped
-    // ... this is for material selecting just a mesh
-    vtkDataSet *GetExternalMeshSurface(std::vector<int>);
-
-    // get the exterior mesh surface with triangles subdivided and a variable
-    // ... not necessary -- can be done with GetVariable and a geom filter
-    //vtkDataSet *GetExternalVariableSurface(std::vector<int>, vtkDataSet *);
-
-    // get the exterior mesh surface with matno zonal var
-    // ... this is for a normal "filled boundary" plot
-    vtkDataSet *GetExternalMaterialSurface(std::vector<int>);
-
-    // get the inter-material mesh surface matno zonal var
-    // ... this is for a normal "unfilled boundary" plot
-    vtkDataSet *GetInternalMaterialSurface(std::vector<int>);
-
-    // for species selection
-    static void SpeciesSelect(const std::vector<bool>&,
-                              avtMaterial *, avtSpecies *,
-                              vtkDataArray*, avtMixedVariable*,
-                              vtkDataArray*&, avtMixedVariable*&);
 
     // This is the reconstructed output and supporting data structures
     struct ReconstructedCoord
@@ -189,8 +159,6 @@ class DATABASE_API MIR
     };
 
   private:
-    MIROptions options;
-
     static float xGrid;
     static float yGrid;
     static float zGrid;

@@ -1,6 +1,6 @@
 #ifndef TRIANGULATOR_H
 #define TRIANGULATOR_H
-#include <database_exports.h>
+#include <mir_exports.h>
 
 #include <vector>
 #include <MIROptions.h>
@@ -27,7 +27,7 @@
 //    tris a normal array.
 //
 // ****************************************************************************
-class DATABASE_API Triangulator
+class MIR_API Triangulator
 {
   public:
     Triangulator(int nmat_);

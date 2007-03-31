@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <set>
 
 extern "C" {
 #include <mili_enum.h>
@@ -18,6 +19,9 @@ extern "C" {
 
 #include <avtDatabaseMetaData.h>
 #include <avtMaterial.h>
+
+#include <avtVariableCache.h>
+#include <avtUnstructuredPointBoundaries.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -47,6 +51,9 @@ using std::ifstream;
 //
 //    Akira Haddox, Fri Jul 25 11:09:13 PDT 2003
 //    Added reading in of variable dimensions.
+//
+//    Akira Haddox, Mon Aug 18 14:33:15 PDT 2003
+//    Added partition file support.
 //
 // ****************************************************************************
 
@@ -121,6 +128,14 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fname)
 
     if (in.fail())
         EXCEPTION1(InvalidFilesException, fname);
+
+    // Read part file, if it exists.
+    dynaPartFilename = "";
+    in >> dynaPartFilename;
+    if (dynaPartFilename != "")
+        readPartInfo = false;
+    else
+        readPartInfo = true;
     
     in.close();
 
@@ -248,6 +263,9 @@ avtMiliFileFormat::~avtMiliFileFormat()
 //    Akira Haddox, Tue Jul 22 08:09:28 PDT 2003
 //    Fixed the try block. Properly dealt with cell variable blocks.
 //
+//    Akira Haddox, Mon Aug 18 14:33:15 PDT 2003
+//    Commented out previous sand-based ghosts.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -255,6 +273,7 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
 {
     debug5 << "Reading in " << mesh << " for domain/ts : " << dom << ',' << ts
            << endl;
+
     if (!readMesh[dom])
         ReadMesh(dom);
     if (!validateVars[dom])
@@ -335,6 +354,12 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
     pts->Delete();
     delete [] fpts;
 
+    //
+    // This code for ghost levels from sand variables has been commented
+    // out, since they conflict with the real ghost zones that we can
+    // generate.
+    //
+#if 0
     //
     // Add in the ghost levels (from sand variables), if it has any.
     //
@@ -449,6 +474,7 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
         ghostLevels->Delete();
         rv->SetUpdateGhostLevel(0);
     } 
+#endif
 
     return rv;
 }
@@ -796,6 +822,7 @@ avtMiliFileFormat::ReadMesh(int dom)
                       case M_TRUSS:
                         connectivity[dom][mesh_id]->InsertNextCell(VTK_LINE,
                                                  conn_count[i], conn);
+                        break;
                       case M_BEAM:
                         // Beams are lines that have a third point to define
                         // the normal. Since we don't need to visualize it,
@@ -1423,6 +1450,9 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             break;
         }
     }
+
+    if (!readPartInfo)
+        ParseDynaPart();
 }
 
 // ****************************************************************************
@@ -1543,4 +1573,252 @@ avtMiliFileFormat::FreeUpResources()
     {
         readMesh[i] = false;
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtMiliFileFormat::ParseDynaPart
+//
+//  Purpose:
+//    Read though a DynaPart output file to gather information about
+//    shared nodes for generating ghostzones.
+//
+//  Programmer: Akira Haddox
+//  Creation:   August 6, 2003
+//
+// ****************************************************************************
+
+#define READ_THROUGH_NEXT_COMMENT(_in) while(_in.get() != '#') ;\
+                                       _in.getline(buf, 1024)
+#define READ_VECTOR(_in, _dest) \
+    for (_macro_i = 0; _macro_i < _dest.size(); ++_macro_i) \
+        _in >> _dest[_macro_i]
+
+void
+avtMiliFileFormat::ParseDynaPart()
+{
+    readPartInfo = true;
+    int i;
+    int _macro_i;
+
+    string fname = fampath;
+    fname += "/" + dynaPartFilename;
+
+    ifstream in;
+    in.open(fname.c_str());
+
+    if (in.fail())
+        EXCEPTION1(InvalidFilesException, fname.c_str());
+
+    char buf[1024];
+
+    // Read the header line
+    in.getline(buf, 1024);
+    
+    // Skip through the version and initial comments
+    do
+    {
+        in.getline(buf, 1024);
+    }while (buf[0] == '#');
+
+    // Get the number of discrete elements
+    READ_THROUGH_NEXT_COMMENT(in);
+    in.getline(buf, 1024);
+
+    // Get the number of each type
+    READ_THROUGH_NEXT_COMMENT(in);
+    int nNodal;
+    int nHexs;
+    int nBeams;
+    int nShells;
+    int nThickShells;
+    int nProc;
+    in >> nNodal >> nHexs >> nBeams >> nShells >> nThickShells >> nProc;
+
+    // Get nodes per processor
+    vector<int> nNodalPerProc(nProc, 0);
+    READ_THROUGH_NEXT_COMMENT(in);
+    READ_VECTOR(in, nNodalPerProc);
+
+    // Get hexs per processor
+    vector<int> nHexsPerProc(nProc, 0);
+    if (nHexs)
+    {
+        READ_THROUGH_NEXT_COMMENT(in);
+        READ_VECTOR(in, nHexsPerProc);
+    }
+
+    // Get Beams per processor
+    vector<int> nBeamsPerProc(nProc, 0);
+    if (nBeams)
+    {
+        READ_THROUGH_NEXT_COMMENT(in);
+        READ_VECTOR(in, nBeamsPerProc);
+    }
+
+    // Get shells per processor
+    vector<int> nShellsPerProc(nProc, 0);
+    if (nShells)
+    {
+        READ_THROUGH_NEXT_COMMENT(in);
+        READ_VECTOR(in, nShellsPerProc);
+    }
+    
+    // Get thick shells per processor
+    vector<int> nThickShellsPerProc(nProc, 0);
+    if (nThickShells)
+    {
+        READ_THROUGH_NEXT_COMMENT(in);
+        READ_VECTOR(in, nThickShellsPerProc);
+    }
+    
+
+    // Get number of shared nodes per processor
+    vector<int> nSharedNodes(nProc, 0);
+    READ_THROUGH_NEXT_COMMENT(in);
+    READ_VECTOR(in, nSharedNodes);
+
+    // Get the number of processors a processor shares with
+    vector<int> nProcComm(nProc, 0);
+    READ_THROUGH_NEXT_COMMENT(in);
+    READ_VECTOR(in, nProcComm);
+
+    // Get the node divisions per processor
+    vector<vector<int> > nodesProcMap(nProc);
+    for (i = 0; i < nProc; ++i)
+    {
+        nodesProcMap[i].resize(nNodalPerProc[i]);
+        READ_THROUGH_NEXT_COMMENT(in);
+        READ_VECTOR(in, nodesProcMap[i]);
+    }
+
+    //
+    // Now we need to skip through all the sections that define what
+    // the partitioning is.
+    //
+    int skippedSections = 0;
+    for (i = 0; i < nProc; ++i)
+    {
+//        if (nNodalPerProc[i]) ++skippedSections;
+        if (nHexsPerProc[i]) ++skippedSections;
+        if (nBeamsPerProc[i]) ++skippedSections;
+        if (nShellsPerProc[i]) ++skippedSections;
+        if (nThickShellsPerProc[i]) ++skippedSections;
+    }
+
+    for (i = 0; i < skippedSections; ++i)
+        READ_THROUGH_NEXT_COMMENT(in);
+    // The next READ_THROUGH_NEXT_COMMENT queues us up to the right point
+
+    vector<int> nAdjacentProc(nProc, 0);
+    vector<vector<int> > adjacentProc(nProc);
+    vector<vector<int> > nSharedNodesPerProc(nProc);
+
+    // Indexed: [domain] shares with [domain]
+    vector<vector<vector< int > > >     sharedNodes;
+
+    sharedNodes.resize(nProc);
+    for (i = 0; i < nProc; ++i)
+    {
+        sharedNodes[i].resize(nProc);
+
+        // Get the adjacent processors
+        READ_THROUGH_NEXT_COMMENT(in);
+        int adp;
+        for (;;)
+        {
+            in >> adp;
+            if (in.fail())
+                break;
+            adjacentProc[i].push_back(adp);
+        }
+        in.clear();
+        nAdjacentProc[i] = adjacentProc[i].size();
+
+        // We may have stripped the '#' out of the comment
+        // use a getline this time.
+        in.getline(buf, 1024);
+        
+        // Read in how many shared nodes there are for each shared processor
+        nSharedNodesPerProc[i].resize(nAdjacentProc[i]);
+        READ_VECTOR(in, nSharedNodesPerProc[i]);
+
+        int j;
+        READ_THROUGH_NEXT_COMMENT(in);
+        for (j = 0; j < nAdjacentProc[i]; ++j)
+        {
+            int index = adjacentProc[i][j];
+            sharedNodes[i][index].resize(nSharedNodesPerProc[i][j]);
+            READ_VECTOR(in, sharedNodes[i][index]);
+        }
+    }
+    
+    // Remapp the shared node ids to the ones we store
+    vector<vector<vector<pair<int,int> > > > mappings(nProc);
+    for (i = 0; i < nProc; ++i)
+    {
+        mappings[i].resize(nProc);
+        int j;
+        for (j = 0; j < nProc; ++j)
+        {
+            int iPtr = 0;
+            int k;
+            for (k = 0; k < sharedNodes[i][j].size(); ++k)
+            {
+                int relative = sharedNodes[i][j][k];
+                // Proc i is sharing with proc j
+                while (nodesProcMap[i][iPtr] != relative)
+                    // Incriment iPtr. This check shouldn't be
+                    // necessary really.
+                    if (++iPtr > nodesProcMap[j].size())
+                        break;
+
+                int jPtr;
+                for (jPtr = 0; nodesProcMap[j][jPtr] != relative; ++jPtr)
+                    ;
+                
+                sharedNodes[i][j][k] = iPtr;
+                mappings[i][j].push_back(pair<int, int>(iPtr, jPtr));
+            }
+        }
+    }
+
+    in.close();
+
+    avtUnstructuredPointBoundaries *upb = new avtUnstructuredPointBoundaries;
+    
+    for (i = 0; i < ndomains; ++i)
+    {
+        int j;
+        for (j = 0; j < ndomains; ++j)
+        {
+            if (i == j)
+                continue;
+
+            if (sharedNodes[i][j].size() == 0)
+                continue;
+
+            if (i < j)
+            {
+                vector<int> d1pts;
+                vector<int> d2pts;
+                
+                for (int k = 0; k < mappings[i][j].size(); ++k)
+                {
+                    d1pts.push_back(mappings[i][j][k].first);
+                    d2pts.push_back(mappings[i][j][k].second);
+                }
+                
+                upb->SetSharedPoints(i, j, d1pts, d2pts);
+            }
+        }
+    }
+
+    upb->SetTotalNumberOfDomains(ndomains);
+
+    void_ref_ptr vr = void_ref_ptr(upb, 
+                                   avtUnstructuredPointBoundaries::Destruct); 
+
+    cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+                        -1, -1, vr);
 }
