@@ -5698,13 +5698,39 @@ ViewerWindow::ClearLastExternalRenderRequest()
 // Programmer: Mark C. Miller 
 // Creation:   November 10, 2003 
 //
+// Modifications:
+//
+//   Mark C. Miller, Mon Nov 24 22:02:25 PST 2003
+//   Modifed it to make copies of plot attributes
+//
 // ****************************************************************************
 
 void
 ViewerWindow::UpdateLastExternalRenderRequest(
     const ExternalRenderRequestInfo &newRequest)
 {
-    lastExternalRenderRequest = newRequest;
+    int i = 0;
+
+    // delete any old copies of plot attributes
+    for (i = 0; i < lastExternalRenderRequest.plotIdsList.size(); i++)
+    {
+        if (lastExternalRenderRequest.attsList[i] != NULL)
+            delete lastExternalRenderRequest.attsList[i];
+    }
+
+    // make copies of the plot attributes 
+    lastExternalRenderRequest.attsList.clear();
+    for (i = 0; i < newRequest.plotIdsList.size(); i++)
+    {
+        AttributeSubject *tmp = newRequest.attsList[i]->NewInstance(true);
+        lastExternalRenderRequest.attsList.push_back(tmp);
+    }
+
+    // copy everything else over
+    lastExternalRenderRequest.pluginIDsList = newRequest.pluginIDsList;
+    lastExternalRenderRequest.hostsList     = newRequest.hostsList;
+    lastExternalRenderRequest.plotIdsList   = newRequest.plotIdsList;
+
 }
 
 // ****************************************************************************

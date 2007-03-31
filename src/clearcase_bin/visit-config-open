@@ -252,7 +252,7 @@
                 <Field name="timeLimitSet" type="bool">false</Field>
                 <Field name="timeLimit" type="string"></Field>
                 <Field name="launchMethodSet" type="bool">true</Field>
-                <Field name="launchMethod" type="string">prun</Field>
+                <Field name="launchMethod" type="string">srun</Field>
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
@@ -274,7 +274,7 @@
                 <Field name="timeLimitSet" type="bool">false</Field>
                 <Field name="timeLimit" type="string"></Field>
                 <Field name="launchMethodSet" type="bool">true</Field>
-                <Field name="launchMethod" type="string">psub/prun</Field>
+                <Field name="launchMethod" type="string">psub/srun</Field>
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
@@ -406,7 +406,7 @@
                 <Field name="timeLimitSet" type="bool">false</Field>
                 <Field name="timeLimit" type="string"></Field>
                 <Field name="launchMethodSet" type="bool">true</Field>
-                <Field name="launchMethod" type="string">prun</Field>
+                <Field name="launchMethod" type="string">srun</Field>
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
@@ -428,7 +428,7 @@
                 <Field name="timeLimitSet" type="bool">false</Field>
                 <Field name="timeLimit" type="string"></Field>
                 <Field name="launchMethodSet" type="bool">true</Field>
-                <Field name="launchMethod" type="string">psub/prun</Field>
+                <Field name="launchMethod" type="string">psub/srun</Field>
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>
@@ -458,7 +458,7 @@
                 <Field name="parallel" type="bool">false</Field>
             </Object>
             <Object name="HostProfile" childObjects="0">
-                <Field name="profileName" type="string">parallel pbatch</Field>
+                <Field name="profileName" type="string">parallel interactive pbatch</Field>
                 <Field name="host" type="string">pvc.llnl.gov</Field>
                 <Field name="hostAliases" type="string">pvc#.llnl.gov pvc##.llnl.gov pvc###.llnl.gov pvc# pvc## pvc###</Field>
                 <Field name="timeout" type="int">240</Field>

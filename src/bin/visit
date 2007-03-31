@@ -281,6 +281,10 @@ $0 = shift @ARGV;
 #    Jeremy Meredith, Thu Nov 13 12:01:20 PST 2003
 #    Added srun (SLURM) launcher support.
 #
+#    Jeremy Meredith, Mon Nov 24 14:59:17 PST 2003
+#    Added compression of ".." and stripping of "." dirs in the visit path.
+#    Removed erroneous single quotes for the launcher args.
+#
 ###############################################################################
 
 
@@ -307,6 +311,20 @@ for ($progdir) {
     /^\.$/ && do { $tmpdir = $cwd; last; };     # is exactly  `.'
     $tmpdir = "$cwd/$progdir";
 }
+
+# strip single . paths
+while ($tmpdir =~ s|(/\./)|/|) {}
+
+# compress out remaining /dir/.. forms
+while ($tmpdir =~ s|(/[^/]+/\.\.)||) {}
+
+# Note: the above ".."-compression is safe because we already determined we 
+# had an absolute path, we know the substitution goes left-to-right, and
+# we cannot legally .. above the root of the directory tree.  If at some
+# point these assumptions change, we can use the following line instead,
+# which is more complex but makes sure not to compress out /../.. forms.
+#while ($tmpdir =~ s@(/([^/.][^/]*|[^/]*[^/.]|[^/]{3,})/\.\.)@@) {}
+
 chomp( $visitdir = `dirname $tmpdir` );
 
 # Do the usage help text
@@ -652,7 +670,7 @@ if ((($parallel) or ($launchengine)) and
     # told to launch an engine, add any parallel arguments back on
     push @visitargs, "-par"                   if ($parallel && !$procs_set);
     push @visitargs, "-l",  $launch           if ($launch_set);
-    push @visitargs, "-la", "\'@launchargs\'" if ($launchargs_set);
+    push @visitargs, "-la", "@launchargs"     if ($launchargs_set);
     push @visitargs, "-np", $procs            if ($procs_set);
     push @visitargs, "-nn", $nodes            if ($nodes_set);
     push @visitargs, "-n",  $name             if ($name_set);
