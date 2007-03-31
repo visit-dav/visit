@@ -221,6 +221,10 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Hank Childs, Fri Aug  1 21:54:08 PDT 2003
 //    Add support for curves.
 //
+//    Hank Childs, Wed Aug 13 11:17:58 PDT 2003
+//    No longer assume that requesting a material means that we are doing
+//    material interface reconstruction.
+//
 // ****************************************************************************
 
 void
@@ -324,12 +328,6 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         extents[0] = 0.;
         extents[1] = 1.;
         atts.GetEffectiveDataExtents()->Set(extents);
-    }
-
-    const avtMaterialMetaData *matmd = GetMetaData()->GetMaterial(var);
-    if (matmd != NULL)
-    {
-        validity.InvalidateZones();
     }
 
     const avtCurveMetaData *cmd = GetMetaData()->GetCurve(var);

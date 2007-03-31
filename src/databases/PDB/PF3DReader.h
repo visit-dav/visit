@@ -17,12 +17,15 @@
 //   Brad Whitlock, Tue Apr 29 13:26:31 PST 2003
 //   I made it work with MTSD files.
 //
+//   Brad Whitlock, Thu Aug 7 16:54:57 PST 2003
+//   Added cache argument to the constructor.
+//
 // ****************************************************************************
 
 class PF3DReader : public PDBReader
 {
 public:
-    PF3DReader(PDBfile *pdb);
+    PF3DReader(PDBfile *pdb, avtVariableCache *c);
     virtual ~PF3DReader();
 
     virtual bool Identify();

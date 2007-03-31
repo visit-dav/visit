@@ -616,6 +616,10 @@ avtPlot::CombinedExecute(avtDataObject_p input, avtPipelineSpecification_p spec,
 //    Hank Childs, Fri Jul 25 21:21:08 PDT 2003
 //    Rename relevantPointsFilter to condenseDatasetFilter.
 //
+//    Jeremy Meredith, Wed Aug 13 18:11:45 PDT 2003
+//    Made it use always use the normals filter, but only
+//    do cell normals if we don't want them averaged to the nodes.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -664,13 +668,19 @@ avtPlot::ReduceGeometry(avtDataObject_p curDS)
 
     //
     // Only create vertex normals if we don't have zone-centered data.
+    // Otherwise, create cell normals.
     //
     if (rv->GetInfo().GetAttributes().GetCentering() != AVT_ZONECENT && 
         !rv->GetInfo().GetValidity().NormalsAreInappropriate())
     {
-        vertexNormalsFilter->SetInput(rv);
-        rv = vertexNormalsFilter->GetOutput();
+        vertexNormalsFilter->SetPointNormals(true);
     }
+    else
+    {
+        vertexNormalsFilter->SetPointNormals(false);
+    }
+    vertexNormalsFilter->SetInput(rv);
+    rv = vertexNormalsFilter->GetOutput();
 
     avtDataAttributes &outAtts = rv->GetInfo().GetAttributes();
     if (outAtts.GetTopologicalDimension() != TargetTopologicalDimension())

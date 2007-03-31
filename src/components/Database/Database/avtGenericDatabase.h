@@ -201,7 +201,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     void                       AddOriginalCellsArray(vtkDataSet *, const int);
     void                       AddOriginalNodesArray(vtkDataSet *, const int);
 
-    bool                       PrepareMaterialSelect(const char *, int,
+    bool                       PrepareMaterialSelect(int, bool,
                                                   avtSILRestrictionTraverser &, 
                                                   std::vector<std::string> &);
     avtDataTree_p              MaterialSelect(vtkDataSet *, avtMaterial *, 

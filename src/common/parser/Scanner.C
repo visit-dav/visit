@@ -115,6 +115,11 @@ Scanner::GetCharType(const char c)
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Aug 13 09:36:22 PDT 2003
+//    Take out the quotes around string constants.
+//
 // ****************************************************************************
 Token *
 Scanner::GetAcceptToken(const Pos &pos, const std::string &parsed, int state)
@@ -122,7 +127,8 @@ Scanner::GetAcceptToken(const Pos &pos, const std::string &parsed, int state)
     switch (state)
     {
       case  2:
-        return new StringConst(pos, parsed);
+        // Remove the quotes on either side of the string.
+        return new StringConst(pos, parsed.substr(1, parsed.size()-2));
       case  3:
         return new Character(pos, parsed);
       case  5:

@@ -4,6 +4,7 @@
 #include <SiloReader.h>
 #include <DebugStream.h>
 #include <InvalidDBTypeException.h>
+#include <avtVariableCache.h>
 
 // ****************************************************************************
 // Method: PDBFactory::PDBFactory
@@ -50,6 +51,7 @@ PDBFactory::~PDBFactory()
 //
 // Arguments:
 //   filename : The name of the PDB file to open.
+//   cache    : A pointer to the database's cache.
 //
 // Returns:    False if the file cannot be opened or if no compatible reader
 //             is found.
@@ -63,10 +65,13 @@ PDBFactory::~PDBFactory()
 //   Brad Whitlock, Tue Apr 29 11:06:16 PDT 2003
 //   I added the PP and Z file reader.
 //
+//   Brad Whitlock, Thu Aug 7 16:50:29 PST 2003
+//   I added a cache pointer to the argument list.
+//
 // ****************************************************************************
 
 bool
-PDBFactory::Open(const char *filename)
+PDBFactory::Open(const char *filename, avtVariableCache *cache)
 {
     bool retval = false;
 
@@ -82,7 +87,7 @@ PDBFactory::Open(const char *filename)
         // See if the file is a Silo file.
         if(reader == NULL)
         {
-            reader = new SiloReader(file);
+            reader = new SiloReader(file, cache);
             bool isSilo = reader->Identify();
             if(isSilo)
             {
@@ -100,7 +105,7 @@ PDBFactory::Open(const char *filename)
         // See if the file is a PP file or Z file.
         if(reader == NULL)
         {
-            reader = new PP_ZFileReader(file);
+            reader = new PP_ZFileReader(file, cache);
             if(!(retval = reader->Identify()))
             {
                 delete reader;
@@ -111,7 +116,7 @@ PDBFactory::Open(const char *filename)
         // See if the file is a PF3D file.
         if(reader == NULL)
         {
-            reader = new PF3DReader(file);
+            reader = new PF3DReader(file, cache);
             if(!(retval = reader->Identify()))
             {
                 delete reader;

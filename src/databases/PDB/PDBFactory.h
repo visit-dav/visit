@@ -4,6 +4,7 @@
 
 // Forward declarations
 class PDBReader;
+class avtVariableCache;
 
 // ****************************************************************************
 // Class: PDBFactory
@@ -18,7 +19,9 @@ class PDBReader;
 // Creation:   Thu Oct 10 09:00:14 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 7 16:50:08 PST 2003
+//   Added a variable cache pointer to the Open method.
+//
 // ****************************************************************************
 
 class PDBFactory
@@ -26,7 +29,7 @@ class PDBFactory
 public:
     PDBFactory();
     ~PDBFactory();
-    bool Open(const char *filename);
+    bool Open(const char *filename, avtVariableCache *cache);
     void Close();
     PDBReader *GetReader() { return reader; };
 private:

@@ -83,6 +83,9 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //    Jeremy Meredith, Thu Jun 12 08:47:03 PDT 2003
 //    Added option for boundary surfaces.
 //
+//    Hank Childs, Tue Aug 12 17:27:32 PDT 2003
+//    Added explicit flag for forcing material interface reconstruction.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataSpecification
@@ -115,6 +118,13 @@ class PIPELINE_API avtDataSpecification
     const std::vector<CharStrRef> &
                                  GetSecondaryVariables(void)
                                        { return secondaryVariables; };
+
+    bool                         MustDoMaterialInterfaceReconstruction(void) 
+                                     { return mustDoMIR; };
+    void                         ForceMaterialInterfaceReconstructionOn(void) 
+                                     { mustDoMIR = true; };
+    void                         ForceMaterialInterfaceReconstructionOff(void) 
+                                     { mustDoMIR = false; };
 
     bool                         NeedInternalSurfaces(void) 
                                      { return needInternalSurfaces; };
@@ -193,6 +203,7 @@ class PIPELINE_API avtDataSpecification
     bool                         needNodes;
     bool                         mayRequireZones;
     bool                         useGhostZones;
+    bool                         mustDoMIR;
     bool                         needInternalSurfaces;
     bool                         needBoundarySurfaces;
     bool                         needValidFaceConnectivity;

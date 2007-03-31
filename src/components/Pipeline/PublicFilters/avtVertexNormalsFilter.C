@@ -5,7 +5,7 @@
 #include <avtVertexNormalsFilter.h>
 
 #include <vtkPolyData.h>
-#include <vtkPolyDataNormals.h>
+#include <vtkVisItPolyDataNormals.h>
 
 #include <avtDataset.h>
 
@@ -47,6 +47,10 @@
 //    Disabled consistency checking because (1) it has bugs, (2) it is slow,
 //    and (3) we are careful enough about cell orderings that we don't need it.
 //
+//    Jeremy Meredith, Wed Aug 13 18:13:14 PDT 2003
+//    Made it use the new VisIt poly data normals filter.  Allowed
+//    cell normals as well as just point normals.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -80,10 +84,14 @@ avtVertexNormalsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         return in_ds;
     }
 
-    vtkPolyDataNormals *normals = vtkPolyDataNormals::New();
+    vtkVisItPolyDataNormals *normals = vtkVisItPolyDataNormals::New();
     normals->SetInput(pd);
     normals->SetFeatureAngle(45.);
-    normals->ConsistencyOff();
+    if (pointNormals)
+        normals->SetNormalTypeToPoint();
+    else
+        normals->SetNormalTypeToCell();
+    normals->SetSplitting(true);
     normals->Update();
 
     vtkPolyData *out_ds = normals->GetOutput();

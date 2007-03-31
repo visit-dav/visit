@@ -182,13 +182,16 @@ avtExpressionFilter::PostExecute(void)
 // ****************************************************************************
 
 vtkDataSet *
-avtExpressionFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
+avtExpressionFilter::ExecuteData(vtkDataSet *in_ds, int index,
+                                 std::string label)
 {
     int   i, j;
 
     //
     // Start off by having the derived type calculate the derived variable.
     //
+    currentDomainsLabel = label;
+    currentDomainsIndex = index;
     vtkDataArray *dat = DeriveVariable(in_ds);
     dat->SetName(outputVariableName);
 

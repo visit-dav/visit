@@ -270,11 +270,18 @@ avtBoundaryFilter::RefashionDataObjectInfo(void)
 //
 //  Modifications:
 //    
+//    Hank Childs, Wed Aug 13 07:55:35 PDT 2003
+//    Explicitly tell data spec when to do MIR.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
 avtBoundaryFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
+    if (plotAtts.GetBoundaryType() == BoundaryAttributes::Material)
+    {
+        spec->GetDataSpecification()->ForceMaterialInterfaceReconstructionOn();
+    }
     spec->GetDataSpecification()->TurnBoundarySurfacesOn();
     return spec;
 }
