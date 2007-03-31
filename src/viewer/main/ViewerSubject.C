@@ -110,6 +110,9 @@ using std::string;
 //    no heavy duty initialization takes place. I also removed old
 //    modification comments.
 //
+//    Jeremy Meredith, Fri Sep 26 12:50:11 PDT 2003
+//    Added defaultStereoToOn.
+//
 // ****************************************************************************
 
 ViewerSubject::ViewerSubject() : parent(), xfer(), viewerRPC(),
@@ -175,6 +178,7 @@ ViewerSubject::ViewerSubject() : parent(), xfer(), viewerRPC(),
     //
     nowin = false;
     smallWindow = false;
+    defaultStereoToOn = false;
 
     //
     // By default, read the config files.
@@ -642,6 +646,10 @@ ViewerSubject::InformClientOfPlugins() const
 //   Kathleen Bonnell, Mon Sep 15 13:09:19 PDT 2003
 //   Tell ViewerQueryManager to initialize the query list after plugins load.
 //   
+//   Jeremy Meredith, Fri Sep 26 12:50:29 PDT 2003
+//   Modify default rendering attributes to use stereo if it was specified
+//   on the command line.
+//
 // ****************************************************************************
 
 void
@@ -663,6 +671,12 @@ ViewerSubject::HeavyInitialization()
         // Process the config file settings.
         //
         ProcessConfigFileSettings();
+
+        //
+        // Turn on stereo if it was enabled from the command line
+        //
+        if (defaultStereoToOn)
+            ViewerWindowManager::GetRenderingAttributes()->SetStereoRendering(true);
 
         //
         // Add the initial windows.
@@ -1530,6 +1544,9 @@ ViewerSubject::GetOperatorFactory() const
 //    I added code to make sure -rpipe and -wpipe are not passed on. I also
 //    added code to defer heavy initialization until later.
 //
+//    Jeremy Meredith, Fri Sep 26 12:50:57 PDT 2003
+//    Added defaultStereoToOn.
+//
 // ****************************************************************************
 
 void
@@ -1717,6 +1734,7 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
         else if (strcmp(argv2[i], "-stereo") == 0)
         {
             VisWinRendering::SetStereoEnabled(true);
+            defaultStereoToOn = true;
         }
         else if (strcmp(argv2[i], "-launchengine") == 0)
         {

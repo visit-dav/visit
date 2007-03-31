@@ -271,8 +271,13 @@ struct avtDefaultPlotMetaData;
 //
 //    Eric Brugger, Wed Aug 20 11:09:33 PDT 2003
 //    I added SetViewCurve.
+//
 //    Walter Herrera, Tue Set 9 10:31:04 PDT 2003
 //    Added CreateAttributesDataNode
+//
+//    Jeremy Meredith, Fri Sep 26 12:18:58 PDT 2003
+//    Added another flag for stereo so we could turn its default value
+//    to 'true' if "-stereo" was on the command line.
 //
 // ****************************************************************************
 
@@ -456,6 +461,7 @@ private:
     std::string            geometry;
     bool                   smallWindow;
     bool                   noconfig;
+    bool                   defaultStereoToOn;
     char                  *configFileName;
 
     ViewerPlotFactory     *plotFactory;
