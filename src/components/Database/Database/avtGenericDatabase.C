@@ -227,8 +227,9 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
                               avtSourceFromDatabase *src)
 {
     int timerHandle = visitTimer->StartTimer();
+    int timeStep = spec->GetTimestep();
 
-    UpdateInternalState(spec->GetTimestep());
+    UpdateInternalState(timeStep);
 
     //
     // Determine which domains the SIL restriction has turned on.
@@ -303,9 +304,9 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
         //
         // Tell everything downstream that we do have original cells.
         //
-        avtDatabaseMetaData *md = GetMetaData();
+        avtDatabaseMetaData *md = GetMetaData(timeStep);
         string meshname = md->MeshForVar(spec->GetVariable());
-        GetMetaData()->SetContainsOriginalCells(meshname, true);
+        GetMetaData(timeStep)->SetContainsOriginalCells(meshname, true);
     }
 
     //
@@ -317,9 +318,9 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
         //
         // Tell everything downstream that we do have original cells.
         //
-        avtDatabaseMetaData *md = GetMetaData();
+        avtDatabaseMetaData *md = GetMetaData(timeStep);
         string meshname = md->MeshForVar(spec->GetVariable());
-        GetMetaData()->SetContainsOriginalCells(meshname, true);
+        GetMetaData(timeStep)->SetContainsOriginalCells(meshname, true);
     }
 
     //
@@ -353,7 +354,7 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     // for example), so call this again.
     //
     avtDataObject_p dob = src->GetOutput();
-    PopulateDataObjectInformation(dob, spec->GetVariable(), *spec);
+    PopulateDataObjectInformation(dob, spec->GetVariable(), timeStep, *spec);
 
     return rv;
 }
@@ -478,7 +479,7 @@ avtGenericDatabase::GetDataset(const char *varname, int ts, int domain,
                         avtSourceFromDatabase *src)
 {
     vtkDataSet *rv = NULL;
-    avtVarType type = GetMetaData()->DetermineVarType(varname);
+    avtVarType type = GetMetaData(ts)->DetermineVarType(varname);
 
     if (strcmp(matname, "_all") == 0)
     {
@@ -591,7 +592,7 @@ vtkDataSet *
 avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
                                         int domain, const char *material)
 {
-    const avtScalarMetaData *smd = GetMetaData()->GetScalar(varname);
+    const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(varname);
     if (smd == NULL)
     {
         EXCEPTION1(InvalidVariableException, varname);
@@ -608,7 +609,7 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
         return NULL;
     }
 
-    string meshname  = GetMetaData()->MeshForVar(varname);
+    string meshname  = GetMetaData(ts)->MeshForVar(varname);
     vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material);
 
     if (mesh == NULL)
@@ -683,7 +684,7 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
     for (int i = 0 ; i < num2ndVars ; i++)
     {
         const char *varName = *(vars2nd[i]);
-        avtDatabaseMetaData *md = GetMetaData();
+        avtDatabaseMetaData *md = GetMetaData(ts);
         avtVarType vt = md->DetermineVarType(varName);
 
         //
@@ -702,7 +703,7 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
         {
           case AVT_SCALAR_VAR:
             {
-                const avtScalarMetaData *smd=GetMetaData()->GetScalar(varName);
+                const avtScalarMetaData *smd=GetMetaData(ts)->GetScalar(varName);
                 if (smd->centering == AVT_NODECENT)
                 {
                     atts = ds->GetPointData();
@@ -716,7 +717,7 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
 
           case AVT_VECTOR_VAR:
             {
-                const avtVectorMetaData *vmd=GetMetaData()->GetVector(varName);
+                const avtVectorMetaData *vmd=GetMetaData(ts)->GetVector(varName);
                 if (vmd->centering == AVT_NODECENT)
                 {
                     atts = ds->GetPointData();
@@ -800,7 +801,7 @@ vtkDataSet *
 avtGenericDatabase::GetMeshDataset(const char *varname, int ts, int domain,
                                    const char *material)
 {
-    string meshname  = GetMetaData()->MeshForVar(varname);
+    string meshname  = GetMetaData(ts)->MeshForVar(varname);
     vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material);
 
     return mesh;
@@ -847,7 +848,7 @@ vtkDataSet *
 avtGenericDatabase::GetVectorVarDataset(const char *varname, int ts,
                                         int domain, const char *material)
 {
-    const avtVectorMetaData *vmd = GetMetaData()->GetVector(varname);
+    const avtVectorMetaData *vmd = GetMetaData(ts)->GetVector(varname);
     if (vmd == NULL)
     {
         EXCEPTION1(InvalidVariableException, varname);
@@ -864,7 +865,7 @@ avtGenericDatabase::GetVectorVarDataset(const char *varname, int ts,
         return NULL;
     }
 
-    string meshname  = GetMetaData()->MeshForVar(varname);
+    string meshname  = GetMetaData(ts)->MeshForVar(varname);
     vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material);
 
     if (mesh == NULL)
@@ -917,7 +918,7 @@ vtkDataSet *
 avtGenericDatabase::GetTensorVarDataset(const char *varname, int ts,
                                         int domain, const char *material)
 {
-    const avtTensorMetaData *tmd = GetMetaData()->GetTensor(varname);
+    const avtTensorMetaData *tmd = GetMetaData(ts)->GetTensor(varname);
     if (tmd == NULL)
     {
         EXCEPTION1(InvalidVariableException, varname);
@@ -934,7 +935,7 @@ avtGenericDatabase::GetTensorVarDataset(const char *varname, int ts,
         return NULL;
     }
 
-    string meshname  = GetMetaData()->MeshForVar(varname);
+    string meshname  = GetMetaData(ts)->MeshForVar(varname);
     vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material);
 
     if (mesh == NULL)
@@ -988,7 +989,7 @@ avtGenericDatabase::GetSymmetricTensorVarDataset(const char *varname, int ts,
                                         int domain, const char *material)
 {
     const avtSymmetricTensorMetaData *tmd = 
-                                         GetMetaData()->GetSymmTensor(varname);
+                                         GetMetaData(ts)->GetSymmTensor(varname);
     if (tmd == NULL)
     {
         EXCEPTION1(InvalidVariableException, varname);
@@ -1006,7 +1007,7 @@ avtGenericDatabase::GetSymmetricTensorVarDataset(const char *varname, int ts,
         return NULL;
     }
 
-    string meshname  = GetMetaData()->MeshForVar(varname);
+    string meshname  = GetMetaData(ts)->MeshForVar(varname);
     vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material);
 
     if (mesh == NULL)
@@ -1072,7 +1073,7 @@ vtkDataSet *
 avtGenericDatabase::GetMaterialDataset(const char *matname, int ts, int domain,
                                        const char *material)
 {
-    string meshname  = GetMetaData()->MeshForVar(matname);
+    string meshname  = GetMetaData(ts)->MeshForVar(matname);
     vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material);
 
     return mesh;
@@ -1115,7 +1116,7 @@ vtkDataSet *
 avtGenericDatabase::GetSpeciesDataset(const char *specname, int ts, int domain,
                                       const char *material)
 {
-    string meshname  = GetMetaData()->MeshForVar(specname);
+    string meshname  = GetMetaData(ts)->MeshForVar(specname);
     vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material);
 
     if (mesh == NULL)
@@ -1601,7 +1602,7 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
     {
         rv->GetCellData()->AddArray(
             mesh->GetCellData()->GetArray("vtkGhostLevels"));
-        GetMetaData()->SetContainsGhostZones(meshname, AVT_HAS_GHOSTS);
+        GetMetaData(ts)->SetContainsGhostZones(meshname, AVT_HAS_GHOSTS);
     }
     rv->GetFieldData()->ShallowCopy(mesh->GetFieldData());
 
@@ -2005,7 +2006,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     //
     // Determine the topological dimension.
     //
-    avtDatabaseMetaData *md = GetMetaData();
+    avtDatabaseMetaData *md = GetMetaData(ts);
     string meshname = md->MeshForVar(var);
     const avtMeshMetaData *mmd = md->GetMesh(meshname);
     if (mmd == NULL)
@@ -2029,7 +2030,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     int numOutput = (needInternalSurfaces ?  numSelected : 1);
     vtkDataSet **out_ds = new vtkDataSet *[numOutput];
 
-    avtVarType type = GetMetaData()->DetermineVarType(var);
+    avtVarType type = GetMetaData(ts)->DetermineVarType(var);
     vtkIntArray *origDims = NULL;
     if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
     {
@@ -2154,7 +2155,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     else
     {
         char label[40];
-        avtSubsetType sT = GetMetaData()->DetermineSubsetType(var);
+        avtSubsetType sT = GetMetaData(ts)->DetermineSubsetType(var);
         if (sT == AVT_DOMAIN_SUBSET || sT == AVT_UNKNOWN_SUBSET)
         {
             //
@@ -2162,7 +2163,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
             // We are doing a material-selected domain-subset plot,
             // or a material-selected non-subset plot. 
             //
-            int domOrigin  =  GetMetaData()->GetMesh(meshname)->blockOrigin;
+            int domOrigin  =  GetMetaData(ts)->GetMesh(meshname)->blockOrigin;
             sprintf(label, "%d", dom + domOrigin);
             for (int d = 0; d < numOutput; d++)
             {
@@ -2174,7 +2175,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
             //
             // Create a new label which is the group number.
             //
-            int gID  =  GetMetaData()->GetMesh(meshname)->groupIds[dom];
+            int gID  =  GetMetaData(ts)->GetMesh(meshname)->groupIds[dom];
             sprintf(label, "%d", gID);
             for (int d = 0; d < numOutput; d++)
             {
@@ -2217,7 +2218,8 @@ void
 avtGenericDatabase::GetMaterialIndices(const char *var, vector<string> &mn,
                                        vector<int> &ml)
 {
-    avtDatabaseMetaData *md = GetMetaData();
+    // assume material composition is invariant with time, get at time 0
+    avtDatabaseMetaData *md = GetMetaData(0);
     string meshname = md->MeshForVar(var);
     string matname  = md->MaterialOnMesh(meshname);
     const avtMaterialMetaData *mmd = md->GetMaterial(matname);
@@ -2270,7 +2272,7 @@ avtGenericDatabase::GetMaterialIndices(const char *var, vector<string> &mn,
 avtMaterial *
 avtGenericDatabase::GetMaterial(int dom, const char *var, int ts)
 {
-    avtDatabaseMetaData *md = GetMetaData();
+    avtDatabaseMetaData *md = GetMetaData(ts);
 
     //
     // Identify the material we want.
@@ -2317,7 +2319,7 @@ avtGenericDatabase::GetMaterial(int dom, const char *var, int ts)
 avtSpecies *
 avtGenericDatabase::GetSpecies(int dom, const char *var, int ts)
 {
-    avtDatabaseMetaData *md = GetMetaData();
+    avtDatabaseMetaData *md = GetMetaData(ts);
 
     //
     // Identify the species we want.
@@ -2528,7 +2530,7 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
     //
     // See if we already have the data lying around.
     //
-    avtDatabaseMetaData *md = GetMetaData();
+    avtDatabaseMetaData *md = GetMetaData(timestep);
     string meshname = md->MeshForVar(varname);
     string matname  = md->MaterialOnMesh(meshname);
     void_ref_ptr vr = void_ref_ptr();
@@ -2658,6 +2660,40 @@ avtGenericDatabase::CanDoDynamicLoadBalancing(void)
     return Interface->CanDoDynamicLoadBalancing();
 }
 
+// ****************************************************************************
+//  Method: avtGenericDatabase::HasInvariantMetaData
+//
+//  Purpose:
+//      Indicates whether or not metadata can vary with time 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   September 30, 2003 
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::HasInvariantMetaData(void) const
+{
+    return Interface->HasInvariantMetaData();
+}
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::HasInvariantSIL
+//
+//  Purpose:
+//      Indicates whether or not the SIL can vary with time 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   September 30, 2003 
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::HasInvariantSIL(void) const
+{
+    return Interface->HasInvariantSIL();
+}
+
 
 // ****************************************************************************
 //  Method: avtGenericDatabase::ReadDataset
@@ -2714,12 +2750,13 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
                       avtDataSpecification_p &spec, avtSourceFromDatabase *src)
 {
     int timerHandle = visitTimer->StartTimer();
+    int ts = spec->GetTimestep();
 
     //
     // This will get unset later if we determine that we actually do have
     // ghosts.
     //
-    avtDatabaseMetaData *md = GetMetaData();
+    avtDatabaseMetaData *md = GetMetaData(ts);
     string meshname = md->MeshForVar(spec->GetVariable());
     md->SetContainsGhostZones(meshname, AVT_NO_GHOSTS);
     md->SetContainsOriginalCells(meshname, false);
@@ -2730,7 +2767,6 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
     const char *var = spec->GetVariable();
     const vector<CharStrRef> &vars2nd = spec->GetSecondaryVariables();
     avtSILRestriction_p silr = spec->GetRestriction();
-    int ts = spec->GetTimestep();
 
     char  progressString[1024];
     sprintf(progressString, "Reading from %s", Interface->GetType());
@@ -2739,13 +2775,13 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
     vector<int>    gIds;
     int domOrigin = 0;
 
-    avtSubsetType subT = GetMetaData()->DetermineSubsetType(var);
+    avtSubsetType subT = GetMetaData(ts)->DetermineSubsetType(var);
     if (subT == AVT_DOMAIN_SUBSET || subT == AVT_GROUP_SUBSET)
     {
-        string meshName = GetMetaData()->MeshForVar(var);
-        blockNames =  GetMetaData()->GetMesh(meshName)->blockNames;
-        domOrigin  =  GetMetaData()->GetMesh(meshName)->blockOrigin;
-        gIds       =  GetMetaData()->GetMesh(meshName)->groupIds;
+        string meshName = GetMetaData(ts)->MeshForVar(var);
+        blockNames =  GetMetaData(ts)->GetMesh(meshName)->blockNames;
+        domOrigin  =  GetMetaData(ts)->GetMesh(meshName)->blockOrigin;
+        gIds       =  GetMetaData(ts)->GetMesh(meshName)->groupIds;
     }
 
     //
@@ -3131,7 +3167,8 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
 
         // Setup vars
         const char *varname = spec->GetVariable();
-        avtVarType type = GetMetaData()->DetermineVarType(varname);
+        int ts = spec->GetTimestep();
+        avtVarType type = GetMetaData(ts)->DetermineVarType(varname);
 
         localstage  = 1;
         nlocalstage = (1 + 
@@ -3182,7 +3219,7 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
             if (type == AVT_MATSPECIES)
                 centering = AVT_ZONECENT;
             else
-                centering = GetMetaData()->GetScalar(varname)->centering;
+                centering = GetMetaData(ts)->GetScalar(varname)->centering;
 
             bool isPointData = (centering == AVT_NODECENT ? true : false);
             vector<vtkDataArray *> scalars;
@@ -3223,7 +3260,7 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
             src->DatabaseProgress(localstage++, nlocalstage,
                                   "Creating ghost zones for vectors");
 
-            const avtVectorMetaData *vmd = GetMetaData()->GetVector(varname);
+            const avtVectorMetaData *vmd = GetMetaData(ts)->GetVector(varname);
             bool isPointData = (vmd->centering == AVT_NODECENT ? true : false);
             vector<vtkDataArray *> vectors;
             for (i = 0 ; i < doms.size() ; i++)
@@ -3262,7 +3299,7 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
         // Exchange secondary variables.
         //
         const vector<CharStrRef> &var2nd = spec->GetSecondaryVariables();
-        avtDatabaseMetaData *metadata = GetMetaData();
+        avtDatabaseMetaData *metadata = GetMetaData(ts);
         for (i = 0 ; i < var2nd.size() ; i++)
         {
             CharStrRef curVar  = var2nd[i];
@@ -3488,9 +3525,9 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
         //
         // Tell everything downstream that we do have ghost zones.
         //
-        avtDatabaseMetaData *md = GetMetaData();
+        avtDatabaseMetaData *md = GetMetaData(ts);
         string meshname = md->MeshForVar(spec->GetVariable());
-        GetMetaData()->SetContainsGhostZones(meshname, AVT_CREATED_GHOSTS);
+        GetMetaData(ts)->SetContainsGhostZones(meshname, AVT_CREATED_GHOSTS);
 
         src->DatabaseProgress(1, 0, progressString);
         rv = true;
@@ -3915,6 +3952,8 @@ avtGenericDatabase::NumStagesForFetch(avtDataSpecification_p spec)
 //
 //    Kathleen Bonnell, Fri Jun 20 13:57:30 PDT 2003  
 //    Add support for node-pick. 
+//
+//    Mark C. Miller, 30Sep03 added timestep argument
 //    
 // ****************************************************************************
 
@@ -3930,7 +3969,7 @@ avtGenericDatabase::QueryScalars(const std::string &varName, const int dom,
     {
         std::vector<double> vals;
         std::vector<std::string> names;
-        const avtScalarMetaData *smd = GetMetaData()->GetScalar(varName);
+        const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(varName);
         if (!smd)
         {
              debug5 << "Querying scalar var, but could not retrieve"
@@ -4122,7 +4161,7 @@ avtGenericDatabase::QueryVectors(const std::string &varName, const int dom,
     bool rv = false;
     if (varInfo.GetValues().empty())
     {
-        const avtVectorMetaData *vmd = GetMetaData()->GetVector(varName);
+        const avtVectorMetaData *vmd = GetMetaData(ts)->GetVector(varName);
         if (!vmd)
         {
             debug5 << "Querying vector var, but could not retrieve"
@@ -4240,7 +4279,7 @@ avtGenericDatabase::QueryTensors(const std::string &varName, const int dom,
     bool rv = false;
     if (varInfo.GetValues().empty())
     {
-        const avtTensorMetaData *tmd = GetMetaData()->GetTensor(varName);
+        const avtTensorMetaData *tmd = GetMetaData(ts)->GetTensor(varName);
         if (!tmd)
         {
             debug5 << "Querying tensor var, but could not retrieve"
@@ -4348,7 +4387,7 @@ avtGenericDatabase::QuerySymmetricTensors(const std::string &varName,
     if (varInfo.GetValues().empty())
     {
         const avtSymmetricTensorMetaData *tmd 
-                                       = GetMetaData()->GetSymmTensor(varName);
+                                       = GetMetaData(ts)->GetSymmTensor(varName);
         if (!tmd)
         {
             debug5 << "Querying tensor var, but could not retrieve"
@@ -4594,7 +4633,7 @@ avtGenericDatabase::QueryNodes(const std::string &varName, const int dom,
                                const bool logical, 
                                std::vector<std::string> &nCoords)
 {
-    string meshName = GetMetaData()->MeshForVar(varName);
+    string meshName = GetMetaData(ts)->MeshForVar(varName);
     vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all");
     bool rv = false; 
     if (ds)
@@ -4688,12 +4727,12 @@ avtGenericDatabase::QueryNodes(const std::string &varName, const int dom,
 // ****************************************************************************
 
 bool
-avtGenericDatabase::QueryMesh(const std::string &varName, const int dom, 
-                              std::string &meshInfo)
+avtGenericDatabase::QueryMesh(const std::string &varName, const int ts,
+                              const int dom, std::string &meshInfo)
 {
     bool rv = false;
-    string mesh = GetMetaData()->MeshForVar(varName);
-    const avtMeshMetaData *mmd = GetMetaData()->GetMesh(mesh);
+    string mesh = GetMetaData(ts)->MeshForVar(varName);
+    const avtMeshMetaData *mmd = GetMetaData(ts)->GetMesh(mesh);
     char temp[256];
     if (!mmd)
     {
@@ -4772,7 +4811,7 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
                                const bool useNodeCoords, const bool logical, 
                                vector<string> &nodeCoords)
 {
-    string meshName = GetMetaData()->MeshForVar(varName);
+    string meshName = GetMetaData(ts)->MeshForVar(varName);
     vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all");
     bool rv = false; 
     if (ds)

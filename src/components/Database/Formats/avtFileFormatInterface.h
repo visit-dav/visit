@@ -95,6 +95,9 @@ class DATABASE_API avtFileFormatInterface
 
     virtual void            FreeUpResources(int, int) = 0;
 
+    bool                    HasInvariantMetaData(void) const;
+    bool                    HasInvariantSIL(void) const;
+
     bool                    CanDoDynamicLoadBalancing(void);
     const char             *GetType(void);
     bool                    HasVarsDefinedOnSubMeshes(void);
@@ -108,7 +111,7 @@ class DATABASE_API avtFileFormatInterface
 
   protected:
     virtual int             GetNumberOfFileFormats(void) = 0;
-    virtual avtFileFormat  *GetFormat(int) = 0;
+    virtual avtFileFormat  *GetFormat(int) const = 0;
 };
 
 

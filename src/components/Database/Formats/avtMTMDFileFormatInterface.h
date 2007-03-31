@@ -52,7 +52,7 @@ class DATABASE_API avtMTMDFileFormatInterface : public avtFileFormatInterface
 
     virtual int             GetNumberOfFileFormats(void)
                               { return 1; };
-    virtual avtFileFormat  *GetFormat(int n) { return format; };
+    virtual avtFileFormat  *GetFormat(int n) const { return format; };
 };
 
 

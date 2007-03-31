@@ -86,6 +86,10 @@ class DBATTS_API avtSIL
     int                               GetCollectionIndex(std::string) const;
 
     void                              Print(ostream &) const;
+    void                              Print(ostream &,
+                                          std::vector< std::string > perSetInfo,
+                                          std::vector< std::string > perCollInfo,
+                                          std::vector< std::string > perMatrixInfo) const;
 
     SILAttributes                    *MakeSILAttributes(void) const;
 

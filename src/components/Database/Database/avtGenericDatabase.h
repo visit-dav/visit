@@ -153,6 +153,8 @@ class     PickVarInfo;
 //    Hank Childs, Mon Sep 22 07:52:34 PDT 2003
 //    Added support for tensors.
 //
+//    Mark C. Miller, 30Sep03, Added support for time varying MD/SIL
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -172,6 +174,9 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     virtual int                NumStagesForFetch(avtDataSpecification_p);
 
     virtual const char        *GetFilename(int);
+
+    virtual bool               HasInvariantMetaData(void) const;
+    virtual bool               HasInvariantSIL(void) const;
 
   protected:
     avtFileFormatInterface    *Interface;
@@ -287,7 +292,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                           const int, const bool, const bool,
                                           std::vector<std::string> &);
 
-    virtual bool               QueryMesh(const std::string &, const int, 
+    virtual bool               QueryMesh(const std::string &, const int, const int, 
                                          std::string &);
 
     virtual bool               QueryZones(const std::string&, const int, int &,

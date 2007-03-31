@@ -19,10 +19,15 @@
 
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
+#include <ImproperUseException.h>
 #include <PickAttributes.h>
 #include <PickVarInfo.h>
 #include <TimingsManager.h>
 #include <Utility.h>
+
+// size of MD/SIL caches
+int       avtDatabase::mdCacheSize         = 20;
+int       avtDatabase::silCacheSize        = 20;
 
 bool      avtDatabase::onlyServeUpMetaData = false;
 
@@ -55,9 +60,9 @@ bool      avtDatabase::onlyServeUpMetaData = false;
 
 avtDatabase::avtDatabase()
 {
-    metadata        = NULL;
-    sil             = NULL;
-    gotIOInfo       = false;
+    gotIOInfo         = false;
+    invariantMetaData = NULL;
+    invariantSIL      = NULL;
 }
 
 
@@ -78,26 +83,27 @@ avtDatabase::avtDatabase()
 //    Hank Childs, Thu Mar  1 13:42:43 PST 2001
 //    Split class so functionality went in derived type, avtGenericDatabase.
 //
+//    Mark C. Miller, 30Sep03 Added support to time-varying SIL/MD
 // ****************************************************************************
 
 avtDatabase::~avtDatabase()
 {
-    if (metadata != NULL)
-    {
-        delete metadata;
-        metadata = NULL;
-    }
-    
     std::vector<avtDataObjectSource *>::iterator it;
     for (it = sourcelist.begin() ; it != sourcelist.end() ; it++)
     {
         delete *it;
     }
 
-    if (sil != NULL)
+    if (invariantMetaData != NULL)
     {
-        delete sil;
-        sil = NULL;
+        delete invariantMetaData;
+        invariantMetaData = NULL;
+    }
+
+    if (invariantSIL != NULL)
+    {
+        delete invariantSIL;
+        invariantSIL = NULL;
     }
 }
 
@@ -137,7 +143,7 @@ avtDatabase::GetOutput(const char *var, int ts)
     //
     // Figure out how many domains there are for the current variable.
     //
-    int nDomains = GetMetaData()->GetNDomains(var);
+    int nDomains = GetMetaData(ts)->GetNDomains(var);
 
     if (nDomains <= 0)
     {
@@ -150,7 +156,7 @@ avtDatabase::GetOutput(const char *var, int ts)
     avtDataObjectSource *src = CreateSource(var, ts);
     avtDataObject_p dob = src->GetOutput();
 
-    PopulateDataObjectInformation(dob, var);
+    PopulateDataObjectInformation(dob, var, ts);
 
     sourcelist.push_back(src);
 
@@ -228,11 +234,14 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Hank Childs, Tue Sep 23 23:03:07 PDT 2003
 //    Add support for tensors.
 //
+//    Mark C. Miller, 30Sep03, added timeStep argument
+//
 // ****************************************************************************
 
 void
 avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                                            const char *var,
+                                           int ts,
                                            avtDataSpecification *spec)
 {
     int timerHandle = visitTimer->StartTimer();
@@ -240,8 +249,8 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     avtDataAttributes &atts     = dob->GetInfo().GetAttributes();
     avtDataValidity   &validity = dob->GetInfo().GetValidity();
 
-    string mesh = GetMetaData()->MeshForVar(var);
-    const avtMeshMetaData *mmd = GetMetaData()->GetMesh(mesh);
+    string mesh = GetMetaData(ts)->MeshForVar(var);
+    const avtMeshMetaData *mmd = GetMetaData(ts)->GetMesh(mesh);
     if (mmd != NULL)
     {
         atts.SetCellOrigin(mmd->cellOrigin);
@@ -272,7 +281,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         }
     }
     
-    const avtScalarMetaData *smd = GetMetaData()->GetScalar(var);
+    const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(var);
     if (smd != NULL)
     {
         atts.SetVariableDimension(1);
@@ -294,7 +303,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         }
     }
 
-    const avtVectorMetaData *vmd = GetMetaData()->GetVector(var);
+    const avtVectorMetaData *vmd = GetMetaData(ts)->GetVector(var);
     if (vmd != NULL)
     {
         atts.SetVariableDimension(vmd->varDim);
@@ -321,7 +330,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         }
     }
 
-    const avtTensorMetaData *tmd = GetMetaData()->GetTensor(var);
+    const avtTensorMetaData *tmd = GetMetaData(ts)->GetTensor(var);
     if (tmd != NULL)
     {
         atts.SetVariableDimension(9);
@@ -329,7 +338,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         atts.SetCentering(tmd->centering);
     }
 
-    const avtSymmetricTensorMetaData *stmd = GetMetaData()->GetSymmTensor(var);
+    const avtSymmetricTensorMetaData *stmd = GetMetaData(ts)->GetSymmTensor(var);
     if (stmd != NULL)
     {
         atts.SetVariableDimension(9);
@@ -337,7 +346,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         atts.SetCentering(stmd->centering);
     }
 
-    const avtSpeciesMetaData *spmd = GetMetaData()->GetSpecies(var);
+    const avtSpeciesMetaData *spmd = GetMetaData(ts)->GetSpecies(var);
     if (spmd != NULL)
     {
         atts.SetVariableDimension(1);
@@ -349,7 +358,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         atts.GetEffectiveDataExtents()->Set(extents);
     }
 
-    const avtCurveMetaData *cmd = GetMetaData()->GetCurve(var);
+    const avtCurveMetaData *cmd = GetMetaData(ts)->GetCurve(var);
     if (cmd != NULL)
     {
         atts.SetTopologicalDimension(1);
@@ -374,7 +383,89 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
 
 
 // ****************************************************************************
-//  Method: avtDatabase::GetMetaData
+//  Method: avtDatabase::MetaDataIsInvariant
+//
+//  Purpose: Return whether or not database meta data is invariant.
+//
+//  We use a bool* to implement this so that we can know whether or not the
+//  bool has been set and once it is set, never call down to the plugins to
+//  re-acquire this knowledge
+//
+//  Programmer: Mark C. Miller, 30Sep03
+// ****************************************************************************
+bool
+avtDatabase::MetaDataIsInvariant(void)
+{
+   if (invariantMetaData == NULL)
+   {
+      invariantMetaData = new bool;
+      *invariantMetaData = HasInvariantMetaData();
+   }
+
+   return *invariantMetaData;
+}
+
+// ****************************************************************************
+//  Method: avtDatabase::SILIsInvariant
+//
+//  Purpose: Return whether or not SIL is invariant.
+//
+//  We use a bool* to implement this so that we can know whether or not the
+//  bool has been set and once it is set, never call down to the plugins to
+//  re-acquire this knowledge
+//
+//  Programmer: Mark C. Miller, 30Sep03
+// ****************************************************************************
+bool
+avtDatabase::SILIsInvariant(void)
+{
+   if (invariantSIL == NULL)
+   {
+      invariantSIL = new bool;
+      *invariantSIL = HasInvariantSIL();
+   }
+
+   return *invariantSIL;
+}
+
+// ****************************************************************************
+//  Method: avtDatabase::GetMostRecentTimestepQueried
+//
+//  Purpose:
+//      Provide convenience method for caller's that don't have a reasonable
+//      'current' time to pass to GetMetaData and GetSIL which now both
+//      require the caller to specify the time. This function simply returns
+//      the time of the most recent request for either SIL or MetaData. The
+//      idea is that a reasonable time to use when one is not available is
+//      the time of the most recent query for metadata or SIL. 
+//      
+// ****************************************************************************
+int
+avtDatabase::GetMostRecentTimestep(void) const
+{
+   if (sil.size() == 0)
+   {
+      if (metadata.size() == 0)
+         return 0;
+      else
+         return metadata.front().ts;
+   }
+   else
+   {
+      if (metadata.size() == 0)
+         return sil.front().ts;
+      else
+      {
+         if (sil.front().ts > metadata.front().ts)
+            return sil.front().ts;
+         else
+            return metadata.front().ts;
+      }
+   }
+}
+
+// ****************************************************************************
+//  Method: avtDatabase::GetNewMetaData
 //
 //  Purpose:
 //      Provide mechanism for clients to get information about the file
@@ -396,27 +487,98 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
 //    Hank Childs, Thu Aug 14 08:45:39 PDT 2003
 //    Set the database's name with the meta-data.
 //
+//    Mark C. Miller, 22Sep03, changed name to Get'New'MetaData. Put result
+//    in MRU cache
+//
+// ****************************************************************************
+void
+avtDatabase::GetNewMetaData(int timeState)
+{
+    // sanity check: since SIL info is currently embedded in MetaData,
+    // we cannot have MD invariant but SIL NOT invariant
+    if (MetaDataIsInvariant() && !SILIsInvariant())
+    {
+        EXCEPTION1(ImproperUseException, "invalid MD/SIL invariants condition");
+    }
+
+    // acquire new metadata for the given timestep
+    avtDatabaseMetaData *md = new avtDatabaseMetaData;
+    const char *filename = GetFilename(timeState);
+    string fname;
+    if (filename == NULL)
+        fname = "";
+    else
+        fname = filename;
+    SetDatabaseMetaData(md, timeState);
+    md->SetDatabaseName(fname);
+    md->SetMustRepopulateOnStateChange(!MetaDataIsInvariant() ||
+                                       !SILIsInvariant());
+    PopulateIOInformation(ioInfo);
+    gotIOInfo = true;
+
+    // put the metadata at the front of the MRU cache
+    CachedMDEntry tmp = {md, timeState};
+    metadata.push_front(tmp);
+}
+
+// ****************************************************************************
+//  Method: avtDatabase::GetMetaData
+//
+//  Purpose:
+//      Get and manage metadata from multiple timesteps in an MRU cache 
+//
+//  Arguments:
+//     timeState : The time state that we're interested in.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   September 30, 2003
+//
 // ****************************************************************************
 
 avtDatabaseMetaData *
 avtDatabase::GetMetaData(int timeState)
 {
-    if (metadata == NULL)
+    if (MetaDataIsInvariant())
     {
-        metadata = new avtDatabaseMetaData;
-        const char *filename = GetFilename(timeState);
-        string fname;
-        if (filename == NULL)
-            fname = "";
-        else
-            fname = filename;
-        metadata->SetDatabaseName(fname);
-        SetDatabaseMetaData(metadata, timeState);
-        PopulateIOInformation(ioInfo);
-        gotIOInfo = true;
+
+        // since its invariant, get it at time 0
+        if (metadata.size() == 0)
+            GetNewMetaData(0);
+
+    }
+    else
+    {
+        // see if we've already cached metadata for this timestep
+        std::list<CachedMDEntry>::iterator i;
+        for (i = metadata.begin(); i != metadata.end(); i++)
+        {
+            if (timeState == i->ts)
+            {
+                // move the found entry to front of list
+                CachedMDEntry tmp = *i;
+                metadata.erase(i);
+                metadata.push_front(tmp);
+                break;
+            }
+        }
+
+       // if we didn't find it in the cache, remove the oldest (last) entry
+       // and read new metadata
+       if (i == metadata.end())
+       {
+           if (metadata.size() >= mdCacheSize)
+           {
+               CachedMDEntry tmp = metadata.back(); 
+               metadata.pop_back();
+               delete tmp.md;
+           }
+
+           GetNewMetaData(timeState);
+       }
+
     }
 
-    return metadata;
+    return metadata.front().md;
 }
 
 
@@ -438,20 +600,81 @@ avtDatabase::GetMetaData(int timeState)
 //    Brad Whitlock, Wed May 14 09:10:23 PDT 2003
 //    Added timeState argument.
 //
+//    Mark C. Miller, 22Sep03, changed name to Get'New'SIL. Put result
+//    in MRU cache
+//
 // ****************************************************************************
 
+void
+avtDatabase::GetNewSIL(int timeState)
+{
+    // build a new sil for the given timestep
+    avtSIL *newsil = new avtSIL;
+    PopulateSIL(newsil, timeState);
+
+    // put result in front of MRU cache
+    CachedSILEntry tmp = {newsil, timeState};
+    sil.push_front(tmp);
+}
+
+// ****************************************************************************
+//  Method: avtDatabase::GetSIL
+//
+//  Purpose:
+//      Get and manage SILs from multiple timesteps in an MRU cache 
+//
+//  Arguments:
+//     timeState : The time state that we're interested in.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   September 30, 2003
+//
+// ****************************************************************************
 avtSIL *
 avtDatabase::GetSIL(int timeState)
 {
-    if (sil == NULL)
+    if (SILIsInvariant())
     {
-        sil = new avtSIL;
-        PopulateSIL(sil, timeState);
+
+        // since its invariant, get it at time 0
+        if (sil.size() == 0)
+            GetNewSIL(0);
+
+    }
+    else
+    {
+        // see if we've already cached sil for this timestep
+        std::list<CachedSILEntry>::iterator i;
+        for (i = sil.begin(); i != sil.end(); i++)
+        {
+            if (timeState == i->ts)
+            {
+                // move the found entry to front of list
+                CachedSILEntry tmp = *i;
+                sil.erase(i);
+                sil.push_front(tmp);
+                break;
+            }
+        }
+
+       // if we didn't find it in the cache, remove the oldest (last) entry
+       // and read new sil
+       if (i == sil.end())
+       {
+           if (sil.size() >= silCacheSize)
+           {
+               CachedSILEntry tmp = sil.back(); 
+               sil.pop_back();
+               delete tmp.sil;
+           }
+
+           GetNewSIL(timeState);
+       }
+
     }
 
-    return sil;
+    return sil.front().sil;
 }
-
 
 // ****************************************************************************
 //  Method: avtDatabase::ClearCache
@@ -531,9 +754,9 @@ avtDatabase::GetIOInformation(void)
         //
         // Getting the meta-data will force the I/O information to be read in.
         // It also does the correct preconditions so that getting the I/O info
-        // will be meaningful.
+        // will be meaningful. We assume this info does not change with time
         //
-        GetMetaData();
+        GetMetaData(0);
     }
     return ioInfo;
 }
@@ -693,9 +916,6 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Always call QueryMesh, don't keep vars of type AVT_MESH in pickAtts'
 //    PickVarInfo.
 //    
-//    Kathleen Bonnell, Thu Sep 18 07:43:33 PDT 2003 
-//    QueryMaterial should use 'real' elements when available. 
-//    
 //    Hank Childs, Mon Sep 22 09:20:08 PDT 2003
 //    Added support for tensors and symmetric tensors.
 //
@@ -768,7 +988,7 @@ avtDatabase::Query(PickAttributes *pa)
     }
 
     std::string meshInfo;
-    QueryMesh(pa->GetActiveVariable(), foundDomain, meshInfo);
+    QueryMesh(pa->GetActiveVariable(), ts, foundDomain, meshInfo);
     pa->SetMeshInfo(meshInfo);
 
     intVector removeMe;
@@ -782,11 +1002,7 @@ avtDatabase::Query(PickAttributes *pa)
         bool success = false;
         TRY
         {
-            avtVarType varType = metadata->DetermineVarType(vName);
-            int matEl = (pa->GetRealElementNumber() != -1 ? 
-                         pa->GetRealElementNumber() : foundEl);
-            intVector matIncEls = (pa->GetRealIncidentElements().size() > 0 ? 
-                                   pa->GetRealIncidentElements() : incEls);
+            avtVarType varType = GetMetaData(ts)->DetermineVarType(vName);
             switch(varType)
             {
                 case AVT_SCALAR_VAR : success = 
@@ -809,9 +1025,8 @@ avtDatabase::Query(PickAttributes *pa)
                                  incEls, pa->GetPickVarInfo(varNum), zonePick);
                    pa->GetPickVarInfo(varNum).SetVariableType("symm_tensor");
                    break; 
-                case AVT_MATERIAL : 
-                   success = 
-                   QueryMaterial(vName, foundDomain, matEl, ts, matIncEls, 
+                case AVT_MATERIAL : success = 
+                   QueryMaterial(vName, foundDomain, foundEl, ts, incEls, 
                                  pa->GetPickVarInfo(varNum), zonePick);
                    pa->GetPickVarInfo(varNum).SetVariableType("material");
                    break; 

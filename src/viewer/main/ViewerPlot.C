@@ -1995,6 +1995,26 @@ ViewerPlot::CreateActor(const int frame)
     // Get a data reader.
     TRY
     {
+        // The following code is necessary to support time-varying SILs
+        ViewerFileServer *server = ViewerFileServer::Instance();
+        avtDatabaseMetaData *md = (avtDatabaseMetaData *)
+                                       server->GetMetaData(GetHostName(),
+                                                           GetDatabaseName());
+        if (md->GetMustRepopulateOnStateChange())
+        {
+            if (viewerPlotList == NULL)
+                EXCEPTION0(ImproperUseException);
+
+            viewerPlotList->ClearDefaultSILRestrictions(GetHostName(),
+                                                        GetDatabaseName());
+            avtSILRestriction_p newsilr =
+                viewerPlotList->GetDefaultSILRestriction(GetHostName(),
+                                                         GetDatabaseName(),
+                                                         GetVariableName());
+            newsilr->SetFromCompatibleRestriction(GetSILRestriction());
+            SetSILRestriction(newsilr);
+        }
+
         reader = ViewerEngineManager::Instance()->
                                       GetDataObjectReader(this,frame);
     }
@@ -2076,24 +2096,7 @@ ViewerPlot::CreateActor(const int frame)
     plotList[frame-frame0]->SetBackgroundColor(bgColor);
     plotList[frame-frame0]->SetForegroundColor(fgColor);
     plotList[frame-frame0]->SetIndex(networkID);
-
-    ViewerFileServer *server = ViewerFileServer::Instance();
-    avtDatabaseMetaData *md = (avtDatabaseMetaData *)
-                                   server->GetMetaData(GetHostName(),
-                                                       GetDatabaseName());
-    avtSILRestriction_p newsilr = NULL;
-    if (md->GetMustRepopulateOnStateChange())
-    {
-        if (viewerPlotList == NULL)
-            EXCEPTION0(ImproperUseException);
-        newsilr = viewerPlotList->GetDefaultSILRestriction(GetHostName(),
-                                         GetDatabaseName(), GetVariableName());
-    }
-    else
-    {
-        newsilr = silr;
-    }
-    plotList[frame-frame0]->SetCurrentSILRestriction(newsilr);
+    plotList[frame-frame0]->SetCurrentSILRestriction(silr);
 
     TRY
     {

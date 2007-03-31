@@ -1041,12 +1041,22 @@ avtSILRestriction::MakeCompactAttributes(void) const
 //    Dramatically reduced the sets being printed out, because of new matrix
 //    format.
 //
+//    Mark C. Miller, 23Sep03, added per-set info for state of each set's
+//    selection
+//
 // ****************************************************************************
 
 void
 avtSILRestriction::Print(ostream &out) const
 {
-    avtSIL::Print(out);
+    // make labels for state of each set
+    static const char *stateNames[3] = {"NoneUsed", "SomeUsed", "AllUsed"};
+
+    std::vector< std::string > perSetInfo, dummyInfo;
+    for (int i = 0 ; i < useSet.size() ; i++)
+        perSetInfo.push_back(stateNames[STATE_INDEX(useSet[i])]);
+
+    avtSIL::Print(out, perSetInfo, dummyInfo, dummyInfo);
     out << "Top Set = " << topSet << endl;
 }
 
@@ -1193,9 +1203,9 @@ avtSILRestriction::GetLeafSets(int ind, vector<int> &leaves)
 //
 // Returns:    Whether or not the sets were compatible.
 //
-// Note:       This code assumes the SIL restrictions are compatible if they
-//             have the same number of leaf sets under their respective top
-//             sets and that the names of all leaf sets are the same.
+// Note:       This code assumes the SIL restrictions are compatible if amoung 
+//             the minimum number of leaf sets under their respective top
+//             sets, the names of all leaf sets are the same.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar 7 14:12:09 PST 2002
@@ -1204,6 +1214,9 @@ avtSILRestriction::GetLeafSets(int ind, vector<int> &leaves)
 //   
 //    Hank Childs, Thu Nov 14 10:30:56 PST 2002
 //    Remove access to 'sets' data member to enable SIL matrices.
+//
+//    Mark C. Miller - 24Sep03, Modified to support differing number of leaf
+//       Sets
 //
 // ****************************************************************************
 
@@ -1223,15 +1236,16 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
     //
     // If the sizes are not equal then return.
     //
-    if(leaves.size() != otherLeaves.size())
-        return false; 
+    int minNumLeaves = leaves.size() < otherLeaves.size() ?
+                           leaves.size() :
+                           otherLeaves.size();
 
     //
     // Compare the names of each set. If at the end, they are all the 
     // same then we have a compatible SIL restriction.
     //
     bool compatible = true;
-    for(i = 0; i < leaves.size(); ++i)
+    for(i = 0; i < minNumLeaves; ++i)
     {
         avtSILSet_p set1 = GetSILSet(i);
         avtSILSet_p set2 = silr->GetSILSet(i);
@@ -1249,7 +1263,7 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
     if(compatible)
     {
         SuspendCorrectnessChecking();
-        for(i = 0; i < leaves.size(); ++i)
+        for(i = 0; i < minNumLeaves; ++i)
         {
             useSet[leaves[i]] = silr->useSet[otherLeaves[i]];
         }

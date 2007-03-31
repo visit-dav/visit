@@ -211,7 +211,7 @@ avtFileFormatInterface::TurnMaterialSelectionOn(const char *matname)
 //  Method: avtFileFormatInterface::CanDoDynamicLoadBalancing
 //
 //  Purpose:
-//      Tells the file format that it should do material selection.   
+//      Indicates if the file format supports dynamic load balancing.   
 //
 //  Programmer: Hank Childs
 //  Creation:   March 14, 2003
@@ -234,4 +234,36 @@ avtFileFormatInterface::CanDoDynamicLoadBalancing(void)
     return true;
 }
 
+// ****************************************************************************
+//  Method: avtFileFormatInterface::HasInvariantMetaData
+//
+//  Purpose:
+//      Indicates if the file format can have metadata that varies with time 
+//
+//  Programmer: Mark C. Miller
+//  Creation:   September 30, 2003
+//
+// ****************************************************************************
 
+bool
+avtFileFormatInterface::HasInvariantMetaData(void) const
+{
+    return GetFormat(0)->HasInvariantMetaData();
+}
+
+// ****************************************************************************
+//  Method: avtFileFormatInterface::HasInvariantSIL
+//
+//  Purpose:
+//      Indicates if the file format can have a SIL that varies with time 
+//
+//  Programmer: Mark C. Miller
+//  Creation:   September 30, 2003
+//
+// ****************************************************************************
+
+bool
+avtFileFormatInterface::HasInvariantSIL(void) const
+{
+    return GetFormat(0)->HasInvariantSIL();
+}

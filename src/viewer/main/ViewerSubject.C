@@ -2475,7 +2475,7 @@ ViewerSubject::RedrawWindow()
 
 void
 ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
-    int timeState, bool updateNFrames)
+    int timeState, bool updateNFrames, bool loadDefaultPlots)
 {
     int  i;
 
@@ -3098,7 +3098,7 @@ void
 ViewerSubject::OpenDatabase()
 {
     OpenDatabaseHelper(viewerRPC.GetDatabase(), viewerRPC.GetIntArg1(),
-                       true);
+                       true, true);
 }
 
 // ****************************************************************************
@@ -3162,7 +3162,8 @@ ViewerSubject::ReOpenDatabase()
     ViewerWindowManager *wM = ViewerWindowManager::Instance();
     ViewerAnimation *animation = wM->GetActiveAnimation();
     ViewerPlotList *plotList = animation->GetPlotList();
-    OpenDatabaseHelper(hostDatabase, animation->GetFrameIndex(), false);
+    OpenDatabaseHelper(hostDatabase, animation->GetFrameIndex(), 
+                       false, false);
 
     //
     // Tell the compute engine to clear any cached information about the
@@ -3211,7 +3212,7 @@ ViewerSubject::ReplaceDatabase()
     //
     // First open the database.
     //
-    OpenDatabaseHelper(viewerRPC.GetDatabase(), 0, true);
+    OpenDatabaseHelper(viewerRPC.GetDatabase(), 0, true, false);
 
     //
     // Now perform the database replacement.
@@ -3253,7 +3254,7 @@ ViewerSubject::OverlayDatabase()
     //
     // First open the database.
     //
-    OpenDatabaseHelper(viewerRPC.GetDatabase(), 0, true);
+    OpenDatabaseHelper(viewerRPC.GetDatabase(), 0, true, false);
 
     //
     // Now perform the database replacement.

@@ -29,6 +29,17 @@ class MessageAttributes;
 //   and tell them exactly what attributes changed. The attributes
 //   are flags that indicate which real attribute changed.
 //
+//   We maintain a cache of MetaData. In general, care must be taken
+//   to manage this cache correctly when the MetaData for a single
+//   database varies with time. However, we are lucky in that the GUI
+//   only queries certain members from MetaData that indeed don't
+//   vary with time. For example, the number of states or materials.
+//   There is only one place in the GUI where the pieces of MetaData
+//   that can vary with time are actually used. This is in the File
+//   Information Window. So, we deal with that case by making an
+//   explicit call to the MD server to get the meta data if indeed
+//   the MetaData is not invariant.
+//
 // Programmer: Brad Whitlock
 // Creation:   Mon Aug 21 15:02:59 PST 2000
 //
@@ -100,6 +111,9 @@ class MessageAttributes;
 //   Added SilentNotify so we can execute several RPCs without having to
 //   tell the observers each time we do something.
 //
+//   Mark C. Miller, Wed Oct  8 17:20:23 PDT 2003
+//   Added GetMetaDataFromMDServer method
+//
 // ****************************************************************************
 
 class GUI_API FileServerList : public AttributeSubject
@@ -153,6 +167,9 @@ public:
     bool GetUseCurrentDirectory() const;
     bool GetAutomaticFileGrouping() const;
     const QualifiedFilename &GetOpenFile();
+    int GetOpenFileTimeState() const;
+    const avtDatabaseMetaData *GetMetaDataFromMDServer(const QualifiedFilename &f,
+                                                       int timeState);
     const avtDatabaseMetaData *GetMetaData();
     const avtDatabaseMetaData *GetMetaData(const QualifiedFilename &f);
     const avtSIL *GetSIL(const QualifiedFilename &f);
@@ -219,6 +236,9 @@ private:
 
     // Information about the current file.
     QualifiedFilename openFile;
+    int               openFileTimeState;
+
+    // caches for MetaData and SIL
     FileMetaDataMap   fileMetaData;
     SILMap            SILData;
 

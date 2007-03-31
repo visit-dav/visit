@@ -193,8 +193,8 @@ avtSourceFromDatabase::FetchDataset(avtDataSpecification_p spec,
         }
     }
 
-    avtDatabaseMetaData *md = database->GetMetaData();
     int timestep = spec->GetTimestep();
+    avtDatabaseMetaData *md = database->GetMetaData(timestep);
     avtDataAttributes &atts = GetOutput()->GetInfo().GetAttributes();
     if (md->IsCycleAccurate(timestep))
     {
@@ -283,7 +283,7 @@ avtSourceFromDatabase::FetchMeshAuxiliaryData(const char *type, void *args,
     // We only have hooks to the variable defined on the mesh.  We can get
     // the mesh name by accessing the database object.
     //
-    string mn = database->GetMetaData()->MeshForVar(variable);
+    string mn = database->GetMetaData(timestep)->MeshForVar(variable);
     avtDataSpecification_p newspec =new avtDataSpecification(spec, mn.c_str());
     database->GetAuxiliaryData(newspec, output, type, args);
 }
@@ -315,8 +315,8 @@ avtSourceFromDatabase::FetchMaterialAuxiliaryData(const char *type, void *args,
     // We only have hooks to the variable defined on the material.  We can get
     // the material name by accessing the database object.
     //
-    string mn   = database->GetMetaData()->MeshForVar(variable);
-    string mat  = database->GetMetaData()->MaterialOnMesh(mn);
+    string mn   = database->GetMetaData(timestep)->MeshForVar(variable);
+    string mat  = database->GetMetaData(timestep)->MaterialOnMesh(mn);
     avtDataSpecification_p newspec =new avtDataSpecification(spec, mat.c_str());
     database->GetAuxiliaryData(newspec, output, type, args);
 }
@@ -349,13 +349,13 @@ avtSourceFromDatabase::GetFullDataSpecification(void)
     if (*lastSpec != NULL)
         acting_var = lastSpec->GetVariable();
 
-    avtSIL *sil = database->GetSIL();
+    avtSIL *sil = database->GetSIL(timestep);
     avtSILRestriction_p silr = new avtSILRestriction(sil);
 
     //
     // Indicate which mesh is the mesh we are interested in.
     //
-    avtDatabaseMetaData *md = database->GetMetaData();
+    avtDatabaseMetaData *md = database->GetMetaData(timestep);
     string mesh = md->MeshForVar(variable);
     silr->SetTopSet(mesh.c_str());
 

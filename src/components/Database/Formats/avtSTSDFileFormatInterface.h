@@ -69,7 +69,7 @@ class DATABASE_API avtSTSDFileFormatInterface : public avtFileFormatInterface
 
     virtual int             GetNumberOfFileFormats(void)
                               { return nTimesteps*nBlocks; };
-    virtual avtFileFormat  *GetFormat(int n) 
+    virtual avtFileFormat  *GetFormat(int n) const
                               { int block = n % nBlocks;
                                 int ts    = n / nBlocks;
                                 return timesteps[ts][block]; };

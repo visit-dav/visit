@@ -8,6 +8,7 @@
 #include <database_exports.h>
 
 #include <vector>
+#include <list>
 
 #include <void_ref_ptr.h>
 
@@ -27,12 +28,41 @@ class   PickAttributes;
 class   PickVarInfo;
 
 
+// structures to support SIL/MD MRU caches
+typedef struct {
+   avtSIL *sil;
+   int     ts;
+} CachedSILEntry;
+
+typedef struct {
+   avtDatabaseMetaData *md;
+   int                  ts;
+} CachedMDEntry;
+
 // ****************************************************************************
 //  Class: avtDatabase
 //
 //  Purpose:
 //      Provides an interface for what our database looks like.  Derived types
 //      should have no public functions besides constructors and destructors.
+//
+//      Regarding invariance of MetaData and/or SIL. The avtDatabaseMetaData
+//      object is a catch-all for a lot of bits and pieces of information
+//      about a database. In fact, it also currently contains the information
+//      necessary to construct a SIL (either a generic one or a custom one).
+//      While it would be best to flag each group of related constructs in
+//      avtDatabaseMetaData as either invariant or not, we have only culled
+//      out the SIL. Nonetheless, there are often cases where only portions
+//      of avtDatabaseMetaData vary with time while other portions of it can
+//      be assumed to be constant. Examples are the number and names of
+//      materials in the problem or the type of set a particular subset in
+//      the SIL is. In these cases, it is acceptable to simply request any
+//      state's metadata and so state zero is customarily used.
+//
+//      If there are situations in which you need to obtain MetaData or
+//      SIL information but do not have a handy 'current' time, we have 
+//      provided a convenience funciton, GetMostRecentTimestep() to return
+//      the most recent timestep at which MD/SIL was last queried.
 //
 //  Programmer: Hank Childs
 //  Creation:   August 9, 2000
@@ -98,6 +128,10 @@ class   PickVarInfo;
 //    Hank Childs, Mon Sep 22 09:20:08 PDT 2003
 //    Add support for picking tensors.
 //
+//    Mark C. Miller, 29Sep03
+//    Added support for time-varying SIL/MetaData
+//    Made timestep argument required for GetMetaData and GetSIL 
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -113,12 +147,15 @@ class DATABASE_API avtDatabase
                                                 VoidRefList &,
                                                 const char *type,void *args)=0;
 
-    avtDatabaseMetaData        *GetMetaData(int timeState = 0);
-    avtSIL                     *GetSIL(int timeState = 0);
+    avtDatabaseMetaData        *GetMetaData(int stateIndex);
+    avtSIL                     *GetSIL(int stateIndex);
+    int                         GetMostRecentTimestep() const;
 
     virtual void                ClearCache(void);
     virtual void                FreeUpResources(void);
     virtual bool                CanDoDynamicLoadBalancing(void);
+    virtual bool                MetaDataIsInvariant(void);
+    virtual bool                SILIsInvariant(void);
     virtual int                 NumStagesForFetch(avtDataSpecification_p);
 
     const avtIOInformation     &GetIOInformation(void);
@@ -133,12 +170,24 @@ class DATABASE_API avtDatabase
     static void                 GetFileListFromTextFile(const char *,
                                                         char **&, int &);
   protected:
-    avtDatabaseMetaData                   *metadata;
-    avtSIL                                *sil;
+    std::list<CachedMDEntry>               metadata;
+    std::list<CachedSILEntry>              sil;
     std::vector<avtDataObjectSource *>     sourcelist;
     avtIOInformation                       ioInfo;
     bool                                   gotIOInfo;
     static bool                            onlyServeUpMetaData;
+
+    static int                             mdCacheSize;
+    static int                             silCacheSize;
+
+    bool                                  *invariantMetaData;
+    bool                                  *invariantSIL;
+
+    void                        GetNewMetaData(int stateIndex);
+    void                        GetNewSIL(int stateIndex);
+
+    virtual bool                HasInvariantMetaData(void) const = 0;
+    virtual bool                HasInvariantSIL(void) const = 0;
 
     virtual avtDataObjectSource *CreateSource(const char *, int) = 0;
     virtual void                SetDatabaseMetaData(avtDatabaseMetaData *,int=0) = 0;
@@ -147,6 +196,7 @@ class DATABASE_API avtDatabase
 
     void                        PopulateDataObjectInformation(avtDataObject_p&,
                                                   const char *,
+                                                  int,
                                                   avtDataSpecification* =NULL);
     virtual bool                QueryScalars(const std::string &, const int, 
                                              const int, const int,
@@ -179,7 +229,7 @@ class DATABASE_API avtDatabase
                                            const int, const bool, const bool,
                                            std::vector<std::string> &)
                                                {return false; };
-    virtual bool                QueryMesh(const std::string &, const int, 
+    virtual bool                QueryMesh(const std::string &, const int, const int, 
                                           std::string &) {return false; };
 
     virtual bool                QueryZones(const std::string &,const int,int &,

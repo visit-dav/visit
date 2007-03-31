@@ -29,6 +29,9 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
   public:
                           avtSAMRAIFileFormat(const char *);
     virtual              ~avtSAMRAIFileFormat();
+
+    bool                  HasInvariantMetaData(void) const { return false; };
+    bool                  HasInvariantSIL(void) const { return false; };
     
     virtual const char   *GetType(void) { return "SAMRAI File Format"; };
     

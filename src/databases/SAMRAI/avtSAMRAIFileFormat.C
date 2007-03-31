@@ -1,7 +1,7 @@
 // ***************************************************************************
 //                              avtSAMRAIFileFormat.C                         
 //
-//  Purpose:  Sample database which reads multi-domain multi-timestep files
+//  Purpose:  Read SAMRAI data files 
 //
 //  Programmer:  Walter Herrera Jimenez
 //  Creation:    July 7, 2003
@@ -84,7 +84,8 @@ avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
     parent_pointer_array = NULL;
 
     num_patches = 0;
-
+    child_array_length = 0;
+    parent_array_length = 0;
 
     dir_name = GetDirName(fname);
     file_name = fname;
@@ -237,7 +238,8 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
         spacing[i] = dx[level * 3 + i];
     }
 
-    if (grid_type == "RECTILINEAR") {
+    if (grid_type == "RECTILINEAR" || grid_type == "CARTESIAN") 
+    {
         vtkFloatArray  *coords[3];
         for (int i = 0 ; i < 3 ; i++)
           {
@@ -262,7 +264,8 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
     
         return rGrid;
     }
-    else if (grid_type == "ALE") {
+    else if (grid_type == "ALE" || grid_type == "DEFORMED") 
+    {
         char var_name[100];
         sprintf(var_name, "Coords");
         vtkDataArray * array = GetVectorVar(patch, var_name);
@@ -478,7 +481,7 @@ avtSAMRAIFileFormat::GetVectorVar(int patch,
 
 
 // ****************************************************************************
-//  Method: avtBOVFileFormat::GetAuxiliaryData
+//  Method: avtSAMRAIFileFormat::GetAuxiliaryData
 //
 //  Purpose:
 //      Gets auxiliary data about the file format.
@@ -611,11 +614,7 @@ void
 avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
     {
-
         static const char *mesh_name = "amr_mesh";
-
-        // AMR mesh topology (sil) can change over time
-        md->SetMustRepopulateOnStateChange(true);
 
         avtMeshMetaData *mesh = new avtMeshMetaData;
         mesh->name = mesh_name;
@@ -657,15 +656,6 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         plot->AddAttribute(attribute);
 
         sprintf(attribute,"%d SubsetAttributes lineWidth 1", INT_NODE);
-        plot->AddAttribute(attribute);
-
-        sprintf(attribute,"%d singleColor ColorAttribute", INTERNAL_NODE);
-        plot->AddAttribute(attribute);
-
-        sprintf(attribute,"%d ColorAttribute color 4 %d %d %d %d", 
-                UNSIGNED_CHAR_ARRAY_NODE, 
-                colors[0%numColors][0], colors[0%numColors][1], 
-                colors[0%numColors][2], colors[0%numColors][3]);
         plot->AddAttribute(attribute);
 
         sprintf(attribute,"%d SubsetAttributes wireframe true", BOOL_NODE);
@@ -776,36 +766,36 @@ avtSAMRAIFileFormat::ReadMetaDataFile()
 
         ReadGridType(h5_file);
         ReadDataType(h5_file);
-        
+
         ReadNumDimensions(h5_file);
         ReadNumLevels(h5_file);
-        
+
         ReadXLO(h5_file);
         ReadDX(h5_file);
-        
+
         ReadNumPatches(h5_file);
         ReadNumPatchesLevel(h5_file);
         ReadRatiosCoarserLevels(h5_file);
-        
+
         ReadNumClusters(h5_file);
         ReadNumProcessors(h5_file);
-        
+
         ReadNumVariables(h5_file);
         ReadVarCellCentered(h5_file);
         ReadVarNames(h5_file);
         ReadVarNumComponents(h5_file);
-        
+
         ReadVarExtents(h5_file);
         ReadPatchExtents(h5_file);
         ReadPatchMap(h5_file);
-        
+
         ReadChildArrayLength(h5_file);
         ReadChildArray(h5_file);
         ReadChildPointerArray(h5_file);
         ReadParentArrayLength(h5_file);
         ReadParentArray(h5_file);
         ReadParentPointerArray(h5_file);
-        
+
         H5Fclose(h5_file);
     }
 }
@@ -826,8 +816,11 @@ void
 avtSAMRAIFileFormat::ReadTime(hid_t &h5_file)
 {
     hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/time");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/time", file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     H5Dread(h5_dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
             &time);
@@ -849,8 +842,11 @@ void
 avtSAMRAIFileFormat::ReadTimeStepNumber(hid_t &h5_file)
 {
     hid_t h5_dataset = H5Dopen(h5_file,"/BASIC_INFO/time_step_number");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/time_step_number", file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
             &time_step_number);
@@ -872,8 +868,11 @@ void
 avtSAMRAIFileFormat::ReadTimeOfDump(hid_t &h5_file)
 {
     hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/time_of_dump");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/time_of_dump", file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     hid_t h5_disk_datatype = H5Tcopy(h5_dataset);
     int datatype_size = H5Tget_size(h5_disk_datatype);
@@ -909,8 +908,12 @@ avtSAMRAIFileFormat::ReadNumDimensions(hid_t &h5_file)
 {
     hid_t h5_dataset = H5Dopen(h5_file,
                                "/BASIC_INFO/number_dimensions_of_problem");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/number_dimensions_of_problem", 
+                file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
             &num_dim_problem);
@@ -935,8 +938,11 @@ void
 avtSAMRAIFileFormat::ReadXLO(hid_t &h5_file)
 {
     hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/XLO");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/XLO", file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     xlo = new double[3];
 
@@ -959,8 +965,11 @@ void
 avtSAMRAIFileFormat::ReadNumLevels(hid_t &h5_file)
 {
     hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/number_levels");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/number_levels", file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
             &num_levels);
@@ -985,8 +994,11 @@ void
 avtSAMRAIFileFormat::ReadDX(hid_t &h5_file)
 {
     hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/dx");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/dx", file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     dx = new double[num_levels * 3];
 
@@ -1012,8 +1024,11 @@ void
 avtSAMRAIFileFormat::ReadNumPatches(hid_t &h5_file)
 {
     hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/number_global_patches");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/number_global_patches", file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
             &num_patches);
@@ -1038,8 +1053,12 @@ void
 avtSAMRAIFileFormat::ReadNumPatchesLevel(hid_t &h5_file)
 {
     hid_t h5_dataset = H5Dopen(h5_file,"/BASIC_INFO/number_patches_at_level");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/number_patches_at_level", 
+                file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     num_patches_level = new int[num_levels];
 
@@ -1067,8 +1086,12 @@ avtSAMRAIFileFormat::ReadRatiosCoarserLevels(hid_t &h5_file)
 {
     hid_t h5_dataset = H5Dopen(h5_file, 
                                "/BASIC_INFO/ratios_to_coarser_levels");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/ratios_to_coarser_levels", 
+                file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     ratios_coarser_levels = new int[num_levels * 3];
 
@@ -1095,8 +1118,12 @@ void
 avtSAMRAIFileFormat::ReadNumClusters(hid_t &h5_file)
 {
     hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/number_file_clusters");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/number_file_clusters", 
+                file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
             &num_clusters);
@@ -1121,8 +1148,11 @@ void
 avtSAMRAIFileFormat::ReadNumProcessors(hid_t &h5_file)
 {
     hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/number_processors");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/number_processors", file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
             &num_procs);
@@ -1147,8 +1177,12 @@ void
 avtSAMRAIFileFormat::ReadNumVariables(hid_t &h5_file)
 {
     hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/number_visit_variables");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/number_visit_variables", 
+                file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
             &num_vars);
@@ -1172,9 +1206,12 @@ avtSAMRAIFileFormat::ReadNumVariables(hid_t &h5_file)
 void 
 avtSAMRAIFileFormat::ReadVarCellCentered(hid_t &h5_file)
 {
-    hid_t h5_dataset = H5Dopen(h5_file,        "/BASIC_INFO/var_cell_centered");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/var_cell_centered");
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/var_cell_centered", file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     var_cell_centered = new int[num_vars];
 
@@ -1201,8 +1238,11 @@ void
 avtSAMRAIFileFormat::ReadGridType(hid_t &h5_file)
 {
     hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/grid_type");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/grid_type", file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     hid_t h5_disk_datatype = H5Tcopy(h5_dataset);
     int datatype_size = H5Tget_size(h5_disk_datatype);
@@ -1240,8 +1280,11 @@ void
 avtSAMRAIFileFormat::ReadDataType(hid_t &h5_file)
 {
     hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/data_type");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/data_type", file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     hid_t h5_disk_datatype = H5Tcopy(h5_dataset);
     int datatype_size = H5Tget_size(h5_disk_datatype);
@@ -1279,8 +1322,11 @@ void
 avtSAMRAIFileFormat::ReadVarNames(hid_t &h5_file)
 {
     hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/var_names");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/var_names", file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     hid_t h5_disk_datatype = H5Tcopy(h5_dataset);
     int datatype_size = H5Tget_size(h5_disk_datatype);
@@ -1322,8 +1368,11 @@ void
 avtSAMRAIFileFormat::ReadVarNumComponents(hid_t &h5_file)
 {
     hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/var_number_components");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/var_number_components", file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     var_num_components = new int[num_vars];
 
@@ -1363,7 +1412,7 @@ avtSAMRAIFileFormat::ReadVarExtents(hid_t &h5_file)
                HOFFSET(var_extents_t,min), H5T_NATIVE_DOUBLE);
     H5Tinsert (h5_mem_datatype, "max", 
                HOFFSET(var_extents_t,max), H5T_NATIVE_DOUBLE);
-              
+
     var_extents = new var_extents_t* [num_vars];
     for (int v = 0; v < num_vars; v++) {
       var_extents[v] = new var_extents_t[num_patches];
@@ -1372,8 +1421,11 @@ avtSAMRAIFileFormat::ReadVarExtents(hid_t &h5_file)
       sprintf(ds_name,"/extents/%s-Extents",var_names[v].c_str());
       
       hid_t h5_dataset = H5Dopen(h5_file, ds_name);
-      if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+      if (h5_dataset < 0) {
+          char str[1024];
+          sprintf(str, "%s::%s", file_name.c_str(), ds_name);
+          EXCEPTION1(InvalidFilesException, str);
+      }
 
       H5Dread(h5_dataset, h5_mem_datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
               var_extents[v]);
@@ -1401,8 +1453,11 @@ void
 avtSAMRAIFileFormat::ReadPatchExtents(hid_t &h5_file)
 {
     hid_t h5_dataset = H5Dopen(h5_file, "/extents/patch_extents");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/extents/patch_extents", file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     patch_extents = new patch_extents_t[num_patches];
 
@@ -1465,8 +1520,11 @@ void
 avtSAMRAIFileFormat::ReadPatchMap(hid_t &h5_file)
 {
     hid_t h5_dataset = H5Dopen(h5_file, "/extents/patch_map");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/extents/patch_map", file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     hid_t h5_datatype = H5Tcreate (H5T_COMPOUND, sizeof(patch_map_t));
     H5Tinsert (h5_datatype, "processor_number", 
@@ -1503,8 +1561,11 @@ void
 avtSAMRAIFileFormat::ReadChildArrayLength(hid_t &h5_file)
 {
     hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/child_array_length");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/child_array_length", file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
             &child_array_length);
@@ -1528,9 +1589,15 @@ avtSAMRAIFileFormat::ReadChildArrayLength(hid_t &h5_file)
 void 
 avtSAMRAIFileFormat::ReadChildArray(hid_t &h5_file)
 {
-    hid_t h5_dataset = H5Dopen(h5_file,        "/BASIC_INFO/child_array");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (child_array_length == 0)
+        return;
+
+    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/child_array");
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/child_array", file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     child_array = new int[child_array_length];
 
@@ -1556,9 +1623,15 @@ avtSAMRAIFileFormat::ReadChildArray(hid_t &h5_file)
 void 
 avtSAMRAIFileFormat::ReadChildPointerArray(hid_t &h5_file)
 {
+    if (child_array_length == 0)
+        return;
+
     hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/child_pointer_array");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/child_pointer_array", file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     hid_t h5_datatype = H5Tcreate (H5T_COMPOUND, sizeof(child_t));
     H5Tinsert (h5_datatype, "offset", 
@@ -1592,8 +1665,11 @@ void
 avtSAMRAIFileFormat::ReadParentArrayLength(hid_t &h5_file)
 {
     hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/parent_array_length");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/parent_array_length", file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
             &parent_array_length);
@@ -1617,9 +1693,15 @@ avtSAMRAIFileFormat::ReadParentArrayLength(hid_t &h5_file)
 void 
 avtSAMRAIFileFormat::ReadParentArray(hid_t &h5_file)
 {
-    hid_t h5_dataset = H5Dopen(h5_file,        "/BASIC_INFO/parent_array");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (parent_array_length == 0)
+        return;
+
+    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/parent_array");
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/parent_array", file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     parent_array = new int[parent_array_length];
 
@@ -1645,9 +1727,15 @@ avtSAMRAIFileFormat::ReadParentArray(hid_t &h5_file)
 void 
 avtSAMRAIFileFormat::ReadParentPointerArray(hid_t &h5_file)
 {
+    if (parent_array_length == 0)
+        return;
+
     hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/parent_pointer_array");
-    if (h5_dataset < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
+    if (h5_dataset < 0) {
+        char str[1024];
+        sprintf(str, "%s::/BASIC_INFO/parent_pointer_array", file_name.c_str());
+        EXCEPTION1(InvalidFilesException, str);
+    }
 
     hid_t h5_datatype = H5Tcreate (H5T_COMPOUND, sizeof(parent_t));
     H5Tinsert (h5_datatype, "offset", 
