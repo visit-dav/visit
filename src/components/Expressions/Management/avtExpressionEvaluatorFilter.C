@@ -514,3 +514,23 @@ avtExpressionEvaluatorFilter::Query(PickAttributes *pa)
 }
 
 
+// ****************************************************************************
+//  Method: avtExpressionEvaluatorFilter::FindElementForPoint
+//
+//  Purpose:
+//      Passes this request on to the queryable source. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   November 13, 2003 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtExpressionEvaluatorFilter::FindElementForPoint(const char *var, const int ts,
+    const int dom, const char *elType, float pt[3], int &elNum)
+{
+    return GetInput()->GetQueryableSource()->
+        FindElementForPoint(var, ts, dom, elType, pt, elNum);
+}

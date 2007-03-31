@@ -8,6 +8,11 @@
 #include <stdio.h>
 #include <vector>
 
+#include <Expression.h>
+#include <PickAttributes.h>
+#include <PickVarInfo.h>
+#include <Utility.h>
+
 #include <avtDatabaseMetaData.h>
 #include <avtDataObjectSource.h>
 #include <avtDataset.h>
@@ -20,10 +25,7 @@
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 #include <ImproperUseException.h>
-#include <PickAttributes.h>
-#include <PickVarInfo.h>
 #include <TimingsManager.h>
-#include <Utility.h>
 
 // size of MD/SIL caches
 int       avtDatabase::mdCacheSize         = 20;
@@ -490,7 +492,11 @@ avtDatabase::GetMostRecentTimestep(void) const
 //    Mark C. Miller, 22Sep03, changed name to Get'New'MetaData. Put result
 //    in MRU cache
 //
+//    Hank Childs, Tue Nov 25 07:38:18 PST 2003
+//    Add mesh quality expressions.
+//
 // ****************************************************************************
+
 void
 avtDatabase::GetNewMetaData(int timeState)
 {
@@ -513,6 +519,9 @@ avtDatabase::GetNewMetaData(int timeState)
     md->SetDatabaseName(fname);
     md->SetMustRepopulateOnStateChange(!MetaDataIsInvariant() ||
                                        !SILIsInvariant());
+
+    AddMeshQualityExpressions(md);
+
     PopulateIOInformation(ioInfo);
     gotIOInfo = true;
 
@@ -520,6 +529,88 @@ avtDatabase::GetNewMetaData(int timeState)
     CachedMDEntry tmp = {md, timeState};
     metadata.push_front(tmp);
 }
+
+
+// ****************************************************************************
+//  Method: avtDatabase::AddMeshQualityExpressions
+//
+//  Purpose:
+//      Adds the mesh quality expressions for unstructured and structured
+//      meshes.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 25, 2003
+//
+// ****************************************************************************
+
+void
+avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
+{
+    struct MQExprTopoPair
+    {
+        MQExprTopoPair(const char *s, int t) { mq_expr = s; topo = t; };
+        MQExprTopoPair() { ; };
+        string mq_expr;
+        int    topo;
+    };
+
+    int nmeshes = md->GetNumMeshes();
+    for (int i = 0 ; i < nmeshes ; i++)
+    {
+        const avtMeshMetaData *mmd = md->GetMesh(i);
+        avtMeshType mt = mmd->meshType;
+        if (mt != AVT_CURVILINEAR_MESH && mt != AVT_UNSTRUCTURED_MESH &&
+            mt != AVT_SURFACE_MESH)
+        {
+            continue;
+        }
+
+        const int nPairs = 20;
+        MQExprTopoPair exprs[nPairs];
+        exprs[0]  = MQExprTopoPair("area", 2);
+        exprs[1]  = MQExprTopoPair("aspect_gamma", 3);
+        exprs[2]  = MQExprTopoPair("aspect", -1);
+        exprs[3]  = MQExprTopoPair("condition", -1);
+        exprs[4]  = MQExprTopoPair("diagonal", 3);
+        exprs[5]  = MQExprTopoPair("dimension", 3);
+        exprs[6]  = MQExprTopoPair("jacobian", -1);
+        exprs[7]  = MQExprTopoPair("largest_angle", 2);
+        exprs[8]  = MQExprTopoPair("oddy", -1);
+        exprs[9]  = MQExprTopoPair("relative_size", -1);
+        exprs[10] = MQExprTopoPair("scaled_jacobian", -1);
+        exprs[11] = MQExprTopoPair("shape", -1);
+        exprs[12] = MQExprTopoPair("shape_and_size", -1);
+        exprs[13] = MQExprTopoPair("shear", -1);
+        exprs[14] = MQExprTopoPair("skew", -1);
+        exprs[15] = MQExprTopoPair("smallest_angle", 2);
+        exprs[16] = MQExprTopoPair("stretch", -1);
+        exprs[17] = MQExprTopoPair("taper", -1);
+        exprs[18] = MQExprTopoPair("volume", 3);
+        exprs[19] = MQExprTopoPair("warpage", 2);
+
+        int topoDim = mmd->topologicalDimension;
+        string name = mmd->name;
+        for (int i = 0 ; i < nPairs ; i++)
+        {
+            if ((topoDim != exprs[i].topo) && (exprs[i].topo != -1))
+                continue;
+
+            Expression new_expr;
+            char buff[1024];
+            if (nmeshes == 1)
+                sprintf(buff, "mesh_quality/%s", exprs[i].mq_expr.c_str());
+            else
+                sprintf(buff, "mesh_quality/%s_%s", exprs[i].mq_expr.c_str(),
+                                                    name.c_str());
+            new_expr.SetName(buff);
+            sprintf(buff, "%s(%s)", exprs[i].mq_expr.c_str(), name.c_str());
+            new_expr.SetDefinition(buff);
+            new_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&new_expr);
+        }
+    }
+}
+
 
 // ****************************************************************************
 //  Method: avtDatabase::GetMetaData

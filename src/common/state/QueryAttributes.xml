@@ -4,6 +4,17 @@
       Zone
       Node
     </Enum>
+    <Enum name="VarType">
+      Mesh
+      Scalar
+      Vector
+      Tensor
+      Symmetric_Tensor
+      Material
+      Species
+      Curve
+      Unknown
+    </Enum>
     <Field name="name" label="name" type="string">
     </Field>
     <Field name="variables" label="variables" type="stringVector">
@@ -22,15 +33,22 @@
     <Field name="element" label="element" type="int">
       -1
     </Field>
-    <Field name="resultsValue" label="resultsValue" type="double">
+    <Field name="resultsValue" label="resultsValue" type="doubleVector">
       0.000000
     </Field>
     <Field name="elementType" label="elementType" type="enum" subtype="ElementType">
       Zone
     </Field>
+    <Field name="timeStep" label="timeStep" type="int">
+      0
+    </Field>
+    <Field name="varTypes" label="varTypes" type="intVector" internal="true">
+    </Field>
     <Function name="Reset" user="true" member="true">
     </Function>
     <Function name="PrintSelf" user="true" member="true">
+    </Function>
+    <Function name="SetResultsValue" user="true" member="true">
     </Function>
     <Include file="source" quoted="false">
       stdio.h

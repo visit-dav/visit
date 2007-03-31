@@ -36,6 +36,10 @@ class vtkDataSet;
 //    Hank Childs, Fri Jul 25 21:21:08 PDT 2003
 //    Renamed from avtRelevantPointsFilter.
 //
+//    Kathleen Bonnell, Wed Nov 12 18:26:21 PST 2003 
+//    Added a flag that tells this filter to keep avt and vtk data arrays
+//    around, and a method for setting the flag. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCondenseDatasetFilter : public avtStreamer
@@ -49,12 +53,16 @@ class PIPELINE_API avtCondenseDatasetFilter : public avtStreamer
                              { return "Removing unneeded points"; };
 
     virtual void         ReleaseData(void);
+    void                 KeepAVTandVTK(bool val) {keepAVTandVTK = val; };
 
   protected:
     vtkPolyDataRelevantPointsFilter         *rpfPD;
     vtkUnstructuredGridRelevantPointsFilter *rpfUG;
 
     virtual vtkDataSet  *ExecuteData(vtkDataSet *, int, std::string);
+
+  private:
+    bool                 keepAVTandVTK;
 };
 
 

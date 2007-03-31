@@ -21,6 +21,8 @@
 //  Creation:   November 07, 2000
 //
 //  Modifications:
+//    Kathleen Bonnell, Wed Nov 12 18:26:21 PST 2003
+//    Initialize keepAVTandVTK.
 //
 // ****************************************************************************
 
@@ -28,6 +30,7 @@ avtCondenseDatasetFilter::avtCondenseDatasetFilter()
 {
     rpfPD = vtkPolyDataRelevantPointsFilter::New();
     rpfUG = vtkUnstructuredGridRelevantPointsFilter::New();
+    keepAVTandVTK = false;
 }
 
 
@@ -82,6 +85,9 @@ avtCondenseDatasetFilter::~avtCondenseDatasetFilter()
 //    Hank Childs, Fri Jul 25 21:25:31 PDT 2003
 //    Removed unneeded variables.
 //
+//    Kathleen Bonnell, Wed Nov 12 18:26:21 PST 2003 
+//    Allow AVT and VTK variables to be kept if requested. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -94,27 +100,30 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     //
     vtkDataSet *no_vars = (vtkDataSet *) in_ds->NewInstance();
     no_vars->ShallowCopy(in_ds);
-    for (i = no_vars->GetPointData()->GetNumberOfArrays()-1 ; i >= 0 ; i--)
+    if (!keepAVTandVTK)
     {
-        vtkDataArray *arr = no_vars->GetPointData()->GetArray(i);
-        const char *name = arr->GetName();
-        if (name == NULL)
-            continue;
-        if (strstr(name, "vtk") != NULL)
-            no_vars->GetPointData()->RemoveArray(name);
-        else if (strstr(name, "avt") != NULL)
-            no_vars->GetPointData()->RemoveArray(name);
-    }
-    for (i = no_vars->GetCellData()->GetNumberOfArrays()-1 ; i >= 0 ; i--)
-    {
-        vtkDataArray *arr = no_vars->GetCellData()->GetArray(i);
-        const char *name = arr->GetName();
-        if (name == NULL)
-            continue;
-        if (strstr(name, "vtk") != NULL)
-            no_vars->GetCellData()->RemoveArray(name);
-        else if (strstr(name, "avt") != NULL)
-            no_vars->GetCellData()->RemoveArray(name);
+        for (i = no_vars->GetPointData()->GetNumberOfArrays()-1 ; i >= 0 ; i--)
+        {
+            vtkDataArray *arr = no_vars->GetPointData()->GetArray(i);
+            const char *name = arr->GetName();
+            if (name == NULL)
+                continue;
+            if (strstr(name, "vtk") != NULL)
+                no_vars->GetPointData()->RemoveArray(name);
+            else if (strstr(name, "avt") != NULL)
+                no_vars->GetPointData()->RemoveArray(name);
+        }
+        for (i = no_vars->GetCellData()->GetNumberOfArrays()-1 ; i >= 0 ; i--)
+        {
+            vtkDataArray *arr = no_vars->GetCellData()->GetArray(i);
+            const char *name = arr->GetName();
+            if (name == NULL)
+                continue;
+            if (strstr(name, "vtk") != NULL)
+                no_vars->GetCellData()->RemoveArray(name);
+            else if (strstr(name, "avt") != NULL)
+                no_vars->GetCellData()->RemoveArray(name);
+        }
     }
  
     //

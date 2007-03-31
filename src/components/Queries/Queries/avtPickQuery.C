@@ -246,6 +246,10 @@ avtPickQuery::PostExecute(void)
 //    Kathleen Bonnell, Tue Nov 18 14:14:05 PST 2003 
 //    Retrieve logical zone coordinates if specified by pick atts. 
 // 
+//    Kathleen Bonnell, Wed Nov 19 16:06:59 PST 2003
+//    Replaced calls to RGridFindCell and LocateFindCell to vtkVisItUtility::
+//    FindCell, which is more accurate. 
+//    
 // ****************************************************************************
 
 void
@@ -274,15 +278,8 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
         //
         //  If a valid zone hasn't already been determined, locate it now.
         //  
-        if (type != VTK_RECTILINEAR_GRID)
-        {
-            foundElement = LocatorFindCell(ds);
-        }
-        else
-        {
-            foundElement = RGridFindCell((vtkRectilinearGrid*)ds);
-        }
-
+        float *cellPoint  = pickAtts.GetCellPoint();
+        foundElement = vtkVisItUtility::FindCell(ds, cellPoint);
 
         //
         //  If a valid zone still hasn't been found, there's some kind of 
@@ -452,112 +449,6 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
             pickAtts.SetPickPoint(pickAtts.GetCellPoint());
         }
     }
-}
-
-
-// ****************************************************************************
-//  Method: avtPickQuery::LocatorFindCell
-//
-//  Purpose:
-//      Uses a locator to find the cell containing the picked point. 
-//
-//  Returns:
-//      The id of the cell containing the picked point. (-1 if point is
-//      not contained within the ds).
-//
-//  Programmer: Kathleen Bonnell  
-//  Creation:   November 15, 2002
-//
-//  Modifications:
-//    Kathleen Bonnell, Mon Dec 30 11:18:24 PST 2002
-//    Use new vtkVisItUtility method GetLogicalIndices.
-//
-//    Kathleen Bonnell, Tue Apr  8 11:08:15 PDT 2003  
-//    The logic calculating 'real' cellId did not belong in this method. 
-//
-//    Kathleen Bonnell, Thu Apr 17 15:14:27 PDT 2003  
-//    Use inverse transformation matrix, if available, to determine true
-//    intersection point with original data.  
-//
-//    Kathleen Bonnell, Wed May  7 13:24:37 PDT 2003
-//    Renamed from LocateCell.
-//    
-//    Kathleen Bonnell, Wed Jun 18 18:03:41 PDT 2003 
-//    Moved transformation of cellPoint to ApplyFilters method, so that
-//    the transformed point is available to RGridFindCell if necessary. 
-//    
-//    Kathleen Bonnell, Thu Jun 19 16:50:41 PDT 2003  
-//    Test for no cells in ds. 
-//    
-// ****************************************************************************
-
-int
-avtPickQuery::LocatorFindCell(vtkDataSet *ds)
-{
-    if (ds->GetNumberOfCells() == 0)
-    {
-        return -1;
-    }
-
-    //
-    // Use the picked point that has been moved towards the cell center.
-    //
-    float *cellPoint  = pickAtts.GetCellPoint();
-
-    float tol, dist, ptLine[3], diagLen;
-    int subId, found = -1;
-    vtkIdType cellId;
- 
-    vtkVisItCellLocator *cellLocator = vtkVisItCellLocator::New();
-    cellLocator->SetIgnoreGhosts(true);
-    cellLocator->SetDataSet(ds);
-    cellLocator->BuildLocator();
-
-    int nCells = ds->GetNumberOfCells();
-    diagLen = ds->GetLength();
-    if (nCells != 0)
-        tol = diagLen / (float) nCells;
-    else
-        tol = 1e-6;
-
-    cellLocator->FindClosestPoint(cellPoint,ptLine,cellId,subId,dist);
-    if (cellId >= 0 && dist <= tol)
-    {
-        found = cellId;
-    }
-    cellLocator->Delete();
-    return found;
-}
-
-
-// ****************************************************************************
-//  Method: avtPickQuery::RGridFindCell
-//
-//  Purpose:
-//      Uses rectilinear-grid specific code to find the cell containing 
-//      the picked point. 
-//
-//  Returns:
-//      The id of the cell containing the picked point. (-1 if point is
-//      not contained within the rgrid).
-//
-//  Programmer: Kathleen Bonnell  
-//  Creation:   May 7, 2003 
-//
-//  Modifications:
-//    Kathleen Bonnell, Wed May 14 17:48:52 PDT 2003  
-//    Removed unnecessary (repeated) code segment.
-//
-// ****************************************************************************
-
-int
-avtPickQuery::RGridFindCell(vtkRectilinearGrid *rgrid)
-{
-    int ijk[3];
-    float *x  = pickAtts.GetCellPoint();
-    if (vtkVisItUtility::ComputeStructuredCoordinates(rgrid, x, ijk) == 0)
-        return -1;
-    return rgrid->ComputeCellId(ijk);
 }
 
 

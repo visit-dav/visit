@@ -50,6 +50,9 @@
 #   Hank Childs, Thu Oct  2 09:59:40 PDT 2003
 #   Added avtMultipleInputQuery, avtL2NormQuery, avtTimeQuery, more.
 #
+#   Kathleen Bonnell, Mon Oct 27 12:28:07 PST 2003
+#   Added avtPlotMinMaxQuery. 
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -75,6 +78,7 @@ Queries_src= \
  Queries/avtLocateCellQuery.C  \
  Queries/avtL2NormQuery.C  \
  Queries/avtL2NormBetweenCurvesQuery.C  \
+ Queries/avtPlotMinMaxQuery.C  \
  Queries/avtPickQuery.C  \
  Queries/avtSummationQuery.C  \
  Queries/avtTimeQuery.C  \

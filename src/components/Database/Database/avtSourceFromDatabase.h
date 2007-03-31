@@ -57,6 +57,9 @@ class  PickAttributes;
 //    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002 
 //    Add Query method. 
 //
+//    Kathleen Bonnell, Thu Nov 13 08:44:01 PST 2003 
+//    Add FindElementForPoint method. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtSourceFromDatabase : public avtTerminatingDatasetSource
@@ -79,6 +82,9 @@ class DATABASE_API avtSourceFromDatabase : public avtTerminatingDatasetSource
     void                InvalidateZones(void);
     void                DatabaseProgress(int, int, const char *);
     virtual void        Query(PickAttributes *);
+    virtual bool        FindElementForPoint(const char *, const int, 
+                            const int, const char *, float[3], int &);
+
   protected:
     avtDatasetDatabase      *database;
     char                    *variable;

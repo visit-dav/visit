@@ -525,6 +525,60 @@ ThisProcessorHasMinimumValue(double min)
 
 
 // ****************************************************************************
+//  Function: ThisProcessorHasMaximumValue
+//
+//  Purpose:
+//      Determines if this processor has the maximum value over all the
+//      processors.
+//
+//  Arguments:
+//      max     The maximum for this processor.
+//
+//  Returns:    true if it does have the maximum, false otherwise.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   October 27, 2003 
+//
+//  Modifications:
+//    
+// ****************************************************************************
+
+bool
+ThisProcessorHasMaximumValue(double max)
+{
+#ifdef PARALLEL
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    int nProcs;
+    MPI_Comm_size(MPI_COMM_WORLD, &nProcs);
+    double *allValues = new double[nProcs];
+    MPI_Allgather(&max, 1, MPI_DOUBLE, allValues, 1, MPI_DOUBLE,
+                  MPI_COMM_WORLD);
+    double theBestMax = max;
+    int  theCurrentWinner = rank;
+    for (int i = 0 ; i < nProcs ; i++)
+    {
+        //
+        // A bit tricky here -- if many processors have the same maximum, then
+        // doing > rather than '>=' could cause some of them to believe that
+        // they are the winner arbitrarily.  Would be correct, but not in the
+        // spirit of the routine (we want all the processors to believe that
+        // one single processor has the best maximum).
+        //
+        if (allValues[i] >= theBestMax)
+        {
+            theBestMax = allValues[i];
+            theCurrentWinner = i;
+        }
+    }
+    return (theCurrentWinner == rank ? true : false);
+#else
+    return true;
+#endif
+}
+
+
+// ****************************************************************************
 //  Function:  BroadcastInt
 //
 //  Purpose:

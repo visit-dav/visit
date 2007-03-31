@@ -1306,6 +1306,9 @@ avtStructuredDomainBoundaries::Finish(int domain)
 //    Added code to get all processors to agree on one data type.
 //    This was causing problems with more procs than domains.
 //
+//    Hank Childs, Tue Nov 25 17:32:53 PST 2003
+//    Fix typo that comes up in parallel only.
+//
 // ****************************************************************************
 vector<vtkDataArray*>
 avtStructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
@@ -1316,7 +1319,7 @@ avtStructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
 
 #ifdef PARALLEL
     // Let's get them all to agree on one data type.
-    int myDataType = myDataType;
+    int myDataType = dataType;
     MPI_Allreduce(&myDataType, &dataType, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
 #endif
 

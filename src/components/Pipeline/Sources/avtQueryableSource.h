@@ -22,6 +22,10 @@ class PickAttributes;
 //  Programmer: Hank Childs
 //  Creation:   July 28, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Nov 12 18:26:21 PST 2003
+//    Add virtual method 'FindElementForPoint'.
+//
 // ****************************************************************************
 
 class avtQueryableSource : virtual public avtDataObjectSource
@@ -32,6 +36,8 @@ class avtQueryableSource : virtual public avtDataObjectSource
 
     virtual avtQueryableSource   *GetQueryableSource(void) { return this; };
     virtual void                  Query(PickAttributes *) = 0;
+    virtual bool                  FindElementForPoint(const char*, const int, 
+                                    const int, const char*, float[3], int &)=0;
 };
 
 

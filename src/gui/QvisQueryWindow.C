@@ -380,6 +380,9 @@ QvisQueryWindow::UpdateResults(bool)
 //   Hank Childs, Fri Oct  3 16:22:03 PDT 2003
 //   Added L2Norm and more.
 //
+//   Kathleen Bonnell, Mon Nov 17 14:01:45 PST 2003 
+//   Added 'Plot MinMax'.
+// 
 // ****************************************************************************
 
 void
@@ -411,7 +414,9 @@ QvisQueryWindow::UpdateArgumentPanel(int index)
                  (strcmp(names[index].c_str(), "L2Norm Between Curves") == 0)||
                  (strcmp(names[index].c_str(), "Area Between Curves") == 0) ||
                  (strcmp(names[index].c_str(), "Revolved surface area") == 0)||
-                 (strcmp(names[index].c_str(), "Revolved volume") == 0)) 
+                 (strcmp(names[index].c_str(), "Revolved volume") == 0) ||
+                 (strcmp(names[index].c_str(), "Plot MinMax") == 0)) 
+                // no Variables widget
                 showWidgets[0] = false;
             else if (strcmp(names[index].c_str(), "Variable by Zone") == 0) 
             {

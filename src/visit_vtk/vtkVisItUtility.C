@@ -5,10 +5,12 @@
 #include <vtkVisItUtility.h>
 
 #include <vtkFieldData.h>
+#include <vtkGenericCell.h>
 #include <vtkIntArray.h>
 #include <vtkPointSet.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+#include <vtkVisItCellLocator.h>
 
 
 // ****************************************************************************
@@ -290,7 +292,6 @@ vtkVisItUtility::CalculateRealID(const int cellId, const bool forCell, vtkDataSe
 //
 // ****************************************************************************
 
-
 int
 vtkVisItUtility::ComputeStructuredCoordinates(vtkRectilinearGrid *rgrid, 
                                               float x[3], int ijk[3])
@@ -341,4 +342,59 @@ vtkVisItUtility::ComputeStructuredCoordinates(vtkRectilinearGrid *rgrid,
     }
  
   return 1;
+}
+
+
+// ****************************************************************************
+//  Function: FindCell
+//
+//  Purpose:
+//    Searches the dataset for a cell containing the given point.
+//
+//  Arguments:
+//    ds     The dataset to search. 
+//    pt     The point.
+//
+//  Returns:
+//    -1 if the point pt is outside of the ds, and the cell Id of the cell
+//     containing the point otherwise. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   November 13, 2003 
+//
+// ****************************************************************************
+
+int
+vtkVisItUtility::FindCell(vtkDataSet *ds, float pt[3])
+{
+    if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        int ijk[3];
+        vtkRectilinearGrid *rgrid = (vtkRectilinearGrid*)ds;
+        if (ComputeStructuredCoordinates(rgrid, pt, ijk) == 0)
+            return -1;
+        return rgrid->ComputeCellId(ijk);
+    }
+    else
+    {
+        if (ds->GetNumberOfCells() == 0)
+        {
+            return -1;
+        }
+
+        vtkGenericCell *gcell = vtkGenericCell::New();
+        int found = -1, subId;
+        float pcoords[3], *weights = new float[8], diagLen, tol;
+        int nCells = ds->GetNumberOfCells();
+        diagLen = ds->GetLength();
+        if (nCells != 0)
+            tol = diagLen / (float) nCells;
+        else
+            tol = 1e-6;
+
+        found = ds->FindCell(pt, NULL, gcell, 0, tol, subId, pcoords, weights);
+        delete [] weights;
+        gcell->Delete();
+        return found;
+    }
 }

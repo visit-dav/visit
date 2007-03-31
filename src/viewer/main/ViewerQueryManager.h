@@ -107,6 +107,9 @@ class avtToolInterface;
 //    Kathleen Bonnell, Mon Sep 15 13:09:19 PDT 2003 
 //    Added InitializeQueryList.
 //
+//    Kathleen Bonnell, Wed Nov 19 15:41:11 PST 2003 
+//    Added VerifyQueryVariables.
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -183,6 +186,9 @@ class VIEWER_API ViewerQueryManager
     void            UpdateDesignator(void);
     avtVarType      DetermineVarType(const char *hName, const char *dbName, 
                                      const char *varName);
+    int             VerifyQueryVariables(const std::string &qName, 
+                                         const std::vector<int> &varTypes);
+
 
     void            HandlePickCache();
     bool            initialPick;
