@@ -30,6 +30,7 @@
 #define __vtkCamera_h
 
 #include "vtkObject.h"
+#include <visit_vtk_exports.h>
 
 class vtkMatrix4x4;
 class vtkPerspectiveTransform;
@@ -37,7 +38,7 @@ class vtkRenderer;
 class vtkTransform;
 class vtkLinearTransform;
 
-class VTK_RENDERING_EXPORT vtkCamera : public vtkObject
+class VISIT_VTK_API vtkCamera : public vtkObject
 {
  public:
   void PrintSelf(ostream& os, vtkIndent indent);

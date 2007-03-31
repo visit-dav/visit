@@ -217,6 +217,11 @@ QvisPlotListBoxItem::width(const QListBox *lb) const
 //   Brad Whitlock, Wed May 7 19:09:34 PST 2003
 //   I fixed it so it looks okay on Windows.
 //
+//   Brad Whitlock, Fri Jun 20 10:42:58 PDT 2003
+//   I made plots have "(hidden)" in their name when they are expanded and
+//   hidden. I forgot to add that case when I added the code to draw
+//   expanded plots.
+//
 // ****************************************************************************
 
 void QvisPlotListBoxItem::paint(QPainter *painter)
@@ -420,7 +425,10 @@ void QvisPlotListBoxItem::paint(QPainter *painter)
         int textdY = (maxIconHeight - textHeight) / 2;
         int thisTextY = iconY + textHeight + textdY;
         setTextPen(painter, false);
-        painter->drawText(textX, thisTextY, plotName);
+        if(plot.GetHiddenFlag())
+            painter->drawText(textX, thisTextY, plotName + " (hidden)");
+        else
+            painter->drawText(textX, thisTextY, plotName);
         // Make the text and icon clickable.
         QRect textRect(iconX, iconY,
                        listBox()->width(), maxIconHeight);
@@ -702,7 +710,9 @@ QvisPlotListBoxItem::drawDeleteButton(QPainter *painter, const QRect &r) const
 // Creation:   Tue Apr 8 16:32:59 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jun 18 13:00:04 PST 2003
+//   I made single clicking work for the Subset button.
+//
 // ****************************************************************************
 
 int
@@ -723,7 +733,7 @@ QvisPlotListBoxItem::clicked(const QPoint &pos, bool doubleClicked, int &id)
     }
 
     QRect subsetButton(bw + 4, 1, bw, bw);
-    if(subsetButton.contains(pos) && doubleClicked)
+    if(subsetButton.contains(pos))
     {
         return 1;
     }

@@ -55,6 +55,10 @@ inline char toupper(char c)
 //    Brad Whitlock, Thu Dec 12 09:58:30 PDT 2002
 //    I added ucharVector support.
 //
+//    Brad Whitlock, Fri Jun 20 10:55:22 PDT 2003
+//    I fixed a bug in the code generation for setattr that caused bad code
+//    to be generated when the first field it internal.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -184,7 +188,6 @@ class PythonGeneratorField : public virtual Field
 
     virtual void WriteSetAttr(ostream &c, const QString &className, bool first)
     {
-        // Do not add any methods if the field is internal.
         if(internal)
             return;
 
@@ -1114,15 +1117,6 @@ class AttsGeneratorColor : public virtual Color , public virtual PythonGenerator
         c << "    const unsigned char *" << name << " = obj->data->" << MethodNameGet() << "().GetColor();" << endl;
         c << "    fprintf(fp, \"" << name << " = (%d, %d, %d, %d)\\n\", int("<<name<<"[0]), int("<<name<<"[1]), int("<<name<<"[2]), int("<<name<<"[3]));" << endl;
     }
-
-    virtual void WriteSetAttr(ostream &c, const QString &className, bool first)
-    {
-        if(first)
-            c << "    if(strcmp(name, \"" << name << "\") == 0)" << endl;
-        else
-            c << "    else if(strcmp(name, \"" << name << "\") == 0)" << endl;
-        c << "        retval = ("<<className<<"_"<<MethodNameSet()<<"(self, args) != NULL);" << endl;
-    }
 };
 
 
@@ -1612,14 +1606,14 @@ class PythonGeneratorAttribute
         int i, index = 0;
         for(i = 0; i < fields.size(); ++i)
         {
-            if(fields[i]->HasSetAttr())
+            if(fields[i]->HasSetAttr() && !fields[i]->internal)
             {
                 index = i;
                 break;
             }
         }
 
-        for(i = 0; i < fields.size(); ++i)
+        for(i = index; i < fields.size(); ++i)
             fields[i]->WriteSetAttr(c, name, i == index);
         c << endl;
 

@@ -52,7 +52,7 @@ public class TryLighting extends RunViewer implements SimpleObserver
 
             // Set the view
             ViewAttributes v = viewer.GetView3D();
-            v.SetCamera(0.456808, 0.335583, 0.823839);
+            v.SetViewNormal(0.456808, 0.335583, 0.823839);
             v.SetFocus(-0.927295, -1.22113, 1.01159);
             v.SetViewUp(-0.184554, 0.941716, -0.281266);
             v.SetParallelScale(15.7041);
