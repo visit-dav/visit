@@ -153,6 +153,9 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
 //    I added a curve view.  I replaced view dimension with window mode.
 //
+//    Eric Brugger, Thu Oct 16 11:21:53 PDT 2003
+//    I moved the handling of full frame mode to VisWindow.
+//
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex)
@@ -250,7 +253,6 @@ ViewerWindow::ViewerWindow(int windowIndex)
     view2DAtts    = new AttributeSubjectMap;
     view3DAtts    = new AttributeSubjectMap;
 
-    fullFrame = false;
     //
     // Create the window's action manager.
     //
@@ -1096,6 +1098,9 @@ ViewerWindow::MoveViewKeyframe(int oldFrame, int newFrame)
 //    Hank Childs, Wed Oct 15 12:58:19 PDT 2003
 //    Copy over the eye angle.
 //
+//    Eric Brugger, Thu Oct 16 14:29:28 PDT 2003
+//    I added a full frame mode to the 2d view.
+//
 // ****************************************************************************
 
 void
@@ -1119,6 +1124,7 @@ ViewerWindow::SetViewKeyframe()
 
     curView2D->SetWindowCoords(view2d.window);
     curView2D->SetViewportCoords(view2d.viewport);
+    curView2D->SetFullFrame(view2d.fullFrame);
 
     view2DAtts->SetAtts(animation->GetFrameIndex(), curView2D);
 
@@ -1452,40 +1458,21 @@ ViewerWindow::GetMaintainViewMode() const
 //    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
 //    I added a curve view.
 //
+//    Eric Brugger, Thu Oct 16 11:21:53 PDT 2003
+//    I moved the handling of full frame mode to VisWindow.
+//
 // ****************************************************************************
 
 void
 ViewerWindow::SetFullFrameMode(const bool mode)
 {
-    if (fullFrame == mode)
-    {
-        return;
-    }
+    //
+    // Set the full frame mode and update the view.
+    //
+    avtView2D view2D=visWindow->GetView2D();
 
-    fullFrame = mode;
-
-    if (visWindow->GetWindowMode() == WINMODE_2D)
-    {
-        avtView2D view2D=visWindow->GetView2D();
-        if (fullFrame)
-        { 
-            //
-            // Scale the window.
-            //
-            Compute2DScaleFactor(view2D.axisScaleFactor, view2D.axisScaleType);
-        }
-        else
-        {
-            view2D.axisScaleFactor = 0.;
-        }
-
-        visWindow->SetView2D(view2D);
-
-        //
-        // Flag the view as unmodified.
-        //
-        viewModified2d = false;
-    }
+    view2D.fullFrame = mode;
+    visWindow->SetView2D(view2D);
 }
 
 
@@ -1500,12 +1487,16 @@ ViewerWindow::SetFullFrameMode(const bool mode)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   May 13, 2003
 //
+//  Modifications:
+//    Eric Brugger, Thu Oct 16 11:21:53 PDT 2003
+//    I moved the handling of full frame mode to VisWindow.
+//
 // ****************************************************************************
 
 bool
 ViewerWindow::GetFullFrameMode() const
 {
-    return fullFrame;
+    return visWindow->GetView2D().fullFrame;
 }
 
 
@@ -2374,6 +2365,9 @@ ViewerWindow::CopyViewAttributes(const ViewerWindow *source)
 //   Hank Childs, Wed Oct 15 12:58:19 PDT 2003
 //   Added eye angle.
 //
+//   Eric Brugger, Thu Oct 16 14:29:28 PDT 2003
+//   I added a full frame mode to the 2d view.
+//
 // ****************************************************************************
 
 void
@@ -2420,6 +2414,7 @@ ViewerWindow::UpdateCameraView()
                 view2d.viewport[i] = viewport[i];
                 view2d.window[i]   = window[i];
             }
+            view2d.fullFrame = curView2D->GetFullFrame();
  
             visWindow->SetView2D(view2d);
         }
@@ -2895,72 +2890,6 @@ ViewerWindow::SetPlotColors(const double *bg, const double *fg)
 }
 
 // ****************************************************************************
-//  Method: ViewerWindow::Compute2DScaleFactor
-//
-//  Purpose: 
-//    Computes an axis scale factor that will create a square plot, based
-//    on the current 2d bounding box. 
-//
-//  Arguments:
-//    s         The computed scale factor. 
-//    t         The axis that should be scaled (0 == x, 1 == y) 
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   May 13, 2003 
-//
-//  Modifications:
-//    Kathleen Bonnell, Wed Jul 16 16:32:43 PDT 2003
-//    Use boundingBox2d only if valid, otherwise retrieve plot extents. 
-//
-// ****************************************************************************
-
-void
-ViewerWindow::Compute2DScaleFactor(double &s, int & t)
-{
-   
-    double width, height; 
-    if (boundingBoxValid2d)
-    {
-        width  = boundingBox2d[1] - boundingBox2d[0];
-        height = boundingBox2d[3] - boundingBox2d[2];
-    }
-    else
-    {
-        //
-        // Get the extents based on the plot limits.
-        //
-        double ext[4];
-        GetExtents(2, ext);
-        if (ext[0] == DBL_MAX && ext[1] == -DBL_MAX)
-        {
-            // no scaling can take place, plot limits invalid.
-            s = 0.;  
-            t = 1;   // scale the y_axis (default)
-            return;
-        }
-        width  = ext[1] - ext[0];
-        height = ext[3] - ext[2];
-    }
-
-    if (width > height && height > 0.)
-    {
-        s =  width / height;
-        t = 1; // scale the y_axis
-    }
-    else if (height > width && width > 0.)
-    {
-        s =  height / width;
-        t = 0; // scale the x_axis
-    }
-    else 
-    {
-        s = 0.;  // no scaling needs to take place
-        t = 1;   // scale the y_axis (default)
-    }
-}
-
-
-// ****************************************************************************
 //  Method: ViewerWindow::GetScaleFactorAndType
 //
 //  Purpose: 
@@ -2977,22 +2906,15 @@ ViewerWindow::Compute2DScaleFactor(double &s, int & t)
 //    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
 //    I added a curve view.
 //
+//    Eric Brugger, Thu Oct 16 11:21:53 PDT 2003
+//    I moved the handling of full frame mode to VisWindow.
+//
 // ****************************************************************************
 
 void
 ViewerWindow::GetScaleFactorAndType(double &s, int &t)
 {
-    if (fullFrame && visWindow->GetWindowMode() == WINMODE_2D)
-    {
-        avtView2D view2D=visWindow->GetView2D();
-        s = view2D.axisScaleFactor;
-        t = view2D.axisScaleType;
-    }
-    else 
-    {
-        s = 0.;
-        t = 1;
-    }
+    visWindow->GetScaleFactorAndType(s, t);
 }
 
 // ****************************************************************************
@@ -3109,6 +3031,9 @@ ViewerWindow::RecenterViewCurve(const double *limits)
 //    Kathleen Bonnell, Wed Jul 16 10:02:52 PDT 2003 
 //    Don't scale view2D's window, handled in avtView2d. 
 //
+//    Eric Brugger, Thu Oct 16 11:21:53 PDT 2003
+//    I moved the handling of full frame mode to VisWindow.
+//
 // ****************************************************************************
 
 void
@@ -3145,14 +3070,6 @@ ViewerWindow::RecenterView2d(const double *limits)
         view2D.window[i] = limits[i];
     }
 
-    if (fullFrame)
-    { 
-        Compute2DScaleFactor(view2D.axisScaleFactor, view2D.axisScaleType);
-    }
-    else
-    {
-        view2D.axisScaleFactor = 0.;
-    }
     visWindow->SetView2D(view2D);
 
     //
@@ -3390,6 +3307,9 @@ ViewerWindow::ResetViewCurve()
 //    Kathleen Bonnell, Wed Jul 16 10:02:52 PDT 2003 
 //    Don't scale view2D's window, handled in avtView2d. 
 //
+//    Eric Brugger, Thu Oct 16 11:21:53 PDT 2003
+//    I moved the handling of full frame mode to VisWindow.
+//
 // ****************************************************************************
 
 void
@@ -3420,14 +3340,6 @@ ViewerWindow::ResetView2d()
     view2D.window[1]   = boundingBox2d[1];
     view2D.window[2]   = boundingBox2d[2];
     view2D.window[3]   = boundingBox2d[3];
-    if (fullFrame)
-    { 
-        Compute2DScaleFactor(view2D.axisScaleFactor, view2D.axisScaleType);
-    }
-    else
-    {
-        view2D.axisScaleFactor = 0.;
-    }
 
     visWindow->SetView2D(view2D);
 
@@ -5137,6 +5049,9 @@ ViewerWindow::SetPopupEnabled(bool val)
 //   Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
 //   I added a curve view.
 //   
+//   Eric Brugger, Thu Oct 16 11:21:53 PDT 2003
+//   I moved the handling of full frame mode to VisWindow.
+//
 // ****************************************************************************
 
 void
@@ -5168,7 +5083,6 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
         windowNode->AddNode(new DataNode("viewExtentsType", avtExtentType_ToString(plotExtentsType)));
         windowNode->AddNode(new DataNode("timeLocked", timeLocked));
         windowNode->AddNode(new DataNode("toolsLocked", toolsLocked));
-        windowNode->AddNode(new DataNode("fullFrame", fullFrame));
 
         //
         // Interaction mode.
@@ -5333,8 +5247,6 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
         SetCameraViewMode(node->AsBool());
     if((node = windowNode->GetNode("maintainView")) != 0)
         SetMaintainViewMode(node->AsBool());
-    if((node = windowNode->GetNode("fullFrame")) != 0)
-        SetFullFrameMode(node->AsBool());
 
     //
     // Read in lock flags.

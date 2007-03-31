@@ -171,8 +171,11 @@ Definition:
 //   Brad Whitlock, Thu Oct 9 13:32:13 PST 2003
 //   I made the single color always be saved out.
 //
+//   Brad Whitlock, Tue Oct 21 16:01:40 PST 2003
+//   I made the default palette get saved out with the colors from the
+//   multicolor in it.
+//
 // ****************************************************************************
-
 bool
 ContourAttributes::CreateNode(DataNode *parentNode, bool forceAdd)
 {
@@ -183,6 +186,45 @@ ContourAttributes::CreateNode(DataNode *parentNode, bool forceAdd)
     bool addToParent = false;
     // Create a node for ContourAttributes.
     DataNode *node = new DataNode("ContourAttributes");
+
+    //
+    // Create a copy of the defaultPalette object and store the colors
+    // from the multiColor into it. Once we do that, save the palette to
+    // the node.
+    //
+    bool fixupPositions = false;
+    DataNode *defaultPaletteNode = new DataNode("defaultPalette");
+    ColorControlPointList savePalette(defaultPalette);
+    int initialNPoints = savePalette.GetNumColorControlPoints();
+    for(int i = 0; i < multiColor.GetNumColorAttributes(); ++i)
+    {
+        const ColorAttribute &cpt = multiColor.GetColorAttribute(i);
+
+        if(i < initialNPoints)
+        {
+            savePalette[i].SetColors(cpt.GetColor());
+        }
+        else
+        {
+            ColorControlPoint ccpt;
+            ccpt.SetColors(cpt.GetColor());
+            savePalette.AddColorControlPoint(ccpt);
+            fixupPositions = true;
+        }
+    }
+    if(fixupPositions)
+    {
+        int npts = savePalette.GetNumColorControlPoints();
+        for(int i = 0; i < npts; ++i)
+            savePalette[i].SetPosition(float(i) / float(npts-1));
+    }
+    if(savePalette.CompactCreateNode(defaultPaletteNode, forceAdd))
+    {
+        addToParent = true;
+        node->AddNode(defaultPaletteNode);
+    }
+    else
+        delete defaultPaletteNode;
 
     if(!FieldsEqual(2, &defaultObject))
     {
@@ -323,6 +365,11 @@ ContourAttributes::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
+
+    // Set the default palette from the values in the DataNode.
+    if((node = searchNode->GetNode("defaultPalette")) != 0)
+        defaultPalette.SetFromNode(node);
+
     if((node = searchNode->GetNode("colorType")) != 0)
     {
         // Allow enums to be int or string in the config file

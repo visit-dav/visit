@@ -258,6 +258,9 @@ struct ExternalRenderRequestInfo
 //    Eric Brugger, Thu Aug 28 12:16:23 PDT 2003
 //    I added SetViewModifiedCurve.
 //
+//    Eric Brugger, Thu Oct  9 11:06:16 PDT 2003
+//    I deleted Compute2DScaleFactor.  I deleted fullFrame.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -402,7 +405,6 @@ public:
 
     void SetFullFrameMode(const bool mode);
     bool GetFullFrameMode() const;
-    void Compute2DScaleFactor(double &s, int &t);
     void GetScaleFactorAndType(double &s, int &t);
 
     void ConvertFromLeftEyeToRightEye(void);
@@ -500,7 +502,6 @@ private:
     bool            centeringValid2d;
     bool            centeringValid3d;
 
-    bool            fullFrame;
     bool            mergeViewLimits;
 
     static bool     doNoWinMode;

@@ -1,9 +1,9 @@
 // ************************************************************************* //
-//                               Navigate2D.h                                //
+//                              NavigateCurve.h                              //
 // ************************************************************************* //
 
-#ifndef NAVIGATE_2D_H
-#define NAVIGATE_2D_H
+#ifndef NAVIGATE_CURVE_H
+#define NAVIGATE_CURVE_H
 #include <viswindow_exports.h>
 
 
@@ -14,32 +14,20 @@ class VisWindowInteractorProxy;
 
 
 // ****************************************************************************
-//  Class: Navigate2D
+//  Class: NavigateCurve
 //
 //  Purpose:
-//      Defines what Visit's 2D Navigation interactions should look like.  
+//      Defines what Visit's Curve Navigation interactions should look like.  
 //
-//  Programmer: Hank Childs
-//  Creation:   May 19, 2000
-//
-//  Modifications:
-//
-//    Hank Childs, Mon Mar 18 13:47:00 PST 2002
-//    Comply with new interface from base class for better buttonpress control.
-// 
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
-//    Removed arguments from all ButtonAction methods, in order to match
-//    vtk's new interactor api.
-//
-//    Eric Brugger, Fri Oct 10 08:52:11 PDT 2003
-//    I added OnTimer, PanCamera and ZoomCamera.
+//  Programmer: Eric Brugger
+//  Creation:   October 15, 2003
 //
 // ****************************************************************************
 
-class VISWINDOW_API Navigate2D : public VisitInteractor
+class VISWINDOW_API NavigateCurve : public VisitInteractor
 {
   public:
-                        Navigate2D(VisWindowInteractorProxy &);
+                        NavigateCurve(VisWindowInteractorProxy &);
  
     virtual void        OnTimer(void);
 

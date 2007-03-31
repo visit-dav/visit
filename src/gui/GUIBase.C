@@ -329,9 +329,13 @@ GUIBase::RestoreCursor()
 //   Opens the specified data file using the file server.
 //
 // Arguments:
-//   qf  : The qualified file name that we want to open.
-//   sob : The caller of this method. We pass it if we do not want the caller
-//         to update as a result of calling this method.
+//   qf              : The qualified file name that we want to open.
+//   timeState       : The time state that we want to open.
+//   addDefaultPlots : Whether we want to allow the viewer to add default
+//                     plots if the database has them.
+//   sob             : The caller of this method. We pass it if we do not want
+//                     the caller to update as a result of calling this method.
+//   reOpen          : Whether we should reopen the database instead of opening.
 //
 // Returns:    True if the operation is a success.
 //
@@ -360,11 +364,15 @@ GUIBase::RestoreCursor()
 //   Brad Whitlock, Thu May 15 12:34:06 PDT 2003
 //   I added support for opening a file at a later time state.
 //
+//   Brad Whitlock, Wed Oct 22 12:16:43 PDT 2003
+//   I added support for telling the viewer that we don't want to add
+//   default plots when we open a database.
+//
 // ****************************************************************************
 
 bool
 GUIBase::OpenDataFile(const QualifiedFilename &qf, int timeState,
-    SimpleObserver *sob, bool reOpen)
+    bool addDefaultPlots, SimpleObserver *sob, bool reOpen)
 {
     bool retval = true;
     GlobalAttributes *globalAtts = viewer->GetGlobalAttributes();
@@ -414,7 +422,8 @@ GUIBase::OpenDataFile(const QualifiedFilename &qf, int timeState,
             else
             {
                 // Tell the viewer to open the database.
-                viewer->OpenDatabase(qf.FullName().c_str(), timeState);
+                viewer->OpenDatabase(qf.FullName().c_str(), timeState,
+                                     addDefaultPlots);
             }
         }
         CATCH2(GetMetaDataException, gmde)

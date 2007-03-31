@@ -41,6 +41,9 @@ class SimpleObserver;
 //   Brad Whitlock, Thu May 15 12:33:11 PDT 2003
 //   I added a timeState argument to OpenDataFile.
 //
+//   Brad Whitlock, Wed Oct 22 12:16:01 PDT 2003
+//   I added an addDefaultPlots argument to OpenDataFile.
+//
 // ****************************************************************************
 
 class GUI_API GUIBase
@@ -68,6 +71,7 @@ protected:
 
     bool OpenDataFile(const QualifiedFilename &qf,
                       int timeState,
+                      bool addDefaultPlots = true,
                       SimpleObserver *sob = 0,
                       bool reOpen = false);
 

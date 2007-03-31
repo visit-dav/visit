@@ -62,6 +62,9 @@ class QPushButton;
 //   Brad Whitlock, Thu Sep 11 09:33:08 PDT 2003
 //   I added slots to reset or recenter the view.
 //
+//   Eric Brugger, Thu Oct 16 12:21:13 PDT 2003
+//   I added full frame mode to the 2D view tab.
+//
 // ****************************************************************************
 
 class GUI_API QvisViewWindow : public QvisPostableWindowSimpleObserver
@@ -105,6 +108,7 @@ private slots:
 
     void processViewportText();
     void processWindowText();
+    void fullFrameToggled(bool val);
 
     void processNormalText();
     void processFocusText();
@@ -156,6 +160,7 @@ private:
     QGroupBox   *view2DGroup;
     QLineEdit   *viewportLineEdit;
     QLineEdit   *windowLineEdit;
+    QCheckBox   *fullFrameToggle;
 
     // 3d widgets
     QVBox       *page3D;

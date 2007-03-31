@@ -183,6 +183,10 @@ ZoomCurve::EndMiddleButtonAction()
 //    Eric Brugger, Wed Aug 20 09:59:50 PDT 2003
 //    I changed the routine to match the new definition of avtViewCurve.
 //
+//    Eric Brugger, Wed Oct 15 16:29:52 PDT 2003
+//    I modified the routine to handle the fact that curve views are
+//    full frame.
+//
 // ****************************************************************************
 
 void
@@ -228,18 +232,19 @@ ZoomCurve::ZoomCamera(void)
     //
     VisWindow *vw = proxy;
 
-    const avtViewCurve &oldViewCurve=vw->GetViewCurve();
+    avtViewCurve newViewCurve=vw->GetViewCurve();
 
-    avtViewCurve newViewCurve;
+    int       size[2];
 
-    newViewCurve.viewport[0] = oldViewCurve.viewport[0];
-    newViewCurve.viewport[1] = oldViewCurve.viewport[1];
-    newViewCurve.viewport[2] = oldViewCurve.viewport[2];
-    newViewCurve.viewport[3] = oldViewCurve.viewport[3];
+    vtkRenderWindowInteractor *rwi = Interactor;
+    rwi->GetSize(size);
+
+    double s = newViewCurve.GetScaleFactor(size);
+
     newViewCurve.domain[0] = leftX;
     newViewCurve.domain[1] = rightX;
-    newViewCurve.range[0]  = bottomY;
-    newViewCurve.range[1]  = topY;
+    newViewCurve.range[0]  = bottomY / s;
+    newViewCurve.range[1]  = topY / s;
 
     vw->SetViewCurve(newViewCurve);
 
@@ -268,6 +273,7 @@ ZoomCurve::ZoomCamera(void)
 void
 ZoomCurve::ZoomCamera(const int x, const int y)
 {
+    cerr << "ZoomCurve::ZoomCamera(const int x, const int y)" << endl;
     vtkRenderWindowInteractor *rwi = Interactor;
 
     if (OldY != y)

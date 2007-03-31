@@ -25,6 +25,10 @@ class ViewCurveAttributes;
 //    SetToViewAttributes with SetToViewCurveAttributes.  I added window
 //    size arguments to SetViewFromViewInfo and SetViewInfoFromView.
 //
+//    Eric Brugger, Fri Oct 10 12:42:27 PDT 2003
+//    I deleted SetViewportFromView.  I added GetScaleFactor and
+//    GetValidDomainRange.
+//
 // ****************************************************************************
 
 struct PIPELINE_API avtViewCurve
@@ -35,15 +39,19 @@ struct PIPELINE_API avtViewCurve
 
   public:
                     avtViewCurve();
-    avtViewCurve     & operator=(const avtViewCurve &);
+    avtViewCurve  & operator=(const avtViewCurve &);
     bool            operator==(const avtViewCurve &);
     void            SetToDefault(void);
     void            SetViewFromViewInfo(const avtViewInfo &, int *);
     void            SetViewInfoFromView(avtViewInfo &, int *) const;
-    void            SetViewportFromView(double *, const int, const int) const;
+
+    double          GetScaleFactor(int *) const;
 
     void            SetFromViewCurveAttributes(const ViewCurveAttributes *);
     void            SetToViewCurveAttributes(ViewCurveAttributes *) const;
+
+  protected:
+    void            GetValidDomainRange(double *, double *) const;
 };
 
 

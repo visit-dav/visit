@@ -140,11 +140,17 @@ avtViewCurve::SetToDefault()
 //    I replaced window with domain and range.  I added a window size argument
 //    so that the routine could handle non-square windows and viewports.
 //
+//    Eric Brugger, Fri Oct 10 12:45:11 PDT 2003
+//    Add code to handle degenerate windows.
+//
 // ****************************************************************************
 
 void
 avtViewCurve::SetViewFromViewInfo(const avtViewInfo &viewInfo, int *size)
 {
+    double validDomain[2], validRange[2];
+    GetValidDomainRange(validDomain, validRange);
+
     //
     // Determine the new window.  We assume that the viewport stays the
     // same, since panning and zooming can not change the viewport.  We
@@ -160,16 +166,18 @@ avtViewCurve::SetViewFromViewInfo(const avtViewInfo &viewInfo, int *size)
     double    aspectRatio;
     double    scale;
 
-    viewScale = ((range[1] - range[0]) / (domain[1] - domain[0])) *
+    viewScale = ((validRange[1] - validRange[0]) /
+                 (validDomain[1] - validDomain[0])) *
                 ((viewport[1] - viewport[0]) / (viewport[3] - viewport[2])) *
                 ((double) size[0] / (double) size[1]) ;
 
     xcenter = viewInfo.focus[0];
     ycenter = viewInfo.focus[1] * viewScale;
 
-    oldHalfWidth = (range[1] - range[0]) / 2.;
+    oldHalfWidth = (validRange[1] - validRange[0]) / 2.;
     curHalfWidth = viewInfo.parallelScale * viewScale;
-    aspectRatio = (domain[1] - domain[0]) / (range[1] - range[0]);
+    aspectRatio = (validDomain[1] - validDomain[0]) /
+                  (validRange[1]  - validRange[0]);
     scale = curHalfWidth / oldHalfWidth;
     domain[0] = xcenter - oldHalfWidth * scale * aspectRatio;
     domain[1] = xcenter + oldHalfWidth * scale * aspectRatio;
@@ -199,23 +207,33 @@ avtViewCurve::SetViewFromViewInfo(const avtViewInfo &viewInfo, int *size)
 //    I replaced window with domain and range.  I added a window size argument
 //    so that the routine could handle non-square windows and viewports.
 //
+//    Eric Brugger, Wed Oct  8 16:28:41 PDT 2003
+//    I Modified the routine to set the z camera position and near and far
+//    clipping plane positions independent of the coordinate extents.
+//
+//    Eric Brugger, Fri Oct 10 12:45:11 PDT 2003
+//    Add code to handle degenerate windows.
+//
 // ****************************************************************************
 
 void
 avtViewCurve::SetViewInfoFromView(avtViewInfo &viewInfo, int *size) const
 {
+    double validDomain[2], validRange[2];
+    GetValidDomainRange(validDomain, validRange);
+
     //
     // Calculate a new range so that we get a 1 to 1 aspect ration.
     //
     double    viewScale;
-    double    range2[2];
 
-    viewScale = ((domain[1] - domain[0]) / (range[1] - range[0])) *
+    viewScale = ((validDomain[1] - validDomain[0]) /
+                 (validRange[1] -  validRange[0])) *
                 ((viewport[3] - viewport[2]) / (viewport[1] - viewport[0])) *
                 ((double) size[1] / (double) size[0]) ;
 
-    range2[0] = range[0] * viewScale;
-    range2[1] = range[1] * viewScale;
+    validRange[0] = validRange[0] * viewScale;
+    validRange[1] = validRange[1] * viewScale;
 
     //
     // Reset the view up vector, the focal point and the camera position.
@@ -223,19 +241,19 @@ avtViewCurve::SetViewInfoFromView(avtViewInfo &viewInfo, int *size) const
     //
     double    width;
 
-    width = range2[1] - range2[0];
+    width = validRange[1] - validRange[0];
 
     viewInfo.viewUp[0] = 0.;
     viewInfo.viewUp[1] = 1.;
     viewInfo.viewUp[2] = 0.;
 
-    viewInfo.focus[0] = (domain[1] + domain[0]) / 2.;
-    viewInfo.focus[1] = (range2[1] + range2[0]) / 2.;
+    viewInfo.focus[0] = (validDomain[1] + validDomain[0]) / 2.;
+    viewInfo.focus[1] = (validRange[1]  + validRange[0]) / 2.;
     viewInfo.focus[2] = 0.;
 
     viewInfo.camera[0] = viewInfo.focus[0];
     viewInfo.camera[1] = viewInfo.focus[1];
-    viewInfo.camera[2] = width / 2.;
+    viewInfo.camera[2] = 1.;
 
     //
     // Set the projection mode, parallel scale and view angle.  The
@@ -248,41 +266,42 @@ avtViewCurve::SetViewInfoFromView(avtViewInfo &viewInfo, int *size) const
     viewInfo.viewAngle = 30.;
 
     //
-    // Calculate the near and far clipping planes.  These clipping planes
-    // should match what vtk would generate.
+    // Set the near and far clipping planes.  They are set independent of
+    // the coordinate extents, since it doesn't matter.  Setting the values
+    // too tight around the focus causes problems.
     //
-    viewInfo.nearPlane = width / 4.;
-    viewInfo.farPlane  = 3. * width / 4.;
+    viewInfo.nearPlane = 0.5;
+    viewInfo.farPlane  = 1.5;
 }
 
 // ****************************************************************************
-//  Method: avtViewCurve::SetViewportFromView
+//  Method: avtViewCurve::GetScaleFactor
 //
 //  Purpose:
-//    Calculate the viewport to use based on the size of the window so as
-//    to maintain a 1 to 1 aspect ratio yet maximize the size of the viewport
-//    within the specified viewport.
+//    Gets the window's scale factor.
 //
 //  Arguments:
-//    winViewport  The viewport modified to take into account the window.
-//    <unused>     The width in pixels of the window.
-//    <unused>     The height in pixels of the window.
+//    size      The size of the renderable area.
 //
-//  Programmer:  Kathleen Bonnell
-//  Creation:    April 30, 2002
+//  Programmer: Eric Brugger
+//  Creation:   October 10, 2003
 //
 // ****************************************************************************
 
-void
-avtViewCurve::SetViewportFromView(double *winViewport, const int, const int) const
+double
+avtViewCurve::GetScaleFactor(int *size) const
 {
-    //
-    //  Always use max viewport
-    //
-    winViewport[0] = viewport[0];
-    winViewport[1] = viewport[1];
-    winViewport[2] = viewport[2];
-    winViewport[3] = viewport[3];
+    double s;
+
+    double validDomain[2], validRange[2];
+    GetValidDomainRange(validDomain, validRange);
+
+    s = ((validDomain[1] - validDomain[0]) /
+         (validRange[1]  - validRange[0])) *
+        ((viewport[3] - viewport[2]) / (viewport[1] - viewport[0])) *
+        ((double) size[1] / (double) size[0]);
+
+    return s;
 }
 
 // ****************************************************************************
@@ -341,3 +360,52 @@ avtViewCurve::SetToViewCurveAttributes(ViewCurveAttributes *viewAtts) const
     viewAtts->SetDomainCoords(domain);
     viewAtts->SetRangeCoords(range);
 }
+
+// ****************************************************************************
+//  Method: avtViewCurve::GetValidDomainRange
+//
+//  Purpose:
+//    Gets the domain and range parameters and makes sure that they are valid
+//    (meaning width and height are both positive).
+//
+//  Arguments:
+//    validDomain  The valid domain.
+//    validRange   The valid range.
+//
+//  Programmer: Eric Brugger
+//  Creation:   October 10, 2003
+//
+// ****************************************************************************
+
+void
+avtViewCurve::GetValidDomainRange(double *validDomain,
+    double *validRange) const
+{
+    //
+    // Copy over the original window.
+    //
+    validDomain[0] = domain[0];
+    validDomain[1] = domain[1];
+    validRange[0]  = range[0];
+    validRange[1]  = range[1];
+
+    //
+    // Account for degenerate views.
+    //
+    double width  = validDomain[1] - validDomain[0];
+    double height = validRange[1]  - validRange[0];
+    if (width <= 0. && height <= 0.)
+    {
+        validDomain[1] = validDomain[0] + 1.;
+        validRange[1]  = validRange[0]  + 1.;
+    }
+    else if (width <= 0)
+    {
+        validDomain[1] = validDomain[0] + height;
+    }
+    else if (height <= 0)
+    {
+        validRange[1] = validRange[0] + width;
+    }
+}
+

@@ -239,7 +239,10 @@ ContourViewerPluginInfo::XPMIconData() const
 // Creation:   Mon Dec 9 13:12:27 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Oct 22 16:42:08 PST 2003
+//   I changed the code so if we're in multicolor mode, the default palette
+//   does not get overwritten unless it is empty.
+//
 // ****************************************************************************
 
 void
@@ -247,11 +250,15 @@ ContourViewerPluginInfo::InitializeDefaultPalette(ContourAttributes *contour)
 {
     // Copy over the contour's defaultPalette with the default discrete
     // color table from avtColorTable.
-    avtColorTables *ct = avtColorTables::Instance();
-    ColorTableAttributes *ctAtts = ct->GetColorTables();
-    int i = ctAtts->GetColorTableIndex(ct->GetDefaultDiscreteColorTable());
-    if(i != -1)
+    if(contour->GetColorType() != ContourAttributes::ColorByMultipleColors ||
+       contour->GetDefaultPalette().GetNumColorControlPoints() < 1)
     {
-        contour->SetDefaultPalette(ctAtts->operator[](i));
+        avtColorTables *ct = avtColorTables::Instance();
+        ColorTableAttributes *ctAtts = ct->GetColorTables();
+        int i = ctAtts->GetColorTableIndex(ct->GetDefaultDiscreteColorTable());
+        if(i != -1)
+        {
+            contour->SetDefaultPalette(ctAtts->operator[](i));
+        }
     }
 }

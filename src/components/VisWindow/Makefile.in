@@ -89,6 +89,9 @@
 #    Brad Whitlock, Tue Jul 15 16:46:04 PST 2003
 #    Added VisWindowTypes.C
 #
+#    Eric Brugger, Wed Oct 15 16:56:10 PDT 2003
+#    Added NavigateCurve.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -119,6 +122,7 @@ Interactors_src= \
   Interactors/Lineout2D.C \
   Interactors/Navigate2D.C \
   Interactors/Navigate3D.C \
+  Interactors/NavigateCurve.C \
   Interactors/NullInteractor.C \
   Interactors/Pick2D.C \
   Interactors/Pick3D.C \

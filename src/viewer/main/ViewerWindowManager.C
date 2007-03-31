@@ -1763,6 +1763,9 @@ ViewerWindowManager::SetViewCurveFromClient()
 //    Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
 //    I changed the call to UpdateViewAtts.
 //
+//    Eric Brugger, Thu Oct 16 14:32:08 PDT 2003
+//    I added a full frame mode to the 2d view.
+//
 // ****************************************************************************
 
 void
@@ -1778,6 +1781,7 @@ ViewerWindowManager::SetView2DFromClient()
         view2d.viewport[i] = viewport[i];
         view2d.window[i]   = window[i];
     }
+    view2d.fullFrame = view2DClientAtts->GetFullFrame();
 
     //
     // Set the 2D view for the active viewer window.
@@ -5731,6 +5735,10 @@ ViewerWindowManager::EndEngineExecute()
 //   Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
 //   Added writing out of lineout window.
 //
+//   Brad Whitlock, Tue Oct 21 14:54:51 PST 2003
+//   I prevented the activeWindow and the lineoutWindow from being saved
+//   if we're not producing a detailed log.
+//
 // ****************************************************************************
 
 void
@@ -5745,8 +5753,11 @@ ViewerWindowManager::CreateNode(DataNode *parentNode, bool detailed)
     //
     // Add information about the ViewerWindowManager.
     //
-    mgrNode->AddNode(new DataNode("activeWindow", activeWindow));
-    mgrNode->AddNode(new DataNode("lineoutWindow", lineoutWindow));
+    if(detailed)
+    {
+        mgrNode->AddNode(new DataNode("activeWindow", activeWindow));
+        mgrNode->AddNode(new DataNode("lineoutWindow", lineoutWindow));
+    }
 
     //
     // Let each window add its own data.
