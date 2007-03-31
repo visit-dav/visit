@@ -3,6 +3,7 @@
 
 #include <avtDataObjectWriter.h>
 #include <avtPlot.h>
+#include <AnnotationAttributes.h>
 #include <WindowAttributes.h>
 #include <vectortypes.h>
 #include <string>
@@ -99,6 +100,9 @@ class VisWindow;
 //    Brad Whitlock, Tue Mar 25 13:43:10 PST 2003
 //    Added DefineDB.
 //
+//    Mark C. Miller, 15Jul03
+//    Added method to set annotation attributes
+//
 // ****************************************************************************
 
 class NetworkManager
@@ -132,6 +136,7 @@ class NetworkManager
     void          UpdatePlotAtts(int, const AttributeGroup *);
 
     void          SetWindowAttributes(const WindowAttributes&);
+    void          SetAnnotationAttributes(const AnnotationAttributes&);
 
     void          SetLoadBalancer(LoadBalancer *lb) {loadBalancer = lb;};
 
@@ -157,6 +162,7 @@ class NetworkManager
     bool                        requireOriginalCells;
     LoadBalancer               *loadBalancer;
     WindowAttributes            windowAttributes;
+    AnnotationAttributes        annotationAttributes;
     VisWindow                  *viswin;
 };
 

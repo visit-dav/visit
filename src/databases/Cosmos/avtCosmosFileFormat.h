@@ -10,6 +10,8 @@
 #include <vector>
 #include <string>
 
+class vtkDataSet;
+
 // ****************************************************************************
 //  Class: avtCosmosFileFormat
 //
@@ -24,6 +26,10 @@
 //    Akira Haddox, Fri Jun 13 13:50:08 PDT 2003
 //    Added data and functions to read and store the compact mesh
 //    structure information.
+//
+//    Akira Haddox, Mon Jun 16 12:33:50 PDT 2003
+//    Added in 2D spherical, cylindrical, XZ and YZ cartesian support.
+//    Added in support for reading in ghostzones.
 //
 // ****************************************************************************
 
@@ -45,8 +51,34 @@ class avtCosmosFileFormat : public avtMTMDFileFormat
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
   protected:
+    enum CoordinateType
+    {   cartesian, spherical, cylindrical   };
+
     void                  ReadMesh(int domain);
     void                  ReadMeshInfo(int domain);
+
+    vtkDataSet * CalculateMesh3DCartesian(double start[3],
+                                          double delta[3], int ptDim[3]);
+    vtkDataSet * CalculateMesh3DSpherical(double start[3],
+                                          double delta[3], int ptDim[3]);
+
+    vtkDataSet * CalculateMesh2DCartesian(double start[3],
+                                          double delta[3], int ptDim[3]);
+    vtkDataSet * CalculateMesh2DSpherical(double start[3],
+                                          double delta[3], int ptDim[3]);
+    vtkDataSet * CalculateMesh2DCylindrical(double start[3],
+                                            double delta[3], int ptDim[3]);
+
+    void         FillVectorVar3DCartesian(float *ptr, float *values[3], int);
+    void         FillVectorVar3DSpherical(float *ptr, float *values[3], 
+                                          double start[3], double delta[3],
+                                          int dims[3]);
+    
+    void         FillVectorVar2DCartesian(float *ptr, float *values[3], int);
+    void         FillVectorVar2DSpherical(float *ptr, float *values[3], 
+                                          double start[3], double delta[3]);
+    void         FillVectorVar2DCylindrical(float *ptr, float *values[3], 
+                                          double start[3], double delta[3]);
     
     vtkDataSet                        **meshes;
     
@@ -57,8 +89,9 @@ class avtCosmosFileFormat : public avtMTMDFileFormat
     int                                 ntimesteps;
     int                                 nscalars;
     int                                 nvectors;
-    int                                 npoints;
     int                                 dimensions[3];
+    int                                 dropDimension;
+    CoordinateType                      coordType;
 
     //
     // Index by domain
@@ -67,9 +100,14 @@ class avtCosmosFileFormat : public avtMTMDFileFormat
     std::vector<std::vector<double> >   meshInfo;
     std::vector<bool>                   meshInfoLoaded;
 
-    bool                                sphericalCoordinates;
-    
     std::string                         timeFileName;
+    
+    //
+    // Ghost zones are set on certain internal faces. Ordering is by
+    // domain, then by start(x), end(x), start(y), end(y), start(z), end(z).
+    //
+    bool                                 existGhostZones;
+    std::vector<vector<bool> >           ghostSet;
     
     std::vector<std::string>            scalarVarNames;
     std::vector<std::string>            vectorVarNames;
@@ -88,6 +126,5 @@ class avtCosmosFileFormat : public avtMTMDFileFormat
     };
     std::vector<std::vector<TripleString> >     vectorFileNames;
 };
-
 
 #endif

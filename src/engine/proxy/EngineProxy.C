@@ -120,7 +120,6 @@ EngineProxy::SetupComponentRPCs()
     xfer.Add(&makePlotRPC);
     xfer.Add(&useNetworkRPC);
     xfer.Add(&updatePlotAttsRPC);
-    xfer.Add(&setWindowAttsRPC);
     xfer.Add(&pickRPC);
     xfer.Add(&startPickRPC);
     xfer.Add(&executeRPC);
@@ -130,6 +129,7 @@ EngineProxy::SetupComponentRPCs()
     xfer.Add(&openDatabaseRPC);
     xfer.Add(&defineVirtualDatabaseRPC);
     xfer.Add(&renderRPC);
+    xfer.Add(&setWinAnnotAttsRPC);
 
     // Extract some information about the engine from the command line
     // arguments that were used to create it.
@@ -442,27 +442,29 @@ EngineProxy::UpdatePlotAttributes(const string &name, int id,
 }
 
 // ****************************************************************************
-//  Method:  EngineProxy::SetWindowAtts
+//  Method:  EngineProxy::SetWinAnnotAtts
 //
 //  Purpose:
-//    Set up the current window attributes for the engine (for image mode).
+//    Set up the current window and annotation attributes for the engine.
 //
 //  Arguments:
-//    atts       the current window's attributes
+//    winAtts       the current window's attributes
+//    annotAtts     the current window's annotation attributes
 //
-//  Programmer:  Jeremy Meredith
-//  Creation:    November  8, 2001
+//  Programmer:  Mark C. Miller 
+//  Creation:    15Jul03 
 //
 // ****************************************************************************
 
 void
-EngineProxy::SetWindowAtts(const WindowAttributes *atts)
+EngineProxy::SetWinAnnotAtts(const WindowAttributes *winAtts,
+                             const AnnotationAttributes *annotAtts)
 {
-    setWindowAttsRPC(atts);
-    if (setWindowAttsRPC.GetStatus() == VisItRPC::error)
+    setWinAnnotAttsRPC(winAtts,annotAtts);
+    if (setWinAnnotAttsRPC.GetStatus() == VisItRPC::error)
     {
-        RECONSTITUTE_EXCEPTION(setWindowAttsRPC.GetExceptionType(),
-                               setWindowAttsRPC.GetMessage());
+        RECONSTITUTE_EXCEPTION(setWinAnnotAttsRPC.GetExceptionType(),
+                               setWinAnnotAttsRPC.GetMessage());
     }
 }
 

@@ -20,7 +20,7 @@
 #include <QueryRPC.h>
 #include <ReleaseDataRPC.h>
 #include <SetFinalVariableNameRPC.h>
-#include <SetWindowAttsRPC.h>
+#include <SetWinAnnotAttsRPC.h>
 #include <StartPickRPC.h>
 #include <UpdatePlotAttsRPC.h>
 #include <UseNetworkRPC.h>
@@ -196,7 +196,8 @@ public:
                                   PickAttributes &);
     void                     StartPick(const bool, const int);
 
-    void                     SetWindowAtts(const WindowAttributes*);
+    void                     SetWinAnnotAtts(const WindowAttributes*,
+                                             const AnnotationAttributes*);
     avtDataObjectReader_p    Render(bool, const intVector&);
 
     avtDataObjectReader_p    Execute(bool, void (*waitCB)(void *), void *cbData);
@@ -228,7 +229,6 @@ private:
     MakePlotRPC              makePlotRPC;
     UseNetworkRPC            useNetworkRPC;
     UpdatePlotAttsRPC        updatePlotAttsRPC;
-    SetWindowAttsRPC         setWindowAttsRPC;
     ExecuteRPC               executeRPC;
     PickRPC                  pickRPC;
     StartPickRPC             startPickRPC;
@@ -238,6 +238,7 @@ private:
     OpenDatabaseRPC          openDatabaseRPC;
     DefineVirtualDatabaseRPC defineVirtualDatabaseRPC;
     RenderRPC                renderRPC;
+    SetWinAnnotAttsRPC       setWinAnnotAttsRPC;
 
     // For indicating status.
     StatusAttributes        *statusAtts;

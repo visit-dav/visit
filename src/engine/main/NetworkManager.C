@@ -22,6 +22,7 @@
 #include <avtArccosFilter.h>
 #include <avtCosFilter.h>
 #include <avtDegreeToRadianFilter.h>
+#include <avtExtents.h>
 #include <avtGradientFilter.h>
 #include <avtMagnitudeFilter.h>
 #include <avtNeighborFilter.h>
@@ -68,6 +69,7 @@
 #include <PlotPluginInfo.h>
 #ifdef PARALLEL
 #include <mpi.h>
+#include <parallel.h>
 #endif
 
 static double RenderBalance(int numTrianglesIHave);
@@ -1328,7 +1330,9 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer)
           workingNet = NULL;
           UseNetwork(plotIds[i]);
           DataNetwork *workingNetSaved = workingNet;
-          avtDataObject_p dob = GetOutput(false)->GetInput();
+          avtDataObjectWriter_p tmpWriter = GetOutput(false);
+          avtDataObject_p dob = tmpWriter->GetInput();
+          dob->GetInfo().ParallelMerge(tmpWriter);
 
           // do the part of the execute we'd do in the viewer
           avtActor_p anActor = workingNetSaved->GetPlot()->Execute(NULL, dob);
@@ -1451,6 +1455,36 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts)
                         atts.GetView().GetViewportCoords()[3]);
 
     windowAttributes = atts;
+}
+
+// ****************************************************************************
+//  Method:  NetworkManager::SetAnnotationAttributes
+//
+//  Purpose:
+//    Set the annotation attributes for the engine's viswin.  Note, only
+//    those annotations that live in a 3D world are rendered on the engine.
+//    Furthermore, only processor 0 does annotation rendering work.
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    15Jul03 
+//
+// ****************************************************************************
+void
+NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts)
+{
+#ifdef PARALLEL
+   if (PAR_Rank())
+#endif
+   {
+      // copy the attributes and disable all non-3D attributes 
+      AnnotationAttributes newAtts = atts;
+      newAtts.SetUserInfoFlag(false);
+      newAtts.SetDatabaseInfoFlag(false);
+      newAtts.SetLegendInfoFlag(false);
+      newAtts.SetTriadFlag(false);
+      viswin->SetAnnotationAtts(&newAtts);
+   }
+   annotationAttributes = atts;
 }
 
 // ****************************************************************************
@@ -1692,8 +1726,8 @@ RenderBalance(int numTrianglesIHave)
    int rank, size, *triCounts;
 
    balance = -1.0;
-   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-   MPI_Comm_size(MPI_COMM_WORLD, &size);
+   rank = PAR_Rank();
+   size = PAR_Size();
    if (rank == 0)
       triCounts = new int [size]; 
    MPI_Gather(&numTrianglesIHave, 1, MPI_INT, triCounts, 1, MPI_INT, 0, MPI_COMM_WORLD);

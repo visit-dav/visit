@@ -16,7 +16,7 @@ class ReadRPC;
 class ReleaseDataRPC;
 class RenderRPC;
 class SetFinalVariableNameRPC;
-class SetWindowAttsRPC;
+class SetWinAnnotAttsRPC;
 class StartPickRPC;
 class UpdatePlotAttsRPC;
 class UseNetworkRPC;
@@ -130,7 +130,6 @@ class Engine
     MakePlotRPC              *makePlotRPC;
     UseNetworkRPC            *useNetworkRPC;
     UpdatePlotAttsRPC        *updatePlotAttsRPC;
-    SetWindowAttsRPC         *setWindowAttsRPC;
     PickRPC                  *pickRPC;
     StartPickRPC             *startPickRPC;
     ExecuteRPC               *executeRPC;
@@ -140,6 +139,7 @@ class Engine
     OpenDatabaseRPC          *openDatabaseRPC;
     DefineVirtualDatabaseRPC *defineVirtualDatabaseRPC;
     RenderRPC                *renderRPC;
+    SetWinAnnotAttsRPC       *setWinAnnotAttsRPC;
 };
 
 #endif

@@ -30,9 +30,28 @@ class     avtExtents;
 //      True...Extents:    The extents from the original dataset.  However
 //                         these extents may be transformed etc.  These are,
 //                         for the most part, display extents.
+//
+//                         The 'true' extents are the extents of the dataset
+//                         regardless of its parallel decomposotion, if any.
+//                         That is, upon syncronization of parallel processes,
+//                         all processors should be forced to agree on the true
+//                         extents.
+//
+//                         In theory the 'true' extents are the extents of the
+//                         dataset regardless of whether only some of it has been
+//                         read in. However, for databases that don't support
+//                         the auxiliary extents data, it would be necessary to
+//                         read data that wasn't needed in a pipeline just to
+//                         get the 'true' extents set right. So we don't do that.
+//
 //      Current...Extents: The extents at the bottom of the pipeline for what
 //                         is really there.  Used for re-mapping the color to
 //                         what actually exists in what is being rendered, etc.
+//
+//                         The 'current' extents are the extents of what is left,
+//                          sort of, after various operations, which may have reduced
+//                         the data, such as thresholding, slicing, etc.
+//
 //      Effective...Extents: Like the current extents, but sometimes maintained
 //                         in the middle of a pipeline.  They are used for
 //                         things like resampling onto an area smaller than
@@ -42,6 +61,12 @@ class     avtExtents;
 //                         what know some extents until we are done executing.
 //                         Then we can take all of the pieces and unify them.
 //                         This is where the pieces are stored.
+//
+//                         The cummulative variants are used as places to store
+//                         extents information on a per-processor basis *before*
+//                         that information is merged and unified across all
+//                         processors. Think of the cummulative variants as 
+//                         "what this processor has seen so far."
 //
 //  Programmer: Hank Childs
 //  Creation:   March 24, 2001
@@ -69,6 +94,9 @@ class     avtExtents;
 //
 //    Kathleen Bonnell, Thu Apr 10 10:29:29 PDT 2003  
 //    Added transform and Set/Get/Merge/Read/Write/Copy methods. 
+//
+//    Mark C. Miller, 15Jul03
+//    Added Set/GetCanUseCummulativeAsTrueOrCurrent
 //    
 // ****************************************************************************
 
@@ -116,7 +144,10 @@ class PIPELINE_API avtDataAttributes
                                     { return cumulativeCurrentSpatial; };
     avtExtents              *GetCumulativeCurrentDataExtents(void)
                                     { return cumulativeCurrentData; };
-
+    void                     SetCanUseCummulativeAsTrueOrCurrent(bool canUse)
+                                { canUseCummulativeAsTrueOrCurrent = canUse; }
+    bool                     GetCanUseCummulativeAsTrueOrCurrent(void)
+                                { return canUseCummulativeAsTrueOrCurrent; }
 
     void                     SetTopologicalDimension(int);
     int                      GetTopologicalDimension(void) const
@@ -205,6 +236,7 @@ class PIPELINE_API avtDataAttributes
     avtExtents              *effectiveData;
     avtExtents              *currentData;
     avtExtents              *cumulativeCurrentData;
+    bool                     canUseCummulativeAsTrueOrCurrent;
 
     avtMatrix               *transform;
     bool                     canUseTransform;

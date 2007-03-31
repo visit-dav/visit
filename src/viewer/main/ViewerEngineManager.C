@@ -15,6 +15,7 @@
 #include <IncompatibleSecurityTokenException.h>
 #include <CancelledConnectException.h>
 #include <CouldNotConnectException.h>
+#include <AnnotationAttributes.h>
 #include <PickAttributes.h>
 #include <QueryAttributes.h>
 #include <StatusAttributes.h>
@@ -1393,24 +1394,24 @@ ViewerEngineManager::StartPick(const char *hostName_, const bool flag,
 }
 
 // ****************************************************************************
-// Method: ViewerEngineManager::SetWindowAtts
+// Method: ViewerEngineManager::SetWinAnnotAtts
 //
 // Purpose: 
-//   Engine SetWindowAtts RPC wrapped for safety.
+//   Engine SetWinAnnotAtts RPC wrapped for safety.
 //
-// Programmer: Brad Whitlock
-// Creation:   Fri Feb 22 14:50:06 PST 2002
+// Programmer: Mark C. Miller 
+// Creation:   15Jul03 
 //
 // Modifications:
 //   
 // ****************************************************************************
 
 bool
-ViewerEngineManager::SetWindowAtts(const char *hostName_,
-    const WindowAttributes *wa)
+ViewerEngineManager::SetWinAnnotAtts(const char *hostName_,
+    const WindowAttributes *wa, const AnnotationAttributes *aa)
 {
     ENGINE_PROXY_RPC_BEGIN;
-    engine->SetWindowAtts(wa);
+    engine->SetWinAnnotAtts(wa,aa);
     ENGINE_PROXY_RPC_END;
 }
 
@@ -1714,6 +1715,9 @@ ViewerEngineManager::Update(Subject *TheChangedSubject)
 //    Brad Whitlock, Tue May 7 16:38:52 PST 2002
 //    Passed a callback to the engine's Execute method.
 //
+//    Mark C. Miller, 16Jul03
+//    Modified SetWindowAtts call to SetWinAnnotAtts
+//
 // ****************************************************************************
 
 void
@@ -1726,9 +1730,10 @@ ViewerEngineManager::GetImage(int index, avtDataObject_p &dob)
     ViewerWindowManager *vwm = ViewerWindowManager::Instance();
     ViewerWindow *w = vwm->GetActiveWindow();
     WindowAttributes winAtts = w->GetWindowAttributes();
+    AnnotationAttributes annotAtts = *(w->GetAnnotationAttributes());
 
     // send to the engine
-    engine->SetWindowAtts(&winAtts);
+    engine->SetWinAnnotAtts(&winAtts,&annotAtts);
     
     engine->UseNetwork(index);
 #ifdef VIEWER_MT

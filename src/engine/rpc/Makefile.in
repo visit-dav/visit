@@ -96,6 +96,9 @@
 #    Brad Whitlock, Tue Mar 25 13:49:45 PST 2003
 #    I added DefineVirtualDatabaseRPC.
 #
+#    Mark C. Miller 15Jul03
+#    Added SetWinAnnotAttsRPC, removed SetWindowAttsRPC
+#
 ###############################################################################
 
 ##
@@ -124,7 +127,7 @@ SRC= \
     ReleaseDataRPC.C \
     RenderRPC.C \
     SetFinalVariableNameRPC.C \
-    SetWindowAttsRPC.C \
+    SetWinAnnotAttsRPC.C \
     StartPickRPC.C \
     UpdatePlotAttsRPC.C \
     UseNetworkRPC.C

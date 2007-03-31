@@ -823,5 +823,6 @@ ViewerAnimation::SetWindowAtts(const char *hostName)
     //
     ViewerWindow *w = windows[0];
     WindowAttributes winAtts = w->GetWindowAttributes();
-    return ViewerEngineManager::Instance()->SetWindowAtts(hostName, &winAtts);
+    AnnotationAttributes annotAtts = *(w->GetAnnotationAttributes());
+    return ViewerEngineManager::Instance()->SetWinAnnotAtts(hostName, &winAtts, &annotAtts);
 }

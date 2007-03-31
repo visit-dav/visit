@@ -67,6 +67,7 @@ DataNetwork::GetWriter(avtDataObject_p dob, avtPipelineSpecification_p pspec,
       avtDataObjectWriter_p tmpWriter = GetPlot()->Execute(dob, pspec, atts);
       if (GetPlot()->CanCacheWriterExternally())
          writer = tmpWriter;
+//      tmpWriter->GetInput()->GetInfo().ParallelMerge(tmpWriter);
       return tmpWriter;
    }
 }
