@@ -542,17 +542,35 @@ QvisSpectrumBar::addControlPoint(const QColor &color, float position)
             // Figure the position that should be used.
             if(index == controlPoints->NumControlPoints() - 1)
             {
+                // Compute the distance to the next point.
+                float dx = controlPoints->Position(index) - controlPoints->Position(index - 1);
+
+                // If the distance is small enough, realign the points and recalculate the
+                // distance to the next point.
+                if(dx <= 0.)
+                {
+                    alignControlPoints();
+                    dx = controlPoints->Position(index) - controlPoints->Position(index - 1);
+                }
+
                 // Add new point to the left.
-                temp.position = controlPoints->Position(index - 1) +
-                   ((controlPoints->Position(index) - controlPoints->Position(index - 1)) *
-                    0.5);
+                temp.position = controlPoints->Position(index - 1) + dx * 0.5f;
             }
             else
             {
+                // Compute the distance to the next point.
+                float dx = controlPoints->Position(index + 1) - controlPoints->Position(index);
+
+                // If the distance is small enough, realign the points and recalculate the
+                // distance to the next point.
+                if(dx <= 0.)
+                {
+                    alignControlPoints();
+                    dx = controlPoints->Position(index) - controlPoints->Position(index - 1);
+                }
+
                 // Add new point to the right.
-                temp.position = controlPoints->Position(index) +
-                   ((controlPoints->Position(index + 1) - controlPoints->Position(index)) *
-                    0.5);
+                temp.position = controlPoints->Position(index) + dx * 0.5f;
             }
         }
         else
@@ -715,7 +733,9 @@ QvisSpectrumBar::setRawColors(unsigned char *colors, int ncolors)
 // Creation:   Tue Mar 27 15:01:02 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jul 14 14:44:11 PST 2003
+//   I added some value checking.
+//
 // ****************************************************************************
 
 void
@@ -725,14 +745,18 @@ QvisSpectrumBar::setEditMode(bool val)
     {
         float *fcolors = new float[256 * 3];
         unsigned char *raw = getRawColors(256);
-        
-        // Turn the unsigned chars into floats.
-        for(int i = 0; i < 256 * 3; ++i)
-            fcolors[i] = (float)raw[i] / 255;
 
-        // Note that the fcolors array is owned by the controlPoints object after
-        // the call to SetColorValues.
-        controlPoints->SetColorValues(fcolors, 256);
+        if(raw)
+        {
+            // Turn the unsigned chars into floats.
+            for(int i = 0; i < 256 * 3; ++i)
+                fcolors[i] = (float)raw[i] / 255;
+
+            // Note that the fcolors array is owned by the controlPoints object after
+            // the call to SetColorValues.
+            controlPoints->SetColorValues(fcolors, 256);
+            delete [] raw;
+        }
     }
     
     controlPoints->SetEditMode(val);
@@ -1495,6 +1519,9 @@ QvisSpectrumBar::drawSpectrum()
 //   Brad Whitlock, Thu Oct 24 11:06:22 PDT 2002
 //   I removed the restriction that the endpoints lie at 0 and 1.
 //
+//   Brad Whitlock, Mon Jul 14 14:43:04 PST 2003
+//   I added a little range checking code.
+//
 // ****************************************************************************
 
 unsigned char *
@@ -1505,8 +1532,13 @@ QvisSpectrumBar::getRawColors(int range)
     ControlPoint *oldpts = NULL, *newpts = NULL;
     ControlPoint *c1 = NULL, *c2 = NULL;
 
+    // Return early if the range is bad.
+    if(range < 1)
+        return 0;
+
     // Allocate memory for the array to be returned.
-    row = new unsigned char[range * 3];
+    int arrayLength = range * 3;
+    row = new unsigned char[arrayLength];
 
     /*******************************************
      * Phase I -- If the widget is non-editable
@@ -1610,6 +1642,7 @@ QvisSpectrumBar::getRawColors(int range)
      * Phase IV -- Figure the colors for a row.
      ********************************************/
     c2 = c1;
+    int consecutiveZeroLengthRanges = 0;
     for(ci = 0; ci < npoints - 1; ci++)
     {
         float delta_r, delta_g, delta_b;
@@ -1624,22 +1657,26 @@ QvisSpectrumBar::getRawColors(int range)
 
         if(color_range > 1)
         {
+            consecutiveZeroLengthRanges = 0;
             if(ci == 0 && color_start_i != 0)
             {
                 for(i = 0; i < color_start_i; i++)
                 {
-                    row[c++] = (unsigned char)(c1->color[0] * 255);
-                    row[c++] = (unsigned char)(c1->color[1] * 255);
-                    row[c++] = (unsigned char)(c1->color[2] * 255);
+                    if(c < arrayLength)
+                    {
+                        row[c++] = (unsigned char)(c1->color[0] * 255);
+                        row[c++] = (unsigned char)(c1->color[1] * 255);
+                        row[c++] = (unsigned char)(c1->color[2] * 255);
+                    }
                 }
             }
 
             // Figure out some deltas.
             if(smoothing())
             {
-                    delta_r = (float)(c2->color[0]-c1->color[0])/(float)(color_range-1);
-                    delta_g = (float)(c2->color[1]-c1->color[1])/(float)(color_range-1);
-                    delta_b = (float)(c2->color[2]-c1->color[2])/(float)(color_range-1);
+                delta_r = (float)(c2->color[0]-c1->color[0])/(float)(color_range-1);
+                delta_g = (float)(c2->color[1]-c1->color[1])/(float)(color_range-1);
+                delta_b = (float)(c2->color[2]-c1->color[2])/(float)(color_range-1);
             }
             else
                 delta_r = delta_g = delta_b = 0.;
@@ -1651,9 +1688,12 @@ QvisSpectrumBar::getRawColors(int range)
             for(i = color_start_i; i < color_end_i; i++)
             {
                 // Store the colors as 24 bit rgb.
-                row[c++] = (unsigned char)(r_sum * 255);
-                row[c++] = (unsigned char)(g_sum * 255);
-                row[c++] = (unsigned char)(b_sum * 255);
+                if(c < arrayLength)
+                {
+                    row[c++] = (unsigned char)(r_sum * 255);
+                    row[c++] = (unsigned char)(g_sum * 255);
+                    row[c++] = (unsigned char)(b_sum * 255);
+                }
 
                 // Add the color deltas.
                 r_sum += delta_r; g_sum += delta_g; b_sum += delta_b;
@@ -1663,17 +1703,24 @@ QvisSpectrumBar::getRawColors(int range)
             {
                 for(i = color_end_i; i < range; i++)
                 {
-                    row[c++] = (unsigned char)(c2->color[0] * 255);
-                    row[c++] = (unsigned char)(c2->color[1] * 255);
-                    row[c++] = (unsigned char)(c2->color[2] * 255);
+                    if(c < arrayLength)
+                    {
+                        row[c++] = (unsigned char)(c2->color[0] * 255);
+                        row[c++] = (unsigned char)(c2->color[1] * 255);
+                        row[c++] = (unsigned char)(c2->color[2] * 255);
+                    }
                 }
             }
         }
-        else
+        else if(c < arrayLength)
         {
             row[c++] = (unsigned char)(c1->color[0] * 255);
             row[c++] = (unsigned char)(c1->color[1] * 255);
             row[c++] = (unsigned char)(c1->color[2] * 255);
+
+            // If this is the second zero length range in a row, back up.
+            if(++consecutiveZeroLengthRanges > 1)
+                c -= 3;
         }
 
         c1++;

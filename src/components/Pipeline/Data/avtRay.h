@@ -77,6 +77,8 @@ class PIPELINE_API avtRay
                                                         { return numSamples; };
     inline int                    GetFirstSample(void) const;
     inline int                    GetLastSample(void) const;
+    int                           GetFirstSampleOfLongestRun(void) const;
+    int                           GetLastSampleOfLongestRun(void) const;
              
     static void                   SetArbitrator(avtSamplePointArbitrator *);
 

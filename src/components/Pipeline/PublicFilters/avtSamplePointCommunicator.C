@@ -191,6 +191,9 @@ avtSamplePointCommunicator::Execute(void)
     int   outMinWidth, outMaxWidth, outMinHeight, outMaxHeight;
     imagePartition->GetThisPartition(outMinWidth, outMaxWidth, outMinHeight,
                                      outMaxHeight);
+    int nv = GetTypedInput()->GetNumberOfVariables();
+    nv = UnifyMaximumValue(nv);
+    GetTypedOutput()->SetNumberOfVariables(nv);
     GetTypedOutput()->SetVolume(volumeWidth, volumeHeight, volumeDepth);
     avtVolume *outvolume = GetTypedOutput()->GetVolume();
     outvolume->Restrict(outMinWidth, outMaxWidth, outMinHeight, outMaxHeight);

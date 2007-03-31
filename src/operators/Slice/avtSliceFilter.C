@@ -277,6 +277,10 @@ avtSliceFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Wed Jun 18 11:06:30 PDT 2003
 //    Request arrays if necessary for different slice types.
 //
+//    Hank Childs, Mon Jul 14 19:50:30 PDT 2003
+//    Make sure that the info about the origin is up-to-date before eliminating
+//    domains from potential calculation.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -311,11 +315,19 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
     // Give the interval tree the linear equation of the plane and have it
     // return a domain list.
     //
-    float normal[3]
+    if (atts.GetOriginType() == SliceAttributes::Point ||
+        atts.GetOriginType() == SliceAttributes::Intercept)
+    {
+        float normal[3]
              = {atts.GetNormal()[0], atts.GetNormal()[1], atts.GetNormal()[2]};
-    vector<int> domains;
-    it->GetDomainsList(normal, D, domains);
-    rv->GetDataSpecification()->GetRestriction()->RestrictDomains(domains);
+        float origin[3];
+        GetOrigin(origin[0], origin[1], origin[2]);
+        float tmpD = normal[0]*origin[0] + normal[1]*origin[1] +
+                     normal[2]*origin[2];
+        vector<int> domains;
+        it->GetDomainsList(normal, tmpD, domains);
+        rv->GetDataSpecification()->GetRestriction()->RestrictDomains(domains);
+    }
 
     return rv;
 }
