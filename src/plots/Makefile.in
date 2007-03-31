@@ -93,6 +93,9 @@
 #    Hank Childs, Thu Jun 26 23:17:01 PDT 2003
 #    Added Histogram plot.
 #
+#    Hank Childs, Tue Sep 23 07:28:20 PDT 2003
+#    Added Tensor plot.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -104,7 +107,7 @@ all: message
 OPTIONAL=Kerbel Topology
 
 REQUIRED=Boundary Contour Curve FilledBoundary Histogram Mesh Pseudocolor \
-         Streamline Subset Surface Vector Volume
+         Streamline Subset Surface Tensor Vector Volume
 
 SUBDIRS=$(REQUIRED) @PLOT_OPTIONAL_DIRS@
 ALLSUBDIRS=$(REQUIRED) $(OPTIONAL)

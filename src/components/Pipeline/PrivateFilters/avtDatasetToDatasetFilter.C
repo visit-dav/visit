@@ -110,12 +110,12 @@ avtDatasetToDatasetFilter::PostExecute(void)
 {
     if (switchVariables)
     {
-        debug5 << GetType() << ":Setting output variable to be " << pipelineVariable
-               << " after execution." << endl;
+        debug5 << GetType() << ": Setting output variable to be " 
+               << pipelineVariable << " after execution." << endl;
         OutputSetActiveVariable(pipelineVariable);
         if (removeActiveVariableWhenDone)
         {
-            debug5 << GetType() << ":Removing variable " << activeVariable
+            debug5 << GetType() << ": Removing variable " << activeVariable
                    << " after execution." << endl;
             avtDataTree_p tree = GetDataTree();
             bool    success;
@@ -128,7 +128,7 @@ avtDatasetToDatasetFilter::PostExecute(void)
     {
         if (removeSecondaryVariable[i] == true)
         {
-            debug5 << GetType() << ":Removing secondary variable "
+            debug5 << GetType() << ": Removing secondary variable "
                    << secondaryVarList[i] << " after execution." << endl;
             avtDataTree_p tree = GetDataTree();
             bool    success;
@@ -136,7 +136,7 @@ avtDatasetToDatasetFilter::PostExecute(void)
                            success);
         } else
         {
-            debug5 << GetType() << ":Leaving secondary variable "
+            debug5 << GetType() << ": Leaving secondary variable "
                    << secondaryVarList[i] << " after execution." << endl;
         }
     }
@@ -214,13 +214,15 @@ avtDatasetToDatasetFilter::ExamineSpecification(avtPipelineSpecification_p s)
         {
             ds->AddSecondaryVariable(activeVariable);
             removeActiveVariableWhenDone = true;
-            debug5 << GetType() << ":ExamineSpecification: Setting primary variable "
-                   << activeVariable << " to be removed at PostExecute." << endl;
+            debug5 << GetType() << ": ExamineSpecification: Setting primary "
+                   << "variable " << activeVariable 
+                   << " to be removed at PostExecute." << endl;
         } else
         {
             removeActiveVariableWhenDone = false;
-            debug5 << GetType() << ":ExamineSpecification: Leaving primary variable "
-                   << activeVariable << " where it is at PostExecute." << endl;
+            debug5 << GetType() << ": ExamineSpecification: Leaving primary "
+                   << "variable " << activeVariable 
+                   << " where it is at PostExecute." << endl;
         }
     }
 
@@ -247,13 +249,15 @@ avtDatasetToDatasetFilter::ExamineSpecification(avtPipelineSpecification_p s)
         {
             ds->AddSecondaryVariable(secondaryVarList[i]);
             removeSecondaryVariable[i] = true;
-            debug5 << GetType() << ":ExamineSpecification: Setting secondary variable "
-                   << secondaryVarList[i] << " to be removed at PostExecute." << endl;
+            debug5 << GetType() << ": ExamineSpecification: Setting secondary "
+                   << "variable " << secondaryVarList[i] 
+                   << " to be removed at PostExecute." << endl;
         } else
         {
             removeSecondaryVariable[i] = false;
-            debug5 << GetType() << ":ExamineSpecification: Leaving secondary variable "
-                   << secondaryVarList[i] << " where it is at PostExecute." << endl;
+            debug5 << GetType() << ": ExamineSpecification: Leaving secondary "
+                   << "variable " << secondaryVarList[i] 
+                   << " where it is at PostExecute." << endl;
         }
     }
 }
@@ -290,6 +294,19 @@ avtDatasetToDatasetFilter::SetActiveVariable(const char *varname)
 }
 
 
+// ****************************************************************************
+//  Method: avtDatasetToDatasetFile::AddSecondaryVariable
+//
+//  Purpose:
+//      Used by derived types to declare interest in an additional (ie
+//      secondary) variable.  This class will then make sure this variable
+//      is fetched properly.
+//
+//  Programmer: Hank Childs          <Added Header>
+//  Creation:   September 22, 2003   <Header Creation Date>
+//
+// ****************************************************************************
+
 void
 avtDatasetToDatasetFilter::AddSecondaryVariable(const char *var)
 {
@@ -314,3 +331,5 @@ avtDatasetToDatasetFilter::AddSecondaryVariable(const char *var)
                                               // later.
 
 }
+
+

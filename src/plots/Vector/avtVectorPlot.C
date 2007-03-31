@@ -7,10 +7,10 @@
 #include <vtkVectorGlyph.h>
 
 #include <avtGhostZoneFilter.h>
-#include <avtGlyphMapper.h>
 #include <avtLookupTable.h>
 #include <avtVariableLegend.h>
 #include <avtVectorFilter.h>
+#include <avtVectorGlyphMapper.h>
 
 #include <LineAttributes.h>
 
@@ -39,7 +39,7 @@ avtVectorPlot::avtVectorPlot()
     glyph        = vtkVectorGlyph::New();
     vectorFilter = new avtVectorFilter(true, 10);
     ghostFilter  = new avtGhostZoneFilter();
-    glyphMapper  = new avtGlyphMapper(glyph->GetOutput());
+    glyphMapper  = new avtVectorGlyphMapper(glyph->GetOutput());
     avtLUT       = new avtLookupTable();
 
     varLegend = new avtVariableLegend;

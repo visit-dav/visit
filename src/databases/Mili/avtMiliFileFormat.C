@@ -2,7 +2,6 @@
 //                              avtMiliFileFormat.C                          //
 // ************************************************************************* //
 
-
 #include <avtMiliFileFormat.h>
 
 #include <vector>
@@ -17,9 +16,10 @@ extern "C" {
 #include <vtkUnstructuredGrid.h>
 #include <vtkFloatArray.h>
 
+#include <Expression.h>
+
 #include <avtDatabaseMetaData.h>
 #include <avtMaterial.h>
-
 #include <avtVariableCache.h>
 #include <avtUnstructuredPointBoundaries.h>
 
@@ -831,7 +831,8 @@ avtMiliFileFormat::ReadMesh(int dom)
                                                  2, conn);
                         break;
                       case M_TRI:
-                        connectivity[dom][mesh_id]->InsertNextCell(VTK_TRIANGLE,
+                        connectivity[dom][mesh_id]->InsertNextCell(
+                                                                  VTK_TRIANGLE,
                                                  conn_count[i], conn);
                         break;
                       case M_QUAD:
@@ -851,7 +852,8 @@ avtMiliFileFormat::ReadMesh(int dom)
                                                      conn_count[i], conn);
                         break;
                       case M_HEX:
-                        connectivity[dom][mesh_id]->InsertNextCell(VTK_HEXAHEDRON,
+                        connectivity[dom][mesh_id]->InsertNextCell(
+                                                                VTK_HEXAHEDRON,
                                                      conn_count[i], conn);
                         break;
                       default:
@@ -1094,8 +1096,8 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
         rv->SetNumberOfTuples(nnodes[dom][mesh_id]);
         float *p = (float *) rv->GetVoidPointer(0);
         char *tmp = (char *) name;  // Bypass const
-        int rval = mc_read_results(dbid[dom], ts+1, sub_record_ids[dom][sr_valid],
-                                    1, &tmp, p);
+        int rval = mc_read_results(dbid[dom], ts+1, 
+                                   sub_record_ids[dom][sr_valid], 1, &tmp, p);
         if (rval != OK)
         {
             EXCEPTION1(InvalidVariableException, name);
@@ -1196,6 +1198,9 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
 //    Akira Haddox, Thu Jul 24 13:36:38 PDT 2003
 //    Properly dealt with cell variable blocks.
 //
+//    Hank Childs, Mon Sep 22 07:36:48 PDT 2003
+//    Add support for reading in tensors.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1213,11 +1218,17 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
     else
         DecodeMultiMeshVarname(name, vname, meshid);
     
-    vtkFloatArray *rv = vtkFloatArray::New();
-    rv->SetNumberOfComponents(dims);
-
     int v_index = GetVariableIndex(vname.c_str(), meshid);
     int mesh_id = var_mesh_associations[v_index];
+
+    //
+    // We stuff tensors into the vector field, so explicitly look up the
+    // dimension of vector (3 for vector, 6 for symm tensor, 9 for tensor).
+    //
+    int vdim = var_dimension[v_index];
+
+    vtkFloatArray *rv = vtkFloatArray::New();
+    rv->SetNumberOfComponents(vdim);
 
     if (centering[v_index] == AVT_NODECENT)
     {
@@ -1239,8 +1250,8 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
         rv->SetNumberOfTuples(nnodes[dom][mesh_id]);
         float *ptr = (float *) rv->GetVoidPointer(0);
         char *tmp = (char *) name;  // Bypass const
-        int rval = mc_read_results(dbid[dom], ts+1, sub_record_ids[dom][sr_valid],
-                                    1, &tmp, ptr);
+        int rval = mc_read_results(dbid[dom], ts+1,
+                                   sub_record_ids[dom][sr_valid], 1, &tmp,ptr);
         if (rval != OK)
         {
             EXCEPTION1(InvalidVariableException, name);
@@ -1251,7 +1262,7 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
         rv->SetNumberOfTuples(ncells[dom][mesh_id]);
         float *p = (float *) rv->GetVoidPointer(0);
         int i;
-        int nvals = ncells[dom][mesh_id] * dims;
+        int nvals = ncells[dom][mesh_id] * vdim;
         for (i = 0 ; i < nvals ; i++)
             p[i] = 0.;
         for (int i = 0 ; i < vars_valid[dom][v_index].size() ; i++)
@@ -1273,7 +1284,7 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
                 
                     int rval = mc_read_results(dbid[dom], ts+1,
                                  sub_record_ids[dom][i],
-                                 1, &tmp, p + dims * start);
+                                 1, &tmp, p + vdim * start);
                     if (rval != OK)
                     {
                         EXCEPTION1(InvalidVariableException, name);
@@ -1289,7 +1300,7 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
                     for (b = 0; b < nBlocks; ++b)
                         pSize += blocks[b * 2 + 1] - blocks[b * 2] + 1;
 
-                    float *arr = new float[pSize * dims];
+                    float *arr = new float[pSize * vdim];
 
                     int rval = mc_read_results(dbid[dom], ts + 1,
                                     sub_record_ids[dom][i],
@@ -1309,14 +1320,44 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
                         int c, k;
                         for (c = blocks[b * 2] - 1; c <= blocks[b * 2 + 1] - 1;
                                                     ++c)
-                            for (k = 0; k < dims; ++k)
-                                p[dims * (c + start) + k] = *(ptr++);
+                            for (k = 0; k < vdim; ++k)
+                                p[vdim * (c + start) + k] = *(ptr++);
                     }
                     
                     delete [] arr;
                 }
             }
         }
+    }
+
+    //
+    // If we have a symmetric tensor, put that in the form of a normal
+    // tensor.
+    //
+    if (vdim == 6)
+    {
+        vtkFloatArray *new_rv = vtkFloatArray::New();
+        int ntups = rv->GetNumberOfTuples();
+        new_rv->SetNumberOfComponents(9);
+        new_rv->SetNumberOfTuples(ntups);
+        for (int i = 0 ; i < ntups ; i++)
+        {
+            float orig_vals[6];
+            float new_vals[9];
+            rv->GetTuple(i, orig_vals);
+            new_vals[0] = orig_vals[0];  // XX
+            new_vals[1] = orig_vals[3];  // XY
+            new_vals[2] = orig_vals[5];  // XZ
+            new_vals[3] = orig_vals[3];  // YX
+            new_vals[4] = orig_vals[1];  // YY
+            new_vals[5] = orig_vals[4];  // YZ
+            new_vals[6] = orig_vals[5];  // ZX
+            new_vals[7] = orig_vals[4];  // ZY
+            new_vals[8] = orig_vals[2];  // ZZ
+            new_rv->SetTuple(i, new_vals);
+        }
+        rv->Delete();
+        rv = new_rv;
     }
 
     return rv;
@@ -1383,6 +1424,9 @@ avtMiliFileFormat::GetNTimesteps()
 //    Akira Haddox, Fri May 23 08:13:09 PDT 2003
 //    Added in support for multiple meshes. Changed for MTMD.
 //
+//    Hank Childs, Sat Sep 20 08:15:54 PDT 2003
+//    Added support for tensors and add some expressions based on tensors.
+//
 // ****************************************************************************
 
 void
@@ -1420,10 +1464,31 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             continue;
 
         //
-        // Don't list vectors whose dimension don't match the dataset's.
+        // Determine if this is a tensor or a symmetric tensor.
         //
         if (vartype[i] == AVT_VECTOR_VAR && var_dimension[i] != dims)
-            continue;
+        {
+            if (dims == 3)
+            {
+                if (var_dimension[i] == 6)
+                    vartype[i] = AVT_SYMMETRIC_TENSOR_VAR;
+                else if (var_dimension[i] == 9)
+                    vartype[i] = AVT_TENSOR_VAR;
+                else
+                    continue;
+            }
+            else if (dims == 2)      
+            {
+                if (var_dimension[i] == 3)
+                    vartype[i] = AVT_SYMMETRIC_TENSOR_VAR;
+                else if (var_dimension[i] == 4)
+                    vartype[i] = AVT_TENSOR_VAR;
+                else
+                    continue;
+            }
+            else
+                continue;
+        }
         
         string *vname;
         string mvnStr;
@@ -1446,10 +1511,279 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
           case AVT_VECTOR_VAR:
             AddVectorVarToMetaData(md, *vname, meshname, centering[i], dims);
             break;
+          case AVT_SYMMETRIC_TENSOR_VAR:
+            AddSymmetricTensorVarToMetaData(md, *vname, meshname, centering[i],
+                                            dims);
+            break;
+          case AVT_TENSOR_VAR:
+            AddTensorVarToMetaData(md, *vname, meshname, centering[i], dims);
+            break;
           default:
             break;
         }
     }
+
+    TRY
+    {
+        // This call throw an exception if stress does not exist.
+        GetVariableIndex("stress");
+
+        Expression pressure_expr;
+        pressure_expr.SetName("derived/pressure");
+        pressure_expr.SetDefinition("-trace(stress)/3");
+        pressure_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&pressure_expr);
+
+        Expression stressx_expr;
+        stressx_expr.SetName("derived/stress_x");
+        stressx_expr.SetDefinition("stress[0][0]");
+        stressx_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&stressx_expr);
+
+        Expression stressy_expr;
+        stressy_expr.SetName("derived/stress_y");
+        stressy_expr.SetDefinition("stress[1][1]");
+        stressy_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&stressy_expr);
+
+        Expression stressz_expr;
+        stressz_expr.SetName("derived/stress_z");
+        stressz_expr.SetDefinition("stress[2][2]");
+        stressz_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&stressz_expr);
+
+        Expression stressxy_expr;
+        stressxy_expr.SetName("derived/stress_xy");
+        stressxy_expr.SetDefinition("stress[0][1]");
+        stressxy_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&stressxy_expr);
+
+        Expression stressxz_expr;
+        stressxz_expr.SetName("derived/stress_xz");
+        stressxz_expr.SetDefinition("stress[0][2]");
+        stressxz_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&stressxz_expr);
+
+        Expression stressyz_expr;
+        stressyz_expr.SetName("derived/stress_yz");
+        stressyz_expr.SetDefinition("stress[0][2]");
+        stressyz_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&stressyz_expr);
+
+        Expression seff_expr;
+        seff_expr.SetName("derived/eff_stress");
+        seff_expr.SetDefinition("effective_tensor(stress)");
+        seff_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&seff_expr);
+
+        Expression p_dev_stress1_expr;
+        p_dev_stress1_expr.SetName("derived/prin_dev_stress_1");
+        p_dev_stress1_expr.SetDefinition("principal_deviatoric_tensor(stress)[0]");
+        p_dev_stress1_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&p_dev_stress1_expr);
+
+        Expression p_dev_stress2_expr;
+        p_dev_stress2_expr.SetName("derived/prin_dev_stress_2");
+        p_dev_stress2_expr.SetDefinition("principal_deviatoric_tensor(stress)[1]");
+        p_dev_stress2_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&p_dev_stress2_expr);
+
+        Expression p_dev_stress3_expr;
+        p_dev_stress3_expr.SetName("derived/prin_dev_stress_3");
+        p_dev_stress3_expr.SetDefinition("principal_deviatoric_tensor(stress)[2]");
+        p_dev_stress3_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&p_dev_stress3_expr);
+
+        Expression maxshr_expr;
+        maxshr_expr.SetName("derived/max_shear_stress");
+        maxshr_expr.SetDefinition("tensor_maximum_shear(stress)");
+        maxshr_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&maxshr_expr);
+
+        Expression prin_stress1_expr;
+        prin_stress1_expr.SetName("derived/prin_stress_1");
+        prin_stress1_expr.SetDefinition("principal_tensor(stress)[0]");
+        prin_stress1_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&prin_stress1_expr);
+
+        Expression prin_stress2_expr;
+        prin_stress2_expr.SetName("derived/prin_stress_2");
+        prin_stress2_expr.SetDefinition("principal_tensor(stress)[1]");
+        prin_stress2_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&prin_stress2_expr);
+
+        Expression prin_stress3_expr;
+        prin_stress3_expr.SetName("derived/prin_stress_3");
+        prin_stress3_expr.SetDefinition("principal_tensor(stress)[2]");
+        prin_stress3_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&prin_stress3_expr);
+    }
+    CATCH(InvalidVariableException)
+    {
+    }
+    ENDTRY
+
+    TRY
+    {
+        // This call throw an exception if strain does not exist.
+        GetVariableIndex("strain");
+
+        Expression strainx_expr;
+        strainx_expr.SetName("derived/strain_x");
+        strainx_expr.SetDefinition("strain[0][0]");
+        strainx_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainx_expr);
+
+        Expression strainy_expr;
+        strainy_expr.SetName("derived/strain_y");
+        strainy_expr.SetDefinition("strain[1][1]");
+        strainy_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainy_expr);
+
+        Expression strainz_expr;
+        strainz_expr.SetName("derived/strain_z");
+        strainz_expr.SetDefinition("strain[2][2]");
+        strainz_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainz_expr);
+
+        Expression strainxy_expr;
+        strainxy_expr.SetName("derived/strain_xy");
+        strainxy_expr.SetDefinition("strain[0][1]");
+        strainxy_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainxy_expr);
+
+        Expression strainxz_expr;
+        strainxz_expr.SetName("derived/strain_xz");
+        strainxz_expr.SetDefinition("strain[0][2]");
+        strainxz_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainxz_expr);
+
+        Expression strainyz_expr;
+        strainyz_expr.SetName("derived/strain_yz");
+        strainyz_expr.SetDefinition("strain[0][2]");
+        strainyz_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&strainyz_expr);
+
+        Expression seff_expr;
+        seff_expr.SetName("derived/eff_strain");
+        seff_expr.SetDefinition("effective_tensor(strain)");
+        seff_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&seff_expr);
+
+        Expression p_dev_strain1_expr;
+        p_dev_strain1_expr.SetName("derived/prin_dev_strain_1");
+        p_dev_strain1_expr.SetDefinition("principal_deviatoric_tensor(strain)[0]");
+        p_dev_strain1_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&p_dev_strain1_expr);
+
+        Expression p_dev_strain2_expr;
+        p_dev_strain2_expr.SetName("derived/prin_dev_strain_2");
+        p_dev_strain2_expr.SetDefinition("principal_deviatoric_tensor(strain)[1]");
+        p_dev_strain2_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&p_dev_strain2_expr);
+
+        Expression p_dev_strain3_expr;
+        p_dev_strain3_expr.SetName("derived/prin_dev_strain_3");
+        p_dev_strain3_expr.SetDefinition("principal_deviatoric_tensor(strain)[2]");
+        p_dev_strain3_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&p_dev_strain3_expr);
+
+        Expression maxshr_expr;
+        maxshr_expr.SetName("derived/max_shear_strain");
+        maxshr_expr.SetDefinition("tensor_maximum_shear(strain)");
+        maxshr_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&maxshr_expr);
+
+        Expression prin_strain1_expr;
+        prin_strain1_expr.SetName("derived/prin_strain_1");
+        prin_strain1_expr.SetDefinition("principal_tensor(strain)[0]");
+        prin_strain1_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&prin_strain1_expr);
+
+        Expression prin_strain2_expr;
+        prin_strain2_expr.SetName("derived/prin_strain_2");
+        prin_strain2_expr.SetDefinition("principal_tensor(strain)[1]");
+        prin_strain2_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&prin_strain2_expr);
+
+        Expression prin_strain3_expr;
+        prin_strain3_expr.SetName("derived/prin_strain_3");
+        prin_strain3_expr.SetDefinition("principal_tensor(strain)[2]");
+        prin_strain3_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&prin_strain3_expr);
+    }
+    CATCH(InvalidVariableException)
+    {
+    }
+    ENDTRY
+
+    TRY
+    {
+        // This call throw an exception if nodvel does not exist.
+        GetVariableIndex("nodvel");
+
+        Expression velx_expr;
+        velx_expr.SetName("derived/velocity_x");
+        velx_expr.SetDefinition("nodvel[0]");
+        velx_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&velx_expr);
+
+        Expression vely_expr;
+        vely_expr.SetName("derived/velocity_y");
+        vely_expr.SetDefinition("nodvel[1]");
+        vely_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&vely_expr);
+
+        Expression velz_expr;
+        velz_expr.SetName("derived/velocity_z");
+        velz_expr.SetDefinition("nodvel[2]");
+        velz_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&velz_expr);
+
+        Expression velmag_expr;
+        velmag_expr.SetName("derived/velocity_mag");
+        velmag_expr.SetDefinition("magnitude(nodvel)");
+        velmag_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&velmag_expr);
+    }
+    CATCH(InvalidVariableException)
+    {
+    }
+    ENDTRY
+
+    TRY
+    {
+        // This call throw an exception if nodacc does not exist.
+        GetVariableIndex("nodacc");
+
+        Expression accx_expr;
+        accx_expr.SetName("derived/acceleration_x");
+        accx_expr.SetDefinition("nodacc[0]");
+        accx_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&accx_expr);
+
+        Expression accy_expr;
+        accy_expr.SetName("derived/acceleration_y");
+        accy_expr.SetDefinition("nodacc[1]");
+        accy_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&accy_expr);
+
+        Expression accz_expr;
+        accz_expr.SetName("derived/acceleration_z");
+        accz_expr.SetDefinition("nodacc[2]");
+        accz_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&accz_expr);
+
+        Expression accmag_expr;
+        accmag_expr.SetName("derived/acceleration_mag");
+        accmag_expr.SetDefinition("magnitude(nodacc)");
+        accmag_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&accmag_expr);
+    }
+    CATCH(InvalidVariableException)
+    {
+    }
+    ENDTRY
 
     if (!readPartInfo)
         ParseDynaPart();

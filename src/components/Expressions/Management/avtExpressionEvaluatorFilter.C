@@ -293,6 +293,9 @@ avtExpressionEvaluatorFilter::PerformRestriction(avtPipelineSpecification_p spec
 //    Cause an update if there are expression variables that are not sitting
 //    in our output.
 //
+//    Hank Childs, Mon Sep 22 13:32:51 PDT 2003
+//    Tell each variable what type it is.
+//
 // ****************************************************************************
 
 void
@@ -390,6 +393,18 @@ avtExpressionEvaluatorFilter::Query(PickAttributes *pa)
 
             PickVarInfo varInfo;
             varInfo.SetVariableName(expr_vars[i]);
+            int ncomps = arr->GetNumberOfComponents();
+            if (ncomps == 1)
+                varInfo.SetVariableType("scalar");
+            else if (ncomps <= 3)
+                varInfo.SetVariableType("vector");
+            else if (ncomps == 4)
+                varInfo.SetVariableType("tensor");
+            else if (ncomps == 6)
+                varInfo.SetVariableType("symm_tensor");
+            else if (ncomps == 9)
+                varInfo.SetVariableType("tensor");
+
             bool zoneCent = (cent == AVT_ZONECENT);
             varInfo.SetCentering(zoneCent ? PickVarInfo::Zonal
                                           : PickVarInfo::Nodal);

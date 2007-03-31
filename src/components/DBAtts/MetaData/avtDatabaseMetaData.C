@@ -943,8 +943,8 @@ avtVectorMetaData::avtVectorMetaData()
 //  Method: avtVectorMetaData constructor
 //
 //  Arguments:
-//      n           The name of the std::vector variable.
-//      mn          The name of the mesh the std::vector var is defined on.
+//      n           The name of the vector variable.
+//      mn          The name of the mesh the vector var is defined on.
 //      c           The centering of the variable.
 //      vd          The dimension of the variable.
 //
@@ -975,8 +975,8 @@ avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn,
 //  Method: avtVectorMetaData constructor
 //
 //  Arguments:
-//      n           The name of the std::vector variable.
-//      mn          The name of the mesh the std::vector var is defined on.
+//      n           The name of the vector variable.
+//      mn          The name of the mesh the vector var is defined on.
 //      c           The centering of the variable.
 //      vd          The dimension of the variable.
 //      extents     The extents of the variable.
@@ -1019,6 +1019,9 @@ avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn,
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Copied validVariable.
 //
+//    Hank Childs, Sat Sep 20 08:32:38 PDT 2003
+//    Copy over varDim.
+//
 // ****************************************************************************
 
 avtVectorMetaData::avtVectorMetaData(const avtVectorMetaData &rhs)
@@ -1027,6 +1030,7 @@ avtVectorMetaData::avtVectorMetaData(const avtVectorMetaData &rhs)
     name           = rhs.name;
     meshName       = rhs.meshName;
     centering      = rhs.centering;
+    varDim         = rhs.varDim;
     hasDataExtents = rhs.hasDataExtents;
     minDataExtents = rhs.minDataExtents; // safe on a std::vector<float>
     maxDataExtents = rhs.maxDataExtents; // safe on a std::vector<float>
@@ -1062,6 +1066,9 @@ avtVectorMetaData::~avtVectorMetaData()
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Copied validVariable.
 //
+//    Hank Childs, Sat Sep 20 08:32:38 PDT 2003
+//    Copy over varDim.
+//
 // ****************************************************************************
 
 const avtVectorMetaData &
@@ -1070,6 +1077,7 @@ avtVectorMetaData::operator=(const avtVectorMetaData &rhs)
     name           = rhs.name;
     meshName       = rhs.meshName;
     centering      = rhs.centering;
+    varDim         = rhs.varDim;
     hasDataExtents = rhs.hasDataExtents;
     minDataExtents = rhs.minDataExtents; // safe on a std::vector<float>
     maxDataExtents = rhs.maxDataExtents; // safe on a std::vector<float>
@@ -1111,10 +1119,10 @@ avtVectorMetaData::SelectAll()
 //  Method: avtVectorMetaData::SetExtents
 //
 //  Purpose:
-//      Sets the extents of the std::vector
+//      Sets the extents of the :vector
 //
 //  Arguments:
-//      extents     std::vector extents as <min_v1, max_v1, min_v2, max_v2, ...>.
+//      extents     vector extents as <min_v1, max_v1, min_v2, max_v2, ...>.
 //
 //  Programmer: Hank Childs
 //  Creation:   August 30, 2000
@@ -1214,6 +1222,351 @@ avtVectorMetaData::Print(ostream &out, int indent) const
         Indent(out, indent);
         out << "The extents are not set." << endl;
     }
+
+    if (!validVariable)
+    {
+        Indent(out, indent);
+        out << "THIS IS NOT A VALID VARIABLE." << endl;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtTensorMetaData default constructor
+//
+//  Programmer: Hank Childs
+//  Creation:   September 20, 2003
+//
+// ****************************************************************************
+
+avtTensorMetaData::avtTensorMetaData()
+    : AttributeSubject("ssiib")
+{
+    dim = 0;
+    validVariable = true;
+}
+
+
+// ****************************************************************************
+//  Method: avtTensorMetaData constructor
+//
+//  Arguments:
+//      n           The name of the tensor variable.
+//      mn          The name of the mesh the tensor var is defined on.
+//      c           The centering of the variable.
+//      vd          The dimension of the variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 20, 2003
+//
+// ****************************************************************************
+
+avtTensorMetaData::avtTensorMetaData(std::string n, std::string mn, 
+                                     avtCentering c, int vd)
+    : AttributeSubject("ssiib")
+{
+    name           = n;
+    meshName       = mn;
+    centering      = c;
+    dim            = vd;
+    validVariable  = true;
+}
+
+
+// ****************************************************************************
+//  Method: avtTensorMetaData copy constructor
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer: Hank Childs
+//  Creation:   September 20, 2003
+//
+// ****************************************************************************
+
+avtTensorMetaData::avtTensorMetaData(const avtTensorMetaData &rhs)
+    : AttributeSubject("ssiib")
+{
+    name           = rhs.name;
+    meshName       = rhs.meshName;
+    centering      = rhs.centering;
+    dim            = rhs.dim;
+    validVariable  = rhs.validVariable;
+}
+
+
+// ****************************************************************************
+// Method: avtTensorMetaData destructor
+//
+// Programmer: Hank Childs
+// Creation:   September 20, 2003
+//
+// ****************************************************************************
+
+avtTensorMetaData::~avtTensorMetaData()
+{
+}
+
+// ****************************************************************************
+//  Method: avtTensorMetaData::operator=
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer: Hank Childs
+//  Creation:   September 20, 2003
+//
+// ****************************************************************************
+
+const avtTensorMetaData &
+avtTensorMetaData::operator=(const avtTensorMetaData &rhs)
+{
+    name           = rhs.name;
+    meshName       = rhs.meshName;
+    centering      = rhs.centering;
+    dim            = rhs.dim;
+    validVariable  = rhs.validVariable;
+    return *this;
+}
+
+
+// ****************************************************************************
+//  Method: avtTensorMetaData::SelectAll
+//
+//  Programmer: Hank Childs
+//  Creation:   September 20, 2003
+//
+// ****************************************************************************
+
+void
+avtTensorMetaData::SelectAll()
+{
+    Select(0, (void*)&name);
+    Select(1, (void*)&meshName);
+    Select(2, (void*)&centering);
+    Select(3, (void*)&dim);
+    Select(4, (void*)&validVariable);
+}
+
+
+// ****************************************************************************
+//  Method: avtTensorMetaData::Print
+//
+//  Purpose:
+//      Print statement for debugging.
+//
+//  Arguments:
+//      out      The stream to output to.
+//      indent   The number of tabs to indent each line with.
+//
+//  Programmer:  Hank Childs
+//  Creation:    September 20, 2003
+//
+// ****************************************************************************
+
+void
+avtTensorMetaData::Print(ostream &out, int indent) const
+{
+    Indent(out, indent);
+    out << "Name = " << name.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Mesh is = " << meshName.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Centering = ";
+    switch (centering)
+    {
+      case AVT_NODECENT:
+        out << "node centered.";
+        break;
+
+      case AVT_ZONECENT:
+        out << "zone centered.";
+        break;
+
+      case AVT_UNKNOWN_CENT:
+      default:
+        out << "unknowing centering.";
+        break;
+    }
+    out << endl;
+
+    Indent(out, indent);
+    out << "Variable Dimension = " << dim << endl;
+
+    if (!validVariable)
+    {
+        Indent(out, indent);
+        out << "THIS IS NOT A VALID VARIABLE." << endl;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSymmetricTensorMetaData default constructor
+//
+//  Programmer: Hank Childs
+//  Creation:   September 20, 2003
+//
+// ****************************************************************************
+
+avtSymmetricTensorMetaData::avtSymmetricTensorMetaData()
+    : AttributeSubject("ssiib")
+{
+    dim = 0;
+    validVariable = true;
+}
+
+
+// ****************************************************************************
+//  Method: avtSymmetricTensorMetaData constructor
+//
+//  Arguments:
+//      n           The name of the tensor variable.
+//      mn          The name of the mesh the tensor var is defined on.
+//      c           The centering of the variable.
+//      vd          The dimension of the variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 20, 2003
+//
+// ****************************************************************************
+
+avtSymmetricTensorMetaData::avtSymmetricTensorMetaData(std::string n,
+                                        std::string mn, avtCentering c, int vd)
+    : AttributeSubject("ssiib")
+{
+    name           = n;
+    meshName       = mn;
+    centering      = c;
+    dim            = vd;
+    validVariable  = true;
+}
+
+
+// ****************************************************************************
+//  Method: avtSymmetricTensorMetaData copy constructor
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer: Hank Childs
+//  Creation:   September 20, 2003
+//
+// ****************************************************************************
+
+avtSymmetricTensorMetaData::avtSymmetricTensorMetaData(
+                                         const avtSymmetricTensorMetaData &rhs)
+    : AttributeSubject("ssiib")
+{
+    name           = rhs.name;
+    meshName       = rhs.meshName;
+    centering      = rhs.centering;
+    dim            = rhs.dim;
+    validVariable  = rhs.validVariable;
+}
+
+
+// ****************************************************************************
+// Method: avtSymmetricTensorMetaData destructor
+//
+// Programmer: Hank Childs
+// Creation:   September 20, 2003
+//
+// ****************************************************************************
+
+avtSymmetricTensorMetaData::~avtSymmetricTensorMetaData()
+{
+}
+
+// ****************************************************************************
+//  Method: avtSymmetricTensorMetaData::operator=
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer: Hank Childs
+//  Creation:   September 20, 2003
+//
+// ****************************************************************************
+
+const avtSymmetricTensorMetaData &
+avtSymmetricTensorMetaData::operator=(const avtSymmetricTensorMetaData &rhs)
+{
+    name           = rhs.name;
+    meshName       = rhs.meshName;
+    centering      = rhs.centering;
+    dim            = rhs.dim;
+    validVariable  = rhs.validVariable;
+    return *this;
+}
+
+
+// ****************************************************************************
+//  Method: avtSymmetricTensorMetaData::SelectAll
+//
+//  Programmer: Hank Childs
+//  Creation:   September 20, 2003
+//
+// ****************************************************************************
+
+void
+avtSymmetricTensorMetaData::SelectAll()
+{
+    Select(0, (void*)&name);
+    Select(1, (void*)&meshName);
+    Select(2, (void*)&centering);
+    Select(3, (void*)&dim);
+    Select(4, (void*)&validVariable);
+}
+
+
+// ****************************************************************************
+//  Method: avtSymmetricTensorMetaData::Print
+//
+//  Purpose:
+//      Print statement for debugging.
+//
+//  Arguments:
+//      out      The stream to output to.
+//      indent   The number of tabs to indent each line with.
+//
+//  Programmer:  Hank Childs
+//  Creation:    September 20, 2003
+//
+// ****************************************************************************
+
+void
+avtSymmetricTensorMetaData::Print(ostream &out, int indent) const
+{
+    Indent(out, indent);
+    out << "Name = " << name.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Mesh is = " << meshName.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Centering = ";
+    switch (centering)
+    {
+      case AVT_NODECENT:
+        out << "node centered.";
+        break;
+
+      case AVT_ZONECENT:
+        out << "zone centered.";
+        break;
+
+      case AVT_UNKNOWN_CENT:
+      default:
+        out << "unknowing centering.";
+        break;
+    }
+    out << endl;
+
+    Indent(out, indent);
+    out << "Variable Dimension = " << dim << endl;
 
     if (!validVariable)
     {
@@ -2728,7 +3081,7 @@ avtDefaultPlotMetaData::Print(ostream &out, int indent) const
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData()
-    : AttributeSubject("sbddibss*i*i*i*d*a*a*a*a*a*a*a*aba*")
+    : AttributeSubject("sbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*")
 {
     hasTemporalExtents          = false;
     minTemporalExtents          = 0.;
@@ -2774,10 +3127,13 @@ avtDatabaseMetaData::avtDatabaseMetaData()
 //    Walter Herrera, Tue Sep 04 15:08:48 PST 2003
 //    Copy defaultPlots.
 //
+//    Hank Childs, Sat Sep 20 08:32:38 PDT 2003
+//    Copy over tensor data.
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
-    : AttributeSubject("sbddibss*i*i*i*d*a*a*a*a*a*a*a*aba*")
+    : AttributeSubject("sbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*")
 {
     databaseName       = rhs.databaseName;
     hasTemporalExtents = rhs.hasTemporalExtents;
@@ -2801,6 +3157,11 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
         scalars.push_back(new avtScalarMetaData(*rhs.scalars[i]));
     for (i=0; i<rhs.vectors.size(); i++)
         vectors.push_back(new avtVectorMetaData(*rhs.vectors[i]));
+    for (i=0; i<rhs.tensors.size(); i++)
+        tensors.push_back(new avtTensorMetaData(*rhs.tensors[i]));
+    for (i=0; i<rhs.symm_tensors.size(); i++)
+        symm_tensors.push_back(
+                         new avtSymmetricTensorMetaData(*rhs.symm_tensors[i]));
     for (i=0; i<rhs.materials.size(); i++)
         materials.push_back(new avtMaterialMetaData(*rhs.materials[i]));
     for (i=0; i<rhs.species.size(); i++)
@@ -2849,6 +3210,9 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
 //    Walter Herrera, Tue Sep 04 15:08:48 PST 2003
 //    Copy defaultPlots.
 //
+//    Hank Childs, Sat Sep 20 08:32:38 PDT 2003
+//    Copy over tensor data.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData &
@@ -2879,6 +3243,12 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
     for (i=0; i<vectors.size(); i++)
         delete vectors[i];
     vectors.clear();
+    for (i=0; i<tensors.size(); i++)
+        delete tensors[i];
+    tensors.clear();
+    for (i=0; i<symm_tensors.size(); i++)
+        delete symm_tensors[i];
+    symm_tensors.clear();
     for (i=0; i<materials.size(); i++)
         delete materials[i];
     materials.clear();
@@ -2901,6 +3271,11 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
         scalars.push_back(new avtScalarMetaData(*rhs.scalars[i]));
     for (i=0; i<rhs.vectors.size(); i++)
         vectors.push_back(new avtVectorMetaData(*rhs.vectors[i]));
+    for (i=0; i<rhs.tensors.size(); i++)
+        tensors.push_back(new avtTensorMetaData(*rhs.tensors[i]));
+    for (i=0; i<rhs.symm_tensors.size(); i++)
+        symm_tensors.push_back(
+                         new avtSymmetricTensorMetaData(*rhs.symm_tensors[i]));
     for (i=0; i<rhs.materials.size(); i++)
         materials.push_back(new avtMaterialMetaData(*rhs.materials[i]));
     for (i=0; i<rhs.species.size(); i++)
@@ -2910,7 +3285,8 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
     for (i=0; i<rhs.sils.size(); i++)
         sils.push_back(new avtSILMetaData(*rhs.sils[i]));
     for (i=0; i<rhs.defaultPlots.size(); i++)
-        defaultPlots.push_back(new avtDefaultPlotMetaData(*rhs.defaultPlots[i]));
+        defaultPlots.push_back(
+                             new avtDefaultPlotMetaData(*rhs.defaultPlots[i]));
 
     return *this;
 }
@@ -2930,6 +3306,9 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
 //    Walter Herrera, Tue Sep 04 15:08:48 PST 2003
 //    Add support for defaultPlots.
 //
+//    Hank Childs, Sat Sep 20 08:32:38 PDT 2003
+//    Delete tensors.
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::~avtDatabaseMetaData()
@@ -2940,16 +3319,28 @@ avtDatabaseMetaData::~avtDatabaseMetaData()
         delete (*mit);
     }
 
+    std::vector<avtScalarMetaData *>::iterator sit;
+    for (sit = scalars.begin() ; sit != scalars.end() ; sit++)
+    {
+        delete (*sit);
+    }
+
     std::vector<avtVectorMetaData *>::iterator vit;
     for (vit = vectors.begin() ; vit != vectors.end() ; vit++)
     {
         delete (*vit);
     }
 
-    std::vector<avtScalarMetaData *>::iterator sit;
-    for (sit = scalars.begin() ; sit != scalars.end() ; sit++)
+    std::vector<avtTensorMetaData *>::iterator ten_it;
+    for (ten_it = tensors.begin() ; ten_it != tensors.end() ; ten_it++)
     {
-        delete (*sit);
+        delete (*ten_it);
+    }
+
+    std::vector<avtSymmetricTensorMetaData *>::iterator st_it;
+    for (st_it = symm_tensors.begin() ; st_it != symm_tensors.end() ; st_it++)
+    {
+        delete (*st_it);
     }
 
     std::vector<avtMaterialMetaData *>::iterator mait;
@@ -2971,7 +3362,8 @@ avtDatabaseMetaData::~avtDatabaseMetaData()
     }
 
     std::vector<avtDefaultPlotMetaData *>::iterator defpltit;
-    for (defpltit = defaultPlots.begin() ; defpltit != defaultPlots.end() ; defpltit++)
+    for (defpltit = defaultPlots.begin() ; defpltit != defaultPlots.end() ;
+                                                                   defpltit++)
     {
         delete (*defpltit);
     }
@@ -3352,7 +3744,7 @@ avtDatabaseMetaData::Add(avtScalarMetaData *smd)
 //  Method: avtDatabaseMetaData::Add
 //
 //  Arguments:
-//      mmd    A std::vector meta data object.
+//      vmd    A vector meta data object.
 //
 //  Programmer: Hank Childs
 //  Creation:   August 28, 2000
@@ -3363,6 +3755,42 @@ void
 avtDatabaseMetaData::Add(avtVectorMetaData *vmd)
 {
     vectors.push_back(vmd);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::Add
+//
+//  Arguments:
+//      tmd    A tensor meta data object.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 20, 2003
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::Add(avtTensorMetaData *tmd)
+{
+    tensors.push_back(tmd);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::Add
+//
+//  Arguments:
+//     stmd   A symmetric tensor meta data object.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 20, 2003
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::Add(avtSymmetricTensorMetaData *stmd)
+{
+    symm_tensors.push_back(stmd);
 }
 
 
@@ -3597,6 +4025,9 @@ avtDatabaseMetaData::GetNDomains(std::string var) const
 //    Hank Childs, Fri Sep 12 09:11:26 PDT 2003
 //    Made modification so that routine could be 'const'.
 //
+//    Hank Childs, Sat Sep 20 08:32:38 PDT 2003
+//    Add support for tensors.
+//
 // ****************************************************************************
 
 avtVarType
@@ -3640,6 +4071,24 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in) const
         if (vectors[i]->name == var)
         {
             return AVT_VECTOR_VAR;
+        }
+    }
+
+    int ntensors = tensors.size();
+    for (i = 0 ; i < ntensors ; i++)
+    {
+        if (tensors[i]->name == var)
+        {
+            return AVT_TENSOR_VAR;
+        }
+    }
+
+    int nsymmtensors = symm_tensors.size();
+    for (i = 0 ; i < nsymmtensors ; i++)
+    {
+        if (symm_tensors[i]->name == var)
+        {
+            return AVT_SYMMETRIC_TENSOR_VAR;
         }
     }
 
@@ -3713,6 +4162,9 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in) const
 //    Hank Childs, Fri Sep 12 09:17:33 PDT 2003
 //    Re-coded some sections so this routine could be 'const'.
 //
+//    Hank Childs, Sat Sep 20 08:49:16 PDT 2003
+//    Add support for tensors.
+//
 // ****************************************************************************
 
 std::string
@@ -3774,6 +4226,26 @@ avtDatabaseMetaData::MeshForVar(std::string var) const
         }
     }
 
+    // Look through the tensors.
+    int ntensors = tensors.size();
+    for (i = 0 ; i < ntensors ; i++)
+    {
+        if (tensors[i]->name == var)
+        {
+            return tensors[i]->meshName;
+        }
+    }
+
+    // Look through the symmteric tensors.
+    int nsymmtensors = symm_tensors.size();
+    for (i = 0 ; i < nsymmtensors ; i++)
+    {
+        if (symm_tensors[i]->name == var)
+        {
+            return symm_tensors[i]->meshName;
+        }
+    }
+
     // Look through the scalars.
     int nscalars = scalars.size();
     for (i = 0 ; i < nscalars ; i++)
@@ -3817,7 +4289,8 @@ avtDatabaseMetaData::MeshForVar(std::string var) const
     // Look through the sils.
     for (i = 0 ; i < sils.size(); i++)
     {
-        const std::vector<avtSILCollectionMetaData *> &collections = sils[i]->collections;
+        const std::vector<avtSILCollectionMetaData *> &collections = 
+                                                          sils[i]->collections;
         for (int j = 0; j < collections.size(); j++)
         {
            if (collections[j]->classOfCollection == var)
@@ -4055,6 +4528,9 @@ avtDatabaseMetaData::GetSpeciesOnMesh(std::string mesh) const
 //    Hank Childs, Fri Aug  1 11:08:21 PDT 2003
 //    Add support for curves.
 //
+//    Hank Childs, Sat Sep 20 08:49:16 PDT 2003
+//    Add support for tensors.
+//
 // ****************************************************************************
 
 void
@@ -4145,6 +4621,30 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
         out << endl;
     }
     
+    if(tensors.begin() != tensors.end())
+    {
+        Indent(out, indent);
+        out << "Tensors: " << endl;
+    }
+    std::vector< avtTensorMetaData * >::const_iterator tensor_it;
+    for (tensor_it= tensors.begin() ; tensor_it != tensors.end() ; tensor_it++)
+    {
+        (*tensor_it)->Print(out, indent+1);
+        out << endl;
+    }
+    
+    if(symm_tensors.begin() != symm_tensors.end())
+    {
+        Indent(out, indent);
+        out << "Symmetric Tensors: " << endl;
+    }
+    std::vector< avtSymmetricTensorMetaData * >::const_iterator st_it;
+    for (st_it= symm_tensors.begin() ; st_it != symm_tensors.end() ; st_it++)
+    {
+        (*st_it)->Print(out, indent+1);
+        out << endl;
+    }
+
     if(materials.begin() != materials.end())
     {
         Indent(out, indent);
@@ -4279,6 +4779,9 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
 //   Walter Herrera, Tue Sep 04 15:405:17 PST 2003
 //   Add defaultPlots
 //
+//   Hank Childs, Sat Sep 20 08:49:16 PDT 2003
+//   Added tensors.
+//
 // *******************************************************************
 
 void
@@ -4301,13 +4804,15 @@ avtDatabaseMetaData::SelectAll()
     Select(12, (void*)&meshes);
     Select(13, (void*)&scalars);
     Select(14, (void*)&vectors);
-    Select(15, (void*)&materials);
-    Select(16, (void*)&species);
-    Select(17, (void*)&curves);
-    Select(18, (void*)&defaultPlots);
-    Select(19, (void*)&exprList);
-    Select(20, (void*)&mustRepopulateOnStateChange);
-    Select(21, (void*)&sils);
+    Select(15, (void*)&tensors);
+    Select(16, (void*)&symm_tensors);
+    Select(17, (void*)&materials);
+    Select(18, (void*)&species);
+    Select(19, (void*)&curves);
+    Select(20, (void*)&defaultPlots);
+    Select(21, (void*)&exprList);
+    Select(22, (void*)&mustRepopulateOnStateChange);
+    Select(23, (void*)&sils);
 }
 
 // *******************************************************************
@@ -4340,6 +4845,8 @@ avtDatabaseMetaData::SelectAll()
 //   Hank Childs, Thu Aug 14 08:16:07 PDT 2003
 //   Account for database name being added to front of list.
 //
+//   Hank Childs, Sat Sep 20 08:49:16 PDT 2003
+//   Add support for tensors.
 // *******************************************************************
 
 AttributeGroup *
@@ -4354,14 +4861,18 @@ avtDatabaseMetaData::CreateSubAttributeGroup(int n)
       case 14:
         return new avtVectorMetaData;
       case 15:
-        return new avtMaterialMetaData;
+        return new avtTensorMetaData;
       case 16:
-        return new avtSpeciesMetaData;
+        return new avtSymmetricTensorMetaData;
       case 17:
-        return new avtCurveMetaData;
+        return new avtMaterialMetaData;
       case 18:
+        return new avtSpeciesMetaData;
+      case 19:
+        return new avtCurveMetaData;
+      case 20:
         return new avtDefaultPlotMetaData;
-      case 21:
+      case 23:
         return new avtSILMetaData;
       default:
         return NULL;
@@ -4491,7 +5002,7 @@ avtDatabaseMetaData::GetVector(int n) const
 //     This returns the metadata for the vector in the file whose name is n.
 //
 // Arguments:
-//     n  :  the name of the std::vector object
+//     n  :  the name of the vector object
 //
 // Programmer: Jeremy Meredith
 // Creation:   September  1, 2000
@@ -4506,6 +5017,93 @@ avtDatabaseMetaData::GetVector(const std::string &n) const
     for (int i=0; i<vectors.size(); i++)
         if (vectors[i]->name == n)
             return vectors[i];
+    return NULL;
+}
+
+// ****************************************************************************
+// Method: avtDatabaseMetaData::GetTensor
+//
+// Purpose: 
+//     This returns the metadata for the nth tensor in the file.
+//
+// Arguments:
+//     n  :  the index into the array
+//
+// Programmer: Hank Childs
+// Creation:   September 20, 2003
+//
+// ****************************************************************************
+
+const avtTensorMetaData *
+avtDatabaseMetaData::GetTensor(int n) const
+{
+    return tensors[n];
+}
+
+// ****************************************************************************
+// Method: avtDatabaseMetaData::GetTensor
+//
+// Purpose: 
+//     This returns the metadata for the tensor in the file whose name is n.
+//
+// Arguments:
+//     n  :  the name of the tensor object
+//
+// Programmer: Hank Childs
+// Creation:   September 20, 2003
+//
+// ****************************************************************************
+
+const avtTensorMetaData *
+avtDatabaseMetaData::GetTensor(const std::string &n) const
+{
+    for (int i=0; i<tensors.size(); i++)
+        if (tensors[i]->name == n)
+            return tensors[i];
+    return NULL;
+}
+
+// ****************************************************************************
+// Method: avtDatabaseMetaData::GetSymmTensor
+//
+// Purpose: 
+//     This returns the metadata for the nth symmetric tensor in the file.
+//
+// Arguments:
+//     n  :  the index into the array
+//
+// Programmer: Hank Childs
+// Creation:   September 20, 2003
+//
+// ****************************************************************************
+
+const avtSymmetricTensorMetaData *
+avtDatabaseMetaData::GetSymmTensor(int n) const
+{
+    return symm_tensors[n];
+}
+
+// ****************************************************************************
+// Method: avtDatabaseMetaData::GetSymmTensor
+//
+// Purpose: 
+//     This returns the metadata for the symmetric tensor in the file whose
+//     name is n.
+//
+// Arguments:
+//     n  :  the name of the tensor object
+//
+// Programmer: Hank Childs
+// Creation:   September 20, 2003
+//
+// ****************************************************************************
+
+const avtSymmetricTensorMetaData *
+avtDatabaseMetaData::GetSymmTensor(const std::string &n) const
+{
+    for (int i=0; i<symm_tensors.size(); i++)
+        if (symm_tensors[i]->name == n)
+            return symm_tensors[i];
     return NULL;
 }
 

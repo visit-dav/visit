@@ -5,7 +5,6 @@
 #ifndef AVT_VECTOR_PLOT_H
 #define AVT_VECTOR_PLOT_H
 
-
 #include <avtLegend.h>
 #include <avtPlot.h>
 
@@ -14,7 +13,7 @@
 class     vtkVectorGlyph;
 
 class     avtGhostZoneFilter;
-class     avtGlyphMapper;
+class     avtVectorGlyphMapper;
 class     avtVariableLegend;
 class     avtVectorFilter;
 class     avtLookupTable;
@@ -65,7 +64,7 @@ class avtVectorPlot : public avtPointDataPlot
     VectorAttributes            atts;
     bool                        colorsInitialized;
 
-    avtGlyphMapper             *glyphMapper;
+    avtVectorGlyphMapper       *glyphMapper;
     avtVariableLegend          *varLegend;
     avtLegend_p                 varLegendRefPtr;
     avtVectorFilter            *vectorFilter;

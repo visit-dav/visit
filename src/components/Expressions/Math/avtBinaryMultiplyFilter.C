@@ -34,6 +34,9 @@
 //    Hank Childs, Thu Aug 14 13:37:27 PDT 2003
 //    Added support for mixing scalars and vectors.
 //
+//    Hank Childs, Mon Sep 22 17:06:01 PDT 2003
+//    Added support for tensors.
+//
 // ****************************************************************************
  
 void
@@ -43,7 +46,77 @@ avtBinaryMultiplyFilter::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
 {
     int in1ncomps = in1->GetNumberOfComponents();
     int in2ncomps = in2->GetNumberOfComponents();
-    if (in1ncomps == in2ncomps)
+
+    if ((in1ncomps == 9) && (in2ncomps == 9))
+    {
+        float vals[9];
+        for (int i = 0 ; i < ntuples ; i++)
+        {
+            vals[0] = in1->GetComponent(i, 0) * in2->GetComponent(i, 0) + 
+                      in1->GetComponent(i, 1) * in2->GetComponent(i, 3) + 
+                      in1->GetComponent(i, 2) * in2->GetComponent(i, 6); 
+            vals[1] = in1->GetComponent(i, 0) * in2->GetComponent(i, 1) + 
+                      in1->GetComponent(i, 1) * in2->GetComponent(i, 4) + 
+                      in1->GetComponent(i, 2) * in2->GetComponent(i, 7); 
+            vals[2] = in1->GetComponent(i, 0) * in2->GetComponent(i, 2) + 
+                      in1->GetComponent(i, 1) * in2->GetComponent(i, 5) + 
+                      in1->GetComponent(i, 2) * in2->GetComponent(i, 8); 
+            vals[3] = in1->GetComponent(i, 3) * in2->GetComponent(i, 0) + 
+                      in1->GetComponent(i, 4) * in2->GetComponent(i, 3) + 
+                      in1->GetComponent(i, 5) * in2->GetComponent(i, 6); 
+            vals[4] = in1->GetComponent(i, 3) * in2->GetComponent(i, 1) + 
+                      in1->GetComponent(i, 4) * in2->GetComponent(i, 4) + 
+                      in1->GetComponent(i, 5) * in2->GetComponent(i, 7); 
+            vals[5] = in1->GetComponent(i, 3) * in2->GetComponent(i, 2) + 
+                      in1->GetComponent(i, 4) * in2->GetComponent(i, 5) + 
+                      in1->GetComponent(i, 5) * in2->GetComponent(i, 8); 
+            vals[6] = in1->GetComponent(i, 6) * in2->GetComponent(i, 0) + 
+                      in1->GetComponent(i, 7) * in2->GetComponent(i, 3) + 
+                      in1->GetComponent(i, 8) * in2->GetComponent(i, 6); 
+            vals[7] = in1->GetComponent(i, 6) * in2->GetComponent(i, 1) + 
+                      in1->GetComponent(i, 7) * in2->GetComponent(i, 4) + 
+                      in1->GetComponent(i, 8) * in2->GetComponent(i, 7); 
+            vals[8] = in1->GetComponent(i, 6) * in2->GetComponent(i, 2) + 
+                      in1->GetComponent(i, 7) * in2->GetComponent(i, 5) + 
+                      in1->GetComponent(i, 8) * in2->GetComponent(i, 8); 
+            out->SetTuple(i, vals);
+        }
+    }
+    else if ((in1ncomps == 3) && (in2ncomps == 9))
+    {
+        float vals[3];
+        for (int i = 0 ; i < ntuples ; i++)
+        {
+            vals[0] = in1->GetComponent(i, 0) * in2->GetComponent(i, 0) + 
+                      in1->GetComponent(i, 1) * in2->GetComponent(i, 3) + 
+                      in1->GetComponent(i, 2) * in2->GetComponent(i, 6); 
+            vals[1] = in1->GetComponent(i, 0) * in2->GetComponent(i, 1) + 
+                      in1->GetComponent(i, 1) * in2->GetComponent(i, 4) + 
+                      in1->GetComponent(i, 2) * in2->GetComponent(i, 7); 
+            vals[2] = in1->GetComponent(i, 0) * in2->GetComponent(i, 2) + 
+                      in1->GetComponent(i, 1) * in2->GetComponent(i, 5) + 
+                      in1->GetComponent(i, 2) * in2->GetComponent(i, 8); 
+            out->SetTuple(i, vals);
+        }
+    }
+    else if ((in1ncomps == 9) && (in2ncomps == 3))
+    {
+        float vals[3];
+        for (int i = 0 ; i < ntuples ; i++)
+        {
+            vals[0] = in1->GetComponent(i, 0) * in2->GetComponent(i, 0) + 
+                      in1->GetComponent(i, 1) * in2->GetComponent(i, 1) + 
+                      in1->GetComponent(i, 2) * in2->GetComponent(i, 2); 
+            vals[1] = in1->GetComponent(i, 3) * in2->GetComponent(i, 0) + 
+                      in1->GetComponent(i, 4) * in2->GetComponent(i, 1) + 
+                      in1->GetComponent(i, 5) * in2->GetComponent(i, 2); 
+            vals[2] = in1->GetComponent(i, 6) * in2->GetComponent(i, 0) + 
+                      in1->GetComponent(i, 7) * in2->GetComponent(i, 1) + 
+                      in1->GetComponent(i, 8) * in2->GetComponent(i, 2);
+            out->SetTuple(i, vals);
+        }
+    }
+    else if (in1ncomps == in2ncomps)
     {
         for (int i = 0 ; i < ntuples ; i++)
         {
@@ -98,13 +171,28 @@ avtBinaryMultiplyFilter::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
 //  Programmer: Hank Childs
 //  Creation:   August 14, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Sep 22 17:06:01 PDT 2003
+//    Add matrix/tensor cases.
+//
 // ****************************************************************************
 
 int
 avtBinaryMultiplyFilter::GetNumberOfComponentsInOutput(int in1, int in2)
 {
-    if (in1 == in2)
+    if ((in1 == 3) && (in2 == 3))
         return 1;  // We will do a dot product.
+
+    if ((in1 == 9) && (in2 == 9))
+        return 9;  // Matrix multiply
+
+    if ((in1 == 3) && (in2 == 9))
+        return 3;  // Vector x Matrix = Vector
+
+    if ((in1 == 9) && (in2 == 3))
+        return 3;  // Matrix x Vector = Vector
+
     return (in1 > in2 ? in1 : in2);
 }
 

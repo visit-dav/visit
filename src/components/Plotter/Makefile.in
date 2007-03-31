@@ -138,6 +138,9 @@
 #    Eric Brugger, Fri Jan 17 08:30:18 PST 2003
 #    Removed avtVolumePlot.
 #
+#    Hank Childs, Tue Sep 23 21:47:17 PDT 2003
+#    Added TensorMapper.
+#
 ##############################################################################
 
 ##
@@ -152,14 +155,14 @@
 SRC=avtLegend.C avtVariableLegend.C avtGeometryDrawable.C avtActor.C \
     avtBehavior.C avtTheater.C avtMapper.C avtVariableMapper.C avtPlot.C \
     avtImageMapper.C avtImageDrawable.C avtLevelsLegend.C \
-    avtLevelsMapper.C avtDrawer.C avtGlyphMapper.C \
+    avtLevelsMapper.C avtDrawer.C avtVectorGlyphMapper.C \
     avtUserDefinedMapper.C RenderOrder.C avtVolumeVariableLegend.C \
     avtColorTables.C avtSurfaceAndWireframeRenderer.C avtLookupTable.C \
     avtLightList.C avtPickActor.C avtMesaSurfaceAndWireframeRenderer.C \
     avtOpenGLSurfaceAndWireframeRenderer.C avtCustomRenderer.C \
     avtLineoutActor.C avtTransparencyActor.C avtLabelActor.C \
     avtDecorationsDrawable.C avtDecorationsMapper.C avtLabeledCurveMapper.C \
-    avtExternallyRenderedImagesActor.C
+    avtExternallyRenderedImagesActor.C avtTensorGlyphMapper.C
 
 
 CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@ @MESA_INCLUDE@

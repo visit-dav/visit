@@ -48,6 +48,10 @@
 //    Hank Childs, Thu Aug 21 23:49:59 PDT 2003
 //    Avoid choosing an array that is 'vtkGhostLevels', etc.
 //
+//    Hank Childs, Fri Sep 19 16:47:36 PDT 2003
+//    Allow derived types to specify how many components there are in the 
+//    output.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -61,57 +65,90 @@ avtUnaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
 
     if (activeVariable == NULL)
     {
-        // HACK: We don't know what the default variable is, so just go for
-        // array 0.  It's probably right, but we don't know.  XXXX
+        //
+        // This hack is getting more and more refined.  This situation comes up
+        // when we don't know what the active variable is (mostly for the
+        // constant creation filter).  We probably need more infrastructure
+        // to handle this.
+        // Iteration 1 of this hack said take any array.
+        // Iteration 2 said take any array that isn't vtkGhostLevels, etc.
+        // Iteration 3 says take the first scalar array if one is available,
+        //             provided that array is not vtkGhostLevels, etc.
+        //             This is because most constants we create are scalar.
+        //
         int ncellArray = in_ds->GetCellData()->GetNumberOfArrays();
         for (i = 0 ; i < ncellArray ; i++)
         {
-            cell_data = in_ds->GetCellData()->GetArray(i);
-            if (strstr(cell_data->GetName(), "vtk") != NULL)
-            {
-                cell_data = NULL;
+            vtkDataArray *candidate = in_ds->GetCellData()->GetArray(i);
+            if (strstr(candidate->GetName(), "vtk") != NULL)
                 continue;
-            }
-            if (strstr(cell_data->GetName(), "avt") != NULL)
-            {
-                cell_data = NULL;
+            if (strstr(candidate->GetName(), "avt") != NULL)
                 continue;
-            }
-            if (cell_data != NULL) // We found a winner
+            if (candidate->GetNumberOfComponents() == 1)
+            {
+                // Definite winner
+                cell_data = candidate;
                 break;
+            }
+            else
+                // Potential winner -- keep looking
+                cell_data = candidate;
         }
         int npointArray = in_ds->GetPointData()->GetNumberOfArrays();
         for (i = 0 ; i < npointArray ; i++)
         {
-            point_data = in_ds->GetPointData()->GetArray(i);
-            if (strstr(point_data->GetName(), "vtk") != NULL)
-            {
-                point_data = NULL;
+            vtkDataArray *candidate = in_ds->GetPointData()->GetArray(i);
+            if (strstr(candidate->GetName(), "vtk") != NULL)
                 continue;
-            }
-            if (strstr(point_data->GetName(), "avt") != NULL)
-            {
-                point_data = NULL;
+            if (strstr(candidate->GetName(), "avt") != NULL)
                 continue;
-            }
-            if (point_data != NULL) // We found a winner
+            if (candidate->GetNumberOfComponents() == 1)
+            {
+                // Definite winner
+                point_data = candidate;
                 break;
+            }
+            else
+                // Potential winner -- keep looking
+                point_data = candidate;
         }
-    } else
+
+        if (cell_data != NULL && cell_data->GetNumberOfComponents() == 1)
+        {
+            data = cell_data;
+            centering = AVT_ZONECENT;
+        }
+        else if (point_data != NULL && point_data->GetNumberOfComponents()== 1)
+        {
+            data = point_data;
+            centering = AVT_NODECENT;
+        }
+        else if (cell_data != NULL)
+        {
+            data = cell_data;
+            centering = AVT_ZONECENT;
+        }
+        else
+        {
+            data = point_data;
+            centering = AVT_NODECENT;
+        }
+    } 
+    else
     {
         cell_data = in_ds->GetCellData()->GetArray(activeVariable);
         point_data = in_ds->GetPointData()->GetArray(activeVariable);
-    }
 
-    if (cell_data != NULL)
-    {
-        data = cell_data;
-        centering = AVT_ZONECENT;
-    }
-    else
-    {
-        data = point_data;
-        centering = AVT_NODECENT;
+        if (cell_data != NULL)
+        {
+            data = cell_data;
+            centering = AVT_ZONECENT;
+        }
+        else
+        {
+            data = point_data;
+            centering = AVT_NODECENT;
+        }
     }
 
     //
@@ -121,9 +158,16 @@ avtUnaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
     int nvals  = data->GetNumberOfTuples();
 
     vtkDataArray *dv = data->NewInstance();
-    dv->SetNumberOfComponents(ncomps);
+    int noutcomps = GetNumberOfComponentsInOutput(ncomps);
+    dv->SetNumberOfComponents(noutcomps);
     dv->SetNumberOfTuples(nvals);
 
+    //
+    // Should we send in ncomps or noutcomps?  They are the same number 
+    // unless the derived type re-defined GetNumberOfComponentsInOutput.
+    // If it did, it probably doesn't matter.  If not, then it is the same
+    // number.  So send in the input.  Really doesn't matter.
+    //
     DoOperation(data, dv, ncomps, nvals);
 
     return dv;

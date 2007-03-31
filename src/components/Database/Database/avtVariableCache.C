@@ -18,6 +18,9 @@ inline void Indent(ostream &, int);
 
 const char *avtVariableCache::SCALARS_NAME = "SCALARS";
 const char *avtVariableCache::VECTORS_NAME = "VECTORS";
+const char *avtVariableCache::TENSORS_NAME = "TENSORS";
+const char *avtVariableCache::SYMMETRIC_TENSORS_NAME 
+                                           = "SYMMETRIC_TENSORS";
 const char *avtVariableCache::DATASET_NAME = "DATASET";
 
 

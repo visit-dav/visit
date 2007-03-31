@@ -15,6 +15,15 @@
 #include <avtArcsinFilter.h>
 #include <avtArccosFilter.h>
 #include <avtDegreeToRadianFilter.h>
+#include <avtDeterminantFilter.h>
+#include <avtEigenvalueFilter.h>
+#include <avtEigenvectorFilter.h>
+#include <avtInverseFilter.h>
+#include <avtTraceFilter.h>
+#include <avtTensorMaximumShearFilter.h>
+#include <avtPrincipalDeviatoricTensorFilter.h>
+#include <avtPrincipalTensorFilter.h>
+#include <avtEffectiveTensorFilter.h>
 #include <avtGradientFilter.h>
 #include <avtMagnitudeFilter.h>
 #include <avtNeighborFilter.h>
@@ -181,6 +190,7 @@ EngineIndexExpr::CreateFilters(ExprPipelineState *state)
 {
     dynamic_cast<EngineExprNode*>(expr)->CreateFilters(state);
 
+    //avtVectorDecomposeFilter *f = new avtVectorDecomposeFilter(ind);
     avtVectorDecomposeFilter *f = new avtVectorDecomposeFilter(ind);
 
     // Set the variable the function should process.
@@ -271,6 +281,9 @@ EngineVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Hank Childs, Thu Aug 21 09:54:51 PDT 2003
 //      Added conditionals/comparisons.
 //
+//      Hank Childs, Fri Sep 19 16:18:37 PDT 2003
+//      Added matrix operations.
+//
 // ****************************************************************************
 void
 EngineFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -315,6 +328,24 @@ EngineFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtMatvfFilter();
     else if (functionName == "nmats")
         f = new avtNMatsFilter();
+    else if (functionName == "det" || functionName == "determinant")
+        f = new avtDeterminantFilter();
+    else if (functionName == "eigenvalue")
+        f = new avtEigenvalueFilter();
+    else if (functionName == "eigenvector")
+        f = new avtEigenvectorFilter();
+    else if (functionName == "inverse")
+        f = new avtInverseFilter();
+    else if (functionName == "trace")
+        f = new avtTraceFilter();
+    else if (functionName == "effective_tensor")
+        f = new avtEffectiveTensorFilter();
+    else if (functionName == "tensor_maximum_shear")
+        f = new avtTensorMaximumShearFilter();
+    else if (functionName == "principal_tensor")
+        f = new avtPrincipalTensorFilter();
+    else if (functionName == "principal_deviatoric_tensor")
+        f = new avtPrincipalDeviatoricTensorFilter();
     else if (functionName == "degree")
         f = new avtDegreeFilter();
     else if (functionName == "polar")

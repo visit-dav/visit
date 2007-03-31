@@ -1,0 +1,11 @@
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const TensorAttributes &obj);
+Definition:
+bool
+TensorAttributes::ChangesRequireRecalculation(const TensorAttributes &obj)
+{
+    return ((useStride != obj.useStride) ||
+            (stride != obj.stride) ||
+            (nTensors != obj.nTensors));
+}
+

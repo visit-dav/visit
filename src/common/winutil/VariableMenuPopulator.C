@@ -27,7 +27,8 @@ using std::map;
 // ****************************************************************************
 
 VariableMenuPopulator::VariableMenuPopulator() : meshVars(), scalarVars(),
-    materialVars(), vectorVars(), subsetVars(), speciesVars(), curveVars()
+    materialVars(), vectorVars(), subsetVars(), speciesVars(), curveVars(),
+    tensorVars(), symmTensorVars()
 {
 }
 
@@ -84,6 +85,8 @@ VariableMenuPopulator::~VariableMenuPopulator()
 //   VAR_CATEGORY_MATERIALS flag works and does not populate the variable
 //   list with all of the subset variables.
 //
+//   Hank Childs, Tue Sep 23 22:05:54 PDT 2003
+//   Add support for tensors.
 // ****************************************************************************
 
 void
@@ -101,6 +104,8 @@ VariableMenuPopulator::PopulateVariableLists(const avtDatabaseMetaData *md,
     subsetVars.clear();
     speciesVars.clear();
     curveVars.clear();
+    tensorVars.clear();
+    symmTensorVars.clear();
 
     // Do stuff with the metadata
     int i;
@@ -129,6 +134,16 @@ VariableMenuPopulator::PopulateVariableLists(const avtDatabaseMetaData *md,
         const avtCurveMetaData *cmd = md->GetCurve(i);
         curveVars[cmd->name] = cmd->validVariable;
     }
+    for (i = 0; i < md->GetNumTensors(); ++i)
+    {
+        const avtTensorMetaData *tmd = md->GetTensor(i);
+        tensorVars[tmd->name] = tmd->validVariable;
+    }
+    for (i = 0; i < md->GetNumSymmTensors(); ++i)
+    {
+        const avtSymmetricTensorMetaData *tmd = md->GetSymmTensor(i);
+        tensorVars[tmd->name] = tmd->validVariable;
+    }
 
     // Process the expressions
     int nexp = exprList->GetNumExpressions();
@@ -155,6 +170,12 @@ VariableMenuPopulator::PopulateVariableLists(const avtDatabaseMetaData *md,
                 break;
             case Expression::Species:
                 m = &speciesVars;
+                break;
+            case Expression::TensorMeshVar:
+                m = &tensorVars;
+                break;
+            case Expression::SymmetricTensorMeshVar:
+                m = &symmTensorVars;
                 break;
             default:
                 break;
@@ -261,6 +282,9 @@ VariableMenuPopulator::PopulateVariableLists(const avtDatabaseMetaData *md,
 //   I made it possible for materials to be treated differently than subset
 //   variables. The materialVars map is a subset of subsetVars.
 //
+//   Hank Childs, Tue Sep 23 22:09:33 PDT 2003
+//   Added support for tensors.
+//
 // ****************************************************************************
 
 int
@@ -286,6 +310,10 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
        ++numVarTypes;
     if(varTypes & VAR_CATEGORY_CURVE)
        ++numVarTypes;
+    if(varTypes & VAR_CATEGORY_TENSOR)
+       ++numVarTypes;
+    if(varTypes & VAR_CATEGORY_SYMMETRIC_TENSOR)
+       ++numVarTypes;
 
     if(numVarTypes > 1)
     {
@@ -307,6 +335,10 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
             AddVars(vars, speciesVars);
         if(varTypes & VAR_CATEGORY_CURVE)
             AddVars(vars, curveVars);
+        if(varTypes & VAR_CATEGORY_TENSOR)
+            AddVars(vars, tensorVars);
+        if(varTypes & VAR_CATEGORY_SYMMETRIC_TENSOR)
+            AddVars(vars, symmTensorVars);
        
         // Update the menu with the composite variable list.
         UpdateSingleMenu(menu, receiver, vars, changeVar);
@@ -346,6 +378,14 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
             UpdateSingleMenu(menu, receiver, curveVars, changeVar);
             retval = curveVars.size();
             break;
+        case VAR_CATEGORY_TENSOR:
+            UpdateSingleMenu(menu, receiver, tensorVars, changeVar);
+            retval = curveVars.size();
+            break;
+        case VAR_CATEGORY_SYMMETRIC_TENSOR:
+            UpdateSingleMenu(menu, receiver, symmTensorVars, changeVar);
+            retval = curveVars.size();
+            break;
         }
     }
 
@@ -372,6 +412,9 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
 //   Hank Childs, Fri Aug  1 10:44:45 PDT 2003
 //   Add support for curves.
 //
+//   Hank Childs, Tue Sep 23 22:09:33 PDT 2003
+//   Added support for tensors.
+//
 // ****************************************************************************
 
 bool
@@ -393,6 +436,10 @@ VariableMenuPopulator::ItemEnabled(int varType) const
        retval |= (speciesVars.size() > 0);
     if(varType & VAR_CATEGORY_CURVE)
        retval |= (curveVars.size() > 0);
+    if(varType & VAR_CATEGORY_TENSOR)
+       retval |= (tensorVars.size() > 0);
+    if(varType & VAR_CATEGORY_SYMMETRIC_TENSOR)
+       retval |= (symmTensorVars.size() > 0);
 
     return retval;
 }

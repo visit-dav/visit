@@ -360,6 +360,71 @@ avtFileFormat::AddVectorVarToMetaData(avtDatabaseMetaData *md, string name,
 
 
 // ****************************************************************************
+//  Method: avtFileFormat::AddTensorVarToMetaData
+//
+//  Purpose:
+//      A convenience routine to add a tensor variable to the meta-data.
+//
+//  Arguments:
+//      md        The meta-data object to add the tensor var to.
+//      name      The name of the tensor variable.
+//      mesh      The mesh the tensor var is defined on.
+//      cent      The centering type - node vs cell.
+//      dim       The dimension of the tensor variable. (optional = 3)
+//
+//  Programmer: Hank Childs
+//  Creation:   September 20, 2003
+//
+// ****************************************************************************
+
+void
+avtFileFormat::AddTensorVarToMetaData(avtDatabaseMetaData *md, string name,
+                                      string mesh, avtCentering cent, int dim)
+{
+    avtTensorMetaData *tensor = new avtTensorMetaData();
+    tensor->name = name;
+    tensor->meshName = mesh;
+    tensor->centering = cent;
+    tensor->dim = dim;
+
+    md->Add(tensor);
+}
+
+
+// ****************************************************************************
+//  Method: avtFileFormat::AddSymmetricTensorVarToMetaData
+//
+//  Purpose:
+//      A convenience routine to add a symmetric tensor variable to the
+//      meta-data.
+//
+//  Arguments:
+//      md        The meta-data object to add the tensor var to.
+//      name      The name of the tensor variable.
+//      mesh      The mesh the tensor var is defined on.
+//      cent      The centering type - node vs cell.
+//      dim       The dimension of the tensor variable. (optional = 3)
+//
+//  Programmer: Hank Childs
+//  Creation:   September 20, 2003
+//
+// ****************************************************************************
+
+void
+avtFileFormat::AddSymmetricTensorVarToMetaData(avtDatabaseMetaData *md, 
+                          string name, string mesh, avtCentering cent, int dim)
+{
+    avtSymmetricTensorMetaData *st = new avtSymmetricTensorMetaData();
+    st->name = name;
+    st->meshName = mesh;
+    st->centering = cent;
+    st->dim = dim;
+
+    md->Add(st);
+}
+
+
+// ****************************************************************************
 //  Method: avtFileFormat::AddMaterialToMetaData
 //
 //  Purpose:

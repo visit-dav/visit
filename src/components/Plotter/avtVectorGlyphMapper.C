@@ -1,8 +1,8 @@
 // ************************************************************************* //
-//                                avtGlyphMapper.C                           //
+//                             avtVectorGlyphMapper.C                        //
 // ************************************************************************* //
 
-#include <avtGlyphMapper.h>
+#include <avtVectorGlyphMapper.h>
 
 #include <vtkActor.h>
 #include <vtkGlyph3D.h>
@@ -15,7 +15,7 @@
 
 
 // ****************************************************************************
-//  Method: avtGlyphMapper constructor
+//  Method: avtVectorGlyphMapper constructor
 //
 //  Arguments:
 //      g       The glyph this mapper should use.
@@ -43,7 +43,7 @@
 //
 // ****************************************************************************
 
-avtGlyphMapper::avtGlyphMapper(vtkPolyData *g)
+avtVectorGlyphMapper::avtVectorGlyphMapper(vtkPolyData *g)
 {
     glyph = g;
     glyph->Register(NULL);
@@ -59,14 +59,14 @@ avtGlyphMapper::avtGlyphMapper(vtkPolyData *g)
 
 
 // ****************************************************************************
-//  Method: avtGlyphMapper destructor
+//  Method: avtVectorGlyphMapper destructor
 //
 //  Programmer: Hank Childs
 //  Creation:   March 23, 2001
 //
 // ****************************************************************************
 
-avtGlyphMapper::~avtGlyphMapper()
+avtVectorGlyphMapper::~avtVectorGlyphMapper()
 {
     if (glyph != NULL)
     {
@@ -89,7 +89,7 @@ avtGlyphMapper::~avtGlyphMapper()
 
 
 // ****************************************************************************
-//  Method: avtGlyphMapper::CustomizeMappers
+//  Method: avtVectorGlyphMapper::CustomizeMappers
 //
 //  Purpose:
 //      A hook from the base class that allows the variable mapper to force
@@ -113,7 +113,7 @@ avtGlyphMapper::~avtGlyphMapper()
 // ****************************************************************************
 
 void
-avtGlyphMapper::CustomizeMappers(void)
+avtVectorGlyphMapper::CustomizeMappers(void)
 {
     if (glyphFilter != NULL)
     {
@@ -153,7 +153,7 @@ avtGlyphMapper::CustomizeMappers(void)
 
 
 // ****************************************************************************
-//  Method: avtGlyphMapper::SetUpFilters
+//  Method: avtVectorGlyphMapper::SetUpFilters
 //
 //  Purpose:
 //      The glyph mapper inserts filters into the VTK pipeline, but can
@@ -172,7 +172,7 @@ avtGlyphMapper::CustomizeMappers(void)
 // ****************************************************************************
 
 void
-avtGlyphMapper::SetUpFilters(int nDoms)
+avtVectorGlyphMapper::SetUpFilters(int nDoms)
 {
     if (glyphFilter != NULL)
     {
@@ -196,7 +196,7 @@ avtGlyphMapper::SetUpFilters(int nDoms)
 
 
 // ****************************************************************************
-//  Method: avtGlyphMapper::InsertFilters
+//  Method: avtVectorGlyphMapper::InsertFilters
 //
 //  Purpose:
 //      Inserts a glyph filter into the vtk Pipeline.
@@ -219,7 +219,7 @@ avtGlyphMapper::SetUpFilters(int nDoms)
 // ****************************************************************************
 
 vtkDataSet *
-avtGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
+avtVectorGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
 {
     if (dom < 0 || dom >= nGlyphFilters)
     {
@@ -242,7 +242,7 @@ avtGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
 
 
 // ****************************************************************************
-//  Method: avtGlyphMapper::SetLineWidth
+//  Method: avtVectorGlyphMapper::SetLineWidth
 //
 //  Purpose:
 //      Sets the line width of for all the actors of plot.
@@ -262,7 +262,7 @@ avtGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
 // ****************************************************************************
 
 void
-avtGlyphMapper::SetLineWidth(_LineWidth lw)
+avtVectorGlyphMapper::SetLineWidth(_LineWidth lw)
 {
     lineWidth = lw; 
     if ( actors == NULL )
@@ -282,7 +282,7 @@ avtGlyphMapper::SetLineWidth(_LineWidth lw)
 
 
 // ****************************************************************************
-//  Method: avtGlyphMapper::SetLineStyle
+//  Method: avtVectorGlyphMapper::SetLineStyle
 //
 //  Purpose:
 //      Sets the line style of for all the actors of plot.
@@ -296,7 +296,7 @@ avtGlyphMapper::SetLineWidth(_LineWidth lw)
 // ****************************************************************************
 
 void
-avtGlyphMapper::SetLineStyle(_LineStyle ls)
+avtVectorGlyphMapper::SetLineStyle(_LineStyle ls)
 {
     lineStyle = ls;
     if ( actors == NULL )
@@ -316,7 +316,7 @@ avtGlyphMapper::SetLineStyle(_LineStyle ls)
 
 
 // ****************************************************************************
-//  Method: avtGlyphMapper::SetScale
+//  Method: avtVectorGlyphMapper::SetScale
 //
 //  Purpose:
 //      Sets the scale of each glyph.
@@ -330,7 +330,7 @@ avtGlyphMapper::SetLineStyle(_LineStyle ls)
 // ****************************************************************************
 
 void
-avtGlyphMapper::SetScale(float s)
+avtVectorGlyphMapper::SetScale(float s)
 {
     scale = s;
     if (glyphFilter != NULL)
@@ -347,7 +347,7 @@ avtGlyphMapper::SetScale(float s)
 
 
 // ****************************************************************************
-//  Method: avtGlyphMapper::ColorByMagOn
+//  Method: avtVectorGlyphMapper::ColorByMagOn
 //
 //  Purpose:
 //      Tells the glyph mapper to color by the magnitude.
@@ -358,7 +358,7 @@ avtGlyphMapper::SetScale(float s)
 // ****************************************************************************
 
 void
-avtGlyphMapper::ColorByMagOn(void)
+avtVectorGlyphMapper::ColorByMagOn(void)
 {
     colorByMag = true;
 
@@ -376,7 +376,7 @@ avtGlyphMapper::ColorByMagOn(void)
 
 
 // ****************************************************************************
-//  Method: avtGlyphMapper::ColorByMagOff
+//  Method: avtVectorGlyphMapper::ColorByMagOff
 //
 //  Purpose:
 //      Tells the glyph mapper to color all of the glyphs the same color.
@@ -390,7 +390,7 @@ avtGlyphMapper::ColorByMagOn(void)
 // ****************************************************************************
 
 void
-avtGlyphMapper::ColorByMagOff(const unsigned char col[3])
+avtVectorGlyphMapper::ColorByMagOff(const unsigned char col[3])
 {
     glyphColor[0] = col[0];
     glyphColor[1] = col[1];
@@ -426,7 +426,7 @@ avtGlyphMapper::ColorByMagOff(const unsigned char col[3])
 
 
 // ****************************************************************************
-// Method: avtGlyphMapper::SetLookupTable
+// Method: avtVectorGlyphMapper::SetLookupTable
 //
 // Purpose: 
 //   Replaces the current lookup table. 
@@ -440,7 +440,7 @@ avtGlyphMapper::ColorByMagOff(const unsigned char col[3])
 // ****************************************************************************
 
 void
-avtGlyphMapper::SetLookupTable(vtkLookupTable *LUT)
+avtVectorGlyphMapper::SetLookupTable(vtkLookupTable *LUT)
 {
     if (lut == LUT)
     {

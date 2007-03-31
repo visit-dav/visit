@@ -34,12 +34,12 @@ class EXPRESSION_API avtVectorComposeFilter
     virtual const char       *GetType(void)  
                                     { return "avtVectorComposeFilter"; };
     virtual const char       *GetDescription(void)
-                                    { return "Creating a vector from components"; };
+                                 {return "Creating a vector from components";};
     virtual int               NumVariableArguments() { return 3; }
 
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
-    virtual int               GetVariableDimension() { return 3; }
+    virtual int               GetVariableDimension(void);
 };
 
 

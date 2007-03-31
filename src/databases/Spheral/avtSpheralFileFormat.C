@@ -401,6 +401,9 @@ avtSpheralFileFormat::ParseField(char *line, int nwords,
        case AVT_SYMMETRIC_TENSOR_VAR:
          dims_listed = 2;
          break;
+
+       default:
+         EXCEPTION1(InvalidFilesException, rootfile.c_str());
     }
     if ((3+dims_listed) > nwords)
     {
@@ -928,6 +931,9 @@ avtSpheralFileFormat::GetVectorVar(int dom, const char *name)
 //    Make sure we have read in the meta-data, since that is no longer done
 //    in the constructor.
 //
+//    Hank Childs, Mon Sep 22 14:05:50 PDT 2003
+//    Add support for tensors.
+//
 // ****************************************************************************
 
 void
@@ -961,10 +967,20 @@ avtSpheralFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             AddScalarVarToMetaData(md, fields[i], "Node List", AVT_NODECENT,
                                    NULL);
         }
-        if (fieldType[i] == AVT_VECTOR_VAR)
+        else if (fieldType[i] == AVT_VECTOR_VAR)
         {
             AddVectorVarToMetaData(md, fields[i], "Node List", AVT_NODECENT,
                                    fieldDim1[i], NULL);
+        }
+        else if (fieldType[i] == AVT_TENSOR_VAR)
+        {
+            AddTensorVarToMetaData(md, fields[i], "Node List", AVT_NODECENT,
+                                   fieldDim1[i]);
+        }
+        else if (fieldType[i] == AVT_SYMMETRIC_TENSOR_VAR)
+        {
+            AddSymmetricTensorVarToMetaData(md, fields[i], "Node List",
+                                            AVT_NODECENT, fieldDim1[i]);
         }
     }
 
@@ -1066,6 +1082,9 @@ avtSpheralFileFormat::ReadDomain(int dom)
 //    Hank Childs, Mon Mar 17 13:09:24 PST 2003
 //    2D vectors in VTK must be represented as 3D.
 //
+//    Hank Childs, Mon Sep 22 14:07:02 PDT 2003
+//    Add support for tensors.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1138,6 +1157,116 @@ avtSpheralFileFormat::ReadField(istream &ifile, int nodeListIndex,
             arr->SetTuple(i, vals);
         }
         delete [] vals;
+        rv = arr;
+    }
+    else if (fieldType[fieldIndex] == AVT_SYMMETRIC_TENSOR_VAR)
+    {
+        vtkFloatArray *arr = vtkFloatArray::New();
+        int dim  = fieldDim1[fieldIndex];
+        float vals[9];
+        arr->SetNumberOfComponents(9);
+        arr->SetNumberOfTuples(nNodes);
+        if (dim == 2)
+        {
+            for (int i = 0 ; i < nNodes ; i++)
+            {
+                nwords = GetLine(ifile, line, offsets);
+                if (nwords != 4)
+                {
+                    debug1 << "Incorrect number of components for symm-tensor."
+                           << endl;
+                    EXCEPTION1(InvalidFilesException, current_file.c_str());
+                }
+                vals[0] = atof(line + offsets[0]);
+                vals[1] = atof(line + offsets[1]);
+                vals[2] = 0.;
+                vals[3] = atof(line + offsets[2]);
+                vals[4] = atof(line + offsets[3]);
+                vals[5] = 0.;
+                vals[6] = 0.;
+                vals[7] = 0.;
+                vals[8] = 0.;
+                arr->SetTuple(i, vals);
+            }
+        }
+        else
+        {
+            for (int i = 0 ; i < nNodes ; i++)
+            {
+                nwords = GetLine(ifile, line, offsets);
+                if (nwords != 9)
+                {
+                    debug1 << "Incorrect number of components for symm-tensor."
+                           << endl;
+                    EXCEPTION1(InvalidFilesException, current_file.c_str());
+                }
+                vals[0] = atof(line + offsets[0]);
+                vals[1] = atof(line + offsets[1]);
+                vals[2] = atof(line + offsets[2]);
+                vals[3] = atof(line + offsets[3]);
+                vals[4] = atof(line + offsets[4]);
+                vals[5] = atof(line + offsets[5]);
+                vals[6] = atof(line + offsets[6]);
+                vals[7] = atof(line + offsets[7]);
+                vals[8] = atof(line + offsets[8]);
+                arr->SetTuple(i, vals);
+            }
+        }
+        rv = arr;
+    }
+    else if (fieldType[fieldIndex] == AVT_TENSOR_VAR)
+    {
+        vtkFloatArray *arr = vtkFloatArray::New();
+        int dim  = fieldDim1[fieldIndex];
+        float vals[9];
+        arr->SetNumberOfComponents(9);
+        arr->SetNumberOfTuples(nNodes);
+        if (dim == 2)
+        {
+            for (int i = 0 ; i < nNodes ; i++)
+            {
+                nwords = GetLine(ifile, line, offsets);
+                if (nwords != 4)
+                {
+                    debug1 << "Incorrect number of components for tensor."
+                           << endl;
+                    EXCEPTION1(InvalidFilesException, current_file.c_str());
+                }
+                vals[0] = atof(line + offsets[0]);
+                vals[1] = atof(line + offsets[1]);
+                vals[2] = 0.;
+                vals[3] = atof(line + offsets[2]);
+                vals[4] = atof(line + offsets[3]);
+                vals[5] = 0.;
+                vals[6] = 0.;
+                vals[7] = 0.;
+                vals[8] = 0.;
+                arr->SetTuple(i, vals);
+            }
+        }
+        else
+        {
+            for (int i = 0 ; i < nNodes ; i++)
+            {
+                nwords = GetLine(ifile, line, offsets);
+                if (nwords != 9)
+                {
+                    debug1 << "Incorrect number of components for symm-tensor."
+                           << endl;
+                    EXCEPTION1(InvalidFilesException, current_file.c_str());
+                }
+                vals[0] = atof(line + offsets[0]);
+                vals[1] = atof(line + offsets[1]);
+                vals[2] = atof(line + offsets[2]);
+                vals[3] = atof(line + offsets[3]);
+                vals[4] = atof(line + offsets[4]);
+                vals[5] = atof(line + offsets[5]);
+                vals[6] = atof(line + offsets[6]);
+                vals[7] = atof(line + offsets[7]);
+                vals[8] = atof(line + offsets[8]);
+                arr->SetTuple(i, vals);
+            }
+        }
         rv = arr;
     }
     else

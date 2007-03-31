@@ -225,6 +225,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    No longer assume that requesting a material means that we are doing
 //    material interface reconstruction.
 //
+//    Hank Childs, Tue Sep 23 23:03:07 PDT 2003
+//    Add support for tensors.
+//
 // ****************************************************************************
 
 void
@@ -316,6 +319,22 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
 
             delete [] extents;
         }
+    }
+
+    const avtTensorMetaData *tmd = GetMetaData()->GetTensor(var);
+    if (tmd != NULL)
+    {
+        atts.SetVariableDimension(9);
+        atts.SetVariableName(var);
+        atts.SetCentering(tmd->centering);
+    }
+
+    const avtSymmetricTensorMetaData *stmd = GetMetaData()->GetSymmTensor(var);
+    if (stmd != NULL)
+    {
+        atts.SetVariableDimension(9);
+        atts.SetVariableName(var);
+        atts.SetCentering(stmd->centering);
     }
 
     const avtSpeciesMetaData *spmd = GetMetaData()->GetSpecies(var);
@@ -677,6 +696,9 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Kathleen Bonnell, Thu Sep 18 07:43:33 PDT 2003 
 //    QueryMaterial should use 'real' elements when available. 
 //    
+//    Hank Childs, Mon Sep 22 09:20:08 PDT 2003
+//    Added support for tensors and symmetric tensors.
+//
 // ****************************************************************************
 
 void               
@@ -770,15 +792,28 @@ avtDatabase::Query(PickAttributes *pa)
                 case AVT_SCALAR_VAR : success = 
                    QueryScalars(vName, foundDomain, foundEl, ts, incEls, 
                                 pa->GetPickVarInfo(varNum), zonePick);
+                   pa->GetPickVarInfo(varNum).SetVariableType("scalar");
                    break; 
                 case AVT_VECTOR_VAR : success = 
                    QueryVectors(vName, foundDomain, foundEl, ts, incEls, 
                                 pa->GetPickVarInfo(varNum), zonePick);
+                   pa->GetPickVarInfo(varNum).SetVariableType("vector");
+                   break; 
+                case AVT_TENSOR_VAR : success = 
+                   QueryTensors(vName, foundDomain, foundEl, ts, incEls, 
+                                pa->GetPickVarInfo(varNum), zonePick);
+                   pa->GetPickVarInfo(varNum).SetVariableType("tensor");
+                   break; 
+                case AVT_SYMMETRIC_TENSOR_VAR : success = 
+                   QuerySymmetricTensors(vName, foundDomain, foundEl, ts,
+                                 incEls, pa->GetPickVarInfo(varNum), zonePick);
+                   pa->GetPickVarInfo(varNum).SetVariableType("symm_tensor");
                    break; 
                 case AVT_MATERIAL : 
                    success = 
                    QueryMaterial(vName, foundDomain, matEl, ts, matIncEls, 
                                  pa->GetPickVarInfo(varNum), zonePick);
+                   pa->GetPickVarInfo(varNum).SetVariableType("material");
                    break; 
                 case AVT_MESH : 
                    removeMe.push_back(varNum);

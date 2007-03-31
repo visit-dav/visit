@@ -52,6 +52,8 @@ class DATABASE_API avtVariableCache
 
     static const char     *SCALARS_NAME;
     static const char     *VECTORS_NAME;
+    static const char     *TENSORS_NAME;
+    static const char     *SYMMETRIC_TENSORS_NAME;
     static const char     *DATASET_NAME;
 
     vtkObject             *GetVTKObject(const char *name, const char *type,
