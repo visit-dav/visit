@@ -358,6 +358,9 @@ XMLEditPlugin::BlockAllSignals(bool block)
 //    Brad Whitlock, Thu Mar 13 13:02:53 PST 2003
 //    I added another argument to the plugin constructor.
 //
+//    Hank Childs, Sat Sep 13 08:27:57 PDT 2003
+//    Added another argument to plugin constructor.
+//
 // ****************************************************************************
 void
 XMLEditPlugin::attpluginGroupChanged(int id)
@@ -367,7 +370,7 @@ XMLEditPlugin::attpluginGroupChanged(int id)
         xmldoc->docType = "Plugin";
         if (!xmldoc->plugin)
         {
-            xmldoc->plugin = new Plugin("","","","","","","");
+            xmldoc->plugin = new Plugin("","","","","","","","");
             xmldoc->plugin->atts = xmldoc->attribute;
         }
     }
