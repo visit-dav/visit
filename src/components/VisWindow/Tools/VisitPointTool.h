@@ -7,7 +7,6 @@
 // Forward declarations
 class VisWindow;
 class vtkActor;
-class vtkPointSource;
 class vtkPolyDataMapper;
 class vtkPolyData;
 class vtkTextActor;
@@ -26,6 +25,9 @@ class vtkTextActor;
 // Modifications:
 //   Akira Haddox, Wed Jul  2 14:53:50 PDT 2003
 //   Added translation along an axis.
+//
+//   Akira Haddox, Mon Aug  4 12:48:02 PDT 2003
+//   Removed unneeded point actor.
 //
 // ****************************************************************************
 
@@ -61,9 +63,6 @@ class VISWINDOW_API VisitPointTool : public VisitInteractiveTool
 
     avtVector ComputeTranslationDistance(int);
 
-    void CreatePointActor();
-    void UpdatePoint();
-
     void CreateGuide();
     void DeleteGuide();
     void AddGuide();
@@ -82,10 +81,6 @@ class VISWINDOW_API VisitPointTool : public VisitInteractiveTool
 
     float                focalDepth;
     avtVector            translationDistance;
-    vtkPointSource      *pointSource;
-    vtkActor            *pointActor;
-    vtkPolyDataMapper   *pointMapper;
-    vtkPolyData         *pointData;
     vtkActor            *guideActor;
     vtkPolyDataMapper   *guideMapper;
     vtkPolyData         *guideData;

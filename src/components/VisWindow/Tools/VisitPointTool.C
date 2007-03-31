@@ -6,7 +6,6 @@
 
 #include <vtkActor.h>
 #include <vtkCamera.h>
-#include <vtkPointSource.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
@@ -31,6 +30,9 @@
 //   Akira Haddox, Wed Jul  2 14:56:33 PDT 2003
 //   Added axis translate.
 //
+//   Akira Haddox, Mon Aug  4 12:48:02 PDT 2003
+//   Removed unneeded point actor.
+//
 // ****************************************************************************
 
 VisitPointTool::VisitPointTool(VisWindowToolProxy &p) : VisitInteractiveTool(p),
@@ -52,15 +54,10 @@ VisitPointTool::VisitPointTool(VisWindowToolProxy &p) : VisitInteractiveTool(p),
     h.callback = TranslateCallback;
     hotPoints.push_back(h);
 
-    pointSource = NULL;
-    pointData = NULL;
-    pointActor = NULL;
-    pointMapper = NULL;
     guideActor = NULL;
     guideMapper = NULL;
     guideData = NULL;
 
-    CreatePointActor();
     CreateTextActors();
     CreateGuide();
 }
@@ -74,34 +71,14 @@ VisitPointTool::VisitPointTool(VisWindowToolProxy &p) : VisitInteractiveTool(p),
 // Programmer: Akira Haddox
 // Creation:   Mon Jun  9 09:23:01 PDT 2003
 //
+// Modifications:
+//   Akira Haddox, Mon Aug  4 12:48:02 PDT 2003
+//   Removed unneeded point actor.
+//
 // ****************************************************************************
 
 VisitPointTool::~VisitPointTool()
 {
-    if(pointActor != NULL)
-    {
-        pointActor->Delete();
-        pointActor = NULL;
-    }
-
-    if(pointMapper != NULL)
-    {
-        pointMapper->Delete();
-        pointMapper = NULL;
-    }
-
-    if(pointData != NULL)
-    {
-        pointData->Delete();
-        pointData = NULL;
-    }
-
-    if(pointSource != NULL)
-    {
-        pointSource->Delete();
-        pointSource = NULL;
-    }
-
     // Delete the text mappers and actors
     DeleteTextActors();
  
@@ -118,6 +95,10 @@ VisitPointTool::~VisitPointTool()
 // Programmer: Akira Haddox
 // Creation:   Mon Jun  9 09:21:40 PDT 2003
 //
+// Modifications:
+//   Akira Haddox, Mon Aug  4 12:48:02 PDT 2003
+//   Removed unneeded point actor.
+//
 // ****************************************************************************
 
 void
@@ -130,7 +111,6 @@ VisitPointTool::Enable()
     if(!val)
     {
         UpdateTool();
-        proxy.GetCanvas()->AddActor(pointActor);
         AddText();
     }
 }
@@ -144,6 +124,10 @@ VisitPointTool::Enable()
 // Programmer: Akira Haddox
 // Creation:   Mon Jun  9 09:21:40 PDT 2003
 //
+// Modifications:
+//   Akira Haddox, Mon Aug  4 12:48:02 PDT 2003
+//   Removed unneeded point actor.
+//
 // ****************************************************************************
 
 void
@@ -156,7 +140,6 @@ VisitPointTool::Disable()
     // Remove the actors from the canvas if the tool was enabled.
     if(val)
     {
-        proxy.GetCanvas()->RemoveActor(pointActor);
         RemoveText();
     }
 }
@@ -297,6 +280,10 @@ VisitPointTool::UpdateView()
 // Programmer: Akira Haddox
 // Creation:   Mon Jun  9 09:21:40 PDT 2003
 //
+// Modifications:
+//   Akira Haddox, Mon Aug  4 12:48:02 PDT 2003
+//   Removed unneeded point actor.
+//
 // ****************************************************************************
 
 void
@@ -304,55 +291,9 @@ VisitPointTool::UpdateTool()
 {
     hotPoints[0].pt = avtVector((double*)Interface.GetPoint());
 
-    UpdatePoint();
     UpdateText();
 }
 
-// ****************************************************************************
-// Method: VisitPointTool::CreatePointActor
-//
-// Purpose: 
-//   Creates the plane actor.
-//
-// Programmer: Akira Haddox
-// Creation:   Mon Jun  9 09:21:40 PDT 2003
-//
-// ****************************************************************************
-
-void
-VisitPointTool::CreatePointActor()
-{
-    pointSource = vtkPointSource::New();
-    pointMapper = vtkPolyDataMapper::New();
-    UpdatePoint();
-
-    pointActor = vtkActor::New();
-    pointActor->GetProperty()->SetRepresentationToWireframe();
-    pointActor->SetMapper(pointMapper);
-}
-
-// ****************************************************************************
-// Method: VisitPointTool::UpdatePoint
-//
-// Purpose: 
-//   Updates the position of the point.
-//
-// Programmer: Akira Haddox
-// Creation:   Mon Jun  9 09:21:40 PDT 2003
-//
-// ****************************************************************************
-
-void
-VisitPointTool::UpdatePoint()
-{
-    avtVector p1(hotPoints[0].pt);
-    pointSource->SetCenter(p1.x, p1.y, p1.z);
-//    pointSource->SetRadius(1);
-    pointData = pointSource->GetOutput();
-    pointData->Register(NULL);
-
-    pointMapper->SetInput(pointData);
-}
 
 // ****************************************************************************
 // Method: VisitPointTool::CreateTextActors
@@ -896,8 +837,11 @@ VisitPointTool::ComputeTranslationDistance(int direction)
 // Creation:   Mon Jun  9 09:21:40 PDT 2003
 //
 // Modifications:
-//     Akira Haddox, Wed Jul  2 14:58:44 PDT 2003
-//     Added contrained translation along an axis.
+//   Akira Haddox, Wed Jul  2 14:58:44 PDT 2003
+//   Added contrained translation along an axis.
+//
+//   Akira Haddox, Mon Aug  4 12:48:02 PDT 2003
+//   Removed unneeded point actor.
 //
 // ****************************************************************************
 
@@ -959,9 +903,6 @@ VisitPointTool::Translate(CB_ENUM e, int ctrl, int shift, int x, int y, int)
         }
 
         hotPoints[0].pt = (hotPoints[0].pt + motion);
-
-        // Update the point actor
-        UpdatePoint();
 
         // Update the text actors.
         UpdateText();
