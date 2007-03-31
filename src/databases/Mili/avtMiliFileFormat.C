@@ -1429,6 +1429,12 @@ avtMiliFileFormat::GetNTimesteps()
 //    Hank Childs, Sat Sep 20 08:15:54 PDT 2003
 //    Added support for tensors and add some expressions based on tensors.
 //
+//    Hank Childs, Sat Oct 18 09:51:03 PDT 2003
+//    Fix typo for strain/stress expressions.
+//
+//    Hank Childs, Sat Oct 18 10:53:51 PDT 2003
+//    Do not read in the partition info if we are on the mdserver.
+//
 // ****************************************************************************
 
 void
@@ -1568,7 +1574,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
         Expression stressyz_expr;
         stressyz_expr.SetName("derived/stress_yz");
-        stressyz_expr.SetDefinition("stress[0][2]");
+        stressyz_expr.SetDefinition("stress[1][2]");
         stressyz_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&stressyz_expr);
 
@@ -1662,7 +1668,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
         Expression strainyz_expr;
         strainyz_expr.SetName("derived/strain_yz");
-        strainyz_expr.SetDefinition("strain[0][2]");
+        strainyz_expr.SetDefinition("strain[1][2]");
         strainyz_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&strainyz_expr);
 
@@ -1787,7 +1793,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
     ENDTRY
 
-    if (!readPartInfo)
+    if (!readPartInfo && !avtDatabase::OnlyServeUpMetaData())
         ParseDynaPart();
 }
 
