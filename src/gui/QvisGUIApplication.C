@@ -2056,7 +2056,9 @@ QvisGUIApplication::WritePluginWindowConfigs(DataNode *parentNode)
 // Creation:   Mon Jul 14 11:52:52 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Aug 12 11:23:52 PDT 2003
+//   Added code to force the session file to have a .session extension.
+//
 // ****************************************************************************
 
 void
@@ -2074,6 +2076,10 @@ QvisGUIApplication::SaveSession()
     // to that file.
     if(!fileName.isNull())
     {
+        // Force the file to have a .session extension.
+        if(fileName.right(8) != ".session")
+            fileName += ".session";
+
         ++sessionCount;
         viewer->ExportEntireState(fileName.latin1());
 

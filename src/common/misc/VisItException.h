@@ -14,9 +14,6 @@
 
 #include <misc_exports.h>
 
-// Must be re-added
-//#include <arch.h>
-
 #ifdef FAKE_EXCEPTIONS
 #define VISIT_THROW_NOTHING
 #else
@@ -62,6 +59,9 @@
 //    Eric Brugger, Wed Jul 23 13:46:05 PDT 2003
 //    No longer inherit from exception.
 //
+//    Brad Whitlock, Mon Aug 25 15:05:14 PST 2003
+//    Added LogCatch.
+//
 // ****************************************************************************
 
 class MISC_API VisItException
@@ -82,6 +82,9 @@ class MISC_API VisItException
 
     int                GetLine() const { return line; };
     const std::string &GetFilename() const  { return filename; }; 
+
+    static void LogCatch(const char *exceptionType, const char *srcFile,
+                         int srcLine);
 
   protected:
     int                line;
@@ -140,11 +143,11 @@ class MISC_API VisItException
       throw _visit_exception;\
 }
 
-#define TRY                 try
-#define CATCH(T)            catch(T)
-#define CATCH2(T, A)        catch(T A)
-#define CATCHALL            catch
-#define ENDTRY 
+#define TRY                 try {
+#define CATCH(T)            } catch(T)   { VisItException::LogCatch(#T, __FILE__,  __LINE__);
+#define CATCH2(T, A)        } catch(T A) { VisItException::LogCatch(#T, __FILE__,  __LINE__);
+#define CATCHALL(T)         } catch(...) { VisItException::LogCatch(#T, __FILE__,  __LINE__);
+#define ENDTRY              }
 #define RETHROW             throw
 #define CATCH_RETURN(n)     return
 #define CATCH_RETURN2(n, v) return (v)
@@ -237,7 +240,7 @@ int  exception_default_id();
     } \
     else if(exception_compatible(#e)) \
     { \
-        EXPRINT(debug1 << "CATCH(" << #e << ") Lookup on " << #e << " successful." << endl;) \
+        VisItException::LogCatch(#e, __FILE__,  __LINE__); \
         exception_caught = true;
 
 
@@ -246,7 +249,7 @@ int  exception_default_id();
     } \
     else if(exception_compatible(#e)) \
     { \
-        EXPRINT(debug1 << "CATCH2(" << #e << ") Lookup on " << #e << " successful." << endl;) \
+        VisItException::LogCatch(#e, __FILE__,  __LINE__); \
         e & N = *((e *)exception_object); \
         exception_caught = true;
 
@@ -256,8 +259,8 @@ int  exception_default_id();
     } \
     else \
     { \
+        VisItException::LogCatch(#e, __FILE__,  __LINE__); \
         exception_caught = true; \
-        EXPRINT(debug1 << "CATCHALL(...) Doing the catch." << endl;)
 
 
 #define ENDTRY  \

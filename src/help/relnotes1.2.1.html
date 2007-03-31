@@ -1,0 +1,64 @@
+<html>
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>VisIt 1.2.1 Release Notes</title>
+</head>
+<body>
+<p align="center"><b><font size="6">VisIt 1.2.1 Release Notes</font></b></p>
+<p>Welcome to VisIt's release notes page. This page describes the important 
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.2.1</font></b></p>
+<ul>
+  <li>VisIt's expression code has been completely revamped so that all expression constructs such as constants, vectors, and user-defined functions work properly.</li>
+  <li>Pick can now return values for expression variables.</li>
+  <li>VisIt now has conditional expressions such as: if, and, or, which allow you to create sophisticated expressions.</li>
+  <li>The Clip operator has been rewritten so it is 15 to 100 times faster than the older version.</li>
+  <li>VisIt now has better support for vector expressions, including having vector dot and cross functions.</li>
+  <li>VisIt has a new BoxLib database reader plugin.</li>
+  <li>VisIt now has more glyph types for point meshes.</li>
+  <li>VisIt now recognizes .curve files so that they can be plotted by the Curve plot.</li>
+  <li>VisIt has a new matvf expression that can extract the material volume fractions from a material and create a scalar field so volume fractions can be plotted.</li>
+  <li>VisIt has support for parallel Plot3D files.</li>
+  <li>The vertex normals filter is faster.</li>
+  <li>Changing preference to orthogonal slice in the Slice operator window changes the origin type.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.2.1</font></b></p>
+<ul>
+  <li>Pick does not work on expression variables.</li>
+  <li>VisIt crashes when material selecting a volume plot when running in parallel.</li>
+  <li>The Subset plot, in conjunction with the Clip operator, can generate surfaces with bad normals.</li>
+  <li>All curves appear to be regenerated when a new curve is added.</li>
+  <li>VisIt appeared to hang when starting to generate a plot on white.</li>
+  <li>The Host profiles window causes the GUI to crash with certain config settings.</li>
+  <li>VisIt crashes when given an invalid expression.</li>
+  <li>The viewer sometimes crashes when the Engine selection window is active.</li>
+  <li>Empty functions in expressions crash the viewer.</li>
+  <li>2D vector plot with zero y-component still creates vertical arrows.</li>
+  <li>Must click "Apply" too often in the Host profiles window.</li>
+  <li>There is an extra print statement somewhere in the scalable rendering code.</li>
+  <li>The Point tool has a swarm of extra points that move when the tool is moved.</li>
+  <li>If software volume rendering crashes the compute engine then the viewer also crashes.</li>
+  <li>Expressions do not clean up unused variables in the compute engine.</li>
+  <li>Axis labeling off with a Djehuty dataset.</li>
+  <li>The MDServer needs an interface to create expressions.</li>
+  <li>Rendering attributes are not setting set in the compute engine when in scalable rendering mode.</li>
+  <li>VisIt locks up when playing animations in Windows.</li>
+  <li>VisIt has problems reading certain VTK files.</li>
+  <li>Errors for invalid expressions should be made more clear.</li>
+  <li>Save movie does not work on Windows.</li>
+  <li>No -v flag passed to mpeg_encode from save movie.</li>
+  <li>The Box operator does not correctly handle thin boxes.</li>
+  <li>When the Reflect operator is in 2d mode, it shouldn't have +z on the original input quadrant.</li>
+  <li>Restore sessions doe not clear out saved views.</li>
+  <li>Saving sessions with multiple windows adds extra plots.</li>
+  <li>Save session now enforces a .session extension on session files.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version 
+of VisIt: <a href="relnotes1.2.html">VisIt 1.2 Release Notes</a>.</p>
+
+</body>
+
+</html>

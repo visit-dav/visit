@@ -5,6 +5,7 @@
 #include <AttributeSubject.h>
 #include <ViewerSubject.h>
 #include <ViewerMessaging.h>
+#include <DebugStream.h>
 
 // ****************************************************************************
 //  Method: ViewerConfigManager::ViewerConfigManager
@@ -216,6 +217,10 @@ ViewerConfigManager::ReadConfigFile(const char *filename)
 //   Brad Whitlock, Fri Mar 21 10:06:56 PDT 2003
 //   I added code to process old versions and modify the viewer DataNode.
 //
+//   Brad Whitlock, Mon Aug 25 14:36:52 PST 2003
+//   Added code to unselect all fields in the AttributeSubjects so we have
+//   the option of later only sending the ones that changed.
+//
 // ****************************************************************************
 
 void
@@ -241,25 +246,27 @@ ViewerConfigManager::ProcessConfigSettings(DataNode *node)
     if(defaultsNode == 0)
         defaultsNode = viewerNode;
 
+    //
+    // Unselect all fields in the connected AttributeSubjects so we can
+    // later send only the ones that changed to the client.
+    //
+    std::vector<AttributeSubject *>::iterator pos;
+    for (pos = subjectList.begin(); pos != subjectList.end(); ++pos)
+        (*pos)->UnSelectAll();
+
     // Get the version
     DataNode *version = visitRoot->GetNode("Version");
     if(version != 0)
     {
         // Do any modifications on the tree that need to be done.
         std::string configVersion(version->AsString());
-        std::vector<AttributeSubject *>::iterator pos;
         for (pos = subjectList.begin(); pos != subjectList.end(); ++pos)
-        {
             (*pos)->ProcessOldVersions(defaultsNode, configVersion.c_str());
-        }
     }
 
     // Read the attributes into the state objects and notify the observers.
-    std::vector<AttributeSubject *>::iterator pos;
     for (pos = subjectList.begin(); pos != subjectList.end(); ++pos)
-    {
         (*pos)->SetFromNode(defaultsNode);
-    }
 }
 
 // ****************************************************************************
@@ -283,6 +290,41 @@ ViewerConfigManager::Notify()
     for (pos = subjectList.begin(); pos != subjectList.end(); ++pos)
     {
         (*pos)->Notify();
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerConfigManager::NotifyIfSelected
+//
+// Purpose: 
+//   Calls Notify on all subjects registered with the config manager that have
+//   some fields that have been selected.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Aug 25 14:32:02 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerConfigManager::NotifyIfSelected()
+{
+    // Call Notify() on all subjects.
+    std::vector<AttributeSubject *>::iterator pos;
+    for (pos = subjectList.begin(); pos != subjectList.end(); ++pos)
+    {
+        if((*pos)->NumAttributesSelected() > 0)
+        {
+            debug4 << "Sending " << (*pos)->TypeName().c_str()
+                   << " to client." << endl;
+            (*pos)->Notify();
+        }
+        else
+        {
+            debug4 << "Not sending " << (*pos)->TypeName().c_str()
+                   << " to client." << endl;
+        }
     }
 }
 

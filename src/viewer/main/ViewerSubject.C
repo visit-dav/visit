@@ -3222,6 +3222,9 @@ ViewerSubject::ExportEntireState()
 //   Brad Whitlock, Wed Jul 30 14:48:56 PST 2003
 //   Added another argument to ImportEntireState.
 //
+//   Brad Whitlock, Mon Aug 25 14:28:00 PST 2003
+//   Added the NotifyIfSelected method call.
+//
 // ****************************************************************************
 
 void
@@ -3229,6 +3232,7 @@ ViewerSubject::ImportEntireState()
 {
      configMgr->ImportEntireState(viewerRPC.GetVariable(),
                                   viewerRPC.GetBoolFlag());
+     configMgr->NotifyIfSelected();
 }
 
 // ****************************************************************************

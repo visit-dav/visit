@@ -5452,6 +5452,10 @@ ViewerWindowManager::CreateNode(DataNode *parentNode, bool detailed)
 //   Brad Whitlock, Thu Jul 17 14:25:02 PST 2003
 //   Added code to reconstruct all of the windows in the config file.
 //
+//   Brad Whitlock, Mon Aug 25 11:42:49 PDT 2003
+//   Added code to temporarily disable "clone window on first reference" when
+//   setting the active window once all the windows are established.
+//
 // ****************************************************************************
 
 void
@@ -5586,7 +5590,7 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode)
                 }
             }
             else if(nWindows < newNWindows)
-                AddWindow();
+                AddWindow(false);
         }
 
         delete [] existingWindows;
@@ -5606,6 +5610,8 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode)
     //
     // Set the active window.
     //
+    bool cloneWindowFlag = clientAtts->GetCloneWindowOnFirstRef();
+    clientAtts->SetCloneWindowOnFirstRef(false);
     DataNode *node;
     if((node = searchNode->GetNode("activeWindow")) != 0)
     {
@@ -5617,6 +5623,7 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode)
     }
     else
         UpdateAllAtts();
+    clientAtts->SetCloneWindowOnFirstRef(cloneWindowFlag);
 
     //
     // Set the lineout window.

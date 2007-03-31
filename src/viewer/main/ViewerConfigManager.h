@@ -51,6 +51,9 @@ class ViewerSubject;
 //    Brad Whitlock, Wed Jul 9 12:44:08 PDT 2003
 //    I added methods to export the entire state and import the entire state.
 //
+//    Brad Whitlock, Mon Aug 25 14:28:23 PST 2003
+//    Added NotifyIfSelected.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerConfigManager : public ConfigManager
@@ -63,6 +66,7 @@ public:
     virtual DataNode *ReadConfigFile(const char *filename);
     void ProcessConfigSettings(DataNode *);
     void Notify();
+    void NotifyIfSelected();
     void ClearSubjects();
 
     void Add(AttributeSubject *subject);
