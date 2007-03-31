@@ -1,13 +1,15 @@
 <?xml version="1.0"?>
   <Attribute name="QueryAttributes" purpose="This class contains attributes used for query." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="QueryAttributes.code">
+    <Enum name="ElementType">
+      Zone
+      Node
+    </Enum>
     <Field name="name" label="name" type="string">
-       
     </Field>
     <Field name="variables" label="variables" type="stringVector">
       default
     </Field>
     <Field name="resultsMessage" label="resultsMessage" type="string">
-       
     </Field>
     <Field name="worldPoint" label="worldPoint" type="floatArray" length="3">
       0.000000
@@ -17,7 +19,7 @@
     <Field name="domain" label="domain" type="int">
       -1
     </Field>
-    <Field name="zone" label="zone" type="int">
+    <Field name="element" label="element" type="int">
       -1
     </Field>
     <Field name="rayPoint1" label="rayPoint1" type="floatArray" length="3">
@@ -37,6 +39,9 @@
     </Field>
     <Field name="resultsValue" label="resultsValue" type="double">
       0.000000
+    </Field>
+    <Field name="elementType" label="elementType" type="enum" subtype="ElementType">
+      Zone
     </Field>
     <Function name="Reset" user="true" member="true">
     </Function>

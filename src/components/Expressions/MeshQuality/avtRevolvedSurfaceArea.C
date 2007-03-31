@@ -9,11 +9,15 @@
 
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
+#include <vtkDataSetRemoveGhostCells.h>
+#include <vtkGeometryFilter.h>
+#include <vtkPolyData.h>
+#include <vtkVisItFeatureEdges.h>
 
 #include <avtCallback.h>
 
+#include <DebugStream.h>
 #include <InvalidDimensionsException.h>
-
 
 static double AreaOfCone(double, double, double);
 
@@ -69,21 +73,65 @@ avtRevolvedSurfaceArea::PreExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   September 8, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jul 24 13:14:32 PDT 2003
+//    Added code to get the boundary edges before calculating the
+//    revolved surface area.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds)
 {
+    //
+    // Create the boundary edges and remove ghost zone edges
+    //
+    vtkGeometryFilter *geomFilter = vtkGeometryFilter::New();
+
+    vtkVisItFeatureEdges *boundaryFilter = vtkVisItFeatureEdges::New();
+    boundaryFilter->BoundaryEdgesOn();
+    boundaryFilter->FeatureEdgesOff();
+    boundaryFilter->NonManifoldEdgesOff();
+    boundaryFilter->ManifoldEdgesOff();
+    boundaryFilter->ColoringOff();
+
+    vtkDataSetRemoveGhostCells *gzFilter = vtkDataSetRemoveGhostCells::New();
+    gzFilter->SetGhostLevel(1);
+
+    geomFilter->SetInput(in_ds);
+    boundaryFilter->SetInput(geomFilter->GetOutput());
+    boundaryFilter->GetOutput()->SetUpdateGhostLevel(2);
+    boundaryFilter->GetOutput()->Update();
+
+    vtkPolyData *allLines = boundaryFilter->GetOutput();
+    allLines->SetSource(NULL);
+
+    gzFilter->SetInput(allLines);
+    vtkDataSet *ds_1d_nogz = gzFilter->GetOutput();
+    ds_1d_nogz->Update();
+
+    // We need line segment polydata, and should have it by now.
+    if (ds_1d_nogz->GetDataObjectType() != VTK_POLY_DATA)
+    {
+        debug1 << "ERROR:Did not get polydata from ghost zone filter output\n";
+        return NULL;
+    }
+    vtkPolyData *pd_1d_nogz = (vtkPolyData*)ds_1d_nogz;
+
     vtkFloatArray *arr = vtkFloatArray::New();
-    int ncells = in_ds->GetNumberOfCells();
+    int ncells = pd_1d_nogz->GetNumberOfCells();
     arr->SetNumberOfTuples(ncells);
 
     for (int i = 0 ; i < ncells ; i++)
     {
-        vtkCell *cell = in_ds->GetCell(i);
+        vtkCell *cell = pd_1d_nogz->GetCell(i);
         float area = (float) GetLineArea(cell);
         arr->SetTuple1(i, area);
     }
+
+    geomFilter->Delete();
+    gzFilter->Delete();
+    boundaryFilter->Delete();
 
     return arr;
 }

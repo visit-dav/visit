@@ -99,7 +99,7 @@ avtLocateCellQuery::PostExecute(void)
     if (ThisProcessorHasMinimumValue(minDist))
     {
         queryAtts.SetDomain(foundDomain);
-        queryAtts.SetZone(foundZone);
+        queryAtts.SetElement(foundZone);
     }
 }
 
@@ -237,6 +237,9 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
 //    Kathleen Bonnell, Thu Jun 19 16:50:41 PDT 2003  
 //    Test for no cells in ds.  
 //    
+//    Kathleen Bonnell, Wed Jul 23 15:51:45 PDT 2003 
+//    Added logic for World pick (indicated by rayPoint1 == rayPoint2). 
+//    
 // ****************************************************************************
 
 int
@@ -254,12 +257,29 @@ avtLocateCellQuery::LocatorFindCell(vtkDataSet *ds, float &dist, float *isect)
     cellLocator->SetDataSet(ds);
     cellLocator->BuildLocator();
 
-    float pcoords[3];
-    int subId;
+    float pcoords[3], ptLine[3];
+    int subId, success;
 
     vtkIdType foundCell; 
-    int success = cellLocator->IntersectWithLine(rayPt1, rayPt2, dist, 
+    if (rayPt1[0] == rayPt2[0] &&
+        rayPt1[1] == rayPt2[1] &&
+        rayPt1[2] == rayPt2[2])
+    {
+        cellLocator->FindClosestPoint(rayPt1, ptLine, foundCell,
+                                     subId, dist);
+        if (foundCell >= 0)
+        {
+            success = 1;
+            isect[0] = rayPt1[0];
+            isect[1] = rayPt1[1];
+            isect[2] = rayPt1[2];
+        }
+    }
+    else 
+    {
+        success = cellLocator->IntersectWithLine(rayPt1, rayPt2, dist, 
                                      isect, pcoords, subId, foundCell);
+    }
 
     cellLocator->Delete();
     if (success)
@@ -293,6 +313,9 @@ avtLocateCellQuery::LocatorFindCell(vtkDataSet *ds, float &dist, float *isect)
 //    Kathleen Bonnell, Tue Jun  3 15:20:35 PDT 2003
 //    Removed unused tolerance parameter.
 //
+//    Kathleen Bonnell, Wed Jul 23 15:51:45 PDT 2003 
+//    Added logic for World pick (indicated by rayPoint1 == rayPoint2). 
+//    
 // ****************************************************************************
 
 int
@@ -304,30 +327,48 @@ avtLocateCellQuery::RGridFindCell(vtkDataSet *ds, float &dist, float *isect)
     float t, dsBounds[6], rayDir[3];
     float *rayPt1 = queryAtts.GetRayPoint1();
     float *rayPt2 = queryAtts.GetRayPoint2();
+    int ijk[3], success = 0;
+
  
     rgrid->GetBounds(dsBounds);
- 
-    for (i = 0; i < 3; i++)
-    {
-       rayDir[i] = rayPt2[i] - rayPt1[i];
-    }
-    if (vtkCell::HitBBox(dsBounds, rayPt1, rayDir, isect, t))
-    {
-        int ijk[3];
 
-        if (vtkVisItUtility::ComputeStructuredCoordinates(rgrid, isect, ijk) == 1)
+    if (rayPt1[0] == rayPt2[0] &&
+        rayPt1[1] == rayPt2[1] &&
+        rayPt1[2] == rayPt2[2])
+    {
+        success = vtkVisItUtility::ComputeStructuredCoordinates(rgrid, rayPt1, ijk);
+        if (success)
         {
-            cellId = rgrid->ComputeCellId(ijk);
-            vtkUnsignedCharArray *ghosts =
-                (vtkUnsignedCharArray *)ds->GetCellData()->GetArray("vtkGhostLevels");
-            if (ghosts && ghosts->GetComponent(cellId, 0) == 1 )
-            {
-                cellId = -1;
-            }
-            else
+            isect[0] = rayPt1[0];
+            isect[1] = rayPt1[1];
+            isect[2] = rayPt1[2];
+            dist = 0; 
+        }
+    }
+    else
+    {
+        for (i = 0; i < 3; i++)
+        {
+           rayDir[i] = rayPt2[i] - rayPt1[i];
+        }
+        if (vtkCell::HitBBox(dsBounds, rayPt1, rayDir, isect, t))
+        {
+            success = vtkVisItUtility::ComputeStructuredCoordinates(rgrid, 
+                          isect, ijk); 
+            if (success)
             {
                 dist = vtkMath::Distance2BetweenPoints(rayPt1, isect);
             }
+        }
+    }
+    if (success)
+    {
+        cellId = rgrid->ComputeCellId(ijk);
+        vtkUnsignedCharArray *ghosts = (vtkUnsignedCharArray *)ds->
+                     GetCellData()->GetArray("vtkGhostLevels");
+        if (ghosts && ghosts->GetComponent(cellId, 0) == 1 )
+        {
+            cellId = -1;
         }
     }
     return cellId;

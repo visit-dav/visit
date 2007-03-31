@@ -321,6 +321,8 @@ public:
 // Creation:   Wed Feb 5 16:19:23 PST 2003
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Jul 22 16:28:08 PDT 2003
+//   Added Setup.
 //   
 // ****************************************************************************
 
@@ -330,6 +332,7 @@ public:
     SetWindowModeAction(ViewerWindow *win);
     virtual ~SetWindowModeAction() { }
 
+    virtual void Setup();
     virtual void Execute(int val);
     virtual bool Enabled() const;
     virtual bool ChoiceEnabled(int i) const;

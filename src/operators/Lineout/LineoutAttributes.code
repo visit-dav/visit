@@ -19,6 +19,7 @@ LineoutAttributes::CopyAttributes(const AttributeGroup *atts)
         SetPoint1(tmp->GetPoint1());
         SetPoint2(tmp->GetPoint2());
         SetDesignator(tmp->GetDesignator());
+        SetNumberOfSamplePoints(tmp->GetNumSamples());
         retval = true;
     }
 
@@ -46,6 +47,7 @@ LineoutAttributes::CreateCompatible(const std::string &tname) const
         line->SetInteractive(GetInteractive());
         line->SetReflineLabels(GetReflineLabels());
         line->SetDesignator(GetDesignator());
+        line->SetNumSamples(GetNumberOfSamplePoints());
         retval = line;
     }
 

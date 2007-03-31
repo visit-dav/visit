@@ -94,6 +94,10 @@ class avtToolInterface;
 //    Brad Whitlock, Tue Jul 22 10:14:14 PDT 2003
 //    Added methods that let the query manager write its data to a config file.
 //
+//    Kathleen Bonnell, Wed Jul 23 16:56:15 PDT 2003 
+//    Added 'samples' arg to LineQuery and Lineout methods.
+//    Added 'arg1' and 'arg2' to DatabaseQuery.
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -104,10 +108,12 @@ class VIEWER_API ViewerQueryManager
     void            SetOperatorFactory(ViewerOperatorFactory *);
 
     void            DatabaseQuery(ViewerWindow *owin, const std::string &qName,
-                            const std::vector<std::string> &vars);
+                            const std::vector<std::string> &vars,
+                            const int arg1, const int arg2);
 
     void            LineQuery(const char *qName, const double *pt1, 
-                      const double *pt2, const std::vector<std::string> &vars);
+                      const double *pt2, const std::vector<std::string> &vars,
+                      const int samples);
 
     void            PointQuery(const std::string &qName, const double *pt, 
                             const std::vector<std::string> &vars);
@@ -139,7 +145,8 @@ class VIEWER_API ViewerQueryManager
 
 
     void            Lineout(ViewerWindow *win, const double pt1[3], 
-                            const double pt2[3], const std::string &);
+                            const double pt2[3], const std::string &,
+                            const int samples);
     void            Lineout(ViewerWindow *);
     void            Lineout(ViewerWindow *, Line *);
 

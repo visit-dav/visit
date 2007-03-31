@@ -2484,6 +2484,9 @@ ViewerSubject::OpenDatabase()
 //   Brad Whitlock, Fri May 16 11:42:49 PDT 2003
 //   I made it use a helper method to open the database.
 //
+//   Kathleen Bonnell, Wed Jul 23 16:46:30 PDT 2003
+//   Removed view recentering.
+//
 // ****************************************************************************
 
 void
@@ -2529,12 +2532,6 @@ ViewerSubject::ReOpenDatabase()
     //
     plotList->ReplaceDatabase(host, db, true);
     wM->UpdateGlobalAtts();
-
-    //
-    // Recenter the active window's view and redraw.
-    //
-    if(wM->GetActiveWindow() && !wM->GetActiveWindow()->GetMaintainViewMode())
-        wM->RecenterView();
 }
 
 // ****************************************************************************
@@ -3722,6 +3719,9 @@ ViewerSubject::CopyPlotsToWindow(int from, int to)
 //   Kathleen Bonnell, Mon Sep 30 14:38:33 PDT 2002
 //   Added call to ViewerQueryManager's DatabaseQuery method. 
 //   
+//   Kathleen Bonnell, Wed Jul 23 16:10:41 PDT 2003
+//   Added int args to qm->DatabaseQuery. 
+//   
 // ****************************************************************************
 
 void
@@ -3734,7 +3734,8 @@ ViewerSubject::DatabaseQuery()
 
     ViewerWindow *vw = ViewerWindowManager::Instance()->GetActiveWindow();
     ViewerQueryManager *qm = ViewerQueryManager::Instance();
-    qm->DatabaseQuery(vw, viewerRPC.GetQueryName(), viewerRPC.GetQueryVariables());
+    qm->DatabaseQuery(vw, viewerRPC.GetQueryName(), viewerRPC.GetQueryVariables(),
+                      viewerRPC.GetIntArg1(), viewerRPC.GetIntArg2());
 
     // Clear the status
     ClearStatus();
@@ -3782,7 +3783,11 @@ ViewerSubject::PointQuery()
 // Creation:   Fri Sep 6 14:23:13 PST 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Fri Dec 20 11:36:11 PST 2002 
 //   ViewerQueryManager now handles the line queries.
+//
+//   Kathleen Bonnell, Wed Jul 23 16:10:41 PDT 2003
+//   Added IntArg1 to qm->LineQuery.
 //   
 // ****************************************************************************
 
@@ -3796,7 +3801,7 @@ ViewerSubject::LineQuery()
 
     ViewerQueryManager::Instance()->LineQuery( viewerRPC.GetQueryName().c_str(),
               viewerRPC.GetQueryPoint1(), viewerRPC.GetQueryPoint2(),
-              viewerRPC.GetQueryVariables());
+              viewerRPC.GetQueryVariables(), viewerRPC.GetIntArg1());
 
     // Clear the status
     ClearStatus();

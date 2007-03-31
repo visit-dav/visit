@@ -42,6 +42,9 @@ using std::ifstream;
 //    Added in support for multiple meshes. Changed to MTMD.
 //    Changed to read in .mili format files.
 //
+//    Akira Haddox, Tue Jul 22 15:34:40 PDT 2003
+//    Initialized setTimesteps.
+//
 // ****************************************************************************
 
 avtMiliFileFormat::avtMiliFileFormat(const char *fname)
@@ -51,6 +54,7 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fname)
     in.open(fname);
 
     ndomains = nmeshes = 0;
+    setTimesteps = false;
     
     in >> ndomains;
     in >> ntimesteps;
@@ -204,21 +208,15 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fname)
 //    Akira Haddox, Fri May 23 08:51:11 PDT 2003
 //    Added in support for multiple meshes. Changed to MTMD.
 //
+//    Akira Haddox, Wed Jul 23 12:57:14 PDT 2003
+//    Moved allocation of cached information to FreeUpResources.
+//
 // ****************************************************************************
 
 avtMiliFileFormat::~avtMiliFileFormat()
 {
-    int i, j;
-    for (i = 0; i < ndomains; ++i)
-        if (dbid[i] != -1)
-            mc_close(dbid[i]);
-    for (i = 0; i < connectivity.size(); ++i)
-        for (j = 0; j < connectivity[i].size(); ++j)
-            if (connectivity[i][j] != NULL)
-                connectivity[i][j]->Delete();
-    for (i = 0; i < materials.size(); ++i)
-        for (j = 0; j < materials[i].size(); ++j)
-            delete materials[i][j];
+    FreeUpResources();
+
     delete []famroot;
     if (fampath)
     delete []fampath;
@@ -242,6 +240,9 @@ avtMiliFileFormat::~avtMiliFileFormat()
 //  Modifications:
 //    Akira Haddox, Fri May 23 08:51:11 PDT 2003
 //    Added in support for multiple meshes. Changed to MTMD. 
+//
+//    Akira Haddox, Tue Jul 22 08:09:28 PDT 2003
+//    Fixed the try block. Properly dealt with cell variable blocks.
 //
 // ****************************************************************************
 
@@ -343,8 +344,9 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
     }
     CATCH(InvalidVariableException)
     {
-        ;
+        v_index = -1;
     }
+    ENDTRY
 
     if (v_index >= 0)
     {
@@ -361,13 +363,58 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
             {
                 int start = 0;
                 int csize = 0;
-                GetSizeInfoForGroup(sub_records[dom][i].c_str(), start, csize, dom);
+                GetSizeInfoForGroup(sub_records[dom][i].class_name, start, 
+                                    csize, dom);
                 char *tmp = (char *) name;  // Bypass const
-                int rval = mc_read_results(dbid[dom], ts+1, sub_record_ids[dom][i],
-                                           1, &tmp, p + start);
-                if (rval != OK)
+
+                // Simple read in: one block 
+                if (sub_records[dom][i].qty_blocks == 1)
                 {
-                    EXCEPTION1(InvalidVariableException, name);
+                    // Adjust start
+                    start += (sub_records[dom][i].mo_blocks[0] - 1);
+                
+                    int rval = mc_read_results(dbid[dom], ts+1,
+                                 sub_record_ids[dom][i],
+                                 1, &tmp, p + start);
+                    if (rval != OK)
+                    {
+                        EXCEPTION1(InvalidVariableException, name);
+                    }
+                }
+                else
+                {
+                    int nBlocks = sub_records[dom][i].qty_blocks;
+                    int *blocks = sub_records[dom][i].mo_blocks;
+
+                    int pSize = 0;
+                    int b;
+                    for (b = 0; b < nBlocks; ++b)
+                        pSize += blocks[b * 2 + 1] - blocks[b * 2] + 1;
+
+                    float *arr = new float[pSize];
+
+                    int rval = mc_read_results(dbid[dom], ts + 1,
+                                    sub_record_ids[dom][i],
+                                    1, &tmp, arr);
+
+                    if (rval != OK)
+                    {
+                        delete [] arr;
+                        EXCEPTION1(InvalidVariableException, name);
+                    }
+                    
+
+                    float *ptr = arr;
+                    // Fill up the blocks into the array.
+                    for (b = 0; b < nBlocks; ++b)
+                    {
+                        int c;
+                        for (c = blocks[b * 2] - 1; c <= blocks[b * 2 + 1] - 1;
+                                                    ++c)
+                            p[c + start] = *(ptr++);
+                    }
+                    
+                    delete [] arr;
                 }
             }
         }        
@@ -500,6 +547,10 @@ avtMiliFileFormat::DecodeMultiMeshVarname(const string &varname,
 //  Programmer: Akira Haddox
 //  Creation:   June 26, 2003
 //
+//  Modifications:
+//    Akira Haddox, Tue Jul 22 15:34:40 PDT 2003
+//    Added in setting of times.
+//
 // ****************************************************************************
 
 void
@@ -521,6 +572,33 @@ avtMiliFileFormat::OpenDB(int dom)
             rval = mc_open( famname, fampath, "r", &(dbid[dom]) );
             if ( rval != OK )
                 EXCEPTION1(InvalidFilesException, famname);
+        }
+
+        //
+        // The first domain that we open, we use to find the times.
+        //
+        if (!setTimesteps)
+        {
+            setTimesteps = true;
+            //
+            // First entry is how many timesteps we want (all of them),
+            // the following entries are which timesteps we want.
+            // The index is 1 based.
+            //
+            vector<int> timeVars(ntimesteps + 1);
+            timeVars[0] = ntimesteps;
+            int i;
+            for (i = 1; i <= ntimesteps; ++i)
+                timeVars[i] = i;
+
+            vector<float> times(ntimesteps);
+            rval = mc_query_family(dbid[dom], MULTIPLE_TIMES, &(timeVars[0]),
+                                    0, &(times[0]));
+            if (rval == OK)
+            {
+                for (i = 0; i < ntimesteps; ++i)
+                    metadata->SetTime(i, times[i]); 
+            }
         }
     }
 }
@@ -584,6 +662,10 @@ avtMiliFileFormat::GetSizeInfoForGroup(const char *group_name, int &offset,
 //
 //  Programmer: Hank Childs (adapted by Akira Haddox)
 //  Creation:   June 25, 2003
+//
+//  Modifications:
+//    Akira Haddox, Tue Jul 22 09:21:39 PDT 2003
+//    Changed ConstructMaterials call to match new signature.
 //
 // ****************************************************************************
 
@@ -680,7 +762,8 @@ avtMiliFileFormat::ReadMesh(int dom)
         // The materials are in a format that is not AVT friendly.  Convert it
         // now.
         //
-        materials[dom][mesh_id] = ConstructMaterials(mat_list, list_size);
+        materials[dom][mesh_id] = ConstructMaterials(mat_list, list_size, 
+                                                     mesh_id);
 
         //
         // Now that we have our avtMaterial, we can deallocate the 
@@ -766,6 +849,12 @@ avtMiliFileFormat::ReadMesh(int dom)
 //  Programmer: Hank Childs (adapted by Akira Haddox)
 //  Creation:   June 25, 2003
 //
+//  Modifications:
+//    Akira Haddox, Wed Jul 23 09:47:30 PDT 2003
+//    Adapted code to assume it knows all the variables (which are now
+//    obtained from the .mili file). Set validate vars flag after run.
+//    Changed sub_records to hold the mili Subrecord structure.
+//
 // ****************************************************************************
 
 void
@@ -806,7 +895,7 @@ avtMiliFileFormat::ValidateVariables(int dom)
                 continue;
             }
 
-            sub_records[dom].push_back(sr.class_name);
+            sub_records[dom].push_back(sr);
             sub_record_ids[dom].push_back(j);
 
             //
@@ -831,18 +920,21 @@ avtMiliFileFormat::ValidateVariables(int dom)
                          break;
                      }
 
-                 if (sameAsVar != -1)
+                 //
+                 // If we didn't find the variable, then something has gone
+                 // wrong - We should have known it from the .mili file.
+                 //
+                 if (sameAsVar == -1)
                  {
-                     vars_valid[dom][sameAsVar][index] = true;
-                     continue;
+                     EXCEPTION1(InvalidVariableException, sv.short_name);
                  }
 
-                 vector<bool> tmp(sub_records[dom].size(), false);
-                 tmp[index] = true;
-                 vars_valid[dom].push_back(tmp);
+                 vars_valid[dom][sameAsVar][index] = true;
             }
         }
     }
+
+    validateVars[dom] = true;
 }
 
 
@@ -855,11 +947,16 @@ avtMiliFileFormat::ValidateVariables(int dom)
 //  Programmer: Akira Haddox
 //  Creation:   May 22, 2003
 //
+//  Modifications:
+//    Akira Haddox, Tue Jul 22 09:21:39 PDT 2003
+//    Find number of materials from global mesh information.
+//
 // ****************************************************************************
 
 avtMaterial *
 avtMiliFileFormat::ConstructMaterials(vector< vector<int *> > &mat_list,
-                                      vector< vector<int> > &list_size)
+                                      vector< vector<int> > &list_size, 
+                                      int meshId)
 {
     int size = 0;
     int i, j;
@@ -875,7 +972,6 @@ avtMiliFileFormat::ConstructMaterials(vector< vector<int *> > &mat_list,
     // 
     int elem, gr;
     int count = 0;
-    int highestMat = 0;
     for (elem = 0; elem < mat_list.size(); ++elem)
     {
         for (gr = 0; gr < mat_list[elem].size(); ++gr)
@@ -884,14 +980,12 @@ avtMiliFileFormat::ConstructMaterials(vector< vector<int *> > &mat_list,
             for (i = 0; i < list_size[elem][gr]; ++i)
             {
                 int mat = ml[i]; 
-                if (highestMat < mat)
-                    highestMat = mat;
                 mlist[count++] = mat;
             }
         }
     }
     
-    vector<string> mat_names(highestMat + 1);
+    vector<string> mat_names(nmaterials[meshId]);
     char str[32];
     for (i = 0; i < mat_names.size(); ++i)
     {
@@ -899,7 +993,7 @@ avtMiliFileFormat::ConstructMaterials(vector< vector<int *> > &mat_list,
         mat_names[i] = str;
     }
 
-    avtMaterial * mat = new avtMaterial(highestMat + 1, mat_names, size, 
+    avtMaterial * mat = new avtMaterial(nmaterials[meshId], mat_names, size, 
                                         mlist, 0, NULL, NULL, NULL, NULL);
 
     delete []mlist;
@@ -923,6 +1017,9 @@ avtMiliFileFormat::ConstructMaterials(vector< vector<int *> > &mat_list,
 //  Modifications
 //    Akira Haddox, Fri May 23 08:13:09 PDT 2003
 //    Added in support for multiple meshes. Changed to MTMD.
+//
+//    Akira Haddox, Thu Jul 24 13:36:38 PDT 2003
+//    Properly dealt with cell variable blocks.
 //
 // ****************************************************************************
 
@@ -986,13 +1083,59 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
             {
                 int start = 0;
                 int csize = 0;
-                GetSizeInfoForGroup(sub_records[dom][i].c_str(), start, csize, dom);
+                GetSizeInfoForGroup(sub_records[dom][i].class_name, start,
+                                    csize, dom);
+
                 char *tmp = (char *) name;  // Bypass const
-                int rval = mc_read_results(dbid[dom], ts+1, sub_record_ids[dom][i],
-                                           1, &tmp, p + start);
-                if (rval != OK)
+                
+                // Simple read in: one block 
+                if (sub_records[dom][i].qty_blocks == 1)
                 {
-                    EXCEPTION1(InvalidVariableException, name);
+                    // Adjust start
+                    start += (sub_records[dom][i].mo_blocks[0] - 1);
+                
+                    int rval = mc_read_results(dbid[dom], ts+1,
+                                 sub_record_ids[dom][i],
+                                 1, &tmp, p + start);
+                    if (rval != OK)
+                    {
+                        EXCEPTION1(InvalidVariableException, name);
+                    }
+                }
+                else
+                {
+                    int nBlocks = sub_records[dom][i].qty_blocks;
+                    int *blocks = sub_records[dom][i].mo_blocks;
+
+                    int pSize = 0;
+                    int b;
+                    for (b = 0; b < nBlocks; ++b)
+                        pSize += blocks[b * 2 + 1] - blocks[b * 2] + 1;
+
+                    float *arr = new float[pSize];
+
+                    int rval = mc_read_results(dbid[dom], ts + 1,
+                                    sub_record_ids[dom][i],
+                                    1, &tmp, arr);
+
+                    if (rval != OK)
+                    {
+                        delete [] arr;
+                        EXCEPTION1(InvalidVariableException, name);
+                    }
+                    
+
+                    float *ptr = arr;
+                    // Fill up the blocks into the array.
+                    for (b = 0; b < nBlocks; ++b)
+                    {
+                        int c;
+                        for (c = blocks[b * 2] - 1; c <= blocks[b * 2 + 1] - 1;
+                                                    ++c)
+                            p[c + start] = *(ptr++);
+                    }
+                    
+                    delete [] arr;
                 }
             }
         }
@@ -1018,6 +1161,9 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
 //  Modifications
 //    Akira Haddox, Fri May 23 08:13:09 PDT 2003
 //    Added in support for multiple meshes. Changed to MTMD.
+//
+//    Akira Haddox, Thu Jul 24 13:36:38 PDT 2003
+//    Properly dealt with cell variable blocks.
 //
 // ****************************************************************************
 
@@ -1083,13 +1229,60 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
             {
                 int start = 0;
                 int csize = 0;
-                GetSizeInfoForGroup(sub_records[dom][i].c_str(), start, csize, dom);
+                GetSizeInfoForGroup(sub_records[dom][i].class_name, start, 
+                                    csize, dom);
+
                 char *tmp = (char *) name;  // Bypass const
-                int rval = mc_read_results(dbid[dom], ts+1, sub_record_ids[dom][i],
-                                           1, &tmp, p + start*dims);
-                if (rval != OK)
+
+                // Simple read in: one block 
+                if (sub_records[dom][i].qty_blocks == 1)
                 {
-                    EXCEPTION1(InvalidVariableException, name);
+                    // Adjust start
+                    start += (sub_records[dom][i].mo_blocks[0] - 1);
+                
+                    int rval = mc_read_results(dbid[dom], ts+1,
+                                 sub_record_ids[dom][i],
+                                 1, &tmp, p + dims * start);
+                    if (rval != OK)
+                    {
+                        EXCEPTION1(InvalidVariableException, name);
+                    }
+                }
+                else
+                {
+                    int nBlocks = sub_records[dom][i].qty_blocks;
+                    int *blocks = sub_records[dom][i].mo_blocks;
+
+                    int pSize = 0;
+                    int b;
+                    for (b = 0; b < nBlocks; ++b)
+                        pSize += blocks[b * 2 + 1] - blocks[b * 2] + 1;
+
+                    float *arr = new float[pSize * dims];
+
+                    int rval = mc_read_results(dbid[dom], ts + 1,
+                                    sub_record_ids[dom][i],
+                                    1, &tmp, arr);
+
+                    if (rval != OK)
+                    {
+                        delete [] arr;
+                        EXCEPTION1(InvalidVariableException, name);
+                    }
+                    
+
+                    float *ptr = arr;
+                    // Fill up the blocks into the array.
+                    for (b = 0; b < nBlocks; ++b)
+                    {
+                        int c, k;
+                        for (c = blocks[b * 2] - 1; c <= blocks[b * 2 + 1] - 1;
+                                                    ++c)
+                            for (k = 0; k < dims; ++k)
+                                p[dims * (c + start) + k] = *(ptr++);
+                    }
+                    
+                    delete [] arr;
                 }
             }
         }
@@ -1290,4 +1483,54 @@ avtMiliFileFormat::GetAuxiliaryData(const char *var, int ts, int dom,
                                        myCopy->GetMixVF());
     df = avtMaterial::Destruct;
     return (void*) mat;
+}
+
+
+// ****************************************************************************
+//  Method: avtMiliFileFormat::FreeUpResources
+//
+//  Purpose:
+//      Close databases and free up non-essential memory.
+//
+//  Programmer: Akira Haddox
+//  Creation:   July 23, 2003
+//
+// ****************************************************************************
+
+void
+avtMiliFileFormat::FreeUpResources()
+{
+    //
+    // Close mili databases, and delete non-essential allocated memory.
+    // Keep the original sizes of vectors though.
+    //
+    int i, j;
+    for (i = 0; i < ndomains; ++i)
+        if (dbid[i] != -1)
+        {
+            mc_close(dbid[i]);
+            dbid[i] = -1;
+        }
+    for (i = 0; i < connectivity.size(); ++i)
+        for (j = 0; j < connectivity[i].size(); ++j)
+            if (connectivity[i][j] != NULL)
+            {
+                connectivity[i][j]->Delete();
+                connectivity[i][j] = NULL;
+            }
+    for (i = 0; i < materials.size(); ++i)
+        for (j = 0; j < materials[i].size(); ++j)
+            if (materials[i][j])
+            {
+                delete materials[i][j];
+                materials[i][j] = NULL;
+            }
+
+    //
+    // Reset flags to indicate the meshes needs to be read in again.
+    //
+    for (i = 0; i < ndomains; ++i)
+    {
+        readMesh[i] = false;
+    }
 }

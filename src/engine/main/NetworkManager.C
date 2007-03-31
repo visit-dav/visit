@@ -60,6 +60,7 @@
 #include <avtTotalVolumeQuery.h>
 #include <avtTotalRevolvedVolumeQuery.h>
 #include <avtTotalRevolvedSurfaceAreaQuery.h>
+#include <avtVariableQuery.h>
 #include <avtWholeImageCompositer.h>
 #include <avtPlot.h>
 #include <avtDegreeFilter.h>
@@ -1584,7 +1585,7 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
         lcQ->SetInput(queryInput);
         lcQ->PerformQuery(&qa); 
         pa->SetDomain(qa.GetDomain());
-        pa->SetElementNumber(qa.GetZone());
+        pa->SetElementNumber(qa.GetElement());
         pa->SetCellPoint(qa.GetCellPoint());
         pa->SetPickPoint(qa.GetWorldPoint());
         delete lcQ;
@@ -1632,6 +1633,9 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
 //
 //    Jeremy Meredith, Sat Apr 12 11:31:04 PDT 2003
 //    Added compactness queries.
+//
+//    Kathleen Bonnell, Wed Jul 23 15:34:11 PDT 2003 
+//    Add Variable query. 
 //
 // ****************************************************************************
 void
@@ -1689,6 +1693,14 @@ NetworkManager::Query(const int id, QueryAttributes *qa)
         else if (strcmp(queryName.c_str(), "Compactness") == 0)
         {
             query = new avtCompactnessQuery();
+        }
+        else if (strcmp(queryName.c_str(), "Variable by Zone") == 0)
+        {
+            query = new avtVariableQuery();
+        }
+        else if (strcmp(queryName.c_str(), "Variable by Node") == 0) 
+        {
+            query = new avtVariableQuery();
         }
         if (query != NULL)
         {

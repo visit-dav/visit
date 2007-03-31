@@ -38,6 +38,11 @@ using std::vector;
 //    Added in support for multiple meshes within a Mili database.
 //    Changed into a MTMD file format.
 //
+//    Akira Haddox, Tue Jul 22 09:21:39 PDT 2003
+//    Added meshId argument to ConstructMaterials.
+//    Added reading in of times. Added FreeUpResources.
+//    Changed sub_records to hold mili type 'Subrecord'.
+//
 // ****************************************************************************
 
 class avtMiliFileFormat : public avtMTMDFileFormat
@@ -61,35 +66,38 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                                            const char *type, void *args,
                                            DestructorFunction &);
 
+    virtual void          FreeUpResources(void);
+
   protected:
     char *famroot;
     char *fampath;
     
-    vector<Famid>    dbid;
+    vector<Famid>         dbid;
     int                   ntimesteps;
     int                   ndomains;
     int                   nmeshes;
+    bool                  setTimesteps;
 
-    vector<bool>     validateVars;
-    vector<bool>     readMesh;
+    vector<bool>          validateVars;
+    vector<bool>          readMesh;
     int                   dims;
 
     vector<vector<int> >                   nnodes;
     vector<vector<int> >                   ncells;
     vector<vector<vtkUnstructuredGrid *> > connectivity;
 
-    vector<vector< std::string > >         sub_records;
+    vector<vector< Subrecord > >           sub_records;
     vector<vector< int > >                 sub_record_ids;
 
     vector<vector< std::string > >         element_group_name;
     vector<vector< int > >                 connectivity_offset;
     vector<vector< int > >                 group_mesh_associations;
 
-    vector< std::string >         vars;
-    vector< avtCentering >        centering;
-    vector< vector< vector<bool> > >        vars_valid;
-    vector< avtVarType >          vartype;
-    vector< int >                 var_mesh_associations;
+    vector< std::string >                  vars;
+    vector< avtCentering >                 centering;
+    vector< vector< vector<bool> > >       vars_valid;
+    vector< avtVarType >                   vartype;
+    vector< int >                          var_mesh_associations;
 
     vector<int>                            nmaterials;
     vector<vector< avtMaterial * > >       materials;
@@ -97,7 +105,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     void                  ReadMesh(int dom);
     void                  ValidateVariables(int dom);
     avtMaterial *         ConstructMaterials(vector< vector<int*> >&,
-                                            vector< vector<int> > &);
+                                            vector< vector<int> > &, int);
     int                   GetVariableIndex(const char *);
     int                   GetVariableIndex(const char *, int mesh_id);
     void                  GetSizeInfoForGroup(const char *, int &, int &, int);

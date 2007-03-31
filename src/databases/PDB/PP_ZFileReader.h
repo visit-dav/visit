@@ -2,6 +2,8 @@
 #define PP_ZFILE_READER_H
 #include <PDBReader.h>
 
+class vtkDataSet;
+
 // ****************************************************************************
 // Class: PP_ZFileReader
 //
@@ -36,6 +38,7 @@ public:
 protected:
     void Initialize();
     void ReadVariable(const std::string &);
+    void CreateGhostZones(const int *, vtkDataSet *);
 
     int              kmax;
     int              lmax;

@@ -81,4 +81,7 @@
     <Include file="header" quoted="false">
       iostream.h
     </Include>
+    <Include file="source" quoted="false">
+      float.h
+    </Include>
   </Attribute>
