@@ -143,6 +143,10 @@ avtView2D::SetToDefault()
 //    Hank Childs, Mon May  5 13:29:51 PDT 2003
 //    Account for degenerate situation that is hard to prevent.
 //
+//    Kathleen Bonnell, Wed Jul 16 16:46:02 PDT 2003
+//    Scale window coords at beginning, then reverse the scaling at end,
+//    so that everything gets set correctly in full-frame mode.  
+//    
 // ****************************************************************************
 
 void
@@ -150,6 +154,13 @@ avtView2D::SetViewFromViewInfo(const avtViewInfo &viewInfo)
 {
     double valid_window[4];
     GetValidWindow(valid_window);
+    //
+    // If full-frame mode is ON, then the settings in viewInfo have
+    // been scaled.  Scale our window coords to match, so that they
+    // can be reset correctly from viewInfo. (ScaleWindow does nothing
+    // if full-frame mode is OFF).
+    //
+    ScaleWindow(valid_window);
 
     //
     // Determine the new window.  We assume that the viewport stays the
@@ -177,6 +188,14 @@ avtView2D::SetViewFromViewInfo(const avtViewInfo &viewInfo)
     window[1] = xcenter + oldHalfWidth * scale * aspectRatio;
     window[2] = ycenter - oldHalfWidth * scale;
     window[3] = ycenter + oldHalfWidth * scale;
+    //
+    // If full-frame mode is ON, then the scaling of the window coords
+    // performed at the beginning of this method needs to be reversed.
+    // We always want the window coords stored here to reflect the actual
+    // view, not the scaling gymnastics done to facilitate full-frame mode.
+    // (ReverseScaleWindow does nothing if full-frame mode is OFF).
+    //
+    ReverseScaleWindow(window);
 }
 
 // ****************************************************************************
@@ -197,6 +216,12 @@ avtView2D::SetViewFromViewInfo(const avtViewInfo &viewInfo)
 //    Hank Childs, Wed May  7 08:14:33 PDT 2003
 //    Account for degenerate situation that is hard to prevent.
 //
+//    Kathleen Bonnell, Wed Jul 16 16:46:02 PDT 2003 
+//    Call ScaleWindow (effective only in full-frame mode). 
+//
+//    Akira Haddox, Wed Jul 16 16:50:49 PDT 2003
+//    Force the clipping planes to be at least a certain distance away.
+//
 // ****************************************************************************
 
 void
@@ -204,6 +229,14 @@ avtView2D::SetViewInfoFromView(avtViewInfo &viewInfo) const
 {
     double valid_window[4];
     GetValidWindow(valid_window);
+    //
+    // If full-frame mode is ON, then we want to scale our window coords
+    // before using them to set view info.  (ScaleWindow does nothing if
+    // full-frame mode is OFF.)  This is only a temporary scaling for use in
+    // this method as we always want the window coords stored here to
+    // display the extents of what the user is looking at.  
+    //
+    ScaleWindow(valid_window);
 
     //
     //
@@ -213,6 +246,12 @@ avtView2D::SetViewInfoFromView(avtViewInfo &viewInfo) const
     double    width;
 
     width = valid_window[3] - valid_window[2];
+
+    //
+    // If we put the clipping planes too close, bad things start to happen.
+    //
+    if (width < 5e-4)
+        width = 5e-4;
 
     viewInfo.viewUp[0] = 0.;
     viewInfo.viewUp[1] = 1.;
@@ -225,7 +264,6 @@ avtView2D::SetViewInfoFromView(avtViewInfo &viewInfo) const
     viewInfo.camera[0] = viewInfo.focus[0];
     viewInfo.camera[1] = viewInfo.focus[1];
     viewInfo.camera[2] = width / 2.;
-
     //
     // Set the projection mode, parallel scale and view angle.  The
     // projection mode is always parallel for 2D.  The parallel scale is
@@ -265,6 +303,9 @@ avtView2D::SetViewInfoFromView(avtViewInfo &viewInfo) const
 //    Hank Childs, Wed May  7 08:25:48 PDT 2003
 //    Always make sure we are dealing with a valid window.
 //
+//    Kathleen Bonnell, Wed Jul 16 16:46:02 PDT 2003 
+//    Call ScaleWindow (effective only in full-frame mode). 
+//
 // ****************************************************************************
 
 void
@@ -273,6 +314,14 @@ avtView2D::SetViewportFromView(double *winViewport, const int width,
 {
     double valid_window[4];
     GetValidWindow(valid_window);
+    //
+    // If full-frame mode is ON, then we want to scale our window coords
+    // before using them to set the viewport.  (ScaleWindow does nothing if
+    // full-frame mode is OFF.)  This is only a temporary scaling for use in
+    // this method as we always want the window coords stored here to
+    // display the extents of what the user is looking at.  
+    //
+    ScaleWindow(valid_window);
 
     double    viewportDX, viewportDY, viewportDXDY;
     double    windowDX, windowDY, windowDXDY;
@@ -401,5 +450,73 @@ avtView2D::SetToViewAttributes(ViewAttributes *viewAtts) const
 {
     viewAtts->SetWindowCoords(window);
     viewAtts->SetViewportCoords(viewport);
+}
+
+
+// ****************************************************************************
+//  Method: avtView2D::ScaleWindow
+//
+//  Purpose:
+//    Scale the passed window coordinates by the current axisScaleFactor.
+//    Scaling only occurs if full-frame mode is ON (axisScaleFactor != 0.)
+//
+//  Arguments:
+//    swin      The window coords to be scaled. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   July 15, 2003 
+//
+// ****************************************************************************
+
+void
+avtView2D::ScaleWindow(double *swin) const
+{
+    if (axisScaleFactor != 0.)
+    {
+        if (axisScaleType == 0)  // requires x-axis scaling
+        {
+            swin[0] *= axisScaleFactor;
+            swin[1] *= axisScaleFactor;
+        }
+        else  // requires y-axis scaling
+        {
+            swin[2] *= axisScaleFactor;
+            swin[3] *= axisScaleFactor;
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method: avtView2D::ReverseScaleWindow
+//
+//  Purpose:
+//    Reverse the scaling of the passed window coordinates by the current 
+//    axisScaleFactor.  Scaling only occurs if full-frame mode is ON 
+//    (axisScaleFactor != 0.)
+//
+//  Arguments:
+//    swin      The window coords to be scaled. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   July 15, 2003 
+//
+// ****************************************************************************
+
+void
+avtView2D::ReverseScaleWindow(double *swin) const
+{
+    if (axisScaleFactor != 0.)
+    {
+        if (axisScaleType == 0)  // requires x-axis scaling
+        {
+            swin[0] /= axisScaleFactor;
+            swin[1] /= axisScaleFactor;
+        }
+        else  // requires y-axis scaling
+        {
+            swin[2] /= axisScaleFactor;
+            swin[3] /= axisScaleFactor;
+        }
+    }
 }
 

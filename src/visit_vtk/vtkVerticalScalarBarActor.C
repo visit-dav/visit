@@ -622,6 +622,10 @@ void vtkVerticalScalarBarActor:: BuildTics(float width, float height)
 //    Don't modify the lookup table, since that causes display lists to
 //    be regenerated.
 //
+//    Hank Childs, Thu Jul 17 17:43:18 PDT 2003
+//    Be a little more loose on using an auxiliary lookup table, since
+//    near-constant plots are getting drawn incorrectly.
+//
 // **********************************************************************
 
 void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
@@ -744,10 +748,11 @@ void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
   //
   vtkLookupTable *useMe = LookupTable;
   vtkLookupTable *tmp = vtkLookupTable::New();
-  if (tMax <= tMin)
+  if ((tMax <= tMin) || ( ((tMax-tMin) < 1e-7) && (tMax > 1e-4)))
     {
     tMax = tMin+1.;
     tmp->SetRange(tMin, tMax);
+    tmp->SetHueRange(LookupTable->GetHueRange());
     tmp->Build();
     useMe = tmp;
     }

@@ -1729,12 +1729,16 @@ ViewerWindowManager::SetInteractionMode(INTERACTION_MODE m,
 //    Brad Whitlock, Tue Nov 19 14:40:03 PST 2002
 //    I changed UpdateViewAtts so the 3d view will not be sent to the client.
 //
+//    Kathleen Bonnell, Tue Jul 15 08:30:52 PDT 2003
+//    Retrieve active window's 2d view, instead of instantiating a new one,
+//    so that scale factor for full-frame mode is not lost during update. 
+//
 // ****************************************************************************
 
 void
 ViewerWindowManager::SetView2DFromClient()
 {
-    avtView2D view2d;
+    avtView2D view2d = windows[activeWindow]->GetView2D();
 
     const double *viewport=view2DClientAtts->GetViewportCoords();
     const double *window=view2DClientAtts->GetWindowCoords();

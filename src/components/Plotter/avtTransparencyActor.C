@@ -989,3 +989,22 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
 }
 
 
+// ****************************************************************************
+//  Method: avtTransparencyActor::ScaleByVector
+//
+//  Purpose:
+//      Scales the actor by a vector. 
+//
+//  Arguments:
+//      vec    The vector to scale by.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   July 16, 2003 
+//
+// ****************************************************************************
+
+void
+avtTransparencyActor::ScaleByVector(const float vec[3])
+{
+    myActor->SetScale(vec[0], vec[1], vec[2]);
+}

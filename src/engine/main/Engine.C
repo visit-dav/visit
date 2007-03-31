@@ -817,7 +817,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
         }
         visitTimer->StopTimer(collectData, "Collecting data");
 
-        // indicate that cumulative extents in data object good as true extents
+        // indicate that cumulative extents in data object now as good as true extents
         ui_dob->GetInfo().GetAttributes().SetCanUseCummulativeAsTrueOrCurrent(true);
 
         //
@@ -891,6 +891,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
 
 #else // serial
     avtDataObject_p dob = writer->GetInput();
+    dob->GetInfo().GetAttributes().SetCanUseCummulativeAsTrueOrCurrent(true);
     avtDataValidity &v = dob->GetInfo().GetValidity();
     if (!v.HasErrorOccurred())
     {
