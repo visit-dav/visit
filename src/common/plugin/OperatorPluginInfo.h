@@ -44,6 +44,9 @@ class ViewerPlot;
 //    Kathleen Bonnell, Thu Sep 11 10:18:54 PDT 2003
 //    I added a bool argument to InitializeOperatorAtts. 
 //
+//    Jeremy Meredith, Wed Nov  5 10:28:29 PST 2003
+//    Added ability to disable plugins by default.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralOperatorPluginInfo
@@ -52,6 +55,7 @@ class PLUGIN_API GeneralOperatorPluginInfo
     virtual char *GetName() const = 0;
     virtual char *GetVersion() const = 0;
     virtual char *GetID() const = 0;
+    virtual bool  EnabledByDefault() const { return true; }
 };
 
 class PLUGIN_API CommonOperatorPluginInfo : public virtual GeneralOperatorPluginInfo

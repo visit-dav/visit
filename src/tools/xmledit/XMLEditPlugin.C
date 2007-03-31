@@ -30,12 +30,15 @@
 //    symmetric tensor variable types.  Added support for the subset
 //    variable type.
 //
+//    Jeremy Meredith, Wed Nov  5 13:49:32 PST 2003
+//    Added checkbox for "enabled by default".
+//
 // ****************************************************************************
 
 XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
     : QFrame(p, n)
 {
-    QGridLayout *topLayout = new QGridLayout(this, 11,2, 5);
+    QGridLayout *topLayout = new QGridLayout(this, 12,2, 5);
     int row = 0;
 
     attpluginGroup = new QButtonGroup();
@@ -73,19 +76,20 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
 
     hasIcon = new QCheckBox("Has icon", this);
     hasIcon->setChecked(false);
-    connect(hasIcon, SIGNAL(toggled(bool)), this, SLOT(hasIconChanged(bool)));
     topLayout->addWidget(hasIcon, row, 0);
     iconFile = new QLineEdit(this);
     iconFile->setEnabled(false);
-    connect(iconFile, SIGNAL(textChanged(const QString &)),
-            this,  SLOT(iconFileTextChanged(const QString &)));
     topLayout->addWidget(iconFile, row, 1);
     row++;
 
     hasWriter = new QCheckBox("File format can also write data", this);
     hasWriter->setChecked(false);
-    connect(hasWriter, SIGNAL(toggled(bool)), this, SLOT(hasWriterChanged(bool)));
     topLayout->addMultiCellWidget(hasWriter, row,row, 0,1);
+    row++;
+
+    enabledByDefault = new QCheckBox("Plugin is enabled by default", this);
+    hasWriter->setChecked(true);
+    topLayout->addMultiCellWidget(enabledByDefault, row,row, 0,1);
     row++;
 
     topLayout->addWidget(new QLabel("Variable types", this), row, 0);
@@ -169,6 +173,14 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
             this, SLOT(varTypesChanged()));
     connect(varTypeSymmetricTensor, SIGNAL(clicked()),
             this, SLOT(varTypesChanged()));
+    connect(hasIcon, SIGNAL(toggled(bool)),
+            this, SLOT(hasIconChanged(bool)));
+    connect(iconFile, SIGNAL(textChanged(const QString &)),
+            this,  SLOT(iconFileTextChanged(const QString &)));
+    connect(hasWriter, SIGNAL(toggled(bool)),
+            this, SLOT(hasWriterChanged(bool)));
+    connect(enabledByDefault, SIGNAL(toggled(bool)),
+            this, SLOT(enabledByDefaultChanged(bool)));
 }
 
 // ****************************************************************************
@@ -186,6 +198,9 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
 //
 //    Hank Childs, Fri Aug  1 11:21:18 PDT 2003
 //    Add support for curves.
+//
+//    Jeremy Meredith, Wed Nov  5 13:49:49 PST 2003
+//    Added support for plugins en/disabled by default.
 //
 // ****************************************************************************
 
@@ -209,6 +224,7 @@ XMLEditPlugin::UpdateWindowContents()
         varTypeCurve->setChecked(false);
         varTypeTensor->setChecked(false);
         varTypeSymmetricTensor->setChecked(false);
+        enabledByDefault->setChecked(xmldoc->plugin->enabledByDefault);
 
         dbType->setCurrentItem(0);
         extensions->setText("");
@@ -270,6 +286,7 @@ XMLEditPlugin::UpdateWindowContents()
             iconFile->setText("");
             hasIcon->setChecked(false);
             hasWriter->setChecked(false);
+            enabledByDefault->setChecked(true);
             pluginType->setCurrentItem(0);
         }
     }
@@ -294,6 +311,7 @@ XMLEditPlugin::UpdateWindowContents()
         pluginType->setCurrentItem(0);
         dbType->setCurrentItem(0);
         extensions->setText("");
+        enabledByDefault->setChecked(true);
     }
 
     UpdateWindowSensitivity();
@@ -316,6 +334,9 @@ XMLEditPlugin::UpdateWindowContents()
 //
 //    Hank Childs, Fri Aug  1 11:21:18 PDT 2003
 //    Add support for curves.
+//
+//    Jeremy Meredith, Wed Nov  5 13:49:49 PST 2003
+//    Added support for plugins en/disabled by default.
 //
 // ****************************************************************************
 
@@ -344,6 +365,7 @@ XMLEditPlugin::UpdateWindowSensitivity()
     extensions->setEnabled(db);
     hasIcon->setEnabled(op || plot);
     hasWriter->setEnabled(db);
+    enabledByDefault->setEnabled(plugin);
     bool val = (op || plot) && (xmldoc->plugin->iconFile.length() > 0);
     iconFile->setEnabled(val);
 }
@@ -368,6 +390,9 @@ XMLEditPlugin::UpdateWindowSensitivity()
 //    Hank Childs, Fri Aug  1 11:21:18 PDT 2003
 //    Add support for curves.
 //
+//    Jeremy Meredith, Wed Nov  5 13:49:49 PST 2003
+//    Added support for plugins en/disabled by default.
+//
 // ****************************************************************************
 
 void
@@ -391,6 +416,7 @@ XMLEditPlugin::BlockAllSignals(bool block)
     hasIcon->blockSignals(block);
     iconFile->blockSignals(block);
     hasWriter->blockSignals(block);
+    enabledByDefault->blockSignals(block);
 }
 
 // ----------------------------------------------------------------------------
@@ -542,6 +568,25 @@ XMLEditPlugin::hasWriterChanged(bool val)
     xmldoc->plugin->haswriter = val;
 
     UpdateWindowSensitivity();
+}
+
+// ****************************************************************************
+// Method: XMLEditPlugin::enabledByDefaultChanged
+//
+// Programmer: Jeremy Meredith
+// Creation:   November  5, 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+XMLEditPlugin::enabledByDefaultChanged(bool val)
+{
+    if (xmldoc->docType != "Plugin")
+        return;
+
+    xmldoc->plugin->enabledByDefault = val;
 }
 
 // ****************************************************************************

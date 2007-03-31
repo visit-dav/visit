@@ -68,6 +68,9 @@ inline char toupper(char c)
 //    Jeremy Meredith, Tue Sep 23 17:09:31 PDT 2003
 //    Made haswriter be a bool.
 //
+//    Jeremy Meredith, Wed Nov  5 13:28:03 PST 2003
+//    Added ability to disable plugins by default.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1941,6 +1944,7 @@ class PythonGeneratorPlugin
     QString version;
     QString varType;
     QString dbtype;
+    bool    enabledByDefault;
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
@@ -1966,6 +1970,7 @@ class PythonGeneratorPlugin
                           const QString &, bool) : name(n), type(t), 
                           label(l), version(v), varType(vt), dbtype(dt), atts(NULL)
     {
+        enabledByDefault = true;
     }
     void Print(ostream &out)
     {

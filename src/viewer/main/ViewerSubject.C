@@ -777,7 +777,9 @@ ViewerSubject::Execute()
 // Creation:   Tue Jun 17 15:15:11 PST 2003
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Wed Nov  5 13:25:50 PST 2003
+//    Added ability to have plugins disabled by default.
+//
 // ****************************************************************************
 
 void
@@ -820,7 +822,8 @@ ViewerSubject::InitializePluginManagers()
 
     //
     // Go through the saved plugin atts and disable the ones specified
-    // to be disabled in the plugin managers
+    // to be disabled in the plugin managers and enable the ones
+    // specified to be enabled.
     //
     for (i=0; i<pluginAtts->GetId().size(); i++)
     {
@@ -838,24 +841,44 @@ ViewerSubject::InitializePluginManagers()
                     omgr->DisablePlugin(id);
             }
         }
+        else
+        {
+            if (pluginAtts->GetType()[i] == "plot")
+            {
+                if (pmgr->PluginExists(id))
+                    pmgr->EnablePlugin(id);
+            }
+            else if (pluginAtts->GetType()[i] == "operator")
+            {
+                if (omgr->PluginExists(id))
+                    omgr->EnablePlugin(id);
+            }
+        }
     }
 
     //
     // Now add those to the atts that are in the manager but not yet listed
+    // List them as enabled or disabled by their default state
     //
     for (i=0; i<pmgr->GetNAllPlugins(); i++)
     {
         std::string id = pmgr->GetAllID(i);
         if (pluginAtts->GetIndexByID(id) < 0)
+        {
             pluginAtts->AddPlugin(pmgr->GetPluginName(id),     "plot",
-                                  pmgr->GetPluginVersion(id),  id);
+                                  pmgr->GetPluginVersion(id),  id,
+                                  pmgr->PluginEnabled(id));
+        }
     }
     for (i=0; i<omgr->GetNAllPlugins(); i++)
     {
         std::string id = omgr->GetAllID(i);
         if (pluginAtts->GetIndexByID(id) < 0)
+        {
             pluginAtts->AddPlugin(omgr->GetPluginName(id),     "operator",
-                                  omgr->GetPluginVersion(id),  id);
+                                  omgr->GetPluginVersion(id),  id,
+                                  omgr->PluginEnabled(id));
+        }
     }
 }
 

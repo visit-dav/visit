@@ -26,7 +26,7 @@ PluginManagerAttributes::GetIndexByID(const std::string &s)
 
 
 Function:  AddPlugin
-Declaration: void AddPlugin(const std::string &n,const std::string &t,const std::string &v,const std::string &i);
+Declaration: void AddPlugin(const std::string &n,const std::string &t,const std::string &v,const std::string &i,bool e);
 Definition:
 // ****************************************************************************
 // Method: PluginManagerAttributes::AddPlugin
@@ -37,19 +37,24 @@ Definition:
 // Programmer: Jeremy Meredith
 // Creation:   September  7, 2001
 //
+// Modifications:
+//    Jeremy Meredith, Wed Nov  5 12:51:11 PST 2003
+//    Added ability to disable plugins by default.
+//
 // ****************************************************************************
 
 void 
 PluginManagerAttributes::AddPlugin(const std::string &n,
                                    const std::string &t,
                                    const std::string &v,
-                                   const std::string &i)
+                                   const std::string &i,
+                                   bool e)
 {
     name.push_back(n);
     type.push_back(t);
     version.push_back(v);
     id.push_back(i);
-    enabled.push_back(true);
+    enabled.push_back(e);
     SelectAll();
 }
 

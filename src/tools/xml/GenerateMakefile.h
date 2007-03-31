@@ -83,6 +83,10 @@
 //    Jeremy Meredith, Tue Sep 23 16:57:01 PDT 2003
 //    Changed haswriter to a bool.
 //
+//    Jeremy Meredith, Wed Nov  5 13:28:03 PST 2003
+//    Added ability to disable plugins by default.
+//    Added avt files for databases.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -95,6 +99,7 @@ class MakefileGeneratorPlugin
     QString vartype;
     QString dbtype;
     bool    haswriter;
+    bool    enabledByDefault;
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
@@ -124,6 +129,7 @@ class MakefileGeneratorPlugin
     MakefileGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString&w, bool hw)
         : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), haswriter(hw), atts(NULL)
     {
+        enabledByDefault = true;
         customgfiles = false;
         customsfiles = false;
         customvfiles = false;
@@ -136,13 +142,25 @@ class MakefileGeneratorPlugin
         mfiles.clear();
         efiles.clear();
         wfiles.clear();
-        if (type != "database")
+        if (type == "database")
+        {
+            QString filter = QString("avt") + name + "FileFormat.C";
+            defaultmfiles.push_back(filter);
+            defaultefiles.push_back(filter);
+        }
+        else if (type == "plot")
         {
             QString filter = QString("avt") + name + "Filter.C";
             defaultvfiles.push_back(filter);
             defaultefiles.push_back(filter);
             QString widgets = QString("Qvis") + name + "PlotWindow.h";
             defaultwfiles.push_back(widgets);
+        }
+        else if (type == "operator")
+        {
+            QString filter = QString("avt") + name + "Filter.C";
+            defaultvfiles.push_back(filter);
+            defaultefiles.push_back(filter);
         }
     }
     void Print(ostream &out)
@@ -369,14 +387,6 @@ class MakefileGeneratorPlugin
             out << name<<"CommonPluginInfo.C";
             out << endl;
             out << "MSRC="<<name<<"MDServerPluginInfo.C";
-            if (dbtype == "Custom")
-            {
-                out << " avt"<<name<<"Database.C";
-            }
-            else
-            {
-                out << " avt"<<name<<"FileFormat.C";
-            }
             if (haswriter)
             {
                 out << " avt" << name << "Writer.C";
@@ -389,14 +399,6 @@ class MakefileGeneratorPlugin
                     out << " " << defaultmfiles[i];
             out << endl;
             out << "ESRC="<<name<<"EnginePluginInfo.C";
-            if (dbtype == "Custom")
-            {
-                out << " avt"<<name<<"Database.C";
-            }
-            else
-            {
-                out << " avt"<<name<<"FileFormat.C";
-            }
             if (haswriter)
             {
                 out << " avt" << name << "Writer.C";
