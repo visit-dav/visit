@@ -1908,6 +1908,10 @@ avtSiloFileFormat::DoRootDirectoryWork(avtDatabaseMetaData *md)
 //    Removed meta-data argument, since the acquired data will now be stored
 //    off and used later when the meta-data is asked for.
 //
+//    Hank Childs, Wed Nov 12 16:45:19 PST 2003
+//    Use curvilinear domain boundary as structured domain boundary is now
+//    an abstract type.
+//
 // ****************************************************************************
 
 void
@@ -1977,7 +1981,8 @@ avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile)
     //
     if (ndomains > 0 && !avtDatabase::OnlyServeUpMetaData())
     {
-        avtStructuredDomainBoundaries *dbi=new avtStructuredDomainBoundaries();
+        avtCurvilinearDomainBoundaries *dbi =
+                                          new avtCurvilinearDomainBoundaries();
         dbi->SetNumDomains(ndomains);
 
         int l = 0;

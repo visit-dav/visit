@@ -1,0 +1,50 @@
+Function: CopyAttributes
+Declaration: virtual bool CopyAttributes(const AttributeGroup *);
+Definition:
+bool
+CylinderAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    bool retval = false;
+
+    if(TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const CylinderAttributes *tmp = (const CylinderAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    else if(atts->TypeName() == "Line")
+    {
+        const Line *tmp = (const Line*)atts;
+        SetPoint1(tmp->GetPoint1());
+        SetPoint2(tmp->GetPoint2());
+        retval = true;
+    }
+
+    return retval;
+}
+
+Function: CreateCompatible
+Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
+Definition:
+AttributeSubject *
+CylinderAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+
+    if(TypeName() == tname)
+    {
+        retval = new CylinderAttributes(*this);
+    }
+    else if(tname == "Line")
+    {
+        Line *line = new Line;
+
+        line->SetPoint1(GetPoint1());
+        line->SetPoint2(GetPoint2());
+        retval = line;
+    }
+
+    return retval;
+}
+

@@ -22,6 +22,7 @@
 
 #include <avtDatabaseMetaData.h>
 #include <avtIntervalTree.h>
+#include <avtStructuredDomainBoundaries.h>
 #include <avtStructuredDomainNesting.h>
 #include <avtVariableCache.h>
 
@@ -1758,6 +1759,9 @@ avtSAMRAIFileFormat::ReadParentPointerArray(hid_t &h5_file)
 //     This makes it ok to include a call to BuildDomainNestingInfo() in the
 //     GetMesh method without serious performance drawbacks.
 //
+//     Hank Childs, Wed Nov 12 17:58:16 PST 2003
+//     Also create the rectilinear domain boundaries structure.
+//
 // ****************************************************************************
 void 
 avtSAMRAIFileFormat::BuildDomainNestingInfo()
@@ -1822,6 +1826,26 @@ avtSAMRAIFileFormat::BuildDomainNestingInfo()
         cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
             timestep, -1, vr);
 
+        avtRectilinearDomainBoundaries *rdb =
+                                            new avtRectilinearDomainBoundaries;
+        rdb->SetNumDomains(num_patches);
+        for (int i = 0 ; i < num_patches ; i++)
+        {
+            int e[6];
+            e[0] = patch_extents[i].lower[0];
+            e[1] = patch_extents[i].upper[0]+1;
+            e[2] = patch_extents[i].lower[1];
+            e[3] = patch_extents[i].upper[1]+1;
+            e[4] = patch_extents[i].lower[2];
+            e[5] = patch_extents[i].upper[2]+1;
+            rdb->SetIndicesForAMRPatch(i, patch_map[i].level_number, e);
+        }
+        rdb->CalculateBoundaries();
+        void_ref_ptr vrdb = void_ref_ptr(rdb,
+                                   avtStructuredDomainBoundaries::Destruct);
+        cache->CacheVoidRef("any_mesh",
+                            AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+                            timestep, -1, vrdb);
     }
 }
 

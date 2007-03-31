@@ -80,9 +80,15 @@ struct Boundary
     int    NewCellIndexFromNeighbor(Neighbor*, int, int, int);
 };
 
-//
+// ****************************************************************************
 //  Class: BoundaryHelperFunctions
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Nov 10 15:26:00 PST 2003
+//    Added routines for exchanging rectilinear components.
+//
+// ****************************************************************************
 template<class T>
 class BoundaryHelperFunctions
 {
@@ -94,12 +100,15 @@ class BoundaryHelperFunctions
     T   ***InitializeBoundaryData();
     void   FillBoundaryData(int, const T*, T***, bool, int=1);
     void   FillMixedBoundaryData(int,avtMaterial*,const T*,T***,int***,int***,vector<int>&);
+    void   FillRectilinearBoundaryData(int, const T*, const T*, const T*, T***);
     void   CommunicateBoundaryData(const vector<int>&, T***, bool, int=1);
     void   CommunicateMixedBoundaryData(const vector<int>&,T***,int***,int***,vector< vector<int> > &);
     void   CopyOldValues(int, const T*, T*, bool, int=1);
     void   CopyOldMixedValues(avtMaterial*,const T*, T*);
+    void   CopyOldRectilinearValues(int, const T*, T*, int);
     void   SetNewBoundaryData(int, T***, T*, bool, int=1);
     void   SetNewMixedBoundaryData(int,avtMaterial*,const vector< vector<int> >&,int***,T***,int***,int***,int*,T*,int*,int*,int*,int&);
+    void   SetNewRectilinearBoundaryData(int, T***, T*, T*, T*);
     void   FakeNonexistentBoundaryData(int, T*, bool, int=1);
     void   FreeBoundaryData(T***);
 };
@@ -128,10 +137,6 @@ class BoundaryHelperFunctions
 //    vtkScalars and vtkVectors have been deprecated in VTK 4.0, 
 //    use vtkDataArray instead.
 //
-//    Kathleen Bonnell, Wed Mar 27 15:47:14 PST 2002 
-//    vtkScalars and vtkvectors have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
 //    Jeremy Meredith, Brad Whitlock, Thu Apr 4 09:55:34 PDT 2002
 //    Refactored so it uses instances of template classes instead of
 //    relying on template function specialization. This works around a bug
@@ -143,6 +148,12 @@ class BoundaryHelperFunctions
 //    
 //    Jeremy Meredith, Fri Nov  7 15:15:34 PST 2003
 //    Added private methods to handle varying types of scalar exchanges.
+//
+//    Hank Childs, Mon Nov 10 14:57:10 PST 2003
+//    Previously, StructuredDomainBoundaries was a concrete type.  I made it be
+//    abstract and added derived types for curvilinear and rectilinear grids
+//    (the only previous support was for curvilinear grids).  Also added
+//    DeclareNumDomains and CreateGhostZones.
 //
 // ****************************************************************************
 
@@ -158,9 +169,6 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     void     SetExtents(int domain, int e[6]);
     void     AddNeighbor(int domain, int d,int mi, int o[3], int e[6]);
     void     Finish(int domain);
-
-    virtual vector<vtkDataSet*>       ExchangeMesh(vector<int>       domainNum,
-                                               vector<vtkDataSet*>   meshes);
 
     virtual vector<vtkDataArray*>     ExchangeScalar(vector<int>   domainNum,
                                              bool                  isPointData,
@@ -198,7 +206,7 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
                                              vector<vtkDataArray*> scalars);
 
 
-  private:
+  protected:
     // data
     vector<Boundary> wholeBoundary;
     vector<Boundary> boundary;
@@ -209,13 +217,46 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     BoundaryHelperFunctions<int>           *bhf_int;
     BoundaryHelperFunctions<float>         *bhf_float;
     BoundaryHelperFunctions<unsigned char> *bhf_uchar;
-  private:
+
     // helper methods
     vector<int> CreateDomainToProcessorMap(const vector<int>&);
     void        CreateCurrentDomainBoundaryInformation(const vector<int>&);
     bool       *SetExistence(int, bool);
+    void        CreateGhostZones(vtkDataSet *, vtkDataSet *, Boundary *);
+
+    virtual void DeclareNumDomains(int);
 
     friend ostream &operator<<(ostream&, Boundary&);
 };
+
+
+class DATABASE_API avtCurvilinearDomainBoundaries
+    : public avtStructuredDomainBoundaries
+{
+  public:
+    virtual vector<vtkDataSet*>    ExchangeMesh(vector<int>         domainNum,
+                                                vector<vtkDataSet*> meshes);
+};
+
+
+class DATABASE_API avtRectilinearDomainBoundaries
+    : public avtStructuredDomainBoundaries
+{
+  public:
+    virtual vector<vtkDataSet*>    ExchangeMesh(vector<int>         domainNum,
+                                                vector<vtkDataSet*> meshes);
+
+    void  SetIndicesForRectGrid(int domain, int e[6]);
+    void  SetIndicesForAMRPatch(int domain, int level, int e[6]);
+
+    void  CalculateBoundaries(void);
+
+  protected:
+    vector<int>   extents;
+    vector<int>   levels;
+
+    virtual void  DeclareNumDomains(int);
+};
+
 
 #endif
