@@ -966,10 +966,15 @@ EngineProxy::StartPick(const bool flag, const int nid)
 //  Programmer:  Kathleen Bonnell 
 //  Creation:    September 6, 2002 
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Oct  2 16:20:17 PDT 2003
+//    Allow for a query to have multiple network ids.
+//
 // ****************************************************************************
 
 void 
-EngineProxy::Query(const int nid, const QueryAttributes *atts,
+EngineProxy::Query(const std::vector<int> &nid, const QueryAttributes *atts,
                    QueryAttributes &retAtts)
 {
     queryRPC(nid, atts);

@@ -764,6 +764,9 @@ RPCExecutor<ClearCacheRPC>::Execute(ClearCacheRPC *rpc)
 //    Hank Childs, Tue Aug 19 20:57:57 PDT 2003
 //    Added a callback for the terminating source.
 //
+//    Hank Childs, Thu Oct  2 16:29:36 PDT 2003
+//    Renamed GetNetworkId to GetNetworkIds.
+//
 // ****************************************************************************
 template<>
 void
@@ -787,7 +790,7 @@ RPCExecutor<QueryRPC>::Execute(QueryRPC *rpc)
  
     TRY
     {
-        netmgr->Query(rpc->GetNetworkId(), rpc->GetQueryAtts());
+        netmgr->Query(rpc->GetNetworkIds(), rpc->GetQueryAtts());
         rpc->SendReply(rpc->GetQueryAtts());
     }
     CATCH2(VisItException, e)

@@ -4219,31 +4219,35 @@ ViewerPlotList::GetPlot(const int id) const
 
 
 // ****************************************************************************
-// Method: ViewerPlotList::GetPlotID
+// Method: ViewerPlotList::GetActivePlotIDs
 //
 // Purpose: 
-//   Returns the index of the first selected, realized, non-hidden plot.
+//   Returns the index of all the active, realized, non-hidden plots.
 //
 // Returns:    
-//   The 0-origin index of the first selected, realized, non-hidden plot.
-//   Returns -1 if none found. 
+//   The 0-origin index of all the active, realized, non-hidden plots.
 //
 // Programmer: Kathleen Bonnell 
 // Creation:   May 28, 2002 
 //
+// Modifications:
+//
+//   Hank Childs, Thu Oct  2 14:22:16 PDT 2003
+//   Renamed from GetPlotID.  Made it return a vector of ids.
+//
 // ****************************************************************************
 
-int
-ViewerPlotList::GetPlotID() const
+void
+ViewerPlotList::GetActivePlotIDs(std::vector<int> &ids) const
 {
+    ids.clear();
     for (int i = 0; i < nPlots; ++i)
     {
         if (plots[i].active && plots[i].realized && !plots[i].hidden)
         {
-            return i;
+            ids.push_back(i);
         }
     }
-    return -1;
 }
 
 // ****************************************************************************

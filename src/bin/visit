@@ -261,6 +261,9 @@ $0 = shift @ARGV;
 #    Jeremy Meredith, Mon Sep 29 11:26:47 PDT 2003
 #    Added help for the "-o" and "-launchengine" flags.
 #
+#    Brad Whitlock, Fri Oct 3 12:59:49 PDT 2003
+#    I made the -s argument become -scriptfile when -movie is specified.
+#
 ###############################################################################
 
 
@@ -370,7 +373,7 @@ USAGE:  visit [arguments]
 
     Scripting arguments:
         -s    <scriptname>   Runs the specified VisIt script. Note that
-                             this argument only takes effect with -cli.
+                             this argument only takes effect with -cli or -movie.
         -verbose             Prints status information during pipeline
                              execution.
 
@@ -459,6 +462,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-time_annotation" ) { $exe_name = "time_annotation"; }
     elsif ($arg eq "-mpeg_encode" )     { $exe_name = "mpeg_encode"; }
     elsif ($arg eq "-movie" )           { $exe_name = "cli"; $add_movie_args = 1; }
+    elsif ($arg eq "-s")                { if($add_movie_args) { $sfile = shift; push @visitargs, "-scriptfile", $sfile;} else { push @visitargs, $arg;}}
     elsif ($arg eq "-publicpluginsonly"){ $publiconly = 1; push @visitargs, $arg; }
     elsif ($arg eq "-version")   { $want_version = 1; }
     elsif ($arg eq "-help")      { print STDERR "$usage\n"; exit(0); }
@@ -1113,7 +1117,6 @@ else
             print GDBFILE "directory $ENV{VISITHOME}/components/Database/Database\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Database/Formats\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Database/Ghost\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Database/MIR\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Exceptions/Database\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Exceptions/Pipeline\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Exceptions/VisWindow\n";
@@ -1123,6 +1126,9 @@ else
             print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/Math\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/MeshQuality\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Math\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/MIR/Base\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/MIR/Tet\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/MIR/Zoo\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Pipeline/Data\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Pipeline/Pipeline\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Pipeline/PrivateFilters\n";

@@ -1866,10 +1866,13 @@ UpdatePlotAttsCallback(void *vem, const string &str, int index,
 //   Change catch block to second version of rethrow, which will rethrow
 //   the LostConnectionException, and possibly throw a NoEngineException.  
 //
+//   Hank Childs, Thu Oct  2 16:18:11 PDT 2003
+//   Allow for multiple network ids.
+//
 // ****************************************************************************
  
 bool
-ViewerEngineManager::Query(const char *hostName_, const int nid, 
+ViewerEngineManager::Query(const char *hostName_, const std::vector<int> &nid,
                            const QueryAttributes *atts,
                            QueryAttributes &retAtts)
 {

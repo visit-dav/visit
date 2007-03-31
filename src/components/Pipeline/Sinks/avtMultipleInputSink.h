@@ -4,10 +4,13 @@
 
 #ifndef AVT_MULTIPLE_INPUT_SINK_H
 #define AVT_MULTIPLE_INPUT_SINK_H
+
 #include <pipeline_exports.h>
 
-
 #include <avtDataObjectSink.h>
+#include <avtDataTree.h>
+
+class     avtDatasetSink;
 
 
 // ****************************************************************************
@@ -41,6 +44,8 @@ class PIPELINE_API avtMultipleInputSink : virtual public avtDataObjectSink
     avtDataObject_p               GetNthInput(int);
     void                          SetNumSinks(int);
     void                          SetSink(avtDataObjectSink *, int);
+
+    avtDataTree_p                 GetTreeFromSink(avtDatasetSink *);
 };
 
 

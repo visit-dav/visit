@@ -23,6 +23,9 @@ class QvisColorButton;
 //   Brad Whitlock, Tue Jan 29 13:15:07 PST 2002
 //   Added orientation combo box.
 //
+//   Brad Whitlock, Fri Oct 3 10:06:22 PDT 2003
+//   Added an internal method.
+//
 // ****************************************************************************
 
 class GUI_API QvisAppearanceWindow : public QvisPostableWindowObserver
@@ -42,6 +45,7 @@ public slots:
 protected:
     void UpdateWindow(bool doAll);
     void Apply(bool ignore = false);
+    bool ColorsNotTooClose(const QColor &c0, const char *c1str);
 private slots:
     void backgroundChanged(const QColor &bg);
     void foregroundChanged(const QColor &fg);

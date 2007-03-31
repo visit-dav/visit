@@ -109,15 +109,14 @@ def applyFunctionToFrames(func, nframes, conversionargs):
 # Programmer: Brad Whitlock
 # Date:       Wed Dec 18 11:33:22 PDT 2002
 #
+# Modifications:
+#   Brad Whitlock, Fri Oct 3 13:12:54 PST 2003
+#   Changed so it uses unlink to remove files.
+#
 ###############################################################################
 
 def RemoveFile(fileName):
-    command = "rm "
-    if(sys.platform == "win32"):
-        command = "del "
-    command = command + " " + fileName
-    # Remove the files.
-    os.system(command)
+    os.unlink(fileName)
 
 def removeFilesHelper(threadID, start, end, conversionargs):
     # Get the arguments out of the tuple.
@@ -184,6 +183,20 @@ def EncodeQuickTimeMovieHelper(threadID, start, end, conversionargs):
     createQuickTimeFile(subMovieName, baseFormat, start, end, xres, yres)
 
 ###############################################################################
+# Function: MovieClassSaveWindow
+#
+# Purpose:    This function is called from the mangled Python script when it
+#             wants to save an image.
+#
+# Programmer: Brad Whitlock
+# Date:       Fri Oct 3 12:47:32 PDT 2003
+#
+###############################################################################
+classSaveWindowObj = 0
+def MovieClassSaveWindow():
+    return classSaveWindowObj.SaveImage2()
+
+###############################################################################
 # Class: MakeMovie
 #
 # Purpose:    This class makes movies.
@@ -192,6 +205,8 @@ def EncodeQuickTimeMovieHelper(threadID, start, end, conversionargs):
 # Date:       Mon Jul 28 12:45:45 PDT 2003
 #
 # Modifications:
+#   Brad Whitlock, Fri Oct 3 11:14:59 PDT 2003
+#   Added support for processing Python files.
 #
 ###############################################################################
 
@@ -203,6 +218,10 @@ class MakeMovie:
     #
     # Programmer: Brad Whitlock
     # Date:       Mon Jul 28 13:58:06 PST 2003
+    #
+    # Modifications:
+    #   Brad Whitlock, Fri Oct 3 11:14:50 PDT 2003
+    #   Added support for processing Python files.
     #
     ###########################################################################
 
@@ -222,6 +241,8 @@ class MakeMovie:
 
         # Movie properties.
         self.stateFile = ""
+        self.scriptFile = ""
+        self.usingStateFile = 1
         self.frameBase = "frame"
         self.movieBase = "movie"
         self.movieFormat = self.MPEG_MOVIE
@@ -250,10 +271,14 @@ class MakeMovie:
     #   Brad Whitlock, Tue Aug 12 09:57:05 PDT 2003
     #   Added a note about Windows.
     #
+    #   Brad Whitlock, Fri Oct 3 11:16:12 PDT 2003
+    #   Added -scriptfile.
+    #
     ###########################################################################
 
     def PrintUsage(self):
         print "Usage: visit -movie [-format fmt] [-geometry size] -sessionfile name"
+        print "                    -sessionfile name | -scriptfile name "
         print "                    [-output moviename] [-framestep step]"
         print ""
         print "OPTIONS"
@@ -297,6 +322,10 @@ class MakeMovie:
         print "                       when you save your session from within VisIt's "
         print "                       GUI after you set up your plots how you want them."
         print ""
+        print "    -scriptfile name   The scriptfile option lets you pick the name"
+        print "                       of a VisIt Python script to use as input for your"
+        print "                       movie."
+        print ""
         print "    -framestep step    The number of frames to advance when going to "
         print "                       the next frame."
         print ""
@@ -329,6 +358,9 @@ class MakeMovie:
     # Modifications:
     #   Brad Whitlock, Tue Aug 12 09:57:31 PDT 2003
     #   Prevented use of mpeg, qt, and sm on Windows.
+    #
+    #   Brad Whitlock, Fri Oct 3 11:25:33 PDT 2003
+    #   Added support for -scriptfile.
     #
     ###########################################################################
 
@@ -384,6 +416,15 @@ class MakeMovie:
             elif(sys.argv[i] == "-sessionfile"):
                 if((i+1) < len(sys.argv)):
                     self.stateFile = sys.argv[i+1]
+                    self.usesStateFile = 1
+                    i = i + 1
+                else:
+                    self.PrintUsage()
+                    sys.exit(-1)
+            elif(sys.argv[i] == "-scriptfile"):
+                if((i+1) < len(sys.argv)):
+                    self.scriptFile = sys.argv[i+1]
+                    self.usesStateFile = 0
                     i = i + 1
                 else:
                     self.PrintUsage()
@@ -424,9 +465,9 @@ class MakeMovie:
 
         # Make sure that the user provided the -sessionfile option or we can't
         # make a movie!
-        if(self.stateFile == ""):
+        if(self.stateFile == "" and self.scriptFile == ""):
             self.PrintUsage()
-            print "You must provide the -sessionfile option!"
+            print "You must provide the -sessionfile or the -scriptfile option!"
             sys.exit(-1)
 
         # If the movie is just a set of frames, make sure that we use the
@@ -492,6 +533,26 @@ class MakeMovie:
         return SaveWindow()
 
     ###########################################################################
+    # Method: SaveImage2
+    #
+    # Purpose:    This method tells VisIt to save an image.
+    #
+    # Notes:      This method is called when we save an image from a Python
+    #             script.
+    #
+    # Programmer: Brad Whitlock
+    # Date:       Fri Oct 3 12:45:30 PDT 2003
+    #
+    ###########################################################################
+
+    def SaveImage2(self):
+        # Figure out the extension for the output files.
+        ext = self.LookupImageExtension(self.outputFormat)
+        retval = self.SaveImage(self.numFrames, ext)
+        self.numFrames = self.numFrames + 1
+        return retval
+
+    ###########################################################################
     # Method: LookupImageExtension
     #
     # Purpose:    This method returns the file extension associated with the
@@ -515,12 +576,59 @@ class MakeMovie:
         return retval
 
     ###########################################################################
+    # Method: CreateMangledSource
+    #
+    # Purpose:    This method reads in the Python file that we want to execute
+    #             and creates an alternate version in which all of the
+    #             SaveWindow method calls have been replaced with
+    #             MovieClassSaveWindow.
+    #
+    # Programmer: Brad Whitlock
+    # Date:       Mon Jul 28 13:58:06 PST 2003
+    #
+    ###########################################################################
+    
+    def CreateMangledSource(self, name):
+        import string
+
+        # Read in the Python file that we want to source. 
+        f = open(name, "r")
+        lines = f.readlines()
+        f.close()
+
+        #
+        # Create a new Python file and save modified source where every call
+        # to VisIt's SaveWindow() method gets replaced by MovieClassSaveWindow()
+        # which causes the script to save the image using the name and format
+        # prescribed by this movie framework.
+        #
+        newname = "%s.mangled" % name
+        f = open(newname, "w")
+        for line in lines:
+            index = string.find(line, "SaveWindow()")
+            if index == -1:
+                f.write(line)
+            else:
+                before = line[:index]
+                after = line[index+len("SaveWindow()")]
+                f.write(before + "MovieClassSaveWindow()" + after)
+        f.close()
+
+        return newname
+
+    ###########################################################################
     # Method: GenerateFrames
     #
     # Purpose:    This method tells VisIt to generate the frames for the movie.
     #
     # Programmer: Brad Whitlock
     # Date:       Mon Jul 28 13:58:06 PST 2003
+    #
+    # Modifications:
+    #   Brad Whitlock, Fri Oct 3 11:27:50 PDT 2003
+    #   Changed to allow scripts to save images. I also forced camera view
+    #   mode to be enabled so keyframe animations that change the view actually
+    #   save images that have a keyframed view.
     #
     ###########################################################################
 
@@ -533,21 +641,36 @@ class MakeMovie:
         # Figure out the extension for the output files.
         ext = self.LookupImageExtension(self.outputFormat)
 
-        # Make the viewer try and restore its session using the file that
-        # was passed in.
-        RestoreSession(self.stateFile, 0)
+        if(self.usesStateFile):
+            # Make the viewer try and restore its session using the file that
+            # was passed in.
+            RestoreSession(self.stateFile, 0)
 
-        # Make sure that plots are all drawn.
-        DrawPlots()
+            # Make sure that plots are all drawn.
+            DrawPlots()
 
-        # Save an image for each frame in the animation.
-        self.numFrames = 0
-        i = 0
-        while(i < AnimationGetNFrames()):
-            AnimationSetFrame(i)
-            self.SaveImage(self.numFrames, ext)
-            self.numFrames = self.numFrames + 1
-            i = i + self.frameStep
+            # Make sure that camera view mode is on so that if we have a
+            # saved keyframe animation, we really get the keyframed view.
+            if(GetWindowInformation().cameraViewMode == 0):
+                ToggleCameraViewMode()
+
+            # Save an image for each frame in the animation.
+            self.numFrames = 0
+            i = 0
+            while(i < AnimationGetNFrames()):
+                AnimationSetFrame(i)
+                self.SaveImage(self.numFrames, ext)
+                self.numFrames = self.numFrames + 1
+                i = i + self.frameStep
+        else:
+            # Save the callback data so we can call methods on this object.
+            globals()['classSaveWindowObj'] = self
+            # Create a modified version of the user's script.
+            name = self.CreateMangledSource(self.scriptFile)
+            # Try executing the modified version of the user's script.
+            Source(name)
+            # Remove the modified script.
+            RemoveFile(name);
 
     ###########################################################################
     # Method: EncodeMPEGMovie

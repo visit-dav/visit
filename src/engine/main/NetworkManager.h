@@ -110,6 +110,9 @@ class VisWindow;
 //    Jeremy Meredith, Mon Sep 15 17:15:09 PDT 2003
 //    Removed SetFinalVariableName.
 //
+//    Hank Childs, Thu Oct  2 16:31:08 PDT 2003
+//    Allow queries to involve multiple networks.
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -153,7 +156,7 @@ class NetworkManager
     void          StopPickMode(void);
 
     void          Pick(const int, PickAttributes *);
-    void          Query(const int, QueryAttributes*);
+    void          Query(const std::vector<int> &, QueryAttributes*);
 
  private:
     std::vector<DataNetwork*>   networkCache;

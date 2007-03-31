@@ -106,6 +106,43 @@ ConfigManager::WriteIndent(int indentLevel)
 }
 
 // ****************************************************************************
+// Method: ConfigManager::WriteQuotedStringData
+//
+// Purpose: 
+//   Writes the string to the file surrounded by quotes and and quotes that
+//   the string had in it are escaped.
+//
+// Arguments:
+//   str : The string to write to the file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 3 16:18:10 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ConfigManager::WriteQuotedStringData(const std::string &str)
+{
+    fputc('"', fp);    
+    if(str.size() > 0)
+    {
+        const char *cptr = str.c_str();
+        for(int i = 0; i < str.size(); ++i)
+        {
+            // Add escape characters.
+            if(cptr[i] == '"' || cptr[i] == '\\')
+                fputc('\\', fp);
+            fputc(cptr[i], fp);
+        }
+    }
+
+    fputc('"', fp);
+    fputc(' ', fp);
+}
+
+// ****************************************************************************
 // Method: ConfigManager::WriteData
 //
 // Purpose: 
@@ -121,6 +158,10 @@ ConfigManager::WriteIndent(int indentLevel)
 // Modifications:
 //   Brad Whitlock, Fri Mar 30 14:37:21 PST 2001
 //   Added unsigned char cases.
+//
+//   Brad Whitlock, Fri Oct 3 16:00:21 PST 2003
+//   I made string vectors and arrays quote their strings so they read in
+//   correctly if the strings contain spaces.
 //
 // ****************************************************************************
 
@@ -203,8 +244,8 @@ ConfigManager::WriteData(DataNode *node)
     case STRING_ARRAY_NODE:
         { // new scope
             const std::string *sptr = node->AsStringArray();
-            for(i = 0; i < node->GetLength(); ++i, ++sptr)
-                fprintf(fp, "%s ", sptr->c_str());
+            for(i = 0; i < node->GetLength(); ++i)
+                WriteQuotedStringData(*sptr++);
         }
         break;
     case BOOL_ARRAY_NODE:
@@ -265,7 +306,7 @@ ConfigManager::WriteData(DataNode *node)
        { // new scope
             const stringVector &svec = node->AsStringVector();
             for(i = 0; i < svec.size(); ++i)
-                fprintf(fp, "%s ", svec[i].c_str());
+                WriteQuotedStringData(svec[i]);
        }
        break;
     default:
@@ -459,7 +500,9 @@ ConfigManager::FinishTag()
 // Creation:   Thu Jul 3 09:39:11 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Oct 3 17:12:07 PST 2003
+//   Added crude character escaping.
+//
 // ****************************************************************************
 
 stringVector
@@ -471,6 +514,7 @@ ConfigManager::ReadStringVector(char termChar)
     char c;
     bool reading = false, keepgoing = true;
     bool quoted = false;
+    bool escaped = false;
 
     while(keepgoing)
     {
@@ -492,21 +536,51 @@ ConfigManager::ReadStringVector(char termChar)
                 reading = false;
             }
         }
+        else if(c == '\\')
+        {
+            if(escaped)
+            {
+                tempString += c;
+                escaped = false;
+            }
+            else
+                escaped = true;
+        }
         else if(c == '"')
         {
-            quoted = !quoted;
-            // Add to the current string.
-            tempString += c;
-            reading = true;
+            if(escaped)
+            {
+                escaped = false;
+                tempString += c;
+                reading = true;
+            }
+            else
+            {
+                quoted = !quoted;
+                // Add to the current string.
+                tempString += c;
+                reading = true;
+            }
         }
         else if(c != '\t' && c != '<' && c != '>')
         {
+            if(escaped)
+            {
+                tempString += '\\';
+                escaped = false;
+            }
+
             // Add to the current string.
             tempString += c;
             reading = true;
         }
         else if(reading)
         {
+            if(escaped)
+            {
+                tempString += '\\';
+                escaped = false;
+            }
             retval.push_back(tempString);
             tempString = "";
             reading = false;
@@ -514,6 +588,37 @@ ConfigManager::ReadStringVector(char termChar)
     }
  
     return retval;
+}
+
+// ****************************************************************************
+// Method: ConfigManager::RemoveLeadAndTailQuotes
+//
+// Purpose: 
+//   Removes leading and trailing quotes in all of the strings in the vector.
+//
+// Arguments:
+//   sv : The string vector to change.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 6 08:55:23 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ConfigManager::RemoveLeadAndTailQuotes(stringVector &sv)
+{
+    for(int i = 0; i < sv.size(); ++i)
+    {
+        std::string &s = sv[i];
+        if(s.size() > 0)
+        {
+            int head = (s[0] == '"') ? 1 : 0;
+            int tail = (s[s.size()-1] == '"') ? 1 : 0;
+            sv[i] = s.substr(head, s.size() - head - tail);
+        }
+    }
 }
 
 // ****************************************************************************
@@ -541,6 +646,9 @@ ConfigManager::ReadStringVector(char termChar)
 //
 //   Brad Whitlock, Tue Jul 22 10:09:22 PDT 2003
 //   I fixed a bug in reading in CHAR_NODE data.
+//
+//   Brad Whitlock, Fri Oct 3 17:19:42 PST 2003
+//   Added code to strip leading and tailing quotes from string vectors.
 //
 // ****************************************************************************
 
@@ -742,6 +850,7 @@ ConfigManager::ReadFieldData(const std::string &tagName, NodeTypeEnum type,
             std::string *svalArray = 0;
             if(minSize > 0)
             {
+                RemoveLeadAndTailQuotes(sv);
                 svalArray = new std::string[minSize];
                 for(i = 0; i < minSize; ++i)
                     svalArray[i] = sv[i];
@@ -863,6 +972,7 @@ ConfigManager::ReadFieldData(const std::string &tagName, NodeTypeEnum type,
     case STRING_VECTOR_NODE:
         if(minSize > 0)
         {
+            RemoveLeadAndTailQuotes(sv);
             retval = new DataNode(tagName, sv);
         }
         break;

@@ -231,6 +231,9 @@ ViewerQuery::StopObservingPlot()
 //    Added bool argument, which indicates whether the lineout should
 //    be initialized against its default atts or its client atts. 
 //
+//    Hank Childs, Thu Oct  2 14:22:16 PDT 2003
+//    Account for multiple active plots.
+//
 // ****************************************************************************
 
 void
@@ -240,7 +243,9 @@ ViewerQuery::CreateLineout(const bool fromDefault)
     //  Grab information from the originating window.
     //
     ViewerPlotList *origList = originatingWindow->GetAnimation()->GetPlotList();
-    int origPlotID = origList->GetPlotID();
+    std::vector<int> plotIDs;
+    origList->GetActivePlotIDs(plotIDs);
+    int origPlotID = (plotIDs.size() > 0 ? plotIDs[0] : -1);
     originatingPlot = origList->GetPlot(origPlotID);
     int currentFrame = originatingWindow->GetAnimation()->GetFrameIndex();
     int nFrames = originatingWindow->GetAnimation()->GetNFrames();
@@ -812,6 +817,11 @@ ViewerQuery::DisableTool()
 //  Programmer: Kathleen Bonnell
 //  Creation:   July 13, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Oct  2 14:22:16 PDT 2003
+//    Account for multiple active plots.
+//
 // ****************************************************************************
  
 bool
@@ -820,10 +830,12 @@ ViewerQuery::CanHandleTool()
     bool retval = false;
     if (lineAtts->GetInteractive())
     {
-        // Retrieve the plot ID for the current active,non-hidden, realized plot in
-        // the plot list where my results are drawn.
+        // Retrieve the plot ID for the current active,non-hidden, realized 
+        // plot in the plot list where my results are drawn.
+        std::vector<int> plotIDs;
+        resultsWindow->GetAnimation()->GetPlotList()->GetActivePlotIDs(plotIDs);
+        int activePlotId = (plotIDs.size() > 0 ? plotIDs[0] : -1);
 
-        int activePlotId = resultsWindow->GetAnimation()->GetPlotList()->GetPlotID();
         //
         //  Does this plot match my results?
         retval = MatchResultsPlot(resultsWindow->GetAnimation()

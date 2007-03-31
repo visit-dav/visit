@@ -10,9 +10,14 @@
 //  Programmer: Kathleen Bonnell
 //  Creation:   September 6, 2002 
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Oct  2 16:25:55 PDT 2003
+//    Added '*' to 'i*' since we now have a vector of ints.
+//
 // ****************************************************************************
 
-QueryRPC::QueryRPC() : NonBlockingRPC("ia", &returnAtts)
+QueryRPC::QueryRPC() : NonBlockingRPC("i*a", &returnAtts)
 {
   // nothing here;
 }
@@ -30,12 +35,18 @@ QueryRPC::QueryRPC() : NonBlockingRPC("ia", &returnAtts)
 //  Programmer: Kathleen Bonnell
 //  Creation:   September 6, 2002 
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Oct  2 16:25:55 PDT 2003
+//    Renamed networkId to networkIds.
+//
 // ****************************************************************************
 
 void
-QueryRPC::operator()(const int netId, const QueryAttributes *atts)
+QueryRPC::operator()(const std::vector<int> &netIds,
+                     const QueryAttributes *atts)
 {
-    SetNetworkId(netId);
+    SetNetworkIds(netIds);
     SetQueryAtts(atts);
     Execute();
 }
@@ -57,7 +68,7 @@ QueryRPC::operator()(const int netId, const QueryAttributes *atts)
 void
 QueryRPC::SelectAll()
 {
-    Select(0, (void*)&networkId);
+    Select(0, (void*)&networkIds);
     Select(1, (void*)&queryAtts);
 }
 

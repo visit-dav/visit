@@ -377,6 +377,9 @@ QvisQueryWindow::UpdateResults(bool)
 //   Kathleen Bonnell, Wed Jul 23 16:02:22 PDT 2003 
 //   Added 'Variable by Zone'.
 //
+//   Hank Childs, Fri Oct  3 16:22:03 PDT 2003
+//   Added L2Norm and more.
+//
 // ****************************************************************************
 
 void
@@ -401,6 +404,12 @@ QvisQueryWindow::UpdateArgumentPanel(int index)
                  (strcmp(names[index].c_str(), "Volume") == 0) ||
                  (strcmp(names[index].c_str(), "Eulerian") == 0) ||
                  (strcmp(names[index].c_str(), "Compactness") == 0) ||
+                 (strcmp(names[index].c_str(), "Cycle") == 0) ||
+                 (strcmp(names[index].c_str(), "Time") == 0) ||
+                 (strcmp(names[index].c_str(), "L2Norm") == 0) ||
+                 (strcmp(names[index].c_str(), "Integrate") == 0) ||
+                 (strcmp(names[index].c_str(), "L2Norm Between Curves") == 0)||
+                 (strcmp(names[index].c_str(), "Area Between Curves") == 0) ||
                  (strcmp(names[index].c_str(), "Revolved surface area") == 0)||
                  (strcmp(names[index].c_str(), "Revolved volume") == 0)) 
                 showWidgets[0] = false;

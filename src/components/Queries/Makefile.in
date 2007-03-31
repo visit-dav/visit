@@ -47,6 +47,9 @@
 #   Kathleen Bonnell, Wed Jul 23 18:10:53 PDT 2003
 #   Added avtVariableQuery. 
 #
+#   Hank Childs, Thu Oct  2 09:59:40 PDT 2003
+#   Added avtMultipleInputQuery, avtL2NormQuery, avtTimeQuery, more.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -56,16 +59,25 @@ SUBDIRS=Abstract Queries
 SRC=$(Abstract_src) $(Queries_src)
 
 Abstract_src= \
+ Abstract/avtCurveQuery.C \
+ Abstract/avtCurveComparisonQuery.C \
  Abstract/avtDataObjectQuery.C \
  Abstract/avtDatasetQuery.C \
+ Abstract/avtMultipleInputQuery.C \
  Abstract/avtTwoPassDatasetQuery.C
 
 Queries_src= \
+ Queries/avtAreaBetweenCurvesQuery.C  \
  Queries/avtCompactnessQuery.C  \
+ Queries/avtCycleQuery.C  \
  Queries/avtEulerianQuery.C \
+ Queries/avtIntegrateQuery.C  \
  Queries/avtLocateCellQuery.C  \
+ Queries/avtL2NormQuery.C  \
+ Queries/avtL2NormBetweenCurvesQuery.C  \
  Queries/avtPickQuery.C  \
  Queries/avtSummationQuery.C  \
+ Queries/avtTimeQuery.C  \
  Queries/avtTotalRevolvedSurfaceAreaQuery.C \
  Queries/avtTotalRevolvedVolumeQuery.C \
  Queries/avtTotalSurfaceAreaQuery.C \

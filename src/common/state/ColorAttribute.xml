@@ -13,4 +13,5 @@
     <Function name="Green"           user="true"></Function>
     <Function name="Blue"            user="true"></Function>
     <Function name="Alpha"           user="true"></Function>
+    <Function name="CreateNode"      user="false"></Function>
   </Attribute>

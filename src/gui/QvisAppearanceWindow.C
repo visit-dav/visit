@@ -247,6 +247,55 @@ QvisAppearanceWindow::apply()
 }
 
 // ****************************************************************************
+// Method: QvisAppearanceWindow::ColorsNotTooClose
+//
+// Purpose: 
+//   Prevents bad colors from being used together.
+//
+// Arguments:
+//   c0    : The first color to check.
+//   c1str : The string representation of the second color to check.
+//
+// Returns:    True if the colors can be used together; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 3 10:02:10 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+QvisAppearanceWindow::ColorsNotTooClose(const QColor &c0, const char *c1str)
+{
+    QColor c1(c1str);
+
+    int dR = int(c0.red()) - int(c1.red());
+    int dG = int(c0.green()) - int(c1.green());
+    int dB = int(c0.blue()) - int(c1.blue());
+
+    const int threshold = 10;
+    bool rClose = dR > -threshold && dR < threshold;
+    bool gClose = dG > -threshold && dG < threshold;
+    bool bClose = dB > -threshold && dB < threshold;
+
+    bool retval = true;
+    if(rClose && gClose && bClose)
+    {
+        // Update the window so the color buttons get set back properly.
+        UpdateWindow(true);
+
+        // Tell the user that it was a bad idea.
+        Warning("The background color and foreground color will not be "
+                "changed because the selected colors are too similar and "
+                "using them would make it too difficult to use VisIt.");
+        retval = false;
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
 // Method: QvisAppearanceWindow::backgroundChanged
 //
 // Purpose: 
@@ -260,18 +309,24 @@ QvisAppearanceWindow::apply()
 // Creation:   Thu Sep 6 13:16:36 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Oct 3 10:03:19 PDT 2003
+//   Prevented bad colors from being used together.
+//
 // ****************************************************************************
 
 void
 QvisAppearanceWindow::backgroundChanged(const QColor &bg)
 {
     AppearanceAttributes *atts = (AppearanceAttributes *)subject;
-    QString tmp;
-    tmp.sprintf("#%02x%02x%02x", bg.red(), bg.green(), bg.blue());
-    atts->SetBackground(tmp.latin1());
-    SetUpdate(false);
-    Apply();
+
+    if(ColorsNotTooClose(bg, atts->GetForeground().c_str()))
+    {
+        QString tmp;
+        tmp.sprintf("#%02x%02x%02x", bg.red(), bg.green(), bg.blue());
+        atts->SetBackground(tmp.latin1());
+        SetUpdate(false);
+        Apply();
+    }
 }
 
 // ****************************************************************************
@@ -288,6 +343,8 @@ QvisAppearanceWindow::backgroundChanged(const QColor &bg)
 // Creation:   Thu Sep 6 13:16:36 PST 2001
 //
 // Modifications:
+//   Brad Whitlock, Fri Oct 3 10:03:19 PDT 2003
+//   Prevented bad colors from being used together.
 //   
 // ****************************************************************************
 
@@ -295,11 +352,15 @@ void
 QvisAppearanceWindow::foregroundChanged(const QColor &fg)
 {
     AppearanceAttributes *atts = (AppearanceAttributes *)subject;
-    QString tmp;
-    tmp.sprintf("#%02x%02x%02x", fg.red(), fg.green(), fg.blue());
-    atts->SetForeground(tmp.latin1());
-    SetUpdate(false);
-    Apply();
+
+    if(ColorsNotTooClose(fg, atts->GetBackground().c_str()))
+    {
+        QString tmp;
+        tmp.sprintf("#%02x%02x%02x", fg.red(), fg.green(), fg.blue());
+        atts->SetForeground(tmp.latin1());
+        SetUpdate(false);
+        Apply();
+    }
 }
 
 // ****************************************************************************
