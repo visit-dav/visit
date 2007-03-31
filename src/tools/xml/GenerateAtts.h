@@ -96,6 +96,10 @@ using std::vector;
 //    Changed haswriter to be a bool.
 //    Made attributes with multiple vector fields use a single counter.
 //
+//    Brad Whitlock, Thu Oct 9 11:47:28 PDT 2003
+//    I changed the code generation so that colors are always added to the
+//    DataNode in CreateNode.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -2072,8 +2076,14 @@ class AttsGeneratorAttribute
         // Write out the DataNode creation for all attributes.
         for (int i=0; i<fields.size(); i++)
         {
-            c << "    if(!FieldsEqual(" << i << ", &defaultObject))" << endl;
-            c << "    {" << endl;
+            QString forceAdd("false"); 
+            if(fields[i]->type != "color")
+            {
+                c << "    if(!FieldsEqual(" << i << ", &defaultObject))" << endl;
+                c << "    {" << endl;
+            }
+            else
+                forceAdd = "true";
 
             if (fields[i]->GetAttributeGroupID() == "a")
             {
@@ -2081,7 +2091,7 @@ class AttsGeneratorAttribute
                 c << "        DataNode *" << nodeName << " = new DataNode(\""
                   << fields[i]->name << "\");" << endl;
                 c << "        if(" << fields[i]->name << ".CreateNode("
-                  << nodeName << ", false))" << endl;
+                  << nodeName << ", " << forceAdd << "))" << endl;
                 c << "        {" << endl;
                 c << "            addToParent = true;" << endl;
                 c << "            node->AddNode(" << nodeName << ");" << endl;
@@ -2121,7 +2131,8 @@ class AttsGeneratorAttribute
                   << "\", " << fields[i]->name << "));" << endl;
             }
 
-            c << "    }" << endl << endl;
+            if(fields[i]->type != "color")
+                c << "    }" << endl << endl;
         }
 
         c << endl;

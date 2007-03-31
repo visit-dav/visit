@@ -268,6 +268,90 @@ ViewerServerManager::AddProfileArguments(RemoteProxyBase *component,
 }
 
 // ****************************************************************************
+// Method: ViewerServerManager::GetClientMachineNameOptions
+//
+// Purpose: 
+//   This method finds a host profile that matches the specified hostname
+//   and returns the client host name options.
+//
+// Arguments:
+//   host          : The host where the component will be run.
+//   chd           : The type of client host name determination to use.
+//   clientHostName: The manual host name, if manual determination is requested
+//
+// Programmer: Jeremy Meredith
+// Creation:   October  9, 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerServerManager::GetClientMachineNameOptions(const std::string &host,
+                                     HostProfile::ClientHostDetermination &chd,
+                                     std::string &clientHostName)
+{
+    //
+    // Check for a host profile for the hostName. If one exists, 
+    // return the client host name options.
+    //
+    const HostProfile *profile =
+         clientAtts->FindMatchingProfileForHost(host.c_str());
+    if(profile != 0)
+    {
+        chd = profile->GetClientHostDetermination();
+        clientHostName = profile->GetManualClientHostName();
+    }
+    else
+    {
+        chd = HostProfile::MachineName;
+        clientHostName = "";
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerServerManager::GetClientSSHPortOptions
+//
+// Purpose: 
+//   This method finds a host profile that matches the specified hostname
+//   and returns the ssh port options.
+//
+// Arguments:
+//   host          : The host where the component will be run.
+//   manualSSHPort : True if a manual ssh port was specified
+//   sshPort       : The manual ssh port
+//
+// Programmer: Jeremy Meredith
+// Creation:   October  9, 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerServerManager::GetSSHPortOptions(const std::string &host,
+                                       bool &manualSSHPort,
+                                       int &sshPort)
+{
+    //
+    // Check for a host profile for the hostName. If one exists, 
+    // return the ssh port options.
+    //
+    const HostProfile *profile =
+         clientAtts->FindMatchingProfileForHost(host.c_str());
+    if(profile != 0)
+    {
+        manualSSHPort = profile->GetSshPortSpecified();
+        sshPort = profile->GetSshPort();
+    }
+    else
+    {
+        manualSSHPort = false;
+        sshPort = -1;
+    }
+}
+
+// ****************************************************************************
 //  Method: ViewerServerManager::ShouldShareBatchJob
 //
 //  Purpose: 
@@ -445,6 +529,11 @@ ViewerServerManager::CloseLaunchers()
 //   for itself, the mdserver, and the engine if they are told
 //   to share one batch job in the host profile.
 //
+//    Jeremy Meredith, Thu Oct  9 14:03:11 PDT 2003
+//    Added ability to manually specify a client host name or to have it
+//    parsed from the SSH_CLIENT (or related) environment variables.  Added
+//    ability to specify an SSH port.
+//
 // ****************************************************************************
 
 void
@@ -499,10 +588,21 @@ ViewerServerManager::StartLauncher(const std::string &host,
                 dialog->setIgnoreHide(true);
             }
 
+            // Get the client machine name options
+            HostProfile::ClientHostDetermination chd;
+            std::string clientHostName;
+            GetClientMachineNameOptions(host, chd, clientHostName);
+
+            // Get the ssh port options
+            bool manualSSHPort;
+            int  sshPort;
+            GetSSHPortOptions(host, manualSSHPort, sshPort);
+
             //
             // Launch the VisIt component launcher on the specified host.
             //
-            newLauncher->Create(host);
+            newLauncher->Create(host, chd, clientHostName,
+                                manualSSHPort, sshPort);
             launchers[host] = newLauncher;
 
             // Set the dialog's information back to the previous values.

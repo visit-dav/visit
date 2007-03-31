@@ -1,5 +1,10 @@
 <?xml version="1.0"?>
   <Attribute name="HostProfile" purpose="This class contains information needed to launch a remote,VisIt engine." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="HostProfile.code">
+    <Enum name="ClientHostDetermination">
+      MachineName
+      ManuallySpecified
+      ParsedFromSSHCLIENT
+    </Enum>
     <Field name="profileName" label="profileName" type="string">
       notset
     </Field>
@@ -64,6 +69,17 @@
     </Field>
     <Field name="shareOneBatchJob" label="shareOneBatchJob" type="bool">
       false
+    </Field>
+    <Field name="sshPortSpecified" label="SSH port specified" type="bool">
+      false
+    </Field>
+    <Field name="sshPort" label="SSH port" type="int">
+      22
+    </Field>
+    <Field name="clientHostDetermination" label="Client host determination" type="enum" subtype="ClientHostDetermination">
+      MachineName
+    </Field>
+    <Field name="manualClientHostName" label="Client host name" type="string">
     </Field>
     <Function name="defaultUserName" user="true" member="true">
     </Function>

@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 #endif
 #include <vectortypes.h>
+#include <HostProfile.h>
 
 class Connection;
 
@@ -66,6 +67,11 @@ class Connection;
 //    Jeremy Meredith, Thu Jul  3 14:49:23 PDT 2003
 //    Added ability to disable ptys.
 //
+//    Jeremy Meredith, Thu Oct  9 13:56:56 PDT 2003
+//    Added ability to manually specify a client host name or to have it
+//    parsed from the SSH_CLIENT (or related) environment variables.  Added
+//    ability to specify an SSH port.
+//
 // ****************************************************************************
 
 class COMM_API RemoteProcess
@@ -73,7 +79,12 @@ class COMM_API RemoteProcess
 public:
     RemoteProcess(const std::string &rProgram);
     virtual ~RemoteProcess();
-    virtual bool Open(const std::string &rHost, int numRead, int numWrite,
+    virtual bool Open(const std::string &rHost,
+                      HostProfile::ClientHostDetermination chd,
+                      const std::string &clientHostName,
+                      bool manualSSHPort,
+                      int sshPort,
+                      int numRead, int numWrite,
                       bool createAsThoughLocal = false);
     void WaitForTermination();
     void AddArgument(const std::string &arg);
@@ -96,6 +107,10 @@ protected:
     bool CallProgressCallback(int stage);
     bool HostIsLocal(const std::string &rHost) const;
     void CreateCommandLine(stringVector &args, const std::string &rHost,
+                           HostProfile::ClientHostDetermination chd,
+                           const std::string &clientHostName,
+                           bool manualSSHPort,
+                           int sshPort,
                            int numRead, int numWrite, bool local) const;
 protected:
     int                      listenPortNum;

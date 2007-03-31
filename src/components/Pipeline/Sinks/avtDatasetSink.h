@@ -21,15 +21,17 @@
 //  Creation:   May 29, 2001
 //
 //  Modifications:
-//
 //    Hank Childs, Sun May 26 18:55:01 PDT 2002
 //    Make GetInput a public method like it is in the base type.
+//
+//    Brad Whitlock, Thu Oct 9 15:05:27 PST 2003
+//    Fixed the friend declaration so it builds with newer g++ versions.
 //
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetSink : virtual public avtDataObjectSink
 {
-    friend                    avtMultipleInputSink;
+    friend class              avtMultipleInputSink;
 
   public:
                               avtDatasetSink();

@@ -2673,8 +2673,6 @@ int getVectorTokens(std::string buff, std::vector<std::string> &tokens, int node
     if (sscanf(numTokens.c_str(),"%d",&length) != 1)
         return 0;
 
-    bool rightArray = true;
-    
     for(int j=0; j<length; j++)
     {
         token = getToken(buff);

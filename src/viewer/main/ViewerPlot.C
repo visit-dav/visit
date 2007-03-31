@@ -1995,12 +1995,12 @@ ViewerPlot::CreateActor(const int frame)
     // Get a data reader.
     TRY
     {
-        // The following code is necessary to support time-varying SILs
         ViewerFileServer *server = ViewerFileServer::Instance();
-        avtDatabaseMetaData *md = (avtDatabaseMetaData *)
-                                       server->GetMetaData(GetHostName(),
-                                                           GetDatabaseName());
-        if (md->GetMustRepopulateOnStateChange())
+        bool invariantMetaData = server->MetaDataIsInvariant(GetHostName(),
+                                                             GetDatabaseName());
+
+        // The following code is necessary to support time-varying SILs
+        if (!invariantMetaData)
         {
             if (viewerPlotList == NULL)
                 EXCEPTION0(ImproperUseException);

@@ -117,6 +117,7 @@ bool            MDServerConnection::pluginsLoaded = false;
 avtDatabase    *MDServerConnection::currentDatabase;
 std::string     MDServerConnection::currentDatabaseName;
 int             MDServerConnection::currentDatabaseTimeState = 0;
+bool            MDServerConnection::currentDatabaseHasInvariantMD = true;
 MDServerConnection::VirtualFileInformationMap MDServerConnection::virtualFiles;
 
 // ****************************************************************************
@@ -186,6 +187,7 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
     {
         staticInit = true;
         currentDatabase = NULL;
+        currentDatabaseHasInvariantMD = true;
     }
 
     // Initialize some pointer members.
@@ -531,6 +533,8 @@ MDServerConnection::ReadMetaData(std::string file, int timeState)
             currentMetaData->SetTimeStepPath("");
             currentMetaData->SetTimeStepNames(names);
         }
+
+        currentDatabaseHasInvariantMD = ! currentMetaData->GetMustRepopulateOnStateChange();
     }
 
     return (currentMetaData == NULL ? -1 : 0);
@@ -1649,6 +1653,12 @@ MDServerConnection::GetVirtualFileDefinition(const std::string &file)
 //    I added code to make sure that plugins are loaded. I also added timing
 //    information.
 //
+//    Mark C. MillerThu Oct  9 11:13:01 PDT 2003
+//    Added logic to only force close and re-open if the timeState is different
+//    and the current database has invariant metadata. If the current database
+//    does NOT have invariant metadata, then metadata at a different time
+//    step can be correctly read without having to close and re-open. 
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -1664,7 +1674,8 @@ MDServerConnection::GetDatabase(string file, int timeState)
     //
     file = ExpandPath(file);
 
-    if (file != currentDatabaseName || timeState != currentDatabaseTimeState)
+    if (file != currentDatabaseName ||
+           (timeState != currentDatabaseTimeState && currentDatabaseHasInvariantMD))
     {
         string timerMessage(string("Time to open ") + file);
         int    timeid = visitTimer->StartTimer();

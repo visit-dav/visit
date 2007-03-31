@@ -692,6 +692,11 @@ ViewerProxy::AddArgument(const std::string &arg)
 //    Eric Brugger, Wed Aug 20 10:45:18 PDT 2003
 //    I added viewCurveAttributes.
 //
+//    Jeremy Meredith, Thu Oct  9 15:51:06 PDT 2003
+//    Added ability to manually specify a client host name or to have it
+//    parsed from the SSH_CLIENT (or related) environment variables.  Added
+//    ability to specify an SSH port.
+//
 // ****************************************************************************
 
 void
@@ -713,7 +718,10 @@ ViewerProxy::Create()
     //
     // Open the viewer.
     //
-    viewer->Open("localhost", 1, 1);
+    viewer->Open("localhost",
+                 HostProfile::MachineName, "", 
+                 false, 0,
+                 1, 1);
 
     //
     // Form the xfer object for the RPCs.

@@ -15,6 +15,8 @@
 #include <qtabwidget.h>
 #include <qvbox.h>
 
+#include <snprintf.h>
+
 #include <HostProfile.h>
 #include <HostProfileList.h>
 #include <ViewerProxy.h>
@@ -147,6 +149,12 @@ QvisHostProfileWindow::~QvisHostProfileWindow()
 //   Changed username field to update on any text change, not just
 //   a return press.
 //
+//   Jeremy Meredith, Thu Oct  9 15:47:00 PDT 2003
+//   Added ability to manually specify a client host name or to have it
+//   parsed from the SSH_CLIENT (or related) environment variables.  Added
+//   ability to specify an SSH port.  Moved "shareMDServer" to a new
+//   advanced tab, on which these other options were also placed.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::CreateWindowContents()
@@ -264,19 +272,12 @@ QvisHostProfileWindow::CreateWindowContents()
     innerParLayout->setMargin(10);
     innerParLayout->addSpacing(15);
 
-    QGridLayout *parLayout = new QGridLayout(innerParLayout, 9, 4);
+    QGridLayout *parLayout = new QGridLayout(innerParLayout, 8, 4);
     parLayout->setColStretch(2, 50);
     parLayout->setColStretch(3, 50);
     parLayout->setSpacing(10);
 
     int prow = 0;
-
-    shareMDServerCheckBox = new QCheckBox("Share batch job with Metadata Server",
-                                          parGroup, "shareMDServerCheckBox");
-    parLayout->addMultiCellWidget(shareMDServerCheckBox, prow,prow, 0,3);
-    connect(shareMDServerCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(toggleShareMDServer(bool)));
-    prow++;
 
     launchMethod = new QComboBox(false, parGroup, "launchMethod");
     launchMethod->insertItem("(default)");
@@ -379,6 +380,69 @@ QvisHostProfileWindow::CreateWindowContents()
     parLayout->addMultiCellWidget(timeLimitCheckBox, prow, prow, 0, 1);
     parLayout->addMultiCellWidget(timeLimit, prow, prow, 2, 3);
     prow++;
+
+    advancedGroup = new QWidget(central, "advancedGroup");
+    optionsTabs->addTab(advancedGroup, "Advanced options");
+
+    QVBoxLayout *innerAdvLayout = new QVBoxLayout(advancedGroup);
+    innerAdvLayout->setMargin(10);
+    innerAdvLayout->addSpacing(15);
+
+    QGridLayout *advLayout = new QGridLayout(innerAdvLayout, 8, 4);
+    advLayout->setColStretch(0, 10);
+    advLayout->setColStretch(1, 10);
+    advLayout->setColStretch(2, 40);
+    advLayout->setColStretch(3, 40);
+    advLayout->setSpacing(10);
+
+    int arow = 0;
+
+    shareMDServerCheckBox = new QCheckBox("Share batch job with Metadata Server",
+                                          advancedGroup, "shareMDServerCheckBox");
+    parLayout->addMultiCellWidget(shareMDServerCheckBox, arow,arow, 0,3);
+    connect(shareMDServerCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleShareMDServer(bool)));
+    arow++;
+
+    clientHostNameMethod = new QButtonGroup(0, "clientHostNameMethod");
+    connect(clientHostNameMethod, SIGNAL(clicked(int)),
+            this, SLOT(clientHostNameMethodChanged(int)));
+    chnMachineName = new QRadioButton("Use local machine name",
+                                      advancedGroup, "chnMachineName");
+    chnParseFromSSHClient = new QRadioButton("Parse from SSH_CLIENT environment variable",
+                                             advancedGroup, "chnParseFromSSHClient");
+    chnSpecifyManually = new QRadioButton("Specify manually:",
+                                          advancedGroup, "chnSpecifyManually");
+    chnMachineName->setChecked(true);
+    clientHostNameMethod->insert(chnMachineName);
+    clientHostNameMethod->insert(chnParseFromSSHClient);
+    clientHostNameMethod->insert(chnSpecifyManually);
+    advLayout->addMultiCellWidget(new QLabel("Method used to determine local host name:",
+                                             advancedGroup,
+                                             "clientHostNameMethodLabel"),
+                                  arow, arow, 0, 3);
+    arow++;
+    advLayout->addMultiCellWidget(chnMachineName, arow, arow, 1, 2);
+    arow++;
+    advLayout->addMultiCellWidget(chnParseFromSSHClient, arow, arow, 1, 2);
+    arow++;
+    advLayout->addMultiCellWidget(chnSpecifyManually, arow, arow, 1, 1);
+    clientHostName = new QLineEdit(advancedGroup, "clientHostName");
+    connect(clientHostName, SIGNAL(textChanged(const QString &)),
+            this, SLOT(clientHostNameChanged(const QString &)));
+    advLayout->addMultiCellWidget(clientHostName, arow, arow, 2,3);
+    arow++;
+
+    sshPort = new QLineEdit(advancedGroup, "sshPort");
+    sshPortCheckBox = new QCheckBox("Specify SSH port", advancedGroup,
+                                    "sshPortCheckBox");
+    connect(sshPort, SIGNAL(textChanged(const QString &)),
+            this, SLOT(sshPortChanged(const QString &)));
+    connect(sshPortCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleSSHPort(bool)));
+    advLayout->addMultiCellWidget(sshPortCheckBox, arow, arow, 0, 0);
+    advLayout->addMultiCellWidget(sshPort, arow, arow, 1, 2);
+    arow++;
 }
 
 // ****************************************************************************
@@ -644,6 +708,11 @@ QvisHostProfileWindow::UpdateProfileList()
 //   Jeremy Meredith, Thu Jun 26 10:37:38 PDT 2003
 //   Update the share-batch-job toggle.
 //
+//   Jeremy Meredith, Thu Oct  9 15:47:00 PDT 2003
+//   Added ability to manually specify a client host name or to have it
+//   parsed from the SSH_CLIENT (or related) environment variables.  Added
+//   ability to specify an SSH port.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::UpdateActiveProfile()
@@ -674,6 +743,10 @@ QvisHostProfileWindow::UpdateActiveProfile()
     loadBalancing->blockSignals(true);
     engineArguments->blockSignals(true);
     profileName->blockSignals(true);
+    clientHostNameMethod->blockSignals(true);
+    clientHostName->blockSignals(true);
+    sshPortCheckBox->blockSignals(true);
+    sshPort->blockSignals(true);
 
     // If there is no active profile, set some "default" values.
     if(i < 0)
@@ -700,6 +773,10 @@ QvisHostProfileWindow::UpdateActiveProfile()
         loadBalancing->setButton(0);
         engineArguments->setText("");
         activeProfileCheckBox->setChecked(false);
+        clientHostNameMethod->setButton(0);
+        clientHostName->setText("");
+        sshPortCheckBox->setChecked(false);
+        sshPort->setText("");
     }
     else
     {
@@ -782,6 +859,24 @@ QvisHostProfileWindow::UpdateActiveProfile()
         }
 
         engineArguments->setText(temp);
+
+        switch (current.GetClientHostDetermination())
+        {
+          case HostProfile::MachineName:
+            clientHostNameMethod->setButton(0);
+            break;
+          case HostProfile::ParsedFromSSHCLIENT:
+            clientHostNameMethod->setButton(1);
+            break;
+          case HostProfile::ManuallySpecified:
+            clientHostNameMethod->setButton(2);
+            break;
+        }
+        clientHostName->setText(current.GetManualClientHostName().c_str());
+        sshPortCheckBox->setChecked(current.GetSshPortSpecified());
+        char portStr[256];
+        SNPRINTF(portStr, 256, "%d", current.GetSshPort());
+        sshPort->setText(portStr);
     }
 
     // Set the widgets' sensitivity
@@ -810,6 +905,10 @@ QvisHostProfileWindow::UpdateActiveProfile()
     loadBalancing->blockSignals(false);
     engineArguments->blockSignals(false);
     profileName->blockSignals(false);
+    clientHostNameMethod->blockSignals(false);
+    clientHostName->blockSignals(false);
+    sshPortCheckBox->blockSignals(false);
+    sshPort->blockSignals(false);
 }
 
 // ****************************************************************************
@@ -864,6 +963,11 @@ QvisHostProfileWindow::ReplaceLocalHost()
 //
 //    Jeremy Meredith, Mon Apr 14 18:26:05 PDT 2003
 //    Added hostAliases.
+//
+//    Jeremy Meredith, Thu Oct  9 15:47:00 PDT 2003
+//    Added ability to manually specify a client host name or to have it
+//    parsed from the SSH_CLIENT (or related) environment variables.  Added
+//    ability to specify an SSH port.
 //
 // ****************************************************************************
 
@@ -921,6 +1025,10 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
     engineArgumentsLabel->setEnabled(enabled);
     engineArguments->setEnabled(enabled);
     deleteButton->setEnabled(enabled);
+    clientHostName->setEnabled(enabled &&
+                               current->GetClientHostDetermination() ==
+                                              HostProfile::ManuallySpecified);
+    sshPort->setEnabled(enabled && current->GetSshPortSpecified());
 }
 
 // ****************************************************************************
@@ -967,6 +1075,11 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
 //
 //   Jeremy Meredith, Fri May 16 10:59:08 PDT 2003
 //   Allow empty hostAliases.
+//
+//   Jeremy Meredith, Thu Oct  9 15:47:00 PDT 2003
+//   Added ability to manually specify a client host name or to have it
+//   parsed from the SSH_CLIENT (or related) environment variables.  Added
+//   ability to specify an SSH port.
 //
 // ****************************************************************************
 bool
@@ -1227,6 +1340,47 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
     }
     widget++;
 
+    // Do the manual client host name
+    if(which_widget == widget || doAll)
+    {
+        temp = clientHostName->text();
+        temp = temp.stripWhiteSpace();
+
+        std::string newClientHostName(temp.latin1());
+        if (newClientHostName != current.GetManualClientHostName())
+            needNotify = true;
+
+        // Change all profiles with the same hostname
+        for(int i = 0; i < profiles->GetNumHostProfiles(); ++i)
+        {
+            HostProfile &prof = profiles->operator[](i);
+
+            if (prof.GetHost() == current.GetHost())
+                prof.SetManualClientHostName(newClientHostName);
+        }
+    }
+    widget++;
+
+    // Do the ssh port
+    if(which_widget == widget || doAll)
+    {
+        temp = sshPort->text();
+
+        int newPort = temp.toInt();
+        if (current.GetSshPort() != newPort)
+            needNotify = true;
+
+        // Change all profiles with the same hostname
+        for(int i = 0; i < profiles->GetNumHostProfiles(); ++i)
+        {
+            HostProfile &prof = profiles->operator[](i);
+
+            if (prof.GetHost() == current.GetHost())
+                prof.SetSshPort(newPort);
+        }
+    }
+    widget++;
+
     // There was an error with some of the input.
     if(needNotify)
     {
@@ -1429,6 +1583,9 @@ QvisHostProfileWindow::makeActiveProfile(bool)
 //    Made it apply without a return press, and 
 //    renamed the method appropriately.
 //
+//    Jeremy Meredith, Thu Oct  9 15:48:43 PDT 2003
+//    Made it apply to all profiles with the same host.
+//
 // ****************************************************************************
 
 void
@@ -1438,9 +1595,19 @@ QvisHostProfileWindow::userNameChanged(const QString &u)
         return;
 
     // Update the user name.
+
     HostProfileList *profiles = (HostProfileList *)subject;
+    if (profiles->GetActiveProfile() < 0)
+        return;
     HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-    current.SetUserName(u.latin1());
+
+    for(int i = 0; i < profiles->GetNumHostProfiles(); ++i)
+    {
+        HostProfile &prof = profiles->operator[](i);
+
+        if (prof.GetHost() == current.GetHost())
+            prof.SetUserName(u.latin1());
+    }
 }
 
 // ****************************************************************************
@@ -2204,6 +2371,161 @@ QvisHostProfileWindow::processProfileNameText(const QString &name)
         current.SetProfileName(temp.latin1());
         hostTabMap[current.GetHost().c_str()]->changeItem(temp,
                         hostTabMap[current.GetHost().c_str()]->currentItem());
+    }
+}
+
+// ****************************************************************************
+//  Method:  QvisHostProfileWindow::toggleSSHPort
+//
+//  Purpose:
+//    Change the flag to use the specified ssh port for all profiles with the
+//    same remote host name based on a changed widget value.
+//
+//  Arguments:
+//    state      true to use the specified port, false to use the default (22)
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    October  9, 2003
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::toggleSSHPort(bool state)
+{
+    HostProfileList *profiles = (HostProfileList *)subject;
+    if (profiles->GetActiveProfile() < 0)
+        return;
+    HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
+
+    for(int i = 0; i < profiles->GetNumHostProfiles(); ++i)
+    {
+        HostProfile &prof = profiles->operator[](i);
+
+        if (prof.GetHost() == current.GetHost())
+            prof.SetSshPortSpecified(state);
+    }
+
+    profiles->MarkActiveProfile();
+    UpdateWindowSensitivity();
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisHostProfileWindow::sshPortChanged
+//
+//  Purpose:
+//    Change the remote ssh port for all profiles with the
+//    same remote host name based on a changed widget value.
+//
+//  Arguments:
+//    portStr   the string indicating the port value
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    October  9, 2003
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::sshPortChanged(const QString &portStr)
+{
+    if (portStr.isEmpty())
+        return;
+
+    HostProfileList *profiles = (HostProfileList *)subject;
+    if (profiles->GetActiveProfile() < 0)
+        return;
+    HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
+
+    for(int i = 0; i < profiles->GetNumHostProfiles(); ++i)
+    {
+        HostProfile &prof = profiles->operator[](i);
+
+        int port = atoi(portStr.latin1());
+
+        if (prof.GetHost() == current.GetHost())
+            prof.SetSshPort(port);
+    }
+}
+
+// ****************************************************************************
+//  Method:  QvisHostProfileWindow::clientHostNameMethodChanged
+//
+//  Purpose:
+//    Change the client host name determination method for all profiles
+//    with the same remote host name based on a changed widget value.
+//
+//  Arguments:
+//    m          the index of the new method in the button group
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    October  9, 2003
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::clientHostNameMethodChanged(int m)
+{
+    HostProfileList *profiles = (HostProfileList *)subject;
+    if (profiles->GetActiveProfile() < 0)
+        return;
+    HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
+
+    for(int i = 0; i < profiles->GetNumHostProfiles(); ++i)
+    {
+        HostProfile &prof = profiles->operator[](i);
+
+        if (prof.GetHost() == current.GetHost())
+        {
+            switch (m)
+            {
+              case 0:
+                prof.SetClientHostDetermination(HostProfile::MachineName);
+                break;
+              case 1:
+                prof.SetClientHostDetermination(HostProfile::ParsedFromSSHCLIENT);
+                break;
+              case 2:
+                prof.SetClientHostDetermination(HostProfile::ManuallySpecified);
+                break;
+            }
+        }
+    }
+
+    profiles->MarkActiveProfile();
+    UpdateWindowSensitivity();
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisHostProfileWindow::clientHostNameChanged
+//
+//  Purpose:
+//    Change the manually specified client host name for all profiles
+//    with the same remote host name based on a changed widget value.
+//
+//  Arguments:
+//    h          the new host name
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    October  9, 2003
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::clientHostNameChanged(const QString &h)
+{
+    if (h.isEmpty())
+        return;
+
+    HostProfileList *profiles = (HostProfileList *)subject;
+    if (profiles->GetActiveProfile() < 0)
+        return;
+    HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
+
+    for(int i = 0; i < profiles->GetNumHostProfiles(); ++i)
+    {
+        HostProfile &prof = profiles->operator[](i);
+
+        if (prof.GetHost() == current.GetHost())
+            prof.SetManualClientHostName(h.latin1());
     }
 }
 

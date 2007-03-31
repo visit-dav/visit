@@ -449,7 +449,25 @@ avtExpressionEvaluatorFilter::Query(PickAttributes *pa)
             {
                 varInfo.SetNames(names);
                 varInfo.SetValues(vals);
-                pa->AddPickVarInfo(varInfo);
+                int index = -1;
+                for (int ii = 0 ; ii < pa->GetNumPickVarInfos() ; ii++)
+                {
+                    PickVarInfo &vi = pa->GetPickVarInfo(ii);
+                    if (vi.GetVariableName() == varInfo.GetVariableName())
+                    {
+                        index = ii;
+                        break;
+                    }
+                }
+                if (index > 0)
+                {
+                    PickVarInfo &varInfo2 = pa->GetPickVarInfo(index);
+                    varInfo2 = varInfo;
+                }
+                else
+                {
+                    pa->AddPickVarInfo(varInfo);
+                }
             }
         }
     }

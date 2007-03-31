@@ -189,6 +189,55 @@ ViewerFileServer::Instance()
 }
 
 // ****************************************************************************
+// Method: ViewerFileServer::MetaDataIsInvariant
+//
+// Purpose: 
+//   We include this method because in some cases all we are interested in
+//   learning from a GetMetaData call is whether the MetaData is invariant.
+//   We'd like to do it WITHOUT sending RPCs to the MD server. Even in the
+//   case that the MetaData is NOT invariant, all we need to avoid an RPC to
+//   the MD server is MetaData from any one time-state of the specified
+//   database. If no such MetaData exists, this method will then call
+//   GetMetaData to obtain it. For this reason, this method cannot be a const
+//   method.
+//
+// Arguments:
+//   host     : Identifies the mdserver from which to get the metadata.
+//   filename : The path and filename of the file for which we want metadata.
+//
+// ****************************************************************************
+bool
+ViewerFileServer::MetaDataIsInvariant(const std::string &host, 
+                                      const std::string &filename,
+                                      const int timeState)
+{
+    int workingTimeState = -1;
+    if (timeState < 0)
+        workingTimeState = ViewerWindowManager::Instance()->
+                                          GetActiveAnimation()->GetTimeIndex();
+    else
+        workingTimeState = timeState;
+
+    // Create a filename of the form host:filename.
+    std::string fullname(host);
+    fullname += ":";
+    fullname += filename;
+
+    // search for any entry in the cache that at least begins host:filename 
+    FileMetaDataMap::iterator i;
+    for (i = fileMetaData.begin(); i != fileMetaData.end(); i++)
+    {
+       if (i->first.find(fullname) != std::string::npos)
+          return ! i->second->GetMustRepopulateOnStateChange();
+    }
+
+    // ok, do it the hard way
+    const avtDatabaseMetaData *md = GetMetaData(host, filename, timeState);
+
+    return ! md->GetMustRepopulateOnStateChange();
+}
+
+// ****************************************************************************
 // Method: ViewerFileServer::GetMetaData
 //
 // Purpose: 
@@ -674,6 +723,11 @@ ViewerFileServer::StartServer(const std::string &host)
 //    Make the mdserver launch under the vcl if we're sharing a batch
 //    job with the engine.
 //
+//    Jeremy Meredith, Thu Oct  9 13:56:12 PDT 2003
+//    Added ability to manually specify a client host name or to have it
+//    parsed from the SSH_CLIENT (or related) environment variables.  Added
+//    ability to specify an SSH port.
+//
 // ****************************************************************************
 
 void
@@ -695,6 +749,16 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
         // Add arguments from a matching host profile to the mdserver proxy.
         AddProfileArguments(newServer, host);
 
+        // Get the client machine name options
+        HostProfile::ClientHostDetermination chd;
+        std::string clientHostName;
+        GetClientMachineNameOptions(host, chd, clientHostName);
+
+        // Get the ssh port options
+        bool manualSSHPort;
+        int  sshPort;
+        GetSSHPortOptions(host, manualSSHPort, sshPort);
+
         // Create a connection progress dialog and hook it up to the
         // mdserver proxy.
         dialog = SetupConnectionProgressWindow(newServer, host);
@@ -702,12 +766,15 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
         // Start the mdserver on the specified host.
         if (!ShouldShareBatchJob(host) && HostIsLocalHost(host))
         {
-            newServer->Create("localhost");
+            newServer->Create("localhost", chd, clientHostName,
+                              manualSSHPort, sshPort);
         }
         else
         {
             // Use VisIt's launcher to start the remote mdserver.
-            newServer->Create(host, OpenWithLauncher, (void*)dialog, true);
+            newServer->Create(host, chd, clientHostName,
+                              manualSSHPort, sshPort,
+                              OpenWithLauncher, (void*)dialog, true);
         }
 
         // Add the information about the new server to the 

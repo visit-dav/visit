@@ -71,6 +71,11 @@ class QRadioButton;
 //    Jeremy Meredith, Mon Aug 18 13:37:25 PDT 2003
 //    Changed processUserNameText to userNameChanged.
 //
+//    Jeremy Meredith, Thu Oct  9 15:43:39 PDT 2003
+//    Added ability to manually specify a client host name or to have it
+//    parsed from the SSH_CLIENT (or related) environment variables.  Added
+//    ability to specify an SSH port.
+//
 // ****************************************************************************
 
 class GUI_API QvisHostProfileWindow : public QvisPostableWindowObserver
@@ -123,6 +128,10 @@ private slots:
     void hostNameChanged(const QString &host);
     void hostAliasesChanged(const QString &host);
     void userNameChanged(const QString &username);
+    void toggleSSHPort(bool);
+    void sshPortChanged(const QString &port);
+    void clientHostNameMethodChanged(int);
+    void clientHostNameChanged(const QString &);
 private:
     QTabWidget   *hostTabs;
     QListBox     *emptyListBox;
@@ -166,7 +175,15 @@ private:
     QWidget      *parGroup;
     QCheckBox    *launchArgsCheckBox;
     QLineEdit    *launchArgs;
+    QWidget      *advancedGroup;
     QCheckBox    *shareMDServerCheckBox;
+    QButtonGroup *clientHostNameMethod;
+    QRadioButton *chnMachineName;
+    QRadioButton *chnParseFromSSHClient;
+    QRadioButton *chnSpecifyManually;
+    QLineEdit    *clientHostName;
+    QCheckBox    *sshPortCheckBox;
+    QLineEdit    *sshPort;
 
     int          profileCounter;
 };

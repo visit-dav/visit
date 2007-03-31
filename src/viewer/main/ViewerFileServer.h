@@ -70,6 +70,9 @@ class avtSIL;
 //    I made the method to terminate connections be more general so other
 //    types of connections can be used.
 //
+//    Mark C. Miller, Wed Oct  8 23:46:25 PDT 2003
+//    Added methods to query a given database's MetaData or SIL for invariance
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerFileServer : public ViewerServerManager
@@ -94,6 +97,9 @@ public:
     static ViewerFileServer   *Instance();
 
     const avtDatabaseMetaData *GetMetaData(const std::string &host,
+                                           const std::string &filename,
+                                           const int timeState = -1);
+    bool               MetaDataIsInvariant(const std::string &host,
                                            const std::string &filename,
                                            const int timeState = -1);
     const avtSIL              *GetSIL(const std::string &host,

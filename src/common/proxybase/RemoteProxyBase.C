@@ -62,13 +62,21 @@ RemoteProxyBase::~RemoteProxyBase()
 // Creation:   Fri May 2 14:57:06 PST 2003
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Thu Oct  9 14:04:45 PDT 2003
+//    Added ability to manually specify a client host name or to have it
+//    parsed from the SSH_CLIENT (or related) environment variables.  Added
+//    ability to specify an SSH port.
+//
 // ****************************************************************************
 
 void
 RemoteProxyBase::Create(const std::string &hostName,
-    ConnectCallback *connectCallback, void *data,
-    bool createAsThoughLocal)
+                        HostProfile::ClientHostDetermination chd,
+                        const std::string &clientHostName,
+                        bool manualSSHPort,
+                        int sshPort,
+                        ConnectCallback *connectCallback, void *data,
+                        bool createAsThoughLocal)
 {
     // Create a remote process object for the remote component.
     if(connectCallback == NULL)
@@ -96,7 +104,9 @@ RemoteProxyBase::Create(const std::string &hostName,
     //
     // Open the remote component.
     //
-    component->Open(hostName, nRead, nWrite, createAsThoughLocal);
+    component->Open(hostName, chd, clientHostName,
+                    manualSSHPort, sshPort,
+                    nRead, nWrite, createAsThoughLocal);
 
     //
     // Hook up the sockets to the xfer object.

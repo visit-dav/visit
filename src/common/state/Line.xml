@@ -12,7 +12,11 @@
     </Field>
     <Field name="designator" label="designator" type="string">
     </Field>
-    <Field name="color" label="color" type="att" subtype="ColorAttribute">
+    <Field name="color" label="color" type="color">
+         0
+         0
+         0
+         255
     </Field>
     <Field name="lineStyle" label="lineStyle" type="linestyle">
       0

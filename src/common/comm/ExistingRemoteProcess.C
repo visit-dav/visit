@@ -71,11 +71,21 @@ ExistingRemoteProcess::~ExistingRemoteProcess()
 //   I made all of the command line options be passed to the callback
 //   function so launching processes can be done with more flexibility.
 //
+//   Jeremy Meredith, Thu Oct  9 14:04:18 PDT 2003
+//   Added ability to manually specify a client host name or to have it
+//   parsed from the SSH_CLIENT (or related) environment variables.  Added
+//   ability to specify an SSH port.
+//
 // ****************************************************************************
 
 bool
-ExistingRemoteProcess::Open(const std::string &rHost, int numRead, int numWrite,
-    bool createAsThoughLocal)
+ExistingRemoteProcess::Open(const std::string &rHost,
+                            HostProfile::ClientHostDetermination chd,
+                            const std::string &clientHostName,
+                            bool manualSSHPort,
+                            int sshPort,
+                            int numRead, int numWrite,
+                            bool createAsThoughLocal)
 {
     // Start making the connections and start listening.
     if(!StartMakingConnection(rHost, numRead, numWrite))
@@ -83,7 +93,9 @@ ExistingRemoteProcess::Open(const std::string &rHost, int numRead, int numWrite,
 
     // Add all of the relevant command line arguments to a vector of strings.
     stringVector commandLine;
-    CreateCommandLine(commandLine, rHost, numRead, numWrite,
+    CreateCommandLine(commandLine, rHost,
+                      chd, clientHostName, manualSSHPort, sshPort,
+                      numRead, numWrite,
                       createAsThoughLocal);
 
     //

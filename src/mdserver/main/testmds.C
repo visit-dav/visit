@@ -1,5 +1,6 @@
 #include <MDServerProxy.h>
 #include <VisItException.h>
+#include <HostProfile.h>
 #include <string>
 #include <unistd.h>
 #include <Init.h>
@@ -29,6 +30,11 @@ using std::string;
 //
 //   Brad Whitlock, Fri Mar 28 12:54:37 PDT 2003
 //   I updated things to conform the MDServerProxy's new interface.
+//
+//   Jeremy Meredith, Thu Oct  9 14:05:05 PDT 2003
+//   Added ability to manually specify a client host name or to have it
+//   parsed from the SSH_CLIENT (or related) environment variables.  Added
+//   ability to specify an SSH port.
 //
 // ****************************************************************************
 
@@ -63,7 +69,7 @@ TRY
 {
     cout << "----------------------------------------" << endl;
     cout << "Creating MDServer" << endl;
-    mdserver->Create(argv[1]);
+    mdserver->Create(argv[1], HostProfile::MachineName, "", false, 0);
 
     cout << "----------------------------------------" << endl;
     cout << "Getting Directory" << endl;

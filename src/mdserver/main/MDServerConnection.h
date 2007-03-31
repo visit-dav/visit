@@ -176,6 +176,7 @@ private:
     static std::string                currentDatabaseName;
     static avtDatabase               *currentDatabase;
     static int                        currentDatabaseTimeState;
+    static bool                       currentDatabaseHasInvariantMD;
     static VirtualFileInformationMap  virtualFiles;
 
     avtDatabase               *GetDatabase(std::string, int timeState);

@@ -7,7 +7,11 @@
       <Field name="lineWidth" label="Line Width" type="linewidth">
         0
       </Field>
-      <Field name="color" label="Color" type="att" subtype="ColorAttribute">
+      <Field name="color" label="Color" type="color">
+         0
+         0
+         0
+         255
       </Field>
       <Field name="showLabels" label="Labels" type="bool">
         true

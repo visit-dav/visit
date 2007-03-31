@@ -4,6 +4,8 @@
 #include <vectortypes.h>
 #include <map>
 
+#include <HostProfile.h>
+
 class HostProfileList;
 class LauncherProxy;
 class RemoteProxyBase;
@@ -23,6 +25,9 @@ class ViewerConnectionProgressDialog;
 // Modifications:
 //    Jeremy Meredith, Thu Jun 26 10:50:36 PDT 2003
 //    Added ShouldShareBatchJob function.
+//
+//    Jeremy Meredith, Thu Oct  9 13:41:32 PDT 2003
+//    Added client host name determination options.  Added ssh port options.
 //
 // ****************************************************************************
 
@@ -47,6 +52,12 @@ protected:
                       const stringVector &args);
     static void AddProfileArguments(RemoteProxyBase *component,
                       const std::string &host);
+
+    static void GetClientMachineNameOptions(const std::string &host,
+                                     HostProfile::ClientHostDetermination &chd,
+                                     std::string &clientHostName);
+    static void GetSSHPortOptions(const std::string &host,
+                                  bool &manualSSHPort, int &sshPort);
 
     static ViewerConnectionProgressDialog *
         SetupConnectionProgressWindow(RemoteProxyBase *component, 
