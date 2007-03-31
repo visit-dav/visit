@@ -2375,7 +2375,7 @@ COMMON_FILES="common/Makefile
 TOOLS_FILES="tools/Makefile
              tools/annotations/Makefile
              tools/avtprep/Makefile
-             tools/classwriter/Makefile
+             tools/clipeditor/Makefile
              tools/curv3dprep/Makefile
              tools/doxygenate/Makefile
              tools/escan/Makefile

@@ -42,6 +42,12 @@ class EXPRESSION_API avtBinaryMathFilter
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual void              DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                                           vtkDataArray *out, int, int) = 0;
+    virtual int               GetNumberOfComponentsInOutput(int ncompsIn1,
+                                                            int ncompsIn2)
+                                         { return (ncompsIn1 > ncompsIn2
+                                                    ? ncompsIn1 
+                                                    : ncompsIn2);
+                                         };
 
     avtCentering              centering;
 };

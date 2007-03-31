@@ -28,6 +28,9 @@
 //
 //  Modifications:
 //
+//    Hank Childs, Thu Aug 14 11:01:34 PDT 2003
+//    Add better support for 2D vectors.
+//
 // ****************************************************************************
 vtkDataArray *
 avtVectorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
@@ -62,24 +65,28 @@ avtVectorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
                    "The first two variables have different centering.");
     }
 
-    // Get the third variable.
-    if (centering == AVT_ZONECENT)
-        data3 = in_ds->GetCellData()->GetArray(varnames[2]);
-    else
-        data3 = in_ds->GetPointData()->GetArray(varnames[2]);
+    bool twoDVector = 
+            (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2);
 
-    if (data3 == NULL)
+    if (!twoDVector)
     {
-        EXCEPTION1(ExpressionException, 
+        // Get the third variable.
+        if (centering == AVT_ZONECENT)
+            data3 = in_ds->GetCellData()->GetArray(varnames[2]);
+        else
+            data3 = in_ds->GetPointData()->GetArray(varnames[2]);
+    
+        if (data3 == NULL)
+        {
+            EXCEPTION1(ExpressionException, 
                    "The first and third variables have different centering.");
+        }
     }
 
     //
     // Set up a VTK variable reflecting the calculated variable
     //
-    int ncomps = data1->GetNumberOfComponents();
     int nvals  = data1->GetNumberOfTuples();
-
     vtkDataArray *dv = data1->NewInstance();
     dv->SetNumberOfComponents(3);
     dv->SetNumberOfTuples(nvals);
@@ -88,8 +95,13 @@ avtVectorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
     {
         float val1 = data1->GetComponent(i, 0);
         float val2 = data2->GetComponent(i, 0);
-        float val3 = data3->GetComponent(i, 0);
-        dv->SetTuple3(i, val1, val2, val3);
+        if (twoDVector)
+            dv->SetTuple3(i, val1, val2, 0.);
+        else
+        {
+            float val3 = data3->GetComponent(i, 0);
+            dv->SetTuple3(i, val1, val2, val3);
+        }
     }
 
     return dv;

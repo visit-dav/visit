@@ -19,6 +19,11 @@ class     vtkDataArray;
 //  Programmer: Sean Ahern
 //  Creation:   Thu Jun 27 11:15:41 PDT 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Aug 14 13:40:20 PDT 2003
+//    Tell the output that we have one component if we are doing a dot product.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtBinaryMultiplyFilter : public avtBinaryMathFilter
@@ -35,6 +40,7 @@ class EXPRESSION_API avtBinaryMultiplyFilter : public avtBinaryMathFilter
   protected:
     virtual void     DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                                  vtkDataArray *out, int ncomps, int ntuples);
+    virtual int      GetNumberOfComponentsInOutput(int, int);
 };
 
 

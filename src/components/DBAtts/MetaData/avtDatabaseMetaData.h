@@ -230,6 +230,8 @@ class DBATTS_API avtDatabaseMetaData : public AttributeSubject
     doubleVector times;
     intVector    timesAreAccurate;
 
+    std::string  databaseName;
+
     ExpressionList exprList;
 
     std::vector<avtMeshMetaData *>     meshes;
@@ -265,6 +267,9 @@ public:
     void         SetTimeIsAccurate(bool, int);
     void         SetTimesAreAccurate(bool);
     bool         IsTimeAccurate(int) const;
+
+    void         SetDatabaseName(const std::string &dsn) {databaseName = dsn;};
+    const std::string &GetDatabaseName() const { return databaseName; };
 
     void         SetTimeStepPath(const std::string &tsp);
     const std::string &GetTimeStepPath() const { return timeStepPath; };
@@ -305,9 +310,9 @@ public:
                                      intVector &blockIds);
     void         UnsetExtents();
 
-    void         AddExpression(Expression *);
-    Expression * GetExpression(int);
-    int          GetNumberOfExpressions(void);
+    void                AddExpression(Expression *);
+    const Expression   *GetExpression(int) const;
+    int                 GetNumberOfExpressions(void) const;
 
     int          GetNDomains(std::string);
     avtVarType   DetermineVarType(std::string);

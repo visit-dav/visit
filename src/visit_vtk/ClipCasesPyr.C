@@ -1,4 +1,4 @@
-#include "SolidSplitCases.h"
+#include "ClipCases.h"
 
 // Programmer: Jeremy Meredith
 // Date      : August 11, 2003
@@ -7,23 +7,23 @@
 // compiler.  If you must modify it by hand, at least be nice to the 
 // parser and don't add anything else to this file or rearrange it.
 
-int numSolidSplitCasesPyr = 32;
+int numClipCasesPyr = 32;
 
-int numSolidSplitShapesPyr[32] = {
+int numClipShapesPyr[32] = {
   1,  3,  3,  8,  3,  4,  8,  4, // cases 0 - 7
   3,  8,  4,  4,  8,  4,  4,  2, // cases 8 - 15
   2,  4,  4,  8,  4,  4,  8,  3, // cases 16 - 23
   4,  8,  4,  3,  8,  3,  3,  1  // cases 24 - 31
 };
 
-int startSolidSplitShapesPyr[32] = {
+int startClipShapesPyr[32] = {
   0, 7, 27, 47, 105, 125, 157, 215, // cases 0 - 7
   245, 265, 323, 355, 385, 443, 473, 503, // cases 8 - 15
   520, 537, 567, 597, 655, 685, 713, 771, // cases 16 - 23
   791, 821, 879, 907, 927, 985, 1005, 1025  // cases 24 - 31
 };
 
-unsigned char solidSplitShapesPyr[] = {
+unsigned char clipShapesPyr[] = {
  // Case #0: Unique case #1
   ST_PYR, COLOR0, P0, P1, P2, P3, P4, 
  // Case #1: Unique case #2

@@ -345,9 +345,9 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         {
             if (!haveIssuedWarning)
             {
-                avtCallback::IssueWarning("The index select operator was "
-                            "applied to a non-structured mesh.  It is not "
-                            "being applied.");
+                avtCallback::IssueWarning("An internal error occurred and the "
+                                          "index select operator was not "
+                                          "applied.");
                 haveIssuedWarning = true;
             }
             return in_ds;
@@ -465,6 +465,10 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //    Hank Childs, Mon Dec  2 09:59:56 PST 2002
 //    Account for changing interface for SIL restriction.
 //
+//    Hank Childs, Thu Aug 14 07:44:49 PDT 2003
+//    Also request the structured indices if we are specifically told to do
+//    interface reconstruction.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -514,6 +518,11 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
     }
 
     if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved())
+    {
+        rv->GetDataSpecification()->SetNeedStructuredIndices(true);
+    }
+    else if (rv->GetDataSpecification()->
+                                       MustDoMaterialInterfaceReconstruction())
     {
         rv->GetDataSpecification()->SetNeedStructuredIndices(true);
     }
