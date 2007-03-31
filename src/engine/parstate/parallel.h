@@ -17,7 +17,6 @@ extern MPI_Datatype PAR_STATEBUFFER;
 
 // Parallel Prototypes
 void PAR_CreateTypes();
-void PAR_EventLoop(MPIXfer &xfer, QuitRPC &quit);
 void PAR_Exit();
 void PAR_Init(int &argc, char **&argv);
 int  PAR_Rank();

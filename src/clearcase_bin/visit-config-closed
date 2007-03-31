@@ -61,7 +61,7 @@
             </Object>
             <Object name="HostProfile" childObjects="0">
                 <Field name="shareOneBatchJob" type="bool">true</Field>
-                <Field name="profileName" type="string">Q-LANL parallel lsmallq</Field>
+                <Field name="profileName" type="string">Q-LANL parallel lvizq</Field>
                 <Field name="host" type="string">qfe1.lanl.gov qfe2.lanl.gov</Field>
                 <Field name="hostAliases" type="string">qfe# q# q## q### q####</Field>
                 <Field name="timeout" type="int">240</Field>
@@ -82,7 +82,7 @@
             </Object>
             <Object name="HostProfile" childObjects="0">
                 <Field name="shareOneBatchJob" type="bool">true</Field>
-                <Field name="profileName" type="string">Q-LANL parallel lsmallq</Field>
+                <Field name="profileName" type="string">Q-LANL parallel llargeq</Field>
                 <Field name="host" type="string">qfe1.lanl.gov qfe2.lanl.gov</Field>
                 <Field name="hostAliases" type="string">qfe# q# q## q### q####</Field>
                 <Field name="timeout" type="int">240</Field>
@@ -103,7 +103,7 @@
             </Object>
             <Object name="HostProfile" childObjects="0">
                 <Field name="shareOneBatchJob" type="bool">true</Field>
-                <Field name="profileName" type="string">Q-LANL parallel lsmallq</Field>
+                <Field name="profileName" type="string">Q-LANL parallel lhighq</Field>
                 <Field name="host" type="string">qfe1.lanl.gov qfe2.lanl.gov</Field>
                 <Field name="hostAliases" type="string">qfe# q# q## q### q####</Field>
                 <Field name="timeout" type="int">240</Field>

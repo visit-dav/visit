@@ -39,6 +39,9 @@
 #    Brad Whitlock, Mon Mar 17 15:07:17 PST 2003
 #    I added VariableMenuPopulator and QvisVariablePopupMenu.
 #
+#    Jeremy Meredith, Thu Jul 10 16:20:25 PDT 2003
+#    Remove SRCMOC on a make clean.
+#
 ##############################################################################
 
 ##
@@ -70,7 +73,7 @@ NOT_DISTRIB=
 all: message $(LIBSHARED)
 
 clean:
-	$(RM) $(OBJ) $(LIBSHARED)
+	$(RM) $(OBJ) $(LIBSHARED) $(SRCMOC)
 
 ##
 ## Other targets

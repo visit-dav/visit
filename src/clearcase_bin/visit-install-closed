@@ -151,9 +151,9 @@ cat <<EOF > hitit
 #!/bin/sh
 if [ -d /usr/gapps/visit/$ver ]
 then
-   ./visit-install -private -a -g bdiv -gw $ver linux /usr/gapps/visit > installlog 2>&1
+   ./visit-install -private -a -g visit -gw $ver linux /usr/gapps/visit > installlog 2>&1
 else
-   ./visit-install -private -g bdiv -gw $ver linux /usr/gapps/visit > installlog 2>&1
+   ./visit-install -private -g visit -gw $ver linux /usr/gapps/visit > installlog 2>&1
 fi
 rm -f resultlog
 echo "        install of visit on hitit"           > resultlog 2>&1
@@ -184,9 +184,9 @@ cat <<EOF > warp
 #!/bin/sh
 if [ -d /usr/gapps/visit/$ver ]
 then
-   ./visit-install $verflag -a -g bdiv -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
+   ./visit-install $verflag -a -g visit -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
 else
-   ./visit-install $verflag -g bdiv -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
+   ./visit-install $verflag -g visit -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
 fi
 mkdir /usr/gapps/visit/$ver/.visit
 chmod 775 /usr/gapps/visit/$ver/.visit
@@ -224,9 +224,9 @@ cat <<EOF > sc
 #!/bin/sh
 if [ -d /usr/gapps/visit/$ver ]
 then
-   ./visit-install -private -a -g bdiv -gw $ver osf1 /usr/gapps/visit > installlog 2>&1
+   ./visit-install -private -a -g visit -gw $ver osf1 /usr/gapps/visit > installlog 2>&1
 else
-   ./visit-install -private -g bdiv -gw $ver osf1 /usr/gapps/visit > installlog 2>&1
+   ./visit-install -private -g visit -gw $ver osf1 /usr/gapps/visit > installlog 2>&1
 fi
 rm -f resultlog
 echo "        install of visit on sc"              > resultlog 2>&1
@@ -257,9 +257,9 @@ cat <<EOF > tidalwave
 #!/bin/sh
 if [ -d /usr/gapps/visit/$ver ]
 then
-   ./visit-install -private -a -g bdiv -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
+   ./visit-install -private -a -g visit -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
 else
-   ./visit-install -private -g bdiv -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
+   ./visit-install -private -g visit -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
 fi
 rm -f resultlog
 echo "        install of visit on tidalwave"       > resultlog 2>&1
@@ -275,10 +275,10 @@ then
    if [ $test = no ]
    then
       scp tidalwave:/fc/san1/$user/tidalwave/visitbuild/visit$ver2.irix6.tar.gz .
-      scp visit$ver2.irix6.tar.gz tidalwave:
-      scp visit-install tidalwave:
-      scp tidalwave tidalwave:tidalwave_install
-      ssh tidalwave "chmod 750 tidalwave_install;./tidalwave_install"
+      scp visit$ver2.irix6.tar.gz sc1:
+      scp visit-install sc1:
+      scp tidalwave sc1:tidalwave_install
+      ssh sc1 "chmod 750 tidalwave_install;./tidalwave_install"
    fi
 fi
 
@@ -290,9 +290,9 @@ cat <<EOF > white
 #!/bin/sh
 if [ -d /usr/gapps/visit/$ver ]
 then
-   ./visit-install -private -a -g bdiv -gw $ver aix /usr/gapps/visit > installlog 2>&1
+   ./visit-install -private -a -g visit -gw $ver aix /usr/gapps/visit > installlog 2>&1
 else
-   ./visit-install -private -g bdiv -gw $ver aix /usr/gapps/visit > installlog 2>&1
+   ./visit-install -private -g visit -gw $ver aix /usr/gapps/visit > installlog 2>&1
 fi
 rm -f resultlog
 echo "        install of visit on white"           > resultlog 2>&1
@@ -307,11 +307,11 @@ if [ $white = true ]
 then
    if [ $test = no ]
    then
-      scp white:/p/gw1/$user/tidalwave/visitbuild/visit$ver2.aix.tar.gz .
-      scp visit$ver2.aix.tar.gz white:
-      scp visit-install white:
-      scp white white:white_install
-      ssh white "chmod 750 white_install;./white_install"
+      scp white:/p/gw1/$user/white/visitbuild/visit$ver2.aix.tar.gz .
+      scp visit$ver2.aix.tar.gz sc1:
+      scp visit-install sc1:
+      scp white sc1:white_install
+      ssh sc1 "chmod 750 white_install;./white_install"
    fi
 fi
 
@@ -323,9 +323,9 @@ cat <<EOF > emperor
 #!/bin/sh
 if [ -d /usr/gapps/visit/$ver ]
 then
-   ./visit-install $verflag -a -g bdiv -gw $ver linux /usr/gapps/visit > installlog 2>&1
+   ./visit-install $verflag -a -g visit -gw $ver linux /usr/gapps/visit > installlog 2>&1
 else
-   ./visit-install $verflag -g bdiv -gw $ver linux /usr/gapps/visit > installlog 2>&1
+   ./visit-install $verflag -g visit -gw $ver linux /usr/gapps/visit > installlog 2>&1
 fi
 mkdir /usr/gapps/visit/$ver/.visit
 chmod 775 /usr/gapps/visit/$ver/.visit
@@ -347,11 +347,11 @@ then
    if [ $test = no ]
    then
       scp emperor0:/usr/tmp/$user/emperor/visitbuild/visit$ver2.linux.tar.gz .
-      scp visit$ver2.linux.tar.gz emperor0:
-      scp visit-install emperor0:
-      scp emperor emperor0:emperor_install
-      scp visit-config-closed emperor0:visit-config-closed
-      ssh emperor0 "chmod 750 emperor_install;./emperor_install"
+      scp visit$ver2.linux.tar.gz sc1:
+      scp visit-install sc1:
+      scp emperor sc1:emperor_install
+      scp visit-config-closed sc1:visit-config-closed
+      ssh sc1 "chmod 750 emperor_install;./emperor_install"
    fi
 fi
 

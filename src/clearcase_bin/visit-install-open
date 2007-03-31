@@ -166,7 +166,7 @@ fi
 #
 # Check that the visit install script is present.
 #
-if [ ! -e visit-install]
+if [ ! -e visit-install ]
 then
    echo "visit-install is missing."
    exit

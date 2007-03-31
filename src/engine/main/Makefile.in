@@ -167,6 +167,9 @@
 #    Jeremy Meredith, Wed Dec 11 11:12:47 PST 2002
 #    Fixed typo in parallel libraries.
 #
+#    Jeremy Meredith, Thu Jul 10 14:59:45 PDT 2003
+#    Added a few source and header files for cleaning up Engine.C.
+#
 ##############################################################################
 
 ##
@@ -211,7 +214,7 @@ PARLIBDEP=../../lib/libplugin.so ../../lib/libplotter.so \
 ##
 ## Files...
 ##
-SRC=Netnodes.C DataNetwork.C NetworkManager.C Engine.C LoadBalancer.C
+SRC=Netnodes.C DataNetwork.C NetworkManager.C Engine.C LoadBalancer.C main.C
 SEROBJ=$(SRC:.C=_ser.o)
 PAROBJ=$(SRC:.C=_par.o)
 

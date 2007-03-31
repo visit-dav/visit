@@ -618,6 +618,10 @@ void vtkVerticalScalarBarActor:: BuildTics(float width, float height)
 //    When using defined labels, reverse the order in which the colors
 //    are used, if specified. 
 //
+//    Hank Childs, Thu Jul 10 11:10:51 PDT 2003
+//    Don't modify the lookup table, since that causes display lists to
+//    be regenerated.
+//
 // **********************************************************************
 
 void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
@@ -708,7 +712,6 @@ void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
   this->ColorBar->GetCellData()->SetScalars(colors);
   pts->Delete(); polys->Delete(); colors->Delete(); 
 
-
   //
   // generate points for color bar
   //
@@ -730,16 +733,23 @@ void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
   //
   unsigned char *rgba, *rgb;
   vtkIdType ptIds[4];
-  float tMin = range[0];
-  float tMax = range[1];
-  if (!this->UseDefinedLabels || this->definedLabels.empty() )
+  float tMin = lutRange[0];
+  float tMax = lutRange[1];
+
+  //
+  // If we have a constant lookup table, then we still want the scalar bar
+  // to appear with a rainbow color scheme.  We have to be careful not to
+  // modify the existing LUT, or else display lists will be regenerated.
+  // So build a new one in that case.
+  //
+  vtkLookupTable *useMe = LookupTable;
+  vtkLookupTable *tmp = vtkLookupTable::New();
+  if (tMax <= tMin)
     {
-    // 
-    // We want the full spectrum of the color table to be displayed,
-    // so temporarily set the lut range, as we calculate colors,
-    // then reset it when we're done.
-    // 
-    this->LookupTable->SetRange(0., 1.); 
+    tMax = tMin+1.;
+    tmp->SetRange(tMin, tMax);
+    tmp->Build();
+    useMe = tmp;
     }
   for (i=0; i<numColors; i++)
     {
@@ -759,16 +769,17 @@ void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
       if ((it = labelColorMap.find(definedLabels[idx])) != labelColorMap.end())
         {
         vtkIdType colorIndex = it->second;
-        rgba = this->LookupTable->GetPointer(colorIndex);
+        rgba = useMe->GetPointer(colorIndex);
         }
       else
         {
-        rgba = this->LookupTable->MapValue((float)i);
+        rgba = useMe->MapValue((float)i);
         }
       }
     else
       {
-      rgba = this->LookupTable->MapValue((float)i /(numColors-1.0));
+      float val = (((float)i)/(numColors-1.0)) * (tMax - tMin) + tMin;
+      rgba = useMe->MapValue(val);
       }
  
     rgb = colors->GetPointer(3*i); //write into array directly
@@ -776,12 +787,7 @@ void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
     rgb[1] = rgba[1];
     rgb[2] = rgba[2];
     } // loop on numColors
-
-  if (!this->UseDefinedLabels || this->definedLabels.empty() )
-    {
-    // Reset the lut range, if it was modified before.
-    this->LookupTable->SetRange(tMin, tMax);
-    }
+  tmp->Delete();
 
   this->BuildTics(barWidth, x[1]);
   if (this->LabelVisibility)

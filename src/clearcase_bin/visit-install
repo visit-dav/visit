@@ -33,7 +33,7 @@
 #    tests for links behaved strangely on AIX systems.
 #
 #    Eric Brugger, Fri Mar 30 10:55:49 PST 2001
-#    Reorder the some lines cleaing up old versions and backing up the
+#    Reorder some lines cleaing up old versions and backing up the
 #    current version so that it would work properly.
 #
 #    Eric Brugger, Wed Jul 18 15:51:32 PDT 2001
@@ -159,11 +159,11 @@ if (! -e $dir/data)           mkdir $dir/data
 # from the installation directory.
 #
 if ($append == false) then
-   if (-e $dir/bin/visit-)       rm $dir/bin/visit-
+   if (-e $dir/bin/visit-)       rm -f $dir/bin/visit-
    if ($beta == true) then
-      if (-e $dir/beta-)         rm $dir/beta-
+      if (-e $dir/beta-)         rm -f $dir/beta-
    else if ($private == false) then
-      if (-e $dir/current-)      rm $dir/current-
+      if (-e $dir/current-)      rm -f $dir/current-
    endif
    if (-e $dir/$version-)        rm -rf $dir/$version-
 endif
@@ -246,14 +246,14 @@ cd $dir
 # If $version exists at this point it is a link and must be removed
 # with the rm command.
 #
-if (-e $version)                 rm $version
+if (-e $version)                 rm -f $version
 mv $version+ $version
-if (-e bin/visit)                rm bin/visit
+if (-e bin/visit)                rm -f bin/visit
 mv bin/visit+ bin/visit
 if ($beta == true) then
-   if (-e beta)                  rm beta
+   if (-e beta)                  rm -f beta
    ln -s $version beta
 else if ($private == false) then
-   if (-e current)               rm current
+   if (-e current)               rm -f current
    ln -s $version current
 endif
