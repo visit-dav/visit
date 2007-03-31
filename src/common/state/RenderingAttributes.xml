@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="RenderingAttributes" codefile="RenderingAttributes.code" purpose="This class contains special rendering attributes like antialiasing and stero settings." exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="RenderingAttributes" purpose="This class contains special rendering attributes like antialiasing and stero settings." exportAPI="STATE_API" exportInclude="state_exports.h">
     <Enum name="GeometryRepresentation">
        Surfaces
        Wireframe
@@ -18,6 +18,4 @@
     <Field name="notifyForEachRender" type="bool">false</Field>
     <Field name="scalableRendering" type="bool">false</Field>
     <Field name="scalableThreshold" type="int">0</Field>
-    <Function name="SetFromNode"  user="false"></Function>
-    <Function name="CreateNode"   user="false"></Function>
   </Attribute>

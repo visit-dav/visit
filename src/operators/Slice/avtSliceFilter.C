@@ -320,7 +320,7 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
     {
         float normal[3]
              = {atts.GetNormal()[0], atts.GetNormal()[1], atts.GetNormal()[2]};
-        float origin[3];
+        double origin[3];
         GetOrigin(origin[0], origin[1], origin[2]);
         float tmpD = normal[0]*origin[0] + normal[1]*origin[1] +
                      normal[2]*origin[2];

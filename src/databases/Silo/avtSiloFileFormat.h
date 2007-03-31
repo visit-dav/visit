@@ -76,6 +76,10 @@ typedef struct
 //    Changed DetermineMultiMeshForSubVariable to handle more advanced
 //    matching.  Added some more data members to this effect.
 //
+//    Jeremy Meredith, Tue Jul 15 09:23:45 PDT 2003
+//    Split out some of ReadDir into its own functions so that parallelizing
+//    the file reading was easier.
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -128,6 +132,8 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     DBfile               *OpenFile(const char *);
     virtual void          CloseFile(int);
     void                  ReadDir(DBfile *,const char *,avtDatabaseMetaData *);
+    void                  DoRootDirectoryWork(avtDatabaseMetaData*);
+    void                  BroadcastGlobalInfo(avtDatabaseMetaData*);
 
     vtkDataArray         *GetQuadVar(DBfile *, const char *, const char *,int);
     vtkDataArray         *GetUcdVar(DBfile *, const char *, const char *, int);

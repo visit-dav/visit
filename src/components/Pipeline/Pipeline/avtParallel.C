@@ -11,6 +11,11 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 
+using std::string;
+using std::vector;
+
+// A buffer to temporarily receive broadcast data before permanent storage
+static vector<char> broadcastBuffer(1000);
 
 // ****************************************************************************
 //  Function: PAR_Rank
@@ -519,3 +524,150 @@ ThisProcessorHasMinimumValue(double min)
 }
 
 
+// ****************************************************************************
+//  Function:  BroadcastInt
+//
+//  Purpose:
+//    Broadcast an integer from processor 0 to all other processors
+//
+//  Arguments:
+//    i          the int
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July 15, 2003
+//
+// ****************************************************************************
+void BroadcastInt(int &i)
+{
+#ifdef PARALLEL
+    MPI_Bcast(&i, 1, MPI_INT, 0, MPI_COMM_WORLD);
+#endif
+}
+
+// ****************************************************************************
+//  Function:  BroadcastIntVector
+//
+//  Purpose:
+//    Broadcast a vector<int> from processor 0 to all other processors
+//
+//  Arguments:
+//    vi         the vector<int>
+//    myrank     the rank of this process
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July 15, 2003
+//
+// ****************************************************************************
+void BroadcastIntVector(vector<int> &vi, int myrank)
+{
+#ifdef PARALLEL
+    int len;
+    if (myrank==0)
+        len = vi.size();
+    MPI_Bcast(&len, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    if (myrank!=0)
+        vi.resize(len);
+
+    MPI_Bcast(&vi[0], len, MPI_INT, 0, MPI_COMM_WORLD);
+#endif
+}
+
+// ****************************************************************************
+//  Function:  BroadcastString
+//
+//  Purpose:
+//    Broadcast an STL string from processor 0 to all other processors
+//
+//  Arguments:
+//    s          the string
+//    myrank     the rank of this process
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July 15, 2003
+//
+// ****************************************************************************
+void BroadcastString(string &s, int myrank)
+{
+#ifdef PARALLEL
+    int len;
+    if (myrank==0)
+        len = s.length();
+    MPI_Bcast(&len, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    if (broadcastBuffer.size() < len+1)
+        broadcastBuffer.resize(len+1);
+
+    if (myrank==0)
+    {
+        MPI_Bcast((void*)(s.c_str()), len, MPI_CHAR, 0, MPI_COMM_WORLD);
+    }
+    else
+    {
+        MPI_Bcast(&broadcastBuffer[0], len, MPI_CHAR, 0, MPI_COMM_WORLD);
+        broadcastBuffer[len] = '\0';
+        s = &broadcastBuffer[0];
+    }
+#endif
+}
+
+// ****************************************************************************
+//  Function:  BroadcastStringVector
+//
+//  Purpose:
+//    Broadcast an vector<string> from processor 0 to all other processors
+//
+//  Arguments:
+//    vs         the vector<string>
+//    myrank     the rank of this process
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July 15, 2003
+//
+// ****************************************************************************
+void BroadcastStringVector(vector<string> &vs, int myrank)
+{
+#ifdef PARALLEL
+    int len;
+    if (myrank==0)
+        len = vs.size();
+    MPI_Bcast(&len, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    if (myrank!=0)
+        vs.resize(len);
+
+    for (int i=0; i<len; i++)
+    {
+        BroadcastString(vs[i], myrank);
+    }
+#endif
+}
+
+// ****************************************************************************
+//  Function:  BroadcastStringVectorVector
+//
+//  Purpose:
+//    Broadcast a vector<vector<string>> from processor 0 to all
+//    other processors
+//
+//  Arguments:
+//    vvs        the vector<vector<string>>
+//    myrank     the rank of this process
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July 15, 2003
+//
+// ****************************************************************************
+void BroadcastStringVectorVector(vector< vector<string> > &vvs, int myrank)
+{
+#ifdef PARALLEL
+    int len;
+    if (myrank==0)
+        len = vvs.size();
+    MPI_Bcast(&len, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    if (myrank!=0)
+        vvs.resize(len);
+
+    for (int i=0; i<len; i++)
+    {
+        BroadcastStringVector(vvs[i], myrank);
+    }
+#endif
+}

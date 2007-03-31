@@ -328,7 +328,11 @@ ContourAttributes::SetFromNode(DataNode *parentNode)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
-            SetColorType(ColoringMethod(node->AsInt()));
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetColorType(ColoringMethod(ival));
+        }
         else if(node->GetNodeType() == STRING_NODE)
         {
             ColoringMethod value;
@@ -356,7 +360,11 @@ ContourAttributes::SetFromNode(DataNode *parentNode)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
-            SetContourMethod(Select_by(node->AsInt()));
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetContourMethod(Select_by(ival));
+        }
         else if(node->GetNodeType() == STRING_NODE)
         {
             Select_by value;
@@ -376,7 +384,11 @@ ContourAttributes::SetFromNode(DataNode *parentNode)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
-            SetScaling(Scaling(node->AsInt()));
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetScaling(Scaling(ival));
+        }
         else if(node->GetNodeType() == STRING_NODE)
         {
             Scaling value;

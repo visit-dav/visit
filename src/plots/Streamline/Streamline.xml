@@ -121,6 +121,9 @@
         SphereAttributes.h
       </Include>
       <Include file="source" quoted="false">
+        PointAttributes.h
+      </Include>
+      <Include file="source" quoted="false">
         BoxExtents.h
       </Include>
     </Attribute>

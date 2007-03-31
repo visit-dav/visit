@@ -7,6 +7,9 @@
 
 #include<pipeline_exports.h>
 
+#include <vector>
+#include <string>
+
 PIPELINE_API void    Barrier(void);
 PIPELINE_API bool    Collect(float *, int);
 PIPELINE_API bool    Collect(int *, int);
@@ -22,6 +25,13 @@ PIPELINE_API bool    ThisProcessorHasMinimumValue(double);
 PIPELINE_API void    UnifyMinMax(double *, int);
 PIPELINE_API int     UnifyMaximumValue(int);
 
+PIPELINE_API void    BroadcastInt(int &i);
+PIPELINE_API void    BroadcastIntVector(std::vector<int>&, int myrank);
+PIPELINE_API void    BroadcastString(std::string &s, int myrank);
+PIPELINE_API void    BroadcastStringVector(std::vector<std::string>&,
+                                           int myrank);
+PIPELINE_API void    BroadcastStringVectorVector(std::vector<std::vector<std::string> >&,
+                                                 int myrank);
 
 #endif
 

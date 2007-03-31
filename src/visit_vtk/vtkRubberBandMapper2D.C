@@ -81,7 +81,12 @@ vtkStandardNewMacro(vtkRubberBandMapper2D);
 //    Akira Haddox, Tue Mar 18 21:17:05 PST 2003
 //    Fixed bug in X11 DRAW_XOR_LINE: Macro now uses arguments instead of
 //    ignoring them.
-//    
+//
+//    Brad Whitlock, Tue Jul 15 10:55:17 PDT 2003
+//    Fixed offset applied to Windows lines so they are not drawn in the
+//    wrong location anymore. The offset used to be correct, but at some point,
+//    it broke so now I'm making it so no offset is used.
+//
 // ****************************************************************************
 
 void vtkRubberBandMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* actor)
@@ -127,8 +132,8 @@ void vtkRubberBandMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* act
     POINT *points = new POINT[1024];
     POINT oldPoint;
     HDC hdc = GetWindowDC((HWND)window->GetGenericWindowId());
-    int borderT = GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CYSIZE);
-    int borderL = GetSystemMetrics(SM_CXFRAME);
+    int borderT = 0; //GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CYSIZE);
+    int borderL = 0; //GetSystemMetrics(SM_CXFRAME);
 
     // Make the drawing mode be XOR.
     SetROP2(hdc, R2_XORPEN);

@@ -98,6 +98,7 @@ extern "C"
 {
     void initvisit();
     void cli_initvisit(int, bool, int, char **);
+    void cli_runscript(const char *);
 }
 
 //
@@ -249,6 +250,7 @@ static bool                  keepGoing = true;
 static ViewerProxy          *viewer = 0;
 static FILE                 *logFile = 0;
 static bool                  logging = true;
+static bool                  g_runningScript = false;
 #ifdef THREADS
 static bool                  moduleUseThreads = true;
 #else
@@ -7524,15 +7526,19 @@ CloseModule()
 // Creation:   Mon Sep 17 11:44:43 PDT 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jul 15 10:06:13 PDT 2003
+//   Added code to print out an error message if we're running a script.
+//
 // ****************************************************************************
 
 void
 VisItErrorFunc(const char *errString)
 {
-    PyErr_SetString(VisItError, errString);
+    if(g_runningScript)
+        fprintf(stderr, "visit.error: %s\n", errString);
+    else
+        PyErr_SetString(VisItError, errString);
 }
-
 
 // ****************************************************************************
 // Function: cli_initvisit
@@ -7561,6 +7567,43 @@ cli_initvisit(int debugLevel, bool verbose, int argc, char **argv)
     cli_argc = argc;
     cli_argv = argv;
     initvisit();
+}
+
+// ****************************************************************************
+// Function: cli_runscript
+//
+// Purpose: 
+//   This function executes the Python script stored in the specified file.
+//
+// Arguments:
+//   fileName : The name of the file to use.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 15 10:03:17 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+cli_runscript(const char *fileName)
+{
+    // If there was a file to execute, do it.
+    if(fileName != 0)
+    {
+        FILE *fp = fopen(fileName, "r");
+        if(fp)
+        {
+            g_runningScript = true;
+            PyRun_SimpleFile(fp, (char *)fileName);
+            g_runningScript = false;
+            fclose(fp);
+        }
+        else
+        {
+            fprintf(stderr, "The file %s could not be opened.\n", fileName);
+        }
+    }
 }
 
 // ****************************************************************************
