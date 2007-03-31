@@ -13,6 +13,8 @@
 #include <ViewerSubject.h>
 
 #include <AbortException.h>
+#include <CompactSILRestrictionAttributes.h>
+#include <DataNode.h>
 #include <InvalidVariableException.h>
 #include <PickAttributes.h>
 #include <Plot.h>
@@ -1245,6 +1247,7 @@ ViewerPlotList::NewPlot(int type, const std::string &host, const std::string &db
     {
         if(plot)
             delete plot;
+        plot = 0;
     }
     ENDTRY
 
@@ -3541,17 +3544,14 @@ ViewerPlotList::UpdatePlotList() const
         // Set the keyframe indices.
         int nIndices;
         const int *keyframeIndices=plots[i].plot->GetKeyframeIndices(nIndices);
-        vector<int> keyframeIndices2;
+        intVector keyframeIndices2;
         for (j = 0; j < nIndices; j++)
-        {
             keyframeIndices2.push_back(keyframeIndices[j]);
-        }
         plot.SetKeyframes(keyframeIndices2);
-
         // Set the database keyframe indices.
         const int *databaseKeyframeIndices=
             plots[i].plot->GetDatabaseKeyframeIndices(nIndices);
-        vector<int> databaseKeyframeIndices2;
+        intVector databaseKeyframeIndices2;
         for (j = 0; j < nIndices; j++)
         {
             databaseKeyframeIndices2.push_back(databaseKeyframeIndices[j]);
@@ -4189,4 +4189,275 @@ bool
 ViewerPlotList::GetKeyframeMode() const
 {
     return keyframeMode;
+}
+
+// ****************************************************************************
+// Method: ViewerPlotList::CreateNode
+//
+// Purpose: 
+//   Lets the plot list save its information for a config file's DataNode.
+//
+// Arguments:
+//   parentNode : The node to which we're saving information.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 16 13:09:04 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlotList::CreateNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *plotlistNode = new DataNode("ViewerPlotList");
+    parentNode->AddNode(plotlistNode);
+
+    //
+    // Add information specific to the animation.
+    //
+    plotlistNode->AddNode(new DataNode("hostDatabaseName", hostDatabaseName));
+    plotlistNode->AddNode(new DataNode("hostName", hostName));
+    plotlistNode->AddNode(new DataNode("databaseName", databaseName));
+    plotlistNode->AddNode(new DataNode("nPlots", nPlots));
+    plotlistNode->AddNode(new DataNode("keyframeMode", keyframeMode));
+
+    //
+    // Let all of the plots save themselves to the config file.
+    //
+    for(int i = 0; i < nPlots; ++i)
+    {
+        char tmp[20];
+        SNPRINTF(tmp, 20, "plot%02d", i);
+        DataNode *plotNode = new DataNode(tmp);
+        plotlistNode->AddNode(plotNode);
+
+        //
+        // Store the plot's attributes up one level, here, so when we read
+        // the state back in SetFromNode, it is easier to get at the fields
+        // that we need to recreate the right type of ViewerPlot.
+        //
+        plotNode->AddNode(new DataNode("pluginID",
+            std::string(plots[i].plot->GetPluginID())));
+        plotNode->AddNode(new DataNode("hostName",
+            std::string(plots[i].plot->GetHostName())));
+        plotNode->AddNode(new DataNode("databaseName",
+            std::string(plots[i].plot->GetDatabaseName())));
+        plotNode->AddNode(new DataNode("variableName",
+            std::string(plots[i].plot->GetVariableName())));
+        plotNode->AddNode(new DataNode("beginFrame", plots[i].plot->GetBeginFrame()));
+        plotNode->AddNode(new DataNode("endFrame", plots[i].plot->GetEndFrame()));
+        plotNode->AddNode(new DataNode("active", plots[i].active));
+        plotNode->AddNode(new DataNode("hidden", plots[i].hidden));
+        plotNode->AddNode(new DataNode("realized", plots[i].realized));
+
+        // Store the SIL restriction
+        CompactSILRestrictionAttributes *csilr =
+            plots[i].plot->GetSILRestriction()->MakeCompactAttributes();
+        csilr->CreateNode(plotNode, true);
+        delete csilr;
+
+        // Let the plot add its attributes to the node.
+        plots[i].plot->CreateNode(plotNode);
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerPlotList::SetFromNode
+//
+// Purpose: 
+//   Lets the plot list reset its values from a config file.
+//
+// Arguments:
+//   parentNode : The config file information DataNode pointer.
+//
+// Returns:    True if we have created plots that should be realized;
+//             False otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 16 13:10:51 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerPlotList::SetFromNode(DataNode *parentNode)
+{
+    DataNode *node;
+
+    if(parentNode == 0)
+        return false;
+
+    DataNode *plotlistNode = parentNode->GetNode("ViewerPlotList");
+    if(plotlistNode == 0)
+        return false;
+
+    if((node = plotlistNode->GetNode("hostDatabaseName")) != 0)
+        hostDatabaseName = node->AsString();
+    if((node = plotlistNode->GetNode("hostName")) != 0)
+        hostName = node->AsString();
+    if((node = plotlistNode->GetNode("databaseName")) != 0)
+        databaseName = node->AsString();
+    int expectedPlots = 0;
+    if((node = plotlistNode->GetNode("nPlots")) != 0)
+    {
+        // Delete any plots that we may have.
+        while(nPlots > 0)
+            DeletePlot(plots[0].plot, false);
+
+        // Set the number of plots that we expect to create.
+        expectedPlots = (node->AsInt() < 0) ? 0 : node->AsInt();
+    }
+    if((node = plotlistNode->GetNode("keyframeMode")) != 0)
+        keyframeMode = node->AsBool();
+
+    //
+    // Try and recreate the plots
+    //
+    bool sendUpdateFrame = false;
+    bool createdPlots = false;
+    intVector plotSelected;
+    for(int i = 0; i < expectedPlots; ++i)
+    {
+        char key[20];
+        SNPRINTF(key, 20, "plot%02d", i);
+        DataNode *plotNode = plotlistNode->GetNode(key);
+        if(plotNode == 0)
+            continue;
+
+        //
+        // Look for the required bits of information to recreate the plot.
+        //
+        bool haveRequiredFields = true;
+        std::string pluginID, plotHost, plotDB, plotVar;        
+        if((node = plotNode->GetNode("pluginID")) != 0)
+            pluginID = node->AsString();
+        else
+            haveRequiredFields = false;
+        if((node = plotNode->GetNode("hostName")) != 0)
+            plotHost = node->AsString();
+        else
+            haveRequiredFields = false;
+        if((node = plotNode->GetNode("databaseName")) != 0)
+            plotDB = node->AsString();
+        else
+            haveRequiredFields = false;
+        if((node = plotNode->GetNode("variableName")) != 0)
+            plotVar = node->AsString();
+        else
+            haveRequiredFields = false;
+
+        bool createdPlot = false;
+        if(haveRequiredFields)
+        {
+            //
+            // Use the plot plugin manager to get the plot type index from
+            // the plugin id.
+            //
+            int type = PlotPluginManager::Instance()->GetEnabledIndex(pluginID);
+            if(type != -1)
+            {
+                //
+                // Try and create the plot.
+                //
+                ViewerPlot *plot = NewPlot(type, plotHost, plotDB, plotVar, false);
+
+                if(plot)
+                {
+                    //
+                    // Get the start and end frames.
+                    //
+                    bool haveFrameNumbers = true;
+                    int beginFrame = 0, endFrame = 0;
+                    if((node = plotNode->GetNode("endFrame")) != 0)
+                        endFrame = (node->AsInt() < 0) ? 0 : node->AsInt();
+                    else
+                        haveFrameNumbers = false;
+                    if((node = plotNode->GetNode("beginFrame")) != 0)
+                    {
+                        int f = node->AsInt();
+                        beginFrame = (f < 0 || f > endFrame) ? 0 : f;
+                    }
+                    else
+                        haveFrameNumbers = false;
+                    if(haveFrameNumbers)
+                        plot->SetFrameRange(beginFrame, endFrame);
+
+                    // Let the plot finish initializing itself.
+                    plot->SetFromNode(plotNode);
+
+                    // Add the plot to the plot list.
+                    int plotId = SimpleAddPlot(plot, false);
+
+                    // Set the active, hidden flags for the new plot.
+                    if((node = plotNode->GetNode("active")) != 0)
+                        plotSelected.push_back(node->AsBool()?1:0);
+                    else
+                        plotSelected.push_back(0);
+                    if((node = plotNode->GetNode("hidden")) != 0)
+                        plots[plotId].hidden = node->AsBool();
+                    if((node = plotNode->GetNode("realized")) != 0)
+                    {
+                        plots[plotId].realized = node->AsBool();
+                        sendUpdateFrame |= node->AsBool();
+                    }
+
+                    // Read the SIL restriction
+                    if((node = plotNode->GetNode("CompactSILRestrictionAttributes")) != 0)
+                    {
+                        CompactSILRestrictionAttributes csilr;
+                        csilr.SetFromNode(plotNode);
+
+                        // If the sil restriction from the config file has the same
+                        // number of sets, then initialize the plot's real SIL restriction
+                        // from the compact SIL restriction.
+                        avtSILRestriction_p silr = plot->GetSILRestriction();
+                        const unsignedCharVector &usedSets = csilr.GetUseSet();
+                        int nSets = silr->GetNumSets();
+                        if(nSets == usedSets.size())
+                        {                     
+                            silr->SuspendCorrectnessChecking();
+                            silr->TurnOffAll();
+                            silr->SetTopSet(csilr.GetTopSet());
+                            for(int i = 0; i < nSets; ++i)
+                            {
+                                if(usedSets[i] == 2 /* AllUsed */)
+                                    silr->TurnOnSet(i);
+                            }
+                            silr->EnableCorrectnessChecking();
+                        }
+                        else
+                        {
+                            debug1 << "Could not use the stored SIL restriction because "
+                                   << "it was not the right size." << endl;
+                        }
+                    }
+
+                    createdPlot = true;
+                    createdPlots = true;
+                }
+            }
+        }
+
+        // If we could not create the plot, record it in the logs.
+        if(!createdPlot)
+        {
+            debug1 << "Could not create \"" << pluginID.c_str()
+                   << "\" plot of: " << plotHost.c_str()
+                   << ":" << plotDB.c_str() << " (" << plotVar.c_str() << ")"
+                   << endl;
+        }
+    } // end for
+
+    // Now that all of the plots are added, set the selected flag on each plot.
+    // We can't do it as the plots are added because SimpleAddPlot contains
+    // code to set all plots but the new one to inactive.
+    for(int j = 0; j < nPlots; ++j)
+        plots[j].active = (plotSelected[j] > 0);
+
+    return sendUpdateFrame;
 }

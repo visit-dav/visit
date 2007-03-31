@@ -9,6 +9,7 @@
 
 #include <vector>
 #include <string>
+#include <fstream.h>
 
 class vtkDataSet;
 
@@ -30,6 +31,10 @@ class vtkDataSet;
 //    Akira Haddox, Mon Jun 16 12:33:50 PDT 2003
 //    Added in 2D spherical, cylindrical, XZ and YZ cartesian support.
 //    Added in support for reading in ghostzones.
+//
+//    Akira Haddox, Tue Jul 22 09:43:43 PDT 2003
+//    Fixed some code to compile on IRIX. Separated time reading code
+//    to separate function.
 //
 // ****************************************************************************
 
@@ -53,6 +58,9 @@ class avtCosmosFileFormat : public avtMTMDFileFormat
   protected:
     enum CoordinateType
     {   cartesian, spherical, cylindrical   };
+
+    bool                  readInTimes;
+    void                  ReadInTimes();
 
     void                  ReadMesh(int domain);
     void                  ReadMeshInfo(int domain);
@@ -107,7 +115,7 @@ class avtCosmosFileFormat : public avtMTMDFileFormat
     // domain, then by start(x), end(x), start(y), end(y), start(z), end(z).
     //
     bool                                 existGhostZones;
-    std::vector<vector<bool> >           ghostSet;
+    std::vector<std::vector<bool> >           ghostSet;
     
     std::vector<std::string>            scalarVarNames;
     std::vector<std::string>            vectorVarNames;
@@ -125,6 +133,8 @@ class avtCosmosFileFormat : public avtMTMDFileFormat
         std::string x,y,z;
     };
     std::vector<std::vector<TripleString> >     vectorFileNames;
+
+    void ReadString(ifstream &ifile, std::string &str);
 };
 
 #endif

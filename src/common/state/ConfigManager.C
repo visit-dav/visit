@@ -539,6 +539,9 @@ ConfigManager::ReadStringVector(char termChar)
 //   Brad Whitlock, Thu Jul 3 16:16:26 PST 2003
 //   Made it use stringVector class.
 //
+//   Brad Whitlock, Tue Jul 22 10:09:22 PDT 2003
+//   I fixed a bug in reading in CHAR_NODE data.
+//
 // ****************************************************************************
 
 DataNode *
@@ -569,8 +572,7 @@ ConfigManager::ReadFieldData(const std::string &tagName, NodeTypeEnum type,
         // Read a character.
         if(minSize > 0)
         {
-            sscanf(sv[i].c_str(), "%c", &cval);
-            retval = new DataNode(tagName, cval);
+            retval = new DataNode(tagName, sv[0][0]);
         }
         break;
     case UNSIGNED_CHAR_NODE:

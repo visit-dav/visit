@@ -26,6 +26,7 @@ using std::string;
 #include <LineoutInfo.h>
 #include <PickAttributes.h>
 #include <PickPointInfo.h>
+#include <ViewAttributes.h>
 #include <ViewerActionManager.h>
 #include <ViewerAnimation.h>
 #include <ViewerMessaging.h>
@@ -647,7 +648,10 @@ ViewerWindow::GetInteractionMode() const
 // Modifications:
 //   Kathleen Bonnell, Sat Jul 13 18:03:18 PDT 2002  
 //   Notify ViewerQueryManager of the tool's enabled state.
-//   
+//
+//   Brad Whitlock, Fri Jul 18 12:28:17 PDT 2003
+//   Added code to protect us from a bad toolId.
+//
 // ****************************************************************************
 
 void
@@ -657,20 +661,23 @@ ViewerWindow::SetToolEnabled(int toolId, bool enabled)
     // If we're turning the tool on, send attributes to it so it can
     // initialize itself if it wants to.
     //
-    if(enabled)
+    if(toolId >= 0 && toolId < GetNumTools())
     {
-        ViewerPlotList *pl = animation->GetPlotList();
-        pl->InitializeTool(visWindow->GetToolInterface(toolId));
-        ViewerQueryManager::Instance()->
-            InitializeTool(this, visWindow->GetToolInterface(toolId));
-    }
-    else
-    {
-        ViewerQueryManager::Instance()->
-            DisableTool(this, visWindow->GetToolInterface(toolId));
-    }
+        if(enabled)
+        {
+            ViewerPlotList *pl = animation->GetPlotList();
+            pl->InitializeTool(visWindow->GetToolInterface(toolId));
+            ViewerQueryManager::Instance()->
+                InitializeTool(this, visWindow->GetToolInterface(toolId));
+        }
+        else
+        {
+            ViewerQueryManager::Instance()->
+                DisableTool(this, visWindow->GetToolInterface(toolId));
+        }
 
-    visWindow->SetToolEnabled(toolId, enabled);
+        visWindow->SetToolEnabled(toolId, enabled);
+    }
 }
 
 // ****************************************************************************
@@ -4702,6 +4709,7 @@ ViewerWindow::SetPopupEnabled(bool val)
 //
 // Arguments:
 //   parentNode : The node to which we're saving information.
+//   detailed   : Indicates whether detailed information should be added.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Jun 30 13:10:30 PST 2003
@@ -4711,7 +4719,7 @@ ViewerWindow::SetPopupEnabled(bool val)
 // ****************************************************************************
 
 void
-ViewerWindow::CreateNode(DataNode *parentNode)
+ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
 {
     if(parentNode == 0)
         return;
@@ -4720,8 +4728,120 @@ ViewerWindow::CreateNode(DataNode *parentNode)
     parentNode->AddNode(windowNode);
 
     //
+    // Save the window size and location.
+    //
+    int windowSize[2], windowLocation[2];
+    GetWindowSize(windowSize[0], windowSize[1]);
+    GetLocation(windowLocation[0], windowLocation[1]);
+    windowNode->AddNode(new DataNode("windowSize", windowSize, 2));
+    windowNode->AddNode(new DataNode("windowLocation", windowLocation, 2));
+
+    //
     // Add information specific to the ViewerWindow.
     //
+    if(detailed)
+    {
+        windowNode->AddNode(new DataNode("cameraView", cameraView));
+        windowNode->AddNode(new DataNode("maintainView", maintainView));
+        windowNode->AddNode(new DataNode("viewIsLocked", viewIsLocked));
+        windowNode->AddNode(new DataNode("curveWindow", GetTypeIsCurve()));
+        windowNode->AddNode(new DataNode("viewDimension", viewDimension));
+        windowNode->AddNode(new DataNode("viewExtentsType", avtExtentType_ToString(plotExtentsType)));
+        windowNode->AddNode(new DataNode("timeLocked", timeLocked));
+        windowNode->AddNode(new DataNode("toolsLocked", toolsLocked));
+        windowNode->AddNode(new DataNode("fullFrame", fullFrame));
+
+        //
+        // Interaction mode.
+        //
+        windowNode->AddNode(new DataNode("interactionMode",
+            INTERACTION_MODE_ToString(GetInteractionMode())));
+
+        //
+        // Active tools.
+        //
+        stringVector activeTools;
+        for(int i = 0; i < GetNumTools(); ++i)
+        {
+            if(GetToolEnabled(i))
+                activeTools.push_back(GetToolName(i));
+        }
+        if(activeTools.size() > 0)
+            windowNode->AddNode(new DataNode("activeTools", activeTools));
+
+        //
+        // Save out the annotations.
+        //
+        AnnotationAttributes annot(*visWindow->GetAnnotationAtts());
+        annot.CreateNode(windowNode, false);
+
+        //
+        // Save out the lights
+        //
+        LightList lights(*visWindow->GetLightList());
+        lights.CreateNode(windowNode, false);
+
+        //
+        // Save out important rendering attributes.
+        //
+        windowNode->AddNode(new DataNode("scalableRendering", GetScalableRendering()));
+        windowNode->AddNode(new DataNode("scalableThreshold", GetScalableThreshold()));
+        windowNode->AddNode(new DataNode("notifyForEachRender", GetNotifyForEachRender()));
+        windowNode->AddNode(new DataNode("surfaceRepresentation", GetSurfaceRepresentation()));
+        windowNode->AddNode(new DataNode("immediateModeRendering", GetImmediateModeRendering()));
+        windowNode->AddNode(new DataNode("stereoRendering", GetStereo()));
+        windowNode->AddNode(new DataNode("stereoType", GetStereoType()));
+        windowNode->AddNode(new DataNode("antialiasing", GetAntialiasing()));
+
+        //
+        // View
+        //
+        ViewAttributes viewAtts;
+        if (viewDimension == 2)
+        {
+            if (!GetTypeIsCurve())
+            {
+                const avtView2D &view2d = GetView2D();
+                view2d.SetToViewAttributes(&viewAtts);
+            }
+            else 
+            {
+                const avtViewCurve &viewCurve = GetViewCurve();
+                viewCurve.SetToViewAttributes(&viewAtts);
+            }
+        }
+        else
+        {
+            const avtView3D &view3d = GetView3D();
+            view3d.SetToViewAttributes(&viewAtts);
+        }
+        viewAtts.CreateNode(windowNode, false);
+
+        //
+        // Save out the view keyframes.
+        //
+        if(viewDimension == 3)
+        {
+            DataNode *view3DNode = new DataNode("view3DKeyframes");
+            if(view3DAtts->CreateNode(view3DNode))
+                windowNode->AddNode(view3DNode);
+            else
+                delete view3DNode;
+        }
+        else
+        {
+            DataNode *view2DNode = new DataNode("view2DKeyframes");
+            if(view2DAtts->CreateNode(view2DNode))
+                windowNode->AddNode(view2DNode);
+            else
+                delete view2DNode;
+        }
+
+        //
+        // Let the animation add its information.
+        //
+        animation->CreateNode(windowNode);
+    }
 
     //
     // Let other objects add their information.
@@ -4748,6 +4868,8 @@ ViewerWindow::CreateNode(DataNode *parentNode)
 void
 ViewerWindow::SetFromNode(DataNode *parentNode)
 {
+    DataNode *node;
+
     if(parentNode == 0)
         return;
 
@@ -4756,15 +4878,243 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
         return;
 
     //
-    // Get information specific to ViewerWindow.
+    // Read in the animation.
     //
+    if(animation->SetFromNode(windowNode))
+        SendUpdateFrameMessage();
+
+    //
+    // Read in the view and set the view.
+    //
+    if((node = windowNode->GetNode("viewDimension")) != 0)
+        viewDimension = node->AsInt();
+    if((node = windowNode->GetNode("curveWindow")) != 0)
+        SetTypeIsCurve(node->AsBool());
+    if(windowNode->GetNode("ViewAttributes") != 0)
+    {
+        ViewAttributes viewAtts;
+        viewAtts.SetFromNode(windowNode);
+        if (viewDimension == 2)
+        {
+            if (!GetTypeIsCurve())
+            {
+                avtView2D view2d;
+                view2d.SetFromViewAttributes(&viewAtts);
+                SetView2D(view2d);
+            }
+            else 
+            {
+                avtViewCurve viewCurve;
+                viewCurve.SetFromViewAttributes(&viewAtts);
+                SetViewCurve(viewCurve);
+            }
+        }
+        else
+        {
+            avtView3D view3d;
+            view3d.SetFromViewAttributes(&viewAtts);
+            SetView3D(view3d);
+        }
+    }
+    if((node = windowNode->GetNode("cameraView")) != 0)
+        SetCameraViewMode(node->AsBool());
+    if((node = windowNode->GetNode("maintainView")) != 0)
+        SetMaintainViewMode(node->AsBool());
+    if((node = windowNode->GetNode("fullFrame")) != 0)
+        SetFullFrameMode(node->AsBool());
+
+    //
+    // Read in lock flags.
+    //
+    if((node = windowNode->GetNode("viewIsLocked")) != 0)
+        SetViewIsLocked(node->AsBool());
+    if((node = windowNode->GetNode("timeLocked")) != 0)
+        timeLocked = node->AsBool();
+    if((node = windowNode->GetNode("toolsLocked")) != 0)
+        toolsLocked = node->AsBool();
+
+    //
+    // Read in and set any rendering attributes.
+    //
+    if((node = windowNode->GetNode("scalableRendering")) != 0)
+        SetScalableRendering(node->AsBool());
+    if((node = windowNode->GetNode("scalableThreshold")) != 0)
+        SetScalableThreshold(node->AsInt());
+    if((node = windowNode->GetNode("notifyForEachRender")) != 0)
+        SetNotifyForEachRender(node->AsBool());
+    if((node = windowNode->GetNode("surfaceRepresentation")) != 0)
+        SetSurfaceRepresentation(node->AsInt());
+    if((node = windowNode->GetNode("immediateModeRendering")) != 0)
+        SetImmediateModeRendering(node->AsBool());
+    int stereoType = 0;
+    if((node = windowNode->GetNode("stereoType")) != 0)
+        stereoType = node->AsInt();
+    if((node = windowNode->GetNode("stereoRendering")) != 0)
+        SetStereoRendering(node->AsBool(), stereoType);
+    if((node = windowNode->GetNode("antialiasing")) != 0)
+        SetAntialiasing(node->AsBool());
+
+    //
+    // Read in and set the annotation attributes.
+    //
+    if((node = windowNode->GetNode("AnnotationAttributes")) != 0)
+    {
+        AnnotationAttributes annot;
+        annot.SetFromNode(windowNode);
+        SetAnnotationAttributes(&annot);
+    }
+
+    //
+    // Read in and set the light list.
+    //
+    if((node = windowNode->GetNode("LightList")) != 0)
+    {
+        LightList lights;
+        lights.SetFromNode(windowNode);
+        SetLightList(&lights);
+    }
+
+    //
+    // Read in the view keyframes.
+    //
+    ViewAttributes v;
+    if((node = windowNode->GetNode("view2DKeyframes")) != 0)
+        view2DAtts->SetFromNode(node, &v);
+    if((node = windowNode->GetNode("view3DKeyframes")) != 0)
+        view3DAtts->SetFromNode(node, &v);
 
     //
     // Let other objects get their information.
     //
     actionMgr->SetFromNode(windowNode);
+
+    //
+    // Set the view extents type.
+    //
+    if((node = windowNode->GetNode("viewExtentsType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = windowNode->AsInt();
+            ival = (ival < 0 || ival > 3) ? 0 : ival;
+            SetViewExtentsType(avtExtentType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            avtExtentType value;
+            if(avtExtentType_FromString(node->AsString(), value))
+                SetViewExtentsType(value);
+        }
+    }
+
+    //
+    // Read in and set the interaction mode.
+    //
+    if((node = windowNode->GetNode("interactionMode")) != 0)
+    {
+        INTERACTION_MODE m;
+        if(INTERACTION_MODE_FromString(node->AsString(), m))
+            SendInteractionModeMessage(m);
+    }
+
+    //
+    // Read in the list of active tools and send a message to the
+    // viewer's message buffer so that the tool will be activated later
+    // when control returns to the event loop.
+    //
+    if((node = windowNode->GetNode("activeTools")) != 0)
+    {
+        const stringVector &activeTools = node->AsStringVector();
+        for(int i = 0; i < activeTools.size(); ++i)
+        {
+            int toolIndex = -1;
+            for(int j = 0; j < GetNumTools(); ++j)
+            {
+                if(GetToolName(j) == activeTools[i])
+                {
+                    SendActivateToolMessage(j);
+                    break;
+                }
+            }
+        }
+    }
 }
 
+// ****************************************************************************
+// Method: ViewerWindow::SendUpdateFrameMessage
+//
+// Purpose: 
+//   Sends a message to the viewer's event loop that tells it to update the
+//   current animation frame, which will cause plots to be regenerated.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jul 18 12:50:15 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::SendUpdateFrameMessage() const
+{
+    char msg[256];
+
+    SNPRINTF(msg, 256, "updateFrame 0x%p;", this);
+    viewerSubject->MessageRendererThread(msg);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SendInteractionModeMessage
+//
+// Purpose: 
+//   Sends a message to the viewer's event loop that tells it to set the
+//   window's interaction mode.
+//
+// Arguments:
+//   m : The interaction mode to set.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jul 18 12:31:16 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::SendInteractionModeMessage(const INTERACTION_MODE m) const
+{
+    char msg[256];
+
+    SNPRINTF(msg, 256, "setInteractionMode 0x%p %d;", this, int(m));
+    viewerSubject->MessageRendererThread(msg);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SendActivateToolMessage
+//
+// Purpose: 
+//   Sends a message to the viewer's event loop that tells it to activate
+//   the specified tool.
+//
+// Arguments:
+//   toolId : The index of the tool to activate.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jul 18 12:18:47 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::SendActivateToolMessage(const int toolId) const
+{
+    char msg[256];
+
+    SNPRINTF(msg, 256, "activateTool 0x%p %d;", this, toolId);
+    viewerSubject->MessageRendererThread(msg);
+}
 
 // Only place where ViewerWindow should need to talk to ViewerEngineManager
 #include <ViewerEngineManager.h>

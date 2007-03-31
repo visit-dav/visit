@@ -5,6 +5,7 @@
 #include <ViewerOperatorFactory.h>
 
 #include <AttributeSubject.h>
+#include <DataNode.h>
 #include <OperatorPluginInfo.h>
 #include <OperatorPluginManager.h>
 #include <ViewerEngineManager.h>
@@ -267,6 +268,26 @@ ViewerOperator::GetName() const
 }
 
 // ****************************************************************************
+// Method: ViewerOperator::GetPluginID
+//
+// Purpose: Returns the operator's plugin id.
+//   
+// Returns:    A string that tells which plugin created the operator.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 17 09:20:00 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const char *
+ViewerOperator::GetPluginID() const
+{
+    return viewerPluginInfo->GetID();
+}
+
+// ****************************************************************************
 // Method: ViewerOperator::Removeable
 //
 // Purpose: 
@@ -353,4 +374,68 @@ bool
 ViewerOperator::NeedsRecalculation() const
 {
     return needsRecalculation;
+}
+
+
+// ****************************************************************************
+// Method: ViewerOperator::CreateNode
+//
+// Purpose: 
+//   Lets the operator save its information for a config file's DataNode.
+//
+// Arguments:
+//   parentNode : The node to which we're saving information.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 16 13:09:04 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerOperator::CreateNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *operatorNode = new DataNode("ViewerOperator");
+
+    // Add the operator attributes.
+    if(operatorAtts->CreateNode(operatorNode, false))
+        parentNode->AddNode(operatorNode);
+    else
+        delete operatorNode;
+}
+
+// ****************************************************************************
+// Method: ViewerOperator::SetFromNode
+//
+// Purpose: 
+//   Lets the operator reset its values from a config file.
+//
+// Arguments:
+//   parentNode : The config file information DataNode pointer.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 16 13:10:51 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerOperator::SetFromNode(DataNode *parentNode)
+{
+    DataNode *node;
+
+    if(parentNode == 0)
+        return;
+
+    DataNode *operatorNode = parentNode->GetNode("ViewerOperator");
+    if(operatorNode == 0)
+        return;
+
+    // Let the operator try to initialize its attributes.
+    operatorAtts->SetFromNode(operatorNode);
 }

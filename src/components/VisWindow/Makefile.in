@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2002
+#                            Copyright 2000 - 2003
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -86,6 +86,9 @@
 #    Akira Haddox, Thu Jun 12 15:47:32 PDT 2003
 #    Added the point tool.
 #
+#    Brad Whitlock, Tue Jul 15 16:46:04 PST 2003
+#    Added VisWindowTypes.C
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -141,8 +144,8 @@ Tools_src= \
   Tools/avtSphereToolInterface.C \
   Tools/avtToolInterface.C
 VisWindow_src= \
-  VisWindow/VisWindow.C
-
+  VisWindow/VisWindow.C \
+  VisWindow/VisWindowTypes.C
 
 CXXFLAGS=@CXXFLAGS@ @QT_CXXFLAGS@
 CPPFLAGS=@COMPONENT_CPPFLAGS@ @VTKQT_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@

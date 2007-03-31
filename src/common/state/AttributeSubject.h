@@ -24,6 +24,10 @@
 //   Brad Whitlock, Mon Feb 11 15:26:34 PST 2002
 //   Added a new method to create compatible types.
 //
+//   Brad Whitlock, Wed Jul 23 11:15:49 PDT 2003
+//   Added a new method to create a new instance that does not have to
+//   be initialized from the calling object.
+//
 // ****************************************************************************
 
 class STATE_API AttributeSubject : public AttributeGroup, public Subject
@@ -34,6 +38,7 @@ public:
     virtual void SelectAll() = 0;
     virtual void Notify();
     virtual AttributeSubject *CreateCompatible(const std::string &) const;
+    virtual AttributeSubject *NewInstance(bool copy) const { return 0; };
 
     // what the ?
     virtual bool VarChangeRequiresReset(void) { return false; };

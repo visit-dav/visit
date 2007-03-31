@@ -244,7 +244,8 @@ struct ExternalRenderRequestInfo
 //    Removed Start/StopPickMode.  Added INTERACTION_MODE argument to Pick.
 //
 //    Brad Whitlock, Mon Jun 30 13:03:48 PST 2003
-//    Added CreateNode, SetFromNode.
+//    Added CreateNode, SetFromNode, and a few new methods to send messages
+//    to the main event loop.
 //
 //    Mark C. Miller, 07Jul03
 //    Added GetWindowSize method
@@ -264,7 +265,7 @@ public:
     ViewerActionManager *GetActionManager() const;
     int  GetWindowId() const;
 
-    void CreateNode(DataNode *parentNode);
+    void CreateNode(DataNode *parentNode, bool detailed);
     void SetFromNode(DataNode *parentNode);
 
     void SetSize(const int width, const int height);
@@ -325,6 +326,9 @@ public:
     void SendRedrawMessage();
     void SendUpdateMessage();
     void SendDeleteMessage();
+    void SendUpdateFrameMessage() const;
+    void SendActivateToolMessage(const int toolId) const;
+    void SendInteractionModeMessage(const INTERACTION_MODE m) const;
 
     bool IsTheSameWindow(VisWindow *);
 

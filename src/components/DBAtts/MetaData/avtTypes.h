@@ -89,6 +89,10 @@ DBATTS_API extern const char * AUXILIARY_DATA_SPATIAL_EXTENTS;
 DBATTS_API extern const char * AUXILIARY_DATA_MIXED_VARIABLE;
 DBATTS_API extern const char * AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION;
 
+DBATTS_API std::string avtExtentType_ToString(avtExtentType);
+DBATTS_API std::string avtExtentType_ToString(int);
+DBATTS_API bool avtExtentType_FromString(const std::string &, avtExtentType &);
+
 #endif
 
 

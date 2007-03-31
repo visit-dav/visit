@@ -14,6 +14,7 @@
 class AttributeSubject;
 class AttributeSubjectMap;
 class DatabaseAttributes;
+class DataNode;
 class EngineProxy;
 class PickAttributes;
 class PlotQueryInfo;
@@ -136,6 +137,9 @@ class avtToolInterface;
 //    RemoveOperator methods. I also added methods to set/get the new
 //    activeOperator index and the expanded flag.
 //
+//    Brad Whitlock, Wed Jul 16 13:29:03 PST 2003
+//    Added CreateNode and SetFromNode.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot
@@ -176,7 +180,7 @@ class VIEWER_API ViewerPlot
     void SetSILRestriction(avtSILRestriction_p silr);
     avtSILRestriction_p GetSILRestriction() const;
 
-    void AddOperator(const int type);
+    int  AddOperator(const int type);
     bool PromoteOperator(const int operatorIndex);
     bool DemoteOperator(const int operatorIndex);
     bool RemoveOperator(const int operatorIndex);
@@ -241,6 +245,9 @@ class VIEWER_API ViewerPlot
 
     PlotQueryInfo* GetPlotQueryInfo();
     avtVarType     GetVarType();
+
+    void CreateNode(DataNode *);
+    void SetFromNode(DataNode *);
 
   protected:
     bool MoveOperator(const int operatorIndex, bool promote);

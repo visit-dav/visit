@@ -404,109 +404,6 @@ ViewerWindowManager::SetGeometry(const char *windowGeometry)
 }
 
 // ****************************************************************************
-// Method: ViewerWindowManager::AddInitialWindows
-//
-// Purpose: 
-//   Uses the windowAtts object to determine the number of windows that will
-//   be displayed initially and their size, position.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Nov 2 11:36:15 PDT 2001
-//
-// Modifications:
-//    Eric Brugger, Wed Nov 21 12:12:45 PST 2001
-//    I added animation attributes.
-//  
-//    Kathleen Bonnell, Tue Nov 27 16:03:00 PST 2001
-//    Added pick attributes. 
-// 
-//    Brad Whitlock, Mon Feb 4 10:34:59 PDT 2002
-//    Added code to minimize extra windows.
-//
-//    Brad Whitlock, Mon Sep 16 14:55:08 PST 2002
-//    I made the layout be part of the clientAtts instead of the windowAtts.
-//
-// ****************************************************************************
-
-void
-ViewerWindowManager::AddInitialWindows()
-{
-    // Check the windowAtts for a bad number of windows.
-    int windowIndex;
-    int nwin = windowAtts->GetNWindows();
-    bool badNWindows = (nwin > maxWindows) || (nwin < 2);
-    // Check the windowAtts for a bad number of sizes, etc.
-    bool arraysBadSize = (windowAtts->GetWindowWidth().size() != nwin) ||
-                         (windowAtts->GetWindowHeight().size() != nwin) ||
-                         (windowAtts->GetWindowX().size() != nwin) ||
-                         (windowAtts->GetWindowY().size() != nwin);
-
-    // Check the clientAtts for a bad layout.
-    bool badLayout = true;
-    int  lIndex = 0;
-    for(int i = 0; i < maxLayouts; ++i)
-    {
-        if(clientAtts->GetWindowLayout() == validLayouts[i])
-        {
-            lIndex = i;
-            badLayout = false;
-            break;
-        }
-    }
-
-    // If there were inconsistencies in the indowAtts then we should
-    // create a single window and return.
-    if(badNWindows || arraysBadSize || badLayout)
-    {
-        AddWindow();
-        return;
-    }
-
-    // Create a new window for each window listed in the windowAtts.
-    for(windowIndex = 0; windowIndex < nwin; ++windowIndex)
-    {
-        int winW = windowAtts->GetWindowWidth()[windowIndex];
-        int winH = windowAtts->GetWindowHeight()[windowIndex];
-        int winX = windowAtts->GetWindowX()[windowIndex];
-        int winY = windowAtts->GetWindowY()[windowIndex];
-
-        // Add the shift and border into the mix.
-        winX = winX + borderLeft - shiftX;
-        winY = winY + borderTop  - shiftY;
-
-        //
-        // Create the new window along with its animation.
-        //
-        CreateVisWindow(windowIndex, winW, winH, winX, winY);
-    }
-
-    // Set the layout to be used for future AddWindow calls.
-    layout = clientAtts->GetWindowLayout();
-    layoutIndex = lIndex;
-
-    //
-    // Make the first window the active window.
-    //
-    activeWindow = 0;
-
-    //
-    // Since the number of windows may be greater the the saved layout,
-    // minimize the windows that are above the number of windows allowed
-    // in the layout.
-    //
-    for(windowIndex = layout; windowIndex < nwin; ++windowIndex)
-    {
-        if(windows[windowIndex] != 0)
-            windows[windowIndex]->Iconify();
-    }
-
-    //
-    // Update all of the attributes for the window.
-    //
-    UpdateAllAtts();
-}
-
-// ****************************************************************************
 //  Method: ViewerWindowManager::AddWindow
 //
 //  Purpose:
@@ -3325,6 +3222,8 @@ ViewerWindowManager::UpdateAllAtts()
         plotList->UpdatePlotList();
         plotList->UpdatePlotAtts();
         plotList->UpdateSILRestrictionAtts();
+        keyframeClientAtts->SetEnabled(plotList->GetKeyframeMode());
+        keyframeClientAtts->Notify();
     }
 
     //
@@ -4204,6 +4103,9 @@ ViewerWindowManager::GetWindowAtts()
 //   Brad Whitlock, Wed Feb 5 14:22:29 PST 2003
 //   I added support for saving toolbar settings.
 //
+//   Brad Whitlock, Wed Jul 23 13:57:48 PST 2003
+//   I removed the window size, location from windowAtts.
+//
 // ****************************************************************************
 
 void
@@ -4211,33 +4113,6 @@ ViewerWindowManager::UpdateWindowAtts()
 {
     // Make sure the ViewerWindowManager atts object is created.
     GetWindowAtts();
-
-    // Go through the list of windows and store their locations, etc. into
-    // the windowAtts.
-    intVector vecX, vecY, vecW, vecH;
-    for(int i = 0; i < maxWindows; ++i)
-    {
-        if(windows[i] != 0)
-        {
-            int x, y, w, h;
-            // Get the size and location.
-            windows[i]->GetWindowSize(w, h);
-            windows[i]->GetLocation(x, y);
-
-            // Add the info to the vectors.
-            vecX.push_back(x);
-            vecY.push_back(y);
-            vecW.push_back(w);
-            vecH.push_back(h);
-        }
-    }
-
-    // Set the window information into the state object.
-    windowAtts->SetNWindows(vecX.size());
-    windowAtts->SetWindowX(vecX);
-    windowAtts->SetWindowY(vecY);
-    windowAtts->SetWindowWidth(vecW);
-    windowAtts->SetWindowHeight(vecH);
 
     // Let the active window's action manager update the window atts so we
     // save the current toolbar settings.
@@ -5522,36 +5397,40 @@ ViewerWindowManager::EndEngineExecute()
 //
 // Arguments:
 //   parentNode : The node to which we're adding information.
+//   detailed   : A flag that tells whether we should write detailed info.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Jun 30 12:58:36 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jul 17 14:20:27 PST 2003
+//   Added information for a full restart.
+//
 // ****************************************************************************
 
 void
-ViewerWindowManager::CreateNode(DataNode *parentNode)
+ViewerWindowManager::CreateNode(DataNode *parentNode, bool detailed)
 {
     if(parentNode == 0)
         return;
 
-    DataNode *vsNode = new DataNode("ViewerWindowManager");
-    parentNode->AddNode(vsNode);
+    DataNode *mgrNode = new DataNode("ViewerWindowManager");
+    parentNode->AddNode(mgrNode);
 
     //
     // Add information about the ViewerWindowManager.
     //
+    mgrNode->AddNode(new DataNode("activeWindow", activeWindow));
 
     //
     // Let each window add its own data.
     //
     DataNode *windowsNode = new DataNode("Windows");
-    vsNode->AddNode(windowsNode);
+    mgrNode->AddNode(windowsNode);
     for(int i = 0; i < maxWindows; ++i)
     {
         if(windows[i] != 0)
-            windows[i]->CreateNode(windowsNode);
+            windows[i]->CreateNode(windowsNode, detailed);
     }
 }
 
@@ -5570,7 +5449,9 @@ ViewerWindowManager::CreateNode(DataNode *parentNode)
 // Creation:   Mon Jun 30 12:56:30 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jul 17 14:25:02 PST 2003
+//   Added code to reconstruct all of the windows in the config file.
+//
 // ****************************************************************************
 
 void
@@ -5594,31 +5475,158 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode)
     if(windowsNode == 0)
         return;
 
-#if 0
-    // Reactivate this later when the viewer does a full restart.
+    int i, c;
     int newNWindows = windowsNode->GetNumChildren();
+    DataNode *sizeNode = 0;
+    DataNode *locationNode = 0;
+ 
     if(nWindows > newNWindows)
     {
         int d = nWindows - newNWindows;
-        for(int i = 0; i < d; ++i)
+        for(i = 0; i < d; ++i)
             DeleteWindow();
+
+        //
+        // Create an array of pointers to the existing windows such that
+        // the pointer array has no gaps.
+        //
+        ViewerWindow **existingWindows = new ViewerWindow *[nWindows + 1];
+        for(i = 0, c = 0; i < maxWindows; ++i)
+        {
+           if(windows[i] != 0)
+               existingWindows[c++] = windows[i];
+        }
+
+        //
+        // Try and resize or reposition the existing windows.
+        //
+        for(i = 0; i < newNWindows; ++i)
+        {
+            DataNode *windowINode = windowsNode->GetChildren()[i];
+            if((sizeNode = windowINode->GetNode("windowSize")) != 0 &&
+               (locationNode = windowINode->GetNode("windowLocation")) != 0)
+            {
+                // We're able to read in the size and location.
+                int  w, h, x, y;
+                w = sizeNode->AsIntArray()[0];
+                h = sizeNode->AsIntArray()[1];
+                x = locationNode->AsIntArray()[0];
+                y = locationNode->AsIntArray()[1];
+
+                // If we're considering an existing window, just set the
+                // size and position.
+                existingWindows[i]->SetSize(w, h);
+                existingWindows[i]->SetLocation(x, y);
+            }
+        }
+
+        delete [] existingWindows;
     }
     else if(nWindows < newNWindows)
     {
-        int d = newNWindows - nWindows;
-        for(int i = 0; i < d; ++i)
-            AddWindow();
+        //
+        // Create an array of pointers to the existing windows such that
+        // the pointer array has no gaps.
+        //
+        ViewerWindow **existingWindows = new ViewerWindow *[nWindows + 1];
+        for(i = 0, c = 0; i < maxWindows; ++i)
+        {
+           if(windows[i] != 0)
+               existingWindows[c++] = windows[i];
+        }
+
+        //
+        // Loop over the saved windows either using their information to
+        // resize existing windows or to create new windows.
+        //
+        int numExistingWindows = nWindows;
+        for(i = 0; i < newNWindows; ++i)
+        {
+            //
+            // Read the location and size for the window.
+            //
+            DataNode *windowINode = windowsNode->GetChildren()[i];
+            if((sizeNode = windowINode->GetNode("windowSize")) != 0 &&
+               (locationNode = windowINode->GetNode("windowLocation")) != 0)
+            {
+                // We're able to read in the size and location.
+                int  w, h, x, y;
+                w = sizeNode->AsIntArray()[0];
+                h = sizeNode->AsIntArray()[1];
+                x = locationNode->AsIntArray()[0];
+                y = locationNode->AsIntArray()[1];
+
+                // If we're considering an existing window, just set the
+                // size and position.
+                if(i < numExistingWindows)
+                {
+                    existingWindows[i]->SetSize(w, h);
+                    existingWindows[i]->SetLocation(x, y);
+                }
+                // We have the size for a window that does not exist yet so
+                // create the vis window with the correct size.
+                else
+                {
+                    for(int windowIndex = 0;
+                        windowIndex < maxWindows;
+                        ++windowIndex)
+                    {
+                        if(windows[windowIndex] == 0)
+                        {
+                            // Create the vis window so that it has the
+                            // right size and location.
+                            CreateVisWindow(windowIndex, w, h, x, y);
+
+                            // HACK - set the location again because it could
+                            // be shifted a little by some window managers.
+                            windows[windowIndex]->SetLocation(x, y);
+                            break;
+                        }
+                    }
+                }
+            }
+            else if(nWindows < newNWindows)
+                AddWindow();
+        }
+
+        delete [] existingWindows;
     }
-#endif
 
     //
     // Load window-specific information.
     //
     DataNode **wNodes = windowsNode->GetChildren();
     int childCount = 0;
-    for(int i = 0; i < maxWindows; ++i)
+    for(i = 0; i < maxWindows; ++i)
     {
-        if(windows[i] != 0 && childCount < windowsNode->GetNumChildren())
+        if(windows[i] != 0 && childCount < newNWindows)
             windows[i]->SetFromNode(wNodes[childCount++]);
+    }
+
+    //
+    // Set the active window.
+    //
+    DataNode *node;
+    if((node = searchNode->GetNode("activeWindow")) != 0)
+    {
+        int n = node->AsInt();
+        if(n >= 0 && n < nWindows && windows[n] != 0)
+            SetActiveWindow(n + 1);
+        else
+            UpdateAllAtts();
+    }
+    else
+        UpdateAllAtts();
+
+    //
+    // Set the lineout window.
+    //
+    for(i = 0; i < maxWindows; ++i)
+    {
+        if(windows[i] != 0 && windows[i]->GetTypeIsCurve())
+        {
+            lineoutWindow = i;
+            break;
+        }
     }
 }

@@ -13,6 +13,7 @@
 #include <ViewerWindowManager.h>
 #include <ViewerWindow.h>
 #include <ImproperUseException.h>
+#include <DataNode.h>
 #include <DebugStream.h>
 #include <LostConnectionException.h>
 #include <ViewerQueryManager.h>
@@ -825,4 +826,90 @@ ViewerAnimation::SetWindowAtts(const char *hostName)
     WindowAttributes winAtts = w->GetWindowAttributes();
     AnnotationAttributes annotAtts = *(w->GetAnnotationAttributes());
     return ViewerEngineManager::Instance()->SetWinAnnotAtts(hostName, &winAtts, &annotAtts);
+}
+
+// ****************************************************************************
+// Method: ViewerAnimation::CreateNode
+//
+// Purpose: 
+//   Lets the animation save its information for a config file's DataNode.
+//
+// Arguments:
+//   parentNode : The node to which we're saving information.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 16 13:09:04 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerAnimation::CreateNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *animationNode = new DataNode("ViewerAnimation");
+    parentNode->AddNode(animationNode);
+
+    //
+    // Add information specific to the animation.
+    //
+    animationNode->AddNode(new DataNode("nFrames", nFrames));
+    animationNode->AddNode(new DataNode("curFrame", curFrame));
+    animationNode->AddNode(new DataNode("pipelineCaching", pipelineCaching));
+
+    //
+    // Let the plot list save its information.
+    //
+    plotList->CreateNode(animationNode);
+}
+
+// ****************************************************************************
+// Method: ViewerAnimation::SetFromNode
+//
+// Purpose: 
+//   Lets the animation reset its values from a config file.
+//
+// Arguments:
+//   parentNode : The config file information DataNode pointer.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 16 13:10:51 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerAnimation::SetFromNode(DataNode *parentNode)
+{
+    DataNode *node;
+
+    if(parentNode == 0)
+        return false;
+
+    DataNode *animationNode = parentNode->GetNode("ViewerAnimation");
+    if(animationNode == 0)
+        return false;
+
+    //
+    // Read in a few flags for the animation.
+    //
+    if((node = animationNode->GetNode("nFrames")) != 0)
+    {
+        int nf = node->AsInt();
+        if(nf < 1) nf = 1;
+        SetNFrames(nf);
+    }
+    if((node = animationNode->GetNode("curFrame")) != 0)
+        SetFrameIndex(node->AsInt());
+    if((node = animationNode->GetNode("pipelineCaching")) != 0)
+        SetPipelineCaching(node->AsBool());
+
+    //
+    // Let the plot list read in its values.
+    //
+    return plotList->SetFromNode(animationNode);
 }

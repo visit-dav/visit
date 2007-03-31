@@ -8,6 +8,7 @@
 #include <state_exports.h>
 
 class AttributeSubject;
+class DataNode;
 
 // ****************************************************************************
 //  Class: AttributeSubjectMap
@@ -37,6 +38,9 @@ class STATE_API AttributeSubjectMap
     const int *GetIndices(int &) const;
     AttributeSubject *CreateCompatible(const std::string &) const;
     bool CopyAttributes(const AttributeSubjectMap *);
+
+    bool CreateNode(DataNode *parentNode);
+    void SetFromNode(DataNode *parentNode, AttributeSubject *factoryObj);
 
   private:
     void ResizeMap(const int);

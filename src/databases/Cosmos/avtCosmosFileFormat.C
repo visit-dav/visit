@@ -5,10 +5,8 @@
 
 #include <avtCosmosFileFormat.h>
 
-#include <algorithm>
-#include <fstream>
+#include <ctype.h>
 #include <math.h>
-#include <string>
 
 #include <vtkFloatArray.h>
 #include <vtkPoints.h>
@@ -28,7 +26,8 @@
 #include <hdf.h>
 #include <mfhdf.h>
 
-using namespace std;
+using std::vector;
+using std::string;
 
 static string GetDirName(const char *path);
 
@@ -68,7 +67,7 @@ avtCosmosFileFormat::avtCosmosFileFormat(const char *fname)
     
     dirname = GetDirName(fname);
 
-    std::ifstream ifile(fname);
+    ifstream ifile(fname);
 
     if (ifile.fail())
     {
@@ -78,6 +77,7 @@ avtCosmosFileFormat::avtCosmosFileFormat(const char *fname)
     ntimesteps = ndomains = dimensions[0] = -1;
 
     existGhostZones = false;
+    readInTimes = false;
     
     int i;
 
@@ -91,7 +91,7 @@ avtCosmosFileFormat::avtCosmosFileFormat(const char *fname)
     for (;;)
     {
         string key;
-        ifile >> key;
+        ReadString(ifile, key);
 
         if (ifile.eof() || ifile.fail())
                 break;
@@ -99,7 +99,7 @@ avtCosmosFileFormat::avtCosmosFileFormat(const char *fname)
         if (key == "#COORDINATES")
         {
             string value;
-            ifile >> value;
+            ReadString(ifile, value);
             if (value == "spherical")
                 coordType = spherical;
             else if (value == "cylindrical")
@@ -124,7 +124,7 @@ avtCosmosFileFormat::avtCosmosFileFormat(const char *fname)
         }
         else if (key == "#TIMEFILE")
         {
-            ifile >> timeFileName;
+            ReadString(ifile, timeFileName);
             timeFileName = dirname + timeFileName;
         }
         else if (key == "#DIMENSIONS")
@@ -152,7 +152,7 @@ avtCosmosFileFormat::avtCosmosFileFormat(const char *fname)
             string value;
             for (i = 0; i < ndomains; ++i)
             {
-                ifile >> value;
+                ReadString(ifile, value);
                 gridFileNames[i] = dirname + value;
             }
         }
@@ -166,13 +166,15 @@ avtCosmosFileFormat::avtCosmosFileFormat(const char *fname)
                 ifile.get();
 
             string value;
-            getline(ifile, value);
+            char line[1024];
+            ifile.getline(line, 1024);
+            value = line;
 
             scalarVarNames.push_back(value);
 
             for (i = 0; i < ndomains; ++i)
             {
-                ifile >> value;
+                ReadString(ifile, value);
                 scalarFileNames[i].push_back(dirname + value);
             }
         }
@@ -186,7 +188,10 @@ avtCosmosFileFormat::avtCosmosFileFormat(const char *fname)
                 ifile.get();
 
             string value;
-            getline(ifile, value);
+            char line[1024];
+            ifile.getline(line, 1024);
+            value = line;
+
             int index = vectorVarNames.size();
             vectorVarNames.push_back(value);
             
@@ -194,12 +199,12 @@ avtCosmosFileFormat::avtCosmosFileFormat(const char *fname)
             for (i = 0; i < ndomains; ++i)
             {
                 vectorFileNames[i].push_back(TripleString());
-                ifile >> value;
+                ReadString(ifile, value);
                 vectorFileNames[i][index].x = dirname + value;
             }
             for (i = 0; i < ndomains; ++i)
             {
-                ifile >> value;
+                ReadString(ifile, value);
                 vectorFileNames[i][index].y = dirname + value;
             }
 
@@ -207,7 +212,7 @@ avtCosmosFileFormat::avtCosmosFileFormat(const char *fname)
             { 
                 for (i = 0; i < ndomains; ++i)
                 {
-                    ifile >> value;
+                    ReadString(ifile, value);
                     vectorFileNames[i][index].z = dirname + value;
                 }
             }
@@ -301,11 +306,18 @@ avtCosmosFileFormat::~avtCosmosFileFormat()
 //  Programmer:  Akira Haddox
 //  Creation:    June 4, 2003
 //
+//  Modifications:
+//    Akira Haddox, Wed Jul 23 08:13:32 PDT 2003
+//    Added in call to read in times.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtCosmosFileFormat::GetMesh(int ts, int dom, const char *mesh)
 {
+    if (!readInTimes)
+        ReadInTimes();
+    
     if (strcmp(mesh, "mesh"))
         EXCEPTION1(InvalidVariableException, mesh);
 
@@ -803,6 +815,9 @@ avtCosmosFileFormat::GetNTimesteps()
 //    Akira Haddox, Wed Jul 16 15:33:48 PDT 2003
 //    Added in renaming of axes for xz, yz 2D cartesian plots.
 //
+//    Akira Haddox, Wed Jul 23 08:14:56 PDT 2003
+//    Moved time reading code to seperate function called by GetMesh.
+//
 // ****************************************************************************
 
 void
@@ -849,14 +864,25 @@ avtCosmosFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     for (i = 0; i < nvectors; i++)
         md->Add(new avtVectorMetaData(vectorVarNames[i], "mesh", 
                                       AVT_ZONECENT, 3));
-    
-    //
-    // Read in the time
-    //
+}
 
-    md->SetNumStates(ntimesteps);
+// ****************************************************************************
+//  Method:  avtCosmosFileFormat::ReadInTimes
+//
+//  Purpose:
+//      Read in the time information.
+//
+//  Programmer:  Akira Haddox
+//  Creation:    July 22, 2003
+//  
+// ****************************************************************************
 
-    std::ifstream tf;
+void
+avtCosmosFileFormat::ReadInTimes()
+{
+    readInTimes = true;
+
+    ifstream tf;
     tf.open(timeFileName.c_str());
     if (tf.fail())
         EXCEPTION1(InvalidFilesException, timeFileName.c_str());
@@ -867,17 +893,17 @@ avtCosmosFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // 
     // The first 6 numbers we don't use.
     // 
+    int i;
     for (i = 0; i < 6; ++i)
         tf >> junk;
 
     for (i = 0; i < ntimesteps; ++i)
     {
         tf >> cycle >> time;
-        md->SetCycle(i, cycle);
-        md->SetTime(i, time);
+        metadata->SetTime(i, time);
     }
     
-    tf.close();
+    tf.close(); 
 }
 
 
@@ -1061,7 +1087,7 @@ void
 avtCosmosFileFormat::ReadMeshInfo(int domain)
 {
     meshInfoLoaded[domain] = true;
-    std::ifstream file;
+    ifstream file;
     file.open(gridFileNames[domain].c_str());
     if (file.fail())
         EXCEPTION1(InvalidFilesException, gridFileNames[domain].c_str());
@@ -1772,6 +1798,41 @@ avtCosmosFileFormat::FillVectorVar2DCylindrical(float *ptr, float *values[3],
             *(ptr++) = values[1][i];
             *(ptr++) = 0;
         }
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  avtCosmosFileFormat::ReadString
+//
+//  Purpose:
+//      Read in a string from a file. Works like you would expect
+//      ifile >> str to work, except this will compile on all platforms.
+//
+//  Programmer:  Akira Haddox
+//  Creation:    July 22, 2003
+//
+// ****************************************************************************
+
+void
+avtCosmosFileFormat::ReadString(ifstream &ifile, std::string &str)
+{
+    char c;
+    do
+    {
+        c = ifile.get();
+        if (ifile.eof() || ifile.fail())
+            return;
+    }while (isspace(c));    
+
+    str = c;
+
+    while (!isspace(ifile.peek()))
+    {
+        if (ifile.eof() || ifile.fail())
+            return;
+        c = ifile.get();
+        str += c;
     }
 }
 

@@ -157,12 +157,24 @@ PluginManager::PluginLoaded(const string &id)
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 26, 2001
 //
+//  Modfications:
+//    Brad Whitlock, Thu Jul 17 09:56:19 PDT 2003
+//    Prevented case where a bad id could add itself to the allindexmap.
+//
 // ****************************************************************************
 
 string
 PluginManager::GetPluginName(const string &id)
 {
-    return names[allindexmap[id]];
+    string retval;
+    if(allindexmap.find(id) != allindexmap.end())
+    {
+        int index = allindexmap[id];
+        if(index < names.size())
+            retval = names[index];
+    }
+
+    return retval;
 }
 
 // ****************************************************************************
@@ -177,12 +189,24 @@ PluginManager::GetPluginName(const string &id)
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 26, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Thu Jul 17 09:56:19 PDT 2003
+//    Prevented case where a bad id could add itself to the allindexmap.
+//
 // ****************************************************************************
 
 string
 PluginManager::GetPluginVersion(const string &id)
 {
-    return versions[allindexmap[id]];
+    string retval;
+    if(allindexmap.find(id) != allindexmap.end())
+    {
+        int index = allindexmap[id];
+        if(index < versions.size())
+            retval = versions[index];
+    }
+
+    return retval;
 }
 
 // ****************************************************************************
@@ -281,12 +305,21 @@ PluginManager::GetEnabledID(int index) const
 //  Programmer: Jeremy Meredith
 //  Creation:   June 17, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Thu Jul 17 09:51:19 PDT 2003
+//    Added a check to prevent the case where a bad id could add itself to
+//    the map.
+//
 // ****************************************************************************
 
 int
 PluginManager::GetEnabledIndex(const std::string &id)
 {
-    return loadedindexmap[id];
+    int retval = -1;
+    if(loadedindexmap.find(id) != loadedindexmap.end())
+        retval = loadedindexmap[id];
+
+    return retval;
 }
 
 // ****************************************************************************
@@ -301,12 +334,22 @@ PluginManager::GetEnabledIndex(const std::string &id)
 //  Programmer: Jeremy Meredith
 //  Creation:   September 26, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Thu Jul 17 09:51:19 PDT 2003
+//    Added a check to prevent the case where a bad id could add itself to
+//    the map.
+//
 // ****************************************************************************
 
 void
 PluginManager::DisablePlugin(const string &id)
 {
-    enabled[allindexmap[id]] = false;
+    if(allindexmap.find(id) != allindexmap.end())
+    {
+        int index = allindexmap[id];
+        if(index < enabled.size())
+            enabled[index] = false;
+    }
 }
 
 // ****************************************************************************
@@ -321,12 +364,22 @@ PluginManager::DisablePlugin(const string &id)
 //  Programmer: Jeremy Meredith
 //  Creation:   September 26, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Thu Jul 17 09:51:19 PDT 2003
+//    Added a check to prevent the case where a bad id could add itself to
+//    the map.
+//
 // ****************************************************************************
 
 void
 PluginManager::EnablePlugin(const string &id)
 {
-    enabled[allindexmap[id]] = true;
+    if(allindexmap.find(id) != allindexmap.end())
+    {
+        int index = allindexmap[id];
+        if(index < enabled.size())
+            enabled[index] = true;
+    }
 }
 
 // ****************************************************************************

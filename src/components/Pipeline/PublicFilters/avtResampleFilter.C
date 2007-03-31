@@ -326,6 +326,9 @@ avtResampleFilter::BypassResample(void)
 //    Hank Childs, Mon Jul  7 22:31:00 PDT 2003
 //    Copy over whether or not an error occurred in resampling.
 //
+//    Hank Childs, Wed Jul 23 15:33:14 PDT 2003
+//    Make accomodations for not sampling avt and vtk variables.
+//
 // ****************************************************************************
 
 void
@@ -411,17 +414,29 @@ avtResampleFilter::ResampleInput(void)
     avtDatasetExaminer::GetVariableList(ds, vl);
 
     //
+    // This is hack-ish.  The sample point extractor throws out variables
+    // that have "avt" or "vtk" in them.  The returned sample points don't
+    // have variable names, so we need to match up the variables from the
+    // input dataset.
+    //
+    int myVars = 0;
+    for (i = 0 ; i < vl.nvars ; i++)
+        if ((strstr(vl.varnames[i].c_str(), "vtk") == NULL) &&
+            (strstr(vl.varnames[i].c_str(), "avt") == NULL))
+            myVars++;
+
+    //
     // If we have more processors than domains, we have to handle that
     // gracefully.  Communicate how many variables there are so that those
     // that don't have data can play well.
     //
-    int effectiveVars = UnifyMaximumValue(vl.nvars);
+    int effectiveVars = UnifyMaximumValue(myVars);
     vtkDataArray **vars = new vtkDataArray*[effectiveVars];
     for (i = 0 ; i < effectiveVars ; i++)
     {
         vars[i] = vtkFloatArray::New();
     }
-    if (vl.nvars <= 0)
+    if (myVars <= 0)
     {
         //
         // No variables -- this is probably because we didn't get any domains
@@ -458,18 +473,20 @@ avtResampleFilter::ResampleInput(void)
         //
         // Attach this variable to our rectilinear grid.
         //
+        int varsSeen = 0;
         for (i = 0 ; i < vl.nvars ; i++)
         {
             const char *varname = vl.varnames[i].c_str();
+            if ((strstr(varname, "vtk") != NULL) ||
+                (strstr(varname, "avt") != NULL))
+                continue;
+
+            vars[varsSeen]->SetName(varname);
             if (strcmp(varname, primaryVariable) == 0)
-            {
-                rg->GetPointData()->SetScalars(vars[i]);
-            }
+                rg->GetPointData()->SetScalars(vars[varsSeen]);
             else
-            {
-                vars[i]->SetName(varname);
-                rg->GetPointData()->AddArray(vars[i]);
-            }
+                rg->GetPointData()->AddArray(vars[varsSeen]);
+            varsSeen++;
         }
 
         avtDataTree_p tree = new avtDataTree(rg, 0);
@@ -484,7 +501,7 @@ avtResampleFilter::ResampleInput(void)
         SetOutputDataTree(dummy);
     }
 
-    for (i = 0 ; i < vl.nvars ; i++)
+    for (i = 0 ; i < effectiveVars ; i++)
     {
         vars[i]->Delete();
     }

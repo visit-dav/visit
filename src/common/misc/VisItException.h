@@ -17,7 +17,11 @@
 // Must be re-added
 //#include <arch.h>
 
+#ifdef FAKE_EXCEPTIONS
+#define VISIT_THROW_NOTHING
+#else
 #define VISIT_THROW_NOTHING throw()
+#endif
 
 // ****************************************************************************
 //  Class: VisItException
@@ -55,9 +59,12 @@
 //    I fixed a bug in the fake exceptions' TRY statement that could let
 //    nested TRY's rethrow a previously caught exception.
 //
+//    Eric Brugger, Wed Jul 23 13:46:05 PDT 2003
+//    No longer inherit from exception.
+//
 // ****************************************************************************
 
-class MISC_API VisItException : public std::exception
+class MISC_API VisItException
 {
   public:
                        VisItException();

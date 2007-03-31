@@ -6,6 +6,9 @@
 //    For INTERACTION_MODE, renamed PICK to ZONE_PICK, added NODE_PICK.
 //    Removed QUERY_TYPE, no longer needed.
 //
+//    Brad Whitlock, Tue Jul 15 16:34:53 PST 2003
+//    Added methods to convert INTERACTION_MODE to and from string.
+//
 // ************************************************************************* //
 
 
@@ -13,6 +16,8 @@
 #define VIS_WINDOW_TYPES_H
 
 #include <avtVector.h>
+#include <viswindow_exports.h>
+#include <string>
 
 typedef enum
 {
@@ -49,6 +54,12 @@ struct HotPoint
     VisitInteractiveTool *tool;
     hotPointCallback     *callback;
 };
+
+// Functions to convert INTERACTION_MODE to/from string.
+VISWINDOW_API std::string INTERACTION_MODE_ToString(INTERACTION_MODE);
+VISWINDOW_API std::string INTERACTION_MODE_ToString(int);
+VISWINDOW_API bool        INTERACTION_MODE_FromString(const std::string &,
+                                                      INTERACTION_MODE &);
 
 // ****************************************************************************
 //  Function: ValidMode

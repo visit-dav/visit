@@ -9,6 +9,7 @@
 #include <avtTwoPassDatasetQuery.h>
 
 #include <string>
+#include <vector>
 
 class vtkDataSet;
 class vtkCell;
@@ -27,6 +28,11 @@ class vtkCell;
 //    Added additional queries which use a density variable.
 //    Made it inherit from the (new) two-pass query.
 //
+//    Jeremy Meredith, Wed Jul 23 13:29:57 PDT 2003
+//    Turned xBound and yBound into class data members, and made them
+//    STL vectors, and made it collect the boundary points
+//    across all domains and processors.
+//
 // ****************************************************************************
 
 class QUERY_API avtCompactnessQuery : public avtTwoPassDatasetQuery
@@ -43,6 +49,8 @@ class QUERY_API avtCompactnessQuery : public avtTwoPassDatasetQuery
   protected:
     int                             numDomains;
 
+    std::vector<float>              xBound;
+    std::vector<float>              yBound;
 
     double                          totalXSectArea;
     double                          totalRotVolume;

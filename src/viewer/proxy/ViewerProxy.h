@@ -281,6 +281,9 @@ class Xfer;
 //    Brad Whitlock, Tue Jul 1 16:45:31 PST 2003
 //    I added a method to export color tables.
 //
+//    Brad Whitlock, Wed Jul 9 11:54:15 PDT 2003
+//    I added methods to export and import the viewer's entire state.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -429,6 +432,8 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void SetPickAttributes();
 
     void WriteConfigFile();
+    void ExportEntireState(const std::string &filename);
+    void ImportEntireState(const std::string &filename);
 
     // Methods for dealing with plot SIL restrictions.
     avtSILRestriction_p GetPlotSILRestriction() 

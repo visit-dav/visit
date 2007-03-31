@@ -234,6 +234,9 @@ typedef struct {
 //    Brad Whitlock, Mon Jun 30 12:39:19 PDT 2003
 //    Added methods to save/read state.
 //
+//    Brad Whitlock, Wed Jul 23 13:56:03 PST 2003
+//    Removed AddInitialWindows method.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public QObject
@@ -249,7 +252,6 @@ class VIEWER_API ViewerWindowManager : public QObject
     void SetPreshift(const char *windowPreshift);
     void SetGeometry(const char *windowGeometry);
 
-    void AddInitialWindows();
     void AddWindow(bool copyAtts = false);
     void CloneWindow();
     void ClearAllWindows();
@@ -336,7 +338,7 @@ class VIEWER_API ViewerWindowManager : public QObject
     void BeginEngineExecute();
     void EndEngineExecute();
 
-    void CreateNode(DataNode *parentNode);
+    void CreateNode(DataNode *parentNode, bool detailed);
     void SetFromNode(DataNode *parentNode);
 
     static GlobalAttributes              *GetClientAtts();

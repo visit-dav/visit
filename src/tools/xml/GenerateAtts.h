@@ -89,6 +89,9 @@ using std::vector;
 //    Brad Whitlock, Tue Jul 15 13:22:36 PST 2003
 //    I added range checking for enums so reading from config files is safer.
 //
+//    Brad Whitlock, Wed Jul 23 11:17:25 PDT 2003
+//    I added code to generate a NewInstance method.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1541,6 +1544,7 @@ class AttsGeneratorAttribute
         h << "    virtual const std::string TypeName() const;" << endl;
         h << "    virtual bool CopyAttributes(const AttributeGroup *);" << endl;
         h << "    virtual AttributeSubject *CreateCompatible(const std::string &) const;" << endl;
+        h << "    virtual AttributeSubject *NewInstance(bool) const;" << endl;
         h << endl;
         h << "    // Property selection methods" << endl;
         h << "    virtual void SelectAll();" << endl;
@@ -1849,6 +1853,33 @@ class AttsGeneratorAttribute
         c << "    *this = *tmp;" << endl;
         c << endl;
         c << "    return true;" << endl;
+        c << "}" << endl << endl;
+    }
+    void WriteSourceNewInstance(ostream &c)
+    {
+        if (HasFunction("NewInstance"))
+        {
+            PrintFunction(c, "NewInstance");
+            c << endl;
+            return;
+        }
+
+        // Write the method comment.
+        QString purposeString("NewInstance method for the ");
+        purposeString += (name + " class.");
+        QString methodName("NewInstance");
+        WriteMethodComment(c, name, methodName, purposeString);
+
+        c << "AttributeSubject *" << endl;
+        c << name << "::NewInstance(bool copy) const" << endl;
+        c << "{" << endl;
+        c << "    AttributeSubject *retval = 0;" << endl;
+        c << "    if(copy)" << endl;
+        c << "        retval = new " << name << "(*this);" << endl;
+        c << "    else" << endl;
+        c << "        retval = new " << name << ";" << endl;
+        c << endl;
+        c << "    return retval;" << endl;
         c << "}" << endl << endl;
     }
     void WriteSourceCreateCompatible(ostream &c)
@@ -2298,6 +2329,7 @@ class AttsGeneratorAttribute
         WriteSourceTypeName(c);
         WriteSourceCopyAttributes(c);
         WriteSourceCreateCompatible(c);
+        WriteSourceNewInstance(c);
         WriteSourceSelectAll(c);
         WriteSourceSubAttributeGroup(c);
 
