@@ -1,5 +1,5 @@
 // ************************************************************************* //
-//                        avtBoundaryFilter.C                                  // 
+//                            avtBoundaryFilter.C                            // 
 // ************************************************************************* // 
 
 
@@ -44,6 +44,10 @@ avtBoundaryFilter::SetPlotAtts(const BoundaryAttributes *atts)
 //  Creation:   June 12, 2003
 //
 //  Modifications:
+//
+//    Hank Childs, Sat Jun 21 10:51:29 PDT 2003
+//    Made more efficient by removing unnecessary work.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -178,9 +182,9 @@ avtBoundaryFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
                 int numNewCells = 0;
                 for (int j = 0; j < ntotalcells; j++)
                 {
-                    in_pd->GetCellPoints(j, npts, pts);
                     if (boundaryList[j] == s)
                     {
+                        in_pd->GetCellPoints(j, npts, pts);
                         out_pd->InsertNextCell(in_pd->GetCellType(j),
                                                npts, pts);
                         out_CD->CopyData(in_CD, j, numNewCells++); 
@@ -251,7 +255,6 @@ void
 avtBoundaryFilter::RefashionDataObjectInfo(void)
 {
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-    avtDataAttributes &inAtts  = GetInput()->GetInfo().GetAttributes();
 
     outAtts.SetLabels(plotAtts.GetBoundaryNames());
 }

@@ -417,10 +417,9 @@ void vtkSlicer::UnstructuredGridExecute(void)
         vtkAppendPolyData *appender = vtkAppendPolyData::New();
         appender->AddInput(not_from_zoo);
         appender->AddInput(just_from_zoo);
-        appender->SetOutput(output);
-        output->Update();
+        appender->GetOutput()->Update();
 
-        output->SetSource(NULL);
+        output->ShallowCopy(appender->GetOutput());
         appender->Delete();
         not_from_zoo->Delete();
         just_from_zoo->Delete();

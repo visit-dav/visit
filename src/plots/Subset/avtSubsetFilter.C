@@ -65,6 +65,10 @@ avtSubsetFilter::SetPlotAtts(const SubsetAttributes *atts)
 //    Kathleen Bonnell, Fri Dec  6 12:02:04 PST 2002 
 //    Copy all cell data, not just ghost levels.  Pass point data.
 //
+//    Hank Childs, Sat Jun 21 10:48:19 PDT 2003
+//    Fix a problem with accessing cells from poly data.  This fix also made
+//    the accessing more efficient.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -164,8 +168,6 @@ avtSubsetFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
         //
         out_ds = new vtkDataSet *[nSelectedSubsets];
 
-        vtkCellArray *cells = in_pd->GetPolys();
-
         //
         // The following call is a workaround for a VTK bug.  It turns
         // out that when GetCellType if called for the first time for a
@@ -196,13 +198,12 @@ avtSubsetFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
                 out_pd->Allocate(subsetCounts[s]);
 
                 vtkIdType npts, *pts;
-                cells->InitTraversal();
                 int numNewCells = 0;
                 for (int j = 0; j < ntotalcells; j++)
                 {
-                    cells->GetNextCell(npts, pts);
                     if (subsetList[j] == s)
                     {
+                        in_pd->GetCellPoints(j, npts, pts);
                         out_pd->InsertNextCell(in_pd->GetCellType(j),
                                                npts, pts);
                         out_CD->CopyData(in_CD, j, numNewCells++); 

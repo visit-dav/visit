@@ -1,18 +1,23 @@
 // ************************************************************************* //
-//                        avtFilledBoundaryFilter.C                                  // 
+//                          avtFilledBoundaryFilter.C                        //
 // ************************************************************************* // 
 
-
 #include <avtFilledBoundaryFilter.h>
-#include <avtDataAttributes.h>
-#include <avtTerminatingSource.h>
+
 #include <vtkCellArray.h>
 #include <vtkDataSet.h>
 #include <vtkIntArray.h>
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
+
+#include <avtDataAttributes.h>
+#include <avtTerminatingSource.h>
+
 #include <DebugStream.h>
 #include <ImproperUseException.h>
+
+
+using std::string;
 
 
 // ****************************************************************************
@@ -49,7 +54,8 @@ avtFilledBoundaryFilter::SetPlotAtts(const FilledBoundaryAttributes *atts)
 // ****************************************************************************
 
 avtDataTree_p
-avtFilledBoundaryFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
+avtFilledBoundaryFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
+                                         string label)
 {
     if (in_ds == NULL || in_ds->GetNumberOfPoints() == 0)
     {
@@ -80,6 +86,7 @@ avtFilledBoundaryFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string l
             avtDataTree_p rv = new avtDataTree();
             return rv;
         }
+
         //
         // Break up the dataset into a collection of datasets, one
         // per boundary.
@@ -145,8 +152,6 @@ avtFilledBoundaryFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string l
         //
         out_ds = new vtkDataSet *[nSelectedBoundaries];
 
-        vtkCellArray *cells = in_pd->GetPolys();
-
         //
         // The following call is a workaround for a VTK bug.  It turns
         // out that when GetCellType if called for the first time for a
@@ -177,13 +182,12 @@ avtFilledBoundaryFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string l
                 out_pd->Allocate(boundaryCounts[s]);
 
                 vtkIdType npts, *pts;
-                cells->InitTraversal();
                 int numNewCells = 0;
                 for (int j = 0; j < ntotalcells; j++)
                 {
-                    cells->GetNextCell(npts, pts);
                     if (boundaryList[j] == s)
                     {
+                        in_pd->GetCellPoints(j, npts, pts);
                         out_pd->InsertNextCell(in_pd->GetCellType(j),
                                                npts, pts);
                         out_CD->CopyData(in_CD, j, numNewCells++); 
