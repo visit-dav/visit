@@ -104,6 +104,9 @@ class avtToolInterface;
 //    Kathleen Bonnell, Thu Sep 11 12:04:26 PDT 2003
 //    Added optional bool arg to AddQuery and a Lineout method. 
 //
+//    Kathleen Bonnell, Mon Sep 15 13:09:19 PDT 2003 
+//    Added InitializeQueryList.
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -163,6 +166,8 @@ class VIEWER_API ViewerQueryManager
 
     void            CreateNode(DataNode *);
     void            SetFromNode(DataNode *);
+
+    void            InitializeQueryList(void);
 
   protected:
                     ViewerQueryManager();

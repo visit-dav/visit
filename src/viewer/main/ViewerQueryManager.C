@@ -115,6 +115,10 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Kathleen Bonnell, Wed Jul 23 16:26:34 PDT 2003 
 //    Added 'Variable by Zone', 'WorldPick' and 'WorldNodePick'. 
 //
+//    Kathleen Bonnell, Mon Sep 15 13:09:19 PDT 2003 
+//    Moved initialization of queryTypes to its own method, so that it can
+//    be called after plugins are loaded (lineout dependent upon plugins). 
+//
 // ****************************************************************************
 
 ViewerQueryManager::ViewerQueryManager()
@@ -131,29 +135,6 @@ ViewerQueryManager::ViewerQueryManager()
 
     // Create the query list.
     queryTypes = new QueryList;
-#if 1
-    // Kathleen - populate this somewhere.
-    queryTypes->AddQuery("ZonePick", QueryList::PointQuery, QueryList::ScreenSpace);
-    queryTypes->AddQuery("NodePick", QueryList::PointQuery, QueryList::ScreenSpace);
-    if (PlotPluginManager::Instance()->PluginAvailable("Curve_1.0") &&
-        OperatorPluginManager::Instance()->PluginAvailable("Lineout_1.0")) 
-    {
-        queryTypes->AddQuery("Lineout", QueryList::LineQuery);
-    }
-    queryTypes->AddQuery("Eulerian", QueryList::DatabaseQuery);
-    queryTypes->AddQuery("Compactness", QueryList::DatabaseQuery);
-    queryTypes->AddQuery("Revolved volume", QueryList::DatabaseQuery);
-    queryTypes->AddQuery("Revolved surface area", QueryList::DatabaseQuery);
-    queryTypes->AddQuery("Surface area", QueryList::DatabaseQuery);
-    queryTypes->AddQuery("Volume", QueryList::DatabaseQuery);
-    queryTypes->AddQuery("WorldPick", QueryList::PointQuery);
-    queryTypes->AddQuery("WorldNodePick", QueryList::PointQuery);
-    queryTypes->AddQuery("Variable by Zone", QueryList::DatabaseQuery);
-    //queryTypes->AddQuery("Variable by Node", QueryList::DatabaseQuery);
-    //queryTypes->AddQuery("MinMax", QueryList::DatabaseQuery);
-#endif
-
-    queryTypes->SelectAll();
 
     operatorFactory = 0;
 
@@ -2095,4 +2076,43 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
             uniqueVarsSet.insert(v); 
         }
     }
+}
+
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::InitializeQueryList
+//
+//  Purpose:
+//    Initializes queryTypes with the types of queries available.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 15, 2003 
+//
+//  Modifications:
+//    
+// ****************************************************************************
+
+void
+ViewerQueryManager::InitializeQueryList()
+{
+    queryTypes->AddQuery("ZonePick", QueryList::PointQuery, QueryList::ScreenSpace);
+    queryTypes->AddQuery("NodePick", QueryList::PointQuery, QueryList::ScreenSpace);
+    if (PlotPluginManager::Instance()->PluginAvailable("Curve_1.0") &&
+        OperatorPluginManager::Instance()->PluginAvailable("Lineout_1.0")) 
+    {
+        queryTypes->AddQuery("Lineout", QueryList::LineQuery);
+    }
+    queryTypes->AddQuery("Eulerian", QueryList::DatabaseQuery);
+    queryTypes->AddQuery("Compactness", QueryList::DatabaseQuery);
+    queryTypes->AddQuery("Revolved volume", QueryList::DatabaseQuery);
+    queryTypes->AddQuery("Revolved surface area", QueryList::DatabaseQuery);
+    queryTypes->AddQuery("Surface area", QueryList::DatabaseQuery);
+    queryTypes->AddQuery("Volume", QueryList::DatabaseQuery);
+    queryTypes->AddQuery("WorldPick", QueryList::PointQuery);
+    queryTypes->AddQuery("WorldNodePick", QueryList::PointQuery);
+    queryTypes->AddQuery("Variable by Zone", QueryList::DatabaseQuery);
+    //queryTypes->AddQuery("Variable by Node", QueryList::DatabaseQuery);
+    //queryTypes->AddQuery("MinMax", QueryList::DatabaseQuery);
+
+    queryTypes->SelectAll();
 }

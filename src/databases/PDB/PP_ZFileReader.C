@@ -43,8 +43,8 @@ const int PP_ZFileReader::revolutionSteps = 40 + 1;
 //
 // ****************************************************************************
 
-PP_ZFileReader::PP_ZFileReader(PDBfile *pdb, avtVariableCache *c) :
-    PDBReader(pdb, c), rtVar("rt"), ztVar("zt"), materialNames(), varStorage(),
+PP_ZFileReader::PP_ZFileReader(const char *filename) :
+    PDBReader(filename), rtVar("rt"), ztVar("zt"), materialNames(), varStorage(),
     nodalVars()
 {
     kmax = lmax = 0;
@@ -57,7 +57,28 @@ PP_ZFileReader::PP_ZFileReader(PDBfile *pdb, avtVariableCache *c) :
     nTimes = 0;
     assumeMixedMaterialsPresent = false;
 
+    formatIdentified = false;
     initialized = false;
+    varStorageInitialized = false;
+}
+
+PP_ZFileReader::PP_ZFileReader(PDBFileObject *pdb) :
+    PDBReader(pdb), rtVar("rt"), ztVar("zt"), materialNames(), varStorage(),
+    nodalVars()
+{
+    kmax = lmax = 0;
+    meshDimensionsKnown = false;
+    unstructuredCellCount = -1;
+
+    cycles = 0;
+    nCycles = 0;
+    times = 0;
+    nTimes = 0;
+    assumeMixedMaterialsPresent = false;
+
+    formatIdentified = false;
+    initialized = false;
+    varStorageInitialized = false;
 }
 
 // ****************************************************************************
@@ -87,7 +108,7 @@ PP_ZFileReader::~PP_ZFileReader()
 }
 
 // ****************************************************************************
-// Method: PP_ZFileReader::Identify
+// Method: PP_ZFileReader::IdentifyFormat
 //
 // Purpose: 
 //   Identifies the file as a PP Z file.
@@ -106,20 +127,20 @@ PP_ZFileReader::~PP_ZFileReader()
 // ****************************************************************************
 
 bool
-PP_ZFileReader::Identify()
+PP_ZFileReader::IdentifyFormat()
 {
     bool have_kmax, have_lmax, validFile;
 
     // Make sure the file has kmax,
-    if((have_kmax = GetInteger("kmax@value", &kmax)) == false)
+    if((have_kmax = pdb->GetInteger("kmax@value", &kmax)) == false)
     {
-        have_kmax = GetInteger("kmax@las", &kmax);
+        have_kmax = pdb->GetInteger("kmax@las", &kmax);
     }
 
     // Make sure the file has lmax,
-    if((have_lmax = GetInteger("lmax@value", &lmax)) == false)
+    if((have_lmax = pdb->GetInteger("lmax@value", &lmax)) == false)
     {
-        have_lmax = GetInteger("lmax@las", &lmax);
+        have_lmax = pdb->GetInteger("lmax@las", &lmax);
     }
 
     debug4 << "PP_ZFileReader::Identify()" << endl;
@@ -132,8 +153,8 @@ PP_ZFileReader::Identify()
     }
     else
     {
-        bool haveCycleVariable = SymbolExists("cycle_variable@value");
-        bool haveTimeVariable = SymbolExists("time_variable@value");
+        bool haveCycleVariable = pdb->SymbolExists("cycle_variable@value");
+        bool haveTimeVariable = pdb->SymbolExists("time_variable@value");
         validFile = haveCycleVariable && haveTimeVariable;
         meshDimensionsKnown = false;
     }
@@ -141,7 +162,71 @@ PP_ZFileReader::Identify()
            << (meshDimensionsKnown?"true":"false") << endl;
     debug4 << "\t validFile=" << (validFile?"true":"false") << endl;
 
+    formatIdentified = true;
+
     return validFile;
+}
+
+// ****************************************************************************
+// Method: PP_ZFileReader::GetNumTimeSteps
+//
+// Purpose: 
+//   Returns the number of time steps that are available in the file.
+//
+// Returns:    The number of time steps that are available in the file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep 16 15:34:43 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+PP_ZFileReader::GetNumTimeSteps()
+{
+    Initialize();
+    return nTimes;
+}
+
+// ****************************************************************************
+// Method: PP_ZFileReader::GetCycle
+//
+// Purpose: 
+//   Returns a pointer to the Cycle array.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep 16 15:39:06 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const int *
+PP_ZFileReader::GetCycles()
+{
+    Initialize();
+    return cycles;
+}
+
+// ****************************************************************************
+// Method: PP_ZFileReader::GetTime
+//
+// Purpose: 
+//   Returns a pointer to the time array.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep 16 15:41:00 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const double *
+PP_ZFileReader::GetTimes()
+{
+    Initialize();
+    return times;
 }
 
 // ****************************************************************************
@@ -159,6 +244,9 @@ PP_ZFileReader::Identify()
 //   considered to be nodal. Added code to figure out the mesh dimensions
 //   if they were never given.
 //
+//   Brad Whitlock, Wed Sep 17 09:48:21 PDT 2003
+//   I made it able to get the cycle and time from another variable.
+//
 // ****************************************************************************
 
 void
@@ -166,15 +254,19 @@ PP_ZFileReader::Initialize()
 {
     if(!initialized)
     {
+        if(!formatIdentified)
+            IdentifyFormat();
+
         //
         // Read the cycles
         //
+        int tempCycle;
         char *realName = 0;
-        if(GetString("cycle_variable@value", &realName))
+        if(pdb->GetString("cycle_variable@value", &realName))
         {
             debug4 << "Cycle array name: " << realName << endl;
 
-            if(GetIntegerArray(realName, &cycles, &nCycles))
+            if(pdb->GetIntegerArray(realName, &cycles, &nCycles))
             {
                 debug4 << "Cycles = (";
                 for(int i = 0; i < nCycles; ++i)
@@ -188,6 +280,13 @@ PP_ZFileReader::Initialize()
 
             delete [] realName;
         }
+        else if(pdb->GetInteger("ncyc@las", &tempCycle))
+        {
+            debug4 << "Read a single cycle from ncyc@las." << endl;
+            cycles = new int[1];
+            cycles[0] = tempCycle;
+            nCycles = 1;
+        }
         else
         {
             debug4 << "Could not read the cycle array!" << endl;
@@ -199,11 +298,12 @@ PP_ZFileReader::Initialize()
         //
         // Read the time array.
         //
-        if(GetString("time_variable@value", &realName))
+        double tempTime;
+        if(pdb->GetString("time_variable@value", &realName))
         {
             debug4 << "Time array name: " << realName << endl;
 
-            if(GetDoubleArray(realName, &times, &nTimes))
+            if(pdb->GetDoubleArray(realName, &times, &nTimes))
             {
                 debug4 << "Times = (";
                 for(int i = 0; i < nTimes; ++i)
@@ -216,6 +316,13 @@ PP_ZFileReader::Initialize()
             }
 
             delete [] realName;
+        }
+        else if(pdb->GetDouble("time@las", &tempTime))
+        {
+            debug4 << "Read in a single time from time@las." << endl;
+            times = new double[1];
+            times[0] = tempTime;
+            nTimes = 1;
         }
         else
         {
@@ -230,7 +337,7 @@ PP_ZFileReader::Initialize()
         //
         char *pc_list = 0;
         int   pc_list_len = 0;
-        if(GetString("pc_list@global", &pc_list, &pc_list_len))
+        if(pdb->GetString("pc_list@global", &pc_list, &pc_list_len))
         {
             for(int i = 0; i < pc_list_len; i += 2)
             {
@@ -258,8 +365,8 @@ PP_ZFileReader::Initialize()
             TypeEnum t = NO_TYPE;
             int nTotalElements = 0;
 
-            if(SymbolExists("ireg@history", &t, &nTotalElements, &dimensions,
-                            &nDims))
+            if(pdb->SymbolExists("ireg@history", &t, &nTotalElements, &dimensions,
+                                 &nDims))
             {
                 if(nDims >= 2)
                 {
@@ -390,7 +497,7 @@ PP_ZFileReader::PopulateMaterialNames()
     // Look for evidence of materials in the file.
     //
     int nMaterials = 0;
-    if(GetInteger("nreg@las", &nMaterials))
+    if(pdb->GetInteger("nreg@las", &nMaterials))
     {
         debug4 << "We found evidence of " << nMaterials 
                << " materials in the file." << endl;
@@ -476,6 +583,30 @@ PP_ZFileReader::PopulateMaterialNames()
 }
 
 // ****************************************************************************
+// Method: PP_ZFileReader::InitializeVarStorage
+//
+// Purpose: 
+//   Performs comprehensive initialization and makes sure that the varStorage
+//   map contains the right list of variables.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 17 12:02:38 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PP_ZFileReader::InitializeVarStorage()
+{
+    if(!varStorageInitialized)
+    {
+        avtDatabaseMetaData md;
+        PopulateDatabaseMetaData(&md);
+    }
+}
+
+// ****************************************************************************
 // Method: PP_ZFileReader::PopulateDatabaseMetaData
 //
 // Purpose: 
@@ -536,8 +667,9 @@ PP_ZFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     // Read all variables of the specified type.
     //
+    PDBfile *pdbPtr = pdb->filePointer();
     int numVars = 0;
-    char **varList = PD_ls(pdb, NULL /*path*/, NULL /*pattern*/, &numVars);
+    char **varList = PD_ls(pdbPtr, NULL /*path*/, NULL /*pattern*/, &numVars);
 
     //
     // If we got any variable names, see if any are the size that we think
@@ -552,7 +684,7 @@ PP_ZFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             syment *ep = 0;
 
             // Check to see if the  variable is problem sized.
-            if((ep = PD_inquire_entry(pdb, varList[j], 0, NULL)) != NULL)
+            if((ep = PD_inquire_entry(pdbPtr, varList[j], 0, NULL)) != NULL)
             {
                 // Figure out the number of dimensions and the number of
                 // elements that are in the entire array.
@@ -647,7 +779,7 @@ PP_ZFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         // Look for evidence of mixed materials.
         //
         int nszmmt = 0;
-        GetInteger("nszmmt@las", &nszmmt);
+        pdb->GetInteger("nszmmt@las", &nszmmt);
         if(nszmmt > 0)
         {
             //
@@ -702,60 +834,10 @@ PP_ZFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                << endl;
     }
 
+    // Set a flag indicating that the varStorage map has been initialized.
+    varStorageInitialized = false;
+
     debug4 << "PP_ZFileReader::PopulateDatabaseMetaData: end" << endl;
-}
-
-// ****************************************************************************
-// Method: PP_ZFileReader::GetCycles
-//
-// Purpose: 
-//   Adds the cycle numbers to the specified vector of ints.
-//
-// Arguments:
-//   c : The int vector to which the cycles are added.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Jun 26 15:51:53 PST 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-PP_ZFileReader::GetCycles(std::vector<int> &c)
-{
-    Initialize();
-    c.clear();
-
-    debug4 << "PP_ZFileReader::GetCycles: cycles=(";
-    for(int i = 0; i < nCycles; ++i)
-    {
-        c.push_back(cycles[i]);
-        debug4 << ", " << cycles[i];
-    }
-    debug4 << ")" << endl;
-}
-
-// ****************************************************************************
-// Method: PP_ZFileReader::GetNTimesteps
-//
-// Purpose: 
-//   Returns the number of timesteps in the database.
-//
-// Returns:    The number of timesteps.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Jun 26 15:52:38 PST 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-int
-PP_ZFileReader::GetNTimesteps()
-{
-    Initialize();
-    return nTimes;
 }
 
 // ****************************************************************************
@@ -897,6 +979,9 @@ PP_ZFileReader::GetIreg(int state)
 //   Brad Whitlock, Wed Aug 6 11:50:54 PDT 2003
 //   I added a revolved (unstructured) version of their curvilinear mesh.
 //
+//   Brad Whitlock, Wed Sep 17 12:03:32 PDT 2003
+//   I made it call InitializeVarStorage.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -908,7 +993,7 @@ PP_ZFileReader::GetMesh(int state, const char *var)
     //
     // Make sure that everything is initialized.
     //
-    Initialize();
+    InitializeVarStorage();
 
     //
     // Read the ireg variable, which tells us which are ghost zones.
@@ -1128,7 +1213,7 @@ PP_ZFileReader::ReadVariable(const std::string &varStr)
 
     if((pos = varStorage.find(varStr)) != varStorage.end())
     {
-        if(!pos->second->ReadValues(this))
+        if(!pos->second->ReadValues(pdb))
         {
             delete pos->second;
             varStorage.erase(pos);
@@ -1412,6 +1497,9 @@ PP_ZFileReader::GetUnstructuredCellCount()
 //   Added support for zonal variables and variables defined on the new
 //   revolved mesh.
 //
+//   Brad Whitlock, Wed Sep 17 12:03:50 PDT 2003
+//   I made it call InitializeVarStorage.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1423,7 +1511,7 @@ PP_ZFileReader::GetVar(int state, const char *var)
     //
     // Make sure that everything is initialized.
     //
-    Initialize();
+    InitializeVarStorage();
 
     //
     // If we're asking for the variable over the logical mesh, it's really
@@ -1540,34 +1628,6 @@ PP_ZFileReader::GetVar(int state, const char *var)
     }
 
     return scalars;
-}
-
-// ****************************************************************************
-// Method: PP_ZFileReader::GetVectorVar
-//
-// Purpose: 
-//   Returns data for vector variables.
-//
-// Arguments:
-//   state : The time state.
-//   var   : The name of the variable.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Jun 26 16:17:46 PST 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-vtkDataArray *
-PP_ZFileReader::GetVectorVar(int state, const char *var)
-{
-    debug4 << "PP_ZFileReader::GetVectorVar: state=" << state
-           << ", var=" << var << endl;
-
-    Initialize();
-
-    return NULL;
 }
 
 // ****************************************************************************
@@ -1707,8 +1767,8 @@ AddMixedMaterials(MaterialEncoder &mats, const int *ireg, const int *iregmm,
 //   Returns auxiliary data such as materials.
 //
 // Arguments:
-//   var   : The name of the variable for which to return auxiliary data.
 //   state : The time state that we're interested in.
+//   var   : The name of the variable for which to return auxiliary data.
 //   type  : The type of aux data that we want.
 //   args  : ?
 //   df    : The function to use when destroying the returned data.
@@ -1725,7 +1785,7 @@ AddMixedMaterials(MaterialEncoder &mats, const int *ireg, const int *iregmm,
 // ****************************************************************************
 
 void  *
-PP_ZFileReader::GetAuxiliaryData(const char *var, int state, const char *type,
+PP_ZFileReader::GetAuxiliaryData(int state, const char *var, const char *type,
     void *args, DestructorFunction &df)
 {
     avtMaterial *retval = 0;
