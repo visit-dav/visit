@@ -329,6 +329,9 @@ avtResampleFilter::BypassResample(void)
 //    Hank Childs, Wed Jul 23 15:33:14 PDT 2003
 //    Make accomodations for not sampling avt and vtk variables.
 //
+//    Hank Childs, Fri Aug  8 15:34:27 PDT 2003
+//    Make sure that we can get good variable names on the root processor.
+//
 // ****************************************************************************
 
 void
@@ -468,19 +471,25 @@ avtResampleFilter::ResampleInput(void)
         iHaveData = Collect(ptr, width*height*depth);
     }
 
+    std::vector<std::string> varnames;
+    for (i = 0 ; i < vl.nvars ; i++)
+    {
+        const char *varname = vl.varnames[i].c_str();
+        if ((strstr(varname, "vtk") == NULL) &&
+            (strstr(varname, "avt") == NULL))
+           varnames.push_back(varname);
+    }
+    GetListToRootProc(varnames, effectiveVars);
+
     if (iHaveData)
     {
         //
         // Attach this variable to our rectilinear grid.
         //
         int varsSeen = 0;
-        for (i = 0 ; i < vl.nvars ; i++)
+        for (i = 0 ; i < effectiveVars ; i++)
         {
-            const char *varname = vl.varnames[i].c_str();
-            if ((strstr(varname, "vtk") != NULL) ||
-                (strstr(varname, "avt") != NULL))
-                continue;
-
+            const char *varname = varnames[i].c_str();
             vars[varsSeen]->SetName(varname);
             if (strcmp(varname, primaryVariable) == 0)
                 rg->GetPointData()->SetScalars(vars[varsSeen]);

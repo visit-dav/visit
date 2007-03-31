@@ -17,6 +17,7 @@
 #include <VolumeAttributes.h>
 
 #include <DebugStream.h>
+#include <LostConnectionException.h>
 
 
 static void OverrideWithSoftwareImageCallback(void *, avtDataObject_p &);
@@ -472,6 +473,12 @@ avtVolumePlot::EnhanceSpecification(avtPipelineSpecification_p spec)
 //  Programmer: Hank Childs
 //  Creation:   November 20, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Aug 10 19:39:52 PDT 2003
+//    Add support for software volume rendering crashing the engine (meaning
+//    make sure the engine doesn't crash as well.)
+//
 // ****************************************************************************
 
 void
@@ -490,12 +497,19 @@ avtVolumePlot::OverrideWithSoftwareImage(avtDataObject_p &dob)
 
     if (atts.GetDoSoftware())
     {
-        avtCallback::UpdatePlotAttributes(id, index, &atts);
-        avtCallback::GetImage(index, dob);
+        TRY
+        {
+            avtCallback::UpdatePlotAttributes(id, index, &atts);
+            avtCallback::GetImage(index, dob);
 
-        lastWindowAtts = curWin;
-        lastAtts = atts;
-        lastImage = dob;
+            lastWindowAtts = curWin;
+            lastAtts = atts;
+            lastImage = dob;
+        }
+        CATCH(LostConnectionException)
+        {
+            lastImage = NULL;
+        }
     }
 
     atts.SetDoSoftware(false);

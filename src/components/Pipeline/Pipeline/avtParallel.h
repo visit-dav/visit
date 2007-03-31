@@ -32,6 +32,7 @@ PIPELINE_API void    BroadcastStringVector(std::vector<std::string>&,
                                            int myrank);
 PIPELINE_API void    BroadcastStringVectorVector(std::vector<std::vector<std::string> >&,
                                                  int myrank);
+PIPELINE_API bool    GetListToRootProc(std::vector<std::string> &, int);
 
 #endif
 
