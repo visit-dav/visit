@@ -496,7 +496,7 @@ ViewerActionManager::RealizeActionGroups()
             }
             else if(actionInNGroups[i] == 0 && action->AllowInToolbar())
             {
-                debug1 << "Adding " << ViewerRPC::ViewerRPCType_ToString(ActionIndex(i)) << " to the general toolbar" << endl;
+                debug1 << "Adding " << ViewerRPC::ViewerRPCType_ToString(ActionIndex(i)).c_str() << " to the general toolbar" << endl;
                 win->GetToolbar()->AddAction("general", action);
             }
         }

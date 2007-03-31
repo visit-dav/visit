@@ -1,5 +1,8 @@
-#include <math.h>
 #include <VisitPointTool.h>
+
+#include <math.h>
+
+#include <vector>
 
 #include <vtkActor.h>
 #include <vtkCamera.h>
@@ -827,7 +830,7 @@ VisitPointTool::ComputeTranslationDistance(int direction)
     double dy = bounds[3] - bounds[2];
     double dz = bounds[5] - bounds[4];
     
-    vector<avtVector> axes;
+    std::vector<avtVector> axes;
     axes.push_back(avtVector(1., 0., 0.) * (dx / double(size[1])));
     axes.push_back(avtVector(-1., 0., 0.) * (dx / double(size[1])));
     axes.push_back(avtVector(0., 1., 0.) * (dy / double(size[1])));

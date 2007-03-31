@@ -262,6 +262,9 @@ class MaterialAttributes;
 //    Brad Whitlock, Mon Jun 30 12:20:37 PDT 2003
 //    I added methods that allow more information to be saved to a config file.
 //
+//    Brad Whitlock, Tue Jul 1 16:59:00 PST 2003
+//    Added ExportColorTable.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -336,6 +339,7 @@ private:
     void PrintWindow();
     void SaveWindow();
     void UpdateColorTable();
+    void ExportColorTable();
     void WriteConfigFile();
     void SetAnnotationAttributes();
     void SetDefaultAnnotationAttributes();

@@ -2264,10 +2264,16 @@ vtkVisItCellLocator::PolyLineIntersectWithLine(vtkPolyLine *cell, float p1[3], f
 
 #define SUB(dest,v1,v2){dest[0]=v1[0]-v2[0]; dest[1]=v1[1]-v2[1]; dest[2]=v1[2]-v2[2];}
 
-
+// ****************************************************************************
+//
+// Modifications:
+//   Kathleen Bonnell, Mon Jul  7 15:57:37 PDT 2003 
+//   Use smaller eps for testing when DotProduct close to zero.
+//
+// ****************************************************************************
 int
-vtkVisItCellLocator::TriangleIntersectWithLine(vtkTriangle *cell, float p1[3], float p2[3], 
-    float& t, float x[3], float pcoords[3], int& subId)
+vtkVisItCellLocator::TriangleIntersectWithLine(vtkTriangle *cell, float p1[3], 
+    float p2[3], float& t, float x[3], float pcoords[3], int& subId)
 {
   float *fp1 = cell->GetPoints()->GetPoint(0);
   float *fp2 = cell->GetPoints()->GetPoint(1);
@@ -2282,7 +2288,7 @@ vtkVisItCellLocator::TriangleIntersectWithLine(vtkTriangle *cell, float p1[3], f
   double e1[3], e2[3], p[3], s[3], q[3];
   double rayDir[3];
   double u, v, tmp, dt;
-  double eps = 1e-6;
+  double eps = 1e-15;
 
   int i;
   SUB(rayDir, dp2, dp1);

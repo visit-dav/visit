@@ -8,8 +8,8 @@
 # Date:   October 26, 2000
 #
 # Usage:
-#    visit-bin-dist [-c] [-g] [-nct] [-nd] [-nqt] [-nstrip] [-nvtk] [-npython]
-#                    -md <visit_dir> -v <version>
+#    visit-bin-dist [-c] [-g] [-h] [-md <visit_dir>] [-nd] [-nmesa] [-npython]
+#                   [-nqt] [-nstrip] [-nvtk] [-os <operating_system>]
 #
 # Modifications:
 #    Jeremy Meredith, Fri May 11 14:15:01 PDT 2001
@@ -108,9 +108,12 @@
 #    Eric Brugger, Wed May 14 08:59:59 PDT 2003
 #    Added vcl to the distribution.
 #
+#    Eric Brugger, Thu Jul  3 08:15:29 PDT 2003
+#    Remove the version number option and make it determine the version
+#    number from the version file. Add a help option.
+#
 #-----------------------------------------------------------------------
 
-set Version = NONE
 set DataFiles = "TRUE"
 set QtLibs = "TRUE"
 set MesaLibs = "TRUE"
@@ -120,6 +123,7 @@ set Compress = GZIP
 set VisItDir = .
 set OSGiven = "FALSE"
 set Strip = "TRUE"
+set Help = "FALSE"
 
 #
 # Parse the argument list.
@@ -129,25 +133,23 @@ while ($#argv >= 1)
       case -c:
                set Compress = COMPRESS
                breaksw
+
       case -g:
                set Compress = GZIP
                breaksw
-      case -os:
-               shift
-               set os = $1
-               set OSGiven = TRUE
+
+      case -h:
+      case -help:
+               set Help = TRUE
                breaksw
+
       case -md:
                shift
                set VisItDir = $1
                breaksw
+
       case -nd:
                set DataFiles = FALSE
-               breaksw
-
-      case -nqt:
-      case -noqt:
-               set QtLibs = FALSE
                breaksw
 
       case -nmesa:
@@ -155,14 +157,14 @@ while ($#argv >= 1)
                set MesaLibs = FALSE
                breaksw
 
-      case -nvtk:
-      case -novtk:
-               set VTKLibs = FALSE
-               breaksw
-
       case -npython:
       case -nopython:
                set PythonExe = FALSE
+               breaksw
+
+      case -nqt:
+      case -noqt:
+               set QtLibs = FALSE
                breaksw
 
       case -nstrip:
@@ -170,10 +172,17 @@ while ($#argv >= 1)
                set Strip = FALSE
                breaksw
 
-      case -v:
-               shift
-               set Version = $1
+      case -nvtk:
+      case -novtk:
+               set VTKLibs = FALSE
                breaksw
+
+      case -os:
+               shift
+               set os = $1
+               set OSGiven = TRUE
+               breaksw
+
       default:
                echo " "
                echo ">>>>>>>>>>  Illegal option $1  <<<<<<<<<<"
@@ -183,29 +192,30 @@ while ($#argv >= 1)
    shift
 end
 
+if ($Help == TRUE) then
+   echo "Usage: visit-bin-dist [-c] [-g] [-h] [-md <visit_dir>] [-nd] [-nmesa]"
+   echo "                      [-npython] [-nqt] [-nstrip] [-nvtk]"
+   echo "                      [-os <operating_system>]"
+   echo ""
+   echo "       -c             Compress the resultant package."
+   echo "       -g             Gzip the resultant package.  (default)"
+   echo "       -h             Print this message."
+   echo "       -md dir        Set where to find the distribution."
+   echo "       -nd            No data files."
+   echo "       -nmesa         No Mesa libraries."
+   echo "       -npython       No Python executable."
+   echo "       -nqt           No Qt libraries."
+   echo "       -nstrip        Do not strip the execubles and libraries."
+   echo "       -nvtk          No VTK libraries."
+   echo "       -os os         Operating system."
+   exit (1)
+endif
+
 #
 # Determine the operating system.
 #
 if("$OSGiven" == "FALSE") then
     set os = `/bin/uname -s | tr "[A-Z]" "[a-z]" | tr -d "[0-9]"`
-endif
-
-if ($Version == NONE) then
-   echo "Usage: visit-bin-dist [-c] [-g] [-nct] [-nd] [-nqt] [-nvtk]"
-   echo "                      [-md <visit_dir>] -v <version>"
-   echo ""
-   echo "       -c             Compress the resultant package."
-   echo "       -g             Gzip the resultant package.  (default)"
-   echo "       -os            Operating system."
-   echo "       -nd            No data files."
-   echo "       -nqt           No Qt libraries."
-   echo "       -nmesa         No Mesa libraries."
-   echo "       -nvtk          No VTK libraries."
-   echo "       -npython       No Python executable."
-   echo "       -nstrip        Do not strip the execubles and libraries."
-   echo "       -md dir        Set where to find the distribution."
-   echo "       -v version     Set the version number to use."
-   exit (1)
 endif
 
 #
@@ -215,35 +225,18 @@ rm -rf distribution
 mkdir distribution
 
 #
-# Check that the copyright exists.
+# Check that the version exists.
 #
-#if (! -e $VisItDir/COPYRIGHT) then
-#   echo " "
-#   echo "Error: The file $VisItDir/COPYRIGHT does not exist. aborting ..."
-#   echo " "
-#   exit (1)
-#endif
+if (! -e $VisItDir/VERSION) then
+   echo " "
+   echo "Error: The file $VisItDir/VERSION does not exist. aborting ..."
+   echo " "
+   exit (1)
+endif
 
 #
-# Check that the installation instructions exist.
+# Check that the launch script exists.
 #
-#if (! -e $VisItDir/INSTALL_NOTES) then
-#   echo " "
-#   echo "Error: The file $VisItDir/INSTALL_NOTES does not exist. aborting ..."
-#   echo " "
-#   exit (1)
-#endif
-
-#
-# Check that the release notes exist.
-#
-#if (! -e $VisItDir/REL_NOTES) then
-#   echo " "
-#   echo "Error: The file $VisItDir/REL_NOTES does not exist. aborting ..."
-#   echo " "
-#   exit (1)
-#endif
-
 if (! -e $VisItDir/bin/visit) then
    echo " "
    echo "Error: The file $VisItDir/bin/visit does not exist. aborting ..."
@@ -259,6 +252,11 @@ if (("$DataFiles" == "TRUE") && (! -e $VisItDir/data)) then
    echo "Distribution will not contain sample data files."
    set DataFiles = "FALSE"
 endif
+
+#
+# Deterime the version number.
+#
+set Version = `cat $VisItDir/VERSION`
 
 #
 # Determine the name of the Qt shared library.
@@ -359,20 +357,6 @@ foreach platform ($platforms)
    mkdir distribution/visit/$Version/$platform/plugins/databases
    mkdir distribution/visit/$Version/$platform/java
 end
-
-#
-# Copy all the files in the top level directory.
-#
-#cp $VisItDir/COPYRIGHT      distribution/visit/$Version/COPYRIGHT
-#cp $VisItDir/INSTALL_NOTES  distribution/visit/$Version/INSTALL_NOTES
-#cp $VisItDir/REL_NOTES      distribution/visit/$Version/REL_NOTES
-
-#
-# Change the permissions on all the files so that they are correct.
-#
-#chmod 644 distribution/visit/$Version/COPYRIGHT
-#chmod 644 distribution/visit/$Version/INSTALL_NOTES
-#chmod 644 distribution/visit/$Version/REL_NOTES
 
 #
 # Create and copy in the sample data files.

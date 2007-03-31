@@ -5607,7 +5607,6 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode)
     // Load window-specific information.
     //
     DataNode **wNodes = windowsNode->GetChildren();
-cerr << "ViewerWindowManager::SetFromNode: nWindows in file = " << windowsNode->GetNumChildren() << endl;
     int childCount = 0;
     for(int i = 0; i < maxWindows; ++i)
     {

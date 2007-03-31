@@ -1,5 +1,5 @@
 #
-#                            Copyright 2000 - 2002
+#                            Copyright 2000 - 2003
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -201,6 +201,9 @@
 #    Hank Childs, Tue Jul  1 09:17:55 PDT 2003
 #    Added SimilarityTransformAttributes.
 #
+#    Brad Whitlock, Thu Jul 3 17:51:55 PST 2003
+#    Added ColorTableManager.
+#
 ##############################################################################
 
 ##
@@ -209,7 +212,7 @@
 @SET_MAKE@
 @VARIABLES@
 
-CXXFLAGS=-I../../include/visit @CXXFLAGS@
+CXXFLAGS=-I../../include -I../../include/visit @CXXFLAGS@
 CPPFLAGS=-I. @CPPFLAGS@ 
 
 ##
@@ -227,6 +230,7 @@ SRC=    AnimationAttributes.C \
         ColorControlPoint.C \
         ColorControlPointList.C \
         ColorTableAttributes.C \
+        ColorTableManager.C \
         CompactSILRestrictionAttributes.C \
         ConfigManager.C \
         ContourOpAttributes.C \

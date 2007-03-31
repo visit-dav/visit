@@ -308,6 +308,9 @@ VisWinQuery::QueryIsValid(const PickAttributes *pa, const Line *lineAtts)
 //    Set pickActor's attachment point directly, rather than through 
 //    (now defunct) member attachmentPoint. Turn on glyph if NodePick.
 //    
+//    Kathleen Bonnell, Mon Jul  7 16:46:12 PDT 2003  
+//    Un-scale the projection if in FullFrame mode. 
+//    
 // ****************************************************************************
 
 void 
@@ -361,14 +364,19 @@ VisWinQuery::Pick(const PickAttributes *pa)
         pp->SetAttachmentPoint(pt[0], pt[1], pt[2]);
     }
 
-    pp->Shift(projection);
-
     if (mediator.GetFullFrameMode())
     {
         double scale;
         int type;
 
         mediator.GetScaleFactorAndType(scale, type);
+        // Un-scale the projection so that pick letters don't go off the
+        // screen.  
+        projection[0] /= scale;
+        projection[1] /= scale;
+        projection[2] /= scale;
+        pp->Shift(projection);
+
         float vec[3] = { 1., 1., 1.};
         if (type == 0) // x_axis
         {
@@ -380,6 +388,11 @@ VisWinQuery::Pick(const PickAttributes *pa)
         }
         pp->Translate(vec);
     }
+    else
+    {
+        pp->Shift(projection);
+    }
+
 
     //
     //  Add the pickpoint to the renderer. 

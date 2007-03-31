@@ -9,6 +9,7 @@
 #include <vtkFloatArray.h>
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
+#include <vtkUnsignedCharArray.h>
 
 #include <avtImagePartition.h>
 #include <avtParallel.h>
@@ -42,6 +43,12 @@ avtSamplePointToSurfaceFilter::avtSamplePointToSurfaceFilter()
 //  Programmer: Hank Childs
 //  Creation:   June 30, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Jul  2 13:18:25 PDT 2003
+//    Made the surface be output in a form that will be more conducive to
+//    comparisons.
+//
 // ****************************************************************************
 
 void
@@ -74,9 +81,9 @@ avtSamplePointToSurfaceFilter::Execute(void)
 
     avtVolume *volume = GetTypedInput()->GetVolume();
     float samples[AVT_VARIABLE_LIMIT];
-    for (i = minX ; i < maxX ; i++)
+    for (i = minX ; i <= maxX ; i++)
     {
-        for (j = minY ; j < maxY ; j++)
+        for (j = minY ; j <= maxY ; j++)
         {
             const avtRay *ray = volume->QueryGetRay(i, j);
             if (ray == NULL)
@@ -111,8 +118,10 @@ avtSamplePointToSurfaceFilter::Execute(void)
     if (Collect(vals, buff_size))
     {
         vtkPoints *pts = vtkPoints::New();
-        int npts = height*width;
-        pts->SetNumberOfPoints(npts);
+        int norigpts = height*width;
+        int ndummypts = (height-1)*(width-1);
+        int ntotalpts = norigpts + ndummypts;
+        pts->SetNumberOfPoints(ntotalpts);
         for (i = 0 ; i < width ; i++)
         {
             for (j = 0 ; j < height ; j++)
@@ -128,12 +137,90 @@ avtSamplePointToSurfaceFilter::Execute(void)
                 pts->SetPoint(index, x, y, z);
             }
         }
+        for (i = 0 ; i < width-1 ; i++)
+        {
+            for (j = 0 ; j < height-1 ; j++)
+            {
+                int index = i*(height-1) + j + norigpts;
+                float x = ((i+0.5) / (width-1.)) * 2. - 1.;
+                float y = ((j+0.5) /(height-1.)) * 2. - 1.;
+                float z = 0.;
+                int numvalid = 0;
+                int i0 = i*height + j;
+                int i1 = (i+1)*height + j;
+                int i2 = (i+1)*height + j+1;
+                int i3 = i*height + j+1;
+                if (depths[i0] >= 0)
+                {
+                    z += ((float)depths[i0]) / (num_samples-1.);
+                    numvalid++;
+                }
+                if (depths[i1] >= 0)
+                {
+                    z += ((float)depths[i1]) / (num_samples-1.);
+                    numvalid++;
+                }
+                if (depths[i2] >= 0)
+                {
+                    z += ((float)depths[i2]) / (num_samples-1.);
+                    numvalid++;
+                }
+                if (depths[i3] >= 0)
+                {
+                    z += ((float)depths[i3]) / (num_samples-1.);
+                    numvalid++;
+                }
+                if (numvalid > 0)
+                    z /= numvalid;
+                else
+                    z = 0.;
+                pts->SetPoint(index, x, y, z);
+            }
+        }
  
         vtkFloatArray *arr = vtkFloatArray::New();
-        arr->SetNumberOfTuples(npts);
-        for (i = 0 ; i < npts ; i++)
+        arr->SetNumberOfTuples(ntotalpts);
+        for (i = 0 ; i < norigpts ; i++)
         {
             arr->SetTuple1(i, vals[i]);
+        }
+        for (i = 0 ; i < width-1 ; i++)
+        {
+            for (j = 0 ; j < height-1 ; j++)
+            {
+                int index = i*(height-1) + j + norigpts;
+                float val = 0.;
+                int numvalid = 0;
+                int i0 = i*height + j;
+                int i1 = (i+1)*height + j;
+                int i2 = (i+1)*height + j+1;
+                int i3 = i*height + j+1;
+                if (depths[i0] >= 0)
+                {
+                    val += vals[i0];
+                    numvalid++;
+                }
+                if (depths[i1] >= 0)
+                {
+                    val += vals[i1];
+                    numvalid++;
+                }
+                if (depths[i2] >= 0)
+                {
+                    val += vals[i2];
+                    numvalid++;
+                }
+                if (depths[i3] >= 0)
+                {
+                    val += vals[i3];
+                    numvalid++;
+                }
+                if (numvalid > 0)
+                    val /= numvalid;
+                else
+                    val = 0.;
+                arr->SetTuple1(index, val);
+            }
         }
 
         vtkPolyData *pd = vtkPolyData::New();
@@ -144,8 +231,12 @@ avtSamplePointToSurfaceFilter::Execute(void)
         pd->GetPointData()->SetScalars(arr);
         arr->Delete();
 
-        int ncells = (height-1)*(width-1);
+        int ncells = 4*(height-1)*(width-1);
+        vtkUnsignedCharArray *cell_valid = vtkUnsignedCharArray::New();
+        cell_valid->SetName("cell_valid");
+        cell_valid->SetNumberOfTuples(ncells);
         pd->Allocate(ncells*4);
+        int cell_id = 0;
         for (i = 0 ; i < width-1 ; i++)
         {
             for (j = 0 ; j < height-1 ; j++)
@@ -154,59 +245,68 @@ avtSamplePointToSurfaceFilter::Execute(void)
                 int index1 = i*height + j+1;
                 int index2 = (i+1)*height + j+1;
                 int index3 = (i+1)*height + j;
+                int midpt  = i*(height-1) + j + norigpts;
                 bool index0_valid = (depths[index0] >= 0 ? true : false);
                 bool index1_valid = (depths[index1] >= 0 ? true : false);
                 bool index2_valid = (depths[index2] >= 0 ? true : false);
                 bool index3_valid = (depths[index3] >= 0 ? true : false);
+
                 int num_valid = 0;
-                if (index0_valid)
-                    num_valid++;
-                if (index1_valid)
-                    num_valid++;
-                if (index2_valid)
-                    num_valid++;
-                if (index3_valid)
-                    num_valid++;
-                if (num_valid == 3)
-                {
-                    vtkIdType tri[3];
-                    if (!index0_valid)
-                    {
-                        tri[0] = index1;
-                        tri[1] = index2;
-                        tri[2] = index3;
-                    }
-                    if (!index1_valid)
-                    {
-                        tri[0] = index0;
-                        tri[1] = index2;
-                        tri[2] = index3;
-                    }
-                    if (!index2_valid)
-                    {
-                        tri[0] = index0;
-                        tri[1] = index1;
-                        tri[2] = index3;
-                    }
-                    if (!index3_valid)
-                    {
-                        tri[0] = index0;
-                        tri[1] = index1;
-                        tri[2] = index2;
-                    }
-                    pd->InsertNextCell(VTK_TRIANGLE, 3, tri);
-                }
-                else if (num_valid == 4)
-                {
-                    vtkIdType quad[4];
-                    quad[0] = index0;
-                    quad[1] = index1;
-                    quad[2] = index2;
-                    quad[3] = index3;
-                    pd->InsertNextCell(VTK_QUAD, 4, quad);
-                }
+                num_valid += (index0_valid ? 1 : 0);
+                num_valid += (index1_valid ? 1 : 0);
+                num_valid += (index2_valid ? 1 : 0);
+                num_valid += (index3_valid ? 1 : 0);
+                bool all_should_be_invalid = (num_valid <= 2 ? true : false);
+                vtkIdType tri[3];
+
+                // 0, 1, midpt
+                tri[0] = index0;
+                tri[1] = midpt;
+                tri[2] = index1;
+                pd->InsertNextCell(VTK_TRIANGLE, 3, tri);
+                if (all_should_be_invalid)
+                    cell_valid->SetValue(cell_id++, 0);
+                else
+                    cell_valid->SetValue(cell_id++, 
+                                     (index0_valid && index1_valid ? 1 : 0));
+             
+                // 1, 2, midpt
+                tri[0] = index1;
+                tri[1] = midpt;
+                tri[2] = index2;
+                pd->InsertNextCell(VTK_TRIANGLE, 3, tri);
+                if (all_should_be_invalid)
+                    cell_valid->SetValue(cell_id++, 0);
+                else
+                    cell_valid->SetValue(cell_id++, 
+                                     (index1_valid && index2_valid ? 1 : 0));
+                
+                // 2, 3, midpt
+                tri[0] = index2;
+                tri[1] = midpt;
+                tri[2] = index3;
+                pd->InsertNextCell(VTK_TRIANGLE, 3, tri);
+                if (all_should_be_invalid)
+                    cell_valid->SetValue(cell_id++, 0);
+                else
+                    cell_valid->SetValue(cell_id++, 
+                                     (index2_valid && index3_valid ? 1 : 0));
+             
+                // 3, 0, midpt
+                tri[0] = index3;
+                tri[1] = midpt;
+                tri[2] = index0;
+                pd->InsertNextCell(VTK_TRIANGLE, 3, tri);
+                if (all_should_be_invalid)
+                    cell_valid->SetValue(cell_id++, 0);
+                else
+                    cell_valid->SetValue(cell_id++, 
+                                     (index3_valid && index0_valid ? 1 : 0));
             }
         }
+        pd->GetCellData()->AddArray(cell_valid);
+        cell_valid->Delete();
+
         SetOutputDataTree(new avtDataTree(pd, -1));
         pd->Delete();
     }

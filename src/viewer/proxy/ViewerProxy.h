@@ -278,6 +278,9 @@ class Xfer;
 //    Kathleen Bonnell, Tue Jul  1 09:34:37 PDT 2003  
 //    Added SetPickAttributes.
 //
+//    Brad Whitlock, Tue Jul 1 16:45:31 PST 2003
+//    I added a method to export color tables.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -368,6 +371,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void SetActiveDiscreteColorTable(const std::string &colorTableName);
     void DeleteColorTable(const std::string &colorTableName);
     void UpdateColorTable(const std::string &colorTableName);
+    void ExportColorTable(const std::string &colorTableName);
     void InvertBackgroundColor();
 
     void SetView2D();

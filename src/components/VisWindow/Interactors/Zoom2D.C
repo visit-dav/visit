@@ -647,6 +647,10 @@ Zoom2D::DrawGuideLine(int x1, int y1, int x2, int y2)
 //    Also clamped zooming to the boundries (necessary since we round
 //    outwards in our zooming, to always be able to reach the boundry).
 //
+//    Kathleen Bonnell, Mon Jul  7 15:59:11 PDT 2003 
+//    Copy newView2D from current View2D to preserve fields which are
+//    not being overwritten here. 
+// 
 // ****************************************************************************
 
 void
@@ -706,14 +710,8 @@ Zoom2D::ZoomCamera(void)
     //
     VisWindow *vw = proxy;
 
-    const avtView2D &oldView2D=vw->GetView2D();
+    avtView2D newView2D = vw->GetView2D();
 
-    avtView2D newView2D;
-
-    newView2D.viewport[0] = oldView2D.viewport[0];
-    newView2D.viewport[1] = oldView2D.viewport[1];
-    newView2D.viewport[2] = oldView2D.viewport[2];
-    newView2D.viewport[3] = oldView2D.viewport[3];
     newView2D.window[0] = leftX;
     newView2D.window[1] = rightX;
     newView2D.window[2] = bottomY;

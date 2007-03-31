@@ -223,9 +223,16 @@ $0 = shift @ARGV;
 #    Akira Haddox, Tue Jul  1 12:56:14 PDT 2003
 #    Added the makemili tool.
 #
+#    Hank Childs, Wed Jul  2 11:40:48 PDT 2003
+#    Added the surfcomp tool.
+#
 #    Jeremy Meredith, Thu Jul  3 15:10:36 PDT 2003
 #    Added doc for "-nopty".  Made it stricter about when it will
 #    allow non-private plugin installs.
+#
+#    Jeremy Meredith, Mon Jul  7 12:46:08 PDT 2003
+#    The changed the path of "bsub" on Q, breaking things for the Q port.
+#    I updated the path for the Q stuff to match it.
 #
 ###############################################################################
 
@@ -263,6 +270,7 @@ USAGE:  visit [arguments]
         -gui                 Run with the Graphical User Interface (default)
         -cli                 Run with the Command Line Interface
         -makemili            Runs the .mili file generator
+        -surfcomp            Runs the surface-compare tool.
         -text2polys          Runs a utility which generators polygons from text
         -time_annotation     Creates graphical annotation for position in time.
         -silex               Run the Silo Explorer
@@ -408,6 +416,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-xmledit")          { $exe_name = "xmledit"; }
     elsif ($arg eq "-makemili" )        { $exe_name = "makemili"; }
     elsif ($arg eq "-silex" )           { $exe_name = "silex"; }
+    elsif ($arg eq "-surfcomp" )        { $exe_name = "surfcomp"; }
     elsif ($arg eq "-text2polys" )      { $exe_name = "text2polys"; }
     elsif ($arg eq "-time_annotation" ) { $exe_name = "time_annotation"; }
     elsif ($arg eq "-publicpluginsonly"){ $publiconly = 1; push @visitargs, $arg; }
@@ -476,7 +485,7 @@ if ($ver_set)
 # ----
 if ($host =~ /^q\d+$/ || $host =~ /^qfe\d$/)
 {
-    $ENV{PATH} = join ':' , ("$ENV{PATH}","/lsfdir/Q/4.2/alpha5-rms/bin");
+    $ENV{PATH} = join ':' , ("$ENV{PATH}","/lsf/bin");
     $ENV{LD_LIBRARY_PATH} = join ':' ,
                          ("$ENV{LD_LIBRARY_PATH}",
                           "/usr/local/gnu/packages/gcc-3.0.4/lib",

@@ -112,6 +112,13 @@ avtSurfCompPrepFilter::Equivalent(const AttributeGroup *a)
 //  Programmer: Hank Childs
 //  Creation:   June 30, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Jul  2 14:22:10 PDT 2003
+//    Since components of coordinates gets swapped around by coord convert
+//    filter, make sure that we are setting the right number of steps for
+//    the right component.
+//
 // ****************************************************************************
 
 void
@@ -260,16 +267,16 @@ avtSurfCompPrepFilter::Execute(void)
       }  
       case SurfCompPrepAttributes::Cylindrical:
       {
-         numX = atts.GetRadiusSteps();
-         numY = atts.GetThetaSteps();
-         numZ = atts.GetZSteps();
+         numX = atts.GetThetaSteps();
+         numY = atts.GetZSteps();
+         numZ = atts.GetRadiusSteps();
          break;
       }
       case SurfCompPrepAttributes::Spherical:
       {
-         numX = atts.GetRadiusSteps();
-         numY = atts.GetThetaSteps();
-         numZ = atts.GetPhiSteps();
+         numX = atts.GetThetaSteps();
+         numY = atts.GetPhiSteps();
+         numZ = atts.GetRadiusSteps();
          break;
       }
     }
@@ -485,6 +492,11 @@ avtSurfCompPrepFilter::AdditionalPipelineFilters(void)
 //  Programmer: Hank Childs
 //  Creation:   July 1, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Jul  3 11:21:58 PDT 2003
+//    Don't take normals because it adds points and re-orders triangles.
+//
 // ****************************************************************************
 
 void
@@ -492,6 +504,7 @@ avtSurfCompPrepFilter::RefashionDataObjectInfo(void)
 {
     avtDataObject_p output = GetOutput();
     output->GetInfo().GetValidity().InvalidateZones();
+    output->GetInfo().GetValidity().SetNormalsAreInappropriate(true);
     output->GetInfo().GetAttributes().SetTopologicalDimension(2);
     output->GetInfo().GetAttributes().SetContainsGhostZones(AVT_NO_GHOSTS);
 }

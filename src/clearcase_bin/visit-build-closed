@@ -8,7 +8,7 @@
 # Date:   February 12, 2001
 #
 # Usage:
-#    visit-build-closed -v <version> -d <distribution>
+#    visit-build-closed -d <distribution>
 #
 #-----------------------------------------------------------------------
 
@@ -25,7 +25,6 @@ tidalwave=true
 white=true
 emperor=true
 
-ver=undefined
 dist=undefined
 
 #
@@ -84,10 +83,6 @@ do
          emperor=true
          shift
          ;;
-      -v)
-         ver=$2
-         shift 2
-         ;;
       -d)
          dist=$2
          shift 2
@@ -96,16 +91,11 @@ do
 done
 
 #
-# Check that both the version and distribution name were provided.
+# Check that the distribution name was provided.
 #
-if [ $ver = undefined ]
-then
-   echo "Usage: [-none] [-<machine name>] -v <version> -d <distribution>"
-   exit
-fi
 if [ $dist = undefined ]
 then
-   echo "Usage: [-none] [-<machine name>] -v <version> -d <distribution>"
+   echo "Usage: [-none] [-<machine name>] -d <distribution>"
    exit
 fi
 
@@ -118,8 +108,6 @@ then
    echo "Distribution file doesn't exist."
    exit
 fi
-
-ver2=`echo $ver | tr "." "_"`
 
 #
 # Build on warp.
@@ -139,13 +127,15 @@ mv warp_$dist.tar.gz /scratch/$user/warp/visitbuild/$dist.tar.gz
 cd /scratch/$user/warp/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 ./configure >> ../buildlog 2>&1
 env PARALLEL=4 make -P >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist -v $ver >> ../buildlog 2>&1
-mv visit$ver2.irix6.tar.gz ..
+clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
+mv visit\$ver2.irix6.tar.gz ..
 cp clearcase_bin/visit-install ..
 cd ..
-./visit-install $ver irix6 visit >> buildlog 2>&1
+./visit-install \$ver irix6 visit >> buildlog 2>&1
 EOF
 
 if [ $warp = true ]
@@ -176,13 +166,15 @@ mv sc_$dist.tar.gz /nfs/tmp2/$user/sc/visitbuild/$dist.tar.gz
 cd /nfs/tmp2/$user/sc/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
 make >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist -v $ver >> ../buildlog 2>&1
-mv visit$ver2.osf1.tar.gz ..
+clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
+mv visit\$ver2.osf1.tar.gz ..
 cp clearcase_bin/visit-install ..
 cd ..
-./visit-install $ver osf1 visit >> buildlog 2>&1
+./visit-install \$ver osf1 visit >> buildlog 2>&1
 EOF
 
 if [ $sc = true ]
@@ -213,13 +205,15 @@ mv tidalwave_$dist.tar.gz /fc/san1/$user/tidalwave/visitbuild/$dist.tar.gz
 cd /fc/san1/$user/tidalwave/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
 env PARALLEL=20 make -P >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist -v $ver >> ../buildlog 2>&1
-mv visit$ver2.irix6.tar.gz ..
+clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
+mv visit\$ver2.irix6.tar.gz ..
 cp clearcase_bin/visit-install ..
 cd ..
-./visit-install $ver irix6 visit >> buildlog 2>&1
+./visit-install \$ver irix6 visit >> buildlog 2>&1
 EOF
 
 if [ $tidalwave = true ]
@@ -251,13 +245,15 @@ mv white_$dist.tar.gz /p/gw1/$user/white/visitbuild/$dist.tar.gz
 cd /p/gw1/$user/white/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
 gmake -j 6 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist -v $ver >> ../buildlog 2>&1
-mv visit$ver2.aix.tar.gz ..
+clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
+mv visit\$ver2.aix.tar.gz ..
 cp clearcase_bin/visit-install ..
 cd ..
-./visit-install $ver aix visit >> buildlog 2>&1
+./visit-install \$ver aix visit >> buildlog 2>&1
 EOF
 
 if [ $white = true ]
@@ -288,13 +284,15 @@ mv emperor_$dist.tar.gz /usr/tmp/$user/emperor/visitbuild/$dist.tar.gz
 cd /usr/tmp/$user/emperor/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
 ./configure --enable-parallel >> ../buildlog 2>&1
 make -j 3 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist -v $ver >> ../buildlog 2>&1
-mv visit$ver2.linux.tar.gz ..
+clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
+mv visit\$ver2.linux.tar.gz ..
 cp clearcase_bin/visit-install ..
 cd ..
-./visit-install $ver linux visit >> buildlog 2>&1
+./visit-install \$ver linux visit >> buildlog 2>&1
 EOF
 
 if [ $emperor = true ]

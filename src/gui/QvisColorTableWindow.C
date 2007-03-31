@@ -110,6 +110,9 @@ QvisColorTableWindow::~QvisColorTableWindow()
 //   I changed the window so that discrete color tables can have an arbitrary
 //   number of colors.
 //
+//   Brad Whitlock, Tue Jul 1 16:38:50 PST 2003
+//   I added an export button.
+//
 // ****************************************************************************
 
 void
@@ -161,9 +164,13 @@ QvisColorTableWindow::CreateWindowContents()
     connect(newButton, SIGNAL(clicked()), this, SLOT(addColorTable()));
     mgLayout->addWidget(newButton, 0, 0);
 
-    deleteButton = new QPushButton("Delete", colorTableWidgetGroup, "deteteButton");
+    deleteButton = new QPushButton("Delete", colorTableWidgetGroup, "deleteButton");
     connect(deleteButton, SIGNAL(clicked()), this, SLOT(deleteColorTable()));
     mgLayout->addWidget(deleteButton, 1, 0);
+
+    exportButton = new QPushButton("Export", colorTableWidgetGroup, "exportButton");
+    connect(exportButton, SIGNAL(clicked()), this, SLOT(exportColorTable()));
+    mgLayout->addWidget(exportButton, 2, 0);
 
     nameListBox = new QListBox(colorTableWidgetGroup, "nameListBox");
     nameListBox->setMinimumHeight(100);
@@ -1800,4 +1807,24 @@ QvisColorTableWindow::resizeColorTable(int size)
             }
         }
     }    
+}
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::exportColorTable
+//
+// Purpose: 
+//   This is a Qt slot function that tells the viewer to export the currently
+//   selected color table.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 1 16:40:39 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisColorTableWindow::exportColorTable()
+{
+    viewer->ExportColorTable(currentColorTable.latin1());
 }

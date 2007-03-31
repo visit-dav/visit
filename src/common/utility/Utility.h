@@ -8,14 +8,25 @@
 #include <string>
 
 //
+// Type definitions
+//
+typedef void (ProcessDirectoryCallback)(void *, const std::string &, bool,
+                                        bool, long);
+
+//
 // Function Prototypes
 //
 char UTILITY_API *CreateMessageStrings(char **, int *, int);
 int  UTILITY_API  LongestCommonPrefixLength(const char * const *, int);
 int  UTILITY_API  LongestCommonSuffixLength(const char * const *, int);
+bool UTILITY_API  ReadAndProcessDirectory(const std::string &,
+                                          ProcessDirectoryCallback,
+                                          void * = 0,
+                                          bool = false);
 void UTILITY_API  WaitUntilFile(const char *);
 bool UTILITY_API  WildcardStringMatch(const char *p, const char *s);
 bool UTILITY_API  WildcardStringMatch(const std::string &p, const std::string &s);
+
 
 inline char *C_strdup(char const * const);
 inline char *CXX_strdup(char const * const);

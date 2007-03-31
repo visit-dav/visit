@@ -415,14 +415,11 @@ dnl
 dnl    Akira Haddox, Thu Jun 12 08:56:16 PDT 2003
 dnl    Added support for HDF4.
 dnl
-dnl    Eric Brugger, Mon Jun 16 13:22:38 PDT 2003
-dnl    Only build the BOV database reader if zlib is present.
-dnl
-dnl    Hank Childs, Tue Jun 17 10:19:25 PDT 2003
-dnl    Remove BOV symbols.  Add ZLIB symbols.
-dnl
 dnl    Akira Haddox, Tue Jul  1 12:36:01 PDT 2003
 dnl    Added tools/makemili.
+dnl
+dnl    Hank Childs, Wed Jul  2 09:50:00 PDT 2003
+dnl    Added tools/surfcomp.
 dnl
 dnl --------------------------------------------------------------------------
 
@@ -1148,7 +1145,6 @@ saved_CFLAGS="$CFLAGS"
 saved_LDFLAGS="$LDFLAGS"
 saved_LIBS="$LIBS"
 
-HAVE_ZLIB="no"
 AC_ARG_WITH(zlib,[  --with-zlib=INC,LIB     Use the GNU zlib compression],
             ,withval=yes)
 case $withval in
@@ -1161,7 +1157,6 @@ case $withval in
         AC_CHECK_LIB(z, compress2,
 				   ZLIB_LIB="-lz $ZLIB_LIB"
 				   AC_DEFINE(HAVE_LIBZ)
-                                   HAVE_ZLIB="yes"
 		    )
         ;;
     no)
@@ -1189,7 +1184,6 @@ case $withval in
 	    AC_CHECK_LIB(z, compress2,
 				       ZLIB_LIB="-L$zlib_lib -lz $ZLIB_LIB"
 				       AC_DEFINE(HAVE_LIBZ)
-                                       HAVE_ZLIB="yes"
 			)
 	    LIBS="$saved_LIBS"
 	    LDFLAGS="$saved_LDFLAGS"
@@ -1199,18 +1193,12 @@ case $withval in
             AC_CHECK_LIB(z, compress2,
 				       ZLIB_LIB="-lz $ZLIB_LIB"
 				       AC_DEFINE(HAVE_LIBZ)
-                                       HAVE_ZLIB="yes"
 		        )
 	    LIBS="$saved_LIBS"
 	    CPPFLAGS="$saved_CPPFLAGS"
         fi
         ;;
 esac
-ZLIB=""
-if test "$HAVE_ZLIB" = "yes"; then
-    ZLIB="$""(ZLIB)"
-fi
-AC_SUBST(ZLIB)
 AC_SUBST(ZLIB_INCLUDE)
 AC_SUBST(ZLIB_LIB)
 
@@ -2390,7 +2378,8 @@ TOOLS_FILES="tools/Makefile
              tools/avtprep/Makefile
              tools/silex/Makefile
              tools/curv3dprep/Makefile
-             tools/makemili/Makefile"
+             tools/makemili/Makefile
+             tools/surfcomp/Makefile"
 VISIT_VTK_FILES="visit_vtk/Makefile"
 COMPONENT_FILES="components/Makefile
                  components/DBAtts/Makefile
