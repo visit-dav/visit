@@ -809,6 +809,44 @@ avtSILRestriction::Union(avtSILRestriction_p silr)
 // ****************************************************************************
 //  Method: avtSILRestriction::RestrictDomains
 //
+//  Purpose: Public interface to restrict domains
+//
+//  Arguments:
+//      domains   A list of domains to use.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   October 15, 2003 
+//
+// ****************************************************************************
+
+void
+avtSILRestriction::RestrictDomains(const vector<int> &domains)
+{
+    RestrictDomains(domains, false);
+}
+
+// ****************************************************************************
+//  Method: avtSILRestriction::RestrictDomainsForLoadBalance
+//
+//  Purpose: Public interface to restrict domains for load balancing 
+//
+//  Arguments:
+//      domains   A list of domains to use.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   October 15, 2003 
+//
+// ****************************************************************************
+
+void
+avtSILRestriction::RestrictDomainsForLoadBalance(const vector<int> &domains)
+{
+    RestrictDomains(domains, true);
+}
+
+// ****************************************************************************
+//  Method: avtSILRestriction::RestrictDomains
+//
 //  Purpose:
 //      A convenience routine for filters that don't want to worry about how
 //      to traverse a SIL.
@@ -830,10 +868,14 @@ avtSILRestriction::Union(avtSILRestriction_p silr)
 //    Hank Childs, Wed Dec  4 16:15:58 PST 2002
 //    Re-wrote for performance.
 //
+//    Mark C. Miller, Wed Oct 15 16:24:13 PDT 2003
+//    Made private, added bool for special behavior if for load balancing
+//
 // ****************************************************************************
 
 void
-avtSILRestriction::RestrictDomains(const vector<int> &domains)
+avtSILRestriction::RestrictDomains(const vector<int> &domains,
+                                   bool forLoadBalance)
 {
     int timingsHandle = visitTimer->StartTimer();
 
@@ -918,7 +960,17 @@ avtSILRestriction::RestrictDomains(const vector<int> &domains)
             setsToTurnOff.push_back(setsToProcess[i]);
             for (int j = 0 ; j < setsToTurnOff.size() ; j++)
             {
-                useSet[setsToTurnOff[j]] = NoneUsed;
+                if (forLoadBalance)
+                {
+                    if (useSet[setsToTurnOff[j]] == AllUsed) 
+                        useSet[setsToTurnOff[j]] = AllUsedOtherProc;
+                    else
+                        useSet[setsToTurnOff[j]] = NoneUsed;
+                }
+                else
+                {
+                    useSet[setsToTurnOff[j]] = NoneUsed;
+                }
                 avtSILSet_p set = GetSILSet(setsToTurnOff[j]);
                 const vector<int> &mapsOut = set->GetMapsOut();
                 for (int k = 0 ; k < mapsOut.size() ; k++)

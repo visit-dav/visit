@@ -73,9 +73,10 @@ enum avtGhostType
 
 enum SetState
 {
-    NoneUsed    = 0,
-    SomeUsed,  /* 1 */
-    AllUsed    /* 2 */
+    NoneUsed          = 0,
+    SomeUsed,        /* 1 */
+    AllUsed,         /* 2 */
+    AllUsedOtherProc /* 3 */
 }; 
 
 
@@ -89,6 +90,7 @@ DBATTS_API extern const char * AUXILIARY_DATA_SPECIES;
 DBATTS_API extern const char * AUXILIARY_DATA_SPATIAL_EXTENTS;
 DBATTS_API extern const char * AUXILIARY_DATA_MIXED_VARIABLE;
 DBATTS_API extern const char * AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION;
+DBATTS_API extern const char * AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION;
 
 DBATTS_API std::string avtExtentType_ToString(avtExtentType);
 DBATTS_API std::string avtExtentType_ToString(int);

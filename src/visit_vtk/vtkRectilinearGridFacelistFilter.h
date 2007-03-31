@@ -22,15 +22,24 @@ public:
   // Create a vtkRectilinearGridFacelistFilter.
   static vtkRectilinearGridFacelistFilter *New();
 
+  // Description:
+  // Set/Get ForceFaceConsolidation
+  vtkSetMacro(ForceFaceConsolidation, int);
+  vtkGetMacro(ForceFaceConsolidation, int);
+
 protected:
-  vtkRectilinearGridFacelistFilter() {};
+  vtkRectilinearGridFacelistFilter();
   ~vtkRectilinearGridFacelistFilter() {};
 
   void Execute();
 
+  int  ForceFaceConsolidation;
+
 private:
   vtkRectilinearGridFacelistFilter(const vtkRectilinearGridFacelistFilter&);
   void operator=(const vtkRectilinearGridFacelistFilter&);
+
+  void ConsolidationExecute(void);
 };
 
 #endif

@@ -170,6 +170,38 @@ avtSILRestrictionTraverser::GetSpecies(vector<bool> &specList)
 // ****************************************************************************
 //  Method: avtSILRestrictionTraverser::GetDomainList
 //
+//  Purpose: Public interface to GetDomainList
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   October 15, 2003
+//
+// ****************************************************************************
+ 
+void
+avtSILRestrictionTraverser::GetDomainList(vector<int> &list)
+{
+   GetDomainList(list, false);
+}
+
+// ****************************************************************************
+//  Method: avtSILRestrictionTraverser::GetDomainListAllProcs
+//
+//  Purpose: Public interface to GetDomainList
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   October 15, 2003
+//
+// ****************************************************************************
+ 
+void
+avtSILRestrictionTraverser::GetDomainListAllProcs(vector<int> &list)
+{
+   GetDomainList(list, true);
+}
+
+// ****************************************************************************
+//  Method: avtSILRestrictionTraverser::GetDomainList
+//
 //  Purpose:
 //      Walks through all of the sets and creates a list of the identifiers
 //      whose sets have been turned on.
@@ -188,10 +220,13 @@ avtSILRestrictionTraverser::GetSpecies(vector<bool> &specList)
 //    Hank Childs, Fri Nov 22 14:06:36 PST 2002
 //    Moved into the SIL restriction traverser class.
 //
+//    Mark C. Miller
+//    Made private, added bool for query on all procs or just owner
+//
 // ****************************************************************************
  
 void
-avtSILRestrictionTraverser::GetDomainList(vector<int> &list)
+avtSILRestrictionTraverser::GetDomainList(vector<int> &list, bool allProcs)
 {
     int timingsHandle = visitTimer->StartTimer();
     list.clear();
@@ -218,9 +253,27 @@ avtSILRestrictionTraverser::GetDomainList(vector<int> &list)
         int id = set->GetIdentifier();
         if (id >= 0)
         {
-            // If a set has an identifier, all subsets must have the same
-            // identifier.
-            list_with_repeats.push_back(id);
+            if (!allProcs)
+            {
+                if ((silr->useSet[setid] == AllUsed) ||
+                    (silr->useSet[setid] == SomeUsed))
+                {
+                    // If a set has an identifier, all subsets must have the same
+                    // identifier.
+                    list_with_repeats.push_back(id);
+                }
+            }
+            else
+            {
+                if ((silr->useSet[setid] == AllUsed) ||
+                    (silr->useSet[setid] == AllUsedOtherProc) ||
+                    (silr->useSet[setid] == SomeUsed))
+                {
+                    // If a set has an identifier, all subsets must have the same
+                    // identifier.
+                    list_with_repeats.push_back(id);
+                }
+            }
         }
         else
         {

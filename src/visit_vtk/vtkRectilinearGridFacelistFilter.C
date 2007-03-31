@@ -21,6 +21,12 @@ vtkRectilinearGridFacelistFilter* vtkRectilinearGridFacelistFilter::New()
   return new vtkRectilinearGridFacelistFilter;
 }
 
+vtkRectilinearGridFacelistFilter::vtkRectilinearGridFacelistFilter()
+{
+    ForceFaceConsolidation = 0;
+}
+
+
 //
 // The rectilinear grid must create a set of points and it does so by walking
 // through the front face, back face, bottom face, top face, left face, right
@@ -104,10 +110,19 @@ SpecializedIndexer::SpecializedIndexer(int x, int y, int z)
 //  Hank Childs, Thu Aug 15 21:13:43 PDT 2002
 //  Fixed bug where cell data was being copied incorrectly.
 //
+//  Hank Childs, Wed Oct 15 19:24:56 PDT 2003
+//  Added logic for consolidating faces.
+//
 // ****************************************************************************
 
 void vtkRectilinearGridFacelistFilter::Execute()
 {
+  if (ForceFaceConsolidation)
+    {
+        ConsolidationExecute();
+        return;
+    }
+
   int   i, j;
   vtkIdType   quad[4];
 
@@ -408,6 +423,87 @@ void vtkRectilinearGridFacelistFilter::Execute()
   polys->Delete();
 }
 
+
+void vtkRectilinearGridFacelistFilter::ConsolidationExecute(void)
+{
+  int  i;
+
+  vtkRectilinearGrid *input        = GetInput();
+  vtkPolyData        *output       = GetOutput();
+  vtkCellData        *inCellData   = input->GetCellData();
+  vtkPointData       *inPointData  = input->GetPointData();
+  vtkCellData        *outCellData  = output->GetCellData();
+  vtkPointData       *outPointData = output->GetPointData();
+
+  int numOutCells;
+  int numOutPoints;
+  int (*quads)[4];
+  int *ptIds;
+
+  int nX = input->GetXCoordinates()->GetNumberOfTuples();
+  int nY = input->GetYCoordinates()->GetNumberOfTuples();
+  int nZ = input->GetZCoordinates()->GetNumberOfTuples();
+  if (nZ > 1)
+  {
+      static int quads3[6][4] = { { 0, 1, 2, 3 }, { 0, 4, 5, 1 }, 
+                                  { 1, 5, 6, 2 }, { 2, 6, 7, 3 },
+                                  { 3, 7, 4, 0 }, { 4, 7, 6, 5 } };
+      static int ptIds3[8];
+      ptIds3[0] = 0;
+      ptIds3[1] = nX-1;
+      ptIds3[2] = nX*nY-1;
+      ptIds3[3] = (nY-1)*nX;
+      ptIds3[4] = (nX*nY)*(nZ-1);
+      ptIds3[5] = nX-1 + (nX*nY)*(nZ-1);
+      ptIds3[6] = nX*nY-1 + (nX*nY)*(nZ-1);
+      ptIds3[7] = (nY-1)*nX + (nX*nY)*(nZ-1);
+
+      numOutCells = 6;
+      numOutPoints = 8;
+      quads = quads3;
+      ptIds = ptIds3;
+  }
+  else
+  {
+      static int quads2[1][4] = { { 0, 1, 2, 3 } };
+      static int ptIds2[4];
+      ptIds2[0] = 0;
+      ptIds2[1] = nX-1;
+      ptIds2[2] = nX*nY-1;
+      ptIds2[3] = (nY-1)*nX;
+
+      numOutCells  = 1;
+      numOutPoints = 4;
+      quads = quads2;
+      ptIds = ptIds2;
+  }
+
+  vtkCellArray *polys = vtkCellArray::New();
+  polys->Allocate(numOutCells*(4+1));
+
+  for (i = 0 ; i < numOutCells ; i++)
+      polys->InsertNextCell(4, quads[i]);
+  
+  outCellData->CopyAllocate(inCellData, numOutCells);
+  for (i = 0 ; i < numOutCells ; i++)
+      outCellData->CopyData(inCellData, 0, i);
+
+  outPointData->CopyAllocate(inPointData, numOutPoints);
+  vtkPoints *pts = vtkPoints::New();
+  pts->SetNumberOfPoints(numOutPoints);
+  for (i = 0 ; i < numOutPoints ; i++)
+  {
+      outPointData->CopyData(inPointData, ptIds[i], i);
+      float pt[3];
+      input->GetPoint(ptIds[i], pt);
+      pts->SetPoint(i, pt);
+  }
+
+  output->SetPolys(polys);
+  polys->Delete();
+  output->SetPoints(pts);
+  pts->Delete();
+}
 
 void vtkRectilinearGridFacelistFilter::PrintSelf(ostream& os, vtkIndent indent)
 {

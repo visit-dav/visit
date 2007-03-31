@@ -249,6 +249,9 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     bool                       CommunicateGhosts(avtDatasetCollection &,
                                   std::vector<int> &, avtDataSpecification_p &,
                                   avtSourceFromDatabase *);
+    bool                       ApplyGhostForDomainNesting(avtDatasetCollection &,
+                                  std::vector<int> &, std::vector<int> &,
+                                  avtDataSpecification_p &);
     void                       MaterialSelect(avtDatasetCollection &,
                                  std::vector<int> &, avtDataSpecification_p &,
                                  avtSourceFromDatabase *, bool);

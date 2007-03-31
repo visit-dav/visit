@@ -161,6 +161,8 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     void            ReadParentArray(hid_t &h5_file);
     void            ReadParentPointerArray(hid_t &h5_file);
 
+    void            BuildDomainNestingInfo();
+
     void            ReadMetaDataFile();
     unsigned int    GetPatchOffset(const int level, const int patch);
 };

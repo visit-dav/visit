@@ -529,6 +529,11 @@ VisWinAxes::UpdateView(void)
 //  Programmer: Hank Childs
 //  Creation:   September 27, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Oct 15 21:44:19 PDT 2003
+//    Add labels.
+//
 // ****************************************************************************
 
 void
@@ -536,6 +541,7 @@ VisWinAxes::UpdatePlotList(vector<avtActor_p> &list)
 {
     int nActors = list.size();
     string x, y;
+    string lx, ly;
     for (int i = 0 ; i < nActors ; i++)
     {
         avtDataAttributes &atts = 
@@ -550,10 +556,30 @@ VisWinAxes::UpdatePlotList(vector<avtActor_p> &list)
         {
             y = atts.GetYUnits();
         }
+        if ((atts.GetXLabel() != "") && (atts.GetXLabel() != "X-Axis"))
+        {
+            lx = atts.GetXLabel();
+        }
+        if ((atts.GetYLabel() != "") && (atts.GetYLabel() != "Y-Axis"))
+        {
+            ly = atts.GetYLabel();
+        }
     }
 
     sprintf(unitsX, x.c_str());
     sprintf(unitsY, y.c_str());
+    if (mediator.GetMode() == WINMODE_2D)
+    {
+        if (lx != "")
+            sprintf(xTitle, lx.c_str());
+        else
+            strcpy(xTitle, "X-Axis");
+        if (ly != "")
+            sprintf(yTitle, ly.c_str());
+        else
+            strcpy(yTitle, "Y-Axis");
+    }
+
     SetTitle();
 }
 

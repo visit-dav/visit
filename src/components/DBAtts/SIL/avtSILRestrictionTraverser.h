@@ -33,6 +33,7 @@ class DBATTS_API avtSILRestrictionTraverser
     bool                       Equal(avtSILRestriction_p);
 
     void                       GetDomainList(std::vector<int> &);
+    void                       GetDomainListAllProcs(std::vector<int> &);
     bool                       UsesAllData(void);
     bool                       UsesAllDomains(void);
  
@@ -62,6 +63,7 @@ class DBATTS_API avtSILRestrictionTraverser
     const avtSILRestrictionTraverser &    
                                operator=(const avtSILRestrictionTraverser &t)
                                     { return t; };
+    void                       GetDomainList(std::vector<int> &, bool allProcs);
 };
 
 

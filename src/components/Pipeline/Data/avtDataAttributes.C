@@ -53,6 +53,9 @@ using     std::vector;
 //    Eric Brugger, Wed Aug 20 09:28:48 PDT 2003
 //    Initialize windowMode.
 // 
+//    Hank Childs, Wed Oct 15 20:12:49 PDT 2003
+//    Initialize labels.
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes()
@@ -81,6 +84,10 @@ avtDataAttributes::avtDataAttributes()
     dtime                  = 0.;
     timeIsAccurate         = false;
     
+    xLabel                 = "X-Axis";
+    yLabel                 = "Y-Axis";
+    zLabel                 = "Z-Axis";
+
     varname                = "<unknown>";
     filename               = "<unknown>";
     containsGhostZones     = AVT_MAYBE_GHOSTS;
@@ -225,6 +232,9 @@ avtDataAttributes::~avtDataAttributes()
 //    Eric Brugger, Wed Aug 20 09:28:48 PDT 2003
 //    Copy windowMode.
 // 
+//    Hank Childs, Wed Oct 15 20:12:49 PDT 2003
+//    Copy labels.
+//
 // ****************************************************************************
 
 void
@@ -257,6 +267,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     SetXUnits(di.GetXUnits());
     SetYUnits(di.GetYUnits());
     SetZUnits(di.GetZUnits());
+    SetXLabel(di.GetXLabel());
+    SetYLabel(di.GetYLabel());
+    SetZLabel(di.GetZLabel());
 
     *(trueSpatial)               = *(di.trueSpatial);
     *(cumulativeTrueSpatial)     = *(di.cumulativeTrueSpatial);
@@ -794,6 +807,9 @@ avtDataAttributes::SetTime(double d)
 //    Eric Brugger, Wed Aug 20 09:28:48 PDT 2003
 //    Write windowMode.
 // 
+//    Hank Childs, Wed Oct 15 20:12:49 PDT 2003
+//    Write labels.
+//
 // ****************************************************************************
 
 void
@@ -845,6 +861,16 @@ avtDataAttributes::Write(avtDataObjectString &str,
     str.Append((char *) zUnits.c_str(), zUnits.size(),
                   avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
 
+    wrtr->WriteInt(str, xLabel.size());
+    str.Append((char *) xLabel.c_str(), xLabel.size(),
+                  avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
+    wrtr->WriteInt(str, yLabel.size());
+    str.Append((char *) yLabel.c_str(), yLabel.size(),
+                  avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
+    wrtr->WriteInt(str, zLabel.size());
+    str.Append((char *) zLabel.c_str(), zLabel.size(),
+                  avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
+
     WriteLabels(str, wrtr);
     WriteTransform(str, wrtr);
 }
@@ -893,6 +919,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Eric Brugger, Wed Aug 20 09:28:48 PDT 2003
 //    Read windowMode.
 // 
+//    Hank Childs, Wed Oct 15 20:12:49 PDT 2003
+//    Read labels.
+//
 // ****************************************************************************
 
 int
@@ -1012,6 +1041,26 @@ avtDataAttributes::Read(char *input)
     zUnits = zu;
     size += unitSize;
     input += unitSize;
+
+    int labelSize;
+    memcpy(&labelSize, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    string xl(input, labelSize);
+    xLabel = xl;
+    size += labelSize;
+    input += labelSize;
+    memcpy(&labelSize, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    string yl(input, labelSize);
+    yLabel = yl;
+    size += labelSize;
+    input += labelSize;
+    memcpy(&labelSize, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    string zl(input, labelSize);
+    zLabel = zl;
+    size += labelSize;
+    input += labelSize;
 
     s = ReadLabels(input); 
     input += s; size += s;

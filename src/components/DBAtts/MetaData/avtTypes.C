@@ -13,6 +13,8 @@ const char *AUXILIARY_DATA_SPATIAL_EXTENTS = "SPATIAL_EXTENTS";
 const char *AUXILIARY_DATA_MIXED_VARIABLE = "MIXED_VARIABLE";
 const char *AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION 
                                                = "DOMAIN_BOUNDARY_INFORMATION";
+const char *AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION 
+                                               = "DOMAIN_NESTING_INFORMATION";
 
 static const char *avtExtentType_strings[] = { "AVT_ORIGINAL_EXTENTS",
     "AVT_ACTUAL_EXTENTS", "AVT_SPECIFIED_EXTENTS", "AVT_UNKNOWN_EXTENT_TYPE"};
