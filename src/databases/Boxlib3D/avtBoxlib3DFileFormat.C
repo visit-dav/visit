@@ -146,6 +146,12 @@ avtBoxlib3DFileFormat::~avtBoxlib3DFileFormat()
 //    Do not assume that this routine is called only one time (we may call
 //    free up resources and then come back to this timestep).
 //
+//    Hank Childs, Sat Nov 22 08:18:12 PST 2003
+//    Calculate the domain nesting information when initializing the reader.
+//    This way that information will be available when we re-visit timesteps
+//    (because we will get it, the DB will clear it, and, now we will get
+//    it again).
+//
 // ****************************************************************************
 
 void
@@ -312,6 +318,11 @@ avtBoxlib3DFileFormat::InitializeReader(void)
             vectorComponents[index][2] = id3;
             varUsedElsewhere[id3] = true;
         }
+    }
+
+    if (!avtDatabase::OnlyServeUpMetaData())
+    {
+        CalculateDomainNesting();
     }
 }
 
@@ -1047,6 +1058,12 @@ avtBoxlib3DFileFormat::GetVisMF(int index)
 //    Do not display scalar variables when they are being used elsewhere
 //    (like in a vector or in a material).
 //
+//    Hank Childs, Sat Nov 22 08:18:12 PST 2003
+//    Calculate the domain nesting information when initializing the reader.
+//    This way that information will be available when we re-visit timesteps
+//    (because we will get it, the DB will clear it, and, now we will get
+//    it again).
+//
 // ****************************************************************************
 
 void
@@ -1124,11 +1141,6 @@ avtBoxlib3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
         AddMaterialToMetaData(md, matname, mesh_name, nMaterials, mnames);
     }
-
-    if (!avtDatabase::OnlyServeUpMetaData())
-    {
-        CalculateDomainNesting();
-    }
 }
 
 
@@ -1145,6 +1157,10 @@ avtBoxlib3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //
 //    Hank Childs, Tue Nov 11 14:00:53 PST 2003
 //    Added rectilinear domain boundaries.
+//
+//    Hank Childs, Sat Nov 22 08:20:15 PST 2003
+//    Modify the way indices are determined to account for floating point
+//    precision.
 //
 // ****************************************************************************
 
@@ -1225,18 +1241,21 @@ avtBoxlib3DFileFormat::CalculateDomainNesting(void)
         int my_level, local_patch;
         GetLevelAndLocalPatchNumber(patch, my_level, local_patch);
 
-        logIMin[patch] = ((int) ((xMin[patch]-probLo[0]) / deltaX[my_level]))
-                          * multiplier[my_level];
-        logIMax[patch] = ((int) ((xMax[patch]-probLo[0]) / deltaX[my_level]))
-                          * multiplier[my_level];
-        logJMin[patch] = ((int) ((yMin[patch]-probLo[0]) / deltaY[my_level]))
-                          * multiplier[my_level];
-        logJMax[patch] = ((int) ((yMax[patch]-probLo[0]) / deltaY[my_level]))
-                          * multiplier[my_level];
-        logKMin[patch] = ((int) ((zMin[patch]-probLo[0]) / deltaZ[my_level]))
-                          * multiplier[my_level];
-        logKMax[patch] = ((int) ((zMax[patch]-probLo[0]) / deltaZ[my_level]))
-                          * multiplier[my_level];
+        double epsilonX = deltaX[my_level] / 8.0;
+        double epsilonY = deltaY[my_level] / 8.0;
+        double epsilonZ = deltaZ[my_level] / 8.0;
+        logIMin[patch] = ((int) ((xMin[patch]-probLo[0]+epsilonX) 
+                           / deltaX[my_level])) * multiplier[my_level];
+        logIMax[patch] = ((int) ((xMax[patch]-probLo[0]+epsilonX) 
+                           / deltaX[my_level])) * multiplier[my_level];
+        logJMin[patch] = ((int) ((yMin[patch]-probLo[0]+epsilonY) 
+                           / deltaY[my_level])) * multiplier[my_level];
+        logJMax[patch] = ((int) ((yMax[patch]-probLo[0]+epsilonY) 
+                           / deltaY[my_level])) * multiplier[my_level];
+        logKMin[patch] = ((int) ((zMin[patch]-probLo[0]+epsilonZ) 
+                           / deltaZ[my_level])) * multiplier[my_level];
+        logKMax[patch] = ((int) ((zMax[patch]-probLo[0]+epsilonZ) 
+                           / deltaZ[my_level])) * multiplier[my_level];
         int e[6];
         e[0] = logIMin[patch] / multiplier[my_level];
         e[1] = logIMax[patch] / multiplier[my_level];
@@ -1244,6 +1263,7 @@ avtBoxlib3DFileFormat::CalculateDomainNesting(void)
         e[3] = logJMax[patch] / multiplier[my_level];
         e[4] = logKMin[patch] / multiplier[my_level];
         e[5] = logKMax[patch] / multiplier[my_level];
+  
         rdb->SetIndicesForAMRPatch(patch, my_level, e);
     }
     rdb->CalculateBoundaries();
