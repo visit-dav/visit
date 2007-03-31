@@ -42,6 +42,9 @@
 //    Wrote the code to actually find the material volume fractions (the
 //    previous code was just a place-holder).
 //
+//    Jeremy Meredith, Mon Sep 29 12:13:04 PDT 2003
+//    Added support for integer material indices.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -86,13 +89,27 @@ avtMatvfFilter::DeriveVariable(vtkDataSet *in_ds)
     //
     int nmats = mat->GetNMaterials();
     std::vector<bool>  useMat(nmats, false);
+
     for (i = 0 ; i < nmats ; i++)
     {
         std::string currentMat = mat->GetMaterials()[i];
-        for (j = 0 ; j < materials.size() ; j++)
+        for (j = 0 ; j < matNames.size() ; j++)
         {
-            if (currentMat == materials[j])
+            if (currentMat == matNames[j])
                 useMat[i] = true;
+        }
+        for (j = 0 ; j < matIndices.size() ; j++)
+        {
+            char tmp[256];
+            sprintf(tmp, "%d", matIndices[j]);
+
+            std::string matname(tmp);
+            if (currentMat == matname ||
+                (currentMat.length() > matname.length() &&
+                 currentMat.substr(0,matname.length() + 1) == (matname + " ")))
+            {
+                useMat[i] = true;
+            }
         }
     }
     
@@ -194,6 +211,11 @@ avtMatvfFilter::DeriveVariable(vtkDataSet *in_ds)
 //  Programmer:   Sean Ahern
 //  Creation:     Tue Mar 18 23:20:06 America/Los_Angeles 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Sep 29 12:13:04 PDT 2003
+//    Added support for integer material indices.
+//    Added support for integer ranges.
+//
 // ****************************************************************************
 void
 avtMatvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
@@ -220,7 +242,9 @@ avtMatvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     // See if there are other arguments.
     if (nargs > 2)
     {
-        EXCEPTION1(ExpressionException, "avtMatvfFilter: Too many arguments.");
+        EXCEPTION1(ExpressionException, "avtMatvfFilter only expects two "
+                   "arguments.  To specify more than one material, use a "
+                   "list (e.g. [1,4,5:9].");
     }
 
     // Pull off the second argument and see if it's a string or a list.
@@ -229,46 +253,120 @@ avtMatvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     string type = secondTree->GetTypeName();
     if ((type != "Const") && (type != "List"))
     {
-        debug5 << "avtMatvfFilter: Second argument is not a string or a list: " << type.c_str() << endl;
-        EXCEPTION1(ExpressionException, "avtMatvfFilter: Second argument is not a string or a list.");
+        debug5 << "avtMatvfFilter: Second argument is not a constant or a list: " << type.c_str() << endl;
+        EXCEPTION1(ExpressionException, "avtMatvfFilter: Second argument is not a constant or a list.");
     }
 
     if (type == "Const")
     {
         // It's a single constant.
         AddMaterial(dynamic_cast<ConstExpr*>(secondTree));
-    } else
+    }
+    else
     {
         // It's a list.  Process all of them.
         ListExpr *list = dynamic_cast<ListExpr*>(secondTree);
         std::vector<ListElemExpr*> *elems = list->GetElems();
         for(int i=0;i<elems->size();i++)
         {
-            ExprNode *item = (*elems)[i]->GetItem();
-            string type = item->GetTypeName();
-            if (type != "Const")
+            if ((*elems)[i]->GetEnd())
             {
-                debug5 << "avtMatvfFilter: List element is not a string or a list: " << type.c_str() << endl;
-                EXCEPTION1(ExpressionException, "avtMatvfFilter: List element is not a string or a list.");
-            }
+                // it's a range
+                ExprNode *begExpr  = (*elems)[i]->GetBeg();
+                ExprNode *endExpr  = (*elems)[i]->GetEnd();
+                ExprNode *skipExpr = (*elems)[i]->GetSkip();
+                
+                if (begExpr->GetTypeName() != "Const" ||
+                    endExpr->GetTypeName() != "Const" ||
+                    (skipExpr && skipExpr->GetTypeName() != "Const"))
+                {
+                    EXCEPTION1(ExpressionException, "avtMatvfFilter: "
+                               "Range must contain integers.");
+                }
 
-            AddMaterial(dynamic_cast<ConstExpr*>(item));
+                Token *begTok  = dynamic_cast<ConstExpr*>(begExpr)->GetToken();
+                Token *endTok  = dynamic_cast<ConstExpr*>(endExpr)->GetToken();
+                Token *skipTok = !skipExpr ? NULL :
+                                dynamic_cast<ConstExpr*>(skipExpr)->GetToken();
+
+                if (begTok->GetType() != TT_IntegerConst ||
+                    endTok->GetType() != TT_IntegerConst ||
+                    (skipTok && skipTok->GetType() != TT_IntegerConst))
+                {
+                    EXCEPTION1(ExpressionException, "avtMatvfFilter: "
+                               "Range must contain integers.");
+                }
+
+                int beg  = dynamic_cast<IntegerConst*>(begTok)->GetValue();
+                int end  = dynamic_cast<IntegerConst*>(endTok)->GetValue();
+                int skip = !skipTok ? 1 : 
+                           dynamic_cast<IntegerConst*>(skipTok)->GetValue();
+
+                if (skip <= 0 || beg > end)
+                {
+                    EXCEPTION1(ExpressionException, "avtMatvfFilter: "
+                               "Range must be of the form beg:end[:skip].");
+                }
+
+                for (int m = beg; m <= end ; m += skip)
+                    matIndices.push_back(m);
+            }
+            else
+            {
+                ExprNode *item = (*elems)[i]->GetItem();
+                string type = item->GetTypeName();
+                if (type != "Const")
+                {
+                    debug5 << "avtMatvfFilter: List element is not a constant "
+                              "or a list: " << type.c_str() << endl;
+                    EXCEPTION1(ExpressionException, "avtMatvfFilter: "
+                               "List element is not a constant or a list.");
+                }
+
+                AddMaterial(dynamic_cast<ConstExpr*>(item));
+            }
         }
     }
 }
 
+// ****************************************************************************
+//  Method:  avtMatvfFilter::AddMaterial
+//
+//  Purpose:
+//    Add a material by name or index to the list
+//
+//  Arguments:
+//    c          The expression to turn into a material
+//
+//  Programmer:  Sean Ahern
+//  Creation:    March 18, 2003
+//
+//  Modifications:
+//    Jeremy Meredith, Mon Sep 29 12:13:04 PDT 2003
+//    Added support for integer material indices.
+//
+// ****************************************************************************
 void
 avtMatvfFilter::AddMaterial(ConstExpr *c)
 {
     // Check that it's a string.
     Token *t = c->GetToken();
-    if (t->GetType() != TT_StringConst)
+    if (t->GetType() != TT_StringConst && t->GetType() != TT_IntegerConst)
     {
-        debug5 << "avtMatvfFilter: Matfv argument is not a string: "
+        debug5 << "avtMatvfFilter: Matfv argument is not a string or integer: "
                << GetTokenTypeString(t->GetType()).c_str() << endl;
-        EXCEPTION1(ExpressionException, "avtMatvfFilter: Matfv argument is not a string.");
+        EXCEPTION1(ExpressionException, "avtMatvfFilter: "
+                   "Matfv argument is not a string or interger.");
     }
 
-    string matname = dynamic_cast<StringConst*>(t)->GetValue();
-    materials.push_back(matname);
+    if (t->GetType() == TT_StringConst)
+    {
+        string matname = dynamic_cast<StringConst*>(t)->GetValue();
+        matNames.push_back(matname);
+    }
+    else // t->GetType() == TT_IntegerConst
+    {
+        int matindex = dynamic_cast<IntegerConst*>(t)->GetValue();
+        matIndices.push_back(matindex);
+    }
 }
