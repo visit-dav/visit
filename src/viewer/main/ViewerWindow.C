@@ -5228,6 +5228,9 @@ ViewerWindow::SetPopupEnabled(bool val)
 //   Eric Brugger, Thu Oct 16 11:21:53 PDT 2003
 //   I moved the handling of full frame mode to VisWindow.
 //
+//   Hank Childs, Sat Nov 15 14:28:26 PST 2003
+//   Save out specular properties.
+//
 // ****************************************************************************
 
 void
@@ -5301,6 +5304,11 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
         windowNode->AddNode(new DataNode("stereoRendering", GetStereo()));
         windowNode->AddNode(new DataNode("stereoType", GetStereoType()));
         windowNode->AddNode(new DataNode("antialiasing", GetAntialiasing()));
+        windowNode->AddNode(new DataNode("specularFlag", GetSpecularFlag()));
+        windowNode->AddNode(new DataNode("specularCoeff", GetSpecularCoeff()));
+        windowNode->AddNode(new DataNode("specularPower", GetSpecularPower()));
+        ColorAttribute specColor(GetSpecularColor());
+        specColor.CreateNode(windowNode, false);
 
         //
         // View
@@ -5369,6 +5377,9 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
 //   Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
 //   I added a curve view.
 //   
+//   Hank Childs, Sat Nov 15 14:28:26 PST 2003
+//   Read in specular properties.
+//
 // ****************************************************************************
 
 void
@@ -5454,6 +5465,40 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
         SetStereoRendering(node->AsBool(), stereoType);
     if((node = windowNode->GetNode("antialiasing")) != 0)
         SetAntialiasing(node->AsBool());
+
+    //
+    // The specular parameters are all set as a group.
+    //
+    int numParamsSaved = 0;
+    bool tmpSpecularFlag = false;
+    double tmpSpecularCoeff = 0.;
+    double tmpSpecularPower = 0.;
+    ColorAttribute tmpSpecularColor;
+    if((node = windowNode->GetNode("specularFlag")) != 0)
+    {
+        tmpSpecularFlag = node->AsBool();
+        numParamsSaved++;
+    }
+    if((node = windowNode->GetNode("specularCoeff")) != 0)
+    {
+        tmpSpecularCoeff = node->AsFloat();
+        numParamsSaved++;
+    }
+    if((node = windowNode->GetNode("specularPower")) != 0)
+    {
+        tmpSpecularPower = node->AsFloat();
+        numParamsSaved++;
+    }
+    if((node = windowNode->GetNode("ColorAttribute")) != 0)
+    {
+        tmpSpecularColor.SetFromNode(windowNode);
+        numParamsSaved++;
+    }
+    if (numParamsSaved == 4)
+    {
+        SetSpecularProperties(tmpSpecularFlag, tmpSpecularCoeff, 
+                              tmpSpecularPower, tmpSpecularColor);
+    }
 
     //
     // Read in and set the annotation attributes.
