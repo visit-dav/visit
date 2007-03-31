@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <QvisAnimationWindow.h>
+#include <qbuttongroup.h>
 #include <qlabel.h>
 #include <qlayout.h>
 #include <qcheckbox.h>
+#include <qradiobutton.h>
 #include <qslider.h>
 #include <AnimationAttributes.h>
 #include <ViewerProxy.h>
@@ -18,6 +20,10 @@
 // Programmer: Eric Brugger
 // Creation:   Mon Nov 19 14:15:03 PST 2001
 //
+// Modifications:
+//   Brad Whitlock, Tue Oct 7 09:37:42 PDT 2003
+//   Added playbackModeButtonGroup.
+//
 // ****************************************************************************
 
 QvisAnimationWindow::QvisAnimationWindow(AnimationAttributes *subj,
@@ -26,6 +32,7 @@ QvisAnimationWindow::QvisAnimationWindow(AnimationAttributes *subj,
                                QvisPostableWindowObserver::ApplyButton)
 {
     animationAtts = subj;
+    playbackModeButtonGroup = 0;
 }
 
 // ****************************************************************************
@@ -37,11 +44,15 @@ QvisAnimationWindow::QvisAnimationWindow(AnimationAttributes *subj,
 // Programmer: Eric Brugger
 // Creation:   Mon Nov 19 14:15:03 PST 2001
 //
+// Modifications:
+//   Brad Whitlock, Tue Oct 7 09:38:31 PDT 2003
+//   Deleted playbackModeButtonGroup since it has no parent.
+//
 // ****************************************************************************
 
 QvisAnimationWindow::~QvisAnimationWindow()
 {
-    // Nothing here
+    delete playbackModeButtonGroup;
 }
 
 // ****************************************************************************
@@ -57,21 +68,40 @@ QvisAnimationWindow::~QvisAnimationWindow()
 //   Brad Whitlock, Tue May 14 11:39:42 PDT 2002
 //   Added a slider for the animation playback speed.
 //
+//   Brad Whitlock, Mon Oct 6 16:21:12 PST 2003
+//   Added radio buttons that allow the user to set the animation style.
+//
 // ****************************************************************************
 
 void
 QvisAnimationWindow::CreateWindowContents()
 {
     // Create a grid layout.
-    QGridLayout *animLayout = new QGridLayout(topLayout, 4, 2);
+    QGridLayout *animLayout = new QGridLayout(topLayout, 6, 4);
     animLayout->setSpacing(5);
 
-    // Create the check box
-    pipelineCachingToggle = new QCheckBox("Pipeline caching", central,
-        "pipelineCachingToggle");
+    // Create the check box for pipeline caching.
+    pipelineCachingToggle = new QCheckBox("Cache animation for faster playback",
+        central, "pipelineCachingToggle");
     connect(pipelineCachingToggle, SIGNAL(toggled(bool)),
             this, SLOT(pipelineCachingToggled(bool)));
-    animLayout->addMultiCellWidget(pipelineCachingToggle, 0, 0, 0, 1);
+    animLayout->addMultiCellWidget(pipelineCachingToggle, 0, 0, 0, 3);
+
+    // Add the animation style controls.
+    QLabel *styleLabel = new QLabel("Animation playback", central, "styleLabel");
+    animLayout->addMultiCellWidget(styleLabel, 1, 1, 0, 3);
+    playbackModeButtonGroup = new QButtonGroup(0, "playbackModeButtonGroup");
+    QRadioButton *rb = new QRadioButton("Looping", central);
+    playbackModeButtonGroup->insert(rb);
+    animLayout->addWidget(rb, 2, 1);
+    rb = new QRadioButton("Play once", central);
+    playbackModeButtonGroup->insert(rb);
+    animLayout->addWidget(rb, 2, 2);
+    rb = new QRadioButton("Swing", central);
+    playbackModeButtonGroup->insert(rb);
+    animLayout->addWidget(rb, 2, 3);
+    connect(playbackModeButtonGroup, SIGNAL(clicked(int)),
+            this, SLOT(playbackModeChanged(int)));
 
     // Create the slider and some labels.
     timeoutSlider = new QSlider(Qt::Horizontal, central, "timeoutSlider");
@@ -81,16 +111,16 @@ QvisAnimationWindow::CreateWindowContents()
     timeoutSlider->setPageStep(100);
     connect(timeoutSlider, SIGNAL(valueChanged(int)),
             this, SLOT(timeoutChanged(int)));
-    animLayout->addMultiCellWidget(timeoutSlider, 2, 2, 0, 1);
+    animLayout->addMultiCellWidget(timeoutSlider, 4, 4, 0, 3);
     QLabel *speedLabel = new QLabel(timeoutSlider, "Animation speed",
         central, "speedLabel");
-    animLayout->addWidget(speedLabel, 1, 0);
+    animLayout->addMultiCellWidget(speedLabel, 3, 3, 0, 3);
 
     // Create the slower and faster labels.
     QLabel *slowerLabel = new QLabel("slower", central, "speedLabel");
-    animLayout->addWidget(slowerLabel, 3, 0);
+    animLayout->addMultiCellWidget(slowerLabel, 5, 5, 0, 1);
     QLabel *fasterLabel = new QLabel("faster", central, "speedLabel");
-    animLayout->addWidget(fasterLabel, 3, 1, Qt::AlignRight);
+    animLayout->addWidget(fasterLabel, 5, 3, Qt::AlignRight);
 }
 
 // ****************************************************************************
@@ -108,6 +138,9 @@ QvisAnimationWindow::CreateWindowContents()
 // Modifications:
 //   Brad Whitlock, Tue May 14 11:49:44 PDT 2002
 //   Added animation timeout slider.
+//
+//   Brad Whitlock, Mon Oct 6 16:24:09 PST 2003
+//   Added the animation style button group.
 //
 // ****************************************************************************
 
@@ -132,6 +165,12 @@ QvisAnimationWindow::UpdateWindow(bool doAll)
             timeoutSlider->blockSignals(true);
             timeoutSlider->setValue(SLOWEST_TIMEOUT - atts->GetTimeout());
             timeoutSlider->blockSignals(false);
+            break;
+        case 2: // loopAnimation.
+            playbackModeButtonGroup->blockSignals(true);
+            playbackModeButtonGroup->setButton(int(atts->GetPlaybackMode()));
+            playbackModeButtonGroup->blockSignals(false);
+            break;
         }
     }
 }
@@ -205,6 +244,30 @@ void
 QvisAnimationWindow::timeoutChanged(int val)
 {
     animationAtts->SetTimeout(SLOWEST_TIMEOUT - val);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnimationWindow::playbackModeChanged
+//
+// Purpose: 
+//   This a Qt slot function that is called when the animation style changes.
+//
+// Arguments:
+//   val : The new animation style.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 6 16:28:00 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnimationWindow::playbackModeChanged(int val)
+{
+    animationAtts->SetPlaybackMode((AnimationAttributes::PlaybackMode)val);
     SetUpdate(false);
     Apply();
 }

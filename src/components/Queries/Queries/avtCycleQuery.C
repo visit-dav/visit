@@ -4,6 +4,8 @@
 
 #include <avtCycleQuery.h>
 
+#include <stdio.h>
+
 #include <QueryAttributes.h>
 
 

@@ -3575,13 +3575,16 @@ ViewerWindowManager::GetAnimationClientAtts()
 //    Brad Whitlock, Tue May 14 12:11:56 PDT 2002
 //    Added code to update the animation timer.
 //
+//    Brad Whitlock, Mon Oct 6 17:04:24 PST 2003
+//    Made it use SetAnimationAttributes.
+//
 // ****************************************************************************
 
 void
 ViewerWindowManager::SetAnimationAttsFromClient()
 {
-    windows[activeWindow]->GetAnimation()->SetPipelineCaching(
-        animationClientAtts->GetPipelineCachingMode());
+    // Set the animation attributes using the animationClientAtts.
+    windows[activeWindow]->SetAnimationAttributes(animationClientAtts);
 
     UpdateAnimationTimer();
 }

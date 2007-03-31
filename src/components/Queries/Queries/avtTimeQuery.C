@@ -4,6 +4,8 @@
 
 #include <avtTimeQuery.h>
 
+#include <stdio.h>
+
 #include <QueryAttributes.h>
 
 
