@@ -919,6 +919,96 @@ ViewerEngineManager::LaunchMessage(const char *hostName) const
 }
 
 // ****************************************************************************
+// Method: ViewerEngineManager::ExternalRender
+//
+// Purpose: 
+//   Sends various RPC's to engine(s) necessary to perform an external render
+//   request.
+//
+// Arguments:
+//   For each plot to be externally rendered, we have the following...
+//
+//   pluginIDsList: the pluginID for the plot
+//   hostLists:     the host of the engine where the plot will be computed
+//   plotIdsList:   the network (or plot) id of the plot on the assoc. engine
+//   attsList:      the attributes of the plot
+//
+//   winAtts:       window attributes for the window servicing the external
+//                  render request.
+//   annotAtts:     annotation attributes for the window servicing the external
+//                  render request.
+//
+//   shouldTurnOffScalableRendering: set to true if the engine has sent results
+//                  back to the viewer indicating that scalable rendering is
+//                  no longer required for this window.
+//   imgList:       the list of images, one for each engine's render, returned
+//                  to the caller.
+//
+// Programmer: Mark C. Miller 
+// Creation:   November 11, 2003 
+//
+// ****************************************************************************
+
+bool
+ViewerEngineManager::ExternalRender(std::vector<const char*> pluginIDsList,
+                                    stringVector hostsList,
+                                    intVector plotIdsList,
+                                    std::vector<const AttributeSubject *> attsList,
+                                    WindowAttributes winAtts,
+                                    AnnotationAttributes annotAtts,
+                                    bool& shouldTurnOffScalableRendering,
+                                    std::vector<avtImage_p>& imgList)
+{
+    // container for per-engine vector of plot ids 
+    std::map<std::string,std::vector<int> > perEnginePlotIds;
+
+    // send per-plot RPCs
+    for (int i = 0; i < plotIdsList.size(); i++)
+    {
+        if (!UpdatePlotAttributes(hostsList[i].c_str(),pluginIDsList[i],
+                                  plotIdsList[i],attsList[i]))
+            return false;
+        perEnginePlotIds[hostsList[i]].push_back(plotIdsList[i]);
+    }
+
+    int numEnginesToRender = perEnginePlotIds.size();
+    bool sendZBuffer = numEnginesToRender > 1 ? true : false;
+
+    // send per-engine RPCs 
+    std::map<std::string,std::vector<int> >::iterator pos;
+    for (pos = perEnginePlotIds.begin(); pos != perEnginePlotIds.end(); pos++)
+    {
+        if (!SetWinAnnotAtts(pos->first.c_str(), &winAtts, &annotAtts))
+            return false;
+        avtDataObjectReader_p rdr = GetDataObjectReader(sendZBuffer, pos->first.c_str(), pos->second);
+
+        if (*rdr == NULL)
+            return false;
+
+        // check to see if engine decided that SR mode is no longer necessary
+        if (rdr->InputIs(AVT_NULL_IMAGE_MSG))
+        {
+           shouldTurnOffScalableRendering = true;
+           break;
+        }
+
+        // do some magic to update the network so we don't need the reader anymore
+        avtDataObject_p tmpDob = rdr->GetOutput();
+        avtPipelineSpecification_p spec = 
+            tmpDob->GetTerminatingSource()->GetGeneralPipelineSpecification();
+        tmpDob->Update(spec);
+
+        // put the resultant image in the returned list
+        avtImage_p img;
+        CopyTo(img,tmpDob);
+        imgList.push_back(img);
+    }
+
+    return true;
+
+}
+
+// ****************************************************************************
 //  Method: ViewerEngineManager::GetDataObjectReader
 //
 //  Purpose:
