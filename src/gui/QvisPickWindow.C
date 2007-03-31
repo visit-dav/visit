@@ -19,6 +19,7 @@
 #include <ViewerProxy.h>
 #include <DebugStream.h>
 #include <PickVarInfo.h>
+#include <DataNode.h>
 
 using std::string;
 using std::vector;
@@ -46,6 +47,9 @@ using std::vector;
 //   Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002 
 //   Made the window only have the Apply button (not reset or make default).
 //
+//   Brad Whitlock, Wed Aug 27 08:36:19 PDT 2003
+//   Added autoShow flag.
+//
 // ****************************************************************************
 
 QvisPickWindow::QvisPickWindow(PickAttributes *subj, const char *caption, 
@@ -54,6 +58,7 @@ QvisPickWindow::QvisPickWindow(PickAttributes *subj, const char *caption,
                                QvisPostableWindowObserver::ApplyButton, false)
 {
     pickAtts = subj;
+    autoShow = true;
 }
 
 // ****************************************************************************
@@ -98,6 +103,9 @@ QvisPickWindow::~QvisPickWindow()
 //   Kathleen Bonnell, Fri Dec 27 14:09:40 PST 2002   
 //   Added useNodeCoords checkbox. 
 //
+//   Brad Whitlock, Wed Aug 27 08:38:55 PDT 2003
+//   I added a checkbox to set autoShow mode.
+//
 // ****************************************************************************
 
 void
@@ -125,13 +133,13 @@ QvisPickWindow::CreateWindowContents()
         infoLists[i]->setVariableHeight(false);
         tabWidget->addTab(pages[i]," "); 
     }
-    QGridLayout *gLayout = new QGridLayout(topLayout, 2, 4);
 
+    QGridLayout *gLayout = new QGridLayout(topLayout, 3, 4);
     varsLineEdit = new QLineEdit(central, "varsLineEdit");
     varsLineEdit->setText("default"); 
     connect(varsLineEdit, SIGNAL(returnPressed()),
             this, SLOT(variableProcessText()));
-    gLayout->addWidget(varsLineEdit, 0, 1);
+    gLayout->addMultiCellWidget(varsLineEdit, 0, 0, 1, 3);
     gLayout->addWidget(new QLabel(varsLineEdit, "variables", 
                                   central, "varLabel"), 0, 0);
 
@@ -146,6 +154,12 @@ QvisPickWindow::CreateWindowContents()
     connect(logicalCoords, SIGNAL(toggled(bool)),
             this, SLOT(logicalCoordsToggled(bool)));
     gLayout->addMultiCellWidget(logicalCoords, 1, 1, 2, 3);
+
+    autoShowCheckBox = new QCheckBox("Automatically show window", central,
+                                     "autoShowCheckBox");
+    connect(autoShowCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(autoShowToggled(bool)));
+    gLayout->addMultiCellWidget(autoShowCheckBox, 2, 2, 0, 3);
 }
 
 // ****************************************************************************
@@ -174,12 +188,21 @@ QvisPickWindow::CreateWindowContents()
 //   Kathleen Bonnell, Fri Dec 27 14:09:40 PST 2002   
 //   Update new pickAtts member useNodeCoords, logicalCoords. 
 //
+//   Brad Whitlock, Wed Aug 27 08:37:57 PDT 2003
+//   Made the window show itself if autoShow mode is on.
+//
 // ****************************************************************************
+
 void
 QvisPickWindow::UpdateWindow(bool doAll)
 {
     if (pickAtts == 0)
         return;
+
+    // Update the autoShow toggle.
+    autoShowCheckBox->blockSignals(true);
+    autoShowCheckBox->setChecked(autoShow);
+    autoShowCheckBox->blockSignals(false);
 
     //
     //  If pick letter changes, it indicates we need to updated the
@@ -188,6 +211,13 @@ QvisPickWindow::UpdateWindow(bool doAll)
     //
     if (pickAtts->IsSelected(2) || pickAtts->IsSelected(0) || doAll)
     {
+        // If autoShow mode is on, make sure that the window is showing.
+        if(!doAll && autoShow && !isPosted &&
+           !pickAtts->GetClearWindow() && pickAtts->GetFulfilled())
+        {
+            show();
+        }
+
         UpdatePage();
     }
 
@@ -481,6 +511,69 @@ QvisPickWindow::GetCurrentValues(int which_widget)
 }
 
 // ****************************************************************************
+// Method: QvisPickWindow::CreateNode
+//
+// Purpose: 
+//   This method saves the window's information to a DataNode tree.
+//
+// Arguments:
+//   parentNode : The node to which the information is added.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 27 08:51:48 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPickWindow::CreateNode(DataNode *parentNode)
+{
+    // Add the base information.
+    QvisPostableWindowObserver::CreateNode(parentNode);
+
+    // Add more information.
+    if(saveWindowDefaults)
+    {
+        DataNode *node = parentNode->GetNode(caption().latin1());
+        if(node)
+            node->AddNode(new DataNode("autoShow", autoShow));
+    }
+}
+
+// ****************************************************************************
+// Method: QvisPickWindow::SetFromNode
+//
+// Purpose: 
+//   Reads window attributes from the DataNode representation of the config
+//   file.
+//
+// Arguments:
+//   parentNode : The data node that contains the window's attributes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 27 08:54:55 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPickWindow::SetFromNode(DataNode *parentNode, const int *borders)
+{
+    QvisPostableWindowObserver::SetFromNode(parentNode, borders);
+
+    DataNode *winNode = parentNode->GetNode(caption().latin1());
+    if(winNode == 0)
+        return;
+
+    // Set the autoShow flag.
+    DataNode *node;
+    if((node = winNode->GetNode("autoShow")) != 0)
+        autoShow = node->AsBool();
+}
+
+// ****************************************************************************
 // Method: QvisPickWindow::Apply
 //
 // Purpose: 
@@ -612,4 +705,27 @@ QvisPickWindow::logicalCoordsToggled(bool val)
 {
     pickAtts->SetLogicalCoords(val);
     Apply();
+}
+
+// ****************************************************************************
+// Method: QvisPickWindow::autoShowToggled
+//
+// Purpose: 
+//   This is a Qt slot function that sets the internal autoShow flag when the
+//   autoShow checkbox is toggled.
+//
+// Arguments:
+//   val : The new autoShow value.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 27 08:46:20 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPickWindow::autoShowToggled(bool val)
+{
+    autoShow = val;
 }

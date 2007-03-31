@@ -419,6 +419,8 @@ public:
     bool GetScalableRendering() const;
     void SetScalableThreshold(int threshold);
     int  GetScalableThreshold() const;
+    bool IsTurningOffScalableRendering() const
+       {return turningOffScalableRendering; }
 
 private:
     void RecenterView2d(const double *limits);
@@ -455,6 +457,8 @@ private:
     AttributeSubjectMap *view3DAtts;
 
     ExternalRenderRequestInfo lastExternalRenderRequest;
+
+    bool            turningOffScalableRendering;
 
     bool            cameraView;
     bool            maintainView;

@@ -1930,6 +1930,10 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //   Added a flag that lets the window update when turning on scalable
 //   rendering.
 //
+//   Brad Whitlock, Wed Aug 27 17:20:19 PST 2003
+//   I changed the code so it redraws the window like it's supposed to after
+//   setting rendering options like the surface representation.
+//
 // ****************************************************************************
 
 void
@@ -1947,12 +1951,26 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
         windows[index]->SetStereoRendering(renderAtts->GetStereoRendering(),
             (int)renderAtts->GetStereoType());
         windows[index]->SetNotifyForEachRender(renderAtts->GetNotifyForEachRender());
-        windows[index]->SetScalableRendering(renderAtts->GetScalableRendering(), true);
+
+//
+// Note to MCM: Modification comments would be nice so I can better tell what
+//              you were thinking when you changed this function since I also
+//              needed to modify it.
+//
+
+        //MCM_FIX windows[index]->SetScalableRendering(renderAtts->GetScalableRendering(), true);
         windows[index]->SetScalableThreshold(renderAtts->GetScalableThreshold());
+
+        // If the updatesEnabled flag was true before we temporarily disabled
+        // updates, turn updates back on and force the window to redraw so the
+        // rendering options such as the surface representation and antialiasing
+        // are noticed in the vis window right away.
         if (updatesEnabled)
-           windows[index]->EnableUpdates();
-        else
-           windows[index]->RedrawWindow();
+        {
+            windows[index]->EnableUpdates();
+            windows[index]->RedrawWindow();
+        }
+
         UpdateRenderingAtts(index);
         UpdateWindowInformation(index);
     }
@@ -4573,7 +4591,7 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
     w->SetStereoRendering(renderAtts->GetStereoRendering(),
         (int)renderAtts->GetStereoType());
     w->SetNotifyForEachRender(renderAtts->GetNotifyForEachRender());
-    w->SetScalableRendering(renderAtts->GetScalableRendering());
+    //MCM_FIX w->SetScalableRendering(renderAtts->GetScalableRendering());
     w->SetScalableThreshold(renderAtts->GetScalableThreshold());
 }
 

@@ -696,7 +696,7 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
     {
         // Get the output of the network manager. This does the job of
         // executing the network.
-        avtDataObjectWriter_p writer = netmgr->GetOutput(rpc->GetRespondWithNull());
+        avtDataObjectWriter_p writer = netmgr->GetOutput(rpc->GetRespondWithNull(),false);
 
         visitTimer->StopTimer(gettingData, "Executing network");
         writingData = visitTimer->StartTimer();

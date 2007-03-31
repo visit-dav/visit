@@ -67,6 +67,23 @@ avtImage::GetImage(void)
     return image;
 }
 
+// ****************************************************************************
+//  Method: avtImage::GetNumberOfCells
+//
+//  Purpose:
+//      Gets number of cells in an image 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   19Aug03 
+//
+// ****************************************************************************
+
+int
+avtImage::GetNumberOfCells(void) const
+{
+   return image.GetNumberOfCells();
+}
+
 
 // ****************************************************************************
 //  Method: avtImage::InstantiateWriter

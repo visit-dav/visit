@@ -1,0 +1,4 @@
+Constant: DEFAULT_SCALABLE_THRESHOLD
+Declaration: static const int DEFAULT_SCALABLE_THRESHOLD;
+Definition: const int RenderingAttributes::DEFAULT_SCALABLE_THRESHOLD = 2000000;
+

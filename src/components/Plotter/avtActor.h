@@ -109,7 +109,6 @@ class PLOTTER_API avtActor
     avtTransparencyActor         *transparencyActor;
     int                           transparencyIndex;
     avtExternallyRenderedImagesActor *extRenderedImagesActor;
-    int                           extRenderedImageId;
 
     vtkRenderer                  *renderer;
 };

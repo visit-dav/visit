@@ -10,9 +10,9 @@
 #include <ref_ptr.h>
 
 #include <avtDataObject.h>
+#include <avtCellList.h>
 
 
-class  avtCellList;
 class  avtSamplePointsSource;
 class  avtVolume;
 
@@ -46,6 +46,8 @@ class PIPELINE_API  avtSamplePoints : public avtDataObject
 
     void                        SetNumberOfVariables(int);
     int                         GetNumberOfVariables(void) { return numVars; };
+    virtual int                 GetNumberOfCells(void) const
+                                   { return celllist->GetNumberOfCells(); };
     void                        SetVolume(int, int, int);
     avtVolume                  *GetVolume(void)  { return volume; };
 

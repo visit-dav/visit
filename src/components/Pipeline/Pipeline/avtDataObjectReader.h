@@ -5,6 +5,7 @@
 #ifndef AVT_DATA_OBJECT_READER_H
 #define AVT_DATA_OBJECT_READER_H
 #include <pipeline_exports.h>
+#include <string>
 
 
 #include <ref_ptr.h>
@@ -12,7 +13,6 @@
 #include <avtDataSetReader.h>
 #include <avtImageReader.h>
 #include <avtNullDataReader.h>
-
 
 // ****************************************************************************
 //  Class: avtDataObjectReader
@@ -36,6 +36,7 @@ class PIPELINE_API avtDataObjectReader
     bool                         InputIsDataset(void);
     bool                         InputIsImage(void);
     bool                         InputIsNullData(void);
+    bool                         InputIs(const char *);
 
     avtDataObject_p              GetOutput(void);
     avtImage_p                   GetImageOutput(void);
@@ -54,6 +55,9 @@ class PIPELINE_API avtDataObjectReader
     avtDataSetReader_p           datasetReader;
     avtImageReader_p             imageReader;
     avtNullDataReader_p          nullDataReader;
+
+  private:
+    std::string                  inputTypeStr;
 };
 
 

@@ -39,17 +39,16 @@ avtNullDataSink::avtNullDataSink()
 void
 avtNullDataSink::SetTypedInput(avtDataObject_p in)
 {
-    if (*in != NULL && strcmp(in->GetType(), "avtNullData") != 0)
+    if (*in != NULL && 
+        (strcmp(in->GetType(), "avtNullData") != 0) && 
+        (strcmp(in->GetType(), AVT_NULL_IMAGE_MSG) != 0) && 
+        (strcmp(in->GetType(), AVT_NULL_DATASET_MSG) != 0))
     {
-        //
-        // Should create a new exception here, but I'm under time constraints.
-        //
-        debug1 << "Looking for avtNullData, but found type \""
-               << in->GetType() << "\"." << endl;
         EXCEPTION0(ImproperUseException);
     }
 
     CopyTo(input, in);
+
 }
 
 

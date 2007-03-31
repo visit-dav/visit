@@ -384,6 +384,7 @@ avtDataTree::avtDataTree(int n, avtDataRepresentation *drep)
 
 avtDataTree::avtDataTree(avtDataTree_p dt, bool dontCopyData)
 {
+
     if (*dt == NULL)
     {
         EXCEPTION0(NoInputException);
@@ -414,9 +415,13 @@ avtDataTree::avtDataTree(avtDataTree_p dt, bool dontCopyData)
         }
         else
         {
-            dataRep  = new avtDataRepresentation( dt->GetDataRepresentation() );
+            if (dt->dataRep != NULL)
+               dataRep  = new avtDataRepresentation( dt->GetDataRepresentation() );
+            else
+               dataRep = NULL;
         }
     }
+
 }
 
 
@@ -598,6 +603,39 @@ avtDataTree::GetDataRepresentation()
     }
 
     return *dataRep;
+}
+
+// ****************************************************************************
+//  Method: avtDataTree::GetNumberOfCells
+//
+//  Purpose:
+//    To count the number of cells (polys, elements, etc.) of all datasets
+//    in tree 
+//
+//  Programmer: Mark C. Miller
+//  Creation:   19Aug03 
+//
+// ****************************************************************************
+
+int
+avtDataTree::GetNumberOfCells(void) const
+{
+    if (nChildren > 0)
+    {
+        int sum = 0;
+        for (int i = 0; i < nChildren; i++)
+        {
+            if (*children[i] != NULL)
+                sum += children[i]->GetNumberOfCells();
+        }
+        return sum;
+    }
+    else if (dataRep != NULL)
+    {
+        return dataRep->GetNumberOfCells();
+    }
+
+    return 0;
 }
 
 
@@ -1225,6 +1263,7 @@ avtDataTree::WriteTreeStructure(ostream &os, int indent)
             os << "  label:  " << dataRep->GetLabel().c_str() << " "; 
         }
     }
+    os << "\n";
 }
 
 

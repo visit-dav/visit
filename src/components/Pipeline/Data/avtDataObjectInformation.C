@@ -221,7 +221,7 @@ avtDataObjectInformation::ParallelMerge(const avtDataObjectWriter_p dobw)
    char *reducedStr = new char [reducedLen];
 
    // copy localStr to the copiedStr buffer for MPI
-   strncpy(copiedStr, localStr, len);
+   memcpy(copiedStr, localStr, len);
 
    // create mpi type to circumvent possible buffer chopping during reduce
    MPI_Type_contiguous(reducedLen, MPI_CHAR, &mpiTypeDobStr);

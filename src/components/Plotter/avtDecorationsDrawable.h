@@ -50,9 +50,9 @@ class PLOTTER_API avtDecorationsDrawable : public avtDrawable
     virtual void                VisibilityOff(void);
     virtual int                 SetTransparencyActor(avtTransparencyActor *)
                                     { return -1; };
-    virtual int                 SetExternallyRenderedImagesActor(
+    virtual void                SetExternallyRenderedImagesActor(
                                     avtExternallyRenderedImagesActor *)
-                                    { return -1; };
+                                    { return; };
 
     virtual void                ShiftByVector(const float [3]);
     virtual void                ScaleByVector(const float [3]);

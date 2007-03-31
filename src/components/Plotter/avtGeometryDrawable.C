@@ -392,11 +392,12 @@ avtGeometryDrawable::SetTransparencyActor(avtTransparencyActor *act)
 //
 // ****************************************************************************
 
-int
+void
 avtGeometryDrawable::SetExternallyRenderedImagesActor(
     avtExternallyRenderedImagesActor *act)
 {
-    return (mapper!=NULL) ? mapper->SetExternallyRenderedImagesActor(act) : -1;
+    if (mapper!=NULL)
+       mapper->SetExternallyRenderedImagesActor(act);
 }
 
 

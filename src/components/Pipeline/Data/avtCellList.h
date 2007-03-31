@@ -8,13 +8,13 @@
 
 
 #include <avtCellTypes.h>
-#include <avtSamplePoints.h>
 
 class     avtHexahedronExtractor;
 class     avtImagePartition;
 class     avtPyramidExtractor;
 class     avtTetrahedronExtractor;
 class     avtWedgeExtractor;
+class     avtVolume;
 
 
 typedef struct
@@ -26,6 +26,7 @@ typedef struct
     int   size;
     char *cell;
 } avtSerializedCell;
+
 
 
 // ****************************************************************************
@@ -67,6 +68,7 @@ class PIPELINE_API avtCellList
     char                    *ConstructMessages(avtImagePartition *, char **,
                                                int *);
     void                     EstimateNumberOfSamplesPerScanline(int *);
+    int                      GetNumberOfCells(void) const { return celllistI; };
 
   protected:
     avtSerializedCell      **celllist;
