@@ -1,6 +1,11 @@
 <?xml version="1.0"?>
   <Plugin name="Mesh" type="plot" label="Mesh" version="1.0" vartype="mesh" iconFile="Mesh.xpm">
     <Attribute name="MeshAttributes" purpose="Attributes for the mesh plot" persistent="true" codefile="MeshAttributes.code">
+      <Enum name="PointType">
+        Box
+        Axis
+        Icosahedron
+      </Enum>
       <Field name="legendFlag" label="Legend" type="bool">
         true
       </Field>
@@ -48,6 +53,9 @@
       </Field>
       <Field name="pointSizeVar" label="Point size by var" type="string">
         default
+      </Field>
+      <Field name="pointType" label="Point Type" type="enum" subtype="PointType">
+        Box
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>

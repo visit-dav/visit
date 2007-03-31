@@ -678,6 +678,9 @@ avtMeshPlot::ApplyOperators(avtDataObject_p input)
 //    Jeremy Meredith, Fri Dec 20 11:36:03 PST 2002
 //    Added scaling of point variables by a scalar field.
 //
+//    Hank Childs, Thu Aug 21 23:07:47 PDT 2003
+//    Added support for different types of glyphs.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -698,6 +701,7 @@ avtMeshPlot::ApplyRenderingTransformation(avtDataObject_p input)
             glyphPoints->SetScaleVariable("default");
         }
         glyphPoints->SetInput(dob);
+        glyphPoints->SetGlyphType((int) atts.GetPointType());
         dob = glyphPoints->GetOutput();
     }
     else// if (dob->GetInfo().GetAttributes().GetTopologicalDimension() > 0)

@@ -47,13 +47,19 @@
 #   Sean Ahern, Wed Jun 11 13:30:23 PDT 2003
 #   Added avtVectorCrossProductFilter.
 #
+#   Hank Childs, Wed Aug 20 10:48:55 PDT 2003
+#   Added Conditional directory.
+#
+#   Hank Childs, Thu Aug 21 10:41:15 PDT 2003
+#   Added NMats.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 
-SUBDIRS=Abstract Management General Math MeshQuality 
-SRC=$(Abstract_src) $(Management_src) $(General_src) $(Math_src) $(MeshQuality_src) 
+SUBDIRS=Abstract Conditional General Management Math MeshQuality 
+SRC=$(Abstract_src) $(Conditional_src) $(General_src) $(Management_src) $(Math_src) $(MeshQuality_src) 
 
 Abstract_src= \
   Abstract/avtBinaryMathFilter.C \
@@ -61,9 +67,17 @@ Abstract_src= \
   Abstract/avtMultipleInputExpressionFilter.C \
   Abstract/avtUnaryMathFilter.C
 
-Management_src= \
-  Management/avtExpressionEvaluatorFilter.C \
-  Management/avtConstantCreatorFilter.C 
+Conditional_src= \
+  Conditional/avtConditionalFilter.C \
+  Conditional/avtLogicalAndFilter.C \
+  Conditional/avtLogicalOrFilter.C \
+  Conditional/avtLogicalNegationFilter.C \
+  Conditional/avtTestEqualToFilter.C \
+  Conditional/avtTestGreaterThanFilter.C \
+  Conditional/avtTestGreaterThanOrEqualToFilter.C \
+  Conditional/avtTestLessThanFilter.C \
+  Conditional/avtTestLessThanOrEqualToFilter.C \
+  Conditional/avtTestNotEqualToFilter.C
 
 General_src= \
   General/avtDegreeFilter.C \
@@ -71,10 +85,15 @@ General_src= \
   General/avtMatvfFilter.C \
   General/avtMagnitudeFilter.C \
   General/avtMeshCoordinateFilter.C \
+  General/avtNMatsFilter.C \
   General/avtProcessorIdFilter.C \
   General/avtRandomFilter.C \
   General/avtVectorComposeFilter.C \
   General/avtVectorDecomposeFilter.C
+
+Management_src= \
+  Management/avtExpressionEvaluatorFilter.C \
+  Management/avtConstantCreatorFilter.C 
 
 Math_src= \
   Math/avtAbsValFilter.C \

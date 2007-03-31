@@ -35,6 +35,7 @@ class EXPRESSION_API avtUnaryMathFilter : public avtSingleInputExpressionFilter
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
                                           int ncomponents, int ntuples) = 0;
+    virtual vtkDataArray     *CreateArray(vtkDataArray *);
 
     avtCentering              centering;
 };

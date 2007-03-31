@@ -177,7 +177,6 @@ avtMaterial *
 avtMetaData::GetMaterial(int domain)
 {
     VoidRefList list;
-    cerr << "asking for domain " << domain << endl;
     avtPipelineSpecification_p spec = GetPipelineSpecification(domain);
     source->GetMaterialAuxiliaryData(AUXILIARY_DATA_MATERIAL, NULL, spec,list);
     if (list.nList == 0)

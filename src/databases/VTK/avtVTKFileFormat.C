@@ -21,6 +21,10 @@ const char   *avtVTKFileFormat::MESHNAME="mesh";
 const char   *avtVTKFileFormat::VARNAME="VTKVar";
 
 
+static void GetListOfUniqueCellTypes(vtkUnstructuredGrid *ug, 
+                                     vtkUnsignedCharArray *uca);
+
+
 // ****************************************************************************
 //  Method: avtVTKFileFormat constructor
 //
@@ -327,6 +331,10 @@ avtVTKFileFormat::FreeUpResources(void)
 //    Hank Childs, Thu Aug 15 09:07:38 PDT 2002
 //    Add support for multiple variables.
 //
+//    Hank Childs, Thu Aug 21 23:28:44 PDT 2003
+//    Replace call to GetListOfUniqueCellTypes, which hangs in an infinite
+//    loop if there are multiple types of cells.
+//
 // ****************************************************************************
 
 void
@@ -381,7 +389,7 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) dataset;
         vtkUnsignedCharArray *types = vtkUnsignedCharArray::New();
-        ugrid->GetListOfUniqueCellTypes(types);
+        GetListOfUniqueCellTypes(ugrid, types);
 
         if (types->GetNumberOfTuples() == 1)
         {
@@ -458,6 +466,48 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
         nvars++;
     }
+}
+
+
+// ****************************************************************************
+//  Function: GetListOfUniqueCellTypes
+//
+//  Purpose:
+//     Gets a list of the unique cell types.
+//
+//  Notes:    This is done externally to the similar method in 
+//            vtkUnstructuredGrid, since that method is buggy and can get
+//            into an infinite loop.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 21, 2003
+//
+// ****************************************************************************
+
+static void
+GetListOfUniqueCellTypes(vtkUnstructuredGrid *ug, vtkUnsignedCharArray *uca)
+{
+    int  i;
+    bool   haveCellType[256];
+    for (i = 0 ; i < 256 ; i++)
+        haveCellType[i] = false;
+
+    int ncells = ug->GetNumberOfCells();
+    for (i = 0 ; i < ncells ; i++)
+        haveCellType[ug->GetCellType(i)] = true;
+
+    int ntypes = 0;
+    for (i = 0 ; i < 256 ; i++)
+        if (haveCellType[i])
+            ntypes++;
+
+    uca->SetNumberOfTuples(ntypes);
+    int idx = 0;
+    for (i = 0 ; i < 256 ; i++)
+        if (haveCellType[i])
+        {
+            uca->SetValue(idx++, i);
+        }
 }
 
 

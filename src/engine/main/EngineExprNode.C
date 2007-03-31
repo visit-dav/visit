@@ -1,3 +1,7 @@
+// ************************************************************************* //
+//                              EngineExprNode.C                             //
+// ************************************************************************* //
+
 #include <avtUnaryMinusFilter.h>
 #include <avtBinaryAddFilter.h>
 #include <avtBinarySubtractFilter.h>
@@ -16,6 +20,7 @@
 #include <avtNeighborFilter.h>
 #include <avtNodeDegreeFilter.h>
 #include <avtMatvfFilter.h>
+#include <avtNMatsFilter.h>
 #include <avtRadianToDegreeFilter.h>
 #include <avtRevolvedVolume.h>
 #include <avtRevolvedSurfaceArea.h>
@@ -41,6 +46,16 @@
 #include <avtDegreeFilter.h>
 #include <avtVMetrics.h>
 #include <avtConstantCreatorFilter.h>
+#include <avtConditionalFilter.h>
+#include <avtLogicalAndFilter.h>
+#include <avtLogicalNegationFilter.h>
+#include <avtLogicalOrFilter.h>
+#include <avtTestEqualToFilter.h>
+#include <avtTestGreaterThanFilter.h>
+#include <avtTestGreaterThanOrEqualToFilter.h>
+#include <avtTestLessThanFilter.h>
+#include <avtTestLessThanOrEqualToFilter.h>
+#include <avtTestNotEqualToFilter.h>
 
 #include <stdio.h>
 #include <ExpressionException.h>
@@ -252,6 +267,9 @@ EngineVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Sean Ahern, Wed Jun 11 13:44:52 PDT 2003
 //      Added vector cross product.
 //
+//      Hank Childs, Thu Aug 21 09:54:51 PDT 2003
+//      Added conditionals/comparisons.
+//
 // ****************************************************************************
 void
 EngineFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -294,6 +312,8 @@ EngineFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtBinaryMultiplyFilter();
     else if (functionName == "matvf")
         f = new avtMatvfFilter();
+    else if (functionName == "nmats")
+        f = new avtNMatsFilter();
     else if (functionName == "degree")
         f = new avtDegreeFilter();
     else if (functionName == "polar")
@@ -306,6 +326,28 @@ EngineFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtGradientFilter();
     else if (functionName == "magnitude")
         f = new avtMagnitudeFilter();
+    else if (functionName == "if")
+        f = new avtConditionalFilter();
+    else if (functionName == "and")
+        f = new avtLogicalAndFilter();
+    else if (functionName == "or")
+        f = new avtLogicalOrFilter();
+    else if (functionName == "not")
+        f = new avtLogicalNegationFilter();
+    else if (functionName == "le" || functionName == "lte")
+        f = new avtTestLessThanOrEqualToFilter();
+    else if (functionName == "ge" || functionName == "gte")
+        f = new avtTestGreaterThanOrEqualToFilter();
+    else if (functionName == "lt")
+        f = new avtTestLessThanFilter();
+    else if (functionName == "gt")
+        f = new avtTestGreaterThanFilter();
+    else if (functionName == "eq" || functionName == "equal" || 
+             functionName == "equals")
+        f = new avtTestEqualToFilter();
+    else if (functionName == "ne" || functionName == "neq" ||
+             functionName == "notequal" || functionName == "notequals")
+        f = new avtTestNotEqualToFilter();
     else if (functionName == "neighbor")
         f = new avtNeighborFilter();
     else if (functionName == "node_degree")
