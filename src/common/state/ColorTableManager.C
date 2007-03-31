@@ -216,13 +216,16 @@ ColorTableManager::ImportHelper(void *data, const std::string &ctFileName,
 // Creation:   Mon Jul 7 15:43:49 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jul 11 15:44:40 PST 2003
+//   Fixed so it works on Windows.
+//
 // ****************************************************************************
 
 void
 ColorTableManager::ImportColorTable(const std::string &ctFileName)
 {
-    if(ctFileName.substr(ctFileName.size() - 3, 3) == ".ct")
+    if(ctFileName.size() > 3 &&
+       ctFileName.substr(ctFileName.size() - 3) == ".ct")
     {
         //
         // Read the color table from the XML file.

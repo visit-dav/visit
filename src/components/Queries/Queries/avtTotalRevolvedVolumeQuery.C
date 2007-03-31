@@ -19,18 +19,24 @@ using     std::string;
 //  Programmer: Kathleen Bonnell 
 //  Creation:   September 30, 2002 
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Jul 11 16:06:59 PDT 2003
+//    Set units_append.
+//
 // ****************************************************************************
 
 avtTotalRevolvedVolumeQuery::avtTotalRevolvedVolumeQuery() : avtSummationQuery()
 {
     string      varname = "revolved_volume";
     string      sum_type = "RevolvedVolume";    
+    string      units_append = "^3";    
 
     volume      = new avtRevolvedVolume;
     volume->SetOutputVariableName(varname.c_str());
 
     SetVariableName(varname);
     SetSumType(sum_type);
+    SetUnitsAppend(units_append);
     SumGhostValues(false);
 }
 

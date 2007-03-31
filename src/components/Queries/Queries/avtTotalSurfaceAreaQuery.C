@@ -21,12 +21,17 @@ using     std::string;
 //  Programmer: Kathleen Bonnell 
 //  Creation:   September 30, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Jul 11 16:06:59 PDT 2003
+//    Set units_append.
+//
 // ****************************************************************************
 
 avtTotalSurfaceAreaQuery::avtTotalSurfaceAreaQuery() : avtSummationQuery()
 {
     string      varname = "area";
     string      sum_type = "Surface Area";    
+    string      units_append = "^2";    
 
     facelist  = new avtFacelistFilter;
 
@@ -35,6 +40,7 @@ avtTotalSurfaceAreaQuery::avtTotalSurfaceAreaQuery() : avtSummationQuery()
 
     SetVariableName(varname);
     SetSumType(sum_type);
+    SetUnitsAppend(units_append);
     SumGhostValues(false);
 
     // avtVMetricArea will return -1 for cells that are neither triangles

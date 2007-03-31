@@ -10,14 +10,6 @@
 #include <NoInputException.h>
 #include <avtSourceFromAVTDataset.h>
 
-#if defined(_WIN32)
-// GetMessage is a reserved Win32 API function name that is really a
-// macro. Since we use GetMessage as certain method names, we have to
-// undefine the macro. Really, we should *NEVER* use the name GetMessage.
-#ifdef GetMessage
-#undef GetMessage
-#endif
-#endif
 
 // ****************************************************************************
 //  Method: avtDatasetQuery constructor
@@ -29,12 +21,16 @@
 //    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002 
 //    Initialize new members currentNode, totalNodes.
 //
+//    Kathleen Bonnell, Fri Jul 11 16:19:32 PDT 2003 
+//    Initialize value. 
+//
 // ****************************************************************************
 
 avtDatasetQuery::avtDatasetQuery() : avtDatasetSink() 
 {
     currentNode = 0;
     totalNodes = 0;
+    resValue = 0.;
 }
 
 
@@ -53,6 +49,9 @@ avtDatasetQuery::avtDatasetQuery() : avtDatasetSink()
 //    member from argument.  Move creation of artificial pipeline to
 //    the derived types that actually need one.
 //  
+//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002 
+//    Set queryAtts results value. 
+//    
 // ****************************************************************************
 
 void
@@ -83,7 +82,8 @@ avtDatasetQuery::PerformQuery(QueryAttributes *qA)
     //
     // Retrieve the query results and set the message in the atts. 
     //
-    queryAtts.SetResultsMessage(GetMessage());
+    queryAtts.SetResultsMessage(resMsg);
+    queryAtts.SetResultsValue(resValue);
     UpdateProgress(1, 0);
 
     *qA = queryAtts;

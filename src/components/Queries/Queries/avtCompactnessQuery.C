@@ -144,6 +144,9 @@ avtCompactnessQuery::MidExecute(void)
 //    Added new queries.  Moved some logic to MidExecute since this is 
 //    now a two-pass query.
 //
+//    Kathleen Bonnell, Fri Jul 11 16:29:41 PDT 2003 
+//    Renamed 'SetMessage' to 'SetResultMessage'. 
+//
 // ****************************************************************************
 
 void
@@ -208,7 +211,7 @@ avtCompactnessQuery::PostExecute(void)
                  "NOTE -- additional calculations are available if\n"
                  "        a density plot is selected for this query.\n",
                  msg);
-        SetMessage(msg2);
+        SetResultMessage(msg2);
     }
     else
     {
@@ -229,7 +232,7 @@ avtCompactnessQuery::PostExecute(void)
                  centMassX, centMassY,
                  distBound_dv_den_vol,
                  distCMass_dv_den_vol);
-        SetMessage(msg2);
+        SetResultMessage(msg2);
     }
 }
 

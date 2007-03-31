@@ -20,12 +20,17 @@ using     std::string;
 //  Programmer: Kathleen Bonnell 
 //  Creation:   September 30, 2002 
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Jul 11 16:06:59 PDT 2003
+//    Set units_append.
+//
 // ****************************************************************************
 
 avtTotalVolumeQuery::avtTotalVolumeQuery() : avtSummationQuery()
 {
     string      varname = "volume";
     string      sum_type = "Volume";    
+    string      units_append = "^3";    
 
     volume      = new avtVMetricVolume;
     volume->SetOutputVariableName(varname.c_str());
@@ -33,6 +38,7 @@ avtTotalVolumeQuery::avtTotalVolumeQuery() : avtSummationQuery()
 
     SetVariableName(varname);
     SetSumType(sum_type);
+    SetUnitsAppend(units_append);
     SumGhostValues(false);
 }
 

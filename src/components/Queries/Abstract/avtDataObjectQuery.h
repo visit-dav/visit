@@ -33,6 +33,9 @@ typedef void (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002  
 //    Removed unnecessary SetAtts.
 //
+//    Kathleen Bonnell, Fri Jul 11 16:33:16 PDT 2003 
+//    Added units, rename GetMessage as GetResultMessage.
+//
 // ****************************************************************************
 
 class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
@@ -46,7 +49,7 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
     virtual const char           *GetDescription(void) { return NULL; };
 
     virtual void                  PerformQuery(QueryAttributes *) = 0;
-    virtual std::string           GetMessage(void) = 0;
+    virtual std::string           GetResultMessage(void) = 0;
 
     static void                   RegisterInitializeProgressCallback(
                                           InitializeProgressCallback, void *);
@@ -69,6 +72,8 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
     void                          UpdateProgress(int, int);
     virtual void                  ChangedInput(void);
     virtual void                  VerifyInput(void);
+
+    std::string                   units;
 };
 
 

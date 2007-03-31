@@ -1,5 +1,6 @@
 #ifndef SIMILARITYTRANSFORMATTRIBUTES_H
 #define SIMILARITYTRANSFORMATTRIBUTES_H
+#include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
 
@@ -18,7 +19,7 @@
 //   
 // ****************************************************************************
 
-class SimilarityTransformAttributes : public AttributeSubject
+class STATE_API SimilarityTransformAttributes : public AttributeSubject
 {
 public:
     enum AngleType

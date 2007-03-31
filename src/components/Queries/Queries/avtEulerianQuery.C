@@ -209,6 +209,10 @@ avtEulerianQuery::Execute(vtkDataSet *in_ds, const int dom)
 //  Programmer: Kathleen Bonnell
 //  Creation:   November 15, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Jul 11 16:31:45 PDT 2003
+//    Renamed 'SetMessage' to 'SetResultMessage'.
+//
 // ****************************************************************************
 
 void
@@ -276,7 +280,7 @@ avtEulerianQuery::PostExecute(void)
     }
     if (msg.size() == 0)
         msg = "Eulerian could not compute.\n" ;
-    SetMessage(msg);
+    SetResultMessage(msg);
 }
 
 

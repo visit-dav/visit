@@ -429,6 +429,10 @@ avtVectorPlot::SetColorTable(const char *ctName)
 //  Programmer: Brad Whitlock
 //  Creation:   Mon Dec 2 12:04:49 PDT 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Jul 11 16:48:03 PDT 2003
+//    Remove call to SetColorTable, as it is unnecessary here.
+//
 // ****************************************************************************
 
 void
@@ -436,8 +440,6 @@ avtVectorPlot::SetLegend(bool legendOn)
 {
     if (legendOn)
     {
-        SetColorTable(atts.GetColorTableName().c_str());
-
         // Set scaling.
         varLegend->LegendOn();
         varLegend->SetLookupTable(avtLUT->GetLookupTable());
