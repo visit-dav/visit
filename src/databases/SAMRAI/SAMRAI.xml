@@ -1,8 +1,6 @@
 <?xml version="1.0"?>
   <Plugin name="SAMRAI" type="database" label="SAMRAI" version="1.0" dbtype="MTMD">
     <Extensions> samrai </Extensions>
-    <CXXFLAGS> -I/usr/apps/hdf5/serial-1.4.5-post2/include </CXXFLAGS>
-    <LIBS>     -L/usr/apps/hdf5/serial-1.4.5-post2/lib -Wl,-Bstatic -lhdf5 -Wl,-Bdynamic  </LIBS>
+    <CXXFLAGS> $(HDF5_INCLUDE) </CXXFLAGS>
+    <LIBS>     $(HDF5_LIB)     </LIBS>
   </Plugin>
-
- 
