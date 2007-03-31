@@ -4,8 +4,8 @@
 
 #ifndef AVT_DATA_OBJECT_SOURCE_H
 #define AVT_DATA_OBJECT_SOURCE_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <avtDataObject.h>
 #include <avtPipelineSpecification.h>
@@ -15,6 +15,7 @@ typedef   bool (*AbortCallback)(void *);
 typedef   void (*ProgressCallback)(void *, const char *, const char *,int,int);
 
 
+class     avtQueryableSource;
 class     avtTerminatingSource;
 
 
@@ -35,6 +36,9 @@ class     avtTerminatingSource;
 //    Pushed progress/abort callbacks into this type from derived type
 //    avtFilter.
 //
+//    Hank Childs, Mon Jul 28 16:27:58 PDT 2003
+//    Added notion of a queryable source.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObjectSource
@@ -46,6 +50,7 @@ class PIPELINE_API avtDataObjectSource
     virtual bool                    Update(avtPipelineSpecification_p) = 0;
 
     virtual avtTerminatingSource   *GetTerminatingSource(void) = 0;
+    virtual avtQueryableSource     *GetQueryableSource(void) = 0;
 
     virtual avtDataObject_p         GetOutput(void) = 0;
 

@@ -5,6 +5,7 @@
 #include <avtDataObject.h>
 
 #include <avtDataObjectSource.h>
+#include <avtQueryableSource.h>
 #include <avtTerminatingSource.h>
 
 #include <DebugStream.h>
@@ -107,6 +108,32 @@ avtDataObject::GetTerminatingSource(void)
     }
 
     return source->GetTerminatingSource();
+}
+
+
+// ****************************************************************************
+//  Method: avtDataObject::GetQueryableSource
+//
+//  Purpose:
+//      Walks up a pipeline and finds the queryable source.  This passes a
+//      call from the data object to the next source.
+//
+//  Returns:    The queryable source object.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 28, 2003
+//
+// ****************************************************************************
+
+avtQueryableSource *
+avtDataObject::GetQueryableSource(void)
+{
+    if (source == NULL)
+    {
+        EXCEPTION0(NoInputException);
+    }
+
+    return source->GetQueryableSource();
 }
 
 

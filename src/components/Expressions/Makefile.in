@@ -32,8 +32,11 @@
 #
 # Modifications:
 #
-#   Hank Childs, Tue Nov 19 06:44:03 PST 2002
-#   Created.
+#   Sean Ahern, Thu Nov 21 15:19:34 PST 2002
+#   Added the ExpressionEvaluatorFilter.
+#
+#   Sean Ahern, Fri Mar  7 18:19:38 America/Los_Angeles 2003
+#   Reorganized some of the other filters and names.
 #
 #   Hank Childs, Fri Mar  7 09:21:53 PST 2003 
 #   Added avtRandomFilter.
@@ -41,13 +44,16 @@
 #   Hank Childs, Tue Mar 18 21:38:11 PST 2003
 #   Added avtRevolvedSurfaceArea.
 #
+#   Sean Ahern, Wed Jun 11 13:30:23 PDT 2003
+#   Added avtVectorCrossProductFilter.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 
-SUBDIRS=Abstract General Math MeshQuality 
-SRC=$(Abstract_src) $(General_src) $(Math_src) $(MeshQuality_src) 
+SUBDIRS=Abstract Management General Math MeshQuality 
+SRC=$(Abstract_src) $(Management_src) $(General_src) $(Math_src) $(MeshQuality_src) 
 
 Abstract_src= \
   Abstract/avtBinaryMathFilter.C \
@@ -55,18 +61,20 @@ Abstract_src= \
   Abstract/avtMultipleInputExpressionFilter.C \
   Abstract/avtUnaryMathFilter.C
 
+Management_src= \
+  Management/avtExpressionEvaluatorFilter.C \
+  Management/avtConstantCreatorFilter.C 
+
 General_src= \
   General/avtDegreeFilter.C \
   General/avtGradientFilter.C \
+  General/avtMatvfFilter.C \
   General/avtMagnitudeFilter.C \
-  General/avtMeshXCoordinateFilter.C \
-  General/avtMeshYCoordinateFilter.C \
-  General/avtMeshZCoordinateFilter.C \
+  General/avtMeshCoordinateFilter.C \
   General/avtProcessorIdFilter.C \
   General/avtRandomFilter.C \
-  General/avtVectorComponent1Filter.C \
-  General/avtVectorComponent2Filter.C \
-  General/avtVectorComponent3Filter.C 
+  General/avtVectorComposeFilter.C \
+  General/avtVectorDecomposeFilter.C
 
 Math_src= \
   Math/avtAbsValFilter.C \
@@ -126,7 +134,7 @@ SEROBJ=$(SRC:.C=_ser.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libexpressions
 SERLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lvisit_vtk @VTK_LIBS@ $(X_LIBS) @LIBS@
-PARLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lvisit_vtk @VTK_LIBS@ $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
+PARLIBS=${SERLIBS} @SHLIB_MPI_LIBS@
 
 ##
 ## Standard targets...

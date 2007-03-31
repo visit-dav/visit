@@ -8,6 +8,8 @@
 #include <RemoteProcess.h>
 #include <SocketConnection.h>
 #include <StatusAttributes.h>
+#include <ParsingExprList.h>
+#include <ExpressionList.h>
 #include <DebugStream.h>
 #include <TimingsManager.h>
 #include <snprintf.h>
@@ -104,9 +106,18 @@ EngineProxy::~EngineProxy()
 // Creation:   Fri May 2 15:34:54 PST 2003
 //
 // Modifications:
+//
+//    Sean Ahern, Thu Nov 21 20:14:01 PST 2002
+//    Removed AddNamedFunction (no longer needed).  Added observation of
+//    the ExpressionList.
+//
+//    Sean Ahern, Wed Feb  5 15:34:04 PST 2003
+//    Changed the interface to expression lists.
+//
+//    Sean Ahern, Tue Jul 29 12:58:08 PDT 2003
+//    Added a notification for the expression list.
 //   
 // ****************************************************************************
-
 void
 EngineProxy::SetupComponentRPCs()
 {
@@ -115,7 +126,6 @@ EngineProxy::SetupComponentRPCs()
     //
     xfer.Add(&readRPC);
     xfer.Add(&applyOperatorRPC);
-    xfer.Add(&applyNamedFunctionRPC);
     xfer.Add(&setFinalVariableNameRPC);
     xfer.Add(&makePlotRPC);
     xfer.Add(&useNetworkRPC);
@@ -130,6 +140,11 @@ EngineProxy::SetupComponentRPCs()
     xfer.Add(&defineVirtualDatabaseRPC);
     xfer.Add(&renderRPC);
     xfer.Add(&setWinAnnotAttsRPC);
+
+    //
+    // Add other state objects to the transfer object
+    //
+    xfer.Add(&exprList);
 
     // Extract some information about the engine from the command line
     // arguments that were used to create it.
@@ -242,12 +257,25 @@ EngineProxy::GetComponentName() const
 //    Jeremy Meredith, Thu Oct 24 16:15:11 PDT 2002
 //    Added material options.
 //
+//    Sean Ahern, Tue Jul 29 15:47:42 PDT 2003
+//    Made the proxy have its own expression list.  When it's different
+//    from the main one in the viewer, copy it, and send it to the engine
+//    before asking for the data object.
+//
 // ****************************************************************************
 void
 EngineProxy::ReadDataObject(const string &file, const string &var,
                             const int time, avtSILRestriction_p silr,
                             const MaterialAttributes &matopts)
 {
+    // Make sure the engine knows about our current expression list.
+    ExpressionList *vel = ParsingExprList::Instance()->GetList();
+    if (exprList != *vel)
+    {
+        exprList.CopyAttributes(vel);
+        exprList.Notify();
+    }
+
     CompactSILRestrictionAttributes *atts = silr->MakeCompactAttributes();
     readRPC(file, var, time, *atts, matopts);
     if (readRPC.GetStatus() == VisItRPC::error)
@@ -289,35 +317,6 @@ EngineProxy::ApplyOperator(const string &name, const AttributeSubject *atts)
     {
         RECONSTITUTE_EXCEPTION(applyOperatorRPC.GetExceptionType(),
                                applyOperatorRPC.GetMessage());
-    }
-}
-
-// ****************************************************************************
-//  Method: EngineProxy::ApplyNamedFunction
-//
-//  Purpose:
-//      Apply a named function to the end of the current pipeline
-//
-//  Arguments:
-//      name       the name of the function to apply
-//      nargs      the number of arguments to the function
-//
-//  Returns:    
-//
-//  Programmer: Sean Ahern
-//  Creation:   Wed Mar 20 22:01:13 PST 2002
-//
-//  Modifications:
-//
-// ****************************************************************************
-void
-EngineProxy::ApplyNamedFunction(const std::string &name, int nargs)
-{
-    applyNamedFunctionRPC(name, nargs);
-    if (applyNamedFunctionRPC.GetStatus() == VisItRPC::error)
-    {
-        RECONSTITUTE_EXCEPTION(applyNamedFunctionRPC.GetExceptionType(),
-                               applyNamedFunctionRPC.GetMessage());
     }
 }
 

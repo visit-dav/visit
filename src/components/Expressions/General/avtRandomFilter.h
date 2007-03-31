@@ -8,7 +8,8 @@
 #include <avtSingleInputExpressionFilter.h>
 
 class     vtkDataArray;
-
+class     ArgsExpr;
+class     ExprPipelineState;
 
 // ****************************************************************************
 //  Class: avtRandomFilter
@@ -31,6 +32,7 @@ class EXPRESSION_API avtRandomFilter : public avtSingleInputExpressionFilter
     virtual const char       *GetType(void) { return "avtRandomFilter"; };
     virtual const char       *GetDescription(void)
                                            {return "Assigning random #.";};
+    virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual bool              IsPointVariable(void)  { return true; };

@@ -118,6 +118,9 @@
 #    Brad Whitlock, Thu Sep 5 13:43:27 PST 2002
 #    I added purify and quantify targets.
 #
+#    Sean Ahern, Wed Feb  5 16:13:16 PST 2003
+#    Added expression support.
+#
 #    Kathleen Bonnell, Thu Apr 10 11:34:46 PDT 2003
 #    I avtmath to LIBS and TESTLIBS.
 #
@@ -132,7 +135,24 @@
 @SET_MAKE@
 @VARIABLES@
 
-LIBS=-lplugin -lmdserverrpc -lavtmath_ser -lpipeline_ser -ldatabase_ser -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lvisit_vtk @VTK_LIBS@ @LIBS@ @PTHREAD_LIB@ @X_LIBS@
+LIBS= \
+    -lparser \
+    -lplugin \
+    -lmdserverrpc \
+    -lavtmath_ser \
+    -lpipeline_ser \
+    -ldatabase_ser \
+    -ldbatts \
+    -lavtexceptions \
+    -lstate \
+    -lcomm \
+    -lmisc \
+    -lutility \
+    -lvisit_vtk \
+    @VTK_LIBS@ \
+    @LIBS@ \
+    @PTHREAD_LIB@ \
+    @X_LIBS@
 LIBDEP=
 CPPFLAGS=@CPPFLAGS@ @PLATFORM_CPPFLAGS@
 CXXFLAGS=@CXXFLAGS@ -I. -I../../include -I../../include/visit
@@ -148,7 +168,6 @@ SRC=ChangeDirectoryRPCExecutor.C GetMetaDataRPCExecutor.C ConnectRPCExecutor.C \
 OBJ=$(SRC:.C=.o)
 
 ## Source files for the test program
-TESTLIBS=-lmdserverproxy -lavtmath_ser -lpipeline_ser -lmdserverrpc -ldatabase_ser -lplugin -ldbatts -lavtexceptions -lproxybase -lmisc -lstate -lcomm -lutility -lvisit_vtk @VTK_LIBS@ @LIBS@ @PTHREAD_LIB@ @X_LIBS@
 TESTSRC=testmds.C
 TESTOBJ=testmds.o
 
@@ -178,7 +197,7 @@ quantify: $(LIBDEP) $(OBJ)
 	quantify $(CXX) $(INCLUDE) -o $(tmpbin)/mdserver $(LDFLAGS) $(OBJ) $(LIBS)
 
 $(tmpbin)/testmds: $(LIBDEP) $(TESTOBJ)
-	$(CXX) $(INCLUDE) -o $@ $(LDFLAGS) $(TESTOBJ) $(TESTLIBS)
+	$(CXX) $(INCLUDE) -o $@ $(LDFLAGS) $(TESTOBJ) $(LIBS) -lmdserverproxy -lproxybase
 
 install_bin: $(tmpbin)/mdserver
 	$(INSTALL) $(tmpbin)/mdserver $(bindir)

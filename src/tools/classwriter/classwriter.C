@@ -1060,9 +1060,9 @@ public:
             }
         }
 
-        // Persistance methods
+        // Persistence methods
         out << endl;
-        out << "    // Persistance methods" << endl;
+        out << "    // Persistence methods" << endl;
         out << "    virtual void CreateNode(DataNode *node);" << endl;
         out << "    virtual void SetFromNode(DataNode *node);" << endl;
         out << endl;
@@ -1647,7 +1647,7 @@ public:
     void WriteCreateNode(ostream &out)
     {
         out << "///////////////////////////////////////////////////////////////////////////////" << endl;
-        out << "// Persistance methods" << endl;
+        out << "// Persistence methods" << endl;
         out << "///////////////////////////////////////////////////////////////////////////////" << endl;
         out << endl;
         WriteMethodComment(out, ClassName, "CreateNode",

@@ -21,7 +21,6 @@
 #include <AppearanceAttributes.h>
 #include <ColorTableAttributes.h>
 #include <EngineList.h>
-#include <ExpressionList.h>
 #include <GlobalAttributes.h>
 #include <GlobalLineoutAttributes.h>
 #include <HostProfile.h>
@@ -50,7 +49,7 @@
 #include <ViewerActionManager.h>
 #include <ViewerAnimation.h>
 #include <ViewerConnectionProgressDialog.h>
-#include <ViewerExpressionList.h>
+#include <ParsingExprList.h>
 #include <ViewerConfigManager.h>
 #include <ViewerEngineManager.h>
 #include <ViewerRemoteProcessChooser.h>
@@ -443,7 +442,7 @@ ViewerSubject::ConnectXfer()
     xfer.Add(statusAtts);
     xfer.Add(ViewerEngineManager::GetEngineList());
     xfer.Add(avtColorTables::Instance()->GetColorTables());
-    xfer.Add(ViewerExpressionList::Instance()->GetList());
+    xfer.Add(ParsingExprList::Instance()->GetList());
     xfer.Add(ViewerWindowManager::Instance()->GetAnnotationClientAtts());
     xfer.Add(ViewerPlotList::GetClientSILRestrictionAtts());
     xfer.Add(ViewerWindowManager::Instance()->GetView2DClientAtts());
@@ -584,7 +583,7 @@ ViewerSubject::ConnectConfigManager()
     configMgr->Add(ViewerEngineManager::GetClientAtts());
     configMgr->Add(ViewerWindowManager::GetSaveWindowClientAtts());
     configMgr->Add(avtColorTables::Instance()->GetColorTables());
-    configMgr->Add(ViewerExpressionList::Instance()->GetList());
+    configMgr->Add(ParsingExprList::Instance()->GetList());
     configMgr->Add(ViewerWindowManager::GetAnimationClientAtts());
     configMgr->Add(ViewerWindowManager::GetAnnotationDefaultAtts());
     configMgr->Add(ViewerWindowManager::GetView2DClientAtts());
@@ -1026,7 +1025,7 @@ ViewerSubject::AddInitialWindows()
     // Create the window.
     //
     ViewerWindowManager *windowManager=ViewerWindowManager::Instance();
-    if(windowManager != NULL)
+    if (windowManager != NULL)
     {
         int timeid = visitTimer->StartTimer();
         // Connect
@@ -1130,7 +1129,7 @@ ViewerSubject::DelayedProcessSettings()
 void
 ViewerSubject::ProcessEventsCB(void *cbData)
 {
-    if(cbData)
+    if (cbData)
     {
          ViewerSubject *This = (ViewerSubject *)cbData;
          This->ProcessEvents();
@@ -1158,7 +1157,7 @@ ViewerSubject::ProcessEventsCB(void *cbData)
 void
 ViewerSubject::ProcessEvents()
 {
-    if(interruptionEnabled)
+    if (interruptionEnabled)
     {
          mainApp->processEvents(10);
     }
@@ -1318,14 +1317,14 @@ ViewerSubject::CustomizeAppearance()
     //
     // Set the style and inform the widgets.
     //
-    if(appearanceAtts->GetStyle() == "cde")
+    if (appearanceAtts->GetStyle() == "cde")
         mainApp->setStyle(new QCDEStyle);
-    else if(appearanceAtts->GetStyle() == "windows")
+    else if (appearanceAtts->GetStyle() == "windows")
         mainApp->setStyle(new QWindowsStyle);
-    else if(appearanceAtts->GetStyle() == "platinum")
+    else if (appearanceAtts->GetStyle() == "platinum")
         mainApp->setStyle(new QPlatinumStyle);
 #if QT_VERSION >= 230
-    else if(appearanceAtts->GetStyle() == "sgi")
+    else if (appearanceAtts->GetStyle() == "sgi")
         mainApp->setStyle(new QSGIStyle);
 #endif
     else
@@ -1349,7 +1348,7 @@ ViewerSubject::CustomizeAppearance()
     fg.hsv(&h,&s,&v);
     QColor base = Qt::white;
     bool bright_mode = false;
-    if(v >= 255 - 50)
+    if (v >= 255 - 50)
     {
         base = btn.dark(150);
         bright_mode = TRUE;
@@ -1372,7 +1371,7 @@ ViewerSubject::CustomizeAppearance()
                     (fg.blue()+btn.blue())/2);
     QColorGroup dcg(disabled, btn, btn.light( 125 ), btn.dark(), btn.dark(150),
                     disabled, Qt::white, Qt::white, bg );
-    if(bright_mode)
+    if (bright_mode)
     {
         dcg.setColor(QColorGroup::HighlightedText, base);
         dcg.setColor(QColorGroup::Highlight, Qt::white);
@@ -1568,7 +1567,7 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
                debugLevel = atoi(argv2[++i]);
             else
                cerr << "Warning: debug level not specified, assuming 1" << endl;
-            if(debugLevel > 0 && debugLevel < 6)
+            if (debugLevel > 0 && debugLevel < 6)
             {
                 ViewerServerManager::SetDebugLevel(debugLevel);
             }
@@ -1588,10 +1587,10 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
             // This argument and its following options are dangerous to pass on
             i += 2;
         }
-        else if(strcmp(argv2[i], "-background") == 0 ||
+        else if (strcmp(argv2[i], "-background") == 0 ||
                 strcmp(argv2[i], "-bg") == 0)
         {
-            if(i + 1 >= argc2)
+            if (i + 1 >= argc2)
             {
                 cerr << "The -background option must be followed by a color."
                      << endl;
@@ -1608,10 +1607,10 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
             // not passed along to other components.
             ++i;
         }
-        else if(strcmp(argv2[i], "-foreground") == 0 ||
+        else if (strcmp(argv2[i], "-foreground") == 0 ||
                 strcmp(argv2[i], "-fg") == 0)
         {
-            if(i + 1 >= argc2)
+            if (i + 1 >= argc2)
             {
                 cerr << "The -foreground option must be followed by a color."
                      << endl;
@@ -1622,15 +1621,15 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
             appearanceAtts->SetForeground(std::string(argv2[i+1]));
             ++i;
         }
-        else if(strcmp(argv2[i], "-style") == 0)
+        else if (strcmp(argv2[i], "-style") == 0)
         {
-            if(i + 1 >= argc2)
+            if (i + 1 >= argc2)
             {
                 cerr << "The -style option must be followed by a style name."
                      << endl;
                 continue;
             }
-            if(strcmp(argv2[i + 1], "motif") == 0 ||
+            if (strcmp(argv2[i + 1], "motif") == 0 ||
                strcmp(argv2[i + 1], "cde") == 0 ||
                strcmp(argv2[i + 1], "windows") == 0 ||
                strcmp(argv2[i + 1], "platinum") == 0
@@ -1643,9 +1642,9 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
             }
             ++i;
         }
-        else if(strcmp(argv2[i], "-font") == 0)
+        else if (strcmp(argv2[i], "-font") == 0)
         {
-            if(i + 1 >= argc2)
+            if (i + 1 >= argc2)
             {
                 cerr << "The -font option must be followed by a "
                         "font description." << endl;
@@ -1654,7 +1653,7 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
             appearanceAtts->SetFontDescription(argv2[i + 1]);
             ++i;
         }
-        else if(strcmp(argv2[i], "-timing") == 0)
+        else if (strcmp(argv2[i], "-timing") == 0)
         {
             //
             // Enable timing and pass the option to child processes.
@@ -1663,7 +1662,7 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
 
             unknownArguments.push_back(argv2[i]);
         }
-        else if(strcmp(argv2[i], "-noint") == 0)
+        else if (strcmp(argv2[i], "-noint") == 0)
         {
             interruptionEnabled = false;
         }
@@ -1786,7 +1785,7 @@ ViewerSubject::MessageRendererThread(const char *message)
 void
 ViewerSubject::Error(const char *message)
 {
-    if((message == 0) || (strlen(message) < 1))
+    if ((message == 0) || (strlen(message) < 1))
         return;
 
     // Send the message to the observers of the viewer's messageAtts.
@@ -1816,7 +1815,7 @@ ViewerSubject::Error(const char *message)
 void
 ViewerSubject::Warning(const char *message)
 {
-    if((message == 0) || (strlen(message) < 1))
+    if ((message == 0) || (strlen(message) < 1))
         return;
 
     // Send the message to the observers of the viewer's messageAtts.
@@ -1846,7 +1845,7 @@ ViewerSubject::Warning(const char *message)
 void
 ViewerSubject::Message(const char *message)
 {
-    if((message == 0) || (strlen(message) < 1))
+    if ((message == 0) || (strlen(message) < 1))
         return;
 
     // Send the message to the observers of the viewer's messageAtts.
@@ -2452,7 +2451,7 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
     // active animation.
     //
     const avtDatabaseMetaData *md = fs->GetMetaData(host, db, timeState);
-    if(md != NULL)
+    if (md != NULL)
     {
         if(updateNFrames)
         {
@@ -2562,7 +2561,7 @@ ViewerSubject::ReOpenDatabase()
     //
     ViewerFileServer *fileServer = ViewerFileServer::Instance();
     fileServer->ClearFile(hostDatabase);
-    if(forceClose)
+    if (forceClose)
         fileServer->CloseFile(host);
 
     //
@@ -3502,7 +3501,7 @@ ViewerSubject::SetWindowArea()
     if(smallWindow)
     {
         int x, y, w, h;
-        if(sscanf(area, "%dx%d+%d+%d", &w, &h, &x, &y) == 4)
+        if (sscanf(area, "%dx%d+%d+%d", &w, &h, &x, &y) == 4)
         {
             char tmp[30];
             w /= 2;
@@ -3909,10 +3908,10 @@ ViewerSubject::ReadFromParentAndCheckForInterruption()
 {
     bool retval = false;
 
-    if(interruptionEnabled)
+    if (interruptionEnabled)
     {
         // See if the connection needs to be read.
-        if(xfer.GetInputConnection()->NeedsRead())
+        if (xfer.GetInputConnection()->NeedsRead())
         {
             xfer.GetInputConnection()->Fill();
         }
@@ -3925,7 +3924,7 @@ ViewerSubject::ReadFromParentAndCheckForInterruption()
         //
         // If we interrupted then stop animations.
         //
-        if(retval)
+        if (retval)
             ViewerWindowManager::Instance()->Stop();
     }
 
@@ -4263,30 +4262,30 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
     // Only show the dialog if windows have been shown.
     bool windowsShowing = !ViewerWindowManager::Instance()->GetWindowsHidden();
 
-    if(stage == 0)
+    if (stage == 0)
     {
         This->StartLaunchProgress();
-        if(windowsShowing)
+        if (windowsShowing)
         {
             dialog->show();
             retval = !dialog->getCancelled();
         }
     }
-    else if(stage == 1)
+    else if (stage == 1)
     {
-        if(windowsShowing)
+        if (windowsShowing)
         {
 #if QT_VERSION >= 300
-            if(qApp->hasPendingEvents())
+            if (qApp->hasPendingEvents())
 #endif
                 qApp->processOneEvent();
             retval = !dialog->getCancelled();
         }
     }
-    else if(stage == 2)
+    else if (stage == 2)
     {
         This->EndLaunchProgress();
-        if(windowsShowing) 
+        if (windowsShowing) 
         {
             if(!dialog->getIgnoreHide())
                 dialog->hide();

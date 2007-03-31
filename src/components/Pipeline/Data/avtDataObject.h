@@ -15,6 +15,7 @@
 class     avtDataObjectSource;
 class     avtDataObjectWriter;
 class     avtTerminatingSource;
+class     avtQueryableSource;
 
 
 // **************************************************************************** 
@@ -37,6 +38,7 @@ class PIPELINE_API avtDataObject
     virtual                         ~avtDataObject() {;};
 
     avtTerminatingSource            *GetTerminatingSource(void);
+    avtQueryableSource              *GetQueryableSource(void);
 
     bool                             Update(avtPipelineSpecification_p);
     void                             SetSource(avtDataObjectSource *);

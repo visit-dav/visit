@@ -20,6 +20,11 @@ class     vtkDataArray;
 //  Programmer: Sean Ahern
 //  Creation:   Tue Jun 25 19:40:54 PDT 2002
 //
+//  Modifications:
+//      Sean Ahern, Fri Jun 13 11:16:09 PDT 2003
+//      Added the NumVariableArguments function, specifying that all
+//      subclasses of BinaryMathFilter process two variable arguments.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtBinaryMathFilter 
@@ -31,6 +36,7 @@ class EXPRESSION_API avtBinaryMathFilter
 
     virtual const char       *GetType(void)   { return "avtBinaryMathFilter";};
     virtual const char       *GetDescription(void) = 0;
+    virtual int               NumVariableArguments() { return 2; }
 
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);

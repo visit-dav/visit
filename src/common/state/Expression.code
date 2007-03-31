@@ -19,6 +19,10 @@ Expression::GetTypeString(const Expression::ExprType t)
         return "Scalar Mesh Variable";
     case VectorMeshVar:
         return "Vector Mesh Variable";
+    case TensorMeshVar:
+        return "Tensor Mesh Variable";
+    case SymmetricTensorMeshVar:
+        return "Symmetric Tensor Mesh Variable";
     case Mesh:
         return "Mesh";
     case Material:
@@ -40,6 +44,10 @@ Expression::GetTypeId(const std::string s)
         return ScalarMeshVar;
     else if (s == "Vector Mesh Variable")
         return VectorMeshVar;
+    else if (s == "Tensor Mesh Variable")
+        return TensorMeshVar;
+    else if (s == "Symmetric Tensor Mesh Variable")
+        return SymmetricTensorMeshVar;
     else if (s == "Mesh")
         return Mesh;
     else if (s == "Material")
@@ -49,3 +57,4 @@ Expression::GetTypeId(const std::string s)
     else
         return Unknown;
 }
+

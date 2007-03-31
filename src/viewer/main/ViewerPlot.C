@@ -24,7 +24,7 @@
 #include <PlotPluginInfo.h>
 #include <PlotQueryInfo.h>
 #include <ViewerEngineManager.h>
-#include <ViewerExpressionList.h>
+#include <ParsingExprList.h>
 #include <ViewerFileServer.h>
 #include <ViewerMessaging.h>
 #include <ViewerOperator.h>
@@ -38,6 +38,7 @@
 #include <ImproperUseException.h>
 #include <AbortException.h>
 #include <InvalidColortableException.h>
+#include <Expression.h>
 
 extern ViewerSubject *viewerSubject;   // FIX_ME This is a hack.
 
@@ -3331,6 +3332,12 @@ ViewerPlot::GetPlotQueryInfo()
 //    Brad Whitlock, Thu Jul 18 14:45:09 PST 2002
 //    I moved a bunch of the expression code into ViewerExpressionList.
 //
+//    Sean Ahern, Thu Oct 17 17:22:52 PDT 2002
+//    Changed the ViewerExpressionList interface slightly.
+//
+//    Sean Ahern, Wed Feb  5 14:34:38 PST 2003
+//    Removed the ViewerExpressionList for the more general ParsingExprList.
+//
 // ****************************************************************************
 
 avtVarType 
@@ -3339,11 +3346,11 @@ ViewerPlot::GetVarType()
     avtVarType retval = AVT_UNKNOWN_TYPE;
 
     // Check if the variable is an expression.
-    ViewerExpressionList *elist = ViewerExpressionList::Instance();
-    if (elist->VariableIsExpression(variableName))
+    Expression *exp = ParsingExprList::GetExpression(variableName);
+    if (exp != NULL)
     {
         // Get the expression type.
-        retval = elist->GetExpressionType(variableName);
+        retval = ParsingExprList::GetAVTType(exp->GetType());
     }
     else
     {

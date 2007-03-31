@@ -2,15 +2,16 @@
 //                            avtDatasetExaminer.h                           //
 // ************************************************************************* //
 
-#ifndef AVT_DATASET_EXAMINER
-#define AVT_DATASET_EXAMINER
+#ifndef AVT_DATASET_EXAMINER_H
+#define AVT_DATASET_EXAMINER_H
+
 #include <pipeline_exports.h>
 
-
 #include <avtDataset.h>
+#include <avtTypes.h>
 
 
-class     vtkCell;
+class     vtkDataArray;
 
 
 // ****************************************************************************
@@ -43,6 +44,8 @@ class PIPELINE_API avtDatasetExaminer
     static void               FindMaximum(avtDataset_p &, double *, double &);
     static bool               FindZone(avtDataset_p &, int, int, double *);
     static bool               FindNode(avtDataset_p &, int, int, double *);
+    static vtkDataArray      *GetArray(avtDataset_p &, const char *, int,
+                                       avtCentering &);
 };
 
 

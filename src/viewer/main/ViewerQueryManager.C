@@ -28,7 +28,7 @@
 #include <ViewerActionManager.h>
 #include <ViewerAnimation.h>
 #include <ViewerEngineManager.h>
-#include <ViewerExpressionList.h>
+#include <ParsingExprList.h>
 #include <ViewerFileServer.h>
 #include <ViewerMessaging.h>
 #include <ViewerOperator.h>
@@ -1735,6 +1735,8 @@ ViewerQueryManager::SetGlobalLineoutAttsFromClient()
 //  Creation:   March 14, 2003
 //
 //  Modifications:
+//      Sean Ahern, Mon Mar 17 22:30:07 America/Los_Angeles 2003
+//      Changed to the new expression interface.
 // 
 // ****************************************************************************
 
@@ -1744,11 +1746,11 @@ ViewerQueryManager::DetermineVarType(const char *hName, const char *dbName, cons
     avtVarType retval = AVT_UNKNOWN_TYPE;
 
     // Check if the variable is an expression.
-    ViewerExpressionList *elist = ViewerExpressionList::Instance();
-    if (elist->VariableIsExpression(varName))
+    Expression *exp = ParsingExprList::GetExpression(varName);
+    if (exp != NULL)
     {
         // Get the expression type.
-        retval = elist->GetExpressionType(varName);
+        retval = ParsingExprList::GetAVTType(exp->GetType());
     }
     else
     {

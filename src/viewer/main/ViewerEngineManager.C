@@ -23,8 +23,6 @@
 #include <ViewerMessaging.h>
 #include <ViewerOperator.h>
 #include <ViewerPlot.h>
-#include <ViewerExpressionList.h>
-#include <ExprNode.h>
 #include <ViewerSubject.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
@@ -306,7 +304,7 @@ ViewerEngineManager::GetEngineIndex(const char *hostName) const
 {
     int retval = -1;
 
-    for(int i = 0; i < nEngines; ++i)
+    for (int i = 0; i < nEngines; ++i)
     {
         if(strcmp(engines[i]->hostName, hostName) == 0)
         {
@@ -497,7 +495,7 @@ ViewerEngineManager::CreateEngine(const char *hostName,
 
             // Add the new engine to the engine list.
             newEngines = new EngineListEntry*[nEngines+1];
-            for(int i = 0; i < nEngines; i++)
+            for (int i = 0; i < nEngines; i++)
             {
                 newEngines[i] = engines[i];
             }
@@ -975,8 +973,14 @@ ViewerEngineManager::LaunchMessage(const char *hostName) const
 //    Brad Whitlock, Thu Jul 18 14:31:37 PST 2002
 //    I moved some of the expression code into ViewerExpressionList.
 //
+//    Sean Ahern, Thu Oct 17 17:05:45 PDT 2002
+//    Moved the expression parsing into the engine.
+//
 //    Jeremy Meredith, Thu Oct 24 16:17:19 PDT 2002
 //    Added setting of the plot material options from the global options.
+//
+//    Sean Ahern, Wed Nov 20 14:44:16 PST 2002
+//    Moved the expression stuff that was here into the engine.
 //
 //    Eric Brugger, Thu Dec 19 11:01:49 PST 2002
 //    I added keyframing support.
@@ -1005,10 +1009,6 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot,
 
     TRY
     {
-        // Check to see if this plot's variable is an expression.
-        ViewerExpressionList *elist = ViewerExpressionList::Instance();
-        ExprNode *exprTree = elist->GetExpressionTree(plot->GetVariableName());
-
         int state = plot->GetDatabaseState(frame);
 
         // Is the plot's database a virtual database? If it is, then we
@@ -1024,22 +1024,12 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot,
                                           md->GetTimeStepNames(), state);
         }
 
-        // Did we get an expression tree?
-        if (exprTree != NULL)
-        {
-            // Yes, tell the expression tree to generate the plot.
-            exprTree->GeneratePlot(engine, plot, state);
-            engine->SetFinalVariableName(plot->GetVariableName());
-        }
-        else
-        {
-            // No, do it ourselves.  Tell the engine to read a single db of
-            // data.
-            engine->ReadDataObject(plot->GetDatabaseName(),
-                                   plot->GetVariableName(),
-                                   state, plot->GetSILRestriction(),
-                                   *GetMaterialClientAtts());
-        }
+        // Tell the engine to generate the plot
+        engine->ReadDataObject(plot->GetDatabaseName(),
+                               plot->GetVariableName(),
+                               state, plot->GetSILRestriction(),
+                               *GetMaterialClientAtts());
+        engine->SetFinalVariableName(plot->GetVariableName());
 
         //
         // Apply any operators.
@@ -1053,7 +1043,7 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot,
         //
         // Do the plot.
         //
-        if(success)
+        if (success)
             success = plot->ExecuteEngineRPC(frame);
 
         // MCM_FIX_ME
@@ -1065,7 +1055,7 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot,
         //
         // Return the result.
         //
-        if(success)
+        if (success)
         {
 #ifdef VIEWER_MT
             retval = engine->Execute(replyWithNullData, 0, 0);
@@ -1399,8 +1389,8 @@ ViewerEngineManager::StartPick(const char *hostName_, const bool flag,
 // Purpose: 
 //   Engine SetWinAnnotAtts RPC wrapped for safety.
 //
-// Programmer: Mark C. Miller 
-// Creation:   15Jul03 
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 22 14:50:06 PST 2002
 //
 // Modifications:
 //   
@@ -1435,7 +1425,7 @@ bool
 ViewerEngineManager::ClearCache(const char *hostName_, const char *dbName)
 {
     ENGINE_PROXY_RPC_BEGIN;
-    if(dbName == 0)
+    if (dbName == 0)
         engine->ClearCache();
     else
         engine->ClearCache(dbName);
@@ -1493,18 +1483,18 @@ ViewerEngineManager::GetEngineList()
 void
 ViewerEngineManager::RemoveEngine(int engineIndex, bool close)
 {
-    if(engineIndex >= 0 && engineIndex < nEngines)
+    if (engineIndex >= 0 && engineIndex < nEngines)
     {
         // Delete the entry in the engine list for the specified index.    
         delete [] engines[engineIndex]->hostName;
         engines[engineIndex]->engine->GetStatusAttributes()->Detach(this);
-        if(close)
+        if (close)
             engines[engineIndex]->engine->Close();
         delete engines[engineIndex]->engine;
         delete engines[engineIndex];
 
         // Get rid of the hole in the engine list.
-        for(int i = engineIndex; i < nEngines - 1; ++i)
+        for (int i = engineIndex; i < nEngines - 1; ++i)
         {
             engines[i] = engines[i+1];
         }
@@ -1639,9 +1629,9 @@ ViewerEngineManager::Update(Subject *TheChangedSubject)
 
     // Figure out the engineIndex based on the pointer.
     int engineIndex = nEngines;
-    for(int i = 0; i < nEngines; ++i)
+    for (int i = 0; i < nEngines; ++i)
     {
-        if(engines[i]->engine->GetStatusAttributes() == statusAtts)
+        if (engines[i]->engine->GetStatusAttributes() == statusAtts)
         {
             engineIndex = i;
             break;
@@ -1649,27 +1639,27 @@ ViewerEngineManager::Update(Subject *TheChangedSubject)
     }
 
     // Relay the message to the GUI.
-    if(statusAtts->GetClearStatus())
+    if (statusAtts->GetClearStatus())
     {
         // Send a message to clear the status bar.
-        if(engineIndex < nEngines)
+        if (engineIndex < nEngines)
             ClearStatus(engines[engineIndex]->hostName);
         else
             ClearStatus();
     }
-    else if(statusAtts->GetMessageType() == 1)
+    else if (statusAtts->GetMessageType() == 1)
     {
         // The message field was selected.
-        if(engineIndex < nEngines)
+        if (engineIndex < nEngines)
             Status(engines[engineIndex]->hostName,
                    statusAtts->GetMessage().c_str());
         else
             Status(statusAtts->GetMessage().c_str());
     }
-    else if(statusAtts->GetMessageType() == 3)
+    else if (statusAtts->GetMessageType() == 3)
     {
         // The message field was selected.
-        if(engineIndex < nEngines)
+        if (engineIndex < nEngines)
         {
             std::string tmp1("The compute engine running on host ");
             std::string tmp2(engines[engineIndex]->hostName);
@@ -1681,7 +1671,7 @@ ViewerEngineManager::Update(Subject *TheChangedSubject)
         else
             Warning(statusAtts->GetMessage().c_str());
     }
-    else if(engineIndex < nEngines)
+    else if (engineIndex < nEngines)
     {
         Status(engines[engineIndex]->hostName, statusAtts->GetPercent(),
                statusAtts->GetCurrentStage(),
@@ -1944,7 +1934,7 @@ ViewerEngineManager::GetMaterialDefaultAtts()
 void
 ViewerEngineManager::SetClientMaterialAttsFromDefault()
 {
-    if(materialDefaultAtts != 0 && materialClientAtts != 0)
+    if (materialDefaultAtts != 0 && materialClientAtts != 0)
     {
         *materialClientAtts = *materialDefaultAtts;
         materialClientAtts->Notify();
@@ -1965,7 +1955,7 @@ ViewerEngineManager::SetClientMaterialAttsFromDefault()
 void
 ViewerEngineManager::SetDefaultMaterialAttsFromClient()
 {
-    if(materialDefaultAtts != 0 && materialClientAtts != 0)
+    if (materialDefaultAtts != 0 && materialClientAtts != 0)
     {
         *materialDefaultAtts = *materialClientAtts;
     }

@@ -185,6 +185,9 @@
 #    Renamed ViewerEngineLauncher to ViewerEngineChooser. I also added
 #    the ViewerConnectionProgressDialog.
 #
+#    Sean Ahern, Fri Oct  4 11:26:05 PDT 2002
+#    Moved most of the parser code to its own library.
+#
 #    Brad Whitlock, Wed Nov 20 13:32:34 PST 2002
 #    I removed ViewerPalette.{C,h} and ViewerColorTables.{C,h}
 #
@@ -193,6 +196,9 @@
 #
 #    Kathleen Bonnell, Wed Feb  5 09:06:10 PST 2003  
 #    Added ViewerHostProfileSelectorNoWin, ViewerHostProfileSelectorWithWin. 
+#
+#    Sean Ahern, Wed Feb  5 15:27:11 PST 2003
+#    Removed the ViewerExpr stuff since it doesn't differ from the global ones.
 #
 #    Kathleen Bonnell,  Wed Mar  5 11:32:18 PST 2003 
 #    Added LineoutListItem.
@@ -211,6 +217,10 @@
 #    necessary for the way we have plots set up now.  The Histogram plot
 #    uses the histogram filter, which uses an expression.
 #
+#    Sean Ahern, Wed Jul  2 14:41:46 PDT 2003
+#    Removed the link against the expressions library.  This fails with my
+#    new expressions engine.
+#
 ##############################################################################
 
 ##
@@ -228,7 +238,7 @@ VTK_LIBS=@VTK_LIBS@
 VTK_INCLUDE=@VTK_INCLUDES@
 LIBS=-L../../lib -L../../vtkqt -lengineproxy -lenginerpc -lviewerrpc \
      -lmdserverproxy -lmdserverrpc -lvclproxy -lvclrpc -ldbatts -lparser -lplugin -lviswindow \
-     -lavtmath_ser -lexpressions_ser -lplotter -lpipeline_ser -lvisit_vtk -lvtkqt -lwinutil \
+     -lavtmath_ser -lplotter -lpipeline_ser -lvisit_vtk -lvtkqt -lwinutil \
      @QT_LIBS@ -lproxybase -lmisc -lcomm -lstate -lutility -lavtexceptions \
      $(VTK_LIBS) $(X_LIBS) @LIBS@ @PTHREAD_LIB@
 
@@ -237,7 +247,7 @@ LIBDEP=
 MOC=@QT_MOC@
 CXXFLAGS=@CXXFLAGS@ @QT_CXXFLAGS@ 
 CPPFLAGS=@CPPFLAGS@ $(VTK_INCLUDE) -I../../vtkqt \
-         -I../parser -I./icons -I../../include -I../../include/visit
+         -I./icons -I../../include -I../../include/visit -I.
 
 
 
@@ -248,8 +258,6 @@ CPPFLAGS=@CPPFLAGS@ $(VTK_INCLUDE) -I../../vtkqt \
 SRC= \
     ActionGroupDescription.C \
     AnimationActions.C \
-    ExprNode.C \
-    ExprParser.C \
     LineoutListItem.C \
     NoEngineException.C \
     PlotAndOperatorActions.C \
@@ -261,7 +269,6 @@ SRC= \
     ViewerConfigManager.C \
     ViewerConnectionProgressDialog.C \
     ViewerEngineManager.C \
-    ViewerExpressionList.C \
     ViewerFileServer.C \
     ViewerHostProfileSelector.C \
     ViewerHostProfileSelectorNoWin.C \

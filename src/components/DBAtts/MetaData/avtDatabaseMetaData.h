@@ -11,6 +11,7 @@
 
 #include <avtTypes.h>
 #include <AttributeSubject.h>
+#include <ExpressionList.h>
 
 
 //----------------------------------------------------------------------------
@@ -229,9 +230,7 @@ class DBATTS_API avtDatabaseMetaData : public AttributeSubject
     doubleVector times;
     intVector    timesAreAccurate;
 
-    stringVector expressionNames;
-    stringVector expressionDefns;
-    intVector    expressionTypes;
+    ExpressionList exprList;
 
     std::vector<avtMeshMetaData *>     meshes;
     std::vector<avtScalarMetaData *>   scalars;
@@ -306,9 +305,8 @@ public:
                                      intVector &blockIds);
     void         UnsetExtents();
 
-    void         AddExpression(const std::string &, const std::string &,
-                               avtVarType);
-    void         GetExpression(int, std::string &, std::string &, avtVarType&);
+    void         AddExpression(Expression *);
+    Expression * GetExpression(int);
     int          GetNumberOfExpressions(void);
 
     int          GetNDomains(std::string);

@@ -355,6 +355,9 @@ dnl
 dnl    Hank Childs, Thu Oct  3 11:32:29 PDT 2002
 dnl    Made an HDF5 symbol for database plugins.
 dnl
+dnl    Sean Ahern, Fri Oct  4 11:16:52 PDT 2002
+dnl    Moved the expression parser to its own library.
+dnl
 dnl    Hank Childs, Sun Oct 13 21:07:20 PDT 2002
 dnl    Add PDB check based on work by Brad Whitlock.
 dnl
@@ -2336,7 +2339,6 @@ HELP_FILES="help/Makefile"
 if test -n "$VIEWER"; then
     VIEWER_FILES="viewer/Makefile
                   viewer/rpc/Makefile
-                  viewer/parser/Makefile
                   viewer/proxy/Makefile
                   viewer/main/Makefile"
 else
@@ -2362,6 +2364,7 @@ fi
 COMMON_FILES="common/Makefile
               common/comm/Makefile
               common/misc/Makefile
+              common/parser/Makefile
               common/plugin/Makefile
               common/proxybase/Makefile
               common/siloobj/Makefile

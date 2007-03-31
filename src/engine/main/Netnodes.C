@@ -3,6 +3,49 @@
 #include <ImproperUseException.h>
 
 // ****************************************************************************
+//  Method: NetnodeDB constructor
+//
+//  Arguments:
+//      db_in   A pointer to a database.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 28, 2003
+//
+// ****************************************************************************
+
+NetnodeDB::NetnodeDB(avtDatabase *db_in)
+{
+    db = db_in;
+    filename = "<unknown>";
+    var = "<unknown>";
+    time = -1;
+    current_var = "<unknown>";
+    current_time = -1;
+}
+
+
+// ****************************************************************************
+//  Method: NetnodeDB constructor
+//
+//  Arguments:
+//      db_in   A pointer to a database.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 28, 2003
+//
+// ****************************************************************************
+
+NetnodeDB::NetnodeDB(ref_ptr<avtDatabase> db_in)
+{
+    db = db_in;
+    filename = "<unknown>";
+    var = "<unknown>";
+    time = -1;
+    current_var = "<unknown>";
+    current_time = -1;
+}
+
+// ****************************************************************************
 //  Method: NetnodeDB::GetOutput
 //
 //  Purpose:
@@ -11,15 +54,25 @@
 //  Programmer: Hank Childs
 //  Creation:   September 10, 2002
 //
+//  Modificiations:
+//
+//    Hank Childs, Mon Jul 28 13:49:58 PDT 2003
+//    Returned the cached output if possible.
+//
 // ****************************************************************************
-
 avtDataObject_p
 NetnodeDB::GetOutput(void)
 {
-    if (*output == NULL)
+    if ((*output != NULL) &&
+        (var == current_var) &&
+        (time == current_time))
     {
-        output = db->GetOutput(var.c_str(), time);
+        return output;
     }
+
+    output = db->GetOutput(var.c_str(), time);
+    current_var = var;
+    current_time = time;
 
     return output;
 }

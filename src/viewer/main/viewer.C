@@ -8,11 +8,16 @@
 #include <InitVTK.h>
 #include <RemoteProcess.h>
 #include <ViewerPasswordWindow.h>
+#include <ViewerMessaging.h>
 
 #if defined(_WIN32)
 // Get around a macro problem on Windows
 #define GetMessageA GetMessage
 #endif
+
+
+static void ErrorCallback(void *, const char *);
+
 
 // ****************************************************************************
 //  Method: main
@@ -71,6 +76,9 @@
 //    Brad Whitlock, Mon Jun 9 11:23:50 PDT 2003
 //    I made plugins get loaded later.
 //
+//    Hank Childs, Fri Aug  8 08:13:21 PDT 2003
+//    Register an error function.
+//
 // ****************************************************************************
 
 int
@@ -85,6 +93,7 @@ main(int argc, char *argv[])
         //
         Init::Initialize(argc, argv, 0, 1, false);
         Init::SetComponentName("viewer");
+        Init::ComponentRegisterErrorFunction(ErrorCallback, NULL);
         InitVTK::Initialize();
 
         //
@@ -126,3 +135,28 @@ main(int argc, char *argv[])
 
     return retval;
 }
+
+
+// ****************************************************************************
+//  Function: ErrorCallback
+//
+//  Purpose:
+//      A callback routine that can issue error messages.
+//
+//  Arguments:
+//      args    Arguments to the callback.  Not needed for this routine, but
+//              necessary to match the callback signature.
+//      msg     The message to issue.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 8, 2003
+//
+// ****************************************************************************
+
+static void
+ErrorCallback(void *, const char *msg)
+{
+    Error(msg);
+}
+
+

@@ -1791,3 +1791,65 @@ CLocateNode(avtDataRepresentation &data, void *arg, bool &success)
 }
 
 
+// ****************************************************************************
+//  Function: CGetArray
+//
+//  Purpose:
+//      Finds an array for a domain.
+//
+//  Arguments:
+//    data      The data whose arrays should potentially be obtained.
+//    arg       A struct with information about which array to get.
+//    success   Assigned true if operation successful, false otherwise. 
+//
+//  Notes:
+//      This method is designed to be used as the function parameter of
+//      avtDataTree::Iterate.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 29, 2003
+//
+// ****************************************************************************
+
+void
+CGetArray(avtDataRepresentation &data, void *arg, bool &success)
+{
+    GetArrayArgs *args = (GetArrayArgs *) arg;
+
+    if (args->arr != NULL)
+        return;
+
+    //
+    // Perform some checks of the input.
+    //
+    if (!data.Valid())
+    {
+        EXCEPTION0(NoInputException);
+    }
+    if (data.GetDomain() != args->domain)
+    {
+        return;
+    }
+    vtkDataSet *ds = data.GetDataVTK();
+    if (ds == NULL)
+    {
+        EXCEPTION0(NoInputException);
+    }
+
+    char *vname = (char *) args->varname;  // no const support.
+    if (ds->GetPointData()->GetArray(vname))
+    {
+        args->arr = ds->GetPointData()->GetArray(vname);
+        args->centering = AVT_NODECENT;
+    }
+    else if (ds->GetCellData()->GetArray(vname))
+    {
+        args->arr = ds->GetCellData()->GetArray(vname);
+        args->centering = AVT_ZONECENT;
+    }
+
+    if (args->arr != NULL)
+        success = true;
+}
+
+

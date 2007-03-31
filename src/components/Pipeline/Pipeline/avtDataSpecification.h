@@ -77,6 +77,9 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //    Added options for forced material interface reconstruction for mixed
 //    variables, for material interface smoothing, and for clean zones only.
 //
+//    Sean Ahern, Wed Jan  8 17:16:49 PST 2003
+//    Added the ability to remove all secondary variables in one swell foop.
+//
 //    Jeremy Meredith, Thu Jun 12 08:47:03 PDT 2003
 //    Added option for boundary surfaces.
 //
@@ -107,6 +110,7 @@ class PIPELINE_API avtDataSpecification
 
     void                         AddSecondaryVariable(const char *);
     void                         RemoveSecondaryVariable(const char *);
+    void                         RemoveAllSecondaryVariables() {secondaryVariables.clear();};
     bool                         HasSecondaryVariable(const char *);
     const std::vector<CharStrRef> &
                                  GetSecondaryVariables(void)

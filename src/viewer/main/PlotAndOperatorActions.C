@@ -1,6 +1,6 @@
 #include <PlotAndOperatorActions.h>
 #include <ViewerAnimation.h>
-#include <ViewerExpressionList.h>
+#include <ParsingExprList.h>
 #include <ViewerFileServer.h>
 #include <ViewerPlot.h>
 #include <ViewerPlotList.h>
@@ -815,7 +815,7 @@ AddPlotAction::Update()
             ViewerPlotList::SplitHostDatabase(database, host, db);
             const avtDatabaseMetaData *md = fileServer->GetMetaData(host, db);
             const avtSIL *sil = fileServer->GetSIL(host, db);
-            const ExpressionList *exprList = ViewerExpressionList::Instance()->GetList();
+            const ExpressionList *exprList = ParsingExprList::Instance()->GetList();
 
             //
             // Repopulate the menu variable list using information from the

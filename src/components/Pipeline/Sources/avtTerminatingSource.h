@@ -9,14 +9,13 @@
 
 #include <void_ref_ptr.h>
 
-#include <avtDataObjectSource.h>
+#include <avtQueryableSource.h>
 #include <avtDataSpecification.h>
 #include <avtPipelineSpecification.h>
 
 
 class     avtInlinePipelineSource;
 class     avtMetaData;
-class     PickAttributes;
 
 
 typedef avtDataSpecification_p (*LoadBalanceFunction)(void *,
@@ -49,9 +48,12 @@ typedef void                   (*InitializeProgressCallback)(void *, int);
 //    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
 //    Added virtual method Query.
 //
+//    Hank Childs, Mon Jul 28 16:33:34 PDT 2003
+//    Derived from avtQueryableSource instead of avtDataObjectSource.
+//
 // ****************************************************************************
 
-class PIPELINE_API avtTerminatingSource : virtual public avtDataObjectSource
+class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
 {
     friend class                   avtInlinePipelineSource;
 
@@ -83,6 +85,7 @@ class PIPELINE_API avtTerminatingSource : virtual public avtDataObjectSource
     virtual avtDataSpecification_p GetFullDataSpecification(void);
     avtPipelineSpecification_p     GetGeneralPipelineSpecification(void);
 
+    // Define this so derived types don't have to.
     virtual void                   Query(PickAttributes *){;};
 
   protected:

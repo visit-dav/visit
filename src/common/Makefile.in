@@ -60,6 +60,9 @@
 #   Sean Ahern, Mon Jun 10 16:32:01 PDT 2002
 #   Gutted while moving things to a common location.
 #
+#   Sean Ahern, Tue Jan 21 12:40:11 PST 2003
+#   Added the parser directory.
+#
 #   Brad Whitlock, Fri May 2 14:04:49 PST 2003
 #   I added proxybase.
 #
@@ -69,7 +72,7 @@
 @VARIABLES@
 @DIRTARGETS@
 
-SUBDIRS=misc utility comm state plugin proxybase winutil
+SUBDIRS=misc utility comm state plugin proxybase winutil parser
 
 message:
 	@echo

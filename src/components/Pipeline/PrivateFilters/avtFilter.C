@@ -283,6 +283,33 @@ avtFilter::GetTerminatingSource(void)
 
 
 // ****************************************************************************
+//  Method: avtFilter::GetQueryableSource
+//
+//  Purpose:
+//      Gets the queryable source for the pipeline.
+//
+//  Returns:    A queryable source.  Throws an exception over returning NULL.
+//              (so return value is always valid).
+//
+//  Programmer: Hank Childs
+//  Creation:   July 28, 2003
+//
+// ****************************************************************************
+
+avtQueryableSource *
+avtFilter::GetQueryableSource(void)
+{
+    avtDataObject_p input = GetInput();
+    if (*input == NULL)
+    {
+        EXCEPTION0(NoInputException);
+    }
+
+    return input->GetQueryableSource();
+}
+
+
+// ****************************************************************************
 //  Method: avtFilter::ChangedInput
 //
 //  Purpose:

@@ -49,7 +49,7 @@ avtFacadeFilter::GetOutput(void)
 //  Method: avtFacadeFilter::GetTerminatingSource
 //
 //  Purpose:
-//      Gets the terminating source of the piepline.  Since this is a facade,
+//      Gets the terminating source of the pipeline.  Since this is a facade,
 //      it goes to the first filter in the pipeline and gets its terminating
 //      source.  This can probably be achieved by using any filter in the
 //      pipeline.
@@ -63,6 +63,27 @@ avtTerminatingSource *
 avtFacadeFilter::GetTerminatingSource(void)
 {
     return GetLastFilter()->GetTerminatingSource();
+}
+
+
+// ****************************************************************************
+//  Method: avtFacadeFilter::GetQueryableSource
+//
+//  Purpose:
+//      Gets the queryable source of the pipeline.  Since this is a facade,
+//      it goes to the first filter in the pipeline and gets its queryable
+//      source.  This can probably be achieved by using any filter in the
+//      pipeline.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 28, 2003
+//
+// ****************************************************************************
+
+avtQueryableSource *
+avtFacadeFilter::GetQueryableSource(void)
+{
+    return GetLastFilter()->GetQueryableSource();
 }
 
 

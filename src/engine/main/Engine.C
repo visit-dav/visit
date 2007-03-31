@@ -1,5 +1,5 @@
-#include "Engine.h"
-#include "Executors.h"
+#include <Engine.h>
+#include <Executors.h>
 
 #if !defined(_WIN32)
 #include <strings.h>
@@ -14,6 +14,10 @@
 #include <CouldNotConnectException.h>
 #include <DefineVirtualDatabaseRPC.h>
 #include <IncompatibleVersionException.h>
+#include <ExpressionList.h>
+#include <ParserInterface.h>
+#include <ParsingExprList.h>
+#include <EngineExprNodeFactory.h>
 #include <Init.h>
 #include <InitVTK.h>
 #include <LoadBalancer.h>
@@ -154,6 +158,10 @@ Engine::Initialize(int *argc, char **argv[])
 //  Programmer:  Jeremy Meredith
 //  Creation:    July 10, 2003
 //
+//  Modifications:
+//      Sean Ahern, Fri Nov 22 16:09:26 PST 2002
+//      Removed ApplyNamedFunction.
+//
 // ****************************************************************************
 void
 Engine::SetUpViewerInterface(int *argc, char **argv[])
@@ -201,7 +209,6 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     quitRPC                         = new QuitRPC;
     readRPC                         = new ReadRPC;
     applyOperatorRPC                = new ApplyOperatorRPC;
-    applyNamedFunctionRPC           = new ApplyNamedFunctionRPC;
     setFinalVariableNameRPC         = new SetFinalVariableNameRPC;
     makePlotRPC                     = new MakePlotRPC;
     useNetworkRPC                   = new UseNetworkRPC;
@@ -220,7 +227,6 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     xfer->Add(quitRPC);
     xfer->Add(readRPC);
     xfer->Add(applyOperatorRPC);
-    xfer->Add(applyNamedFunctionRPC);
     xfer->Add(setFinalVariableNameRPC);
     xfer->Add(makePlotRPC);
     xfer->Add(useNetworkRPC);
@@ -241,7 +247,6 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new RPCExecutor<ReadRPC>(readRPC));
     rpcExecutors.push_back(new RPCExecutor<ApplyOperatorRPC>(applyOperatorRPC));
     rpcExecutors.push_back(new RPCExecutor<PrepareOperatorRPC>(&applyOperatorRPC->GetPrepareOperatorRPC()));
-    rpcExecutors.push_back(new RPCExecutor<ApplyNamedFunctionRPC>(applyNamedFunctionRPC));
     rpcExecutors.push_back(new RPCExecutor<SetFinalVariableNameRPC>(setFinalVariableNameRPC));
     rpcExecutors.push_back(new RPCExecutor<MakePlotRPC>(makePlotRPC));
     rpcExecutors.push_back(new RPCExecutor<PreparePlotRPC>(&makePlotRPC->GetPreparePlotRPC()));
@@ -258,6 +263,11 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new RPCExecutor<DefineVirtualDatabaseRPC>(defineVirtualDatabaseRPC));
     rpcExecutors.push_back(new RPCExecutor<RenderRPC>(renderRPC));
     rpcExecutors.push_back(new RPCExecutor<SetWinAnnotAttsRPC>(setWinAnnotAttsRPC));
+
+    // Hook up the expression list as an observed object.
+    ParserInterface *p = ParserInterface::MakeParser(new EngineExprNodeFactory());
+    ParsingExprList *l = new ParsingExprList(p);
+    xfer->Add(l->GetList());
 
     //
     // Hook up the viewer connections to Xfer

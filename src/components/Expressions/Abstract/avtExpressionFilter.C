@@ -2,6 +2,7 @@
 //                           avtExpressionFilter.C                           //
 // ************************************************************************* //
 
+#include <EngineExprNode.h>
 #include <avtExpressionFilter.h>
 
 #include <math.h>
@@ -43,6 +44,16 @@ avtExpressionFilter::~avtExpressionFilter()
         outputVariableName = NULL;
     }
 }
+
+void
+avtExpressionFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
+{
+    std::vector<ArgExpr*> *arguments = args->GetArgs();
+    std::vector<ArgExpr*>::iterator i;
+    for (i=arguments->begin(); i != arguments->end(); i++)
+        dynamic_cast<EngineExprNode*>((*i)->GetExpr())->CreateFilters(state);
+}
+
 
 // ****************************************************************************
 //  Method: avtExpressionFilter::SetOutputVariableName
@@ -95,20 +106,36 @@ avtExpressionFilter::PreExecute(void)
 }
 
 
+// ****************************************************************************
+//  Method: avtExpressionFilter::PostExecute
+//
+//  Purpose:
+//      Gins up some default extents so that the cumulative ones will work.
+//
+//  Arguments:
+//      in_ds      The input dataset.
+//      <unused>   The domain number.
+//
+//  Returns:       The output dataset.
+//
+//  Programmer:  ??? <Sean Ahern>
+//  Creation:    ~June 7, 2002
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Jul 21 09:35:52 PDT 2003
+//    Called avtStreamer's PostExecute, since that is the base class.
+//    
+// ****************************************************************************
+
 void
 avtExpressionFilter::PostExecute(void)
 {
     // Make our derived variable be the active variable.
+    avtStreamer::PostExecute();
     OutputSetActiveVariable(outputVariableName);
-    if (removeActiveVariableWhenDone)
-    {
-        debug5 << "Removing variable " << activeVariable << " after the "
-               << "execution of " << GetType() << endl;
-        avtDataTree_p tree = GetDataTree();
-        bool success;
-        tree->Traverse(CRemoveVariable, (void *) activeVariable, success);
-    }
 }
+
 
 // ****************************************************************************
 //  Method: avtExpressionFilter::ExecuteData
@@ -326,3 +353,5 @@ avtExpressionFilter::IsPointVariable()
     return (GetInput()->GetInfo().GetAttributes().GetCentering()
             == AVT_NODECENT);
 }
+
+
