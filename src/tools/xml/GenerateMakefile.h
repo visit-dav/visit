@@ -74,6 +74,9 @@
 //    Hank Childs, Tue Sep  9 10:04:41 PDT 2003
 //    Added support for file writers.
 //
+//    Jeremy Meredith, Tue Sep 23 16:57:01 PDT 2003
+//    Changed haswriter to a bool.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -85,7 +88,7 @@ class MakefileGeneratorPlugin
     QString version;
     QString vartype;
     QString dbtype;
-    QString haswriter;
+    bool    haswriter;
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
@@ -112,7 +115,7 @@ class MakefileGeneratorPlugin
 
     Attribute *atts;
   public:
-    MakefileGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString&w, const QString &hw)
+    MakefileGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString&w, bool hw)
         : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), haswriter(hw), atts(NULL)
     {
         customgfiles = false;
@@ -356,7 +359,7 @@ class MakefileGeneratorPlugin
             {
                 out << " avt"<<name<<"FileFormat.C";
             }
-            if (haswriter == "yes")
+            if (haswriter)
             {
                 out << " avt" << name << "Writer.C";
             }
@@ -376,7 +379,7 @@ class MakefileGeneratorPlugin
             {
                 out << " avt"<<name<<"FileFormat.C";
             }
-            if (haswriter == "yes")
+            if (haswriter)
             {
                 out << " avt" << name << "Writer.C";
             }

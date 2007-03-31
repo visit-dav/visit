@@ -433,6 +433,10 @@ ResampledMat::PrintMatsAtNode(int n)
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 15, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Tue Sep 23 09:46:55 PDT 2003
+//    Changed so it builds on Windows.
+//
 // ****************************************************************************
 void
 ResampledMat::PrintArrays()
@@ -455,9 +459,9 @@ ResampledMat::PrintArrays()
         }
     }
 
-    for (int n=0; n<nPoints; n++)
+    for (int nn=0; nn<nPoints; nn++)
     {
-        PrintMatsAtNode(n);
+        PrintMatsAtNode(nn);
     }
 
     for (int c=0; c<nCells; c++)

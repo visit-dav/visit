@@ -57,6 +57,10 @@ MIRConnectivity::~MIRConnectivity()
 //  Programmer: Hank Childs
 //  Creation:   October 7, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Tue Sep 23 09:41:14 PDT 2003
+//    Made it build on Windows.
+//
 // ****************************************************************************
 
 void
@@ -161,9 +165,9 @@ MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
 
         int c = 0;
         cellindex = new int[ncells];
-        for (int i = 0 ; i < ncells ; i++)
+        for (int j = 0 ; j < ncells ; j++)
         {
-            cellindex[i] = c;
+            cellindex[j] = c;
             c += connectivity[c] + 1;
         }
     }

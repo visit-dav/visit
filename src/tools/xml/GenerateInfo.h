@@ -60,6 +60,10 @@
 //    to initialize from the default atts or client atts based on the value
 //    of the flag. 
 //
+//    Jeremy Meredith, Tue Sep 23 17:03:25 PDT 2003
+//    Made haswriter be a bool.  Added a missing semicolon in the outpus.
+//    Added tensor and symmetric tensor variable types.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -97,7 +101,7 @@ class InfoGeneratorPlugin
     QString vartype;
     QString dbtype;
     QString iconFile;
-    QString haswriter;
+    bool    haswriter;
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
@@ -120,7 +124,7 @@ class InfoGeneratorPlugin
   public:
     InfoGeneratorPlugin(const QString &n,const QString &l,const QString &t,
         const QString &vt,const QString &dt,const QString &v,
-        const QString &ifile, const QString &hw) : name(n), type(t), label(l),
+        const QString &ifile, bool hw) : name(n), type(t), label(l),
         version(v), vartype(vt), dbtype(dt), iconFile(ifile), haswriter(hw),
         atts(NULL)
     {
@@ -482,7 +486,7 @@ class InfoGeneratorPlugin
             if (dbtype != "Custom")
             {
                 c << "#include <avt"<<name<<"FileFormat.h>" << endl;
-                if (haswriter == "yes")
+                if (haswriter)
                    c << "#include <avt"<<name<<"Writer.h>" << endl;
                 c << "#include <avt"<<dbtype<<"FileFormatInterface.h>" << endl;
                 c << "#include <avtGenericDatabase.h>" << endl;
@@ -545,10 +549,10 @@ class InfoGeneratorPlugin
             c << "avtDatabaseWriter *" << endl;
             c << ""<<name<<"CommonPluginInfo::GetWriter(void)" << endl;
             c << "{" << endl;
-            if (haswriter == "yes")
+            if (haswriter)
             c << "    return new avt"<<name<<"Writer;" << endl;
             else
-            c << "    return NULL" << endl;
+            c << "    return NULL;" << endl;
             c << "}" << endl;
             c << "" << endl;
             c << "// ****************************************************************************" << endl;
@@ -774,6 +778,10 @@ class InfoGeneratorPlugin
                     c << "VAR_CATEGORY_SUBSET";
                 else if (types[i] == "curve")
                     c << "VAR_CATEGORY_CURVE";
+                else if (types[i] == "tensor")
+                    c << "VAR_CATEGORY_TENSOR";
+                else if (types[i] == "symmetrictensor")
+                    c << "VAR_CATEGORY_SYMMETRIC_TENSOR";
             }
             c << ";" << endl;
 
@@ -1074,6 +1082,10 @@ class InfoGeneratorPlugin
                     c << "VAR_CATEGORY_SUBSET";
                 else if (types[i] == "curve")
                     c << "VAR_CATEGORY_CURVE";
+                else if (types[i] == "tensor")
+                    c << "VAR_CATEGORY_TENSOR";
+                else if (types[i] == "symmetrictensor")
+                    c << "VAR_CATEGORY_SYMMETRIC_TENSOR";
             }
             c << ";" << endl;
             c << "}" << endl;

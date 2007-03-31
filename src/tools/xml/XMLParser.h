@@ -116,6 +116,9 @@ ParseCharacters(const QString &buff)
 //    Hank Childs, Tue Sep  9 10:04:41 PDT 2003
 //    Added support for file writers.
 //
+//    Jeremy Meredith, Tue Sep 23 17:00:16 PDT 2003
+//    Made haswriter be a true bool.
+//
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -204,7 +207,9 @@ class XMLParser : public QXmlDefaultHandler
             QString haswriter = atts.value("haswriter");
             QString version   = atts.value("version");
             QString iconFile  = atts.value("iconFile");
-            currentPlugin = new Plugin(name, label, type, vartype, dbtype, version, iconFile, haswriter);
+            currentPlugin = new Plugin(name, label, type, vartype,
+                                       dbtype, version, iconFile, 
+                                       haswriter.isNull() ? false : Text2Bool(haswriter));
         }
         else if (tag == "Attribute")
         {

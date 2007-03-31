@@ -12,6 +12,10 @@ using std::vector;
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Sep 23 17:01:21 PDT 2003
+//    Added "yes" and "no" as legal bool values.
+//
 // ****************************************************************************
 class UniqueStringList
 {
@@ -99,9 +103,9 @@ JoinValues(const vector<QString> &strs, QString &j)
 inline bool
 Text2Bool(const QString &s)
 {
-    if (s.lower() == "true" || s.lower() == "t")
+    if (s.lower() == "true" || s.lower() == "t" || s.lower() == "yes")
         return true;
-    else if (s.lower() == "false" || s.lower() == "f")
+    else if (s.lower() == "false" || s.lower() == "f" || s.lower() == "no")
         return false;
 
     throw QString().sprintf("bad value '%s' for bool",s.latin1());

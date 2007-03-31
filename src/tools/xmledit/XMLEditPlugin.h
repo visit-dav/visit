@@ -25,6 +25,10 @@ class QCheckBox;
 //    Hank Childs, Fri Aug  1 11:27:57 PDT 2003
 //    Added support for curves.
 //
+//    Jeremy Meredith, Tue Sep 23 17:05:53 PDT 2003
+//    Added support for tensor and symmetric tensor variable types.
+//    Added support for the "haswriter" database plugin field.
+//
 // ****************************************************************************
 
 class XMLEditPlugin : public QFrame
@@ -43,6 +47,7 @@ class XMLEditPlugin : public QFrame
     void versionTextChanged(const QString&);
     void iconFileTextChanged(const QString&);
     void hasIconChanged(bool);
+    void hasWriterChanged(bool);
     void pluginTypeChanged(int);
     void varTypesChanged();
     void dbTypeChanged(int);
@@ -56,13 +61,17 @@ class XMLEditPlugin : public QFrame
     QLineEdit       *label;
     QLineEdit       *version;
     QCheckBox       *hasIcon;
+    QCheckBox       *hasWriter;
     QLineEdit       *iconFile;
     QCheckBox       *varTypeMesh;
     QCheckBox       *varTypeScalar;
     QCheckBox       *varTypeVector;
     QCheckBox       *varTypeMaterial;
+    QCheckBox       *varTypeSubset;
     QCheckBox       *varTypeSpecies;
     QCheckBox       *varTypeCurve;
+    QCheckBox       *varTypeTensor;
+    QCheckBox       *varTypeSymmetricTensor;
     QComboBox       *dbType;
     QLineEdit       *extensions;
 };

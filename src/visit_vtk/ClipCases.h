@@ -1,5 +1,6 @@
 #ifndef CLIP_CASES_H
 #define CLIP_CASES_H
+#include <visit_vtk_exports.h>
 
 // Programmer: Jeremy Meredith
 // Date      : August 11, 2003
@@ -10,6 +11,9 @@
 //
 //    Jeremy Meredith, Thu Sep 18 11:29:12 PDT 2003
 //    Added quad and triangle cases and output shapes.
+//
+//    Brad Whitlock, Tue Sep 23 09:59:23 PDT 2003
+//    Added API so it builds on Windows.
 //
 
 // Points of original cell (up to 8, for the hex)
@@ -61,34 +65,34 @@
 #define NOCOLOR 122
 
 // Tables
-extern int numClipCasesHex;
-extern int numClipShapesHex[256];
-extern int startClipShapesHex[256];
-extern unsigned char clipShapesHex[];
+extern VISIT_VTK_API int numClipCasesHex;
+extern VISIT_VTK_API int numClipShapesHex[256];
+extern VISIT_VTK_API int startClipShapesHex[256];
+extern VISIT_VTK_API unsigned char clipShapesHex[];
 
-extern int numClipCasesWdg;
-extern int numClipShapesWdg[64];
-extern int startClipShapesWdg[64];
-extern unsigned char clipShapesWdg[];
+extern VISIT_VTK_API int numClipCasesWdg;
+extern VISIT_VTK_API int numClipShapesWdg[64];
+extern VISIT_VTK_API int startClipShapesWdg[64];
+extern VISIT_VTK_API unsigned char clipShapesWdg[];
 
-extern int numClipCasesPyr;
-extern int numClipShapesPyr[32];
-extern int startClipShapesPyr[32];
-extern unsigned char clipShapesPyr[];
+extern VISIT_VTK_API int numClipCasesPyr;
+extern VISIT_VTK_API int numClipShapesPyr[32];
+extern VISIT_VTK_API int startClipShapesPyr[32];
+extern VISIT_VTK_API unsigned char clipShapesPyr[];
 
-extern int numClipCasesTet;
-extern int numClipShapesTet[16];
-extern int startClipShapesTet[16];
-extern unsigned char clipShapesTet[];
+extern VISIT_VTK_API int numClipCasesTet;
+extern VISIT_VTK_API int numClipShapesTet[16];
+extern VISIT_VTK_API int startClipShapesTet[16];
+extern VISIT_VTK_API unsigned char clipShapesTet[];
 
-extern int numClipCasesQua;
-extern int numClipShapesQua[16];
-extern int startClipShapesQua[16];
-extern unsigned char clipShapesQua[];
+extern VISIT_VTK_API int numClipCasesQua;
+extern VISIT_VTK_API int numClipShapesQua[16];
+extern VISIT_VTK_API int startClipShapesQua[16];
+extern VISIT_VTK_API unsigned char clipShapesQua[];
 
-extern int numClipCasesTri;
-extern int numClipShapesTri[8];
-extern int startClipShapesTri[8];
-extern unsigned char clipShapesTri[];
+extern VISIT_VTK_API int numClipCasesTri;
+extern VISIT_VTK_API int numClipShapesTri[8];
+extern VISIT_VTK_API int startClipShapesTri[8];
+extern VISIT_VTK_API unsigned char clipShapesTri[];
 
 #endif

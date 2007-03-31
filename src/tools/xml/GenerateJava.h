@@ -35,6 +35,9 @@ using std::vector;
 //    Jeremy Meredith, Thu Oct 17 15:58:29 PDT 2002
 //    Added some enhancements for the XML editor.
 //
+//    Jeremy Meredith, Tue Sep 23 17:08:53 PDT 2003
+//    Made haswriter be a bool.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1827,7 +1830,7 @@ class AttsGeneratorPlugin
 
     AttsGeneratorAttribute *atts;
   public:
-    AttsGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v,const QString &, const QString &)
+    AttsGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v,const QString &, bool)
         : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), atts(NULL)
     {
     }

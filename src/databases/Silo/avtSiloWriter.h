@@ -19,7 +19,7 @@ class vtkRectilinearGrid;
 class vtkStructuredGrid;
 class vtkUnstructuredGrid;
 
-class avtMeshMetaData;
+struct avtMeshMetaData;
 
 
 // ****************************************************************************

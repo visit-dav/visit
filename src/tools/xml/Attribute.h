@@ -37,6 +37,9 @@
 //    Brad Whitlock, Mon Nov 18 12:54:53 PDT 2002
 //    Ported it to Windows.
 //
+//    Jeremy Meredith, Tue Sep 23 17:11:06 PDT 2003
+//    Added a check so enableval is not empty before writing the enabler.
+//
 // ****************************************************************************
 
 class Attribute
@@ -141,7 +144,7 @@ class Attribute
                 WriteTagAttr(out, "internal", Bool2Text(f->internal));
             if (f->ignoreEquality)
                 WriteTagAttr(out, "ignoreeq", Bool2Text(f->ignoreEquality));
-            if (f->enabler)
+            if (f->enabler && !f->enableval.empty())
             {
                 WriteTagAttr(out, "enabler",
                              f->enabler->name + ":" +

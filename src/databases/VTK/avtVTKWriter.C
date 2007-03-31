@@ -4,7 +4,7 @@
 
 #include <avtVTKWriter.h>
 
-#include <vector.h>
+#include <vector>
 
 #include <vtkDataSetWriter.h>
 

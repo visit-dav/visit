@@ -55,6 +55,10 @@
 //    Jeremy Meredith, Thu Oct 17 15:58:29 PDT 2002
 //    Added some enhancements for the XML editor.
 //
+//    Jeremy Meredith, Tue Sep 23 16:59:03 PDT 2003
+//    Added ability for enablers to dis/enable a widget's associated label.
+//    Made haswriter be a bool.
+//
 // ****************************************************************************
 
 class WindowGeneratorField : public virtual Field
@@ -67,12 +71,17 @@ class WindowGeneratorField : public virtual Field
     // helper functions
     void writeSourceCreateLabel(ostream &c)
     {
-        c << "    mainLayout->addWidget(new QLabel(\""<<label<<"\", central, \""<<name<<"Label\"),"<<index<<",0);" << endl;
+        c << "    "<<name<<"Label = new QLabel(\""<<label<<"\", central, \""<<name<<"Label\");" << endl;
+        c << "    mainLayout->addWidget("<<name<<"Label,"<<index<<",0);" << endl;
     }
     // virtual functions
     virtual void               writeHeaderCallback(ostream &h)
     {
         h << "    //writeHeaderCallback unknown for " << type << " (variable " << name << ")" << endl;
+    }
+    virtual void               writeHeaderLabelData(ostream &h)
+    {
+        h << "    QLabel *"<<name<<"Label;" << endl;
     }
     virtual void               writeHeaderData(ostream &h)
     {
@@ -1258,6 +1267,11 @@ class WindowGeneratorAttribute
             if (fields[i]->internal) continue;
             fields[i]->writeHeaderData(h);
         }
+        for (i=0; i<fields.size(); i++)
+        {
+            if (fields[i]->internal) continue;
+            fields[i]->writeHeaderLabelData(h);
+        }
         h << endl;
         h << "    "<<name<<" *atts;" << endl;
 
@@ -1435,9 +1449,15 @@ class WindowGeneratorAttribute
                 }
 
                 c << ")" << endl;
+                c << "            {\n";
                 c << "                "<<enablees[j]->name<<"->setEnabled(true);" << endl;
+                c << "                "<<enablees[j]->name<<"Label->setEnabled(true);" << endl;
+                c << "            }\n";
                 c << "            else" << endl;
+                c << "            {\n";
                 c << "                "<<enablees[j]->name<<"->setEnabled(false);" << endl;
+                c << "                "<<enablees[j]->name<<"Label->setEnabled(false);" << endl;
+                c << "            }\n";
             }
             fields[i]->writeSourceUpdateWindow(c);
             c << "            break;" << endl;
@@ -1587,7 +1607,7 @@ class WindowGeneratorPlugin
 
     WindowGeneratorAttribute *atts;
   public:
-    WindowGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &, const QString &)
+    WindowGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &, bool)
         : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), atts(NULL)
     {
         if (type == "plot")

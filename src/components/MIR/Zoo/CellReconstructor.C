@@ -422,6 +422,10 @@ CellReconstructor::ReconstructCell(int cellid_, int celltype_,
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 15, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Tue Sep 23 09:48:36 PDT 2003
+//    Made it build on Windows.
+//
 // ****************************************************************************
 void
 CellReconstructor::CreateCentroidPoint(TempCell &old, int interpID,
@@ -433,8 +437,8 @@ CellReconstructor::CreateCentroidPoint(TempCell &old, int interpID,
     newCoord.x = 0;
     newCoord.y = 0;
     newCoord.z = 0;
-    for (int p = 0 ; p < nids ; p++)
-        newCoord.weight[p] = 0.;
+    for (int id = 0 ; id < nids ; id++)
+        newCoord.weight[id] = 0.;
     float weight = 1. / float(npts);
 
     for (int p = 0 ; p < npts ; p++)
