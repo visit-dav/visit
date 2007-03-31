@@ -396,6 +396,9 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Brad Whitlock, Thu Apr 19 16:15:23 PST 2001
 //    Added a legend.
 //
+//    Kathleen Bonnell, Thu Sep 18 13:40:26 PDT 2003 
+//    Set anti-aliased render order to be the same as normal.
+//
 // ****************************************************************************
 
 void
@@ -403,6 +406,7 @@ avtVolumePlot::CustomizeBehavior(void)
 {
     // make it go last
     behavior->SetRenderOrder(MUST_GO_LAST);
+    behavior->SetAntialiasedRenderOrder(MUST_GO_LAST);
 
     // Add a legend.
     float min, max;

@@ -178,6 +178,9 @@ avtSubsetPlot::Create()
 //    Kathleen Bonnell, Wed Apr 10 09:45:43 PDT 2002  
 //    Moved color-related code to new SetColors method. 
 //
+//    Kathleen Bonnell, Mon Sep 29 12:31:18 PDT 2003 
+//    Set AntialiasedRenderOrder depending upon wireframe mode. 
+//
 // ****************************************************************************
 
 void
@@ -192,6 +195,10 @@ avtSubsetPlot::SetAtts(const AttributeGroup *a)
     SetLineStyle(atts.GetLineStyle());
     SetLineWidth(atts.GetLineWidth());
     sub->SetPlotAtts(&atts);
+    if (!atts.GetWireframe())
+        behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
+    else 
+        behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
 }
 
 // ****************************************************************************
@@ -541,6 +548,9 @@ avtSubsetPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Kathleen Bonnell, Thu Dec 19 12:27:09 PST 2002  
 //    Added call to SortLabels. 
 //
+//    Kathleen Bonnell, Mon Sep 29 12:31:18 PDT 2003 
+//    Set AntialiasedRenderOrder depending upon wireframe mode. 
+//
 // ****************************************************************************
 
 void
@@ -554,10 +564,12 @@ avtSubsetPlot::CustomizeBehavior(void)
     if (atts.GetWireframe())
     {
         behavior->SetShiftFactor(0.7);
+        behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
     }
     else
     {
         behavior->SetShiftFactor(0.);
+        behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
     }
 }
 

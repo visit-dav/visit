@@ -1,11 +1,16 @@
 #ifndef RENDER_ORDER_ENUM_H
 #define RENDER_ORDER_ENUM_H
 
+//NOTES:
+//  ABSOLUTELY_LAST will be rendered AFTER
+//  transparent plots.
+//
 typedef enum
 {
     MUST_GO_FIRST = 0,
     DOES_NOT_MATTER,
     MUST_GO_LAST,
+    ABSOLUTELY_LAST,
     MAX_ORDER
 } RenderOrder;
 

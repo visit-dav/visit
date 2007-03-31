@@ -2559,12 +2559,15 @@ VisWindow::GetViewport(float *vport)
 //    Kathleen Bonnell, Tue Jul  8 20:06:37 PDT 2003 
 //    Always allow colleagues to re-add themselves (not just for antialiasing).
 // 
+//    Kathleen Bonnell, Mon Sep 29 13:15:20 PDT 2003 
+//    Pass the antialiasing flag to the plots. 
+// 
 // ****************************************************************************
 
 void
 VisWindow::RecalculateRenderOrder(void)
 {
-    plots->OrderPlots();
+    plots->OrderPlots(rendering->GetAntialiasing());
     ReAddColleaguesToRenderWindow();
 }
 
@@ -4008,12 +4011,19 @@ VisWindow::SetRenderInfoCallback(VisCallback *cb, void *data)
 //   Kathleen Bonnell, Wed Dec  4 17:29:34 PST 2002  
 //   Removed frames argument.
 //   
+//   Kathleen Bonnell, Mon Sep 29 13:15:20 PDT 2003 
+//   Added call to RecalculateRenderOrder. 
+//   
 // ****************************************************************************
 
 void
 VisWindow::SetAntialiasing(bool enabled)
 {
-    rendering->SetAntialiasing(enabled);
+    if (enabled != rendering->GetAntialiasing())
+    {
+        rendering->SetAntialiasing(enabled);
+        RecalculateRenderOrder();
+    }
 }
 
 // ****************************************************************************

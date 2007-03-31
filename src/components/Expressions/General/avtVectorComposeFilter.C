@@ -165,8 +165,8 @@ avtVectorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
             else
             {
                 char str[1024];
-                sprintf(str, "Do not know how to assemble arrays of %d and
-                              %d into a vector or tensor.", 
+                sprintf(str, "Do not know how to assemble arrays of %d and "
+                              "%d into a vector or tensor.", 
                               data1->GetNumberOfComponents(),
                               data2->GetNumberOfComponents());
                 EXCEPTION1(ExpressionException, str);

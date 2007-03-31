@@ -156,6 +156,9 @@ avtTerminatingSource::GetMaterialAuxiliaryData(const char *type, void *args,
 //    Hank Childs, Thu Sep 25 08:12:27 PDT 2003
 //    Reset the 'ErrorOccurred' field.
 //
+//    Hank Childs, Tue Sep 30 16:33:37 PDT 2003
+//    Reset all of the validity fields, not just error occurred.
+//
 // ****************************************************************************
 
 bool
@@ -165,9 +168,9 @@ avtTerminatingSource::Update(avtPipelineSpecification_p spec)
     {
         UpdateProgress(0, 0, "avtTerminatingSource", "Retrieving data.");
     }
-    avtDataSpecification_p data = BalanceLoad(spec);
     if (!ArtificialPipeline())
-        GetOutput()->GetInfo().GetValidity().ResetErrorOccurred();
+        GetOutput()->GetInfo().GetValidity().Reset();
+    avtDataSpecification_p data = BalanceLoad(spec);
     bool rv = FetchData(data);
     if (!ArtificialPipeline())
     {

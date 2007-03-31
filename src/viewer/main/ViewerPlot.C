@@ -3661,6 +3661,7 @@ ViewerPlot::SetFromNode(DataNode *parentNode)
     }
 }
 
+
 // ****************************************************************************
 // Method: ViewerPlot::SetOpaqueMeshIsAppropriate
 //
@@ -3674,6 +3675,8 @@ ViewerPlot::SetFromNode(DataNode *parentNode)
 // Creation:   August 27, 2003 
 //
 // Modifications:
+//   Kathleen Bonnell, Mon Sep 29 12:31:18 PDT 2003
+//   Updated client atts, too.
 //   
 // ****************************************************************************
 
@@ -3681,11 +3684,13 @@ void
 ViewerPlot::SetOpaqueMeshIsAppropriate(bool val)
 {
     const AttributeSubject *atts = NULL;
-    for (int i = 0; i < (frame1 - frame0 + 1) && !atts; ++i)
+    int i, frame;
+    for (i = 0; i < (frame1 - frame0 + 1) && !atts; ++i)
     {
         if (*plotList[i] != 0 && isMesh)
         {
             atts = plotList[i]->SetOpaqueMeshIsAppropriate(val);
+            frame = i;
         }
     }
     //
@@ -3694,6 +3699,7 @@ ViewerPlot::SetOpaqueMeshIsAppropriate(bool val)
     if (atts != NULL)
     {
         SetPlotAtts(atts);
+        SetClientAttsFromPlot(frame);
     }
 }
 

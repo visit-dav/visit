@@ -161,6 +161,8 @@ avtFilledBoundaryPlot::Create()
 //  Note:  taken almost verbatim from the Subset plot
 //
 //  Modifications:
+//    Kathleen Bonnell, Mon Sep 29 13:07:50 PDT 2003
+//    Set AntialiasedRenderOrder dependent upon wireframe mode.
 //
 // ****************************************************************************
 
@@ -176,6 +178,10 @@ avtFilledBoundaryPlot::SetAtts(const AttributeGroup *a)
     SetLineStyle(atts.GetLineStyle());
     SetLineWidth(atts.GetLineWidth());
     sub->SetPlotAtts(&atts);
+    if (!atts.GetWireframe())
+        behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
+    else 
+        behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
 }
 
 // ****************************************************************************
@@ -485,6 +491,8 @@ avtFilledBoundaryPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //  Note:  taken almost verbatim from the Subset plot
 //
 //  Modifications:
+//    Kathleen Bonnell, Mon Sep 29 13:07:50 PDT 2003
+//    Set AntialiasedRenderOrder dependent upon wireframe mode.
 //
 // ****************************************************************************
 
@@ -499,10 +507,12 @@ avtFilledBoundaryPlot::CustomizeBehavior(void)
     if (atts.GetWireframe())
     {
         behavior->SetShiftFactor(0.7);
+        behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
     }
     else
     {
         behavior->SetShiftFactor(0.);
+        behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
     }
 }
 

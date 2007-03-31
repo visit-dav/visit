@@ -271,6 +271,10 @@ avtSurfacePlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Kathleen Bonnell, Thu Mar 28 14:03:19 PST 2002  
 //    Moved code that sets legend's LUT to SetScaling method. 
 //
+//    Kathleen Bonnell, Mon Sep 29 12:31:18 PDT 2003 
+//    Set AntialiasedRenderOrder depending upon whether or not the wireframe
+//    is being drawn without the surface. 
+//
 // ****************************************************************************
 
 void
@@ -285,6 +289,11 @@ avtSurfacePlot::CustomizeBehavior()
 
     behavior->SetLegend(varLegendRefPtr);
     behavior->SetShiftFactor(0.9);
+    behavior->SetRenderOrder(DOES_NOT_MATTER);
+    if (atts.GetWireframeFlag() && !atts.GetSurfaceFlag())
+      behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
+    else 
+      behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
 }
 
 
@@ -336,6 +345,9 @@ avtSurfacePlot::CustomizeBehavior()
 //    Kathleen Bonnell, Tue Nov 26 15:39:16 PST 2002
 //    Notify renderer when lut colors are updated. 
 //    
+//    Kathleen Bonnell, Mon Sep 29 12:31:18 PDT 2003 
+//    Set AntialiasedRenderOrder depending upon whether or not the wireframe
+//    is being drawn without the surface. 
 // ****************************************************************************
 
 void
@@ -374,6 +386,11 @@ avtSurfacePlot::SetAtts(const AttributeGroup *a)
     SetScaling(atts.GetScaling(), atts.GetSkewFactor());
     SetLimitsMode(atts.GetLimitsMode());
     renderer->LUTColorsChanged(updateColors);
+
+    if (atts.GetWireframeFlag() && !atts.GetSurfaceFlag())
+        behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
+    else 
+        behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
 }
 
 // ****************************************************************************

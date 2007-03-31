@@ -30,6 +30,5 @@ avtConstantCreatorFilter::DoOperation(vtkDataArray *, vtkDataArray *out,
                                       int ncomponents, int ntuples)
 {
     for (int i = 0 ; i < ntuples ; i++)
-        for (int j = 0 ; j < ncomponents ; j++)
-            out->SetComponent(i, j, value);
+        out->SetTuple1(i, value);
 }

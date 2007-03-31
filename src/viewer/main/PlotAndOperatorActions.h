@@ -189,7 +189,9 @@ public:
 // Creation:   Mon Mar 17 09:24:19 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Sep 29 17:38:36 PST 2003
+//   I separated host and database into two fields.
+//
 // ****************************************************************************
 
 class QMenuBar;
@@ -224,7 +226,7 @@ private slots:
 private:
     QMenuBar              *menu;
     int                   maxPixmapWidth, maxPixmapHeight;
-    std::string           database;
+    std::string           host, database;
     PluginEntryVector     pluginEntries;
     VariableMenuPopulator menuPopulator;
 };

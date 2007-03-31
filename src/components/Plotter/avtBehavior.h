@@ -49,6 +49,9 @@ class  vtkRenderer;
 //    Eric Brugger, Wed Aug 20 09:50:56 PDT 2003
 //    Added GetWindowMode.
 //
+//    Kathleen Bonnell, Mon Sep 29 13:21:12 PDT 2003 
+//    Added  SetAntialiasedRenderOrder.  Added bool arg to GetRenderOrder.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtBehavior
@@ -76,7 +79,9 @@ class PLOTTER_API avtBehavior
 
     void                       SetRenderOrder(int);
     void                       SetRenderOrder(RenderOrder);
-    int                        GetRenderOrder(void);
+    void                       SetAntialiasedRenderOrder(int);
+    void                       SetAntialiasedRenderOrder(RenderOrder);
+    int                        GetRenderOrder(bool antialiased);
 
     void                       SetLegend(avtLegend_p);
     avtLegend_p                GetLegend(void)       { return legend; };
@@ -87,6 +92,7 @@ class PLOTTER_API avtBehavior
     avtLegend_p                legend;
     float                      shiftFactor;
     RenderOrder                renderOrder;
+    RenderOrder                antialiasedRenderOrder;
 };
 
 

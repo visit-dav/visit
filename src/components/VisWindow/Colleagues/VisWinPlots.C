@@ -204,6 +204,9 @@ VisWinPlots::~VisWinPlots()
 //    Kathleen Bonnell, Fri Jun  6 15:23:05 PDT 2003 
 //    GetFullFrameMode from mediator before retrieving scale factor and type. 
 //    
+//    Kathleen Bonnell, Mon Sep 29 13:21:12 PDT 2003 
+//    Send the antialiasing flag to OrderPlots method.
+//    
 // ****************************************************************************
 
 void
@@ -244,13 +247,14 @@ VisWinPlots::AddPlot(avtActor_p &p)
     }
 
     plots.push_back(p);
-    OrderPlots();
+    bool aa = mediator.GetAntialiasing();
+    OrderPlots(aa);
 
     //
     //  If we are in anti-aliasing mode, Allow other colleagues to place
     //  themselves last in the renderer, to reduce artefacts. 
     //
-    if (mediator.GetAntialiasing())
+    if (aa)
     {
         mediator.ReAddColleaguesToRenderWindow();
     }
@@ -1202,6 +1206,9 @@ VisWinPlots::UnsetBounds(void)
 //      Removes all plots from the window and re-adds them in rendering order
 //      based on the the RenderOrder set in the behavior. 
 //
+//  Arguments:
+//    aa     Indicates if antialiasing mode is on. 
+//
 //  Programmer: Kathleen Bonnell 
 //  Creation:   April 3, 2001 
 //
@@ -1213,15 +1220,20 @@ VisWinPlots::UnsetBounds(void)
 //    Mark C. Miller, Thu Dec 19 11:38:05 PST 2002
 //    Added support for externally rendered images actor
 //
+//    Kathleen Bonnell, Mon Sep 29 13:21:12 PDT 2003 
+//    Added bool argumenti, wh ich is passed to GetRenderOrder.
+//    Plots with RenderOrder 'ABSOLUTELY_LAST' will be rendered after
+//    the transparent actors. (Generally only in Antialiased mode).
+//
 // ****************************************************************************
 
 void
-VisWinPlots::OrderPlots(void)
+VisWinPlots::OrderPlots(bool aa)
 {
     std::vector< avtActor_p >::iterator it;
     std::vector< avtActor_p > orderPlots;
     std::vector< avtActor_p >::iterator oit;
-
+  
     avtActor_p p;
     //
     // first remove all the plots from the window
@@ -1233,7 +1245,7 @@ VisWinPlots::OrderPlots(void)
         p->Remove(mediator.GetCanvas(), mediator.GetForeground());
         oit = orderPlots.begin();
         while (oit != orderPlots.end() && 
-               (*oit)->GetRenderOrder() <= p->GetRenderOrder()) 
+               (*oit)->GetRenderOrder(aa) <= p->GetRenderOrder(aa)) 
         {
             oit++;
         }
@@ -1247,10 +1259,16 @@ VisWinPlots::OrderPlots(void)
     //
     for (oit = orderPlots.begin(); oit != orderPlots.end(); oit++)
     {
-        (*oit)->Add(mediator.GetCanvas(), mediator.GetForeground());
+        if  ((*oit)->GetRenderOrder(aa) != ABSOLUTELY_LAST)
+            (*oit)->Add(mediator.GetCanvas(), mediator.GetForeground());
     }
     transparencyActor->AddToRenderer(mediator.GetCanvas());
     extRenderedImagesActor->AddToRenderer(mediator.GetCanvas());
+    for (oit = orderPlots.begin(); oit != orderPlots.end(); oit++)
+    {
+        if  ((*oit)->GetRenderOrder(aa) == ABSOLUTELY_LAST)
+            (*oit)->Add(mediator.GetCanvas(), mediator.GetForeground());
+    }
 }
 
 
@@ -1626,3 +1644,4 @@ VisWinPlots::FullFrameOff()
     float vec[3] = {1., 1., 1.};
     ScalePlots(vec);
 }
+

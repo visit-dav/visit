@@ -125,6 +125,9 @@ avtSourceFromDatabase::~avtSourceFromDatabase()
 //    Make sure the variable being sent up to the database is a variable
 //    contained within that database.
 //
+//    Hank Childs, Tue Sep 30 15:37:44 PDT 2003
+//    Made sure input downstream would be digestible by all filters.
+//
 // ****************************************************************************
 
 bool
@@ -168,6 +171,26 @@ avtSourceFromDatabase::FetchDataset(avtDataSpecification_p spec,
         avtSILRestrictionTraverser trav(spec->GetRestriction());
         trav.GetDomainList(list);
         tree = tree->PruneTree(list);
+    }
+    else
+    {
+        //
+        // PruneTree does an additional service that is a bit hidden.  If the
+        // output from the database is NULL, many of our filters will choke
+        // on that.  PruneTree puts it in a more digestible form.  The "right"
+        // thing to do in this case is to not call GetOutput on the database
+        // when the last data specification is the same as the current one.
+        // However, I'm a bit scared to do that because it may break other
+        // things.  In addition, if the database threw an error, we are not
+        // catching that.  So, if an error was thrown, and we did re-work the
+        // logic to not call "GetOutput" unnecessarily, we would have to
+        // remember the error and re-call it in that case.
+        //
+        if ((*tree == NULL) ||
+            (!tree->HasData() && (tree->GetNChildren() == 0)))
+        {
+            tree = new avtDataTree();
+        }
     }
 
     avtDatabaseMetaData *md = database->GetMetaData();
