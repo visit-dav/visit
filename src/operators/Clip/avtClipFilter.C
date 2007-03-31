@@ -5,7 +5,6 @@
 #include <avtClipFilter.h>
 
 #include <vtkClipDataSet.h>
-#include <vtkClipVolume.h>
 #include <vtkClipPolyData.h>
 #include <vtkDataSet.h>
 #include <vtkImplicitBoolean.h>
@@ -17,118 +16,14 @@
 #include <vtkSphere.h>
 #include <vtkStructuredPoints.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkVisItClipper3D.h>
 #include <vtkVisItUtility.h>
+#include <vtkDataSetWriter.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <BadVectorException.h>
 #include <TimingsManager.h>
-
-
-// ****************************************************************************
-//  Class: vtkOrderPreservingPointLocator
-// 
-//  Purpose:
-//      The VTK clipping code creates a new point set to operate on.  With this
-//      module, we are separating out the cells that are not clipped, but they
-//      are still indexed by the original point list.  So we need the clipped
-//      points to also be indexed by the original point list (with the new
-//      points added on to the end).  This "locator" is used by the VTK 
-//      clipping code.  It overloads the correct virtual function calls to 
-//      guarantee that the original points take up the first "n" positions in
-//      the new point list.
-//
-// ****************************************************************************
-
-class vtkOrderPreservingPointLocator : public vtkMergePoints
-{
-  public:
-    static vtkOrderPreservingPointLocator *New();
-    
-    virtual int InitPointInsertion(vtkPoints *, const float bounds[6]);
-
-    void RegisterPoints(vtkPoints *);
-
-  protected:
-    vtkOrderPreservingPointLocator();
-    ~vtkOrderPreservingPointLocator();
-    vtkPoints *RegisteredPoints;
-private:
-    // Not implemented.
-    vtkOrderPreservingPointLocator(const vtkOrderPreservingPointLocator&);  
-    void operator=(const vtkOrderPreservingPointLocator&); 
-};
-
-
-vtkStandardNewMacro(vtkOrderPreservingPointLocator);
-
-
-vtkOrderPreservingPointLocator::vtkOrderPreservingPointLocator()
-{
-    this->RegisteredPoints = NULL;
-}
-
-
-vtkOrderPreservingPointLocator::~vtkOrderPreservingPointLocator()
-{
-    if (this->RegisteredPoints != NULL)
-    {
-        this->RegisteredPoints->Delete();
-        this->RegisteredPoints = NULL;
-    }
-}
-
-  
-void
-vtkOrderPreservingPointLocator::RegisterPoints(vtkPoints *pts)
-{
-    if (this->RegisteredPoints != NULL)
-    {
-        this->RegisteredPoints->Delete();
-        this->RegisteredPoints = NULL;
-    }
-
-    this->RegisteredPoints = pts;
-    this->RegisteredPoints->Register(this);
-}
-
-
-int
-vtkOrderPreservingPointLocator::InitPointInsertion(vtkPoints *p, 
-                                                   const float bounds[6])
-{
-    //
-    // This whole class is a sham, so pass the function call down to the base
-    // class which actually does something.
-    //
-    int rv = vtkMergePoints::InitPointInsertion(p, bounds);
-
-    //
-    // Now put all of the points from the original dataset into this data
-    // structure.  If we simply call InsertNextPoint, the point will not get
-    // put in the "bucketing" structure.  So call InsertUniquePoint.  If it
-    // is not unique, then add it explicitly, so the ordering will be
-    // preserved.
-    //
-    int p1 = visitTimer->StartTimer();
-    int numPts = RegisteredPoints->GetNumberOfPoints();
-    for (int i = 0 ; i < numPts ; i++)
-    {
-        float *pt = RegisteredPoints->GetPoint(i);
-        vtkIdType t;
-        if (!InsertUniquePoint(pt, t))
-        {
-            //
-            // We need that point in the list to maintain the original
-            // ordering of the points.
-            //
-            InsertNextPoint(pt);
-        }
-    }
-    visitTimer->StopTimer(p1, "Inserting points");
-
-    return rv;
-}
 
 
 // ****************************************************************************
@@ -145,15 +40,16 @@ vtkOrderPreservingPointLocator::InitPointInsertion(vtkPoints *p,
 //    Hank Childs, Sun Aug 18 09:45:58 PDT 2002
 //    Initialized some new data members for tracking connectivity.
 //
+//    Jeremy Meredith, Fri Aug  8 09:18:40 PDT 2003
+//    Removed subdivision and connectivity flags.  Added fastClipper.
+//
 // ****************************************************************************
 
 avtClipFilter::avtClipFilter()
 {
     clipData = vtkClipDataSet::New();
     clipPoly = vtkClipPolyData::New();
-    clipVolume = vtkClipVolume::New();
-    needsValidFaceConnectivity = false;
-    subdivisionOccurred = false;
+    fastClipper = vtkVisItClipper3D::New();
 }
 
 
@@ -167,6 +63,9 @@ avtClipFilter::avtClipFilter()
 //
 //    Kathleen Bonnell, Wed Jun 20 13:35:27 PDT 2001
 //    Removed vtkGeometryFilter.
+//
+//    Jeremy Meredith, Mon Aug 11 17:04:29 PDT 2003
+//    Added fastClipper.
 //
 // ****************************************************************************
 
@@ -182,13 +81,12 @@ avtClipFilter::~avtClipFilter()
         clipPoly->Delete();
         clipPoly = NULL;
     }
-    if (clipVolume != NULL)
+    if (fastClipper != NULL)
     {
-        clipVolume->Delete();
-        clipVolume = NULL;
+        fastClipper->Delete();
+        fastClipper = NULL;
     }
 }
-
 
 // ****************************************************************************
 //  Method:  avtClipFilter::Create
@@ -196,8 +94,8 @@ avtClipFilter::~avtClipFilter()
 //  Purpose:
 //    Call the constructor.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    May  7, 2001
+//  Programmer:  Jeremy Meredith
+//  Creation:    August  8, 2003
 //
 // ****************************************************************************
 
@@ -221,8 +119,6 @@ avtClipFilter::Create()
 //  Creation:    July 25, 2001
 //
 //  Modifications:
-//    Kathleen Bonnell, Tue May 20 16:02:52 PDT 2003 
-//    Added tests for valid normals.
 //
 // ****************************************************************************
 
@@ -293,23 +189,10 @@ avtClipFilter::Equivalent(const AttributeGroup *a)
 //
 //  Returns:       The output unstructured grid.
 //
-//  Programmer: Kathleen Bonnell  
-//  Creation:   May 7, 2001 
+//  Programmer: Jeremy Meredith
+//  Creation:   August  8, 2003
 //
 //  Modifications:
-//
-//    Kathleen Bonnell, Wed Jun 20 13:35:27 PDT 2001
-//    Removed use of vtkGeometryFilter.
-//
-//    Hank Childs, Tue Sep  4 16:14:49 PDT 2001
-//    Reflect new interface for avtDataAttributes.
-//
-//    Kathleen Bonnell, Wed Sep 19 12:55:57 PDT 2001 
-//    Added string argument, to be passed on to output. 
-//
-//    Hank Childs, Thu Aug 15 21:23:13 PDT 2002
-//    Renamed function since this no longer inherits from data tree streamer.
-//    Also called new ClipData method which should improve performance.
 //
 // ****************************************************************************
 
@@ -331,25 +214,7 @@ avtClipFilter::ExecuteData(vtkDataSet *inDS, int dom, std::string)
     // 
     vtkDataSet *outDS = NULL;
 
-    if (inDS->GetDataObjectType() == VTK_STRUCTURED_POINTS &&
-        GetInput()->GetInfo().GetAttributes().GetSpatialDimension() ==3)
-    {
-        clipVolume->SetInput((vtkStructuredPoints*)inDS);
-        outDS = vtkUnstructuredGrid::New();
-        clipVolume->SetOutput((vtkUnstructuredGrid*)outDS);
-        clipVolume->SetClipFunction(ifuncs);
-        clipVolume->GenerateClipScalarsOff();
-        if (inverse)
-        {
-            clipVolume->InsideOutOn();
-        }
-        else 
-        {
-            clipVolume->InsideOutOff();
-        }
-        clipVolume->Update();
-    }
-    else if (inDS->GetDataObjectType() == VTK_POLY_DATA)
+    if (inDS->GetDataObjectType() == VTK_POLY_DATA)
     {
         outDS = vtkPolyData::New();
         clipPoly->SetInput((vtkPolyData*)inDS);
@@ -366,9 +231,32 @@ avtClipFilter::ExecuteData(vtkDataSet *inDS, int dom, std::string)
         }
         clipPoly->Update();
     }
-    else 
+    else if(GetInput()->GetInfo().GetAttributes().GetTopologicalDimension()!=3)
     {
-        outDS = ClipData(inDS, ifuncs, inverse);
+        outDS = vtkUnstructuredGrid::New();
+        clipData->SetInput(inDS);
+        clipData->SetOutput((vtkUnstructuredGrid*)outDS);
+        clipData->SetClipFunction(ifuncs);
+        clipData->GenerateClipScalarsOff();
+        if (inverse)
+        {
+            clipData->InsideOutOn();
+        }
+        else 
+        {
+            clipData->InsideOutOff();
+        }
+        clipData->Update();
+    }
+    else
+    {
+        outDS = vtkUnstructuredGrid::New();
+        fastClipper->SetInput(inDS);
+        fastClipper->SetOutput((vtkUnstructuredGrid*)outDS);
+        fastClipper->SetClipFunction(ifuncs);
+        fastClipper->SetInsideOut(inverse);
+
+        fastClipper->Update();
     }
 
     ifuncs->Delete();
@@ -385,297 +273,6 @@ avtClipFilter::ExecuteData(vtkDataSet *inDS, int dom, std::string)
         ManageMemory(outDS);
         outDS->Delete();
     }
-
-    return outDS;
-}
-
-
-// ****************************************************************************
-//  Method: avtClipFilter::ClipData
-//
-//  Purpose:
-//      A routine that clips 3D data using VTK routines.  It makes a decision
-//      about whether it can use a fast a routine or whether it must
-//      tetrahedralize every cell.
-//
-//  Programmer: Hank Childs
-//  Creation:   August 15, 2002
-//
-// ****************************************************************************
-
-vtkDataSet *
-avtClipFilter::ClipData(vtkDataSet *inDS, vtkImplicitFunction *ifuncs,
-                         bool inverse)
-{
-    vtkDataSet *rv = NULL;
-    if (needsValidFaceConnectivity)
-    {
-        clipData->SetInput(inDS);
-        clipData->SetClipFunction(ifuncs);
-        if (inverse)
-        {
-            clipData->InsideOutOn();
-        }
-        else 
-        {
-            clipData->InsideOutOff();
-        }
-        clipData->GenerateClipScalarsOff();
-        vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
-        clipData->SetOutput(ugrid);
-        clipData->Update();
-        rv = ugrid;
-    }
-    else
-    {
-        rv = FastClipData(inDS, ifuncs, inverse);
-    }
-
-    return rv;
-}
-
-
-// ****************************************************************************
-//  Method: avtClipFilter::FastClipData
-//
-//  Purpose:
-//      A more efficient version of clip data that separates out the zones that
-//      are completely within the structure and passes them straight through.
-//      This depends on a facelist filter that can match up zones that have
-//      faces that match up triangles and quads.
-//
-//  Programmer: Hank Childs
-//  Creation:   August 18, 2002
-//
-//  Modifications:
-//
-//    Hank Childs, Tue Oct  8 21:42:31 PDT 2002
-//    Clean up memory management for early return case.
-//
-// ****************************************************************************
-
-vtkDataSet *
-avtClipFilter::FastClipData(vtkDataSet *inDS, vtkImplicitFunction *ifuncs,
-                             bool inverse)
-{
-    int   i, j;
-
-    vtkPoints *pts = vtkVisItUtility::GetPoints(inDS);
-
-    //
-    // Classify each of the points ourselves to avoid redundant work.
-    //
-    int p2 = visitTimer->StartTimer();
-    int numPts = pts->GetNumberOfPoints();
-    int numCells = inDS->GetNumberOfCells();
-    float *ptVal = new float[numPts];
-    float *pts_ptr = (float *) pts->GetVoidPointer(0);
-    bool all_above = true;
-    bool all_below = true;
-    for (i = 0 ; i < numPts ; i++)
-    {
-        ptVal[i] = ifuncs->FunctionValue(pts_ptr);
-        if (ptVal[i] == 0.)
-        {
-            all_above = false;
-            all_below = false;
-        }
-        else if (ptVal[i] > 0.)
-        {
-            all_below = false;
-        }
-        else
-        {
-            all_above = false;
-        }
-        pts_ptr += 3;
-    }
-    visitTimer->StopTimer(p2, "Classifying points");
-
-    //
-    // If the whole dataset is outside the clip region, then we don't have
-    // to examine the cells on a case by case basis -- either we want the
-    // whole domain or we don't.
-    //
-    if (all_above)
-    {
-        pts->Delete();
-        inDS->Register(NULL); // The calling function assumes it owns this obj.
-        return (!inverse ? inDS : NULL);
-    }
-    if (all_below)
-    {
-        pts->Delete();
-        inDS->Register(NULL); // The calling function assumes it owns this obj.
-        return (inverse ? inDS : NULL);
-    }
-
-    vtkUnstructuredGrid *outDS = vtkUnstructuredGrid::New();
-
-    //
-    // Now go through the cells and decide if we need to clip it or not.
-    // If so, add it to the "toBeClipped" ugrid.  Otherwise add it to the
-    // "fineAsIs" ugrid.
-    //
-    int p3 = visitTimer->StartTimer();
-    vtkUnstructuredGrid *toBeClipped = vtkUnstructuredGrid::New();
-    toBeClipped->SetPoints(pts);
-    toBeClipped->GetPointData()->PassData(inDS->GetPointData());
-    toBeClipped->GetCellData()->CopyAllocate(inDS->GetCellData(), numCells);
-    toBeClipped->Allocate(numCells);
-
-    vtkUnstructuredGrid *fineAsIs    = vtkUnstructuredGrid::New();
-    fineAsIs->SetPoints(pts);
-    fineAsIs->GetPointData()->PassData(inDS->GetPointData());
-    fineAsIs->GetCellData()->CopyAllocate(inDS->GetCellData(), numCells);
-    fineAsIs->Allocate(numCells);
-
-    vtkCellData *inCD = inDS->GetCellData();
-    vtkCellData *faiCD = fineAsIs->GetCellData();
-    vtkCellData *tbcCD = toBeClipped->GetCellData();
-    int  faiCount = 0;
-    int  tbcCount = 0;
-    int  notCount = 0;
-    for (i = 0 ; i < numCells ; i++)
-    {
-        vtkCell *cell = inDS->GetCell(i);
-        vtkIdList *id_list = cell->GetPointIds();
-        vtkIdType *ids = id_list->GetPointer(0);
-        vtkIdType nIds = id_list->GetNumberOfIds();
-
-        bool below = false;
-        bool above = false;
-        for (j = 0 ; j < nIds ; j++)
-        {
-            if (ptVal[ids[j]] < 0.)
-            {
-                below = true;
-            }
-            else
-            {
-                above = true;
-            }
-        }
-        if (above && below)
-        {
-            toBeClipped->InsertNextCell(inDS->GetCellType(i), id_list);
-            tbcCD->CopyData(inCD, i, tbcCount);
-            tbcCount++;
-        }
-        else if (below && inverse)
-        {
-            fineAsIs->InsertNextCell(inDS->GetCellType(i), id_list);
-            faiCD->CopyData(inCD, i, faiCount);
-            faiCount++;
-        }
-        else if (above && !inverse)
-        {
-            fineAsIs->InsertNextCell(inDS->GetCellType(i), id_list);
-            faiCD->CopyData(inCD, i, faiCount);
-            faiCount++;
-        }
-        else
-        {
-            notCount++;
-        }
-    }
-
-    debug5 << "Decided to clip " << tbcCount << " leave whole " << faiCount
-           << " and throw out " << notCount << " cells." << endl;
-    fineAsIs->Squeeze();
-    toBeClipped->Squeeze();
-    visitTimer->StopTimer(p3, "Classifying cells");
-
-    //
-    // Clip the portion that needs clipping.
-    //
-    int p4 = visitTimer->StartTimer();
-    vtkOrderPreservingPointLocator *loc =vtkOrderPreservingPointLocator::New();
-    loc->RegisterPoints(pts);
-    clipData->SetLocator(loc);
-    clipData->SetInput(toBeClipped);
-    clipData->SetClipFunction(ifuncs);
-    if (inverse)
-    {
-        clipData->InsideOutOn();
-    }
-    else 
-    {
-        clipData->InsideOutOff();
-    }
-    clipData->GenerateClipScalarsOff();
-    vtkUnstructuredGrid *tmp = vtkUnstructuredGrid::New();
-    clipData->SetOutput(tmp);
-    clipData->Update();
-
-    //
-    // We created our own locator to make sure that all of our points got
-    // copied across (this was a VTK hack -- there is more information with
-    // the class description of vtkOrderPreservingPointLocator), but that 
-    // didn't copy over the point data.  Do that now.
-    //
-    int p6 = visitTimer->StartTimer();
-    vtkPointData *tmpPD = tmp->GetPointData();
-    vtkPointData *tbcPD = toBeClipped->GetPointData();
-    int np = pts->GetNumberOfPoints();
-    for (i = 0 ; i < np ; i++)
-    {
-        tmpPD->CopyData(tbcPD, i, i);
-    }
-    visitTimer->StopTimer(p6, "Copying over point data");
-    visitTimer->StopTimer(p4, "Clipping cells on boundary");
-
-    //
-    // We now need to unify our two dataset back into one.  The faces may not
-    // match up, but we have taken care to ensure that the points do.
-    //
-    if (clipData->GetOutput()->GetNumberOfCells() > 0)
-    {
-        int p5 = visitTimer->StartTimer();
-        vtkUnstructuredGrid *clipped = clipData->GetOutput();
-        int numClippedCells = clipped->GetNumberOfCells();
-        int numCleanCells   = fineAsIs->GetNumberOfCells();
-        int numCells = numClippedCells + numCleanCells;
-        outDS->Allocate(numCells);
-        outDS->SetPoints(clipped->GetPoints());
-        outDS->GetPointData()->PassData(clipped->GetPointData());
-        vtkCellData *outCD = outDS->GetCellData();
-        outCD->CopyAllocate(clipped->GetCellData(), numCells);
-        
-        vtkCellData *newCD = clipped->GetCellData();
-        for (i = 0 ; i < numClippedCells ; i++)
-        {
-            vtkCell *cell = clipped->GetCell(i);
-            vtkIdList *id_list = cell->GetPointIds();
-            outDS->InsertNextCell(clipped->GetCellType(i), id_list);
-            outCD->CopyData(newCD, i, i);
-        }
-        newCD = fineAsIs->GetCellData();
-        for (i = 0 ; i < numCleanCells ; i++)
-        {
-            vtkCell *cell = fineAsIs->GetCell(i);
-            vtkIdList *id_list = cell->GetPointIds();
-            outDS->InsertNextCell(fineAsIs->GetCellType(i), id_list);
-            outCD->CopyData(newCD, i, i+numClippedCells);
-        }
-        visitTimer->StopTimer(p5, "Unifying two datasets");
-    }
-    else
-    {
-        outDS->ShallowCopy(fineAsIs);
-    }
-
-    //
-    // Clean up memory.
-    //
-    fineAsIs->Delete();
-    toBeClipped->Delete();
-    tmp->Delete();
-    delete [] ptVal;
-    pts->Delete();
-    loc->Delete();
-
-    subdivisionOccurred = true;
 
     return outDS;
 }
@@ -777,7 +374,6 @@ avtClipFilter::SetUpClipFunctions(vtkImplicitBoolean *funcs, bool &inv)
 }
 
 
-
 // ****************************************************************************
 //  Method: avtClipFilter::RefashionDataObjectInfo
 //
@@ -788,7 +384,6 @@ avtClipFilter::SetUpClipFunctions(vtkImplicitBoolean *funcs, bool &inv)
 //  Creation:   May 7, 2001 
 //
 //  Modifications:
-//
 //    Hank Childs, Wed Jun  6 13:32:28 PDT 2001
 //    Renamed from CopyDatasetMetaData.
 //
@@ -808,62 +403,15 @@ avtClipFilter::RefashionDataObjectInfo(void)
 //      This is defined so that we can examine the pipeline specification and
 //      infer information about what is needed downstream.
 //
-//  Programmer: Hank Childs
-//  Creation:   August 15, 2002
+//  Programmer: Jeremy Meredith
+//  Creation:   August  8, 2003
 //
 // ****************************************************************************
 
 avtPipelineSpecification_p
 avtClipFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
-    avtDataSpecification_p data = spec->GetDataSpecification();
-    needsValidFaceConnectivity = data->NeedValidFaceConnectivity();
     return spec;
-}
-
-
-// ****************************************************************************
-//  Method: avtClipFilter::PreExecute
-//
-//  Purpose:
-//      Sets up a data member that will let us know if any subdivision 
-//      occurred throughout the execution.
-//
-//  Programmer: Hank Childs
-//  Creation:   August 15, 2002
-//
-// ****************************************************************************
-
-void
-avtClipFilter::PreExecute(void)
-{
-    subdivisionOccurred = false;
-}
-
-
-// ****************************************************************************
-//  Method: avtClipFilter::PostExecute
-//
-//  Purpose:
-//      This is called to set up some data attributes in the output.  If we 
-//      clipped some of the cells (making them tetrahedrons), but left others
-//      clean, then we should capture this.
-//
-//  Programmer: Hank Childs
-//  Creation:   August 15, 2002
-//
-// ****************************************************************************
-
-void
-avtClipFilter::PostExecute(void)
-{
-    if (subdivisionOccurred)
-    {
-        GetOutput()->GetInfo().GetValidity().SetSubdivisionOccurred(
-                                                        subdivisionOccurred);
-        GetOutput()->GetInfo().GetValidity().SetNotAllCellsSubdivided(
-                                                        subdivisionOccurred);
-    }
 }
 
 
@@ -873,13 +421,10 @@ avtClipFilter::PostExecute(void)
 //  Purpose:
 //      Free up all problem size memory associated with this filter.
 //
-//  Programmer: Hank Childs
-//  Creation:   September 10, 2002
+//  Programmer: Jeremy Meredith
+//  Creation:   August  8, 2003
 //
 //  Modifications:
-//
-//    Hank Childs, Tue Oct  8 21:42:31 PDT 2002
-//    Release the locator, too.
 //
 // ****************************************************************************
 
@@ -893,8 +438,4 @@ avtClipFilter::ReleaseData(void)
     clipData->SetLocator(NULL);
     clipPoly->SetInput(NULL);
     clipPoly->SetOutput(NULL);
-    clipVolume->SetInput(NULL);
-    clipVolume->SetOutput(NULL);
 }
-
-

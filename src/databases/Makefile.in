@@ -82,6 +82,9 @@
 #   Eric Brugger, Thu Jul  3 17:15:39 PDT 2003
 #   Make the building of the BOV reader required.
 #
+#   Hank Childs, Mon Aug 11 15:51:54 PDT 2003
+#   Add PLOT2D.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -96,7 +99,7 @@ MILI=Mili
 PDB=KullLite PDB
 SAF=SAF
 SAMPLES=Rect Hex
-REQUIRED=BOV Curve2D EnSight Lines PLOT3D Point3D STL Silo Spheral VTK WavefrontOBJ
+REQUIRED=BOV Curve2D EnSight Lines PLOT2D PLOT3D Point3D STL Silo Spheral VTK WavefrontOBJ
 
 OPTIONAL=
 

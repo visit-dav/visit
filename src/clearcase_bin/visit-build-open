@@ -55,6 +55,7 @@ hyper=false
 gps=true
 riptide=true
 frost=true
+pengra=true
 
 dist=undefined
 
@@ -73,6 +74,7 @@ do
          gps=false
          riptide=false
          frost=false
+         pengra=false
          shift
          ;;
       -kickit)
@@ -121,6 +123,14 @@ do
          ;;
       +frost)
          frost=true
+         shift
+         ;;
+      -pengra)
+         pengra=false
+         shift
+         ;;
+      +pengra)
+         pengra=true
          shift
          ;;
       -d)
@@ -413,9 +423,52 @@ then
 fi
 
 #
+# Build on pengra.
+#
+rm -f pengra
+cat <<EOF > pengra
+#!/bin/sh
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
+fi
+if test ! -d /usr/tmp/$user/pengra ; then
+   mkdir /usr/tmp/$user/pengra
+fi
+rm -rf /usr/tmp/$user/pengra/visitbuild
+mkdir /usr/tmp/$user/pengra/visitbuild
+mv pengra_$dist.tar.gz /usr/tmp/$user/pengra/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/pengra/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
+make -j 3 >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
+mv visit\$ver2.linux.tar.gz ..
+cd ..
+rm -f resultlog
+echo "        build of visit on pengra"       > resultlog 2>&1
+echo "       --------------------------"      >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $pengra = true ]
+then
+   if [ $test = no ]
+   then
+      scp1 pengra pengra0:pengra_buildit
+      scp1 $dist.tar.gz pengra0:pengra_$dist.tar.gz
+      ssh1 pengra0 "chmod 750 pengra_buildit;./pengra_buildit" &
+   fi
+fi
+
+#
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f kickit sunspot hyper gps riptide frost
+   rm -f kickit sunspot hyper gps riptide frost pengra
 fi

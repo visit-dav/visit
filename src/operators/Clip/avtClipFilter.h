@@ -17,6 +17,7 @@ class vtkClipPolyData;
 class vtkImplicitBoolean;
 class vtkImplicitFunction;
 class vtkUnstructuredGrid;
+class vtkVisItClipper3D;
 
 
 // ****************************************************************************
@@ -39,6 +40,10 @@ class vtkUnstructuredGrid;
 //    Inherited from plugin streamer rather than plugin data tree streamer.
 //    Also added some performance gains.
 //
+//    Jeremy Meredith, Mon Aug 11 17:09:53 PDT 2003
+//    Rewrote a huge chunk to make use of my new vtkVisItClipper3D.  The 
+//    speedup from using this filter whenever possible is really, really big.
+//
 // ****************************************************************************
 
 class avtClipFilter : public avtPluginStreamer
@@ -59,25 +64,17 @@ class avtClipFilter : public avtPluginStreamer
 
   protected:
     ClipAttributes           atts;
-    bool                     needsValidFaceConnectivity;
-    bool                     subdivisionOccurred;
     vtkClipDataSet          *clipData;
     vtkClipPolyData         *clipPoly;
-    vtkClipVolume           *clipVolume;
+    vtkVisItClipper3D       *fastClipper;
 
     virtual vtkDataSet      *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void             PreExecute(void);
-    virtual void             PostExecute(void);
     virtual void             RefashionDataObjectInfo(void);
     virtual avtPipelineSpecification_p
                              PerformRestriction(avtPipelineSpecification_p);
 
   private:
     bool                     SetUpClipFunctions(vtkImplicitBoolean *, bool&);
-    vtkDataSet              *ClipData(vtkDataSet *, vtkImplicitFunction *,
-                                      bool);
-    vtkDataSet              *FastClipData(vtkDataSet *, vtkImplicitFunction *,
-                                          bool);
 };
 
 
