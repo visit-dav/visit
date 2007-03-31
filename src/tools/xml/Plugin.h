@@ -30,6 +30,9 @@
 //    Brad Whitlock, Thu Mar 13 11:38:23 PDT 2003
 //    Added icon file so the plugin can contain an icon.
 //
+//    Hank Childs, Tue Sep  9 10:04:41 PDT 2003
+//    Added a field to indicate whether or not there is a writer.
+//
 // ****************************************************************************
 
 class Plugin
@@ -42,6 +45,7 @@ class Plugin
     QString vartype;
     QString dbtype;
     QString iconFile;
+    QString haswriter;
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
@@ -68,8 +72,8 @@ class Plugin
 
     Attribute *atts;
   public:
-    Plugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &ifile)
-        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), iconFile(ifile),atts(NULL)
+    Plugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &ifile, const QString &hw)
+        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), iconFile(ifile),haswriter(hw), atts(NULL)
     {
         customgfiles = false;
         customsfiles = false;
@@ -118,7 +122,10 @@ class Plugin
                 WriteTagAttr(out, "iconFile", iconFile);
         }
         else if (type == "database")
+        {
             WriteTagAttr(out, "dbtype", dbtype);
+            WriteTagAttr(out, "haswriter", haswriter);
+        }
         FinishOpenTag(out);
 
         if (cxxflags.size() > 0)

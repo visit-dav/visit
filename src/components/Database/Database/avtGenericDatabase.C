@@ -1684,6 +1684,9 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Hank Childs, Tue Jul 22 21:48:09 PDT 2003
 //    Added a flag for whether or not we communicated ghosts.
 //
+//    Hank Childs, Fri Sep 12 16:27:38 PDT 2003
+//    Added a flag for whether or not reconstruction was forced.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -1694,9 +1697,9 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
                         bool needBoundarySurfaces,
                         bool needValidConnectivity,
                         bool needSmoothMaterialInterfaces,
-                        bool needCleanZonesOnly, bool didGhosts,
-                        bool &subdivisionOccurred, bool &notAllCellsSubdivided,
-                        bool reUseMIR)
+                        bool needCleanZonesOnly, bool reconstructionForced,
+                        bool didGhosts, bool &subdivisionOccurred,
+                        bool &notAllCellsSubdivided, bool reUseMIR)
 {
     //
     // We need to have the material indices as well.
@@ -1745,7 +1748,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
         }
 
         bool  setUpMaterialVariable = false;
-        if (type == AVT_MATERIAL)
+        if (type == AVT_MATERIAL || reconstructionForced)
         {
             setUpMaterialVariable = true;
         }
@@ -3199,6 +3202,9 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
 //    Hank Childs, Tue Jul 22 21:48:09 PDT 2003
 //    Send down information about whether or not we communicated ghost zones.
 //
+//    Hank Childs, Fri Sep 12 16:27:38 PDT 2003
+//    Send down info about whether the MIR was forced.
+//
 // ****************************************************************************
 
 void
@@ -3262,14 +3268,15 @@ avtGenericDatabase::MaterialSelect(avtDatasetCollection &ds,
             bool so;
             bool nacs;
             ds.avtds[i] = MaterialSelect(ds.GetDataset(i,0), ds.GetMaterial(i),
-                                         mvl, domains[i], var, ts,
-                                         ds.matnames[i], ds.labels[i],
-                                         spec->NeedInternalSurfaces(),
-                                         spec->NeedBoundarySurfaces(),
-                                         spec->NeedValidFaceConnectivity(),
-                                         spec->NeedSmoothMaterialInterfaces(),
-                                         spec->NeedCleanZonesOnly(), didGhosts,
-                                         so, nacs, reUseMIR);
+                                mvl, domains[i], var, ts,
+                                ds.matnames[i], ds.labels[i],
+                                spec->NeedInternalSurfaces(),
+                                spec->NeedBoundarySurfaces(),
+                                spec->NeedValidFaceConnectivity(),
+                                spec->NeedSmoothMaterialInterfaces(),
+                                spec->NeedCleanZonesOnly(), 
+                                spec->MustDoMaterialInterfaceReconstruction(),
+                                didGhosts, so, nacs, reUseMIR);
 
             notAllCellsSubdivided = notAllCellsSubdivided || nacs ||
                 (subdivisionOccurred && !so) || (!subdivisionOccurred && so);

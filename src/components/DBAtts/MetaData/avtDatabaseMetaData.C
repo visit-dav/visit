@@ -2702,26 +2702,27 @@ avtDatabaseMetaData::SetExtents(std::string name, const float *extents)
 //    Hank Childs, Fri Aug  1 21:50:51 PDT 2003
 //    Added support for curves.
 //
+//    Hank Childs, Fri Sep 12 09:11:26 PDT 2003
+//    Re-wrote so this could be designated const.
+//
 // ****************************************************************************
 
 int
-avtDatabaseMetaData::GetNDomains(std::string var)
+avtDatabaseMetaData::GetNDomains(std::string var) const
 {
+    int  i;
+
     std::string  meshname = MeshForVar(var);
 
-    std::vector<avtMeshMetaData *>::iterator mit;
-    for (mit = meshes.begin() ; mit != meshes.end() ; mit++)
-    {
-        if ((*mit)->name == meshname)
-        {
-            return (*mit)->numBlocks;
-        }
-    }
+    int nmeshes = meshes.size();
+    for (i = 0 ; i < nmeshes ; i++)
+        if (meshes[i]->name == meshname)
+            return meshes[i]->numBlocks;
 
-    std::vector<avtCurveMetaData *>::iterator cit;
-    for (cit = curves.begin() ; cit != curves.end() ; cit++)
+    int ncurves = curves.size();
+    for (i = 0 ; i < ncurves ; i++)
     {
-        if ((*cit)->name == meshname)
+        if (curves[i]->name == meshname)
         {
             return 1;
         }
@@ -2758,11 +2759,16 @@ avtDatabaseMetaData::GetNDomains(std::string var)
 //    Kathleen Bonnell, Thu Aug 28 13:42:03 PDT 2003
 //    Test for 'var' matching 'blockTitle' or 'groupTitle' in MeshMetaData.
 //
+//    Hank Childs, Fri Sep 12 09:11:26 PDT 2003
+//    Made modification so that routine could be 'const'.
+//
 // ****************************************************************************
 
 avtVarType
-avtDatabaseMetaData::DetermineVarType(std::string var_in)
+avtDatabaseMetaData::DetermineVarType(std::string var_in) const
 {
+    int  i;
+
     // If the variable is an expression, we need to find a "real" variable
     // name to work with.
     ExprNode *tree = ParsingExprList::GetExpressionTree(var_in);
@@ -2782,57 +2788,57 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in)
         ParseCompoundForVar(var_in, var);
     }
 
-    std::vector<avtMeshMetaData *>::iterator mit;
-    for (mit = meshes.begin() ; mit != meshes.end() ; mit++)
+    int nmeshes = meshes.size();
+    for (i = 0 ; i < nmeshes ; i++)
     {
-        if (((*mit)->name == var) || 
-            ((*mit)->blockTitle == var) ||
-            ((*mit)->groupTitle == var))
+        if ((meshes[i]->name == var) || 
+            (meshes[i]->blockTitle == var) ||
+            (meshes[i]->groupTitle == var))
         {
             return AVT_MESH;
         }
     }
 
-    std::vector<avtVectorMetaData *>::iterator vit;
-    for (vit = vectors.begin() ; vit != vectors.end() ; vit++)
+    int nvectors = vectors.size();
+    for (i = 0 ; i < nvectors ; i++)
     {
-        if ((*vit)->name == var)
+        if (vectors[i]->name == var)
         {
             return AVT_VECTOR_VAR;
         }
     }
 
-    std::vector<avtScalarMetaData *>::iterator sit;
-    for (sit = scalars.begin() ; sit != scalars.end() ; sit++)
+    int nscalars = scalars.size();
+    for (i = 0 ; i < nscalars ; i++)
     {
-        if ((*sit)->name == var)
+        if (scalars[i]->name == var)
         {
             return AVT_SCALAR_VAR;
         }
     }
 
-    std::vector<avtMaterialMetaData *>::iterator mait;
-    for (mait = materials.begin() ; mait != materials.end() ; mait++)
+    int nmats = materials.size();
+    for (i = 0 ; i < nmats ; i++)
     {
-        if ((*mait)->name == var)
+        if (materials[i]->name == var)
         {
             return AVT_MATERIAL;
         }
     }
 
-    std::vector<avtSpeciesMetaData *>::iterator spit;
-    for (spit = species.begin() ; spit != species.end() ; spit++)
+    int nspecies = species.size();
+    for (i = 0 ; i < nspecies ; i++)
     {
-        if ((*spit)->name == var)
+        if (species[i]->name == var)
         {
             return AVT_MATSPECIES;
         }
     }
 
-    std::vector<avtCurveMetaData *>::iterator cit;
-    for (cit = curves.begin() ; cit != curves.end() ; cit++)
+    int ncurves = curves.size();
+    for (i = 0 ; i < ncurves ; i++)
     {
-        if ((*cit)->name == var)
+        if (curves[i]->name == var)
         {
             return AVT_CURVE;
         }
@@ -2869,15 +2875,21 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in)
 //    Kathleen Bonnell, Thu Aug 28 13:42:03 PDT 2003
 //    Test for 'var' matching 'blockTitle' or 'groupTitle' in MeshMetaData.
 //
+//    Hank Childs, Fri Sep 12 09:17:33 PDT 2003
+//    Re-coded some sections so this routine could be 'const'.
+//
 // ****************************************************************************
 
 std::string
-avtDatabaseMetaData::MeshForVar(std::string var)
+avtDatabaseMetaData::MeshForVar(std::string var) const
 {
+    int   i;
+
     // Check if we even have a variable.
     if (var == "")
     {
-        debug1 << "avtDatabaseMetaData::MeshForVar: Null variable passed." << endl;
+        debug1 << "avtDatabaseMetaData::MeshForVar: Null variable passed." 
+               << endl;
         EXCEPTION1(InvalidVariableException, var);
     }
 
@@ -2899,10 +2911,10 @@ avtDatabaseMetaData::MeshForVar(std::string var)
     }
 
     // Look through the meshes.
-    std::vector<avtMeshMetaData *>::iterator mit;
-    for (mit = meshes.begin() ; mit != meshes.end() ; mit++)
+    int nmeshes = meshes.size();
+    for (i = 0 ; i < nmeshes ; i++)
     {
-        if ((*mit)->name == var)
+        if (meshes[i]->name == var)
         {
             //
             // The mesh is defined on itself??  A little weird, but this is
@@ -2910,58 +2922,58 @@ avtDatabaseMetaData::MeshForVar(std::string var)
             //
             return var;
         }
-        else if (((*mit)->blockTitle == var) ||
-                 ((*mit)->groupTitle == var))
+        else if ((meshes[i]->blockTitle == var) ||
+                 (meshes[i]->groupTitle == var))
         {
-            return (*mit)->name;
+            return meshes[i]->name;
         }
     }
 
     // Look through the vectors.
-    std::vector<avtVectorMetaData *>::iterator vit;
-    for (vit = vectors.begin() ; vit != vectors.end() ; vit++)
+    int nvectors = vectors.size();
+    for (i = 0 ; i < nvectors ; i++)
     {
-        if ((*vit)->name == var)
+        if (vectors[i]->name == var)
         {
-            return (*vit)->meshName;
+            return vectors[i]->meshName;
         }
     }
 
     // Look through the scalars.
-    std::vector<avtScalarMetaData *>::iterator sit;
-    for (sit = scalars.begin() ; sit != scalars.end() ; sit++)
+    int nscalars = scalars.size();
+    for (i = 0 ; i < nscalars ; i++)
     {
-        if ((*sit)->name == var)
+        if (scalars[i]->name == var)
         {
-            return (*sit)->meshName;
+            return scalars[i]->meshName;
         }
     }
 
     // Look through the materials.
-    std::vector<avtMaterialMetaData *>::iterator mait;
-    for (mait = materials.begin() ; mait != materials.end() ; mait++)
+    int nmats = materials.size();
+    for (i = 0 ; i < nmats ; i++)
     {
-        if ((*mait)->name == var)
+        if (materials[i]->name == var)
         {
-            return (*mait)->meshName;
+            return materials[i]->meshName;
         }
     }
 
     // Look through the species.
-    std::vector<avtSpeciesMetaData *>::iterator spit;
-    for (spit = species.begin() ; spit != species.end() ; spit++)
+    int nspecies = species.size();
+    for (i = 0 ; i < nspecies ; i++)
     {
-        if ((*spit)->name == var)
+        if (species[i]->name == var)
         {
-            return (*spit)->meshName;
+            return species[i]->meshName;
         }
     }
 
     // Look through the curves.
-    std::vector<avtCurveMetaData *>::iterator cit;
-    for (cit = curves.begin() ; cit != curves.end() ; cit++)
+    int ncurves = curves.size();
+    for (i = 0 ; i < ncurves ; i++)
     {
-        if ((*cit)->name == var)
+        if (curves[i]->name == var)
         {
             return var;
         }
@@ -2991,30 +3003,33 @@ avtDatabaseMetaData::MeshForVar(std::string var)
 //    Issue a warning to the debug files if there are multiple materials on a
 //    mesh.
 //
+//    Hank Childs, Fri Sep 12 09:17:33 PDT 2003
+//    Re-coded some sections so this routine could be 'const'.
+//
 // ****************************************************************************
 
 std::string
-avtDatabaseMetaData::MaterialOnMesh(std::string mesh)
+avtDatabaseMetaData::MaterialOnMesh(std::string mesh) const
 {
     std::string rv = "";
     bool foundValue = false;
 
-    std::vector<avtMaterialMetaData *>::iterator mait;
-    for (mait = materials.begin() ; mait != materials.end() ; mait++)
+    int nmats = materials.size();
+    for (int i = 0 ; i < nmats ; i++)
     {
-        if ((*mait)->meshName == mesh)
+        if (materials[i]->meshName == mesh)
         {
             if (foundValue)
             {
                 debug1 << "WARNING: screwy file.  There are multiple materials"
                        << " (" << rv.c_str() << " and " 
-                       << (*mait)->name.c_str() << ") defined"
+                       << materials[i]->name.c_str() << ") defined"
                        << " on the same mesh." << endl;
                 debug1 << "There are assumption in the VisIt code that this "
                        << "will never happen." << endl; 
             }
 
-            rv = (*mait)->name;
+            rv = materials[i]->name;
             foundValue = true;
         }
     }
@@ -3042,17 +3057,22 @@ avtDatabaseMetaData::MaterialOnMesh(std::string mesh)
 //  Programmer: Jeremy Meredith
 //  Creation:   December 17, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Sep 12 09:17:33 PDT 2003
+//    Re-coded some sections so this routine could be 'const'.
+//
 // ****************************************************************************
 
 std::string
-avtDatabaseMetaData::SpeciesOnMesh(std::string mesh)
+avtDatabaseMetaData::SpeciesOnMesh(std::string mesh) const
 {
-    std::vector<avtSpeciesMetaData *>::iterator spit;
-    for (spit = species.begin() ; spit != species.end() ; spit++)
+    int nspecies = species.size();
+    for (int i = 0 ; i < nspecies ; i++)
     {
-        if ((*spit)->meshName == mesh)
+        if (species[i]->meshName == mesh)
         {
-            return (*spit)->name;
+            return species[i]->name;
         }
     }
 
@@ -3080,27 +3100,30 @@ avtDatabaseMetaData::SpeciesOnMesh(std::string mesh)
 //    Issue a warning to the debug files if there are multiple materials on a
 //    mesh.
 //
+//    Hank Childs, Fri Sep 12 09:17:33 PDT 2003
+//    Re-coded some sections so this routine could be 'const'.
+//
 // ****************************************************************************
 
 const avtMaterialMetaData *
-avtDatabaseMetaData::GetMaterialOnMesh(std::string mesh)
+avtDatabaseMetaData::GetMaterialOnMesh(std::string mesh) const
 {
     const avtMaterialMetaData *rv = NULL;
 
-    std::vector<avtMaterialMetaData *>::iterator mait;
-    for (mait = materials.begin() ; mait != materials.end() ; mait++)
+    int nmaterials = materials.size();
+    for (int i = 0 ; i < nmaterials ; i++)
     {
-        if ((*mait)->meshName == mesh)
+        if (materials[i]->meshName == mesh)
         {
             if (rv != NULL)
             {
                 debug1 << "WARNING: screwy file.  There are multiple materials"
-                       << " (" << rv << " and " << (*mait)->name.c_str() 
+                       << " (" << rv << " and " << materials[i]->name.c_str() 
                        << ") defined on the same mesh." << endl;
                 debug1 << "There are assumptions in the VisIt code that this "
                        << "will never happen." << endl; 
             }
-            rv = *mait;
+            rv = materials[i];
         }
     }
 
@@ -3122,17 +3145,22 @@ avtDatabaseMetaData::GetMaterialOnMesh(std::string mesh)
 //  Programmer: Jeremy Meredith
 //  Creation:   December 14, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Sep 12 09:17:33 PDT 2003
+//    Re-coded some sections so this routine could be 'const'.
+//
 // ****************************************************************************
 
 const avtSpeciesMetaData *
-avtDatabaseMetaData::GetSpeciesOnMesh(std::string mesh)
+avtDatabaseMetaData::GetSpeciesOnMesh(std::string mesh) const
 {
-    std::vector<avtSpeciesMetaData *>::iterator spit;
-    for (spit = species.begin() ; spit != species.end() ; spit++)
+    int nspecies = species.size();
+    for (int i = 0 ; i < nspecies ; i++)
     {
-        if ((*spit)->meshName == mesh)
+        if (species[i]->meshName == mesh)
         {
-            return (*spit);
+            return species[i];
         }
     }
 
@@ -3983,7 +4011,7 @@ avtDatabaseMetaData::GetNumberOfExpressions(void) const
 // ****************************************************************************
 
 bool
-avtDatabaseMetaData::VarIsCompound(const std::string &v) 
+avtDatabaseMetaData::VarIsCompound(const std::string &v) const
 {
     int beg = -1, end = -1;
 
@@ -4020,7 +4048,7 @@ avtDatabaseMetaData::VarIsCompound(const std::string &v)
 
 void
 avtDatabaseMetaData::ParseCompoundForMesh(const std::string &inVar, 
-      std::string &outVar) 
+      std::string &outVar) const
 {
     int beg = -1, end = -1;
  
@@ -4063,7 +4091,7 @@ avtDatabaseMetaData::ParseCompoundForMesh(const std::string &inVar,
 
 void
 avtDatabaseMetaData::ParseCompoundForCategory(const std::string &inVar, 
-      std::string &outVar) 
+      std::string &outVar) const
 {
     int end = -1, beg = -1;
  
@@ -4104,7 +4132,7 @@ avtDatabaseMetaData::ParseCompoundForCategory(const std::string &inVar,
 // ****************************************************************************
 
 avtSubsetType
-avtDatabaseMetaData::DetermineSubsetType(const std::string &inVar) 
+avtDatabaseMetaData::DetermineSubsetType(const std::string &inVar) const
 {
     std::string category, mesh;
  
@@ -4184,7 +4212,7 @@ avtDatabaseMetaData::DetermineSubsetType(const std::string &inVar)
 
 void
 avtDatabaseMetaData::ParseCompoundForVar(const std::string &inVar, 
-    std::string &outVar) 
+    std::string &outVar) const
 {
     if (!VarIsCompound(inVar))
     {

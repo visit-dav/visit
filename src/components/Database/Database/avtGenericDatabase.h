@@ -213,7 +213,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                               std::vector<std::string> &,
                                               std::vector<std::string> &,
                                               bool, bool, bool, bool, bool,
-                                              bool, bool&, bool&, bool);
+                                              bool, bool, bool&, bool&, bool);
     void_ref_ptr               GetMIR(int, const char *, int, vtkDataSet*,
                                       avtMaterial *, int, bool, bool, bool,
                                       bool, bool&, bool&, bool);

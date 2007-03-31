@@ -1047,6 +1047,9 @@ TetMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat,
 //    Jeremy Meredith, Fri Jun 13 16:56:43 PDT 2003
 //    Added clean-zone-only support.
 //
+//    Hank Childs, Fri Sep 12 17:40:50 PDT 2003
+//    Formally tell Subset array how many tuples it has.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1234,8 +1237,8 @@ TetMIR::GetDataset(vector<int> mats, vtkDataSet *ds,
         //
         vtkIntArray *outmat = vtkIntArray::New();
         outmat->SetName("avtSubsets");
-        outmat->Allocate(ncells);
-        int *buff = (int *) outmat->GetVoidPointer(0);
+        outmat->SetNumberOfTuples(ncells);
+        int *buff = outmat->GetPointer(0);
         for (i=0; i<ncells; i++)
         {
             buff[i] = mapUsedMatToMat[zonesList[cellList[i]].mat];

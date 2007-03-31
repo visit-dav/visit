@@ -314,15 +314,15 @@ public:
     const Expression   *GetExpression(int) const;
     int                 GetNumberOfExpressions(void) const;
 
-    int          GetNDomains(std::string);
-    avtVarType   DetermineVarType(std::string);
-    avtSubsetType   DetermineSubsetType(const std::string &);
-    std::string  MeshForVar(std::string);
-    std::string  MaterialOnMesh(std::string);
-    std::string  SpeciesOnMesh(std::string);
+    int          GetNDomains(std::string) const;
+    avtVarType   DetermineVarType(std::string) const;
+    avtSubsetType   DetermineSubsetType(const std::string &) const;
+    std::string  MeshForVar(std::string) const;
+    std::string  MaterialOnMesh(std::string) const;
+    std::string  SpeciesOnMesh(std::string) const;
 
-    const avtMaterialMetaData *GetMaterialOnMesh(std::string);
-    const avtSpeciesMetaData  *GetSpeciesOnMesh(std::string);
+    const avtMaterialMetaData *GetMaterialOnMesh(std::string) const;
+    const avtSpeciesMetaData  *GetSpeciesOnMesh(std::string) const;
 
     void         Print(ostream &, int = 0) const;
 
@@ -332,10 +332,13 @@ public:
     virtual AttributeGroup *CreateSubAttributeGroup(int);
 
 private:
-    bool VarIsCompound(const std::string &inVar);
-    void ParseCompoundForVar(const std::string &inVar, std::string &outVar);
-    void ParseCompoundForMesh(const std::string &inVar, std::string &meshName);
-    void ParseCompoundForCategory(const std::string &inVar, std::string &meshName);
+    bool VarIsCompound(const std::string &inVar) const;
+    void ParseCompoundForVar(const std::string &inVar, std::string &outVar)
+                                                                   const;
+    void ParseCompoundForMesh(const std::string &inVar, std::string &meshName)
+                                                                   const;
+    void ParseCompoundForCategory(const std::string &inVar, 
+                                            std::string &meshName) const;
 };
 
 

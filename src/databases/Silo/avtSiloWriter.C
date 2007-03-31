@@ -1,0 +1,1100 @@
+// ************************************************************************* //
+//                              avtSiloWriter.C                              //
+// ************************************************************************* //
+
+#include <avtSiloWriter.h>
+
+#include <vector.h>
+
+#include <vtkIntArray.h>
+#include <vtkPolyData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkStructuredGrid.h>
+#include <vtkUnstructuredGrid.h>
+
+#include <avtDatabaseMetaData.h>
+#include <avtMaterial.h>
+#include <avtMetaData.h>
+#include <avtParallel.h>
+#include <avtTerminatingSource.h>
+
+#include <DebugStream.h>
+#include <ImproperUseException.h>
+
+
+using     std::string;
+using     std::vector;
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter constructor
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+// ****************************************************************************
+
+avtSiloWriter::avtSiloWriter()
+{
+    optlist = NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter destructor
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+// ****************************************************************************
+
+avtSiloWriter::~avtSiloWriter()
+{
+    if (optlist != NULL)
+    {
+        DBFreeOptlist(optlist);
+        optlist = NULL;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::OpenFile
+//
+//  Purpose:
+//      Does no actual work.  Just records the stem name for the files.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 11, 2003
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::OpenFile(const string &stemname)
+{
+    stem = stemname;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WriteHeaders
+//
+//  Purpose:
+//      This will right out the multi-vars for the Silo constructs.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 11, 2003
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteHeaders(const avtDatabaseMetaData *md,
+                            vector<string> &scalars, vector<string> &vectors,
+                            vector<string> &materials)
+{
+    int  i;
+
+    const avtMeshMetaData *mmd = md->GetMesh(0);
+    meshname = mmd->name;
+    matname = (materials.size() > 0 ? materials[0] : "");
+
+    if (PAR_Rank() == 0)
+    {
+        char filename[1024];
+        sprintf(filename, "%s.silo", stem.c_str());
+        DBfile *dbfile = DBCreate(filename, 0, DB_LOCAL, 
+                                  "Silo file written by VisIt", DB_PDB);
+
+        ConstructMultimesh(dbfile, mmd);
+        for (i = 0 ; i < scalars.size() ; i++)
+            ConstructMultivar(dbfile, scalars[i], mmd);
+        for (i = 0 ; i < vectors.size() ; i++)
+            ConstructMultivar(dbfile, vectors[i], mmd);
+        for (i = 0 ; i < materials.size() ; i++)
+            ConstructMultimat(dbfile, materials[i], mmd);
+
+        DBClose(dbfile);
+    }
+
+    ConstructOptlist(md);
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::ConstructMultimesh
+//
+//  Purpose:
+//      Constructs a multi-mesh based on meta-data.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd)
+{
+    int   i;
+    int nblocks = mmd->numBlocks;
+
+    //
+    // Determine what the Silo type is.
+    //
+    int *meshtypes = new int[nblocks];
+    int silo_mesh_type = DB_INVALID_OBJECT;
+    switch (mmd->meshType)
+    {
+      case AVT_RECTILINEAR_MESH:
+      case AVT_CURVILINEAR_MESH:
+        silo_mesh_type = DB_QUADMESH;
+        break;
+
+      case AVT_UNSTRUCTURED_MESH:
+      case AVT_SURFACE_MESH:
+      case AVT_POINT_MESH:
+        silo_mesh_type = DB_UCDMESH;
+        break;
+
+      default:
+        silo_mesh_type = DB_INVALID_OBJECT;
+        break;
+    }
+
+    if (hasMaterialsInProblem && !mustGetMaterialsAdditionally)
+       silo_mesh_type = DB_UCDMESH;  // After we do MIR.
+
+    //
+    // Construct the names for each mesh.
+    //
+    char **mesh_names = new char*[nblocks];
+    for (i = 0 ; i < nblocks ; i++)
+    {
+        meshtypes[i] = silo_mesh_type;
+        char tmp[1024];
+        sprintf(tmp, "%s.%d.silo:/%s", stem.c_str(), i, mmd->name.c_str());
+        mesh_names[i] = new char[strlen(tmp)+1];
+        strcpy(mesh_names[i], tmp);
+    }
+
+    //
+    // Write the actual header information.
+    //
+    DBPutMultimesh(dbfile, (char *) mmd->name.c_str(), nblocks, mesh_names,
+                   meshtypes, optlist);
+
+    //
+    // Clean up memory.
+    //
+    for (i = 0 ; i < nblocks ; i++)
+    {
+        delete [] mesh_names[i];
+    }
+    delete [] mesh_names;
+    delete [] meshtypes;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::ConstructMultivar
+//
+//  Purpose:
+//      Constructs a multi-var based on meta-data.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
+                                 const avtMeshMetaData *mmd)
+{
+    int   i;
+    int nblocks = mmd->numBlocks;
+
+    //
+    // Determine what the Silo type is.
+    //
+    int *vartypes = new int[nblocks];
+    int silo_var_type = DB_INVALID_OBJECT;
+    switch (mmd->meshType)
+    {
+      case AVT_RECTILINEAR_MESH:
+      case AVT_CURVILINEAR_MESH:
+        silo_var_type = DB_QUADVAR;
+        break;
+
+      case AVT_UNSTRUCTURED_MESH:
+      case AVT_SURFACE_MESH:
+      case AVT_POINT_MESH:
+        silo_var_type = DB_UCDVAR;
+        break;
+
+      default:
+        silo_var_type = DB_INVALID_OBJECT;
+        break;
+    }
+
+    if (hasMaterialsInProblem && !mustGetMaterialsAdditionally)
+       silo_var_type = DB_UCDVAR;  // After we do MIR.
+
+    //
+    // Construct the names for each var.
+    //
+    char **var_names = new char*[nblocks];
+    for (i = 0 ; i < nblocks ; i++)
+    {
+        vartypes[i] = silo_var_type;
+        char tmp[1024];
+        sprintf(tmp, "%s.%d.silo:/%s", stem.c_str(), i, sname.c_str());
+        var_names[i] = new char[strlen(tmp)+1];
+        strcpy(var_names[i], tmp);
+    }
+
+    //
+    // Write the actual header information.
+    //
+    DBPutMultivar(dbfile, (char *) sname.c_str(), nblocks, var_names,
+                   vartypes, optlist);
+
+    //
+    // Clean up memory.
+    //
+    for (i = 0 ; i < nblocks ; i++)
+    {
+        delete [] var_names[i];
+    }
+    delete [] var_names;
+    delete [] vartypes;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::ConstructMultimat
+//
+//  Purpose:
+//      Constructs a multimat based on meta-data.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::ConstructMultimat(DBfile *dbfile, const string &mname,
+                                 const avtMeshMetaData *mmd)
+{
+    int   i;
+    int nblocks = mmd->numBlocks;
+
+    //
+    // Construct the names for each mat
+    //
+    char **mat_names = new char*[nblocks];
+    for (i = 0 ; i < nblocks ; i++)
+    {
+        char tmp[1024];
+        sprintf(tmp, "%s.%d.silo:/%s", stem.c_str(), i, mname.c_str());
+        mat_names[i] = new char[strlen(tmp)+1];
+        strcpy(mat_names[i], tmp);
+    }
+
+    //
+    // Write the actual header information.
+    //
+    DBPutMultimat(dbfile, (char *) mname.c_str(), nblocks, mat_names, optlist);
+
+    //
+    // Clean up memory.
+    //
+    for (i = 0 ; i < nblocks ; i++)
+    {
+        delete [] mat_names[i];
+    }
+    delete [] mat_names;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::ConstructOptlist
+//
+//  Purpose:
+//      Constructs an optlist from the input dataset and the database 
+//      meta-data.
+//
+//  Programmer: Hank CHilds
+//  Creation:   September 12, 2003
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::ConstructOptlist(const avtDatabaseMetaData *md)
+{
+    optlist = DBMakeOptlist(10);
+    
+    avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+    int cycle = atts.GetCycle();
+    DBAddOption(optlist, DBOPT_CYCLE, &cycle);
+    float ftime = atts.GetTime();
+    DBAddOption(optlist, DBOPT_TIME, &ftime);
+    double dtime = atts.GetTime();
+    DBAddOption(optlist, DBOPT_DTIME, &dtime);
+    if (atts.GetXUnits() != "")
+        DBAddOption(optlist, DBOPT_XUNITS, (char *) atts.GetXUnits().c_str());
+    if (atts.GetYUnits() != "")
+        DBAddOption(optlist, DBOPT_YUNITS, (char *) atts.GetYUnits().c_str());
+    if (atts.GetZUnits() != "")
+        DBAddOption(optlist, DBOPT_ZUNITS, (char *) atts.GetZUnits().c_str());
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WriteChunk
+//
+//  Purpose:
+//      This writes out one chunk of an avtDataset.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 11, 2003
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
+{
+    //
+    // Now matter what mesh type we have, the file they should go into should
+    // have the same name.  Set up that file now.
+    //
+    char filename[1024];
+    sprintf(filename, "%s.%d.silo", stem.c_str(), chunk);
+    DBfile *dbfile = DBCreate(filename, 0, DB_LOCAL, 
+                              "Silo file written by VisIt", DB_PDB);
+    
+    //
+    // Use sub-routines to do the mesh-type specific writes.
+    //
+    switch (ds->GetDataObjectType())
+    {
+       case VTK_UNSTRUCTURED_GRID:
+         WriteUnstructuredMesh(dbfile, (vtkUnstructuredGrid *) ds, chunk);
+         break;
+
+       case VTK_STRUCTURED_GRID:
+         WriteCurvilinearMesh(dbfile, (vtkStructuredGrid *) ds, chunk);
+         break;
+
+       case VTK_RECTILINEAR_GRID:
+         WriteRectilinearMesh(dbfile, (vtkRectilinearGrid *) ds, chunk);
+         break;
+
+       case VTK_POLY_DATA:
+         WritePolygonalMesh(dbfile, (vtkPolyData *) ds, chunk);
+         break;
+
+       default:
+         EXCEPTION0(ImproperUseException);
+    }
+
+    DBClose(dbfile);
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::CloseFile
+//
+//  Purpose:
+//      Closes the file.  This does nothing in this case.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 11, 2003
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::CloseFile(void)
+{
+    // Just needed to meet interface.
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WriteUnstructuredMesh
+//
+//  Purpose:
+//      Writes out an unstructured mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 11, 2003
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
+                                    int chunk)
+{
+    int  i, j;
+
+    int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+    int npts = ug->GetNumberOfPoints();
+    int nzones = ug->GetNumberOfCells();
+
+    //
+    // Construct the coordinates.
+    //
+    float *coords[3] = { NULL, NULL, NULL };
+    vtkPoints *vtk_pts = ug->GetPoints();
+    float *vtk_ptr = (float *) vtk_pts->GetVoidPointer(0);
+    for (i = 0 ; i < dim ; i++)
+    {
+        coords[i] = new float[npts];
+        for (j = 0 ; j < npts ; j++)
+            coords[i][j] = vtk_ptr[3*j+i];
+    }
+
+    //
+    // Put the zone list into a digestable form for Silo.
+    //
+    vector<int> shapecnt;
+    vector<int> shapesize;
+    vector<int> zonelist;
+    for (i = 0 ; i < nzones ; i++)
+    {
+        //
+        // Get the i'th cell and put its connectivity info into the 'zonelist'
+        // array.
+        //
+        vtkCell *cell = ug->GetCell(i);
+        for (j = 0 ; j < cell->GetNumberOfPoints() ; j++)
+        {
+            zonelist.push_back(cell->GetPointId(j));
+        }
+
+        //
+        // Silo keeps track of how many of each shape it has in a row.
+        // (This means that it doesn't have to explicitly store the size
+        // of each individual cell).  Maintain that information.
+        //
+        int lastshape = shapesize.size()-1;
+        int thisshapesize = cell->GetNumberOfPoints();
+        if (lastshape >= 0 && (thisshapesize == shapesize[lastshape]))
+            shapecnt[lastshape]++;
+        else
+        {
+            shapesize.push_back(thisshapesize);
+            shapecnt.push_back(1);  // 1 is the # of shapes we have seen with
+                                    // this size ie the one we are processing.
+        }
+
+        //
+        // Wedges and pyramids have a different ordering in Silo and VTK.
+        // Make the corrections for these cases.
+        //
+        if (dim == 3 && (cell->GetNumberOfPoints() == 6))
+        {
+            int startOfZone = zonelist.size() - 6;
+            int tmp = zonelist[startOfZone];
+            zonelist[startOfZone]   = zonelist[startOfZone+5];
+            zonelist[startOfZone+5] = zonelist[startOfZone+1];
+            zonelist[startOfZone+1] = zonelist[startOfZone+2];
+            zonelist[startOfZone+2] = tmp;
+        }
+        if (dim == 3 && (cell->GetNumberOfPoints() == 5))
+        {
+            int startOfZone = zonelist.size() - 5;
+            int tmp = zonelist[startOfZone+1];
+            zonelist[startOfZone+1] = zonelist[startOfZone+3];
+            zonelist[startOfZone+3] = tmp;
+        }
+    }
+    
+    //
+    // Now write out the zonelist to the file.
+    //
+    int *zl = &(zonelist[0]);
+    int lzl = zonelist.size();
+    int *ss = &(shapesize[0]);
+    int *sc = &(shapecnt[0]);
+    int nshapes = shapesize.size();
+    DBPutZonelist(dbfile, "zonelist", nzones, dim, zl, lzl, 0, ss, sc,nshapes);
+
+    //
+    // Now write the actual mesh.
+    //
+    DBPutUcdmesh(dbfile, (char *) meshname.c_str(), dim, NULL, coords, npts,
+                 nzones, "zonelist", NULL, DB_FLOAT, optlist);
+
+    WriteUcdvars(dbfile, ug->GetPointData(), ug->GetCellData());
+    WriteMaterials(dbfile, ug->GetCellData(), chunk);
+
+    //
+    // Free up memory.
+    //
+    if (coords[0] != NULL)
+        delete [] coords[0];
+    if (coords[1] != NULL)
+        delete [] coords[1];
+    if (coords[2] != NULL)
+        delete [] coords[2];
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WriteCurvilinearMesh
+//
+//  Purpose:
+//      Writes out an curvilinear mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 11, 2003
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteCurvilinearMesh(DBfile *dbfile, vtkStructuredGrid *sg,
+                                    int chunk)
+{
+    int  i, j;
+
+    int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+
+    //
+    // Construct the coordinates.
+    //
+    float *coords[3] = { NULL, NULL, NULL };
+    vtkPoints *vtk_pts = sg->GetPoints();
+    float *vtk_ptr = (float *) vtk_pts->GetVoidPointer(0);
+    int npts  = sg->GetNumberOfPoints();
+    for (i = 0 ; i < ndims ; i++)
+    {
+        coords[i] = new float[npts];
+        for (j = 0 ; j < npts ; j++)
+            coords[i][j] = vtk_ptr[3*j+i];
+    }
+
+    //
+    // Write the curvilinear mesh to the Silo file.
+    //
+    int dims[3];
+    sg->GetDimensions(dims);
+    DBPutQuadmesh(dbfile, (char *) meshname.c_str(), NULL, coords, dims, ndims,
+                  DB_FLOAT, DB_NONCOLLINEAR, optlist);
+
+    WriteQuadvars(dbfile, sg->GetPointData(), sg->GetCellData(),ndims,dims);
+    WriteMaterials(dbfile, sg->GetCellData(), chunk);
+
+    //
+    // Free up memory.
+    //
+    if (coords[0] != NULL)
+        delete [] coords[0];
+    if (coords[1] != NULL)
+        delete [] coords[1];
+    if (coords[2] != NULL)
+        delete [] coords[2];
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WriteRectilinearMesh
+//
+//  Purpose:
+//      Writes out an rectilinear mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteRectilinearMesh(DBfile *dbfile, vtkRectilinearGrid *rg,
+                                    int chunk)
+{
+    int  i, j;
+
+    int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+
+    //
+    // Construct the coordinates.
+    //
+    float *coords[3] = { NULL, NULL, NULL };
+    int dims[3];
+    rg->GetDimensions(dims);
+    vtkDataArray *vtk_coords[3] = { NULL, NULL, NULL };
+    if (ndims > 0)
+        vtk_coords[0] = rg->GetXCoordinates();
+    if (ndims > 1)
+        vtk_coords[1] = rg->GetYCoordinates();
+    if (ndims > 2)
+        vtk_coords[2] = rg->GetZCoordinates();
+
+    for (i = 0 ; i < ndims ; i++)
+    {
+        if (vtk_coords[i] == NULL)
+            continue;
+
+        int npts = vtk_coords[i]->GetNumberOfTuples();
+        coords[i] = new float[npts];
+        for (j = 0 ; j < npts ; j++)
+            coords[i][j] = vtk_coords[i]->GetTuple1(j);
+    }
+
+    //
+    // Write the rectilinear mesh to the Silo file.
+    //
+    DBPutQuadmesh(dbfile, (char *) meshname.c_str(), NULL, coords, dims, ndims,
+                  DB_FLOAT, DB_COLLINEAR, optlist);
+
+    WriteQuadvars(dbfile, rg->GetPointData(), rg->GetCellData(),ndims,dims);
+    WriteMaterials(dbfile, rg->GetCellData(), chunk);
+
+    //
+    // Free up memory.
+    //
+    if (coords[0] != NULL)
+        delete [] coords[0];
+    if (coords[1] != NULL)
+        delete [] coords[1];
+    if (coords[2] != NULL)
+        delete [] coords[2];
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WritePolygonalMesh
+//
+//  Purpose:
+//      Writes out a polygonal mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::WritePolygonalMesh(DBfile *dbfile, vtkPolyData *pd,
+                                  int chunk)
+{
+    int  i, j;
+
+    int ndims  = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+    int npts   = pd->GetNumberOfPoints();
+    int nzones = pd->GetNumberOfCells();
+
+    //
+    // Construct the coordinates.
+    //
+    float *coords[3] = { NULL, NULL, NULL };
+    vtkPoints *vtk_pts = pd->GetPoints();
+    float *vtk_ptr = (float *) vtk_pts->GetVoidPointer(0);
+    for (i = 0 ; i < ndims ; i++)
+    {
+        coords[i] = new float[npts];
+        for (j = 0 ; j < npts ; j++)
+            coords[i][j] = vtk_ptr[3*j+i];
+    }
+
+    //
+    // We will be writing this dataset out as an unstructured mesh in Silo.
+    // So we will need a zonelist.  Construct that now.
+    //
+    vector<int> shapecnt;
+    vector<int> shapesize;
+    vector<int> zonelist;
+    for (i = 0 ; i < nzones ; i++)
+    {
+        //
+        // Get the i'th cell and put its connectivity info into the 'zonelist'
+        // array.
+        //
+        vtkCell *cell = pd->GetCell(i);
+        for (j = 0 ; j < cell->GetNumberOfPoints() ; j++)
+        {
+            zonelist.push_back(cell->GetPointId(j));
+        }
+
+        //
+        // Silo keeps track of how many of each shape it has in a row.
+        // (This means that it doesn't have to explicitly store the size
+        // of each individual cell).  Maintain that information.
+        //
+        int lastshape = shapesize.size()-1;
+        int thisshapesize = cell->GetNumberOfPoints();
+        if (lastshape >= 0 && (thisshapesize == shapesize[lastshape]))
+            shapecnt[lastshape]++;
+        else
+        {
+            shapesize.push_back(thisshapesize);
+            shapecnt.push_back(1);  // 1 is the # of shapes we have seen with
+                                    // this size ie the one we are processing.
+        }
+    }
+
+    //
+    // Now write out the zonelist to the file.
+    //
+    int *zl = &(zonelist[0]);
+    int lzl = zonelist.size();
+    int *ss = &(shapesize[0]);
+    int *sc = &(shapecnt[0]);
+    int nshapes = shapesize.size();
+    DBPutZonelist(dbfile, "zonelist", nzones, ndims, zl,lzl,0, ss, sc,nshapes);
+
+    //
+    // Now write the actual mesh.
+    //
+    DBPutUcdmesh(dbfile, (char *) meshname.c_str(), ndims, NULL, coords, npts,
+                 nzones, "zonelist", NULL, DB_FLOAT, optlist);
+
+    WriteUcdvars(dbfile, pd->GetPointData(), pd->GetCellData());
+    WriteMaterials(dbfile, pd->GetCellData(), chunk);
+
+    //
+    // Free up memory.
+    //
+    if (coords[0] != NULL)
+        delete [] coords[0];
+    if (coords[1] != NULL)
+        delete [] coords[1];
+    if (coords[2] != NULL)
+        delete [] coords[2];
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WriteUcdvars
+//
+//  Purpose:
+//      Writes out unstructured cell data variables.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteUcdvars(DBfile *dbfile, vtkPointData *pd,
+                               vtkCellData *cd)
+{
+    int   i, j, k;
+
+    //
+    // Write out the nodal variables.
+    //
+    for (i = 0 ; i < pd->GetNumberOfArrays() ; i++)
+    {
+         vtkDataArray *arr = pd->GetArray(i);
+         if (strstr(arr->GetName(), "vtk") != NULL)
+             continue;
+         if (strstr(arr->GetName(), "avt") != NULL)
+             continue;
+         int npts = arr->GetNumberOfTuples();
+         int ncomps = arr->GetNumberOfComponents();
+         if (ncomps == 1)
+         {
+             DBPutUcdvar1(dbfile, (char *) arr->GetName(),
+                          (char *) meshname.c_str(),
+                          (float *) arr->GetVoidPointer(0), npts, NULL, 0,
+                          DB_FLOAT, DB_NODECENT, optlist);
+         }
+         else
+         {
+             float **vars     = new float*[ncomps];
+             float *ptr       = (float *) arr->GetVoidPointer(0);
+             char  **varnames = new char*[ncomps];
+             for (j = 0 ; j < ncomps ; j++)
+             {
+                 vars[j] = new float[npts];
+                 varnames[j] = new char[1024];
+                 sprintf(varnames[j], "%s_comp%d", arr->GetName(), j);
+                 for (k = 0 ; k < npts ; k++)
+                     vars[j][k] = ptr[k*ncomps + j];
+             }
+             DBPutUcdvar(dbfile, (char *) arr->GetName(),
+                         (char *) meshname.c_str(),
+                         ncomps, varnames, vars, npts, NULL, 0, DB_FLOAT,
+                         DB_NODECENT, optlist);
+             for (j = 0 ; j < ncomps ; j++)
+             {
+                  delete [] vars[j];
+                  delete [] varnames[j];
+             }
+             delete [] vars;
+             delete [] varnames;
+         }
+    }
+
+    //
+    // Write out the zonal variables.
+    //
+    for (i = 0 ; i < cd->GetNumberOfArrays() ; i++)
+    {
+         vtkDataArray *arr = cd->GetArray(i);
+         if (strstr(arr->GetName(), "vtk") != NULL)
+             continue;
+         if (strstr(arr->GetName(), "avt") != NULL)
+             continue;
+         int ncomps = arr->GetNumberOfComponents();
+         int nzones = arr->GetNumberOfTuples();
+         if (ncomps == 1)
+         {
+             DBPutUcdvar1(dbfile, (char *) arr->GetName(),
+                          (char *) meshname.c_str(),
+                          (float *) arr->GetVoidPointer(0), nzones, NULL, 0,
+                          DB_FLOAT, DB_ZONECENT, optlist);
+         }
+         else
+         {
+             float **vars     = new float*[ncomps];
+             float *ptr       = (float *) arr->GetVoidPointer(0);
+             char  **varnames = new char*[ncomps];
+             for (j = 0 ; j < ncomps ; j++)
+             {
+                 vars[j] = new float[nzones];
+                 varnames[j] = new char[1024];
+                 sprintf(varnames[j], "%s_comp%d", arr->GetName(), j);
+                 for (k = 0 ; k < nzones ; k++)
+                     vars[j][k] = ptr[k*ncomps + j];
+             }
+             DBPutUcdvar(dbfile, (char *) arr->GetName(),
+                         (char *) meshname.c_str(),
+                         ncomps, varnames, vars, nzones, NULL, 0, DB_FLOAT,
+                         DB_ZONECENT, optlist);
+             for (j = 0 ; j < ncomps ; j++)
+             {
+                  delete [] vars[j];
+                  delete [] varnames[j];
+             }
+             delete [] vars;
+             delete [] varnames;
+         }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WriteQuadvars
+//
+//  Purpose:
+//      Writes out quadvars.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteQuadvars(DBfile *dbfile, vtkPointData *pd,
+                                vtkCellData *cd, int ndims, int *dims)
+{
+    int   i, j, k;
+
+    int zdims[3];
+    zdims[0] = (ndims > 0 ? dims[0]-1 : 0);
+    zdims[1] = (ndims > 1 ? dims[1]-1 : 0);
+    zdims[2] = (ndims > 2 ? dims[2]-1 : 0);
+
+    //
+    // Write out the nodal variables.
+    //
+    for (i = 0 ; i < pd->GetNumberOfArrays() ; i++)
+    {
+         vtkDataArray *arr = pd->GetArray(i);
+         if (strstr(arr->GetName(), "vtk") != NULL)
+             continue;
+         if (strstr(arr->GetName(), "avt") != NULL)
+             continue;
+         int ncomps = arr->GetNumberOfComponents();
+         if (ncomps == 1)
+         {
+             DBPutQuadvar1(dbfile, (char *) arr->GetName(),
+                           (char *) meshname.c_str(),
+                           (float *) arr->GetVoidPointer(0), dims, ndims, NULL,
+                           0, DB_FLOAT, DB_NODECENT, optlist);
+         }
+         else
+         {
+             float **vars     = new float*[ncomps];
+             float *ptr       = (float *) arr->GetVoidPointer(0);
+             int npts = arr->GetNumberOfTuples();
+             char  **varnames = new char*[ncomps];
+             for (j = 0 ; j < ncomps ; j++)
+             {
+                 vars[j] = new float[npts];
+                 varnames[j] = new char[1024];
+                 sprintf(varnames[j], "%s_comp%d", arr->GetName(), j);
+                 for (k = 0 ; k < npts ; k++)
+                     vars[j][k] = ptr[k*ncomps + j];
+             }
+             DBPutQuadvar(dbfile, (char *) arr->GetName(),
+                          (char *) meshname.c_str(),
+                          ncomps, varnames, vars, dims, ndims, NULL, 0, 
+                          DB_FLOAT, DB_NODECENT, optlist);
+             for (j = 0 ; j < ncomps ; j++)
+             {
+                  delete [] vars[j];
+                  delete [] varnames[j];
+             }
+             delete [] vars;
+             delete [] varnames;
+         }
+    }
+
+    //
+    // Write out the zonal variables.
+    //
+    for (i = 0 ; i < cd->GetNumberOfArrays() ; i++)
+    {
+         vtkDataArray *arr = cd->GetArray(i);
+         if (strstr(arr->GetName(), "vtk") != NULL)
+             continue;
+         if (strstr(arr->GetName(), "avt") != NULL)
+             continue;
+         int ncomps = arr->GetNumberOfComponents();
+         int nzones = arr->GetNumberOfTuples();
+         if (ncomps == 1)
+         {
+             DBPutQuadvar1(dbfile, (char *) arr->GetName(),
+                           (char *) meshname.c_str(),
+                           (float *) arr->GetVoidPointer(0), zdims, ndims,
+                           NULL, 0, DB_FLOAT, DB_ZONECENT, optlist);
+         }
+         else
+         {
+             float **vars     = new float*[ncomps];
+             float *ptr       = (float *) arr->GetVoidPointer(0);
+             char  **varnames = new char*[ncomps];
+             for (j = 0 ; j < ncomps ; j++)
+             {
+                 vars[j] = new float[nzones];
+                 varnames[j] = new char[1024];
+                 sprintf(varnames[j], "%s_comp%d", arr->GetName(), j);
+                 for (k = 0 ; k < nzones ; k++)
+                     vars[j][k] = ptr[k*ncomps + j];
+             }
+             DBPutQuadvar(dbfile, (char *) arr->GetName(),
+                          (char *) meshname.c_str(),
+                          ncomps, varnames, vars, zdims, ndims, NULL, 0, 
+                          DB_FLOAT, DB_ZONECENT, optlist);
+             for (j = 0 ; j < ncomps ; j++)
+             {
+                  delete [] vars[j];
+                  delete [] varnames[j];
+             }
+             delete [] vars;
+             delete [] varnames;
+         }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WriteMaterials
+//
+//  Purpose:
+//      Writes out the materials construct.  This routine will "do the right
+//      thing" based on whether or not MIR has already occurred.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 12, 2003
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteMaterials(DBfile *dbfile, vtkCellData *cd, int chunk)
+{
+    int   i;
+
+    if (!hasMaterialsInProblem)
+        return;
+
+    if (mustGetMaterialsAdditionally)
+    {
+        avtMaterial *mat = GetInput()->GetTerminatingSource()
+                                           ->GetMetaData()->GetMaterial(chunk);
+        if (mat == NULL)
+        {
+            debug1 << "Not able to get requested material" << endl;
+            return;
+        }
+
+        //
+        // The AVT material structure closely matches that of the Silo
+        // materials.  Just make a few small conversions and write it out.
+        //
+        int nmats = mat->GetNMaterials();
+        int *matnos = new int[nmats];
+        for (i = 0 ; i < nmats ; i++)
+            matnos[i] = i;
+        int nzones[1];
+        nzones[0] = mat->GetNZones();
+        DBPutMaterial(dbfile, (char *) matname.c_str(),
+                      (char *) meshname.c_str(), nmats, matnos,
+                       (int *) mat->GetMatlist(), nzones, 1, 
+                       (int *) mat->GetMixNext(), (int *) mat->GetMixMat(),
+                       (int *) mat->GetMixZone(), (float *) mat->GetMixVF(),
+                       mat->GetMixlen(), DB_FLOAT, optlist);
+        delete [] matnos;
+    }
+    else
+    {
+        vtkDataArray *arr = cd->GetArray("avtSubsets");
+        if (arr == NULL)
+        {
+            debug1 << "Subsets array not available" << endl;
+            return;
+        }
+        if (arr->GetDataType() != VTK_INT)
+        {
+            debug1 << "Subsets array not of right type" << endl;
+            return;
+        }
+
+        //
+        // We are going to have to calculate each of the structures we want
+        // to write out.  Start by determining which material numbers are used
+        // and which are not.
+        //
+        vtkIntArray *ia = (vtkIntArray *) arr;
+        vector<bool> matlookup;
+        int nzones = ia->GetNumberOfTuples();
+        for (i = 0 ; i < nzones ; i++)
+        {
+            int matno = ia->GetValue(i);
+            while (matlookup.size() <= matno)
+            {
+                matlookup.push_back(false);
+            }
+            matlookup[matno] = true;
+        }
+
+        //
+        // Now determine the number of materials.
+        //
+        int nmats = 0;
+        for (i = 0 ; i < matlookup.size() ; i++)
+            if (matlookup[i])
+                nmats++;
+
+        //
+        // Create the matnos array.
+        //
+        int *matnos = new int[nmats];
+        int dummy = 0;
+        for (i = 0 ; i < matlookup.size() ; i++)
+            if (matlookup[i])
+                matnos[dummy++] = i;
+
+        //
+        // Do the actual write.  This isn't too bad since we have all
+        // clean zones.
+        //
+        DBPutMaterial(dbfile, (char *) matname.c_str(),
+                      (char *) meshname.c_str(), nmats, matnos,
+                       ia->GetPointer(0), &nzones, 1, NULL, NULL, NULL,
+                       NULL, 0, DB_FLOAT, optlist);
+        delete [] matnos;
+    }
+}
+
+

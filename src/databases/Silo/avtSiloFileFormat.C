@@ -627,6 +627,9 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Split some of the methods out of ReadDir so it could be
 //    parallelized.  Only allow the first process to read the root file.
 //
+//    Hank Childs, Fri Sep 12 14:48:33 PDT 2003
+//    Allow for '0' to be a valid material.
+//
 // ****************************************************************************
 
 void
@@ -1360,7 +1363,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         for (j = 0 ; j < mat->nmat ; j++)
         {
             char *num = NULL;
-            int dlen = int(log10(float(mat->matnos[j]))) + 1;
+            int dlen = int(log10(float(mat->matnos[j]+1))) + 1;
             if (mat->matnames == NULL)
             {
                 num = new char[dlen + 2];
@@ -1425,7 +1428,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             for (j = 0 ; j < mat->nmat ; j++)
             {
                 char *num = NULL;
-                int dlen = int(log10(float(mat->matnos[j]))) + 1;
+                int dlen = int(log10(float(mat->matnos[j]+1))) + 1;
                 if (mat->matnames == NULL)
                 {
                     num = new char[dlen + 2];
