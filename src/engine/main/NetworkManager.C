@@ -6,6 +6,7 @@
 #include <MaterialAttributes.h>
 #include <avtExpressionEvaluatorFilter.h>
 #include <ImproperUseException.h>
+#include <InvalidVariableException.h>
 #include <DatabaseException.h>
 #include <NoInputException.h>
 #include <avtPluginFilter.h>
@@ -46,6 +47,9 @@
 #include <mpi.h>
 #include <parallel.h>
 #endif
+
+#include <set>
+using std::set;
 
 static double RenderBalance(int numTrianglesIHave);
 
@@ -309,6 +313,9 @@ NetworkManager::GetDBFromCache(const string &filename, int time)
 //    Jeremy Meredith, Fri Sep  5 15:23:13 PDT 2003
 //    Added a flag for the new MIR algorithm.
 //
+//    Jeremy Meredith, Thu Oct 30 16:09:32 PST 2003
+//    Added code to make sure varLeaves was non-empty before accessing it.
+//
 // ****************************************************************************
 void
 NetworkManager::StartNetwork(const string &filename, const string &var,
@@ -335,7 +342,12 @@ NetworkManager::StartNetwork(const string &filename, const string &var,
     ExprNode *tree = ParsingExprList::GetExpressionTree(leaf);
     while (tree != NULL)
     {
-        leaf = *tree->GetVarLeaves().begin();
+        const set<string> &varLeaves = tree->GetVarLeaves();
+        if (varLeaves.empty())
+        {
+            EXCEPTION1(InvalidVariableException, "");
+        }
+        leaf = *varLeaves.begin();
         tree = ParsingExprList::GetExpressionTree(leaf);
     }
 
