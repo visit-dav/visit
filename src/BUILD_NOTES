@@ -422,7 +422,7 @@ cat Template.conf >> `hostname`.conf
 cd ..
 env CXXFLAGS=-O2 ./configure
 make
-clearcase_bin/visit-bin-dist -v 1.1.6
+clearcase_bin/visit-bin-dist
 # Use the appropriate install command based on the operating system on
 # which you built VisIt.
 clearcase_bin/visit-install 1.1.6 aix `cat ../visitpath`

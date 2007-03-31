@@ -112,6 +112,9 @@
 #    Remove the version number option and make it determine the version
 #    number from the version file. Add a help option.
 #
+#    Eric Brugger, Tue Jul 22 08:31:45 PDT 2003
+#    Add visit-config-open and visit-config-closed to the distribution.
+#
 #-----------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -602,6 +605,14 @@ endif
 if (-e $VisItDir/java/RunViewer.class) then
     cp -R $VisItDir/java/RunViewer.class $javadir
 endif
+
+#
+# Copy the configuration files.
+#
+mkdir $VisItDir/.visit
+cp clearcase_bin/visit-config-closed $VisItDir/.visit
+cp clearcase_bin/visit-config-open   $VisItDir/.visit
+ln -s visit-config-open $VisItDir/.visit/config
 
 #
 # Strip the executables and shared libraries.

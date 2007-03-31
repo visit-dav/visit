@@ -1641,6 +1641,9 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Jeremy Meredith, Thu Jun 12 09:07:28 PDT 2003
 //    Added needBoundarySurfaces option.
 //
+//    Hank Childs, Tue Jul 22 21:48:09 PDT 2003
+//    Added a flag for whether or not we communicated ghosts.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -1651,7 +1654,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
                         bool needBoundarySurfaces,
                         bool needValidConnectivity,
                         bool needSmoothMaterialInterfaces,
-                        bool needCleanZonesOnly,
+                        bool needCleanZonesOnly, bool didGhosts,
                         bool &subdivisionOccurred, bool &notAllCellsSubdivided,
                         bool reUseMIR)
 {
@@ -1676,7 +1679,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     void_ref_ptr vr_mir = GetMIR(dom, var, ts, ds, mat, topoDim,
                                  needValidConnectivity,
                                  needSmoothMaterialInterfaces,
-                                 needCleanZonesOnly,
+                                 needCleanZonesOnly, didGhosts,
                                  subdivisionOccurred,
                                  notAllCellsSubdivided, reUseMIR);
     MIR *mir = (MIR *) (*vr_mir);
@@ -2123,6 +2126,9 @@ avtGenericDatabase::SpeciesSelect(avtDatasetCollection &dsc,
 //    Jeremy Meredith, Thu Oct 24 15:36:34 PDT 2002
 //    Added smoothing option and clean zones only option.
 //
+//    Hank Childs, Tue Jul 22 21:48:09 PDT 2003
+//    Added a flag for whether or not we communicated ghosts.
+//
 // ****************************************************************************
 
 void_ref_ptr
@@ -2130,15 +2136,16 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
                            vtkDataSet *ds, avtMaterial *mat, int topoDim,
                            bool needValidConnectivity,
                            bool needSmoothMaterialInterfaces,
-                           bool needCleanZonesOnly,
+                           bool needCleanZonesOnly, bool didGhosts,
                            bool &subdivisionOccurred,
                            bool &notAllCellsSubdivided, bool reUseMIR)
 {
     char cacheLbl[1000];
-    sprintf(cacheLbl, "MIR_%s_%s_%s",
+    sprintf(cacheLbl, "MIR_%s_%s_%s_%s",
             needValidConnectivity        ? "FullSubdiv" : "MinimalSubdiv",
             needSmoothMaterialInterfaces ? "Smooth"     : "NotSmooth",
-            needCleanZonesOnly           ? "CleanOnly"  : "SplitMixed");
+            needCleanZonesOnly           ? "CleanOnly"  : "SplitMixed",
+            didGhosts                    ? "DidGhosts"  : "NoDidGhosts");
 
     //
     // See if we already have the data lying around.
@@ -3142,6 +3149,9 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
 //    Jeremy Meredith, Thu Jun 12 09:09:30 PDT 2003
 //    Added a flag for internal boundary surfaces.
 //
+//    Hank Childs, Tue Jul 22 21:48:09 PDT 2003
+//    Send down information about whether or not we communicated ghost zones.
+//
 // ****************************************************************************
 
 void
@@ -3211,7 +3221,7 @@ avtGenericDatabase::MaterialSelect(avtDatasetCollection &ds,
                                          spec->NeedBoundarySurfaces(),
                                          spec->NeedValidFaceConnectivity(),
                                          spec->NeedSmoothMaterialInterfaces(),
-                                         spec->NeedCleanZonesOnly(),
+                                         spec->NeedCleanZonesOnly(), didGhosts,
                                          so, nacs, reUseMIR);
 
             notAllCellsSubdivided = notAllCellsSubdivided || nacs ||
