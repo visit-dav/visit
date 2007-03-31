@@ -40,6 +40,10 @@ class     ExprPipelineState;
 //    Made Evaluator be a friend class so that it could call perform
 //    restriction on the expressions it contains.
 //
+//    Hank Childs, Wed Dec 10 09:40:18 PST 2003
+//    Add support for recentering a variable.  It is at this level so all
+//    derived types can use the same routine.
+// 
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionFilter : public avtStreamer
@@ -73,6 +77,8 @@ class EXPRESSION_API avtExpressionFilter : public avtStreamer
 
     virtual int              GetVariableDimension() { return 1; };
     virtual vtkDataArray    *DeriveVariable(vtkDataSet *) = 0;
+
+    vtkDataArray            *Recenter(vtkDataSet*, vtkDataArray*,avtCentering);
 };
 
 

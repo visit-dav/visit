@@ -47,6 +47,7 @@
 #include <avtProcessorIdFilter.h>
 #include <avtDegreeFilter.h>
 #include <avtVMetrics.h>
+#include <avtRecenterFilter.h>
 #include <avtConstantCreatorFilter.h>
 #include <avtConditionalFilter.h>
 #include <avtLogicalAndFilter.h>
@@ -277,6 +278,9 @@ EngineVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Hank Childs, Fri Sep 19 16:18:37 PDT 2003
 //      Added matrix operations.
 //
+//      Hank Childs, Wed Dec 10 11:01:07 PST 2003
+//      Added recenter.
+//
 // ****************************************************************************
 void
 EngineFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -321,6 +325,8 @@ EngineFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtMatvfFilter();
     else if (functionName == "nmats")
         f = new avtNMatsFilter();
+    else if (functionName == "recenter")
+        f = new avtRecenterFilter();
     else if (functionName == "det" || functionName == "determinant")
         f = new avtDeterminantFilter();
     else if (functionName == "eigenvalue")

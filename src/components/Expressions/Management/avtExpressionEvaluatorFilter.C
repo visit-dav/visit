@@ -10,6 +10,7 @@
 #include <avtDatasetExaminer.h>
 #include <avtExpressionEvaluatorFilter.h>
 #include <avtExpressionFilter.h>
+#include <avtIdentityFilter.h>
 #include <avtSourceFromAVTDataset.h>
 #include <avtTypes.h>
 
@@ -43,6 +44,7 @@ using std::find;
 //  Modifications:
 //
 // ****************************************************************************
+
 void
 avtExpressionEvaluatorFilter::Execute(void)
 {
@@ -128,6 +130,10 @@ avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 //    Hank Childs, Fri Oct 24 14:31:33 PDT 2003
 //    Allow expressions that the EEF will use to also perform a restriction.
 //    Also fixed lines longer than 79 characters.
+//
+//    Hank Childs, Wed Dec 10 14:33:53 PST 2003
+//    Added support for expressions of the form A=B.  This involves the 
+//    identity function and was causing a crash previously.
 //
 // ****************************************************************************
 
@@ -238,8 +244,26 @@ avtExpressionEvaluatorFilter::PerformRestriction(
         tree->CreateFilters(&pipelineState);
 
         vector<avtExpressionFilter*> &filters = pipelineState.GetFilters();
-        avtExpressionFilter *bottom = filters.back();
-        bottom->SetOutputVariableName(var.c_str());
+        avtExpressionFilter *f = NULL;
+        if (filters.size() == 0)
+        {
+            // The only way we can get here is if we have an expression of 
+            // the form "A = B".
+            debug1 << "Warning: expression logic identified expression of "
+                   << "form A = B." << endl;
+            avtIdentityFilter *ident = new avtIdentityFilter();
+            string inputName = pipelineState.PopName();
+            ident->AddInputVariableName(inputName.c_str());
+            ident->SetInput(pipelineState.GetDataObject());
+            pipelineState.SetDataObject(ident->GetOutput());
+            pipelineState.AddFilter(ident);
+            f = ident;
+        }
+        else
+        {
+            f = filters.back();
+        }
+        f->SetOutputVariableName(var.c_str());
     }
 
     // Make sure we have real variables to pass to the database.

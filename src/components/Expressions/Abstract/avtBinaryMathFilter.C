@@ -46,6 +46,9 @@
 //    Allow the derived types to specify how many components there will be in
 //    the output.
 //
+//    Hank Childs, Wed Dec 10 11:11:46 PST 2003
+//    Do a better job of handling variables with different centerings.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -69,15 +72,40 @@ avtBinaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
     }
 
     // Get the second variable.
+    bool ownData2 = false;
     if (centering == AVT_ZONECENT)
-        data2 = in_ds->GetCellData()->GetArray(varnames[1]);
-    else
-        data2 = in_ds->GetPointData()->GetArray(varnames[1]);
-
-    if (data2 == NULL)
     {
-        EXCEPTION1(ExpressionException, 
-                   "the two variables have different centering.");
+        data2 = in_ds->GetCellData()->GetArray(varnames[1]);
+        if (data2 == NULL)
+        {
+            data2 = in_ds->GetPointData()->GetArray(varnames[1]);
+            if (data2 != NULL)
+            {
+                data2 = Recenter(in_ds, data2, AVT_NODECENT);
+                ownData2 = true;
+            }
+            else
+            {
+                EXCEPTION1(ExpressionException, "Unable to locate variable");
+            }
+        }
+    }
+    else
+    {
+        data2 = in_ds->GetPointData()->GetArray(varnames[1]);
+        if (data2 == NULL)
+        {
+            data2 = in_ds->GetCellData()->GetArray(varnames[1]);
+            if (data2 != NULL)
+            {
+                data2 = Recenter(in_ds, data2, AVT_ZONECENT);
+                ownData2 = true;
+            }
+            else
+            {
+                EXCEPTION1(ExpressionException, "Unable to locate variable");
+            }
+        }
     }
 
     //
@@ -98,6 +126,11 @@ avtBinaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
         != ncomps)
     {
         GetOutput()->GetInfo().GetAttributes().SetVariableDimension(ncomps);
+    }
+
+    if (ownData2)
+    {
+        data2->Delete();
     }
 
     return dv;
