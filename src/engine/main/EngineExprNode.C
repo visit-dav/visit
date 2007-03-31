@@ -290,6 +290,8 @@ EngineFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtRandomFilter();
     else if (functionName == "cross")
         f = new avtVectorCrossProductFilter();
+    else if (functionName == "dot")
+        f = new avtBinaryMultiplyFilter();
     else if (functionName == "matvf")
         f = new avtMatvfFilter();
     else if (functionName == "degree")

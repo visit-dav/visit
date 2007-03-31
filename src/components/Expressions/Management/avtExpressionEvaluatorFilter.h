@@ -48,7 +48,8 @@ protected:
     virtual int              AdditionalPipelineFilters(void);
 
 protected:
-    ExprPipelineState        pipelineState;
+    ExprPipelineState            pipelineState;
+    avtPipelineSpecification_p   lastUsedSpec;
 };
 
 

@@ -493,6 +493,9 @@ RPCExecutor<UpdatePlotAttsRPC>::Execute(UpdatePlotAttsRPC *rpc)
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
+//    Hank Childs, Tue Aug 19 21:15:58 PDT 2003
+//    Set up callbacks before doing the pick.
+//
 // ****************************************************************************
 template<>
 void
@@ -504,6 +507,9 @@ RPCExecutor<PickRPC>::Execute(PickRPC *rpc)
     debug2 << "Executing PickRPC: " << endl; 
     TRY 
     {
+        avtDataObjectSource::RegisterProgressCallback(NULL, NULL);
+        LoadBalancer::RegisterProgressCallback(NULL, NULL);
+        avtTerminatingSource::RegisterInitializeProgressCallback(NULL, NULL);
         netmgr->Pick(rpc->GetNetId(), rpc->GetPickAtts());
         rpc->SendReply(rpc->GetPickAtts());
     }
@@ -512,6 +518,13 @@ RPCExecutor<PickRPC>::Execute(PickRPC *rpc)
         rpc->SendError(e.GetMessage(), e.GetExceptionType());
     }
     ENDTRY
+
+    avtDataObjectSource::RegisterProgressCallback(
+                               Engine::EngineUpdateProgressCallback, NULL);
+    LoadBalancer::RegisterProgressCallback(
+                               Engine::EngineUpdateProgressCallback, NULL);
+    avtTerminatingSource::RegisterInitializeProgressCallback(
+                               Engine::EngineInitializeProgressCallback, NULL);
 }
 
 
@@ -783,6 +796,9 @@ RPCExecutor<ClearCacheRPC>::Execute(ClearCacheRPC *rpc)
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
+//    Hank Childs, Tue Aug 19 20:57:57 PDT 2003
+//    Added a callback for the terminating source.
+//
 // ****************************************************************************
 template<>
 void
@@ -793,16 +809,16 @@ RPCExecutor<QueryRPC>::Execute(QueryRPC *rpc)
 
     debug2 << "Executing QueryRPC: " << endl;
 
-    avtDataObjectQuery::RegisterProgressCallback(Engine::EngineUpdateProgressCallback,
-                                                  (void*) rpc);
-    avtDataObjectSource::RegisterProgressCallback(Engine::EngineUpdateProgressCallback,
-                                                  (void*) rpc);
-    LoadBalancer::RegisterProgressCallback(Engine::EngineUpdateProgressCallback,
-                                           (void*) rpc);
+    avtDataObjectQuery::RegisterProgressCallback(
+                         Engine::EngineUpdateProgressCallback, (void*) rpc);
+    avtDataObjectSource::RegisterProgressCallback(
+                         Engine::EngineUpdateProgressCallback, (void*) rpc);
+    LoadBalancer::RegisterProgressCallback(
+                         Engine::EngineUpdateProgressCallback, (void*) rpc);
     avtDataObjectQuery::RegisterInitializeProgressCallback(
-                                       Engine::EngineInitializeProgressCallback, 
-                                       (void*) rpc);
-
+                         Engine::EngineInitializeProgressCallback,(void*) rpc);
+    avtTerminatingSource::RegisterInitializeProgressCallback(
+                         Engine::EngineInitializeProgressCallback,(void*) rpc);
  
     TRY
     {
@@ -815,15 +831,16 @@ RPCExecutor<QueryRPC>::Execute(QueryRPC *rpc)
     }
     ENDTRY
 
-    avtDataObjectQuery::RegisterProgressCallback(Engine::EngineUpdateProgressCallback,
-                                                  NULL);
-    avtDataObjectSource::RegisterProgressCallback(Engine::EngineUpdateProgressCallback,
-                                                  NULL);
-    LoadBalancer::RegisterProgressCallback(Engine::EngineUpdateProgressCallback,
-                                           NULL);
+    avtDataObjectQuery::RegisterProgressCallback(
+                               Engine::EngineUpdateProgressCallback, NULL);
+    avtDataObjectSource::RegisterProgressCallback(
+                               Engine::EngineUpdateProgressCallback, NULL);
+    LoadBalancer::RegisterProgressCallback(
+                               Engine::EngineUpdateProgressCallback, NULL);
     avtDataObjectQuery::RegisterInitializeProgressCallback(
-                                       Engine::EngineInitializeProgressCallback, 
-                                       NULL);
+                               Engine::EngineInitializeProgressCallback, NULL);
+    avtTerminatingSource::RegisterInitializeProgressCallback(
+                               Engine::EngineInitializeProgressCallback, NULL);
 }
 
 

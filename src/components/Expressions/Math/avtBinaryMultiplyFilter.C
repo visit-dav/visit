@@ -86,7 +86,6 @@ avtBinaryMultiplyFilter::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
         EXCEPTION1(ExpressionException, "Don't know how to multiply vectors "
                                         "of differing dimensions.");
     }
-    out->DebugOn();
 }
 
 
