@@ -73,6 +73,10 @@ VariableMenuPopulator::~VariableMenuPopulator()
 //   Hank Childs, Fri Aug  1 10:44:45 PDT 2003
 //   Add support for curves.
 //
+//   Kathleen Bonnell, Fri Aug 22 18:03:55 PDT 2003
+//   Create 'compound' subset vars (e.g. 'materials(mesh1)') only when
+//   necessary.
+//
 // ****************************************************************************
 
 void
@@ -158,16 +162,32 @@ VariableMenuPopulator::PopulateVariableLists(const avtDatabaseMetaData *md,
 
     // Do stuff with the sil
     const intVector &topSets = sil->GetWholes();
+
+    // There are currently 9 role types, lets count their occurrance
+    // in the top sets.
+    int roleCount[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    for(i = 0; i < topSets.size(); ++i)
+    {
+        int tsIndex = topSets[i];
+        const intVector &maps = sil->GetSILSet(tsIndex)->GetMapsOut();
+        for (int j = 0; j < maps.size(); ++j)
+        {
+            int idx = maps[j];
+            int role = (int)sil->GetSILCollection(idx)->GetRole();
+            if (role > 0 && role < 8)
+                roleCount[role]++;
+        }
+    }
+
     for(i = 0; i < topSets.size(); ++i)
     {
         int tsIndex = topSets[i];
         const intVector &maps = sil->GetSILSet(tsIndex)->GetMapsOut();
         string setName("(" + sil->GetSILSet(tsIndex)->GetName() + ")");
-
         for(int j = 0; j < maps.size(); ++j)
         {
             int     idx = maps[j];
-            string  varName = sil->GetSILCollection(idx)->GetCategory();
 
             //
             // DISABLE SPECIES FOR SUBSET PLOTS.  THIS IS A HACK AND SHOULD
@@ -177,7 +197,15 @@ VariableMenuPopulator::PopulateVariableLists(const avtDatabaseMetaData *md,
             {
                 continue;
             }
-            varName += setName;
+
+            string  varName = sil->GetSILCollection(idx)->GetCategory();
+            int     role = sil->GetSILCollection(idx)->GetRole();
+
+            //
+            // Only add the set name if necessary.
+            //
+            if (roleCount[role] > 1)
+                varName += setName;
             subsetVars[varName] = true;
         }
     }

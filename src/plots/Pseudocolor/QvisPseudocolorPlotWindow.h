@@ -83,6 +83,7 @@ private slots:
     void colorTableClicked(bool useDefault, const QString &ctName);
     void limitsSelectChanged(int);
     void smoothingLevelChanged(int index);
+    void pointTypeChanged(int index);
     void processPointSizeVarText();
     void pointSizeVarToggled(bool on);
 private:
@@ -105,6 +106,7 @@ private:
     QvisOpacitySlider     *opacitySlider;
     QvisColorTableButton  *colorTableButton;
     QButtonGroup          *smoothingLevelButtons;
+    QButtonGroup          *pointTypeButtons;
 };
 
 #endif
