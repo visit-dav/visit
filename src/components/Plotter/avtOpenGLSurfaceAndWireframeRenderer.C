@@ -3266,6 +3266,10 @@ avtOpenGLSurfaceAndWireframeRenderer::SetupGraphicsLibrary()
             glNewList(setupListId[inputNum], GL_COMPILE);
             SetupGraphicsLibrary2();
             glEndList();
+#ifdef DEBUG_GL_LIST_IDS
+            if (!glIsList(setupListId[inputNum]))
+               cerr << "calling invalid list" << endl;
+#endif
             glCallList(setupListId[inputNum]);
         }
     }
@@ -3276,6 +3280,10 @@ avtOpenGLSurfaceAndWireframeRenderer::SetupGraphicsLibrary()
         // 
         if (!immediateModeRendering)
         {
+#ifdef DEBUG_GL_LIST_IDS
+            if (!glIsList(setupListId[inputNum]))
+               cerr << "calling invalid list" << endl;
+#endif
             glCallList(setupListId[inputNum]);
         }
     }
@@ -3496,6 +3504,10 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface()
             glNewList(surfaceListId[inputNum], GL_COMPILE);
             DrawSurface2();
             glEndList();
+#ifdef DEBUG_GL_LIST_IDS
+            if (!glIsList(surfaceListId[inputNum]))
+               cerr << "calling invalid list" << endl;
+#endif
             glCallList(surfaceListId[inputNum]);
         }
     }
@@ -3506,6 +3518,10 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface()
         // 
         if (!immediateModeRendering)
         {
+#ifdef DEBUG_GL_LIST_IDS
+            if (!glIsList(surfaceListId[inputNum]))
+               cerr << "calling invalid list" << endl;
+#endif
             glCallList(surfaceListId[inputNum]);
         }
     }
@@ -3936,6 +3952,10 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
             glNewList(edgesListId[inputNum], GL_COMPILE);
             DrawEdges2();
             glEndList();
+#ifdef DEBUG_GL_LIST_IDS
+            if (!glIsList(edgesListId[inputNum]))
+               cerr << "calling invalid list" << endl;
+#endif
             glCallList(edgesListId[inputNum]);
         }
     }
@@ -3946,6 +3966,10 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
         // 
         if (!immediateModeRendering)
         {
+#ifdef DEBUG_GL_LIST_IDS
+            if (!glIsList(edgesListId[inputNum]))
+               cerr << "calling invalid list" << endl;
+#endif
             glCallList(edgesListId[inputNum]);
         }
     }

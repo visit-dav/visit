@@ -4002,6 +4002,9 @@ ViewerSubject::ProcessFromParent()
 //    Added code to catch lost connection exceptions so we don't crash
 //    on Linux.
 //
+//    Jeremy Meredith, Mon Aug 18 13:08:40 PDT 2003
+//    Changed the return to a CATCH_RETURN now that it's inside a TRY block.
+//
 // ****************************************************************************
 
 void
@@ -4010,7 +4013,9 @@ ViewerSubject::ReadFromParentAndProcess(int)
     TRY
     {
         if (blockSocketSignals)
-            return;
+        {
+            CATCH_RETURN(1);
+        }
 
         int amountRead = xfer.GetInputConnection()->Fill();
 

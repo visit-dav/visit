@@ -315,29 +315,37 @@ QvisReflectWindow::UpdateWindow(bool doAll)
 // Creation:   Wed Jun 25 09:34:50 PDT 2003
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Mon Aug 18 11:38:56 PDT 2003
+//    Removed Z axis from 2D labels.
+//
 // ****************************************************************************
 
 void
 QvisReflectWindow::UpdateOctantMenuContents()
 {
     octant->clear();
-    octant->insertItem("+X  +Y  +Z");
-    octant->insertItem("-X  +Y  +Z");
-    octant->insertItem("+X  -Y  +Z");
-    octant->insertItem("-X  -Y  +Z");
-    if(mode2D)
+    if (mode2D)
     {
+        octant->insertItem("+X  +Y");
+        octant->insertItem("-X  +Y");
+        octant->insertItem("+X  -Y");
+        octant->insertItem("-X  -Y");
         reflectionLabel->setText("Reflection quadrants");
         originalDataLabel->setText("Original data quadrant");
-        return;
     }
-    octant->insertItem("+X  +Y  -Z");
-    octant->insertItem("-X  +Y  -Z");
-    octant->insertItem("+X  -Y  -Z");
-    octant->insertItem("-X  -Y  -Z");
-    reflectionLabel->setText("Reflection octants");
-    originalDataLabel->setText("Original data octant");
+    else
+    {
+        octant->insertItem("+X  +Y  +Z");
+        octant->insertItem("-X  +Y  +Z");
+        octant->insertItem("+X  -Y  +Z");
+        octant->insertItem("-X  -Y  +Z");
+        octant->insertItem("+X  +Y  -Z");
+        octant->insertItem("-X  +Y  -Z");
+        octant->insertItem("+X  -Y  -Z");
+        octant->insertItem("-X  -Y  -Z");
+        reflectionLabel->setText("Reflection octants");
+        originalDataLabel->setText("Original data octant");
+    }
 }
 
 // ****************************************************************************

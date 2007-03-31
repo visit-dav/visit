@@ -1115,6 +1115,11 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts)
                         atts.GetView().GetViewportCoords()[2],
                         atts.GetView().GetViewportCoords()[3]);
 
+    // rendering options
+    viswin->SetAntialiasing(atts.GetRenderAtts().GetAntialiasing());
+    viswin->SetSurfaceRepresentation(atts.GetRenderAtts().GetGeometryRepresentation());
+    viswin->SetImmediateModeRendering(!atts.GetRenderAtts().GetDisplayLists());
+
     windowAttributes = atts;
 }
 
