@@ -686,10 +686,15 @@ avtImageRepresentation::GetSize(int *_rowSize, int *_colSize)
 //  Programmer: Mark C. Miller 
 //  Creation:   19Aug03 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Nov  5 09:48:13 PST 2003
+//    Added option to count polygons only
+//
 // ****************************************************************************
 
 int
-avtImageRepresentation::GetNumberOfCells(void) const
+avtImageRepresentation::GetNumberOfCells(bool polysOnly) const
 {
     if (asVTK == NULL)
     {
@@ -699,5 +704,11 @@ avtImageRepresentation::GetNumberOfCells(void) const
         }
         return -1;
    }
-   return asVTK->GetNumberOfCells();
+   else
+   {
+      if (polysOnly)
+         return 0;
+      else
+         return asVTK->GetNumberOfCells();
+   }
 }

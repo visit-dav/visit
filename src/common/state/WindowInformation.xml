@@ -53,6 +53,9 @@
     <Field name="fullFrame" label="fullFrame" type="bool">
       false
     </Field>
+    <Field name="usingScalableRendering" label="usingScalableRendering" type="bool">
+      false
+    </Field>
     <Function name="SetFromNode" user="false" member="true">
     </Function>
     <Function name="CreateNode" user="false" member="true">

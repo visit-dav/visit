@@ -275,6 +275,26 @@ avtViewCurve::SetViewInfoFromView(avtViewInfo &viewInfo, int *size) const
 }
 
 // ****************************************************************************
+//  Method: avtViewCurve::GetViewport
+//
+//  Purpose:
+//    Gets the window's viewport 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 4, 2003
+//
+// ****************************************************************************
+
+void
+avtViewCurve::GetViewport(double *winViewport) const
+{
+    winViewport[0] = viewport[0];
+    winViewport[1] = viewport[1];
+    winViewport[2] = viewport[2];
+    winViewport[3] = viewport[3];
+}
+
+// ****************************************************************************
 //  Method: avtViewCurve::GetScaleFactor
 //
 //  Purpose:

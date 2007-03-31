@@ -169,7 +169,6 @@ ViewerWindow::ViewerWindow(int windowIndex)
     SetLightList(ViewerWindowManager::GetLightListDefaultAtts());
 
     // Set some default values.
-    turningOffScalableRendering = false;
     cameraView = false;
     maintainView = false;
     viewIsLocked = false;
@@ -188,6 +187,9 @@ ViewerWindow::ViewerWindow(int windowIndex)
     toolsLocked = false;
     windowId = windowIndex;
     isVisible = false;
+    preparingToChangeScalableRenderingMode = false;
+    isChangingScalableRenderingMode = false;
+    targetScalableRenderingMode = false;
 
     // Create the popup menu and the toolbar.
     popupMenu = new ViewerPopupMenu(this);
@@ -1878,7 +1880,6 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
     SetImmediateModeRendering(source->GetImmediateModeRendering());
     SetSurfaceRepresentation(source->GetSurfaceRepresentation());
     SetNotifyForEachRender(source->GetNotifyForEachRender());
-    SetScalableRendering(source->GetScalableRendering());
     SetScalableThreshold(source->GetScalableThreshold());
 
     //
@@ -4336,8 +4337,8 @@ ViewerWindow::GetWindowAttributes() const
 
     // Rendering attributes
     RenderingAttributes renderAtts;
-    renderAtts.SetScalableRendering(GetScalableRendering());
     renderAtts.SetScalableThreshold(GetScalableThreshold());
+    renderAtts.SetScalableRendering(GetScalableRendering());
     renderAtts.SetDisplayLists(!GetImmediateModeRendering());
     renderAtts.SetAntialiasing(GetAntialiasing());
     renderAtts.SetGeometryRepresentation(
@@ -4886,59 +4887,84 @@ ViewerWindow::GetNotifyForEachRender() const
 }
 
 // ****************************************************************************
-// Method: ViewerWindow::SetScalableRendering
+// Method: ViewerWindow::ChangeScalableRenderingMode
 //
 // Purpose: 
 //   Enables or disables scalable rendering mode 
 //
 // Arguments:
-//   mode   : Whether scalable rendering is on or off.
-//   update : Whether we're allowing an update of the window.
+//   mode   : Whether scalable rendering is to be turned on or off.
 //
 // Programmer: Mark C. Miller
-// Creation:   Tue Dec  3 19:25:11 PST 2002 
-//
-// Modifications:
-//   Brad Whitlock, Tue Jul 8 10:48:25 PDT 2003
-//   I added an optional update flag that can be used to prevent the window
-//   from being updated when we're just setting window attributes.
+// Creation:   Mon Nov  3 17:08:14 PST 2003 
 //
 // ****************************************************************************
 
 void
-ViewerWindow::SetScalableRendering(bool mode, bool update)
+ViewerWindow::ChangeScalableRenderingMode(bool newMode)
 {
     bool updatesEnabled = UpdatesEnabled();
-    bool differentModes = (GetScalableRendering() != mode);
 
-    visWindow->SetScalableRendering(mode);
+    // not that it should never happen but if we're in the midst of a mode
+    // change already, we shouldn't try to change the mode
+    if (IsChangingScalableRenderingMode(true) ||
+        IsChangingScalableRenderingMode(false))
+        return;
 
-    // clear the info about last request
-    if (mode == false)
+    // if we aren't actually changing the mode, do nothing
+    if (GetScalableRendering() != newMode)
     {
-       lastExternalRenderRequest.pluginIDsList.clear();
-       lastExternalRenderRequest.hostsList.clear();
-       lastExternalRenderRequest.plotIdsList.clear();
-       lastExternalRenderRequest.attsList.clear();
-    }
 
-    //
-    // Update the window
-    //
-    if(differentModes && update)
-    {
-        if (!mode)
-           turningOffScalableRendering = true;
-        DisableUpdates();
-        animation->GetPlotList()->ClearPlots();
-        animation->GetPlotList()->RealizePlots();
+        targetScalableRenderingMode = newMode;
+
+        // clear support info for external render requests
+        ClearLastExternalRenderRequest();
+
+        // transmute the plots
+        animation->GetPlotList()->TransmutePlots(animation->GetFrameIndex(),!newMode);
+
+        // set scalable rendering mode in the vis window 
+        visWindow->SetScalableRendering(newMode);
+
         if (updatesEnabled)
-           EnableUpdates();
-        if (turningOffScalableRendering)
-           turningOffScalableRendering = false;
+            RedrawWindow();
+
+        // update the window information
+        ViewerWindowManager::Instance()->UpdateWindowInformation(windowId, false);
     }
 
+    // note, this flag is set to true when the render message is sent
+    isChangingScalableRenderingMode = false;
+    preparingToChangeScalableRenderingMode = false;
+}
 
+// ****************************************************************************
+// Method: ViewerWindow::IsChangingScalableRenderingMode
+//
+// Purpose: 
+//   Returns false if we are NOT in the midst of changing scalable rendering
+//   mode, regardless of the toMode argument. When we ARE in the midst of 
+//   changing scalable rendering mode, this method will return true if the
+//   toMode argument matches the mode we are changing into and false otherwise.
+//
+// Arguments:
+//   toMode : mode to test against for which mode we are switching into 
+//
+// Programmer: Mark C. Miller
+// Creation:   Mon Nov  3 17:08:14 PST 2003 
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::IsChangingScalableRenderingMode(bool toMode) const
+{
+   if (!isChangingScalableRenderingMode)
+       return false;
+
+   if (toMode == targetScalableRenderingMode)
+       return true;
+   else
+       return false;
 }
 
 // ****************************************************************************
@@ -4983,9 +5009,9 @@ ViewerWindow::SetScalableThreshold(int threshold)
        visWindow->SetScalableThreshold(threshold);
 
        if (threshold == 0)
-          SetScalableRendering(true,true);
+          SendScalableRenderingModeChangeMessage(true);
        else if (threshold == INT_MAX)
-          SetScalableRendering(false,true);
+          SendScalableRenderingModeChangeMessage(false);
     }
 }
 
@@ -5261,10 +5287,10 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
     //
     // Read in and set any rendering attributes.
     //
-    if((node = windowNode->GetNode("scalableRendering")) != 0)
-        SetScalableRendering(node->AsBool());
     if((node = windowNode->GetNode("scalableThreshold")) != 0)
         SetScalableThreshold(node->AsInt());
+    if((node = windowNode->GetNode("scalableRendering")) != 0)
+        SendScalableRenderingModeChangeMessage(node->AsBool());
     if((node = windowNode->GetNode("notifyForEachRender")) != 0)
         SetNotifyForEachRender(node->AsBool());
     if((node = windowNode->GetNode("surfaceRepresentation")) != 0)
@@ -5444,6 +5470,54 @@ ViewerWindow::SendActivateToolMessage(const int toolId) const
     viewerSubject->MessageRendererThread(msg);
 }
 
+// ****************************************************************************
+// Method: ViewerWindow::SendScalableRenderingModeChangeMessage
+//
+// Purpose: 
+//   Sends a message to the viewer's event loop that tells it prepare for a
+//   change in the scalable rendering mode. 
+//
+// Arguments:
+//   newMode : The new scalable rendering mode to set.
+//
+// Programmer: Mark C. Miller 
+// Creation:   Mon Nov  3 15:48:33 PST 2003
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SendScalableRenderingModeChangeMessage(bool newMode)
+{
+    char msg[256];
+
+    // we set this flag here so that everywhere else, we can ask if
+    // we're about to change modes
+    preparingToChangeScalableRenderingMode = true;
+
+    SNPRINTF(msg, 256, "setScalableRenderingMode 0x%p %d;", this,
+        (newMode?1:0));
+    viewerSubject->MessageRendererThread(msg);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::ClearLastExternalRenderRequest
+//
+// Purpose: 
+//    Clears stuff from the external render request arrays 
+//
+// Programmer: Mark C. Miller 
+// Creation:   Mon Nov  3 15:48:33 PST 2003
+//
+// ****************************************************************************
+void
+ViewerWindow::ClearLastExternalRenderRequest()
+{
+    lastExternalRenderRequest.pluginIDsList.clear();
+    lastExternalRenderRequest.hostsList.clear();
+    lastExternalRenderRequest.plotIdsList.clear();
+    lastExternalRenderRequest.attsList.clear();
+}
+
 // Only place where ViewerWindow should need to talk to ViewerEngineManager
 #include <ViewerEngineManager.h>
 
@@ -5500,6 +5574,10 @@ ViewerWindow::ExternalRenderCallback(void *data, avtDataObject_p& dob)
           canSkipExternalRender = false;
 
        if (thisRequest.annotAtts != lastRequest.annotAtts)
+          canSkipExternalRender = false;
+
+       if ((thisRequest.plotIdsList.size() != 0) &&
+           (thisRequest.plotIdsList.size() != lastRequest.plotIdsList.size()))
           canSkipExternalRender = false;
 
        // we don't break early so we can build a list of plots to release data on
@@ -5568,7 +5646,7 @@ ViewerWindow::ExternalRenderCallback(void *data, avtDataObject_p& dob)
           if (rdr->InputIs(AVT_NULL_IMAGE_MSG))
           {
              dob = NULL;
-             win->SetScalableRendering(false, true); // we're in the middle of a render
+             win->SendScalableRenderingModeChangeMessage(false);
              return;
           }
 
@@ -5604,13 +5682,16 @@ ViewerWindow::ExternalRenderCallback(void *data, avtDataObject_p& dob)
           dob = NULL;
     }
 
-    // update last request info
-    win->lastExternalRenderRequest.pluginIDsList = thisRequest.pluginIDsList;
-    win->lastExternalRenderRequest.hostsList     = thisRequest.hostsList;
-    win->lastExternalRenderRequest.plotIdsList   = thisRequest.plotIdsList;
-    win->lastExternalRenderRequest.attsList      = thisRequest.attsList;
-    win->lastExternalRenderRequest.winAtts       = thisRequest.winAtts;
-    win->lastExternalRenderRequest.annotAtts     = thisRequest.annotAtts;
+    // update last request info only if this request had something
+    if (thisRequest.plotIdsList.size() != 0)
+    {
+       win->lastExternalRenderRequest.pluginIDsList = thisRequest.pluginIDsList;
+       win->lastExternalRenderRequest.hostsList     = thisRequest.hostsList;
+       win->lastExternalRenderRequest.plotIdsList   = thisRequest.plotIdsList;
+       win->lastExternalRenderRequest.attsList      = thisRequest.attsList;
+       win->lastExternalRenderRequest.winAtts       = thisRequest.winAtts;
+       win->lastExternalRenderRequest.annotAtts     = thisRequest.annotAtts;
+    }
 
     debug2 << "Leaving " << me << endl;
 }

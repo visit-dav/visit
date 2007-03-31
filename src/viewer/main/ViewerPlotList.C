@@ -1323,6 +1323,9 @@ ViewerPlotList::NewPlot(int type, const std::string &host, const std::string &db
 //    Brad Whitlock, Thu Jun 21 15:54:25 PST 2001
 //    I added code to update the SIL restriction attributes.
 //
+//    Mark C. Miller, Thu Oct 30 08:24:25 PST 2003
+//    Added optional bool to only clear the actors, nothing else
+//
 // ****************************************************************************
 
 void
@@ -1505,6 +1508,48 @@ ViewerPlotList::DeleteActivePlots()
     // Update the frame.
     //
     animation->UpdateFrame();
+}
+
+// ****************************************************************************
+//  Method: ViewerPlotList::TransmutePlots
+//
+//  Purpose: This method is used during transitions into and out of scalable
+//  rendering mode. First, all plot's actors are cleared regardless of their
+//  current state. Then, all plots that are realized, in frame range, not
+//  hidden, not in error and have an actor have their actors transmutted. 
+//
+//  When we transmute a plot, we're either destroying or re-creating the
+//  problem-sized data for the actor(s) of the plot. This, in turn, entails
+//  communication with the engine. In all other respects, the plot is
+//  unchanged.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   October 29, 2003 
+//
+// ****************************************************************************
+
+void
+ViewerPlotList::TransmutePlots(int frame, bool turningOffScalableRendering)
+{
+    //
+    // First, clear all plot's actors
+    //
+    for (int i = 0; i < nPlots; i++)
+    {
+        plots[i].plot->ClearActors();
+    }
+
+    //
+    // transmute the actors associated with the plots
+    //
+    for (int i = 0; i < nPlots; i++)
+    {
+        if (plots[i].realized &&
+            plots[i].plot->IsInFrameRange(frame) &&
+           !plots[i].plot->GetErrorFlag())
+
+            plots[i].plot->TransmuteActor(frame, turningOffScalableRendering);
+    }
 }
 
 // ****************************************************************************
@@ -3576,26 +3621,6 @@ ViewerPlotList::GetCurrentPlotAtts(
            hostsList.push_back(std::string(plot->GetHostName()));
            plotIdsList.push_back(plot->GetNetworkID());
            attsList.push_back(plot->GetCurrentPlotAtts());
-#if 0
-            //
-            // Loop over all the operators, bumping the count and setting
-            // the operator attributes if this is the first frame the operator
-            // type is encountered.
-            //
-            int       j;
-
-            for (j = 0; j < plot->GetNOperators(); j++)
-            {
-                ViewerOperator *oper = plot->GetOperator(j);
-                int       operType = oper->GetType();
-
-                operatorCount[operType]++;
-                if (operatorCount[operType] == 1)
-                {
-                    oper->SetClientAttsFromOperator();
-                }
-            }
-#endif
 
         }
     }

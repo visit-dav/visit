@@ -451,12 +451,11 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
         case 14: // cameraViewMode
         case 15: // fullFrame
             break;
+        case 16: // usingScalableRendering
+            scalrenUsingLabel->setText(windowInfo->GetUsingScalableRendering() ? "yes" : "no");
+            break;
         }            
     }
-
-    // Now, handle the current status of scalable rendering
-    scalrenUsingLabel->setText(renderAtts->GetScalableRendering() ? "yes" : "no");
-
 }
 
 // ****************************************************************************

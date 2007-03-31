@@ -226,12 +226,15 @@ static void PrinterAttributesToQPrinter(PrinterAttributes *, QPrinter *);
 //   Brad Whitlock, Thu Sep 4 10:26:54 PDT 2003
 //   I made it use QvisApplication.
 //
+//   Brad Whitlock, Mon Nov 10 14:53:42 PST 2003
+//   I initialized sessionFile.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     ConfigManager(), GUIBase(), message(), plotWindows(),
     operatorWindows(), otherWindows(), foregroundColor(), backgroundColor(),
-    applicationStyle(), loadFile()
+    applicationStyle(), loadFile(), sessionFile()
 {
     completeInit = visitTimer->StartTimer();
     int total = visitTimer->StartTimer();
@@ -713,6 +716,9 @@ QvisGUIApplication::SyncCallback(Subject *s, void *data)
 //   I passed a flag to LoadFile that lets it add default plots when the file
 //   is opened.
 //
+//   Brad Whitlock, Mon Nov 10 14:56:51 PST 2003
+//   I added a stage to load a session file.
+//
 // ****************************************************************************
 
 void
@@ -758,17 +764,23 @@ QvisGUIApplication::FinalInitialization()
             UpdatePrinterAttributes, (void *)printer);
         viewer->GetPrinterAttributes()->SetCreator(viewer->GetLocalUserName());
         visitTimer->StopTimer(timeid, "Setting up printer");
-        break;
-    case 3:
-        // Load the initial data file.
-        LoadFile(true);
 
         // Show that we're ready.
         SplashScreenProgress("VisIt is ready.", 100);
         break;
-    case 4:
+    case 3:
         if(splash)
             splash->hide();
+        break;
+    case 4:
+        // Load the initial data file.
+        LoadFile(true);
+        break;
+    case 5:
+        // Load the initial session file.
+        RestoreSessionFile(sessionFile);
+        break;
+    case 6:
         moreInit = false;
         ++initStage;
         visitTimer->StopTimer(completeInit, "VisIt to be ready");
@@ -880,6 +892,9 @@ QvisGUIApplication::Exec()
 //    Brad Whitlock, Fri Aug 15 13:14:04 PST 2003
 //    I added support for MacOS X styles.
 //
+//    Brad Whitlock, Mon Nov 10 15:01:32 PST 2003
+//    I added support for the -sessionfile argument.
+//
 // ****************************************************************************
 
 void
@@ -898,7 +913,8 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
            current == std::string("-nwrite") ||
            current == std::string("-borders") ||
            current == std::string("-geometry") ||
-           current == std::string("-o"))
+           current == std::string("-o") ||
+           current == std::string("-sessionfile"))
         {
             // Process the -o argument.
             if(current == std::string("-o"))
@@ -949,6 +965,20 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
                     cerr << "The -o option must be followed by a "
                             "filename." << endl;
                 }
+            }
+            else if(current == std::string("-sessionfile"))
+            {
+                if(i + 1 < argc)
+                {
+                    // Set the name of the session file that we're going to
+                    // load once the GUI's done initializing.
+                    sessionFile = QString(argv[i + 1]);
+                }
+                else
+                {
+                    cerr << "The -sessionfile option must be followed by a "
+                            "session filename." << endl;
+                }                
             }
 
             for(int j = i; j + 2 < argc; ++j)
@@ -2137,27 +2167,39 @@ QvisGUIApplication::WritePluginWindowConfigs(DataNode *parentNode)
 //   Brad Whitlock, Tue Aug 12 11:23:52 PDT 2003
 //   Added code to force the session file to have a .session extension.
 //
+//   Brad Whitlock, Mon Nov 10 15:11:20 PST 2003
+//   I made sessions use the .vses extension when we're on Windows.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::SaveSession()
 {
+#if defined(_WIN32)
+    QString sessionExtension(".vses");
+#else
+    QString sessionExtension(".session");
+#endif
+
     // Create the name of a VisIt session file to use.
-    QString defaultFile; defaultFile.sprintf("%svisit%04d.session",
-          GetUserVisItDirectory().c_str(), sessionCount);
+    QString defaultFile;
+    defaultFile.sprintf("%svisit%04d", GetUserVisItDirectory().c_str(),
+                        sessionCount);
+    defaultFile += sessionExtension;
 
     // Get the name of the file that the user saved.
-    QString fileName = QFileDialog::getSaveFileName(defaultFile,
-        "VisIt session (*.session)");
+    QString sFilter(QString("VisIt session (*") + sessionExtension + ")");
+    QString fileName = QFileDialog::getSaveFileName(defaultFile, sFilter);
 
     // If the user chose to save a file, tell the viewer to write its state
     // to that file.
     if(!fileName.isNull())
     {
         // Force the file to have a .session extension.
-        if(fileName.right(8) != ".session")
-            fileName += ".session";
+        if(fileName.right(sessionExtension.length()) != sessionExtension)
+            fileName += sessionExtension;
 
+        // Tell the viewer to save a session file.
         ++sessionCount;
         viewer->ExportEntireState(fileName.latin1());
 
@@ -2262,6 +2304,9 @@ QvisGUIApplication::ReadConfigFile(const char *filename)
 //   Brad Whitlock, Wed Oct 22 12:12:11 PDT 2003
 //   I prevented default plots from being added as we load files.
 //
+//   Brad Whitlock, Mon Nov 10 15:07:21 PST 2003
+//   I moved the code to restore the session to RestoreSessionFile.
+//
 // ****************************************************************************
 
 void
@@ -2269,8 +2314,34 @@ QvisGUIApplication::RestoreSession()
 {
     // Get the name of the session to load.
     QString s(QFileDialog::getOpenFileName(GetUserVisItDirectory().c_str(),
+#if defined(_WIN32)
+              "VisIt session (*.vses)"));
+#else
               "VisIt session (*.session)"));
+#endif
 
+    RestoreSessionFile(s);
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::RestoreSessionFile
+//
+// Purpose: 
+//   Restores the specified session.
+//
+// Arguments:
+//   s : The name of the session file to restore.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov 10 15:07:37 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::RestoreSessionFile(const QString &s)
+{
     // If the user chose a file, tell the viewer to import that session file.
     if(!s.isEmpty())
     {
@@ -2876,12 +2947,21 @@ QvisGUIApplication::RefreshFileListAndNextFrame()
 //   I added code that tells the viewer to open a database because I moved
 //   that code out of SetOpenDataFile.
 //
+//   Brad Whitlock, Mon Nov 10 14:58:32 PST 2003
+//   I added code to prevent the file from being loaded if a session file
+//   name was given on the command line.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::LoadFile(bool addDefaultPlots)
 {
-    if(!loadFile.Empty())
+    if(!sessionFile.isEmpty())
+    {
+        Message("When a session file is specified on the command line, "
+                "files specified with the -o argument are ignored.");
+    }
+    else if(!loadFile.Empty())
     {
         int timeid = visitTimer->StartTimer();
 

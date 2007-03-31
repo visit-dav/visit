@@ -340,6 +340,7 @@ public:
     void SendUpdateFrameMessage() const;
     void SendActivateToolMessage(const int toolId) const;
     void SendInteractionModeMessage(const INTERACTION_MODE m) const;
+    void SendScalableRenderingModeChangeMessage(bool newMode);
 
     bool IsTheSameWindow(VisWindow *);
 
@@ -412,6 +413,9 @@ public:
 
     void ScalePlots(const float [3]);
 
+    void ChangeScalableRenderingMode(bool newMode);
+    bool IsChangingScalableRenderingMode(bool toMode = false) const;
+
     // Rendering options.
     void SetAntialiasing(bool enabled);
     bool GetAntialiasing() const;
@@ -426,12 +430,9 @@ public:
     int  GetNumTriangles() const;
     void SetNotifyForEachRender(bool val);
     bool GetNotifyForEachRender() const;
-    void SetScalableRendering(bool mode, bool update = false);
     bool GetScalableRendering() const;
     void SetScalableThreshold(int threshold);
     int  GetScalableThreshold() const;
-    bool IsTurningOffScalableRendering() const
-       {return turningOffScalableRendering; }
 
 private:
     void RecenterViewCurve(const double *limits);
@@ -444,6 +445,7 @@ private:
     void UpdateViewCurve(const double *limits);
     void UpdateView2d(const double *limits);
     void UpdateView3d(const double *limits);
+    void ClearLastExternalRenderRequest();
 
     static void ShowCallback(void *);
     static void HideCallback(void *);
@@ -472,7 +474,9 @@ private:
 
     ExternalRenderRequestInfo lastExternalRenderRequest;
 
-    bool            turningOffScalableRendering;
+    bool            preparingToChangeScalableRenderingMode;
+    bool            isChangingScalableRenderingMode;
+    bool            targetScalableRenderingMode;
 
     bool            cameraView;
     bool            maintainView;

@@ -44,7 +44,8 @@ class PIPELINE_API avtDataObject
     void                             SetSource(avtDataObjectSource *);
 
     avtDataObjectInformation        &GetInfo(void) { return info; };
-    virtual int                      GetNumberOfCells(void) const = 0;
+    const avtDataObjectInformation  &GetInfo(void) const { return info; };
+    virtual int                      GetNumberOfCells(bool polysOnly = false) const = 0;
 
     virtual const char              *GetType(void) = 0;
     virtual void                     ReleaseData(void);

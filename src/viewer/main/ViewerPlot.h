@@ -148,6 +148,11 @@ class avtToolInterface;
 //    Added optional bool arg to 'AddOperator', indicates whether the operator
 //    should be initialized from its default or client atts. 
 //
+//    Mark C. Miller, Wed Oct 29 14:36:35 PST 2003
+//    Added method to TransmuteActor() to support smooth transitions into
+//    and out of scalable rendering. Also, added optional bools to CreateActor
+//    for switching into scalable rendering.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot
@@ -206,9 +211,12 @@ class VIEWER_API ViewerPlot
     avtDataObjectReader_p &GetReader(const int frame) const;
     bool NoActorExists(const int frame) const;
 
-    void CreateActor(const int frame);
+    void CreateActor(const int frame, bool createNew = true,
+                                      bool turningOffScalableRendering = true);
     void ClearActors();
     void ClearActors(const int f0, const int f1);
+
+    void TransmuteActor(int frame, bool turningOffScalableRendering);
 
     int GetSpatialDimension(const int frame) const;
     double *GetSpatialExtents(const int frame, 

@@ -69,7 +69,7 @@ class PIPELINE_API avtDataRepresentation
 
     vtkDataSet         *GetDataVTK(void);
     unsigned char      *GetDataString(int &, DataSetType &);
-    int                 GetNumberOfCells(void) const;
+    int                 GetNumberOfCells(int topoDim, bool polysOnly) const;
 
     bool                Valid(void);
 

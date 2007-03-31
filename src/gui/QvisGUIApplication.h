@@ -208,6 +208,9 @@ typedef std::vector<QvisWindowBase *> WindowBaseVector;
 //    Brad Whitlock, Wed Oct 22 12:10:42 PDT 2003
 //    Added addDefaultPlots to the LoadFile method.
 //
+//    Brad Whitlock, Mon Nov 10 14:51:46 PST 2003
+//    I added sessionFile.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -230,6 +233,7 @@ private:
     void LaunchViewer();
     void InitializeFileServer(DataNode *);
     void LoadFile(bool addDefaultPlots);
+    void LoadSessionFile();
     void MoveAndResizeMainWindow(int orientation);
     void ProcessArguments(int &argc, char **argv);
     virtual DataNode *ReadConfigFile(const char *filename);
@@ -268,6 +272,7 @@ private slots:
     void RefreshFileList();
     void RefreshFileListAndNextFrame();
     void RestoreSession();
+    void RestoreSessionFile(const QString &);
     void SaveSession();
 private:
     int                          completeInit;
@@ -348,11 +353,11 @@ private:
     QString                      backgroundColor;
     QString                      applicationStyle;
 
-
-
     // File to load on startup.
     QualifiedFilename            loadFile;
 
+    // Session variables
+    QString                      sessionFile;
     int                          sessionCount;
 
     // Synchronization attributes

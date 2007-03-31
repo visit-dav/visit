@@ -72,6 +72,30 @@ avtDataset::avtDataset(avtDataset_p in, bool dontCopyData)
 
 
 // ****************************************************************************
+//  Method: avtDataset::GetNumberOfCells
+//
+//  Purpose:
+//      Returns number of cells in the dataset. Will count only polygons if
+//      polysOnly is true
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    November 5, 2003 
+//
+// ****************************************************************************
+
+int
+avtDataset::GetNumberOfCells(bool polysOnly) const
+{
+   int topoDim = -1;
+
+   // we only care about topoDim if we're counting polys-only
+   if (polysOnly)
+      topoDim = GetInfo().GetAttributes().GetTopologicalDimension();
+
+   return dataTree->GetNumberOfCells(topoDim, polysOnly);
+}
+
+// ****************************************************************************
 //  Method: avtDataset::SetDataTree
 //
 //  Purpose:

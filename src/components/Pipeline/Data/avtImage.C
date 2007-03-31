@@ -76,12 +76,17 @@ avtImage::GetImage(void)
 //  Programmer: Mark C. Miller 
 //  Creation:   19Aug03 
 //
+//  Modificaitons:
+//
+//    Mark C. Miller, Wed Nov  5 09:48:13 PST 2003
+//    Added option to count polygons only
+//
 // ****************************************************************************
 
 int
-avtImage::GetNumberOfCells(void) const
+avtImage::GetNumberOfCells(bool polysOnly) const
 {
-   return image.GetNumberOfCells();
+   return image.GetNumberOfCells(polysOnly);
 }
 
 

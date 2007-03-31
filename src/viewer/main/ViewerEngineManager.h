@@ -116,6 +116,9 @@ typedef struct
 //    Hank Childs, Thu Oct  2 16:18:11 PDT 2003
 //    Allow queries to have multiple network ids.
 //
+//    Mark C. Miller, Wed Oct 29 16:56:14 PST 2003
+//    Added method UseDataObjectReader
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -139,6 +142,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
 
     avtDataObjectReader_p GetDataObjectReader(ViewerPlot *const plot,
                                               const int frame);
+    avtDataObjectReader_p UseDataObjectReader(ViewerPlot *const plot,
+                                              bool turningOffScalableRendering);
     avtDataObjectReader_p GetDataObjectReader(bool sendZBuffer,
                                               const char *hostName_,
                                               intVector ids);

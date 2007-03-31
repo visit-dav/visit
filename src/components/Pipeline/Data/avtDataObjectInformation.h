@@ -42,8 +42,10 @@ class PIPELINE_API avtDataObjectInformation
 
     void                     Copy(const avtDataObjectInformation &);
  
-    avtDataAttributes       &GetAttributes(void)   { return atts; };
-    avtDataValidity         &GetValidity(void)     { return validity; };
+    avtDataAttributes       &GetAttributes(void)       { return atts; };
+    const avtDataAttributes &GetAttributes(void) const { return atts; };
+    avtDataValidity         &GetValidity(void)       { return validity; };
+    const avtDataValidity   &GetValidity(void) const { return validity; };
 
     void                     Merge(const avtDataObjectInformation &);
     void                     ParallelMerge(const ref_ptr<avtDataObjectWriter>);
