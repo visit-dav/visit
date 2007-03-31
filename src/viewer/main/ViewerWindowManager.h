@@ -256,7 +256,6 @@ class VIEWER_API ViewerWindowManager : public QObject
     void CopyAnimationToWindow(int from, int to);
     void DeleteWindow();
     void DeleteWindow(ViewerWindow *win);
-    void ClearPickPoints(int windowIndex = -1);
     void DisableRedraw(int windowIndex = -1);
     bool FileInUse(const char *host, const char *dbName) const;
     void IconifyAllWindows();
@@ -303,7 +302,6 @@ class VIEWER_API ViewerWindowManager : public QObject
     void ToggleFullFrameMode(int windowIndex = -1);
     void SetViewExtentsType(avtExtentType, int windowIndex = -1);
     void UpdateColorTable(const char *ctName);
-    void ClearRefLines(int windowIndex = -1);
     void ResetLineoutDesignation(int windowIndex = -1); 
     int             *GetWindowIndices(int *nwin) const;
     int              GetNumWindows() const;

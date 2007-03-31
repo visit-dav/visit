@@ -19,6 +19,8 @@
     </Function>
     <Function name="ProcessOldVersions" user="true" member="true">
     </Function>
+    <Function name="RemoveActionFromNode" user="true" member="true">
+    </Function>
     <Function name="AddAction" user="true" member="true">
     </Function>
     <Function name="AddActionGroup" user="true" member="true">

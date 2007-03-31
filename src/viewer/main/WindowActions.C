@@ -322,6 +322,138 @@ ClearAllWindowsAction::Execute()
 ///////////////////////////////////////////////////////////////////////////////
 
 // ****************************************************************************
+// Method: ClearPickPointsAction::ClearPickPointsAction
+//
+// Purpose: 
+//   Constructor for the ClearPickPointsAction class.
+//
+// Arguments:
+//   win : The window to which the action belongs.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:31:37 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ClearPickPointsAction::ClearPickPointsAction(ViewerWindow *win) :
+    ViewerAction(win, "ClearPickPointsAction")
+{
+    SetAllText("Clear pick points");
+}
+
+// ****************************************************************************
+// Method: ClearPickPointsAction::Execute
+//
+// Purpose: 
+//   Does the work for ClearPickPointsAction.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:34:54 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ClearPickPointsAction::Execute()
+{
+    window->ClearPickPoints();
+}
+
+// ****************************************************************************
+// Method: ClearPickPointsAction::Enabled
+//
+// Purpose: 
+//   Returns when the action is enabled.
+//
+// Returns:    True if the action is enabled; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:35:11 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ClearPickPointsAction::Enabled() const
+{
+    // This action should only be enabled if the window to which the action belongs
+    // has plots in it.
+    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: ClearReferenceLinesAction::ClearReferenceLinesAction
+//
+// Purpose: 
+//   Constructor for the ClearReferenceLinesAction class.
+//
+// Arguments:
+//   win : The window to which the action belongs.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:31:37 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ClearReferenceLinesAction::ClearReferenceLinesAction(ViewerWindow *win) :
+    ViewerAction(win, "ClearReferenceLinesAction")
+{
+    SetAllText("Clear reference lines");
+}
+
+// ****************************************************************************
+// Method: ClearReferenceLinesAction::Execute
+//
+// Purpose: 
+//   Does the work for ClearReferenceLinesAction.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:34:54 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ClearReferenceLinesAction::Execute()
+{
+    window->ClearRefLines();
+}
+
+// ****************************************************************************
+// Method: ClearReferenceLinesAction::Enabled
+//
+// Purpose: 
+//   Returns when the action is enabled.
+//
+// Returns:    True if the action is enabled; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 4 15:35:11 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ClearReferenceLinesAction::Enabled() const
+{
+    // This action should only be enabled if the window to which the action belongs
+    // has plots in it.
+    return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
 // Method: SetActiveWindowAction::SetActiveWindowAction
 //
 // Purpose: 

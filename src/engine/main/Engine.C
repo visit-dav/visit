@@ -1436,6 +1436,9 @@ ConnectViewer(ParentProcess &viewer, int *argc, char **argv[])
 //    Brad Whitlock, Tue Apr 9 13:43:12 PST 2002
 //    Ported to Windows.
 //
+//    Hank Childs, Tue Jun 24 18:02:01 PDT 2003
+//    Allow for timeouts during network executions.
+//
 // ****************************************************************************
 
 void
@@ -1477,13 +1480,16 @@ PAR_EventLoop(MPIXfer &xfer, QuitRPC &quit)
             MPI_Bcast((void *)&buf, 1, PAR_STATEBUFFER, 0, MPI_COMM_WORLD);
 
             // We have work to do, so cancel the alarm.
-            DisableTimeout();
+            int num_seconds_in_half_hour = 30*60;
+            ResetTimeout(num_seconds_in_half_hour);
 
             // Add the state information to the connection.
             conn.Append((unsigned char *)buf.buffer, buf.nbytes);
 
             // Process the state information.
             xfer.Process();
+
+            ResetTimeout(timeout * 60);
         }
     }
 }
@@ -1521,6 +1527,9 @@ PAR_EventLoop(MPIXfer &xfer, QuitRPC &quit)
 //    Brad Whitlock, Mon Mar 25 16:03:54 PST 2002
 //    Made the connection and timeout code more general.
 //
+//    Hank Childs, Tue Jun 24 18:02:01 PDT 2003
+//    Allow for timeouts during network executions.
+//
 // ****************************************************************************
 
 bool
@@ -1543,10 +1552,13 @@ EventLoop(Xfer &xfer, QuitRPC &quit)
             TRY
             {
                 // We've got some work to do.  Disable the alarm.
-                DisableTimeout();
+                int num_seconds_in_half_hour = 30*60;
+                ResetTimeout(num_seconds_in_half_hour);
 
                 // Process input.
                 ProcessInput(xfer);
+
+                ResetTimeout(timeout * 60);
             }
             CATCH(LostConnectionException)
             {

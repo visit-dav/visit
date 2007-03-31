@@ -129,6 +129,9 @@ Definition:
 //   Kathleen Bonnell, Thu May 15 13:13:52 PDT 2003 
 //   Added ToggleFullFrameRPC to the viewGroup for 1.1.5.
 //
+//   Brad Whitlock, Mon Jun 23 16:39:49 PST 2003
+//   I added the Clear action group for 1.1.6.
+//
 // ****************************************************************************
 
 void
@@ -200,7 +203,6 @@ ViewerWindowManagerAttributes::ProcessOldVersions(DataNode *parentNode,
     //
     if(VersionLessThan(configVersion, "1.1.1"))
     {
-        AddAction(actionNode, "Window", ViewerRPC::ClearWindowRPC);
         AddAction(actionNode, "View", ViewerRPC::SaveViewRPC);
     }
 
@@ -226,6 +228,7 @@ ViewerWindowManagerAttributes::ProcessOldVersions(DataNode *parentNode,
         plotGroup.AddAction(ViewerRPC::DeleteActivePlotsRPC);
         AddActionGroup(actionNode, plotGroup);
     }
+
     //
     // Add actions that are new in 1.1.5
     //
@@ -233,7 +236,80 @@ ViewerWindowManagerAttributes::ProcessOldVersions(DataNode *parentNode,
     {
         AddAction(actionNode, "View", ViewerRPC::ToggleFullFrameRPC);
     }
+
+    //
+    // Add actions that are new in 1.1.6
+    //
+    if(VersionLessThan(configVersion, "1.1.6"))
+    {
+        ActionGroupDescription clearGroup("Clear");
+        clearGroup.SetVisible(true);
+        clearGroup.AddAction(ViewerRPC::ClearWindowRPC);
+        clearGroup.AddAction(ViewerRPC::ClearAllWindowsRPC);
+        clearGroup.AddAction(ViewerRPC::ClearPickPointsRPC);
+        clearGroup.AddAction(ViewerRPC::ClearRefLinesRPC);
+        AddActionGroup(actionNode, clearGroup);
+
+        // Remove ClearWindowRPC from the Window action group.
+        RemoveActionFromNode(actionNode, "Window",
+                             ViewerRPC::ClearWindowRPC);
+    }
 }
+
+Function: RemoveActionFromNode
+Declaration: void RemoveActionFromNode(DataNode *, const char *, ViewerRPC::ViewerRPCType);
+Definition:
+
+// ****************************************************************************
+// Method: ViewerWindowManagerAttributes::RemoveActionFromNode
+//
+// Purpose: 
+//   Removes an action from an action group in a DataNode.
+//
+// Arguments:
+//   node            : The node that contains the action groups.
+//   actionGroupName : The name of the action group from which we're removing
+//                     the action.
+//   action          : The action to be removed.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 24 11:33:38 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManagerAttributes::RemoveActionFromNode(DataNode *node,
+    const char *actionGroupName, ViewerRPC::ViewerRPCType action)
+{
+    // See if the ClearWindow action is in the Window action group.
+    // If it is, remove it.
+    std::string AGName(actionGroupName);
+    std::string actionName(ViewerRPC::ViewerRPCType_ToString(action));
+
+    DataNode **actionNodes = node->GetChildren();
+    for(int i = 0; i < node->GetNumChildren(); ++i)
+    {
+        DataNode *nameNode = actionNodes[i]->GetNode("name");
+        DataNode *aNode = actionNodes[i]->GetNode("actions");
+        if(nameNode != 0 && aNode != 0 &&
+           nameNode->AsString() == AGName)
+        {
+            stringVector newActions;
+            const stringVector &oldActions = aNode->AsStringVector();
+            for(int j = 0; j < oldActions.size(); ++j)
+            {
+                if(oldActions[j] != actionName)
+                    newActions.push_back(oldActions[j]);
+            }
+
+            aNode->SetStringVector(newActions);
+            break;
+        }
+    }
+}
+
 
 Function: AddAction
 Declaration: void AddAction(DataNode *, const char *, ViewerRPC::ViewerRPCType);

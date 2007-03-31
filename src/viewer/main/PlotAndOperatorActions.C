@@ -1358,7 +1358,10 @@ DeleteActivePlotsAction::~DeleteActivePlotsAction()
 // Creation:   Fri Mar 21 15:51:48 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jun 23 16:30:51 PST 2003
+//   I made the ClearPickPoints and ClearRefLines methods use the window
+//   instead of the window manager.
+//
 // ****************************************************************************
 
 void
@@ -1367,8 +1370,8 @@ DeleteActivePlotsAction::Execute()
     window->GetAnimation()->GetPlotList()->DeleteActivePlots();
     if(window->GetAnimation()->GetPlotList()->GetNumPlots() == 0)
     {
-        windowMgr->ClearPickPoints();
-        windowMgr->ClearRefLines();
+        window->ClearPickPoints();
+        window->ClearRefLines();
         windowMgr->ResetLineoutDesignation();
         windowMgr->DisableAllTools();
     }

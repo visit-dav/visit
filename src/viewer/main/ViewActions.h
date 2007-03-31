@@ -151,6 +151,7 @@ public:
 // Creation:   May 13, 2003 
 //
 // Modifications:
+//   Brad Whitlock, Tue Jun 24 13:34:10 PST 2003
 //   
 // ****************************************************************************
 
@@ -163,6 +164,7 @@ public:
     virtual void Execute();
     virtual bool Enabled() const;
     virtual bool Toggled() const;
+    virtual bool AllowInToolbar() const { return false; }
 };
 
 // ****************************************************************************
