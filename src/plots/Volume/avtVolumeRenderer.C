@@ -174,12 +174,13 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
     vtkRectilinearGrid  *grid = (vtkRectilinearGrid*)ds;
     vtkDataArray *data = NULL;
     vtkDataArray *opac = NULL;
-    GetScalars(grid, data, opac);
+    bool haveScalars = GetScalars(grid, data, opac);
 
-    rendererImplementation->Render(grid, data, opac, view, atts,
-                                   vmin, vmax, vsize,
-                                   omin, omax, osize,
-                                   gx, gy, gz, gmn);
+    if (haveScalars)
+        rendererImplementation->Render(grid, data, opac, view, atts,
+                                       vmin, vmax, vsize,
+                                       omin, omax, osize,
+                                       gx, gy, gz, gmn);
 }
 
 
@@ -232,7 +233,8 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
     vtkRectilinearGrid  *grid = (vtkRectilinearGrid*)ds;
     vtkDataArray        *data = NULL;
     vtkDataArray        *opac = NULL;
-    GetScalars(grid, data, opac);
+    if (!GetScalars(grid, data, opac))
+        return;
 
     int dims[3];
     grid->GetDimensions(dims);
@@ -549,7 +551,7 @@ avtVolumeRenderer::SetAtts(const AttributeGroup *a)
 //    Do a better job of locating the variable.
 //
 // ****************************************************************************
-void
+bool
 avtVolumeRenderer::GetScalars(vtkDataSet *ds, vtkDataArray *&data,
                                   vtkDataArray *&opac)
 {
@@ -578,7 +580,7 @@ avtVolumeRenderer::GetScalars(vtkDataSet *ds, vtkDataArray *&data,
     }
     if (data == NULL)
     {
-        EXCEPTION0(ImproperUseException);
+        return false;
     }
 
     //
@@ -624,6 +626,8 @@ avtVolumeRenderer::GetScalars(vtkDataSet *ds, vtkDataArray *&data,
         }
         opac->Register(NULL);
     }
+
+    return true;
 }
 
 // ****************************************************************************

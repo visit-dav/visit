@@ -5902,6 +5902,10 @@ ViewerWindowManager::CreateNode(DataNode *parentNode, bool detailed)
 //   Added code to temporarily disable "clone window on first reference" when
 //   setting the active window once all the windows are established.
 //
+//   Brad Whitlock, Tue Dec 2 17:13:31 PST 2003
+//   Added code to change the referenced flag so windows with plots are not
+//   considered unreferenced.
+//
 // ****************************************************************************
 
 void
@@ -6049,8 +6053,13 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode)
     int childCount = 0;
     for(i = 0; i < maxWindows; ++i)
     {
+        referenced[i] = false;
         if(windows[i] != 0 && childCount < newNWindows)
+        {
             windows[i]->SetFromNode(wNodes[childCount++]);
+            if(windows[i]->GetAnimation()->GetPlotList()->GetNumPlots() > 0)
+                referenced[i] = true;
+        }
     }
 
     //

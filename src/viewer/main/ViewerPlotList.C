@@ -1728,6 +1728,34 @@ ViewerPlotList::RealizePlots()
     animation->UpdateFrame();
 }
 
+
+// ****************************************************************************
+//  Method: ViewerPlotList::SetErrorFlagAllPlots()
+//
+//  Purpose:
+//    Indicate all plots are in error
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   Novembedr 25, 2003
+//
+// ****************************************************************************
+
+void
+ViewerPlotList::SetErrorFlagAllPlots(bool errorFlag)
+{
+    //
+    // Loop through the list setting the realized flag for each plot.
+    //
+    for (int i = 0; i < nPlots; i++)
+    {
+        plots[i].plot->SetErrorFlag(errorFlag);
+    }
+
+    UpdatePlotList();
+    UpdateSILRestrictionAtts();
+}
+
+
 // ****************************************************************************
 //  Method: ViewerPlotList::SetPlotVar
 //

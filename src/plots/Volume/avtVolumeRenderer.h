@@ -67,7 +67,7 @@ class avtVolumeRenderer : public avtCustomRenderer
     float                   omin,omax,osize;
     float                  *gx, *gy, *gz, *gm, *gmn;
 
-    void                    GetScalars(vtkDataSet*,vtkDataArray*&,vtkDataArray *&);
+    bool                    GetScalars(vtkDataSet*,vtkDataArray*&,vtkDataArray *&);
     void                    GetRange(vtkDataArray *, float &, float &);
 };
 
