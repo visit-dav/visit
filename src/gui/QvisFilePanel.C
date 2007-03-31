@@ -1300,13 +1300,30 @@ QvisFilePanel::ConnectGlobalAttributes(GlobalAttributes *ga)
 //   Brad Whitlock, Wed Oct 22 12:18:23 PDT 2003
 //   I added the addDefaultPlots flag to OpenDataFile.
 //
+//   Brad Whitlock, Mon Nov 3 10:42:23 PDT 2003
+//   I renamed OpenDataFile to SetOpenDataFile and I moved the code that
+//   told the viewer to open the data file to here so file replacement would
+//   no longer do more work than is required.
+//
 // ****************************************************************************
 
 bool
 QvisFilePanel::OpenFile(const QualifiedFilename &qf, int timeState, bool reOpen)
 {
     // Try and open the data file.
-    bool retval = OpenDataFile(qf, timeState, true, this, reOpen);
+    bool retval = SetOpenDataFile(qf, timeState, this, reOpen);
+
+    if(reOpen)
+    {
+        // Tell the viewer to replace all of the plots having
+        // databases that match the file we're re-opening.
+        viewer->ReOpenDatabase(qf.FullName().c_str(), false);
+    }
+    else
+    {
+        // Tell the viewer to open the database.
+        viewer->OpenDatabase(qf.FullName().c_str(), timeState, true);
+    }
 
     // Get a pointer to the file's metadata.
     const avtDatabaseMetaData *md = fileServer->GetMetaData(qf);
@@ -1344,15 +1361,26 @@ QvisFilePanel::OpenFile(const QualifiedFilename &qf, int timeState, bool reOpen)
 //   Brad Whitlock, Wed Oct 15 15:26:31 PST 2003
 //   I made it possible to replace a file at a later time state.
 //
+//   Brad Whitlock, Mon Nov 3 10:46:18 PDT 2003
+//   Rewrote so replace does not first tell the viewer to open the database.
+//
 // ****************************************************************************
 
 void
 QvisFilePanel::ReplaceFile(const QualifiedFilename &filename, int timeState)
 {
-    if(OpenFile(filename, timeState, false))
-    {
-        viewer->ReplaceDatabase(filename.FullName().c_str(), timeState);
-    }
+    // Try and set the open the data file.
+    SetOpenDataFile(filename, timeState, this, false);
+
+    // Tell the viewer to replace the database.
+    viewer->ReplaceDatabase(filename.FullName().c_str(), timeState);
+
+    // Get a pointer to the file's metadata.
+    const avtDatabaseMetaData *md = fileServer->GetMetaData(filename);
+    int nTimeStates = md ? md->GetNumStates() : 1;
+
+    replaceButton->setEnabled(nTimeStates > 1);
+    overlayButton->setEnabled(false);
 }
 
 // ****************************************************************************
@@ -1378,15 +1406,27 @@ QvisFilePanel::ReplaceFile(const QualifiedFilename &filename, int timeState)
 //   Brad Whitlock, Thu May 15 12:31:13 PDT 2003
 //   I added time state to OpenFile.
 //
+//   Brad Whitlock, Mon Nov 3 10:50:01 PDT 2003
+//   I rewrote the routine so it no longer ends up telling the viewer to
+//   open the database before overlaying.
+//
 // ****************************************************************************
 
 void
 QvisFilePanel::OverlayFile(const QualifiedFilename &filename)
 {
-    if(OpenFile(filename, 0, false))
-    {
-        viewer->OverlayDatabase(filename.FullName().c_str());
-    }
+    // Try and set the open the data file.
+    SetOpenDataFile(filename, 0, this, false);
+
+    // Tell the viewer to replace the database.
+    viewer->OverlayDatabase(filename.FullName().c_str());
+
+    // Get a pointer to the file's metadata.
+    const avtDatabaseMetaData *md = fileServer->GetMetaData(filename);
+    int nTimeStates = md ? md->GetNumStates() : 1;
+
+    replaceButton->setEnabled(nTimeStates > 1);
+    overlayButton->setEnabled(false);
 }
 
 // ****************************************************************************
@@ -2044,6 +2084,11 @@ QvisFilePanel::openFileDblClick(QListViewItem *item)
 //   Brad Whitlock, Fri Oct 24 14:33:40 PST 2003
 //   I made it use the new AnimationSetFrame method.
 //
+//   Brad Whitlock, Mon Nov 3 11:33:05 PDT 2003
+//   I made it always use the ReplaceFile method and I changed the
+//   ReplaceDatabase functionality in the viewer so changes the animation
+//   time state if we're replacing with the same database.
+//
 // ****************************************************************************
 
 void
@@ -2054,23 +2099,13 @@ QvisFilePanel::replaceFile()
 
     if((fileItem != 0) && fileItem->isFile() && (!fileItem->file.Empty()))
     {
-        if(fileItem->file == fileServer->GetOpenFile())
-        {
-            // It must be a database timestep if the time state is not -1 and
-            // the file item has the same filename as the open file.
-            if(fileItem->timeState != -1)
-                AnimationSetFrame(fileItem->timeState, true);
-        }
-        else
-        {
-            // Make sure that we use a valid time state. Some file items
-            // have a time state of -1 if they are the parent item of several
-            // time step items.
-            int timeState = (fileItem->timeState < 0) ? 0 : fileItem->timeState;
+        // Make sure that we use a valid time state. Some file items
+        // have a time state of -1 if they are the parent item of several
+        // time step items.
+        int timeState = (fileItem->timeState < 0) ? 0 : fileItem->timeState;
 
-            // Try and replace the file.
-            ReplaceFile(fileItem->file.FullName(), timeState);
-        }
+        // Try and replace the file.
+        ReplaceFile(fileItem->file.FullName(), timeState);
     }
 }
 

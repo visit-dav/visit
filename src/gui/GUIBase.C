@@ -323,7 +323,7 @@ GUIBase::RestoreCursor()
 }
 
 // ****************************************************************************
-// Method: GUIBase::OpenDataFile
+// Method: GUIBase::SetOpenDataFile
 //
 // Purpose: 
 //   Opens the specified data file using the file server.
@@ -331,8 +331,6 @@ GUIBase::RestoreCursor()
 // Arguments:
 //   qf              : The qualified file name that we want to open.
 //   timeState       : The time state that we want to open.
-//   addDefaultPlots : Whether we want to allow the viewer to add default
-//                     plots if the database has them.
 //   sob             : The caller of this method. We pass it if we do not want
 //                     the caller to update as a result of calling this method.
 //   reOpen          : Whether we should reopen the database instead of opening.
@@ -368,11 +366,16 @@ GUIBase::RestoreCursor()
 //   I added support for telling the viewer that we don't want to add
 //   default plots when we open a database.
 //
+//   Brad Whitlock, Mon Nov 3 09:34:03 PDT 2003
+//   I added code to prevent the file panel from updating prematurely. I also
+//   renamed the method and ripped out the code that told the viewer to
+//   open the database. I removed the addDefaultPlots argument.
+//
 // ****************************************************************************
 
 bool
-GUIBase::OpenDataFile(const QualifiedFilename &qf, int timeState,
-    bool addDefaultPlots, SimpleObserver *sob, bool reOpen)
+GUIBase::SetOpenDataFile(const QualifiedFilename &qf, int timeState,
+    SimpleObserver *sob, bool reOpen)
 {
     bool retval = true;
     GlobalAttributes *globalAtts = viewer->GetGlobalAttributes();
@@ -404,6 +407,13 @@ GUIBase::OpenDataFile(const QualifiedFilename &qf, int timeState,
             // Tell the fileServer to open the file specified by filename.
             // This will cause it to read the file's MetaData.
             fileServer->OpenFile(qf, timeState);
+            // Prevent the file panel from updating because the globalAtts
+            // from the viewer, that the file panel uses to display the right
+            // database highlight, do not yet contain the right timeState and
+            // updating the file panel now causes it to switch to the wrong
+            // time state for a moment.
+            if(sob)
+                sob->SetUpdate(false);
             fileServer->Notify();
             ClearStatus();
 
@@ -412,19 +422,6 @@ GUIBase::OpenDataFile(const QualifiedFilename &qf, int timeState,
             if(sob)
                 sob->SetUpdate(false);
             globalAtts->Notify();
-
-            if(reOpen)
-            {
-                // Tell the viewer to replace all of the plots having
-                // databases that match the file we're re-opening.
-                viewer->ReOpenDatabase(qf.FullName().c_str(), false);
-            }
-            else
-            {
-                // Tell the viewer to open the database.
-                viewer->OpenDatabase(qf.FullName().c_str(), timeState,
-                                     addDefaultPlots);
-            }
         }
         CATCH2(GetMetaDataException, gmde)
         {

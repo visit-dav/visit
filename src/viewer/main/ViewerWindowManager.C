@@ -5991,6 +5991,8 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode)
 // Arguments:
 //   host            : The host where the new database is found.
 //   database        : The database to use.
+//   timeState       : The time state to use.
+//   setTimeState    : Whether or not to set the time state.
 //   onlyReplaceSame : If true, then file replacement is only done if the
 //                     new database is the same as the database in a plot.
 //
@@ -5998,19 +6000,23 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode)
 // Creation:   Wed Oct 15 14:03:35 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Nov 3 10:03:00 PDT 2003
+//   Added timeState and setTimeState arguments.
+//
 // ****************************************************************************
 
 void
 ViewerWindowManager::ReplaceDatabase(const std::string &host,
-    const std::string &database, bool onlyReplaceSame)
+    const std::string &database, int timeState, bool setTimeState,
+    bool onlyReplaceSame)
 {
     for(int i = 0; i < maxWindows; ++i)
     {
         if(windows[i] != 0)
         {
             windows[i]->GetAnimation()->GetPlotList()->
-                ReplaceDatabase(host, database, onlyReplaceSame);
+                ReplaceDatabase(host, database, timeState, setTimeState,
+                                onlyReplaceSame);
         }
     }
 }

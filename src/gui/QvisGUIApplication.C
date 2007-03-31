@@ -2872,6 +2872,10 @@ QvisGUIApplication::RefreshFileListAndNextFrame()
 //   Brad Whitlock, Wed Oct 22 12:11:18 PDT 2003
 //   Added a flag that determines whether default plots can be added.
 //
+//   Brad Whitlock, Mon Nov 3 10:56:54 PDT 2003
+//   I added code that tells the viewer to open a database because I moved
+//   that code out of SetOpenDataFile.
+//
 // ****************************************************************************
 
 void
@@ -2954,7 +2958,11 @@ QvisGUIApplication::LoadFile(bool addDefaultPlots)
             viewer->ShowAllWindows();
 
             // Try and open the data file for plotting.
-            OpenDataFile(loadFile, timeState, addDefaultPlots);
+            SetOpenDataFile(loadFile, timeState);
+
+            // Tell the viewer to open the file too.
+            viewer->OpenDatabase(loadFile.FullName().c_str(), timeState,
+                                 addDefaultPlots);
         }
         CATCH2(BadHostException, bhe)
         {

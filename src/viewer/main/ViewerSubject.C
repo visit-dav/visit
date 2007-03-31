@@ -2445,191 +2445,6 @@ ViewerSubject::RedrawWindow()
 }
 
 // ****************************************************************************
-//  Method: ViewerSubject::OpenDatabaseHelper
-//
-//  Purpose:
-//    Opens a database.
-//
-//  Programmer: Eric Brugger
-//  Creation:   August 17, 2000
-//
-//  Modifications:
-//    Jeremy Meredith, Fri Apr 20 10:33:42 PDT 2001
-//    Added code to pass "other" options to the engine when starting.
-//
-//    Brad Whitlock, Wed Nov 14 17:08:07 PST 2001
-//    Added code to set the number of time steps in the animation.
-//
-//    Brad Whitlock, Wed Sep 11 16:29:27 PST 2002
-//    I changed the code so an engine is only launched when the file can
-//    be opened.
-//
-//    Brad Whitlock, Tue Dec 10 15:34:17 PST 2002
-//    I added code to tell the engine to open the database.
-//
-//    Brad Whitlock, Mon Dec 30 14:59:24 PST 2002
-//    I changed how nFrames and nStates are set.
-//
-//    Brad Whitlock, Fri Jan 17 11:35:29 PDT 2003
-//    I added code to reset nFrames if there are no plots in the plot list.
-//
-//    Brad Whitlock, Tue Feb 11 11:56:34 PDT 2003
-//    I made it use STL strings.
-//
-//    Brad Whitlock, Tue Mar 25 14:23:16 PST 2003
-//    I made it capable of defining a virtual database.
-//
-//    Brad Whitlock, Fri Apr 4 11:10:08 PDT 2003
-//    I changed how the number of frames in an animation is updated.
-//
-//    Brad Whitlock, Thu May 15 13:34:19 PST 2003
-//    I added the timeState argument and renamed the method.
-//
-//    Hank Childs, Thu Aug 14 09:10:00 PDT 2003
-//    Added code to manage expressions from databases.
-//
-//    Walter Herrera, Thu Sep 04 16:13:43 PST 2003
-//    I made it capable of creating default plots
-//
-//    Brad Whitlock, Fri Oct 3 10:40:49 PDT 2003
-//    I prevented the addition of default plots if the plot list already
-//    contains plots from the new database.
-//
-//    Brad Whitlock, Wed Oct 22 12:27:30 PDT 2003
-//    I made the method actually use the addDefaultPlots argument.
-//
-//    Brad Whitlock, Fri Oct 24 17:07:52 PST 2003
-//    I moved the code to update the expression list into the plot list.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
-    int timeState, bool updateNFrames, bool addDefaultPlots)
-{
-    int  i;
-
-    debug1 << "Opening database " << entireDBName.c_str()
-           << ", timeState=" << timeState << endl;
-
-    //
-    // Associate the database with the currently active animation (window).
-    //
-    ViewerWindowManager *wM=ViewerWindowManager::Instance();
-    ViewerPlotList *plotList = wM->GetActiveAnimation()->GetPlotList();
-
-    //
-    // Set the new host/database name into the plot list. This splits it.
-    //
-    plotList->SetHostDatabaseName(entireDBName);
-    std::string host(plotList->GetHostName());
-    std::string db(plotList->GetDatabaseName());
-
-    //
-    // Expand the database name to its full path just in case.
-    //
-    ViewerFileServer *fs = ViewerFileServer::Instance();
-    std::string expandedDB(fs->ExpandedFileName(host, db));
-    plotList->SetDatabaseName(expandedDB.c_str());
-    db = plotList->GetDatabaseName();
-
-    //
-    // Get the number of time states and set that information into the
-    // active animation.
-    //
-    const avtDatabaseMetaData *md = fs->GetMetaData(host, db, timeState);
-    if (md != NULL)
-    {
-        if(updateNFrames)
-        {
-            // Update the number of animation frames.
-            ViewerAnimation *animation = wM->GetActiveAnimation();
-            animation->UpdateNFrames();
-
-            // Move to the specified time state.
-            if(timeState > 0)
-                animation->SetFrameIndex(timeState);
-
-            wM->UpdateGlobalAtts();
-        }
-
-        //
-        // Update the expression list.
-        //
-        plotList->UpdateExpressionList(false);
-
-        //
-        // Create a compute engine to use with the database.
-        //
-        stringVector noArgs;
-        ViewerEngineManager::Instance()->CreateEngine(host.c_str(), noArgs,
-                                                     false, numEngineRestarts);
-
-        //
-        // Tell the new engine to open the specified database.
-        //
-        ViewerEngineManager *eMgr = ViewerEngineManager::Instance();
-        if(md->GetIsVirtualDatabase() && md->GetNumStates() > 1)
-        {
-            eMgr->DefineVirtualDatabase(host.c_str(), db.c_str(),
-                                        md->GetTimeStepPath().c_str(),
-                                        md->GetTimeStepNames(),
-                                        timeState);
-        }
-        else
-        {
-            eMgr->OpenDatabase(host.c_str(), db.c_str(), timeState);
-        }
-        
-        //
-        // Create default plots if there are no plots from the database
-        // already in the plot list.
-        //
-        if(addDefaultPlots &&
-           !plotList->FileInUse(host.c_str(), db.c_str()))
-        {
-            DataNode *adn = NULL;
-            bool defaultPlotsAdded = false;
-
-            for(i=0; i<md->GetNumDefaultPlots(); i++)
-            {
-                const avtDefaultPlotMetaData *dp = md->GetDefaultPlot(i);
-                adn = CreateAttributesDataNode(dp);
-
-                //
-                // Use the plot plugin manager to get the plot type index from
-                // the plugin id.
-                //
-                int type = PlotPluginManager::Instance()->GetEnabledIndex(dp->pluginID);
-
-                if(type != -1)
-                {
-                    debug4 << "Adding default plot: type=" << type
-                           << " var=" << dp->plotVar.c_str() << endl;
-                    plotList->AddPlot(type, dp->plotVar, false, false, adn);
-                    defaultPlotsAdded = true;
-                }
-            }
-
-            if (defaultPlotsAdded)
-            {
-                plotList->RealizePlots();
-            } 
-
-            if (adn != NULL)
-                delete adn;
-        }
-        else
-        {
-            debug4 << "Default plots were not added because the plot list "
-                      "already contains plots from "
-                   << host.c_str() << ":" << db.c_str() << endl;
-        }
-    }
-}
-
-
-// ****************************************************************************
 // Function: getToken
 //
 // Purpose: 
@@ -3101,6 +2916,189 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
     return node;
 }
 
+// ****************************************************************************
+//  Method: ViewerSubject::OpenDatabaseHelper
+//
+//  Purpose:
+//    Opens a database.
+//
+//  Programmer: Eric Brugger
+//  Creation:   August 17, 2000
+//
+//  Modifications:
+//    Jeremy Meredith, Fri Apr 20 10:33:42 PDT 2001
+//    Added code to pass "other" options to the engine when starting.
+//
+//    Brad Whitlock, Wed Nov 14 17:08:07 PST 2001
+//    Added code to set the number of time steps in the animation.
+//
+//    Brad Whitlock, Wed Sep 11 16:29:27 PST 2002
+//    I changed the code so an engine is only launched when the file can
+//    be opened.
+//
+//    Brad Whitlock, Tue Dec 10 15:34:17 PST 2002
+//    I added code to tell the engine to open the database.
+//
+//    Brad Whitlock, Mon Dec 30 14:59:24 PST 2002
+//    I changed how nFrames and nStates are set.
+//
+//    Brad Whitlock, Fri Jan 17 11:35:29 PDT 2003
+//    I added code to reset nFrames if there are no plots in the plot list.
+//
+//    Brad Whitlock, Tue Feb 11 11:56:34 PDT 2003
+//    I made it use STL strings.
+//
+//    Brad Whitlock, Tue Mar 25 14:23:16 PST 2003
+//    I made it capable of defining a virtual database.
+//
+//    Brad Whitlock, Fri Apr 4 11:10:08 PDT 2003
+//    I changed how the number of frames in an animation is updated.
+//
+//    Brad Whitlock, Thu May 15 13:34:19 PST 2003
+//    I added the timeState argument and renamed the method.
+//
+//    Hank Childs, Thu Aug 14 09:10:00 PDT 2003
+//    Added code to manage expressions from databases.
+//
+//    Walter Herrera, Thu Sep 04 16:13:43 PST 2003
+//    I made it capable of creating default plots
+//
+//    Brad Whitlock, Fri Oct 3 10:40:49 PDT 2003
+//    I prevented the addition of default plots if the plot list already
+//    contains plots from the new database.
+//
+//    Brad Whitlock, Wed Oct 22 12:27:30 PDT 2003
+//    I made the method actually use the addDefaultPlots argument.
+//
+//    Brad Whitlock, Fri Oct 24 17:07:52 PST 2003
+//    I moved the code to update the expression list into the plot list.
+//
+// ****************************************************************************
+
+void
+ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
+    int timeState, bool updateNFrames, bool addDefaultPlots)
+{
+    int  i;
+
+    debug1 << "Opening database " << entireDBName.c_str()
+           << ", timeState=" << timeState << endl;
+
+    //
+    // Associate the database with the currently active animation (window).
+    //
+    ViewerWindowManager *wM=ViewerWindowManager::Instance();
+    ViewerPlotList *plotList = wM->GetActiveAnimation()->GetPlotList();
+
+    //
+    // Set the new host/database name into the plot list. This splits it.
+    //
+    plotList->SetHostDatabaseName(entireDBName);
+    std::string host(plotList->GetHostName());
+    std::string db(plotList->GetDatabaseName());
+
+    //
+    // Expand the database name to its full path just in case.
+    //
+    ViewerFileServer *fs = ViewerFileServer::Instance();
+    std::string expandedDB(fs->ExpandedFileName(host, db));
+    plotList->SetDatabaseName(expandedDB.c_str());
+    db = plotList->GetDatabaseName();
+
+    //
+    // Get the number of time states and set that information into the
+    // active animation.
+    //
+    const avtDatabaseMetaData *md = fs->GetMetaData(host, db, timeState);
+    if (md != NULL)
+    {
+        if(updateNFrames)
+        {
+            // Update the number of animation frames.
+            ViewerAnimation *animation = wM->GetActiveAnimation();
+            animation->UpdateNFrames();
+
+            // Move to the specified time state.
+            if(timeState > 0)
+                animation->SetFrameIndex(timeState);
+
+            wM->UpdateGlobalAtts();
+        }
+
+        //
+        // Update the expression list.
+        //
+        plotList->UpdateExpressionList(false);
+
+        //
+        // Create a compute engine to use with the database.
+        //
+        stringVector noArgs;
+        ViewerEngineManager::Instance()->CreateEngine(host.c_str(), noArgs,
+                                                     false, numEngineRestarts);
+
+        //
+        // Tell the new engine to open the specified database.
+        //
+        ViewerEngineManager *eMgr = ViewerEngineManager::Instance();
+        if(md->GetIsVirtualDatabase() && md->GetNumStates() > 1)
+        {
+            eMgr->DefineVirtualDatabase(host.c_str(), db.c_str(),
+                                        md->GetTimeStepPath().c_str(),
+                                        md->GetTimeStepNames(),
+                                        timeState);
+        }
+        else
+        {
+            eMgr->OpenDatabase(host.c_str(), db.c_str(), timeState);
+        }
+        
+        //
+        // Create default plots if there are no plots from the database
+        // already in the plot list.
+        //
+        if(addDefaultPlots &&
+           !plotList->FileInUse(host.c_str(), db.c_str()))
+        {
+            DataNode *adn = NULL;
+            bool defaultPlotsAdded = false;
+
+            for(i=0; i<md->GetNumDefaultPlots(); i++)
+            {
+                const avtDefaultPlotMetaData *dp = md->GetDefaultPlot(i);
+                adn = CreateAttributesDataNode(dp);
+
+                //
+                // Use the plot plugin manager to get the plot type index from
+                // the plugin id.
+                //
+                int type = PlotPluginManager::Instance()->GetEnabledIndex(dp->pluginID);
+
+                if(type != -1)
+                {
+                    debug4 << "Adding default plot: type=" << type
+                           << " var=" << dp->plotVar.c_str() << endl;
+                    plotList->AddPlot(type, dp->plotVar, false, false, adn);
+                    defaultPlotsAdded = true;
+                }
+            }
+
+            if (defaultPlotsAdded)
+            {
+                plotList->RealizePlots();
+            } 
+
+            if (adn != NULL)
+                delete adn;
+        }
+        else
+        {
+            debug4 << "Default plots were not added because the plot list "
+                      "already contains plots from "
+                   << host.c_str() << ":" << db.c_str() << endl;
+        }
+    }
+}
 
 // ****************************************************************************
 // Method: ViewerSubject::OpenDatabase
@@ -3160,6 +3158,9 @@ ViewerSubject::OpenDatabase()
 //   size of the database if it is virtual and more time states have been
 //   added.
 //
+//   Brad Whitlock, Mon Nov 3 10:03:51 PDT 2003
+//   Made some interface changes to ViewerWindowManager::ReplaceDatabase.
+//
 // ****************************************************************************
 
 void
@@ -3204,7 +3205,7 @@ ViewerSubject::ReOpenDatabase()
     // Now perform the database replacement in all windows that use the
     // specified database.
     //
-    ViewerWindowManager::Instance()->ReplaceDatabase(host, db, true);
+    ViewerWindowManager::Instance()->ReplaceDatabase(host, db, 0, false, true);
 
     wM->UpdateGlobalAtts();
 }
@@ -3238,6 +3239,12 @@ ViewerSubject::ReOpenDatabase()
 //   Brad Whitlock, Wed Oct 15 15:40:44 PST 2003
 //   I made it possible to replace a database at a later time state.
 //
+//   Brad Whitlock, Mon Nov 3 09:50:21 PDT 2003
+//   I changed a flag to false in the call to OpenDatabaseHelper so the
+//   animation's number of frames would not be updated because this caused
+//   extra work. I passed the time state to the plot list's ReplaceDatabase
+//   method instead.
+//
 // ****************************************************************************
 
 void
@@ -3250,15 +3257,19 @@ ViewerSubject::ReplaceDatabase()
     // First open the database.
     //
     OpenDatabaseHelper(viewerRPC.GetDatabase(), viewerRPC.GetIntArg1(),
-                       true, false);
+                       false, false);
 
     //
     // Now perform the database replacement.
     //
+
     ViewerWindowManager *wM = ViewerWindowManager::Instance();
     ViewerPlotList *plotList = wM->GetActiveAnimation()->GetPlotList();
     plotList->ReplaceDatabase(plotList->GetHostName(),
-                              plotList->GetDatabaseName());
+                              plotList->GetDatabaseName(),
+                              viewerRPC.GetIntArg1(),
+                              true,
+                              false);
     wM->UpdateGlobalAtts();
 
     //

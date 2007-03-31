@@ -55,6 +55,9 @@
 //    Allow derived types to specify how many components there are in the 
 //    output.
 //
+//    Hank Childs, Mon Nov  3 16:02:21 PST 2003
+//    Make use of virtual function CreateArray to create VTK arrays.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -160,7 +163,7 @@ avtUnaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
     int ncomps = data->GetNumberOfComponents();
     int nvals  = data->GetNumberOfTuples();
 
-    vtkDataArray *dv = data->NewInstance();
+    vtkDataArray *dv = CreateArray(data);
     int noutcomps = GetNumberOfComponentsInOutput(ncomps);
     dv->SetNumberOfComponents(noutcomps);
     dv->SetNumberOfTuples(nvals);

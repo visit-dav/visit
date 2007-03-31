@@ -1807,17 +1807,25 @@ ViewerPlotList::SetPlotOperatorAtts(const int operatorType, bool applyToAll)
 //   Brad Whitlock, Fri Oct 24 17:40:36 PST 2003
 //   I made it update the expression list.
 //
+//   Brad Whitlock, Mon Nov 3 10:06:02 PDT 2003
+//   I added timeState and setTimeState so we can change the animation's
+//   time state if we need to change time states before updating the frame.
+//   This lets us change animation time states before having to execute the 
+//   pipeline so it is somewhat cheaper to replace files with a database
+//   that has a new active time state. This approach also lets us just change
+//   the animation's time state if we're replacing with the same database.
+//
 // ****************************************************************************
 
 void
 ViewerPlotList::ReplaceDatabase(const std::string &host, const std::string &database,
-    bool onlyReplaceSame)
+    int timeState, bool setTimeState, bool onlyReplaceSame)
 {
     //
     // Loop through the list replacing the plot's database.
     //
     bool defaultChanged = false;
-    bool updateSIL = false;
+    bool plotsReplaced = false;
     for (int i = 0; i < nPlots; i++)
     {
         //
@@ -1871,7 +1879,7 @@ ViewerPlotList::ReplaceDatabase(const std::string &host, const std::string &data
                     plot->SetHostDatabaseName(host.c_str(), database.c_str());
                     plot->SetSILRestriction(silr);
                     plot->ClearActors();
-                    updateSIL = true;
+                    plotsReplaced = true;
 
                     //
                     // If we're not in keyframing mode, then we should set
@@ -1923,7 +1931,7 @@ ViewerPlotList::ReplaceDatabase(const std::string &host, const std::string &data
     //
     // Update the SIL restriction attributes if necessary.
     //
-    if (updateSIL)
+    if (plotsReplaced)
         UpdateSILRestrictionAtts();
 
     //
@@ -1934,7 +1942,10 @@ ViewerPlotList::ReplaceDatabase(const std::string &host, const std::string &data
     //
     // Update the frame.
     //
-    animation->UpdateFrame();
+    if(setTimeState)
+        animation->SetFrameIndex(timeState);
+    else
+        animation->UpdateFrame();
 }
 
 // ****************************************************************************

@@ -206,7 +206,7 @@ class VIEWER_API ViewerPlotList
     void SetPlotAtts(const int plotType);
     void SetPlotOperatorAtts(const int operatorType, bool applyToAll = false);
     void ReplaceDatabase(const std::string &host, const std::string &database,
-                         bool onlyReplaceSame = false);
+                         int timeState, bool setTimeState, bool onlyReplaceSame);
     void OverlayDatabase(const std::string &host, const std::string &database);
 
     void SetActivePlots(const intVector &activePlots,

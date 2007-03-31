@@ -667,6 +667,9 @@ LineoutListItem::DisableTool()
 //    Eric Brugger, Wed Aug 20 10:51:31 PDT 2003
 //    I removed calls to UpdateScaleFactor since it no longer exists.
 //
+//    Brad Whitlock, Mon Nov 3 10:17:12 PDT 2003
+//    Changed the interface to ViewerPlotList::ReplaceDatabase.
+//
 // ****************************************************************************
 
 void
@@ -683,7 +686,7 @@ LineoutListItem::Update(Subject *TheChangedSubject)
              case PlotQueryInfo::Database:
                  host = origPlot->GetHostName();
                  db = origPlot->GetDatabaseName();
-                 vpl->ReplaceDatabase(host, db);
+                 vpl->ReplaceDatabase(host, db, 0, false, false);
                  break;
              case PlotQueryInfo::VarName:
                  vpl->SetPlotVar(origPlot->GetVariableName());
