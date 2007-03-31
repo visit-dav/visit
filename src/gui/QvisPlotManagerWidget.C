@@ -764,6 +764,9 @@ QvisPlotManagerWidget::PopulateVariableLists(const QualifiedFilename &filename)
 //   Brad Whitlock, Mon Mar 17 15:45:49 PST 2003
 //   I made it use a variable menu populator.
 //
+//   Hank Childs, Fri Aug  1 21:30:30 PDT 2003
+//   Re-enable Curve plots, since they now require Curve variables.
+//
 // ****************************************************************************
 
 void
@@ -780,9 +783,6 @@ QvisPlotManagerWidget::UpdatePlotVariableMenu()
         bool hasEntries = (varCount > 0);
 
         plotMenu->setItemEnabled(i, hasEntries);
-        // HACK!! WANT TO TEMPORARILY DISABLE CURVES
-        if (plotMenu->text(i) == "Curve")
-            plotMenu->setItemEnabled(i, false);
     }
 
     // Set the enabled state of the Plot and Operator menus.

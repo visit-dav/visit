@@ -25,7 +25,7 @@ using std::map;
 // ****************************************************************************
 
 VariableMenuPopulator::VariableMenuPopulator() : meshVars(), scalarVars(),
-    vectorVars(), subsetVars(), speciesVars()
+    vectorVars(), subsetVars(), speciesVars(), curveVars()
 {
 }
 
@@ -70,6 +70,9 @@ VariableMenuPopulator::~VariableMenuPopulator()
 //   Brad Whitlock, Tue May 20 12:49:43 PDT 2003
 //   Made it work with an updated version of Expression::ExprType..
 //
+//   Hank Childs, Fri Aug  1 10:44:45 PDT 2003
+//   Add support for curves.
+//
 // ****************************************************************************
 
 void
@@ -85,6 +88,7 @@ VariableMenuPopulator::PopulateVariableLists(const avtDatabaseMetaData *md,
     vectorVars.clear();
     subsetVars.clear();
     speciesVars.clear();
+    curveVars.clear();
 
     // Do stuff with the metadata
     int i;
@@ -107,6 +111,11 @@ VariableMenuPopulator::PopulateVariableLists(const avtDatabaseMetaData *md,
     {
         const avtSpeciesMetaData *smd = md->GetSpecies(i);
         speciesVars[smd->name] = smd->validVariable;
+    }
+    for (i = 0; i < md->GetNumCurves(); ++i)
+    {
+        const avtCurveMetaData *cmd = md->GetCurve(i);
+        curveVars[cmd->name] = cmd->validVariable;
     }
 
     // Process the expressions
@@ -196,6 +205,9 @@ VariableMenuPopulator::PopulateVariableLists(const avtDatabaseMetaData *md,
 //
 // Modifications:
 //
+//   Hank Childs, Fri Aug  1 10:44:45 PDT 2003
+//   Added support for curves.
+//
 // ****************************************************************************
 
 int
@@ -219,6 +231,8 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
        ++numVarTypes;
     if(varTypes & VAR_CATEGORY_SPECIES)
        ++numVarTypes;
+    if(varTypes & VAR_CATEGORY_CURVE)
+       ++numVarTypes;
 
     if(numVarTypes > 1)
     {
@@ -236,6 +250,8 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
             AddVars(vars, subsetVars);
         if(varTypes & VAR_CATEGORY_SPECIES)
             AddVars(vars, speciesVars);
+        if(varTypes & VAR_CATEGORY_CURVE)
+            AddVars(vars, curveVars);
         
         // Update the menu with the composite variable list.
         UpdateSingleMenu(menu, receiver, vars, changeVar);
@@ -267,6 +283,10 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
             UpdateSingleMenu(menu, receiver, speciesVars, changeVar);
             retval = speciesVars.size();
             break;
+        case VAR_CATEGORY_CURVE:
+            UpdateSingleMenu(menu, receiver, curveVars, changeVar);
+            retval = curveVars.size();
+            break;
         }
     }
 
@@ -290,6 +310,9 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
 //
 // Modifications:
 //   
+//   Hank Childs, Fri Aug  1 10:44:45 PDT 2003
+//   Add support for curves.
+//
 // ****************************************************************************
 
 bool
@@ -309,6 +332,8 @@ VariableMenuPopulator::ItemEnabled(int varType) const
        retval |= (subsetVars.size() > 0);
     if(varType & VAR_CATEGORY_SPECIES)
        retval |= (speciesVars.size() > 0);
+    if(varType & VAR_CATEGORY_CURVE)
+       retval |= (curveVars.size() > 0);
 
     return retval;
 }

@@ -52,6 +52,9 @@
 //    I added code to generate icon methods if the plugin has an icon file. I
 //    also added code to put a GetVariableTypes method into viewer plot plugins.
 //
+//    Hank Childs, Fri Aug  1 10:39:50 PDT 2003
+//    Added support for curves.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -736,6 +739,8 @@ class InfoGeneratorPlugin
                     c << "VAR_CATEGORY_SPECIES";
                 else if (types[i] == "subset")
                     c << "VAR_CATEGORY_SUBSET";
+                else if (types[i] == "curve")
+                    c << "VAR_CATEGORY_CURVE";
             }
             c << ";" << endl;
 
@@ -1023,6 +1028,8 @@ class InfoGeneratorPlugin
                     c << "VAR_CATEGORY_SPECIES";
                 else if (types[i] == "subset")
                     c << "VAR_CATEGORY_SUBSET";
+                else if (types[i] == "curve")
+                    c << "VAR_CATEGORY_CURVE";
             }
             c << ";" << endl;
             c << "}" << endl;

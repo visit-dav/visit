@@ -25,6 +25,9 @@ class QObject;
 //
 // Modifications:
 //   
+//   Hank Childs, Fri Aug  1 10:44:45 PDT 2003
+//   Add support for curves.
+//
 // ****************************************************************************
 
 class WINUTIL_API VariableMenuPopulator
@@ -52,7 +55,8 @@ private:
     void AddVars(StringBoolMap &to, const StringBoolMap &from);
 
     // Create some lists to keep track of the variable names.
-    StringBoolMap meshVars, scalarVars, vectorVars, subsetVars, speciesVars;
+    StringBoolMap meshVars, scalarVars, vectorVars, subsetVars, speciesVars,
+                  curveVars;
 };
 
 #endif

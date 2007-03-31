@@ -13,6 +13,7 @@
 #define VAR_CATEGORY_VECTOR   0x08
 #define VAR_CATEGORY_SUBSET   0x10
 #define VAR_CATEGORY_SPECIES  0x20
+#define VAR_CATEGORY_CURVE    0x40
 
 // Forward declarations.
 class AttributeSubject;

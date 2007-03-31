@@ -22,6 +22,9 @@ class QCheckBox;
 //    Brad Whitlock, Thu Mar 13 11:13:05 PDT 2003
 //    I added support for plugin icons.
 //
+//    Hank Childs, Fri Aug  1 11:27:57 PDT 2003
+//    Added support for curves.
+//
 // ****************************************************************************
 
 class XMLEditPlugin : public QFrame
@@ -59,6 +62,7 @@ class XMLEditPlugin : public QFrame
     QCheckBox       *varTypeVector;
     QCheckBox       *varTypeMaterial;
     QCheckBox       *varTypeSpecies;
+    QCheckBox       *varTypeCurve;
     QComboBox       *dbType;
     QLineEdit       *extensions;
 };

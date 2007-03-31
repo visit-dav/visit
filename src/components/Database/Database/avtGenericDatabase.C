@@ -462,6 +462,9 @@ avtGenericDatabase::FreeUpResources(void)
 //    Hank Childs, Mon Nov  5 16:54:18 PST 2001
 //    Extend support for secondary variables to include vectors.
 //
+//    Hank Childs, Fri Aug  1 21:49:01 PDT 2003
+//    Treat curves like meshes.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -496,6 +499,7 @@ avtGenericDatabase::GetDataset(const char *varname, int ts, int domain,
         break;
 
       case AVT_MESH:
+      case AVT_CURVE:
         rv = GetMeshDataset(varname, ts, domain, matname);
         break;
 

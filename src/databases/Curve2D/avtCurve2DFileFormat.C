@@ -11,7 +11,6 @@
 
 #include <avtDatabaseMetaData.h>
 
-#include <BadIndexException.h>
 #include <DebugStream.h>
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
@@ -38,7 +37,7 @@ using std::string;
 // ****************************************************************************
 
 avtCurve2DFileFormat::avtCurve2DFileFormat(const char *fname)
-    : avtSTMDFileFormat(&fname, 1)
+    : avtSTSDFileFormat(fname)
 {
     filename = fname;
     readFile = false;
@@ -66,10 +65,9 @@ avtCurve2DFileFormat::~avtCurve2DFileFormat()
 //  Method: avtCurve2DFileFormat::GetMesh
 //
 //  Purpose:
-//      Returns the curve associated with a curver identifier.
+//      Returns the curve associated with a curve name.
 //
 //  Arguments:
-//      curve_id   The curve identifier.
 //      name       The mesh name.
 //
 //  Programmer: Hank Childs
@@ -84,33 +82,34 @@ avtCurve2DFileFormat::~avtCurve2DFileFormat()
 //    Hank Childs, Tue Apr  8 11:09:03 PDT 2003
 //    Make sure we have read in the file first.
 //
+//    Hank Childs, Fri Aug  1 21:19:28 PDT 2003
+//    Retro-fit for STSD.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtCurve2DFileFormat::GetMesh(int curve_id, const char *name)
+avtCurve2DFileFormat::GetMesh(const char *name)
 {
     if (!readFile)
     {
         ReadFile();
     }
 
-    if (curve_id < 0 || curve_id >= curves.size())
+    for (int i = 0 ; i < curves.size() ; i++)
     {
-        EXCEPTION2(BadIndexException, curve_id, curves.size());
+        if (strcmp(curveNames[i].c_str(), name) == 0)
+        {
+            //
+            // The calling function will think it owns the return mesh, so
+            // increment its reference count.
+            //
+            curves[i]->Register(NULL);
+        
+            return curves[i];
+        }
     }
 
-    if (strcmp(name, "Curve") != 0)
-    {
-        EXCEPTION1(InvalidVariableException, name);
-    }
-
-    //
-    // The calling function will think it owns the return mesh, so increment
-    // its reference count.
-    //
-    curves[curve_id]->Register(NULL);
-
-    return curves[curve_id];
+    EXCEPTION1(InvalidVariableException, name);
 }
 
 
@@ -118,7 +117,7 @@ avtCurve2DFileFormat::GetMesh(int curve_id, const char *name)
 //  Method: avtCurve2DFileFormat::GetVar
 //
 //  Purpose:
-//      Returns the variable associated with a domain number.
+//      Returns a variable.
 //
 //  Notes:      This is not meaningful for this file type and is here only to
 //              meet the base type's interface.
@@ -130,10 +129,15 @@ avtCurve2DFileFormat::GetMesh(int curve_id, const char *name)
 //  Programmer:   Hank Childs
 //  Creation:     May 28, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug  1 21:19:28 PDT 2003
+//    Retro-fit for STSD.
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtCurve2DFileFormat::GetVar(int, const char *name)
+avtCurve2DFileFormat::GetVar(const char *name)
 {
     EXCEPTION1(InvalidVariableException, name);
 }
@@ -154,6 +158,9 @@ avtCurve2DFileFormat::GetVar(int, const char *name)
 //    Hank Childs, Tue Apr  8 11:09:03 PDT 2003
 //    Make sure we have read in the file first.
 //
+//    Hank Childs, Fri Aug  1 21:01:51 PDT 2003
+//    Mark curves as "curve" type.
+//
 // ****************************************************************************
 
 void
@@ -164,18 +171,12 @@ avtCurve2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         ReadFile();
     }
 
-    avtMeshMetaData *mesh = new avtMeshMetaData;
-    mesh->name = "Curve";
-    mesh->meshType = AVT_UNSTRUCTURED_MESH;
-    mesh->numBlocks = curves.size();
-    mesh->blockOrigin = 0;
-    mesh->spatialDimension = 2;
-    mesh->topologicalDimension = 1;
-    mesh->blockNames = curveNames;
-    mesh->blockTitle = "curves";
-    mesh->blockPieceName = "curve";
-    mesh->hasSpatialExtents = false;
-    md->Add(mesh);
+    for (int i = 0 ; i < curves.size() ; i++)
+    {
+        avtCurveMetaData *curve = new avtCurveMetaData;
+        curve->name = curveNames[i];
+        md->Add(curve);
+    }
 }
 
 

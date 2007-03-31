@@ -22,6 +22,9 @@
 //    Brad Whitlock, Thu Mar 13 11:15:25 PDT 2003
 //    I added widgets to set the plugin's icon file.
 //
+//    Hank Childs, Fri Aug  1 11:21:18 PDT 2003
+//    Add support for curves.
+//
 // ****************************************************************************
 
 XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
@@ -82,11 +85,13 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
     varTypeVector   = new QCheckBox("Vector", this);
     varTypeMaterial = new QCheckBox("Material", this);
     varTypeSpecies  = new QCheckBox("Species", this);
+    varTypeCurve    = new QCheckBox("Curve", this);
     varTypeLayout->addWidget(varTypeMesh);
     varTypeLayout->addWidget(varTypeScalar);
     varTypeLayout->addWidget(varTypeVector);
     varTypeLayout->addWidget(varTypeMaterial);
     varTypeLayout->addWidget(varTypeSpecies);
+    varTypeLayout->addWidget(varTypeCurve);
     topLayout->addLayout(varTypeLayout, row, 1);
     row++;
 
@@ -135,6 +140,8 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
             this, SLOT(varTypesChanged()));
     connect(varTypeSpecies, SIGNAL(clicked()),
             this, SLOT(varTypesChanged()));
+    connect(varTypeCurve, SIGNAL(clicked()),
+            this, SLOT(varTypesChanged()));
 }
 
 // ****************************************************************************
@@ -149,6 +156,9 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
 //  Modifications:
 //    Brad Whitlock, Thu Mar 13 11:20:57 PDT 2003
 //    I added support for plugin icons.
+//
+//    Hank Childs, Fri Aug  1 11:21:18 PDT 2003
+//    Add support for curves.
 //
 // ****************************************************************************
 
@@ -168,6 +178,7 @@ XMLEditPlugin::UpdateWindowContents()
         varTypeVector->setChecked(false);
         varTypeMaterial->setChecked(false);
         varTypeSpecies->setChecked(false);
+        varTypeCurve->setChecked(false);
 
         dbType->setCurrentItem(0);
         extensions->setText("");
@@ -189,6 +200,8 @@ XMLEditPlugin::UpdateWindowContents()
                     varTypeMaterial->setChecked(true);
                 else if (types[i] == "species")
                     varTypeSpecies->setChecked(true);
+                else if (types[i] == "curve")
+                    varTypeCurve->setChecked(true);
             }
         }
         else if (xmldoc->plugin->type == "operator")
@@ -233,6 +246,7 @@ XMLEditPlugin::UpdateWindowContents()
         varTypeVector->setChecked(false);
         varTypeMaterial->setChecked(false);
         varTypeSpecies->setChecked(false);
+        varTypeCurve->setChecked(false);
         hasIcon->setChecked(false);
         iconFile->setText("");
         pluginType->setCurrentItem(0);
@@ -258,6 +272,9 @@ XMLEditPlugin::UpdateWindowContents()
 //    Brad Whitlock, Thu Mar 13 11:29:22 PDT 2003
 //    I added support for plugin icons.
 //
+//    Hank Childs, Fri Aug  1 11:21:18 PDT 2003
+//    Add support for curves.
+//
 // ****************************************************************************
 
 void
@@ -277,6 +294,7 @@ XMLEditPlugin::UpdateWindowSensitivity()
     varTypeVector->setEnabled(plot);
     varTypeMaterial->setEnabled(plot);
     varTypeSpecies->setEnabled(plot);
+    varTypeCurve->setEnabled(plot);
     dbType->setEnabled(db);
     extensions->setEnabled(db);
     hasIcon->setEnabled(op || plot);
@@ -301,6 +319,9 @@ XMLEditPlugin::UpdateWindowSensitivity()
 //    Brad Whitlock, Thu Mar 13 11:31:39 PDT 2003
 //    Added plugin icon support.
 //
+//    Hank Childs, Fri Aug  1 11:21:18 PDT 2003
+//    Add support for curves.
+//
 // ****************************************************************************
 
 void
@@ -315,6 +336,7 @@ XMLEditPlugin::BlockAllSignals(bool block)
     varTypeVector->blockSignals(block);
     varTypeMaterial->blockSignals(block);
     varTypeSpecies->blockSignals(block);
+    varTypeCurve->blockSignals(block);
     dbType->blockSignals(block);
     extensions->blockSignals(block);
     hasIcon->blockSignals(block);
@@ -518,6 +540,11 @@ XMLEditPlugin::extensionsTextChanged(const QString &text)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug  1 11:21:18 PDT 2003
+//    Add support for curves.
+//
 // ****************************************************************************
 void
 XMLEditPlugin::varTypesChanged()
@@ -537,6 +564,8 @@ XMLEditPlugin::varTypesChanged()
         p->vartype += "material,";
     if (varTypeSpecies->isChecked())
         p->vartype += "species,";
+    if (varTypeCurve->isChecked())
+        p->vartype += "curve,";
     if (!p->vartype.isEmpty())
         p->vartype = p->vartype.left(p->vartype.length()-1);
 }
