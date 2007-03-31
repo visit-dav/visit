@@ -100,6 +100,10 @@ ConnectRPCExecutor::StrDup(const char *str)
 //   Brad Whitlock, Thu Dec 26 16:06:06 PST 2002
 //   I added support for a security key.
 //
+//   Brad Whitlock, Mon Jun 16 13:51:43 PST 2003
+//   I made the code more generic so different kinds of connections can be
+//   used to talk to the client.
+//
 // ****************************************************************************
 
 void
@@ -108,34 +112,18 @@ ConnectRPCExecutor::Update(Subject *s)
     ConnectRPC *rpc = (ConnectRPC *)s;
 
     // Create a fake argv that we can use to make a new MDServerConnection.
-    int argc = 11, argc2 = 11;
-    char temp[20];
-    char **argv = new char *[12];
-    char **argv2 = new char *[12];
-    argv[0] = StrDup("foo");
-    argv[1] = StrDup("-host");
-    argv[2] = StrDup(rpc->GetHost().c_str());
-
-    argv[3] = StrDup("-port");
-    sprintf(temp, "%d", rpc->GetPort());
-    argv[4] = StrDup(temp);
-
-    argv[5] = StrDup("-nread");
-    sprintf(temp, "%d", rpc->GetNRead());
-    argv[6] = StrDup(temp);
-
-    argv[7] = StrDup("-nwrite");
-    sprintf(temp, "%d", rpc->GetNWrite());
-    argv[8] = StrDup(temp);
-
-    argv[9] = StrDup("-key");
-    argv[10] = StrDup(rpc->GetKey().c_str());
-    argv[11] = NULL;
-
-    // Make a copy of argv to give to AddConnection.
-    int i;
+    const stringVector &args = rpc->GetArguments();
+    int i, argc = args.size();
+    int argc2 = argc;
+    char **argv = new char *[argc + 1];
+    char **argv2 = new char *[argc + 1];
     for(i = 0; i < argc; ++i)
+    {
+        argv[i] = StrDup(args[i].c_str());
         argv2[i] = argv[i];
+    }
+    argv[argc]  = NULL;
+    argv2[argc2] = NULL;
 
     TRY
     {

@@ -1,7 +1,9 @@
 #include <AttributeGroup.h>
 #include <EqualVal.h>
 #include <Interpolator.h>
-#include <string>
+#include <Connection.h>
+
+// Do a using statement.
 using std::string;
 
 //
@@ -812,7 +814,6 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
         { // new scope
           intVector *vi = (intVector *)(info.address);
           intVector::iterator ipos;
-
           conn.WriteInt(vi->size());
           for(ipos = vi->begin(); ipos != vi->end(); ++ipos)
               conn.WriteInt(*ipos);

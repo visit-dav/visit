@@ -2,9 +2,6 @@
 #include <VisItException.h>
 #include <QvisGUIApplication.h>
 #include <Init.h>
-#include <PlotPluginManager.h>
-#include <OperatorPluginManager.h>
-#include <qapplication.h>
 
 // ****************************************************************************
 //  Function: main
@@ -53,14 +50,10 @@ main(int argc, char **argv)
         // Initialize error logging.
         Init::Initialize(argc, argv, 0, 1, false);
         Init::SetComponentName("gui");
-        // Load plugins.
-        PlotPluginManager::Initialize(PlotPluginManager::GUI);
-        OperatorPluginManager::Initialize(OperatorPluginManager::GUI);
 
         TRY
         {
             // Create the application instance.
-            QApplication::setColorSpec(QApplication::ManyColor);
             QvisGUIApplication VisitGUI(argc, argv);
 
             // Execute the GUI and return its return code.

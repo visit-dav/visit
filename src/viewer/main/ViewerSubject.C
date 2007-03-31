@@ -103,122 +103,30 @@ using std::string;
 //  Creation:   August 9, 2000
 //
 //  Modifications:
-//    Kathleen Bonnell, Wed Oct 11 08:52:24 PDT 2000
-//    Added onionpeel operator to operatorFactory.
-//
-//    Brad Whitlock, Fri Oct 27 14:05:57 PST 2000
-//    I added code to make the viewer work with Qt.
-//
-//    Brad Whitlock, Fri Nov 10 15:20:13 PST 2000
-//    I added the material plot.
-//
-//    Jeremy Meredith, Tue Dec 12 13:59:45 PST 2000
-//    Added the material selection operator.
-//
-//    Eric Brugger, Thu Dec 21 11:41:11 PST 2000
-//    I modified the routine to work with the new plot factory.
-//
-//    Brad Whitlock, Mon Apr 30 16:05:14 PST 2001
-//    I added messaging state objects.
-//
-//    Brad Whitlock, Thu Jun 14 15:59:48 PST 2001
-//    I added a color table object.
-//
-//    Kathleen Bonnell, Mon Jun 18 14:56:09 PDT 2001
-//    I added annotationAttributes. 
-//
-//    Brad Whitlock, Fri May 25 16:38:31 PST 2001
-//    Added initialization of an error handling variable.
-//
-//    Jeremy Meredith, Fri Jul 20 11:24:40 PDT 2001
-//    Added initialization of shift.
-//
-//    Jeremy Meredith, Thu Jul 26 03:15:04 PDT 2001
-//    Added support for real operator plugins.
-//
-//    Brad Whitlock, Thu Aug 30 09:01:56 PDT 2001
-//    I removed the annotation attributes.
-//
-//    Jeremy Meredith, Wed Sep  5 14:05:56 PDT 2001
-//    Added plugin manager attributes.
-//
-//    Jeremy Meredith, Fri Sep 14 13:30:55 PDT 2001
-//    Added initialization of preshift.
-//
-//    Jeremy Meredith, Fri Sep 28 13:45:32 PDT 2001
-//    Added reading of plugin manager attributes, disabling
-//    of plugins, delayed loading of plugins.
-//
-//    Brad Whitlock, Fri Oct 19 12:29:24 PDT 2001
-//    Added a timer object.
-//
-//    Eric Brugger, Mon Oct 29 09:47:30 PST 2001
-//    Removed the timer object and work process.
-//
-//    Eric Brugger, Mon Nov 19 15:42:07 PST 2001
-//    I added animation attributes.
-//
-//    Brad Whitlock, Mon Sep 17 11:04:41 PDT 2001
-//    Added sync attributes.
-//
-//    Brad Whitlock, Fri Jan 4 17:29:54 PST 2002
-//    Added a flag for interruption checking.
-//
-//    Jeremy Meredith, Tue Apr 16 11:25:30 PDT 2002
-//    Added ability to process a few command line args before anything happens.
-//    Added flag to disable reading of config files.
-//
-//    Brad Whitlock, Mon Mar 25 12:46:12 PDT 2002
-//    Removed a flag that checks for zero length reads. Made pipe related
-//    coding compile only when the viewer is multithreaded.
-//
-//    Jeremy Meredith, Tue Apr 23 15:51:47 PDT 2002
-//    Added initialization of nowin flag.
-//
-//    Jeremy Meredith, Wed May  8 15:39:43 PDT 2002
-//    Added keyframe attributes.
-//
-//    Brad Whitlock, Mon Aug 19 16:01:15 PST 2002
-//    I removed the animationAtts member.
-//
-//    Jeremy Meredith, Wed Aug 21 12:51:28 PDT 2002
-//    I renamed some plot/operator plugin manager methods for refactoring.
-//
-//    Eric Brugger, Mon Nov 25 09:37:08 PST 2002
-//    I moved the keyframe attribute subject to the window manager.
-//
-//    Brad Whitlock, Mon Dec 2 13:37:00 PST 2002
-//    I removed the color tables.
-//
-//    Jeremy Meredith, Thu Dec 19 12:05:29 PST 2002
-//    Added support for launching engines from the command line.
-//    Added ability to temporarily block socket signals.
-//
-//    Brad Whitlock, Thu Jan 9 11:51:01 PDT 2003
-//    I made some members be strings to avoid memory problems.
-//
-//    Kathleen Bonnell, Wed Feb  5 08:30:42 PST 2003 
-//    Pass '!nowin' as an argument in the creation of mainApp, so that gui
-//    isn't created in nowin mode. 
-//
-//    Jeremy Meredith, Fri Feb 28 12:21:01 PST 2003
-//    Renamed LoadPlugins to LoadPluginsNow (since there is a corresponding
-//    LoadPluginsOnDemand).
-//
-//    Brad Whitlock, Fri May 16 14:53:17 PST 2003
-//    I added support for named config files.
-//
-//    Brad Whitlock, Mon Jun 30 12:30:18 PDT 2003
-//    I passed this pointer to ViewerConfigManager's constructor.
-//
-//    Brad Whitlock, Wed Jul 23 13:49:48 PST 2003
-//    Initialized the launchingCompoent flag.
+//    Brad Whitlock, Tue Jun 17 14:39:12 PST 2003
+//    I made sure that all objects and pointers are initialized and that
+//    no heavy duty initialization takes place. I also removed old
+//    modification comments.
 //
 // ****************************************************************************
 
-ViewerSubject::ViewerSubject(int *argc, char ***argv) : borders(), shift(),
-    preshift(), geometry()
+ViewerSubject::ViewerSubject() : parent(), xfer(), viewerRPC(),
+    borders(), shift(), preshift(), geometry()
 {
+    //
+    // Initialize pointers to some Qt objects that don't get created
+    // until later.
+    //
+    mainApp = 0;
+    checkParent = 0;
+    checkRenderer = 0;
+
+    //
+    // By default we don't want to defer heavy initialization work.
+    //
+    deferHeavyInitialization = false;
+    heavyInitializationDone = false;
+
     //
     // Enabled interruption checking by default.
     //
@@ -235,14 +143,30 @@ ViewerSubject::ViewerSubject(int *argc, char ***argv) : borders(), shift(),
     launchEngineAtStartup = "";
 
     //
+    // Set by BlockSocketSignals method.
+    //
+    blockSocketSignals = false;
+
+    //
+    // Initialize some special opcodes for xfer.
+    //
+    animationStopOpcode = 0;
+    iconifyOpcode = 0;
+
+    //
     // can be overridden by the -numrestarts flag.
     //
     numEngineRestarts = VIEWER_NUM_ENGINE_RESTARTS;
 
     //
-    // Set by BlockSocketSignals method.
+    // Initialize pointers to some objects that don't get created until later.
     //
-    blockSocketSignals = false;
+    viewerRPCObserver = 0;
+    syncObserver = 0;
+    messageAtts = 0;
+    statusAtts = 0;
+    appearanceAtts = 0;
+    syncAtts = 0;
 
     //
     // Set some flags related to viewer windows.
@@ -255,11 +179,91 @@ ViewerSubject::ViewerSubject(int *argc, char ***argv) : borders(), shift(),
     //
     noconfig = false;
     configFileName = 0;
+    configMgr = 0;
+    systemSettings = 0;
+    localSettings = 0;
 
     //
-    // Process a few command line arguments that need to happen first
+    // Initialize pointers to some objects that don't get created until later.
     //
-    ProcessCommandLine1(argc, argv);
+    plotFactory = 0;
+    operatorFactory = 0;
+    messageBuffer = 0;
+    messagePipe[0] = -1; messagePipe[1] = -1;
+    pluginAtts = 0;
+
+    viewerSubject = this;   // FIX_ME Hack, this should be removed.
+}
+
+// ****************************************************************************
+//  Method: ViewerSubject destructor
+//
+//  Programmer: Eric Brugger
+//  Creation:   August 9, 2000
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+ViewerSubject::~ViewerSubject()
+{
+    delete messageBuffer;
+    delete viewerRPCObserver;
+    delete plotFactory;
+    delete operatorFactory;
+    delete configMgr;
+    delete messageAtts;
+    delete statusAtts;
+    delete pluginAtts;
+    delete appearanceAtts;
+    delete syncAtts;
+    delete syncObserver;
+    delete configFileName;
+
+#ifdef VIEWER_MT
+    if(messagePipe[0] != -1)
+        close(messagePipe[0]);
+
+    if(messagePipe[1] != -1)
+        close(messagePipe[1]);
+#endif
+}
+
+// ****************************************************************************
+//  Method: ViewerSubject::Connect
+//
+//  Purpose:
+//    Connect to the parent process.
+//
+//  Arguments:
+//    argc      The argc from the command line which contains information
+//              about which ports to use.
+//    argv      The argv from the command line which contains information
+//              about which ports to use.
+//
+//  Programmer: Eric Brugger
+//  Creation:   August 9, 2000
+//
+//  Modifications:
+//    Brad Whitlock, Tue Jun 17 14:27:26 PST 2003
+//    Completely reorganized.
+//
+// ****************************************************************************
+
+void
+ViewerSubject::Connect(int *argc, char ***argv)
+{
+    //
+    // Connect to the parent.
+    //
+    int total = visitTimer->StartTimer();
+    int timeid = visitTimer->StartTimer();
+    parent.Connect(argc, argv, true);
+    visitTimer->StopTimer(timeid, "Connecting to client");
+
+    //
+    // Create objects.
+    //
 
     // Create the messaging attributes.
     messageAtts = new MessageAttributes;
@@ -270,11 +274,115 @@ ViewerSubject::ViewerSubject(int *argc, char ***argv) : borders(), shift(),
     syncAtts = new SyncAttributes;
     // Create the plugin attributes
     pluginAtts = new PluginManagerAttributes;
+    messageBuffer = new ViewerMessageBuffer;
 
+    //
+    // Read the config files.
+    //
+    ReadConfigFiles(*argc, *argv);
+
+    //
+    // Process the command line arguments first since some may be removed
+    // by QApplication::QApplication.
+    //
+    ProcessCommandLine(argc, argv);
+
+    //
+    // Create the QApplication context. This sets the qApp pointer.
+    //
+    char **argv2 = new char *[*argc + 3];
+    int argc2 = *argc + 2;
+    for(int i = 0; i < *argc; ++i)
+        argv2[i] = (*argv)[i];
+    argv2[*argc] = "-font";
+    argv2[*argc+1] = (char*)appearanceAtts->GetFontDescription().c_str();
+    argv2[*argc+2] = NULL;
+    mainApp = new QApplication(argc2, argv2, !nowin);
+    CustomizeAppearance();
+    delete [] argv2;
+
+    //
+    // Set up the Xfer object.
+    //
+    ConnectXfer();
+
+    //
+    // Connect the socket notifiers, etc.
+    //
+    ConnectObjectsAndHandlers();
+
+    //
+    // Connect the objects to the config manager.
+    //
+    ConnectConfigManager();
+
+    //
+    // If we are not deferring heavy initialization, do it now.
+    //
+    if(!deferHeavyInitialization)
+        HeavyInitialization();
+
+    visitTimer->StopTimer(total, "Total time connecting and setting up");
+}
+
+// ****************************************************************************
+//  Method: ViewerSubject::ReadConfigFiles.
+//
+//  Purpose:
+//    Process the viewer command line arguments.
+//
+//  Arguments:
+//    argc      The number of command line arguments.
+//    argv      The command line arguments.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   April 17, 2002
+//
+//  Modifications:
+//    Brad Whitlock, Fri May 16 14:54:28 PST 2003
+//    I added support for the -config flag to read a named config file.
+//
+// ****************************************************************************
+
+void
+ViewerSubject::ReadConfigFiles(int argc, char **argv)
+{
+    int timeid = visitTimer->StartTimer();
+
+    //
+    // Look for config file, related flags.
+    //
+    for (int i = 1 ; i < argc ; i++)
+    {
+        if (strcmp(argv[i], "-noconfig") == 0)
+        {
+            noconfig = true;
+            if(configFileName != 0)
+            {
+                delete [] configFileName;
+                configFileName = 0;
+            }
+        }
+        else if (strcmp(argv[i], "-config") == 0 && (i+1) < argc && !noconfig)
+        {
+            if(configFileName != 0)
+            {
+                delete [] configFileName;
+                configFileName = 0;
+            }
+            int len = strlen(argv[i+1]);
+            configFileName = new char[len + 1];
+            strcpy(configFileName, argv[i+1]);
+        }       
+    }
+
+    //
     // Read the config file and setup the appearance attributes. Note that
     // we call the routine to process the config file settings here because
     // it only has to update the appearance attributes.
+    //
     configMgr = new ViewerConfigManager(this);
+    timeid = visitTimer->StartTimer();
     char *configFile = configMgr->GetSystemConfigFile();
     if (noconfig)
         systemSettings = NULL;
@@ -291,8 +399,365 @@ ViewerSubject::ViewerSubject(int *argc, char ***argv) : borders(), shift(),
     configMgr->Add(pluginAtts);
     configMgr->ProcessConfigSettings(systemSettings);
     configMgr->ProcessConfigSettings(localSettings);
-    configMgr->Notify();
     configMgr->ClearSubjects();
+    visitTimer->StopTimer(timeid, "Reading config files.");
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::ConnectXfer
+//
+// Purpose: 
+//   Connects various objects to the Xfer object.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 17 14:56:01 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::ConnectXfer()
+{
+    //
+    // Create an xfer object for communicating the RPCs.
+    //
+    xfer.Add(&viewerRPC);
+    xfer.SetInputConnection(parent.GetWriteConnection());
+    xfer.SetOutputConnection(parent.GetReadConnection());
+
+    //
+    // Connect the client attribute subjects.
+    //
+    xfer.Add(syncAtts);
+    xfer.Add(appearanceAtts);
+    xfer.Add(pluginAtts);
+    xfer.Add(ViewerWindowManager::GetClientAtts());
+    xfer.Add(ViewerPlotList::GetClientAtts());
+    xfer.Add(ViewerEngineManager::GetClientAtts());
+    xfer.Add(messageAtts);
+    xfer.Add(ViewerWindowManager::GetSaveWindowClientAtts());
+    xfer.Add(statusAtts);
+    xfer.Add(ViewerEngineManager::GetEngineList());
+    xfer.Add(avtColorTables::Instance()->GetColorTables());
+    xfer.Add(ViewerExpressionList::Instance()->GetList());
+    xfer.Add(ViewerWindowManager::Instance()->GetAnnotationClientAtts());
+    xfer.Add(ViewerPlotList::GetClientSILRestrictionAtts());
+    xfer.Add(ViewerWindowManager::Instance()->GetView2DClientAtts());
+    xfer.Add(ViewerWindowManager::Instance()->GetView3DClientAtts());
+    xfer.Add(ViewerWindowManager::Instance()->GetLightListClientAtts());
+    xfer.Add(ViewerWindowManager::Instance()->GetAnimationClientAtts());
+    xfer.Add(ViewerQueryManager::Instance()->GetPickClientAtts());
+    xfer.Add(ViewerWindowManager::Instance()->GetPrinterClientAtts());
+    xfer.Add(ViewerWindowManager::Instance()->GetWindowInformation());
+    xfer.Add(ViewerWindowManager::Instance()->GetRenderingAttributes());
+    xfer.Add(ViewerWindowManager::Instance()->GetKeyframeClientAtts());
+    xfer.Add(ViewerQueryManager::Instance()->GetQueryTypes());
+    xfer.Add(ViewerQueryManager::Instance()->GetQueryClientAtts());
+    xfer.Add(ViewerEngineManager::GetMaterialClientAtts());
+    xfer.Add(ViewerQueryManager::Instance()->GetGlobalLineoutClientAtts());
+
+    //
+    // Set up special opcodes and their handler.
+    //
+    animationStopOpcode = xfer.CreateNewSpecialOpcode();
+    iconifyOpcode = xfer.CreateNewSpecialOpcode();
+    xfer.SetupSpecialOpcodeHandler(SpecialOpcodeCallback, (void *)this);
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::ConnectObjectsAndHandlers
+//
+// Purpose: 
+//   Creates certain objects that are observers and sets up their slots and
+//   callback functions.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 17 14:56:26 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::ConnectObjectsAndHandlers()
+{
+    //
+    // Create a QSocketNotifier that tells us to call ReadFromParentAndProcess.
+    //
+    if(parent.GetWriteConnection())
+    {
+        if(parent.GetWriteConnection()->GetDescriptor() != -1)
+        {
+            checkParent = new QSocketNotifier(
+                parent.GetWriteConnection()->GetDescriptor(),
+                QSocketNotifier::Read);
+            connect(checkParent, SIGNAL(activated(int)),
+                    this, SLOT(ReadFromParentAndProcess(int)));
+        }
+    }
+
+#ifdef VIEWER_MT
+    //
+    // Try to create a pipe to communicate with the rendering thread.
+    //
+    if (pipe(messagePipe) < 0)
+    {
+        cerr << "Can not create the pipe for communicating with the master\n";
+        cerr << "thread.\n";
+        messagePipe[0] = -1;
+        messagePipe[1] = -1;
+    }
+    else
+    {
+        // Create a QSocketNotifier that will tell us when to call
+        // ProcessRendererMessage.
+        checkRenderer = new QSocketNotifier(messagePipe[0],
+            QSocketNotifier::Read);
+        connect(checkRenderer, SIGNAL(activated(int)),
+                this, SLOT(ProcessRendererMessage()));
+    }
+#endif
+
+    // Create an observer for the viewerRPC object. The RPC's are actually
+    // handled by the ViewerSubject by a slot function.
+    //
+    viewerRPCObserver = new ViewerRPCObserver(&viewerRPC);
+    connect(viewerRPCObserver, SIGNAL(executeRPC()),
+            this, SLOT(HandleViewerRPC()));
+
+    //
+    // Create an observer for the syncAtts object. Each time the object
+    // updates, send the attributes back to the client.
+    //
+    syncObserver = new ViewerRPCObserver(syncAtts);
+    connect(syncObserver, SIGNAL(executeRPC()),
+            this, SLOT(HandleSync()));
+
+    //
+    // Register a callback function to be called when launching a remote
+    // process requires authentication.
+    //
+#if !defined(_WIN32)
+    if (!ViewerWindow::GetNoWinMode())
+    {
+        RemoteProcess::SetAuthenticationCallback(&ViewerPasswordWindow::authenticate);
+    }
+#endif
+
+    //
+    // Get the localhost name from the parent and give it to the
+    // ViewerEngineManager so it can use it when needed.
+    //
+    ViewerServerManager::SetLocalHost(parent.GetHostName());
+
+    //
+    // Set the default user name.
+    //
+    HostProfile::SetDefaultUserName(parent.GetTheUserName());
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::ConnectConfigManager
+//
+// Purpose: 
+//   Connects objects to the config manager.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 17 14:57:28 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::ConnectConfigManager()
+{
+    //
+    // Create the configuration manager and connect objects that can be
+    // written to the config file.
+    //
+    configMgr->Add(ViewerWindowManager::GetClientAtts());
+    configMgr->Add(ViewerEngineManager::GetClientAtts());
+    configMgr->Add(ViewerWindowManager::GetSaveWindowClientAtts());
+    configMgr->Add(avtColorTables::Instance()->GetColorTables());
+    configMgr->Add(ViewerExpressionList::Instance()->GetList());
+    configMgr->Add(ViewerWindowManager::GetAnimationClientAtts());
+    configMgr->Add(ViewerWindowManager::GetAnnotationDefaultAtts());
+    configMgr->Add(ViewerWindowManager::GetView2DClientAtts());
+    configMgr->Add(ViewerWindowManager::GetView3DClientAtts());
+    configMgr->Add(ViewerWindowManager::GetLightListDefaultAtts());
+    configMgr->Add(ViewerWindowManager::GetWindowAtts());
+    configMgr->Add(ViewerWindowManager::GetWindowInformation());
+    configMgr->Add(ViewerWindowManager::GetPrinterClientAtts());
+    configMgr->Add(ViewerWindowManager::GetRenderingAttributes());
+    configMgr->Add(ViewerEngineManager::GetMaterialDefaultAtts());
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::InformClientOfPlugins
+//
+// Purpose: 
+//   Inform the client of the plugins that are loaded. This needs to be done
+//   prior to the config settings being read for the plugin objects because
+//   once that happens, they are added to the config manager, which means that
+//   they get transmitted to the client. Sending the pluginAtts first ensures
+//   that the client will load the plugins before getting plugin object data.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jul 25 12:02:41 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::InformClientOfPlugins() const
+{
+    pluginAtts->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::HeavyInitialization
+//
+// Purpose: 
+//   Does the expensive initialization like loading plugins, processing the
+//   config file, setting up windows, and possibly launching an engine.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 17 15:09:28 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::HeavyInitialization()
+{
+    if(!heavyInitializationDone)
+    {
+        int timeid = visitTimer->StartTimer();
+        //
+        // Do everything related to loading plugins.
+        //
+        InitializePluginManagers();
+        LoadPlotPlugins();
+        LoadOperatorPlugins();
+        InformClientOfPlugins();
+
+        //
+        // Process the config file settings.
+        //
+        ProcessConfigFileSettings();
+
+        //
+        // Add the initial windows.
+        //
+        AddInitialWindows();
+
+        //
+        // Launch an engine if certain command line flags were given.
+        //
+        LaunchEngineOnStartup();
+
+        heavyInitializationDone = true;
+        visitTimer->StopTimer(timeid, "Heavy initialization.");
+    }
+}
+
+// ****************************************************************************
+//  Method: ViewerSubject::Execute
+//
+//  Purpose:
+//    Execute the viewer subject.
+//
+//  Programmer: Eric Brugger
+//  Creation:   August 16, 2000
+//
+//  Modifications:
+//    Brad Whitlock, Wed Nov 1 14:56:23 PST 2000
+//    I made it use Qt and return a return code.
+//
+//    Brad Whitlock, Mon Nov 27 14:24:02 PST 2000
+//    I added code to connect some of ViewerWindowManager's signals to
+//    ViewerSubject's slots.
+//
+//    Brad Whitlock, Fri May 25 16:45:22 PST 2001
+//    Added code to print a message if a LostConnectionException is encountered.
+//
+//    Jeremy Meredith, Fri Jul 20 11:25:10 PDT 2001
+//    Added call to SetShift.
+//
+//    Jeremy Meredith, Fri Sep 14 13:30:17 PDT 2001
+//    Added call to SetPreshift.
+//
+//    Brad Whitlock, Mon Oct 22 18:52:46 PST 2001
+//    Changed the exception handling keywords to macros.
+//
+//    Jeremy Meredith, Thu Dec 19 12:13:34 PST 2002
+//    Added support for launching engines from the command line.
+//
+//    Brad Whitlock, Fri Dec 27 12:41:32 PDT 2002
+//    I passed an empty string vector to the CreateEngine method because
+//    the engine manager now passes the ViewerServerManager's unknown
+//    arguments to the engines that get launched.
+//   
+//    Kathleen Bonnell, Fri Feb  7 09:09:47 PST 2003  
+//    Added registration of the authentication callback. (moved from viewer.C)
+//
+//    Brad Whitlock, Fri Jul 25 12:24:37 PDT 2003
+//    Moved most of the code elsewhere.
+//
+// ****************************************************************************
+
+int
+ViewerSubject::Execute()
+{
+    //
+    // Enter the event processing loop.
+    //
+    int retval;
+    TRY
+    {
+        retval = mainApp->exec();
+    }
+    CATCH(LostConnectionException)
+    {
+        cerr << "The component that launched VisIt's viewer has terminated "
+                "abnormally." << endl;
+        retval = -1;
+    }
+    ENDTRY
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::InitializePluginManagers
+//
+// Purpose: 
+//   Reads the common plugin info for plot and operator plugins and populates
+//   the pluginAtts.
+//
+// Note:       Moved from other methods.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 17 15:15:11 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::InitializePluginManagers()
+{
+    //
+    // Load the plugin info.
+    //
+    int timeid = visitTimer->StartTimer();
+    PlotPluginManager::Initialize(PlotPluginManager::Viewer);
+    OperatorPluginManager::Initialize(OperatorPluginManager::Viewer);
+    visitTimer->StopTimer(timeid, "Loading plugin info.");
 
     PlotPluginManager     *pmgr = PlotPluginManager::Instance();
     OperatorPluginManager *omgr = OperatorPluginManager::Instance();
@@ -360,6 +825,28 @@ ViewerSubject::ViewerSubject(int *argc, char ***argv) : borders(), shift(),
             pluginAtts->AddPlugin(omgr->GetPluginName(id),     "operator",
                                   omgr->GetPluginVersion(id),  id);
     }
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::LoadPlotPlugins
+//
+// Purpose: 
+//   Loads the plot plugins and creates the plot factory object.
+//
+// Note:       Moved from other methods to here.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 17 15:16:13 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::LoadPlotPlugins()
+{
+    int total  = visitTimer->StartTimer();
+    int timeid = visitTimer->StartTimer();
 
     //
     // It's safe to load the plugins now
@@ -367,480 +854,118 @@ ViewerSubject::ViewerSubject(int *argc, char ***argv) : borders(), shift(),
     TRY
     {
         PlotPluginManager::Instance()->LoadPluginsNow();
+    }
+    CATCH2(VisItException, e)
+    {
+        // Just print out an error message to the console because we cannot
+        // abort without hanging the viewer's client.
+        cerr << "VisIt could not read all of the plot plugins. "
+             << "The error message is: \"" << e.GetMessage().c_str() << "\"" << endl;
+    }
+    ENDTRY
+    visitTimer->StopTimer(timeid, "Loading plot plugins.");
+
+    //
+    // Create the Plot factory.
+    //
+    plotFactory = new ViewerPlotFactory();
+    for (int i = 0; i < plotFactory->GetNPlotTypes(); ++i)
+    {
+        AttributeSubject *attr = plotFactory->GetClientAtts(i);
+
+        if (attr != 0)
+        {
+            xfer.Add(attr);
+            configMgr->Add(attr);
+        }
+    }
+
+    visitTimer->StopTimer(total, "Loading plot plugins and instantiating objects.");
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::LoadOperatorPlugins
+//
+// Purpose: 
+//   Loads the operator plugins and creates the operator factory object.
+//
+// Note:       Moved from other methods to here.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 17 15:16:57 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::LoadOperatorPlugins()
+{
+    int total = visitTimer->StartTimer();
+    int timeid = visitTimer->StartTimer();
+
+    //
+    // It's safe to load the plugins now
+    //
+    TRY
+    {
         OperatorPluginManager::Instance()->LoadPluginsNow();
     }
     CATCH2(VisItException, e)
     {
         // Just print out an error message to the console because we cannot
         // abort without hanging the viewer's client.
-        cerr << "VisIt could not read all of the plugins. "
+        cerr << "VisIt could not read all of the operator plugins. "
              << "The error message is: \"" << e.GetMessage().c_str() << "\"" << endl;
     }
     ENDTRY
-
-    //
-    // Process the command line arguments first since some may be removed
-    // by QApplication::QApplication.
-    //
-    ProcessCommandLine2(argc, argv);
-
-    //
-    // Create the QApplication context. This sets the qApp pointer.
-    //
-    char **argv2 = new char *[*argc + 3];
-    int argc2 = *argc + 2;
-    for(i = 0; i < *argc; ++i)
-        argv2[i] = (*argv)[i];
-    argv2[*argc] = "-font";
-    argv2[*argc+1] = (char*)appearanceAtts->GetFontDescription().c_str();
-    argv2[*argc+2] = NULL;
-    mainApp = new QApplication(argc2, argv2, !nowin);
-    CustomizeAppearance();
-    delete [] argv2;
-
-#ifdef VIEWER_MT
-    //
-    // Try to create a pipe to communicate with the rendering thread.
-    //
-    if (pipe(messagePipe) < 0)
-    {
-        cerr << "Can not create the pipe for communicating with the master\n";
-        cerr << "thread.\n";
-        messagePipe[0] = -1;
-        messagePipe[1] = -1;
-    }
-    else
-    {
-        // Create a QSocketNotifier that will tell us when to call
-        // ProcessRendererMessage.
-        checkRenderer = new QSocketNotifier(messagePipe[0],
-            QSocketNotifier::Read);
-        connect(checkRenderer, SIGNAL(activated(int)),
-                this, SLOT(ProcessRendererMessage()));
-    }
-#endif
-    messageBuffer = new ViewerMessageBuffer;
-
-    //
-    // Create the Plot factory.
-    //
-    plotFactory = new ViewerPlotFactory();
+    visitTimer->StopTimer(timeid, "Loading operator plugins.");
 
     //
     // Create the Operator factory.
     //
     operatorFactory = new ViewerOperatorFactory();
-
-    viewerSubject = this;   // FIX_ME Hack, this should be removed.
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject destructor
-//
-//  Programmer: Eric Brugger
-//  Creation:   August 9, 2000
-//
-//  Modifications:
-//    Brad Whitlock, Thu Oct 5 19:41:09 PST 2000
-//    I removed the SocketConnections.
-//
-//    Brad Whitlock, Mon Oct 30 11:16:36 PDT 2000
-//    I modified the code to delete borders, geometry and added code to
-//    close the message pipes to the rendering thread.
-//
-//    Brad Whitlock, Tue Nov 21 12:42:09 PDT 2000
-//    Added code to close down the mdservers.
-//
-//    Brad Whitlock, Mon Apr 30 16:05:44 PST 2001
-//    Added messaging subjects.
-//
-//    Brad Whitlock, Thu Jun 14 16:00:58 PST 2001
-//    Added the color table object.
-//
-//    Kathleen Bonnell, Mon Jun 18 14:56:09 PDT 2001 
-//    I added annotationAtts. 
-//
-//    Jeremy Meredith, Fri Jul 20 11:24:56 PDT 2001
-//    Added 'shift'.
-//
-//    Brad Whitlock, Thu Aug 30 10:29:40 PDT 2001
-//    Removed the annotation attributes.
-//
-//    Jeremy Meredith, Wed Sep  5 14:05:52 PDT 2001
-//    Added plugin manager attributes.
-//
-//    Brad Whitlock, Wed Sep 5 00:30:58 PDT 2001
-//    Added the appearance attributes.
-//
-//    Jeremy Meredith, Fri Sep 14 13:31:05 PDT 2001
-//    Added 'preshift'.
-//
-//    Eric Brugger, Mon Nov 19 15:42:07 PST 2001
-//    I added animation attributes.
-//
-//    Brad Whitlock, Mon Sep 17 11:05:47 PDT 2001
-//    Added sync attributes.
-//
-//    Brad Whitlock, Thu Feb 7 16:04:21 PST 2002
-//    Added code to delete the default SIL restrictions.
-//
-//    Brad Whitlock, Thu Mar 7 11:42:17 PDT 2002
-//    Removed the code to delete the default SIL restrictions.
-//
-//    Brad Whitlock, Tue Apr 16 12:54:41 PDT 2002
-//    Closed the pipes only if the viewer is multithreaded.
-//
-//    Jeremy Meredith, Wed May  8 15:39:52 PDT 2002
-//    Added keyframe attributes.
-//
-//    Brad Whitlock, Mon Aug 19 16:01:34 PST 2002
-//    I removed the animationAtts member.
-//
-//    Eric Brugger, Mon Nov 25 09:37:08 PST 2002
-//    I moved the keyframe attribute subject to the window manager.
-//
-//    Brad Whitlock, Mon Dec 2 13:37:14 PST 2002
-//    I removed the colorTables member.
-//
-//    Brad Whitlock, Fri Dec 27 14:56:13 PST 2002
-//    I moved the code to close the mdservers to another method.
-//
-//    Brad Whitlock, Thu Jan 9 11:51:32 PDT 2003
-//    I removed the code to delete the borders, shift, preshift, and
-//    geometry arrays since they are now strings.
-//
-//    Brad Whitlock, Fri May 16 14:53:44 PST 2003
-//    I added code to delete configFileName.
-//
-// ****************************************************************************
-
-ViewerSubject::~ViewerSubject()
-{
-    delete messageBuffer;
-    delete viewerRPCObserver;
-    delete plotFactory;
-    delete operatorFactory;
-    delete configMgr;
-    delete messageAtts;
-    delete statusAtts;
-    delete pluginAtts;
-    delete appearanceAtts;
-    delete syncAtts;
-    delete syncObserver;
-    delete configFileName;
-
-#ifdef VIEWER_MT
-    if(messagePipe[0] != -1)
-        close(messagePipe[0]);
-
-    if(messagePipe[1] != -1)
-        close(messagePipe[1]);
-#endif
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::Connect
-//
-//  Purpose:
-//    Connect to the parent process.
-//
-//  Arguments:
-//    argc      The argc from the command line which contains information
-//              about which ports to use.
-//    argv      The argv from the command line which contains information
-//              about which ports to use.
-//
-//  Programmer: Eric Brugger
-//  Creation:   August 9, 2000
-//
-//  Modifications:
-//    Brad Whitlock, Tue Sep 19 19:01:45 PST 2000
-//    I connected the host profile list to xfer.
-//
-//    Brad Whitlock, Thu Sep 28 11:05:51 PDT 2000
-//    I added an rpc to write a config file. I also added code to create
-//    a ViewerConfigurationManager object to read defaults from the config
-//    file.
-//
-//    Kathleen Bonnell, Wed Oct 11 08:52:24 PDT 2000
-//    I connected ViewerOnionPeelOperator to xfer and configMgr.
-//
-//    Brad Whitlock, Thu Oct 5 19:41:31 PST 2000
-//    I changed how this class hooks up Xfer to the parent process.
-//
-//    Brad Whitlock, Fri Oct 27 14:13:16 PST 2000
-//    I removed the VisApplication class and altered the code to work with Qt.
-//
-//    Brad Whitlock, Fri Nov 10 15:21:25 PST 2000
-//    I added the material plot.
-//
-//    Eric Brugger, Thu Dec 21 11:41:11 PST 2000
-//    I modified the routine to treat plots generically using the plot
-//    factory.
-//
-//    Brad Whitlock, Fri Feb 9 15:38:04 PST 2001
-//    Connected the ViewerWindowManager's new SaveImageAttributes state object.
-//
-//    Eric Brugger, Thu Mar  8 16:35:03 PST 2001
-//    Changed the order of connecting some of the attribute subjects to
-//    match the viewer proxy.
-//
-//    Brad Whitlock, Mon Apr 23 13:13:16 PST 2001
-//    Added the messageAtts subject to xfer.
-//
-//    Brad Whitlock, Mon Apr 30 14:24:49 PST 2001
-//    Added statusAtts and engineList subjects to xfer.
-//
-//    Brad Whitlock, Thu Jun 14 16:01:26 PST 2001
-//    Added the viewer color table object.
-//
-//    Kathleen Bonnell, Mon Jun 18 14:56:09 PDT 2001 
-//    I added annotationAtts. 
-//
-//    Jeremy Meredith, Tue Jul  3 11:03:37 PDT 2001
-//    I renamed ReadFromParent to ReadFromParentAndProcess. 
-//
-//    Brad Whitlock, Thu Jun 21 13:46:12 PST 2001
-//    Connected the plot list's new SIL restriction attributes to xfer.
-//
-//    Jeremy Meredith, Thu Jul 26 03:15:22 PDT 2001
-//    Added support for real operator plugins.
-//
-//    Brad Whitlock, Fri Jul 20 14:46:10 PST 2001
-//    Connected the view state objects.
-//
-//    Brad Whitlock, Thu Aug 30 09:04:46 PDT 2001
-//    Modified how the annotation attributes are connected.
-//
-//    Jeremy Meredith, Wed Sep  5 14:05:47 PDT 2001
-//    Added plugin manager attributes.
-//
-//    Brad Whitlock, Wed Sep 5 00:32:34 PDT 2001
-//    Added appearance attributes.
-//
-//    Brad Whitlock, Mon Sep 24 14:07:17 PST 2001
-//    Added code to set the localHost name with the ViewerEngineManager.
-//
-//    Jeremy Meredith, Fri Sep 28 13:46:46 PDT 2001
-//    Attach plugin manager attributes to xfer and the config manager.
-//
-//    Brad Whitlock, Fri Sep 14 14:14:47 PST 2001
-//    Connected the light list.
-//
-//    Brad Whitlock, Fri Nov 2 11:32:05 PDT 2001
-//    Connected the ViewerWindowManager's windowAtts to the config manager
-//    so viewer window locations and sizes are saved to the config file.
-//
-//    Eric Brugger, Mon Nov 19 15:42:07 PST 2001
-//    I added animation attributes.
-//
-//    Brad Whitlock, Mon Sep 17 11:06:00 PDT 2001
-//    Added syncAtts.
-//
-//    Kathleen Bonnell, Wed Nov 28 09:48:18 PST 2001
-//    I added pick attributes.
-//
-//    Brad Whitlock, Tue Feb 19 13:15:29 PST 2002
-//    Made the state objects get initialized from both the system wide
-//    settings and the local settings.
-//
-//    Brad Whitlock, Wed Feb 20 14:33:56 PST 2002
-//    I added the printer attributes.
-//
-//    Brad Whitlock, Thu Apr 11 15:48:26 PST 2002
-//    Added code to set the default user name.
-//
-//    Brad Whitlock, Mon Mar 25 17:00:08 PST 2002
-//    I modified the communication interface.
-//
-//    Jeremy Meredith, Wed May  8 15:39:57 PDT 2002
-//    Added keyframe attributes.
-//
-//    Hank Childs, Thu May 23 18:41:19 PDT 2002
-//    Renamed SaveImageAttributes to SaveWindowAttributes.
-//
-//    Brad Whitlock, Mon Aug 19 16:01:57 PST 2002
-//    I removed the animationAtts member.
-//
-//    Brad Whitlock, Mon Sep 16 15:29:35 PST 2002
-//    I connected the WindowInformation and the RenderingAttributes.
-//
-//    Brad Whitlock, Fri Sep 6 14:14:22 PST 2002
-//    I connected the query list.
-//
-//    Jeremy Meredith, Thu Oct 24 16:03:39 PDT 2002
-//    Added material options.
-//
-//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002  
-//    Connect  PickAttributes from ViewerQueryManager instead of 
-//    ViewerWindowManager. 
-//
-//    Eric Brugger, Mon Nov 25 09:37:08 PST 2002
-//    I moved the keyframe attribute subject to the window manager.
-//
-//    Brad Whitlock, Thu Feb 27 11:23:02 PDT 2003
-//    I added code to set up special opcodes.
-//
-//    Brad Whitlock, Wed Mar 12 10:33:20 PDT 2003
-//    I added iconifyOpcode.
-//
-//    Kathleen Bonnell, Tue Jul  1 09:21:57 PDT 2003 
-//    Changed 'GetPickAtts' to 'GetPickClientAtts'.
-//
-//    Brad Whitlock, Wed Jul 2 12:27:25 PDT 2003
-//    Added code to let other objects in the viewer process their new
-//    config settings.
-//
-//    Brad Whitlock, Tue Jul 1 17:19:05 PST 2003
-//    I added code to import color tables from external files.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::Connect(int *argc, char ***argv)
-{
-    //
-    // Connect to the parent.
-    //
-    parent.Connect(argc, argv, true);
-
-    //
-    // Get the localhost name from the parent and give it to the
-    // ViewerEngineManager so it can use it when needed.
-    //
-    ViewerEngineManager::Instance()->SetLocalHost(parent.GetHostName());
-
-    //
-    // Create an xfer object for communicating the RPCs.
-    //
-    xfer.Add(&viewerRPC);
-    xfer.SetInputConnection(parent.GetWriteConnection());
-    xfer.SetOutputConnection(parent.GetReadConnection());
-
-    //
-    // Create an observer for the viewerRPC object. The RPC's are actually
-    // handled by the ViewerSubject by a slot function.
-    //
-    viewerRPCObserver = new ViewerRPCObserver(&viewerRPC);
-    connect(viewerRPCObserver, SIGNAL(executeRPC()),
-            this, SLOT(HandleViewerRPC()));
-
-    //
-    // Create an observer for the syncAtts object. Each time the object
-    // updates, send the attributes back to the client.
-    //
-    syncObserver = new ViewerRPCObserver(syncAtts);
-    connect(syncObserver, SIGNAL(executeRPC()),
-            this, SLOT(HandleSync()));
-
-    //
-    // Create a QSocketNotifier that tells us to call ReadFromParentAndProcess.
-    //
-    if(parent.GetWriteConnection())
-    {
-        if(parent.GetWriteConnection()->GetDescriptor() != -1)
-        {
-            checkParent = new QSocketNotifier(
-                parent.GetWriteConnection()->GetDescriptor(),
-                QSocketNotifier::Read);
-            connect(checkParent, SIGNAL(activated(int)),
-                    this, SLOT(ReadFromParentAndProcess(int)));
-        }
-    }
-
-    // Connect the client attribute subjects.
-    xfer.Add(syncAtts);
-    xfer.Add(appearanceAtts);
-    xfer.Add(pluginAtts);
-    xfer.Add(ViewerWindowManager::GetClientAtts());
-    xfer.Add(ViewerPlotList::GetClientAtts());
-    xfer.Add(ViewerEngineManager::GetClientAtts());
-    xfer.Add(messageAtts);
-    xfer.Add(ViewerWindowManager::GetSaveWindowClientAtts());
-    xfer.Add(statusAtts);
-    xfer.Add(ViewerEngineManager::GetEngineList());
-    xfer.Add(avtColorTables::Instance()->GetColorTables());
-    xfer.Add(ViewerExpressionList::Instance()->GetList());
-    xfer.Add(ViewerWindowManager::Instance()->GetAnnotationClientAtts());
-    xfer.Add(ViewerPlotList::GetClientSILRestrictionAtts());
-    xfer.Add(ViewerWindowManager::Instance()->GetView2DClientAtts());
-    xfer.Add(ViewerWindowManager::Instance()->GetView3DClientAtts());
-    xfer.Add(ViewerWindowManager::Instance()->GetLightListClientAtts());
-    xfer.Add(ViewerWindowManager::Instance()->GetAnimationClientAtts());
-    xfer.Add(ViewerQueryManager::Instance()->GetPickClientAtts());
-    xfer.Add(ViewerWindowManager::Instance()->GetPrinterClientAtts());
-    xfer.Add(ViewerWindowManager::Instance()->GetWindowInformation());
-    xfer.Add(ViewerWindowManager::Instance()->GetRenderingAttributes());
-    xfer.Add(ViewerWindowManager::Instance()->GetKeyframeClientAtts());
-    xfer.Add(ViewerQueryManager::Instance()->GetQueryTypes());
-    xfer.Add(ViewerQueryManager::Instance()->GetQueryClientAtts());
-    xfer.Add(ViewerEngineManager::GetMaterialClientAtts());
-    xfer.Add(ViewerQueryManager::Instance()->GetGlobalLineoutClientAtts());
-
-    int i;
-    for (i = 0; i < plotFactory->GetNPlotTypes(); ++i)
-    {
-        AttributeSubject *attr = plotFactory->GetClientAtts(i);
-
-        if (attr != 0)
-            xfer.Add(attr);
-    }
-
-    for (i = 0; i < operatorFactory->GetNOperatorTypes(); ++i)
+    for (int i = 0; i < operatorFactory->GetNOperatorTypes(); ++i)
     {
         AttributeSubject *attr = operatorFactory->GetClientAtts(i);
 
         if (attr != 0)
+        {
             xfer.Add(attr);
+            configMgr->Add(attr);
+        }
     }
+
+    // Set the query manager's operator factory pointer.
+    ViewerQueryManager::Instance()->SetOperatorFactory(operatorFactory);
 
     // List the objects connected to xfer.
     xfer.ListObjects();
 
-    // Set up special opcodes and their handler.
-    animationStopOpcode = xfer.CreateNewSpecialOpcode();
-    iconifyOpcode = xfer.CreateNewSpecialOpcode();
-    xfer.SetupSpecialOpcodeHandler(SpecialOpcodeCallback, (void *)this);
+    visitTimer->StopTimer(total, "Loading operator plugins and instantiating objects.");
+}
 
+// ****************************************************************************
+// Method: ViewerSubject::ProcessConfigFileSettings
+//
+// Purpose: 
+//   Processes the config file settings that were read in.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 17 15:19:27 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::ProcessConfigFileSettings()
+{
     //
-    // Create the configuration manager and connect objects that can be
-    // written to the config file.
-    //
-    configMgr->Add(ViewerWindowManager::GetClientAtts());
-    configMgr->Add(ViewerEngineManager::GetClientAtts());
-    for (i = 0; i < plotFactory->GetNPlotTypes(); ++i)
-    {
-        AttributeSubject *attr = plotFactory->GetDefaultAtts(i);
-
-        if (attr != 0)
-            configMgr->Add(attr);
-    }
-    for (i = 0; i < operatorFactory->GetNOperatorTypes(); ++i)
-    {
-        AttributeSubject *attr = operatorFactory->GetDefaultAtts(i);
-
-        if (attr != 0)
-            configMgr->Add(attr);
-    }
-    configMgr->Add(ViewerWindowManager::GetSaveWindowClientAtts());
-    configMgr->Add(avtColorTables::Instance()->GetColorTables());
-    configMgr->Add(ViewerExpressionList::Instance()->GetList());
-    configMgr->Add(ViewerWindowManager::GetAnimationClientAtts());
-    configMgr->Add(ViewerWindowManager::GetAnnotationDefaultAtts());
-    configMgr->Add(ViewerWindowManager::GetView2DClientAtts());
-    configMgr->Add(ViewerWindowManager::GetView3DClientAtts());
-    configMgr->Add(ViewerWindowManager::GetLightListDefaultAtts());
-    configMgr->Add(ViewerWindowManager::GetWindowAtts());
-    configMgr->Add(ViewerWindowManager::GetWindowInformation());
-    configMgr->Add(ViewerWindowManager::GetPrinterClientAtts());
-    configMgr->Add(ViewerWindowManager::GetRenderingAttributes());
-    configMgr->Add(ViewerEngineManager::GetMaterialDefaultAtts());
-
-    // Set the default user name.
-    HostProfile::SetDefaultUserName(parent.GetTheUserName());
-
     // Make the hooked up state objects set their properties from
     // both the system and local settings.
+    //
+    int timeid = visitTimer->StartTimer();
     configMgr->ProcessConfigSettings(systemSettings);
     configMgr->ProcessConfigSettings(localSettings);
 
@@ -850,6 +975,7 @@ ViewerSubject::Connect(int *argc, char ***argv)
 
     // Send the user's config settings to the client.
     configMgr->Notify();
+
     delete systemSettings; systemSettings = 0;
 
     // Let other viewer objects set their properties from the local settings.
@@ -862,7 +988,6 @@ ViewerSubject::Connect(int *argc, char ***argv)
 
     // Add the pluginAtts *after* the config settings have been read.
     // First, tell the client which plugins we've really loaded.
-    pluginAtts->Notify();
     configMgr->Add(pluginAtts);
 
     // Copy the default annotation attributes into the client annotation
@@ -875,57 +1000,24 @@ ViewerSubject::Connect(int *argc, char ***argv)
     // Send the queries to the client.
     ViewerQueryManager::Instance()->GetQueryTypes()->Notify();
 
-    // Set the query manager's operator factory pointer.
-    ViewerQueryManager::Instance()->SetOperatorFactory(operatorFactory);
+    visitTimer->StopTimer(timeid, "Processing config file data.");
 }
 
 // ****************************************************************************
-//  Method: ViewerSubject::Execute
+// Method: ViewerSubject::AddInitialWindows
 //
-//  Purpose:
-//    Execute the viewer subject.
+// Purpose: 
+//   Adds the appropriate number of vis windows.
 //
-//  Programmer: Eric Brugger
-//  Creation:   August 16, 2000
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 17 15:20:20 PST 2003
 //
-//  Modifications:
-//    Brad Whitlock, Wed Nov 1 14:56:23 PST 2000
-//    I made it use Qt and return a return code.
-//
-//    Brad Whitlock, Mon Nov 27 14:24:02 PST 2000
-//    I added code to connect some of ViewerWindowManager's signals to
-//    ViewerSubject's slots.
-//
-//    Brad Whitlock, Fri May 25 16:45:22 PST 2001
-//    Added code to print a message if a LostConnectionException is encountered.
-//
-//    Jeremy Meredith, Fri Jul 20 11:25:10 PDT 2001
-//    Added call to SetShift.
-//
-//    Jeremy Meredith, Fri Sep 14 13:30:17 PDT 2001
-//    Added call to SetPreshift.
-//
-//    Brad Whitlock, Mon Oct 22 18:52:46 PST 2001
-//    Changed the exception handling keywords to macros.
-//
-//    Jeremy Meredith, Thu Dec 19 12:13:34 PST 2002
-//    Added support for launching engines from the command line.
-//
-//    Brad Whitlock, Fri Dec 27 12:41:32 PDT 2002
-//    I passed an empty string vector to the CreateEngine method because
-//    the engine manager now passes the ViewerServerManager's unknown
-//    arguments to the engines that get launched.
+// Modifications:
 //   
-//    Kathleen Bonnell, Fri Feb  7 09:09:47 PST 2003  
-//    Added registration of the authentication callback. (moved from viewer.C)
-//
-//    Brad Whitlock, Wed Jul 23 13:55:03 PST 2003
-//    I replaced AddInitialWindows with AddWindow.
-//
 // ****************************************************************************
 
-int
-ViewerSubject::Execute()
+void
+ViewerSubject::AddInitialWindows()
 {
     //
     // Create the window.
@@ -933,6 +1025,7 @@ ViewerSubject::Execute()
     ViewerWindowManager *windowManager=ViewerWindowManager::Instance();
     if(windowManager != NULL)
     {
+        int timeid = visitTimer->StartTimer();
         // Connect
         connect(windowManager, SIGNAL(createWindow(ViewerWindow *)),
                 this, SLOT(ConnectWindow(ViewerWindow *)));
@@ -944,19 +1037,27 @@ ViewerSubject::Execute()
 
         // Make the window manager add an initial window.
         windowManager->AddWindow();
-    }
 
-    //
-    // Register a callback function to be called when launching a remote
-    // process requires authentication.
-    //
-#if !defined(_WIN32)
-    if (!ViewerWindow::GetNoWinMode())
-    {
-        RemoteProcess::SetAuthenticationCallback(&ViewerPasswordWindow::authenticate);
+        visitTimer->StopTimer(timeid, "Adding windows.");
     }
-#endif
+}
 
+// ****************************************************************************
+// Method: ViewerSubject::LaunchEngineOnStartup
+//
+// Purpose: 
+//   Launches an engine as part of the heavy initialization step.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 17 15:21:00 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::LaunchEngineOnStartup()
+{
     //
     // Launch an engine if needed, never popping up the chooser window
     //
@@ -966,24 +1067,6 @@ ViewerSubject::Execute()
         ViewerEngineManager::Instance()->CreateEngine(launchEngineAtStartup.c_str(),
                                                       noArgs, true, numEngineRestarts);
     }
-
-    //
-    // Enter the event processing loop.
-    //
-    int retval;
-    TRY
-    {
-        retval = mainApp->exec();
-    }
-    CATCH(LostConnectionException)
-    {
-        cerr << "The component that launched VisIt's viewer has terminated "
-                "abnormally." << endl;
-        retval = -1;
-    }
-    ENDTRY
-
-    return retval;
 }
 
 // ****************************************************************************
@@ -1343,60 +1426,7 @@ ViewerSubject::GetOperatorFactory() const
 }
 
 // ****************************************************************************
-//  Method: ViewerSubject::ProcessCommandLine1
-//
-//  Purpose:
-//    Process the viewer command line arguments.
-//
-//  Arguments:
-//    argc      The number of command line arguments.
-//    argv      The command line arguments.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   April 17, 2002
-//
-//  Modifications:
-//    Brad Whitlock, Fri May 16 14:54:28 PST 2003
-//    I added support for the -config flag to read a named config file.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ProcessCommandLine1(int *argc, char ***argv)
-{
-    int    argc2 = *argc;
-    char **argv2 = *argv;
-
-    //
-    // Preprocess the command line for the viewer.
-    //
-    for (int i = 1 ; i < argc2 ; i++)
-    {
-        if (strcmp(argv2[i], "-noconfig") == 0)
-        {
-            noconfig = true;
-            if(configFileName != 0)
-            {
-                delete [] configFileName;
-                configFileName = 0;
-            }
-        }
-        else if (strcmp(argv2[i], "-config") == 0 && (i+1) < argc2 && !noconfig)
-        {
-            if(configFileName != 0)
-            {
-                delete [] configFileName;
-                configFileName = 0;
-            }
-            int len = strlen(argv2[i+1]);
-            configFileName = new char[len + 1];
-            strcpy(configFileName, argv2[i+1]);
-        }       
-    }
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::ProcessCommandLine2
+//  Method: ViewerSubject::ProcessCommandLine
 //
 //  Purpose:
 //    Process the viewer command line arguments.
@@ -1467,10 +1497,14 @@ ViewerSubject::ProcessCommandLine1(int *argc, char ***argv)
 //    to -nowin mode as well, as we use PTYs to capture text for windowing
 //    but with -nowin we cannot open windows.
 //
+//    Brad Whitlock, Mon Jun 16 12:33:53 PDT 2003
+//    I added code to make sure -rpipe and -wpipe are not passed on. I also
+//    added code to defer heavy initialization until later.
+//
 // ****************************************************************************
 
 void
-ViewerSubject::ProcessCommandLine2(int *argc, char ***argv)
+ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
 {
     int    argc2 = *argc;
     char **argv2 = *argv;
@@ -1533,8 +1567,7 @@ ViewerSubject::ProcessCommandLine2(int *argc, char ***argv)
                cerr << "Warning: debug level not specified, assuming 1" << endl;
             if(debugLevel > 0 && debugLevel < 6)
             {
-                ViewerEngineManager::SetDebugLevel(debugLevel);
-                ViewerFileServer::SetDebugLevel(debugLevel);
+                ViewerServerManager::SetDebugLevel(debugLevel);
             }
         }
         else if (strcmp(argv2[i], "-host")     == 0 ||
@@ -1545,6 +1578,12 @@ ViewerSubject::ProcessCommandLine2(int *argc, char ***argv)
         {
             // this argument and the following option are dangerous to pass on
             i++;
+        }
+        else if (strcmp(argv2[i], "-wpipe") == 0 ||
+                 strcmp(argv2[i], "-rpipe") == 0)
+        {
+            // This argument and its following options are dangerous to pass on
+            i += 2;
         }
         else if(strcmp(argv2[i], "-background") == 0 ||
                 strcmp(argv2[i], "-bg") == 0)
@@ -1622,6 +1661,10 @@ ViewerSubject::ProcessCommandLine2(int *argc, char ***argv)
         else if (strcmp(argv2[i], "-noconfig") == 0)
         {
             // do nothing; processed by an earlier parsing of the command line
+        }
+        else if (strcmp(argv2[i], "-defer") == 0)
+        {
+            deferHeavyInitialization = true;
         }
         else if (strcmp(argv2[i], "-nowin") == 0)
         {
@@ -3484,6 +3527,8 @@ ViewerSubject::SetWindowArea()
 void
 ViewerSubject::ConnectToMetaDataServer()
 {
+    int timeid = visitTimer->StartTimer();
+
     //
     // Tell the viewer's fileserver to have its mdserver running on 
     // the specified host to connect to another process.
@@ -3491,6 +3536,13 @@ ViewerSubject::ConnectToMetaDataServer()
     ViewerFileServer::Instance()->ConnectServer(
         viewerRPC.GetProgramHost(),
         viewerRPC.GetProgramOptions()); 
+
+    visitTimer->StopTimer(timeid, "Time spent telling mdserver to connect to client.");
+
+    //
+    // Do heavy initialization if we still need to do it.
+    //
+    HeavyInitialization();
 }
 
 // ****************************************************************************
@@ -4285,8 +4337,7 @@ ViewerSubject::HandleViewerRPC()
     // Get a pointer to the active window's action manager.
     //
     bool actionHandled = false;
-    ViewerActionManager *actionMgr = ViewerWindowManager::Instance()->
-        GetActiveWindow()->GetActionManager();
+    ViewerActionManager *actionMgr = 0;
 
     //
     // Handle the RPC. Note that these should be replaced with actions.
@@ -4484,6 +4535,8 @@ ViewerSubject::HandleViewerRPC()
     default:
         // If an RPC is not handled in the above cases, handle it as
         // an action.
+        actionMgr = ViewerWindowManager::Instance()->
+            GetActiveWindow()->GetActionManager();
         actionMgr->HandleAction(viewerRPC);
         actionHandled = true;
     }

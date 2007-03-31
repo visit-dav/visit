@@ -104,6 +104,9 @@
 #    Brad Whitlock, Mon May 5 09:38:47 PDT 2003
 #    I added the launcher directory.
 #
+#    Brad Whitlock, Thu Jun 19 13:12:07 PST 2003
+#    I removed the splashscreen.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -113,7 +116,7 @@
 DISTRIB=configure configure.in VERSION
 
 SUBDIRS=include lib bin common @VTKQT@ visit_vtk components engine \
-        launcher @METADATA_SERVER@ @VIEWER@ @SPLASHSCREEN@ @GUI@ @VISITPY@ \
+        launcher @METADATA_SERVER@ @VIEWER@ @GUI@ @VISITPY@ \
         @JAVA_TARGET@ plots operators databases help tools
 
 #

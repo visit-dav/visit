@@ -127,11 +127,6 @@ main(int argc, char *argv[])
         {
             strcpy(component, "engine");
         }
-        else if(ARG("-splashscreen"))
-        {
-            strcpy(component, "splashscreen");
-            printRunInfo = 0;
-        }
         else if(ARG("-vcl"))
         {
             strcpy(component, "vcl");

@@ -8,36 +8,12 @@
   Thanks:    Kathleen Bonnell, B Division, Lawrence Livermore Nat'l Laboratory 
 
 Copyright (c) 1993-2001 Ken Martin, Will Schroeder, Bill Lorensen 
-All rights reserved.
+All rights reserve  
+  See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
- * Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
- * Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
- * Neither name of Ken Martin, Will Schroeder, or Bill Lorensen nor the names
-   of any contributors may be used to endorse or promote products derived
-   from this software without specific prior written permission.
-
- * Modified source versions must be plainly marked as such, and must not be
-   misrepresented as being the original software.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+     This software is distributed WITHOUT ANY WARRANTY; without even 
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     PURPOSE.  See the above copyright notice for more information.
 =========================================================================*/
 // .NAME vtkKatCubeAxesActor - create a  plot of a bounding box edges - 
 // used for navigation
@@ -62,11 +38,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // the axes to be set partially away from the actual bounding box to perhaps
 // prevent overlap of labels between the various axes.
 //
-// The bounding box to use is defined in one of three ways. First, if the Input
-// ivar is defined, then the input dataset's bounds is used. If the Input is 
-// not defined, and the Prop (superclass of all actors) is defined, then the
-// Prop's bounds is used. If neither the Input or Prop is defined, then the
-// Bounds instance variable (an array of six floats) is used.
+// The Bounds instance variable (an array of six floats) is used to determine
+// the bounding box.
 // 
 // .SECTION See Also
 // vtkActor vtkAxisActor vtkCubeAxesActor2D
@@ -101,23 +74,9 @@ public:
   
   // Description:
   // Draw the axes as per the vtkProp superclass' API.
-  int RenderOverlay(vtkViewport*);
-  int RenderOpaqueGeometry(vtkViewport*);
-  int RenderTranslucentGeometry(vtkViewport *) {return 0;}
+  virtual int RenderOpaqueGeometry(vtkViewport*);
+  virtual int RenderTranslucentGeometry(vtkViewport *) {return 0;}
 
-  // Description:
-  // Use the bounding box of this input dataset to draw the cube axes. If this
-  // is not specified, then the class will attempt to determine the bounds from
-  // the defined Prop or Bounds.
-  virtual void SetInput(vtkDataSet*);
-  vtkGetObjectMacro(Input, vtkDataSet);
-
-  // Description:
-  // Use the bounding box of this prop to draw the cube axes. The Prop is used 
-  // to determine the bounds only if the Input is not defined.
-  virtual void SetProp(vtkProp*);
-  vtkGetObjectMacro(Prop, vtkProp);
-  
   // Description:
   // Explicitly specify the region in space around which to draw the bounds.
   // The bounds is used only when no Input or Prop is specified. The bounds
@@ -284,8 +243,6 @@ protected:
   vtkKatCubeAxesActor();
   ~vtkKatCubeAxesActor();
 
-  vtkDataSet *Input;     //Define bounds from input data, or
-  vtkProp    *Prop;      //Define bounds from actor/assembly, or
   float       Bounds[6]; //Define bounds explicitly
 
   vtkCamera *Camera;
@@ -357,6 +314,10 @@ private:
   int   numAxesY;
   int   numAxesZ;
 
+  float valueScaleFactor;
+  bool mustAdjustValue;
+  bool ForceLabelReset;
+
   // various helper methods
   void  TransformBounds(vtkViewport *viewport, const float bounds[6], 
                         float pts[8][3]);
@@ -364,7 +325,7 @@ private:
                    float zCoords[4][6], float xRange[2], float yRange[2], 
                    float zRange[2]);
 
-  void  ComputeTickSize(float bounds[6]);
+  bool  ComputeTickSize(float bounds[6]);
   void  AdjustValues(const float bounds[6]);
   void  AdjustRange(const float bounds[6]);
   void  SetValueScaleFactor(float scale);
@@ -372,6 +333,8 @@ private:
   void  BuildAxes(vtkViewport *);
   void  DetermineRenderAxes(vtkViewport *);
   void  SetNonDependentAttributes(void);
+  void  BuildLabels(vtkKatAxisActor *axes[4]);
+  void  AdjustTicksComputeRange(vtkKatAxisActor *axes[4]);
 
   
 

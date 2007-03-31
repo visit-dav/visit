@@ -360,12 +360,7 @@ MDServerProxy::GetSIL(const string &file, int timeState)
 //   Tells the mdserver to connect to another program.
 //
 // Arguments:
-//   host : The host where the program to which we want to connect is running.
-//   key  : Part of the security key that must be passed to the client in
-//          order to be allowed to talk to the client.
-//   port : The port on which the remote program is listening.
-//   numRead  : The number of read sockets to create.
-//   numWrite : The number of write sockets to create.
+//   args : All of the arguments needed to connect to another program.
 //
 // Returns:    
 //
@@ -381,11 +376,10 @@ MDServerProxy::GetSIL(const string &file, int timeState)
 // ****************************************************************************
 
 void
-MDServerProxy::Connect(const string &host, const string &key, int port,
-    int numRead, int numWrite)
+MDServerProxy::Connect(const stringVector &args)
 {
     // Tell the mdserver to connect to another program.
-    connectRPC(host, key, port, numRead, numWrite);
+    connectRPC(args);
 }
 
 // ****************************************************************************

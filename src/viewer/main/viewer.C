@@ -8,8 +8,6 @@
 #include <InitVTK.h>
 #include <RemoteProcess.h>
 #include <ViewerPasswordWindow.h>
-#include <PlotPluginManager.h>
-#include <OperatorPluginManager.h>
 
 #if defined(_WIN32)
 // Get around a macro problem on Windows
@@ -70,6 +68,9 @@
 //    Kathleen Bonnell, Fri Feb  7 09:09:47 PST 2003 
 //    I moved the registration of the authentication callback to ViewerSubject.
 //
+//    Brad Whitlock, Mon Jun 9 11:23:50 PDT 2003
+//    I made plugins get loaded later.
+//
 // ****************************************************************************
 
 int
@@ -87,28 +88,21 @@ main(int argc, char *argv[])
         InitVTK::Initialize();
 
         //
-        // Load the plugins.
+        // Create the viewer subject.
         //
-        PlotPluginManager::Initialize(PlotPluginManager::Viewer);
-        OperatorPluginManager::Initialize(OperatorPluginManager::Viewer);
+        ViewerSubject viewer;
 
         //
-        // Create the viewer subject. This connects back to the client.
+        // Connect back to the client and perform some initialization.
         //
-        ViewerSubject viewerSubject(&argc, &argv);
-
-        //
-        // Connect various internal state objects that must be done after 
-        // reading the plugins.
-        //
-        viewerSubject.Connect(&argc, &argv);
+        viewer.Connect(&argc, &argv);
 
         //
         // Execute the viewer.
         //
         TRY
         {
-            retval = viewerSubject.Execute();
+            retval = viewer.Execute();
         }
         CATCH2(VisItException, e)
         {

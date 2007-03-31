@@ -9,35 +9,11 @@
 
 Copyright (c) 1993-2001 Ken Martin, Will Schroeder, Bill Lorensen 
 All rights reserved.
+  See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
- * Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
- * Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
- * Neither name of Ken Martin, Will Schroeder, or Bill Lorensen nor the names
-   of any contributors may be used to endorse or promote products derived
-   from this software without specific prior written permission.
-
- * Modified source versions must be plainly marked as such, and must not be
-   misrepresented as being the original software.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+     This software is distributed WITHOUT ANY WARRANTY; without even 
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     PURPOSE.  See the above copyright notice for more information.
 =========================================================================*/
 #include "vtkKatCubeAxesActor.h"
 #include "vtkKatAxisActor.h"
@@ -50,6 +26,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 int LabelExponent(float min, float max);
 int Digits(float min, float max, int pow);
+float MaxOf(float, float);
+float MaxOf(float, float, float, float); 
 
 // *************************************************************************
 // Modifications:
@@ -59,8 +37,6 @@ int Digits(float min, float max, int pow);
 // *************************************************************************
 
 vtkStandardNewMacro(vtkKatCubeAxesActor);
-vtkCxxSetObjectMacro(vtkKatCubeAxesActor, Input, vtkDataSet);
-vtkCxxSetObjectMacro(vtkKatCubeAxesActor, Prop, vtkProp);
 vtkCxxSetObjectMacro(vtkKatCubeAxesActor, Camera,vtkCamera);
 
 
@@ -78,12 +54,14 @@ vtkCxxSetObjectMacro(vtkKatCubeAxesActor, Camera,vtkCamera);
 //   Hank Childs, Fri Sep 27 17:15:07 PDT 2002
 //   Initialize new members for units.
 //
+//   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
+//   Remove 'Input' and 'Prop' members, initialize new members
+//   valueScaleFactor, mustAdjustValue, ForceLabelReset.
+//
 // *************************************************************************
 
 vtkKatCubeAxesActor::vtkKatCubeAxesActor()
 {
-  this->Input = NULL;
-  this->Prop = NULL;
   this->Bounds[0] = -1.0; this->Bounds[1] = 1.0;
   this->Bounds[2] = -1.0; this->Bounds[3] = 1.0;
   this->Bounds[4] = -1.0; this->Bounds[5] = 1.0;
@@ -176,6 +154,10 @@ vtkKatCubeAxesActor::vtkKatCubeAxesActor()
       this->renderAxesZ[i] = i;
   }
   this->numAxesX = this->numAxesY = this->numAxesZ = 1;
+
+  this->valueScaleFactor = 1.;
+  this->mustAdjustValue = false;
+  this->ForceLabelReset = false;
 }
 
 // Shallow copy of an actor.
@@ -183,6 +165,10 @@ vtkKatCubeAxesActor::vtkKatCubeAxesActor()
 // Modifications:
 //   Kathleen Bonnell, Wed Mar  6 13:48:48 PST 2002
 //   Call superclass method the new VTK 4.0 way.
+//
+//   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
+//   Remove 'Input' and 'Prop' members, added new members
+//   valueScaleFactor, mustAdjustValue, ForceLabelReset.
 //
 void vtkKatCubeAxesActor::ShallowCopy(vtkKatCubeAxesActor *actor)
 {
@@ -196,10 +182,11 @@ void vtkKatCubeAxesActor::ShallowCopy(vtkKatCubeAxesActor *actor)
   this->SetYTitle(actor->GetYTitle());
   this->SetZTitle(actor->GetZTitle());
   this->SetFlyMode(actor->GetFlyMode());
-  this->SetInput(actor->GetInput());
-  this->SetProp(actor->GetProp());
   this->SetCamera(actor->GetCamera());
   this->SetBounds(actor->GetBounds());
+  this->mustAdjustValue = actor->mustAdjustValue;
+  this->valueScaleFactor = actor->valueScaleFactor;
+  this->ForceLabelReset = actor->ForceLabelReset;
 }
 
 // ****************************************************************************
@@ -212,8 +199,6 @@ void vtkKatCubeAxesActor::ShallowCopy(vtkKatCubeAxesActor *actor)
 
 vtkKatCubeAxesActor::~vtkKatCubeAxesActor()
 {
-  this->SetInput(NULL);
-  this->SetProp(NULL);
   this->SetCamera(NULL);
 
   for (int i = 0; i < 4; i++)
@@ -277,55 +262,6 @@ vtkKatCubeAxesActor::~vtkKatCubeAxesActor()
 
 
 // *************************************************************************
-//
-// Modifications:
-//   Kathleen Bonnell, Wed Nov  7 16:19:16 PST 2001
-//   Only render those axes needed for current FlyMode.
-//
-// *************************************************************************
-int vtkKatCubeAxesActor::RenderOverlay(vtkViewport *viewport)
-{
-  int i, renderedSomething=0;
-
-  // Initialization
-  if (! this->RenderSomething)
-    {
-    return 0;
-    }
- 
-
-  //Render the axes
-
-  if (this->XAxisVisibility)
-    {
-    for (i = 0; i < this->numAxesX; i++)
-      {
-      renderedSomething += 
-          this->XAxes[this->renderAxesX[i]]->RenderOverlay(viewport);
-      }
-    }
-  if (this->YAxisVisibility)
-    {
-    for (i = 0; i < numAxesY; i++)
-      {
-      renderedSomething += 
-          this->YAxes[this->renderAxesY[i]]->RenderOverlay(viewport);
-      }
-    }
-
-  if (this->ZAxisVisibility)
-    {
-    for (i = 0; i < numAxesZ; i++)
-      {
-      renderedSomething += 
-          this->ZAxes[this->renderAxesZ[i]]->RenderOverlay(viewport);
-      }
-    }
-
-  return renderedSomething;
-}
-
-// *************************************************************************
 // Project the bounding box and compute edges on the border of the bounding
 // cube. Determine which parts of the edges are visible via intersection 
 // with the boundary of the viewport (minus borders).
@@ -339,12 +275,14 @@ int vtkKatCubeAxesActor::RenderOverlay(vtkViewport *viewport)
 //   Moved bulk of 'build' code to BuildAxes method, added calls to
 //   BuildAxes and DetermineRenderAxes methods.
 //
+//   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
+//   Added initial build of each axis. 
 // *************************************************************************
 
 int vtkKatCubeAxesActor::RenderOpaqueGeometry(vtkViewport *viewport)
 {
   int i, renderedSomething=0;
-  
+  static bool initialRender = true; 
   // Initialization
   if (!this->Camera)
     {
@@ -354,6 +292,18 @@ int vtkKatCubeAxesActor::RenderOpaqueGeometry(vtkViewport *viewport)
     }
  
   this->BuildAxes(viewport); 
+
+  if (initialRender)
+    {
+     for (i = 0; i < 4; i++)
+       {
+       this->XAxes[i]->BuildAxis(viewport, true);
+       this->YAxes[i]->BuildAxis(viewport, true);
+       this->ZAxes[i]->BuildAxis(viewport, true);
+       }
+    }
+  initialRender = false;
+
   this->DetermineRenderAxes(viewport); 
 
   //Render the axes
@@ -464,36 +414,18 @@ void vtkKatCubeAxesActor::ReleaseGraphicsResources(vtkWindow *win)
     }
 }
 
+// *************************************************************************
 // Compute the bounds
+// 
+// Modifications:
+//   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
+//   Removed support for Prop and Input. 
+// *************************************************************************
 void vtkKatCubeAxesActor::GetBounds(float bounds[6])
 {
-  float *propBounds;
-  int i;
-
-  if (this->Input)
+  for (int i=0; i< 6; i++)
     {
-    this->Input->Update();
-    this->Input->GetBounds(bounds);
-    for (i=0; i< 6; i++)
-      {
-      this->Bounds[i] = bounds[i];
-      }
-    }
-
-  else if (this->Prop && 
-  ((propBounds = this->Prop->GetBounds()) && propBounds != NULL) )
-    {
-    for (i=0; i< 6; i++)
-      {
-      bounds[i] = this->Bounds[i] = propBounds[i];
-      }
-    }
-  else
-    {
-    for (i=0; i< 6; i++)
-      {
-      bounds[i] = this->Bounds[i];
-      }
+    bounds[i] = this->Bounds[i];
     }
 }
 
@@ -502,21 +434,17 @@ void vtkKatCubeAxesActor::GetBounds(float& xmin, float& xmax,
                                    float& ymin, float& ymax,
                                    float& zmin, float& zmax)
 {
-  float bounds[6];
-  this->GetBounds(bounds);
-  xmin = bounds[0];
-  xmax = bounds[1];
-  ymin = bounds[2];
-  ymax = bounds[3];
-  zmin = bounds[4];
-  zmax = bounds[5];
+  xmin = this->Bounds[0];
+  xmax = this->Bounds[1];
+  ymin = this->Bounds[2];
+  ymax = this->Bounds[3];
+  zmin = this->Bounds[4];
+  zmax = this->Bounds[5];
 }
 
 // Compute the bounds
 float *vtkKatCubeAxesActor::GetBounds()
 {
-  float bounds[6];
-  this->GetBounds(bounds);
   return this->Bounds;
 }
 
@@ -525,29 +453,14 @@ float *vtkKatCubeAxesActor::GetBounds()
 //   Kathleen Bonnell, Wed Mar  6 13:48:48 PST 2002
 //   Call superclass method the new VTK 4.0 way.
 //
+//   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
+//   Removed Input and Prop.
+//
 // ******************************************************************
 
 void vtkKatCubeAxesActor::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
-
-  if (this->Input)
-    {
-    os << indent << "Input: (" << (void *)this->Input << ")\n";
-    }
-  else
-    {
-    os << indent << "Input: (none)\n";
-    }
-
-  if (this->Prop)
-    {
-    os << indent << "Prop: (" << (void *)this->Prop << ")\n";
-    }
-  else
-    {
-    os << indent << "Prop: (none)\n";
-    }
 
   os << indent << "Bounds: \n";
   os << indent << "  Xmin,Xmax: (" << this->Bounds[0] << ", " 
@@ -639,55 +552,80 @@ void vtkKatCubeAxesActor::TransformBounds(vtkViewport *viewport,
 //  based on an average of the coordinate direction ranges.
 //  Set the necessary Axes methods with the calculated information.
 //
+//  Returns:  false if tick size not recomputed, true otherwise.
+//
 //  Modifications:
 //    Kathleen Bonnell, Wed Nov  7 16:19:16 PST 2001
 //    Added logic for early-termination.
 //
+//    Kathleen Bonnell, Fri Jul 18 09:09:31 PDT 2003 
+//    Added return value, added calls to AdjustTicksComputeRange and
+//    BuildLabels. 
+//
 // ***********************************************************************
-void vtkKatCubeAxesActor::ComputeTickSize(float bounds[6])
+
+bool
+vtkKatCubeAxesActor::ComputeTickSize(float bounds[6])
 {
-    int i;
-    float xExt = bounds[1] - bounds[0];
-    float yExt = bounds[3] - bounds[2];
-    float zExt = bounds[5] - bounds[4];
+  int i;
+  float xExt = bounds[1] - bounds[0];
+  float yExt = bounds[3] - bounds[2];
+  float zExt = bounds[5] - bounds[4];
 
-    if (xExt == this->LastXExtent &&
-        yExt == this->LastYExtent &&
-        zExt == this->LastZExtent)
-      {
-          // no need to re-compute ticksize.
-          return;
-      }
-
-    this->LastXExtent = xExt;
-    this->LastYExtent = yExt;
-    this->LastZExtent = zExt;
-
-    float major = 0.02 * (xExt + yExt + zExt) / 3.;
-    float minor = 0.5 * major;
-    for (i = 0; i < 4; i++)
+  if (xExt == this->LastXExtent &&
+      yExt == this->LastYExtent &&
+      zExt == this->LastZExtent)
     {
-        this->XAxes[i]->SetMajorTickSize(major);
-        this->XAxes[i]->SetMinorTickSize(minor);
-
-        this->YAxes[i]->SetMajorTickSize(major);
-        this->YAxes[i]->SetMinorTickSize(minor);
-
-        this->ZAxes[i]->SetMajorTickSize(major);
-        this->ZAxes[i]->SetMinorTickSize(minor);
-
-        this->XAxes[i]->SetGridlineXLength(xExt);
-        this->XAxes[i]->SetGridlineYLength(yExt);
-        this->XAxes[i]->SetGridlineZLength(zExt);
-
-        this->YAxes[i]->SetGridlineXLength(xExt);
-        this->YAxes[i]->SetGridlineYLength(yExt);
-        this->YAxes[i]->SetGridlineZLength(zExt);
-
-        this->ZAxes[i]->SetGridlineXLength(xExt);
-        this->ZAxes[i]->SetGridlineYLength(yExt);
-        this->ZAxes[i]->SetGridlineZLength(zExt);
+    // no need to re-compute ticksize.
+    return false;
     }
+  
+  if (xExt != this->LastXExtent)
+    {
+    AdjustTicksComputeRange(this->XAxes);
+    BuildLabels(this->XAxes);
+    }
+    if (yExt != this->LastYExtent)
+    {
+    AdjustTicksComputeRange(this->YAxes);
+    BuildLabels(this->YAxes);
+    }
+    if (zExt != this->LastZExtent)
+    {
+    AdjustTicksComputeRange(this->ZAxes);
+    BuildLabels(this->ZAxes);
+    }
+
+  this->LastXExtent = xExt;
+  this->LastYExtent = yExt;
+  this->LastZExtent = zExt;
+
+  float major = 0.02 * (xExt + yExt + zExt) / 3.;
+  float minor = 0.5 * major;
+  for (i = 0; i < 4; i++)
+    {
+    this->XAxes[i]->SetMajorTickSize(major);
+    this->XAxes[i]->SetMinorTickSize(minor);
+
+    this->YAxes[i]->SetMajorTickSize(major);
+    this->YAxes[i]->SetMinorTickSize(minor);
+
+    this->ZAxes[i]->SetMajorTickSize(major);
+    this->ZAxes[i]->SetMinorTickSize(minor);
+
+    this->XAxes[i]->SetGridlineXLength(xExt);
+    this->XAxes[i]->SetGridlineYLength(yExt);
+    this->XAxes[i]->SetGridlineZLength(zExt);
+
+    this->YAxes[i]->SetGridlineXLength(xExt);
+    this->YAxes[i]->SetGridlineYLength(yExt);
+    this->YAxes[i]->SetGridlineZLength(zExt);
+
+    this->ZAxes[i]->SetGridlineXLength(xExt);
+    this->ZAxes[i]->SetGridlineYLength(yExt);
+    this->ZAxes[i]->SetGridlineZLength(zExt);
+    }
+  return true;
 }
 
 // ****************************************************************************
@@ -909,7 +847,7 @@ Digits(float min, float max, int lastPow)
             digitsPastDecimal = 5;
         }
     }
- 
+
     return digitsPastDecimal;
 }
 
@@ -980,55 +918,6 @@ LabelExponent(float min, float max)
 
 
 
-// ****************************************************************************
-//  Method: VisWinAxes3D::SetValueScaleFactor
-//
-//  Purpose:
-//    For each axis, sets a scale factor by which label values are scaled.
-//
-//  Arguments:
-//    scale     The scale factor.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 30, 2001 
-//
-// ****************************************************************************
-
-void
-vtkKatCubeAxesActor::SetValueScaleFactor(float scale)
-{
-    for (int i = 0; i < 4; i++)
-    {
-        this->XAxes[i]->SetValueScaleFactor(scale);
-        this->YAxes[i]->SetValueScaleFactor(scale);
-        this->ZAxes[i]->SetValueScaleFactor(scale);
-    }
-}
-
-
-// ****************************************************************************
-//  Method: VisWinAxes3D::UnSetValueScaleFactor
-//
-//  Purpose:
-//    For each axis, unsets the scale factor by which label values are scaled.
-//
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   April 9, 2002 
-//
-// ****************************************************************************
-
-void
-vtkKatCubeAxesActor::UnSetValueScaleFactor()
-{
-    for (int i = 0; i < 4; i++)
-    {
-        this->XAxes[i]->UnSetValueScaleFactor();
-        this->YAxes[i]->UnSetValueScaleFactor();
-        this->ZAxes[i]->UnSetValueScaleFactor();
-    }
-}
-
 // *************************************************************************
 //  Build the axes. Determine coordinates, position, etc. 
 //
@@ -1041,6 +930,11 @@ vtkKatCubeAxesActor::UnSetValueScaleFactor()
 //  Modifications:
 //    Kathleen Bonnell, Mon Dec  3 16:49:01 PST 2001
 //    Compare vtkTimeStamps correctly.
+//
+//    Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003
+//    Added logic to compute and set for each axis the labels and title 
+//    scale size. 
+//
 // *************************************************************************
 
 void vtkKatCubeAxesActor::BuildAxes(vtkViewport *viewport)
@@ -1064,7 +958,6 @@ void vtkKatCubeAxesActor::BuildAxes(vtkViewport *viewport)
   // to camera).
 
   this->TransformBounds(viewport, bounds, pts);
-  this->ComputeTickSize(bounds);
 
   // Setup the axes for plotting
   float xCoords[4][6], yCoords[4][6], zCoords[4][6];
@@ -1135,22 +1028,68 @@ void vtkKatCubeAxesActor::BuildAxes(vtkViewport *viewport)
     this->XAxes[i]->SetTitle(this->XTitle);
     this->YAxes[i]->SetTitle(this->YTitle);
     this->ZAxes[i]->SetTitle(this->ZTitle);
-
-    this->XAxes[i]->SetLabelFormat(this->XLabelFormat);
-    this->YAxes[i]->SetLabelFormat(this->YLabelFormat);
-    this->ZAxes[i]->SetLabelFormat(this->ZLabelFormat);
     }
 
+
+  bool ticksRecomputed = this->ComputeTickSize(bounds);
+
   //
-  // Ticks on non-major axes are not drawn unless fly-mode is STATIC,
-  // however, user may want to see gridlines in another fly-mode.  If
-  // that is the case, turn on tick visibility for non-major axes.
+  // Labels are built during ComputeTickSize. if
+  // ticks were not recomputed, but we need a label
+  // reset, then build the labels here. 
   //
-  for (i = 0; i < 4; i++)
+  if (!ticksRecomputed && this->ForceLabelReset)
     {
-    this->XAxes[i]->BuildAxis(viewport);
-    this->YAxes[i]->BuildAxis(viewport);
-    this->ZAxes[i]->BuildAxis(viewport);
+    BuildLabels(this->XAxes);
+    BuildLabels(this->YAxes);
+    BuildLabels(this->ZAxes);
+    }
+
+  if (ticksRecomputed || this->ForceLabelReset)
+    {
+    // labels were re-built, need to recompute the scale. 
+    float center[3]; 
+
+    center[0] = (this->Bounds[1] - this->Bounds[0]) * 0.5;
+    center[1] = (this->Bounds[3] - this->Bounds[2]) * 0.5;
+    center[2] = (this->Bounds[5] - this->Bounds[4]) * 0.5;
+
+
+    float lenX = this->XAxes[0]->ComputeMaxLabelLength(center);
+    float lenY = this->YAxes[0]->ComputeMaxLabelLength(center);
+    float lenZ = this->ZAxes[0]->ComputeMaxLabelLength(center);
+    float lenTitleX = this->XAxes[0]->ComputeTitleLength(center);
+    float lenTitleY = this->YAxes[0]->ComputeTitleLength(center);
+    float lenTitleZ = this->ZAxes[0]->ComputeTitleLength(center);
+    float maxLabelLength = MaxOf(lenX, lenY, lenZ, 0.);
+    float maxTitleLength = MaxOf(lenTitleX, lenTitleY, lenTitleZ, 0.);
+    float bWidth  = this->Bounds[1] - this->Bounds[0];
+    float bHeight = this->Bounds[3] - this->Bounds[2];
+
+    float bLength = sqrt(bWidth*bWidth + bHeight*bHeight);
+
+    float target = bLength *0.04;
+    float labelscale = 1.;
+    if (maxLabelLength != 0.)
+      {
+      labelscale = target / maxLabelLength;
+      }
+    target = bLength *0.10;
+
+    float titlescale = 1.;
+    if (maxTitleLength != 0.)
+      {
+      titlescale = target / maxTitleLength;
+      }
+    for (i = 0; i < 4; i++)
+      {
+      this->XAxes[i]->SetLabelScale(labelscale);
+      this->YAxes[i]->SetLabelScale(labelscale);
+      this->ZAxes[i]->SetLabelScale(labelscale);
+      this->XAxes[i]->SetTitleScale(titlescale);
+      this->YAxes[i]->SetTitleScale(titlescale);
+      this->ZAxes[i]->SetTitleScale(titlescale);
+      }
     }
   this->RenderSomething = 1;
   this->BuildTime.Modified();
@@ -1309,7 +1248,6 @@ void vtkKatCubeAxesActor::DetermineRenderAxes(vtkViewport *viewport)
 
   // determine the bounds to use (input, prop, or user-defined)
   this->GetBounds(bounds);
-
   this->TransformBounds(viewport, bounds, pts);
 
   // Take into account the inertia. Process only so often.
@@ -1520,7 +1458,249 @@ void vtkKatCubeAxesActor::DetermineRenderAxes(vtkViewport *viewport)
   this->ZAxes[renderAxesZ[0]]->SetTitleVisibility(this->ZAxisLabelVisibility);
   this->ZAxes[renderAxesZ[0]]->SetTickVisibility(this->ZAxisTickVisibility);
   this->ZAxes[renderAxesZ[0]]->SetMinorTicksVisible(this->ZAxisMinorTickVisibility);
-
 }
 
+float
+MaxOf(float a, float b)
+{
+    return (a > b ? a : b); 
+}
+
+float
+MaxOf(float a, float b, float c, float d)
+{
+    return MaxOf(MaxOf(a, b), MaxOf(c, d));
+}
+
+
+
+inline float ffix(float value)
+{
+  int ivalue = (int)value;
+  return (float) ivalue;
+}
+
+inline float fsign(float value, float sign)
+{
+  value = fabs(value);
+  if (sign < 0.)
+    {
+    value *= -1.;
+    }
+  return value;
+}
+
+// *******************************************************************
+// Method: vtkKatCubeAxesActor::AdjustTicksComputeRange
+//
+// Purpose: Sets private members controlling the number and position
+//          of ticks.
+//   
+// Arguments:
+//   inRange   The range for this axis.
+//
+// Note:    The bulk of this method was taken from vtkHankAxisActor.C
+//          The original method was reduced to serve the purposes
+//          of this class.   
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   29 August, 2001 
+//
+// Modifications:
+//   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003
+//   Moved from vtkKatAxisActor. Added calls to set inividual axis'
+//   MajorStart, MinorStart, deltaMajor, deltaMinor. 
+//
+// *******************************************************************
+
+void 
+vtkKatCubeAxesActor::AdjustTicksComputeRange(vtkKatAxisActor *axes[4]) 
+{
+  double sortedRange[2], range;
+  double fxt, fnt, frac;
+  double div, major, minor;
+  double majorStart, minorStart; 
+  int numTicks;
+  float *inRange = axes[0]->GetRange();
+
+  sortedRange[0] = (double)(inRange[0] < inRange[1] ? inRange[0] : inRange[1]);
+  sortedRange[1] = (double)(inRange[0] > inRange[1] ? inRange[0] : inRange[1]);
+
+  range = sortedRange[1] - sortedRange[0];
+
+  // Find the integral points.
+  double pow10 = log10(range);
+
+
+  // Build in numerical tolerance
+  if (pow10 != 0.)
+    {
+    double eps = 10.0e-10;
+    pow10 = fsign((fabs(pow10) + eps), pow10);
+    }
+
+  // ffix move you in the wrong direction if pow10 is negative.
+  if (pow10 < 0.)
+    {
+    pow10 = pow10 - 1.;
+    }
+
+  fxt = pow(10.f, ffix(pow10));
+    
+  // Find the number of integral points in the interval.
+  fnt  = range/fxt;
+  fnt  = ffix(fnt);
+  frac = fnt;
+  numTicks = (frac <= 0.5 ? (int)ffix(fnt) : ((int)ffix(fnt) + 1));
+
+  div = 1.;
+  if (numTicks < 5)
+    {
+    div = 2.;
+    }
+  if (numTicks <= 2)
+    {
+    div = 5.;
+    }
+
+  // If there aren't enough major tick points in this decade, use the next
+  // decade.
+  major = fxt;
+  if (div != 1.)
+    {
+    major /= div;
+    }
+  minor = (fxt/div) / 10.;
+
+  // Figure out the first major and minor tick locations, relative to the
+  // start of the axis.
+  if (sortedRange[0] <= 0.)
+    {
+    majorStart = major*(ffix(sortedRange[0]*(1./major)) + 0.);
+    minorStart = minor*(ffix(sortedRange[0]*(1./minor)) + 0.);
+    }
+  else
+    {
+    majorStart = major*(ffix(sortedRange[0]*(1./major)) + 1.);
+    minorStart = minor*(ffix(sortedRange[0]*(1./minor)) + 1.);
+    }
+
+  for (int i = 0; i < 4; i++)
+    {
+    axes[i]->SetMinorStart(minorStart); 
+    axes[i]->SetMajorStart(majorStart); 
+
+    axes[i]->SetDeltaMinor(minor); 
+    axes[i]->SetDeltaMajor(major); 
+    }
+}
+
+
+// ****************************************************************
+// Modifications:
+//   Kathleen Bonnell, Thu Aug  1 13:44:02 PDT 2002 
+//   Set a flag that forces label values to be reset. 
+// ****************************************************************
+void
+vtkKatCubeAxesActor::SetValueScaleFactor(const float scale)
+{
+    if (!this->mustAdjustValue || this->valueScaleFactor != scale)
+    {
+       this->ForceLabelReset = true;
+    }
+    else
+    {
+       this->ForceLabelReset = false;
+    }
+    this->mustAdjustValue = true;
+    this->valueScaleFactor = scale;
+}
+
+// ****************************************************************
+// Modifications:
+//   Kathleen Bonnell, Thu Aug  1 13:44:02 PDT 2002 
+//   Set a flag that forces label values to be reset. 
+// ****************************************************************
+void
+vtkKatCubeAxesActor::UnSetValueScaleFactor()
+{
+    if (this->mustAdjustValue)
+    {
+       this->Modified();
+       this->ForceLabelReset = true;
+    }
+    else
+    {
+       this->ForceLabelReset = false;
+    }
+    this->mustAdjustValue = false;
+    this->valueScaleFactor = 1.0;
+}
+
+
+// ****************************************************************
+//  Determine what the labels should be and set them in each axis.
+// ****************************************************************
+
+void
+vtkKatCubeAxesActor::BuildLabels(vtkKatAxisActor *axes[4])
+{
+  char label[512];
+  int i, labelCount = 0;
+  const float majorStart = axes[0]->GetMajorStart();
+  const float deltaMajor = axes[0]->GetDeltaMajor();
+  const float *p2        = axes[0]->GetPoint2Coordinate()->GetValue();
+  const float *range     = axes[0]->GetRange();
+  float lastVal, val= majorStart;
+  float extents = range[1] - range[0];
+  vector<string> labels; 
+  const char *format; 
+  switch (axes[0]->GetAxisType())
+    {
+    case VTK_AXIS_TYPE_X : 
+        lastVal = p2[0]; 
+        format = this->XLabelFormat;
+        break; 
+    case VTK_AXIS_TYPE_Y : 
+        lastVal = p2[1]; 
+        format = this->YLabelFormat;
+        break; 
+    case VTK_AXIS_TYPE_Z : 
+        lastVal = p2[2]; 
+        format = this->ZLabelFormat;
+        break; 
+    }
+
+  // figure out how many labels we need:
+  while (val <= lastVal && labelCount < VTK_MAX_LABELS)
+    {
+    labelCount++;
+    val += deltaMajor;
+    }
+
+  val = majorStart;
+  for (i = 0; i < labelCount; i++)
+    {
+    if (fabs(val) < 0.01 && extents > 1)
+      {
+      // We just happened to fall at something near zero and the range is
+      // large, so set it to zero to avoid ugliness.
+      val = 0.;  
+      }
+    if (this->mustAdjustValue)
+      {
+      sprintf(label, format, val * valueScaleFactor);
+      }
+    else
+      {
+      sprintf(label, format, val);
+      }
+    labels.push_back(label);
+    val += deltaMajor;
+    }
+  for (i = 0; i < 4; i++)
+    {
+        axes[i]->SetLabels(labels);
+    }
+}
 

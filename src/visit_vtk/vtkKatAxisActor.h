@@ -9,35 +9,9 @@
 
 Copyright (c) 1993-2000 Ken Martin, Will Schroeder, Bill Lorensen 
 All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
- * Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
- * Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
- * Neither name of Ken Martin, Will Schroeder, or Bill Lorensen nor the names
-   of any contributors may be used to endorse or promote products derived
-   from this software without specific prior written permission.
-
- * Modified source versions must be plainly marked as such, and must not be
-   misrepresented as being the original software.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+     This software is distributed WITHOUT ANY WARRANTY; without even 
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     PURPOSE.  See the above copyright notice for more information.
 =========================================================================*/
 // .NAME vtkKatAxisActor - Create an axis with tick marks and labels
 // .SECTION Description
@@ -73,13 +47,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __vtkKatAxisActor_h
 #include <visit_vtk_exports.h>
 
-#include "vtkActor.h"
-#include "vtkPolyDataMapper.h"
-#include "vtkVectorText.h"
-#include "vtkFollower.h"
-#include "vtkCamera.h"
+#include <vector>
+#include <string>
+
+#include <vtkActor.h>
+#include <vtkCamera.h>
 #include <vtkCoordinate.h>
+#include <vtkFollower.h>
 #include <vtkPolyData.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkVectorText.h>
 
 #define VTK_MAX_LABELS    200
 #define VTK_MAX_TICKS     1000
@@ -96,6 +73,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define VTK_AXIS_POS_MINMAX 1
 #define VTK_AXIS_POS_MAXMAX 2
 #define VTK_AXIS_POS_MAXMIN 3
+
 
 class VISIT_VTK_API vtkKatAxisActor : public vtkActor
 {
@@ -239,9 +217,8 @@ public:
 
   // Description:
   // Draw the axis. 
-  int RenderOverlay(vtkViewport* viewport);
-  int RenderOpaqueGeometry(vtkViewport* viewport);
-  int RenderTranslucentGeometry(vtkViewport *) {return 0;}
+  virtual int RenderOpaqueGeometry(vtkViewport* viewport);
+  virtual int RenderTranslucentGeometry(vtkViewport *) {return 0;}
 
   // Description:
   // Release any graphics resources that are being consumed by this actor.
@@ -250,22 +227,30 @@ public:
   void ReleaseGraphicsResources(vtkWindow *);
 
   // Description:
-  // Computes the range of the axis given an input range.  It does not 
-  // necessarily place tick marks at the endpoints so that it can place
-  // them accurately where "nice" numbers lie.
-  void AdjustTicksComputeRange(float inRange[2]);
-
-  // Description:
   // Shallow copy of an axis actor. Overloads the virtual vtkProp method.
   void ShallowCopy(vtkProp *prop);
 
+  float ComputeMaxLabelLength(const float [3]);
+  float ComputeTitleLength(const float [3]);
+  void SetLabelScale(const float);
+  void SetTitleScale(const float);
+
+
   // Description:
-  // Set/Unset the use of a scale factor for label values. 
-  void SetValueScaleFactor(const float);
-  void UnSetValueScaleFactor(void);
+  // Set/Get the starting position for minor and major tick points,
+  // and the delta values that determine their spacing. 
+  vtkSetMacro(MinorStart, float);
+  vtkGetMacro(MinorStart, float);
+  vtkSetMacro(MajorStart, float);
+  vtkGetMacro(MajorStart, float);
+  vtkSetMacro(DeltaMinor, float);
+  vtkGetMacro(DeltaMinor, float);
+  vtkSetMacro(DeltaMajor, float);
+  vtkGetMacro(DeltaMajor, float);
 
+  void SetLabels(const std::vector<std::string> &labels);
 
-  void BuildAxis(vtkViewport *viewport);
+  void BuildAxis(vtkViewport *viewport, bool);
 
 protected:
   vtkKatAxisActor();
@@ -301,22 +286,17 @@ private:
   void operator=(const vtkKatAxisActor&);
 
 
-  void BuildXTypeAxis(vtkViewport *, float p1[3], float p2[3], float ext);
-  void BuildYTypeAxis(vtkViewport *, float p1[3], float p2[3], float ext);
-  void BuildZTypeAxis(vtkViewport *, float p1[3], float p2[3], float ext);
-
   void TransformBounds(vtkViewport *, float bnds[6]);
 
-  bool BuildLabels(float, float);
-  void ScaleAndSetLabels(vtkViewport *);
-  void SetNumberOfLabels(const int);
+  void BuildLabels(vtkViewport *, bool);
+  void SetLabelPositions(vtkViewport *, bool);
 
-  void BuildTitle(float p1[3], float p2[3]);
+  void BuildTitle(bool);
 
-  void SetAxisPointsAndLines(float p1[3], float p2[3]);
-  bool BuildTickPointsForXType(float p1[3], float p2[3]);
-  bool BuildTickPointsForYType(float p1[3], float p2[3]);
-  bool BuildTickPointsForZType(float p1[3], float p2[3]);
+  void SetAxisPointsAndLines(void);
+  bool BuildTickPointsForXType(float p1[3], float p2[3], bool);
+  bool BuildTickPointsForYType(float p1[3], float p2[3], bool);
+  bool BuildTickPointsForZType(float p1[3], float p2[3], bool);
 
   bool TickVisibilityChanged(void);
 
@@ -331,9 +311,6 @@ private:
 
   float  DeltaMinor;
   float  DeltaMajor;
-
-  float  valueScaleFactor;
-  bool   mustAdjustValue;
 
   int    LastAxisPosition;
   int    LastAxisType;
@@ -362,7 +339,6 @@ private:
   vtkTimeStamp        LabelBuildTime;
 
   int                 AxisHasZeroLength;
-  int                 ForceLabelReset;
 };
 
 

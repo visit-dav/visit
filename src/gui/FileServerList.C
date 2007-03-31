@@ -267,6 +267,10 @@ FileServerList::Initialize()
 //
 // Modifications:
 //   
+//   Brad Whitlock, Fri Jun 20 17:34:08 PST 2003
+//   I added code to prevent the mdserver's CloseDatabase method from
+//   being called if we have no open file.
+//
 // ****************************************************************************
 
 void
@@ -379,7 +383,8 @@ FileServerList::SilentNotify()
             // try and change the host or path, etc.
             if(fileAction == FILE_CLOSE)
             {
-                info->server->CloseDatabase();
+                if(!openFile.Empty())
+                    info->server->CloseDatabase();
             }
             else
             {

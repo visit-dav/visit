@@ -162,9 +162,15 @@
 #    Jeremy Meredith, Thu Jun 12 09:00:25 PDT 2003
 #    Added vtkUnstructuredGridBoundaryFilter.
 #
-#    Akira Haddox, Thu Jul  3 13:42:53 PDT 2003
-#    Added vtkDashedXorGridMapper2D.C
+#    Hank Childs, Mon Jun 23 09:46:51 PDT 2003
+#    Added vtkVisItContourFilter.C
 #
+#    Akira Haddox, Thu Jul  3 13:42:53 PDT 2003
+#    Added vtkDashedXorGridMapper2D.
+#
+#    Akira Haddox, Fri Jul 25 10:30:45 PDT 2003
+#    Added vtkVisItScalarTree.
+# 
 ##############################################################################
 
 ##
@@ -212,11 +218,13 @@ SRC=InitVTK.C \
     vtkVerticalScalarBarActor.C \
     vtkVerticalScalarBarWithOpacityActor.C \
     vtkVisItCellLocator.C \
+    vtkVisItContourFilter.C \
     vtkVisItCutter.C \
     vtkVisItFeatureEdges.C \
     vtkVisItPLOT3DReader.C \
     vtkVisItQuad.C \
     vtkVisItSTLWriter.C \
+    vtkVisItScalarTree.C \
     vtkVisItStreamLine.C \
     vtkVisItTriangle.C \
     vtkVisItUtility.C
@@ -257,11 +265,13 @@ HDR=InitVTK.h \
     vtkVerticalScalarBarActor.h \
     vtkVerticalScalarBarWithOpacityActor.h \
     vtkVisItCellLocator.h \
+    vtkVisItContourFilter.h \
     vtkVisItCutter.h \
     vtkVisItFeatureEdges.h \
     vtkVisItPLOT3DReader.h \
     vtkVisItQuad.h \
     vtkVisItSTLWriter.h \
+    vtkVisItScalarTree.h \
     vtkVisItStreamLine.h \
     vtkVisItTriangle.h \
     vtkVisItUtility.h

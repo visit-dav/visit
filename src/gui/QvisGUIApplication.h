@@ -13,6 +13,7 @@
 #include <QualifiedFilename.h>
 
 // Long list of forward declarations.
+class DataNode;
 class ObserverToCallback;
 class QApplication;
 class QPrinter;
@@ -46,9 +47,7 @@ class QvisSaveWindow;
 class QvisSubsetWindow;
 class QvisViewWindow;
 class QvisWindowBase;
-#ifdef SPLASHSCREEN
-class SplashScreenProxy;
-#endif
+class SplashScreen;
 
 // Create a type for a vector of postable windows.
 typedef std::vector<QvisWindowBase *> WindowBaseVector;
@@ -214,13 +213,14 @@ public:
 
 private:
     void AddViewerArguments(int argc, char **argv);
-    void AddViewerSpaceArguments(int orientation);
-    void AddSplashScreenArguments(int argc, char **argv);
-    void SplashScreenProgress(char *, int);
+    void AddViewerSpaceArguments();
+    void SplashScreenProgress(const char *, int);
     void CalculateViewerArea(int orientation, int &x, int &y,
                              int &width, int &height);
-    void CreateWindows(int orientation);
+    void CreateMainWindow();
+    bool CreateWindows(int startPercent, int endPercent);
     void CreatePluginWindows();
+    void LaunchViewer();
     void InitializeFileServer(DataNode *);
     void LoadFile();
     void MoveAndResizeMainWindow(int orientation);
@@ -233,12 +233,16 @@ private:
 
     void ReadPluginWindowConfigs(DataNode *parentNode, const char *configVersion);
     void WritePluginWindowConfigs(DataNode *parentNode);
+    void Synchronize(int tag);
+    void HandleSynchronize(int val);
 
     // Internal callbacks
     static void StartMDServer(const std::string &hostName,
                               const stringVector &args, void *data);
     static void UpdatePrinterAttributes(Subject *subj, void *data);
+    static void SyncCallback(Subject *s, void *data);
 private slots:
+    void HeavyInitialization();
     void ReadFromViewer(int sock_id);
     void SaveSettings();
     void ActivatePlotWindow(int index);
@@ -248,6 +252,7 @@ private slots:
     void AboutVisIt();
     void CustomizeAppearance(bool notify);
     void LoadPlugins();
+    void FinalInitialization();
 
     void SaveWindow();
     void SetPrinterOptions();
@@ -256,6 +261,7 @@ private slots:
     void RestoreSession();
     void SaveSession();
 private:
+    int                          completeInit;
     bool                         viewerIsAlive;
 
     MessageAttributes            message;
@@ -265,14 +271,13 @@ private:
 
     // A socket notifier to tell us when the viewer proxy has input.
     QSocketNotifier              *fromViewer;
+    bool                          allowSocketRead;
 
     QPrinter                     *printer;
     ObserverToCallback           *printerObserver;
 
-#ifdef SPLASHSCREEN
-    // Splashscreen proxy
-    SplashScreenProxy            *splash;
-#endif
+    SplashScreen                 *splash;
+    bool                          showSplash;
 
     // Commandline arguments for QT
     int    qt_argc;
@@ -334,10 +339,23 @@ private:
     QString                      backgroundColor;
     QString                      applicationStyle;
 
+
+
     // File to load on startup.
     QualifiedFilename            loadFile;
 
     int                          sessionCount;
+
+    // Synchronization attributes
+    ObserverToCallback           *syncObserver;
+    int                          initStage;
+    int                          heavyInitStage;
+    int                          windowInitStage;
+    int                          windowTimeId;
+
+    // Config file storage
+    DataNode                     *systemSettings;
+    DataNode                     *localSettings;
 };
 
 #endif

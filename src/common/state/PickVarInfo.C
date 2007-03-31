@@ -909,7 +909,7 @@ PickVarInfo::CreateOutputString(std::string &os)
         else
         {
             mixOffset  = 0;
-            string spacing;
+            std::string spacing;
             for (i = 0; i < numMatsPerZone.size(); i++)
             {
                 if (names.size() > 0)

@@ -89,6 +89,9 @@
 //    Brad Whitlock, Tue May 13 15:29:50 PST 2003
 //    I made it possible to get metadata for a certain timestate.
 //
+//    Brad Whitlock, Mon Jun 16 13:45:31 PST 2003
+//    I changed the Connect method so it only has a single argument.
+//
 // ****************************************************************************
 
 class MDSERVER_PROXY_API MDServerProxy : public RemoteProxyBase
@@ -140,9 +143,7 @@ public:
 
     // RPCs to access functionality on the mdserver.
     void                       ChangeDirectory(const std::string &);
-    void                       Connect(const std::string &host,
-                                       const std::string &key, int port,
-                                       int numRead, int numWrite);
+    void                       Connect(const stringVector &args);
     void                       CreateGroupList(const std::string &filename,
                                                const stringVector &groupList);
     std::string                GetDirectory();

@@ -43,6 +43,9 @@ using std::vector;
 //    Added reading in of times. Added FreeUpResources.
 //    Changed sub_records to hold mili type 'Subrecord'.
 //
+//    Akira Haddox, Fri Jul 25 11:09:13 PDT 2003
+//    Added var_dimension.
+//
 // ****************************************************************************
 
 class avtMiliFileFormat : public avtMTMDFileFormat
@@ -97,6 +100,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     vector< avtCentering >                 centering;
     vector< vector< vector<bool> > >       vars_valid;
     vector< avtVarType >                   vartype;
+    vector< int >                          var_dimension;
     vector< int >                          var_mesh_associations;
 
     vector<int>                            nmaterials;

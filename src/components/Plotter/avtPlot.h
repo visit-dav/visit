@@ -170,7 +170,7 @@ class PLOTTER_API avtPlot
     avtTheater                 theater;
     avtBehavior_p              behavior;
     avtDrawer                 *drawer;
-    avtDatasetToDatasetFilter *relevantPointsFilter;
+    avtDatasetToDatasetFilter *condenseDatasetFilter;
     avtDatasetToDatasetFilter *ghostZoneAndFacelistFilter;
     avtDatasetToDatasetFilter *compactTreeFilter;
     avtDatasetToDatasetFilter *currentExtentFilter;

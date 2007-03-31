@@ -14,8 +14,7 @@
 using std::string;
 
 class vtkCellDataToPointData;
-class vtkContourFilter;
-class vtkContourGrid;
+class vtkVisItContourFilter;
 class vtkDataSet;
 
 
@@ -68,8 +67,7 @@ class PIPELINE_API avtContourFilter : public avtDataTreeStreamer
     virtual void               ReleaseData(void);
 
   protected:
-    vtkContourFilter          *cf;
-    vtkContourGrid            *cg;
+    vtkVisItContourFilter     *cf;
     vtkCellDataToPointData    *cd2pd;
 
     bool                       stillNeedExtents;

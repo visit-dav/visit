@@ -2,7 +2,6 @@
 #define CONNECT_RPC_H
 #include <mdsrpc_exports.h>
 #include <VisItRPC.h>
-#include <string>
 
 // ****************************************************************************
 // Class: ConnectRPC
@@ -20,6 +19,9 @@
 //   Brad Whitlock, Thu Dec 26 15:58:30 PST 2002
 //   I added a security key feature.
 //
+//   Brad Whitlock, Mon Jun 16 13:39:48 PST 2003
+//   I changed the definition so all fields are encapsulated in a string vector.
+//
 // ****************************************************************************
 
 class MDSERVER_RPC_API ConnectRPC : public NonBlockingRPC
@@ -29,24 +31,15 @@ public:
     virtual ~ConnectRPC();
 
     // Invokation method
-    void operator()(const std::string &host, const std::string &key,
-                    int port, int nread, int nwrite);
+    void operator()(const stringVector &args);
 
     // Property selection methods
     virtual void SelectAll();
 
     // Access methods
-    const std::string &GetHost() const;
-    const std::string &GetKey() const;
-    int GetPort() const;
-    int GetNRead() const;
-    int GetNWrite() const;
+    const stringVector &GetArguments() const;
 private:
-    std::string connectHost;
-    std::string connectKey;
-    int         connectPort;
-    int         connectNRead;
-    int         connectNWrite;
+    stringVector arguments;
 };
 
 

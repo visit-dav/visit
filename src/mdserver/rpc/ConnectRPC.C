@@ -13,14 +13,13 @@
 //   Brad Whitlock, Thu Dec 26 15:59:41 PST 2002
 //   I added connectKey.
 //
+//   Brad Whitlock, Mon Jun 16 13:41:38 PST 2003
+//   I replaced all of the fields with the arguments field.
+//
 // ****************************************************************************
 
-ConnectRPC::ConnectRPC() : NonBlockingRPC("ssiii"), connectHost(""),
-    connectKey("")
+ConnectRPC::ConnectRPC() : NonBlockingRPC("s*"), arguments()
 {
-    connectPort = 0;
-    connectNRead = 0;
-    connectNWrite = 0;
 }
 
 // ****************************************************************************
@@ -48,11 +47,7 @@ ConnectRPC::~ConnectRPC()
 //   arguments into local attributes and calls RPC's Execute method.
 //
 // Arguments:
-//   host   : The host on which the remote process is running.
-//   key    : The security key that the remote process must return.
-//   port   : The port used to connect to the remote process.
-//   nread  : The number of read sockets to open.
-//   nwrite : The number of write sockets to open.
+//   args : The arguments that describe how to connect to the client.
 //
 // Returns:    
 //
@@ -62,18 +57,15 @@ ConnectRPC::~ConnectRPC()
 // Creation:   Fri Nov 17 17:50:57 PST 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jun 16 13:42:24 PST 2003
+//   I made it use a single string vector.
+//
 // ****************************************************************************
 
 void
-ConnectRPC::operator()(const std::string &host, const std::string &key,
-                       int port, int nread, int nwrite)
+ConnectRPC::operator()(const stringVector &args)
 {
-    connectHost = host;
-    connectKey = key;
-    connectPort = port;
-    connectNRead = nread;
-    connectNWrite = nwrite;
+    arguments = args;
     Execute();
 }
 
@@ -91,121 +83,26 @@ ConnectRPC::operator()(const std::string &host, const std::string &key,
 //   Brad Whitlock, Thu Dec 26 16:00:55 PST 2002
 //   I added connectKey.
 //
+//   Brad Whitlock, Mon Jun 16 13:43:01 PST 2003
+//   I replaced all of the fields with a single string vector field.
+//
 // ****************************************************************************
 
 void
 ConnectRPC::SelectAll()
 {
-    Select(0, (void *)&connectHost);
-    Select(1, (void *)&connectKey);
-    Select(2, (void *)&connectPort);
-    Select(3, (void *)&connectNRead);
-    Select(4, (void *)&connectNWrite);
+    Select(0, (void *)&arguments);
 }
 
 // ****************************************************************************
-// Method: ConnectRPC::GetHost
+// Method: ConnectRPC::GetArguments
 //
 // Purpose: 
-//   Returns the host.
+//   Returns the arguments.
 //
 // Arguments:
 //
-// Returns:    Returns the host.
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Nov 17 17:53:50 PST 2000
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-const std::string &
-ConnectRPC::GetHost() const
-{
-    return connectHost;
-}
-
-// ****************************************************************************
-// Method: ConnectRPC::GetKey
-//
-// Purpose: 
-//   Returns the security key.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Dec 26 16:01:28 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-const std::string &
-ConnectRPC::GetKey() const
-{
-    return connectKey;
-}
-
-// ****************************************************************************
-// Method: ConnectRPC::GetPort
-//
-// Purpose: 
-//   Returns the port used in the RPC call.
-//
-// Arguments:
-//
-// Returns:     Returns the port used in the RPC call.
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Nov 17 17:54:10 PST 2000
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-int
-ConnectRPC::GetPort() const
-{
-    return connectPort;
-}
-
-// ****************************************************************************
-// Method: ConnectRPC::GetNRead
-//
-// Purpose: 
-//   Returns the number of read sockets.
-//
-// Arguments:
-//
-// Returns:    Returns the number of read sockets.
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Nov 17 17:54:31 PST 2000
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-int
-ConnectRPC::GetNRead() const
-{
-    return connectNRead;
-}
-
-// ****************************************************************************
-// Method: ConnectRPC::GetNWrite
-//
-// Purpose: 
-//   Returns the number of write sockets.
-//
-// Arguments:
-//
-// Returns:    Returns the number of write sockets.
+// Returns:    Returns the arguments.
 //
 // Note:       
 //
@@ -216,8 +113,8 @@ ConnectRPC::GetNRead() const
 //   
 // ****************************************************************************
 
-int
-ConnectRPC::GetNWrite() const
+const stringVector &
+ConnectRPC::GetArguments() const
 {
-     return connectNWrite;
+     return arguments;
 }

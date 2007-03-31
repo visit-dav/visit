@@ -22,6 +22,7 @@
 #endif
 #endif
 
+#include <Connection.h>
 #include <Observer.h>
 #include <ObserverToCallback.h>
 #include <ViewerProxy.h>

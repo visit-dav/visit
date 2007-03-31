@@ -5,10 +5,10 @@
 #include <string>
 #include <exception>
 #include <iostream.h>
-#include <Connection.h>
 
 // Forward declaration
 class AttributeGroup;
+class Connection;
 class DataNode;
 
 // ****************************************************************************
