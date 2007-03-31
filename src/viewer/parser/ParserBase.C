@@ -160,6 +160,10 @@ ParserBase::PrintState(ostream &o)
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Jul 28 16:57:00 PDT 2003
+//    Added extra info to the error message.
+//
 // ****************************************************************************
 void
 ParserBase::ParseOneToken(Token *t)
@@ -184,6 +188,7 @@ ParserBase::ParseOneToken(Token *t)
         if (t->GetType() == TT_EOF)
             throw UnexpectedEndException(t->GetPos());
         else
-            throw SyntacticException(t->GetPos());
+            throw SyntacticException(t->GetPos(),
+                                     GetTokenString(t->GetType()));
     }
 }

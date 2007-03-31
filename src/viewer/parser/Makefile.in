@@ -38,6 +38,9 @@
 #    Jeremy Meredith, Fri Jul 12 14:30:11 PDT 2002
 #    Unified include directories.
 #
+#    Jeremy Meredith, Mon Jul 28 16:56:09 PDT 2003
+#    Changed some libraries for linking the standalone debugging parser.
+#
 ##############################################################################
 
 ##
@@ -57,8 +60,8 @@ VTK_INCLUDE=@VTK_INCLUDES@
 LIBS=-L../../lib -L../../vtkqt -lengineproxy -lenginerpc -lviewerrpc \
      -lmdserverproxy -lmdserverrpc -ldbatts -lparser -lplugin -lviswindow \
      -lavtmath_ser -lplotter -lpipeline_ser -lvisit_vtk -lvtkqt -lwinutil \
-     @QT_LIBS@ -lmisc -lcomm -lrpc -lstate -lutility -lavtexceptions \
-     -lviewer $(VTK_LIBS) $(X_LIBS) @LIBS@ @PTHREAD_LIB@
+     @QT_LIBS@ -lmisc -lcomm -lvclproxy  -lvclrpc -lproxybase -lstate -lutility \
+     -lavtexceptions -lviewer $(VTK_LIBS) $(X_LIBS) @LIBS@ @PTHREAD_LIB@
 LDFLAGS=@LDFLAGS@ @QT_LDFLAGS@
 CXXFLAGS=@CXXFLAGS@
 CPPFLAGS=@CPPFLAGS@ ${VTK_INCLUDE} -I. -I../../include/visit

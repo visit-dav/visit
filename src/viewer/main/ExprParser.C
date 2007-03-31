@@ -9,8 +9,11 @@
 #include <Colors.h>
 #include <ExprGrammar.h>
 #include <ParseException.h>
+#include <ViewerMessaging.h>
 #include <vector>
 using std::vector;
+
+ExprParser::ErrorMessageTarget ExprParser::errorMessageTarget = EMT_VIEWER;
 
 class DummyNode : public ExprGrammarNode
 {
@@ -60,6 +63,10 @@ ExprParser::ExprParser() : ParserBase()
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
+//
+//  Modifications:
+//    Jeremy Meredith, Mon Jul 28 16:03:49 PDT 2003
+//    Added more info to the error message in the TimeSpec.
 //
 // ****************************************************************************
 ExprGrammarNode*
@@ -334,7 +341,8 @@ ExprParser::ApplyRule(const Symbol &sym, const Rule *rule,
             {
                 const   string & id = static_cast<Identifier *>(E[3])->GetVal();
                 if (id.length() != 1)
-                    throw   SyntacticException(E[3]->GetPos());
+                    throw SyntacticException(E[3]->GetPos(),
+                                             "needs to be 'i', 'c', or 't'");
                 char    c = id[0];
                 TimeExpr::Type t;
                 if (c == 'c' || c == 'C')
@@ -344,7 +352,8 @@ ExprParser::ApplyRule(const Symbol &sym, const Rule *rule,
                 else if (c == 'i' || c == 'I')
                     t = TimeExpr::Index;
                 else
-                    throw SyntacticException(E[3]->GetPos());
+                    throw SyntacticException(E[3]->GetPos(),
+                                             "needs to be 'i', 'c', or 't'");
                 node = new TimeExpr(p, static_cast<ListExpr *>(E[1]), t);
                 break;
             }
@@ -374,6 +383,12 @@ ExprParser::ApplyRule(const Symbol &sym, const Rule *rule,
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Jul 28 16:13:35 PDT 2003
+//    Made it report normal parse errors through the viewer window
+//    mechanism if needed.  Unhandled reductions will only occur during
+//    debugging and can still go to cerr.
+//
 // ****************************************************************************
 ExprNode*
 ExprParser::Parse(const std::string &s)
@@ -398,6 +413,7 @@ ExprParser::Parse(const std::string &s)
     }
     catch (UnhandledReductionException &e)
     {
+        // This should only occur during debugging; print to cerr anyway
         cerr << e.Message() << endl;
         cerr << "Rule = " << *(e.GetRule()) << endl;
         e.GetPos().PrintText(cerr, text);
@@ -405,8 +421,15 @@ ExprParser::Parse(const std::string &s)
     }
     catch (ParseException &e)
     {
-        cerr << e.Message() << endl;
-        e.GetPos().PrintText(cerr, text);
+        char error[1024];
+        SNPRINTF(error, 1024, "%s\n%s",
+                 e.Message(), e.GetPos().GetText(text).c_str());
+
+        if (errorMessageTarget == EMT_VIEWER)
+            Error(error);
+        else if (errorMessageTarget == EMT_CONSOLE)
+            cerr << error;
+
         return NULL;
     }
 

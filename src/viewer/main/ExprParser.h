@@ -20,6 +20,10 @@
 //    Brad Whitlock, Fri Jun 28 15:20:36 PST 2002
 //    Changed the name of the base class.
 //
+//    Jeremy Meredith, Mon Jul 28 16:54:47 PDT 2003
+//    Add the ability to set the error reporting message target to 
+//    the console, the viewer error message mechanism, or neither.
+//
 // ****************************************************************************
 
 class VIEWER_API ExprParser : private ParserBase
@@ -28,12 +32,24 @@ class VIEWER_API ExprParser : private ParserBase
     ExprParser();
     ExprNode *Parse(const std::string &);
 
+    enum ErrorMessageTarget
+    {
+        EMT_NONE,
+        EMT_CONSOLE,
+        EMT_VIEWER
+    };
+    static void SetErrorMessageTarget(const ErrorMessageTarget emt)
+    {
+        errorMessageTarget = emt;
+    }
+
   protected:
     ExprGrammarNode *ApplyRule(const Symbol&, const Rule*,
                                std::vector<ExprGrammarNode*>&, Pos);
 
   private:
     Scanner scanner;
+    static ErrorMessageTarget errorMessageTarget;
 };
 
 #endif
