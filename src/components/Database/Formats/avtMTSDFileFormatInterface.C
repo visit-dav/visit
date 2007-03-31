@@ -279,7 +279,8 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md, int)
     vector<int> cycles;
     domains[0]->GetCycles(cycles);
     bool guessLooksGood = true;
-    for (int i = 0 ; i < nDomains ; i++)
+    int i;
+    for (i = 0 ; i < nDomains ; i++)
     {
         if (i != 0)
         {
@@ -312,7 +313,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md, int)
     vector<double> times;
     domains[0]->GetTimes(times);
     guessLooksGood = true;
-    for (int i = 0 ; i < times.size() ; i++)
+    for (i = 0 ; i < times.size() ; i++)
     {
         if (i != 0)
         {

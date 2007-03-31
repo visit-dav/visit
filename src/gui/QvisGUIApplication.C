@@ -2051,9 +2051,9 @@ QvisGUIApplication::WriteConfigFile(const char *filename)
     //
     stringVector plotDatabases;
     const PlotList *pl = viewer->GetPlotList();
-    for(int i = 0; i < pl->GetNumPlots(); ++i)
+    for(int j = 0; j < pl->GetNumPlots(); ++j)
     {
-        const Plot &p = pl->GetPlot(i);
+        const Plot &p = pl->GetPlot(j);
         // Make sure we only add it if it's not already there.
         if(std::find(plotDatabases.begin(),
                      plotDatabases.end(),

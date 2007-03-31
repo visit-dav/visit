@@ -4,8 +4,13 @@
 
 #include <avtFeatureEdgesFilter.h>
 
+#include <vtkCell.h>
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkFeatureEdges.h>
+#include <vtkIdList.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 
 #include <avtDataset.h>

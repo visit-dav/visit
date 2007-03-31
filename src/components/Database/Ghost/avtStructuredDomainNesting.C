@@ -1,5 +1,6 @@
 #include <avtStructuredDomainNesting.h>
 #include <VisItException.h>
+#include <vtkCellData.h>
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
 #include <vtkStructuredGrid.h>

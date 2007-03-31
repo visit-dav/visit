@@ -758,6 +758,10 @@ QvisFileSelectionWindow::UpdateComboBox(QComboBox *cb, const stringVector &s,
 //   Brad Whitlock, Fri Mar 28 15:57:26 PST 2003
 //   I made it use QFileSelectionListBoxItem.
 //
+//   Brad Whitlock, Tue Oct 21 13:28:25 PST 2003
+//   I made directories get their associated permission flag so they appear
+//   grayed out if they don't have read permission.
+//
 // ****************************************************************************
 
 void
@@ -776,19 +780,22 @@ QvisFileSelectionWindow::UpdateDirectoryList()
     {
         if(pos->name == std::string("."))
         {
-            new QFileSelectionListBoxItem(directoryList, curDirString,
-                QualifiedFilename(curDirString.latin1()));
+            QualifiedFilename dirName(curDirString.latin1());
+            dirName.SetAccess(pos->CanAccess());
+            new QFileSelectionListBoxItem(directoryList, curDirString, dirName);
         }
         else if(pos->name == std::string(".."))
         {
-            new QFileSelectionListBoxItem(directoryList, upDirString,
-                QualifiedFilename(upDirString.latin1()));
+            QualifiedFilename dirName(upDirString.latin1());
+            dirName.SetAccess(pos->CanAccess());
+            new QFileSelectionListBoxItem(directoryList, upDirString, dirName);
         }
         else
         {
-            QString name(pos->name.c_str());
-            new QFileSelectionListBoxItem(directoryList, name,
-                QualifiedFilename(pos->name), folderPixmap);
+            QualifiedFilename dirName(pos->name);
+            dirName.SetAccess(pos->CanAccess());
+            new QFileSelectionListBoxItem(directoryList, pos->name.c_str(),
+                dirName, folderPixmap);
         }
     }
 }

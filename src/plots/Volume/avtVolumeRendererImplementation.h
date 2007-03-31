@@ -4,7 +4,7 @@
 class vtkRectilinearGrid;
 class vtkDataArray;
 class VolumeAttributes;
-class avtViewInfo;
+struct avtViewInfo;
 
 // ****************************************************************************
 //  Class:  avtVolumeRendererImplementation

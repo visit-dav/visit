@@ -117,7 +117,10 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
                                          float *gx, float *gy, float *gz,
                                          float *gmn)
 {
-#if defined(HAVE_GL_TEX_IMAGE_3D) || defined(avtOpenGL3DTextureVolumeRenderer)
+//
+// The VC++ 6.0 compiler's OpenGL does not have 3D texturing!
+//
+#if !defined(_WIN32) && (defined(HAVE_GL_TEX_IMAGE_3D) || defined(avtOpenGL3DTextureVolumeRenderer))
 
     // Get the transfer function
     int ncolors=256;
@@ -162,7 +165,8 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
     float ambient = 0.0;
 
     // Find an ambient light
-    for (int i=0; i<lights.NumLights(); i++)
+    int i;
+    for (i=0; i<lights.NumLights(); i++)
     {
         const LightAttributes &l = lights.GetLight(i);
         if (l.GetEnabledFlag() && l.GetType()==LightAttributes::Ambient)
@@ -176,7 +180,7 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
     }
 
     // Find a directional (object or camera) light
-    for (int i=0; i<lights.NumLights(); i++)
+    for (i=0; i<lights.NumLights(); i++)
     {
         const LightAttributes &l = lights.GetLight(i);
         if (l.GetEnabledFlag() && l.GetType()!=LightAttributes::Ambient)
