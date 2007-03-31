@@ -10,6 +10,8 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 
+#include <float.h>
+
 #include <vector>
 using std::vector;
 
