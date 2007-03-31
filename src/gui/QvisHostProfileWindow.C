@@ -140,6 +140,9 @@ QvisHostProfileWindow::~QvisHostProfileWindow()
 //   Jeremy Meredith, Mon May 19 12:48:38 PDT 2003
 //   Added toggle button for sharing mdserver / engines in a single job.
 //
+//   Jeremy Meredith, Thu Jun 26 10:37:09 PDT 2003
+//   Enabled the share-batch-job toggle.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::CreateWindowContents()
@@ -269,7 +272,6 @@ QvisHostProfileWindow::CreateWindowContents()
     parLayout->addMultiCellWidget(shareMDServerCheckBox, prow,prow, 0,3);
     connect(shareMDServerCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleShareMDServer(bool)));
-    shareMDServerCheckBox->setEnabled(false);
     prow++;
 
     launchMethod = new QComboBox(false, parGroup, "launchMethod");
@@ -635,6 +637,9 @@ QvisHostProfileWindow::UpdateProfileList()
 //   Jeremy Meredith, Mon Apr 14 17:21:25 PDT 2003
 //   Added hostAliases.
 //
+//   Jeremy Meredith, Thu Jun 26 10:37:38 PDT 2003
+//   Update the share-batch-job toggle.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::UpdateActiveProfile()
@@ -709,6 +714,8 @@ QvisHostProfileWindow::UpdateActiveProfile()
         timeout->setValue(current.GetTimeout());
         parallelCheckBox->setChecked(current.GetParallel());
         bool parEnabled = current.GetParallel();
+        if (parEnabled)
+            shareMDServerCheckBox->setChecked(current.GetShareOneBatchJob());
         launchCheckBox->setChecked(parEnabled && current.GetLaunchMethodSet());
         if (parEnabled && current.GetLaunchMethodSet())
         {

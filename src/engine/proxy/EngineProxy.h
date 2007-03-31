@@ -149,6 +149,9 @@ class StatusAttributes;
 //    Brad Whitlock, Fri May 2 15:28:24 PST 2003
 //    I made it inherit from RemoteProxyBase.
 //
+//    Jeremy Meredith, Thu Jun 26 10:31:39 PDT 2003
+//    Made the numprocs/nodes/lb methods virtual.
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -160,12 +163,12 @@ public:
     virtual bool Parallel() const { return numProcs > 1; };
     virtual std::string GetComponentName() const;
 
-    void SetNumProcessors(int np) { numProcs = np; };
-    void SetNumNodes(int nn)      { numNodes = nn; };
-    void SetLoadBalancing(int lb) { loadBalancing = lb; };
-    int  NumProcessors() const    { return numProcs; };
-    int  NumNodes() const         { return numNodes; };
-    int  LoadBalancing() const    { return loadBalancing; };
+    virtual void SetNumProcessors(int np) { numProcs = np; };
+    virtual void SetNumNodes(int nn)      { numNodes = nn; };
+    virtual void SetLoadBalancing(int lb) { loadBalancing = lb; };
+    virtual int  NumProcessors() const    { return numProcs; };
+    virtual int  NumNodes() const         { return numNodes; };
+    virtual int  LoadBalancing() const    { return loadBalancing; };
 
     StatusAttributes        *GetStatusAttributes() const;
 

@@ -211,6 +211,15 @@ $0 = shift @ARGV;
 #    but since 1.0.  This should be removed when the oldest previous
 #    version anyone will want to run is 1.1.4.
 #
+#    Jeremy Meredith, Thu Jun 26 10:05:12 PDT 2003
+#    Added support for LANL's Q machine:  I added a hack to update
+#    the user's paths.  I allowed the VCL to be launched in parallel.
+#    I Added a parallel launcher ("-pl") argument.  It is much
+#    like "-l", except it will only be triggered when launching the
+#    engine.  I made the number of processors to be passed to the
+#    parallel launcher only when the number of processors was actually
+#    set.  I added support for "bsub" as a launcher.
+#
 ###############################################################################
 
 
@@ -295,6 +304,7 @@ USAGE:  visit [arguments]
     Parallel arguments:
         -par                 Select the parallel version.  (optional)
         -l    <method>       Launch in parallel using the given method.
+        -pl   <method>       Launch only the engine in parallel as specified.
         -la   <args>         Additional arguments for the parallel launcher.
         -np   <# procs>      The number of processors to use.
         -nn   <# nodes>      The number of nodes to allocate.
@@ -360,6 +370,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-np")        { $procs= shift; $procs_set= 1; $parallel = 1; }
     elsif ($arg eq "-nn")        { $nodes= shift; $nodes_set= 1; }
     elsif ($arg eq "-l")         { $launch=shift; $launch_set=1; }
+    elsif ($arg eq "-pl")        { $parlaunch=shift; $parlaunch_set=1; }
     elsif ($arg eq "-la")        { $_=shift; @launchargs=split; $launchargs_set=1; }
     elsif ($arg eq "-n" )        { $name = shift; $name_set = 1; }
     elsif ($arg eq "-p" )        { $part = shift; $part_set = 1; }
@@ -447,6 +458,22 @@ if ($ver_set)
     }
 }
 
+# ----
+#  HACK for LANL's Q machine:
+#
+#  If we're on LANL's Q machine, then we need to make sure BSUB is in our
+#  path and that libstdc++ and libmpi are in our library path.
+# ----
+if ($host =~ /^q\d+$/ || $host =~ /^qfe\d$/)
+{
+    $ENV{PATH} = join ':' , ("$ENV{PATH}","/lsfdir/Q/4.2/alpha5-rms/bin");
+    $ENV{LD_LIBRARY_PATH} = join ':' ,
+                         ("$ENV{LD_LIBRARY_PATH}",
+                          "/usr/local/gnu/packages/gcc-3.0.4/lib",
+                          "/lsfdir/Q_CD/4.2/alpha5-rms/lib",
+                          "/usr/local/opt/Compaq_MPI_64_2.5UK1_r1/usr/shlib");
+}
+
 # -----------------------------------------------------------------------------
 #                               Check for errors
 # -----------------------------------------------------------------------------
@@ -467,7 +494,9 @@ if (($procs_set) and ($procs < 1))
     exit 1;
 }
 
-if ((($parallel) or ($launchengine)) and ($exe_name ne "engine"))
+if ((($parallel) or ($launchengine)) and
+    ($exe_name ne "engine") and
+    ($exe_name ne "vcl"))
 {
     # If we're trying to run in parallel, or we've been explicitly
     # told to launch an engine, add any parallel arguments back on
@@ -586,6 +615,15 @@ if ($exe_name eq "engine")
 {
     $exe_name .= "_ser" if (!$parallel);
     $exe_name .= "_par" if ($parallel);
+
+    # if we've designated a parallel launcher, then we are sharing
+    # one batch job between the mdserver and engine (through the vcl)
+    # so: if we're launching a parallel engine with -pl specified, then
+    # make the real launcher the parallel launcher
+    if ($parallel and $parlaunch_set)
+    {
+        $launch = $parlaunch;
+    }
 }
 
 # If a directory was specified or the executable exists in a first-level bin
@@ -786,14 +824,14 @@ $ENV{MESA_GLX_FX} = disable;
 @visitcmd = ("$visitbindir/$exe_name", @visitargs);
 $printonly = grep(/^$exe_name$/, @norun) unless ($debug_totalview);
 
-if ($procs_set)
+if ($procs_set or ($parallel and $parlaunch_set))
 {
     # mpirun
     if ($launch eq "mpirun")
     {
         @parcmd = ("mpirun");
 	push @parcmd, @launchargs if $launchargs_set;
-        push @parcmd, "-np", $procs;
+        push @parcmd, "-np", $procs if $procs_set;
         push @parcmd, "-p",  $part  if $part_set;
         push @parcmd, @visitcmd;
 
@@ -806,7 +844,7 @@ if ($procs_set)
     {
         @parcmd = ("dmpirun");
 	push @parcmd, @launchargs if $launchargs_set;
-        push @parcmd, "-np", $procs;
+        push @parcmd, "-np", $procs if $procs_set;
         push @parcmd, "-p",  $part  if $part_set;
         push @parcmd, @visitcmd;
 
@@ -819,7 +857,7 @@ if ($procs_set)
     {
         @parcmd = @visitcmd;
 	push @parcmd, @launchargs if $launchargs_set;
-        push @parcmd, "-procs",  $procs;
+        push @parcmd, "-procs",  $procs if $procs_set;
         push @parcmd, "-nodes",  $nodes if $nodes_set;
         push @parcmd, "-rmpool", $part  if $part_set;
 
@@ -832,7 +870,7 @@ if ($procs_set)
     {
         @parcmd = ("prun");
 	push @parcmd, @launchargs if $launchargs_set;
-        push @parcmd, "-n",  $procs;
+        push @parcmd, "-n",  $procs if $procs_set;
         push @parcmd, "-N",  $nodes if $nodes_set;
         push @parcmd, "-p",  $part  if $part_set;
         push @parcmd, @visitcmd;
@@ -858,7 +896,7 @@ if ($procs_set)
         @parcmd = ("psub");
 	push @parcmd, @launchargs if $launchargs_set;
         push @parcmd, "-x";
-        push @parcmd, "-g",  $procs;
+        push @parcmd, "-g",  $procs if $procs_set;
         push @parcmd, "-ln", $nodes if $nodes_set;
         push @parcmd, "-r",  $name  if $name_set;
         push @parcmd, "-c",  $part  if $part_set;
@@ -869,12 +907,29 @@ if ($procs_set)
         @printcmd = @parcmd;
         push @printcmd, ("\"".(pop @printcmd)."\"");
     }
+    # bsub
+    elsif (substr($launch,0,4) eq "bsub")
+    {
+        ($bsubcmd, $sublauncher) = split /\W+/, substr($launch,4);
+        $sublauncher = "" if (!defined $sublauncher);
+        if ($security_key_set) { push @visitcmd, "-key", $security_key; }
+        @parcmd = ("bsub");
+        push @parcmd, "-I";
+	push @parcmd, @launchargs if $launchargs_set;
+        push @parcmd, "-n",  $procs if $procs_set;
+        push @parcmd, "-q",  $part  if $part_set;
+        push @parcmd, "-W" , $time  if $time_set;
+        push @parcmd, $sublauncher;
+        push @parcmd, @visitcmd;
+        @printcmd = @parcmd;
+        push @printcmd, ("\"".(pop @printcmd)."\"");
+    }
     # yod
     elsif ($launch eq "yod")
     {
         @parcmd = ("/cougar/bin/yod");
 	push @parcmd, @launchargs if $launchargs_set;
-        push @parcmd, "-sz", $procs;
+        push @parcmd, "-sz", $procs if $procs_set;
         push @parcmd, @visitcmd;
 
         @printcmd = @parcmd;

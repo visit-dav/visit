@@ -248,6 +248,7 @@ CreateMessageStrings(char **lists, int *count, int nl)
 //
 //  Purpose:
 //    Match a pattern to a string, using normal '*' and '?' wildcards.
+//    Also match '#' to single numerical digits.
 //
 //  Notes:
 //    Yes, recursive -- but it attempts to do a minimal number of recursion
@@ -260,6 +261,10 @@ CreateMessageStrings(char **lists, int *count, int nl)
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    February 12, 2002
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Jun 26 10:28:28 PDT 2003
+//    Added the '#' wildcard.
 //
 // ****************************************************************************
 bool
@@ -287,9 +292,11 @@ WildcardStringMatch(const char *p, const char *s)
             return false;
     }
 
-    // first chars match ("?" matches any char), consume one char
-    if (*p == '?' ||
-        *p == *s)
+    // first chars match ("?" matches any char, "#" matches a digit),
+    // and consume one char
+    if ( *p == '?' ||
+        (*p == '#' && *s >= '0' && *s <= '9') ||
+         *p == *s)
     {
         return WildcardStringMatch(&p[1], &s[1]);
     }

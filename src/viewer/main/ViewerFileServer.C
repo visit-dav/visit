@@ -611,6 +611,10 @@ ViewerFileServer::StartServer(const std::string &host)
 //    I moved some code into the base class and made it possible to launch
 //    an mdserver through a launcher program.
 //
+//    Jeremy Meredith, Thu Jun 26 10:49:08 PDT 2003
+//    Make the mdserver launch under the vcl if we're sharing a batch
+//    job with the engine.
+//
 // ****************************************************************************
 
 void
@@ -637,8 +641,10 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
         dialog = SetupConnectionProgressWindow(newServer, host);
 
         // Start the mdserver on the specified host.
-        if(HostIsLocalHost(host))
+        if (!ShouldShareBatchJob(host) && HostIsLocalHost(host))
+        {
             newServer->Create("localhost");
+        }
         else
         {
             // Use VisIt's launcher to start the remote mdserver.

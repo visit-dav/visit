@@ -1216,6 +1216,8 @@ MDServerConnection::FileMatchesFilterList(const std::string &fileName,
 // Creation:   Wed Oct 4 15:18:18 PST 2000
 //
 // Modifications:
+//   Jeremy Meredith, Thu Jun 26 10:32:59 PDT 2003
+//   Added a '#' wildcard that matches a single numerical digit.
 //
 // ****************************************************************************
 
@@ -1239,6 +1241,16 @@ MDServerConnection::FileMatchesFilter(const char *filter, const char *str,
             break;
         case '?':
             if (str[i2] != '\0')
+            {
+                i1++;
+                i2++;
+            } else
+            {
+                return false;
+            }
+            break;
+        case '#':
+            if (str[i2] >= '0' && str[i2] <= '9')
             {
                 i1++;
                 i2++;

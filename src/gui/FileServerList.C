@@ -1530,6 +1530,9 @@ FileServerList::FileMatchesFilterList(const std::string &fileName,
 //   Brad Whitlock, Thu Sep 12 14:33:44 PST 2002
 //   Changed it so files that begin with '.' do not match the '*' filter.
 //
+//   Jeremy Meredith, Thu Jun 26 10:32:59 PDT 2003
+//   Added a '#' wildcard that matches a single numerical digit.
+//
 // ****************************************************************************
 
 bool
@@ -1551,6 +1554,16 @@ FileServerList::FileMatchesFilter(const char *filter, const char *str, int &j)
             break;
         case '?':
             if (str[i2] != '\0')
+            {
+                i1++;
+                i2++;
+            } else
+            {
+                return false;
+            }
+            break;
+        case '#':
+            if (str[i2] >= '0' && str[i2] <= '9')
             {
                 i1++;
                 i2++;
