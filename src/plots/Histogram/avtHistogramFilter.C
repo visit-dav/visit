@@ -289,6 +289,22 @@ avtHistogramFilter::PostExecute(void)
     outAtts.GetEffectiveSpatialExtents()->Set(extents);
     outAtts.GetCurrentSpatialExtents()->Set(extents);
     outAtts.GetCumulativeCurrentSpatialExtents()->Set(extents);
+
+    outAtts.SetXUnits(pipelineVariable);
+    string yunits = "";
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 3)
+    {
+        yunits = "Volume";
+    }
+    else
+    {
+        if (atts.GetTwoDAmount() == HistogramAttributes::Area)
+            yunits = "Area";
+        else
+            yunits = "Revolved Volume";
+
+    }
+    outAtts.SetYUnits(yunits);
 }
 
 
