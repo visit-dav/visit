@@ -141,6 +141,8 @@ class PIPELINE_API avtDataValidity
                                    { return queryable; }
 
     void                     ErrorOccurred(void) { errorOccurred = true; };
+    void                     ResetErrorOccurred(void)
+                                                 { errorOccurred = false; };
     bool                     HasErrorOccurred(void) { return errorOccurred; };
     void                     SetErrorMessage(std::string &s)
                                                           { errorString = s; };

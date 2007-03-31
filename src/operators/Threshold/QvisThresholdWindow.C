@@ -127,6 +127,10 @@ QvisThresholdWindow::CreateWindowContents()
 //
 // Modifications:
 //   
+//   Hank Childs, Thu Sep 25 09:16:09 PDT 2003
+//   Allow for "min" and "max" to be valid values in the lbound and ubound
+//   windows.
+//   
 // ****************************************************************************
 
 void
@@ -150,11 +154,17 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
             amount->setButton(atts->GetAmount());
             break;
           case 1: //lbound
-            temp.sprintf("%g", atts->GetLbound());
+            if (atts->GetLbound() == -1e+37)
+                temp = "min";
+            else
+                temp.sprintf("%g", atts->GetLbound());
             lbound->setText(temp);
             break;
           case 2: //ubound
-            temp.sprintf("%g", atts->GetUbound());
+            if (atts->GetUbound() == +1e+37)
+                temp = "max";
+            else
+                temp.sprintf("%g", atts->GetUbound());
             ubound->setText(temp);
             break;
           case 3: //variable
@@ -177,6 +187,10 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
 //
 // Modifications:
 //   
+//   Hank Childs, Thu Sep 25 09:16:09 PDT 2003
+//   Allow for "min" and "max" to be valid values in the lbound and ubound
+//   windows.
+//
 // ****************************************************************************
 
 void
@@ -195,20 +209,25 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
     if(which_widget == 1 || doAll)
     {
         temp = lbound->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        if (temp.latin1() == QString("min"))
+            atts->SetUbound(-1e+37);
+        else
         {
-            double val = temp.toDouble(&okay);
-            atts->SetLbound(val);
-        }
+            okay = !temp.isEmpty();
+            if(okay)
+            {
+                double val = temp.toDouble(&okay);
+                atts->SetLbound(val);
+            }
 
-        if(!okay)
-        {
-            msg.sprintf("The value of lbound was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetLbound());
-            Message(msg);
-            atts->SetLbound(atts->GetLbound());
+            if(!okay)
+            {
+                msg.sprintf("The value of lbound was invalid. "
+                    "Resetting to the last good value of %g.",
+                    atts->GetLbound());
+                Message(msg);
+                atts->SetLbound(atts->GetLbound());
+            }
         }
     }
 
@@ -216,20 +235,25 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
     if(which_widget == 2 || doAll)
     {
         temp = ubound->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        if (temp.latin1() == QString("max"))
+            atts->SetUbound(1e+37);
+        else
         {
-            double val = temp.toDouble(&okay);
-            atts->SetUbound(val);
-        }
-
-        if(!okay)
-        {
-            msg.sprintf("The value of ubound was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetUbound());
-            Message(msg);
-            atts->SetUbound(atts->GetUbound());
+            okay = !temp.isEmpty();
+            if(okay)
+            {
+                double val = temp.toDouble(&okay);
+                atts->SetUbound(val);
+            }
+    
+            if(!okay)
+            {
+                msg.sprintf("The value of ubound was invalid. "
+                    "Resetting to the last good value of %g.",
+                    atts->GetUbound());
+                Message(msg);
+                atts->SetUbound(atts->GetUbound());
+            }
         }
     }
 

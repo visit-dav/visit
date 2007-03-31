@@ -153,6 +153,9 @@ avtTerminatingSource::GetMaterialAuxiliaryData(const char *type, void *args,
 //    Hank Childs, Mon Aug 13 15:23:08 PDT 2001
 //    Made call to update progress.
 //
+//    Hank Childs, Thu Sep 25 08:12:27 PDT 2003
+//    Reset the 'ErrorOccurred' field.
+//
 // ****************************************************************************
 
 bool
@@ -163,6 +166,8 @@ avtTerminatingSource::Update(avtPipelineSpecification_p spec)
         UpdateProgress(0, 0, "avtTerminatingSource", "Retrieving data.");
     }
     avtDataSpecification_p data = BalanceLoad(spec);
+    if (!ArtificialPipeline())
+        GetOutput()->GetInfo().GetValidity().ResetErrorOccurred();
     bool rv = FetchData(data);
     if (!ArtificialPipeline())
     {
