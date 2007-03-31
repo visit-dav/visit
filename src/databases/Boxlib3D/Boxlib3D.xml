@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Boxlib3D" type="database" label="Boxlib3D" version="1.0" dbtype="MTMD">
+  <Plugin name="Boxlib3D" type="database" label="Boxlib3D" version="1.0" dbtype="STMD" haswriter="false">
     <CXXFLAGS>
       $(BOXLIB3D_INCLUDE)
     </CXXFLAGS>
