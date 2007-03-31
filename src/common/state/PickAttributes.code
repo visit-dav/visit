@@ -15,6 +15,9 @@ Definition:
 //   Kathleen Bonnell, Wed Jul 23 17:28:30 PDT 2003 
 //   Don't print cellPoint if it is invalid (== FLT_MAX). 
 //   
+//   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003 
+//   Added meshInfo. 
+//   
 // ****************************************************************************
 void
 PickAttributes::PrintSelf(ostream &os)
@@ -32,7 +35,15 @@ PickAttributes::PrintSelf(ostream &os)
         os << "\n";
     os << fileName.c_str() << " ";
     os << "timestep " << timeStep << " ";
-    os << "domain " << domain << "\n";
+    if (meshInfo.empty())
+    {
+        if (domain != -1)
+            os << "domain " << domain << "\n";
+    }
+    else
+    {
+        os << "\n" << meshInfo.c_str() << "\n";
+    }
     os << "active variable:   " << activeVariable.c_str() << "\n";
     os << "selected variables: ";
     for (i = 0; i < variables.size(); i++)
@@ -95,7 +106,7 @@ PickAttributes::PrintSelf(ostream &os)
 }
 
 Function: CreateOutputString
-Declaration: void CreateOutputString(std::string &os);
+Declaration: void CreateOutputString(std::string &os, bool withLetter = true);
 Definition:
 // ****************************************************************************
 // Method: PickAttributes::CreateOutputString
@@ -112,9 +123,13 @@ Definition:
 //   Kathleen Bonnell, Wed Jul 23 17:28:30 PDT 2003 
 //   Don't include cellPoint or pickLetter if invalid.
 //   
+//   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003 
+//   Added meshInfo.  So that outputstring can be created with (default)
+//   or without the 'pickletter', added argument withLetter.
+//   
 // ****************************************************************************
 void
-PickAttributes::CreateOutputString(std::string &os)
+PickAttributes::CreateOutputString(std::string &os, bool withLetter)
 {
     if (!fulfilled)
         return;
@@ -129,19 +144,29 @@ PickAttributes::CreateOutputString(std::string &os)
     else
         fileName = databaseName.substr(pos+1) ;
 
-    if (pickLetter.size() != 0)
-        sprintf(buff, "\n%s:  ", pickLetter.c_str());
-    else 
-        sprintf(buff, "\n");
-    os += buff;
-    os += fileName;
-    if (domain != -1)
+    if (withLetter)
     {
-        sprintf(buff, "  timestep %d  domain %d\n", timeStep, domain);
+        if (pickLetter.size() != 0)
+            sprintf(buff, "\n%s:  ", pickLetter.c_str());
+        else 
+            sprintf(buff, "\n");
+        os += buff;
     }
-    else 
+    os += fileName;
+    if (meshInfo.empty())
     {
-        sprintf(buff, "  timestep %d  \n", timeStep);
+        if (domain != -1)
+        {
+            sprintf(buff, "  timestep %d  domain %d\n", timeStep, domain);
+        }
+        else 
+        {
+            sprintf(buff, "  timestep %d  \n", timeStep);
+        }
+    }
+    else
+    {
+        sprintf(buff, "  timestep %d  \n%s\n", timeStep, meshInfo.c_str());
     }
     os += buff;
     if (cellPoint[0] != FLT_MAX)
@@ -244,6 +269,8 @@ Definition:
 // Creation:   June 26, 2003 
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003
+//   Reset meshInfo.
 //   
 // ****************************************************************************
 
@@ -264,6 +291,8 @@ PickAttributes::PrepareForNewPick()
 
     if (!nodeCoords.empty())
         nodeCoords.clear();
+
+    meshInfo = "";
 
     ClearPickVarInfos();
 }

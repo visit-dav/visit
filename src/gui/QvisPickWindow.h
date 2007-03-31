@@ -45,6 +45,9 @@ class PickAttributes;
 //   Brad Whitlock, Tue Sep 9 09:02:03 PDT 2003
 //   I made it use QMultiLineEdit instead of QListBox.
 //
+//   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003 
+//   Added the savePicks checkbox. Remove AddInformation, no longer necessary.
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -72,11 +75,12 @@ private slots:
     void useNodeCoordsToggled(bool val);
     void logicalCoordsToggled(bool val);
     void autoShowToggled(bool);
+    void savePicksToggled(bool);
 private:
     void UpdatePage(void);
     void ClearPages(void);
-    void AddInformation(QString &, const QString &, int &) const;
 
+    bool            savePicks;
     bool            autoShow;
     int             nextPage;
     QString         lastLetter;
@@ -87,6 +91,7 @@ private:
     QCheckBox      *useNodeCoords;
     QCheckBox      *logicalCoords;
     QCheckBox      *autoShowCheckBox;
+    QCheckBox      *savePicksCheckBox;
 
     QLineEdit      *varsLineEdit;
     PickAttributes *pickAtts;

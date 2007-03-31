@@ -24,6 +24,9 @@
 //    Hank Childs, Wed May 29 09:06:05 PDT 2002
 //    Initialized spinMode.
 //
+//    Brad Whitlock, Wed Sep 10 15:28:12 PST 2003
+//    Initialized spinModeSuspended.
+//
 // ****************************************************************************
 
 VisWinInteractions::VisWinInteractions(VisWindowColleagueProxy &c,
@@ -33,6 +36,7 @@ VisWinInteractions::VisWinInteractions(VisWindowColleagueProxy &c,
     mode = NAVIGATE;
     bboxMode = true;
     spinMode = false;
+    spinModeSuspended = false;
     hotPointInteractor = new VisitHotPointInteractor(i);
     mediator.SetInteractor(hotPointInteractor);
 }
@@ -368,6 +372,43 @@ bool
 VisWinInteractions::GetSpinMode() const
 {
     return spinMode;
+}
+
+// ****************************************************************************
+//  Method: VisWinInteractions::SetSpinModeSuspended
+//
+//  Purpose:
+//      Sets whether spin mode is temporarily suspended.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Wed Sep 10 15:29:02 PST 2003
+//
+// ****************************************************************************
+
+void
+VisWinInteractions::SetSpinModeSuspended(bool val)
+{
+    spinModeSuspended = val;
+}
+
+
+// ****************************************************************************
+//  Method: VisWinInteractions::GetSpinModeSuspdended
+//
+//  Purpose:
+//      Determines whether the spin mode is suspended.
+//
+//  Returns:    true if spin mode is suspended, false otherwise.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Wed Sep 10 15:59:18 PST 2003
+//
+// ****************************************************************************
+
+bool
+VisWinInteractions::GetSpinModeSuspended() const
+{
+    return spinModeSuspended;
 }
 
 

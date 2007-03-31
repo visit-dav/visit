@@ -53,7 +53,10 @@ Navigate3D::Navigate3D(VisWindowInteractorProxy &v) : VisitInteractor(v)
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002 
 //    Retrieve the LastPosition from the renderWindowInteractor.  It is no
 //    longer a member of the parent class. 
-//    
+//
+//    Brad Whitlock, Wed Sep 10 16:05:08 PST 2003
+//    I added support for temporarily suspending spin mode.
+//
 // ****************************************************************************
 
 void
@@ -93,16 +96,26 @@ Navigate3D::OnTimer(void)
     if (!matchedUpState && shouldSpin)
     {
         VisWindow *vw = proxy;
-        if (vw->GetSpinMode() == true)
+        if(!vw->GetSpinModeSuspended())
         {
-            OldX = spinOldX;
-            OldY = spinOldY;
-            RotateCamera(spinNewX, spinNewY);
-            rwi->CreateTimer(VTKI_TIMER_UPDATE);
+            if (vw->GetSpinMode())
+            {
+                OldX = spinOldX;
+                OldY = spinOldY;
+                RotateCamera(spinNewX, spinNewY);
+                rwi->CreateTimer(VTKI_TIMER_UPDATE);
+            }
+            else
+            {
+                DisableSpinMode();
+            }
         }
-        else
+        else if(vw->GetSpinMode())
         {
-            DisableSpinMode();
+            // Don't mess with the camera, just create another timer so
+            // we keep getting into this method until spin mode is no
+            // longer suspended.
+            rwi->CreateTimer(VTKI_TIMER_UPDATE);
         }
     }
 }
@@ -288,6 +301,8 @@ Navigate3D::EndMiddleButtonAction()
 //
 //  Programmer: Hank Childs
 //  Creation:   May 29, 2002
+//
+//  Modifications:
 //
 // ****************************************************************************
 

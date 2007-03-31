@@ -131,6 +131,11 @@ QvisOperatorWindow::GetCurrentValues(int)
 //   Jeremy Meredith, Mon Jun 23 16:18:29 PDT 2003
 //   Changed GetAllID to GetEnabledID.
 //
+//   Kathleen Bonnell, Thu Sep 11 10:35:39 PDT 2003 
+//   When the operator needs to be added, set client atts (instead of default),
+//   but let the operator know to initalize from client via a flag passed
+//   to AddOperator.  This allows the 'Reset' operation to work as expected.
+//
 // ****************************************************************************
 
 void
@@ -182,12 +187,12 @@ QvisOperatorWindow::SetOperatorOptions()
                                     "Yes", "No", 0,
                                     0, 1 ) == 0)
             {
-                // Set the default attributes so when we apply the operator,
-                // it only causes the plot to be modified one time. Otherwise
-                // we have to add the operator and then set its options 
-                // which would cause the plot to be generated twice.
-                viewer->SetDefaultOperatorOptions(operatorType);
-                viewer->AddOperator(operatorType);
+                // Set the client attributes, and set the 'fromDefault' flag
+                // to false in the call to AddOperator, so that the operator 
+                // knows to initialize the atts from client rather than the 
+                // ususal default atts. 
+                viewer->SetOperatorOptions(operatorType);
+                viewer->AddOperator(operatorType, false);
             }
         }
         else

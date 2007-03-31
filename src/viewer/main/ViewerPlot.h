@@ -143,6 +143,10 @@ class avtToolInterface;
 //    Kathleen Bonnell, Thu Aug 28 10:10:35 PDT 2003
 //    Added IsMesh and SetOpaqueMeshIsAppropriate. 
 //
+//    Kathleen Bonnell, Thu Sep 11 11:50:02 PDT 2003 
+//    Added optional bool arg to 'AddOperator', indicates whether the operator
+//    should be initialized from its default or client atts. 
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot
@@ -183,7 +187,7 @@ class VIEWER_API ViewerPlot
     void SetSILRestriction(avtSILRestriction_p silr);
     avtSILRestriction_p GetSILRestriction() const;
 
-    int  AddOperator(const int type);
+    int  AddOperator(const int type, const bool fromDefault = true);
     bool PromoteOperator(const int operatorIndex);
     bool DemoteOperator(const int operatorIndex);
     bool RemoveOperator(const int operatorIndex);

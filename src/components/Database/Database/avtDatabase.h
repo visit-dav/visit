@@ -92,6 +92,9 @@ class   PickVarInfo;
 //    Kathleen Bonnell, Fri Jun 20 13:52:00 PDT 2003  
 //    Added QueryZones, added parameter to other Query methods.
 //
+//    Kathleen Bonnell, Tue Sep  9 16:51:10 PDT 2003 
+//    Changed PickVarInfo argument in QueryMesh to std::string.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -164,7 +167,7 @@ class DATABASE_API avtDatabase
                                            std::vector<std::string> &)
                                                {return false; };
     virtual bool                QueryMesh(const std::string &, const int, 
-                                          PickVarInfo &) {return false; };
+                                          std::string &) {return false; };
 
     virtual bool                QueryZones(const std::string &, const int, int &, 
                                            const int, std::vector<int> &, 

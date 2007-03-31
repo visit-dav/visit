@@ -58,6 +58,9 @@ class QPushButton;
 //   I added support for curve views and split the view attributes into
 //   2d and 3d parts.
 //
+//   Brad Whitlock, Thu Sep 11 09:33:08 PDT 2003
+//   I added slots to reset or recenter the view.
+//
 // ****************************************************************************
 
 class GUI_API QvisViewWindow : public QvisPostableWindowSimpleObserver
@@ -119,6 +122,8 @@ private slots:
 
     void lockedViewChecked(bool);
     void extentTypeChanged(int);
+    void resetView();
+    void recenterView();
     void undoView();
     void tabSelected(const QString &);
 private:

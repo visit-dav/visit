@@ -55,6 +55,11 @@
 //    Hank Childs, Fri Aug  1 10:39:50 PDT 2003
 //    Added support for curves.
 //
+//    Kathleen Bonnell, Thu Sep 11 10:29:34 PDT 2003 
+//    Added bool argument to InitializeOperatorAtts, and modified the code
+//    to initialize from the default atts or client atts based on the value
+//    of the flag. 
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -186,7 +191,8 @@ class InfoGeneratorPlugin
             h << "    virtual void GetClientAtts(AttributeSubject *atts);" << endl;
             h << endl;
             h << "    virtual void InitializeOperatorAtts(AttributeSubject *atts," << endl;
-            h << "                                        const ViewerPlot *plot);" << endl;
+            h << "                                        const ViewerPlot *plot," << endl;
+            h << "                                        const bool fromDefault);" << endl;
             if(iconFile.length() > 0)
                 h << "    virtual const char **XPMIconData() const;" << endl;
             h << endl;
@@ -978,14 +984,25 @@ class InfoGeneratorPlugin
         c << endl;
         c << "void" << endl;
         if (type=="operator")
+        {
             c << name<<"ViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts," << endl
-              << "                                              const ViewerPlot *plot)" << endl;
+              << "                                              const ViewerPlot *plot," << endl
+              << "                                              const bool fromDefault)" << endl;
+            c << "{" << endl;
+            c << "    if (fromDefault)" << endl;
+            c << "        *("<<atts->name<<"*)atts = *defaultAtts;" << endl;
+            c << "    else" << endl;
+            c << "        *("<<atts->name<<"*)atts = *clientAtts;" << endl;
+            c << "}" << endl;
+        }
         else if (type=="plot")
+        {
             c << name<<"ViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts," << endl
               << "    const char *, const char *, const char *)" << endl;
-        c << "{" << endl;
-        c << "    *("<<atts->name<<"*)atts = *defaultAtts;" << endl;
-        c << "}" << endl;
+            c << "{" << endl;
+            c << "    *("<<atts->name<<"*)atts = *defaultAtts;" << endl;
+            c << "}" << endl;
+        }
 
         if (type=="plot")
         {

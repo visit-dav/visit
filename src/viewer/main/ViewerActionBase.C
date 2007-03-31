@@ -108,7 +108,10 @@ ViewerActionBase::Activate()
 // Creation:   Wed Feb 5 17:16:35 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Sep 11 08:53:10 PDT 2003
+//   The window's HideMenu method does not seem to always be called so let's
+//   hide it after executing each action if it needs to be hidden.
+//
 // ****************************************************************************
 
 void
@@ -126,4 +129,7 @@ ViewerActionBase::Activate(bool setup)
 
     // Tell the action manager to update all of the actions.
     window->GetActionManager()->Update();
+
+    // Hide the menu since we're done with the action.
+    window->HideMenu();
 }

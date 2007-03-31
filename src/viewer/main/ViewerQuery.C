@@ -70,10 +70,13 @@ void CreateBasis(const avtVector &N, const avtVector &UP,
 //    Kathleen Bonnell, Fri Mar  7 16:27:04 PST 2003 
 //    Initialize planeAtts. 
 //    
+//    Kathleen Bonnell, Thu Sep 11 12:04:26 PDT 2003 
+//    Added optional 'fromDefault' flag. 
+//    
 // ***********************************************************************
 
 ViewerQuery::ViewerQuery(ViewerWindow *origWin, ViewerWindow *resWin, 
-                         Line *lA) : SimpleObserver()
+                         Line *lA, const bool fromDefault) : SimpleObserver()
 {
     resPlotQueryInfo = 0;
     width = height = 0.;
@@ -83,7 +86,7 @@ ViewerQuery::ViewerQuery(ViewerWindow *origWin, ViewerWindow *resWin,
     originatingWindow = origWin;
     resultsWindow = resWin;
     lineAtts->CopyAttributes(lA);
-    CreateLineout();
+    CreateLineout(fromDefault);
 
     //  
     // Retrieve the interactivity from Lineout Ops.
@@ -224,10 +227,14 @@ ViewerQuery::StopObservingPlot()
 //    Kathleen Bonnell, on Aug  4 17:26:07 PDT 2003 
 //    Set animation's FrameIndex only if it is different. 
 //
+//    Kathleen Bonnell, Thu Sep 11 12:04:26 PDT 2003 
+//    Added bool argument, which indicates whether the lineout should
+//    be initialized against its default atts or its client atts. 
+//
 // ****************************************************************************
 
 void
-ViewerQuery::CreateLineout()
+ViewerQuery::CreateLineout(const bool fromDefault)
 {
     //
     //  Grab information from the originating window.
@@ -289,7 +296,7 @@ ViewerQuery::CreateLineout()
     // Add the lineout operator.
     //
     int operatorType = OperatorPluginManager::Instance()->GetEnabledIndex("Lineout_1.0");
-    resultsPlot->AddOperator(operatorType);
+    resultsPlot->AddOperator(operatorType, fromDefault);
 
     //
     // Update the view for the new window.

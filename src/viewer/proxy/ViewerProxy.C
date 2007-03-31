@@ -2291,6 +2291,8 @@ ViewerProxy::ChangeActivePlotsVar(const std::string &var)
 //
 //  Arguments:
 //    oper      The operator to add.
+//    fromDefault  Flag indicating whether the operator should be initialized
+//                 from its DefaultAtts or from its Client Atts.
 //
 //  Programmer: Eric Brugger
 //  Creation:   August 15, 2000
@@ -2299,15 +2301,19 @@ ViewerProxy::ChangeActivePlotsVar(const std::string &var)
 //    Jeremy Meredith, Thu Jul 26 03:13:36 PDT 2001
 //    Removed all references to OperType.
 //
+//    Kathleen Bonnell,  
+//    Added 'fromDefault' arg. Use it to set the bool flag in the rpc.
+//
 // ****************************************************************************
 void
-ViewerProxy::AddOperator(int oper)
+ViewerProxy::AddOperator(int oper, const bool fromDefault)
 {
     //
     // Set the rpc type and arguments.
     //
     viewerRPC->SetRPCType(ViewerRPC::AddOperatorRPC);
     viewerRPC->SetOperatorType(oper);
+    viewerRPC->SetBoolFlag(fromDefault);
 
     //
     // Issue the RPC.

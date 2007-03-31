@@ -31,11 +31,14 @@
 //    Jeremy Meredith, Wed May 21 13:07:59 PDT 2003
 //    Added needsRecalculation.
 //
+//    Kathleen Bonnell, Thu Sep 11 11:37:51 PDT 2003 
+//    Added fromDefault arg, passed to InitializeOperatorAtts. 
+//
 // ****************************************************************************
 
-ViewerOperator::ViewerOperator(const int type_,
+ViewerOperator::ViewerOperator(const int type_, 
                                ViewerOperatorPluginInfo *viewerPluginInfo_,
-                               ViewerPlot *plot_)
+                               ViewerPlot *plot_, const bool fromDefault)
 {
     type              = type_;
     viewerPluginInfo  = viewerPluginInfo_;
@@ -44,7 +47,7 @@ ViewerOperator::ViewerOperator(const int type_,
     avtfilter         = NULL;
     needsRecalculation= true;
 
-    viewerPluginInfo->InitializeOperatorAtts(operatorAtts, plot);
+    viewerPluginInfo->InitializeOperatorAtts(operatorAtts, plot, fromDefault);
 }
 
 // ****************************************************************************

@@ -101,6 +101,9 @@ class avtToolInterface;
 //    Eric Brugger, Wed Aug 20 11:04:40 PDT 2003
 //    Removed UpdateScaleFactor.
 //
+//    Kathleen Bonnell, Thu Sep 11 12:04:26 PDT 2003
+//    Added optional bool arg to AddQuery and a Lineout method. 
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -148,7 +151,7 @@ class VIEWER_API ViewerQueryManager
     void            Lineout(ViewerWindow *win, const double pt1[3], 
                             const double pt2[3], const std::string &,
                             const int samples);
-    void            Lineout(ViewerWindow *);
+    void            Lineout(ViewerWindow *, const bool fromLineout = true);
     void            Lineout(ViewerWindow *, Line *);
 
     void            SetGlobalLineoutAttsFromClient();
@@ -166,7 +169,8 @@ class VIEWER_API ViewerQueryManager
     ColorAttribute  GetColor();
 
   private:
-    void            AddQuery(ViewerWindow *origwin, Line *lineAtts);
+    void            AddQuery(ViewerWindow *origwin, Line *lineAtts,
+                             const bool fromDefault = true);
 
     void            SimpleAddQuery(ViewerQuery_p query, ViewerPlot *, 
                                    ViewerWindow *, ViewerWindow *);

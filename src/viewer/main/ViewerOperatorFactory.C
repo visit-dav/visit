@@ -110,10 +110,14 @@ int ViewerOperatorFactory::GetNOperatorTypes() const
 //    Eric Brugger, Wed Jan 15 15:56:13 PST 2003
 //    Modify the method so that the plot argument is not const.
 //
+//    Kathleen Bonnell, Thu Sep 11 11:37:51 PDT 2003 
+//    Added 'fromDefault' arg, to be passed to ViewerOperator constructor.
+//
 // ****************************************************************************
 
 ViewerOperator *ViewerOperatorFactory::CreateOperator(const int type,
-                                                      ViewerPlot *plot)
+                                                      ViewerPlot *plot,
+                                                      const bool fromDefault)
 {
     //
     // Check that the type is within range and that the type has been
@@ -127,9 +131,9 @@ ViewerOperator *ViewerOperatorFactory::CreateOperator(const int type,
     //
     // Call the appropriate routine.
     //
-    return new ViewerOperator(type,
+    return new ViewerOperator(type, 
                               viewerPluginInfo[type],
-                              plot);
+                              plot, fromDefault);
 }
 
 // ****************************************************************************

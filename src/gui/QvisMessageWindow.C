@@ -100,6 +100,9 @@ QvisMessageWindow::~QvisMessageWindow()
 //   Brad Whitlock, Tue May 20 15:07:59 PST 2003
 //   I made it work with the regenerated MessageAttributes.
 //
+//   Brad Whitlock, Wed Sep 10 09:44:44 PDT 2003
+//   I made the cursor get reset for error and warning messages.
+//
 // *************************************************************************************
 
 void
@@ -113,11 +116,13 @@ QvisMessageWindow::Update(Subject *)
         show();
         qApp->beep();
         severityLabel->setText(QString("Error!"));
+        RestoreCursor();
     }
     else if(ma->GetSeverity() == MessageAttributes::Warning)
     {
         show();
-        severityLabel->setText(QString("Warning")); 
+        severityLabel->setText(QString("Warning"));
+        RestoreCursor();
     }
     else if(ma->GetSeverity() == MessageAttributes::Message)
         severityLabel->setText(QString("Message"));

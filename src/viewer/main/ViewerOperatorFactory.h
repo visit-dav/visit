@@ -43,6 +43,9 @@ class ViewerOperatorPluginInfo;
 //    Eric Brugger, Wed Jan 15 15:54:26 PST 2003
 //    Modify the CreateOperator method so that the plot argument is not const.
 //
+//    Kathleen Bonnell, Thu Sep 11 11:37:51 PDT 2003
+//    Added 'fromDefault' to CreateOperator method. 
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerOperatorFactory
@@ -53,7 +56,8 @@ class VIEWER_API ViewerOperatorFactory
 
     int GetNOperatorTypes() const;
 
-    ViewerOperator *CreateOperator(const int type, ViewerPlot *plot);
+    ViewerOperator *CreateOperator(const int type, ViewerPlot *plot,
+                                   const bool fromDefault);
 
     AttributeSubject *GetDefaultAtts(const int type) const;
     AttributeSubject *GetClientAtts(const int type) const;

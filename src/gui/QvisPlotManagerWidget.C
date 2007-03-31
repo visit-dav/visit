@@ -349,6 +349,10 @@ QvisPlotManagerWidget::CreateMenus()
 //   I moved the code that sets the enabled state for the Plots and Operators
 //   menus to UpdatePlotAndOperatorMenuEnabledState.
 //
+//   Brad Whitlock, Wed Sep 10 09:04:34 PDT 2003
+//   I moved the code that sets the enabled state for the Hide, Delete,
+//   and Draw buttons to UpdateHideDeleteDrawButtonsEnabledState.
+//
 // ****************************************************************************
 
 void
@@ -434,9 +438,7 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
         // or not the engine is busy.
         activePlots->setEnabled(canChange);
         plotListBox->setEnabled(canChange);
-        hideButton->setEnabled(canChange);
-        deleteButton->setEnabled(canChange);
-        drawButton->setEnabled(canChange);
+        UpdateHideDeleteDrawButtonsEnabledState();
         applyOperatorToggle->setEnabled(canChange);
 
         bool havePlots = (plotAttsMenu->count() > 0);
@@ -479,13 +481,14 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
 //   I added a check to prevent updates to the listbox if they are not
 //   necessary.
 //
+//   Brad Whitlock, Wed Sep 10 08:57:46 PDT 2003
+//   I changed the code so the Hide button is enabled when is should be enabled.
+//
 // ****************************************************************************
 
 void
 QvisPlotManagerWidget::UpdatePlotList()
 {
-    int nHideablePlots = 0;
-
     if(plotListBox->NeedsUpdated(plotList))
     {
         // Update the plot list.
@@ -520,25 +523,52 @@ QvisPlotManagerWidget::UpdatePlotList()
                    current.GetHiddenFlag(), (int)current.GetStateType(),
                    current.GetDatabaseName().c_str(),current.GetPlotVar().c_str());
 #endif
-
-            // Figure out how many plots are selected and complete. These are
-            // the plots that can be hidden.
-            bool hideableState = (current.GetStateType() == Plot::Completed) ||
-                                 (current.GetStateType() == Plot::Error);
-            bool canHide = hideableState || current.GetHiddenFlag();
-            if(current.GetActiveFlag() && canHide)
-                ++nHideablePlots;
         } // end for
     }
 
-    // Set the enabled states for the hide, delete buttons.
+    // Set the enabled states for the hide, delete, and draw buttons.
+    UpdateHideDeleteDrawButtonsEnabledState();
+
+    plotListBox->blockSignals(false);
+    blockSignals(false);
+}
+
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::UpdateHideDeleteDrawButtonsEnabledState
+//
+// Purpose: 
+//   Updates the enabled state for the Hide, Delete, and Draw buttons so it
+//   is always done the same way.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 10 09:05:26 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPlotManagerWidget::UpdateHideDeleteDrawButtonsEnabledState() const
+{
+    //
+    // Figure out the number of plots that can be hidden.
+    //
+    int nHideablePlots = 0;
+    for(int i = 0; i < plotList->GetNumPlots(); ++i)
+    {
+        // Create a constant reference to the current plot.
+       const Plot &current = plotList->operator[](i);
+       bool hideableState = (current.GetStateType() == Plot::Completed) ||
+                            (current.GetStateType() == Plot::Error);
+       bool canHide = hideableState || current.GetHiddenFlag();
+       if(current.GetActiveFlag() && canHide)
+           ++nHideablePlots;
+    }
+
     bool canChange = !globalAtts->GetExecuting();
     hideButton->setEnabled(nHideablePlots > 0 && canChange);
     deleteButton->setEnabled(plotList->GetNumPlots() > 0 && canChange);
     drawButton->setEnabled(plotList->GetNumPlots() > 0 && canChange);
-
-    plotListBox->blockSignals(false);
-    blockSignals(false);
 }
 
 // ****************************************************************************

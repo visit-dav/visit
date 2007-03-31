@@ -485,6 +485,11 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], float tol,
 // Modified from above routine to use new cell intersection code that
 // does not depend upon a tolerance.
 //
+// Modifications:
+//   Kathleen Bonnell, Wed Sep 10 09:31:08 PDT 2003
+//   Ensure that the 't' argument gets the correct value upon successful
+//   intersection.
+//
 int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], 
                                       float& t, float x[3], float pcoords[3],
                                       int &subId, vtkIdType &cellId)
@@ -509,7 +514,7 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
   int bestDir, cellIsGhost;
   float stopDist, currDist;
   float length, maxLength = 0.0;
-  float tempX[3], pc[3];
+  float tempT, tempX[3], pc[3];
   int tempId;
   vtkUnsignedCharArray *ghosts = 
     (vtkUnsignedCharArray *)this->DataSet->GetCellData()->GetArray("vtkGhostLevels");
@@ -624,22 +629,21 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
                 // intersect with line call
                 this->DataSet->GetCell(cId, cell);
                 
-                if (CellIntersectWithLine(cell, a0, a1, t, tempX, pc, tempId))
+                if (CellIntersectWithLine(cell, a0, a1, tempT, tempX, pc, tempId))
                   {
-
                   if (!this->IsInOctantBounds(tempX))
                    {
 
                    this->CellHasBeenVisited[cId] = 0; // mark the cell non-visited
                    }
-                  else if (t < tMax) // it might be close
+                  else if (tempT < tMax) // it might be close
                     {
-                    tMax = t;
+                    tMax = tempT;
+                    t = tempT;
                     bestCellId = cId;
                     x[0] = tempX[0]; x[1] = tempX[1]; x[2] = tempX[2];
                     pcoords[0] = pc[0]; pcoords[1] = pc[1]; pcoords[2] = pc[2]; 
                     subId = tempId;
-                    
                     } // t <= tMax+tol
                   } // cell Isected line
                 } // if (hitCellBounds)

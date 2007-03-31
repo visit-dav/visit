@@ -670,6 +670,10 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    methods whether or not this is a zone pick.  Reflect some name changes
 //    in pickAtts.
 //
+//    Kathleen Bonnell, Tue Sep  9 16:51:10 PDT 2003 
+//    Always call QueryMesh, don't keep vars of type AVT_MESH in pickAtts'
+//    PickVarInfo.
+//    
 // ****************************************************************************
 
 void               
@@ -738,7 +742,11 @@ avtDatabase::Query(PickAttributes *pa)
         }
     }
 
+    std::string meshInfo;
+    QueryMesh(pa->GetActiveVariable(), foundDomain, meshInfo);
+    pa->SetMeshInfo(meshInfo);
 
+    intVector removeMe;
     for (int varNum = 0; varNum < userVars.size(); varNum++)
     {
         vName = userVars[varNum];
@@ -764,8 +772,8 @@ avtDatabase::Query(PickAttributes *pa)
                    QueryMaterial(vName, foundDomain, foundEl, ts, incEls, 
                                  pa->GetPickVarInfo(varNum), zonePick);
                    break; 
-                case AVT_MESH : success = 
-                   QueryMesh(vName, foundDomain, pa->GetPickVarInfo(varNum));
+                case AVT_MESH : 
+                   removeMe.push_back(varNum);
                    break; 
                 default : 
                    break; 
@@ -779,6 +787,15 @@ avtDatabase::Query(PickAttributes *pa)
             // pick window.
         }
         ENDTRY 
+    }
+
+    // 
+    // Remove any PickVarInfos (genenerally for vars whose type is AVT_MESH)
+    // 
+    if (removeMe.size() > 0)
+    {
+        for (int i = removeMe.size() -1; i >= 0; --i)
+            pa->RemovePickVarInfo(removeMe[i]); 
     }
 
     const char *fname = GetFilename(ts);

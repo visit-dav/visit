@@ -4089,7 +4089,7 @@ avtGenericDatabase::QueryNodes(const std::string &varName, const int dom,
 //  Arguments:
 //    varName     The variable on which to retrieve data.
 //    dom         The domain to query.
-//    varInfo     A place to store the results. 
+//    meshInfo     A place to store the results. 
 //
 //  Returns:
 //    True if data was successfully retrieved, false otherwise.
@@ -4097,47 +4097,51 @@ avtGenericDatabase::QueryNodes(const std::string &varName, const int dom,
 //  Programmer:   Kathleen Bonnell 
 //  Creation:     April 18, 2003 
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Sep  9 16:51:10 PDT 2003
+//    Changed PickVarInfo argument to std::string. 
+//
 // ****************************************************************************
 
 bool
 avtGenericDatabase::QueryMesh(const std::string &varName, const int dom, 
-                              PickVarInfo &varInfo)
+                              std::string &meshInfo)
 {
     bool rv = false;
     string mesh = GetMetaData()->MeshForVar(varName);
     const avtMeshMetaData *mmd = GetMetaData()->GetMesh(mesh);
-    char meshInfo[256];
-    string msg = " ";
+    char temp[256];
     if (!mmd)
     {
          debug5 << "Querying mesh, but could not retrieve"
                 << " meta data!" << endl;
          return false;
     }
+    sprintf(temp, "%s:  ", mesh.c_str());
+    meshInfo += temp;
     if (mmd->numGroups > 0 && dom < mmd->groupIds.size())
     {
-         sprintf(meshInfo, " %s %d" , mmd->groupPieceName.c_str(), 
+         sprintf(temp, " %s %d " , mmd->groupPieceName.c_str(), 
                  mmd->groupIds[dom]);
-         msg += meshInfo;
+         meshInfo += temp;
          rv = true;
     }
     if (mmd->numBlocks > 1)
     {
         if ( mmd->blockNames.size() == 0)
         {
-             sprintf(meshInfo, " %s %d" , mmd->blockPieceName.c_str(), 
+             sprintf(temp, " %s %d " , mmd->blockPieceName.c_str(), 
                      dom + mmd->blockOrigin);
-             msg += meshInfo;
+             meshInfo += temp;
         }
         else 
         {
-             sprintf(meshInfo, " %s %s" , mmd->blockPieceName.c_str(), 
+             sprintf(temp, " %s %s " , mmd->blockPieceName.c_str(), 
                      mmd->blockNames[dom].c_str());
-             msg += meshInfo;
+             meshInfo += temp;
         }
         rv = true;
     }
-    varInfo.SetMiscMessage(msg); 
     // 
     // This is where we could allow the interface to add more information.
     // 
