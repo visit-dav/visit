@@ -225,6 +225,11 @@ ViewerAnimation::GetNFrames() const
 //    I added a call for each window associated with this animation to
 //    to merge the current plot limits with the previous plot limits.
 //
+//    Eric Brugger, Fri Dec  5 16:42:30 PST 2003
+//    I removed the call to merge the current plot limits with the previous
+//    plot limits, since it was moved to a less central location to allow
+//    greater flexibility.
+//
 // ****************************************************************************
 
 bool
@@ -267,7 +272,6 @@ ViewerAnimation::SetFrameIndex(const int index)
     //
     for(int i = 0; i < nWindows; ++i)
     {
-        windows[i]->SetMergeViewLimits(true);
         windows[i]->UpdateCameraView();
     }
 
@@ -317,6 +321,9 @@ ViewerAnimation::GetFrameIndex() const
 //    Brad Whitlock, Mon Oct 6 16:55:14 PST 2003
 //    I added support for different animation playback modes.
 //
+//    Eric Brugger, Fri Dec  5 16:42:30 PST 2003
+//    I added code to set view limit merging if the frame was changed.
+//
 // ****************************************************************************
 
 void
@@ -355,6 +362,14 @@ ViewerAnimation::NextFrame()
         else
             SetFrameIndex(nextFrameIndex);
     }
+
+    //
+    // If we changed frames, then turn on view limit merging.
+    //
+    if (curFrame == nextFrameIndex)
+    {
+        SetMergeViewLimits(true);
+    }
 }
 
 // ****************************************************************************
@@ -376,6 +391,9 @@ ViewerAnimation::NextFrame()
 //    Brad Whitlock, Mon Oct 6 16:56:44 PST 2003
 //    I made it possible for the animation to stop once it reaches the start
 //    of the animation.
+//
+//    Eric Brugger, Fri Dec  5 16:42:30 PST 2003
+//    I added code to set view limit merging if the frame was changed.
 //
 // ****************************************************************************
 
@@ -414,6 +432,14 @@ ViewerAnimation::PrevFrame()
         }
         else
             SetFrameIndex(prevFrameIndex);
+    }
+
+    //
+    // If we changed frames, then turn on view limit merging.
+    //
+    if (curFrame == prevFrameIndex)
+    {
+        SetMergeViewLimits(true);
     }
 }
 
@@ -988,6 +1014,30 @@ ViewerAnimation::SetWindowAtts(const char *hostName)
     WindowAttributes winAtts = w->GetWindowAttributes();
     AnnotationAttributes annotAtts = *(w->GetAnnotationAttributes());
     return ViewerEngineManager::Instance()->SetWinAnnotAtts(hostName, &winAtts, &annotAtts);
+}
+
+// ****************************************************************************
+//  Method:  ViewerPlotList::SetMergeViewLimits
+//
+//  Purpose:
+//    Set the merge view limits mode for all the windows associated with
+//    the animation.
+//
+//  Arguments:
+//    mode     : The new merge view limits mode.
+//
+//  Programmer:  Eric Brugger
+//  Creation:    December 5, 2003
+//
+// ****************************************************************************
+
+void
+ViewerAnimation::SetMergeViewLimits(const bool mode)
+{
+    for(int i = 0; i < nWindows; ++i)
+    {
+        windows[i]->SetMergeViewLimits(mode);
+    }
 }
 
 // ****************************************************************************

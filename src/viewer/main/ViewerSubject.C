@@ -3277,6 +3277,12 @@ ViewerSubject::ReOpenDatabase()
 //   extra work. I passed the time state to the plot list's ReplaceDatabase
 //   method instead.
 //
+//   Eric Brugger, Mon Dec  8 08:09:54 PST 2003
+//   I added a call to turn on view limit merging if the new database
+//   was the same as the old one.  I also made the test controlling
+//   the call to recenter view more restrictive, also requiring the
+//   window to be in 3d mode.
+//
 // ****************************************************************************
 
 void
@@ -3284,6 +3290,17 @@ ViewerSubject::ReplaceDatabase()
 {
     debug4 << "ReplaceDatabase: db=" << viewerRPC.GetDatabase().c_str()
            << ", time=" << viewerRPC.GetIntArg1() << endl;
+
+    //
+    // If the replace is merely changing the timestate, then turn on
+    // view limit merging.
+    //
+    ViewerWindowManager *wM = ViewerWindowManager::Instance();
+    if (viewerRPC.GetDatabase() ==
+        wM->GetActiveAnimation()->GetPlotList()->GetHostDatabaseName())
+    {
+        wM->GetActiveAnimation()->SetMergeViewLimits(true);
+    }
 
     //
     // First open the database.
@@ -3294,8 +3311,6 @@ ViewerSubject::ReplaceDatabase()
     //
     // Now perform the database replacement.
     //
-
-    ViewerWindowManager *wM = ViewerWindowManager::Instance();
     ViewerPlotList *plotList = wM->GetActiveAnimation()->GetPlotList();
     plotList->ReplaceDatabase(plotList->GetHostName(),
                               plotList->GetDatabaseName(),
@@ -3307,8 +3322,12 @@ ViewerSubject::ReplaceDatabase()
     //
     // Recenter the active window's view and redraw.
     //
-    if(wM->GetActiveWindow() && !wM->GetActiveWindow()->GetMaintainViewMode())
+    if(wM->GetActiveWindow() &&
+       !wM->GetActiveWindow()->GetMaintainViewMode() &&
+       (wM->GetActiveWindow()->GetWindowMode() == WINMODE_3D))
+    {
         wM->RecenterView();
+    }
 }
 
 // ****************************************************************************

@@ -2284,6 +2284,10 @@ ViewerWindowManager::ToggleCameraViewMode(int windowIndex)
 // Creation:   Mon Nov 11 11:59:05 PDT 2002
 //
 // Modifications:
+//   Eric Brugger, Mon Dec  8 08:24:16 PST 2003
+//   I corrected the test to make sure that the number of frames matched
+//   between the windows being locked.  I added code to turn on view
+//   limit merging.
 //   
 // ****************************************************************************
 
@@ -2319,10 +2323,15 @@ ViewerWindowManager::ToggleLockTime(int windowIndex)
 
             if (winner != -1)
             {
-                // Copy the frame index.
-                int fi = windows[winner]->GetAnimation()->GetFrameIndex();
-                if(windows[index]->GetAnimation()->SetFrameIndex(fi))
+                if (windows[winner]->GetAnimation()->GetNFrames() ==
+                    windows[index]->GetAnimation()->GetNFrames())
                 {
+                    // Copy the frame index.
+                    int fi = windows[winner]->GetAnimation()->GetFrameIndex();
+
+                    windows[index]->GetAnimation()->SetMergeViewLimits(true);
+                    windows[index]->GetAnimation()->SetFrameIndex(fi);
+
                     // Copy the animation mode.
                     ViewerAnimation::AnimationMode mode;
                     mode = windows[winner]->GetAnimation()->GetMode();
@@ -4115,6 +4124,9 @@ ViewerWindowManager::SetKeyframeAttsFromClient()
 //   Added windowIndex so it does not need to be called only on the active
 //   window.
 //
+//   Eric Brugger, Mon Dec  8 08:24:16 PST 2003
+//   Added code to turn on view limit merging.
+//
 // ****************************************************************************
 
 void
@@ -4127,6 +4139,7 @@ ViewerWindowManager::SetFrameIndex(int frame, int windowIndex)
     if(windows[index] != 0)
     {
         // Set the frame of the active window first.
+        windows[index]->GetAnimation()->SetMergeViewLimits(true);
         windows[index]->GetAnimation()->SetFrameIndex(frame);
 
         // If the active window is time-locked, update the other windows
@@ -4138,7 +4151,10 @@ ViewerWindowManager::SetFrameIndex(int frame, int windowIndex)
                 if(i != index && windows[i] != 0)
                 {
                     if(windows[i]->GetTimeLock())
+                    {
+                        windows[i]->GetAnimation()->SetMergeViewLimits(true);
                         windows[i]->GetAnimation()->SetFrameIndex(frame);
+                    }
                 }
             }
         }
@@ -6086,6 +6102,9 @@ ViewerWindowManager::EnableExternalRenderRequestsAllWindows(
 //   I prevented the activeWindow and the lineoutWindow from being saved
 //   if we're not producing a detailed log.
 //
+//   Eric Brugger, Fri Dec  5 13:42:39 PST 2003
+//   Added writing of maintainView, cameraView and viewExtentsType.
+//
 // ****************************************************************************
 
 void
@@ -6105,6 +6124,17 @@ ViewerWindowManager::CreateNode(DataNode *parentNode, bool detailed)
         mgrNode->AddNode(new DataNode("activeWindow", activeWindow));
         mgrNode->AddNode(new DataNode("lineoutWindow", lineoutWindow));
     }
+
+    //
+    // The following attributes are actually per window, but are being
+    // treated as global so that they are saved when saving settings.
+    //
+    mgrNode->AddNode(new DataNode("maintainView",
+       windows[activeWindow]->GetMaintainViewMode()));
+    mgrNode->AddNode(new DataNode("cameraView",
+       windows[activeWindow]->GetCameraViewMode()));
+    mgrNode->AddNode(new DataNode("viewExtentsType",
+       avtExtentType_ToString(windows[activeWindow]->GetViewExtentsType())));
 
     //
     // Let each window add its own data.
@@ -6147,6 +6177,9 @@ ViewerWindowManager::CreateNode(DataNode *parentNode, bool detailed)
 //   Added code to change the referenced flag so windows with plots are not
 //   considered unreferenced.
 //
+//   Eric Brugger, Fri Dec  5 13:42:39 PST 2003
+//   Added loading of maintainView, cameraView and viewExtentsType.
+//
 // ****************************************************************************
 
 void
@@ -6160,8 +6193,31 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode)
         return;
 
     //
-    // Load information specific to ViewerWindowManager.
+    // Load information specific to ViewerWindowManager.  The following
+    // attributes are actually per window, but are being treated as
+    // global so that they are saved when saving settings.
     //
+    DataNode *node = 0;
+    if((node = searchNode->GetNode("cameraView")) != 0)
+        windows[activeWindow]->SetCameraViewMode(node->AsBool());
+    if((node = searchNode->GetNode("maintainView")) != 0)
+        windows[activeWindow]->SetMaintainViewMode(node->AsBool());
+    if((node = searchNode->GetNode("viewExtentsType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            ival = (ival < 0 || ival > 3) ? 0 : ival;
+            windows[activeWindow]->SetViewExtentsType(avtExtentType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            avtExtentType value;
+            if(avtExtentType_FromString(node->AsString(), value))
+                windows[activeWindow]->SetViewExtentsType(value);
+        }
+    }
 
     //
     // Create the right number of windows.
@@ -6325,7 +6381,6 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode)
     //
     bool cloneWindowFlag = clientAtts->GetCloneWindowOnFirstRef();
     clientAtts->SetCloneWindowOnFirstRef(false);
-    DataNode *node;
     if((node = searchNode->GetNode("activeWindow")) != 0)
     {
         int n = node->AsInt();

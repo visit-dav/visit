@@ -76,6 +76,9 @@ class ViewerWindow;
 //    Brad Whitlock, Mon Oct 6 16:52:33 PST 2003
 //    Added support for different kinds of animation playback.
 //
+//    Eric Brugger, Fri Dec  5 16:16:43 PST 2003
+//    Added SetMergeViewLimits.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerAnimation
@@ -132,6 +135,8 @@ class VIEWER_API ViewerAnimation
     PlaybackMode GetPlaybackMode() const;
 
     bool SetWindowAtts(const char *hostName);
+
+    void SetMergeViewLimits(const bool mode);
 
     void CreateNode(DataNode *);
     bool SetFromNode(DataNode *);
