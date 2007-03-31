@@ -18,6 +18,8 @@
 #include <ParentProcess.h>
 #include <ViewerConnectionProgressDialog.h>
 #include <ViewerMessaging.h>
+#include <ViewerWindowManager.h>
+#include <ViewerAnimation.h>
 
 #include <DebugStream.h>
 
@@ -235,6 +237,9 @@ ViewerFileServer::Instance()
 //   Brad Whitlock, Wed May 14 11:49:45 PDT 2003
 //   I added a timeState argument.
 //
+//   Hank Childs, Mon Sep 15 17:18:36 PDT 2003
+//   Account for databases that change over time.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
@@ -242,6 +247,12 @@ ViewerFileServer::GetMetaData(const std::string &host,
                               const std::string &filename,
                               const int timeState)
 {
+    int workingTimeState = -1;
+    if (timeState < 0)
+        workingTimeState = ViewerWindowManager::Instance()->
+                                          GetActiveAnimation()->GetTimeIndex();
+    else
+        workingTimeState = timeState;
     // Create a filename of the form host:filename.
     std::string fullname(host);
     fullname += ":";
@@ -250,7 +261,24 @@ ViewerFileServer::GetMetaData(const std::string &host,
     // If the filename is in the cache, return its metadata, otherwise query
     // the appropriate mdserver for it.
     if(fileMetaData.find(fullname) != fileMetaData.end())
+    {
         return fileMetaData[fullname];
+    }
+
+    // Some databases have meta-data that varies over time.  If this is the
+    // case, then we store the timeState with the meta-data.  Give this a try
+    // as well.
+    std::string fullname_state(host);
+    fullname_state += ":";
+    fullname_state += filename;
+    fullname_state += ":";
+    char state_str[64];
+    sprintf(state_str, "%d", workingTimeState);
+    fullname_state += state_str;
+    if(fileMetaData.find(fullname_state) != fileMetaData.end())
+    {
+        return fileMetaData[fullname_state];
+    }
 
     // Try and start a server if one does not exist.
     NoFaultStartServer(host);
@@ -274,12 +302,23 @@ ViewerFileServer::GetMetaData(const std::string &host,
             TRY
             {
                 const avtDatabaseMetaData *md =
-                    servers[host]->proxy->GetMetaData(filename, timeState);
+                    servers[host]->proxy->GetMetaData(filename, 
+                                                      workingTimeState);
 
                 if(md != NULL)
                 {
                     avtDatabaseMetaData *mdCopy = new avtDatabaseMetaData(*md);
-                    fileMetaData[fullname] = mdCopy;
+
+                    // If the meta-data changes for each state, then cache
+                    // the meta-data on a per state basis.  This is done by
+                    // encoding the state into the name.
+                    std::string key;
+                    if (mdCopy->GetMustRepopulateOnStateChange())
+                        key = fullname_state;
+                    else
+                        key = fullname;
+                    fileMetaData[key] = mdCopy;
+
                     retval = mdCopy;
                 }
             }
@@ -365,21 +404,41 @@ ViewerFileServer::GetMetaData(const std::string &host,
 //   Brad Whitlock, Wed May 14 11:49:45 PDT 2003
 //   I added a timeState argument.
 //
+//   Hank Childs, Mon Sep 15 17:18:36 PDT 2003
+//   Account for SILs that change over time.
+//
 // ****************************************************************************
 
 const avtSIL *
 ViewerFileServer::GetSIL(const std::string &host, const std::string &filename,
     const int timeState)
 {
-    // Create a filename of the form host:filename.
+    int workingTimeState = -1;
+    if (timeState < 0)
+        workingTimeState = ViewerWindowManager::Instance()->
+                                          GetActiveAnimation()->GetTimeIndex();
+    else
+        workingTimeState = timeState;
+
+    // Create a filename of the form host:filename:time.
+    // If we request a SIL from time A, and then request it from time B,
+    // it will calculate a new SIL, even if the SIL does not change over time.
+    // However, this routine will only be called one time if the SIL does
+    // not change over time, so this is a non-issue.
     std::string fullName(host);
     fullName += ":";
     fullName += filename;
+    fullName += ":";
+    char state_str[64];
+    sprintf(state_str, "%d", workingTimeState);
+    fullName += state_str;
 
     // If the filename is in the cache, return its SIL attributes,
     // otherwise query the appropriate mdserver for it.
     if(fileSIL.find(fullName) != fileSIL.end())
+    {
         return fileSIL[fullName];
+    }
 
     // Try and start a server if one does not exist.
     NoFaultStartServer(host);
@@ -403,7 +462,7 @@ ViewerFileServer::GetSIL(const std::string &host, const std::string &filename,
             TRY
             {
                 const SILAttributes *atts =
-                    servers[host]->proxy->GetSIL(filename, timeState);
+                    servers[host]->proxy->GetSIL(filename, workingTimeState);
 
                 if(atts != NULL)
                 {

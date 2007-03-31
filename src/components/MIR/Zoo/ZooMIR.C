@@ -63,11 +63,57 @@ ZooMIR::~ZooMIR()
 //    mat_orig        the material
 //
 //  Programmer:  Jeremy Meredith
-//  Creation:    August 20, 2003
+//  Creation:    September 18, 2003
 //
 // ****************************************************************************
 bool
 ZooMIR::Reconstruct3DMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig)
+{
+    return ReconstructMesh(mesh_orig, mat_orig, 3);
+}
+
+
+
+// ****************************************************************************
+//  Method:  ZooMIR::Reconstruct2DMesh
+//
+//  Purpose:
+//    Main method for interface reconstruction in 2D.
+//
+//  Arguments:
+//    mesh_orig       the mesh
+//    mat_orig        the material
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    September 18, 2003
+//
+// ****************************************************************************
+bool
+ZooMIR::Reconstruct2DMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig)
+{
+    return ReconstructMesh(mesh_orig, mat_orig, 2);
+}
+
+// ****************************************************************************
+//  Method:  ZooMIR::ReconstructMesh
+//
+//  Purpose:
+//    Main method for interface reconstruction in any dimension.
+//
+//  Arguments:
+//    mesh_orig       the mesh
+//    mat_orig        the material
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 20, 2003
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Sep 18 10:57:37 PDT 2003
+//    Made applicable to any number of dimensions.
+//
+// ****************************************************************************
+bool
+ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
 {
     // check that Reconstruct hasn't already been called
     if (dimension > 0)
@@ -92,7 +138,7 @@ ZooMIR::Reconstruct3DMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig)
     int timerHandle = visitTimer->StartTimer();
 
     // Set the dimensionality
-    dimension   = 3;
+    dimension = dim;
 
     // Set the connectivity
     MIRConnectivity conn;
@@ -140,31 +186,6 @@ ZooMIR::Reconstruct3DMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig)
     visitTimer->StopTimer(timerHandle2, "MIR: Cell clipping");
     visitTimer->StopTimer(timerHandle, "Full MIR reconstruction");
     visitTimer->DumpTimings();
-
-    return true;
-}
-
-
-
-// ****************************************************************************
-//  Method:  ZooMIR::Reconstruct2DMesh
-//
-//  Purpose:
-//    Main method for interface reconstruction in 2D.
-//
-//  Arguments:
-//    mesh_orig       the mesh
-//    mat_orig        the material
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    August 20, 2003
-//
-// ****************************************************************************
-bool
-ZooMIR::Reconstruct2DMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig)
-{
-    EXCEPTION1(ImproperUseException,
-               "ZooMIR doesn't support 2D meshes (yet)!");
 
     return true;
 }

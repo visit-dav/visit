@@ -32,7 +32,6 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     
     virtual const char   *GetType(void) { return "SAMRAI File Format"; };
     
-    virtual vtkDataSet   *ReadMesh(int, const char *);
     virtual vtkDataSet   *GetMesh(int, const char *);
     virtual vtkDataArray *GetVar(int, const char *);
     virtual vtkDataArray *GetVectorVar(int, const char *);
@@ -79,7 +78,6 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
       int number_parents;
     } parent_t;
 
-
     vtkDataSet                  **cached_patches;
     std::string                   file_name;
     std::string                   dir_name;
@@ -122,6 +120,8 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     parent_t                     *parent_pointer_array;
 
 
+    virtual vtkDataSet   *ReadMesh(int);
+
     void            ReadGridType(hid_t &h5_file);
     void            ReadDataType(hid_t &h5_file);
 
@@ -158,7 +158,7 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     void            ReadParentArray(hid_t &h5_file);
     void            ReadParentPointerArray(hid_t &h5_file);
 
-    void            ReadMetaDataFile(hid_t &file);
+    void            ReadMetaDataFile();
     unsigned int    GetPatchOffset(const int level, const int patch);
 };
 

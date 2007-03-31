@@ -18,6 +18,7 @@ class DataNode;
 class EngineProxy;
 class PickAttributes;
 class PlotQueryInfo;
+class ViewerPlotList;
 class ViewerPlotPluginInfo;
 class ViewerOperator;
 class avtToolInterface;
@@ -258,6 +259,9 @@ class VIEWER_API ViewerPlot
     void SetOpaqueMeshIsAppropriate(bool);
     bool IsMesh(void);
 
+    void RegisterViewerPlotList(ViewerPlotList *vpl)
+                                 { viewerPlotList = vpl; };
+
   protected:
     bool MoveOperator(const int operatorIndex, bool promote);
 
@@ -266,6 +270,7 @@ class VIEWER_API ViewerPlot
   private:
     void CheckCache(const int f0, const int f1, const bool force);
 
+    ViewerPlotList         *viewerPlotList;
     int                     type;
     ViewerPlotPluginInfo   *viewerPluginInfo;
 

@@ -485,3 +485,17 @@ int hexQuadFaces[6][4] =
     { 4, 5, 6, 7 }
 };
 
+int triVerticesFromEdges[3][2] =
+{
+    {0,1},
+    {1,2},
+    {2,0}
+};
+
+int quadVerticesFromEdges[4][2] =
+{
+    {0,1},
+    {1,2},
+    {2,3},
+    {3,0}
+};

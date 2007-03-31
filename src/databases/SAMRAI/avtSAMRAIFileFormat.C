@@ -29,13 +29,29 @@
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
-
+#include <DataNode.h>
 
 using std::vector;
 using std::string;
 
 static string GetDirName(const char *path);
 static string GetNameLevel(const char *name_level_str, unsigned int &level, char link);
+
+static int numColors = 12;
+static int colors[][4] = {
+  {255,   0,   0, 255},
+  {  0, 255,   0, 255},
+  {  0,   0, 255, 255},
+  {  0, 255, 255, 255},
+  {255,   0, 255, 255},
+  {255, 255,   0, 255},
+  {255, 135,   0, 255},
+  {255,   0, 135, 255},
+  {  0, 255, 135, 255},
+  {135, 255,   0, 255},
+  {  0, 135, 255, 255},
+  {135,   0, 255, 255}
+};
 
 
 // ****************************************************************************
@@ -73,17 +89,7 @@ avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
     dir_name = GetDirName(fname);
     file_name = fname;
 
-    hid_t hfile = H5Fopen(file_name.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT); 
-
-    if (hfile < 0)
-    {
-        debug1 << "Unable to open metadata file " << fname << endl;
-    }
-    else
-    {
-        ReadMetaDataFile(hfile);
-    }
-    H5Fclose(hfile);
+    ReadMetaDataFile();
 
     cached_patches = new vtkDataSet*[num_patches];
     for (int p=0; p<num_patches; p++)
@@ -180,25 +186,16 @@ avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
 vtkDataSet *
 avtSAMRAIFileFormat::GetMesh(int patch, const char *level_name)
 {
-    unsigned level;
-    string name = GetNameLevel(level_name, level, '_');
-    if (level >= num_levels)
-    {
-        EXCEPTION1(InvalidVariableException, level_name);
-    }
-
-    unsigned offset = GetPatchOffset(level, patch);
-
-    if (cached_patches[offset] != NULL)
+    if (cached_patches[patch] != NULL)
     {
         // The reference count will be decremented by the generic database,
         // because it will assume it owns it.
-        cached_patches[offset]->Register(NULL);
-        return cached_patches[offset];
+        cached_patches[patch]->Register(NULL);
+        return cached_patches[patch];
     }
 
-    vtkDataSet *ds = ReadMesh(patch, level_name);
-    cached_patches[offset] = ds;
+    vtkDataSet *ds = ReadMesh(patch);
+    cached_patches[patch] = ds;
     ds->Register(NULL);
 
     return ds;
@@ -208,44 +205,36 @@ avtSAMRAIFileFormat::GetMesh(int patch, const char *level_name)
 //  Method:  avtSAMRAIFileFormat::ReadMesh
 //
 //  Purpose:
-//    Reads the mesh with the given name for the given time step and
+//    Reads the patch with the given id for the given time step and
 //    domain from the file.  NOTE: time step is ignored in this case
 //    because the mesh does not change over time.
 //
 //  Arguments:
-//    ts         the time step
-//    dom        the domain number
-//    mesh       the name of the mesh to read
+//    patch      the patch number
 //
 //  Programmer:  Walter Herrera Jimenez
 //  Creation:    July 11, 2003
 //
 // ****************************************************************************
 vtkDataSet *
-avtSAMRAIFileFormat::ReadMesh(int patch, const char *level_name)
+avtSAMRAIFileFormat::ReadMesh(int patch)
 {
     // timestep (ts) is unused because the mesh is constant over time
     // should really interact with variable cache (see Exodus format)
     // so the mesh is only read once for all time steps
 
-    unsigned level;
-    string name = GetNameLevel(level_name, level, '_');
-    if (level >= num_levels)
-        EXCEPTION1(InvalidVariableException, level_name);
- 
-
-    unsigned offset = GetPatchOffset(level, patch);
     int dimensions[] = {1, 1, 1};
     float spacing[] = {0, 0, 0};
     float origin[] = {0, 0, 0};
 
     int dim = num_dim_problem < 3 ? num_dim_problem: 3;
+    int level = patch_map[patch].level_number;
 
     for (int i=0; i<dim; i++) {
-        origin[i] = patch_extents[offset].xlo[i];
-        dimensions[i] = patch_extents[offset].upper[i] -
-                        patch_extents[offset].lower[i] + 2;
-        spacing[i] = dx[level * num_dim_problem + i];
+        origin[i] = patch_extents[patch].xlo[i];
+        dimensions[i] = patch_extents[patch].upper[i] -
+                        patch_extents[patch].lower[i] + 2;
+        spacing[i] = dx[level * 3 + i];
     }
 
     if (grid_type == "RECTILINEAR") {
@@ -275,7 +264,7 @@ avtSAMRAIFileFormat::ReadMesh(int patch, const char *level_name)
     }
     else if (grid_type == "ALE") {
         char var_name[100];
-        sprintf(var_name, "Coords_%05d", level);
+        sprintf(var_name, "Coords");
         vtkDataArray * array = GetVectorVar(patch, var_name);
         vtkStructuredGrid  *sGrid = vtkStructuredGrid::New(); 
         vtkPoints *points = vtkPoints::New();
@@ -295,7 +284,9 @@ avtSAMRAIFileFormat::ReadMesh(int patch, const char *level_name)
         return sGrid;
     }
     else {
-        EXCEPTION1(InvalidVariableException, level_name);
+        char dummyVarName[128];
+        sprintf(dummyVarName,"amr_mesh, patch %d", patch);
+        EXCEPTION1(InvalidVariableException, dummyVarName);
     }
 }
 
@@ -322,33 +313,24 @@ avtSAMRAIFileFormat::ReadMesh(int patch, const char *level_name)
 vtkDataArray *
 avtSAMRAIFileFormat::GetVar(int patch, const char *visit_var_name)
 {
-    unsigned int level;
-    string var_name = GetNameLevel(visit_var_name, level, '_');    
 
-    if (level >= num_levels)
-        EXCEPTION1(InvalidVariableException, visit_var_name);
-
-    if (patch < 0 || patch >= num_patches_level[level])
-        EXCEPTION1(InvalidVariableException, visit_var_name);
-
+    string var_name = visit_var_name;
 
     std::map<std::string, var_t>::const_iterator cur_var;
     cur_var = var_names_num_components.find(var_name);
 
     if (cur_var == var_names_num_components.end())
-        EXCEPTION1(InvalidVariableException, visit_var_name);
+        EXCEPTION1(InvalidVariableException, var_name);
     
     int num_components = (*cur_var).second.num_components;
     int cell_centered =  (*cur_var).second.cell_centered;
         
     if (num_components != 1 )
-        EXCEPTION1(InvalidVariableException, visit_var_name);
-
-    unsigned int offset = GetPatchOffset(level, patch);
+        EXCEPTION1(InvalidVariableException, var_name);
 
     for (int v = 0; v < num_vars; v++) {
         if (var_names[v] == var_name) {
-            if (!var_extents[v][offset].data_is_defined) {
+            if (!var_extents[v][patch].data_is_defined) {
                 return NULL;
             }
             break;
@@ -359,17 +341,19 @@ avtSAMRAIFileFormat::GetVar(int patch, const char *visit_var_name)
     int dim = num_dim_problem < 3 ? num_dim_problem: 3;
     int num_data_samples = 1;
     for (int i=0; i<dim; i++) {
-        num_data_samples *= patch_extents[offset].upper[i] - 
-                            patch_extents[offset].lower[i] + extent;
+        num_data_samples *= patch_extents[patch].upper[i] - 
+                            patch_extents[patch].lower[i] + extent;
     }
 
     char file[2048];   
     sprintf(file, "%sprocessor_cluster.%05d.samrai",
-            dir_name.c_str(), patch_map[offset].file_cluster_number);
+            dir_name.c_str(), patch_map[patch].file_cluster_number);
 
     char variable[100];
     sprintf(variable, "/processor.%05d/level.%05d/patch.%05d/%s",
-            patch_map[offset].processor_number, level, patch, 
+            patch_map[patch].processor_number,
+            patch_map[patch].level_number,
+            patch_map[patch].patch_number, 
             var_name.c_str());
 
 
@@ -416,14 +400,7 @@ vtkDataArray *
 avtSAMRAIFileFormat::GetVectorVar(int patch, 
                                   const char *visit_var_name)
 {
-    unsigned int level;
-    string var_name = GetNameLevel(visit_var_name, level, '_');    
-
-    if (level >= num_levels)
-        EXCEPTION1(InvalidVariableException, visit_var_name);
-
-    if (patch < 0 || patch >= num_patches_level[level])
-        EXCEPTION1(InvalidVariableException, visit_var_name);
+    string var_name = visit_var_name; 
 
     std::map<std::string, var_t>::const_iterator cur_var;
     cur_var = var_names_num_components.find(var_name);
@@ -436,12 +413,11 @@ avtSAMRAIFileFormat::GetVectorVar(int patch,
     int cell_centered =  (*cur_var).second.cell_centered;
         
     int extent = cell_centered == 1 ? 1 : 2;
-    unsigned int offset = GetPatchOffset(level, patch);
     int dim = num_dim_problem < 3 ? num_dim_problem: 3;
     int num_data_samples = 1;
     for (int i=0; i<dim; i++) {
-        num_data_samples *= patch_extents[offset].upper[i] - 
-                            patch_extents[offset].lower[i] + extent;
+        num_data_samples *= patch_extents[patch].upper[i] - 
+                            patch_extents[patch].lower[i] + extent;
     }
 
     char variable[100];
@@ -449,7 +425,7 @@ avtSAMRAIFileFormat::GetVectorVar(int patch,
 
     for (int v = 0; v < num_vars; v++) {
         if (var_names[v] == variable) {
-            if (!var_extents[v][offset].data_is_defined) {
+            if (!var_extents[v][patch].data_is_defined) {
                 return NULL;
             }
             break;
@@ -458,7 +434,7 @@ avtSAMRAIFileFormat::GetVectorVar(int patch,
 
     char file[2048];   
     sprintf(file, "%sprocessor_cluster.%05d.samrai",
-            dir_name.c_str(), patch_map[offset].file_cluster_number);
+            dir_name.c_str(), patch_map[patch].file_cluster_number);
 
     hid_t h5f_file = H5Fopen(file, H5F_ACC_RDONLY, H5P_DEFAULT); 
     if (h5f_file < 0)
@@ -472,17 +448,13 @@ avtSAMRAIFileFormat::GetVectorVar(int patch,
         vectors->SetComponent(j, 2, 0);
     }
 
-
-//      vtkFloatArray *vectors = vtkFloatArray::New();
-//      vectors->SetNumberOfComponents(num_components);
-//      vectors->SetNumberOfTuples(num_data_samples);
-
-
     float *var_data = new float[num_data_samples];
 
     for (int i = 0 ; i < num_components ; i++) {
         sprintf(variable, "/processor.%05d/level.%05d/patch.%05d/%s.%02d",
-                patch_map[offset].processor_number, level, patch, 
+                patch_map[patch].processor_number,
+                patch_map[patch].level_number,
+                patch_map[patch].patch_number, 
                 var_name.c_str(), i);
 
         hid_t h5d_variable = H5Dopen(h5f_file, variable);
@@ -517,7 +489,7 @@ avtSAMRAIFileFormat::GetVectorVar(int patch,
 // ****************************************************************************
 
 void *
-avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int domain,
+avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
                                       const char *type, void *,
                                       DestructorFunction &df)
 {
@@ -546,11 +518,10 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int domain,
                 if (var_names[v] == name) {
 
                     for (int patch = 0 ; patch < num_patches_level[level] ; patch++) {
-                        unsigned offset = GetPatchOffset(level, patch);
 
-                        if (var_extents[v][offset].data_is_defined) {
-                            float range[2] = { var_extents[v][offset].min, 
-                                               var_extents[v][offset].max };
+                        if (var_extents[v][patch].data_is_defined) {
+                            float range[2] = { var_extents[v][patch].min, 
+                                               var_extents[v][patch].max };
                             itree->AddDomain(patch, range);
                         }
                         else {
@@ -565,7 +536,6 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int domain,
             itree = new avtIntervalTree(num_patches_level[level], 3);
             for (int patch = 0 ; patch < num_patches_level[level] ; patch++) {
                 bool data_defined = true;
-                unsigned int offset = GetPatchOffset(level, patch); 
                 float range[6] = { 0, 0, 0, 0, 0, 0 };
                 int dim = num_components <= 3 ? num_components : 3;
                 for (int i=0; i<dim; i++) {
@@ -574,9 +544,9 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int domain,
 
                     for (int v = 0; v < num_vars; v++) {
                         if (var_names[v] == variable) {
-                            if (var_extents[v][offset].data_is_defined) {
-                                range[i*2] = var_extents[v][offset].min; 
-                                range[i*2+1] = var_extents[v][offset].max;
+                            if (var_extents[v][patch].data_is_defined) {
+                                range[i*2] = var_extents[v][patch].min; 
+                                range[i*2+1] = var_extents[v][patch].max;
                             }
                             else {
                                 data_defined = false;
@@ -604,13 +574,12 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int domain,
 
         itree = new avtIntervalTree(num_patches_level[level], 3);
         for (int patch = 0 ; patch < num_patches_level[level] ; patch++) {
-            unsigned offset = GetPatchOffset(level, patch);
             float bounds[] = {0, 0, 0, 0, 0, 0};
             int dim = num_dim_problem < 3 ? num_dim_problem: 3;
 
             for (int j=0; j<dim; j++) {
-                bounds[j*2] = patch_extents[offset].xlo[j];
-                bounds[j*2+1] = patch_extents[offset].xup[j];
+                bounds[j*2] = patch_extents[patch].xlo[j];
+                bounds[j*2+1] = patch_extents[patch].xup[j];
             }
             itree->AddDomain(patch, bounds);
         }
@@ -637,26 +606,73 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int domain,
 //  Creation:    June 19, 2003
 //
 // ****************************************************************************
+
 void
 avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
-    for (int l=0; l<num_levels; l++) {
-        char mesh_name[30];
+    {
+
+        static const char *mesh_name = "amr_mesh";
+
+        // AMR mesh topology (sil) can change over time
+        md->SetMustRepopulateOnStateChange(true);
+
         avtMeshMetaData *mesh = new avtMeshMetaData;
-        sprintf(mesh_name, "Level_%05d", l);
         mesh->name = mesh_name;
+
         mesh->meshType = AVT_RECTILINEAR_MESH;
-        mesh->numBlocks = num_patches_level[l];
-        mesh->blockOrigin = 0;
-        mesh->spatialDimension = 3;
-        mesh->topologicalDimension = 3;
+        mesh->topologicalDimension = num_dim_problem;
+        mesh->spatialDimension = num_dim_problem; // should really be set rank of "Coords"
         mesh->hasSpatialExtents = false;
+
+        // spoof a group/domain mesh
+        mesh->numBlocks = num_patches;
+        mesh->blockTitle = "patches";
+        mesh->blockPieceName = "patch";
+        mesh->numGroups = num_levels;
+        mesh->groupTitle = "levels";
+        mesh->groupPieceName = "level";
+        vector<int> groupIds(num_patches);
+        vector<string> blockPieceNames(num_patches);
+        for (int i = 0; i < num_patches; i++)
+        {
+           char tmpName[64];
+           sprintf(tmpName,"patch%d",patch_map[i].patch_number);
+
+           groupIds[i] = patch_map[i].level_number;
+           blockPieceNames[i] = tmpName;
+        }
+        mesh->blockNames = blockPieceNames;
         md->Add(mesh);
+        md->AddGroupInformation(num_levels, num_patches, groupIds);
 
-        //char domain_name[50];
-        //sprintf(domain_name, "domains(Level_%05d)", l);
-        //AddDefaultPlotToMetaData(md, "subset", domain_name);
+        avtDefaultPlotMetaData *plot = new avtDefaultPlotMetaData("Subset_1.0", "levels");
 
+        char attribute[250];
+
+        sprintf(attribute,"%d NULL ViewerPlot", INTERNAL_NODE);
+        plot->AddAttribute(attribute);
+
+        sprintf(attribute,"%d ViewerPlot SubsetAttributes", INTERNAL_NODE);
+        plot->AddAttribute(attribute);
+
+        sprintf(attribute,"%d SubsetAttributes lineWidth 1", INT_NODE);
+        plot->AddAttribute(attribute);
+
+        sprintf(attribute,"%d singleColor ColorAttribute", INTERNAL_NODE);
+        plot->AddAttribute(attribute);
+
+        sprintf(attribute,"%d ColorAttribute color 4 %d %d %d %d", 
+                UNSIGNED_CHAR_ARRAY_NODE, 
+                colors[0%numColors][0], colors[0%numColors][1], 
+                colors[0%numColors][2], colors[0%numColors][3]);
+        plot->AddAttribute(attribute);
+
+        sprintf(attribute,"%d SubsetAttributes wireframe true", BOOL_NODE);
+        plot->AddAttribute(attribute);
+
+        md->Add(plot);
+        
         int v=0;
         std::map<std::string, var_t>::const_iterator var_it;
         for (var_it = var_names_num_components.begin();
@@ -667,8 +683,8 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 continue;
             }
 
-            char var_name[(*var_it).first.size() + 20];
-            sprintf(var_name, "%s_%05d", (*var_it).first.c_str(), l);
+            char *var_name = new char[(*var_it).first.size() + 20];
+            sprintf(var_name, "%s", (*var_it).first.c_str());
           
             if ((*var_it).second.num_components == 1) { // scalar field
               if ( (*var_it).second.cell_centered == 1) {
@@ -691,7 +707,42 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             else {
               EXCEPTION1(InvalidVariableException, (*var_it).first.c_str());
             }
+
+            delete [] var_name;
         }
+
+        // the code below to create a custom SIL is currently disabled
+#if 0
+        // build the custom SIL
+        avtSILMetaData *sil = new avtSILMetaData(mesh_name);
+
+        // create the collection class for levels
+        int levelCollId = sil->AddCollectionClass("levels", "level", num_levels);
+
+        // create the collections of patches on each level
+        int *tmpIndices = new int[num_patches];
+        int globalPatchIndex = 0;
+        for (int i = 0; i < num_levels; i++)
+        {
+
+           // find all patches in global patch map on this level
+           int levelPatchIndex = 0;
+           while (patch_map[globalPatchIndex].level_number == i)
+              tmpIndices[levelPatchIndex++] = globalPatchIndex++;
+
+           // add a collection of patches underneath this level
+           int localPatchCollId =
+               sil->AddCollection("patches", "patch", levelPatchIndex, levelCollId,
+                                  i, -1, NULL);
+
+        }
+        delete [] tmpIndices;
+
+        // create the collections of levels patches on each patch
+
+        md->Add(sil);
+#endif
+
     }
 }
 
@@ -709,43 +760,54 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //
 // ****************************************************************************
 void
-avtSAMRAIFileFormat::ReadMetaDataFile(hid_t &h5_file)
+avtSAMRAIFileFormat::ReadMetaDataFile()
 {
-    ReadTimeStepNumber(h5_file);
-    ReadTime(h5_file);
-    ReadTimeOfDump(h5_file);
+    hid_t h5_file = H5Fopen(file_name.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT); 
 
-    ReadGridType(h5_file);
-    ReadDataType(h5_file);
-  
-    ReadNumDimensions(h5_file);
-    ReadNumLevels(h5_file);
+    if (h5_file < 0)
+    {
+        debug1 << "Unable to open metadata file " << file_name.c_str() << endl;
+    }
+    else
+    {
+        ReadTimeStepNumber(h5_file);
+        ReadTime(h5_file);
+        ReadTimeOfDump(h5_file);
 
-    ReadXLO(h5_file);
-    ReadDX(h5_file);
-
-    ReadNumPatches(h5_file);
-    ReadNumPatchesLevel(h5_file);
-    ReadRatiosCoarserLevels(h5_file);
-
-    ReadNumClusters(h5_file);
-    ReadNumProcessors(h5_file);
-
-    ReadNumVariables(h5_file);
-    ReadVarCellCentered(h5_file);
-    ReadVarNames(h5_file);
-    ReadVarNumComponents(h5_file);
-
-    ReadVarExtents(h5_file);
-    ReadPatchExtents(h5_file);
-    ReadPatchMap(h5_file);
-
-    ReadChildArrayLength(h5_file);
-    ReadChildArray(h5_file);
-    ReadChildPointerArray(h5_file);
-    ReadParentArrayLength(h5_file);
-    ReadParentArray(h5_file);
-    ReadParentPointerArray(h5_file);
+        ReadGridType(h5_file);
+        ReadDataType(h5_file);
+        
+        ReadNumDimensions(h5_file);
+        ReadNumLevels(h5_file);
+        
+        ReadXLO(h5_file);
+        ReadDX(h5_file);
+        
+        ReadNumPatches(h5_file);
+        ReadNumPatchesLevel(h5_file);
+        ReadRatiosCoarserLevels(h5_file);
+        
+        ReadNumClusters(h5_file);
+        ReadNumProcessors(h5_file);
+        
+        ReadNumVariables(h5_file);
+        ReadVarCellCentered(h5_file);
+        ReadVarNames(h5_file);
+        ReadVarNumComponents(h5_file);
+        
+        ReadVarExtents(h5_file);
+        ReadPatchExtents(h5_file);
+        ReadPatchMap(h5_file);
+        
+        ReadChildArrayLength(h5_file);
+        ReadChildArray(h5_file);
+        ReadChildPointerArray(h5_file);
+        ReadParentArrayLength(h5_file);
+        ReadParentArray(h5_file);
+        ReadParentPointerArray(h5_file);
+        
+        H5Fclose(h5_file);
+    }
 }
 
 
@@ -820,7 +882,7 @@ avtSAMRAIFileFormat::ReadTimeOfDump(hid_t &h5_file)
     hid_t h5_mem_datatype = H5Tcopy(H5T_C_S1);
     H5Tset_size(h5_mem_datatype, datatype_size);  
 
-    char buffer[datatype_size];
+    char *buffer = new char[datatype_size];
 
     H5Dread(h5_dataset, h5_mem_datatype, H5S_ALL,H5S_ALL, H5P_DEFAULT, buffer);
 
@@ -829,6 +891,7 @@ avtSAMRAIFileFormat::ReadTimeOfDump(hid_t &h5_file)
     H5Dclose(h5_dataset);        
 
     time_dump = buffer;
+    delete [] buffer;
 }
 
 // ****************************************************************************
@@ -875,7 +938,7 @@ avtSAMRAIFileFormat::ReadXLO(hid_t &h5_file)
     if (h5_dataset < 0)
         EXCEPTION1(InvalidFilesException, file_name.c_str());
 
-    xlo = new double[num_dim_problem];
+    xlo = new double[3];
 
     H5Dread(h5_dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, xlo);
     H5Dclose(h5_dataset);    
@@ -925,7 +988,7 @@ avtSAMRAIFileFormat::ReadDX(hid_t &h5_file)
     if (h5_dataset < 0)
         EXCEPTION1(InvalidFilesException, file_name.c_str());
 
-    dx = new double[num_levels * num_dim_problem];
+    dx = new double[num_levels * 3];
 
     H5Dread(h5_dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, dx);
     H5Dclose(h5_dataset);    
@@ -1007,7 +1070,7 @@ avtSAMRAIFileFormat::ReadRatiosCoarserLevels(hid_t &h5_file)
     if (h5_dataset < 0)
         EXCEPTION1(InvalidFilesException, file_name.c_str());
 
-    ratios_coarser_levels = new int[num_levels * num_dim_problem];
+    ratios_coarser_levels = new int[num_levels * 3];
 
     H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
             ratios_coarser_levels);
@@ -1147,7 +1210,7 @@ avtSAMRAIFileFormat::ReadGridType(hid_t &h5_file)
     hid_t h5_mem_datatype = H5Tcopy(H5T_C_S1);
     H5Tset_size(h5_mem_datatype, datatype_size);  
 
-    char buffer[datatype_size];
+    char *buffer = new char[datatype_size];
 
     H5Dread(h5_dataset, h5_mem_datatype, H5S_ALL,H5S_ALL, H5P_DEFAULT, buffer);
 
@@ -1156,6 +1219,7 @@ avtSAMRAIFileFormat::ReadGridType(hid_t &h5_file)
     H5Dclose(h5_dataset);        
 
     grid_type = buffer;
+    delete [] buffer;
 }
 
 
@@ -1185,7 +1249,7 @@ avtSAMRAIFileFormat::ReadDataType(hid_t &h5_file)
     hid_t h5_mem_datatype = H5Tcopy(H5T_C_S1);
     H5Tset_size(h5_mem_datatype, datatype_size);  
 
-    char buffer[datatype_size];
+    char *buffer = new char[datatype_size];
 
     H5Dread(h5_dataset, h5_mem_datatype, H5S_ALL,H5S_ALL, H5P_DEFAULT, buffer);
 
@@ -1194,6 +1258,7 @@ avtSAMRAIFileFormat::ReadDataType(hid_t &h5_file)
     H5Dclose(h5_dataset);        
 
     data_type = buffer;
+    delete [] buffer;
 }
 
 
@@ -1223,7 +1288,7 @@ avtSAMRAIFileFormat::ReadVarNames(hid_t &h5_file)
     hid_t h5_mem_datatype = H5Tcopy(H5T_C_S1);
     H5Tset_size(h5_mem_datatype, datatype_size);  
 
-    char buffer[num_vars * datatype_size];
+    char *buffer = new char[num_vars * datatype_size];
     var_names = new std::string[num_vars];
 
     H5Dread(h5_dataset, h5_mem_datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
@@ -1236,6 +1301,7 @@ avtSAMRAIFileFormat::ReadVarNames(hid_t &h5_file)
     for (int v = 0; v < num_vars; v++) {
       var_names[v] = &buffer[v * datatype_size];
     }
+    delete [] buffer;
 }
 
 
@@ -1298,7 +1364,7 @@ avtSAMRAIFileFormat::ReadVarExtents(hid_t &h5_file)
     H5Tinsert (h5_mem_datatype, "max", 
                HOFFSET(var_extents_t,max), H5T_NATIVE_DOUBLE);
               
-    var_extents = new (var_extents_t*)[num_vars];
+    var_extents = new var_extents_t* [num_vars];
     for (int v = 0; v < num_vars; v++) {
       var_extents[v] = new var_extents_t[num_patches];
       
@@ -1699,9 +1765,3 @@ GetNameLevel(const char *name_level_str, unsigned int &level, char link)
     level = strtol(last+1,NULL,0);
     return str;
 }
-
-
-
-
-
-

@@ -20,6 +20,11 @@ class ResampledMat;
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 15, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Sep 18 11:17:24 PDT 2003
+//    Implemented 2D MIR.  Moved Reconstruct3DMesh's code into
+//    ReconstructMesh and made both the 2D and 2D cases point to it.
+//
 // ****************************************************************************
 class MIR_API ZooMIR : public MIR
 {
@@ -28,6 +33,7 @@ class MIR_API ZooMIR : public MIR
     virtual ~ZooMIR();
 
     // do the processing
+    bool         ReconstructMesh(vtkDataSet *, avtMaterial *, int);
     virtual bool Reconstruct3DMesh(vtkDataSet *, avtMaterial *);
     virtual bool Reconstruct2DMesh(vtkDataSet *, avtMaterial *);
 

@@ -71,6 +71,11 @@
     </Field>
     <Field name="meshInfo" label="MeshInfo" type="string" internal="true">
     </Field>
+    <Field name="realElementNumber" label="RealElementNumber" type="int" internal="true">
+      -1
+    </Field>
+    <Field name="realIncidentElements" label="RealIncidentElements" type="intVector" internal="true">
+    </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
     <Function name="CreateOutputString" user="true" member="true">

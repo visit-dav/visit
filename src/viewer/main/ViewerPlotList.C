@@ -568,11 +568,14 @@ ViewerPlotList::GetNumRealizedPlots() const
 //    Added the ability to catch exceptions from NewPlot.  If it catches one,
 //    it displays the exception's error message, and a generic one otherwise.
 //
+//    Walter Herrera, Thu Sep 04 16:13:43 PST 2003
+//    I made it capable of creating plots with default attributes
+//
 // ****************************************************************************
 
 int
 ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
-    bool applyOperators)
+    bool applyOperators, DataNode *attributesNode)
 {
     if (databaseName.size() < 1)
     {
@@ -605,6 +608,14 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
     if (hadError)
     {
         return -1;
+    }
+
+    //
+    // Apply the attributes to the new plot
+    //
+    if(attributesNode != 0) 
+    {
+        newPlot->SetFromNode(attributesNode);
     }
 
     //
@@ -981,6 +992,9 @@ ViewerPlotList::MovePlotDatabaseKeyframe(int plotId, int oldFrame, int newFrame)
 //    Brad Whitlock, Fri Apr 4 10:39:08 PDT 2003
 //    I added code to set the database state in the copied plot.
 //
+//    Hank Childs, Wed Sep 17 10:33:05 PDT 2003
+//    Register plot list with plots.
+//
 // ****************************************************************************
 
 void
@@ -1023,6 +1037,7 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl)
                  src->GetSILRestriction(), f0, f1, s1 - s0);
              dest->SetDatabaseState(f0, s0);
              dest->SetDatabaseState(f1, s1);
+             dest->RegisterViewerPlotList(this);
          }
          CATCH(VisItException)
          {
@@ -1223,6 +1238,9 @@ ViewerPlotList::SimpleAddPlot(ViewerPlot *plot, bool replacePlots)
 //   Made it ignore exceptions from GetDefaultSILRestriction.  They
 //   are now caught and displayed properly at a higher level.
 //
+//   Hank Childs, Wed Sep 17 10:33:05 PDT 2003
+//   Register plot list with plots.
+//
 // ****************************************************************************
 
 ViewerPlot *
@@ -1264,6 +1282,7 @@ ViewerPlotList::NewPlot(int type, const std::string &host, const std::string &db
     {
         plot = plotFactory->CreatePlot(type, host.c_str(), db.c_str(), var.c_str(),
                                        silr, 0, nFrames - 1, nStates);
+        plot->RegisterViewerPlotList(this);
     }
     CATCH(VisItException)
     {

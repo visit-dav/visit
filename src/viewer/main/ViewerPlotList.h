@@ -181,7 +181,7 @@ class VIEWER_API ViewerPlotList
     int  GetNumPlots() const;
     int  GetNumRealizedPlots() const;
     int  AddPlot(int type, const std::string &var, bool replacePlots = false,
-                 bool applyToAll = false);
+                 bool applyToAll = false, DataNode *attributesNode = 0);
     int  GetMaximumStates() const;
     void SetPlotFrameRange(int plotId, int frame0, int frame1);
     void DeletePlotKeyframe(int plotId, int frame);
@@ -259,6 +259,9 @@ class VIEWER_API ViewerPlotList
                                   std::string &host, std::string &db);
     static void ClearDefaultSILRestrictions(const std::string &host,
                                             const std::string &database);
+    avtSILRestriction_p GetDefaultSILRestriction(const std::string &host,
+                                                 const std::string &database,
+                                                 const std::string &var);
 
     void CreateNode(DataNode *);
     bool SetFromNode(DataNode *);
@@ -267,9 +270,6 @@ class VIEWER_API ViewerPlotList
                         const std::string &db, const std::string &var,
                         bool applyOperators);
     int         SimpleAddPlot(ViewerPlot *plot, bool replacePlots);
-    avtSILRestriction_p GetDefaultSILRestriction(const std::string &host,
-                                                 const std::string &database,
-                                                 const std::string &var);
     static std::string SILRestrictionKey(const std::string &, const std::string &, int);
 
   private:

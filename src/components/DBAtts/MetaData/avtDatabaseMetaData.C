@@ -9,6 +9,7 @@
 #include <ExprNode.h>
 #include <BadIndexException.h>
 #include <DebugStream.h>
+#include <ImproperUseException.h>
 #include <InvalidVariableException.h>
 
 
@@ -1946,6 +1947,764 @@ avtCurveMetaData::Print(ostream &out, int indent) const
 
 
 // ****************************************************************************
+//  Method: avtSILCollectionMetaData default constructor 
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    02Sep03 
+//
+// ****************************************************************************
+avtSILCollectionMetaData::avtSILCollectionMetaData()
+   : AttributeSubject("ssiiiii*")
+{
+   collectionSize = -1;
+   collectionIdOfParent = -1;
+   indexOfParent = -1;
+   collectionIdOfChildren = -1;
+}
+
+// ****************************************************************************
+//  Method: avtSILCollectionMetaData copy constructor 
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    02Sep03 
+//
+// ****************************************************************************
+avtSILCollectionMetaData::avtSILCollectionMetaData(
+   const avtSILCollectionMetaData &rhs) : AttributeSubject("ssiiiii*")
+{
+   classOfCollection = rhs.classOfCollection;
+   defaultMemberBasename = rhs.defaultMemberBasename;
+   collectionSize = rhs.collectionSize;
+   collectionIdOfParent = rhs.collectionIdOfParent;
+   indexOfParent = rhs.indexOfParent;
+   collectionIdOfChildren = collectionIdOfChildren;
+   indicesOfChildren = rhs.indicesOfChildren;
+}
+
+// ****************************************************************************
+//  Method: avtSILCollectionMetaData constructor 
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    02Sep03 
+//
+// ****************************************************************************
+avtSILCollectionMetaData::avtSILCollectionMetaData(
+   std::string _classOfCollection, std::string _defaultMemberBasename,
+   int _collectionSize,
+   int _collectionIdOfParent, int _indexOfParent,
+   int _collectionIdOfChildren, int *_indicesOfChildren)
+   : AttributeSubject("ssiiiii*")
+{
+   if (_collectionSize <= 0)
+   {
+      EXCEPTION1(ImproperUseException, _classOfCollection);
+   }
+
+   classOfCollection = _classOfCollection;
+   defaultMemberBasename = _defaultMemberBasename;
+   collectionSize = _collectionSize;
+   collectionIdOfParent = _collectionIdOfParent;
+   indexOfParent = _indexOfParent;
+   collectionIdOfChildren = _collectionIdOfChildren;
+   if (_indicesOfChildren != NULL)
+   {
+      indicesOfChildren =  vector<int>(collectionSize);
+      for (int i = 0; i < collectionSize; i++)
+         indicesOfChildren[i] = _indicesOfChildren[i];
+   }
+}
+
+// ****************************************************************************
+//  Method: avtSILCollectionMetaData destructor 
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    02Sep03 
+//
+// ****************************************************************************
+avtSILCollectionMetaData::~avtSILCollectionMetaData()
+{
+}
+
+// ****************************************************************************
+//  Method: avtSILCollectionMetaData operator=
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    02Sep03 
+//
+// ****************************************************************************
+const avtSILCollectionMetaData &
+avtSILCollectionMetaData::operator=(const avtSILCollectionMetaData &rhs)
+{
+   classOfCollection = rhs.classOfCollection;
+   defaultMemberBasename = rhs.defaultMemberBasename;
+   collectionSize = rhs.collectionSize;
+   collectionIdOfParent = rhs.collectionIdOfParent;
+   indexOfParent = rhs.indexOfParent;
+   collectionIdOfChildren = collectionIdOfChildren;
+   indicesOfChildren = rhs.indicesOfChildren;
+
+   return *this;
+}
+
+
+// ****************************************************************************
+//  Method: avtSILCollectionMetaData::SelectAll 
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    02Sep03 
+//
+// ****************************************************************************
+void
+avtSILCollectionMetaData::SelectAll()
+{
+   Select(0,&classOfCollection);
+   Select(1,&defaultMemberBasename);
+   Select(2,&collectionSize);
+   Select(3,&collectionIdOfParent);
+   Select(4,&indexOfParent);
+   Select(5,&collectionIdOfChildren);
+   Select(6,&indicesOfChildren);
+}
+
+// ****************************************************************************
+//  Method: avtSILCollectionMetaData::Print
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    02Sep03 
+//
+// ****************************************************************************
+void
+avtSILCollectionMetaData::Print(ostream& out, int indent) const
+{
+    Indent(out, indent);
+    out << "Class = " << classOfCollection.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Default Member Basename = " << defaultMemberBasename.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Size = " << collectionSize << endl;
+
+    Indent(out, indent);
+    out << "Parent = (" << collectionIdOfParent << "," <<
+            indexOfParent << ")" << endl;
+
+    Indent(out, indent);
+    out << "Children are from collection " << collectionIdOfChildren << endl;
+
+    if (indicesOfChildren.size())
+    {
+       Indent(out, indent);
+       out << "Children ids are... ";
+       for (int i = 0; i < collectionSize; i++)
+       {
+          if (!((i+1)%10))
+          {
+             out << endl;
+             Indent(out, indent);
+             out << "                   ";
+          }
+          out << " " << indicesOfChildren[i];
+       }
+       out << endl;
+    }
+}
+
+// ****************************************************************************
+//  Method: avtSILCollectionMetaData::GetType
+//
+//  Purpose: returns whether or not the given collection entry represents
+//  a collection class, a pure collection (only links in the SIL) or a 
+//  collection and sets.
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    14Sep03 
+//
+// ****************************************************************************
+avtSILCollectionMetaData::CollectionType
+avtSILCollectionMetaData::GetType(void) const
+{
+   if      (collectionIdOfParent     == -1 &&
+            indexOfParent            == -1 &&
+            collectionIdOfChildren   == -1 &&
+            indicesOfChildren.size() == 0)
+      return Class;
+   else if (collectionIdOfParent   != -1 &&
+            indexOfParent          != -1 &&
+            collectionIdOfChildren != -1)
+      return PureCollection;
+   else if (collectionIdOfParent     != -1 &&
+            indexOfParent            != -1 &&
+            collectionIdOfChildren   == -1 &&
+            indicesOfChildren.size() == 0)
+      return CollectionAndSets;
+   else
+      return Unknown;
+}
+
+// ****************************************************************************
+//  Method: avtSILMetaData default constructor 
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    02Sep03 
+//
+// ****************************************************************************
+avtSILMetaData::avtSILMetaData()
+    : AttributeSubject("si*i*ia*")
+{
+   // initially, we don't know the storage chunk class id
+   theStorageChunkClassId = -1;
+
+   // create pre-defined collection classes (currently just "whole")
+   int wholeCollectionClassId = collections.size();
+   avtSILCollectionMetaData *wholeCollectionClass =
+      new avtSILCollectionMetaData("whole", "mesh", 1, -1, -1, -1, NULL);
+
+   collections.push_back(wholeCollectionClass);
+   classDisjointFlags.push_back(1);
+   classIds.push_back(wholeCollectionClassId);
+}
+
+// ****************************************************************************
+//  Method: avtSILMetaData constructor 
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    02Sep03 
+//
+// ****************************************************************************
+avtSILMetaData::avtSILMetaData(std::string _meshName)
+    : AttributeSubject("si*i*ia*")
+{
+   meshName = _meshName;
+
+   // initially, we don't know the storage chunk class id
+   theStorageChunkClassId = -1;
+
+   // create pre-defined collection classes (currently just "whole")
+   int wholeCollectionClassId = collections.size();
+   avtSILCollectionMetaData *wholeCollectionClass =
+      new avtSILCollectionMetaData("whole", _meshName, 1, -1, -1, -1, NULL);
+
+   collections.push_back(wholeCollectionClass);
+   classDisjointFlags.push_back(1);
+   classIds.push_back(wholeCollectionClassId);
+}
+
+// ****************************************************************************
+//  Method: avtSILMetaData copy constructor 
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    02Sep03 
+//
+// ****************************************************************************
+avtSILMetaData::avtSILMetaData(const avtSILMetaData &rhs)
+    : AttributeSubject("si*i*ia*")
+{
+   meshName = rhs.meshName;
+   classIds = rhs.classIds;
+   classDisjointFlags = rhs.classDisjointFlags;
+   theStorageChunkClassId = rhs.theStorageChunkClassId;
+   collections.clear();
+   for (int i=0; i<rhs.collections.size(); i++)
+      collections.push_back(new avtSILCollectionMetaData(*(rhs.collections[i])));
+}
+
+// ****************************************************************************
+//  Method: avtSILMetaData destructor
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    02Sep03 
+//
+// ****************************************************************************
+avtSILMetaData::~avtSILMetaData()
+{
+    for(int i = 0; i < collections.size(); ++i)
+        delete collections[i];
+}
+
+// ****************************************************************************
+//  Method: avtSILMetaData operator=
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    02Sep03 
+//
+// ****************************************************************************
+const avtSILMetaData &
+avtSILMetaData::operator=(const avtSILMetaData &rhs)
+{
+   meshName = rhs.meshName;
+   classIds = rhs.classIds;
+   classDisjointFlags = rhs.classDisjointFlags;
+   theStorageChunkClassId = rhs.theStorageChunkClassId;
+   collections.clear();
+   for (int i=0; i<rhs.collections.size(); i++)
+      collections.push_back(new avtSILCollectionMetaData(*(rhs.collections[i])));
+
+   return *this;
+}
+
+// ****************************************************************************
+//  Method: avtSILMetaData operator=
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    02Sep03 
+//
+// ****************************************************************************
+void
+avtSILMetaData::SelectAll()
+{
+   Select(0,&meshName);
+   Select(1,&classIds);
+   Select(2,&classDisjointFlags);
+   Select(3,&theStorageChunkClassId);
+   Select(4,&collections);
+}
+
+// ****************************************************************************
+//  Method: avtSILMetaData::CreateSubAttributeGroup 
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    02Sep03 
+//
+// ****************************************************************************
+AttributeGroup*
+avtSILMetaData::CreateSubAttributeGroup(int)
+{
+    return new avtSILCollectionMetaData;
+}
+
+// ****************************************************************************
+//  Method: avtSILMetaData::Print
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    02Sep03 
+//
+// ****************************************************************************
+void
+avtSILMetaData::Print(ostream& out, int indent) const
+{
+    int i;
+
+    Indent(out, indent);
+    out << "Mesh Name = " << meshName.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Number of collection classes = " << classIds.size() << endl;
+
+    Indent(out, indent);
+    out << "Collection class names are..." << endl;
+    for (i = 0; i < classIds.size(); i++)
+    {
+       Indent(out, indent+8);
+       out << collections[classIds[i]]->GetClassName().c_str() << endl;
+    }
+
+    Indent(out, indent);
+    out << "The storage chunk class = " <<
+       collections[theStorageChunkClassId]->GetClassName().c_str() << endl;
+
+    Indent(out, indent);
+    out << "Collection details are..." << endl;
+    for (i = 0; i < collections.size(); i++)
+       collections[i]->Print(out,indent+8);
+
+}
+
+// ****************************************************************************
+//  Method: avtSILMetaData::GetCollectionClassId
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    02Sep03 
+//
+// ****************************************************************************
+int
+avtSILMetaData::GetCollectionClassId(std::string& className) const
+{
+   for (int i = 0; i < classIds.size(); i++)
+      if (!strcmp(className.c_str(),
+                  collections[classIds[i]]->GetClassName().c_str()))
+          return classIds[i];
+   return -1;
+}
+
+// ****************************************************************************
+//  Method: avtSILMetaData::AddCollectionClass
+//
+//  Purpose: Add a collection class to SIL metadata. A collection class is an
+//  awful lot like a collection. In fact, it can be thought of as being
+//  implemented as a collection on the whole though if hideFromWhole is true,
+//  it won't be 'visible' on the whole from inside VisIt.
+//
+//  Collection class names must be unique. Only one collection class can be
+//  created that has isStorageChunkClass true. Finally, the count of the number
+//  of members in the collection class is a global count over the SIL of
+//  sets of the associated class. For example, if you are creating a collection
+//  class for patches in a block-structured AMR mesh, the numMembers you
+//  would pass here is the total number of patches over all levels. Each
+//  'entry' in the collection class uniquely identifies one of the patches.
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    02Sep03 
+//
+// ****************************************************************************
+int
+avtSILMetaData::AddCollectionClass(std::string className,
+   std::string defaultMemberBasename, int numMembers,
+   int pairwiseDisjoint, bool hideFromWhole, bool isStorageChunkClass)
+{
+   int newCollectionClassId = collections.size();
+
+   // make sure the number of members is sane
+   if (numMembers <= 0)
+   {
+      EXCEPTION1(ImproperUseException, className);
+   }
+
+   // make sure the class name is unique
+   for (int i = 0; i < classIds.size(); i++)
+   {
+      if (className == collections[classIds[i]]->GetClassName())
+      {
+         EXCEPTION1(ImproperUseException, className);
+      }
+   }
+
+   // create the collection class entry
+   avtSILCollectionMetaData *newCollectionClass =
+      new avtSILCollectionMetaData(className, defaultMemberBasename,
+                                   numMembers, -1, -1, -1, NULL);
+
+   collections.push_back(newCollectionClass);
+   classDisjointFlags.push_back(pairwiseDisjoint);
+   classIds.push_back(newCollectionClassId);
+
+   if (isStorageChunkClass)
+   {
+      if (theStorageChunkClassId != -1)
+      {
+         EXCEPTION1(ImproperUseException, className);
+      }
+
+      theStorageChunkClassId = newCollectionClassId;
+
+   }
+
+#if 0
+   if (!hideFromWhole)
+   {
+      // create a collection entry on whole
+      avtSILCollectionMetaData *collectionOnWhole =
+         new avtSILCollectionMetaData(className, defaultMemberBasename,
+                                      numMembers, 0, 0, newCollectionClassId, NULL);
+      collections.push_back(collectionOnWhole);
+   }
+#endif
+
+   return newCollectionClassId;
+}
+
+// ****************************************************************************
+//  Method: avtSILMetaData::AddCollection 
+//
+//  Purpose: Add a collection to SIL meta data. A collection can be created
+//  'from scratch' or in terms of another collection. In the former mode,
+//  the caller does NOT specify either the collectionIdOfChildren of
+//  indicesOfChildren arguments. In the later mode, the caller specifies
+//  both of these arguments. The indicesOfChildren argument enumerates which
+//  sets in the collection identified by collectionIdOfChildren, are in the
+//  collection being here defined and, consequently, subsets of the set
+//  identified by the pair <collectionIdOfParent,indexOfParent>.
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    02Sep03 
+//
+// ****************************************************************************
+int
+avtSILMetaData::AddCollection(
+   std::string classOfCollection, std::string defaultMemberBasename,
+   int collectionSize, int collectionIdOfParent, int indexOfParent,
+   int collectionIdOfChildren, int *indicesOfChildren)
+{
+   int newCollectionId = collections.size();
+
+   avtSILCollectionMetaData *parentCollection = 
+      collections[collectionIdOfParent];
+
+   if (indexOfParent < 0 || indexOfParent >= parentCollection->GetSize())
+   {
+      EXCEPTION2(BadIndexException, indexOfParent, parentCollection->GetSize());
+   }
+
+   if (collectionIdOfChildren < 0 && indicesOfChildren != NULL)
+   {
+      EXCEPTION1(ImproperUseException, classOfCollection);
+   }
+
+   if (collectionIdOfChildren >= 0)
+   {
+      avtSILCollectionMetaData *childrenCollection = 
+         collections[collectionIdOfChildren];
+
+      if (classOfCollection != childrenCollection->GetClassName())
+      {
+         EXCEPTION1(ImproperUseException, classOfCollection);
+      }
+
+      if (indicesOfChildren)
+      {
+         for (int i = 0; i < collectionSize; i++)
+         {
+            if (indicesOfChildren[i] >= childrenCollection->GetSize())
+            {
+               EXCEPTION2(BadIndexException, indicesOfChildren[i], childrenCollection->GetSize());
+            }
+         }
+      }
+   }
+
+   avtSILCollectionMetaData *newCollection =
+      new avtSILCollectionMetaData(classOfCollection, defaultMemberBasename,
+             collectionSize, collectionIdOfParent, indexOfParent,
+             collectionIdOfChildren, indicesOfChildren);
+
+   collections.push_back(newCollection);
+
+   return newCollectionId;
+}
+
+// ****************************************************************************
+//  Method: avtSILMetaData::Validate
+//
+//  Purpose: check a SIL meta data object for errors.
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    02Sep03 
+//
+// ****************************************************************************
+void
+avtSILMetaData::Validate()
+{
+   if (theStorageChunkClassId == -1)
+   {
+      EXCEPTION0(ImproperUseException);
+   }
+
+   for (int i = 0; i < collections.size(); i++)
+   {
+      avtSILCollectionMetaData *coll = collections[i];
+
+      if ((coll->collectionIdOfChildren > 0) &&
+          (collections[coll->collectionIdOfChildren]->GetType() !=
+           avtSILCollectionMetaData::Class))
+      {
+         if (coll->indicesOfChildren.size() == 0)
+         {
+            EXCEPTION0(ImproperUseException);
+         }
+
+         avtSILCollectionMetaData *childColl = collections[coll->collectionIdOfChildren];
+
+         if (coll->collectionSize > childColl->collectionSize)
+         {
+            EXCEPTION0(ImproperUseException);
+         }
+
+         for (int j = 0; j < coll->collectionSize; j++)
+         {
+            if ((coll->indicesOfChildren[i] < 0) ||
+                (coll->indicesOfChildren[i] >= childColl->collectionSize))
+            {
+               EXCEPTION2(BadIndexException, coll->indicesOfChildren[i],
+                          childColl->collectionSize);
+            }
+         }
+      }
+   }
+}
+
+
+// ****************************************************************************
+//  Method: avtDefaultPlotMetaData default constructor
+//
+//  Arguments:
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    September 04, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtDefaultPlotMetaData::avtDefaultPlotMetaData()
+    : AttributeSubject("sss*b")
+{ 
+    validVariable = false;
+}
+
+// ****************************************************************************
+//  Method: avtDefaultPlotMetaData constructor
+//
+//  Arguments:
+//      p        The name of the plugin.
+//      v        The name of the variable the plot is applied on.
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    September 04, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtDefaultPlotMetaData::avtDefaultPlotMetaData(std::string p, std::string v)
+    : AttributeSubject("sss*b")
+{
+    pluginID      = p;
+    plotVar       = v;
+    validVariable = true;
+}
+
+// ****************************************************************************
+//  Method: avtDefaultPlotMetaData copy constructor
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    September 04, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtDefaultPlotMetaData::avtDefaultPlotMetaData(const avtDefaultPlotMetaData &rhs)
+    : AttributeSubject("sss*b")
+{
+    pluginID       = rhs.pluginID;
+    plotVar        = rhs.plotVar;
+    plotAttributes = rhs.plotAttributes; 
+    validVariable  = rhs.validVariable;
+}
+
+// ****************************************************************************
+//  Method: avtDefaultPlotMetaData destructor
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    September 04, 2003
+//
+//  Modifications:
+//   
+// ****************************************************************************
+
+avtDefaultPlotMetaData::~avtDefaultPlotMetaData()
+{
+}
+
+
+// ****************************************************************************
+//  Method: avtDefaultPlotMetaData::operator=
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    September 04, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+const avtDefaultPlotMetaData &
+avtDefaultPlotMetaData::operator=(const avtDefaultPlotMetaData &rhs)
+{
+    pluginID       = rhs.pluginID;
+    plotVar        = rhs.plotVar;
+    plotAttributes = rhs.plotAttributes; 
+    validVariable  = rhs.validVariable;
+    return *this;
+}
+
+
+// ****************************************************************************
+//  Method: avtDefaultPlotMetaData::AddAttribute
+//
+//  Arguments:
+//      attr  : the attribute to be added
+//
+//  Programmer: Walter Herrera Jimenez
+//  Creation:   September 04, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtDefaultPlotMetaData::AddAttribute(const std::string& attr)
+{
+    plotAttributes.push_back(attr);
+}
+
+
+// ****************************************************************************
+//  Method: avtDefaultPlotMetaData::SelectAll
+//
+//  Arguments:
+//
+//  Programmer: Walter Herrera Jimenez
+//  Creation:   September 04, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtDefaultPlotMetaData::SelectAll()
+{
+    Select(0, (void*)&pluginID); 
+    Select(1, (void*)&plotVar);
+    Select(2, (void*)&plotAttributes);
+    Select(3, (void*)&validVariable);
+}
+
+
+// ****************************************************************************
+//  Method: avtDefaultPlotMetaData::Print
+//
+//  Purpose:
+//      Print statement for debugging.
+//
+//  Arguments:
+//      out      The stream to output to.
+//      indent   The number of tabs to indent each line with.
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    September 04, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtDefaultPlotMetaData::Print(ostream &out, int indent) const
+{
+    Indent(out, indent);
+    out << "PluginID = " << pluginID.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Plot Variable = " << plotVar.c_str() << endl;
+
+    out << "Plot Attributes:" << endl;
+    for(int i = 0; i < plotAttributes.size(); ++i)
+      out << "\t" << plotAttributes[i].c_str() << endl;
+    out << endl;
+
+    if (!validVariable)
+    {
+        Indent(out, indent);
+        out << "THIS IS NOT A VALID VARIABLE." << endl;
+    }
+}
+
+// ****************************************************************************
 //  Method: avtDatabaseMetaData default constructor
 //
 //  Programmer:  Hank Childs
@@ -1963,16 +2722,20 @@ avtCurveMetaData::Print(ostream &out, int indent) const
 //    Brad Whitlock, Tue Mar 25 14:29:26 PST 2003
 //    I added the isVirtualDatabase and timeStepNames fields.
 //
+//    Walter Herrera, Tue Sep 04 15:08:48 PST 2003
+//    I added the defaultPlots field.
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData()
-    : AttributeSubject("sbddibss*i*i*i*d*a*a*a*a*a*a*a")
+    : AttributeSubject("sbddibss*i*i*i*d*a*a*a*a*a*a*a*aba*")
 {
-    hasTemporalExtents = false;
-    minTemporalExtents = 0.;
-    maxTemporalExtents = 0.;
-    numStates          = 0;
-    isVirtualDatabase  = false;
+    hasTemporalExtents          = false;
+    minTemporalExtents          = 0.;
+    maxTemporalExtents          = 0.;
+    numStates                   = 0;
+    isVirtualDatabase           = false;
+    mustRepopulateOnStateChange = false;
 }
 
 
@@ -2008,10 +2771,13 @@ avtDatabaseMetaData::avtDatabaseMetaData()
 //    Hank Childs, Thu Aug 14 08:16:07 PDT 2003
 //    Copy over the database name.
 //
+//    Walter Herrera, Tue Sep 04 15:08:48 PST 2003
+//    Copy defaultPlots.
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
-    : AttributeSubject("sbddibss*i*i*i*d*a*a*a*a*a*a*a")
+    : AttributeSubject("sbddibss*i*i*i*d*a*a*a*a*a*a*a*aba*")
 {
     databaseName       = rhs.databaseName;
     hasTemporalExtents = rhs.hasTemporalExtents;
@@ -2019,6 +2785,7 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
     maxTemporalExtents = rhs.maxTemporalExtents;
     numStates          = rhs.numStates;
     isVirtualDatabase  = rhs.isVirtualDatabase;
+    mustRepopulateOnStateChange = rhs.mustRepopulateOnStateChange;
     timeStepPath       = rhs.timeStepPath;
     timeStepNames      = rhs.timeStepNames;
     cyclesAreAccurate  = rhs.cyclesAreAccurate;
@@ -2040,6 +2807,10 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
         species.push_back(new avtSpeciesMetaData(*rhs.species[i]));
     for (i=0; i<rhs.curves.size(); i++)
         curves.push_back(new avtCurveMetaData(*rhs.curves[i]));
+    for (i=0; i<rhs.sils.size(); i++)
+        sils.push_back(new avtSILMetaData(*rhs.sils[i]));
+    for (i=0; i<rhs.defaultPlots.size(); i++)
+        defaultPlots.push_back(new avtDefaultPlotMetaData(*rhs.defaultPlots[i]));
 }
 
 
@@ -2075,6 +2846,9 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
 //    Hank Childs, Thu Aug 14 08:16:07 PDT 2003
 //    Copy over the database name.
 //
+//    Walter Herrera, Tue Sep 04 15:08:48 PST 2003
+//    Copy defaultPlots.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData &
@@ -2086,6 +2860,7 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
     maxTemporalExtents = rhs.maxTemporalExtents;
     numStates          = rhs.numStates;
     isVirtualDatabase  = rhs.isVirtualDatabase;
+    mustRepopulateOnStateChange = rhs.mustRepopulateOnStateChange;
     timeStepPath       = rhs.timeStepPath;
     timeStepNames      = rhs.timeStepNames;
     cyclesAreAccurate  = rhs.cyclesAreAccurate;
@@ -2113,6 +2888,12 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
     for (i=0; i<curves.size(); i++)
         delete curves[i];
     curves.clear();
+    for (i=0; i<sils.size(); i++)
+        delete sils[i];
+    sils.clear();
+    for (i=0; i<defaultPlots.size(); i++)
+        delete defaultPlots[i];
+    defaultPlots.clear();
 
     for (i=0; i<rhs.meshes.size(); i++)
         meshes.push_back(new avtMeshMetaData(*rhs.meshes[i]));
@@ -2126,6 +2907,10 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
         species.push_back(new avtSpeciesMetaData(*rhs.species[i]));
     for (i=0; i<rhs.curves.size(); i++)
         curves.push_back(new avtCurveMetaData(*rhs.curves[i]));
+    for (i=0; i<rhs.sils.size(); i++)
+        sils.push_back(new avtSILMetaData(*rhs.sils[i]));
+    for (i=0; i<rhs.defaultPlots.size(); i++)
+        defaultPlots.push_back(new avtDefaultPlotMetaData(*rhs.defaultPlots[i]));
 
     return *this;
 }
@@ -2141,6 +2926,9 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
 //
 //    Hank Childs, Fri Aug  1 11:08:21 PDT 2003
 //    Add support for curves.
+//
+//    Walter Herrera, Tue Sep 04 15:08:48 PST 2003
+//    Add support for defaultPlots.
 //
 // ****************************************************************************
 
@@ -2180,6 +2968,18 @@ avtDatabaseMetaData::~avtDatabaseMetaData()
     for (cit = curves.begin() ; cit != curves.end() ; cit++)
     {
         delete (*cit);
+    }
+
+    std::vector<avtDefaultPlotMetaData *>::iterator defpltit;
+    for (defpltit = defaultPlots.begin() ; defpltit != defaultPlots.end() ; defpltit++)
+    {
+        delete (*defpltit);
+    }
+
+    std::vector<avtSILMetaData *>::iterator silit;
+    for (silit = sils.begin() ; silit != sils.end() ; silit++)
+    {
+        delete (*silit);
     }
 }
 
@@ -2621,6 +3421,41 @@ avtDatabaseMetaData::Add(avtCurveMetaData *cmd)
 
 
 // ****************************************************************************
+//  Method: avtDatabaseMetaData::Add
+//
+//  Arguments:
+//      smd    A SIL meta data object.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   August 28, 2003
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::Add(avtSILMetaData *smd)
+{
+    smd->Validate();
+    sils.push_back(smd);
+}
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::Add
+//
+//  Arguments:
+//      pmd    A default plot meta data object.
+//
+//  Programmer: Walter Herrera
+//  Creation:   Septemver 04, 2003
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::Add(avtDefaultPlotMetaData *pmd)
+{
+    defaultPlots.push_back(pmd);
+}
+
+// ****************************************************************************
 //  Method: avtDatabaseMetaData::SetExtents
 //
 //  Purpose:
@@ -2979,6 +3814,18 @@ avtDatabaseMetaData::MeshForVar(std::string var) const
         }
     }
 
+    // Look through the sils.
+    for (i = 0 ; i < sils.size(); i++)
+    {
+        vector<avtSILCollectionMetaData *> collections = sils[i]->collections;
+        for (int j = 0; j < collections.size(); j++)
+        {
+           if (collections[j]->classOfCollection == var)
+              return sils[i]->meshName;
+        }
+    }
+
+
     EXCEPTION1(InvalidVariableException, var);
 }
 
@@ -3220,6 +4067,10 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
     out << "Num Time States: " << numStates << endl;
 
     Indent(out, indent);
+    out << "MetaData" << (mustRepopulateOnStateChange ? " IS " : " is NOT ") << 
+        "repopulated on state changes" << endl;
+
+    Indent(out, indent);
     if (hasTemporalExtents)
     {
         out << "Temporal extents are from " << minTemporalExtents << " to "
@@ -3330,6 +4181,19 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
         out << endl;
     }
 
+    if(defaultPlots.begin() != defaultPlots.end())
+    {
+        Indent(out, indent);
+        out << "Default Plots: " << endl;
+    }
+    std::vector< avtDefaultPlotMetaData * >::const_iterator plot_it;
+    for (plot_it = defaultPlots.begin() ; plot_it != defaultPlots.end() ; 
+         plot_it++)
+    {
+        (*plot_it)->Print(out, indent+1);
+        out << endl;
+    }
+
     if (exprList.GetNumExpressions() > 0)
     {
         Indent(out, indent);
@@ -3370,6 +4234,12 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
                 << exprList[i].GetDefinition().c_str() << endl;
         }
     }
+    std::vector< avtSILMetaData * >::const_iterator sit;
+    for (sit = sils.begin() ; sit != sils.end() ; sit++)
+    {
+        (*sit)->Print(out, indent+1);
+        out << endl;
+    }
 }
 
 
@@ -3406,6 +4276,9 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
 //   Hank Childs, Thu Aug 14 08:16:07 PDT 2003
 //   Added database name.
 //
+//   Walter Herrera, Tue Sep 04 15:405:17 PST 2003
+//   Add defaultPlots
+//
 // *******************************************************************
 
 void
@@ -3431,8 +4304,10 @@ avtDatabaseMetaData::SelectAll()
     Select(15, (void*)&materials);
     Select(16, (void*)&species);
     Select(17, (void*)&curves);
-
-    Select(18, (void*)&exprList);
+    Select(18, (void*)&defaultPlots);
+    Select(19, (void*)&exprList);
+    Select(20, (void*)&mustRepopulateOnStateChange);
+    Select(21, (void*)&sils);
 }
 
 // *******************************************************************
@@ -3484,6 +4359,10 @@ avtDatabaseMetaData::CreateSubAttributeGroup(int n)
         return new avtSpeciesMetaData;
       case 17:
         return new avtCurveMetaData;
+      case 18:
+        return new avtDefaultPlotMetaData;
+      case 21:
+        return new avtSILMetaData;
       default:
         return NULL;
     }
@@ -3775,7 +4654,70 @@ avtDatabaseMetaData::GetCurve(const std::string &n) const
             return curves[i];
     return NULL;
 }
-    
+
+// *******************************************************************
+// Method: avtDatabaseMetaData::GetSIL
+//
+// Purpose: 
+//     This returns the metadata for the nth SIL in the file.
+//
+// Arguments:
+//     n  :  the index into the array
+//
+// Programmer: Mark C. Miller 
+// Creation:   04Sep03 
+// *******************************************************************
+
+const avtSILMetaData *
+avtDatabaseMetaData::GetSIL(int n) const
+{
+    return sils[n];
+}
+
+// *******************************************************************
+// Method: avtDatabaseMetaData::GetSIL
+//
+// Purpose: 
+//     This returns the metadata for the SIL in the file whose name
+//     is n.
+//
+// Arguments:
+//     n  :  the name of the SIL object
+//
+// Programmer: Mark C. Miller
+// Creation:   04Sep03 
+// *******************************************************************
+
+const avtSILMetaData *
+avtDatabaseMetaData::GetSIL(const std::string &n) const
+{
+    for (int i=0; i<sils.size(); i++)
+        if (sils[i]->meshName == n)
+            return sils[i];
+    return NULL;
+}
+
+// *******************************************************************
+// Method: avtDatabaseMetaData::GetDefaultPlot
+//
+// Purpose: 
+//     This returns the metadata for the nth default plot in the file.
+//
+// Arguments:
+//     n  :  the index into the array
+//
+// Programmer: Walter Herrera
+// Creation:   September 04, 2003
+//
+// Modifications:
+//   
+// *******************************************************************
+
+const avtDefaultPlotMetaData *
+avtDatabaseMetaData::GetDefaultPlot(int n) const
+{
+    return defaultPlots[n];
+}
 
 // ****************************************************************************
 //  Method: avtDatabaseMetaData::SetBlocksForMesh

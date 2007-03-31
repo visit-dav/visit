@@ -4,6 +4,7 @@
 #include <vector>
 
 // Some vector typedefs.
+typedef std::vector<bool>             boolVector;
 typedef std::vector<char>             charVector;
 typedef std::vector<unsigned char>    unsignedCharVector;
 typedef std::vector<int>              intVector;

@@ -63,6 +63,7 @@ public:
         FieldType_intArray,
         FieldType_intVector,
         FieldType_bool,
+        FieldType_boolVector,
         FieldType_float,
         FieldType_floatArray,
         FieldType_double,
@@ -156,6 +157,7 @@ protected:
     void DeclareVectorDouble();
     void DeclareVectorString();
     void DeclareVectorAttributeGroup();
+    void DeclareVectorBool();
 private:
     class STATE_API typeInfo
     {

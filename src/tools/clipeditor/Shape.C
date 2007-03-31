@@ -10,6 +10,9 @@
 //    added a NOCOLOR option (i.e. the centroid-point is on the intersection
 //    between the two materials).
 //
+//    Jeremy Meredith, Thu Sep 18 11:29:12 PDT 2003
+//    Added Quad and Triangle shapes.
+//
 // ----------------------------------------------------------------------------
 
 #include "Shape.h"
@@ -26,6 +29,9 @@ using std::vector;
 int  Shape::duplicateFacesRemoval = 0;
 bool Shape::lighting = false;
 bool Shape::numbering = true;
+
+int triangleFaces[1][3] = {{0,1,2}};
+int quadFaces[1][4] = {{0,1,2,3}};
 
 void
 DrawFuzzyPoint(float x,float y,float z,float d)
@@ -140,6 +146,41 @@ Shape::Shape(ShapeType st, int sc, DataSet *ds)
         quads = wedgeQuadFaces;
         break;
 
+      case ST_QUAD:
+        nverts = 4;
+
+        xc[0] = -1;        yc[0] =  -1;        zc[0] =  0;
+        xc[1] =  1;        yc[1] =  -1;        zc[1] =  0;
+        xc[2] =  1;        yc[2] =   1;        zc[2] =  0;
+        xc[3] = -1;        yc[3] =   1;         zc[3] =  0;
+
+        nedges = 4;
+        edges = quadVerticesFromEdges;
+
+        ntris = 0;
+        tris = NULL;
+
+        nquads = 1;
+        quads = quadFaces;
+        break;
+
+      case ST_TRIANGLE:
+        nverts = 3;
+
+        xc[0] = -1;        yc[0] =  -1;        zc[0] =  0;
+        xc[1] =  1;        yc[1] =  -1;        zc[1] =  0;
+        xc[2] =  0;        yc[2] =   1;        zc[2] =  0;
+
+        nedges = 3;
+        edges = triVerticesFromEdges;
+
+        ntris = 1;
+        tris = triangleFaces;
+
+        nquads = 0;
+        quads = NULL;
+        break;
+
       case ST_POINT:
         cerr << "Error\n";
         exit(1);
@@ -197,6 +238,26 @@ Shape::Shape(ShapeType st, Shape *parent, int c, int n, const char *nodes, DataS
         tris   = wedgeTriangleFaces;
         nquads = 3;
         quads  = wedgeQuadFaces;
+        break;
+
+      case ST_QUAD:
+        nverts = 4;
+        nedges = 4;
+        edges  = quadVerticesFromEdges;
+        ntris  = 0;
+        tris   = NULL;
+        nquads = 1;
+        quads  = quadFaces;
+        break;
+
+      case ST_TRIANGLE:
+        nverts = 3;
+        nedges = 3;
+        edges  = triVerticesFromEdges;
+        ntris  = 1;
+        tris   = triangleFaces;
+        nquads = 0;
+        quads  = NULL;
         break;
 
       case ST_POINT:
@@ -617,6 +678,15 @@ Shape::Invert()
         swap(parentNodes[2],parentNodes[5]);
         break;
 
+      case ST_TRIANGLE:
+        swap(parentNodes[0],parentNodes[2]);
+        break;
+
+      case ST_QUAD:
+        swap(parentNodes[0],parentNodes[3]);
+        swap(parentNodes[1],parentNodes[2]);
+        break;
+
       case ST_POINT:
         break;
     }
@@ -712,6 +782,46 @@ Shape::CheckCopyOf(Shape *s)
         }
         break;
 
+      case ST_QUAD:
+        ncases = 8;
+        for (i=0; i<ncases; i++)
+        {
+            bool okay = true;
+            for (int p=0; p<4; p++)
+            {
+                if (s->pointcase[p] !=
+                    this->pointcase[quadTransforms[i].n[p]])
+                {
+                    okay = false;
+                }
+            }
+            if (okay)
+            {
+                return i;
+            }
+        }
+        break;
+
+      case ST_TRIANGLE:
+        ncases = 6;
+        for (i=0; i<ncases; i++)
+        {
+            bool okay = true;
+            for (int p=0; p<3; p++)
+            {
+                if (s->pointcase[p] !=
+                    this->pointcase[triTransforms[i].n[p]])
+                {
+                    okay = false;
+                }
+            }
+            if (okay)
+            {
+                return i;
+            }
+        }
+        break;
+
       case ST_POINT:
         cerr << "Error\n";
         break;
@@ -752,6 +862,14 @@ Shape::Shape(Shape *copy, int xformID, Shape *parent, DataSet *ds)
 
       case ST_WEDGE:
         MakeCopyOf(copy, wedgeTransforms[xformID]);
+        break;
+
+      case ST_QUAD:
+        MakeCopyOf(copy, quadTransforms[xformID]);
+        break;
+
+      case ST_TRIANGLE:
+        MakeCopyOf(copy, triTransforms[xformID]);
         break;
 
       case ST_POINT:
@@ -828,6 +946,48 @@ Shape::MakeCopyOf(Shape *s, PyramidTransform &xform)
 
 void
 Shape::MakeCopyOf(Shape *s, TetTransform &xform)
+{
+    for (int i=0; i<nverts; i++)
+    {
+        char c1 = s->parentNodes[i];
+        char c2 = c1;
+        if (c1 >= '0' && c1 <= '9')
+        {
+            c2 = xform.n[c1 - '0'] + '0';
+        }
+        else if (c1 >= 'a' && c1 <= 'l')
+        {
+            c2 = xform.e[c1 - 'a'];
+        }
+        parentNodes[i] = c2;
+    }
+    if (xform.f)
+        Invert();
+}
+
+void
+Shape::MakeCopyOf(Shape *s, QuadTransform &xform)
+{
+    for (int i=0; i<nverts; i++)
+    {
+        char c1 = s->parentNodes[i];
+        char c2 = c1;
+        if (c1 >= '0' && c1 <= '9')
+        {
+            c2 = xform.n[c1 - '0'] + '0';
+        }
+        else if (c1 >= 'a' && c1 <= 'l')
+        {
+            c2 = xform.e[c1 - 'a'];
+        }
+        parentNodes[i] = c2;
+    }
+    if (xform.f)
+        Invert();
+}
+
+void
+Shape::MakeCopyOf(Shape *s, TriTransform &xform)
 {
     for (int i=0; i<nverts; i++)
     {

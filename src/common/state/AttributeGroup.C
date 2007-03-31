@@ -38,6 +38,7 @@ static const unsigned char msgTypeVectorFloat          = 0x17;
 static const unsigned char msgTypeVectorDouble         = 0x18;
 static const unsigned char msgTypeVectorString         = 0x19;
 static const unsigned char msgTypeVectorAttributeGroup = 0x1a;
+static const unsigned char msgTypeVectorBool           = 0x1b;
 
 #if 0
 // These are uesful for creating debugging output. Ordinarily, these
@@ -48,7 +49,7 @@ static const char *typeNames[] = {
 "ListChar", "ListUnsignedChar", "ListInt", "ListLong", "ListFloat", 
 "ListDouble", "ListString", "ListAttributeGroup", "ListBool",
 "VectorChar", "VectorUnsignedChar", "VectorInt", "VectorLong", "VectorFloat",
-"VectorDouble", "VectorString", "VectorAttributeGroup"
+"VectorDouble", "VectorString", "VectorAttributeGroup", "VectorBool",
 };
 #endif
 
@@ -250,6 +251,9 @@ AttributeGroup::InterpolateConst(const AttributeGroup *atts1,
           case FieldType_bool:
             ConstInterp<bool>::InterpScalar(addrOut,addr1,addr2,f);
             break;
+          case FieldType_boolVector:
+            ConstInterp<bool>::InterpVector(addrOut,addr1,addr2,f);
+            break;
           case FieldType_float:
             ConstInterp<float>::InterpScalar(addrOut,addr1,addr2,f);
             break;
@@ -385,6 +389,9 @@ AttributeGroup::InterpolateLinear(const AttributeGroup *atts1,
           case FieldType_bool:
             ConstInterp<bool>::InterpScalar(addrOut,addr1,addr2,f);
             break;
+          case FieldType_boolVector:
+            ConstInterp<bool>::InterpVector(addrOut,addr1,addr2,f);
+            break;
           case FieldType_float:
             LinInterp<float>::InterpScalar(addrOut,addr1,addr2,f);
             break;
@@ -515,6 +522,10 @@ AttributeGroup::EqualTo(const AttributeGroup *atts) const
             break;
           case FieldType_bool:
             if (!(EqualVal<bool>::EqualScalar(addr1,addr2)))
+               return false;
+            break;
+          case FieldType_boolVector:
+            if (!(EqualVal<bool>::EqualVector(addr1,addr2)))
                return false;
             break;
           case FieldType_float:
@@ -788,6 +799,21 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
                else
                    conn.WriteChar(0);
            }
+        }
+        break;
+    case msgTypeVectorBool:
+        { // new scope
+          boolVector *vb = (boolVector *)(info.address);
+          boolVector::iterator bpos;
+
+          conn.WriteInt(vb->size());
+          for(bpos = vb->begin(); bpos != vb->end(); ++bpos)
+          {
+              if (*bpos)
+                  conn.WriteChar(1);
+              else
+                  conn.WriteChar(0);
+          }
         }
         break;
     case msgTypeVectorChar:
@@ -1068,6 +1094,25 @@ AttributeGroup::ReadType(Connection &conn, int attrId, AttributeGroup::typeInfo 
               conn.ReadChar(&c);
 
               *bptr = (c == 1);
+          }
+        }
+        break;
+    case msgTypeVectorBool:
+        { // new scope
+          boolVector *vb = (boolVector *)(info.address);
+          vb->clear();
+
+          // Read the length of the vector and reserve that many items.
+          conn.ReadInt(&vecLen);
+          if(vecLen > 0)
+              vb->reserve(vecLen);
+
+          // Read the elements
+          for(i = vecLen; i > 0; --i)
+          {
+              unsigned char c;
+              conn.ReadChar(&c);
+              vb->push_back((c==1));
           }
         }
         break;
@@ -1746,6 +1791,13 @@ AttributeGroup::CalculateMessageSize(Connection &conn)
                 }
             }
                 break;
+            case msgTypeVectorBool:
+            { // new scope
+                boolVector *vb = (boolVector *)(pos->address);
+                messageSize += conn.IntSize(conn.DEST);
+                messageSize += (conn.CharSize(conn.DEST) * vb->size());
+            }
+                break;
             case msgTypeVectorChar:
             { // new scope
                 charVector *vc = (charVector *)(pos->address);
@@ -1931,6 +1983,12 @@ AttributeGroup::DeclareListBool()
 }
 
 void
+AttributeGroup::DeclareVectorBool()
+{
+    typeMap.push_back(msgTypeVectorBool);
+}
+
+void
 AttributeGroup::DeclareVectorChar()
 {
     typeMap.push_back(msgTypeVectorChar);
@@ -2031,6 +2089,9 @@ AttributeGroup::CreateTypeMap(const char *formatString)
             // Declare vectors
             switch(baseFormat)
             {
+            case 'b':
+                DeclareVectorBool();
+                break;
             case 'c':
                 DeclareVectorChar();
                 break;
@@ -2355,6 +2416,13 @@ ostream& operator<<(ostream& os, const AttributeGroup& atts)
             break;
 
         // vectors of primitive types 
+        case msgTypeVectorBool:
+            {   boolVector *vb = (boolVector *)pos->address;
+                boolVector::iterator bpos;
+                for(bpos = vb->begin(); bpos != vb->end(); ++bpos)
+                    os << ", '" << (*bpos==1?"true":"false") << "'";
+            }
+            break;
         case msgTypeVectorChar:
             {   charVector *vc = (charVector *)pos->address;
                 charVector::iterator cpos;

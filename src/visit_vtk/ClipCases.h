@@ -8,6 +8,9 @@
 //    Jeremy Meredith, Mon Sep 15 17:24:15 PDT 2003
 //    Added NOCOLOR.
 //
+//    Jeremy Meredith, Thu Sep 18 11:29:12 PDT 2003
+//    Added quad and triangle cases and output shapes.
+//
 
 // Points of original cell (up to 8, for the hex)
 // Note: we assume P0 is zero in several places.
@@ -48,7 +51,9 @@
 #define ST_PYR 101
 #define ST_WDG 102
 #define ST_HEX 103
-#define ST_PNT 104
+#define ST_TRI 104
+#define ST_QUA 105
+#define ST_PNT 106
 
 // Colors
 #define COLOR0  120
@@ -75,5 +80,15 @@ extern int numClipCasesTet;
 extern int numClipShapesTet[16];
 extern int startClipShapesTet[16];
 extern unsigned char clipShapesTet[];
+
+extern int numClipCasesQua;
+extern int numClipShapesQua[16];
+extern int startClipShapesQua[16];
+extern unsigned char clipShapesQua[];
+
+extern int numClipCasesTri;
+extern int numClipShapesTri[8];
+extern int startClipShapesTri[8];
+extern unsigned char clipShapesTri[];
 
 #endif

@@ -29,6 +29,7 @@
 #include <ViewerMessaging.h>
 #include <ViewerOperator.h>
 #include <ViewerOperatorFactory.h>
+#include <ViewerPlotList.h>
 #include <ViewerSubject.h>
 
 #include <DebugStream.h>
@@ -105,6 +106,9 @@ avtDataObjectReader_p ViewerPlot::nullReader((avtDataObjectReader *)0);
 //    Kathleen Bonnell, Wed Aug 27 15:45:45 PDT 2003 
 //    Initialize 'isMesh'. 
 //
+//    Hank Childs, Wed Sep 17 10:20:23 PDT 2003
+//    Added pointer to ViewerPlotList.
+//
 // ****************************************************************************
 
 ViewerPlot::ViewerPlot(const int type_,
@@ -143,6 +147,7 @@ ViewerPlot::ViewerPlot(const int type_,
     errorFlag           = false;
     networkID           = -1;
     queryAtts           = 0;               
+    viewerPlotList      = NULL;
 
     bgColor[0] = bgColor[1] = bgColor[2] = 1.0; 
     fgColor[0] = fgColor[1] = fgColor[2] = 0.0; 
@@ -1977,6 +1982,9 @@ ViewerPlot::GetReader(const int frame) const
 //    Eric Brugger, Mon Nov 18 09:16:38 PST 2002
 //    I added keyframing support.
 //
+//    Hank Childs, Wed Sep 17 09:31:59 PDT 2003
+//    If the meta-data varies over time, don't re-use the SIL.
+//
 // ****************************************************************************
 
 void
@@ -2065,10 +2073,27 @@ ViewerPlot::CreateActor(const int frame)
     plotAtts->GetAtts(frame - frame0, curPlotAtts);
     plotList[frame-frame0]->SetAtts(curPlotAtts);
     plotList[frame-frame0]->SetVarName(variableName);
-    plotList[frame-frame0]->SetCurrentSILRestriction(silr);
     plotList[frame-frame0]->SetBackgroundColor(bgColor);
     plotList[frame-frame0]->SetForegroundColor(fgColor);
     plotList[frame-frame0]->SetIndex(networkID);
+
+    ViewerFileServer *server = ViewerFileServer::Instance();
+    avtDatabaseMetaData *md = (avtDatabaseMetaData *)
+                                   server->GetMetaData(GetHostName(),
+                                                       GetDatabaseName());
+    avtSILRestriction_p newsilr = NULL;
+    if (md->GetMustRepopulateOnStateChange())
+    {
+        if (viewerPlotList == NULL)
+            EXCEPTION0(ImproperUseException);
+        newsilr = viewerPlotList->GetDefaultSILRestriction(GetHostName(),
+                                         GetDatabaseName(), GetVariableName());
+    }
+    else
+    {
+        newsilr = silr;
+    }
+    plotList[frame-frame0]->SetCurrentSILRestriction(newsilr);
 
     TRY
     {

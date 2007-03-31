@@ -3,6 +3,11 @@
 //
 // Programmer: Jeremy Meredith
 // Date:       August 11, 2003
+//
+// Modifications:
+//    Jeremy Meredith, Thu Sep 18 11:29:12 PDT 2003
+//    Added Quad and Triangle shapes.
+//
 // ----------------------------------------------------------------------------
 
 #ifndef SHAPE_H
@@ -20,6 +25,8 @@ enum ShapeType
     ST_WEDGE,
     ST_PYRAMID,
     ST_TET,
+    ST_QUAD,
+    ST_TRIANGLE,
     ST_POINT
 };
 
@@ -81,6 +88,8 @@ struct Shape
     void MakeCopyOf(Shape *s, WedgeTransform &xform);
     void MakeCopyOf(Shape *s, PyramidTransform &xform);
     void MakeCopyOf(Shape *s, TetTransform &xform);
+    void MakeCopyOf(Shape *s, QuadTransform &xform);
+    void MakeCopyOf(Shape *s, TriTransform &xform);
 
     DataSet *dataset;
 };

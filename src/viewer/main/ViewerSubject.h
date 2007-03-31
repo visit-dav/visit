@@ -37,6 +37,8 @@ class ViewerRPC;
 class ViewerWindow;
 class PluginManagerAttributes;
 class MaterialAttributes;
+class DataNode;
+class avtDefaultPlotMetaData;
 
 // ****************************************************************************
 //  Class: ViewerSubject
@@ -269,6 +271,8 @@ class MaterialAttributes;
 //
 //    Eric Brugger, Wed Aug 20 11:09:33 PDT 2003
 //    I added SetViewCurve.
+//    Walter Herrera, Tue Set 9 10:31:04 PDT 2003
+//    Added CreateAttributesDataNode
 //
 // ****************************************************************************
 
@@ -331,6 +335,8 @@ private:
     void ProcessSpecialOpcodes(int opcode);
     void OpenDatabaseHelper(const std::string &db, int timeState,
                             bool updateNFrames);
+
+    DataNode *CreateAttributesDataNode(const avtDefaultPlotMetaData *) const;
 
     // RPC handler methods.
     void Close();
