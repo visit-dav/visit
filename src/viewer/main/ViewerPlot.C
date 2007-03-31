@@ -1994,6 +1994,9 @@ ViewerPlot::GetReader(const int frame) const
 //    Mark C. Miller, Tue Nov 11 12:27:33 PST 2003
 //    Added code to temporarily disable external render requets in all windows
 //
+//    Hank Childs, Sun Nov 16 13:32:12 PST 2003
+//    Tell UI processes when the SIL has changed out from underneath it.
+//
 // ****************************************************************************
 
 // only place in ViewerPlot where ViewerWindowManager is needed
@@ -2013,7 +2016,7 @@ ViewerPlot::CreateActor(const int frame, bool createNew,
     {
         ViewerFileServer *server = ViewerFileServer::Instance();
         bool invariantMetaData = server->MetaDataIsInvariant(GetHostName(),
-                                                             GetDatabaseName());
+                                                            GetDatabaseName());
 
         // The following code is necessary to support time-varying SILs
         if (!invariantMetaData)
@@ -2029,6 +2032,10 @@ ViewerPlot::CreateActor(const int frame, bool createNew,
                                                          GetVariableName());
             newsilr->SetFromCompatibleRestriction(GetSILRestriction());
             SetSILRestriction(newsilr);
+
+            // We have changed the SIL.  Make sure to tell the GUI or CLI
+            // that it has changed out from underneath them.
+            viewerPlotList->UpdateSILRestrictionAtts();
         }
 
         if (!createNew)
