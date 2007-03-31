@@ -23,7 +23,10 @@ using namespace std;
 
 InvalidVariableException::InvalidVariableException(string varname)
 {
-    msg = "An invalid variable (" + varname + ") was specified.";
+    if (varname == "")
+        msg = "There was no variable specified.";
+    else
+        msg = "An invalid variable (" + varname + ") was specified.";
 }
 
 

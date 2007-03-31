@@ -20,6 +20,7 @@
 #include <Plot.h>
 #include <PlotList.h>
 #include <PlotPluginManager.h>
+#include <RecursiveExpressionException.h>
 #include <SILRestrictionAttributes.h>
 #include <ViewerAnimation.h>
 #include <ViewerEngineManager.h>
@@ -41,6 +42,10 @@
 #include <ExprNode.h>
 
 #include <DebugStream.h>
+
+#include <set>
+using std::set;
+using std::string;
 
 //
 // Storage for static data elements.
@@ -559,6 +564,10 @@ ViewerPlotList::GetNumRealizedPlots() const
 //    Brad Whitlock, Tue Feb 11 11:40:43 PDT 2003
 //    I made it use STL strings.
 //
+//    Jeremy Meredith, Fri Aug 15 11:20:10 PDT 2003
+//    Added the ability to catch exceptions from NewPlot.  If it catches one,
+//    it displays the exception's error message, and a generic one otherwise.
+//
 // ****************************************************************************
 
 int
@@ -574,11 +583,27 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
     //
     // Try and create the new plot.
     //
-    ViewerPlot *newPlot = NewPlot(type, hostName, databaseName, var,
-                                  applyOperators);
-    if (newPlot == 0)
+    ViewerPlot *newPlot = NULL;
+    bool hadError = false;
+    TRY
     {
-        Error("VisIt could not create the desired plot.");
+        newPlot = NewPlot(type, hostName, databaseName, var,
+                                      applyOperators);
+        if (newPlot == 0)
+        {
+            Error("VisIt could not create the desired plot.");
+            hadError = true;
+        }
+    }
+    CATCH2(VisItException, e)
+    {
+        Error(e.Message().c_str());
+        hadError = true;
+    }
+    ENDTRY
+
+    if (hadError)
+    {
         return -1;
     }
 
@@ -1194,6 +1219,10 @@ ViewerPlotList::SimpleAddPlot(ViewerPlot *plot, bool replacePlots)
 //   Brad Whitlock, Thu Apr 3 09:37:46 PDT 2003
 //   I made it smarter about the time range over which a plot can exist.
 //
+//   Jeremy Meredith, Fri Aug 15 11:21:30 PDT 2003
+//   Made it ignore exceptions from GetDefaultSILRestriction.  They
+//   are now caught and displayed properly at a higher level.
+//
 // ****************************************************************************
 
 ViewerPlot *
@@ -1204,15 +1233,7 @@ ViewerPlotList::NewPlot(int type, const std::string &host, const std::string &db
     // Get the default SIL restriction.
     //
     avtSILRestriction_p silr(0);
-    TRY
-    {
-         silr = GetDefaultSILRestriction(host, db, var);
-    }
-    CATCH(InvalidVariableException)
-    {
-         // Do nothing.
-    }
-    ENDTRY
+    silr = GetDefaultSILRestriction(host, db, var);
 
     if (*silr == 0)
     {
@@ -1999,6 +2020,10 @@ ViewerPlotList::OverlayDatabase(const std::string &host, const std::string &data
 //   Sean Ahern, Thu Mar  6 01:45:41 America/Los_Angeles 2003
 //   Added support to find the "real variable" from an expression.
 //
+//   Jeremy Meredith, Fri Aug 15 11:22:18 PDT 2003
+//   Made it properly catch errors from parsing expressions.
+//   Made it handle (and abort from) infinitely recursive expressions.
+//
 // ****************************************************************************
 avtSILRestriction_p
 ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
@@ -2023,11 +2048,24 @@ ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
     // Check if the variable is an expression.  If it is, walk down the
     // parse tree until we have a "real" variable to work with.
     string realvar = var;
-    ExprNode *tree = ParsingExprList::GetExpressionTree(realvar);
-    while (tree != NULL)
+    set<string> expandedVars;
+    expandedVars.insert(realvar);
+    Expression *expr = ParsingExprList::GetExpression(realvar);
+    while (expr)
     {
+        ExprNode *tree = ParsingExprList::GetExpressionTree(expr);
+        if (!tree)
+        {
+            // There was a parse error
+            return silr;
+        }
         realvar = *tree->GetVarLeaves().begin();
-        tree = ParsingExprList::GetExpressionTree(realvar);
+        if (expandedVars.count(realvar))
+        {
+            EXCEPTION1(RecursiveExpressionException, realvar);
+        }
+        expandedVars.insert(realvar);
+        expr = ParsingExprList::GetExpression(realvar);
     }
 
     // Figure out the top set for the SIL restriction. If there is more 

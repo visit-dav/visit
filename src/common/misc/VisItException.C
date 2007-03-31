@@ -170,6 +170,9 @@ typedef struct
 //   Kathleen Bonnell, Tue May 20 14:25:11 PDT 2003  
 //   Added BadVectorException. 
 //
+//   Jeremy Meredith, Fri Aug 15 11:19:25 PDT 2003
+//   Added RecursiveExpressionException and InvalidExpressionException.
+//
 
 static const exception_info exception_tree[] =
 {
@@ -205,6 +208,7 @@ static const exception_info exception_tree[] =
     {"InvalidDBTypeException",             "DatabaseException"},
     {"InvalidDimensionsException",         "PipelineException"},
     {"InvalidDirectoryException",          "VisItException"},
+    {"InvalidExpressionException",         "VisItException"},
     {"InvalidFilesException",              "DatabaseException"},
     {"InvalidLimitsException",             "PipelineException"},
     {"InvalidMergeException",              "PipelineException"},
@@ -223,6 +227,7 @@ static const exception_info exception_tree[] =
     {"NonQueryableInputException",         "PipelineException"},
     {"PipelineException",                  "VisItException"},
     {"PlotDimensionalityException",        "VisWindowException"},
+    {"RecursiveExpressionException",       "VisItException"},
     {"SiloException",                      "DatabaseException"},
     {"VisItException",                     NULL},
     {"VisWindowException",                 "VisItException"}

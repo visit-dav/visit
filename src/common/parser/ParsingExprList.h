@@ -23,6 +23,8 @@ class ParserInterface;
 // Creation:   Tue Sep 25 14:17:12 PDT 2001
 //
 // Modifications:
+//    Jeremy Meredith, Fri Aug 15 11:33:25 PDT 2003
+//    Added a new form of GetExpressionTree that takes an Expression.
 //
 // ****************************************************************************
 
@@ -43,6 +45,7 @@ public:
 
     virtual void Update(Subject *);
 
+    static ExprNode *GetExpressionTree(Expression*);
     static ExprNode *GetExpressionTree(const char *varname);
     static ExprNode *GetExpressionTree(std::string varname)
         { return GetExpressionTree(varname.c_str()); }

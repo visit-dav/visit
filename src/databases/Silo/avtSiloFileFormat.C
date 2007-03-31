@@ -1769,6 +1769,12 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 //  Programmer:  Jeremy Meredith
 //  Creation:    July 15, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 15 08:01:51 PDT 2003
+//    Remove broadcasting of defvars.  This is now handled through a different
+//    mechanism at a higher level.
+//
 // ****************************************************************************
 void
 avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
@@ -1821,23 +1827,6 @@ avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
     BroadcastInt(groupInfo.ndomains);
     BroadcastInt(groupInfo.numgroups);
     BroadcastIntVector(groupInfo.ids,  rank);
-
-    //
-    // Broadcast DefVars
-    //
-    int size;
-    if (rank == 0)
-        size = defvars.size();
-    BroadcastInt(size);
-    if (rank != 0)
-        defvars.resize(size);
-    for (int i=0; i<size; i++)
-    {
-        BroadcastString(defvars[i].vector_name, rank);
-        BroadcastString(defvars[i].component1, rank);
-        BroadcastString(defvars[i].component2, rank);
-        BroadcastString(defvars[i].component3, rank);
-    }
 #endif
 }
 

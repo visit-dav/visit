@@ -236,3 +236,31 @@ ParsingExprList::GetExpressionTree(const char *varname)
 
     return tree;
 }
+
+// ****************************************************************************
+// Method: ParsingExprList::GetExpressionTree
+//
+// Purpose: 
+//   Returns the expression tree for the specified expression or NULL if
+//   the expression does not exist.
+//
+// Arguments:
+//   expr : The expression for which to get the tree.
+//
+// Returns:    The expression tree for the specified expression or NULL if
+//   the expression does not exist.
+//
+// Programmer: Jeremy Meredith
+// Creation:   August 14, 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+ExprNode *
+ParsingExprList::GetExpressionTree(Expression *expr)
+{
+    if (!expr)
+        return NULL;
+
+    return Instance()->GetParser()->Parse(expr->GetDefinition());
+}
