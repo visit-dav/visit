@@ -594,6 +594,9 @@ ViewerSubject::ConnectObjectsAndHandlers()
 //    Brad Whitlock, Fri Nov 7 13:57:47 PST 2003
 //    I added the default annotation object list to the config manager..
 //
+//    Kathleen Bonnell, Wed Dec 17 14:44:26 PST 2003 
+//    Added the default pick attributes to the config manager..
+//
 // ****************************************************************************
 
 void
@@ -620,6 +623,7 @@ ViewerSubject::ConnectConfigManager()
     configMgr->Add(ViewerWindowManager::GetRenderingAttributes());
     configMgr->Add(ViewerEngineManager::GetMaterialDefaultAtts());
     configMgr->Add(ViewerWindowManager::GetDefaultAnnotationObjectList());
+    configMgr->Add(ViewerQueryManager::Instance()->GetPickDefaultAtts());
 }
 
 // ****************************************************************************
@@ -1031,6 +1035,8 @@ ViewerSubject::LoadOperatorPlugins()
 // Creation:   Tue Jun 17 15:19:27 PST 2003
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Dec 17 14:44:26 PST 2003
+//   Added PickAtts.
 //
 // ****************************************************************************
 
@@ -1072,6 +1078,10 @@ ViewerSubject::ProcessConfigFileSettings()
 
     // Copy the default material atts to the client material atts
     ViewerEngineManager::SetClientMaterialAttsFromDefault();
+
+    // Copy the default pick atts to the client pick atts
+    ViewerQueryManager::Instance()->SetClientPickAttsFromDefault();
+
 
     // Send the queries to the client.
     ViewerQueryManager::Instance()->GetQueryTypes()->Notify();
@@ -4216,14 +4226,37 @@ ViewerSubject::ResetAnnotationObjectList()
 // Creation:   November 26, 2003 
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Dec 17 14:44:26 PST 2003
+//   Changed call from ResetPickAtts to SetPickAttsFromDefault.
 //   
 // ****************************************************************************
 
 void
 ViewerSubject::ResetPickAttributes()
 {
-    ViewerQueryManager::Instance()->ResetPickAttributes(); 
+    ViewerQueryManager::Instance()->SetPickAttsFromDefault(); 
 }
+
+
+// ****************************************************************************
+// Method: ViewerSubject::ResetPickLetter
+//
+// Purpose: 
+//   Resets pick letter to default values. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 9, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::ResetPickLetter()
+{
+    ViewerQueryManager::Instance()->ResetPickLetter(); 
+}
+
 
 // ****************************************************************************
 //  Method: ViewerSubject::SetKeyframeAttributes
@@ -5317,6 +5350,9 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
 //    Brad Whitlock, Wed Oct 29 11:06:48 PDT 2003
 //    I added several new RPCs for handling annotations.
 //
+//    Kathleen Bonnell, Wed Dec 17 14:45:22 PST 2003 
+//    Added ResetPickLetterRPC, SetDefaultPickAttributesRPC.
+//
 // ****************************************************************************
 
 void
@@ -5549,6 +5585,12 @@ ViewerSubject::HandleViewerRPC()
     case ViewerRPC::ResetAnnotationObjectListRPC:
         ResetAnnotationObjectList();
         break;
+    case ViewerRPC::ResetPickLetterRPC:
+        ResetPickLetter();
+        break;
+    case ViewerRPC::SetDefaultPickAttributesRPC:
+        SetDefaultPickAttributes();
+        break;
     case ViewerRPC::MaxRPC:
         break;
     default:
@@ -5744,4 +5786,21 @@ void
 ViewerSubject::SetPickAttributes()
 {
     ViewerQueryManager::Instance()->SetPickAttsFromClient();
+}
+
+// ****************************************************************************
+//  Method: ViewerSubject::SetDefaultPickAttributes
+//
+//  Purpose:
+//    Execute the SetDefaultPickAttributes RPC.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 9, 2003 
+//
+// ****************************************************************************
+
+void
+ViewerSubject::SetDefaultPickAttributes()
+{
+    ViewerQueryManager::Instance()->SetDefaultPickAttsFromClient();
 }

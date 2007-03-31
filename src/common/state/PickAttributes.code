@@ -21,6 +21,9 @@ Definition:
 //   Kathleen Bonnell, Tue Nov 18 10:06:40 PST 2003 
 //   Support logical zone numbers. 
 //   
+//   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
+//   Support multiple types of coordinates. 
+//   
 // ****************************************************************************
 void
 PickAttributes::PrintSelf(ostream &os)
@@ -83,47 +86,79 @@ PickAttributes::PrintSelf(ostream &os)
                << cellPoint[2] << ">\n";
         }
     }
-    bool printCoords = useNodeCoords && !nodeCoords.empty();
-    bool printZoneCoords = logicalZone && !zoneCoords.empty();
     if (pickType == Zone)
     {
-        os << "Zone " << elementNumber << " ";
-        if (printZoneCoords)
+        os << "Zone " ;
+        if (showZoneId)
+            os<< elementNumber << " ";
+        if (showZoneDomainLogicalCoords && !dzoneCoords.empty())
         {
-            os << zoneCoords[0].c_str() << "\n";
+            os << "d" << dzoneCoords[0].c_str();
         }
+        if (showZoneBlockLogicalCoords && !bzoneCoords.empty())
+        {
+            os << " b" << bzoneCoords[0].c_str();
+        }
+        os << "\n";
     }
     else if (pickType == Node)
     {
-        os << "Node " << elementNumber << " ";
-        if (printCoords)
+        os << "Node ";
+        if (showNodeId)
+            os << elementNumber << " ";
+        if (showNodePhysicalCoords && !pnodeCoords.empty())
         {
-            os << nodeCoords[0].c_str() << "\n";
+            os << pnodeCoords[0].c_str() ;
         }
-    }
-    if (pickType == Zone)
-    {
-        os << "Nodes " ; 
-    }
-    else if (pickType == Node)
-    {
-        os << "Incident Zones " ; 
-    }
-    for (i = 0; i < incidentElements.size(); i++)
-    {
-        os << incidentElements[i] << "  ";
-        if (printCoords && pickType == Zone)
+        if (showNodeDomainLogicalCoords && !dnodeCoords.empty())
         {
-            os << nodeCoords[i].c_str() << "\n";
-        } 
-        else if (printZoneCoords && pickType == Node)
+            os << dnodeCoords[0].c_str() ;
+        }
+        if (showNodeBlockLogicalCoords && !bnodeCoords.empty())
         {
-            os << zoneCoords[i].c_str() << "\n";
-        } 
+            os << bnodeCoords[0].c_str() ;
+        }
+        os << "\n";
     }
-    os << "\n";
+    if (displayIncidentElements)
+    {
+        bool showId;
+        if (pickType == Zone)
+        {
+            os << "Incident Nodes " ; 
+            showId = showNodeId;
+        }
+        else if (pickType == Node)
+        {
+            os << "Incident Zones " ; 
+            showId = showZoneId;
+        }
+        for (i = 0; i < incidentElements.size(); i++)
+        {
+            if (showId)
+                os << incidentElements[i] << "  ";
+            if (pickType == Zone)
+            {
+                if (showNodePhysicalCoords && !pnodeCoords.empty())
+                    os << " " << pnodeCoords[i].c_str() << "\n";
+                if (showNodeDomainLogicalCoords && !dnodeCoords.empty())
+                    os << " domain " << dnodeCoords[i].c_str() << "\n";
+                if (showNodeBlockLogicalCoords && !bnodeCoords.empty())
+                    os << " block " << bnodeCoords[i].c_str() << "\n";
+            }
+            else if (pickType == Node)
+            {
+                if (showZoneDomainLogicalCoords && !dzoneCoords.empty())
+                    os << " domain " << dzoneCoords[i].c_str() << "\n";
+                if (showZoneBlockLogicalCoords && !bzoneCoords.empty())
+                    os << " block " << bzoneCoords[i].c_str() << "\n";
+            }
+        }
+        os << "\n";
+    }
     for (i = 0; i < varInfo.size(); i++)
         ((PickVarInfo*)varInfo[i])->PrintSelf(os);
+
     os << "RayPoint 1: <" << rayPoint1[0] << ", " 
                           << rayPoint1[1] << ", " 
                           << rayPoint1[2] << ">\n";
@@ -161,6 +196,9 @@ Definition:
 //   Minor changes so that picking on Curves does not display unnecessary
 //   information. 
 //   
+//   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
+//   Support multiple types of coordinates. 
+//   
 // ****************************************************************************
 void
 PickAttributes::CreateOutputString(std::string &os, bool withLetter)
@@ -169,7 +207,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         return;
 
     int i;
-    char buff[256];
+    char buff[512];
    
     std::string fileName; 
     int pos = databaseName.find_last_of('/');
@@ -181,9 +219,9 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     if (withLetter)
     {
         if (pickLetter.size() != 0)
-            sprintf(buff, "\n%s:  ", pickLetter.c_str());
+            SNPRINTF(buff, 512, "\n%s:  ", pickLetter.c_str());
         else 
-            sprintf(buff, "\n");
+            SNPRINTF(buff, 512, "\n");
         os += buff;
     }
     os += fileName;
@@ -191,26 +229,26 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     {
         if (domain != -1)
         {
-            sprintf(buff, "  timestep %d  domain %d\n", timeStep, domain);
+            SNPRINTF(buff, 512, "  timestep %d  domain %d\n", timeStep, domain);
         }
         else 
         {
-            sprintf(buff, "  timestep %d  \n", timeStep);
+            SNPRINTF(buff, 512, "  timestep %d  \n", timeStep);
         }
     }
     else
     {
-        sprintf(buff, "  timestep %d  \n%s\n", timeStep, meshInfo.c_str());
+        SNPRINTF(buff, 512, "  timestep %d  \n%s\n", timeStep, meshInfo.c_str());
     }
     os += buff;
     if (pickType == CurveNode)
     {
-        sprintf(buff, "Point: <%f, %f>\n", nodePoint[0], nodePoint[1]);
+        SNPRINTF(buff, 512, "Point: <%f, %f>\n", nodePoint[0], nodePoint[1]);
         os += buff;
     }
     else if (pickType == CurveZone)
     {
-        sprintf(buff, "Point1: <%f, %f>\nPoint2: <%f, %f>\n", 
+        SNPRINTF(buff, 512, "Point1: <%f, %f>\nPoint2: <%f, %f>\n", 
                   nodePoint[0], nodePoint[1], cellPoint[0], cellPoint[1]);
         os += buff;
     }
@@ -220,12 +258,12 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         {
             if (!needTransformMessage)
             {
-                sprintf(buff, "Point: <%f, %f>\n",
+                SNPRINTF(buff, 512, "Point: <%f, %f>\n",
                         cellPoint[0], cellPoint[1]);
             }
             else 
             {
-                sprintf(buff, "Point: (in transformed space)\n        <%f, %f>\n",
+                SNPRINTF(buff, 512, "Point: (in transformed space)\n        <%f, %f>\n",
                         cellPoint[0], cellPoint[1]);
             }
         }
@@ -233,87 +271,151 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         {
             if (!needTransformMessage)
             {
-                sprintf(buff, "Point: <%f, %f, %f>\n",
+                SNPRINTF(buff, 512, "Point: <%f, %f, %f>\n",
                         cellPoint[0], cellPoint[1], cellPoint[2]);
             }
             else 
             {
-                sprintf(buff, "Point: (in transformed space) \n       <%f, %f, %f>\n",
+                SNPRINTF(buff, 512, "Point: (in transformed space) \n       <%f, %f, %f>\n",
                         cellPoint[0], cellPoint[1], cellPoint[2]);
             }
         }
         os += buff;
     }
-
-    bool printCoords = useNodeCoords && !nodeCoords.empty(); 
-    bool printZoneCoords = logicalZone && !zoneCoords.empty(); 
+    bool showZoneCoords = (showZoneDomainLogicalCoords  && !dzoneCoords.empty()) || 
+                          (showZoneBlockLogicalCoords && !bzoneCoords.empty());
+    bool showNodeCoords = (showNodePhysicalCoords && !pnodeCoords.empty())||
+                          (showNodeDomainLogicalCoords && !dnodeCoords.empty())|| 
+                          (showNodeBlockLogicalCoords && !bnodeCoords.empty());
     if (pickType == Zone)
     {
-        if (!printZoneCoords)
+        if (showZoneId || showZoneCoords)
+            os += "Zone:  ";
+        if (showZoneId)
         {
-            sprintf(buff, "Zone:  %d\n", elementNumber);
+            SNPRINTF(buff, 512, "%d", elementNumber);
+            os += buff;
         }
-        else
+        if (showZoneDomainLogicalCoords & !dzoneCoords.empty()) 
         {
-            sprintf(buff, "Zone:  %d  %s\n", elementNumber, 
-                    zoneCoords[0].c_str());
+            SNPRINTF(buff, 512, " domain %s", dzoneCoords[0].c_str());
+            os += buff;
         }
-        os += buff;
+        if (showZoneBlockLogicalCoords & !bzoneCoords.empty()) 
+        {
+            SNPRINTF(buff, 512, " block %s", bzoneCoords[0].c_str());
+            os += buff;
+        }
+        if (showZoneId || showZoneCoords)
+            os += "\n";
     }
     else if (pickType == Node)
     {
-        if (!printCoords)
+        if (showNodeId || showNodeCoords)
+            os += "Node:  ";
+        if (showNodeId)
         {
-            sprintf(buff, "Node:  %d\n", elementNumber);
+            SNPRINTF(buff, 512, "%d", elementNumber);
+            os += buff;
         }
-        else
+        if (showNodePhysicalCoords & !pnodeCoords.empty()) 
         {
-            sprintf(buff, "Node:  %d  %s\n", elementNumber, 
-                    nodeCoords[0].c_str());
+            SNPRINTF(buff, 512, " %s", pnodeCoords[0].c_str());
+            os += buff;
         }
-        os += buff;
+        if (showNodeDomainLogicalCoords & !dnodeCoords.empty()) 
+        {
+            SNPRINTF(buff, 512, " domain %s", dnodeCoords[0].c_str());
+            os += buff;
+        }
+        if (showNodeBlockLogicalCoords & !bnodeCoords.empty()) 
+        {
+            SNPRINTF(buff, 512, " block %s", bnodeCoords[0].c_str());
+            os += buff;
+        }
+        if (showNodeId || showNodeCoords)
+            os += "\n";
     }
-    if (pickType == Zone)
+    if (displayIncidentElements)
     {
-        os += "Nodes:  " ; 
-        if (printCoords)
+        bool showId;
+        if (pickType == Zone)
         {
-            os += "\n    "; 
+            os += "Incident Nodes:  " ; 
+            if (showNodeCoords)
+            {
+                os += "\n    "; 
+            }
+            showId = showNodeId;
         }
-    }
-    else if (pickType == Node)
-    {
-        os += "Incident zones:  " ; 
-        if (printZoneCoords)
+        else if (pickType == Node)
         {
-            os += "\n    "; 
+            os += "Incident zones:  " ; 
+            if (showZoneCoords)
+            {
+                os += "\n    "; 
+            }
+            showId = showZoneId;
         }
-    }
 
-    for (i = 0; i < incidentElements.size(); i++)
-    {
-        sprintf(buff, "%d  ", incidentElements[i]);
-        os += buff; 
-        if (printCoords && pickType == Zone)
+        for (i = 0; i < incidentElements.size(); i++)
         {
-            sprintf(buff, "%s\n    ", nodeCoords[i].c_str());
-            os += buff;
+            if (showId)
+            {
+                SNPRINTF(buff, 512, "%d  ", incidentElements[i]);
+                os += buff; 
+            }
+            if (pickType == Zone)
+            {
+                if (showNodePhysicalCoords & !pnodeCoords.empty()) 
+                {
+                    SNPRINTF(buff, 512, " %s", pnodeCoords[i].c_str());
+                    os += buff;
+                }
+                if (showNodeDomainLogicalCoords & !dnodeCoords.empty()) 
+                {
+                    SNPRINTF(buff, 512, " domain %s", dnodeCoords[i].c_str());
+                    os += buff;
+                }
+                if (showNodeBlockLogicalCoords & !bnodeCoords.empty()) 
+                {
+                    SNPRINTF(buff, 512, " block %s", bnodeCoords[i].c_str());
+                    os += buff;
+                }
+                if (showNodeCoords)
+                {
+                    os += "\n    "; 
+                }
+            }
+            else if (pickType == Node)
+            {
+                if (showZoneDomainLogicalCoords & !dzoneCoords.empty()) 
+                {
+                    SNPRINTF(buff, 512, " domain %s", dzoneCoords[i].c_str());
+                    os += buff;
+                }
+                if (showZoneBlockLogicalCoords & !bzoneCoords.empty()) 
+                {
+                    SNPRINTF(buff, 512, " block %s", bzoneCoords[i].c_str());
+                    os += buff;
+                }
+                if (showZoneCoords)
+                {
+                    os += "\n    "; 
+                }
+            }
         }
-        else if (printZoneCoords && pickType == Node)
-        {
-            sprintf(buff, "%s\n    ", zoneCoords[i].c_str());
-            os += buff;
-        }
+        os += "\n";
     }
-    os += "\n";
 
     for (i = 0; i < varInfo.size(); i++)
     {
         std::string iv;
+        std::string pt = PickType_ToString(pickType);
         //
         // VarInfo does not append a newline char, but we need one here
         //
-        ((PickVarInfo*)varInfo[i])->CreateOutputString(iv);
+        ((PickVarInfo*)varInfo[i])->CreateOutputString(iv, pt);
         os += iv;
         os += "\n";
     }
@@ -342,6 +444,9 @@ Definition:
 //   Kathleen Bonnell, Tue Nov 18 10:06:40 PST 2003 
 //   Reset zoneCoords. 
 //   
+//   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
+//   Support new types of coordinates. 
+//   
 // ****************************************************************************
 
 void
@@ -360,11 +465,20 @@ PickAttributes::PrepareForNewPick()
     if (!incidentElements.empty())
         incidentElements.clear();
 
-    if (!nodeCoords.empty())
-        nodeCoords.clear();
+    if (!pnodeCoords.empty())
+        pnodeCoords.clear();
 
-    if (!zoneCoords.empty())
-        zoneCoords.clear();
+    if (!dnodeCoords.empty())
+        dnodeCoords.clear();
+
+    if (!bnodeCoords.empty())
+        bnodeCoords.clear();
+
+    if (!dzoneCoords.empty())
+        dzoneCoords.clear();
+
+    if (!bzoneCoords.empty())
+        bzoneCoords.clear();
 
     realElementNumber = -1;
     if (!realIncidentElements.empty())
@@ -377,39 +491,146 @@ PickAttributes::PrepareForNewPick()
     ClearPickVarInfos();
 }
 
-Function: Reset
-Declaration: void Reset();
+Function: SetFromNode
+Declaration: void SetFromNode(DataNode *parentNode);
 Definition:
 // ****************************************************************************
-// Method: PickAttributes::Reset
+// Method: PickAttributes::SetFromNode
 //
 // Purpose: 
-//   Restore pick to default state.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   November 26, 2003 
 //
 // Modifications:
 //   
 // ****************************************************************************
-
 void
-PickAttributes::Reset()
+PickAttributes::SetFromNode(DataNode *parentNode)
 {
-    // This does most of the work for us.
-    PrepareForNewPick();
+    if(parentNode == 0)
+        return;
 
-    // Now do the rest.
-    timeStep = -1;
-    rayPoint1[0] = rayPoint1[1] = rayPoint1[2] = 0;
-    rayPoint2[0] = rayPoint2[1] = rayPoint2[2] = 0;
-    pickType = Zone;
-    useNodeCoords = false;
-    logicalCoords = false;
-    logicalZone = false;
+    DataNode *searchNode = parentNode->GetNode("PickAttributes");
+    if(searchNode == 0)
+        return;
 
-    if (!variables.empty())
-        variables.clear();
-    variables.push_back("default");
+    DataNode *node;
+
+    if((node = searchNode->GetNode("variables")) != 0)
+        SetVariables(node->AsStringVector());
+
+    if((node = searchNode->GetNode("displayIncidentElements")) != 0)
+        SetDisplayIncidentElements(node->AsBool());
+
+    if((node = searchNode->GetNode("showNodeId")) != 0)
+        SetShowNodeId(node->AsBool());
+    if((node = searchNode->GetNode("showNodeDomainLogicalCoords")) != 0)
+        SetShowNodeDomainLogicalCoords(node->AsBool());
+    if((node = searchNode->GetNode("showNodeBlockLogicalCoords")) != 0)
+        SetShowNodeBlockLogicalCoords(node->AsBool());
+    if((node = searchNode->GetNode("showNodePhysicalCoords")) != 0)
+        SetShowNodePhysicalCoords(node->AsBool());
+
+    if((node = searchNode->GetNode("showZoneId")) != 0)
+        SetShowZoneId(node->AsBool());
+    if((node = searchNode->GetNode("showZoneDomainLogicalCoords")) != 0)
+        SetShowZoneDomainLogicalCoords(node->AsBool());
+    if((node = searchNode->GetNode("showZoneBlockLogicalCoords")) != 0)
+        SetShowZoneBlockLogicalCoords(node->AsBool());
+
+    // Clear all the PickVarInfos.
+    ClearPickVarInfos();
+
+}
+
+Function: CreateNode
+Declaration: bool CreateNode(DataNode *parentNode, bool forceAdd);
+Definition:
+// ****************************************************************************
+// Method: PickAttributes::CreateNode
+//
+// Purpose: 
+//
+// Modifications:
+//   
+// ****************************************************************************
+bool
+PickAttributes::CreateNode(DataNode *parentNode, bool forceAdd)
+{
+    if(parentNode == 0)
+        return false;
+
+    PickAttributes defaultObject;
+    bool addToParent = false;
+    // Create a node for PickAttributes.
+    DataNode *node = new DataNode("PickAttributes");
+
+    if(!FieldsEqual(0, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("variables", variables));
+    }
+
+    if(!FieldsEqual(1, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("displayIncidentElements", displayIncidentElements));
+    }
+
+    if(!FieldsEqual(2, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showNodeId", showNodeId));
+    }
+
+    if(!FieldsEqual(3, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showNodeDomainLogicalCoords", 
+                                    showNodeDomainLogicalCoords));
+    }
+
+    if(!FieldsEqual(4, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showNodeBlockLogicalCoords", 
+                                    showNodeBlockLogicalCoords));
+    }
+
+    if(!FieldsEqual(5, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showNodePhysicalCoords", 
+                                    showNodePhysicalCoords));
+    }
+
+    if(!FieldsEqual(6, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showZoneId", 
+                                    showZoneId));
+    }
+
+    if(!FieldsEqual(7, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showZoneDomainLogicalCoords", 
+                                    showZoneDomainLogicalCoords));
+    }
+
+    if(!FieldsEqual(8, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showZoneBlockLogicalCoords", 
+                                    showZoneBlockLogicalCoords));
+    }
+
+
+    // Add the node to the parent node.
+    if(addToParent || forceAdd)
+        parentNode->AddNode(node);
+    else
+        delete node;
+
+    return (addToParent || forceAdd);
+
 }
 

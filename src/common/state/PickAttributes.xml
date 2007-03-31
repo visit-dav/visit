@@ -6,21 +6,53 @@
       CurveZone
       CurveNode
     </Enum>
-    <Field name="clearWindow" label="clearWindow" type="bool" internal="true">
+    <Field name="variables" label="variables" type="stringVector">
+      default
+    </Field>
+    <Field name="displayIncidentElements" label="displayIncidentElement" type="bool">
+      true
+    </Field>
+    <Field name="showNodeId" label="showNodeId" type="bool">
+      true
+    </Field>
+    <Field name="showNodeDomainLogicalCoords" label="showNodeDomainLogicalCorods" type="bool">
       false
     </Field>
-    <Field name="fulfilled" label="fulfilled" type="bool" internal="true">
+    <Field name="showNodeBlockLogicalCoords" label="showNodeBlocKLogicalCoords" type="bool">
+      false
+    </Field>
+    <Field name="showNodePhysicalCoords" label="showNodePhysicalCoords" type="bool">
+      false
+    </Field>
+    <Field name="showZoneId" label="showZoneId" type="bool">
+      true
+    </Field>
+    <Field name="showZoneDomainLogicalCoords" label="showZoneDomainLogicalCoords" type="bool">
+      false
+    </Field>
+    <Field name="showZoneBlockLogicalCoords" label="showZoneBlockLogicalCoords" type="bool">
+      false
+    </Field>
+    <Field name="clearWindow" label="clearWindow" type="bool" internal="true">
       false
     </Field>
     <Field name="pickLetter" label="pickLetter" type="string" internal="true">
     </Field>
+    <Field name="fulfilled" label="fulfilled" type="bool" internal="true">
+      false
+    </Field>
+    <Field name="pickType" label="pickType" type="enum" subtype="PickType" internal="true">
+      Zone
+    </Field>
+    <Field name="domain" label="domain" type="int" internal="true">
+      -1
+    </Field>
     <Field name="elementNumber" label="elementNumber" type="int" internal="true">
       -1
     </Field>
-    <Field name="timeStep" label="timeStep" type="int" internal="true">
-      -1
+    <Field name="incidentElements" label="incidentElements" type="intVector" internal="true">
     </Field>
-    <Field name="domain" label="domain" type="int" internal="true">
+    <Field name="timeStep" label="timeStep" type="int" internal="true">
       -1
     </Field>
     <Field name="dimension" label="dimension" type="int" internal="true">
@@ -40,44 +72,6 @@
       0.000000
       0.000000
     </Field>
-    <Field name="incidentElements" label="incidentElements" type="intVector" internal="true">
-    </Field>
-    <Field name="variables" label="variables" type="stringVector">
-      default
-    </Field>
-    <Field name="varInfo" label="varInfo" type="attVector" subtype="PickVarInfo" internal="true">
-    </Field>
-    <Field name="useNodeCoords" label="useNodeCoords" type="bool">
-      false
-    </Field>
-    <Field name="logicalCoords" label="logicalCoords" type="bool" enabler="useNodeCoords:true">
-      false
-    </Field>
-    <Field name="nodeCoords" label="nodeCoords" type="stringVector" internal="true">
-    </Field>
-    <Field name="rayPoint1" label="rayPoint1" type="floatArray" length="3" internal="true">
-      0.000000
-      0.000000
-      0.000000
-    </Field>
-    <Field name="rayPoint2" label="rayPoint2" type="floatArray" length="3" internal="true">
-      0.000000
-      0.000000
-      0.000000
-    </Field>
-    <Field name="needTransformMessage" label="needTransformMessage" type="bool" internal="true">
-      false
-    </Field>
-    <Field name="pickType" label="pickType" type="enum" subtype="PickType" internal="true">
-      Zone
-    </Field>
-    <Field name="meshInfo" label="MeshInfo" type="string" internal="true">
-    </Field>
-    <Field name="realElementNumber" label="RealElementNumber" type="int" internal="true">
-      -1
-    </Field>
-    <Field name="realIncidentElements" label="RealIncidentElements" type="intVector" internal="true">
-    </Field>
     <Field name="nodePoint" label="nodePoint" type="floatArray" length="3" internal="true">
       0.000000
       0.000000
@@ -91,10 +85,37 @@
       0.000000
       0.000000
     </Field>
-    <Field name="logicalZone" label="logicalZone" type="bool">
+    <Field name="rayPoint1" label="rayPoint1" type="floatArray" length="3" internal="true">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="rayPoint2" label="rayPoint2" type="floatArray" length="3" internal="true">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="meshInfo" label="MeshInfo" type="string" internal="true">
+    </Field>
+    <Field name="realElementNumber" label="RealElementNumber" type="int" internal="true">
+      -1
+    </Field>
+    <Field name="realIncidentElements" label="RealIncidentElements" type="intVector" internal="true">
+    </Field>
+    <Field name="pnodeCoords" label="pnodeCoords" type="stringVector" internal="true">
+    </Field>
+    <Field name="dnodeCoords" label="dnodeCoords" type="stringVector" internal="true">
+    </Field>
+    <Field name="bnodeCoords" label="bnodeCoords" type="stringVector" internal="true">
+    </Field>
+    <Field name="dzoneCoords" label="dzoneCoords" type="stringVector" internal="true">
+    </Field>
+    <Field name="bzoneCoords" label="bzoneCoords" type="stringVector" internal="true">
+    </Field>
+    <Field name="needTransformMessage" label="needTransformMessage" type="bool" internal="true">
       false
     </Field>
-    <Field name="zoneCoords" label="zoneCoords" type="stringVector" internal="true">
+    <Field name="varInfo" label="varInfo" type="attVector" subtype="PickVarInfo" internal="true">
     </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
@@ -102,7 +123,9 @@
     </Function>
     <Function name="PrepareForNewPick" user="true" member="true">
     </Function>
-    <Function name="Reset" user="true" member="true">
+    <Function name="SetFromNode" user="false" member="true">
+    </Function>
+    <Function name="CreateNode" user="false" member="true">
     </Function>
     <Include file="source" quoted="false">
       stdio.h

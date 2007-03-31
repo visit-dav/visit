@@ -146,6 +146,10 @@ typedef struct {
 //    Hank Childs, Tue Nov 25 07:39:32 PST 2003
 //    Added AddMeshQualityExpressions.
 //
+//    Kathleen Bonnell, Wed Dec 17 14:58:31 PST 2003 
+//    Updated arguments lists for QueryNodes and QueryZones so that multiple
+//    types of coordinates could be retrieved. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -250,8 +254,12 @@ class DATABASE_API avtDatabase
                                            const int, const int,
                                            std::vector<int> &, float [3],
                                            const int, const bool, const bool,
+                                           const bool, std::vector<std::string> &,
                                            std::vector<std::string> &,
-                                           const bool, std::vector<std::string> &)
+                                           std::vector<std::string> &,
+                                           const bool,  const bool,
+                                           std::vector<std::string> &,
+                                           std::vector<std::string> &)
                                                {return false; };
     virtual bool                QueryMesh(const std::string &, const int, const int, 
                                           std::string &) {return false; };
@@ -259,8 +267,13 @@ class DATABASE_API avtDatabase
     virtual bool                QueryZones(const std::string &,const int,int &,
                                            const int, std::vector<int> &, 
                                            float [3], const int, const bool, 
-                                           const bool, std::vector<std::string> &,
-                                           const bool, std::vector<std::string> &)
+                                           const bool,  const bool, 
+                                           std::vector<std::string> &,
+                                           std::vector<std::string> &,
+                                           std::vector<std::string> &,
+                                           const bool, const bool, 
+                                           std::vector<std::string> &,
+                                           std::vector<std::string> &)
                                                { return false; } ;
 };
 

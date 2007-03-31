@@ -51,6 +51,9 @@ class PickAttributes;
 //   Kathleen Bonnell, Tue Nov 18 14:03:22 PST 2003 
 //   Added logicalZone checkbox. 
 //
+//   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
+//   More widgets to support more user-settable PickAtts.
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -68,6 +71,8 @@ public:
 
 public slots:
     virtual void apply();
+    virtual void makeDefault();
+    virtual void reset();
 protected:
     virtual void CreateWindowContents();
     void UpdateWindow(bool doAll);
@@ -75,9 +80,14 @@ protected:
     void Apply(bool ignore = false);
 private slots:
     void variableProcessText();
-    void useNodeCoordsToggled(bool val);
-    void logicalCoordsToggled(bool val);
-    void logicalZoneToggled(bool val);
+    void displayIncElsToggled(bool val);
+    void nodeIdToggled(bool val);
+    void nodeDomLogToggled(bool val);
+    void nodeBlockLogToggled(bool val);
+    void nodePhysicalToggled(bool val);
+    void zoneIdToggled(bool val);
+    void zoneDomLogToggled(bool val);
+    void zoneBlockLogToggled(bool val);
     void autoShowToggled(bool);
     void savePicksToggled(bool);
 private:
@@ -92,9 +102,15 @@ private:
     QTabWidget     *tabWidget;
     QVBox          *pages[MAX_PICK_TABS];
     QMultiLineEdit *infoLists[MAX_PICK_TABS];
-    QCheckBox      *useNodeCoords;
-    QCheckBox      *logicalCoords;
-    QCheckBox      *logicalZone;
+    QCheckBox      *displayIncEls;
+    QCheckBox      *nodeId;
+    QCheckBox      *nodeDomLog;
+    QCheckBox      *nodeBlockLog;
+    QCheckBox      *nodePhysical;
+    QCheckBox      *zoneId;
+    QCheckBox      *zoneDomLog;
+    QCheckBox      *zoneBlockLog;
+
     QCheckBox      *autoShowCheckBox;
     QCheckBox      *savePicksCheckBox;
 

@@ -6880,6 +6880,37 @@ visit_NodePick(PyObject *self, PyObject *args)
     return PyLong_FromLong(long(errorFlag == 0));
 }
 
+// ****************************************************************************
+// Function: visit_ResetPickLetter
+//
+// Purpose:
+//   Tells the viewer to reset the pick letter used in pick output. 
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell
+// Creation:   December 9, 2003
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ResetPickLetter(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    MUTEX_LOCK();
+        viewer->ResetPickLetter();
+
+        if(logging)
+            fprintf(logFile, "ResetPickLetter()\n");
+    MUTEX_UNLOCK();
+    Synchronize();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
 
 // ****************************************************************************
 // Function: visit_ResetPickAttributes
@@ -6963,6 +6994,56 @@ visit_SetPickAttributes(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+
+// ****************************************************************************
+// Function: visit_SetDefaultPickAttributes
+//
+// Purpose:
+//   Tells the viewer to save the default pick attributes.
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 9, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetDefaultPickAttributes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *pick = NULL;
+    // Try and get the annotation pointer.
+    if(!PyArg_ParseTuple(args,"O",&pick))
+    {
+        cerr << "visit_SetDefaultPickAttributes: Cannot parse object!" << endl;
+        return NULL;
+    }
+    if(!PyPickAttributes_Check(pick))
+    {
+        VisItErrorFunc("Argument is not a PickAttributes object");
+        return NULL;
+    }
+
+    MUTEX_LOCK();
+        PickAttributes *pa = PyPickAttributes_FromPyObject(pick);
+
+        // Copy the object into the view attributes.
+        *(viewer->GetPickAttributes()) = *pa;
+        viewer->GetPickAttributes()->Notify();
+        viewer->SetDefaultPickAttributes();
+
+        if(logging)
+            fprintf(logFile, "SetDefaultPickAttributes()\n");
+    MUTEX_UNLOCK();
+    Synchronize();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
 
 // ****************************************************************************
 // Function: visit_GetPickAttributes
@@ -7897,6 +7978,8 @@ AddDefaultMethods()
     AddMethod("PickByZone", visit_PickByZone);
     AddMethod("PickByNode", visit_PickByNode);
     AddMethod("ResetPickAttributes", visit_ResetPickAttributes);
+    AddMethod("ResetPickLetter", visit_ResetPickLetter);
+    AddMethod("SetDefaultPickAttributes", visit_SetDefaultPickAttributes);
 
     //
     // Extra methods that are not part of the ViewerProxy but allow the

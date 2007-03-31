@@ -264,6 +264,9 @@ avtPickQuery::PostExecute(void)
 //    Replaced calls to RGridFindCell and LocateFindCell to vtkVisItUtility::
 //    FindCell, which is more accurate. 
 //    
+//    Kathleen Bonnell, Wed Dec 17 15:06:34 PST 2003 
+//    Added logic to support multiple types of coordinates. 
+//
 // ****************************************************************************
 
 void
@@ -312,24 +315,46 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
         if (pickAtts.GetPickType() == PickAttributes::Zone)
         {
             int type = ds->GetDataObjectType();
-            if (pickAtts.GetLogicalZone() &&
+            if ((pickAtts.GetShowZoneDomainLogicalCoords()  ||
+                 pickAtts.GetShowZoneBlockLogicalCoords())  &&
                 (type == VTK_STRUCTURED_GRID || 
                  type == VTK_RECTILINEAR_GRID))
             {
                 char buff[80];
                 int ijk[3];
                 stringVector zoneCoords;
-                vtkVisItUtility::GetLogicalIndices(ds, true, foundElement, ijk);
-                if (pickAtts.GetDimension() == 2)
+                if (pickAtts.GetShowZoneDomainLogicalCoords())
                 {
-                    sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                    zoneCoords.clear();
+                    vtkVisItUtility::GetLogicalIndices(ds, true, foundElement, 
+                        ijk, false);
+                    if (pickAtts.GetDimension() == 2)
+                    {
+                        sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                    }
+                    else 
+                    {
+                        sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                    }
+                    zoneCoords.push_back(buff);
+                    pickAtts.SetDzoneCoords(zoneCoords);
                 }
-                else 
+                if (pickAtts.GetShowZoneBlockLogicalCoords())
                 {
-                    sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                    zoneCoords.clear();
+                    vtkVisItUtility::GetLogicalIndices(ds, true, foundElement, 
+                        ijk, true);
+                    if (pickAtts.GetDimension() == 2)
+                    {
+                        sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                    }
+                    else 
+                    {
+                        sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                    }
+                    zoneCoords.push_back(buff);
+                    pickAtts.SetBzoneCoords(zoneCoords);
                 }
-                zoneCoords.push_back(buff);
-                pickAtts.SetZoneCoords(zoneCoords);
             }
             success = RetrieveNodes(ds, foundElement);
         }
@@ -558,7 +583,9 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
 //  Creation:   June 27, 2003 
 //
 //  Modifications:
-//    
+//    Kathleen Bonnell, Wed Dec 17 15:06:34 PST 2003 
+//    Added logic to support multiple types of coordinates. 
+//
 // ****************************************************************************
 
 bool
@@ -566,7 +593,9 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
 {
     vtkIdList *ptIds = vtkIdList::New();
     intVector nodes;
-    stringVector nodeCoords;
+    stringVector pnodeCoords;
+    stringVector dnodeCoords;
+    stringVector bnodeCoords;
     float coord[3];
     int ijk[3];
     char buff[80];
@@ -585,13 +614,15 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
         for (int i = 0; i < ptIds->GetNumberOfIds(); i++)
         {
             nodes.push_back(ptIds->GetId(i));
-            if (pickAtts.GetUseNodeCoords())
+            if ((pickAtts.GetShowNodeDomainLogicalCoords() ||
+                pickAtts.GetShowNodeBlockLogicalCoords()) &&
+                (type == VTK_STRUCTURED_GRID || 
+                 type == VTK_RECTILINEAR_GRID))
             {
-                if (pickAtts.GetLogicalCoords() && 
-                    (type == VTK_STRUCTURED_GRID || 
-                    type == VTK_RECTILINEAR_GRID))
+                if (pickAtts.GetShowNodeDomainLogicalCoords())
                 {
-                    vtkVisItUtility::GetLogicalIndices(ds, false, ptIds->GetId(i), ijk);
+                    vtkVisItUtility::GetLogicalIndices(ds, false, 
+                         ptIds->GetId(i), ijk, false);
                     if (pickAtts.GetDimension() == 2)
                     {
                         sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
@@ -600,20 +631,35 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
                     {
                         sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
                     }
+                    dnodeCoords.push_back(buff);
                 }
-                else
+                if (pickAtts.GetShowNodeBlockLogicalCoords())
                 {
-                    ds->GetPoint(ptIds->GetId(i), coord); 
+                    vtkVisItUtility::GetLogicalIndices(ds, false, 
+                         ptIds->GetId(i), ijk, true);
                     if (pickAtts.GetDimension() == 2)
                     {
-                        sprintf(buff, "<%g, %g>", coord[0], coord[1]);
+                        sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
                     }
                     else 
                     {
-                        sprintf(buff, "<%g, %g, %g>", coord[0], coord[1], coord[2]);
+                        sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
                     }
+                    bnodeCoords.push_back(buff);
                 }
-                nodeCoords.push_back(buff);
+            }
+            if (pickAtts.GetShowNodePhysicalCoords())
+            {
+                ds->GetPoint(ptIds->GetId(i), coord); 
+                if (pickAtts.GetDimension() == 2)
+                {
+                    sprintf(buff, "<%g, %g>", coord[0], coord[1]);
+                }
+                else 
+                {
+                    sprintf(buff, "<%g, %g, %g>", coord[0], coord[1], coord[2]);
+                }
+                pnodeCoords.push_back(buff);
             }
         }
         ptIds->Delete();
@@ -629,7 +675,9 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
             pickAtts.SetPickPoint(pt);
         }
         pickAtts.SetIncidentElements(nodes);
-        pickAtts.SetNodeCoords(nodeCoords);
+        pickAtts.SetPnodeCoords(pnodeCoords);
+        pickAtts.SetDnodeCoords(dnodeCoords);
+        pickAtts.SetBnodeCoords(bnodeCoords);
     }
     return success;
 }
@@ -659,6 +707,9 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
 //    Kathleen Bonnell, Tue Nov 18 14:14:05 PST 2003 
 //    Retrieve logical zone coordinates if specified by pick atts. 
 //    
+//    Kathleen Bonnell, Wed Dec 17 15:06:34 PST 2003 
+//    Added logic to support multiple types of coordinates. 
+//
 // ****************************************************************************
 
 bool
@@ -666,7 +717,8 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
 {
     vtkIdList *cellIds = vtkIdList::New();
     intVector zones;
-    stringVector zoneCoords;
+    stringVector dzoneCoords;
+    stringVector bzoneCoords;
     ds->GetPointCells(foundNode, cellIds);
     int nCells = cellIds->GetNumberOfIds();
     int type = ds->GetDataObjectType();
@@ -693,24 +745,46 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
             if (ghosts && ghosts[cells[i]] == 1)
                continue;
             zones.push_back(cells[i]);
-            if (pickAtts.GetLogicalZone() &&
+            if ((pickAtts.GetShowZoneBlockLogicalCoords() ||
+                 pickAtts.GetShowZoneDomainLogicalCoords()) &&
                 (type == VTK_STRUCTURED_GRID || 
                  type == VTK_RECTILINEAR_GRID))
             {
-                vtkVisItUtility::GetLogicalIndices(ds, true, cells[i], ijk);
-                if (pickAtts.GetDimension() == 2)
+                if (pickAtts.GetShowZoneDomainLogicalCoords())
                 {
-                    sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                    vtkVisItUtility::GetLogicalIndices(ds, true, cells[i], ijk, 
+                      false);
+
+                    if (pickAtts.GetDimension() == 2)
+                    {
+                        sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                    }
+                    else 
+                    {
+                        sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                    }
+                    dzoneCoords.push_back(buff);
                 }
-                else 
+                if (pickAtts.GetShowZoneBlockLogicalCoords())
                 {
-                    sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                    vtkVisItUtility::GetLogicalIndices(ds, true, cells[i], ijk, 
+                      true);
+
+                    if (pickAtts.GetDimension() == 2)
+                    {
+                        sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                    }
+                    else 
+                    {
+                        sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                    }
+                    bzoneCoords.push_back(buff);
                 }
-                zoneCoords.push_back(buff);
             }
         }
         pickAtts.SetIncidentElements(zones);
-        pickAtts.SetZoneCoords(zoneCoords);
+        pickAtts.SetDzoneCoords(dzoneCoords);
+        pickAtts.SetBzoneCoords(bzoneCoords);
     }
     cellIds->Delete();
     return success;
@@ -735,6 +809,8 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
 //  Creation:   June 27, 2003 
 //
 //  Modifications:
+//    Kathleen Bonnell, Wed Dec 17 15:06:34 PST 2003 
+//    Added logic to support multiple types of coordinates. 
 //    
 // ****************************************************************************
 
@@ -784,18 +860,20 @@ avtPickQuery::DeterminePickedNode(vtkDataSet *ds, int &foundEl)
    // change the foundEl (a zone) to the min pt id (node)
    foundEl = minId;
 
-   if (pickAtts.GetUseNodeCoords())
+   float coord[3];
+   char buff[80];
+   int type = ds->GetDataObjectType();
+   if ((pickAtts.GetShowNodeDomainLogicalCoords() ||
+        pickAtts.GetShowNodeBlockLogicalCoords())  &&
+       (type == VTK_STRUCTURED_GRID || 
+        type == VTK_RECTILINEAR_GRID))
    {
-       char buff[80];
        int ijk[3];
-       float coord[3];
-       int type = ds->GetDataObjectType();
-       stringVector nodeCoords;
-       if (pickAtts.GetLogicalCoords() && 
-           (type == VTK_STRUCTURED_GRID || 
-           type == VTK_RECTILINEAR_GRID))
+       if (pickAtts.GetShowNodeDomainLogicalCoords())
        {
-           vtkVisItUtility::GetLogicalIndices(ds, false, minId, ijk);
+           nodeCoords.clear();
+           vtkVisItUtility::GetLogicalIndices(ds, false, minId, ijk, 
+              false);
            if (pickAtts.GetDimension() == 2)
            {
                sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
@@ -804,21 +882,40 @@ avtPickQuery::DeterminePickedNode(vtkDataSet *ds, int &foundEl)
            {
                sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
            }
+           nodeCoords.push_back(buff);
+           pickAtts.SetDnodeCoords(nodeCoords);
        }
-       else
+       if (pickAtts.GetShowNodeBlockLogicalCoords())
        {
-           points->GetPoint(minId, coord); 
+           nodeCoords.clear();
+           vtkVisItUtility::GetLogicalIndices(ds, false, minId, ijk, 
+               true);
            if (pickAtts.GetDimension() == 2)
            {
-               sprintf(buff, "<%g, %g>", coord[0], coord[1]);
+               sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
            }
            else 
            {
-               sprintf(buff, "<%g, %g, %g>", coord[0], coord[1], coord[2]);
+               sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
            }
+           nodeCoords.push_back(buff);
+           pickAtts.SetBnodeCoords(nodeCoords);
+       }
+   }
+   if (pickAtts.GetShowNodePhysicalCoords())
+   {
+       nodeCoords.clear();
+       points->GetPoint(minId, coord); 
+       if (pickAtts.GetDimension() == 2)
+       {
+           sprintf(buff, "<%g, %g>", coord[0], coord[1]);
+       }
+       else 
+       {
+           sprintf(buff, "<%g, %g, %g>", coord[0], coord[1], coord[2]);
        }
        nodeCoords.push_back(buff);
-       pickAtts.SetNodeCoords(nodeCoords);
+       pickAtts.SetPnodeCoords(nodeCoords);
    }
    return true;
 }

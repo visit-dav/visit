@@ -165,6 +165,10 @@ class     PickVarInfo;
 //    Kathleen Bonnell, Thu Nov 20 17:47:57 PST 2003 
 //    Add 'FindElementForPoint'. 
 //
+//    Kathleen Bonnell, Wed Dec 17 14:58:31 PST 2003 
+//    Updated arguments lists for QueryNodes and QueryZones so that multiple
+//    types of coordinates could be retrieved. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -310,8 +314,12 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                           const int, const int, 
                                           std::vector<int> &, float [3], 
                                           const int, const bool, const bool,
+                                          const bool, std::vector<std::string> &,
                                           std::vector<std::string> &,
-                                          const bool, std::vector<std::string> &);
+                                          std::vector<std::string> &,
+                                          const bool, const bool,
+                                          std::vector<std::string> &,
+                                          std::vector<std::string> &);
 
     virtual bool               QueryMesh(const std::string &, const int, const int, 
                                          std::string &);
@@ -319,8 +327,13 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     virtual bool               QueryZones(const std::string&, const int, int &,
                                           const int, std::vector<int> &, 
                                           float [3], const int, const bool, 
-                                          const bool, std::vector<std::string> &,
-                                          const bool, std::vector<std::string> &);
+                                          const bool, const bool, 
+                                          std::vector<std::string> &,
+                                          std::vector<std::string> &,
+                                          std::vector<std::string> &,
+                                          const bool, const bool, 
+                                          std::vector<std::string> &,
+                                          std::vector<std::string> &); 
 
     void                       AssociateBounds(vtkDataSet *);
     void                       ScaleMesh(vtkDataSet *);

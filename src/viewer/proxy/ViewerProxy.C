@@ -3146,6 +3146,33 @@ ViewerProxy::ResetLightList()
     viewerRPC->Notify();
 }
 
+// ****************************************************************************
+// Method: ViewerProxy::ResetPickLetter
+//
+// Purpose: 
+//   Reset the pick attributes to default values.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 9, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::ResetPickLetter()
+{
+    //
+    // Set the rpc type.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::ResetPickLetterRPC);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
 
 // ****************************************************************************
 // Method: ViewerProxy::ResetPickAttributes
@@ -4627,6 +4654,34 @@ ViewerProxy::SetGlobalLineoutAttributes()
     // Set the rpc type.
     //
     viewerRPC->SetRPCType(ViewerRPC::SetGlobalLineoutAttributesRPC);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+
+// ****************************************************************************
+//  Method: ViewerProxy::SetDefaultPickAttributes
+//
+//  Purpose:
+//    Applies the default pick attributes.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 9, 2003 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerProxy::SetDefaultPickAttributes()
+{
+    //
+    // Set the rpc type.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::SetDefaultPickAttributesRPC);
 
     //
     // Issue the RPC.

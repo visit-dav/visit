@@ -114,6 +114,10 @@ class avtToolInterface;
 //    Added ResetPickAttributes, ResetDesignator.  Added optional int args
 //    to Pick and PointQuery.
 //
+//    Kathleen Bonnell, Wed Dec 17 14:45:22 PST 2003 
+//    Added SetPickAttsFromDefault, SetDefaultPickAttsFromClient,
+//    SetClientPickAttsFromDefault. 
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -150,14 +154,18 @@ class VIEWER_API ViewerQueryManager
 
     void            UpdatePickAtts();
     void            SetPickAttsFromClient();
+    void            SetPickAttsFromDefault();
+    void            SetDefaultPickAttsFromClient();
+    void            SetClientPickAttsFromDefault();
     void            ClearPickPoints(void);
-    void            ResetPickAttributes(void);
+    void            ResetPickLetter(void);
     void            ResetDesignator(void);
 
 
     static QueryAttributes  *GetQueryClientAtts();
     static PickAttributes   *GetPickAtts();
     static PickAttributes   *GetPickClientAtts();
+    static PickAttributes   *GetPickDefaultAtts();
     static GlobalLineoutAttributes   *GetGlobalLineoutAtts();
     static GlobalLineoutAttributes   *GetGlobalLineoutClientAtts();
 
@@ -217,6 +225,7 @@ class VIEWER_API ViewerQueryManager
 
     static QueryAttributes    *queryClientAtts;
     static PickAttributes     *pickAtts;
+    static PickAttributes     *pickDefaultAtts;
     static PickAttributes     *pickClientAtts;
     static GlobalLineoutAttributes          *globalLineoutAtts;
     static GlobalLineoutAttributes          *globalLineoutClientAtts;
