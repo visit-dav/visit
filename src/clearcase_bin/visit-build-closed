@@ -19,6 +19,7 @@ user=`whoami`
 #
 # Parse the execute line, providing default values for error checking.
 #
+hitit=true
 warp=false
 sc=true
 tidalwave=true
@@ -36,11 +37,20 @@ for abc
 do
    case $1 in
       -none)
+         hitit=false
          warp=false
          sc=false
          tidalwave=false
          white=false
          emperor=false
+         shift
+         ;;
+      -hitit)
+         hitit=false
+         shift
+         ;;
+      +hitit)
+         hitit=true
          shift
          ;;
       -warp)
@@ -110,6 +120,43 @@ then
 fi
 
 #
+# Build on hitit.
+#
+rm -f hitit
+cat <<EOF > hitit
+#!/bin/sh
+if test ! -e /var/tmp/$user ; then
+   mkdir /var/tmp/$user
+fi
+if test ! -e /var/tmp/$user/hitit ; then
+   mkdir /var/tmp/$user/hitit
+fi
+rm -rf /var/tmp/$user/hitit/visitbuild
+mkdir /var/tmp/$user/hitit/visitbuild
+mv hitit_$dist.tar.gz /var/tmp/$user/hitit/visitbuild/$dist.tar.gz
+cd /var/tmp/$user/hitit/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+./configure >> ../buildlog 2>&1
+make -j 4 >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
+mv visit\$ver2.linux.tar.gz ..
+cd ..
+EOF
+ 
+if [ $hitit = true ]
+then
+   if [ $test = no ]
+   then
+      scp -P 22 hitit hitit:hitit_buildit
+      scp -P 22 $dist.tar.gz hitit:hitit_$dist.tar.gz
+      ssh -p 22 hitit "chmod 750 hitit_buildit;./hitit_buildit" &
+   fi
+fi
+
+#
 # Build on warp.
 #
 rm -f warp
@@ -133,9 +180,7 @@ env CXXFLAGS=-O2 ./configure >> ../buildlog 2>&1
 env PARALLEL=4 make -P >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.irix6.tar.gz ..
-cp clearcase_bin/visit-install ..
 cd ..
-./visit-install \$ver irix6 visit >> buildlog 2>&1
 EOF
 
 if [ $warp = true ]
@@ -172,18 +217,16 @@ env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
 make >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.osf1.tar.gz ..
-cp clearcase_bin/visit-install ..
 cd ..
-./visit-install \$ver osf1 visit >> buildlog 2>&1
 EOF
 
 if [ $sc = true ]
 then
    if [ $test = no ]
    then
-      scp -P 22 sc sc1:sc_buildit
-      scp -P 22 $dist.tar.gz sc1:sc_$dist.tar.gz
-      ssh -p 22 sc1 "chmod 750 sc_buildit;./sc_buildit" &
+      scp sc sc1:sc_buildit
+      scp $dist.tar.gz sc1:sc_$dist.tar.gz
+      ssh sc1 "chmod 750 sc_buildit;./sc_buildit" &
    fi
 fi
 
@@ -211,9 +254,7 @@ env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
 env PARALLEL=20 make -P >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.irix6.tar.gz ..
-cp clearcase_bin/visit-install ..
 cd ..
-./visit-install \$ver irix6 visit >> buildlog 2>&1
 EOF
 
 if [ $tidalwave = true ]
@@ -251,9 +292,7 @@ env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
 gmake -j 6 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.aix.tar.gz ..
-cp clearcase_bin/visit-install ..
 cd ..
-./visit-install \$ver aix visit >> buildlog 2>&1
 EOF
 
 if [ $white = true ]
@@ -290,9 +329,7 @@ ver2=\`echo \$ver | tr "." "_"\`
 make -j 3 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.linux.tar.gz ..
-cp clearcase_bin/visit-install ..
 cd ..
-./visit-install \$ver linux visit >> buildlog 2>&1
 EOF
 
 if [ $emperor = true ]
@@ -310,5 +347,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f warp sc tidalwave white emperor
+   rm -f hitit warp sc tidalwave white emperor
 fi

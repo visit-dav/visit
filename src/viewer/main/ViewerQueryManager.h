@@ -88,6 +88,9 @@ class avtToolInterface;
 //    Added arguments to StartPickMode. Added SetPickAttsFromClient, 
 //    GetPickClientAtts.
 //
+//    Kathleen Bonnell, Wed Jul  9 08:58:27 PDT 2003 
+//    Add method ViewDimChanged. 
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -142,6 +145,7 @@ class VIEWER_API ViewerQueryManager
 
     void            StartPickMode(const bool, const bool);
     void            StopPickMode();
+    void            ViewDimChanged(ViewerWindow *);
 
   protected:
                     ViewerQueryManager();

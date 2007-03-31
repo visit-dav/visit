@@ -1,0 +1,51 @@
+<html>
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>VisIt 1.1.6 Release Notes</title>
+</head>
+<body>
+<p align="center"><b><font size="6">VisIt 1.1.6 Release Notes</font></b></p>
+<p>Welcome to VisIt's release notes page. This page describes the important 
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.1.6</font></b></p>
+<ul>
+  <li>VisIt has a new Histogram plot that can be used to show the distribution of values for a variable in a database.</li>
+  <li>VisIt has a new pick mode that allows you to pick on nodes of a mesh.</li>
+  <li>The vis window's popup menu has a new Clear submenu that lets you clear pick points, reference lines, and plots from the window.</li>
+  <li>You can now control the location of the major and minor tick marks for the 2d axes.</li>
+  <li>VisIt reads another PDB format.</li>
+  <li>VisIt now runs in parallel on LANL's Q machine.</li>
+  <li>Color tables can be saved to their own files, which can be shared among colleagues. The Color table window has a new "Export" button to export color tables to files.</li>
+  <li>The GUI's File menu has a new "Refresh files" button that refreshes the file list and allows VisIt to detect files that are new since the last time the directory was checked..</li>
+  <li>2d zooming now has reference lines to make it more obvious where you are zooming.</li>
+  <li>VisIt can now save several views to the config file for use in later sessings. To save a view, click the "Save view" icon in the toolbar. Once several views are saved, you can click on their icons to choose between them. When "Saving settings", these views are saved to the config file so that they are available the next time you run VisIt.</li>
+  <li>The Shift key forces rubber band zooming to be square.</li>
+  <li>VisIt's Point tool has been improved.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.1.6</font></b></p>
+<ul>
+  <li>VisIt's viewer crashes after slicing a mesh that has been onion-peeled.</li>
+  <li>VisIt crashes when doing animation due to a memory leak.</li>
+  <li>The Reset button causes the wrong plot attributes to be applied when some plugins are disabled.</li>
+  <li>The GUI hangs when the "Clone window on first reference" feature is enabled and no database was opened before changing the active window.</li>
+  <li>Cloning windows causes plots to be drawn immediately in the new window.</li>
+  <li>No ssh password prompt is available when -cli -nowin arguments are given.</li>
+  <li>The CLI has no way to return the coordinates for nodes.</li>
+  <li>Parallel compute engines are not clearing out of the VIEWS nodes.</li>
+  <li>Extra triangles in the middle of the dataset for a FilledBoundary plot of materials.</li>
+  <li>Zoom limits with zoom mode can't extend all the way to xmin, ymin.</li>
+  <li>Plugins are installed in /usr/gapps/visit by default.</li>
+  <li>The Reflect operator attributes window is not so clear for 2d.</li>
+  <li>Pick points disappear when a mesh plot is added.</li>
+  <li>The Area query returns negative values for "pixels".</li>
+  <li>Rubber band zooming where the new zoom rectangle has no area is no longer allowed.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version 
+of VisIt: <a href="relnotes1.1.5.html">VisIt 1.1.5 Release Notes</a>.</p>
+
+</body>
+
+</html>

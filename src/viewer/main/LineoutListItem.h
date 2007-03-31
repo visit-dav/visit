@@ -33,6 +33,9 @@ class avtToolInterface;
 //    Kathleen Bonnell, Fri Mar  7 16:27:04 PST 2003
 //    Removed unnecessary method 'DeleteResultsWindow'.
 //
+//    Kathleen Bonnell, Wed Jul  9 09:21:22 PDT 2003  
+//    Added method ViewDimChanged.
+//
 // ****************************************************************************
 
 class VIEWER_API LineoutListItem : public SimpleObserver
@@ -69,6 +72,7 @@ class VIEWER_API LineoutListItem : public SimpleObserver
     void HandleTool(const avtToolInterface &);
     bool InitializeTool(avtToolInterface &);
     void DisableTool(void);
+    void ViewDimChanged(void);
 
 
   private:

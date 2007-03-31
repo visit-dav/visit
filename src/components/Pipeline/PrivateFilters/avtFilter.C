@@ -553,6 +553,10 @@ avtFilter::TryDataExtents(double *outexts, const char *varname)
 //    Hank Childs, Wed Apr 17 09:33:15 PDT 2002
 //    Made argument const.
 //
+//    Hank Childs, Wed Jul  9 11:48:22 PDT 2003
+//    Use the prescribed extents if the variable is named and that name is
+//    the name of the default variable.
+//
 // ****************************************************************************
 
 void
@@ -567,7 +571,7 @@ avtFilter::GetDataExtents(double *outexts, const char *varname)
     }
 
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
-    if (varname == NULL)
+    if (varname == NULL || (atts.GetVariableName() == varname))
     {
         atts.GetCumulativeTrueDataExtents()->CopyTo(outexts);
     }

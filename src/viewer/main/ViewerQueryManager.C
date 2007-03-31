@@ -1890,3 +1890,41 @@ ViewerQueryManager::Lineout(ViewerWindow *origWin, Line *lineAtts)
     AddQuery(origWin, lineAtts);
 }
 
+
+// ****************************************************************************
+// Method: ViewerQueryManager::ViewDimChanged
+//
+// Purpose: 
+//   Notifies lineouts that the view dim has changed. 
+//
+// Arguments:
+//   modWin    The window whose view dimension is changing.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   July 9, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerQueryManager::ViewDimChanged(ViewerWindow *modWin)
+{
+    // 
+    // No work to do if there are no lineouts, or if lineouts
+    // are in dynamic mode.
+    // 
+    if (nLineouts == 0 || GetGlobalLineoutAtts()->GetDynamic())
+    {
+        return;
+    }
+
+    for (int i = 0; i < nLineouts; i++)
+    {
+        if (lineoutList[i]->MatchOriginatingWindow(modWin))
+        {
+            lineoutList[i]->ViewDimChanged();
+        }
+    }
+} 
+
