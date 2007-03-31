@@ -44,6 +44,23 @@ avtActor::avtActor()
 
 
 // ****************************************************************************
+//  Method: avtActor destructor
+//
+//  Programmer: Hank Childs
+//  Creation:   June 25, 2003
+//
+// ****************************************************************************
+
+avtActor::~avtActor()
+{
+    if (transparencyActor != NULL && transparencyIndex >= 0)
+    {
+        transparencyActor->RemoveInput(transparencyIndex);
+    }
+}
+
+
+// ****************************************************************************
 //  Method: avtActor::SetBehavior
 //
 //  Purpose:

@@ -124,6 +124,9 @@ avtReflectFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Mon Feb 24 17:19:42 PST 2003
 //    Better checking of when we need to calculate extents in parallel.
 //
+//    Hank Childs, Wed Jun 25 09:30:59 PDT 2003
+//    Fix stupid cut-n-paste bug.
+//
 // ****************************************************************************
 
 void
@@ -153,7 +156,7 @@ avtReflectFilter::PreExecute(void)
     }
     bool needX = reflectX && atts.GetUseXBoundary();
     bool needY = reflectY && atts.GetUseYBoundary();
-    bool needZ = reflectY && atts.GetUseZBoundary();
+    bool needZ = reflectZ && atts.GetUseZBoundary();
     if (needX || needY || needZ)
     {
         GetSpatialExtents(extents);

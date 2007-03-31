@@ -33,6 +33,9 @@ static const int operator2WidgetOctants[] = {0, 1, 3, 2, 4, 5, 7, 6};
 //    Brad Whitlock, Thu Mar 6 11:31:12 PDT 2003
 //    I added stretch and initialized some widgets that have no parents.
 //
+//    Brad Whitlock, Wed Jun 25 09:24:38 PDT 2003
+//    I initialized modeButtons, userSetMode, and mode2D.
+//
 // ****************************************************************************
 
 QvisReflectWindow::QvisReflectWindow(const int type,
@@ -44,6 +47,10 @@ QvisReflectWindow::QvisReflectWindow(const int type,
 {
     atts = subj;
 
+    userSetMode = false;
+    mode2D = true;
+
+    modeButtons = 0;
     xBound = 0;
     yBound = 0;
     zBound = 0;
@@ -63,6 +70,7 @@ QvisReflectWindow::QvisReflectWindow(const int type,
 
 QvisReflectWindow::~QvisReflectWindow()
 {
+    delete modeButtons;
     delete xBound;
     delete yBound;
     delete zBound;
@@ -81,30 +89,45 @@ QvisReflectWindow::~QvisReflectWindow()
 //    Brad Whitlock, Mon Mar 3 11:42:37 PDT 2003
 //    I made it use a QvisReflectWidget.
 //
+//    Brad Whitlock, Wed Jun 25 09:25:32 PDT 2003
+//    I added code that lets us have a 2D input mode.
+//
 // ****************************************************************************
+
 void
 QvisReflectWindow::CreateWindowContents()
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(topLayout, 10, "mainLayout");
 
-    // Octant
-    QHBoxLayout *octantLayout = new QHBoxLayout(mainLayout);
-    octantLayout->addWidget(new QLabel("Original data is in octant", central, "octantLayout"));
-    octant = new QComboBox(false, central, "octant");
-    octant->insertItem("+X  +Y  +Z");
-    octant->insertItem("-X  +Y  +Z");
-    octant->insertItem("+X  -Y  +Z");
-    octant->insertItem("-X  -Y  +Z");
-    octant->insertItem("+X  +Y  -Z");
-    octant->insertItem("-X  +Y  -Z");
-    octant->insertItem("+X  -Y  -Z");
-    octant->insertItem("-X  -Y  -Z");
-    octantLayout->addWidget(octant);
+    // Add the controls to select the input mode.
+    QGridLayout *octantLayout = new QGridLayout(mainLayout, 2, 3);
+    modeButtons = new QButtonGroup(0, "modeButtons");
+    octantLayout->addWidget(new QLabel("Input mode", central, "inputModeLabel"),
+                            0, 0);
+    QRadioButton *rb = new QRadioButton("2D", central, "mode2D");
+    modeButtons->insert(rb);
+    octantLayout->addWidget(rb, 0, 1);
+    rb = new QRadioButton("3D", central, "mode3D");
+    modeButtons->insert(rb);
+    modeButtons->setButton(0);
+    connect(modeButtons, SIGNAL(clicked(int)),
+            this, SLOT(selectMode(int)));
+    octantLayout->addWidget(rb, 0, 2);
 
+    // Octant
+    originalDataLabel = new QLabel("Original data quadrant", central,
+        "originalDataLabel");
+    octantLayout->addWidget(originalDataLabel, 1, 0);
+    octant = new QComboBox(false, central, "octant");
+    octantLayout->addMultiCellWidget(octant, 1, 1, 1, 2);
+
+    // Reflection widget
     reflect = new QvisReflectWidget(central, "reflect");
+    reflect->setMode2D(mode2D);
     connect(reflect, SIGNAL(valueChanged(bool*)),
             this, SLOT(selectOctants(bool*)));
-    mainLayout->addWidget(new QLabel(reflect, "Reflection octants", central));
+    reflectionLabel = new QLabel(reflect, "Reflection quadrants", central);
+    mainLayout->addWidget(reflectionLabel);
     mainLayout->addWidget(reflect, 100);
 
     // Limits
@@ -174,12 +197,20 @@ QvisReflectWindow::CreateWindowContents()
 //    Brad Whitlock, Wed Mar 5 15:49:22 PST 2003
 //    I made it use a QvisReflectWidget widget.
 //
+//    Brad Whitlock, Wed Jun 25 10:11:14 PDT 2003
+//    I added a 2D input mode.
+//
 // ****************************************************************************
 
 void
 QvisReflectWindow::UpdateWindow(bool doAll)
 {
     QString temp;
+    bool    setOctant  = false;
+    bool    originIs3D = (operator2WidgetOctants[atts->GetOctant()] > 3);
+    bool    reflection3D = false;
+
+    reflect->blockSignals(true);
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -193,13 +224,8 @@ QvisReflectWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-          case 0: //octant
-            octant->blockSignals(true);
-            octant->setCurrentItem(atts->GetOctant());
-            octant->blockSignals(false);
-            reflect->blockSignals(true);
-            reflect->setOriginalOctant(operator2WidgetOctants[atts->GetOctant()]);
-            reflect->blockSignals(false);
+          case 0: // octant
+            setOctant = true;
             break;
           case 1: //xBound
             xUseData->setText((atts->GetOctant()&0x01) ? "Use dataset max" : "Use dataset min");
@@ -236,15 +262,82 @@ QvisReflectWindow::UpdateWindow(bool doAll)
                 {
                     int b = i ^ atts->GetOctant();
                     octants[operator2WidgetOctants[i]] = (r[b] > 0);
+                    reflection3D |= (octants[operator2WidgetOctants[i]] && operator2WidgetOctants[i] > 3);
                 }
 
-                reflect->blockSignals(true);
                 reflect->setValues(octants);
-                reflect->blockSignals(false);
             }
             break;
         }
     }
+
+    if(originIs3D || reflection3D)
+    {
+        bool newMode2D = !originIs3D && !reflection3D;
+        if(newMode2D != mode2D)
+        {
+            mode2D = newMode2D;
+            modeButtons->blockSignals(true);
+            modeButtons->setButton(mode2D ? 0 : 1);
+            modeButtons->blockSignals(false);
+            reflect->setMode2D(mode2D);
+            UpdateOctantMenuContents();
+        }
+    }
+    else if(!userSetMode)
+    {
+        mode2D = true;
+        modeButtons->blockSignals(true);
+        modeButtons->setButton(0);
+        modeButtons->blockSignals(false);
+        reflect->setMode2D(mode2D);
+        UpdateOctantMenuContents();
+    }
+
+    if(setOctant)
+    {
+        octant->blockSignals(true);
+        octant->setCurrentItem(atts->GetOctant());
+        octant->blockSignals(false);
+        reflect->setOriginalOctant(operator2WidgetOctants[atts->GetOctant()]);
+    }
+
+    reflect->blockSignals(false);
+}
+
+// ****************************************************************************
+// Method: QvisReflectWindow::UpdateOctantMenuContents
+//
+// Purpose: 
+//   Updates the octant menu's contents so it shows the appropriate choices.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jun 25 09:34:50 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisReflectWindow::UpdateOctantMenuContents()
+{
+    octant->clear();
+    octant->insertItem("+X  +Y  +Z");
+    octant->insertItem("-X  +Y  +Z");
+    octant->insertItem("+X  -Y  +Z");
+    octant->insertItem("-X  -Y  +Z");
+    if(mode2D)
+    {
+        reflectionLabel->setText("Reflection quadrants");
+        originalDataLabel->setText("Original data quadrant");
+        return;
+    }
+    octant->insertItem("+X  +Y  -Z");
+    octant->insertItem("-X  +Y  -Z");
+    octant->insertItem("+X  -Y  -Z");
+    octant->insertItem("-X  -Y  -Z");
+    reflectionLabel->setText("Reflection octants");
+    originalDataLabel->setText("Original data octant");
 }
 
 // ****************************************************************************
@@ -472,4 +565,69 @@ QvisReflectWindow::specifiedZProcessText()
 {
     GetCurrentValues(6);
     Apply();
+}
+
+// ****************************************************************************
+// Method: QvisReflectWindow::selectMode
+//
+// Purpose: 
+//   Selects the input mode.
+//
+// Arguments:
+//   mode : The new input mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jun 25 12:44:20 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisReflectWindow::selectMode(int mode)
+{
+    if(mode == 0)
+    {
+        bool originIs3D = (operator2WidgetOctants[atts->GetOctant()] > 3);
+        bool reflection3D = false;
+        int *r = atts->GetReflections();
+        bool octants[8];
+        for (int i=0; i<8; i++)
+        {
+            int b = i ^ atts->GetOctant();
+            octants[operator2WidgetOctants[i]] = (r[b] > 0);
+            reflection3D |= (octants[operator2WidgetOctants[i]] && operator2WidgetOctants[i] > 3);
+        }
+
+        if(originIs3D || reflection3D)
+        {
+            Error("The reflection attributes require the 3D input mode because "
+                  "the original data octant or one or more of the reflection "
+                  "octants has a negative Z value. The input mode will remain 3D.");
+            mode2D = false;
+            modeButtons->blockSignals(true);
+            modeButtons->setButton(1);
+            modeButtons->blockSignals(false);
+        }
+        else
+        {
+            if(!mode2D)
+            {
+                mode2D = true;
+                reflect->setMode2D(mode2D);
+                UpdateOctantMenuContents();
+            }
+        }
+    }
+    else
+    {
+        if(mode2D)
+        {
+            mode2D = false;
+            reflect->setMode2D(mode2D);
+            UpdateOctantMenuContents();
+        }
+
+        userSetMode = true;
+    }
 }

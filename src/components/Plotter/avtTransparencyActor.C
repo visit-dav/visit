@@ -272,6 +272,42 @@ avtTransparencyActor::ReplaceInput(int ind, vector<vtkDataSet *> &d,
 
 
 // ****************************************************************************
+//  Method: avtTransparencyActor::RemoveInput
+//
+//  Purpose:
+//      Removes the i'th input.  This means it will free up any memory
+//      associated with the index.
+//
+//  Arguments:
+//      ind     The index of the VTK constructs.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 25, 2003
+//
+// ****************************************************************************
+
+void
+avtTransparencyActor::RemoveInput(int ind)
+{
+    if (ind >= useActor.size() || ind < 0)
+    {
+        EXCEPTION2(BadIndexException, ind, useActor.size());
+    }
+
+    for (int i = 0 ; i < preparedDataset[ind].size() ; i++)
+    {
+        if (preparedDataset[ind][i] != NULL)
+        {
+            preparedDataset[ind][i]->Delete();
+            preparedDataset[ind][i] = NULL;
+        }
+    }
+
+    useActor[ind] = false;
+}
+
+
+// ****************************************************************************
 //  Method: avtTransparencyActor::TurnOffInput
 //
 //  Purpose:

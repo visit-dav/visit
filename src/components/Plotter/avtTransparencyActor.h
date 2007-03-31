@@ -65,6 +65,7 @@ class PLOTTER_API avtTransparencyActor
 
     void                             TurnOffInput(int);
     void                             TurnOnInput(int);
+    void                             RemoveInput(int);
     void                             InputWasModified(int);
     void                             SetVisibility(int, bool);
     void                             VisibilityOff(void);
