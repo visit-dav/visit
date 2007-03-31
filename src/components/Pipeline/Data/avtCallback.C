@@ -20,6 +20,7 @@ ImageCallback                 avtCallback::imageCallback = NULL;
 void                         *avtCallback::imageCallbackArgs = NULL;
 
 WindowAttributes              avtCallback::windowAtts;
+LightList                     avtCallback::lightList;
 
 bool                          avtCallback::nowinMode = false;
 
@@ -168,6 +169,42 @@ void
 avtCallback::SetCurrentWindowAtts(const WindowAttributes &atts)
 {
     windowAtts = atts;
+}
+
+
+// ****************************************************************************
+//  Method: avtCallback::GetCurrentLightList
+//
+//  Purpose:
+//      Gets the current light list.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   October  2, 2003
+//
+// ****************************************************************************
+
+const LightList &
+avtCallback::GetCurrentLightList(void)
+{
+    return lightList;
+}
+
+
+// ****************************************************************************
+//  Method: avtCallback::SetCurrentLightList
+//
+//  Purpose:
+//      Sets the current light list.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   October  2, 2003
+//
+// ****************************************************************************
+
+void
+avtCallback::SetCurrentLightList(const LightList &l)
+{
+    lightList = l;
 }
 
 

@@ -5,5 +5,6 @@
     <Field name="width" type="int">30</Field>
     <Field name="height" type="int">30</Field>
     <Field name="depth" type="int">30</Field>
+    <Field name="prefersPowersOfTwo" type="bool">false</Field>
     <Field name="defaultVal" type="float">-1e38</Field>
   </Attribute>

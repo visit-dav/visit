@@ -4181,11 +4181,18 @@ ViewerWindowManager::SetDefaultLightListFromClient()
 //    The viewer window now stores LightList attributes, not avtLightList, so
 //    there is no need for a conversion here. 
 //
+//    Jeremy Meredith, Thu Oct  2 12:34:00 PDT 2003
+//    Copy the light list to avtCallback.
+//
 // ****************************************************************************
 
 void
 ViewerWindowManager::SetLightListFromClient()
 {
+    // HACK: set the light list in the callback
+    // for why this is bad, see VisIt00003853.
+    avtCallback::SetCurrentLightList(*lightListClientAtts);
+
     windows[activeWindow]->SetLightList(lightListClientAtts);
 }
 

@@ -38,6 +38,10 @@ class QSlider;
 //    Added support for smoothing the data and setting the number of samples
 //    per ray.
 //
+//    Jeremy Meredith, Thu Oct  2 13:09:18 PDT 2003
+//    Added settings for the renderer type, the gradient method, and
+//    the number of 3D textured slices.
+//
 // ****************************************************************************
 
 class QvisVolumePlotWindow : public QvisPostableWindowObserver
@@ -91,6 +95,9 @@ private slots:
     void samplesPerRayProcessText();
     void opacityVariableProcessText();
     void software();
+    void rendererTypeChanged(int val);
+    void gradientTypeChanged(int val);
+    void num3DSlicesProcessText();
 private:
     int                      plotType;
     VolumeAttributes         *volumeAtts;
@@ -125,8 +132,11 @@ private:
     QCheckBox                *legendToggle;
     QCheckBox                *lightingToggle;
     QCheckBox                *smoothDataToggle;
+    QButtonGroup             *rendererButtonGroup;
+    QButtonGroup             *gradientButtonGroup;
     QLineEdit                *resampleTarget;
     QSlider                  *resampleTargetSlider;
+    QLineEdit                *num3DSlices;
     QLineEdit                *samplesPerRay;
     QLineEdit                *opacityVariable;
 };

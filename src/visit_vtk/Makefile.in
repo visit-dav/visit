@@ -186,6 +186,9 @@
 #    Hank Childs, Tue Sep 23 21:20:15 PDT 2003
 #    Add vtkTensorReduceFilter.
 #
+#    Hank Childs, Thu Oct  2 08:51:16 PDT 2003
+#    Added vtkDisjointCubesFacelistFilter.
+#
 ##############################################################################
 
 ##
@@ -212,6 +215,7 @@ SRC=InitVTK.C \
     vtkDataSetFromVolume.C \
     vtkDataSetRemoveGhostCells.C \
     vtkDebugStream.C \
+    vtkDisjointCubesFacelistFilter.C \
     vtkHankAxisActor2D.C \
     vtkKatAxisActor.C \
     vtkKatCubeAxesActor.C \

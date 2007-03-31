@@ -1,4 +1,4 @@
-// ************************************************************************* //
+  // ************************************************************************* //
 //                             avtResampleFilter.C                           //
 // ************************************************************************* //
 
@@ -28,6 +28,10 @@ void                    CreateViewFromBounds(avtViewInfo &, const double *,
                                              double [3]);
 vtkDataArray           *GetCoordinates(float, float, int);
 
+
+#ifndef MAX
+#define MAX(a,b) ((a)>(b)?(a):(b))
+#endif
 
 // ****************************************************************************
 //  Method: avtResampleFilter constructor
@@ -542,6 +546,9 @@ avtResampleFilter::ResampleInput(void)
 //    Do not blow up memory if we get faked up bounds.  Changed bounds to
 //    double.
 //
+//    Jeremy Meredith, Thu Oct  2 12:52:42 PDT 2003
+//    Added ability to preferentially choose power-of-two sized dimensions.
+//
 // ****************************************************************************
 
 void
@@ -580,6 +587,32 @@ avtResampleFilter::GetDimensions(int &width, int &height, int &depth,
         width  = (int)(amountInX * ratioX);
         height = (int)(amountInX * ratioY);
         depth  = (int)(amountInX * ratioZ);
+
+        if (atts.GetPrefersPowersOfTwo())
+        {
+            int w[2], h[2], d[2];
+            w[1] = MAX(int(pow(2,1+int(log(width -1)/log(2)))),2);
+            h[1] = MAX(int(pow(2,1+int(log(height-1)/log(2)))),2);
+            d[1] = MAX(int(pow(2,1+int(log(depth -1)/log(2)))),2);
+            w[0] = w[1]/2;
+            h[0] = h[1]/2;
+            d[0] = d[1]/2;
+
+            if (width - w[0] < w[1] - width)
+                width = w[0];
+            else
+                width = w[1];
+
+            if (height - h[0] < h[1] - height)
+                height = h[0];
+            else
+                height = h[1];
+
+            if (depth - d[0] < d[1] - depth)
+                depth = d[0];
+            else
+                depth = d[1];
+        }
     }
     else
     {
