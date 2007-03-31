@@ -1,7 +1,8 @@
 #include <GetFileListRPC.h>
 #include <GetFileListException.h>
 #include <DebugStream.h>
-#include <map>
+#include <Utility.h>
+#include <algorithm>
 
 // ****************************************************************************
 // Method: GetFileListRPC::GetFileListRPC
@@ -257,23 +258,25 @@ GetFileListRPC::FileList::Clear()
 // Creation:   Mon Apr 14 10:18:28 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Aug 26 13:28:04 PST 2003
+//   I added the name member and a < operator.
+//
 // ****************************************************************************
 
 struct FileListInformation
 {
-    FileListInformation()
+    FileListInformation() : name()
     {
     }
 
-    FileListInformation(int t, long s, int a)
+    FileListInformation(const std::string &n, int t, long s, int a) : name(n)
     {
         type = t;
         size = s;
         access = a;
     }
 
-    FileListInformation(const FileListInformation &obj)
+    FileListInformation(const FileListInformation &obj) : name(obj.name)
     {
         type = obj.type;
         size = obj.size;
@@ -286,14 +289,22 @@ struct FileListInformation
 
     void operator = (const FileListInformation &obj)
     {
+        name = obj.name;
         type = obj.type;
         size = obj.size;
         access = obj.access;
     }
 
-    int  type;
-    long size;
-    int  access;
+    // Use numeric and string comparison to compare the name.
+    bool operator < (const FileListInformation &obj) const
+    {
+        return NumericStringCompare(name, obj.name);
+    }
+
+    std::string name;
+    int         type;
+    int         access;
+    long        size;
 };
 
 // ****************************************************************************
@@ -306,30 +317,34 @@ struct FileListInformation
 // Creation:   Mon Apr 14 10:18:12 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Aug 26 13:24:44 PST 2003
+//   I made it sort numerically.
+//
 // ****************************************************************************
 
 void
 GetFileListRPC::FileList::Sort()
 {
-    std::map<std::string, FileListInformation> sortMap;
+    std::vector<FileListInformation> sortVector;
 
     // Fill up the map sorting it in the process.
     int i;
     for(i = 0; i < names.size(); ++i)
     {
-        sortMap[names[i]] = FileListInformation(types[i], sizes[i], access[i]);
+        sortVector.push_back(
+            FileListInformation(names[i], types[i], sizes[i], access[i]));
     }
 
+    // Sort the vector.
+    std::sort(sortVector.begin(), sortVector.end());
+
     // Iterate through the map and store the values back into the vectors.
-    i = 0;
-    std::map<std::string, FileListInformation>::const_iterator pos;
-    for(pos = sortMap.begin(); pos != sortMap.end(); ++pos, ++i)
+    for(i = 0; i < sortVector.size(); ++i)
     {
-        names[i]  = pos->first;
-        types[i]  = pos->second.type;
-        sizes[i]  = pos->second.size;
-        access[i] = pos->second.access;
+        names[i]  = sortVector[i].name;
+        types[i]  = sortVector[i].type;
+        sizes[i]  = sortVector[i].size;
+        access[i] = sortVector[i].access;
     }
 }
 

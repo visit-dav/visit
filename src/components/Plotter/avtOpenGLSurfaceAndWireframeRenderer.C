@@ -42,20 +42,49 @@ avtOpenGLSurfaceAndWireframeRenderer::avtOpenGLSurfaceAndWireframeRenderer()
 //    Hank Childs, Mon May  5 18:17:23 PDT 2003
 //    Do not assume that we have a valid VTK renderer.
 //
+//    Kathleen Bonnell, Tue Aug 26 13:51:22 PDT 2003 
+//    Moved deletion of display lists to ReleaseGraphicsResources. 
+//
 // ****************************************************************************
 
 avtOpenGLSurfaceAndWireframeRenderer::~avtOpenGLSurfaceAndWireframeRenderer()
 {
+    ReleaseGraphicsResources();
+    surfaceListId.clear();
+    edgesListId.clear();
+    setupListId.clear();
+}
+
+
+// ****************************************************************************
+//  Method: avtOpenGLSurfaceAndWireframeRenderer::ReleaseGraphicsResources
+//
+//  Purpose:  Releases graphics resources by deleting display lists.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    August 26, 2003 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtOpenGLSurfaceAndWireframeRenderer::ReleaseGraphicsResources()
+{
+    if (VTKRen == NULL)
+        return;
+
     int i;
 
-    if (VTKRen != NULL)
-        VTKRen->GetRenderWindow()->MakeCurrent();
+    VTKRen->GetRenderWindow()->MakeCurrent();
 
     for (i = 0; i < surfaceListId.size(); i++)
     {
         if (surfaceListId[i])
         {
             glDeleteLists(surfaceListId[i], 1);
+            surfaceListId[i] = 0;
+            surfaceModified[i] = true;
         }
     }
     for (i = 0; i < edgesListId.size(); i++)
@@ -63,6 +92,8 @@ avtOpenGLSurfaceAndWireframeRenderer::~avtOpenGLSurfaceAndWireframeRenderer()
         if (edgesListId[i])
         {
             glDeleteLists(edgesListId[i], 1);
+            edgesListId[i] = 0;
+            edgesModified[i] = true;
         }
     }
     for (i = 0; i < setupListId.size(); i++)
@@ -70,11 +101,10 @@ avtOpenGLSurfaceAndWireframeRenderer::~avtOpenGLSurfaceAndWireframeRenderer()
         if (setupListId[i])
         {
             glDeleteLists(setupListId[i], 1);
+            setupListId[i] = 0;
+            setupModified[i] = true;
         }
     }
-    surfaceListId.clear();
-    edgesListId.clear();
-    setupListId.clear();
 }
 
 // ****************************************************************************
@@ -3251,7 +3281,7 @@ avtOpenGLSurfaceAndWireframeRenderer::SetupGraphicsLibrary()
     //
     //  See if display list needs to be regenerated. 
     //
-    if (propMTime[inputNum] < prop->GetMTime())
+    if (setupModified[inputNum] || (propMTime[inputNum] < prop->GetMTime()))
     {
         if (setupListId[inputNum])
         {
@@ -3268,7 +3298,7 @@ avtOpenGLSurfaceAndWireframeRenderer::SetupGraphicsLibrary()
             glEndList();
 #ifdef DEBUG_GL_LIST_IDS
             if (!glIsList(setupListId[inputNum]))
-               cerr << "calling invalid list" << endl;
+               cerr << "calling invalid setup list" << endl;
 #endif
             glCallList(setupListId[inputNum]);
         }
@@ -3282,7 +3312,7 @@ avtOpenGLSurfaceAndWireframeRenderer::SetupGraphicsLibrary()
         {
 #ifdef DEBUG_GL_LIST_IDS
             if (!glIsList(setupListId[inputNum]))
-               cerr << "calling invalid list" << endl;
+               cerr << "calling invalid setup list" << endl;
 #endif
             glCallList(setupListId[inputNum]);
         }
@@ -3506,7 +3536,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface()
             glEndList();
 #ifdef DEBUG_GL_LIST_IDS
             if (!glIsList(surfaceListId[inputNum]))
-               cerr << "calling invalid list" << endl;
+               cerr << "calling invalid surface list" << endl;
 #endif
             glCallList(surfaceListId[inputNum]);
         }
@@ -3520,7 +3550,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface()
         {
 #ifdef DEBUG_GL_LIST_IDS
             if (!glIsList(surfaceListId[inputNum]))
-               cerr << "calling invalid list" << endl;
+               cerr << "calling invalid surface list" << endl;
 #endif
             glCallList(surfaceListId[inputNum]);
         }
@@ -3954,7 +3984,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
             glEndList();
 #ifdef DEBUG_GL_LIST_IDS
             if (!glIsList(edgesListId[inputNum]))
-               cerr << "calling invalid list" << endl;
+               cerr << "calling invalid edges list" << endl;
 #endif
             glCallList(edgesListId[inputNum]);
         }
@@ -3968,7 +3998,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
         {
 #ifdef DEBUG_GL_LIST_IDS
             if (!glIsList(edgesListId[inputNum]))
-               cerr << "calling invalid list" << endl;
+               cerr << "calling invalid edges list" << endl;
 #endif
             glCallList(edgesListId[inputNum]);
         }

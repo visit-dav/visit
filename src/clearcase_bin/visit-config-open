@@ -20,7 +20,7 @@
             <Object name="HostProfile" childObjects="0">
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">blue.llnl.gov</Field>
-                <Field name="hostAliases" type="string">blue.pacific.llnl.gov blue???.pacific.llnl.gov</Field>
+                <Field name="hostAliases" type="string">blue.pacific.llnl.gov blue###.pacific.llnl.gov</Field>
                 <Field name="timeout" type="int">240</Field>
                 <Field name="numProcessors" type="int">1</Field>
                 <Field name="numNodesSet" type="bool">false</Field>
@@ -42,7 +42,7 @@
             <Object name="HostProfile" childObjects="0">
                 <Field name="profileName" type="string">parallel pdebug</Field>
                 <Field name="host" type="string">blue.llnl.gov</Field>
-                <Field name="hostAliases" type="string">blue.pacific.llnl.gov blue???.pacific.llnl.gov</Field>
+                <Field name="hostAliases" type="string">blue.pacific.llnl.gov blue###.pacific.llnl.gov</Field>
                 <Field name="timeout" type="int">240</Field>
                 <Field name="numProcessors" type="int">4</Field>
                 <Field name="numNodesSet" type="bool">true</Field>
@@ -64,7 +64,7 @@
             <Object name="HostProfile" childObjects="0">
                 <Field name="profileName" type="string">parallel pbatch</Field>
                 <Field name="host" type="string">blue.llnl.gov</Field>
-                <Field name="hostAliases" type="string">blue.pacific.llnl.gov blue???.pacific.llnl.gov</Field>
+                <Field name="hostAliases" type="string">blue.pacific.llnl.gov blue###.pacific.llnl.gov</Field>
                 <Field name="timeout" type="int">240</Field>
                 <Field name="numProcessors" type="int">16</Field>
                 <Field name="numNodesSet" type="bool">true</Field>
@@ -86,7 +86,7 @@
             <Object name="HostProfile" childObjects="0">
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">frost.llnl.gov</Field>
-                <Field name="hostAliases" type="string">frost.pacific.llnl.gov frost???.pacific.llnl.gov</Field>
+                <Field name="hostAliases" type="string">frost.pacific.llnl.gov frost###.pacific.llnl.gov</Field>
                 <Field name="timeout" type="int">240</Field>
                 <Field name="numProcessors" type="int">1</Field>
                 <Field name="numNodesSet" type="bool">false</Field>
@@ -108,7 +108,7 @@
             <Object name="HostProfile" childObjects="0">
                 <Field name="profileName" type="string">parallel pdebug</Field>
                 <Field name="host" type="string">frost.llnl.gov</Field>
-                <Field name="hostAliases" type="string">frost.pacific.llnl.gov frost???.pacific.llnl.gov</Field>
+                <Field name="hostAliases" type="string">frost.pacific.llnl.gov frost###.pacific.llnl.gov</Field>
                 <Field name="timeout" type="int">240</Field>
                 <Field name="numProcessors" type="int">16</Field>
                 <Field name="numNodesSet" type="bool">true</Field>
@@ -130,7 +130,7 @@
             <Object name="HostProfile" childObjects="0">
                 <Field name="profileName" type="string">parallel pbatch</Field>
                 <Field name="host" type="string">frost.llnl.gov</Field>
-                <Field name="hostAliases" type="string">frost.pacific.llnl.gov frost???.pacific.llnl.gov</Field>
+                <Field name="hostAliases" type="string">frost.pacific.llnl.gov frost###.pacific.llnl.gov</Field>
                 <Field name="timeout" type="int">240</Field>
                 <Field name="numProcessors" type="int">32</Field>
                 <Field name="numNodesSet" type="bool">true</Field>
@@ -152,7 +152,7 @@
             <Object name="HostProfile" childObjects="0">
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">gps15.llnl.gov gps16.llnl.gov</Field>
-                <Field name="hostAliases" type="string">gps??.llnl.gov</Field>
+                <Field name="hostAliases" type="string">gps##.llnl.gov</Field>
                 <Field name="timeout" type="int">240</Field>
                 <Field name="numProcessors" type="int">1</Field>
                 <Field name="numNodesSet" type="bool">false</Field>
@@ -174,7 +174,7 @@
             <Object name="HostProfile" childObjects="0">
                 <Field name="profileName" type="string">parallel</Field>
                 <Field name="host" type="string">gps15.llnl.gov gps16.llnl.gov</Field>
-                <Field name="hostAliases" type="string">gps??.llnl.gov</Field>
+                <Field name="hostAliases" type="string">gps##.llnl.gov</Field>
                 <Field name="timeout" type="int">240</Field>
                 <Field name="numProcessors" type="int">2</Field>
                 <Field name="numNodesSet" type="bool">false</Field>
@@ -240,7 +240,7 @@
             <Object name="HostProfile" childObjects="0">
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">snow.llnl.gov</Field>
-                <Field name="hostAliases" type="string">snow.llnl.gov snow??.llnl.gov</Field>
+                <Field name="hostAliases" type="string">snow.llnl.gov snow##.llnl.gov</Field>
                 <Field name="timeout" type="int">240</Field>
                 <Field name="numProcessors" type="int">1</Field>
                 <Field name="numNodesSet" type="bool">false</Field>
@@ -262,7 +262,7 @@
             <Object name="HostProfile" childObjects="0">
                 <Field name="profileName" type="string">parallel pbatch</Field>
                 <Field name="host" type="string">snow.llnl.gov</Field>
-                <Field name="hostAliases" type="string">snow.llnl.gov snow??.llnl.gov</Field>
+                <Field name="hostAliases" type="string">snow.llnl.gov snow##.llnl.gov</Field>
                 <Field name="timeout" type="int">240</Field>
                 <Field name="numProcessors" type="int">16</Field>
                 <Field name="numNodesSet" type="bool">true</Field>
@@ -284,7 +284,7 @@
             <Object name="HostProfile" childObjects="0">
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">pengra.llnl.gov</Field>
-                <Field name="hostAliases" type="string">pengra?.llnl.gov pengra??.llnl.gov pengra? pengra?? pengra???</Field>
+                <Field name="hostAliases" type="string">pengra#.llnl.gov pengra##.llnl.gov pengra# pengra## pengra###</Field>
                 <Field name="timeout" type="int">240</Field>
                 <Field name="numProcessors" type="int">1</Field>
                 <Field name="numNodesSet" type="bool">false</Field>
@@ -306,7 +306,7 @@
             <Object name="HostProfile" childObjects="0">
                 <Field name="profileName" type="string">parallel interactive pdebug</Field>
                 <Field name="host" type="string">pengra.llnl.gov</Field>
-                <Field name="hostAliases" type="string">pengra?.llnl.gov pengra??.llnl.gov pengra? pengra?? pengra???</Field>
+                <Field name="hostAliases" type="string">pengra#.llnl.gov pengra##.llnl.gov pengra# pengra## pengra###</Field>
                 <Field name="timeout" type="int">240</Field>
                 <Field name="numProcessors" type="int">2</Field>
                 <Field name="numNodesSet" type="bool">true</Field>
@@ -328,7 +328,7 @@
             <Object name="HostProfile" childObjects="0">
                 <Field name="profileName" type="string">parallel batch pbatch</Field>
                 <Field name="host" type="string">pengra.llnl.gov</Field>
-                <Field name="hostAliases" type="string">pengra?.llnl.gov pengra??.llnl.gov pengra? pengra?? pengra???</Field>
+                <Field name="hostAliases" type="string">pengra#.llnl.gov pengra##.llnl.gov pengra# pengra## pengra###</Field>
                 <Field name="timeout" type="int">240</Field>
                 <Field name="numProcessors" type="int">4</Field>
                 <Field name="numNodesSet" type="bool">true</Field>
@@ -350,7 +350,7 @@
             <Object name="HostProfile" childObjects="0">
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">pvc.llnl.gov</Field>
-                <Field name="hostAliases" type="string">pvc?.llnl.gov pvc??.llnl.gov pvc? pvc?? pvc???</Field>
+                <Field name="hostAliases" type="string">pvc#.llnl.gov pvc##.llnl.gov pvc# pvc## pvc###</Field>
                 <Field name="timeout" type="int">240</Field>
                 <Field name="numProcessors" type="int">1</Field>
                 <Field name="numNodesSet" type="bool">false</Field>
@@ -372,7 +372,7 @@
             <Object name="HostProfile" childObjects="0">
                 <Field name="profileName" type="string">parallel pbatch</Field>
                 <Field name="host" type="string">pvc.llnl.gov</Field>
-                <Field name="hostAliases" type="string">pvc?.llnl.gov pvc??.llnl.gov pvc? pvc?? pvc???</Field>
+                <Field name="hostAliases" type="string">pvc#.llnl.gov pvc##.llnl.gov pvc# pvc## pvc###</Field>
                 <Field name="timeout" type="int">240</Field>
                 <Field name="numProcessors" type="int">4</Field>
                 <Field name="numNodesSet" type="bool">true</Field>

@@ -748,13 +748,22 @@ VisWinRendering::ScreenCapture(bool doCanvasZBufferToo)
 //    Hank Childs, Tue Aug  1 16:24:09 PDT 2000
 //    Added a render to pick up the size change.
 //
+//    Kathleen Bonnell, Tue Aug 26 09:01:33 PDT 2003 
+//    Only set the size if different than what was previously set.  Calling
+//    SetSize all the time in ScalableRendering mode causes the rendering
+//    Context to be destroyed, invalidating any display lists created. 
+//
 // ****************************************************************************
 
 void
 VisWinRendering::SetSize(int w, int h)
 {
-    GetRenderWindow()->SetSize(w, h);
-    Render();
+    int *size = GetRenderWindow()->GetSize();
+    if (size[0] != w || size[1] != h)
+    {
+        GetRenderWindow()->SetSize(w, h);
+        Render();
+    }
 }
 
 // ****************************************************************************

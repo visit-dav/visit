@@ -1,5 +1,6 @@
 #include <QualifiedFilename.h>
 #include <visit-config.h>
+#include <Utility.h>
 
 // ****************************************************************************
 // Method: QualifiedFilename::QualifiedFilename
@@ -126,16 +127,56 @@ QualifiedFilename::operator == (const QualifiedFilename &qf) const
            (filename == qf.filename);
 }
 
+// ****************************************************************************
+// Method: QualifiedFilename::operator < 
+//
+// Purpose: 
+//   Compares a filename against this filename.
+//
+// Arguments:
+//   qf : The filename to compare against this filename.
+//
+// Returns:    true if this filename is less than the passed in filename.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Aug 26 13:39:43 PST 2003
+//
+// Modifications:
+//   Brad Whitlock, Tue Aug 26 13:39:46 PST 2003
+//   Changed from using < operator for strings to using NumericStringCompare.
+//
+// ****************************************************************************
+
 bool
 QualifiedFilename::operator < (const QualifiedFilename &qf) const
 {
-    return (FullName() < qf.FullName());
+    return NumericStringCompare(FullName(), qf.FullName());
 }
+
+// ****************************************************************************
+// Method: QualifiedFilename::operator >
+//
+// Purpose: 
+//   Compares a filename against this filename.
+//
+// Arguments:
+//   qf : The filename to compare against this filename.
+//
+// Returns:    true if this filename is greater than the passed in filename.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Aug 26 13:39:43 PST 2003
+//
+// Modifications:
+//   Brad Whitlock, Tue Aug 26 13:39:46 PST 2003
+//   Changed from using > operator for strings to using NumericStringCompare.
+//
+// ****************************************************************************
 
 bool
 QualifiedFilename::operator > (const QualifiedFilename &qf) const
 {
-    return (FullName() > qf.FullName());
+    return NumericStringCompare(qf.FullName(), FullName());
 }
 
 // ****************************************************************************

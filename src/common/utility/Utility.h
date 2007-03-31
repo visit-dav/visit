@@ -26,7 +26,7 @@ bool UTILITY_API  ReadAndProcessDirectory(const std::string &,
 void UTILITY_API  WaitUntilFile(const char *);
 bool UTILITY_API  WildcardStringMatch(const char *p, const char *s);
 bool UTILITY_API  WildcardStringMatch(const std::string &p, const std::string &s);
-
+bool UTILITY_API  NumericStringCompare(const std::string &str1, const std::string &str2);
 
 inline char *C_strdup(char const * const);
 inline char *CXX_strdup(char const * const);

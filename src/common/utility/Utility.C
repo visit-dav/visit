@@ -470,3 +470,88 @@ ReadAndProcessDirectory(const std::string &directory,
 
     return retval;
 }
+
+// ****************************************************************************
+// Function: NumericStringCompare
+//
+// Purpose: 
+//   Compares two strings but treats any numbers contained in the string as
+//   numbers so they compare differently than a staight text comparison.
+//
+// Arguments:
+//   str1 : The first string to compare.
+//   str2 : The second string to compare.
+//
+// Returns:    true if str1<str2; false otherwise.
+//
+// Programmer: Sean Ahern
+// Creation:   Tue Aug 26 11:41:54 PDT 2003
+//
+// Modifications:
+//   Brad Whitlock, Tue Aug 26 11:42:12 PDT 2003
+//   I stole this function from MeshTV and adapted it to C++.
+//
+// ****************************************************************************
+
+bool
+NumericStringCompare(const std::string &str1, const std::string &str2)
+{
+    const char *p1 = str1.c_str();
+    const char *p2 = str2.c_str();
+
+    // Compare the two strings, character by character.
+    while ((*p1 != '\0') && (*p2 != '\0'))
+    {
+        // If we're at some digits, we have to treat it differently.
+        if (isdigit(*p1) && isdigit(*p2))
+        {
+            /* We're in the digits. */
+            int num1 = (*p1) - '0';
+            int num2 = (*p2) - '0';
+
+            p1++;
+            p2++;
+
+            // Walk along until we're out of numbers in each string.
+            while ((*p1 != '\0') && isdigit(*p1))
+            {
+                num1 *= 10;
+                num1 += (*p1) - '0';
+                p1++;
+            }
+            while ((*p2 != '\0') && isdigit(*p2))
+            {
+                num2 *= 10;
+                num2 += (*p2) - '0';
+                p2++;
+            }
+
+            // Compare the numbers. If they're the same, keep going. If 
+            // they're different, return the difference.
+            if (num1 != num2)
+                return ((num1 - num2) < 0);
+        }
+        else
+        {
+            // We're in some normal characters. Just compare them normally.
+            if (*p1 == *p2)
+            {
+                p1++;
+                p2++;
+            }
+            else
+            {
+                return ((*p1 - *p2) < 0);
+            }
+        }
+    }
+
+    //
+    // If we fall out here, the strings are the same up to the point. But 
+    // one of the strings is shorter than the other.
+    //
+    if(*p1)
+        return true;
+    else
+        return false;
+}

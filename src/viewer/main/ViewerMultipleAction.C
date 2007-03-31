@@ -22,7 +22,9 @@
 // Creation:   Wed Feb 5 17:08:54 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Aug 26 17:12:41 PST 2003
+//   I added the isExclusive flag and removed the Selected slot function.
+//
 // ****************************************************************************
 
 ViewerMultipleAction::ViewerMultipleAction(ViewerWindow *win, const char *name) : 
@@ -33,13 +35,13 @@ ViewerMultipleAction::ViewerMultipleAction(ViewerWindow *win, const char *name) 
     toggled = false;
     actionMenu = 0;
     actionMenuId = -1;
+    isExclusive = true;
 
     // Create a new QActionGroup and make it call our Activate method when
     // it is activated.
     QString n; n.sprintf("%s_action", name);
     action = new QActionGroup(0, name);
-    connect(action, SIGNAL(selected(QAction *)),
-            this, SLOT(Selected(QAction *)));
+    action->setExclusive(false);
 }
 
 // ****************************************************************************
@@ -185,6 +187,10 @@ ViewerMultipleAction::ChoiceToggled(int i) const
 //   Added code to return early if the action or the action menu has not
 //   been created yet.
 //
+//   Brad Whitlock, Tue Aug 26 17:13:29 PST 2003
+//   I changed the code to fix some problems with the toolbar buttons not
+//   updating correctly.
+//
 // ****************************************************************************
 
 void
@@ -197,29 +203,47 @@ ViewerMultipleAction::Update()
 
     // See if the action as whole should be enabled.
     bool actionShouldBeEnabled = Enabled();
+    int enabledChildCount = 0;
+
+    // Update the action's enabled state.
+    if(action->isEnabled() != actionShouldBeEnabled)
+        action->setEnabled(actionShouldBeEnabled);
 
     // Update the child actions
-    int enabledChildCount = 0;
+    bool foundTrue = false;
     for(int i = 0; i < children.size(); ++i)
     {
         bool choiceShouldBeEnabled = actionShouldBeEnabled ? ChoiceEnabled(i) : false;
         if(choiceShouldBeEnabled)
             ++enabledChildCount;
-        if(children[i]->isEnabled() != choiceShouldBeEnabled)
-            children[i]->setEnabled(choiceShouldBeEnabled);
-
+  
         bool choiceShouldBeToggled = ChoiceToggled(i);
+
         if(children[i]->isOn() != choiceShouldBeToggled)
         {
+            bool toggled = false;
+            if(isExclusive)
+            {
+                if(!foundTrue)
+                {
+                    toggled = choiceShouldBeToggled;
+                    if(choiceShouldBeToggled)
+                        foundTrue = true;
+                }
+                else
+                    toggled = false;
+            }
+            else
+                toggled = choiceShouldBeToggled;
+
             children[i]->blockSignals(true);
-            children[i]->setOn(choiceShouldBeToggled);
+            children[i]->setOn(toggled);
             children[i]->blockSignals(false);
         }
-    }
 
-    // Update the action's enabled state.
-    if(action->isEnabled() != actionShouldBeEnabled)
-        action->setEnabled(actionShouldBeEnabled);
+        if(children[i]->isEnabled() != choiceShouldBeEnabled)
+            children[i]->setEnabled(choiceShouldBeEnabled);
+    }   
 
     // Enable or disable the menu based on how many child actions were enabled.
     if(VisualEnabled())
@@ -358,19 +382,20 @@ ViewerMultipleAction::ConnectChildAction(QAction *newAction)
 // Creation:   Wed Feb 5 17:08:54 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Aug 26 17:34:15 PST 2003
+//   Made the new action be a child of the action group.
+//
 // ****************************************************************************
 
 void
 ViewerMultipleAction::AddChoice(const char *menuText)
 {
     // Create an action that is a child to this action group.
-    QAction *newAction = new QAction(0, menuText);
+    QAction *newAction = new QAction(action, menuText);
     newAction->setText(menuText);
     newAction->setMenuText(menuText);
     newAction->setToolTip(menuText);
     newAction->setToggleAction(true);
-    action->insert(newAction);
     ConnectChildAction(newAction);
 
     // Save the child pointer for later
@@ -393,6 +418,8 @@ ViewerMultipleAction::AddChoice(const char *menuText)
 // Creation:   Thu Feb 20 18:29:17 America/Los_Angeles 2003
 //
 // Modifications:
+//   Brad Whitlock, Tue Aug 26 17:34:15 PST 2003
+//   Made the new action be a child of the action group.
 //   
 // ****************************************************************************
 
@@ -402,13 +429,12 @@ ViewerMultipleAction::AddChoice(const char *menuText, const char *toolTip,
                                 const QPixmap &large_icon)
 {
     // Create an action that is a child to this action group.
-    QAction *newAction = new QAction(0, menuText);
+    QAction *newAction = new QAction(action, menuText);
     newAction->setText(menuText);
     newAction->setMenuText(menuText);
     newAction->setToolTip(toolTip);
     newAction->setIconSet(QIconSet(small_icon, large_icon));
     newAction->setToggleAction(true);
-    action->insert(newAction);
     ConnectChildAction(newAction);
 
     // Save the child pointer for later
@@ -431,20 +457,22 @@ ViewerMultipleAction::AddChoice(const char *menuText, const char *toolTip,
 // Creation:   Wed Feb 5 17:08:54 PST 2003
 //
 // Modifications:
+//   Brad Whitlock, Tue Aug 26 17:34:15 PST 2003
+//   Made the new action be a child of the action group.
 //   
 // ****************************************************************************
+
 void
 ViewerMultipleAction::AddChoice(const char *menuText, const char *toolTip,
                                 const QPixmap &icon)
 {
     // Create an action that is a child to this action group.
-    QAction *newAction = new QAction(0, menuText);
+    QAction *newAction = new QAction(action, menuText);
     newAction->setText(menuText);
     newAction->setMenuText(menuText);
     newAction->setToolTip(toolTip);
     newAction->setIconSet(QIconSet(icon));
     newAction->setToggleAction(true);
-    action->insert(newAction);
     ConnectChildAction(newAction);
 
     // Save the child pointer for later
@@ -464,14 +492,15 @@ ViewerMultipleAction::AddChoice(const char *menuText, const char *toolTip,
 // Creation:   Wed Feb 5 17:08:54 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Aug 26 17:16:43 PST 2003
+//   Saved the flag in isExclusive instead of setting the value in the action.
+//
 // ****************************************************************************
 
 void
 ViewerMultipleAction::SetExclusive(bool val)
 {
-    // Set the action's exclusive flag.
-    action->setExclusive(val);
+    isExclusive = val;
 }
 
 // ****************************************************************************
@@ -638,39 +667,6 @@ ViewerMultipleAction::ActivateHelper(int i)
 //
 // Qt slot functions
 //
-
-// ****************************************************************************
-// Method: ViewerMultipleAction::Selected
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the action is exclusive and
-//   you change the action selection.
-//
-// Arguments:
-//   a : The action that caused the call.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Feb 5 17:08:54 PST 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerMultipleAction::Selected(QAction *a)
-{
-    // Set the activeAction member
-    for(int i = 0; i < children.size(); ++i)
-    {
-       if(children[i] == a)
-       {
-           activeAction = i;
-           break;
-       }
-    }
-
-    Activate();
-}
 
 void ViewerMultipleAction::activate0(){ ActivateHelper(0); }
 void ViewerMultipleAction::activate1(){ ActivateHelper(1); }

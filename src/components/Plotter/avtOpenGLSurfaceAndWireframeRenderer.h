@@ -28,6 +28,9 @@
 //    Added secondary draw and setup methods, so that display lists could be
 //    supported.  Added members to keep track of display list indices. 
 //
+//    Kathleen Bonnell, Tue Aug 26 13:54:32 PDT 2003 
+//    Added ReleaseGraphicsResources. 
+//    
 // ****************************************************************************
 
 class PLOTTER_API avtOpenGLSurfaceAndWireframeRenderer 
@@ -37,10 +40,12 @@ class PLOTTER_API avtOpenGLSurfaceAndWireframeRenderer
                               avtOpenGLSurfaceAndWireframeRenderer();
     virtual                  ~avtOpenGLSurfaceAndWireframeRenderer();
 
+
   protected:
     virtual void              SetupGraphicsLibrary();
     virtual void              DrawEdges();
     virtual void              DrawSurface();
+    virtual void              ReleaseGraphicsResources();
 
    private:
     void                      SetupGraphicsLibrary2();
