@@ -30,6 +30,11 @@ static int FormatLine(char *line);
 //  Programmer: Hank Childs
 //  Creation:   May 12, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Sep 15 09:21:29 PDT 2003
+//    Initialized nodalCentering.
+//
 // ****************************************************************************
 
 avtBOVFileFormat::avtBOVFileFormat(const char *fname)
@@ -86,6 +91,7 @@ avtBOVFileFormat::avtBOVFileFormat(const char *fname)
     var_brick_max = NULL;
     littleEndian = false;
     hasBoundaries = false;
+    nodalCentering = true;
 
     ReadTOC();
 
@@ -175,6 +181,11 @@ avtBOVFileFormat::~avtBOVFileFormat()
 //  Programmer: Hank Childs
 //  Creation:   May 12, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Sep 15 09:49:06 PDT 2003
+//    If we have zonal centering, then construct the mesh differently.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -221,7 +232,12 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
     float z_stop  = origin[2] + z_step*(z_off+1);
 
     //
-    // Create the VTK construct.
+    // Create the VTK construct.  Note that the mesh is being created to fit
+    // the variable we are reading in.  If we are told that that variable is
+    // nodal, then we need one node for each entry in the variable array.
+    // If it is zonal, then we need one zone for each entry in the variable
+    // array.  In the zonal case, if the variable array is NX x NY x NZ, then
+    // the mesh should have (NX+1) x (NY+1) x (NZ+1) nodes.
     //
     vtkRectilinearGrid *rv = vtkRectilinearGrid::New();
 
@@ -235,6 +251,8 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
         if (x_off >= nx-1)
             dx -= 1;
     }
+    if (! nodalCentering) 
+        dx += 1;
     x->SetNumberOfTuples(dx);
     for (i = 0 ; i < dx ; i++)
         x->SetTuple1(i, x_start + i * (x_stop-x_start) / (dx-1));
@@ -249,6 +267,8 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
         if (y_off >= ny-1)
             dy -= 1;
     }
+    if (! nodalCentering) 
+        dy += 1;
     y->SetNumberOfTuples(dy);
     for (i = 0 ; i < dy ; i++)
         y->SetTuple1(i, y_start + i * (y_stop-y_start) / (dy-1));
@@ -263,6 +283,8 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
         if (z_off >= nz-1)
             dz -= 1;
     }
+    if (! nodalCentering) 
+        dz += 1;
     z->SetNumberOfTuples(dz);
     for (i = 0 ; i < dz ; i++)
         z->SetTuple1(i, z_start + i * (z_stop-z_start) / (dz-1));
@@ -481,6 +503,11 @@ avtBOVFileFormat::GetAuxiliaryData(const char *var, int domain,
 //  Programmer: Hank Childs
 //  Creation:   May 12, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Sep 15 09:51:16 PDT 2003
+//    Account for the possibility of zonal variables.
+//
 // ****************************************************************************
 
 void
@@ -504,7 +531,8 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->hasSpatialExtents = false;
     md->Add(mesh);
 
-    AddScalarVarToMetaData(md, varname, "mesh", AVT_NODECENT);
+    AddScalarVarToMetaData(md, varname, "mesh",
+                               (nodalCentering ? AVT_NODECENT : AVT_ZONECENT));
 }
 
 
@@ -516,6 +544,11 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //
 //  Programmer: Hank Childs
 //  Creation:   May 12, 2003
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Sep 15 11:12:32 PDT 2003
+//    Allow for centering to be specified.
 //
 // ****************************************************************************
 
@@ -651,6 +684,12 @@ avtBOVFileFormat::ReadTOC(void)
                 if (i != nbricks-1)
                     line += strlen(line) + 1;
             }
+        }
+        else if (strcmp(line, "CENTERING:") == 0)
+        {
+            line += strlen("CENTERING:") + 1;
+            if (strstr(line, "zon") != NULL)
+                nodalCentering = false;
         }
     }
 }

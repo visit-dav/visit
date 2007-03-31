@@ -48,6 +48,7 @@ class avtBOVFileFormat : public avtSTMDFileFormat
     char                      *varname;
     bool                       hasBoundaries;
     bool                       littleEndian;
+    bool                       nodalCentering;
     float                      min, max;
     float                      origin[3];
     float                      dimensions[3];

@@ -491,6 +491,9 @@ ReadAndProcessDirectory(const std::string &directory,
 //   Brad Whitlock, Tue Aug 26 11:42:12 PDT 2003
 //   I stole this function from MeshTV and adapted it to C++.
 //
+//   Brad Whitlock, Mon Sep 15 14:52:12 PST 2003
+//   I fixed it so things sort correctly.
+//
 // ****************************************************************************
 
 bool
@@ -551,7 +554,7 @@ NumericStringCompare(const std::string &str1, const std::string &str2)
     // one of the strings is shorter than the other.
     //
     if(*p1)
-        return true;
-    else
         return false;
+    else
+        return true;
 }
