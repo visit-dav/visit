@@ -291,6 +291,9 @@ $0 = shift @ARGV;
 #    Brad Whitlock, Fri Dec 5 11:44:32 PDT 2003
 #    Added help for -sessionfile.
 #
+#    Eric Brugger, Tue Dec 23 10:15:11 PST 2003
+#    Added support for logging usage.  It is off by default.
+#
 ###############################################################################
 
 
@@ -465,10 +468,11 @@ $beta         = 0;
 @norun        = ();
 $publiconly   = 0;
 $launchengine = "";
-@breakpoints = ();
-$debug_gdb = 0;
+@breakpoints  = ();
+$debug_gdb    = 0;
 $debug_totalview = "";
 $add_movie_args = 0;
+$logging      = 0;
 
 # Parse the arguments 
 @visitargs = ();
@@ -1047,6 +1051,20 @@ $ENV{TRAP_FPE} = "";
 $ENV{MESA_GLX_FX} = disable;
 
 
+# If logging is true and we are running the mdserver, then add usage
+# information to the log file.
+if ($logging and $exe_name eq "mdserver")
+{
+    chomp ( $user_info = `whoami` );
+    chomp ( $host_info = `hostname` );
+    chomp ( $date_info = `date` );
+    $info = "$user_info"." "."$host_info"." "."$date_info"."\n";
+
+    $filename=">>$visitdir/usagelog";
+    open(USERINFO, $filename);
+    print USERINFO "$info";
+    close(USERINFO);
+}
 
 # -----------------------------------------------------------------------------
 #                                   Run it!

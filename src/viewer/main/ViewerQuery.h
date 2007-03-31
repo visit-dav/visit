@@ -10,15 +10,12 @@
 #include <ref_ptr.h>
 
 // Forward declarations.
-class AttributeSubject;
 class Line;
 class PlaneAttributes;
 class PlotQueryInfo;
-class SILRestrictionAttributes;
 class ViewerPlot;
 class ViewerWindow;
 class avtToolInterface;
-class avtVector;
 
 
 // ****************************************************************************

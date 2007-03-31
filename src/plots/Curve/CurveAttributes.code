@@ -1,13 +1,3 @@
-Function: ChangesRequireRecalculation
-Declaration: bool ChangesRequireRecalculation(const CurveAttributes &) const;
-Definition:
-bool
-CurveAttributes::ChangesRequireRecalculation(const CurveAttributes &obj) const
-{
-    return false;
-}
-
-
 Function: CopyAttributes
 Declaration: virtual bool CopyAttributes(const AttributeGroup *);
 Definition:
@@ -59,6 +49,15 @@ CurveAttributes::CreateCompatible(const std::string &tname) const
     return retval;
 }
 
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const CurveAttributes &) const;
+Definition:
+bool
+CurveAttributes::ChangesRequireRecalculation(const CurveAttributes &obj) const
+{
+    return false;
+}
+
 Function: Print
 Declaration: void Print(ostream &, bool) const;
 Definition:
@@ -84,6 +83,8 @@ CurveAttributes::Print(ostream &out, bool selected_only) const
                    GetDesignator();    break;
           case  3: out << "showLabels= " << GetShowLabels();    break;
           case  4: out << "designator= " << GetDesignator().c_str();    break;
+          case  5: out << "showPoints= " << GetShowPoints();    break;
+          case  6: out << "pointSize=  " << GetPointSize();    break;
         }
         out << ",";
     }

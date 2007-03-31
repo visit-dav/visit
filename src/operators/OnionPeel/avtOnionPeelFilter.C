@@ -178,6 +178,9 @@ avtOnionPeelFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Bonnell, Wed May  7 11:09:05 PDT 2003 
 //    Remove ghost cells, if present. 
 //
+//    Kathleen Bonnell, Fri Dec 19 09:07:33 PST 2003 
+//    Verify logical indices for groups are valid for this domain. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -198,19 +201,40 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
         }
         if (groupCategory)
         {
-            vtkDataArray *arr = in_ds->GetFieldData()->GetArray("base_index");
-            int ind[3] = { 0, 0, 0};
-            if (arr != NULL)
+            vtkDataArray *bi_arr = in_ds->GetFieldData()->GetArray("base_index");
+            int minIJK[3] = { 0, 0, 0};
+            int maxIJK[3] = { 0, 0, 0};
+            vtkDataArray *rd_arr = in_ds->GetFieldData()->GetArray("avtRealDims");
+            if (bi_arr != NULL && rd_arr != NULL)
             {
-                vtkIntArray *ar2 = (vtkIntArray *) arr;
-                ind[0] = ar2->GetValue(0);
-                ind[1] = ar2->GetValue(1);
-                ind[2] = ar2->GetValue(2);
-                id[0] = (id[0]-ind[0] > 0 ? id[0] - ind[0] : 0);
-                id[1] = (id[1]-ind[1] > 0 ? id[1] - ind[1] : 0);
+                int *bi = ((vtkIntArray *)bi_arr)->GetPointer(0);
+                int *rd = ((vtkIntArray *)rd_arr)->GetPointer(0);
+
+                minIJK[0] = bi[0];
+                minIJK[1] = bi[1];
+                minIJK[2] = bi[2];
+                maxIJK[0] = rd[1] - rd[0] + minIJK[0] -1;
+                maxIJK[1] = rd[3] - rd[2] + minIJK[1] -1;
+                maxIJK[2] = rd[5] - rd[4] + minIJK[2] -1;
+
+                //
+                // Verify that the logical index is valid for this domain
+                // If not, set encounteredBadSeed to true, return NULL.
+                //
+                for (int i = 0; i < id.size(); i++)
+                {
+                    if (id[i] < minIJK[i] || id[i] > maxIJK[i])
+                    {
+                        encounteredBadSeed = true;
+                        return NULL;
+                    }
+                }
+
+                id[0] = (id[0]-minIJK[0] > 0 ? id[0] - minIJK[0] : 0);
+                id[1] = (id[1]-minIJK[1] > 0 ? id[1] - minIJK[1] : 0);
                 if (id.size() == 3)
                 {
-                    id[2] = (id[2]-ind[2] > 0 ? id[2] - ind[2] : 0);
+                    id[2] = (id[2]-minIJK[2] > 0 ? id[2] - minIJK[2] : 0);
                 }
             }
         }

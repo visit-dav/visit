@@ -10,6 +10,7 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkProbeFilter.h>
+#include <vtkUnsignedCharArray.h>
 
 
 vtkStandardNewMacro(vtkLineoutFilter);
@@ -65,6 +66,9 @@ vtkLineoutFilter::~vtkLineoutFilter()
 //   Kathleen Bonnell, Fri Jul 12 17:19:40 PDT 2002
 //   Removed YScale, no longer needed.
 //  
+//   Kathleen Bonnell, Tue Dec 23 10:18:06 PST 2003 
+//   Slight rework to consider ghost levels. 
+//  
 //======================================================================
 void
 vtkLineoutFilter::Execute()
@@ -114,12 +118,10 @@ vtkLineoutFilter::Execute()
   vtkIdType i, index, numPoints = validPoints->GetNumberOfTuples();
 
   vtkPoints *outPts = vtkPoints::New();
-  outPts->SetNumberOfPoints(numPoints);
   outPolys->SetPoints(outPts);
   outPts->Delete();
 
   vtkCellArray *verts = vtkCellArray::New();
-  verts->InsertNextCell(numPoints);
   outPolys->SetVerts(verts);
   verts->Delete();
 
@@ -132,22 +134,40 @@ vtkLineoutFilter::Execute()
       return;
   }
 
+  unsigned char* ghosts = 0;
+  vtkDataArray *gl = 
+      this->Probe->GetOutput()->GetPointData()->GetArray("vtkGhostLevels");
+
+  int updateLevel = GetOutput()->GetUpdateGhostLevel();
+  if (gl && gl->GetDataType() == VTK_UNSIGNED_CHAR && 
+      gl->GetNumberOfComponents() == 1)
+    {
+        ghosts = ((vtkUnsignedCharArray*)gl)->GetPointer(0);
+    }
   //
   //  Distance needs to be calculated for each new point.
   //
   float currentPoint[3];
+  vtkIdTypeArray *nonGhostValidPoints =  vtkIdTypeArray::New();
   for (i = 0; i < numPoints; i++)
     {
     index = validPoints->GetValue(i);
-    inPts->GetPoint(index, currentPoint);
-    newPoint[0] = sqrt(vtkMath::Distance2BetweenPoints(this->Point1, currentPoint));
-    newPoint[1] = scalars->GetTuple1(index); 
-    outPts->SetPoint(i, newPoint); 
+    bool ghost = (ghosts && ghosts[index] > updateLevel);
+    if (!ghost)
+      {
+      inPts->GetPoint(index, currentPoint);
+      newPoint[0] = sqrt(vtkMath::Distance2BetweenPoints(this->Point1, currentPoint));
+      newPoint[1] = scalars->GetTuple1(index); 
+      outPts->InsertNextPoint(newPoint); 
+      nonGhostValidPoints->InsertNextValue(index);
+      }
     }
 
+  numPoints = outPts->GetNumberOfPoints();
   //
   //  Create vertex cells.
   //
+  verts->InsertNextCell(numPoints);
   for (i = 0; i < numPoints; i++)
     {
     verts->InsertCellPoint(i);
@@ -163,13 +183,15 @@ vtkLineoutFilter::Execute()
   outPD->CopyAllocate(inPD, numPoints);
   for (i = 0; i < numPoints; i++)
     {
-    outPD->CopyData(inPD, validPoints->GetValue(i), i);
+    outPD->CopyData(inPD, nonGhostValidPoints->GetValue(i), i);
     }
 
   //
   // Clean up;
   //
   probeOut->Delete();
+  nonGhostValidPoints->Delete();
+
 } 
 
 //======================================================================
