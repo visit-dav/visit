@@ -1532,6 +1532,9 @@ QvisViewWindow::GetCurrentValues(int which_widget)
 //   Eric Brugger, Mon Jan 13 15:06:42 PST 2003
 //   I added the commands "vp" and "wp".
 //
+//   Eric Brugger, Wed Dec 24 10:20:47 PST 2003
+//   I added the commands "xtrans", "ytrans" and "zf".
+//
 // ****************************************************************************
  
 void
@@ -1588,11 +1591,35 @@ QvisViewWindow::ParseViewCommands(const char *str)
             else
                 okay = false;
         }
+        else if(strncmp(command, "xtrans ", 7) == 0)
+        {
+            double panx;
+
+            if (sscanf(&command[7], "%lg", &panx) == 1)
+            {
+                Pan(panx, 0.);
+                doApply = true;
+            }
+            else
+                okay = false;
+        }
         else if(strncmp(command, "pany ", 5) == 0)
         {
             double pany;
 
             if (sscanf(&command[5], "%lg", &pany) == 1)
+            {
+                Pan(0., pany);
+                doApply = true;
+            }
+            else
+                okay = false;
+        }
+        else if(strncmp(command, "ytrans ", 7) == 0)
+        {
+            double pany;
+
+            if (sscanf(&command[7], "%lg", &pany) == 1)
             {
                 Pan(0., pany);
                 doApply = true;
@@ -1689,6 +1716,18 @@ QvisViewWindow::ParseViewCommands(const char *str)
             double zoom;
 
             if (sscanf(&command[6], "%lg", &zoom) == 1)
+            {
+                Zoom(zoom);
+                doApply = true;
+            }
+            else
+                okay = false;
+        }
+        else if (strncmp(command, "zf ", 3) == 0)
+        {
+            double zoom;
+
+            if (sscanf(&command[3], "%lg", &zoom) == 1)
             {
                 Zoom(zoom);
                 doApply = true;

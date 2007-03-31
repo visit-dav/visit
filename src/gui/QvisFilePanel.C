@@ -285,7 +285,10 @@ QvisFilePanel::~QvisFilePanel()
 // Creation:   Mon Oct 13 16:15:46 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Dec 29 10:13:15 PDT 2003
+//   I added code to help determine how labels are displayed if a database is
+//   virtual.
+//
 // ****************************************************************************
 
 void
@@ -331,10 +334,13 @@ QvisFilePanel::SetTimeStateFormat(const TimeFormat &m)
                     {
                         int j, maxts = QMIN(md->GetNumStates(), item->childCount());
                         QListViewItemIterator it(item); ++it;
+                        bool useVirtualDBInfo = DisplayVirtualDBInformation(item->file);
+
+                        // Set the label so that it shows the right values.
                         for(j = 0; j < maxts; ++j, ++it)
                         {
-                             // Reset the label so that it shows the right values.
-                             it.current()->setText(0, CreateItemLabel(md, j));
+                             it.current()->setText(0, CreateItemLabel(md, j,
+                                 useVirtualDBInfo));
                         }
                     }
                 }
@@ -815,37 +821,64 @@ QvisFilePanel::ExpandDatabases()
     //
     // Iterate through the items and expand them if they are databases.
     //
+    int nDBWithDifferentNStates = 0;
+
     for(i = 0; i < count; ++i)
     {
         QvisListViewFileItem *item = items[i];
         if(item != 0)
         {
-            if(item->firstChild() == 0) // Will this work for .visit files?
+            if(item->firstChild() == 0)
             {
                 if(item->timeState == -1)
                     ExpandDatabaseItem(item);
             }
-            else if(HaveFileInformation(item->file) &&
-                    !FileShowsCorrectData(item->file))
+            else if(HaveFileInformation(item->file))
             {
                 // See if the file is a database
                 const avtDatabaseMetaData *md = fileServer->GetMetaData(item->file);
                 if(md != 0 && md->GetNumStates() > 1)
                 {
-                    int j, maxts = QMIN(md->GetNumStates(), item->childCount());
-                    QListViewItemIterator it(item); ++it;
-                    for(j = 0; j < maxts; ++j, ++it)
+                    if(md->GetNumStates() != item->childCount())
                     {
-                         // Reset the label so that it shows the right values.
-                         it.current()->setText(0, CreateItemLabel(md, j));
+                        //
+                        // We likely have a virtual database that has multiple time states
+                        // per file. It would be a pain to fix it here so just note that
+                        // it happened and do an update later.
+                        //
+                        ++nDBWithDifferentNStates;
+                        SetFileShowsCorrectData(item->file, false);
                     }
+                    else if(!FileShowsCorrectData(item->file))
+                    {
+                        bool useVirtualDBInfo = DisplayVirtualDBInformation(item->file);
+                        int j;
+                        QListViewItemIterator it(item); ++it;
+                        for(j = 0; j < item->childCount(); ++j, ++it)
+                        {
+                             // Reset the label so that it shows the right values.
+                             it.current()->setText(0, CreateItemLabel(md, j, 
+                                 useVirtualDBInfo));
+                        }
 
-                    // Remember that the item now has the correct information
-                    // displayed through its children.
-                    SetFileShowsCorrectData(item->file, true);
+                        // Remember that the item now has the correct information
+                        // displayed through its children.
+                        SetFileShowsCorrectData(item->file, true);
+                    }
                 }
-            }
+            }           
         }
+    }
+
+    //
+    // If we had databases for which we were not showing the correct number of time
+    // states update the file list later from the event loop so we have the
+    // opportunity to correct the problem without having to try and do it in this
+    // method.
+    //
+    if(nDBWithDifferentNStates > 0)
+    {
+        QTimer::singleShot(100, this, SLOT(internalUpdateFileList()));
     }
 
     // Delete the temporary array.
@@ -876,6 +909,10 @@ QvisFilePanel::ExpandDatabases()
 //   Fixed a bug that caused expanded databases to sometimes get the wrong
 //   database in their child time states.
 //
+//   Brad Whitlock, Mon Dec 29 11:34:42 PDT 2003
+//   I changed the code so we can correctly display virtual databases that
+//   have multiple time states per file.
+//
 // ****************************************************************************
 
 void
@@ -892,29 +929,80 @@ QvisFilePanel::ExpandDatabaseItem(QvisListViewFileItem *item)
 
     if(fileServer->HaveOpenedFile(item->file))
     {
-        // See if the file is a database
-        const avtDatabaseMetaData *md = fileServer->GetMetaData(item->file);
-        if(md != 0 && md->GetNumStates() > 1)
-        {              
-            fileListView->blockSignals(true);
-            for(int i = 0; i < md->GetNumStates(); ++i)
-            {
-                QvisListViewFileItem *fi = new QvisListViewFileItem(
-                    item, CreateItemLabel(md, i), item->file,
-                    QvisListViewFileItem::FILE_NODE, i);
-                fi->setOpen(false);
-            }
-
-            // Set the database pixmap.
-            item->setPixmap(0, *databasePixmap);
-            fileListView->blockSignals(false);
-
-            // Remember that the item now has the correct information
-            // displayed through its children.
-            SetFileShowsCorrectData(item->file, true);
-        }
+        ExpandDatabaseItemUsingMetaData(item);
     }
     else if(item->file.IsVirtual())
+    {
+        ExpandDatabaseItemUsingVirtualDBDefinition(item);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::ExpandDatabaseItemUsingMetaData
+//
+// Purpose: 
+//   Expands a database item as a database, which means that it uses the
+//   number of time states to display the database.
+//
+// Arguments:
+//   item : The item to expand.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 29 12:22:41 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilePanel::ExpandDatabaseItemUsingMetaData(QvisListViewFileItem *item)
+{
+    // See if the file is a database
+    const avtDatabaseMetaData *md = fileServer->GetMetaData(item->file);
+    if(md != 0 && md->GetNumStates() > 1)
+    {              
+        fileListView->blockSignals(true);
+        bool useVirtualDBInfo = DisplayVirtualDBInformation(item->file);
+        for(int i = 0; i < md->GetNumStates(); ++i)
+        {
+            QvisListViewFileItem *fi = new QvisListViewFileItem(
+                item, CreateItemLabel(md, i, useVirtualDBInfo),
+                item->file, QvisListViewFileItem::FILE_NODE, i);
+            fi->setOpen(false);
+        }
+
+        // Set the database pixmap.
+        item->setPixmap(0, *databasePixmap);
+        fileListView->blockSignals(false);
+
+        // Remember that the item now has the correct information
+        // displayed through its children.
+        SetFileShowsCorrectData(item->file, true);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::ExpandDatabaseItemUsingVirtualDBDefinition
+//
+// Purpose: 
+//   Expands a database item as a virtual database when possible. Otherwise, if
+//   the virtual database has more time states than files, it is displayed
+//   as a database.
+//
+// Arguments:
+//   item : The item that gets expanded.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 29 12:23:37 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilePanel::ExpandDatabaseItemUsingVirtualDBDefinition(QvisListViewFileItem *item)
+{
+    if(DisplayVirtualDBInformation(item->file))
     {
         fileListView->blockSignals(true);
 
@@ -938,6 +1026,12 @@ QvisFilePanel::ExpandDatabaseItem(QvisListViewFileItem *item)
         // displayed through its children since we have not opened it yet.
         SetFileShowsCorrectData(item->file, false);
     }
+    else if(item->file.IsVirtual())
+    {
+        // The database is virtual but it must have more time states than
+        // files so we should expand it as a database.
+        ExpandDatabaseItemUsingMetaData(item);
+    }
 }
 
 // ****************************************************************************
@@ -949,6 +1043,8 @@ QvisFilePanel::ExpandDatabaseItem(QvisListViewFileItem *item)
 // Arguments:
 //   md : The metadata to use when computing the label.
 //   ts : The timestate to use when computing the label.
+//   useVirtualDBInformation : Whether or not to use virtual DB information
+//                             if it is available.
 //
 // Returns:    A string to use in the file panel to help display the file.
 //
@@ -958,18 +1054,22 @@ QvisFilePanel::ExpandDatabaseItem(QvisListViewFileItem *item)
 // Creation:   Mon Oct 13 15:42:17 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Dec 29 10:15:24 PDT 2003
+//   I added the useVirtualDBInformation argument so we can force this method
+//   to ignore the fact that a database may be virtual.
+//
 // ****************************************************************************
 
 QString
-QvisFilePanel::CreateItemLabel(const avtDatabaseMetaData *md, int ts)
+QvisFilePanel::CreateItemLabel(const avtDatabaseMetaData *md, int ts,
+    bool useVirtualDBInformation)
 {
     QString label;
 
     if(timeStateFormat.GetDisplayMode() == TimeFormat::Cycles)
     {
         int cycle = (ts < md->GetCycles().size()) ? md->GetCycles()[ts] : ts;
-        if(md->GetIsVirtualDatabase())
+        if(useVirtualDBInformation && md->GetIsVirtualDatabase())
         {
             QualifiedFilename name(md->GetTimeStepNames()[ts]);
             label = QString(name.filename.c_str()) +
@@ -983,7 +1083,7 @@ QvisFilePanel::CreateItemLabel(const avtDatabaseMetaData *md, int ts)
         double t = (ts < md->GetTimes().size()) ? md->GetTimes()[ts] : double(ts);
         bool   accurate = (ts < md->GetTimes().size()) ?
                           md->IsTimeAccurate(ts) : false;
-        if(md->GetIsVirtualDatabase())
+        if(useVirtualDBInformation && md->GetIsVirtualDatabase())
         {
             QualifiedFilename name(md->GetTimeStepNames()[ts]);
 
@@ -999,7 +1099,7 @@ QvisFilePanel::CreateItemLabel(const avtDatabaseMetaData *md, int ts)
         double t = (ts < md->GetTimes().size()) ? md->GetTimes()[ts] : double(ts);
         bool   accurate = (ts < md->GetTimes().size()) ?
                           md->IsTimeAccurate(ts) : false;
-        if(md->GetIsVirtualDatabase())
+        if(useVirtualDBInformation && md->GetIsVirtualDatabase())
         {
             QualifiedFilename name(md->GetTimeStepNames()[ts]);
 
@@ -1075,6 +1175,37 @@ QvisFilePanel::FormattedTimeString(const double t, bool accurate) const
         formatString.sprintf("%%.%dg", timeStateFormat.GetPrecision());
         retval.sprintf((const char *)formatString.latin1(), t);
     }
+    return retval;
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::DisplayVirtualDBInformation
+//
+// Purpose: 
+//   Returns whether or not we should display a virtual database as a
+//   virtual database. Sometimes, virtual databases have more states than
+//   files. In that case, we want to show them as databases instead of
+//   virtual databases.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 29 11:28:59 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+QvisFilePanel::DisplayVirtualDBInformation(const QualifiedFilename &file) const
+{
+    bool retval = true;
+
+    const avtDatabaseMetaData *md = fileServer->GetMetaData(file);
+    if(md != 0 && md->GetNumStates() > 1 && md->GetIsVirtualDatabase())
+    {
+        int nts = fileServer->GetVirtualFileDefinitionSize(file);
+        retval = (nts == md->GetNumStates());
+    }
+
     return retval;
 }
 
@@ -1645,6 +1776,29 @@ QvisFilePanel::AnimationSetFrame(int index, bool indexIsTimeState)
 //
 // Qt slot functions.
 //
+
+
+// ****************************************************************************
+// Method: QvisFilePanel::internalUpdateFileList
+//
+// Purpose: 
+//   Updates the file list.
+//
+// Note:       This method should only be called on a timer because updating
+//             the file list affects a lot of things.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec 19 17:02:15 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilePanel::internalUpdateFileList()
+{
+    UpdateFileList(true);
+}
 
 // ****************************************************************************
 // Method: QvisFilePanel::prevFrame
