@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+  <Plugin name="ANALYZE" type="database" label="ANALYZE" version="1.0" enabled="true" dbtype="STSD" haswriter="false">
+    <Extensions>
+      img
+      hdr
+    </Extensions>
+    <Files components="M">
+      avtANALYZEFileFormat.C
+      DSRObject.C
+    </Files>
+    <Files components="E">
+      avtANALYZEFileFormat.C
+      DSRObject.C
+    </Files>
+    <Attribute persistent="false">
+    </Attribute>
+  </Plugin>
