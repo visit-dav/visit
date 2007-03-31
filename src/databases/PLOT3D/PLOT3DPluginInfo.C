@@ -4,6 +4,10 @@
 
 #include <PLOT3DPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo PLOT3D_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

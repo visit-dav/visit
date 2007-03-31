@@ -6,6 +6,10 @@
 #include <SiloDumpAttributes.h>
 #include <QvisSiloDumpWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo SiloDump_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

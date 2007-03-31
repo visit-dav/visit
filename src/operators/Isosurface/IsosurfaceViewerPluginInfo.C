@@ -5,6 +5,10 @@
 #include <IsosurfacePluginInfo.h>
 #include <IsosurfaceAttributes.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo Isosurface_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

@@ -4,8 +4,10 @@
 
 #include <avtDatasetVerifier.h>
 
-#include <vtkFloatArray.h>
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
+#include <vtkFloatArray.h>
+#include <vtkPointData.h>
 
 #include <avtCallback.h>
 

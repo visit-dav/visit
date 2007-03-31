@@ -1,5 +1,9 @@
 #include <SpheralPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Spheral_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

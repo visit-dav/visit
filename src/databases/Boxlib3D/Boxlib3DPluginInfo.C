@@ -4,6 +4,14 @@
 
 #include <Boxlib3DPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Makefile_GetGeneralInfo
+#endif
+
+#if defined(__APPLE__)
+#define GetGeneralInfo Boxlib3D_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

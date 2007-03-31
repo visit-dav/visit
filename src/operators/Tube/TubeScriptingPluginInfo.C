@@ -4,6 +4,10 @@
 #include <TubePluginInfo.h>
 #include <PyTubeAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Tube_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

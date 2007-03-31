@@ -9,6 +9,7 @@
 #endif
 #include <GL/gl.h>
 
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkCamera.h>

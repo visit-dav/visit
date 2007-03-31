@@ -4,6 +4,14 @@
 #include <LineoutPluginInfo.h>
 #include <PyLineoutAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Makefile.in_GetScriptingInfo
+#endif
+
+#if defined(__APPLE__)
+#define GetScriptingInfo Lineout_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

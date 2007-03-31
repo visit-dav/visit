@@ -55,6 +55,7 @@ protected slots:
     void processHostText();
     void processFilenameText();
     void familyToggled(bool);
+    void stereoToggled(bool);
     void fileFormatChanged(int);
     void maintainAspectToggled(bool);
     void processWidthText();
@@ -68,6 +69,7 @@ private:
     QLineEdit           *hostLineEdit;
     QLineEdit           *filenameLineEdit;
     QCheckBox           *familyCheckBox;
+    QCheckBox           *stereoCheckBox;
     QComboBox           *fileFormatComboBox;
     QLabel              *qualityLabel;
     QSlider             *qualitySlider;

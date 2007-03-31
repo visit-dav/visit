@@ -58,6 +58,9 @@
 #    Hank Childs, Thu Nov 14 17:05:58 PST 2002
 #    Added avtSILMatrix.
 #
+#    Brad Whitlock, Tue Aug 5 9:38:34 PDT 2003
+#    I removed an old Silo dependency.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -81,11 +84,11 @@ SIL_src= \
   SIL/avtSILSet.C
 
 
-CPPFLAGS=@COMPONENT_CPPFLAGS@ @SILO_INCLUDE@ @CPPFLAGS@ 
+CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
 
 OBJ=$(SRC:.C=.o)
 LIB=libdbatts
-LIBS=-lavtexceptions -lstate -lutility -lmisc @SILO_LIB@
+LIBS=-lavtexceptions -lstate -lutility -lmisc
 
 ##
 ## Standard targets...

@@ -11,6 +11,7 @@
 
 #include <visit-config.h>
 
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkCamera.h>

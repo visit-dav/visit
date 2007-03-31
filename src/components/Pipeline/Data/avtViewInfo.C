@@ -34,6 +34,9 @@ avtViewInfo::avtViewInfo()
 //    Eric Brugger, Fri Jun  6 15:30:49 PDT 2003
 //    I added image pan and image zoom.
 //
+//    Hank Childs, Wed Oct 15 13:09:03 PDT 2003
+//    Added eye angle.
+//
 // ****************************************************************************
 
 avtViewInfo &
@@ -49,6 +52,7 @@ avtViewInfo::operator=(const avtViewInfo &vi)
     viewUp[1]    = vi.viewUp[1];
     viewUp[2]    = vi.viewUp[2];
     viewAngle    = vi.viewAngle;
+    eyeAngle     = vi.eyeAngle;
     parallelScale= vi.parallelScale;
     setScale     = vi.setScale;
     orthographic = vi.orthographic;
@@ -75,6 +79,9 @@ avtViewInfo::operator=(const avtViewInfo &vi)
 //    Eric Brugger, Fri Jun  6 15:30:49 PDT 2003
 //    I added image pan and image zoom.
 //
+//    Hank Childs, Wed Oct 15 13:09:03 PDT 2003
+//    Added eye angle.
+//
 // ****************************************************************************
 
 bool
@@ -99,6 +106,11 @@ avtViewInfo::operator==(const avtViewInfo &vi)
     }
 
     if (viewAngle != vi.viewAngle)
+    {
+        return false;
+    }
+
+    if (eyeAngle != vi.eyeAngle)
     {
         return false;
     }
@@ -141,6 +153,9 @@ avtViewInfo::operator==(const avtViewInfo &vi)
 //    Eric Brugger, Fri Jun  6 15:30:49 PDT 2003
 //    I added image pan and image zoom.
 //
+//    Hank Childs, Wed Oct 15 13:09:03 PDT 2003
+//    Added eye angle.
+//
 // ****************************************************************************
 
 void
@@ -156,6 +171,7 @@ avtViewInfo::SetToDefault()
     viewUp[1]    =  1.;
     viewUp[2]    =  0.;
     viewAngle    = 30.;
+    eyeAngle     = 2.;
     setScale     = false;
     parallelScale= 1.;
     nearPlane    = 0.001;
@@ -175,6 +191,11 @@ avtViewInfo::SetToDefault()
 //  Programmer:  Kathleen Bonnell
 //  Creation:    January 04, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Oct 15 13:09:03 PDT 2003
+//    Added eye angle.
+//
 // ****************************************************************************
 
 void
@@ -190,6 +211,7 @@ avtViewInfo::SetViewFromCamera(vtkCamera *vtkcam)
     farPlane  = clipRange[1];
 
     viewAngle = vtkcam->GetViewAngle();
+    eyeAngle  = vtkcam->GetEyeAngle();
     parallelScale = vtkcam->GetParallelScale();
     orthographic = (vtkcam->GetParallelProjection() != 0 ? true : false);
 }
@@ -212,12 +234,16 @@ avtViewInfo::SetViewFromCamera(vtkCamera *vtkcam)
 //    I modified the call to SetWindowCenter since the meaning of its
 //    arguments changed.
 //
+//    Hank Childs, Wed Oct 15 13:09:03 PDT 2003
+//    Added eye angle.
+//
 // ****************************************************************************
 
 void
 avtViewInfo::SetCameraFromView(vtkCamera *vtkcam) const
 {
     vtkcam->SetViewAngle(viewAngle);
+    vtkcam->SetEyeAngle(eyeAngle);
     if (setScale)
     {
         vtkcam->SetParallelScale(parallelScale);

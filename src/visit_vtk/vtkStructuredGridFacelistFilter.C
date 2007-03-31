@@ -1,6 +1,9 @@
-#include <vtkStructuredGridFacelistFilter.h>
+#include "vtkStructuredGridFacelistFilter.h"
 
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
 #include <vtkObjectFactory.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkStructuredGrid.h>
 

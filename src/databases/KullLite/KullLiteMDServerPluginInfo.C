@@ -1,5 +1,9 @@
 #include <KullLitePluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetMDServerInfo KullLite_GetMDServerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //

@@ -6,6 +6,10 @@
 #include <ThreeSliceAttributes.h>
 #include <QvisThreeSliceWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo ThreeSlice_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

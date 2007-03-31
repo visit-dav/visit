@@ -5,6 +5,10 @@
 #include <SurfacePluginInfo.h>
 #include <avtSurfacePlot.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Surface_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

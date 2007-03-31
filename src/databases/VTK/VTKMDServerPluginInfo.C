@@ -1,5 +1,9 @@
 #include <VTKPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetMDServerInfo VTK_GetMDServerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //

@@ -4,6 +4,10 @@
 
 #include <Point3DPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Point3D_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

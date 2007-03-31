@@ -5,6 +5,10 @@
 #include <PseudocolorPluginInfo.h>
 #include <avtPseudocolorPlot.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo Pseudocolor_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

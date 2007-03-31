@@ -1,5 +1,9 @@
 #include <STLPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo STL_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

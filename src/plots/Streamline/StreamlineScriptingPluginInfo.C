@@ -4,6 +4,10 @@
 #include <StreamlinePluginInfo.h>
 #include <PyStreamlineAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Streamline_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

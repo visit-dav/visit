@@ -3,10 +3,13 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <TimingsManager.h>
+#include <vtkCellArray.h>
+#include <vtkCellType.h>
 #include <vtkDataSet.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
+
 
 // ****************************************************************************
 //  Method: MIRConnectivity constructor

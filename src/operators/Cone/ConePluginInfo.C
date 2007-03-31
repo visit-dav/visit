@@ -5,6 +5,10 @@
 #include <ConePluginInfo.h>
 #include <ConeAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Cone_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

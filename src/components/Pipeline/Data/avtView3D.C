@@ -41,6 +41,9 @@ avtView3D::avtView3D()
 //    Eric Brugger, Fri Jun  6 15:24:17 PDT 2003
 //    I added image pan and image zoom.
 //
+//    Hank Childs, Wed Oct 15 13:05:33 PDT 2003
+//    Added eye angle.
+//
 // ****************************************************************************
 
 avtView3D &
@@ -63,6 +66,7 @@ avtView3D::operator=(const avtView3D &vi)
     imagePan[1]   = vi.imagePan[1];
     imageZoom     = vi.imageZoom;
     perspective   = vi.perspective;
+    eyeAngle      = vi.eyeAngle;
 
     return *this;
 }
@@ -79,6 +83,9 @@ avtView3D::operator=(const avtView3D &vi)
 //  Modifications:
 //    Eric Brugger, Fri Jun  6 15:24:17 PDT 2003
 //    I added image pan and image zoom.
+//
+//    Hank Childs, Wed Oct 15 13:05:33 PDT 2003
+//    Added eye angle.
 //
 // ****************************************************************************
 
@@ -106,7 +113,8 @@ avtView3D::operator==(const avtView3D &vi)
     if (viewAngle != vi.viewAngle || parallelScale != vi.parallelScale ||
         nearPlane != vi.nearPlane || farPlane != vi.farPlane ||
         imagePan[0] != vi.imagePan[0] || imagePan[1] != vi.imagePan[1] ||
-        imageZoom != vi.imageZoom || perspective != vi.perspective)
+        imageZoom != vi.imageZoom || perspective != vi.perspective ||
+        eyeAngle != vi.eyeAngle)
     {
         return false;
     }
@@ -132,6 +140,9 @@ avtView3D::operator==(const avtView3D &vi)
 //    Eric Brugger, Fri Jun  6 15:24:17 PDT 2003
 //    I added image pan and image zoom.
 //
+//    Hank Childs, Wed Oct 15 13:05:33 PDT 2003
+//    Added eye angle.
+//
 // ****************************************************************************
 
 void
@@ -153,6 +164,7 @@ avtView3D::SetToDefault()
     imagePan[0]   = 0.;
     imagePan[1]   = 0.;
     imageZoom     = 1.;
+    eyeAngle      = 2.0;
     perspective   = false;
 }
 
@@ -191,6 +203,9 @@ avtView3D::SetToDefault()
 //    Eric Brugger, Fri Jun  6 15:24:17 PDT 2003
 //    I added image pan and image zoom.
 //
+//    Hank Childs, Wed Oct 15 13:05:33 PDT 2003
+//    Added eye angle.
+//
 // ****************************************************************************
 
 void
@@ -222,6 +237,8 @@ avtView3D::SetViewInfoFromView(avtViewInfo &viewInfo) const
     viewInfo.focus[0] = focus[0];
     viewInfo.focus[1] = focus[1];
     viewInfo.focus[2] = focus[2];
+
+    viewInfo.eyeAngle = eyeAngle;
 
     distance = parallelScale / tan(viewAngle * 3.1415926535 / 360.);
     viewInfo.camera[0] = focus[0] + normal2[0] * distance;
@@ -272,6 +289,9 @@ avtView3D::SetViewInfoFromView(avtViewInfo &viewInfo) const
 //    Eric Brugger, Wed Aug 20 09:39:11 PDT 2003
 //    I renamed this routine.
 //   
+//    Hank Childs, Wed Oct 15 13:05:33 PDT 2003
+//    Added eye angle.
+//
 // ****************************************************************************
 
 void
@@ -292,6 +312,7 @@ avtView3D::SetFromView3DAttributes(const View3DAttributes *view3DAtts)
     imagePan[1] = view3DAtts->GetImagePan()[1];
     imageZoom = view3DAtts->GetImageZoom();
     perspective = view3DAtts->GetPerspective();
+    eyeAngle = view3DAtts->GetEyeAngle();
 }
 
 // ****************************************************************************
@@ -310,6 +331,9 @@ avtView3D::SetFromView3DAttributes(const View3DAttributes *view3DAtts)
 //    Eric Brugger, Wed Aug 20 09:39:11 PDT 2003
 //    I renamed this routine.
 //   
+//    Hank Childs, Wed Oct 15 13:05:33 PDT 2003
+//    Added eye angle.
+//
 // ****************************************************************************
 
 void
@@ -325,4 +349,5 @@ avtView3D::SetToView3DAttributes(View3DAttributes *view3DAtts) const
     view3DAtts->SetImagePan(imagePan);
     view3DAtts->SetImageZoom(imageZoom);
     view3DAtts->SetPerspective(perspective);
+    view3DAtts->SetEyeAngle(eyeAngle);
 }

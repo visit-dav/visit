@@ -4,12 +4,16 @@
 
 #include <avtLocateCellQuery.h>
 
+#include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkVisItCellLocator.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkRectilinearGrid.h>
-#include <vtkVisItUtility.h>
 #include <vtkMath.h>
+#include <vtkPoints.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkVisItCellLocator.h>
+#include <vtkVisItUtility.h>
+
 #include <DebugStream.h>
 
 #include <math.h>

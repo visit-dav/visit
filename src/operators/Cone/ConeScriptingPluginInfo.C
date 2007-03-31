@@ -4,6 +4,10 @@
 #include <ConePluginInfo.h>
 #include <PyConeAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Cone_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

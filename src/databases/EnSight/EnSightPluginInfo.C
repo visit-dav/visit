@@ -4,6 +4,10 @@
 
 #include <EnSightPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo EnSight_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

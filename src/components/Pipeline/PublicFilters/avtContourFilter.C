@@ -8,8 +8,10 @@
 #include <float.h>
 #include <vector>
 
+#include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
 #include <vtkFloatArray.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkVisItContourFilter.h>

@@ -4,6 +4,7 @@
 
 #include <avtBase10LogFilter.h>
 
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
 
 #include <ExpressionException.h>

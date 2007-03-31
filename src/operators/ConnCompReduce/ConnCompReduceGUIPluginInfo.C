@@ -6,6 +6,10 @@
 #include <ConnCompReduceAttributes.h>
 #include <QvisConnCompReduceWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo ConnCompReduce_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

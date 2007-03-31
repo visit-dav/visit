@@ -5,6 +5,10 @@
 #include <InverseGhostZonePluginInfo.h>
 #include <InverseGhostZoneAttributes.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo InverseGhostZone_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

@@ -6,6 +6,10 @@
 #include <IsosurfaceAttributes.h>
 #include <QvisIsosurfaceWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Isosurface_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

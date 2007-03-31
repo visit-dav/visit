@@ -1,5 +1,9 @@
 #include <Point3DPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetMDServerInfo Point3D_GetMDServerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //

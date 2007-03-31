@@ -6,6 +6,10 @@
 #include <TensorAttributes.h>
 #include <QvisTensorPlotWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Tensor_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

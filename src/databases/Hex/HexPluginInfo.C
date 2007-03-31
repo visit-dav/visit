@@ -4,6 +4,10 @@
 
 #include <HexPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Hex_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

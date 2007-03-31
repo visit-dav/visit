@@ -311,7 +311,7 @@ dnl    Sean Ahern, Mon Jun 10 16:20:48 PDT 2002
 dnl    Added make-targets-dir so that we can get rid of a lot of rules.
 dnl
 dnl    Jeremy Meredith, Fri Jul 12 14:35:08 PDT 2002
-dnl    Unified the include file locations to the root /include/ tree.
+dnl    Unified the include file locations to the root /include tree.
 dnl    This includes mesa, qt, vtk, and visit.  Also linked moc to our
 dnl    private bin directory and used it there.  Added makefiles for our
 dnl    root include and bin directories.  Added check for ios::noreplace.
@@ -412,6 +412,10 @@ dnl
 dnl    Brad Whitlock, Fri May 2 15:06:12 PST 2003
 dnl    I added libproxybase and the new launcher component.
 dnl
+dnl    Sean Ahern, Fri Aug  9 15:52:39 PDT 2002
+dnl    Made UNAME be run as few times as possible.  Removed the memmove
+dnl    test, as we weren't using it.  Added Darwin (Mac OS X) support.
+dnl
 dnl    Sean Ahern, Wed Jun 11 16:36:52 PDT 2003
 dnl    Fixed pthreads test.
 dnl
@@ -444,6 +448,9 @@ dnl    Added tools/convert.
 dnl
 dnl    Jeremy Meredith, Fri Oct 10 12:32:27 PDT 2003
 dnl    Added check for 3D texturing support in OpenGL.
+dnl
+dnl    Brad Whitlock, Wed Sep 3 10:55:28 PDT 2003
+dnl    Added more Darwin support and added logic to create bundles.
 dnl
 dnl --------------------------------------------------------------------------
 
@@ -494,8 +501,10 @@ AC_DEFINE_UNQUOTED(SLASH_CHAR,'/')
 AC_DEFINE_UNQUOTED(SLASH_STRING,"/")
 
 # Load the OS configuration file if present.
+UNAME="`uname 2>/dev/null`"
+SHORT_UNAME=`uname -s | tr A-Z a-z | tr -d 0-9`
 AC_MSG_CHECKING(for OS configuration file)
-site_conf=config-site/`uname`.conf
+site_conf=config-site/$UNAME.conf
 if test -r $site_conf; then
     AC_MSG_RESULT($site_conf)
     . $site_conf
@@ -592,7 +601,7 @@ if test "$UseParallel" = "yes"; then
    LIBSHAREDPAR="$""(LIBSHAREDPAR)"
    LIBSHAREDPAR_UPDATEONLY="libsharedpar_updateonly"
 
-   if test "`uname 2>/dev/null`" != "AIX"; then
+   if test "$UNAME" != "AIX"; then
        if (test -z "$MPI_LIBS") then
            MPI_LIBS="-lmpi"
        fi
@@ -687,15 +696,26 @@ if test -n "$VTK"; then
     VTK_INCROOT="$""(TOPDIR)/include/vtk"
     VTK_INCLUDES="-I$VTK_INCROOT -I$VTK_INCROOT/Common -I$VTK_INCROOT/Filtering -I$VTK_INCROOT/Graphics -I$VTK_INCROOT/Hybrid -I$VTK_INCROOT/IO -I$VTK_INCROOT/Imaging -I$VTK_INCROOT/Rendering"
     VTK_LIBS="-lvtkCommon -lvtkFiltering -lvtkGraphics -lvtkHybrid -lvtkIO -lvtkImaging -lvtkRendering -lvtkzlib -lvtkexpat -lvtkjpeg -lvtkpng -lvtktiff -lvtkftgl -lvtkfreetype $GL_LIBS $MESA_LIBS"
+
+    # If we're on Darwin, we took VisIt's vtkCamera and built it into the VTK library so
+    # we don't want to put it into the visit_vtk library or else we'll get duplicate
+    # symbols, which is fatal on Darwin because we use a flat namespace.
+    if test "$SHORT_UNAME" = "darwin"; then
+        VTK_CAMERA_SRC=""
+    else
+        VTK_CAMERA_SRC="vtkCamera.C"
+    fi
 else
     AC_MSG_RESULT(not found)
     VTK_DIR=""
     VTK_INCLUDES=""
     VTK_LIBS=""
+    VTK_CAMERA_SRC=""
 fi
 AC_SUBST(VTK_DIR)
 AC_SUBST(VTK_INCLUDES)
 AC_SUBST(VTK_LIBS)
+AC_SUBST(VTK_CAMERA_SRC)
 
 #
 # Check for the common directory
@@ -920,6 +940,7 @@ else
     AC_MSG_RESULT(no)
     enable_gui=no
     ENGINEPROXYDIR=""
+    GUI_CXXFLAGS=""
 fi
 AC_SUBST(GUI)
 AC_SUBST(GUILIB)
@@ -1134,7 +1155,7 @@ if test "$USE_PTY" = "yes"; then
 
     # Check for SYSV versus BSD style pseudo-ttys
     AC_MSG_CHECKING(for SYSV vs BSD style ptys)
-    if test "`uname 2>/dev/null`" = "Linux" || test "`uname 2>/dev/null`" = "AIX"; then
+    if test "$UNAME" = "Linux" || test "$UNAME" = "AIX"; then
         AC_MSG_RESULT(BSD)
     else
         AC_TRY_LINK([#include <stdlib.h>], grantpt(0),
@@ -1146,10 +1167,10 @@ if test "$USE_PTY" = "yes"; then
 fi
 
 #
-# We only need to check for -ldl if we're on SunOS or linux.
+# Check for -ldl if we're on SunOS or linux.
 #
 AC_MSG_CHECKING(for Linux and -ldl)
-if test "`uname 2>/dev/null`" = "Linux" || test "`uname 2>/dev/null`" = "SunOS"; then
+if test "$UNAME" = "Linux" || test "$UNAME" = "SunOS"; then
     AC_CHECK_LIB(dl, main,   LIBS="-ldl $LIBS")
 else
     AC_MSG_RESULT(no)
@@ -1159,19 +1180,19 @@ fi
 # We need to check for the networking libraries on SunOS
 #
 AC_MSG_CHECKING(for SunOS and -lnsl)
-if test "`uname 2>/dev/null`" = "SunOS"; then
+if test "$UNAME" = "SunOS"; then
     AC_CHECK_LIB(nsl, main,   LIBS="-lnsl $LIBS")
 else
     AC_MSG_RESULT(no)
 fi
 AC_MSG_CHECKING(for SunOS and -lsocket)
-if test "`uname 2>/dev/null`" = "SunOS"; then
+if test "$UNAME" = "SunOS"; then
     AC_CHECK_LIB(socket, main,   LIBS="-lsocket $LIBS")
 else
     AC_MSG_RESULT(no)
 fi
 AC_MSG_CHECKING(for SunOS and -lresolv)
-if test "`uname 2>/dev/null`" = "SunOS"; then
+if test "$UNAME" = "SunOS"; then
     AC_CHECK_LIB(resolv, main,   LIBS="-lresolv $LIBS")
 else
     AC_MSG_RESULT(no)
@@ -1620,17 +1641,25 @@ AC_ARG_WITH(silo_library,
 AC_MSG_CHECKING(for SILO library)
 if test -n "$silo_library"; then
     SILO_LIB="-L`echo $silo_library|sed 's/  */ -L/g'` -lsilo"
+    SILO_LIBDIR="$silo_library"
     AC_MSG_RESULT(user specified ("$SILO_LIB"))
 else
+    dnl On Darwin, we build Silo as a shared library.
+    if test "$SHORT_UNAME" = "darwin"; then
+        LIBSILO="libsilo.dylib"
+    else
+        LIBSILO="libsilo.a"
+    fi
+
     dnl
     dnl Look for the SILO library. First chech to see if the DEFAULT_SILO_LIBRARY
     dnl environment variable is set. If it is then try to use that SILO lib.
     dnl
     silo_keep_checking="yes"
     if test -n "$DEFAULT_SILO_LIBRARY"; then
-        if test -r "$DEFAULT_SILO_LIBRARY/libsilo.a"; then
-            SILO_LIB="-L$DEFAULT_SILO_LIBRARY -lsilo"
-            AC_MSG_RESULT(user specified ("$SILO_LIB"))
+        if test -r "$DEFAULT_SILO_LIBRARY/$LIBSILO"; then
+            SILO_LIBDIR="$DEFAULT_SILO_LIBRARY"
+            AC_MSG_RESULT(user specified ("$SILO_LIBDIR"))
             silo_keep_checking="no"
         fi
     fi
@@ -1640,22 +1669,25 @@ else
     dnl in some of the usual places.
     dnl
     if test "$silo_keep_checking" = "yes"; then
-        if test -r "/usr/local/apps/lib/libsilo.a"; then
-            SILO_LIB="-L/usr/local/apps/lib -lsilo"
-            AC_MSG_RESULT(using /usr/local/apps/lib/libsilo.a)
-        elif test -r "/usr/local/meshtv/lib/libsilo.a"; then
-            SILO_LIB="-L/usr/local/meshtv/lib -lsilo"
-            AC_MSG_RESULT(using /usr/local/meshtv/lib/libsilo.a)
-        elif test -r "/usr/local/apps/meshtv/lib/libsilo.a"; then
-            SILO_LIB="-L/usr/local/apps/meshtv/lib -lsilo"
-            AC_MSG_RESULT(using /usr/local/apps/meshtv/lib/libsilo.a)
+        if test -r "/usr/local/apps/lib/$LIBSILO"; then
+            SILO_LIBDIR="/usr/local/apps/lib"
+            AC_MSG_RESULT(using /usr/local/apps/lib/$LIBSILO)
+        elif test -r "/usr/local/meshtv/lib/$LIBSILO"; then
+            SILO_LIBDIR="/usr/local/meshtv/lib"
+            AC_MSG_RESULT(using /usr/local/meshtv/lib/$LIBSILO)
+        elif test -r "/usr/local/apps/meshtv/lib/$LIBSILO"; then
+            SILO_LIBDIR="/usr/local/apps/meshtv/lib"
+            AC_MSG_RESULT(using /usr/local/apps/meshtv/lib/$LIBSILO)
         else
             AC_MSG_ERROR([The SILO library could not be found. Please provide
     --with-silo-library=directory and rerun 'configure'.])
         fi
     fi
+
+    SILO_LIB="-L$SILO_LIBDIR -lsilo"
 fi
 AC_SUBST(SILO_LIB)
+AC_SUBST(SILO_LIBDIR)
 
 dnl
 dnl Check for exodus libraries
@@ -2005,9 +2037,10 @@ if test "$enable_gui" = "yes"; then
     QtGlobalInc="$QTDIR/include/qglobal.h"
 
     if test -f $QtGlobalInc; then
-        ## Check for appropriate versions of Qt (future, 3.0.x, 2.3.x)
-	for ver in  3.0.4  3.0.3               \
-                    3.0.2  3.0.1  3.0.0        \
+        ## Check for supported versions of Qt.
+	for ver in  3.2.0  \
+                    3.1.2  3.1.1  3.1.0 \
+                    3.0.4  3.0.3  3.0.2  3.0.1  3.0.0 \
                     2.3.2  2.3.1  2.3.0 ; do
             QtVer=`grep $ver $QtGlobalInc`
             if test -n "$QtVer"; then
@@ -2033,7 +2066,10 @@ if test "$enable_gui" = "yes"; then
         QT_STATICLDFLAGS=-L$QTDIR/lib
     fi
     AC_SUBST(QT_STATICLDFLAGS)
-    QT_CXXFLAGS="-I$""(TOPDIR)/include/qt $QT_CXXFLAGS"
+    if test "$SHORT_UNAME" = "darwin"; then
+        QTMAC_FLAGS="-DMACOSX_102"
+    fi
+    QT_CXXFLAGS="-I$""(TOPDIR)/include/qt $QT_CXXFLAGS $QTMAC_FLAGS"
     AC_SUBST(QT_CXXFLAGS)
     QT_MOC="$""(TOPDIR)/bin/moc"
     AC_SUBST(QT_MOC)
@@ -2104,9 +2140,13 @@ elif test "$x_libraries" != NONE; then
 fi
 
 #
-# Is the X library available?
+# Is the X library available if we need it?
 #
-AC_CHECK_LIB(X11,  main, X_LIBS="-lX11 $X_LIBS"         ,,$X_LIBS)
+if test "$no_x" != "yes"; then
+    AC_CHECK_LIB(X11,  main, X_LIBS="-lX11 $X_LIBS"         ,,$X_LIBS)
+else
+    X_LIBS=""
+fi
 AC_SUBST(X_LIBS)
 
 #
@@ -2166,27 +2206,18 @@ if test "$enable_scripting" = "yes"; then
     PY_LIB="-l$PYVERSION"
     PY_CLI_LIB="$PY_LIB -lpthread"
 
-    os=`/bin/uname -s | tr "[[A-Z]]" "[[a-z]]" | tr -d "[[0-9]]"`
-    case $os in
-##        aix)
-##            PY_LIB="-l$PYVERSION -lpthread"
-##            PY_CLI_LIB=""
-##            ;;
+    case $SHORT_UNAME in
         linux)
             PY_CLI_LIB="$PY_CLI_LIB -lutil"
-##            PY_LIB=""
             ;;
-##        *)
-##            PY_LIB=""
-##            ;;
+        darwin)
+            PY_INCLUDEDIR="$PYDIR/Python.framework/Headers"
+            PY_CXXFLAGS="-Wno-long-double -I$PY_INCLUDEDIR"
+            PY_LDFLAGS="-F$PYDIR"
+            PY_LIB="-framework Python"
+            PY_CLI_LIB=""
+            ;;
     esac
-
-##    if test "$os" = "aix"; then
-##        PY_LIB="-l$PYVERSION -lpthread"
-##        PY_CLI_LIB=""
-##    else
-##        PY_LIB=""
-##    fi
 else
     PYDIR=""
     PYVERSION=""
@@ -2244,8 +2275,8 @@ fi
 #
 # Figure out how to create shared libraries
 #
-os=`/bin/uname -s | tr "[[A-Z]]" "[[a-z]]" | tr -d "[[0-9]]"`
-case $os in
+CREATE_SILO_LINK=""
+case $SHORT_UNAME in
   irix)
     # Both g++ and CC use this
     if test -z "$SHLIB_CREATEPROG"; then
@@ -2292,6 +2323,25 @@ case $os in
         SHLIB_CREATEPROG="$""(CXX) -shared -o"
     fi
     ;;
+
+  darwin)
+    # Expecting g++
+    if test -z "$SHLIB_CREATEPROG"; then
+        SHLIB_CREATEPROG="$""(CXX) -dynamiclib -flat_namespace -undefined suppress -o"
+    fi
+    if test -z "$SHLIB_SOEXT"; then SHLIB_SOEXT="dylib"; fi
+    if test -z "$SHLIB_LIBEXT"; then SHLIB_LIBEXT="dylib"; fi
+    # Set the post processing step to something really useless because we
+    # don't need a postprocessing step since we're going to build directly
+    # in the lib directory.
+    SHLIB_POSTPROCESS="@echo Built library!"
+    SHLIB_POSTPROCESS_SER="@echo Built library!"
+    SHLIB_POSTPROCESS_PAR="@echo Built library!"
+    # Set SHLIB_TMPDIR so that libraries are created directly in the lib directory.
+    SHLIB_TMPDIR="$""(TOPDIR)/lib/"
+    SHLIB_LIBS="$""(LIBS)"
+    CREATE_SILO_LINK="create_silo_link"
+    ;;
 esac
 # Set up the defaults
 if test -z "$SHLIB_LIBS"           ; then SHLIB_LIBS=""; fi
@@ -2328,6 +2378,8 @@ AC_SUBST(SHLIB_LIBEXT)
 AC_SUBST(SHLIB_POSTPROCESS)
 AC_SUBST(SHLIB_POSTPROCESS_SER)
 AC_SUBST(SHLIB_POSTPROCESS_PAR)
+AC_SUBST(SHLIB_TMPDIR)
+AC_SUBST(CREATE_SILO_LINK)
 
 AC_DEFINE_UNQUOTED(PLUGIN_EXTENSION, ".${SHLIB_SOEXT}" )
 
@@ -2388,6 +2440,13 @@ if test "`${MAKE-make} --version -f /dev/null 2>/dev/null|sed -n 1p|cut -c1-8`" 
    AC_MSG_RESULT(yes)
    if test -n "$GCC"; then
       SOURCE_DEPENDENCIES=include/make-depend-gnu
+      # Darwin's gcc doesn't understand the -MG flag.
+      if test "$UNAME" = "Darwin"; then
+         MG=""
+      else
+         MG="-MG"
+      fi
+      AC_SUBST(MG)
    elif test -n "$MAKEDEPEND"; then
       SOURCE_DEPENDENCIES=include/make-depend-std
    else
@@ -2580,6 +2639,12 @@ AC_OUTPUT($STANDARD_FILES
 (cd include   && ${MAKE-make})
 (cd lib       && ${MAKE-make})
 (cd tools/xml && ${MAKE-make} $TOPDIR/bin/xml2makefile)
+
+# If we 're on a Darwin system, make bundles for the gui and the viewer.
+if test "$SHORT_UNAME" = "darwin";  then
+    clearcase_bin/makebundles
+fi
+
 (cd plots     && ${MAKE-make} dirmakefiles)
 (cd operators && ${MAKE-make} dirmakefiles)
 (cd databases && ${MAKE-make} dirmakefiles)

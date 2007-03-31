@@ -1,18 +1,19 @@
 #include "vtkVisItClipper3D.h"
-#include "vtkFloatArray.h"
 #include <vtkAppendFilter.h>
+#include <vtkCellData.h>
+#include <vtkClipDataSet.h>
 #include <vtkCutter.h>
+#include <vtkFloatArray.h>
 #include <vtkImplicitFunction.h>
-#include <vtkPlane.h>
-#include <vtkPolyData.h>
-#include <vtkDataSet.h>
 #include <vtkObjectFactory.h>
-#include <vtkVolumeFromVolume.h>
+#include <vtkPlane.h>
+#include <vtkPointData.h>
+#include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkClipDataSet.h>
-#include <vtkDataSetWriter.h>
+#include <vtkVolumeFromVolume.h>
+
 #include <ImproperUseException.h>
 
 #include <DebugStream.h>

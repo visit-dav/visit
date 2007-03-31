@@ -4,6 +4,10 @@
 #include <SphereSlicePluginInfo.h>
 #include <PySphereSliceAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo SphereSlice_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

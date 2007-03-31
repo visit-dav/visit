@@ -6,6 +6,7 @@
 
 #include <float.h>
 
+#include <vtkCell.h>
 #include <vtkFloatArray.h>
 #include <vtkMath.h>
 #include <vtkMatrix4x4.h>

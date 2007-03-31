@@ -5,6 +5,10 @@
 #include <ThreeSlicePluginInfo.h>
 #include <avtThreeSliceFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo ThreeSlice_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

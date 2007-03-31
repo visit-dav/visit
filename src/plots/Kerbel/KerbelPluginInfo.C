@@ -5,6 +5,14 @@
 #include <KerbelPluginInfo.h>
 #include <KerbelAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Makefile.in_GetGeneralInfo
+#endif
+
+#if defined(__APPLE__)
+#define GetGeneralInfo Kerbel_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

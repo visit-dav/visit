@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 
+#include <vtkCellType.h>
 #include <vtkFloatArray.h>
 #include <vtkUnstructuredGrid.h>
 

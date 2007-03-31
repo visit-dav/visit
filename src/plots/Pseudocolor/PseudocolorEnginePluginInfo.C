@@ -5,6 +5,10 @@
 #include <PseudocolorPluginInfo.h>
 #include <avtPseudocolorPlot.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Pseudocolor_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

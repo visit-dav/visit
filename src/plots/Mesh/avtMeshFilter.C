@@ -4,13 +4,15 @@
 
 #include <avtMeshFilter.h>
 
+#include <vtkAppendPolyData.h>
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
+#include <vtkDataSetRemoveGhostCells.h>
+#include <vtkExtractEdges.h>
 #include <vtkGeometryFilter.h>
 #include <vtkLinesFromOriginalCells.h>
-#include <vtkUniqueFeatureEdges.h>
 #include <vtkPolyData.h>
-#include <vtkExtractEdges.h>
-#include <vtkDataSetRemoveGhostCells.h>
-#include <vtkAppendPolyData.h>
+#include <vtkUniqueFeatureEdges.h>
 
 #include <ImproperUseException.h>
 #include <DebugStream.h>

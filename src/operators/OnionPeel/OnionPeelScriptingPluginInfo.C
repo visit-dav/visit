@@ -4,6 +4,10 @@
 #include <OnionPeelPluginInfo.h>
 #include <PyOnionPeelAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo OnionPeel_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

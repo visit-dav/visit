@@ -4,7 +4,9 @@
 
 #include <avtDisplaceFilter.h>
 
+#include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
+#include <vtkPointData.h>
 #include <vtkPointSet.h>
 #include <vtkWarpVector.h>
 

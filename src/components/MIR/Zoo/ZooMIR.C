@@ -3,10 +3,15 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <TimingsManager.h>
+
 #include <avtMaterial.h>
 #include <avtMixedVariable.h>
+#include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetFromVolume.h>
+#include <vtkIntArray.h>
+#include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
@@ -215,33 +220,50 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 20, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Oct 15 16:47:49 PDT 2003
+//    Allowed a material to get passed in.  This is completely optional and
+//    used only for cleanZonesOnly.  Also updated cleanZonesOnly to not only
+//    return the mixed zones as clean zones (with a material index one beyond
+//    the number of materials), but for the cleanZonesOnly support to be
+//    smart about which mixed zones to return.
+//
 // ****************************************************************************
 vtkDataSet *
 ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
-                   std::vector<avtMixedVariable*> mixvars, bool doMats)
+                   std::vector<avtMixedVariable*> mixvars, bool doMats,
+                   avtMaterial *mat)
 {
     int i, j, timerHandle = visitTimer->StartTimer();
+    bool doAllMats = mats.empty();
 
     //
     // Start off by determining which materials we should reconstruct and
     // which we should leave out.
     //
-    bool *matFlag = new bool[nMaterials];
-    if (!mats.empty())
+    bool *matFlag = new bool[nMaterials+1];
+    if (!doAllMats)
     {
-        for (i = 0; i < nMaterials; i++)
+        for (i = 0; i < nMaterials+1; i++)
             matFlag[i] = false;
         for (i = 0; i < mats.size(); i++)
         {
             int origmatno = mats[i];
-            int usedmatno = mapMatToUsedMat[origmatno];
-            if (usedmatno != -1)
-                matFlag[usedmatno] = true;
+            if (origmatno == nMaterials)
+            {
+                matFlag[nMaterials] = true;
+            }
+            else
+            {
+                int usedmatno = mapMatToUsedMat[origmatno];
+                if (usedmatno != -1)
+                    matFlag[usedmatno] = true;
+            }
         }
     }
     else
     {
-        for (i = 0; i < nMaterials; i++)
+        for (i = 0; i < nMaterials+1; i++)
             matFlag[i] = true;
     }
 
@@ -253,11 +275,32 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     int *cellList = new int[ntotalcells];
     for (int c = 0; c < ntotalcells; c++)
     {
-        if (zonesList[c].mat >= 0 &&
-            matFlag[zonesList[c].mat])
+        int matno = zonesList[c].mat;
+        if (matno >= 0)
         {
-            cellList[ncells] = c;
-            ncells++;
+            if (matFlag[matno])
+                cellList[ncells++] = c;
+        }
+        else if (!mat)
+        {
+             if (matFlag[nMaterials])
+                 cellList[ncells++] = c;
+        }
+        else
+        {
+            bool match = false;
+            int  mixIndex = -matno - 1;
+            while (mixIndex >= 0 && !match)
+            {
+                matno = mat->GetMixMat()[mixIndex];
+
+                if (matFlag[matno])
+                    match = true;
+
+                mixIndex = mat->GetMixNext()[mixIndex] - 1;
+            }
+            if (match)
+                cellList[ncells++] = c;
         }
     }
 
@@ -410,7 +453,8 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
         int *buff = outmat->GetPointer(0);
         for (i=0; i<ncells; i++)
         {
-            buff[i] = mapUsedMatToMat[zonesList[cellList[i]].mat];
+            int matno = zonesList[cellList[i]].mat;
+            buff[i] = matno < 0 ? nMaterials : mapUsedMatToMat[matno];
         }
         rv->GetCellData()->AddArray(outmat);
         outmat->Delete();

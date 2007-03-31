@@ -5,8 +5,10 @@
 #include <avtRevolvedVolume.h>
 
 #include <float.h>
+#include <vtkCell.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
+#include <vtkPoints.h>
 
 #include <avtCallback.h>
 

@@ -5,6 +5,10 @@
 #include <SlicePluginInfo.h>
 #include <SliceAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Slice_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

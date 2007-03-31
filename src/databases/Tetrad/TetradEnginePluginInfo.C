@@ -1,5 +1,9 @@
 #include <TetradPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Tetrad_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

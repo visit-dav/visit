@@ -4,6 +4,10 @@
 
 #include <TimeVaryingExodusPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo TimeVaryingExodus_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

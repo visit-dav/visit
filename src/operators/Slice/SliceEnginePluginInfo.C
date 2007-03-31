@@ -5,6 +5,10 @@
 #include <SlicePluginInfo.h>
 #include <avtSliceFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Slice_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

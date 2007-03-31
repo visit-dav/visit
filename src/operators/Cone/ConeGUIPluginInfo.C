@@ -6,6 +6,10 @@
 #include <ConeAttributes.h>
 #include <QvisConeWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Cone_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

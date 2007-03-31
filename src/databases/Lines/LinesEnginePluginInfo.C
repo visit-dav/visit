@@ -1,5 +1,13 @@
 #include <LinesPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Makefile.in_GetEngineInfo
+#endif
+
+#if defined(__APPLE__)
+#define GetEngineInfo Lines_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

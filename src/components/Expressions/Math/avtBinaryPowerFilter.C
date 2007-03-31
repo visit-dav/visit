@@ -5,6 +5,7 @@
 #include <avtBinaryPowerFilter.h>
 
 #include <vtkDataArray.h>
+#include <vtkDataArray.h>
 
 #include <ExpressionException.h>
 

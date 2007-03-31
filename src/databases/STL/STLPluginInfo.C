@@ -4,6 +4,10 @@
 
 #include <STLPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo STL_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

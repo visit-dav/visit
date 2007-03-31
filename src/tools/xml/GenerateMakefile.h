@@ -2,6 +2,7 @@
 #define GENERATE_MAKEFILE_H
 
 #include "Field.h"
+#include <visit-config.h> // for the plugin extension.
 
 // ****************************************************************************
 //  File:  GenerateMakefile
@@ -73,6 +74,11 @@
 //
 //    Hank Childs, Tue Sep  9 10:04:41 PDT 2003
 //    Added support for file writers.
+//
+//    Brad Whitlock, Mon May 19 14:33:45 PST 2003
+//    I made it use the shared library extension from visit-config.h so it
+//    writes the plugins to the write filenames on MacOS X. I also changed
+//    the list of sources somewhat so plugins load without problems on the Mac.
 //
 //    Jeremy Meredith, Tue Sep 23 16:57:01 PDT 2003
 //    Changed haswriter to a bool.
@@ -217,7 +223,11 @@ class MakefileGeneratorPlugin
                     out << " " << wfiles[i];
             out << endl;
             out << "ISRC="<<name<<"PluginInfo.C" << endl;
-            out << "COMMONSRC="<<name<<"PluginInfo.C "<<name<<"CommonPluginInfo.C "<<atts->name<<".C" << endl;
+            out << "COMMONSRC=";
+#ifndef __APPLE__
+            out << name<<"PluginInfo.C ";
+#endif
+            out <<name<<"CommonPluginInfo.C "<<atts->name<<".C" << endl;
             out << "GSRC="<<name<<"GUIPluginInfo.C Qvis"<<name<<"Window.C";
             if (customgfiles)
                 for (int i=0; i<gfiles.size(); i++)
@@ -269,12 +279,12 @@ class MakefileGeneratorPlugin
             out << "ESERLIBS=-lpipeline_ser -ldbatts_ser -lavtexceptions_ser -lstate -lmisc -lvisit_vtk $(VTK_LIBS)" << endl;
             out << "EPARLIBS=-lpipeline_par -ldbatts_par -lavtexceptions_par -lstate -lmisc -lvisit_vtk $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
             out << "" << endl;
-            out << "IDSO="<<visitplugininstall<<"/operators/libI"<<name<<"Operator.so" << endl;
-            out << "GDSO="<<visitplugininstall<<"/operators/libG"<<name<<"Operator.so" << endl;
-            out << "SDSO="<<visitplugininstall<<"/operators/libS"<<name<<"Operator.so" << endl;
-            out << "VDSO="<<visitplugininstall<<"/operators/libV"<<name<<"Operator.so" << endl;
-            out << "ESERDSO="<<visitplugininstall<<"/operators/libE"<<name<<"Operator_ser.so" << endl;
-            out << "EPARDSO="<<visitplugininstall<<"/operators/libE"<<name<<"Operator_par.so" << endl;
+            out << "IDSO="<<visitplugininstall<<"/operators/libI"<<name<<"Operator" << PLUGIN_EXTENSION << endl;
+            out << "GDSO="<<visitplugininstall<<"/operators/libG"<<name<<"Operator" << PLUGIN_EXTENSION << endl;
+            out << "SDSO="<<visitplugininstall<<"/operators/libS"<<name<<"Operator" << PLUGIN_EXTENSION << endl;
+            out << "VDSO="<<visitplugininstall<<"/operators/libV"<<name<<"Operator" << PLUGIN_EXTENSION << endl;
+            out << "ESERDSO="<<visitplugininstall<<"/operators/libE"<<name<<"Operator_ser" << PLUGIN_EXTENSION << endl;
+            out << "EPARDSO="<<visitplugininstall<<"/operators/libE"<<name<<"Operator_par" << PLUGIN_EXTENSION << endl;
         }
         else if (type=="plot")
         {
@@ -284,7 +294,11 @@ class MakefileGeneratorPlugin
                     out << " " << wfiles[i];
             out << endl;
             out << "ISRC="<<name<<"PluginInfo.C" << endl;
-            out << "COMMONSRC="<<name<<"PluginInfo.C "<<name<<"CommonPluginInfo.C "<<atts->name<<".C" << endl;
+            out << "COMMONSRC=";
+#ifndef __APPLE__
+            out << name<<"PluginInfo.C ";
+#endif
+            out << name<<"CommonPluginInfo.C "<<atts->name<<".C" << endl;
             out << "GSRC="<<name<<"GUIPluginInfo.C Qvis"<<name<<"PlotWindow.C";
             if (customgfiles)
                 for (int i=0; i<gfiles.size(); i++)
@@ -337,18 +351,22 @@ class MakefileGeneratorPlugin
             out << "ESERLIBS=-lpipeline_ser -lplotter_ser -ldbatts_ser -lavtexceptions_ser -lstate -lmisc -lvisit_vtk $(VTK_LIBS)" << endl;
             out << "EPARLIBS=-lpipeline_par -lplotter_ser -ldbatts_par -lavtexceptions_par -lstate -lmisc -lvisit_vtk $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
             out << "" << endl;
-            out << "IDSO="<<visitplugininstall<<"/plots/libI"<<name<<"Plot.so" << endl;
-            out << "GDSO="<<visitplugininstall<<"/plots/libG"<<name<<"Plot.so" << endl;
-            out << "SDSO="<<visitplugininstall<<"/plots/libS"<<name<<"Plot.so" << endl;
-            out << "VDSO="<<visitplugininstall<<"/plots/libV"<<name<<"Plot.so" << endl;
-            out << "ESERDSO="<<visitplugininstall<<"/plots/libE"<<name<<"Plot_ser.so" << endl;
-            out << "EPARDSO="<<visitplugininstall<<"/plots/libE"<<name<<"Plot_par.so" << endl;
+            out << "IDSO="<<visitplugininstall<<"/plots/libI"<<name<<"Plot" << PLUGIN_EXTENSION << endl;
+            out << "GDSO="<<visitplugininstall<<"/plots/libG"<<name<<"Plot" << PLUGIN_EXTENSION << endl;
+            out << "SDSO="<<visitplugininstall<<"/plots/libS"<<name<<"Plot" << PLUGIN_EXTENSION << endl;
+            out << "VDSO="<<visitplugininstall<<"/plots/libV"<<name<<"Plot" << PLUGIN_EXTENSION << endl;
+            out << "ESERDSO="<<visitplugininstall<<"/plots/libE"<<name<<"Plot_ser" << PLUGIN_EXTENSION << endl;
+            out << "EPARDSO="<<visitplugininstall<<"/plots/libE"<<name<<"Plot_par" << PLUGIN_EXTENSION << endl;
         }
         else if (type=="database")
         {
             out << "WIDGETS=" << endl;
             out << "ISRC="<<name<<"PluginInfo.C" << endl;
-            out << "COMMONSRC="<<name<<"PluginInfo.C "<<name<<"CommonPluginInfo.C";
+            out << "COMMONSRC=";
+#ifndef __APPLE__
+            out << name<<"PluginInfo.C ";
+#endif
+            out << name<<"CommonPluginInfo.C";
             out << endl;
             out << "MSRC="<<name<<"MDServerPluginInfo.C";
             if (dbtype == "Custom")
@@ -402,10 +420,10 @@ class MakefileGeneratorPlugin
             out << "ESERLIBS=-lavtexceptions_ser -lvisit_vtk $(VTK_LIBS)" << endl;
             out << "EPARLIBS=-lavtexceptions_par -lvisit_vtk $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
             out << "" << endl;
-            out << "IDSO="<<visitplugininstall<<"/databases/libI"<<name<<"Database.so" << endl;
-            out << "MDSO="<<visitplugininstall<<"/databases/libM"<<name<<"Database.so" << endl;
-            out << "ESERDSO="<<visitplugininstall<<"/databases/libE"<<name<<"Database_ser.so" << endl;
-            out << "EPARDSO="<<visitplugininstall<<"/databases/libE"<<name<<"Database_par.so" << endl;
+            out << "IDSO="<<visitplugininstall<<"/databases/libI"<<name<<"Database" << PLUGIN_EXTENSION << endl;
+            out << "MDSO="<<visitplugininstall<<"/databases/libM"<<name<<"Database" << PLUGIN_EXTENSION << endl;
+            out << "ESERDSO="<<visitplugininstall<<"/databases/libE"<<name<<"Database_ser" << PLUGIN_EXTENSION << endl;
+            out << "EPARDSO="<<visitplugininstall<<"/databases/libE"<<name<<"Database_par" << PLUGIN_EXTENSION << endl;
         }
         out << endl;
         out << "" << endl;
@@ -429,7 +447,7 @@ class MakefileGeneratorPlugin
         out << "## Standard targets..." << endl;
         out << "##" << endl;
         if (type!="database")
-            out << "all: message $(IDSO) $(GUILIB) $(SCRIPTINGLIB) $(VIEWERLIB) $(ENGINELIBSER) $(ENGINELIBPAR) $(JAVACLASS)" << endl;
+            out << "all: message $(IDSO) $(GUILIB) $(VIEWERLIB) $(ENGINELIBSER) $(ENGINELIBPAR) $(SCRIPTINGLIB) $(JAVACLASS)" << endl;
         else
             out << "all: message $(IDSO) $(MDSERVERLIB) $(ENGINELIBSER) $(ENGINELIBPAR)" << endl;
         out << "" << endl;

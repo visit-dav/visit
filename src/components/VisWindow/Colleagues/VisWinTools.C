@@ -10,6 +10,8 @@
 #include <VisitSphereTool.h>
 
 #include <vtkActor2D.h>
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper2D.h>
 #include <vtkProperty2D.h>

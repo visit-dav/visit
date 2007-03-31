@@ -1,5 +1,9 @@
 #include <STLPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetMDServerInfo STL_GetMDServerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //

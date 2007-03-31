@@ -12,6 +12,7 @@
 
 #include <float.h>
 
+#include <vtkActor2D.h>
 #include <vtkCamera.h>
 #include <vtkImageData.h>
 #include <vtkImageMapper.h>

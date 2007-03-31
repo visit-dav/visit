@@ -5,6 +5,10 @@
 #include <IsosurfacePluginInfo.h>
 #include <IsosurfaceAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Isosurface_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

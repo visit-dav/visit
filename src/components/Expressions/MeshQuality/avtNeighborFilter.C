@@ -7,9 +7,10 @@
 #include <math.h>
 #include <float.h>
 
-#include <vtkDataArray.h>
+#include <vtkCellArray.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
+#include <vtkPointData.h>
 #include <vtkPointLocator.h>
 #include <vtkPolyData.h>
 #include <vtkVertex.h>

@@ -5,6 +5,10 @@
 #include <ContourPluginInfo.h>
 #include <avtContourPlot.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Contour_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

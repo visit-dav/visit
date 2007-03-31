@@ -4,6 +4,10 @@
 #include <BoxPluginInfo.h>
 #include <PyBoxAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Box_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

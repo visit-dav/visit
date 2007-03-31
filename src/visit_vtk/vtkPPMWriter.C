@@ -1,6 +1,7 @@
 #include "vtkPPMWriter.h"
-#include "vtkObjectFactory.h"
 #include <vtkImageData.h>
+#include <vtkPointData.h>
+#include <vtkObjectFactory.h>
 
 
 //------------------------------------------------------------------------------

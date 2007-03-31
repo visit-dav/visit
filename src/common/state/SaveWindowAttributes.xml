@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="SaveWindowAttributes" purpose="This class contains the attributes used for saving windows." exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="SaveWindowAttributes" purpose="This class contains the attributes used for saving windows." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="SaveWindowAttributes.code">
     <Enum name="FileFormat">
       BMP
       CURVE
@@ -14,17 +14,47 @@
       ULTRA
       VTK
     </Enum>
-    <Field name="hostName" type="string">"localhost"</Field>
-    <Field name="fileName" type="string">"visit"</Field>
-    <Field name="family" type="bool">true</Field>
-    <Field name="format" type="enum" subtype="FileFormat">TIFF</Field>
-    <Field name="maintainAspect" type="bool">true</Field>
-    <Field name="width" type="int">1024</Field>
-    <Field name="height" type="int">1024</Field>
-    <Field name="screenCapture" type="bool">true</Field>
-    <Field name="saveTiled" type="bool">false</Field>
-    <Field name="quality" type="int">80</Field>
-    <Field name="progressive" type="bool">false</Field>
-    <Field name="binary" type="bool">false</Field>
-    <Field name="lastRealFilename" type="string" internal="true">""</Field>
+    <Field name="hostName" label="hostName" type="string">
+      localhost
+    </Field>
+    <Field name="fileName" label="fileName" type="string">
+      visit
+    </Field>
+    <Field name="family" label="family" type="bool">
+      true
+    </Field>
+    <Field name="format" label="format" type="enum" subtype="FileFormat">
+      TIFF
+    </Field>
+    <Field name="maintainAspect" label="maintainAspect" type="bool">
+      true
+    </Field>
+    <Field name="width" label="width" type="int">
+      1024
+    </Field>
+    <Field name="height" label="height" type="int">
+      1024
+    </Field>
+    <Field name="screenCapture" label="screenCapture" type="bool">
+      true
+    </Field>
+    <Field name="saveTiled" label="saveTiled" type="bool">
+      false
+    </Field>
+    <Field name="quality" label="quality" type="int">
+      80
+    </Field>
+    <Field name="progressive" label="progressive" type="bool">
+      false
+    </Field>
+    <Field name="binary" label="binary" type="bool">
+      false
+    </Field>
+    <Field name="lastRealFilename" label="lastRealFilename" type="string" internal="true">
+    </Field>
+    <Field name="stereo" label="stereo" type="bool">
+      false
+    </Field>
+    <Function name="CurrentFormatIsImageFormat" user="true" member="true">
+    </Function>
   </Attribute>

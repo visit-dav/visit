@@ -1,5 +1,9 @@
 #include <PDBPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo PDB_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

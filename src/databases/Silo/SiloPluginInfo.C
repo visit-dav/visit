@@ -4,6 +4,10 @@
 
 #include <SiloPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Silo_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

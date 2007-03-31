@@ -5,6 +5,10 @@
 #include <IndexSelectPluginInfo.h>
 #include <avtIndexSelectFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo IndexSelect_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

@@ -2,6 +2,8 @@
 
 #include <vtkActor.h>
 #include <vtkCamera.h>
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
 #include <vtkMatrix4x4.h>
 #include <vtkOutlineSource.h>
 #include <vtkPolyData.h>

@@ -1,5 +1,9 @@
 #include <MiliPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Mili_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

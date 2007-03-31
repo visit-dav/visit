@@ -4,6 +4,14 @@
 #include <TopologyPluginInfo.h>
 #include <PyTopologyAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Makefile_GetScriptingInfo
+#endif
+
+#if defined(__APPLE__)
+#define GetScriptingInfo Topology_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

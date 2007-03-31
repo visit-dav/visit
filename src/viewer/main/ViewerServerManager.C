@@ -450,6 +450,10 @@ ViewerServerManager::AddArguments(RemoteProxyBase *component,
 //   I made the timeout for showing the window be zero if the component
 //   being launched is remote or parallel.
 //
+//   Brad Whitlock, Wed Oct 8 14:49:45 PST 2003
+//   I made the timeout be zero on MacOS X. This can be undone later when
+//   VisIt launches faster there.
+//
 // ****************************************************************************
 
 ViewerConnectionProgressDialog *
@@ -463,7 +467,13 @@ ViewerServerManager::SetupConnectionProgressWindow(RemoteProxyBase *component,
     //
     if(!avtCallback::GetNowinMode())
     {
+#if defined(__APPLE__)
+        // Make the timeout on MacOS X be zero since it takes so long to
+        // launch an engine. This at least gives the user something to look at.
+        int timeout = 0;
+#else
         int timeout = (component->Parallel() || !HostIsLocalHost(host)) ? 0 : 4000;
+#endif
         // Create a new connection dialog.
         dialog = new ViewerConnectionProgressDialog(
             component->GetComponentName().c_str(),

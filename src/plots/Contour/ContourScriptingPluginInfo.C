@@ -4,6 +4,10 @@
 #include <ContourPluginInfo.h>
 #include <PyContourAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Contour_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

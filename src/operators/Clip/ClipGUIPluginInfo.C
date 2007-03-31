@@ -6,6 +6,10 @@
 #include <ClipAttributes.h>
 #include <QvisClipWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Clip_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

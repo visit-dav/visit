@@ -8,7 +8,9 @@
 #include <ctype.h>
 #include <math.h>
 
+#include <vtkCellData.h>
 #include <vtkFloatArray.h>
+#include <vtkIntArray.h>
 #include <vtkPoints.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>

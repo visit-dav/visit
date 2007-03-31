@@ -1,11 +1,16 @@
 #include "vtkLinesFromOriginalCells.h"
-#include "vtkEdgeTable.h"
-#include "vtkMergePoints.h"
-#include "vtkObjectFactory.h"
-#include "vtkExtractEdges.h"
-#include "vtkUnsignedIntArray.h"
+
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
+#include <vtkEdgeTable.h>
+#include <vtkExtractEdges.h>
+#include <vtkMergePoints.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
 #include <vtkVisItUtility.h>
 #include <vtkPolyData.h>
+#include <vtkUnsignedIntArray.h>
+#include <vtkVisItUtility.h>
 
 
 //------------------------------------------------------------------------------

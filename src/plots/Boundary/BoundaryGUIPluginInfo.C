@@ -6,6 +6,10 @@
 #include <BoundaryAttributes.h>
 #include <QvisBoundaryPlotWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Boundary_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

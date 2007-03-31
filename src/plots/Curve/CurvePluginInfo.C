@@ -5,6 +5,10 @@
 #include <CurvePluginInfo.h>
 #include <CurveAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Curve_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

@@ -222,6 +222,9 @@ QvisPlotListBoxItem::width(const QListBox *lb) const
 //   hidden. I forgot to add that case when I added the code to draw
 //   expanded plots.
 //
+//   Brad Whitlock, Thu Aug 21 17:45:49 PST 2003
+//   I changed how the brush is created so it looks better on MacOS X.
+//
 // ****************************************************************************
 
 void QvisPlotListBoxItem::paint(QPainter *painter)
@@ -243,13 +246,13 @@ void QvisPlotListBoxItem::paint(QPainter *painter)
     if(!selected())
     {
         painter->fillRect(0, 0, (bw << 1) + 3, bw + 1,
-                          listBox()->colorGroup().background());
+                          listBox()->colorGroup().brush(QColorGroup::Background));
     }
     else
     {
         // Draw the selection rectangle for the plot on the database line.
         painter->fillRect(0, 0, listBox()->width(), bw + 3, //fm.lineSpacing() + 3,
-                          listBox()->colorGroup().highlight());
+                          listBox()->colorGroup().brush(QColorGroup::Highlight));
     }
 
     // Create the points for the expanded button.
@@ -271,12 +274,12 @@ void QvisPlotListBoxItem::paint(QPainter *painter)
     if(selected())
     {
         painter->setPen(listBox()->colorGroup().highlightedText());
-        painter->setBrush(QBrush(listBox()->colorGroup().highlightedText()));
+        painter->setBrush(listBox()->colorGroup().brush(QColorGroup::HighlightedText));
     }
     else
     {
         painter->setPen(listBox()->colorGroup().text());
-        painter->setBrush(QBrush(listBox()->colorGroup().text()));
+        painter->setBrush(listBox()->colorGroup().brush(QColorGroup::Text));
     }
 
     // Draw the expanded button
@@ -580,7 +583,9 @@ QvisPlotListBoxItem::setTextPen(QPainter *painter, bool highlightText) const
 // Creation:   Thu Apr 10 15:28:04 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Aug 22 09:19:17 PDT 2003
+//   I changed how the brush is selected so it looks good on MacOS X.
+//
 // ****************************************************************************
 
 void
@@ -588,7 +593,7 @@ QvisPlotListBoxItem::drawButtonSurface(QPainter *painter, const QRect &r) const
 {
     // Draw the button background.
     painter->fillRect(r.x() + 1, r.y() + 1, r.width() - 3, r.height() - 3,
-                      listBox()->colorGroup().background());
+                      listBox()->colorGroup().brush(QColorGroup::Background));
 
     // Draw the highlights.
     int x0 = r.x();

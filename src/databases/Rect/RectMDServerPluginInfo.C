@@ -1,5 +1,9 @@
 #include <RectPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetMDServerInfo Rect_GetMDServerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //

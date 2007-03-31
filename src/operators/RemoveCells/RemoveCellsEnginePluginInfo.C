@@ -5,6 +5,14 @@
 #include <RemoveCellsPluginInfo.h>
 #include <avtRemoveCellsFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Makefile_GetEngineInfo
+#endif
+
+#if defined(__APPLE__)
+#define GetEngineInfo RemoveCells_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

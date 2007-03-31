@@ -15,15 +15,19 @@
 //
 //========================================================================
 
+#include "vtkSurfaceFilter.h"
+
 #include <vtkCell.h>
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
 #include <vtkIdList.h>
 #include <vtkObjectFactory.h>
-#include <vtkSurfaceFilter.h>
+#include <vtkPointData.h>
+#include <vtkPointSet.h>
+#include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkPointSet.h>
-#include <vtkPolyData.h>
 
 
 // ======================================================================

@@ -4,10 +4,12 @@
 
 #include <avtTransform.h>
 
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkMatrix4x4.h>
 #include <vtkMatrixToHomogeneousTransform.h>
 #include <vtkMatrixToLinearTransform.h>
+#include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkTransformFilter.h>

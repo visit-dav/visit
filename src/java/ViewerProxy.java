@@ -80,6 +80,9 @@ import java.util.Vector;
 //   Brad Whitlock, Fri Aug 29 11:24:11 PDT 2003
 //   I added HideToolbars and ShowToolbars.
 //
+//   Brad Whitlock, Wed Oct 15 15:39:02 PST 2003
+//   I added a timeState argument to the ReplaceDatabase method.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -412,10 +415,11 @@ public class ViewerProxy implements SimpleObserver
         return synchronous ? Synchronize() : true;
     }
 
-    public boolean ReplaceDatabase(String database)
+    public boolean ReplaceDatabase(String database, int timeState)
     {
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_REPLACEDATABASERPC);
         rpc.SetDatabase(database);
+        rpc.SetIntArg1(timeState);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }

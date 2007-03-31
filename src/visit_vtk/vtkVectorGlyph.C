@@ -40,8 +40,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =========================================================================*/
 
-#include "vtkObjectFactory.h"
 #include "vtkVectorGlyph.h"
+
+#include <vtkCellArray.h>
+#include <vtkObjectFactory.h>
 #include <vtkPolyData.h>
 
 // ***********************************************************************

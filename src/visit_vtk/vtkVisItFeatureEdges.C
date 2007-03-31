@@ -15,16 +15,19 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include "vtkVisItFeatureEdges.h"
+#include <vtkVisItFeatureEdges.h>
 
-#include "vtkFloatArray.h"
-#include "vtkMath.h"
-#include "vtkMergePoints.h"
-#include "vtkObjectFactory.h"
-#include "vtkPolyData.h"
-#include "vtkPolygon.h"
-#include "vtkTriangleStrip.h"
-#include "vtkUnsignedCharArray.h"
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
+#include <vtkFloatArray.h>
+#include <vtkMath.h>
+#include <vtkMergePoints.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkPolyData.h>
+#include <vtkPolygon.h>
+#include <vtkTriangleStrip.h>
+#include <vtkUnsignedCharArray.h>
 
 vtkCxxRevisionMacro(vtkVisItFeatureEdges, "$Revision: 1.61 $");
 vtkStandardNewMacro(vtkVisItFeatureEdges);

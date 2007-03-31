@@ -5,6 +5,10 @@
 #include <BoxPluginInfo.h>
 #include <BoxAttributes.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo Box_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

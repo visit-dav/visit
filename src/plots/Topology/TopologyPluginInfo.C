@@ -5,6 +5,14 @@
 #include <TopologyPluginInfo.h>
 #include <TopologyAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Makefile_GetGeneralInfo
+#endif
+
+#if defined(__APPLE__)
+#define GetGeneralInfo Topology_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

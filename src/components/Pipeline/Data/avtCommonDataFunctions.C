@@ -9,9 +9,12 @@
 
 #include <vtkAppendFilter.h>
 #include <vtkAppendPolyData.h>
+#include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetMapper.h>
 #include <vtkMath.h>
+#include <vtkPointData.h>
 #include <vtkUnsignedIntArray.h>
 
 #include <avtCallback.h>

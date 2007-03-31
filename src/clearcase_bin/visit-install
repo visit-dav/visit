@@ -53,6 +53,9 @@
 #    I removed some error tests that were redundant and caused a
 #    maintenance issue.
 #
+#    Brad Whitlock, Wed Oct 8 16:29:25 PST 2003
+#    Added support for clickable scripts in MacOS X.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -64,6 +67,11 @@ set config = prompt
 set group_ownership = none
 set dir_permission = 755
 set file_permission = 644
+
+# Figure out the platform so if we're on a platform for which we need to
+# perform extra steps, we know it.
+set uname = `which uname`
+set os = `$uname -s | tr "[A-Z]" "[a-z]" | tr -d "[0-9]"`
 
 set option_found = true
 while ($option_found == true)
@@ -232,6 +240,33 @@ if ($config == open) then
    ln -s visit-config-open $dir/$version+/.visit/config
 else if ($config == closed) then
    ln -s visit-config-closed $dir/$version+/.visit/config
+endif
+
+#
+# If we're on MacOS X, then we want to create some small scripts that
+# can be clicked on from the Finder and have VisIt work.
+#
+if("$os" == "darwin") then
+    # Create a clickable script to run the cli, silex, and xmledit.
+    set csh = `which csh`
+    set scriptNames = ("VisIt" "cli" "Silex" "XmlEdit")
+    set appNames = ("visit" "cli" "silex" "xmledit")
+    @ i = 1
+    while($i < 5)
+        set app = $appNames[$i]
+        set appscript = $scriptNames[$i]
+        if(-e $dir/bin/$appscript.command) then
+            rm -f $dir/bin/$appscript.command
+        endif
+        echo "#\!$csh -f"           >  $dir/bin/$appscript.command
+        if($i > 1) then
+            echo "$dir/bin/visit -$app" >> $dir/bin/$appscript.command
+        else
+            echo "$dir/bin/visit"       >> $dir/bin/$appscript.command
+        endif
+        echo "exit 0"               >> $dir/bin/$appscript.command
+        @ i++
+    end
 endif
 
 #

@@ -1,9 +1,14 @@
 #include <stdlib.h>
 
+#include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkDataSetReader.h>
 #include <vtkDataSetWriter.h>
 #include <vtkFloatArray.h>
+#include <vtkIdList.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
+
 
 int main(int argc, char *argv[])
 {

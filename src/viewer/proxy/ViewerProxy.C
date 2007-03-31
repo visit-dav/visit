@@ -1347,16 +1347,22 @@ ViewerProxy::ReOpenDatabase(const std::string &database, bool forceClose)
 //  Programmer: Brad Whitlock
 //  Creation:   Wed Mar 6 16:07:47 PST 2002
 //
+//  Modifications:
+//    Brad Whitlock, Wed Oct 15 15:37:44 PST 2003
+//    I added an optional timeState argument so we can replace databases
+//    at later time states.
+//
 // ****************************************************************************
 
 void
-ViewerProxy::ReplaceDatabase(const std::string &database)
+ViewerProxy::ReplaceDatabase(const std::string &database, int timeState)
 {
     //
     // Set the rpc type and arguments.
     //
     viewerRPC->SetRPCType(ViewerRPC::ReplaceDatabaseRPC);
     viewerRPC->SetDatabase(database);
+    viewerRPC->SetIntArg1(timeState);
 
     //
     // Issue the RPC.

@@ -5,6 +5,10 @@
 #include <ConnCompReducePluginInfo.h>
 #include <ConnCompReduceAttributes.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo ConnCompReduce_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

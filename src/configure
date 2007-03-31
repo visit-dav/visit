@@ -1317,9 +1317,11 @@ _ACEOF
 
 
 # Load the OS configuration file if present.
+UNAME="`uname 2>/dev/null`"
+SHORT_UNAME=`uname -s | tr A-Z a-z | tr -d 0-9`
 echo "$as_me:$LINENO: checking for OS configuration file" >&5
 echo $ECHO_N "checking for OS configuration file... $ECHO_C" >&6
-site_conf=config-site/`uname`.conf
+site_conf=config-site/$UNAME.conf
 if test -r $site_conf; then
     echo "$as_me:$LINENO: result: $site_conf" >&5
 echo "${ECHO_T}$site_conf" >&6
@@ -1447,7 +1449,7 @@ echo "${ECHO_T}enabled" >&6
    LIBSHAREDPAR="$""(LIBSHAREDPAR)"
    LIBSHAREDPAR_UPDATEONLY="libsharedpar_updateonly"
 
-   if test "`uname 2>/dev/null`" != "AIX"; then
+   if test "$UNAME" != "AIX"; then
        if (test -z "$MPI_LIBS") then
            MPI_LIBS="-lmpi"
        fi
@@ -2401,13 +2403,24 @@ echo "${ECHO_T}found" >&6
     VTK_INCROOT="$""(TOPDIR)/include/vtk"
     VTK_INCLUDES="-I$VTK_INCROOT -I$VTK_INCROOT/Common -I$VTK_INCROOT/Filtering -I$VTK_INCROOT/Graphics -I$VTK_INCROOT/Hybrid -I$VTK_INCROOT/IO -I$VTK_INCROOT/Imaging -I$VTK_INCROOT/Rendering"
     VTK_LIBS="-lvtkCommon -lvtkFiltering -lvtkGraphics -lvtkHybrid -lvtkIO -lvtkImaging -lvtkRendering -lvtkzlib -lvtkexpat -lvtkjpeg -lvtkpng -lvtktiff -lvtkftgl -lvtkfreetype $GL_LIBS $MESA_LIBS"
+
+    # If we're on Darwin, we took VisIt's vtkCamera and built it into the VTK library so
+    # we don't want to put it into the visit_vtk library or else we'll get duplicate
+    # symbols, which is fatal on Darwin because we use a flat namespace.
+    if test "$SHORT_UNAME" = "darwin"; then
+        VTK_CAMERA_SRC=""
+    else
+        VTK_CAMERA_SRC="vtkCamera.C"
+    fi
 else
     echo "$as_me:$LINENO: result: not found" >&5
 echo "${ECHO_T}not found" >&6
     VTK_DIR=""
     VTK_INCLUDES=""
     VTK_LIBS=""
+    VTK_CAMERA_SRC=""
 fi
+
 
 
 
@@ -2682,6 +2695,7 @@ else
 echo "${ECHO_T}no" >&6
     enable_gui=no
     ENGINEPROXYDIR=""
+    GUI_CXXFLAGS=""
 fi
 
 
@@ -4684,7 +4698,7 @@ _ACEOF
     # Check for SYSV versus BSD style pseudo-ttys
     echo "$as_me:$LINENO: checking for SYSV vs BSD style ptys" >&5
 echo $ECHO_N "checking for SYSV vs BSD style ptys... $ECHO_C" >&6
-    if test "`uname 2>/dev/null`" = "Linux" || test "`uname 2>/dev/null`" = "AIX"; then
+    if test "$UNAME" = "Linux" || test "$UNAME" = "AIX"; then
         echo "$as_me:$LINENO: result: BSD" >&5
 echo "${ECHO_T}BSD" >&6
     else
@@ -4736,11 +4750,11 @@ rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
 fi
 
 #
-# We only need to check for -ldl if we're on SunOS or linux.
+# Check for -ldl if we're on SunOS or linux.
 #
 echo "$as_me:$LINENO: checking for Linux and -ldl" >&5
 echo $ECHO_N "checking for Linux and -ldl... $ECHO_C" >&6
-if test "`uname 2>/dev/null`" = "Linux" || test "`uname 2>/dev/null`" = "SunOS"; then
+if test "$UNAME" = "Linux" || test "$UNAME" = "SunOS"; then
     echo "$as_me:$LINENO: checking for main in -ldl" >&5
 echo $ECHO_N "checking for main in -ldl... $ECHO_C" >&6
 if test "${ac_cv_lib_dl_main+set}" = set; then
@@ -4804,7 +4818,7 @@ fi
 #
 echo "$as_me:$LINENO: checking for SunOS and -lnsl" >&5
 echo $ECHO_N "checking for SunOS and -lnsl... $ECHO_C" >&6
-if test "`uname 2>/dev/null`" = "SunOS"; then
+if test "$UNAME" = "SunOS"; then
     echo "$as_me:$LINENO: checking for main in -lnsl" >&5
 echo $ECHO_N "checking for main in -lnsl... $ECHO_C" >&6
 if test "${ac_cv_lib_nsl_main+set}" = set; then
@@ -4864,7 +4878,7 @@ echo "${ECHO_T}no" >&6
 fi
 echo "$as_me:$LINENO: checking for SunOS and -lsocket" >&5
 echo $ECHO_N "checking for SunOS and -lsocket... $ECHO_C" >&6
-if test "`uname 2>/dev/null`" = "SunOS"; then
+if test "$UNAME" = "SunOS"; then
     echo "$as_me:$LINENO: checking for main in -lsocket" >&5
 echo $ECHO_N "checking for main in -lsocket... $ECHO_C" >&6
 if test "${ac_cv_lib_socket_main+set}" = set; then
@@ -4924,7 +4938,7 @@ echo "${ECHO_T}no" >&6
 fi
 echo "$as_me:$LINENO: checking for SunOS and -lresolv" >&5
 echo $ECHO_N "checking for SunOS and -lresolv... $ECHO_C" >&6
-if test "`uname 2>/dev/null`" = "SunOS"; then
+if test "$UNAME" = "SunOS"; then
     echo "$as_me:$LINENO: checking for main in -lresolv" >&5
 echo $ECHO_N "checking for main in -lresolv... $ECHO_C" >&6
 if test "${ac_cv_lib_resolv_main+set}" = set; then
@@ -7790,32 +7804,39 @@ echo "$as_me:$LINENO: checking for SILO library" >&5
 echo $ECHO_N "checking for SILO library... $ECHO_C" >&6
 if test -n "$silo_library"; then
     SILO_LIB="-L`echo $silo_library|sed 's/  */ -L/g'` -lsilo"
+    SILO_LIBDIR="$silo_library"
     echo "$as_me:$LINENO: result: user specified (\"$SILO_LIB\")" >&5
 echo "${ECHO_T}user specified (\"$SILO_LIB\")" >&6
 else
+        if test "$SHORT_UNAME" = "darwin"; then
+        LIBSILO="libsilo.dylib"
+    else
+        LIBSILO="libsilo.a"
+    fi
+
                     silo_keep_checking="yes"
     if test -n "$DEFAULT_SILO_LIBRARY"; then
-        if test -r "$DEFAULT_SILO_LIBRARY/libsilo.a"; then
-            SILO_LIB="-L$DEFAULT_SILO_LIBRARY -lsilo"
-            echo "$as_me:$LINENO: result: user specified (\"$SILO_LIB\")" >&5
-echo "${ECHO_T}user specified (\"$SILO_LIB\")" >&6
+        if test -r "$DEFAULT_SILO_LIBRARY/$LIBSILO"; then
+            SILO_LIBDIR="$DEFAULT_SILO_LIBRARY"
+            echo "$as_me:$LINENO: result: user specified (\"$SILO_LIBDIR\")" >&5
+echo "${ECHO_T}user specified (\"$SILO_LIBDIR\")" >&6
             silo_keep_checking="no"
         fi
     fi
 
                     if test "$silo_keep_checking" = "yes"; then
-        if test -r "/usr/local/apps/lib/libsilo.a"; then
-            SILO_LIB="-L/usr/local/apps/lib -lsilo"
-            echo "$as_me:$LINENO: result: using /usr/local/apps/lib/libsilo.a" >&5
-echo "${ECHO_T}using /usr/local/apps/lib/libsilo.a" >&6
-        elif test -r "/usr/local/meshtv/lib/libsilo.a"; then
-            SILO_LIB="-L/usr/local/meshtv/lib -lsilo"
-            echo "$as_me:$LINENO: result: using /usr/local/meshtv/lib/libsilo.a" >&5
-echo "${ECHO_T}using /usr/local/meshtv/lib/libsilo.a" >&6
-        elif test -r "/usr/local/apps/meshtv/lib/libsilo.a"; then
-            SILO_LIB="-L/usr/local/apps/meshtv/lib -lsilo"
-            echo "$as_me:$LINENO: result: using /usr/local/apps/meshtv/lib/libsilo.a" >&5
-echo "${ECHO_T}using /usr/local/apps/meshtv/lib/libsilo.a" >&6
+        if test -r "/usr/local/apps/lib/$LIBSILO"; then
+            SILO_LIBDIR="/usr/local/apps/lib"
+            echo "$as_me:$LINENO: result: using /usr/local/apps/lib/$LIBSILO" >&5
+echo "${ECHO_T}using /usr/local/apps/lib/$LIBSILO" >&6
+        elif test -r "/usr/local/meshtv/lib/$LIBSILO"; then
+            SILO_LIBDIR="/usr/local/meshtv/lib"
+            echo "$as_me:$LINENO: result: using /usr/local/meshtv/lib/$LIBSILO" >&5
+echo "${ECHO_T}using /usr/local/meshtv/lib/$LIBSILO" >&6
+        elif test -r "/usr/local/apps/meshtv/lib/$LIBSILO"; then
+            SILO_LIBDIR="/usr/local/apps/meshtv/lib"
+            echo "$as_me:$LINENO: result: using /usr/local/apps/meshtv/lib/$LIBSILO" >&5
+echo "${ECHO_T}using /usr/local/apps/meshtv/lib/$LIBSILO" >&6
         else
             { { echo "$as_me:$LINENO: error: The SILO library could not be found. Please provide
     --with-silo-library=directory and rerun 'configure'." >&5
@@ -7824,7 +7845,10 @@ echo "$as_me: error: The SILO library could not be found. Please provide
    { (exit 1); exit 1; }; }
         fi
     fi
+
+    SILO_LIB="-L$SILO_LIBDIR -lsilo"
 fi
+
 
 
 
@@ -8212,9 +8236,10 @@ echo $ECHO_N "checking for supported Qt version... $ECHO_C" >&6
     QtGlobalInc="$QTDIR/include/qglobal.h"
 
     if test -f $QtGlobalInc; then
-        ## Check for appropriate versions of Qt (future, 3.0.x, 2.3.x)
-	for ver in  3.0.4  3.0.3               \
-                    3.0.2  3.0.1  3.0.0        \
+        ## Check for supported versions of Qt.
+	for ver in  3.2.0  \
+                    3.1.2  3.1.1  3.1.0 \
+                    3.0.4  3.0.3  3.0.2  3.0.1  3.0.0 \
                     2.3.2  2.3.1  2.3.0 ; do
             QtVer=`grep $ver $QtGlobalInc`
             if test -n "$QtVer"; then
@@ -8243,7 +8268,10 @@ echo "${ECHO_T}Qt $QtVersion in $QTDIR" >&6
         QT_STATICLDFLAGS=-L$QTDIR/lib
     fi
 
-    QT_CXXFLAGS="-I$""(TOPDIR)/include/qt $QT_CXXFLAGS"
+    if test "$SHORT_UNAME" = "darwin"; then
+        QTMAC_FLAGS="-DMACOSX_102"
+    fi
+    QT_CXXFLAGS="-I$""(TOPDIR)/include/qt $QT_CXXFLAGS $QTMAC_FLAGS"
 
     QT_MOC="$""(TOPDIR)/bin/moc"
 
@@ -8597,9 +8625,10 @@ elif test "$x_libraries" != NONE; then
 fi
 
 #
-# Is the X library available?
+# Is the X library available if we need it?
 #
-echo "$as_me:$LINENO: checking for main in -lX11" >&5
+if test "$no_x" != "yes"; then
+    echo "$as_me:$LINENO: checking for main in -lX11" >&5
 echo $ECHO_N "checking for main in -lX11... $ECHO_C" >&6
 if test "${ac_cv_lib_X11_main+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -8652,6 +8681,9 @@ if test $ac_cv_lib_X11_main = yes; then
   X_LIBS="-lX11 $X_LIBS"
 fi
 
+else
+    X_LIBS=""
+fi
 
 
 #
@@ -8757,27 +8789,18 @@ echo "${ECHO_T}$PYDIR, version $PYVERSION" >&6
     PY_LIB="-l$PYVERSION"
     PY_CLI_LIB="$PY_LIB -lpthread"
 
-    os=`/bin/uname -s | tr "[A-Z]" "[a-z]" | tr -d "[0-9]"`
-    case $os in
-##        aix)
-##            PY_LIB="-l$PYVERSION -lpthread"
-##            PY_CLI_LIB=""
-##            ;;
+    case $SHORT_UNAME in
         linux)
             PY_CLI_LIB="$PY_CLI_LIB -lutil"
-##            PY_LIB=""
             ;;
-##        *)
-##            PY_LIB=""
-##            ;;
+        darwin)
+            PY_INCLUDEDIR="$PYDIR/Python.framework/Headers"
+            PY_CXXFLAGS="-Wno-long-double -I$PY_INCLUDEDIR"
+            PY_LDFLAGS="-F$PYDIR"
+            PY_LIB="-framework Python"
+            PY_CLI_LIB=""
+            ;;
     esac
-
-##    if test "$os" = "aix"; then
-##        PY_LIB="-l$PYVERSION -lpthread"
-##        PY_CLI_LIB=""
-##    else
-##        PY_LIB=""
-##    fi
 else
     PYDIR=""
     PYVERSION=""
@@ -9263,8 +9286,8 @@ fi
 #
 # Figure out how to create shared libraries
 #
-os=`/bin/uname -s | tr "[A-Z]" "[a-z]" | tr -d "[0-9]"`
-case $os in
+CREATE_SILO_LINK=""
+case $SHORT_UNAME in
   irix)
     # Both g++ and CC use this
     if test -z "$SHLIB_CREATEPROG"; then
@@ -9311,6 +9334,25 @@ case $os in
         SHLIB_CREATEPROG="$""(CXX) -shared -o"
     fi
     ;;
+
+  darwin)
+    # Expecting g++
+    if test -z "$SHLIB_CREATEPROG"; then
+        SHLIB_CREATEPROG="$""(CXX) -dynamiclib -flat_namespace -undefined suppress -o"
+    fi
+    if test -z "$SHLIB_SOEXT"; then SHLIB_SOEXT="dylib"; fi
+    if test -z "$SHLIB_LIBEXT"; then SHLIB_LIBEXT="dylib"; fi
+    # Set the post processing step to something really useless because we
+    # don't need a postprocessing step since we're going to build directly
+    # in the lib directory.
+    SHLIB_POSTPROCESS="@echo Built library!"
+    SHLIB_POSTPROCESS_SER="@echo Built library!"
+    SHLIB_POSTPROCESS_PAR="@echo Built library!"
+    # Set SHLIB_TMPDIR so that libraries are created directly in the lib directory.
+    SHLIB_TMPDIR="$""(TOPDIR)/lib/"
+    SHLIB_LIBS="$""(LIBS)"
+    CREATE_SILO_LINK="create_silo_link"
+    ;;
 esac
 # Set up the defaults
 if test -z "$SHLIB_LIBS"           ; then SHLIB_LIBS=""; fi
@@ -9329,6 +9371,8 @@ if test -z "$SHLIB_LIBEXT"         ; then SHLIB_LIBEXT="so"; fi
 if test -z "$SHLIB_POSTPROCESS"    ; then SHLIB_POSTPROCESS="mv $""(LIBSHAREDTEMP) $""@"; fi
 if test -z "$SHLIB_POSTPROCESS_SER"; then SHLIB_POSTPROCESS_SER="mv $""(LIBSHAREDTEMPSER) $""@"; fi
 if test -z "$SHLIB_POSTPROCESS_PAR"; then SHLIB_POSTPROCESS_PAR="mv $""(LIBSHAREDTEMPPAR) $""@"; fi
+
+
 
 
 
@@ -15454,6 +15498,13 @@ if test "`${MAKE-make} --version -f /dev/null 2>/dev/null|sed -n 1p|cut -c1-8`" 
 echo "${ECHO_T}yes" >&6
    if test -n "$GCC"; then
       SOURCE_DEPENDENCIES=include/make-depend-gnu
+      # Darwin's gcc doesn't understand the -MG flag.
+      if test "$UNAME" = "Darwin"; then
+         MG=""
+      else
+         MG="-MG"
+      fi
+
    elif test -n "$MAKEDEPEND"; then
       SOURCE_DEPENDENCIES=include/make-depend-std
    else
@@ -16210,6 +16261,7 @@ s,@OBJEXT@,$OBJEXT,;t t
 s,@VTK_DIR@,$VTK_DIR,;t t
 s,@VTK_INCLUDES@,$VTK_INCLUDES,;t t
 s,@VTK_LIBS@,$VTK_LIBS,;t t
+s,@VTK_CAMERA_SRC@,$VTK_CAMERA_SRC,;t t
 s,@AVTPREP_SER@,$AVTPREP_SER,;t t
 s,@AVTPREP_PAR@,$AVTPREP_PAR,;t t
 s,@CONVERT_SER@,$CONVERT_SER,;t t
@@ -16264,6 +16316,7 @@ s,@SAF_INCLUDE@,$SAF_INCLUDE,;t t
 s,@SAF_LIB@,$SAF_LIB,;t t
 s,@SILO_INCLUDE@,$SILO_INCLUDE,;t t
 s,@SILO_LIB@,$SILO_LIB,;t t
+s,@SILO_LIBDIR@,$SILO_LIBDIR,;t t
 s,@EXODUS@,$EXODUS,;t t
 s,@EXODUS_LIBS@,$EXODUS_LIBS,;t t
 s,@EXODUS_FLAGS@,$EXODUS_FLAGS,;t t
@@ -16324,6 +16377,8 @@ s,@SHLIB_LIBEXT@,$SHLIB_LIBEXT,;t t
 s,@SHLIB_POSTPROCESS@,$SHLIB_POSTPROCESS,;t t
 s,@SHLIB_POSTPROCESS_SER@,$SHLIB_POSTPROCESS_SER,;t t
 s,@SHLIB_POSTPROCESS_PAR@,$SHLIB_POSTPROCESS_PAR,;t t
+s,@SHLIB_TMPDIR@,$SHLIB_TMPDIR,;t t
+s,@CREATE_SILO_LINK@,$CREATE_SILO_LINK,;t t
 /@VARIABLES@/r $VARIABLES
 s,@VARIABLES@,,;t t
 /@TARGETS@/r $TARGETS
@@ -16334,6 +16389,7 @@ s,@DIRTARGETS@,,;t t
 s,@LIBTARGETS@,,;t t
 /@PARLIBTARGETS@/r $PARLIBTARGETS
 s,@PARLIBTARGETS@,,;t t
+s,@MG@,$MG,;t t
 /@SOURCE_DEPENDENCIES@/r $SOURCE_DEPENDENCIES
 s,@SOURCE_DEPENDENCIES@,,;t t
 s,@tmpbin@,$tmpbin,;t t
@@ -16849,6 +16905,12 @@ fi
 (cd include   && ${MAKE-make})
 (cd lib       && ${MAKE-make})
 (cd tools/xml && ${MAKE-make} $TOPDIR/bin/xml2makefile)
+
+# If we 're on a Darwin system, make bundles for the gui and the viewer.
+if test "$SHORT_UNAME" = "darwin";  then
+    clearcase_bin/makebundles
+fi
+
 (cd plots     && ${MAKE-make} dirmakefiles)
 (cd operators && ${MAKE-make} dirmakefiles)
 (cd databases && ${MAKE-make} dirmakefiles)

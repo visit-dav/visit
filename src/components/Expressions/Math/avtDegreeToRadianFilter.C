@@ -6,6 +6,7 @@
 
 #include <math.h>
 
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
 
 #if defined(_WIN32) && !defined(M_PI)

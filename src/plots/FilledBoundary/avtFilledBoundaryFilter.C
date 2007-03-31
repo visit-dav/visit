@@ -5,8 +5,10 @@
 #include <avtFilledBoundaryFilter.h>
 
 #include <vtkCellArray.h>
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkIntArray.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
 

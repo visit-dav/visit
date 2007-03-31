@@ -5,6 +5,10 @@
 #include <HistogramPluginInfo.h>
 #include <avtHistogramPlot.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Histogram_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

@@ -4,6 +4,10 @@
 #include <ReflectPluginInfo.h>
 #include <PyReflectAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Reflect_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

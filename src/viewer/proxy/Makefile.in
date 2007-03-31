@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2000
+#                            Copyright 2000 - 2003
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -58,6 +58,9 @@
 #    Jeremy Meredith, Fri Jul 12 14:30:10 PDT 2002
 #    Unified include directories.
 #
+#    Brad Whitlock, Wed Aug 13 16:00:16 PST 2003
+#    I removed -lrpc, which is a liberary that we've not built for a long time.
+#
 ##############################################################################
 
 ##
@@ -75,7 +78,7 @@ SRC=ViewerProxy.C
 HDR=ViewerProxy.h
 OBJ=$(SRC:.C=.o)
 LIB=libviewerproxy
-LIBS=-ldbatts -lavtexceptions -lviewerrpc -lcomm -lmisc -lstate -lrpc -lplugin
+LIBS=-ldbatts -lavtexceptions -lviewerrpc -lcomm -lmisc -lstate -lplugin
 
 
 ##

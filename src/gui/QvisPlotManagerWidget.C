@@ -46,7 +46,7 @@ using std::vector;
 //   This is the constructor for the QvisPlotManagerWidget class.
 //
 // Arguments:
-//   plotList : This is the PlotList object that the widget observes.
+//   menuBar  : A pointer to the main window's menu bar.
 //   parent   : The widget's parent.
 //   name     : The widget's name.
 //
@@ -88,11 +88,14 @@ using std::vector;
 //   Brad Whitlock, Mon Aug 25 09:38:58 PDT 2003
 //   I changed a label string.
 //
+//   Brad Whitlock, Fri Aug 15 15:07:59 PST 2003
+//   I added a QMenuBar argument to the constructor.
+//
 // ****************************************************************************
 
-QvisPlotManagerWidget::QvisPlotManagerWidget(QWidget *parent, const char *name)
-    : QWidget(parent, name), GUIBase(), SimpleObserver(), menuPopulator(),
-    plotPlugins()
+QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
+    QWidget *parent, const char *name) : QWidget(parent, name), GUIBase(),
+    SimpleObserver(), menuPopulator(), plotPlugins()
 {
     pluginsLoaded = false;
 
@@ -151,7 +154,7 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QWidget *parent, const char *name)
 
     // Create the plot and operator menus. Note that they will be empty until
     // they are populated by the main application.
-    CreateMenus();
+    CreateMenus(menuBar);
 }
 
 // ****************************************************************************
@@ -235,16 +238,25 @@ QvisPlotManagerWidget::~QvisPlotManagerWidget()
 //   Brad Whitlock, Mon Mar 17 13:33:40 PST 2003
 //   I added icons for some options in the operator menu.
 //
+//   Brad Whitlock, Fri Aug 15 15:10:00 PST 2003
+//   I added support for MacOS X.
+//
 // ****************************************************************************
 
 void
-QvisPlotManagerWidget::CreateMenus()
+QvisPlotManagerWidget::CreateMenus(QMenuBar *menuBar)
 {
     //
     // Create the Plots Menu
     //
+#if defined(__APPLE__)
+    // On MacOS, we want to have all of the menu options together since they
+    // run along the top of the screen instead of being part of each window.
+    plotMenuBar = menuBar;
+#else
     plotMenuBar = new QMenuBar(this, "plotMenu");
     topLayout->addMultiCellWidget(plotMenuBar, 3, 3, 0, 3);
+#endif
 
     // Create the Plot menu. Each time we highlight a plot, we
     // update the current plot type.
@@ -275,7 +287,13 @@ QvisPlotManagerWidget::CreateMenus()
     plotAttsMenu = new QPopupMenu( plotMenuBar );
     connect(plotAttsMenu, SIGNAL(activated(int)),
             this, SIGNAL(activatePlotWindow(int)));
-    plotAttsMenuId = plotMenuBar->insertItem( tr("PlotAtts"), plotAttsMenu);
+    plotAttsMenuId = plotMenuBar->insertItem(
+#ifdef __APPLE__
+        tr("Plot Attributes"),
+#else
+        tr("PlotAtts"),
+#endif
+        plotAttsMenu);
     plotMenuBar->setItemEnabled(plotAttsMenuId, false);
 
     //
@@ -284,7 +302,13 @@ QvisPlotManagerWidget::CreateMenus()
     operatorAttsMenu = new QPopupMenu( plotMenuBar );
     connect(operatorAttsMenu, SIGNAL(activated(int)),
             this, SIGNAL(activateOperatorWindow(int)));
-    operatorAttsMenuId = plotMenuBar->insertItem( tr("OpAtts"), operatorAttsMenu );
+    operatorAttsMenuId = plotMenuBar->insertItem(
+#ifdef __APPLE__
+        tr("Operator Attributes"),
+#else
+        tr("OpAtts"),
+#endif
+        operatorAttsMenu );
     plotMenuBar->setItemEnabled(operatorAttsMenuId, false);
 
     //
@@ -593,6 +617,10 @@ QvisPlotManagerWidget::UpdateHideDeleteDrawButtonsEnabledState() const
 //   Brad Whitlock, Thu Mar 13 09:29:15 PDT 2003
 //   I added support for icons in the menu.
 //
+//   Brad Whitlock, Thu Aug 21 13:36:25 PST 2003
+//   I disabled icon support on MacOS X since applications don't get
+//   to put icons in the top menu.
+//
 // ****************************************************************************
 
 void
@@ -614,6 +642,7 @@ QvisPlotManagerWidget::AddPlotType(const char *plotName, const int varTypes,
     int id;
     QString menuName(plotName);
     menuName += QString(" . . .");
+#if !defined(__APPLE__)
     if(iconData)
     {
         // Add the plot type to the plot menu.
@@ -627,6 +656,7 @@ QvisPlotManagerWidget::AddPlotType(const char *plotName, const int varTypes,
         plotAttsMenu->insertItem(icon, menuName, plotAttsMenu->count());
     }
     else
+#endif
     {
         // Add the plot type to the plot menu.
         id = plotMenu->insertItem(plotName, entry.varMenu, plotMenu->count());
@@ -657,6 +687,10 @@ QvisPlotManagerWidget::AddPlotType(const char *plotName, const int varTypes,
 //
 //   Brad Whitlock, Thu Mar 13 09:47:38 PDT 2003
 //   I added support for icons in the menu.
+//
+//   Brad Whitlock, Thu Aug 21 13:41:21 PST 2003
+//   I prevented icons from being created since applications on MacOS X don't
+//   get to put icons in the top menu.
 //
 // ****************************************************************************
 

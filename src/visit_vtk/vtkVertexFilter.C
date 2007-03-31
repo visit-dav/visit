@@ -40,8 +40,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =========================================================================*/
 
-#include "vtkObjectFactory.h"
 #include "vtkVertexFilter.h"
+
+#include <vtkCell.h>
+#include <vtkCellData.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 
 // **************************************************************************

@@ -1,5 +1,9 @@
 #include <SAFPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetMDServerInfo SAF_GetMDServerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //

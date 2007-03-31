@@ -8,6 +8,9 @@
 extern "C" void ieee_handler(int)           { }
 extern "C" void standard_arithmetic(int)    { }
 extern "C" void nonstandard_arithmetic(int) { }
+extern "C" void __mth_i_dpowd(void)         { }
+extern "C" void __arg_reduce_(void)         { }
+extern "C" void __pgdbg_stub(void)          { }
 
 //
 // Define functions to free memory.

@@ -6,8 +6,11 @@
 
 #include <algorithm>
 
+#include <vtkCellData.h>
 #include <vtkCellLocator.h>
 #include <vtkDataSet.h>
+#include <vtkGenericCell.h>
+#include <vtkPointData.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkVisItUtility.h>

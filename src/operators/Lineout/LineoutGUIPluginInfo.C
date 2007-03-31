@@ -6,6 +6,14 @@
 #include <LineoutAttributes.h>
 #include <QvisLineoutWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Makefile.in_GetGUIInfo
+#endif
+
+#if defined(__APPLE__)
+#define GetGUIInfo Lineout_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

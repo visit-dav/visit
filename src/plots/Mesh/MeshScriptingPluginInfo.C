@@ -4,6 +4,10 @@
 #include <MeshPluginInfo.h>
 #include <PyMeshAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Mesh_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

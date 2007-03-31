@@ -4,6 +4,10 @@
 
 #include <MiliPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Mili_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

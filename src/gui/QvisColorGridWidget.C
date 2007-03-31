@@ -1081,6 +1081,10 @@ QvisColorGridWidget::getColorRect(int index, int &x, int &y,
 //   Brad Whitlock, Wed Feb 26 13:00:03 PST 2003
 //   I made it capable of drawing an incomplete row of colors.
 //
+//   Brad Whitlock, Thu Aug 21 15:36:18 PST 2003
+//   I changed how the brush to draw the background is selected so it looks
+//   better on MacOS X.
+//
 // ****************************************************************************
 
 void
@@ -1088,7 +1092,13 @@ QvisColorGridWidget::drawColorArray()
 {
     // Fill the pixmap with the background color or draw a frame.
     QPainter paint(drawPixmap);
-    paint.fillRect(rect(), QBrush(colorGroup().button()));
+
+#ifdef Q_WS_MACX
+    paint.fillRect(rect(), colorGroup().brush(QColorGroup::Background));
+#else
+    paint.fillRect(rect(), colorGroup().brush(QColorGroup::Button));
+#endif
+
     if(drawFrame)
     {
         drawBox(paint, rect(), colorGroup().light(),
@@ -1284,6 +1294,9 @@ QvisColorGridWidget::drawHighlightedColor(QPainter *paint, int index)
 //   Brad Whitlock, Fri Apr 26 11:37:12 PDT 2002
 //   I fixed an error that cropped up on windows.
 //
+//   Brad Whitlock, Thu Aug 21 15:38:21 PST 2003
+//   I changed how the brush is selected so it looks better on MacOS X.
+//
 // ****************************************************************************
 
 QRegion
@@ -1297,20 +1310,26 @@ QvisColorGridWidget::drawUnHighlightedColor(QPainter *paint, int index)
         int x, y, boxWidth, boxHeight;
         getColorRect(index, x, y, boxWidth, boxHeight);
 
+#ifdef Q_WS_MACX
+        QBrush brush(colorGroup().brush(QColorGroup::Background));
+#else
+        QBrush brush(colorGroup().brush(QColorGroup::Button));
+#endif
+
         // Draw the button and the color over the button.
         if(paint == 0)
         {
             QPainter p2(drawPixmap);
             p2.fillRect(x - boxPaddingValue / 2, y - boxPaddingValue / 2,
-                           boxWidth + boxPaddingValue, boxHeight + boxPaddingValue,
-                           colorGroup().button());
+                        boxWidth + boxPaddingValue, boxHeight + boxPaddingValue,
+                        brush);
             drawColor(p2, index);
         }
         else
         {
             paint->fillRect(x - boxPaddingValue / 2, y - boxPaddingValue / 2,
-                             boxWidth + boxPaddingValue, boxHeight + boxPaddingValue,
-                             colorGroup().button());
+                            boxWidth + boxPaddingValue, boxHeight + boxPaddingValue,
+                            brush);
             drawColor(*paint, index);
         }
 

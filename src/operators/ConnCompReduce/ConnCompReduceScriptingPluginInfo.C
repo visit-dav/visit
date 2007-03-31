@@ -4,6 +4,10 @@
 #include <ConnCompReducePluginInfo.h>
 #include <PyConnCompReduceAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo ConnCompReduce_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

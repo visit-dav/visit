@@ -6,6 +6,10 @@
 #include <VectorAttributes.h>
 #include <QvisVectorPlotWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Vector_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

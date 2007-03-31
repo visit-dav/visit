@@ -7,6 +7,10 @@
 #include <avtColorTables.h>
 #include <ColorTableAttributes.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo Contour_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

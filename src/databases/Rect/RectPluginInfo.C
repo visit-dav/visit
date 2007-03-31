@@ -4,6 +4,10 @@
 
 #include <RectPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Rect_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

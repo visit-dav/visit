@@ -76,8 +76,8 @@
 
 #include <qapplication.h>
 #include <qmainwindow.h>
-#include "vtkRenderWindow.h"
-#include "vtkOpenGLRenderer.h"
+#include <vtkRenderWindow.h>
+#include <vtkOpenGLRenderer.h>
 
 class vtkQtRenderWindowInteractor;
 class vtkFloatArray;
@@ -178,8 +178,10 @@ public:
     // Overridden by LLNL
     virtual void SetDisplayId(void *)  { };
     virtual void SetWindowId(void *)   { };
+    virtual void SetNextWindowId(void *)   { };
     virtual void SetParentId(void *)   { };
     virtual void SetWindowInfo(char *) { };
+    virtual void SetNextWindowInfo(char *) { };
     virtual void SetParentInfo(char *) { };
     virtual int  GetEventPending();
     virtual int  GetDepthBufferSize();

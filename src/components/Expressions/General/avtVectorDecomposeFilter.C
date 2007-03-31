@@ -6,7 +6,9 @@
 
 #include <math.h>
 
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
+#include <vtkPointData.h>
 
 #include <ExpressionException.h>
 

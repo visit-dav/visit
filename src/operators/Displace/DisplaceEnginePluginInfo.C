@@ -5,6 +5,10 @@
 #include <DisplacePluginInfo.h>
 #include <avtDisplaceFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Displace_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

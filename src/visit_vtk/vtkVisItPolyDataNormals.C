@@ -1,10 +1,14 @@
 #include "vtkVisItPolyDataNormals.h"
 
-#include "vtkFloatArray.h"
-#include "vtkMath.h"
-#include "vtkPolyData.h"
-#include "vtkPolygon.h"
-#include "vtkObjectFactory.h"
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
+#include <vtkFloatArray.h>
+#include <vtkMath.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkPolyData.h>
+#include <vtkPolygon.h>
+#include <vtkTriangle.h>
 
 vtkCxxRevisionMacro(vtkVisItPolyDataNormals, "$Revision: 1.00 $");
 vtkStandardNewMacro(vtkVisItPolyDataNormals);

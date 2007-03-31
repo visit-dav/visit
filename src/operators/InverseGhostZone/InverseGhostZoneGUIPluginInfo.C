@@ -6,6 +6,10 @@
 #include <InverseGhostZoneAttributes.h>
 #include <QvisInverseGhostZoneWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo InverseGhostZone_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

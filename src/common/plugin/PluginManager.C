@@ -17,6 +17,9 @@
 #if defined(_WIN32)
 #include <windows.h>
 #include <direct.h>
+#elif defined(__APPLE__)
+#include <mach-o/dyld.h>
+#include <dirent.h>
 #else
 #include <dlfcn.h>
 #include <dirent.h>
@@ -399,6 +402,10 @@ PluginManager::EnablePlugin(const string &id)
 //    Jeremy Meredith, Fri Jul  5 17:36:23 PDT 2002
 //    Made it work on plugins from multiple directories.
 //
+//    Brad Whitlock, Thu Aug 21 14:10:51 PST 2003
+//    Added code to prevent the same plugin from being in the list multiple
+//    times.
+//
 // ****************************************************************************
 
 void
@@ -411,6 +418,7 @@ PluginManager::GetPluginList(vector<pair<string,string> > &libs)
     // Add each file that is a library to the list.
     string ext(PLUGIN_EXTENSION);
     int extLen = ext.size();
+
     for(int i = 0; i < files.size(); ++i)
     {
         const string &filename = files[i].second;
@@ -429,9 +437,13 @@ PluginManager::GetPluginList(vector<pair<string,string> > &libs)
         }
 
 #undef PLUGIN_MAX
-
         // It is a valid library name so add it to the list.
-        libs.push_back(files[i]);
+        bool found = false;
+        for(int j = 0; j < libs.size() && !found; ++j)
+            found = (libs[j] == files[i]);
+    
+        if(!found)
+            libs.push_back(files[i]);
     }
 
     // Sort the library filename list.
@@ -809,6 +821,221 @@ PluginManager::GetAllIndexFromName(const string &name) const
     return pluginTypeIndex;
 }
 
+#if defined(__APPLE__)
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+///
+/// Methods that simulate dlopen, dlsym, dlclose, and dlerror on MacOS X.
+///
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+#include <stdarg.h>
+
+#define ERR_STR_LEN 1000
+#define RTLD_LAZY   1
+#define RTLD_GLOBAL 2
+
+/* Set and get the error string for use by dlerror */
+static const char *dlerror_helper(int setget, const char *str, ...)
+{
+    static char errstr[ERR_STR_LEN];
+    static int err_filled = 0;
+    const char *retval;
+    NSLinkEditErrors ler;
+    int lerno;
+    const char *dylderrstr;
+    const char *file;
+    va_list arg;
+    if (setget <= 0)
+    {
+        va_start(arg, str);
+        strncpy(errstr, "dlsimple: ", ERR_STR_LEN);
+        vsnprintf(errstr + 10, ERR_STR_LEN - 10, str, arg);
+        va_end(arg);
+        /* We prefer to use the dyld error string if getset is 1*/
+        if (setget == 0) {
+            NSLinkEditError(&ler, &lerno, &file, &dylderrstr);
+            //fprintf(stderr,"dyld: %s\n",dylderrstr);
+            if (dylderrstr && strlen(dylderrstr))
+                strncpy(errstr,dylderrstr,ERR_STR_LEN);
+        }       
+        err_filled = 1;
+        retval = NULL;
+    }
+    else
+    {
+        if (!err_filled)
+            retval = NULL;
+        else
+            retval = errstr;
+        err_filled = 0;
+    }
+    return retval;
+}
+
+const char *dlerror(void)
+{
+    return dlerror_helper(1, (char *)NULL);
+}
+
+
+void *dlopen(const char *path, int mode)
+{
+    void *module = 0;
+    NSObjectFileImage ofi = 0;
+    NSObjectFileImageReturnCode ofirc;
+    static int (*make_private_module_public) (NSModule module) = 0;
+    unsigned int flags =  NSLINKMODULE_OPTION_RETURN_ON_ERROR |
+                          NSLINKMODULE_OPTION_PRIVATE;
+
+    /* If we got no path, the app wants the global namespace,
+       use -1 as the marker in this case */
+    if (!path)
+        return (void *)-1;
+
+    /* Create the object file image, works for things linked
+       with the -bundle arg to ld */
+    ofirc = NSCreateObjectFileImageFromFile(path, &ofi);
+    switch (ofirc)
+    {
+        case NSObjectFileImageSuccess:
+            /* It was okay, so use NSLinkModule to link in the image */
+            if (!(mode & RTLD_LAZY)) flags += NSLINKMODULE_OPTION_BINDNOW;
+            module = NSLinkModule(ofi, path,flags);
+            /* Don't forget to destroy the object file
+               image, unless you like leaks */
+            NSDestroyObjectFileImage(ofi);
+            /* If the mode was global, then change the module, this avoids
+               multiply defined symbol errors to first load private then
+               make global. Silly, isn't it. */
+            if ((mode & RTLD_GLOBAL))
+            {
+              if (!make_private_module_public)
+              {
+                _dyld_func_lookup("__dyld_NSMakePrivateModulePublic", 
+                (unsigned long *)&make_private_module_public);
+              }
+              make_private_module_public(module);
+            }
+            break;
+        case NSObjectFileImageInappropriateFile:
+            /* It may have been a dynamic library rather
+               than a bundle, try to load it */
+            module = (void *)NSAddImage(path, 
+                        NSADDIMAGE_OPTION_RETURN_ON_ERROR);
+            break;
+        case NSObjectFileImageFailure:
+            dlerror_helper(0,"Object file setup failure :  \"%s\"", path);
+            return 0;
+        case NSObjectFileImageArch:
+            dlerror_helper(0,"No object for this architecture :  \"%s\"", path);
+            return 0;
+        case NSObjectFileImageFormat:
+            dlerror_helper(0,"Bad object file format :  \"%s\"", path);
+            return 0;
+        case NSObjectFileImageAccess:
+            dlerror_helper(0,"Can't read object file :  \"%s\"", path);
+            return 0;       
+    }
+    if (!module)
+        dlerror_helper(0, "Can not open \"%s\"", path);
+    return module;
+}
+
+int dlclose(void *handle)
+{
+    if ((((struct mach_header *)handle)->magic == MH_MAGIC) ||
+        (((struct mach_header *)handle)->magic == MH_CIGAM))
+    {
+        dlerror_helper(-1, "Can't remove dynamic libraries on darwin");
+        return 0;
+    }
+    if (!NSUnLinkModule(handle, 0))
+    {
+        dlerror_helper(0, "unable to unlink module %s", NSNameOfModule(handle));
+        return 1;
+    }
+    return 0;
+}
+
+/* dlsymIntern is used by dlsym to find the symbol */
+void *dlsymIntern(void *handle, const char *symbol)
+{
+    NSSymbol *nssym = 0;
+    /* If the handle is -1, if is the app global context */
+    if (handle == (void *)-1)
+    {
+        /* Global context, use NSLookupAndBindSymbol */
+        if (NSIsSymbolNameDefined(symbol))
+        {
+            nssym = NSLookupAndBindSymbol(symbol);
+        }
+
+    }
+    /* Now see if the handle is a struch mach_header* or not,
+       use NSLookupSymbol in image for libraries, and
+       NSLookupSymbolInModule for bundles */
+    else
+    {
+        /* Check for both possible magic numbers depending
+           on x86/ppc byte order */
+        if ((((struct mach_header *)handle)->magic == MH_MAGIC) ||
+            (((struct mach_header *)handle)->magic == MH_CIGAM))
+        {
+            if (NSIsSymbolNameDefinedInImage((struct mach_header *)handle,
+                symbol))
+            {
+                nssym = NSLookupSymbolInImage((struct mach_header *)handle,
+                            symbol, NSLOOKUPSYMBOLINIMAGE_OPTION_BIND
+                          | NSLOOKUPSYMBOLINIMAGE_OPTION_RETURN_ON_ERROR);
+            }
+
+        }
+        else
+        {
+            nssym = NSLookupSymbolInModule(handle, symbol);
+        }
+    }
+    if (!nssym)
+    {
+        dlerror_helper(0, "Symbol \"%s\" Not found", symbol);
+        return NULL;
+    }
+    return NSAddressOfSymbol(nssym);
+}
+
+/* dlsym, prepend the underscore and call dlsymIntern */
+void *dlsym(void *handle, const char *symbol)
+{
+    static char undersym[257];  /* Saves calls to malloc(3) */
+    int sym_len = strlen(symbol);
+    void *value = NULL;
+    char *malloc_sym = NULL;
+
+    if (sym_len < 256)
+    {
+        snprintf(undersym, 256, "_%s", symbol);
+        value = dlsymIntern(handle, undersym);
+    }
+    else
+    {
+        malloc_sym = malloc(sym_len + 2);
+        if (malloc_sym)
+        {
+            sprintf(malloc_sym, "_%s", symbol);
+            value = dlsymIntern(handle, malloc_sym);
+            free(malloc_sym);
+        }
+        else
+        {
+            dlerror_helper(-1, "Unable to allocate memory");
+        }
+    }
+    return value;
+}
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 ///
@@ -851,7 +1078,7 @@ PluginManager::SetPluginDir()
                    "The environment variable VISITPLUGINDIR must be defined.");
 #endif
     }
-
+    
 #if defined(_WIN32)
     pluginDirs.push_back(string(plugindir) + SLASH_STRING + managerName + "s");
 #else
@@ -991,7 +1218,9 @@ PluginManager::PluginOpen(const string &pluginFile)
 // Creation:   Fri Mar 29 12:03:46 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 21 14:14:40 PST 2003
+//   Added a special implementation for MacOS X.
+//
 // ****************************************************************************
 
 void *
@@ -1000,6 +1229,32 @@ PluginManager::PluginSymbol(const string &symbol)
     void *retval;
 #if defined(_WIN32)
     retval = (void *)GetProcAddress((HMODULE)handle, symbol.c_str());
+#elif defined(__APPLE__)
+    string symbolName(symbol);
+
+    //
+    // If the symbol that we want begins with "Get" then we're most likely
+    // trying to access a plugin and in order to get plugins to work on MacOS X
+    // in a flat namespace, I changed the name of the access function so that
+    // it has the name of the plugin prepended to it in order to create a unique
+    // function name. Here, we use the name of the plugin file to determine the
+    // name of the plugin so we can create the symbol that we're really after.
+    //
+    if(symbol.substr(0,3) == "Get")
+    {
+        string ext(PLUGIN_EXTENSION);
+        int slashPos = openPlugin.rfind("/");
+        int suffixLen = (openPlugin.find("_ser") != -1 ||
+                         openPlugin.find("_par") != -1) ? 4 : 0;
+        int len = openPlugin.size() - slashPos - suffixLen - 5 -
+                  managerName.size() - ext.size();
+        string pluginPrefix(openPlugin.substr(slashPos + 5, len));
+        debug4 << "PluginSymbol: prefix: " << pluginPrefix << endl;
+        symbolName = string(pluginPrefix + "_" + symbol);
+        debug4 << "PluginSymbol: sym: " << symbolName << endl;
+    }
+    
+    retval = dlsym(handle, symbolName.c_str());
 #else
     retval = dlsym(handle, symbol.c_str());
 #endif
@@ -1052,11 +1307,6 @@ PluginManager::PluginError() const
 void
 PluginManager::PluginClose()
 {
-    // Try to destruct static objects.  This is a g++ism.
-    void (*fini)(void) = (void(*)(void))PluginSymbol("_GLOBAL__DD");
-    if (fini)
-        fini();
-
     openPlugin = "";
 
 #if defined(_WIN32)
@@ -1066,6 +1316,11 @@ PluginManager::PluginClose()
         handle = 0;
     }
 #else
+    // Try to destruct static objects.  This is a g++ism.
+    void (*fini)(void) = (void(*)(void))PluginSymbol("_GLOBAL__DD");
+    if (fini)
+        fini();
+        
     if(handle)
     {
         dlclose(handle);

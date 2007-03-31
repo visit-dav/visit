@@ -5,6 +5,14 @@
 #include <TopologyPluginInfo.h>
 #include <avtTopologyPlot.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo Makefile_GetViewerInfo
+#endif
+
+#if defined(__APPLE__)
+#define GetViewerInfo Topology_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

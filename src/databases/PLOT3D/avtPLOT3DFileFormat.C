@@ -8,6 +8,7 @@
 #include <string>
 
 #include <vtkDataArray.h>
+#include <vtkPointData.h>
 #include <vtkStructuredGrid.h>
 #include <vtkVisItPLOT3DReader.h>
 

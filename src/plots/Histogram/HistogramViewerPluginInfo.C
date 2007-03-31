@@ -5,6 +5,10 @@
 #include <HistogramPluginInfo.h>
 #include <avtHistogramPlot.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo Histogram_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

@@ -7,11 +7,14 @@
 #include <math.h>
 #include <vector>
 
+#include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
 #include <vtkCellDerivatives.h> 
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
 #include <vtkIdList.h>
+#include <vtkPointData.h>
 
 #include <DebugStream.h>
 #include <ExpressionException.h>

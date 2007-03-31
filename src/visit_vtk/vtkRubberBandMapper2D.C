@@ -47,9 +47,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vtkProperty2D.h>
 #include <vtkScalarsToColors.h>
 #include <vtkViewport.h>
+#include <vtkActor2D.h>
+#include <vtkPointData.h>
+#include <vtkCellArray.h>
+#include <vtkCoordinate.h>
 
 #if defined(_WIN32)
 #include <windows.h>
+#elif defined(__APPLE__)
+int placeholder;
 #else
 #include <X11/Intrinsic.h>
 #endif
@@ -94,9 +100,11 @@ void vtkRubberBandMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* act
     vtkWindow*  window = viewport->GetVTKWindow();
 
 #if defined(_WIN32)
+// ****************************************************************************
 //
 // Win32 coding and macros
 //
+// ****************************************************************************
 #define STORE_POINT(P, X, Y) P.x = long((X) + borderL);  P.y = long((Y)+borderT);
 
 #define SET_FOREGROUND_F(rgba) if(validPen) DeleteObject(pen); \
@@ -141,10 +149,31 @@ void vtkRubberBandMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* act
     // Set the line color
     float whitergb[] = {1.,1.,1.};
     SET_FOREGROUND_F(whitergb);
+#elif defined(__APPLE__)
+// ***************************************************************************
+//
+// MacOS X Darwin coding and macros
+//
+// ***************************************************************************
+
+// for now...
+int *points = new int[1024];
+
+#define STORE_POINT(P, X, Y) cerr << "STORE_POINT macro for Mac." << endl;
+#define SET_FOREGROUND_F(rgba) cerr << "SET_FOREGROUND_F macro for Mac." << endl;
+#define SET_FOREGROUND(rgba) cerr << "SET_FOREGROUND macro for Mac." << endl;
+#define DRAW_POLYGON(points, npts) cerr << "DRAW_POLYGON macro for Mac." << endl;
+#define RESIZE_POINT_ARRAY(points, npts, currSize) cerr << "RESIZE_POINT_ARRAY macro for Mac." << endl;
+#define DRAW_XOR_LINE(x1, y1, x2, y2) cerr << "DRAW_XOR_LINE macro for Mac." << endl;
+#define FLUSH_AND_SYNC() cerr << "FLUSH_AND_SYNC macro for Mac." << endl;
+
+
 #else
+// ***************************************************************************
 //
 // X11 coding and macros
 //
+// ***************************************************************************
 
 #define STORE_POINT(P, X, Y) P.x = short(X); P.y = short(Y);
 

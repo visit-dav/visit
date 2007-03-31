@@ -5,6 +5,10 @@
 #include <PseudocolorPluginInfo.h>
 #include <PseudocolorAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Pseudocolor_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

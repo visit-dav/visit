@@ -5,6 +5,10 @@
 #include <InverseGhostZonePluginInfo.h>
 #include <InverseGhostZoneAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo InverseGhostZone_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

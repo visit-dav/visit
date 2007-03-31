@@ -1,5 +1,9 @@
 #include <BOVPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo BOV_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

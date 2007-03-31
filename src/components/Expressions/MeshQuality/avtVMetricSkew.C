@@ -4,6 +4,7 @@
 
 #include "avtVMetricSkew.h"
 
+#include <vtkCellType.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
 

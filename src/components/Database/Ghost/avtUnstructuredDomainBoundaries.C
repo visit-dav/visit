@@ -1,12 +1,18 @@
 #include <avtUnstructuredDomainBoundaries.h>
-#include <VisItException.h>
+
+#include <vtkCellData.h>
 #include <vtkFloatArray.h>
+#include <vtkIdList.h>
 #include <vtkIntArray.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
+
+
 #include <avtMaterial.h>
 #include <avtMixedVariable.h>
 
 #include <DebugStream.h>
+#include <VisItException.h>
 
 #include <set>
 #include <map>

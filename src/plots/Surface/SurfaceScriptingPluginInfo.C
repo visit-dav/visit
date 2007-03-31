@@ -4,6 +4,10 @@
 #include <SurfacePluginInfo.h>
 #include <PySurfaceAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Surface_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

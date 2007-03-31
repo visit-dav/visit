@@ -5,6 +5,10 @@
 #include <StreamlinePluginInfo.h>
 #include <StreamlineAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Streamline_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

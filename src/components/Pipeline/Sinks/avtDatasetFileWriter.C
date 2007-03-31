@@ -8,10 +8,13 @@
 
 #include <vtkAppendFilter.h>
 #include <vtkAppendPolyData.h>
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
 #include <vtkDataSetWriter.h>
 #include <vtkFloatArray.h>
 #include <vtkOBJWriter.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkVisItSTLWriter.h>
 #include <vtkTriangleFilter.h>

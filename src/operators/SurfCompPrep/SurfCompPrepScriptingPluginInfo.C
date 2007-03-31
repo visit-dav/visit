@@ -4,6 +4,10 @@
 #include <SurfCompPrepPluginInfo.h>
 #include <PySurfCompPrepAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo SurfCompPrep_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

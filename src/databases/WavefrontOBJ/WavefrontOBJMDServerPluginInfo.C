@@ -1,5 +1,9 @@
 #include <WavefrontOBJPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetMDServerInfo WavefrontOBJ_GetMDServerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //

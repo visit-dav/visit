@@ -4,8 +4,10 @@
 
 #include "avtSurfaceAndWireframeRenderer.h"
 
+#include <vtkCellData.h>
 #include <vtkGeometryFilter.h>
 #include <vtkLookupTable.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkProperty.h>
 #include <vtkRenderer.h>

@@ -6,6 +6,10 @@
 #include <ReflectAttributes.h>
 #include <QvisReflectWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Reflect_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

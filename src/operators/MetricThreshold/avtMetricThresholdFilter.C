@@ -4,8 +4,11 @@
 
 #include <avtMetricThresholdFilter.h>
 
+#include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkDataArray.h>
+#include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkThreshold.h>

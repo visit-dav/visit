@@ -600,19 +600,27 @@ vtkQtRenderWindow::CreateToolbar(const char *name)
 //   Brad Whitlock, Mon Jan 27 11:31:33 PDT 2003
 //   I made it draw on the GL widget.
 //
+//   Brad Whitlock, Fri May 16 9:23:23 PDT 2003
+//   I added a MacOS X implementation.
+//
 // ****************************************************************************
 
 void *
 vtkQtRenderWindow::GetGenericContext()
 {
-#ifdef Q_WS_X11
+#if defined(Q_WS_X11)
     static GC gc = (GC) NULL; 
 
     if (!gc) gc = XCreateGC(gl->x11Display(), gl->winId(), 0, 0);
 
     return (void *) gc;
-#else
+#elif defined(Q_WS_WIN)
     return (void *)qt_display_dc();
+#elif defined(Q_WS_MACX)
+    cerr << "vtkQtRenderWindow::GetGenericContext(): Mac version not implemented!" <<  endl;
+    return 0;
+#else
+    return 0;
 #endif
 }
 
@@ -892,10 +900,13 @@ int* vtkQtRenderWindow::GetSize()               { return this->Size; }
 // Added by LLNL
 void *vtkQtRenderWindow::GetGenericDisplayId()
 {
-#if defined(_WIN32)
+#if defined(Q_WS_WIN)
     return (void *)qt_display_dc();
-#else
+#elif defined(Q_WS_X11)
     return (void *)this->x11Display();
+#elif defined(Q_WS_MACX)
+    cerr << "vtkQtRenderWindow::GetGenericDisplayId(): Mac version not implemented!" << endl;
+    return 0;
 #endif
 };
 

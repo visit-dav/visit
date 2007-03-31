@@ -5,6 +5,10 @@
 #include <SurfacePluginInfo.h>
 #include <SurfaceAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Surface_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

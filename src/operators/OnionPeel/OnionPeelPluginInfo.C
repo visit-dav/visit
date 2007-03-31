@@ -5,6 +5,10 @@
 #include <OnionPeelPluginInfo.h>
 #include <OnionPeelAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo OnionPeel_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

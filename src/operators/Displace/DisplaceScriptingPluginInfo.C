@@ -4,6 +4,10 @@
 #include <DisplacePluginInfo.h>
 #include <PyDisplaceAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Displace_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

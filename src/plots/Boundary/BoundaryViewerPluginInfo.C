@@ -4,6 +4,10 @@
 
 #include <BoundaryPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo Boundary_GetViewerInfo
+#endif
+
 #include <stdio.h>
 
 #include <ViewerFileServer.h>

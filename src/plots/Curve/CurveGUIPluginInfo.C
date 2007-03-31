@@ -6,6 +6,10 @@
 #include <CurveAttributes.h>
 #include <QvisCurvePlotWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Curve_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

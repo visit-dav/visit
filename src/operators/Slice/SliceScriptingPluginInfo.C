@@ -4,6 +4,10 @@
 #include <SlicePluginInfo.h>
 #include <PySliceAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Slice_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

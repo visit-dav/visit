@@ -3,7 +3,6 @@
 #include <map>
 
 #include <visit-config.h> // To get the version number
-#include <qapplication.h>
 #include <qcolor.h>
 #include <qcursor.h>
 #include <qfiledialog.h>
@@ -11,6 +10,9 @@
 #include <qprinter.h>
 #include <qsocketnotifier.h>
 #include <qstatusbar.h>
+
+#if QT_VERSION < 300
+// If we're not using Qt 3.0, then include style headers.
 #include <qmotifstyle.h>
 #include <qcdestyle.h>
 #include <qwindowsstyle.h>
@@ -18,6 +20,8 @@
 #if QT_VERSION >= 230
 #include <qsgistyle.h>
 #endif
+#endif
+
 #include <qtimer.h>
 #include <QvisGUIApplication.h>
 
@@ -44,6 +48,7 @@
 #include <SyncAttributes.h>
 #include <WindowInformation.h>
 
+#include <QvisApplication.h>
 #include <FileServerList.h>
 #include <QvisAnimationWindow.h>
 #include <QvisAnnotationWindow.h>
@@ -218,6 +223,9 @@ static void PrinterAttributesToQPrinter(PrinterAttributes *, QPrinter *);
 //   I made the -foreground, -background, and -style arguments supercede the
 //   values stored in the appearance attributes in the config file.
 //
+//   Brad Whitlock, Thu Sep 4 10:26:54 PDT 2003
+//   I made it use QvisApplication.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
@@ -309,7 +317,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     qt_argv[argc] = "-font";
     qt_argv[argc+1] = (char*)viewer->GetAppearanceAttributes()->GetFontDescription().c_str();
     qt_argv[argc+2] = NULL;
-    mainApp = new QApplication(qt_argc, qt_argv);
+    mainApp = new QvisApplication(qt_argc, qt_argv);
     SetWaitCursor();
     viewer->GetAppearanceAttributes()->SelectAll();
     CustomizeAppearance(false);
@@ -866,6 +874,9 @@ QvisGUIApplication::Exec()
 //    Brad Whitlock, Thu Jun 19 12:11:51 PDT 2003
 //    I added -nosplash.
 //
+//    Brad Whitlock, Fri Aug 15 13:14:04 PST 2003
+//    I added support for MacOS X styles.
+//
 // ****************************************************************************
 
 void
@@ -1005,6 +1016,11 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
 #if QT_VERSION >= 230
                || style == "sgi"
 #endif
+#if QT_VERSION >= 300
+#ifdef Q_WS_MACX
+               || style == "aqua" || style == "macintosh"
+#endif
+#endif
                )
             {
                 applicationStyle = argv[i + 1];
@@ -1052,6 +1068,9 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
 //    Brad Whitlock, Thu Jun 19 11:51:25 PDT 2003
 //    I removed the code to customize the splashscreen.
 //
+//    Brad Whitlock, Fri Aug 15 13:14:59 PST 2003
+//    I added support for MacOS X styles.
+//
 // ****************************************************************************
 
 void
@@ -1069,6 +1088,7 @@ QvisGUIApplication::CustomizeAppearance(bool notify)
     //
     if(styleSelected)
     {
+#if QT_VERSION < 300
         if(aa->GetStyle() == "cde")
             mainApp->setStyle(new QCDEStyle);
         else if(aa->GetStyle() == "windows")
@@ -1081,12 +1101,19 @@ QvisGUIApplication::CustomizeAppearance(bool notify)
 #endif
         else
             mainApp->setStyle(new QMotifStyle);
+#else
+        // Set the style via the style name.
+        mainApp->setStyle(aa->GetStyle().c_str());
+#endif
     }
 
     //
     // Set the application colors
     //
-    if(backgroundSelected || foregroundSelected || styleSelected)
+    bool needToSetColors = backgroundSelected || foregroundSelected ||
+                           styleSelected;
+    bool colorStyle = aa->GetStyle() != "aqua" && aa->GetStyle() != "macintosh";
+    if(needToSetColors && colorStyle)
     {
         QColor bg(aa->GetBackground().c_str());
         QColor fg(aa->GetForeground().c_str());
@@ -1445,6 +1472,9 @@ QvisGUIApplication::AddViewerSpaceArguments()
 //   Brad Whitlock, Wed Jul 30 16:51:44 PST 2003
 //   Hooked up new reopenOnNextFrame signal for the main window.
 //
+//   Brad Whitlock, Thu Sep 4 10:28:07 PDT 2003
+//   I hooked up hideApplication and showApplication signals.
+//
 // ****************************************************************************
 
 void
@@ -1457,6 +1487,8 @@ QvisGUIApplication::CreateMainWindow()
     // window is closed.
     connect(mainApp, SIGNAL(aboutToQuit()), mainApp, SLOT(closeAllWindows()));
     connect(mainApp, SIGNAL(lastWindowClosed()), mainApp, SLOT(quit()));
+    connect(mainApp, SIGNAL(hideApplication()), this, SLOT(IconifyWindows()));
+    connect(mainApp, SIGNAL(showApplication()), this, SLOT(DeIconifyWindows()));
 
     // Create the main window. Note that the static attributes of
     // QvisWindowBase, which all windows use, are being set here through
@@ -3303,11 +3335,47 @@ QvisGUIApplication::SplashScreenProgress(const char *msg, int prog)
 //
 // Modifications:
 //   
+//   Hank Childs, Wed Oct 15 08:50:14 PDT 2003
+//   Turn off TIFFs where the VTK library doesn't work.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::SaveWindow()
 {
+//
+// ALL OF THE FOLLOWING CODE IS TO WORK AROUND A PROBLEM WITH TIFFs ON TRU64.
+//
+    bool tiffsDontWork = false;
+    bool bigEndian = false;
+#ifdef WORDS_BIGENDIAN
+        bigEndian = true;
+#endif
+    bool long8 = false;
+#if (SIZEOF_LONG == 8)
+        long8 = true;
+#endif
+    if (bigEndian && long8)
+        tiffsDontWork = tiffsDontWork;
+
+    if (tiffsDontWork)
+    {
+        const SaveWindowAttributes *atts = viewer->GetSaveWindowAttributes();
+        if (atts->GetFormat() == SaveWindowAttributes::TIFF)
+        {
+            char msg[1024];
+            sprintf(msg, "Because of problems in an underlying library, "
+                         "TIFFs are not available on this platform.  Please "
+                         "select another format and try again.  NO IMAGE HAS"
+                         " BEEN SAVED.");
+            Error(QString(msg));
+            return;
+        }
+    }
+//
+// END WORK-AROUND ON TIFFs FOR TRU64.
+//
+
     viewer->SaveWindow();
 }
 

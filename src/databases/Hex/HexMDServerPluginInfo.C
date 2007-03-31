@@ -1,5 +1,9 @@
 #include <HexPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetMDServerInfo Hex_GetMDServerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //

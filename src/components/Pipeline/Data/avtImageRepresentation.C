@@ -4,8 +4,9 @@
 
 #include <vtkCharArray.h>
 #include <vtkFloatArray.h>
-#include <vtkImageData.h>
 #include <vtkImageClip.h>
+#include <vtkImageData.h>
+#include <vtkPointData.h>
 #include <vtkStructuredPoints.h>
 #include <vtkStructuredPointsReader.h>
 #include <vtkStructuredPointsWriter.h>

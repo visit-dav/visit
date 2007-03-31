@@ -6,8 +6,12 @@
 
 #include <float.h>
 
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkMath.h>
+#include <vtkIdList.h>
+#include <vtkMath.h>
+#include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkVisItCellLocator.h>

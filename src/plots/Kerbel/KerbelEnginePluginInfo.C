@@ -5,6 +5,14 @@
 #include <KerbelPluginInfo.h>
 #include <avtKerbelPlot.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Makefile.in_GetEngineInfo
+#endif
+
+#if defined(__APPLE__)
+#define GetEngineInfo Kerbel_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

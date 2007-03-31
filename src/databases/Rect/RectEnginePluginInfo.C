@@ -1,5 +1,9 @@
 #include <RectPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Rect_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

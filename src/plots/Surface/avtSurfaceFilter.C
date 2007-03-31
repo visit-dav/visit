@@ -6,20 +6,22 @@
 
 #include <math.h>
 
+#include <vtkAppendPolyData.h>
+#include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
 #include <vtkDataSet.h>
+#include <vtkDataSetWriter.h>
 #include <vtkFloatArray.h>
+#include <vtkGeometryFilter.h>
+#include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkPointSet.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkDataSetWriter.h>
 #include <vtkSurfaceFilter.h>
-#include <vtkAppendPolyData.h>
 #include <vtkUniqueFeatureEdges.h>
-#include <vtkGeometryFilter.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <avtDatasetExaminer.h>
 

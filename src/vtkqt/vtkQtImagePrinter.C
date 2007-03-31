@@ -5,6 +5,7 @@
 #include <qpaintdevicemetrics.h>
 
 #include <vtkImageData.h>
+#include <vtkPointData.h>
 
 // ****************************************************************************
 // Method: vtkQtImagePrinter::New

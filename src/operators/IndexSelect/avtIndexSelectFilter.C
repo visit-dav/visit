@@ -4,10 +4,13 @@
 
 #include <avtIndexSelectFilter.h>
 
+#include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkDataSetRemoveGhostCells.h>
 #include <vtkExtractGrid.h>
 #include <vtkExtractRectilinearGrid.h>
 #include <vtkIntArray.h>
+#include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnsignedIntArray.h>

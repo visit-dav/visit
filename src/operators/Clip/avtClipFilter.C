@@ -4,13 +4,17 @@
 
 #include <avtClipFilter.h>
 
+#include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkClipDataSet.h>
 #include <vtkClipPolyData.h>
 #include <vtkDataSet.h>
+#include <vtkIdList.h>
 #include <vtkImplicitBoolean.h>
 #include <vtkMergePoints.h>
 #include <vtkObjectFactory.h>
 #include <vtkPlane.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkSphere.h>

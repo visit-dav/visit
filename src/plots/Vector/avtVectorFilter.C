@@ -4,6 +4,7 @@
 
 #include <avtVectorFilter.h>
 
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkVectorReduceFilter.h>
 #include <vtkVertexFilter.h>

@@ -5,6 +5,10 @@
 #include <IndexSelectPluginInfo.h>
 #include <IndexSelectAttributes.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo IndexSelect_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

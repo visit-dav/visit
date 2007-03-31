@@ -5,6 +5,10 @@
 #include <ExternalSurfacePluginInfo.h>
 #include <ExternalSurfaceAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo ExternalSurface_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

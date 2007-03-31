@@ -5,6 +5,10 @@
 #include <BoundaryPluginInfo.h>
 #include <avtBoundaryPlot.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Boundary_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

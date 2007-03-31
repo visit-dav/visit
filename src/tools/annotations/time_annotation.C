@@ -25,15 +25,16 @@
 #include <vtkGraphicsFactory.h>
 #include <vtkImageData.h>
 #include <vtkImagingFactory.h>
+#include <vtkPointData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
-#include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
+#include <vtkRenderWindow.h>
 #include <vtkScaledTextActor.h>
 #include <vtkTextMapper.h>
-#include <vtkWindowToImageFilter.h>
 #include <vtkTIFFWriter.h>
 #include <vtkUnsignedCharArray.h>
+#include <vtkWindowToImageFilter.h>
 
 #include <arial_font.h>
 

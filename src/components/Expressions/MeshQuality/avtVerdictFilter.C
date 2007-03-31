@@ -6,9 +6,10 @@
 
 #include <verdict.h>
 
+#include <vtkCell.h>
 #include <vtkDataSet.h>
-#include <vtkDataArray.h>
 #include <vtkFloatArray.h>
+#include <vtkPoints.h>
 
 #include <avtDataTree.h>
 #include <avtDataRepresentation.h>

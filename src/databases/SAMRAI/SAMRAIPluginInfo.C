@@ -4,6 +4,10 @@
 
 #include <SAMRAIPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo SAMRAI_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

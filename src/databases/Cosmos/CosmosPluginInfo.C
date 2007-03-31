@@ -4,6 +4,10 @@
 
 #include <CosmosPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Cosmos_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

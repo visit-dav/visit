@@ -10,10 +10,11 @@
 
 #include "vtkVisItSTLWriter.h"
 
-#include "vtkByteSwap.h"
-#include "vtkObjectFactory.h"
-#include "vtkPolyData.h"
-#include "vtkTriangle.h"
+#include <vtkByteSwap.h>
+#include <vtkCellArray.h>
+#include <vtkObjectFactory.h>
+#include <vtkPolyData.h>
+#include <vtkTriangle.h>
 
 vtkCxxRevisionMacro(vtkVisItSTLWriter, "$Revision: 1.45 $");
 vtkStandardNewMacro(vtkVisItSTLWriter);

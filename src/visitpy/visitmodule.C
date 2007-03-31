@@ -1496,6 +1496,9 @@ visit_OverlayDatabase(PyObject *self, PyObject *args)
 //   Brad Whitlock, Fri Jul 26 12:11:27 PDT 2002
 //   I made it return a success value.
 //
+//   Brad Whitlock, Wed Oct 15 16:38:39 PST 2003
+//   I made it accept an optional timestate argument.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -1504,22 +1507,31 @@ visit_ReplaceDatabase(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
 
     char *fileName;
-    if (!PyArg_ParseTuple(args, "s", &fileName))
-       return NULL;
+    int timeState = 0;
+    if (!PyArg_ParseTuple(args, "si", &fileName, &timeState))
+    {
+       if (!PyArg_ParseTuple(args, "s", &fileName))
+           return NULL;
+       else
+           PyErr_Clear();
+    }
 
     // Replace the database.
     MUTEX_LOCK();
-        viewer->ReplaceDatabase(fileName);
+        viewer->ReplaceDatabase(fileName, timeState);
         if(logging)
-            fprintf(logFile, "ReplaceDatabase(\"%s\")\n", fileName);
+        {
+            fprintf(logFile, "ReplaceDatabase(\"%s\", %d)\n",
+                    fileName, timeState);
+        }
     MUTEX_UNLOCK();
     int errorFlag = Synchronize();
 
-    // Go to the first time step.
+    // Go to the desired time step.
     if(errorFlag == 0)
     {
         MUTEX_LOCK();
-            viewer->AnimationSetFrame(0);
+            viewer->AnimationSetFrame(timeState);
         MUTEX_UNLOCK();
         errorFlag = Synchronize();
     }

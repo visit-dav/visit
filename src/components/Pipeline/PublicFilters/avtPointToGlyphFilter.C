@@ -7,6 +7,8 @@
 #include <math.h>
 
 #include <vtkGlyph3D.h>
+#include <vtkIdTypeArray.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataRelevantPointsFilter.h>
 #include <vtkUnstructuredGrid.h>

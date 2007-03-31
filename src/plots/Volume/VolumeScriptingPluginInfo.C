@@ -4,6 +4,10 @@
 #include <VolumePluginInfo.h>
 #include <PyVolumeAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Volume_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

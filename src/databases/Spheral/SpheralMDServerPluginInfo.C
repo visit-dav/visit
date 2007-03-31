@@ -1,5 +1,9 @@
 #include <SpheralPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetMDServerInfo Spheral_GetMDServerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //

@@ -6,6 +6,10 @@
 #include <HistogramAttributes.h>
 #include <QvisHistogramPlotWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Histogram_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

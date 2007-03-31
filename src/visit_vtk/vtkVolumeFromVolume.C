@@ -4,7 +4,10 @@
 
 #include <vtkVolumeFromVolume.h>
 
+#include <vtkIdList.h>
 #include <vtkCellData.h>
+#include <vtkCellType.h>
+#include <vtkIdList.h>
 #include <vtkPointData.h>
 #include <vtkUnstructuredGrid.h>
 

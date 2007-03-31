@@ -1,4 +1,4 @@
-#                            Copyright 1991 - 2001
+#                            Copyright 1991 - 2003
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -189,6 +189,11 @@
 #    Hank Childs, Thu Oct  2 08:51:16 PDT 2003
 #    Added vtkDisjointCubesFacelistFilter.
 #
+#    Brad Whitlock, Fri Aug 22 17:30:41 PST 2003
+#    I made vtkCamera be added by configure so we have the option of not
+#    building it on MacOS X since VTK already has a vtkCamera. I built
+#    our vtkCamera into VTK instead.
+#
 ##############################################################################
 
 ##
@@ -208,8 +213,7 @@ SRC=InitVTK.C \
     ClipCasesTri.C \
     ClipCasesWdg.C \
     vtkAxisDepthSort.C \
-    vtkBackgroundActor.C \
-    vtkCamera.C \
+    vtkBackgroundActor.C @VTK_CAMERA_SRC@\
     vtkConnectedTubeFilter.C \
     vtkDashedXorGridMapper2D.C \
     vtkDataSetFromVolume.C \

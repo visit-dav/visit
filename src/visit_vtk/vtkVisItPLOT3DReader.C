@@ -19,11 +19,13 @@
 
 =========================================================================*/
 #include "vtkVisItPLOT3DReader.h"
-#include "vtkByteSwap.h"
-#include "vtkObjectFactory.h"
-#include "vtkFloatArray.h"
-#include "vtkIntArray.h"
-#include "vtkStructuredGrid.h"
+
+#include <vtkByteSwap.h>
+#include <vtkFloatArray.h>
+#include <vtkIntArray.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkStructuredGrid.h>
 
 #include <ctype.h>
 #include <math.h>

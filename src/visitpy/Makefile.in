@@ -115,7 +115,7 @@ HDR= \
 
 OBJ=$(SRC:.C=.o)
 LIB=visitmodule
-LIBNAME=$(LIB).so
+LIBNAME=$(LIB).@SHLIB_SOEXT@
 CLI=$(tmpbin)/cli
 
 ##

@@ -4,6 +4,10 @@
 #include <InverseGhostZonePluginInfo.h>
 #include <PyInverseGhostZoneAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo InverseGhostZone_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

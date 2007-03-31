@@ -4,6 +4,10 @@
 #include <BoundaryPluginInfo.h>
 #include <PyBoundaryAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Boundary_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

@@ -3,13 +3,17 @@
 #include <InvalidVariableException.h>
 #include <InvalidCellTypeException.h>
 
+#include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkIdList.h>
 #include <vtkIntArray.h>
 #include <vtkMatrix4x4.h>
 #include <vtkPolyData.h>
-#include <vtkStructuredGrid.h>
+#include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <avtDatabaseMetaData.h>

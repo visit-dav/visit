@@ -3,6 +3,7 @@
 #include <avtSTSDFileFormatInterface.h>
 #include <avtDatabaseMetaData.h>
 
+#include <vtkCellData.h>
 #include <vtkFloatArray.h>
 #include <vtkIdList.h>
 #include <vtkIntArray.h>

@@ -1,5 +1,9 @@
 #include <PLOT3DPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo PLOT3D_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

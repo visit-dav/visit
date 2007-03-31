@@ -5,6 +5,10 @@
 #include <VectorPluginInfo.h>
 #include <avtVectorPlot.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Vector_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

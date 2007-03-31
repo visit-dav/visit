@@ -5,22 +5,10 @@
 #include <PlotPluginManager.h>
 #include <PlotPluginInfo.h>
 #include <DebugStream.h>
-#include <InvalidDirectoryException.h>
 #include <InvalidPluginException.h>
-#include <visit-config.h>
 #include <iostream.h>
-#include <stdlib.h>
 #include <string>
 #include <vector>
-#include <algorithm>
-
-#if defined(_WIN32)
-#include <windows.h>
-#include <direct.h>
-#else
-#include <dlfcn.h>
-#include <dirent.h>
-#endif
 
 using std::string;
 using std::vector;

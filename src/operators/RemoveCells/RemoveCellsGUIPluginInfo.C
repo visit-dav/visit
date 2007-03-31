@@ -6,6 +6,14 @@
 #include <RemoveCellsAttributes.h>
 #include <QvisRemoveCellsWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Makefile_GetGUIInfo
+#endif
+
+#if defined(__APPLE__)
+#define GetGUIInfo RemoveCells_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

@@ -5,6 +5,10 @@
 #include <DisplacePluginInfo.h>
 #include <DisplaceAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Displace_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

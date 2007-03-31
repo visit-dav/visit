@@ -5,6 +5,10 @@
 #include <MetricThresholdPluginInfo.h>
 #include <MetricThresholdAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo MetricThreshold_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

@@ -56,6 +56,10 @@ bool    ViewerWindow::doNoWinMode = false;
 //
 extern ViewerSubject  *viewerSubject;
 
+//
+// Function prototypes.
+//
+static void RotateAroundY(const avtView3D&, double, avtView3D&);
 
 // ****************************************************************************
 //  Method: ViewerWindow::ViewerWindow
@@ -1089,6 +1093,9 @@ ViewerWindow::MoveViewKeyframe(int oldFrame, int newFrame)
 //    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
 //    I added a curve view.  I split the view attributes into 2d and 3d parts.
 //
+//    Hank Childs, Wed Oct 15 12:58:19 PDT 2003
+//    Copy over the eye angle.
+//
 // ****************************************************************************
 
 void
@@ -1130,6 +1137,7 @@ ViewerWindow::SetViewKeyframe()
     curView3D->SetImagePan(view3d.imagePan);
     curView3D->SetImageZoom(view3d.imageZoom);
     curView3D->SetPerspective(view3d.perspective);
+    curView3D->SetEyeAngle(view3d.eyeAngle);
 
     view3DAtts->SetAtts(animation->GetFrameIndex(), curView3D);
 }
@@ -2363,6 +2371,9 @@ ViewerWindow::CopyViewAttributes(const ViewerWindow *source)
 //   Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
 //   I added a curve view.
 //
+//   Hank Childs, Wed Oct 15 12:58:19 PDT 2003
+//   Added eye angle.
+//
 // ****************************************************************************
 
 void
@@ -2429,6 +2440,7 @@ ViewerWindow::UpdateCameraView()
             view3d.viewUp[2] = curView3D->GetViewUp()[2];
             view3d.viewAngle = curView3D->GetViewAngle();
             view3d.parallelScale = curView3D->GetParallelScale();
+            view3d.eyeAngle = curView3D->GetEyeAngle();
             view3d.nearPlane = curView3D->GetNearPlane();
             view3d.farPlane = curView3D->GetFarPlane();
             view3d.imagePan[0] = curView3D->GetImagePan()[0];
@@ -3951,6 +3963,205 @@ ViewerWindow::UpdateView3d(const double *limits)
     }
 
     haveRenderedIn3d = true;
+}
+
+// ****************************************************************************
+//  Method: ViewerWindow::ConvertFromLeftEyeToRightEye
+//
+//  Purpose:
+//      Converts from a left eye view to a right eye view.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 15, 2003
+//
+// ****************************************************************************
+
+void
+ViewerWindow::ConvertFromLeftEyeToRightEye(void)
+{
+    const avtView3D &curView = GetView3D();
+    double eyeAngle = curView.eyeAngle;
+    avtView3D newView;
+    RotateAroundY(curView, -eyeAngle, newView);
+    SetView3D(newView);
+}
+
+// ****************************************************************************
+//  Method: ViewerWindow::ConvertFromRightEyeToLeftEye
+//
+//  Purpose:
+//      Converts from a right eye view to a left eye view.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 15, 2003
+//
+// ****************************************************************************
+
+void
+ViewerWindow::ConvertFromRightEyeToLeftEye(void)
+{
+    const avtView3D &curView = GetView3D();
+    double eyeAngle = curView.eyeAngle;
+    avtView3D newView;
+    RotateAroundY(curView, +eyeAngle, newView);
+    SetView3D(newView);
+}
+
+// ****************************************************************************
+//  Function: RotateAroundY
+//
+//  Purpose:
+//      Rotates around the y-axis by a specified angle.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 15, 2003
+//
+// ****************************************************************************
+
+static void
+RotateAroundY(const avtView3D &curView, double angle,
+                            avtView3D &newView)
+{
+    double angleRadians;
+    double v1[3], v2[3], v3[3];
+    double m1[9], m2[9], m3[9], r[9];
+    double rotationMatrix[9];
+    double viewNormal[3];
+    double viewUp[3];
+
+    //
+    // Calculate the rotation matrix in screen coordinates.
+    //
+    angleRadians = angle * (3.141592653589793 / 180.);
+    r[0] = cos(angleRadians);
+    r[1] = 0.;
+    r[2] = sin(angleRadians);
+    r[3] = 0.;
+    r[4] = 1.;
+    r[5] = 0.;
+    r[6] = - sin(angleRadians);
+    r[7] = 0.;
+    r[8] = cos(angleRadians);
+
+    //
+    // Calculate the matrix to rotate from object coordinates to screen
+    // coordinates and its inverse.
+    //
+    v1[0] = curView.normal[0];
+    v1[1] = curView.normal[1];
+    v1[2] = curView.normal[2];
+    double mag = sqrt(v1[0]*v1[0] + v1[1]*v1[1] + v1[2]*v1[2]);
+    if (mag == 0)
+        mag = 1.;
+    v1[0] /= mag;
+    v1[1] /= mag;
+    v1[2] /= mag;
+
+    v2[0] = curView.viewUp[0];
+    v2[1] = curView.viewUp[1];
+    v2[2] = curView.viewUp[2];
+    mag = sqrt(v2[0]*v2[0] + v2[1]*v2[1] + v2[2]*v2[2]);
+    if (mag == 0)
+        mag = 1.;
+    v2[0] /= mag;
+    v2[1] /= mag;
+    v2[2] /= mag;
+
+    v3[0] =   v2[1]*v1[2] - v2[2]*v1[1];
+    v3[1] = - v2[0]*v1[2] + v2[2]*v1[0];
+    v3[2] =   v2[0]*v1[1] - v2[1]*v1[0];
+    mag = sqrt(v3[0]*v3[0] + v3[1]*v3[1] + v3[2]*v3[2]);
+    if (mag == 0)
+        mag = 1.;
+    v3[0] /= mag;
+    v3[1] /= mag;
+    v3[2] /= mag;
+
+    // View normal and view up may not be orthogonal -- make sure that they
+    // are by crossing v3 and view normal again.
+    v2[0] =   v1[1]*v3[2] - v1[2]*v3[1];
+    v2[1] = - v1[0]*v3[2] + v1[2]*v3[0];
+    v2[2] =   v1[0]*v3[1] - v1[1]*v3[0];
+    mag = sqrt(v2[0]*v2[0] + v2[1]*v2[1] + v2[2]*v2[2]);
+    if (mag == 0)
+        mag = 1.;
+    v2[0] /= mag;
+    v2[1] /= mag;
+    v2[2] /= mag;
+
+    m1[0] = v3[0];
+    m1[1] = v2[0];
+    m1[2] = v1[0];
+    m1[3] = v3[1];
+    m1[4] = v2[1];
+    m1[5] = v1[1];
+    m1[6] = v3[2];
+    m1[7] = v2[2];
+    m1[8] = v1[2];
+
+    m2[0] = m1[0];
+    m2[1] = m1[3];
+    m2[2] = m1[6];
+    m2[3] = m1[1];
+    m2[4] = m1[4];
+    m2[5] = m1[7];
+    m2[6] = m1[2];
+    m2[7] = m1[5];
+    m2[8] = m1[8];
+
+    //
+    // Form the composite transformation matrix m1 X r X m2.
+    //
+    m3[0] = m1[0]*r[0] + m1[1]*r[3] + m1[2]*r[6];
+    m3[1] = m1[0]*r[1] + m1[1]*r[4] + m1[2]*r[7];
+    m3[2] = m1[0]*r[2] + m1[1]*r[5] + m1[2]*r[8];
+    m3[3] = m1[3]*r[0] + m1[4]*r[3] + m1[5]*r[6];
+    m3[4] = m1[3]*r[1] + m1[4]*r[4] + m1[5]*r[7];
+    m3[5] = m1[3]*r[2] + m1[4]*r[5] + m1[5]*r[8];
+    m3[6] = m1[6]*r[0] + m1[7]*r[3] + m1[8]*r[6];
+    m3[7] = m1[6]*r[1] + m1[7]*r[4] + m1[8]*r[7];
+    m3[8] = m1[6]*r[2] + m1[7]*r[5] + m1[8]*r[8];
+
+    rotationMatrix[0] = m3[0]*m2[0] + m3[1]*m2[3] + m3[2]*m2[6];
+    rotationMatrix[1] = m3[0]*m2[1] + m3[1]*m2[4] + m3[2]*m2[7];
+    rotationMatrix[2] = m3[0]*m2[2] + m3[1]*m2[5] + m3[2]*m2[8];
+    rotationMatrix[3] = m3[3]*m2[0] + m3[4]*m2[3] + m3[5]*m2[6];
+    rotationMatrix[4] = m3[3]*m2[1] + m3[4]*m2[4] + m3[5]*m2[7];
+    rotationMatrix[5] = m3[3]*m2[2] + m3[4]*m2[5] + m3[5]*m2[8];
+    rotationMatrix[6] = m3[6]*m2[0] + m3[7]*m2[3] + m3[8]*m2[6];
+    rotationMatrix[7] = m3[6]*m2[1] + m3[7]*m2[4] + m3[8]*m2[7];
+    rotationMatrix[8] = m3[6]*m2[2] + m3[7]*m2[5] + m3[8]*m2[8];
+
+    //
+    // Calculate the new view normal and view up.
+    //
+    viewNormal[0] = curView.normal[0] * rotationMatrix[0] +
+                    curView.normal[1] * rotationMatrix[3] +
+                    curView.normal[2] * rotationMatrix[6];
+    viewNormal[1] = curView.normal[0] * rotationMatrix[1] +
+                    curView.normal[1] * rotationMatrix[4] +
+                    curView.normal[2] * rotationMatrix[7];
+    viewNormal[2] = curView.normal[0] * rotationMatrix[2] +
+                    curView.normal[1] * rotationMatrix[5] +
+                    curView.normal[2] * rotationMatrix[8];
+
+    viewUp[0] = curView.viewUp[0] * rotationMatrix[0] +
+                curView.viewUp[1] * rotationMatrix[3] +
+                curView.viewUp[2] * rotationMatrix[6];
+    viewUp[1] = curView.viewUp[0] * rotationMatrix[1] +
+                curView.viewUp[1] * rotationMatrix[4] +
+                curView.viewUp[2] * rotationMatrix[7];
+    viewUp[2] = curView.viewUp[0] * rotationMatrix[2] +
+                curView.viewUp[1] * rotationMatrix[5] +
+                curView.viewUp[2] * rotationMatrix[8];
+
+    newView = curView;
+    newView.normal[0] = viewNormal[0];
+    newView.normal[1] = viewNormal[1];
+    newView.normal[2] = viewNormal[2];
+    newView.viewUp[0] = viewUp[0];
+    newView.viewUp[1] = viewUp[1];
+    newView.viewUp[2] = viewUp[2];
 }
 
 // ****************************************************************************

@@ -4,6 +4,10 @@
 
 #include <VTKPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo VTK_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

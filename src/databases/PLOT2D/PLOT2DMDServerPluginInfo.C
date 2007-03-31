@@ -1,5 +1,9 @@
 #include <PLOT2DPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetMDServerInfo PLOT2D_GetMDServerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //

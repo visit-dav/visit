@@ -5,6 +5,10 @@
 #include <HistogramPluginInfo.h>
 #include <HistogramAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Histogram_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

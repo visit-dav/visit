@@ -5,6 +5,10 @@
 #include <IndexSelectPluginInfo.h>
 #include <IndexSelectAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo IndexSelect_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

@@ -5,6 +5,10 @@
 #include <SurfCompPrepPluginInfo.h>
 #include <SurfCompPrepAttributes.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo SurfCompPrep_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

@@ -25,11 +25,15 @@ static QWidget *parentOfEveryWindow = 0;
 //   I changed the code so that on the Windows platform, all windows are
 //   children of the first window which happens to be the Main window.
 //
+//   Brad Whitlock, Thu Sep 4 12:18:59 PDT 2003
+//   I made all windows be children of the main window on MacOS X so when
+//   child windows are active, the VisIt menu does not change.
+//
 // ****************************************************************************
 
 QvisWindowBase::QvisWindowBase(const char *captionString, WFlags f) :
     QMainWindow(parentOfEveryWindow, captionString,
-#if defined(_WIN32)
+#if defined(Q_WS_WIN) || defined(Q_WS_MACX)
                 WType_TopLevel | f)
 {
     // Make each window the child of the first window that is created

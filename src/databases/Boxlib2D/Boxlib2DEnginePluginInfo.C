@@ -1,5 +1,9 @@
 #include <Boxlib2DPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Boxlib2D_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

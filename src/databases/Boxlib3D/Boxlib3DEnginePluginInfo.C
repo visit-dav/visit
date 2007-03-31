@@ -1,5 +1,13 @@
 #include <Boxlib3DPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Makefile_GetEngineInfo
+#endif
+
+#if defined(__APPLE__)
+#define GetEngineInfo Boxlib3D_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

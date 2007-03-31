@@ -5,6 +5,14 @@
 #include <TopologyPluginInfo.h>
 #include <avtTopologyPlot.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Makefile_GetEngineInfo
+#endif
+
+#if defined(__APPLE__)
+#define GetEngineInfo Topology_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

@@ -24,6 +24,8 @@ AppearanceAttributes::InitializeStyle()
     foreground = tmp;
 
     style = "windows";
+#elif defined(__APPLE__)
+    style = "aqua";
 #else
     style = "motif";
 #endif

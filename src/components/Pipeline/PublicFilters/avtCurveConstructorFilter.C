@@ -5,6 +5,7 @@
 #include <avtCurveConstructorFilter.h>
 #include <avtDataTree.h>
 
+#include <vtkCellArray.h>
 #include <vtkDataSet.h>
 #include <vtkPolyData.h>
 #include <InvalidDimensionsException.h>

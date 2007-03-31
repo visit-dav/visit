@@ -6,6 +6,10 @@
 #include <SubsetAttributes.h>
 #include <QvisSubsetPlotWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Subset_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

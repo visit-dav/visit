@@ -5,6 +5,10 @@
 #include <TransformPluginInfo.h>
 #include <avtTransformFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Transform_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

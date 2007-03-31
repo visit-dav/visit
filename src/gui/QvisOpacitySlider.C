@@ -1,7 +1,10 @@
 #include <QvisOpacitySlider.h>
 #include <qbitmap.h>
+#include <qcolor.h>
 #include <qdrawutil.h>
+#include <qimage.h>
 #include <qpainter.h>
+#include <qpalette.h>
 #include <qstyle.h>
 #include <qtimer.h>
 
@@ -604,66 +607,115 @@ QvisOpacitySlider::drawTicks( QPainter *p, const QColorGroup& g, int dist,
 //   Added code to draw checkerboard over the gradient if the widget
 //   is disabled.
 //
+//   Brad Whitlock, Thu Aug 21 17:31:30 PST 2003
+//   Added code to do alpha blending with a pixmap background so it looks
+//   like it's supposed to look on MacOS X.
+//
 // ****************************************************************************
 
 void
 QvisOpacitySlider::createGradientPixmap()
 {
     // Create the pixmap.
-    gradientPixmap = new QPixmap(width(), height() - tickOffset);
+    int w = width();
+    int h = height() - tickOffset;
+    gradientPixmap = new QPixmap(w, h);
 
-    // Now draw the color gradient into the pixmap.
-    float invWidth = 1.0 / ((float)width());
-    float deltaRed = gradientColor.red() - colorGroup().background().red();
-    float deltaGreen = gradientColor.green() - colorGroup().background().green();
-    float deltaBlue = gradientColor.blue() - colorGroup().background().blue();
+    QBrush brush(colorGroup().brush(QColorGroup::Background));
+    QPainter paint(gradientPixmap);
 
-    deltaRed *= invWidth;
-    deltaGreen *= invWidth;
-    deltaBlue *= invWidth;
-
-    float red = (float)colorGroup().background().red();
-    float green = (float)colorGroup().background().green();
-    float blue = (float)colorGroup().background().blue();
-
-    QPainter p(gradientPixmap);
-    for(int i = 0; i < width(); ++i)
+    if(brush.pixmap())
     {
-        int currentRed = (int)red;
-        int currentGreen = (int)green;
-        int currentBlue = (int)blue;
+        // Paint the background into the pixmap.
+        paint.fillRect(0, 0, w, h, colorGroup().brush(QColorGroup::Background));
+        QImage img = gradientPixmap->convertToImage();
+        if(!img.isNull())
+        {
+            for(int i = 0; i < w; ++i)
+            {
+                float t = float(i) / float(w - 1);
+                float omt = 1.f - t;
+                int   rc, gc, bc;
+                for(int j = 0; j < h; ++j)
+                {
+                    // Alpha blend with the pixel that's there already.
+                    QRgb p = img.pixel(i, j);
+                    rc = int(omt * float(qRed(p)) + t * float(gradientColor.red()));
+                    rc = (rc > 255) ? 255 : rc;
+                    gc = int(omt * float(qGreen(p)) + t * float(gradientColor.green()));
+                    gc = (gc > 255) ? 255 : gc;
+                    bc = int(omt * float(qBlue(p)) + t * float(gradientColor.blue()));
+                    bc = (bc > 255) ? 255 : bc;
+                    img.setPixel(i, j, qRgb(rc, gc, bc));
+                }
+            }
 
-        // Clamp values just in case they went out of range.
-        if(currentRed < 0)
-           currentRed = 0;
-        else if(currentRed > 255)
-           currentRed = 255;
+            if(!gradientPixmap->convertFromImage(img))
+            {
+                qDebug("QvisOpacitySlider::createGradientPixmap: "
+                       "Could not convert the image to a pixmap!");
+            }
+        }
+        else
+        {
+            qDebug("QvisOpacitySlider::createGradientPixmap: "
+                   "Could not create the initial image from the pixmap.");
+        }
+    }
+    else
+    {
+        // Now draw the color gradient into the pixmap.
+        float invWidth = 1.0 / ((float)width());
+        float deltaRed = gradientColor.red() - colorGroup().background().red();
+        float deltaGreen = gradientColor.green() - colorGroup().background().green();
+        float deltaBlue = gradientColor.blue() - colorGroup().background().blue();
 
-        if(currentGreen < 0)
-           currentGreen = 0;
-        else if(currentGreen > 255)
-           currentGreen = 255;
+        deltaRed *= invWidth;
+        deltaGreen *= invWidth;
+        deltaBlue *= invWidth;
 
-        if(currentBlue < 0)
-           currentBlue = 0;
-        else if(currentBlue > 255)
-           currentBlue = 255;
+        float red = (float)colorGroup().background().red();
+        float green = (float)colorGroup().background().green();
+        float blue = (float)colorGroup().background().blue();
 
-        QColor tempColor(currentRed, currentGreen, currentBlue);
-        p.setPen(tempColor);
-        p.drawLine(i, 0, i, height());
+        for(int i = 0; i < width(); ++i)
+        {
+            int currentRed = (int)red;
+            int currentGreen = (int)green;
+            int currentBlue = (int)blue;
 
-        red += deltaRed;
-        green += deltaGreen;
-        blue += deltaBlue;
+            // Clamp values just in case they went out of range.
+            if(currentRed < 0)
+                currentRed = 0;
+            else if(currentRed > 255)
+                currentRed = 255;
+
+            if(currentGreen < 0)
+                currentGreen = 0;
+            else if(currentGreen > 255)
+                currentGreen = 255;
+
+            if(currentBlue < 0)
+                currentBlue = 0;
+            else if(currentBlue > 255)
+                currentBlue = 255;
+
+            QColor tempColor(currentRed, currentGreen, currentBlue);
+            paint.setPen(tempColor);
+            paint.drawLine(i, 0, i, h);
+
+            red += deltaRed;
+            green += deltaGreen;
+            blue += deltaBlue;
+        }
     }
 
     // If the widget is disabled then draw a checkerboard over it.
     if(!isEnabled())
     {
-        QBrush brush(colorGroup().background());
-        brush.setStyle(QBrush::Dense6Pattern);
-        p.fillRect(QRect(0, 0, width(), height()), brush);
+        QBrush brush2(colorGroup().background());
+        brush2.setStyle(QBrush::Dense6Pattern);
+        paint.fillRect(QRect(0, 0, w, h), brush2);
     }
 }
 
@@ -763,6 +815,9 @@ QvisOpacitySlider::resizeEvent(QResizeEvent *)
 //   Brad Whitlock, Mon Mar 11 12:42:43 PDT 2002
 //   Upgraded to Qt 3.0.
 //
+//   Brad Whitlock, Thu Aug 21 17:33:54 PST 2003
+//   I fixed it so it looks better on MacOS X.
+//
 // ****************************************************************************
 
 void
@@ -789,9 +844,10 @@ QvisOpacitySlider::paintEvent(QPaintEvent *)
     }
 
     // Draw the tick marks.
-    p.fillRect(0, 0, width(), tickOffset, colorGroup().background());
+    p.fillRect(0, 0, width(), tickOffset,
+               colorGroup().brush(QColorGroup::Background));
     p.fillRect(0, tickOffset + thickness(), width(), height(),
-               colorGroup().background());
+               colorGroup().brush(QColorGroup::Background));
     drawTicks(&p, colorGroup(), 0, tickOffset - 2, interval);
 
     // If this widget has focus, draw the focus rectangle.

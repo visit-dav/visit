@@ -1,5 +1,9 @@
 #include <WavefrontOBJPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo WavefrontOBJ_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

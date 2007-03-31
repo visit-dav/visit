@@ -12,14 +12,18 @@ using std::vector;
 #include <Tetrahedralizer.h>
 #include <Triangulator.h>
 
-#include <vtkDataSet.h>
 #include <vtkCell.h>
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
+#include <vtkDataSet.h>
 #include <vtkFloatArray.h>
+#include <vtkIntArray.h>
+#include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
-#include <vtkUnstructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <avtMixedVariable.h>
 #include <avtMaterial.h>
@@ -329,6 +333,10 @@ TetMIR::~TetMIR()
 //    cell may still need to be split in many cases where there are more than
 //    three materials in an adjacent zone.
 //
+//    Jeremy Meredith, Wed Oct 15 16:47:49 PDT 2003
+//    Removed support for clean-zones-only.  Leaving it in would have required
+//    more maintenance to this class than we would like to support.
+//
 // ****************************************************************************
 bool
 TetMIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
@@ -466,8 +474,7 @@ TetMIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
         bool clean       = (*real_clean_zones)[c];
         int  clean_matno = mat->GetMatlist()[c];
 
-        if (options.cleanZonesOnly ||
-            (options.leaveCleanZonesWhole && clean))
+        if (options.leaveCleanZonesWhole && clean)
         {
             someClean = true;
             ReconstructCleanCell(clean_matno, c, *c_ptr, c_ptr+1,
@@ -607,6 +614,10 @@ TetMIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
 //    cell may still need to be split in many cases where there are more than
 //    three materials in an adjacent zone.
 //
+//    Jeremy Meredith, Wed Oct 15 16:49:47 PDT 2003
+//    Removed support for clean-zones-only.  Leaving it in would have required
+//    more maintenance to this class than we would like to support.
+//
 // ****************************************************************************
 bool
 TetMIR::Reconstruct2DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
@@ -731,8 +742,7 @@ TetMIR::Reconstruct2DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
         bool clean       = (*real_clean_zones)[c];
         int  clean_matno = mat->GetMatlist()[c];
 
-        if (options.cleanZonesOnly ||
-            (options.leaveCleanZonesWhole && clean))
+        if (options.leaveCleanZonesWhole && clean)
         {
             someClean = true;
             ReconstructCleanCell(clean_matno, c, *c_ptr, c_ptr+1,
@@ -904,11 +914,16 @@ TetMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat,
 //    Hank Childs, Fri Sep 12 17:40:50 PDT 2003
 //    Formally tell Subset array how many tuples it has.
 //
+//    Jeremy Meredith, Wed Oct 15 16:47:49 PDT 2003
+//    Added space for a material to get passed.  This is not used here;
+//    it is only used for the new ZooMIR algorithm with clean-zones-only.
+//
 // ****************************************************************************
 
 vtkDataSet *
 TetMIR::GetDataset(vector<int> mats, vtkDataSet *ds, 
-                vector<avtMixedVariable *> mixvars, bool doMats)
+                   vector<avtMixedVariable *> mixvars, bool doMats,
+                   avtMaterial *)
 {
     int i, j, timerHandle = visitTimer->StartTimer();
 

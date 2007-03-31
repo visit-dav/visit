@@ -5,6 +5,7 @@
 #include "avtVolumeRenderer.h"
 
 #include <vtkDataSet.h>
+#include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>

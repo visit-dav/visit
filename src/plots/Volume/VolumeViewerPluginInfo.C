@@ -5,6 +5,10 @@
 #include <VolumePluginInfo.h>
 #include <avtVolumePlot.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo Volume_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

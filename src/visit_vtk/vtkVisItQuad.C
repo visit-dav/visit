@@ -1,6 +1,7 @@
 #include <vtkVisItQuad.h>
 
 #include <vtkObjectFactory.h>
+#include <vtkPoints.h>
 #include <vtkTriangle.h>
 
 vtkCxxRevisionMacro(vtkVisItQuad, "$Revision: 1.0 $");

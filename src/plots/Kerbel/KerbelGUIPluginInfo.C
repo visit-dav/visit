@@ -6,6 +6,14 @@
 #include <KerbelAttributes.h>
 #include <QvisKerbelPlotWindowWithButtons.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Makefile.in_GetGUIInfo
+#endif
+
+#if defined(__APPLE__)
+#define GetGUIInfo Kerbel_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

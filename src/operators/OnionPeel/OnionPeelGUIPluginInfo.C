@@ -6,6 +6,10 @@
 #include <OnionPeelAttributes.h>
 #include <QvisOnionPeelWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo OnionPeel_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

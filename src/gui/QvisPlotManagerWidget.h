@@ -114,6 +114,9 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   Brad Whitlock, Wed Sep 10 09:07:02 PDT 2003
 //   Added UpdateHideDeleteDrawButtonsEnabledState.
 //
+//   Brad Whitlock, Fri Aug 15 15:06:56 PST 2003
+//   Added the menu bar pointer in the constructor.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotManagerWidget : public QWidget, public GUIBase,
@@ -121,7 +124,8 @@ class GUI_API QvisPlotManagerWidget : public QWidget, public GUIBase,
 {
     Q_OBJECT
 public:
-    QvisPlotManagerWidget(QWidget *parent = 0, const char *name = 0);
+    QvisPlotManagerWidget(QMenuBar *menuBar, QWidget *parent = 0,
+        const char *name = 0);
     ~QvisPlotManagerWidget();
     virtual void Update(Subject *);
     virtual void SubjectRemoved(Subject *);
@@ -142,7 +146,7 @@ signals:
 protected:
     virtual void keyReleaseEvent(QKeyEvent *key);
 private:
-    void CreateMenus();
+    void CreateMenus(QMenuBar *);
     void UpdatePlotList();
     void PopulateVariableLists(const QualifiedFilename &filename);
     void UpdatePlotVariableMenu();
