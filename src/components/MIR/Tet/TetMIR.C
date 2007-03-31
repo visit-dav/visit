@@ -918,6 +918,10 @@ TetMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat,
 //    Added space for a material to get passed.  This is not used here;
 //    it is only used for the new ZooMIR algorithm with clean-zones-only.
 //
+//    Jeremy Meredith, Wed Oct 22 13:02:12 PDT 2003
+//    Added a check to make sure the requested material is not the
+//    "clean-zones-only" mixed material index before looking it up.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -939,9 +943,12 @@ TetMIR::GetDataset(vector<int> mats, vtkDataSet *ds,
         for (i = 0; i < mats.size(); i++)
         {
             int origmatno = mats[i];
-            int usedmatno = mapMatToUsedMat[origmatno];
-            if (usedmatno != -1)
-                matFlag[usedmatno] = true;
+            if (origmatno < mapMatToUsedMat.size())
+            {
+                int usedmatno = mapMatToUsedMat[origmatno];
+                if (usedmatno != -1)
+                    matFlag[usedmatno] = true;
+            }
         }
     }
     else

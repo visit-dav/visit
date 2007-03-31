@@ -32,6 +32,9 @@ struct ResampledMat;
 //    Jeremy Meredith, Wed Oct 15 16:47:49 PDT 2003
 //    Added space for a material to get passed in to GetDataset.
 //
+//    Jeremy Meredith, Tue Oct 21 11:24:42 PDT 2003
+//    Added data member to track original number of materials.
+//
 // ****************************************************************************
 class MIR_API ZooMIR : public MIR
 {
@@ -159,6 +162,7 @@ class MIR_API ZooMIR : public MIR
 
     int                                     dimension;
     int                                     nMaterials;
+    int                                     nOrigMaterials;
     bool                                    noMixedZones;
 
     std::vector<int>                        mapMatToUsedMat;
