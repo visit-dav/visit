@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <algorithm>
+#include <map>
 
 #include <visit-config.h> // To get the version number and splashscreen
 #include <qapplication.h>
@@ -1378,6 +1379,7 @@ QvisGUIApplication::CreateWindows(int orientation)
             this, SLOT(ActivatePlotWindow(int)));
     connect(mainWin->GetPlotManager(), SIGNAL(activateOperatorWindow(int)),
             this, SLOT(ActivateOperatorWindow(int)));
+    connect(mainWin, SIGNAL(refreshFileList()), this, SLOT(RefreshFileList()));
     mainWin->ConnectMessageAttr(&message);
     mainWin->ConnectGUIMessageAttributes();
     mainWin->ConnectGlobalAttributes(viewer->GetGlobalAttributes());
@@ -2290,6 +2292,95 @@ QvisGUIApplication::InitializeFileServer(DataNode *guiNode)
         Error(msgStr);
     }
     ENDTRY
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::RefreshFileList
+//
+// Purpose: 
+//   This is a Qt slot function that rereads the files in the current directory
+//   and adds them to the new list of applied files, which are the files that
+//   appear in the selected files list in the file panel.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 23 10:43:58 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::RefreshFileList()
+{
+    // Save the current host and path.
+    std::string oldHost(fileServer->GetHost());
+    std::string oldPath(fileServer->GetPath());
+
+    //
+    // Create a list of hosts,paths for which we must get a new list of files.
+    //
+    std::map<QualifiedFilename, bool> paths;
+    const QualifiedFilenameVector &appliedFiles = fileServer->GetAppliedFileList();
+    int i;
+    for(i = 0; i < appliedFiles.size(); ++i)
+    {
+        QualifiedFilename temp(appliedFiles[i]);
+        temp.filename = "a";
+        paths[temp] = true;
+    }
+
+    //
+    // Reread all of the directories that are in the applied file list.
+    //
+    QualifiedFilenameVector refreshedFiles;
+    std::map<QualifiedFilename, bool>::const_iterator pos;
+    for(pos = paths.begin(); pos != paths.end(); ++pos)
+    {
+        TRY
+        {
+            // Reread the current directory.
+            fileServer->SetHost(pos->first.host);
+            fileServer->SetPath("");
+            fileServer->SetPath(pos->first.path);
+            fileServer->SilentNotify();
+
+            // Filter the new list of files add them to the refreshed list.
+            QualifiedFilenameVector newFiles(fileServer->GetFilteredFileList());
+            for(i = 0; i < newFiles.size(); ++i)
+                refreshedFiles.push_back(newFiles[i]);
+        }
+        CATCH(VisItException)
+        {
+            ; // do nothing
+        }
+        ENDTRY
+    }
+
+    // Sort the file list before storing it.
+    std::sort(refreshedFiles.begin(), refreshedFiles.end());
+
+    //
+    // Restore the previous host and path and set the new applied file list.
+    //
+    fileServer->SetHost(oldHost);
+    fileServer->SetPath(oldPath);
+    fileServer->SetAppliedFileList(refreshedFiles);
+    fileServer->Notify();
+
+    //
+    // If the open file is in the list of new files and it is a virtual db,
+    // then reopen it so we pick up new time states.
+    //
+    for(i = 0; i < refreshedFiles.size(); ++i)
+    {
+        if(refreshedFiles[i].IsVirtual() && refreshedFiles[i] == fileServer->GetOpenFile())
+        {
+            viewer->ReOpenDatabase(refreshedFiles[i].FullName().c_str(), false);
+            break;
+        }
+    }
 }
 
 // ****************************************************************************

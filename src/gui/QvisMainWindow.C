@@ -169,6 +169,9 @@
 //    Brad Whitlock, Wed May 21 07:43:52 PDT 2003
 //    I added fullFrame mode to the Windows menu.
 //
+//    Brad Whitlock, Mon Jun 23 10:09:51 PDT 2003
+//    I added a button to refresh the file list.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -226,7 +229,8 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     QPopupMenu * file = new QPopupMenu( this );
     menuBar()->insertItem( tr("&File"), file );
     file->insertItem(openIcon, tr("Select &file . . ."), this, SIGNAL(activateFileWindow()), CTRL+Key_F );
-    file->insertItem(tr("File &information . . ."), this, SIGNAL(activateFileInformationWindow()), CTRL+Key_I);
+    file->insertItem( tr("Refresh file list"), this, SIGNAL(refreshFileList()), CTRL+Key_R);
+    file->insertItem( tr("File &information . . ."), this, SIGNAL(activateFileInformationWindow()), CTRL+Key_I);
     file->insertItem( tr("Compute &engines . . ."), this, SIGNAL(activateEngineWindow()), CTRL+Key_E);
     file->insertSeparator();
     file->insertItem(saveIcon, tr("&Save window"), this, SIGNAL(saveWindow()), CTRL+Key_S );

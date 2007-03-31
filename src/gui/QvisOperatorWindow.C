@@ -128,6 +128,9 @@ QvisOperatorWindow::GetCurrentValues(int)
 //   Brad Whitlock, Wed Jun 26 15:28:08 PST 2002
 //   Made the operator prompt window only pop up if there are plots.
 //
+//   Jeremy Meredith, Mon Jun 23 16:18:29 PDT 2003
+//   Changed GetAllID to GetEnabledID.
+//
 // ****************************************************************************
 
 void
@@ -167,7 +170,7 @@ QvisOperatorWindow::SetOperatorOptions()
 
             // Create a prompt for the user.
             std::string opName(opMgr->GetPluginName(
-                               opMgr->GetAllID(operatorType)));
+                               opMgr->GetEnabledID(operatorType)));
             QString msg;
             msg.sprintf("No %s operator was found for the selected plots.\n"
                         "Do you want to apply the %s operator?\n\n",
