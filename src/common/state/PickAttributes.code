@@ -18,6 +18,9 @@ Definition:
 //   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003 
 //   Added meshInfo. 
 //   
+//   Kathleen Bonnell, Tue Nov 18 10:06:40 PST 2003 
+//   Support logical zone numbers. 
+//   
 // ****************************************************************************
 void
 PickAttributes::PrintSelf(ostream &os)
@@ -66,9 +69,14 @@ PickAttributes::PrintSelf(ostream &os)
         }
     }
     bool printCoords = useNodeCoords && !nodeCoords.empty();
+    bool printZoneCoords = logicalZone && !zoneCoords.empty();
     if (pickType == Zone)
     {
         os << "Zone " << elementNumber << " ";
+        if (printZoneCoords)
+        {
+            os << zoneCoords[0].c_str() << "\n";
+        }
     }
     else if (pickType == Node)
     {
@@ -92,6 +100,10 @@ PickAttributes::PrintSelf(ostream &os)
         if (printCoords && pickType == Zone)
         {
             os << nodeCoords[i].c_str() << "\n";
+        } 
+        else if (printZoneCoords && pickType == Node)
+        {
+            os << zoneCoords[i].c_str() << "\n";
         } 
     }
     os << "\n";
@@ -126,6 +138,9 @@ Definition:
 //   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003 
 //   Added meshInfo.  So that outputstring can be created with (default)
 //   or without the 'pickletter', added argument withLetter.
+//   
+//   Kathleen Bonnell, Tue Nov 18 10:06:40 PST 2003 
+//   Support logical zone numbers. 
 //   
 // ****************************************************************************
 void
@@ -201,9 +216,18 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     }
 
     bool printCoords = useNodeCoords && !nodeCoords.empty(); 
+    bool printZoneCoords = logicalZone && !zoneCoords.empty(); 
     if (pickType == Zone)
     {
-        sprintf(buff, "Zone:  %d\n", elementNumber);
+        if (!printZoneCoords)
+        {
+            sprintf(buff, "Zone:  %d\n", elementNumber);
+        }
+        else
+        {
+            sprintf(buff, "Zone:  %d  %s\n", elementNumber, 
+                    zoneCoords[0].c_str());
+        }
     }
     else if (pickType == Node)
     {
@@ -229,6 +253,10 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     else if (pickType == Node)
     {
         os += "Incident zones:  " ; 
+        if (printZoneCoords)
+        {
+            os += "\n    "; 
+        }
     }
 
     for (i = 0; i < incidentElements.size(); i++)
@@ -238,6 +266,11 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         if (printCoords && pickType == Zone)
         {
             sprintf(buff, "%s\n    ", nodeCoords[i].c_str());
+            os += buff;
+        }
+        else if (printZoneCoords && pickType == Node)
+        {
+            sprintf(buff, "%s\n    ", zoneCoords[i].c_str());
             os += buff;
         }
     }
@@ -275,6 +308,9 @@ Definition:
 //   Kathleen Bonnell, Wed Sep 17 17:09:00 PDT 2003 
 //   Reset realElementNumber, realIncidentElements.
 //   
+//   Kathleen Bonnell, Tue Nov 18 10:06:40 PST 2003 
+//   Reset zoneCoords. 
+//   
 // ****************************************************************************
 
 void
@@ -295,6 +331,9 @@ PickAttributes::PrepareForNewPick()
 
     if (!nodeCoords.empty())
         nodeCoords.clear();
+
+    if (!zoneCoords.empty())
+        zoneCoords.clear();
 
     realElementNumber = -1;
     if (!realIncidentElements.empty())

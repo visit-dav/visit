@@ -629,6 +629,24 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
     //
     UpdatePlotList();
     UpdatePlotAtts();
+
+    //
+    // Find a compatible plot to set the new plot's SIL restriction with
+    //
+    int compatiblePlotIndex = FindCompatiblePlot(newPlot);
+
+    if (compatiblePlotIndex > -1)
+    {
+        avtSILRestriction_p new_silr = GetDefaultSILRestriction(
+                                          newPlot->GetHostName(),
+                                          newPlot->GetDatabaseName(),
+                                          newPlot->GetVariableName());
+
+        ViewerPlot *matchedPlot = plots[compatiblePlotIndex].plot;
+        new_silr->SetFromCompatibleRestriction(matchedPlot->GetSILRestriction());
+        newPlot->SetSILRestriction(new_silr);
+    }
+
     UpdateSILRestrictionAtts();
 
     return plotId;
@@ -1508,6 +1526,69 @@ ViewerPlotList::DeleteActivePlots()
     // Update the frame.
     //
     animation->UpdateFrame();
+}
+
+// ****************************************************************************
+//  Method: ViewerPlotList::FindCompatiblePlot
+//
+//  Purpose: This method finds a plot in the plot list that is compatible
+//  with the one pased in. Compatibility means it *must* be have the same host
+//  name and database name. Beyond that, any plots which share more of their
+//  other features are considered more compatible.
+//
+//  Returns: -1 on failure, valid plot id otherwise
+//
+//  Programmer: Mark C. Miller
+//  Creation:   November 19, 2003 
+//
+// ****************************************************************************
+
+int
+ViewerPlotList::FindCompatiblePlot(ViewerPlot *givenPlot)
+{
+    int i;
+    int compatibleIndex = -1;
+    int maxFeaturesMatched = -1;
+
+    for (i = 0; i < nPlots; ++i)
+    {
+        bool basicCompatiblity = false;
+        int numFeaturesMatched = 0;
+
+        // ignore the the plot in the list that is the same as the given plot
+        if (plots[i].plot == givenPlot)
+            continue;
+
+        // check basic compatibility
+        if ((strcmp(plots[i].plot->GetHostName(),
+                    givenPlot->GetHostName()) == 0) &&
+            (strcmp(plots[i].plot->GetDatabaseName(),
+                    givenPlot->GetDatabaseName()) == 0))
+            basicCompatiblity = true;
+
+        // check for compatibility in other features
+        if (strcmp(plots[i].plot->GetPlotName(),givenPlot->GetPlotName()) == 0)
+            numFeaturesMatched++;
+        if (strcmp(plots[i].plot->GetPluginID(),givenPlot->GetPluginID()) == 0)
+            numFeaturesMatched++;
+        if (strcmp(plots[i].plot->GetVariableName(),
+                   givenPlot->GetVariableName()) == 0)
+            numFeaturesMatched++;
+        if (plots[i].plot->GetType() == givenPlot->GetType())
+            numFeaturesMatched++;
+        if (plots[i].plot->GetNetworkID() == givenPlot->GetNetworkID())
+            numFeaturesMatched++;
+        if (plots[i].plot->GetVarType() == givenPlot->GetVarType())
+            numFeaturesMatched++;
+
+        if (basicCompatiblity && (numFeaturesMatched > maxFeaturesMatched))
+        {
+            maxFeaturesMatched = numFeaturesMatched;
+            compatibleIndex = i;
+        }
+    }
+
+    return compatibleIndex;
 }
 
 // ****************************************************************************

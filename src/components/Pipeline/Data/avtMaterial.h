@@ -19,14 +19,20 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    June 24, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Nov 19 14:42:09 PST 2003
+//    Added "material number" to CellMatInfo.  This is more for internal
+//    use than for displaying; for example, if one were to try to extract
+//    species information for each material in this cell.
 // ****************************************************************************
 struct CellMatInfo
 {
     std::string name;
+    int         matno;
     float       vf;
     int         mix_index;
-    CellMatInfo(std::string n="", float v=0., int m=-1)
-                                            : name(n), vf(v), mix_index(m) { };
+    CellMatInfo(std::string n="", int mn=-1, float v=0., int mi=-1)
+                                 : name(n), matno(mn), vf(v), mix_index(mi) { }
 };
 
 // ****************************************************************************

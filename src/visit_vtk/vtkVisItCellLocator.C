@@ -17,6 +17,7 @@
 =========================================================================*/
 #include "vtkVisItCellLocator.h"
 
+#include <vtkBox.h>
 #include <vtkCell.h>
 #include <vtkCellArray.h>
 #include <vtkCellType.h>
@@ -310,7 +311,7 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], float tol,
         direction3[i] = direction2[i]/tMax;
     }
 
-  if (vtkCell::HitBBox(bounds2, origin, direction2, hitPosition, result))
+  if (vtkBox::IntersectBox(bounds2, origin, direction2, hitPosition, result))
     {
     // start walking through the octants
     prod = this->NumberOfDivisions*this->NumberOfDivisions;
@@ -378,14 +379,14 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], float tol,
               // check whether we intersect the cell bounds
               if (this->CacheCellBounds)
                 {
-                hitCellBounds = vtkCell::HitBBox(this->CellBounds[cId],
+                hitCellBounds = vtkBox::IntersectBox(this->CellBounds[cId],
                                                  a0, direction1,
                                                  hitCellBoundsPosition, result);
                 }
               else 
                 {
                 this->DataSet->GetCellBounds(cId, cellBounds);
-                hitCellBounds = vtkCell::HitBBox(cellBounds,
+                hitCellBounds = vtkBox::IntersectBox(cellBounds,
                                                  a0, direction1,
                                                  hitCellBoundsPosition, result);
                 }
@@ -555,7 +556,7 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
         direction3[i] = direction2[i]/tMax;
     }
 
-  if (vtkCell::HitBBox(bounds2, origin, direction2, hitPosition, result))
+  if (vtkBox::IntersectBox(bounds2, origin, direction2, hitPosition, result))
     {
     // start walking through the octants
     prod = this->NumberOfDivisions*this->NumberOfDivisions;
@@ -623,14 +624,14 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
               // check whether we intersect the cell bounds
               if (this->CacheCellBounds)
                 {
-                hitCellBounds = vtkCell::HitBBox(this->CellBounds[cId],
+                hitCellBounds = vtkBox::IntersectBox(this->CellBounds[cId],
                                                  a0, direction1,
                                                  hitCellBoundsPosition, result);
                 }
               else 
                 {
                 this->DataSet->GetCellBounds(cId, cellBounds);
-                hitCellBounds = vtkCell::HitBBox(cellBounds,
+                hitCellBounds = vtkBox::IntersectBox(cellBounds,
                                                  a0, direction1,
                                                  hitCellBoundsPosition, result);
                 }
@@ -2657,7 +2658,7 @@ vtkVisItCellLocator::VoxelIntersectWithLine(vtkVoxel *cell, float p1[3], float p
     bounds[2*i+1] = maxPt[i];
     }
  
-  if ( ! vtkCell::HitBBox(bounds, p1, p21, x, t) )
+  if ( ! vtkBox::IntersectBox(bounds, p1, p21, x, t) )
     {
     return 0;
     }

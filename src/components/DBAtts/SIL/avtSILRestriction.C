@@ -14,6 +14,7 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <IncompatibleDomainListsException.h>
+#include <InvalidVariableException.h>
 #include <TimingsManager.h>
 
 #define STATE_INDEX(S) (((S)==SomeUsed)?1:(((S)==AllUsed)?2:((S)==AllUsedOtherProc?3:0)))
@@ -1217,6 +1218,7 @@ avtSILRestriction::GetLeafSets(int ind, vector<int> &leaves)
             continue;
         }
         avtSILCollection_p coll = GetSILCollection(cur);
+            
         const avtSILNamespace *nms = coll->GetSubsets();
 
         //
@@ -1286,11 +1288,16 @@ avtSILRestriction::GetLeafSets(int ind, vector<int> &leaves)
 //    Mark C. Miller - 24Sep03, Modified to support differing number of leaf
 //       Sets
 //
+//    Mark C. Miller, Tue Nov 18 18:58:24 PST 2003
+//    Added better support for creating a compatible SIL when the two SILs
+//    are not identical in structure -- mainly for time-varying SILs
+//
 // ****************************************************************************
 
 bool
 avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
 {
+    bool compatible = false;
     int i;
     vector<int> leaves;
     vector<int> otherLeaves;
@@ -1302,43 +1309,104 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
     silr->GetLeafSets(silr->topSet, otherLeaves);
 
     //
-    // If the sizes are not equal then return.
+    // If the number of leaf sets are the same, compare their names/ids 
+    // Otherwise, try to match up non-domain sets (e.g. id!=-1)
     //
-    int minNumLeaves = leaves.size() < otherLeaves.size() ?
-                           leaves.size() :
-                           otherLeaves.size();
-
-    //
-    // Compare the names of each set. If at the end, they are all the 
-    // same then we have a compatible SIL restriction.
-    //
-    bool compatible = true;
-    for(i = 0; i < minNumLeaves; ++i)
+    if (leaves.size() == otherLeaves.size())
     {
-        avtSILSet_p set1 = GetSILSet(i);
-        avtSILSet_p set2 = silr->GetSILSet(i);
-        if(set1->GetName() != set2->GetName())
+        // confirm all leaves names/ids match
+        for(i = 0; i < leaves.size(); ++i)
         {
-            compatible = false;
-            break;
+            compatible = true;
+            avtSILSet_p set1 = GetSILSet(i);
+            avtSILSet_p set2 = silr->GetSILSet(i);
+            if ((set1->GetName() != set2->GetName()) ||
+                (set1->GetIdentifier() != set2->GetIdentifier()))
+            {
+                compatible = false;
+                break;
+            }
         }
-    }
 
-    //
-    // If all the set names are the same then copy the restriction into
-    // the current restriction.
-    //
-    if(compatible)
+        // copy over the useSet values
+        if (compatible)
+        {
+            SuspendCorrectnessChecking();
+            for(i = 0; i < leaves.size(); ++i)
+            {
+                useSet[leaves[i]] = silr->useSet[otherLeaves[i]];
+            }
+            EnableCorrectnessChecking();
+        }
+
+    }
+    else
     {
         SuspendCorrectnessChecking();
-        for(i = 0; i < minNumLeaves; ++i)
+        compatible = true;
+
+        //
+        // first, set all the leaves useSet flag to something invalid
+        // so we can confirm they've all be visited later
+        //
+        for (i = 0; i < leaves.size(); i++)
+            useSet[leaves[i]] = 0xAA;
+
+        //
+        // Now, for every non-domain set, find its equivalent in the
+        // input SIL and set this set's selection similarly
+        //
+        for (i = 0; i < GetNumSets(); i++)
         {
-            useSet[leaves[i]] = silr->useSet[otherLeaves[i]];
+
+           avtSILSet_p set1 = GetSILSet(i);
+           if (set1->GetIdentifier() < 0)
+           {
+              int set2Index;
+
+              // try to find the equivalently named
+              // set in the input SIL
+              TRY
+              {
+                  set2Index = silr->GetSetIndex(set1->GetName());
+              }
+              CATCH(InvalidVariableException)
+              {
+                  set2Index = -1;
+              }
+              ENDTRY
+
+              // ok, we found it, now set the selection for this 
+              if (set2Index != -1)
+              {
+                  if (silr->useSet[set2Index] == AllUsed)
+                  {
+                      TurnOnSet(i);
+                  }
+                  else if (silr->useSet[set2Index] == NoneUsed)
+                  {
+                      TurnOffSet(i);
+                  }
+              }
+           }
         }
+
+        //
+        // ok, any sets whose useSet flag is still
+        // 0xAA were never touched. We can turn 'em off,
+        // turn 'em on, or return compatible = false
+        // The latter is the least desireable choice.
+        // We choose to turn them on.
+        //
+        for (i = 0; i < leaves.size(); i++)
+        {
+            if (useSet[leaves[i]] == 0xAA)
+                useSet[leaves[i]] = AllUsed;
+        }
+
         EnableCorrectnessChecking();
+
     }
 
     return compatible;
 }
-
-

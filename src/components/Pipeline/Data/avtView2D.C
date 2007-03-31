@@ -159,29 +159,39 @@ avtView2D::SetToDefault()
 //    I added a window size argument so that the routine could handle
 //    non-square windows and viewports.
 //
+//    Eric Brugger, Tue Nov 18 08:38:38 PST 2003
+//    I replaced GetValidWindow with CheckAndCorrectWindow.
+//
 // ****************************************************************************
 
 void
-avtView2D::SetViewInfoFromView(avtViewInfo &viewInfo, int *size) const
+avtView2D::SetViewInfoFromView(avtViewInfo &viewInfo, int *size)
 {
-    double validWindow[4];
-    GetValidWindow(validWindow);
+    CheckAndCorrectWindow();
 
     //
     // Handle full-frame mode if on.
     //
+    double realWindow[4];
+
+    realWindow[0] = window[0];
+    realWindow[1] = window[1];
     if (fullFrame)
     {
         double    viewScale;
 
-        viewScale = ((validWindow[1] - validWindow[0]) /
-                     (validWindow[3] - validWindow[2])) *
+        viewScale = ((window[1] - window[0]) / (window[3] - window[2])) *
                     ((viewport[3] - viewport[2]) /
                      (viewport[1] - viewport[0])) *
                     ((double) size[1] / (double) size[0]) ;
 
-        validWindow[2] = validWindow[2] * viewScale;
-        validWindow[3] = validWindow[3] * viewScale;
+        realWindow[2] = window[2] * viewScale;
+        realWindow[3] = window[3] * viewScale;
+    }
+    else
+    {
+        realWindow[2] = window[2];
+        realWindow[3] = window[3];
     }
 
     //
@@ -191,14 +201,14 @@ avtView2D::SetViewInfoFromView(avtViewInfo &viewInfo, int *size) const
     //
     double    width;
 
-    width = validWindow[3] - validWindow[2];
+    width = realWindow[3] - realWindow[2];
 
     viewInfo.viewUp[0] = 0.;
     viewInfo.viewUp[1] = 1.;
     viewInfo.viewUp[2] = 0.;
 
-    viewInfo.focus[0] = (validWindow[1] + validWindow[0]) / 2.;
-    viewInfo.focus[1] = (validWindow[3] + validWindow[2]) / 2.;
+    viewInfo.focus[0] = (realWindow[1] + realWindow[0]) / 2.;
+    viewInfo.focus[1] = (realWindow[3] + realWindow[2]) / 2.;
     viewInfo.focus[2] = 0.;
 
     viewInfo.camera[0] = viewInfo.focus[0];
@@ -251,11 +261,14 @@ avtView2D::SetViewInfoFromView(avtViewInfo &viewInfo, int *size) const
 //    Eric Brugger, Wed Oct  8 16:45:35 PDT 2003
 //    Modified to handle full frame mode properly.
 //
+//    Eric Brugger, Tue Nov 18 08:38:38 PST 2003
+//    I replaced GetValidWindow with CheckAndCorrectWindow.
+//
 // ****************************************************************************
 
 void
 avtView2D::GetActualViewport(double *winViewport, const int width,
-    const int height) const
+    const int height)
 {
 
     if (fullFrame)
@@ -270,8 +283,7 @@ avtView2D::GetActualViewport(double *winViewport, const int width,
     }
     else
     {
-        double validWindow[4];
-        GetValidWindow(validWindow);
+        CheckAndCorrectWindow();
 
         double    viewportDX, viewportDY, viewportDXDY;
         double    windowDX, windowDY, windowDXDY;
@@ -281,8 +293,8 @@ avtView2D::GetActualViewport(double *winViewport, const int width,
         viewportDXDY = (viewportDX / viewportDY) *
             ((double) width / (double) height);
 
-        windowDX = validWindow[1] - validWindow[0];
-        windowDY = validWindow[3] - validWindow[2];
+        windowDX = window[1] - window[0];
+        windowDY = window[3] - window[2];
         windowDXDY = windowDX / windowDY;
 
         if ((viewportDXDY >= 1. && viewportDXDY <= windowDXDY) ||
@@ -323,23 +335,25 @@ avtView2D::GetActualViewport(double *winViewport, const int width,
 //  Programmer: Eric Brugger
 //  Creation:   October 10, 2003
 //
+//  Modifications:
+//    Eric Brugger, Tue Nov 18 08:38:38 PST 2003
+//    I replaced GetValidWindow with CheckAndCorrectWindow.
+//
 // ****************************************************************************
 
 double
-avtView2D::GetScaleFactor(int *size) const
+avtView2D::GetScaleFactor(int *size)
 {
     double s;
 
     if (fullFrame)
     {
-        double validWindow[4];
-        GetValidWindow(validWindow);
+        CheckAndCorrectWindow();
 
         double actualViewport[4];
         GetActualViewport(actualViewport, size[0], size[1]);
 
-        s = ((validWindow[1] - validWindow[0]) /
-             (validWindow[3] - validWindow[2])) *
+        s = ((window[1] - window[0]) / (window[3] - window[2])) *
             ((actualViewport[3] - actualViewport[2]) /
              (actualViewport[1] - actualViewport[0])) *
             ((double) size[1] / (double) size[0]);
@@ -414,48 +428,64 @@ avtView2D::SetToView2DAttributes(View2DAttributes *view2DAtts) const
 }
 
 // ****************************************************************************
-//  Method: avtView2D::GetValidWindow
+//  Method: avtView2D::CheckAndCorrectWindow
 //
 //  Purpose:
-//    Gets the window parameters and makes sure that they are valid
-//    (meaning width and height are both positive).
+//    Checks the window parameters and corrects them if they are invalid.
 //
-//  Arguments:
-//    validWindow  The valid window.
-//
-//  Programmer: Hank Childs
-//  Creation:   May 7, 2003
+//  Programmer: Eric Brugger
+//  Creation:   November 18, 2003
 //
 // ****************************************************************************
 
 void
-avtView2D::GetValidWindow(double *validWindow) const
+avtView2D::CheckAndCorrectWindow()
 {
-    //
-    // Copy over the original window.
-    //
-    validWindow[0] = window[0];
-    validWindow[1] = window[1];
-    validWindow[2] = window[2];
-    validWindow[3] = window[3];
-
     //
     // Account for degenerate views.
     //
-    double width  = validWindow[1] - validWindow[0];
-    double height = validWindow[3] - validWindow[2];
+    double width  = window[1] - window[0];
+    double height = window[3] - window[2];
     if (width <= 0. && height <= 0.)
     {
-        validWindow[1] = validWindow[0] + 1.;
-        validWindow[3] = validWindow[2] + 1.;
+        if (window[0] == 0. && window[2] == 0.)
+        {
+            window[0] = -1.;
+            window[1] =  1.;
+            window[2] = -1.;
+            window[3] =  1.;
+        }
+        else if (window[0] == 0.)
+        {
+            window[0] -= window[2];
+            window[1] += window[3];
+            window[2] -= window[2];
+            window[3] += window[3];
+        }
+        else if (window[2] == 0.)
+        {
+            window[2] -= window[0];
+            window[3] += window[1];
+            window[0] -= window[0];
+            window[1] += window[1];
+        }
+        else
+        {
+            window[0] -= window[0];
+            window[1] += window[1];
+            window[2] -= window[2];
+            window[3] += window[3];
+        }
     }
     else if (width <= 0)
     {
-        validWindow[1] = validWindow[0] + height;
+        window[0] -= height / 2.;
+        window[1] += height / 2.;
     }
     else if (height <= 0)
     {
-        validWindow[3] = validWindow[2] + width;
+        window[2] -= width / 2.;
+        window[3] += width / 2.;
     }
 }
 

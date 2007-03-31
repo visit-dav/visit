@@ -48,6 +48,9 @@ class PickAttributes;
 //   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003 
 //   Added the savePicks checkbox. Remove AddInformation, no longer necessary.
 //
+//   Kathleen Bonnell, Tue Nov 18 14:03:22 PST 2003 
+//   Added logicalZone checkbox. 
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -74,6 +77,7 @@ private slots:
     void variableProcessText();
     void useNodeCoordsToggled(bool val);
     void logicalCoordsToggled(bool val);
+    void logicalZoneToggled(bool val);
     void autoShowToggled(bool);
     void savePicksToggled(bool);
 private:
@@ -90,6 +94,7 @@ private:
     QMultiLineEdit *infoLists[MAX_PICK_TABS];
     QCheckBox      *useNodeCoords;
     QCheckBox      *logicalCoords;
+    QCheckBox      *logicalZone;
     QCheckBox      *autoShowCheckBox;
     QCheckBox      *savePicksCheckBox;
 

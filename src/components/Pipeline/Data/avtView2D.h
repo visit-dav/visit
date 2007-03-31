@@ -35,6 +35,9 @@ class View2DAttributes;
 //    SetViewFromViewInfo.  I renamed SetViewportFromView to GetActualViewport.
 //    I added GetScaleFactor.  I deleted ScaleWindow and ReverseScaleWindow.
 //
+//    Eric Brugger, Tue Nov 18 08:17:28 PST 2003
+//    Replaced GetValidWindow with CheckAndCorrectWindow.
+//
 // ****************************************************************************
 
 struct PIPELINE_API avtView2D
@@ -48,16 +51,16 @@ struct PIPELINE_API avtView2D
     avtView2D     & operator=(const avtView2D &);
     bool            operator==(const avtView2D &);
     void            SetToDefault(void);
-    void            SetViewInfoFromView(avtViewInfo &, int *) const;
+    void            SetViewInfoFromView(avtViewInfo &, int *);
 
-    void            GetActualViewport(double *, const int, const int) const;
-    double          GetScaleFactor(int *) const;
+    void            GetActualViewport(double *, const int, const int);
+    double          GetScaleFactor(int *);
 
     void            SetFromView2DAttributes(const View2DAttributes *);
     void            SetToView2DAttributes(View2DAttributes *) const;
 
   protected:
-    void            GetValidWindow(double *) const;
+    void            CheckAndCorrectWindow();
 };
 
 

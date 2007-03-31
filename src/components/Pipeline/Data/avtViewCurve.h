@@ -32,6 +32,10 @@ class ViewCurveAttributes;
 //    Mark C. Miller, Tue Nov  4 14:04:02 PST 2003
 //    Added GetViewport method
 //
+//    Eric Brugger, Tue Nov 18 09:20:54 PST 2003
+//    I deleted SetViewFromViewInfo.  I replaced GetValidDomainRange
+//    with CheckAndCorrectDomainRange.
+//
 // ****************************************************************************
 
 struct PIPELINE_API avtViewCurve
@@ -45,18 +49,16 @@ struct PIPELINE_API avtViewCurve
     avtViewCurve  & operator=(const avtViewCurve &);
     bool            operator==(const avtViewCurve &);
     void            SetToDefault(void);
-    void            SetViewFromViewInfo(const avtViewInfo &, int *);
-    void            SetViewInfoFromView(avtViewInfo &, int *) const;
-
+    void            SetViewInfoFromView(avtViewInfo &, int *);
 
     void            GetViewport(double *) const;
-    double          GetScaleFactor(int *) const;
+    double          GetScaleFactor(int *);
 
     void            SetFromViewCurveAttributes(const ViewCurveAttributes *);
     void            SetToViewCurveAttributes(ViewCurveAttributes *) const;
 
   protected:
-    void            GetValidDomainRange(double *, double *) const;
+    void            CheckAndCorrectDomainRange();
 };
 
 

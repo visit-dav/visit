@@ -132,6 +132,10 @@ typedef struct {
 //    Added support for time-varying SIL/MetaData
 //    Made timestep argument required for GetMetaData and GetSIL 
 //
+//    Kathleen Bonnell, Tue Nov 18 14:07:13 PST 2003 
+//    Added bool and stringVector args to QueryNodes, QueryZones, in
+//    support of logical zone coordinates. 
+// 
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -227,7 +231,8 @@ class DATABASE_API avtDatabase
                                            const int, const int,
                                            std::vector<int> &, float [3],
                                            const int, const bool, const bool,
-                                           std::vector<std::string> &)
+                                           std::vector<std::string> &,
+                                           const bool, std::vector<std::string> &)
                                                {return false; };
     virtual bool                QueryMesh(const std::string &, const int, const int, 
                                           std::string &) {return false; };
@@ -235,6 +240,7 @@ class DATABASE_API avtDatabase
     virtual bool                QueryZones(const std::string &,const int,int &,
                                            const int, std::vector<int> &, 
                                            float [3], const int, const bool, 
+                                           const bool, std::vector<std::string> &,
                                            const bool, std::vector<std::string> &)
                                                { return false; } ;
 };

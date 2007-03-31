@@ -29,6 +29,7 @@ using std::string;
 #include <RenderingAttributes.h>
 #include <ViewerActionManager.h>
 #include <ViewerAnimation.h>
+#include <ViewerEngineManager.h>
 #include <ViewerMessaging.h>
 #include <ViewerPlotList.h> 
 #include <ViewerPopupMenu.h>
@@ -2950,6 +2951,10 @@ ViewerWindow::GetScaleFactorAndType(double &s, int &t)
 //    Eric Brugger, Thu Aug 28 12:27:42 PDT 2003
 //    I modified the routine to set the viewModifiedCurve flag.
 //
+//    Eric Brugger, Tue Nov 18 11:13:48 PST 2003
+//    I removed coding for handling degenerate views since this was now
+//    handled in avtViewCurve.
+//
 // ****************************************************************************
 
 void
@@ -2974,23 +2979,6 @@ ViewerWindow::RecenterViewCurve(const double *limits)
     for (i = 0; i < 4; i++)
     {
         boundingBoxCurve[i] = limits[i];
-    }
-
-    //
-    // If one of the axes has no extents, create some based on the extents
-    // of the other axis.
-    //
-    if (boundingBoxCurve[2] == boundingBoxCurve[3])
-    {
-        double fudge = (boundingBoxCurve[1] - boundingBoxCurve[0] ) * 0.5;
-        boundingBoxCurve[2] -= fudge;
-        boundingBoxCurve[3] += fudge;
-    }
-    else if (boundingBoxCurve[0] == boundingBoxCurve[1])
-    {
-        double fudge = (boundingBoxCurve[3] - boundingBoxCurve[2] ) * 0.5;
-        boundingBoxCurve[0] -= fudge;
-        boundingBoxCurve[1] += fudge;
     }
 
     //
@@ -3220,6 +3208,10 @@ ViewerWindow::RecenterView3d(const double *limits)
 //    Eric Brugger, Thu Aug 28 12:27:42 PDT 2003
 //    I modified the routine to set the viewModifiedCurve flag.
 //
+//    Eric Brugger, Tue Nov 18 11:13:48 PST 2003
+//    I removed coding for handling degenerate views since this was now
+//    handled in avtViewCurve.
+//
 // ****************************************************************************
 
 void
@@ -3241,23 +3233,6 @@ ViewerWindow::ResetViewCurve()
     {
         boundingBoxValidCurve = false;
         return;
-    }
-
-    //
-    // If one of the axes has no extents, create some based on the extents
-    // of the other axis.
-    //
-    if (boundingBoxCurve[2] == boundingBoxCurve[3])
-    {
-        double fudge = (boundingBoxCurve[1] - boundingBoxCurve[0]) * 0.5;
-        boundingBoxCurve[2] -= fudge;
-        boundingBoxCurve[3] += fudge;
-    }
-    else if (boundingBoxCurve[0] == boundingBoxCurve[1])
-    {
-        double fudge = (boundingBoxCurve[3] - boundingBoxCurve[2]) * 0.5;
-        boundingBoxCurve[0] -= fudge;
-        boundingBoxCurve[1] += fudge;
     }
 
     //
@@ -5795,9 +5770,6 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
     return true;
 }
 
-// Only place where ViewerWindow should need to talk to ViewerEngineManager
-#include <ViewerEngineManager.h>
-
 // ****************************************************************************
 // Function: ExternalRenderCallback 
 //
@@ -5807,6 +5779,10 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
 //   a. no change in the dob passed in means nothing changed
 //   b. null means nothing to be externally rendered
 //   c. an externally rendered image 
+//
+// Note: as of this writing, this is the only place where ViewerEngineManager
+// is referenced. If we can remove the reference, don't forget to remove the
+// include directive.
 //
 // Arguments:
 //   data : pointer to the ViewerWindow object instance that set the callback 

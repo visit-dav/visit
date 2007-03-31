@@ -12,6 +12,24 @@
 
 #include <void_ref_ptr.h>
 
+class avtMaterial;
+
+// ****************************************************************************
+//  Class:  CellSpecInfo
+//
+//  Purpose:
+//    Holds species info for a cell in response to a query.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 19, 2003
+//
+// ****************************************************************************
+struct CellSpecInfo
+{
+    std::string name;
+    float       mf;
+    CellSpecInfo(std::string n="", float m=0.) : name(n), mf(m) { }
+};
 
 // ****************************************************************************
 //  Class: avtSpecies
@@ -54,6 +72,8 @@ class PIPELINE_API avtSpecies
     const float                     *GetSpecMF(void)   { return species_mf; };
     int                              GetNMat(void) { return nSpecies.size(); };
     
+    std::vector<CellSpecInfo>        ExtractCellSpecInfo(int c, int m,
+                                                         avtMaterial *);
 
   protected:
     std::vector<int>                         nSpecies;

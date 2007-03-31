@@ -250,6 +250,9 @@
 #    Brad Whitlock, Thu Sep 4 10:16:28 PDT 2003
 #    I added QvisApplication.
 #
+#    Jeremy Meredith, Wed Nov 19 12:35:43 PST 2003
+#    Moved a few non-widget files from MOC to non-MOC status.
+#
 ##############################################################################
 
 ##
@@ -312,7 +315,6 @@ HDRMOC = \
     QvisLightingWindow.h \
     QvisLineStyleWidget.h \
     QvisLineWidthWidget.h \
-    QvisListViewFileItem.h \
     QvisMainWindow.h \
     QvisMaterialWindow.h \
     QvisMessageWindow.h \
@@ -322,7 +324,6 @@ HDRMOC = \
     QvisOutputWindow.h \
     QvisPickWindow.h \
     QvisPlotListBox.h \
-    QvisPlotListBoxItem.h \
     QvisPlotManagerWidget.h \
     QvisPluginWindow.h \
     QvisPostableWindow.h \
@@ -336,7 +337,6 @@ HDRMOC = \
     QvisScribbleOpacityBar.h \
     QvisSpectrumBar.h \
     QvisSubsetListView.h \
-    QvisSubsetListViewItem.h \
     QvisSubsetWindow.h \
     QvisVCRControl.h \
     QvisViewWindow.h \
@@ -353,6 +353,9 @@ HDR = ${HDRMOC} \
     KFListViewItem.h \
     mini3D.h \
     QualifiedFilename.h \
+    QvisListViewFileItem.h \
+    QvisPlotListBoxItem.h \
+    QvisSubsetListViewItem.h \
     StatusSubject.h
 
 # All of the sources that are not Qt objects.

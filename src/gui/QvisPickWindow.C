@@ -118,6 +118,9 @@ QvisPickWindow::~QvisPickWindow()
 //   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003 
 //   Added  savePicks checkbox.
 //
+//   Kathleen Bonnell, Tue Nov 18 14:03:22 PST 2003 
+//   Added  logicalZone checkbox.
+//
 // ****************************************************************************
 
 void
@@ -138,7 +141,7 @@ QvisPickWindow::CreateWindowContents()
         tabWidget->addTab(pages[i]," "); 
     }
 
-    QGridLayout *gLayout = new QGridLayout(topLayout, 4, 4);
+    QGridLayout *gLayout = new QGridLayout(topLayout, 5, 4);
     varsLineEdit = new QLineEdit(central, "varsLineEdit");
     varsLineEdit->setText("default"); 
     connect(varsLineEdit, SIGNAL(returnPressed()),
@@ -159,17 +162,22 @@ QvisPickWindow::CreateWindowContents()
             this, SLOT(logicalCoordsToggled(bool)));
     gLayout->addMultiCellWidget(logicalCoords, 1, 1, 2, 3);
 
+    logicalZone = new QCheckBox("Logical Zone Coordinates", central, "logicalZone");
+    connect(logicalZone, SIGNAL(toggled(bool)),
+            this, SLOT(logicalZoneToggled(bool)));
+    gLayout->addMultiCellWidget(logicalZone, 2, 2, 0, 3);
+
     autoShowCheckBox = new QCheckBox("Automatically show window", central,
                                      "autoShowCheckBox");
     connect(autoShowCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(autoShowToggled(bool)));
-    gLayout->addMultiCellWidget(autoShowCheckBox, 2, 2, 0, 3);
+    gLayout->addMultiCellWidget(autoShowCheckBox, 3, 3, 0, 3);
 
     savePicksCheckBox = new QCheckBox("Don't clear this window", central,
                                      "savePicksCheckBox");
     connect(savePicksCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(savePicksToggled(bool)));
-    gLayout->addMultiCellWidget(savePicksCheckBox, 3, 3, 0, 3);
+    gLayout->addMultiCellWidget(savePicksCheckBox, 4, 4, 0, 3);
 }
 
 // ****************************************************************************
@@ -203,6 +211,9 @@ QvisPickWindow::CreateWindowContents()
 //
 //   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003
 //   Don't clear the window if savePicks is checked. 
+//
+//   Kathleen Bonnell, Tue Nov 18 14:03:22 PST 2003 
+//   Update logicalZone. 
 //
 // ****************************************************************************
 
@@ -265,6 +276,12 @@ QvisPickWindow::UpdateWindow(bool doAll)
         logicalCoords->blockSignals(true);
         logicalCoords->setChecked(pickAtts->GetLogicalCoords());
         logicalCoords->blockSignals(false);
+    }
+    if (pickAtts->IsSelected(26) || doAll)
+    {
+        logicalZone->blockSignals(true);
+        logicalZone->setChecked(pickAtts->GetLogicalZone());
+        logicalZone->blockSignals(false);
     }
 }
 
@@ -610,6 +627,30 @@ QvisPickWindow::logicalCoordsToggled(bool val)
     pickAtts->SetLogicalCoords(val);
     Apply();
 }
+
+
+// ****************************************************************************
+// Method: QvisPickWindow::logicalZoneToggled
+//
+// Purpose:
+//   This is a Qt slot function that sets the flag indicating whether
+//   or not logical zone coordinates should be used. 
+//
+// Arguments:
+//   val : The state of the toggle button.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 18, 2003 
+//
+// ****************************************************************************
+
+void
+QvisPickWindow::logicalZoneToggled(bool val)
+{
+    pickAtts->SetLogicalZone(val);
+    Apply();
+}
+
 
 // ****************************************************************************
 // Method: QvisPickWindow::autoShowToggled
