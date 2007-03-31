@@ -41,6 +41,9 @@
 //    Kathleen Bonnell, Tue Nov 26 15:39:16 PST 2002 
 //    Initialize new member lutColorsChanged.
 //
+//    Kathleen Bonnell, Thu Aug  7 08:29:31 PDT 2003 
+//    Removed immediateModeRendering. 
+//
 // ****************************************************************************
 
 avtSurfaceAndWireframeRenderer::avtSurfaceAndWireframeRenderer()
@@ -63,7 +66,6 @@ avtSurfaceAndWireframeRenderer::avtSurfaceAndWireframeRenderer()
 
     drawEdgeLines = drawEdgeStrips = drawEdgePolys = true;
 
-    immediateModeRendering = false;
     inputNum = 0;
     ignoreLighting = false;
     lutColorsChanged = false;
@@ -210,11 +212,19 @@ avtSurfaceAndWireframeRenderer::Draw()
 //    Kathleen Bonnell, Tue Nov 26 15:39:16 PST 2002 
 //    Removed unused members lastAmbient, lastDiffuse. 
 //    
+//    Kathleen Bonnell, Thu Aug  7 08:35:53 PDT 2003 
+//    Added early return if there are no points in the dataset.
+//    
 // ****************************************************************************
 
 void
 avtSurfaceAndWireframeRenderer::Render(vtkDataSet *ds)
 {
+    if (ds->GetNumberOfPoints() == 0)
+    {
+        return;
+    }
+
     for (inputNum = 0; inputNum < inputs.size(); inputNum++)
     {
         if (inputs[inputNum] == ds) break;
@@ -944,41 +954,6 @@ avtSurfaceAndWireframeRenderer::SetScalarRange(float min, float max)
     scalarRange = true;    
     range[0] = min; 
     range[1] = max; 
-}
-
-
-// ****************************************************************************
-// Method: avtSurfaceAndWireframeRenderer::ImmediateModeRenderingOn
-//
-// Purpose:
-//   Turns on immediate rendering mode. 
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   June 14, 2002
-//
-// ****************************************************************************
-
-void
-avtSurfaceAndWireframeRenderer::ImmediateModeRenderingOn()
-{
-    immediateModeRendering = true;    
-}
-
-// ****************************************************************************
-// Method: avtSurfaceAndWireframeRenderer::ImmediateModeRenderingOff
-//
-// Purpose:
-//   Turns off immediate rendering mode. 
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   June 14, 2002
-//
-// ****************************************************************************
-
-void
-avtSurfaceAndWireframeRenderer::ImmediateModeRenderingOff()
-{
-    immediateModeRendering = false;    
 }
 
 

@@ -68,6 +68,9 @@ typedef struct lec { float r, g, b; } LEC;
 //    Removed unused members lastAmbient, lastDiffuse.  Added new member
 //    lutColorsChanged and method LUTColorsChanged to set it.  Added
 //    GetScalarVisibility.
+//
+//    Kathleen Bonnell, Thu Aug  7 08:29:31 PDT 2003 
+//    Moved immediateModeRendering and Set/Get methods to parent class. 
 //    
 // ****************************************************************************
 
@@ -109,9 +112,6 @@ class PLOTTER_API avtSurfaceAndWireframeRenderer : public avtCustomRenderer
     void                      EdgePolysOn();
     void                      EdgePolysOff();
 
-    void                      ImmediateModeRenderingOn();
-    void                      ImmediateModeRenderingOff();
-
     virtual void              GlobalLightingOn();
     virtual void              GlobalLightingOff();
     virtual void              GlobalSetAmbientCoefficient(const float);
@@ -137,7 +137,6 @@ class PLOTTER_API avtSurfaceAndWireframeRenderer : public avtCustomRenderer
     bool                      drawEdgeStrips; 
     bool                      drawEdgePolys; 
 
-    bool                      immediateModeRendering;
     bool                      ignoreLighting;
     bool                      lutColorsChanged;
 

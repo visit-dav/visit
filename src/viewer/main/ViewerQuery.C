@@ -221,6 +221,9 @@ ViewerQuery::StopObservingPlot()
 //    Jeremy Meredith, Tue Jun 17 19:29:00 PDT 2003
 //    Changed GetAllIndex to GetEnabledIndex.
 //
+//    Kathleen Bonnell, on Aug  4 17:26:07 PDT 2003 
+//    Set animation's FrameIndex only if it is different. 
+//
 // ****************************************************************************
 
 void
@@ -242,12 +245,21 @@ ViewerQuery::CreateLineout()
     std::string hdbName(originatingPlot->GetHostName());
     hdbName += ":";
     hdbName += originatingPlot->GetDatabaseName();
-    bool replacePlots  = ViewerWindowManager::Instance()->GetClientAtts()->GetReplacePlots();
+    bool replacePlots = ViewerWindowManager::Instance()->
+                        GetClientAtts()->GetReplacePlots();
  
     int plotType = PlotPluginManager::Instance()->GetEnabledIndex("Curve_1.0");
     ViewerPlotList *plotList =  resultsWindow->GetAnimation()->GetPlotList();
     resultsWindow->GetAnimation()->SetNFrames(nFrames);
-    resultsWindow->GetAnimation()->SetFrameIndex(currentFrame);
+
+    //
+    // Only set the frame index if it different than what the animation
+    // currently holds, otherwise will force unnecessary pipeline re-executions.
+    //
+    if (currentFrame != resultsWindow->GetAnimation()->GetFrameIndex())
+    {
+        resultsWindow->GetAnimation()->SetFrameIndex(currentFrame);
+    }
     plotList->SetHostDatabaseName(hdbName.c_str());
  
     int pid = plotList->AddPlot(plotType, vName, replacePlots, false);

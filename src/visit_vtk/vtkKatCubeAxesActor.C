@@ -30,7 +30,7 @@ using std::vector;
 using std::string;
 
 int LabelExponent(float min, float max);
-int Digits(float min, float max, int pow);
+int Digits(float min, float max);
 float MaxOf(float, float);
 float MaxOf(float, float, float, float); 
 
@@ -62,6 +62,10 @@ vtkCxxSetObjectMacro(vtkKatCubeAxesActor, Camera,vtkCamera);
 //   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
 //   Remove 'Input' and 'Prop' members, initialize new members
 //   valueScaleFactor, mustAdjustValue, ForceLabelReset.
+//
+//   Kathleen Bonnell, Wed Aug  6 13:59:15 PDT 2003 
+//   Remove valueScaleFactor, replace mustAdjustValue and ForceLabelReset
+//   with one for each axis type.
 //
 // *************************************************************************
 
@@ -142,7 +146,9 @@ vtkKatCubeAxesActor::vtkKatCubeAxesActor()
   sprintf(this->ZTitle,"%s","Z-Axis");
   this->ZUnits = NULL;
 
-  this->lastPow = 0;
+  this->lastXPow = 0;
+  this->lastYPow = 0;
+  this->lastZPow = 0;
   this->lastXAxisDigits = 3;
   this->lastYAxisDigits = 3;
   this->lastZAxisDigits = 3;
@@ -160,11 +166,16 @@ vtkKatCubeAxesActor::vtkKatCubeAxesActor()
   }
   this->numAxesX = this->numAxesY = this->numAxesZ = 1;
 
-  this->valueScaleFactor = 1.;
-  this->mustAdjustValue = false;
-  this->ForceLabelReset = false;
+  this->mustAdjustXValue = false;
+  this->mustAdjustYValue = false;
+  this->mustAdjustZValue = false;
+
+  this->ForceXLabelReset = false;
+  this->ForceYLabelReset = false;
+  this->ForceZLabelReset = false;
 }
 
+// ****************************************************************************
 // Shallow copy of an actor.
 //
 // Modifications:
@@ -175,6 +186,12 @@ vtkKatCubeAxesActor::vtkKatCubeAxesActor()
 //   Remove 'Input' and 'Prop' members, added new members
 //   valueScaleFactor, mustAdjustValue, ForceLabelReset.
 //
+//   Kathleen Bonnell, Wed Aug  6 13:59:15 PDT 2003 
+//   Remove valueScaleFactor, replace mustAdjustValue and ForceLabelReset
+//   with one for each axis type.
+//
+// ****************************************************************************
+
 void vtkKatCubeAxesActor::ShallowCopy(vtkKatCubeAxesActor *actor)
 {
   this->Superclass::ShallowCopy(actor);
@@ -189,9 +206,12 @@ void vtkKatCubeAxesActor::ShallowCopy(vtkKatCubeAxesActor *actor)
   this->SetFlyMode(actor->GetFlyMode());
   this->SetCamera(actor->GetCamera());
   this->SetBounds(actor->GetBounds());
-  this->mustAdjustValue = actor->mustAdjustValue;
-  this->valueScaleFactor = actor->valueScaleFactor;
-  this->ForceLabelReset = actor->ForceLabelReset;
+  this->mustAdjustXValue = actor->mustAdjustXValue;
+  this->mustAdjustYValue = actor->mustAdjustYValue;
+  this->mustAdjustZValue = actor->mustAdjustZValue;
+  this->ForceXLabelReset = actor->ForceXLabelReset;
+  this->ForceYLabelReset = actor->ForceYLabelReset;
+  this->ForceZLabelReset = actor->ForceZLabelReset;
 }
 
 // ****************************************************************************
@@ -662,74 +682,133 @@ vtkKatCubeAxesActor::ComputeTickSize(float bounds[6])
 //    Hank Childs, Fri Sep 27 17:15:07 PDT 2002
 //    Account for units.
 //
+//    Kathleen Bonnell, Wed Aug  6 13:59:15 PDT 2003
+//    Each axis type now has its own 'mustAdjustValue' and 'lastPow'.
+//
 // ****************************************************************************
 
 void
 vtkKatCubeAxesActor::AdjustValues(const float bnds[6])
 {
-    int largestPow = 0;
-
-    if (bnds[0] != bnds[1])
-    {
-        int xPow = LabelExponent(bnds[0], bnds[1]);
-        largestPow = (fabs(float(xPow)) > fabs(float(largestPow)) ? xPow : largestPow);
-    }
-
-    if (bnds[2] != bnds[3])
-    {
-        int yPow = LabelExponent(bnds[2], bnds[3]);
-        largestPow = (fabs(float(yPow)) > fabs(float(largestPow)) ? yPow : largestPow);
-    }
-
-    if (bnds[4] != bnds[5])
-    {
-        int zPow = LabelExponent(bnds[4], bnds[5]);
-        largestPow = (fabs(float(zPow)) > fabs(float(largestPow)) ? zPow : largestPow);
-    }
-
-    if (largestPow != 0)
-    { 
-       this->SetValueScaleFactor(1.0 / pow(10.f, largestPow));
-    }
-    else 
-    { 
-       this->UnSetValueScaleFactor();
-    }
-  
     char xTitle[256];
+    int xPow = LabelExponent(bnds[0], bnds[1]);
+    if (xPow != 0)
+      { 
+      if (!this->mustAdjustXValue || this->lastXPow != xPow)
+        {
+        this->ForceXLabelReset = true;
+        }
+        else
+        {
+        this->ForceXLabelReset = false;
+        }
+      this->mustAdjustXValue = true;
+
+      if (XUnits == NULL || XUnits[0] == '\0')
+        sprintf(xTitle, "X-Axis (e%d)", xPow);
+      else
+        sprintf(xTitle, "X-Axis (e%d %s)", xPow, XUnits);
+      }
+    else 
+      { 
+      if (this->mustAdjustXValue)
+        {
+        this->Modified();
+        this->ForceXLabelReset = true;
+        }
+      else
+        {
+        this->ForceXLabelReset = false;
+        }
+      this->mustAdjustXValue = false;
+
+      if (XUnits == NULL || XUnits[0] == '\0')
+        sprintf(xTitle, "X-Axis");
+      else
+        sprintf(xTitle, "X-Axis (%s)", XUnits);
+      }
+
+
     char yTitle[256];
+    int yPow = LabelExponent(bnds[2], bnds[3]);
+    if (yPow != 0)
+      { 
+
+      if (!this->mustAdjustYValue || this->lastYPow != yPow)
+        {
+        this->ForceYLabelReset = true;
+        }
+        else
+        {
+        this->ForceYLabelReset = false;
+        }
+      this->mustAdjustYValue = true;
+      if (YUnits == NULL || YUnits[0] == '\0')
+        sprintf(yTitle, "Y-Axis (e%d)", yPow);
+      else
+        sprintf(yTitle, "Y-Axis (e%d %s)", yPow, YUnits);
+      }
+    else 
+      { 
+      if (this->mustAdjustYValue)
+        {
+        this->Modified();
+        this->ForceYLabelReset = true;
+        }
+      else
+        {
+        this->ForceYLabelReset = false;
+        }
+      this->mustAdjustYValue = false;
+      if (YUnits == NULL || YUnits[0] == '\0')
+        sprintf(yTitle, "Y-Axis");
+      else
+        sprintf(yTitle, "Y-Axis (%s)", YUnits);
+      }
+
+
     char zTitle[256];
-    if (largestPow == 0)
-    {
-        if (XUnits == NULL || XUnits[0] == '\0')
-            sprintf(xTitle, "X-Axis");
+    int zPow = LabelExponent(bnds[4], bnds[5]);
+    if (zPow != 0)
+      { 
+      if (!this->mustAdjustZValue || this->lastZPow != zPow)
+        {
+        this->ForceZLabelReset = true;
+        }
         else
-            sprintf(xTitle, "X-Axis (%s)", XUnits);
-        if (YUnits == NULL || YUnits[0] == '\0')
-            sprintf(yTitle, "Y-Axis");
-        else
-            sprintf(yTitle, "Y-Axis (%s)", YUnits);
-        if (ZUnits == NULL || ZUnits[0] == '\0')
-            sprintf(zTitle, "Z-Axis");
-        else
-            sprintf(zTitle, "Z-Axis (%s)", ZUnits);
-    }
-    else
-    {
-        if (XUnits == NULL || XUnits[0] == '\0')
-            sprintf(xTitle, "X-Axis (e%d)", largestPow);
-        else
-            sprintf(xTitle, "X-Axis (e%d %s)", largestPow, XUnits);
-        if (YUnits == NULL || YUnits[0] == '\0')
-            sprintf(yTitle, "Y-Axis (e%d)", largestPow);
-        else
-            sprintf(yTitle, "Y-Axis (e%d %s)", largestPow, YUnits);
-        if (ZUnits == NULL || ZUnits[0] == '\0')
-            sprintf(zTitle, "Z-Axis (e%d)", largestPow);
-        else
-            sprintf(zTitle, "Z-Axis (e%d %s)", largestPow, ZUnits);
-    }
-    this->lastPow = largestPow;
+        {
+        this->ForceZLabelReset = false;
+        }
+      this->mustAdjustZValue = true;
+
+      if (ZUnits == NULL || ZUnits[0] == '\0')
+        sprintf(zTitle, "Z-Axis (e%d)", zPow);
+      else
+        sprintf(zTitle, "Z-Axis (e%d %s)", zPow, ZUnits);
+      }
+    else 
+      { 
+      if (this->mustAdjustZValue)
+        {
+        this->Modified();
+        this->ForceZLabelReset = true;
+        }
+      else
+        {
+        this->ForceZLabelReset = false;
+        }
+      this->mustAdjustZValue = false;
+
+      if (ZUnits == NULL || ZUnits[0] == '\0')
+        sprintf(zTitle, "Z-Axis");
+      else
+        sprintf(zTitle, "Z-Axis (%s)", ZUnits);
+      }
+  
+    this->lastXPow = xPow;
+    this->lastYPow = yPow;
+    this->lastZPow = zPow;
+
     SetXTitle(xTitle);
     SetYTitle(yTitle);
     SetZTitle(zTitle);
@@ -756,12 +835,39 @@ vtkKatCubeAxesActor::AdjustValues(const float bnds[6])
 //    Kathleen Bonnell, Thu Aug  1 14:05:05 PDT 2002 
 //    Send lastPos as argument to Digits. 
 //
+//    Kathleen Bonnell, Wed Aug  6 13:59:15 PDT 2003 
+//    Adjust the range values using lastXPow, lastYPow, lastZPow.
+//
 // ****************************************************************************
 
 void
 vtkKatCubeAxesActor::AdjustRange(const float bnds[6])
 {
-    int xAxisDigits = Digits(bnds[0], bnds[1], this->lastPow);
+    float xrange[2], yrange[2], zrange[2];
+    xrange[0] = bnds[0];
+    xrange[1] = bnds[1];
+    yrange[0] = bnds[2];
+    yrange[1] = bnds[3];
+    zrange[0] = bnds[4];
+    zrange[1] = bnds[5];
+
+    if (this->lastXPow != 0)
+    {
+        xrange[0] /= pow(10., this->lastXPow);
+        xrange[1] /= pow(10., this->lastXPow);
+    }
+    if (this->lastYPow != 0)
+    {
+        yrange[0] /= pow(10., this->lastYPow);
+        yrange[1] /= pow(10., this->lastYPow);
+    }
+    if (this->lastZPow != 0)
+    {
+        zrange[0] /= pow(10., this->lastZPow);
+        zrange[1] /= pow(10., this->lastZPow);
+    }
+
+    int xAxisDigits = Digits(xrange[0], xrange[1]);
     if (xAxisDigits != this->lastXAxisDigits)
     {
         char  format[16];
@@ -770,7 +876,7 @@ vtkKatCubeAxesActor::AdjustRange(const float bnds[6])
         this->lastXAxisDigits = xAxisDigits;
     }
 
-    int yAxisDigits = Digits(bnds[2], bnds[3], this->lastPow);
+    int yAxisDigits = Digits(yrange[0], yrange[1]);
     if (yAxisDigits != this->lastYAxisDigits)
     {
         char  format[16];
@@ -779,7 +885,7 @@ vtkKatCubeAxesActor::AdjustRange(const float bnds[6])
         this->lastYAxisDigits = yAxisDigits;
     }
 
-    int zAxisDigits = Digits(bnds[4], bnds[5], this->lastPow);
+    int zAxisDigits = Digits(zrange[0], zrange[1]);
     if (zAxisDigits != this->lastZAxisDigits)
     {
         char  format[16];
@@ -816,18 +922,22 @@ vtkKatCubeAxesActor::AdjustRange(const float bnds[6])
 //    Kathleen Bonnell, Thu Aug  1 13:44:02 PDT 2002 
 //    Added lastPow argument, it specifies whether or not scientific notation
 //    is being used on the labels.
+//
+//    Kathleen Bonnell, Wed Aug  6 13:59:15 PDT 2003
+//    Removed lastPow argment, as the adjustment necessary is now taking
+//    place in AdjustRange. 
+//    
 // ****************************************************************************
 
 int
-Digits(float min, float max, int lastPow)
+Digits(float min, float max )
 {
     float  range = max - min;
     float  pow10   = log10(range);
     int    ipow10  = (int)floor(pow10);
-
     int    digitsPastDecimal = -ipow10;
 
-    if (digitsPastDecimal < 0 && lastPow == 0)
+    if (digitsPastDecimal < 0) 
     {
         //
         // The range is more than 10, but not so big we need scientific
@@ -839,13 +949,13 @@ Digits(float min, float max, int lastPow)
     {
         //
         // We want one more than the range since there is more than one
-        // tick per decade.  If in scientific notation, may be negative.
+        // tick per decade.  
         //
-        digitsPastDecimal = abs(digitsPastDecimal) + 1;
+        digitsPastDecimal++;
 
         //
         // Anything more than 5 is just noise.  (and probably 5 is noise with
-        // floating point is the part before the decimal is big).
+        // floating point if the part before the decimal is big).
         //
         if (digitsPastDecimal > 5)
         {
@@ -884,11 +994,17 @@ Digits(float min, float max, int lastPow)
 //    Kathleen Bonnell, Wed Oct 31 07:57:49 PST 2001 
 //    Moved from VisWinAxes3D.
 //
+//    Kathleen Bonnell, Wed Aug  6 13:59:15 PDT 2003 
+//    Added test for min==max.
+//
 // ****************************************************************************
 
 int
 LabelExponent(float min, float max)
 {
+    if (min == max)
+        return 0;
+
     //
     // Determine power of 10 to scale axis labels to.
     //
@@ -939,6 +1055,9 @@ LabelExponent(float min, float max)
 //    Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003
 //    Added logic to compute and set for each axis the labels and title 
 //    scale size. 
+//
+//    Kathleen Bonnell, Wed Aug  6 13:59:15 PDT 2003 
+//    Indivdual axes now have their own ForceLabelReset.
 //
 // *************************************************************************
 
@@ -1043,14 +1162,18 @@ void vtkKatCubeAxesActor::BuildAxes(vtkViewport *viewport)
   // ticks were not recomputed, but we need a label
   // reset, then build the labels here. 
   //
-  if (!ticksRecomputed && this->ForceLabelReset)
+  if (!ticksRecomputed)
     {
-    BuildLabels(this->XAxes);
-    BuildLabels(this->YAxes);
-    BuildLabels(this->ZAxes);
+    if (this->ForceXLabelReset)
+      BuildLabels(this->XAxes);
+    if (this->ForceYLabelReset)
+      BuildLabels(this->YAxes);
+    if (this->ForceZLabelReset)
+      BuildLabels(this->ZAxes);
     }
 
-  if (ticksRecomputed || this->ForceLabelReset)
+  if (ticksRecomputed || this->ForceXLabelReset || this->ForceYLabelReset ||
+      this->ForceZLabelReset)
     {
     // labels were re-built, need to recompute the scale. 
     float center[3]; 
@@ -1080,12 +1203,19 @@ void vtkKatCubeAxesActor::BuildAxes(vtkViewport *viewport)
       labelscale = target / maxLabelLength;
       }
     target = bLength *0.10;
-
     float titlescale = 1.;
     if (maxTitleLength != 0.)
       {
       titlescale = target / maxTitleLength;
       }
+ 
+    //
+    // Allow a bit bigger title if we have units, otherwise
+    // the title may be too small to read.
+    //
+    if (XUnits != NULL && XUnits[0] != '\0')
+        titlescale *= 2;
+
     for (i = 0; i < 4; i++)
       {
       this->XAxes[i]->SetLabelScale(labelscale);
@@ -1602,49 +1732,11 @@ vtkKatCubeAxesActor::AdjustTicksComputeRange(vtkKatAxisActor *axes[4])
 
 
 // ****************************************************************
-// Modifications:
-//   Kathleen Bonnell, Thu Aug  1 13:44:02 PDT 2002 
-//   Set a flag that forces label values to be reset. 
-// ****************************************************************
-void
-vtkKatCubeAxesActor::SetValueScaleFactor(const float scale)
-{
-    if (!this->mustAdjustValue || this->valueScaleFactor != scale)
-    {
-       this->ForceLabelReset = true;
-    }
-    else
-    {
-       this->ForceLabelReset = false;
-    }
-    this->mustAdjustValue = true;
-    this->valueScaleFactor = scale;
-}
-
-// ****************************************************************
-// Modifications:
-//   Kathleen Bonnell, Thu Aug  1 13:44:02 PDT 2002 
-//   Set a flag that forces label values to be reset. 
-// ****************************************************************
-void
-vtkKatCubeAxesActor::UnSetValueScaleFactor()
-{
-    if (this->mustAdjustValue)
-    {
-       this->Modified();
-       this->ForceLabelReset = true;
-    }
-    else
-    {
-       this->ForceLabelReset = false;
-    }
-    this->mustAdjustValue = false;
-    this->valueScaleFactor = 1.0;
-}
-
-
-// ****************************************************************
 //  Determine what the labels should be and set them in each axis.
+//
+//  Modification:
+//    Kathleen Bonnell, Wed Aug  6 13:59:15 PDT 2003
+//    Each axis type now has it's own 'mustAdjustValue' and 'pow'.
 // ****************************************************************
 
 void
@@ -1652,12 +1744,15 @@ vtkKatCubeAxesActor::BuildLabels(vtkKatAxisActor *axes[4])
 {
   char label[512];
   int i, labelCount = 0;
-  const float majorStart = axes[0]->GetMajorStart();
+  float majorStart = axes[0]->GetMajorStart();
   const float deltaMajor = axes[0]->GetDeltaMajor();
   const float *p2        = axes[0]->GetPoint2Coordinate()->GetValue();
   const float *range     = axes[0]->GetRange();
-  float lastVal, val= majorStart;
+  float lastVal, val = majorStart;
   float extents = range[1] - range[0];
+  bool mustAdjustValue;
+  int lastPow;
+  
   vector<string> labels; 
   const char *format; 
   switch (axes[0]->GetAxisType())
@@ -1665,14 +1760,20 @@ vtkKatCubeAxesActor::BuildLabels(vtkKatAxisActor *axes[4])
     case VTK_AXIS_TYPE_X : 
         lastVal = p2[0]; 
         format = this->XLabelFormat;
+        mustAdjustValue = this->mustAdjustXValue;
+        lastPow = this->lastXPow;
         break; 
     case VTK_AXIS_TYPE_Y : 
         lastVal = p2[1]; 
         format = this->YLabelFormat;
+        mustAdjustValue = this->mustAdjustYValue;
+        lastPow = this->lastYPow;
         break; 
     case VTK_AXIS_TYPE_Z : 
         lastVal = p2[2]; 
         format = this->ZLabelFormat;
+        mustAdjustValue = this->mustAdjustZValue;
+        lastPow = this->lastZPow;
         break; 
     }
 
@@ -1684,6 +1785,11 @@ vtkKatCubeAxesActor::BuildLabels(vtkKatAxisActor *axes[4])
     }
 
   val = majorStart;
+
+  float scaleFactor = 1.;
+  if (lastPow != 0)
+     scaleFactor = 1.0/pow(10., lastPow);
+
   for (i = 0; i < labelCount; i++)
     {
     if (fabs(val) < 0.01 && extents > 1)
@@ -1692,9 +1798,9 @@ vtkKatCubeAxesActor::BuildLabels(vtkKatAxisActor *axes[4])
       // large, so set it to zero to avoid ugliness.
       val = 0.;  
       }
-    if (this->mustAdjustValue)
+    if (mustAdjustValue) 
       {
-      sprintf(label, format, val * valueScaleFactor);
+      sprintf(label, format, val*scaleFactor);
       }
     else
       {

@@ -73,6 +73,10 @@ class PLOTTER_API avtUserDefinedMapper : public avtMapper
 //  Programmer: Hank Childs
 //  Creation:   March 26, 2001
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Aug  4 11:35:53 PDT 2003
+//    Added methods for setting ImmediateModeRendering.
+//
 // ****************************************************************************
 
 class PLOTTER_API vtkUserDefinedMapperBridge : public vtkDataSetMapper
@@ -84,6 +88,11 @@ class PLOTTER_API vtkUserDefinedMapperBridge : public vtkDataSetMapper
     void                     SetRenderer(avtCustomRenderer_p);
   
     virtual void             Render(vtkRenderer *ren, vtkActor *a);
+
+    virtual void             ImmediateModeRenderingOn(void);
+    virtual void             ImmediateModeRenderingOff(void);
+    virtual void             SetImmediateModeRendering(int );
+    virtual int              GetImmediateModeRendering(void);
 
   protected:
                              vtkUserDefinedMapperBridge();
