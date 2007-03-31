@@ -232,6 +232,7 @@ QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
 
     // Initialize the attached subjects
     globalAtts = NULL;
+    sliderDown = false;
 }
 
 // ****************************************************************************
@@ -520,12 +521,15 @@ QvisFilePanel::UpdateFileList(bool doAll)
 //   Brad Whitlock, Wed Jul 2 15:58:47 PST 2003
 //   I added exception handling code for when the metadata cannot be read.
 //
+//   Brad Whitlock, Tue Sep 9 15:40:40 PST 2003
+//   I made it return early if the slider is down.
+//
 // ****************************************************************************
 
 void
 QvisFilePanel::UpdateAnimationControls(bool doAll)
 {
-    if(fileServer == 0 || globalAtts == 0)
+    if(fileServer == 0 || globalAtts == 0 || sliderDown)
         return;
 
     // currentFile changed.  Update the file server.
@@ -1838,6 +1842,7 @@ QvisFilePanel::sliderEnd()
 {
     sliderDown = false;
 
+    // Update the clients that need to know about the new frame
     globalAtts->SetCurrentFrame(sliderVal);
     SetUpdate(false);
     globalAtts->Notify();
@@ -1855,6 +1860,9 @@ QvisFilePanel::sliderEnd()
 //
 // Arguments:
 //   val : The new slider value.
+//
+// Note:       This method is called when clicking on areas of the slider to
+//             make it page up/down.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Sep 27 11:59:05 PDT 2000

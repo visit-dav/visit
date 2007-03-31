@@ -846,6 +846,11 @@ ViewerSubject::InitializePluginManagers()
 // Creation:   Tue Jun 17 15:16:13 PST 2003
 //
 // Modifications:
+//   Brad Whitlock, Tue Sep 9 16:30:34 PST 2003
+//   I fixed a bug where I accidentally hooked up the client plot attributes
+//   to the config manager instead of hooking up the default plot attributes.
+//   This prevented the plot attributes from being correctly sent to the
+//   client.
 //   
 // ****************************************************************************
 
@@ -879,12 +884,13 @@ ViewerSubject::LoadPlotPlugins()
     for (int i = 0; i < plotFactory->GetNPlotTypes(); ++i)
     {
         AttributeSubject *attr = plotFactory->GetClientAtts(i);
+        AttributeSubject *defaultAttr = plotFactory->GetDefaultAtts(i);
 
         if (attr != 0)
-        {
             xfer.Add(attr);
-            configMgr->Add(attr);
-        }
+
+        if (defaultAttr != 0)
+            configMgr->Add(defaultAttr);
     }
 
     visitTimer->StopTimer(total, "Loading plot plugins and instantiating objects.");
@@ -902,7 +908,12 @@ ViewerSubject::LoadPlotPlugins()
 // Creation:   Tue Jun 17 15:16:57 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Sep 9 16:30:34 PST 2003
+//   I fixed a bug where I accidentally hooked up the client operator
+//   attributes to the config manager instead of hooking up the default
+//   operator attributes. This prevented the operator attributes from being
+//   correctly sent to the client
+//
 // ****************************************************************************
 
 void
@@ -935,12 +946,13 @@ ViewerSubject::LoadOperatorPlugins()
     for (int i = 0; i < operatorFactory->GetNOperatorTypes(); ++i)
     {
         AttributeSubject *attr = operatorFactory->GetClientAtts(i);
+        AttributeSubject *defaultAttr = operatorFactory->GetDefaultAtts(i);
 
         if (attr != 0)
-        {
             xfer.Add(attr);
-            configMgr->Add(attr);
-        }
+
+        if(defaultAttr)
+            configMgr->Add(defaultAttr);
     }
 
     // Set the query manager's operator factory pointer.
@@ -1157,6 +1169,9 @@ ViewerSubject::ProcessEventsCB(void *cbData)
 //   Only process events if we allow interruption. This makes it so we can
 //   prevent synchronous clients from going too fast for the viewer.
 //
+//   Brad Whitlock, Tue Sep 9 15:38:10 PST 2003
+//   I increased the amount of time that we can use to process events.
+//
 // ****************************************************************************
 
 void
@@ -1164,7 +1179,7 @@ ViewerSubject::ProcessEvents()
 {
     if (interruptionEnabled)
     {
-         mainApp->processEvents(10);
+         mainApp->processEvents(100);
     }
 }
 

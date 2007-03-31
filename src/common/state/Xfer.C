@@ -295,7 +295,7 @@ Xfer::ReadPendingMessages()
             if(specialOpcodeCallback != 0)
                 specialOpcodeCallback(opcode, specialOpcodeCallbackData);
 
-            return false;
+            continue;
         }
         else if (opcode == -1)
         {

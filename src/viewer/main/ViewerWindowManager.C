@@ -5164,6 +5164,24 @@ ViewerWindowManager::StopTimer()
 //    Brad Whitlock, Wed Jul 24 14:55:50 PST 2002
 //    I fixed the scheduling algorithm for choosing the next window.
 //
+//    Brad Whitlock, Tue Sep 9 15:16:55 PST 2003
+//    I added code to tell the ViewerSubject to process some of the input
+//    that it received from the client. I had to do this because the animation's
+//    NextFrame and PrevFrame methods often need to get a new plot from the
+//    compute engine. It uses an RPC to do that and while it is in the RPC,
+//    it checks for new input from the client and it looks for an interrupt
+//    opcode in that input. If it finds an interrupt then it interrupts,
+//    otherwise the input is left unprocessed in the input buffer. The RPC
+//    also calls some code to process Qt window events. Unfortunately, that
+//    function call does not process client input because the socket has been
+//    read. This is okay because it would process client input, which could
+//    potentially alter the plot, in the middle of executing a plot. To fix
+//    the situation, I tell the ViewerSubject to process any client input
+//    that it has after the plot has been executed. This lets us process
+//    client input without the danger of being inside the engine proxy's
+//    Execute RPC and it is pretty much a noop when we get to this function
+//    with an animation that's been cached.
+//
 // ****************************************************************************
 
 void
@@ -5218,9 +5236,25 @@ ViewerWindowManager::AnimationCallback()
         timer->blockSignals(true);
 
         if (mode == ViewerAnimation::PlayMode)
+        {
+            // Change to the next frame in the animation, which will likely
+            // cause us to have to read a plot from the compute engine.
             windows[lastAnimation]->GetAnimation()->NextFrame();
+
+            // Process any client input that we had to ignore while reading
+            // the plot from the compute engine.
+            viewerSubject->ProcessFromParent();
+        }
         else
+        {
+            // Change to the next frame in the animation, which will likely
+            // cause us to have to read a plot from the compute engine.
             windows[lastAnimation]->GetAnimation()->PrevFrame();
+
+            // Process any client input that we had to ignore while reading
+            // the plot from the compute engine.
+            viewerSubject->ProcessFromParent();
+        }
 
         // Start the timer up again.
         timer->blockSignals(false);
