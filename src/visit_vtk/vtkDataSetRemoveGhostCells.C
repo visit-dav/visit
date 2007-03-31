@@ -206,6 +206,10 @@ void vtkDataSetRemoveGhostCells::PolyDataExecute()
 //    Reworked code to utilize vtk ExtractRectilinearGrid filter. 
 //    Use new avtRealDims array.
 //
+//    Hank Childs, Sun Nov  9 13:19:45 PST 2003
+//    Tell output that it doesn't have ghost zones, even if we couldn't handle
+//    it correctly.  This makes the life of the wireframe filter much easier.
+//
 // ***************************************************************************
 
 void vtkDataSetRemoveGhostCells::RectilinearGridExecute()
@@ -220,6 +224,7 @@ void vtkDataSetRemoveGhostCells::RectilinearGridExecute()
     {
     vtkErrorMacro(<<"No proper match for avtRealDims found in field data.");
     output->ShallowCopy(input);
+    output->GetCellData()->RemoveArray("vtkGhostLevels");
     return;
     }
 
