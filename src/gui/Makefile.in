@@ -259,6 +259,9 @@
 #    Brad Whitlock, Fri Oct 31 13:32:19 PST 2003
 #    I Added new files for advanced annotation controls.
 #
+#    Brad Whitlock, Tue Dec 30 14:28:20 PST 2003
+#    I added QvisAnimationSlider.
+#
 ##############################################################################
 
 ##
@@ -291,6 +294,7 @@ HDRMOC = \
     KFListView.h \
     KFTimeSlider.h \
     QvisAbstractOpacityBar.h \
+    QvisAnimationSlider.h \
     QvisAnimationWindow.h \
     QvisAnnotationObjectInterface.h \
     QvisAnnotationWindow.h \

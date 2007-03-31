@@ -32,6 +32,44 @@ AttributeSubjectMap::AttributeSubjectMap()
 }
 
 // ****************************************************************************
+// Method: AttributeSubjectMap::AttributeSubjectMap
+//
+// Purpose: 
+//   Copy constructor.
+//
+// Arguments:
+//   obj : The object to copy.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 30 17:05:04 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AttributeSubjectMap::AttributeSubjectMap(const AttributeSubjectMap &obj)
+{
+    int i;
+
+    nIndices   = obj.nIndices;
+    maxIndices = obj.maxIndices;
+
+    atts       = new AttributeSubject*[maxIndices];
+    indices    = new int[maxIndices];
+
+    for(i = 0; i < nIndices; ++i)
+    {
+        atts[i] = obj.atts[i]->NewInstance(true);
+        indices[i] = obj.indices[i];
+    }
+    for(i = nIndices; i < maxIndices; ++i)
+    {
+        atts[i] = 0;
+        indices[i] = 0;
+    }
+}
+
+// ****************************************************************************
 //  Method: AttributeSubjectMap destructor
 //
 //  Programmer: Eric Brugger
@@ -51,6 +89,48 @@ AttributeSubjectMap::~AttributeSubjectMap()
     {
         delete [] atts;
         delete [] indices;
+    }
+}
+
+// ****************************************************************************
+// Method: AttributeSubjectMap::operator =
+//
+// Purpose: 
+//   Assignment operator.
+//
+// Arguments:
+//   obj : The object to copy.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 30 17:05:42 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+AttributeSubjectMap::operator =(const AttributeSubjectMap &obj)
+{
+    int i;
+    for(i = 0; i < nIndices; ++i)
+        delete atts[i];
+    delete [] atts;
+
+    nIndices   = obj.nIndices;
+    maxIndices = obj.maxIndices;
+
+    atts       = new AttributeSubject*[maxIndices];
+    indices    = new int[maxIndices];
+
+    for(i = 0; i < nIndices; ++i)
+    {
+        atts[i] = obj.atts[i]->NewInstance(true);
+        indices[i] = obj.indices[i];
+    }
+    for(i = nIndices; i < maxIndices; ++i)
+    {
+        atts[i] = 0;
+        indices[i] = 0;
     }
 }
 

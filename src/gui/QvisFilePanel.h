@@ -12,9 +12,9 @@
 class QListView;
 class QListViewItem;
 class QPushButton;
-class QSlider;
 class QLineEdit;
 class QPixmap;
+class QvisAnimationSlider;
 class QvisListViewFileItem;
 class QvisVCRControl;
 
@@ -80,6 +80,9 @@ class ViewerProxy;
 //   I added a slot to help me update the file list in case we encounter
 //   virtual files that have been added but have multiple time states
 //   in each file. I also added some internal convenience methods.
+//
+//   Brad Whitlock, Tue Dec 30 14:33:25 PST 2003
+//   I made it use QvisAnimationSlider.
 //
 // ****************************************************************************
 
@@ -175,7 +178,7 @@ private:
     QPushButton      *openButton;
     QPushButton      *replaceButton;
     QPushButton      *overlayButton;
-    QSlider          *animationPosition;
+    QvisAnimationSlider *animationPosition;
     QLineEdit        *timeField;
     QvisVCRControl   *vcrControls;
     QPixmap          *computerPixmap;
@@ -184,7 +187,6 @@ private:
 
     GlobalAttributes *globalAtts;
 
-    bool                      sliderDown;
     int                       sliderVal;
     FileDisplayInformationMap displayInfo;
     TimeFormat                timeStateFormat;

@@ -2357,6 +2357,9 @@ ViewerWindow::GetView3D() const
 //    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
 //    I added a curve view.
 //
+//    Brad Whitlock, Tue Dec 30 17:06:39 PST 2003
+//    I added code to copy the view keyframes.
+//
 // ****************************************************************************
 
 void
@@ -2368,6 +2371,13 @@ ViewerWindow::CopyViewAttributes(const ViewerWindow *source)
     visWindow->SetViewCurve(source->visWindow->GetViewCurve());
     visWindow->SetView2D(source->visWindow->GetView2D());
     visWindow->SetView3D(source->visWindow->GetView3D());
+
+    //
+    // Copy the view keyframes.
+    //
+    *viewCurveAtts = *(source->viewCurveAtts);
+    *view2DAtts = *(source->view2DAtts);
+    *view3DAtts = *(source->view3DAtts);
 
     //
     // Copy the bounding boxes.

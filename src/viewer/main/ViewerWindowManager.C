@@ -2910,6 +2910,9 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
 //    I implemented CloneWindowOnFirstRef mode, which clones the current
 //    window to the newly activated window when it is first referenced.
 //
+//    Brad Whitlock, Tue Dec 30 14:41:38 PST 2003
+//    Added code to make sure the new active window is not iconified.
+//
 // ****************************************************************************
 
 void
@@ -2946,6 +2949,9 @@ ViewerWindowManager::SetActiveWindow(const int windowId)
     // Make the specified window active.
     //
     activeWindow = windowId - 1;
+
+    // Deiconify the activated window.
+    windows[activeWindow]->DeIconify();
 
     // Raise the activated window.
     windows[activeWindow]->Raise();
