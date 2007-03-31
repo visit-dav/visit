@@ -18,6 +18,7 @@ class  vtkVoxel;
 class  vtkWedge;
 
 class  avtHexahedronExtractor;
+class  avtMassVoxelExtractor;
 class  avtPyramidExtractor;
 class  avtTetrahedronExtractor;
 class  avtWedgeExtractor;
@@ -47,6 +48,9 @@ class  avtRayFunction;
 //    Remove boolean argument to Extract<Cell> calls since it is no longer
 //    necessary when all of the variables are being extracted.
 //
+//    Hank Childs, Sun Dec 14 11:07:56 PST 2003
+//    Added mass voxel extractor.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtSamplePointExtractor : public avtDatasetToSamplePointsFilter
@@ -69,6 +73,7 @@ class PIPELINE_API avtSamplePointExtractor : public avtDatasetToSamplePointsFilt
     int                       currentNode, totalNodes;
 
     avtHexahedronExtractor   *hexExtractor;
+    avtMassVoxelExtractor    *massVoxelExtractor;
     avtPyramidExtractor      *pyramidExtractor;
     avtTetrahedronExtractor  *tetExtractor;
     avtWedgeExtractor        *wedgeExtractor;

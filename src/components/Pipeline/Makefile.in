@@ -159,6 +159,9 @@
 #    Hank Childs, Fri Oct  3 11:10:29 PDT 2003
 #    Added avtCurveConstructorFilter.
 #
+#    Hank Childs, Sun Dec 14 11:05:37 PST 2003
+#    Added avtMassVoxelExtractor.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -198,6 +201,7 @@ Data_src= \
   Data/avtIntervalTree.C \
   Data/avtLightingModel.C \
   Data/avtMIPRangeRF.C \
+  Data/avtMassVoxelExtractor.C \
   Data/avtMaterial.C \
   Data/avtMaximumIntensityProjectionRF.C \
   Data/avtMetaData.C \

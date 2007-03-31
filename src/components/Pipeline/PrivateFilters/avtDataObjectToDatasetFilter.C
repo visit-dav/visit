@@ -29,6 +29,10 @@
 //    Hank Childs, Sat Dec 13 16:07:44 PST 2003
 //    Set the dimension of the output variable.
 //
+//    Hank Childs, Sun Dec 14 14:15:02 PST 2003
+//    Initialize the dimension for the cases of non-variables (like meshes and
+//    subsets).
+//
 // ****************************************************************************
 
 void
@@ -36,6 +40,7 @@ avtDataObjectToDatasetFilter::OutputSetActiveVariable(const char *varname)
 {
     SetActiveVariableArgs args;
     args.varname = varname;
+    args.activeVarDim = 0;
     avtDataTree_p tree = GetDataTree();
     bool success;
     tree->Traverse(CSetActiveVariable, (void *) &args, success);
