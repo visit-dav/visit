@@ -2,6 +2,8 @@
 //                        avtImageRepresentation.C                           //
 // ************************************************************************* //
 
+#include <vtkCharArray.h>
+#include <vtkFloatArray.h>
 #include <vtkImageData.h>
 #include <vtkImageClip.h>
 #include <vtkStructuredPoints.h>
@@ -18,8 +20,7 @@
 //
 
 void   CreateStringFromInput(vtkImageData *, float *, unsigned char *&, int &);
-void   CreateStringFromVTKInput(vtkImageData *, char *&, int &);
-void   GetImageFromString(unsigned char *, vtkImageData *&, float *&);
+void   CreateStringFromVTKInput(vtkImageData *, unsigned char *&, int &);
 
 
 // ****************************************************************************
@@ -72,15 +73,23 @@ avtImageRepresentation::avtImageRepresentation(vtkImageData *d)
 avtImageRepresentation::avtImageRepresentation(vtkImageData *d, float *z)
 {
     Initialize();
+    int width = 0;
+    int height = 0;
 
     asVTK        = d;
     if (asVTK != NULL)
     {
         asVTK->Register(NULL);
+        width  = asVTK->GetDimensions()[0];
+        height = asVTK->GetDimensions()[1];
     }
 
-    zbuffer      = z;
-    zbufferRef   = new int(1);
+    if (z != NULL)
+    {
+       zbuffer      = new float[width * height];
+       memcpy(zbuffer, z, sizeof(float) * width * height);
+       zbufferRef   = new int(1);
+    }
 }
 
 
@@ -97,11 +106,12 @@ avtImageRepresentation::avtImageRepresentation(char *d, int dl)
     Initialize();
 
     asCharLength = dl;
-    asChar = new unsigned char[asCharLength];
-    for (int i = 0 ; i < asCharLength ; i++)
-        asChar[i] = d[i];
-
-    asCharRef = new int(1);
+    if (asCharLength > 0 && d != NULL)
+    {
+       asChar = new unsigned char[asCharLength];
+       memcpy(asChar, d, asCharLength * sizeof(char));
+       asCharRef = new int(1);
+    }
 }
 
 
@@ -355,7 +365,7 @@ avtImageRepresentation::GetImageVTK(void)
             EXCEPTION0(NoInputException);
         }
 
-        GetImageFromString(asChar, asVTK, zbuffer);
+        GetImageFromString(asChar, asCharLength, asVTK, zbuffer);
         if (zbuffer != NULL)
         {
             zbufferRef = new int(1);
@@ -395,7 +405,7 @@ avtImageRepresentation::GetZBuffer(void)
             EXCEPTION0(NoInputException);
         }
 
-        GetImageFromString(asChar, asVTK, zbuffer);
+        GetImageFromString(asChar, asCharLength, asVTK, zbuffer);
         if (zbuffer != NULL)
         {
             zbufferRef = new int(1);
@@ -427,7 +437,7 @@ avtImageRepresentation::GetRGBBuffer(void)
             EXCEPTION0(NoInputException);
         }
 
-        GetImageFromString(asChar, asVTK, zbuffer);
+        GetImageFromString(asChar, asCharLength, asVTK, zbuffer);
         if (zbuffer != NULL)
         {
             zbufferRef = new int(1);
@@ -498,71 +508,34 @@ void
 CreateStringFromInput(vtkImageData *img, float *zbuffer, unsigned char *&str,
                       int &len)
 {
+    // make a shallow copy for if we need to attach zbuffer data
+    vtkImageData *tmp  = vtkImageData::New();
+    tmp->ShallowCopy(img);
+
     //
     // Figure out what the width and height should be before we start altering
     // the image (the image should not be altered, but you never know with VTK)
     //
     int dims[3];
-    img->GetDimensions(dims);
+    tmp->GetDimensions(dims);
     int width  = dims[0];
     int height = dims[1];
 
-    //
-    // Get the VTK image data as a string.
-    //
-    char *imgStr    = NULL;
-    int   imgLength = 0;
-    CreateStringFromVTKInput(img, imgStr, imgLength);
-
-    len = 0;
-
-    // One int to say whether or not there is going to be a z-buffer
-    len += sizeof(int);
-
-    // Put the vtk image next.
-    len += sizeof(int);
-    len += imgLength;
- 
-    if (zbuffer != NULL)
+    // add the zbuffer as point data if we have one
+    if (zbuffer)
     {
-        // Put the width and height in the string
-        len += 2*sizeof(int);
-
-        // Allocate space for the z-buffer.
-        len += (width*height)*sizeof(float);
+       vtkFloatArray *zArray = vtkFloatArray::New();
+       zArray->SetNumberOfComponents(1);
+       int iOwnIt = 1;  // 1 means we own it -- you don't delete it.
+       zArray->SetArray(zbuffer, width * height, iOwnIt);
+       zArray->SetName("zbuffer");
+       tmp->GetPointData()->AddArray(zArray);
+       zArray->Delete();
     }
 
-    str = new unsigned char[len];
-    unsigned char *current = str;
+    CreateStringFromVTKInput(tmp, str, len);
 
-    //
-    // Put in a flag saying if there will be a zbuffer at the end.
-    //
-    int  zBufferFlag = (zbuffer != NULL ? 1 : 0);
-    memcpy(current, &zBufferFlag, sizeof(int));
-    current += sizeof(int);
-
-    //
-    // Copy over the vtk image.
-    //
-    memcpy(current, &imgLength, sizeof(int));
-    current += sizeof(int);
-    memcpy(current, imgStr, imgLength);
-    current += imgLength;
-    delete [] imgStr;
-
-    //
-    // If there is a zbuffer, copy it over.
-    //
-    if (zbuffer != NULL)
-    {
-        memcpy(current, &width, sizeof(int));
-        current += sizeof(int);
-        memcpy(current, &height, sizeof(int));
-        current += sizeof(int);
-        memcpy(current, zbuffer, (height*width)*sizeof(float));
-        current += (height*width)*sizeof(float);
-    }
+    tmp->Delete();
 }
 
 
@@ -583,7 +556,7 @@ CreateStringFromInput(vtkImageData *img, float *zbuffer, unsigned char *&str,
 // ****************************************************************************
 
 void
-CreateStringFromVTKInput(vtkImageData *img, char *&str, int &len)
+CreateStringFromVTKInput(vtkImageData *img, unsigned char *&str, int &len)
 {
     //
     // Technique for writing image to a string stolen from
@@ -604,7 +577,7 @@ CreateStringFromVTKInput(vtkImageData *img, char *&str, int &len)
     writer->Write();
 
     len = writer->GetOutputStringLength();
-    str = writer->RegisterAndGetOutputString();
+    str = (unsigned char *) writer->RegisterAndGetOutputString();
 
     writer->Delete();
     clip->Delete();
@@ -628,40 +601,41 @@ CreateStringFromVTKInput(vtkImageData *img, char *&str, int &len)
 //  Programmer: Hank Childs
 //  Creation:   February 13, 2001
 //
+//  Modifications:
+//
+//     Mark C. Miller, 22Jul03
+//     Re-wrote to avoid use of memcpy. 
+//
 // ****************************************************************************
 
-void
-GetImageFromString(unsigned char *str, vtkImageData *&img, float *&zbuffer)
+void avtImageRepresentation::GetImageFromString(unsigned char *str,
+        int strLength, vtkImageData *&img, float *&zbuffer)
 {
-    int isZBuffer;
-    memcpy(&isZBuffer, str, sizeof(int));
-    str += sizeof(int);
-    
-    int imgLength;
-    memcpy(&imgLength, str, sizeof(int));
-    str += sizeof(int);
-
+    // read the string assuming its just an image
     vtkStructuredPointsReader *reader = vtkStructuredPointsReader::New();
+    vtkCharArray *charArray = vtkCharArray::New();
+    int iOwnIt = 1;  // 1 means we own it -- you don't delete it.
+    charArray->SetArray((char *) str, strLength, iOwnIt);
     reader->SetReadFromInputString(1);
-    reader->SetInputString((char *) str, imgLength);
+    reader->SetInputArray(charArray);
     img = reader->GetOutput();
-    img->Register(NULL);
     img->Update();
+    img->Register(NULL);
     img->SetSource(NULL);
     reader->Delete();
-    str += imgLength;
+    charArray->Delete();
 
-    if (isZBuffer != 0)
+    // If there is a "zbuffer" point data array, then get it too
+    vtkDataArray *zArray = img->GetPointData()->GetArray("zbuffer");
+    if (zArray)
     {
-        int width, height;
-        memcpy(&width, str, sizeof(int));
-        str += sizeof(int);
-        memcpy(&height, str, sizeof(int));
-        str += sizeof(int);
+       int size = zArray->GetSize();
+       zbuffer = new float[size];
+       memcpy(zbuffer, zArray->GetVoidPointer(0), size * sizeof(float));
+       zbufferRef   = new int(1);
 
-        zbuffer = new float[width*height];
-        memcpy(&zbuffer, str, (width*height)*sizeof(float));
-        str += (width*height)*sizeof(float);
+       // remove the zbuffer data from the vtkImageData object 
+       img->GetPointData()->RemoveArray("zbuffer");
     }
 }
 
@@ -697,7 +671,7 @@ avtImageRepresentation::GetSize(int *_rowSize, int *_colSize)
             EXCEPTION0(NoInputException);
         }
 
-        GetImageFromString(asChar, asVTK, zbuffer);
+        GetImageFromString(asChar, asCharLength, asVTK, zbuffer);
     }
 
     int *imageDims = asVTK->GetDimensions();

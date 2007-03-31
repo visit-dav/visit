@@ -972,6 +972,9 @@ ViewerFileServer::ConnectServer(const std::string &mdServerHost,
 //   I simplified the code so it does not matter which sorts of connections
 //   are used.
 //
+//   Brad Whitlock, Tue Jul 29 11:40:07 PDT 2003
+//   Changed interface to ParentProcess::Connect.
+//
 // ****************************************************************************
 
 void
@@ -992,7 +995,7 @@ ViewerFileServer::TerminateConnectionRequest(const stringVector &args, int failC
         ParentProcess killer;
 
         // Connect back to the process.
-        killer.Connect(&argc, &argv, true, failCode);
+        killer.Connect(1, 1, &argc, &argv, true, failCode);
     }
     CATCHALL(...)
     {

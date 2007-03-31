@@ -118,6 +118,9 @@
 #    Brad Whitlock, Thu Jun 19 13:16:57 PST 2003
 #    Removed splashscreen from the distribution.
 #
+#    Eric Brugger, Tue Jul 29 08:23:32 PDT 2003
+#    Added makemili to the distribution.
+#
 #-----------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -221,7 +224,7 @@ endif
 # Determine the operating system.
 #
 if("$OSGiven" == "FALSE") then
-    set os = `/bin/uname -s | tr "[A-Z]" "[a-z]" | tr -d "[0-9]"`
+   set os = `/bin/uname -s | tr "[A-Z]" "[a-z]" | tr -d "[0-9]"`
 endif
 
 #
@@ -345,7 +348,7 @@ endif
 mkdir distribution/visit
 mkdir distribution/visit/bin
 if ($DataFiles == "TRUE") then
-    mkdir distribution/visit/data
+   mkdir distribution/visit/data
 endif
 
 mkdir distribution/visit/$Version
@@ -464,7 +467,7 @@ cp $VisItDir/bin/visit         distribution/visit/bin/visit
 cp $VisItDir/bin/cli           $bindir/cli
 cp $VisItDir/bin/engine_ser    $bindir/engine_ser
 if(-e $VisItDir/bin/engine_par) then
-    cp $VisItDir/bin/engine_par $bindir/engine_par
+   cp $VisItDir/bin/engine_par $bindir/engine_par
 endif
 cp $VisItDir/bin/gui           $bindir/gui
 cp $VisItDir/bin/mdserver      $bindir/mdserver
@@ -483,6 +486,9 @@ cp $VisItDir/bin/curv3dprep    $bindir
 # copy text2polys and time_annotation
 cp $VisItDir/bin/text2polys    $bindir
 cp $VisItDir/bin/time_annotation $bindir
+if(-e $VisItDir/bin/makemili_ser) then
+   cp $VisItDir/bin/makemili_ser $bindir/makemili_ser
+endif
 
 #
 # Copy the VisIt libraries to the distribution.
@@ -596,17 +602,17 @@ cp $VisItDir/include/qt/*.h                     $incdir/qt
 #
 cp $VisItDir/help/*.html $helpdir
 if (-e $VisItDir/help/visit.helpml) then
-    cp $VisItDir/help/visit.helpml $helpdir
+   cp $VisItDir/help/visit.helpml $helpdir
 endif
 
 #
 # Copy the Java class files to the distribution.
 #
 if (-e $VisItDir/java/llnl/visit/ViewerProxy.class) then
-    cp -R $VisItDir/java/llnl $javadir
+   cp -R $VisItDir/java/llnl $javadir
 endif
 if (-e $VisItDir/java/RunViewer.class) then
-    cp -R $VisItDir/java/RunViewer.class $javadir
+   cp -R $VisItDir/java/RunViewer.class $javadir
 endif
 
 #

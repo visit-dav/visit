@@ -499,13 +499,17 @@ int multiplierTable2[4] = { -1,  1, 1, -1};
 //   Kathleen Bonnell, Fri Jul 18 09:09:31 PDT 2003 
 //   Renamed to SetLabelPosition.  Removed calculation of label
 //   scale factor, added check for no labels to early return test.
-//   
+//
+//   Eric Brugger, Tue Jul 29 14:42:44 PDT 2003
+//   Corrected the test that causes the routine to exit early when
+//   no work needs to be done.
+//
 // *******************************************************************
 
 void 
 vtkKatAxisActor::SetLabelPositions(vtkViewport *viewport, bool force) 
 {
-  if (!force || !this->LabelVisibility || this->NumberOfLabelsBuilt == 0) 
+  if (!force && (!this->LabelVisibility || this->NumberOfLabelsBuilt == 0)) 
       return;
 
   float bounds[6], center[3], tick[3], pos[3];

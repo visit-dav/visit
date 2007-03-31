@@ -108,6 +108,9 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   Brad Whitlock, Tue Apr 8 10:43:10 PDT 2003
 //   I enhanced the widget so it supports moving operators around in a pipeline.
 //
+//   Brad Whitlock, Mon Jul 28 17:21:17 PST 2003
+//   Added UpdatePlotAndOperatorMenuEnabledState.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotManagerWidget : public QWidget, public GUIBase,
@@ -141,6 +144,7 @@ private:
     void PopulateVariableLists(const QualifiedFilename &filename);
     void UpdatePlotVariableMenu();
     void UpdateVariableMenu();
+    void UpdatePlotAndOperatorMenuEnabledState() const;
 
 private slots:
     void setActivePlots();

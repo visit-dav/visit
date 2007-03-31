@@ -128,6 +128,9 @@ avtTerminatingDatasetSource::FetchData(avtDataSpecification_p spec)
 //    Since VTK assumes vectors are 3D, allocate enough memory to make sure
 //    it does do an array bounds write.
 //
+//    Hank Childs, Tue Jul 29 16:33:57 PDT 2003
+//    Make use of cached bounds.
+//
 // ****************************************************************************
 
 void
@@ -141,7 +144,16 @@ avtTerminatingDatasetSource::MergeExtents(vtkDataSet *ds)
     avtDataAttributes &atts = GetOutput()->GetInfo().GetAttributes();
 
     float bounds[6];
-    ds->GetBounds(bounds);
+    if (ds->GetFieldData()->GetArray("avtOriginalBounds") != NULL)
+    {
+        vtkDataArray *arr = ds->GetFieldData()->GetArray("avtOriginalBounds");
+        for (int i = 0 ; i < 6 ; i++)
+            bounds[i] = arr->GetTuple1(i);
+    }
+    else
+    {
+        ds->GetBounds(bounds);
+    }
 
     double dbounds[6];
     dbounds[0] = bounds[0];

@@ -41,6 +41,9 @@ MergeZFPixelBuffers(void *ibuf, void *iobuf, int *count, void *datatype)
     ZFPixel_t *inout_zfpixels = (ZFPixel_t *) iobuf;
     int i;
 
+    // quiet the compiler
+    datatype = datatype;
+
     // get the bacground color info out of last entry
     unsigned char local_bg_r = in_zfpixels[*count-1].r; 
     unsigned char local_bg_g = in_zfpixels[*count-1].g; 
@@ -133,8 +136,8 @@ avtWholeImageCompositer::FinalizeMPIStuff(void)
 
 #else
 
-void avtWholeImageCompositer::InitializeMPIStuff(void) {;};
-void avtWholeImageCompositer::FinalizeMPIStuff(void) {;};
+void avtWholeImageCompositer::InitializeMPIStuff(void) {;}
+void avtWholeImageCompositer::FinalizeMPIStuff(void) {;}
 
 #endif
 
@@ -166,6 +169,7 @@ avtWholeImageCompositer::avtWholeImageCompositer()
 
 avtWholeImageCompositer::~avtWholeImageCompositer()
 {
+   inputImages.clear();
    avtWholeImageCompositer::objectCount--;
    if (avtWholeImageCompositer::objectCount == 0)
       FinalizeMPIStuff();
@@ -184,14 +188,14 @@ avtWholeImageCompositer::~avtWholeImageCompositer()
 
 void
 avtWholeImageCompositer::Execute(void)
-{  int i, numRows, numCols;
-   float *ioz, *rioz;
-   unsigned char *iorgb, *riorgb;
-   bool allocatedInput;
+{   int i, numRows, numCols;
+    float *ioz, *rioz;
+    unsigned char *iorgb, *riorgb;
+    vtkImageData *mergedLocalImage, *mergedGlobalImage;
 
+    // sanity checks
     if (inputImages.size() == 0)
        EXCEPTION0(ImproperUseException);
-
     for (i = 0; i < inputImages.size(); i++)
     {
       inputImages[i]->GetImage().GetSize(&numRows, &numCols);
@@ -200,92 +204,112 @@ avtWholeImageCompositer::Execute(void)
     }
 
     int nPixels = outRows * outCols;
-
     avtImageRepresentation &zeroImageRep = inputImages[0]->GetImage();
 
     if (inputImages.size() > 1)
     {
-       ioz                 = new         float [nPixels];
-       iorgb               = new unsigned char [3*nPixels];
-       allocatedInput      = true;
-       float           *z0 = zeroImageRep.GetZBuffer();
-       unsigned char *rgb0 = zeroImageRep.GetRGBBuffer();
-       for (i = 0; i < nPixels; i++)
+       //
+       // Merge within a processor
+       //
+       mergedLocalImage    = avtImageRepresentation::NewImage(outCols, outRows);
+       iorgb               = (unsigned char *) mergedLocalImage->GetScalarPointer(0, 0, 0);
+       ioz                 = new float [nPixels];
+       float                 *z0 = zeroImageRep.GetZBuffer();
+       const unsigned char *rgb0 = zeroImageRep.GetRGBBuffer();
+
+       // we memcpy because we can't alter any of the input images
+       memcpy(ioz, z0, nPixels * sizeof(float));
+       memcpy(iorgb, rgb0, nPixels * 3 * sizeof(unsigned char));
+
+       // do the merges, accumulating results in ioz and iorgb
+       for (i = 1; i < inputImages.size(); i++)
        {
-               int ii = 3*i;
-               ioz[i] = z0[i];
-          iorgb[ii+0] = rgb0[ii+0];
-          iorgb[ii+1] = rgb0[ii+1];
-          iorgb[ii+2] = rgb0[ii+2];
+           float                 *z = inputImages[i]->GetImage().GetZBuffer();
+           const unsigned char *rgb = inputImages[i]->GetImage().GetRGBBuffer();
+           MergeBuffers(this, nPixels, false, z, rgb, ioz, iorgb);
        }
     }
     else
     {
-       allocatedInput = false;
-       ioz            = zeroImageRep.GetZBuffer();
-       iorgb          = zeroImageRep.GetRGBBuffer();
+       mergedLocalImage = NULL;
+       ioz              = zeroImageRep.GetZBuffer();
+       iorgb            = zeroImageRep.GetRGBBuffer();
     }
 
-    // merge within a processor
-    for (i = 1; i < inputImages.size(); i++)
-    {
-        float           *z = inputImages[i]->GetImage().GetZBuffer();
-        unsigned char *rgb = inputImages[i]->GetImage().GetRGBBuffer();
-        MergeBuffers(this, nPixels, false, z, rgb, ioz, iorgb);
-    }
 
-    if (mpiRank == mpiRoot)
-    {
-       rioz   = new         float [nPixels];
-       riorgb = new unsigned char [3*nPixels];
-    }
-    else
-    {
-       rioz   = NULL;
-       riorgb = NULL;
-    }
-
-    vtkImageData *image = avtImageRepresentation::NewImage(outCols, outRows);
-    unsigned char *data = (unsigned char *)image->GetScalarPointer(0, 0, 0);
-
-    // Now, merge across processors 
     if (mpiRoot >= 0)
     {
+       // only root allocates output AVT imge
+       if (mpiRank == mpiRoot)
+       {
+          mergedGlobalImage = avtImageRepresentation::NewImage(outCols, outRows);
+          riorgb = (unsigned char *) mergedGlobalImage->GetScalarPointer(0, 0, 0);
+          rioz   = new float [nPixels];
+       }
+
+       //
+       // Merge across processors
+       //
        MergeBuffers(this, nPixels, true, ioz, iorgb, rioz, riorgb);
+
+       if (mergedLocalImage != NULL)
+       {
+          mergedLocalImage->Delete();
+          delete [] ioz;
+       }
 
        if (mpiRank == mpiRoot)
        {
-          if (!shouldOutputZBuffer)
+          if (shouldOutputZBuffer)
+          {
+             avtImageRepresentation theOutput(mergedGlobalImage,rioz);
+             SetOutputImage(theOutput);
+          }
+          else
+          {
              delete [] rioz;
-          for (i = 0; i < 3*nPixels; i++)
-             data[i] = riorgb[i];
-          delete [] riorgb;
+             avtImageRepresentation theOutput(mergedGlobalImage);
+             SetOutputImage(theOutput);
+          }
+          mergedGlobalImage->Delete();
+       }
+       else
+       {
+          avtImageRepresentation theOutput(NULL);
+          SetOutputImage(theOutput);
        }
     }
     else
     {
-       for (i = 0; i < 3*nPixels; i++)
-          data[i] = iorgb[i];
+       if (mergedLocalImage != NULL)
+       {
+          if (shouldOutputZBuffer)
+          {
+             avtImageRepresentation theOutput(mergedLocalImage,ioz);
+             SetOutputImage(theOutput);
+          }
+          else
+          {
+             delete [] ioz;
+             avtImageRepresentation theOutput(mergedLocalImage);
+             SetOutputImage(theOutput);
+          }
+          mergedLocalImage->Delete();
+       }
+       else
+       {
+          if (shouldOutputZBuffer)
+          {
+             avtImageRepresentation theOutput(zeroImageRep.GetImageVTK(),zeroImageRep.GetZBuffer());
+             SetOutputImage(theOutput);
+          }
+          else
+          {
+             avtImageRepresentation theOutput(zeroImageRep.GetImageVTK());
+             SetOutputImage(theOutput);
+          }
+       }
     }
-
-    if (allocatedInput)
-    {
-       delete [] ioz;
-       delete [] iorgb;
-    }
-
-    if (shouldOutputZBuffer)
-    {
-       avtImageRepresentation theOutput(image,rioz);
-       SetOutputImage(theOutput);
-    }
-    else
-    {
-       avtImageRepresentation theOutput(image);
-       SetOutputImage(theOutput);
-    }
-
-    image->Delete();
 }
 
 // ****************************************************************************
@@ -308,7 +332,7 @@ avtWholeImageCompositer::Execute(void)
 // ****************************************************************************
 void
 MergeBuffers(avtWholeImageCompositer *thisObj, int npixels, bool doParallel,
-   float *inz, unsigned char *inrgb, float *ioz, unsigned char *iorgb)
+   const float *inz, const unsigned char *inrgb, float *ioz, unsigned char *iorgb)
 {
    // build local var surrogates of object members for this friend function
    int                   chunkSize = thisObj->chunkSize; 
@@ -331,6 +355,9 @@ MergeBuffers(avtWholeImageCompositer *thisObj, int npixels, bool doParallel,
    {
       int len = npixels < chunk ? npixels : chunk;
 
+      // copy the separate zbuffer and rgb arrays into a single array of structs
+      // Note, in parallel, the iozf array is simply used as a place to put the output
+      // In serial, however, it also needs to be populated before the MergeZFBuffers 
       for (int i = 0, j = io; i < len; i++, j++)
       {
             int jj = 3*j;
@@ -338,6 +365,18 @@ MergeBuffers(avtWholeImageCompositer *thisObj, int npixels, bool doParallel,
          inzf[i].r = inrgb[jj+0];
          inzf[i].g = inrgb[jj+1];
          inzf[i].b = inrgb[jj+2];
+      }
+
+      if (!doParallel)
+      {
+         for (int i = 0, j = io; i < len; i++, j++)
+         {
+               int jj = 3*j;
+            iozf[i].z = ioz[j];
+            iozf[i].r = iorgb[jj+0];
+            iozf[i].g = iorgb[jj+1];
+            iozf[i].b = iorgb[jj+2];
+         }
       }
 
       // put the background color info in the last entry in the array

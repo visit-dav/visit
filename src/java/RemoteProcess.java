@@ -26,6 +26,9 @@ import java.util.Vector;
 //   Brad Whitlock, Thu Jan 2 13:55:40 PST 2003
 //   I added a security key.
 //
+//   Brad Whitlock, Tue Jul 29 11:16:19 PDT 2003
+//   I removed the code that put -nread and -nwrite on the command line.
+//
 // ****************************************************************************
 
 class RemoteProcess implements Runnable
@@ -134,10 +137,6 @@ class RemoteProcess implements Runnable
         args.addElement(conn.GetLocalHostName());
         args.addElement("-port");
         args.addElement(new Integer(conn.GetPort()));
-        args.addElement("-nread");
-        args.addElement("1");
-        args.addElement("-nwrite");
-        args.addElement("1");
         args.addElement("-key");
         args.addElement(conn.GetSecurityKey());
 

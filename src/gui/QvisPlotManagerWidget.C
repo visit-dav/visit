@@ -342,6 +342,10 @@ QvisPlotManagerWidget::CreateMenus()
 //   I made the number of plugins be taken into account when enabling the
 //   plot and operator attributes menus.
 //
+//   Brad Whitlock, Mon Jul 28 17:52:29 PST 2003
+//   I moved the code that sets the enabled state for the Plots and Operators
+//   menus to UpdatePlotAndOperatorMenuEnabledState.
+//
 // ****************************************************************************
 
 void
@@ -434,12 +438,13 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
 
         bool havePlots = (plotAttsMenu->count() > 0);
         bool haveOperators = (operatorAttsMenu->count() > 0);
-        plotMenuBar->setItemEnabled(plotMenuId, canChange && havePlots);
+
         plotMenuBar->setItemEnabled(plotAttsMenuId, canChange && havePlots);
-        plotMenuBar->setItemEnabled(operatorMenuId, canChange && haveOperators);
         plotMenuBar->setItemEnabled(operatorAttsMenuId, canChange && haveOperators);
         plotMenuBar->setItemEnabled(varMenuId, (varMenu->count() > 0) && canChange);
-        plotMenuBar->update();
+
+        // Update the first two menu items' enabled state.
+        UpdatePlotAndOperatorMenuEnabledState();
     }
     else if(TheChangedSubject == pluginAtts)
     {
@@ -768,7 +773,6 @@ QvisPlotManagerWidget::UpdatePlotVariableMenu()
     PopulateVariableLists(fileServer->GetOpenFile());
 
     // Update the various menus
-    bool someMenusEnabled = false;
     for(int i = 0; i < plotPlugins.size(); ++i)
     {
         int varCount = menuPopulator.UpdateSingleVariableMenu(
@@ -779,17 +783,66 @@ QvisPlotManagerWidget::UpdatePlotVariableMenu()
         // HACK!! WANT TO TEMPORARILY DISABLE CURVES
         if (plotMenu->text(i) == "Curve")
             plotMenu->setItemEnabled(i, false);
-
-        someMenusEnabled |= hasEntries;
     }
 
-    // Set the enabled state of the Plot and Operator menus based on how
-    // many variables are in the variable lists.
-    bool enableMenu = someMenusEnabled && pluginsLoaded;
-    plotMenuBar->setItemEnabled(plotMenuId, enableMenu &&
-        (plotAttsMenu->count() > 0));
-    plotMenuBar->setItemEnabled(operatorMenuId, enableMenu &&
-        (operatorAttsMenu->count() > 0));
+    // Set the enabled state of the Plot and Operator menus.
+    UpdatePlotAndOperatorMenuEnabledState();
+}
+
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::UpdatePlotAndOperatorMenuEnabledState
+//
+// Purpose: 
+//   Determines when the "Plots" and "Operators" options in the Plot menu
+//   should be enabled and sets their enabled state accordingly.
+//
+// Note:       You should only set the enabled state for the "Plots" and
+//             "Operators" menu options by calling this method because when
+//             it was being set all over the place, there was not consistent
+//             rule and now we have one in the form of this method.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jul 28 17:49:35 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPlotManagerWidget::UpdatePlotAndOperatorMenuEnabledState() const
+{
+    bool plotMenuEnabled = false;
+    bool operatorMenuEnabled = false;
+
+    if(pluginsLoaded && !globalAtts->GetExecuting())
+    {
+        // Look through the menus for the available plots to see how many
+        // are enabled. If any are enabled, then consider that we may want
+        // to enable the plot menu.
+        int i;
+        bool somePlotMenusEnabled = false;
+        for(i = 0; i < plotPlugins.size(); ++i)
+            somePlotMenusEnabled |= (plotPlugins[i].varMenu->count() > 0);
+
+        bool someOperatorMenusEnabled = false;
+        for(i = 0; i < operatorMenu->count(); ++i)
+            someOperatorMenusEnabled |= operatorMenu->isItemEnabled(i);
+
+        bool haveAvailablePlots = plotAttsMenu->count() > 0;
+        bool haveAvailableOperators = operatorAttsMenu->count() > 0;
+        bool haveOpenFile = !fileServer->GetOpenFile().Empty();
+
+        plotMenuEnabled = haveAvailablePlots &&
+                          somePlotMenusEnabled &&
+                          haveOpenFile;
+        operatorMenuEnabled = haveAvailableOperators &&
+                              someOperatorMenusEnabled &&
+                              haveOpenFile;
+    }
+
+    // Set the enabled state of the Plot and Operator menus.
+    plotMenuBar->setItemEnabled(plotMenuId, plotMenuEnabled);
+    plotMenuBar->setItemEnabled(operatorMenuId, operatorMenuEnabled);
     plotMenuBar->update();
 }
 
@@ -1088,6 +1141,11 @@ QvisPlotManagerWidget::drawPlots()
 //   Brad Whitlock, Thu May 15 13:11:27 PST 2003
 //   I made the viewer open the database at the current time state.
 //
+//   Eric Brugger, Mon Jul 28 16:38:12 PDT 2003
+//   Removed the code that has the viewer open the database associated with
+//   the first active plot since that is now done by the viewer when the
+//   active plots are changed.
+//
 // ****************************************************************************
 
 void
@@ -1163,12 +1221,6 @@ QvisPlotManagerWidget::setActivePlots()
             int timeState = globalAtts->GetCurrentState();
             fileServer->OpenFile(qualifiedFile, timeState);
             fileServer->Notify();
-
-            // Tell the viewer to also open the file for the plot. If we don't
-            // do this then when we try and create a new plot using what the
-            // GUI considers to be the open file, the viewer will use the
-            // wrong database.
-            viewer->OpenDatabase(qualifiedFile.FullName().c_str(), timeState);
         }
     }
 }

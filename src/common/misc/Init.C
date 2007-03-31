@@ -239,7 +239,7 @@ Init::SetComponentName(const char *cname)
 {
    int len;
 
-   if (cname != 0 && (len = strlen(cname) > 0))
+   if (cname != 0 && (len = strlen(cname)) > 0)
    {
       len = len < sizeof(componentName) ? len : sizeof(componentName) - 1;
       strncpy(componentName, cname, len);

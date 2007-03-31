@@ -321,6 +321,9 @@ avtSTSDFileFormatInterface::GetFilename(int ts)
 //    Brad Whitlock, Wed May 14 09:31:21 PDT 2003
 //    Added timeState so we can get the metadata for a certain time state.
 //
+//    Hank Childs, Tue Jul 29 21:39:39 PDT 2003
+//    Do not declare the cycle number accurate -- since we are still guessing.
+//
 // ****************************************************************************
 
 void
@@ -373,7 +376,7 @@ avtSTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         }
         md->SetCycles(cycles);
     }
-    md->SetCyclesAreAccurate(guessLooksGood);
+    md->SetCyclesAreAccurate(false);
 
     //
     // Have a _single_ timestep populate what variables, meshes, materials, etc

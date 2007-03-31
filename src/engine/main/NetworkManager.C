@@ -1333,10 +1333,26 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer)
           DataNetwork *workingNetSaved = workingNet;
           avtDataObjectWriter_p tmpWriter = GetOutput(false);
           avtDataObject_p dob = tmpWriter->GetInput();
+
+          // merge polygon info output across processors 
           dob->GetInfo().ParallelMerge(tmpWriter);
 
+          // get this plots object handle
+          avtPlot_p aPlot = workingNetSaved->GetPlot();
+
+          // set foreground and background colors of the plot
+          double color[3];
+          color[0] = windowAttributes.GetBackground()[0]/255.0,
+          color[1] = windowAttributes.GetBackground()[1]/255.0,
+          color[2] = windowAttributes.GetBackground()[2]/255.0,
+          aPlot->SetBackgroundColor(color);
+          color[0] = windowAttributes.GetForeground()[0]/255.0,
+          color[1] = windowAttributes.GetForeground()[1]/255.0,
+          color[2] = windowAttributes.GetForeground()[2]/255.0,
+          aPlot->SetForegroundColor(color);
+
           // do the part of the execute we'd do in the viewer
-          avtActor_p anActor = workingNetSaved->GetPlot()->Execute(NULL, dob);
+          avtActor_p anActor = aPlot->Execute(NULL, dob);
 
           viswin->AddPlot(anActor);
        }

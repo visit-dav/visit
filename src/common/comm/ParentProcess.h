@@ -38,6 +38,11 @@ class Connection;
 //   Brad Whitlock, Mon Dec 16 14:27:22 PST 2002
 //   Added a security key.
 //
+//   Brad Whitlock, Tue Jul 29 10:54:29 PDT 2003
+//   Added numRead and numWrite to the Connect method so we know how many
+//   connections to create without having to pass the numbers on the command
+//   line.
+//
 // ****************************************************************************
 
 class COMM_API ParentProcess
@@ -45,7 +50,8 @@ class COMM_API ParentProcess
 public:
     ParentProcess();
     ~ParentProcess();
-    void Connect(int *argc, char **argv[], bool createSockets, int failCode=0);
+    void Connect(int numRead, int numWrite, int *argc, char **argv[],
+                 bool createSockets, int failCode=0);
     const std::string &GetHostName() const;
     std::string        GetTheUserName() const;
     Connection  *GetReadConnection(int i=0) const;

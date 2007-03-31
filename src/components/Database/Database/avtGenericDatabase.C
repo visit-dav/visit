@@ -25,6 +25,7 @@
 #include <vtkUnstructuredGridBoundaryFilter.h>
 #include <vtkVisItUtility.h>
 
+#include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
 #include <avtDatasetCollection.h>
 #include <avtDomainBoundaries.h>
@@ -1212,6 +1213,9 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
 //    Hank Childs, Fri Mar 14 20:56:40 PST 2003
 //    Turned off caching in some instances.
 //
+//    Hank Childs, Tue Jul 29 16:48:28 PDT 2003
+//    Scale mesh when appropriate.  Also cache bounds.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1250,6 +1254,9 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
         // read it in, then it guarantees it only happens once.
         //
         mesh->Update();
+
+        AssociateBounds(mesh);
+        ScaleMesh(mesh);
 
         cache.CacheVTKObject(meshname, avtVariableCache::DATASET_NAME, ts,
                              domain, material, mesh);
@@ -4225,4 +4232,208 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
     }
     return rv;
 }
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::AssociateBounds
+//
+//  Purpose:
+//      Calls GetBounds on the dataset one time and associates the information
+//      with the dataset.  This avoids having the routine called repeatedly.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 29, 2003
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::AssociateBounds(vtkDataSet *ds)
+{
+    float bounds[6];
+    ds->GetBounds(bounds);
+    vtkFloatArray *arr = vtkFloatArray::New();
+    arr->SetName("avtOriginalBounds");
+    arr->SetNumberOfTuples(6);
+    for (int i = 0 ; i < 6 ; i++)
+        arr->SetTuple1(i, bounds[i]);
+    ds->GetFieldData()->AddArray(arr);
+    arr->Delete();
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::ScaleMesh
+//
+//  Purpose:
+//      Scales the mesh in if it is too big.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 29, 2003
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
+{
+    bool needScaling = false;
+    double scaleFactor = 1.;
+
+    float bounds[6];
+    if (ds->GetFieldData()->GetArray("avtOriginalBounds") != NULL)
+    {
+        vtkDataArray *arr = ds->GetFieldData()->GetArray("avtOriginalBounds");
+        for (int i = 0 ; i < 6 ; i++)
+            bounds[i] = arr->GetTuple1(i);
+    }
+    else
+    {
+        ds->GetBounds(bounds);
+    }
+
+    if (bounds[1] - bounds[0] > 1e8)
+    {
+        scaleFactor = 1.;
+        double temp = bounds[1] - bounds[0];
+        while (temp > 1e6)
+        {
+            temp /= 10.;
+            scaleFactor *= 10.;
+        }
+        needScaling = true;
+    }
+    if ((bounds[1] > bounds[0]) && (bounds[1] - bounds[0] < 1e-6))
+    {
+        scaleFactor = 1.;
+        double temp = bounds[1] - bounds[0];
+        while (temp < 1e-3)
+        {
+            temp *= 10.;
+            scaleFactor /= 10.;
+        }
+        needScaling = true;
+    }
+    if (bounds[3] - bounds[2] > 1e8)
+    {
+        scaleFactor = 1.;
+        double temp = bounds[3] - bounds[2];
+        while (temp > 1e6)
+        {
+            temp /= 10.;
+            scaleFactor *= 10.;
+        }
+        needScaling = true;
+    }
+    if ((bounds[3] > bounds[2]) && (bounds[3] - bounds[2] < 1e-6))
+    {
+        scaleFactor = 1.;
+        double temp = bounds[3] - bounds[2];
+        while (temp < 1e-3)
+        {
+            temp *= 10.;
+            scaleFactor /= 10.;
+        }
+        needScaling = true;
+    }
+    if (bounds[5] - bounds[4] > 1e8)
+    {
+        scaleFactor = 1.;
+        double temp = bounds[5] - bounds[4];
+        while (temp > 1e6)
+        {
+            temp /= 10.;
+            scaleFactor *= 10.;
+        }
+        needScaling = true;
+    }
+    if ((bounds[5] > bounds[4]) && (bounds[5] - bounds[4] < 1e-6))
+    {
+        scaleFactor = 1.;
+        double temp = bounds[5] - bounds[4];
+        while (temp < 1e-3)
+        {
+            temp *= 10.;
+            scaleFactor /= 10.;
+        }
+        needScaling = true;
+    }
+
+    if (!needScaling)
+    {
+        return;
+    }
+
+    static bool haveIssuedWarning = false;
+    if (!haveIssuedWarning)
+    {
+        char msg[1024] = "The dataset is too large or too small for VisIt to "
+                  "handle natively.  As a result, the dataset is being scaled."
+                  "  This will affect the labels for axes, as well as "
+                  "coordinate arguments, such as the origin for a slice."
+                  "This message will only be issued one time per session, "
+                  "even if additional datasets are scaled.";
+        avtCallback::IssueWarning(msg);
+        haveIssuedWarning = true;
+    }
+
+    int dstype = ds->GetDataObjectType();
+    switch (dstype)
+    {
+      case VTK_STRUCTURED_GRID:
+      case VTK_UNSTRUCTURED_GRID:
+      case VTK_POLY_DATA:
+        {
+            vtkPointSet *ps = (vtkPointSet *) ds;
+            vtkPoints *pts = ps->GetPoints();
+            vtkPoints *newPts = vtkPoints::New();
+            int npts = pts->GetNumberOfPoints();
+            newPts->SetNumberOfPoints(npts);
+            float *np = (float *) newPts->GetVoidPointer(0);
+            float *p  = (float *) pts->GetVoidPointer(0);
+            int nvals = 3*npts;
+            for (int i = 0 ; i < nvals ; i++)
+            {
+                np[i] = p[i] / scaleFactor;
+            }
+            ps->SetPoints(newPts);
+            newPts->Delete();
+        }
+        break;
+      case VTK_RECTILINEAR_GRID:
+        {
+            vtkRectilinearGrid *rg = (vtkRectilinearGrid *) ds;
+            vtkDataArray *in[3];
+            in[0] = rg->GetXCoordinates();
+            in[1] = rg->GetYCoordinates();
+            in[2] = rg->GetZCoordinates();
+            vtkFloatArray *out[3];
+            for (int i = 0 ; i < 3 ; i++)
+            {
+                out[i] = vtkFloatArray::New();
+                int ntuples = in[i]->GetNumberOfTuples();
+                out[i]->SetNumberOfTuples(ntuples);
+                for (int j = 0 ; j < ntuples ; j++)
+                    out[i]->SetTuple1(j, in[i]->GetTuple1(j) / scaleFactor);
+            }
+            rg->SetXCoordinates(out[0]);
+            rg->SetYCoordinates(out[1]);
+            rg->SetZCoordinates(out[2]);
+            out[0]->Delete();
+            out[1]->Delete();
+            out[2]->Delete();
+        }
+        break;
+
+      default:
+        debug1 << "Warning: a mesh should be scaled, but VisIt could not do "
+               << "it because it was an unknown meshtype." << endl;
+    }
+
+    if (ds->GetFieldData()->GetArray("avtOriginalBounds") != NULL)
+    {
+        vtkDataArray *arr = ds->GetFieldData()->GetArray("avtOriginalBounds");
+        for (int i = 0 ; i < 6 ; i++)
+            arr->SetTuple1(i, arr->GetTuple1(i) / scaleFactor);
+    }
+}
+
 

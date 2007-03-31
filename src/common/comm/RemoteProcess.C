@@ -1406,7 +1406,9 @@ RemoteProcess::SecureShellArgs() const
 // Creation:   Mon May 5 13:05:24 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jul 29 10:51:42 PDT 2003
+//   I removed -nread and -nwrite from the command line.
+//
 // ****************************************************************************
 
 void
@@ -1478,14 +1480,6 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
     args.push_back("-port");
     char tmp[20];
     sprintf(tmp, "%d", listenPortNum);
-    args.push_back(tmp);
-
-    args.push_back("-nread");
-    sprintf(tmp, "%d", numRead);
-    args.push_back(tmp);
-
-    args.push_back("-nwrite");
-    sprintf(tmp, "%d", numWrite);
     args.push_back(tmp);
 
     //

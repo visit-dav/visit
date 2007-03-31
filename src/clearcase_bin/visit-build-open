@@ -289,16 +289,16 @@ fi
 rm -f gps
 cat <<EOF > gps
 #!/bin/sh
-if test ! -e /nfs/tmp1/$user ; then
-   mkdir /nfs/tmp1/$user
+if test ! -e /nfs/tmp3/$user ; then
+   mkdir /nfs/tmp3/$user
 fi
-if test ! -e /nfs/tmp1/$user/gps; then
-   mkdir /nfs/tmp1/$user/gps
+if test ! -e /nfs/tmp3/$user/gps; then
+   mkdir /nfs/tmp3/$user/gps
 fi
-rm -rf /nfs/tmp1/$user/gps/visitbuild
-mkdir /nfs/tmp1/$user/gps/visitbuild
-mv gps_$dist.tar.gz /nfs/tmp1/$user/gps/visitbuild/$dist.tar.gz
-cd /nfs/tmp1/$user/gps/visitbuild
+rm -rf /nfs/tmp3/$user/gps/visitbuild
+mkdir /nfs/tmp3/$user/gps/visitbuild
+mv gps_$dist.tar.gz /nfs/tmp3/$user/gps/visitbuild/$dist.tar.gz
+cd /nfs/tmp3/$user/gps/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
@@ -375,16 +375,16 @@ fi
 rm -f frost
 cat <<EOF > frost
 #!/bin/sh
-if test ! -e /nfs/tmp1/$user ; then
-   mkdir /nfs/tmp1/$user
+if test ! -e /p/gf1/$user ; then
+   mkdir /p/gf1/$user
 fi
-if test ! -e /nfs/tmp1/$user/frost ; then
-   mkdir /nfs/tmp1/$user/frost
+if test ! -e /p/gf1/$user/frost ; then
+   mkdir /p/gf1/$user/frost
 fi
-rm -rf /nfs/tmp1/$user/frost/visitbuild
-mkdir /nfs/tmp1/$user/frost/visitbuild
-mv frost_$dist.tar.gz /nfs/tmp1/$user/frost/visitbuild/$dist.tar.gz
-cd /nfs/tmp1/$user/frost/visitbuild
+rm -rf /p/gf1/$user/frost/visitbuild
+mkdir /p/gf1/$user/frost/visitbuild
+mv frost_$dist.tar.gz /p/gf1/$user/frost/visitbuild/$dist.tar.gz
+cd /p/gf1/$user/frost/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`

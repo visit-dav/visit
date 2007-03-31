@@ -2843,6 +2843,9 @@ QvisGUIApplication::LoadFile()
 //   Brad Whitlock, Fri Jul 25 13:08:34 PST 2003
 //   Added a check that allows us to ignore a socket read.
 //
+//   Brad Whitlock, Mon Jul 28 14:41:10 PST 2003
+//   Made the e-mail address be visit-help@llnl.gov.
+//
 // ****************************************************************************
 
 void
@@ -2859,7 +2862,7 @@ QvisGUIApplication::ReadFromViewer(int)
         {
             cerr << "VisIt's viewer exited abnormally! Aborting the Graphical "
                  << "User Interface. VisIt's developers may be reached at "
-                 << "\"VisIt@llnl.gov\"."
+                 << "\"visit-help@llnl.gov\"."
                  << endl;
             viewerIsAlive = false;
 

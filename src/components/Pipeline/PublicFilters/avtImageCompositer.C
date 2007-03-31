@@ -22,7 +22,7 @@ avtImageCompositer::avtImageCompositer()
 {
    outRows = -1;
    outCols = -1;
-   shouldOutputZBuffer = true;
+   shouldOutputZBuffer = false;
    mpiRoot = -1;
    mpiRank = 0;
 #ifdef PARALLEL

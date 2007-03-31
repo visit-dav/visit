@@ -5,7 +5,7 @@
 #ifndef AVT_SAMRAI_FILE_FORMAT_H
 #define AVT_SAMRAI_FILE_FORMAT_H
 
-#include <avtMTMDFileFormat.h>
+#include <avtSTMDFileFormat.h>
 
 #include <vector>
 #include <string>
@@ -17,14 +17,14 @@
 //  Class: avtSAMRAIFileFormat
 //
 //  Purpose:
-//      A file format reader for multi-timestep, multi-domain SAMRAI files.
+//      A file format reader for single-timestep, multi-domain SAMRAI files.
 //
 //  Programmer:  Jeremy Meredith, Walter Herrera-Jimenez
 //  Creation:    July 7, 2003
 //
 // ****************************************************************************
 
-class avtSAMRAIFileFormat : public avtMTMDFileFormat
+class avtSAMRAIFileFormat : public avtSTMDFileFormat
 {
   public:
                           avtSAMRAIFileFormat(const char *);
@@ -32,22 +32,23 @@ class avtSAMRAIFileFormat : public avtMTMDFileFormat
     
     virtual const char   *GetType(void) { return "SAMRAI File Format"; };
     
-    virtual void          GetCycles(std::vector<int> &);
-    virtual int           GetNTimesteps(void);
- 
-    virtual vtkDataSet   *ReadMesh(int, int, const char *);
-    virtual vtkDataSet   *GetMesh(int, int, const char *);
-    virtual vtkDataArray *GetVar(int, int, const char *);
-    virtual vtkDataArray *GetVectorVar(int, int, const char *);
+    virtual vtkDataSet   *ReadMesh(int, const char *);
+    virtual vtkDataSet   *GetMesh(int, const char *);
+    virtual vtkDataArray *GetVar(int, const char *);
+    virtual vtkDataArray *GetVectorVar(int, const char *);
+    virtual void         *GetAuxiliaryData(const char *var, int,
+                                           const char *type, void *args,
+                                           DestructorFunction &);
+    virtual int           GetCycle(void) { return dump_number; };
 
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
   protected:
     typedef struct {
-      int proc; 
-      int cluster;
-      int level;
-      int patch_num;
+      int processor_number; 
+      int file_cluster_number;
+      int level_number;
+      int patch_number;
     } patch_map_t;
 
     typedef struct {
@@ -68,7 +69,6 @@ class avtSAMRAIFileFormat : public avtMTMDFileFormat
     } var_t;
 
     vtkDataSet                  **cached_patches;
-    int                           num_timesteps;
     std::string                   file_name;
     std::string                   dir_name;
     int                           dump_number;

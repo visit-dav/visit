@@ -78,6 +78,10 @@ class PIPELINE_API avtImageRepresentation
     void                 Copy(const avtImageRepresentation &);
     void                 DestructSelf(void);
     void                 Initialize(void);
+
+  private:
+    void                 GetImageFromString(unsigned char *, int,
+                            vtkImageData *&, float *&);
 };
 
 inline

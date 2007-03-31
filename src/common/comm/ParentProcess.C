@@ -196,11 +196,15 @@ ParentProcess::SetVersion(const std::string &ver)
 //    Brad Whitlock, Fri Apr 18 15:13:34 PST 2003
 //    I added the -noconnect flag to help debug certain components.
 //
+//    Brad Whitlock, Tue Jul 29 10:56:34 PDT 2003
+//    I added numRead and numWrite so we don't have to get the number of
+//    connections to create from the command line anymore.
+//
 // ****************************************************************************
 
 void
-ParentProcess::Connect(int *argc, char **argv[], bool createSockets,
-    int failCode)
+ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
+    bool createSockets, int failCode)
 {
     char **argv2 = *argv;
     bool rhostSpecified = false;
@@ -228,50 +232,6 @@ ParentProcess::Connect(int *argc, char **argv[], bool createSockets,
             if(rhostSpecified && (i + 1 < *argc))
             {
                 port = atoi(argv2[i + 1]);
-                deleteCount = 2;
-            }
-        }
-        else if(std::string(argv2[i]) == std::string("-nread"))
-        {
-            if(rhostSpecified && (i + 1 < *argc))
-            {
-                int num = atoi(argv2[i + 1]);
-                if(createSockets && (num > 0) && !nReadSpecified)
-                {
-                    nReadSpecified = true;
-                    writeConnections = new Connection*[num];
-                    for(int j = 0; j < num; ++j)
-                    {
-                        int desc = GetClientSocketDescriptor(port);
-                        if(desc != -1)
-                        {
-                            writeConnections[nWriteConnections] = new SocketConnection(desc);
-                            ++nWriteConnections;
-                        }
-                    }
-                }
-                deleteCount = 2;
-            }
-        }
-        else if(std::string(argv2[i]) == std::string("-nwrite"))
-        {
-            if(rhostSpecified && (i + 1 < *argc))
-            {
-                int num = atoi(argv2[i + 1]);
-                if(createSockets && (num > 0) && !nWriteSpecified)
-                {
-                    nWriteSpecified = true;
-                    readConnections = new Connection*[num];
-                    for(int j = 0; j < num; ++j)
-                    {
-                        int desc = GetClientSocketDescriptor(port);
-                        if(desc != -1)
-                        {
-                            readConnections[nReadConnections] = new SocketConnection(desc);
-                            ++nReadConnections;
-                        }
-                    }
-                }
                 deleteCount = 2;
             }
         }
@@ -304,18 +264,58 @@ ParentProcess::Connect(int *argc, char **argv[], bool createSockets,
         }
     } // end for i
 
-    if(createSockets && (nReadConnections == 0 && nWriteConnections == 0))
+    //
+    // Now that we have connection information, create the connections.
+    //
+    if(rhostSpecified && createSockets)
     {
-        // If we are supposed to create sockets but cannot, then we
-        // throw a CouldNotConnectException so we know that we could not
-        // connect back to the parent process.
-        EXCEPTION0(CouldNotConnectException);
-    }
-    else if(nWriteSpecified || nReadSpecified)
-    {
-        // Now that the sockets are open, exchange type representation info
-        // and set that info in the socket connections.
-        ExchangeTypeRepresentations(failCode);
+        if(numRead > 0)
+        {
+            nReadSpecified = true;
+            writeConnections = new Connection*[numRead];
+            for(int j = 0; j < numRead; ++j)
+            {
+                int desc = GetClientSocketDescriptor(port);
+                if(desc != -1)
+                {
+                    writeConnections[nWriteConnections] = new SocketConnection(desc);
+                    ++nWriteConnections;
+                }
+            }
+        }
+
+        if(numWrite > 0)
+        {
+            nWriteSpecified = true;
+            readConnections = new Connection*[numWrite];
+            for(int j = 0; j < numWrite; ++j)
+            {
+                int desc = GetClientSocketDescriptor(port);
+                if(desc != -1)
+                {
+                    readConnections[nReadConnections] = new SocketConnection(desc);
+                    ++nReadConnections;
+                }
+            }
+        }
+
+        if(nReadConnections == 0 && nWriteConnections == 0)
+        {
+            //
+            // If we are supposed to create sockets but cannot, then we
+            // throw a CouldNotConnectException so we know that we could not
+            // connect back to the parent process.
+            //
+            EXCEPTION0(CouldNotConnectException);
+        }
+        else
+        {
+            //
+            // Now that the sockets are open, exchange type representation info
+            // and set that info in the socket connections.
+            //
+            ExchangeTypeRepresentations(failCode);
+        }
     }
 }
 
