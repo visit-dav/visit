@@ -780,10 +780,6 @@ QvisFilePanel::UpdateTimeFieldText(int timeState)
 //   Fixed a small bug with how the cycles are displayed when we have a
 //   virtual file that does not have all of the cycle numbers.
 //
-//   Brad Whitlock, Mon Oct 13 15:57:36 PST 2003
-//   I made virtual files able to expand to their full size if they have
-//   more time states than files.
-//
 // ****************************************************************************
 
 void
@@ -817,9 +813,10 @@ QvisFilePanel::ExpandDatabases()
         QvisListViewFileItem *item = items[i];
         if(item != 0)
         {
-            if(item->firstChild() == 0)
+            if(item->firstChild() == 0) // Will this work for .visit files?
             {
-                ExpandDatabaseItem(item);
+                if(item->timeState == -1)
+                    ExpandDatabaseItem(item);
             }
             else if(HaveFileInformation(item->file) &&
                     !FileShowsCorrectData(item->file))
@@ -868,6 +865,10 @@ QvisFilePanel::ExpandDatabases()
 //   Brad Whitlock, Mon Oct 13 15:37:56 PST 2003
 //   Moved code into CreateItemLabel method.
 //
+//   Brad Whitlock, Fri Oct 24 14:12:45 PST 2003
+//   Fixed a bug that caused expanded databases to sometimes get the wrong
+//   database in their child time states.
+//
 // ****************************************************************************
 
 void
@@ -892,7 +893,7 @@ QvisFilePanel::ExpandDatabaseItem(QvisListViewFileItem *item)
             for(int i = 0; i < md->GetNumStates(); ++i)
             {
                 QvisListViewFileItem *fi = new QvisListViewFileItem(
-                    item, CreateItemLabel(md, i), fileServer->GetOpenFile(),
+                    item, CreateItemLabel(md, i), item->file,
                     QvisListViewFileItem::FILE_NODE, i);
                 fi->setOpen(false);
             }
@@ -1191,7 +1192,7 @@ QvisFilePanel::UpdateFileSelection()
             } 
         }
         else if(HaveFileInformation(item->file) &&
-                FileIsExpanded(item->file))
+                FileIsExpanded(item->file) && item->timeState == -1)
         {
             item->setOpen(true);
         }
@@ -1552,6 +1553,48 @@ QvisFilePanel::SetFileShowsCorrectData(const QualifiedFilename &filename,
     displayInfo[filename.FullName()].correctData = val;
 }
 
+// ****************************************************************************
+// Method: QvisFilePanel::AnimationSetFrame
+//
+// Purpose: 
+//   Sets the animation frame.
+//
+// Arguments:
+//   index            : The index of the new time state.
+//   indexIsTimeState : Whether the index is a time state or an animation frame
+//                      index.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 24 14:36:50 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilePanel::AnimationSetFrame(int index, bool indexIsTimeState)
+{
+    // If the indexIsTimeState flag is true then the index that's being
+    // passed in corresponds to a database time state and not an
+    // animation frame. This flag is currently ignored but we may need to
+    // use it someday to make keyframing work 100%.
+    int frame = index;
+
+    // Tell the viewer to set the animation frame.
+    if(frame != globalAtts->GetCurrentFrame())
+    {
+        viewer->AnimationSetFrame(frame);
+    }
+    else
+    {
+        QString msg;
+        msg.sprintf("Frame %d is already the current frame.", frame);
+        Message(msg);
+    }
+}
+
 //
 // Qt slot functions.
 //
@@ -1840,7 +1883,9 @@ QvisFilePanel::highlightFile(QListViewItem *item)
     // If we've opened the file before, highlighting it should make it
     // the open file.
     if(fileOpenedBefore && fileItem->timeState == -1)
+    {
         OpenFile(fileItem->file, 0, false);
+    }
 
     replaceButton->setEnabled(enable || (fileItem->timeState >= 0));
     overlayButton->setEnabled(enable);
@@ -1882,7 +1927,28 @@ QvisFilePanel::openFile()
 
         // We're reopening so we should reopen to the current time state.
         if(reOpen)
+        {
             timeState = globalAtts->GetCurrentState();
+
+            //
+            // If we're reopening and we're trying to use a later time state
+            // then issue an error message because we don't want to let users
+            // change time states with reopen because they'll do it and
+            // complain that VisIt is slow.
+            //
+            if(fileItem->timeState != -1 &&
+               fileItem->timeState != timeState)
+            {
+                UpdateFileSelection();
+                Error("Reopen cannot be used to change the active time state "
+                      "for an animation because reopen discards all cached "
+                      "networks and causes the database to actually be "
+                      "reopened. If you want to change the active time state, "
+                      "use the animation slider or select a new time state "
+                      "and click the Replace button.");
+                return;
+            }
+        }
         else if(fileItem->timeState != -1)
         {
             // We're not reopening, we're opening. The file that we're opening
@@ -1922,6 +1988,9 @@ QvisFilePanel::openFile()
 //   Brad Whitlock, Thu May 15 12:39:09 PDT 2003
 //   I made it so that we can open a file directly at a later time state.
 //
+//   Brad Whitlock, Fri Oct 24 14:33:12 PST 2003
+//   I made it use the new AnimationSetFrame method.
+//
 // ****************************************************************************
 
 void
@@ -1936,7 +2005,7 @@ QvisFilePanel::openFileDblClick(QListViewItem *item)
         {
             // It must be a database timestep if the time state is not -1 and
             // the file item has the same filename as the open file.
-            viewer->AnimationSetFrame(fileItem->timeState);
+            AnimationSetFrame(fileItem->timeState, true);
         }
         else
         {
@@ -1972,6 +2041,9 @@ QvisFilePanel::openFileDblClick(QListViewItem *item)
 //   I added code to let replace open files at the selected time state instead
 //   of using time state 0.
 //
+//   Brad Whitlock, Fri Oct 24 14:33:40 PST 2003
+//   I made it use the new AnimationSetFrame method.
+//
 // ****************************************************************************
 
 void
@@ -1987,7 +2059,7 @@ QvisFilePanel::replaceFile()
             // It must be a database timestep if the time state is not -1 and
             // the file item has the same filename as the open file.
             if(fileItem->timeState != -1)
-                viewer->AnimationSetFrame(fileItem->timeState);
+                AnimationSetFrame(fileItem->timeState, true);
         }
         else
         {
@@ -2098,7 +2170,12 @@ QvisFilePanel::sliderMove(int val)
 //   Eric Brugger, Mon Dec 16 13:05:01 PST 2002
 //   I seperated the concepts of state and frame, since they are no longer
 //   equivalent with keyframe support.
-//   
+// 
+//   Brad Whitlock, Fri Oct 24 14:31:33 PST 2003
+//   I made it use the new AnimationSetFrame method and I removed old code to
+//   set the current frame in the global atts. The viewer now sends back the
+//   current frame but it didn't used to a long time ago.
+//
 // ****************************************************************************
 
 void
@@ -2106,13 +2183,8 @@ QvisFilePanel::sliderEnd()
 {
     sliderDown = false;
 
-    // Update the clients that need to know about the new frame
-    globalAtts->SetCurrentFrame(sliderVal);
-    SetUpdate(false);
-    globalAtts->Notify();
-
-    // Tell the viewer to set the animation frame.
-    viewer->AnimationSetFrame(sliderVal);
+    // Set the new frame.
+    AnimationSetFrame(sliderVal, false);
 }
 
 // ****************************************************************************
@@ -2135,7 +2207,12 @@ QvisFilePanel::sliderEnd()
 //   Eric Brugger, Mon Dec 16 13:05:01 PST 2002
 //   I seperated the concepts of state and frame, since they are no longer
 //   equivalent with keyframe support.
-//   
+//
+//   Brad Whitlock, Fri Oct 24 14:31:33 PST 2003
+//   I made it use the new AnimationSetFrame method and I removed old code to
+//   set the current frame in the global atts. The viewer now sends back the
+//   current frame but it didn't used to a long time ago.
+//
 // ****************************************************************************
 
 void
@@ -2144,12 +2221,8 @@ QvisFilePanel::sliderChange(int val)
     if(sliderDown)
         return;
 
-    globalAtts->SetCurrentFrame(val);
-    SetUpdate(false);
-    globalAtts->Notify();
-
-    // Tell the viewer to set the animation frame.
-    viewer->AnimationSetFrame(val);
+    // Set the new frame.
+    AnimationSetFrame(val, false);
 }
 
 // ****************************************************************************
@@ -2654,6 +2727,12 @@ FileTree::FileTreeNode::Destroy()
 //   Brad Whitlock, Mon Aug 26 16:43:46 PST 2002
 //   I added the ability to have different kinds of separators.
 //
+//   Brad Whitlock, Mon Oct 27 13:42:32 PST 2003
+//   I made the new node get inserted into the list using the fileName to
+//   determine where to insert because the fileName is sorted using the
+//   numeric string comparison routine. This fixes cases where files like
+//   foo10z0000.silo would come before foo2z0000.silo.
+//
 // ****************************************************************************
 
 FileTree::FileTreeNode *
@@ -2692,7 +2771,7 @@ FileTree::FileTreeNode::Add(int nType, const std::string &name,
             int index = 0;
             for(int i = 0; i < numChildren; ++i, ++index)
             {
-                if(notInserted && (children[i]->nodeName > newNode->nodeName))
+                if(notInserted && (children[i]->fileName > newNode->fileName))
                 {
                     newChildren[index++] = newNode;
                     newChildren[index] = children[i];

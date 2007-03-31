@@ -46,6 +46,7 @@
 #include <QuitRPCExecutor.h>
 #include <SocketConnection.h>
 #include <TimingsManager.h>
+#include <Utility.h>
 #include <Xfer.h>
 #include <RPCExecutor.h>
 #include <fstream.h>
@@ -1414,6 +1415,11 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p) const
 //   Brad Whitlock, Tue Apr 22 17:24:15 PST 2003
 //   I fixed a bug that prevented it from working on Windows.
 //
+//   Brad Whitlock, Mon Oct 27 13:27:26 PST 2003
+//   Changed to reflect that the virtualFiles map now has a VirtualFileName
+//   key instead of a std::string key. I did this to fix sorting problems
+//   with the virtual filenames list.
+//
 // ****************************************************************************
 
 void
@@ -1521,7 +1527,7 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files,
             // Change the name in the files list back to the original file name.
             for(i = 0; i < files.names.size(); ++i)
             {
-                if(files.names[i] == pos->first)
+                if(files.names[i] == pos->first.name)
                 {
                     files.names[i] = pos->second.files[0];
                     break;
@@ -1531,13 +1537,13 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files,
         else
         {
             // Determine a good root name for the database.
-            std::string rootName(pos->first + " database");
+            std::string rootName(pos->first.name + " database");
 
             // Change the name in the files list from the pattern name
             // to the new root name. Also change the file type to VIRTUAL.
             for(i = 0; i < files.names.size(); ++i)
             {
-                if(files.names[i] == pos->first)
+                if(files.names[i] == pos->first.name)
                 {
                     files.names[i] = rootName;
                     files.types[i] = GetFileListRPC::VIRTUAL;
@@ -1778,6 +1784,60 @@ MDServerConnection::CloseDatabase()
         currentDatabase = NULL;
         currentDatabaseName = "";
     }
+}
+
+// ****************************************************************************
+// Class: VirtualFileName
+//
+// Purpose:
+//   This class is a string that sorts using numeric string sorting.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 27 11:43:10 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+MDServerConnection::VirtualFileName::VirtualFileName() : name()
+{
+}
+
+MDServerConnection::VirtualFileName::VirtualFileName(const MDServerConnection::VirtualFileName &obj) : name(obj.name)
+{
+}
+
+MDServerConnection::VirtualFileName::VirtualFileName(const std::string &obj) : name(obj)
+{
+}
+
+MDServerConnection::VirtualFileName::~VirtualFileName()
+{
+}
+
+void 
+MDServerConnection::VirtualFileName::operator = (const MDServerConnection::VirtualFileName &obj)
+{
+    name = obj.name;
+}
+
+bool
+MDServerConnection::VirtualFileName::operator == (const MDServerConnection::VirtualFileName &obj) const
+{
+    return (name == obj.name);
+}
+
+bool
+MDServerConnection::VirtualFileName::operator < (const MDServerConnection::VirtualFileName &obj) const
+{
+    bool retval = false;
+
+    if(name != obj.name)
+        retval = NumericStringCompare(name, obj.name);
+
+    return retval;
 }
 
 // ****************************************************************************
