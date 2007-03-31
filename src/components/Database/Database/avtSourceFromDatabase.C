@@ -128,6 +128,9 @@ avtSourceFromDatabase::~avtSourceFromDatabase()
 //    Hank Childs, Tue Sep 30 15:37:44 PDT 2003
 //    Made sure input downstream would be digestible by all filters.
 //
+//    Hank Childs, Fri Oct 17 21:56:36 PDT 2003
+//    Don't crash when NULL filenames are encountered.
+//
 // ****************************************************************************
 
 bool
@@ -208,18 +211,21 @@ avtSourceFromDatabase::FetchDataset(avtDataSpecification_p spec,
     }
 
     const char *filename = database->GetFilename(timestep);
-    const char *latest, *greatest;
-    greatest = filename;
-    latest   = filename;
-    while (latest != NULL)
+    if (filename != NULL)
     {
-        latest = strpbrk(greatest, "\\/");
-        if (latest != NULL)
+        const char *latest, *greatest;
+        greatest = filename;
+        latest   = filename;
+        while (latest != NULL)
         {
-            greatest = latest+1;
+            latest = strpbrk(greatest, "\\/");
+            if (latest != NULL)
+            {
+                greatest = latest+1;
+            }
         }
+        atts.SetFilename(string(greatest));
     }
-    atts.SetFilename(string(greatest));
 
     //
     // We can't just share a reference to that specification, because it might

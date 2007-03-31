@@ -67,6 +67,12 @@ bool VisWinRendering::stereoEnabled = false;
 //    Eric Brugger, Thu Dec 12 13:27:42 PST 2002
 //    Initialized some new data members added to for scalable rendering.
 //
+//    Hank Childs, Fri Oct 17 21:52:51 PDT 2003
+//    Set scalable thresholding to be very high.  Another bug ['3922] allows
+//    for scalable rendering even when never is set.  The threshold it uses
+//    is the one from this module.  So I am setting it to be very high until
+//    '3922 is fixed.
+//
 // ****************************************************************************
 
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) 
@@ -88,7 +94,7 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p)
     notifyForEachRender            = false;
     inMotion                       = false;
     scalableRendering              = false;
-    scalableThreshold              = 0;
+    scalableThreshold              = 20000000;
 
     canvas       = vtkRenderer::New();
     canvas->SetInteractive(1);
