@@ -2008,7 +2008,7 @@ avtSILCollectionMetaData::avtSILCollectionMetaData(
    collectionIdOfChildren = _collectionIdOfChildren;
    if (_indicesOfChildren != NULL)
    {
-      indicesOfChildren =  vector<int>(collectionSize);
+      indicesOfChildren =  intVector(collectionSize);
       for (int i = 0; i < collectionSize; i++)
          indicesOfChildren[i] = _indicesOfChildren[i];
    }
@@ -3817,7 +3817,7 @@ avtDatabaseMetaData::MeshForVar(std::string var) const
     // Look through the sils.
     for (i = 0 ; i < sils.size(); i++)
     {
-        vector<avtSILCollectionMetaData *> collections = sils[i]->collections;
+        const std::vector<avtSILCollectionMetaData *> &collections = sils[i]->collections;
         for (int j = 0; j < collections.size(); j++)
         {
            if (collections[j]->classOfCollection == var)

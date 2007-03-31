@@ -22,6 +22,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>VisIt's CLI has new methods to disable to the toolbar.</li>
   <li>"Reset view" and "Recenter view" buttons have been added to the View window's Advanced tab.</li>
   <li>VisIt's CLI has been enhanced so it is not so picky about taking colors that contain floating point numbers.</li>
+  <li><p>The view settings have been completely seperated into 2D, 3D and Curve views throughout all of VisIt. This has resulted in a number of changes in the GUI, the Python client and the Java client.</p><p>In the GUI, the view window has an additional panel with curve view attributes. They consist of the viewport, domain and range.</p><p>In the Python interface, Get/SetViewCurve, ViewCurveAttributes, View2DAttributes and View3DAttributes have been added. The ViewAttributes class is still there for backward compatability, but will be removed in release 1.3. ViewCurveAttributes only has curve attributes, View2DAttributes only has 2D attributes and View3DAttributes only has 3D attributes (as opposed to the ViewAttributes which has them all combinied.) GetView2D was modified to return a View2DAttributes object and GetView3D was modified to return a View3DAttributes object. SetView2D takes both View2DAttributes and ViewAttributes objects and SetView3D takes both View3DAttributes and ViewAttributes objects (again this was done to help with backward compatability.)</p><p>In the Java interface, Get/SetViewCurve, ViewCurveAttributes, View2DAttributes and View3DAttributes have been added. ViewAttributes has been removed, which will cause some backaward compatability problems.</p></li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.2.2</font></b></p>
 <ul>
@@ -52,6 +53,10 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Make "Select by" options in the Contour Plot window plural.</li>
   <li>The Reflect operator window does not show the axis labels for the back view.</li>
   <li>The Threshold operator window does not reset properly.</li>
+  <li>The curve view is not set properly after doing a lineout.</li>
+  <li>Changing a curve attribute causes the curve view to be reset.</li>
+  <li>Curve plots ignore the limits in the view window.</li>
+  <li>Pan and zoom in the 3D view attributes are not interpolated by EvalCubicSpline.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version 
 of VisIt: <a href="relnotes1.2.1.html">VisIt 1.2.1 Release Notes</a>.</p>

@@ -1694,7 +1694,9 @@ AddCleanMaterials(MaterialEncoder &mats, const int *ireg, int kmax, int lmax,
 // Creation:   Mon Aug 11 13:56:37 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Sep 18 17:15:21 PST 2003
+//   Fixed ilamm offset so it uses 0 origin array.
+//
 // ****************************************************************************
 
 static void
@@ -1724,7 +1726,7 @@ AddMixedMaterials(MaterialEncoder &mats, const int *ireg, const int *iregmm,
                      }
                      else
                      {
-                         int minIndex = ilamm_row[2 * i];
+                         int minIndex = ilamm_row[2 * i] - 1;
                          for(int k = 0; k < nSteps; ++k)
                              mats.AddMixed(zoneId++,
                                            iregmm + minIndex,
@@ -1749,7 +1751,7 @@ AddMixedMaterials(MaterialEncoder &mats, const int *ireg, const int *iregmm,
                      mats.AddClean(zoneId, ireg_row[i]);
                  else
                  {
-                     int minIndex = ilamm_row[2 * i];
+                     int minIndex = ilamm_row[2 * i] - 1;
                      mats.AddMixed(zoneId,
                                    iregmm + minIndex,
                                    volfmm + minIndex,
