@@ -157,6 +157,9 @@ SpecializedIndexer::SpecializedIndexer(int x, int y, int z)
 //  Brad Whitlock, Fri Oct 1 17:03:53 PST 2004
 //  Pass field data through to the output.
 //
+//  Hank Childs, Wed Nov 10 11:30:03 PST 2004
+//  Correct problem where we are over-allocating number of points for 2D case.
+//
 // ****************************************************************************
 
 void vtkRectilinearGridFacelistFilter::Execute()
@@ -229,15 +232,15 @@ void vtkRectilinearGridFacelistFilter::Execute()
   int npts = 0;
   if (nX <= 1)
   {
-    npts = 2*nY*nZ;
+    npts = nY*nZ;
   }
   else if (nY <= 1)
   {
-    npts = 2*nX*nZ;
+    npts = nX*nZ;
   }
   else if (nZ <= 1)
   {
-    npts = 2*nX*nY;
+    npts = nX*nY;
   }
   else
   {

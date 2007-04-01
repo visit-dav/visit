@@ -1415,7 +1415,9 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
                 annotMode = doAllAnnotations ? 2 : 1;
 
             avtDataObjectReader_p rdr =
-                engines[ek].proxy->Render(sendZBuffer, pos->second, annotMode);
+                engines[ek].proxy->Render(sendZBuffer, pos->second, annotMode,
+                                          ViewerSubject::ProcessEventsCB,
+                                          (void *)viewerSubject);
 
             if (*rdr == NULL)
             {
@@ -1909,7 +1911,9 @@ ViewerEngineManager::GetDataObjectReader(bool sendZBuffer,
     TRY
     {
         int annotMode = doAllAnnotations ? 2 : 1;
-        retval = engines[ek].proxy->Render(sendZBuffer, ids, annotMode);
+        retval = engines[ek].proxy->Render(sendZBuffer, ids, annotMode,
+                                        ViewerSubject::ProcessEventsCB,
+                                        (void *)viewerSubject);
     }
     CATCH(LostConnectionException)
     {

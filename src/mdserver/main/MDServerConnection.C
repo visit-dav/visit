@@ -1127,6 +1127,10 @@ MDServerConnection::ReadCWD()
 //   sort the file list to avoid potential problems arising from defining
 //   virtual files.
 //
+//   Hank Childs, Wed Nov 10 16:15:19 PST 2004
+//   Do not call readdir if opendir failed.  This is because readdir will
+//   segfault on MCR due to bizarre Lustre group read permission issues.
+//   
 // ****************************************************************************
 
 void
@@ -1221,56 +1225,59 @@ MDServerConnection::ReadFileList()
     ngids = getgroups(100, gids);
 
     // Add each directory entry to the file list.
-    while ((ent = readdir(dir)) != NULL)
+    if (dir != NULL)
     {
-        struct stat s;
-        stat((currentWorkingDirectory + "/" + ent->d_name).c_str(), &s);
-        fl.names.push_back(ent->d_name);
-
-        mode_t mode = s.st_mode;
-
-        bool isdir = S_ISDIR(mode);
-        bool isreg = S_ISREG(mode);
-
-        fl.types.push_back(isdir ? GetFileListRPC::DIR :
-                           isreg ? GetFileListRPC::REG : 
-                           GetFileListRPC::UNKNOWN);
-        fl.sizes.push_back((long)s.st_size);
-
-        bool isuser  = (s.st_uid == uid);
-        bool isgroup = false;
-        for (int i=0; i<ngids && !isgroup; i++)
-            if (s.st_gid == gids[i])
-                isgroup=true;
-
-        bool canaccess = false;
-        if (isdir)
+        while ((ent = readdir(dir)) != NULL)
         {
-            if ((mode & S_IROTH) &&
-                (mode & S_IXOTH))
-                canaccess=true;
-            else if (isuser &&
-                     (mode & S_IRUSR) &&
-                     (mode & S_IXUSR))
-                canaccess=true;
-            else if (isgroup &&
-                     (mode & S_IRGRP) &&
-                     (mode & S_IXGRP))
-                canaccess=true;
-        }
-        else
-        {
-            if (mode & S_IROTH)
-                canaccess=true;
-            else if (isuser &&
-                     (mode & S_IRUSR))
-                canaccess=true;
-            else if (isgroup &&
-                     (mode & S_IRGRP))
-                canaccess=true;
-        }
+            struct stat s;
+            stat((currentWorkingDirectory + "/" + ent->d_name).c_str(), &s);
+            fl.names.push_back(ent->d_name);
+    
+            mode_t mode = s.st_mode;
+    
+            bool isdir = S_ISDIR(mode);
+            bool isreg = S_ISREG(mode);
+    
+            fl.types.push_back(isdir ? GetFileListRPC::DIR :
+                               isreg ? GetFileListRPC::REG : 
+                               GetFileListRPC::UNKNOWN);
+            fl.sizes.push_back((long)s.st_size);
+    
+            bool isuser  = (s.st_uid == uid);
+            bool isgroup = false;
+            for (int i=0; i<ngids && !isgroup; i++)
+                if (s.st_gid == gids[i])
+                    isgroup=true;
+    
+            bool canaccess = false;
+            if (isdir)
+            {
+                if ((mode & S_IROTH) &&
+                    (mode & S_IXOTH))
+                    canaccess=true;
+                else if (isuser &&
+                         (mode & S_IRUSR) &&
+                         (mode & S_IXUSR))
+                    canaccess=true;
+                else if (isgroup &&
+                         (mode & S_IRGRP) &&
+                         (mode & S_IXGRP))
+                    canaccess=true;
+            }
+            else
+            {
+                if (mode & S_IROTH)
+                        canaccess=true;
+                else if (isuser &&
+                         (mode & S_IRUSR))
+                    canaccess=true;
+                else if (isgroup &&
+                         (mode & S_IRGRP))
+                    canaccess=true;
+            }
 
-        fl.access.push_back(canaccess ? 1 : 0);
+            fl.access.push_back(canaccess ? 1 : 0);
+        }
     }
 
     closedir(dir);

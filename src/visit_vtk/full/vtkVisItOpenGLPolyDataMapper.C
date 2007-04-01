@@ -618,6 +618,10 @@ static void vtkOpenGLDrawCN013(vtkCellArray *aPrim, GLenum aGlFunction,
 //   Hank Childs, Tue May 25 10:51:06 PDT 2004
 //   Added new arguments for display lists.  DID NOT MAKE USE OF.
 //
+//   Hank Childs, Tue Nov  9 15:40:05 PST 2004
+//   Optimize this case since this comes up for pseudocolors of
+//   point meshes with point glyphs.
+//
 static void vtkOpenGLDrawS01(vtkCellArray *aPrim, GLenum aGlFunction,
                              vtkIdType &, vtkPoints *p, vtkDataArray *, 
                              vtkUnsignedCharArray *c, vtkDataArray *, 
@@ -627,21 +631,27 @@ static void vtkOpenGLDrawS01(vtkCellArray *aPrim, GLenum aGlFunction,
 {
   int j;
   vtkIdType *pts = 0;
-  vtkIdType npts = 0;
   int count = 0;
   
   GLenum previousGlFunction=GL_INVALID_VALUE;
 
-  for (aPrim->InitTraversal(); noAbort && aPrim->GetNextCell(npts,pts); 
-       count++)
+  const float *vertices = p->GetPoint(0);
+  const unsigned char *colors = c->GetPointer(0);
+
+  int ncells = aPrim->GetNumberOfCells();
+  vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+
+  for (int i = 0 ; i < ncells ; i++, count++)
     { 
+    vtkIdType npts = *ids++;
     vtkOpenGLBeginPolyTriangleOrQuad( aGlFunction, previousGlFunction, 
                                       npts );
     
     for (j = 0; j < npts; j++) 
       {
-      glColor4ubv(c->GetPointer(4*pts[j]));
-      glVertex3fv(p->GetPoint(pts[j]));
+      glColor4ubv(colors + 4*(*ids));
+      glVertex3fv(vertices + 3*(*ids));
+      ids++;
       }
 
     if ((previousGlFunction != GL_TRIANGLES) 
@@ -658,6 +668,19 @@ static void vtkOpenGLDrawS01(vtkCellArray *aPrim, GLenum aGlFunction,
       if (ren->GetRenderWindow()->CheckAbortStatus())
         {
         noAbort = 0;
+        }
+      }
+    if (doingDisplayLists)
+      {
+      primsInCurrentList++;
+      if (primsInCurrentList >= dlSize)
+        {
+        glEnd();
+        glEndList();
+        CurrentList++;
+        glNewList(CurrentList,GL_COMPILE);
+        glBegin(previousGlFunction);
+        primsInCurrentList = 0;
         }
       }
     }

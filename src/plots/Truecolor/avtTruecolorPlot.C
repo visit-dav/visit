@@ -243,3 +243,28 @@ avtTruecolorPlot::SetOpacity(float opacity)
        behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
     }
 }
+
+
+// ****************************************************************************
+//  Method: avtTruecolorPlot::ReleaseData
+//
+//  Purpose:
+//      Release the problem sized data associated with this plot.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 9, 2004
+//
+// ****************************************************************************
+
+void
+avtTruecolorPlot::ReleaseData(void)
+{
+    avtSurfaceDataPlot::ReleaseData();
+
+    if (TruecolorFilter != NULL)
+    {
+        TruecolorFilter->ReleaseData();
+    }
+}
+
+

@@ -24,6 +24,11 @@ class     avtTruecolorFilter;
 //  Programmer: Chris Wojtan
 //  Creation:   Monday, June 15 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Nov 10 11:32:31 PST 2004
+//    Add ReleaseData to address memory leaks.
+//
 // ****************************************************************************
 
 class avtTruecolorPlot : public avtSurfaceDataPlot
@@ -37,6 +42,7 @@ class avtTruecolorPlot : public avtSurfaceDataPlot
     static avtPlot             *Create();
 
     virtual void                SetAtts(const AttributeGroup*);
+    virtual void                ReleaseData();
     
     void                        SetOpacity(float);
 
