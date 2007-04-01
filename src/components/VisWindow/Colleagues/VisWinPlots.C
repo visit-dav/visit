@@ -1258,6 +1258,9 @@ VisWinPlots::UnsetBounds(void)
 //    Note that old call to ReAddToolsToRenderWindow happens as part of
 //    ReAddColleaguesToRenderWindow
 //
+//    Mark C. MIller, Thu Jan 20 22:27:39 PST 2005
+//    Changed to use TransparenciesMightExist
+//
 // ****************************************************************************
 
 void
@@ -1301,7 +1304,8 @@ VisWinPlots::OrderPlots()
     // The tools don't show up if added after the transparency actor
     // (when all other colleagues are re-added, so re-add them here.
     //
-    bool addedColleaguesBeforeTransparencyActor = TransparenciesExist();
+    bool addedColleaguesBeforeTransparencyActor =
+             transparencyActor->TransparenciesMightExist();
     if (addedColleaguesBeforeTransparencyActor)
         mediator.ReAddColleaguesToRenderWindow();
     transparencyActor->AddToRenderer(mediator.GetCanvas());

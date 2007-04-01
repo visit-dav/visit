@@ -28,6 +28,7 @@
 #include <avtCurlFilter.h>
 #include <avtDivergenceFilter.h>
 #include <avtLaplacianFilter.h>
+#include <avtResradFilter.h>
 #include <avtMagnitudeFilter.h>
 #include <avtNeighborFilter.h>
 #include <avtNodeDegreeFilter.h>
@@ -37,6 +38,7 @@
 #include <avtNMatsFilter.h>
 #include <avtRadianToDegreeFilter.h>
 #include <avtRevolvedVolume.h>
+#include <avtSideVolume.h>
 #include <avtRevolvedSurfaceArea.h>
 #include <avtSpecMFFilter.h>
 #include <avtTanFilter.h>
@@ -303,6 +305,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Added macro expressions -- curl, divergence, laplacian, and materror.
 //      Also added support functions for materror -- MIRvf and relative diff.
 //
+//      Hank Childs, Thu Jan 20 15:51:16 PST 2005
+//      Added side volume, resrad.
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -389,6 +394,8 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtDivergenceFilter();
     else if (functionName == "laplacian" || functionName == "Laplacian")
         f = new avtLaplacianFilter();
+    else if (functionName == "resrad")
+        f = new avtResradFilter();
     else if (functionName == "magnitude")
         f = new avtMagnitudeFilter();
     else if (functionName == "relative_difference")
@@ -430,6 +437,8 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtVMetricTaper();
     else if (functionName == "volume")
         f = new avtVMetricVolume();
+    else if (functionName == "side_volume")
+        f = new avtSideVolume();
     else if (functionName == "stretch")
         f = new avtVMetricStretch();
     else if (functionName == "diagonal")

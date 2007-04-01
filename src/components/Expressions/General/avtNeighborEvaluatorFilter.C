@@ -15,6 +15,7 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 
+#include <avtCallback.h>
 
 using std::vector;
 
@@ -45,6 +46,24 @@ avtNeighborEvaluatorFilter::avtNeighborEvaluatorFilter()
 
 avtNeighborEvaluatorFilter::~avtNeighborEvaluatorFilter()
 {
+}
+
+
+// ****************************************************************************
+//  Method: avtNeighborEvaluatorFilter::PreExecute
+//
+//  Purpose:
+//      Called before Execute, this will initialize haveIssuedWarning.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 20, 2005
+//
+// ****************************************************************************
+
+void
+avtNeighborEvaluatorFilter::PreExecute(void)
+{
+    haveIssuedWarning = false;
 }
 
 
@@ -86,11 +105,20 @@ avtNeighborEvaluatorFilter::DeriveVariable(vtkDataSet *in_ds)
     results->SetNumberOfTuples(nvals);        
     float *r_ptr = (float *) results->GetVoidPointer(0);
 
-    if (input == NULL)
-        return results;
-    if (input->GetNumberOfComponents() != 1)
+    if (input == NULL || input->GetNumberOfComponents() != 1)
     {
-        // only deal with scalars, should issue warning.
+        // Don't return uninitialized memory.
+        for (i = 0 ; i < nvals ; i++)
+            r_ptr[i] = 0.;
+         
+        if (!haveIssuedWarning)
+        {
+            avtCallback::IssueWarning("The biggest neighbor/smallest neighbor/"
+                                      "average neighbor expression only "
+                                      "operates on scalar quantities.");
+            haveIssuedWarning = true;
+        }
+
         return results;
     }
 

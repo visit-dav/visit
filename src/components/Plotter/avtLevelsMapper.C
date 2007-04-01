@@ -136,6 +136,9 @@ avtLevelsMapper::~avtLevelsMapper()
 //    Hank Childs, Mon Jul  8 09:56:41 PDT 2002
 //    Add support for transparency.
 //
+//    Mark C. Miller, Thu Jan 20 22:27:39 PST 2005
+//    Passed opacity to InputWasModified
+//
 // ****************************************************************************
 
 void
@@ -160,7 +163,7 @@ avtLevelsMapper::CustomizeMappers(void)
  
             if (transparencyActor != NULL)
             {
-                transparencyActor->InputWasModified(transparencyIndex);
+                transparencyActor->InputWasModified(transparencyIndex, col[3]);
             }
         }
     }
@@ -417,6 +420,9 @@ avtLevelsMapper::SetLabels(vector<string> &labels, bool fromTree)
 //   Hank Childs, Tue Jul  9 08:44:00 PDT 2002
 //   Add support for transparency.
 //
+//    Mark C. Miller, Thu Jan 20 22:27:39 PST 2005
+//    Passed opacity to InputWasModified
+//
 // ****************************************************************************
 
 void
@@ -435,7 +441,7 @@ avtLevelsMapper::SetColors(const ColorAttributeList &c)
 
             if (transparencyActor != NULL)
             {
-                transparencyActor->InputWasModified(transparencyIndex);
+                transparencyActor->InputWasModified(transparencyIndex, col[3]);
             }
         }
     }

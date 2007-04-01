@@ -702,6 +702,9 @@ avtDatabase::GetNewMetaData(int timeState)
 //    Hank Childs, Thu Jul 29 09:30:43 PDT 2004
 //    Do not add MQE for nodes or edges.
 //
+//    Hank Childs, Thu Jan 20 15:47:25 PST 2005
+//    Added side volume.
+//
 // ****************************************************************************
 
 void
@@ -730,7 +733,7 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
         if (topoDim == 0 || topoDim == 1)
             continue;
 
-        const int nPairs = 20;
+        const int nPairs = 21;
         MQExprTopoPair exprs[nPairs];
         exprs[0]  = MQExprTopoPair("area", 2);
         exprs[1]  = MQExprTopoPair("aspect_gamma", 3);
@@ -751,7 +754,8 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
         exprs[16] = MQExprTopoPair("stretch", -1);
         exprs[17] = MQExprTopoPair("taper", -1);
         exprs[18] = MQExprTopoPair("volume", 3);
-        exprs[19] = MQExprTopoPair("warpage", 2);
+        exprs[19] = MQExprTopoPair("side_volume", 3);
+        exprs[20] = MQExprTopoPair("warpage", 2);
 
         string name = mmd->name;
         for (int i = 0 ; i < nPairs ; i++)

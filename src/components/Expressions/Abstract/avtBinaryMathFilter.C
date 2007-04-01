@@ -88,6 +88,9 @@ avtBinaryMathFilter::~avtBinaryMathFilter()
 //    Hank Childs, Thu Apr 22 11:11:33 PDT 2004
 //    When the centerings are different, always use zonal.
 //
+//    Hank Childs, Thu Jan 20 17:32:13 PST 2005
+//    Make cur_mesh accessible to derived types.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -162,7 +165,9 @@ avtBinaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
     dv->SetNumberOfComponents(ncomps);
     dv->SetNumberOfTuples(nvals);
 
+    cur_mesh = in_ds;
     DoOperation(data1, data2, dv, ncomps, nvals);
+    cur_mesh = NULL;
 
     if (GetOutput()->GetInfo().GetAttributes().GetVariableDimension()
         != ncomps)
