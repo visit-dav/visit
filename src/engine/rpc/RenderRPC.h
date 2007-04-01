@@ -18,6 +18,8 @@
 //    Mark C. Miller, Mon Mar 29 14:11:42 PST 2004 
 //    Added bool controlling 3D annotations
 //
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Changed 3D annotation flag to integer mode
 // ****************************************************************************
 class ENGINE_RPC_API RenderRPC : public NonBlockingRPC
 {
@@ -26,7 +28,7 @@ public:
     virtual ~RenderRPC();
 
     // Invokation method
-    void operator()(const intVector&,bool,bool);
+    void operator()(const intVector&,bool,int);
 
     // Property selection methods
     virtual void SelectAll();
@@ -34,17 +36,17 @@ public:
     // Property setting methods
     void SetIDs(const intVector&);
     void SetSendZBuffer(bool);
-    void SetDo3DAnnotsOnly(bool);
+    void SetAnnotMode(int);
 
     // Property getting methods
     const intVector& GetIDs() const;
     bool GetSendZBuffer() const;
-    bool GetDo3DAnnotsOnly() const;
+    int  GetAnnotMode() const;
 
 private:
     intVector ids;
     bool sendZBuffer;
-    bool do3DAnnotsOnly;
+    int annotMode;
 };
 
 #endif

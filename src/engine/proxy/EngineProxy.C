@@ -501,6 +501,9 @@ EngineProxy::UpdatePlotAttributes(const string &name, int id,
 //    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
 //    Added argument for frame and state
 //
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Added argument for view extents
+//
 // ****************************************************************************
 
 void
@@ -509,10 +512,11 @@ EngineProxy::SetWinAnnotAtts(const WindowAttributes *winAtts,
                              const AnnotationObjectList *aoList,
                              const string extStr,
                              const VisualCueList *visCues,
-                             const int *frameAndState)
+                             const int *frameAndState,
+                             const double *viewExtents)
 {
     setWinAnnotAttsRPC(winAtts, annotAtts, aoList, extStr, visCues,
-        frameAndState);
+        frameAndState, viewExtents);
     if (setWinAnnotAttsRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(setWinAnnotAttsRPC.GetExceptionType(),
@@ -769,18 +773,20 @@ EngineProxy::DefineVirtualDatabase(const std::string &fileFormat,
 //    Mark C. Miller, Mon Jul 12 19:46:32 PDT 2004
 //    Removed waitCB and cbData arguments
 //   
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Changed bool arg for doing 3D annots to annotMode
 // ****************************************************************************
 
 avtDataObjectReader_p
 EngineProxy::Render(bool sendZBuffer, const intVector& networkIDs,
-    bool do3DAnnotsOnly)
+    int annotMode)
 {
 
     // Send a status message indicating that we're starting a scalable render 
     Status("Scalable Rendering.");
 
     // Do it!
-    renderRPC(networkIDs, sendZBuffer, do3DAnnotsOnly);
+    renderRPC(networkIDs, sendZBuffer, annotMode);
 
     // Get the reply and update the progress bar
     while (renderRPC.GetStatus() == VisItRPC::incomplete ||

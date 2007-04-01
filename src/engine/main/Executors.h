@@ -650,6 +650,8 @@ RPCExecutor<StartPickRPC>::Execute(StartPickRPC *rpc)
 //    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
 //    Added code to pass frame and state info along
 //
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Added code to pass view extents
 // ****************************************************************************
 template<>
 void
@@ -664,7 +666,8 @@ RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
     TRY 
     {
         netmgr->SetWindowAttributes(rpc->GetWindowAtts(),
-                                    rpc->GetExtentTypeString());
+                                    rpc->GetExtentTypeString(),
+                                    rpc->GetViewExtents());
         netmgr->SetAnnotationAttributes(rpc->GetAnnotationAtts(),
                                         rpc->GetAnnotationObjectList(),
                                         rpc->GetVisualCueList(),
@@ -1123,6 +1126,8 @@ RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
 //    Added code to re-register various callbacks like other RPC's in this
 //    file
 //
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Changed bool flag for 3D annots to integer mode
 // ****************************************************************************
 template<>
 void
@@ -1146,7 +1151,7 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
         // do the render
         avtDataObjectWriter_p writer =
             netmgr->Render(rpc->GetIDs(),rpc->GetSendZBuffer(),
-                           rpc->GetDo3DAnnotsOnly());
+                           rpc->GetAnnotMode());
 
         // Send the data back to the viewer.
         engine->WriteData(rpc, writer);

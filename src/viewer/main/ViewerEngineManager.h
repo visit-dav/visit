@@ -185,6 +185,8 @@ class avtDatabaseMetaData;
 //    Jeremy Meredith, Wed Aug 25 11:35:19 PDT 2004
 //    Added methods needed by for simulation-engines.
 //
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Added arg for view extents in SetWinAnnotAtts
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -270,7 +272,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
                          const AnnotationObjectList *ao,
                          const std::string extStr,
                          const VisualCueList *visCues,
-                         const int *frameAndState);
+                         const int *frameAndState,
+                         const double *viewExtents);
     bool ClearCache(const EngineKey &ek, const char *dbName = 0);
     bool Query(const EngineKey &ek, const std::vector<int> &networkIds, 
                const QueryAttributes *atts, QueryAttributes &retAtts);

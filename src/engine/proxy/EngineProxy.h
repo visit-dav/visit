@@ -203,6 +203,9 @@ class StatusAttributes;
 //    Jeremy Meredith, Tue Aug 24 22:30:21 PDT 2004
 //    Added methods and data needed for simulations.
 //
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Added explicit view extents to SetWinAnnotAtts
+//    Changed bool arg for 3D annotations to an integer mode in Render
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -264,9 +267,10 @@ public:
                                              const AnnotationObjectList*,
                                              std::string,
                                              const VisualCueList*,
-                                             const int *frameAndState); 
+                                             const int *frameAndState,
+                                             const double *viewExtents);
 
-    avtDataObjectReader_p    Render(bool, const intVector&, bool);
+    avtDataObjectReader_p    Render(bool, const intVector&, int);
 
     avtDataObjectReader_p    Execute(bool, void (*waitCB)(void *), void *cbData);
 

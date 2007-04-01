@@ -35,6 +35,9 @@ using std::string;
 //
 //    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
 //    Added member for frame and state info
+//
+//    Mark C. Miller, Wed Oct  6 18:36:47 PDT 2004
+//    Added array of view extents
 // ****************************************************************************
 
 
@@ -50,6 +53,7 @@ typedef struct _ExternalRenderRequestInfo
     string                                extStr;
     VisualCueList                         visCues;
     int                                   frameAndState[7];
+    double                                viewExtents[6];
 } ExternalRenderRequestInfo;
 
 #endif

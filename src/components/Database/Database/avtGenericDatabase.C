@@ -4327,6 +4327,12 @@ avtGenericDatabase::CommunicateGhostNodesFromDomainBoundariesFromFile(
 //  Programmer: Hank Childs
 //  Creation:   August 14, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Sep 29 16:55:26 PDT 2004
+//    Update name of global node numbers, since name was recently changed
+//    out from underneath us.
+//
 // ****************************************************************************
 
 bool
@@ -4394,7 +4400,9 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
         rpf->SetInput(ff->GetOutput());
         rpf->Update();
         vtkIntArray *g = (vtkIntArray *)
-               rpf->GetOutput()->GetPointData()->GetArray("avtGlobalNodeId");
+            rpf->GetOutput()->GetPointData()->GetArray("avtGlobalNodeNumbers");
+        if (g == NULL)  // Name of array changed out from underneath us?
+            EXCEPTION0(ImproperUseException);
         vtkIntArray *l = (vtkIntArray *)
                rpf->GetOutput()->GetPointData()->GetArray("avtOriginalNodeId");
 

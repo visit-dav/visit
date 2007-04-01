@@ -39,6 +39,8 @@ using std::vector;
 //    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
 //    Added frame and state data member and methods
 //
+//    Mark C. Miller, Wed Oct  6 18:36:47 PDT 2004
+//    Added array of view extents
 // ****************************************************************************
 class ENGINE_RPC_API SetWinAnnotAttsRPC : public BlockingRPC
 {
@@ -52,7 +54,8 @@ public:
                     const AnnotationObjectList*,
                     const string,
                     const VisualCueList*,
-                    const int*);
+                    const int*,
+                    const double*);
 
     // Property selection methods
     virtual void SelectAll();
@@ -64,6 +67,7 @@ public:
     void SetExtentTypeString(const string);
     void SetVisualCueList(const VisualCueList*);
     void SetFrameAndState(const int*);
+    void SetViewExtents(const double*);
 
     // Property getting methods
     const WindowAttributes &GetWindowAtts() const;
@@ -72,6 +76,7 @@ public:
     const string &GetExtentTypeString() const;
     const VisualCueList &GetVisualCueList() const;
     const int* GetFrameAndState() const;
+    const double *GetViewExtents() const;
 
 private:
     WindowAttributes win;
@@ -80,6 +85,7 @@ private:
     string extstr;
     VisualCueList cuelist;
     int fands[7];
+    double vexts[6];
 };
 
 #endif

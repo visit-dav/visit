@@ -853,11 +853,16 @@ VisWinRendering::ScreenCapture(bool doViewportOnly, bool doCanvasZBufferToo)
 //  Programmer: Mark C. Miller
 //  Creation:   July 26, 2004 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Oct  6 17:50:23 PDT 2004
+//    Added args for viewport only and keeping zbuffer
+//
 // ****************************************************************************
 
 avtImage_p
 VisWinRendering::PostProcessScreenCapture(avtImage_p capturedImage,
-    bool doViewportOnly)
+    bool doViewportOnly, bool keepZBuffer)
 {
     unsigned char *pixels;
 
@@ -914,7 +919,7 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p capturedImage,
     // The img->Update forces the window to render, so we explicitly
     // disable external render requests
     //
-    avtSourceFromImage screenCaptureSource(image);
+    avtSourceFromImage screenCaptureSource(image, keepZBuffer ? capturedImage->GetImage().GetZBuffer() : 0);
     avtImage_p img = screenCaptureSource.GetTypedOutput();
     img->Update(screenCaptureSource.GetGeneralPipelineSpecification());
     img->SetSource(NULL);
