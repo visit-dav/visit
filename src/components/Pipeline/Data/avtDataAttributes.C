@@ -432,17 +432,17 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
         ; // no-op because we care about neither
     else if (ignoreThis && !ignoreThat)
     {
-        trueSpatial              = da.trueSpatial;
-        cumulativeTrueSpatial    = da.cumulativeTrueSpatial;
-        effectiveSpatial         = da.effectiveSpatial;
-        currentSpatial           = da.currentSpatial;
-        cumulativeCurrentSpatial = da.cumulativeCurrentSpatial;
-
-        trueData                 = da.trueData;
-        cumulativeTrueData       = da.cumulativeTrueData;
-        effectiveData            = da.effectiveData;
-        currentData              = da.currentData;
-        cumulativeCurrentData    = da.cumulativeCurrentData;
+        *(trueSpatial)               = *(da.trueSpatial);
+        *(cumulativeTrueSpatial)     = *(da.cumulativeTrueSpatial);
+        *(effectiveSpatial)          = *(da.effectiveSpatial);
+        *(currentSpatial)            = *(da.currentSpatial);
+        *(cumulativeCurrentSpatial)  = *(da.cumulativeCurrentSpatial);
+ 
+        *(trueData)                  = *(da.trueData);
+        *(cumulativeTrueData)        = *(da.cumulativeTrueData);
+        *(effectiveData)             = *(da.effectiveData);
+        *(currentData)               = *(da.currentData);
+        *(cumulativeCurrentData)     = *(da.cumulativeCurrentData);
 
         canUseCummulativeAsTrueOrCurrent = da.canUseCummulativeAsTrueOrCurrent;
     }

@@ -87,7 +87,9 @@ public:
 // Creation:   Wed Feb 5 15:52:14 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Feb 24 13:30:24 PST 2004
+//   I added code to record that toolbars should be off.
+//
 // ****************************************************************************
 
 class HideToolbarsAction : public ViewerAction
@@ -106,6 +108,9 @@ public:
         if(tb)
         {
             tb->HideAll();
+
+            // Record that the toolbars should be off.
+            windowMgr->GetWindowAtts()->SetToolbarsVisible(false);
         }
     }
 
@@ -124,6 +129,8 @@ public:
 // Creation:   Tue Apr 1 10:34:13 PDT 2003
 //
 // Modifications:
+//   Brad Whitlock, Tue Feb 24 13:30:24 PST 2004
+//   I added code to record that toolbars should be off.
 //   
 // ****************************************************************************
 
@@ -141,6 +148,9 @@ public:
     virtual void Execute()
     {
         windowMgr->HideToolbarsForAllWindows();
+
+        // Record that the toolbars should be off.
+        windowMgr->GetWindowAtts()->SetToolbarsVisible(false);
     }
 
     virtual bool AllowInToolbar() const { return false; }
@@ -158,6 +168,8 @@ public:
 // Creation:   Wed Feb 5 15:52:35 PST 2003
 //
 // Modifications:
+//   Brad Whitlock, Tue Feb 24 13:30:24 PST 2004
+//   I added code to record that toolbars should be on.
 //   
 // ****************************************************************************
 
@@ -176,6 +188,9 @@ public:
         ViewerToolbar *tb = window->GetToolbar();
         if(tb)
         {
+            // Record that the toolbars should be on.
+            windowMgr->GetWindowAtts()->SetToolbarsVisible(true);
+
             tb->ShowAll();
         }
     }
@@ -195,6 +210,8 @@ public:
 // Creation:   Tue Apr 1 10:34:13 PDT 2003
 //
 // Modifications:
+//   Brad Whitlock, Tue Feb 24 13:30:24 PST 2004
+//   I added code to record that toolbars should be on.
 //   
 // ****************************************************************************
 
@@ -211,6 +228,9 @@ public:
 
     virtual void Execute()
     {
+        // Record that the toolbars should be on.
+        windowMgr->GetWindowAtts()->SetToolbarsVisible(true);
+
         windowMgr->ShowToolbarsForAllWindows();
     }
 
@@ -375,6 +395,9 @@ ViewerActionManager::~ViewerActionManager()
 //   I moved initialization of the default action groups to the
 //   ViewerWindowManagerAttributes.
 //
+//   Brad Whitlock, Tue Feb 24 13:27:48 PST 2004
+//   I passed the toolbar's visibility flag to RealizeActionGroups.
+//
 // ****************************************************************************
 
 void
@@ -410,7 +433,7 @@ ViewerActionManager::EnableActions(ViewerWindowManagerAttributes *wma)
     //
     // Now that the action groups are defined, add the actions to the menus.
     //
-    RealizeActionGroups();
+    RealizeActionGroups(wma->GetToolbarsVisible());
 }
 
 // ****************************************************************************
@@ -418,6 +441,9 @@ ViewerActionManager::EnableActions(ViewerWindowManagerAttributes *wma)
 //
 // Purpose: 
 //   Creates the action groups in the form of menus and toolbars.
+//
+// Arguments:
+//   toolbarsVisible : Whether the toolbar should be visible.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Feb 5 14:14:03 PST 2003
@@ -430,10 +456,13 @@ ViewerActionManager::EnableActions(ViewerWindowManagerAttributes *wma)
 //   I changed the code that adds actions to the general toolbar so that
 //   actions that are not supposed to be added to the toolbar are not added.
 //
+//   Brad Whitlock, Tue Feb 24 14:08:48 PST 2004
+//   I added an argument to set the visibilty of the toolbar.
+//
 // ****************************************************************************
 
 void
-ViewerActionManager::RealizeActionGroups()
+ViewerActionManager::RealizeActionGroups(bool toolbarsVisible)
 {
     int i;
 
@@ -448,6 +477,16 @@ ViewerActionManager::RealizeActionGroups()
             break;
         }
     }
+
+    //
+    // Set whether the toolbar is hidden or showing before it has any
+    // toolbars. This way when they do get created, they never get shown
+    // if the toolbar is hidden.
+    //
+    if(toolbarsVisible)
+        win->GetToolbar()->ShowAll();
+    else
+        win->GetToolbar()->HideAll();
 
     // Determine the number of action groups that each action belongs to.
     int *actionInNGroups = new int[(int)ViewerRPC::MaxRPC];

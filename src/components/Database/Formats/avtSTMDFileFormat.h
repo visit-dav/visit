@@ -42,6 +42,9 @@ class     vtkDataArray;
 //    vtkScalars and vtkVectors have  been deprecated in VTK 4.0, 
 //    use vtkDataArray instead.
 //
+//    Mark C. Miller, Mon Feb 23 20:38:47 PST 2004
+//    Added method, ActivateTimestep
+//
 // ****************************************************************************
 
 class DATABASE_API avtSTMDFileFormat : public avtFileFormat
@@ -53,6 +56,9 @@ class DATABASE_API avtSTMDFileFormat : public avtFileFormat
     virtual void          *GetAuxiliaryData(const char *var, int,
                                             const char *type, void *args,
                                             DestructorFunction &);
+
+    virtual void           ActivateTimestep(void)
+                               { avtFileFormat::ActivateTimestep(); };
 
     void                   SetTimestep(int ts, int ns) 
                                  { timestep = ts; nTimesteps = ns; };

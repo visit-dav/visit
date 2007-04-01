@@ -164,6 +164,10 @@ avtTetradFileFormat::GetMesh(int, const char *)
 //  Programmer: Hank Childs
 //  Creation:   October 7, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Mon Feb 23 14:24:04 PST 2004
+//    Made it build on Windows.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -181,8 +185,8 @@ avtTetradFileFormat::ConstructMesh(void)
     int space_id = H5Dget_space(cell_array);
     hsize_t vdims[3];
     H5Sget_simple_extent_dims(space_id, vdims, NULL);
-    debug5 << "The connectivity has dimensions = " << vdims[0] << " x "
-           << vdims[1] << endl;
+    debug5 << "The connectivity has dimensions = " << int(vdims[0]) << " x "
+           << int(vdims[1]) << endl;
     if (vdims[1] != 8)
     {
         EXCEPTION1(InvalidVariableException, "mesh");
@@ -203,8 +207,8 @@ avtTetradFileFormat::ConstructMesh(void)
     }
     space_id = H5Dget_space(vert_array);
     H5Sget_simple_extent_dims(space_id, vdims, NULL);
-    debug5 << "The vertices have dimensions = " << vdims[0] << " x "
-           << vdims[1] << endl;
+    debug5 << "The vertices have dimensions = " << int(vdims[0]) << " x "
+           << int(vdims[1]) << endl;
     if (vdims[1] != 3)
     {
         EXCEPTION1(InvalidVariableException, "mesh");
@@ -284,7 +288,7 @@ avtTetradFileFormat::GetVar(int ts, const char *var)
     int space_id = H5Dget_space(var_handle);
     hsize_t vdims[3];
     H5Sget_simple_extent_dims(space_id, vdims, NULL);
-    debug5 << "The variable has dimensions " << vdims[0] << endl;
+    debug5 << "The variable has dimensions " << int(vdims[0]) << endl;
 
     //
     // Set up a VTK object and allocate memory for it.  That way HDF5 can read

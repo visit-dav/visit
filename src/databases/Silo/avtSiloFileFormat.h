@@ -81,6 +81,10 @@ typedef struct
 //    Hank Childs, Fri Feb 13 17:18:04 PST 2004
 //    Added argument to CalcMaterial.
 //
+//    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
+//    Added GetFile() method
+//    Added optional bools to skip global information during OpenFile
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -139,8 +143,9 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     GroupInfo                                 groupInfo;
 
 
-    DBfile               *OpenFile(int);
-    DBfile               *OpenFile(const char *);
+    DBfile               *GetFile(int);
+    DBfile               *OpenFile(int, bool skipGlobalInfo = false);
+    DBfile               *OpenFile(const char *, bool skipGlobalInfo = false);
     virtual void          CloseFile(int);
     void                  ReadDir(DBfile *,const char *,avtDatabaseMetaData *);
     void                  DoRootDirectoryWork(avtDatabaseMetaData*);

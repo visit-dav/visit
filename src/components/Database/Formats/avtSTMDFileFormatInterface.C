@@ -422,3 +422,28 @@ avtSTMDFileFormatInterface::FreeUpResources(int ts, int)
 }
 
 
+// ****************************************************************************
+//  Method: avtSTMDFileFormatInterface::ActivateTimestep
+//
+//  Purpose: Notify the format of our intention to read data for a given
+//  timestep. This gives the format an opportunity to do whatever 
+//  parallel collective work it might need to for the given timestep
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   February 23, 2004 
+//
+// ****************************************************************************
+
+void
+avtSTMDFileFormatInterface::ActivateTimestep(int ts)
+{
+    if (ts < 0 || ts >= nTimesteps)
+    {
+        //EXCEPTION2(BadIndexException, ts, nTimesteps);
+        debug1 << "INTERNAL ERROR: bad timestep = " << ts << " out of "
+               << nTimesteps << ".  To avoid a crash, ignorning fix until "
+               << "state issues are resolved." << endl;
+        ts = nTimesteps-1;
+    }
+    timesteps[ts]->ActivateTimestep();
+}

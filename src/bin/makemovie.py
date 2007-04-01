@@ -684,6 +684,10 @@ class MakeMovie:
     #   mode to be enabled so keyframe animations that change the view actually
     #   save images that have a keyframed view.
     #
+    #   Brad Whitlock, Tue Feb 24 11:57:39 PDT 2004
+    #   If there was a problem when trying to set the animation frame,
+    #   try and draw the plots again.
+    #
     ###########################################################################
 
     def GenerateFrames(self):
@@ -711,8 +715,18 @@ class MakeMovie:
             # Save an image for each frame in the animation.
             self.numFrames = 0
             i = 0
+            drawThePlots = 0
             while(i < AnimationGetNFrames()):
-                AnimationSetFrame(i)
+                if(AnimationSetFrame(i) == 0):
+                    drawThePlots = 1
+                    print "There was an error when trying to set the "\
+"animation frame to %d. VisIt will now try to redraw the plots." % i
+                if(drawThePlots):
+                    if(DrawPlots() == 0):
+                        print "VisIt could not draw plots for frame %d. "\
+"You should investigate the file used for that frame." % i
+                    else:
+                        drawThePlots = 0
                 self.SaveImage(self.numFrames, ext)
                 self.numFrames = self.numFrames + 1
                 i = i + self.frameStep

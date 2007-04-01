@@ -60,6 +60,7 @@ class DATABASE_API avtFileFormat
                           avtFileFormat();
     virtual              ~avtFileFormat();
 
+    virtual void          ActivateTimestep(void);
     virtual void          FreeUpResources(void);
     void                  SetDatabaseMetaData(avtDatabaseMetaData *);
     void                  RegisterDatabaseMetaData(avtDatabaseMetaData *);
@@ -83,8 +84,6 @@ class DATABASE_API avtFileFormat
 
     virtual void          RegisterVariableList(const char *,
                                           const std::vector<CharStrRef> &) {;};
-
-    virtual void          ActivateTimestep(void) {;};
 
   protected:
     avtVariableCache     *cache;

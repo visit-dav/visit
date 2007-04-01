@@ -23,6 +23,12 @@
 #   Brad Whitlock, Thu Jan 8 11:15:13 PDT 2004
 #   I added BUILD_NOTES.txt.
 #
+#   Brad Whitlock, Tue Feb 24 09:00:27 PDT 2004
+#   I changed the script so some files are copied using converttextfile, which
+#   copies text files but also converts the end of line from UNIX to Windows.
+#   This allows me to use the UNIX config files but make them Windows friendly
+#   when creating the Windows distribution.
+#
 #------------------------------------------------------------------------------
 
 if(`pwd` != "/data_vobs/VisIt") then
@@ -162,8 +168,8 @@ foreach configdir (Debug Release)
     # Copy the makemovie script to the right bin dir.
     cp $VISITSRC/bin/makemovie.py bin/$configdir
     # Copy the host config files to the right bin dir.
-    cp $VISITSRC/clearcase_bin/visit-config-open   bin/$configdir
-    cp $VISITSRC/clearcase_bin/visit-config-closed bin/$configdir
+    $SCRIPTDIR/converttextfile $SCRIPTDIR/visit-config-open   bin/$configdir/visit-config-open.ini
+    $SCRIPTDIR/converttextfile $SCRIPTDIR/visit-config-closed bin/$configdir/visit-config-closed.ini
     mkdir bin/$configdir/help
     cp $VISITSRC/help/*.{html,helpml} bin/$configdir/help
     mkdir bin/$configdir/databases

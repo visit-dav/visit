@@ -105,6 +105,9 @@ ViewerConfigManager::~ViewerConfigManager()
 //    I made the default values state objects be completely printed out if
 //    we're writing a session file.
 //
+//    Brad Whitlock, Tue Feb 24 10:26:48 PDT 2004
+//    I made it write the file in text mode.
+//
 // ****************************************************************************
 
 void
@@ -136,7 +139,7 @@ ViewerConfigManager::WriteConfigFile(const char *filename)
     parent->CreateNode(viewerNode, writeDetail);
 
     // Try to open the output file.
-    if((fp = fopen(filename, "wb")) == 0)
+    if((fp = fopen(filename, "wt")) == 0)
         return;
 
     // Write the output file to stdout for now.
@@ -180,6 +183,9 @@ ViewerConfigManager::WriteConfigFile(const char *filename)
 //    I set the file pointer to 0 so the destructor does not attempt to
 //    close the file again.
 //
+//    Brad Whitlock, Tue Feb 24 10:27:10 PDT 2004
+//    I made it read the file in text mode.
+//
 // ****************************************************************************
 
 DataNode *
@@ -188,7 +194,7 @@ ViewerConfigManager::ReadConfigFile(const char *filename)
     DataNode *node = 0;
 
     // Try and open the file for reading.
-    if((fp = fopen(filename, "r")) == 0)
+    if((fp = fopen(filename, "rt")) == 0)
         return node;
 
     // Read the XML tag and ignore it.

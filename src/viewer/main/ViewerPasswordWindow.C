@@ -2,6 +2,7 @@
 #include <ViewerConnectionProgressDialog.h>
 
 #include <CouldNotConnectException.h>
+#include <CancelledConnectException.h>
 
 #include <qlayout.h>
 #include <qlineedit.h>
@@ -32,6 +33,9 @@ ViewerConnectionProgressDialog *ViewerPasswordWindow::dialog = NULL;
 //    Jeremy Meredith. Tue Dec  9 15:16:52 PST 2003
 //    Added a cancel button, as well as supported Rejected functionality.
 //
+//    Brad Whitlock, Mon Feb 23 15:07:41 PST 2004
+//    Added space between the password line edit and the cancel button.
+//
 // ****************************************************************************
 
 ViewerPasswordWindow::ViewerPasswordWindow(QWidget *parent, const char *name)
@@ -49,6 +53,7 @@ ViewerPasswordWindow::ViewerPasswordWindow(QWidget *parent, const char *name)
     passedit->setEchoMode(QLineEdit::Password);
     l2->addWidget(passedit);
     connect(passedit, SIGNAL(returnPressed()), this, SLOT(accept()));
+    layout->addSpacing(20);
 
     QHBoxLayout *l3 = new QHBoxLayout(layout);
     QPushButton *okay = new QPushButton("OK", this, "OK");
@@ -115,6 +120,12 @@ ViewerPasswordWindow::~ViewerPasswordWindow()
 //    closes the password window.  Also, changed the size of the read
 //    buffer to be more reasonable.
 //
+//    Brad Whitlock, Mon Feb 23 15:12:27 PST 2004
+//    I changed the code so it uses CancelledConnectException when the
+//    password window returns a NULL password since the only way to do that
+//    is to click the Cancel button. This changes the message that is seen
+//    after the launch is cancelled.
+//
 // ****************************************************************************
 
 void
@@ -156,7 +167,7 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
             if (!passwd)
             {
                 // User closed the window or hit cancel
-                EXCEPTION0(CouldNotConnectException);
+                EXCEPTION0(CancelledConnectException);
             }
 
             write(fd, passwd, strlen(passwd));
@@ -175,7 +186,7 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
             if (!passphr)
             {
                 // User closed the window or hit cancel
-                EXCEPTION0(CouldNotConnectException);
+                EXCEPTION0(CancelledConnectException);
             }
 
             write(fd, passphr, strlen(passphr));

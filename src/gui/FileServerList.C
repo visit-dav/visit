@@ -1866,6 +1866,11 @@ FileServerList::GetVirtualFileDefinitionSize(const QualifiedFilename &name) cons
 //   Brad Whitlock, Thu Mar 27 09:30:14 PDT 2003
 //   I added automaticFileGroupingFlag.
 //
+//   Brad Whitlock, Tue Feb 24 14:42:47 PST 2004
+//   I disabled VisIt's ability to save the active host. This prevents
+//   VisIt from automatically logging you into a remote machine from having
+//   saved your settings while visiting that remote computer.
+//
 // ****************************************************************************
 
 bool
@@ -1875,9 +1880,28 @@ FileServerList::CreateNode(DataNode *parentNode, bool, bool)
     parentNode->AddNode(fsNode);
 
     // Add the path and filter for localhost to the fsNode.
+#ifdef PERSISTENT_REMOTE_HOST_INFO
+    //
+    // This code was commented out on Tue Feb 24 14:38:05 PST 2004.
+    // Enable this code again if we decide to allow users to save the
+    // host on which they were last working so VisIt can log them in
+    // automatically.
+    //
     fsNode->AddNode(new DataNode("host", activeHost));
     fsNode->AddNode(new DataNode("path", servers[activeHost]->path));
     fsNode->AddNode(new DataNode("filter", servers[activeHost]->filter));
+#else
+    //
+    // Save the path and filter for localhost. If localhost is not in the
+    // list of hosts then no path or filter are saved.
+    //
+    ServerMap::const_iterator info = servers.find("localhost");
+    if(info != servers.end())
+    {
+        fsNode->AddNode(new DataNode("path", info->second->path));
+        fsNode->AddNode(new DataNode("filter", info->second->filter));
+    }
+#endif
     fsNode->AddNode(new DataNode("useCurrentDir", useCurrentDirectoryFlag));
     fsNode->AddNode(new DataNode("automaticFileGrouping", automaticFileGroupingFlag));
 
@@ -1929,6 +1953,11 @@ FileServerList::CreateNode(DataNode *parentNode, bool, bool)
 //   Brad Whitlock, Thu Mar 27 09:31:55 PDT 2003
 //   I added automaticFileGrouping.
 //
+//   Brad Whitlock, Tue Feb 24 14:45:36 PST 2004
+//   I disabled VisIt's ability to set the host from a config file. This
+//   means that you cannot any longer have VisIt automatically log you into
+//   a remote computer.
+//
 // ****************************************************************************
 
 void
@@ -1950,9 +1979,11 @@ FileServerList::SetFromNode(DataNode *parentNode)
     // and path from the default settings.
     if(!useCurrentDirectoryFlag)
     {
+#ifdef PERSISTENT_REMOTE_HOST_INFO
         // Read the filter and the path from the DataNode tree.
         if((node = fsNode->GetNode("host")) != 0)
             SetHost(node->AsString());
+#endif
         if((node = fsNode->GetNode("path")) != 0)
             SetPath(node->AsString());
     }

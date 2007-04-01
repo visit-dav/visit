@@ -2,6 +2,9 @@
   <Attribute name="ViewerWindowManagerAttributes" purpose="This class contains the attributes that dictate where viewer windows are positioned, etc." persistent="true" codefile="ViewerWindowManagerAttributes.code">
     <Field name="actionConfigurations" label="actionConfigurations" type="attVector" subtype="ActionGroupDescription" init="true">
     </Field>
+    <Field name="toolbarsVisible" label="Toolbars visible" type="bool">
+      true
+    </Field>
     <Function name="CreateNode" user="false" member="true">
     </Function>
     <Function name="SetFromNode" user="false" member="true">

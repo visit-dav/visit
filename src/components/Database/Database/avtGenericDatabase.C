@@ -2852,6 +2852,9 @@ avtGenericDatabase::HasInvariantSIL(void) const
 //
 //    Mark C. Miller, Mon Feb  9 15:41:57 PST 2004
 //    Added call to new interface method, ActivateTimestep
+//
+//    Mark C. Miller, Mon Feb 23 20:38:47 PST 2004
+//    Made call to ActivateTimestep accept the timestep as an argument
 //    
 // ****************************************************************************
 
@@ -2905,7 +2908,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
     // Some file formats may need to engage in global communication when
     // changing time-steps. Provide that opportunity here 
     //
-    Interface->ActivateTimestep();
+    Interface->ActivateTimestep(ts);
 
     //
     // Iterate through each of the domains and do material selection as we go.

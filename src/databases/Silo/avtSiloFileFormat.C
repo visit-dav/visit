@@ -179,6 +179,31 @@ avtSiloFileFormat::ActivateTimestep(void)
 }
 
 // ****************************************************************************
+//  Method: avtSiloFileFormat::GetFile
+//
+//  Purpose: Get file at specified index, assuming its already been opened
+//  and throw an exception if it hasn't. This is intended to replace various
+//  calls to OpenFile, that could ultimately result in MPI collective 
+//  communication if the file had not been opened in the past, and could
+//  cause VisIt to deadlock.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   February 10, 2004
+//
+// ****************************************************************************
+
+DBfile *
+avtSiloFileFormat::GetFile(int f)
+{
+    if (dbfiles[f] == NULL)
+    {
+        EXCEPTION1(InvalidFilesException, filenames[f]);
+    }
+
+    return dbfiles[f];
+}
+
+// ****************************************************************************
 //  Method: avtSiloFileFormat::OpenFile
 //
 //  Purpose:
@@ -203,10 +228,13 @@ avtSiloFileFormat::ActivateTimestep(void)
 //    Hank Childs, Thu Apr 10 08:45:44 PDT 2003
 //    Initialize global information.
 //
+//    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
+//    Added bool to skip global information
+//
 // ****************************************************************************
 
 DBfile *
-avtSiloFileFormat::OpenFile(int f)
+avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
 {
     //
     // Make sure this is in range.
@@ -242,7 +270,7 @@ avtSiloFileFormat::OpenFile(int f)
 
     RegisterFile(f);
 
-    if (f == 0 && !readGlobalInfo)
+    if (f == 0 && !readGlobalInfo && !skipGlobalInfo)
     {
         ReadGlobalInformation(dbfiles[f]);
     }
@@ -341,10 +369,13 @@ avtSiloFileFormat::GetTimeVaryingInformation(DBfile *dbfile)
 //    Brad Whitlock, Thu May 22 14:23:14 PST 2003
 //    I made it use SLASH_STRING so it works better on Windows.
 //
+//    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
+//    Added bool to skip global info
+//
 // *****************************************************************************
 
 DBfile *
-avtSiloFileFormat::OpenFile(const char *n)
+avtSiloFileFormat::OpenFile(const char *n, bool skipGlobalInfo)
 {
     //
     // The directory of this file is all relative to the directory of the 
@@ -388,7 +419,7 @@ avtSiloFileFormat::OpenFile(const char *n)
         fileIndex = AddFile(name);
     }
 
-    DBfile *dbfile = OpenFile(fileIndex);
+    DBfile *dbfile = OpenFile(fileIndex, skipGlobalInfo);
     return dbfile;
 }
 
@@ -2636,6 +2667,9 @@ AddDefvars(const char *defvars, avtDatabaseMetaData *md)
 //    Hank Childs, Wed Jan 14 11:58:41 PST 2004
 //    Use the cached multi-var to prevent too many DBGetMultivar calls.
 //
+//    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
+//    Changed call to OpenFile() to GetFile()
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2653,9 +2687,9 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
     debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
 
     //
-    // Open file may be a misnomer -- GetFile is more like it.
+    // Get the file handle, throw an exception if it hasn't been opened 
     //
-    DBfile *dbfile = OpenFile(tocIndex);
+    DBfile *dbfile = GetFile(tocIndex);
 
     //
     // It's ridiculous, but Silo does not have all of the `const's in their
@@ -2780,6 +2814,9 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
 //    Hank Childs, Wed Jan 14 12:04:19 PST 2004
 //    Remove redundant DBGetMultivar calls.
 //
+//    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
+//    Changed call to OpenFile() to GetFile()
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2797,9 +2834,9 @@ avtSiloFileFormat::GetVectorVar(int domain, const char *v)
     }
 
     //
-    // Open file may be a misnomer -- GetFile is more like it.
+    // Get the file handle, throw an exception if it hasn't already been opened
     //
-    DBfile *dbfile = OpenFile(tocIndex);
+    DBfile *dbfile = GetFile(tocIndex);
 
     //
     // It's ridiculous, but Silo does not have all of the `const's in their
@@ -3072,6 +3109,9 @@ avtSiloFileFormat::GetPointVectorVar(DBfile *dbfile, const char *vname)
 //    Hank Childs, Wed Jan 14 11:20:18 PST 2004
 //    Make use of cached multimeshes if available.
 //
+//    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
+//    Changed call to OpenFile() to GetFile()
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -3081,9 +3121,9 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
     debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
 
     //
-    // Open file may be a misnomer -- GetFile is more like it.
+    // Get the file handle, throw an exception if it hasn't already been opened
     //
-    DBfile *dbfile = OpenFile(tocIndex);
+    DBfile *dbfile = GetFile(tocIndex);
 
     //
     // It's ridiculous, but Silo does not have all of the `const's in their
@@ -4698,6 +4738,12 @@ avtSiloFileFormat::DetermineFilenameAndDirectory(char *input, char *filename,
 //    Hank Childs, Fri May 11 14:40:36 PDT 2001
 //    Call DetermineFilenameAndDirectory instead of calculating it ourselves.
 //
+//    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
+//    Added optional bool to tell OpenFile to skip global info as a
+//    pre-caution against opening the tocIndex file for the first time and
+//    winding up attempting to engage in collective communication for global
+//    information that other processors can't be guarenteed of reaching.
+//
 // ****************************************************************************
 
 void
@@ -4712,7 +4758,15 @@ avtSiloFileFormat::DetermineFileAndDirectory(char *input, DBfile *&cFile,
         // The variable is in a different file, so open that file.  This will
         // create the filename and add it to our registry if necessary.
         //
-        cFile = OpenFile(filename);
+        // Since this call to OpenFile is made from within a GetMesh or GetVar
+        // call, it cannot wind up causing the plugin to engage in collective
+        // communication for global information. Typically, the tocIndex file
+        // would have already been opened by this point in execution. However,
+        // telling OpenFile to explicitly skip collective communication removes
+        // all doubt.
+        //
+        bool skipGlobalInfo = true;
+        cFile = OpenFile(filename, skipGlobalInfo);
     }
 }
 
@@ -5085,6 +5139,9 @@ avtSiloFileFormat::GetAuxiliaryData(const char *var, int domain,
 //    Hank Childs, Fri Feb 13 17:18:04 PST 2004
 //    Add the domain to the CalcMaterial call.
 //
+//    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
+//    Changed call to OpenFile() to GetFile()
+//
 // ****************************************************************************
 
 avtMaterial *
@@ -5094,9 +5151,9 @@ avtSiloFileFormat::GetMaterial(int dom, const char *mat)
     debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
 
     //
-    // Get the dbfile with the table of contents.
+    // Get the file handle, throw an exception if it hasn't already been opened
     //
-    DBfile *dbfile = OpenFile(tocIndex);
+    DBfile *dbfile = GetFile(tocIndex);
 
     //
     // Silo can't accept consts, so cast it away.
@@ -5184,6 +5241,9 @@ avtSiloFileFormat::GetMaterial(int dom, const char *mat)
 //
 //  Modifications:
 //
+//    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
+//    Changed call to OpenFile() to GetFile()
+//
 // ****************************************************************************
 
 avtSpecies *
@@ -5193,9 +5253,9 @@ avtSiloFileFormat::GetSpecies(int dom, const char *spec)
     debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
 
     //
-    // Get the dbfile with the table of contents.
+    // Get the file handle, throw an exception if it hasn't already been opened
     //
-    DBfile *dbfile = OpenFile(tocIndex);
+    DBfile *dbfile = GetFile(tocIndex);
 
     //
     // Silo can't accept consts, so cast it away.
@@ -5288,6 +5348,9 @@ avtSiloFileFormat::GetSpecies(int dom, const char *spec)
 //    Moved code from avtSiloTimeStep, made it work with Silo objects
 //    distributed across multiple files.
 //
+//    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
+//    Changed call to OpenFile() to GetFile()
+//
 // ****************************************************************************
 
 avtFacelist *
@@ -5297,9 +5360,9 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
     debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
 
     //
-    // Get the dbfile with the table of contents.
+    // Get the file handle, throw an exception if it hasn't already been opened
     //
-    DBfile *dbfile = OpenFile(tocIndex);
+    DBfile *dbfile = GetFile(tocIndex);
 
     //
     // Silo can't accept consts, so cast it away.
@@ -5774,6 +5837,11 @@ avtSiloFileFormat::QueryMultimesh(const char *path, const char *name)
 //  Programmer: Hank Childs
 //  Creation:   January 14, 2004
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
+//    Changed call to OpenFile() to GetFile()
+//
 // ****************************************************************************
 
 DBmultimesh *
@@ -5795,7 +5863,7 @@ avtSiloFileFormat::GetMultimesh(const char *path, const char *name)
     //
     // We haven't seen this multimesh before -- read it in.
     //
-    DBfile *dbfile = OpenFile(tocIndex);
+    DBfile *dbfile = GetFile(tocIndex);
     DBmultimesh *mm = DBGetMultimesh(dbfile, combined_name);
 
     multimesh_name.push_back(combined_name);
@@ -5847,6 +5915,11 @@ avtSiloFileFormat::QueryMultivar(const char *path, const char *name)
 //  Programmer: Hank Childs
 //  Creation:   January 14, 2004
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
+//    Changed call to OpenFile() to GetFile()
+//
 // ****************************************************************************
 
 DBmultivar *
@@ -5868,7 +5941,7 @@ avtSiloFileFormat::GetMultivar(const char *path, const char *name)
     //
     // We haven't seen this multivar before -- read it in.
     //
-    DBfile *dbfile = OpenFile(tocIndex);
+    DBfile *dbfile = GetFile(tocIndex);
     DBmultivar *mm = DBGetMultivar(dbfile, combined_name);
 
     multivar_name.push_back(combined_name);
@@ -5920,6 +5993,11 @@ avtSiloFileFormat::QueryMultimat(const char *path, const char *name)
 //  Programmer: Hank Childs
 //  Creation:   January 14, 2004
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
+//    Changed call to OpenFile() to GetFile()
+//
 // ****************************************************************************
 
 DBmultimat *
@@ -5941,7 +6019,7 @@ avtSiloFileFormat::GetMultimat(const char *path, const char *name)
     //
     // We haven't seen this multimat before -- read it in.
     //
-    DBfile *dbfile = OpenFile(tocIndex);
+    DBfile *dbfile = GetFile(tocIndex);
     DBmultimat *mm = DBGetMultimat(dbfile, combined_name);
 
     multimat_name.push_back(combined_name);
@@ -5993,6 +6071,11 @@ avtSiloFileFormat::QueryMultimatspec(const char *path, const char *name)
 //  Programmer: Hank Childs
 //  Creation:   January 14, 2004
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
+//    Changed call to OpenFile() to GetFile()
+//
 // ****************************************************************************
 
 DBmultimatspecies *
@@ -6014,7 +6097,7 @@ avtSiloFileFormat::GetMultimatspec(const char *path, const char *name)
     //
     // We haven't seen this multimatspec before -- read it in.
     //
-    DBfile *dbfile = OpenFile(tocIndex);
+    DBfile *dbfile = GetFile(tocIndex);
     DBmultimatspecies *mm = DBGetMultimatspecies(dbfile, combined_name);
 
     multimatspec_name.push_back(combined_name);

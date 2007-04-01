@@ -44,6 +44,9 @@ class     vtkDataArray;
 //    to return the right time. I also added method to indicate whether the
 //    returned cycle/time can be believed.
 //
+//    Mark C. Miller, Mon Feb 23 20:38:47 PST 2004
+//    Added method, ActivateTimestep
+//
 // ****************************************************************************
 
 class DATABASE_API avtSTSDFileFormat : public avtFileFormat
@@ -66,6 +69,9 @@ class DATABASE_API avtSTSDFileFormat : public avtFileFormat
     virtual vtkDataSet    *GetMesh(const char *) = 0;
     virtual vtkDataArray  *GetVar(const char *) = 0;
     virtual vtkDataArray  *GetVectorVar(const char *);
+
+    virtual void           ActivateTimestep(void)
+                               { avtFileFormat::ActivateTimestep(); };
 
   protected:
     char                  *filename;

@@ -1,0 +1,64 @@
+#!/usr/local/apps/bin/python
+
+###############################################################################
+# Program: converttextfile
+#
+# Purpose: This program converts UNIX text files to Windows text files and
+#          can be used in lieu of the cp command in the shell.
+#
+# Programmer: Brad Whitlock
+# Date:       Tue Feb 24 08:58:21 PDT 2004
+#
+# Modifications:
+#
+###############################################################################
+
+import sys
+
+if(len(sys.argv) < 3):
+    print "Usage: %s src dest\n" % sys.argv[0]
+    sys.exit(-1)
+
+#
+# Determine the names of the files involved.
+#
+srcFile = sys.argv[1]
+destFile = sys.argv[2]
+
+if(destFile == "."):
+    pos = srcFile.rfind("/")
+    if(pos >= 0):
+        destFile = srcFile[pos + 1:]
+    else:
+        print "Copying to the same file!";
+        sys.exit(-1)
+
+#
+# Read in all of the source lines
+#
+lines = ()
+try:
+    f = open(srcFile, "rt")
+    lines = f.readlines()
+    f.close()
+except IOError:
+    print "%s could not be opened." % srcFile
+    sys.exit(-1)
+
+#
+# Write out all of the lines with extra Windows end of line characters
+#
+try:
+    f = open(destFile, "wb")
+    for line in lines:
+        f.write("%s" % line[:-1])
+        f.write("%c" % 13)
+        f.write("%c" % 10)
+    f.close()
+except IOError:
+    print "Could not write to %s." % destFile
+
+#
+# We're done. Exit now.
+#
+sys.exit(0)
