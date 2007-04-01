@@ -19,6 +19,7 @@ class DatabaseAttributes;
 class DataNode;
 class EngineProxy;
 class PickAttributes;
+class Plot;
 class PlotQueryInfo;
 class ViewerPlotList;
 class ViewerPlotPluginInfo;
@@ -178,6 +179,10 @@ class avtToolInterface;
 //    Added clonedNetworkId, which when not -1 indicates that this plot 
 //    should use a cloned network instead of creating a new one. 
 //    
+//    Brad Whitlock, Thu Apr 1 16:22:09 PST 2004
+//    I added a copy constructor and made changes to make keyframing work
+//    again.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot
@@ -189,51 +194,81 @@ class VIEWER_API ViewerPlot
                const std::string &hostName_,
                const std::string &databaseName_,
                const std::string &variableName_,
-               avtSILRestriction_p silr, const int plotState,
-               const int nStates);
+               avtSILRestriction_p silr,
+               const int plotState,    // Initial database state for the plot
+               const int nStates,      // Number of total database states
+               const int cacheIndex,   // Initial active cache index
+               const int nCacheEntries // Number of cache entries
+              );
+    ViewerPlot(const ViewerPlot &);
     virtual ~ViewerPlot();
+    void operator = (const ViewerPlot &obj);
 
-    int GetState() const;
-    void SetState(int state);
-    bool FollowsTime() const;
-    void SetFollowsTime(bool);
+    //
+    // Methods to identify the plot plugin.
+    //
+    const char *GetPlotName() const;
+    const char *GetPluginID() const;
+    int GetType() const;
 
-    void SetFrameRange(const int f0, const int f1);
-    bool IsInFrameRange() const;
-    int GetBeginFrame() const;
-    int GetEndFrame() const;
-    const int *GetKeyframeIndices(int &) const;
-    void DeleteKeyframe(const int frame);
-    void MoveKeyframe(int oldFrame, int newFrame);
-
+    //
+    // Get/Set the plot's database and variable.
+    //
     void SetHostDatabaseName(const std::string &host,
                              const std::string &database);
     const std::string &GetHostName() const;
     const std::string &GetDatabaseName() const;
     std::string GetSource() const;
-
     const EngineKey &GetEngineKey() const;
-
-    const char *GetPlotName() const;
-    const char *GetPluginID() const;
-
-    int GetType() const;
-
     bool SetVariableName(const std::string &name);
     const std::string &GetVariableName() const;
     const avtCentering GetVariableCentering() const;
 
-    void SetDatabaseAtts(const AttributeSubjectMap *atts);
-    const AttributeSubjectMap *GetDatabaseAtts() const;
-    void SetDatabaseState(const int frame, const int state);
-    int GetDatabaseState(const int frame) const;
-    const int *GetDatabaseKeyframeIndices(int &) const;
-    void DeleteDatabaseKeyframe(const int frame);
-    void MoveDatabaseKeyframe(int oldFrame, int newFrame);
-
+    //
+    // Get/Set the SIL restriction and get metadata.
+    //
     void SetSILRestriction(avtSILRestriction_p silr);
     avtSILRestriction_p GetSILRestriction() const;
+    const avtDatabaseMetaData *GetMetaData() const;
 
+    //
+    // Returns the database state that the plot currently displays.
+    //
+    int GetState() const;
+
+    //
+    // Get/Set the cache index, which is where the plot is in time.
+    //
+    void SetCacheIndex(int cacheIndex_);
+    int  GetCacheIndex() const;
+
+    //
+    // Get/Set whether the plot allows its cache index to be changed.
+    //
+    bool FollowsTime() const;
+    void SetFollowsTime(bool);
+
+    //
+    // Set/Get plot attributes and keyframes.
+    //
+    void SetClientAttsFromPlot();
+    void SetPlotAttsFromClient();
+    bool SetPlotAtts(const AttributeSubject *atts);
+    const AttributeSubject *GetPlotAtts() const;
+    void DeleteKeyframe(const int cacheIndex);
+    void MoveKeyframe(int oldIndex, int newIndex);
+
+    //
+    // Set/Get database keyframes.
+    //
+    void AddDatabaseKeyframe(int index, int state);
+    void DeleteDatabaseKeyframe(const int index);
+    void MoveDatabaseKeyframe(int oldIndex, int newIndex);
+    void SetKeyframeMode(bool);
+
+    //
+    // Manage operators.
+    //
     int  AddOperator(const int type, const bool fromDefault = true);
     bool PromoteOperator(const int operatorIndex);
     bool DemoteOperator(const int operatorIndex);
@@ -241,63 +276,62 @@ class VIEWER_API ViewerPlot
     void RemoveLastOperator();
     void RemoveAllOperators();
     void SetOperatorAttsFromClient(const int type);
-
-    int GetNOperators() const;
+    int  GetNOperators() const;
     ViewerOperator *GetOperator(const int i) const;
     void SetActiveOperatorIndex(int index);
     int  GetActiveOperatorIndex() const;
     void SetExpanded(bool val);
     bool GetExpanded() const;
 
+    //
+    // Manage the actor,reader,plot caches.
+    //
+    void SetRange(const int i0, const int i1);
+    void UpdateCacheSize(bool kfMode, bool clearActors, int newsize=-1);
+    bool IsInRange() const;
     avtActor_p &GetActor() const;
     avtDataObjectReader_p &GetReader() const;
     bool NoActorExists() const;
-
     void CreateActor(bool createNew = true,
                      bool turningOffScalableRendering = true);
     void ClearActors();
     void ClearCurrentActor();
-    void ClearActors(const int f0, const int f1);
-
     void TransmuteActor(bool turningOffScalableRendering);
 
-    int GetSpatialDimension() const;
-    double *GetSpatialExtents(avtExtentType = AVT_UNKNOWN_EXTENT_TYPE) const;
-    void SetSpatialExtentsType(avtExtentType);
 
     bool ExecuteEngineRPC();
 
-    bool GetErrorFlag() const;
-    void SetErrorFlag(bool val);
-
-    void SetClientAttsFromPlot();
-    void SetPlotAttsFromClient();
-    bool SetPlotAtts(const AttributeSubject *atts);
-    bool SetPlotAtts(const AttributeSubjectMap *atts);
-    const AttributeSubjectMap *GetPlotAtts() const;
-    const AttributeSubject *GetCurrentPlotAtts() const;
-
-    bool UpdateColorTable(const char *ctName);
-    bool SetBackgroundColor(const double *);
-    bool SetForegroundColor(const double *);
 
     bool HandleTool(const avtToolInterface &ti);
     bool InitializeTool(avtToolInterface &ti);
-
-    int  GetNetworkID() const;
-    void SetNetworkID(int id);
-
     bool StartPick();
     void StopPick();
 
+    //
+    // Get/Set specific plot attributes.
+    //
+    int GetSpatialDimension() const;
+    double *GetSpatialExtents(avtExtentType = AVT_UNKNOWN_EXTENT_TYPE) const;
+    void SetSpatialExtentsType(avtExtentType);
+    bool UpdateColorTable(const char *ctName);
+    bool SetBackgroundColor(const double *);
+    bool SetForegroundColor(const double *);
+    bool GetErrorFlag() const;
+    void SetErrorFlag(bool val);
+    int  GetNetworkID() const;
+    void SetNetworkID(int id);
     PlotQueryInfo* GetPlotQueryInfo();
     avtVarType     GetVarType() const;
     avtVarType     GetVarType(const std::string &var) const;
+    void           SetOpaqueMeshIsAppropriate(bool);
+    bool           IsMesh();
 
+    //
+    // Let the plot read/write itself to a config file.
+    //
     void CreateNode(DataNode *);
     void SetFromNode(DataNode *);
-    void SetOpaqueMeshIsAppropriate(bool);
-    bool IsMesh(void);
+    void InitializePlot(Plot &p) const;
 
     void RegisterViewerPlotList(ViewerPlotList *vpl)
                                  { viewerPlotList = vpl; };
@@ -306,19 +340,17 @@ class VIEWER_API ViewerPlot
     void SetCloneId(int id) { clonedNetworkId = id; } ;
     int  GetCloneId(void) { return clonedNetworkId; } ;
 
-    const avtDatabaseMetaData *GetMetaData() const;
 
     void UpdateDataExtents();
-                                 
   protected:
+    void CopyHelper(const ViewerPlot &);
     bool MoveOperator(const int operatorIndex, bool promote);
     void SetActor(const avtActor_p actor);
-
-    int                     frame0, frame1;
+    void ClearActors(const int f0, const int f1);
+    void CheckCache(const int f0, const int f1, const bool force);
+    void ResizeCache(int size);
 
   private:
-    void CheckCache(const int f0, const int f1, const bool force);
-
     ViewerPlotList         *viewerPlotList;
     int                     type;
     ViewerPlotPluginInfo   *viewerPluginInfo;
@@ -329,8 +361,11 @@ class VIEWER_API ViewerPlot
     std::string             databaseName;
     std::string             variableName;
     std::vector<double>     dataExtents;
-    int                     state;
     bool                    followsTime;
+
+    int                     cacheIndex;
+    int                     cacheSize;
+    int                     beginCacheIndex, endCacheIndex;
 
     AttributeSubjectMap    *databaseAtts;
     DatabaseAttributes     *curDatabaseAtts;

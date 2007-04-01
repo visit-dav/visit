@@ -300,13 +300,9 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     id = ctrls->insertItem(animIcon, tr("&Animation . . ."), this, SIGNAL(activateAnimationWindow()), CTRL+Key_A);
     id = ctrls->insertItem(annotIcon, tr("A&nnotation . . ."), this, SIGNAL(activateAnnotationWindow()), CTRL+Key_N);
     id = ctrls->insertItem(rainbowIcon, tr("Color &table . . ."), this, SIGNAL(activateColorTableWindow()), CTRL+Key_T);
-//    id = ctrls->insertItem( tr("Command line . . ."), this, SIGNAL(activateCommandLineWindow()));
-//    ctrls->setItemEnabled(id, false);
     id = ctrls->insertItem( tr("&Database correlations . . ."), this, SIGNAL(activateCorrelationListWindow()), CTRL+Key_D);
     id = ctrls->insertItem(exprIcon, tr("&Expressions . . ."), this, SIGNAL(activateExpressionsWindow()), CTRL+SHIFT+Key_E );
     id = ctrls->insertItem( tr("&Keyframing . . ."), this, SIGNAL(activateKeyframeWindow()), CTRL+Key_K);
-    // Disable keyframing for now...
-    ctrls->setItemEnabled(id, false);
     id = ctrls->insertItem( tr("&Material Options . . ."), this, SIGNAL(activateMaterialWindow()), CTRL+Key_M);
     id = ctrls->insertItem(lightIcon, tr("&Lighting . . ."), this, SIGNAL(activateLightingWindow()), CTRL+Key_L );
     id = ctrls->insertItem(tr("&Lineout . . ."), this, SIGNAL(activateGlobalLineoutWindow()), CTRL+SHIFT+Key_L );

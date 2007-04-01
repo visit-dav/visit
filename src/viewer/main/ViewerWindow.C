@@ -1014,7 +1014,7 @@ ViewerWindow::ClearViewKeyframes()
 //    Delete a view keyframe.
 //
 //  Arguments:
-//    frame     The keyframe to delete.
+//    index : The keyframe to delete.
 //
 //  Programmer: Eric Brugger
 //  Creation:   January 6, 2003
@@ -1023,45 +1023,55 @@ ViewerWindow::ClearViewKeyframes()
 //    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
 //    I added a curve view.
 //
+//    Brad Whitlock, Wed Apr 7 13:54:35 PST 2004
+//    I rewrote it for multiple time sliders.
+//
 // ****************************************************************************
 
 void
-ViewerWindow::DeleteViewKeyframe(const int frame)
+ViewerWindow::DeleteViewKeyframe(const int index)
 {
-#ifdef BEFORE_NEW_FILE_SELECTION
-    int nFrames = animation->GetNFrames();
-
-    //
-    // Check that the frame is within range.
-    //
-    if ((frame < 0) || (frame >= nFrames))
+    if(!GetPlotList()->GetKeyframeMode())
     {
-        debug1 << "The frame is out of range." << endl;
-        return;
+        Error("VisIt does not allow view keyframes to be deleted when the "
+              "active window is not in keyframe mode.");
     }
-
-    //
-    // Delete the keyframe at the specified frame.  DeleteAtts
-    // returns the range of frames that were invalidated.  The
-    // maximum value is clamped to nFrames since DeleteAtts may
-    // return INT_MAX to indicate the end of the animation.
-    //
-    int f0, f1;
-
-    viewCurveAtts->DeleteAtts(frame, f0, f1);
-    view2DAtts->DeleteAtts(frame, f0, f1);
-    view3DAtts->DeleteAtts(frame, f0, f1);
-    f1 = f1 < (nFrames - 1) ? f1 : (nFrames - 1);
-
-    //
-    // If the current frame is within the range, update the view.
-    //
-    if (animation->GetFrameIndex() >= f0 || animation->GetFrameIndex() <= f1)
+    else
     {
-        UpdateCameraView();
-        ViewerWindowManager::Instance()->UpdateViewAtts();
+        // Get the number of states for the keyframe time slider.
+        int curIndex = 0, nIndices = 1;
+        GetPlotList()->GetTimeSliderStates(KF_TIME_SLIDER, curIndex, nIndices);
+
+        //
+        // Check that the index is within range.
+        //
+        if ((index < 0) || (index >= nIndices))
+        {
+            debug1 << "The index is out of range." << endl;
+            return;
+        }
+
+        //
+        // Delete the keyframe at the specified frame.  DeleteAtts
+        // returns the range of frames that were invalidated.  The
+        // maximum value is clamped to nFrames since DeleteAtts may
+        // return INT_MAX to indicate the end of the animation.
+        //
+        int i0, i1;
+        viewCurveAtts->DeleteAtts(index, i0, i1);
+        view2DAtts->DeleteAtts(index, i0, i1);
+        view3DAtts->DeleteAtts(index, i0, i1);
+        i1 = i1 < (nIndices - 1) ? i1 : (nIndices - 1);
+
+        //
+        // If the current index is within the range, update the view.
+        //
+        if (curIndex >= i0 || curIndex <= i1)
+        {
+            UpdateCameraView();
+            ViewerWindowManager::Instance()->UpdateViewAtts();
+        }
     }
-#endif
 }
 
 // ****************************************************************************
@@ -1081,49 +1091,59 @@ ViewerWindow::DeleteViewKeyframe(const int frame)
 //    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
 //    I added a curve view.
 //
+//    Brad Whitlock, Wed Apr 7 13:54:35 PST 2004
+//    I rewrote it for multiple time sliders.
+//
 // ****************************************************************************
 
 void
-ViewerWindow::MoveViewKeyframe(int oldFrame, int newFrame)
+ViewerWindow::MoveViewKeyframe(int oldIndex, int newIndex)
 {
-#ifdef BEFORE_NEW_FILE_SELECTION
-    int nFrames = animation->GetNFrames();
-
-    //
-    // Check that the frame numbers are within range.
-    //
-    if ((oldFrame < 0) || (oldFrame >= nFrames) ||
-        (newFrame < 0) || (newFrame >= nFrames))
+    if(!GetPlotList()->GetKeyframeMode())
     {
-        debug1 << "The frame is out of range." << endl;
-        return;
+        Error("VisIt does not allow view keyframes to be moved when the "
+              "active window is not in keyframe mode.");
     }
-
-    //
-    // Move the keyframe at oldFrame to newFrame.  MoveAtts
-    // returns the range of frames that were invalidated.  The
-    // maximum value is clamped to nFrames since DeleteAtts may
-    // return INT_MAX to indicate the end of the animation.
-    //
-    int f0, f1;
-
-    if (!viewCurveAtts->MoveAtts(oldFrame, newFrame, f0, f1))
-        return;
-    if (!view2DAtts->MoveAtts(oldFrame, newFrame, f0, f1))
-        return;
-    if (!view3DAtts->MoveAtts(oldFrame, newFrame, f0, f1))
-        return;
-    f1 = f1 < (nFrames - 1) ? f1 : (nFrames - 1);
-
-    //
-    // If the current frame is within the range, update the view.
-    //
-    if (animation->GetFrameIndex() >= f0 || animation->GetFrameIndex() <= f1)
+    else
     {
-        UpdateCameraView();
-        ViewerWindowManager::Instance()->UpdateViewAtts();
+        // Get the number of states for the keyframe time slider.
+        int curIndex = 0, nIndices = 1;
+        GetPlotList()->GetTimeSliderStates(KF_TIME_SLIDER, curIndex, nIndices);
+
+        //
+        // Check that the index is within range.
+        //
+        if ((oldIndex < 0) || (oldIndex >= nIndices) ||
+            (newIndex < 0) || (newIndex >= nIndices))
+        {
+            debug1 << "The index is out of range." << endl;
+            return;
+        }
+
+        //
+        // Delete the keyframe at the specified frame.  DeleteAtts
+        // returns the range of frames that were invalidated.  The
+        // maximum value is clamped to nFrames since DeleteAtts may
+        // return INT_MAX to indicate the end of the animation.
+        //
+        int i0, i1;
+        if (!viewCurveAtts->MoveAtts(oldIndex, newIndex, i0, i1))
+            return;
+        if (!view2DAtts->MoveAtts(oldIndex, newIndex, i0, i1))
+            return;
+        if (!view3DAtts->MoveAtts(oldIndex, newIndex, i0, i1))
+            return;
+        i1 = i1 < (nIndices - 1) ? i1 : (nIndices - 1);
+
+        //
+        // If the current index is within the range, update the view.
+        //
+        if (curIndex >= i0 || curIndex <= i1)
+        {
+            UpdateCameraView();
+            ViewerWindowManager::Instance()->UpdateViewAtts();
+        }
     }
-#endif
 }
 
 // ****************************************************************************
@@ -1149,53 +1169,60 @@ ViewerWindow::MoveViewKeyframe(int oldFrame, int newFrame)
 //    Eric Brugger, Thu Oct 16 14:29:28 PDT 2003
 //    I added a full frame mode to the 2d view.
 //
+//    Brad Whitlock, Wed Apr 7 13:54:35 PST 2004
+//    I rewrote it for multiple time sliders.
+//
 // ****************************************************************************
 
 void
 ViewerWindow::SetViewKeyframe()
 {
-#ifdef BEFORE_NEW_FILE_SELECTION
-    //
-    // Set a curve view keyframe.
-    //
-    const avtViewCurve &viewCurve = visWindow->GetViewCurve();
+    if(!GetPlotList()->GetKeyframeMode())
+    {
+        Error("VisIt does not allow view keyframes to be added when the "
+              "active window is not in keyframe mode.");
+    }
+    else
+    {
+        // Get the number of states for the keyframe time slider.
+        int curIndex = 0, nIndices = 1;
+        GetPlotList()->GetTimeSliderStates(KF_TIME_SLIDER, curIndex, nIndices);
+        
+        //
+        // Set a curve view keyframe.
+        //
+        const avtViewCurve &viewCurve = visWindow->GetViewCurve();
+        curViewCurve->SetDomainCoords(viewCurve.domain);
+        curViewCurve->SetRangeCoords(viewCurve.range);
+        curViewCurve->SetViewportCoords(viewCurve.viewport);
+        viewCurveAtts->SetAtts(curIndex, curViewCurve);
 
-    curViewCurve->SetDomainCoords(viewCurve.domain);
-    curViewCurve->SetRangeCoords(viewCurve.range);
-    curViewCurve->SetViewportCoords(viewCurve.viewport);
+        //
+        // Set a 2d view keyframe.
+        //
+        const avtView2D &view2d = visWindow->GetView2D();
+        curView2D->SetWindowCoords(view2d.window);
+        curView2D->SetViewportCoords(view2d.viewport);
+        curView2D->SetFullFrame(view2d.fullFrame);
+        view2DAtts->SetAtts(curIndex, curView2D);
 
-    viewCurveAtts->SetAtts(animation->GetFrameIndex(), curViewCurve);
-
-    //
-    // Set a 2d view keyframe.
-    //
-    const avtView2D &view2d = visWindow->GetView2D();
-
-    curView2D->SetWindowCoords(view2d.window);
-    curView2D->SetViewportCoords(view2d.viewport);
-    curView2D->SetFullFrame(view2d.fullFrame);
-
-    view2DAtts->SetAtts(animation->GetFrameIndex(), curView2D);
-
-    //
-    // Set a 3d view keyframe.
-    //
-    const avtView3D &view3d = visWindow->GetView3D();
-
-    curView3D->SetViewNormal(view3d.normal);
-    curView3D->SetFocus(view3d.focus);
-    curView3D->SetViewUp(view3d.viewUp);
-    curView3D->SetViewAngle(view3d.viewAngle);
-    curView3D->SetParallelScale(view3d.parallelScale);
-    curView3D->SetNearPlane(view3d.nearPlane);
-    curView3D->SetFarPlane(view3d.farPlane);
-    curView3D->SetImagePan(view3d.imagePan);
-    curView3D->SetImageZoom(view3d.imageZoom);
-    curView3D->SetPerspective(view3d.perspective);
-    curView3D->SetEyeAngle(view3d.eyeAngle);
-
-    view3DAtts->SetAtts(animation->GetFrameIndex(), curView3D);
-#endif
+        //
+        // Set a 3d view keyframe.
+        //
+        const avtView3D &view3d = visWindow->GetView3D();
+        curView3D->SetViewNormal(view3d.normal);
+        curView3D->SetFocus(view3d.focus);
+        curView3D->SetViewUp(view3d.viewUp);
+        curView3D->SetViewAngle(view3d.viewAngle);
+        curView3D->SetParallelScale(view3d.parallelScale);
+        curView3D->SetNearPlane(view3d.nearPlane);
+        curView3D->SetFarPlane(view3d.farPlane);
+        curView3D->SetImagePan(view3d.imagePan);
+        curView3D->SetImageZoom(view3d.imageZoom);
+        curView3D->SetPerspective(view3d.perspective);
+        curView3D->SetEyeAngle(view3d.eyeAngle);
+        view3DAtts->SetAtts(curIndex, curView3D);
+    }
 }
 
 // ****************************************************************************
@@ -2506,86 +2533,50 @@ ViewerWindow::CopyViewAttributes(const ViewerWindow *source)
 //   Eric Brugger, Thu Oct 16 14:29:28 PDT 2003
 //   I added a full frame mode to the 2d view.
 //
+//   Brad Whitlock, Wed Apr 7 14:07:46 PST 2004
+//   I made some changes to make it work now there are multiple time
+//   sliders. I also changed the code so it does not copy view components
+//   value by value since there are helper methods already for that.
+//
 // ****************************************************************************
 
 void
 ViewerWindow::UpdateCameraView()
 {
-#ifdef BEFORE_NEW_FILE_SELECTION
     //
-    // If we are in camera view mode and at least one view keyframe has
-    // been defined then set the view based on the view keyframes.
+    // If we are in keyframe mode and we want to see the keyframed camera
+    // and at least one view keyframe has been defined then set the view based
+    // on the view keyframes.
     //
-    if (cameraView && view2DAtts->GetNIndices() > 0)
+    if (GetPlotList()->GetKeyframeMode() && cameraView &&
+        view2DAtts->GetNIndices() > 0)
     {
+        // Get the number of states for the keyframe time slider.
+        int curIndex = 0, nIndices = 1;
+        GetPlotList()->GetTimeSliderStates(KF_TIME_SLIDER, curIndex, nIndices);
+
         if (visWindow->GetWindowMode() == WINMODE_CURVE)
         {
-            viewCurveAtts->GetAtts(animation->GetFrameIndex(), curViewCurve);
- 
-            avtViewCurve viewCurve = visWindow->GetViewCurve();
- 
-            const double *domain=curViewCurve->GetDomainCoords();
-            const double *range=curViewCurve->GetRangeCoords();
-            const double *viewport=curViewCurve->GetViewportCoords();
- 
-            for (int i = 0; i < 4; i++)
-            {
-                viewCurve.viewport[i] = viewport[i];
-            }
-            viewCurve.domain[0] = domain[0];
-            viewCurve.domain[1] = domain[1];
-            viewCurve.range[0]  = range[0];
-            viewCurve.range[1]  = range[1];
- 
+            viewCurveAtts->GetAtts(curIndex, curViewCurve);
+            avtViewCurve viewCurve;
+            viewCurve.SetFromViewCurveAttributes(curViewCurve);
             visWindow->SetViewCurve(viewCurve);
         }
         else if (visWindow->GetWindowMode() == WINMODE_2D)
         {
-            view2DAtts->GetAtts(animation->GetFrameIndex(), curView2D);
- 
-            avtView2D view2d = visWindow->GetView2D();
- 
-            const double *viewport=curView2D->GetViewportCoords();
-            const double *window=curView2D->GetWindowCoords();
- 
-            for (int i = 0; i < 4; i++)
-            {
-                view2d.viewport[i] = viewport[i];
-                view2d.window[i]   = window[i];
-            }
-            view2d.fullFrame = curView2D->GetFullFrame();
- 
+            view2DAtts->GetAtts(curIndex, curView2D);
+            avtView2D view2d;
+            view2d.SetFromView2DAttributes(curView2D);
             visWindow->SetView2D(view2d);
         }
         else
         {
-            view3DAtts->GetAtts(animation->GetFrameIndex(), curView3D);
-
+            view3DAtts->GetAtts(curIndex, curView3D);
             avtView3D view3d;
-
-            view3d.normal[0] = curView3D->GetViewNormal()[0];
-            view3d.normal[1] = curView3D->GetViewNormal()[1];
-            view3d.normal[2] = curView3D->GetViewNormal()[2];
-            view3d.focus[0] = curView3D->GetFocus()[0];
-            view3d.focus[1] = curView3D->GetFocus()[1];
-            view3d.focus[2] = curView3D->GetFocus()[2];
-            view3d.viewUp[0] = curView3D->GetViewUp()[0];
-            view3d.viewUp[1] = curView3D->GetViewUp()[1];
-            view3d.viewUp[2] = curView3D->GetViewUp()[2];
-            view3d.viewAngle = curView3D->GetViewAngle();
-            view3d.parallelScale = curView3D->GetParallelScale();
-            view3d.eyeAngle = curView3D->GetEyeAngle();
-            view3d.nearPlane = curView3D->GetNearPlane();
-            view3d.farPlane = curView3D->GetFarPlane();
-            view3d.imagePan[0] = curView3D->GetImagePan()[0];
-            view3d.imagePan[1] = curView3D->GetImagePan()[1];
-            view3d.imageZoom = curView3D->GetImageZoom();
-            view3d.perspective = curView3D->GetPerspective();
-
+            view3d.SetFromView3DAttributes(curView3D);
             visWindow->SetView3D(view3d);
         }
     }
-#endif
 }
 
 // ****************************************************************************
@@ -6179,6 +6170,9 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
 //   Eric Brugger, Mon Mar 29 15:34:50 PST 2004
 //   I added maintainData.
 //
+//   Brad Whitlock, Wed Apr 7 13:53:24 PST 2004
+//   Added code to translate keyframing information for old config files.
+//
 // ****************************************************************************
 
 void
@@ -6262,13 +6256,40 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
         {
             DataNode *hostNode = vplNode->GetNode("hostName");
             DataNode *databaseNode = vplNode->GetNode("databaseName");
-            if(hostNode != 0 && databaseNode != 0)
+            DataNode *kfModeNode = vplNode->GetNode("keyframeMode");
+
+            //
+            // Determine whether the plot list is in keyframe mode.
+            //
+            bool kfMode = false;
+            if(kfModeNode != 0)
+                kfMode = kfModeNode->AsBool();
+
+            if(kfMode)
             {
+                //
+                // We're in keyframe mode so set the number of keyframes and add a
+                // keyframing time slider.
+                //
+                vplNode->AddNode(new DataNode("nKeyframes", nFrames));
+                DataNode *tsNode = new DataNode("timeSliders");
+                tsNode->AddNode(new DataNode(KF_TIME_SLIDER, curFrame));
+                vplNode->AddNode(tsNode);
+                vplNode->AddNode(new DataNode("activeTimeSlider",
+                    std::string(KF_TIME_SLIDER)));
+                debug3 << "Created a time slider (" << KF_TIME_SLIDER
+                       << ") at state" << curFrame << " for old session file." << endl;
+            }
+            else if(hostNode != 0 && databaseNode != 0)
+            {
+                //
+                // We're not in keyframing mode so create a time slider for the
+                // active source.
+                //
                 std::string tsHost(hostNode->AsString());
                 std::string tsDB(databaseNode->AsString());
-                tsDB = ViewerFileServer::Instance()->
-                    ExpandedFileName(tsHost, tsDB);
-                std::string tsName(tsHost + ":" + tsDB);
+                std::string tsName(ViewerFileServer::Instance()->
+                    ComposeDatabaseName(tsHost, tsDB));
 
                 //
                 // If the database has multiple time states then add a time
@@ -6279,7 +6300,7 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
                 vplNode->AddNode(tsNode);
                 vplNode->AddNode(new DataNode("activeTimeSlider", tsName));
                 debug3 << "Created a time slider (" << tsName.c_str()
-                       << " at state" << curFrame << ") for old session file." << endl;
+                       << ") at state" << curFrame << " for old session file." << endl;
             }
         }
         // Remove the ViewerAnimation node.
@@ -6762,16 +6783,20 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
 //    Jeremy Meredith, Tue Mar 30 11:04:04 PST 2004
 //    Added an engine key used to index (and restart) engines.
 //
+//    Brad Whitlock, Mon Apr 5 12:23:31 PDT 2004
+//    Renamed a method.
+//
 // ****************************************************************************
+
 void
 ViewerWindow::GetExternalRenderRequestInfo(
-    ExternalRenderRequestInfo& theRequest) const
+    ExternalRenderRequestInfo &theRequest) const
 {
     // get information about the plots, their hosts, ids, and attributes
-    GetPlotList()->GetCurrentPlotAtts(theRequest.pluginIDsList,
-                                      theRequest.engineKeysList,
-                                      theRequest.plotIdsList,
-                                      theRequest.attsList);
+    GetPlotList()->GetPlotAtts(theRequest.pluginIDsList,
+                               theRequest.engineKeysList,
+                               theRequest.plotIdsList,
+                               theRequest.attsList);
 
     // get information about this window's attributes
     theRequest.winAtts = GetWindowAttributes();

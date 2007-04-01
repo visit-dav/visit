@@ -12,6 +12,8 @@
 #include <map>
 #include <vectortypes.h>
 
+#define KF_TIME_SLIDER "Keyframe animation"
+
 // Forward declarations.
 class AttributeSubject;
 class DataNode;
@@ -242,12 +244,22 @@ public:
     int  AddPlot(int type, const std::string &var, bool replacePlots = false,
                  bool applyToAll = false, DataNode *attributesNode = 0);
 
-    void SetPlotFrameRange(int plotId, int frame0, int frame1);
+    // 
+    // Keyframing methods
+    //
+    void SetPlotRange(int plotId, int frame0, int frame1);
     void DeletePlotKeyframe(int plotId, int frame);
     void MovePlotKeyframe(int plotId, int oldFrame, int newFrame);
     void SetPlotDatabaseState(int plotId, int frame, int state);
     void DeletePlotDatabaseKeyframe(int plotId, int frame);
     void MovePlotDatabaseKeyframe(int plotId, int oldFrame, int newFrame);
+    void SetKeyframeMode(const bool mode);
+    bool GetKeyframeMode() const;
+    void SetNKeyframes(int nFrames);
+    int  GetNKeyframes() const;
+    bool GetNKeyframesWasUserSet() const;
+
+
     void CopyFrom(const ViewerPlotList *pl);
     void ClearPlots();
     void ClearActors();
@@ -277,19 +289,19 @@ public:
 
     void AddOperator(const int type, bool applyToAll = false, 
                      const bool fromDefault = true);
-    void PromoteOperator(const int operatorId, bool applyTpAll = false);
-    void DemoteOperator(const int operatorId, bool applyTpAll = false);
-    void RemoveOperator(const int operatorId, bool applyTpAll = false);
+    void PromoteOperator(const int operatorId, bool applyToAll = false);
+    void DemoteOperator(const int operatorId, bool applyToAll = false);
+    void RemoveOperator(const int operatorId, bool applyToAll = false);
     void RemoveLastOperator(bool applyToAll = false);
     void RemoveAllOperators(bool applyToAll = false);
 
     bool UpdateColorTable(const char *ctName);
 
     void UpdatePlotAtts(bool=true) const;
-    void GetCurrentPlotAtts(std::vector<const char*> &pluginIDsList,
-                            std::vector<EngineKey> &engineKeysList,
-                            intVector &plotIdsList,
-                            std::vector<const AttributeSubject*> &attsList) const; 
+    void GetPlotAtts(std::vector<const char*> &pluginIDsList,
+                     std::vector<EngineKey> &engineKeysList,
+                     intVector &plotIdsList,
+                     std::vector<const AttributeSubject*> &attsList) const; 
     void UpdatePlotList() const;
     void UpdateSILRestrictionAtts();
     void InterruptUpdatePlotList();
@@ -317,11 +329,6 @@ public:
 
     ViewerPlot *GetPlot(const int id) const;
     void GetActivePlotIDs(intVector &) const;
-
-    void SetKeyframeMode(const bool mode);
-    bool GetKeyframeMode() const;
-    void SetNKeyframes(int nFrames);
-    int GetNKeyframes() const;
 
     static void ClearDefaultSILRestrictions(const std::string &host,
                                             const std::string &database);
@@ -368,6 +375,7 @@ public:
     PlaybackMode           playbackMode;
 
     bool                   keyframeMode;
+    bool                   nKeyframesWasUserSet;
     int                    nKeyframes;
 
     bool                   pipelineCaching;

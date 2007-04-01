@@ -3923,12 +3923,26 @@ ViewerWindowManager::UpdateAllAtts()
     UpdateRenderingAtts();
 }
 
+// ****************************************************************************
+// Method: ViewerWindowManager::UpdateKeyframeAttributes
+//
+// Purpose: 
+//   Sends the keyframing attributes back to the client.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Apr 7 00:33:10 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 void
 ViewerWindowManager::UpdateKeyframeAttributes()
 {
     ViewerPlotList *plotList = windows[activeWindow]->GetPlotList();
     keyframeClientAtts->SetEnabled(plotList->GetKeyframeMode());
     keyframeClientAtts->SetNFrames(plotList->GetNKeyframes());
+    keyframeClientAtts->SetNFramesWasUserSet(plotList->GetNKeyframesWasUserSet());
     keyframeClientAtts->Notify();
 }
 
@@ -4946,7 +4960,11 @@ ViewerWindowManager::ReversePlay(int windowIndex)
 // Creation:   Sun Jan 25 02:29:13 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 7 00:48:43 PDT 2004
+//   I changed the code so it allows the time slider to be set to the 
+//   keyframe animation time slider. There was some difficulty because it
+//   is a special time slider in that it does not have a database correlation.
+//
 // ****************************************************************************
 
 void
@@ -4965,7 +4983,8 @@ ViewerWindowManager::SetActiveTimeSlider(const std::string &ts, int windowIndex)
         DatabaseCorrelationList *cL = ViewerFileServer::Instance()->
             GetDatabaseCorrelationList();
         DatabaseCorrelation *correlation = cL->FindCorrelation(ts);
-        if(correlation == 0)
+        bool kfTimeSlider = (ts == KF_TIME_SLIDER);
+        if(!kfTimeSlider && correlation == 0)
         {
             Error("VisIt could not find a database correlation "
                   "for the desired time slider so it must not be a valid time "
@@ -4984,6 +5003,21 @@ ViewerWindowManager::SetActiveTimeSlider(const std::string &ts, int windowIndex)
         //
         if(windows[index]->GetTimeLock())
         {
+            //
+            // We're making the keyframing time slider be active return early
+            // since I don't think we want to make other windows use the 
+            // keyframe time slider since other windows are likely to have
+            // very different keyframes.
+            //
+            if(windows[index]->GetPlotList()->GetKeyframeMode() && kfTimeSlider)
+            {
+                Warning("You've made the keyframe animation time slider be the "
+                        "active time slider. Other windows that are also time "
+                        "locked will not have their time sliders set to the "
+                        "keyframe time slider.");
+                return;
+            }
+
             intVector badWindowIds;
             for(int i = 0; i < maxWindows; ++i)
             {

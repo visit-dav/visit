@@ -153,6 +153,9 @@ PlaybackMode_FromString(const std::string &s,
 //    I added support for multiple time sliders and initialized some other
 //    new members.
 //
+//    Brad Whitlock, Tue Apr 6 23:24:12 PST 2004
+//    I added nKeyframesWasUserSet.
+//
 // ****************************************************************************
 
 ViewerPlotList::ViewerPlotList(ViewerWindow *const viewerWindow) : 
@@ -172,6 +175,7 @@ ViewerPlotList::ViewerPlotList(ViewerWindow *const viewerWindow) :
     playbackMode = Looping;
 
     keyframeMode = false;
+    nKeyframesWasUserSet = false;
     nKeyframes = 1;
     pipelineCaching = false;
 }
@@ -330,7 +334,9 @@ ViewerPlotList::HasActiveTimeSlider() const
 // Creation:   Mon Mar 22 15:21:07 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 2 14:43:29 PST 2004
+//   I added keyframing support.
+//
 // ****************************************************************************
 
 void
@@ -428,7 +434,7 @@ ViewerPlotList::GetTimeSliderInformation(int &activeTS,
     // If we're in keyframing mode, add a time slider for the animation.
     //
     if(GetKeyframeMode())
-        uniqueTSNames["Animation"] = 0; // keyframe frame #
+        uniqueTSNames[KF_TIME_SLIDER] = timeSliders[KF_TIME_SLIDER];
 
     //
     // Figure out the active time slider index.
@@ -537,7 +543,9 @@ ViewerPlotList::CreateTimeSlider(const std::string &newTimeSlider, int state)
 // Creation:   Mon Mar 22 15:26:10 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 2 14:41:40 PST 2004
+//   I added keyframing support.
+//
 // ****************************************************************************
 
 void
@@ -547,21 +555,35 @@ ViewerPlotList::GetTimeSliderStates(const std::string &ts, int &state,
     ViewerFileServer *fs = ViewerFileServer::Instance();
     DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
 
-    DatabaseCorrelation *correlation = cL->FindCorrelation(ts);
+    //
+    // Get the current time slider state.
+    //
+    StringIntMap::const_iterator pos = timeSliders.find(ts);
+    if(pos != timeSliders.end())
+        state = pos->second;
+    else
+       state = 0;
 
-    if(correlation != 0)
+    //
+    // Set the number of frames.
+    //
+    if(GetKeyframeMode() && ts == KF_TIME_SLIDER)
     {
-        StringIntMap::const_iterator it = timeSliders.find(ts);
-        if(it != timeSliders.end())
-            state = it->second;
-        else
-            state = 0;
-        nStates = correlation->GetNumStates();
+        nStates = nKeyframes;
     }
     else
     {
-        state = 0;
-        nStates = 1;
+        DatabaseCorrelation *correlation = cL->FindCorrelation(ts);
+
+        if(correlation != 0)
+        {
+            nStates = correlation->GetNumStates();
+        }
+        else
+        {
+            state = 0;
+            nStates = 1;
+        }
     }
 }
 
@@ -840,67 +862,123 @@ ViewerPlotList::UpdatePlotStates()
 // Creation:   Mon Mar 22 15:45:23 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Apr 8 15:44:16 PST 2004
+//   I added support for keyframing.
+//
 // ****************************************************************************
 
 bool
 ViewerPlotList::UpdateSinglePlotState(ViewerPlot *plot)
 {
     bool different = false;
+    ViewerFileServer *fs = ViewerFileServer::Instance();
+    DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
+    DatabaseCorrelation *tsCorrelation = 0;
 
     //
     // Try and find a correlation for the active time slider if there is
     // an active time slider.
     //
-    ViewerFileServer *fs = ViewerFileServer::Instance();
-    DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
-    DatabaseCorrelation *tsCorrelation = 0;
-    if(HasActiveTimeSlider())
-        tsCorrelation = cL->FindCorrelation(activeTimeSlider);
-
-    //
-    // Set the plot's state according to the time slider.
-    //
-    DatabaseCorrelation *correlation = 0;
-    int plotState = 0, tsState = 0, tsNStates = 0;
-    std::string plotSource(plot->GetSource());
-    if(tsCorrelation != 0 && tsCorrelation->UsesDatabase(plotSource))
+    if(GetKeyframeMode())
     {
-        GetTimeSliderStates(activeTimeSlider, tsState, tsNStates);
-        plotState = tsCorrelation->GetCorrelatedTimeState(
-                plotSource, tsState);
-    }
-    else if((correlation = cL->FindCorrelation(plotSource)) != 0)
-    {
-        //
-        // The time slider did not use the plot's source. Try getting
-        // the time state from the plot source's corralation and time
-        // slider.
-        //
         int tsState = 0, tsNStates = 0;
-        GetTimeSliderStates(plotSource, tsState, tsNStates);
-        if(tsState >= 0)
+        GetTimeSliderStates(GetActiveTimeSlider(), tsState, tsNStates);
+        if(GetActiveTimeSlider() == KF_TIME_SLIDER)
         {
-            plotState = correlation->GetCorrelatedTimeState(
-                plotSource, tsState);
+            if(plot->GetCacheIndex() != tsState)
+            {
+                different = true;
+
+                if(!pipelineCaching)
+                    plot->ClearCurrentActor();
+
+                //
+                // We changed time states using the keyframe time slider. Change
+                // the cache index for the plot to be the same as the keyframe
+                // time slider's state.
+                //
+                plot->SetCacheIndex(tsState);
+            }
+        }
+        else
+        {
+            int kfIndex = 0, kfNIndices = 0;
+            GetTimeSliderStates(KF_TIME_SLIDER, kfIndex, kfNIndices);
+
+            //
+            // To get here, the user moved a time slider for a correlation
+            // but not for the keyframe time slider. This means that we
+            // should take the state for the active time slider and 
+            // figure out the plot's state at that state using the
+            // correlation and then set a database keyframe using that
+            // computed state at the current keyframe index.
+            //
+            tsCorrelation = cL->FindCorrelation(GetActiveTimeSlider());
+            if(tsCorrelation != 0 &&
+               tsCorrelation->UsesDatabase(plot->GetSource()))
+            {
+                int plotState = tsCorrelation->GetCorrelatedTimeState(
+                    plot->GetSource(), tsState);
+                if(plotState != -1)
+                {
+                    different = true;
+                    plot->AddDatabaseKeyframe(kfIndex, plotState);
+                    debug3 << "Added database keyframe. dbkeyframes["
+                           << kfIndex << "] = " << plotState << endl;
+                }
+            }
         }
     }
-
-    // Set the plot's state.
-    if(plotState >= 0)
+    else
     {
-        different = (plot->GetState() != plotState);
+        if(HasActiveTimeSlider())
+            tsCorrelation = cL->FindCorrelation(activeTimeSlider);
 
         //
-        // If we're changing to a different plot state and we're not
-        // pipeline caching then clear the plot's actor before setting
-        // the new state.
+        // Set the plot's state according to the time slider.
         //
-        if (different && !pipelineCaching)
-            plot->ClearCurrentActor();
+        DatabaseCorrelation *correlation = 0;
+        int plotState = 0, tsState = 0, tsNStates = 0;
+        std::string plotSource(plot->GetSource());
 
-        // Set the new state.
-        plot->SetState(plotState);
+        if(tsCorrelation != 0 && tsCorrelation->UsesDatabase(plotSource))
+        {
+            GetTimeSliderStates(activeTimeSlider, tsState, tsNStates);
+            plotState = tsCorrelation->GetCorrelatedTimeState(
+                    plotSource, tsState);
+        }
+        else if((correlation = cL->FindCorrelation(plotSource)) != 0)
+        {
+            //
+            // The time slider did not use the plot's source. Try getting
+            // the time state from the plot source's corralation and time
+            // slider.
+            //
+            int tsState = 0, tsNStates = 0;
+            GetTimeSliderStates(plotSource, tsState, tsNStates);
+            if(tsState >= 0)
+            {
+                plotState = correlation->GetCorrelatedTimeState(
+                    plotSource, tsState);
+            }
+        }
+
+        // Set the plot's state.
+        if(plotState >= 0)
+        {
+            different = (plot->GetCacheIndex() != plotState);
+
+            //
+            // If we're changing to a different plot state and we're not
+            // pipeline caching then clear the plot's actor before setting
+            // the new state.
+            //
+            if (different && !pipelineCaching)
+                plot->ClearCurrentActor();
+
+            // Set the new state.
+            plot->SetCacheIndex(plotState);
+        }
     }
 
     return different;
@@ -1705,8 +1783,8 @@ ViewerPlotList::SetDatabaseName(const std::string &database)
     //
     // Save the hostDatabaseName.
     //
-    hostDatabaseName = ViewerFileServer::Instance()->
-        ComposeDatabaseName(hostName, databaseName);
+    hostDatabaseName = ViewerFileServer::ComposeDatabaseName(hostName,
+        databaseName);
 }
 
 // ****************************************************************************
@@ -2044,7 +2122,6 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
         new_silr->SetFromCompatibleRestriction(matchedPlot->GetSILRestriction());
         newPlot->SetSILRestriction(new_silr);
     }
-
     UpdateSILRestrictionAtts();
 
     //
@@ -2059,15 +2136,15 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
 }
 
 // ****************************************************************************
-//  Method: ViewerPlotList::SetPlotFrameRange
+//  Method: ViewerPlotList::SetPlotRange
 //
 //  Purpose:
-//    Set the frame range for the specified plot.
+//    Set the range for the specified plot.
 //
 //  Arguments:
 //    plotId    : The id of the plot.
-//    frame0    : The start frame of the plot.
-//    frame1    : The end frame of the plot.
+//    index0    : The start index of the plot.
+//    index1    : The end index of the plot.
 //
 //  Programmer: Eric Brugger
 //  Creation:   November 18, 2002
@@ -2076,10 +2153,13 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
 //    Brad Whitlock, Sun Jan 25 22:09:49 PST 2004
 //    Changed how animation works.
 //
+//    Brad Whitlock, Mon Apr 5 14:42:39 PST 2004
+//    I renamed the method.
+//
 // ****************************************************************************
 
 void
-ViewerPlotList::SetPlotFrameRange(int plotId, int frame0, int frame1)
+ViewerPlotList::SetPlotRange(int plotId, int index0, int index1)
 {
     //
     // Check that the plot id is within range.
@@ -2093,7 +2173,7 @@ ViewerPlotList::SetPlotFrameRange(int plotId, int frame0, int frame1)
     //
     // Set the frame range for the specified plot.
     //
-    plots[plotId].plot->SetFrameRange(frame0, frame1);
+    plots[plotId].plot->SetRange(index0, index1);
 
     //
     // Update the client attributes.
@@ -2217,6 +2297,9 @@ ViewerPlotList::MovePlotKeyframe(int plotId, int oldFrame, int newFrame)
 //    Brad Whitlock, Wed Apr 16 13:49:19 PST 2003
 //    I removed the unnecessary call to UpdatePlotAtts.
 //
+//    Brad Whitlock, Mon Apr 5 14:51:56 PST 2004
+//    Changed the name of a method call.
+//
 // ****************************************************************************
 
 void
@@ -2234,7 +2317,7 @@ ViewerPlotList::SetPlotDatabaseState(int plotId, int frame, int state)
     //
     // Set the database state for the specified plot and frame.
     //
-    plots[plotId].plot->SetDatabaseState(frame, state);
+    plots[plotId].plot->AddDatabaseKeyframe(frame, state);
 
     //
     // Update the client attributes.
@@ -2383,18 +2466,14 @@ ViewerPlotList::MovePlotDatabaseKeyframe(int plotId, int oldFrame, int newFrame)
 //    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
 //    Added an engine key to map plots to the engine used to create them.
 //
+//    Brad Whitlock, Fri Apr 2 10:57:29 PDT 2004
+//    I rewrote the method so it uses the new ViewerPlot copy constructor.
+//
 // ****************************************************************************
 
 void
 ViewerPlotList::CopyFrom(const ViewerPlotList *pl)
 {
-    //
-    // If the plot list being copied is in keyframe mode then put the
-    // current plot list in keyframe mode.
-    //
-    if(pl->keyframeMode)
-        keyframeMode = true;
-
     //
     // Copy the database and the host database.
     //
@@ -2409,6 +2488,14 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl)
     // Copy the animation playback mode.
     //
     playbackMode = pl->GetPlaybackMode();
+
+    //
+    // If the plot list being copied is in keyframe mode then put the
+    // current plot list in keyframe mode.
+    //
+    if(pl->keyframeMode)
+        SetNKeyframes(pl->GetNKeyframes());
+    SetKeyframeMode(pl->keyframeMode);
 
     //
     // Copy the time sliders and the active time slider from the input
@@ -2427,45 +2514,14 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl)
     int plotsAdded = 0;
     for (int i = 0; i < pl->GetNumPlots(); ++i)
     {
-         ViewerPlot *src = pl->GetPlot(i);
-
          //
          // Try and create a copy of the i'th plot.
          //
-         ViewerPlotFactory *plotFactory = viewerSubject->GetPlotFactory();
-         ViewerPlot *dest = NULL;
+         ViewerPlot *src = pl->GetPlot(i);
+         ViewerPlot *dest = 0;
          TRY
          {
-#ifdef BEFORE_NEW_FILE_SELECTION
-// Fix this when I fix keyframing...
-             int f0, f1, s0, s1;
-             f0 = src->GetBeginFrame();
-             f1 = src->GetEndFrame() + 1;
-             s0 = src->GetDatabaseState(f0);
-             s1 = src->GetDatabaseState(f1);
-             dest = plotFactory->CreatePlot(src->GetType(),
-                                            src->GetEngineKey(),
-                                            src->GetHostName(),
-                                            src->GetDatabaseName(),
-                                            src->GetVariableName(),
-                                            src->GetSILRestriction(),
-                                            src->GetState(), s1 - s0);
-             dest->SetDatabaseState(f0, s0);
-             dest->SetDatabaseState(f1, s1);
-             dest->RegisterViewerPlotList(this);
-#else
-             int f0, f1;
-             f0 = src->GetBeginFrame();
-             f1 = src->GetEndFrame();
-             dest = plotFactory->CreatePlot(src->GetType(),
-                                            src->GetEngineKey(),
-                                            src->GetHostName(),
-                                            src->GetDatabaseName(),
-                                            src->GetVariableName(),
-                                            src->GetSILRestriction(),
-                                            src->GetState(), f1 - f0 + 1);
-             dest->RegisterViewerPlotList(this);
-#endif
+             dest = new ViewerPlot(*src);
          }
          CATCH(VisItException)
          {
@@ -2477,30 +2533,8 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl)
          }
          ENDTRY
 
-         if (dest != NULL)
+         if(dest != 0)
          {
-             //
-             // Apply the same plot attributes as the old plot.
-             //
-             dest->SetPlotAtts(src->GetPlotAtts());
-
-             //
-             // Apply the same database attributes as the old plot.
-             //
-             dest->SetDatabaseAtts(src->GetDatabaseAtts());
-
-             //
-             // Apply the same operators that are on the old plot to
-             // the new plot.
-             //
-             for (int j = 0; j < src->GetNOperators(); ++j)
-             {
-                 ViewerOperator *op = src->GetOperator(j);
-                 dest->AddOperator(op->GetType());
-                 ViewerOperator *newOp = dest->GetOperator(j);
-                 newOp->SetOperatorAtts(op->GetOperatorAtts());
-             }
-
              //
              // Add the new plot to the plot list.
              //
@@ -2554,6 +2588,10 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl)
 //    the else clause of the replace plots test.  The previous logic failed
 //    when replacePlots was true and nPlots was zero since the plot list
 //    didn't get allocated.
+//
+//    Brad Whitlock, Fri Apr 2 11:13:17 PDT 2004
+//    I added code that makes the plot aware that it belonges to this
+//    plot list.
 //
 // ****************************************************************************
 
@@ -2612,6 +2650,7 @@ ViewerPlotList::SimpleAddPlot(ViewerPlot *plot, bool replacePlots)
     plots[nPlots].plot->SetBackgroundColor(bgColor);
     plots[nPlots].plot->SetForegroundColor(fgColor);
     plots[nPlots].plot->SetSpatialExtentsType(spatialExtentsType);
+    plots[nPlots].plot->RegisterViewerPlotList(this);
     nPlots++;
     return plotId;
 }
@@ -2672,8 +2711,11 @@ ViewerPlotList::SimpleAddPlot(ViewerPlot *plot, bool replacePlots)
 //   Brad Whitlock, Sun Jan 25 22:10:58 PST 2004
 //   I added support for database correlations.
 //
-//    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
-//    Added an engine key to map plots to the engine used to create them.
+//   Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
+//   Added an engine key to map plots to the engine used to create them.
+//
+//   Brad Whitlock, Thu Apr 8 15:46:46 PST 2004
+//   I added support for keyframing back in.
 //
 // ****************************************************************************
 
@@ -2702,7 +2744,7 @@ ViewerPlotList::NewPlot(int type, const EngineKey &ek,
     // the plot.
     // 
     int plotState = 0;
-    if(nStates > 0 && HasActiveTimeSlider())
+    if(nStates > 1 && HasActiveTimeSlider())
     {
         //
         // The time slider's correlation did not use the new plot's
@@ -2716,6 +2758,8 @@ ViewerPlotList::NewPlot(int type, const EngineKey &ek,
             int activeTSState = timeSliders[activeTimeSlider];
             plotState = mostSuitable->GetCorrelatedTimeState(plotSource,
                 activeTSState);
+            if(plotState == -1)
+                plotState = 0;
         }
     }
 
@@ -2741,8 +2785,27 @@ ViewerPlotList::NewPlot(int type, const EngineKey &ek,
     ViewerPlot *plot = 0;
     TRY
     {
+        //
+        // If we're not in keyframing mode then we only want to size the
+        // plot's caches so they can contain enough actors, etc for the
+        // number of states in the plot's database.
+        //
+        int cacheIndex(plotState);
+        int cacheSize(nStates);
+
+        //
+        // If we're in keyframing mode, we want to size the plot's cache
+        // so it can store enough actors for the desired number of frames.
+        //
+        if(GetKeyframeMode())
+            GetTimeSliderStates(KF_TIME_SLIDER, cacheIndex, cacheSize);
+
+        //
+        // Create the plot.
+        //
         plot = plotFactory->CreatePlot(type, ek, host, db, var,
-                                       silr, plotState, nStates);
+                                       silr, plotState, nStates,
+                                       cacheIndex, cacheSize);
         plot->RegisterViewerPlotList(this);
     }
     CATCH(VisItException)
@@ -2938,6 +3001,12 @@ ViewerPlotList::DeletePlot(ViewerPlot *whichOne, bool doUpdate)
 //    and the correlation for the active time slider does not contain
 //    the active source.
 //
+//    Brad Whitlock, Wed Apr 7 22:30:35 PST 2004
+//    I prevented the time slider from being reset to the active source if
+//    the time slider was the keyframe animation time slider. I removed a
+//    call to set the opaque flag for mesh plots since it is now done when
+//    plots are added to the window.
+//
 // ****************************************************************************
 
 void
@@ -2977,7 +3046,6 @@ ViewerPlotList::DeleteActivePlots()
     if (nPlots > 0)
     {
         plots[0].active = true;
-        CanMeshPlotBeOpaque();
     }
     else
     {
@@ -2995,7 +3063,8 @@ ViewerPlotList::DeleteActivePlots()
                 GetDatabaseCorrelationList();
             DatabaseCorrelation *tsCorrelation = cL->FindCorrelation(
                 activeTimeSlider);
-            if(!tsCorrelation->UsesDatabase(hostDatabaseName))
+            if(tsCorrelation != 0 &&
+               !tsCorrelation->UsesDatabase(hostDatabaseName))
             {
                 SetActiveTimeSlider(hostDatabaseName);
 
@@ -3145,7 +3214,7 @@ ViewerPlotList::TransmutePlots(bool turningOffScalableRendering)
     {
         if (plots[i].realized &&
            !plots[i].hidden &&
-            plots[i].plot->IsInFrameRange() &&
+            plots[i].plot->IsInRange() &&
            !plots[i].plot->GetErrorFlag())
         {
             plots[i].plot->TransmuteActor(turningOffScalableRendering);
@@ -3163,8 +3232,12 @@ ViewerPlotList::TransmutePlots(bool turningOffScalableRendering)
 //  Creation:   September 6, 2000
 //
 //  Modifications:
-//    Kathleen Bonnell, Thu Aug 28 10:10:35 PDT 2003 
-//    Added call to CanMeshPlotBeOpaque.
+//   Kathleen Bonnell, Thu Aug 28 10:10:35 PDT 2003 
+//   Added call to CanMeshPlotBeOpaque.
+//
+//   Brad Whitlock, Thu Apr 8 11:31:59 PDT 2004
+//   I removed the call to CanMeshPlotBeOpaque since it is now called from
+//   a central location.
 //
 // ****************************************************************************
 
@@ -3184,8 +3257,6 @@ ViewerPlotList::HideActivePlots()
             plots[i].hidden = plots[i].hidden == true ? false : true;
         }
     }
-  
-    CanMeshPlotBeOpaque();
  
     //
     // Update the client attributes.
@@ -3381,6 +3452,14 @@ ViewerPlotList::SetPlotAtts(const int plotType)
     //
     if (selectedCount > 0)
     {
+        //
+        // If we're in keyframing mode then send the plot list since
+        // to the client because it contains the keyframe indices.
+        //
+        if(GetKeyframeMode())
+            UpdatePlotList();
+
+        // Update the frame.
         UpdateFrame();
     }
     else
@@ -3670,6 +3749,10 @@ ViewerPlotList::CloseDatabase(const std::string &dbName)
 //   Brad Whitlock, Fri Mar 26 14:02:12 PST 2004
 //   Use the time state for getting the new SIL restriction.
 //
+//   Brad Whitlock, Mon Apr 5 11:24:18 PDT 2004
+//   I changed the code so it should be able to change the size of the caches
+//   for a plot without having to clear the actors.
+//
 // ****************************************************************************
 
 void
@@ -3733,35 +3816,14 @@ ViewerPlotList::ReplaceDatabase(const std::string &host, const std::string &data
                     //
                     plot->SetHostDatabaseName(host.c_str(), database.c_str());
                     plot->SetSILRestriction(silr);
-                    plot->ClearActors();
                     plotsReplaced = true;
 
                     //
-                    // If we're not in keyframing mode, then we should set
-                    // the plot's frame range in the animation to the maximum
-                    // number of time states in the plot's database. We do this
-                    // to resize the actor arrays in the plot so there are
-                    // enough for the new number of time states.
+                    // Tell the plot to update its cache size and whether it should
+                    // clear out its actors when it does change the cache size.
                     //
-                    if(!GetKeyframeMode())
-                    {
-                        ViewerFileServer *fs = ViewerFileServer::Instance();
-                        const avtDatabaseMetaData *md = fs->GetMetaData(
-                            plot->GetHostName(), plot->GetDatabaseName());
-                        if(md)
-                        {
-                            int f0 = plot->GetBeginFrame();
-                            int f1 = plot->GetEndFrame();
-                            int newf1 = md->GetNumStates() - 1;
-                            if(f0 > newf1)
-                                f0 = newf1 - 1;
-                            if(f0 < 0)
-                                f0 = 0;
-                            plot->SetFrameRange(f0, newf1);
-                            plot->DeleteDatabaseKeyframe(f1);
-                            plot->SetDatabaseState(newf1, newf1);
-                        }
-                    }
+                    bool clearActors = GetKeyframeMode();
+                    plot->UpdateCacheSize(GetKeyframeMode(), clearActors);
                 }
             }
             CATCH(InvalidVariableException)
@@ -3832,6 +3894,9 @@ ViewerPlotList::ReplaceDatabase(const std::string &host, const std::string &data
 //   Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
 //   Added an engine key to map plots to the engine used to create them.
 //
+//   Brad Whitlock, Mon Apr 5 12:13:07 PDT 2004
+//   I rewrote the method using a copy constructor.
+//
 // ****************************************************************************
 
 void
@@ -3846,17 +3911,12 @@ ViewerPlotList::OverlayDatabase(const EngineKey &ek,
     int nInitialPlots = nPlots;
     for (int i = 0; i < nInitialPlots; ++i)
     {
-        //
-        // Create a new plot based on the old plot. Then copy the old plot's
-        // plot attributes into the new plot.
-        //
         ViewerPlot *newPlot = 0;
         TRY
         {
-            newPlot = NewPlot(plots[i].plot->GetType(),
-                              ek, host, database,
-                              plots[i].plot->GetVariableName(),
-                              false);
+            newPlot = new ViewerPlot(*(plots[i].plot));
+            newPlot->SetHostDatabaseName(host, database);
+            newPlot->UpdateCacheSize(GetKeyframeMode(), true);
         }
         CATCHALL(...)
         {
@@ -3870,22 +3930,6 @@ ViewerPlotList::OverlayDatabase(const EngineKey &ek,
         //
         if (newPlot)
         {
-             //
-             // Apply the same plot attributes as the old plot.
-             //
-             newPlot->SetPlotAtts(plots[i].plot->GetPlotAtts());
-
-             //
-             // Apply the same operators that are on the old plot to the new plot.
-             //
-             for (int j = 0; j < plots[i].plot->GetNOperators(); ++j)
-             {
-                 ViewerOperator *op = plots[i].plot->GetOperator(j);
-                 newPlot->AddOperator(op->GetType());
-                 ViewerOperator *newOp = newPlot->GetOperator(j);
-                 newOp->SetOperatorAtts(op->GetOperatorAtts());
-             }
-
              //
              // Add the new plot to the plot list.
              //
@@ -4458,7 +4502,7 @@ ViewerPlotList::AddOperator(const int type, bool applyToAll, const bool fromDefa
     //
     // Update the frame.
     //
-    UpdateFrame();
+    UpdateFrame(false);
 }
 
 // ****************************************************************************
@@ -4746,8 +4790,9 @@ ViewerPlotList::ArePlotsUpToDate() const
         // plot because this plot doesn't need to ruin it for the other plots
         // which may be defined at this frame.
         //
-        if (!p->IsInFrameRange())
+        if (!p->IsInRange())
             continue;
+
 #ifdef VIEWER_MT
         //
         // An unfortunate degenerate case.  Trying to execute the plot
@@ -4756,9 +4801,7 @@ ViewerPlotList::ArePlotsUpToDate() const
         // it is up-to-date.
         //
         if (p->NoActorExists() && p->GetErrorFlag())
-        {
             return true;
-        }
 #endif
         //
         // The real issue is that a plot must want to be drawn (realized is
@@ -4770,9 +4813,7 @@ ViewerPlotList::ArePlotsUpToDate() const
         bool needsGenerated = (p->NoActorExists() ||
                                p->GetErrorFlag());
         if (isCandidate && needsGenerated)
-        {
             return false;
-        }
     }
 
     return true;
@@ -4851,6 +4892,10 @@ ViewerPlotList::InterruptUpdatePlotList()
 //    Brad Whitlock, Sun Jan 25 22:59:07 PST 2004
 //    I added multiple time sliders.
 //
+//    Brad Whitlock, Thu Apr 8 11:32:37 PDT 2004
+//    I removed the call to CanMeshPlotsBeOpaque because I moved it to a
+//    central location to fix issues with the opacity and keyframing.
+//
 // ****************************************************************************
 
 bool
@@ -4873,7 +4918,7 @@ ViewerPlotList::UpdatePlots(bool animating)
             // not already exist.
             //
             if (plots[i].realized &&
-                plots[i].plot->IsInFrameRange() &&
+                plots[i].plot->IsInRange() &&
                 !plots[i].hidden &&
                 !plots[i].plot->GetErrorFlag() &&
                 plots[i].plot->NoActorExists())
@@ -4947,8 +4992,6 @@ ViewerPlotList::UpdatePlots(bool animating)
             attempts = 0;
     }
 #endif
-
-    CanMeshPlotBeOpaque();
 
 #ifdef VIEWER_MT
     return false;
@@ -5189,6 +5232,10 @@ CreatePlot(void *info)
 //    Eric Brugger, Tue Mar 30 16:12:41 PST 2004
 //    I added a call to UpdateDataExtents.
 //
+//    Brad Whitlock, Fri Apr 2 15:43:10 PST 2004
+//    Added support for keyframing. I also changed how the opaque flag for
+//    mesh plots is set.
+//
 // ****************************************************************************
 
 void
@@ -5227,6 +5274,13 @@ ViewerPlotList::UpdateWindow(bool immediateUpdate)
     globalExtents[2] = DBL_MAX; globalExtents[3] = -DBL_MAX;
     globalExtents[4] = DBL_MAX; globalExtents[5] = -DBL_MAX;
 
+    //
+    // Before we add plots to the window, set the opaque mesh flag on all
+    // of the mesh plots so they can adjust to the plots that are going to
+    // be in the window.
+    //
+    CanMeshPlotBeOpaque();
+
     for (int i = 0; i < nPlots; i++)
     {
         if (plots[i].plot->GetErrorFlag())
@@ -5238,13 +5292,6 @@ ViewerPlotList::UpdateWindow(bool immediateUpdate)
         }
 
         //
-        // Get the state for the plot, which is the state that it shows
-        // in the vis window. This allows plots to be added to the window
-        // even though they may not use the active time slider.
-        //
-        int stateForPlot = plots[i].plot->GetState();
-
-        //
         // If the reader or the actor is bad then mark the plot as bad. This
         // usually happens when a plot generated before the current plot has
         // had an error and the current plot has not been generated.
@@ -5253,13 +5300,14 @@ ViewerPlotList::UpdateWindow(bool immediateUpdate)
             plots[i].plot->NoActorExists())
         {
             debug5 << "\tplot " << i << " was not added to the window "
-                   << "because it has no actor for state " << stateForPlot
-                   << ", which is the state that should be shown "
+                   << "because it has no actor for cache index "
+                   << plots[i].plot->GetCacheIndex()
+                   << ", which is the index that should be shown "
                    << "for the plot." << endl;
             continue;
         }
 
-        if (plots[i].plot->IsInFrameRange() &&
+        if (plots[i].plot->IsInRange() &&
             plots[i].realized == true && plots[i].hidden == false)
         {
             avtActor_p &actor = plots[i].plot->GetActor();
@@ -5515,6 +5563,9 @@ ViewerPlotList::SetForegroundColor(const double *fg)
 //    I changed a bunch of the calls to ViewerPlot so we don't need the 
 //    animation frame.
 //
+//    Brad Whitlock, Mon Apr 5 11:48:07 PDT 2004
+//    I made keyframing work again after I broke it.
+//
 // ****************************************************************************
 
 void
@@ -5567,7 +5618,7 @@ ViewerPlotList::UpdatePlotAtts(bool updateThoseNotRepresented) const
         // the count and set the plot attributes if this is the first
         // frame the plot type is encountered.
         //
-        if (plot->IsInFrameRange() == true && plots[i].active == true)
+        if (plot->IsInRange() && plots[i].active)
         {
             plotCount[plotType]++;
             if (plotCount[plotType] == 1)
@@ -5686,7 +5737,7 @@ ViewerPlotList::UpdatePlotAtts(bool updateThoseNotRepresented) const
 }
 
 // ****************************************************************************
-//  Method: ViewerPlotList::GetCurrentPlotAtts
+//  Method: ViewerPlotList::GetPlotAtts
 //
 //  Purpose:
 //     Populate an STL vector with the current attributes of every active,
@@ -5707,10 +5758,13 @@ ViewerPlotList::UpdatePlotAtts(bool updateThoseNotRepresented) const
 //    Jeremy Meredith, Thu Mar 25 15:34:23 PST 2004
 //    I added a list of engine keys.
 //
+//    Brad Whitlock, Mon Apr 5 12:21:02 PDT 2004
+//    I made it use GetPlotAtts and I renamed the method.
+//
 // ****************************************************************************
 
 void
-ViewerPlotList::GetCurrentPlotAtts(
+ViewerPlotList::GetPlotAtts(
    std::vector<const char*>&             pluginIDsList,
    std::vector<EngineKey>&               engineKeysList,
    std::vector<int>&                     plotIdsList,
@@ -5718,7 +5772,7 @@ ViewerPlotList::GetCurrentPlotAtts(
 {
     for (int i = 0; i < nPlots; i++)
     {
-        if (plots[i].plot->IsInFrameRange() && !plots[i].hidden &&
+        if (plots[i].plot->IsInRange() && !plots[i].hidden &&
             plots[i].realized && !plots[i].plot->NoActorExists())
         {
             ViewerPlot *plot = plots[i].plot;
@@ -5726,7 +5780,7 @@ ViewerPlotList::GetCurrentPlotAtts(
             pluginIDsList.push_back(plot->GetPluginID());
             engineKeysList.push_back(plot->GetEngineKey());
             plotIdsList.push_back(plot->GetNetworkID());
-            attsList.push_back(plot->GetCurrentPlotAtts());
+            attsList.push_back(plot->GetPlotAtts());
         }
     }
 }
@@ -5773,6 +5827,9 @@ ViewerPlotList::GetCurrentPlotAtts(
 //    Jeremy Meredith, Tue Mar 30 12:28:52 PST 2004
 //    Added suport for simulations.
 //
+//    Brad Whitlock, Mon Apr 5 09:56:35 PDT 2004
+//    I moved much of the code into ViewerPlot.
+//
 // ****************************************************************************
 
 void
@@ -5797,33 +5854,10 @@ ViewerPlotList::UpdatePlotList() const
     clientAtts->ClearPlots();
     for (int i = 0; i < nPlots; i++)
     {
-        int       j;
-        Plot      plot;
-
-        plot.SetPlotType(plots[i].plot->GetType());
+        Plot plot;
+        plots[i].plot->InitializePlot(plot);
         plot.SetActiveFlag(plots[i].active);
         plot.SetHiddenFlag(plots[i].hidden);
-        plot.SetExpandedFlag(plots[i].plot->GetExpanded());
-        plot.SetBeginFrame(plots[i].plot->GetBeginFrame());
-        plot.SetEndFrame(plots[i].plot->GetEndFrame());
-        plot.SetIsFromSimulation(plots[i].plot->GetEngineKey().IsSimulation());
- 
-        // Set the keyframe indices.
-        int nIndices;
-        const int *keyframeIndices=plots[i].plot->GetKeyframeIndices(nIndices);
-        intVector keyframeIndices2;
-        for (j = 0; j < nIndices; j++)
-            keyframeIndices2.push_back(keyframeIndices[j]);
-        plot.SetKeyframes(keyframeIndices2);
-        // Set the database keyframe indices.
-        const int *databaseKeyframeIndices=
-            plots[i].plot->GetDatabaseKeyframeIndices(nIndices);
-        intVector databaseKeyframeIndices2;
-        for (j = 0; j < nIndices; j++)
-        {
-            databaseKeyframeIndices2.push_back(databaseKeyframeIndices[j]);
-        }
-        plot.SetDatabaseKeyframes(databaseKeyframeIndices2);
 
         // Figure out the stage of completion that the plot is at.
         if (plots[i].plot->GetErrorFlag())
@@ -5834,7 +5868,7 @@ ViewerPlotList::UpdatePlotList() const
         {
             if (plots[i].realized)
             {
-                if(plots[i].plot->IsInFrameRange() &&
+                if(plots[i].plot->IsInRange() &&
                    plots[i].plot->NoActorExists())
                     plot.SetStateType(Plot::Pending);
                 else
@@ -5844,19 +5878,7 @@ ViewerPlotList::UpdatePlotList() const
                 plot.SetStateType(Plot::NewlyCreated);
         }
 
-        // Set the plot variable.
-        plot.SetPlotVar(plots[i].plot->GetVariableName());
-
-        // Set the operators that are applied to the plot
-        for (int op_index = 0; op_index < plots[i].plot->GetNOperators();
-            ++op_index)
-        {
-            plot.AddOperator(plots[i].plot->GetOperator(op_index)->GetType());
-        }
-        plot.SetActiveOperator(plots[i].plot->GetActiveOperatorIndex());
-
-        // Set the database name and add the plot to the plot list.
-        plot.SetDatabaseName(plots[i].plot->GetSource());
+        // Add the plot to the list.
         clientAtts->AddPlot(plot, plots[i].id);
     }
     clientAtts->Notify();
@@ -6126,7 +6148,7 @@ ViewerPlotList::GetPlotLimits(int nDimensions, double *limits) const
 
     for (int i = 0; i < nPlots; i++)
     {
-        if (plots[i].plot->IsInFrameRange() &&
+        if (plots[i].plot->IsInRange() &&
             !plots[i].plot->GetErrorFlag() &&
             plots[i].realized == true)
         {
@@ -6538,12 +6560,86 @@ ViewerPlotList::GetActivePlotIDs(intVector &ids) const
 //  Programmer: Eric Brugger
 //  Creation:   November 18, 2002
 //
+//  Modifcations:
+//    Brad Whitlock, Fri Apr 2 16:12:51 PST 2004
+//    Added code to switch all plots into keyframe mode.
+//
 // ****************************************************************************
  
 void
 ViewerPlotList::SetKeyframeMode(const bool mode)
 {
-    keyframeMode = mode;
+    if(keyframeMode != mode)
+    {
+        keyframeMode = mode;
+
+        //
+        // If the user did not set the number of keyframes to use, determine
+        // the maximum number of states used in the plots and the active
+        // source. Use that for the initial number of keyframes. Once the
+        // plot list is in keyframing mode, the user can change the number
+        // of keyframes.
+        //
+        if(keyframeMode && !nKeyframesWasUserSet)
+        {
+            int nFrames = 1;
+            if(hostDatabaseName != "")
+            {
+                const avtDatabaseMetaData *md = ViewerFileServer::Instance()->
+                    GetMetaData(hostName, databaseName);
+                nFrames = (md != 0) ? md->GetNumStates() : 1;
+            }
+            for(int i = 0; i < nPlots; ++i)
+            {
+                const avtDatabaseMetaData *md = plots[i].plot->GetMetaData();
+                nFrames = max(((md != 0) ? md->GetNumStates() : 1), nFrames);
+            }
+            nKeyframes = nFrames;
+            nKeyframesWasUserSet = false;
+            debug3 << "Setting the number of keyframes to " << nKeyframes
+                   << " because the number was never set by the user."
+                   << endl;
+        }
+
+        // Switch all of the plots into the prevailing keyframe mode.
+        for(int i = 0; i < nPlots; ++i)
+            plots[i].plot->SetKeyframeMode(keyframeMode);
+
+        if(keyframeMode)
+        {
+            // When switching into keyframing mode, create a keyframe time
+            // slider and make it be the active time slider.
+            CreateTimeSlider(KF_TIME_SLIDER, 0);
+            SetActiveTimeSlider(KF_TIME_SLIDER);
+        }
+        else
+        {
+            // We're going out of keyframing mode. Make it okay to reset
+            // the number of frames the next time we enter keyframing mode.
+            nKeyframesWasUserSet = false;
+
+            // When leaving keyframing mode, delete the keyframe time
+            // slider and use the time slider for the active source.
+            StringIntMap::iterator pos = timeSliders.find(KF_TIME_SLIDER);
+            if(pos != timeSliders.end())
+                timeSliders.erase(pos);
+
+            // Use the active source as the new time slider.
+            SetActiveTimeSlider(hostDatabaseName);
+        }
+
+        //
+        // Send some updated information back to the client.
+        //
+        UpdatePlotList();
+        ViewerWindowManager::Instance()->UpdateKeyframeAttributes();
+        ViewerWindowManager::Instance()->UpdateWindowInformation(WINDOWINFO_TIMESLIDERS);
+
+        //
+        // Update the frame.
+        //
+        UpdateFrame();
+    }
 }
 
 // ****************************************************************************
@@ -6565,16 +6661,92 @@ ViewerPlotList::GetKeyframeMode() const
     return keyframeMode;
 }
 
+// ****************************************************************************
+// Method: ViewerPlotList::SetNKeyframes
+//
+// Purpose: 
+//   Tells all of the plots to update their number of keyframes so the plot
+//   caches are the right size.
+//
+// Arguments:
+//   nFrames : The new number of keyframes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Apr 5 14:22:07 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 void
 ViewerPlotList::SetNKeyframes(int nFrames)
 {
+    bool different = nKeyframes != nFrames;
     nKeyframes = nFrames;
+    nKeyframesWasUserSet = true;
+
+    //
+    // If we're in keyframe mode, update the size of the plot caches.
+    //
+    if(different && keyframeMode)
+    {
+        // If the keyframe time slider is out of bounds, put it back into
+        // the new range.
+        int state = 0, nStates = 1;
+        GetTimeSliderStates(KF_TIME_SLIDER, state, nStates);
+        if(state > nFrames)
+        {
+            debug1 << "The keyframe time slider's state was outside the "
+                "acceptable range. Set its state to: " << nFrames-1 << endl;
+            timeSliders[KF_TIME_SLIDER] = nFrames - 1;
+        }
+
+        // Update the plot cache sizes.
+        for(int i = 0; i < nPlots; ++i)
+            plots[i].plot->UpdateCacheSize(keyframeMode, keyframeMode, nKeyframes);
+        ViewerWindowManager::Instance()->UpdateKeyframeAttributes();
+        ViewerWindowManager::Instance()->UpdateWindowInformation(WINDOWINFO_TIMESLIDERS);
+    }
 }
+
+// ****************************************************************************
+// Method: ViewerPlotList::GetNKeyframes
+//
+// Purpose: 
+//   Returns the number of keyframes.
+//
+// Returns:    The number of keyframes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 8 15:41:04 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
 
 int
 ViewerPlotList::GetNKeyframes() const
 {
     return nKeyframes;
+}
+
+// ****************************************************************************
+// Method: ViewerPlotList::GetNKeyframesWasUserSet
+//
+// Purpose: 
+//   Returns whether the number of keyframes was set by the user.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 8 15:41:26 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerPlotList::GetNKeyframesWasUserSet() const
+{
+    return nKeyframesWasUserSet;
 }
 
 // ****************************************************************************
@@ -6725,8 +6897,11 @@ ViewerPlotList::CreateNode(DataNode *parentNode)
 //   Since it is possible for NewPlot to throw an exception, I added
 //   try/catch around it.
 //
-//    Jeremy Meredith, Tue Mar 30 17:18:38 PST 2004
-//    Added support for simulations.
+//   Jeremy Meredith, Tue Mar 30 17:18:38 PST 2004
+//   Added support for simulations.
+//
+//   Brad Whitlock, Fri Apr 2 15:51:59 PST 2004
+//   I added support for keyframing.
 //
 // ****************************************************************************
 
@@ -6776,7 +6951,10 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
     {
         int nkf = node->AsInt();
         if(nkf > 0)
+        {
             nKeyframes = nkf;
+            nKeyframesWasUserSet = true;
+        }
     }
     if((node = plotlistNode->GetNode("playbackMode")) != 0)
     {
@@ -6839,10 +7017,11 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
                 // that we want to define. If there isn't then we're processing
                 // a pre 1.3 session file and we need to make a new correlation
                 // it its file has metadata and that metadata is for a
-                // time-varying file.
+                // time-varying file. Don't create the correlation if the
+                // time slider is the keyframing time slider.
                 //
                 DatabaseCorrelation *correlation = cL->FindCorrelation(tsName);
-                if(correlation == 0)
+                if(correlation == 0 && tsName != KF_TIME_SLIDER)
                 {
                      //
                      // If the time slider database has multiple time steps then
@@ -6866,16 +7045,16 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
                      }
                 }
 
-                if(correlation != 0)
+                if(correlation != 0 || tsName == KF_TIME_SLIDER)
                 {
-                    debug3 << "Creating time slider " << tsName.c_str()
-                           << " at state " << tsState << endl;
+                    debug3 << "Creating time slider \"" << tsName.c_str()
+                           << "\" at state " << tsState << endl;
                     timeSliders[tsName] = tsState;
                 }
                 else
                 {
-                    debug3 << "Did not create time slider "
-                           << tsName.c_str() << endl;
+                    debug3 << "Did not create time slider \""
+                           << tsName.c_str() << "\"" << endl;
                 }
             }
         }
@@ -6909,7 +7088,7 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
         // desired time slider must be for a single time state database.
         // Since that must be the case, don't set the time slider.
         //
-        if(cL->FindCorrelation(tsName) != 0)
+        if(cL->FindCorrelation(tsName) != 0 || tsName == KF_TIME_SLIDER)
             SetActiveTimeSlider(tsName);
     }
 
@@ -7119,9 +7298,11 @@ ViewerPlotList::CanMeshPlotBeOpaque()
     bool canBeOpaque = true;
     for (i = 0; i < nPlots && canBeOpaque; ++i)
     {
-        if (!plots[i].hidden && !plots[i].plot->IsMesh())
+        if (plots[i].plot->IsInRange() && !plots[i].hidden &&
+            !plots[i].plot->IsMesh())
             canBeOpaque = false;
     }
+
     for (i = 0; i < nPlots; ++i)
         plots[i].plot->SetOpaqueMeshIsAppropriate(canBeOpaque);
 }
@@ -7140,6 +7321,7 @@ ViewerPlotList::CanMeshPlotBeOpaque()
 //  Creation:    March 25, 2004
 //
 // ****************************************************************************
+
 void
 ViewerPlotList::SetEngineKey(const EngineKey &ek)
 {

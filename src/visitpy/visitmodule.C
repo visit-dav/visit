@@ -1224,7 +1224,10 @@ visit_AnimationPreviousFrame(PyObject *self, PyObject *args)
 // Creation:   Tue Mar 2 09:01:59 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 7 13:38:40 PST 2004
+//   I changed the code to get the number of states to account for
+//   keyframe mode.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -1233,19 +1236,31 @@ visit_SetTimeSliderState(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
 
     //
-    // Get the number of states for the active time slider.
+    // Make sure that there is a time slider.
     //
     WindowInformation *wi = viewer->GetWindowInformation();
-    DatabaseCorrelationList *correlations = viewer->GetDatabaseCorrelationList();
+    if(wi->GetActiveTimeSlider() < 0)
+        VisItErrorFunc("SetTimeSliderState was called when there is no time slider.");
+
+    //
+    // Get the number of states for the active time slider.
+    //
+    int nStates = 1;
     const std::string &ts = wi->GetTimeSliders()[wi->GetActiveTimeSlider()];
-    DatabaseCorrelation *c = correlations->FindCorrelation(ts);
-    int nStates = 0;
-    if(c != 0)
-        nStates = c->GetNumStates();
+    if(viewer->GetKeyframeAttributes()->GetEnabled())
+        nStates = viewer->GetKeyframeAttributes()->GetNFrames();
+    else
+    {
+        DatabaseCorrelationList *correlations = viewer->GetDatabaseCorrelationList();
+        DatabaseCorrelation *c = correlations->FindCorrelation(ts);
+        if(c != 0)
+            nStates = c->GetNumStates();
+    }
 
     int state;
     if(!PyArg_ParseTuple(args, "i", &state))
         return NULL;
+
     if(state < 0 || state >= nStates)
     {
         fprintf(stderr, "The active time slider, %s, has states in this range:"
@@ -1381,6 +1396,9 @@ visit_GetTimeSliders(PyObject *self, PyObject *args)
 // Creation:   Tue Mar 2 09:16:26 PDT 2004
 //
 // Modifications:
+//   Brad Whitlock, Wed Apr 7 14:24:26 PST 2004
+//   I added support for getting the number of states when we're in keyframing
+//   mode.
 //
 // ****************************************************************************
 
@@ -1393,12 +1411,17 @@ visit_TimeSliderGetNStates(PyObject *self, PyObject *args)
     // Get the number of states for the active time slider.
     //
     WindowInformation *wi = viewer->GetWindowInformation();
-    DatabaseCorrelationList *correlations = viewer->GetDatabaseCorrelationList();
     const std::string &ts = wi->GetTimeSliders()[wi->GetActiveTimeSlider()];
-    DatabaseCorrelation *c = correlations->FindCorrelation(ts);
-    int nStates = 0;
-    if(c != 0)
-        nStates = c->GetNumStates();
+    int nStates = 1;
+    if(viewer->GetKeyframeAttributes()->GetEnabled() && ts == "Keyframe animation")
+        nStates = viewer->GetKeyframeAttributes()->GetNFrames();
+    else
+    {
+        DatabaseCorrelationList *correlations = viewer->GetDatabaseCorrelationList();
+        DatabaseCorrelation *c = correlations->FindCorrelation(ts);
+        if(c != 0)
+            nStates = c->GetNumStates();
+    }
 
     // Return the success value.
     return PyLong_FromLong(long(nStates));

@@ -142,6 +142,9 @@ ViewerPlotFactory::GetNPlotTypes() const
 //    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
 //    Added an engine key to map a plot to the engine used to create it.
 //
+//    Brad Whitlock, Fri Apr 2 16:06:22 PST 2004
+//    I added a couple more arguments.
+//
 // ****************************************************************************
 
 ViewerPlot *
@@ -150,7 +153,10 @@ ViewerPlotFactory::CreatePlot(const int type, const EngineKey &ek,
                               const std::string &databaseName,
                               const std::string &varName,
                               avtSILRestriction_p silr,
-                              const int plotState, const int nStates) const
+                              const int plotState,
+                              const int nStates,
+                              const int cacheIndex,
+                              const int nCacheIndices) const
 {
     //
     // Check that the type is within range and that the type has been
@@ -166,7 +172,7 @@ ViewerPlotFactory::CreatePlot(const int type, const EngineKey &ek,
     //
     return new ViewerPlot(type,
         viewerPluginInfo[type], ek, hostName, databaseName, varName, silr,
-        plotState, nStates);
+        plotState, nStates, cacheIndex, nCacheIndices);
 }
 
 // ****************************************************************************
