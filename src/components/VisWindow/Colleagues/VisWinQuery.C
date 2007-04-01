@@ -367,6 +367,9 @@ VisWinQuery::QueryIsValid(const VisualCueInfo *vqPoint, const VisualCueInfo *vqL
 //    Mark C. Miller Wed Jun  9 17:44:38 PDT 2004
 //    Modified to use VisualCueInfo arguments
 //
+//    Brad Whitlock, Tue Jun 29 10:53:44 PDT 2004
+//    Fixed so it works with MSVC++ 6.0 again.
+//
 // ****************************************************************************
 
 void 
@@ -435,7 +438,9 @@ VisWinQuery::Pick(const VisualCueInfo *vq)
     //
     //  Save this for removal later.
     //
-    PickEntry tmp = {pp,*vq};
+    PickEntry tmp;
+    tmp.pickActor = pp;
+    tmp.vqInfo = *vq;
     pickPoints.push_back(tmp);
 
 
@@ -510,6 +515,9 @@ VisWinQuery::ClearPickPoints()
 //    Mark C. Miller Wed Jun  9 17:44:38 PDT 2004
 //    Modified to use VisualCueInfo argument
 //
+//    Brad Whitlock, Tue Jun 29 10:55:15 PDT 2004
+//    I fixed the code so it builds with MSVC++ 6.0 again.
+//
 // ****************************************************************************
 
 void 
@@ -567,7 +575,9 @@ VisWinQuery::Lineout(const VisualCueInfo *vq)
     //
     //  Save this for removal later.
     //
-    LineEntry tmp = {lo,*vq};
+    LineEntry tmp;
+    tmp.lineActor = lo;
+    tmp.vqInfo = *vq;
     lineOuts.push_back(tmp);
 }
 

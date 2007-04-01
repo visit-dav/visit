@@ -616,6 +616,9 @@ avtFilter::TryDataExtents(double *outexts, const char *varname)
 //    DataExtents now restricted to only 2 components, regardless of variable
 //    dimension. 
 //
+//    Hank Childs, Tue Jun 29 07:16:23 PDT 2004
+//    Only use valid extents.
+//
 // ****************************************************************************
 
 void
@@ -629,12 +632,19 @@ avtFilter::GetDataExtents(double *outexts, const char *varname)
          return;
     }
 
+    bool hadThemAlready = false;
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
     if (varname == NULL || (atts.GetVariableName() == varname))
     {
-        atts.GetCumulativeTrueDataExtents()->CopyTo(outexts);
+        avtExtents *exts = atts.GetCumulativeTrueDataExtents();
+        if (exts->HasExtents())
+        {
+            atts.GetCumulativeTrueDataExtents()->CopyTo(outexts);
+            hadThemAlready = true;
+        }
     }
-    else
+
+    if (!hadThemAlready)
     {
         SearchDataForDataExtents(outexts);
     }

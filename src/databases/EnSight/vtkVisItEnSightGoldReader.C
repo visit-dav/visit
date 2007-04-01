@@ -287,6 +287,11 @@ int vtkVisItEnSightGoldReader::ReadMeasuredGeometryFile(char* fileName,
   return 1;
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue Jun 29 08:15:24 PDT 2004
+//   Allow for trailing whitespace after "part".
+//
 //----------------------------------------------------------------------------
 int vtkVisItEnSightGoldReader::ReadScalarsPerNode(char* fileName, char* description,
                                              int timeStep, int measured,
@@ -395,7 +400,7 @@ int vtkVisItEnSightGoldReader::ReadScalarsPerNode(char* fileName, char* descript
     }
   
   while (this->ReadNextDataLine(line) &&
-         strcmp(line, "part") == 0)
+         strncmp(line, "part", 4) == 0)
     {
     this->ReadNextDataLine(line);
     partId = atoi(line) - 1; // EnSight starts #ing with 1.
@@ -441,6 +446,11 @@ int vtkVisItEnSightGoldReader::ReadScalarsPerNode(char* fileName, char* descript
   return 1;
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue Jun 29 08:15:24 PDT 2004
+//   Allow for trailing whitespace after "part".
+//
 //----------------------------------------------------------------------------
 int vtkVisItEnSightGoldReader::ReadVectorsPerNode(char* fileName, char* description,
                                              int timeStep, int measured)
@@ -541,7 +551,7 @@ int vtkVisItEnSightGoldReader::ReadVectorsPerNode(char* fileName, char* descript
     }
   
   while (this->ReadNextDataLine(line) &&
-         strcmp(line, "part") == 0)
+         strncmp(line, "part", 4) == 0)
     {
     vectors = vtkFloatArray::New();
     this->ReadNextDataLine(line);
@@ -574,6 +584,11 @@ int vtkVisItEnSightGoldReader::ReadVectorsPerNode(char* fileName, char* descript
   return 1;
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue Jun 29 08:15:24 PDT 2004
+//   Allow for trailing whitespace after "part".
+//
 //----------------------------------------------------------------------------
 int vtkVisItEnSightGoldReader::ReadTensorsPerNode(char* fileName, char* description,
                                              int timeStep)
@@ -632,7 +647,7 @@ int vtkVisItEnSightGoldReader::ReadTensorsPerNode(char* fileName, char* descript
   this->ReadNextDataLine(line); // skip the description line
 
   while (this->ReadNextDataLine(line) &&
-         strcmp(line, "part") == 0)
+         strncmp(line, "part", 4) == 0)
     {
     tensors = vtkFloatArray::New();
     this->ReadNextDataLine(line);
@@ -661,6 +676,11 @@ int vtkVisItEnSightGoldReader::ReadTensorsPerNode(char* fileName, char* descript
   return 1;
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue Jun 29 08:15:24 PDT 2004
+//   Allow for trailing whitespace after "part".
+//
 //----------------------------------------------------------------------------
 int vtkVisItEnSightGoldReader::ReadScalarsPerElement(char* fileName,
                                                 char* description,
@@ -724,7 +744,7 @@ int vtkVisItEnSightGoldReader::ReadScalarsPerElement(char* fileName,
   this->ReadNextDataLine(line); // skip the description line
   lineRead = this->ReadNextDataLine(line); // "part"
   
-  while (lineRead && strcmp(line, "part") == 0)
+  while (lineRead && strncmp(line, "part", 4) == 0)
     {
     this->ReadNextDataLine(line);
     partId = atoi(line) - 1; // EnSight starts #ing with 1.
@@ -756,7 +776,7 @@ int vtkVisItEnSightGoldReader::ReadScalarsPerElement(char* fileName,
       }
     else 
       {
-      while (lineRead && strcmp(line, "part") != 0 &&
+      while (lineRead && strncmp(line, "part", 4) != 0 &&
              strncmp(line, "END TIME STEP", 13) != 0)
         {
         elementType = this->GetElementType(line);
@@ -804,6 +824,11 @@ int vtkVisItEnSightGoldReader::ReadScalarsPerElement(char* fileName,
   return 1;
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue Jun 29 08:15:24 PDT 2004
+//   Allow for trailing whitespace after "part".
+//
 //----------------------------------------------------------------------------
 int vtkVisItEnSightGoldReader::ReadVectorsPerElement(char* fileName,
                                                 char* description,
@@ -865,7 +890,7 @@ int vtkVisItEnSightGoldReader::ReadVectorsPerElement(char* fileName,
   this->ReadNextDataLine(line); // skip the description line
   lineRead = this->ReadNextDataLine(line); // "part"
   
-  while (lineRead && strcmp(line, "part") == 0)
+  while (lineRead && strncmp(line, "part", 4) == 0)
     {
     vectors = vtkFloatArray::New();
     this->ReadNextDataLine(line);
@@ -894,7 +919,7 @@ int vtkVisItEnSightGoldReader::ReadVectorsPerElement(char* fileName,
       }
     else 
       {
-      while (lineRead && strcmp(line, "part") != 0 &&
+      while (lineRead && strncmp(line, "part", 4) != 0 &&
              strncmp(line, "END TIME STEP", 13) != 0)
         {
         elementType = this->GetElementType(line);
@@ -935,6 +960,11 @@ int vtkVisItEnSightGoldReader::ReadVectorsPerElement(char* fileName,
   return 1;
 }
 
+// Modifications:
+//
+//   Hank Childs, Tue Jun 29 08:15:24 PDT 2004
+//   Allow for trailing whitespace after "part".
+//
 //----------------------------------------------------------------------------
 int vtkVisItEnSightGoldReader::ReadTensorsPerElement(char* fileName,
                                                 char* description,
@@ -996,7 +1026,7 @@ int vtkVisItEnSightGoldReader::ReadTensorsPerElement(char* fileName,
   this->ReadNextDataLine(line); // skip the description line
   lineRead = this->ReadNextDataLine(line); // "part"
   
-  while (lineRead && strcmp(line, "part") == 0)
+  while (lineRead && strncmp(line, "part", 4) == 0)
     {
     tensors = vtkFloatArray::New();
     this->ReadNextDataLine(line);
@@ -1025,7 +1055,7 @@ int vtkVisItEnSightGoldReader::ReadTensorsPerElement(char* fileName,
       }
     else 
       {
-      while (lineRead && strcmp(line, "part") != 0 &&
+      while (lineRead && strncmp(line, "part", 4) != 0 &&
              strncmp(line, "END TIME STEP", 13) != 0)
         {
         elementType = this->GetElementType(line);

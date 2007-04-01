@@ -41,6 +41,9 @@ using std::vector;
 //    Jeremy Meredith, Wed Nov  5 13:28:03 PST 2003
 //    Added ability to disable plugins by default.
 //
+//    Brad Whitlock, Tue Jun 29 12:01:39 PDT 2004
+//    Improved how constants are written out.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1592,7 +1595,7 @@ class AttsGeneratorAttribute
     {
         // Write the enums out as groups of static int constants.
         if(EnumType::enums.size() > 0)
-            h << "    // Constants" << endl;
+            h << "    // Enum values" << endl;
         int i;
         for (i = 0; i < EnumType::enums.size(); ++i)
         {
@@ -1607,6 +1610,8 @@ class AttsGeneratorAttribute
         //
         // Write any constants that have been specified.
         //
+        if(constants.size() > 0)
+            h << "    // Constants" << endl;
         for (i = 0; i < constants.size(); ++i)
         {
             QString def(constants[i]->def);
@@ -1627,7 +1632,31 @@ class AttsGeneratorAttribute
                     def.remove(index2+1, index-index2+1);
             }
 
-            h << "    public final static " << def << endl;
+            // Find an equals sign and then look to see if the constant
+            // value matches any of the enums' values. If so, alter the
+            // constant definition so it prints the right enum value.
+            bool noEnumMatches = true;
+            index = def.find("=");
+            if(index >= 0)
+            {
+                QString value(def.mid(index + 2, def.length() - index - 4));
+                for (int j = 0; j < EnumType::enums.size() && noEnumMatches; ++j)
+                {
+                    for (int k = 0; k < EnumType::enums[j]->values.size() && noEnumMatches; ++k)
+                    {
+                        if(EnumType::enums[j]->values[k] == value)
+                        {
+                            noEnumMatches = false;
+                            QString constName(EnumType::enums[j]->type + QString("_") + EnumType::enums[j]->values[k]);
+                            h << "    public final static " << def.left(index + 2)
+                              << constName.upper() << ";\n" << endl;
+                        }
+                    }
+                }
+            }
+
+            if(noEnumMatches)
+                h << "    public final static " << def << endl;
         }
 
         if (EnumType::enums.size() || constants.size())

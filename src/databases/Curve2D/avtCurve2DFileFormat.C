@@ -362,6 +362,9 @@ avtCurve2DFileFormat::ReadFile(void)
 //    and is not really necessary for us.  Also treat parenthesis as square
 //    brackets, since parenthesis are special for us.
 //
+//    Brad Whitlock, Tue Jun 29 11:50:41 PDT 2004
+//    Fixed for Windows compiler.
+//
 // ****************************************************************************
 
 CurveToken
@@ -374,8 +377,8 @@ avtCurve2DFileFormat::GetPoint(ifstream &ifile, float &x, float &y, string &ln)
     // Parenthesis are special characters for variables names, etc, so just
     // change them to square brackets to "go with the flow"...
     //
-    int nchars = strlen(line);
-    for (int i = 0 ; i < nchars ; i++)
+    int i, nchars = strlen(line);
+    for (i = 0 ; i < nchars ; i++)
     {
         if (line[i] == '(')
             line[i] = '<';
@@ -393,7 +396,7 @@ avtCurve2DFileFormat::GetPoint(ifstream &ifile, float &x, float &y, string &ln)
     }
     bool allSpace = true;
     int len = strlen(line);
-    for (int i = 0 ; i < len ; i++)
+    for (i = 0 ; i < len ; i++)
     {
         if (!isspace(line[i]))
         {

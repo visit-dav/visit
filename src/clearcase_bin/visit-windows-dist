@@ -36,6 +36,9 @@
 #   Brad Whitlock, Thu May 27 14:26:41 PST 2004
 #   Changed to account for the new location of winutil.
 #
+#   Brad Whitlock, Tue Jun 29 10:12:12 PDT 2004
+#   I made the Windows version get its own config files.
+#
 #------------------------------------------------------------------------------
 
 if(`pwd` != "/data_vobs/VisIt") then
@@ -181,8 +184,8 @@ foreach configdir (Debug Release)
     # Copy the makemovie script to the right bin dir.
     cp $VISITSRC/bin/makemovie.py bin/$configdir
     # Copy the host config files to the right bin dir.
-    $SCRIPTDIR/converttextfile $SCRIPTDIR/visit-config-open   bin/$configdir/visit-config-open.ini
-    $SCRIPTDIR/converttextfile $SCRIPTDIR/visit-config-closed bin/$configdir/visit-config-closed.ini
+    $SCRIPTDIR/converttextfile $SCRIPTDIR/visit-config-open.ini   bin/$configdir/visit-config-open.ini
+    $SCRIPTDIR/converttextfile $SCRIPTDIR/visit-config-closed.ini bin/$configdir/visit-config-closed.ini
     mkdir bin/$configdir/help
     cp $VISITSRC/help/*.{html,helpml} bin/$configdir/help
     mkdir bin/$configdir/databases
