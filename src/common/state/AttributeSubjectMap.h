@@ -23,6 +23,9 @@ class DataNode;
 //   Brad Whitlock, Tue Dec 30 17:04:12 PST 2003
 //   I added a copy constructor and an assignment operator.
 //
+//   Mark C. Miller, Thu Mar 25 10:45:18 PST 2004
+//   Added method, SetAttsLe
+//
 // ****************************************************************************
  
 class STATE_API AttributeSubjectMap
@@ -37,6 +40,7 @@ public:
     void SetAtts(const AttributeSubject *);
     void SetAtts(const int, const AttributeSubject *);
     void SetAtts(const int, const AttributeSubject *, int &, int &);
+    void SetAttsLe(const int, const AttributeSubject *);
     void GetAtts(const int, AttributeSubject *) const;
     void ClearAtts();
     bool DeleteAtts(const int, int &, int &);

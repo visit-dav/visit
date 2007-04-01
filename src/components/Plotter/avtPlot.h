@@ -127,6 +127,9 @@ class     AttributeSubject;
 //
 //    Kathleen Bonnell, Wed Aug 27 15:45:45 PDT 2003
 //    Added SetOpaqueMeshIsAppropriate. 
+//
+//    Mark C. Miller, Wed Mar 24 19:23:21 PST 2004
+//    Added AttributesDependOnDatabaseMetaData
 //    
 // ****************************************************************************
 
@@ -157,6 +160,9 @@ class PLOTTER_API avtPlot
     void                       SetVarName(const char *name);
 
     bool                       NeedsRecalculation(void);
+
+    virtual bool               AttributesDependOnDatabaseMetaData(void)
+                                   { return false; };
 
     virtual bool               SetColorTable(const char *ctName);
     void                       SetCurrentSILRestriction(avtSILRestriction_p);

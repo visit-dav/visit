@@ -53,6 +53,9 @@ class     avtSmoothPolyDataFilter;
 //    Kathleen Bonnell, Thu Dec 19 12:27:09 PST 2002 
 //    Added the SortLabels method.
 //
+//    Mark C. Miller, Wed Mar 24 19:23:21 PST 2004
+//    Added AttributesDependOnDatabaseMetaData
+//
 // ****************************************************************************
 
 class
@@ -66,9 +69,13 @@ avtSubsetPlot : public avtVolumeDataPlot
 
     virtual const char       *GetName(void) { return "SubsetPlot"; };
 
+
     virtual void              SetAtts(const AttributeGroup*);
     virtual void              ReleaseData(void);
     virtual bool              SetColorTable(const char *ctName);
+
+    virtual bool              AttributesDependOnDatabaseMetaData(void)
+                                  { return true; };
 
     void                      SetLegend(bool);
     void                      SetLineWidth(int);

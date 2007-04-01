@@ -1,0 +1,262 @@
+#!/bin/sh
+
+# ----------------------------------------------------------------------------
+#       Rebuild VisIt, run the VisIt regression test, and post the results.
+#
+#  Programmer: Jeremy Meredith
+#  Date:       April 18, 2002
+#
+#  Modifications:
+#    Jeremy Meredith, Thu Aug 29 15:16:06 PDT 2002
+#    I added code to email the nightly log to a list of interested users.
+#    I disabled to code to email offending users when something breaks 
+#    and instead send the results to only the log recipients.
+#    When VTK ofscreen rendering stabilizes, email to all offending users
+#    should be enabled again.
+#
+#    Jeremy Meredith, Fri Nov 15 12:58:50 PST 2002
+#    Turned back on the email notification, and reorganized the email code.
+#
+#    Jeremy Meredith, Tue May  6 13:36:04 PDT 2003
+#    Added a link to the new web location into the message.
+#
+#    Mark C. Miller, Thu Jan  8 17:10:01 PST 2004 
+#    Added path to mpich/bin
+#    Added code to run test in multiple modes
+#
+#    Mark C. Miller, Thu Jan 15 16:43:27 PST 2004 
+#    Added time limit argument of 1800 seconds to runtest
+#
+#    Mark C. Miller, Mon Jan 19 16:24:16 PST 2004
+#    Changed time limit argument to 30 minutes
+#
+#    Mark C. Miller, Tue Jan 20 14:23:19 PST 2004
+#    Modified email message generation to loop over all modes
+#    tested for summary/log catenation. Modified mail message to
+#    log recipients to include information on skipped tests
+#
+#    Mark C. Miller, Mon Feb  9 20:36:34 PST 2004
+#    Modified skipList
+#
+#    Mark C. Miller, Sat Feb 21 18:44:01 PST 2004
+#    Added scalable mode and entries to skipList
+#
+#    Mark C. Miller, Tue Feb 24 12:44:12 PST 2004
+#    Changed scalable mode to 'scalable,parallel'
+#
+#    Hank Childs, Fri Mar 19 21:58:15 PST 2004
+#    Re-enabled database.py and viewChange.py for "scalable,paralle", since
+#    they now pass.
+#
+#    Jeremy Meredith, Tue Mar 23 12:49:45 PST 2004
+#    Added the new test multi_format2.py to the parallel skip list since
+#    it forces an engine restart.
+#
+# ----------------------------------------------------------------------------
+
+# list of users who want email every night with the log file
+logrecipients="meredith childs"
+
+# list of modes to run the test in
+testmodes="serial parallel"
+
+# build error message
+msghdr_build="From: visit@llnl.gov\n\
+Subject: failed nightly build\n\
+\n\
+This is an automated error message: \n\
+\n\
+There were errors building VisIt bugline during an automatic run.\n"
+
+msgftr_build="\n\n------ build log follows ------\n\n"
+
+
+# regression error message
+msghdr_testfailed="From: visit@llnl.gov\n\
+Subject: failed regression test\n\
+\n\
+Results posted at https://dnt-cs.llnl.gov/~visit/\
+\n\
+This is an automated error message: \n\
+\n\
+The VisIt regression test failed during an automatic run\n"
+
+msghdr_testpassed="From: visit@llnl.gov\n\
+Subject: passed regression test\n\
+\n\
+Results posted at https://dnt-cs.llnl.gov/~visit/\
+\n\
+This is an automated message: \n\
+\n\
+The VisIt regression test passed the automatic run\n"
+
+msghdr_partialpass="From: visit@llnl.gov\n\
+Subject: partially passed regression test\n\
+\n\
+Results posted at https://dnt-cs.llnl.gov/~visit/\
+\n\
+This is an automated message: \n\
+\n\
+The VisIt regression test passed the automatic run\n\
+but skipped the following cases"
+
+msgftr_testsum="\n\n------ test summary follows ------\n\n"
+msgftr_testlog="\n\n------ full log follows ------\n\n"
+
+
+# list of offending users
+users=""
+
+if test -f "/home/visit/public_html/modifiers"; then
+    users=`cat /home/visit/public_html/modifiers | sort | uniq`
+    msg_userlist="\nThe complete list of users who have modified VisIt is:\n"$users
+    msg_yourfault="\nYour name is on the list of users who have locked the bugline\n""since the last time the regression suite was run.\n"
+else
+    users="visit"
+    msg_userlist="\nNo one is listed as having modified VisIt.\n"
+    msg_yourfault=""
+fi
+
+# set up the environment
+umask 002
+DISPLAY=elysium:0
+export DISPLAY
+PATH=/home/visit/bin:/data_vobs/VisIt/clearcase_bin:/home/visit/clearcase_bin:/usr/atria/bin:/usr/security/bin:/sbin:/usr/sbin:/usr/bsd:/usr/bin:/usr/local/bin:/bin:/etc:/usr/bin/X11:/usr/local/X11:/usr/etc:/usr/lib:/usr/atria/bin:/usr/ccs/bin:/usr/SUNWspro/bin:/usr/gapps/mpich/1.2.4/SunOS/serial/default/debug/bin:.
+export PATH
+
+# rebuild visit
+cleartool startview visit_VOBowner_test  1> /dev/null 2>&1
+cd /view/visit_VOBowner_test/data_vobs/VisIt 
+rm -f config.cache
+rm -f buildlog
+echo "LD_LIBRARY_PATH = $LD_LIBRARY_PATH" 1> buildlog 2>&1
+echo "Forcing LD_LIBRARY_PATH to /usr/local/lib" 1> buildlog 2>&1
+LD_LIBRARY_PATH=/usr/local/lib
+export LD_LIBRARY_PATH
+env CXXFLAGS="-g" ./configure --enable-parallel 1>> buildlog 2>&1
+rm -f plugins/*/*.so
+clearmake  1>> buildlog 2>&1
+error=$?
+
+# email if the build failed
+if test ! "$error" = "0"; then
+    # email the users
+    rm -f mailmsg
+    echo $msghdr_build  >> mailmsg
+    echo $msg_yourfault >> mailmsg
+    echo $msg_userlist  >> mailmsg
+    echo $msgftr_build  >> mailmsg
+    cat buildlog        >> mailmsg
+    for user in $users; do
+        sendregressionmail $user mailmsg
+    done
+
+    # email the log recipients
+    rm -f mailmsg
+    echo $msghdr_build  >> mailmsg
+    echo $msg_userlist  >> mailmsg
+    echo $msgftr_build  >> mailmsg
+    cat buildlog        >> mailmsg
+    for user in $logrecipients; do
+        sendregressionmail $user mailmsg
+    done
+
+    rm -f mailmsg
+    exit
+fi
+
+# make sure all needed data files exist
+cd data
+make test 1> /dev/null 2>&1
+#          (we should probably check for errors here)
+cd ..
+
+# set the datestamp used for all test modes
+curdate=`date +%Y-%m-%d-%p%I%M`
+
+# set mode to run in
+#modes="serial parallel scalable"
+modes="serial parallel scalable,parallel"
+
+# set list of tests/modes to skip
+skipList="parallel:tests/databases/samrai.py \
+          parallel:tests/hybrid/sil.py \
+          parallel:tests/rendering/volume.py \
+          parallel,parallel:tests/databases/multi_format2.py \
+          scalable,parallel:tests/hybrid/gradient.py \
+          scalable,parallel:tests/hybrid/lineout.py \
+          scalable,parallel:tests/operators/operators.py \
+          scalable,parallel:tests/rendering/volume.py" 
+
+# run the test(s)
+error=0
+cd test
+for m in $modes; do
+   ./runtest -q -p -s "$skipList" -m "$m" -d "$curdate"
+   curerror=$?
+   if test ! "$curerror" = "0"; then
+      error=1
+   fi
+done
+
+# restart the list of modifiers
+if test -f "/home/visit/public_html/modifiers"; then
+    mv /home/visit/public_html/modifiers /home/visit/public_html/current
+fi
+
+# email if the run showed differences or crashed
+if test ! "$error" = "0"; then
+    # email the users
+    rm -f mailmsg
+    echo $msghdr_testfailed   >> mailmsg
+    echo $msg_yourfault       >> mailmsg
+    echo $msg_userlist        >> mailmsg
+    echo $msgftr_testsum      >> mailmsg
+    for m in $modes; do
+        modesdir=`echo $m | sed s/,/_/`
+        echo "Summary of results for $m" >> mailmsg
+        cat /home/visit/public_html/current/$modesdir/summary >> mailmsg
+    done
+    for user in $users; do
+        sendregressionmail $user mailmsg
+    done
+    rm -f mailmsg
+fi
+
+# always email summary to interested users
+if true; then
+    rm -f mailmsg
+    if test ! "$error" = "0"; then
+        echo $msghdr_testfailed >> mailmsg
+        echo $msg_userlist      >> mailmsg
+        echo $msgftr_testsum   >> mailmsg
+        for m in $modes; do
+            modesdir=`echo $m | sed s/,/_/`
+            echo "Summary of results for $m" >> mailmsg
+            cat /home/visit/public_html/current/$modesdir/summary >> mailmsg
+            echo $msgftr_testlog   >> mailmsg
+            cat /home/visit/public_html/current/$modesdir/log     >> mailmsg
+        done
+    else
+        if test "$skipList" = ""; then
+            echo $msghdr_testpassed >> mailmsg
+        else
+            echo $msghdr_partialpass >> mailmsg
+            for s in $skipList; do
+                echo "   $s" >> mailmsg
+            done
+        fi
+        echo $msgftr_testsum   >> mailmsg
+        for m in $modes; do
+            modesdir=`echo $m | sed s/,/_/`
+            echo "Summary of results for $m" >> mailmsg
+            cat /home/visit/public_html/current/$modesdir/summary >> mailmsg
+        done
+    fi
+    for user in $logrecipients; do
+        sendregressionmail $user mailmsg
+    done
+    rm -f mailmsg
+fi
+
+exit

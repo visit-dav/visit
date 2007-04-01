@@ -224,6 +224,10 @@ avtDataAttributes::DestructSelf(void)
 //  Programmer: Hank Childs
 //  Creation:   February 25, 2004
 //
+//  Modifications:
+//    Brad Whitlock, Wed Mar 24 09:18:39 PDT 2004
+//    Fixed for Windows compiler.
+//
 // ****************************************************************************
 
 void
@@ -296,20 +300,20 @@ avtDataAttributes::Print(ostream &out)
         out << "The labels are: ";
         for (int i = 0 ; i < labels.size() ; i++)
         {
-            out << labels[i];
+            out << labels[i].c_str();
             if (i < labels.size()-1)
                out << ", ";
         }
         out << endl;
     }
 
-    out << "The filename is " << filename << endl;
-    out << "The X-units are " << xUnits << endl;
-    out << "The Y-units are " << yUnits << endl;
-    out << "The Z-units are " << zUnits << endl;
-    out << "The X-labels are " << xLabel << endl;
-    out << "The Y-labels are " << yLabel << endl;
-    out << "The Z-labels are " << zLabel << endl;
+    out << "The filename is " << filename.c_str() << endl;
+    out << "The X-units are " << xUnits.c_str() << endl;
+    out << "The Y-units are " << yUnits.c_str() << endl;
+    out << "The Z-units are " << zUnits.c_str() << endl;
+    out << "The X-labels are " << xLabel.c_str() << endl;
+    out << "The Y-labels are " << yLabel.c_str() << endl;
+    out << "The Z-labels are " << zLabel.c_str() << endl;
 
     if (trueSpatial != NULL)
     {
@@ -339,7 +343,7 @@ avtDataAttributes::Print(ostream &out)
 
     for (int i = 0 ; i < variables.size() ; i++)
     {
-        out << "Variable = " << variables[i].varname << endl;
+        out << "Variable = " << variables[i].varname.c_str() << endl;
         out << "Dimension = " << variables[i].dimension << endl;
         switch (variables[i].centering)
         {

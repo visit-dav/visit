@@ -2064,6 +2064,9 @@ ViewerPlot::GetReader(const int frame) const
 //    Added code to check newsilr for NULL and throw exception instead of
 //    possibly hitting a SEGV
 //
+//    Mark C. Miller, Wed Mar 24 19:02:35 PST 2004
+//    Moved declaration for 'invariantMetaData' outside of TRY block
+//
 // ****************************************************************************
 
 // only place in ViewerPlot where ViewerWindowManager is needed
@@ -2078,12 +2081,14 @@ ViewerPlot::CreateActor(const int frame, bool createNew,
     std::vector<bool> oldAble;
     ViewerWindowManager::Instance()->DisableExternalRenderRequestsAllWindows(oldAble);
 
+    bool invariantMetaData = true;
+
     // Get a data reader.
     TRY
     {
         ViewerFileServer *server = ViewerFileServer::Instance();
-        bool invariantMetaData = server->MetaDataIsInvariant(GetHostName(),
-                                                            GetDatabaseName());
+        invariantMetaData = server->MetaDataIsInvariant(GetHostName(),
+                                                        GetDatabaseName());
 
         // The following code is necessary to support time-varying SILs
         if (!invariantMetaData)
@@ -2192,6 +2197,27 @@ ViewerPlot::CreateActor(const int frame, bool createNew,
 
     plotList[frame-frame0] = viewerPluginInfo->AllocAvtPlot();
     plotAtts->GetAtts(frame - frame0, curPlotAtts);
+
+    if (!invariantMetaData)
+    {
+        if (viewerPlotList == NULL)
+            EXCEPTION0(ImproperUseException);
+
+        if (!viewerPlotList->GetKeyframeMode())
+        {
+            if (plotList[frame-frame0]->AttributesDependOnDatabaseMetaData())
+            {
+                viewerPluginInfo->ReInitializePlotAtts(curPlotAtts, hostName,
+                    databaseName, variableName);
+                viewerPluginInfo->SetClientAtts(curPlotAtts);
+
+                // ok, now set the plotAtts map, being careful not to introduce
+                // new keyframes in the process. So, we use the 'Le' method
+                plotAtts->SetAttsLe(frame - frame0, curPlotAtts);
+            }
+        }
+    }
+
     plotList[frame-frame0]->SetAtts(curPlotAtts);
     plotList[frame-frame0]->SetVarName(variableName);
     plotList[frame-frame0]->SetBackgroundColor(bgColor);
@@ -2706,6 +2732,7 @@ ViewerPlot::SetPlotAttsFromClient(int frame)
         return;
  
     viewerPluginInfo->GetClientAtts(curPlotAtts);
+    cerr << "Calling SetPlotAtts for frame " << frame << endl;
     SetPlotAtts(frame, curPlotAtts);
 }
 
