@@ -1485,6 +1485,10 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
 //    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
 //    Added code to pass annotation object list to SetWinAnnotAtts
 //
+//    Mark C. Miller, Tue Jun  8 14:43:36 PDT 2004
+//    Added code to get window id directly from plot object instead of
+//    active window
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1548,9 +1552,9 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
         if (success)
             success = plot->ExecuteEngineRPC();
 
-        // MCM_FIX_ME
+        int windowId = plot->GetWindowId();
         ViewerWindowManager *vwm = ViewerWindowManager::Instance();
-        ViewerWindow *w = vwm->GetActiveWindow();
+        ViewerWindow *w = vwm->GetWindow(windowId);
         bool replyWithNullData = w->GetScalableRendering();
         if (w->IsChangingScalableRenderingMode(false))
         {

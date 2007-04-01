@@ -204,6 +204,9 @@ avtPickActor::Remove()
 //    Kathleen Bonnell, Fri Jun 27 16:57:45 PDT 2003 
 //    Change glyph's position in 3d.
 //
+//    Kathleen Bonnell, Tue Jun  8 17:42:59 PDT 2004 
+//    For 2d, use correct vec components. 
+//
 // ****************************************************************************
 
 void 
@@ -226,8 +229,8 @@ avtPickActor::Shift(const float vec[3])
     else
     {
         shiftFactor = 10.;    // completely arbitrary shift factor!!!
-        newPos[0] = attach[0] + vec[2] *shiftFactor;
-        newPos[1] = attach[1] + vec[2] *shiftFactor;
+        newPos[0] = attach[0] + vec[0] *shiftFactor;
+        newPos[1] = attach[1] + vec[1] *shiftFactor;
         newPos[2] = attach[2];
     }
     lineSource->SetPoint2(newPos[0], newPos[1], newPos[2]);
@@ -474,6 +477,9 @@ avtPickActor::UpdateView()
 //    Kathleen Bonnell, Fri Feb 20 12:34:39 PST 2004 
 //    Handle 3D lineSource's Pt1 differently than 2D. 
 //
+//    Kathleen Bonnell, Fri Feb 20 12:34:39 PST 2004 
+//    Handle 2D glyphActor's position differently than 3D. 
+//
 // ****************************************************************************
 
 void 
@@ -504,9 +510,18 @@ avtPickActor::Translate(const float vec[3])
     newPos[2] *= vec[2];
 
     newPos = glyphActor->GetPosition();
-    newPos[0] *= vec[0];
-    newPos[1] *= vec[1]; 
-    newPos[2] *= vec[2];
+    if (mode3D)
+    {
+        newPos[0] *= vec[0];
+        newPos[1] *= vec[1]; 
+        newPos[2] *= vec[2];
+    }
+    else
+    {
+        newPos[0] = attach[0] * vec[0];
+        newPos[1] = attach[1] * vec[1]; 
+        newPos[2] = attach[2] * vec[2];
+    }
 
     lineSource->Modified();
 }
@@ -537,4 +552,23 @@ avtPickActor::ResetPosition(const float vec[3])
     letterActor->SetPosition(attach[0], attach[1], attach[2]);
     glyphActor->SetPosition(attach[0], attach[1], attach[2]);
     Shift(vec);
+}
+
+// ****************************************************************************
+//  Method:  avtPickActor::GetLetterPosition
+//
+//  Purpose:   Retrieve the position of the letterActor. 
+//             Useful for determining scale factor.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    June 8, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+const float * 
+avtPickActor::GetLetterPosition()
+{
+    return letterActor->GetPosition();
 }

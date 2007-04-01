@@ -7693,3 +7693,16 @@ ViewerPlotList::GetNumberOfCells(bool polysOnly) const
     }
     return sum;
 }
+
+// ****************************************************************************
+//  Method:  ViewerPlotList::GetWindowId
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    June 8, 2004 
+//
+// ****************************************************************************
+int
+ViewerPlotList::GetWindowId() const
+{
+    return window->GetWindowId();
+}

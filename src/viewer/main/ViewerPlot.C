@@ -33,6 +33,7 @@
 #include <ViewerOperatorFactory.h>
 #include <ViewerPlotList.h>
 #include <ViewerSubject.h>
+#include <ViewerWindowManager.h>
 
 #include <DebugStream.h>
 #include <DataNode.h>
@@ -2474,9 +2475,6 @@ ViewerPlot::GetReader() const
 //
 // ****************************************************************************
 
-// only place in ViewerPlot where ViewerWindowManager is needed
-#include <ViewerWindowManager.h>
-
 void
 ViewerPlot::CreateActor(bool createNew,
                         bool turningOffScalableRendering,
@@ -4389,3 +4387,21 @@ ViewerPlot::UpdateDataExtents()
     plotList[cacheIndex]->GetDataExtents(dataExtents);
 }
 
+// ****************************************************************************
+//  Method: ViewerPlot::GetWindowId
+//
+//  Purpose: Return the window Id for this plot
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   June 8, 2004
+//
+// ****************************************************************************
+
+int
+ViewerPlot::GetWindowId() const
+{
+    if (viewerPlotList == NULL)
+        EXCEPTION0(ImproperUseException);
+
+    return viewerPlotList->GetWindowId();
+}

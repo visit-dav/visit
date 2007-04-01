@@ -196,6 +196,10 @@ VisWinQuery::SetForegroundColor(float fr, float fg, float fb)
 //    Kathleen Bonnell, Fri Feb 20 12:37:26 PST 2004 
 //    Shift and translate pickPoints (in 2D or Curve mode). 
 //
+//    Kathleen Bonnell, Tue Jun  8 17:42:59 PDT 2004 
+//    For picks, use LetterPosition instead of AttachmentPoint to determine
+//    scale.
+//
 // ****************************************************************************
 
 void
@@ -219,7 +223,7 @@ VisWinQuery::UpdateView()
 
         for (it = pickPoints.begin() ; it != pickPoints.end() ; it++)
         {
-            const float *pos = (*it)->GetAttachmentPoint();
+            const float *pos = (*it)->GetLetterPosition();
             (*it)->SetScale(mediator.ComputeVectorTextScaleFactor(pos));
             if (mediator.GetMode() != WINMODE_3D)
             {
@@ -380,7 +384,7 @@ VisWinQuery::Pick(const PickAttributes *pa)
 
     float shiftVec[3];
     CreateShiftVector(shiftVec, distance);
-  
+
     if (mediator.GetFullFrameMode())
     {
         double scale;
@@ -859,6 +863,10 @@ VisWinQuery::CreateTranslationVector(const double s, const int t, float vec[3])
 //  Programmer: Kathleen Bonnell
 //  Creation:   February 20, 2004 
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Jun  8 17:42:59 PDT 2004
+//    Handle FullFrame mode differently than non-FullFrame.
+//
 // ****************************************************************************
 
 void
@@ -875,9 +883,18 @@ VisWinQuery::CreateShiftVector(float vec[3], const float distance)
     }
     else 
     {
-        vec[0] = 0;
-        vec[1] = 0;
-        vec[2] = distance;
+        if (mediator.GetFullFrameMode())
+        {
+            vec[0] = 0;
+            vec[1] = distance;
+            vec[2] = 0;
+        }
+        else
+        {
+            vec[0] = distance;
+            vec[1] = distance;
+            vec[2] = 0;
+        }
     }
 }
 
