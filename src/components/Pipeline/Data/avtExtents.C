@@ -109,6 +109,10 @@ avtExtents::Print(ostream &out)
 //  Programmer: Hank Childs
 //  Creation:   September 4, 2001
 //
+//  Modifications:
+//    Mark C. Miller, Mon Mar 21 11:16:10 PST 2005
+//    Added missing line to set deleted extents to NULL. Other code in this
+//    class depends on it being null whenever it is NOT allocated.
 // ****************************************************************************
 
 const avtExtents &
@@ -117,6 +121,7 @@ avtExtents::operator=(const avtExtents &exts)
     if (extents != NULL)
     {
         delete [] extents;
+        extents = NULL;
     }
 
     dimension = exts.dimension;
