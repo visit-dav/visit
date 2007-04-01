@@ -88,6 +88,9 @@
 #    modern equivalents of the old visit script.  Added the ability to
 #    launch tools without passing them as an argument to the visit script.
 #
+#    Jeremy Meredith, Mon Apr 18 09:27:00 PDT 2005
+#    Renamed convert to visitconvert.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -382,7 +385,7 @@ endif
 #
 # Make the symbolic links for the programs
 #
-set programs = "convert curv3dprep makemili mpeg_encode silex surfcomp text2polys time_annotation visit xml2atts xml2avt xml2info xml2java xml2makefile xml2projectfile xml2python xml2window xmledit xmltest"
+set programs = "curv3dprep makemili mpeg_encode silex surfcomp text2polys time_annotation visit visitconvert xml2atts xml2avt xml2info xml2java xml2makefile xml2projectfile xml2python xml2window xmledit xmltest"
 
 cd $dir/bin
 foreach prog ($programs)
