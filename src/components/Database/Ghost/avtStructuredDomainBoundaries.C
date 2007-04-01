@@ -7,9 +7,11 @@
 #include <vtkCellData.h>
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
+#include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 
+#include <avtGhostData.h>
 #include <avtMaterial.h>
 #include <avtMixedVariable.h>
 
@@ -2376,6 +2378,105 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>        domainNum,
     }
  
     return out;
+}
+
+// ****************************************************************************
+//  Method: avtStructuredDomainBoundaries::CreateGhostNodes
+//
+//  Purpose:
+//      Creates ghost nodes.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 14, 2004
+//
+// ****************************************************************************
+
+void
+avtStructuredDomainBoundaries::CreateGhostNodes(vector<int>         domainNum,
+                                                vector<vtkDataSet*> meshes)
+{
+    vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
+    CreateCurrentDomainBoundaryInformation(domain2proc);
+
+    for (int i = 0 ; i < domainNum.size() ; i++)
+    {
+        int dom = domainNum[i];
+        Boundary *bi = &boundary[dom];
+
+        vtkDataSet *ds = meshes[i];
+        int npts = ds->GetNumberOfPoints();
+
+        vtkUnsignedCharArray *gn = vtkUnsignedCharArray::New();
+        gn->SetNumberOfTuples(npts);
+        gn->SetName("vtkGhostNodes");
+        unsigned char *gnp = gn->GetPointer(0);
+   
+        for (int j = 0 ; j < npts ; j++)
+            gnp[j] = 0;
+
+        int dims[3];
+        dims[0] = bi->oldnextents[1] - bi->oldnextents[0] + 1;
+        dims[1] = bi->oldnextents[3] - bi->oldnextents[2] + 1;
+        dims[2] = bi->oldnextents[5] - bi->oldnextents[4] + 1;
+
+        if (bi->newnextents[0] < bi->oldnextents[0])
+        {
+            for (int k = 0 ; k < dims[2] ; k++)
+                for (int j = 0 ; j < dims[1] ; j++)
+                {
+                    int idx = 0 + j*dims[0] + k*dims[0]*dims[1];
+                    avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+                }
+        }
+        if (bi->newnextents[1] > bi->oldnextents[1])
+        {
+            for (int k = 0 ; k < dims[2] ; k++)
+                for (int j = 0 ; j < dims[1] ; j++)
+                {
+                    int idx = dims[0]-1 + j*dims[0] + k*dims[0]*dims[1];
+                    avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+                }
+        }
+        if (bi->newnextents[2] < bi->oldnextents[2])
+        {
+            for (int k = 0 ; k < dims[2] ; k++)
+                    for (int i = 0 ; i < dims[0] ; i++)
+                {
+                    int idx = i + 0*dims[0] + k*dims[0]*dims[1];
+                    avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+                }
+        }
+        if (bi->newnextents[3] > bi->oldnextents[3])
+        {
+            for (int k = 0 ; k < dims[2] ; k++)
+                for (int i = 0 ; i < dims[0] ; i++)
+                {
+                    int idx = i + (dims[1]-1)*dims[0] + k*dims[0]*dims[1];
+                    avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+                }
+        }
+        if (bi->newnextents[4] < bi->oldnextents[4])
+        {
+            for (int j = 0 ; j < dims[1] ; j++)
+                for (int i = 0 ; i < dims[0] ; i++)
+                {
+                        int idx = i + j*dims[0] + 0*dims[0]*dims[1];
+                    avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+                }
+        }
+        if (bi->newnextents[5] > bi->oldnextents[5])
+        {
+                for (int j = 0 ; j < dims[1] ; j++)
+                for (int i = 0 ; i < dims[0] ; i++)
+                {
+                    int idx = i + j*dims[0] + (dims[2]-1)*dims[0]*dims[1];
+                    avtGhostData::AddGhostNodeType(gnp[idx], DUPLICATED_NODE);
+                }
+        }
+    
+        ds->GetPointData()->AddArray(gn);
+        gn->Delete();
+    }
 }
 
 // ****************************************************************************

@@ -19,6 +19,7 @@
 
 struct    avtDatasetCollection;
 struct    avtMatSpeciesMetaData;
+class     avtDomainBoundaries;
 class     avtFileFormatInterface;
 class     avtMixedVariable;
 class     avtSILRestrictionTraverser;
@@ -190,6 +191,9 @@ class     PickVarInfo;
 //    Mark C. Miller, Mon Aug  9 19:12:24 PDT 2004
 //    Added methods to get global node and zone ids
 //
+//    Hank Childs, Fri Aug 13 15:57:29 PDT 2004
+//    Beef up ghost data communication routines.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -290,9 +294,37 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     void                       ReadDataset(avtDatasetCollection &, 
                                   std::vector<int> &, avtDataSpecification_p &,
                                   avtSourceFromDatabase *);
-    bool                       CommunicateGhosts(avtDatasetCollection &,
-                                  std::vector<int> &, avtDataSpecification_p &,
-                                  avtSourceFromDatabase *);
+
+    avtDomainBoundaries       *GetDomainBoundaryInformation(
+                                                       avtDatasetCollection &,
+                                                       std::vector<int> &,
+                                                       avtDataSpecification_p);
+    bool                       CommunicateGhosts(avtGhostDataType,
+                                    avtDatasetCollection &, std::vector<int> &, 
+                                    avtDataSpecification_p &,
+                                    avtSourceFromDatabase *);
+    bool                       CommunicateGhostZonesFromDomainBoundaries(
+                                    avtDomainBoundaries *,
+                                    avtDatasetCollection &, std::vector<int> &,
+                                    avtDataSpecification_p &,
+                                    avtSourceFromDatabase *);
+    bool                     CommunicateGhostZonesFromDomainBoundariesFromFile(
+                                    avtDatasetCollection &, std::vector<int> &,
+                                    avtDataSpecification_p &,
+                                    avtSourceFromDatabase *);
+    bool                     CommunicateGhostNodesFromDomainBoundariesFromFile(
+                                    avtDatasetCollection &, std::vector<int> &,
+                                    avtDataSpecification_p &,
+                                    avtSourceFromDatabase *);
+    bool                       CommunicateGhostZonesFromGlobalNodeIds(
+                                    avtDatasetCollection &, std::vector<int> &,
+                                    avtDataSpecification_p &,
+                                    avtSourceFromDatabase *);
+    bool                       CommunicateGhostNodesFromGlobalNodeIds(
+                                    avtDatasetCollection &, std::vector<int> &,
+                                    avtDataSpecification_p &,
+                                    avtSourceFromDatabase *);
+
     bool                       ApplyGhostForDomainNesting(avtDatasetCollection &,
                                   std::vector<int> &, std::vector<int> &,
                                   avtDataSpecification_p &);

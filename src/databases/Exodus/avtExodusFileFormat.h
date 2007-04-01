@@ -75,7 +75,7 @@ class avtExodusFileFormat : public avtMTSDFileFormat
     std::vector<int>            blockId;
     std::vector<std::string>    pointVars;
     std::vector<std::string>    cellVars;
-    avtVariableCache           *cache;
+    avtVariableCache           *exodusCache;
     bool                        readInFile;
     int                         fileList;
 

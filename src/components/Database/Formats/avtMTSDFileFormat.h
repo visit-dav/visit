@@ -52,6 +52,9 @@ class     avtIOInformation;
 //    Mark C. Miller, Tue Mar 16 14:28:42 PST 2004
 //    Added method, PopulateIOInformation
 //
+//    Hank Childs, Mon Aug 16 16:22:56 PDT 2004
+//    Allow for the domain to be set.
+//
 // ****************************************************************************
 
 class DATABASE_API avtMTSDFileFormat : public avtFileFormat
@@ -63,6 +66,8 @@ class DATABASE_API avtMTSDFileFormat : public avtFileFormat
     virtual void          *GetAuxiliaryData(const char *var, int,
                                             const char *type, void *args,
                                             DestructorFunction &);
+
+    void                   SetDomain(int d) { myDomain = d; };
 
     virtual void           GetCycles(std::vector<int> &);
     virtual void           GetTimes(std::vector<double> &);
@@ -81,6 +86,7 @@ class DATABASE_API avtMTSDFileFormat : public avtFileFormat
   protected:
     char                 **filenames;
     int                    nFiles;
+    int                    myDomain;
 
     int                    AddFile(const char *);
     static const int       MAX_FILES;

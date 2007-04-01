@@ -161,6 +161,9 @@ class BoundaryHelperFunctions
 //    indicate this condition rather than sub-classing because the class
 //    hierarchy is more involved than was worth it.
 //
+//    Hank Childs, Sat Aug 14 06:41:00 PDT 2004
+//    Added CreateGhostNodes.
+//
 // ****************************************************************************
 
 class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
@@ -199,6 +202,9 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     virtual vector<avtMixedVariable*> ExchangeMixVar(vector<int>     domainNum,
                                         const vector<avtMaterial*>   mats,
                                         vector<avtMixedVariable*>    mixvars);
+
+    virtual void                      CreateGhostNodes(vector<int>   domainNum,
+                                               vector<vtkDataSet*> meshes);
 
     virtual bool                      ConfirmMesh(vector<int>      domainNum,
                                                vector<vtkDataSet*> meshes);

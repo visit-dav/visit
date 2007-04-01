@@ -21,12 +21,14 @@
 #include <vtkMath.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
+#include <vtkPolyDataRelevantPointsFilter.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnstructuredGridBoundaryFilter.h>
+#include <vtkUnstructuredGridFacelistFilter.h>
 #include <vtkVisItUtility.h>
 
 #include <avtCallback.h>
@@ -43,6 +45,7 @@
 #include <avtSILRestrictionTraverser.h>
 #include <avtSourceFromDatabase.h>
 #include <avtTypes.h>
+#include <avtUnstructuredPointBoundaries.h>
 #include <PickAttributes.h>
 #include <PickVarInfo.h>
 #include <TetMIR.h>
@@ -419,10 +422,12 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     //
     bool didGhosts = false;
 
-    bool ghostDataIsNeeded = false;
-    if (spec->GetDesiredGhostDataType() != NO_GHOST_DATA)
-        ghostDataIsNeeded = true;
+    avtGhostDataType ghostType = spec->GetDesiredGhostDataType();
     if (shouldDoMatSelect)
+        ghostType = GHOST_ZONE_DATA;
+
+    bool ghostDataIsNeeded = false;
+    if (ghostType != NO_GHOST_DATA)
         ghostDataIsNeeded = true;
 
     bool canCreateGhostData = true;
@@ -431,7 +436,8 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
 
     if (canCreateGhostData && ghostDataIsNeeded)
     {
-        didGhosts = CommunicateGhosts(datasetCollection, domains, spec, src);
+        didGhosts = CommunicateGhosts(ghostType, datasetCollection, domains, 
+                                      spec, src);
     }
 
     //
@@ -464,7 +470,7 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
 
 
 // ****************************************************************************
-//  Method: avtGenericDatabase::UpdateinternalState
+//  Method: avtGenericDatabase::UpdateInternalState
 //
 //  Purpose:
 //      Do some internal bookkeeping.  This is mostly to handle current
@@ -1827,6 +1833,11 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
 //    Hank Childs, Wed Oct 10 15:47:49 PDT 2001
 //    Don't cache back NULL data.
 //
+//    Hank Childs, Mon Aug 23 14:14:23 PDT 2004
+//    Look for auxiliary data where the data is of type that applies to all
+//    timesteps (for example, global node ids where the nodes don't change
+//    over time).
+//
 // ****************************************************************************
 
 void
@@ -1856,9 +1867,16 @@ avtGenericDatabase::GetAuxiliaryData(avtDataSpecification_p spec,
     for (int i = 0 ; i < domains.size() ; i++)
     {
         //
-        // See if we already have the data lying around.
+        // See if we already have the data lying around for this timestep or
+        // for "all" (= -1) timesteps.  Examples of "all" timesteps entities
+        // are global node ids where the nodes do not change over time.
         //
         void_ref_ptr vr = cache.GetVoidRef(var, type, ts, domains[i]);
+        if (*vr == NULL)
+        {
+            vr = cache.GetVoidRef(var, type, -1, domains[i]);
+        }
+
         if (*vr != NULL)
         {
             //
@@ -3361,6 +3379,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
 //      zones.
 //
 //  Arguments:
+//      ghostType The type of ghost data to create.
 //      ds        The dataset collection.
 //      doms      A list of domains.
 //      spec      A data specification.
@@ -3457,518 +3476,232 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
 //    Mark C. Miller, Wed Aug 11 14:41:06 PDT 2004
 //    Moved check for if ghost had been read from file to just before ghost
 //    node stuff. Made it contribute to results for shouldStop
-//
+//    
 //    Mark C. Miller, Mon Aug 16 15:01:27 PDT 2004
 //    Fixed missing initialization of boolean haveGlobalNodeIds
 //    Removed extraneous debug statements
 //    
+//    Hank Childs, Sat Aug 14 06:41:00 PDT 2004
+//    Allow for ghost nodes to be created.  Put real work in subroutines.
+//
 // ****************************************************************************
 
 bool
-avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds, 
-   vector<int> &doms, avtDataSpecification_p &spec, avtSourceFromDatabase *src)
+avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType, 
+                      avtDatasetCollection &ds, vector<int> &doms,
+                      avtDataSpecification_p &spec, avtSourceFromDatabase *src)
 {
-    int  i, j, k;
+    int portion1 = visitTimer->StartTimer();
 
-    bool created_new_zones = false;
-    bool created_ghosts = false;
+    int  i;
 
     int ts = spec->GetTimestep();
-    const char *varname = spec->GetVariable();
     avtDatabaseMetaData *md = GetMetaData(ts);
-    avtVarType type = md->DetermineVarType(varname);
+    const char *varname = spec->GetVariable();
     std::string meshname = md->MeshForVar(varname);
 
+    //
+    // We may already have ghost data from reading it out of the file.  If this
+    // is the case, just return now.
+    //
+    int shouldStop = 0;
+    if (md->GetContainsGhostZones(meshname) == AVT_HAS_GHOSTS)
+        shouldStop = 1;
+#ifdef PARALLEL
+    int  parallelShouldStop;
+    MPI_Allreduce(&shouldStop, &parallelShouldStop, 1, MPI_INT, MPI_MAX,
+                  MPI_COMM_WORLD);
+    shouldStop = parallelShouldStop;
+#endif
+    if (shouldStop != 0)
+        return false;
+
+    avtDomainBoundaries *dbi = GetDomainBoundaryInformation(ds, doms, spec);
+    bool hasDomainBoundaryInfo = (dbi != NULL);
+#ifdef PARALLEL
+    int hdbi = (hasDomainBoundaryInfo ? 1 : 0);
+    int phdbi;
+    MPI_Allreduce(&hdbi, &phdbi, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+    if (phdbi < 1)
+        hasDomainBoundaryInfo = false;
+#endif
+
+    //
+    // Determine if we have global node ids.
+    //
+    bool haveDomainWithoutGlobalNodeIds = false;
+    bool haveGlobalNodeIdsForAtLeastOneDom = false;
+    for (i = 0 ; i < doms.size() ; i++)
+    {
+        if (GetGlobalNodeIds(doms[i], meshname.c_str(), ts) == NULL)
+            haveDomainWithoutGlobalNodeIds = true;
+        else
+            haveGlobalNodeIdsForAtLeastOneDom = true;
+    }
+#ifdef PARALLEL
+    int tmp1[2], tmp2[2];
+    tmp1[0] = (haveDomainWithoutGlobalNodeIds ? 1 : 0);
+    tmp1[1] = (haveGlobalNodeIdsForAtLeastOneDom ? 1 : 0);
+    MPI_Allreduce(tmp1, tmp2, 2, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+    haveDomainWithoutGlobalNodeIds = (tmp2[0] == 1 ? true : false);
+    haveGlobalNodeIdsForAtLeastOneDom = (tmp2[1] == 1 ? true : false);
+#endif
+    bool canUseGlobalNodeIds = !haveDomainWithoutGlobalNodeIds &&
+                               haveGlobalNodeIdsForAtLeastOneDom;
+
+    visitTimer->StopTimer(portion1, "Prepatory time for ghost zone creation."
+                                    "  This also counts synchronization.");
+    int portion2 = visitTimer->StartTimer();
+
+    //
+    // Now its decision time.  We know what tools we can use -- whether or not
+    // we have domain boundary information and whether or not we can use global
+    // node ids.  We also know what kind of ghost data we need.  So call the
+    // proper subroutine to do it.
+    //
+    bool s = false;
+    if (ghostType == GHOST_NODE_DATA)
+    {
+        if (hasDomainBoundaryInfo)
+            s = CommunicateGhostNodesFromDomainBoundariesFromFile(ds, doms,
+                                                                  spec, src);
+        else if (canUseGlobalNodeIds)
+            s = CommunicateGhostNodesFromGlobalNodeIds(ds, doms, spec, src);
+    }
+    else if (ghostType == GHOST_ZONE_DATA)
+    {
+        if (hasDomainBoundaryInfo)
+            s = CommunicateGhostZonesFromDomainBoundariesFromFile(ds, doms, 
+                                                                  spec, src);
+        else if (canUseGlobalNodeIds)
+            s = CommunicateGhostZonesFromGlobalNodeIds(ds, doms, spec, src);
+    }
+    else
+    {
+        debug1 << "Internal error: asked to communicate ghost data, but ghost "
+               << "type is neither ghost zones or ghost nodes." << endl;
+    }
+    visitTimer->StopTimer(portion2, "Time to actually communicate ghost data");
+    
+    bool madeGhosts = s;
+    if (madeGhosts);
+    {
+        // 
+        // This will tell everything downstream that we have created ghost
+        // zones.
+        //
+        md->SetContainsGhostZones(meshname, AVT_CREATED_GHOSTS);
+    }
+
+    bool madeNewZones = madeGhosts && (ghostType == GHOST_ZONE_DATA);
+    return madeNewZones;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetDomainBoundaryInformation
+//
+//  Purpose:
+//      Gets the domain boundary information and confirms that the DBI actually
+//      applies to the mesh we have.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 14, 2004
+//
+// ****************************************************************************
+
+avtDomainBoundaries *
+avtGenericDatabase::GetDomainBoundaryInformation(avtDatasetCollection &ds,
+                                                 std::vector<int> &doms,
+                                                 avtDataSpecification_p spec)
+{
+    //
+    // Try getting the domain boundary information.  If we don't have it for
+    // *any* timestep, try getting it for *this* timestep (it can change with
+    // AMR datasets).
+    //
     void_ref_ptr vr = cache.GetVoidRef("any_mesh",
                                    AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
                                   -1, -1);
     if (*vr == NULL)
         vr = cache.GetVoidRef("any_mesh",
                               AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
-                             spec->GetTimestep(), -1);
-
-    if (*vr != NULL)
-    {
-        avtDomainBoundaries *dbi = (avtDomainBoundaries*)*vr;
-
-        //
-        // Make sure that this mesh is the mesh we have boundary information
-        // for.
-        //
-        vector<vtkDataSet *> confirmlist;
-        for (i = 0 ; i < doms.size() ; i++)
-        {
-            confirmlist.push_back(ds.GetDataset(i, 0));
-        }
-        bool haveRightMesh = dbi->ConfirmMesh(doms, confirmlist);
-        int  shouldStop = (haveRightMesh ? 0 : 1);
-
-#ifdef PARALLEL
-        int  parallelShouldStop;
-        MPI_Allreduce(&shouldStop, &parallelShouldStop, 1, MPI_INT, MPI_MAX,
-                      MPI_COMM_WORLD);
-        shouldStop = parallelShouldStop;
-#endif
-
-        if (shouldStop > 0)
-        {
-            debug1 << "Not applying ghost zones because the boundary "
-                   << "information does not apply to this mesh." << endl;
-            return false;
-        }
-
-        //
-        //  Setup
-        //
-        int timerHandle = visitTimer->StartTimer();
-
-        // Setup progress
-        int   localstage;
-        int   nlocalstage;
-        char  progressString[1024] = "Calculating ghost zones";
-        src->DatabaseProgress(0, 0, progressString);
-
-        src->DatabaseProgress(0, 100,
-                         "Calculating ghost zones: waiting for all MPI tasks");
-#ifdef PARALLEL
-        Barrier();
-#endif
-        // Setup materials
-        int anymats    = false;
-        int allmats    = true; 
-        int most_mixvars = 0;
-        const int didnt_get_any = 100;
-        int least_mixvars = didnt_get_any; 
-        for (i = 0 ; i < doms.size() ; i++)
-        {
-            avtMaterial *mat = ds.GetMaterial(i);
-            if (mat)
-                anymats = true;
-            else
-                allmats = false;
-
-            if (mat != NULL && mat->GetMixlen() > 0)
-            {
-                int num = ds.GetAllMixVars(i).size();
-                most_mixvars = (most_mixvars > num ? most_mixvars : num);
-                least_mixvars = (least_mixvars < num ? least_mixvars : num);
-            }
-        }
-
-#ifdef PARALLEL
-        int anymats_tmp    = anymats;
-        int allmats_tmp    = allmats; 
-        int least_mix_tmp  = least_mixvars;
-        int most_mix_tmp   = most_mixvars;
-        MPI_Allreduce(&anymats_tmp, &anymats,1,MPI_INT,MPI_MAX,MPI_COMM_WORLD);
-        MPI_Allreduce(&allmats_tmp, &allmats,1,MPI_INT,MPI_MIN,MPI_COMM_WORLD);
-        MPI_Allreduce(&most_mix_tmp, &most_mixvars, 1, MPI_INT, MPI_MAX,
-                      MPI_COMM_WORLD);
-        MPI_Allreduce(&least_mix_tmp, &least_mixvars, 1, MPI_INT, MPI_MIN,
-                      MPI_COMM_WORLD);
-#endif
-
-        if (anymats && !allmats)
-            EXCEPTION1(VisItException, "Material selection must be performed "
-                       "on all domains.  Please see a VisIt developer.");
-        if (least_mixvars != didnt_get_any)
-        {
-            if (most_mixvars != least_mixvars)
-            {
-                debug1 << "Not all of the domains have the same number of "
-                       << "mixvars." << endl;
-                debug1 << "Most_mixvars = " << most_mixvars << endl;
-                debug1 << "Least_mixvars = " << least_mixvars << endl;
-                EXCEPTION1(VisItException, "Mixed variables must be defined "
-                           "on all domains that have mixed materials. "
-                           " Please see a VisIt developer.");
-            }
-        }
-        int nummixvars = most_mixvars;
-
-        localstage  = 1;
-        nlocalstage = (1 + 
-                       ((type==AVT_SCALAR_VAR || type==AVT_VECTOR_VAR) ? 1:0) +
-                       (anymats ? 1:0) + 
-                       (nummixvars > 0 ? 1:0) +
-                       (spec->NeedZoneNumbers()||spec->NeedStructuredIndices()
-                                ? 1: 0));
-
-        //
-        //  Exchange Meshes
-        //
-        src->DatabaseProgress(localstage++, nlocalstage,
-                              "Creating ghost zones for meshes");
-
-        vector<vtkDataSet *> list;
-        for (i = 0 ; i < doms.size() ; i++)
-        {
-            list.push_back(ds.GetDataset(i, 0));
-            list[i]->Register(NULL);
-        }
-        vector<vtkDataSet *> newList = dbi->ExchangeMesh(doms, list);
-
-        //
-        //  Copy FieldData arrays indivdually, as there may be
-        //  some already in existence in newList.
-        //
-        for (i = 0 ; i < doms.size() ; i++)
-        {
-            vtkFieldData *fd = list[i]->GetFieldData();
-            for (k = 0; k < fd->GetNumberOfArrays(); k++)
-            {
-                newList[i]->GetFieldData()->AddArray(fd->GetArray(k));
-            }
-            ds.SetDataset(i, 0, newList[i]);
-            newList[i]->Delete();
-        }
-
-        //
-        //  Exchange Variables
-        //
-        if (type == AVT_SCALAR_VAR || type == AVT_MATSPECIES)
-        {
-            src->DatabaseProgress(localstage++, nlocalstage,
-                                  "Creating ghost zones for scalars");
-
-            avtCentering centering;
-            if (type == AVT_MATSPECIES)
-                centering = AVT_ZONECENT;
-            else
-                centering = GetMetaData(ts)->GetScalar(varname)->centering;
-
-            bool isPointData = (centering == AVT_NODECENT ? true : false);
-            vector<vtkDataArray *> scalars;
-            for (i = 0 ; i < doms.size() ; i++)
-            {
-                vtkDataSet *ds1 = list[i];
-                vtkDataArray *s   = NULL;
-                if (centering == AVT_NODECENT)
-                {
-                    s = ds1->GetPointData()->GetScalars();
-                }
-                else
-                {
-                    s = ds1->GetCellData()->GetScalars();
-                }
-                scalars.push_back(s);
-            }
-            vector<vtkDataArray *> scalarsOut;
-            scalarsOut = dbi->ExchangeScalar(doms, isPointData, scalars);
-            for (i = 0 ; i < doms.size() ; i++)
-            {
-                vtkDataSet *ds1 = ds.GetDataset(i, 0);
-                vtkDataArray *s   = scalarsOut[i];
-                if (centering == AVT_NODECENT)
-                {
-                    ds1->GetPointData()->SetScalars(s);
-                }
-                else
-                {
-                    ds1->GetCellData()->SetScalars(s);
-                }
-                s->Delete();
-            }
-        }
-
-        if (type == AVT_VECTOR_VAR)
-        {
-            src->DatabaseProgress(localstage++, nlocalstage,
-                                  "Creating ghost zones for vectors");
-
-            const avtVectorMetaData *vmd = GetMetaData(ts)->GetVector(varname);
-            bool isPointData = (vmd->centering == AVT_NODECENT ? true : false);
-            vector<vtkDataArray *> vectors;
-            for (i = 0 ; i < doms.size() ; i++)
-            {
-                vtkDataSet *ds1 = list[i];
-                vtkDataArray *s   = NULL;
-                if (vmd->centering == AVT_NODECENT)
-                {
-                    s = ds1->GetPointData()->GetVectors();
-                }
-                else
-                {
-                    s = ds1->GetCellData()->GetVectors();
-                }
-                vectors.push_back(s);
-            }
-            vector<vtkDataArray *> vectorsOut;
-            vectorsOut = dbi->ExchangeFloatVector(doms, isPointData, vectors);
-            for (i = 0 ; i < doms.size() ; i++)
-            {
-                vtkDataSet *ds1 = ds.GetDataset(i, 0);
-                vtkDataArray *s   = vectorsOut[i];
-                if (vmd->centering == AVT_NODECENT)
-                {
-                    ds1->GetPointData()->SetVectors(s);
-                }
-                else
-                {
-                    ds1->GetCellData()->SetVectors(s);
-                }
-                s->Delete();
-            }
-        }
-
-        //
-        // Exchange secondary variables.
-        //
-        const vector<CharStrRef> &var2nd = 
-                               spec->GetSecondaryVariablesWithoutDuplicates();
-        avtDatabaseMetaData *metadata = GetMetaData(ts);
-        for (i = 0 ; i < var2nd.size() ; i++)
-        {
-            CharStrRef curVar  = var2nd[i];
-            avtVarType varType = metadata->DetermineVarType(*curVar);
-            switch (varType)
-            {
-              case AVT_SCALAR_VAR:
-                {
-                    avtCentering centering = metadata->GetScalar(*curVar)
-                                                                   ->centering;
-                    bool isPointData = (centering == AVT_NODECENT
-                                                     ? true : false);
-                    vector<vtkDataArray *> scalars;
-                    for (j = 0 ; j < doms.size() ; j++)
-                    {
-                        vtkDataSet *ds1 = list[j];
-                        vtkDataSetAttributes *atts = NULL;
-                        if (isPointData)
-                        {
-                            atts = ds1->GetPointData();
-                        }
-                        else
-                        {
-                            atts = ds1->GetCellData();
-                        }
-                        scalars.push_back(atts->GetArray(*curVar));
-                    }
-                    vector<vtkDataArray *> scalarsOut;
-                    scalarsOut = dbi->ExchangeScalar(doms,isPointData,scalars);
-                    for (j = 0 ; j < doms.size() ; j++)
-                    {
-                        vtkDataSet *ds1 = ds.GetDataset(j, 0);
-                        vtkDataSetAttributes *atts = NULL;
-                        if (isPointData)
-                        {
-                            atts = ds1->GetPointData();
-                        }
-                        else
-                        {
-                            atts = ds1->GetCellData();
-                        }
-                        atts->AddArray(scalarsOut[j]);
-                        scalarsOut[j]->Delete();
-                    }
-                }
-                break;
-              case AVT_MATSPECIES:
-                {
-                    vector<vtkDataArray *> scalars;
-                    for (j = 0 ; j < doms.size() ; j++)
-                    {
-                        scalars.push_back(list[j]->GetCellData()->GetArray(
-                                                                     *curVar));
-                    }
-                    vector<vtkDataArray *> scalarsOut;
-                    scalarsOut = dbi->ExchangeScalar(doms, false, scalars);
-                    for (j = 0 ; j < doms.size() ; j++)
-                    {
-                        vtkDataSet *ds1 = ds.GetDataset(j, 0);
-                        ds1->GetCellData()->AddArray(scalarsOut[j]);
-                        scalarsOut[j]->Delete();
-                    }
-                }
-                break;
-              case AVT_VECTOR_VAR:
-                {
-                    avtCentering centering = metadata->GetVector(*curVar)
-                                                                   ->centering;
-                    bool isPointData = (centering == AVT_NODECENT
-                                                     ? true : false);
-                    vector<vtkDataArray *> vectors;
-                    for (j = 0 ; j < doms.size() ; j++)
-                    {
-                        vtkDataSet *ds1 = list[j];
-                        vtkDataSetAttributes *atts = NULL;
-                        if (isPointData)
-                        {
-                            atts = ds1->GetPointData();
-                        }
-                        else
-                        {
-                            atts = ds1->GetCellData();
-                        }
-                        vectors.push_back(atts->GetArray(*curVar));
-                    }
-                    vector<vtkDataArray *> vectorsOut;
-                    vectorsOut = dbi->ExchangeFloatVector(doms,isPointData,
-                                                          vectors);
-                    for (j = 0 ; j < doms.size() ; j++)
-                    {
-                        vtkDataSet *ds1 = ds.GetDataset(j, 0);
-                        vtkDataSetAttributes *atts = NULL;
-                        if (isPointData)
-                        {
-                            atts = ds1->GetPointData();
-                        }
-                        else
-                        {
-                            atts = ds1->GetCellData();
-                        }
-                        atts->AddArray(vectorsOut[j]);
-                        vectorsOut[j]->Delete();
-                    }
-                }
-                break;
-
-              case AVT_MATERIAL:
-              case AVT_MESH:
-                // These typically come about because of expressions.
-                // Just ignore -- it will be handled elsewhere.
-                continue;
-
-              default:
-                EXCEPTION1(VisItException, "Cannot exchange secondary "
-                         "variables that aren't scalars, vectors, or species");
-            }
-        }
-
-        //
-        //  Exchange Materials and Mixed Variables
-        //
-        if (anymats)
-        {
-            src->DatabaseProgress(localstage++, nlocalstage,
-                                  "Creating ghost zones for materials");
-
-            // materials
-            vector<avtMaterial*> matList;
-            for (i = 0 ; i < doms.size() ; i++)
-                matList.push_back(ds.GetMaterial(i));
-
-            vector<avtMaterial*> newMatList = dbi->ExchangeMaterial(doms,
-                                                                    matList);
-
-            for (i = 0 ; i < doms.size() ; i++)
-                ds.SetMaterial(i, newMatList[i]);
-
-            // mixvars
-            if (nummixvars > 0)
-            {
-                src->DatabaseProgress(localstage++, nlocalstage,
-                                      "Creating ghost zones for mixed vars");
-                for (i = 0 ; i < nummixvars ; i++)
-                {
-                    vector<avtMixedVariable*> mixvarList;
-                    int numDomains = doms.size();
-                    for (j = 0 ; j < numDomains ; j++)
-                    {
-                        avtMaterial *mat = matList[j];
-                        if (mat != NULL && mat->GetMixlen() > 0)
-                        {
-                            avtMixedVariable *mv = (avtMixedVariable *)
-                                                     *(ds.GetAllMixVars(j)[i]);
-                            mixvarList.push_back(mv);
-                        }
-                        else
-                        {
-                            mixvarList.push_back(NULL);
-                        }
-                    }
-
-                    vector<avtMixedVariable*> newMixvarList = 
-                        dbi->ExchangeMixVar(doms, matList, mixvarList);
-
-                    for (j = 0 ; j < doms.size() ; j++)
-                        if (newMixvarList[j] != NULL)
-                        {
-                            void_ref_ptr vr = void_ref_ptr(newMixvarList[j],
-                                                  avtMixedVariable::Destruct);
-                            ds.ReplaceMixVar(j, vr);
-                        }
-                }
-            }
-        }
-
-        //
-        // Exchange OriginalNodes Arrays.
-        //
-        if (spec->NeedNodeNumbers())
-        {
-            vector<vtkDataArray *> nodeNums;
-            for (j = 0 ; j < doms.size() ; j++)
-            {
-                vtkDataSet *ds1 = list[j];
-                nodeNums.push_back(ds1->GetPointData()->GetArray(
-                                                    "avtOriginalNodeNumbers"));
-            }
-            vector<vtkDataArray *> nodeNumsOut;
-            nodeNumsOut = dbi->ExchangeIntVector(doms,true,nodeNums);
-            for (j = 0 ; j < doms.size() ; j++)
-            {
-                vtkDataSet *ds1 = ds.GetDataset(j, 0);
-                ds1->GetPointData()->AddArray(nodeNumsOut[j]);
-                nodeNumsOut[j]->Delete();
-            }
-        }
-
-        //
-        // Exchange OriginalCells Arrays.
-        //
-        if (spec->NeedZoneNumbers() || spec->NeedStructuredIndices())
-        {
-            vector<vtkDataArray *> cellNums;
-            for (j = 0 ; j < doms.size() ; j++)
-            {
-                vtkDataSet *ds1 = list[j];
-                cellNums.push_back(ds1->GetCellData()->GetArray(
-                                                    "avtOriginalCellNumbers"));
-            }
-            vector<vtkDataArray *> cellNumsOut;
-            cellNumsOut = dbi->ExchangeIntVector(doms,false,cellNums);
-            for (j = 0 ; j < doms.size() ; j++)
-            {
-                vtkDataSet *ds1 = ds.GetDataset(j, 0);
-                ds1->GetCellData()->AddArray(cellNumsOut[j]);
-                cellNumsOut[j]->Delete();
-            }
-        }
-
-        //
-        // We added references to the mesh with no ghost zones so that we could
-        // reference it through the communication.  Now that we are done,
-        // remove those references.
-        //
-        for (i = 0 ; i < doms.size() ; i++)
-        {
-            list[i]->Delete();
-        }
-
-        src->DatabaseProgress(1, 0, progressString);
-        created_new_zones = true;
-        created_ghosts = true;
-        visitTimer->StopTimer(timerHandle, "Creating ghost zones");
-    }
+                              spec->GetTimestep(), -1);
 
     //
-    // Make sure that we actually have the node ids.
+    // If we couldn't find DBI, then we are done, so return.
     //
-    bool haveGlobalNodeIds = false;
-    for (i = 0 ; i < doms.size() ; i++)
-    {
-        haveGlobalNodeIds = true;
-        if (GetGlobalNodeIds(doms[i], meshname.c_str(), ts) == NULL)
-        {
-            haveGlobalNodeIds = false;
-            break;
-        }
-    }
-    int  shouldStop = (haveGlobalNodeIds ? 0 : 1);
+    avtDomainBoundaries *dbi = (avtDomainBoundaries*)*vr;
+    if (dbi == NULL)
+        return NULL;
 
-    // set shouldStop to 1 also if we arrive here already having ghosts 
-    if (md->GetContainsGhostZones(meshname) == AVT_HAS_GHOSTS)
+    //
+    // Make sure that this mesh is the mesh we have boundary information
+    // for.
+    //
+    vector<vtkDataSet *> confirmlist;
+    for (int i = 0 ; i < doms.size() ; i++)
+    {
+        confirmlist.push_back(ds.GetDataset(i, 0));
+    }
+    bool haveRightMesh = dbi->ConfirmMesh(doms, confirmlist);
+    if (!haveRightMesh)
+        dbi = NULL;
+
+    return dbi;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::
+//                            CommunicateGhostZonesFromDomainBoundariesFromFile
+//
+//  Purpose:
+//      Creates ghost zones using domain boundary information that comes from
+//      a file.
+//
+//  Arguments:
+//      ds        The dataset collection.
+//      doms      A list of domains.
+//      spec      A data specification.
+//      src       The source object.
+//
+//  Notes:      This routine used to be wholely contained by CommunicateGhosts.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 13, 2004
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
+                      avtDatasetCollection &ds, std::vector<int> &doms,
+                      avtDataSpecification_p &spec, avtSourceFromDatabase *src)
+{
+    //
+    //  Setup
+    //
+    char  progressString[1024] = "Calculating ghost zones";
+    src->DatabaseProgress(0, 0, progressString);
+    src->DatabaseProgress(0, 100,
+                     "Calculating ghost zones: waiting for all MPI tasks");
+
+    //
+    // Obtain some info about what we are operating on.
+    //
+    int ts = spec->GetTimestep();
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    const char *varname = spec->GetVariable();
+    std::string meshname = md->MeshForVar(varname);
+
+    int shouldStop = 0;
+    avtDomainBoundaries *dbi = GetDomainBoundaryInformation(ds, doms, spec);
+
+    //
+    // This method should never be called if the domain boundary information
+    // doesn't exist, but make sure just in case.
+    //
+    if (dbi == NULL)
         shouldStop = 1;
 
 #ifdef PARALLEL
@@ -3978,244 +3711,1332 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
     shouldStop = parallelShouldStop;
 #endif
 
-    if (shouldStop == 0)
+    if (shouldStop > 0)
     {
-        int timerHandle = visitTimer->StartTimer();
+        debug1 << "Not applying ghost zones because the boundary "
+               << "information does not apply to this mesh." << endl;
+        return false;
+    }
 
-        //
-        // Identify what the biggest id is.
-        //
-        int maxId = -1;
-        for (i = 0 ; i < doms.size() ; i++)
+    return CommunicateGhostZonesFromDomainBoundaries(dbi, ds, doms, spec, src);
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries
+//
+//  Purpose:
+//      Creates ghost zones using domain boundary information.
+//
+//  Arguments:
+//      ds        The dataset collection.
+//      doms      A list of domains.
+//      spec      A data specification.
+//      src       The source object.
+//
+//  Notes:      This routine used to be wholely contained by CommunicateGhosts.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 17, 2004
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
+                      avtDomainBoundaries *dbi,
+                      avtDatasetCollection &ds, std::vector<int> &doms,
+                      avtDataSpecification_p &spec, avtSourceFromDatabase *src)
+{
+    int   i, j, k;
+
+    int t1 = visitTimer->StartTimer();
+
+    int   localstage;
+    int   nlocalstage;
+    char  progressString[1024] = "Calculating ghost zones";
+
+    //
+    // Obtain some info about what we are operating on.
+    //
+    int ts = spec->GetTimestep();
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    const char *varname = spec->GetVariable();
+    avtVarType type = md->DetermineVarType(varname);
+    std::string meshname = md->MeshForVar(varname);
+
+    // Setup materials
+    int anymats    = false;
+    int allmats    = true; 
+    int most_mixvars = 0;
+    const int didnt_get_any = 100;
+    int least_mixvars = didnt_get_any; 
+    for (i = 0 ; i < doms.size() ; i++)
+    {
+        avtMaterial *mat = ds.GetMaterial(i);
+        if (mat)
+            anymats = true;
+        else
+            allmats = false;
+
+        if (mat != NULL && mat->GetMixlen() > 0)
         {
-            vtkDataArray *gni = GetGlobalNodeIds(doms[i], meshname.c_str(), ts);
-            vtkIntArray *int_gni = (vtkIntArray *) gni;
-            int *ptr = int_gni->GetPointer(0);
-            int nvals = int_gni->GetNumberOfTuples();
-            for (j = 0 ; j < nvals ; j++)
-                maxId = (maxId < ptr[j] ? ptr[j] : maxId);
+            int num = ds.GetAllMixVars(i).size();
+            most_mixvars = (most_mixvars > num ? most_mixvars : num);
+            least_mixvars = (least_mixvars < num ? least_mixvars : num);
         }
-
-        maxId += 1;  // Its easier to work with ranges if maxId is one bigger
-                     // than the actual biggest id.
-
-        //
-        // Identify what the maximum id is across all processors.
-        //
-        maxId = UnifyMaximumValue(maxId);
-        int num_procs = PAR_Size();
-        int rank = PAR_Rank();
-
-        //
-        // Break the range up among all processors.
-        //
-        int numIdsPerProc = maxId / num_procs + 1;
-        int myMin = numIdsPerProc * rank;
-        int myMax = numIdsPerProc * (rank+1);
-        if (myMax > maxId)
-            myMax = maxId;
-
-        //
-        // We will do the bookkeeping for this processor's range.  Set up
-        // the variables for that now.
-        //
-        int mySize = myMax-myMin;
-        int *allIds = new int[mySize];
-        for (i = 0 ; i < mySize ; i++)
-            allIds[i] = 0;
-
-        //
-        // Go through all of the ids for this processor and either update
-        // our arrays or determine which processor they should go to.
-        //
-        vector< vector <int> > ids_for_proc(num_procs);
-        for (i = 0 ; i < doms.size() ; i++)
-        {
-            vtkDataArray *gni = GetGlobalNodeIds(doms[i], meshname.c_str(), ts); 
-            vtkIntArray *int_gni = (vtkIntArray *) gni;
-            int *ptr = int_gni->GetPointer(0);
-            int nvals = int_gni->GetNumberOfTuples();
-            for (j = 0 ; j < nvals ; j++)
-            {
-                if (ptr[j] < myMin || ptr[j] >= myMax)
-                {
-                    int otherProc = ptr[j] / numIdsPerProc;
-                    ids_for_proc[otherProc].push_back(ptr[j]);
-                }
-                else
-                    allIds[ptr[j]-myMin]++;
-            }
-        }
+    }
 
 #ifdef PARALLEL
-        // 
-        // Now take all the nodes that fell into other processors' ranges and
-        // send them there using all-to-all communication.
-        //
-        int *sendcount = new int[num_procs];
-        int *recvcount = new int[num_procs];
-        int totalSend = 0;
-        for (i = 0 ; i < num_procs ; i++)
+    int anymats_tmp    = anymats;
+    int allmats_tmp    = allmats; 
+    int least_mix_tmp  = least_mixvars;
+    int most_mix_tmp   = most_mixvars;
+    MPI_Allreduce(&anymats_tmp, &anymats,1,MPI_INT,MPI_MAX,MPI_COMM_WORLD);
+    MPI_Allreduce(&allmats_tmp, &allmats,1,MPI_INT,MPI_MIN,MPI_COMM_WORLD);
+    MPI_Allreduce(&most_mix_tmp, &most_mixvars, 1, MPI_INT, MPI_MAX,
+                  MPI_COMM_WORLD);
+    MPI_Allreduce(&least_mix_tmp, &least_mixvars, 1, MPI_INT, MPI_MIN,
+                  MPI_COMM_WORLD);
+#endif
+
+    if (anymats && !allmats)
+        EXCEPTION1(VisItException, "Material selection must be performed "
+                   "on all domains.  Please see a VisIt developer.");
+    if (least_mixvars != didnt_get_any)
+    {
+        if (most_mixvars != least_mixvars)
         {
-            sendcount[i] = ids_for_proc[i].size();
-            totalSend += sendcount[i];
+            debug1 << "Not all of the domains have the same number of "
+                   << "mixvars." << endl;
+            debug1 << "Most_mixvars = " << most_mixvars << endl;
+            debug1 << "Least_mixvars = " << least_mixvars << endl;
+            EXCEPTION1(VisItException, "Mixed variables must be defined "
+                       "on all domains that have mixed materials. "
+                       " Please see a VisIt developer.");
         }
+    }
+    int nummixvars = most_mixvars;
 
-        MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT,
-                     MPI_COMM_WORLD);
+    localstage  = 1;
+    nlocalstage = (1 + 
+                   ((type==AVT_SCALAR_VAR || type==AVT_VECTOR_VAR) ? 1:0) +
+                   (anymats ? 1:0) + 
+                   (nummixvars > 0 ? 1:0) +
+                   (spec->NeedZoneNumbers()||spec->NeedStructuredIndices()
+                            ? 1: 0));
 
-        int totalRecv = 0;
-        for (i = 0 ; i < num_procs ; i++)
+    //
+    //  Exchange Meshes
+    //
+    src->DatabaseProgress(localstage++, nlocalstage,
+                          "Creating ghost zones for meshes");
+
+    vector<vtkDataSet *> list;
+    for (i = 0 ; i < doms.size() ; i++)
+    {
+        list.push_back(ds.GetDataset(i, 0));
+        list[i]->Register(NULL);
+    }
+    vector<vtkDataSet *> newList = dbi->ExchangeMesh(doms, list);
+
+    //
+    //  Copy FieldData arrays indivdually, as there may be
+    //  some already in existence in newList.
+    //
+    for (i = 0 ; i < doms.size() ; i++)
+    {
+        vtkFieldData *fd = list[i]->GetFieldData();
+        for (k = 0; k < fd->GetNumberOfArrays(); k++)
         {
-            totalRecv += recvcount[i];
+            newList[i]->GetFieldData()->AddArray(fd->GetArray(k));
         }
+        ds.SetDataset(i, 0, newList[i]);
+        newList[i]->Delete();
+    }
 
-        int *senddisp = new int[num_procs];
-        int *recvdisp = new int[num_procs];
-        senddisp[0] = 0;
-        recvdisp[0] = 0;
-        for (i = 1 ; i < num_procs ; i++)
+    //
+    //  Exchange Variables
+    //
+    if (type == AVT_SCALAR_VAR || type == AVT_MATSPECIES)
+    {
+        src->DatabaseProgress(localstage++, nlocalstage,
+                              "Creating ghost zones for scalars");
+
+        avtCentering centering;
+        if (type == AVT_MATSPECIES)
+            centering = AVT_ZONECENT;
+        else
+            centering = GetMetaData(ts)->GetScalar(varname)->centering;
+
+        bool isPointData = (centering == AVT_NODECENT ? true : false);
+        vector<vtkDataArray *> scalars;
+        for (i = 0 ; i < doms.size() ; i++)
         {
-            senddisp[i] = senddisp[i-1] + sendcount[i-1];
-            recvdisp[i] = recvdisp[i-1] + recvcount[i-1];
+            vtkDataSet *ds1 = list[i];
+            vtkDataArray *s   = NULL;
+            if (centering == AVT_NODECENT)
+            {
+                s = ds1->GetPointData()->GetScalars();
+            }
+            else
+            {
+                s = ds1->GetCellData()->GetScalars();
+            }
+            scalars.push_back(s);
         }
-
-        int *big_send_buffer = new int[totalSend];
-        int idx = 0;
-        for (i = 0 ; i < num_procs ; i++)
-            for (j = 0 ; j < ids_for_proc[i].size() ; j++)
-                big_send_buffer[idx++] = ids_for_proc[i][j];
-
-        int *big_recv_buffer = new int[totalRecv];
-      
-        //
-        // We are now ready to transfer the actual node ids.
-        //
-        MPI_Alltoallv(big_send_buffer, sendcount, senddisp, MPI_INT,
-                      big_recv_buffer, recvcount, recvdisp, MPI_INT,
-                      MPI_COMM_WORLD);
-
-        //
-        // Now take everything in the receive buffer and add update our
-        // node list counters with it.
-        //
-        for (i = 0 ; i < totalRecv ; i++)
+        vector<vtkDataArray *> scalarsOut;
+        scalarsOut = dbi->ExchangeScalar(doms, isPointData, scalars);
+        for (i = 0 ; i < doms.size() ; i++)
         {
-            if (big_recv_buffer[i] < myMin || big_recv_buffer[i] >= myMax)
+            vtkDataSet *ds1 = ds.GetDataset(i, 0);
+            vtkDataArray *s   = scalarsOut[i];
+            if (centering == AVT_NODECENT)
+            {
+                ds1->GetPointData()->SetScalars(s);
+            }
+            else
+            {
+                ds1->GetCellData()->SetScalars(s);
+            }
+            s->Delete();
+        }
+    }
+
+    if (type == AVT_VECTOR_VAR)
+    {
+        src->DatabaseProgress(localstage++, nlocalstage,
+                              "Creating ghost zones for vectors");
+
+        const avtVectorMetaData *vmd = GetMetaData(ts)->GetVector(varname);
+        bool isPointData = (vmd->centering == AVT_NODECENT ? true : false);
+        vector<vtkDataArray *> vectors;
+        for (i = 0 ; i < doms.size() ; i++)
+        {
+            vtkDataSet *ds1 = list[i];
+            vtkDataArray *s   = NULL;
+            if (vmd->centering == AVT_NODECENT)
+            {
+                s = ds1->GetPointData()->GetVectors();
+            }
+            else
+            {
+                s = ds1->GetCellData()->GetVectors();
+            }
+            vectors.push_back(s);
+        }
+        vector<vtkDataArray *> vectorsOut;
+        vectorsOut = dbi->ExchangeFloatVector(doms, isPointData, vectors);
+        for (i = 0 ; i < doms.size() ; i++)
+        {
+            vtkDataSet *ds1 = ds.GetDataset(i, 0);
+            vtkDataArray *s   = vectorsOut[i];
+            if (vmd->centering == AVT_NODECENT)
+            {
+                ds1->GetPointData()->SetVectors(s);
+            }
+            else
+            {
+                ds1->GetCellData()->SetVectors(s);
+            }
+            s->Delete();
+        }
+    }
+
+    //
+    // Exchange secondary variables.
+    //
+    const vector<CharStrRef> &var2nd = 
+                           spec->GetSecondaryVariablesWithoutDuplicates();
+    avtDatabaseMetaData *metadata = GetMetaData(ts);
+    for (i = 0 ; i < var2nd.size() ; i++)
+    {
+        CharStrRef curVar  = var2nd[i];
+        avtVarType varType = metadata->DetermineVarType(*curVar);
+        switch (varType)
+        {
+          case AVT_SCALAR_VAR:
+            {
+                avtCentering centering = metadata->GetScalar(*curVar)
+                                                               ->centering;
+                bool isPointData = (centering == AVT_NODECENT ? true : false);
+                vector<vtkDataArray *> scalars;
+                for (j = 0 ; j < doms.size() ; j++)
+                {
+                    vtkDataSet *ds1 = list[j];
+                    vtkDataSetAttributes *atts = NULL;
+                    if (isPointData)
+                    {
+                        atts = ds1->GetPointData();
+                    }
+                    else
+                    {
+                        atts = ds1->GetCellData();
+                    }
+                    scalars.push_back(atts->GetArray(*curVar));
+                }
+                vector<vtkDataArray *> scalarsOut;
+                scalarsOut = dbi->ExchangeScalar(doms,isPointData,scalars);
+                for (j = 0 ; j < doms.size() ; j++)
+                {
+                    vtkDataSet *ds1 = ds.GetDataset(j, 0);
+                    vtkDataSetAttributes *atts = NULL;
+                    if (isPointData)
+                    {
+                        atts = ds1->GetPointData();
+                    }
+                    else
+                    {
+                        atts = ds1->GetCellData();
+                    }
+                    atts->AddArray(scalarsOut[j]);
+                    scalarsOut[j]->Delete();
+                }
+            }
+            break;
+          case AVT_MATSPECIES:
+            {
+                vector<vtkDataArray *> scalars;
+                for (j = 0 ; j < doms.size() ; j++)
+                {
+                    scalars.push_back(list[j]->GetCellData()->GetArray(
+                                                                 *curVar));
+                }
+                vector<vtkDataArray *> scalarsOut;
+                scalarsOut = dbi->ExchangeScalar(doms, false, scalars);
+                for (j = 0 ; j < doms.size() ; j++)
+                {
+                    vtkDataSet *ds1 = ds.GetDataset(j, 0);
+                    ds1->GetCellData()->AddArray(scalarsOut[j]);
+                    scalarsOut[j]->Delete();
+                }
+            }
+            break;
+          case AVT_VECTOR_VAR:
+            {
+                avtCentering centering = metadata->GetVector(*curVar)
+                                                               ->centering;
+                bool isPointData = (centering == AVT_NODECENT ? true : false);
+                vector<vtkDataArray *> vectors;
+                for (j = 0 ; j < doms.size() ; j++)
+                {
+                    vtkDataSet *ds1 = list[j];
+                    vtkDataSetAttributes *atts = NULL;
+                    if (isPointData)
+                    {
+                        atts = ds1->GetPointData();
+                    }
+                    else
+                    {
+                        atts = ds1->GetCellData();
+                    }
+                    vectors.push_back(atts->GetArray(*curVar));
+                }
+                vector<vtkDataArray *> vectorsOut;
+                vectorsOut = dbi->ExchangeFloatVector(doms,isPointData,
+                                                      vectors);
+                for (j = 0 ; j < doms.size() ; j++)
+                {
+                    vtkDataSet *ds1 = ds.GetDataset(j, 0);
+                    vtkDataSetAttributes *atts = NULL;
+                    if (isPointData)
+                    {
+                        atts = ds1->GetPointData();
+                    }
+                    else
+                    {
+                        atts = ds1->GetCellData();
+                    }
+                    atts->AddArray(vectorsOut[j]);
+                    vectorsOut[j]->Delete();
+                }
+            }
+            break;
+
+          case AVT_MATERIAL:
+          case AVT_MESH:
+            // These typically come about because of expressions.
+            // Just ignore -- it will be handled elsewhere.
+            continue;
+
+          default:
+            EXCEPTION1(VisItException, "Cannot exchange secondary "
+                     "variables that aren't scalars, vectors, or species");
+        }
+    }
+
+    //
+    //  Exchange Materials and Mixed Variables
+    //
+    if (anymats)
+    {
+        src->DatabaseProgress(localstage++, nlocalstage,
+                              "Creating ghost zones for materials");
+
+        // materials
+        vector<avtMaterial*> matList;
+        for (i = 0 ; i < doms.size() ; i++)
+            matList.push_back(ds.GetMaterial(i));
+
+        vector<avtMaterial*> newMatList = dbi->ExchangeMaterial(doms, matList);
+
+        for (i = 0 ; i < doms.size() ; i++)
+            ds.SetMaterial(i, newMatList[i]);
+
+        // mixvars
+        if (nummixvars > 0)
+        {
+            src->DatabaseProgress(localstage++, nlocalstage,
+                                  "Creating ghost zones for mixed vars");
+            for (i = 0 ; i < nummixvars ; i++)
+            {
+                vector<avtMixedVariable*> mixvarList;
+                int numDomains = doms.size();
+                for (j = 0 ; j < numDomains ; j++)
+                {
+                    avtMaterial *mat = matList[j];
+                    if (mat != NULL && mat->GetMixlen() > 0)
+                    {
+                        avtMixedVariable *mv = (avtMixedVariable *)
+                                                 *(ds.GetAllMixVars(j)[i]);
+                        mixvarList.push_back(mv);
+                    }
+                    else
+                    {
+                        mixvarList.push_back(NULL);
+                    }
+                }
+
+                vector<avtMixedVariable*> newMixvarList = 
+                                dbi->ExchangeMixVar(doms, matList, mixvarList);
+
+                for (j = 0 ; j < doms.size() ; j++)
+                    if (newMixvarList[j] != NULL)
+                    {
+                        void_ref_ptr vr = void_ref_ptr(newMixvarList[j],
+                                              avtMixedVariable::Destruct);
+                        ds.ReplaceMixVar(j, vr);
+                    }
+            }
+        }
+    }
+
+    //
+    // Exchange OriginalNodes Arrays.
+    //
+    if (spec->NeedNodeNumbers())
+    {
+        vector<vtkDataArray *> nodeNums;
+        for (j = 0 ; j < doms.size() ; j++)
+        {
+            vtkDataSet *ds1 = list[j];
+            nodeNums.push_back(ds1->GetPointData()->GetArray(
+                                                "avtOriginalNodeNumbers"));
+        }
+        vector<vtkDataArray *> nodeNumsOut;
+        nodeNumsOut = dbi->ExchangeIntVector(doms,true,nodeNums);
+        for (j = 0 ; j < doms.size() ; j++)
+        {
+            vtkDataSet *ds1 = ds.GetDataset(j, 0);
+            ds1->GetPointData()->AddArray(nodeNumsOut[j]);
+            nodeNumsOut[j]->Delete();
+        }
+    }
+
+    //
+    // Exchange OriginalCells Arrays.
+    //
+    if (spec->NeedZoneNumbers() || spec->NeedStructuredIndices())
+    {
+        vector<vtkDataArray *> cellNums;
+        for (j = 0 ; j < doms.size() ; j++)
+        {
+            vtkDataSet *ds1 = list[j];
+            cellNums.push_back(ds1->GetCellData()->GetArray(
+                                                "avtOriginalCellNumbers"));
+        }
+        vector<vtkDataArray *> cellNumsOut;
+        cellNumsOut = dbi->ExchangeIntVector(doms,false,cellNums);
+        for (j = 0 ; j < doms.size() ; j++)
+        {
+            vtkDataSet *ds1 = ds.GetDataset(j, 0);
+            ds1->GetCellData()->AddArray(cellNumsOut[j]);
+            cellNumsOut[j]->Delete();
+        }
+    }
+
+    //
+    // We added references to the mesh with no ghost zones so that we could
+    // reference it through the communication.  Now that we are done,
+    // remove those references.
+    //
+    for (i = 0 ; i < doms.size() ; i++)
+    {
+        list[i]->Delete();
+    }
+
+    src->DatabaseProgress(1, 0, progressString);
+
+    visitTimer->StopTimer(t1, "Actual communication of ghost zones");
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::
+//                            CommunicateGhostNodesFromDomainBoundariesFromFile
+//
+//  Purpose:
+//      Creates ghost nodes using domain boundary information.
+//
+//  Arguments:
+//      ds        The dataset collection.
+//      doms      A list of domains.
+//      spec      A data specification.
+//      src       The source object.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 14, 2004
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::CommunicateGhostNodesFromDomainBoundariesFromFile(
+                      avtDatasetCollection &ds, std::vector<int> &doms,
+                      avtDataSpecification_p &spec, avtSourceFromDatabase *src)
+{
+    //
+    //  Setup
+    //
+    char  progressString[1024] = "Calculating ghost nodes";
+    src->DatabaseProgress(0, 0, progressString);
+    src->DatabaseProgress(0, 100,
+                     "Calculating ghost nodes: waiting for all MPI tasks");
+
+    //
+    // Obtain some info about what we are operating on.
+    //
+    int ts = spec->GetTimestep();
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    const char *varname = spec->GetVariable();
+    std::string meshname = md->MeshForVar(varname);
+
+    int shouldStop = 0;
+    avtDomainBoundaries *dbi = GetDomainBoundaryInformation(ds, doms, spec);
+
+    //
+    // This method should never be called if the domain boundary information
+    // doesn't exist, but make sure just in case.
+    //
+    if (dbi == NULL)
+        shouldStop = 1;
+
+#ifdef PARALLEL
+    int  parallelShouldStop;
+    MPI_Allreduce(&shouldStop, &parallelShouldStop, 1, MPI_INT, MPI_MAX,
+                  MPI_COMM_WORLD);
+    shouldStop = parallelShouldStop;
+#endif
+
+    if (shouldStop > 0)
+    {
+        debug1 << "Not applying ghost nodes because the boundary "
+               << "information does not apply to this mesh." << endl;
+        return false;
+    }
+
+    vector<vtkDataSet *> list;
+    for (int i = 0 ; i < doms.size() ; i++)
+        list.push_back(ds.GetDataset(i, 0));
+    dbi->CreateGhostNodes(doms, list);
+
+    src->DatabaseProgress(1, 0, progressString);
+
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds
+//
+//  Purpose:
+//      Creates ghost zones using global node ids.
+//
+//  Arguments:
+//      ds        The dataset collection.
+//      doms      A list of domains.
+//      spec      A data specification.
+//      src       The source object.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 14, 2004
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
+                      avtDatasetCollection &ds, std::vector<int> &doms, 
+                      avtDataSpecification_p &spec, avtSourceFromDatabase *src)
+{
+    //
+    // The game plan here is to create a domain boundaries object using the
+    // global node ids.
+    //
+    int   i, j, k, l;
+
+    int ts = spec->GetTimestep();
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    const char *varname = spec->GetVariable();
+    std::string meshname = md->MeshForVar(varname);
+    int numDomains = md->GetMesh(meshname)->numBlocks;
+
+    //
+    // Make sure we are dealing with unstructured grids.
+    //
+    for (i = 0 ; i < doms.size() ; i++)
+    {
+        vtkDataSet *d = ds.GetDataset(i, 0);
+        if (d == NULL)
+            continue;
+        if (d->GetDataObjectType() != VTK_UNSTRUCTURED_GRID)
+        {
+            debug1 << "Not able to create ghost zones for anything but "
+                   << "unstructured grids." << endl;
+            return false;
+        }
+    }
+
+    //
+    // Most of the nodes in a dataset are internal.  It is possible to run
+    // this algorithm using all of those nodes, but it will make the number
+    // of nodes considered *huge*.  So let's figure out which nodes are 
+    // internal and exteral.
+    //
+    int t1 = visitTimer->StartTimer();
+    vector<vtkIntArray *> gni;
+    vector<vtkIntArray *> lni;
+    for (i = 0 ; i < doms.size() ; i++)
+    {
+        vtkUnstructuredGrid *d = (vtkUnstructuredGrid *) ds.GetDataset(i, 0);
+        vtkUnstructuredGrid *copy = vtkUnstructuredGrid::New();
+        copy->CopyStructure(d);
+        vtkDataArray *gn = GetGlobalNodeIds(doms[i], meshname.c_str(), ts);
+        copy->GetPointData()->AddArray(gn);
+        vtkIntArray *ln = vtkIntArray::New();
+        int npts = gn->GetNumberOfTuples();
+        ln->SetNumberOfTuples(npts);
+        int *ptr = ln->GetPointer(0);
+        for (j = 0 ; j < npts ; j++)
+            ptr[j] = j;
+        ln->SetName("avtOriginalNodeId");
+        copy->GetPointData()->AddArray(ln);
+        vtkUnstructuredGridFacelistFilter *ff =
+                                      vtkUnstructuredGridFacelistFilter::New();
+        ff->SetInput(copy);
+        vtkPolyDataRelevantPointsFilter *rpf =
+                                        vtkPolyDataRelevantPointsFilter::New();
+        rpf->SetInput(ff->GetOutput());
+        rpf->Update();
+        vtkIntArray *g = (vtkIntArray *)
+               rpf->GetOutput()->GetPointData()->GetArray("avtGlobalNodeId");
+        vtkIntArray *l = (vtkIntArray *)
+               rpf->GetOutput()->GetPointData()->GetArray("avtOriginalNodeId");
+
+        g->Register(NULL);
+        l->Register(NULL);
+        copy->Delete();
+        rpf->Delete();
+        ff->Delete();
+
+        gni.push_back(g);
+        lni.push_back(l);
+    }
+    visitTimer->StopTimer(t1, "Finding nodes external to domain.");
+
+    //
+    // Identify what the biggest id is.
+    //
+    int maxId = -1;
+    for (i = 0 ; i < doms.size() ; i++)
+    {
+        vtkIntArray *int_gni = gni[i];
+        int *ptr = int_gni->GetPointer(0);
+        int nvals = int_gni->GetNumberOfTuples();
+        for (j = 0 ; j < nvals ; j++)
+            maxId = (maxId < ptr[j] ? ptr[j] : maxId);
+    }
+
+    maxId += 1;  // Its easier to work with ranges if maxId is one bigger
+                 // than the actual biggest id.
+
+    //
+    // Identify what the maximum id is across all processors.
+    //
+    maxId = UnifyMaximumValue(maxId);
+    int num_procs = PAR_Size();
+    int rank = PAR_Rank();
+
+    //
+    // Break the range up among all processors.
+    //
+    int t2 = visitTimer->StartTimer();
+    int numIdsPerProc = maxId / num_procs + 1;
+    int myMin = numIdsPerProc * rank;
+    int myMax = numIdsPerProc * (rank+1);
+    if (myMax > maxId)
+        myMax = maxId;
+
+    //
+    // We will do the bookkeeping for this processor's range.  Set up
+    // the variables for that now.
+    //
+    int mySize = myMax-myMin;
+    vector<int> index_for_node(mySize, -1);
+
+    int curIndex = 0;
+    int curSize = 4096;
+    vector< vector <int> > doms_for_id(curSize);
+    vector< vector <int> > local_ids_for_id(curSize);
+
+    //
+    // Go through all of the ids for this processor and either update
+    // our arrays or determine which processor they should go to.
+    //
+    vector< vector <int> > global_ids_for_proc(num_procs);
+    vector< vector <int> > doms_for_proc(num_procs);
+    vector< vector <int> > local_ids_for_proc(num_procs);
+    for (i = 0 ; i < doms.size() ; i++)
+    {
+        vtkIntArray *int_gni = gni[i];
+        vtkIntArray *int_lni = lni[i];
+        int *ptr  = int_gni->GetPointer(0);
+        int *ptr2 = int_lni->GetPointer(0);
+        int nvals = int_gni->GetNumberOfTuples();
+        for (j = 0 ; j < nvals ; j++)
+        {
+            if (ptr[j] < myMin || ptr[j] >= myMax)
+            {
+                int otherProc = ptr[j] / numIdsPerProc;
+                global_ids_for_proc[otherProc].push_back(ptr[j]);
+                doms_for_proc[otherProc].push_back(doms[i]);
+                local_ids_for_proc[otherProc].push_back(ptr2[j]);
+            }
+            else
+            {
+                int idx = ptr[j]-myMin;
+                int ifn = index_for_node[idx];
+                if (ifn == -1)
+                {
+                    if ((curIndex + 1) >= curSize)
+                    {
+                        curSize *= 2;
+                        doms_for_id.resize(curSize);
+                        local_ids_for_id.resize(curSize);
+                    }
+                    index_for_node[idx] = curIndex;
+                    curIndex++;
+                    ifn = index_for_node[idx];
+                }
+                doms_for_id[ifn].push_back(doms[i]);
+                local_ids_for_id[ifn].push_back(ptr2[j]);
+            }
+        }
+    }
+
+    // 
+    // We are now done with the arrays of global node ids that are on the
+    // exterior of the dataset, so let's clean that up now.
+    //
+    for (i = 0 ; i < doms.size() ; i++)
+    {
+        gni[i]->Delete();
+        lni[i]->Delete();
+    }
+    gni.clear();
+    lni.clear();
+
+#ifdef PARALLEL
+    // 
+    // Now take all the nodes that fell into other processors' ranges and
+    // send them there using all-to-all communication.
+    //
+    int *sendcount = new int[num_procs];
+    int *recvcount = new int[num_procs];
+    int totalSend = 0;
+    for (i = 0 ; i < num_procs ; i++)
+    {
+        sendcount[i] = 3*global_ids_for_proc[i].size();
+        totalSend += sendcount[i];
+    }
+
+    MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, MPI_COMM_WORLD);
+
+    int totalRecv = 0;
+    for (i = 0 ; i < num_procs ; i++)
+    {
+        totalRecv += recvcount[i];
+    }
+
+    int *senddisp = new int[num_procs];
+    int *recvdisp = new int[num_procs];
+    senddisp[0] = 0;
+    recvdisp[0] = 0;
+    for (i = 1 ; i < num_procs ; i++)
+    {
+        senddisp[i] = senddisp[i-1] + sendcount[i-1];
+        recvdisp[i] = recvdisp[i-1] + recvcount[i-1];
+    }
+
+    int *big_send_buffer = new int[totalSend];
+    int idx = 0;
+    for (i = 0 ; i < num_procs ; i++)
+    {
+        for (j = 0 ; j < global_ids_for_proc[i].size() ; j++)
+        {
+            big_send_buffer[idx++] = global_ids_for_proc[i][j];
+            big_send_buffer[idx++] = doms_for_proc[i][j];
+            big_send_buffer[idx++] = local_ids_for_proc[i][j];
+        }
+    }
+
+    int *big_recv_buffer = new int[totalRecv];
+  
+    //
+    // We are now ready to transfer the actual node ids.
+    //
+    MPI_Alltoallv(big_send_buffer, sendcount, senddisp, MPI_INT,
+                  big_recv_buffer, recvcount, recvdisp, MPI_INT,
+                  MPI_COMM_WORLD);
+
+    //
+    // Now take everything in the receive buffer and add update our
+    // node list counters with it.
+    //
+    if ((totalRecv % 3) != 0)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+    vector<int> Domain2Proc(numDomains, -1);
+    int index = 0;
+    for (i = 0 ; i < num_procs ; i++)
+    {
+        for (j = 0 ; j < recvcount[i] ; j += 3)
+        {
+            int glob_id = big_recv_buffer[index];
+            int dom_id = big_recv_buffer[index+1];
+            int local_id = big_recv_buffer[index+2];
+            if (glob_id < myMin || glob_id >= myMax)
             {
                 EXCEPTION0(ImproperUseException);
             }
-            allIds[big_recv_buffer[i]-myMin]++;
-        }
-
-        //
-        // We now know definitively whether each node is a ghost or not ghost.
-        //  Now get that information back to the processors
-        // that requested it.  Because we know what order things were sent in,
-        // it is sufficient to simply send back a yes/no answer with no
-        // further information.
-        //
-        // Note: since we are now sending back information about what we
-        // received, all the "send" sizes become "receive" sizes and 
-        // vice-versa.
-        //
-        int new_totalSend = totalRecv;
-        int new_totalRecv = totalSend;
-        int *new_senddisp = recvdisp;
-        int *new_recvdisp = senddisp;
-        int *new_sendcount = recvcount;
-        int *new_recvcount = sendcount;
-        char *new_big_send_buffer = new char[new_totalSend];
-        char *new_big_recv_buffer = new char[new_totalRecv];
-
-        for (i = 0 ; i < new_totalSend ; i++)
-            new_big_send_buffer[i] = 
-                                (allIds[big_recv_buffer[i]-myMin] > 1 ? 1 : 0);
-
-        MPI_Alltoallv(new_big_send_buffer, new_sendcount, new_senddisp,MPI_CHAR,
-                      new_big_recv_buffer, new_recvcount, new_recvdisp,MPI_CHAR,
-                      MPI_COMM_WORLD);
-
-        // 
-        // We are almost there!  Each processor has now sent us whether or not
-        // the nodes we requested are ghost nodes are not.  Note: the info
-        // is coming back to us in *exactly* the order requested, so we can
-        // take the values and start blindly assigning them.  There is some
-        // subtlety to the indexing here.
-        //
-        vector<int> num_used_from_proc(num_procs, 0);
-#endif
-
-        for (i = 0 ; i < doms.size() ; i++)
-        {
-            vtkDataSet *d = ds.GetDataset(i, 0);
-            vtkDataArray *gni = GetGlobalNodeIds(doms[i], meshname.c_str(), ts); 
-            vtkIntArray *int_gni = (vtkIntArray *) gni;
-            int *ptr = int_gni->GetPointer(0);
-            int nvals = int_gni->GetNumberOfTuples();
-            vtkUnsignedCharArray *ghost_nodes = vtkUnsignedCharArray::New();
-            ghost_nodes->SetName("vtkGhostNodes");
-            ghost_nodes->SetNumberOfTuples(nvals);
-            for (j = 0 ; j < nvals ; j++)
+    
+            int idx = glob_id-myMin;
+            int ifn = index_for_node[idx];
+            if (ifn == -1)
             {
-                if (ptr[j] >= myMin && ptr[j] < myMax)
+                if ((curIndex + 1) >= curSize)
                 {
-                    if (allIds[ptr[j]-myMin] > 1)
-                        ghost_nodes->SetValue(j, 1);
-                    else
-                        ghost_nodes->SetValue(j, 0);
+                    curSize *= 2;
+                    doms_for_id.resize(curSize);
+                    local_ids_for_id.resize(curSize);
                 }
-                else
-                {
-#ifdef PARALLEL
-                    int otherProc = ptr[j] / numIdsPerProc;
-                    int idx = new_recvdisp[otherProc] + 
-                              num_used_from_proc[otherProc];
-                    char val = new_big_recv_buffer[idx];
-                    num_used_from_proc[otherProc]++;
-                    ghost_nodes->SetValue(j, val);
-#else
-                    EXCEPTION0(ImproperUseException);
-#endif
-                }
+                index_for_node[idx] = curIndex;
+                curIndex++;
+                ifn = index_for_node[idx];
             }
-            vtkDataSet *d2 = d->NewInstance();
-            d2->ShallowCopy(d);
-            d2->GetPointData()->AddArray(ghost_nodes);
-            ds.SetDataset(i, 0, d2);
-            d2->Delete();
-            ghost_nodes->Delete();
-        }
+            doms_for_id[ifn].push_back(dom_id);
+            local_ids_for_id[ifn].push_back(local_id);
+            Domain2Proc[dom_id] = i;
 
-        delete [] allIds;
+            index += 3;
+        }
+    }
+#endif
+    visitTimer->StopTimer(t2, "Creating table of shared nodes.");
+
+    // 
+    // We now have all the info we need to identify which nodes are shared
+    // between which domains (for our portion of the global indexing space,
+    // at least).
+    //
+    int t4 = visitTimer->StartTimer();
+    vector< vector<int> > pairs(numDomains);
+    vector< vector< vector<int> > > first_val(numDomains);
+    vector< vector< vector<int> > > second_val(numDomains);
+    for (i = myMin ; i < myMax ; i++)
+    {
+        int idx = i-myMin;
+        int indirection_index = index_for_node[idx];
+        if (indirection_index < 0)
+            continue;
+        if (doms_for_id[indirection_index].size() <= 1)
+            continue;
+
+        for (j = 0 ; j < doms_for_id[indirection_index].size() ; j++)
+        {
+            int primary_dom = doms_for_id[indirection_index][j];
+            int primary_local_node = local_ids_for_id[indirection_index][j];
+            for (k = 0 ; k < doms_for_id[indirection_index].size() ; k++)
+            {
+                int secondary_dom = doms_for_id[indirection_index][k];
+                int secondary_local_node = 
+                                        local_ids_for_id[indirection_index][k];
+                // 'if' test should be true only when j == k.
+                if (primary_dom == secondary_dom)
+                    continue;
+                int match = -1;
+                for (l = 0 ; l < pairs[primary_dom].size() ; l++)
+                    if (pairs[primary_dom][l] == secondary_dom)
+                    {
+                        match = l;
+                        break;
+                    }
+                if (match == -1)
+                {
+                    pairs[primary_dom].push_back(secondary_dom);
+                    int newSize = first_val[primary_dom].size()+1;
+                    first_val[primary_dom].resize(newSize);
+                    second_val[primary_dom].resize(newSize);
+                    match = pairs[primary_dom].size()-1;
+                }
+                first_val[primary_dom][match].push_back(primary_local_node);
+                second_val[primary_dom][match].push_back(secondary_local_node);
+            }
+        }
+    }
+
 #ifdef PARALLEL
-        delete [] new_big_send_buffer;
-        delete [] new_big_recv_buffer;
-        delete [] big_recv_buffer;
-        delete [] big_send_buffer;
-        delete [] senddisp;
-        delete [] recvdisp;
-        delete [] sendcount;
-        delete [] recvcount;
+    //
+    // We now have a list of all shared points for our portion of the global 
+    // indexing space.  But the matches we are interested in have to go to
+    // other processors.  So do more all-to-all communication.
+    //
+
+    //
+    // First, decide the size of what we are going to send to each processor.
+    //
+    for (i = 0 ; i < num_procs ; i++)
+        sendcount[i] = 0;
+    for (i = 0 ; i < numDomains ; i++)
+    {
+        int proc = Domain2Proc[i];
+        int numPairs = pairs[i].size();
+        for (j = 0 ; j < numPairs ; j++)
+        {
+            int domain2 = pairs[i][j];
+            int proc2 = Domain2Proc[domain2];
+            int numShared = first_val[i][j].size();
+            if (proc >= 0)
+                sendcount[proc] += 2+1+numShared*2;
+            if (proc2 >= 0 && proc2 != proc)
+                sendcount[proc2] += 2+1+numShared*2;
+        }
+    }
+    
+    totalSend = 0;
+    for (i = 0 ; i < num_procs ; i++)
+    {
+        totalSend += sendcount[i];
+    }
+
+    MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, MPI_COMM_WORLD);
+
+    totalRecv = 0;
+    for (i = 0 ; i < num_procs ; i++)
+    {
+        totalRecv += recvcount[i];
+    }
+
+    senddisp[0] = 0;
+    recvdisp[0] = 0;
+    for (i = 1 ; i < num_procs ; i++)
+    {
+        senddisp[i] = senddisp[i-1] + sendcount[i-1];
+        recvdisp[i] = recvdisp[i-1] + recvcount[i-1];
+    }
+
+    delete [] big_send_buffer;
+    big_send_buffer = new int[totalSend];
+    idx = 0;
+    int *curDisp = new int[num_procs];
+    for (i = 0 ; i < num_procs ; i++)
+        curDisp[i] = senddisp[i];
+
+    for (i = 0 ; i < numDomains ; i++)
+    {
+        int proc = Domain2Proc[i];
+        int numPairs = pairs[i].size();
+        for (j = 0 ; j < numPairs ; j++)
+        {
+            int domain2 = pairs[i][j];
+            int proc2 = Domain2Proc[domain2];
+            int numShared = first_val[i][j].size();
+            if (proc >= 0)
+            {
+                int *buffer = big_send_buffer + curDisp[proc];
+                curDisp[proc] += 2+1+numShared*2;
+                buffer[0] = i;
+                buffer[1] = domain2;
+                buffer[2] = numShared;
+                for (k = 0 ; k < numShared ; k++)
+                    buffer[k+3] = first_val[i][j][k];
+                for (k = 0 ; k < numShared ; k++)
+                    buffer[k+3+numShared] = second_val[i][j][k];
+            }
+            if (proc2 >= 0 && proc2 != proc)
+            {
+                int *buffer = big_send_buffer + curDisp[proc2];
+                curDisp[proc2] += 2+1+numShared*2;
+                buffer[0] = i;
+                buffer[1] = domain2;
+                buffer[2] = numShared;
+                for (k = 0 ; k < numShared ; k++)
+                    buffer[k+3] = first_val[i][j][k];
+                for (k = 0 ; k < numShared ; k++)
+                    buffer[k+3+numShared] = second_val[i][j][k];
+            }
+        }
+    }
+    delete [] curDisp;
+    delete [] big_recv_buffer;
+    big_recv_buffer = new int[totalRecv];
+  
+    //
+    // We are now ready to transfer the actual sets of shared points.
+    //
+    MPI_Alltoallv(big_send_buffer, sendcount, senddisp, MPI_INT,
+                  big_recv_buffer, recvcount, recvdisp, MPI_INT,
+                  MPI_COMM_WORLD);
+
+    //
+    // Now add the shared points to the domain boundary information that comes
+    // from other processors.
+    //
+    for (i = 0 ; i < num_procs ; i++)
+    {
+        int ap = 0; // ap => amountProcessed
+        int amountToProcess = recvcount[i];
+        int *buffer = big_recv_buffer + recvdisp[i];
+        while (ap < amountToProcess)
+        {
+            int domain1 = buffer[ap++];
+            int domain2 = buffer[ap++];
+            int numShared = buffer[ap++];
+
+            if (domain1 == domain2)
+            {
+                // Should not happen...
+                buffer += 2*numShared;
+                continue;
+            }
+
+            int match = -1;
+            for (l = 0 ; l < pairs[domain1].size() ; l++)
+                if (pairs[domain1][l] == domain2)
+                {
+                    match = l;
+                    break;
+                }
+            if (match == -1)
+            {
+                pairs[domain1].push_back(domain2);
+                int newSize = first_val[domain1].size()+1;
+                first_val[domain1].resize(newSize);
+                second_val[domain1].resize(newSize);
+                match = pairs[domain1].size()-1;
+            }
+
+            int numCurVals = first_val[domain1][match].size();
+            int newNumVals = numCurVals + numShared;
+            
+            first_val[domain1][match].resize(newNumVals);
+            second_val[domain1][match].resize(newNumVals);
+
+            for (j = 0 ; j < numShared ; j++)
+                first_val[domain1][match][numCurVals+j] = buffer[ap++];
+            for (j = 0 ; j < numShared ; j++)
+                second_val[domain1][match][numCurVals+j] = buffer[ap++];
+        }
+    }
+
+    delete [] sendcount;
+    delete [] recvcount;
+    delete [] senddisp;
+    delete [] recvdisp;
+    delete [] curDisp;
+    delete [] big_send_buffer;
+    delete [] big_recv_buffer;
+#endif
+    visitTimer->StopTimer(t4, "Setting up shared nodes list.");
+
+    //
+    // Create domain boundary information object by registering the shared
+    // points.
+    //
+    avtUnstructuredPointBoundaries upb;
+    upb.SetTotalNumberOfDomains(numDomains);
+    for (i = 0 ; i < numDomains ; i++)
+    {
+        for (j = 0 ; j < pairs[i].size() ; j++)
+        {
+            upb.SetSharedPoints(i, pairs[i][j], first_val[i][j],
+                                                 second_val[i][j]);
+        }
+    }
+
+    return CommunicateGhostZonesFromDomainBoundaries(&upb, ds, doms, spec,src);
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds
+//
+//  Purpose:
+//      Creates ghost nodes using global node ids.
+//
+//  Arguments:
+//      ds        The dataset collection.
+//      doms      A list of domains.
+//      spec      A data specification.
+//      src       The source object.
+//
+//  Notes:      This routine used to be wholely contained by CommunicateGhosts.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 13, 2004
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
+                      avtDatasetCollection &ds, std::vector<int> &doms, 
+                      avtDataSpecification_p &spec, avtSourceFromDatabase *src)
+{
+    int   i, j;
+
+    int ts = spec->GetTimestep();
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    const char *varname = spec->GetVariable();
+    std::string meshname = md->MeshForVar(varname);
+
+    //
+    // Identify what the biggest id is.
+    //
+    int maxId = -1;
+    for (i = 0 ; i < doms.size() ; i++)
+    {
+        vtkDataArray *gni = GetGlobalNodeIds(doms[i], meshname.c_str(), ts);
+        vtkIntArray *int_gni = (vtkIntArray *) gni;
+        int *ptr = int_gni->GetPointer(0);
+        int nvals = int_gni->GetNumberOfTuples();
+        for (j = 0 ; j < nvals ; j++)
+            maxId = (maxId < ptr[j] ? ptr[j] : maxId);
+    }
+
+    maxId += 1;  // Its easier to work with ranges if maxId is one bigger
+                 // than the actual biggest id.
+
+    //
+    // Identify what the maximum id is across all processors.
+    //
+    maxId = UnifyMaximumValue(maxId);
+    int num_procs = PAR_Size();
+    int rank = PAR_Rank();
+
+    //
+    // Break the range up among all processors.
+    //
+    int numIdsPerProc = (maxId / num_procs) + 1;
+    int myMin = numIdsPerProc * rank;
+    int myMax = numIdsPerProc * (rank+1);
+    if (myMax > maxId)
+        myMax = maxId;
+
+    //
+    // We will do the bookkeeping for this processor's range.  Set up
+    // the variables for that now.
+    //
+    int mySize = myMax-myMin;
+    int *allIds = new int[mySize];
+    for (i = 0 ; i < mySize ; i++)
+        allIds[i] = 0;
+
+    //
+    // Go through all of the ids for this processor and either update
+    // our arrays or determine which processor they should go to.
+    //
+    vector< vector <int> > ids_for_proc(num_procs);
+    for (i = 0 ; i < doms.size() ; i++)
+    {
+        vtkDataArray *gni = GetGlobalNodeIds(doms[i], meshname.c_str(), ts); 
+        vtkIntArray *int_gni = (vtkIntArray *) gni;
+        int *ptr = int_gni->GetPointer(0);
+        int nvals = int_gni->GetNumberOfTuples();
+        for (j = 0 ; j < nvals ; j++)
+        {
+            if (ptr[j] < myMin || ptr[j] >= myMax)
+            {
+                int otherProc = ptr[j] / numIdsPerProc;
+                ids_for_proc[otherProc].push_back(ptr[j]);
+            }
+            else
+                allIds[ptr[j]-myMin]++;
+        }
+    }
+
+#ifdef PARALLEL
+    // 
+    // Now take all the nodes that fell into other processors' ranges and
+    // send them there using all-to-all communication.
+    //
+    int *sendcount = new int[num_procs];
+    int *recvcount = new int[num_procs];
+    int totalSend = 0;
+    for (i = 0 ; i < num_procs ; i++)
+    {
+        sendcount[i] = ids_for_proc[i].size();
+        totalSend += sendcount[i];
+    }
+
+    MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT, MPI_COMM_WORLD);
+
+    int totalRecv = 0;
+    for (i = 0 ; i < num_procs ; i++)
+    {
+        totalRecv += recvcount[i];
+    }
+
+    int *senddisp = new int[num_procs];
+    int *recvdisp = new int[num_procs];
+    senddisp[0] = 0;
+    recvdisp[0] = 0;
+    for (i = 1 ; i < num_procs ; i++)
+    {
+        senddisp[i] = senddisp[i-1] + sendcount[i-1];
+        recvdisp[i] = recvdisp[i-1] + recvcount[i-1];
+    }
+
+    int *big_send_buffer = new int[totalSend];
+    int idx = 0;
+    for (i = 0 ; i < num_procs ; i++)
+        for (j = 0 ; j < ids_for_proc[i].size() ; j++)
+            big_send_buffer[idx++] = ids_for_proc[i][j];
+
+    int *big_recv_buffer = new int[totalRecv];
+  
+    //
+    // We are now ready to transfer the actual node ids.
+    //
+    MPI_Alltoallv(big_send_buffer, sendcount, senddisp, MPI_INT,
+                  big_recv_buffer, recvcount, recvdisp, MPI_INT,
+                  MPI_COMM_WORLD);
+
+    //
+    // Now take everything in the receive buffer and add update our
+    // node list counters with it.
+    //
+    for (i = 0 ; i < totalRecv ; i++)
+    {
+        if (big_recv_buffer[i] < myMin || big_recv_buffer[i] >= myMax)
+        {
+            EXCEPTION0(ImproperUseException);
+        }
+        allIds[big_recv_buffer[i]-myMin]++;
+    }
+
+    //
+    // We now know definitively whether each node is a ghost or not ghost.
+    //  Now get that information back to the processors
+    // that requested it.  Because we know what order things were sent in,
+    // it is sufficient to simply send back a yes/no answer with no
+    // further information.
+    //
+    // Note: since we are now sending back information about what we
+    // received, all the "send" sizes become "receive" sizes and 
+    // vice-versa.
+    //
+    int new_totalSend = totalRecv;
+    int new_totalRecv = totalSend;
+    int *new_senddisp = recvdisp;
+    int *new_recvdisp = senddisp;
+    int *new_sendcount = recvcount;
+    int *new_recvcount = sendcount;
+    char *new_big_send_buffer = new char[new_totalSend];
+    char *new_big_recv_buffer = new char[new_totalRecv];
+
+    for (i = 0 ; i < new_totalSend ; i++)
+        new_big_send_buffer[i] = 
+                            (allIds[big_recv_buffer[i]-myMin] > 1 ? 1 : 0);
+
+    MPI_Alltoallv(new_big_send_buffer, new_sendcount, new_senddisp,MPI_CHAR,
+                  new_big_recv_buffer, new_recvcount, new_recvdisp,MPI_CHAR,
+                  MPI_COMM_WORLD);
+
+    // 
+    // We are almost there!  Each processor has now sent us whether or not
+    // the nodes we requested are ghost nodes are not.  Note: the info
+    // is coming back to us in *exactly* the order requested, so we can
+    // take the values and start blindly assigning them.  There is some
+    // subtlety to the indexing here.
+    //
+    vector<int> num_used_from_proc(num_procs, 0);
 #endif
 
-        visitTimer->StopTimer(timerHandle, "Creating ghost nodes");
-        created_ghosts = true;
-    }
-
-    if (created_ghosts)
+    for (i = 0 ; i < doms.size() ; i++)
     {
-        //
-        // Tell everything downstream that we do have ghost zones.
-        //
-        md->SetContainsGhostZones(meshname, AVT_CREATED_GHOSTS);
+        vtkDataSet *d = ds.GetDataset(i, 0);
+        vtkDataArray *gni = GetGlobalNodeIds(doms[i], meshname.c_str(), ts); 
+        vtkIntArray *int_gni = (vtkIntArray *) gni;
+        int *ptr = int_gni->GetPointer(0);
+        int nvals = int_gni->GetNumberOfTuples();
+        vtkUnsignedCharArray *ghost_nodes = vtkUnsignedCharArray::New();
+        ghost_nodes->SetName("vtkGhostNodes");
+        ghost_nodes->SetNumberOfTuples(nvals);
+        for (j = 0 ; j < nvals ; j++)
+        {
+            if (ptr[j] >= myMin && ptr[j] < myMax)
+            {
+                if (allIds[ptr[j]-myMin] > 1)
+                    ghost_nodes->SetValue(j, 1);
+                else
+                    ghost_nodes->SetValue(j, 0);
+            }
+            else
+            {
+#ifdef PARALLEL
+                int otherProc = ptr[j] / numIdsPerProc;
+                int idx = new_recvdisp[otherProc] + 
+                          num_used_from_proc[otherProc];
+                char val = new_big_recv_buffer[idx];
+                num_used_from_proc[otherProc]++;
+                ghost_nodes->SetValue(j, val);
+#else
+                EXCEPTION0(ImproperUseException);
+#endif
+            }
+        }
+        vtkDataSet *d2 = d->NewInstance();
+        d2->ShallowCopy(d);
+        d2->GetPointData()->AddArray(ghost_nodes);
+        ds.SetDataset(i, 0, d2);
+        d2->Delete();
+        ghost_nodes->Delete();
     }
 
-    debug5 << "LEAVING communicate ghosts with created_ghosts = " << created_ghosts << " and created_new_zones " <<
-    created_new_zones << endl;
+    delete [] allIds;
+#ifdef PARALLEL
+    delete [] new_big_send_buffer;
+    delete [] new_big_recv_buffer;
+    delete [] big_recv_buffer;
+    delete [] big_send_buffer;
+    delete [] senddisp;
+    delete [] recvdisp;
+    delete [] sendcount;
+    delete [] recvcount;
+#endif
 
-    return created_new_zones;
+    return true;
 }
+
 
 // ****************************************************************************
 //  Method: avtGenericDatabase::ApplyGhostForDomainNesting
@@ -4708,6 +5529,9 @@ avtGenericDatabase::NumStagesForFetch(avtDataSpecification_p spec)
 //    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004
 //    Set PickVarInfo::treatAsASCII from ScalarMetaData::treatAsASCII.
 //
+//    Hank Childs, Fri Aug 20 14:05:54 PDT 2004
+//    Initialize variable to remove compiler warning.
+//
 // ****************************************************************************
 
 bool
@@ -4730,11 +5554,12 @@ avtGenericDatabase::QueryScalars(const std::string &varName, const int dom,
              return false;
         }
         char temp[80];
-        vtkDataArray *scalars = GetScalarVariable(varName.c_str(), ts, dom, "_all");
+        vtkDataArray *scalars = GetScalarVariable(varName.c_str(), ts, dom,
+                                                  "_all");
         if (scalars) 
         {
             varInfo.SetTreatAsASCII(smd->treatAsASCII);
-            bool zoneCent, validCentering = true;
+            bool zoneCent = false, validCentering = true;
             if (smd->centering == AVT_NODECENT)
             {
                 varInfo.SetCentering(PickVarInfo::Nodal);
@@ -4904,6 +5729,9 @@ avtGenericDatabase::QueryScalars(const std::string &varName, const int dom,
 //    Kathleen Bonnell, Fri Jun 20 13:57:30 PDT 2003  
 //    Add support for node-pick. 
 //    
+//    Hank Childs, Fri Aug 20 14:05:54 PDT 2004
+//    Initialize variable to remove compiler warning.
+//
 // ****************************************************************************
 
 bool
@@ -4925,13 +5753,14 @@ avtGenericDatabase::QueryVectors(const std::string &varName, const int dom,
         std::vector<std::string> names;
         std::vector<double> vals;
         char buff[80];
-        vtkDataArray *vectors = GetVectorVariable(varName.c_str(), ts, dom, "_all");
+        vtkDataArray *vectors = GetVectorVariable(varName.c_str(), ts, dom,
+                                                  "_all");
         int nComponents = 0;; 
         double *temp = NULL; 
         double mag = 0.;
         if (vectors)
         {
-            bool zoneCent, validCentering = true;
+            bool zoneCent = false, validCentering = true;
             if (vmd->centering == AVT_NODECENT)
             {
                 varInfo.SetCentering(PickVarInfo::Nodal);
@@ -5022,6 +5851,11 @@ avtGenericDatabase::QueryVectors(const std::string &varName, const int dom,
 //  Programmer:   Hank Childs
 //  Creation:     September 22, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 20 14:05:54 PDT 2004
+//    Initialize variable to remove compiler warning.
+//
 // ****************************************************************************
 
 bool
@@ -5050,7 +5884,7 @@ avtGenericDatabase::QueryTensors(const std::string &varName, const int dom,
         double *temp = NULL; 
         if (tensors)
         {
-            bool zoneCent, validCentering = true;
+            bool zoneCent = false, validCentering = true;
             if (tmd->centering == AVT_NODECENT)
             {
                 varInfo.SetCentering(PickVarInfo::Nodal);
@@ -5129,6 +5963,11 @@ avtGenericDatabase::QueryTensors(const std::string &varName, const int dom,
 //  Programmer:   Hank Childs
 //  Creation:     September 22, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 20 14:05:54 PDT 2004
+//    Initialize variable to remove compiler warning.
+//
 // ****************************************************************************
 
 bool
@@ -5141,7 +5980,7 @@ avtGenericDatabase::QuerySymmetricTensors(const std::string &varName,
     if (varInfo.GetValues().empty())
     {
         const avtSymmetricTensorMetaData *tmd 
-                                       = GetMetaData(ts)->GetSymmTensor(varName);
+                                     = GetMetaData(ts)->GetSymmTensor(varName);
         if (!tmd)
         {
             debug5 << "Querying tensor var, but could not retrieve"
@@ -5157,7 +5996,7 @@ avtGenericDatabase::QuerySymmetricTensors(const std::string &varName,
         int nComponents = 0;; 
         if (tensors)
         {
-            bool zoneCent, validCentering = true;
+            bool zoneCent = false, validCentering = true;
             if (tmd->centering == AVT_NODECENT)
             {
                 varInfo.SetCentering(PickVarInfo::Nodal);

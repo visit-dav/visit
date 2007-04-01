@@ -45,13 +45,16 @@ vector< vector<string> >   *avtExodusFileFormat::globalFileLists = NULL;
 //    Hank Childs, Thu Jul 22 14:28:10 PDT 2004
 //    Add support for registering file lists.
 //
+//    Hank Childs, Mon Aug 23 13:41:54 PDT 2004
+//    Rename cache object to avoid namespace conflict with base class.
+//
 // ****************************************************************************
 
 avtExodusFileFormat::avtExodusFileFormat(const char *name)
    : avtMTSDFileFormat(&name, 1)
 {
     reader = NULL;
-    cache  = NULL;
+    exodusCache  = NULL;
     readInFile = false;
     fileList = -1;
 }
@@ -95,6 +98,11 @@ avtExodusFileFormat::RegisterFileList(const char *const *list, int nlist)
 //
 //  Programmer: Hank Childs
 //  Creation:   April 8, 2003
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Aug 23 13:41:54 PDT 2004
+//    Rename cache object to avoid namespace conflict with base class.
 //
 // ****************************************************************************
 
@@ -145,7 +153,7 @@ avtExodusFileFormat::ReadInFile(void)
     // We need to maintain our own cache, since meshes do not change over
     // timesteps (but the exodus format is the only thing that knows that).
     //
-    cache = new avtVariableCache;
+    exodusCache = new avtVariableCache;
 
     readInFile = true;
 }
@@ -157,6 +165,11 @@ avtExodusFileFormat::ReadInFile(void)
 //  Programmer: Hank Childs
 //  Creation:   October 8, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Aug 23 13:41:54 PDT 2004
+//    Rename cache object to avoid namespace conflict with base class.
+//
 // ****************************************************************************
 
 avtExodusFileFormat::~avtExodusFileFormat()
@@ -166,10 +179,10 @@ avtExodusFileFormat::~avtExodusFileFormat()
         reader->Delete();
         reader = NULL;
     }
-    if (cache != NULL)
+    if (exodusCache != NULL)
     {
-        delete cache;
-        cache = NULL;
+        delete exodusCache;
+        exodusCache = NULL;
     }
 }
 
@@ -524,11 +537,15 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
 //    Added bool argument for okToRemoveAndCacheGlobalIds
 //    Added code to remove and cache global node and zone ids
 //
+//    Hank Childs, Mon Aug 23 13:41:54 PDT 2004
+//    Rename cache object to avoid namespace conflict with base class.
+//    Also increment reference counts of arrays that are becoming void refs.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtExodusFileFormat::ReadMesh(int ts, const char *mesh,
-    bool okToRemoveAndCacheGlobalIds)
+                              bool okToRemoveAndCacheGlobalIds)
 {
     if (!readInFile)
     {
@@ -546,7 +563,7 @@ avtExodusFileFormat::ReadMesh(int ts, const char *mesh,
     const char *matname = "_all";
     int fts = 0;
     int dom = 0;
-    vtkDataSet *cmesh = (vtkDataSet *) cache->GetVTKObject(mesh,
+    vtkDataSet *cmesh = (vtkDataSet *) exodusCache->GetVTKObject(mesh,
                             avtVariableCache::DATASET_NAME, fts, dom, matname);
     if (cmesh != NULL)
     {
@@ -572,22 +589,26 @@ avtExodusFileFormat::ReadMesh(int ts, const char *mesh,
             // associated with. So, if the VTK dataset we've obtained has
             // them, here, we remove them and cache them in AVT separately.
             //
-            vtkDataArray *gnodeIds = ds->GetPointData()->GetArray("avtGlobalNodeId");
+            vtkDataArray *gnodeIds =
+                               ds->GetPointData()->GetArray("avtGlobalNodeId");
             if (gnodeIds != NULL)
             {
-                ds->GetPointData()->RemoveArray("avtGlobalNodeId");
-
-                void_ref_ptr vr = void_ref_ptr(gnodeIds, avtVariableCache::DestructVTKObject);
-                cache->CacheVoidRef(mesh, AUXILIARY_DATA_GLOBAL_NODE_IDS, fts, dom, vr);
+                gnodeIds->Register(NULL);
+                void_ref_ptr vr = void_ref_ptr(gnodeIds, 
+                                          avtVariableCache::DestructVTKObject);
+                cache->CacheVoidRef(mesh, AUXILIARY_DATA_GLOBAL_NODE_IDS,
+                                    -1, myDomain, vr);
             }
 
-            vtkDataArray *gzoneIds = ds->GetCellData()->GetArray("ElementGlobalId");
+            vtkDataArray *gzoneIds =
+                                ds->GetCellData()->GetArray("ElementGlobalId");
             if (gzoneIds != NULL)
             {
-                ds->GetCellData()->RemoveArray("ElementGlobalId");
-
-                void_ref_ptr vr = void_ref_ptr(gzoneIds, avtVariableCache::DestructVTKObject);
-                cache->CacheVoidRef(mesh, AUXILIARY_DATA_GLOBAL_ZONE_IDS, fts, dom, vr);
+                gzoneIds->Register(NULL);
+                void_ref_ptr vr = void_ref_ptr(gzoneIds,
+                                          avtVariableCache::DestructVTKObject);
+                cache->CacheVoidRef(mesh, AUXILIARY_DATA_GLOBAL_ZONE_IDS,
+                                    -1, myDomain, vr);
             }
         }
 
@@ -597,8 +618,8 @@ avtExodusFileFormat::ReadMesh(int ts, const char *mesh,
         //
         // Cache the mesh back.
         //
-        cache->CacheVTKObject(mesh, avtVariableCache::DATASET_NAME, fts, dom,
-                              matname, rv);
+        exodusCache->CacheVTKObject(mesh, avtVariableCache::DATASET_NAME, fts, 
+                                    dom, matname, rv);
     }
 
     return rv;
@@ -769,6 +790,10 @@ avtExodusFileFormat::GetVectorVar(int ts, const char *var)
 //    so we'll rarely, if ever, wind up in here making an explicit request
 //    for them.
 //
+//    Hank Childs, Mon Aug 23 13:41:54 PDT 2004
+//    Rename cache object to avoid namespace conflict with base class.
+//    Also increment reference counts of arrays that are becoming void refs.
+//
 // ****************************************************************************
 
 void *
@@ -830,13 +855,14 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
         // we'll remove them from from the vtkDataSet object and stick
         // them in the AVT cache now.
         //
-        vtkDataArray *gzoneIds = ds->GetCellData()->GetArray("ElementGlobalId");
+        vtkDataArray *gzoneIds =ds->GetCellData()->GetArray("ElementGlobalId");
         if (gzoneIds != NULL)
         {
-            ds->GetCellData()->RemoveArray("ElementGlobalId");
-
-            void_ref_ptr vr = void_ref_ptr(gzoneIds, avtVariableCache::DestructVTKObject);
-            cache->CacheVoidRef("Mesh", AUXILIARY_DATA_GLOBAL_ZONE_IDS, ts, 0, vr);
+            gzoneIds->Register(NULL);
+            void_ref_ptr vr = void_ref_ptr(gzoneIds,
+                                          avtVariableCache::DestructVTKObject);
+            cache->CacheVoidRef("Mesh", AUXILIARY_DATA_GLOBAL_ZONE_IDS, 
+                                -1, myDomain, vr);
         }
 
         //
@@ -844,13 +870,12 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
         // cache them as avtGenericDatabase will do that for us upon return
         // from this call
         //
-        vtkDataArray *gnodeIds = ds->GetPointData()->GetArray("avtGlobalNodeId");
-        if (gnodeIds != NULL)
-            ds->GetPointData()->RemoveArray("avtGlobalNodeId");
+        vtkDataArray *gnodeIds=ds->GetPointData()->GetArray("avtGlobalNodeId");
 
         //
         // Return what we came here for
         //
+        gnodeIds->Register(NULL);
         df = avtVariableCache::DestructVTKObject;
         return (void*) gnodeIds;
     }
@@ -867,13 +892,14 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
         // we'll remove them from from the vtkDataSet object and stick
         // them in the AVT cache now.
         //
-        vtkDataArray *gnodeIds = ds->GetPointData()->GetArray("avtGlobalNodeId");
+        vtkDataArray *gnodeIds=ds->GetPointData()->GetArray("avtGlobalNodeId");
         if (gnodeIds != NULL)
         {
-            ds->GetPointData()->RemoveArray("avtGlobalNodeId");
-
-            void_ref_ptr vr = void_ref_ptr(gnodeIds, avtVariableCache::DestructVTKObject);
-            cache->CacheVoidRef("Mesh", AUXILIARY_DATA_GLOBAL_NODE_IDS, ts, 0, vr);
+            gnodeIds->Register(NULL);
+            void_ref_ptr vr = void_ref_ptr(gnodeIds,
+                                          avtVariableCache::DestructVTKObject);
+            cache->CacheVoidRef("Mesh", AUXILIARY_DATA_GLOBAL_NODE_IDS,
+                                -1, myDomain, vr);
         }
 
         //
@@ -881,13 +907,12 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
         // cache them as avtGenericDatabase will do that for us upon return
         // from this call
         //
-        vtkDataArray *gzoneIds = ds->GetCellData()->GetArray("ElementGlobalId");
-        if (gzoneIds != NULL)
-            ds->GetCellData()->RemoveArray("ElementGlobalId");
+        vtkDataArray *gzoneIds =ds->GetCellData()->GetArray("ElementGlobalId");
 
         //
         // Return what we came here for
         //
+        gzoneIds->Register(NULL);
         df = avtVariableCache::DestructVTKObject;
         return (void*) gzoneIds;
     }
