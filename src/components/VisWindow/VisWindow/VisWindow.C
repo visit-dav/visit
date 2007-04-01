@@ -5470,6 +5470,9 @@ VisWindow::ResumeTranslucentGeometry()
 //   Kathleen Bonnell, Tue Nov  2 10:18:16 PST 2004
 //   Added support for full-frame mode.
 //
+//   Kathleen Bonnell, Mon Nov  8 15:47:32 PST 2004
+//   Moved support for full-frame mode to ViewerQueryManager.
+//
 // ****************************************************************************
 
 void
@@ -5488,13 +5491,7 @@ VisWindow::GlyphPick(const float *rp1, const float *rp2, int &dom,
     float dir[3];
     float r1[3] = {rp1[0], rp1[1], rp1[2]};
     float r2[3] = {rp2[0], rp2[1], rp2[2]};
-    if (GetFullFrameMode())
-    {
-       int *size = rendering->GetFirstRenderer()->GetSize(); 
-       double scale = view2D.GetScaleFactor(size);
-       r1[1] /= scale;
-       r2[1] /= scale;
-    }
+
     for (i = 0; i < 3; i++)
         dir[i] = r2[i] - r1[i];
     float dummy1[3], dummy2;

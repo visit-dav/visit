@@ -1545,6 +1545,9 @@ ViewerQueryManager::ClearPickPoints()
 //    Kathleen Bonnell, Tue Oct 12 16:31:46 PDT 2004 
 //    Expand 'GlyphPick' to include non-LabelPlot point meshes. 
 //
+//    Kathleen Bonnell, Mon Nov  8 15:47:32 PST 2004 
+//    Moved full-frame test to before 'GlyphPick' test.
+//
 // ****************************************************************************
 
 bool
@@ -1671,63 +1674,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             }
             else 
                 pickAtts->SetPickType(PickAttributes::CurveNode);
-   
         }
-        bool doGlyphPick = 
-                  (strcmp(plot->GetPlotName(), "Vector") == 0) ||
-                  ((plot->GetMeshType() == AVT_POINT_MESH) &&
-                   (strcmp(plot->GetPlotName(), "Label") != 0));
-
-        if (doGlyphPick && win->GetScalableRendering() && 
-            (dom ==-1 || el == -1))
-        {
-            pickAtts->SetRequiresGlyphPick(true);
-        }
-        else if (doGlyphPick && !win->GetScalableRendering())
-        {
-            int d = -1, e = -1;
-            bool forCell = false;
-            if (dom == -1 || el == -1) 
-            {
-                //
-                // We only want to find an intersection  with the currently
-                // active plot, so make it the only pickable actor in the 
-                // renderer. Perform the intersection test, then make it
-                // unpickable again.
-                //
-                plot->GetActor()->MakePickable();
-                win->GlyphPick(pd.rayPt1, pd.rayPt2, d, e, forCell);
-                plot->GetActor()->MakeUnPickable();
-                d += plot->GetBlockOrigin();
-                // 
-                // Due to the nature of the glyphs, the pick type MUST match
-                // the variable centering.
-                // 
-                if (forCell)
-                    pickAtts->SetPickType(PickAttributes::DomainZone);
-                else 
-                    pickAtts->SetPickType(PickAttributes::DomainNode);
-            }
-            else // PickByNode or PickByZone
-            {
-                d = dom;
-                e = el;
-            }
-            if (d != -1 && e != -1)
-            {
-                pickAtts->SetDomain(d);
-                pickAtts->SetElementNumber(e);
-                float dummyPt[3] = { FLT_MAX, 0., 0.};
-                pickAtts->SetPickPoint(dummyPt);
-                pickAtts->SetCellPoint(dummyPt);
-            }
-            else
-            {
-                Warning("Vector pick could not find a valid intersection.");
-                return false;
-            }
-        }
-
         float *rp1 = pd.rayPt1;
         float *rp2 = pd.rayPt2;
         //
@@ -1760,7 +1707,62 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
 
         pickAtts->SetRayPoint1(rp1);
         pickAtts->SetRayPoint2(rp2);
-   
+
+        bool doGlyphPick = 
+                  (strcmp(plot->GetPlotName(), "Vector") == 0) ||
+                  ((plot->GetMeshType() == AVT_POINT_MESH) &&
+                   (strcmp(plot->GetPlotName(), "Label") != 0));
+
+        if (doGlyphPick && win->GetScalableRendering() && 
+            (dom ==-1 || el == -1))
+        {
+            pickAtts->SetRequiresGlyphPick(true);
+        }
+        else if (doGlyphPick && !win->GetScalableRendering())
+        {
+            int d = -1, e = -1;
+            bool forCell = false;
+            if (dom == -1 || el == -1) 
+            {
+                //
+                // We only want to find an intersection  with the currently
+                // active plot, so make it the only pickable actor in the 
+                // renderer. Perform the intersection test, then make it
+                // unpickable again.
+                //
+                plot->GetActor()->MakePickable();
+                win->GlyphPick(rp1, rp2, d, e, forCell);
+                plot->GetActor()->MakeUnPickable();
+                d += plot->GetBlockOrigin();
+                // 
+                // Due to the nature of the glyphs, the pick type MUST match
+                // the variable centering.
+                // 
+                if (forCell)
+                    pickAtts->SetPickType(PickAttributes::DomainZone);
+                else 
+                    pickAtts->SetPickType(PickAttributes::DomainNode);
+            }
+            else // PickByNode or PickByZone
+            {
+                d = dom;
+                e = el;
+            }
+            if (d != -1 && e != -1)
+            {
+                pickAtts->SetDomain(d);
+                pickAtts->SetElementNumber(e);
+                float dummyPt[3] = { FLT_MAX, 0., 0.};
+                pickAtts->SetPickPoint(dummyPt);
+                pickAtts->SetCellPoint(dummyPt);
+            }
+            else
+            {
+                Warning("Glyph pick could not find a valid intersection.");
+                return false;
+            }
+        }
+
         //
         // Most of the time, these will be -1, Except when picking
         // via PickByZone or PickByNode.

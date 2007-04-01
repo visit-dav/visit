@@ -644,6 +644,11 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds)
 //    elements stored in pickAtts don't correspond to the element numbers
 //    used by ds.
 //    
+//    Kathleen Bonnell, Mon Nov  8 15:47:32 PST 2004 
+//    Instead of wrapping 'GetTreatAsASCII' in TRY-CATCH, ensure the variable
+//    is valid before retrieving the flag to avoid EXCEPTION throwing 
+//    altogether. 
+//    
 // ****************************************************************************
 
 void
@@ -690,18 +695,11 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
         {
             vName = userVars[varNum];
         }
-        TRY
-        {
+
+        if (data.ValidVariable(vName))
             treatAsASCII = data.GetTreatAsASCII(vName.c_str());
-        }
-        CATCH(ImproperUseException)
-        {
-            //
-            // We may be querying a Mesh var.
-            //
+        else
             treatAsASCII = false;
-        }
-        ENDTRY
 
         vtkDataArray *varArray = ds->GetPointData()->GetArray(vName.c_str());
         if (varArray != NULL) // nodal data

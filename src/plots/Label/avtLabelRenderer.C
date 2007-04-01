@@ -39,6 +39,10 @@
 // Creation:    October 1, 2004
 //
 // Modifications:
+//    Jeremy Meredith, Mon Nov  8 17:20:43 PST 2004
+//    Caching is now done on a per-vtk-dataset basis, and we no longer
+//    keep track of whether the cache is invalidated independent of whether
+//    it was deallocated.
 //
 // ****************************************************************************
 
@@ -62,14 +66,6 @@ avtLabelRenderer::avtLabelRenderer() : avtCustomRenderer(), singleCellInfo(),
     treatAsASCII = false;
     renderLabels3D = false;
 
-    cellLabelsCache = 0;
-    cellLabelsCached = false;
-    cellLabelsCacheSize = 0;
-
-    nodeLabelsCache = 0;
-    nodeLabelsCached = false;
-    nodeLabelsCacheSize = 0;
-
     spatialExtents[0] = 0.;
     spatialExtents[1] = 0.;
     spatialExtents[2] = 0.;
@@ -91,15 +87,22 @@ avtLabelRenderer::avtLabelRenderer() : avtCustomRenderer(), singleCellInfo(),
 //   Brad Whitlock, Mon Oct 25 16:04:38 PST 2004
 //   Changed the call to clear the label caches.
 //
+//    Jeremy Meredith, Mon Nov  8 17:20:43 PST 2004
+//    Caching is now done on a per-vtk-dataset basis, and we no longer
+//    keep track of whether the cache is invalidated independent of whether
+//    it was deallocated.
+//
 // ****************************************************************************
 
 avtLabelRenderer::~avtLabelRenderer()
 {
-    if (input != 0)
+    for (std::map<vtkDataSet*,vtkPolyData*>::iterator it = inputMap.begin();
+         it != inputMap.end();
+         it++)
     {
-        input->Delete();
-        input = 0;
+        it->second->Delete();
     }
+    inputMap.clear();
 
     if(labelBins != 0)
         delete [] labelBins;
@@ -165,6 +168,9 @@ avtLabelRenderer::SetForegroundColor(const double *fg)
 // Creation:    Thu Jan 22 11:16:18 PDT 2004
 //
 // Modifications:
+//    Jeremy Meredith, Mon Nov  8 17:20:43 PST 2004
+//    Caching is now done on a per-vtk-dataset basis.  Also, added a call
+//    to free the geometry filter when we were done with it.
 //
 // ****************************************************************************
 
@@ -181,22 +187,32 @@ avtLabelRenderer::Render(vtkDataSet *ds)
     // For efficiency: if input type is vtkPolyData, there's no 
     // need to pass it through the geometry filter.
     //
-  
-    if (input != 0)
-        input->Delete();
 
-    if (ds->GetDataObjectType() != VTK_POLY_DATA) 
+    if (!inputMap[ds])
     {
-        vtkGeometryFilter *gf = vtkGeometryFilter::New();
-        gf->SetInput(ds);
-        input = vtkPolyData::New();
-        gf->SetOutput(input);
-        gf->Update();
+        // we haven't seen this input yet
+        if (ds->GetDataObjectType() != VTK_POLY_DATA) 
+        {
+            vtkGeometryFilter *gf = vtkGeometryFilter::New();
+            gf->SetInput(ds);
+            input = vtkPolyData::New();
+            gf->SetOutput(input);
+            gf->Update();
+            gf->Delete();
+        }
+        else 
+        {
+            input = (vtkPolyData *)ds;
+            input->Register(NULL);
+        }
+
+        inputMap[ds] = input;
     }
-    else 
+    else
     {
-        input = (vtkPolyData *)ds;
-        input->Register(NULL);
+        // This one is a re-run, so it's safe to re-use whatever
+        // polydata we decided to use for it last time.
+        input = inputMap[ds];
     }
 
     //
@@ -263,6 +279,10 @@ avtLabelRenderer::ResetLabelBins()
 // Creation:   Mon Oct 25 08:56:56 PDT 2004
 //
 // Modifications:
+//    Jeremy Meredith, Mon Nov  8 17:19:21 PST 2004
+//    The caching code changed a bit, so I decided to change the
+//    invalidation to actually deallocate the memory as well.  It was
+//    not a big price to pay, and the code winds up a bit simpler.
 //   
 // ****************************************************************************
 
@@ -275,9 +295,7 @@ avtLabelRenderer::SetVariable(const char *name)
     //
     if(varname != 0 && name != 0 && strcmp(name, varname) != 0)
     {
-        cellLabelsCached = false;
-        nodeLabelsCached = false;
-        maxLabelLength = 0;
+        ClearLabelCaches();
     }
 
     // Store the new variable name.
@@ -549,6 +567,10 @@ avtLabelRenderer::SetupSingleNodeLabel()
 // Creation:   Tue Oct 5 14:45:59 PST 2004
 //
 // Modifications:
+//    Jeremy Meredith, Mon Nov  8 17:20:43 PST 2004
+//    Caching is now done on a per-vtk-dataset basis, and we no longer
+//    keep track of whether the cache is invalidated independent of whether
+//    it was deallocated.
 //   
 // ****************************************************************************
 
@@ -561,24 +583,22 @@ avtLabelRenderer::SetupSingleNodeLabel()
 void
 avtLabelRenderer::CreateCachedCellLabels()
 {
-    // Resize the cell labels cache.
-    if(cellLabelsCache == 0 || input->GetNumberOfCells() != cellLabelsCacheSize)
-    {
-        delete [] cellLabelsCache;
-        cellLabelsCacheSize = input->GetNumberOfCells();
-        cellLabelsCache = new char[MAX_LABEL_SIZE * cellLabelsCacheSize + 1];
-    }
+    char *&cellLabelsCache = cellLabelsCacheMap[input];
 
-    //
-    // Include the method body with BEGIN_LABEL, END_LABEL macros defined
-    // such that we immediately draw the labels without first transforming
-    // them.
-    //
-    if(!cellLabelsCached)
+    // Resize the cell labels cache.
+    if (cellLabelsCache == NULL)
     {
+        int cellLabelsCacheSize = input->GetNumberOfCells();
+        cellLabelsCacheSizeMap[input] = cellLabelsCacheSize;
+        cellLabelsCache = new char[MAX_LABEL_SIZE * cellLabelsCacheSize + 1];
+
+        //
+        // Include the method body with BEGIN_LABEL, END_LABEL macros defined
+        // such that we immediately draw the labels without first transforming
+        // them.
+        //
         char *labelString = cellLabelsCache;
 #include <CellLabels_body.C>
-        cellLabelsCached = true;
     }
 }
 #undef BEGIN_LABEL
@@ -594,7 +614,11 @@ avtLabelRenderer::CreateCachedCellLabels()
 // Creation:   Tue Oct 5 14:49:59 PST 2004
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Mon Nov  8 17:20:43 PST 2004
+//    Caching is now done on a per-vtk-dataset basis, and we no longer
+//    keep track of whether the cache is invalidated independent of whether
+//    it was deallocated.
+//
 // ****************************************************************************
 
 #define BEGIN_LABEL  int L;
@@ -605,24 +629,22 @@ avtLabelRenderer::CreateCachedCellLabels()
 void
 avtLabelRenderer::CreateCachedNodeLabels()
 {
-    // Resize the node labels cache.
-    if(nodeLabelsCache == 0 || input->GetPoints()->GetNumberOfPoints() != nodeLabelsCacheSize)
-    {
-        delete [] nodeLabelsCache;
-        nodeLabelsCacheSize = input->GetPoints()->GetNumberOfPoints();
-        nodeLabelsCache = new char[MAX_LABEL_SIZE * nodeLabelsCacheSize + 1];
-    }
+    char *&nodeLabelsCache = nodeLabelsCacheMap[input];
 
-    //
-    // Include the method body with BEGIN_LABEL, END_LABEL macros defined
-    // such that we immediately draw the labels without first transforming
-    // them.
-    //
-    if(!nodeLabelsCached)
-    { 
+    // Resize the node labels cache.
+    if(nodeLabelsCache == NULL)
+    {
+        int nodeLabelsCacheSize = input->GetPoints()->GetNumberOfPoints();
+        nodeLabelsCacheSizeMap[input] = nodeLabelsCacheSize;
+        nodeLabelsCache = new char[MAX_LABEL_SIZE * nodeLabelsCacheSize + 1];
+
+        //
+        // Include the method body with BEGIN_LABEL, END_LABEL macros defined
+        // such that we immediately draw the labels without first transforming
+        // them.
+        //
         char *labelString = nodeLabelsCache;
 #include <NodeLabels_body.C>
-        nodeLabelsCached = true;
     }
 }
 #undef BEGIN_LABEL
@@ -639,6 +661,10 @@ avtLabelRenderer::CreateCachedNodeLabels()
 // Creation:   Mon Oct 25 16:03:33 PST 2004
 //
 // Modifications:
+//    Jeremy Meredith, Mon Nov  8 17:20:43 PST 2004
+//    Caching is now done on a per-vtk-dataset basis, and we no longer
+//    keep track of whether the cache is invalidated independent of whether
+//    it was deallocated.
 //   
 // ****************************************************************************
 
@@ -649,15 +675,19 @@ avtLabelRenderer::ClearLabelCaches()
     // Delete the label caches.
     //
     maxLabelLength = 0;
-    delete [] cellLabelsCache;
-    cellLabelsCache = 0;
-    cellLabelsCached = false;
-    cellLabelsCacheSize = 0;
 
-    delete [] nodeLabelsCache;
-    nodeLabelsCache = 0;
-    nodeLabelsCached = false;
-    nodeLabelsCacheSize = 0;
+    std::map<vtkPolyData*,char*>::iterator it;
+    for (it=cellLabelsCacheMap.begin(); it != cellLabelsCacheMap.end(); it++)
+    {
+        delete[] it->second;
+    }
+    cellLabelsCacheMap.clear();
+
+    for (it=nodeLabelsCacheMap.begin(); it != nodeLabelsCacheMap.end(); it++)
+    {
+        delete[] it->second;
+    }
+    nodeLabelsCacheMap.clear();
 }
 
 // ****************************************************************************
@@ -876,7 +906,9 @@ avtLabelRenderer::TransformPoints(const float *inputPoints,
 // Creation:   Mon Oct 25 09:08:35 PDT 2004
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Mon Nov  8 17:25:19 PST 2004
+//    Caching is now on a per-dataset basis.
+//
 // ****************************************************************************
 
 void
@@ -926,7 +958,7 @@ avtLabelRenderer::PopulateBinsWithNodeLabels3D()
     stageTimer = visitTimer->StartTimer();
     int n = fa->GetNumberOfTuples();
     float *transformedPoint = xformedPoints;
-    const char *currentLabel = nodeLabelsCache;
+    const char *currentLabel = nodeLabelsCacheMap[input];
     if(quantizedNormalIndices != 0)
     {
         //
@@ -971,7 +1003,9 @@ avtLabelRenderer::PopulateBinsWithNodeLabels3D()
 // Creation:   Mon Oct 25 09:08:35 PDT 2004
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Mon Nov  8 17:25:19 PST 2004
+//    Caching is now on a per-dataset basis.
+//
 // ****************************************************************************
 
 void
@@ -1015,7 +1049,7 @@ avtLabelRenderer::PopulateBinsWithCellLabels3D()
     stageTimer = visitTimer->StartTimer();
     float *transformedPoint = xformedPoints;
     int n = cellCenters->GetNumberOfTuples();
-    const char *currentLabel = cellLabelsCache;
+    const char *currentLabel = cellLabelsCacheMap[input];
     if(quantizedNormalIndices != 0)
     {
         //
@@ -1061,6 +1095,11 @@ avtLabelRenderer::PopulateBinsWithCellLabels3D()
 //  Creation:    October 1, 2004
 //
 //  Modifications:
+//    Jeremy Meredith, Mon Nov  8 17:19:21 PST 2004
+//    The caching code changed a bit, so I decided to change the
+//    invalidation to actually deallocate the memory as well.  It was
+//    not a big price to pay, and the code winds up a bit simpler because
+//    it is now just a single function call.
 //
 // ****************************************************************************
 void
@@ -1134,9 +1173,7 @@ avtLabelRenderer::SetAtts(const AttributeGroup *a)
     //
     if(labelDisplayFormatChanged)
     {
-        cellLabelsCached = false;
-        nodeLabelsCached = false;
-        maxLabelLength = 0;
+        ClearLabelCaches();
     }
 }
 
