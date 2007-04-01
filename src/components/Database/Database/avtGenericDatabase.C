@@ -5324,12 +5324,18 @@ avtGenericDatabase::AssociateBounds(vtkDataSet *ds)
 //    Hank Childs, Sat Mar 27 11:51:10 PST 2004
 //    Do not let scaling go into an infinite loop.
 //
+//    Hank Childs, Thu Apr 22 07:56:13 PDT 2004
+//    Make sure that all of the dimensions are too big or too small, not just
+//    one of them.
+//
 // ****************************************************************************
 
 void
 avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
 {
-    bool needScaling = false;
+    bool needXScaling = false;
+    bool needYScaling = false;
+    bool needZScaling = false;
     double scaleFactor = 1.;
 
     float bounds[6];
@@ -5354,7 +5360,7 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
             temp /= 10.;
             scaleFactor *= 10.;
         }
-        needScaling = true;
+        needXScaling = true;
     }
     if ((bounds[1] > bounds[0]) && (bounds[1] - bounds[0] < 1e-6))
     {
@@ -5366,7 +5372,7 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
             temp *= 10.;
             scaleFactor /= 10.;
         }
-        needScaling = true;
+        needXScaling = true;
     }
     if (bounds[3] - bounds[2] > 1e8)
     {
@@ -5378,7 +5384,7 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
             temp /= 10.;
             scaleFactor *= 10.;
         }
-        needScaling = true;
+        needYScaling = true;
     }
     if ((bounds[3] > bounds[2]) && (bounds[3] - bounds[2] < 1e-6))
     {
@@ -5390,7 +5396,7 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
             temp *= 10.;
             scaleFactor /= 10.;
         }
-        needScaling = true;
+        needYScaling = true;
     }
     if (bounds[5] - bounds[4] > 1e8)
     {
@@ -5402,7 +5408,7 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
             temp /= 10.;
             scaleFactor *= 10.;
         }
-        needScaling = true;
+        needZScaling = true;
     }
     if ((bounds[5] > bounds[4]) && (bounds[5] - bounds[4] < 1e-6))
     {
@@ -5414,14 +5420,23 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
             temp *= 10.;
             scaleFactor /= 10.;
         }
-        needScaling = true;
+        needZScaling = true;
     }
 
-    if (!needScaling)
+    //
+    // If any of the three dimensions don't need to be scaled, then don't
+    // scale.  However, the Z-test is a little tricky, since we might only
+    // have a 2D dataset.
+    //
+    if (!needXScaling || !needYScaling)
     {
         return;
     }
-
+    if (!needZScaling && (bounds[4] != bounds[5]))
+    {
+        return;
+    }
+    
     static bool haveIssuedWarning = false;
     if (!haveIssuedWarning)
     {
