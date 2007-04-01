@@ -1,4 +1,4 @@
-  // ************************************************************************* //
+// ************************************************************************* //
 //                             avtResampleFilter.C                           //
 // ************************************************************************* //
 
@@ -13,6 +13,8 @@
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
 #include <avtParallel.h>
+#include <avtRay.h>
+#include <avtRelativeValueSamplePointArbitrator.h>
 #include <avtSamplePointExtractor.h>
 #include <avtSourceFromAVTDataset.h>
 #include <avtWorldSpaceToImageSpaceTransform.h>
@@ -337,6 +339,10 @@ avtResampleFilter::BypassResample(void)
 //    Hank Childs, Fri Aug  8 15:34:27 PDT 2003
 //    Make sure that we can get good variable names on the root processor.
 //
+//    Hank Childs, Sat Jan 29 10:56:58 PST 2005
+//    Added support for using bounds from attributes.  Also set up arbitrator
+//    if necessary.
+//
 // ****************************************************************************
 
 void
@@ -344,17 +350,37 @@ avtResampleFilter::ResampleInput(void)
 {
     int  i, j;
 
+    avtRelativeValueSamplePointArbitrator *arb = NULL;
+    bool is3D = true;
+
     avtDataset_p output = GetTypedOutput();
     double bounds[6];
-    avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
-    avtExtents *exts = datts.GetEffectiveSpatialExtents();
-    if (exts->HasExtents())
+    if (atts.GetUseBounds())
     {
-        exts->CopyTo(bounds);
+        bounds[0] = atts.GetMinX();
+        bounds[1] = atts.GetMaxX();
+        bounds[2] = atts.GetMinY();
+        bounds[3] = atts.GetMaxY();
+        bounds[4] = atts.GetMinZ();
+        bounds[5] = atts.GetMaxZ();
+        if (bounds[4] == bounds[5])
+        {
+            is3D = false;
+            bounds[5] += 0.1;
+        }
     }
     else
     {
-        GetSpatialExtents(bounds);
+        avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
+        avtExtents *exts = datts.GetEffectiveSpatialExtents();
+        if (exts->HasExtents())
+        {
+            exts->CopyTo(bounds);
+        }
+        else
+        {
+            GetSpatialExtents(bounds);
+        }
     }
 
     debug4 << "Resampling over space: " << bounds[0] << ", " << bounds[1]
@@ -367,8 +393,11 @@ avtResampleFilter::ResampleInput(void)
     // pass it along (since resampling does not change it in theory).
     //
     double range[2];
-    GetDataExtents(range);
-    output->GetInfo().GetAttributes().GetEffectiveDataExtents()->Set(range);
+    if (GetInput()->GetInfo().GetAttributes().ValidActiveVariable())
+    {
+        GetDataExtents(range);
+        output->GetInfo().GetAttributes().GetEffectiveDataExtents()->Set(range);
+    }
 
     avtViewInfo view;
     double scale[3];
@@ -408,8 +437,49 @@ avtResampleFilter::ResampleInput(void)
     GetDimensions(width, height, depth, bounds);
 
     avtSamplePointExtractor extractor(width, height, depth);
+    extractor.Set3DMode(is3D);
     extractor.SetInput(trans.GetOutput());
     
+    //
+    // This is hack-ish.  The sample point extractor throws out variables
+    // that have "avt" or "vtk" in them.  The returned sample points don't
+    // have variable names, so we need to match up the variables from the
+    // input dataset.
+    //
+    VarList vl;
+    vl.nvars = -1;
+    avtDatasetExaminer::GetVariableList(ds, vl);
+    int myVars = 0;
+    for (i = 0 ; i < vl.nvars ; i++)
+        if ((strstr(vl.varnames[i].c_str(), "vtk") == NULL) &&
+            (strstr(vl.varnames[i].c_str(), "avt") == NULL))
+            myVars++;
+
+    if (atts.GetUseArbitrator())
+    {
+        int tmpCnt = 0;
+        int match = -1;
+        for (i = 0 ; i < vl.nvars ; i++)
+            if ((strstr(vl.varnames[i].c_str(), "vtk") == NULL) &&
+                (strstr(vl.varnames[i].c_str(), "avt") == NULL))
+            {
+                if (vl.varnames[i] == atts.GetArbitratorVarName())
+                    match = tmpCnt;
+                if (atts.GetArbitratorVarName() == "default" &&
+                    vl.varnames[i] == primaryVariable)
+                    match = tmpCnt;
+                tmpCnt++;
+            }
+        if (match != -1)
+        {
+            arb = new avtRelativeValueSamplePointArbitrator(
+                                         atts.GetArbitratorLessThan(), match);
+            avtRay::SetArbitrator(arb);
+        }
+    }
+    else
+        avtRay::SetArbitrator(NULL);
+
     //
     // Since this is Execute, forcing an update is okay...
     //
@@ -428,21 +498,6 @@ avtResampleFilter::ResampleInput(void)
     // original bounds.
     //
     vtkRectilinearGrid *rg = CreateGrid(bounds, width, height, depth);
-    VarList vl;
-    vl.nvars = -1;
-    avtDatasetExaminer::GetVariableList(ds, vl);
-
-    //
-    // This is hack-ish.  The sample point extractor throws out variables
-    // that have "avt" or "vtk" in them.  The returned sample points don't
-    // have variable names, so we need to match up the variables from the
-    // input dataset.
-    //
-    int myVars = 0;
-    for (i = 0 ; i < vl.nvars ; i++)
-        if ((strstr(vl.varnames[i].c_str(), "vtk") == NULL) &&
-            (strstr(vl.varnames[i].c_str(), "avt") == NULL))
-            myVars++;
 
     //
     // If we have more processors than domains, we have to handle that
@@ -531,6 +586,11 @@ avtResampleFilter::ResampleInput(void)
         vars[i]->Delete();
     }
     delete [] vars;
+    if (arb != NULL)
+    {
+        delete arb;
+        avtRay::SetArbitrator(NULL);
+    }
 }
 
 
@@ -855,12 +915,21 @@ GetCoordinates(float start, float length, int numEls)
 //    Hank Childs, Fri Nov 16 08:51:59 PST 2001
 //    Capture what the primary variable is.
 //
+//    Hank Childs, Sat Jan 29 11:01:59 PST 2005
+//    If we are going to use an arbitrator, make sure to request the variable.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
 avtResampleFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
     spec->NoDynamicLoadBalancing();
+    if (atts.GetUseArbitrator())
+    {
+        if (atts.GetArbitratorVarName() != "default")
+            spec->GetDataSpecification()->
+                     AddSecondaryVariable(atts.GetArbitratorVarName().c_str());
+    }
     if (primaryVariable != NULL)
     {
         delete [] primaryVariable;

@@ -10,7 +10,6 @@
 #include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
 #include <vtkDataSet.h>
-#include <vtkDataSetWriter.h>
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
@@ -21,6 +20,7 @@
 #include <vtkSurfaceFilter.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <avtCallback.h>
 #include <avtDataAttributes.h>
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
@@ -54,11 +54,14 @@
 //    Kathleen Bonnell, Mon May 24 14:13:55 PDT 2004 
 //    Moved geoFilter, appendFilter and edgesFilter to avtWireframeFilter.
 //
+//    Hank Childs, Sun Jan 30 13:55:21 PST 2005
+//    Change attribute type.
+//
 // ****************************************************************************
 
 avtSurfaceFilter::avtSurfaceFilter(const AttributeGroup *a)
 {
-    atts = *(SurfaceAttributes*)a;
+    atts = *(SurfaceFilterAttributes*)a;
     filter       = vtkSurfaceFilter::New();
     cd2pd        = vtkCellDataToPointData::New();
     stillNeedExtents = true;
@@ -132,12 +135,15 @@ avtSurfaceFilter::Create(const AttributeGroup *atts)
 //
 //  Modifications:
 //
+//    Hank Childs, Sun Jan 30 13:55:21 PST 2005
+//    Change attribute type we are casting to.
+//
 // ****************************************************************************
 
 bool
 avtSurfaceFilter::Equivalent(const AttributeGroup *a)
 {
-    return (atts == *(SurfaceAttributes*)a);
+    return (atts == *(SurfaceFilterAttributes*)a);
 }
 
 
@@ -212,6 +218,12 @@ avtSurfaceFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Fri Jul 30 12:26:20 PDT 2004
 //    Update zValMin and zValMax.
 //
+//    Hank Childs, Sun Jan 30 13:55:21 PST 2005
+//    Use SurfaceFilterAttributes, not SurfaceAttributes.
+//
+//    Hank Childs, Sun Jan 30 14:26:28 PST 2005
+//    Qualify which variable we want to know the centering of.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -221,19 +233,55 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     vtkFloatArray *outScalars  = vtkFloatArray::New();
     outScalars->SetNumberOfComponents(1);
   
-    if (GetInput()->GetInfo().GetAttributes().GetCentering() == AVT_ZONECENT)
+    const char *varname = NULL;
+    if (atts.GetVariable() != "default")
+        varname = atts.GetVariable().c_str();
+
+    if (GetInput()->GetInfo().GetAttributes().GetCentering(varname) == 
+                                                                  AVT_ZONECENT)
     {
         //
         // The input is zone-centered, but this filter needs
         // node-centered data, so put it through a filter.
         //
+        if (atts.GetVariable() != "default")
+        {
+            vtkDataArray *tmp = inDS->GetCellData()->GetScalars();
+            if (tmp != NULL && atts.GetVariable() != tmp->GetName())
+            {
+                tmp->Register(NULL);
+                inDS->GetCellData()->SetScalars(inDS->GetCellData()
+                                       ->GetArray(atts.GetVariable().c_str()));
+                inDS->GetCellData()->AddArray(tmp);
+                tmp->Delete();
+            }
+            else
+                inDS->GetCellData()->SetScalars(inDS->GetCellData()
+                                       ->GetArray(atts.GetVariable().c_str()));
+        }
         cd2pd->SetInput(inDS);
         cd2pd->Update();
         inScalars = cd2pd->GetOutput()->GetPointData()->GetScalars();
     }
     else 
     {
-        inScalars = inDS->GetPointData()->GetScalars();
+        if (atts.GetVariable() != "default")
+            inScalars = 
+                    inDS->GetPointData()->GetArray(atts.GetVariable().c_str());
+        else
+            inScalars = inDS->GetPointData()->GetScalars();
+    }
+
+    if (inScalars == NULL)
+    {
+        if (!haveIssuedWarning)
+        {
+            avtCallback::IssueWarning("The data could not be elevated because "
+                                      "of an internal error in VisIt.");
+            haveIssuedWarning = true;
+        }
+        outScalars->Delete();
+        return NULL;
     }
 
     // Convert the scalars point data based on the scaling factors
@@ -242,12 +290,19 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     int numScalars = inScalars->GetNumberOfTuples();
     outScalars->SetNumberOfTuples(numScalars);
 
+    bool doLog = false;
+    bool doSkew = false;
+    if (atts.GetUseXYLimits())
+    {
+        doLog = atts.GetScaling() == SurfaceFilterAttributes::Log;
+        doSkew = atts.GetScaling() == SurfaceFilterAttributes::Skew;
+    }
     for (int i = 0; i < numScalars; i++)
     {
         // calculate  and store zVals
         zVal = inScalars->GetTuple1(i);
          
-        if (atts.GetScaling() == SurfaceAttributes::Log)
+        if (doLog)
         {
             // min & max may have been set by user to be pos values
             // but individual data values are not guaranteed to fall
@@ -261,7 +316,7 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             }
             zVal = log10(zVal);
         }
-        else if (atts.GetScaling() == SurfaceAttributes::Skew)
+        else if (doSkew)
         {
              zVal = SkewTheValue(zVal); 
         }
@@ -282,7 +337,8 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     filter->Update();
 
     outScalars->Delete();
-    outUG->GetPointData()->SetScalars(inScalars);
+    if (atts.GetGenerateNodalOutput())
+        outUG->GetPointData()->SetScalars(inScalars);
     return (vtkDataSet*) outUG;
 }
 
@@ -361,8 +417,10 @@ avtSurfaceFilter::SkewTheValue(const double val)
 //    Hank Childs, Mon Aug 30 08:04:05 PDT 2004
 //    Set the label for the surface plot as well.
 //
-//    Kathleen Bonnell, Thu Jan  6 11:38:55 PST 2005 
-//    Removed TRY-CATCH blocks if favor of testing for ValidActiveVariable.
+//    Hank Childs, Sun Jan 30 14:10:22 PST 2005
+//    It may be that we don't have a valid variable (filled boundary plus
+//    elevate operator).  Be more careful.  Also remove, TRY/CATCH blocks
+//    that could be avoided through if tests.
 //
 // ****************************************************************************
 
@@ -375,7 +433,8 @@ avtSurfaceFilter::RefashionDataObjectInfo(void)
     va.SetPointsWereTransformed(true);
     avtDataAttributes &da = GetOutput()->GetInfo().GetAttributes();
     da.SetSpatialDimension(3);
-    da.SetCentering(AVT_NODECENT);
+    if (da.ValidActiveVariable() && atts.GetGenerateNodalOutput())
+        da.SetCentering(AVT_NODECENT);
     da.SetCanUseTransform(false);
     if (da.HasInvTransform())
     {
@@ -390,9 +449,10 @@ avtSurfaceFilter::RefashionDataObjectInfo(void)
     //
     // Set the variable name as the label of the z-axis.
     //
-    if (GetInput()->GetInfo().GetAttributes().ValidActiveVariable())
+    avtDataAttributes &in_da = GetInput()->GetInfo().GetAttributes();
+    if (in_da.ValidActiveVariable())
     {
-        da.SetZLabel(GetInput()->GetInfo().GetAttributes().GetVariableName());
+        da.SetZLabel(in_da.GetVariableName());
     }
 
     //
@@ -449,6 +509,9 @@ avtSurfaceFilter::VerifyInput(void)
 //    Hank Childs, Thu Sep 23 08:07:03 PDT 2004
 //    Instruct the database to create ghost zones if necessary.
 //
+//    Hank Childs, Sun Jan 30 14:05:25 PST 2005
+//    Ask for a secondary variable.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -481,6 +544,11 @@ avtSurfaceFilter::PerformRestriction(avtPipelineSpecification_p spec)
     // boundaries and get no cracks in our isosurface.
     //
     const char *varname = spec->GetDataSpecification()->GetVariable();
+    if (atts.GetVariable() != "default" && atts.GetVariable() != varname)
+    {
+        varname = atts.GetVariable().c_str();
+        SetActiveVariable(varname);
+    }
     avtDataAttributes &in_atts = GetInput()->GetInfo().GetAttributes();
     bool skipGhost = false;
     if (in_atts.ValidVariable(varname) &&
@@ -513,6 +581,12 @@ avtSurfaceFilter::PerformRestriction(avtPipelineSpecification_p spec)
 //    Hank Childs, Fri Jul 30 12:24:30 PDT 2004
 //    Initialize zValMin, zValMax.
 //
+//    Hank Childs, Sun Jan 30 14:21:29 PST 2005
+//    Account for secondary variables.
+//
+//    Hank Childs, Tue Feb  1 13:09:37 PST 2005
+//    Initialize haveIssuedWarning.
+//
 // ****************************************************************************
 
 void
@@ -520,9 +594,12 @@ avtSurfaceFilter::PreExecute(void)
 {
     if (stillNeedExtents)
     {
+        const char *varname = pipelineVariable;
+        if (atts.GetVariable() != "default")
+            varname = atts.GetVariable().c_str();
         double dataExtents[2];
         double spatialExtents[6];
-        GetDataExtents(dataExtents);
+        GetDataExtents(dataExtents, varname);
         avtDataset_p input = GetTypedInput();
         avtDatasetExaminer::GetSpatialExtents(input, spatialExtents);
 
@@ -531,6 +608,8 @@ avtSurfaceFilter::PreExecute(void)
 
     zValMin = +FLT_MAX;
     zValMax = -FLT_MAX;
+
+    haveIssuedWarning = false;
 }
 
 
@@ -555,6 +634,12 @@ avtSurfaceFilter::PreExecute(void)
 //    Only one type of min/max (not scaling and coloring).
 //    Added test for min > max. 
 //
+//    Hank Childs, Sun Jan 30 13:55:21 PST 2005
+//    Use SurfaceFilterAttributes, not SurfaceAttributes.
+//
+//    Hank Childs, Tue Feb  1 11:26:46 PST 2005
+//    Allow for mode where scaling is based solely on variable.
+//
 // ****************************************************************************
 
 void
@@ -578,7 +663,7 @@ avtSurfaceFilter::CalculateScaleValues(double *de, double *se)
         min = max;
     }
 
-    if ( atts.GetScaling() == SurfaceAttributes::Log )
+    if ( atts.GetScaling() == SurfaceFilterAttributes::Log )
     {
         min = log10(min);
         max = log10(max);
@@ -589,7 +674,7 @@ avtSurfaceFilter::CalculateScaleValues(double *de, double *se)
     dZ = max - min;
     dXY = (dX > dY ? dX : dY);
 
-    if ( 0. == dZ )
+    if (atts.GetUseXYLimits() == false || 0. == dZ)
     {
         Ms = 1.;
         Bs = 0.;

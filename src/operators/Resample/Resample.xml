@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+  <Plugin name="Resample" type="operator" label="Resample" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false">
+    <Files components="E">
+      avtResamplePluginFilter.C
+    </Files>
+    <Attribute name="ResamplePluginAttributes" purpose="Atts for Resample operator" persistent="false" exportAPI="" exportInclude="">
+      <Enum name="TieResolver">
+        random
+        largest
+        smallest
+      </Enum>
+      <Field name="startX" label="Start X" type="double">
+        0.000000
+      </Field>
+      <Field name="endX" label="End X" type="double">
+        1.000000
+      </Field>
+      <Field name="samplesX" label="Samples in X" type="int">
+        10
+      </Field>
+      <Field name="startY" label="Start Y" type="double">
+        0.000000
+      </Field>
+      <Field name="endY" label="End Y" type="double">
+        1.000000
+      </Field>
+      <Field name="samplesY" label="Samples in Y" type="int">
+        10
+      </Field>
+      <Field name="is3D" label="3D resampling" type="bool">
+        true
+      </Field>
+      <Field name="startZ" label="Start Z" type="double" enabler="is3D:true">
+        0.000000
+      </Field>
+      <Field name="endZ" label="End Z" type="double" enabler="is3D:true">
+        1.000000
+      </Field>
+      <Field name="samplesZ" label="Samples in Z" type="int" enabler="is3D:true">
+        10
+      </Field>
+      <Field name="tieResolver" label="Resolve ties" type="enum" subtype="TieResolver">
+        random
+      </Field>
+      <Field name="tieResolverVariable" label="Variable to resolve ties" type="variablename" enabler="tieResolver:smallest,largest" vartypes="010000000">
+        default
+      </Field>
+      <Field name="defaultValue" label="Value for uncovered regions" type="double">
+        0.000000
+      </Field>
+    </Attribute>
+  </Plugin>

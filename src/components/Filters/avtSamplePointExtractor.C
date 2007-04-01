@@ -9,10 +9,13 @@
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkHexahedron.h>
+#include <vtkPixel.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkPyramid.h>
+#include <vtkQuad.h>
 #include <vtkTetra.h>
+#include <vtkTriangle.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkVoxel.h>
 #include <vtkWedge.h>
@@ -61,6 +64,9 @@
 //    Hank Childs, Fri Dec 10 09:59:57 PST 2004
 //    Initialized shouldDoTiling.
 //
+//    Hank Childs, Wed Feb  2 08:56:00 PST 2005
+//    Initialize modeIs3D.
+//
 // ****************************************************************************
 
 avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
@@ -85,6 +91,8 @@ avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
     aspect = 1.;
 
     shouldDoTiling = false;
+
+    modeIs3D = true;
 }
 
 
@@ -302,10 +310,12 @@ avtSamplePointExtractor::SetUpExtractors(void)
 
     if (shouldDoTiling)
     {
-        hexExtractor->Restrict(width_min, width_max-1, height_min, height_max-1);
+        hexExtractor->Restrict(width_min, width_max-1, 
+                               height_min, height_max-1);
         massVoxelExtractor->Restrict(width_min, width_max-1,
                                      height_min, height_max-1);
-        tetExtractor->Restrict(width_min, width_max-1, height_min, height_max-1);
+        tetExtractor->Restrict(width_min, width_max-1,
+                               height_min, height_max-1);
         wedgeExtractor->Restrict(width_min, width_max-1, height_min, 
                                  height_max-1);
         pyramidExtractor->Restrict(width_min, width_max-1,
@@ -359,6 +369,9 @@ avtSamplePointExtractor::SetUpExtractors(void)
 //    If the rectilinear grids are in world space, then let the mass voxel
 //    extractor know about it.
 //
+//    Hank Childs, Sat Jan 29 13:32:54 PST 2005
+//    Added 2D extractors.
+//
 // ****************************************************************************
 
 void
@@ -389,7 +402,7 @@ avtSamplePointExtractor::ExecuteTree(avtDataTree_p dt)
     //
     vtkDataSet *ds = dt->GetDataRepresentation().GetDataVTK();
 
-    if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    if (modeIs3D && ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
         massVoxelExtractor->SetGridsAreInWorldSpace(
                             rectilinearGridsAreInWorldSpace, viewInfo, aspect);
@@ -411,6 +424,11 @@ avtSamplePointExtractor::ExecuteTree(avtDataTree_p dt)
             continue;
 
         vtkCell *cell = ds->GetCell(j);
+        if (modeIs3D && cell->GetCellDimension() != 3)
+            EXCEPTION1(InvalidCellTypeException, "triangles and quads.");
+        if (!modeIs3D && cell->GetCellDimension() != 2)
+            EXCEPTION1(InvalidCellTypeException, "surfaces or anything outside"
+                                                 " the finite element zoo.");
 
         switch (cell->GetCellType())
         {
@@ -432,6 +450,18 @@ avtSamplePointExtractor::ExecuteTree(avtDataTree_p dt)
 
           case VTK_PYRAMID:
             ExtractPyramid((vtkPyramid *) cell, ds, j);
+            break;
+
+          case VTK_TRIANGLE:
+            ExtractTriangle((vtkTriangle *) cell, ds, j);
+            break;
+
+          case VTK_QUAD:
+            ExtractQuad((vtkQuad *) cell, ds, j);
+            break;
+
+          case VTK_PIXEL:
+            ExtractPixel((vtkPixel *) cell, ds, j);
             break;
 
           default:
@@ -874,7 +904,7 @@ avtSamplePointExtractor::ExtractPyramid(vtkPyramid *pyr, vtkDataSet *ds,
 //
 //  Arguments:
 //      voxel    The voxel cell.
-//      ds       The dataset the voxrl came from (needed to find the var).
+//      ds       The dataset the voxel came from (needed to find the var).
 //      voxind   The index of voxel in ds.
 //
 //  Programmer:  Hank Childs
@@ -970,6 +1000,313 @@ avtSamplePointExtractor::ExtractVoxel(vtkVoxel *voxel, vtkDataSet *ds,
 
     //
     // Have the extractor extract the sample points from this hexahedron.
+    //
+    hexExtractor->Extract(h);
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePointExtractor::ExtractTriangle
+//
+//  Purpose:
+//      Sets up the data and call the extract method for a triangle
+//
+//  Arguments:
+//      tri      The triangle cell.
+//      ds       The dataset the triangle came from (needed to find the var).
+//      triind   The index of the triangle in ds.
+//
+//  Programmer:  Hank Childs
+//  Creation:    January 29, 2005
+//
+// ****************************************************************************
+
+void
+avtSamplePointExtractor::ExtractTriangle(vtkTriangle *tri, vtkDataSet *ds,
+                                         int triind)
+{
+    int   i, v;
+
+    avtWedge w;
+    w.nVars = 0;
+
+    //
+    // Retrieve all of the zonal variables.
+    //
+    vtkFieldData *cd = ds->GetCellData();
+    int ncd = cd->GetNumberOfArrays();
+    for (v = 0 ; v < ncd ; v++)
+    {
+        vtkDataArray *arr = cd->GetArray(v);
+        if (strstr(arr->GetName(), "vtk") != NULL)
+            continue;
+        if (strstr(arr->GetName(), "avt") != NULL)
+            continue;
+        float val = arr->GetComponent(triind, 0);
+        for (i = 0 ; i < 6 ; i++)
+        {
+            w.val[i][w.nVars] = val;
+        }
+        w.nVars++;
+    }
+
+    //
+    // Retrieve all of the nodal variables.
+    //
+    vtkFieldData *pd = ds->GetPointData();
+    int npd = pd->GetNumberOfArrays();
+    for (v = 0 ; v < npd ; v++)
+    {
+        vtkDataArray *arr = pd->GetArray(v);
+        if (strstr(arr->GetName(), "vtk") != NULL)
+            continue;
+        if (strstr(arr->GetName(), "avt") != NULL)
+            continue;
+        vtkIdList *ids = tri->GetPointIds();
+        float val0 = arr->GetComponent(ids->GetId(0), 0);
+        float val1 = arr->GetComponent(ids->GetId(1), 0);
+        float val2 = arr->GetComponent(ids->GetId(2), 0);
+        w.val[0][w.nVars] = val0;
+        w.val[1][w.nVars] = val1;
+        w.val[2][w.nVars] = val2;
+        w.val[3][w.nVars] = val0;
+        w.val[4][w.nVars] = val1;
+        w.val[5][w.nVars] = val2;
+        w.nVars++;
+    }
+
+    if (rayfoo != NULL)
+    {
+        if (!rayfoo->CanContributeToPicture(6, w.val))
+        {
+            return;
+        }
+    }
+
+    //
+    // Get the points for the triangle in our own data structure.
+    //
+    vtkPoints *pts = tri->GetPoints();
+    for (i = 0 ; i < 3 ; i++)
+    {
+        float *pt = pts->GetPoint(i);
+        w.pts[i][0] = pt[0];
+        w.pts[i][1] = pt[1];
+        w.pts[i][2] = pt[2]-0.1;  // Make the cell be 3D
+        w.pts[3+i][0] = pt[0];
+        w.pts[3+i][1] = pt[1];
+        w.pts[3+i][2] = pt[2]+0.1; // Make the cell be 3D
+    }
+
+    //
+    // Have the extractor extract the sample points from this triangle.
+    //
+    wedgeExtractor->Extract(w);
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePointExtractor::ExtractQuad
+//
+//  Purpose:
+//      Sets up the data and call the extract method for a quad
+//
+//  Arguments:
+//      quad     The quad cell.
+//      ds       The dataset the triangle came from (needed to find the var).
+//      quadind  The index of the quad in ds.
+//
+//  Programmer:  Hank Childs
+//  Creation:    January 29, 2005
+//
+// ****************************************************************************
+
+void
+avtSamplePointExtractor::ExtractQuad(vtkQuad *quad, vtkDataSet *ds,
+                                     int quadind)
+{
+    int   i, v;
+
+    avtHexahedron h;
+    h.nVars = 0;
+
+    //
+    // Retrieve all of the zonal variables.
+    //
+    vtkFieldData *cd = ds->GetCellData();
+    int ncd = cd->GetNumberOfArrays();
+    for (v = 0 ; v < ncd ; v++)
+    {
+        vtkDataArray *arr = cd->GetArray(v);
+        if (strstr(arr->GetName(), "vtk") != NULL)
+            continue;
+        if (strstr(arr->GetName(), "avt") != NULL)
+            continue;
+        float val = arr->GetComponent(quadind, 0);
+        for (i = 0 ; i < 8 ; i++)
+        {
+            h.val[i][h.nVars] = val;
+        }
+        h.nVars++;
+    }
+
+    //
+    // Retrieve all of the nodal variables.
+    //
+    vtkFieldData *pd = ds->GetPointData();
+    int npd = pd->GetNumberOfArrays();
+    for (v = 0 ; v < npd ; v++)
+    {
+        vtkDataArray *arr = pd->GetArray(v);
+        if (strstr(arr->GetName(), "vtk") != NULL)
+            continue;
+        if (strstr(arr->GetName(), "avt") != NULL)
+            continue;
+        vtkIdList *ids = quad->GetPointIds();
+        float val0 = arr->GetComponent(ids->GetId(0), 0);
+        float val1 = arr->GetComponent(ids->GetId(1), 0);
+        float val2 = arr->GetComponent(ids->GetId(2), 0);
+        float val3 = arr->GetComponent(ids->GetId(3), 0);
+        h.val[0][h.nVars] = val0;
+        h.val[1][h.nVars] = val1;
+        h.val[2][h.nVars] = val2;
+        h.val[3][h.nVars] = val3;
+        h.val[4][h.nVars] = val0;
+        h.val[5][h.nVars] = val1;
+        h.val[6][h.nVars] = val2;
+        h.val[7][h.nVars] = val3;
+        h.nVars++;
+    }
+
+    if (rayfoo != NULL)
+    {
+        if (!rayfoo->CanContributeToPicture(8, h.val))
+        {
+            return;
+        }
+    }
+
+    //
+    // Get the points for the triangle in our own data structure.
+    //
+    vtkPoints *pts = quad->GetPoints();
+    for (i = 0 ; i < 4 ; i++)
+    {
+        float *pt = pts->GetPoint(i);
+        h.pts[i][0] = pt[0];
+        h.pts[i][1] = pt[1];
+        h.pts[i][2] = pt[2]-0.1;  // Make the cell be 3D
+        h.pts[4+i][0] = pt[0];
+        h.pts[4+i][1] = pt[1];
+        h.pts[4+i][2] = pt[2]+0.1; // Make the cell be 3D
+    }
+
+    //
+    // Have the extractor extract the sample points from this quad.
+    //
+    hexExtractor->Extract(h);
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePointExtractor::ExtractPixel
+//
+//  Purpose:
+//      Sets up the data and call the extract method for a pixel
+//
+//  Arguments:
+//      pixel    The pixel cell.
+//      ds       The dataset the triangle came from (needed to find the var).
+//      pixind   The index of the pixel in ds.
+//
+//  Programmer:  Hank Childs
+//  Creation:    January 29, 2005
+//
+// ****************************************************************************
+
+void
+avtSamplePointExtractor::ExtractPixel(vtkPixel *pixel, vtkDataSet *ds,
+                                     int pixind)
+{
+    int   i, v;
+
+    avtHexahedron h;
+    h.nVars = 0;
+
+    //
+    // Retrieve all of the zonal variables.
+    //
+    vtkFieldData *cd = ds->GetCellData();
+    int ncd = cd->GetNumberOfArrays();
+    for (v = 0 ; v < ncd ; v++)
+    {
+        vtkDataArray *arr = cd->GetArray(v);
+        if (strstr(arr->GetName(), "vtk") != NULL)
+            continue;
+        if (strstr(arr->GetName(), "avt") != NULL)
+            continue;
+        float val = arr->GetComponent(pixind, 0);
+        for (i = 0 ; i < 8 ; i++)
+        {
+            h.val[i][h.nVars] = val;
+        }
+        h.nVars++;
+    }
+
+    //
+    // Retrieve all of the nodal variables.
+    //
+    vtkFieldData *pd = ds->GetPointData();
+    int npd = pd->GetNumberOfArrays();
+    for (v = 0 ; v < npd ; v++)
+    {
+        vtkDataArray *arr = pd->GetArray(v);
+        if (strstr(arr->GetName(), "vtk") != NULL)
+            continue;
+        if (strstr(arr->GetName(), "avt") != NULL)
+            continue;
+        vtkIdList *ids = pixel->GetPointIds();
+        float val0 = arr->GetComponent(ids->GetId(0), 0);
+        float val1 = arr->GetComponent(ids->GetId(1), 0);
+        float val2 = arr->GetComponent(ids->GetId(2), 0);
+        float val3 = arr->GetComponent(ids->GetId(3), 0);
+        h.val[0][h.nVars] = val0;
+        h.val[1][h.nVars] = val1;
+        h.val[2][h.nVars] = val3;  // Swap for pixel
+        h.val[3][h.nVars] = val2;  // Swap for pixel
+        h.val[4][h.nVars] = val0;
+        h.val[5][h.nVars] = val1;
+        h.val[6][h.nVars] = val3;  // Swap for pixel
+        h.val[7][h.nVars] = val2;  // Swap for pixel
+        h.nVars++;
+    }
+
+    if (rayfoo != NULL)
+    {
+        if (!rayfoo->CanContributeToPicture(8, h.val))
+        {
+            return;
+        }
+    }
+
+    //
+    // Get the points for the triangle in our own data structure.
+    //
+    vtkPoints *pts = pixel->GetPoints();
+    int pix2quad[4] = { 0, 1, 3, 2 };
+    for (i = 0 ; i < 4 ; i++)
+    {
+        float *pt = pts->GetPoint(pix2quad[i]);
+        h.pts[i][0] = pt[0];
+        h.pts[i][1] = pt[1];
+        h.pts[i][2] = pt[2]-0.1;  // Make the cell be 3D
+        h.pts[4+i][0] = pt[0];
+        h.pts[4+i][1] = pt[1];
+        h.pts[4+i][2] = pt[2]+0.1; // Make the cell be 3D
+    }
+
+    //
+    // Have the extractor extract the sample points from this pixel.
     //
     hexExtractor->Extract(h);
 }

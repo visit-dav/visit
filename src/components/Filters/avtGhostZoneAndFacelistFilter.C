@@ -153,6 +153,10 @@ avtGhostZoneAndFacelistFilter::SetForceFaceConsolidation(bool val)
 //    Mark C. Miller, Thu Oct 16 05:46:06 PDT 2003
 //    Added condition that if ghost were CREATED, apply facelist filter first
 //
+//    Hank Childs, Wed Feb  2 08:56:00 PST 2005
+//    Make sure we are using the right variable in the spec, since that will
+//    affect what the active variable is.
+//
 // ****************************************************************************
 
 void
@@ -173,18 +177,25 @@ avtGhostZoneAndFacelistFilter::Execute(void)
     avtSourceFromAVTDataset termsrc(ds);
     avtDataObject_p data = termsrc.GetOutput(); 
 
+    avtPipelineSpecification_p specForDB = GetGeneralPipelineSpecification();
+    avtDataSpecification_p wrongVar = specForDB->GetDataSpecification();
+    avtDataSpecification_p correctVar = new avtDataSpecification(wrongVar,
+                                                             pipelineVariable);
+    avtPipelineSpecification_p goodSpec = new avtPipelineSpecification(
+                                                       specForDB, correctVar);
+    
     if (useFaceFilter && !useGhostFilter)
     {
         debug5 << "Using facelist filter only." << endl;
         faceFilter->SetInput(data);
-        faceFilter->Update(GetGeneralPipelineSpecification());
+        faceFilter->Update(goodSpec);
         GetOutput()->Copy(*(faceFilter->GetOutput()));
     }
     else if (useGhostFilter && !useFaceFilter)
     {
         debug5 << "Using ghostzone filter only." << endl;
         ghostFilter->SetInput(data);
-        ghostFilter->Update(GetGeneralPipelineSpecification());
+        ghostFilter->Update(goodSpec);
         GetOutput()->Copy(*(ghostFilter->GetOutput()));
     }
     else if (!useGhostFilter && !useFaceFilter)
@@ -203,7 +214,7 @@ avtGhostZoneAndFacelistFilter::Execute(void)
             debug5 << "Using facelist filter before ghostzone filter." << endl;
             faceFilter->SetInput(data);
             ghostFilter->SetInput(faceFilter->GetOutput());
-            ghostFilter->Update(GetGeneralPipelineSpecification());
+            ghostFilter->Update(goodSpec);
             GetOutput()->Copy(*(ghostFilter->GetOutput()));
         }
         else
@@ -211,7 +222,7 @@ avtGhostZoneAndFacelistFilter::Execute(void)
             debug5 << "Using ghostzone filter before facelist filter." << endl;
             ghostFilter->SetInput(data);
             faceFilter->SetInput(ghostFilter->GetOutput());
-            faceFilter->Update(GetGeneralPipelineSpecification());
+            faceFilter->Update(goodSpec);
             GetOutput()->Copy(*(faceFilter->GetOutput()));
         }
     }

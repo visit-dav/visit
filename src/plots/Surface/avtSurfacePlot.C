@@ -10,6 +10,7 @@
 #include <InvalidDimensionsException.h>
 #include <InvalidLimitsException.h>
 #include <SurfaceAttributes.h>
+#include <SurfaceFilterAttributes.h>
 
 #include <avtVariableLegend.h>
 #include <avtUserDefinedMapper.h>
@@ -212,7 +213,20 @@ avtSurfacePlot::ApplyOperators(avtDataObject_p input)
     {
         delete surfaceFilter;
     }
-    surfaceFilter = new avtSurfaceFilter((const AttributeGroup *)&atts);
+
+    SurfaceFilterAttributes sf_atts;
+    sf_atts.SetLimitsMode(
+                   (SurfaceFilterAttributes::LimitsMode) atts.GetLimitsMode());
+    sf_atts.SetMinFlag(atts.GetMinFlag());
+    sf_atts.SetMaxFlag(atts.GetMaxFlag());
+    sf_atts.SetScaling((SurfaceFilterAttributes::Scaling) atts.GetScaling());
+    sf_atts.SetSkewFactor(atts.GetSkewFactor());
+    sf_atts.SetMin(atts.GetMin());
+    sf_atts.SetMax(atts.GetMax());
+    sf_atts.SetVariable("default");
+    sf_atts.SetUseXYLimits(true);
+    sf_atts.SetGenerateNodalOutput(true);
+    surfaceFilter = new avtSurfaceFilter((const AttributeGroup *)&sf_atts);
 
     surfaceFilter->SetInput(input);
     return surfaceFilter->GetOutput();

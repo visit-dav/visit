@@ -11,12 +11,12 @@
 #include <avtDatasetExaminer.h>
 #include <avtFlatLighting.h>
 #include <avtOpacityMap.h>
+#include <avtOpacityMapSamplePointArbitrator.h>
 #include <avtParallel.h>
 #include <avtRay.h>
 #include <avtPhong.h>
 #include <avtRayTracer.h>
 #include <avtResampleFilter.h>
-#include <avtSamplePointArbitrator.h>
 #include <avtSourceFromAVTDataset.h>
 #include <avtView3D.h>
 #include <avtViewInfo.h>
@@ -179,6 +179,9 @@ avtVolumeFilter::Execute(void)
 //
 //    Hank Childs, Tue Dec 21 16:42:19 PST 2004
 //    Incorporate attenuation.
+//
+//    Hank Childs, Sat Jan 29 10:37:19 PST 2005
+//    Use opacity map sample arbitrator.
 //
 // ****************************************************************************
 
@@ -365,7 +368,7 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     // We have to set up a sample point "arbitrator" to allow small cells
     // to be included in the final picture.
     //
-    avtSamplePointArbitrator arb(om2, opacIndex);
+    avtOpacityMapSamplePointArbitrator arb(om2, opacIndex);
     avtRay::SetArbitrator(&arb);
 
     //

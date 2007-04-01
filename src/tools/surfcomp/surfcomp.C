@@ -10,13 +10,94 @@
 #include <vtkPolyData.h>
 
 
+// ****************************************************************************
+//  Function: SurfMerge
+//
+//  Purpose:
+//      Merges two surfaces.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 1, 2005
+//
+// ****************************************************************************
+
+void
+SurfMerge(int argc, char *argv[])
+{
+    int  i;
+
+    if (argc != 5)
+    {
+        cerr << "Usage: "<<argv[0] << " -merge <ds-1> <ds-2> <output>" << endl;
+        exit(EXIT_FAILURE);
+    }
+
+    vtkDataSetReader *rdr1 = vtkDataSetReader::New();
+    rdr1->SetFileName(argv[2]);
+    rdr1->Update();
+    vtkDataSetReader *rdr2 = vtkDataSetReader::New();
+    rdr2->SetFileName(argv[3]);
+    rdr2->Update();
+
+    vtkDataSet *ds1 = rdr1->GetOutput();
+    vtkDataSet *ds2 = rdr2->GetOutput();
+    if (ds1->GetNumberOfPoints() != ds2->GetNumberOfPoints())
+    {
+        cerr << "Different number of points" << endl;
+        exit(EXIT_FAILURE);
+    }
+    if (ds1->GetNumberOfCells() != ds2->GetNumberOfCells())
+    {
+        cerr << "Different number of cells" << endl;
+        exit(EXIT_FAILURE);
+    }
+
+    for (i = 0 ; i < ds2->GetPointData()->GetNumberOfArrays() ; i++)
+    {
+        vtkDataArray *da = ds2->GetPointData()->GetArray(i);
+        char name[1024];
+        sprintf(name, "ds2_%s", da->GetName());
+        da->SetName(name);
+        ds1->GetPointData()->AddArray(da);
+    }
+    for (i = 0 ; i < ds2->GetCellData()->GetNumberOfArrays() ; i++)
+    {
+        vtkDataArray *da = ds2->GetCellData()->GetArray(i);
+        char name[1024];
+        sprintf(name, "ds2_%s", da->GetName());
+        da->SetName(name);
+        ds1->GetCellData()->AddArray(da);
+    }
+
+    vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
+    wrtr->SetInput(ds1);
+    wrtr->SetFileName(argv[4]);
+    wrtr->Write();
+}
+
+
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Tue Feb  1 15:28:04 PST 2005
+//    Added SurfMerge.
+//
+// ****************************************************************************
+
 int main(int argc, char *argv[])
 {
+    if (argc > 1 && strcmp(argv[1], "-merge") == 0)
+    {
+        SurfMerge(argc, argv);
+        return 0;
+    }
+
     if (argc != 5)
     {
         cerr << "Usage: " << argv[0] << " <surface-1> <surface-2> <A> <B>"
              << endl;
         cerr << "\tThe result is S1*A - S2 + B" << endl;
+        cerr << "Or:  " << argv[0] << " -merge <ds-1> <ds-2> <output>" << endl;
         exit(EXIT_FAILURE);
     }
 
@@ -108,23 +189,34 @@ int main(int argc, char *argv[])
                                   pd1->GetCellData()->GetArray("cell_valid");
     vtkFloatArray *uca2 = (vtkFloatArray *)
                                   pd2->GetCellData()->GetArray("cell_valid");
-    for (i = 0 ; i < ncells ; i++)
+    if (uca1 != NULL && uca2 != NULL)
     {
-        float is1 = uca1->GetValue(i);
-        float is2 = uca2->GetValue(i);
-        vtkIdList *pts1 = pd1->GetCell(i)->GetPointIds();
-        vtkIdList *pts2 = pd2->GetCell(i)->GetPointIds();
-        if ((is1 > 0.) && (is2 > 0.))
+        for (i = 0 ; i < ncells ; i++)
         {
-            diffed->InsertNextCell(VTK_TRIANGLE, pts1);
+            float is1 = uca1->GetValue(i);
+            float is2 = uca2->GetValue(i);
+            vtkIdList *pts1 = pd1->GetCell(i)->GetPointIds();
+            vtkIdList *pts2 = pd2->GetCell(i)->GetPointIds();
+            if ((is1 > 0.) && (is2 > 0.))
+            {
+                diffed->InsertNextCell(VTK_TRIANGLE, pts1);
+            }
+            else if (is1 > 0.)
+            {
+                only1->InsertNextCell(VTK_TRIANGLE, pts1);
+            }
+            else if (is2 > 0.)
+            {
+                only2->InsertNextCell(VTK_TRIANGLE, pts2);
+            }
         }
-        else if (is1 > 0.)
+    }
+    else
+    {
+        for (i = 0 ; i < ncells ; i++)
         {
-            only1->InsertNextCell(VTK_TRIANGLE, pts1);
-        }
-        else if (is2 > 0.)
-        {
-            only2->InsertNextCell(VTK_TRIANGLE, pts2);
+            diffed->InsertNextCell(pd1->GetCellType(i), 
+                                  pd1->GetCell(i)->GetPointIds());
         }
     }
 

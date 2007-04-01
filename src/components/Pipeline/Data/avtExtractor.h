@@ -121,11 +121,17 @@ class PIPELINE_API avtExtractor
 //    Hank Childs, Tue Sep 18 10:20:35 PDT 2001
 //    Cast to get rid of compiler warning.
 //
+//    Hank Childs, Sat Jan 29 18:49:00 PST 2005
+//    Add checks for degenerate volumes.
+//
 // ****************************************************************************
 
 int 
 avtExtractor::SnapXRight(float x)
 {
+    if (x_step == 0.)
+        return restrictedMinWidth;
+
     float close_to_index = (x - FRUSTUM_MIN_X) / x_step;
     int   index = (int)ceil(close_to_index);
 
@@ -153,6 +159,9 @@ avtExtractor::SnapXRight(float x)
 int 
 avtExtractor::SnapXLeft(float x)
 {
+    if (x_step == 0.)
+        return restrictedMinWidth;
+
     float close_to_index = (x - FRUSTUM_MIN_X) / x_step;
     int   index = (int)floor(close_to_index);
 
@@ -180,6 +189,9 @@ avtExtractor::SnapXLeft(float x)
 int 
 avtExtractor::SnapYTop(float y)
 {
+    if (y_step == 0.)
+        return restrictedMinHeight;
+
     float close_to_index = (y - FRUSTUM_MIN_Y) / y_step;
     int   index = (int)ceil(close_to_index);
 
@@ -207,6 +219,9 @@ avtExtractor::SnapYTop(float y)
 int 
 avtExtractor::SnapYBottom(float y)
 {
+    if (y_step == 0.)
+        return restrictedMinHeight;
+
     float close_to_index = (y - FRUSTUM_MIN_Y) / y_step;
     int   index = (int)floor(close_to_index);
 
@@ -234,6 +249,9 @@ avtExtractor::SnapYBottom(float y)
 int 
 avtExtractor::SnapZBack(float z)
 {
+    if (z_step == 0.)
+        return 0;
+
     float close_to_index = (z - FRUSTUM_MIN_Z) / z_step;
     int   index = (int)ceil(close_to_index);
 
@@ -261,6 +279,9 @@ avtExtractor::SnapZBack(float z)
 int 
 avtExtractor::SnapZFront(float z)
 {
+    if (z_step == 0.)
+        return 0;
+
     float close_to_index = (z - FRUSTUM_MIN_Z) / z_step;
     int   index = (int)floor(close_to_index);
 

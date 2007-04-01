@@ -13,8 +13,11 @@
 #include <avtViewInfo.h>
 
 class  vtkHexahedron;
+class  vtkPixel;
 class  vtkPyramid;
+class  vtkQuad;
 class  vtkTetra;
+class  vtkTriangle;
 class  vtkVoxel;
 class  vtkWedge;
 
@@ -55,6 +58,9 @@ class  avtRayFunction;
 //    Hank Childs, Fri Nov 19 13:41:56 PST 2004
 //    Added view conversion option.
 //
+//    Hank Childs, Sat Jan 29 13:32:54 PST 2005
+//    Added 2D extractors.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtSamplePointExtractor 
@@ -77,6 +83,8 @@ class AVTFILTERS_API avtSamplePointExtractor
     void                      RestrictToTile(int, int, int, int);
     void                      StopTiling(void) { shouldDoTiling = false; };
 
+    void                      Set3DMode(bool m) { modeIs3D = m; };
+
   protected:
     int                       width, height, depth;
     int                       currentNode, totalNodes;
@@ -84,6 +92,7 @@ class AVTFILTERS_API avtSamplePointExtractor
     bool                      shouldDoTiling;
     int                       width_min, width_max;
     int                       height_min, height_max;
+    bool                      modeIs3D;
 
     avtHexahedronExtractor   *hexExtractor;
     avtMassVoxelExtractor    *massVoxelExtractor;
@@ -107,6 +116,9 @@ class AVTFILTERS_API avtSamplePointExtractor
     inline void               ExtractTet(vtkTetra *, vtkDataSet *, int);
     inline void               ExtractPyramid(vtkPyramid *, vtkDataSet *, int);
     inline void               ExtractWedge(vtkWedge *, vtkDataSet *, int);
+    inline void               ExtractTriangle(vtkTriangle *, vtkDataSet *,int);
+    inline void               ExtractQuad(vtkQuad *, vtkDataSet *, int);
+    inline void               ExtractPixel(vtkPixel *, vtkDataSet *, int);
 };
 
 

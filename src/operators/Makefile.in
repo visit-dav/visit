@@ -163,6 +163,9 @@
 #    Jeremy Meredith, Fri Dec 10 13:39:08 PST 2004
 #    Tools are now run directly instead of as an argument to visit.
 # 
+#    Hank Childs, Sat Jan 29 19:51:16 PST 2005
+#    Added elevate, resample, and coordswap operators.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -170,11 +173,11 @@
 all: message
 	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
 
-OPTIONAL=Context ConnCompReduce Decimate ExternalSurface \
-         MetricThreshold RemoveCells SiloDump SubdivideQuads \
+OPTIONAL=Context ConnCompReduce CoordSwap Decimate ExternalSurface \
+         MetricThreshold RemoveCells Resample SiloDump SubdivideQuads \
          SurfCompPrep Tube
 
-REQUIRED=Box Clip Cone Cylinder Displace IndexSelect InverseGhostZone \
+REQUIRED=Box Clip Cone Cylinder Displace Elevate IndexSelect InverseGhostZone \
          Isosurface Isovolume Lineout OnionPeel Project Reflect Revolve \
          Slice SphereSlice ThreeSlice Threshold Transform
 
