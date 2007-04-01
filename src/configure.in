@@ -1723,7 +1723,7 @@ dnl
 # Check for the public SILO includes since that's what we'll use.
 #
 AC_ARG_WITH(silo_include,
-	[  --with-silo_include     User-specified SILO include directory],
+	[  --with-silo_include=<INC-DIR>     User-specified SILO include directory],
 	silo_include=$withval,
 	silo_include="")
 AC_MSG_CHECKING(for SILO include files)
@@ -1770,7 +1770,7 @@ AC_SUBST(SILO_INCLUDE)
 # Check for the public SILO library since that's what we'll use.
 #
 AC_ARG_WITH(silo_library,
-	[  --with-silo_library     User-specified SILO library directory],
+	[  --with-silo_library=<LIB-DIR>     User-specified SILO library directory],
 	silo_library=$withval,
 	silo_library="")
 AC_MSG_CHECKING(for SILO library)
@@ -1820,6 +1820,84 @@ else
     fi
 
     SILO_LIB="-L$SILO_LIBDIR -lsilo"
+fi
+
+#
+# Decide whether we should try to use libsiloh5 or just libsilo
+# or whether libsilo in turn depends on HDF5
+#
+if test -n "$HDF5_LIB"; then
+    if test -r "$SILO_LIBDIR/libsiloh5.a"; then
+
+        AC_MSG_CHECKING(whether to use libsilo.a or libsiloh5.a)
+
+        saved_CPPFLAGS="$CPPFLAGS"
+        saved_LIBS="$LIBS"
+	saved_SILO_LIB="$SILO_LIB"
+
+        SILO_LIB="-L$SILO_LIBDIR -lsiloh5 $HDF5_LIB"
+        CPPFLAGS="$CPPFLAGS $SILO_INCLUDE $HDF5_INCLUDE $ZLIB_INCLUDE"
+        LIBS="$SILO_LIB $LIBS"
+
+        AC_TRY_RUN(
+            [
+	    #include <silo.h>
+	    int main()
+	    {
+	        return DBCreate("junk.silo", DB_CLOBBER,
+		           DB_LOCAL, 0, DB_HDF5) == 0;
+	    }
+            ]
+	    ,  have_libsiloh=yes
+	    ,  have_libsiloh=no 
+        )
+
+	if test "$have_libsiloh" = "yes"; then
+            AC_MSG_RESULT(libsiloh5.a)
+        else
+            AC_MSG_RESULT(libsilo.a)
+	    SILO_LIB="$saved_SILO_LIB"
+	fi
+
+        LIBS="$saved_LIBS"
+        CPPFLAGS="$saved_CPPFLAGS"
+
+    else
+
+        AC_MSG_CHECKING(whether libsilo.a depends on hdf5)
+
+        saved_CPPFLAGS="$CPPFLAGS"
+        saved_LIBS="$LIBS"
+	saved_SILO_LIB="$SILO_LIB"
+
+        SILO_LIB="$SILO_LIB $HDF5_LIB"
+        CPPFLAGS="$CPPFLAGS $SILO_INCLUDE $HDF5_INCLUDE $ZLIB_INCLUDE"
+        LIBS="$SILO_LIB $LIBS"
+
+        AC_TRY_RUN(
+            [
+	    #include <silo.h>
+	    int main()
+	    {
+	        return DBCreate("junk.silo", DB_CLOBBER,
+		           DB_LOCAL, 0, DB_HDF5) == 0;
+	    }
+            ]
+	    ,  silo_depends_on_hdf5=yes
+	    ,  silo_depends_on_hdf5=no 
+        )
+
+	if test "$silo_depends_on_hdf5" = "yes"; then
+            AC_MSG_RESULT(yes)
+        else
+            AC_MSG_RESULT(no)
+	    SILO_LIB="$saved_SILO_LIB"
+	fi
+
+        LIBS="$saved_LIBS"
+        CPPFLAGS="$saved_CPPFLAGS"
+
+    fi
 fi
 AC_SUBST(SILO_LIB)
 AC_SUBST(SILO_LIBDIR)
