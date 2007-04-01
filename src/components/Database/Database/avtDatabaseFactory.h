@@ -4,10 +4,14 @@
 
 #ifndef AVT_DATABASE_FACTORY_H
 #define AVT_DATABASE_FACTORY_H
+
 #include <database_exports.h>
+
+#include <stdlib.h> // For NULL
 
 
 class avtDatabase;
+class CommonDatabasePluginInfo;
 
 
 // ****************************************************************************
@@ -22,37 +26,30 @@ class avtDatabase;
 //
 //  Modifications:
 //
-//    Hank Childs, Fri Mar  2 11:24:48 PST 2001
-//    Reflected changes in database and removed SiloObj.  Added VTK.
-// 
-//    Hank Childs, Wed Feb 13 16:36:58 PST 2002
-//    Added better support for multiple blocks with STSD file formats.
-//
-//    Hank Childs, Fri Feb 15 17:28:01 PST 2002
-//    Add support for time-varying Exodus files.
-//
-//    Hank Childs, Fri May  3 16:04:43 PDT 2002
-//    Add support for PLOT3D.
-//
-//    Hank Childs, Fri May 24 16:32:28 PDT 2002
-//    Add support for STL.
-//
-//    Hank Childs, Tue May 28 14:53:04 PDT 2002
-//    Add support for curve files.
-//
 //    Jeremy Meredith, Tue Aug 27 15:08:29 PDT 2002
 //    Removed all formats and placed them in database plugins.
 //
 //    Hank Childs, Mon Mar  1 08:48:26 PST 2004
 //    Added the timestep as an argument.
 //
+//    Hank Childs, Mon Mar 22 09:41:34 PST 2004
+//    Added string specifying format type.  Also removed outdated comments
+//    from the era when the DB factory knew about specific formats.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabaseFactory
 {
   public:
-    static avtDatabase           *FileList(const char * const *, int, int);
-    static avtDatabase           *VisitFile(const char *, int);
+    static avtDatabase           *FileList(const char * const *, int, int,
+                                           const char * = NULL);
+    static avtDatabase           *VisitFile(const char *, int,
+                                            const char * = NULL);
+
+  protected:
+    static avtDatabase           *SetupDatabase(CommonDatabasePluginInfo *,
+                                                const char * const *, int,
+                                                int, int, int);
 };
 
 

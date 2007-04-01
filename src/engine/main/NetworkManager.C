@@ -275,10 +275,14 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
 //    Hank Childs, Mon Mar  1 08:48:26 PST 2004
 //    Send the time to the database factory as well.
 //
+//    Hank Childs, Mon Mar 22 11:10:43 PST 2004
+//    Allow for the DB type to be explicitly specified.
+//
 // ****************************************************************************
 
 NetnodeDB *
-NetworkManager::GetDBFromCache(const string &filename, int time)
+NetworkManager::GetDBFromCache(const string &filename, int time,
+                               const char *format)
 {
     //cerr << "NetworkManager::GetDBFromCache()" << endl;
 
@@ -328,9 +332,9 @@ NetworkManager::GetDBFromCache(const string &filename, int time)
         NetnodeDB *netDB = NULL;
         const char *filename_c = filename.c_str();
         if (filename.substr(filename.length() - 6) == ".visit")
-            db = avtDatabaseFactory::VisitFile(filename_c, time);
+            db = avtDatabaseFactory::VisitFile(filename_c, time, format);
         else
-            db = avtDatabaseFactory::FileList(&filename_c, 1, time);
+            db = avtDatabaseFactory::FileList(&filename_c, 1, time, format);
 
         // If we want to open the file at a later timestep, get the
         // SIL so that it contains the right data.
@@ -556,6 +560,7 @@ NetworkManager::StartNetwork(const string &filename, const string &var,
 //    dbName   : The database name.
 //    files    : The list of files that make up the database.
 //    time     : The timestep that we want to examine.
+//    format   : The file format type of the DB.
 //   
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar 25 13:41:08 PST 2003
@@ -572,10 +577,12 @@ NetworkManager::StartNetwork(const string &filename, const string &var,
 //   Hank Childs, Mon Mar  1 08:48:26 PST 2004
 //   Send the time to the database factory as well.
 //
+//   Hank Childs, Mon Mar 22 11:10:43 PST 2004
+//   Send the file format type to the database factory.
 // ****************************************************************************
 void
 NetworkManager::DefineDB(const string &dbName, const string &dbPath,
-    const stringVector &files, int time)
+    const stringVector &files, int time, const string &format)
 {
     //
     // We gotta have a load balancer
@@ -665,7 +672,7 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
             for(int i = 0; i < filesWithPath.size(); ++i)
                 names[i] = filesWithPath[i].c_str();
             db = avtDatabaseFactory::FileList(names, filesWithPath.size(),
-                                              time);
+                                              time, format.c_str());
             delete [] names;
             names = 0;
 
@@ -675,9 +682,10 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
                    << "definition for " << dbName.c_str() << endl;
         }
         else if (dbName.substr(dbName.length() - 6) == ".visit")
-            db = avtDatabaseFactory::VisitFile(dbName_c, time);
+            db = avtDatabaseFactory::VisitFile(dbName_c, time, format.c_str());
         else
-            db = avtDatabaseFactory::FileList(&dbName_c, 1, time);
+            db = avtDatabaseFactory::FileList(&dbName_c, 1, time,
+                                              format.c_str());
 
         // If we want to open the file at a later timestep, get the
         // metadata and the SIL so that it contains the right data.

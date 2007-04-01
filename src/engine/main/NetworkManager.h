@@ -128,6 +128,9 @@ class VisWindow;
 //    Keep track of what plots are in the vis window in SR mode, so we don't
 //    have to clear out the vis window with every render.
 //
+//    Hank Childs, Mon Mar 22 11:10:43 PST 2004
+//    Allow for the database's file format type to be specified explicitly.
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -139,13 +142,14 @@ class NetworkManager
     void          ClearAllNetworks(void);
     void          ClearNetworksWithDatabase(const std::string &);
 
-    NetnodeDB*    GetDBFromCache(const string &filename, int time);
+    NetnodeDB*    GetDBFromCache(const string &filename, int time,
+                                 const char * = NULL);
     void          StartNetwork(const std::string&, const std::string &,
                                int,
                                const CompactSILRestrictionAttributes &,
                                const MaterialAttributes &);
     void          DefineDB(const std::string &, const std::string &,
-                           const stringVector &, int);
+                           const stringVector &, int, const std::string &);
     void          AddFilter(const std::string&,
                             const AttributeGroup* = NULL,
                             const unsigned int ninputs = 1);

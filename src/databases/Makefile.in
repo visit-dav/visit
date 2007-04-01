@@ -110,7 +110,7 @@ MILI=Mili
 PDB=KullLite PDB
 SAF=SAF
 SAMPLES=Rect Hex
-REQUIRED=ANALYZE BOV Curve2D EnSight Lines PLOT2D PLOT3D Point3D STL Silo Spheral VTK WavefrontOBJ
+REQUIRED=ANALYZE BOV Curve2D EnSight Lines PLOT2D PLOT3D Point3D STL Silo Spheral VTK WavefrontOBJ Vista
 
 OPTIONAL=
 
