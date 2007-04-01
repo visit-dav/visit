@@ -1389,6 +1389,9 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    If we can't save the file, the returned filename is NULL.  Handle this
 //    gracefully.
 //
+//    Brad Whitlock, Wed Feb 23 17:19:41 PST 2005
+//    Added a call to ClearStatus.
+//
 // ****************************************************************************
 
 void
@@ -1643,6 +1646,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
         CATCH2(VisItException, ve)
         {
             Warning(ve.Message().c_str());
+            ClearStatus();
             savedWindow = false;
         }
         ENDTRY

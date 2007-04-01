@@ -98,6 +98,9 @@ QvisLightingWindow::~QvisLightingWindow()
 //   Brad Whitlock, Wed Mar 26 08:12:00 PDT 2003
 //   I added a brightness spin box.
 //
+//   Brad Whitlock, Wed Feb 23 18:01:42 PST 2005
+//   I made the brightness spin box use a different slot.
+//
 // ****************************************************************************
 
 void
@@ -207,7 +210,7 @@ QvisLightingWindow::CreateWindowContents()
         "lightBrightnessSpinBox");
     lightBrightnessSpinBox->setSuffix("%");
     connect(lightBrightnessSpinBox, SIGNAL(valueChanged(int)),
-            this, SLOT(brightnessChanged(int)));
+            this, SLOT(brightnessChanged2(int)));
     sLayout->addWidget(lightBrightnessSpinBox, 5, 1);
 
     lightEnabledCheckBox = new QCheckBox("Enabled", lightGroupBox, "lightEnabledCheckBox");
@@ -436,15 +439,24 @@ QvisLightingWindow::GetCurrentValues(int which_widget)
 // Creation:   Fri Oct 19 16:14:50 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Feb 23 17:38:24 PST 2005
+//   I made GetCurrentValues be called all the time.
+//
 // ****************************************************************************
 
 void
 QvisLightingWindow::Apply(bool ignore)
 {
+    // This is a little different from how it is normally done in a window
+    // but we're setting attributes for an individual object in a list of 
+    // objects and we have to get the current values all the time in case
+    // some of them changed because a full update is going to cause all
+    // light attributes for the active light to be selected, which could
+    // cause text widgets like the light direction to get reset.
+    GetCurrentValues(-1);
+
     if(AutoUpdate() || ignore)
     {
-        GetCurrentValues(-1);
         lights->Notify();
 
         viewer->SetLightList();
@@ -557,7 +569,11 @@ QvisLightingWindow::activeLightComboBoxChanged(int index)
 // Creation:   Fri Oct 19 16:18:56 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Feb 23 18:00:17 PST 2005
+//   Made the routines set their partner widget directly so we don't have to
+//   use UpdateWindow, called by Apply since that interferes with the slider
+//   when you hold down on the +/- arrows.
+//
 // ****************************************************************************
 
 void
@@ -566,6 +582,29 @@ QvisLightingWindow::brightnessChanged(int val)
     LightAttributes &light = lights->GetLight(activeLight);
     light.SetBrightness(0.01 * val);
     lights->SelectLight(activeLight);
+
+    // Update the spin box.
+    lightBrightnessSpinBox->blockSignals(true);
+    lightBrightnessSpinBox->setValue(val);
+    lightBrightnessSpinBox->blockSignals(false);
+
+    SetUpdate(false);
+    Apply();
+}
+
+void
+QvisLightingWindow::brightnessChanged2(int val)
+{
+    LightAttributes &light = lights->GetLight(activeLight);
+    light.SetBrightness(0.01 * val);
+    lights->SelectLight(activeLight);
+
+    // Update the slider
+    lightBrightness->blockSignals(true);
+    lightBrightness->setValue(val);
+    lightBrightness->blockSignals(false);
+
+    SetUpdate(false);
     Apply();
 }
 

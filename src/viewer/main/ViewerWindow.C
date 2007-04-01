@@ -6586,6 +6586,10 @@ ViewerWindow::SetPopupEnabled(bool val)
 //   Hank Childs, Sun Oct 24 13:39:57 PDT 2004
 //   Save out shading properties.
 //
+//   Brad Whitlock, Wed Feb 23 16:31:10 PST 2005
+//   Added code to prevent the view from being saved if there are no plots
+//   that have actually been realized.
+//
 // ****************************************************************************
 
 void
@@ -6672,20 +6676,23 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
         //
         // View
         //
-        ViewCurveAttributes tmpViewCurveAtts;
-        const avtViewCurve &viewCurve = GetViewCurve();
-        viewCurve.SetToViewCurveAttributes(&tmpViewCurveAtts);
-        tmpViewCurveAtts.CreateNode(windowNode, true, true);
+        if(GetPlotList()->GetNumRealizedPlots() > 0)
+        {
+            ViewCurveAttributes tmpViewCurveAtts;
+            const avtViewCurve &viewCurve = GetViewCurve();
+            viewCurve.SetToViewCurveAttributes(&tmpViewCurveAtts);
+            tmpViewCurveAtts.CreateNode(windowNode, true, true);
 
-        View2DAttributes tmpView2DAtts;
-        const avtView2D &view2d = GetView2D();
-        view2d.SetToView2DAttributes(&tmpView2DAtts);
-        tmpView2DAtts.CreateNode(windowNode, true, true);
+            View2DAttributes tmpView2DAtts;
+            const avtView2D &view2d = GetView2D();
+            view2d.SetToView2DAttributes(&tmpView2DAtts);
+            tmpView2DAtts.CreateNode(windowNode, true, true);
 
-        View3DAttributes tmpView3DAtts;
-        const avtView3D &view3d = GetView3D();
-        view3d.SetToView3DAttributes(&tmpView3DAtts);
-        tmpView3DAtts.CreateNode(windowNode, true, true);
+            View3DAttributes tmpView3DAtts;
+            const avtView3D &view3d = GetView3D();
+            view3d.SetToView3DAttributes(&tmpView3DAtts);
+            tmpView3DAtts.CreateNode(windowNode, true, true);
+        }
 
         //
         // Save out the view keyframes.
