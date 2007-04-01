@@ -50,6 +50,7 @@
 #include <EngineList.h>
 #include <GlobalAttributes.h>
 #include <GlobalLineoutAttributes.h>
+#include <InteractorAttributes.h>
 #include <KeyframeAttributes.h>
 #include <MessageAttributes.h>
 #include <PickAttributes.h>
@@ -77,6 +78,7 @@
 #include <PyGlobalAttributes.h>
 #include <PyGlobalLineoutAttributes.h>
 #include <PyHostProfile.h>
+#include <PyInteractorAttributes.h>
 #include <PyKeyframeAttributes.h>
 #include <PyMaterialAttributes.h>
 #include <PyPickAttributes.h>
@@ -8224,6 +8226,165 @@ visit_GetPickAttributes(PyObject *self, PyObject *args)
     return retval;
 }
 
+
+// ****************************************************************************
+// Function: visit_ResetInteractorAttributes
+//
+// Purpose:
+//   Tells the viewer to reset the new interactor attributes to default. 
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell
+// Creation:   August 16, 2004 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ResetInteractorAttributes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    MUTEX_LOCK();
+        viewer->ResetInteractorAttributes();
+
+        if(logging)
+            fprintf(logFile, "ResetInteractorAttributes()\n");
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());;
+}
+
+
+// ****************************************************************************
+// Function: visit_SetInteractorAttributes
+//
+// Purpose:
+//   Tells the viewer to use the new Interactor attributes we're sending.
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell
+// Creation:   August 16, 2004 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetInteractorAttributes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *interactor = NULL;
+    // Try and get the interactor attributes pointer.
+    if(!PyArg_ParseTuple(args,"O",&interactor))
+    {
+        VisItErrorFunc("SetInteractorAttributes: Cannot parse object!");
+        return NULL;
+    }
+    if(!PyInteractorAttributes_Check(interactor))
+    {
+        VisItErrorFunc("Argument is not an InteractorAttributes object");
+        return NULL;
+    }
+
+    MUTEX_LOCK();
+        InteractorAttributes *ia = PyInteractorAttributes_FromPyObject(interactor);
+
+        // Copy the object into the pick attributes.
+        *(viewer->GetInteractorAttributes()) = *ia;
+        viewer->GetInteractorAttributes()->Notify();
+        viewer->SetInteractorAttributes();
+
+        if(logging)
+            fprintf(logFile, "SetInteractorAttributes()\n");
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());;
+}
+
+
+// ****************************************************************************
+// Function: visit_SetDefaultInteractorAttributes
+//
+// Purpose:
+//   Tells the viewer to save the default interactor attributes.
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 16, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetDefaultInteractorAttributes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *interactor = NULL;
+    // Try and get the interactorAttributes pointer.
+    if(!PyArg_ParseTuple(args,"O",&interactor))
+    {
+        VisItErrorFunc("SetDefaultInteracotrAttributes: Cannot parse object!");
+        return NULL;
+    }
+    if(!PyInteractorAttributes_Check(interactor))
+    {
+        VisItErrorFunc("Argument is not a InteractorAttributes object");
+        return NULL;
+    }
+
+    MUTEX_LOCK();
+        InteractorAttributes *ia = PyInteractorAttributes_FromPyObject(interactor);
+
+        // Copy the object into the view attributes.
+        *(viewer->GetInteractorAttributes()) = *ia;
+        viewer->GetInteractorAttributes()->Notify();
+        viewer->SetDefaultInteractorAttributes();
+
+        if(logging)
+            fprintf(logFile, "SetDefaultInteractorAttributes()\n");
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());;
+}
+
+// ****************************************************************************
+// Function: visit_GetInteractorAttributes
+//
+// Purpose:
+//   Returns the current interactor attributes.
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 16, 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetInteractorAttributes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *retval = PyInteractorAttributes_NewPyObject();
+    InteractorAttributes *ia = PyInteractorAttributes_FromPyObject(retval);
+
+    // Copy the viewer proxy's pick atts into the return data structure.
+    *ia = *(viewer->GetInteractorAttributes());
+
+    return retval;
+}
+
+
 // ****************************************************************************
 // Function: visit_ResetQueryOverTimeAttributes
 //
@@ -9278,6 +9439,7 @@ AddDefaultMethods()
     AddMethod("GetEngineList", visit_GetEngineList);
     AddMethod("GetGlobalAttributes", visit_GetGlobalAttributes);
     AddMethod("GetGlobalLineoutAttributes", visit_GetGlobalLineoutAttributes);
+    AddMethod("GetInteractorAttributes", visit_GetInteractorAttributes);
     AddMethod("GetKeyframeAttributes", visit_GetKeyframeAttributes);
     AddMethod("GetMaterialAttributes", visit_GetMaterialAttributes);
     AddMethod("GetPickAttributes", visit_GetPickAttributes);
@@ -9302,6 +9464,8 @@ AddDefaultMethods()
     AddMethod("OpenMDServer", visit_OpenMDServer);
     AddMethod("OverlayDatabase", visit_OverlayDatabase);
     AddMethod("Pick", visit_Pick);
+    AddMethod("PickByNode", visit_PickByNode);
+    AddMethod("PickByZone", visit_PickByZone);
     AddMethod("PrintWindow", visit_PrintWindow);
     AddMethod("PromoteOperator", visit_PromoteOperator);
     AddMethod("Query", visit_Query);
@@ -9313,8 +9477,12 @@ AddDefaultMethods()
     AddMethod("RemoveOperator", visit_RemoveOperator);
     AddMethod("ReOpenDatabase", visit_ReOpenDatabase);
     AddMethod("ReplaceDatabase", visit_ReplaceDatabase);
+    AddMethod("ResetLineoutColor", visit_ResetLineoutColor);
     AddMethod("ResetOperatorOptions", visit_ResetOperatorOptions);
+    AddMethod("ResetPickAttributes", visit_ResetPickAttributes);
+    AddMethod("ResetPickLetter", visit_ResetPickLetter);
     AddMethod("ResetPlotOptions", visit_ResetPlotOptions);
+    AddMethod("ResetQueryOverTimeAttributes", visit_ResetQueryOverTimeAttributes);
     AddMethod("ResetView", visit_ResetView);
     AddMethod("RestoreSession", visit_RestoreSession);
     AddMethod("SaveSession", visit_SaveSession);
@@ -9327,10 +9495,14 @@ AddDefaultMethods()
     AddMethod("SetCenterOfRotation",  visit_SetCenterOfRotation);
     AddMethod("SetCloneWindowOnFirstRef", visit_SetCloneWindowOnFirstRef);
     AddMethod("SetDefaultAnnotationAttributes", visit_SetDefaultAnnotationAttributes);
+    AddMethod("SetDefaultInteractorAttributes", visit_SetDefaultInteractorAttributes);
     AddMethod("SetDefaultMaterialAttributes", visit_SetDefaultMaterialAttributes);
     AddMethod("SetDefaultOperatorOptions", visit_SetDefaultOperatorOptions);
+    AddMethod("SetDefaultPickAttributes", visit_SetDefaultPickAttributes);
     AddMethod("SetDefaultPlotOptions", visit_SetDefaultPlotOptions);
+    AddMethod("SetDefaultQueryOverTimeAttributes", visit_SetDefaultQueryOverTimeAttributes);
     AddMethod("SetGlobalLineoutAttributes", visit_SetGlobalLineoutAttributes);
+    AddMethod("SetInteractorAttributes", visit_SetInteractorAttributes);
     AddMethod("SetKeyframeAttributes", visit_SetKeyframeAttributes);
     AddMethod("SetMaterialAttributes", visit_SetMaterialAttributes);
     AddMethod("SetOperatorOptions", visit_SetOperatorOptions);
@@ -9353,6 +9525,7 @@ AddDefaultMethods()
     AddMethod("SetWindowArea",  visit_SetWindowArea);
     AddMethod("SetWindowLayout",  visit_SetWindowLayout);
     AddMethod("SetWindowMode",  visit_SetWindowMode);
+    AddMethod("ShowAllWindows",  visit_ShowAllWindows);
     AddMethod("ShowToolbars", visit_ShowToolbars);
     AddMethod("TimeSliderGetNStates",visit_TimeSliderGetNStates );
     AddMethod("TimeSliderNextState", visit_TimeSliderNextState);
@@ -9366,19 +9539,10 @@ AddDefaultMethods()
     AddMethod("ToggleMaintainDataMode", visit_ToggleMaintainDataMode);
     AddMethod("ToggleSpinMode", visit_ToggleSpinMode);
     AddMethod("UndoView",  visit_UndoView);
-    AddMethod("WriteConfigFile",  visit_WriteConfigFile);
-    AddMethod("ZonePick", visit_Pick);
     AddMethod("WorldPick", visit_Pick);
     AddMethod("WorldNodePick", visit_NodePick);
-    AddMethod("PickByZone", visit_PickByZone);
-    AddMethod("PickByNode", visit_PickByNode);
-    AddMethod("ResetLineoutColor", visit_ResetLineoutColor);
-    AddMethod("ResetPickAttributes", visit_ResetPickAttributes);
-    AddMethod("ResetPickLetter", visit_ResetPickLetter);
-    AddMethod("ResetQueryOverTimeAttributes", visit_ResetQueryOverTimeAttributes);
-    AddMethod("SetDefaultPickAttributes", visit_SetDefaultPickAttributes);
-    AddMethod("SetDefaultQueryOverTimeAttributes", visit_SetDefaultQueryOverTimeAttributes);
-    AddMethod("ShowAllWindows",  visit_ShowAllWindows);
+    AddMethod("WriteConfigFile",  visit_WriteConfigFile);
+    AddMethod("ZonePick", visit_Pick);
 
     //
     // Deprecated ViewerProxy methods. Remove in 1.4.

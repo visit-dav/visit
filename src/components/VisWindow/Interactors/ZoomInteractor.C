@@ -12,6 +12,7 @@
 #include <vtkRenderer.h>
 #include <vtkRenderWindowInteractor.h>
 
+#include <VisWindow.h>
 #include <VisWindowInteractorProxy.h>
 #include <ZoomInteractor.h>
 
@@ -34,6 +35,9 @@
 //    Akira Haddox, Thu Jul  3 14:15:48 PDT 2003
 //    Added initialization of shift and controlKeyDown.
 //    
+//    Kathleen Bonnell, Wed Aug 18 10:10:35 PDT 2004 
+//    Set shouldClampSquare and shouldDrawGuides based on InteractorAtts.
+//
 // ****************************************************************************
 
 ZoomInteractor::ZoomInteractor(VisWindowInteractorProxy &vw) 
@@ -41,6 +45,10 @@ ZoomInteractor::ZoomInteractor(VisWindowInteractorProxy &vw)
 {
     rubberBandMode  = false;
     shiftKeyDown = controlKeyDown = false;
+
+    VisWindow *win = vw;
+    shouldClampSquare = win->GetInteractorAtts()->GetClampSquare();
+    shouldDrawGuides = win->GetInteractorAtts()->GetShowGuidelines();
 
     //
     // Create the poly data that will map the rubber band onto the screen.
@@ -146,6 +154,9 @@ ZoomInteractor::SetCanvasViewport(void)
 //    Akira Haddox, Thu Jul  3 14:17:48 PDT 2003
 //    Set shift and controlKeyDown based on interactor information.
 //
+//    Kathleen Bonnell, Wed Aug 18 10:10:35 PDT 2004 
+//    Set shouldClampSquare and shouldDrawGuides based on InteractorAtts.
+//
 // ****************************************************************************
 
 void
@@ -155,6 +166,10 @@ ZoomInteractor::StartRubberBand(int x, int y)
 
     shiftKeyDown = Interactor->GetShiftKey();
     controlKeyDown = Interactor->GetControlKey();
+
+    VisWindow *win = proxy;
+    shouldClampSquare = win->GetInteractorAtts()->GetClampSquare();
+    shouldDrawGuides = win->GetInteractorAtts()->GetShowGuidelines();
 
     //
     // Add the rubber band actors to the background.  We do this since the
@@ -214,6 +229,10 @@ ZoomInteractor::StartRubberBand(int x, int y)
 //    Akira Haddox, Thu Jul  3 14:17:48 PDT 2003
 //    Force a square rubber band when shift key is down.
 //
+//    Kathleen Bonnell, Wed Aug 18 10:10:35 PDT 2004 
+//    Force a square rubber band when the global flag is turned on, or
+//    the shift key is down. 
+//
 // ****************************************************************************
 
 void
@@ -229,7 +248,7 @@ ZoomInteractor::OnMouseMove()
         // If the shift key is down, lock the coordinates so that we form
         // a square.
         //
-        if (shiftKeyDown)
+        if (shouldClampSquare || shiftKeyDown)
         {
             int deltaX = x - anchorX;
             int deltaY = y - anchorY;
@@ -625,3 +644,4 @@ ZoomInteractor::DrawRubberBandLine(int x1, int y1, int x2, int y2)
     pts->SetPoint(1, (double) x2, (double) y2, 0.);   
     rubberBandMapper->RenderOverlay(ren, rubberBandActor);
 }
+

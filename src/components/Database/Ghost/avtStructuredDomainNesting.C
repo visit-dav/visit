@@ -179,6 +179,63 @@ DetectBoundaryGhostLayers(int numDims, unsigned char *ghostData, int numCells,
 
 }
 
+// ****************************************************************************
+//  Method avtStructuredDomainNesting::GetSelectedDescendents
+//
+//  Purpose: Given the list of all domains in the current selection and a
+//  a given domain, find all of the given domain's descendents that are also
+//  in the current selection. In fact, it finds only the *greatest* descendents
+//  in the sense that once it finds a descendent that is in the selection, it
+//  does not continue to process that descendent's descendents. However, if
+//  a descendent is not in the current selection, it nonetheless, checks 
+//  that descendent's descendents for the possibility that thay might be.
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    August 18, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtStructuredDomainNesting::GetSelectedDescendents(
+    const vector<int>& allDomainList, int dom,
+    vector<int>& selectedDescendents) const
+{
+    int i;
+
+    //
+    // Build a lookup table for the all domain list 
+    //
+    int maxDom = allDomainList[0];
+    for (i = 1; i < allDomainList.size(); i++)
+    {
+        if (allDomainList[i] > maxDom)
+            maxDom = allDomainList[i];
+    }
+
+    vector<bool> lookup(maxDom + 1, false);
+    for (i = 0; i < allDomainList.size(); i++)
+        lookup[allDomainList[i]] = true;
+
+    vector<int> domQueue;
+    domQueue.push_back(dom);
+
+    while (domQueue.size())
+    {
+       int currentDom = domQueue.back();
+       domQueue.pop_back();
+       const vector<int>& childDoms = domainNesting[currentDom].childDomains;
+
+       for (i = 0; i < childDoms.size(); i++)
+       {
+           if ((childDoms[i] <= maxDom) && lookup[childDoms[i]])
+               selectedDescendents.push_back(childDoms[i]);
+           else
+               domQueue.push_back(childDoms[i]);
+       }
+    }
+}
 
 // ****************************************************************************
 //  Method: avtStructuredDomainNesting::ApplyGhost
@@ -210,6 +267,12 @@ DetectBoundaryGhostLayers(int numDims, unsigned char *ghostData, int numCells,
 //    of range from inner loops. Finally, I changed to the code to use straight
 //    assignment rather than bit operators for to avoid possible generation of
 //    non-0/1 values.
+//
+//    Mark C. Miller, Wed Aug 18 18:20:27 PDT 2004
+//    Made it support the case where a domain's children may not be selected
+//    but its grandchildren (or any deeper descendent) might be. I also
+//    re-organized the key loops a bit for better cache efficiency and less
+//    multiplication.
 //
 // ****************************************************************************
 bool
@@ -256,109 +319,138 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
             ghostArray->SetName("vtkGhostLevels");
             meshes[i]->GetCellData()->AddArray(ghostArray);
             ghostArray->Delete();
-            memset(ghostData, 0x0, numCells);
         }
 
         //
-        // Look at each of the children of this domain.
-        // If in current selection, ghost the appropriate elements here 
+        // Compute (memory) size of this domain including ghostLayers
         //
-        for (int j = 0; j < domainNesting[parentDom].childDomains.size(); j++)
-        {
+        int Ni         = domainNesting[parentDom].logicalExtents[3] -
+                         domainNesting[parentDom].logicalExtents[0] +
+                         1 + 2 * ghostLayers[0];
+        int Nj         = domainNesting[parentDom].logicalExtents[4] -
+                         domainNesting[parentDom].logicalExtents[1] +
+                         1 + 2 * ghostLayers[1];
+        int Nk         = domainNesting[parentDom].logicalExtents[5] -
+                         domainNesting[parentDom].logicalExtents[2] +
+                         1 + 2 * ghostLayers[2];
 
-            bool thisChildIsOn = false;
-            for (int k = 0; k < allDomainList.size(); k++)
+        //
+        // Clear out internal ghost values (e.g. those that are not part
+        // of ghostLayers which came from the database)
+        //
+        for (int kk = ghostLayers[2]; kk < Nk - ghostLayers[2]; kk++)
+        {
+            int c = kk*Ni*Nj;
+            for (int jj = ghostLayers[1]; jj < Nj - ghostLayers[1]; jj++)
             {
-                if (allDomainList[k] == domainNesting[parentDom].childDomains[j])
+                int b = c + jj*Ni;
+                for (int ii = ghostLayers[0]; ii < Ni - ghostLayers[0]; ii++)
                 {
-                   thisChildIsOn = true;
-                   break;
+                    int a = b + ii;
+                    ghostData[a] = 0x0;
                 }
+            }
+        }
+
+        //
+        // Obtain the list of descendents of the current domain that are
+        // also in the current selection.
+        //
+        vector<int> selectedDescendents;
+        GetSelectedDescendents(allDomainList, parentDom, selectedDescendents);
+
+        //
+        // For each descendent, ghost the current domain appropriately
+        //
+        for (int j = 0; j < selectedDescendents.size(); j++)
+        {
+            int ratio[3]   = {1, 1, 1};
+            int descDom    = selectedDescendents[j];
+            int parentLevel= domainNesting[parentDom].level;
+            int descLevel  = domainNesting[descDom].level;
+            int I0         = domainNesting[parentDom].logicalExtents[0];
+            int I1         = domainNesting[parentDom].logicalExtents[3] + 1;
+            int J0         = domainNesting[parentDom].logicalExtents[1];
+            int J1         = domainNesting[parentDom].logicalExtents[4] + 1;
+            int K0         = domainNesting[parentDom].logicalExtents[2];
+            int K1         = domainNesting[parentDom].logicalExtents[5] + 1;
+
+            //
+            // compute ratio to descendent from parent
+            //
+            for (int l = parentLevel+1; l <= descLevel; l++)
+            {
+                ratio[0] *= levelRatios[l][0];
+                ratio[1] *= (numDimensions >= 2 ? levelRatios[l][1] : 1);
+                ratio[2] *= (numDimensions >= 3 ? levelRatios[l][2] : 1);
             }
 
             //
-            // whether the child is on or not, we need to go through and set the ghosts of
-            // the parent accordingly. If the child is on, we need to set the ghost array
-            // in the parent to 1 where appropriate. Otherwise, we need to set it to 0
-            // We use the exclusive or operator below to achieve this
+            // Compute min/max extents in the current patch's level by mapping
+            // the selected descendent's indexing scheme onto this level
             //
-            unsigned char ghostVal = 0x0;
-            if (thisChildIsOn)
-                ghostVal = 0x1;
+            int i0         = domainNesting[descDom].logicalExtents[0] / ratio[0];
+            int i1         = (domainNesting[descDom].logicalExtents[3] + 1) / ratio[0];
+            if ((domainNesting[descDom].logicalExtents[3] + 1) % ratio[0]) i1++;
+            int j0         = domainNesting[descDom].logicalExtents[1] / ratio[1];
+            int j1         = (domainNesting[descDom].logicalExtents[4] + 1) / ratio[1];
+            if ((domainNesting[descDom].logicalExtents[4] + 1) % ratio[1]) j1++;
+            int k0         = domainNesting[descDom].logicalExtents[2] / ratio[2];
+            int k1         = (domainNesting[descDom].logicalExtents[5] + 1) / ratio[2];
+            if ((domainNesting[descDom].logicalExtents[5] + 1) % ratio[2]) k1++;
 
+            //
+            // Often a descendent domain spans multiple parents. So, we need to
+            // clip the bounds computed above to THIS parent's upper/lower bounds
+            //
+            if (i1 > I1) i1 = I1;
+            if (j1 > J1) j1 = J1;
+            if (k1 > K1) k1 = K1;
+            if (i0 < I0) i0 = I0;
+            if (j0 < J0) j0 = J0;
+            if (k0 < K0) k0 = K0;
+
+            didGhost = true;
+
+            if (numDimensions == 3)
             {
-                int ratio[3];
-                int childDom   = domainNesting[parentDom].childDomains[j];
-                int childLevel = domainNesting[childDom].level;
-                int Ni         = domainNesting[parentDom].logicalExtents[3] -
-                                 domainNesting[parentDom].logicalExtents[0] +
-                                 1 + 2 * ghostLayers[0];
-                int Nj         = domainNesting[parentDom].logicalExtents[4] -
-                                 domainNesting[parentDom].logicalExtents[1] +
-                                 1 + 2 * ghostLayers[1];
-                int Nk         = domainNesting[parentDom].logicalExtents[5] -
-                                 domainNesting[parentDom].logicalExtents[2] +
-                                 1 + 2 * ghostLayers[2];
-                int I0         = domainNesting[parentDom].logicalExtents[0];
-                int I1         = domainNesting[parentDom].logicalExtents[3] + 1;
-                int J0         = domainNesting[parentDom].logicalExtents[1];
-                int J1         = domainNesting[parentDom].logicalExtents[4] + 1;
-                int K0         = domainNesting[parentDom].logicalExtents[2];
-                int K1         = domainNesting[parentDom].logicalExtents[5] + 1;
-                ratio[0]       = levelRatios[childLevel][0];
-                ratio[1]       = numDimensions >= 2 ? levelRatios[childLevel][1] : 1;
-                ratio[2]       = numDimensions >= 3 ? levelRatios[childLevel][2] : 1;
-                int i0         = domainNesting[childDom].logicalExtents[0] / ratio[0];
-                int i1         = (domainNesting[childDom].logicalExtents[3] + 1) / ratio[0];
-                int j0         = domainNesting[childDom].logicalExtents[1] / ratio[1];
-                int j1         = (domainNesting[childDom].logicalExtents[4] + 1) / ratio[1];
-                int k0         = domainNesting[childDom].logicalExtents[2] / ratio[2];
-                int k1         = (domainNesting[childDom].logicalExtents[5] + 1) / ratio[2];
-
-                //
-                // Often a child domain spans multiple parents. So, we need to
-                // clip the bounds computed above to THIS parent's upper bounds
-                //
-                if (i1 > I1) i1 = I1;
-                if (j1 > J1) j1 = J1;
-                if (k1 > K1) k1 = K1;
-                if (i0 < I0) i0 = I0;
-                if (j0 < J0) j0 = J0;
-                if (k0 < K0) k0 = K0;
-
-                didGhost = true;
-
-                if (numDimensions == 3)
+                for (int kk = k0; kk < k1; kk++)
                 {
-                    for (int ii = i0; ii < i1; ii++)
-                        for (int jj = j0; jj < j1; jj++)
-                            for (int kk = k0; kk < k1; kk++)
-                            {
-                                int a = ii - I0 + ghostLayers[0];
-                                int b = jj - J0 + ghostLayers[1];
-                                int c = kk - K0 + ghostLayers[2];
-                                int idx = c*Ni*Nj + b*Ni + a;
-                                ghostData[idx] = ghostVal;
-                            }
-                }
-                else if (numDimensions == 2)
-                {
-                    for (int ii = i0; ii < i1; ii++)
-                        for (int jj = j0; jj < j1; jj++)
+                    int cc = kk - K0 + ghostLayers[2];
+                    int c = cc*Ni*Nj;
+                    for (int jj = j0; jj < j1; jj++)
+                    {
+                        int bb = jj - J0 + ghostLayers[1];
+                        int b = c + bb*Ni;
+                        for (int ii = i0; ii < i1; ii++)
                         {
-                            int a = ii - I0 + ghostLayers[0];
-                            int b = jj - J0 + ghostLayers[1];
-                            int idx = b*Ni + a;
-                            ghostData[idx] = ghostVal; 
+                            int aa = ii - I0 + ghostLayers[0];
+                            int a = b + aa;
+                            ghostData[a] = 0x1;
                         }
+                    }
                 }
-                else
+            }
+            else if (numDimensions == 2)
+            {
+                for (int jj = j0; jj < j1; jj++)
                 {
+                    int bb = jj - J0 + ghostLayers[1];
+                    int b = bb*Ni;
                     for (int ii = i0; ii < i1; ii++)
                     {
-                        int a = ii - I0 + ghostLayers[0];
-                        ghostData[a] = ghostVal;
+                        int aa = ii - I0 + ghostLayers[0];
+                        int a = b + aa;
+                        ghostData[a] = 0x1; 
                     }
+                }
+            }
+            else
+            {
+                for (int ii = i0; ii < i1; ii++)
+                {
+                    int a = ii - I0 + ghostLayers[0];
+                    ghostData[a] = 0x1;
                 }
             }
         }

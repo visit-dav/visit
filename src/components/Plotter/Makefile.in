@@ -168,7 +168,9 @@ SRC=avtLegend.C avtVariableLegend.C avtGeometryDrawable.C avtActor.C \
     avtOpenGLSurfaceAndWireframeRenderer.C avtCustomRenderer.C \
     avtLineoutActor.C avtTransparencyActor.C avtLabelActor.C \
     avtDecorationsDrawable.C avtDecorationsMapper.C avtLabeledCurveMapper.C \
-    avtExternallyRenderedImagesActor.C avtTensorGlyphMapper.C avtDrawable.C 
+    avtExternallyRenderedImagesActor.C avtTensorGlyphMapper.C avtDrawable.C \
+    avtPointGlyphMapper.C 
+
 
 
 CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@ @MESA_INCLUDE@

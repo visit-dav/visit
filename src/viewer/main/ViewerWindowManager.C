@@ -24,6 +24,7 @@
 #include <DataNode.h>
 #include <EngineKey.h>
 #include <GlobalAttributes.h>
+#include <InteractorAttributes.h>
 #include <KeyframeAttributes.h>
 #include <LightList.h>
 #include <LightAttributes.h>
@@ -89,6 +90,8 @@ View3DAttributes *ViewerWindowManager::view3DClientAtts=0;
 AnimationAttributes *ViewerWindowManager::animationClientAtts=0;
 AnnotationAttributes *ViewerWindowManager::annotationClientAtts=0;
 AnnotationAttributes *ViewerWindowManager::annotationDefaultAtts=0;
+InteractorAttributes *ViewerWindowManager::interactorClientAtts=0;
+InteractorAttributes *ViewerWindowManager::interactorDefaultAtts=0;
 KeyframeAttributes *ViewerWindowManager::keyframeClientAtts=0;
 LightList *ViewerWindowManager::lightListClientAtts=0;
 LightList *ViewerWindowManager::lightListDefaultAtts=0;
@@ -516,6 +519,12 @@ ViewerWindowManager::AddWindow(bool copyAtts)
         dest->GetPlotList()->CopyFrom(src->GetPlotList());
     }
     referenced[windowIndex] = true;
+
+    // Always copy the Interactor atts
+    if (windowIndex != activeWindow)
+    {
+        windows[windowIndex]->CopyInteractorAtts(windows[activeWindow]);
+    }
 
     //
     // Now that the view has been set up (and other things), we can set the
@@ -4012,6 +4021,9 @@ ViewerWindowManager::RenderInformationCallback(void *data)
 //   Brad Whitlock, Fri Jan 23 15:55:55 PST 2004
 //   I split up UpdateWindowInformation into three methods.
 //
+//   Kathleen Bonnell, Wed Aug 18 09:28:51 PDT 2004 
+//   Added call to update interactor atts. 
+//
 // ****************************************************************************
 
 void
@@ -4053,6 +4065,11 @@ ViewerWindowManager::UpdateAllAtts()
     // Update the client annotation attributes.
     //
     UpdateAnnotationAtts();
+
+    //
+    // Update the client interactor attributes.
+    //
+    UpdateInteractorAtts();
 
     //
     // Update the client's light list.
@@ -8469,5 +8486,181 @@ void ViewerWindowManager::ResetTimeQueryDesignation(int winIndex)
     {
         timeQueryWindow = -1;
     }
+}
+
+
+// ****************************************************************************
+//  Method: ViewerWindowManager::GetInteractorClientAtts
+//
+//  Purpose: 
+//    Returns a pointer to the interactor attributes.
+//
+//  Returns:    A pointer to the interactor attributes.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   August 16, 2004 
+//
+// ****************************************************************************
+
+InteractorAttributes *
+ViewerWindowManager::GetInteractorClientAtts()
+{
+    //
+    // If the client attributes haven't been allocated then do so.
+    //
+    if (interactorClientAtts == 0)
+    {
+        interactorClientAtts = new InteractorAttributes;
+    }
+
+    return interactorClientAtts;
+}
+
+// ****************************************************************************
+//  Method: ViewerWindowManager::GetInteractorDefaultAtts
+//
+//  Purpose: 
+//    Returns a pointer to the default interactor attributes.
+//
+//  Returns:    A pointer to the default interactor attributes.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   August 16, 2004
+//
+// ****************************************************************************
+
+InteractorAttributes *
+ViewerWindowManager::GetInteractorDefaultAtts()
+{
+    //
+    // If the client attributes haven't been allocated then do so.
+    //
+    if (interactorDefaultAtts == 0)
+    {
+        interactorDefaultAtts = new InteractorAttributes;
+    }
+
+    return interactorDefaultAtts;
+}
+
+// ****************************************************************************
+//  Method: ViewerWindowManager::SetClientInteractorAttsFromDefault
+//
+//  Purpose: 
+//    This method copies the default interactor attributes into the client
+//    interactor attributes.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 16, 2004 
+//
+// ****************************************************************************
+
+void
+ViewerWindowManager::SetClientInteractorAttsFromDefault()
+{
+    if(interactorDefaultAtts != 0 && interactorClientAtts != 0)
+    {
+        *interactorClientAtts = *interactorDefaultAtts;
+    }
+}
+
+// ****************************************************************************
+//  Method: ViewerWindowManager::SetDefaultInteractorAttsFromClient
+//
+//  Purpose: 
+//    This method copies the client's interactor attributes into the default
+//    interactor attributes.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   August 16, 2004 
+//
+// ****************************************************************************
+
+void
+ViewerWindowManager::SetDefaultInteractorAttsFromClient()
+{
+    if(interactorDefaultAtts != 0 && interactorClientAtts != 0)
+    {
+        *interactorDefaultAtts = *interactorClientAtts;
+    }
+}
+
+// ****************************************************************************
+//  Method: ViewerWindowManager::SetInteractorAttsFromClient
+//
+//  Purpose: 
+//    Sets the interactor attributes for the active window based on the
+//    client's interactor attributes.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 16, 2004 
+//
+//  Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::SetInteractorAttsFromClient()
+{
+    for (int i = 0; i < maxWindows; i++)
+    {
+        if (windows[i] != 0)
+            windows[i]->SetInteractorAtts(interactorClientAtts);
+    }
+}
+
+// ****************************************************************************
+//  Method: ViewerWindowManager::SetInteractorAttsFromDefault
+//
+//  Purpose: 
+//    Sets the interactor attributes for the active window based on the
+//    default interactor attributes.
+//
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 16, 2004 
+//
+// ****************************************************************************
+
+void
+ViewerWindowManager::SetInteractorAttsFromDefault()
+{
+    for (int i = 0; i < maxWindows; i++)
+    {
+        if (windows[i] != 0)
+            windows[i]->SetInteractorAtts(interactorDefaultAtts);
+    }
+    //
+    // Update the client's annotation attributes
+    //
+    *interactorClientAtts = *interactorDefaultAtts;
+    interactorClientAtts->Notify();
+}
+
+// ****************************************************************************
+//  Method: ViewerWindowManager::UpdateInteractorAtts
+//
+//  Purpose: 
+//    Sends the interactor attributes for the active window to the client.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 16, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerWindowManager::UpdateInteractorAtts()
+{
+    ViewerWindow *win = windows[activeWindow];
+    const InteractorAttributes *winAtts = win->GetInteractorAtts();
+
+    //
+    // Copy the window's interactor attributes to the client interactor
+    // attributes and notify the client.
+    //
+    *interactorClientAtts = *winAtts;
+    interactorClientAtts->Notify();
 }
 

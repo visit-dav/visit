@@ -203,6 +203,9 @@
 //    Changed QueryOverTime's accelerator key from CTL-T to CTL-SHIFT-Q
 //    so that it would not collide with the ColorTable's accelerator. 
 // 
+//    Kathleen Bonnell, Wed Aug 18 09:44:09 PDT 2004 
+//    Added Interactors window.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -323,6 +326,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     menuBar()->insertItem( tr("&Options"), pref );
     pref->insertItem( tr("&Appearance . . ."), this, SIGNAL(activateAppearanceWindow()), CTRL+SHIFT+Key_A);
     pref->insertItem(computerIcon, tr("&Host profiles . . ."), this, SIGNAL(activateHostWindow()), CTRL+Key_H );
+    pref->insertItem(tr("&Interactors . . ."), this, SIGNAL(activateInteractorWindow()), CTRL+SHIFT+Key_I );
     pref->insertItem(pluginIcon, tr("&Plugin Manager . . ."), this, SIGNAL(activatePluginWindow()), CTRL+SHIFT+Key_P);
     pref->insertItem(tr("Preferences . . ."), this, SIGNAL(activatePreferencesWindow()));
     pref->insertItem(tr("Rendering . . ."), this, SIGNAL(activateRenderingWindow()));

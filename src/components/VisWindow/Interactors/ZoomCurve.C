@@ -195,6 +195,9 @@ ZoomCurve::EndMiddleButtonAction()
 //    I modified the routine to handle the fact that curve views are
 //    full frame.
 //
+//    Kathleen Bonnell, Wed Aug 18 09:59:02 PDT 2004
+//    Added code to perform an 'unzoom' when the control key is pressed.
+//
 // ****************************************************************************
 
 void
@@ -249,10 +252,74 @@ ZoomCurve::ZoomCamera(void)
 
     double s = newViewCurve.GetScaleFactor(size);
 
-    newViewCurve.domain[0] = leftX;
-    newViewCurve.domain[1] = rightX;
-    newViewCurve.range[0]  = bottomY / s;
-    newViewCurve.range[1]  = topY / s;
+    if (!controlKeyDown) // zoom
+    {
+        newViewCurve.domain[0] = leftX;
+        newViewCurve.domain[1] = rightX;
+        newViewCurve.range[0]  = bottomY/s;
+        newViewCurve.range[1]  = topY/s;
+    }
+    else // un-zoom 
+    {
+        float win1[4], win2[4], win3[4], win4[4];
+
+        // window created by rubber band
+        win1[0] = leftX;
+        win1[1] = rightX;
+        win1[2] = bottomY;
+        win1[3] = topY;
+        float win1_w = win1[1] - win1[0];
+        float win1_h = win1[3] - win1[2];
+
+        // the current window 
+        win2[0] = newViewCurve.domain[0];
+        win2[1] = newViewCurve.domain[1];
+        win2[2] = newViewCurve.range[0];
+        win2[3] = newViewCurve.range[1];
+        float win2_w = win2[1] - win2[0];
+        float win2_h = win2[3] - win2[2];
+
+        float scaleX = win1_w / win2_w;
+        float scaleY = win1_h / win2_h;
+
+        if (scaleY < scaleX)
+        {
+            float midX = (win2[0] + win2[1]) / 2.;
+            float halfw = (win2_h) * (win1_w / win1_h) / 2.;
+            win3[0] = midX - halfw;
+            win3[1] = midX + halfw;
+            win3[2] = win2[2];
+            win3[3] = win2[3];
+        }
+        else 
+        {
+            float midY = (win2[2] + win2[3]) /2.;
+            float halfh = (win2_w) * (win1_h / win1_w) / 2.;
+            win3[0] = win2[0];
+            win3[1] = win2[1]; 
+            win3[2] = midY - halfh;
+            win3[3] = midY + halfh;
+        }
+
+        float win3_w = (win3[1] - win3[0]);
+        float win3_h = (win3[3] - win3[2]);
+
+        win4[0] = ((win1[0] - win2[0]) / win2_w) * win3_w + win3[0];
+        win4[1] = ((win1[1] - win2[0]) / win2_w) * win3_w + win3[0];
+        win4[2] = ((win1[2] - win2[2]) / win2_h) * win3_h + win3[2];
+        win4[3] = ((win1[3] - win2[2]) / win2_h) * win3_h + win3[2];
+
+        float win4_w = (win4[1] - win4[0]);
+        float win4_h = (win4[3] - win4[2]);
+
+        newViewCurve.domain[0] = (win3[0] - win4[0]) * win3_w / win4_w + win3[0];
+        newViewCurve.domain[1] = (win3[1] - win4[0]) * win3_w / win4_w + win3[0];
+        newViewCurve.range[0]  = (win3[2] - win4[2]) * win3_h / win4_h + win3[2];
+        newViewCurve.range[1]  = (win3[3] - win4[2]) * win3_h / win4_h + win3[2];
+
+        newViewCurve.range[0] /= s;
+        newViewCurve.range[1] /= s;
+    }
 
     vw->SetViewCurve(newViewCurve);
 

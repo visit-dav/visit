@@ -20,16 +20,22 @@ Definition:
 //   Hank Childs, Thu Aug 21 22:28:25 PDT 2003
 //   Added pointType.
 //
+//   Kathleen Bonnell, Wed Aug 18 18:08:52 PDT 2004 
+//   Removed pointSize, pointType from test.  Added new conditions for
+//   recalculation when pointSizeVar or pointSizeVarEnabled have changed. 
+//
 // ****************************************************************************
 bool
 PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &obj) const
 {
+    bool ptVarChange = obj.pointSizeVarEnabled &&
+                       pointSizeVar != obj.pointSizeVar &&
+                       obj.pointSizeVar != "default"; 
+
     return (centering != obj.centering ||
-            pointSize != obj.pointSize ||
-            pointSizeVar != obj.pointSizeVar ||
-            pointType != obj.pointType ||
-            pointSizeVarEnabled != obj.pointSizeVarEnabled ||
+            ptVarChange ||
             smoothingLevel != obj.smoothingLevel); 
+
 }
 
 Function: Print

@@ -47,6 +47,10 @@ class VisWindowInteractorProxy;
 //    Added two flags for when control and shift are set.
 //    Made Start/End/UpdateRubberBand virtual (overloaded in Zoom2D).
 //
+//    Kathleen Bonnell, Wed Aug 18 10:10:35 PDT 2004 
+//    Added two flags for when InteractorAtts 'ClampToSquare' and 
+//    'ShowGuidelines' are set. 
+//
 // ****************************************************************************
 
 class VISWINDOW_API ZoomInteractor : public VisitInteractor
@@ -73,6 +77,8 @@ class VISWINDOW_API ZoomInteractor : public VisitInteractor
         
     bool                   shiftKeyDown;
     bool                   controlKeyDown;
+    bool                   shouldClampSquare;
+    bool                   shouldDrawGuides;
 
     virtual void           StartRubberBand(int, int);
     virtual void           EndRubberBand();

@@ -8,10 +8,9 @@
 
 #include <avtExtents.h>
 #include <avtLookupTable.h>
-#include <avtPointToGlyphFilter.h>
 #include <avtShiftCenteringFilter.h>
 #include <avtVariableLegend.h>
-#include <avtVariableMapper.h>
+#include <avtPointGlyphMapper.h>
 
 #include <DebugStream.h>
 #include <InvalidLimitsException.h>
@@ -40,20 +39,23 @@
 //    Eric Brugger, Wed Jul 16 11:09:02 PDT 2003
 //    Modified to work with the new way legends are managed.
 //
+//    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004 
+//    Replaced varMapper and glyphPoints with glyphMapper. 
+//
 // ****************************************************************************
 
 avtPseudocolorPlot::avtPseudocolorPlot()
 {
-    varMapper = new avtVariableMapper;
     varLegend = new avtVariableLegend;
     varLegend->SetTitle("Pseudocolor");
+    glyphMapper = new avtPointGlyphMapper;
 
     colorsInitialized = false;
+    topoDim = 3;
 
     avtLUT  = new avtLookupTable;
 
     filter = NULL;
-    glyphPoints = new avtPointToGlyphFilter;
 
     //
     // This is to allow the legend to reference counted so the behavior can
@@ -79,6 +81,9 @@ avtPseudocolorPlot::avtPseudocolorPlot()
 //    Hank Childs, Sun Jun 23 12:22:58 PDT 2002
 //    Destruct glyphPoints.
 //
+//    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004 
+//    No longer using glyphPoints, replaced varMapper with glyphMapepr.
+//
 // ****************************************************************************
 
 avtPseudocolorPlot::~avtPseudocolorPlot()
@@ -89,21 +94,15 @@ avtPseudocolorPlot::~avtPseudocolorPlot()
         filter = NULL;
     }
 
-    if (glyphPoints != NULL)
-    {
-        delete glyphPoints;
-        glyphPoints = NULL;
-    }
-
-    if (varMapper != NULL)
-    {
-        delete varMapper;
-        varMapper = NULL;
-    }
     if (avtLUT != NULL)
     {
         delete avtLUT;
         avtLUT = NULL;
+    }
+    if (glyphMapper != NULL)
+    {
+        delete glyphMapper;
+        glyphMapper = NULL;
     }
 
     //
@@ -141,12 +140,16 @@ avtPseudocolorPlot::Create()
 //  Programmer: Hank Childs
 //  Creation:   December 28, 2000
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
+//    Replaced varMapper with glyphMapper.
+//
 // ****************************************************************************
 
 avtMapper *
 avtPseudocolorPlot::GetMapper(void)
 {
-    return varMapper;
+    return glyphMapper;
 }
 
 
@@ -243,31 +246,17 @@ avtPseudocolorPlot::ApplyOperators(avtDataObject_p input)
 //    Hank Childs, Thu Aug 21 22:05:14 PDT 2003
 //    Added support for different types of point glyphs.
 //
+//    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
+//    Removed glyph filter (replaced by glyphMapper).  Record topological 
+//    dimension for use by EhanceSpecification. 
+//
 // ****************************************************************************
 
 avtDataObject_p
 avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
-    avtDataObject_p dob = input; 
-
-    if (dob->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
-    {
-        glyphPoints->SetPointSize(atts.GetPointSize());
-        glyphPoints->SetScaleByVariableEnabled(atts.GetPointSizeVarEnabled());
-        if (atts.GetPointSizeVarEnabled())
-        {
-            glyphPoints->SetScaleVariable(atts.GetPointSizeVar());
-        }
-        else
-        {
-            glyphPoints->SetScaleVariable("default");
-        }
-        glyphPoints->SetInput(dob);
-        glyphPoints->SetGlyphType((int) atts.GetPointType());
-        dob = glyphPoints->GetOutput();
-    }
-
-    return dob;
+    topoDim = input->GetInfo().GetAttributes().GetTopologicalDimension(); 
+    return input;
 }
 
 
@@ -375,6 +364,9 @@ avtPseudocolorPlot::CustomizeBehavior()
 //    Kathleen Bonnell, Thu Mar 28 14:03:19 PST 2002 
 //    Removed previousMode.
 // 
+//    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
+//    Replaced varMapper with glyphMapper. Added glyphMapper specific code.
+//
 // ****************************************************************************
 
 void
@@ -401,6 +393,29 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
         colorsInitialized = true;
         SetColorTable(atts.GetColorTableName().c_str());
     }
+
+    glyphMapper->SetScale(atts.GetPointSize());
+    if (atts.GetPointSizeVarEnabled())
+    {
+        if (atts.GetPointSizeVar() == "default")
+        { 
+            if (varname != NULL)
+                glyphMapper->DataScalingOn(varname);
+        } 
+        else
+        { 
+            glyphMapper->DataScalingOn(atts.GetPointSizeVar());
+        } 
+    }
+    else 
+    {
+        glyphMapper->DataScalingOff();
+    }
+    glyphMapper->SetGlyphType((int)atts.GetPointType());
+
+
+    if (varname != NULL)
+        glyphMapper->ColorByScalarOn(string(varname));
 
     SetScaling(atts.GetScaling(), atts.GetSkewFactor());
     SetLimitsMode(atts.GetLimitsMode());
@@ -523,6 +538,9 @@ avtPseudocolorPlot::SetLegend(bool legendOn)
 //    Kathleen Bonnell, Wed Mar 13 12:04:53 PST 2002    
 //    Set legend's lut and scaling. 
 //
+//    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
+//    Replaced varMapper with glyphMapper.
+//
 // ****************************************************************************
 
 void
@@ -533,16 +551,16 @@ avtPseudocolorPlot::SetScaling(int mode, double skew)
 
     if (mode == 1)
     {
-       varMapper->SetLookupTable(avtLUT->GetLogLookupTable());
+       glyphMapper->SetLookupTable(avtLUT->GetLogLookupTable());
     }
     else if (mode == 2)
     {
        avtLUT->SetSkewFactor(skew);
-       varMapper->SetLookupTable(avtLUT->GetSkewLookupTable());
+       glyphMapper->SetLookupTable(avtLUT->GetSkewLookupTable());
     }
     else 
     {
-       varMapper->SetLookupTable(avtLUT->GetLookupTable());
+       glyphMapper->SetLookupTable(avtLUT->GetLookupTable());
     }
 }
 
@@ -560,6 +578,10 @@ avtPseudocolorPlot::SetScaling(int mode, double skew)
 //  Programmer: Hank Childs
 //  Creation:   December 28, 2000
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
+//    Replaced varMapper with glyphMapper.
+//
 // ****************************************************************************
 
 void
@@ -567,11 +589,11 @@ avtPseudocolorPlot::SetLighting(bool lightingOn)
 {
     if (lightingOn)
     {
-        varMapper->TurnLightingOn();
+        glyphMapper->TurnLightingOn();
     }
     else
     {
-        varMapper->TurnLightingOff();
+        glyphMapper->TurnLightingOff();
     }
 }
 
@@ -606,6 +628,9 @@ avtPseudocolorPlot::SetLighting(bool lightingOn)
 //    Eric Brugger, Thu Mar 25 17:12:04 PST 2004
 //    I added code to use the data extents from the base class if set.
 //
+//    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
+//    Replaced varMapper with glyphMapper.
+//
 // ****************************************************************************
 
 void
@@ -615,15 +640,15 @@ avtPseudocolorPlot::SetLimitsMode(int limitsMode)
     //
     //  Retrieve the actual range of the data
     //
-    varMapper->GetVarRange(min, max);
+    glyphMapper->GetVarRange(min, max);
 
     float userMin = atts.GetMinFlag() ? atts.GetMin() : min;
     float userMax = atts.GetMaxFlag() ? atts.GetMax() : max;
       
     if (dataExtents.size() == 2)
     {
-        varMapper->SetMin(dataExtents[0]);
-        varMapper->SetMax(dataExtents[1]);
+        glyphMapper->SetMin(dataExtents[0]);
+        glyphMapper->SetMax(dataExtents[1]);
     }
     else if (atts.GetMinFlag() && atts.GetMaxFlag())
     {
@@ -633,40 +658,40 @@ avtPseudocolorPlot::SetLimitsMode(int limitsMode)
         }
         else
         {
-            varMapper->SetMin(userMin);
-            varMapper->SetMax(userMax);
+            glyphMapper->SetMin(userMin);
+            glyphMapper->SetMax(userMax);
         }
     } 
     else if (atts.GetMinFlag())
     {
-        varMapper->SetMin(userMin);
+        glyphMapper->SetMin(userMin);
         if (userMin > userMax)
         {
-            varMapper->SetMax(userMin);
+            glyphMapper->SetMax(userMin);
         }
         else
         {
-            varMapper->SetMaxOff();
+            glyphMapper->SetMaxOff();
         }
     }
     else if (atts.GetMaxFlag())
     {
-        varMapper->SetMax(userMax);
+        glyphMapper->SetMax(userMax);
         if (userMin > userMax)
         {
-            varMapper->SetMin(userMax);
+            glyphMapper->SetMin(userMax);
         }
         else
         {
-            varMapper->SetMinOff();
+            glyphMapper->SetMinOff();
         }
     }
     else
     {
-        varMapper->SetMinOff();
-        varMapper->SetMaxOff();
+        glyphMapper->SetMinOff();
+        glyphMapper->SetMaxOff();
     }
-    varMapper->SetLimitsMode(limitsMode);
+    glyphMapper->SetLimitsMode(limitsMode);
 
     SetLegendRanges();
 }
@@ -688,12 +713,15 @@ avtPseudocolorPlot::SetLimitsMode(int limitsMode)
 //    Kathleen Bonnell, Mon Sep 29 13:07:50 PDT 2003 
 //    Set AntialiasedRenderOrder. 
 //
+//    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
+//    Replaced varMapper with glyphMapper.
+//
 // ****************************************************************************
 
 void
 avtPseudocolorPlot::SetOpacity(float opacity)
 {
-    varMapper->SetOpacity(opacity);
+    glyphMapper->SetOpacity(opacity);
     if (opacity < 1.)
     {
        behavior->SetRenderOrder(MUST_GO_LAST);
@@ -723,6 +751,9 @@ avtPseudocolorPlot::SetOpacity(float opacity)
 //    Kathleen Bonnell, Wed May 29 13:40:22 PDT 2002  
 //    Always allow user to specify Min/Max. 
 // 
+//    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
+//    Replaced varMapper with glyphMapper.
+//
 // ****************************************************************************
 
 void
@@ -736,11 +767,11 @@ avtPseudocolorPlot::SetLegendRanges()
     bool validRange = false;
     if (atts.GetLimitsMode() == PseudocolorAttributes::OriginalData)
     {
-        validRange = varMapper->GetRange(min, max);
+        validRange = glyphMapper->GetRange(min, max);
     }
     else
     {
-        validRange = varMapper->GetCurrentRange(min, max);
+        validRange = glyphMapper->GetCurrentRange(min, max);
     }
 
     varLegend->SetRange(min, max);
@@ -759,7 +790,7 @@ avtPseudocolorPlot::SetLegendRanges()
     //
     // set and get the range for the legend's limits text
     //
-    varMapper->GetVarRange(min, max);
+    glyphMapper->GetVarRange(min, max);
     varLegend->SetVarRange(min, max);
 }
 
@@ -773,6 +804,10 @@ avtPseudocolorPlot::SetLegendRanges()
 //  Programmer: Hank Childs
 //  Creation:   September 12, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
+//    Removed glyphPoints.
+//
 // ****************************************************************************
  
 void
@@ -783,10 +818,6 @@ avtPseudocolorPlot::ReleaseData(void)
     if (filter != NULL)
     {
         filter->ReleaseData();
-    }
-    if (glyphPoints != NULL)
-    {
-        glyphPoints->ReleaseData();
     }
 }
 
@@ -807,3 +838,40 @@ avtPseudocolorPlot::GetSmoothingLevel()
 {
     return atts.GetSmoothingLevel();
 }
+
+
+// ****************************************************************************
+//  Method: avtPseudocolorPlot::EnhanceSpecification
+//
+//  Purpose:
+//    Add secondary variable to pipeline if needed. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 19, 2004 
+//
+// ****************************************************************************
+
+avtPipelineSpecification_p
+avtPseudocolorPlot::EnhanceSpecification(avtPipelineSpecification_p spec)
+{
+    avtPipelineSpecification_p rv = spec;
+    if (topoDim == 0)
+    {
+        string pointVar = atts.GetPointSizeVar();
+        avtDataSpecification_p dspec = spec->GetDataSpecification();
+
+        //
+        // Find out if we REALLY need to add the secondary variable.
+        //
+        if (atts.GetPointSizeVarEnabled() && 
+            pointVar != "default" &&
+            pointVar != dspec->GetVariable() &&
+            !dspec->HasSecondaryVariable(pointVar.c_str()))
+        {
+            rv = new avtPipelineSpecification(spec);
+            rv->GetDataSpecification()->AddSecondaryVariable(pointVar.c_str());
+        }
+    }
+    return rv;
+}
+

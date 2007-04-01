@@ -11,11 +11,9 @@
 #include <PseudocolorAttributes.h>
 
 class     avtLookupTable;
-class     avtPointToGlyphFilter;
 class     avtShiftCenteringFilter;
 class     avtVariableLegend;
-class     avtVariableMapper;
-class     avtSmoothPolyDataFilter;
+class     avtPointGlyphMapper;
 
 
 // ****************************************************************************
@@ -75,6 +73,10 @@ class     avtSmoothPolyDataFilter;
 //    Eric Brugger, Thu Mar 25 16:59:55 PST 2004
 //    I added the GetDataExtents method.
 //
+//    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
+//    Added EnhanceSpecification, and topoDim ivar.  Replaced glyphPoints
+//    and varMapper with glyphMapper.
+//
 // ****************************************************************************
 
 class avtPseudocolorPlot : public avtSurfaceDataPlot
@@ -101,19 +103,20 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     void                        SetScaling(int, double);
 
   protected:
-    avtVariableMapper          *varMapper;
+    avtPointGlyphMapper        *glyphMapper;
     avtVariableLegend          *varLegend;
     avtLegend_p                 varLegendRefPtr;
     PseudocolorAttributes       atts;
     avtShiftCenteringFilter    *filter;
-    avtPointToGlyphFilter      *glyphPoints;
-    avtSmoothPolyDataFilter    *smooth;
     bool                        colorsInitialized;
+    int                         topoDim;
     avtLookupTable             *avtLUT;
 
     virtual avtMapper          *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
     virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);
+    virtual avtPipelineSpecification_p     
+                                EnhanceSpecification(avtPipelineSpecification_p);
     virtual void                CustomizeBehavior(void);
     virtual int                 GetSmoothingLevel();
 

@@ -16,6 +16,7 @@
 #include <VisCallback.h>
 
 #include <AnnotationAttributes.h>
+#include <InteractorAttributes.h>
 #include <LightList.h>
 
 #include <avtActor.h>
@@ -264,6 +265,9 @@ class VisitInteractor;
 //    Mark C. Miller, Mon Jul 26 15:08:39 PDT 2004
 //    Added PostProcessScreenCapture
 //
+//    Kathleen Bonnell, Wed Aug 18 10:10:35 PDT 2004 
+//    Added InteractorAttributes and Set/Get methods.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -387,6 +391,9 @@ public:
     void                 SetLightList(const LightList *);
     const LightList     *GetLightList() const;
 
+    void                 SetInteractorAtts(const InteractorAttributes *);
+    const InteractorAttributes     *GetInteractorAtts() const;
+
     void                 Render(void);
 
     void                 UpdateView();
@@ -471,6 +478,7 @@ protected:
     VisWinAnnotations                 *annotations;
 
     AnnotationAttributes               annotationAtts;
+    InteractorAttributes               interactorAtts;
     LightList                          lightList;
 
     float                              foreground[3];

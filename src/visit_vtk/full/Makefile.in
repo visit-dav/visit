@@ -226,6 +226,9 @@
 #    Renamed vtkHankAxisActor2D to vtkVisItAxisActor2D, similar for 
 #    vtkHankTIFFWriter, vtkKatCubeAxesActor and vtkKatAxisActor.
 #
+#    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004 
+#    Added vtkVisItGlyph3D. 
+#
 ##############################################################################
 
 ##
@@ -277,6 +280,7 @@ SRC=InitVTK.C \
     vtkVisItCutter.C \
     vtkVisItClipper.C \
     vtkVisItFeatureEdges.C \
+    vtkVisItGlyph3D.C \
     vtkVisItMesaPolyDataMapper.C \
     vtkVisItOpenGLPolyDataMapper.C \
     vtkVisItPolyDataNormals.C \

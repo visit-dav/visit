@@ -39,6 +39,7 @@
 #include <AppearanceAttributes.h>
 #include <HostProfile.h>
 #include <GlobalLineoutAttributes.h>
+#include <InteractorAttributes.h>
 #include <ObserverToCallback.h>
 #include <PickAttributes.h>
 #include <QueryAttributes.h>
@@ -65,6 +66,7 @@
 #include <QvisGlobalLineoutWindow.h>
 #include <QvisHelpWindow.h>
 #include <QvisHostProfileWindow.h>
+#include <QvisInteractorWindow.h>
 #include <QvisKeyframeWindow.h>
 #include <QvisLightingWindow.h>
 #include <QvisMainWindow.h>
@@ -130,6 +132,7 @@
 #define WINDOW_RENDERING        23
 #define WINDOW_CORRELATION      24  
 #define WINDOW_TIMEQUERY        25
+#define WINDOW_INTERACTOR       26
 
 const char *QvisGUIApplication::windowNames[] = {
 "File selection",
@@ -157,7 +160,8 @@ const char *QvisGUIApplication::windowNames[] = {
 "Preferences",
 "Rendering options",
 "Database correlation list",
-"QueryOverTime"
+"QueryOverTime",
+"Interactors"
 };
 
 // Some internal prototypes.
@@ -1772,6 +1776,9 @@ QvisGUIApplication::CreateMainWindow()
 //   Brad Whitlock, Wed Aug 4 16:13:42 PST 2004
 //   Forced the file selection window to be created.
 //
+//   Kathleen Bonnell, Wed Aug 18 09:44:09 PDT 2004 
+//   Added InteractorWindow. 
+//
 // ****************************************************************************
 
 void
@@ -1867,6 +1874,8 @@ QvisGUIApplication::SetupWindows()
              this, SLOT(showCorrelationListWindow()));
      connect(mainWin, SIGNAL(activateQueryOverTimeWindow()),
              this, SLOT(showQueryOverTimeWindow()));
+     connect(mainWin, SIGNAL(activateInteractorWindow()),
+             this, SLOT(showInteractorWindow()));
 }
 
 // ****************************************************************************
@@ -1886,6 +1895,8 @@ QvisGUIApplication::SetupWindows()
 // Creation:   Thu May 6 14:54:09 PST 2004
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Aug 18 09:44:09 PDT 2004 
+//   Added InteractorWindow. 
 //   
 // ****************************************************************************
 
@@ -2057,6 +2068,11 @@ QvisGUIApplication::WindowFactory(int i)
         // Create the time query window.
         win = new QvisQueryOverTimeWindow(viewer->GetQueryOverTimeAttributes(),
             windowNames[i], "QueryOverTime", mainWin->GetNotepad());
+        break;
+    case WINDOW_INTERACTOR:
+        // Create the time query window.
+        win = new QvisInteractorWindow(viewer->GetInteractorAttributes(),
+            windowNames[i], "Interactor", mainWin->GetNotepad());
         break;
     }
 
@@ -4386,3 +4402,4 @@ void QvisGUIApplication::showQueryWindow()           { GetInitializedWindowPoint
 void QvisGUIApplication::showRenderingWindow()       { GetInitializedWindowPointer(WINDOW_RENDERING)->show(); }
 void QvisGUIApplication::showCorrelationListWindow() { GetInitializedWindowPointer(WINDOW_CORRELATION)->show(); }
 void QvisGUIApplication::showQueryOverTimeWindow()   { GetInitializedWindowPointer(WINDOW_TIMEQUERY)->show(); }
+void QvisGUIApplication::showInteractorWindow()   { GetInitializedWindowPointer(WINDOW_INTERACTOR)->show(); }

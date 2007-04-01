@@ -5137,3 +5137,52 @@ VisWindow::ReAddToolsToRenderWindow(void)
 {
     tools->ReAddToolsToWindow();
 }
+
+
+// ****************************************************************************
+// Method: VisWindow::SetInteractorAtts
+//
+// Purpose: 
+//   Sets the interactor attributes used to control zoom, etc.
+//
+//  Arguments:
+//    atts     The interactor attributes to use. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   July 16, 2004 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisWindow::SetInteractorAtts(const InteractorAttributes *atts)
+{
+    bool changed = (interactorAtts != *atts);
+
+    if (changed)
+    {
+        interactorAtts = *atts;
+        // nothing to be done at this point, the interactors interested
+        // in these atts will retrieve them at the appropriate time.
+        // This may need to change in the future.
+    }
+}
+
+// ****************************************************************************
+// Method: VisWindow::GetInteractorAttributes()
+//
+// Purpose: 
+//   Returns a pointer to the window's interactor attributes.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 16, 2004 
+//   
+// ****************************************************************************
+
+const InteractorAttributes *
+VisWindow::GetInteractorAtts() const
+{
+    return (const InteractorAttributes *)&interactorAtts;
+}
+

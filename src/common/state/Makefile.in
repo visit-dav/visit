@@ -228,6 +228,9 @@
 #    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 #    Added source files for VisualCues
 #
+#    Kathleen Bonnell, Mon Aug 16 11:39:46 PDT 2004 
+#    Added InteractorAttributes. 
+#
 ##############################################################################
 
 ##
@@ -273,6 +276,7 @@ SRC=    AnimationAttributes.C \
         GlobalLineoutAttributes.C \
         HostProfile.C \
         HostProfileList.C \
+        InteractorAttributes.C \
         KeepAliveRPC.C \
         KeyframeAttributes.C \
 	LightAttributes.C \

@@ -28,6 +28,7 @@
 #include <GlobalLineoutAttributes.h>
 #include <HostProfile.h>
 #include <HostProfileList.h>
+#include <InteractorAttributes.h>
 #include <KeyframeAttributes.h>
 #include <LightList.h>
 #include <MaterialAttributes.h>
@@ -155,6 +156,9 @@
 //    Kathleen Bonnell, Wed Mar 24 10:56:30 PST 2004 
 //    I added queryOverTimeAtts.
 //
+//    Kathleen Bonnell, Wed Aug 18 09:28:51 PDT 2004
+//    Added interactorAtts.
+//
 // ****************************************************************************
 
 ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
@@ -193,6 +197,7 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
     globalLineoutAtts    = new GlobalLineoutAttributes;
     annotationObjectList = new AnnotationObjectList;
     queryOverTimeAtts    = new QueryOverTimeAttributes;
+    interactorAtts       = new InteractorAttributes;
 
     // Make the proxy observe the SIL restriction attributes.
     silRestrictionAtts->Attach(this);
@@ -325,6 +330,9 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
 //    Katheen Bonnell, Wed Mar 24 10:56:30 PST 2004 
 //    I added queryOverTimeAtts.
 //
+//    Kathleen Bonnell, Wed Aug 18 09:28:51 PDT 2004
+//    Added interactorAtts.
+//
 // ****************************************************************************
 
 ViewerProxy::~ViewerProxy()
@@ -369,6 +377,7 @@ ViewerProxy::~ViewerProxy()
     delete globalLineoutAtts;
     delete annotationObjectList;
     delete queryOverTimeAtts;
+    delete interactorAtts;
 
     //
     // Delete the plot attribute state objects.
@@ -733,6 +742,9 @@ ViewerProxy::AddArgument(const std::string &arg)
 //    Katheen Bonnell, Wed Mar 24 10:56:30 PST 2004 
 //    I added queryOverTimeAtts.
 //
+//    Kathleen Bonnell, Wed Aug 18 09:28:51 PDT 2004
+//    Added interactorAtts.
+//
 // ****************************************************************************
 
 void
@@ -806,6 +818,7 @@ ViewerProxy::Create()
     xfer->Add(globalLineoutAtts);
     xfer->Add(annotationObjectList);
     xfer->Add(queryOverTimeAtts);
+    xfer->Add(interactorAtts);
 
     xfer->ListObjects();
 
@@ -5190,3 +5203,87 @@ ViewerProxy::ResetLineoutColor()
     //
     viewerRPC->Notify();
 }
+
+
+// ****************************************************************************
+// Method: ViewerProxy::ResetInteractorAttributes
+//
+// Purpose: 
+//   Reset the interactor attributes to default values.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 16, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::ResetInteractorAttributes()
+{
+    //
+    // Set the rpc type.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::ResetInteractorAttributesRPC);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+//  Method: ViewerProxy::SetDefaultInteractorAttributes
+//
+//  Purpose:
+//    Applies the default interactor attributes.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 16, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerProxy::SetDefaultInteractorAttributes()
+{
+    //
+    // Set the rpc type.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::SetDefaultInteractorAttributesRPC);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+
+// ****************************************************************************
+//  Method: ViewerProxy::SetInteractorAttributes
+//
+//  Purpose:
+//    Applies the interactor attributes.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 16, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerProxy::SetInteractorAttributes()
+{
+    //
+    // Set the rpc type.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::SetInteractorAttributesRPC);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+

@@ -67,6 +67,11 @@
 //    Modified with PickEntry and LineEntry data types in vectors of pickPoints
 //    and refLines. Changed some interfaces to use VisualCueInfo.
 //    
+//    Kathleen Bonnell, Wed Aug 18 09:44:09 PDT 2004 
+//    Added Start2DMode, StartCurveMode and Start3D mode so that pick actors
+//    inappropriate for the new mode can be removed.   Added optional int arg
+//    to ClearPickPoints method.
+//    
 // ****************************************************************************
 class VISWINDOW_API VisWinQuery : public VisWinColleague
 {
@@ -88,7 +93,7 @@ class VISWINDOW_API VisWinQuery : public VisWinColleague
     void                          ClearLineouts(void);
 
     void                          Pick(const VisualCueInfo *);
-    void                          ClearPickPoints(void);
+    void                          ClearPickPoints(const int which = 0);
 
     virtual void                  FullFrameOn(const double, const int);
     virtual void                  FullFrameOff(void);
@@ -96,6 +101,11 @@ class VISWINDOW_API VisWinQuery : public VisWinColleague
 
     void                          GetVisualCues(const VisualCueInfo::CueType cueType,
                                       std::vector<const VisualCueInfo *>& cues) const;
+
+
+    virtual void             Start2DMode();
+    virtual void             Start3DMode();
+    virtual void             StartCurveMode();
 
   protected:
     void                          CreateTranslationVector(const double, 

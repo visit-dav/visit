@@ -34,6 +34,7 @@
 #include <HostProfile.h>
 #include <HostProfileList.h>
 #include <InitVTK.h>
+#include <InteractorAttributes.h>
 #include <InvalidVariableException.h>
 #include <KeyframeAttributes.h>
 #include <LostConnectionException.h>
@@ -498,6 +499,9 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //   Kathleen Bonnell, Wed Mar 31 11:08:05 PST 2004 
 //   Added ViewerQueryManger's QueryOverTimeAtts to xfer.
 //
+//   Kathleen Bonnell, Wed Aug 18 09:25:33 PDT 2004 
+//   Added ViewerWindowManger's InteractorAtts to xfer.
+//
 // ****************************************************************************
 
 void
@@ -544,6 +548,7 @@ ViewerSubject::ConnectXfer()
     xfer.Add(ViewerQueryManager::Instance()->GetGlobalLineoutClientAtts());
     xfer.Add(ViewerWindowManager::GetAnnotationObjectList());
     xfer.Add(ViewerQueryManager::Instance()->GetQueryOverTimeClientAtts());
+    xfer.Add(ViewerWindowManager::Instance()->GetInteractorClientAtts());
 
     //
     // Set up special opcodes and their handler.
@@ -680,6 +685,9 @@ ViewerSubject::ConnectObjectsAndHandlers()
 //    Kathleen Bonnell, Wed Mar 31 11:08:05 PST 2004 
 //    Added ViewerQueryManger's QueryOverTimeAtts to config manager.
 //
+//    Kathleen Bonnell, Wed Aug 18 09:25:33 PDT 2004 
+//    Added ViewerWindowManger's InteractorAtts to config manager.
+//
 // ****************************************************************************
 
 void
@@ -708,6 +716,7 @@ ViewerSubject::ConnectConfigManager()
     configMgr->Add(ViewerWindowManager::GetDefaultAnnotationObjectList());
     configMgr->Add(ViewerQueryManager::Instance()->GetPickDefaultAtts());
     configMgr->Add(ViewerQueryManager::Instance()->GetQueryOverTimeDefaultAtts());
+    configMgr->Add(ViewerWindowManager::Instance()->GetInteractorDefaultAtts());
 }
 
 // ****************************************************************************
@@ -1131,6 +1140,9 @@ ViewerSubject::LoadOperatorPlugins()
 //   Kathleen Bonnell, Wed Mar 31 11:08:05 PST 2004 
 //   Added QueryOverTimeAtts.
 //
+//   Kathleen Bonnell, Wed Aug 18 09:25:33 PDT 2004 
+//   Added InteractorAtts.
+//
 // ****************************************************************************
 
 void
@@ -1177,6 +1189,9 @@ ViewerSubject::ProcessConfigFileSettings()
 
     // Copy the default time query atts to the client time query atts
     ViewerQueryManager::Instance()->SetClientQueryOverTimeAttsFromDefault();
+
+    // Copy the default time query atts to the client time query atts
+    ViewerWindowManager::Instance()->SetClientInteractorAttsFromDefault();
 
     // Send the queries to the client.
     ViewerQueryManager::Instance()->GetQueryTypes()->Notify();
@@ -6163,6 +6178,9 @@ ViewerSubject::SendKeepAlives()
 //    Kathleen Bonnell, Thu Aug  5 08:34:15 PDT 2004 
 //    Added ResetLineoutColorRPC.
 //
+//    Kathleen Bonnell, Wed Aug 18 09:25:33 PDT 2004 
+//    Added methods related to InteractorAttributes.
+//
 // ****************************************************************************
 
 void
@@ -6440,6 +6458,15 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::ResetLineoutColorRPC:
         ResetLineoutColor();
+        break;
+    case ViewerRPC::SetInteractorAttributesRPC:
+        SetInteractorAttributes();
+        break;
+    case ViewerRPC::SetDefaultInteractorAttributesRPC:
+        SetDefaultInteractorAttributes();
+        break;
+    case ViewerRPC::ResetInteractorAttributesRPC:
+        ResetInteractorAttributes();
         break;
     case ViewerRPC::MaxRPC:
         break;
@@ -6732,3 +6759,65 @@ ViewerSubject::ResetLineoutColor()
 {
     ViewerQueryManager::Instance()->ResetLineoutColor(); 
 }
+
+
+// ****************************************************************************
+//  Method: ViewerSubject::SetInteractorAttributes
+//
+//  Purpose:
+//    Execute the SetInteractorAttributes RPC.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 16, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerSubject::SetInteractorAttributes()
+{
+    ViewerWindowManager *wM=ViewerWindowManager::Instance();
+    wM->SetInteractorAttsFromClient();
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::SetDefaultInteractorAttributes
+//
+// Purpose: 
+//   Sets the default interactor atts from the client interactor atts.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 16, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::SetDefaultInteractorAttributes()
+{
+    ViewerWindowManager::SetDefaultInteractorAttsFromClient();
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::ResetInteractorAttributes
+//
+// Purpose: 
+//   Sets the default interactor attributes into the interactor attributes
+//   for the active window.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 16, 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::ResetInteractorAttributes()
+{
+    ViewerWindowManager *wM=ViewerWindowManager::Instance();
+    wM->SetInteractorAttsFromDefault();
+}
+

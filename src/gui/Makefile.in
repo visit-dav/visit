@@ -277,6 +277,9 @@
 #    I removed the command line window and interpreter classes since they
 #    have not been valid since before the intitial visit prototype.
 #
+#    Kathleen Bonnell, Mon Aug 16 17:54:35 PDT 2004 
+#    Added QvisInteractorWindow.
+#
 ##############################################################################
 
 ##
@@ -337,6 +340,7 @@ HDRMOC = \
     QvisGUIApplication.h \
     QvisHelpWindow.h \
     QvisHostProfileWindow.h \
+    QvisInteractorWindow.h \
     QvisKeyframeWindow.h \
     QvisLightingWidget.h \
     QvisLightingWindow.h \

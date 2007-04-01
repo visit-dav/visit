@@ -145,6 +145,9 @@
       SetDefaultQueryOverTimeAttributesRPC
       ResetQueryOverTimeAttributesRPC
       ResetLineoutColorRPC
+      SetInteractorAttributesRPC
+      SetDefaultInteractorAttributesRPC
+      ResetInteractorAttributesRPC
       MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">

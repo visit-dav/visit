@@ -491,6 +491,9 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
 //    Jeremy Meredith, Tue Mar 23 14:40:20 PST 2004
 //    Added the file format as an argument.  Made use of it in GetDBFromCache.
 //
+//    Mark C. Miller, Thu Aug 19 10:28:45 PDT 2004
+//    Removed #ifdef 0 code block
+//
 // ****************************************************************************
 void
 NetworkManager::StartNetwork(const string &filename, const string &format,
@@ -500,17 +503,6 @@ NetworkManager::StartNetwork(const string &filename, const string &format,
                              const MaterialAttributes &matopts)
 {
     //cerr << "NetworkManager::StartNetwork()" << endl;
-
-    // Check to make sure that there is no existing network.
-    // MCM_FIX: in automatic SR mode, this logic won't work.
-#if 0
-    if (workingNet != NULL)
-    {
-        char error[] = "Trying to create pipeline twice.";
-        debug1 << error << endl;
-        EXCEPTION1(ImproperUseException,error);
-    }
-#endif
 
     // If the variable is an expression, we need to find a "real" variable
     // name to work with.
