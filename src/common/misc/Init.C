@@ -23,6 +23,15 @@
 static void RemovePrependedDirs(const char *, char *); 
 static char executableName[256];
 static char componentName[256];
+static const char *const allComponentNames[] = {
+    "avtprep",
+    "cli",
+    "engine",
+    "gui",
+    "launcher",
+    "mdserver",
+    "viewer"
+};
 static ErrorFunction errorFunction = NULL;
 static void *errorFunctionArgs = NULL;
 
@@ -265,6 +274,41 @@ const char *
 Init::GetComponentName(void)
 {
    return (const char *) componentName;
+}
+
+// ****************************************************************************
+//  Function: Init::ComponentNameToID
+//
+//  Purpose: Return integer index of component name in list of all components
+//
+// ****************************************************************************
+const int
+Init::ComponentNameToID(const char *compName)
+{
+    int n = sizeof(allComponentNames) / sizeof(allComponentNames[0]);
+    for (int i = 0; i < n; i++)
+    {
+        if (strcmp(compName, allComponentNames[i]) == 0)
+            return i;
+    }
+    return -1;
+}
+
+// ****************************************************************************
+//  Function: Init::ComponentNameToID
+//
+//  Purpose: Return name of component with given index in list of all components
+//
+// ****************************************************************************
+const char*
+Init::ComponentIDToName(const int id)
+{
+    int n = sizeof(allComponentNames) / sizeof(allComponentNames[0]);
+
+    if (id >= 0 && id < n)
+        return allComponentNames[id];
+    else
+        return "unknown";
 }
 
 // ****************************************************************************

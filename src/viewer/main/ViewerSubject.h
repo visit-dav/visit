@@ -27,6 +27,7 @@ class AppearanceAttributes;
 class ColorTableAttributes;
 class InteractorAttributes;
 class MessageAttributes;
+class ProcessAttributes;
 class QApplication;
 class QSocketNotifier;
 class QTimer;
@@ -335,6 +336,8 @@ struct avtDefaultPlotMetaData;
 //    Brad Whitlock, Thu Feb 3 11:09:27 PDT 2005
 //    Added int return value for OpenDatabaseHelper.
 //
+//    Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
+//    Added ProcessAttributees
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -494,6 +497,8 @@ private:
     void SetDefaultInteractorAttributes();
     void ResetInteractorAttributes();
 
+    void GetProcessAttributes();
+
 private slots:
     void HandleViewerRPC();
     void HandleSync();
@@ -552,6 +557,7 @@ private:
     SyncAttributes        *syncAtts;
     avtDatabaseMetaData   *metaData;
     SILAttributes         *silAtts;
+    ProcessAttributes     *procAtts;
 
     bool                   nowin;
     std::string            borders;

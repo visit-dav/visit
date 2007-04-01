@@ -32,6 +32,7 @@
 #include <MakePlotRPC.h>
 #include <OpenDatabaseRPC.h>
 #include <PickRPC.h>
+#include <ProcInfoRPC.h>
 #include <QueryRPC.h>
 #include <QuitRPC.h>
 #include <ReadRPC.h>
@@ -978,6 +979,34 @@ RPCExecutor<ClearCacheRPC>::Execute(ClearCacheRPC *rpc)
 }
 
  
+// ****************************************************************************
+//  Method: RPCExecutor<ProcInfoRPC>::Execute
+//
+//  Purpose:  Execute a request for process infor.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   November 15, 2004
+//
+// ****************************************************************************
+template<>
+void
+RPCExecutor<ProcInfoRPC>::Execute(ProcInfoRPC *rpc)
+{
+    Engine         *engine = Engine::Instance();
+
+    debug2 << "Executing ProcInfoRPC: " << endl;
+
+    TRY
+    {
+        rpc->SendReply(engine->GetProcessAttributes());
+    }
+    CATCH2(VisItException, e)
+    {
+        rpc->SendError(e.Message(), e.GetExceptionType());
+    }
+    ENDTRY
+}
+
 // ****************************************************************************
 //  Method: RPCExecutor<QueryRPC>::Execute
 //

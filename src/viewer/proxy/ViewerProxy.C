@@ -29,6 +29,7 @@
 #include <GlobalLineoutAttributes.h>
 #include <HostProfile.h>
 #include <HostProfileList.h>
+#include <Init.h>
 #include <InteractorAttributes.h>
 #include <KeyframeAttributes.h>
 #include <LightList.h>
@@ -38,6 +39,7 @@
 #include <PlotList.h>
 #include <PluginManagerAttributes.h>
 #include <PrinterAttributes.h>
+#include <ProcessAttributes.h>
 #include <QueryAttributes.h>
 #include <QueryList.h>
 #include <RenderingAttributes.h>
@@ -163,6 +165,9 @@
 //    Jeremy Meredith, Wed Aug 25 10:32:18 PDT 2004
 //    Added metadata and SIL attributes (needed for simulations).
 //
+//    Mark C. Miller, Tue Mar  8 17:59:40 PST 2005
+//    Added ProcessAttributes
+//
 // ****************************************************************************
 
 ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
@@ -204,6 +209,7 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
     interactorAtts       = new InteractorAttributes;
     metaData             = new avtDatabaseMetaData;
     silAtts              = new SILAttributes;
+    procAtts             = new ProcessAttributes;
 
     // Make the proxy observe the SIL restriction attributes.
     silRestrictionAtts->Attach(this);
@@ -342,6 +348,9 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
 //    Jeremy Meredith, Wed Aug 25 10:32:18 PDT 2004
 //    Added metadata and SIL attributes (needed for simulations).
 //
+//    Mark C. Miller, Tue Mar  8 17:59:40 PST 2005
+//    Added ProcessAttributes
+//
 // ****************************************************************************
 
 ViewerProxy::~ViewerProxy()
@@ -389,6 +398,7 @@ ViewerProxy::~ViewerProxy()
     delete interactorAtts;
     delete metaData;
     delete silAtts;
+    delete procAtts;
 
     //
     // Delete the plot attribute state objects.
@@ -759,6 +769,9 @@ ViewerProxy::AddArgument(const std::string &arg)
 //    Jeremy Meredith, Wed Aug 25 10:32:18 PDT 2004
 //    Added metadata and SIL attributes (needed for simulations).
 //
+//    Mark C. Miller, Tue Mar  8 17:59:40 PST 2005
+//    Added ProcessAttributes
+//
 // ****************************************************************************
 
 void
@@ -835,6 +848,7 @@ ViewerProxy::Create()
     xfer->Add(interactorAtts);
     xfer->Add(metaData);
     xfer->Add(silAtts);
+    xfer->Add(procAtts);
 
     xfer->ListObjects();
 
@@ -5326,3 +5340,25 @@ ViewerProxy::SetInteractorAttributes()
     viewerRPC->Notify();
 }
 
+// ****************************************************************************
+//  Method: ViewerProxy::QueryProcessAttributes
+//
+//  Purpose: Gets unix process information
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   January 5, 2005 
+//
+// ****************************************************************************
+void
+ViewerProxy::QueryProcessAttributes(const std::string componentName,
+    const std::string engineHostName, const std::string engineDbName)
+{
+    int id = Init::ComponentNameToID(componentName.c_str());
+
+    viewerRPC->SetRPCType(ViewerRPC::GetProcInfoRPC);
+    viewerRPC->SetIntArg1(id);
+    viewerRPC->SetProgramHost(engineHostName);
+    viewerRPC->SetProgramSim(engineDbName);
+
+    viewerRPC->Notify();
+}

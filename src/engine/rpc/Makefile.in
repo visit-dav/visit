@@ -137,6 +137,7 @@ SRC= \
     MakePlotRPC.C \
     OpenDatabaseRPC.C \
     PickRPC.C \
+    ProcInfoRPC.C \
     QueryRPC.C \
     ReadRPC.C \
     ReleaseDataRPC.C \

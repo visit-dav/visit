@@ -54,6 +54,7 @@
 #include <Plot.h>
 #include <PlotList.h>
 #include <PluginManagerAttributes.h>
+#include <ProcessAttributes.h>
 #include <QueryAttributes.h>
 #include <PrinterAttributes.h>
 #include <RenderingAttributes.h>
@@ -82,6 +83,7 @@
 #include <PyMaterialAttributes.h>
 #include <PyPickAttributes.h>
 #include <PyPrinterAttributes.h>
+#include <PyProcessAttributes.h>
 #include <PyRenderingAttributes.h>
 #include <PySaveWindowAttributes.h>
 #include <PySILRestriction.h>
@@ -9255,6 +9257,52 @@ visit_GetAnnotationObject(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_GetProcessAttributes
+//
+// Purpose: Gets Unix process attributes for a visit component by name 
+//
+// Programmer: Mark C. Miller 
+// Creation:   Tuesday, January 18, 2005 
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetProcessAttributes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    char *componentName;
+    char *engineHostName;
+    char *engineDbName;
+    if (!PyArg_ParseTuple(args, "sss", &componentName, &engineHostName,
+                                       &engineDbName))
+    {
+        if (!PyArg_ParseTuple(args, "ss", &componentName, &engineHostName))
+        {
+            if (!PyArg_ParseTuple(args, "s", &componentName))
+                return NULL;
+            engineHostName = "localhost";
+            PyErr_Clear();
+        }
+        engineDbName = "";
+        PyErr_Clear();
+    }
+
+    PyObject *retval = PyProcessAttributes_NewPyObject();
+    ProcessAttributes *pa = PyProcessAttributes_FromPyObject(retval);
+
+    viewer->QueryProcessAttributes(componentName, engineHostName, engineDbName);
+
+    Synchronize();
+
+    viewer->GetProcessAttributes();
+
+    // Copy the viewer proxy's window information into the return data structure.
+    *pa = *(viewer->GetProcessAttributes());
+
+    return retval;
+}
+
+// ****************************************************************************
 // Function: UpdateAnnotationsHelper
 //
 // Purpose: 
@@ -9619,6 +9667,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   I removed some deprecated functions and added TimeSliderSetState, which
 //   is the same thing as SetTimeSliderState but might be easier to remember.
 //
+//   Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
+//   Added GetProcessAttributes
+//
 // ****************************************************************************
 
 static void
@@ -9705,6 +9756,7 @@ AddDefaultMethods()
     AddMethod("GetPickAttributes", visit_GetPickAttributes);
     AddMethod("GetPickOutput", visit_GetPickOutput);
     AddMethod("GetPipelineCachingMode", visit_GetPipelineCachingMode);
+    AddMethod("GetProcessAttributes", visit_GetProcessAttributes);
     AddMethod("GetQueryOutputString", visit_GetQueryOutputString);
     AddMethod("GetQueryOutputValue", visit_GetQueryOutputValue);
     AddMethod("GetRenderingAttributes", visit_GetRenderingAttributes);
@@ -9874,6 +9926,9 @@ AddDefaultMethods()
 //   Jeremy Meredith, Fri Oct 29 16:47:57 PDT 2004
 //   Added constructor to support lighting (LightAttributes).
 //
+//   Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
+//   Added PyProcessAttributes
+//
 // ****************************************************************************
 
 static void
@@ -9887,6 +9942,7 @@ AddExtensions()
     ADD_EXTENSION(PyHostProfile_GetMethodTable);
     ADD_EXTENSION(PyMaterialAttributes_GetMethodTable);
     ADD_EXTENSION(PyPrinterAttributes_GetMethodTable);
+    ADD_EXTENSION(PyProcessAttributes_GetMethodTable);
     ADD_EXTENSION(PyRenderingAttributes_GetMethodTable);
     ADD_EXTENSION(PySaveWindowAttributes_GetMethodTable);
     ADD_EXTENSION(PySILRestriction_GetMethodTable);
@@ -9926,6 +9982,9 @@ AddExtensions()
 //   Brad Whitlock, Fri Mar 19 08:51:39 PDT 2004
 //   Added GlobalAttributes.
 //
+//   Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
+//   Added ProcessAttributes
+//
 // ****************************************************************************
 
 static void
@@ -9936,6 +9995,7 @@ InitializeExtensions()
     PyHostProfile_StartUp(0, logFile);
     PyMaterialAttributes_StartUp(viewer->GetMaterialAttributes(), logFile);
     PyPrinterAttributes_StartUp(viewer->GetPrinterAttributes(), logFile);
+    PyProcessAttributes_StartUp(viewer->GetProcessAttributes(), logFile);
     PyRenderingAttributes_StartUp(viewer->GetRenderingAttributes(), logFile);
     PySaveWindowAttributes_StartUp(viewer->GetSaveWindowAttributes(), logFile);
     PyViewCurveAttributes_StartUp(viewer->GetViewCurveAttributes(), logFile);
@@ -10005,6 +10065,9 @@ CloseExtensions()
 //   Brad Whitlock, Fri Mar 19 08:52:27 PDT 2004
 //   Added GlobalAttributes.
 //
+//   Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
+//   Added ProcessAttributes
+//
 // ****************************************************************************
 
 static void
@@ -10022,6 +10085,7 @@ SetLogging(bool val)
     PyGlobalAttributes_SetLogging(val);
     PyMaterialAttributes_SetLogging(val);
     PyPrinterAttributes_SetLogging(val);
+    PyProcessAttributes_SetLogging(val);
     PyRenderingAttributes_SetLogging(val);
     PySaveWindowAttributes_SetLogging(val);
     PyViewAttributes_SetLogging(val);

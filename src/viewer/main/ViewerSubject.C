@@ -33,6 +33,7 @@
 #include <GlobalLineoutAttributes.h>
 #include <HostProfile.h>
 #include <HostProfileList.h>
+#include <Init.h>
 #include <InitVTK.h>
 #include <InteractorAttributes.h>
 #include <InvalidVariableException.h>
@@ -44,6 +45,7 @@
 #include <PlotList.h>
 #include <PluginManagerAttributes.h>
 #include <PrinterAttributes.h>
+#include <ProcessAttributes.h>
 #include <QueryAttributes.h>
 #include <QueryList.h>
 #include <RemoteProcess.h>
@@ -136,6 +138,9 @@ using std::string;
 //    Jeremy Meredith, Wed Aug 25 10:32:18 PDT 2004
 //    Added metadata and SIL attributes (needed for simulations).
 //
+//    Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
+//    Added procAtts
+//
 // ****************************************************************************
 
 ViewerSubject::ViewerSubject() : parent(), xfer(), viewerRPC(),
@@ -205,6 +210,7 @@ ViewerSubject::ViewerSubject() : parent(), xfer(), viewerRPC(),
     syncAtts = 0;
     metaData = 0;
     silAtts = 0;
+    procAtts = 0;
 
     //
     // Set some flags related to viewer windows.
@@ -244,6 +250,9 @@ ViewerSubject::ViewerSubject() : parent(), xfer(), viewerRPC(),
 //    Jeremy Meredith, Wed Aug 25 10:32:18 PDT 2004
 //    Added metadata and SIL attributes (needed for simulations).
 //
+//    Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
+//    Added procAtts
+//
 // ****************************************************************************
 
 ViewerSubject::~ViewerSubject()
@@ -262,6 +271,7 @@ ViewerSubject::~ViewerSubject()
     delete configFileName;
     delete metaData;
     delete silAtts;
+    delete procAtts;
 
 #ifdef VIEWER_MT
     if(messagePipe[0] != -1)
@@ -308,6 +318,9 @@ ViewerSubject::~ViewerSubject()
 //    Jeremy Meredith, Wed Aug 25 10:32:18 PDT 2004
 //    Added metadata and SIL attributes (needed for simulations).
 //
+//    Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
+//    Added procAtts
+//
 // ****************************************************************************
 
 void
@@ -338,6 +351,7 @@ ViewerSubject::Connect(int *argc, char ***argv)
     // Create the metadata and sil attributes
     metaData = new avtDatabaseMetaData;
     silAtts = new SILAttributes;
+    procAtts = new ProcessAttributes;
 
     //
     // Read the config files.
@@ -524,6 +538,9 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //   Jeremy Meredith, Wed Aug 25 10:32:18 PDT 2004
 //   Added metadata and SIL attributes (needed for simulations).
 //
+//   Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
+//   Added procAtts
+//
 // ****************************************************************************
 
 void
@@ -573,6 +590,7 @@ ViewerSubject::ConnectXfer()
     xfer.Add(ViewerWindowManager::Instance()->GetInteractorClientAtts());
     xfer.Add(metaData);
     xfer.Add(silAtts);
+    xfer.Add(procAtts);
 
     //
     // Set up special opcodes and their handler.
@@ -6428,6 +6446,9 @@ ViewerSubject::SendKeepAlives()
 //    Kathleen Bonnell, Wed Aug 18 09:25:33 PDT 2004 
 //    Added methods related to InteractorAttributes.
 //
+//   Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
+//   Added GetProcessAttributes 
+//
 // ****************************************************************************
 
 void
@@ -6714,6 +6735,9 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::ResetInteractorAttributesRPC:
         ResetInteractorAttributes();
+        break;
+    case ViewerRPC::GetProcInfoRPC:
+        GetProcessAttributes();
         break;
     case ViewerRPC::MaxRPC:
         break;
@@ -7068,6 +7092,62 @@ ViewerSubject::ResetInteractorAttributes()
     wM->SetInteractorAttsFromDefault();
 }
 
+// ****************************************************************************
+// Method: ViewerSubject::GetProcessAttributes
+//
+// Purpose: Gets unix process information
+//
+// Programmer: Mark C. Miller
+// Creation:   Tuesday, January 18, 2004 
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::GetProcessAttributes()
+{
+    ProcessAttributes tmpAtts;
+
+    string componentName = Init::ComponentIDToName(viewerRPC.GetIntArg1());
+    if (componentName == "engine")
+    {
+        const std::string &hostName = viewerRPC.GetProgramHost();
+        const std::string &simName  = viewerRPC.GetProgramSim();
+
+        ViewerEngineManager *vem = ViewerEngineManager::Instance();
+        vem->GetProcInfo(EngineKey(hostName, simName), tmpAtts);
+    }
+    else if (componentName == "viewer")
+    {
+        int pid = getpid();
+        int ppid = getppid();
+        char myHost[256];
+        gethostname(myHost, sizeof(myHost));
+
+        std::vector<double> tmpPids;
+        tmpPids.push_back(pid);
+
+        std::vector<double> tmpPpids;
+        tmpPpids.push_back(ppid);
+
+        std::vector<string> tmpHosts;
+        tmpHosts.push_back(myHost);
+
+        tmpAtts.SetPids(tmpPids);
+        tmpAtts.SetPpids(tmpPpids);
+        tmpAtts.SetHosts(tmpHosts);
+        tmpAtts.SetIsParallel(false); // would be better to check for threads
+    }
+    else
+    {
+        Warning("Currently, GetProcessAttributes() works only for "
+                "\"engine\" or \"viewer\"");
+        return;
+    }
+
+    *procAtts = tmpAtts;
+    procAtts->SelectAll();
+    procAtts->Notify();
+}
 
 // ****************************************************************************
 //  Method:  ViewerSubject::ReadFromSimulationAndProcess

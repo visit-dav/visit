@@ -303,6 +303,7 @@ SRC=    AnimationAttributes.C \
         Point.C \
         PointAttributes.C \
         PrinterAttributes.C \
+	ProcessAttributes.C \
         QueryAttributes.C \
         QueryList.C \
         QueryOverTimeAttributes.C \

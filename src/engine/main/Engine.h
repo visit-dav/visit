@@ -23,6 +23,7 @@ class StartPickRPC;
 class StartQueryRPC;
 class UpdatePlotAttsRPC;
 class UseNetworkRPC;
+class ProcInfoRPC;
 
 // Other classes
 class avtDatabaseMetaData;
@@ -33,6 +34,7 @@ class NetworkManager;
 class NonBlockingRPC;
 class Observer;
 class Xfer;
+class ProcessAttributes;
 
 #include <vector>
 #include <avtDataObjectWriter.h>
@@ -86,6 +88,9 @@ class Xfer;
 //    Hank Childs, Mon Feb 28 17:03:06 PST 2005
 //    Added StartQueryRPC.
 //
+//    Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
+//    Added GetProcessAttributes
+//
 // ****************************************************************************
 
 class Engine
@@ -129,6 +134,9 @@ class Engine
 
     // Tell the engine whether or not fatal exceptions have occurred
     void            SetNoFatalExceptions(bool nf) {noFatalExceptions = nf;}
+
+    // Method to get unix process information
+    ProcessAttributes *GetProcessAttributes();
 
     // Various callbacks
     static bool     EngineAbortCallback(void *);
@@ -206,12 +214,16 @@ class Engine
     RenderRPC                *renderRPC;
     SetWinAnnotAttsRPC       *setWinAnnotAttsRPC;
     CloneNetworkRPC          *cloneNetworkRPC;
+    ProcInfoRPC              *procInfoRPC;
 
     // The metadata, filename, format for a simulation
     std::string               filename;
     std::string               format;
     avtDatabaseMetaData      *metaData;
     SILAttributes            *silAtts;
+
+    // unix process attributes
+    ProcessAttributes        *procAtts;
 };
 
 #endif

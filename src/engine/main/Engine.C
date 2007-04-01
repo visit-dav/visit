@@ -3,6 +3,7 @@
 
 #if !defined(_WIN32)
 #include <strings.h>
+#include <sys/types.h>   // for getpid()
 #include <unistd.h>      // for alarm()
 #endif
 #include <new.h>
@@ -71,6 +72,10 @@ const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 //  Programmer:  Jeremy Meredith
 //  Creation:    July 10, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Mar  8 17:59:40 PST 2005
+//    Added procAtts
 // ****************************************************************************
 Engine::Engine()
 {
@@ -79,6 +84,7 @@ Engine::Engine()
     timeout = 0;
     netmgr = NULL;
     lb = NULL;
+    procAtts = NULL;
 }
 
 // ****************************************************************************
@@ -247,6 +253,9 @@ Engine::Finalize(void)
 //    Hank Childs, Mon Feb 28 17:03:06 PST 2005
 //    Added StartQueryRPC.
 //
+//    Mark C. Miller, Tue Mar  8 17:59:40 PST 2005
+//    Added procInfoRPC 
+//
 // ****************************************************************************
 
 void
@@ -311,6 +320,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     renderRPC                       = new RenderRPC;
     setWinAnnotAttsRPC              = new SetWinAnnotAttsRPC;
     cloneNetworkRPC                 = new CloneNetworkRPC;
+    procInfoRPC                     = new ProcInfoRPC;
 
     xfer->Add(quitRPC);
     xfer->Add(keepAliveRPC);
@@ -331,6 +341,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     xfer->Add(renderRPC);
     xfer->Add(setWinAnnotAttsRPC);
     xfer->Add(cloneNetworkRPC);
+    xfer->Add(procInfoRPC);
 
     // Create an object to implement the RPCs
     rpcExecutors.push_back(new RPCExecutor<QuitRPC>(quitRPC));
@@ -355,6 +366,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new RPCExecutor<RenderRPC>(renderRPC));
     rpcExecutors.push_back(new RPCExecutor<SetWinAnnotAttsRPC>(setWinAnnotAttsRPC));
     rpcExecutors.push_back(new RPCExecutor<CloneNetworkRPC>(cloneNetworkRPC));
+    rpcExecutors.push_back(new RPCExecutor<ProcInfoRPC>(procInfoRPC));
 
     // Hook up the expression list as an observed object.
     Parser *p = new ExprParser(new avtExprNodeFactory());
@@ -1777,4 +1789,94 @@ Engine::Disconnect()
 {
     delete instance;
     instance = NULL;
+}
+
+// ****************************************************************************
+//  Method:  Engine::GetProcessAttributes
+//
+//  Purpose: Gets unix process attributes
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    March 8, 2005 
+//
+// ****************************************************************************
+ProcessAttributes *
+Engine::GetProcessAttributes()
+{
+    if (procAtts == NULL)
+    {
+
+        cerr << "Get Engine's Process Attributes" << endl;
+
+        procAtts = new ProcessAttributes;
+
+        doubleVector pids;
+        doubleVector ppids;
+        stringVector hosts;
+
+        int myPid = getpid();
+        int myPpid = getppid();
+
+#ifdef PARALLEL
+
+        char myHost[2*MPI_MAX_PROCESSOR_NAME];
+        int strLen;
+        MPI_Get_processor_name(myHost, &strLen); 
+
+        bool isParallel = true;
+
+        // collect pids and host names
+        int *allPids;
+        int *allPpids;
+        char *allHosts;
+        if (PAR_Rank() == 0)
+        {
+            allPids = new int[PAR_Size()];
+            allPpids = new int[PAR_Size()];
+            allHosts = new char[PAR_Size() * sizeof(myHost)];
+        }
+
+        MPI_Gather(&myPid, 1, MPI_INT,
+                   allPids, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Gather(&myPpid, 1, MPI_INT,
+                   allPpids, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Gather(&myHost, sizeof(myHost), MPI_CHAR,
+                   allHosts, sizeof(myHost), MPI_CHAR, 0, MPI_COMM_WORLD);
+
+        if (PAR_Rank() == 0)
+        {
+            for (int i = 0; i < PAR_Size(); i++)
+            {
+                pids.push_back(allPids[i]);
+                ppids.push_back(allPpids[i]);
+                hosts.push_back(&allHosts[i*sizeof(myHost)]);
+            }
+
+            delete [] allPids;
+            delete [] allPpids;
+            delete [] allHosts;
+        }
+
+#else
+
+        pids.push_back(myPid);
+        ppids.push_back(myPpid);
+
+        char myHost[256];
+        gethostname(myHost, sizeof(myHost));
+        hosts.push_back(myHost);
+
+        bool isParallel = false;
+
+#endif
+
+        procAtts->SetPids(pids);
+        procAtts->SetPpids(ppids);
+        procAtts->SetHosts(hosts);
+        procAtts->SetIsParallel(isParallel);
+
+    }
+
+    return procAtts;
+
 }

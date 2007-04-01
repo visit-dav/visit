@@ -122,6 +122,7 @@ SRC= \
     PyMaterialAttributes.C \
     PyPickAttributes.C \
     PyPrinterAttributes.C \
+    PyProcessAttributes.C \
     PyQueryOverTimeAttributes.C \
     PyRenderingAttributes.C \
     PySaveWindowAttributes.C \
@@ -146,6 +147,7 @@ HDR= \
     PyMaterialAttributes.h \
     PyPickAttributes.h \
     PyPrinterAttributes.h \
+    PyProcessAttributes.h \
     PyQueryOverTimeAttributes.h \
     PyRenderingAttributes.h \
     PySaveWindowAttributes.h \
