@@ -4,9 +4,15 @@
 #include <visit-config.h>
 
 #ifdef HAVE_PDB_PROPER
-#   include <pdb.h>
+#include <pdb.h>
+#define PDBLIB_ERRORSTRING PD_err
 #else
-#   include <lite_pdb.h>
+#include <lite_pdb.h>
+#ifdef _WIN32
+#define PDBLIB_ERRORSTRING "(don't have the PD_err error string)"
+#else
+#define PDBLIB_ERRORSTRING PD_err
+#endif
 #endif
 
 #include <string>

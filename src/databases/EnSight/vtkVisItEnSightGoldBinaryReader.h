@@ -35,12 +35,9 @@
 #ifndef __vtkVisItEnSightGoldBinaryReader_h
 #define __vtkVisItEnSightGoldBinaryReader_h
 
-#include <database_exports.h>
-
 #include "vtkVisItEnSightReader.h"
 
-class DATABASE_API VTK_IO_EXPORT vtkVisItEnSightGoldBinaryReader : 
-                                 public vtkVisItEnSightReader
+class vtkVisItEnSightGoldBinaryReader : public vtkVisItEnSightReader
 {
 public:
   static vtkVisItEnSightGoldBinaryReader *New();

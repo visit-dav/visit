@@ -31,14 +31,11 @@
 #ifndef __vtkVisItPolyDataReader_h
 #define __vtkVisItPolyDataReader_h
 
-#include <database_exports.h>
-
 #include "vtkVisItDataReader.h"
 
 class vtkPolyData;
 
-class DATABASE_API VTK_IO_EXPORT vtkVisItPolyDataReader : 
-                                 public vtkVisItDataReader
+class vtkVisItPolyDataReader : public vtkVisItDataReader
 {
 public:
   static vtkVisItPolyDataReader *New();

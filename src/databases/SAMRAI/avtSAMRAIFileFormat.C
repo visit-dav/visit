@@ -60,7 +60,7 @@ static const int MAX_GHOST_CODES = MAX_GHOST_LAYERS *
 
 static string GetDirName(const char *path);
 
-#define DELETE(P)           \
+#define SAFE_DELETE(P)      \
    if (P != 0)              \
    {                        \
        delete[] P;          \
@@ -185,11 +185,11 @@ avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
 {
     int i,v;
 
-    DELETE(xlo);
-    DELETE(dx);
-    DELETE(num_patches_level);
-    DELETE(ratios_coarser_levels)
-    DELETE(patch_extents);
+    SAFE_DELETE(xlo);
+    SAFE_DELETE(dx);
+    SAFE_DELETE(num_patches_level);
+    SAFE_DELETE(ratios_coarser_levels)
+    SAFE_DELETE(patch_extents);
     
     if (var_extents != NULL) {
         for(v=0; v<num_vars; v++) {
@@ -202,27 +202,27 @@ avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
     //
     // cleanup variable information
     //
-    DELETE(var_names);
-    DELETE(var_cell_centered);
-    DELETE(var_num_components);
-    DELETE(var_num_ghosts);
+    SAFE_DELETE(var_names);
+    SAFE_DELETE(var_cell_centered);
+    SAFE_DELETE(var_num_components);
+    SAFE_DELETE(var_num_ghosts);
 
     //
     // cleanup parent/child information
     //
-    DELETE(patch_map);
-    DELETE(child_array);
-    DELETE(child_pointer_array);
-    DELETE(parent_array);
-    DELETE(parent_pointer_array);
+    SAFE_DELETE(patch_map);
+    SAFE_DELETE(child_array);
+    SAFE_DELETE(child_pointer_array);
+    SAFE_DELETE(parent_array);
+    SAFE_DELETE(parent_pointer_array);
 
     //
     // clean up stuff having to do with species
     //
-    DELETE(nmatspec);
-    DELETE(spec_var_names);
+    SAFE_DELETE(nmatspec);
+    SAFE_DELETE(spec_var_names);
     for (i = 0; i < num_mats; i++)
-        DELETE(mat_specs[mat_names[i]]);
+        SAFE_DELETE(mat_specs[mat_names[i]]);
 
     std::map<std::string, std::map<std::string, matinfo_t*> >::iterator ms;
     for (ms  = mat_specs_matinfo.begin();
@@ -232,7 +232,7 @@ avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
         for (mms  = ms->second.begin();
              mms != ms->second.end(); mms++)
         {
-            DELETE(mms->second);
+            SAFE_DELETE(mms->second);
         }
     }
 
@@ -243,7 +243,7 @@ avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
     for (m  = mat_names_matinfo.begin();
          m != mat_names_matinfo.end(); m++)
     {
-        DELETE(m->second);
+        SAFE_DELETE(m->second);
     }
 
     std::map<std::string, std::map<std::string, matinfo_t*> >::iterator mv;
@@ -254,14 +254,14 @@ avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
         for (mmv  = mv->second.begin();
              mmv != mv->second.end(); mmv++)
         {
-            DELETE(mmv->second);
+            SAFE_DELETE(mmv->second);
         }
     }
 
-    DELETE(mat_names);
-    DELETE(mat_var_names);
-    DELETE(mat_num_ghosts);
-    DELETE(mat_var_num_components);
+    SAFE_DELETE(mat_names);
+    SAFE_DELETE(mat_var_names);
+    SAFE_DELETE(mat_num_ghosts);
+    SAFE_DELETE(mat_var_num_components);
 
     //
     // cleanup the mesh cache
@@ -371,6 +371,9 @@ avtSAMRAIFileFormat::CanCacheVariable(const char *var_name)
 //     Mark C. Miller, Tue Dec  9 10:45:46 PST 2003
 //     Changed name of BuildDomainNestingInfo to BuildDomainAuxiliaryInfo
 //
+//     Brad Whitlock, Fri Mar 5 10:19:32 PDT 2004
+//     Changed for Windows compiler.
+//
 // ****************************************************************************
 vtkDataSet *
 avtSAMRAIFileFormat::GetMesh(int patch, const char *)
@@ -383,7 +386,7 @@ avtSAMRAIFileFormat::GetMesh(int patch, const char *)
     if (cached_patches[patch][ghostCode] != NULL)
     {
         debug5 << "avtSAMRAIFileFormat::GetMesh returning cached value for \""
-               << active_visit_var_name << "\"" << endl;
+               << active_visit_var_name.c_str() << "\"" << endl;
 
         // The reference count will be decremented by the generic database,
         // because it will assume it owns it.
@@ -420,6 +423,9 @@ avtSAMRAIFileFormat::GetMesh(int patch, const char *)
 //    Mark C. Miller, Wed Jan  7 11:35:37 PST 2004
 //    Elminated traversal of ALE coordinate data and replaced with a SetData
 //    call
+//
+//    Brad Whitlock, Fri Mar 5 10:19:32 PDT 2004
+//    Changed for Windows compiler.
 //
 // ****************************************************************************
 vtkDataSet *
@@ -490,14 +496,15 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
         // compute physical origin and cell-spacing
         float spacing[] = {0, 0, 0};
         float origin[] = {0, 0, 0};
-        for (int i=0; i<dim; i++) {
+        int i;
+        for (i=0; i<dim; i++) {
             spacing[i] = dx[level * 3 + i];
             origin[i] = patch_extents[patch].xlo[i] - 
                         spacing[i] * num_ghosts[i];
         }
 
         vtkFloatArray  *coords[3];
-        for (int i = 0 ; i < 3 ; i++)
+        for (i = 0 ; i < 3 ; i++)
           {
             // Default number of components for an array is 1.
             coords[i] = vtkFloatArray::New();
@@ -549,7 +556,8 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
     {
         int nghost = 0;
         int ncells = 1;
-        for (int i = 0; i < dim; i++)
+        int i;
+        for (i = 0; i < dim; i++)
             ncells *= (dimensions[i]-1);
 
         vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
@@ -557,7 +565,7 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
         ghostCells->Allocate(ncells);
 
         // fill in ghost value (0/1) for each cell
-        for (int i = 0; i < ncells; i++)
+        for (i = 0; i < ncells; i++)
         {
             bool in_ghost_layers = false;
 
@@ -667,6 +675,9 @@ avtSAMRAIFileFormat::GetVectorVar(int patch, const char *visit_var_name)
 //    Mark C. Miller, Tue Jan 13 13:45:31 PST 2004
 //    Renamed from GetVectorVar to ReadVar
 //
+//    Brad Whitlock, Fri Mar 5 10:19:32 PDT 2004
+//    Changed for Windows compiler.
+//
 // ****************************************************************************
 vtkDataArray *
 avtSAMRAIFileFormat::ReadVar(int patch, 
@@ -697,7 +708,8 @@ avtSAMRAIFileFormat::ReadVar(int patch,
     int extent = cell_centered == 1 ? 1 : 2;
     int dim = num_dim_problem < 3 ? num_dim_problem: 3;
     int num_data_samples = 1;
-    for (int i=0; i<dim; i++) {
+    int i;
+    for (i=0; i<dim; i++) {
         num_data_samples *= patch_extents[patch].upper[i] - 
                             patch_extents[patch].lower[i] + extent + 2 * num_ghosts[i];
     }
@@ -770,8 +782,8 @@ avtSAMRAIFileFormat::ReadVar(int patch,
     var_data->SetNumberOfTuples(num_data_samples);
     float *fbuf = (float*) var_data->GetVoidPointer(0);
 
-    for (int i = 0 ; i < num_components ; i++) {
-
+    for (i = 0 ; i < num_components ; i++)
+    {
         // determine name of the HDF5 dataset and open it 
         char variable[256];
         if (var_type == AVT_SCALAR_VAR)
@@ -861,6 +873,9 @@ avtSAMRAIFileFormat::ReadVar(int patch,
 //    Kathleen Bonnell, Mon Dec 22 15:06:41 PST 2003
 //    Added code to delete hdims, max_hdims.
 //
+//    Brad Whitlock, Fri Mar 5 10:19:32 PDT 2004
+//    Changed for Windows compiler.
+//
 // ****************************************************************************
 float *
 avtSAMRAIFileFormat::ReadMatSpecFractions(int patch, string mat_name,
@@ -895,7 +910,7 @@ avtSAMRAIFileFormat::ReadMatSpecFractions(int patch, string mat_name,
 
     int dim = num_dim_problem < 3 ? num_dim_problem: 3;
     int num_data_samples = 1;
-    for (int i=0; i<dim; i++) {
+    for (i=0; i<dim; i++) {
         num_data_samples *= patch_extents[patch].upper[i] - 
                             patch_extents[patch].lower[i] + 1 +
                             2 * mat_num_ghosts[i];
@@ -944,7 +959,7 @@ avtSAMRAIFileFormat::ReadMatSpecFractions(int patch, string mat_name,
     hsize_t *max_hdims = new hsize_t[hndims];
     H5Sget_simple_extent_dims(h5d_space, hdims, max_hdims);
     hsize_t hsum = 1;
-    for (int i = 0; i < hndims; i++)
+    for (i = 0; i < hndims; i++)
         hsum *= hdims[i];
     if ((hsize_t) num_data_samples != hsum)
     {
@@ -1146,19 +1161,19 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
                              mixlen, mix_mat, mix_next, mix_zone, mix_vf);
 
        for (i = 0; i < matList.size(); i++)
-           DELETE(vfracs[i]);
-       DELETE(vfracs);
+           SAFE_DELETE(vfracs[i]);
+       SAFE_DELETE(vfracs);
 
        bytesInMem = (ncells * sizeof(int) + mixlen * (3*sizeof(int)+sizeof(float)));
 
    }
 
    // free up the matnames and numbers
-   DELETE(matnos);
+   SAFE_DELETE(matnos);
    for (i = 0; i < num_mats; i++)
-       DELETE(matnames[i]);
+       SAFE_DELETE(matnames[i]);
 
-   DELETE(matnames);
+   SAFE_DELETE(matnames);
 
    bytesInFileTotal += bytesInFile;
    bytesInMemTotal += bytesInMem;
@@ -1561,7 +1576,7 @@ avtSAMRAIFileFormat::GetSpecies(int patch, const char *specObjName)
             if (numSpecs > 0)
             {
                 for (j = 0; j < numSpecs; j++)
-                    DELETE(matSpecFracs[i][j]);
+                    SAFE_DELETE(matSpecFracs[i][j]);
             }
         }
     }
@@ -2037,12 +2052,15 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Added call to ReadAndCheckVDRVersions(); 
 //    Added call to ReadVarNumGhosts();
 //
+//    Brad Whitlock, Fri Mar 5 10:19:32 PDT 2004
+//    Changed for Windows compiler.
+//
 // ****************************************************************************
 void
 avtSAMRAIFileFormat::ReadMetaDataFile()
 {
     debug5 << "avtSAMRAIFileFormat::ReadMetaDataFile reading SAMRAI summary "
-        "file, \"" << file_name << "\"" << endl;
+        "file, \"" << file_name.c_str() << "\"" << endl;
 
     hid_t h5_file = H5Fopen(file_name.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT); 
 
@@ -3263,7 +3281,7 @@ avtSAMRAIFileFormat::ReadMaterialInfo(hid_t &h5_file)
             new_mat_names[i] = mat_names[i];
         new_mat_names[num_mats] = inferredVoidMatName; 
 
-        DELETE(mat_names);
+        SAFE_DELETE(mat_names);
         mat_names = new_mat_names;
 
         num_mats++;
@@ -3391,6 +3409,9 @@ avtSAMRAIFileFormat::ReadSpeciesInfo(hid_t &h5_file)
 //     I switched to use avtCurvilinearDomainBoundaries when its in ALE
 //     mesh
 //
+//     Brad Whitlock, Fri Mar 5 10:19:32 PDT 2004
+//     Changed for Windows compiler.
+//
 // ****************************************************************************
 void 
 avtSAMRAIFileFormat::BuildDomainAuxiliaryInfo()
@@ -3417,7 +3438,8 @@ avtSAMRAIFileFormat::BuildDomainAuxiliaryInfo()
         //
         vector<int> ratios(3,1);
         dn->SetLevelRefinementRatios(0, ratios);
-        for (int i = 1; i < num_levels; i++)
+        int i;
+        for (i = 1; i < num_levels; i++)
         {
            vector<int> ratios(3);
            ratios[0] = ratios_coarser_levels[3*i+0];
@@ -3429,7 +3451,7 @@ avtSAMRAIFileFormat::BuildDomainAuxiliaryInfo()
         //
         // set each domain's level, children and logical extents
         //
-        for (int i = 0; i < num_patches; i++)
+        for (i = 0; i < num_patches; i++)
         {
             vector<int> childPatches;
             for (int j = 0; j < child_pointer_array[i].number_children; j++)
@@ -3556,9 +3578,12 @@ avtSAMRAIFileFormat::GetGhostCodeForVar(const char *visit_var_name)
 //  Creation:    December 11, 2003 
 //
 //  Modifications:
-//  Kathleen Bonnell, Mon Dec 22 15:06:41 PST 2003
-//  Added code dynamically allocate hdims max_hdims, so that code will build
-//  on IRIX. 
+//     Kathleen Bonnell, Mon Dec 22 15:06:41 PST 2003
+//     Added code dynamically allocate hdims max_hdims, so that code will build
+//     on IRIX. 
+//
+//     Brad Whitlock, Fri Mar 5 10:19:32 PDT 2004
+//     Changed for Windows compiler.
 //
 // ****************************************************************************
 void 
@@ -3567,7 +3592,8 @@ avtSAMRAIFileFormat::ReadDataset(hid_t &hdfFile, const char *dsPath,
 {
 
     // confirm total number of entries > 0
-    for (int i = 0; i < ndims; i++)
+    int i;
+    for (i = 0; i < ndims; i++)
     {
         if (dims[i] == 0)
             return;
@@ -3578,7 +3604,7 @@ avtSAMRAIFileFormat::ReadDataset(hid_t &hdfFile, const char *dsPath,
     {
         if (isOptional)
         {
-            for (int i = 0; i < ndims; i++)
+            for (i = 0; i < ndims; i++)
                 dims[i] = 0;
             *data = 0;
             return;
@@ -3606,7 +3632,7 @@ avtSAMRAIFileFormat::ReadDataset(hid_t &hdfFile, const char *dsPath,
     H5Sclose(h5d_space);
 
     int num_vals = 1;
-    for (int i = 0; i < hndims; i++)
+    for (i = 0; i < hndims; i++)
     {
         if (dims[i] == -1)
             dims[i] = hdims[i];

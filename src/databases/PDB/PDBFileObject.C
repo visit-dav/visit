@@ -294,6 +294,9 @@ PDBFileObject::filePointer()
 //   Moved all of the code to get information about the variable to the
 //   SymbolExists method.
 //
+//   Brad Whitlock, Fri Mar 5 11:01:43 PDT 2004
+//   Fixed for Windows compiler.
+//
 // ****************************************************************************
 
 void *
@@ -346,7 +349,7 @@ PDBFileObject::ReadValues(const char *name, TypeEnum *t, int *nTotalElements,
             if(PD_read(pdb, (char *)name, retval) == FALSE)
             {
                 debug4 << "PDBFileObject::ReadValues: PD_read failed for " << name
-                       << ". " << PD_err << endl;
+                       << ". " << PDBLIB_ERRORSTRING << endl;
 
                 free_void_mem(retval, *t);
                 retval = 0;
@@ -360,7 +363,7 @@ PDBFileObject::ReadValues(const char *name, TypeEnum *t, int *nTotalElements,
         else
         {
             debug4 << "PDBFileObject::ReadValues: Variable \"" << name
-                   << "\" could not be located. " << PD_err << endl;
+                   << "\" could not be located. " << PDBLIB_ERRORSTRING << endl;
         }
     }
 

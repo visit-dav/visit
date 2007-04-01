@@ -20,7 +20,6 @@
 #ifndef __vtkVisItGenericEnSightReader_h
 #define __vtkVisItGenericEnSightReader_h
 
-#include <database_exports.h>
 #include "vtkDataSetSource.h"
 
 class vtkCallbackCommand;
@@ -28,8 +27,7 @@ class vtkDataArrayCollection;
 class vtkDataArraySelection;
 class vtkIdListCollection;
 
-class DATABASE_API VTK_IO_EXPORT vtkVisItGenericEnSightReader : 
-                                 public vtkDataSetSource
+class vtkVisItGenericEnSightReader : public vtkDataSetSource
 {
 public:
   static vtkVisItGenericEnSightReader *New();

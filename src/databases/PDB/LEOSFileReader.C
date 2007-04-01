@@ -377,6 +377,13 @@ LEOSFileReader::BuildVarInfoMap()
 // Programmer: Mark C. Miller
 // Creation:   February 10, 2004 
 //
+//  Modifications:
+//    Brad Whitlock, Fri Mar 5 10:42:44 PDT 2004
+//    Fixed for the Windows compiler.
+//
+//    Mark C. Miller, Mon Mar  8 20:18:06 PST 2004
+//    Made it skip an "unknown" variable and return false if tryHardLevel < 1
+//
 // ****************************************************************************
 
 bool 
@@ -384,7 +391,7 @@ LEOSFileReader::AddVariableAndMesh(avtDatabaseMetaData *md, const char *matDirNa
     const char *matName, const char *matForm, const char *varDirName)
 {
 
-    map<string, eosVarInfo_t>::const_iterator i;
+    std::map<string, eosVarInfo_t>::const_iterator i;
     eosVarInfo_t varInfo;
 
     // if the material formula isn't now known, read it
@@ -428,11 +435,19 @@ LEOSFileReader::AddVariableAndMesh(avtDatabaseMetaData *md, const char *matDirNa
 
         // if we didn't find the variable in the map, and we should
         // try harder, add info about it to the eosVarInfoMap
-        if ((i == eosVarInfoMap.end()) && (tryHardLevel > 0))
+        if (i == eosVarInfoMap.end())
         {
-            ReadVariableInfo(matDirName, varDirName, varInfo);
-            eosVarInfoMap[varName] = varInfo; 
-            i = eosVarInfoMap.find(varName);
+            if (tryHardLevel > 1)
+            {
+                ReadVariableInfo(matDirName, varDirName, varInfo);
+                eosVarInfoMap[varName] = varInfo; 
+                i = eosVarInfoMap.find(varName);
+            }
+            else
+            {
+                delete [] varName;
+                return false;
+            }
         }
     }
 
@@ -496,6 +511,10 @@ LEOSFileReader::GetTopDirs()
 // Programmer: Mark C. Miller
 // Creation:   February 10, 2004 
 //
+// Modifications:
+//   Brad Whitlock, Fri Mar 5 10:43:53 PDT 2004
+//   Fixed for the Windows compiler.
+//
 // ****************************************************************************
 
 bool
@@ -530,33 +549,36 @@ LEOSFileReader::IdentifyFormat()
     for (i = 0; i < numTopDirs; i++)
     {
         string symStr;
-        bool hasOtherSymbols = true;
+        int numOtherSymbols = 0;
+
+        symStr = "/" + string(topDirs[i]) + "material_info/material_name";
+        numOtherSymbols += pdb->SymbolExists(symStr.c_str());
 
         symStr = "/" + string(topDirs[i]) + "material_info/bulkmod";
-        hasOtherSymbols = hasOtherSymbols && pdb->SymbolExists(symStr.c_str());
+        numOtherSymbols += pdb->SymbolExists(symStr.c_str());
 
         symStr = "/" + string(topDirs[i]) + "material_info/eosnum";
-        hasOtherSymbols = hasOtherSymbols && pdb->SymbolExists(symStr.c_str());
+        numOtherSymbols += pdb->SymbolExists(symStr.c_str());
 
         symStr = "/" + string(topDirs[i]) + "material_info/rho0";
-        hasOtherSymbols = hasOtherSymbols && pdb->SymbolExists(symStr.c_str());
+        numOtherSymbols += pdb->SymbolExists(symStr.c_str());
 
         symStr = "/" + string(topDirs[i]) + "material_info/rhocrit";
-        hasOtherSymbols = hasOtherSymbols && pdb->SymbolExists(symStr.c_str());
+        numOtherSymbols += pdb->SymbolExists(symStr.c_str());
 
         symStr = "/" + string(topDirs[i]) + "material_info/t0";
-        hasOtherSymbols = hasOtherSymbols && pdb->SymbolExists(symStr.c_str());
+        numOtherSymbols += pdb->SymbolExists(symStr.c_str());
 
         symStr = "/" + string(topDirs[i]) + "material_info/tcrit";
-        hasOtherSymbols = hasOtherSymbols && pdb->SymbolExists(symStr.c_str());
+        numOtherSymbols += pdb->SymbolExists(symStr.c_str());
 
-        if (hasOtherSymbols)
+        if (numOtherSymbols > 3)
         {
             //
             // Examine this dir for sub-dirs of known LEOS variable names 
             //
             int numKnownLEOSVars = 0; 
-            map<string, eosVarInfo_t>::const_iterator j;
+            std::map<string, eosVarInfo_t>::const_iterator j;
             for (j = eosVarInfoMap.begin(); j != eosVarInfoMap.end(); j++)
             {
                 string varDir = "/" + string(topDirs[i]) + j->first + "/";
@@ -564,9 +586,9 @@ LEOSFileReader::IdentifyFormat()
                    numKnownLEOSVars++;
             }
 
-            // arbitrary test if we see more than 1/3 of the known variables,
+            // arbitrary test: if we see any known variables,
             // it must be an eos file
-            if (numKnownLEOSVars > eosVarInfoMap.size() / 3)
+            if (numKnownLEOSVars > 0)
             {
                 validFile = true;
                 break;
@@ -963,6 +985,10 @@ LEOSFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 // Programmer: Mark C. Miller
 // Creation:   February 10, 2004 
 //
+//  Modifications:
+//   Brad Whitlock, Fri Mar 5 10:43:53 PDT 2004
+//   Fixed for the Windows compiler.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -974,7 +1000,6 @@ LEOSFileReader::GetMesh(int state, const char *var)
     int size;
     char tmpStr[256];
     string::size_type n;
-    map<string, eosVarInfo_t>::const_iterator i;
 
     // string off the "_mesh" from end of the variable name and
     // compute  the full variable name (e.g. "mat/eos-var") and the
@@ -989,17 +1014,18 @@ LEOSFileReader::GetMesh(int state, const char *var)
     string matDirName = matDirMap[fullVarName];
 
     // attempt to lookup the full variable name first, then the short name
-    i = eosVarInfoMap.find(fullVarName);
-    if (i == eosVarInfoMap.end())
-        i = eosVarInfoMap.find(varName);
+    std::map<string, eosVarInfo_t>::const_iterator it =
+        eosVarInfoMap.find(fullVarName);
+    if (it == eosVarInfoMap.end())
+        it = eosVarInfoMap.find(varName);
 
-    if (i == eosVarInfoMap.end())
+    if (it == eosVarInfoMap.end())
     {
         EXCEPTION1(InvalidVariableException, var);
     }
 
     // get the variable info we have in the eosVarInfoMap
-    eosVarInfo_t varInfoFromMap = i->second;
+    eosVarInfo_t varInfoFromMap = it->second;
 
     // read the actual variable info from the file
     eosVarInfo_t varInfoFromFile;
@@ -1114,6 +1140,10 @@ LEOSFileReader::GetMesh(int state, const char *var)
 // Programmer: Mark C. Miller 
 // Creation:   February 10, 2004 
 //
+// Modifications:
+//   Brad Whitlock, Fri Mar 5 10:47:02 PDT 2004
+//   Fixed for the Windows compiler.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1124,7 +1154,6 @@ LEOSFileReader::GetVar(int state, const char *var)
 
     char tmpStr[256];
     string::size_type n;
-    map<string, eosVarInfo_t>::const_iterator i;
 
     // compute  the full variable name (e.g. "mat/eos-var") and the
     // variable name
@@ -1136,17 +1165,18 @@ LEOSFileReader::GetVar(int state, const char *var)
     string matDirName = matDirMap[fullVarName];
 
     // attempt to lookup the full variable name first, then the short name
-    i = eosVarInfoMap.find(fullVarName);
-    if (i == eosVarInfoMap.end())
-        i = eosVarInfoMap.find(varName);
+    std::map<string, eosVarInfo_t>::const_iterator it =
+        eosVarInfoMap.find(fullVarName);
+    if (it == eosVarInfoMap.end())
+        it = eosVarInfoMap.find(varName);
 
-    if (i == eosVarInfoMap.end())
+    if (it == eosVarInfoMap.end())
     {
         EXCEPTION1(InvalidVariableException, var);
     }
 
     // get the variable info we have in the eosVarInfoMap
-    eosVarInfo_t varInfoFromMap = i->second;
+    eosVarInfo_t varInfoFromMap = it->second;
 
     // read the actual variable info from the file
     eosVarInfo_t varInfoFromFile;

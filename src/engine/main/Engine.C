@@ -629,6 +629,9 @@ Engine::ProcessInput()
 //
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
+// 
+//    Mark C. Miller, Thu Mar  4 12:07:04 PST 2004
+//    Told NetworkManager to dump rendered images
 //
 // ****************************************************************************
 void
@@ -651,6 +654,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
         else if (strcmp(argv[i], "-dump") == 0)
         {
             avtStreamer::DebugDump(true);
+            netmgr->DumpRenders();
         }
         else if (strcmp(argv[i], "-lb-block") == 0)
         {

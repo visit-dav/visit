@@ -38,12 +38,9 @@
 #ifndef __vtkVisItEnSightGoldReader_h
 #define __vtkVisItEnSightGoldReader_h
 
-#include <database_exports.h>
-
 #include "vtkVisItEnSightReader.h"
 
-class DATABASE_API VTK_IO_EXPORT vtkVisItEnSightGoldReader : 
-                                 public vtkVisItEnSightReader
+class vtkVisItEnSightGoldReader : public vtkVisItEnSightReader
 {
 public:
   static vtkVisItEnSightGoldReader *New();

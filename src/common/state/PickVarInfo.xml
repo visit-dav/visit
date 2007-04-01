@@ -41,6 +41,8 @@
     </Function>
     <Function name="PrintSymmetricTensor" user="true" member="true">
     </Function>
+    <Function name="HasInfo" user="true" member="true">
+    </Function>
     <Include file="source" quoted="false">
       stdio.h
     </Include>

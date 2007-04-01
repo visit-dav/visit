@@ -37,15 +37,13 @@
 
 #ifndef __vtkVisItEnSight6Reader_h
 #define __vtkVisItEnSight6Reader_h
-#include <database_exports.h>
 
 #include "vtkVisItEnSightReader.h"
 
 class vtkIdTypeArray;
 class vtkPoints;
 
-class DATABASE_API VTK_IO_EXPORT vtkVisItEnSight6Reader : 
-                                 public vtkVisItEnSightReader
+class vtkVisItEnSight6Reader : public vtkVisItEnSightReader
 {
 public:
   static vtkVisItEnSight6Reader *New();
