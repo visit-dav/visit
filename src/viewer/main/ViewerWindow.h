@@ -326,6 +326,9 @@ class ViewerToolbar;
 //
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Const qualified GetExtents
+//
+//    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
+//    Added data member for name of last color table to change
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -600,6 +603,7 @@ private:
 
     bool            isChangingScalableRenderingMode;
     bool            targetScalableRenderingMode;
+    std::string     nameOfCtChangedSinceLastRender;
 
     bool            cameraView;
     bool            maintainView;

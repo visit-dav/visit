@@ -652,6 +652,9 @@ RPCExecutor<StartPickRPC>::Execute(StartPickRPC *rpc)
 //
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Added code to pass view extents
+//
+//    Mark C. Miller, Tue Oct 19 19:44:00 PDT 2004
+//    Added arg to pass changed color table name
 // ****************************************************************************
 template<>
 void
@@ -667,7 +670,8 @@ RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
     {
         netmgr->SetWindowAttributes(rpc->GetWindowAtts(),
                                     rpc->GetExtentTypeString(),
-                                    rpc->GetViewExtents());
+                                    rpc->GetViewExtents(),
+                                    rpc->GetChangedCtName());
         netmgr->SetAnnotationAttributes(rpc->GetAnnotationAtts(),
                                         rpc->GetAnnotationObjectList(),
                                         rpc->GetVisualCueList(),

@@ -1316,6 +1316,9 @@ ViewerEngineManager::LaunchMessage(const EngineKey &ek)  const
 //    Added view extents to externa render request info
 //    Added code to push explicit view extents to the engine(s)
 //    Made it so only the last engine will render annotations
+//
+//    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
+//    Added code to pass along name of last color table to change
 //    
 // ****************************************************************************
 
@@ -1337,6 +1340,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
     const VisualCueList& visCues                     = reqInfo.visCues;
     const int* frameAndState                         = reqInfo.frameAndState;
     const double *viewExtents                        = reqInfo.viewExtents;
+    string ctName                                    = reqInfo.lastChangedCtName;
 
     bool retval = true;
     EngineKey ek;
@@ -1381,7 +1385,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
         {
             ek = pos->first;
             engines[ek].proxy->SetWinAnnotAtts(&winAtts, &annotAtts, &annotObjs,
-                             extStr, &visCues, frameAndState, viewExtents);
+                             extStr, &visCues, frameAndState, viewExtents, ctName);
         }
 
         // send per-plot RPCs
@@ -1688,7 +1692,7 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
                                        fns[4], fns[5], fns[6]);
            double vext[6];
            w->GetExtents(3, vext);
-           engine->SetWinAnnotAtts(&winAtts,&annotAtts,&annotObjs,extStr,&visCues,fns,vext);
+           engine->SetWinAnnotAtts(&winAtts,&annotAtts,&annotObjs,extStr,&visCues,fns,vext,"");
         }
 
         //
@@ -2235,6 +2239,9 @@ ViewerEngineManager::StartPick(const EngineKey &ek, const bool forZones,
 //
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Added code for view extents
+//
+//    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
+//    Added code to pass along name of last color table to change
 // ****************************************************************************
 
 bool
@@ -2245,10 +2252,12 @@ ViewerEngineManager::SetWinAnnotAtts(const EngineKey &ek,
                                      const string extstr,
                                      const VisualCueList *visCues,
                                      const int *frameAndState,
-                                     const double *viewExtents)
+                                     const double *viewExtents,
+                                     const string ctName)
 {
     ENGINE_PROXY_RPC_BEGIN("SetWinAnnotAtts");
-    engine->SetWinAnnotAtts(wa,aa,ao,extstr,visCues,frameAndState,viewExtents);
+    engine->SetWinAnnotAtts(wa,aa,ao,extstr,visCues,frameAndState,viewExtents,
+        ctName);
     ENGINE_PROXY_RPC_END;
 }
 
@@ -2663,7 +2672,7 @@ ViewerEngineManager::GetImage(int index, avtDataObject_p &dob)
     w->GetExtents(3, vext);
 
     // send to the engine
-    engine->SetWinAnnotAtts(&winAtts,&annotAtts,&annotObjs,extStr,&visCues,fns,vext);
+    engine->SetWinAnnotAtts(&winAtts,&annotAtts,&annotObjs,extStr,&visCues,fns,vext,"");
     
     engine->UseNetwork(index);
 #ifdef VIEWER_MT

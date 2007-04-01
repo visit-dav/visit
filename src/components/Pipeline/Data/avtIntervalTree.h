@@ -30,6 +30,9 @@
 //    Hank Childs, Tue Nov 19 12:26:34 PST 2002
 //    Removed all knowledge of previous incarnation of 'IntervalTree'.
 //
+//    Mark C. Miller, Mon Oct 18 14:36:49 PDT 2004
+//    Added hasBeenCalculated variable
+//
 // ****************************************************************************
 
 class PIPELINE_API avtIntervalTree
@@ -65,6 +68,8 @@ class PIPELINE_API avtIntervalTree
 
     float                    *nodeExtents;
     int                      *nodeIDs;
+
+    bool                      hasBeenCalculated;
 
     void                      CollectInformation(void);
     void                      ConstructTree(void);

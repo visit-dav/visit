@@ -14,7 +14,7 @@ using std::string;
 
 #include <avtColorTables.h>
 #include <avtDataObjectReader.h>
-#include <avtWholeImageCompositer.h>
+#include <avtWholeImageCompositerWithZ.h>
 #include <avtToolInterface.h>
 
 #include <AnimationAttributes.h>
@@ -188,6 +188,9 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Kathleen Bonnell, Wed Aug 18 09:39:29 PDT 2004 
 //    Added call to SetInteractorAtts. 
 //
+//    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
+//    Added code to manage name of last color table to change
+//
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex)
@@ -234,6 +237,7 @@ ViewerWindow::ViewerWindow(int windowIndex)
     isVisible = false;
     isChangingScalableRenderingMode = false;
     targetScalableRenderingMode = false;
+    nameOfCtChangedSinceLastRender = "";
 
     // Create the popup menu and the toolbar.
     popupMenu = new ViewerPopupMenu(this);
@@ -1880,7 +1884,10 @@ ViewerWindow::GetPerspectiveProjection() const
 // Creation:   Thu Jun 14 16:31:51 PST 2001
 //
 // Modifications:
-//   
+//
+//   Mark C. Miller, Tue Oct 19 19:21:49 PDT 2004
+//   Added setting of nameOfCtChangedSinceLastRender
+//
 // ****************************************************************************
 
 void
@@ -1890,6 +1897,7 @@ ViewerWindow::UpdateColorTable(const char *ctName)
     if(GetPlotList()->UpdateColorTable(ctName))
     {
         SendRedrawMessage();
+        nameOfCtChangedSinceLastRender = ctName;
     }
 }
 
@@ -5114,6 +5122,9 @@ ViewerWindow::GetWindowAttributes() const
 //
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Added code to deal with view extents
+//
+//    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
+//    Added code to manage name of last color table to change
 // ****************************************************************************
 
 bool
@@ -5130,15 +5141,16 @@ ViewerWindow::SendWindowEnvironmentToEngine(const EngineKey &ek)
     visWindow->GetFrameAndState(fns[0], fns[1], fns[2], fns[3],
                                         fns[4], fns[5], fns[6]);
     double vexts[6];
-    GetExtents(3, vexts);
+    GetExtents(visWindow->GetWindowMode()==WINMODE_3D?3:2, vexts);
+    if (visWindow->GetWindowMode()!=WINMODE_3D)
+    {
+        vexts[4] = 0.0;
+        vexts[5] = 0.0;
+    }
+
     return ViewerEngineManager::Instance()->SetWinAnnotAtts(ek,
-                                                            &winAtts,
-                                                            &annotAtts,
-                                                            &annotObjs,
-                                                            extStr,
-                                                            &visCues,
-                                                             fns,
-                                                             vexts);
+               &winAtts, &annotAtts, &annotObjs, extStr, &visCues,
+               fns, vexts,"");
 }
 
 // ****************************************************************************
@@ -7105,6 +7117,9 @@ ViewerWindow::ShouldSendScalableRenderingModeChangeMessage(bool *newMode) const
 //
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Added code to deal with view extents and frame and state
+//
+//    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
+//    Added code to manage name of last color table to change
 // ****************************************************************************
 
 void
@@ -7122,6 +7137,7 @@ ViewerWindow::ClearLastExternalRenderRequestInfo()
         lastExternalRenderRequest.frameAndState[i] = 0;
     for (int i = 0; i < 6; i++)
         lastExternalRenderRequest.viewExtents[i] = (i%2 ? 1.0 : 0.0);
+    lastExternalRenderRequest.lastChangedCtName = "";
 }
 
 // ****************************************************************************
@@ -7152,6 +7168,9 @@ ViewerWindow::ClearLastExternalRenderRequestInfo()
 //
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Added code to deal with view extents and frame and state
+//
+//    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
+//    Added code to manage name of last color table to change
 // ****************************************************************************
 
 void
@@ -7188,6 +7207,9 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
         lastExternalRenderRequest.frameAndState[i] = newRequest.frameAndState[i];
     for (int i = 0; i < 6; i++)
         lastExternalRenderRequest.viewExtents[i] = newRequest.viewExtents[i];
+    lastExternalRenderRequest.lastChangedCtName = ""; 
+
+    nameOfCtChangedSinceLastRender = "";
 }
 
 // ****************************************************************************
@@ -7231,6 +7253,9 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
 //
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Added code to deal with view extents and frame and state
+//
+//    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
+//    Added code to manage name of last color table to change
 // ****************************************************************************
 
 bool
@@ -7262,6 +7287,9 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
         return false;
 
     if (thisRequest.extStr != lastRequest.extStr)
+        return false;
+
+    if (thisRequest.lastChangedCtName != lastRequest.lastChangedCtName)
         return false;
 
     if (thisRequest.annotObjs != lastRequest.annotObjs)
@@ -7360,6 +7388,9 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
 //
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Added code to deal with view extents
+//
+//    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
+//    Added code to manage name of last color table to change
 // ****************************************************************************
 
 void
@@ -7389,8 +7420,15 @@ ViewerWindow::GetExternalRenderRequestInfo(
     for (int i = 0; i < 7; i++)
         theRequest.frameAndState[i] = fns[i];
 
-    GetExtents(3, theRequest.viewExtents);
+    GetExtents(visWindow->GetWindowMode()==WINMODE_3D?3:2,
+        theRequest.viewExtents);
+    if (visWindow->GetWindowMode()!=WINMODE_3D)
+    {
+        theRequest.viewExtents[4] = 0.0;
+        theRequest.viewExtents[5] = 0.0;
+    }
 
+    theRequest.lastChangedCtName = nameOfCtChangedSinceLastRender;
 }
 
 // ****************************************************************************
@@ -7415,6 +7453,8 @@ ViewerWindow::GetExternalRenderRequestInfo(
 //    Replaced long list of args relating to external render request with
 //    single struct in call to eMgr->ExternalRender
 //
+//    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
+//    Changed name of image compositer class
 // ****************************************************************************
 bool
 ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
@@ -7484,7 +7524,7 @@ ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
         // NOTE: YOU NEED TO MAKE SURE ALL ENGINES HAVE USED
         // SAME BACKGROUND COLOR IN ORDER FOR THIS TO WORK
         //
-        avtWholeImageCompositer imageCompositer;
+        avtWholeImageCompositerWithZ imageCompositer;
         int numRows = thisRequest.winAtts.GetSize()[1];
         int numCols = thisRequest.winAtts.GetSize()[0];
 

@@ -46,12 +46,18 @@ static bool     Intersects(float [3], float[3], int, int, const float *);
 //  Programmer: Hank Childs
 //  Creation:   August 8, 2000
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Oct 18 14:36:49 PDT 2004
+//    Added hasBeenCalculated
+//
 // ****************************************************************************
 
 avtIntervalTree::avtIntervalTree(int doms, int dims)
 {
     nDomains    = doms;
     nDims       = dims;
+    hasBeenCalculated = false;
 
     //
     // A vector for one domain should have the min and max for each dimension.
@@ -138,7 +144,7 @@ avtIntervalTree::Destruct(void *i)
 void
 avtIntervalTree::GetExtents(float *extents) const
 {
-    if (nodeExtents == NULL)
+    if ((nodeExtents == NULL) || (hasBeenCalculated == false))
     {
         EXCEPTION0(IntervalTreeNotCalculatedException);
     }
@@ -198,6 +204,9 @@ avtIntervalTree::AddDomain(int domain, float *d)
 //    Hank Childs, Wed Dec  5 17:21:53 PST 2001 
 //    Added argument to allow for serial usage.
 //
+//    Mark C. Miller, Mon Oct 18 14:36:49 PDT 2004
+//    Added hasBeenCalculated
+//
 // ****************************************************************************
 
 void
@@ -208,6 +217,7 @@ avtIntervalTree::Calculate(bool alreadyCollectedAllInformation)
         CollectInformation();
     }
     ConstructTree();
+    hasBeenCalculated = true;
 }
 
 
@@ -527,12 +537,22 @@ avtIntervalTree::SplitSize(int size)
 //  Programmer: Hank Childs
 //  Creation:   October 27, 1999
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Oct 18 14:36:49 PDT 2004
+//    Added code to throw an exception of the tree hasn't been calculated
+//
 // ****************************************************************************
 
 void
 avtIntervalTree::GetDomainsList(const float *params, float solution,
                                 vector<int> &list) const
 {
+    if (hasBeenCalculated == false)
+    {
+        EXCEPTION0(IntervalTreeNotCalculatedException);
+    }
+
     list.clear();
 
     int nodeStack[100]; // Only need log amount
@@ -592,12 +612,22 @@ avtIntervalTree::GetDomainsList(const float *params, float solution,
 //  Programmer: Hank Childs
 //  Creation:   May 14, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Oct 18 14:36:49 PDT 2004
+//    Added code to throw an exception of the tree hasn't been calculated
+//
 // ****************************************************************************
  
 void
 avtIntervalTree::GetDomainsListFromRange(const float *min_vec,
                                  const float *max_vec, vector<int> &list) const
 {
+    if (hasBeenCalculated == false)
+    {
+        EXCEPTION0(IntervalTreeNotCalculatedException);
+    }
+
     list.clear();
  
     int nodeStack[100]; // Only need log amount
@@ -944,12 +974,22 @@ Intersects(float origin[3], float rayDir[3], int block, int nDims,
 //  Programmer: Kathleen Bonnell 
 //  Creation:   December 19, 2003 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Oct 18 14:36:49 PDT 2004
+//    Added code to throw an exception of the tree hasn't been calculated
+//
 // ****************************************************************************
 
 void
 avtIntervalTree::GetDomainsList(float origin[3], float rayDir[3],
                                 vector<int> &list) const
 {
+    if (hasBeenCalculated == false)
+    {
+        EXCEPTION0(IntervalTreeNotCalculatedException);
+    }
+
     list.clear();
 
     int nodeStack[100]; // Only need log amount

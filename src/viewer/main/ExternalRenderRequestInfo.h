@@ -38,6 +38,9 @@ using std::string;
 //
 //    Mark C. Miller, Wed Oct  6 18:36:47 PDT 2004
 //    Added array of view extents
+//
+//    Mark C. Miller, Tue Oct 19 19:21:49 PDT 2004
+//    Added lastChangedCtName
 // ****************************************************************************
 
 
@@ -54,6 +57,7 @@ typedef struct _ExternalRenderRequestInfo
     VisualCueList                         visCues;
     int                                   frameAndState[7];
     double                                viewExtents[6];
+    string                                lastChangedCtName;
 } ExternalRenderRequestInfo;
 
 #endif

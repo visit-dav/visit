@@ -38,7 +38,6 @@
 #include <avtDomainBoundaries.h>
 #include <avtDomainNesting.h>
 #include <avtFileFormatInterface.h>
-#include <avtMetaData.h>
 #include <avtMixedVariable.h>
 #include <avtParallel.h>
 #include <avtSILGenerator.h>
@@ -486,7 +485,7 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     if (nDomains == 0)
         dob->GetInfo().GetValidity().SetHasEverOwnedAnyDomain(false);
     PopulateDataObjectInformation(dob, spec->GetVariable(), timeStep, 
-        selectionsApplied, *spec);
+        selectionsApplied, spec);
 
     return rv;
 }
@@ -1864,6 +1863,9 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
 //    timesteps (for example, global node ids where the nodes don't change
 //    over time).
 //
+//    Mark C. Miller, Mon Oct 18 13:02:37 PDT 2004
+//    Added code to set variable name from 'args' for Data/Spatial extents
+//
 // ****************************************************************************
 
 void
@@ -1878,8 +1880,14 @@ avtGenericDatabase::GetAuxiliaryData(avtDataSpecification_p spec,
     // tree (which it represents as domain -1).
     //
     int ts = spec->GetTimestep();
-    const char *var = spec->GetVariable();
     avtSILSpecification sil = spec->GetSIL();
+    const char *var = spec->GetVariable();
+    if ((strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0) ||
+        (strcmp(type, AUXILIARY_DATA_DATA_EXTENTS) == 0))
+    {
+        if (args != NULL)
+            var = (char *) args;
+    }
 
     vector<int> domains;
     sil.GetDomainList(domains);

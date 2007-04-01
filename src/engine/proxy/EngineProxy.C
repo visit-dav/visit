@@ -504,6 +504,9 @@ EngineProxy::UpdatePlotAttributes(const string &name, int id,
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Added argument for view extents
 //
+//    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
+//    Added argument for color table name
+//
 // ****************************************************************************
 
 void
@@ -513,10 +516,11 @@ EngineProxy::SetWinAnnotAtts(const WindowAttributes *winAtts,
                              const string extStr,
                              const VisualCueList *visCues,
                              const int *frameAndState,
-                             const double *viewExtents)
+                             const double *viewExtents,
+                             const string ctName)
 {
     setWinAnnotAttsRPC(winAtts, annotAtts, aoList, extStr, visCues,
-        frameAndState, viewExtents);
+        frameAndState, viewExtents, ctName);
     if (setWinAnnotAttsRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(setWinAnnotAttsRPC.GetExceptionType(),

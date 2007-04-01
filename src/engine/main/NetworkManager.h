@@ -180,6 +180,9 @@ class VisWindow;
 //    Added view extents to SetWindowAttributes
 //    Changed bool flag for 3D annotations to integer mode in
 //    SetAnnotationAttributes and Render
+//
+//    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
+//    Added arg for color table name to SetWindowAttributes
 // ****************************************************************************
 class NetworkManager
 {
@@ -219,7 +222,8 @@ class NetworkManager
 
     void          SetWindowAttributes(const WindowAttributes&,
                                       const std::string&,
-                                      const double*);
+                                      const double*,
+                                      const std::string&);
     void          SetAnnotationAttributes(const AnnotationAttributes&,
                                           const AnnotationObjectList&,
                                           const VisualCueList&, 
@@ -267,6 +271,7 @@ class NetworkManager
     AnnotationObjectList        annotationObjectList;
     VisualCueList               visualCueList;
     std::string                 extentTypeString;
+    std::string                 changedCtName;
     int                         frameAndState[7];
     VisWindow                  *viswin;
     std::vector<int>            plotsCurrentlyInWindow;

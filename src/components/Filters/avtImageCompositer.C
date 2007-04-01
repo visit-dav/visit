@@ -47,7 +47,7 @@ avtImageCompositer::avtImageCompositer()
 
 avtImageCompositer::~avtImageCompositer()
 {
-    ;
+    inputImages.clear();
 }
 
 

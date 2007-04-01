@@ -56,6 +56,9 @@ class     avtTerminatingSource;
 //    Kathleen Bonnell, Thu Jul  1 16:41:57 PDT 2004 
 //    Added GetMixedVar.
 //
+//    Mark C. Miller, Mon Oct 18 13:02:37 PDT 2004
+//    Added optional var args to GetDataExtents/GetSpatialExtents
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMetaData
@@ -64,8 +67,8 @@ class PIPELINE_API avtMetaData
                                  avtMetaData(avtTerminatingSource *);
     virtual                     ~avtMetaData();
 
-    avtIntervalTree             *GetDataExtents(void);
-    avtIntervalTree             *GetSpatialExtents(void);
+    avtIntervalTree             *GetDataExtents(const char *var = NULL);
+    avtIntervalTree             *GetSpatialExtents(const char *var = NULL);
 
     avtFacelist                 *GetExternalFacelist(int);
     avtMaterial                 *GetMaterial(int, int = -1);

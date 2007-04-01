@@ -275,12 +275,21 @@ avtThresholdFilter::PreExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   May 14, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Oct 18 13:02:37 PDT 2004
+//    Added code to pass variable name in call to GetDataExtents
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
 avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
 {
-    avtIntervalTree *it = GetMetaData()->GetDataExtents();
+    string thres_var = atts.GetVariable();;
+    if (thres_var == "default")
+        thres_var = in_spec->GetDataSpecification()->GetVariable();
+
+    avtIntervalTree *it = GetMetaData()->GetDataExtents(thres_var.c_str());
     if (it == NULL)
     {
         return in_spec;

@@ -185,6 +185,9 @@ typedef struct {
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added argument for selections applied to PopulateDataObjectInformation
 //
+//    Mark C. Miller, Tue Oct 19 14:08:56 PDT 2004
+//    Changed 'spec' arg of PopulateDataObjectInformation to a ref_ptr
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -273,7 +276,7 @@ class DATABASE_API avtDatabase
                                                   const char *,
                                                   int,
                                                   const vector<bool> &selsApplied,
-                                                  avtDataSpecification* =NULL);
+                                                  avtDataSpecification_p =NULL);
     virtual bool                QueryScalars(const std::string &, const int, 
                                              const int, const int,
                                              const std::vector<int> &,
