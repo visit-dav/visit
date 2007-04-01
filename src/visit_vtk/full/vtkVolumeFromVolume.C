@@ -342,8 +342,95 @@ vtkVolumeFromVolume::TetList::AddTet(int cellId, int v1,int v2,int v3,int v4)
     currentShape++;
 }
 
+vtkVolumeFromVolume::QuadList::QuadList()
+    : vtkVolumeFromVolume::ShapeList(4)
+{
+}
+ 
+
+vtkVolumeFromVolume::QuadList::~QuadList()
+{
+}
+ 
+void
+vtkVolumeFromVolume::QuadList::AddQuad(int cellId, int v1,int v2,int v3,int v4)
+{
+    if (currentShape >= shapesPerList)
+    {
+        if (currentList >= listSize+1)
+        {
+            int **tmpList = new int*[2*listSize];
+            for (int i = 0 ; i < listSize ; i++)
+            {
+                tmpList[i] = list[i];
+            }
+            listSize *= 2;
+            delete [] list;
+            list = tmpList;
+        }
+ 
+        currentList++;
+        list[currentList] = new int[(shapeSize+1)*shapesPerList];
+        currentShape = 0;
+    }
+ 
+    int idx = (shapeSize+1)*currentShape;
+    list[currentList][idx+0] = cellId;
+    list[currentList][idx+1] = v1;
+    list[currentList][idx+2] = v2;
+    list[currentList][idx+3] = v3;
+    list[currentList][idx+4] = v4;
+    currentShape++;
+}
+
+vtkVolumeFromVolume::TriList::TriList()
+    : vtkVolumeFromVolume::ShapeList(3)
+{
+}
+ 
+
+vtkVolumeFromVolume::TriList::~TriList()
+{
+}
+ 
+void
+vtkVolumeFromVolume::TriList::AddTri(int cellId, int v1,int v2,int v3)
+{
+    if (currentShape >= shapesPerList)
+    {
+        if (currentList >= listSize+1)
+        {
+            int **tmpList = new int*[2*listSize];
+            for (int i = 0 ; i < listSize ; i++)
+            {
+                tmpList[i] = list[i];
+            }
+            listSize *= 2;
+            delete [] list;
+            list = tmpList;
+        }
+ 
+        currentList++;
+        list[currentList] = new int[(shapeSize+1)*shapesPerList];
+        currentShape = 0;
+    }
+ 
+    int idx = (shapeSize+1)*currentShape;
+    list[currentList][idx+0] = cellId;
+    list[currentList][idx+1] = v1;
+    list[currentList][idx+2] = v2;
+    list[currentList][idx+3] = v3;
+    currentShape++;
+}
 
 
+
+// ****************************************************************************
+//  Modifications:
+//    Jeremy Meredith, Mon Feb 16 19:11:34 PST 2004
+//    Added polygonal cell support.
+//
+// ****************************************************************************
 void
 vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
                                       vtkUnstructuredGrid *output,
@@ -534,6 +621,43 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
             cellId++;
         }
     }
+
+    nlists = quads.GetNumberOfLists();
+    for (i = 0 ; i < nlists ; i++)
+    {
+        const int *list;
+        int listSize = quads.GetList(i, list);
+        for (j = 0 ; j < listSize ; j++)
+        {
+            outCD->CopyData(inCD, list[0], cellId);
+            vtkIdType quad[4];
+            quad[0] = (list[1] < 0) ? (centroidStart-1 - list[1]) : (list[1]);
+            quad[1] = (list[2] < 0) ? (centroidStart-1 - list[2]) : (list[2]);
+            quad[2] = (list[3] < 0) ? (centroidStart-1 - list[3]) : (list[3]);
+            quad[3] = (list[4] < 0) ? (centroidStart-1 - list[4]) : (list[4]);
+            output->InsertNextCell(VTK_QUAD, 4, quad);
+            list += 5;
+            cellId++;
+        }
+    }
+
+    nlists = tris.GetNumberOfLists();
+    for (i = 0 ; i < nlists ; i++)
+    {
+        const int *list;
+        int listSize = tris.GetList(i, list);
+        for (j = 0 ; j < listSize ; j++)
+        {
+            outCD->CopyData(inCD, list[0], cellId);
+            vtkIdType tri[3];
+            tri[0] = (list[1] < 0) ? (centroidStart-1 - list[1]) : (list[1]);
+            tri[1] = (list[2] < 0) ? (centroidStart-1 - list[2]) : (list[2]);
+            tri[2] = (list[3] < 0) ? (centroidStart-1 - list[3]) : (list[3]);
+            output->InsertNextCell(VTK_TRIANGLE, 3, tri);
+            list += 4;
+            cellId++;
+        }
+    }
 }
 
 
@@ -549,6 +673,12 @@ inline void GetPoint(float *pt, const float *X, const float *Y,
 }
 
 
+// ****************************************************************************
+//  Modifications:
+//    Jeremy Meredith, Mon Feb 16 19:11:34 PST 2004
+//    Added polygonal cell support.
+//
+// ****************************************************************************
 void
 vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
                                       vtkUnstructuredGrid *output,
@@ -735,6 +865,43 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
             hex[7] = (list[8] < 0) ? (centroidStart-1 - list[8]) : (list[8]);
             output->InsertNextCell(VTK_HEXAHEDRON, 8, hex);
             list += 9;
+            cellId++;
+        }
+    }
+
+    nlists = quads.GetNumberOfLists();
+    for (i = 0 ; i < nlists ; i++)
+    {
+        const int *list;
+        int listSize = quads.GetList(i, list);
+        for (j = 0 ; j < listSize ; j++)
+        {
+            outCD->CopyData(inCD, list[0], cellId);
+            vtkIdType quad[4];
+            quad[0] = (list[1] < 0) ? (centroidStart-1 - list[1]) : (list[1]);
+            quad[1] = (list[2] < 0) ? (centroidStart-1 - list[2]) : (list[2]);
+            quad[2] = (list[3] < 0) ? (centroidStart-1 - list[3]) : (list[3]);
+            quad[3] = (list[4] < 0) ? (centroidStart-1 - list[4]) : (list[4]);
+            output->InsertNextCell(VTK_QUAD, 4, quad);
+            list += 5;
+            cellId++;
+        }
+    }
+
+    nlists = tris.GetNumberOfLists();
+    for (i = 0 ; i < nlists ; i++)
+    {
+        const int *list;
+        int listSize = tris.GetList(i, list);
+        for (j = 0 ; j < listSize ; j++)
+        {
+            outCD->CopyData(inCD, list[0], cellId);
+            vtkIdType tri[3];
+            tri[0] = (list[1] < 0) ? (centroidStart-1 - list[1]) : (list[1]);
+            tri[1] = (list[2] < 0) ? (centroidStart-1 - list[2]) : (list[2]);
+            tri[2] = (list[3] < 0) ? (centroidStart-1 - list[3]) : (list[3]);
+            output->InsertNextCell(VTK_TRIANGLE, 3, tri);
+            list += 4;
             cellId++;
         }
     }

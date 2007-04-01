@@ -222,3 +222,23 @@ avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
     return out_ds;
 }
+
+
+// ****************************************************************************
+//  Method: avtIsovolumeFilter::RefashionDataObjectInfo
+//
+//  Purpose:
+//      Indicates the zones no longer correspond to the original problem.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   February 16, 2004
+//
+// ****************************************************************************
+
+void
+avtIsovolumeFilter::RefashionDataObjectInfo(void)
+{
+    GetOutput()->GetInfo().GetValidity().InvalidateZones();
+}
+
+
