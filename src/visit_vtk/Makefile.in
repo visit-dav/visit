@@ -200,6 +200,9 @@
 #    Brad Whitlock, Tue Oct 28 17:00:24 PST 2003
 #    I added vtkTimeSliderActor.
 #
+#    Hank Childs, Mon Jan  5 21:19:56 PST 2004
+#    Added vtkHankTIFFWriter.
+#
 ##############################################################################
 
 ##
@@ -227,6 +230,7 @@ SRC=InitVTK.C \
     vtkDebugStream.C \
     vtkDisjointCubesFacelistFilter.C \
     vtkHankAxisActor2D.C \
+    vtkHankTIFFWriter.C \
     vtkKatAxisActor.C \
     vtkKatCubeAxesActor.C \
     vtkLineoutFilter.C \
