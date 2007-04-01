@@ -4059,6 +4059,10 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
 //    Now, we use direct manipulation of the viewing transformation instead
 //    of adjusting depth range.
 //
+//    Brad Whitlock, Tue Jan 4 15:02:09 PST 2005
+//    Renamed near, far to nearPlane and farPlane since near,far are
+//    reserve words in the Windows compiler.
+//
 // ****************************************************************************
 
 void
@@ -4248,14 +4252,14 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
         double C = pmatrix[10];
         double D = pmatrix[14];
         double r = (C-1.)/(C+1.);
-        double far = D * (1.-r)/2.;
-        double near = far / r;
+        double farPlane = D * (1.-r)/2.;
+        double nearPlane = farPlane / r;
 
         // compute a shift based upon total range in Z
-        double zShift1 = (far - near) / 1.0e+4;
+        double zShift1 = (farPlane - nearPlane) / 1.0e+4;
 
         // compute a shift based upon distance between eye and near clip
-        double zShift2 = near / 2.0;
+        double zShift2 = nearPlane / 2.0;
 
         // use whatever shift is smaller
         double zShift = zShift1 < zShift2 ? zShift1 : zShift2;

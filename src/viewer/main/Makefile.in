@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2004
+#                            Copyright 2000 - 2005
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -249,6 +249,9 @@
 #    Jeremy Meredith, Tue Nov 23 14:53:07 PST 2004
 #    Refactored the expression parser into two separate libraries.
 #
+#    Brad Whitlock, Wed Jan 5 09:25:20 PDT 2005
+#    Added -lexpr for MacOS X.
+#
 ##############################################################################
 
 ##
@@ -266,7 +269,7 @@ VTK_LIBS=@VTK_LIBS@
 VTK_INCLUDE=@VTK_INCLUDES@
 LIBS=-L../../lib -L../../vtkqt -lengineproxy -lenginerpc -lviewerrpc \
      -lmdserverproxy -lmdserverrpc -lvclproxy -lvclrpc -ldbatts -lexpr \
-     -lparser -lplugin -lqtviswindow -lviswindow -lavtmath_ser -lplotter \
+     -lexpr -lparser -lplugin -lqtviswindow -lviswindow -lavtmath_ser -lplotter \
      -lavtfilters_ser -lavtwriter -lavtview -lpipeline_ser -lvisit_vtk \
      -llightweight_visit_vtk -lparallel_visit_vtk_ser -lvtkqt -lwinutil \
      @QT_LIBS@ -lproxybase -lmisc -lcomm -lstate -lutility -lavtexceptions \

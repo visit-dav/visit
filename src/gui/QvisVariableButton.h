@@ -3,6 +3,7 @@
 #include <qpushbutton.h>
 #include <qobjectlist.h>
 #include <string>
+#include <gui_exports.h>
 
 class QvisVariableButtonHelper;
 class QvisVariablePopupMenu;
@@ -28,7 +29,7 @@ class VariableMenuPopulator;
 //   
 // ****************************************************************************
 
-class QvisVariableButton : public QPushButton
+class GUI_API QvisVariableButton : public QPushButton
 {
     Q_OBJECT
 public:

@@ -1,4 +1,4 @@
-#                            Copyright 1991 - 2004
+#                            Copyright 1991 - 2005
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -157,6 +157,9 @@
 #    Removed avtPointGlyphMapper, Added avtPointGlypher, 
 #    avtVariablePointGlyphMapper, avtLevelsPointGlyphMapper.
 #
+#    Brad Whitlock, Wed Jan 5 09:25:20 PDT 2005
+#    Added -lexpr for MacOS X.
+#
 ##############################################################################
 
 ##
@@ -188,7 +191,7 @@ CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@ @MESA_INCLUDE@
 
 OBJ=$(SRC:.C=.o)
 LIB=libplotter
-LIBS=-ldbatts -lmisc -lcomm -lstate -lparser -lutility -lpipeline_ser -lavtview -lavtmath_ser -lavtfilters_ser -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser $(VTK_LIBS) $(X_LIBS)
+LIBS=-ldbatts -lmisc -lcomm -lstate -lexpr -lparser -lutility -lpipeline_ser -lavtview -lavtmath_ser -lavtfilters_ser -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser $(VTK_LIBS) $(X_LIBS)
 
 ##
 ## Standard targets...

@@ -35,6 +35,9 @@
 #    Jeremy Meredith, Wed Nov 24 12:31:20 PST 2004
 #    Created.  Took mostly from the old parser library.
 #
+#    Brad Whitlock, Tue Jan 4 17:01:46 PST 2005
+#    Added additional libraries to the link line so it links on MacOS X.
+#
 ##############################################################################
 
 ##
@@ -74,7 +77,7 @@ CONFIGOBJ=${CONFIGSRC:.C=.o}
 TESTOBJ1=$(TESTSRC1:.C=.o)
 LIB=libexpr
 NOT_DISTRIB=
-LIBS=-L../../lib -lmisc -lstate -lcomm -lutility @LIBS@
+LIBS=-L../../lib -lmisc -lstate -lcomm -lutility -lparser -lavtexceptions @LIBS@
 
 ##
 ## Standard targets...

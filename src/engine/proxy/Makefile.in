@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2004
+#                            Copyright 2000 - 2005
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -65,6 +65,9 @@
 #    Brad Whitlock, Tue Nov 2 13:33:36 PST 2004
 #    Added still more libraries to get prebinding working again on MacOS X.
 #
+#    Brad Whitlock, Wed Jan 5 09:25:20 PDT 2005
+#    Added -lexpr for MacOS X.
+#
 ##############################################################################
 
 ##
@@ -83,7 +86,7 @@ SRC=EngineProxy.C
 HDR=EngineProxy.h
 OBJ=$(SRC:.C=.o)
 LIB=libengineproxy
-LIBS=-lenginerpc -ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lcomm -lmisc -lstate -lplugin -lparser -lutility -lproxybase -llightweight_visit_vtk $(VTK_LIBS)
+LIBS=-lenginerpc -ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lcomm -lmisc -lstate -lplugin -lexpr -lparser -lutility -lproxybase -llightweight_visit_vtk $(VTK_LIBS)
 
 
 ##

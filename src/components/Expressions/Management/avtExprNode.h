@@ -2,6 +2,7 @@
 #define AVT_EXPR_NODE_H
 
 #include <ExprNode.h>
+#include <expression_exports.h>
 
 class ExprPipelineState;
 
@@ -11,14 +12,14 @@ class ExprPipelineState;
 //
 
 
-class avtExprNode : public virtual ExprNode
+class EXPRESSION_API avtExprNode : public virtual ExprNode
 {
   public:
     avtExprNode(const Pos &p) : ExprNode(p) {}
     virtual void CreateFilters(ExprPipelineState *) = 0;
 };
 
-class avtConstExpr
+class EXPRESSION_API avtConstExpr
     : public avtExprNode, public ConstExpr
 {
   public:
@@ -27,7 +28,7 @@ class avtConstExpr
     virtual void CreateFilters(ExprPipelineState *);
 };
 
-class avtUnaryExpr
+class EXPRESSION_API avtUnaryExpr
     : public avtExprNode, public UnaryExpr
 {
   public:
@@ -36,7 +37,7 @@ class avtUnaryExpr
     virtual void CreateFilters(ExprPipelineState *);
 };
 
-class avtBinaryExpr : public avtExprNode, public BinaryExpr
+class EXPRESSION_API avtBinaryExpr : public avtExprNode, public BinaryExpr
 {
   public:
     avtBinaryExpr(const Pos &p, char o, ExprNode *l, ExprNode *r)
@@ -44,7 +45,7 @@ class avtBinaryExpr : public avtExprNode, public BinaryExpr
     virtual void CreateFilters(ExprPipelineState *);
 };
 
-class avtIndexExpr : public avtExprNode, public IndexExpr
+class EXPRESSION_API avtIndexExpr : public avtExprNode, public IndexExpr
 {
   public:
     avtIndexExpr(const Pos &p, ExprNode *e, int ind)
@@ -52,7 +53,7 @@ class avtIndexExpr : public avtExprNode, public IndexExpr
     virtual void CreateFilters(ExprPipelineState *);
 };
 
-class avtVectorExpr : public avtExprNode, public VectorExpr
+class EXPRESSION_API avtVectorExpr : public avtExprNode, public VectorExpr
 {
   public:
     avtVectorExpr(const Pos &p, ExprNode *x, ExprNode *y, ExprNode *z=NULL)
@@ -60,7 +61,7 @@ class avtVectorExpr : public avtExprNode, public VectorExpr
     virtual void CreateFilters(ExprPipelineState *);
 };
 
-class avtFunctionExpr : public avtExprNode, public FunctionExpr
+class EXPRESSION_API avtFunctionExpr : public avtExprNode, public FunctionExpr
 {
   public:
     avtFunctionExpr(const Pos &p, Identifier *i, ArgsExpr *e=NULL)
@@ -68,7 +69,7 @@ class avtFunctionExpr : public avtExprNode, public FunctionExpr
     virtual void CreateFilters(ExprPipelineState *);
 };
 
-class avtVarExpr : public avtExprNode, public VarExpr
+class EXPRESSION_API avtVarExpr : public avtExprNode, public VarExpr
 {
   public:
     avtVarExpr(const Pos &p, DBExpr *d, PathExpr *v, bool exp)

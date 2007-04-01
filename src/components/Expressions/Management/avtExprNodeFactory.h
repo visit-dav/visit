@@ -4,13 +4,14 @@
 #include <ExprNodeFactory.h>
 #include <ExprToken.h>
 #include <avtExprNode.h>
+#include <expression_exports.h>
 
 //  Modifications:
 //    Jeremy Meredith, Wed Nov 24 12:24:12 PST 2004
 //    Renamed Engine to avt.
 //
 
-class avtExprNodeFactory: public ExprNodeFactory
+class EXPRESSION_API avtExprNodeFactory: public ExprNodeFactory
 {
 public:
     virtual ~avtExprNodeFactory() {}

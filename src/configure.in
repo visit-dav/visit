@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce configure.
 dnl 
 dnl 
 dnl 
-dnl                            Copyright 2000 - 2004
+dnl                            Copyright 2000 - 2005
 dnl                 The Regents of the University of California.
 dnl                             All rights reserved.
 dnl 
@@ -533,6 +533,9 @@ dnl    This lets us do host-type flags conditioned on what kind of compiler
 dnl    we are using.  Added support for xlC on AIX.  Put back some
 dnl    commented-out code to support strangeness on shared libraries on AIX
 dnl    if we decide we want to use it again.  
+dnl
+dnl    Brad Whitlock, Thu Jan 6 13:01:21 PST 2005
+dnl    Added support for creating a link to the HDF4 libraries on MacOS X.
 dnl
 dnl --------------------------------------------------------------------------
 
@@ -2096,6 +2099,7 @@ AC_MSG_CHECKING(for HDF4)
 HDF4=""
 HDF4_FLAGS=""
 HDF4_LIBS=""
+HDF4_LIBDIR=""
 AC_ARG_WITH(hdf4,
 	    [  --with-hdf4=INC-DIR,LIB-DIR      Location of HDF4 header and library],
            hdf4_specified="yes",
@@ -2105,6 +2109,7 @@ if test "$hdf4_specified" = "yes"; then
    if test "$withval" != "no"; then
       HDF4_FLAGS="-I`echo $withval |cut -f1 -d,`"
       HDF4_LIBS="-L`echo $withval |cut -f2 -d, -s`"
+      HDF4_LIBDIR="`echo $withval |cut -f2 -d, -s`"
    fi
 else
    if test "$DEFAULT_HDF4_FLAGS" != "" ; then
@@ -2112,6 +2117,7 @@ else
    fi
    if test "$DEFAULT_HDF4_LIBS" != "" ; then
       HDF4_LIBS="-L$DEFAULT_HDF4_LIBS -lmfhdf -ldf -ljpeg -lz $HDF4_LIBS"
+      HDF4_LIBDIR="$DEFAULT_HDF4_LIBS"
    fi
 fi
 if test "$HDF4_LIBS" != "" ; then
@@ -2127,7 +2133,7 @@ fi
 AC_SUBST(HDF4)
 AC_SUBST(HDF4_FLAGS)
 AC_SUBST(HDF4_LIBS)
-
+AC_SUBST(HDF4_LIBDIR)
 
 #
 # Look for Boxlib2D.
@@ -2771,12 +2777,13 @@ AC_SUBST(ENGINEWRAPPAR)
 
 #
 # This helps the Makefile in the lib directory make the right links
-# to Silo, Mili, and HDF5. It is only needed on MacOS X because on
+# to Silo, Mili, HDF4, and HDF5. It is only needed on MacOS X because on
 # other platforms, these libraries are statically linked into the
 # database plugins and on MacOS X they are dynamically linked.
 #
 CREATE_SILO_LINK=""
 CREATE_MILI_LINK=""
+CREATE_HDF4_LINK=""
 CREATE_HDF5_LINK=""
 case $SHORT_UNAME in
   darwin)
@@ -2786,6 +2793,9 @@ case $SHORT_UNAME in
     if test "$MILI_LIBS" != "" ; then
         CREATE_MILI_LINK="create_mili_link"
     fi
+    if test "$HDF4_LIBS" != "" ; then
+        CREATE_HDF4_LINK="create_hdf4_link"
+    fi
     if test "$HDF5_LIB" != "" ; then
         CREATE_HDF5_LINK="create_hdf5_link"
     fi
@@ -2793,6 +2803,7 @@ case $SHORT_UNAME in
 esac
 AC_SUBST(CREATE_SILO_LINK)
 AC_SUBST(CREATE_MILI_LINK)
+AC_SUBST(CREATE_HDF4_LINK)
 AC_SUBST(CREATE_HDF5_LINK)
 
 #

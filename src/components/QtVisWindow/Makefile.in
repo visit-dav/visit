@@ -1,4 +1,4 @@
-#                            Copyright 1991 - 2004
+#                            Copyright 1991 - 2005
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -40,6 +40,9 @@
 #    Brad Whitlock, Tue Nov 2 13:30:39 PST 2004
 #    Added -lparallel_visit_vtk_ser so VisIt links on MacOS X again.
 #
+#    Brad Whitlock, Wed Jan 5 09:25:20 PDT 2005
+#    Added -lexpr for MacOS X.
+#
 ##############################################################################
 
 ##
@@ -59,7 +62,7 @@ CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@ @VTKQT_CPPFLAGS@
 
 OBJ=$(SRC:.C=.o)
 LIB=libqtviswindow
-LIBS=-ldbatts -lviswindow -lpipeline_ser -lavtfilters_ser -lavtmath_ser -lavtview -lavtexceptions -lplotter -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lmisc -lstate -lcomm -lparser -lutility @VTKQT_LIBS@ $(VTK_LIBS) $(X_LIBS)
+LIBS=-ldbatts -lviswindow -lpipeline_ser -lavtfilters_ser -lavtmath_ser -lavtview -lavtexceptions -lplotter -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lmisc -lstate -lcomm -lexpr -lparser -lutility @VTKQT_LIBS@ $(VTK_LIBS) $(X_LIBS)
 
 ##
 ## Standard targets...

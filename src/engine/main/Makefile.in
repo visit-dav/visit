@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2004
+#                            Copyright 2000 - 2005
 #                 The Regents of the University of California.
 #                             All rights reserved.
 #
@@ -215,6 +215,9 @@
 #    Jeremy Meredith, Tue Nov 23 14:53:07 PST 2004
 #    Refactored the expression parser into two separate libraries.
 #
+#    Brad Whitlock, Wed Jan 5 09:25:20 PDT 2005
+#    Added -lexpr for MacOS X.
+#
 ##############################################################################
 
 ##
@@ -233,7 +236,7 @@ CPPFLAGS= -I@tmpinc@ @ENGINE_CPPFLAGS@ @CPPFLAGS@ \
 COMMONLIBS=-L../../lib -lplugin -lviswindow -lplotter -lmir -lavtview \
         -lavtwriter -lvisit_vtk -llightweight_visit_vtk \
 	-lenginerpc -lutility -lmisc -lcomm -lstate \
-        -ldbatts -lavtexceptions -lexpr -lparser
+        -ldbatts -lavtexceptions -lexpr -lexpr -lparser
 
 SERLIBS=$(COMMONLIBS) -lavtmath_ser -ldatabase_ser -lquery_ser \
         -lexpressions_ser -lavtfilters_ser -lpipeline_ser  \

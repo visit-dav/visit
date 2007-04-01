@@ -191,6 +191,9 @@
 #    Kathleen Bonnell, Mon Jan  3 13:33:20 PST 2005 
 #    Add avtTimeLoopFilter. 
 #
+#    Brad Whitlock, Tue Jan 4 17:42:23 PST 2005
+#    Added -lexpr so it links on MacOS X.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -329,8 +332,8 @@ CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libpipeline
-SERLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lparser -lavtmath_ser -llightweight_visit_vtk @VTK_LIBS@ $(X_LIBS) @LIBS@
-PARLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lparser -lavtmath_par -llightweight_visit_vtk @VTK_LIBS@ $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
+SERLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lexpr -lparser -lavtmath_ser -llightweight_visit_vtk @VTK_LIBS@ $(X_LIBS) @LIBS@
+PARLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lexpr -lparser -lavtmath_par -llightweight_visit_vtk @VTK_LIBS@ $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
 
 ##
 ## Standard targets...

@@ -27,12 +27,16 @@ using std::deque;
 //    Refactored to allow other kinds of scanners.  This class's old
 //    functionality moved to ExprScanner.
 //
+//    Brad Whitlock, Tue Jan 4 14:24:35 PST 2005
+//    Moved ctor, dtor definitions into the C file.
+//
 // ****************************************************************************
+
 class PARSER_API Scanner
 {
   public:
-    Scanner() { }
-    virtual ~Scanner() { }
+    Scanner();
+    virtual ~Scanner();
     virtual void   SetInput(const std::string &) = 0;
     virtual Token *ScanOneToken() = 0;
 };

@@ -121,6 +121,10 @@ import java.util.Vector;
 //   Kathleen Bonnell, Wed Aug 18 09:19:25 PDT 2004 
 //   Added support for InteractorAttributes.
 //
+//   Brad Whitlock, Fri Jan 7 17:00:00 PST 2005
+//   I hooked up the InteractorAttributes to xfer and added a silAtts
+//   member to get the sil attributes for simulations.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -174,6 +178,7 @@ public class ViewerProxy implements SimpleObserver
         annotationObjectList = new AnnotationObjectList();
         queryOverTimeAtts = new QueryOverTimeAttributes();
         interactorAtts = new InteractorAttributes();
+        silAtts = new SILRestrictionAttributes();
 
         // Create the plugin managers.
         plotPlugins = new PluginManager("plot");
@@ -243,6 +248,14 @@ public class ViewerProxy implements SimpleObserver
             xfer.Add(globalLineoutAtts);
             xfer.Add(annotationObjectList);
             xfer.Add(queryOverTimeAtts);
+            xfer.Add(interactorAtts);
+
+            // For simulations. Note that the metadata is being
+            // added as a dummy so Xfer can skip its bytes when
+            // messages come in because we don't have an object
+            // for it yet.
+            xfer.AddDummy(); // metadata
+            xfer.Add(silAtts);
 
             // hook up the message observer.
             messageObserver.Attach(messageAtts);
@@ -1325,7 +1338,7 @@ public class ViewerProxy implements SimpleObserver
         pt[0] = (double)x;
         pt[1] = (double)y;
         pt[2] = 0.;
-        return PointQuery("Pick", pt, vars);
+        return PointQuery("ScreenZonePick", pt, vars);
     }
 
     public boolean Lineout(double x0, double y0, double x1, double y1, Vector vars)
@@ -1681,4 +1694,5 @@ public class ViewerProxy implements SimpleObserver
     private AnnotationObjectList     annotationObjectList;
     private QueryOverTimeAttributes  queryOverTimeAtts;
     private InteractorAttributes     interactorAtts;
+    private SILRestrictionAttributes silAtts;
 }
