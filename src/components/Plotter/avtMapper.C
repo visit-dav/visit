@@ -296,6 +296,9 @@ avtMapper::GetDrawable(void)
 //    Brad Whitlock, Mon Sep 23 16:56:50 PST 2002
 //    Changed the immediate mode rendering test so it uses a new member.
 //
+//    Hank Childs, Thu Mar 18 16:02:27 PST 2004
+//    Do not create actors and mappers for empty datasets.
+//
 // ****************************************************************************
 
 void
@@ -330,13 +333,6 @@ avtMapper::SetUpMappers(void)
     mappers  = new vtkDataSetMapper*[nMappers];
     actors   = new vtkActor*[nMappers];
 
-    // if there was an exception upstream, then we may get false leaves.
-    // Bottom line is that all of the logic below should initialize the mappers
-    // in case there was a problem, so let's initialize them just in case.
-    // Kat's note 21 Sep 01:  now that tree's are compacted, this 
-    // initialization is probably no longer necesary, but I will leave it in
-    // for now, just in case.
-    //
     for (int j = 0 ; j < nMappers ; j++)
     {
         mappers[j] = NULL;
@@ -345,6 +341,12 @@ avtMapper::SetUpMappers(void)
     SetUpFilters(nMappers);
     for (int i = 0; i < nMappers; i++)
     {
+        // We might have some dummy data (SR-mode).  If so, just continue.
+        if (children[i] == NULL)
+            continue;
+        if (children[i]->GetNumberOfCells() <= 0)
+            continue;
+
         mappers[i] = CreateMapper();
         vtkDataSet *ds = InsertFilters(children[i], i);
         mappers[i]->SetInput(ds);

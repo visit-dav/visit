@@ -249,6 +249,10 @@ QvisPluginWindow::UpdateWindow(bool doAll)
 //    Jeremy Meredith, Fri Sep 28 13:52:35 PDT 2001
 //    Added ability to keep track of which items are checked/unchecked.
 //
+//    Jeremy Meredith, Fri Mar 19 13:46:31 PST 2004
+//    Added warning to inform user about the need to save settings and
+//    restart visit to pick up changes to plugins.
+//
 // ****************************************************************************
 
 void
@@ -267,6 +271,9 @@ QvisPluginWindow::Apply(bool dontIgnore)
     }
 
     pluginAtts->Notify();
+
+    GUIBase::Warning("Note:  Plugins are loaded at startup.  Please save "
+                     "your settings and restart VisIt to apply your changes.");
 }
 
 // ****************************************************************************

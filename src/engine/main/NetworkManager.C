@@ -58,6 +58,7 @@
 #include <mpi.h>
 #include <parallel.h>
 #endif
+#include <TimingsManager.h>
 
 #include <set>
 using std::set;
@@ -1046,6 +1047,10 @@ NetworkManager::GetTotalGlobalCellCounts(void) const
 //    Hank Childs, Mon Jan  5 16:39:06 PST 2004
 //    Make sure that this isn't called on a previously cleared network.
 //
+//    Hank Childs, Thu Mar 18 16:06:56 PST 2004
+//    If this plot is currently located in the vis window (for SR-mode), then
+//    clear it out of the window before cleaning up the network.
+//
 // ****************************************************************************
 void
 NetworkManager::DoneWithNetwork(int id)
@@ -1057,6 +1062,16 @@ NetworkManager::DoneWithNetwork(int id)
             << " >= num saved networks (" << networkCache.size() << ")"
             << endl;
         EXCEPTION0(ImproperUseException);
+    }
+
+    for (int i = 0 ; i < plotsCurrentlyInWindow.size() ; i++)
+    {
+        if (plotsCurrentlyInWindow[i] == id)
+        {
+            viswin->ClearPlots();
+            plotsCurrentlyInWindow.clear();
+            break;
+        }
     }
 
     if (networkCache[id] != NULL)
@@ -1290,6 +1305,14 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
 //
 //  Programmer:  Mark C. Miller 
 //  Creation:    08Apr03 
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Mar 18 16:06:56 PST 2004
+//    Do some bookkeeping for which plots are stored in the vis window already.
+//    This allows us to not have to remove the plots and re-add them for each
+//    render.
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer)
@@ -1298,6 +1321,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer)
 
     TRY
     {
+       int t1 = visitTimer->StartTimer();
        avtDataObjectWriter_p writer;
        int  scalableThreshold = windowAttributes.GetRenderAtts().GetScalableThreshold();
 
@@ -1317,24 +1341,58 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer)
        }
        else
        {
-
           // put all the plot objects into the VisWindow
           viswin->SetScalableRendering(false);
-          for (int i = 0; i < plotIds.size(); i++)
+
+          //
+          // Determine if the plots currently in the window are the same as
+          // those we were asked to render.
+          //
+          bool needToSetUpWindowContents = false;
+          if (plotIds.size() != plotsCurrentlyInWindow.size())
+              needToSetUpWindowContents = true;
+          else
           {
-             // get the network output as we would normally
-             workingNet = NULL;
-             UseNetwork(plotIds[i]);
-             DataNetwork *workingNetSaved = workingNet;
-             avtDataObjectWriter_p tmpWriter = GetOutput(false,true);
-             avtDataObject_p dob = tmpWriter->GetInput();
+              for (int p = 0 ; p < plotIds.size() ; p++)
+                  if (plotIds[p] != plotsCurrentlyInWindow[p])
+                      needToSetUpWindowContents = true;
+          }
 
-             // merge polygon info output across processors 
-             dob->GetInfo().ParallelMerge(tmpWriter);
+          if (needToSetUpWindowContents)
+          {
+              int t2 = visitTimer->StartTimer();
+              int t3 = visitTimer->StartTimer();
+              viswin->ClearPlots();
+              visitTimer->StopTimer(t3, "Clearing plots out of vis window");
 
-             avtActor_p anActor = workingNetSaved->GetActor(dob, &windowAttributes);
+              for (int i = 0; i < plotIds.size(); i++)
+              {
+                 int t7 = visitTimer->StartTimer();
+                 // get the network output as we would normally
+                 workingNet = NULL;
+                 UseNetwork(plotIds[i]);
+                 DataNetwork *workingNetSaved = workingNet;
+                 int t4 = visitTimer->StartTimer();
+                 avtDataObjectWriter_p tmpWriter = GetOutput(false,true);
+                 avtDataObject_p dob = tmpWriter->GetInput();
 
-             viswin->AddPlot(anActor);
+                 // merge polygon info output across processors 
+                 dob->GetInfo().ParallelMerge(tmpWriter);
+                 visitTimer->StopTimer(t4, "Merging data info in parallel");
+
+                 int t5 = visitTimer->StartTimer();
+                 avtActor_p anActor = workingNetSaved->GetActor(dob,
+                                                            &windowAttributes);
+                 visitTimer->StopTimer(t5, "Calling GetActor for DOB");
+    
+                 int t6 = visitTimer->StartTimer();
+                 viswin->AddPlot(anActor);
+                 visitTimer->StopTimer(t6, "Adding plot to the vis window");
+                 visitTimer->StopTimer(t7, "Setting up one plot");
+              }
+
+              plotsCurrentlyInWindow = plotIds;
+              visitTimer->StopTimer(t2, "Setting up window contents");
           }
 
           AdjustWindowAttributes();
@@ -1345,14 +1403,14 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer)
                  << "x" << endl;
 
           // render the image and capture it. Relies upon explicit render
+          int t3 = visitTimer->StartTimer();
           avtImage_p theImage = viswin->ScreenCapture(true);
+          visitTimer->StopTimer(t3, "Screen capture for SR");
 
           // this call is here to reset any actor's scaling before we remove
           // them from the VisWindow so they are back to the same state
           // it is harmless if not in 2D mode and/or not in full frame mode
           viswin->FullFrameOff();
-
-          viswin->ClearPlots();
 
 #ifdef PARALLEL
           if (dumpRenders)
@@ -1407,6 +1465,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer)
        }
 
        // return it
+       visitTimer->StopTimer(t1, "Total time for NetworkManager::Render");
        CATCH_RETURN2(1, writer);
 
     }

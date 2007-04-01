@@ -112,6 +112,9 @@ avtDataSetWriter::DataObjectWrite(avtDataObjectString &str)
 //    Hank Childs, Mon Oct  1 09:16:42 PDT 2001
 //    Removed objwriter argument.
 //
+//    Hank Childs, Wed Mar 17 20:40:56 PST 2004
+//    Reduce the number of socket writes.
+//
 // ****************************************************************************
 
 void
@@ -148,27 +151,28 @@ avtDataSetWriter::WriteDataTree(avtDataTree_p tree, avtDataObjectString &str)
     else
     {
         int len;
-        int lengthAndChunkAndDST[3];
+        int lengthAndChunkAndDSTAndLabel[4];
         unsigned char * s;
         DataSetType dst;
 
         // get the domain string and its length
         s = tree->GetDataRepresentation().GetDataString(len, dst);
-        lengthAndChunkAndDST[0] = len;
+        lengthAndChunkAndDSTAndLabel[0] = len;
         // write out the length 
 
         // write out the chunk index
         int chunk = tree->GetDataRepresentation().GetDomain();
-        lengthAndChunkAndDST[1] = chunk;
+        lengthAndChunkAndDSTAndLabel[1] = chunk;
 
         // write out the dataset's type.
-        lengthAndChunkAndDST[2] = dst;
-
-        WriteInt(str, lengthAndChunkAndDST, 3);
+        lengthAndChunkAndDSTAndLabel[2] = dst;
 
         // write out the label
         string label = tree->GetDataRepresentation().GetLabel();
-        WriteInt(str, label.size());
+        lengthAndChunkAndDSTAndLabel[3] = label.size();
+
+        WriteInt(str, lengthAndChunkAndDSTAndLabel, 4);
+
         if (label.size() > 0)
         {
             str.Append((char *) label.c_str(), label.size(), 
@@ -176,8 +180,11 @@ avtDataSetWriter::WriteDataTree(avtDataTree_p tree, avtDataObjectString &str)
         }
 
         // write out the string 
-        str.Append((char*) s, len, 
+        if (len > 0)
+        {
+            str.Append((char*) s, len, 
                avtDataObjectString::DATA_OBJECT_STRING_DOES_NOT_OWN_REFERENCE);
+        }
     }
 }
 

@@ -42,6 +42,10 @@ class QSlider;
 //    Added settings for the renderer type, the gradient method, and
 //    the number of 3D textured slices.
 //
+//    Jeremy Meredith, Fri Mar 19 15:04:39 PST 2004
+//    I added a new callback for when the resample target slider
+//    is released.
+//
 // ****************************************************************************
 
 class QvisVolumePlotWindow : public QvisPostableWindowObserver
@@ -92,6 +96,7 @@ private slots:
     void alphaValuesChanged();
     void resampleTargetProcessText();
     void resampleTargetSliderChanged(int val);
+    void resampleTargetSliderReleased();
     void samplesPerRayProcessText();
     void opacityVariableProcessText();
     void software();

@@ -16,6 +16,7 @@
 #include <snprintf.h>
 #include <visit-config.h>
 #include <DebugStream.h>
+#include <Utility.h>
 
 // Some static constants.
 static const int FILE_NOACTION = 0;
@@ -1633,6 +1634,9 @@ FileServerList::ParseFilterString(const std::string &filter,
 //   I restructured the code so it is easier to understand. I also changed it
 //   to fit the new interface for FileMatchesFilter.
 //
+//   Jeremy Meredith, Fri Mar 19 14:46:24 PST 2004
+//   I made it use WildcardStringMatch from Utility.h.
+//
 // ****************************************************************************
 
 bool
@@ -1644,95 +1648,10 @@ FileServerList::FileMatchesFilterList(const std::string &fileName,
     bool match = false;
     for(int i = 0; i < filterList.size() && !match; ++i)
     {
-        int index = 0;
-        match = FileMatchesFilter(filterList[i].c_str(),
-                                  fileName.c_str(),
-                                  index);
+        match = WildcardStringMatch(filterList[i],fileName);
     }
 
     return match;
-}
-
-// ****************************************************************************
-// Method: FileServerList::FileMatchesFilter
-//
-// Purpose: 
-//   Checks a filename against a filter string.
-//
-// Arguments:
-//   filter : The filter to check against.
-//   str    : The string to check against the filter.
-//   j      : An index into the original string.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Oct 4 15:18:18 PST 2000
-//
-// Modifications:
-//   Brad Whitlock, Thu Sep 12 14:33:44 PST 2002
-//   Changed it so files that begin with '.' do not match the '*' filter.
-//
-//   Jeremy Meredith, Thu Jun 26 10:32:59 PDT 2003
-//   Added a '#' wildcard that matches a single numerical digit.
-//
-// ****************************************************************************
-
-bool
-FileServerList::FileMatchesFilter(const char *filter, const char *str, int &j)
-{
-    bool val;
-    int i1 = 0;
-    int i2 = 0;
-    for (;;)
-    {
-        switch (filter[i1])
-        {
-        case '\0':
-            if (str[i2] == '\0')
-                return true;
-            else
-                return false;
-            /* NOTREACHED */
-            break;
-        case '?':
-            if (str[i2] != '\0')
-            {
-                i1++;
-                i2++;
-            } else
-            {
-                return false;
-            }
-            break;
-        case '#':
-            if (str[i2] >= '0' && str[i2] <= '9')
-            {
-                i1++;
-                i2++;
-            } else
-            {
-                return false;
-            }
-            break;
-        case '*':
-            i1++;
-            val = (j == 0) ? (str[i2] != '.') : true;
-            while (str[i2] != '\0' && val &&
-                   !FileMatchesFilter(&filter[i1], &str[i2], j))
-            {
-                j++;
-                i2++;
-            }
-            break;
-        default:
-            if (filter[i1] == str[i2])
-            {
-                i1++;
-                i2++;
-            } else
-                return false;
-            break;
-        }
-    }
 }
 
 // ****************************************************************************

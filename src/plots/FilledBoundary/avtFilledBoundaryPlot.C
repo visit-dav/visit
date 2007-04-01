@@ -4,6 +4,8 @@
 
 #include <avtFilledBoundaryPlot.h>
 
+#include <algorithm>
+
 #include <FilledBoundaryAttributes.h>
 
 #include <avtColorTables.h>
@@ -17,9 +19,14 @@
 #include <avtFeatureEdgesFilter.h>
 #include <avtSmoothPolyDataFilter.h>
 
+#include <DebugStream.h>
 #include <InvalidColortableException.h>
 #include <LineAttributes.h>
 #include <maptypes.h>
+
+using std::sort;
+using std::pair;
+
 
 // ****************************************************************************
 //  Method: avtFilledBoundaryPlot constructor
@@ -749,28 +756,71 @@ avtFilledBoundaryPlot::ReleaseData(void)
 //  Programmer: Jeremy Meredith
 //  Creation:   May  9, 2003
 //
-//  Note:  taken almost verbatim from the Subset plot
+//  Modifications:
+//
+//    Hank Childs, Thu Mar 18 21:18:06 PST 2004
+//    Re-wrote quadratic algorithm.
 //
 // ****************************************************************************
  
 void
 avtFilledBoundaryPlot::SortLabels()
 {
-    vector < string > allLabels = atts.GetBoundaryNames();
-    vector < string > labels;
-    vector < string > sortedLabels;
-    behavior->GetInfo().GetAttributes().GetLabels(labels);
+    int   i;
 
-    for (int i = 0; i < allLabels.size(); i++)
+    vector < string > originalLabels = atts.GetBoundaryNames();
+
+    //
+    // Construct pairs of (label, index-into-ordered-list)
+    //
+    vector < pair < string, int > > originalLabelPairs;
+    for (i = 0 ; i < originalLabels.size() ; i++)
     {
-        for (int j = 0; j < labels.size(); j++)
+        originalLabelPairs.push_back(pair<string, int>(originalLabels[i], i));
+    }
+    sort(originalLabelPairs.begin(), originalLabelPairs.end());
+    
+    vector < string > usedLabels;
+    behavior->GetInfo().GetAttributes().GetLabels(usedLabels);
+    sort(usedLabels.begin(), usedLabels.end());
+    int origLabelIndex = 0;
+    vector < pair < int, string > > sortedUsedLabels;
+    for (i = 0 ; i < usedLabels.size() ; i++)
+    {
+        while (usedLabels[i] != originalLabelPairs[origLabelIndex].first)
         {
-            if (allLabels[i] == labels[j])
-            {
-                sortedLabels.push_back(allLabels[i]);
+            origLabelIndex++;
+            if (origLabelIndex >= originalLabelPairs.size())
                 break;
-            }
         }
+
+        if (origLabelIndex >= originalLabelPairs.size())
+            break;
+
+        sortedUsedLabels.push_back(
+         pair<int, string>(originalLabelPairs[origLabelIndex].second, 
+                           usedLabels[i]));
+    }
+
+    if (origLabelIndex >= originalLabelPairs.size())
+    {
+        // We have had an internal error -- there is a label in the subset
+        // plot that is not in "master" list of labels.
+        // Do nothing -- this means the labels won't be sorted.
+        debug1 << "INTERNAL ERROR: the plot has a label that is not contained "
+               << "in the master list of labels.  Not sorting the labels."
+               << endl;
+        return;
+    }
+
+    
+    sort(sortedUsedLabels.begin(), sortedUsedLabels.end());
+    vector < string > sortedLabels(sortedUsedLabels.size());
+    for (i = 0; i < sortedUsedLabels.size(); i++)
+    {
+        sortedLabels[i] = sortedUsedLabels[i].second;
     }
     behavior->GetInfo().GetAttributes().SetLabels(sortedLabels);
 }
+
+

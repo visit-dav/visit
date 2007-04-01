@@ -19,6 +19,7 @@ typedef enum
     DATASET_TYPE_CURVILINEAR,
     DATASET_TYPE_UNSTRUCTURED,
     DATASET_TYPE_POLYDATA,
+    DATASET_TYPE_NULL,
     DATASET_TYPE_UNKNOWN
 }  DataSetType;
 
@@ -52,6 +53,9 @@ typedef enum
 //    Added member 'label' and retrieval method. Modifed constructor to
 //    include the label.
 //    
+//    Hank Childs, Wed Mar 17 19:16:48 PST 2004
+//    Added a static null dataset to prevent unnecessary memory usage with SR.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataRepresentation
@@ -85,6 +89,12 @@ class PIPELINE_API avtDataRepresentation
 
     int                 domain;
     std::string         label;
+
+    static bool         initializedNullDataset;
+    static vtkDataSet  *nullDataset;
+
+    static void         InitializeNullDataset(void);
+    static DataSetType  DatasetTypeForVTK(vtkDataSet *);
 };
 
 

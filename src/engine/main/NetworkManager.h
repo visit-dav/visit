@@ -124,6 +124,10 @@ class VisWindow;
 //    Mark C. Miller, Thu Mar  4 12:07:04 PST 2004
 //    Added data member dumpRenders and method DumpRenders()
 //
+//    Hank Childs, Thu Mar 18 16:05:55 PST 2004
+//    Keep track of what plots are in the vis window in SR mode, so we don't
+//    have to clear out the vis window with every render.
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -193,6 +197,7 @@ class NetworkManager
     WindowAttributes            windowAttributes;
     AnnotationAttributes        annotationAttributes;
     VisWindow                  *viswin;
+    std::vector<int>            plotsCurrentlyInWindow;
 
     bool                        dumpRenders;
 };
