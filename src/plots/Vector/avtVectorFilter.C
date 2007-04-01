@@ -323,6 +323,9 @@ avtVectorFilter::SetMagVarName(const string &mname)
 //    Store whether or not we want to specify that node and zone arrays be
 //    kept around through to the renderer.  (Needed by pick).
 //
+//    Kathleen Bonnell, Wed Dec  1 09:19:31 PST 2004 
+//    Turn on Node/Zone numbers when 'MayRequireNodes' is true. 
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -352,7 +355,8 @@ avtVectorFilter::PerformRestriction(avtPipelineSpecification_p pspec)
     
 
     avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
-    if (pspec->GetDataSpecification()->MayRequireZones())
+    if (pspec->GetDataSpecification()->MayRequireZones() || 
+        pspec->GetDataSpecification()->MayRequireNodes())
     {
         keepNodeZone = true;
         if (data.GetCentering() == AVT_NODECENT)

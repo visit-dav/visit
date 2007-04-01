@@ -247,6 +247,10 @@ inline void GetPoint(float *pt, const float *X, const float *Y,
 //    Hank Childs, Fri Jan 30 08:50:44 PST 2004
 //    Speed up construction by doing pointer arithmetic.
 //
+//    Kathleen Bonnell, Tue Nov 23 14:07:10 PST 2004 
+//    Don't interoplate avtOriginalNodeNumbers, instead use the closest
+//    point to the slice point.
+//
 // ****************************************************************************
 
 void
@@ -258,6 +262,10 @@ vtkSurfaceFromVolume::ConstructPolyData(vtkPointData *inPD, vtkCellData *inCD,
     vtkPointData *outPD = output->GetPointData();
     vtkCellData  *outCD = output->GetCellData();
 
+    vtkIntArray *newOrigNodes = NULL;
+    vtkIntArray *origNodes = vtkIntArray::SafeDownCast(
+              inPD->GetArray("avtOriginalNodeNumbers"));
+
     //
     // Set up the output points and its point data.
     //
@@ -265,6 +273,15 @@ vtkSurfaceFromVolume::ConstructPolyData(vtkPointData *inPD, vtkCellData *inCD,
     int nOutPts = pt_list.GetTotalNumberOfPoints();
     outPts->SetNumberOfPoints(nOutPts);
     outPD->CopyAllocate(inPD, nOutPts);
+
+    if (origNodes != NULL)
+    {
+        newOrigNodes = vtkIntArray::New();
+        newOrigNodes->SetNumberOfComponents(origNodes->GetNumberOfComponents());
+        newOrigNodes->SetNumberOfTuples(nOutPts);
+        newOrigNodes->SetName(origNodes->GetName());
+    }
+
     int nLists = pt_list.GetNumberOfLists();
     int ptIdx = 0;
     for (i = 0 ; i < nLists ; i++)
@@ -284,11 +301,24 @@ vtkSurfaceFromVolume::ConstructPolyData(vtkPointData *inPD, vtkCellData *inCD,
             pt[2] = pt1[2]*p + pt2[2]*bp;
             outPts->SetPoint(ptIdx, pt);
             outPD->InterpolateEdge(inPD, ptIdx, pe.ptIds[0], pe.ptIds[1], bp);
+            if (newOrigNodes)
+            {
+                int id = (bp <= 0.5 ? pe.ptIds[0] : pe.ptIds[1]);
+                newOrigNodes->SetTuple(ptIdx, origNodes->GetTuple(id));
+            }
             ptIdx++;
         }
     }
     output->SetPoints(outPts);
     outPts->Delete();
+
+    if (newOrigNodes)
+    {
+        // AddArray will overwrite an already existing array with 
+        // the same name, exactly what we want here.
+        outPD->AddArray(newOrigNodes);
+        newOrigNodes->Delete();
+    }
 
     //
     // Now set up the triangles and the cell data.

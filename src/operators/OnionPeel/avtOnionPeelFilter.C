@@ -406,6 +406,9 @@ avtOnionPeelFilter::RefashionDataObjectInfo(void)
 //    Kathleen Bonnell, Thu Feb 26 12:50:38 PST 2004 
 //    Added code to test that the currently chosen set is turned on. 
 //
+//    Kathleen Bonnell, Tue Nov 30 09:25:28 PST 2004 
+//    Turn on ZoneNumbers when appropriate, even if not performing restriction. 
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -413,6 +416,10 @@ avtOnionPeelFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
     if (atts.GetSubsetName() == "Whole")
     {
+        if (spec->GetDataSpecification()->MayRequireZones())
+        {
+            spec->GetDataSpecification()->TurnZoneNumbersOn();
+        }
         //
         // No restriction necessary. 
         //
