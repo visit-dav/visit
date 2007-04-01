@@ -133,7 +133,16 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     src->Query(&pickAtts);
 
     if (pickAtts.GetMatSelected())
-        RetrieveVarInfo(ds); 
+    {
+        //
+        // The zone numbers stored in IncidentElements are not the correct
+        // ones to use with this dataset ... get the correct ones to use
+        // with RetrieveVarInfo, then reset them.
+        //
+        intVector pickedZones = pickAtts.GetIncidentElements();
+        intVector currentZones = GetCurrentZoneForOriginal(ds, pickedZones); 
+        RetrieveVarInfo(ds, pickAtts.GetElementNumber(), currentZones); 
+    }
 
     //
     // Set the domain and zone of pickAtts in relation to the

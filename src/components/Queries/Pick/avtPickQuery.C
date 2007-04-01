@@ -14,6 +14,7 @@
 #include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkUnsignedCharArray.h>
+#include <vtkUnsignedIntArray.h>
 #include <vtkVisItUtility.h>
 
 #include <avtExpressionEvaluatorFilter.h>
@@ -251,6 +252,10 @@ avtPickQuery::PostExecute(void)
 //    Kathleen Bonnell, Wed Jun  2 10:21:50 PDT 2004 
 //    Moved Node and Zone-specific code to Preparation method.
 //
+//    Kathleen Bonnell, Tue Aug 10 09:15:58 PDT 2004 
+//    When material selection has been applied, request OriginalZoneNumbers
+//    and OriginalNodeNumbers. 
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -308,6 +313,12 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
             if (!dspec->HasSecondaryVariable(vars[i].c_str()))
                 dspec->AddSecondaryVariable(vars[i].c_str());
         }
+    }
+
+    if (pickAtts.GetMatSelected())
+    {
+        dspec->TurnZoneNumbersOn();
+        dspec->TurnNodeNumbersOn();
     }
     avtPipelineSpecification_p pspec = new avtPipelineSpecification(dspec, 0);
 
@@ -652,6 +663,29 @@ avtPickQuery::GetZoneCoords(vtkDataSet *ds, const int zoneId)
 //  Method: avtPickQuery::RetrieveVarInfo
 //
 //  Purpose:
+//    Convenience method, so derived types don't need to pass new args.
+//
+//  Arguments:
+//    ds    The dataset to retrieve information from.
+//
+//  Programmer: Kathleen Bonnell  
+//  Creation:   August 11, 2004 
+//
+//  Modifications:
+//    
+// ****************************************************************************
+
+void
+avtPickQuery::RetrieveVarInfo(vtkDataSet* ds)
+{
+    RetrieveVarInfo(ds, pickAtts.GetElementNumber(), pickAtts.GetIncidentElements());
+}
+
+
+// ****************************************************************************
+//  Method: avtPickQuery::RetrieveVarInfo
+//
+//  Purpose:
 //    Retrieves the variable information from the dataset and stores it
 //    in pickAtts.
 //
@@ -671,10 +705,16 @@ avtPickQuery::GetZoneCoords(vtkDataSet *ds, const int zoneId)
 //    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
 //    Set PickVarInfo's treatAsASCII from DataAttributes' treatAsASCII. 
 //    
+//    Kathleen Bonnell, Wed Aug 11 09:21:07 PDT 2004 
+//    Added args findElement, and findIncidentElements, used when the
+//    elements stored in pickAtts don't correspond to the element numbers
+//    used by ds.
+//    
 // ****************************************************************************
 
 void
-avtPickQuery::RetrieveVarInfo(vtkDataSet* ds)
+avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement, 
+    const intVector &findIncidentElements)
 {
     bool treatAsASCII = false;
     avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
@@ -761,7 +801,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds)
                 {
                     SNPRINTF(buff, 80, "(%d)", incidentElements[k]);
                     names.push_back(buff);
-                    varArray->GetTuple(incidentElements[k], temp);
+                    varArray->GetTuple(findIncidentElements[k], temp);
                     mag = 0;
                     for (int i = 0; i < nComponents; i++)
                     {
@@ -781,7 +821,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds)
                 // data we want is associated with element
                 SNPRINTF(buff, 80, "(%d)", element);
                 names.push_back(buff);
-                varArray->GetTuple(element, temp);
+                varArray->GetTuple(findElement, temp);
                 mag = 0.;
                 for (int i = 0; i < nComponents; i++)
                 {
@@ -1078,3 +1118,102 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
     return success;
 }
 
+
+// ****************************************************************************
+//  Method: avtPickQuery::GetCurrentZoneForOriginal
+//
+//  Purpose:
+//    Determines the zone in the dataset whose original zone designation
+///   matches that of the passed zone.
+//
+//  Arguments:
+//    ds         The dataset to retrieve information from.
+//    origZone   An 'original' zone id. 
+//
+//  Returns:
+//    The zone id in ds whose original zone id matches the arg. 
+//    If 'avtOriginalCellNumbers' is not present, then the value is equal to
+//    the arg value. 
+//
+//  Programmer: Kathleen Bonnell  
+//  Creation:   August 11, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+avtPickQuery::GetCurrentZoneForOriginal(vtkDataSet *ds, const int origZone)
+{
+    int currentZone = origZone;
+    vtkUnsignedIntArray *origCells = vtkUnsignedIntArray::SafeDownCast(
+        ds->GetCellData()->GetArray("avtOriginalCellNumbers"));
+    if (origCells)
+    {
+        int nTuples = origCells->GetNumberOfTuples();
+        int nComp = origCells->GetNumberOfComponents();
+        int comp = nComp -1;
+        unsigned int *oc = origCells->GetPointer(0);
+        for (int i = 0; i < nTuples; i++)
+        {
+            if (oc[i*nComp+comp] == origZone)
+            {
+                currentZone = i;
+                break;
+            }
+        }
+    }
+    return currentZone;
+}
+
+// ****************************************************************************
+//  Method: avtPickQuery::GetCurrentZoneForOriginal
+//
+//  Purpose:
+//    Determines the  zones in the dataset whose original zone designation
+///   matches those of the passed list. 
+//
+//  Arguments:
+//    ds         The dataset to retrieve information from.
+//    origZones  A list of 'original' zone ids. 
+//
+//  Returns:
+//    The list of zone ids in ds whose original zone ids match those
+//    of the passed list.  If 'avtOriginalCellNumbers' is not present,
+//    then the returned list is equialent to the passed list.
+//
+//  Programmer: Kathleen Bonnell  
+//  Creation:   August 11, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+intVector
+avtPickQuery::GetCurrentZoneForOriginal(vtkDataSet *ds, const intVector &origZones)
+{
+    intVector currentZones = origZones;
+    vtkUnsignedIntArray *origCells = vtkUnsignedIntArray::SafeDownCast(
+        ds->GetCellData()->GetArray("avtOriginalCellNumbers"));
+    if (origCells)
+    {
+        int nTuples = origCells->GetNumberOfTuples();
+        int nComp = origCells->GetNumberOfComponents();
+        int comp = nComp -1;
+        unsigned int *oc = origCells->GetPointer(0);
+        int nFound = 0;
+        for (int i = 0; i < nTuples && nFound < origZones.size(); i++)
+        {
+            for (int j = 0; j < currentZones.size(); j++)
+            {
+                if (oc[i*nComp+comp] == origZones[j])
+                {
+                    currentZones[j] = i; 
+                    nFound++;
+                    break;
+                }
+            }
+        }
+    }
+    return currentZones;
+}

@@ -78,6 +78,9 @@ avtZonePickQuery::SetInvTransform(const avtMatrix *m)
 //  Creation:   May 20, 2004
 //
 //  Modifications:
+//    Kathleen Bonnell, Tue Aug 10 09:12:54 PDT 2004
+//    When material selection has been applied, ensure that RetrieveVarInfo
+//    will be using the correct zone id for this dataset.
 //
 // ****************************************************************************
 
@@ -163,7 +166,14 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
 
     if (pickAtts.GetMatSelected())
     {
-        RetrieveVarInfo(ds); 
+        //
+        // The zone id stored in ElementNumber will not be correct relative
+        // to this dataset.  Retrieve the correct one for use with 
+        // RetrieveVarInfo, then reset it.
+        //
+        int currentZone = GetCurrentZoneForOriginal(ds, pickAtts.GetElementNumber());
+        RetrieveVarInfo(ds, currentZone, pickAtts.GetIncidentElements()); 
+      
     }
 
     //

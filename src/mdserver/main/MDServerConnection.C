@@ -1526,6 +1526,7 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files,
                     // files unrelated.
                     //
                     if(extraSmartGrouping &&
+                       pattern.size() >= 2 &&
                        pattern.substr(pattern.size() - 2) == ".*")
                     {
                         std::string pattern2;

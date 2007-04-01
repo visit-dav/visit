@@ -301,6 +301,10 @@ avtSliceFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Tue Jun 29 07:24:11 PDT 2004
 //    Use interval trees when slicing by percent.
 //
+//    Kathleen Bonnell, Tue Aug 10 09:20:32 PDT 2004 
+//    Always turn on Node/Zone numbers, because Pick will not work correctly
+//    without them. 
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -308,6 +312,16 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
     avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
 
+    //
+    // Pick returns wrong results (even with transform) when slice lies
+    // along boundary between zones.  So always turn on zone, node
+    // numbers.  WE MAY WANT TO REVERT BACK IN THE FUTURE IF A
+    // BETTER WAY CAN BE FOUND FOR PICK TO RETURN CORRECT RESULTS.  
+    rv->GetDataSpecification()->TurnZoneNumbersOn();
+    rv->GetDataSpecification()->TurnNodeNumbersOn();
+
+
+#if 0
     if (atts.GetProject2d() && rv->GetDataSpecification()->MayRequireZones())
     {
         rv->GetDataSpecification()->TurnZoneNumbersOn();
@@ -325,6 +339,7 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
     {
         rv->GetDataSpecification()->TurnNodeNumbersOn();
     }
+#endif
 
     //
     // Get the interval tree.
