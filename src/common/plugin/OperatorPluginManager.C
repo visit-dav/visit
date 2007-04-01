@@ -244,6 +244,9 @@ OperatorPluginManager::GetScriptingPluginInfo(const string &id)
 //    Jeremy Meredith, Wed Nov  5 13:28:03 PST 2003
 //    Use the default value for enabled status instead of always true.
 //
+//    Hank Childs, Tue Mar 22 16:06:15 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 bool
@@ -268,7 +271,10 @@ OperatorPluginManager::LoadGeneralPluginInfo()
 
     // We can't have two plugins with the same id.
     if (PluginExists(info->GetID()))
+    {
+        delete info;
         return false;
+    }
 
     // Success!  Add it to the list.
     allindexmap[info->GetID()] = ids.size();
@@ -276,6 +282,7 @@ OperatorPluginManager::LoadGeneralPluginInfo()
     names   .push_back(info->GetName());
     versions.push_back(info->GetVersion());
     enabled .push_back(info->EnabledByDefault());
+    delete info;
     return true;
 }
 

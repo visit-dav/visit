@@ -27,6 +27,7 @@ int ftime(struct timeb *);
 #endif
 
 
+bool              haveInitialized = false;
 TimingsManager   *visitTimer = TimingsManager::Initialize("default");
 
 
@@ -136,11 +137,16 @@ TimingsManager::TimingsManager()
 //    Brad Whitlock, Thu Mar 14 12:24:34 PDT 2002
 //    Renamed UnixTimingsManager to SystemTimingsManager.
 //
+//    Hank Childs, Tue Mar 22 16:13:20 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 TimingsManager *
 TimingsManager::Initialize(const char *fname)
 {
+    if (haveInitialized)
+        return visitTimer;
 #ifdef PARALLEL
     visitTimer = new MPITimingsManager;
 #else
@@ -148,6 +154,7 @@ TimingsManager::Initialize(const char *fname)
 #endif
 
     visitTimer->SetFilename(fname);
+    haveInitialized = true;
 
     return visitTimer;
 }

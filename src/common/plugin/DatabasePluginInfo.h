@@ -50,11 +50,15 @@ class avtDatabaseWriter;
 //    Added the general plugin info method HasWriter so the mdserver
 //    can still check if it is supported by the given plugin.
 //
+//    Hank Childs, Tue Mar 22 16:06:15 PST 2005
+//    Make destructor virtual.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralDatabasePluginInfo
 {
   public:
+    virtual ~GeneralDatabasePluginInfo() {;};
     virtual char *GetName() const = 0;
     virtual char *GetVersion() const = 0;
     virtual char *GetID() const = 0;

@@ -168,6 +168,9 @@ DatabasePluginManager::GetCommonPluginInfo(const string &id)
 //    Jeremy Meredith, Tue Feb 22 15:22:29 PST 2005
 //    Added a way to determine directly if a plugin has a writer.
 //
+//    Hank Childs, Tue Mar 22 16:06:15 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 bool
@@ -192,7 +195,10 @@ DatabasePluginManager::LoadGeneralPluginInfo()
 
     // We can't have two plugins with the same id.
     if (PluginExists(info->GetID()))
+    {
+        delete info;
         return false;
+    }
 
     // Success!  Add it to the list.
     allindexmap[info->GetID()] = ids.size();
@@ -201,6 +207,7 @@ DatabasePluginManager::LoadGeneralPluginInfo()
     versions .push_back(info->GetVersion());
     enabled  .push_back(info->EnabledByDefault());
     haswriter.push_back(info->HasWriter());
+    delete info;
     return true;
 }
 

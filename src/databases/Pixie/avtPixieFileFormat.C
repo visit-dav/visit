@@ -2,6 +2,9 @@
 //                            avtPixieFileFormat.C                           //
 // ************************************************************************* //
 
+// define this to make sure the plugin always serves up float data to VisIt
+#define FORCE_FLOATS
+
 #include <avtPixieFileFormat.h>
 
 #include <algorithm>
@@ -1410,7 +1413,22 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
             // Determine the variable's type to see if we can support it.
             //
             hid_t t = H5Dget_type(obj);
+
+            //
+            // MCM - Added 16Mar05
+            // VisIt can't deal well with a large variety of different data
+            // types. So, we force everything to float with this line of
+            // code. This tells the plugin that everything is float,
+            // regardless of its real type on disk. Note that if we
+            // every implement GetAuxiliaryData functions for global node/zone
+            // ids, we'll have to be a little smarter.
+            //
+#ifdef FORCE_FLOATS
+            varInfo.nativeVarType = H5T_NATIVE_FLOAT; 
+#else
             varInfo.nativeVarType = H5Tget_native_type(t, H5T_DIR_ASCEND);
+#endif
+
             bool supported = false;
             if(H5Tequal(varInfo.nativeVarType, H5T_NATIVE_INT) > 0 ||
                H5Tequal(varInfo.nativeVarType, H5T_NATIVE_UINT) > 0)

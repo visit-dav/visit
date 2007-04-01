@@ -52,11 +52,15 @@ class ViewerPlot;
 //    Brad Whitlock, Tue Dec 14 09:44:04 PDT 2004
 //    Added support for operator wizards.
 //
+//    Hank Childs, Tue Mar 22 16:06:15 PST 2005
+//    Made destructor virtual.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralOperatorPluginInfo
 {
   public:
+    virtual ~GeneralOperatorPluginInfo() {;};
     virtual char *GetName() const = 0;
     virtual char *GetVersion() const = 0;
     virtual char *GetID() const = 0;

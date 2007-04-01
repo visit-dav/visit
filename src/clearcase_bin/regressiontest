@@ -106,7 +106,10 @@
 #    Add skips for dynamic load balancing mode.  Run the DLB mode every Sunday.
 #
 #    Mark C. Miller Mon Mar 21 18:57:08 PST 2005
-#    Added skips for purify mode
+#    Added skips for purify mode, added code to make clean in data dir
+#
+#    Mark C. Miller, Tue Mar 22 08:54:39 PST 2005
+#    Added cat of output from make clean in data dir to /dev/null
 #
 # ----------------------------------------------------------------------------
 
@@ -191,7 +194,7 @@ LD_LIBRARY_PATH=/usr/local/lib
 export LD_LIBRARY_PATH
 env CXXFLAGS="-g" ./configure --enable-parallel 1>> buildlog 2>&1
 rm -f plugins/*/*.so
-(cd data; clearmake clean)
+(cd data; clearmake clean 1> /dev/null 2>&1 )
 clearmake -J 2 1>> buildlog 2>&1
 error=$?
 

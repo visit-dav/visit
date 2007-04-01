@@ -126,6 +126,9 @@ ViewerPasswordWindow::~ViewerPasswordWindow()
 //    is to click the Cancel button. This changes the message that is seen
 //    after the launch is cancelled.
 //
+//    Jeremy Meredith, Tue Mar 22 08:42:14 PST 2005
+//    Added a new parsed message ('6090).
+//
 // ****************************************************************************
 
 void
@@ -155,6 +158,11 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
         *pbuf = '\0';
 
         if (strstr(buffer, "continue connecting (yes/no)?"))
+        {
+            write(fd, "yes\n", 4);
+            pbuf = buffer;
+        }
+        else if (strstr(buffer, "continue connecting(yes/no)?"))
         {
             write(fd, "yes\n", 4);
             pbuf = buffer;
