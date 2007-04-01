@@ -7,12 +7,14 @@
 #include <avtGhostData.h>
 
 #include <BadIndexException.h>
+#include <DebugStream.h>
 #include <UnexpectedValueException.h>
 #include <VisItException.h>
 
 #include <vtkCellData.h>
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
+#include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 
 #define MAX_GHOST_LAYERS 2
@@ -473,3 +475,57 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
     return didGhost;
 
 }
+
+
+// ****************************************************************************
+//  Method: avtStructuredDomainNesting::ConfirmMesh
+//
+//  Purpose:
+//      Confirms that the dataset is the one that this object is intended to
+//      operate on.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 1, 2005
+//
+// ****************************************************************************
+
+bool
+avtStructuredDomainNesting::ConfirmMesh(vector<int> &domains,
+                                        vector<vtkDataSet *> &meshes)
+{
+    for (int i = 0 ; i < domains.size() ; i++)
+    {
+        int dims[3] = { -1, -1, -1 };
+        int do_type = meshes[i]->GetDataObjectType();
+        if (do_type == VTK_STRUCTURED_GRID)
+        {
+            vtkStructuredGrid *sgrid = (vtkStructuredGrid *) meshes[i];
+            sgrid->GetDimensions(dims);
+        }
+        else if (do_type == VTK_RECTILINEAR_GRID)
+        {
+            vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) meshes[i];
+            rgrid->GetDimensions(dims);
+        }
+         
+        if (domains[i] >= domainNesting.size())
+        {
+            debug1 << "Warning: avtStructuredDomainNesting failing ConfirmMesh"
+                   << " because domain number " << domains[i] << " was bigger "
+                   << "than largest domain " << domainNesting.size() << endl;
+            return false;
+        }
+
+        vector<int> &extents = domainNesting[domains[i]].logicalExtents;
+        if ((extents[3]-extents[0]+2) != dims[0])
+            return false;
+        if ((extents[4]-extents[1]+2) != dims[1])
+            return false;
+        if (dims[2] > 1 && (extents[5]-extents[2]+2) != dims[1])
+            return false;
+    }
+
+    return true;
+}
+
+

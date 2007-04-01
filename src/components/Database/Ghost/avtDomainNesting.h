@@ -28,6 +28,9 @@ class vtkDataSet;
 //    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
 //    Update "Purpose" statement for changes in handling ghost data.
 //
+//    Hank Childs, Thu Jan  6 16:00:27 PST 2005
+//    Added ConfirmMesh.
+//
 // ****************************************************************************
 class DATABASE_API avtDomainNesting
 {
@@ -38,6 +41,7 @@ class DATABASE_API avtDomainNesting
     virtual bool ApplyGhost(vector<int> domainList, vector<int> allDomainList,
                             vector<vtkDataSet*> meshes) = 0;
 
+    virtual bool ConfirmMesh(vector<int> &, vector<vtkDataSet*> &) = 0;
 };
 
 #endif

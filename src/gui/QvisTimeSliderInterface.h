@@ -23,6 +23,8 @@ class QvisScreenPositionEdit;
 // Creation:   Fri Oct 31 12:47:34 PDT 2003
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005
+//   Added timeFormatLinEdit and timeFormatChanged slot.
 //   
 // ****************************************************************************
 
@@ -43,6 +45,7 @@ private slots:
     void widthChanged(int);
     void heightChanged(int);
     void labelChanged();
+    void timeFormatChanged();
     void startColorChanged(const QColor &);
     void startOpacityChanged(int);
     void endColorChanged(const QColor &);
@@ -66,6 +69,7 @@ private:
     QvisOpacitySlider      *textColorOpacity;
     QCheckBox              *useForegroundColorCheckBox;
     QLineEdit              *labelLineEdit;
+    QLineEdit              *timeFormatLineEdit;
     QComboBox              *timeDisplayComboBox;
     QCheckBox              *visibleCheckBox;
     QCheckBox              *roundedCheckBox;

@@ -16,5 +16,7 @@ PyObject       *PyContourAttributes_WrapPyObject(const ContourAttributes *attr);
 void            PyContourAttributes_SetLogging(bool val);
 void            PyContourAttributes_SetDefaults(const ContourAttributes *atts);
 
+PyObject       *PyContourAttributes_StringRepresentation(const ContourAttributes *atts);
+
 #endif
 

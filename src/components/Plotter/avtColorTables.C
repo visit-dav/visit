@@ -119,6 +119,9 @@ avtColorTables *avtColorTables::instance = NULL;
 //   Brad Whitlock, Wed Nov 20 13:34:47 PST 2002
 //   I rewrote the routine.
 //
+//   Kathleen Bonnell, Thu Jan 13 17:58:39 PST 2005 
+//   Make the opacity for the ColorControlPoint be 255. 
+//
 // ****************************************************************************
 
 avtColorTables::avtColorTables()
@@ -148,7 +151,7 @@ avtColorTables::avtColorTables()
                                 (unsigned char)(fptr[1]*255),
                                 (unsigned char)(fptr[2]*255),
                                 (unsigned char)(fptr[3]*255),
-                                0);
+                                255);
             ccpl.AddColorControlPoint(p);
             fptr += 4;
         }

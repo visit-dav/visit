@@ -1758,6 +1758,9 @@ QvisGUIApplication::AddViewerSpaceArguments()
 //   so we can support plot and operator wizards without the plot manager
 //   widget having to deal with the plugin manager.
 //
+//   Hank Childs, Thu Jan 13 13:24:37 PST 2005
+//   Change slots so that we can determine if iconify windows is spontaneous.
+//
 // ****************************************************************************
 
 void
@@ -1769,7 +1772,7 @@ QvisGUIApplication::CreateMainWindow()
     // window is closed.
     connect(mainApp, SIGNAL(aboutToQuit()), mainApp, SLOT(closeAllWindows()));
     connect(mainApp, SIGNAL(lastWindowClosed()), mainApp, SLOT(quit()));
-    connect(mainApp, SIGNAL(hideApplication()), this, SLOT(IconifyWindows()));
+    connect(mainApp, SIGNAL(hideApplication()), this, SLOT(NonSpontaneousIconifyWindows()));
     connect(mainApp, SIGNAL(showApplication()), this, SLOT(DeIconifyWindows()));
 
     // Create the main window. Note that the static attributes of
@@ -1779,7 +1782,7 @@ QvisGUIApplication::CreateMainWindow()
     title += VERSION;
     mainWin = new QvisMainWindow(orientation, title.c_str());
     connect(mainWin, SIGNAL(saveSettings()), this, SLOT(SaveSettings()));
-    connect(mainWin, SIGNAL(iconifyWindows()), this, SLOT(IconifyWindows()));
+    connect(mainWin, SIGNAL(iconifyWindows(bool)), this, SLOT(IconifyWindows(bool)));
     connect(mainWin, SIGNAL(deIconifyWindows()), this, SLOT(DeIconifyWindows()));
     connect(mainWin, SIGNAL(activateAboutWindow()), this, SLOT(AboutVisIt()));
     connect(mainWin, SIGNAL(saveWindow()), this, SLOT(SaveWindow()));
@@ -4082,6 +4085,25 @@ QvisGUIApplication::ActivateOperatorWindow(int index)
 }
 
 // ****************************************************************************
+// Method: QvisGUIApplication::NonSpontaneousIconifyWindows
+//
+// Purpose: 
+//   This is a Qt slot function that iconifies all of the GUI windows.  It 
+//   should only be called when the iconify request is not spontaneous.
+//
+// Programmer: Hank Childs
+// Creation:   January 13, 2005
+//
+// ****************************************************************************
+
+void
+QvisGUIApplication::NonSpontaneousIconifyWindows(void)
+{
+    IconifyWindows(false);
+}
+
+
+// ****************************************************************************
 // Method: QvisGUIApplication::IconifyWindows
 //
 // Purpose: 
@@ -4102,13 +4124,17 @@ QvisGUIApplication::ActivateOperatorWindow(int index)
 //   I made it skip plot and operator windows that don't exist. I also changed
 //   how we iterate through otherWindows.
 //
+//   Hank Childs, Thu Jan 13 13:24:37 PST 2005
+//   Only minimize window if this is a non-spontaneous iconify request. ['5436]
+//
 // ****************************************************************************
 
 void
-QvisGUIApplication::IconifyWindows()
+QvisGUIApplication::IconifyWindows(bool isSpontaneous)
 {
     // Iconify the main window.
-    mainWin->showMinimized();
+    if (!isSpontaneous)
+        mainWin->showMinimized();
 
 #if !defined(_WIN32)
     int index;

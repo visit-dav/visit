@@ -34,6 +34,9 @@
 //    Modify the interpretation of the time slider's Position2 to the more
 //    standard vtk interpretation where the coordinate is relative to Position.
 //   
+//    Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005 
+//    Initialize timeFormatString. 
+//
 // ****************************************************************************
 
 avtTimeSliderColleague::avtTimeSliderColleague(VisWindowColleagueProxy &m) :
@@ -42,6 +45,7 @@ avtTimeSliderColleague::avtTimeSliderColleague(VisWindowColleagueProxy &m) :
     useForegroundForTextColor = true;
     addedToRenderer = false;
     textFormatString = 0;
+    timeFormatString = 0;
     textString = 0;
     timeDisplayMode = 0;
     currentTime = 0.;
@@ -63,7 +67,7 @@ avtTimeSliderColleague::avtTimeSliderColleague(VisWindowColleagueProxy &m) :
     textActor = vtkTextActor::New();
     textActor->ScaledTextOn();
     std::string defaultString("Time="); defaultString += TIME_IDENTIFIER;
-    SetText(defaultString.c_str());
+    SetText(defaultString.c_str(), "%g");
     vtkCoordinate *pos = textActor->GetPositionCoordinate();
     pos->SetCoordinateSystemToNormalizedViewport();
     GetTextRect(DEFAULT_X, DEFAULT_Y, DEFAULT_WIDTH, DEFAULT_HEIGHT, rect);
@@ -100,6 +104,8 @@ avtTimeSliderColleague::avtTimeSliderColleague(VisWindowColleagueProxy &m) :
 // Creation:   Thu Nov 6 14:26:36 PST 2003
 //
 // Modifications:
+//    Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005 
+//    Delete timeFormatString. 
 //   
 // ****************************************************************************
 
@@ -118,7 +124,10 @@ avtTimeSliderColleague::~avtTimeSliderColleague()
     }
 
     if(textFormatString != 0)
-        delete textFormatString;
+        delete [] textFormatString;
+
+    if(timeFormatString != 0)
+        delete [] timeFormatString;
 }
 
 // ****************************************************************************
@@ -236,6 +245,9 @@ avtTimeSliderColleague::ShouldBeAddedToRenderer() const
 //    I added code to set the object's visibility so objects that are not
 //    visible remain invisible when restoring a session file.
 //
+//    Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005 
+//    Send TimeFormat string to SetText method. 
+//   
 // ****************************************************************************
 
 void
@@ -302,13 +314,14 @@ avtTimeSliderColleague::SetOptions(const AnnotationObject &annot)
     //
     // Set the labels if the text vector is different
     //
-    if(currentOptions.GetText() != annot.GetText())
+    if((currentOptions.GetText() != annot.GetText()) ||
+       (currentOptions.GetTimeFormat() != annot.GetTimeFormat()))
     {
         const stringVector &text = annot.GetText();
         if(text.size() > 0)
-            SetText(text[0].c_str());
+            SetText(text[0].c_str(), annot.GetTimeFormat().c_str());
         else
-            SetText("");
+            SetText("", annot.GetTimeFormat().c_str());
     }
 
     //
@@ -408,6 +421,9 @@ avtTimeSliderColleague::SetOptions(const AnnotationObject &annot)
 //    Modify the interpretation of the time slider's Position2 to the more
 //    standard vtk interpretation where the coordinate is relative to Position.
 //   
+//    Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005 
+//    Get the TimeFormat string.
+//   
 // ****************************************************************************
 
 void
@@ -455,6 +471,8 @@ avtTimeSliderColleague::GetOptions(AnnotationObject &annot)
 
     // Store the parametricTime from the time slider into float attribute 1.
     annot.SetFloatAttribute1(timeSlider->GetParametricTime());
+
+    annot.SetTimeFormat(timeFormatString);
 }
 
 // ****************************************************************************
@@ -586,6 +604,8 @@ avtTimeSliderColleague::SetFrameAndState(int nFrames,
 // Creation:   Wed Dec 3 12:46:37 PDT 2003
 //
 // Modifications:
+//    Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005 
+//    Send timeFormatString to SetText method.
 //   
 // ****************************************************************************
 
@@ -600,7 +620,7 @@ avtTimeSliderColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
         std::string formatString(textFormatString);
         std::string::size_type pos;
         if((pos = formatString.find(TIME_IDENTIFIER)) != std::string::npos)
-            SetText(textFormatString);
+            SetText(textFormatString, timeFormatString);
     }
 }
 
@@ -616,11 +636,13 @@ avtTimeSliderColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 // Creation:   Wed Nov 5 14:17:22 PST 2003
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005 
+//   Added timeFormat arg, use it to set timeFormatString.
 //
 // ****************************************************************************
 
 void
-avtTimeSliderColleague::SetText(const char *formatString)
+avtTimeSliderColleague::SetText(const char *formatString, const char *timeFormat)
 {
     if(formatString == 0)
         return;
@@ -635,6 +657,13 @@ avtTimeSliderColleague::SetText(const char *formatString)
         textFormatString = new char[len + 1];
         strcpy(textFormatString, formatString);
     }
+    int tf_len = strlen(timeFormat);
+    if(timeFormatString != timeFormat)
+    {
+        delete [] timeFormatString;
+        timeFormatString = new char[tf_len + 1];
+        strcpy(timeFormatString, timeFormat);
+    }
 
     // Replace $time with the time if the format string contains $time.
     delete [] textString;
@@ -646,7 +675,7 @@ avtTimeSliderColleague::SetText(const char *formatString)
         std::string left(fmtStr.substr(0, pos));
         std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
         char tmp[100];
-        SNPRINTF(tmp, 100, "%g", currentTime);
+        SNPRINTF(tmp, 100, timeFormat, currentTime);
         len = left.size() + strlen(tmp) + right.size() + 1;
         textString = new char[len];
         SNPRINTF(textString, len, "%s%s%s", left.c_str(), tmp, right.c_str());

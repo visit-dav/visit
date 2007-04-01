@@ -23,10 +23,17 @@
 //
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added window id
+//
+//    Brad Whitlock, Thu Jan 13 13:44:47 PST 2005
+//    Initialized member values.
+//
 // ****************************************************************************
 
-RenderRPC::RenderRPC() : NonBlockingRPC("i*bii")
+RenderRPC::RenderRPC() : NonBlockingRPC("i*bii"), ids()
 {
+    sendZBuffer = false;
+    annotMode = 0;
+    windowID = 0;
 }
 
 // ****************************************************************************
@@ -132,6 +139,11 @@ RenderRPC::SelectAll()
 //
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added window id
+//
+//    Brad Whitlock, Thu Jan 13 13:45:17 PST 2005
+//    Fixed critical bug in SetWindowID where the address of the argument was
+//    being taken for the Select call.
+//
 // ****************************************************************************
 
 void
@@ -159,7 +171,7 @@ void
 RenderRPC::SetWindowID(int windowID_)
 {
     windowID = windowID_;
-    Select(3, (void*)&windowID_);
+    Select(3, (void*)&windowID);
 }
 
 
