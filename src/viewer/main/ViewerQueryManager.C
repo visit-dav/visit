@@ -1542,6 +1542,9 @@ ViewerQueryManager::ClearPickPoints()
 //    intersection test is performed on data from the Renderer, where the
 //    glyphs live.
 //
+//    Kathleen Bonnell, Tue Oct 12 16:31:46 PDT 2004 
+//    Expand 'GlyphPick' to include non-LabelPlot point meshes. 
+//
 // ****************************************************************************
 
 bool
@@ -1670,14 +1673,17 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 pickAtts->SetPickType(PickAttributes::CurveNode);
    
         }
+        bool doGlyphPick = 
+                  (strcmp(plot->GetPlotName(), "Vector") == 0) ||
+                  ((plot->GetMeshType() == AVT_POINT_MESH) &&
+                   (strcmp(plot->GetPlotName(), "Label") != 0));
 
-        if (strcmp(plot->GetPlotName(), "Vector") == 0 && 
-            win->GetScalableRendering() && (dom ==-1 || el == -1))
+        if (doGlyphPick && win->GetScalableRendering() && 
+            (dom ==-1 || el == -1))
         {
             pickAtts->SetRequiresGlyphPick(true);
         }
-        else if (strcmp(plot->GetPlotName(), "Vector") == 0 && 
-             !win->GetScalableRendering())
+        else if (doGlyphPick && !win->GetScalableRendering())
         {
             int d = -1, e = -1;
             bool forCell = false;
@@ -1692,6 +1698,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 plot->GetActor()->MakePickable();
                 win->GlyphPick(pd.rayPt1, pd.rayPt2, d, e, forCell);
                 plot->GetActor()->MakeUnPickable();
+                d += plot->GetBlockOrigin();
                 // 
                 // Due to the nature of the glyphs, the pick type MUST match
                 // the variable centering.

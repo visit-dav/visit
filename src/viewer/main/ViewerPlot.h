@@ -197,6 +197,9 @@ class avtToolInterface;
 //    Kathleen Bonnell, Wed Aug 25 08:31:44 PDT 2004 
 //    Added GetMeshType.
 //
+//    Kathleen Bonnell, Fri Oct 29 13:57:38 PDT 2004
+//    Added GetBlockOrigin.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot
@@ -326,6 +329,7 @@ class VIEWER_API ViewerPlot
     //
     // Get/Set specific plot attributes.
     //
+    int GetBlockOrigin() const;
     int GetSpatialDimension() const;
     double *GetSpatialExtents(avtExtentType = AVT_UNKNOWN_EXTENT_TYPE) const;
     void SetSpatialExtentsType(avtExtentType);

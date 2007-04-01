@@ -1142,12 +1142,21 @@ avtSurfaceAndWireframeRenderer::LUTColorsChanged(const bool val)
 //
 //  Modifications:
 //
+//    Hank Childs, Fri Oct 29 10:30:22 PDT 2004
+//    Do not turn on specular lighting if lighting is off.
+//
 // ****************************************************************************
 
 void
 avtSurfaceAndWireframeRenderer::SetSpecularProperties(bool flag, float coeff, 
     float power, const ColorAttribute &color)
 {
+    if (ignoreLighting)
+    {
+        if (prop != NULL)
+            prop->SetSpecular(0);
+        return;
+    }
     if (prop != NULL && (drawSurfaceStrips || drawSurfacePolys ||
         prop->GetRepresentation() == VTK_SURFACE))
     {

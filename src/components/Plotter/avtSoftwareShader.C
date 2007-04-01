@@ -10,6 +10,7 @@
 
 #include <LightAttributes.h>
 
+#include <avtMatrix.h>
 #include <avtViewInfo.h>
 #include <avtView3D.h>
 
@@ -262,6 +263,11 @@ static float CalculateShadow_Soft(int l_width, int l_height,
 //  Programmer: Hank Childs
 //  Creation:   October 24, 2004
 //  
+//  Modifications:
+//
+//    Hank Childs, Mon Nov  1 11:17:25 PST 2004
+//    Make use of new avtMatrix functions to calculate correct camera lights.
+//
 // ****************************************************************************
 
 bool
@@ -277,23 +283,28 @@ avtSoftwareShader::GetLightDirection(const LightAttributes &la,
     }
     else if (la.GetType() == LightAttributes::Camera)
     {
+        light_dir[0] = la.GetDirection()[0];
+        light_dir[1] = la.GetDirection()[1];
+        light_dir[2] = la.GetDirection()[2];
         vtkCamera *cam = vtkCamera::New();
         avtViewInfo ccvi;
         cur_view.SetViewInfoFromView(ccvi);
         ccvi.SetCameraFromView(cam);
-        vtkMatrix4x4 *lt = cam->GetCameraLightTransformMatrix();
-        vtkLight *light = vtkLight::New();
-        light->SetTransformMatrix(lt);
-        float ld[3];
-        ld[0] = la.GetDirection()[0];
-        ld[1] = la.GetDirection()[1];
-        ld[2] = la.GetDirection()[2];
-        light->SetPosition(ld);
-        light->GetTransformedPosition(ld);
-        light_dir[0] = -ld[0];
-        light_dir[1] = -ld[1];
-        light_dir[2] = -ld[2];
-        light->Delete();
+
+        float pos[3];
+        cam->GetPosition(pos);
+        float focus[3];
+        cam->GetFocalPoint(focus);
+        float up[3];
+        cam->GetViewUp(up);
+
+        avtMatrix mat;
+        mat.MakeRotation(pos, focus, up);
+
+        avtVector v = mat * (avtVector(light_dir));
+        light_dir[0] = -v.x;
+        light_dir[1] = -v.y;
+        light_dir[2] = -v.z;
         cam->Delete();
     }
     else

@@ -525,6 +525,10 @@ avtLabelPlot::SetAtts(const AttributeGroup *a)
 //
 // Modifications:
 //   
+//   Hank Childs, Tue Nov  2 05:16:53 PST 2004
+//   Go ahead and release data for the normals filter, now that a memory issue
+//   has been cleaned up.
+//
 // ****************************************************************************
 
 void
@@ -543,14 +547,9 @@ avtLabelPlot::ReleaseData(void)
     {
         condenseFilter->ReleaseData();
     }
-#if 0
-//
-// This crashes the engine.
-//
     if (normalFilter != NULL)
     {
         normalFilter->ReleaseData();
     }
-#endif
     debug3 << "avtLabelPlot::ReleaseData: 1" << endl;
 }

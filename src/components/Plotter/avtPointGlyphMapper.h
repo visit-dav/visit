@@ -25,6 +25,8 @@ class     vtkVisItPolyDataNormals;
 //  Creation:   August 19, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Tue Nov  2 10:18:16 PST 2004
+//    Added more flavors of ColorByScalarOff. 
 //
 // ****************************************************************************
 
@@ -41,6 +43,8 @@ class PLOTTER_API  avtPointGlyphMapper : public avtVariableMapper
 
     void                       ColorByScalarOn(const std::string &);
     void                       ColorByScalarOff(const unsigned char [3]);
+    void                       ColorByScalarOff(const double [3]);
+    void                       ColorByScalarOff(const float [3]);
 
   protected:
     vtkPolyData               *glyph2D;
@@ -51,7 +55,7 @@ class PLOTTER_API  avtPointGlyphMapper : public avtVariableMapper
     int                        glyphType;
     bool                       dataScaling;
     bool                       colorByScalar;
-    unsigned char              glyphColor[3];
+    float                      glyphColor[3];
 
     vtkVisItGlyph3D          **glyphFilter;
     vtkVisItPolyDataNormals  **normalsFilter;

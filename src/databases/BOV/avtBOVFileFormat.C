@@ -542,6 +542,10 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
 //    Hank Childs, Sun May  9 08:43:33 PDT 2004
 //    Do not assume that we have valid data extents.
 //
+//    Hank Childs, Fri Oct 22 11:52:37 PDT 2004
+//    Do not throw an exception if the variable name is foreign to us -- it
+//    is probably an expression.
+//
 // ****************************************************************************
 
 void *
@@ -560,7 +564,7 @@ avtBOVFileFormat::GetAuxiliaryData(const char *var, int domain,
     {
         if (strcmp(var, varname) != 0)
         {
-            EXCEPTION1(InvalidVariableException, var);
+            return NULL;
         }
         if (var_brick_min != NULL && var_brick_max != NULL)
         {

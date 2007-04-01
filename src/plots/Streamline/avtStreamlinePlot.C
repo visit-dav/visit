@@ -373,6 +373,11 @@ avtStreamlinePlot::SetLegend(bool legendOn)
 //  Programmer: Hank Childs
 //  Creation:   December 28, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Oct 29 10:06:24 PDT 2004
+//    Account for specular lighting.
+//
 // ****************************************************************************
 
 void
@@ -381,10 +386,12 @@ avtStreamlinePlot::SetLighting(bool lightingOn)
     if (lightingOn)
     {
         varMapper->TurnLightingOn();
+        varMapper->SetSpecularIsInappropriate(false);
     }
     else
     {
         varMapper->TurnLightingOff();
+        varMapper->SetSpecularIsInappropriate(true);
     }
 }
 

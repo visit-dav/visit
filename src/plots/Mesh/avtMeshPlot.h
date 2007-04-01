@@ -15,10 +15,10 @@
 class     vtkProperty;
 
 class     avtMeshFilter;
-class     avtPointToGlyphFilter;
 class     avtUserDefinedMapper;
 class     avtVariableLegend;
 class     avtSmoothPolyDataFilter;
+class     avtPointGlyphMapper;
 
 
 // ****************************************************************************
@@ -94,6 +94,10 @@ class     avtSmoothPolyDataFilter;
 //    Kathleen Bonnell, Tue Aug 24 16:12:03 PDT 2004 
 //    Added avtMeshType arg to SetOpaqueMeshIsAppropriate.
 //    
+//    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004 
+//    Replaced avtPointToGlyphFilter with avtPointGlyphMapper.  Removed
+//    avtMeshType arg from SetOpaqueMeshIsAppropriate.
+//    
 // ****************************************************************************
 
 class
@@ -126,16 +130,16 @@ avtMeshPlot : public avtPlot
 
     virtual int     TargetTopologicalDimension(void);
     virtual const AttributeSubject 
-                   *SetOpaqueMeshIsAppropriate(bool, avtMeshType);
+                   *SetOpaqueMeshIsAppropriate(bool);
 
 
   protected:
     avtSurfaceAndWireframeRenderer_p renderer;
     avtUserDefinedMapper            *mapper;
+    avtPointGlyphMapper             *glyphMapper;
     avtVariableLegend               *varLegend;
     avtGhostZoneAndFacelistFilter   *ghostAndFaceFilter;
     avtMeshFilter                   *filter;
-    avtPointToGlyphFilter           *glyphPoints;
     vtkProperty                     *property;
     avtLegend_p                      varLegendRefPtr;
     avtSmoothPolyDataFilter         *smooth;

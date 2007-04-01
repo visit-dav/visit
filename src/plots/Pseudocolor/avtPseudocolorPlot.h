@@ -14,6 +14,7 @@ class     avtLookupTable;
 class     avtShiftCenteringFilter;
 class     avtVariableLegend;
 class     avtPointGlyphMapper;
+class     avtPseudocolorFilter;
 
 
 // ****************************************************************************
@@ -80,6 +81,9 @@ class     avtPointGlyphMapper;
 //    Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004 
 //    Added SetCellCountMultiplierForSRThreshold.
 //
+//    Kathleen Bonnell, Tue Nov  2 11:01:28 PST 2004 
+//    Added avtPseudocolorFilter.
+//
 // ****************************************************************************
 
 class avtPseudocolorPlot : public avtSurfaceDataPlot
@@ -110,6 +114,7 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     avtVariableLegend          *varLegend;
     avtLegend_p                 varLegendRefPtr;
     PseudocolorAttributes       atts;
+    avtPseudocolorFilter       *pcfilter;
     avtShiftCenteringFilter    *filter;
     bool                        colorsInitialized;
     int                         topoDim;
