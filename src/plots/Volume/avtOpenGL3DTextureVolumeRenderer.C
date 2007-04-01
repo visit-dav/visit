@@ -105,6 +105,9 @@ avtOpenGL3DTextureVolumeRenderer::~avtOpenGL3DTextureVolumeRenderer()
 //    Jeremy Meredith, Fri Oct 10 16:29:31 PDT 2003
 //    Made it work with Mesa again.
 //
+//    Hank Childs, Tue May 11 15:24:45 PDT 2004
+//    Turn off blending so transparent surfaces can work afterwards.
+//
 // ****************************************************************************
 void
 avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
@@ -329,7 +332,9 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
     glTexParameterf(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glEnable(GL_TEXTURE_3D);
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
+    bool alreadyBlending = glIsEnabled(GL_BLEND);
+    if (!alreadyBlending)
+        glEnable(GL_BLEND);
     glDepthMask(false);
 
     // Set up camera parameters
@@ -427,7 +432,8 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
     // Set some GL parameters back to their expected values and free memory
     glDepthMask(true);
     glDisable(GL_TEXTURE_3D);
-    glDisable(GL_BLEND);
+    if (!alreadyBlending)
+        glDisable(GL_BLEND);
     glEnable(GL_LIGHTING);
     opac->Delete();
     data->Delete();
@@ -459,6 +465,9 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
 //  Creation:    October  1, 2003
 //
 //  Modifications:
+//
+//    Hank Childs, Tue May 11 15:24:45 PDT 2004
+//    Turn off blending so transparent surfaces can work afterwards.
 //
 // ****************************************************************************
 
@@ -658,7 +667,9 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
     glTexParameterf(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glEnable(GL_TEXTURE_3D);
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
+    bool alreadyBlending = glIsEnabled(GL_BLEND);
+    if (!alreadyBlending)
+        glEnable(GL_BLEND);
 
     // set up parameters
     vtkCamera *camera = vtkCamera::New();
@@ -891,7 +902,8 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
     glDepthMask(true);
 
     glDisable(GL_TEXTURE_3D);
-    glDisable(GL_BLEND);
+    if (!alreadyBlending)
+        glDisable(GL_BLEND);
     glEnable(GL_LIGHTING);
     opac->Delete();
     data->Delete();

@@ -843,6 +843,9 @@ GetDataRange(vtkDataSet *ds, double *de, const char *vname)
 //    Kathleen Bonnell, Thu Mar 11 10:32:04 PST 2004 
 //    Renamed from GetDataRange. DataExtents now always have only 2 components.
 //
+//    Kathleen Bonnell, Tue May 11 08:02:51 PDT 2004
+//    Added support for VTK_DOUBLE. 
+//
 // ****************************************************************************
 
 void
@@ -870,6 +873,16 @@ GetDataScalarRange(vtkDataSet *ds, double *exts, const char *vname)
     if (da->GetDataType() == VTK_FLOAT)
     {
         float *ptr = (float *) da->GetVoidPointer(0);
+        for (i = 0 ; i < nvals ; i++)
+        {
+            exts[0] = (exts[0] < *ptr ? exts[0] : *ptr);
+            exts[1] = (exts[1] > *ptr ? exts[1] : *ptr);
+            ptr++;
+        }
+    }
+    if (da->GetDataType() == VTK_DOUBLE)
+    {
+        double *ptr = (double *) da->GetVoidPointer(0);
         for (i = 0 ; i < nvals ; i++)
         {
             exts[0] = (exts[0] < *ptr ? exts[0] : *ptr);

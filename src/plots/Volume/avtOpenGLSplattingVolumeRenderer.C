@@ -116,6 +116,9 @@ avtOpenGLSplattingVolumeRenderer::~avtOpenGLSplattingVolumeRenderer()
 //    Made this class not inherit from avtVolumeRenderer, so it now receives
 //    most of its state in the Render arguments every frame.
 //
+//    Hank Childs, Tue May 11 15:24:45 PDT 2004
+//    Turn off blending so transparent surfaces can work afterwards.
+//
 // ****************************************************************************
 
 void
@@ -169,7 +172,9 @@ avtOpenGLSplattingVolumeRenderer::Render(vtkRectilinearGrid *grid,
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, alphatexId);
     glEnable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
+    bool alreadyBlending = glIsEnabled(GL_BLEND);
+    if (!alreadyBlending)
+        glEnable(GL_BLEND);
 
     // set up parameters
     vtkCamera *camera = vtkCamera::New();
@@ -485,7 +490,8 @@ avtOpenGLSplattingVolumeRenderer::Render(vtkRectilinearGrid *grid,
     glDepthMask(true);
 
     glDisable(GL_TEXTURE_2D);
-    glDisable(GL_BLEND);
+    if (!alreadyBlending)
+        glDisable(GL_BLEND);
     glEnable(GL_LIGHTING);
     opac->Delete();
     data->Delete();
