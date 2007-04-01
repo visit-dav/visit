@@ -155,6 +155,9 @@ avtBoundaryPlot::Create()
 //    Kathleen Bonnell, Mon Sep 29 13:15:20 PDT 2003
 //    Set AntialisedRenderOrder dependent upon wireframe mode.
 //
+//    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004 
+//    Ensure that specular properties aren't used in wireframe mode. 
+//
 // ****************************************************************************
 
 void
@@ -170,10 +173,15 @@ avtBoundaryPlot::SetAtts(const AttributeGroup *a)
     SetLineWidth(atts.GetLineWidth());
     sub->SetPlotAtts(&atts);
     if (!atts.GetWireframe())
+    {
         behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
-    if (atts.GetWireframe())
+        levelsMapper->SetSpecularIsInappropriate(false);
+    }
+    else 
+    {
         behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
-
+        levelsMapper->SetSpecularIsInappropriate(true);
+    }
 }
 
 // ****************************************************************************

@@ -5,6 +5,7 @@
 #include <VisWindow.h>
 
 #include <vtkCamera.h>
+#include <vtkCellPicker.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkRenderer.h>
@@ -167,6 +168,9 @@ VisWindow::VisWindow(bool callInit)
 //    Added the annotation colleague and initialized the new frameAndState
 //    array.
 //
+//    Kathleen Bonnell, Thu Sep  2 13:40:25 PDT 2004 
+//    Initialize pickForIntersectionOnly.
+//
 // ****************************************************************************
 
 void
@@ -264,6 +268,8 @@ VisWindow::Initialize(VisWinRendering *ren)
 
     performLineoutCallback= 0;
     loInfo = 0;
+
+    pickForIntersectionOnly = false;
 }
 
 
@@ -3683,6 +3689,9 @@ VisWindow::ProcessResizeEvent(void *data)
 //   I modified the method so that pick worked properly with the new pan
 //   and zoom mechanism.
 //
+//   Kathleen Bonnell, Thu Sep  2 13:40:25 PDT 2004 
+//   Added code to call the 'FindIntersection' method if the flag is set. 
+//
 // ****************************************************************************
 
 void
@@ -3691,6 +3700,23 @@ VisWindow::Pick(int x, int y)
     if(performPickCallback == 0)
         return;
 
+    if (pickForIntersectionOnly)
+    {
+        double isect[3];
+        ppInfo->validPick = FindIntersection(x, y, isect); 
+        ppInfo->intersectionOnly = true; 
+        if (ppInfo->validPick)
+        {
+            ppInfo->rayPt1[0] = isect[0];
+            ppInfo->rayPt1[1] = isect[1];
+            ppInfo->rayPt1[2] = isect[2];
+        }
+        // Execute the callback.
+        (*performPickCallback)((void*)ppInfo);
+        return;    
+    }
+
+    ppInfo->intersectionOnly = false; 
     float cameraPos[4];
     float cameraFocal[4];
     float pickPos[3];
@@ -5186,3 +5212,109 @@ VisWindow::GetInteractorAtts() const
     return (const InteractorAttributes *)&interactorAtts;
 }
 
+
+// ****************************************************************************
+//  Method: VisWindow::FindIntersection
+//
+//  Purpose: 
+//    Uses a vtkCellPicker to find the world coordinate corresponding to the
+//    specified screen coordinates. 
+//
+//  Arguments:
+//    x         The screen x-coordinate.
+//    y         The screen y-coordinate.
+//    isect     A place to store the intersection point.
+//
+//  Returns:    True if an intersection with rendered data was found, 
+//              false otherwise.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 2, 2004 
+//   
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+VisWindow::FindIntersection(const int x, const int y, double isect[3])
+{
+    vtkRenderer *ren = GetCanvas();
+    if(!ren->GetRenderWindow())
+    {
+        return false;
+    }
+
+    bool success;
+    vtkCellPicker *picker = vtkCellPicker::New();
+    picker->SetTolerance(1.0e-6);
+    picker->Pick(x, y, 0, ren);
+   
+    int cell = picker->GetCellId();
+
+    if ( cell < 0 )
+    {
+       debug5 << "vtkCellPicker found no intersection with surface."  << endl;
+       success = false;
+    }
+    else
+    {
+        vtkDataSet *ds = picker->GetDataSet();
+        if (ds == NULL)
+        {
+            success = false;
+            debug5 << "vtkCellPicker returned NULL dataset." << endl;
+        }
+        else 
+        {
+            success = true;
+            isect[0] = picker->GetPickPosition()[0];
+            isect[1] = picker->GetPickPosition()[1];
+            isect[2] = picker->GetPickPosition()[2];
+        }
+    }
+    picker->Delete();
+    return success;
+}
+
+
+// ****************************************************************************
+//  Method: VisWindow::SetPickTypeToIntersection
+//
+//  Purpose: 
+//    Sets a flag specifiying that the PickMethod should perform an
+//    intersection calculation. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 2, 2004 
+//   
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisWindow::SetPickTypeToIntersection()
+{
+    pickForIntersectionOnly = true;
+}
+
+
+// ****************************************************************************
+//  Method: VisWindow::SetPickTypeToNormal
+//
+//  Purpose: 
+//    Sets a flag specifiying that the PickMethod should NOT perform an
+//    intersection calculation, but perform in the default manner, constructing
+//    ray points from the screen coordinates. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 2, 2004 
+//   
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisWindow::SetPickTypeToNormal()
+{
+    pickForIntersectionOnly = false;
+}

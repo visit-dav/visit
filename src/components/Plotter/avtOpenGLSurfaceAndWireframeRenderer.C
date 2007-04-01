@@ -3732,7 +3732,6 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
     // how do we draw points
     void (*draw0)(vtkCellArray *, GLenum, int &, vtkPoints *, vtkDataArray *, 
                   vtkUnsignedCharArray *, vtkDataArray *);
-
     switch (idx) 
     {
         case  0: draw0 = Draw01;       break;
@@ -4051,12 +4050,15 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
 //    Mark C. Miller, Wed Aug 11 13:38:14 PDT 2004
 //    Added a code to adjust glDepthRange and reset it upon exit
 //
+//    Kathleen Bonnell, Thu Sep  2 16:15:35 PDT 2004 
+//    Added code to select the glFunction depending upon Representation.
+//
 // ****************************************************************************
 
 void
 avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
 {
-    GLenum aGlFunction;
+    GLenum aGlFunction, glFunction[4];
     vtkPoints *p;
     vtkCellArray *aPrim;
     vtkDataArray *n;
@@ -4064,6 +4066,35 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
     int tDim;
     int cellNum = 0;
     int cellNormals = 0;
+
+    switch (prop->GetRepresentation()) 
+    {
+        case VTK_POINTS:
+             glFunction[0]  = GL_POINTS;
+             glFunction[1]  = GL_POINTS;
+             glFunction[2]  = GL_POINTS;
+             glFunction[3]  = GL_POINTS;
+             break;
+        case VTK_WIREFRAME:
+             glFunction[0] = GL_POINTS;
+             glFunction[1] = GL_LINE_STRIP;
+             glFunction[2] = GL_LINE_STRIP;
+             glFunction[3] = GL_LINE_LOOP;
+             break;
+        case VTK_SURFACE:
+             glFunction[0] = GL_POINTS;
+             glFunction[1] = GL_LINE_STRIP;
+             glFunction[2] = GL_LINE_STRIP;
+             glFunction[3] = GL_LINE_LOOP;
+             break;
+        default: 
+             debug5 << "Bad representation sent\n";
+             glFunction[0] = GL_POINTS;
+             glFunction[1] = GL_LINE_STRIP;
+             glFunction[2] = GL_LINE_STRIP;
+             glFunction[3] = GL_LINE_LOOP;
+             break;
+    }
   
     p = input->GetPoints();
   
@@ -4122,6 +4153,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
     // how do we draw points
     void (*draw0)(vtkCellArray *, GLenum, int &, vtkPoints *, vtkDataArray *, 
                   vtkUnsignedCharArray *, vtkDataArray *) = NULL;
+
     switch (idx)
     {
         case 0: draw0 = Draw01;     break;
@@ -4196,7 +4228,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
     // different lists of primitives. So, we can't rely on GL's
     // glPolygonOffset stuff to help us here. Instead, we borrow from
     // a trick the VTK folks do in vtkPolyDataMapper, and adjust the
-    // depth range of the scene using glDepthRange. We then undue this
+    // depth range of the scene using glDepthRange. We then undo this
     // adjustment when we exit this routine. In short, we move the
     // maximum Z value toward the viewer 0.01% of the total range in Z.
     //
@@ -4207,7 +4239,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
     glDepthRange(savedDepthRange[0],savedDepthRange[1]-eps);
 
     aPrim = input->GetVerts();
-    aGlFunction = GL_POINTS; 
+    aGlFunction = glFunction[0]; 
   
     // draw all the points
     if (draw0)
@@ -4216,7 +4248,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
     }
   
     aPrim = input->GetLines();
-    aGlFunction = GL_LINE_STRIP; 
+    aGlFunction = glFunction[1]; 
   
     // draw all the elements
     if (drawEdgeLines)
@@ -4230,6 +4262,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
     // here.  Pulled from the normal Draw method.  draw2 and draw2W
     // compute normals differently.
     aPrim = input->GetStrips();
+    aGlFunction = glFunction[2]; 
     if (drawEdgeStrips)
     {
         draw2(aPrim, aGlFunction, cellNum, p, n, NULL, t);
@@ -4241,7 +4274,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
 
     // do polys
     aPrim = input->GetPolys();
-    aGlFunction = GL_LINE_LOOP;
+    aGlFunction = glFunction[3]; 
     if (drawEdgePolys)
     {
         draw3(aPrim, aGlFunction, cellNum, p, n, NULL, t);

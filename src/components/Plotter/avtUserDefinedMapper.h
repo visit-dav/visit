@@ -11,6 +11,7 @@
 #include <avtCustomRenderer.h>
 #include <avtMapper.h>
 
+class     ColorAttribute;
 class     vtkUserDefinedMapperBridge;
 
 
@@ -40,6 +41,9 @@ class     vtkUserDefinedMapperBridge;
 //    Moved inlined destructor definition to .C file because certain compilers
 //    have problems with them.
 //
+//    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004 
+//    Added SetSurfaceRepresentation and SetSpecularProperties.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtUserDefinedMapper : public avtMapper
@@ -54,7 +58,9 @@ class PLOTTER_API avtUserDefinedMapper : public avtMapper
     virtual void               GlobalLightingOn(void);
     virtual void               GlobalLightingOff(void);
     virtual void               GlobalSetAmbientCoefficient(const float);
-
+    virtual void               SetSurfaceRepresentation(int rep);
+    virtual void               SetSpecularProperties(bool,float,float,
+                                                      const ColorAttribute&);
   protected:
     avtCustomRenderer_p        renderer;
     vtkDataSetMapper          *CreateMapper(void);

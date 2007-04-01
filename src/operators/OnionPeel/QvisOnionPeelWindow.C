@@ -110,7 +110,9 @@ QvisOnionPeelWindow::CreateWindowContents()
     //
     // Category
     //
-    mainLayout->addWidget(new QLabel("Category", central, "categoryNameLabel"),1,0);
+    categoryLabel = new QLabel("Category", central, "categoryNameLabel");
+    mainLayout->addWidget(categoryLabel,1,0);
+
     categoryName = new QComboBox(true, central, "categoryName");
     categoryName->setAutoCompletion(true);
     categoryName->setInsertionPolicy(QComboBox::NoInsertion);
@@ -124,7 +126,8 @@ QvisOnionPeelWindow::CreateWindowContents()
     //
     // Set
     //
-    mainLayout->addWidget(new QLabel("Set", central, "subsetNameLabel"),2,0);
+    subsetLabel = new QLabel("Set", central, "subsetNameLabel");
+    mainLayout->addWidget(subsetLabel,2,0);
     subsetName = new QComboBox(true, central, "subsetName");
     subsetName->setAutoCompletion(true);
     subsetName->setInsertionPolicy(QComboBox::NoInsertion);
@@ -283,6 +286,9 @@ QvisOnionPeelWindow::UpdateComboBoxes()
 //   Kathleen Bonnell, Thu Feb 26 13:19:40 PST 2004
 //   Only update the box whose information has changed. 
 //   
+//   Kathleen Bonnell, Thu Sep  2 15:54:03 PDT 2004 
+//   Disable if zero or 1 names.
+//   
 // ****************************************************************************
 
 void
@@ -333,6 +339,18 @@ QvisOnionPeelWindow::FillCategoryBox()
     {
         categoryName->insertItem(defaultItem);
         categoryName->setCurrentItem(0);
+        categoryName->setEnabled(false);
+        categoryLabel->setEnabled(false);
+    }
+    else if (categoryName->count() == 1)
+    {
+        categoryName->setEnabled(false);
+        categoryLabel->setEnabled(false);
+    }
+    else 
+    {
+        categoryName->setEnabled(true);
+        categoryLabel->setEnabled(true);
     }
     categoryName->setEditText(categoryName->currentText());
     categoryName->blockSignals(false);
@@ -350,6 +368,9 @@ QvisOnionPeelWindow::FillCategoryBox()
 // Modifications:
 //   Kathleen Bonnell, Thu Feb 26 13:19:40 PST 2004
 //   Check the silUseSet for names to include. 
+//   
+//   Kathleen Bonnell, Thu Sep  2 15:54:03 PDT 2004 
+//   Disable if zero or 1 names.
 //   
 // ****************************************************************************
 
@@ -405,6 +426,18 @@ QvisOnionPeelWindow::FillSubsetBox()
     {
         subsetName->insertItem(defaultItem);
         subsetName->setCurrentItem(0);
+        subsetName->setEnabled(false);
+        subsetLabel->setEnabled(false);
+    }
+    else if (subsetName->count() == 1)
+    {
+        subsetName->setEnabled(false);
+        subsetLabel->setEnabled(false);
+    }
+    else
+    {
+        subsetName->setEnabled(true);
+        subsetLabel->setEnabled(true);
     }
     subsetName->setEditText(subsetName->currentText());
     subsetName->blockSignals(false);

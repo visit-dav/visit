@@ -1064,6 +1064,9 @@ ChooseCenterOfRotationAction::Setup()
 // Creation:   Wed Jan 7 10:07:47 PDT 2004
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Sep  2 13:55:05 PDT 2004
+//   Added bool flag to SetPickFunction -- indicates we only want Pick to
+//   retrieve the intersection point.
 //   
 // ****************************************************************************
 
@@ -1098,7 +1101,7 @@ ChooseCenterOfRotationAction::Execute()
         // the plots. Instead of picking, the function will set the center
         // of rotation using the pick point.
         //
-        window->SetPickFunction(FinishCB, (void *)this);
+        window->SetPickFunction(FinishCB, (void *)this, true);
     }
     else
     {

@@ -463,43 +463,17 @@ avtGeometryDrawable::SetAmbientCoefficient(const float amb)
 //    Kathleen Bonnell, Sat Oct 19 15:07:04 PDT 2002 
 //    Disable lighting for Wireframe and Points representation.
 //
+//    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004 
+//    Moved logic into avtMapper so that derived mappers may have a chance
+//    to override the behavior. 
+//
 // ****************************************************************************
 
 void
 avtGeometryDrawable::SetSurfaceRepresentation(int rep)
 {
-    for (int i = 0 ; i < nActors ; i++)
-    {
-        if (actors[i] != NULL)
-        {
-            vtkProperty *prop = actors[i]->GetProperty();
-            if(prop != NULL)
-            {
-                int actorRep = prop->GetRepresentation();
-                if(rep == 0 && actorRep != VTK_SURFACE)
-                {
-                    prop->SetRepresentation(VTK_SURFACE);
-                    if (mapper->GetLighting())
-                    {
-                        prop->SetAmbient(mapper->GetGlobalAmbientCoefficient());
-                        prop->SetDiffuse(1.);
-                    }
-                }
-                else if(rep == 1 && actorRep != VTK_WIREFRAME)
-                {
-                    prop->SetRepresentation(VTK_WIREFRAME);
-                    prop->SetAmbient(1.);
-                    prop->SetDiffuse(0.);
-                }
-                else if(rep == 2 && actorRep != VTK_POINTS)
-                {
-                    prop->SetRepresentation(VTK_POINTS);
-                    prop->SetAmbient(1.);
-                    prop->SetDiffuse(0.);
-                }
-            }
-        }
-    }
+    if (mapper != NULL)
+        mapper->SetSurfaceRepresentation(rep);
 }
 
 // ****************************************************************************
@@ -518,6 +492,9 @@ avtGeometryDrawable::SetSurfaceRepresentation(int rep)
 //  Creation:   November 14, 2003
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Sep  2 08:52:56 PDT 2004
+//    Moved logic into avtMapper so that derived mappers may have a chance
+//    to override the behavior. 
 //
 // ****************************************************************************
 
@@ -525,24 +502,8 @@ void
 avtGeometryDrawable::SetSpecularProperties(bool flag, float coeff, float power,
                                            const ColorAttribute &color)
 {
-    for (int i = 0 ; i < nActors ; i++)
-    {
-        if (actors[i] != NULL)
-        {
-            vtkProperty *prop = actors[i]->GetProperty();
-            if(prop != NULL)
-            {
-                prop->SetSpecular(flag ? coeff : 0);
-                prop->SetSpecularPower(power);
-                int r = color.Red();
-                int g = color.Green();
-                int b = color.Blue();
-                prop->SetSpecularColor(float(r)/255.,
-                                       float(g)/255.,
-                                       float(b)/255.);
-            }
-        }
-    }
+    if (mapper != NULL)
+        mapper->SetSpecularProperties(flag, coeff, power, color);
 }
 
 // ****************************************************************************

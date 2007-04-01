@@ -12,6 +12,7 @@
 #include <avtDataObject.h>
 #include <avtViewInfo.h>
 
+class     ColorAttribute;
 class     vtkDataSet;
 class     vtkRenderer;
 
@@ -42,6 +43,9 @@ typedef void (*OverrideRenderCallback)(void *, avtDataObject_p &);
 //    Kathleen Bonnell, Mon Aug  4 11:14:22 PDT 2003 
 //    Added member and methods in support of immediate mode rendering.
 //
+//    Kathleen Bonnell,  Thu Sep  2 11:44:09 PDT 2004
+//    Added SetSurfaceRepresentation and SetSpecularProperties. 
+//
 // ****************************************************************************
 
 class PLOTTER_API avtCustomRenderer
@@ -65,6 +69,11 @@ class PLOTTER_API avtCustomRenderer
     virtual void            ImmediateModeRenderingOff(void);
     virtual void            SetImmediateModeRendering(bool);
     virtual bool            GetImmediateModeRendering(void);
+
+    virtual void            SetSurfaceRepresentation(int rep);
+    virtual void            SetSpecularProperties(bool,float,float,
+                                                  const ColorAttribute&);
+ 
 
     void                    RegisterOverrideRenderCallback(
                                                OverrideRenderCallback, void *);
