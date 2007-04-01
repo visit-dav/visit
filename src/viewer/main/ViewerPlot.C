@@ -1652,6 +1652,14 @@ ViewerPlot::RemoveAllOperators()
 //    Made it check to see if the operator needs recalculation before
 //    reporting that things have changed.
 //
+//    Brad Whitlock, Fri Mar 12 15:23:08 PST 2004
+//    I changed the code so it sets the active operator's attributes if the
+//    active operator is the same type as the operator whose attributes we're
+//    setting. I also made it work if there is only one operator of the type
+//    that we're setting. If there is more than one operator of the type
+//    that we're setting and it is not the active operator a warning message
+//    is now issued.
+//
 // ****************************************************************************
 
 void
@@ -1666,17 +1674,56 @@ ViewerPlot::SetOperatorAttsFromClient(const int type)
     }
 
     //
+    // Determine how many operators match the operator type and also check
+    // to see if the active operator has the same type.
+    //
+    int nInstances = 0;
+    int firstIndex = -1;
+    bool activeOperatorMatchesType = false;
+    for(int i = 0; i < nOperators; ++i)
+    {
+        bool typeMatches = (operators[i]->GetType() == type);
+        nInstances += (typeMatches ? 1 : 0);
+        if(typeMatches && firstIndex == -1)
+            firstIndex = i;
+        if(activeOperatorIndex == i)
+            activeOperatorMatchesType = typeMatches;
+    }
+
+    //
     // Change the attributes of any operators that match the type.
     //
     bool changed = false;
-    for (int i = 0; i < nOperators; i++)
+    if(activeOperatorMatchesType)
     {
-        if ((operators[i]->GetType() == type) &&
-            (!expandedFlag || (i == activeOperatorIndex)))
-        {
-            operators[i]->SetOperatorAttsFromClient();
-            changed |= operators[i]->NeedsRecalculation();
-        }
+        // The active operator was of the type that we're trying to
+        // set so set the operator attributes for the active operator.
+        operators[activeOperatorIndex]->SetOperatorAttsFromClient();
+        changed |= operators[activeOperatorIndex]->NeedsRecalculation();
+    }
+    else if(nInstances > 1)
+    {
+        // The active operator was not of the type that we're trying
+        // to set AND there is more than one operator of that type.
+        // Warn the user to select one of the operators and don't set
+        // anything rather than clobber the operator settings.
+        char msg[400];
+        const char *oName = operators[firstIndex]->GetName();
+        SNPRINTF(msg, 400, "You have more than one %s operator applied to a "
+            "plot but none of the %s operators is the active operator. "
+            "Please make one of the %s operators be the active operator by "
+            "expanding the plot and clicking one of its %s operators so "
+            "VisIt will apply the operator settings to the correct %s "
+            "operator.", oName, oName, oName, oName, oName);
+        Warning(msg);
+    }
+    else if(firstIndex != -1)
+    {
+        // There's only 1 instance of the operator that we're trying
+        // to set and it is not the active operator. Oh well. Just set
+        // the operator attributes anyway.
+        operators[firstIndex]->SetOperatorAttsFromClient();
+        changed |= operators[firstIndex]->NeedsRecalculation();
     }
 
     //
