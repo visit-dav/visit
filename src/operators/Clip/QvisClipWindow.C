@@ -85,6 +85,10 @@ QvisClipWindow::~QvisClipWindow()
 //   Removed UMR's that came about from labels setting a 'buddy' widget
 //   before that widget had been created. 
 //   
+//   Kathleen Bonnell, Mon Dec  6 14:35:14 PST 2004 
+//   Changed plane*Status from groupButton to checkable QVGroupBox.  Modified
+//   connect statements accordingly.
+//
 // ****************************************************************************
 
 void
@@ -96,6 +100,7 @@ QvisClipWindow::CreateWindowContents()
     connect(tabWidget, SIGNAL(currentChanged(QWidget *)),
             this, SLOT(tabWidgetChanged(QWidget *)));
     topLayout->addWidget(tabWidget);
+
     // 
     // Plane tab 
     // 
@@ -104,31 +109,14 @@ QvisClipWindow::CreateWindowContents()
     planeBox->setMargin(10);
 
     // Plane1 Group
-    QVGroupBox *plane1GBox = new QVGroupBox(planeBox, "p1GBox");
-
-    // Create a group of radio buttons for Plane1 Status
-    plane1Status = new QButtonGroup(plane1GBox, "plane1StatusRG" );
-    plane1Status->setFrameStyle(QFrame::NoFrame);
-
-    QHBoxLayout *plane1StatusButtonsLayout =
-        new QHBoxLayout(plane1Status, 0, -1, "plane1StatusButtonsLayout");
-    plane1StatusButtonsLayout->setSpacing(10);
-    plane1StatusButtonsLayout->setMargin(5);
-    tempLabel = new QLabel("Plane 1     ", plane1Status, "p1Label");
-    plane1StatusButtonsLayout->addWidget(tempLabel);
-    QRadioButton *rb = new QRadioButton("Off", plane1Status );
-    plane1StatusButtonsLayout->addWidget(rb);
-    rb = new QRadioButton( plane1Status );
-    rb->setText( "On" );
-    rb->setChecked( TRUE );
-    plane1StatusButtonsLayout->addWidget(rb);
-    plane1StatusButtonsLayout->addStretch();
-    // Each time a radio button is clicked, call the plane1StatusClicked slot.
-    connect(plane1Status, SIGNAL(clicked(int)),
-            this, SLOT(plane1StatusClicked(int)));
+    plane1Status = new QVGroupBox(planeBox, "p1GBox");
+    plane1Status->setTitle("Plane 1");
+    plane1Status->setCheckable(true);
+    connect(plane1Status, SIGNAL(toggled(bool)),
+            this, SLOT(plane1StatusToggled(bool)));
 
     // Plane1 Origin 
-    QHBox *p1OrigBox = new QHBox(plane1GBox, "p1OrigBox");
+    QHBox *p1OrigBox = new QHBox(plane1Status, "p1OrigBox");
     p1OrigBox->setMargin(5);
     p1OrigBox->setSpacing(10);
 
@@ -138,7 +126,7 @@ QvisClipWindow::CreateWindowContents()
             this, SLOT(processPlane1Origin()));
 
     // Plane1 Normal 
-    QHBox *p1NormBox = new QHBox(plane1GBox, "p1NormBox");
+    QHBox *p1NormBox = new QHBox(plane1Status, "p1NormBox");
     p1NormBox->setMargin(5);
     p1NormBox->setSpacing(10);
     tempLabel = new QLabel("Normal", p1NormBox, "plane1NormalLabel");
@@ -146,36 +134,16 @@ QvisClipWindow::CreateWindowContents()
     connect(plane1Normal, SIGNAL(returnPressed()),
             this, SLOT(processPlane1Normal()));
 
-    
-
     // Plane2 Group
-    QVGroupBox *plane2GBox = new QVGroupBox(planeBox, "p2GBox");
-    plane2GBox->setMargin(5);
-
-
-    // Create a group of radio buttons for Plane2 Status
-    plane2Status = new QButtonGroup(plane2GBox, "plane2StatusRG" );
-    plane2Status->setFrameStyle(QFrame::NoFrame);
-
-    QHBoxLayout *plane2StatusButtonsLayout =
-        new QHBoxLayout(plane2Status, 0, -1, "plane2StatusButtonsLayout");
-    plane2StatusButtonsLayout->setSpacing(10);
-    plane2StatusButtonsLayout->setMargin(5);
-    tempLabel = new QLabel("Plane 2     ", plane2Status, "p2Label");
-    plane2StatusButtonsLayout->addWidget(tempLabel);
-    rb = new QRadioButton("Off", plane2Status );
-    rb->setChecked( TRUE );
-    plane2StatusButtonsLayout->addWidget(rb);
-    rb = new QRadioButton( plane2Status );
-    rb->setText( "On" );
-    plane2StatusButtonsLayout->addWidget(rb);
-    plane2StatusButtonsLayout->addStretch();
-    // Each time a radio button is clicked, call the plane2StatusClicked slot.
-    connect(plane2Status, SIGNAL(clicked(int)),
-            this, SLOT(plane2StatusClicked(int)));
+    plane2Status = new QVGroupBox(planeBox, "p2GBox");
+    plane2Status->setTitle("Plane 2");
+    plane2Status->setCheckable(true);
+    plane2Status->setMargin(5);
+    connect(plane2Status, SIGNAL(toggled(bool)),
+            this, SLOT(plane2StatusToggled(bool)));
 
     // Plane2 Origin 
-    QHBox *p2OrigBox = new QHBox(plane2GBox, "p2OrigBox");
+    QHBox *p2OrigBox = new QHBox(plane2Status, "p2OrigBox");
     p2OrigBox->setMargin(5);
     p2OrigBox->setSpacing(10);
 
@@ -185,7 +153,7 @@ QvisClipWindow::CreateWindowContents()
             this, SLOT(processPlane2Origin()));
 
     // Plane2 Normal 
-    QHBox *p2NormBox = new QHBox(plane2GBox, "p2NormBox");
+    QHBox *p2NormBox = new QHBox(plane2Status, "p2NormBox");
     p2NormBox->setMargin(5);
     p2NormBox->setSpacing(10);
     tempLabel = new QLabel("Normal", p2NormBox, "plane2NormalLabel");
@@ -195,31 +163,14 @@ QvisClipWindow::CreateWindowContents()
 
 
     // Plane3 Group
-    QVGroupBox *plane3GBox = new QVGroupBox(planeBox, "p3GBox");
-
-    // Create a group of radio buttons for Plane3 Status
-    plane3Status = new QButtonGroup(plane3GBox, "plane3StatusRG" );
-    plane3Status->setFrameStyle(QFrame::NoFrame);
-
-    QHBoxLayout *plane3StatusButtonsLayout =
-        new QHBoxLayout(plane3Status, 0, -1, "plane3StatusButtonsLayout");
-    plane3StatusButtonsLayout->setSpacing(10);
-    plane3StatusButtonsLayout->setMargin(5);
-    tempLabel = new QLabel("Plane 3     ", plane3Status, "p3Label");
-    plane3StatusButtonsLayout->addWidget(tempLabel);
-    rb = new QRadioButton("Off", plane3Status );
-    rb->setChecked( TRUE );
-    plane3StatusButtonsLayout->addWidget(rb);
-    rb = new QRadioButton( plane3Status );
-    rb->setText( "On" );
-    plane3StatusButtonsLayout->addWidget(rb);
-    plane3StatusButtonsLayout->addStretch();
-    // Each time a radio button is clicked, call the plane3StatusClicked slot.
-    connect(plane3Status, SIGNAL(clicked(int)),
-            this, SLOT(plane3StatusClicked(int)));
+    plane3Status = new QVGroupBox(planeBox, "p3GBox");
+    plane3Status->setTitle("Plane 3");
+    plane3Status->setCheckable(true);
+    connect(plane3Status, SIGNAL(toggled(bool)),
+            this, SLOT(plane3StatusToggled(bool)));
 
     // Plane3 Origin 
-    QHBox *p3OrigBox = new QHBox(plane3GBox, "p3OrigBox");
+    QHBox *p3OrigBox = new QHBox(plane3Status, "p3OrigBox");
     p3OrigBox->setMargin(5);
     p3OrigBox->setSpacing(10);
 
@@ -229,7 +180,7 @@ QvisClipWindow::CreateWindowContents()
             this, SLOT(processPlane3Origin()));
 
     // Plane3 Normal 
-    QHBox *p3NormBox = new QHBox(plane3GBox, "p3NormBox");
+    QHBox *p3NormBox = new QHBox(plane3Status, "p3NormBox");
     p3NormBox->setMargin(5);
     p3NormBox->setSpacing(10);
     tempLabel = new QLabel("Normal", p3NormBox, "plane3NormalLabel");
@@ -322,6 +273,10 @@ QvisClipWindow::CreateWindowContents()
 //   Replaced simple QString::sprintf's with a setNum because there seems
 //   to be a bug causing numbers to be incremented by .00001.  See '5263.
 //
+//   Kathleen Bonnell, Mon Dec  6 14:35:14 PST 2004 
+//   plane*Status widgets are now QVGroupBoxes, modify set method calls
+//   accordingly. 
+//
 // ****************************************************************************
 
 void
@@ -350,9 +305,9 @@ QvisClipWindow::UpdateWindow(bool doAll)
             tabWidget->blockSignals(true);
             if (clipAtts->GetFuncType() == ClipAttributes::Plane)
             {
-                plane1Status->setButton(clipAtts->GetPlane1Status());
-                plane2Status->setButton(clipAtts->GetPlane2Status());
-                plane3Status->setButton(clipAtts->GetPlane3Status());
+                plane1Status->setChecked(clipAtts->GetPlane1Status());
+                plane2Status->setChecked(clipAtts->GetPlane2Status());
+                plane3Status->setChecked(clipAtts->GetPlane3Status());
                 dptr = clipAtts->GetPlane1Origin();
                 temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
                 plane1Origin->setText(temp);
@@ -388,13 +343,13 @@ QvisClipWindow::UpdateWindow(bool doAll)
             tabWidget->blockSignals(false);
             break;
         case 1: // plane1Status
-            plane1Status->setButton(clipAtts->GetPlane1Status());
+            plane1Status->setChecked(clipAtts->GetPlane1Status());
             break;
         case 2: // plane2Status
-            plane2Status->setButton(clipAtts->GetPlane2Status());
+            plane2Status->setChecked(clipAtts->GetPlane2Status());
             break;
         case 3: // plane3Status
-            plane3Status->setButton(clipAtts->GetPlane3Status());
+            plane3Status->setChecked(clipAtts->GetPlane3Status());
             break;
         case 4: // plane1Origin
             dptr = clipAtts->GetPlane1Origin();
@@ -920,13 +875,13 @@ QvisClipWindow::tabWidgetChanged(QWidget *which)
 
 
 // ****************************************************************************
-// Method: QvisClipWindow::plane1StatusClicked
+// Method: QvisClipWindow::plane1StatusToggled
 //
 // Purpose:
-//   This is a Qt slot function that is called when a status button is clicked.
+//   This is a Qt slot function that is called when a status is changed.
 //
 // Arguments:
-//   button  :  Which status button was selected.
+//   val  :    The new state of the checkbox 
 //
 // Programmer: Kathleen Bonnell
 // Creation:   May 7, 2001
@@ -936,23 +891,26 @@ QvisClipWindow::tabWidgetChanged(QWidget *which)
 //   Kathleen Bonnell, Tue Jun  5 15:11:09 PDT 2001
 //   Changed 'apply' to 'Apply'.
 //   
+//   Kathleen Bonnell, Mon Dec  6 14:35:14 PST 2004 
+//   Changed name from 'Clicked' to 'Toggled'. 
+//
 // ****************************************************************************
 
 void
-QvisClipWindow::plane1StatusClicked(int button)
+QvisClipWindow::plane1StatusToggled(bool val)
 {
-    clipAtts->SetPlane1Status(button);
+    clipAtts->SetPlane1Status(val);
     Apply();
 }
 
 // ****************************************************************************
-// Method: QvisClipWindow::plane2StatusClicked
+// Method: QvisClipWindow::plane2StatusToggled
 //
 // Purpose:
-//   This is a Qt slot function that is called when a status button is clicked.
+//   This is a Qt slot function that is called when a status is changed.
 //
 // Arguments:
-//   button  :  Which status button was selected.
+//   val  :    The new state of the checkbox. 
 //
 // Programmer: Kathleen Bonnell
 // Creation:   May 7, 2001
@@ -962,24 +920,27 @@ QvisClipWindow::plane1StatusClicked(int button)
 //   Kathleen Bonnell, Tue Jun  5 15:11:09 PDT 2001
 //   Changed 'apply' to 'Apply'.
 //   
+//   Kathleen Bonnell, Mon Dec  6 14:35:14 PST 2004 
+//   Changed name from 'Clicked' to 'Toggled'. 
+//
 // ****************************************************************************
 
 void
-QvisClipWindow::plane2StatusClicked(int button)
+QvisClipWindow::plane2StatusToggled(bool val)
 {
-    clipAtts->SetPlane2Status(button);
+    clipAtts->SetPlane2Status(val);
     Apply();
 }
 
 
 // ****************************************************************************
-// Method: QvisClipWindow::plane3StatusClicked
+// Method: QvisClipWindow::plane3StatusToggled
 //
 // Purpose:
-//   This is a Qt slot function that is called when a status button is clicked.
+//   This is a Qt slot function that is called when a status is changed.
 //
 // Arguments:
-//   button  :  Which status button was selected.
+//   val  :    The new state of the checkbox.
 //
 // Programmer: Kathleen Bonnell
 // Creation:   May 7, 2001
@@ -989,12 +950,15 @@ QvisClipWindow::plane2StatusClicked(int button)
 //   Kathleen Bonnell, Tue Jun  5 15:11:09 PDT 2001
 //   Changed 'apply' to 'Apply'.
 //   
+//   Kathleen Bonnell, Mon Dec  6 14:35:14 PST 2004 
+//   Changed name from 'Clicked' to 'Toggled'. 
+//
 // ****************************************************************************
 
 void
-QvisClipWindow::plane3StatusClicked(int button)
+QvisClipWindow::plane3StatusToggled(bool val)
 {
-    clipAtts->SetPlane3Status(button);
+    clipAtts->SetPlane3Status(val);
     Apply();
 }
 
