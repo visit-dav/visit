@@ -69,6 +69,10 @@ MIRConnectivity::~MIRConnectivity()
 //    more translations later.  It is both easier and faster to get the
 //    shape type correct.
 //
+//    Jeremy Meredith, Tue Jul 13 17:50:00 PDT 2004
+//    The previous fix only applied to rectilinear cases.  I added code to
+//    revert to the old method for curvilinear meshes.
+//
 // ****************************************************************************
 
 void
@@ -114,16 +118,32 @@ MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
                     for (int i = 0 ; i < nx ; i++)
                     {
                         cellindex[cell_idx] = (c - connectivity);
-                        *c++ = 8;
-                        *c++ = zOff + yOff + i;
-                        *c++ = zOff + yOff + i+1;
-                        *c++ = zOff + yOff1 + i;
-                        *c++ = zOff + yOff1 + i+1;
-                        *c++ = zOff1 + yOff + i;
-                        *c++ = zOff1 + yOff + i+1;
-                        *c++ = zOff1 + yOff1 + i;
-                        *c++ = zOff1 + yOff1 + i+1;
-                        celltype[cell_idx++] = VTK_VOXEL;
+                        if (dstype == VTK_RECTILINEAR_GRID)
+                        {
+                            *c++ = 8;
+                            *c++ = zOff + yOff + i;
+                            *c++ = zOff + yOff + i+1;
+                            *c++ = zOff + yOff1 + i;
+                            *c++ = zOff + yOff1 + i+1;
+                            *c++ = zOff1 + yOff + i;
+                            *c++ = zOff1 + yOff + i+1;
+                            *c++ = zOff1 + yOff1 + i;
+                            *c++ = zOff1 + yOff1 + i+1;
+                            celltype[cell_idx++] = VTK_VOXEL;
+                        }
+                        else
+                        {
+                            *c++ = 8;
+                            *c++ = zOff + yOff + i;
+                            *c++ = zOff + yOff + i+1;
+                            *c++ = zOff + yOff1 + i+1;
+                            *c++ = zOff + yOff1 + i;
+                            *c++ = zOff1 + yOff + i;
+                            *c++ = zOff1 + yOff + i+1;
+                            *c++ = zOff1 + yOff1 + i+1;
+                            *c++ = zOff1 + yOff1 + i;
+                            celltype[cell_idx++] = VTK_HEXAHEDRON;
+                        }
                     }
                 }
             }
@@ -143,12 +163,24 @@ MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
                 for (int i = 0 ; i < nx ; i++)
                 {
                     cellindex[cell_idx] = (c - connectivity);
-                    *c++ = 4;
-                    *c++ = yOff + i;
-                    *c++ = yOff + i+1;
-                    *c++ = yOff1 + i;
-                    *c++ = yOff1 + i+1;
-                    celltype[cell_idx++] = VTK_PIXEL;
+                    if (dstype == VTK_RECTILINEAR_GRID)
+                    {
+                        *c++ = 4;
+                        *c++ = yOff + i;
+                        *c++ = yOff + i+1;
+                        *c++ = yOff1 + i;
+                        *c++ = yOff1 + i+1;
+                        celltype[cell_idx++] = VTK_PIXEL;
+                    }
+                    else
+                    {
+                        *c++ = 4;
+                        *c++ = yOff + i;
+                        *c++ = yOff + i+1;
+                        *c++ = yOff1 + i+1;
+                        *c++ = yOff1 + i;
+                        celltype[cell_idx++] = VTK_QUAD;
+                    }
                 }
             }
         }

@@ -1697,6 +1697,9 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
 //    Mark C. Miller, Tue May 25 16:42:09 PDT 2004
 //    Added code to set the color tables
 //
+//    Mark C. Miller, Tue Jul 13 17:53:19 PDT 2004
+//    Added call to UpdateView after resizing the window.
+//
 // ****************************************************************************
 void
 NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
@@ -1714,7 +1717,10 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
     int s0,s1;
     viswin->GetSize(s0,s1);
     if ((s0 != atts.GetSize()[0]) || (s1 != atts.GetSize()[1]))
+    {
        viswin->SetSize(atts.GetSize()[0], atts.GetSize()[1]);
+       viswin->UpdateView();
+    }
 
     //
     // Set the view information.

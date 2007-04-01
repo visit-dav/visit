@@ -16,7 +16,12 @@
 
 #include <avtVector.h>
 
-#define BOX_SIZE         1.
+#define BOX_SIZE              1.
+#define NUM_TEXT_ACTORS       7
+#define LAST_HOTPOINT         7
+
+#define NEAR_HOTPOINT_RADIUS (1./60.)
+#define FAR_HOTPOINT_RADIUS  (1./60./2.)
 
 // ****************************************************************************
 // Method: VisitBoxTool::VisitBoxTool
@@ -31,6 +36,8 @@
 // Creation:   Wed Oct 30 12:22:39 PDT 2002
 //
 // Modifications:
+//   Brad Whitlock, Tue Jul 13 14:11:03 PST 2004
+//   I changed how the hotpoints work for this tool.
 //
 // ****************************************************************************
 
@@ -43,42 +50,80 @@ VisitBoxTool::VisitBoxTool(VisWindowToolProxy &p) : VisitInteractiveTool(p),
     activeHotPoint = 0;
 
     HotPoint h;
-    h.radius = 1./60.; // See what a good value is.
+    h.radius = NEAR_HOTPOINT_RADIUS; // See what a good value is.
     h.tool = this;
+
+    const float boxOrigin[] = {0., 0., 0.};
+    const float boxSize[] = {BOX_SIZE, BOX_SIZE, BOX_SIZE};
 
     //
     // Add the box origin hotpoint.
     //
-    h.pt = avtVector(0.,  0.,  0.);
+    h.pt = avtVector(boxOrigin[0], boxOrigin[1], boxOrigin[2]);
     h.callback = TranslateCallback;
     origHotPoints.push_back(h);
 
     //
-    // Add the resize X hotpoint.
+    // Add the XMIN hotpoint.
     //
-    h.pt = avtVector(BOX_SIZE, 0., 0.); // replace later.
-    h.callback = ResizeCallback1;
+    h.pt = avtVector(boxOrigin[0],
+                     boxOrigin[1] + boxSize[1]/2.,
+                     boxOrigin[2] + boxSize[2]/2.);
+    h.callback = XMINCallback;
     origHotPoints.push_back(h);
 
     //
-    // Add the resize Y hotpoint.
+    // Add the XMAX hotpoint.
     //
-    h.pt = avtVector(0., BOX_SIZE,  0.); // replace later.
-    h.callback = ResizeCallback2;
+    h.pt = avtVector(boxOrigin[0] + boxSize[0],
+                     boxOrigin[1] + boxSize[1]/2.,
+                     boxOrigin[2] + boxSize[2]/2.);
+    h.callback = XMAXCallback;
     origHotPoints.push_back(h);
 
     //
-    // Add the resize Z hotpoint.
+    // Add the YMIN hotpoint.
     //
-    h.pt = avtVector(0., 0., BOX_SIZE); // replace later.
-    h.callback = ResizeCallback3;
+    h.pt = avtVector(boxOrigin[0] + boxSize[0]/2.,
+                     boxOrigin[1],
+                     boxOrigin[2] + boxSize[2]/2.);
+    h.callback = YMINCallback;
+    origHotPoints.push_back(h);
+
+    //
+    // Add the YMAX hotpoint.
+    //
+    h.pt = avtVector(boxOrigin[0] + boxSize[0]/2.,
+                     boxOrigin[1] + boxSize[1],
+                     boxOrigin[2] + boxSize[2]/2.);
+    h.callback = YMAXCallback;
+    origHotPoints.push_back(h);
+
+    //
+    // Add the ZMIN hotpoint.
+    //
+    h.pt = avtVector(boxOrigin[0] + boxSize[0]/2.,
+                     boxOrigin[1] + boxSize[1]/2.,
+                     boxOrigin[2]);
+    h.callback = ZMINCallback;
+    origHotPoints.push_back(h);
+
+    //
+    // Add the ZMAX hotpoint.
+    //
+    h.pt = avtVector(boxOrigin[0] + boxSize[0]/2.,
+                     boxOrigin[1] + boxSize[1]/2.,
+                     boxOrigin[2] + boxSize[2]);
+    h.callback = ZMAXCallback;
     origHotPoints.push_back(h);
 
     //
     // Add the resize hotpoint.
     //
-    h.pt = avtVector(BOX_SIZE, BOX_SIZE, BOX_SIZE); // replace later.
-    h.callback = ResizeCallback4;
+    h.pt = avtVector(boxOrigin[0] + boxSize[0],
+                     boxOrigin[1] + boxSize[1],
+                     boxOrigin[2] + boxSize[2]);
+    h.callback = ResizeCallback;
     origHotPoints.push_back(h);
 
     //
@@ -282,6 +327,9 @@ VisitBoxTool::Stop3DMode()
 //   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002 
 //   Use vtkTextProperty to set actor color instead of vtkProperty.
 //
+//   Brad Whitlock, Tue Jul 13 14:18:21 PST 2004
+//   I changed the number of text actors.
+//
 // ****************************************************************************
 
 void
@@ -294,8 +342,8 @@ VisitBoxTool::SetForegroundColor(float r, float g, float b)
 
     // Set the colors of the text actors.
     originTextActor->GetTextProperty()->SetColor(color);
-    for(int i = 0; i < 4; ++i)
-        cornerTextActor[i]->GetTextProperty()->SetColor(color);
+    for(int i = 0; i < NUM_TEXT_ACTORS; ++i)
+        labelTextActor[i]->GetTextProperty()->SetColor(color);
 }
 
 // ****************************************************************************
@@ -417,6 +465,9 @@ VisitBoxTool::CreateBoxActor()
 //   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002
 //   Replace vtkActor2d/vtkTextMapper pairs with vtkTextActor.
 //
+//   Brad Whitlock, Tue Jul 13 14:18:45 PST 2004
+//   I changed the number of text actors.
+//
 // ****************************************************************************
 
 void
@@ -425,10 +476,10 @@ VisitBoxTool::CreateTextActors()
     originTextActor = vtkTextActor::New();
     originTextActor->ScaledTextOff(); 
 
-    for(int i = 0; i < 4; ++i)
+    for(int i = 0; i < NUM_TEXT_ACTORS; ++i)
     {
-        cornerTextActor[i] = vtkTextActor::New();
-        cornerTextActor[i]->ScaledTextOff();
+        labelTextActor[i] = vtkTextActor::New();
+        labelTextActor[i]->ScaledTextOff();
     }
 }
 
@@ -445,6 +496,9 @@ VisitBoxTool::CreateTextActors()
 //   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002
 //   textMappers no longer required.
 //
+//   Brad Whitlock, Tue Jul 13 14:16:45 PST 2004
+//   Changed the number of text actors.
+//
 // ****************************************************************************
 
 void
@@ -456,14 +510,13 @@ VisitBoxTool::DeleteTextActors()
         originTextActor = NULL;
     }
 
-    for(int i = 0; i < 4; ++i)
+    for(int i = 0; i < NUM_TEXT_ACTORS; ++i)
     {
-        if(cornerTextActor[i] != NULL)
+        if(labelTextActor[i] != NULL)
         {
-            cornerTextActor[i]->Delete();
-            cornerTextActor[i] = NULL;
+            labelTextActor[i]->Delete();
+            labelTextActor[i] = NULL;
         }
-
     }
 }
 
@@ -477,6 +530,8 @@ VisitBoxTool::DeleteTextActors()
 // Creation:   Wed Oct 30 12:22:27 PDT 2002
 //
 // Modifications:
+//   Brad Whitlock, Tue Jul 13 14:35:50 PST 2004
+//   Changed number of actors.
 //
 // ****************************************************************************
 
@@ -485,8 +540,8 @@ VisitBoxTool::AddText()
 {
 #ifndef NO_ANNOTATIONS
     proxy.GetForeground()->AddActor2D(originTextActor);
-    for(int i = 0; i < 4; ++i)
-        proxy.GetForeground()->AddActor2D(cornerTextActor[i]);
+    for(int i = 0; i < NUM_TEXT_ACTORS; ++i)
+        proxy.GetForeground()->AddActor2D(labelTextActor[i]);
 #endif
 }
 
@@ -500,6 +555,8 @@ VisitBoxTool::AddText()
 // Creation:   Wed Oct 30 12:22:28 PDT 2002
 //
 // Modifications:
+//   Brad Whitlock, Tue Jul 13 14:35:50 PST 2004
+//   Changed number of actors.
 //
 // ****************************************************************************
 
@@ -508,9 +565,49 @@ VisitBoxTool::RemoveText()
 {
 #ifndef NO_ANNOTATIONS
     proxy.GetForeground()->RemoveActor2D(originTextActor);
-    for(int i = 0; i < 4; ++i)
-        proxy.GetForeground()->RemoveActor2D(cornerTextActor[i]);
+    for(int i = 0; i < NUM_TEXT_ACTORS; ++i)
+        proxy.GetForeground()->RemoveActor2D(labelTextActor[i]);
 #endif
+}
+
+// ****************************************************************************
+// Method: VisItBoxTool::GetHotPointLabel
+//
+// Purpose: 
+//   Returns the label for the index'th hot point.
+//
+// Arguments:
+//   index : The index of the hot point.
+//   str   : The return string for the label.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 13 14:43:01 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisitBoxTool::GetHotPointLabel(int index, char *str)
+{
+    if(index == 0)
+        sprintf(str, " Origin<%1.3g %1.3g %1.3g>",
+            hotPoints[index].pt.x, hotPoints[index].pt.y, hotPoints[index].pt.z);
+    else if(index == 1)
+        sprintf(str, " Xmin = %1.3g", hotPoints[index].pt.x);
+    else if(index == 2)
+        sprintf(str, " Xmax = %1.3g", hotPoints[index].pt.x);
+    else if(index == 3)
+        sprintf(str, " Ymin = %1.3g", hotPoints[index].pt.y);
+    else if(index == 4)
+        sprintf(str, " Ymax = %1.3g", hotPoints[index].pt.y);
+    else if(index == 5)
+        sprintf(str, " Zmin = %1.3g", hotPoints[index].pt.z);
+    else if(index == 6)
+        sprintf(str, " Zmax = %1.3g", hotPoints[index].pt.z);
+    else
+        sprintf(str, " XYZ<%1.3g %1.3g %1.3g>",
+            hotPoints[index].pt.x, hotPoints[index].pt.y, hotPoints[index].pt.z);
 }
 
 // ****************************************************************************
@@ -526,34 +623,57 @@ VisitBoxTool::RemoveText()
 //   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002
 //   Replace mapper with actor.
 //
+//   Brad Whitlock, Tue Jul 13 14:44:02 PST 2004
+//   Moved some code into GetHotPointLabel. I also added code to make hot
+//   points on faces that point away be smaller.
+//
 // ****************************************************************************
 
 void
 VisitBoxTool::UpdateText()
 {
     char str[100];
-    sprintf(str, "Origin <%1.3g %1.3g %1.3g>", hotPoints[0].pt.x,
-            hotPoints[0].pt.y, hotPoints[0].pt.z);
+    GetHotPointLabel(0, str);
     originTextActor->SetInput(str);
     avtVector originScreen = ComputeWorldToDisplay(hotPoints[0].pt);
     float pt[3] = {originScreen.x, originScreen.y, 0.};
     originTextActor->GetPositionCoordinate()->SetValue(pt);
 
-    for(int i = 1; i < 5; ++i)
+    float bounds[6];
+    proxy.GetBounds(bounds);
+    avtVector center((hotPoints[1].pt.x + hotPoints[2].pt.x) * 0.5,
+                     (hotPoints[3].pt.y + hotPoints[4].pt.y) * 0.5,
+                     (hotPoints[5].pt.z + hotPoints[6].pt.z) * 0.5);
+    vtkCamera *camera = proxy.GetCanvas()->GetActiveCamera();
+    const double *pos = camera->GetPosition();
+    const double *focus = camera->GetFocalPoint();
+    avtVector camvec(pos[0]-focus[0],pos[1]-focus[1],pos[2]-focus[2]);
+    camvec.normalize();
+
+    for(int i = 0; i < NUM_TEXT_ACTORS; ++i)
     {
-        if(i == 1)
-            sprintf(str, " X = %1.3g", hotPoints[i].pt.x);
-        else if(i == 2)
-            sprintf(str, " Y = %1.3g", hotPoints[i].pt.y);
-        else if(i == 3)
-            sprintf(str, " Z = %1.3g", hotPoints[i].pt.z);
-        else
-            sprintf(str, " XYZ<%1.3g %1.3g %1.3g>",
-                hotPoints[i].pt.x, hotPoints[i].pt.y, hotPoints[i].pt.z);
-        cornerTextActor[i-1]->SetInput(str);
-        avtVector originScreen = ComputeWorldToDisplay(hotPoints[i].pt);
+        GetHotPointLabel(i+1, str);
+        labelTextActor[i]->SetInput(str);
+        avtVector originScreen = ComputeWorldToDisplay(hotPoints[i+1].pt);
         float pt[3] = {originScreen.x, originScreen.y, 0.};
-        cornerTextActor[i-1]->GetPositionCoordinate()->SetValue(pt);
+        labelTextActor[i]->GetPositionCoordinate()->SetValue(pt);
+
+        // Alter the hot point's radius based on if its face points towards
+        // the camera.
+        if(i < NUM_TEXT_ACTORS-1)
+        {
+            avtVector N(hotPoints[i+1].pt - center);
+            N.normalize();
+
+            double dot = camvec * N;
+            bool facingAway = (dot < 0.);
+ 
+            if(facingAway)
+                hotPoints[i+1].radius = FAR_HOTPOINT_RADIUS;
+            else
+                hotPoints[i+1].radius = NEAR_HOTPOINT_RADIUS;
+
+        }
     }
 }
 
@@ -665,7 +785,7 @@ VisitBoxTool::AddOutline()
         addedOutline = true;
         UpdateOutline();
 
-        int i, n = (activeHotPoint == 0 || activeHotPoint == 4) ? 3 : 2;
+        int i, n = (activeHotPoint == 0 || activeHotPoint == LAST_HOTPOINT) ? 3 : 2;
         for(i = 0; i < n; ++i)
             proxy.GetCanvas()->AddActor(outlineActor[i]);
 
@@ -699,7 +819,7 @@ VisitBoxTool::RemoveOutline()
     if (addedOutline)
     {
 
-        int i, n = (activeHotPoint == 0 || activeHotPoint == 4) ? 3 : 2;
+        int i, n = (activeHotPoint == 0 || activeHotPoint == LAST_HOTPOINT) ? 3 : 2;
         for(i = 0; i < n; ++i)
             proxy.GetCanvas()->RemoveActor(outlineActor[i]);
 
@@ -726,7 +846,9 @@ VisitBoxTool::RemoveOutline()
 // Creation:   Wed Oct 30 12:25:19 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jul 13 15:59:06 PST 2004
+//   Changed to account for more hotpoints.
+//
 // ****************************************************************************
 
 void
@@ -737,7 +859,7 @@ VisitBoxTool:: GetBoundingBoxOutline(int a, avtVector *verts, bool giveMin)
 
     if(a == 1)
     {
-        float x = giveMin ? hotPoints[0].pt.x : hotPoints[1].pt.x;
+        float x = giveMin ? hotPoints[0].pt.x : hotPoints[2].pt.x;
         verts[0] = avtVector(x, extents[2], extents[4]);
         verts[1] = avtVector(x, extents[3], extents[4]);
         verts[2] = avtVector(x, extents[3], extents[5]);
@@ -745,7 +867,7 @@ VisitBoxTool:: GetBoundingBoxOutline(int a, avtVector *verts, bool giveMin)
     }
     else if(a == 2)
     {
-        float y = giveMin ? hotPoints[0].pt.y : hotPoints[2].pt.y;
+        float y = giveMin ? hotPoints[0].pt.y : hotPoints[4].pt.y;
         verts[0] = avtVector(extents[0], y, extents[4]);
         verts[1] = avtVector(extents[1], y, extents[4]);
         verts[2] = avtVector(extents[1], y, extents[5]);
@@ -753,7 +875,7 @@ VisitBoxTool:: GetBoundingBoxOutline(int a, avtVector *verts, bool giveMin)
     }
     else if(a == 3)
     {
-        float z = giveMin ? hotPoints[0].pt.z : hotPoints[3].pt.z;
+        float z = giveMin ? hotPoints[0].pt.z : hotPoints[6].pt.z;
         verts[0] = avtVector(extents[0], extents[2], z);
         verts[1] = avtVector(extents[1], extents[2], z);
         verts[2] = avtVector(extents[1], extents[3], z);
@@ -776,7 +898,10 @@ VisitBoxTool:: GetBoundingBoxOutline(int a, avtVector *verts, bool giveMin)
 // Modifications:
 //   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002
 //   Replace mapper with actor.
-//   
+//
+//   Brad Whitlock, Tue Jul 13 14:45:22 PST 2004
+//   Moved some code into GetHotPointLabel.
+//
 // ****************************************************************************
 
 void
@@ -785,7 +910,7 @@ VisitBoxTool::UpdateOutline()
     if(!addedOutline)
         return;
 
-    if(activeHotPoint == 0 || activeHotPoint == 4)
+    if(activeHotPoint == 0 || activeHotPoint == LAST_HOTPOINT)
     {
         float totalExtents[6];
         proxy.GetBounds(totalExtents);
@@ -798,11 +923,11 @@ VisitBoxTool::UpdateOutline()
              vtkOutlineSource *source = vtkOutlineSource::New();
              float extents[6];
              extents[0] = (i == 0) ? totalExtents[0] : hotPoints[0].pt.x;
-             extents[1] = (i == 0) ? totalExtents[1] : hotPoints[4].pt.x;
+             extents[1] = (i == 0) ? totalExtents[1] : hotPoints[LAST_HOTPOINT].pt.x;
              extents[2] = (i == 1) ? totalExtents[2] : hotPoints[0].pt.y;
-             extents[3] = (i == 1) ? totalExtents[3] : hotPoints[4].pt.y;
+             extents[3] = (i == 1) ? totalExtents[3] : hotPoints[LAST_HOTPOINT].pt.y;
              extents[4] = (i == 2) ? totalExtents[4] : hotPoints[0].pt.z;
-             extents[5] = (i == 2) ? totalExtents[5] : hotPoints[4].pt.z;
+             extents[5] = (i == 2) ? totalExtents[5] : hotPoints[LAST_HOTPOINT].pt.z;
              source->SetBounds(extents);
              outlineData[i] = source->GetOutput();
              outlineData[i]->Register(NULL);
@@ -823,7 +948,14 @@ VisitBoxTool::UpdateOutline()
         bool planeFlag[6];
         avtVector verts[4];
 
-        plane[0] = activeHotPoint; plane[1] = activeHotPoint;
+        int ahp;
+        if(activeHotPoint == 1 || activeHotPoint == 2)
+            plane[0] = plane[1] = 1;
+        else if(activeHotPoint == 3 || activeHotPoint == 4)
+            plane[0] = plane[1] = 2;
+        else
+            plane[0] = plane[1] = 3;
+        plane[0] = ahp; plane[1] = ahp;
         planeFlag[0] = true; planeFlag[1] = false;
 
         for(int j = 0; j < 2; ++j)
@@ -890,12 +1022,7 @@ VisitBoxTool::UpdateOutline()
         // Update the text along the edge of the outline.
         //
         char str[100];
-        if(activeHotPoint == 1)
-            sprintf(str, " X = %1.3g", hotPoints[1].pt.x);
-        else if(activeHotPoint == 2)
-            sprintf(str, " Y = %1.3g", hotPoints[2].pt.y);
-        else
-            sprintf(str, " Z = %1.3g", hotPoints[3].pt.z);
+        GetHotPointLabel(activeHotPoint, str);
         for(int i = 0; i < 4; ++i)
         {
             outlineTextActor[i]->SetInput(str);
@@ -916,7 +1043,9 @@ VisitBoxTool::UpdateOutline()
 // Creation:   Wed Oct 30 12:22:31 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jul 13 15:56:07 PST 2004
+//   Changed to account for more hotpoints.
+//
 // ****************************************************************************
 
 void
@@ -925,15 +1054,15 @@ VisitBoxTool::CallCallback()
     // Fill the extents array that we'll give to the client. Make sure the
     // min extents are actually first.
     double extents[6];
-    bool minFirstX = (hotPoints[0].pt.x < hotPoints[1].pt.x);
-    bool minFirstY = (hotPoints[0].pt.y < hotPoints[2].pt.y);
-    bool minFirstZ = (hotPoints[0].pt.z < hotPoints[3].pt.z);
-    extents[0] = minFirstX ? hotPoints[0].pt.x : hotPoints[1].pt.x;
-    extents[1] = minFirstX ? hotPoints[1].pt.x : hotPoints[0].pt.x;
-    extents[2] = minFirstY ? hotPoints[0].pt.y : hotPoints[2].pt.y;
-    extents[3] = minFirstY ? hotPoints[2].pt.y : hotPoints[0].pt.y;
-    extents[4] = minFirstZ ? hotPoints[0].pt.z : hotPoints[3].pt.z;
-    extents[5] = minFirstZ ? hotPoints[3].pt.z : hotPoints[0].pt.z;
+    bool minFirstX = (hotPoints[0].pt.x < hotPoints[2].pt.x);
+    bool minFirstY = (hotPoints[0].pt.y < hotPoints[4].pt.y);
+    bool minFirstZ = (hotPoints[0].pt.z < hotPoints[6].pt.z);
+    extents[0] = minFirstX ? hotPoints[0].pt.x : hotPoints[2].pt.x;
+    extents[1] = minFirstX ? hotPoints[2].pt.x : hotPoints[0].pt.x;
+    extents[2] = minFirstY ? hotPoints[0].pt.y : hotPoints[4].pt.y;
+    extents[3] = minFirstY ? hotPoints[4].pt.y : hotPoints[0].pt.y;
+    extents[4] = minFirstZ ? hotPoints[0].pt.z : hotPoints[6].pt.z;
+    extents[5] = minFirstZ ? hotPoints[6].pt.z : hotPoints[0].pt.z;
 
     Interface.SetExtents(extents);
     Interface.ExecuteCallback();
@@ -1092,7 +1221,9 @@ VisitBoxTool::Translate(CB_ENUM e, int, int shift, int x, int y)
 //  Creation:    Wed Oct 30 12:22:36 PDT 2002
 //
 //  Modifications:
-// 
+//    Brad Whitlock, Tue Jul 13 14:48:14 PST 2004
+//    I updated the code so it handles more hotpoints.
+//
 // ****************************************************************************
 
 #define TOLERANCE 0.0001
@@ -1101,7 +1232,10 @@ void
 VisitBoxTool::Resize(CB_ENUM e, int, int, int x, int y)
 {
     HotPoint &origin = hotPoints[0];
-    HotPoint &resize = hotPoints[activeHotPoint];
+    int idx = (activeHotPoint < LAST_HOTPOINT) ? (
+     (activeHotPoint & 1) ? (activeHotPoint+1) : (activeHotPoint)
+     ) : LAST_HOTPOINT;
+    HotPoint &resize = hotPoints[idx];
 
     float dX, dY, dZ;
     avtVector originScreen, resizeScreen;
@@ -1111,7 +1245,7 @@ VisitBoxTool::Resize(CB_ENUM e, int, int, int x, int y)
         originScreen = ComputeWorldToDisplay(origin.pt);
         resizeScreen = ComputeWorldToDisplay(resize.pt);
 
-        if(activeHotPoint == 4)
+        if(activeHotPoint == LAST_HOTPOINT)
         {
             dY = originScreen.y - resizeScreen.y;
             originalDistance = dY;
@@ -1125,8 +1259,9 @@ VisitBoxTool::Resize(CB_ENUM e, int, int, int x, int y)
     else if(e == CB_MIDDLE)
     {
         double scale;
+        float currentDist;
 
-        if(activeHotPoint == 4)
+        if(activeHotPoint == LAST_HOTPOINT)
         {
              originScreen = ComputeWorldToDisplay(origin.pt);
              dY = originScreen.y - double(y);
@@ -1147,9 +1282,9 @@ VisitBoxTool::Resize(CB_ENUM e, int, int, int x, int y)
             dX = extents[1] - extents[0];
             dY = extents[3] - extents[2];
             dZ = extents[5] - extents[4];
-            if(activeHotPoint == 1)
+            if(activeHotPoint == 1 || activeHotPoint == 2)
                 wLength = dX;
-            else if(activeHotPoint == 2)
+            else if(activeHotPoint == 3 || activeHotPoint == 4)
                 wLength = dY;
             else
                 wLength = dZ;
@@ -1160,10 +1295,9 @@ VisitBoxTool::Resize(CB_ENUM e, int, int, int x, int y)
             float worldDelta = (float(screenDelta) / float(size[1])) * wLength;
 
             avtVector motion(resize.pt - origin.pt);
-            float currentDist;
-            if(activeHotPoint == 1)
+            if(activeHotPoint == 1 || activeHotPoint == 2)
                 currentDist = motion.x;
-            else if(activeHotPoint == 2)
+            else if(activeHotPoint == 3 || activeHotPoint == 4)
                 currentDist = motion.y;
             else
                 currentDist = motion.z;
@@ -1179,14 +1313,50 @@ VisitBoxTool::Resize(CB_ENUM e, int, int, int x, int y)
         if(activeHotPoint == 1)
             S = avtMatrix::CreateScale(scale, 1., 1.);
         else if(activeHotPoint == 2)
-            S = avtMatrix::CreateScale(1., scale, 1.);
+            S = avtMatrix::CreateScale(scale, 1., 1.);
         else if(activeHotPoint == 3)
-            S = avtMatrix::CreateScale(1., 1., scale);
+            S = avtMatrix::CreateScale(1., scale, 1.);
         else if(activeHotPoint == 4)
+            S = avtMatrix::CreateScale(1., scale, 1.);
+        else if(activeHotPoint == 5)
+            S = avtMatrix::CreateScale(1., 1., scale);
+        else if(activeHotPoint == 6)
+            S = avtMatrix::CreateScale(1., 1., scale);
+        else if(activeHotPoint == 7)
             S = avtMatrix::CreateScale(scale);
+
+        // Record the values of the max hot points before transformation.
+        double Maxes[3];
+        Maxes[0] = hotPoints[2].pt.x;
+        Maxes[1] = hotPoints[4].pt.y;
+        Maxes[2] = hotPoints[6].pt.z;
 
         SMtx = S * SMtx;
         DoTransformations();
+
+        // Hot points that scale in the min direction increase the scale
+        // but also have to translate the origin.
+        if(activeHotPoint == 1)
+        {
+            double dX = Maxes[0] - hotPoints[2].pt.x;
+            avtMatrix T(avtMatrix::CreateTranslate(dX, 0., 0.));
+            TMtx =  T * TMtx;
+            DoTransformations();
+        }
+        else if(activeHotPoint == 3)
+        {
+            double dY = Maxes[1] - hotPoints[4].pt.y;
+            avtMatrix T(avtMatrix::CreateTranslate(0., dY, 0.));
+            TMtx =  T * TMtx;
+            DoTransformations();
+        }
+        else if(activeHotPoint == 5)
+        {
+            double dZ = Maxes[2] - hotPoints[6].pt.z;
+            avtMatrix T(avtMatrix::CreateTranslate(0., 0., dZ));
+            TMtx =  T * TMtx;
+            DoTransformations();
+        }
 
         // Save the distance for next time through.
         originalDistance = dY;
@@ -1274,7 +1444,7 @@ VisitBoxTool::TranslateCallback(VisitInteractiveTool *it, CB_ENUM e,
 }
 
 void
-VisitBoxTool::ResizeCallback1(VisitInteractiveTool *it, CB_ENUM e,
+VisitBoxTool::XMINCallback(VisitInteractiveTool *it, CB_ENUM e,
     int ctrl, int shift, int x, int y)
 {
     VisitBoxTool *bt = (VisitBoxTool *)it;
@@ -1283,7 +1453,7 @@ VisitBoxTool::ResizeCallback1(VisitInteractiveTool *it, CB_ENUM e,
 }
 
 void
-VisitBoxTool::ResizeCallback2(VisitInteractiveTool *it, CB_ENUM e,
+VisitBoxTool::XMAXCallback(VisitInteractiveTool *it, CB_ENUM e,
     int ctrl, int shift, int x, int y)
 {
     VisitBoxTool *bt = (VisitBoxTool *)it;
@@ -1292,7 +1462,7 @@ VisitBoxTool::ResizeCallback2(VisitInteractiveTool *it, CB_ENUM e,
 }
 
 void
-VisitBoxTool::ResizeCallback3(VisitInteractiveTool *it, CB_ENUM e,
+VisitBoxTool::YMINCallback(VisitInteractiveTool *it, CB_ENUM e,
     int ctrl, int shift, int x, int y)
 {
     VisitBoxTool *bt = (VisitBoxTool *)it;
@@ -1301,10 +1471,37 @@ VisitBoxTool::ResizeCallback3(VisitInteractiveTool *it, CB_ENUM e,
 }
 
 void
-VisitBoxTool::ResizeCallback4(VisitInteractiveTool *it, CB_ENUM e,
+VisitBoxTool::YMAXCallback(VisitInteractiveTool *it, CB_ENUM e,
     int ctrl, int shift, int x, int y)
 {
     VisitBoxTool *bt = (VisitBoxTool *)it;
     bt->SetActiveHotPoint(4);
+    bt->Resize(e, ctrl, shift, x, y);
+}
+
+void
+VisitBoxTool::ZMINCallback(VisitInteractiveTool *it, CB_ENUM e,
+    int ctrl, int shift, int x, int y)
+{
+    VisitBoxTool *bt = (VisitBoxTool *)it;
+    bt->SetActiveHotPoint(5);
+    bt->Resize(e, ctrl, shift, x, y);
+}
+
+void
+VisitBoxTool::ZMAXCallback(VisitInteractiveTool *it, CB_ENUM e,
+    int ctrl, int shift, int x, int y)
+{
+    VisitBoxTool *bt = (VisitBoxTool *)it;
+    bt->SetActiveHotPoint(6);
+    bt->Resize(e, ctrl, shift, x, y);
+}
+
+void
+VisitBoxTool::ResizeCallback(VisitInteractiveTool *it, CB_ENUM e,
+    int ctrl, int shift, int x, int y)
+{
+    VisitBoxTool *bt = (VisitBoxTool *)it;
+    bt->SetActiveHotPoint(7);
     bt->Resize(e, ctrl, shift, x, y);
 }
