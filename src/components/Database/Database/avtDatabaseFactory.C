@@ -39,10 +39,44 @@ using std::string;
 using std::vector;
 
 //
+// Static data members
+//
+char    *avtDatabaseFactory::defaultFormat = "Silo";
+
+
+//
 // Function Prototypes
 //
-
 void CheckPermissions(const char *);
+
+
+// ****************************************************************************
+//  Method: avtDatabaseFactory::SetDefaultFormat
+//
+//  Purpose:
+//      Sets the default format to use if the file type cannot be determined
+//      by looking at extensions.
+//
+//  Arguments:
+//      format  The name of the format to use (example: "Silo")
+//  Programmer: Hank Childs
+//  Creation:   May 9, 2004
+//
+// ****************************************************************************
+
+void
+avtDatabaseFactory::SetDefaultFormat(const char *f)
+{
+    //
+    // It's quite possible that the current format string is pointing to 
+    // something on the heap (in which case we should free it).  However, it
+    // might be pointing to something in the program portion of memory, which
+    // would be a bad thing to delete.  So just leak it.  It's only a few
+    // bytes.
+    defaultFormat = new char[strlen(f)+1];
+    strcpy(defaultFormat, f);
+}
+
 
 // ****************************************************************************
 //  Method: avtDatabaseFactory::FileList
@@ -90,6 +124,9 @@ void CheckPermissions(const char *);
 //
 //    Brad Whitlock, Fri Apr 30 16:05:42 PST 2004
 //    I made extension comparison be case insensitive on Windows.
+//
+//    Hank Childs, Sun May  9 11:41:45 PDT 2004
+//    Use the user-settable default format, rather than a hard-coded "Silo".
 //
 // ****************************************************************************
 
@@ -239,7 +276,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
     //
     // If no file extension match, then we default to the given database type
     //
-    string defaultDatabaseType("Silo");
+    string defaultDatabaseType(defaultFormat);
     if (rv == NULL)
     {
         int defaultindex = dbmgr->GetAllIndexFromName(defaultDatabaseType);

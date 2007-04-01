@@ -5,6 +5,8 @@
 #include <Init.h>
 #include <InitVTKNoGraphics.h>
 #include <avtDatabase.h>
+#include <avtDatabaseFactory.h>
+
 
 // Prototypes.
 bool ProcessCommandLine(int argc, char *argv[]);
@@ -136,6 +138,9 @@ main(int argc, char *argv[])
 //   I made it return a flag that tells whether we should connect back to
 //   the calling program.
 //
+//   Hank Childs, Sun May  9 11:52:45 PDT 2004
+//   Added the default_format argument.
+//
 // ****************************************************************************
 
 bool
@@ -156,6 +161,14 @@ ProcessCommandLine(int argc, char *argv[])
         else if(strcmp(argv[i], "-noconnect") == 0)
         {
             runApp = false;
+        }
+        else if (strcmp(argv[i], "-default_format") == 0)
+        {
+            if ((i+1) < argc)
+            {
+                avtDatabaseFactory::SetDefaultFormat(argv[i+1]);
+                i++;
+            }
         }
     }
 

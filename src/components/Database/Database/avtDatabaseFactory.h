@@ -36,6 +36,9 @@ class CommonDatabasePluginInfo;
 //    Added string specifying format type.  Also removed outdated comments
 //    from the era when the DB factory knew about specific formats.
 //
+//    Hank Childs, Sun May  9 11:41:45 PDT 2004
+//    Allow for default file format type to be set.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabaseFactory
@@ -45,11 +48,14 @@ class DATABASE_API avtDatabaseFactory
                                            const char * = NULL);
     static avtDatabase           *VisitFile(const char *, int,
                                             const char * = NULL);
+    static void                   SetDefaultFormat(const char *);
 
   protected:
     static avtDatabase           *SetupDatabase(CommonDatabasePluginInfo *,
                                                 const char * const *, int,
                                                 int, int, int);
+
+    static char                  *defaultFormat;
 };
 
 

@@ -47,8 +47,10 @@ class avtBOVFileFormat : public avtSTMDFileFormat
     int                        bricklet_size[3];
     char                      *varname;
     bool                       hasBoundaries;
+    bool                       declaredEndianess;
     bool                       littleEndian;
     bool                       nodalCentering;
+    bool                       byteData;
     float                      min, max;
     float                      origin[3];
     float                      dimensions[3];
