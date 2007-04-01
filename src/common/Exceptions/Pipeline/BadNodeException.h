@@ -20,6 +20,8 @@
 //  Creation:   January 13, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Wed Jan 19 15:54:38 PST 2005
+//    Added constructor with string arg.
 //
 // ****************************************************************************
 
@@ -28,6 +30,7 @@ class AVTEXCEPTION_API BadNodeException : public PipelineException
   public:
                     BadNodeException(int, int);
                     BadNodeException(std::vector<int> &);
+                    BadNodeException(int, std::string &);
     virtual        ~BadNodeException() VISIT_THROW_NOTHING {;};
 };
 

@@ -474,10 +474,10 @@ then
    if [ $test = no ]
    then
       scp thunder2:/usr/tmp/brugger/thunder/visitbuild/visit$ver2.linux-ia64.tar.gz .
-      scp visit$ver2.linux-ia64.tar.gz alc0:
-      scp visit-install alc0:
-      scp thunder alc0:thunder_install
-      ssh alc0 "chmod 750 thunder_install;./thunder_install"
+      scp visit$ver2.linux-ia64.tar.gz gps15:
+      scp visit-install gps15:
+      scp thunder gps15:thunder_install
+      ssh gps15 "chmod 750 thunder_install;./thunder_install"
    fi
 fi
 

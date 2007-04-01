@@ -14,6 +14,7 @@
 #include <avtTerminatingSource.h>
 
 #include <BadCellException.h>
+#include <BadNodeException.h>
 #include <GhostCellException.h>
 #include <InvalidVariableException.h>
 #include <InvalidCategoryException.h>
@@ -26,6 +27,7 @@
 #include <avtCallback.h>
 #include <avtParallel.h>
 #include <avtExtents.h>
+#include <snprintf.h>
 
 using std::string;
 using std::vector;
@@ -55,7 +57,7 @@ using std::vector;
 avtOnionPeelFilter::avtOnionPeelFilter()
 {
     opf  = vtkOnionPeelFilter::New();
-    opf->SetBadSeedCellCallback(avtOnionPeelFilter::BadSeedCellCallback, this);
+    opf->SetBadSeedCallback(avtOnionPeelFilter::BadSeedCallback, this);
 
     encounteredBadSeed = false;
     encounteredGhostSeed = false;
@@ -196,6 +198,9 @@ avtOnionPeelFilter::Equivalent(const AttributeGroup *a)
 //    Add support for data whose zones were not preserved (e.g. MIR), set
 //    a flag in the vtk filter.
 //
+//    Kathleen Bonnell, Wed Jan 19 16:15:35 PST 2005 
+//    Add support for nodal seedId.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -205,11 +210,6 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
     {
         return NULL;
     }
-    bool reconstructOriginalCells = false;
-    if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved())
-    {
-        reconstructOriginalCells = true;
-    } 
    
     encounteredBadSeed = false;
     encounteredGhostSeed = false;
@@ -220,8 +220,8 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
         if ((in_ds->GetDataObjectType() != VTK_STRUCTURED_GRID) && 
             (in_ds->GetDataObjectType() != VTK_RECTILINEAR_GRID))
         {
-            char msg[1024];
-            sprintf(msg, "A Logical Index can only be used with structured data.");
+            char msg[64];
+            SNPRINTF(msg, 64, "A Logical Index can only be used with structured data.");
             EXCEPTION1(LogicalIndexException, msg);
         }
         if (groupCategory)
@@ -278,40 +278,52 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
     avtDataAttributes &da = GetInput()->GetInfo().GetAttributes();
     if (!atts.GetLogical())
     {
-        int seedCell = -1;
+        int seed = -1;
         if (atts.GetUseGlobalId()) 
         {
-            seedCell = 
-                vtkVisItUtility::GetLocalElementForGlobal(in_ds, id[0], true);
-            if (seedCell == -1)
+            if (atts.GetSeedType() == OnionPeelAttributes::SeedCell)
+            {
+                seed = vtkVisItUtility::GetLocalElementForGlobal(
+                         in_ds, id[0], true);
+            }
+            else
+            {
+                seed = vtkVisItUtility::GetLocalElementForGlobal(
+                         in_ds, id[0], false);
+            }
+            if (seed == -1)
             {
                  return NULL;
             }
         }
         else
         {
-            if (da.GetCellOrigin() != 0)
+            seed = id[0];
+            if (atts.GetSeedType() == OnionPeelAttributes::SeedCell)
             {
-                debug5 << "Offsetting seed cell by origin = " << da.GetCellOrigin()
-                       << endl;
-                if (da.GetCellOrigin() > 1)
+                if (da.GetCellOrigin() != 0)
                 {
-                    debug1 << "WARNING: mesh origin to offset seed cell by is "
-                            << da.GetCellOrigin() << endl;
+                    debug5 << "Offsetting seed cell by origin = " 
+                           << da.GetCellOrigin() << endl;
+                    if (da.GetCellOrigin() > 1)
+                    {
+                        debug1 << "WARNING: mesh origin to offset seed cell by is "
+                                << da.GetCellOrigin() << endl;
+                    }
                 }
+                seed -= da.GetCellOrigin();
             }
-            seedCell = id[0] - da.GetCellOrigin();
         }
 
         //
         // This often comes up when someone has their default saved to cell 0 and
         // the origin is 1.  Then the cell they're asking for is '-1'.
         //
-        if (seedCell < 0)
+        if (seed < 0)
         {
-            seedCell = 0;
+            seed = 0;
         }
-        opf->SetSeedCellId(seedCell);
+        opf->SetSeedId(seed);
     }
     else
     {
@@ -323,7 +335,10 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
     opf->SetInput(ds);
     opf->SetRequestedLayer(atts.GetRequestedLayer());
     opf->SetAdjacencyType(atts.GetAdjacencyType());
-    opf->SetReconstructOriginalCells(reconstructOriginalCells);
+    opf->SetSeedIdIsForCell((int)
+        (atts.GetSeedType() == OnionPeelAttributes::SeedCell));
+    opf->SetReconstructOriginalCells((int)
+        !GetInput()->GetInfo().GetValidity().GetZonesPreserved());
 
     vtkUnstructuredGrid *out_ug = vtkUnstructuredGrid::New();
     opf->SetOutput(out_ug);
@@ -344,7 +359,7 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
 }
 
 // ****************************************************************************
-//  Method: avtOnionPeelFilter::BadSeedCellCallback
+//  Method: avtOnionPeelFilter::BadSeedCallback
 //
 //  Purpose:
 //      This is the static function that is called when a bad seed cell is
@@ -353,18 +368,22 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
 //  Programmer: Hank Childs
 //  Creation:   May 23, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jan 19 16:15:35 PST 2005 
+//    Removed 'Cell' from method name and args. 
+//
 // ****************************************************************************
 
 void
-avtOnionPeelFilter::BadSeedCellCallback(void *ptr, int seedCell, int numCells, 
+avtOnionPeelFilter::BadSeedCallback(void *ptr, int seed, int numIds, 
                                         bool ghost)
 {
     avtOnionPeelFilter *opf = (avtOnionPeelFilter *) ptr;
-    opf->BadSeedCell(seedCell, numCells, ghost);
+    opf->BadSeed(seed, numIds, ghost);
 }
 
 // ****************************************************************************
-//  Method: avtOnionPeelFilter::BadSeedCell
+//  Method: avtOnionPeelFilter::BadSeed
 //
 //  Purpose:
 //      Called when a bad seed cell is encountered.
@@ -375,10 +394,14 @@ avtOnionPeelFilter::BadSeedCellCallback(void *ptr, int seedCell, int numCells,
 //  Modifications:
 //    Kathleen Bonnell, Thu Aug 15 18:30:44 PDT 2002
 //    Added new category of bad seed cell:  ghost.
+//
+//    Kathleen Bonnell, Wed Jan 19 16:15:35 PST 2005 
+//    Removed 'Cell' from method name and args. 
+//
 // ****************************************************************************
 
 void
-avtOnionPeelFilter::BadSeedCell(int seedCell, int numCells, bool ghost)
+avtOnionPeelFilter::BadSeed(int seed, int numIds, bool ghost)
 {
     //
     // At this point I would like to throw the actual exception.  
@@ -390,8 +413,8 @@ avtOnionPeelFilter::BadSeedCell(int seedCell, int numCells, bool ghost)
     // (more likely this being a shared library is the culprit) and issue the
     // exception then.
     //
-    badSeedCell = seedCell;
-    maximumCells = numCells;
+    badSeed = seed;
+    maximumIds = numIds;
     if (ghost)
         encounteredGhostSeed = true;
     else
@@ -450,6 +473,9 @@ avtOnionPeelFilter::RefashionDataObjectInfo(void)
 //    Kathleen Bonnell, Tue Jan 18 19:37:46 PST 2005
 //    Ensure ZoneNumbers are requested whenever zones not preserved. 
 //
+//    Kathleen Bonnell, Wed Jan 19 16:15:35 PST 2005 
+//    Request NodeNumbers whenever zones not preserved, and seedId is a node. 
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -458,12 +484,13 @@ avtOnionPeelFilter::PerformRestriction(avtPipelineSpecification_p spec)
     if (atts.GetSubsetName() == "Whole") 
     {
         if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved() || 
-            spec->GetDataSpecification()->MayRequireZones())
+            spec->GetDataSpecification()->MayRequireZones() ||
+            atts.GetUseGlobalId())
         {
             spec->GetDataSpecification()->TurnZoneNumbersOn();
+            if (atts.GetSeedType() == OnionPeelAttributes::SeedNode)
+                spec->GetDataSpecification()->TurnNodeNumbersOn();
         }
-        if (atts.GetUseGlobalId()) 
-            spec->GetDataSpecification()->TurnGlobalZoneNumbersOn();
         //
         // No restriction necessary. 
         //
@@ -472,9 +499,12 @@ avtOnionPeelFilter::PerformRestriction(avtPipelineSpecification_p spec)
     if (atts.GetUseGlobalId()) 
     {
         spec->GetDataSpecification()->TurnGlobalZoneNumbersOn();
+        spec->GetDataSpecification()->TurnGlobalNodeNumbersOn();
         if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved()) 
         {
             spec->GetDataSpecification()->TurnZoneNumbersOn();
+            if (atts.GetSeedType() == OnionPeelAttributes::SeedNode)
+                spec->GetDataSpecification()->TurnNodeNumbersOn();
         }
         //
         // Cannot determine a-priori where the global zone number
@@ -512,6 +542,8 @@ avtOnionPeelFilter::PerformRestriction(avtPipelineSpecification_p spec)
         rv->GetDataSpecification()->MayRequireZones())
     {
         rv->GetDataSpecification()->TurnZoneNumbersOn();
+        if (atts.GetSeedType() == OnionPeelAttributes::SeedNode)
+            rv->GetDataSpecification()->TurnNodeNumbersOn();
     }
     return rv;
 }
@@ -631,6 +663,9 @@ avtOnionPeelFilter::VerifyInput()
 //    Kathleen Bonnell, Tue Jan 18 19:37:46 PST 2005 
 //    Added another type of exception call. 
 //
+//    Kathleen Bonnell, Wed Jan 19 16:15:35 PST 2005
+//    Added BadNodeException call when badSeed is a node. 
+//
 // ****************************************************************************
 
 void
@@ -652,31 +687,53 @@ avtOnionPeelFilter::PostExecute()
             {
                 if (atts.GetLogical())
                 {
-                    EXCEPTION1(BadCellException, atts.GetIndex());
+                    if (atts.GetSeedType() == OnionPeelAttributes::SeedCell)    
+                    {
+                        EXCEPTION1(BadCellException, atts.GetIndex());
+                    }
+                    else 
+                    {
+                        EXCEPTION1(BadNodeException, atts.GetIndex());
+                    }
                 }
                 else 
                 {
-                    EXCEPTION2(BadCellException, badSeedCell, maximumCells);
+                    if (atts.GetSeedType() == OnionPeelAttributes::SeedCell)    
+                    {
+                        EXCEPTION2(BadCellException, badSeed, maximumIds);
+                    }
+                    else 
+                    {
+                        EXCEPTION2(BadNodeException, badSeed, maximumIds);
+                    }
                 }
             }
             else 
             {
                 string reason("It is not available in current data.");
-                EXCEPTION2(BadCellException, badSeedCell, reason);
+
+                if (atts.GetSeedType() == OnionPeelAttributes::SeedCell)    
+                {
+                    EXCEPTION2(BadCellException, badSeed, reason);
+                }
+                else 
+                {
+                    EXCEPTION2(BadNodeException, badSeed, reason);
+                }
             }
         }
         if (encounteredGhostSeed)
         {
             encounteredGhostSeed = false;
-            char msg [512];
-            sprintf(msg, "Please choose a different seed cell.");
+            char msg [64];
+            SNPRINTF(msg, 64, "Please choose a different seed cell.");
             if (atts.GetLogical())
             {
                 EXCEPTION2(GhostCellException, atts.GetIndex(), msg);
             }
             else
             {
-                EXCEPTION2(GhostCellException, badSeedCell, msg);
+                EXCEPTION2(GhostCellException, badSeed, msg);
             }
         }
     }

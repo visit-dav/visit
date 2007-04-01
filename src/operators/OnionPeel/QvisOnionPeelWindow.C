@@ -89,12 +89,15 @@ QvisOnionPeelWindow::~QvisOnionPeelWindow()
 //   Kathleen Bonnell, Tue Jan 18 19:37:46 PST 2005 
 //   Changed maximum for requestedLayer spin box. 
 //   
+//   Kathleen Bonnell, Wed Jan 19 15:45:38 PST 2005 
+//   Added 'seedType' button group. 
+//
 // ****************************************************************************
 
 void
 QvisOnionPeelWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 5,3,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 7,3,  10, "mainLayout");
 
 
     //
@@ -144,35 +147,50 @@ QvisOnionPeelWindow::CreateWindowContents()
             this, SLOT(subsetNameChanged()));
     mainLayout->addMultiCellWidget(subsetName, 2,2, 1,2);
 
+    //
+    // Seed
+    //
+    mainLayout->addWidget(new QLabel("Seed", central, "seedTypeLabel"),3,0);
+    seedType = new QButtonGroup(central, "seedType");
+    seedType->setFrameStyle(QFrame::NoFrame);
+    QHBoxLayout *seedTypeLayout = new QHBoxLayout(seedType);
+    seedTypeLayout->setSpacing(10);
+    QRadioButton *rb = new QRadioButton("Cell", seedType);
+    seedTypeLayout->addWidget(rb);
+    rb = new QRadioButton("Node", seedType);
+    seedTypeLayout->addWidget(rb);
+    connect(seedType, SIGNAL(clicked(int)),
+            this, SLOT(seedTypeChanged(int)));
+    mainLayout->addWidget(seedType, 3,1);
     
     //
     // Index
     //
-    mainLayout->addMultiCellWidget(new QLabel("Cell # or i j [k]", 
-                central, "indexLabel"),3,3,0,1);
+    mainLayout->addMultiCellWidget(new QLabel("Seed # or i j [k]", 
+                central, "indexLabel"),4,4,0,1);
     index = new QLineEdit(central, "index");
     index->setText(QString("1"));
     connect(index, SIGNAL(returnPressed()),
             this, SLOT(indexChanged()));
-    mainLayout->addWidget(index, 3,2);
+    mainLayout->addWidget(index, 4,2);
 
     //
     // UseGlobalId
     //
-    useGlobalId = new QCheckBox("Cell # is Global", central, "useGlobalId");
+    useGlobalId = new QCheckBox("Seed # is Global", central, "useGlobalId");
     useGlobalId->setChecked(false);
     connect(useGlobalId, SIGNAL(toggled(bool)),
             this, SLOT(useGlobalIdToggled(bool)));
-    mainLayout->addMultiCellWidget(useGlobalId, 4,4, 0,2);
+    mainLayout->addMultiCellWidget(useGlobalId, 5,5, 0,2);
 
     //
     // Layers
     //
-    mainLayout->addWidget(new QLabel("Layers", central, "requestedLayerLabel"),5,0);
+    mainLayout->addWidget(new QLabel("Layers", central, "requestedLayerLabel"),6,0);
     requestedLayer = new QSpinBox(0, 10000, 1, central, "requestedLayer");
     connect(requestedLayer, SIGNAL(valueChanged(int)), 
             this, SLOT(requestedLayerChanged(int)));
-    mainLayout->addWidget(requestedLayer, 5,1);
+    mainLayout->addWidget(requestedLayer, 6,1);
 }
 
 
@@ -195,6 +213,9 @@ QvisOnionPeelWindow::CreateWindowContents()
 //   Kathleen Bonnell, Fri Dec 10 14:28:14 PST 2004
 //   Added useGlobalId checkbox.
 //   
+//   Kathleen Bonnell, Wed Jan 19 15:45:38 PST 2005 
+//   Added 'seedType' button group. 
+//
 // ****************************************************************************
 
 void
@@ -260,10 +281,17 @@ QvisOnionPeelWindow::UpdateWindow(bool doAll)
             index->setText(temp); 
             index->blockSignals(false);
             break;
-        case 5: // Layers 
+        case 5: // Logical 
+            break;
+        case 6: // Layers 
             requestedLayer->blockSignals(true);
             requestedLayer->setValue(atts->GetRequestedLayer());
             requestedLayer->blockSignals(false);
+            break;
+        case 7: // SeedType 
+            seedType->blockSignals(true);
+            seedType->setButton(atts->GetSeedType());
+            seedType->blockSignals(false);
             break;
         }
     } // end for
@@ -660,6 +688,19 @@ QvisOnionPeelWindow::adjacencyTypeChanged(int val)
     if(val != atts->GetAdjacencyType())
     {
         atts->SetAdjacencyType(OnionPeelAttributes::NodeFace(val));
+        if (AutoUpdate())
+            QTimer::singleShot(100, this, SLOT(delayedApply()));
+        else
+            Apply();
+    }
+}
+
+void
+QvisOnionPeelWindow::seedTypeChanged(int val)
+{
+    if(val != atts->GetSeedType())
+    {
+        atts->SetSeedType(OnionPeelAttributes::SeedIdType(val));
         if (AutoUpdate())
             QTimer::singleShot(100, this, SLOT(delayedApply()));
         else

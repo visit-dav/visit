@@ -229,17 +229,22 @@ curdate=`date +%Y-%m-%d-%p%I%M`
 modes="serial parallel scalable,parallel"
 
 # set list of tests/modes to skip
+#skipList="dummy_mode:tests/dummy_category/dummy_file.py"
 skipList=
 
 # run the test(s)
 error=0
 cd test
 for m in $modes; do
-   ./runtest -q -p -s "$skipList" -m "$m" -d "$curdate" -notrackmem
-   curerror=$?
-   if test ! "$curerror" = "0"; then
-      error=1
-   fi
+    if test "$skipList" = ""; then
+        ./runtest -q -p -m "$m" -d "$curdate" -notrackmem
+    else
+        ./runtest -q -s "$skipList" -p -m "$m" -d "$curdate" -notrackmem
+    fi
+    curerror=$?
+    if test ! "$curerror" = "0"; then
+        error=1
+    fi
 done
 
 # restart the list of modifiers

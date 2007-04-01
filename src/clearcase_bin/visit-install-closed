@@ -21,7 +21,7 @@ user=`whoami`
 #
 hitit=true
 sunset=true
-warp=true
+warp=false
 sc=true
 tidalwave=true
 white=true
@@ -48,13 +48,12 @@ do
          emperor=false
          shift
          ;;
-      -bdiv)
+      +bdiv)
          hitit=true
          sunset=true
-         warp=true
          shift
          ;;
-      -lc)
+      +lc)
          sc=true
          tidalwave=true
          white=true
