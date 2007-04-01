@@ -4,6 +4,7 @@
 
 #ifdef PARALLEL
 #include <mpi.h>
+#include <avtParallel.h>
 #endif
 
 #include <avtDataObjectInformation.h>
@@ -119,17 +120,16 @@ avtDataObjectInformation::Merge(const avtDataObjectInformation &di)
 // ****************************************************************************
 void
 avtDataObjectInformation::RecvResult(const avtDataObjectWriter_p dobw,
-   int swapWithProc)
+   int swapWithProc, int mpiResultLenTag, int mpiResultStrTag)
 {
 #ifdef PARALLEL
 
-   static const int mpiTag = 41; // arbitrary
    MPI_Status mpiStatus;
    int dstLen;
 
-   MPI_Recv(&dstLen, 1, MPI_INT, swapWithProc, mpiTag, MPI_COMM_WORLD, &mpiStatus);
+   MPI_Recv(&dstLen, 1, MPI_INT, swapWithProc, mpiResultLenTag, MPI_COMM_WORLD, &mpiStatus);
    char *dstStr = new char [dstLen];
-   MPI_Recv(dstStr, dstLen, MPI_CHAR, swapWithProc, mpiTag+1, MPI_COMM_WORLD, &mpiStatus);
+   MPI_Recv(dstStr, dstLen, MPI_CHAR, swapWithProc, mpiResultStrTag, MPI_COMM_WORLD, &mpiStatus);
 
    avtDataObjectInformation dstDobInfo;
    dstDobInfo.Read(dstStr);
@@ -151,14 +151,18 @@ avtDataObjectInformation::RecvResult(const avtDataObjectWriter_p dobw,
 //  Programmer: Mark C. Miller
 //  Creation:   02Sep03 
 //
+//  Modifications:
+//
+//     Mark C. Miller, Thu Jun 10 10:05:09 PDT 2004
+//     Modified to use unique message tags
+//
 // ****************************************************************************
 void
 avtDataObjectInformation::SendResult(const avtDataObjectWriter_p dobw,
-   int swapWithProc)
+   int swapWithProc, int mpiResultLenTag, int mpiResultStrTag)
 {
 #ifdef PARALLEL
 
-   static const int mpiTag = 41; // arbitrary
    int srcLen;
    char *srcStr;
    avtDataObjectString srcDobStr;
@@ -166,8 +170,8 @@ avtDataObjectInformation::SendResult(const avtDataObjectWriter_p dobw,
    Write(srcDobStr, *dobw);
    srcDobStr.GetWholeString(srcStr, srcLen);
 
-   MPI_Send(&srcLen, 1, MPI_INT, swapWithProc, mpiTag, MPI_COMM_WORLD);
-   MPI_Send(srcStr, srcLen, MPI_CHAR, swapWithProc, mpiTag+1, MPI_COMM_WORLD);
+   MPI_Send(&srcLen, 1, MPI_INT, swapWithProc, mpiResultLenTag, MPI_COMM_WORLD);
+   MPI_Send(srcStr, srcLen, MPI_CHAR, swapWithProc, mpiResultStrTag, MPI_COMM_WORLD);
 
 #endif
 }
@@ -182,14 +186,18 @@ avtDataObjectInformation::SendResult(const avtDataObjectWriter_p dobw,
 //  Programmer: Mark C. Miller
 //  Creation:   02Sep03 
 //
+//  Modifications:
+//
+//     Mark C. Miller, Thu Jun 10 10:05:09 PDT 2004
+//     Modified to use unique message tags
+//
 // ****************************************************************************
 void
 avtDataObjectInformation::SwapAndMerge(const avtDataObjectWriter_p dobw,
-   int swapWithProc)
+   int swapWithProc, int mpiSwapLenTag, int mpiSwapStrTag)
 {
 #ifdef PARALLEL
 
-   static const int mpiTag = 37; // arbitrary
    MPI_Status mpiStatus;
    char *srcStr, *dstStr;
    int   srcLen,  dstLen;
@@ -200,15 +208,15 @@ avtDataObjectInformation::SwapAndMerge(const avtDataObjectWriter_p dobw,
    srcDobStr.GetWholeString(srcStr, srcLen);
 
    // swap string lengths
-   MPI_Sendrecv(&srcLen, 1, MPI_INT, swapWithProc, mpiTag,
-                &dstLen, 1, MPI_INT, swapWithProc, mpiTag,
+   MPI_Sendrecv(&srcLen, 1, MPI_INT, swapWithProc, mpiSwapLenTag,
+                &dstLen, 1, MPI_INT, swapWithProc, mpiSwapLenTag,
                 MPI_COMM_WORLD, &mpiStatus);
 
    dstStr = new char [dstLen];
 
    // swap strings
-   MPI_Sendrecv(srcStr, srcLen, MPI_CHAR, swapWithProc, mpiTag+1,
-                dstStr, dstLen, MPI_CHAR, swapWithProc, mpiTag+1,
+   MPI_Sendrecv(srcStr, srcLen, MPI_CHAR, swapWithProc, mpiSwapStrTag,
+                dstStr, dstLen, MPI_CHAR, swapWithProc, mpiSwapStrTag,
                 MPI_COMM_WORLD, &mpiStatus);
 
    // unserialize the dst string only
@@ -260,6 +268,9 @@ avtDataObjectInformation::SwapAndMerge(const avtDataObjectWriter_p dobw,
 //     Hank Childs, Wed Feb 25 11:00:09 PST 2004
 //     Correct mispelling of cumulative.
 //
+//     Mark C. Miller, Thu Jun 10 10:05:09 PDT 2004
+//     Modified to use unique message tags
+//
 // ****************************************************************************
 
 void
@@ -272,6 +283,10 @@ avtDataObjectInformation::ParallelMerge(const avtDataObjectWriter_p dobw)
 
    MPI_Comm_size(MPI_COMM_WORLD, &commSize);
    MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+   int mpiResultLenTag = GetUniqueMessageTag();
+   int mpiResultStrTag = GetUniqueMessageTag();
+   int mpiSwapLenTag   = GetUniqueMessageTag();
+   int mpiSwapStrTag   = GetUniqueMessageTag();
    groupSize = 1;
 
    // walk up the communication tree, swapping and merging infos
@@ -291,7 +306,7 @@ avtDataObjectInformation::ParallelMerge(const avtDataObjectWriter_p dobw)
       // if the processor to swap with is in range of communicator
       if ((myGroupIdx == 0) && 
           (0 <= swapWithProc) && (swapWithProc < commSize))
-         SwapAndMerge(dobw, swapWithProc);
+         SwapAndMerge(dobw, swapWithProc, mpiSwapLenTag, mpiSwapStrTag);
       
       groupSize <<= 1;
    }
@@ -313,14 +328,14 @@ avtDataObjectInformation::ParallelMerge(const avtDataObjectWriter_p dobw)
          swapWithProc = (myGroupNum - 1) * groupSize + myGroupIdx;
          if ((myGroupIdx == 0) &&
              (0 <= swapWithProc) && (swapWithProc < commSize))
-            RecvResult(dobw, swapWithProc);
+            RecvResult(dobw, swapWithProc, mpiResultLenTag, mpiResultStrTag);
       }
       else                  // myGroupNum is even
       {
          swapWithProc = (myGroupNum + 1) * groupSize + myGroupIdx;
          if ((myGroupIdx == 0) &&
              (0 <= swapWithProc) && (swapWithProc < commSize))
-            SendResult(dobw, swapWithProc);
+            SendResult(dobw, swapWithProc, mpiResultLenTag, mpiResultStrTag);
       }
 
       groupSize >>= 1;

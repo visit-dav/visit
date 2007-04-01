@@ -28,6 +28,9 @@
 //    Jeremy Meredith, Fri Sep 21 14:43:21 PDT 2001
 //    Added override of SendInterruption.
 //
+//    Mark C. Miller, Thu Jun 10 09:08:18 PDT 2004
+//    Added arg for mpiInterruptTag to SendInterruption
+//
 // *******************************************************************
 
 class ENGINE_PARSTATE_API MPIXfer : public Xfer
@@ -37,7 +40,7 @@ public:
     virtual ~MPIXfer();
     virtual void Process();
     virtual void Update(Subject*);
-    virtual void SendInterruption();
+    virtual void SendInterruption(int mpiInterruptTag);
 
     void SetEnableReadHeader(bool val);
 protected:

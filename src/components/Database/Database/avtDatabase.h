@@ -167,6 +167,10 @@ typedef struct {
 //    Kathleen Bonnell, Tue May 25 16:16:25 PDT 2004 
 //    Added virtual QueryZoneCenter, defined here so derived types don't
 //    have to. 
+
+//    Kathleen Bonnell, Wed Jun  9 12:44:48 PDT 2004 
+//    Added bool arg to QueryMesh. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -295,7 +299,7 @@ class DATABASE_API avtDatabase
                                            std::vector<std::string> &)
                                                {return false; };
     virtual bool                QueryMesh(const std::string &, const int, const int, 
-                                          std::string &) {return false; };
+                                          std::string &, const bool) {return false; };
 
     virtual bool                QueryZones(const std::string &,const int,int &,
                                            const int, std::vector<int> &, 

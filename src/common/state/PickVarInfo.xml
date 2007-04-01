@@ -35,8 +35,6 @@
     </Function>
     <Function name="CreateOutputString" user="true" member="true">
     </Function>
-    <Function name="CreateOutputStrings" user="true" member="true">
-    </Function>
     <Function name="PrintTensor" user="true" member="true">
     </Function>
     <Function name="PrintSymmetricTensor" user="true" member="true">

@@ -36,6 +36,9 @@ class     avtDataObjectWriter;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Mark C. Miller, Thu Jun 10 10:05:09 PDT 2004
+//    Added message tag args to private comm functions
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObjectInformation
@@ -64,11 +67,11 @@ class PIPELINE_API avtDataObjectInformation
 
   private:
     void                     SwapAndMerge(const ref_ptr<avtDataObjectWriter> dobw,
-                                          int swapWithProc);
+                                          int swapWithProc, int lenTag, int strTag);
     void                     RecvResult(const ref_ptr<avtDataObjectWriter> dobw,
-                                        int swapWithProc);
+                                        int swapWithProc, int lenTag, int strTag);
     void                     SendResult(const ref_ptr<avtDataObjectWriter> dobw,
-                                        int swapWithProc);
+                                        int swapWithProc, int lenTag, int strTag);
 };
 
 #endif

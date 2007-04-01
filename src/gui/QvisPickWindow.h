@@ -57,6 +57,9 @@ class PickAttributes;
 //   Kathleen Bonnell, Thu Apr  1 18:42:52 PST 2004 
 //   Added timeCurveCheckBox. 
 //
+//   Kathleen Bonnell, Wed Jun  9 09:41:15 PDT 2004 
+//   Added conciseOutputCheckBox, showMeshNameCheckBox, showTimestepCheckBox. 
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -94,6 +97,10 @@ private slots:
     void autoShowToggled(bool);
     void savePicksToggled(bool);
     void timeCurveToggled(bool);
+    void conciseOutputToggled(bool);
+    void showMeshNameToggled(bool);
+    void showTimestepToggled(bool);
+
 private:
     void UpdatePage(void);
     void ClearPages(void);
@@ -118,6 +125,9 @@ private:
     QCheckBox      *autoShowCheckBox;
     QCheckBox      *savePicksCheckBox;
     QCheckBox      *timeCurveCheckBox;
+    QCheckBox      *conciseOutputCheckBox;
+    QCheckBox      *showMeshNameCheckBox;
+    QCheckBox      *showTimestepCheckBox;
 
     QLineEdit      *varsLineEdit;
     PickAttributes *pickAtts;

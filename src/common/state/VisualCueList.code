@@ -1,5 +1,5 @@
 Function: SetFrom
-Declaration: void SetFrom(const vector<const VisualCueInfo*>& cues);
+Declaration: void SetFrom(const std::vector<const VisualCueInfo*>& cues);
 Definition:
 // ****************************************************************************
 // Method: VisualCueList::SetFrom
@@ -9,7 +9,7 @@ Definition:
 //
 // ****************************************************************************
 void
-VisualCueList::SetFrom(const vector<const VisualCueInfo*>& cueVec)
+VisualCueList::SetFrom(const std::vector<const VisualCueInfo*>& cueVec)
 {
     int i;
 

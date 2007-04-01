@@ -5038,11 +5038,15 @@ avtGenericDatabase::QueryNodes(const std::string &varName, const int dom,
 //    Kathleen Bonnell, Tue Sep  9 16:51:10 PDT 2003
 //    Changed PickVarInfo argument to std::string. 
 //
+//    Kathleen Bonnell, Wed Jun  9 17:41:00 PDT 2004 
+//    Added showName argument. 
+//
 // ****************************************************************************
 
 bool
 avtGenericDatabase::QueryMesh(const std::string &varName, const int ts,
-                              const int dom, std::string &meshInfo)
+                              const int dom, std::string &meshInfo,
+                              const bool showName)
 {
     bool rv = false;
     string mesh = GetMetaData(ts)->MeshForVar(varName);
@@ -5054,11 +5058,14 @@ avtGenericDatabase::QueryMesh(const std::string &varName, const int ts,
                 << " meta data!" << endl;
          return false;
     }
-    sprintf(temp, "%s:  ", mesh.c_str());
-    meshInfo += temp;
+    if (showName)
+    {
+        sprintf(temp, "%s ", mesh.c_str());
+        meshInfo += temp;
+    }
     if (mmd->numGroups > 0 && dom < mmd->groupIds.size())
     {
-         sprintf(temp, " %s %d " , mmd->groupPieceName.c_str(), 
+         sprintf(temp, "%s %d " , mmd->groupPieceName.c_str(), 
                  mmd->groupIds[dom]);
          meshInfo += temp;
          rv = true;
@@ -5067,13 +5074,13 @@ avtGenericDatabase::QueryMesh(const std::string &varName, const int ts,
     {
         if ( mmd->blockNames.size() == 0)
         {
-             sprintf(temp, " %s %d " , mmd->blockPieceName.c_str(), 
+             sprintf(temp, "%s %d " , mmd->blockPieceName.c_str(), 
                      dom + mmd->blockOrigin);
              meshInfo += temp;
         }
         else 
         {
-             sprintf(temp, " %s %s " , mmd->blockPieceName.c_str(), 
+             sprintf(temp, "%s %s " , mmd->blockPieceName.c_str(), 
                      mmd->blockNames[dom].c_str());
              meshInfo += temp;
         }

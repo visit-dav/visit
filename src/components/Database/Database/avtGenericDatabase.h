@@ -181,6 +181,9 @@ class     PickVarInfo;
 //    Kathleen Bonnell, Tue May 25 16:16:25 PDT 2004 
 //    Add QueryZoneCenter. 
 //
+//    Kathleen Bonnell, Wed Jun  9 12:44:48 PDT 2004 
+//    Add bool arg to QueryMesh. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -338,7 +341,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                           std::vector<std::string> &);
 
     virtual bool               QueryMesh(const std::string &, const int, const int, 
-                                         std::string &);
+                                         std::string &, const bool);
 
     virtual bool               QueryZones(const std::string&, const int, int &,
                                           const int, std::vector<int> &, 

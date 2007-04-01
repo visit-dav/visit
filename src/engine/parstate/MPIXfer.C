@@ -119,10 +119,15 @@ MPIXfer::ReadHeader()
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 20, 2001
 //
+//  Modifications:
+//
+//    Mark C. Miller, Thu Jun 10 09:08:18 PDT 2004
+//    Added arg for interrupt message tag
+//
 // ****************************************************************************
 
 void
-MPIXfer::SendInterruption()
+MPIXfer::SendInterruption(int mpiInterruptTag)
 {
     if (PAR_UIProcess())
     {
@@ -132,7 +137,7 @@ MPIXfer::SendInterruption()
         MPI_Request *request = new MPI_Request[size];
         for (int i=1; i<size; i++)
         {
-            MPI_Isend(buf, 1, MPI_CHAR, i, 456, MPI_COMM_WORLD, &request[i]);
+            MPI_Isend(buf, 1, MPI_CHAR, i, mpiInterruptTag, MPI_COMM_WORLD, &request[i]);
         }
 
         // Then wait for them all to read the command

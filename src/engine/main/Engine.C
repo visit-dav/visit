@@ -61,12 +61,6 @@ static void WriteByteStreamToSocket(NonBlockingRPC *, Connection *,
 // Initial connection timeout of 5 minutes (300 seconds)
 #define INITIAL_CONNECTION_TIMEOUT 60
 
-// convenient MPI message tags
-#define CELL_COUNT_TAG          0x0
-#define SEND_DATA_TAG           0x1
-#define DATAOBJ_SIZE_TAG        0x2
-#define DATAOBJ_DATA_TAG        0x3
-
 // ****************************************************************************
 //  Constructor:  Engine::Engine
 //
@@ -930,6 +924,9 @@ WriteByteStreamToSocket(NonBlockingRPC *rpc, Connection *vtkConnection,
 //    UI proc and check if ok before actually sending data. When scalable
 //    threshold is exceeded, UI proc tells everyone to stop sending data.
 //
+//    Mark C. Miller, Thu Jun 10 09:08:18 PDT 2004
+//    Modified to use unique MPI message tags
+//
 // ****************************************************************************
 void
 Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
@@ -938,6 +935,12 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
 {
 
 #ifdef PARALLEL
+
+    // set up MPI message tags
+    int mpiCellCountTag   = GetUniqueMessageTag();
+    int mpiSendDataTag    = GetUniqueMessageTag();
+    int mpiDataObjSizeTag = GetUniqueMessageTag();
+    int mpiDataObjDataTag = GetUniquemessageTag();
 
     //
     // When respond with null is true, this routine still has an obligation
@@ -981,7 +984,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
 
                 // recv the "num cells I have" message from any proc
                 MPI_Recv(&proc_i_localCellCount, 1, MPI_INT, MPI_ANY_SOURCE,
-                    CELL_COUNT_TAG, MPI_COMM_WORLD, &stat);
+                    mpiCellCountTag, MPI_COMM_WORLD, &stat);
 
                 mpiSource = stat.MPI_SOURCE;
 
@@ -1003,14 +1006,14 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
                 // tell source processor whether or not to send data with
                 // the "should send data" message
                 MPI_Send(&shouldGetData, 1, MPI_INT, mpiSource, 
-                    SEND_DATA_TAG, MPI_COMM_WORLD);
+                    mpiSendDataTag, MPI_COMM_WORLD);
                 debug5 << "told processor " << mpiSource << (shouldGetData==1?" to":" NOT to")
                        << " send data" << endl;
 
                 if (shouldGetData)
                 {
                     MPI_Recv(&size, 1, MPI_INT, mpiSource, 
-                             DATAOBJ_SIZE_TAG, MPI_COMM_WORLD, &stat);
+                             mpiDataObjSizeTag, MPI_COMM_WORLD, &stat);
                     debug5 << "recieving size=" << size << endl;
 
                     debug5 << "receiving " << size << " bytes from MPI_SOURCE "
@@ -1018,7 +1021,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
 
                     char *str = new char[size];
                     MPI_Recv(str, size, MPI_CHAR, mpiSource, 
-                             DATAOBJ_DATA_TAG, MPI_COMM_WORLD, &stat);
+                             mpiDataObjDataTag, MPI_COMM_WORLD, &stat);
                     debug5 << "recieving data" << endl;
     
                     // The data object reader will delete the string.
@@ -1106,18 +1109,18 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
             // send the "num cells I have" message to proc 0
             int numCells = writer->GetInput()->GetNumberOfCells();
             debug5 << "sending \"num cells I have\" message (=" << numCells << ")" << endl;
-            MPI_Send(&numCells, 1, MPI_INT, 0, CELL_COUNT_TAG, MPI_COMM_WORLD);
+            MPI_Send(&numCells, 1, MPI_INT, 0, mpiCellCountTag, MPI_COMM_WORLD);
 
             // recv the "should send data" message from proc 0
-            MPI_Recv(&shouldSendData, 1, MPI_INT, 0, SEND_DATA_TAG, MPI_COMM_WORLD, &stat);
+            MPI_Recv(&shouldSendData, 1, MPI_INT, 0, mpiSendDataTag, MPI_COMM_WORLD, &stat);
 
             if (shouldSendData)
             {
                debug5 << "sending size=" << size << endl; 
-               MPI_Send(&size, 1, MPI_INT, 0, DATAOBJ_SIZE_TAG, MPI_COMM_WORLD);
+               MPI_Send(&size, 1, MPI_INT, 0, mpiDataObjSizeTag, MPI_COMM_WORLD);
                debug5 << "sending " << size << " bytes to proc 0" << endl;
                debug5 << "sending data" << endl; 
-               MPI_Send(str, size, MPI_CHAR, 0, DATAOBJ_DATA_TAG, MPI_COMM_WORLD);
+               MPI_Send(str, size, MPI_CHAR, 0, mpiDataObjDataTag, MPI_COMM_WORLD);
             }
             else
             {
@@ -1234,6 +1237,9 @@ Engine::SendKeepAliveReply()
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
+//    Mark C. Miller, Thu Jun 10 10:05:09 PDT 2004
+//    Modified to use a unique message tag for the interrupt message
+//
 // ****************************************************************************
 
 bool
@@ -1245,16 +1251,18 @@ Engine::EngineAbortCallbackParallel(void *data, bool informSlaves)
                    "EngineAbortCallback called with no Xfer set.");
 
 #ifdef PARALLEL
+    int mpiInterruptTag = GetUniqueMessageTag();
+
     // non-ui processes must do something entirely different
     if (!PAR_UIProcess())
     {
         int flag;
         MPI_Status status;
-        MPI_Iprobe(0, 456, MPI_COMM_WORLD, &flag, &status);
+        MPI_Iprobe(0, mpiInterruptTag, MPI_COMM_WORLD, &flag, &status);
         if (flag)
         {
             char buf[1];
-            MPI_Recv(buf, 1, MPI_CHAR, 0, 456, MPI_COMM_WORLD, &status);
+            MPI_Recv(buf, 1, MPI_CHAR, 0, mpiInterruptTag, MPI_COMM_WORLD, &status);
             return true;
         }
         return false;
@@ -1274,7 +1282,7 @@ Engine::EngineAbortCallbackParallel(void *data, bool informSlaves)
 #ifdef PARALLEL
     // If needed, tell the non-ui processes to abort as well
     if (abort && informSlaves)
-        xfer->SendInterruption();
+        xfer->SendInterruption(mpiInterruptTag);
 #endif
     return abort;
 }

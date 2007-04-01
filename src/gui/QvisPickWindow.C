@@ -139,6 +139,9 @@ QvisPickWindow::~QvisPickWindow()
 //   Kathleen Bonnell, Thu Apr  1 18:42:52 PST 2004 
 //   Added TimeCurve checkbox. 
 //
+//   Kathleen Bonnell, Wed Jun  9 09:41:15 PDT 2004 
+//   Added conciseOutput, showMeshName and showTimestep checkboxes. 
+//
 // ****************************************************************************
 
 void
@@ -159,7 +162,7 @@ QvisPickWindow::CreateWindowContents()
         tabWidget->addTab(pages[i]," "); 
     }
 
-    QGridLayout *gLayout = new QGridLayout(topLayout, 7, 4);
+    QGridLayout *gLayout = new QGridLayout(topLayout, 9, 4);
     varsLineEdit = new QLineEdit(central, "varsLineEdit");
     varsLineEdit->setText("default"); 
     connect(varsLineEdit, SIGNAL(returnPressed()),
@@ -168,18 +171,37 @@ QvisPickWindow::CreateWindowContents()
     gLayout->addWidget(new QLabel(varsLineEdit, "variables", 
                                   central, "varLabel"), 0, 0);
 
+    conciseOutputCheckBox = new QCheckBox("Concise Output.", central,
+                                     "conciseOutputCheckBox");
+    connect(conciseOutputCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(conciseOutputToggled(bool)));
+    gLayout->addMultiCellWidget(conciseOutputCheckBox, 1, 1, 0, 1);
+
+
+    showMeshNameCheckBox = new QCheckBox("Show Mesh Name", central, 
+                                  "showMeshNameCheckBox");
+    connect(showMeshNameCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(showMeshNameToggled(bool)));
+    gLayout->addMultiCellWidget(showMeshNameCheckBox, 2, 2, 0, 1);
+
+    showTimestepCheckBox = new QCheckBox("Show Timestep", central, 
+                                  "showTimestepCheckBox");
+    connect(showTimestepCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(showTimestepToggled(bool)));
+    gLayout->addMultiCellWidget(showTimestepCheckBox, 2, 2, 2, 3);
+
     displayIncEls = new QCheckBox("Display incident nodes/zones.", central, 
                                   "displayIncEls");
     connect(displayIncEls, SIGNAL(toggled(bool)),
             this, SLOT(displayIncElsToggled(bool)));
-    gLayout->addMultiCellWidget(displayIncEls, 1, 1, 0, 1);
+    gLayout->addMultiCellWidget(displayIncEls, 3, 3, 0, 1);
 
 
     // Node settings
     QGroupBox *nodeGroupBox = new QGroupBox(central, "nodeGroupBox");
     nodeGroupBox->setTitle("Display for Nodes:");
     nodeGroupBox->setMargin(10);
-    gLayout->addMultiCellWidget(nodeGroupBox, 2, 2, 0, 3);
+    gLayout->addMultiCellWidget(nodeGroupBox, 4, 4, 0, 3);
     QGridLayout *nLayout = new QGridLayout(nodeGroupBox, 3, 4);
     nLayout->setMargin(10);
     nLayout->setSpacing(10);
@@ -206,7 +228,7 @@ QvisPickWindow::CreateWindowContents()
     QGroupBox *zoneGroupBox = new QGroupBox(central, "zoneGroupBox");
     zoneGroupBox->setTitle("Display for Zones:");
     zoneGroupBox->setMargin(10);
-    gLayout->addMultiCellWidget(zoneGroupBox, 3, 3, 0, 3);
+    gLayout->addMultiCellWidget(zoneGroupBox, 5, 5, 0, 3);
     QGridLayout *zLayout = new QGridLayout(zoneGroupBox, 3, 4);
     zLayout->setMargin(10);
     zLayout->setSpacing(10);
@@ -226,24 +248,23 @@ QvisPickWindow::CreateWindowContents()
     zLayout->addMultiCellWidget(zoneBlockLog, 2, 2, 2, 3);
 
    
-
     autoShowCheckBox = new QCheckBox("Automatically show window", central,
                                      "autoShowCheckBox");
     connect(autoShowCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(autoShowToggled(bool)));
-    gLayout->addMultiCellWidget(autoShowCheckBox, 4, 4, 0, 3);
+    gLayout->addMultiCellWidget(autoShowCheckBox, 6, 6, 0, 3);
 
     savePicksCheckBox = new QCheckBox("Don't clear this window", central,
                                      "savePicksCheckBox");
     connect(savePicksCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(savePicksToggled(bool)));
-    gLayout->addMultiCellWidget(savePicksCheckBox, 5, 5, 0, 3);
+    gLayout->addMultiCellWidget(savePicksCheckBox, 7, 7, 0, 3);
 
     timeCurveCheckBox = new QCheckBox("Create time curve with next pick.", central,
                                      "timeCurveCheckBox");
     connect(timeCurveCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(timeCurveToggled(bool)));
-    gLayout->addMultiCellWidget(timeCurveCheckBox, 6, 6, 0, 3);
+    gLayout->addMultiCellWidget(timeCurveCheckBox, 8, 8, 0, 3);
 }
 
 // ****************************************************************************
@@ -286,6 +307,9 @@ QvisPickWindow::CreateWindowContents()
 //
 //   Kathleen Bonnell, Thu Apr  1 18:42:52 PST 2004 
 //   Added TimeCurve checkbox. 
+//
+//   Kathleen Bonnell, Wed Jun  9 09:41:15 PDT 2004 
+//   Added conciseOutput, showMeshName and showTimestep checkboxes. 
 //
 // ****************************************************************************
 
@@ -410,7 +434,30 @@ QvisPickWindow::UpdateWindow(bool doAll)
         timeCurveCheckBox->setChecked(pickAtts->GetDoTimeCurve());
         timeCurveCheckBox->blockSignals(false);
     }
-   
+
+    // conciseOutput
+    if (pickAtts->IsSelected(42) || doAll)
+    {
+        conciseOutputCheckBox->blockSignals(true);
+        conciseOutputCheckBox->setChecked(pickAtts->GetConciseOutput());
+        conciseOutputCheckBox->blockSignals(false);
+    }
+
+    // showMeshName
+    if (pickAtts->IsSelected(43) || doAll)
+    {
+        showMeshNameCheckBox->blockSignals(true);
+        showMeshNameCheckBox->setChecked(pickAtts->GetShowMeshName());
+        showMeshNameCheckBox->blockSignals(false);
+    }
+
+    // showTimestep
+    if (pickAtts->IsSelected(44) || doAll)
+    {
+        showTimestepCheckBox->blockSignals(true);
+        showTimestepCheckBox->setChecked(pickAtts->GetShowTimeStep());
+        showTimestepCheckBox->blockSignals(false);
+    }
 }
 
 
@@ -1001,6 +1048,79 @@ void
 QvisPickWindow::timeCurveToggled(bool val)
 {
     pickAtts->SetDoTimeCurve(val);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisPickWindow::conciseOutputToggled
+//
+// Purpose: 
+//   This is a Qt slot function that sets the flag indicating whether
+//   or not the pick output should be printed in concise format.
+//
+// Arguments:
+//   val : The new conciseOutput value.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   June 9, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPickWindow::conciseOutputToggled(bool val)
+{
+    pickAtts->SetConciseOutput(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisPickWindow::showMeshNameToggled
+//
+// Purpose: 
+//   This is a Qt slot function that sets the flag indicating whether
+//   or not the pick output should display the mesh name. 
+//
+// Arguments:
+//   val : The new showMeshName value.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   June 9, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPickWindow::showMeshNameToggled(bool val)
+{
+    pickAtts->SetShowMeshName(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisPickWindow::showTimestepToggled
+//
+// Purpose: 
+//   This is a Qt slot function that sets the flag indicating whether
+//   or not the pick output should display the timestep. 
+//
+// Arguments:
+//   val : The new showTimestep value.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   June 9, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPickWindow::showTimestepToggled(bool val)
+{
+    pickAtts->SetShowTimeStep(val);
     Apply();
 }
 
