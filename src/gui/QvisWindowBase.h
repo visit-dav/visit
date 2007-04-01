@@ -4,6 +4,7 @@
 #include <qmainwindow.h>
 #include <GUIBase.h>
 #include <vector>
+#include <map>
 
 class DataNode;
 
@@ -56,5 +57,6 @@ protected:
 
 // Create a type for a vector of postable windows.
 typedef std::vector<QvisWindowBase *> WindowBaseVector;
+typedef std::map<std::string, QvisWindowBase *> WindowBaseMap;
 
 #endif

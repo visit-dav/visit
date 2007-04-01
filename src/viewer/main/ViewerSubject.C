@@ -284,6 +284,10 @@ ViewerSubject::~ViewerSubject()
 //    Brad Whitlock, Tue Jul 29 11:18:07 PDT 2003
 //    I changed the interface to ParentProcess::Connect.
 //
+//    Brad Whitlock, Thu May 6 12:24:21 PDT 2004
+//    I added a little Qt/mac code to prevent the viewer from having anything
+//    in its menubar.
+//
 // ****************************************************************************
 
 void
@@ -336,6 +340,12 @@ ViewerSubject::Connect(int *argc, char ***argv)
     mainApp = new QApplication(argc2, argv2, !nowin);
     CustomizeAppearance();
     delete [] argv2;
+
+#ifdef Q_WS_MACX
+    // Prevent the viewer from having anything in its menubar.
+    extern void qt_mac_set_no_native_menubar(bool);
+    qt_mac_set_no_native_menubar(true);
+#endif
 
     //
     // Set up the Xfer object.

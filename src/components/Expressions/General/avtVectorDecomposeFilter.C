@@ -115,6 +115,9 @@ avtVectorDecomposeFilter::GetVariableDimension(void)
 //    Hank Childs, Fri Sep 19 15:00:11 PDT 2003
 //    Account for tensor data as well.
 //
+//    Hank Childs, Fri May  7 07:38:31 PDT 2004
+//    Fix bug with decomposing point tensors.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -133,7 +136,7 @@ avtVectorDecomposeFilter::DeriveVariable(vtkDataSet *in_ds)
     //
     // Get the array of interest.
     //
-    if (in_ds->GetPointData()->GetVectors() != NULL)
+    if (in_ds->GetPointData()->GetArray(varname) != NULL)
     {
         arr = in_ds->GetPointData()->GetArray(varname);
     }
@@ -143,7 +146,8 @@ avtVectorDecomposeFilter::DeriveVariable(vtkDataSet *in_ds)
     }
     if (arr == NULL)
     {
-        EXCEPTION1(ExpressionException, "Cannot locate variable");
+        EXCEPTION1(ExpressionException, "When creating an expression, VisIt "
+                          "was not able to locate a necessary variable.");
     }
 
     //

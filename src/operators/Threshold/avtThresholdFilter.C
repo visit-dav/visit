@@ -14,6 +14,7 @@
 #include <avtMetaData.h>
 
 #include <DebugStream.h>
+#include <ImproperUseException.h>
 #include <NoDefaultVariableException.h>
 
 
@@ -117,11 +118,39 @@ avtThresholdFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Sat Jun 21 09:25:34 PDT 2003
 //    If we have poly data input, then we should have poly data output.
 //
+//    Hank Childs, Fri May  7 08:33:17 PDT 2004
+//    If the variable is not a scalar, then issue a warning.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtThresholdFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
+    string v1 = atts.GetVariable();
+    string thres_var;
+    if (v1 == "default")
+        thres_var = pipelineVariable;
+    else
+        thres_var = v1;
+    vtkDataArray *arr = in_ds->GetPointData()->GetArray(thres_var.c_str());
+    if (arr == NULL)
+        arr = in_ds->GetCellData()->GetArray(thres_var.c_str());
+
+    if (arr == NULL)
+    {
+        char str[1024];
+        sprintf(str, "The threshold operator was not applied because the "
+                "variable \"%s\" could not be located.", thres_var.c_str());
+        EXCEPTION1(VisItException, str);
+    }
+    if (arr->GetNumberOfComponents() != 1)
+    {
+        char str[1024];
+        sprintf(str, "The threshold operator was not applied because the "
+                "variable \"%s\" is not a scalar.", thres_var.c_str());
+        EXCEPTION1(VisItException, str);
+    }
+
     vtkThreshold *threshold = vtkThreshold::New();
 
     //

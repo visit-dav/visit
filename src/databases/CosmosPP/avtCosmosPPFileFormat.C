@@ -228,6 +228,13 @@ avtCosmosPPFileFormat::~avtCosmosPPFileFormat()
 //  Programmer: Hank Childs
 //  Creation:   December 31, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Fri May  7 15:31:07 PDT 2004
+//    The VTK point locator is numerically sensitive if you give it lots of
+//    points along a plane.  So we are going to code around it and dummy up
+//    z-values as x-values.
+//
 // ****************************************************************************
 
 void
@@ -347,9 +354,10 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
     }
     else
     {
-        float z_diff = bounds[5] - bounds[4];
-        bounds[4] -= z_diff*0.1;
-        bounds[5] += z_diff*0.1;
+        // HACK!  The VTK point locator doesn't work very well with 2D objects,
+        // so make this appear to be 3D by using the X-coordinate.
+        bounds[4] = bounds[0];
+        bounds[5] = bounds[1];
     }
 
     pl->InitPointInsertion(pts, bounds, npts);
@@ -363,7 +371,9 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
         float pt[3];
         pt[0] = current_tmp[0];
         pt[1] = current_tmp[1];
-        pt[2] = (rank < 3 ? 0. : current_tmp[2]);
+        // HACK -- if we are in 2D and all the points are along the plane
+        // z=0, then we will crash.  So dummy up some good z-values.
+        pt[2] = (rank < 3 ? pt[0] : current_tmp[2]);
         int ptIndex = pl->IsInsertedPoint(pt);
         if (ptIndex >= 0)
         {
@@ -378,6 +388,15 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
             n_unique_pts++;
         }
         current_tmp += rank;
+    }
+    if (rank < 3)
+    {
+        // HACK -- to avoid VTK's numerical sensitivity, we had to dummy up
+        // some Z-values.  Undo this now.
+        int new_npts = pts->GetNumberOfPoints();
+        float *ptr = (float *) pts->GetVoidPointer(0);
+        for (i = 0 ; i < new_npts ; i++)
+            ptr[3*i+2] = 0.;
     }
     dataset[ts][dom]->SetPoints(pts);
     pts->Delete();

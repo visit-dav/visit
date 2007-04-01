@@ -57,7 +57,6 @@
 #include <QvisAnnotationWindow.h>
 #include <QvisAppearanceWindow.h>
 #include <QvisColorTableWindow.h>
-#include <QvisCommandLineWindow.h>
 #include <QvisDatabaseCorrelationListWindow.h>
 #include <QvisEngineWindow.h>
 #include <QvisExpressionsWindow.h>
@@ -104,6 +103,62 @@
 #define VISIT_GUI_CONFIG_FILE "guiconfig"
 #define VIEWER_READY_TAG       100
 #define SET_FILE_HIGHLIGHT_TAG 101
+
+#define WINDOW_FILE_SELECTION    0
+#define WINDOW_FILE_INFORMATION  1
+#define WINDOW_MESSAGE           2
+#define WINDOW_OUTPUT            3
+#define WINDOW_HOSTPROFILES      4
+#define WINDOW_SAVE              5
+#define WINDOW_ENGINE            6
+#define WINDOW_ANIMATION         7
+#define WINDOW_ANNOTATION        8 
+#define WINDOW_COLORTABLE        9 
+#define WINDOW_EXPRESSIONS      10  
+#define WINDOW_SUBSET           11
+#define WINDOW_PLUGINMANAGER    12    
+#define WINDOW_VIEW             13
+#define WINDOW_APPEARANCE       14 
+#define WINDOW_KEYFRAME         15
+#define WINDOW_LIGHTING         16
+#define WINDOW_GLOBALLINEOUT    17    
+#define WINDOW_MATERIALOPTIONS  18      
+#define WINDOW_PICK             19
+#define WINDOW_HELP             20
+#define WINDOW_QUERY            21
+#define WINDOW_PREFERENCES      22  
+#define WINDOW_RENDERING        23
+#define WINDOW_CORRELATION      24  
+#define WINDOW_TIMEQUERY        25
+
+const char *QvisGUIApplication::windowNames[] = {
+"File selection",
+"File information",
+"Information",
+"Output",
+"Host profiles",
+"Set save options",
+"Compute engines",
+"Animation",
+"Annotation",
+"Color tables",
+"Expressions",
+"Subset",
+"Plugin Manager",
+"View",
+"Appearance",
+"Keyframe Editor",
+"Lighting",
+"Lineout options",
+"Material Reconstruction Options",
+"Pick",
+"Help",
+"Query",
+"Preferences",
+"Rendering options",
+"Database correlation list",
+"QueryOverTime"
+};
 
 // Some internal prototypes.
 static void QPrinterToPrinterAttributes(QPrinter *, PrinterAttributes *);
@@ -459,17 +514,20 @@ QvisGUIApplication::~QvisGUIApplication()
 #if !defined(_WIN32) && !defined(__APPLE__)
     // Delete the windows.
     int i;
-    for(i = 0; i < otherWindows.size(); ++i)
+    for(WindowBaseMap::iterator pos = otherWindows.begin();
+        pos != otherWindows.end(); ++pos)
     {
-        delete otherWindows[i];
+        delete pos->second;
     }
     for(i = 0; i < plotWindows.size(); ++i)
     {
-        delete plotWindows[i];
+        if(plotWindows[i] != 0)
+            delete plotWindows[i];
     }
     for(i = 0; i < operatorWindows.size(); ++i)
     {
-        delete operatorWindows[i];
+        if(operatorWindows[i] != 0)
+            delete operatorWindows[i];
     }
 #endif
 
@@ -519,9 +577,12 @@ QvisGUIApplication::~QvisGUIApplication()
 // Creation:   Thu Jun 19 15:13:16 PST 2003
 //
 // Modifications:
-//   
 //   Hank Childs, Sat Jan 24 10:45:05 PST 2004
 //   Add a stage where we tell the mdserver to load its plugins.
+//
+//   Brad Whitlock, Thu May 6 14:50:20 PST 2004
+//   Moved the stage where we tell the mdserver to load plugins and I added
+//   more complete timing information.
 //
 // ****************************************************************************
 
@@ -533,6 +594,11 @@ QvisGUIApplication::HeavyInitialization()
     bool gotoNextStage = true;
     WindowMetrics *wm = 0;
 
+    // Create some timers.
+    if(heavyInitStage == 0) 
+        stagedInit = visitTimer->StartTimer();
+    timeid = visitTimer->StartTimer();
+    
     debug4 << "QvisGUIApplication::HeavyInitialization: heavyInitStage="
            << heavyInitStage << endl;
 
@@ -541,9 +607,9 @@ QvisGUIApplication::HeavyInitialization()
     case 0:
         SplashScreenProgress("Calculating window metrics...", 5);
         // Calculate the window metrics
-        timeid = visitTimer->StartTimer();
+        
         wm = WindowMetrics::Instance();
-        visitTimer->StopTimer(timeid, "Calculating window metrics");
+        visitTimer->StopTimer(timeid, "stage 0 - Calculating window metrics");
 
         // Ise the window metrics to set some internal fields.
         screenX    = wm->GetScreenX();
@@ -561,17 +627,21 @@ QvisGUIApplication::HeavyInitialization()
         break;
     case 1:
         SplashScreenProgress("Creating main window...", 10);
+        visitTimer->StopTimer(timeid, "stage 1");
         break;
     case 2:
         // Create the main window.
         CreateMainWindow();
+        visitTimer->StopTimer(timeid, "stage 2 - Creating main window");
         break;
     case 3:
         SplashScreenProgress("Starting viewer...", 12);
+        visitTimer->StopTimer(timeid, "stage 3");
         break;
     case 4:
         // Launch the viewer.
         LaunchViewer();
+        visitTimer->StopTimer(timeid, "stage 4 - Launching viewer");
         break;
     case 5:
         // Create the socket notifier and hook it up to the viewer.
@@ -582,17 +652,19 @@ QvisGUIApplication::HeavyInitialization()
                 this, SLOT(ReadFromViewer(int)));
 
         SplashScreenProgress("Starting metadata server...", 32);
+        visitTimer->StopTimer(timeid, "stage 5");
         break;
     case 6:
         // Initialize the file server. This connects the GUI to the mdserver
         // running on localhost.
-        timeid = visitTimer->StartTimer();
+
         fileServer->SetConnectCallback(StartMDServer, (void *)viewer);
         fileServer->Initialize();
-        visitTimer->StopTimer(timeid, "Launching mdserver");
+        visitTimer->StopTimer(timeid, "stage 6 - Launching mdserver");
         break;
     case 7:
         SplashScreenProgress("Launched the metadata server...", 52);
+        visitTimer->StopTimer(timeid, "stage 7");
         break;
     case 8:
         // Set the current directory in the loadFile if its path is empty.
@@ -602,35 +674,47 @@ QvisGUIApplication::HeavyInitialization()
             SplashScreenProgress("Getting the path...", 55);
             loadFile.path = fileServer->GetPath();
         }
+        visitTimer->StopTimer(timeid, "stage 8");
         break;
     case 9:
-        // Tell the mdserver to load its plugins.
-        fileServer->LoadPlugins();
+        SplashScreenProgress("Creating crucial windows...", 60);
+        visitTimer->StopTimer(timeid, "stage 9");
         break;
     case 10:
-        // Create the GUI's windows.
-        gotoNextStage = CreateWindows(56, 80);
+        // Create the GUI's crucial windows.
+        SetupWindows();
+        visitTimer->StopTimer(timeid, "stage 10 - Creating crucial windows");
         break;
     case 11:
-        SplashScreenProgress("Loading plugin information...", 81);
+        SplashScreenProgress("Loading plugin information...", 70);
+        visitTimer->StopTimer(timeid, "stage 11");
         break;
     case 12:
         // Load plugin info
-        timeid = visitTimer->StartTimer();
         PlotPluginManager::Initialize(PlotPluginManager::GUI);
         OperatorPluginManager::Initialize(OperatorPluginManager::GUI);
-        visitTimer->StopTimer(timeid, "Loading plugin info");
+        visitTimer->StopTimer(timeid, "stage 12 - Loading plugin info");
         break;
     case 13:
-        SplashScreenProgress("Processing config file...", 90);
+        SplashScreenProgress("Processing config file...", 80);
+        visitTimer->StopTimer(timeid, "stage 13");
         break;
     case 14:
         // Process the config file settings.
-        timeid = visitTimer->StartTimer();
         ProcessConfigSettings(systemSettings, true);
         ProcessConfigSettings(localSettings, false);
-        visitTimer->StopTimer(timeid, "Processing config file");
+        visitTimer->StopTimer(timeid, "stage 14 - Processing config file");
+        break;
     case 15:
+        // Tell the mdserver to load its plugins. It can't load plugins before
+        // we process the config settings though because that sets up the 
+        // file server, which sets and reads files for the active directory.
+        // Loading plugins before that stalls the gui if the mdserver is
+        // slow about loading plugins.
+        fileServer->LoadPlugins();
+        visitTimer->StopTimer(timeid, "stage 15 - Telling mdserver to load plugins");
+        break;
+    case 16:
         // Let the GUI read from the viewer now.
         allowSocketRead = true;
 
@@ -638,6 +722,7 @@ QvisGUIApplication::HeavyInitialization()
         // when the viewer is ready.
         Synchronize(VIEWER_READY_TAG);
         moreInit = false;
+        visitTimer->StopTimer(timeid, "stage 16");
         break;
     default:
         moreInit = false;
@@ -649,6 +734,8 @@ QvisGUIApplication::HeavyInitialization()
            ++heavyInitStage;
         QTimer::singleShot(10, this, SLOT(HeavyInitialization()));
     }
+    else
+        visitTimer->StopTimer(stagedInit, "HeavyInitialization");
 }
 
 // ****************************************************************************
@@ -661,16 +748,14 @@ QvisGUIApplication::HeavyInitialization()
 // Creation:   Thu Jun 19 15:12:41 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu May 6 14:51:29 PST 2004
+//   I removed the timers because they're now 1 level up.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::LaunchViewer()
 {
-    // Start up the viewer
-    int timeid = visitTimer->StartTimer();
-    const char * viewerMsg = "Starting viewer...";
-
     TRY
     {
         // Add some more arguments and launch the viewer.
@@ -678,7 +763,6 @@ QvisGUIApplication::LaunchViewer()
         viewer->AddArgument("-defer");
         viewer->Create();
         viewerIsAlive = true;
-        visitTimer->StopTimer(timeid, viewerMsg);
 
         // Set the default user name in the host profiles.
         HostProfile::SetDefaultUserName(viewer->GetLocalUserName());
@@ -687,7 +771,6 @@ QvisGUIApplication::LaunchViewer()
     {
         cerr << "The version numbers of the GUI and the viewer do not match."
              << endl;
-        visitTimer->StopTimer(timeid, viewerMsg);
         // Re-throw the exception.
         RETHROW;
     }
@@ -695,7 +778,6 @@ QvisGUIApplication::LaunchViewer()
     {
         cerr << "The viewer did not return the proper credentials."
              << endl;
-        visitTimer->StopTimer(timeid, viewerMsg);
         // Re-throw the exception.
         RETHROW;
     }
@@ -812,13 +894,23 @@ QvisGUIApplication::SyncCallback(Subject *s, void *data)
 //   Added code to create a timer that is used to send keep alive signals
 //   to the mdservers.
 //
+//   Brad Whitlock, Wed May 5 08:47:22 PDT 2004
+//   Removed code to setup printer so it is done later on demand. I also added
+//   a new stage that creates non-plugin GUI windows that the config file
+//   wants to be visible. Finally, I made the main window be shown later to
+//   speed up launch time on MacOS X.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::FinalInitialization()
 {
-    int timeid;
     bool moreInit = true;
+
+    // Create time timers.
+    if(initStage == 0)
+        stagedInit = visitTimer->StartTimer();
+    int timeid = visitTimer->StartTimer();
 
     debug4 << "QvisGUIApplication::FinalInitialization: initStage="
            << initStage << endl;
@@ -826,63 +918,79 @@ QvisGUIApplication::FinalInitialization()
     switch(initStage)
     {
     case 0:
-        timeid = visitTimer->StartTimer();
+        allowSocketRead = false;
+
+#ifndef Q_WS_MACX
         // Tell the viewer to show all of its windows.
         viewer->ShowAllWindows();
 
         // Show the main window
         mainWin->show();
+#else
+        // On MacOS X, just tell the viewer to show for now.
+        viewer->ShowAllWindows();
+#endif
 
         // Indicate that future messages should go to windows and not
         // to the console.
         writeToConsole = false;
 
-        visitTimer->StopTimer(timeid, "Showing windows");
+        visitTimer->StopTimer(timeid, "stage 0 - Showing windows");
         break;
     case 1:
-        timeid = visitTimer->StartTimer();
+        //
+        // Create the non-plugin GUI windows that should be visible according
+        // to the config file.
+        //
+        SplashScreenProgress("Creating visible windows...", 90);
+        CreateInitiallyVisibleWindows(localSettings);
+        visitTimer->StopTimer(timeid, "stage 1 - Creating visible windows");
+        break;
+    case 2:
+        SplashScreenProgress("Processing window configs...", 95);
         // Process the window config file settings.
         ProcessWindowConfigSettings(systemSettings);
         ProcessWindowConfigSettings(localSettings);
-        delete systemSettings; systemSettings = 0;
-        delete localSettings;  localSettings = 0;
-
-        visitTimer->StopTimer(timeid, "Processing window configs");
-        break;
-    case 2:
-        // Set up printing
-        timeid = visitTimer->StartTimer();
-        printer = new QPrinter;
-        printerObserver = new ObserverToCallback(viewer->GetPrinterAttributes(),
-            UpdatePrinterAttributes, (void *)printer);
-        viewer->GetPrinterAttributes()->SetCreator(viewer->GetLocalUserName());
-        PrinterAttributesToQPrinter(viewer->GetPrinterAttributes(), printer);
-        visitTimer->StopTimer(timeid, "Setting up printer");
-
-        // Show that we're ready.
-        SplashScreenProgress("VisIt is ready.", 100);
+        visitTimer->StopTimer(timeid, "stage 2 - Processing window configs");
         break;
     case 3:
-        if(splash)
-            splash->hide();
+        // Show that we're ready.
+        SplashScreenProgress("VisIt is ready.", 100);
+        visitTimer->StopTimer(timeid, "stage 3");
         break;
     case 4:
-        // Load the initial data file.
-        LoadFile(true);
+        if(splash)
+            splash->hide();
+        visitTimer->StopTimer(timeid, "stage 4 - Hiding splashscreen");
         break;
     case 5:
-        // Load the initial session file.
-        RestoreSessionFile(sessionFile);
+        // Load the initial data file.
+        LoadFile(true);
+        visitTimer->StopTimer(timeid, "stage 5 - LoadFile");
         break;
     case 6:
+        // Load the initial session file.
+        RestoreSessionFile(sessionFile);
+        visitTimer->StopTimer(timeid, "stage 6 - RestoreSessionFile");
+        break;
+    case 7:
         // Create a timer that will send keep alive signals to the mdservers
         // every 5 minutes.
         keepAliveTimer = new QTimer(this, "keepAliveTimer");
         connect(keepAliveTimer, SIGNAL(timeout()),
                 this, SLOT(SendKeepAlives()));
         keepAliveTimer->start(5 * 60 * 1000);
+        visitTimer->StopTimer(timeid, "stage 7 - Create keepalive");
         break;
-   case 7:
+    case 8:
+#ifdef Q_WS_MACX
+        // In the MacOS X version, show the main window last because it 
+        // trims off about 1.5 seconds off of the launch.
+        mainWin->show();
+#endif
+        allowSocketRead = true;
+        visitTimer->StopTimer(timeid, "stage 8");
+        visitTimer->StopTimer(stagedInit, "FinalInitialization");
         visitTimer->StopTimer(completeInit, "VisIt to be ready");
 
         moreInit = false;
@@ -1593,12 +1701,14 @@ QvisGUIApplication::AddViewerSpaceArguments()
 //   Brad Whitlock, Thu Sep 4 10:28:07 PDT 2003
 //   I hooked up hideApplication and showApplication signals.
 //
+//   Brad Whitlock, Wed May 5 15:58:47 PST 2004
+//   I moved a line from another method into this one.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::CreateMainWindow()
 {
-    int timeid = visitTimer->StartTimer();
     int orientation = viewer->GetAppearanceAttributes()->GetOrientation();
 
     // Make it so the application terminates when the last
@@ -1635,355 +1745,531 @@ QvisGUIApplication::CreateMainWindow()
     mainWin->ConnectGlobalAttributes(viewer->GetGlobalAttributes());
     mainWin->ConnectPlotList(viewer->GetPlotList());
     mainWin->ConnectWindowInformation(viewer->GetWindowInformation());
+    mainWin->ConnectViewerStatusAttributes(viewer->GetStatusAttributes());
 
     // Move and resize the GUI so that we can get accurate size and
     // position information from it.
     MoveAndResizeMainWindow(orientation);
-
-    visitTimer->StopTimer(timeid, "Creating main window");
 }
 
-// *****************************************************************************
-// Method: QvisGUIApplication::CreateWindows
+// ****************************************************************************
+// Method: QvisGUIApplication::SetupWindows
 //
 // Purpose: 
-//   Creates the various GUI windows and connects them to observe
-//   state objects in the viewer and the file server.
+//   Create the crucial windows and set up slot functions to be called when
+//   we want to look at the other windows.
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Aug 31 14:17:31 PST 2000
+// Creation:   Thu May 6 14:53:20 PST 2004
 //
 // Modifications:
-//   Brad Whitlock, Thu Jun 19 15:46:05 PST 2003
-//   I removed old mod comments and rewrote the routine so it can be called
-//   from within the Qt event loop.
-//
-//   Eric Brugger, Wed Aug 20 14:01:46 PDT 2003
-//   Added curve view attributes.
-//
-//   Brad Whitlock, Mon Oct 13 17:22:45 PST 2003
-//   I hooked up a new signal/slot between the main window and the preferenes
-//   window.
-//
-//   Brad Whitlock, Fri Oct 31 14:24:24 PST 2003
-//   I changed how the annotation window is initialized.
-//
-//   Brad Whitlock, Tue Jan 27 21:39:16 PST 2004
-//   I changed some initialization for the keyframe window. I also hooked up
-//   a new preference window signal. I added the database correlation list
-//   window.
-//
-//   Kathleen Bonnell, Wed Mar 31 10:13:43 PST 2004 
-//   Added QueryOverTime window. 
-//
-//   Brad Whitlock, Fri Apr 9 14:32:05 PST 2004
-//   I connected a new signal from the preferences window.
-//
+//   
 // ****************************************************************************
 
-bool
-QvisGUIApplication::CreateWindows(int startPercent, int endPercent)
+void
+QvisGUIApplication::SetupWindows()
 {
-    bool  done = false;
-    const int nWindows = 27;
-    float perWindow = float(endPercent - startPercent) / float(nWindows-1);
-#define PERCENT int(startPercent + (perWindow * windowInitStage))
+     // Create the crucial windows
+     messageWin = (QvisMessageWindow *)GetWindowPointer(WINDOW_MESSAGE);
 
-    debug4 << "QvisGUIApplication::CreateWindows: windowInitStage="
-           << windowInitStage << endl;
+     outputWin = (QvisOutputWindow *)GetWindowPointer(WINDOW_OUTPUT);
+     outputWin->CreateEntireWindow();
+     connect(mainWin, SIGNAL(activateOutputWindow()), outputWin, SLOT(show()));
+     connect(outputWin, SIGNAL(unreadOutput(bool)),
+             mainWin, SLOT(unreadOutput(bool)));
 
-    switch(windowInitStage)
+     pluginWin = (QvisPluginWindow *)GetWindowPointer(WINDOW_PLUGINMANAGER);
+     connect(mainWin, SIGNAL(activatePluginWindow()),
+             pluginWin, SLOT(show()));
+     connect(pluginWin, SIGNAL(pluginSettingsChanged()),
+             this, SLOT(LoadPlugins()));
+
+     appearanceWin = (QvisAppearanceWindow *)GetWindowPointer(WINDOW_APPEARANCE);
+     connect(mainWin, SIGNAL(activateAppearanceWindow()),
+             appearanceWin, SLOT(show()));
+     connect(appearanceWin, SIGNAL(changeAppearance(bool)),
+             this, SLOT(CustomizeAppearance(bool)));
+
+     pickWin = (QvisPickWindow *)GetWindowPointer(WINDOW_PICK);
+     connect(mainWin, SIGNAL(activatePickWindow()),
+             pickWin, SLOT(show()));
+
+     preferencesWin = (QvisPreferencesWindow *)GetWindowPointer(WINDOW_PREFERENCES);
+     connect(mainWin, SIGNAL(activatePreferencesWindow()),
+             preferencesWin, SLOT(show()));
+     connect(preferencesWin, SIGNAL(changeTimeFormat(const TimeFormat &)),
+             mainWin, SLOT(SetTimeStateFormat(const TimeFormat &)));
+     connect(preferencesWin, SIGNAL(showSelectedFiles(bool)),
+             mainWin, SLOT(SetShowSelectedFiles(bool)));
+     connect(preferencesWin, SIGNAL(allowFileSelectionChange(bool)),
+             mainWin, SLOT(SetAllowFileSelectionChange(bool)));
+
+     //
+     // Non crucial windows can be created later on demand. Instead of
+     // creating all of the windows, create slot functions to
+     // create and show then on demand.
+     //
+     connect(mainWin, SIGNAL(activateFileWindow()),
+             this, SLOT(showFileSelectionWindow()));
+     connect(mainWin, SIGNAL(activateFileInformationWindow()),
+             this, SLOT(showFileInformationWindow()));
+     connect(mainWin, SIGNAL(activateHostWindow()),
+             this, SLOT(showHostProfilesWindow()));
+     connect(mainWin, SIGNAL(activateSaveWindow()),
+             this, SLOT(showSaveWindow()));
+     connect(mainWin, SIGNAL(activateEngineWindow()),
+             this, SLOT(showEngineWindow()));
+     connect(mainWin, SIGNAL(activateAnimationWindow()),
+             this, SLOT(showAnimationWindow()));
+     connect(mainWin, SIGNAL(activateAnnotationWindow()),
+             this, SLOT(showAnnotationWindow()));
+     connect(mainWin, SIGNAL(activateColorTableWindow()),
+             this, SLOT(showColorTableWindow()));
+     connect(mainWin, SIGNAL(activateExpressionsWindow()),
+             this, SLOT(showExpressionsWindow()));
+     connect(mainWin, SIGNAL(activateSubsetWindow()),
+             this, SLOT(showSubsetWindow()));
+     connect(mainWin->GetPlotManager(), SIGNAL(activateSubsetWindow()),
+             this, SLOT(showSubsetWindow()));
+     connect(mainWin, SIGNAL(activateViewWindow()),
+             this, SLOT(showViewWindow()));
+     connect(mainWin, SIGNAL(activateKeyframeWindow()),
+             this, SLOT(showKeyframeWindow()));
+     connect(mainWin, SIGNAL(activateLightingWindow()),
+             this, SLOT(showLightingWindow()));
+     connect(mainWin, SIGNAL(activateGlobalLineoutWindow()),
+             this, SLOT(showGlobalLineoutWindow()));
+     connect(mainWin, SIGNAL(activateMaterialWindow()),
+             this, SLOT(showMaterialWindow()));
+     connect(mainWin, SIGNAL(activateCopyrightWindow()),
+             this, SLOT(displayCopyright()));
+     connect(mainWin, SIGNAL(activateHelpWindow()),
+             this, SLOT(showHelpWindow()));
+     connect(mainWin, SIGNAL(activateReleaseNotesWindow()),
+             this, SLOT(displayReleaseNotes()));
+     connect(mainWin, SIGNAL(activateQueryWindow()),
+             this, SLOT(showQueryWindow()));
+     connect(mainWin, SIGNAL(activateRenderingWindow()),
+             this, SLOT(showRenderingWindow()));
+     connect(mainWin, SIGNAL(activateCorrelationListWindow()),
+             this, SLOT(showCorrelationListWindow()));
+     connect(mainWin, SIGNAL(activateQueryOverTimeWindow()),
+             this, SLOT(showQueryOverTimeWindow()));
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::WindowFactory
+//
+// Purpose: 
+//   Creates a window and returns a pointer to it.
+//
+// Arguments:
+//   i : The index of the type of window to create.
+//
+// Returns:    A pointer to a window.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu May 6 14:54:09 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QvisWindowBase *
+QvisGUIApplication::WindowFactory(int i)
+{
+    QvisWindowBase *win = 0;
+
+    switch(i)
     {
-    case 0:
-        windowTimeId = visitTimer->StartTimer();
-        // Create the command line interface window.
-        SplashScreenProgress("Creating CLI window...", PERCENT);
-        cliWin = new QvisCommandLineWindow(
-           "Command Line Interface", "CLI", mainWin->GetNotepad());
-        connect(mainWin, SIGNAL(activateCommandLineWindow()), cliWin, SLOT(show()));
-        otherWindows.push_back(cliWin);
+    case WINDOW_FILE_SELECTION:
+        // Create a file selection window.
+        { QvisFileSelectionWindow *fsWin = new QvisFileSelectionWindow(windowNames[i]);
+          fsWin->ConnectSubjects(viewer->GetHostProfileList());
+          win = fsWin;
+        }
         break;
-    case 1:
-        // Create the file selection window.
-        SplashScreenProgress("Creating File Selection window...", PERCENT);
-        fileWin = new QvisFileSelectionWindow("File selection");
-        fileWin->ConnectSubjects(viewer->GetHostProfileList());
-        connect(mainWin, SIGNAL(activateFileWindow()), fileWin, SLOT(show()));
-        otherWindows.push_back(fileWin);
-        break;
-    case 2:
+    case WINDOW_FILE_INFORMATION:
         // Create the file information window.
-        SplashScreenProgress("Creating File Information window...", PERCENT);
-        fileInformationWin = new QvisFileInformationWindow(fileServer, "File information",
+        win = new QvisFileInformationWindow(fileServer, windowNames[i],
             "FileInfo", mainWin->GetNotepad());
-        connect(mainWin, SIGNAL(activateFileInformationWindow()), fileInformationWin, SLOT(show()));
-        otherWindows.push_back(fileInformationWin);
         break;
-    case 3:
+    case WINDOW_MESSAGE:
         // Create the message window
-        SplashScreenProgress("Creating Message window...", PERCENT);
-        messageWin = new QvisMessageWindow(&message, "Information");
-        otherWindows.push_back(messageWin);
+        win = new QvisMessageWindow(&message, windowNames[i]);
         break;
-    case 4:
+    case WINDOW_OUTPUT:
         // Create the output window
-        SplashScreenProgress("Creating Output window...", PERCENT);
-        outputWin = new QvisOutputWindow(&message, "Output", "Output",
+        win = new QvisOutputWindow(&message, windowNames[i], "Output",
             mainWin->GetNotepad());
-        outputWin->CreateEntireWindow();
-        connect(mainWin, SIGNAL(activateOutputWindow()), outputWin, SLOT(show()));
-        connect(outputWin, SIGNAL(unreadOutput(bool)),
-                mainWin, SLOT(unreadOutput(bool)));
-        otherWindows.push_back(outputWin);
         break;
-    case 5:
+    case WINDOW_HOSTPROFILES:
         // Create the host profile window
-        SplashScreenProgress("Creating Host Profile window...", PERCENT);
-        hostWin = new QvisHostProfileWindow(viewer->GetHostProfileList(),
-            "Host profiles", "Profiles", mainWin->GetNotepad());
-        connect(mainWin, SIGNAL(activateHostWindow()), hostWin, SLOT(show()));
-        otherWindows.push_back(hostWin);
+        win = new QvisHostProfileWindow(viewer->GetHostProfileList(),
+            windowNames[i], "Profiles", mainWin->GetNotepad());
         break;
-    case 6:
+    case WINDOW_SAVE:
         // Create the save window.
-        SplashScreenProgress("Creating Save window...", PERCENT);
-        saveWin = new QvisSaveWindow(viewer->GetSaveWindowAttributes(),
-           "Set save options", "Save options", mainWin->GetNotepad());
-        connect(mainWin, SIGNAL(activateSaveWindow()),
-                saveWin, SLOT(show()));
-        otherWindows.push_back(saveWin);
+        win = new QvisSaveWindow(viewer->GetSaveWindowAttributes(),
+           windowNames[i], "Save options", mainWin->GetNotepad());
         break;
-    case 7:
+    case WINDOW_ENGINE:
         // Create the engine window.
-        SplashScreenProgress("Creating Engine window...", PERCENT);
-        engineWin = new QvisEngineWindow(viewer->GetEngineList(),
-            "Compute engines", "Engines", mainWin->GetNotepad());
-        connect(mainWin, SIGNAL(activateEngineWindow()), engineWin, SLOT(show()));
-        otherWindows.push_back(engineWin);
+        { QvisEngineWindow *ewin = new QvisEngineWindow(viewer->GetEngineList(),
+            windowNames[i], "Engines", mainWin->GetNotepad());
+          ewin->ConnectStatusAttributes(viewer->GetStatusAttributes());
+          win = ewin;
+        }
         break;
-    case 8:
+    case WINDOW_ANIMATION:
         // Create the animation window.
-        SplashScreenProgress("Creating Animation window...", PERCENT);
-        animationWin = new QvisAnimationWindow(viewer->GetAnimationAttributes(),
-            "Animation", "Animation", mainWin->GetNotepad());
-        connect(mainWin, SIGNAL(activateAnimationWindow()),
-                animationWin, SLOT(show()));
-        otherWindows.push_back(animationWin);
+        win = new QvisAnimationWindow(viewer->GetAnimationAttributes(),
+            windowNames[i], "Animation", mainWin->GetNotepad());
         break;
-    case 9:
+    case WINDOW_ANNOTATION:
         // Create the annotation window.
-        SplashScreenProgress("Creating Annotation window...", PERCENT);
-        annotationWin = new QvisAnnotationWindow("Annotation", "Annotation",
-            mainWin->GetNotepad());
-        annotationWin->ConnectAnnotationAttributes(viewer->GetAnnotationAttributes());
-        annotationWin->ConnectAnnotationObjectList(
-            viewer->GetAnnotationObjectList());
-        connect(mainWin, SIGNAL(activateAnnotationWindow()),
-                annotationWin, SLOT(show()));
-        otherWindows.push_back(annotationWin);
+        { QvisAnnotationWindow *aWin = new QvisAnnotationWindow(windowNames[i],
+             "Annotation", mainWin->GetNotepad());
+          aWin->ConnectAnnotationAttributes(viewer->GetAnnotationAttributes());
+          aWin->ConnectAnnotationObjectList(viewer->GetAnnotationObjectList());
+          win = aWin;
+        }
         break;
-    case 10:
+    case WINDOW_COLORTABLE:
         // Create the colortable window,
-        SplashScreenProgress("Creating Colortable window...", PERCENT);
-        colorTableWin = new QvisColorTableWindow(viewer->GetColorTableAttributes(),
-            "Color tables", "Color tables", mainWin->GetNotepad());
-        connect(mainWin, SIGNAL(activateColorTableWindow()),
-                colorTableWin, SLOT(show()));
-        otherWindows.push_back(colorTableWin);
+        win = new QvisColorTableWindow(viewer->GetColorTableAttributes(),
+            windowNames[i], "Color tables", mainWin->GetNotepad());
         break;
-    case 11:
+    case WINDOW_EXPRESSIONS:
         // Create the expressions window,
-        SplashScreenProgress("Creating Expressions window...", PERCENT);
-        exprWin = new QvisExpressionsWindow(viewer->GetExpressionList(),
-            "Expressions", "Expressions", mainWin->GetNotepad());
-        connect(mainWin, SIGNAL(activateExpressionsWindow()),
-                exprWin, SLOT(show()));
-        otherWindows.push_back(exprWin);
+        win = new QvisExpressionsWindow(viewer->GetExpressionList(),
+            windowNames[i], "Expressions", mainWin->GetNotepad());
         break;
-    case 12:
+    case WINDOW_SUBSET:
         // Create the subset window.
-        SplashScreenProgress("Creating Subset window...", PERCENT);
-        subsetWin = new QvisSubsetWindow(viewer->GetSILRestrictionAttributes(),
-            "Subset", "Subset", mainWin->GetNotepad());
-        connect(mainWin, SIGNAL(activateSubsetWindow()), subsetWin, SLOT(show()));
-        connect(mainWin->GetPlotManager(), SIGNAL(activateSubsetWindow()),
-                subsetWin, SLOT(show()));
-        otherWindows.push_back(subsetWin);
+        win = new QvisSubsetWindow(viewer->GetSILRestrictionAttributes(),
+            windowNames[i], "Subset", mainWin->GetNotepad());
         break;
-    case 13:
+    case WINDOW_PLUGINMANAGER:
         // Create the plugin manager window.
-        pluginWin = new QvisPluginWindow(viewer->GetPluginManagerAttributes(),
-            "Plugin Manager", "Plugins", mainWin->GetNotepad());
-        connect(mainWin, SIGNAL(activatePluginWindow()),
-                pluginWin, SLOT(show()));
-        connect(pluginWin, SIGNAL(pluginSettingsChanged()),
-                this, SLOT(LoadPlugins()));
-        otherWindows.push_back(pluginWin);
+        win = new QvisPluginWindow(viewer->GetPluginManagerAttributes(),
+            windowNames[i], "Plugins", mainWin->GetNotepad());
         break;
-    case 14:
+    case WINDOW_VIEW:
         // Create the view window.
-        SplashScreenProgress("Creating View window...", PERCENT);
-        viewWin = new QvisViewWindow("View", "View", mainWin->GetNotepad());
-        viewWin->ConnectCurveAttributes(viewer->GetViewCurveAttributes());
-        viewWin->Connect2DAttributes(viewer->GetView2DAttributes());
-        viewWin->Connect3DAttributes(viewer->GetView3DAttributes());
-        viewWin->ConnectWindowInformation(viewer->GetWindowInformation());
-        connect(mainWin, SIGNAL(activateViewWindow()),
-                viewWin, SLOT(show()));
-        otherWindows.push_back(viewWin);
+        { QvisViewWindow *viewWin = new QvisViewWindow(windowNames[i], "View",
+              mainWin->GetNotepad());
+           viewWin->ConnectCurveAttributes(viewer->GetViewCurveAttributes());
+           viewWin->Connect2DAttributes(viewer->GetView2DAttributes());
+           viewWin->Connect3DAttributes(viewer->GetView3DAttributes());
+           viewWin->ConnectWindowInformation(viewer->GetWindowInformation());
+           win = viewWin;
+        }
         break;
-    case 15:
+    case WINDOW_APPEARANCE:
         // Create the appearance window.
-        SplashScreenProgress("Creating Appearance window...", PERCENT);
-        appearanceWin = new QvisAppearanceWindow(viewer->GetAppearanceAttributes(),
-            "Appearance", "Appearance", mainWin->GetNotepad());
-        connect(mainWin, SIGNAL(activateAppearanceWindow()),
-                appearanceWin, SLOT(show()));
-        connect(appearanceWin, SIGNAL(changeAppearance(bool)),
-                this, SLOT(CustomizeAppearance(bool)));
-        otherWindows.push_back(appearanceWin);
+        win = new QvisAppearanceWindow(viewer->GetAppearanceAttributes(),
+             windowNames[i], "Appearance", mainWin->GetNotepad());
         break;
-    case 16:
+    case WINDOW_KEYFRAME:
         // Create the keyframe window.
-        SplashScreenProgress("Creating Keyframe window...", PERCENT);
-        keyframeWin = new QvisKeyframeWindow(viewer->GetKeyframeAttributes(),
-            "Keyframe Editor", "Keyframer", mainWin->GetNotepad());
-        connect(mainWin, SIGNAL(activateKeyframeWindow()),
-                keyframeWin, SLOT(show()));
-        otherWindows.push_back(keyframeWin);
-        /*
-          DISABLED TEMPORARILY - 5/8/02 JSM
-        keyframeWin->ConnectAttributes(viewer->GetAnnotationAttributes(), "Annotation");
-        keyframeWin->ConnectAttributes(viewer->GetAppearanceAttributes(), "Appearance");
-        */
-        keyframeWin->ConnectWindowInformation(viewer->GetWindowInformation());
-        keyframeWin->ConnectPlotList(viewer->GetPlotList());
+        { QvisKeyframeWindow *kfWin = new QvisKeyframeWindow(
+            viewer->GetKeyframeAttributes(), windowNames[i], 
+            "Keyframer", mainWin->GetNotepad());
+          kfWin->ConnectWindowInformation(viewer->GetWindowInformation());
+          kfWin->ConnectPlotList(viewer->GetPlotList());
+          win = kfWin;
+        }
         break;
-    case 17:
+    case WINDOW_LIGHTING:
         // Create the lighting window.
-        SplashScreenProgress("Creating Lighting window...", PERCENT);
-        lightingWin = new QvisLightingWindow(viewer->GetLightList(),
-            "Lighting", "Lighting", mainWin->GetNotepad());
-        connect(mainWin, SIGNAL(activateLightingWindow()),
-                lightingWin, SLOT(show()));
-        otherWindows.push_back(lightingWin);
+        win = new QvisLightingWindow(viewer->GetLightList(),
+            windowNames[i], "Lighting", mainWin->GetNotepad());
         break;
-    case 18:
+    case WINDOW_GLOBALLINEOUT:
         // Create the global lineout window.
-        SplashScreenProgress("Creating GlobalLineout window...", PERCENT);
-        globalLineoutWin = new QvisGlobalLineoutWindow(viewer->GetGlobalLineoutAttributes(),
-            "Lineout", "Lineout", mainWin->GetNotepad());
-        connect(mainWin, SIGNAL(activateGlobalLineoutWindow()),
-                globalLineoutWin, SLOT(show()));
-        otherWindows.push_back(globalLineoutWin);
+        win = new QvisGlobalLineoutWindow(viewer->GetGlobalLineoutAttributes(),
+            windowNames[i], "Lineout", mainWin->GetNotepad());
         break;
-    case 19:
+    case WINDOW_MATERIALOPTIONS:
         // Create the material options window.
-        SplashScreenProgress("Creating materials window...", PERCENT);
-        materialWin = new QvisMaterialWindow(viewer->GetMaterialAttributes(),
-            "Material Reconstruction Options", "MIR Options", mainWin->GetNotepad());
-        connect(mainWin, SIGNAL(activateMaterialWindow()),
-                materialWin, SLOT(show()));
-        otherWindows.push_back(materialWin);
+        win = new QvisMaterialWindow(viewer->GetMaterialAttributes(),
+            windowNames[i], "MIR Options", mainWin->GetNotepad());
         break;
-    case 20:
+    case WINDOW_PICK:
         // Create the pick window.
-        SplashScreenProgress("Creating Pick window...", PERCENT);
-        pickWin = new QvisPickWindow(viewer->GetPickAttributes(),
-            "Pick", "Pick", mainWin->GetNotepad());
-        pickWin->CreateEntireWindow();
-        connect(mainWin, SIGNAL(activatePickWindow()),
-                pickWin, SLOT(show()));
-        otherWindows.push_back(pickWin);
+        { QvisPickWindow *pwin = new QvisPickWindow(viewer->GetPickAttributes(),
+            windowNames[i], "Pick", mainWin->GetNotepad());
+            pwin->CreateEntireWindow();
+          win = pwin;
+        }
         break;
-    case 21:
+    case WINDOW_HELP:
         // Create the help window
-        SplashScreenProgress("Creating Help window...", PERCENT);
-        helpWin = new QvisHelpWindow("Help");
-        connect(mainWin, SIGNAL(activateCopyrightWindow()),
-                helpWin, SLOT(displayCopyright()));
-        connect(mainWin, SIGNAL(activateHelpWindow()),
-                helpWin, SLOT(show()));
-        connect(mainWin, SIGNAL(activateReleaseNotesWindow()),
-                helpWin, SLOT(displayReleaseNotes()));
-        otherWindows.push_back(helpWin);
+        win = new QvisHelpWindow("Help");
         break;
-    case 22:
+    case WINDOW_QUERY:
         // Create the query window.
-        SplashScreenProgress("Creating Query window...", PERCENT);
-        queryWin = new QvisQueryWindow("Query", "Query", mainWin->GetNotepad());
-        queryWin->ConnectQueryList(viewer->GetQueryList());
-        queryWin->ConnectQueryAttributes(viewer->GetQueryAttributes());
-        queryWin->ConnectPickAttributes(viewer->GetPickAttributes());
-        queryWin->ConnectPlotList(viewer->GetPlotList());
-        connect(mainWin, SIGNAL(activateQueryWindow()),
-                queryWin, SLOT(show()));
-        otherWindows.push_back(queryWin);
+        { QvisQueryWindow *queryWin = new QvisQueryWindow(windowNames[i],
+            "Query", mainWin->GetNotepad());
+          queryWin->ConnectQueryList(viewer->GetQueryList());
+          queryWin->ConnectQueryAttributes(viewer->GetQueryAttributes());
+          queryWin->ConnectPickAttributes(viewer->GetPickAttributes());
+          queryWin->ConnectPlotList(viewer->GetPlotList());
+          win = queryWin;
+        }
         break;
-    case 23:
+    case WINDOW_PREFERENCES:
         // Create the preferences window.
-        SplashScreenProgress("Creating Preferences window...", PERCENT);
-        preferencesWin = new QvisPreferencesWindow(viewer->GetGlobalAttributes(),
-            "Preferences", "Preferences", mainWin->GetNotepad());
-        connect(mainWin, SIGNAL(activatePreferencesWindow()),
-                preferencesWin, SLOT(show()));
-        connect(preferencesWin, SIGNAL(changeTimeFormat(const TimeFormat &)),
-                mainWin, SLOT(SetTimeStateFormat(const TimeFormat &)));
-        connect(preferencesWin, SIGNAL(showSelectedFiles(bool)),
-                mainWin, SLOT(SetShowSelectedFiles(bool)));
-        connect(preferencesWin, SIGNAL(allowFileSelectionChange(bool)),
-                mainWin, SLOT(SetAllowFileSelectionChange(bool)));
-        otherWindows.push_back(preferencesWin);
+        win = new QvisPreferencesWindow(viewer->GetGlobalAttributes(),
+            windowNames[i], "Preferences", mainWin->GetNotepad());
         break;
-    case 24:
+    case WINDOW_RENDERING:
         // Create the rendering preferences window.
-        SplashScreenProgress("Creating Rendering window...", PERCENT);
-        renderingWin = new QvisRenderingWindow("Rendering options", "Rendering",
-            mainWin->GetNotepad());
-        connect(mainWin, SIGNAL(activateRenderingWindow()),
-                renderingWin, SLOT(show()));
-        renderingWin->ConnectRenderingAttributes(viewer->GetRenderingAttributes());
-        renderingWin->ConnectWindowInformation(viewer->GetWindowInformation());
-        otherWindows.push_back(renderingWin);
-
-        // Hook up the viewer's status attributes to the main window and the
-        // engine window.
-        engineWin->ConnectStatusAttributes(viewer->GetStatusAttributes());
-        mainWin->ConnectViewerStatusAttributes(viewer->GetStatusAttributes());
+        { QvisRenderingWindow *renderingWin = new QvisRenderingWindow(
+            windowNames[i], "Rendering", mainWin->GetNotepad());
+          renderingWin->ConnectRenderingAttributes(viewer->GetRenderingAttributes());
+          renderingWin->ConnectWindowInformation(viewer->GetWindowInformation());
+          win = renderingWin;
+        }
         break;
-    case 25:
+    case WINDOW_CORRELATION:
         // Create the database correlation list window.
-        SplashScreenProgress("Creating Correlation window...", PERCENT);
-        correlationListWin = new QvisDatabaseCorrelationListWindow(
-            viewer->GetDatabaseCorrelationList(), "Database correlation list",
+        win = new QvisDatabaseCorrelationListWindow(
+            viewer->GetDatabaseCorrelationList(), windowNames[i],
             "Correlations", mainWin->GetNotepad());
-        connect(mainWin, SIGNAL(activateCorrelationListWindow()),
-                correlationListWin, SLOT(show()));
-        otherWindows.push_back(correlationListWin);
-
         break;
-    case 26:
+    case WINDOW_TIMEQUERY:
         // Create the time query window.
-        SplashScreenProgress("Creating QueryOverTime window...", PERCENT);
-        queryOverTimeWin = new QvisQueryOverTimeWindow(
-             viewer->GetQueryOverTimeAttributes(),
-            "QueryOverTime", "QueryOverTime", mainWin->GetNotepad());
-        connect(mainWin, SIGNAL(activateQueryOverTimeWindow()),
-                queryOverTimeWin, SLOT(show()));
-        otherWindows.push_back(queryOverTimeWin);
-
-        // Move this code to the new last case when one is added.
-        done = true;
-        visitTimer->StopTimer(windowTimeId, "Creating windows");
+        win = new QvisQueryOverTimeWindow(viewer->GetQueryOverTimeAttributes(),
+            windowNames[i], "QueryOverTime", mainWin->GetNotepad());
         break;
     }
 
-#undef PERCENT
+    return win;
+}
 
-    // Move to the next stage in window creation.
-    ++windowInitStage;
+// ****************************************************************************
+// Method: QvisGUIApplication::CreateInitiallyVisibleWindows
+//
+// Purpose: 
+//   Creates the windows that are initially visible based on the settings
+//   in the config file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu May 6 14:55:00 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
 
-    return done;
+void
+QvisGUIApplication::CreateInitiallyVisibleWindows(DataNode *node)
+{
+    if(node == 0)
+        return;
+
+    // Look for the VisIt tree.
+    DataNode *visitRoot = node->GetNode("VisIt");
+    if(visitRoot == 0)
+        return;
+
+    // Get the gui node.
+    DataNode *guiNode = visitRoot->GetNode("GUI");
+    if(guiNode == 0)
+        return;
+
+    for(int i = 0; i < sizeof(windowNames) / sizeof(const char *); ++i)
+    {
+        DataNode *wNode = guiNode->GetNode(windowNames[i]);
+        if(wNode != 0)
+        {
+            bool windowVisible = false;
+            DataNode *visibleNode = wNode->GetNode("visible");
+            DataNode *postedNode = wNode->GetNode("posted");
+            if(visibleNode != 0)
+            {
+                windowVisible = visibleNode->AsBool();
+                if(postedNode != 0)
+                    windowVisible |= postedNode->AsBool();
+            }
+
+            //
+            // If the window exists, let the code to initialize the window
+            // get executed since it will apply the new settings.
+            //
+            bool windowExists = (otherWindows.find(windowNames[i]) !=
+                otherWindows.end());
+
+            //
+            // The window is visible so get its pointer, which indirectly
+            // causes the window to be created.
+            //
+            if(windowVisible || windowExists)
+            {
+                debug1 << (windowExists ? "Initializing" : "Creating")
+                       << " the \"" << windowNames[i]
+                       << "\" window because it was in the config file."
+                       << endl;
+
+                // Make the window read its settings.
+                if(node != localSettings && node != systemSettings)
+                {
+                    // The node is noehter the local settings nor the system
+                    // settings so create the window but don't initialize it.
+                    QvisWindowBase *win = GetWindowPointer(i);
+
+                    // If the window was created, initialize it using the
+                    // specified settings.
+                    if(win != 0)
+                    {
+                        if(windowExists)
+                        {
+                            debug1 << "Hiding \"" << windowNames[i]
+                                   << "\" window" << endl;
+                            win->hide();
+                        }
+
+                        ReadWindowSettings(win, node);
+                    }
+                }
+                else
+                {
+                    // Ask for the initialized window so it will be created 
+                    // and get initialized with the local and system settings.
+                    GetInitializedWindowPointer(i);
+                }
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::ReadWindowSettings
+//
+// Purpose: 
+//   Makes a window read its config settings.
+//
+// Arguments:
+//   win : The window that we want to read its config settings.
+//   node : The node where the settings are stored.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu May 6 14:55:36 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::ReadWindowSettings(QvisWindowBase *win, DataNode *node)
+{
+    if(win != 0 && node != 0)
+    {
+        // Look for the VisIt tree.
+        DataNode *visitRoot = node->GetNode("VisIt");
+        if(visitRoot != 0)
+        {
+            // Get the gui node.
+            DataNode *guiNode = visitRoot->GetNode("GUI");
+            if(guiNode != 0)
+            {
+                // Get the version
+                DataNode *version = visitRoot->GetNode("Version");
+                const char *configVersion = 0;
+                if(version != 0)
+                    configVersion = version->AsString().c_str();
+                win->ProcessOldVersions(guiNode, configVersion);
+                win->SetFromNode(guiNode, borders);
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::GetWindowPointer
+//
+// Purpose: 
+//   Returns a pointer to the i'th window, even if it needs to be created
+//   first.
+//
+// Arguments:
+//   i : The index of the window whose pointer we want.
+//
+// Returns:    A pointer to the i'th window.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu May 6 14:56:29 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QvisWindowBase *
+QvisGUIApplication::GetWindowPointer(int i)
+{
+    QvisWindowBase *win = 0;
+    const char *wName = windowNames[i];
+    WindowBaseMap::iterator pos = otherWindows.find(wName);
+    if(pos == otherWindows.end())
+    {
+        win = WindowFactory(i);
+        if(win != 0)
+        {
+            // Add the window to the list of windows.
+            otherWindows[wName] = win;
+        }
+    }
+    else
+        win = pos->second;
+
+    return win;
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::GetInitializedWindowPointer
+//
+// Purpose: 
+//   Returns a pointer to the i'th window after it has been initialized using
+//   the system and local settings.
+//
+// Arguments:
+//   i : The index of the window that we want to create.
+//
+// Returns:    A pointer to the window that we want.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu May 6 15:19:21 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QvisWindowBase *
+QvisGUIApplication::GetInitializedWindowPointer(int i)
+{
+    QvisWindowBase *win = GetWindowPointer(i);
+
+    if(win != 0)
+    {
+        if(win->inherits("QvisPostableWindow"))
+        {
+            QvisPostableWindow *pwin = (QvisPostableWindow *)win;
+            if(pwin->posted())
+                pwin->hide();
+        }
+
+        ReadWindowSettings(win, systemSettings);
+        ReadWindowSettings(win, localSettings);
+    }
+
+    return win;
 }
 
 // ****************************************************************************
@@ -2083,14 +2369,11 @@ QvisGUIApplication::CreatePluginWindows()
     {
         // Get a pointer to the GUI portion of the plot plugin information.
         GUIPlotPluginInfo *GUIInfo = plotPluginManager->GetGUIPluginInfo(
-                                                 plotPluginManager->GetEnabledID(i));
+            plotPluginManager->GetEnabledID(i));
    
-        // Create the plot plugin window.
-        QvisPostableWindowObserver *win = GUIInfo->CreatePluginWindow(i,
-            viewer->GetPlotAttributes(i), mainWin->GetNotepad());
-
-        // Add the window to the list of plot windows.
-        plotWindows.push_back(win);
+        // Add a NULL window to the list of plot windows. We'll create the
+        // plugin window later when we need it.
+        plotWindows.push_back(0);
 
         // Add the attributes to the keyframe window
         /*
@@ -2114,17 +2397,84 @@ QvisGUIApplication::CreatePluginWindows()
         GUIOperatorPluginInfo *GUIInfo = operatorPluginManager->GetGUIPluginInfo(
                                        operatorPluginManager->GetEnabledID(i));
 
-        // Create the operator plugin window.
-        QvisPostableWindowObserver *win = GUIInfo->CreatePluginWindow(i,
-            viewer->GetOperatorAttributes(i), mainWin->GetNotepad());
-
-        // Add the window to the list of operator windows.
-        operatorWindows.push_back(win);
+        // Add a NULL window to the list of operator windows. We'll create the
+        // plugin window later when we need it.
+        operatorWindows.push_back(0);
 
         // Add an option to the main window's operator manager widget's
         // operator list.
         mainWin->GetPlotManager()->AddOperatorType(GUIInfo->GetMenuName(),
                                                    GUIInfo->XPMIconData());
+    }
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::EnsurePlotWindowIsCreated
+//
+// Purpose: 
+//   This method creates the i'th plot plugin window if it has not been
+//   created yet.
+//
+// Arguments:
+//   i : The index of the plot plugin to create.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu May 6 14:57:52 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::EnsurePlotWindowIsCreated(int i)
+{
+    if(plotWindows[i] == 0)
+    {
+        // Get a pointer to the plot plugin manager.
+        PlotPluginManager *plotPluginManager = PlotPluginManager::Instance();
+
+        // Get a pointer to the GUI portion of the plot plugin information.
+        GUIPlotPluginInfo *GUIInfo = plotPluginManager->GetGUIPluginInfo(
+            plotPluginManager->GetEnabledID(i));
+   
+        // Create the plot plugin window.
+        plotWindows[i] = GUIInfo->CreatePluginWindow(i,
+            viewer->GetPlotAttributes(i), mainWin->GetNotepad());
+    }
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::EnsureOperatorWindowIsCreated
+//
+// Purpose: 
+//   This method creates the i'th operator plugin window if it has not been
+//   created yet.
+//
+// Arguments:
+//   i : The index of the operator plugin to create.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu May 6 14:57:52 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::EnsureOperatorWindowIsCreated(int i)
+{
+    if(operatorWindows[i] == 0)
+    {
+        // Get a pointer to the operator plugin manager.
+        OperatorPluginManager *operatorPluginManager = OperatorPluginManager::Instance();
+
+        // Get a pointer to the GUI portion of the operator plugin information.
+        GUIOperatorPluginInfo *GUIInfo = operatorPluginManager->GetGUIPluginInfo(
+            operatorPluginManager->GetEnabledID(i));
+
+        // Create the operator plugin window.
+        operatorWindows[i] = GUIInfo->CreatePluginWindow(i,
+            viewer->GetOperatorAttributes(i), mainWin->GetNotepad());
     }
 }
 
@@ -2193,6 +2543,9 @@ QvisGUIApplication::CreatePluginWindows()
 //    Added code to save whether we're allowing the file panel's selection
 //    to be updated.
 //
+//    Brad Whitlock, Wed May 5 16:11:34 PST 2004
+//    I changed how we iterate through otherWindows.
+//
 // ****************************************************************************
 
 void
@@ -2214,8 +2567,11 @@ QvisGUIApplication::WriteConfigFile(const char *filename)
     viewer->GetAppearanceAttributes()->CreateNode(guiNode, true, false);
 
     // Make the windows save their attributes.
-    for(int i = 0; i < otherWindows.size(); ++i)
-        otherWindows[i]->CreateNode(guiNode);
+    for(WindowBaseMap::iterator pos = otherWindows.begin();
+        pos != otherWindows.end(); ++pos)
+    {
+        pos->second->CreateNode(guiNode);
+    }
 
     // Make the plugin windows add their information to the guiNode that is
     // saved into the config file.
@@ -2288,7 +2644,10 @@ QvisGUIApplication::WriteConfigFile(const char *filename)
 // Creation:   Fri Mar 23 16:10:37 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue May 4 17:03:34 PST 2004
+//   Since plugin windows don't necessarily exist all the time now, save
+//   the plugin window or its configs.
+//
 // ****************************************************************************
 
 void
@@ -2300,14 +2659,16 @@ QvisGUIApplication::WritePluginWindowConfigs(DataNode *parentNode)
     // to the config file data.
     for(i = 0; i < plotWindows.size(); ++i)
     {
-        plotWindows[i]->CreateNode(parentNode);
+        if(plotWindows[i] != 0)
+            plotWindows[i]->CreateNode(parentNode);
     }
 
     // Iterate through each operator window and have it add its window
     // information to the config file data.
     for(i = 0; i < operatorWindows.size(); ++i)
     {
-        operatorWindows[i]->CreateNode(parentNode);
+        if(operatorWindows[i] != 0)
+            operatorWindows[i]->CreateNode(parentNode);
     }
 }
 
@@ -2500,6 +2861,11 @@ QvisGUIApplication::RestoreSession()
 //   Brad Whitlock, Thu Feb 26 13:30:49 PST 2004
 //   Added code to tell the viewer to clear the caches on all engines.
 //
+//   Brad Whitlock, Thu May 6 15:17:34 PST 2004
+//   I added a call to the new CreateInitiallyVisibleWindows method, which
+//   creates the windows for which we have information stored in the 
+//   session file.
+//
 // ****************************************************************************
 
 void
@@ -2515,6 +2881,7 @@ QvisGUIApplication::RestoreSessionFile(const QString &s)
         if(node)
         {
             ProcessConfigSettings(node, false);
+            CreateInitiallyVisibleWindows(node);
             ProcessWindowConfigSettings(node); 
 
             // Look for the VisIt tree.
@@ -2644,6 +3011,10 @@ QvisGUIApplication::ProcessConfigSettings(DataNode *node, bool systemConfig)
 //   I added code to set whether the file panel's highlight should ever
 //   be changed.
 //
+//   Brad Whitlock, Wed May 5 15:50:59 PST 2004
+//   I removed some code that processed the config settings for the non-plugin
+//   windows.
+//  
 // ****************************************************************************
 
 void
@@ -2668,21 +3039,6 @@ QvisGUIApplication::ProcessWindowConfigSettings(DataNode *node)
     const char *configVersion = 0;
     if(version != 0)
         configVersion = version->AsString().c_str();
-
-    // Read the windows' information. The border sizes will need to be added
-    // to the window's x, y coordinates so pass those to the SetFromNode
-    // routines.
-    for(int i = 0; i < otherWindows.size(); ++i)
-    {
-        if(otherWindows[i]->inherits("QvisPostableWindow"))
-        {
-            QvisPostableWindow *win = (QvisPostableWindow *)otherWindows[i];
-            if(win->posted())
-                win->hide();
-        }
-        otherWindows[i]->ProcessOldVersions(guiNode, configVersion);
-        otherWindows[i]->SetFromNode(guiNode, borders);
-    }
 
     // Set the time format.
     TimeFormat fmt;
@@ -2734,6 +3090,10 @@ QvisGUIApplication::ProcessWindowConfigSettings(DataNode *node)
 //   problems when we try and post them again or hide them when processing
 //   the settings.
 //
+//   Brad Whitlock, Wed May 5 16:57:09 PST 2004
+//   I added code to create plugin windows that don't exist at the time we
+//   are reading the config file.
+//
 // ****************************************************************************
 
 void
@@ -2742,32 +3102,66 @@ QvisGUIApplication::ReadPluginWindowConfigs(DataNode *parentNode,
 {
     int i;
 
-    // Iterate through each plot window and have it add its window information
-    // to the config file data.
-    for(i = 0; i < plotWindows.size(); ++i)
+    // Get a pointer to the plot plugin manager.
+    PlotPluginManager *plotPluginManager = PlotPluginManager::Instance();
+
+    // Create the window and populate the menu for each plot plugin.
+    for(i = 0; i < plotPluginManager->GetNEnabledPlugins(); ++i)
     {
-        if(plotWindows[i]->inherits("QvisPostableWindow"))
+        // Get a pointer to the GUI portion of the plot plugin information.
+        GUIPlotPluginInfo *GUIInfo = plotPluginManager->GetGUIPluginInfo(
+            plotPluginManager->GetEnabledID(i));
+
+        std::string key(GUIInfo->GetMenuName());
+        key += " plot attributes";
+
+        if(plotWindows[i] != 0 &&
+           plotWindows[i]->inherits("QvisPostableWindow"))
         {
             QvisPostableWindow *win = (QvisPostableWindow *)plotWindows[i];
             if(win->posted())
                 win->hide();
         }
-        plotWindows[i]->ProcessOldVersions(parentNode, configVersion);
-        plotWindows[i]->SetFromNode(parentNode, borders);
+
+        if(parentNode->GetNode(key) != 0)
+        {
+            debug1 << "Found \"" << key.c_str() << "\" in the config so "
+                   << "that window will be created." << endl;
+            EnsurePlotWindowIsCreated(i);
+            plotWindows[i]->ProcessOldVersions(parentNode, configVersion);
+            plotWindows[i]->SetFromNode(parentNode, borders);
+        }
     }
 
-    // Iterate through each operator window and have it add its window
-    // information to the config file data.
-    for(i = 0; i < operatorWindows.size(); ++i)
+    // Get a pointer to the operator plugin manager.
+    OperatorPluginManager *operatorPluginManager = OperatorPluginManager::Instance();
+
+    // Create the window and populate the menu for each operator plugin.
+    for(i = 0; i < operatorPluginManager->GetNEnabledPlugins(); ++i)
     {
-        if(operatorWindows[i]->inherits("QvisPostableWindow"))
+        // Get a pointer to the GUI portion of the operator plugin information.
+        GUIOperatorPluginInfo *GUIInfo = operatorPluginManager->GetGUIPluginInfo(
+                                       operatorPluginManager->GetEnabledID(i));
+
+        std::string key(GUIInfo->GetMenuName());
+        key += " operator attributes";
+
+        if(operatorWindows[i] != 0 &&
+            operatorWindows[i]->inherits("QvisPostableWindow"))
         {
             QvisPostableWindow *win = (QvisPostableWindow *)operatorWindows[i];
             if(win->posted())
                 win->hide();
         }
-        operatorWindows[i]->ProcessOldVersions(parentNode, configVersion);
-        operatorWindows[i]->SetFromNode(parentNode, borders);
+
+        if(parentNode->GetNode(key) != 0)
+        {
+            debug1 << "Found \"" << key.c_str() << "\" in the config so "
+                   << "that window will be created." << endl;
+            EnsureOperatorWindowIsCreated(i);
+            operatorWindows[i]->ProcessOldVersions(parentNode, configVersion);
+            operatorWindows[i]->SetFromNode(parentNode, borders);
+        }
     }
 }
 
@@ -3493,6 +3887,7 @@ QvisGUIApplication::ActivatePlotWindow(int index)
 {
     if(index >= 0 && index < plotWindows.size())
     {
+        EnsurePlotWindowIsCreated(index);
         plotWindows[index]->show();
     }
 }
@@ -3519,6 +3914,7 @@ QvisGUIApplication::ActivateOperatorWindow(int index)
 {
     if(index >= 0 && index < operatorWindows.size())
     {
+        EnsureOperatorWindowIsCreated(index);
         operatorWindows[index]->show();
     }
 }
@@ -3540,6 +3936,10 @@ QvisGUIApplication::ActivateOperatorWindow(int index)
 //   Since windows are now children of the main window on the Windows
 //   platform, do not iconify them because the main window handles it.
 //
+//   Brad Whitlock, Tue May 4 16:58:20 PST 2004
+//   I made it skip plot and operator windows that don't exist. I also changed
+//   how we iterate through otherWindows.
+//
 // ****************************************************************************
 
 void
@@ -3552,16 +3952,25 @@ QvisGUIApplication::IconifyWindows()
     int index;
 
     // Iconify all of the regular windows.
-    for(index = 0; index < otherWindows.size(); ++index)
-        otherWindows[index]->showMinimized();
+    for(WindowBaseMap::iterator pos = otherWindows.begin();
+        pos != otherWindows.end(); ++pos)
+    {
+        pos->second->showMinimized();
+    }
 
     // Iconify all of the plot windows.
     for(index = 0; index < plotWindows.size(); ++index)
-        plotWindows[index]->showMinimized();
+    {
+        if(plotWindows[index] != 0)
+            plotWindows[index]->showMinimized();
+    }
 
     // Iconify all of the operator windows.
     for(index = 0; index < operatorWindows.size(); ++index)
-        operatorWindows[index]->showMinimized();
+    {
+        if(operatorWindows[index] != 0)
+            operatorWindows[index]->showMinimized();
+    }
 #endif
 
     // Iconify the viewer windows
@@ -3585,6 +3994,10 @@ QvisGUIApplication::IconifyWindows()
 //   Since windows are now children of the main window on the Windows
 //   platform, do not deiconify them because the main window handles it.
 //
+//   Brad Whitlock, Tue May 4 16:59:32 PST 2004
+//   I made it skip windows that don't exist. I also changed how we iterate
+//   through otherWindows.
+//
 // ****************************************************************************
 
 void
@@ -3600,16 +4013,25 @@ QvisGUIApplication::DeIconifyWindows()
     int index;
 
     // deIconify all of the regular windows.
-    for(index = 0; index < otherWindows.size(); ++index)
-        otherWindows[index]->showNormal();
+    for(WindowBaseMap::iterator pos = otherWindows.begin();
+        pos != otherWindows.end(); ++pos)
+    {
+        pos->second->showNormal();
+    }
 
     // Iconify all of the plot windows.
     for(index = 0; index < plotWindows.size(); ++index)
-        plotWindows[index]->showNormal();
+    {
+        if(plotWindows[index] != 0)
+            plotWindows[index]->showNormal();
+    }
 
     // Iconify all of the operator windows.
     for(index = 0; index < operatorWindows.size(); ++index)
-        operatorWindows[index]->showNormal();
+    {
+        if(operatorWindows[index] != 0)
+            operatorWindows[index]->showNormal();
+    }
 #endif
 }
 
@@ -3704,11 +4126,30 @@ QvisGUIApplication::SaveWindow()
 //   Brad Whitlock, Tue May 14 15:11:55 PST 2002
 //   Made it work with Qt 3.0.2.
 //
+//   Brad Whitlock, Wed May 5 08:46:19 PDT 2004
+//   Moved the printer initialization code to here since it's something
+//   that is rarely done. We can do it when we want to open the printer
+//   window.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::SetPrinterOptions()
 {
+    //
+    // If we've never set up the printer options, set them up now.
+    //
+    if(printer == 0)
+    {
+        int timeid = visitTimer->StartTimer();
+        printer = new QPrinter;
+        printerObserver = new ObserverToCallback(viewer->GetPrinterAttributes(),
+            UpdatePrinterAttributes, (void *)printer);
+        viewer->GetPrinterAttributes()->SetCreator(viewer->GetLocalUserName());
+        PrinterAttributesToQPrinter(viewer->GetPrinterAttributes(), printer);
+        visitTimer->StopTimer(timeid, "Setting up printer");
+    }
+
     if(printer->setup(mainWin))
     {
         //
@@ -3837,3 +4278,30 @@ QvisGUIApplication::UpdatePrinterAttributes(Subject *subj, void *data)
     QPrinter *printer = (QPrinter *)data;
     PrinterAttributesToQPrinter(p, printer);
 }
+
+//
+// Qt slot functions to show windows that are created later on demand.
+//
+
+void QvisGUIApplication::showFileSelectionWindow()   { GetInitializedWindowPointer(WINDOW_FILE_SELECTION)->show(); }
+void QvisGUIApplication::showFileInformationWindow() { GetInitializedWindowPointer(WINDOW_FILE_INFORMATION)->show(); }
+void QvisGUIApplication::showHostProfilesWindow()    { GetInitializedWindowPointer(WINDOW_HOSTPROFILES)->show(); }
+void QvisGUIApplication::showSaveWindow()            { GetInitializedWindowPointer(WINDOW_SAVE)->show(); }
+void QvisGUIApplication::showEngineWindow()          { GetInitializedWindowPointer(WINDOW_ENGINE)->show(); }
+void QvisGUIApplication::showAnimationWindow()       { GetInitializedWindowPointer(WINDOW_ANIMATION)->show(); }
+void QvisGUIApplication::showAnnotationWindow()      { GetInitializedWindowPointer(WINDOW_ANNOTATION)->show(); }
+void QvisGUIApplication::showColorTableWindow()      { GetInitializedWindowPointer(WINDOW_COLORTABLE)->show(); }
+void QvisGUIApplication::showExpressionsWindow()     { GetInitializedWindowPointer(WINDOW_EXPRESSIONS)->show(); }
+void QvisGUIApplication::showSubsetWindow()          { GetInitializedWindowPointer(WINDOW_SUBSET)->show(); }
+void QvisGUIApplication::showViewWindow()            { GetInitializedWindowPointer(WINDOW_VIEW)->show(); }
+void QvisGUIApplication::showKeyframeWindow()        { GetInitializedWindowPointer(WINDOW_KEYFRAME)->show(); }
+void QvisGUIApplication::showLightingWindow()        { GetInitializedWindowPointer(WINDOW_LIGHTING)->show(); }
+void QvisGUIApplication::showGlobalLineoutWindow()   { GetInitializedWindowPointer(WINDOW_GLOBALLINEOUT)->show(); }
+void QvisGUIApplication::showMaterialWindow()        { GetInitializedWindowPointer(WINDOW_MATERIALOPTIONS)->show(); }
+void QvisGUIApplication::showHelpWindow()            { GetInitializedWindowPointer(WINDOW_HELP)->show(); }
+void QvisGUIApplication::displayCopyright()          { ((QvisHelpWindow *)GetInitializedWindowPointer(WINDOW_HELP))->displayCopyright(); }
+void QvisGUIApplication::displayReleaseNotes()       { ((QvisHelpWindow *)GetInitializedWindowPointer(WINDOW_HELP))->displayReleaseNotes(); }
+void QvisGUIApplication::showQueryWindow()           { GetInitializedWindowPointer(WINDOW_QUERY)->show(); }
+void QvisGUIApplication::showRenderingWindow()       { GetInitializedWindowPointer(WINDOW_RENDERING)->show(); }
+void QvisGUIApplication::showCorrelationListWindow() { GetInitializedWindowPointer(WINDOW_CORRELATION)->show(); }
+void QvisGUIApplication::showQueryOverTimeWindow()   { GetInitializedWindowPointer(WINDOW_TIMEQUERY)->show(); }
