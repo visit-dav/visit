@@ -3080,10 +3080,13 @@ avtDefaultPlotMetaData::Print(ostream &out, int indent) const
 //    Walter Herrera, Tue Sep 04 15:08:48 PST 2003
 //    I added the defaultPlots field.
 //
+//    Hank Childs, Fri Mar  5 11:21:06 PST 2004
+//    Added 's' for fileFormat.
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData()
-    : AttributeSubject("sbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*")
+    : AttributeSubject("ssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*")
 {
     hasTemporalExtents          = false;
     minTemporalExtents          = 0.;
@@ -3132,12 +3135,16 @@ avtDatabaseMetaData::avtDatabaseMetaData()
 //    Hank Childs, Sat Sep 20 08:32:38 PDT 2003
 //    Copy over tensor data.
 //
+//    Hank Childs, Fri Mar  5 11:21:06 PST 2004
+//    Copy over file format.
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
-    : AttributeSubject("sbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*")
+    : AttributeSubject("ssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*")
 {
     databaseName       = rhs.databaseName;
+    fileFormat         = rhs.fileFormat;
     hasTemporalExtents = rhs.hasTemporalExtents;
     minTemporalExtents = rhs.minTemporalExtents;
     maxTemporalExtents = rhs.maxTemporalExtents;
@@ -3215,12 +3222,16 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
 //    Hank Childs, Sat Sep 20 08:32:38 PDT 2003
 //    Copy over tensor data.
 //
+//    Hank Childs, Fri Mar  5 11:21:06 PST 2004
+//    Copy over file format.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData &
 avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
 {
     databaseName       = rhs.databaseName;
+    fileFormat         = rhs.fileFormat;
     hasTemporalExtents = rhs.hasTemporalExtents;
     minTemporalExtents = rhs.minTemporalExtents;
     maxTemporalExtents = rhs.maxTemporalExtents;
@@ -4538,6 +4549,9 @@ avtDatabaseMetaData::GetSpeciesOnMesh(std::string mesh) const
 //    Hank Childs, Sat Sep 20 08:49:16 PDT 2003
 //    Add support for tensors.
 //
+//    Hank Childs, Fri Mar  5 11:21:06 PST 2004
+//    Print file format.
+//
 // ****************************************************************************
 
 void
@@ -4545,6 +4559,9 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
 {
     Indent(out, indent);
     out << "Database: " << databaseName.c_str() << endl;
+
+    Indent(out, indent);
+    out << "File format: " << fileFormat.c_str() << endl;
 
     Indent(out, indent);
     out << "Num Time States: " << numStates << endl;
@@ -4789,37 +4806,41 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
 //   Hank Childs, Sat Sep 20 08:49:16 PDT 2003
 //   Added tensors.
 //
+//   Hank Childs, Fri Mar  5 11:21:06 PST 2004
+//   Add file format.
+//
 // *******************************************************************
 
 void
 avtDatabaseMetaData::SelectAll()
 {
     Select(0, (void*)&databaseName);
-    Select(1, (void*)&hasTemporalExtents);
-    Select(2, (void*)&minTemporalExtents);
-    Select(3, (void*)&maxTemporalExtents);
-    Select(4, (void*)&numStates);
-    Select(5, (void*)&isVirtualDatabase);
+    Select(1, (void*)&fileFormat);
+    Select(2, (void*)&hasTemporalExtents);
+    Select(3, (void*)&minTemporalExtents);
+    Select(4, (void*)&maxTemporalExtents);
+    Select(5, (void*)&numStates);
+    Select(6, (void*)&isVirtualDatabase);
 
-    Select(6, (void*)&timeStepPath);
-    Select(7, (void*)&timeStepNames);
-    Select(8, (void*)&cyclesAreAccurate);
-    Select(9, (void*)&cycles);
-    Select(10, (void*)&timesAreAccurate);
-    Select(11, (void*)&times);
+    Select(7, (void*)&timeStepPath);
+    Select(8, (void*)&timeStepNames);
+    Select(9, (void*)&cyclesAreAccurate);
+    Select(10, (void*)&cycles);
+    Select(11, (void*)&timesAreAccurate);
+    Select(12, (void*)&times);
 
-    Select(12, (void*)&meshes);
-    Select(13, (void*)&scalars);
-    Select(14, (void*)&vectors);
-    Select(15, (void*)&tensors);
-    Select(16, (void*)&symm_tensors);
-    Select(17, (void*)&materials);
-    Select(18, (void*)&species);
-    Select(19, (void*)&curves);
-    Select(20, (void*)&defaultPlots);
-    Select(21, (void*)&exprList);
-    Select(22, (void*)&mustRepopulateOnStateChange);
-    Select(23, (void*)&sils);
+    Select(13, (void*)&meshes);
+    Select(14, (void*)&scalars);
+    Select(15, (void*)&vectors);
+    Select(16, (void*)&tensors);
+    Select(17, (void*)&symm_tensors);
+    Select(18, (void*)&materials);
+    Select(19, (void*)&species);
+    Select(20, (void*)&curves);
+    Select(21, (void*)&defaultPlots);
+    Select(22, (void*)&exprList);
+    Select(23, (void*)&mustRepopulateOnStateChange);
+    Select(24, (void*)&sils);
 }
 
 // *******************************************************************
@@ -4854,6 +4875,10 @@ avtDatabaseMetaData::SelectAll()
 //
 //   Hank Childs, Sat Sep 20 08:49:16 PDT 2003
 //   Add support for tensors.
+//
+//   Hank Childs, Fri Mar  5 15:54:24 PST 2004
+//   Update for indexing change due to file format types being added.
+//
 // *******************************************************************
 
 AttributeGroup *
@@ -4861,25 +4886,25 @@ avtDatabaseMetaData::CreateSubAttributeGroup(int n)
 {
     switch (n)
     {
-      case 12:
-        return new avtMeshMetaData;
       case 13:
-        return new avtScalarMetaData;
+        return new avtMeshMetaData;
       case 14:
-        return new avtVectorMetaData;
+        return new avtScalarMetaData;
       case 15:
-        return new avtTensorMetaData;
+        return new avtVectorMetaData;
       case 16:
-        return new avtSymmetricTensorMetaData;
+        return new avtTensorMetaData;
       case 17:
-        return new avtMaterialMetaData;
+        return new avtSymmetricTensorMetaData;
       case 18:
-        return new avtSpeciesMetaData;
+        return new avtMaterialMetaData;
       case 19:
-        return new avtCurveMetaData;
+        return new avtSpeciesMetaData;
       case 20:
+        return new avtCurveMetaData;
+      case 21:
         return new avtDefaultPlotMetaData;
-      case 23:
+      case 24:
         return new avtSILMetaData;
       default:
         return NULL;

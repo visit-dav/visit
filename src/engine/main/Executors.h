@@ -902,6 +902,9 @@ RPCExecutor<ReleaseDataRPC>::Execute(ReleaseDataRPC *rpc)
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
+//    Hank Childs, Fri Mar  5 11:46:09 PST 2004
+//    Load database plugins before trying to instantiate the DB of that type.
+//
 // ****************************************************************************
 template<>
 void
@@ -912,6 +915,7 @@ RPCExecutor<OpenDatabaseRPC>::Execute(OpenDatabaseRPC *rpc)
 
     debug2 << "Executing OpenDatabaseRPC: db=" << rpc->GetDatabaseName().c_str()
            << ", time=" << rpc->GetTime() << endl;
+    DatabasePluginManager::Instance()->PluginAvailable(rpc->GetFileFormat());
 
     netmgr->GetDBFromCache(rpc->GetDatabaseName(), rpc->GetTime());
 }
@@ -929,6 +933,9 @@ RPCExecutor<OpenDatabaseRPC>::Execute(OpenDatabaseRPC *rpc)
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
+//    Hank Childs, Fri Mar  5 11:46:09 PST 2004
+//    Load database plugins before trying to instantiate the DB of that type.
+//
 // ****************************************************************************
 template<>
 void
@@ -944,6 +951,7 @@ RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
            << endl;
     for (int i = 0; i < rpc->GetDatabaseFiles().size(); ++i)
         debug5 << "file["<<i<<"]="<<rpc->GetDatabaseFiles()[i].c_str() << endl;
+    DatabasePluginManager::Instance()->PluginAvailable(rpc->GetFileFormat());
 
     netmgr->DefineDB(rpc->GetDatabaseName(), rpc->GetDatabasePath(),
                      rpc->GetDatabaseFiles(), rpc->GetTime());

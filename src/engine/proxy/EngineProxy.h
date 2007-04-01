@@ -160,6 +160,9 @@ class StatusAttributes;
 //    Hank Childs, Thu Oct  2 16:20:17 PDT 2003
 //    Allow for queries to involve multiple networks.
 //
+//    Hank Childs, Fri Mar  5 11:41:12 PST 2004
+//    Add file format type to open database.
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -181,8 +184,10 @@ public:
     StatusAttributes        *GetStatusAttributes() const;
 
     // RPCs to access functionality on the engine.
-    void                     OpenDatabase(const std::string &, int = 0);
+    void                     OpenDatabase(const std::string &, 
+                                          const std::string &, int = 0);
     void                     DefineVirtualDatabase(const std::string &,
+                                                   const std::string &,
                                                    const std::string &,
                                                    const stringVector &,
                                                    int = 0);

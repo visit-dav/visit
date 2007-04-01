@@ -368,6 +368,7 @@ class DBATTS_API avtDatabaseMetaData : public AttributeSubject
     intVector    timesAreAccurate;
 
     std::string  databaseName;
+    std::string  fileFormat;
 
     ExpressionList exprList;
 
@@ -416,6 +417,9 @@ public:
 
     void         SetDatabaseName(const std::string &dsn) {databaseName = dsn;};
     const std::string &GetDatabaseName() const { return databaseName; };
+
+    void         SetFileFormat(const std::string &ff) {fileFormat = ff;};
+    const std::string &GetFileFormat() const { return fileFormat; };
 
     void         SetTimeStepPath(const std::string &tsp);
     const std::string &GetTimeStepPath() const { return timeStepPath; };
