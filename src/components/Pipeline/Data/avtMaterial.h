@@ -78,7 +78,8 @@ class PIPELINE_API avtMaterial
                                                  const int *mixm,
                                                  const int *mixn,
                                                  const int *mixz,
-                                                 const float *mixv);
+                                                 const float *mixv, 
+                                                 const char *domain = NULL);
                                      avtMaterial(int, const
                                                      std::vector<std::string>&,
                                                  int, const int *, int,

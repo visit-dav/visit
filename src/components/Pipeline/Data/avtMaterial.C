@@ -2,8 +2,11 @@
 //                                 avtMaterial.C                             //
 // ************************************************************************* //
 
-#include <stdio.h>         // for sprintf
 #include <avtMaterial.h>
+
+#include <stdio.h>         // for sprintf
+
+#include <avtCallback.h>
 
 #include <BadDomainException.h>
 #include <DebugStream.h>
@@ -27,6 +30,7 @@ using namespace std;
 //      mixm         The mix_mat.
 //      mixz         The mix_zone.
 //      mixv         The mix_vf.
+//      dom          The domain string (for printing error messages only).
 //
 //  Programmer: Hank Childs
 //  Creation:   November 7, 2000
@@ -61,17 +65,23 @@ using namespace std;
 //    Do not always include the 'phoney material', because it screws up
 //    species.
 //
+//    Hank Childs, Thu Feb 12 13:57:28 PST 2004
+//    Do a better job of checking for bad materials and also issue a warning
+//    when they are encountered.
+//
 // ****************************************************************************
 
 avtMaterial::avtMaterial(int nMats, const int *mats, char **names,
                          int ndims, const int *dims, int major_order,
                          const int *ml, int mixl, const int *mixm,
-                         const int *mixn, const int *mixz, const float *mixv)
+                         const int *mixn, const int *mixz, const float *mixv,
+                         const char *domain)
 {
     int timerHandle = visitTimer->StartTimer();
-
     int  i;
 
+    const char *dom = (domain != NULL ? domain : "<not available>");
+    bool haveIssuedWarning = false;
     vector<bool> matUsed(nMats+1, false);
 
     vector<string>  matnames;
@@ -129,13 +139,38 @@ avtMaterial::avtMaterial(int nMats, const int *mats, char **names,
         }
         for (i = 0 ; i < nzon ; i++)
         {
-            if (ml[i] < 0)
+            //
+            // If we have a valid index into the mixed portion, tag it and
+            // skip along to the next zone.
+            //
+            if ((ml[i] < 0) && (ml[i] > -mixl))
             {
                 newml[i] = ml[i];
                 continue;
             }
+
+            if ((ml[i] <= -mixlen) && (ml[i] < 0))
+            {
+                newml[i] = nMats;
+                if (!haveIssuedWarning)
+                {
+                    char msg[1024];
+                    sprintf(msg, "Zone %d of %s has a bad entry in its "
+                                 "mixed material structure", i, dom);
+                    avtCallback::IssueWarning(msg);
+                    haveIssuedWarning = true;
+                }
+            }
             else if (ml[i] > maxMat || lut[ml[i]] == -1)
             {
+                if (!haveIssuedWarning)
+                {
+                    char msg[1024];
+                    sprintf(msg, "Zone %d of %s has an invalid material"
+                                 " number -- %d", i, dom, ml[i]);
+                    avtCallback::IssueWarning(msg);
+                    haveIssuedWarning = true;
+                }
                 newml[i] = nMats;
             }
             else
@@ -148,6 +183,15 @@ avtMaterial::avtMaterial(int nMats, const int *mats, char **names,
         {
             if (mixm[i] < 0 || mixm[i] > maxMat || lut[mixm[i]] == -1)
             {
+                if (!haveIssuedWarning)
+                {
+                    char msg[1024];
+                    sprintf(msg, "Mixed mat entry %d of %s has an "
+                                 "invalid material number -- %d", i, 
+                                 dom, mixm[i]);
+                    avtCallback::IssueWarning(msg);
+                    haveIssuedWarning = true;
+                }
                 newmixm[i] = nMats;
             }
             else
@@ -165,7 +209,7 @@ avtMaterial::avtMaterial(int nMats, const int *mats, char **names,
         //
         for (i = 0 ; i < nzon ; i++)
         {
-            if (ml[i] < 0)
+            if (ml[i] < 0 && ml[i] > -mixl)
             {
                 newml[i] = ml[i];
                 continue;
@@ -183,7 +227,17 @@ avtMaterial::avtMaterial(int nMats, const int *mats, char **names,
                 }
             }
             if (m == nMats)
-               matUsed[nMats] = true;
+            {
+                if (!haveIssuedWarning)
+                {
+                    char msg[1024];
+                    sprintf(msg, "Zone %d of %s has a bad entry in its "
+                                 "material structure", i, dom);
+                    avtCallback::IssueWarning(msg);
+                    haveIssuedWarning = true;
+                }
+                matUsed[nMats] = true;
+            }
         }
     
         for (i = 0 ; i < mixl ; i++)
@@ -200,7 +254,18 @@ avtMaterial::avtMaterial(int nMats, const int *mats, char **names,
                 }
             }
             if (m == nMats)
-               matUsed[nMats] = true;
+            {
+                if (!haveIssuedWarning)
+                {
+                    char msg[1024];
+                    sprintf(msg, "Mixed mat entry %d of %s has an "
+                                 "invalid material number -- %d", i, 
+                                 dom, mixm[i]);
+                    avtCallback::IssueWarning(msg);
+                    haveIssuedWarning = true;
+                }
+                matUsed[nMats] = true;
+            }
         }
     }
 

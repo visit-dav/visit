@@ -4,11 +4,14 @@
 
 #include <avtNMatsFilter.h>
 
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
 
 #include <avtMaterial.h>
 #include <avtMetaData.h>
+
+#include <DebugStream.h>
 
 
 // ****************************************************************************
@@ -63,8 +66,13 @@ avtNMatsFilter::~avtNMatsFilter()
 //  Creation:     August 21, 2003
 //
 //  Modifications:
-//      Sean Ahern, Thu Aug 21 12:17:27 PDT 2003
-//      Fixed up a small error and a warning.
+//
+//    Sean Ahern, Thu Aug 21 12:17:27 PDT 2003
+//    Fixed up a small error and a warning.
+//
+//    Hank Childs, Wed Feb 11 11:23:28 PST 2004
+//    Fix bug with calculation of mixed zones.  Also operate on zones where
+//    the connectivity has changed.
 //
 // ****************************************************************************
 
@@ -84,6 +92,17 @@ avtNMatsFilter::DeriveVariable(vtkDataSet *in_ds)
     vtkFloatArray *rv = vtkFloatArray::New();
     rv->SetNumberOfTuples(ncells);
 
+    vtkDataArray *zn =in_ds->GetCellData()->GetArray("avtOriginalCellNumbers");
+    if (zn == NULL)
+    {
+        debug1 << "Unable to find original cell numbers (needed for nmats)."
+               << endl;
+        return NULL;
+    }
+    int *ptr = (int *) zn->GetVoidPointer(0);
+    int entry_size = zn->GetNumberOfComponents();
+    int offset = entry_size-1;
+
     //
     // Walk through the material data structure and determine the number of
     // materials for each cell.
@@ -93,17 +112,61 @@ avtNMatsFilter::DeriveVariable(vtkDataSet *in_ds)
     for (i = 0 ; i < ncells ; i++)
     {
         int nmats = 0;
-        if (matlist[i] >= 0)
+        bool shouldSkip = false;
+        if (entry_size == 2)
         {
-            nmats = 1;
+            if (ptr[entry_size*i + 0] != currentDomainsIndex)
+            {
+                nmats = 1;
+                shouldSkip = true;
+            }
         }
-        else
+        if (!shouldSkip)
         {
-            int start = -matlist[i]-1;
-            nmats = mix_next[start] - start;
+            int zone = ptr[entry_size*i + offset];
+            if (matlist[zone] >= 0)
+            {
+                nmats = 1;
+            }
+            else
+            {
+                int current = -matlist[zone]-1;
+                nmats = 1;
+                // nmats < 1000 just to prevent infinite loops if someone
+                // set this structure up wrong.
+                while ((mix_next[current] != 0) && (nmats < 1000))
+                {
+                    current = mix_next[current]-1;
+                    nmats++;
+                }
+            }
         }
         rv->SetTuple1(i, (float) nmats);
     }
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtNMatsFilter::PerformRestriction
+//
+//  Purpose:
+//      State that we need the zone numbers.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 11, 2004
+//
+// ****************************************************************************
+
+avtPipelineSpecification_p
+avtNMatsFilter::PerformRestriction(avtPipelineSpecification_p spec)
+{
+    avtPipelineSpecification_p rv = 
+                      avtSingleInputExpressionFilter::PerformRestriction(spec);
+
+    avtDataSpecification_p ds = spec->GetDataSpecification();
+    ds->TurnZoneNumbersOn();
 
     return rv;
 }
