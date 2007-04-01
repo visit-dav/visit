@@ -269,6 +269,9 @@ avtMiliFileFormat::~avtMiliFileFormat()
 //    Akira Haddox, Mon Aug 18 14:33:15 PDT 2003
 //    Commented out previous sand-based ghosts.
 //
+//    Hank Childs, Sat Jun 26 11:24:47 PDT 2004
+//    Check for bad files where number of timesteps is incorrectly reported.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -617,6 +620,7 @@ avtMiliFileFormat::OpenDB(int dom)
         if (!setTimesteps)
         {
             setTimesteps = true;
+
             //
             // First entry is how many timesteps we want (all of them),
             // the following entries are which timesteps we want.
@@ -631,6 +635,15 @@ avtMiliFileFormat::OpenDB(int dom)
             vector<float> ttimes(ntimesteps);
             rval = mc_query_family(dbid[dom], MULTIPLE_TIMES, &(timeVars[0]),
                                     0, &(ttimes[0]));
+
+            //
+            // Some Mili files are written out incorrectly -- they have an
+            // extra timestep at the end with no data.  Detect and ignore.
+            //
+            if (ntimesteps >= 2)
+                if (ttimes[ntimesteps-1] == ttimes[ntimesteps-2])
+                    ntimesteps--;
+
             times.clear();
             if (rval == OK)
             {
@@ -1467,6 +1480,10 @@ avtMiliFileFormat::GetNTimesteps()
 //    Hank Childs, Mon Oct 20 10:07:00 PDT 2003
 //    Call OpenDB for domain 0 to populate the times.
 //
+//    Hank Childs, Sat Jun 26 10:28:45 PDT 2004
+//    Make the materials start at "1" and go up.  Also make the domain 
+//    decomposition say processor instead of block.
+//
 // ****************************************************************************
 
 void
@@ -1479,14 +1496,25 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         char matname[32];
         sprintf(meshname, "mesh%d", i + 1);
         sprintf(matname, "materials%d", i + 1);
-        AddMeshToMetaData(md, meshname, AVT_UNSTRUCTURED_MESH, NULL, ndomains,
-                          0, dims, dims);
+        avtMeshMetaData *mesh = new avtMeshMetaData;
+        mesh->name = meshname;
+        mesh->meshType = AVT_UNSTRUCTURED_MESH;
+        mesh->numBlocks = ndomains;
+        mesh->blockOrigin = 0;
+        mesh->cellOrigin = 0;
+        mesh->spatialDimension = dims;
+        mesh->topologicalDimension = dims;
+        mesh->blockTitle = "processors";
+        mesh->blockPieceName = "processor";
+        mesh->hasSpatialExtents = false;
+        md->Add(mesh);
+
         vector<string> mnames(nmaterials[i]);
         int j;
         char str[32];
         for (j = 0; j < nmaterials[i]; ++j)
         {
-            sprintf(str, "mat%d", j);
+            sprintf(str, "mat%d", j+1);
             mnames[j] = str;
         }
         AddMaterialToMetaData(md, matname, meshname, nmaterials[i], mnames);
