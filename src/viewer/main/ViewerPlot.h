@@ -17,6 +17,7 @@ class AttributeSubject;
 class AttributeSubjectMap;
 class DatabaseAttributes;
 class DataNode;
+class EngineKey;
 class EngineProxy;
 class PickAttributes;
 class Plot;
@@ -218,7 +219,7 @@ class VIEWER_API ViewerPlot
     //
     // Get/Set the plot's database and variable.
     //
-    void SetHostDatabaseName(const std::string &host,
+    void SetHostDatabaseName(const EngineKey &hostKey,
                              const std::string &database);
     const std::string &GetHostName() const;
     const std::string &GetDatabaseName() const;
@@ -311,6 +312,7 @@ class VIEWER_API ViewerPlot
     bool InitializeTool(avtToolInterface &ti);
     bool StartPick();
     void StopPick();
+    void ResetNetworkIds(const EngineKey &key);
 
     //
     // Get/Set specific plot attributes.

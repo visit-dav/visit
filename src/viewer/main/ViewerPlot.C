@@ -885,10 +885,14 @@ ViewerPlot::IsInRange() const
 //    I removed the coding which caused the routine to be exited early if
 //    the new host and database names matched the existing ones.
 //
+//    Brad Whitlock, Mon May 3 09:55:24 PDT 2004
+//    I added code to set the engine key to be the new host if the host
+//    is changing.
+//
 // ****************************************************************************
 
 void
-ViewerPlot::SetHostDatabaseName(const std::string &host, 
+ViewerPlot::SetHostDatabaseName(const EngineKey &key, 
     const std::string &database)
 {
     bool reInit = false;
@@ -906,7 +910,7 @@ ViewerPlot::SetHostDatabaseName(const std::string &host,
     // If the host and database are different then we need to clear the
     // database keyframes.
     // 
-    if(host != hostName || database != databaseName)
+    if(key != engineKey || database != databaseName)
     {
         databaseAtts->ClearAtts();
         if(viewerPlotList->GetKeyframeMode())
@@ -918,9 +922,14 @@ ViewerPlot::SetHostDatabaseName(const std::string &host,
     }
 
     //
+    // Set the engine key if the host name is changing.
+    //
+    engineKey = key;
+
+    //
     // Set the host and database names.
     //
-    hostName = host;
+    hostName = key.OriginalHostName();
     databaseName = database;
     if (reInit)
     {
@@ -3717,6 +3726,33 @@ ViewerPlot::StopPick()
                                                    false, networkID))
     {
         debug1 << "An error occurred when stopping the pick." << endl;
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::ResetNetworkIds
+//
+// Purpose: 
+//   Resets the network ids for pick if the specified engine key matches the
+//   plot's engine key.
+//
+// Arguments:
+//   key : The engine key to compare against.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon May 3 14:23:26 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::ResetNetworkIds(const EngineKey &key)
+{
+    if(key == engineKey)
+    {
+        networkID = -1;
+        clonedNetworkId = -1;
     }
 }
 

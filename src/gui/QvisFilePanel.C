@@ -2688,6 +2688,11 @@ QvisFilePanel::openFile()
 //   I changed it so it tries to set the time slider to the right state for
 //   the database with the time state that we want to open.
 //
+//   Brad Whitlock, Mon May 3 17:23:46 PST 2004
+//   I added code to make sure that the time slider is related to the
+//   database that we're opening before trying to figure out the time state
+//   of the database.
+//
 // ****************************************************************************
 
 void
@@ -2706,14 +2711,36 @@ QvisFilePanel::openFileDblClick(QListViewItem *item)
             // the file item has the same filename as the open file.
 
             //
+            // If the correlation for the active time slider does not use the
+            // database that we just double-clicked, 
+            //
+            WindowInformation *windowInfo = viewer->GetWindowInformation();
+            int activeTS = windowInfo->GetActiveTimeSlider();
+            std::string activeTSName, src(fileItem->file.FullName());
+            DatabaseCorrelationList *cL = viewer->GetDatabaseCorrelationList();
+
+            if(activeTS >= 0)
+            {
+                activeTSName = windowInfo->GetTimeSliders()[activeTS];
+                DatabaseCorrelation *c = cL->FindCorrelation(activeTSName);
+                DatabaseCorrelation *csrc = cL->FindCorrelation(src);
+                if (c != 0 && csrc != 0 && !c->UsesDatabase(src))
+                {
+                    debug1 << "Have to set the time slider before setting the "
+                              "time state because the active time slider does "
+                              "not use the database that we double clicked.\n";
+                    activeTSName = src;
+                    viewer->SetActiveTimeSlider(activeTSName);
+                }
+            }
+
+            //
             // Get the inverse correlated time state, which is the time state
             // for the active time slider's correlation where the given
             // database has the database time state that we want opened.
             //
-            std::string src(fileItem->file.FullName());
-            state = GetTimeSliderStateForDatabaseState(src, state);
-
-            SetTimeSliderState(state);
+            state = GetTimeSliderStateForDatabaseState(activeTSName, src, state);
+            viewer->SetTimeSliderState(state);
         }
         else
         {

@@ -34,3 +34,4 @@ MeshAttributes::ChangesRequireRecalculation(const MeshAttributes &obj,
             (smoothingLevel != obj.smoothingLevel) ||
             (showInternal != obj.showInternal && spatDim == 3));
 }
+

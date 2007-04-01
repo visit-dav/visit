@@ -99,6 +99,9 @@ QvisMeshPlotWindow::~QvisMeshPlotWindow()
 //   Kathleen Bonnell, Thu Feb  5 11:48:48 PST 2004 
 //   Added showInternalToggle. 
 // 
+//   Jeremy Meredith, Tue May  4 13:23:10 PDT 2004
+//   Added support for a new (Point) type of glyphing for point meshes.
+//
 // ****************************************************************************
 
 void
@@ -242,6 +245,9 @@ QvisMeshPlotWindow::CreateWindowContents()
     rb = new QRadioButton("Icosahedron", central, "Icosahedron");
     pointTypeButtons->insert(rb);
     pointTypeLayout->addWidget(rb, 0, 3);
+    rb = new QRadioButton("Point", central, "Point");
+    pointTypeButtons->insert(rb);
+    pointTypeLayout->addWidget(rb, 0, 4);
     theLayout->addMultiCellLayout(pointTypeLayout, 8,8 , 0,3);
 
     // Create the legend toggle
@@ -320,6 +326,10 @@ QvisMeshPlotWindow::CreateWindowContents()
 //
 //   Kathleen Bonnell, Thu Feb  5 11:48:48 PST 2004 
 //   Added 'showInternalToggle'. 
+//
+//   Jeremy Meredith, Tue May  4 13:23:10 PDT 2004
+//   Added support for a new (Point) type of glyphing for point meshes.
+//   When doing GL_POINT, we ignore point size, so also disable it.
 //
 // ****************************************************************************
 
@@ -467,6 +477,8 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
             pointTypeButtons->blockSignals(true);
             pointTypeButtons->setButton((int) meshAtts->GetPointType());
             pointTypeButtons->blockSignals(false);
+            pointSizeLineEdit->setEnabled(meshAtts->GetPointType() !=
+                                                        MeshAttributes::Point);
             break;
         case 15: // opaqueMeshIsAppropriate
             // If in AUTO mode:  if OpaqueMesh is appropriate, handle 
@@ -1023,6 +1035,9 @@ QvisMeshPlotWindow::smoothingLevelChanged(int level)
 //  Creation:    August 21, 2003
 //
 //  Modifications:
+//   Jeremy Meredith, Tue May  4 13:23:10 PDT 2004
+//   Added support for a new (Point) type of glyphing for point meshes.
+//   When doing GL_POINT, we ignore point size, so also disable it.
 //
 // ****************************************************************************
 
@@ -1030,6 +1045,8 @@ void
 QvisMeshPlotWindow::pointTypeChanged(int type)
 {
     meshAtts->SetPointType((MeshAttributes::PointType) type);
+    pointSizeLineEdit->setEnabled(meshAtts->GetPointType() !=
+                                                        MeshAttributes::Point);
     SetUpdate(false);
     Apply();
 }

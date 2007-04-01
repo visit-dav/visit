@@ -288,9 +288,9 @@ public:
     void SetPlotVar(const std::string &variable);
     void SetPlotAtts(const int plotType);
     void SetPlotOperatorAtts(const int operatorType, bool applyToAll = false);
-    void ReplaceDatabase(const std::string &host, const std::string &database,
+    void ReplaceDatabase(const EngineKey &ek, const std::string &database,
                          int timeState, bool setTimeState, bool onlyReplaceSame);
-    void OverlayDatabase(const EngineKey &ek, const std::string &host,
+    void OverlayDatabase(const EngineKey &ek,
                          const std::string &database);
 
     void SetActivePlots(const intVector &activePlots,
@@ -337,7 +337,8 @@ public:
     void ClearPipelines();
 
     void StartPick();
-    void StopPick(void);
+    void StopPick();
+    void ResetNetworkIds(const EngineKey &key);
     std::string GetVarName();
     ViewerPlot *GetPlot(const int id) const;
     void GetActivePlotIDs(intVector &) const;

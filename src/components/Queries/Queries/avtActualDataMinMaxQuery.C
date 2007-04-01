@@ -76,6 +76,9 @@ avtActualDataMinMaxQuery::~avtActualDataMinMaxQuery()
 //    Hank Childs, Fri Apr  9 16:25:40 PDT 2004
 //    Minimize work done by creating new SIL.
 //
+//    Kathleen Bonnell, Tue May  4 14:25:07 PDT 2004
+//    Set SILRestriction via member restriction, instead of SILUseSet. 
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -104,16 +107,7 @@ avtActualDataMinMaxQuery::ApplyFilters(avtDataObject_p inData)
 
         avtDataSpecification_p newDS = new 
             avtDataSpecification(oldSpec->GetVariable(), queryAtts.GetTimeStep(), 
-                                 oldSpec->GetRestriction());
-
-        newDS->GetRestriction()->SuspendCorrectnessChecking();
-        newDS->GetRestriction()->TurnOnAll();
-        for (int i = 0; i < silUseSet.size(); i++)
-        {
-            if (silUseSet[i] == 0)
-                newDS->GetRestriction()->TurnOffSet(i);
-        }
-        newDS->GetRestriction()->EnableCorrectnessChecking();
+                                 querySILR);
 
         avtPipelineSpecification_p pspec = 
             new avtPipelineSpecification(newDS, queryAtts.GetPipeIndex());

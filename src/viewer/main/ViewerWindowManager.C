@@ -22,6 +22,7 @@
 #include <DatabaseCorrelation.h>
 #include <DatabaseCorrelationList.h>
 #include <DataNode.h>
+#include <EngineKey.h>
 #include <GlobalAttributes.h>
 #include <KeyframeAttributes.h>
 #include <LightList.h>
@@ -5525,7 +5526,7 @@ ViewerWindowManager::CloseDatabase(const std::string &dbName)
 //   Replaces the database in all windows.
 //
 // Arguments:
-//   host            : The host where the new database is found.
+//   key             : The key of the engine that will generate the plot.
 //   database        : The database to use.
 //   timeState       : The time state to use.
 //   setTimeState    : Whether or not to set the time state.
@@ -5542,10 +5543,13 @@ ViewerWindowManager::CloseDatabase(const std::string &dbName)
 //   Brad Whitlock, Mon Jan 26 22:50:56 PST 2004
 //   I made it use the plot list directly.
 //
+//   Brad Whitlock, Mon May 3 12:48:29 PDT 2004
+//   I made it use an engine key.
+//
 // ****************************************************************************
 
 void
-ViewerWindowManager::ReplaceDatabase(const std::string &host,
+ViewerWindowManager::ReplaceDatabase(const EngineKey &key,
     const std::string &database, int timeState, bool setTimeState,
     bool onlyReplaceSame)
 {
@@ -5554,10 +5558,36 @@ ViewerWindowManager::ReplaceDatabase(const std::string &host,
         if(windows[i] != 0)
         {
             windows[i]->GetPlotList()->
-                ReplaceDatabase(host, database, timeState, setTimeState,
+                ReplaceDatabase(key, database, timeState, setTimeState,
                                 onlyReplaceSame);
         }
     }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::ResetNetworkIds
+//
+// Purpose: 
+//   Resets the network ids for all plots that use the specified engine key.
+//
+// Arguments:
+//   key : The engine key that's getting reset.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon May 3 14:12:42 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::ResetNetworkIds(const EngineKey &key)
+{
+    for(int i = 0; i < maxWindows; ++i)
+    {
+        if(windows[i] != 0)
+            windows[i]->GetPlotList()->ResetNetworkIds(key);
+    }    
 }
 
 // ****************************************************************************

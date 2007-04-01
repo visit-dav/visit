@@ -37,6 +37,7 @@ class AnnotationAttributes;
 class AnnotationObjectList;
 class DatabaseCorrelation;
 class DataNode;
+class EngineKey;
 class GlobalAttributes;
 class KeyframeAttributes;
 class LightList;
@@ -376,7 +377,8 @@ class VIEWER_API ViewerWindowManager : public QObject
     void SetViewExtentsType(avtExtentType, int windowIndex = -1);
     void UpdateColorTable(const char *ctName);
     void ResetLineoutDesignation(int windowIndex = -1); 
-    void ResetTimeQueryDesignation(int windowIndex = -1); 
+    void ResetTimeQueryDesignation(int windowIndex = -1);
+    void ResetNetworkIds(const EngineKey &k);
     int             *GetWindowIndices(int *nwin) const;
     int              GetNumWindows() const;
     ViewerWindow    *GetActiveWindow() const;
@@ -415,7 +417,7 @@ class VIEWER_API ViewerWindowManager : public QObject
     void DisableExternalRenderRequestsAllWindows(std::vector<bool>& oldAble);
     void EnableExternalRenderRequestsAllWindows(const std::vector<bool> oldAble);
 
-    void ReplaceDatabase(const std::string &host,
+    void ReplaceDatabase(const EngineKey &key,
                          const std::string &database,
                          int timeState,
                          bool setTimeState,

@@ -4037,6 +4037,9 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
 //    Kathleen Bonnell, Thu Jun 13 10:26:49 PDT 2002    
 //    Renamed DrawEdges2. 
 //    
+//    Jeremy Meredith, Tue May  4 12:24:07 PDT 2004
+//    Added support for un-glyphed point meshes (Verts in a vtkCellArray).
+//
 // ****************************************************************************
 
 void
@@ -4105,6 +4108,15 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
         idx += 16;
     }
 
+    // how do we draw points
+    void (*draw0)(vtkCellArray *, GLenum, int &, vtkPoints *, vtkDataArray *, 
+                  vtkUnsignedCharArray *, vtkDataArray *) = NULL;
+    switch (idx)
+    {
+        case 0: draw0 = Draw01;     break;
+        case 4: draw0 = DrawT01;    break;
+    }
+
     // how do we draw lines
     void (*draw1)(vtkCellArray *, GLenum, int &, vtkPoints *, vtkDataArray *, 
                   vtkUnsignedCharArray *, vtkDataArray *);
@@ -4157,6 +4169,15 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
 
     glDisable(GL_LIGHTING);
 
+    aPrim = input->GetVerts();
+    aGlFunction = GL_POINTS; 
+  
+    // draw all the points
+    if (draw0)
+    {
+        draw0(aPrim, aGlFunction, cellNum, p, n, NULL, t);
+    }
+  
     aPrim = input->GetLines();
     aGlFunction = GL_LINE_STRIP; 
   

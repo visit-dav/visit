@@ -30,6 +30,7 @@
 #include <DebugStream.h>
 #include <ViewerConnectionProgressDialog.h>
 #include <ViewerRemoteProcessChooser.h>
+#include <ViewerWindowManager.h>
 #include <MaterialAttributes.h>
 
 #include <avtCallback.h>
@@ -2164,8 +2165,12 @@ ViewerEngineManager::RemoveEngine(const EngineKey &ek, bool close)
 // Creation:   Fri Feb 22 14:52:35 PST 2002
 //
 // Modifications:
-//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
-//    Use a map of engines based on a key, and be aware of simulations.
+//   Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//   Use a map of engines based on a key, and be aware of simulations.
+//
+//   Brad Whitlock, Mon May 3 14:39:35 PST 2004
+//   I made it tell all plots that use the failed engine key to reset
+//   their network ids.
 //
 // ****************************************************************************
 
@@ -2190,6 +2195,10 @@ ViewerEngineManager::RemoveFailedEngine(const EngineKey &ek)
     // Send a message to the client to clear the status for the
     // engine that had troubles.
     ClearStatus(ek.ID().c_str());
+
+    // Tell all plots that use the failed engine for their engine to reset
+    // their network ids so pick works properly.
+    ViewerWindowManager::Instance()->ResetNetworkIds(ek);
 
     // Remove the specified engine from the list of engines.
     RemoveEngine(ek, false);

@@ -16,7 +16,6 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkVisItUtility.h>
 
-#include <avtCallback.h>
 #include <avtExpressionEvaluatorFilter.h>
 #include <avtMatrix.h>
 #include <avtTerminatingSource.h>
@@ -331,6 +330,9 @@ avtPickQuery::PostExecute(void)
 //    Added another call to "RetrieveVarInfo" in case databse did not fill
 //    in all the information. 
 //
+//    Kathleen Bonnell, Tue May  4 14:26:42 PDT 2004
+//    Replaced avtCallback to a pickAtts error message. 
+//
 // ****************************************************************************
 
 void
@@ -366,9 +368,9 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
             pickAtts.SetElementNumber(-1);
             debug5 << "PICK BIG PROBLEM!  "
                    << "Could not find zone corresponding to pick point" << endl;
-            avtCallback::IssueWarning(
-                "The pick operation has encountered an internal "
+            pickAtts.SetErrorMessage("Pick encountered an internal "
                 "error.  Please contact a VisIt developer"); 
+            pickAtts.SetError(true);
             return;
         }
         
@@ -607,6 +609,9 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
 //    Simplified use of pspec and dspec.   No longer use dspec's timestep
 //    to set pickAtts' timestep.
 //
+//    Kathleen Bonnell, Tue May  4 14:25:07 PDT 2004
+//    Set SILRestriction via member restriction, instead of SILUseSet. 
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -679,16 +684,11 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
 
     stringVector vars = pickAtts.GetVariables();
 
-    dspec->GetRestriction()->SuspendCorrectnessChecking();
-    dspec->GetRestriction()->TurnOnAll();
-    int i;
-    for (i = 0; i < silUseSet.size(); i++)
-    {
-        if (silUseSet[i] == 0)
-            dspec->GetRestriction()->TurnOffSet(i);
-    }
-    dspec->GetRestriction()->EnableCorrectnessChecking();
+    dspec = new avtDataSpecification(pickAtts.GetActiveVariable().c_str(),
+                                     pickAtts.GetTimeStep(),
+                                     querySILR);
 
+    int i;
     if (!singleDomain)
     {
         dspec->GetRestriction()->RestrictDomains(dlist);

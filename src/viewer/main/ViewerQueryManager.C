@@ -1616,6 +1616,10 @@ ViewerQueryManager::ClearPickPoints()
 //    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
 //    Added an engine key to map plots to the engine used to create them.
 //
+//    Kathleen Bonnell, Tue May  4 14:41:50 PDT 2004 
+//    Changed Message to Warning for pick failure, utilize new pic atts 
+//    error message. 
+//
 // ****************************************************************************
 
 bool
@@ -1811,7 +1815,11 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                    UpdatePickAtts();
                
                    //SEND ERROR MESSAGE TO GUI WINDOW FOR DISPLAY
-                   Message("Pick not valid for current plot" );
+                   if (!pa.GetError())
+                       Warning("Pick failed with an internal error"
+                               " please contact a VisIt developer." );
+                   else 
+                       Warning(pa.GetErrorMessage().c_str());
                 }
             }
             CATCH2(VisItException, e)
@@ -1853,7 +1861,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
     }
     else
     {
-        Message("The picked point is not contained in a surface");
+        Warning("The picked point is not contained in a surface");
     }
 
     return retval;

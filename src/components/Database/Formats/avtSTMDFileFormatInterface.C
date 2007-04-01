@@ -95,11 +95,13 @@ avtSTMDFileFormatInterface::~avtSTMDFileFormatInterface()
 //  Creation:   February 22, 2001
 //
 //  Modifications:
-//
 //    Hank Childs, Fri Dec  5 11:08:54 PST 2003
 //    Try to handle bad timesteps, since the viewer's state is out-of-whack
 //    and a fix cannot get in by 1.2.5.
 //
+//    Brad Whitlock, Tue May 4 13:47:45 PST 2004
+//    Reenabled exception.
+//.
 // ****************************************************************************
 
 vtkDataSet *
@@ -107,11 +109,7 @@ avtSTMDFileFormatInterface::GetMesh(int ts, int dom, const char *mesh)
 {
     if (ts < 0 || ts >= nTimesteps)
     {
-        //EXCEPTION2(BadIndexException, ts, nTimesteps);
-        debug1 << "INTERNAL ERROR: bad timestep = " << ts << " out of "
-               << nTimesteps << ".  To avoid a crash, ignorning fix until "
-               << "state issues are resolved." << endl;
-        ts = nTimesteps-1;
+        EXCEPTION2(BadIndexException, ts, nTimesteps);
     }
 
     return timesteps[ts]->GetMesh(dom, mesh);
@@ -142,6 +140,9 @@ avtSTMDFileFormatInterface::GetMesh(int ts, int dom, const char *mesh)
 //    Try to handle bad timesteps, since the viewer's state is out-of-whack
 //    and a fix cannot get in by 1.2.5.
 //
+//    Brad Whitlock, Tue May 4 13:47:45 PST 2004
+//    Reenabled exception.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -149,11 +150,7 @@ avtSTMDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 {
     if (ts < 0 || ts >= nTimesteps)
     {
-        //EXCEPTION2(BadIndexException, ts, nTimesteps);
-        debug1 << "INTERNAL ERROR: bad timestep = " << ts << " out of "
-               << nTimesteps << ".  To avoid a crash, ignorning fix until "
-               << "state issues are resolved." << endl;
-        ts = nTimesteps-1;
+        EXCEPTION2(BadIndexException, ts, nTimesteps);
     }
 
     return timesteps[ts]->GetVar(dom, var);
@@ -184,6 +181,9 @@ avtSTMDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 //    Try to handle bad timesteps, since the viewer's state is out-of-whack
 //    and a fix cannot get in by 1.2.5.
 //
+//    Brad Whitlock, Tue May 4 13:47:45 PST 2004
+//    Reenabled exception.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -191,11 +191,7 @@ avtSTMDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var)
 {
     if (ts < 0 || ts >= nTimesteps)
     {
-        //EXCEPTION2(BadIndexException, ts, nTimesteps);
-        debug1 << "INTERNAL ERROR: bad timestep = " << ts << " out of "
-               << nTimesteps << ".  To avoid a crash, ignorning fix until "
-               << "state issues are resolved." << endl;
-        ts = nTimesteps-1;
+        EXCEPTION2(BadIndexException, ts, nTimesteps);
     }
 
     return timesteps[ts]->GetVectorVar(dom, var);
@@ -221,10 +217,12 @@ avtSTMDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var)
 //  Craetion:   February 22, 2001
 //
 //  Modifications:
-//
 //    Hank Childs, Fri Dec  5 11:08:54 PST 2003
 //    Try to handle bad timesteps, since the viewer's state is out-of-whack
 //    and a fix cannot get in by 1.2.5.
+//
+//    Brad Whitlock, Tue May 4 13:47:45 PST 2004
+//    Reenabled exception.
 //
 // ****************************************************************************
 
@@ -235,11 +233,7 @@ avtSTMDFileFormatInterface::GetAuxiliaryData(const char *var, int ts, int dom,
 {
     if (ts < 0 || ts >= nTimesteps)
     {
-        //EXCEPTION2(BadIndexException, ts, nTimesteps);
-        debug1 << "INTERNAL ERROR: bad timestep = " << ts << " out of "
-               << nTimesteps << ".  To avoid a crash, ignorning fix until "
-               << "state issues are resolved." << endl;
-        ts = nTimesteps-1;
+        EXCEPTION2(BadIndexException, ts, nTimesteps);
     }
 
     return timesteps[ts]->GetAuxiliaryData(var, dom, type, args, df);
@@ -256,10 +250,12 @@ avtSTMDFileFormatInterface::GetAuxiliaryData(const char *var, int ts, int dom,
 //  Creation:   March 12, 2002
 //
 //  Modifications:
-//
 //    Hank Childs, Fri Dec  5 11:08:54 PST 2003
 //    Try to handle bad timesteps, since the viewer's state is out-of-whack
 //    and a fix cannot get in by 1.2.5.
+//
+//    Brad Whitlock, Tue May 4 13:47:45 PST 2004
+//    Reenabled exception.
 //
 // ****************************************************************************
 
@@ -268,11 +264,7 @@ avtSTMDFileFormatInterface::GetFilename(int ts)
 {
     if (ts < 0 || ts >= nTimesteps)
     {
-        //EXCEPTION2(BadIndexException, ts, nTimesteps);
-        debug1 << "INTERNAL ERROR: bad timestep = " << ts << " out of "
-               << nTimesteps << ".  To avoid a crash, ignorning fix until "
-               << "state issues are resolved." << endl;
-        ts = nTimesteps-1;
+        EXCEPTION2(BadIndexException, ts, nTimesteps);
     }
 
     return timesteps[ts]->GetFilename();
@@ -305,6 +297,9 @@ avtSTMDFileFormatInterface::GetFilename(int ts)
 //    Try to handle bad timesteps, since the viewer's state is out-of-whack
 //    and a fix cannot get in by 1.2.5.
 //
+//    Brad Whitlock, Tue May 4 13:47:45 PST 2004
+//    Reenabled exception.
+//
 // ****************************************************************************
 
 void
@@ -316,11 +311,7 @@ avtSTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     //
     if(timeState < 0 || timeState >= nTimesteps)
     {
-        //EXCEPTION2(BadIndexException, timeState, nTimesteps);
-        debug1 << "INTERNAL ERROR: bad timestep = " << timeState << " out of "
-               << nTimesteps << ".  To avoid a crash, ignorning fix until "
-               << "state issues are resolved." << endl;
-        timeState = nTimesteps-1;
+        EXCEPTION2(BadIndexException, timeState, nTimesteps);
     }
 
     //
@@ -395,6 +386,9 @@ avtSTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
 //    Try to handle bad timesteps, since the viewer's state is out-of-whack
 //    and a fix cannot get in by 1.2.5.
 //
+//    Brad Whitlock, Tue May 4 13:47:45 PST 2004
+//    Reenabled exception.
+//
 // ****************************************************************************
 
 void
@@ -411,11 +405,7 @@ avtSTMDFileFormatInterface::FreeUpResources(int ts, int)
     {
         if (ts < 0 || ts >= nTimesteps)
         {
-            //EXCEPTION2(BadIndexException, ts, nTimesteps);
-            debug1 << "INTERNAL ERROR: bad timestep = " << ts << " out of "
-                   << nTimesteps << ".  To avoid a crash, ignorning fix until "
-                   << "state issues are resolved." << endl;
-            ts = nTimesteps-1;
+            EXCEPTION2(BadIndexException, ts, nTimesteps);
         }
         timesteps[ts]->FreeUpResources();
     }
@@ -431,6 +421,10 @@ avtSTMDFileFormatInterface::FreeUpResources(int ts, int)
 //  Programmer: Mark C. Miller 
 //  Creation:   February 23, 2004 
 //
+//  Modifications:
+//    Brad Whitlock, Tue May 4 13:47:45 PST 2004
+//    Reenabled exception.
+//
 // ****************************************************************************
 
 void
@@ -438,11 +432,7 @@ avtSTMDFileFormatInterface::ActivateTimestep(int ts)
 {
     if (ts < 0 || ts >= nTimesteps)
     {
-        //EXCEPTION2(BadIndexException, ts, nTimesteps);
-        debug1 << "INTERNAL ERROR: bad timestep = " << ts << " out of "
-               << nTimesteps << ".  To avoid a crash, ignorning fix until "
-               << "state issues are resolved." << endl;
-        ts = nTimesteps-1;
+        EXCEPTION2(BadIndexException, ts, nTimesteps);
     }
     timesteps[ts]->ActivateTimestep();
 }
@@ -455,6 +445,10 @@ avtSTMDFileFormatInterface::ActivateTimestep(int ts)
 //  Programmer: Mark C. Miller 
 //  Creation:   March 16, 2004 
 //
+//  Modifications:
+//    Brad Whitlock, Tue May 4 13:47:45 PST 2004
+//    Reenabled exception.
+//
 // ****************************************************************************
 
 void
@@ -462,11 +456,7 @@ avtSTMDFileFormatInterface::PopulateIOInformation(int ts, avtIOInformation& ioIn
 {
     if (ts < 0 || ts >= nTimesteps)
     {
-        //EXCEPTION2(BadIndexException, ts, nTimesteps);
-        debug1 << "INTERNAL ERROR: bad timestep = " << ts << " out of "
-               << nTimesteps << ".  To avoid a crash, ignorning fix until "
-               << "state issues are resolved." << endl;
-        ts = nTimesteps-1;
+        EXCEPTION2(BadIndexException, ts, nTimesteps);
     }
     timesteps[ts]->PopulateIOInformation(ioInfo);
 }

@@ -6092,6 +6092,8 @@ visit_SetPlotSILRestriction(PyObject *self, PyObject *args)
 // Creation:   May 14, 2003 
 //
 // Modifications:
+//   Kathleen Bonnell, Tue May  4 14:44:33 PDT 2004
+//   Use PickAtts' error message if available.
 //   
 // ****************************************************************************
 
@@ -6107,7 +6109,11 @@ visit_GetPickOutput(PyObject *self, PyObject *args)
     }
     else
     {
-        pickOut = "Either no Pick has been performed, or the last Pick was invalid."; 
+        if (pa->GetError())
+            pickOut = pa->GetErrorMessage();
+        else
+            pickOut = "Either no Pick has been performed, "
+                      "or the last Pick was invalid.\n"; 
     }
     return PyString_FromString(pickOut.c_str());
 }

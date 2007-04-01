@@ -141,6 +141,10 @@ avtMeshFilter::~avtMeshFilter()
 //    Use extractEdges, if user wants to see internal zones and input
 //    is not already polydata. 
 //
+//    Jeremy Meredith, Tue May  4 12:34:25 PDT 2004
+//    Add support for unglyphed point meshes (i.e. topological dimension
+//    is still 0 after going through the glyph filter).
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -178,9 +182,9 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
     }
 
     //
-    // Do not perform opaque if topological dimension of input ==  1 
+    // Do not perform opaque if topological dimension of input == 0 or 1 
     // 
-    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() != 1) 
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() > 1) 
     {
         // Create a dataset that can be rendered as a solid surface, using
         // z buffer to shift so surface doesn't override lines of mesh.
@@ -213,7 +217,8 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
         //
         vtkPolyData *pd = (vtkPolyData *) revisedInput2;
         if (pd->GetPolys()->GetNumberOfCells() == 0 &&
-            pd->GetStrips()->GetNumberOfCells() == 0)
+            pd->GetStrips()->GetNumberOfCells() == 0 &&
+            pd->GetVerts()->GetNumberOfCells() == 0)
         {
             topoDim = 1;
         }
@@ -223,6 +228,14 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
             lineFilter->SetInput((vtkPolyData*)revisedInput2);
             lineFilter->SetOutput(outDS);
             lineFilter->Update();
+        }
+        else if (topoDim == 0)
+        { 
+            outDS->Delete();
+            outDS = (vtkPolyData*)revisedInput2;
+            outDS->Register(NULL);
+            debug5 << "MeshFilter not making a point mesh go through the line "
+                   << "filter." << endl;
         }
         else
         {
