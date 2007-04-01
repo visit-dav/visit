@@ -1,23 +1,20 @@
 // ************************************************************************* //
-//                             avtPointGlyphMapper.C                        //
+//                             avtPointGlypher.C                             //
 // ************************************************************************* //
 
-#include <avtPointGlyphMapper.h>
+#include <avtPointGlypher.h>
 
-#include <vtkActor.h>
 #include <vtkVisItGlyph3D.h>
 #include <vtkPolyData.h>
-#include <vtkProperty.h>
-#include <vtkDataSetMapper.h>
-#include <vtkLookupTable.h>
 #include <vtkVisItPolyDataNormals.h>
 #include <BadIndexException.h>
-#include <string>
+
+
 using std::string;
 
 
 // ****************************************************************************
-//  Method: avtPointGlyphMapper constructor
+//  Method: avtPointGlypher constructor
 //
 //  Arguments:
 //
@@ -25,10 +22,12 @@ using std::string;
 //  Creation:   August 19, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri Nov 12 09:24:15 PST 2004
+//    Added scalingVarDim and spatialDim.
 //
 // ****************************************************************************
 
-avtPointGlyphMapper::avtPointGlyphMapper()
+avtPointGlypher::avtPointGlypher()
 {
     glyph2D = NULL;
     glyph3D = NULL;
@@ -41,12 +40,14 @@ avtPointGlyphMapper::avtPointGlyphMapper()
     normalsFilter     = NULL;
     nGlyphFilters     = 0;
     scalingVarName = "";
+    scalingVarDim = 1;
     coloringVarName = "";
+    spatialDim = 3;
 }
 
 
 // ****************************************************************************
-//  Method: avtPointGlyphMapper destructor
+//  Method: avtPointGlypher destructor
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   August 19, 2004
@@ -55,7 +56,7 @@ avtPointGlyphMapper::avtPointGlyphMapper()
 //
 // ****************************************************************************
 
-avtPointGlyphMapper::~avtPointGlyphMapper()
+avtPointGlypher::~avtPointGlypher()
 {
     ClearGlyphs();
     if (glyphFilter != NULL)
@@ -84,59 +85,29 @@ avtPointGlyphMapper::~avtPointGlyphMapper()
 
 
 // ****************************************************************************
-//  Method: avtPointGlyphMapper::CustomizeMappers
+//  Method: avtPointGlypher::CustomizeGlyphs
 //
 //  Purpose:
-//    A hook from the base class that allows the variable mapper to force
-//    the vtk mappers to be the same as its state.
+//    Sets the proper source for the glyphFilters, based on the spatialDim. 
+//
+//  Arguments:
+//    spatDim   The spatial dimension of the points being glyphed.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   August 19, 2004
 //
 //  Modifications:
-//    Kathleen Bonnell, Tue Nov  2 10:18:16 PST 2004
-//    avtVariableMapper::CustomizeMappers assumes a valid scalar variable
-//    for determining data extents, so don't call it when we aren't coloring
-//    by a scalar.  Copied non-data-extents related code from parent class
-//    to here.
+//    Kathleen Bonnell, Fri Nov 12 08:49:04 PST 2004
+//    Renamed from CustomizeMappers, as this is no longer derived from 
+//    avtMapper.  Added spatial dimension argument.  Removed avtMapper
+//    specific code.
 //
 // ****************************************************************************
 
 void
-avtPointGlyphMapper::CustomizeMappers(void)
+avtPointGlypher::CustomizeGlyphs(int spatDim)
 {
-    if (colorByScalar)
-    {
-        avtVariableMapper::CustomizeMappers();
-    }
-    else     
-    {
-        if (lighting)
-        {
-            TurnLightingOn();
-        }
-        else
-        {
-            TurnLightingOff();
-        }
-
-        SetOpacity(opacity);
-
-        for (int i = 0; i < nMappers; i++)
-        {
-            if (mappers[i] != NULL)
-            {
-                mappers[i]->SetLookupTable(lut);
-            }
-            if (actors[i] != NULL)
-            {
-                vtkProperty *prop = actors[i]->GetProperty();
-                prop->SetLineStipplePattern(LineStyle2StipplePattern(lineStyle));
-                prop->SetLineWidth(LineWidth2Int(lineWidth));
-            }
-        }
-    }
-
+    spatialDim = spatDim;
     if (glyphFilter != NULL)
     {
         vtkPolyData *glyph = GetGlyphSource();
@@ -145,22 +116,20 @@ avtPointGlyphMapper::CustomizeMappers(void)
             if (glyphFilter[i] != NULL)
             {
                 glyphFilter[i]->SetSource(glyph);
-                if (dataScaling)
-                {
-                    glyphFilter[i]->SetScaleModeToScaleByScalar();
-                    if (scalingVarName != "")
-                        glyphFilter[i]->SelectScalarsForScaling(scalingVarName.c_str());
-                }
-                else 
-                {
-                    glyphFilter[i]->SetScaleModeToDataScalingOff();
-                }
             }
             if (normalsFilter[i] != NULL)
             {
                 normalsFilter[i]->SetNormalTypeToCell();
             }
         }
+    }
+    if (dataScaling)
+    {
+        DataScalingOn(scalingVarName, scalingVarDim);
+    }
+    else 
+    {
+        DataScalingOff(); 
     }
 
     if (colorByScalar)
@@ -169,7 +138,7 @@ avtPointGlyphMapper::CustomizeMappers(void)
     }
     else 
     {
-        ColorByScalarOff(glyphColor);
+        ColorByScalarOff();
     }
          
     SetScale(scale);
@@ -177,22 +146,25 @@ avtPointGlyphMapper::CustomizeMappers(void)
 
 
 // ****************************************************************************
-//  Method: avtPointGlyphMapper::SetUpFilters
+//  Method: avtPointGlypher::SetUpGlyphs
 //
 //  Purpose:
-//    The glyph mapper inserts filters into the VTK pipeline, but can
-//    only do so inside another routines (avtMapper::SetUpMappers) loop.
-//    This is called before InsertFilters to allow for initialization work.
+//    Creates glyphFilters.
+//
+//  Arguments:
+//    nGlyphs   The number of glyph filters to be created.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   August 19, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri Nov 12 08:49:04 PST 2004
+//    Renamed method, so it doesn't collide with avtMapper methods. 
 //
 // ****************************************************************************
 
 void
-avtPointGlyphMapper::SetUpFilters(int nDoms)
+avtPointGlypher::SetUpGlyphs(int nGlyphs)
 {
     if (glyphFilter != NULL)
     {
@@ -216,29 +188,27 @@ avtPointGlyphMapper::SetUpFilters(int nDoms)
         }
         delete [] normalsFilter;
     }
-    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
+    nGlyphFilters     = nGlyphs;
+    glyphFilter       = new vtkVisItGlyph3D*[nGlyphFilters];
+    normalsFilter     = new vtkVisItPolyDataNormals*[nGlyphFilters];
+    for (int i = 0 ; i < nGlyphFilters ; i++)
     {
-        nGlyphFilters     = nDoms;
-        glyphFilter       = new vtkVisItGlyph3D*[nGlyphFilters];
-        normalsFilter     = new vtkVisItPolyDataNormals*[nGlyphFilters];
-        for (int i = 0 ; i < nGlyphFilters ; i++)
-        {
-            glyphFilter[i] = NULL;
-            normalsFilter[i] = NULL;
-        }
+        glyphFilter[i] = NULL;
+        normalsFilter[i] = NULL;
     }
 }
 
 
 // ****************************************************************************
-//  Method: avtPointGlyphMapper::InsertFilters
+//  Method: avtPointGlypher::InsertGlyphs
 //
 //  Purpose:
 //    Inserts a glyph filter into the vtk Pipeline.
 //
 //  Arguments:
-//    ds        The upstream dataset.
-//    dom       The domain number.
+//    ds          The upstream dataset.
+//    whichGlyph  Which glyph filter should be used. 
+//    spatDim     The spatial dimension. 
 //
 //  Returns:      The dataset to be sent downstream.
 //
@@ -250,51 +220,55 @@ avtPointGlyphMapper::SetUpFilters(int nDoms)
 //    Hank Childs, Wed Nov 10 11:27:23 PST 2004
 //    Do not glyphs points when our glyph type is "point".
 //
+//    Kathleen Bonnell, Fri Nov 12 08:49:04 PST 2004 
+//    Added spatDim argument, since this is no longer derived from avtMapper,
+//    and so 'GetInput' no longer is available. 
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtPointGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
+avtPointGlypher::InsertGlyphs(vtkDataSet *ds, int whichGlyph, int spatDim)
 {
-    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() != 0)
-        return ds;
-    if (glyphType == 3)
+    if (glyphType == 3) // Point
         return ds;
 
-    if (dom < 0 || dom >= nGlyphFilters)
+    if (whichGlyph < 0 || whichGlyph >= nGlyphFilters)
     {
-        EXCEPTION2(BadIndexException, dom, nGlyphFilters);
+        EXCEPTION2(BadIndexException, whichGlyph, nGlyphFilters);
     }
 
-    if (glyphFilter[dom] == NULL)
+    spatialDim = spatDim;
+
+    if (glyphFilter[whichGlyph] == NULL)
     {
         //
         // We don't have to initialize the filter now, since it will be done
         // in customize mappers later.
         //
-        glyphFilter[dom] = vtkVisItGlyph3D::New();
+        glyphFilter[whichGlyph] = vtkVisItGlyph3D::New();
     }
-    if (normalsFilter[dom] == NULL)
+    if (normalsFilter[whichGlyph] == NULL)
     {
-        normalsFilter[dom] = vtkVisItPolyDataNormals::New();
+        normalsFilter[whichGlyph] = vtkVisItPolyDataNormals::New();
     }
 
-    glyphFilter[dom]->SetInput(ds);
-    glyphFilter[dom]->SetVectorModeToVectorRotationOff();
+    glyphFilter[whichGlyph]->SetInput(ds);
+    glyphFilter[whichGlyph]->SetVectorModeToVectorRotationOff();
 
-    if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 3)
+    if (spatialDim == 3)
     {
-        normalsFilter[dom]->SetInput(glyphFilter[dom]->GetOutput());
-        return normalsFilter[dom]->GetOutput();
+        normalsFilter[whichGlyph]->SetInput(glyphFilter[whichGlyph]->GetOutput());
+        return normalsFilter[whichGlyph]->GetOutput();
     }
     else
     {
-        return glyphFilter[dom]->GetOutput();
+        return glyphFilter[whichGlyph]->GetOutput();
     }
 }
 
 
 // ****************************************************************************
-//  Method: avtPointGlyphMapper::SetScale
+//  Method: avtPointGlypher::SetScale
 //
 //  Purpose:
 //    Sets the scale of each glyph.
@@ -308,7 +282,7 @@ avtPointGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
 // ****************************************************************************
 
 void
-avtPointGlyphMapper::SetScale(float s)
+avtPointGlypher::SetScale(float s)
 {
     scale = s;
     if (glyphFilter != NULL)
@@ -341,7 +315,7 @@ avtPointGlyphMapper::SetScale(float s)
 // ****************************************************************************
 
 void
-avtPointGlyphMapper::SetGlyphType(const int type)
+avtPointGlypher::SetGlyphType(const int type)
 {
     if (type < 0 || type > 3) 
         return; 
@@ -366,7 +340,7 @@ avtPointGlyphMapper::SetGlyphType(const int type)
 
 
 // ****************************************************************************
-//  Method: avtPointGlyphMapper::SetUpGlyph
+//  Method: avtPointGlypher::SetUpGlyph
 //
 //  Purpose:
 //    Sets up glyph based on glyphType.
@@ -382,7 +356,7 @@ avtPointGlyphMapper::SetGlyphType(const int type)
 // ****************************************************************************
 
 void
-avtPointGlyphMapper::SetUpGlyph(void)
+avtPointGlypher::SetUpGlyph(void)
 {
     //
     // Free any memory associated with the old glyphs
@@ -599,7 +573,7 @@ avtPointGlyphMapper::SetUpGlyph(void)
 }
 
 // ****************************************************************************
-//  Method: avtPointGlyphMapper::ClearGlyphs 
+//  Method: avtPointGlypher::ClearGlyphs 
 //
 //  Purpose:
 //    Deletes the polydata associated with the glyph sources. 
@@ -612,7 +586,7 @@ avtPointGlyphMapper::SetUpGlyph(void)
 // ****************************************************************************
 
 void
-avtPointGlyphMapper::ClearGlyphs()
+avtPointGlypher::ClearGlyphs()
 {
     if (glyph2D != NULL)
     {
@@ -627,7 +601,7 @@ avtPointGlyphMapper::ClearGlyphs()
 }
 
 // ****************************************************************************
-//  Method: avtPointGlyphMapper::GetGlyphSource 
+//  Method: avtPointGlypher::DataScalingOff 
 //
 //  Purpose:
 //    Retrieves the correct glyph source for the input's spatial dimension.
@@ -640,7 +614,7 @@ avtPointGlyphMapper::ClearGlyphs()
 // ****************************************************************************
 
 void
-avtPointGlyphMapper::DataScalingOff(void)
+avtPointGlypher::DataScalingOff(void)
 {
     dataScaling = false;
     scalingVarName = "";
@@ -658,37 +632,56 @@ avtPointGlyphMapper::DataScalingOff(void)
 }
 
 // ****************************************************************************
-//  Method: avtPointGlyphMapper::DataScalingOn 
+//  Method: avtPointGlypher::DataScalingOn 
 //
 //  Purpose:
-//    Retrieves the correct glyph source for the input's spatial dimension.
+//    Turns on the appropriate type of data scaling based on the dimension
+//    of the variable to be used in scaling. 
 //
 //  Arguments:
 //    sname     The name of the scalars to be used for scaling the glyphs.
+//    varDim    The dimension of the var to be used for scaling.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   August 19, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri Nov 12 09:24:15 PST 2004
+//    Added varDim argument so that data scaling can be done by other
+//    than just scalar vars.  
 //
 // ****************************************************************************
 
 
 void
-avtPointGlyphMapper::DataScalingOn(const string &sname)
+avtPointGlypher::DataScalingOn(const string &sname, int varDim)
 {
     dataScaling = true;
     scalingVarName = sname;
-
+    scalingVarDim = varDim;
     if (glyphFilter != NULL)
     {
         for (int i = 0 ; i < nGlyphFilters ; i++)
         {
             if (glyphFilter[i] != NULL)
             {
-                glyphFilter[i]->SetScaleModeToScaleByScalar();
-                if (scalingVarName != "")
+                if (scalingVarDim  < 3)
+                {
+                    glyphFilter[i]->SetScaleModeToScaleByScalar();
                     glyphFilter[i]->SelectScalarsForScaling(scalingVarName.c_str());
+                }
+                else if (scalingVarDim == 3)
+                {
+                    glyphFilter[i]->SetScaleModeToScaleByVector();
+                    glyphFilter[i]->SelectVectorsForScaling(scalingVarName.c_str());
+                }
+                else 
+                { 
+                    // will use the first three components to scale each 
+                    // coord direction.
+                    glyphFilter[i]->SetScaleModeToScaleByVectorComponents();
+                    glyphFilter[i]->SelectVectorsForScaling(scalingVarName.c_str());
+                }
             }
         }
     }
@@ -696,7 +689,7 @@ avtPointGlyphMapper::DataScalingOn(const string &sname)
 
 
 // ****************************************************************************
-//  Method: avtPointGlyphMapper::GetGlyphSource 
+//  Method: avtPointGlypher::GetGlyphSource 
 //
 //  Purpose:
 //    Retrieves the correct glyph source for the input's spatial dimension.
@@ -708,26 +701,24 @@ avtPointGlyphMapper::DataScalingOn(const string &sname)
 //  Creation:   August 19, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri Nov 12 09:24:15 PST 2004
+//    Use spatialDim data member, as this class is no longer derived from
+//    an avtMapper and has no access to pipeline input data.
 //
 // ****************************************************************************
 
 vtkPolyData *
-avtPointGlyphMapper::GetGlyphSource(void)
+avtPointGlypher::GetGlyphSource()
 {
-    if (*(GetInput()) != NULL)
-    {
-        if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
-            return glyph2D;
-        else 
-            return glyph3D;
-    }
-    return glyph3D;
-
+    if (spatialDim == 2)
+        return glyph2D;
+    else 
+        return glyph3D;
 }
 
 
 // ****************************************************************************
-//  Method: avtPointGlyphMapper::ColorByScalarOn
+//  Method: avtPointGlypher::ColorByScalarOn
 //
 //  Purpose:
 //    Tells the glyph mapper to color by the given scalar.
@@ -742,7 +733,7 @@ avtPointGlyphMapper::GetGlyphSource(void)
 // ****************************************************************************
 
 void
-avtPointGlyphMapper::ColorByScalarOn(const string &sn)
+avtPointGlypher::ColorByScalarOn(const string &sn)
 {
     colorByScalar = true;
     coloringVarName = sn;
@@ -761,7 +752,7 @@ avtPointGlyphMapper::ColorByScalarOn(const string &sn)
 
 
 // ****************************************************************************
-//  Method: avtPointGlyphMapper::ColorByScalarOff
+//  Method: avtPointGlypher::ColorByScalarOff
 //
 //  Purpose:
 //    Tells the glyph mapper to color all of the glyphs the same color.
@@ -773,31 +764,16 @@ avtPointGlyphMapper::ColorByScalarOn(const string &sn)
 //  Creation:     August 19, 2004 
 //
 //  Modifications:
-//    Kathleen Bonnell, Tue Nov  2 10:18:16 PST 2004
-//    Change argument type from unsigned char to float.
+//    Kathleen Bonnell, Fri Nov 12 09:30:38 PST 2004
+//    Removed vtkActor specific code, as this class is no longer derived from
+//    avtMapper and does not have access to vtkActors.
 //
 // ****************************************************************************
 
 void
-avtPointGlyphMapper::ColorByScalarOff(const float col[3])
+avtPointGlypher::ColorByScalarOff()
 {
-    glyphColor[0] = col[0];
-    glyphColor[1] = col[1];
-    glyphColor[2] = col[2];
     colorByScalar = false;
-  
-    if (actors != NULL)
-    {
-        for (int i = 0 ; i < nMappers ; i++)
-        {
-            if (actors[i] != NULL)
-            {
-                vtkProperty *prop = actors[i]->GetProperty();
-                prop->SetColor(glyphColor);
-            }
-        }
-    }
-
     if (glyphFilter != NULL)
     {
         for (int i = 0 ; i < nGlyphFilters ; i++)
@@ -808,55 +784,5 @@ avtPointGlyphMapper::ColorByScalarOff(const float col[3])
             }
         }
     }
-}
-
-
-// ****************************************************************************
-//  Method: avtPointGlyphMapper::ColorByScalarOff
-//
-//  Purpose:
-//    Tells the glyph mapper to color all of the glyphs the same color.
-//
-//  Arguments:
-//    col         The new color.
-//
-//  Programmer:   Kathleen Bonnell
-//  Creation:     November 2, 2004 
-//
-// ****************************************************************************
-
-void
-avtPointGlyphMapper::ColorByScalarOff(const unsigned char col[3])
-{
-    float fc[3];
-    fc[0] = (float)col[0] / 255.;
-    fc[1] = (float)col[1] / 255.;
-    fc[2] = (float)col[2] / 255.;
-    ColorByScalarOff(fc);
-}
-
-
-// ****************************************************************************
-//  Method: avtPointGlyphMapper::ColorByScalarOff
-//
-//  Purpose:
-//    Tells the glyph mapper to color all of the glyphs the same color.
-//
-//  Arguments:
-//    col         The new color.
-//
-//  Programmer:   Kathleen Bonnell
-//  Creation:     November 2, 2004 
-//
-// ****************************************************************************
-
-void
-avtPointGlyphMapper::ColorByScalarOff(const double col[3])
-{
-    float fc[3];
-    fc[0] = (float)col[0];
-    fc[1] = (float)col[1];
-    fc[2] = (float)col[2];
-    ColorByScalarOff(fc);
 }
 

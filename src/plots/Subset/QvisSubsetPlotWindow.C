@@ -19,6 +19,7 @@
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisOpacitySlider.h>
+#include <QvisPointControl.h>
 #include <SubsetAttributes.h>
 #include <ViewerProxy.h>
 
@@ -176,6 +177,9 @@ QvisSubsetPlotWindow::~QvisSubsetPlotWindow()
 //   Jeremy Meredith, Tue Dec 10 10:25:41 PST 2002
 //   Added smoothing options.
 //
+//   Kathleen Bonnell, Fri Nov 12 11:35:11 PST 2004 
+//   Added pointControl. 
+//
 // ****************************************************************************
 
 void
@@ -279,7 +283,7 @@ QvisSubsetPlotWindow::CreateWindowContents()
     colorLayout->addMultiCellWidget(colorTableButton, 1, 1, 1, 2, AlignLeft | AlignVCenter);
 
     // Create the overall opacity.
-    QGridLayout *opLayout = new QGridLayout(topLayout, 5, 2);
+    QGridLayout *opLayout = new QGridLayout(topLayout, 6, 2);
     opLayout->setSpacing(5);
     overallOpacity = new QvisOpacitySlider(0, 255, 25, 255, central, 
                     "overallOpacity", NULL);
@@ -294,23 +298,35 @@ QvisSubsetPlotWindow::CreateWindowContents()
     overallOpacityLabel->setAlignment(AlignLeft | AlignVCenter);
     opLayout->addWidget(overallOpacityLabel, 0, 0);
 
+    // Create the point control 
+    pointControl = new QvisPointControl(central, "pointControl");
+    connect(pointControl, SIGNAL(pointSizeChanged(double)),
+            this, SLOT(pointSizeChanged(double)));
+    connect(pointControl, SIGNAL(pointSizeVarChanged(QString &)),
+            this, SLOT(pointSizeVarChanged(QString &)));
+    connect(pointControl, SIGNAL(pointSizeVarToggled(bool)),
+            this, SLOT(pointSizeVarToggled(bool)));
+    connect(pointControl, SIGNAL(pointTypeChanged(int)),
+            this, SLOT(pointTypeChanged(int)));
+    opLayout->addMultiCellWidget(pointControl, 1, 1, 0, 1);
+ 
     // Create the legend toggle
     legendCheckBox = new QCheckBox("Legend", central, "legendToggle");
     connect(legendCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
-    opLayout->addWidget(legendCheckBox, 1, 0);
+    opLayout->addWidget(legendCheckBox, 2, 0);
 
     // Create the wireframe toggle
     wireframeCheckBox = new QCheckBox("Wireframe", central, "wireframeCheckBox");
     connect(wireframeCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(wireframeToggled(bool)));
-    opLayout->addWidget(wireframeCheckBox, 2, 0);
+    opLayout->addWidget(wireframeCheckBox, 3, 0);
 
     // Create the internal surfaces toggle
     drawInternalCheckBox = new QCheckBox("Draw internal surfaces", central, "drawInternalCheckBox");
     connect(drawInternalCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(drawInternalToggled(bool)));
-    opLayout->addMultiCellWidget(drawInternalCheckBox, 3,3, 0,1);
+    opLayout->addMultiCellWidget(drawInternalCheckBox, 4,4, 0,1);
 
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(0, "smoothingButtons");
@@ -329,7 +345,8 @@ QvisSubsetPlotWindow::CreateWindowContents()
     rb = new QRadioButton("High", central, "HighSmoothing");
     smoothingLevelButtons->insert(rb);
     smoothingLayout->addWidget(rb, 0, 3);
-    opLayout->addMultiCellLayout(smoothingLayout, 4,4 , 0,1);
+    opLayout->addMultiCellLayout(smoothingLayout, 5,5 , 0,1);
+
 }
 
 // ****************************************************************************
@@ -376,6 +393,9 @@ QvisSubsetPlotWindow::CreateWindowContents()
 //
 //   Jeremy Meredith, Tue Dec 10 10:25:51 PST 2002
 //   Added smoothing options.
+//
+//   Kathleen Bonnell, Fri Nov 12 11:35:11 PST 2004 
+//   Added point options.
 //
 // ****************************************************************************
 
@@ -469,6 +489,27 @@ QvisSubsetPlotWindow::UpdateWindow(bool doAll)
             smoothingLevelButtons->blockSignals(true);
             smoothingLevelButtons->setButton(subsetAtts->GetSmoothingLevel());
             smoothingLevelButtons->blockSignals(false);
+            break;
+        case 14: // pointSize
+            pointControl->blockSignals(true);
+            pointControl->SetPointSize(subsetAtts->GetPointSize());
+            pointControl->blockSignals(false);
+            break;
+        case 15: // pointType
+            pointControl->blockSignals(true);
+            pointControl->SetPointType(subsetAtts->GetPointType());
+            pointControl->blockSignals(false);
+            break;
+        case 16: // pointSizeVarEnabled
+            pointControl->blockSignals(true);
+            pointControl->SetPointSizeVarChecked(subsetAtts->GetPointSizeVarEnabled());
+            pointControl->blockSignals(false);
+            break;
+        case 17: // pointSizeVar
+            pointControl->blockSignals(true);
+            temp = QString(subsetAtts->GetPointSizeVar());
+            pointControl->SetPointSizeVar(temp);
+            pointControl->blockSignals(false);
             break;
         }
     } // end for
@@ -753,6 +794,9 @@ QvisSubsetPlotWindow::SetMultipleColorWidgets(int index)
 //    type stored within the class instead of the one hardwired from
 //    an include file.
 //   
+//   Kathleen Bonnell, Fri Nov 12 11:35:11 PST 2004 
+//   Uncommented GetCurrentValues. 
+//
 // ****************************************************************************
 
 void
@@ -762,7 +806,7 @@ QvisSubsetPlotWindow::Apply(bool ignore)
     {
         // Get the current subset plot attributes and tell the other
         // observers about them.
-//        GetCurrentValues(-1);
+        GetCurrentValues(-1);
         subsetAtts->Notify();
 
         // Tell the viewer to set the subset plot attributes.
@@ -812,13 +856,16 @@ QvisSubsetPlotWindow::apply()
 //    type stored within the class instead of the one hardwired from
 //    an include file.
 //   
+//   Kathleen Bonnell, Fri Nov 12 11:35:11 PST 2004 
+//   Uncommented GetCurrentValues. 
+//
 // ****************************************************************************
 
 void
 QvisSubsetPlotWindow::makeDefault()
 {
     // Tell the viewer to set the default subset plot attributes.
-//    GetCurrentValues(-1);
+    GetCurrentValues(-1);
     subsetAtts->Notify();
     viewer->SetDefaultPlotOptions(plotType);
 }
@@ -1247,3 +1294,134 @@ QvisSubsetPlotWindow::colorTableClicked(bool useDefault, const QString &ctName)
     subsetAtts->SetColorTableName(ctName.latin1());
     Apply();
 }
+
+
+// ****************************************************************************
+// Method: QvisSubsetPlotWindow::GetCurrentValues
+//
+// Purpose: 
+//   Gets the current values for one or all of the lineEdit widgets.
+//
+// Arguments:
+//   which_widget : The number of the widget to update. If -1 is passed,
+//                  the routine gets the current values for all widgets.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 4, 2004 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisSubsetPlotWindow::GetCurrentValues(int which_widget)
+{
+    bool doAll = (which_widget == -1);
+
+    // Do the point size
+    if(doAll)
+    {
+        subsetAtts->SetPointSize(pointControl->GetPointSize());
+        subsetAtts->SetPointSizeVar(pointControl->GetPointSizeVar().latin1());
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  QvisSubsetPlotWindow::pointTypeChanged
+//
+//  Purpose:
+//    Qt slot function that is called when one of the point type buttons
+//    is clicked.
+//
+//  Arguments:
+//    type   :   The new type
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    November 4, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+QvisSubsetPlotWindow::pointTypeChanged(int type)
+{
+    subsetAtts->SetPointType((SubsetAttributes::PointType) type);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisSubsetPlotWindow::pointSizeVarToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the pointSizeVar toggle
+//   button is toggled.
+//
+// Arguments:
+//   val : The new state of the pointSizeVar toggle.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 4, 2004 
+//   
+// ****************************************************************************
+
+void
+QvisSubsetPlotWindow::pointSizeVarToggled(bool val)
+{
+    subsetAtts->SetPointSizeVarEnabled(val);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisSubsetPlotWindow::pointSizeVarChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   point size variable text and presses the Enter key.
+//
+// Arguments:
+//   val :     The new value of the pointSizeVar text.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 4, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSubsetPlotWindow::pointSizeVarChanged(QString &var)
+{
+    subsetAtts->SetPointSizeVar(var.latin1()); 
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisSubsetPlotWindow::pointSizeChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   point size text and presses the Enter key.
+//
+// Arguments:
+//   size :     The new point size.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 4, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSubsetPlotWindow::pointSizeChanged(double size)
+{
+    subsetAtts->SetPointSize(size); 
+    Apply();
+}
+
+

@@ -10,11 +10,11 @@
 #include <MeshAttributes.h>
 
 #include <avtMeshFilter.h>
-#include <avtPointGlyphMapper.h>
 #include <avtSmoothPolyDataFilter.h>
 #include <avtSurfaceAndWireframeRenderer.h>
 #include <avtUserDefinedMapper.h>
 #include <avtVariableLegend.h>
+#include <avtVariablePointGlyphMapper.h>
 
 #include <DebugStream.h>
 
@@ -75,6 +75,9 @@
 //    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004
 //    Initialize glyphMapper, remove glyphPoints.
 //
+//    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004 
+//    Replaced avtPointGlyphMapper with avtVariablePointGlyphMapper.
+//
 // ****************************************************************************
 
 avtMeshPlot::avtMeshPlot()
@@ -88,7 +91,7 @@ avtMeshPlot::avtMeshPlot()
     CopyTo(cr, renderer);
     mapper = new avtUserDefinedMapper(cr);
 
-    glyphMapper = new avtPointGlyphMapper;
+    glyphMapper = new avtVariablePointGlyphMapper;
 
     
     property = vtkProperty::New();
@@ -299,6 +302,9 @@ avtMeshPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
 //    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004 
 //    Set up glyphMapper. 
 //
+//    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004 
+//    Updated glyphMapper methods calls with new names. 
+//
 // ****************************************************************************
 
 void
@@ -320,12 +326,12 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     if (atts.GetForegroundFlag())
     {
         SetMeshColor(fgColor);
-        glyphMapper->ColorByScalarOff(fgColor);
+        glyphMapper->ColorBySingleColor(fgColor);
     }
     else 
     {
         SetMeshColor(atts.GetMeshColor().GetColor());
-        glyphMapper->ColorByScalarOff(atts.GetMeshColor().GetColor());
+        glyphMapper->ColorBySingleColor(atts.GetMeshColor().GetColor());
     }
     SetPointSize(atts.GetPointSize());
     SetRenderOpaque();
@@ -339,22 +345,16 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     }
     SetLegend(atts.GetLegendFlag());
 
-
     //
     // Setup glyphMapper
     //
     glyphMapper->SetScale(atts.GetPointSize());
-    if (atts.GetPointSizeVarEnabled())
+    if (atts.GetPointSizeVarEnabled() &&
+        atts.GetPointSizeVar() != "default" &&
+        atts.GetPointSizeVar() != "" &&
+        atts.GetPointSizeVar() != "\0")
     {
-        if (atts.GetPointSizeVar() != "default" &&
-            atts.GetPointSizeVar() != "") 
-        {
-            glyphMapper->DataScalingOn(atts.GetPointSizeVar());
-        }
-        else 
-        {
-            glyphMapper->DataScalingOff();
-        }
+        glyphMapper->ScaleByVar(atts.GetPointSizeVar());
     }
     else
     {

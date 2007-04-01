@@ -12,6 +12,12 @@
         ColorByMultipleColors
         ColorByColorTable
       </Enum>
+      <Enum name="PointType">
+        Box
+        Axis
+        Icosahedron
+        Point
+      </Enum>
       <Field name="colorType" label="colorType" type="enum" subtype="ColoringMethod">
         ColorByMultipleColors
       </Field>
@@ -59,6 +65,18 @@
         255
         255
         255
+      </Field>
+      <Field name="pointSize" label="Point size" type="double">
+        0.050000
+      </Field>
+      <Field name="pointType" label="Point Type" type="enum" subtype="PointType">
+        Box
+      </Field>
+       <Field name="pointSizeVarEnabled" label="Point size by var enabled" type="bool">
+        false
+      </Field>
+      <Field name="pointSizeVar" label="Point size by var" type="string">
+        default
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>

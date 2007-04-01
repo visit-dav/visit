@@ -10,7 +10,7 @@
 #include <SubsetAttributes.h>
 
 class     avtLevelsLegend;
-class     avtLevelsMapper;
+class     avtLevelsPointGlyphMapper;
 class     avtLookupTable;
 
 class     avtFeatureEdgesFilter;
@@ -56,6 +56,9 @@ class     avtSmoothPolyDataFilter;
 //    Mark C. Miller, Wed Mar 24 19:23:21 PST 2004
 //    Added AttributesDependOnDatabaseMetaData
 //
+//    Kathleen Bonnell, Fri Nov 12 11:47:49 PST 2004 
+//    Changed mapper type to avtLevelsPointGlyphMapper. 
+//
 // ****************************************************************************
 
 class
@@ -90,7 +93,7 @@ avtSubsetPlot : public avtVolumeDataPlot
     avtSmoothPolyDataFilter         *smooth;
 
     SubsetAttributes          atts;
-    avtLevelsMapper          *levelsMapper;
+    avtLevelsPointGlyphMapper *levelsMapper;
     avtLevelsLegend          *levelsLegend;
     avtLegend_p               levLegendRefPtr;
     avtLookupTable           *avtLUT;

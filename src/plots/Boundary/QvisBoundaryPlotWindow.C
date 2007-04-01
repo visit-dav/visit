@@ -19,6 +19,7 @@
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisOpacitySlider.h>
+#include <QvisPointControl.h>
 #include <BoundaryAttributes.h>
 #include <ViewerProxy.h>
 
@@ -158,6 +159,8 @@ QvisBoundaryPlotWindow::~QvisBoundaryPlotWindow()
 // Creation:   June 12, 2003
 //
 // Modifications:
+//   Kathleen Bonnell, Fri Nov 12 10:17:58 PST 2004
+//   Added pointControl.
 //
 // ****************************************************************************
 
@@ -277,17 +280,29 @@ QvisBoundaryPlotWindow::CreateWindowContents()
     overallOpacityLabel->setAlignment(AlignLeft | AlignVCenter);
     opLayout->addWidget(overallOpacityLabel, 0, 0);
 
+    // Create the point control 
+    pointControl = new QvisPointControl(central, "pointControl");
+    connect(pointControl, SIGNAL(pointSizeChanged(double)),
+            this, SLOT(pointSizeChanged(double)));
+    connect(pointControl, SIGNAL(pointSizeVarChanged(QString &)),
+            this, SLOT(pointSizeVarChanged(QString &)));
+    connect(pointControl, SIGNAL(pointSizeVarToggled(bool)),
+            this, SLOT(pointSizeVarToggled(bool)));
+    connect(pointControl, SIGNAL(pointTypeChanged(int)),
+            this, SLOT(pointTypeChanged(int)));
+    opLayout->addMultiCellWidget(pointControl, 1, 1, 0, 1);
+ 
     // Create the legend toggle
     legendCheckBox = new QCheckBox("Legend", central, "legendToggle");
     connect(legendCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
-    opLayout->addWidget(legendCheckBox, 1, 0);
+    opLayout->addWidget(legendCheckBox, 2, 0);
 
     // Create the wireframe toggle
     wireframeCheckBox = new QCheckBox("Wireframe", central, "wireframeCheckBox");
     connect(wireframeCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(wireframeToggled(bool)));
-    opLayout->addWidget(wireframeCheckBox, 2, 0);
+    opLayout->addWidget(wireframeCheckBox, 3, 0);
 
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(0, "smoothingButtons");
@@ -329,6 +344,8 @@ QvisBoundaryPlotWindow::CreateWindowContents()
 // Creation:   June 12, 2003
 //
 // Modifications:
+//   Kathleen Bonnell, Fri Nov 12 10:17:58 PST 2004
+//   Added pointControl cases.
 //
 // ****************************************************************************
 
@@ -417,6 +434,28 @@ QvisBoundaryPlotWindow::UpdateWindow(bool doAll)
             smoothingLevelButtons->blockSignals(true);
             smoothingLevelButtons->setButton(boundaryAtts->GetSmoothingLevel());
             smoothingLevelButtons->blockSignals(false);
+            break;
+        case 13: // pointSize
+            pointControl->blockSignals(true);
+            pointControl->SetPointSize(boundaryAtts->GetPointSize());
+            pointControl->blockSignals(false);
+            break;
+        case 14: // pointType
+            pointControl->blockSignals(true);
+            pointControl->SetPointType(boundaryAtts->GetPointType());
+            pointControl->blockSignals(false);
+            break;
+        case 15: // pointSizeVarEnabled
+            pointControl->blockSignals(true);
+            pointControl->SetPointSizeVarChecked(
+                          boundaryAtts->GetPointSizeVarEnabled());
+            pointControl->blockSignals(false);
+            break;
+        case 16: // pointSizeVar
+            pointControl->blockSignals(true);
+            temp = QString(boundaryAtts->GetPointSizeVar());
+            pointControl->SetPointSizeVar(temp);
+            pointControl->blockSignals(false);
             break;
         }
     } // end for
@@ -697,6 +736,8 @@ QvisBoundaryPlotWindow::SetMultipleColorWidgets(int index)
 //  Note:  taken almost verbatim from the Subset plot
 //
 // Modifications:
+//   Kathleen Bonnell, Fri Nov 12 10:17:58 PST 2004
+//   Uncommented GetCurrentValues.
 //   
 // ****************************************************************************
 
@@ -707,7 +748,7 @@ QvisBoundaryPlotWindow::Apply(bool ignore)
     {
         // Get the current boundary plot attributes and tell the other
         // observers about them.
-//        GetCurrentValues(-1);
+        GetCurrentValues(-1);
         boundaryAtts->Notify();
 
         // Tell the viewer to set the boundary plot attributes.
@@ -756,6 +797,8 @@ QvisBoundaryPlotWindow::apply()
 //  Note:  taken almost verbatim from the Subset plot
 //
 // Modifications:
+//   Kathleen Bonnell, Fri Nov 12 10:17:58 PST 2004
+//   Uncommented GetCurrentValues.
 //   
 // ****************************************************************************
 
@@ -763,7 +806,7 @@ void
 QvisBoundaryPlotWindow::makeDefault()
 {
     // Tell the viewer to set the default boundary plot attributes.
-//    GetCurrentValues(-1);
+    GetCurrentValues(-1);
     boundaryAtts->Notify();
     viewer->SetDefaultPlotOptions(plotType);
 }
@@ -1184,3 +1227,129 @@ QvisBoundaryPlotWindow::colorTableClicked(bool useDefault, const QString &ctName
     boundaryAtts->SetColorTableName(ctName.latin1());
     Apply();
 }
+
+
+// ****************************************************************************
+// Method: QvisBoundaryPlotWindow::GetCurrentValues
+//
+// Purpose: 
+//   Gets the current values for one or all of the lineEdit widgets.
+//
+// Arguments:
+//   which_widget : The number of the widget to update. If -1 is passed,
+//                  the routine gets the current values for all widgets.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 10, 2004 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisBoundaryPlotWindow::GetCurrentValues(int which_widget)
+{
+    bool doAll = (which_widget == -1);
+
+    // Do the point size and pointsize var
+    if(doAll)
+    {
+        boundaryAtts->SetPointSize(pointControl->GetPointSize());
+        boundaryAtts->SetPointSizeVar(pointControl->GetPointSizeVar().latin1());
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  QvisBoundaryPlotWindow::pointTypeChanged
+//
+//  Purpose:
+//    Qt slot function that is called when one of the point type buttons
+//    is clicked.
+//
+//  Arguments:
+//    type   :   The new type
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    November 10, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+QvisBoundaryPlotWindow::pointTypeChanged(int type)
+{
+    boundaryAtts->SetPointType((BoundaryAttributes::PointType) type);
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisBoundaryPlotWindow::pointSizeVarToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the pointSizeVar toggle
+//   button is toggled.
+//
+// Arguments:
+//   val : The new state of the pointSizeVar toggle.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 10, 2004 
+//   
+// ****************************************************************************
+
+void
+QvisBoundaryPlotWindow::pointSizeVarToggled(bool val)
+{
+    boundaryAtts->SetPointSizeVarEnabled(val);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisBoundaryPlotWindow::processPointSizeVarText
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   point size variable text and pressed the Enter key.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 10, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisBoundaryPlotWindow::pointSizeVarChanged(QString &var)
+{
+    boundaryAtts->SetPointSizeVar(var.latin1()); 
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisBoundaryPlotWindow::pointSizeChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   point size text and pressed the Enter key.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 10, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisBoundaryPlotWindow::pointSizeChanged(double d)
+{
+    boundaryAtts->SetPointSize(d); 
+    Apply();
+}
+
+

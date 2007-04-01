@@ -22,6 +22,25 @@
 using std::string;
 
 
+
+// ****************************************************************************
+//  Method: avtFilledBoundaryFilter constructor
+//
+//  Arguments:
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   November 10, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtFilledBoundaryFilter::avtFilledBoundaryFilter()
+{
+    keepNodeZone = false; 
+}
+
+
 // ****************************************************************************
 //  Method: avtFilledBoundaryFilter::SetPlotAtts
 //
@@ -260,6 +279,10 @@ avtFilledBoundaryFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
 //
 //  Note:  taken almost verbatim from the Subset plot
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Nov 12 10:51:59 PST 2004
+//    Added call to SetKeepNodeZoneArrays.
+//
 // ****************************************************************************
 
 void
@@ -267,6 +290,7 @@ avtFilledBoundaryFilter::RefashionDataObjectInfo(void)
 {
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
     outAtts.SetLabels(plotAtts.GetBoundaryNames());
+    outAtts.SetKeepNodeZoneArrays(keepNodeZone);
 }
 
  
@@ -282,6 +306,11 @@ avtFilledBoundaryFilter::RefashionDataObjectInfo(void)
 //    
 //    Hank Childs, Wed Aug 13 07:55:35 PDT 2003
 //    Explicitly tell the data specification when we want MIR.
+//
+//    Kathleen Bonnell, Fri Nov 12 10:51:59 PST 2004
+//    If working with a point mesh (topodim == 0), then determine if a point
+//    size var secondary variable needs to be added to the pipeline, and
+//    whether or not we need to keep Node and Zone numbers around. 
 //
 // ****************************************************************************
 
@@ -300,6 +329,36 @@ avtFilledBoundaryFilter::PerformRestriction(avtPipelineSpecification_p spec)
     {
         spec->GetDataSpecification()->SetNeedCleanZonesOnly(true);
     }
+
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
+    {
+        string pointVar = plotAtts.GetPointSizeVar();
+        avtDataSpecification_p dspec = spec->GetDataSpecification();
+
+        //
+        // Find out if we REALLY need to add the secondary variable.
+        //
+        if (plotAtts.GetPointSizeVarEnabled() && 
+            pointVar != "default" &&
+            pointVar != "\0" &&
+            pointVar != dspec->GetVariable() &&
+            !dspec->HasSecondaryVariable(pointVar.c_str()))
+        {
+            spec->GetDataSpecification()->AddSecondaryVariable(pointVar.c_str());
+        }
+
+        avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
+        if (spec->GetDataSpecification()->MayRequireZones())
+        {
+            keepNodeZone = true;
+            spec->GetDataSpecification()->TurnNodeNumbersOn();
+        }
+        else
+        {
+            keepNodeZone = false;
+        }
+    }
+
     return spec;
 }
 

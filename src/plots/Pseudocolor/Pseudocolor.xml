@@ -83,7 +83,7 @@
       <Function name="Print" user="true" member="true">
       </Function>
       <Include file="header" quoted="false">
-        iostream.h
+        visitstream.h
       </Include>
     </Attribute>
   </Plugin>

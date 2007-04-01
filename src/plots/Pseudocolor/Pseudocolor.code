@@ -24,16 +24,21 @@ Definition:
 //   Removed pointSize, pointType from test.  Added new conditions for
 //   recalculation when pointSizeVar or pointSizeVarEnabled have changed. 
 //
+//   Kathleen Bonnell, Fri Nov 12 11:11:41 PST 2004 
+//   Modified determination of when secondary var requires recalc. 
+//
 // ****************************************************************************
 bool
 PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &obj) const
 {
-    bool ptVarChange = obj.pointSizeVarEnabled &&
-                       pointSizeVar != obj.pointSizeVar &&
-                       obj.pointSizeVar != "default"; 
+   bool needSecondaryVar = obj.pointSizeVarEnabled &&
+                           pointSizeVar != obj.pointSizeVar &&
+                           obj.pointSizeVar != "default" && 
+                           obj.pointSizeVar != "" &&
+                           obj.pointSizeVar != "\0"; 
 
     return (centering != obj.centering ||
-            ptVarChange ||
+            needSecondaryVar ||
             smoothingLevel != obj.smoothingLevel); 
 
 }

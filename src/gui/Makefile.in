@@ -284,6 +284,9 @@
 #    Removed ExprTableItem, ExpressionTable, and ExprDeleteButton;
 #    redesigned expressions window.
 #
+#    Kathleen Bonnell, Fri Nov 12 09:54:25 PST 2004 
+#    Added QvisPointControl.
+#
 ##############################################################################
 
 ##
@@ -358,6 +361,7 @@ HDRMOC = \
     QvisPlotListBox.h \
     QvisPlotManagerWidget.h \
     QvisPluginWindow.h \
+    QvisPointControl.h \
     QvisPostableWindow.h \
     QvisPostableWindowObserver.h \
     QvisPostableWindowSimpleObserver.h \

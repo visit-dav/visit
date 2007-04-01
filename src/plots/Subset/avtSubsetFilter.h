@@ -29,12 +29,15 @@
 //    I added PostExecute so that accurate labels could be passed via
 //    the DataAttributes object. 
 //
+//    Kathleen Bonnell, Fri Nov 12 11:50:33 PST 2004
+//    Moved constructor to source code, added keepNodeZone data member. 
+//
 // ****************************************************************************
 
 class avtSubsetFilter : public avtDataTreeStreamer
 {
   public:
-                          avtSubsetFilter(){};
+                          avtSubsetFilter();
     virtual              ~avtSubsetFilter(){}; 
 
     virtual const char   *GetType(void) {return "avtSubsetFilter";};
@@ -52,6 +55,9 @@ class avtSubsetFilter : public avtDataTreeStreamer
                           PerformRestriction(avtPipelineSpecification_p);
 
     virtual void          PostExecute(void);
+
+  private:
+    bool                  keepNodeZone;
 };
 
 

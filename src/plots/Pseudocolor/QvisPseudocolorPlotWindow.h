@@ -9,6 +9,7 @@ class QButtonGroup;
 class QLabel;
 class QvisOpacitySlider;
 class QvisColorTableButton;
+class QvisPointControl;
 
 class Subject;
 class PseudocolorAttributes;
@@ -48,6 +49,10 @@ class PseudocolorAttributes;
 //   Jeremy Meredith, Fri Dec 20 11:36:03 PST 2002
 //   Added scaling of point variables by a scalar field.
 //
+//   Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004 
+//   Replace individual point-size related widgets and associated slots
+//   with QvisPointControl 
+//
 // ****************************************************************************
 
 class QvisPseudocolorPlotWindow : public QvisPostableWindowObserver
@@ -76,16 +81,18 @@ private slots:
     void maxToggled(bool on);
     void processMaxLimitText();
     void processMinLimitText();
-    void processPointSizeText();
     void processSkewText();
     void scaleClicked(int scale);
     void changedOpacity(int opacity, const void *);
     void colorTableClicked(bool useDefault, const QString &ctName);
     void limitsSelectChanged(int);
     void smoothingLevelChanged(int index);
+
+    void pointSizeChanged(double d);
     void pointTypeChanged(int index);
-    void processPointSizeVarText();
     void pointSizeVarToggled(bool on);
+    void pointSizeVarChanged(QString &);
+
 private:
     int                   plotType;
     PseudocolorAttributes *pcAtts;
@@ -97,16 +104,13 @@ private:
     QComboBox             *limitsSelect;
     QLineEdit             *maxLineEdit;
     QLineEdit             *minLineEdit;
-    QLineEdit             *pointsizeLineEdit;
-    QCheckBox             *pointSizeVarToggle;
-    QLineEdit             *pointSizeVarLineEdit;
     QButtonGroup          *scalingButtons;
     QLabel                *skewLabel;
     QLineEdit             *skewLineEdit;
     QvisOpacitySlider     *opacitySlider;
     QvisColorTableButton  *colorTableButton;
     QButtonGroup          *smoothingLevelButtons;
-    QButtonGroup          *pointTypeButtons;
+    QvisPointControl      *pointControl;
 };
 
 #endif

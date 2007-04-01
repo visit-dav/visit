@@ -42,17 +42,27 @@ Definition:
 //    Jeremy Meredith, Fri Jun 13 16:58:16 PDT 2003
 //    Added cleanZonesOnly.
 //
+//    Kathleen Bonnell, Wed Nov 10 09:22:35 PST 2004 
+//    Added needSecondaryVar.
+//
 // ****************************************************************************
 bool
 FilledBoundaryAttributes::ChangesRequireRecalculation(const FilledBoundaryAttributes &obj)
 {
+    bool needSecondaryVar = obj.pointSizeVarEnabled &&
+                            pointSizeVar != obj.pointSizeVar &&
+                            obj.pointSizeVar != "default" && 
+                            obj.pointSizeVar != "" &&
+                            obj.pointSizeVar != "\0"; 
+
     return ((filledFlag != obj.filledFlag) ||
             (boundaryType != obj.boundaryType) || 
             (boundaryNames != obj.boundaryNames) ||
             (wireframe != obj.wireframe) ||
             (drawInternal != obj.drawInternal) ||
             (smoothingLevel != obj.smoothingLevel) ||
-            (cleanZonesOnly != obj.cleanZonesOnly));
+            (cleanZonesOnly != obj.cleanZonesOnly) ||
+            needSecondaryVar);
 }
 
 Function: VarChangeRequiresReset

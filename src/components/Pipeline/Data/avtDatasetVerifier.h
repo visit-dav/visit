@@ -9,8 +9,9 @@
 
 #include <avtDataTree.h>
 
-class     vtkDataSet;
 class     vtkDataArray;
+class     vtkDataSet;
+class     vtkDataSetAttributes;
 
 
 // ****************************************************************************
@@ -35,6 +36,10 @@ class     vtkDataArray;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Kathleen Bonnell, Fri Nov 12 08:22:29 PST 2004 
+//    Changed arguments for CorrectVarMismatch, to make the method able to
+//    handle more var types. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetVerifier
@@ -49,7 +54,7 @@ class PIPELINE_API avtDatasetVerifier
     bool        issuedWarningForVarMismatch;
 
     void        VerifyDataset(vtkDataSet *, int);
-    void        CorrectVarMismatch(vtkDataSet *, vtkDataArray *, bool);
+    void        CorrectVarMismatch(vtkDataArray *, vtkDataSetAttributes*, int); 
 
     void        IssueVarMismatchWarning(int, int, bool, int);
 };

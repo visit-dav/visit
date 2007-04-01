@@ -6,16 +6,26 @@ Definition:
 //    Jeremy Meredith, Mon Dec  9 16:30:54 PST 2002
 //    Added smoothing level.
 //
+//    Kathleen Bonnell, Fri Nov 12 11:42:36 PST 2004 
+//    Added needSecondaryVar. 
+//
 // ****************************************************************************
 bool
 SubsetAttributes::ChangesRequireRecalculation(const SubsetAttributes &obj)
 {
+    bool needSecondaryVar = obj.pointSizeVarEnabled &&
+                            pointSizeVar != obj.pointSizeVar &&
+                            obj.pointSizeVar != "default" && 
+                            obj.pointSizeVar != "" &&
+                            obj.pointSizeVar != "\0"; 
+
     return ((filledFlag != obj.filledFlag) ||
             (subsetType != obj.subsetType) || 
             (subsetNames != obj.subsetNames) ||
             (wireframe != obj.wireframe) ||
             (drawInternal != obj.drawInternal) ||
-            (smoothingLevel != obj.smoothingLevel));
+            (smoothingLevel != obj.smoothingLevel) ||
+            needSecondaryVar);
 }
 
 Function: VarChangeRequiresReset

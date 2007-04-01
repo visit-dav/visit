@@ -93,6 +93,9 @@ vtkVisItGlyph3D::~vtkVisItGlyph3D()
 //    Ensure that avtOriginalCellNumbers and avtOriginalNodeNumbers arrays
 //    get copied to output (if they exist in input). 
 //
+//    Kathleen Bonnell, Fri Nov 12 11:50:33 PST 2004
+//    Retrieve VectorsForScaling. 
+//
 //*****************************************************************************
 void vtkVisItGlyph3D::Execute()
 {
@@ -156,6 +159,7 @@ void vtkVisItGlyph3D::Execute()
   inScalars_forColoring = pd->GetArray(this->ScalarsForColoring);
   inScalars_forScaling  = pd->GetArray(this->ScalarsForScaling);
   inVectors_forColoring = pd->GetArray(this->VectorsForColoring);
+  inVectors_forScaling  = pd->GetArray(this->VectorsForScaling);
 
   inOrigNodes = pd->GetArray("avtOriginalNodeNumbers");
   inOrigCells = pd->GetArray("avtOriginalCellNumbers");
@@ -311,7 +315,8 @@ void vtkVisItGlyph3D::Execute()
     {
     newScalars = inScalars_forColoring->NewInstance();
     newScalars->SetNumberOfComponents(inScalars_forColoring->GetNumberOfComponents());
-    newScalars->Allocate(inScalars_forColoring->GetNumberOfComponents()*numPts*numSourcePts);
+    newScalars->Allocate(inScalars_forColoring->GetNumberOfComponents()*
+                         numPts*numSourcePts);
     newScalars->SetName(inScalars_forColoring->GetName());
     }
   else if ( this->ColorMode == VTK_COLOR_BY_SCALAR && inScalars)

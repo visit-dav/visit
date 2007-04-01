@@ -14,6 +14,7 @@ class QvisColorTableButton;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisOpacitySlider;
+class QvisPointControl;
 
 // ****************************************************************************
 // Class: QvisSubsetPlotWindow
@@ -43,6 +44,9 @@ class QvisOpacitySlider;
 //   Jeremy Meredith, Tue Dec 10 10:22:40 PST 2002
 //   Added smoothing level.
 //
+//   Kathleen Bonnell, Fri Nov 12 11:35:11 PST 2004 
+//   Added pointControl and its associated slots.  Also added GetCurrentValues. 
+//
 // ****************************************************************************
 
 class QvisSubsetPlotWindow : public QvisPostableWindowObserver
@@ -65,6 +69,7 @@ protected:
     void SetMultipleColorWidgets(int index);
     void UpdateMultipleArea();
     void UpdateItem(int i);
+    void GetCurrentValues(int which_widget);
 private slots:
     void lineStyleChanged(int newStyle);
     void lineWidthChanged(int newWidth);
@@ -80,6 +85,12 @@ private slots:
     void subsetSelectionChanged();
     void overallOpacityChanged(int opacity);
     void smoothingLevelChanged(int index);
+
+    void pointSizeChanged(double d);
+    void pointTypeChanged(int index);
+    void pointSizeVarToggled(bool on);
+    void pointSizeVarChanged(QString &);
+
 private:
     int                     plotType;
     SubsetAttributes       *subsetAtts;
@@ -101,6 +112,8 @@ private:
     QCheckBox              *wireframeCheckBox;
     QCheckBox              *drawInternalCheckBox;
     QButtonGroup           *smoothingLevelButtons;
+
+    QvisPointControl       *pointControl;
 };
 
 #endif

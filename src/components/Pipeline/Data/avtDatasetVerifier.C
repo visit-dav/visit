@@ -109,6 +109,10 @@ avtDatasetVerifier::VerifyDatasets(int nlist, vtkDataSet **list,
 //    Hank Childs, Fri Aug 27 15:32:06 PDT 2004
 //    Rename ghost data array.
 //
+//    Kathleen Bonnell, Fri Nov 12 08:22:29 PST 2004
+//    Changed args being sent to CorrectVarMismatch, so that the method can
+//    handle more var types. 
+//
 // ****************************************************************************
 
 void
@@ -126,7 +130,7 @@ avtDatasetVerifier::VerifyDataset(vtkDataSet *ds, int dom)
         int nscalars = pt_var->GetNumberOfTuples();
         if (nscalars != nPts)
         {
-            CorrectVarMismatch(ds, pt_var, true);
+            CorrectVarMismatch(pt_var, ds->GetPointData(), nPts); 
             IssueVarMismatchWarning(nscalars, nPts, true, dom);
         }
     }
@@ -138,7 +142,7 @@ avtDatasetVerifier::VerifyDataset(vtkDataSet *ds, int dom)
         int nscalars = cell_var->GetNumberOfTuples();
         if (nscalars != nCells)
         {
-            CorrectVarMismatch(ds, cell_var, false);
+            CorrectVarMismatch(cell_var, ds->GetCellData(), nCells);
             bool issueWarning = true;
             vtkUnsignedCharArray *gz = (vtkUnsignedCharArray *)
                                  ds->GetCellData()->GetArray("avtGhostZones");
@@ -223,9 +227,10 @@ avtDatasetVerifier::IssueVarMismatchWarning(int nVars, int nUnits,
 //      Corrects a variable mismatch.  Assigns 0 to the end.
 //
 //  Arguments:
-//      ds       The dataset.
-//      scalar   The original scalar variable.
-//      isPoint  true if it is a ptvar, false otherwise.
+//      var      The original variable.
+//      atts     The point-data or cell-data associated with the dataset,
+//               where the new variable needs to be placed.
+//      destNum  The number of values needed in the destination variable array.
 //
 //  Programmer:  Hank Childs
 //  Creation:    October 18, 2001
@@ -244,58 +249,101 @@ avtDatasetVerifier::IssueVarMismatchWarning(int nVars, int nUnits,
 //    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray and 
 //    vtkFloatArray instead.
 //
+//    Kathleen Bonnell, Fri Nov 12 08:22:29 PST 2004
+//    Changed args.  Reworked method to handle more than just Scalar vars.
+//
 // ****************************************************************************
 
 void
-avtDatasetVerifier::CorrectVarMismatch(vtkDataSet *ds, vtkDataArray *scalar,
-                                       bool isPoint)
+avtDatasetVerifier::CorrectVarMismatch(vtkDataArray *var,
+                                       vtkDataSetAttributes *atts, int destNum)
 {
-    int destNum = 0;
-    vtkFloatArray *newScalar = vtkFloatArray::New();
+    int i;
+    bool isActiveAttribute = false;
+    int nComponents = var->GetNumberOfComponents();
 
-    if (isPoint)
-    {
-        destNum = ds->GetNumberOfPoints();
-    }
-    else
-    {
-        destNum = ds->GetNumberOfCells();
-    }
-    newScalar->SetNumberOfTuples(destNum);
+    vtkDataArray *newVar = var->NewInstance();
+    newVar->SetNumberOfComponents(nComponents);
+    newVar->SetNumberOfTuples(destNum);
 
-    const char *name = scalar->GetName();
+    const char *name = var->GetName();
+
     if (name != NULL)
     {
-        newScalar->SetName(name);
+        newVar->SetName(name);
+        //
+        // Determine if this var is the active Attribute 
+        // (Scalar,Vector, Tensor)
+        //
+        const char *attributeName;
+        if (nComponents == 1 && atts->GetScalars())
+            attributeName = atts->GetScalars()->GetName();
+        else if (nComponents == 3 && atts->GetVectors())
+            attributeName = atts->GetVectors()->GetName();
+        else if (nComponents == 9 && atts->GetTensors())
+            attributeName = atts->GetTensors()->GetName();
+        else 
+            attributeName = "";
+        isActiveAttribute = (strcmp(attributeName, name) == 0); 
     }
 
-    int   origNum = scalar->GetNumberOfTuples();
-    for (int i = 0 ; i < destNum ; i++)
+    //
+    // Create a default tuple to be used in the case when our new
+    // variable requires more values than are contained in the original var.
+    //
+    float *defaultTuple = NULL;
+    if (nComponents > 1)
+    {
+        defaultTuple = new float[nComponents];
+        for (i = 0; i < nComponents; i++)
+            defaultTuple[i] = 0.f; 
+    } 
+                 
+    int   origNum = var->GetNumberOfTuples();
+    for (i = 0 ; i < destNum ; i++)
     {
         if (i < origNum)
         {
-            newScalar->SetValue(i, scalar->GetTuple1(i));
+            newVar->SetTuple(i, var->GetTuple(i));
         }
-        else
+        else if (nComponents == 1)
         {
-            newScalar->SetValue(i, 0.);
+            newVar->SetTuple1(i, 0.f);
+        }
+        else 
+        {
+            newVar->SetTuple(i, defaultTuple);
         }
     }
 
     //
-    // Now make the new scalar be the official scalar.  We couldn't do this
-    // before since registering it may have freed the original scalar and we
-    // still wanted it.
+    // Now make the new var be the official var.  We couldn't do this
+    // before since registering it may have freed the original var and we
+    // still wanted it.  Set* replaces the currently active Attribute 
+    // (Vectors, Scalars), so only do it if the var we are replacing was the 
+    // active Attribute, otherwise use AddArray to replace the old var.
     //
-    if (isPoint)
+    if (!isActiveAttribute)
     {
-        ds->GetPointData()->SetScalars(newScalar);
+        atts->AddArray(newVar);
     }
-    else
+    else if (nComponents == 1)
     {
-        ds->GetCellData()->SetScalars(newScalar);
+        atts->SetScalars(newVar);
     }
-    newScalar->Delete();
+    else if (nComponents == 3)
+    {
+        atts->SetVectors(newVar);
+    }
+    else if (nComponents == 9)
+    {
+        atts->SetTensors(newVar);
+    }
+    if (nComponents > 1)
+    {
+        delete [] defaultTuple; 
+    }
+    newVar->Delete();
 }
 
 

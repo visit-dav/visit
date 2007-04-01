@@ -37,6 +37,25 @@ avtPseudocolorFilter::~avtPseudocolorFilter()
 
 
 // ****************************************************************************
+//  Method: avtPseudocolorFilter::SetPlotAtts
+//
+//  Purpose:    Sets the PseudcolorAttributes needed for this filter.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   November 10, 2040 
+//
+// ****************************************************************************
+
+void
+avtPseudocolorFilter::SetPlotAtts(const PseudocolorAttributes *atts)
+{
+    plotAtts = *atts;
+}
+
+
+
+
+// ****************************************************************************
 //  Method: avtPseudocolorFilter::ExecuteData
 //
 //  Purpose:
@@ -101,6 +120,24 @@ avtPseudocolorFilter::PerformRestriction(avtPipelineSpecification_p pspec)
     avtPipelineSpecification_p rv = pspec;
 
     avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
+
+    string pointVar = plotAtts.GetPointSizeVar();
+    avtDataSpecification_p dspec = new avtDataSpecification(
+                                       pspec->GetDataSpecification());
+
+    //
+    // Find out if we need to add a secondary variable.
+    //
+    if (plotAtts.GetPointSizeVarEnabled() && 
+        pointVar != "default" &&
+        pointVar != "\0" &&
+        pointVar != dspec->GetVariable() &&
+        !dspec->HasSecondaryVariable(pointVar.c_str()))
+    {
+        rv->GetDataSpecification()->AddSecondaryVariable(pointVar.c_str());
+    }
+
+
     if (pspec->GetDataSpecification()->MayRequireZones())
     {
         keepNodeZone = true;
@@ -117,6 +154,7 @@ avtPseudocolorFilter::PerformRestriction(avtPipelineSpecification_p pspec)
     {
         keepNodeZone = false;
     }
+
 
     return rv;
 }

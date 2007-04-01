@@ -153,6 +153,10 @@
 #    Brad Whitlock, Tue Nov 2 11:38:28 PDT 2004
 #    Added -lparallel_visit_vtk_ser to the list of required libs.
 #
+#    Kathleen Bonnell, Fri Nov 12 08:39:41 PST 2004 
+#    Removed avtPointGlyphMapper, Added avtPointGlypher, 
+#    avtVariablePointGlyphMapper, avtLevelsPointGlyphMapper.
+#
 ##############################################################################
 
 ##
@@ -175,7 +179,8 @@ SRC=avtLegend.C avtVariableLegend.C avtGeometryDrawable.C avtActor.C \
     avtLineoutActor.C avtTransparencyActor.C avtLabelActor.C \
     avtDecorationsDrawable.C avtDecorationsMapper.C avtLabeledCurveMapper.C \
     avtExternallyRenderedImagesActor.C avtTensorGlyphMapper.C avtDrawable.C \
-    avtPointGlyphMapper.C avtSoftwareShader.C
+    avtPointGlypher.C avtVariablePointGlyphMapper.C avtSoftwareShader.C \
+    avtLevelsPointGlyphMapper.C 
 
 
 

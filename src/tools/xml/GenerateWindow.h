@@ -68,6 +68,9 @@
 //    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
 //    Allow for mdserver-specific code in a plugin's source files.
 //
+//    Kathleen Bonnell, Thu Nov 11 16:56:21 PST 2004 
+//    Added suuport for ucharVector.
+//
 // ****************************************************************************
 
 class WindowGeneratorField : public virtual Field
@@ -634,6 +637,16 @@ class WindowGeneratorUCharArray : public virtual UCharArray , public virtual Win
         : UCharArray(s,n,l), WindowGeneratorField("ucharArray",n,l), Field("ucharArray",n,l) { }
 };
 
+//
+// -------------------------------- UCharVector --------------------------------
+//
+class WindowGeneratorUCharVector : public virtual UCharVector , public virtual WindowGeneratorField
+{
+  public:
+    WindowGeneratorUCharVector(const QString &n, const QString &l)
+        : UCharVector(n,l), WindowGeneratorField("ucharVector",n,l), Field("ucharVector",n,l) { }
+};
+
 
 //
 // ---------------------------------- String ----------------------------------
@@ -1043,6 +1056,7 @@ class WindowFieldFactory
         else if (type == "doubleVector") f = new WindowGeneratorDoubleVector(name,label);
         else if (type == "uchar")        f = new WindowGeneratorUChar(name,label);
         else if (type == "ucharArray")   f = new WindowGeneratorUCharArray(length,name,label);
+        else if (type == "ucharVector")   f = new WindowGeneratorUCharVector(name,label);
         else if (type == "string")       f = new WindowGeneratorString(name,label);
         else if (type == "stringVector") f = new WindowGeneratorStringVector(name,label);
         else if (type == "colortable")   f = new WindowGeneratorColorTable(name,label);

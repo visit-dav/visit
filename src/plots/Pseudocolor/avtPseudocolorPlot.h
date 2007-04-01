@@ -11,10 +11,10 @@
 #include <PseudocolorAttributes.h>
 
 class     avtLookupTable;
-class     avtShiftCenteringFilter;
-class     avtVariableLegend;
-class     avtPointGlyphMapper;
 class     avtPseudocolorFilter;
+class     avtShiftCenteringFilter;
+class     avtVariablePointGlyphMapper;
+class     avtVariableLegend;
 
 
 // ****************************************************************************
@@ -84,6 +84,9 @@ class     avtPseudocolorFilter;
 //    Kathleen Bonnell, Tue Nov  2 11:01:28 PST 2004 
 //    Added avtPseudocolorFilter.
 //
+//    Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004
+//    Replaced avtPointGlyphMapper with avtVariablePointGlyphMapper. 
+//
 // ****************************************************************************
 
 class avtPseudocolorPlot : public avtSurfaceDataPlot
@@ -110,7 +113,7 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     void                        SetScaling(int, double);
 
   protected:
-    avtPointGlyphMapper        *glyphMapper;
+    avtVariablePointGlyphMapper  *glyphMapper;
     avtVariableLegend          *varLegend;
     avtLegend_p                 varLegendRefPtr;
     PseudocolorAttributes       atts;

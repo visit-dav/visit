@@ -7,7 +7,7 @@
 
 
 #include <avtStreamer.h>
-
+#include <PseudocolorAttributes.h>
 
 
 // ****************************************************************************
@@ -20,6 +20,8 @@
 //  Creation:   October 29, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri Nov 12 11:35:11 PST 2004
+//    Added PlotAtts.
 //
 // ****************************************************************************
 
@@ -32,6 +34,7 @@ class avtPseudocolorFilter : public avtStreamer
     virtual const char       *GetType(void)   { return "avtPseudocolorFilter"; };
     virtual const char       *GetDescription(void)
                                   { return "Preparing pipeline"; };
+    void                      SetPlotAtts(const PseudocolorAttributes *);
 
   protected:
     bool                      keepNodeZone;
@@ -40,6 +43,8 @@ class avtPseudocolorFilter : public avtStreamer
     virtual void              RefashionDataObjectInfo(void);
     virtual avtPipelineSpecification_p
                               PerformRestriction(avtPipelineSpecification_p);
+  private:
+    PseudocolorAttributes     plotAtts;
 };
 
 
