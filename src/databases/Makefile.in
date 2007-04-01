@@ -94,6 +94,9 @@
 #   Hank Childs, Mon Nov 24 09:33:18 PST 2003
 #   Added Cosmos++.
 #
+#   Chris Wojtan, Tue Jun 15 15:46:54 PDT 2004
+#   Added Image file format reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -110,7 +113,7 @@ MILI=Mili
 PDB=KullLite PDB
 SAF=SAF
 SAMPLES=Rect Hex
-REQUIRED=ANALYZE BOV Curve2D EnSight Lines PLOT2D PLOT3D Point3D STL Silo Spheral VTK WavefrontOBJ Vista
+REQUIRED=ANALYZE BOV Curve2D EnSight Image Lines PLOT2D PLOT3D Point3D STL Silo Spheral VTK WavefrontOBJ Vista
 
 OPTIONAL=
 
