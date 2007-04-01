@@ -6,7 +6,7 @@
 
 #include <avtDatasetExaminer.h>
 #include <avtParallel.h>
-
+#include <snprintf.h>
 
 // ****************************************************************************
 //  Method: avtNumNodesQuery constructor
@@ -47,7 +47,9 @@ avtNumNodesQuery::~avtNumNodesQuery()
 //  Creation:   February 18, 2004 
 //
 //  Modifications:
-//    
+//    Brad Whitlock, Mon Feb 23 12:11:02 PDT 2004
+//    I made it use SNPRINTF to get it to build on Linux.
+//
 // ****************************************************************************
 
 void
@@ -64,14 +66,14 @@ avtNumNodesQuery::PerformQuery(QueryAttributes *qA)
 
     avtDataset_p input = GetTypedInput();
     int totalNodes = 0;
-    char msg[1024];
+    char msg[200];
 
     totalNodes = avtDatasetExaminer::GetNumberOfNodes(input);
     SumIntAcrossAllProcessors(totalNodes);
     if (OriginalData())
-        sprintf(msg, "The original number of nodes is %d.", totalNodes);
+        SNPRINTF(msg, 200, "The original number of nodes is %d.", totalNodes);
     else 
-        sprintf(msg, "The actual number of nodes is %d.", totalNodes);
+        SNPRINTF(msg, 200, "The actual number of nodes is %d.", totalNodes);
 
     qA->SetResultsMessage(msg);
     qA->SetResultsValue((double)totalNodes);
