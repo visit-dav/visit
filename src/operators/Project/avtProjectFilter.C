@@ -4,6 +4,7 @@
 
 #include <avtProjectFilter.h>
 
+#include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
@@ -113,27 +114,66 @@ avtProjectFilter::Equivalent(const AttributeGroup *a)
 //  Programmer: Jeremy Meredith
 //  Creation:   September  3, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Sep 10 16:15:55 PDT 2004
+//    Added projection of vectors.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtProjectFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
     int  datatype = in_ds->GetDataObjectType();
+    vtkPointSet *out_ds = NULL;
     switch (datatype)
     {
       case VTK_RECTILINEAR_GRID:
-        return ProjectRectilinearGrid((vtkRectilinearGrid*)in_ds);
+        out_ds = ProjectRectilinearGrid((vtkRectilinearGrid*)in_ds);
+        break;
 
       case VTK_STRUCTURED_GRID:
       case VTK_UNSTRUCTURED_GRID:
       case VTK_POLY_DATA:
-        return ProjectPointSet((vtkPointSet*)in_ds);
+        out_ds = ProjectPointSet((vtkPointSet*)in_ds);
+        break;
 
       default:
         EXCEPTION0(ImproperUseException);
     }
-    
-    return NULL;
+
+    //
+    // We have said normals are inappropriate, since this will be a
+    // 2D data set.  We have not touched the vectors, however --
+    // we have only projected the mesh itself so far.
+    //
+    vtkDataArray *vectors;
+    vectors = out_ds->GetPointData()->GetVectors();
+    if (vectors)
+    {
+        vtkDataArray *arr = vectors->NewInstance();
+        arr->SetNumberOfComponents(3);
+        arr->Allocate(3*vectors->GetNumberOfTuples());
+        ProjectVectors(in_ds, out_ds, vectors, arr, false);
+        arr->SetName(vectors->GetName());
+        out_ds->GetPointData()->RemoveArray(vectors->GetName());
+        out_ds->GetPointData()->SetVectors(arr);
+        arr->Delete();
+    }
+    vectors = out_ds->GetCellData()->GetVectors();
+    if (vectors)
+    {
+        vtkDataArray *arr = vectors->NewInstance();
+        arr->SetNumberOfComponents(3);
+        arr->Allocate(3*vectors->GetNumberOfTuples());
+        ProjectVectors(in_ds, out_ds, vectors, arr, true);
+        arr->SetName(vectors->GetName());
+        out_ds->GetPointData()->RemoveArray(vectors->GetName());
+        out_ds->GetPointData()->SetVectors(arr);
+        arr->Delete();
+    }
+
+
+    return out_ds;
 }
 
 
@@ -171,11 +211,10 @@ avtProjectFilter::ProjectPoint(float &x,float &y,float &z)
 }
 
 // ****************************************************************************
-//  Method:  avtProjectFilter::ProjectRectilinearToRectilinear
+//  Method:  avtProjectFilter::ProjectRectilinearGrid
 //
 //  Purpose:
-//    Project a rectilinear grid in such a way that it remains a
-//    rectilinear grid.
+//    Converts a rectilinear grid to a curvilinear grid while projecting
 //
 //  Arguments:
 //    in_ds      the rectilinear grid to project
@@ -183,58 +222,14 @@ avtProjectFilter::ProjectPoint(float &x,float &y,float &z)
 //  Programmer:  Jeremy Meredith
 //  Creation:    September  6, 2004
 //
-// ****************************************************************************
-vtkDataSet *
-avtProjectFilter::ProjectRectilinearToRectilinear(vtkRectilinearGrid *in_ds)
-{
-    //
-    // NOTE: we are only assuming XY Cartesian projection here
-    //
-    if (atts.GetProjectionType() != ProjectAttributes::XYCartesian)
-        EXCEPTION0(ImproperUseException);
-
-
-    vtkRectilinearGrid *out_ds = in_ds->NewInstance();
-    out_ds->ShallowCopy(in_ds);
-
-    vtkDataArray *z_orig = in_ds->GetZCoordinates();
-    int nz = z_orig->GetNumberOfTuples();
-
-    // Make a new point array
-    vtkDataArray *z_new  = z_orig->NewInstance();
-    z_new->SetNumberOfTuples(nz);
-    float *zcoords = (float*)z_new->GetVoidPointer(0); // Assume float
-    for (int i = 0 ; i < nz ; i++)
-    {
-        zcoords[i] = 0.0;
-    }
-    out_ds->SetZCoordinates(z_new);
-    z_new->Delete();
-
-    ManageMemory(out_ds);
-    out_ds->Delete();
-    return out_ds;
-}
-
-
-// ****************************************************************************
-//  Method:  avtProjectFilter::ProjectRectilinearToCurvilinear
-//
-//  Purpose:
-//    Converts a rectilinear grid to a curvilinear grid while projecting
-//
-//  Arguments:
-//    in_ds      the input rectilinear grid
-//
-//  Note: Partially copied from avtTransform::TransformRectilinearToCurvilinear
-//        with the exception of the code to transform each point.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    September  6, 2004
+//  Modifications:
+//    Jeremy Meredith, Fri Sep 10 16:16:12 PDT 2004
+//    Always convert to a curvilinear grid.  The extra code wasn't even
+//    worth it because I expect no one will ever want to do it.
 //
 // ****************************************************************************
-vtkDataSet *
-avtProjectFilter::ProjectRectilinearToCurvilinear(vtkRectilinearGrid *in_ds)
+vtkPointSet *
+avtProjectFilter::ProjectRectilinearGrid(vtkRectilinearGrid *in_ds)
 {
     int  dims[3];
     in_ds->GetDimensions(dims);
@@ -275,14 +270,6 @@ avtProjectFilter::ProjectRectilinearToCurvilinear(vtkRectilinearGrid *in_ds)
     out->GetPointData()->ShallowCopy(in_ds->GetPointData());
 
     //
-    // We have said normals are inappropriate, since this will be a
-    // 2D data set.  We have not touched the vectors, however.
-    // As soon as we figure out the right thing to do with them, we
-    // should do it here!
-    //
-
-
-    //
     // We want to reduce the reference count of this dataset so it doesn't get
     // leaked.  But where to store it?  Fortunately, our base class handles
     // this for us.
@@ -293,33 +280,6 @@ avtProjectFilter::ProjectRectilinearToCurvilinear(vtkRectilinearGrid *in_ds)
     return out;
 }
 
-// ****************************************************************************
-//  Method:  avtProjectFilter::ProjectRectilinearGrid
-//
-//  Purpose:
-//    Projects a rectilinear grid.  Determines if the rectilinear grid
-//    needs to be converted to a curvilinear grid.
-//
-//  Arguments:
-//    in_ds      the rectilinear grid to project
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    September  6, 2004
-//
-// ****************************************************************************
-vtkDataSet *
-avtProjectFilter::ProjectRectilinearGrid(vtkRectilinearGrid *in_ds)
-{
-    switch (atts.GetProjectionType())
-    {
-      case ProjectAttributes::XYCartesian:
-        return ProjectRectilinearToRectilinear(in_ds);
-      case ProjectAttributes::ZRCylindrical:
-        return ProjectRectilinearToCurvilinear(in_ds);
-    }
-
-    return NULL;
-}
 
 // ****************************************************************************
 //  Method:  avtProjectFilter::ProjectPointSet
@@ -335,7 +295,7 @@ avtProjectFilter::ProjectRectilinearGrid(vtkRectilinearGrid *in_ds)
 //  Creation:    September  6, 2004
 //
 // ****************************************************************************
-vtkDataSet *
+vtkPointSet *
 avtProjectFilter::ProjectPointSet(vtkPointSet *in_ds)
 {
     vtkPointSet *out_ds = in_ds->NewInstance();
@@ -364,6 +324,80 @@ avtProjectFilter::ProjectPointSet(vtkPointSet *in_ds)
 }
 
 // ****************************************************************************
+//  Method:  avtProjectFilter::ProjectVectors
+//
+//  Purpose:
+//    Project some vectors!
+//
+//  Arguments:
+//    old_ds          the original dataset
+//    new_ds          the transformed one
+//    in              the vectors to project
+//    out             the place to store the new vectors
+//    cell_centered   true if these vectors are cell data
+//
+//  Notes:  Yes, it is horribly inefficient.  Get over it or rewrite it.
+//          Plus, it might not even be doing the right thing!  If you
+//          know what it truly means to project a vector cylindrically,
+//          you are welcome to fix that as well.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    September 10, 2004
+//
+// ****************************************************************************
+void
+avtProjectFilter::ProjectVectors(vtkDataSet *old_ds, 
+                                 vtkDataSet *new_ds,
+                                 vtkDataArray *in,
+                                 vtkDataArray *out,
+                                 bool cell_centered)
+{
+    int nvectors  = in->GetNumberOfTuples();
+    float *inptr  = (float*)in->GetVoidPointer(0);
+    float *outptr = (float*)out->GetVoidPointer(0);
+
+    for (int i=0; i<nvectors; i++)
+    {
+        float *oldpt;
+        float *newpt;
+
+        if (cell_centered)
+        {
+            oldpt = old_ds->GetPoint(old_ds->GetCell(i)->GetPointId(0));
+            newpt = new_ds->GetPoint(new_ds->GetCell(i)->GetPointId(0));
+        }
+        else
+        {
+            oldpt = old_ds->GetPoint(i);
+            newpt = new_ds->GetPoint(i);
+        }
+
+        // What the heck is the right thing for projecting a
+        // vector!?  Especially a vector that is cell-centered?!?!?
+        // Especially a cylindrical projection!
+
+        // Well, we'll do something defensible.  Assume the vector is
+        // a displacement.  The new vector will be the one that takes
+        // us FROM the post-transformed location TO the spot that
+        // started at the original location, was first displaced
+        // using the original vector, and was *then* projected.
+        float u = inptr[i*3+0];
+        float v = inptr[i*3+1];
+        float w = inptr[i*3+2];
+
+        float x = oldpt[0] + u;
+        float y = oldpt[1] + v;
+        float z = oldpt[2] + w;
+
+        ProjectPoint(x,y,z);
+
+        outptr[i*3+0] = x - newpt[0];
+        outptr[i*3+1] = y - newpt[1];
+        outptr[i*3+2] = z - newpt[2];
+    }
+}
+
+// ****************************************************************************
 //  Method:  avtProjectFilter::RefashionDataObjectInfo
 //
 //  Purpose:
@@ -383,13 +417,41 @@ avtProjectFilter::RefashionDataObjectInfo(void)
     avtDataAttributes &outAtts     = GetOutput()->GetInfo().GetAttributes();
     avtDataValidity   &outValidity = GetOutput()->GetInfo().GetValidity();
    
-    // I suppose the topological dimension shouldn't change...:
-    //if (inAtts.GetTopologicalDimension() == 3)
-    //    outAtts.SetTopologicalDimension(2);
-
     if (inAtts.GetSpatialDimension() == 3)
         outAtts.SetSpatialDimension(2);
 
     outValidity.SetNormalsAreInappropriate(true);
+}
+
+// ****************************************************************************
+//  Method: avtProjectFilter::PerformRestriction
+//
+//  Purpose:
+//    Turn on zone/node numbers if needed for pick (for example).
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   September  9, 2004
+//
+//  Note:  I copied this implementation from Displace for now since
+//         it seemed the most alike to this requirements for getting
+//         pick to work.
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtPipelineSpecification_p
+avtProjectFilter::PerformRestriction(avtPipelineSpecification_p spec)
+{
+    avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
+    if (rv->GetDataSpecification()->MayRequireZones())
+    {
+        rv->GetDataSpecification()->TurnZoneNumbersOn();
+    }
+    if (rv->GetDataSpecification()->MayRequireNodes())
+    {
+        rv->GetDataSpecification()->TurnNodeNumbersOn();
+    }
+    return rv;
 }
 

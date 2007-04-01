@@ -160,15 +160,14 @@ PDBReader::VariableData::VariableData(const std::string &name) : varName(name)
 // Creation:   Thu Jun 26 14:56:14 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Sep 2 00:08:45 PDT 2004
+//   Replaced the code with FreeData.
+//
 // ****************************************************************************
 
 PDBReader::VariableData::~VariableData()
 {
-    if(data)
-        free_void_mem(data, dataType);
-
-    delete [] dims;
+    FreeData();
 }
 
 // ****************************************************************************
@@ -199,4 +198,33 @@ PDBReader::VariableData::ReadValues(PDBFileObject *pdb)
     }
 
     return data != 0;
+}
+
+// ****************************************************************************
+// Method: PDBReader::VariableData::FreeData
+//
+// Purpose: 
+//   Frees the object's data.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 2 00:09:57 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PDBReader::VariableData::FreeData()
+{
+    if(data != 0)
+    {
+        free_void_mem(data, dataType);
+        data = 0;
+        dataType = NO_TYPE;
+    }
+
+    delete [] dims;
+    dims = 0;
+    nDims = 0;
+    nTotalElements = 0;
 }

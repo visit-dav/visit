@@ -763,6 +763,10 @@ QvisQueryWindow::ConnectPlotList(PlotList *pl)
 //   Kathleen Bonnell, Wed Sep  8 10:06:16 PDT 2004 
 //   Removed references to QueryList::CoordRep, no longer exists. 
 //
+//   Kathleen Bonnell, Fri Sep 10 13:28:33 PDT 2004 
+//   The 'currentItem' of the queryList is not the correct index into queries.
+//   Test the currentText against queries->names to get valid index.
+//
 // ****************************************************************************
 
 void
@@ -770,11 +774,22 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
 {
     if(AutoUpdate() || ignore)
     {
-        int index = queryList->currentItem();
         int useActualData = dataOpts->id(dataOpts->selected());
         const stringVector &names = queries->GetNames();
         const intVector &types = queries->GetTypes();
         const intVector &winType = queries->GetWinType();
+
+        QString currentText = queryList->currentText();
+        int index = -1;
+        for (int i = 0; i < names.size(); i++)
+        {
+           if (string(currentText.latin1()) == names[i])
+           {
+               index = i;
+               break;
+           } 
+        } 
+        
         if(index >= 0 && index < types.size())
         {
             QueryList::QueryType t = (QueryList::QueryType)types[index];

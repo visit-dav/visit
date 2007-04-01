@@ -7,6 +7,46 @@
 #include <avtDatabaseMetaData.h>
 
 // ****************************************************************************
+// Class: PP_Z_MTSD_FileFormatInterface
+//
+// Purpose:
+//   Custom file format interface that allows the PP_Z MTSD file format to
+//   free up its resources as it sees fit.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 1 23:28:26 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class PP_Z_MTSD_FileFormatInterface : public avtMTSDFileFormatInterface
+{
+public:
+    PP_Z_MTSD_FileFormatInterface(avtMTSDFileFormat **fileFormats,
+        int nFileFormats) :
+        avtMTSDFileFormatInterface(fileFormats, nFileFormats)
+    {
+    }
+
+    virtual ~PP_Z_MTSD_FileFormatInterface()
+    {
+    }
+
+    virtual void FreeUpResources(int ts, int)
+    {
+        // This file format interface only ever has 1 "domain". That "domain"
+        // is a PP_Z_MTSD_FileFormat, which manages its own set of files so
+        // we need to pass the time state on to it and let it free up
+        // resources on the time state according to its own rules.
+        PP_Z_MTSD_FileFormat *fmt = (PP_Z_MTSD_FileFormat *)domains[0];
+        fmt->FreeUpResourcesForTimeStep(ts);
+    }
+};
+
+// ****************************************************************************
 // Method: PP_Z_MTSD_FileFormat::CreateInterface
 //
 // Purpose: 
@@ -25,7 +65,9 @@
 // Creation:   Tue Sep 16 17:36:05 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Sep 1 23:29:39 PST 2004
+//   I made it use the PP_Z_MTSD_FileFormatInterface.
+//
 // ****************************************************************************
 
 avtFileFormatInterface *
@@ -48,7 +90,7 @@ PP_Z_MTSD_FileFormat::CreateInterface(PDBFileObject *pdb,
             //
             avtMTSDFileFormat **ffl = new avtMTSDFileFormat*[1];
             ffl[0] = ff;
-            inter = new avtMTSDFileFormatInterface(ffl, 1);
+            inter = new PP_Z_MTSD_FileFormatInterface(ffl, 1);
         }
         CATCH(VisItException)
         {
@@ -84,7 +126,9 @@ PP_Z_MTSD_FileFormat::CreateInterface(PDBFileObject *pdb,
 // Creation:   Tue Sep 16 17:37:37 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Sep 1 23:30:06 PST 2004
+//   Initialized the lastTimeState and timeFlowsForward members.
+//
 // ****************************************************************************
 
 PP_Z_MTSD_FileFormat::PP_Z_MTSD_FileFormat(const char *filename,
@@ -99,6 +143,8 @@ PP_Z_MTSD_FileFormat::PP_Z_MTSD_FileFormat(const char *filename,
         readers[i] = new PP_ZFileReader(list[i]);
 
     nTotalTimeSteps = -1;
+    lastTimeState = -1;
+    timeFlowsForward = true;
 }
 
 // ****************************************************************************
@@ -116,6 +162,8 @@ PP_Z_MTSD_FileFormat::PP_Z_MTSD_FileFormat(const char *filename,
 // Creation:   Tue Sep 16 17:37:37 PST 2003
 //
 // Modifications:
+//   Brad Whitlock, Wed Sep 1 23:30:06 PST 2004
+//   Initialized the lastTimeState and timeFlowsForward members.
 //   
 // ****************************************************************************
 
@@ -132,6 +180,8 @@ PP_Z_MTSD_FileFormat::PP_Z_MTSD_FileFormat(PDBFileObject *p,
         readers[i] = new PP_ZFileReader(list[i]);
 
     nTotalTimeSteps = -1;
+    lastTimeState = -1;
+    timeFlowsForward = true;
 }
 
 // ****************************************************************************
@@ -416,6 +466,42 @@ PP_Z_MTSD_FileFormat::GetTimeVaryingInformation(int ts, avtDatabaseMetaData *md)
 }
 
 // ****************************************************************************
+// Method: PP_Z_MTSD_FileFormat::DetermineTimeFlow
+//
+// Purpose: 
+//   Tries to determine whether we're accessing timesteps in a forward or
+//   backward fashion so we can more accurately guess when we need to 
+//   clear the cache.
+//
+// Arguments:
+//   ts : The time state that we're accessing.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 2 09:43:12 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PP_Z_MTSD_FileFormat::DetermineTimeFlow(int ts)
+{
+    if(lastTimeState == -1)
+        timeFlowsForward = true;
+    else if(lastTimeState != ts)
+    {
+        if(lastTimeState == 0)
+            timeFlowsForward = (ts != nTotalTimeSteps-1);
+        else if(lastTimeState == nTotalTimeSteps-1)
+            timeFlowsForward = (ts == 0);
+        else
+            timeFlowsForward = (ts > lastTimeState);
+    }
+
+    lastTimeState = ts;
+}
+
+// ****************************************************************************
 // Method: PP_Z_MTSD_FileFormat::GetAuxiliaryData
 //
 // Purpose: 
@@ -431,7 +517,9 @@ PP_Z_MTSD_FileFormat::GetTimeVaryingInformation(int ts, avtDatabaseMetaData *md)
 // Creation:   Tue Sep 16 17:43:15 PST 2003
 //
 // Modifications:
-//   
+//    Brad Whitlock, Thu Sep 2 09:39:32 PDT 2004
+//    Added a call to DetermineTimeFlow.
+//
 // ****************************************************************************
 
 void *
@@ -444,7 +532,10 @@ PP_Z_MTSD_FileFormat::GetAuxiliaryData(const char *var, int ts,
     int index = GetReaderIndexAndTimeStep(ts, localTimeState);
 
     if(index != -1)
+    {
+        DetermineTimeFlow(ts);
         retval = readers[index]->GetAuxiliaryData(localTimeState, var, type, args, df);
+    }
 
     return retval;
 }
@@ -464,7 +555,9 @@ PP_Z_MTSD_FileFormat::GetAuxiliaryData(const char *var, int ts,
 // Creation:   Tue Sep 16 17:43:39 PST 2003
 //
 // Modifications:
-//   
+//    Brad Whitlock, Thu Sep 2 09:39:32 PDT 2004
+//    Added a call to DetermineTimeFlow.
+// 
 // ****************************************************************************
 
 vtkDataSet *
@@ -476,7 +569,10 @@ PP_Z_MTSD_FileFormat::GetMesh(int ts, const char *var)
     int index = GetReaderIndexAndTimeStep(ts, localTimeState);
 
     if(index != -1)
+    {
+        DetermineTimeFlow(ts);
         retval = readers[index]->GetMesh(localTimeState, var);
+    }
 
     return retval;
 }
@@ -497,7 +593,9 @@ PP_Z_MTSD_FileFormat::GetMesh(int ts, const char *var)
 // Creation:   Tue Sep 16 17:44:28 PST 2003
 //
 // Modifications:
-//   
+//    Brad Whitlock, Thu Sep 2 09:39:32 PDT 2004
+//    Added a call to DetermineTimeFlow.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -509,9 +607,83 @@ PP_Z_MTSD_FileFormat::GetVar(int ts, const char *var)
     int index = GetReaderIndexAndTimeStep(ts, localTimeState);
 
     if(index != -1)
+    {
+        DetermineTimeFlow(ts);
         retval = readers[index]->GetVar(localTimeState, var);
+    }
 
     return retval;
+}
+
+// ****************************************************************************
+// Method: PP_Z_MTSD_FileFormat::FreeUpResourcesForTimeStep
+//
+// Purpose: 
+//   This is a special method that is called by PP_Z_MTSD_FileFormatInterface
+//   when the generic database needs to free resources for a specific time
+//   step. That mechanism ends up calling this method instead of 
+//   the FreeUpResources method since FreeUpResources does not allow us to
+//   figure out which time state we need to clear, which translates to a
+//   specific file. We don't want to just clear the file because we want to
+//   wait for more assurance that we're done with it before clearing its data.
+//
+// Arguments:
+//   ts : The time step to clear.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 2 00:34:09 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PP_Z_MTSD_FileFormat::FreeUpResourcesForTimeStep(int ts)
+{
+    if(ts == -1)
+    {
+        debug4 << "PP_Z_MTSD_FileFormat::FreeUpResourcesForTimeStep: "
+                  "freeing data for all files." << endl;
+        for(int i = 0; i < nReaders; ++i)
+            readers[i]->FreeUpResources();
+    }
+    else
+    {
+        // Try and predict what the next time step will be based on previous
+        // accesses.
+        int nextTimeStep;
+        if(timeFlowsForward)
+        {
+            nextTimeStep = ts + 1;
+            if(nextTimeStep >= nTotalTimeSteps)
+                nextTimeStep = 0;
+        }
+        else
+        {
+            nextTimeStep = ts - 1;
+            if(nextTimeStep < 0)
+                nextTimeStep = nTotalTimeSteps - 1;
+        }
+
+        // Determine the file that was used for ts (the time state for which
+        // we're freeing up resources) and the "next" time step.
+        int tmp;
+        int index = GetReaderIndexAndTimeStep(ts, tmp);
+        int nextIndex = GetReaderIndexAndTimeStep(nextTimeStep, tmp);
+
+        // If the index and nextIndex are both valid but not equal then
+        // we will be transitioning to a new PDB file. Tell the current
+        // file to clear out its cached data.
+        if(index != -1 && nextIndex != -1 && index != nextIndex)
+        {
+            debug4 << "PP_Z_MTSD_FileFormat::FreeUpResourcesForTimeStep: "
+                      "freeing data for all timesteps in file " << index
+                   << " because we think the next timestep will be "
+                   << nextTimeStep << ", which is in file " << nextIndex
+                   << endl;
+            readers[index]->FreeUpResources();
+        }
+    }
 }
 
 // ****************************************************************************

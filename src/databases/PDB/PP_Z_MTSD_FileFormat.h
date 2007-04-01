@@ -19,7 +19,10 @@ class PDBFileObject;
 // Creation:   Tue Sep 16 13:41:07 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Sep 1 23:52:14 PST 2004
+//   Added FreeUpResourcesForTimeStep method, lastTimeState, and 
+//   timeFlowsForward members.
+//
 // ****************************************************************************
 
 class PP_Z_MTSD_FileFormat : public avtMTSDFileFormat
@@ -52,12 +55,17 @@ public:
 
     virtual vtkDataSet   *GetMesh(int ts, const char *var);
     virtual vtkDataArray *GetVar(int ts, const char *var);
+
+    void FreeUpResourcesForTimeStep(int ts);
 private:
-    int GetReaderIndexAndTimeStep(int ts, int &localTimeState);
+    void DetermineTimeFlow(int);
+    int  GetReaderIndexAndTimeStep(int ts, int &localTimeState);
 
     int                    nReaders;
     PP_ZFileReader       **readers;
     int                    nTotalTimeSteps;
+    int                    lastTimeState;
+    bool                   timeFlowsForward;
 };
 
 #endif

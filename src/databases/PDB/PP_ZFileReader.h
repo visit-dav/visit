@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <void_ref_ptr.h>
+#include <vectortypes.h>
 
 class vtkDataArray;
 class vtkDataSet;
@@ -32,6 +33,10 @@ class avtDatabaseMetaData;
 //   Brad Whitlock, Fri Sep 26 10:22:05 PDT 2003
 //   I added support for ray meshes.
 //
+//   Brad Whitlock, Wed Sep 1 23:53:01 PST 2004
+//   I added a FreeUpResources method to clear out the stored data in the
+//   variable cache and close the PDB file object.
+//
 // ****************************************************************************
 
 class PP_ZFileReader : public PDBReader
@@ -54,6 +59,8 @@ public:
     int           GetNumTimeSteps();
     const int    *GetCycles();
     const double *GetTimes();
+
+    void          FreeUpResources();
 protected:
     virtual bool IdentifyFormat();
 
@@ -67,6 +74,8 @@ protected:
     const int *GetIreg(int state);
     int  GetUnstructuredCellCount();
     bool PopulateMaterialNames();
+    bool ReadMaterialNames(int nmats, stringVector &matNames);
+    bool ReadMaterialNamesHelper(const char *, int , stringVector &);
     void AddRayMetaData(avtDatabaseMetaData *);
     vtkDataSet *GetRayMesh(int state, const char *var);
     vtkDataSet *ConstructRayMesh(int state, bool is3d);

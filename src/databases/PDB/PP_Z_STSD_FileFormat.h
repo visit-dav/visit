@@ -21,6 +21,9 @@ class avtFileFormatInterface;
 //   Added methods that indicate that the cycle and time that the file format
 //   returns can be believed.
 //
+//   Brad Whitlock, Thu Sep 2 00:12:33 PDT 2004
+//   Added override for FreeUpResources.
+//
 // ****************************************************************************
 
 class PP_Z_STSD_FileFormat : public avtSTSDFileFormat
@@ -48,6 +51,7 @@ public:
     virtual vtkDataArray *GetVar(const char *var);
     virtual void         *GetAuxiliaryData(const char *var, const char *type,
                                            void *args, DestructorFunction &);
+    virtual void          FreeUpResources();
 protected:
     PP_ZFileReader        reader;
 };

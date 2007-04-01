@@ -16,7 +16,9 @@
 // Creation:   Tue Sep 16 09:25:28 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Sep 2 00:06:54 PDT 2004
+//   Added the VariableData::FreeData method.
+//
 // ****************************************************************************
 
 class PDBReader
@@ -36,6 +38,7 @@ protected:
         VariableData(const std::string &name);
         ~VariableData();
         bool ReadValues(PDBFileObject *pdb);
+        void FreeData();
 
         std::string  varName;
         void        *data;
