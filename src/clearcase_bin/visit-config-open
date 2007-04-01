@@ -243,8 +243,8 @@
                 <Field name="hostAliases" type="string">mcr#.llnl.gov mcr##.llnl.gov mcr###.llnl.gov mcr####.llnl.gov mcr# mcr## mcr### mcr####</Field>
                 <Field name="timeout" type="int">480</Field>
                 <Field name="numProcessors" type="int">8</Field>
-                <Field name="numNodesSet" type="bool">true</Field>
-                <Field name="numNodes" type="int">1</Field>
+                <Field name="numNodesSet" type="bool">false</Field>
+                <Field name="numNodes" type="int">0</Field>
                 <Field name="partitionSet" type="bool">true</Field>
                 <Field name="partition" type="string">pdebug</Field>
                 <Field name="bankSet" type="bool">false</Field>
@@ -463,8 +463,8 @@
                 <Field name="hostAliases" type="string">pvc#.llnl.gov pvc##.llnl.gov pvc###.llnl.gov pvc# pvc## pvc###</Field>
                 <Field name="timeout" type="int">480</Field>
                 <Field name="numProcessors" type="int">16</Field>
-                <Field name="numNodesSet" type="bool">true</Field>
-                <Field name="numNodes" type="int">8</Field>
+                <Field name="numNodesSet" type="bool">false</Field>
+                <Field name="numNodes" type="int">0</Field>
                 <Field name="partitionSet" type="bool">true</Field>
                 <Field name="partition" type="string">pbatch</Field>
                 <Field name="bankSet" type="bool">false</Field>

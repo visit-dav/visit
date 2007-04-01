@@ -250,5 +250,41 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
 };
 
 
-#endif
+#define DEFAULT_SIZE    1024
+#define DEFAULT_MINC    2.0
 
+class UniqueSpeciesMF
+{
+  public:
+      UniqueSpeciesMF(int initSize = DEFAULT_SIZE, float _minc = DEFAULT_MINC);
+     ~UniqueSpeciesMF();
+
+      int IndexOfMFVector(float *mf_vector, int nvals);
+
+      float *GetData();
+      int    GetSize();
+      int    GetMaxSize();
+
+  private:
+
+      static   int DefaultSize;
+      static float DefaultMinc;
+
+      // this is solely to control default construction of mapped values
+      struct Index {
+          int idx;
+          Index() : idx(-1) {}
+      };
+
+      map<unsigned int,Index> vmap;
+
+      bool dataRetrieved;
+
+      float minc;
+      int max_nspecies_mf;
+
+      int nspecies_mf;
+      float *species_mf;
+};
+
+#endif

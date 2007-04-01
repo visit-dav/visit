@@ -6,12 +6,20 @@
 //  Programmer:  Walter Herrera Jimenez
 //  Creation:    July 7, 2003
 //
+//  Modifications:
+//    Mark C. Miller
+//    Eric Brugger
+//    Kathleen Bonnell
+//
 // ****************************************************************************
 
+#define USE_UNIQUE_SPECIES
 
 #include <avtSAMRAIFileFormat.h>
 
 #include <AutoArray.h>
+
+#include <BJHash.h>
 
 #include <vector>
 #include <string>
@@ -395,6 +403,10 @@ avtSAMRAIFileFormat::GetMesh(int patch, const char *)
 //    Added support for ghosting. Note that it can vary depending upon the
 //    variable requested.
 //
+//    Mark C. Miller, Wed Jan  7 11:35:37 PST 2004
+//    Elminated traversal of ALE coordinate data and replaced with a SetData
+//    call
+//
 // ****************************************************************************
 vtkDataSet *
 avtSAMRAIFileFormat::ReadMesh(int patch)
@@ -491,22 +503,17 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
     {
         char var_name[100];
         sprintf(var_name, "Coords");
+
         vtkDataArray * array = GetVectorVar(patch, var_name);
-        vtkStructuredGrid  *sGrid = vtkStructuredGrid::New(); 
+
         vtkPoints *points = vtkPoints::New();
-        points->SetNumberOfPoints(array->GetNumberOfTuples());
+        points->SetData(array);
+        array->Delete();
 
-        for (unsigned i=0; i<array->GetNumberOfTuples(); i++) {
-            float p[3];
-            array->GetTuple(i, p);
-            points->SetPoint(i,p);
-        }
-
+        vtkStructuredGrid  *sGrid = vtkStructuredGrid::New(); 
         sGrid->SetDimensions(dimensions);
         sGrid->SetPoints(points);
-
         points->Delete();
-        array->Delete();
 
         retval = sGrid;
     }
@@ -719,13 +726,16 @@ avtSAMRAIFileFormat::GetVar(int patch, const char *visit_var_name)
 //    I modified the routine to handle the variable name without the extension
 //    (.00, .01, .02) identifying the component.
 //
+//    Mark C. Miller, Wed Jan  7 11:35:37 PST 2004
+//    I eliminated use of VTK SetComponent methods as well as extra buffer
+//    copies. Now, HDF5 reads the data directly into the buffer space allocated
+//    by VTK in the vtkFloatArray object.
+//
 // ****************************************************************************
 vtkDataArray *
 avtSAMRAIFileFormat::GetVectorVar(int patch, 
                                   const char *visit_var_name)
 {
-   // cerr << "FIX ME. MY PERFORMANCE IS BAD!, avtSAMRAIFileFormat::GetVectorVar" << endl;
-
     debug5 << "avtSAMRAIFileFormat::GetVectorVar for variable " <<
         visit_var_name << "on patch " << patch << endl;
 
@@ -777,11 +787,7 @@ avtSAMRAIFileFormat::GetVectorVar(int patch,
     vtkFloatArray *vectors = vtkFloatArray::New();
     vectors->SetNumberOfComponents(3);
     vectors->SetNumberOfTuples(num_data_samples);
-    for (int j = 0 ; j < num_data_samples ; j++) {
-        vectors->SetComponent(j, 2, 0);
-    }
-
-    float *var_data = new float[num_data_samples];
+    float *fbuf = (float*) vectors->GetVoidPointer(0);
 
     for (int i = 0 ; i < num_components ; i++) {
         char variable[100];
@@ -814,17 +820,29 @@ avtSAMRAIFileFormat::GetVectorVar(int patch,
         delete [] hdims;
         delete [] max_hdims;
 
-        H5Dread(h5d_variable, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
-                var_data);
-        H5Dclose(h5d_variable);      
+        // create dataspace and selection to read directly into fbuf
+        hsize_t nvals = 3*num_data_samples;
+        hid_t memspace = H5Screate_simple(1, &nvals, &nvals);
+        hssize_t start = i;
+        hsize_t stride = 3;
+        hsize_t count = num_data_samples;
+        H5Sselect_hyperslab(memspace, H5S_SELECT_SET, &start, &stride, &count, NULL);
 
-        for (int j = 0 ; j < num_data_samples ; j++) {
-            vectors->SetComponent(j, i, var_data[j]);
-        }
+        H5Dread(h5d_variable, H5T_NATIVE_FLOAT, memspace, H5S_ALL, H5P_DEFAULT, fbuf);
+
+        H5Dclose(h5d_variable);      
+        H5Sclose(memspace);
     }
 
-    delete[] var_data;
     H5Fclose(h5f_file);
+
+    // set 3rd component to 0 if necessary
+    if (num_components == 2)
+    {
+        int i;
+        for (i = 2; i < num_data_samples*3; i+=3)
+            fbuf[i] = 0.0;
+    }
 
     // update last patch/var information
     last_visit_var_name = visit_var_name;
@@ -953,12 +971,21 @@ avtSAMRAIFileFormat::ReadMatSpecFractions(int patch, string mat_name,
 //  Programmer: Mark C. Miller 
 //  Creation:   December 12, 2003 
 //
+//  Modifications:
+//    Mark C. Miller, Wed Jan  7 11:35:37 PST 2004
+//    Added stuff to compute compression achieved
+//
 // ****************************************************************************
 
 avtMaterial *
 avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
 {
     int i;
+
+    double bytesInFile = 0.0;
+    static double bytesInFileTotal = 0.0;
+    double bytesInMem = 0.0;
+    static double bytesInMemTotal = 0.0;
 
     debug5 << "avtSAMRAIFileFormat::GetMaterial getting materials on patch "
            << patch << endl;
@@ -1054,13 +1081,20 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
                               0              //silomat->mix_vf
                               );
      
+
+        bytesInFile = 0.0;
+        bytesInMem = (ncells * sizeof(int));
+
     }
     else
     {
        // read the volume fractions for each material
        float **vfracs = new float*[matList.size()];
        for (i = 0; i < matList.size(); i++)
+       {
            vfracs[i] = ReadMatSpecFractions(patch, mat_names[matList[i]]);
+           bytesInFile += (ncells * sizeof(float));
+       }
 
        int *matfield;
        int mixlen;
@@ -1079,6 +1113,8 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
            DELETE(vfracs[i]);
        DELETE(vfracs);
 
+       bytesInMem = (ncells * sizeof(int) + mixlen * (3*sizeof(int)+sizeof(float)));
+
    }
 
    // free up the matnames and numbers
@@ -1087,6 +1123,13 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
        DELETE(matnames[i]);
 
    DELETE(matnames);
+
+   bytesInFileTotal += bytesInFile;
+   bytesInMemTotal += bytesInMem;
+
+   debug5 << "compression of material data on patch " << patch << " is "
+          << bytesInFile / bytesInMem << "x [cummulative = "
+          << bytesInFileTotal / bytesInMemTotal << "x]" << endl;
 
    return mat;
 }
@@ -1286,6 +1329,10 @@ avtSAMRAIFileFormat::DebugMixedMaterials(int ncells, int* &matfield,
 //  Programmer: Mark C. Miller 
 //  Creation:   December 18, 2003 
 //
+//  Modifications:
+//    Mark C. Miller, Wed Jan  7 11:35:37 PST 2004
+//    Added stuff to compute amount of compression achieved
+//
 // ****************************************************************************
 
 avtSpecies *
@@ -1293,6 +1340,11 @@ avtSAMRAIFileFormat::GetSpecies(int patch, const char *specObjName)
 {
     int i;
     avtMaterial* mat = 0;
+
+    double bytesInFile = 0.0;
+    static double bytesInFileTotal = 0.0;
+    double bytesInMem = 0.0;
+    static double bytesInMemTotal = 0.0;
 
     if (has_specs == false)
     {
@@ -1387,6 +1439,16 @@ avtSAMRAIFileFormat::GetSpecies(int patch, const char *specObjName)
         avtSpecies *spec = new avtSpecies(num_mats, nmatspec, dim, dims, specList, mixlen,
                                           mixList, 0, NULL);
 
+        bytesInFile = 0.0;
+        bytesInMem = (mixlen + ncells) * sizeof(int);
+
+        bytesInFileTotal += bytesInFile;
+        bytesInMemTotal += bytesInMem;
+
+        debug5 << "compression of species data on patch " << patch << " is "
+               << bytesInFile / bytesInMem << "x [cummulative = "
+               << bytesInFileTotal / bytesInMemTotal << "x]" << endl;
+
         return spec;
     }
 
@@ -1412,9 +1474,11 @@ avtSAMRAIFileFormat::GetSpecies(int patch, const char *specObjName)
                 float **specFracs = new float*[numSpecs];
 
                 for (j = 0; j < numSpecs; j++)
+                {
                     specFracs[j] = ReadMatSpecFractions(patch, matName,
                                        mat_specs[matName][j]);
-
+                    bytesInFile += (ncells * sizeof(float));
+                }
                 matSpecFracs.push_back(specFracs);
             }
             else
@@ -1462,6 +1526,15 @@ avtSAMRAIFileFormat::GetSpecies(int patch, const char *specObjName)
         }
     }
 
+    bytesInMem = (mat->GetMixlen() + ncells) * sizeof(int) + nspecies_mf * sizeof(float);
+
+    bytesInFileTotal += bytesInFile;
+    bytesInMemTotal += bytesInMem;
+
+    debug5 << "compression of species data on patch " << patch << " is "
+           << bytesInFile / bytesInMem << "x [cummulative = "
+           << bytesInFileTotal / bytesInMemTotal << "x]" << endl;
+
     return spec;
 }
 
@@ -1472,6 +1545,10 @@ avtSAMRAIFileFormat::GetSpecies(int patch, const char *specObjName)
 //
 //  Programmer: Mark C. Miller
 //  Creation:   December 20, 2003 
+//
+//  Modifications:
+//    Mark C. Miller, Wed Jan  7 11:35:37 PST 2004
+//    Added stuff to compute unique species vectors for compression
 //
 // ****************************************************************************
 
@@ -1486,7 +1563,11 @@ avtSAMRAIFileFormat::ConvertMassFractionFields(vector<int> matIds,
     const int* mix_next = mat->GetMixNext();
     int mixlen          = mat->GetMixlen();
 
+#ifdef USE_UNIQUE_SPECIES
+    UniqueSpeciesMF uniq_species_mf(ncells,1.5);
+#else
     AutoArray<float> aaspecies_mf(ncells,ncells,true);
+#endif
     speclist = new int[ncells];
     mixlist  = new int[mixlen];
 
@@ -1508,9 +1589,16 @@ avtSAMRAIFileFormat::ConvertMassFractionFields(vector<int> matIds,
                 speclist[i] = 0;
             else
             {
+#ifdef USE_UNIQUE_SPECIES
+                float mf_vec[nmatspec[matNum]];
+                for (j = 0; j < nmatspec[matNum]; j++)
+                    mf_vec[j] = matSpecFracs[matNum][j][i];
+                speclist[i] = uniq_species_mf.IndexOfMFVector(mf_vec, nmatspec[matNum]);
+#else
                 speclist[i] = nspecies_mf;
                 for (j = 0; j < nmatspec[matNum]; j++)
                     aaspecies_mf[nspecies_mf++] = matSpecFracs[matNum][j][i];
+#endif
             }
         }
         else // mixed zone
@@ -1530,9 +1618,16 @@ avtSAMRAIFileFormat::ConvertMassFractionFields(vector<int> matIds,
                     EXCEPTION2(UnexpectedValueException, nmatspec[matNum], 0);
                 }
 
+#ifdef USE_UNIQUE_SPECIES
+                float mf_vec[nmatspec[matNum]];
+                for (j = 0; j < nmatspec[matNum]; j++)
+                    mf_vec[j] = matSpecFracs[matNum][j][i];
+                mixlist[mixidx] = uniq_species_mf.IndexOfMFVector(mf_vec, nmatspec[matNum]);
+#else
                 mixlist[mixidx] = nspecies_mf;
                 for (j = 0; j < nmatspec[matNum]; j++)
                     aaspecies_mf[nspecies_mf++] = matSpecFracs[matNum][j][i];
+#endif
 
                 first = false;
                 mixidx = mix_next[mixidx];
@@ -1540,11 +1635,16 @@ avtSAMRAIFileFormat::ConvertMassFractionFields(vector<int> matIds,
         }
     }
 
+#ifdef USE_UNIQUE_SPECIES
+    species_mf = uniq_species_mf.GetData();
+    nspecies_mf = uniq_species_mf.GetSize();
+#else
     species_mf = aaspecies_mf.GetData();
     if (nspecies_mf != aaspecies_mf.GetSize())
     {
         EXCEPTION2(UnexpectedValueException, nspecies_mf, aaspecies_mf.GetSize());
     }
+#endif
 }
 
 // ****************************************************************************
@@ -2005,7 +2105,7 @@ avtSAMRAIFileFormat::ReadAndCheckVDRVersion(hid_t &h5_file)
     hid_t h5_dataset = H5Dopen(h5_file,"/BASIC_INFO/VDR_version_number");
     if (h5_dataset < 0) {
         char str[1024];
-        sprintf(str, "%s::/BASIC_INFO/VDR version numer does not exist. Unable "
+        sprintf(str, "%s::/BASIC_INFO/VDR_version_number does not exist. Unable "
             "to confirm file's version compatibility with reader plugin", file_name.c_str());
         EXCEPTION1(InvalidFilesException, str);
     }
@@ -3509,4 +3609,155 @@ GetDirName(const char *path)
     str[last-path+1] = '\0';
 
     return str;
+}
+
+
+int   UniqueSpeciesMF::DefaultSize = DEFAULT_SIZE;
+float UniqueSpeciesMF::DefaultMinc = DEFAULT_MINC;
+
+// ****************************************************************************
+//  Constructor:  UniqueSpeciesMF
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    January 6, 2004
+//
+// ****************************************************************************
+UniqueSpeciesMF::UniqueSpeciesMF(int initSize, float _minc)
+{
+    // sanity checks
+    if (initSize < 0)
+        initSize = DefaultSize;
+    if (_minc < 1.0)
+        _minc = DefaultMinc;
+
+    dataRetrieved = false;
+
+    max_nspecies_mf = initSize;
+    minc = _minc;
+
+    nspecies_mf = 0;
+    species_mf = (float *) malloc(max_nspecies_mf * sizeof(float));
+}
+
+// ****************************************************************************
+//  Destructor:  ~UniqueSpeciesMF
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    January 6, 2004
+//
+// ****************************************************************************
+UniqueSpeciesMF::~UniqueSpeciesMF()
+{
+    if (!dataRetrieved && species_mf != 0)
+        free(species_mf);
+}
+
+// ****************************************************************************
+//  Method:  UniqueSpeciesMF::GetSize
+//
+//  Purpose: Returns the current size of the species_mf array 
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    January 6, 2004
+//
+// ****************************************************************************
+int
+UniqueSpeciesMF::GetSize()
+{
+    return nspecies_mf;
+}
+
+// ****************************************************************************
+//  Method:  UniqueSpeciesMF::GetMaxSize
+//
+//  Purpose: Returns the current max size of the species_mf array 
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    January 6, 2004
+//
+// ****************************************************************************
+int
+UniqueSpeciesMF::GetMaxSize()
+{
+    return max_nspecies_mf;
+}
+
+// ****************************************************************************
+//  Method:  UniqueSpeciesMF::GetData
+//
+//  Purpose: Returns the species_mf array 
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    January 6, 2004
+//
+// ****************************************************************************
+float *
+UniqueSpeciesMF::GetData()
+{
+    if (dataRetrieved)
+        return 0;
+
+    dataRetrieved = true;
+
+    // downsize the array as necessary
+    if (nspecies_mf < max_nspecies_mf)
+    {
+        species_mf = (float*) realloc((void*)species_mf,
+                                      nspecies_mf * sizeof(float)); 
+        max_nspecies_mf = nspecies_mf;
+    }
+
+    float *retval = species_mf;
+    species_mf = 0;
+
+    return retval;
+}
+
+// ****************************************************************************
+//  Method:  UniqueSpeciesMF::IndexOfMFVector
+//
+//  Purpose: Installs a new species vector in the species_mf array and returns
+//  its index or returns the index of an existing matching vector.
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    January 6, 2004
+//
+// ****************************************************************************
+int
+UniqueSpeciesMF::IndexOfMFVector(float *mf_vector, int nvals)
+{
+    if (dataRetrieved)
+        return -1;
+
+    // compute a key based on Bob Burtle's hashing algorithm
+    unsigned int hval = BJHash::Hash((unsigned char*)mf_vector,
+                                     nvals * sizeof(float), 0xdeadbeef);
+
+    // look up the key in the map, if it isn't found STL will create the entry
+    // using the default constructor
+    int retval = vmap[hval].idx;
+
+    // if the key wasn't found, we've got a new species mf vector, so add it
+    if (retval == -1)
+    {
+        // increase size of species_mf array if necessary
+        if ((nspecies_mf + nvals) >= max_nspecies_mf)
+        {
+              max_nspecies_mf = (int) (max_nspecies_mf * minc);
+            species_mf = (float*) realloc((void*)species_mf,
+                                          max_nspecies_mf * sizeof(float)); 
+        }
+
+        // put the index for this mf vector into the map 
+        vmap[hval].idx = nspecies_mf;
+        retval = nspecies_mf;
+
+        // put the mf vector in the species_mf array
+        int i;
+        for (i = 0; i < nvals; i++)
+            species_mf[nspecies_mf++] = mf_vector[i];
+    }
+
+    return retval;
+    
 }
