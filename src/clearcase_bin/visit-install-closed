@@ -20,6 +20,7 @@ user=`whoami`
 # Parse the execute line, providing default values for error checking.
 #
 hitit=true
+sunset=true
 warp=true
 sc=true
 tidalwave=true
@@ -39,6 +40,7 @@ do
    case $1 in
       -none)
          hitit=false
+         sunset=false
          warp=false
          sc=false
          tidalwave=false
@@ -52,6 +54,14 @@ do
          ;;
       +hitit)
          hitit=true
+         shift
+         ;;
+      -sunset)
+         sunset=false
+         shift
+         ;;
+      +sunset)
+         sunset=true
          shift
          ;;
       -warp)
@@ -147,7 +157,7 @@ echo "       ---------------------------"          >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver/sgi-linux-mips2/bin    >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/linux-intel/bin        >> resultlog 2>&1
 EOF
 
 if [ $hitit = true ]
@@ -159,6 +169,34 @@ then
       scp -P 22 visit-install hitit:
       scp -P 22 hitit hitit:hitit_install
       ssh -p 22 hitit "chmod 750 hitit_install;./hitit_install"
+   fi
+fi
+
+#
+# Install on sunset.
+#
+rm -f sunset
+cat <<EOF > sunset
+#!/bin/sh
+./visit-install -private -c closed -g visit -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
+rm -f resultlog
+echo "        install of visit on sunset"          > resultlog 2>&1
+echo "       ----------------------------"         >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/sun4-sunos5-sparc/bin  >> resultlog 2>&1
+EOF
+
+if [ $sunset = true ]
+then
+   if [ $test = no ]
+   then
+      scp -P 22 sunset:/export/scratch/$user/sunset/visitbuild/visit$ver2.sunos5.tar.gz .
+      scp -P 22 visit$ver2.sunos5.tar.gz sunset:
+      scp -P 22 visit-install sunset:
+      scp -P 22 sunset sunset:sunset_install
+      ssh -p 22 sunset "chmod 750 sunset_install;./sunset_install"
    fi
 fi
 
@@ -327,5 +365,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hitit warp sc tidalwave white emperor
+   rm -f hitit sunset warp sc tidalwave white emperor
 fi
