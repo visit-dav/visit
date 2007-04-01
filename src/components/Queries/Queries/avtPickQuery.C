@@ -600,6 +600,9 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
 //    Reworked to use ExpressionEvaluatorFilter and SILRestriction UseSet as
 //    passed down by the Engine. 
 //    
+//    Hank Childs, Fri Apr  9 16:25:40 PDT 2004
+//    Minimize work done by creating new SIL.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -677,6 +680,7 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
 
     pspec->SetDataSpecification(dspec);
 
+    pspec->GetDataSpecification()->GetRestriction()->SuspendCorrectnessChecking();
     pspec->GetDataSpecification()->GetRestriction()->TurnOnAll();
     int i;
     for (i = 0; i < silUseSet.size(); i++)
@@ -684,6 +688,7 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
         if (silUseSet[i] == 0)
             pspec->GetDataSpecification()->GetRestriction()->TurnOffSet(i);
     }
+    pspec->GetDataSpecification()->GetRestriction()->EnableCorrectnessChecking();
 
     if (!singleDomain)
     {

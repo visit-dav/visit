@@ -68,6 +68,9 @@ avtActualDataMinMaxQuery::~avtActualDataMinMaxQuery()
 //    Kathleen Bonnell, Wed Mar 31 16:07:50 PST 2004
 //    Added code for time-varying case.
 //
+//    Hank Childs, Fri Apr  9 16:25:40 PDT 2004
+//    Minimize work done by creating new SIL.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -98,12 +101,14 @@ avtActualDataMinMaxQuery::ApplyFilters(avtDataObject_p inData)
             avtDataSpecification(oldSpec->GetVariable(), queryAtts.GetTimeStep(), 
                                  oldSpec->GetRestriction());
 
+        newDS->GetRestriction()->SuspendCorrectnessChecking();
         newDS->GetRestriction()->TurnOnAll();
         for (int i = 0; i < silUseSet.size(); i++)
         {
             if (silUseSet[i] == 0)
                 newDS->GetRestriction()->TurnOffSet(i);
         }
+        newDS->GetRestriction()->EnableCorrectnessChecking();
 
         avtPipelineSpecification_p pspec = 
             new avtPipelineSpecification(newDS, queryAtts.GetPipeIndex());
