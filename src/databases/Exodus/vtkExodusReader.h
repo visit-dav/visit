@@ -162,6 +162,7 @@ public:
   void SetCellDataArrayLoadFlag(int index, int flag);
   int GetCellDataArrayLoadFlag(int index);
   
+  void  LoadTimes(void);
   float GetTime(int ts) {  return (this->Times != NULL && ts >= 0 &&
                                    ts < this->NumberOfTimeSteps
                            ? Times[ts]
@@ -229,6 +230,7 @@ protected:
   vtkIntArray *NumberOfBlockElements;
   vtkIntArray *BlockIds;
   vtkIntArray *CellVarTruthTable;
+  bool alreadyDoneExecuteInfo;
   
   // Actual number of arrays that will be generated.
   int NumberOfPointDataArrays;

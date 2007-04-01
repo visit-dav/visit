@@ -43,8 +43,11 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =========================================================================*/
+#include <vector>
+#include <string>
 #include "vtkExodusReader.h"
 #include <vtkCell.h>
+#include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkIdList.h>
 #include <vtkIntArray.h>
@@ -53,6 +56,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
 #include <ctype.h>
 #include "netcdf.h"
 #include "exodusII.h"
@@ -94,6 +98,9 @@ vtkStandardNewMacro(vtkExodusReader);
 //    Hank Childs, Sun Jun 27 10:31:18 PDT 2004
 //    Initialize GenerateNodeGlobalIdArray.
 //
+//    Hank Childs, Wed Jul 14 07:49:06 PDT 2004
+//    Initialize alreadyDoneExecuteInfo.
+//
 //----------------------------------------------------------------------------
 // Description:
 // Instantiate object with NULL filename.
@@ -132,6 +139,7 @@ vtkExodusReader::vtkExodusReader()
   this->PointMapOutIn = vtkIdList::New();
 
   this->Times = NULL;
+  this->alreadyDoneExecuteInfo = false;
 }
 
 
@@ -355,12 +363,46 @@ void vtkExodusReader::SetNumberOfCellDataArrays(int num)
 }
 
 
+void vtkExodusReader::LoadTimes()
+{
+  float version;
+  int CPU_word_size, IO_word_size;
+  float fdum;
+  char *cdum = NULL;
+  CPU_word_size = 0; 
+  IO_word_size = 0;
+  
+  int exoid = ex_open(this->FileName, EX_READ, &CPU_word_size, &IO_word_size,
+                  &version);
+  if (this->NumberOfTimeSteps == 0)
+  {
+     int error = ex_inquire(exoid, EX_INQ_TIME, &this->NumberOfTimeSteps,
+                        &fdum,cdum);
+     if (error < 0)
+       {
+       vtkErrorMacro("Error: " << error 
+                     << " while reading number of time steps from file " 
+                     << this->FileName);
+       }
+  }
+  if (this->Times != NULL)
+      delete [] Times;
+  this->Times = new float[this->NumberOfTimeSteps];
+  ex_get_all_times(exoid, this->Times);
+  
+  ex_close(exoid);
+}
+
 
 //----------------------------------------------------------------------------
 // Modifications:
 //
 //   Hank Childs, Sat Apr 17 07:29:22 PDT 2004
 //   Read in the times as well.
+//
+//   Hank Childs, Wed Jul 14 07:35:25 PDT 2004
+//   No longer load the times, since that is so costly.  Also, only call this
+//   function one time.
 //
 //----------------------------------------------------------------------------
 
@@ -382,6 +424,10 @@ void vtkExodusReader::ExecuteInformation()
   char *cdum = NULL;
   char elem_type[MAX_STR_LENGTH+1];
   
+  if (alreadyDoneExecuteInfo)
+      return;
+  alreadyDoneExecuteInfo = true;
+
   CPU_word_size = 0;  // float or double.
   IO_word_size = 0;
   
@@ -500,9 +546,6 @@ void vtkExodusReader::ExecuteInformation()
     vtkErrorMacro("Error: " << error << " while reading number of time steps from file " 
                   << this->FileName);
     }
-  this->Times = new float[this->NumberOfTimeSteps];
-  ex_get_all_times(exoid, this->Times);
-  
   error = ex_close(exoid);
   if (error < 0)
     {
@@ -517,6 +560,13 @@ void vtkExodusReader::ExecuteInformation()
     }
 }
 
+//----------------------------------------------------------------------------
+// Modifications:
+//
+//   Hank Childs, Wed Jul 14 07:35:25 PDT 2004
+//   No longer call CheckForProblems -- it doesn't fix anything if there is
+//   a problem and takes a long time to execute.
+//
 //----------------------------------------------------------------------------
 void vtkExodusReader::Execute()
 {
@@ -589,8 +639,6 @@ void vtkExodusReader::Execute()
   // Extra arrays that the reader can generate.
   this->GenerateExtraArrays();
   
-  this->CheckForProblems();
-  
   // Reclaim any extra space.
   output->Squeeze();
   
@@ -626,18 +674,20 @@ void vtkExodusReader::ReadGeometry(int exoid)
 //   Use vtkIdType for outPtCount to match VTK 4.0 API for retrieving the
 //   number of Nodes.
 //
+//   Hank Childs, Sat Jul 10 12:19:28 PDT 2004
+//   Remove virtual function calls for performance.
+//
 //----------------------------------------------------------------------------
 void vtkExodusReader::ReadCells(int exoid)
 {
   int i, j, k;
-  int num_elem_in_block;
-  int num_nodes_per_elem;
-  int num_attr;
-  char elem_type[MAX_STR_LENGTH+1];
+  std::vector<int> num_elem_in_block;
+  std::vector<int> num_nodes_per_elem;
+  std::vector<int> num_attr;
+  std::vector<std::string> elem_type;
   char all_caps_elem_type[MAX_STR_LENGTH+1];
-  int *connect, *pConnect;
+  std::vector<int *> connect;
   vtkUnstructuredGrid *output = this->GetOutput();
-  vtkIdList *cellIds=vtkIdList::New();
   int cellType;
   int cellNumPoints;
   int *pointMapInOutArray;
@@ -646,7 +696,7 @@ void vtkExodusReader::ReadCells(int exoid)
   int len;
 
   // I think we can do better than this.
-  output->Allocate(this->NumberOfElements);  
+  //output->Allocate(this->NumberOfElements);  
   
   // Set up the point maps.
   // Remember which points we have used.
@@ -681,25 +731,64 @@ void vtkExodusReader::ReadCells(int exoid)
 
   // Initialize using the type of cells.  
   // A block contains contains only one type of cell.
+  // We will go through and get all of the connectivities out of the file
+  // first, so we will know how big of an array to allocate this in to.
   for (i = this->StartBlock; i <= this->EndBlock; ++i)
     {
     // Although we read most of this information in ExecuteInformation,
     // we did not save the element types for the blocks.
-    ex_get_elem_block(exoid, this->BlockIds->GetValue(i), elem_type,
-                      &num_elem_in_block, &num_nodes_per_elem, &num_attr);
-    if (num_elem_in_block == 0)
+    char elem_type_tmp[MAX_STR_LENGTH+1];
+    int num_elem_in_cur_block, num_nodes_per_cur_elem, cur_num_attr;
+    ex_get_elem_block(exoid, this->BlockIds->GetValue(i), elem_type_tmp,
+                      &num_elem_in_cur_block, &num_nodes_per_cur_elem,
+                      &cur_num_attr);
+    elem_type.push_back(elem_type_tmp);
+    num_elem_in_block.push_back(num_elem_in_cur_block);
+    num_nodes_per_elem.push_back(num_nodes_per_cur_elem);
+    num_attr.push_back(cur_num_attr);
+    if (num_elem_in_cur_block == 0)
       {
-      continue;
+      connect.push_back(NULL);
       }
-    connect = new int [num_nodes_per_elem*num_elem_in_block];
-    ex_get_elem_conn (exoid, this->BlockIds->GetValue(i), connect);
+    else
+      {
+      int *tmp_conn = new int [num_nodes_per_cur_elem*num_elem_in_cur_block];
+      ex_get_elem_conn (exoid, this->BlockIds->GetValue(i), tmp_conn);
+      connect.push_back(tmp_conn);
+      }
+    }
 
+  // Calculate how big the dataset will have to be to hold this and create the
+  // VTK unstructured grid.
+  int totalSize = 0;
+  int numCells = 0;
+  for (i = 0; i < connect.size(); i++)
+    {
+    totalSize += (num_nodes_per_elem[i]+1)*(num_elem_in_block[i]);
+    numCells += num_elem_in_block[i];
+    }
+
+  vtkIdTypeArray *nlist = vtkIdTypeArray::New();
+  nlist->SetNumberOfValues(totalSize);
+  vtkIdType *nl = nlist->GetPointer(0);
+
+  vtkUnsignedCharArray *cellTypes = vtkUnsignedCharArray::New();
+  cellTypes->SetNumberOfValues(numCells);
+  unsigned char *ct = cellTypes->GetPointer(0);
+
+  vtkIntArray *cellLocations = vtkIntArray::New();
+  cellLocations->SetNumberOfValues(numCells);
+  int *cl = cellLocations->GetPointer(0);
+
+  int idx = 0;
+  for (i = this->StartBlock, idx=0 ; i <= this->EndBlock; i++, idx++)
+    {
     // cellNumPoints may be smaller than num_nodes_per_elem 
     // because of higher order cells.
-    len = strlen(elem_type);
+    len = strlen(elem_type[idx].c_str());
     for (j = 0 ; j < len ; j++)
       {
-      all_caps_elem_type[j] = toupper(elem_type[j]);
+      all_caps_elem_type[j] = toupper(elem_type[idx].c_str()[j]);
       }
     if (strncmp(all_caps_elem_type, "HEX", 3) == 0)
       {
@@ -739,17 +828,19 @@ void vtkExodusReader::ReadCells(int exoid)
       }
     else
       {
-      vtkErrorMacro("Cannot handle type: " << elem_type << " with " 
-                    << num_nodes_per_elem << " nodes.");
-      delete [] connect;
+      vtkErrorMacro("Cannot handle type: " << elem_type[idx].c_str() 
+                    << " with " << num_nodes_per_elem[idx] << " nodes.");
       continue;
       }
       
     // Now save the cells in a cell array.
-    pConnect = connect;
-    for (j = 0; j < num_elem_in_block; ++j)
+    int *pConnect = connect[idx];
+    int currentIndex = 0;
+    for (j = 0; j < num_elem_in_block[idx]; ++j)
       {
-      cellIds->Reset();
+      *ct++ = cellType;
+      *cl++ = currentIndex;
+      *nl++ = num_nodes_per_elem[i];
       for (k = 0; k < cellNumPoints; ++k)
         {
         // Translate inId to outId and build up point map.
@@ -760,25 +851,30 @@ void vtkExodusReader::ReadCells(int exoid)
           outId = pointMapInOutArray[inId] = outPtCount++;
           this->PointMapOutIn->InsertId(outId, inId);
           }
-        // Build up a list of cell pt ids to insert in to the output data set.
-        cellIds->InsertNextId(outId);
+        *nl++ = outId;
         }
       // Skip to next element (may skip more than 8 nodes).
-      pConnect += num_nodes_per_elem;
-      // Insert cell into output.
-      output->InsertNextCell(cellType, cellIds);
+      currentIndex += 1+cellNumPoints;
+      pConnect += num_nodes_per_elem[idx];
       }
-    
-    delete [] connect;
-    connect = NULL;
     }
   
+  for (i = 0 ; i < connect.size() ; i++)
+    if (connect[i] != NULL)
+        delete [] connect[i];
+
+  vtkCellArray *cells = vtkCellArray::New();
+  cells->SetCells(numCells, nlist);
+  nlist->Delete();
+
+  output->SetCells(cellTypes, cellLocations, cells);
+  cellTypes->Delete();
+  cellLocations->Delete();
+  cells->Delete();
+
   // From now on we only need the OutIn map.
   delete [] pointMapInOutArray;
   pointMapInOutArray = NULL;
-  
-  cellIds->Delete();
-  cellIds = NULL;
 }
 
 
@@ -791,6 +887,9 @@ void vtkExodusReader::ReadCells(int exoid)
 //
 //   Hank Childs, Sun Jun 27 10:31:18 PDT 2004
 //   Read in the global node ids as well.
+//
+//   Hank Childs, Sat Jul 10 12:19:28 PDT 2004
+//   Remove virtual function calls for performance.
 //
 //----------------------------------------------------------------------------
 void vtkExodusReader::ReadPoints(int exoid)
@@ -819,6 +918,7 @@ void vtkExodusReader::ReadPoints(int exoid)
   // we are only going to save the points the points that we used.
   outPtCount = this->PointMapOutIn->GetNumberOfIds();
   newPoints->SetNumberOfPoints(outPtCount);
+  float *ptr = (float *) newPoints->GetVoidPointer(0);
   for (outId  = 0; outId < outPtCount; ++outId)
     {
     inId = this->PointMapOutIn->GetId(outId);
@@ -828,14 +928,9 @@ void vtkExodusReader::ReadPoints(int exoid)
       vtkErrorMacro("Point id out of range.");
       }
     
-    if (z == NULL)
-      {
-      newPoints->InsertPoint(outId, x[inId], y[inId], 0.0);
-      }
-    else
-      {
-      newPoints->InsertPoint(outId, x[inId], y[inId], z[inId]);
-      }
+    ptr[3*outId]   = x[inId];
+    ptr[3*outId+1] = y[inId];
+    ptr[3*outId+2] = (z == NULL ? 0. : z[inId]);
     }
   output->SetPoints(newPoints);
   delete [] x;
@@ -1183,7 +1278,7 @@ vtkDataArray *vtkExodusReader::ReadCellDataArray(int exoid, int varIndex)
   float *px;
   float *pv;
   vtkFloatArray *array;
-  float numElemInPiece;
+  int numElemInPiece;
   
   // Find the total number of elements in the blocks we are loading.
   numElemInPiece = 0;
@@ -1254,7 +1349,7 @@ vtkDataArray *vtkExodusReader::ReadCellDataVector(int exoid, int startIdx,
   float *px, *py, *pz;
   float *pv;
   vtkFloatArray *array;
-  float numElemInPiece;
+  int numElemInPiece;
   
   if (dim != 2 && dim != 3)
     {

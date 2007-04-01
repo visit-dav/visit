@@ -26,16 +26,16 @@ all the packages except VTK and Qt, you can probably use newer versions of the
 packages and VisIt should work properly.  For Mesa, you must build a mangled
 version of Mesa.  The distribution provided has already been set up to build
 a mangled version so no additional work is required if you use it.  For VTK,
-you must use the October 28, 2003 distribution provided. The version of Qt used to
-build VisIt must be greater than or equal to 2.3.0. VisIt is also compatible
-with Qt version 3.
+you must use the October 28, 2003 distribution provided. The version of Qt
+used to build VisIt must be greater than or equal to 2.3.0. VisIt is also
+compatible with Qt version 3.
 
 Building VisIt
 ===============
 
-VisIt can currently be built on aix, irix, linux, solaris, tru64 and
-windows operating systems.  The following instructions only apply to
-building VisIt on Unix systems and does not apply to Windows.
+VisIt can currently be built on aix, irix, mac os x, linux, solaris, tru64
+and windows operating systems.  The following instructions only apply to
+building VisIt on Unix systems and does not apply to Mac OS X or Windows.
 
 We currently build VisIt using the following compilers on the following
 operating systems.  It is suggested that you use the same compilers.
@@ -44,11 +44,10 @@ operating systems.  It is suggested that you use the same compilers.
    Operating System          Compiler
    ================          ========
    AIX 5.1                   g++ 3.1
-   MacOS X 10.3 (Darwin)     g++ 3.3
    IRIX64 6.5                MIPSpro 7.3.1.1m and MIPSpro 7.3.1.2m
-   Redhat Linux 7.1 and 7.2  g++ 2.96
-   Solaris 7                 g++ 2.95.2
-   Tru64 5.1                 g++ 3.0.4 
+   Linux 7.1 and 7.2         g++ 2.96 or g++ 3.2.3
+   Solaris 7                 g++ 2.95.2 or g++ 3.2
+   Tru64 5.1                 g++ 3.0.4 or g++ 3.3.2
 
 The following compilers will *NOT* work with VisIt.  They will either not
 compile VisIt or will generate bad code.
@@ -56,6 +55,7 @@ compile VisIt or will generate bad code.
    Operating System          Compiler
    ================          ========
    IRIX64 6.5                MIPSpro 7.4
+   Linux 7.1 and 7.2         g++ 3.3 -> 3.3.3
 
 It is essential that you build all the dependent packages and VisIt using
 the same c++ compiler or you will encounter linking problems because different
@@ -156,9 +156,9 @@ cd cmake-1.8.1
 #
 # We have experienced problems building CMake on AIX with g++/gcc.
 # so for AIX use the native compilers to build CMake: 
-# env CXX=xlC CC=xlc CXXFLAGS="" ./bootstrap
+# env CXX=xlC CC=xlc CXXFLAGS="" CFLAGS="" ./bootstrap
 # otherwise:
-env CXXFLAGS="" ./bootstrap
+env CXXFLAGS=""  CFLAGS="" ./bootstrap
 make
 
 #
@@ -177,8 +177,9 @@ cd VTK
 # and CMAKE_C_COMPILER.  If you want to change the compiler flags you should
 # modify CMAKE_CXX_FLAGS and CMAKE_C_FLAGS.  You might want to specify "-O2"
 # as a compiler flag to build an optimized version.  If you want to specify
-# the location of the OpenGL library you should modify OPENGL_gl_LIBRARY
-# (/usr/shlib/libGL.so on tru64 systems.)
+# the location of the OpenGL library you should modify OPENGL_gl_LIBRARY and
+# OPENGL_glu_LIBRARY (/usr/shlib/libGL.so and /usr/shlib/libGLU.so on tru64
+# systems.)
 #
 # On AIX, you may experience problems with X11 headers. Check the following
 # and modify as necessary: CMAKE_X_CFLAGS, X11_X11_INCLUDE_PATH, 
@@ -226,6 +227,13 @@ cd VTK
 #    Imaging/vtkImageRange3D.cxx
 #    Imaging/vtkImageVariance3D.cxx
 #
+
+#
+# On tru64 systems using g++3.3.3, you may get messages indicating that
+# "-timplicit_local -no_implicit_include" are not supported compiler
+# options when building cmake.  Ignore them, the options appear to be
+# necessary for things to build properly.
+#
 make
 
 #
@@ -267,11 +275,10 @@ Qt
 The Qt toolkit from Trolltech is a free (for non-commercial use), cross-
 platform Graphical User Inteface toolkit that runs on X11, MS Windows, and
 Mac-X. VisIt uses Qt as the basis of its GUI and Viewer.  Follow the
-directions listed below to build Qt.  You can use Qt version 2.3.0 or 3.0.2
-on all the systems except tru64 where you must use 3.0.2.  Version 2.3.0
-generally looks nicer than version 3.0.2, so we recommend it where possible.
-If you have any problems building or installing Qt, read the INSTALL file
-in the Qt distribution for more information.
+directions listed below to build Qt.  You can use Qt version 2.3.0, 3.0.2
+or 3.3.2 on all the systems except tru64 where you must can't use 2.3.0.
+We recommend using 3.3.2.  If you have any problems building or installing
+Qt, read the INSTALL file in the Qt distribution for more information.
 
 #
 # Build Qt 2.3.0
@@ -364,6 +371,43 @@ setenv LD_LIBRARY64_PATH $QTDIR/lib:$LD_LIBRARY64_PATH       # SGI
 # On tru64 systems you will need to make the following changes to
 # the file mkspecs/tru64-g++/qmake.conf:
 # set QMAKE_LIBDIR_OPENGL to "/usr/shlib"
+#
+# On tru64 systems qt generates some unaligned access errors. To
+# correct the problem change the following two code blocks in
+# src/tools/qlocale.cpp.
+#
+# #if !defined(INFINITY)
+#         ...
+# #endif
+#
+#                    to
+#
+# #if !defined(INFINITY)
+# static const union {unsigned char c[8];double d;} be_inf_bytes = { 0x7f, 0xf0, 0, 0, 0, 0, 0, 0 } ;
+# static const union {unsigned char c[8];double d;} le_inf_bytes = { 0, 0, 0, 0, 0, 0, 0xf0, 0x7f };
+# static inline double inf()
+# {
+#     return ByteOrder == BigEndian ? be_inf_bytes.d : le_inf_bytes.d;
+# }
+# #   define INFINITY (::inf())
+# #endif
+#
+#                    and
+#
+# #if !defined(NAN)
+#         ...
+# #endif
+#                    to
+#
+# #if !defined(NAN)
+# static const union {unsigned char c[8];double d;} be_nan_bytes = { 0x7f, 0xf8, 0, 0, 0, 0, 0, 0 };
+# static const union {unsigned char c[8];double d;} le_nan_bytes = { 0, 0, 0, 0, 0, 0, 0xf8, 0x7f };
+# static inline double nan()
+# {
+#     return ByteOrder == BigEndian ? be_nan_bytes.d : le_nan_bytes.d;
+# }
+# #   define NAN (::nan())
+# #endif
 #
 # On aix systems you will need to make the following changes to
 # the file mkspecs/aix-g++/qmake.conf:
