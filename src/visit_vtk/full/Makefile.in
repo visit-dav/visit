@@ -210,6 +210,9 @@
 #    Hank Childs, Fri Jan 23 09:40:19 PST 2004
 #    Removed vtkVisItPLOT3DReader.
 #
+#    Hank Childs, Sun Feb  1 13:21:44 PST 2004
+#    Removed vtkDataSetFromVolume.
+#
 ##############################################################################
 
 ##
@@ -226,7 +229,6 @@ SRC=InitVTK.C \
     vtkBackgroundActor.C @VTK_CAMERA_SRC@\
     vtkConnectedTubeFilter.C \
     vtkDashedXorGridMapper2D.C \
-    vtkDataSetFromVolume.C \
     vtkDataSetRemoveGhostCells.C \
     vtkDisjointCubesFacelistFilter.C \
     vtkHankAxisActor2D.C \
