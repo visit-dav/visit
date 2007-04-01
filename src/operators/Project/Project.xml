@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+  <Plugin name="Project" type="operator" label="Project" version="1.0" enabled="true" iconFile="Project.xpm">
+    <Attribute name="ProjectAttributes" purpose="Project data from three to two dimensions" persistent="false" exportAPI="" exportInclude="">
+      <Enum name="ProjectionType">
+        XYCartesian
+        ZRCylindrical
+      </Enum>
+      <Field name="projectionType" label="projectionType" type="enum" subtype="ProjectionType">
+        XYCartesian
+      </Field>
+    </Attribute>
+  </Plugin>

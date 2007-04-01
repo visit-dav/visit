@@ -109,6 +109,10 @@ using std::vector;
 //    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
 //    Allow for mdserver-specific code in a plugin's source files.
 //
+//    Jeremy Meredith, Wed Sep  1 12:38:10 PDT 2004
+//    Removed AttVector's header SetXXX method prototype.
+//    Honor non-member user-defined functions.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1001,6 +1005,11 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
     virtual void WriteSourceSetDefault(ostream &c)
     {
     }
+    virtual void WriteHeaderSetFunction(ostream &h)
+    {
+        // Disabled the header method because the .C implementation (below)
+        // does not output anything.
+    }
     virtual void WriteSourceSetFunction(ostream &c, const QString &classname)
     {
         /*
@@ -1630,7 +1639,7 @@ class AttsGeneratorAttribute
         bool wroteUserDefinedHeading = false;
         for (i=0; i<functions.size(); i++)
         {
-            if (functions[i]->user)
+            if (functions[i]->user && functions[i]->member)
             {
                 if (! wroteUserDefinedHeading)
                 {
@@ -1658,6 +1667,21 @@ class AttsGeneratorAttribute
 
         h << "};" << endl;
         h << endl;
+
+        bool wroteUserDefinedFunctionsHeading = false;
+        for (i=0; i<functions.size(); i++)
+        {
+            if (functions[i]->user && !functions[i]->member)
+            {
+                if (! wroteUserDefinedFunctionsHeading)
+                {
+                    h << "// User-defined functions" << endl;
+                    wroteUserDefinedFunctionsHeading = true;
+                }
+                h << functions[i]->decl << endl;
+            }
+        }
+
         h << "#endif" << endl;
     }
     // ------------------------------------------------------------------------
