@@ -106,17 +106,27 @@ avtLocateQuery::PreExecute(void)
 //  Creation:   May 18, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Nov  4 15:18:15 PST 2004
+//    Set a flag in pick atts specifiying whether or not this code was
+//    successful in finding an intersection.
 //    
 // ****************************************************************************
 
 void
 avtLocateQuery::PostExecute(void)
 {
-    if (ThisProcessorHasMinimumValue(minDist))
+    int foundIsect = 0;
+    if (ThisProcessorHasMinimumValue(minDist) && minDist != +FLT_MAX)
     {
         pickAtts.SetDomain(foundDomain);
         pickAtts.SetElementNumber(foundElement);
+        foundIsect = 1;
     }
+    //
+    // Make sure all processors are on the same page.
+    //
+    foundIsect = UnifyMaximumValue(foundIsect);
+    pickAtts.SetLocationSuccessful(foundIsect);
 }
 
 

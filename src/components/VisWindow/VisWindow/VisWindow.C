@@ -5286,7 +5286,8 @@ VisWindow::GetInteractorAtts() const
 //  Creation:   September 2, 2004 
 //   
 //  Modifications:
-//
+//    Kathleen Bonnell, Thu Nov  4 16:46:31 PST 2004
+//    Make plots pickable before performing intersection, and unpickable after.
 // ****************************************************************************
 
 bool
@@ -5297,7 +5298,8 @@ VisWindow::FindIntersection(const int x, const int y, double isect[3])
     {
         return false;
     }
-
+   
+    plots->MakeAllPickable();
     bool success;
     vtkCellPicker *picker = vtkCellPicker::New();
     picker->SetTolerance(1.0e-6);
@@ -5327,6 +5329,7 @@ VisWindow::FindIntersection(const int x, const int y, double isect[3])
         }
     }
     picker->Delete();
+    plots->MakeAllUnPickable();
     return success;
 }
 

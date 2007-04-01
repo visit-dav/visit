@@ -37,6 +37,15 @@ using std::vector;
 //  Programmer: Hank Childs (re-factored by Mark Miller) 
 //  Creation:   April 27, 2004 
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Nov  4 13:36:07 PST 2004
+//    'maxMat' had a +1 from the actual highest used material number, but
+//    checks for invalid numbers were using '> maxMat' instead of '>= maxMat'.
+//    I change maxMat to be the actual highest used material number and
+//    allocated an array of size maxMat+1 for the lut, because having maxMat
+//    mean "highest used material number" seems clearer than changing the
+//    invalid checks to be ">=".
+//
 // ****************************************************************************
 static void
 RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
@@ -59,7 +68,6 @@ RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
             maxMat = mats[i];
         }
     }
-    maxMat += 1;
 
     //
     // Translate the arbitrarily numbered material lists to 0 -> n-1
@@ -69,8 +77,8 @@ RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
         //
         // It is faster to look up the material by lookup table.
         //
-        int *lut = new int[maxMat];
-        for (i = 0 ; i < maxMat ; i++)
+        int *lut = new int[maxMat+1];
+        for (i = 0 ; i <= maxMat ; i++)
         {
             lut[i] = -1;
         }

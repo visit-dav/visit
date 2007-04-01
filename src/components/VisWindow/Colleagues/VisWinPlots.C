@@ -1833,3 +1833,47 @@ VisWinPlots::ResumeTranslucentGeometry()
 {
     transparencyActor->ResumeRendering();
 }
+
+
+// ****************************************************************************
+//  Method: VisWinPlots::MakeAllPickable
+//
+//  Purpose:
+//      Make all the actors pickable.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   November 4, 2004
+//
+// ****************************************************************************
+
+void
+VisWinPlots::MakeAllPickable()
+{
+    std::vector< avtActor_p >::iterator it;
+    for (it = plots.begin() ; it != plots.end() ; it++)
+    {
+        (*it)->MakePickable();
+    }
+}
+
+
+// ****************************************************************************
+//  Method: VisWinPlots::MakeAllUnPickable
+//
+//  Purpose:
+//      Make all the actors unpickable.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   November 4, 2004
+//
+// ****************************************************************************
+
+void
+VisWinPlots::MakeAllUnPickable()
+{
+    std::vector< avtActor_p >::iterator it;
+    for (it = plots.begin() ; it != plots.end() ; it++)
+    {
+        (*it)->MakeUnPickable();
+    }
+}

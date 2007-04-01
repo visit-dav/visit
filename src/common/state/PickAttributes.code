@@ -598,6 +598,7 @@ PickAttributes::PrepareForNewPick()
     includeGhosts = false;
     elementIsGhost = false;
     requiresGlyphPick = false;
+    locationSuccessful = false;
 }
 
 Function: SetFromNode
