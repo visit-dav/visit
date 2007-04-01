@@ -102,6 +102,10 @@ vtkUniqueFeatureEdges::~vtkUniqueFeatureEdges()
 //
 //    Kathleen Bonnell, Mon May 20 17:01:31 PDT 2002  
 //    Fix memory leak. (delete edgeTable).
+//
+//    Hank Childs, Fri Jul 30 08:02:44 PDT 2004
+//    Copy over field data.
+//
 // ****************************************************************************
 
 void vtkUniqueFeatureEdges::Execute()
@@ -206,6 +210,7 @@ void vtkUniqueFeatureEdges::Execute()
 
   outPD->CopyAllocate(pd, numPts);
   outCD->CopyAllocate(cd, numCells);
+  GetOutput()->GetFieldData()->ShallowCopy(GetInput()->GetFieldData());
 
   // Get our locator for merging points
   //

@@ -89,6 +89,9 @@ vtkVisItPolyDataNormals::Execute()
 //    critical math operations.  Added note of concern about using
 //    VTK's normal calculation at all.
 //
+//    Hank Childs, Fri Jul 30 09:00:51 PDT 2004
+//    Copy along cell data from verts and lines as well.
+//
 // ****************************************************************************
 void
 vtkVisItPolyDataNormals::ExecutePointWithoutSplitting()
@@ -103,6 +106,10 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting()
     vtkPoints    *inPts = input->GetPoints();
 
     int nCells  = inCA->GetNumberOfCells();
+    int nOtherCells = input->GetVerts()->GetNumberOfCells() + 
+                      input->GetLines()->GetNumberOfCells();
+    int nTotalCells = nCells + nOtherCells;
+
     int nPoints = input->GetNumberOfPoints();
 
     vtkPolyData *output = GetOutput();
@@ -144,11 +151,12 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting()
 
     // Create the output cells, accumulating cell normals to the points
     output->Allocate(inCA->GetNumberOfConnectivityEntries());
-    outCD->CopyAllocate(inCD, nCells);
+    outCD->CopyAllocate(inCD, nTotalCells);
+
     vtkIdType *connPtr = inCA->GetPointer();
     for (i = 0 ; i < nCells ; i++)
     {
-        outCD->CopyData(inCD, i, i);
+        outCD->CopyData(inCD, nOtherCells+i, nOtherCells+i);
         int nVerts = *connPtr++;
         if (nVerts == 3)
         {
@@ -207,6 +215,10 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting()
     // copy the original vertices and lines to the output
     output->SetVerts(input->GetVerts());
     output->SetLines(input->GetLines());
+
+    // copy the data from the lines and vertices now.
+    for (i = 0 ; i < nOtherCells ; i++)
+        outCD->CopyData(inCD, i, i);
 }
 
 // ****************************************************************************
@@ -344,6 +356,9 @@ class NormalList
 //    Jeremy Meredith, Fri May 28 09:46:14 PDT 2004
 //    Use double precision math in critical sections.
 //
+//    Hank Childs, Fri Jul 30 09:00:51 PDT 2004
+//    Account for cell data in verts and lines.
+//
 // ****************************************************************************
 void
 vtkVisItPolyDataNormals::ExecutePointWithSplitting()
@@ -358,6 +373,10 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
     vtkPoints    *inPts = input->GetPoints();
 
     int nCells  = inCA->GetNumberOfCells();
+    int nOtherCells = input->GetPolys()->GetNumberOfCells() +
+                      input->GetLines()->GetNumberOfCells();
+    int nTotalCells = nCells + nOtherCells;
+
     int nPoints = input->GetNumberOfPoints();
 
     vtkPolyData *output = GetOutput();
@@ -375,7 +394,7 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
     // the duplicated points (where a feature edge was found).
     NormalList normalList(nPoints);
 
-    outCD->CopyAllocate(inCD, nCells);
+    outCD->CopyAllocate(inCD, nTotalCells);
     vtkIdTypeArray *list = vtkIdTypeArray::New();
     list->SetNumberOfValues(inCA->GetNumberOfConnectivityEntries());
     vtkIdType *nl = list->GetPointer(0);
@@ -385,7 +404,7 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
     int newPointIndex = nPoints;
     for (i = 0 ; i < nCells ; i++)
     {
-        outCD->CopyData(inCD, i, i);
+        outCD->CopyData(inCD, i+nOtherCells, i+nOtherCells);
         int nVerts;
         nVerts = *connPtr++;
 
@@ -595,6 +614,9 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
     output->SetVerts(input->GetVerts());
     output->SetLines(input->GetLines());
 
+    // copy the data from the lines and vertices now.
+    for (i = 0 ; i < nOtherCells ; i++)
+        outCD->CopyData(inCD, i, i);
 }
 
 // ****************************************************************************

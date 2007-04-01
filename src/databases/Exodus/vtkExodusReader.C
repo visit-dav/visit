@@ -677,6 +677,9 @@ void vtkExodusReader::ReadGeometry(int exoid)
 //   Hank Childs, Sat Jul 10 12:19:28 PDT 2004
 //   Remove virtual function calls for performance.
 //
+//   Hank Childs, Thu Jul 29 15:30:40 PDT 2004
+//   Fix bug with setting up the cell list.
+//
 //----------------------------------------------------------------------------
 void vtkExodusReader::ReadCells(int exoid)
 {
@@ -781,6 +784,7 @@ void vtkExodusReader::ReadCells(int exoid)
   int *cl = cellLocations->GetPointer(0);
 
   int idx = 0;
+  int currentIndex = 0;
   for (i = this->StartBlock, idx=0 ; i <= this->EndBlock; i++, idx++)
     {
     // cellNumPoints may be smaller than num_nodes_per_elem 
@@ -835,7 +839,6 @@ void vtkExodusReader::ReadCells(int exoid)
       
     // Now save the cells in a cell array.
     int *pConnect = connect[idx];
-    int currentIndex = 0;
     for (j = 0; j < num_elem_in_block[idx]; ++j)
       {
       *ct++ = cellType;

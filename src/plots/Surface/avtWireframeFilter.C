@@ -6,6 +6,7 @@
 
 #include <vtkAppendPolyData.h>
 #include <vtkDataSet.h>
+#include <vtkFieldData.h>
 #include <vtkGeometryFilter.h>
 #include <vtkPolyData.h>
 #include <vtkUniqueFeatureEdges.h>
@@ -131,6 +132,9 @@ avtWireframeFilter::Equivalent(const AttributeGroup *a)
 //
 //  Modifications:
 //
+//     Hank Childs, Thu Jul 29 17:24:40 PDT 2004
+//     Reverse order of inputs to appender to get around VTK funniness.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -139,16 +143,29 @@ avtWireframeFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     // xtract the edges for correct wireframe rendering.
     
     geoFilter->SetInput(inDS);
+
+    //
+    // If the input to the geometry filter is poly data, it does not pass
+    // the field data through.  So copy that now.
+    //
+    geoFilter->Update();  // Update now so we can copy over the field data.
+    if (inDS->GetDataObjectType() == VTK_POLY_DATA)
+        geoFilter->GetOutput()->GetFieldData()
+                                           ->ShallowCopy(inDS->GetFieldData());
+
     edgesFilter->SetInput(geoFilter->GetOutput());
 
-    appendFilter->SetInputByNumber(0, geoFilter->GetOutput());
-    appendFilter->SetInputByNumber(1, edgesFilter->GetOutput());
+    //
+    // Lines must go before polys to avoid VTK bug with indexing cell data.
+    //
+    appendFilter->SetInputByNumber(0, edgesFilter->GetOutput());
+    appendFilter->SetInputByNumber(1, geoFilter->GetOutput());
  
     vtkPolyData *outPolys = vtkPolyData::New();
     appendFilter->SetOutput(outPolys);
     appendFilter->Update();
 
-    return (vtkDataSet*) outPolys;
+    return outPolys;
 }
 
 
@@ -182,35 +199,6 @@ avtWireframeFilter::ReleaseData(void)
     edgesFilter->SetInput(NULL);
     edgesFilter->SetOutput(NULL);
     edgesFilter->SetLocator(NULL);
-}
-
-
-// ****************************************************************************
-//  Method: avtWireframeFilter::PostExecute
-//
-//  Purpose:
-//    Send accurate Spatial Extents to output. 
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   May 24, 2004 
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtWireframeFilter::PostExecute(void)
-{
-    avtDataAttributes& outAtts = GetOutput()->GetInfo().GetAttributes();
-            
-    // get the outputs's spatial extents
-    double se[6];
-    avtDataset_p output = GetTypedOutput();
-    avtDatasetExaminer::GetSpatialExtents(output, se);
-
-    // over-write spatial extents
-    outAtts.GetTrueSpatialExtents()->Clear();
-    outAtts.GetCumulativeTrueSpatialExtents()->Set(se);
 }
 
 

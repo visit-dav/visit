@@ -54,6 +54,9 @@ class vtkCellDataToPointData;
 //    Moved geofilter, appendFilter and edgesFilter to avtWireframeFilter. 
 //    Removed PostExecute. 
 //
+//    Hank Childs, Fri Jul 30 12:09:16 PDT 2004
+//    Added PostExecute.
+//
 // ****************************************************************************
 
 class avtSurfaceFilter : public avtStreamer
@@ -79,6 +82,7 @@ class avtSurfaceFilter : public avtStreamer
     double                  max;
     double                  Ms;
     double                  Bs;
+    double                  zValMin, zValMax;
     bool                    stillNeedExtents;
 
     double                  SkewTheValue(const double);
@@ -88,6 +92,7 @@ class avtSurfaceFilter : public avtStreamer
     virtual void            RefashionDataObjectInfo(void);
     virtual void            VerifyInput(void);
     virtual void            PreExecute(void);
+    virtual void            PostExecute(void);
     virtual avtPipelineSpecification_p
                             PerformRestriction(avtPipelineSpecification_p);
 };
