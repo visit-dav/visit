@@ -15,11 +15,13 @@
 #include <Xfer.h>
 #include <VisWindowTypes.h>
 #include <avtTypes.h>
+#include <EngineKey.h>
 #include <vector>
 #include <string>
 #include <map>
 
 struct avtViewInfo;
+class avtDatabaseMetaData;
 class AnnotationAttributes;
 class AppearanceAttributes;
 class ColorTableAttributes;
@@ -28,10 +30,13 @@ class MessageAttributes;
 class QApplication;
 class QSocketNotifier;
 class QTimer;
+class SILAttributes;
 class StatusAttributes;
 class SyncAttributes;
 class ViewerConfigManager;
 class ViewerMessageBuffer;
+class ViewerMetaDataObserver;
+class ViewerSILAttsObserver;
 class ViewerOperatorFactory;
 class ViewerPlotFactory;
 class ViewerRPCObserver;
@@ -322,6 +327,11 @@ struct avtDefaultPlotMetaData;
 //    Kathleen Bonnell, Wed Aug 18 09:28:51 PDT 2004 
 //    Added InteractorAttributes methods.
 //
+//    Jeremy Meredith, Wed Aug 25 10:47:18 PDT 2004
+//    Added ability to read information (both in general and specifically
+//    for new metadata and SIL atts) from an engine.  This was needed for
+//    simulations.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -484,11 +494,17 @@ private:
 private slots:
     void HandleViewerRPC();
     void HandleSync();
+    void HandleMetaDataUpdated(const std::string &host, const std::string &db,
+                               const avtDatabaseMetaData *md);
+    void HandleSILAttsUpdated(const std::string &host, const std::string &db,
+                              const SILAttributes *md);
     void ProcessRendererMessage();
     void ReadFromParentAndProcess(int);
     void DelayedProcessSettings();
     void SendKeepAlives();
     void EnableSocketSignals();
+
+    void ReadFromSimulationAndProcess(int);
 
     void ConnectWindow(ViewerWindow *win);
     void DisconnectWindow(ViewerWindow *win);
@@ -531,6 +547,8 @@ private:
     StatusAttributes      *statusAtts;
     AppearanceAttributes  *appearanceAtts;
     SyncAttributes        *syncAtts;
+    avtDatabaseMetaData   *metaData;
+    SILAttributes         *silAtts;
 
     bool                   nowin;
     std::string            borders;
@@ -552,6 +570,11 @@ private:
     int                    messagePipe[2];
 
     PluginManagerAttributes *pluginAtts;
+
+    std::map<int,EngineKey>                     simulationSocketToKey;
+    std::map<EngineKey,QSocketNotifier*>        engineKeyToNotifier;
+    std::map<EngineKey,ViewerMetaDataObserver*> engineMetaDataObserver;
+    std::map<EngineKey,ViewerSILAttsObserver*>  engineSILAttsObserver;
 
     // note: we may only want to use the engineParallelArguments for
     // the first launch of an engine

@@ -478,6 +478,9 @@ LineoutListItem::DeleteOriginatingWindow()
 //    Brad Whitlock, Tue Jan 27 00:52:37 PDT 2004
 //    I made it use the plot list instead of an animation.
 //
+//    Kathleen Bonnell, Mon Aug 23 09:31:07 PDT 2004 
+//    Don't set the active window.
+//
 // ****************************************************************************
 
 void
@@ -517,21 +520,10 @@ LineoutListItem::HandleTool(const avtToolInterface &ti)
     {
         //
         //  We want to update the window where lineouts are drawn,
-        //  so make it the active window if it isn't already.
         //
-        int resWinIndex = resWin->GetWindowId()+ 1; 
-        ViewerWindowManager *vwm = ViewerWindowManager::Instance();
-        int activeWindowIndex = vwm->GetActiveWindow()->GetWindowId()+ 1;
-        if (activeWindowIndex != resWinIndex)
-            vwm->SetActiveWindow(resWinIndex); 
-
         ViewerPlotList *resPL = resWin->GetPlotList();
         resPL->UpdatePlotAtts(false);
         resPL->UpdateFrame();
-
-        // Reset the active window if necessary.
-        if (activeWindowIndex != resWinIndex)
-            vwm->SetActiveWindow(activeWindowIndex); 
     }
 }
 

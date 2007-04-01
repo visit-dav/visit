@@ -24,6 +24,7 @@ class UpdatePlotAttsRPC;
 class UseNetworkRPC;
 
 // Other classes
+class avtDatabaseMetaData;
 class Connection;
 class LoadBalancer;
 class MPIXfer;
@@ -69,6 +70,9 @@ class Xfer;
 //    Mark C. Miller, Wed Aug 11 23:42:18 PDT 2004
 //    Added argument for cellCountMultiplier to WriteData
 //
+//    Jeremy Meredith, Wed Aug 25 11:58:44 PDT 2004
+//    Added methods needed for Simulation support.
+//
 // ****************************************************************************
 
 class Engine
@@ -82,6 +86,12 @@ class Engine
     void            Finalize(void);
     bool            ConnectViewer(int *argc, char **argv[]);
     void            SetUpViewerInterface(int *argc, char **argv[]);
+
+    // Needed for simulations
+    void            PopulateSimulationMetaData(const std::string &db,
+                                               const std::string &fmt);
+    void            SimulationTimeStepChanged();
+    static void     Disconnect();
 
     // Two event loops
     bool            EventLoop();
@@ -179,6 +189,12 @@ class Engine
     RenderRPC                *renderRPC;
     SetWinAnnotAttsRPC       *setWinAnnotAttsRPC;
     CloneNetworkRPC          *cloneNetworkRPC;
+
+    // The metadata, filename, format for a simulation
+    std::string               filename;
+    std::string               format;
+    avtDatabaseMetaData      *metaData;
+    SILAttributes            *silAtts;
 };
 
 #endif

@@ -5,13 +5,13 @@
 #include <visitstream.h>
 
 #include <avtDatabaseMetaData.h>
+#include <avtSimulationInformation.h>
 #include <ParsingExprList.h>
 #include <ExprNode.h>
 #include <BadIndexException.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <InvalidVariableException.h>
-
 
 inline void   Indent(ostream &, int);
 
@@ -3430,7 +3430,7 @@ avtDefaultPlotMetaData::Print(ostream &out, int indent) const
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData()
-    : AttributeSubject("sssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*bsibb")
+    : AttributeSubject("sssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*babb")
 {
     hasTemporalExtents          = false;
     minTemporalExtents          = 0.;
@@ -3440,8 +3440,7 @@ avtDatabaseMetaData::avtDatabaseMetaData()
     mustRepopulateOnStateChange = false;
     mustAlphabetizeVariables    = true;
     isSimulation                = false;
-    simHost                     = "";
-    simPort                     = 0;
+    simInfo                     = new avtSimulationInformation();
     useCatchAllMesh             = false;
 }
 
@@ -3502,7 +3501,7 @@ avtDatabaseMetaData::avtDatabaseMetaData()
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
-    : AttributeSubject("sssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*bsibb")
+    : AttributeSubject("sssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*babb")
 {
     databaseName       = rhs.databaseName;
     fileFormat         = rhs.fileFormat;
@@ -3523,8 +3522,7 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
     times              = rhs.times;
     exprList           = rhs.exprList;
     isSimulation       = rhs.isSimulation;
-    simHost            = rhs.simHost;
-    simPort            = rhs.simPort;
+    simInfo            = new avtSimulationInformation(*rhs.simInfo);
 
     int i;
     for (i=0; i<rhs.meshes.size(); i++)
@@ -3628,8 +3626,7 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
     times              = rhs.times;
     exprList           = rhs.exprList;
     isSimulation       = rhs.isSimulation;
-    simHost            = rhs.simHost;
-    simPort            = rhs.simPort;
+    *simInfo           = *rhs.simInfo;
 
     int i;
     for (i=0; i<meshes.size(); i++)
@@ -4946,6 +4943,9 @@ avtDatabaseMetaData::GetSpeciesOnMesh(std::string mesh) const
 //    Brad Whitlock, Fri Jul 23 12:37:57 PDT 2004
 //    Added databaseComment.
 //
+//    Jeremy Meredith, Thu Aug 12 13:23:25 PDT 2004
+//    Added simulation fields.
+//
 // ****************************************************************************
 
 void
@@ -4953,6 +4953,9 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
 {
     Indent(out, indent);
     out << "Database: " << databaseName.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Simulation: " << (isSimulation ? "Yes" : "No" ) << endl;
 
     Indent(out, indent);
     out << "Database comment: " << databaseComment.c_str() << endl;
@@ -5253,10 +5256,9 @@ avtDatabaseMetaData::SelectAll()
     Select(25, (void*)&sils);
 
     Select(26, (void*)&isSimulation);
-    Select(27, (void*)&simHost);
-    Select(28, (void*)&simPort);
-    Select(29, (void*)&useCatchAllMesh);
-    Select(30, (void*)&mustAlphabetizeVariables);
+    Select(27, (void*)simInfo);
+    Select(28, (void*)&useCatchAllMesh);
+    Select(29, (void*)&mustAlphabetizeVariables);
 }
 
 // *******************************************************************
@@ -6092,6 +6094,17 @@ avtDatabaseMetaData::GetNumberOfExpressions(void) const
     return exprList.GetNumExpressions();
 }
 
+void
+avtDatabaseMetaData::SetSimInfo(const avtSimulationInformation &si)
+{
+    *simInfo = si;
+}
+
+const avtSimulationInformation&
+avtDatabaseMetaData::GetSimInfo() const
+{
+    return *simInfo;
+}
 
 // ****************************************************************************
 //  Function: avtDatabaseMetaData::VarIsCompound
@@ -6364,3 +6377,61 @@ Indent(ostream &out, int indent)
 }
 
 
+// ****************************************************************************
+//  Function: GetAllVariableNames
+//
+//  Purpose:
+//    Retrieves names of all variables defined on a particular mesh. 
+//
+//  Arguments:
+//    activeVar The active variable for the pipeline, used to determine
+//              the mesh the vars should be defined on.
+//
+//  Returns:
+//    A list of variable names defined on the same mesh as the active var.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 24, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+const stringVector
+avtDatabaseMetaData::GetAllVariableNames(const std::string &activeVar) const
+{
+    int i;
+    stringVector vars;
+    std::string meshName = MeshForVar(activeVar);
+    for (i = 0; i < GetNumScalars(); i++) 
+    {
+        if (GetScalar(i)->meshName == meshName)
+            vars.push_back(GetScalar(i)->name);
+    }
+    for (i = 0; i < GetNumVectors(); i++) 
+    {
+        if (GetVector(i)->meshName == meshName)
+            vars.push_back(GetVector(i)->name);
+    }
+    for (i = 0; i < GetNumTensors(); i++) 
+    {
+        if (GetTensor(i)->meshName == meshName)
+            vars.push_back(GetTensor(i)->name);
+    }
+    for (i = 0; i < GetNumSymmTensors(); i++) 
+    {
+        if (GetSymmTensor(i)->meshName == meshName)
+            vars.push_back(GetSymmTensor(i)->name);
+    }
+    for (i = 0; i < GetNumMaterials(); i++) 
+    {
+        if (GetMaterial(i)->meshName == meshName)
+            vars.push_back(GetMaterial(i)->name);
+    }
+    for (i = 0; i < GetNumSpecies(); i++) 
+    {
+        if (GetSpecies(i)->meshName == meshName)
+            vars.push_back(GetSpecies(i)->name);
+    }
+    return vars;
+}

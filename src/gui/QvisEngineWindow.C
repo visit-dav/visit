@@ -369,9 +369,15 @@ QvisEngineWindow::UpdateInformation(int index)
     else
     {
         if (engines->GetSimulationName()[index] != "")
+        {
             engineLabel->setText("Simulation:");
+            closeEngineButton->setText("Disconnect simulation");
+        }
         else
+        {
             engineLabel->setText("Engine:");
+            closeEngineButton->setText("Close engine");
+        }
 
         QString tmp;
         tmp.sprintf("%d", engines->GetNumProcessors()[index]);

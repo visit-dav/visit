@@ -50,6 +50,10 @@
 //    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
 //    Allow for mdserver-specific code in a plugin's source files.
 //
+//    Brad Whitlock, Thu Aug 12 10:38:06 PDT 2004
+//    I removed the include for database_exports.h in the generated code
+//    since it was not needed.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -109,7 +113,7 @@ class AVTGeneratorPlugin
 
     Attribute *atts;
   public:
-    AVTGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v,const QString &, bool hw)
+    AVTGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v,const QString &, bool hw,bool,bool)
         : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), haswriter(hw), atts(NULL)
     {
         enabledByDefault = true;
@@ -720,7 +724,6 @@ class AVTGeneratorPlugin
             h << "#ifndef AVT_"<<name<<"_FILE_FORMAT_H" << endl;
             h << "#define AVT_"<<name<<"_FILE_FORMAT_H" << endl;
             h << "" << endl;
-            h << "#include <database_exports.h>" << endl;
             h << "#include <avtSTSDFileFormat.h>" << endl;
             h << "" << endl;
             h << "" << endl;
@@ -784,8 +787,6 @@ class AVTGeneratorPlugin
             h << "" << endl;
             h << "#ifndef AVT_"<<name<<"_FILE_FORMAT_H" << endl;
             h << "#define AVT_"<<name<<"_FILE_FORMAT_H" << endl;
-            h << "" << endl;
-            h << "#include <database_exports.h>" << endl;
             h << "" << endl;
             h << "#include <avtMTSDFileFormat.h>" << endl;
             h << "" << endl;
@@ -853,8 +854,6 @@ class AVTGeneratorPlugin
             h << "#ifndef AVT_"<<name<<"_FILE_FORMAT_H" << endl;
             h << "#define AVT_"<<name<<"_FILE_FORMAT_H" << endl;
             h << "" << endl;
-            h << "#include <database_exports.h>" << endl;
-            h << "" << endl;
             h << "#include <avtSTMDFileFormat.h>" << endl;
             h << "" << endl;
             h << "#include <vector>" << endl;
@@ -917,8 +916,6 @@ class AVTGeneratorPlugin
             h << "" << endl;
             h << "#ifndef AVT_"<<name<<"_FILE_FORMAT_H" << endl;
             h << "#define AVT_"<<name<<"_FILE_FORMAT_H" << endl;
-            h << "" << endl;
-            h << "#include <database_exports.h>" << endl;
             h << "" << endl;
             h << "#include <avtMTMDFileFormat.h>" << endl;
             h << "" << endl;

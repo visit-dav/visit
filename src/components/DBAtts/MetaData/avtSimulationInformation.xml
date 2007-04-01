@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+  <Attribute name="avtSimulationInformation" purpose="Contains information about simulation connections" persistent="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h">
+    <Field name="host" label="host" type="string">
+    </Field>
+    <Field name="port" label="port" type="int">
+      0
+    </Field>
+  </Attribute>

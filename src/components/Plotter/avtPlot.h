@@ -149,6 +149,9 @@ class     AttributeSubject;
 //    Made GetCellCountMultiplierForSRThreshold non-virtual
 //    Added SetCellCountMultiplierForSRThreshold
 //
+//    Kathleen Bonnell, Tue Aug 24 16:12:03 PDT 2004 
+//    Added avtMeshType arg to SetOpaqueMeshIsAppropriate. 
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -201,7 +204,7 @@ class PLOTTER_API avtPlot
     virtual avtMapper         *GetMapper(void) = 0;
     virtual bool               CanCacheWriterExternally(void) { return true; } 
     virtual const AttributeSubject 
-                              *SetOpaqueMeshIsAppropriate(bool)
+                              *SetOpaqueMeshIsAppropriate(bool, avtMeshType)
                                    { return NULL; };
     float                      GetCellCountMultiplierForSRThreshold() const;
 

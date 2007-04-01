@@ -131,6 +131,10 @@ avtDatabaseFactory::SetDefaultFormat(const char *f)
 //    Brad Whitlock, Thu May 27 18:12:45 PST 2004
 //    I fixed a bug that I introduced into the Windows extension comparison.
 //
+//    Jeremy Meredith, Tue Aug 24 17:59:24 PDT 2004
+//    Vastly improved the error messages when failing to open a file.
+//    The extra error detection prevented crashes in some common situations.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -192,16 +196,32 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
     if (format != NULL)
     {
         int formatindex = dbmgr->GetAllIndex(format);
-        if (formatindex != -1)
+        if (formatindex < 0)
         {
-            string formatid = dbmgr->GetAllID(formatindex);
-            CommonDatabasePluginInfo *info = 
-                                         dbmgr->GetCommonPluginInfo(formatid);
-            rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
-                               nBlocks);
+            char msg[1000];
+            sprintf(msg,
+                    "The DB factory was told to open a file of type %s, "
+                    "but the engine had no plugin of that type.",
+                    format);
+            EXCEPTION1(ImproperUseException, msg);
         }
 
-        if (formatindex < 0 || rv == NULL)
+        string formatid = dbmgr->GetAllID(formatindex);
+        if (!dbmgr->PluginAvailable(formatid))
+        {
+            char msg[1000];
+            sprintf(msg,
+                    "The DB factory was told to open a file of type %s, "
+                    "but that format's plugin could not be loaded.",
+                    format);
+            EXCEPTION1(ImproperUseException, msg);
+        }
+        CommonDatabasePluginInfo *info = 
+            dbmgr->GetCommonPluginInfo(formatid);
+        rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
+                           nBlocks);
+
+        if (rv == NULL)
         {
             char msg[1000];
             sprintf(msg,

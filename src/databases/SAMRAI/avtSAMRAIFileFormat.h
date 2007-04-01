@@ -42,6 +42,10 @@ class avtSpecies;
 //
 //    Mark C. Miller, Thu Jan 29 11:21:41 PST 2004
 //    Added var_max_ghost data member
+//
+//    Mark C. Miller, Mon Aug 23 14:17:55 PDT 2004
+//    Added methods PopulateIOInformation, OpenFile, CloseFile and data
+//    member h5files
 // 
 // ****************************************************************************
 
@@ -69,8 +73,12 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     int                   GetCycle(void) { return time_step_number; };
 
     void                  PopulateDatabaseMetaData(avtDatabaseMetaData *);
+    void                  PopulateIOInformation(avtIOInformation &ioInfo);
     void                  RegisterVariableList(const char *,
                                                const vector<CharStrRef> &);
+
+    hid_t                 OpenFile(const char *fileName);
+    void                  CloseFile(int f);
 
   protected:
 
@@ -185,6 +193,8 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     string                        active_visit_var_name;
     string                        last_visit_var_name;
     int                           last_patch;
+
+    hid_t                        *h5files;
 
     static int           objcnt;
     static void          InitializeHDF5();

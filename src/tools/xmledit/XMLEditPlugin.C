@@ -437,6 +437,10 @@ XMLEditPlugin::BlockAllSignals(bool block)
 //    Hank Childs, Sat Sep 13 08:27:57 PDT 2003
 //    Added another argument to plugin constructor.
 //
+//    Jeremy Meredith, Wed Aug 25 11:57:08 PDT 2004
+//    Added the "no-engine" and "engine-only" options to the plugin
+//    constructor.
+//
 // ****************************************************************************
 void
 XMLEditPlugin::attpluginGroupChanged(int id)
@@ -446,7 +450,7 @@ XMLEditPlugin::attpluginGroupChanged(int id)
         xmldoc->docType = "Plugin";
         if (!xmldoc->plugin)
         {
-            xmldoc->plugin = new Plugin("","","","","","","","");
+            xmldoc->plugin = new Plugin("","","","","","","",false,false,false);
             xmldoc->plugin->atts = xmldoc->attribute;
         }
     }

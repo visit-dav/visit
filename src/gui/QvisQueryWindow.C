@@ -107,6 +107,9 @@ QvisQueryWindow::~QvisQueryWindow()
 //   Kathleen Bonnell, Thu Apr 22 15:31:24 PDT 2004 
 //   Made the default for dataOpts be 'actual data'. 
 //
+//   Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004 
+//   Made the default for dataOpts be 'original data'. 
+//
 // ****************************************************************************
 
 void
@@ -160,7 +163,7 @@ QvisQueryWindow::CreateWindowContents()
     sLayout->addWidget(origData, 5, 0);
     QRadioButton *actualData = new QRadioButton("Actual Data", argPanel, "actualData");
     dataOpts->insert(actualData);
-    dataOpts->setButton(1);
+    dataOpts->setButton(0);
     sLayout->addWidget(actualData, 6, 0);
 
     // Add the time button to the argument panel.
@@ -457,6 +460,9 @@ QvisQueryWindow::UpdateResults(bool)
 //   Kathleen Bonnell, Thu Apr 22 15:31:24 PDT 2004 
 //   Made the default for dataOpts be 'actual data'. 
 //
+//   Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004 
+//   Made the default for dataOpts be 'original data'. 
+//
 // ****************************************************************************
 
 void
@@ -467,7 +473,7 @@ QvisQueryWindow::UpdateArgumentPanel(int index)
     const intVector &timeQuery = queries->GetTimeQuery();
 
     // reset a few defaults
-    dataOpts->setButton(1);
+    dataOpts->setButton(0);
     
     if(index < winType.size())
     {

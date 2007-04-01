@@ -2606,3 +2606,51 @@ FileServerList::GetSeparatorString(const std::string &host)
     SAFE_GET_SEPARATOR(host, GetSeparatorString);
     return sep;
 }
+
+// ****************************************************************************
+//  Method:  FileServerList::SetOpenFileMetaData
+//
+//  Purpose:
+//    Poke new metadata into the file server.  This is needed by
+//    databases that return metadata from the Engine and not the
+//    MDServer -- i.e. simulations.
+//
+//  Arguments:
+//    md         the new metadata
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 25, 2004
+//
+// ****************************************************************************
+void
+FileServerList::SetOpenFileMetaData(const avtDatabaseMetaData *md)
+{
+    *(fileMetaData[openFile.FullName()]) = *md;
+    // hack to have it return that the file changed
+    fileAction=FILE_OPEN;
+    Select(5, (void *)&fileAction);
+}
+
+// ****************************************************************************
+//  Method:  FileServerList::SetOpenFileSIL
+//
+//  Purpose:
+//    Poke a new SIL into the file server.  This is needed by
+//    databases that return metadata from the Engine and not the
+//    MDServer -- i.e. simulations.
+//
+//  Arguments:
+//    sil        the new SIL
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 25, 2004
+//
+// ****************************************************************************
+void
+FileServerList::SetOpenFileSIL(const avtSIL *sil)
+{
+    *(SILData[openFile.FullName()]) = *sil;
+    // hack to have it return that the file changed
+    fileAction=FILE_OPEN;
+    Select(5, (void *)&fileAction);
+}

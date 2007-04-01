@@ -71,6 +71,10 @@ GetMetaDataRPCExecutor::~GetMetaDataRPCExecutor()
 //   Brad Whitlock, Tue May 13 15:40:03 PST 2003
 //   I added timeState.
 //
+//   Jeremy Meredith, Wed Aug 25 11:40:22 PDT 2004
+//   Handle errors through exceptions instead of error codes.   This allows
+//   real error messages to make it to the user.
+//
 // ****************************************************************************
 
 void
@@ -84,20 +88,20 @@ GetMetaDataRPCExecutor::Update(Subject *s)
     TRY
     {
         // Either send a successful reply or send an error.
-        if(parent->ReadMetaData(rpc->GetFile(), rpc->GetTimeState()) == 0)
-        {
+        parent->ReadMetaData(rpc->GetFile(), rpc->GetTimeState());
 #ifdef DEBUG
-            debug2 << "MetaData=" << endl;
-            parent->GetCurrentMetaData()->Print(debug2);
+        debug2 << "MetaData=" << endl;
+        parent->GetCurrentMetaData()->Print(debug2);
 #endif
-            rpc->SendReply(parent->GetCurrentMetaData());
-        }
-        else
-            rpc->SendError();
+        rpc->SendReply(parent->GetCurrentMetaData());
     }
     CATCH2(DatabaseException, dbe)
     {
         rpc->SendError(dbe.GetMessage(), dbe.GetExceptionType());
+    }
+    CATCH2(VisItException, ve)
+    {
+        rpc->SendError("An unknown error has occurred", ve.GetExceptionType());
     }
     ENDTRY
 }

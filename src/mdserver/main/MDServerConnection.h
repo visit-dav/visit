@@ -95,6 +95,10 @@ class Xfer;
 //    Brad Whitlock, Thu Jul 29 11:29:12 PDT 2004
 //    I added FileHasVisItExtension.
 //
+//    Jeremy Meredith, Wed Aug 25 11:41:54 PDT 2004
+//    Handle errors through exceptions instead of error codes.   This allows
+//    real error messages to make it to the user.
+//
 // ****************************************************************************
 
 class MDServerConnection
@@ -138,10 +142,10 @@ public:
     Connection *GetWriteConnection() const;
 
     // Functions used by the RPC Executors.
-    int  ReadMetaData(std::string file, int timeState);
+    void ReadMetaData(std::string file, int timeState);
     avtDatabaseMetaData *GetCurrentMetaData() const;
 
-    int  ReadSIL(std::string file, int timeState);
+    void ReadSIL(std::string file, int timeState);
     SILAttributes *GetCurrentSIL() const;
 
     void CloseDatabase();

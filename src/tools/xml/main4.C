@@ -11,8 +11,6 @@ bool print   = true;
 bool clobber = false;
 bool installpublic  = false;
 bool installprivate = false;
-bool noengineplugin   = false;
-bool onlyengineplugin = false;
 
 #ifdef TEST_ONLY
 #endif
@@ -39,6 +37,7 @@ bool onlyengineplugin = false;
 #endif
 #ifdef GENERATE_PROJECTFILE
 #include "GenerateProjectFile.h"
+bool generateVersion7Projects = false;
 #endif
 
 #include "XMLParser.h"
@@ -52,6 +51,7 @@ PrintUsage(const char *prog)
     cerr << "        -noprint       no debug output" << endl;
     cerr << "        -public        (xml2makefile only) install publicly" << endl;
     cerr << "        -private       (xml2makefile only) install privately" << endl;
+    cerr << "        -version7      (xml2projectfile only)" << endl;
 }
 
 class ErrorHandler : public QXmlErrorHandler
@@ -178,6 +178,15 @@ void ProcessFile(QString file);
 //    I added support for database plugins with only a mdserver or engine
 //    component.  This was critical for simulation support.
 //
+//    Brad Whitlock, Mon Aug 16 16:50:29 PST 2004
+//    I added the -version7 flag.
+//
+//    Jeremy Meredith, Wed Aug 11 14:56:02 PDT 2004
+//    I made the mdserver/engine only support be specified by the xml file.
+//
+//    Jeremy Meredith, Wed Aug 25 11:51:33 PDT 2004
+//    Moved the engine-only concept into the XML file, not a main argument.
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -222,22 +231,16 @@ int main(int argc, char *argv[])
                 argv[j] = argv[j+1];
             i--;
         }
-        else if (strcmp(argv[i], "-noengineplugin") == 0)
+#ifdef GENERATE_PROJECTFILE
+        else if (strcmp(argv[i], "-version7") == 0)
         {
-            noengineplugin = true;
+            generateVersion7Projects = true;
             argc--;
             for (int j=i; j<argc; j++)
                 argv[j] = argv[j+1];
             i--;
         }
-        else if (strcmp(argv[i], "-onlyengineplugin") == 0)
-        {
-            onlyengineplugin = true;
-            argc--;
-            for (int j=i; j<argc; j++)
-                argv[j] = argv[j+1];
-            i--;
-        }
+#endif
     }
 
     if (installpublic && installprivate)
@@ -620,7 +623,7 @@ ProcessFile(QString file)
         if (docType == "Plugin")
         {
             // project file writer mode
-            plugin->WriteProjectFiles(Open);
+            plugin->WriteProjectFiles(Open, generateVersion7Projects);
         }
         else
         {

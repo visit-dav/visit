@@ -106,12 +106,16 @@ using std::vector;
 //   Brad Whitlock, Mon Mar 15 11:46:34 PDT 2004
 //   I added varMenuFlags.
 //
+//   Jeremy Meredith, Tue Aug 24 16:20:40 PDT 2004
+//   Made it observe metadata directly so it knows when to update things.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
     QWidget *parent, const char *name) : QWidget(parent, name), GUIBase(),
     SimpleObserver(), menuPopulator(), varMenuPopulator(), plotPlugins()
 {
+    metaData = 0;
     plotList = 0;
     globalAtts = 0;
     windowInfo = 0;
@@ -210,10 +214,16 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
 //   Brad Whitlock, Thu Jan 29 21:40:31 PST 2004
 //   Added windowInfo.
 //
+//   Jeremy Meredith, Tue Aug 24 16:21:00 PDT 2004
+//   Made it observe metadata directly so it knows when to update things.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::~QvisPlotManagerWidget()
 {
+    if(metaData)
+        metaData->Detach(this);
+
     if(plotList)
         plotList->Detach(this);
 
@@ -461,13 +471,16 @@ QvisPlotManagerWidget::CreateMenus(QMenuBar *menuBar)
 //   Brad Whitlock, Thu Jan 29 21:45:34 PST 2004
 //   I added code to update the source list.
 //
+//   Jeremy Meredith, Tue Aug 24 16:21:15 PDT 2004
+//   Made it observe metadata directly so it knows when to update things.
+//
 // ****************************************************************************
 
 void
 QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
 {
     if(plotList == 0 || fileServer == 0 || globalAtts == 0 ||
-       pluginAtts == 0 || windowInfo == 0)
+       pluginAtts == 0 || windowInfo == 0 || metaData == 0)
     {
         return;
     }
@@ -1429,6 +1442,13 @@ QvisPlotManagerWidget::ConnectWindowInformation(WindowInformation *wi)
 {
     windowInfo = wi;
     windowInfo->Attach(this);
+}
+
+void
+QvisPlotManagerWidget::ConnectDatabaseMetaData(avtDatabaseMetaData *md)
+{
+    metaData = md;
+    metaData->Attach(this);
 }
 
 // ****************************************************************************

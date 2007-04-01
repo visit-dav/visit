@@ -7,7 +7,7 @@
 #else
 #define PLOTTER_API __declspec(dllimport)
 #endif
-#ifdef USING_MSVC6
+#if defined(USING_MSVC6) || defined(USING_MSVC7)
 // Turn off warning about inheritance by dominance.
 #pragma warning(disable:4250)
 // Turn off warning about lack of DLL interface

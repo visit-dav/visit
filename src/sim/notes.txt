@@ -16,6 +16,7 @@
   d)  We could, of course, simply provide a script for users to run
       before ARES to set up their environment.
 
+
 4.  This all needs to be tested for portability.
 
 5.  Related to 3a, there is a RTLD_GLOBAL flag set in sim.C when loading
@@ -33,3 +34,46 @@ handlers).
 
 7.  Think about security of who's allowed to talk to whom.
 
+8.  On linux:
+    a)  without -lpthread, it stalled down in vtkWriter waiting on a
+        file mutex!  (This is while it was trying to construct a vtk
+        data object string to return the geometry to the viewer.)
+        Further update:  It stalled with -lpthread as well, just in
+        different ways.  I found that it seemed to be stalling on the
+        line of code:
+            *fp << "%%";
+        And changing it to a 
+            *fp << strdup("%%");
+        may have fixed the problem.  I'm not convinced this isn't a
+        gcc296/glibc problem.  And removing pthreads from VTK may fix
+        it as well.  (why are they there, anyway?).  There also may
+        still be a serious memory bug causing this, but I haven't moved
+        back to the suns to try it out yet.
+    a2) CLARIFICATION -- Found out the problem....  if the dependent
+        libraries depend on -lpthread, but the main executable does
+        not, then it will hang somewhere in the iostream stuff.  The solution
+        is to make sure the main executable is also linked with pthreads.
+
+    b)  without -rdynamic on the link line for the binary, we
+        couldn't see symbols in the main executable, either through
+        "extern int *p_ns;" or through "dlopen(NULL, ...) ....".
+
+    b2) --export-dynamic also solves this.  Same symptoms, etc.  Maybe
+        it's the same flag?
+
+-------------------------------------------
+
+TODO:
+
+1) security
+2) if the simulation is running, stop requests to the engine:
+   either (a) have Engine return error conditions
+   or     (b) have EngineProxy return error conditions
+   or     (c) have the simulation pause
+3) simulation controls window and interfaces (pause, start, auto-update)
+4) get parallel working
+5) QvisGUIApplication::HandleMetaDataUpdate is a bit too manual right 
+   now -- e.g. it manually calls Update on the file information window
+   and the plot manager widget.  We might be able to have these happen
+   automatically by having the right things observe the right attributes.
+6) test updating SILs

@@ -20,6 +20,8 @@
 
 using     std::string;
 
+extern int cycle;
+
 extern int p_nx;
 extern int p_ny;
 extern int p_nz;
@@ -89,111 +91,45 @@ avtSimDBFileFormat::FreeUpResources(void)
 //      information it can request from you.
 //
 //  Programmer: Jeremy Meredith
-//  Creation:   March 25, 2004
+//  Creation:   August 24, 2004
 //
 // ****************************************************************************
 
 void
 avtSimDBFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
+    // Note -- it is not yet safe to remove this:
+    // This is probably because it gets propagated to the viewer as-is.
+    // Furthermore, there are now pieces of the engine that depend on it,
+    // and obviously the engine cannot retrieve metadata from the MDServer to
+    // determine if it is a simulation.
     md->SetIsSimulation(true);
-    md->SetSimHost(host);
-    md->SetSimPort(port);
+
     AddMeshToMetaData(md, "mesh", AVT_CURVILINEAR_MESH, NULL,
                       1, 0, 3, 3);
     AddScalarVarToMetaData(md, "speed", "mesh", AVT_NODECENT);
     AddScalarVarToMetaData(md, "density", "mesh", AVT_ZONECENT);
-
-    //
-    // CODE TO ADD A MESH
-    //
-    // string meshname = ...
-    //
-    // AVT_RECTILINEAR_MESH, AVT_CURVILINEAR_MESH, AVT_UNSTRUCTURED_MESH,
-    // AVT_POINT_MESH, AVT_SURFACE_MESH, AVT_UNKNOWN_MESH
-    // avtMeshType mt = AVT_RECTILINEAR_MESH;
-    //
-    // int nblocks = YOU_MUST_DECIDE;
-    // int block_origin = 0;
-    // int spatial_dimension = 2;
-    // int topological_dimension = 2;
-    // float *extents = NULL;
-    //
-    // Here's the call that tells the meta-data object that we have a mesh:
-    //
-    // AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-    //                   spatial_dimension, topological_dimension);
-    //
-
-    //
-    // CODE TO ADD A SCALAR VARIABLE
-    //
-    // string mesh_for_this_var = meshname; // ??? -- could be multiple meshes
-    // string varname = ...
-    //
-    // AVT_NODECENT, AVT_ZONECENT, AVT_UNKNOWN_CENT
-    // avtCentering cent = AVT_NODECENT;
-    //
-    //
-    // Here's the call that tells the meta-data object that we have a var:
-    //
-    // AddScalarVarToMetaData(md, varname, mesh_for_this_var, cent);
-    //
-
-    //
-    // CODE TO ADD A VECTOR VARIABLE
-    //
-    // string mesh_for_this_var = meshname; // ??? -- could be multiple meshes
-    // string varname = ...
-    // int vector_dim = 2;
-    //
-    // AVT_NODECENT, AVT_ZONECENT, AVT_UNKNOWN_CENT
-    // avtCentering cent = AVT_NODECENT;
-    //
-    //
-    // Here's the call that tells the meta-data object that we have a var:
-    //
-    // AddVectorVarToMetaData(md, varname, mesh_for_this_var, cent,vector_dim);
-    //
-
-    //
-    // CODE TO ADD A TENSOR VARIABLE
-    //
-    // string mesh_for_this_var = meshname; // ??? -- could be multiple meshes
-    // string varname = ...
-    // int tensor_dim = 9;
-    //
-    // AVT_NODECENT, AVT_ZONECENT, AVT_UNKNOWN_CENT
-    // avtCentering cent = AVT_NODECENT;
-    //
-    //
-    // Here's the call that tells the meta-data object that we have a var:
-    //
-    // AddTensorVarToMetaData(md, varname, mesh_for_this_var, cent,tensor_dim);
-    //
-
-    //
-    // CODE TO ADD A MATERIAL
-    //
-    // string mesh_for_mat = meshname; // ??? -- could be multiple meshes
-    // string matname = ...
-    // int nmats = ...;
-    // vector<string> mnames;
-    // for (int i = 0 ; i < nmats ; i++)
-    // {
-    //     char str[32];
-    //     sprintf(str, "mat%d", i);
-    //     -- or -- 
-    //     strcpy(str, "Aluminum");
-    //     mnames.push_back(str);
-    // }
-    // 
-    // Here's the call that tells the meta-data object that we have a mat:
-    //
-    // AddMaterialToMetaData(md, matname, mesh_for_mat, nmats, mnames);
-    //
 }
 
+// ****************************************************************************
+//  Method:  avtSimDBFileFormat::GetCycle
+//
+//  Purpose:
+//    return the current cycle
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 24, 2004
+//
+// ****************************************************************************
+
+int
+avtSimDBFileFormat::GetCycle()
+{
+    return cycle;
+}
 
 // ****************************************************************************
 //  Method: avtSimDBFileFormat::GetMesh
@@ -211,7 +147,7 @@ avtSimDBFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //                  there is only one mesh.
 //
 //  Programmer: Jeremy Meredith
-//  Creation:   March 25, 2004
+//  Creation:   August 24, 2004
 //
 // ****************************************************************************
 vtkDataSet *
@@ -274,35 +210,38 @@ avtSimDBFileFormat::GetMesh(int domain, const char *meshname)
 //      varname    The name of the variable requested.
 //
 //  Programmer: Jeremy Meredith
-//  Creation:   March 25, 2004
+//  Creation:   August 24, 2004
 //
 // ****************************************************************************
 
 vtkDataArray *
 avtSimDBFileFormat::GetVar(int domain, const char *varname)
 {
-    return NULL;
-    //
-    // If you have a file format where variables don't apply (for example a
-    // strictly polygonal format like the STL (Stereo Lithography) format,
-    // then uncomment the code below.
-    //
-    // EXCEPTION0(InvalidVariableException, varname);
-    //
+    vtkFloatArray *array = vtkFloatArray::New();
+    int nzones = ((*nx)-1) * ((*ny)-1) * ((*nz)-1);
+    int nnodes = *nx * *ny * *nz;
+    if (string(varname) == "density")
+    {
+        array->SetNumberOfTuples(nzones);
+        for (int i=0; i<nzones; i++)
+        {
+            array->SetTuple1(i, (*zvalues)[i]);
+        }
+    }
+    else if (string(varname) == "speed")
+    {
+        array->SetNumberOfTuples(nnodes);
+        for (int i=0; i<nnodes; i++)
+        {
+            array->SetTuple1(i, (*nvalues)[i]);
+        }
+    }
+    else
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
 
-    //
-    // If you do have a scalar variable, here is some code that may be helpful.
-    //
-    // int ntuples = XXX; // this is the number of entries in the variable.
-    // vtkFloatArray *rv = vtkFloatArray::New();
-    // rv->SetNumberOfTuples(ntuples);
-    // for (int i = 0 ; i < ntuples ; i++)
-    // {
-    //      rv->SetTuple1(i, VAL);  // you must determine value for ith entry.
-    // }
-    //
-    // return rv;
-    //
+    return array;
 }
 
 
@@ -329,35 +268,4 @@ vtkDataArray *
 avtSimDBFileFormat::GetVectorVar(int domain, const char *varname)
 {
     return NULL;
-    //
-    // If you have a file format where variables don't apply (for example a
-    // strictly polygonal format like the STL (Stereo Lithography) format,
-    // then uncomment the code below.
-    //
-    // EXCEPTION0(InvalidVariableException, varname);
-    //
-
-    //
-    // If you do have a vector variable, here is some code that may be helpful.
-    //
-    // int ncomps = YYY;  // This is the rank of the vector - typically 2 or 3.
-    // int ntuples = XXX; // this is the number of entries in the variable.
-    // vtkFloatArray *rv = vtkFloatArray::New();
-    // int ucomps = (ncomps == 2 ? 3 : ncomps);
-    // rv->SetNumberOfComponents(ucomps);
-    // rv->SetNumberOfTuples(ntuples);
-    // float *one_entry = new float[ucomps];
-    // for (int i = 0 ; i < ntuples ; i++)
-    // {
-    //      int j;
-    //      for (j = 0 ; j < ncomps ; j++)
-    //           one_entry[j] = ...
-    //      for (j = ncomps ; j < ucomps ; j++)
-    //           one_entry[j] = 0.;
-    //      rv->SetTuple(i, one_entry); 
-    // }
-    //
-    // delete [] one_entry;
-    // return rv;
-    //
 }

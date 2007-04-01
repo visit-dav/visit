@@ -105,6 +105,11 @@ vtkVisItContourFilter::GetPointScalars(void)
     return (float *) arr->GetVoidPointer(0);
 }
 
+// Modifications:
+//   Brad Whitlock, Thu Aug 12 14:45:24 PST 2004
+//   Added float casts to the pow() arguments so it builds on MSVC7.Net.
+//
+///////////////////////////////////////////////////////////////////////////////
 
 void
 vtkVisItContourFilter::StructuredGridExecute(void)
@@ -127,8 +132,8 @@ vtkVisItContourFilter::StructuredGridExecute(void)
     vtkPolyData       *output = GetOutput();
 
     int ptSizeGuess = (this->CellList == NULL
-                         ? (int) pow(nCells, 0.6667) * 5 + 100
-                         : ptSizeGuess = CellListSize*5 + 100);
+                         ? (int) pow(float(nCells), 0.6667f) * 5 + 100
+                         : CellListSize*5 + 100);
 
     vtkSurfaceFromVolume sfv(ptSizeGuess);
 
@@ -202,6 +207,12 @@ vtkVisItContourFilter::StructuredGridExecute(void)
     sfv.ConstructPolyData(inPD, inCD, output, pts_ptr);
 }
 
+// Modifications:
+//   Brad Whitlock, Thu Aug 12 14:45:24 PST 2004
+//   Added float casts to the pow() arguments so it builds on MSVC7.Net.
+//
+///////////////////////////////////////////////////////////////////////////////
+
 void vtkVisItContourFilter::RectilinearGridExecute(void)
 {
     int  i, j;
@@ -224,8 +235,8 @@ void vtkVisItContourFilter::RectilinearGridExecute(void)
     vtkPolyData  *output = GetOutput();
 
     int ptSizeGuess = (this->CellList == NULL
-                         ? (int) pow(nCells, 0.6667) * 5 + 100
-                         : ptSizeGuess = CellListSize*5 + 100);
+                         ? (int) pow(float(nCells), 0.6667f) * 5 + 100
+                         : CellListSize*5 + 100);
 
     vtkSurfaceFromVolume sfv(ptSizeGuess);
 
@@ -297,6 +308,12 @@ void vtkVisItContourFilter::RectilinearGridExecute(void)
     sfv.ConstructPolyData(inPD, inCD, output, pt_dims, X, Y, Z);
 }
 
+// Modifications:
+//   Brad Whitlock, Thu Aug 12 14:45:24 PST 2004
+//   Added float casts to the pow() arguments so it builds on MSVC7.Net.
+//
+///////////////////////////////////////////////////////////////////////////////
+
 void vtkVisItContourFilter::UnstructuredGridExecute(void)
 {
     // The routine here is a bit trickier than for the Rectilinear or
@@ -320,8 +337,8 @@ void vtkVisItContourFilter::UnstructuredGridExecute(void)
     vtkPolyData       *output = GetOutput();
 
     int ptSizeGuess = (this->CellList == NULL
-                         ? (int) pow(nCells, 0.6667) * 5 + 100
-                         : ptSizeGuess = CellListSize*5 + 100);
+                         ? (int) pow(float(nCells), 0.6667f) * 5 + 100
+                         : CellListSize*5 + 100);
 
     vtkSurfaceFromVolume sfv(ptSizeGuess);
 

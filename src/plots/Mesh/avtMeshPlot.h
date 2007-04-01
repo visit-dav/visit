@@ -91,6 +91,9 @@ class     avtSmoothPolyDataFilter;
 //    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
 //    Changed GetCellCountMultiplierForSRThreshold to Set...
 //    
+//    Kathleen Bonnell, Tue Aug 24 16:12:03 PDT 2004 
+//    Added avtMeshType arg to SetOpaqueMeshIsAppropriate.
+//    
 // ****************************************************************************
 
 class
@@ -123,7 +126,7 @@ avtMeshPlot : public avtPlot
 
     virtual int     TargetTopologicalDimension(void);
     virtual const AttributeSubject 
-                   *SetOpaqueMeshIsAppropriate(bool);
+                   *SetOpaqueMeshIsAppropriate(bool, avtMeshType);
 
 
   protected:

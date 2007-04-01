@@ -84,7 +84,9 @@ typedef struct bowinfo_structdef bowinfo_struct,*bowinfo;
 #include "sys/stat.h"
 
     /* lib_include "unistd.h" */
+#if !defined(_WIN32)
 #include "unistd.h"
+#endif
 
     /* lib_include "fcntl.h" */
 #include "fcntl.h"

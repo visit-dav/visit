@@ -12,6 +12,7 @@ class avtSIL;
 class DatabaseCorrelation;
 class DatabaseCorrelationList;
 class DataNode;
+class SILAttributes;
 
 // ****************************************************************************
 // Class: ViewerFileServer
@@ -100,6 +101,9 @@ class DataNode;
 //    Brad Whitlock, Tue Jul 27 10:39:34 PDT 2004
 //    I added UpdateDatabaseCorrelation.
 //
+//    Jeremy Meredith, Wed Aug 25 11:47:37 PDT 2004
+//    Added methods to poke new metadata (and sil) for a simulation.
+//
 // ****************************************************************************
 
 class ViewerFileServer : public ViewerServerManager
@@ -127,6 +131,17 @@ public:
                                                  std::string &db);
     static std::string         ComposeDatabaseName(const std::string &host,
                                                    const std::string &db);
+
+    //
+    // Use this method to give the file server new metadata for a simulation.
+    //
+    void                       SetSimulationMetaData(const std::string &host,
+                                                   const std::string &filename,
+                                                   const avtDatabaseMetaData&);
+
+    void                       SetSimulationSILAtts(const std::string &host,
+                                                   const std::string &filename,
+                                                   const SILAttributes&);
 
     //
     // Use this method when you need metadata about the file but metadata

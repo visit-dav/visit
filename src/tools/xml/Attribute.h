@@ -40,6 +40,9 @@
 //    Jeremy Meredith, Tue Sep 23 17:11:06 PDT 2003
 //    Added a check so enableval is not empty before writing the enabler.
 //
+//    Brad Whitlock, Tue Aug 17 17:23:37 PST 2004
+//    Added some code to get around a crash using MSVC7.Net.
+//
 // ****************************************************************************
 
 class Attribute
@@ -61,6 +64,8 @@ class Attribute
               const QString &e, const QString &ei)
         : name(n), purpose(p), exportAPI(e), exportInclude(ei)
     {
+        if (name.isNull()) name = "";
+        if (purpose.isNull()) purpose = "";
         if (f.isNull())
             codeFile = NULL;
         else

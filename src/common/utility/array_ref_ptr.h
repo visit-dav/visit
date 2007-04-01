@@ -1,6 +1,5 @@
 #ifndef ARRAY_REF_PTR_H
 #define ARRAY_REF_PTR_H
-#include <utility_exports.h>
 
 #include <visitstream.h>
 
@@ -19,7 +18,7 @@
 // ****************************************************************************
 
 template <class T>
-class UTILITY_API array_ref_ptr
+class array_ref_ptr
 {
  public:
     array_ref_ptr();
@@ -157,7 +156,7 @@ array_ref_ptr<T>::RemoveReference(void)
     }
 }
 
-#if defined(_WIN32)
+#if defined(_WIN32) && defined(USING_MSVC6)
 template <class T, class S>
 #else
 template <class T>

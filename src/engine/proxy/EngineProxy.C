@@ -5,6 +5,7 @@
 #include <EngineProxy.h>
 
 #include <AbortException.h>
+#include <LostConnectionException.h>
 #include <RemoteProcess.h>
 #include <SocketConnection.h>
 #include <StatusAttributes.h>
@@ -43,6 +44,9 @@
 //     Brad Whitlock, Fri May 2 15:32:27 PST 2003
 //     I made it inherit from RemoteProxyBase.
 //
+//     Jeremy Meredith, Tue Aug 24 22:12:21 PDT 2004
+//     Added metadata and sil atts for simulations.
+//
 // ****************************************************************************
 
 EngineProxy::EngineProxy() : RemoteProxyBase("-engine")
@@ -58,6 +62,8 @@ EngineProxy::EngineProxy() : RemoteProxyBase("-engine")
     // Create the status attributes that we use to communicate status
     // information to the client.
     statusAtts = new StatusAttributes;
+    metaData = new avtDatabaseMetaData;
+    silAtts = new SILAttributes;
 }
 
 // ****************************************************************************
@@ -123,6 +129,9 @@ EngineProxy::~EngineProxy()
 //    Kathleen Bonnell, Wed Mar 31 17:23:01 PST 2004 
 //    Added CloneNetworkRPC.
 //
+//    Jeremy Meredith, Tue Aug 24 22:12:21 PDT 2004
+//    Added metadata and sil atts for simulations.
+//
 // ****************************************************************************
 void
 EngineProxy::SetupComponentRPCs()
@@ -151,6 +160,8 @@ EngineProxy::SetupComponentRPCs()
     // Add other state objects to the transfer object
     //
     xfer.Add(&exprList);
+    xfer.Add(metaData);
+    xfer.Add(silAtts);
 
     // Extract some information about the engine from the command line
     // arguments that were used to create it.
@@ -1159,3 +1170,92 @@ EngineProxy::CloneNetwork(const int id, const QueryOverTimeAttributes *qa)
                                cloneNetworkRPC.GetMessage());
     }
 }
+
+
+// ****************************************************************************
+//  Method:  EngineProxy::GetWriteSocket
+//
+//  Purpose:
+//    Get the socket to receive input from the engine
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 24, 2004
+//
+// ****************************************************************************
+
+int
+EngineProxy::GetWriteSocket()
+{
+    if (xfer.GetInputConnection())
+        return xfer.GetInputConnection()->GetDescriptor();
+    else
+        return -1;
+}
+
+// ****************************************************************************
+//  Method:  EngineProxy::ReadDataAndProcess
+//
+//  Purpose:
+//    Get some data fom the engine and process it.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 24, 2004
+//
+// ****************************************************************************
+
+void
+EngineProxy::ReadDataAndProcess()
+{
+    int amountRead = xfer.GetInputConnection()->Fill();
+    if (amountRead > 0)
+        xfer.Process();
+    else
+        EXCEPTION0(LostConnectionException);
+}
+
+// ****************************************************************************
+//  Method:  EngineProxy::GetSimulationMetaData
+//
+//  Purpose:
+//    Return the engine proxy metadata attributes for simulations.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 24, 2004
+//
+// ****************************************************************************
+
+avtDatabaseMetaData *
+EngineProxy::GetSimulationMetaData()
+{
+    return metaData;
+}
+
+// ****************************************************************************
+//  Method:  EngineProxy::GetSimulationSILAtts
+//
+//  Purpose:
+//    Return the engine proxy SIL attributes for simulations.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 24, 2004
+//
+// ****************************************************************************
+
+SILAttributes *
+EngineProxy::GetSimulationSILAtts()
+{
+    return silAtts;
+}
+

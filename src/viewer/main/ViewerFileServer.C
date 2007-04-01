@@ -4,6 +4,7 @@
 #include <ViewerFileServer.h>
 
 #include <avtDatabaseMetaData.h>
+#include <avtSimulationInformation.h>
 #include <avtSIL.h>
 #include <BadHostException.h>
 #include <DatabaseCorrelation.h>
@@ -21,6 +22,7 @@
 #include <MDServerProxy.h>
 #include <ParentProcess.h>
 #include <ParsingExprList.h>
+#include <SILAttributes.h>
 #include <ViewerConnectionProgressDialog.h>
 #include <ViewerMessaging.h>
 #include <ViewerWindowManager.h>
@@ -2379,4 +2381,92 @@ ViewerFileServer::ServerInfo::ServerInfo(const ServerInfo &b)
 ViewerFileServer::ServerInfo::~ServerInfo()
 {
     delete proxy;
+}
+
+
+// ****************************************************************************
+//  Method:  ViewerFileServer::SetSimulationMetaData
+//
+//  Purpose:
+//    Store updated metadata for a simulation.  This happens when
+//    (1) we first start a simulation, it has complete information
+//    compared to the mdserver's metadata, and (2) when the simulation
+//    changes time steps, it sends new metadata.
+//
+//  Arguments:
+//    host,filename   the identifiers for the simulation
+//    md              the new metadata
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 25, 2004
+//
+// ****************************************************************************
+void
+ViewerFileServer::SetSimulationMetaData(const std::string &host,
+                                        const std::string &filename,
+                                        const avtDatabaseMetaData &md)
+{
+    std::string dbName(ComposeDatabaseName(host, filename));
+    for(FileMetaDataMap::const_iterator pos = fileMetaData.begin();
+        pos != fileMetaData.end();
+        ++pos)
+    {
+        // Split the metadata key into name and ts components so we only
+        // add a file once in the case that it is time-varying and there are
+        // multiple cached metadata objects for different time states.
+        std::string name;
+        int         ts;
+        SplitKey(pos->first, name, ts);
+
+        if(name == dbName)
+        {
+            avtSimulationInformation simInfo = pos->second->GetSimInfo();
+            *(pos->second) = md;
+            pos->second->SetIsSimulation(true);
+            pos->second->SetSimInfo(simInfo);
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method:  ViewerFileServer::SetSimulationSILAtts
+//
+//  Purpose:
+//    Store updated metadata for a simulation.  This happens when
+//    (1) we first start a simulation, it has complete information
+//    compared to the mdserver's metadata, and possibly (2) when the
+//    simulation changes time steps, it sends new metadata.
+//
+//  Arguments:
+//    host,filename   the identifiers for the simulation
+//    silAtts         the new SIL attributes
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 25, 2004
+//
+// ****************************************************************************
+void
+ViewerFileServer::SetSimulationSILAtts(const std::string &host,
+                                       const std::string &filename,
+                                       const SILAttributes &silAtts)
+{
+    avtSIL *sil = new avtSIL(silAtts);
+    std::string dbName(ComposeDatabaseName(host, filename));
+    for(FileSILMap::const_iterator pos = fileSIL.begin();
+        pos != fileSIL.end();
+        ++pos)
+    {
+        // Split the metadata key into name and ts components so we only
+        // add a file once in the case that it is time-varying and there are
+        // multiple cached metadata objects for different time states.
+        std::string name;
+        int         ts;
+        SplitKey(pos->first, name, ts);
+
+        if(name == dbName)
+        {
+            *(pos->second) = *sil;
+        }
+    }
+    delete sil;
 }

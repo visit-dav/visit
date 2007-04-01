@@ -846,7 +846,8 @@ avtMeshPlot::CustomizeBehavior(void)
 void
 avtMeshPlot::CustomizeMapper(avtDataObjectInformation &info)
 {
-    if (info.GetValidity().GetWireframeRenderingIsInappropriate())
+    if (info.GetValidity().GetWireframeRenderingIsInappropriate() &&
+        atts.GetOpaqueMode() == MeshAttributes::Auto)
     {
         wireframeRenderingIsInappropriate = true;
         SetRenderOpaque();
@@ -1043,13 +1044,16 @@ avtMeshPlot::ReleaseData(void)
 //    Kathleen Bonnell, Thu Sep  4 11:35:18 PDT 2003
 //    Only update the value opaqueMode is Auto.
 //
+//    Kathleen Bonnell, Tue Aug 24 16:12:03 PDT 2004 
+//    Exclude point mesh from auto-opaque mode. 
+//
 // ****************************************************************************
 
 const AttributeSubject *
-avtMeshPlot::SetOpaqueMeshIsAppropriate(bool val)
+avtMeshPlot::SetOpaqueMeshIsAppropriate(bool val, avtMeshType mt)
 {
     if ((atts.GetOpaqueMode() == MeshAttributes::Auto) &&
-       (val != atts.GetOpaqueMeshIsAppropriate()))
+       (val != atts.GetOpaqueMeshIsAppropriate() && mt != AVT_POINT_MESH))
     {
         atts.SetOpaqueMeshIsAppropriate(val);
         return &atts;

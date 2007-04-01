@@ -326,6 +326,10 @@ $0 = shift @ARGV;
 #    I modified the setting of the LD_LIBRARY_PATH so that /usr/local/lib
 #    is at the end of the path instead of at the beginning.
 #
+#    Jeremy Meredith, Wed Aug 25 09:25:41 PDT 2004
+#    Added help for "-timing".  Added the "-env" option.  Added 
+#    "-h" and "--help" as valid arguments to priunt the help text.
+#
 ###############################################################################
 
 
@@ -469,6 +473,8 @@ USAGE:  visit [arguments]
     Debugging arguments:
         -debug <level>       Run with <level> levels of output logging.
                              <level> must be between 1 and 5.
+        -timing              Print timings files.
+        -env                 Print environment variables only.
         -dump                Have streamers dump their results to files.
         -gdb                 Run under gdb.
         -gdb-gui             Run the gui under gdb.
@@ -506,7 +512,8 @@ $launchengine = "";
 $debug_gdb    = 0;
 $debug_totalview = "";
 $add_movie_args = 0;
-$logging      = 0;
+$envonly        = 0;
+$logging        = 0;
 
 # Parse the arguments 
 @visitargs = ();
@@ -556,7 +563,10 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-publicpluginsonly"){ $publiconly = 1; push @visitargs, $arg; }
     elsif ($arg eq "-version")   { $want_version = 1; }
     elsif ($arg eq "-help")      { print STDERR "$usage\n"; exit(0); }
+    elsif ($arg eq "-h")         { print STDERR "$usage\n"; exit(0); }
+    elsif ($arg eq "--help")     { print STDERR "$usage\n"; exit(0); }
     elsif ($arg eq "-norun")     { $nr = shift; push @norun, $nr; push @visitargs, "-norun", $nr; }
+    elsif ($arg eq "-env")              { $envonly = 1; }
     elsif ($arg eq "-launchengine")     { if (scalar(@ARGV)>0) {$launchengine = shift;}
                                           if ($launchengine eq "") { $launchengine="localhost"; }
                                           elsif ($launchengine =~ /^-/) { unshift @ARGV, $launchengine; $launchengine = "localhost";}}
@@ -1150,6 +1160,12 @@ if ($logging and $exe_name eq "mdserver")
 #                                   Run it!
 # -----------------------------------------------------------------------------
 
+if ($envonly)
+{
+    PrintEnvironment();
+    exit(0);
+}
+
 @visitcmd = ("$visitbindir/$exe_name", @visitargs);
 $printonly = grep(/^$exe_name$/, @norun) unless ($debug_totalview);
 
@@ -1500,7 +1516,23 @@ sub RunComponent {
 }
 
 sub PrintEnvironment {
-    if (grep(/csh/, "$ENV{SHELL}"))
+    if ($envonly)
+    {
+        print STDERR <<"EOF"
+LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}
+LD_LIBRARY32_PATH=$ENV{LD_LIBRARY32_PATH}
+LD_LIBRARYN32_PATH=$ENV{LD_LIBRARYN32_PATH}
+LD_LIBRARY64_PATH=$ENV{LD_LIBRARY64_PATH}
+LIBPATH=$ENV{LIBPATH}
+VISITHOME=$ENV{VISITHOME}
+VISITHELPHOME=$ENV{VISITHELPHOME}
+VISITPLUGINDIR=$ENV{VISITPLUGINDIR}
+PYTHONHOME=$ENV{PYTHONHOME}
+TRAP_FPE=$ENV{TRAP_FPE}
+MESA_GLX_FX=$ENV{MESA_GLX_FX}
+EOF
+    }
+    elsif (grep(/csh/, "$ENV{SHELL}"))
     {
         print STDERR <<"EOF"
 Be sure to set your environment variables:

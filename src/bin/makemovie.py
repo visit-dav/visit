@@ -911,6 +911,12 @@ class MakeMovie:
     # Programmer: Brad Whitlock
     # Date:       Mon Jul 28 13:58:06 PST 2003
     #
+    # Modifications:
+    #   Brad Whitlock, Tue Aug 24 09:32:39 PDT 2004
+    #   I set the outputToCurrentDirectory flag to true because on Windows,
+    #   the default is to output files to a specified directory, which is not
+    #   what we want when saving movie frames.
+    #
     ###########################################################################
 
     def SaveImage(self, index, ext):
@@ -929,6 +935,7 @@ class MakeMovie:
             s.format =  s.RGB
         s.width = self.xres
         s.height = self.yres
+        s.outputToCurrentDirectory = 1
         SetSaveWindowAttributes(s)
         return SaveWindow()
 

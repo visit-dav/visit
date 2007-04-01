@@ -65,6 +65,9 @@
 #    I added -lcomm and -lparser since avtDatabaseMetadata needs those
 #    libraries.
 #
+#    Jeremy Meredith, Thu Aug 12 11:41:14 PDT 2004
+#    I added avtSimulationInformation.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -75,6 +78,7 @@ SRC=$(MetaData_src) $(SIL_src)
 
 MetaData_src= \
   MetaData/avtDatabaseMetaData.C \
+  MetaData/avtSimulationInformation.C \
   MetaData/avtTypes.C
 SIL_src= \
   SIL/avtSIL.C \

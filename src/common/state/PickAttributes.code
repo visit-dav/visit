@@ -29,7 +29,7 @@ Definition:
 //   
 //   Kathleen Bonnell, Wed Jun  9 12:24:09 PDT 2004 
 //   Add conciseOutput.
-//   
+//
 // ****************************************************************************
 void
 PickAttributes::PrintSelf(ostream &os)
@@ -219,6 +219,9 @@ Definition:
 //   
 //   Kathleen Bonnell, Wed Jun  9 12:24:09 PDT 2004 
 //   Added 'showTimeStep'. 
+//
+//   Mark C. Miller, Tue Aug 24 19:53:18 PDT 2004
+//   Added block/group piece names
 //   
 // ****************************************************************************
 void
@@ -259,6 +262,9 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     }
     os += fileName;
 
+    std::string domStr = (blockPieceName == "" ? "domain" : blockPieceName);
+    std::string grpStr = (groupPieceName == "" ? "group" : groupPieceName);
+
     if (showTimeStep)
     {
         SNPRINTF(buff, 512, "  timestep %d", timeStep);
@@ -268,7 +274,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     {
         if (domain != -1)
         {
-            SNPRINTF(buff, 512, "  domain %d\n", domain);
+            SNPRINTF(buff, 512, "  %s %d\n", domStr.c_str(), domain);
             os += buff;
         }
         else 
@@ -336,12 +342,12 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         }
         if (showZoneDomainLogicalCoords & !dzoneCoords.empty()) 
         {
-            SNPRINTF(buff, 512, " domain %s", dzoneCoords[0].c_str());
+            SNPRINTF(buff, 512, " %s %s", domStr.c_str(), dzoneCoords[0].c_str());
             os += buff;
         }
         if (showZoneBlockLogicalCoords & !bzoneCoords.empty()) 
         {
-            SNPRINTF(buff, 512, " block %s", bzoneCoords[0].c_str());
+            SNPRINTF(buff, 512, " %s %s", grpStr.c_str(), bzoneCoords[0].c_str());
             os += buff;
         }
         if (showZoneId || showZoneCoords)
@@ -363,12 +369,12 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         }
         if (showNodeDomainLogicalCoords & !dnodeCoords.empty()) 
         {
-            SNPRINTF(buff, 512, " domain %s", dnodeCoords[0].c_str());
+            SNPRINTF(buff, 512, " %s %s", domStr.c_str(), dnodeCoords[0].c_str());
             os += buff;
         }
         if (showNodeBlockLogicalCoords & !bnodeCoords.empty()) 
         {
-            SNPRINTF(buff, 512, " block %s", bnodeCoords[0].c_str());
+            SNPRINTF(buff, 512, " %s %s", grpStr.c_str(), bnodeCoords[0].c_str());
             os += buff;
         }
         if (showNodeId || showNodeCoords)
@@ -412,12 +418,12 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
                 }
                 if (showNodeDomainLogicalCoords & !dnodeCoords.empty()) 
                 {
-                    SNPRINTF(buff, 512, " domain %s", dnodeCoords[i].c_str());
+                    SNPRINTF(buff, 512, " %s %s", domStr.c_str(), dnodeCoords[i].c_str());
                     os += buff;
                 }
                 if (showNodeBlockLogicalCoords & !bnodeCoords.empty()) 
                 {
-                    SNPRINTF(buff, 512, " block %s", bnodeCoords[i].c_str());
+                    SNPRINTF(buff, 512, " %s %s", grpStr.c_str(), bnodeCoords[i].c_str());
                     os += buff;
                 }
                 if (showNodeCoords)
@@ -429,12 +435,12 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
             {
                 if (showZoneDomainLogicalCoords & !dzoneCoords.empty()) 
                 {
-                    SNPRINTF(buff, 512, " domain %s", dzoneCoords[i].c_str());
+                    SNPRINTF(buff, 512, " %s %s", domStr.c_str(), dzoneCoords[i].c_str());
                     os += buff;
                 }
                 if (showZoneBlockLogicalCoords & !bzoneCoords.empty()) 
                 {
-                    SNPRINTF(buff, 512, " block %s", bzoneCoords[i].c_str());
+                    SNPRINTF(buff, 512, " %s %s", grpStr.c_str(), bzoneCoords[i].c_str());
                     os += buff;
                 }
                 if (showZoneCoords)
@@ -499,7 +505,10 @@ Definition:
 //   
 //   Kathleen Bonnell, Tue Jun  1 16:44:44 PDT 2004 
 //   Reset matSelected and needActualCoords. 
-//   
+//
+//   Mark C. Miller, Tue Aug 24 19:37:14 PDT 2004
+//   Added code to reset blockPieceName and groupPieceName
+//
 // ****************************************************************************
 
 void
@@ -552,6 +561,9 @@ PickAttributes::PrepareForNewPick()
     matSelected = false;
 
     needActualCoords = false;
+
+    blockPieceName = "";
+    groupPieceName = "";
 }
 
 Function: SetFromNode
@@ -754,6 +766,9 @@ Definition:
 // Creation:    June 9, 2004
 //
 // Modifications:
+//
+//   Mark C. Miller, Tue Aug 24 19:53:18 PDT 2004
+//   Added block/group piece names
 //   
 // ****************************************************************************
 
@@ -784,11 +799,14 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
         SNPRINTF(buff, 512, "  timestep %d", timeStep);
         os += buff;
     }
+
+    std::string domStr = (blockPieceName == "" ? "domain" : blockPieceName);
+
     if (meshInfo.empty()) 
     {
         if (domain != -1)
         {
-            SNPRINTF(buff, 512, "  domain %d", domain);
+            SNPRINTF(buff, 512, "  %s %d", domStr.c_str(), domain);
             os += buff;
         }
     }

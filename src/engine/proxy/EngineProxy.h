@@ -20,12 +20,14 @@
 #include <QueryRPC.h>
 #include <ReleaseDataRPC.h>
 #include <SetWinAnnotAttsRPC.h>
+#include <SILAttributes.h>
 #include <StartPickRPC.h>
 #include <UpdatePlotAttsRPC.h>
 #include <UseNetworkRPC.h>
 #include <ExpressionList.h>
 
 #include <avtDataObjectReader.h>
+#include <avtDatabaseMetaData.h>
 
 #include <vectortypes.h>
 #include <string>
@@ -198,6 +200,9 @@ class StatusAttributes;
 //    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
 //    Added argument for frame and state to SetWinAnnotAtts
 // 
+//    Jeremy Meredith, Tue Aug 24 22:30:21 PDT 2004
+//    Added methods and data needed for simulations.
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -217,6 +222,13 @@ public:
     virtual int  NumProcessors() const    { return numProcs; };
     virtual int  NumNodes() const         { return numNodes; };
     virtual int  LoadBalancing() const    { return loadBalancing; };
+
+    // Needed for simulations to pass back metadata; may have expanded
+    // functionality in the future
+    int                      GetWriteSocket();
+    void                     ReadDataAndProcess();
+    avtDatabaseMetaData     *GetSimulationMetaData();
+    SILAttributes           *GetSimulationSILAtts();
 
     StatusAttributes        *GetStatusAttributes() const;
 
@@ -300,6 +312,10 @@ private:
 
     // For indicating status.
     StatusAttributes        *statusAtts;
+
+    // Metadata, SIL published by a simulation
+    avtDatabaseMetaData     *metaData;
+    SILAttributes           *silAtts;
 
     // Information that can be queried about the engine.
     int                      numProcs;

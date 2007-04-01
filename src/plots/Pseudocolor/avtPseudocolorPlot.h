@@ -77,6 +77,9 @@ class     avtPointGlyphMapper;
 //    Added EnhanceSpecification, and topoDim ivar.  Replaced glyphPoints
 //    and varMapper with glyphMapper.
 //
+//    Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004 
+//    Added SetCellCountMultiplierForSRThreshold.
+//
 // ****************************************************************************
 
 class avtPseudocolorPlot : public avtSurfaceDataPlot
@@ -121,6 +124,9 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     virtual int                 GetSmoothingLevel();
 
     virtual avtLegend_p         GetLegend(void) { return varLegendRefPtr; };
+
+    virtual void                SetCellCountMultiplierForSRThreshold(
+                                   const avtDataObject_p dob);
 
 private:
     void                        SetLegendRanges(void);

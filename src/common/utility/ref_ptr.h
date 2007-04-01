@@ -1,6 +1,5 @@
 #ifndef REF_PTR_H
 #define REF_PTR_H
-#include <utility_exports.h>
 
 #include <visitstream.h>
 
@@ -32,10 +31,13 @@
 //    Hank Childs, Tue Sep 24 09:29:57 PDT 2002
 //    Remove references to VoidRef, since it is getting its own class.
 //
+//    Brad Whitlock, Tue Aug 10 17:06:50 PST 2004
+//    Removed some Windows API stuff that was not necessary.
+//
 // ****************************************************************************
 
 template <class T>
-class UTILITY_API ref_ptr
+class ref_ptr
 {
  public:
     ref_ptr();

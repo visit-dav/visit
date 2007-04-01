@@ -1620,7 +1620,7 @@ class WindowGeneratorPlugin
 
     WindowGeneratorAttribute *atts;
   public:
-    WindowGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &, bool)
+    WindowGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &, bool,bool,bool)
         : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), atts(NULL)
     {
         enabledByDefault = true;

@@ -194,6 +194,9 @@ class avtToolInterface;
 //    Mark C. Miller, Tue Jun  8 14:43:36 PDT 2004
 //    Added GetWindowId
 //
+//    Kathleen Bonnell, Wed Aug 25 08:31:44 PDT 2004 
+//    Added GetMeshType.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot
@@ -338,6 +341,7 @@ class VIEWER_API ViewerPlot
     avtVarType     GetVarType(const std::string &var) const;
     void           SetOpaqueMeshIsAppropriate(bool);
     bool           IsMesh();
+    avtMeshType    GetMeshType() const;
 
     //
     // Let the plot read/write itself to a config file.

@@ -4149,7 +4149,7 @@ FileTree::FileTreeNode::NumberedFilename(int fileIndex) const
 void
 FileTree::FileTreeNode::Print(ostream &os, const std::string &indent) const
 {
-    os << indent.c_str() << "[" << nodeName.c_str() << "] " << fileName.FullName() << endl;
+    os << indent.c_str() << "[" << nodeName.c_str() << "] " << fileName.FullName().c_str() << endl;
 
     // Add any children there might be.
     if(numChildren > 0)

@@ -10,6 +10,7 @@
 #include <VariableMenuPopulator.h>
 
 // Forward declarations.
+class  avtDatabaseMetaData;
 class  ViewerProxy;
 class  PlotList;
 class  ExpressionList;
@@ -126,6 +127,9 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   Brad Whitlock, Wed Feb 25 11:16:23 PDT 2004
 //   Added members to help speed up menu creation and update.
 //
+//   Jeremy Meredith, Wed Aug 25 11:12:53 PDT 2004
+//   Have it observe updating metadata directly.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotManagerWidget : public QWidget, public GUIBase,
@@ -144,6 +148,7 @@ public:
     void ConnectExpressionList(ExpressionList *);
     void ConnectPluginManagerAttributes(PluginManagerAttributes *);
     void ConnectWindowInformation(WindowInformation *);
+    void ConnectDatabaseMetaData(avtDatabaseMetaData *);
 
     void AddPlotType(const char *plotName, const int varTypes,
                      const char **iconData = 0);
@@ -221,6 +226,7 @@ private:
     bool                     pluginsLoaded;
 
     // State objects that this window observes.
+    avtDatabaseMetaData     *metaData;
     PlotList                *plotList;
     GlobalAttributes        *globalAtts;
     ExpressionList          *exprList;

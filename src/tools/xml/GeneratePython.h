@@ -2309,7 +2309,7 @@ class PythonGeneratorPlugin
   public:
     PythonGeneratorPlugin(const QString &n,const QString &l,const QString &t,
                           const QString &vt,const QString &dt,const QString &v,
-                          const QString &, bool) : name(n), type(t), 
+                          const QString &, bool,bool,bool) : name(n), type(t), 
                           label(l), version(v), varType(vt), dbtype(dt), atts(NULL)
     {
         enabledByDefault = true;

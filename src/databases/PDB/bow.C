@@ -28,6 +28,25 @@
 
 #include "bow.h"
 
+//
+// Make some substitutions so the code is portable to Windows.
+//
+#if defined(_WIN32)
+#include <process.h>
+#include <io.h>
+#define GETPID     getpid
+#define FILE_OPEN  _open
+#define FILE_CLOSE _close
+#define FILE_READ  _read
+#define FILE_WRITE _write
+#else
+#define GETPID     getpid
+#define FILE_OPEN  open
+#define FILE_CLOSE close
+#define FILE_READ  read
+#define FILE_WRITE write
+#endif
+
 
 #define HEADSIZE (4+4+4+2+4+4+2+2+2+2+2+2)
 
@@ -292,7 +311,7 @@ float *bow2bof(bowglobal bg,char *bow,int bowi)
 
         find_tmpdir(tmpdir);
         sprintf(tmpname,"%s/bof2bow_tmp%d_%d_%d_%d",tmpdir,
-            binf->ti[bowi],binf->bi[bowi],binf->vi[bowi],(int)getpid());
+            binf->ti[bowi],binf->bi[bowi],binf->vi[bowi],(int)GETPID());
         sprintf(tmpnamegz,"%s.gz",tmpname);
         fioX_write(tmpnamegz,(char *)ub,size-FULLHEADSIZE);
         sprintf(cmd,"gunzip %s",tmpnamegz);
@@ -646,14 +665,14 @@ static char *fioX_read(bowglobal bg,char *pathsrc)
     char *buf;
 
     /* open for read, get size stat */
-    if ((id=open(pathsrc,O_RDONLY))<0) RET((char *)0)
-    if (fstat(id,st)) { close(id); RET((char *)0) }
+    if ((id=FILE_OPEN(pathsrc,O_RDONLY))<0) RET((char *)0)
+    if (fstat(id,st)) { FILE_CLOSE(id); RET((char *)0) }
     n=st->st_size;
-    if (n<=0) { close(id); RET((char *)0) }
+    if (n<=0) { FILE_CLOSE(id); RET((char *)0) }
     buf=(char *)(*bg->alloc)(bg->opaque,n);
-    if (read(id,buf,n)!=n)
-        { close(id); (*bg->free)(bg->opaque,(void *)buf); RET((char *)0) }
-    close(id);
+    if (FILE_READ(id,buf,n)!=n)
+        { FILE_CLOSE(id); (*bg->free)(bg->opaque,(void *)buf); RET((char *)0) }
+    FILE_CLOSE(id);
     RET(buf)
 }
 
@@ -666,10 +685,10 @@ static int fioX_write(char *pathdst,char *buf,int size)
 {
     int id;
 
-    id=open(pathdst,O_WRONLY|O_CREAT|O_TRUNC,0644);
+    id=FILE_OPEN(pathdst,O_WRONLY|O_CREAT|O_TRUNC,0644);
     if (id<0) RET(-1)
-    if (write(id,buf,size)!=size) { close(id); RET(-1) }
-    close(id);
+    if (FILE_WRITE(id,buf,size)!=size) { FILE_CLOSE(id); RET(-1) }
+    FILE_CLOSE(id);
     RET(0)
 }
 

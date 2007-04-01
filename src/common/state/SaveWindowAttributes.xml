@@ -20,10 +20,10 @@
       Jpeg
       Deflate
     </Enum>
-    <Field name="outputToCurrentDirectory" label="Output to current directory" type="bool">
+    <Field name="outputToCurrentDirectory" label="Output to current directory" type="bool" init="true">
       true
     </Field>
-    <Field name="outputDirectory" label="outputDirectory" type="string">
+    <Field name="outputDirectory" label="outputDirectory" type="string" init="true">
       .
     </Field>
     <Field name="fileName" label="fileName" type="string">

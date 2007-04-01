@@ -36,15 +36,18 @@ public:
 //  Creation:   Mon May 13 14:39:37 PDT 2002
 //
 //  Modifications:
-//      Sean Ahern, Tue May 21 16:10:35 PDT 2002
-//      Made the destructor tell the avtDatabase to free its resources.
+//    Sean Ahern, Tue May 21 16:10:35 PDT 2002
+//    Made the destructor tell the avtDatabase to free its resources.
 //
-//      Hank Childs, Mon Jul 28 13:33:54 PDT 2003
-//      Do more initialization in the constructor.  Added necessary information
-//      for caching data objects.
+//    Hank Childs, Mon Jul 28 13:33:54 PDT 2003
+//    Do more initialization in the constructor.  Added necessary information
+//    for caching data objects.
 //
-//      Hank Childs, Tue Nov 18 14:11:33 PST 2003
-//      Put SetDBInfo into the .C file, since it now does more work.
+//    Hank Childs, Tue Nov 18 14:11:33 PST 2003
+//    Put SetDBInfo into the .C file, since it now does more work.
+//
+//    Jeremy Meredith, Wed Aug 25 11:54:18 PDT 2004
+//    Added method to return the raw database.
 //
 // ****************************************************************************
 class NetnodeDB: public Netnode
@@ -61,6 +64,7 @@ public:
     ref_ptr<avtDatabase> GetDB(void) {return db;};
     void ReleaseData();
     void FreeUpResources() { db->FreeUpResources(); };
+    avtDatabaseMetaData *GetMetaData(int ts) { return db->GetMetaData(ts); }
 
 protected:
     ref_ptr<avtDatabase>    db;

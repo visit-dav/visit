@@ -71,3 +71,38 @@ ExpressionList::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
     return (addToParent || forceAdd);
 }
 
+Function: GetAllVarNames
+Declaration: const stringVector GetAllVarNames(const std::string &dbN) const;
+Definition:
+// ****************************************************************************
+// Method: ExpressionList::GetAllVarNames
+//
+// Purpose: 
+//   This method retrieves all the expression var names defined for the
+//   passed database name.
+//
+// Arguments:
+//   dbN       The database name for which to return var names.
+//
+// Returns:
+//   A list of expression var names defined for the given database.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 25, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const stringVector
+ExpressionList::GetAllVarNames(const std::string &dbN) const
+{
+    stringVector vars;
+    for (int i = 0; i < GetNumExpressions(); i++)
+    {
+        Expression *e = (Expression*)expressions[i];
+        if (!e->GetHidden() && e->GetDbName() == dbN)
+            vars.push_back(e->GetName());
+    }
+    return vars;
+}

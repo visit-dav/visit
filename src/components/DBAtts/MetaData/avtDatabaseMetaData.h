@@ -13,6 +13,7 @@
 #include <AttributeSubject.h>
 #include <ExpressionList.h>
 
+class avtSimulationInformation;
 
 //----------------------------------------------------------------------------
 //  Class: avtMeshMetaData
@@ -377,6 +378,13 @@ public:
 //  Modifications:
 //    Mark C. Miller, Tue Aug 10 14:16:36 PDT 2004
 //    Added method GetContainsGhosts()
+//
+//    Kathleen Bonnell, Wed Aug 25 08:37:12 PDT 2004 
+//    Added method GetAllVariableNames. 
+//
+//    Jeremy Meredith, Thu Aug 12 11:39:38 PDT 2004
+//    changed simulation information to be a separate class.
+//
 //----------------------------------------------------------------------------
 class DBATTS_API avtDatabaseMetaData : public AttributeSubject
 {
@@ -387,10 +395,6 @@ class DBATTS_API avtDatabaseMetaData : public AttributeSubject
     bool         isVirtualDatabase;
     bool         mustRepopulateOnStateChange;
     bool         mustAlphabetizeVariables;
-
-    bool         isSimulation;
-    std::string  simHost;
-    int          simPort;
 
     bool         useCatchAllMesh;
 
@@ -417,6 +421,9 @@ class DBATTS_API avtDatabaseMetaData : public AttributeSubject
     std::vector<avtCurveMetaData *>             curves;
     std::vector<avtDefaultPlotMetaData *>       defaultPlots;
     std::vector<avtSILMetaData *>               sils;
+
+    bool                                        isSimulation;
+    avtSimulationInformation                   *simInfo;
 
 public:
     avtDatabaseMetaData();
@@ -448,10 +455,8 @@ public:
 
     void         SetIsSimulation(bool val) { isSimulation = val; }
     bool         GetIsSimulation() const { return isSimulation; }
-    void         SetSimHost(const std::string &h) { simHost = h; }
-    std::string  GetSimHost() const { return simHost; }
-    void         SetSimPort(int p) { simPort = p; }
-    int          GetSimPort() const { return simPort; }
+    void         SetSimInfo(const avtSimulationInformation&);
+    const avtSimulationInformation &GetSimInfo() const;
 
     const intVector &GetCycles() const { return cycles; };
     void         SetCycle(int, int);
@@ -557,6 +562,7 @@ public:
     virtual void SelectAll();
     virtual AttributeGroup *CreateSubAttributeGroup(int);
 
+    const stringVector GetAllVariableNames(const std::string &) const;
 private:
     bool VarIsCompound(const std::string &inVar) const;
     void ParseCompoundForVar(const std::string &inVar, std::string &outVar)

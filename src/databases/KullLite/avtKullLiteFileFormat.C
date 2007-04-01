@@ -248,7 +248,7 @@ avtKullLiteFileFormat::ReadInPrimaryMesh(int fi)
 {
     int   i;
 
-    debug4 << "Reading in dataset from KullLite file " << my_filenames[fi]
+    debug4 << "Reading in dataset from KullLite file " << my_filenames[fi].c_str()
            << endl;
 
     m_pdbFile = PD_open((char *) my_filenames[fi].c_str(), "r");
@@ -765,7 +765,7 @@ avtKullLiteFileFormat::GetMesh(int dom, const char *mesh)
     //
     // Do some error checking.
     //
-    debug5 << "Getting mesh from KullLite file: " << my_filenames[dom] << endl;
+    debug5 << "Getting mesh from KullLite file: " << my_filenames[dom].c_str() << endl;
     if (dom < 0 || dom >= my_filenames.size())
         EXCEPTION2(BadDomainException, dom, my_filenames.size());
 
@@ -1564,6 +1564,9 @@ avtKullLiteFileFormat::GetRealMaterial(int domain)
 //     Hank Childs, Mon Jul 26 09:16:28 PDT 2004
 //     Add support for mesh tags.
 //
+//     Kathleen Bonnell, Wed Aug 25 11:21:56 PDT 2004 
+//     Set mesh-type for node_tags to AVT_POINT_MESH. 
+//
 // ****************************************************************************
 
 void
@@ -1661,7 +1664,7 @@ avtKullLiteFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         avtMeshMetaData *mesh = new avtMeshMetaData;
         mesh->name = "mesh_tags/nodes_mesh";
-        mesh->meshType = AVT_UNSTRUCTURED_MESH;
+        mesh->meshType = AVT_POINT_MESH;
         mesh->numBlocks = my_filenames.size();
         mesh->blockOrigin = 0;
         mesh->spatialDimension = (is3DMesh ? 3 : 2);
@@ -1783,7 +1786,7 @@ void avtKullLiteFileFormat::ReadInMaterialNames()
 void avtKullLiteFileFormat::ReadInMaterialName(int fi)
 {
     debug4 << "Reading in material header from KullLite file "
-           << my_filenames[fi] << endl;    
+           << my_filenames[fi].c_str() << endl;    
 
     m_pdbFile = PD_open((char *) my_filenames[fi].c_str(), "r");
     if (m_pdbFile == NULL)
