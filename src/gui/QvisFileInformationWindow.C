@@ -1,7 +1,14 @@
 #if defined(_WIN32)
 #include <strstrea.h>
 #else
+
+#ifdef GCC3_3_X86_64
+#include <strstream>
+using std::ostrstream;
+#else
 #include <strstream.h>
+#endif
+
 #endif
 #include <qmultilineedit.h>
 #include <qtabwidget.h>

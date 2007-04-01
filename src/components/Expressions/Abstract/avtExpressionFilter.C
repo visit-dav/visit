@@ -196,6 +196,10 @@ avtExpressionFilter::PostExecute(void)
 //    Hank Childs, Mon Sep 22 08:34:14 PDT 2003
 //    Add support for tensors.
 //
+//    Hank Childs, Thu Jan 29 16:22:06 PST 2004
+//    Fix some odd centering cases that can come up when a variable can get
+//    misidentified.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -219,7 +223,34 @@ avtExpressionFilter::ExecuteData(vtkDataSet *in_ds, int index,
     //
     vtkDataSet *rv = (vtkDataSet *) in_ds->NewInstance();
     rv->ShallowCopy(in_ds);
-    if (IsPointVariable())
+    int npts   = rv->GetNumberOfPoints();
+    int ncells = rv->GetNumberOfCells();
+    int ntups  = dat->GetNumberOfTuples();
+    bool isPoint = false;
+    if ((ntups == ncells) && (ntups != npts))
+    {
+        isPoint = false;
+    }
+    else if ((ntups == npts) && (ntups != ncells))
+    {
+        isPoint = true;
+    }
+    else if ((ntups == npts) && (ntups == ncells))
+    {
+        isPoint = IsPointVariable();
+    }
+    else
+    {
+        debug1 << "Number of tuples cannot be point or cell variable."
+               << endl;
+        debug1 << "Var = " << dat->GetName() << endl;
+        debug1 << "Ntuples = " << ntups << endl;
+        debug1 << "Ncells = " << ncells << endl;
+        debug1 << "Npts = " << npts << endl;
+        return rv;
+    }
+
+    if (isPoint)
     {
         rv->GetPointData()->AddArray(dat);
         if (vardim == 1)
@@ -248,7 +279,7 @@ avtExpressionFilter::ExecuteData(vtkDataSet *in_ds, int index,
     {
         double exts[6];
         unsigned char *ghosts = NULL;
-        if (!IsPointVariable())
+        if (!isPoint)
         {
             vtkUnsignedCharArray *g = (vtkUnsignedCharArray *)
                                  rv->GetCellData()->GetArray("vtkGhostLevels");

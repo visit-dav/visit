@@ -188,6 +188,9 @@
 #    Hank Childs, Sat Jan 24 11:34:44 PST 2004
 #    Changed link-line to accomodate library re-organization.
 #
+#    Eric Brugger, Thu Jan 29 13:38:33 PST 2004
+#    Fix a bug in the dependencies so that it builds properly in parallel.
+#
 ##############################################################################
 
 ##
@@ -256,19 +259,19 @@ MAINPAROBJ=$(MAINSRC:.C=_par.o)
 ##
 ## Standard targets...
 ##
-all: $(LIBSHAREDSER) @LIBSHAREDPAR@ @ENGINE_SER@ @ENGINE_PAR@
+all: @ENGINE_SER@ @ENGINE_PAR@
 
 clean:
-	$(RM) $(SEROBJ) @ENGINE_SER@ $(LIBSHAREDSER)
-	$(RM) $(PAROBJ) @ENGINE_PAR@  @LIBSHAREDPAR@
+	$(RM) $(SEROBJ) $(LIBSHAREDSER) @ENGINE_SER@
+	$(RM) $(PAROBJ) $(LIBSHAREDPAR) @ENGINE_PAR@
 
 ##
 ## Other targets...
 ##
-@ENGINE_SER@ or_no_ser: $(SERLIBDEP) $(SEROBJ) $(MAINSEROBJ)
+@ENGINE_SER@ or_no_ser: $(SERLIBDEP) $(SEROBJ) $(MAINSEROBJ) $(LIBSHAREDSER)
 	$(CXX) -o $@ $(LDFLAGS) $(MAINSEROBJ) -lengine_ser $(SERLIBS)
 
-@ENGINE_PAR@ or_no_par: $(PARLIBDEP) $(PAROBJ) $(MAINPAROBJ)
+@ENGINE_PAR@ or_no_par: $(PARLIBDEP) $(PAROBJ) $(MAINPAROBJ) $(LIBSHAREDPAR)
 	$(CXX) -o $@ $(LDFLAGS) $(MAINPAROBJ) -lengine_par $(PARLIBS)
 
 purify: $(SERLIBDEP) $(SEROBJ)
