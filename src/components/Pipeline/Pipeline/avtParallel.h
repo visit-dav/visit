@@ -40,6 +40,7 @@ PIPELINE_API void    BroadcastStringVectorVector(std::vector<std::vector<std::st
 PIPELINE_API bool    GetListToRootProc(std::vector<std::string> &, int);
 
 PIPELINE_API int     GetUniqueMessageTag();
+PIPELINE_API int     GetUniqueStaticMessageTag();
 
 PIPELINE_API void    GetAttToRootProc(AttributeGroup &, int);
 PIPELINE_API void    GetFloatArrayToRootProc(float *, int, bool &);
