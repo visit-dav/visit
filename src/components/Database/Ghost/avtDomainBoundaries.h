@@ -1,6 +1,13 @@
+// ************************************************************************* //
+//                            avtDomainBoundaries.h                          //
+// ************************************************************************* //
+
 #ifndef AVT_DOMAIN_BOUNDARIES_H
 #define AVT_DOMAIN_BOUNDARIES_H
+
 #include <database_exports.h>
+
+#include <avtGhostData.h>
 
 #include <vector>
 using std::vector;
@@ -34,7 +41,12 @@ class avtMaterial;
 //    Hank Childs, Sat Aug 14 06:41:00 PDT 2004
 //    Added ghost nodes.
 //
+//    Hank Childs, Sun Feb 27 12:00:12 PST 2005
+//    Added pure virtual methods RequiresCommunication.  Added "allDomains"
+//    argument to CreateGhostNodes.
+//
 // ****************************************************************************
+
 class DATABASE_API avtDomainBoundaries
 {
   public:
@@ -63,7 +75,9 @@ class DATABASE_API avtDomainBoundaries
                                         const vector<avtMaterial*>   mats,
                                         vector<avtMixedVariable*>    mixvars) =0;
     virtual void                      CreateGhostNodes(vector<int>   domainNum,
-                                               vector<vtkDataSet*>   meshes)  =0;
+                                               vector<vtkDataSet*>   meshes,
+                                               vector<int> &)  =0;
+    virtual bool                      RequiresCommunication(avtGhostDataType) = 0;
     virtual bool                      ConfirmMesh(vector<int>      domainNum,
                                                vector<vtkDataSet*> meshes)  =0;
 };

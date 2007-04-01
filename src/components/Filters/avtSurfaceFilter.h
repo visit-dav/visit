@@ -14,7 +14,6 @@
 
 class vtkDataSet;
 class vtkSurfaceFilter;
-class vtkCellDataToPointData;
 
 
 // ****************************************************************************
@@ -63,6 +62,9 @@ class vtkCellDataToPointData;
 //    Changed attributes and more to support stand-alone filter so Elevate
 //    operator can also use.
 //
+//    Hank Childs, Fri Mar  4 08:47:07 PST 2005
+//    Removed cd2pd.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtSurfaceFilter : public avtStreamer
@@ -83,7 +85,6 @@ class AVTFILTERS_API avtSurfaceFilter : public avtStreamer
   protected:
     SurfaceFilterAttributes    atts;
     vtkSurfaceFilter          *filter;
-    vtkCellDataToPointData    *cd2pd;
     double                     min;
     double                     max;
     double                     Ms;

@@ -4,11 +4,11 @@
 
 #ifndef AVT_ORIGINATING_SINK_H
 #define AVT_ORIGINATING_SINK_H
+
 #include <pipeline_exports.h>
 
-
 #include <avtDataObjectSink.h>
-#include <avtDataSpecification.h>
+#include <avtPipelineSpecification.h>
 
 
 typedef  bool (*GuideFunction)(void *, int);
@@ -35,6 +35,10 @@ typedef  bool (*GuideFunction)(void *, int);
 //    Moved inlined destructor definition to .C file because certain compilers 
 //    have problems with them.
 //
+//    Hank Childs, Wed Mar  2 11:16:01 PST 2005
+//    Take a full-blown pipeline specification rather than a data spec and a
+//    pipeline index.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtOriginatingSink : virtual public avtDataObjectSink
@@ -43,16 +47,12 @@ class PIPELINE_API avtOriginatingSink : virtual public avtDataObjectSink
                               avtOriginatingSink();
     virtual                  ~avtOriginatingSink();
 
-    void                      SetPipelineIndex(int);
-
-    void                      Execute(avtDataSpecification_p);
+    void                      Execute(avtPipelineSpecification_p);
 
     static void               SetGuideFunction(GuideFunction, void *);
     static void               GetGuideFunction(GuideFunction &, void *&);
 
   protected:
-    int                       pipelineIndex;
-
     virtual void              InputIsReady(void);
     virtual void              DynamicLoadBalanceCleanUp(void);
 

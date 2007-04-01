@@ -39,6 +39,7 @@
 #include <RenderRPC.h>
 #include <SetWinAnnotAttsRPC.h>
 #include <StartPickRPC.h>
+#include <StartQueryRPC.h>
 #include <UpdatePlotAttsRPC.h>
 #include <UseNetworkRPC.h>
 
@@ -620,6 +621,43 @@ RPCExecutor<StartPickRPC>::Execute(StartPickRPC *rpc)
             netmgr->StartPickMode(rpc->GetForZones());
         else
             netmgr->StopPickMode();
+        rpc->SendReply();
+    }
+    CATCH2(VisItException, e)
+    {
+        rpc->SendError(e.Message(), e.GetExceptionType());
+    }
+    ENDTRY
+}
+
+
+// ****************************************************************************
+//  Method: RPCExecutor<StartQueryRPC>::Execute
+//
+//  Purpose:
+//      Indicates that we should start query mode or stop query mode.
+//      This is important to the network manager, because it cannot do DLB
+//      while in query mode.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 28, 2005
+//
+// ****************************************************************************
+template<>
+void
+RPCExecutor<StartQueryRPC>::Execute(StartQueryRPC *rpc)
+{
+    Engine         *engine = Engine::Instance();
+    NetworkManager *netmgr = engine->GetNetMgr();
+
+    debug2 << "Executing StartQueryRPC: " << endl; 
+
+    TRY 
+    {
+        if (rpc->GetStartFlag())
+            netmgr->StartQueryMode();
+        else
+            netmgr->StopQueryMode();
         rpc->SendReply();
     }
     CATCH2(VisItException, e)

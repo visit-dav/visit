@@ -23,11 +23,14 @@
 //
 //    Hank Childs, Fri Jan 28 13:40:20 PST 2005
 //    Use exception macros.
+//
+//    Hank Childs, Sun Mar  6 08:42:50 PST 2005
+//    Removed ForceStatic call.  That is now the default.
+//
 // ****************************************************************************
 
 void *get_engine()
 {
-    LoadBalancer::ForceStatic();
     Engine *engine = Engine::Instance();
     return (void*)engine;
 }

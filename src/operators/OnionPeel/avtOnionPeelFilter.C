@@ -818,6 +818,12 @@ avtOnionPeelFilter::PreExecute()
 //  Programmer: Hank Childs
 //  Creation:   September 10, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Mar  4 08:12:25 PST 2005
+//    Do not set outputs of filters to NULL, since this will prevent them
+//    from re-executing correctly in DLB-mode.
+//
 // ****************************************************************************
 
 void
@@ -825,7 +831,7 @@ avtOnionPeelFilter::ReleaseData(void)
 {
     avtPluginStreamer::ReleaseData();
     opf->SetInput(NULL);
-    opf->SetOutput(NULL);
+    opf->SetOutput(vtkUnstructuredGrid::New());
 }
 
 

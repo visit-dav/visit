@@ -81,6 +81,10 @@ class  PickAttributes;
 //    Kathleen Bonnell, Tue Jan 25 07:59:28 PST 2005 
 //    Added const char* arg to QueryCoords.
 //
+//    Hank Childs, Sun Feb 27 12:44:40 PST 2005
+//    Removed method CanDoDynamicLoadBalancing.  Database is now asked
+//    directly.  Also added new ReleaseData method that is aware of DLB.
+//
 // ****************************************************************************
 
 class DATABASE_API avtSourceFromDatabase : public avtTerminatingDatasetSource
@@ -114,6 +118,8 @@ class DATABASE_API avtSourceFromDatabase : public avtTerminatingDatasetSource
     virtual void        GetDomainName(const std::string &, const int, 
                             const int, std::string &);
 
+    virtual void        ReleaseData(void);
+
   protected:
     avtDatasetDatabase      *database;
     char                    *variable;
@@ -121,7 +127,6 @@ class DATABASE_API avtSourceFromDatabase : public avtTerminatingDatasetSource
     avtDataSpecification_p   lastSpec;
 
     virtual bool        FetchDataset(avtDataSpecification_p, avtDataTree_p &);
-    virtual bool        CanDoDynamicLoadBalancing(void);
     virtual int         NumStagesForFetch(avtDataSpecification_p);
 };
 

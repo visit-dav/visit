@@ -1,6 +1,6 @@
-// ****************************************************************************
-//                      avtUnstructuredDomainBoundaries.h
-// ****************************************************************************
+// ************************************************************************* //
+//                     avtUnstructuredDomainBoundaries.h                     //
+// ************************************************************************* //
 
 #ifndef AVT_UNSTRUCTURED_DOMAIN_BOUNDARIES_H
 #define AVT_UNSTRUCTURED_DOMAIN_BOUNDARIES_H
@@ -43,6 +43,9 @@ class avtMaterial;
 //    Brad Whitlock, Thu Sep 16 12:52:56 PDT 2004
 //    I added some workarounds so it builds using the MSVC6.0 compiler on
 //    Windows. The code should be unaffected on other systems.
+//
+//    Hank Childs, Sun Feb 27 12:12:03 PST 2005
+//    Added RequiresCommunication.  Also added argument to CreateGhostNodes.
 //
 // ****************************************************************************
 
@@ -87,8 +90,10 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
                                         vector<avtMixedVariable*>    mixvars);
     
     virtual void                      CreateGhostNodes(vector<int>   domainNum,
-                                               vector<vtkDataSet*> meshes);
+                                               vector<vtkDataSet*> meshes,
+                                               vector<int> &allDomains);
 
+    virtual bool                      RequiresCommunication(avtGhostDataType);
     virtual bool                      ConfirmMesh(vector<int>      domainNum,
                                         vector<vtkDataSet*> meshes);
     

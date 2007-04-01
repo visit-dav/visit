@@ -137,6 +137,9 @@ EngineProxy::~EngineProxy()
 //    Jeremy Meredith, Tue Aug 24 22:12:21 PDT 2004
 //    Added metadata and sil atts for simulations.
 //
+//    Hank Childs, Mon Feb 28 17:26:21 PST 2005
+//    Added StartQuery.
+//
 // ****************************************************************************
 void
 EngineProxy::SetupComponentRPCs()
@@ -151,6 +154,7 @@ EngineProxy::SetupComponentRPCs()
     xfer.Add(&updatePlotAttsRPC);
     xfer.Add(&pickRPC);
     xfer.Add(&startPickRPC);
+    xfer.Add(&startQueryRPC);
     xfer.Add(&executeRPC);
     xfer.Add(&clearCacheRPC);
     xfer.Add(&queryRPC);
@@ -1094,6 +1098,32 @@ EngineProxy::StartPick(const bool forZones, const bool flag, const int nid)
     {
         RECONSTITUTE_EXCEPTION(startPickRPC.GetExceptionType(),
                              startPickRPC.Message());
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  EngineProxy::StartQuery
+//
+//  Purpose:
+//
+//  Arguments:
+//
+//  Programmer:  Hank Childs
+//  Creation:    February 28, 2005
+//
+// ****************************************************************************
+
+void 
+EngineProxy::StartQuery(const bool flag, const int nid)
+{
+
+    startQueryRPC(flag, nid);
+
+    if (startQueryRPC.GetStatus() == VisItRPC::error)
+    {
+        RECONSTITUTE_EXCEPTION(startQueryRPC.GetExceptionType(),
+                             startQueryRPC.Message());
     }
 }
 

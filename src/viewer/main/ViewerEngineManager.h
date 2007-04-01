@@ -200,6 +200,9 @@ class avtDatabaseMetaData;
 //    Kathleen Bonnell, Tue Mar  1 11:20:15 PST 2005 
 //    Added UdpateExpressionsFromPlot. 
 //
+//    Hank Childs, Wed Mar  2 11:52:32 PST 2005
+//    Added StartQuery.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -277,6 +280,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
               const PickAttributes *atts, PickAttributes &retAtts);
     bool StartPick(const EngineKey &ek, const bool forZones,
                    const bool flag, const int nid);
+    bool StartQuery(const EngineKey &ek, const bool flag, const int nid);
     bool SetWinAnnotAtts(const EngineKey &ek, const WindowAttributes *wa,
                          const AnnotationAttributes *aa,
                          const AnnotationObjectList *ao,

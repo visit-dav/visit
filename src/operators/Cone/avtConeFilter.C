@@ -940,6 +940,12 @@ avtConeFilter::RefashionDataObjectInfo(void)
 //  Programmer: Hank Childs
 //  Creation:   September 10, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Mar  4 08:12:25 PST 2005
+//    Do not set outputs of filters to NULL, since this will prevent them
+//    from re-executing correctly in DLB-mode.
+//
 // ****************************************************************************
 
 void
@@ -948,17 +954,17 @@ avtConeFilter::ReleaseData(void)
     avtPluginStreamer::ReleaseData();
 
     cutter->SetInput(NULL);
-    cutter->SetOutput(NULL);
+    cutter->SetOutput(vtkPolyData::New());
     polar->SetInput(NULL);
-    polar->SetOutput(NULL);
+    polar->SetOutput(vtkPolyData::New());
     transform->SetInput(NULL);
-    transform->SetOutput(NULL);
+    transform->SetOutput(vtkPolyData::New());
     clipOffSides->SetInput(NULL);
-    clipOffSides->SetOutput(NULL);
+    clipOffSides->SetOutput(vtkPolyData::New());
     clipBottom->SetInput(NULL);
-    clipBottom->SetOutput(NULL);
+    clipBottom->SetOutput(vtkPolyData::New());
     clipByLength->SetInput(NULL);
-    clipByLength->SetOutput(NULL);
+    clipByLength->SetOutput(vtkPolyData::New());
 }
 
 

@@ -74,6 +74,9 @@ avtDatasetQuery::~avtDatasetQuery()
 //    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002 
 //    Set queryAtts results value. 
 //    
+//    Hank Childs, Mon Feb 28 15:40:45 PST 2005
+//    Do not assume the tree is valid.  It is not with DLB.
+//
 //    Kathleen Bonnell, Tue Mar  1 11:20:15 PST 2005
 //    Test for empty data tree after ApplyFilters, and submit an error
 //    message. 
@@ -101,10 +104,11 @@ avtDatasetQuery::PerformQuery(QueryAttributes *qA)
     // Reset the input so that we have access to the data tree. 
     //
     SetTypedInput(dob);
+
     avtDataTree_p tree = GetInputDataTree();
     int validInputTree = 0;
     
-    if (!tree->IsEmpty())
+    if (*tree != NULL && !tree->IsEmpty())
     {
         validInputTree = 1;
     }

@@ -4,8 +4,8 @@
 
 #ifndef AVT_INLINE_PIPELINE_SOURCE_H
 #define AVT_INLINE_PIPELINE_SOURCE_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <avtTerminatingSource.h>
 
@@ -26,6 +26,9 @@
 //  Modifications:
 //    Jeremy Meredith, Wed Jun  9 09:14:57 PDT 2004
 //    Added species aux data.
+//
+//    Hank Childs, Sat Mar  5 18:36:02 PST 2005
+//    Turn off load balancing for inline pipeline sources.
 //
 // ****************************************************************************
 
@@ -54,6 +57,7 @@ class PIPELINE_API avtInlinePipelineSource : virtual public avtTerminatingSource
                                VoidRefList &);
 
     virtual bool           ArtificialPipeline(void)  { return true; };
+    virtual bool           UseLoadBalancer(void) { return false; };
 };
 
 

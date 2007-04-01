@@ -420,6 +420,10 @@ avtClipFilter::PerformRestriction(avtPipelineSpecification_p spec)
 //    Made my fast clipper support 2D, and removed the old generic
 //    VTK data set clipper.
 //
+//    Hank Childs, Fri Mar  4 08:12:25 PST 2005
+//    Do not set outputs of filters to NULL, since this will prevent them
+//    from re-executing correctly in DLB-mode.
+//
 // ****************************************************************************
 
 void
@@ -428,5 +432,5 @@ avtClipFilter::ReleaseData(void)
     avtPluginStreamer::ReleaseData();
 
     clipPoly->SetInput(NULL);
-    clipPoly->SetOutput(NULL);
+    clipPoly->SetOutput(vtkPolyData::New());
 }

@@ -80,6 +80,9 @@ static int    VSSearch(const vector<string> &, const string &);
 //    Hank Childs, Sun Feb 13 13:53:14 PST 2005
 //    Do not require to be in a "plt" directory.
 //
+//    Hank Childs, Sun Mar  6 16:21:15 PST 2005
+//    Add support for GeoDyne material names.
+//
 // ****************************************************************************
 
 avtBoxlib2DFileFormat::avtBoxlib2DFileFormat(const char *fname)
@@ -109,6 +112,7 @@ avtBoxlib2DFileFormat::avtBoxlib2DFileFormat(const char *fname)
     timestepPath = t;
 
     initializedReader = false;
+    vf_names_for_materials = false;
 }
 
 
@@ -134,6 +138,11 @@ avtBoxlib2DFileFormat::~avtBoxlib2DFileFormat()
 //
 //  Programmer: Hank Childs
 //  Creation:   December 10, 2003
+//
+//  Modifications:
+//
+//    Hank Childs, Sun Mar  6 16:21:15 PST 2005
+//    Add support for GeoDyne material names.
 //
 // ****************************************************************************
 
@@ -226,6 +235,22 @@ avtBoxlib2DFileFormat::InitializeReader(void)
 
             if (val > nMaterials)
                 nMaterials = val;
+        }
+    }
+    if (nMaterials == 0)
+    {
+        for (i = 0; i < nVars; ++i)
+        {
+            int val = 0;
+            if (varNames[i].find("vf_") == 0)
+            {
+                varUsedElsewhere[i] = true;
+                int val = atoi(varNames[i].c_str()+3);
+    
+                if (val > nMaterials)
+                    nMaterials = val;
+                vf_names_for_materials = true;
+            }
         }
     }
     
@@ -1353,6 +1378,9 @@ avtBoxlib2DFileFormat::GetAuxiliaryData(const char *var, int dom,
 //    Hank Childs, Mon Feb 14 11:05:11 PST 2005
 //    Make materials be 1-indexed.
 //
+//    Hank Childs, Sun Mar  6 16:21:15 PST 2005
+//    Add support for GeoDyne material names.
+//
 // ****************************************************************************
     
 void *
@@ -1395,7 +1423,10 @@ avtBoxlib2DFileFormat::GetMaterial(const char *var, int patch,
     vector<float *> mats(nMaterials);
     for (i = 1; i <= nMaterials; ++i)
     {
-        sprintf(str,"frac%d", i);
+        if (vf_names_for_materials)
+            sprintf(str,"vf_%d", i);
+        else
+            sprintf(str,"frac%d", i);
         floatArrays[i - 1] = (vtkFloatArray *)(GetVar(patch, str));
         mats[i - 1] = floatArrays[i - 1]->GetPointer(0);
     }

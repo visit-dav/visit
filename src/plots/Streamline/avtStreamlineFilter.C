@@ -438,6 +438,10 @@ avtStreamlineFilter::SetPointDensity(int den)
 //   Added tests around the methods to set the input/output since the filters
 //   are no longer created in the constructor.
 //
+//    Hank Childs, Fri Mar  4 08:12:25 PST 2005
+//    Do not set outputs of filters to NULL, since this will prevent them
+//    from re-executing correctly in DLB-mode.
+//
 // ****************************************************************************
 
 void
@@ -448,17 +452,17 @@ avtStreamlineFilter::ReleaseData(void)
     if(streamline != 0)
     {
         streamline->SetInput(NULL);
-        streamline->SetOutput(NULL);
+        streamline->SetOutput(vtkPolyData::New());
     }
     if(tubes != 0)
     {
         tubes->SetInput(NULL);
-        tubes->SetOutput(NULL);
+        tubes->SetOutput(vtkPolyData::New());
     }
     if(ribbons != 0)
     {
         ribbons->SetInput(NULL);
-        ribbons->SetOutput(NULL);
+        ribbons->SetOutput(vtkPolyData::New());
     }
 }
 

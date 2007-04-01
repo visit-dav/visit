@@ -477,6 +477,10 @@ avtDataRepresentation::GetDataString(int &length, DataSetType &dst)
 //    Hank Childs, Wed Mar 17 19:21:22 PST 2004
 //    Make use of the null dataset to make sure we don't blow memory in SR-mode
 //
+//    Hank Childs, Sun Mar  6 08:18:53 PST 2005
+//    Remove the data string after creating the VTK data set.  This 
+//    substantially reduces memory footprint.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -571,6 +575,7 @@ avtDataRepresentation::GetDataVTK(void)
             asVTK->SetSource(NULL);
             reader->Delete();
             charArray->Delete();
+            originalString = NULL;
         }
     }
 

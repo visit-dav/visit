@@ -268,6 +268,12 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //  Programmer: Hank Childs
 //  Creation:   September 10, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Mar  4 08:12:25 PST 2005
+//    Do not set outputs of filters to NULL, since this will prevent them
+//    from re-executing correctly in DLB-mode.
+//
 // ****************************************************************************
 
 void
@@ -276,9 +282,9 @@ avtCondenseDatasetFilter::ReleaseData(void)
     avtStreamer::ReleaseData();
 
     rpfPD->SetInput(NULL);
-    rpfPD->SetOutput(NULL);
+    rpfPD->SetOutput(vtkPolyData::New());
     rpfUG->SetInput(NULL);
-    rpfUG->SetOutput(NULL);
+    rpfUG->SetOutput(vtkUnstructuredGrid::New());
 }
 
 

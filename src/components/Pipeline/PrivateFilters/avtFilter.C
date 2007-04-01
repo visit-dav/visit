@@ -13,6 +13,7 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <NoInputException.h>
+#include <TimingsManager.h>
 
 
 using std::string;
@@ -119,6 +120,11 @@ avtFilter::UpdateProgress(int current, int total)
 //    Hank Childs, Fri May 16 10:37:09 PDT 2003
 //    Do a better job of catching exceptions.
 //
+//    Hank Childs, Sun Feb 27 13:04:32 PST 2005
+//    If we are doing dynamic load balancing, clean up our input as we go.
+//    Moved timings code from avtDataTreeStreamer to this routine so that
+//    all filters are timed.
+//
 // ****************************************************************************
 
 bool
@@ -154,6 +160,8 @@ avtFilter::Update(avtPipelineSpecification_p spec)
 
         TRY
         {
+            int timerHandle = visitTimer->StartTimer();
+
             //
             // If extents have changed, we need to copy that downstream.
             //
@@ -168,6 +176,9 @@ avtFilter::Update(avtPipelineSpecification_p spec)
             UpdateProgress(1, 0);
             debug1 << "Done executing " << GetType() << endl;
             modified = false;
+
+            visitTimer->StopTimer(timerHandle, GetType());
+            visitTimer->DumpTimings();
         }
         CATCH2(VisItException, e)
         {
@@ -180,6 +191,15 @@ avtFilter::Update(avtPipelineSpecification_p spec)
         ENDTRY
 
         inExecute = false;
+    }
+
+    //
+    // If we are doing dynamic load balancing, clean up as we go.
+    //
+    if (GetInput()->GetInfo().GetValidity().GetIsThisDynamic())
+    {
+        if (GetInput()->GetSource() != NULL)
+            GetInput()->GetSource()->ReleaseData();
     }
 
     debug1 << "Done Updating " << GetType() << endl;
@@ -985,13 +1005,20 @@ avtFilter::ExamineSpecification(avtPipelineSpecification_p)
 //  Programmer: Hank Childs
 //  Creation:   October 24, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Feb 19 14:40:58 PST 2005
+//    Release data is now defined in the base class.  Just call the base
+//    class's method.  Left this one in place so that the debug statement
+//    would stick around (very useful for debugging).
+//
 // ****************************************************************************
 
 void
 avtFilter::ReleaseData(void)
 {
     debug3 << "Filter " << GetType() << " releasing its data" << endl;
-    GetOutput()->ReleaseData();
+    avtDataObjectSource::ReleaseData();
 }
 
 

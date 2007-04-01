@@ -15,22 +15,37 @@
 #include <avtPipelineSpecification.h>
 #include <avtIOInformation.h>
 
+class     avtDatabase;
+
+
 //
 //  Callbacks
 //
 typedef   bool (*ParAbortCallback)(void *, bool);
 typedef   void (*ProgressCallback)(void *, const char *, const char *,int,int);
 
+// ****************************************************************************
+//  Struct: LBInfo
 //
-//  Structure for load balancing information for each pipeline
+//  Purpose:
+//    Structure for load balancing information for each pipeline.
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Feb 27 12:22:08 PST 2005
+//    Added haveInitializedDLB and doDLB.
+//
+// ****************************************************************************
 struct LBInfo
 {
     std::string                       db;           // database name
     bool                              complete;     // true if complete
     int                               current;      // current domain (else -1)
+    bool                              haveInitializedDLB; 
+    bool                              doDLB; 
 
-    LBInfo(const std::string &db_) : db(db_), complete(false), current(-1) {};
+    LBInfo(const std::string &db_) : db(db_), complete(false), current(-1),
+                                     haveInitializedDLB(false), doDLB(false){};
 };
 
 //
@@ -91,6 +106,12 @@ typedef enum
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added avtDatabaseMetaData arg to AddDatabase
 //
+//    Hank Childs, Sun Feb 27 11:12:44 PST 2005
+//    Added avtDatabase argument to AddDatabase.  Also added data member dbMap.
+//
+//    Hank Childs, Sun Mar  6 08:42:50 PST 2005
+//    Renamed ForceDynamic to AllowDynamic.
+//
 // ****************************************************************************
 
 class LoadBalancer
@@ -102,8 +123,10 @@ class LoadBalancer
     avtDataSpecification_p        Reduce(avtPipelineSpecification_p input);
     bool                          CheckDynamicLoadBalancing(
                                          avtPipelineSpecification_p input);
+    bool                          CheckDynamicLoadBalancing(int);
 
     void                          AddDatabase(const std::string &dbname,
+                                              avtDatabase *,
                                               const avtIOInformation &,
                                               const avtDatabaseMetaData *);
 
@@ -116,8 +139,7 @@ class LoadBalancer
                                                            void *);
     static void                   RegisterAbortCallback(ParAbortCallback,
                                                         void *);
-    static void                   ForceStatic();
-    static void                   ForceDynamic();
+    static void                   AllowDynamic();
     static void                   SetScheme(LoadBalanceScheme);
 
   protected:
@@ -128,8 +150,7 @@ class LoadBalancer
     static ProgressCallback           progressCallback;
     static void                      *progressCallbackArgs;
 
-    static bool                       forceStatic;
-    static bool                       forceDynamic;
+    static bool                       allowDynamic;
     static LoadBalanceScheme          scheme;
 
     int                               rank;
@@ -137,6 +158,7 @@ class LoadBalancer
 
     std::map<std::string, IOInfo>     ioMap;
     std::vector<LBInfo>               pipelineInfo;
+    std::map<std::string, avtDatabase *>  dbMap;
 };
 
 

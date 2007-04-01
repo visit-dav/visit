@@ -1032,10 +1032,15 @@ avtDatabase::GetIOInformation(int stateIndex)
 //  Programmer: Hank Childs
 //  Creation:   October 25, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Feb 27 11:20:39 PST 2005
+//    Added data specification argument.
+//
 // ****************************************************************************
 
 bool
-avtDatabase::CanDoDynamicLoadBalancing(void)
+avtDatabase::CanDoDynamicLoadBalancing(avtDataSpecification_p)
 {
     return true;
 }

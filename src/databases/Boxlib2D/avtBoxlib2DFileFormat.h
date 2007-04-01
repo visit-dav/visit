@@ -28,6 +28,11 @@ class VisMF;
 //  Programmer:  Hank Childs (Akira Haddox)
 //  Creation:    December 10, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Mar  6 16:21:15 PST 2005
+//    Add support for GeoDyne material names.
+//
 // ****************************************************************************
 
 class avtBoxlib2DFileFormat : public avtSTMDFileFormat
@@ -83,6 +88,7 @@ class avtBoxlib2DFileFormat : public avtSTMDFileFormat
     int                                     cycle;
     std::string                             timestepPath;
     bool                                    initializedReader;
+    bool                                    vf_names_for_materials;
     
     // Scalar vars listed in header.
     int                                     nVars;

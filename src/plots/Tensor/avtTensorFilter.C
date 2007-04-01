@@ -251,6 +251,12 @@ avtTensorFilter::RefashionDataObjectInfo(void)
 //  Programmer: Hank Childs
 //  Creation:   September 10, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Mar  4 08:12:25 PST 2005
+//    Do not set outputs of filters to NULL, since this will prevent them
+//    from re-executing correctly in DLB-mode.
+//
 // ****************************************************************************
 
 void
@@ -259,9 +265,9 @@ avtTensorFilter::ReleaseData(void)
     avtStreamer::ReleaseData();
 
     reduce->SetInput(NULL);
-    reduce->SetOutput(NULL);
+    reduce->SetOutput(vtkPolyData::New());
     vertex->SetInput(NULL);
-    vertex->SetOutput(NULL);
+    vertex->SetOutput(vtkPolyData::New());
 }
 
 

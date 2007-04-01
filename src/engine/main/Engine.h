@@ -20,6 +20,7 @@ class RenderRPC;
 class SetFinalVariableNameRPC;
 class SetWinAnnotAttsRPC;
 class StartPickRPC;
+class StartQueryRPC;
 class UpdatePlotAttsRPC;
 class UseNetworkRPC;
 
@@ -81,6 +82,9 @@ class Xfer;
 //    Jeremy Meredith, Mon Nov  1 17:17:59 PST 2004
 //    Added a parallel ProcessInput for parallel Simulation support.  Made
 //    some other small changes necessary for that to happen.
+//
+//    Hank Childs, Mon Feb 28 17:03:06 PST 2005
+//    Added StartQueryRPC.
 //
 // ****************************************************************************
 
@@ -192,6 +196,7 @@ class Engine
     UpdatePlotAttsRPC        *updatePlotAttsRPC;
     PickRPC                  *pickRPC;
     StartPickRPC             *startPickRPC;
+    StartQueryRPC            *startQueryRPC;
     ExecuteRPC               *executeRPC;
     ClearCacheRPC            *clearCacheRPC;
     QueryRPC                 *queryRPC;

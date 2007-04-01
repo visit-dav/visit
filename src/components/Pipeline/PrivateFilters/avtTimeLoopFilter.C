@@ -74,6 +74,9 @@ avtTimeLoopFilter::~avtTimeLoopFilter()
 //    Kathleen Bonnell, Thu Jan 27 09:14:35 PST 2005
 //    Added call to FinalizeTimeLoop.
 //
+//    Hank Childs, Fri Mar  4 09:41:53 PST 2005
+//    Don't do dynamic load balancing with time queries.
+//
 // ****************************************************************************
 
 bool
@@ -114,6 +117,7 @@ avtTimeLoopFilter::Update(avtPipelineSpecification_p spec)
 
         avtPipelineSpecification_p pspec = 
             new avtPipelineSpecification(newDS, spec->GetPipelineIndex());
+        pspec->NoDynamicLoadBalancing();
 
         modified |= avtFilter::Update(pspec);
         

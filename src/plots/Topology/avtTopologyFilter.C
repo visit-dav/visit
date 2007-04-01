@@ -725,6 +725,12 @@ avtTopologyFilter::RefashionDataObjectInfo(void)
 //  Programmer: Akira Haddox
 //  Creation:   July 1, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Mar  4 08:12:25 PST 2005
+//    Do not set outputs of filters to NULL, since this will prevent them
+//    from re-executing correctly in DLB-mode.
+//
 // ****************************************************************************
 
 void
@@ -735,6 +741,6 @@ avtTopologyFilter::ReleaseData()
     if (cf)
     {
         cf->SetInput(NULL);
-        cf->SetOutput(NULL);
+        cf->SetOutput(vtkPolyData::New());
     }
 }

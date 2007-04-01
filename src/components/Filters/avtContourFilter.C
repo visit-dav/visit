@@ -64,13 +64,15 @@ using std::string;
 //    Brad Whitlock, Tue May 20 13:42:25 PST 2003
 //    I made it use the updated ContourOpAttributes.
 //
+//    Hank Childs, Sun Mar  6 08:18:53 PST 2005
+//    Removed cd2pd.
+//
 // ****************************************************************************
 
 avtContourFilter::avtContourFilter(const ContourOpAttributes &a)
 {
     atts   = a;
     cf     = vtkVisItContourFilter::New();
-    cd2pd  = vtkCellDataToPointData::New();
     stillNeedExtents = true;
     shouldCreateLabels = true;
 
@@ -124,6 +126,9 @@ avtContourFilter::avtContourFilter(const ContourOpAttributes &a)
 //    Hank Childs, Mon Apr 23 15:49:59 PDT 2001
 //    Destruct contour grid.
 //
+//    Hank Childs, Sun Mar  6 08:18:53 PST 2005
+//    Removed cd2pd.
+//
 // ****************************************************************************
 
 avtContourFilter::~avtContourFilter()
@@ -132,11 +137,6 @@ avtContourFilter::~avtContourFilter()
     {
         cf->Delete();
         cf = NULL;
-    }
-    if (cd2pd != NULL)
-    {
-        cd2pd->Delete();
-        cd2pd = NULL;
     }
 }
 
@@ -470,6 +470,10 @@ avtContourFilter::PreExecute(void)
 //    Hank Childs, Mon Aug 30 08:45:14 PDT 2004
 //    Give better progress.
 //
+//    Hank Childs, Sun Mar  6 08:18:53 PST 2005
+//    Instantiate cd2pd here inside this routine rather than using a data
+//    member.
+//
 // ****************************************************************************
 
 avtDataTree_p 
@@ -511,6 +515,7 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
         vtkDataSet *new_in_ds = (vtkDataSet *) in_ds->NewInstance();
         new_in_ds->CopyStructure(in_ds);
         new_in_ds->GetCellData()->AddArray(cellVar);
+        vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
         cd2pd->SetInput(new_in_ds);
         cd2pd->SetOutput(toBeContoured);
         cd2pd->Update();
@@ -528,6 +533,7 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
             }
         }
         new_in_ds->Delete();
+        cd2pd->Delete();
     }
     else
     {
@@ -974,6 +980,13 @@ avtContourFilter::CreateLabels()
 //    Hank Childs, Mon Sep 16 18:26:11 PDT 2002
 //    Fix additional memory bloat problems.
 //
+//    Hank Childs, Fri Mar  4 08:12:25 PST 2005
+//    Do not set outputs of filters to NULL, since this will prevent them 
+//    from re-executing correctly in DLB-mode.
+//
+//    Hank Childs, Sun Mar  6 08:18:53 PST 2005
+//    Removed cd2pd.
+//
 // ****************************************************************************
 
 void
@@ -982,9 +995,7 @@ avtContourFilter::ReleaseData(void)
     avtDataTreeStreamer::ReleaseData();
 
     cf->SetInput(NULL);
-    cf->SetOutput(NULL);
-    cd2pd->SetInput(NULL);
-    cd2pd->SetOutput(NULL);
+    cf->SetOutput(vtkPolyData::New());
 }
 
 

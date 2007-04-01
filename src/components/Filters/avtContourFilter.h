@@ -55,6 +55,9 @@ class vtkDataSet;
 //    Do a better job of providing progress.  Added two data members, nnodes
 //    and current_node to help with bookkeeping.
 //
+//    Hank Childs, Sun Mar  6 08:18:53 PST 2005
+//    Removed "centering conversion module" data member.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtContourFilter : public avtDataTreeStreamer
@@ -72,7 +75,6 @@ class AVTFILTERS_API avtContourFilter : public avtDataTreeStreamer
 
   protected:
     vtkVisItContourFilter     *cf;
-    vtkCellDataToPointData    *cd2pd;
 
     bool                       stillNeedExtents;
     bool                       shouldCreateLabels;

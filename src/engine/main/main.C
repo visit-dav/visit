@@ -2,7 +2,6 @@
 
 #include <DebugStream.h>
 #include <TimingsManager.h>
-#include <LoadBalancer.h>
 
 #ifdef PARALLEL
 #include <avtParallel.h>
@@ -200,13 +199,14 @@
 //    Hank Childs, Tue Jun  1 13:58:57 PDT 2004
 //    Added call to Init::Finalize.
 //
+//    Hank Childs, Sun Mar  6 08:56:30 PST 2005
+//    Remove call to LoadBalancer::ForceStatic.  This is now the default.
+//
 // ****************************************************************************
 
 int
 main(int argc, char *argv[])
 {
-    LoadBalancer::ForceStatic();
-
     Engine *engine = Engine::Instance();
 
     // Do some pre-connect initialization

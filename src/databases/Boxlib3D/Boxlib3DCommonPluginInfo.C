@@ -39,6 +39,15 @@ Boxlib3DCommonPluginInfo::GetDefaultExtensions()
     return defaultExtensions;
 }
 
+std::vector<std::string>
+Boxlib3DCommonPluginInfo::GetFilenames()
+{
+    std::vector<std::string> filenames;
+    filenames.push_back("Header");
+
+    return filenames;
+}
+
 // ****************************************************************************
 //  Method: Boxlib3DCommonPluginInfo::SetUpBoxlib3DDatabase
 //

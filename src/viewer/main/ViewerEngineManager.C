@@ -2120,6 +2120,26 @@ ViewerEngineManager::Pick(const EngineKey &ek,
 }
 
 // ****************************************************************************
+// Method: ViewerEngineManager::StartQuery
+//
+// Purpose: 
+//   Engine StartQuery RPC wrapped for safety.
+//
+// Programmer: Hank Childs
+// Creation:   March 1, 2005
+//
+// ****************************************************************************
+
+bool
+ViewerEngineManager::StartQuery(const EngineKey &ek, const bool flag,
+                               const int nid)
+{
+    ENGINE_PROXY_RPC_BEGIN("StartQuery");
+    engine->StartQuery(flag, nid);
+    ENGINE_PROXY_RPC_END;
+}
+
+// ****************************************************************************
 // Method: ViewerEngineManager::StartPick
 //
 // Purpose: 

@@ -4,12 +4,15 @@
 
 #include <avtOriginatingSink.h>
 
+#include <snprintf.h>
+
 #include <avtPipelineSpecification.h>
 
 #include <AbortException.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <NoInputException.h>
+#include <TimingsManager.h>
 
 
 //
@@ -27,11 +30,15 @@ void            *avtOriginatingSink::guideFunctionArgs = NULL;
 //  Programmer: Hank Childs
 //  Creation:   May 29, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Mar  2 11:17:20 PST 2005
+//    Remove old data member pipelineIndex.
+//
 // ****************************************************************************
 
 avtOriginatingSink::avtOriginatingSink()
 {
-    pipelineIndex = -1;
 }
 
 
@@ -54,27 +61,6 @@ avtOriginatingSink::~avtOriginatingSink()
 
 
 // ****************************************************************************
-//  Method: avtOriginatingSink::SetPipelineIndex
-//
-//  Purpose:
-//      Sets the pipeline index for this originating sink.
-//
-//  Arguments:
-//      pI      The new pipeline index.
-//
-//  Programmer: Hank Childs
-//  Creation:   May 29, 2001
-//
-// ****************************************************************************
-
-void
-avtOriginatingSink::SetPipelineIndex(int pI)
-{
-    pipelineIndex = pI;
-}
-
-
-// ****************************************************************************
 //  Method: avtOriginatingSink::Execute
 //
 //  Purpose:
@@ -82,7 +68,7 @@ avtOriginatingSink::SetPipelineIndex(int pI)
 //      multiple times when dynamic load balancing is necessary.
 //
 //  Arguments:
-//      spec    The data specification this pipeline should restrict itself to.
+//      spec    The pipeline specification this pipeline should use.
 //
 //  Programmer: Hank Childs
 //  Creation:   May 29, 2001
@@ -108,11 +94,18 @@ avtOriginatingSink::SetPipelineIndex(int pI)
 //    Hank Childs, Fri Sep 28 13:18:47 PDT 2001
 //    Added hook for cleaning up after dynamic load balancing.
 //
+//    Hank Childs, Sat Feb 19 14:46:05 PST 2005
+//    Added timings for dynamic load balancing.
+//
+//    Hank Childs, Wed Mar  2 11:17:20 PST 2005
+//    Take a pipeline specification rather than a data specification.
+//
 // ****************************************************************************
 
 void
-avtOriginatingSink::Execute(avtDataSpecification_p spec)
+avtOriginatingSink::Execute(avtPipelineSpecification_p pipelineSpec)
 {
+    int pipelineIndex = pipelineSpec->GetPipelineIndex();
     if (pipelineIndex < 0)
     {
         //
@@ -121,16 +114,13 @@ avtOriginatingSink::Execute(avtDataSpecification_p spec)
         EXCEPTION0(ImproperUseException);
     }
 
-    avtPipelineSpecification_p pipelineSpec;
-    pipelineSpec = new avtPipelineSpecification(spec, pipelineIndex);
-
     avtDataObject_p input = GetInput();
     if (*input == NULL)
     {
         EXCEPTION0(NoInputException);
     }
 
-    if (!guideFunction)
+    if (!guideFunction || pipelineIndex == 0)
     {
         debug4 << "No guide function registered with the originating sink,"
                << " doing normal Update." << endl;
@@ -147,7 +137,9 @@ avtOriginatingSink::Execute(avtDataSpecification_p spec)
             debug4 << "Guide function indicated that we should do the "
                    << "first Update on pipeline " << pipelineIndex << "." 
                    << endl;
+            int t = visitTimer->StartTimer();
             input->Update(pipelineSpec);
+            visitTimer->StopTimer(t, "First pipeline update.");
         }
 
         //
@@ -160,13 +152,20 @@ avtOriginatingSink::Execute(avtDataSpecification_p spec)
             avtDataObject_p dob = input->Clone();
             while (guideFunction(guideFunctionArgs, pipelineIndex))
             {
-                debug4 << "Doing " << iter++ << " iteration Updating on "
+                debug4 << "Doing " << iter << " iteration Updating on "
                        << "pipeline " << pipelineIndex << "." << endl;
+                int t = visitTimer->StartTimer();
                 input->Update(pipelineSpec);
+                char msg[1024];
+                SNPRINTF(msg, 1024, "Iteration %d of dynamic LB update.",iter);
+                visitTimer->StopTimer(t, msg);
                 dob->Merge(*input);
+                iter++;
             }
             input->Copy(*dob);
+            int t2 = visitTimer->StartTimer();
             DynamicLoadBalanceCleanUp();
+            visitTimer->StopTimer(t2, "Time to do DLB clean up");
         }
         debug4 << "Done with iterating Updates on pipeline "
                << pipelineIndex << endl;

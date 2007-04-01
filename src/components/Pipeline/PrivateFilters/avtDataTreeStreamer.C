@@ -12,7 +12,6 @@
 
 #include <IncompatibleDomainListsException.h>
 #include <DebugStream.h>
-#include <TimingsManager.h>
 
 
 // ****************************************************************************
@@ -85,13 +84,14 @@ avtDataTreeStreamer::~avtDataTreeStreamer()
 //    Eric Brugger, Mon Nov  5 13:38:23 PST 2001
 //    Modified to always compile the timing code.
 //
+//    Hank Childs, Mon Feb 28 10:39:28 PST 2005
+//    Moved timings code into base class avtFilter.
+//
 // ****************************************************************************
 
 void
 avtDataTreeStreamer::Execute(void)
 {
-    int timerHandle = visitTimer->StartTimer();
-
     //
     // This will walk through the data domains in a data tree.
     //
@@ -100,10 +100,6 @@ avtDataTreeStreamer::Execute(void)
     avtDataTree_p newTree = Execute(tree);
 
     SetOutputDataTree(newTree);
-
-    const char *filterType = GetType();
-    visitTimer->StopTimer(timerHandle, filterType);
-    visitTimer->DumpTimings();
 }
 
 
@@ -256,7 +252,6 @@ avtDataTreeStreamer::UpdateExtents(avtDataTree_p tree)
         avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
         if (trueDataExtents == NULL)
         {
-            avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
             trueDataExtents = new avtExtents(1);
         }
         double range[2];  // who has more than 25 vars?
