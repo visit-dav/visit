@@ -6,6 +6,12 @@
 
 #include <AbortException.h>
 #include <LostConnectionException.h>
+
+// MCM -- 22Feb05: Hack to fix problem on SGI where reconstituting an
+// exception would die in the throw. If we ever figure out why SGI needed
+// this, we should remove this include directive
+#include <InvalidVariableException.h>
+
 #include <RemoteProcess.h>
 #include <SocketConnection.h>
 #include <StatusAttributes.h>
